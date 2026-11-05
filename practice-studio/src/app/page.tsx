@@ -556,9 +556,9 @@ export default function PracticeStudioPage() {
                 type="button"
                 onClick={handleSyncToNotion}
                 disabled={isSyncing || !currentDrill}
-                className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-slate-950 font-bold text-xs px-3.5 py-1.5 rounded-lg transition-colors shadow-sm"
+                className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold text-xs px-3.5 py-1.5 rounded-lg transition-colors shadow-sm"
               >
-                {isSyncing ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+                {isSyncing ? <RefreshCw className="w-3.5 h-3.5 animate-spin text-white" /> : <Send className="w-3.5 h-3.5 text-white" />}
                 Grade &amp; Sync to Notion
               </button>
 

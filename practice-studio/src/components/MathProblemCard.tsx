@@ -100,17 +100,17 @@ export const MathProblemCard: React.FC<MathProblemCardProps> = ({
 
       {/* Plain Text CAS */}
       {problem.plainText && (
-        <div className="flex flex-wrap items-center justify-between gap-2 bg-[#10131d] border border-dashed border-[#2c354d] rounded-lg px-3 py-2 mb-3.5 text-xs text-slate-300">
-          <span>
+        <div className="cas-copy-box flex flex-wrap items-center justify-between gap-2 bg-[#10131d] border border-dashed border-[#2c354d] rounded-lg px-3 py-2 mb-3.5 text-xs text-slate-300">
+          <span className="flex items-center gap-1.5 flex-wrap">
             <strong className="text-slate-400">Plain-Text / CAS Input:</strong>{" "}
-            <code className="font-mono text-indigo-300 bg-indigo-950/40 px-1.5 py-0.5 rounded">
+            <code className="cas-code-snippet font-mono text-indigo-300 bg-indigo-950/40 px-1.5 py-0.5 rounded">
               {problem.plainText}
             </code>
           </span>
           <button
             type="button"
             onClick={handleCopyCas}
-            className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-[#1d2333] hover:bg-indigo-600/20 text-slate-300 hover:text-white border border-[#2c354d] transition-colors"
+            className="cas-copy-btn inline-flex items-center gap-1 px-2.5 py-1 rounded bg-[#1d2333] hover:bg-indigo-600/20 text-slate-300 hover:text-white border border-[#2c354d] transition-colors"
           >
             {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
             {copied ? "Copied" : "Copy"}

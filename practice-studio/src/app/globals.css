@@ -52,15 +52,27 @@ html.light body,
   color: #0f172a !important;
 }
 
-/* 2. Top Header Sticky Bar */
-.light header.bg-\[\#151924\]\/90 {
-  background-color: rgba(255, 255, 255, 0.92) !important;
+/* 2. Top Header Sticky Bar & Drop Shadows (Soft, subtle & clean) */
+.light header.bg-\[\#151924\]\/90,
+.light header.sticky {
+  background-color: rgba(255, 255, 255, 0.95) !important;
   border-color: #e2e8f0 !important;
-  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.08), 0 2px 6px -1px rgba(15, 23, 42, 0.04) !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.03) !important;
 }
 
 .light header .h-10.bg-\[\#2c354d\] {
   background-color: #e2e8f0 !important;
+}
+
+/* Very subtle airy shadows across all cards in Light Mode */
+.light .shadow-xl,
+.light .shadow-2xl,
+.light .shadow-lg,
+.light .shadow-md,
+.light .shadow-sm,
+.light article,
+.light section {
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.02) !important;
 }
 
 /* 3. Primary Card Containers */
@@ -69,7 +81,7 @@ html.light body,
 .light section.bg-gradient-to-br {
   background: #ffffff !important;
   border-color: #e2e8f0 !important;
-  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.06), 0 1px 2px -1px rgba(15, 23, 42, 0.04) !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.02) !important;
 }
 
 /* 4. Controls, Inputs, Selects, and Secondary Bars */
@@ -166,7 +178,8 @@ html.light body,
   border-color: #e2e8f0 !important;
 }
 
-.light .border-dashed.border-\[\#2c354d\] {
+.light .border-dashed.border-\[\#2c354d\],
+.light .cas-copy-box {
   border-color: #cbd5e1 !important;
 }
 
@@ -232,7 +245,113 @@ html.light body,
   color: #b91c1c !important;
 }
 
-/* 9. StepRow Derivations */
+/* 9. Badges (Fix for Problem Header Badges & Reference Badges) */
+.light .problem-type-badge.bg-indigo-950\/70 {
+  background-color: #e0e7ff !important;
+  color: #4338ca !important;
+  border-color: #c7d2fe !important;
+}
+
+.light .problem-type-badge.bg-emerald-950\/70 {
+  background-color: #d1fae5 !important;
+  color: #065f46 !important;
+  border-color: #a7f3d0 !important;
+}
+
+.light .bg-cyan-500\/10 {
+  background-color: #ecfeff !important;
+  border-color: #a5f3fc !important;
+}
+
+.light .text-cyan-300 {
+  color: #0e7490 !important;
+}
+
+.light .bg-amber-500\/10 {
+  background-color: #fffbeb !important;
+  border-color: #fde68a !important;
+}
+
+.light .notion-badge.bg-sky-500\/10 {
+  background-color: #f0f9ff !important;
+  color: #0369a1 !important;
+  border-color: #bae6fd !important;
+}
+
+.light .notion-badge.bg-sky-500\/10:hover {
+  background-color: #e0f2fe !important;
+  color: #0284c7 !important;
+}
+
+.light .notion-badge.bg-slate-800 {
+  background-color: #f1f5f9 !important;
+  color: #334155 !important;
+  border-color: #cbd5e1 !important;
+}
+
+.light .bg-\[\#1b2234\].text-slate-300,
+.light .bg-\[\#1d2333\].text-slate-400 {
+  background-color: #f1f5f9 !important;
+  color: #475569 !important;
+  border-color: #e2e8f0 !important;
+}
+
+/* 10. Grade & Sync Notion Button (Always white text & icon) */
+button.bg-emerald-600,
+.light button.bg-emerald-600 {
+  color: #ffffff !important;
+}
+
+button.bg-emerald-600 svg,
+.light button.bg-emerald-600 svg {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
+}
+
+/* 11. Plain Text CAS Box & Copy Button (Math) */
+.light .cas-copy-box {
+  background-color: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+  color: #334155 !important;
+}
+
+.light .cas-copy-box strong {
+  color: #475569 !important;
+}
+
+.light .cas-code-snippet,
+.light .cas-copy-box code {
+  background-color: #eef2ff !important;
+  color: #4338ca !important;
+  border: 1px solid #c7d2fe !important;
+  font-weight: 600;
+}
+
+.light .cas-copy-btn,
+.light .cas-copy-box button {
+  background-color: #ffffff !important;
+  color: #334155 !important;
+  border-color: #cbd5e1 !important;
+}
+
+.light .cas-copy-btn:hover,
+.light .cas-copy-box button:hover {
+  background-color: #f1f5f9 !important;
+  color: #0f172a !important;
+  border-color: #94a3b8 !important;
+}
+
+.light .cas-copy-btn svg,
+.light .cas-copy-box button svg {
+  color: #64748b !important;
+}
+
+.light .cas-copy-btn:hover svg,
+.light .cas-copy-box button:hover svg {
+  color: #0f172a !important;
+}
+
+/* 12. StepRow Derivations */
 .light .grid.items-center.bg-\[\#1d2333\] {
   background-color: #ffffff !important;
   border-color: #e2e8f0 !important;
@@ -270,7 +389,7 @@ html.light body,
   background-color: #fee2e2 !important;
 }
 
-/* 10. KaTeX Rendering in Light Mode */
+/* 13. KaTeX Rendering in Light Mode */
 .light .katex,
 .light .katex-display {
   color: #0f172a !important;
@@ -286,7 +405,7 @@ html.light body,
   color: #0f172a !important;
 }
 
-/* 11. VS Code Block & Editor */
+/* 14. VS Code Block & Editor */
 .light .bg-\[\#1e1e1e\] {
   background-color: #ffffff !important;
   color: #0f172a !important;
@@ -321,6 +440,31 @@ html.light body,
   color: #0f172a !important;
 }
 
+/* PRG VS Code Window Copy Button */
+.light .vscode-copy-btn,
+.light .vscode-copy-btn.bg-\[\#2d2d2d\] {
+  background-color: #ffffff !important;
+  color: #334155 !important;
+  border-color: #cbd5e1 !important;
+}
+
+.light .vscode-copy-btn:hover,
+.light .vscode-copy-btn.hover\:bg-\[\#383838\]:hover {
+  background-color: #f1f5f9 !important;
+  color: #0f172a !important;
+  border-color: #94a3b8 !important;
+}
+
+.light .vscode-copy-btn svg {
+  color: #64748b !important;
+  stroke: #64748b !important;
+}
+
+.light .vscode-copy-btn:hover svg {
+  color: #0f172a !important;
+  stroke: #0f172a !important;
+}
+
 /* VS Code Syntax Token Highlighting for Light Theme */
 .light .tok-plain { color: #24292f !important; }
 .light .tok-comment { color: #6e7781 !important; }
@@ -332,7 +476,7 @@ html.light body,
 .light .tok-number { color: #0550ae !important; }
 .light .tok-constant { color: #0550ae !important; }
 
-/* 12. SVG & Visual Renderer Text */
+/* 15. SVG & Visual Renderer Text */
 .light .fill-slate-200 {
   fill: #0f172a !important;
   filter: none !important;
@@ -356,7 +500,7 @@ html.light body,
   border-color: #e2e8f0 !important;
 }
 
-/* 13. Theme Toggle Button Styling */
+/* 16. Theme Toggle Button Styling */
 .theme-toggle-btn {
   background-color: #1d2333;
   color: #cbd5e1;

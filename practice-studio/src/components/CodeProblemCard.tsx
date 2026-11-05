@@ -184,7 +184,7 @@ export const CodeProblemCard: React.FC<CodeProblemCardProps> = ({
         <div className="flex flex-wrap items-center gap-2">
           <span className="font-bold text-base text-indigo-300 flex items-center gap-2">
             <span
-              className={`px-2 py-0.5 rounded-md text-xs font-mono font-semibold uppercase ${
+              className={`problem-type-badge px-2 py-0.5 rounded-md text-xs font-mono font-semibold uppercase ${
                 isKata
                   ? "bg-emerald-950/70 text-emerald-300 border border-emerald-700/40"
                   : "bg-indigo-950/70 text-indigo-300 border border-indigo-700/40"
