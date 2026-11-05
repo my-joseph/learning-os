@@ -76,6 +76,15 @@ $$\text{Think Before Coding} \longrightarrow \text{Hands-On Implementation} \lon
 - **Zero Toy Examples Standard:** AI is strictly forbidden from using `foo`, `bar`, `baz`, `test1`, or meaningless single-letter variables. Every problem must model realistic production domains (Auth tokens, Rate limiting, E-Commerce pricing, Mutex locks, WebSocket backoff).
 - **Anti-Cheat & Boundary Standards:** Test suites must include boundary edge cases (empty collections, zero, falsy values, large integers, timeout traps) to verify real logic rather than hardcoded return branches.
 
+### 4. Problem Specification Formatting & Readability Protocol (Zero Wall-of-Text Standard)
+To ensure maximum cognitive clarity and mirror real-world engineering specifications (Jira tickets, PRDs, RFCs), all programming prompts must follow strict typography and structural standards:
+- **Zero Wall-of-Text Standard:** Continuous unbroken paragraphs (> 2 sentences) for complex multi-rule specifications are strictly forbidden. Never dump a single massive block of text.
+- **Mandatory Four-Part Specification Structure:**
+  1. **Objective / Overview:** 1-2 concise sentences summarizing the primary mission with the entry point function or class enclosed in inline backticks (e.g. `Implement calculateOrderTotal(order) for an e-commerce platform.`).
+  2. **Categorized Markdown Sections & Bulleted Lists:** Requirements, calculation tiers, and business policies must be broken down into structured bulleted lists (`- `) with bold category prefixes (e.g. `**Input Validation:**`, `**Coupon Rules:**`, `**Shipping Policy:**`, `**Tax Rules:**`).
+  3. **Strict Code Identifier Typography:** Every code symbol, variable/parameter (`order.items`, `subtotal`), literal value (`"PERCENT10"`, `true`, `8 USD`), and Error type (`RangeError`, `TypeError`) must be formatted as inline code with backticks.
+  4. **Explicit Return Schema Contract:** Multi-key return objects or data structures must be explicitly written out as an inline code contract (e.g. `{ subtotal, discount, shipping, tax, total, currency: 'USD' }`) or code block so the developer never has to guess the shape.
+
 ---
 
 ## PART 6 — Universal Five-Tier Milestone Taxonomy (Labs)

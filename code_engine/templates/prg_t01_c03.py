@@ -188,10 +188,12 @@ module.exports = { debounce };
         "category": "Concurrency & Timing",
         "context": "Frontend & Event Flow",
         "prompt": (
-            f"Implement a production-grade debounce(fn, delay) utility. "
-            f"It delays executing 'fn' until 'delay' milliseconds have elapsed since the last call. "
-            f"All subsequent calls within the delay window must reset the timer. "
-            f"The debounced function must preserve the invocation 'this' context and arguments."
+            "Implement a production-grade `debounce(fn, delay)` utility in JavaScript.\n\n"
+            "**Behavioral Requirements:**\n"
+            "- Delays executing `fn` until `delay` milliseconds have elapsed since the last invocation.\n"
+            "- Repeated calls within the delay window must reset the timer and postpone execution.\n"
+            "- Must preserve the invocation `this` context and forward all received arguments.\n"
+            "- Supports `0ms` delay as a macrotask deferral."
         ),
         "codeType": "problem-solving",
         "archetype": "problem-solving",
@@ -331,10 +333,11 @@ module.exports = { groupBy };
         "category": "Data Transformation",
         "context": "Collection Processing",
         "prompt": (
-            "Implement a groupBy(collection, iteratee) utility in JavaScript. "
-            "It splits a collection into sets, grouped by the result of running each value through iteratee. "
-            "Iteratee may be either a function (e.g. Math.floor) or a string property key (e.g. 'type'). "
-            "Return an empty object if the input is null, undefined, or empty."
+            "Implement a `groupBy(collection, iteratee)` utility in JavaScript.\n\n"
+            "**Behavioral Requirements:**\n"
+            "- Splits `collection` into sets grouped by the result of running each value through `iteratee`.\n"
+            "- `iteratee` can be either a function (e.g. `Math.floor`) or a string property name (e.g. `'type'`).\n"
+            "- Return an empty object `{}` if `collection` is `null`, `undefined`, or an empty array."
         ),
         "codeType": "problem-solving",
         "archetype": "problem-solving",
@@ -546,12 +549,21 @@ module.exports = { calculateOrderTotal };
         "category": "E-Commerce & Financial Pipeline",
         "context": "Pricing & Invariant Enforcement",
         "prompt": (
-            "Implement calculateOrderTotal(order) for an e-commerce platform. "
-            "Validate inputs defensively (items non-empty, price >= 0, integer quantity > 0, throw RangeError). "
-            "Apply coupon rules (PERCENT10: 10% off up to 20 USD; FIXED15: 15 USD off if subtotal >= 50 USD; FREESHIP). "
-            "Apply shipping (8 USD standard, free if post-discount subtotal >= 100 USD or VIP or FREESHIP). "
-            "Calculate 7% sales tax on taxable items (item.taxable !== false) after proportional discount. "
-            "Return formatted price breakdown { subtotal, discount, shipping, tax, total, currency: 'USD' }."
+            "Implement `calculateOrderTotal(order)` for an e-commerce platform.\n\n"
+            "**Validation Invariants:**\n"
+            "- `order.items` must be a non-empty array.\n"
+            "- Each item must have `price >= 0` and integer `quantity > 0`.\n"
+            "- Throw `RangeError` if validation fails or items is empty.\n\n"
+            "**Discount & Coupon Rules:**\n"
+            "- `PERCENT10`: 10% discount on subtotal, capped at 20 USD max.\n"
+            "- `FIXED15`: 15 USD discount if subtotal >= 50 USD, else 0 USD.\n"
+            "- `FREESHIP`: Free shipping voucher.\n\n"
+            "**Shipping Policy:**\n"
+            "- Standard shipping is 8 USD.\n"
+            "- Free shipping if post-discount subtotal >= 100 USD, or `isVip` is `true`, or coupon is `FREESHIP`.\n\n"
+            "**Taxation & Output Contract:**\n"
+            "- Apply 7% sales tax on taxable items (`item.taxable !== false`) on the discounted taxable amount.\n"
+            "- Return price breakdown: `{ subtotal, discount, shipping, tax, total, currency: 'USD' }` (rounded to 2 decimals)."
         ),
         "codeType": "problem-solving",
         "archetype": "problem-solving",
@@ -784,11 +796,14 @@ module.exports = { AsyncCache };
         "category": "State Management & Concurrency",
         "context": "Async Cache Stampede Triage",
         "prompt": (
-            "Diagnose and fix two critical defects in AsyncCache: "
-            "1. Cache Stampede: Concurrent calls to getOrFetch(key, fetcher) trigger redundant fetch executions. "
-            "Deduplicate in-flight Promises using an inFlight map so all simultaneous requests share the single active request. "
-            "2. State Mutation Leak: Returning cached references directly allows external callers to mutate cache state. "
-            "Defensively clone results before returning."
+            "Diagnose and fix two critical defects in `AsyncCache`:\n\n"
+            "**1. Cache Stampede (Concurrency Bug):**\n"
+            "- Simultaneous calls to `getOrFetch(key, fetcher)` fire redundant `fetcher` calls.\n"
+            "- Deduplicate in-flight Promises using an `inFlight` Map so all concurrent requests share the single active Promise.\n"
+            "- Ensure `inFlight` key is deleted in a `finally` block even if the fetch fails.\n\n"
+            "**2. State Mutation Leak (Defensive Copying):**\n"
+            "- Returning cached references directly allows external callers to mutate internal cache state.\n"
+            "- Defensively clone cached results before returning to callers."
         ),
         "codeType": "debugging",
         "archetype": "debugging",
@@ -1001,10 +1016,16 @@ module.exports = { calculateMonthlyBill };
         "category": "Refactoring & Clean Architecture",
         "context": "Subscription Billing Engine",
         "prompt": (
-            "Refactor calculateMonthlyBill(account) to support the new 'family' plan (34.99 USD base for 2 members, "
-            "+8.99 USD per extra member up to 6 max, RangeError if > 6) and annualCommitment (15% discount before tax). "
-            "Keep all legacy plans (basic, pro, enterprise) green. "
-            "Decouple plan configuration into clean lookup dictionaries rather than monolithic nested if/else statements."
+            "Refactor `calculateMonthlyBill(account)` to support new business requirements without breaking existing plans:\n\n"
+            "**New Plan: 'family':**\n"
+            "- Base price: 34.99 USD (includes 2 members).\n"
+            "- Add-on members: +8.99 USD per extra member over 2, up to 6 members max.\n"
+            "- Guard Invariant: If `account.members > 6`, throw `RangeError('Family plan allows max 6 members')`.\n\n"
+            "**New Feature: Annual Commitment:**\n"
+            "- If `account.annualCommitment` is `true`, apply a 15% discount on the plan subtotal before tax.\n\n"
+            "**Refactoring Objective:**\n"
+            "- Keep all legacy plans (`basic`, `pro`, `enterprise`) 100% green.\n"
+            "- Decouple the tangled `switch`/`if-else` statement into clean strategy configuration dictionaries."
         ),
         "codeType": "refactoring",
         "archetype": "refactoring",
@@ -1207,11 +1228,14 @@ module.exports = { RateLimiter };
         "category": "Subsystem Architecture & Events",
         "context": "API Gateway Rate Limiter",
         "prompt": (
-            "Build an event-driven RateLimiter class implementing a sliding window algorithm. "
-            "It extends EventEmitter and tracks request timestamps per key. "
-            "consume(key) allows up to maxRequests within windowMs and returns { allowed, remaining, resetMs }. "
-            "When a request exceeds the limit, it emits a 'blocked' event with (key, resetMs) and returns allowed: false. "
-            "reset(key) clears the history for the specified key."
+            "Build an event-driven `RateLimiter` class implementing a sliding window algorithm extending `EventEmitter`.\n\n"
+            "**Constructor:**\n"
+            "- `new RateLimiter({ maxRequests = 5, windowMs = 1000 })`\n\n"
+            "**Methods & Invariants:**\n"
+            "- `consume(key)`: Allows up to `maxRequests` within `windowMs`.\n"
+            "- Returns `{ allowed: true, remaining: number, resetMs: number }`.\n"
+            "- On limit breach: emit `'blocked'` event with `(key, resetMs)` and return `{ allowed: false, remaining: 0, resetMs }`.\n"
+            "- `reset(key)`: Clears recorded history for the specified key."
         ),
         "codeType": "project-based",
         "archetype": "project-based",
@@ -1342,11 +1366,12 @@ module.exports = { memoize };
         "category": "Reusable Generic Utilities",
         "context": "Function Caching & Memoization",
         "prompt": (
-            "Implement memoize(fn, resolver) in JavaScript. "
-            "It returns a memoized function that caches the result of calling fn. "
-            "If resolver is provided, it determines the cache key based on the arguments supplied; "
-            "otherwise the first argument is used as the map key. "
-            "Ensure that falsy return values (0, false, null, '') are properly cached without re-evaluating."
+            "Implement `memoize(fn, resolver)` in JavaScript.\n\n"
+            "**Behavioral Requirements:**\n"
+            "- Returns a memoized function caching the result of calling `fn`.\n"
+            "- If `resolver` is provided, use it to compute the cache key; otherwise default to `args[0]`.\n"
+            "- Correctly cache falsy return values (`0`, `false`, `null`, `''`) without re-evaluating.\n"
+            "- Expose the underlying cache `Map` on `memoized.cache`."
         ),
         "codeType": "problem-solving",
         "archetype": "problem-solving",

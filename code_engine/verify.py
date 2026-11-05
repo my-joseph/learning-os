@@ -25,7 +25,6 @@ import subprocess
 from code_engine.answer_check import check_answer, parse_tokens
 
 BANNED = [
-    (re.compile(r"\*\*"), "Markdown bold (**)"),
     (re.compile(r"__"), "Markdown underscore emphasis (__)"),
     (re.compile(r"\[\[[^\]]*\]\]"), "raw [[ID]] token"),
     (re.compile(r"[\u0E00-\u0E7F]"), "non-English (Thai) text"),
@@ -50,6 +49,20 @@ def check_text_safety(pid, label, text):
             _fail(pid, f"{label} contains {what}: {text[:120]}")
     if text.count("$") % 2 != 0:
         _fail(pid, f"{label} has unbalanced $ delimiters: {text[:120]}")
+
+
+def check_prompt_readability(pid, prompt: str):
+    """Enforces Zero Wall-of-Text Standard on programming prompts."""
+    if not isinstance(prompt, str):
+        return
+    if len(prompt) > 250:
+        has_structure = ("\n" in prompt) or ("- " in prompt) or ("**" in prompt)
+        if not has_structure:
+            _fail(
+                pid,
+                "prompt violates Zero Wall-of-Text Standard (> 250 chars without newlines, bullet points, or bold sections). "
+                "Structure with markdown sections and bullet points."
+            )
 
 
 def run_node(code: str, timeout: float = 3.0):
@@ -112,10 +125,11 @@ def verify_problem(p, id_map=None):
     pid = p.get("id", p.get("templateKey", "?"))
     v = p.get("verify", {})
 
-    # 1. Text safety
+    # 1. Text safety & Zero Wall-of-Text check
     for fld in TEXT_FIELDS:
         if fld in p:
             check_text_safety(pid, fld, p[fld])
+    check_prompt_readability(pid, p.get("prompt", ""))
 
     # 2. Anti-Answer-Leak
     check_anti_leak(pid, p)

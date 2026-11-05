@@ -13,7 +13,12 @@
  * 6. เพิ่มความยาก     : Scale up test inputs and handle harsher stress scenarios.
  * 
  * SPECIFICATION:
- * Implement a groupBy(collection, iteratee) utility in JavaScript. It splits a collection into sets, grouped by the result of running each value through iteratee. Iteratee may be either a function (e.g. Math.floor) or a string property key (e.g. 'type'). Return an empty object if the input is null, undefined, or empty.
+ * Implement a `groupBy(collection, iteratee)` utility in JavaScript.
+
+**Behavioral Requirements:**
+- Splits `collection` into sets grouped by the result of running each value through `iteratee`.
+- `iteratee` can be either a function (e.g. `Math.floor`) or a string property name (e.g. `'type'`).
+- Return an empty object `{}` if `collection` is `null`, `undefined`, or an empty array.
  * ============================================================================
  */
 

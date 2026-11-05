@@ -13,7 +13,16 @@
  * 6. เพิ่มความยาก     : Scale up test inputs and handle harsher stress scenarios.
  * 
  * SPECIFICATION:
- * Build an event-driven RateLimiter class implementing a sliding window algorithm. It extends EventEmitter and tracks request timestamps per key. consume(key) allows up to maxRequests within windowMs and returns { allowed, remaining, resetMs }. When a request exceeds the limit, it emits a 'blocked' event with (key, resetMs) and returns allowed: false. reset(key) clears the history for the specified key.
+ * Build an event-driven `RateLimiter` class implementing a sliding window algorithm extending `EventEmitter`.
+
+**Constructor:**
+- `new RateLimiter({ maxRequests = 5, windowMs = 1000 })`
+
+**Methods & Invariants:**
+- `consume(key)`: Allows up to `maxRequests` within `windowMs`.
+- Returns `{ allowed: true, remaining: number, resetMs: number }`.
+- On limit breach: emit `'blocked'` event with `(key, resetMs)` and return `{ allowed: false, remaining: 0, resetMs }`.
+- `reset(key)`: Clears recorded history for the specified key.
  * ============================================================================
  */
 

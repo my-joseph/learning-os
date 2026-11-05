@@ -13,7 +13,13 @@
  * 6. เพิ่มความยาก     : Scale up test inputs and handle harsher stress scenarios.
  * 
  * SPECIFICATION:
- * Implement a production-grade debounce(fn, delay) utility. It delays executing 'fn' until 'delay' milliseconds have elapsed since the last call. All subsequent calls within the delay window must reset the timer. The debounced function must preserve the invocation 'this' context and arguments.
+ * Implement a production-grade `debounce(fn, delay)` utility in JavaScript.
+
+**Behavioral Requirements:**
+- Delays executing `fn` until `delay` milliseconds have elapsed since the last invocation.
+- Repeated calls within the delay window must reset the timer and postpone execution.
+- Must preserve the invocation `this` context and forward all received arguments.
+- Supports `0ms` delay as a macrotask deferral.
  * ============================================================================
  */
 
