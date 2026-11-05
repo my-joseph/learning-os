@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Math Practice Player</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
+  <link rel="stylesheet" href="/web/styles.css" />
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="/web/app.js"></script>
+</head>
+<body>
+  <div class="container">
+    <!-- Top Control Bar: 1. Pre-Generation Config  |  2. Load Saved .json  |  3. Sync to Notion -->
+    <header class="top-bar">
+      <div class="top-bar-section">
+        <span class="section-title">1. Pre-Generation Config</span>
+        <div class="controls-row">
+          <label for="cfgUnit">Unit</label>
+          <select id="cfgUnit">
+            <option value="MTH-T02-C01-U01">MTH-T02-C01-U01 · Complex Numbers</option>
+          </select>
+
+          <label for="cfgCount">Count</label>
+          <select id="cfgCount">
+            <option value="5" selected>5 Qs</option>
+            <option value="10">10 Qs</option>
+            <option value="15">15 Qs</option>
+            <option value="20">20 Qs</option>
+          </select>
+
+          <label for="cfgDifficulty">Difficulty</label>
+          <select id="cfgDifficulty">
+            <option value="ALL" selected>Mixed Exam Mode (L1–L4)</option>
+            <option value="1">Level 1 — Foundation</option>
+            <option value="2">Level 2 — Standard Exam</option>
+            <option value="3">Level 3 — Trap &amp; Diagnostic</option>
+            <option value="4">Level 4 — Applied Synthesis</option>
+          </select>
+
+          <button id="btnGenerate" class="btn-primary" onclick="handleGenerateNewDrill()">
+            + Generate New .json Set
+          </button>
+        </div>
+      </div>
+
+      <div class="top-bar-divider"></div>
+
+      <div class="top-bar-section">
+        <span class="section-title">2. Active Drill File (.json) &amp; Notion Sync</span>
+        <div class="controls-row">
+          <select id="drillFileSelect" onchange="handleSelectDrillFile(this.value)"></select>
+          <span id="liveScoreBadge" class="badge badge-score">Score: 0 / 0 (0%)</span>
+          <button id="btnSyncNotion" class="btn-success" onclick="handleSyncToNotion()">
+            Grade &amp; Sync to Notion
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Drill Metadata Banner -->
+    <section id="drillHeaderCard" class="header-card"></section>
+
+    <!-- Notification / Sync Banner -->
+    <div id="statusBanner" class="status-banner"></div>
+
+    <!-- Problems List -->
+    <main id="problemsRoot"></main>
+  </div>
+</body>
+</html>

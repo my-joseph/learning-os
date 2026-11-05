@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 380" width="100%" height="100%">
+  <defs>
+    <style>
+      .label { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 19px; font-weight: 600; fill: #1f2937; }
+      .formula { font-family: "KaTeX_Math", "Times New Roman", serif; font-size: 20px; font-weight: bold; fill: #6366f1; }
+    </style>
+  </defs>
+  <rect width="100%" height="100%" fill="#f8fafc" rx="12"/>
+  
+  <!-- Cylinder Body Outline -->
+  <!-- Top Ellipse -->
+  <ellipse cx="180" cy="90" rx="90" ry="30" fill="#e0e7ff" stroke="#4f46e5" stroke-width="3"/>
+  
+  <!-- Lateral Body -->
+  <path d="M 90,90 L 90,270 A 90 30 0 0 0 270,270 L 270,90 Z" fill="#eef2ff" stroke="none"/>
+  <!-- Lateral Left/Right Borders -->
+  <line x1="90" y1="90" x2="90" y2="270" stroke="#4f46e5" stroke-width="3"/>
+  <line x1="270" y1="90" x2="270" y2="270" stroke="#4f46e5" stroke-width="3"/>
+  
+  <!-- Bottom Ellipse (Front half solid, back half dashed) -->
+  <path d="M 90,270 A 90 30 0 0 0 270,270" fill="none" stroke="#4f46e5" stroke-width="3"/>
+  <path d="M 90,270 A 90 30 0 0 1 270,270" fill="none" stroke="#a5b4fc" stroke-width="2" stroke-dasharray="5,5"/>
+  
+  <!-- Top Radius Dimension -->
+  <line x1="180" y1="90" x2="270" y2="90" stroke="#dc2626" stroke-width="3"/>
+  <circle cx="180" cy="90" r="4" fill="#1f2937"/>
+  <circle cx="270" cy="90" r="4" fill="#dc2626"/>
+  <text x="225" y="80" class="label" fill="#dc2626" text-anchor="middle">Radius r</text>
+  
+  <!-- Height Dimension (on right) -->
+  <line x1="290" y1="90" x2="290" y2="270" stroke="#2563eb" stroke-width="2.5"/>
+  <line x1="280" y1="90" x2="300" y2="90" stroke="#2563eb" stroke-width="2"/>
+  <line x1="280" y1="270" x2="300" y2="270" stroke="#2563eb" stroke-width="2"/>
+  <text x="325" y="185" class="label" fill="#2563eb">Height h</text>
+
+  <!-- Formula Panel -->
+  <rect x="330" y="40" width="170" height="110" rx="8" fill="#f5f3ff" stroke="#818cf8" stroke-width="1.5"/>
+  <text x="415" y="70" class="label" text-anchor="middle" font-size="16">3D Cylinder</text>
+  <text x="415" y="105" class="formula" text-anchor="middle">V = π r² h</text>
+  <text x="415" y="135" class="formula" text-anchor="middle" font-size="16">A = 2πr² + 2πrh</text>
+</svg>

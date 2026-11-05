@@ -1,0 +1,14 @@
+{
+  "name": "lab-prg-t03-c01-01",
+  "version": "1.0.0",
+  "description": "Full-Stack E-Commerce Core & Checkout Engine — Phase 3 Project Lab",
+  "type": "module",
+  "scripts": {
+    "test": "node --experimental-strip-types --test tests/*.test.ts",
+    "test:watch": "node --experimental-strip-types --test --watch tests/*.test.ts",
+    "submit": "python3 ../common/submit_lab.py"
+  },
+  "keywords": ["typescript", "ecommerce", "domain-driven", "testing", "state-machine"],
+  "author": "Antigravity Learning Engine",
+  "license": "MIT"
+}

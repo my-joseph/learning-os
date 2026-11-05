@@ -1,0 +1,2490 @@
+{
+  "PRG-T01": {
+    "id": "40c3818f-8ba0-8188-b07f-ddf7342b6108",
+    "title": "JavaScript & TypeScript Engineering"
+  },
+  "PHY-T01": {
+    "id": "4003818f-8ba0-80ab-916d-d38edce5bacb",
+    "title": "Physics High School"
+  },
+  "MTH-T01": {
+    "id": "4003818f-8ba0-802b-ad3c-e664941df5db",
+    "title": "Prealgebra"
+  },
+  "PRG-T02": {
+    "id": "40c3818f-8ba0-81e5-870b-dd99ca3d7318",
+    "title": "Frontend Engineering"
+  },
+  "MTH-T02": {
+    "id": "4003818f-8ba0-8043-8ff1-dd5524247456",
+    "title": "Algebra and Trigonometry"
+  },
+  "PRG-T03": {
+    "id": "40c3818f-8ba0-81b8-ae61-f1b25d49b2a9",
+    "title": "Next.js & Full-Stack React"
+  },
+  "PRG-T04": {
+    "id": "40c3818f-8ba0-81b5-aafc-ff3d6992fdc1",
+    "title": "Backend Engineering"
+  },
+  "PRG-T05": {
+    "id": "40c3818f-8ba0-812d-b6f5-d8bb573f5d06",
+    "title": "Database Engineering"
+  },
+  "PRG-T06": {
+    "id": "40c3818f-8ba0-8140-be72-d8df15534069",
+    "title": "Authentication, Authorization & Security"
+  },
+  "PRG-T07": {
+    "id": "40c3818f-8ba0-8153-acf4-d92fc4218963",
+    "title": "Full-Stack Product Engineering"
+  },
+  "PRG-T08": {
+    "id": "40c3818f-8ba0-8132-9a78-e5c22364add6",
+    "title": "Testing & Software Quality"
+  },
+  "PRG-T09": {
+    "id": "40c3818f-8ba0-810f-b911-d89fdeda8626",
+    "title": "System Design, Redis & Realtime"
+  },
+  "PRG-T10": {
+    "id": "40c3818f-8ba0-8170-8e0e-c74a4451b116",
+    "title": "Deployment, Docker & Cloud"
+  },
+  "PRG-T00": {
+    "id": "40c3818f-8ba0-8127-ab0d-e2c2df1f9e43",
+    "title": "Foundation Audit"
+  },
+  "PRG-T10-C03": {
+    "id": "40c3818f-8ba0-8176-989d-eb3f7b0cfc19",
+    "title": "Deploy & Final Showcase"
+  },
+  "PRG-T10-C02": {
+    "id": "40c3818f-8ba0-815a-80a6-da886b00ec02",
+    "title": "CI/CD, Monitoring & Operations"
+  },
+  "PRG-T10-C01": {
+    "id": "40c3818f-8ba0-811d-a34a-df1f9a4c2bb2",
+    "title": "Production Readiness & Docker"
+  },
+  "PRG-T09-C02": {
+    "id": "40c3818f-8ba0-81d0-ad3b-e528200b205f",
+    "title": "Realtime & Background Work"
+  },
+  "PRG-T09-C01": {
+    "id": "40c3818f-8ba0-81b4-9865-eeeae8cf8d37",
+    "title": "System Design & Redis Caching"
+  },
+  "PRG-T08-C03": {
+    "id": "40c3818f-8ba0-8190-ac32-f9660037444a",
+    "title": "End-to-End Testing & Quality Gates"
+  },
+  "PRG-T08-C02": {
+    "id": "40c3818f-8ba0-81bb-8644-e5f0f57c94c4",
+    "title": "React Component Testing"
+  },
+  "PRG-T08-C01": {
+    "id": "40c3818f-8ba0-813f-ac06-e61348c651fc",
+    "title": "Unit & Integration Testing"
+  },
+  "PRG-T07-C04": {
+    "id": "40c3818f-8ba0-81da-a08d-f5405a11b1ee",
+    "title": "Product Polish & Release Candidate"
+  },
+  "PRG-T07-C03": {
+    "id": "40c3818f-8ba0-818b-8e25-d4f2662216f7",
+    "title": "Files, Notifications & Search"
+  },
+  "PRG-T07-C02": {
+    "id": "40c3818f-8ba0-811f-9f4f-c72f2b64b8ee",
+    "title": "Core Collaboration Features"
+  },
+  "PRG-T07-C01": {
+    "id": "40c3818f-8ba0-8161-968e-c70ac5454df7",
+    "title": "Product Scope & Domain Architecture"
+  },
+  "PRG-T06-C02": {
+    "id": "40c3818f-8ba0-814c-828a-e24e76a0f106",
+    "title": "Authorization & Web Security"
+  },
+  "PRG-T06-C01": {
+    "id": "40c3818f-8ba0-818f-b7ca-dafda362a611",
+    "title": "Authentication & Session Management"
+  },
+  "PRG-T05-C03": {
+    "id": "40c3818f-8ba0-8174-b7b7-dff57f8bcfcc",
+    "title": "Prisma, Migrations & Data Access"
+  },
+  "PRG-T05-C02": {
+    "id": "40c3818f-8ba0-8196-bd4d-c429079f5a65",
+    "title": "PostgreSQL Queries, Indexes & Transactions"
+  },
+  "PRG-T05-C01": {
+    "id": "40c3818f-8ba0-8108-9bb5-dedf9939113d",
+    "title": "Relational Modeling & SQL"
+  },
+  "PRG-T04-C03": {
+    "id": "40c3818f-8ba0-813a-94aa-ff0d937472c5",
+    "title": "Backend Structure & API Quality"
+  },
+  "PRG-T04-C02": {
+    "id": "40c3818f-8ba0-813f-8cfb-d082d67f8faa",
+    "title": "Express, Middleware & Validation"
+  },
+  "PRG-T04-C01": {
+    "id": "40c3818f-8ba0-8117-9696-d45f43a58b54",
+    "title": "Node Runtime, HTTP & API Design"
+  },
+  "PRG-T03-C03": {
+    "id": "40c3818f-8ba0-8106-8f52-f4d2e5188798",
+    "title": "Mutations, Route Handlers & CMS Mini App"
+  },
+  "PRG-T03-C02": {
+    "id": "40c3818f-8ba0-819a-a5bb-df68c2506c2c",
+    "title": "Server/Client Components & Data Flow"
+  },
+  "PRG-T03-C01": {
+    "id": "40c3818f-8ba0-81c8-aa08-c35bef86ce68",
+    "title": "Next.js App Router Foundations"
+  },
+  "PRG-T02-C05": {
+    "id": "40c3818f-8ba0-810b-9837-d38c587078cc",
+    "title": "Frontend Performance & Architecture"
+  },
+  "PRG-T02-C04": {
+    "id": "40c3818f-8ba0-81a6-8752-fc4a9896de6a",
+    "title": "UI Engineering, Responsive Design & Accessibility"
+  },
+  "PRG-T02-C03": {
+    "id": "40c3818f-8ba0-81d1-9a25-c081d41abbb0",
+    "title": "Forms, Validation & Data UX"
+  },
+  "PRG-T02-C02": {
+    "id": "40c3818f-8ba0-8114-b143-d54b277b05c1",
+    "title": "Client State & Server State"
+  },
+  "PRG-T02-C01": {
+    "id": "40c3818f-8ba0-8174-8ef9-d0966cf63f6e",
+    "title": "React Mental Model & Component Architecture"
+  },
+  "PRG-T01-C03": {
+    "id": "40c3818f-8ba0-815f-8356-d8e9627e7c24",
+    "title": "Problem Solving & Utility Toolkit"
+  },
+  "PRG-T01-C02": {
+    "id": "40c3818f-8ba0-8126-b5ad-f03fec9bfbe4",
+    "title": "TypeScript for Application Code"
+  },
+  "PRG-T01-C01": {
+    "id": "40c3818f-8ba0-8122-af62-ef0327e2a3c7",
+    "title": "JavaScript Deep Dive"
+  },
+  "PRG-T00-C03": {
+    "id": "40c3818f-8ba0-81c0-9000-c0cd4e84dfa0",
+    "title": "Developer Workflow & Git"
+  },
+  "PRG-T00-C02": {
+    "id": "40c3818f-8ba0-81da-86c7-e93a0f2a0be5",
+    "title": "JavaScript & TypeScript Baseline"
+  },
+  "PRG-T00-C01": {
+    "id": "40c3818f-8ba0-81a7-818f-daa684a12710",
+    "title": "Web Platform Fundamentals"
+  },
+  "MTH-T01-C11": {
+    "id": "4013818f-8ba0-8104-973c-ee2c1d2a2cd1",
+    "title": "Solving Linear Equations"
+  },
+  "MTH-T01-C01": {
+    "id": "4013818f-8ba0-8128-8b88-c27b12d743b8",
+    "title": "Whole Numbers"
+  },
+  "MTH-T01-C10": {
+    "id": "4013818f-8ba0-81ab-b640-e0ca95982e40",
+    "title": "The Properties of Real Numbers"
+  },
+  "MTH-T01-C02": {
+    "id": "4013818f-8ba0-81b7-bb58-fe78c77eda4b",
+    "title": "The Language of Algebra"
+  },
+  "MTH-T02-C12": {
+    "id": "4013818f-8ba0-80fa-a9e6-d7d2c625e4ff",
+    "title": "Sequences, Probability, and Counting Theory"
+  },
+  "MTH-T02-C11": {
+    "id": "4013818f-8ba0-8017-a1ee-e78d9f323b6d",
+    "title": "Analytic Geometry"
+  },
+  "MTH-T02-C10": {
+    "id": "4013818f-8ba0-80b1-a3ea-d27cd41af406",
+    "title": "Systems of Equations and Inequalities"
+  },
+  "MTH-T02-C09": {
+    "id": "4013818f-8ba0-801f-becf-cf79330bb55e",
+    "title": "Further Applications of Trigonometry"
+  },
+  "MTH-T02-C08": {
+    "id": "4013818f-8ba0-802b-98b7-e2c73556b53c",
+    "title": "Trigonometric Identities and Equations"
+  },
+  "MTH-T02-C07": {
+    "id": "4013818f-8ba0-8069-86a9-c31d88fed691",
+    "title": "Periodic Functions"
+  },
+  "MTH-T02-C06": {
+    "id": "4013818f-8ba0-8030-80b6-c7fb1fc0cede",
+    "title": "The Unit Circle: Sine and Cosine Functions"
+  },
+  "MTH-T02-C05": {
+    "id": "4013818f-8ba0-8003-939b-e99b84c9aea2",
+    "title": "Exponential and Logarithmic Functions"
+  },
+  "MTH-T02-C04": {
+    "id": "4013818f-8ba0-8008-905c-d03a4a781430",
+    "title": "Polynomial and Rational Functions"
+  },
+  "MTH-T02-C03": {
+    "id": "4013818f-8ba0-804c-b493-efd63b318b46",
+    "title": "Linear Functions"
+  },
+  "MTH-T02-C02": {
+    "id": "4013818f-8ba0-8087-b66c-ced18064436e",
+    "title": "Functions"
+  },
+  "MTH-T02-C01": {
+    "id": "4013818f-8ba0-8097-a141-e24011167161",
+    "title": "Equations and Inequalities"
+  },
+  "PHY-T01-C23": {
+    "id": "4013818f-8ba0-8030-bdef-e1a1c9c90fc5",
+    "title": "Particle Physics"
+  },
+  "PHY-T01-C22": {
+    "id": "4013818f-8ba0-8096-ad98-fa17dc5fd5a6",
+    "title": "The Atom"
+  },
+  "PHY-T01-C21": {
+    "id": "4013818f-8ba0-800a-afb5-ec430b878f32",
+    "title": "The Quantum Nature of Light"
+  },
+  "PHY-T01-C20": {
+    "id": "4013818f-8ba0-800e-a9d8-c715bb5ce6c0",
+    "title": "Magnetism"
+  },
+  "PHY-T01-C19": {
+    "id": "4013818f-8ba0-80ac-9f43-fd7ff5aa6235",
+    "title": "Electrical Circuits"
+  },
+  "PHY-T01-C18": {
+    "id": "4013818f-8ba0-8075-adf1-f999d1b717a6",
+    "title": "Static Electricity"
+  },
+  "PHY-T01-C17": {
+    "id": "4013818f-8ba0-8035-a4f7-c658e2983642",
+    "title": "Diffraction and Interference"
+  },
+  "PHY-T01-C16": {
+    "id": "4013818f-8ba0-8011-99ac-def2c3fae435",
+    "title": "Mirrors and Lenses"
+  },
+  "PHY-T01-C15": {
+    "id": "4013818f-8ba0-80ba-a24b-d4b38a6204f9",
+    "title": "Light"
+  },
+  "PHY-T01-C14": {
+    "id": "4013818f-8ba0-8067-88be-e9153940d9d8",
+    "title": "Sound"
+  },
+  "PHY-T01-C13": {
+    "id": "4013818f-8ba0-80ae-8af6-f111f25d9bc4",
+    "title": "Waves and Their Properties"
+  },
+  "PHY-T01-C12": {
+    "id": "4013818f-8ba0-80ad-b72e-ff3d032c7f91",
+    "title": "Thermodynamics"
+  },
+  "PHY-T01-C11": {
+    "id": "4013818f-8ba0-801b-83aa-cb0929833612",
+    "title": "Thermal Energy, Heat, and Work"
+  },
+  "PHY-T01-C10": {
+    "id": "4013818f-8ba0-8057-8f74-efd6f3e00cf9",
+    "title": "Special Relativity"
+  },
+  "PHY-T01-C09": {
+    "id": "4013818f-8ba0-80c5-b0cc-f3d15f2f066e",
+    "title": "Work, Energy, and Simple Machines"
+  },
+  "PHY-T01-C08": {
+    "id": "4013818f-8ba0-8059-90ba-f6d35e5c0371",
+    "title": "Momentum"
+  },
+  "PHY-T01-C07": {
+    "id": "4013818f-8ba0-80fb-8ffc-e8f44aaafa85",
+    "title": "Newton’s Law of Gravitation"
+  },
+  "PHY-T01-C06": {
+    "id": "4013818f-8ba0-8086-8592-d4f937fe1dfe",
+    "title": "Circular and Rotational Motion"
+  },
+  "PHY-T01-C05": {
+    "id": "4013818f-8ba0-8096-b6db-e82013a21bd3",
+    "title": "Motion in Two Dimensions"
+  },
+  "PHY-T01-C04": {
+    "id": "4013818f-8ba0-803d-af82-d9d6d2f7a0d3",
+    "title": "Forces and Newton’s Laws of Motion"
+  },
+  "PHY-T01-C03": {
+    "id": "4013818f-8ba0-8052-bbb1-c4697f073a26",
+    "title": "Acceleration"
+  },
+  "PHY-T01-C02": {
+    "id": "4013818f-8ba0-801e-989e-cbf3bd2817d1",
+    "title": "Motion in One Dimension"
+  },
+  "PHY-T01-C01": {
+    "id": "4013818f-8ba0-80ee-87e1-e1eafadf248d",
+    "title": "What is Physics?"
+  },
+  "MTH-T01-C14": {
+    "id": "4003818f-8ba0-8047-9b02-f51945184734",
+    "title": "Graphs"
+  },
+  "MTH-T01-C13": {
+    "id": "4003818f-8ba0-8059-9a7b-c4f58dde1acc",
+    "title": "Polynomials"
+  },
+  "MTH-T01-C12": {
+    "id": "4003818f-8ba0-80cf-bf95-ef15001d8a52",
+    "title": "Math Models and Geometry"
+  },
+  "MTH-T01-C03": {
+    "id": "4003818f-8ba0-8065-86fe-f4b5d423cd59",
+    "title": "Integers"
+  },
+  "MTH-T01-C06": {
+    "id": "4003818f-8ba0-80b5-880d-efc899bb6183",
+    "title": "Percents"
+  },
+  "MTH-T01-C09": {
+    "id": "4003818f-8ba0-80cd-8826-cc9d13c40a2c",
+    "title": "Roots"
+  },
+  "MTH-T01-C08": {
+    "id": "4003818f-8ba0-80b3-bcc3-c7e76ffdae10",
+    "title": "Exponents"
+  },
+  "MTH-T01-C07": {
+    "id": "4003818f-8ba0-80da-9ece-c25762c28b7d",
+    "title": "Propotional & Radio"
+  },
+  "MTH-T01-C05": {
+    "id": "4003818f-8ba0-80bf-9e2b-de83e73f026b",
+    "title": "Decimals"
+  },
+  "MTH-T01-C04": {
+    "id": "4003818f-8ba0-8054-8960-c0514eb841aa",
+    "title": "Fractions"
+  },
+  "PRG-T10-C03-U07": {
+    "id": "40c3818f-8ba0-8142-a21b-d9104b825949",
+    "title": "README, Demo and Retrospective"
+  },
+  "PRG-T10-C03-U06": {
+    "id": "40c3818f-8ba0-8158-86d9-cf2feeaf7b81",
+    "title": "Production Smoke Testing"
+  },
+  "PRG-T10-C03-U05": {
+    "id": "40c3818f-8ba0-8182-81bd-c1cc58a5409b",
+    "title": "Domain and HTTPS Basics"
+  },
+  "PRG-T10-C03-U04": {
+    "id": "40c3818f-8ba0-816a-97b4-e92ac12f23e6",
+    "title": "Deploying the Application"
+  },
+  "PRG-T10-C03-U03": {
+    "id": "40c3818f-8ba0-81bd-8c9a-d9ae9d3bb92f",
+    "title": "Database Provisioning and Migrations"
+  },
+  "PRG-T10-C03-U02": {
+    "id": "40c3818f-8ba0-81b9-b978-e897959f603a",
+    "title": "Production Environment Variables"
+  },
+  "PRG-T10-C03-U01": {
+    "id": "40c3818f-8ba0-81e3-9ee7-c4dad7f02f06",
+    "title": "Choosing a Deployment Target"
+  },
+  "PRG-T10-C02-U07": {
+    "id": "40c3818f-8ba0-8174-badb-e213120fb4ef",
+    "title": "Rollback and Release Checklist"
+  },
+  "PRG-T10-C02-U06": {
+    "id": "40c3818f-8ba0-81d3-ae6f-c4752e84b653",
+    "title": "Database Backup Basics"
+  },
+  "PRG-T10-C02-U05": {
+    "id": "40c3818f-8ba0-815c-a944-e08b18cd3699",
+    "title": "Application Logs and Monitoring"
+  },
+  "PRG-T10-C02-U04": {
+    "id": "40c3818f-8ba0-81fd-a177-f5152d464edb",
+    "title": "Deployment Workflow"
+  },
+  "PRG-T10-C02-U03": {
+    "id": "40c3818f-8ba0-81c8-8340-e212b969a382",
+    "title": "Automated Tests and Build Checks"
+  },
+  "PRG-T10-C02-U01": {
+    "id": "40c3818f-8ba0-811d-9284-e991cf11f85f",
+    "title": "CI Pipeline Fundamentals"
+  },
+  "PRG-T10-C02-U02": {
+    "id": "40c3818f-8ba0-8199-b743-f7532fcebc88",
+    "title": "GitHub Actions Workflow Syntax"
+  },
+  "PRG-T10-C01-U07": {
+    "id": "40c3818f-8ba0-81c8-8246-c2906d84115d",
+    "title": "Local Production-like Workflow"
+  },
+  "PRG-T10-C01-U06": {
+    "id": "40c3818f-8ba0-81fe-a957-e4c771293618",
+    "title": "Container Logs and Debugging"
+  },
+  "PRG-T10-C01-U05": {
+    "id": "40c3818f-8ba0-8132-a858-d72134400400",
+    "title": "Docker Compose for App and Database"
+  },
+  "PRG-T10-C01-U04": {
+    "id": "40c3818f-8ba0-8102-8fa7-c7259f207662",
+    "title": "Volumes and Networking"
+  },
+  "PRG-T10-C01-U03": {
+    "id": "40c3818f-8ba0-81b5-a646-c5fe33f72760",
+    "title": "Dockerfile Fundamentals"
+  },
+  "PRG-T10-C01-U01": {
+    "id": "40c3818f-8ba0-816e-ab06-cf9bf3db8c4e",
+    "title": "Production Environment Configuration"
+  },
+  "PRG-T10-C01-U02": {
+    "id": "40c3818f-8ba0-81b1-8051-d5b0051ae67f",
+    "title": "Docker Images and Containers"
+  },
+  "PRG-T09-C02-U07": {
+    "id": "40c3818f-8ba0-8161-a6f5-fe45b8f0fd6d",
+    "title": "Choosing Realtime vs Polling"
+  },
+  "PRG-T09-C02-U06": {
+    "id": "40c3818f-8ba0-8144-9550-ee96501eb399",
+    "title": "Retries and Idempotency"
+  },
+  "PRG-T09-C02-U05": {
+    "id": "40c3818f-8ba0-81d1-a156-fdae173e5d7e",
+    "title": "Background Job Concepts"
+  },
+  "PRG-T09-C02-U04": {
+    "id": "40c3818f-8ba0-8171-b67d-f95905ada87e",
+    "title": "Realtime UI Synchronization"
+  },
+  "PRG-T09-C02-U03": {
+    "id": "40c3818f-8ba0-8113-b541-d56af080b26d",
+    "title": "Events and Message Design"
+  },
+  "PRG-T09-C02-U02": {
+    "id": "40c3818f-8ba0-81b5-99f3-f585e576b5d7",
+    "title": "WebSocket Lifecycle"
+  },
+  "PRG-T09-C02-U01": {
+    "id": "40c3818f-8ba0-8175-a680-c4c8844291e6",
+    "title": "Realtime Communication Concepts"
+  },
+  "PRG-T09-C01-U07": {
+    "id": "40c3818f-8ba0-81b0-8c32-c2e5a59181c5",
+    "title": "Measuring Cache Effectiveness"
+  },
+  "PRG-T09-C01-U06": {
+    "id": "40c3818f-8ba0-81cf-8224-d10b7a0f0b5f",
+    "title": "Cache Invalidation Strategies"
+  },
+  "PRG-T09-C01-U05": {
+    "id": "40c3818f-8ba0-818d-a8a0-da033edc68ee",
+    "title": "Cache Keys and Expiration"
+  },
+  "PRG-T09-C01-U04": {
+    "id": "40c3818f-8ba0-8162-ab8e-e6709fd59477",
+    "title": "Redis Data Structures"
+  },
+  "PRG-T09-C01-U03": {
+    "id": "40c3818f-8ba0-81d3-a152-ce5963a5a0db",
+    "title": "Caching Concepts and Tradeoffs"
+  },
+  "PRG-T09-C01-U02": {
+    "id": "40c3818f-8ba0-81e7-ba4c-ce419b168a93",
+    "title": "Identifying Bottlenecks"
+  },
+  "PRG-T09-C01-U01": {
+    "id": "40c3818f-8ba0-8145-8bdc-f5338bed37d1",
+    "title": "System Design Fundamentals"
+  },
+  "PRG-T08-C03-U07": {
+    "id": "40c3818f-8ba0-814e-82a8-d15e2f47cd89",
+    "title": "CI Quality Gates"
+  },
+  "PRG-T08-C03-U06": {
+    "id": "40c3818f-8ba0-81bb-a844-d6e9556ade5d",
+    "title": "Critical User Journey Tests"
+  },
+  "PRG-T08-C03-U05": {
+    "id": "40c3818f-8ba0-8172-b67b-fd065b8c6883",
+    "title": "Authentication State and Test Data"
+  },
+  "PRG-T08-C03-U04": {
+    "id": "40c3818f-8ba0-8123-a311-c18072a3268e",
+    "title": "Assertions and Waiting"
+  },
+  "PRG-T08-C03-U03": {
+    "id": "40c3818f-8ba0-81fc-accc-f47d46e7fb31",
+    "title": "Locators and User Actions"
+  },
+  "PRG-T08-C03-U02": {
+    "id": "40c3818f-8ba0-814d-96ac-f128125b0ba3",
+    "title": "Playwright Setup and Browser Contexts"
+  },
+  "PRG-T08-C03-U01": {
+    "id": "40c3818f-8ba0-81ba-ab9d-d961861911b5",
+    "title": "End-to-end Testing Concepts"
+  },
+  "PRG-T08-C02-U06": {
+    "id": "40c3818f-8ba0-81b0-9d66-cc0c7cb93822",
+    "title": "Accessibility-oriented Assertions"
+  },
+  "PRG-T08-C02-U05": {
+    "id": "40c3818f-8ba0-81e9-93c7-fdea35cdb740",
+    "title": "Async UI Testing"
+  },
+  "PRG-T08-C02-U04": {
+    "id": "40c3818f-8ba0-81e2-b594-cd5071e00940",
+    "title": "Testing Forms and Validation"
+  },
+  "PRG-T08-C02-U03": {
+    "id": "40c3818f-8ba0-811b-9b75-fd62d06f40cd",
+    "title": "Testing User Interactions"
+  },
+  "PRG-T08-C02-U02": {
+    "id": "40c3818f-8ba0-81be-bd55-e8ab9e5a0e7a",
+    "title": "Queries by Role and Label"
+  },
+  "PRG-T08-C02-U01": {
+    "id": "40c3818f-8ba0-81d7-9f65-ccc816ee4dc8",
+    "title": "Testing Library Philosophy"
+  },
+  "PRG-T08-C01-U07": {
+    "id": "40c3818f-8ba0-81c1-bd74-f841afeb1019",
+    "title": "Coverage and Test Quality"
+  },
+  "PRG-T08-C01-U06": {
+    "id": "40c3818f-8ba0-81e0-a024-f62866937c6f",
+    "title": "Test Data and Fixtures"
+  },
+  "PRG-T08-C01-U05": {
+    "id": "40c3818f-8ba0-814a-a3ff-cfe2e6b0e649",
+    "title": "Testing Error Paths"
+  },
+  "PRG-T08-C01-U04": {
+    "id": "40c3818f-8ba0-812a-b73d-e8ca6afb1f56",
+    "title": "Service and API Integration Tests"
+  },
+  "PRG-T08-C01-U03": {
+    "id": "40c3818f-8ba0-81af-849c-ce5c1e254ab9",
+    "title": "Mocking Dependencies"
+  },
+  "PRG-T08-C01-U02": {
+    "id": "40c3818f-8ba0-81d1-934c-ebb3b1422ab2",
+    "title": "Unit Testing Pure Functions"
+  },
+  "PRG-T08-C01-U01": {
+    "id": "40c3818f-8ba0-8153-a423-c4c2e79e74dd",
+    "title": "Testing Pyramid and Test Strategy"
+  },
+  "PRG-T07-C04-U07": {
+    "id": "40c3818f-8ba0-8109-8cce-d6293fb93b9e",
+    "title": "Release Candidate Checklist"
+  },
+  "PRG-T07-C04-U06": {
+    "id": "40c3818f-8ba0-81af-8019-c8fb8128bc19",
+    "title": "User Walkthrough and Usability Fixes"
+  },
+  "PRG-T07-C04-U05": {
+    "id": "40c3818f-8ba0-81a6-b1b5-dbcafe34b568",
+    "title": "Accessibility Review"
+  },
+  "PRG-T07-C04-U04": {
+    "id": "40c3818f-8ba0-8145-bf26-d993108e9985",
+    "title": "Activity and Notification Polish"
+  },
+  "PRG-T07-C04-U03": {
+    "id": "40c3818f-8ba0-8131-bb23-ebaf12db206d",
+    "title": "Onboarding and First-use Experience"
+  },
+  "PRG-T07-C04-U02": {
+    "id": "40c3818f-8ba0-81da-a190-de087fff3d7b",
+    "title": "Responsive Product UX"
+  },
+  "PRG-T07-C04-U01": {
+    "id": "40c3818f-8ba0-815a-95fa-e9854549f87b",
+    "title": "Empty, Loading and Error States"
+  },
+  "PRG-T07-C03-U07": {
+    "id": "40c3818f-8ba0-81da-926a-cfe8076b4150",
+    "title": "Failure and Retry Handling"
+  },
+  "PRG-T07-C03-U06": {
+    "id": "40c3818f-8ba0-81c3-b922-d4fad1874350",
+    "title": "Background Work Concepts"
+  },
+  "PRG-T07-C03-U05": {
+    "id": "40c3818f-8ba0-8140-a82b-d1dff8967412",
+    "title": "Activity Feed and Audit Events"
+  },
+  "PRG-T07-C03-U04": {
+    "id": "40c3818f-8ba0-8190-820e-e5fa91ac2e6f",
+    "title": "Search and Filtering"
+  },
+  "PRG-T07-C03-U03": {
+    "id": "40c3818f-8ba0-8136-9620-e443bd79e290",
+    "title": "Notification Model and Delivery"
+  },
+  "PRG-T07-C03-U02": {
+    "id": "40c3818f-8ba0-8141-b07a-c7ac09eb4581",
+    "title": "Object Storage Integration Concepts"
+  },
+  "PRG-T07-C03-U01": {
+    "id": "40c3818f-8ba0-8111-ba50-cc5500880ea6",
+    "title": "File Metadata and Upload Flow"
+  },
+  "PRG-T07-C02-U07": {
+    "id": "40c3818f-8ba0-81f8-8fad-c2ec5cc2e14d",
+    "title": "Role and Ownership Enforcement"
+  },
+  "PRG-T07-C02-U06": {
+    "id": "40c3818f-8ba0-8187-943f-de1ad84f78af",
+    "title": "Comments and Collaboration"
+  },
+  "PRG-T07-C02-U05": {
+    "id": "40c3818f-8ba0-8137-a8ee-dace77386f19",
+    "title": "Task Assignment and Status Changes"
+  },
+  "PRG-T07-C02-U04": {
+    "id": "40c3818f-8ba0-814b-b7b8-dcdca82b392f",
+    "title": "Kanban Workflow"
+  },
+  "PRG-T07-C02-U03": {
+    "id": "40c3818f-8ba0-81b4-9a2f-cca20de243ac",
+    "title": "Projects and Task Model"
+  },
+  "PRG-T07-C02-U02": {
+    "id": "40c3818f-8ba0-814a-a8dd-cc5a34ad8c97",
+    "title": "Invitations and Onboarding Flow"
+  },
+  "PRG-T07-C02-U01": {
+    "id": "40c3818f-8ba0-813b-b1b7-dbef61e205db",
+    "title": "Workspace and Membership Model"
+  },
+  "PRG-T07-C01-U06": {
+    "id": "40c3818f-8ba0-81f7-9eb6-e3f6b4a15900",
+    "title": "Milestones and Technical Plan"
+  },
+  "PRG-T07-C01-U05": {
+    "id": "40c3818f-8ba0-81ae-a11a-c0a706f191f8",
+    "title": "Application Architecture"
+  },
+  "PRG-T07-C01-U04": {
+    "id": "40c3818f-8ba0-81a9-8b4e-cf242c7b0a69",
+    "title": "Feature Prioritization and MVP Scope"
+  },
+  "PRG-T07-C01-U03": {
+    "id": "40c3818f-8ba0-81b1-b36c-f68a94420f8e",
+    "title": "Domain Entities and Relationships"
+  },
+  "PRG-T07-C01-U02": {
+    "id": "40c3818f-8ba0-8100-a0b5-ebcda3768d2e",
+    "title": "User Stories and Acceptance Criteria"
+  },
+  "PRG-T07-C01-U01": {
+    "id": "40c3818f-8ba0-814b-9818-c02477717047",
+    "title": "Product Brief and User Personas"
+  },
+  "PRG-T06-C02-U08": {
+    "id": "40c3818f-8ba0-816a-a862-debc437e0447",
+    "title": "OWASP Risk Review"
+  },
+  "PRG-T06-C02-U07": {
+    "id": "40c3818f-8ba0-81e2-92bf-d5f23b2ccc35",
+    "title": "Secrets and Environment Safety"
+  },
+  "PRG-T06-C02-U06": {
+    "id": "40c3818f-8ba0-81f3-8dbb-e2ff1d7e5b76",
+    "title": "CORS and Security Headers"
+  },
+  "PRG-T06-C02-U05": {
+    "id": "40c3818f-8ba0-81f4-afa8-d6789bbbb6c1",
+    "title": "SQL Injection and Parameterization"
+  },
+  "PRG-T06-C02-U04": {
+    "id": "40c3818f-8ba0-8188-8ce8-ccf903734382",
+    "title": "CSRF and Request Protection"
+  },
+  "PRG-T06-C02-U03": {
+    "id": "40c3818f-8ba0-81c4-98d4-f41a17bb296e",
+    "title": "XSS and Output Safety"
+  },
+  "PRG-T06-C02-U02": {
+    "id": "40c3818f-8ba0-815b-8028-eec49cc42b05",
+    "title": "Resource Ownership Checks"
+  },
+  "PRG-T06-C02-U01": {
+    "id": "40c3818f-8ba0-81b2-a74b-cb51e73b4d48",
+    "title": "Role-based Access Control"
+  },
+  "PRG-T06-C01-U07": {
+    "id": "40c3818f-8ba0-810e-a590-d418f0a0d636",
+    "title": "Implementing Auth with a Trusted Library"
+  },
+  "PRG-T06-C01-U06": {
+    "id": "40c3818f-8ba0-810c-ab35-e3bed6aa0358",
+    "title": "OAuth Flow Concepts"
+  },
+  "PRG-T06-C01-U05": {
+    "id": "40c3818f-8ba0-8183-8d22-e94f8bf16b28",
+    "title": "JWT and Token Concepts"
+  },
+  "PRG-T06-C01-U04": {
+    "id": "40c3818f-8ba0-8180-baec-f54a4e3cc246",
+    "title": "Secure Cookie Attributes"
+  },
+  "PRG-T06-C01-U03": {
+    "id": "40c3818f-8ba0-811f-a83d-ced91a34b538",
+    "title": "Sessions and Cookies"
+  },
+  "PRG-T06-C01-U02": {
+    "id": "40c3818f-8ba0-8183-9807-d4756d92b3df",
+    "title": "Password Storage and Hashing Concepts"
+  },
+  "PRG-T06-C01-U01": {
+    "id": "40c3818f-8ba0-8148-9da9-ffdf65011351",
+    "title": "Authentication vs Authorization"
+  },
+  "PRG-T05-C03-U07": {
+    "id": "40c3818f-8ba0-811b-95f9-ca554a70757a",
+    "title": "Seeding and Data Access Patterns"
+  },
+  "PRG-T05-C03-U06": {
+    "id": "40c3818f-8ba0-81c7-9e15-d830fc051492",
+    "title": "Transactions with Prisma"
+  },
+  "PRG-T05-C03-U05": {
+    "id": "40c3818f-8ba0-8163-a8ee-c899e63e3d8c",
+    "title": "Nested Reads and Writes"
+  },
+  "PRG-T05-C03-U04": {
+    "id": "40c3818f-8ba0-81e3-bb60-d9016b1a208e",
+    "title": "CRUD Queries"
+  },
+  "PRG-T05-C03-U03": {
+    "id": "40c3818f-8ba0-8147-879b-d31a1a8b9705",
+    "title": "Migrations and Schema Changes"
+  },
+  "PRG-T05-C03-U02": {
+    "id": "40c3818f-8ba0-81f7-aa3f-d6670b0b521d",
+    "title": "Prisma Relations"
+  },
+  "PRG-T05-C03-U01": {
+    "id": "40c3818f-8ba0-81a0-8c17-f214476c2223",
+    "title": "Prisma Schema and Models"
+  },
+  "PRG-T05-C02-U07": {
+    "id": "40c3818f-8ba0-81ed-9cc1-d2b57ec8b7fc",
+    "title": "Query Optimization"
+  },
+  "PRG-T05-C02-U06": {
+    "id": "40c3818f-8ba0-81f5-92a7-c341b41b64f9",
+    "title": "Isolation and Concurrency Basics"
+  },
+  "PRG-T05-C02-U05": {
+    "id": "40c3818f-8ba0-818a-b5f7-fda673f35e59",
+    "title": "Transactions and ACID"
+  },
+  "PRG-T05-C02-U04": {
+    "id": "40c3818f-8ba0-816c-b1b4-d4690010bb90",
+    "title": "Indexes and Query Plans"
+  },
+  "PRG-T05-C02-U03": {
+    "id": "40c3818f-8ba0-81c7-8916-ee98f7254711",
+    "title": "Subqueries and Common Table Expressions"
+  },
+  "PRG-T05-C02-U02": {
+    "id": "40c3818f-8ba0-81ca-a644-f66d33d5707c",
+    "title": "INNER and OUTER JOINs"
+  },
+  "PRG-T05-C02-U01": {
+    "id": "40c3818f-8ba0-813d-9c75-f443163c0de4",
+    "title": "Filtering, Sorting and Aggregation"
+  },
+  "PRG-T05-C01-U07": {
+    "id": "40c3818f-8ba0-81b1-80f6-d9c521bf9b1d",
+    "title": "ERD Design and Schema Creation"
+  },
+  "PRG-T05-C01-U06": {
+    "id": "40c3818f-8ba0-81b9-8804-e5b2d37e18e2",
+    "title": "JOINs and Aggregations"
+  },
+  "PRG-T05-C01-U05": {
+    "id": "40c3818f-8ba0-81ea-89a1-dfbbc407b9ee",
+    "title": "SELECT, WHERE and ORDER BY"
+  },
+  "PRG-T05-C01-U04": {
+    "id": "40c3818f-8ba0-815d-ba1c-d8addb459ceb",
+    "title": "Normalization and Constraints"
+  },
+  "PRG-T05-C01-U03": {
+    "id": "40c3818f-8ba0-816e-89ac-c0e0d2fb8271",
+    "title": "Primary and Foreign Keys"
+  },
+  "PRG-T05-C01-U02": {
+    "id": "40c3818f-8ba0-8118-a1c6-d5f676d2e6a1",
+    "title": "Entities, Attributes and Relationships"
+  },
+  "PRG-T05-C01-U01": {
+    "id": "40c3818f-8ba0-814f-b643-f7e8af1bb6d0",
+    "title": "Relational Database Concepts"
+  },
+  "PRG-T04-C03-U07": {
+    "id": "40c3818f-8ba0-81db-ac47-ca8bbb03ed33",
+    "title": "Backend Module Boundaries"
+  },
+  "PRG-T04-C03-U06": {
+    "id": "40c3818f-8ba0-8114-ac6b-cf09690341d2",
+    "title": "API Documentation"
+  },
+  "PRG-T04-C03-U05": {
+    "id": "40c3818f-8ba0-8197-885d-d3c91e0382d6",
+    "title": "Configuration and Secrets"
+  },
+  "PRG-T04-C03-U04": {
+    "id": "40c3818f-8ba0-81b2-b273-f7d4111bc21f",
+    "title": "Consistent API Contracts"
+  },
+  "PRG-T04-C03-U03": {
+    "id": "40c3818f-8ba0-8188-a15c-dc8e86909911",
+    "title": "Pagination, Sorting and Filtering"
+  },
+  "PRG-T04-C03-U01": {
+    "id": "40c3818f-8ba0-812b-b12a-cf5d76b95c3c",
+    "title": "Routes, Controllers and Services"
+  },
+  "PRG-T04-C03-U02": {
+    "id": "40c3818f-8ba0-8174-ae4a-df6ad4dfc818",
+    "title": "Data Access Layer"
+  },
+  "PRG-T04-C02-U07": {
+    "id": "40c3818f-8ba0-817f-bab7-fd336c014999",
+    "title": "Typed CRUD Endpoints"
+  },
+  "PRG-T04-C02-U06": {
+    "id": "40c3818f-8ba0-814d-955f-daccd60e081c",
+    "title": "Logging and Configuration"
+  },
+  "PRG-T04-C02-U05": {
+    "id": "40c3818f-8ba0-815f-9143-e471a8f79c9c",
+    "title": "Centralized Error Handling"
+  },
+  "PRG-T04-C02-U03": {
+    "id": "40c3818f-8ba0-8157-848a-d4209f0bfe73",
+    "title": "Middleware and Request Lifecycle"
+  },
+  "PRG-T04-C02-U04": {
+    "id": "40c3818f-8ba0-8172-b04a-d5b7e5298375",
+    "title": "Request Validation"
+  },
+  "PRG-T04-C02-U02": {
+    "id": "40c3818f-8ba0-81c8-9ae4-e89231283962",
+    "title": "Routing and Route Parameters"
+  },
+  "PRG-T04-C02-U01": {
+    "id": "40c3818f-8ba0-81f6-8132-d15026617104",
+    "title": "Express Application Setup"
+  },
+  "PRG-T04-C01-U07": {
+    "id": "40c3818f-8ba0-81da-b476-f557c39a6faf",
+    "title": "Async I/O and Error Handling"
+  },
+  "PRG-T04-C01-U06": {
+    "id": "40c3818f-8ba0-8160-83c2-fa8d7a9ac412",
+    "title": "API Response and Error Conventions"
+  },
+  "PRG-T04-C01-U05": {
+    "id": "40c3818f-8ba0-8194-bc82-ec834dae401f",
+    "title": "REST Resource Design"
+  },
+  "PRG-T04-C01-U04": {
+    "id": "40c3818f-8ba0-8161-8f2d-e3af92f7285a",
+    "title": "Methods, Status Codes and Headers"
+  },
+  "PRG-T04-C01-U03": {
+    "id": "40c3818f-8ba0-814c-b6b3-d76ac21bba70",
+    "title": "HTTP Request and Response"
+  },
+  "PRG-T04-C01-U02": {
+    "id": "40c3818f-8ba0-8140-9516-ff2983e143d3",
+    "title": "Modules and Environment Variables"
+  },
+  "PRG-T04-C01-U01": {
+    "id": "40c3818f-8ba0-8199-9e11-d613240a07d1",
+    "title": "Node.js Runtime and Event Loop"
+  },
+  "PRG-T03-C03-U07": {
+    "id": "40c3818f-8ba0-81cd-9b17-d2ec4b9020ee",
+    "title": "Building a Small Content Manager"
+  },
+  "PRG-T03-C03-U06": {
+    "id": "40c3818f-8ba0-8108-93d3-dfb02440bf3d",
+    "title": "Error and Pending States"
+  },
+  "PRG-T03-C03-U05": {
+    "id": "40c3818f-8ba0-81ef-acd4-eefde93d0550",
+    "title": "CRUD Data Flow"
+  },
+  "PRG-T03-C03-U04": {
+    "id": "40c3818f-8ba0-81d1-ac64-fd6292268964",
+    "title": "Revalidation and Redirects"
+  },
+  "PRG-T03-C03-U03": {
+    "id": "40c3818f-8ba0-811a-b96e-c0489eb99989",
+    "title": "Input Validation with Zod"
+  },
+  "PRG-T03-C03-U01": {
+    "id": "40c3818f-8ba0-8182-ba85-f0d777bbaf45",
+    "title": "Route Handlers"
+  },
+  "PRG-T03-C03-U02": {
+    "id": "40c3818f-8ba0-81ff-a618-c3b35a14af39",
+    "title": "Server Actions and Form Mutations"
+  },
+  "PRG-T03-C02-U07": {
+    "id": "40c3818f-8ba0-8177-831d-fd4adb8e3319",
+    "title": "Streaming and Suspense Basics"
+  },
+  "PRG-T03-C02-U06": {
+    "id": "40c3818f-8ba0-819f-87ee-c43c1a8e1ea0",
+    "title": "Caching and Revalidation"
+  },
+  "PRG-T03-C02-U05": {
+    "id": "40c3818f-8ba0-8121-9400-d410adc9ca4d",
+    "title": "Passing Data Across Component Boundaries"
+  },
+  "PRG-T03-C02-U04": {
+    "id": "40c3818f-8ba0-81a8-9abf-f39836e9c206",
+    "title": "Data Fetching on the Server"
+  },
+  "PRG-T03-C02-U03": {
+    "id": "40c3818f-8ba0-819a-bf43-d7cbf2f9c208",
+    "title": "Server/Client Boundary Design"
+  },
+  "PRG-T03-C02-U02": {
+    "id": "40c3818f-8ba0-81c4-a21e-e2daa19ba838",
+    "title": "Client Components"
+  },
+  "PRG-T03-C02-U01": {
+    "id": "40c3818f-8ba0-813c-859f-c18c218d7dce",
+    "title": "Server Components"
+  },
+  "PRG-T03-C01-U07": {
+    "id": "40c3818f-8ba0-81ed-a27e-efd15712825e",
+    "title": "Static and Dynamic Rendering"
+  },
+  "PRG-T03-C01-U06": {
+    "id": "40c3818f-8ba0-81a1-9214-d7bae0047705",
+    "title": "Metadata and Navigation"
+  },
+  "PRG-T03-C01-U05": {
+    "id": "40c3818f-8ba0-81d3-aa9a-ff4ded4f7523",
+    "title": "Dynamic Routes and Route Parameters"
+  },
+  "PRG-T03-C01-U04": {
+    "id": "40c3818f-8ba0-81ad-8ca8-deb82aa8f640",
+    "title": "Loading and Error UI"
+  },
+  "PRG-T03-C01-U03": {
+    "id": "40c3818f-8ba0-81f8-a922-ef71fab2c820",
+    "title": "Layouts and Nested Routes"
+  },
+  "PRG-T03-C01-U02": {
+    "id": "40c3818f-8ba0-8184-b671-da4a8de22b78",
+    "title": "App Router and File-system Routing"
+  },
+  "PRG-T03-C01-U01": {
+    "id": "40c3818f-8ba0-819b-b1e6-e9c330c0b73f",
+    "title": "Next.js Project Structure"
+  },
+  "PRG-T02-C05-U07": {
+    "id": "40c3818f-8ba0-8193-93a5-dea0ac749af5",
+    "title": "Frontend Architecture Decisions"
+  },
+  "PRG-T02-C05-U06": {
+    "id": "40c3818f-8ba0-8192-95a1-df61b52b8e48",
+    "title": "Performance Measurement"
+  },
+  "PRG-T02-C05-U05": {
+    "id": "40c3818f-8ba0-8179-a816-fc8329da614c",
+    "title": "Image and Asset Optimization"
+  },
+  "PRG-T02-C05-U04": {
+    "id": "40c3818f-8ba0-813c-8a64-d9957002bce9",
+    "title": "Code Splitting and Lazy Loading"
+  },
+  "PRG-T02-C05-U03": {
+    "id": "40c3818f-8ba0-819f-9669-d5bd264f8656",
+    "title": "Memoization: When and Why"
+  },
+  "PRG-T02-C05-U02": {
+    "id": "40c3818f-8ba0-811b-ab49-c6d53bc94400",
+    "title": "Rendering Cost and Re-render Analysis"
+  },
+  "PRG-T02-C05-U01": {
+    "id": "40c3818f-8ba0-81fe-b593-ecf8e1e14dd5",
+    "title": "Component Boundaries and Composition"
+  },
+  "PRG-T02-C04-U07": {
+    "id": "40c3818f-8ba0-817e-b23c-f32c6de64bb4",
+    "title": "Dark Mode and Theming"
+  },
+  "PRG-T02-C04-U06": {
+    "id": "40c3818f-8ba0-817f-8ddc-cc91ec7792d2",
+    "title": "Semantic UI and Accessibility"
+  },
+  "PRG-T02-C04-U05": {
+    "id": "40c3818f-8ba0-8174-806d-c1b772f52504",
+    "title": "Keyboard and Focus Management"
+  },
+  "PRG-T02-C04-U04": {
+    "id": "40c3818f-8ba0-8132-9dd7-c85ed293ecd8",
+    "title": "Component Variants and States"
+  },
+  "PRG-T02-C04-U03": {
+    "id": "40c3818f-8ba0-815b-8c18-f95218e86750",
+    "title": "Responsive Layout Patterns"
+  },
+  "PRG-T02-C04-U02": {
+    "id": "40c3818f-8ba0-814c-bc48-f99588257f97",
+    "title": "Tailwind Fundamentals"
+  },
+  "PRG-T02-C04-U01": {
+    "id": "40c3818f-8ba0-81d8-9ab5-ca08a56b8649",
+    "title": "Design Tokens and Visual Consistency"
+  },
+  "PRG-T02-C03-U07": {
+    "id": "40c3818f-8ba0-8178-89b0-d80288fdc0f4",
+    "title": "Accessible Form UX"
+  },
+  "PRG-T02-C03-U06": {
+    "id": "40c3818f-8ba0-8175-9f84-c0c92e3753ef",
+    "title": "Async Validation"
+  },
+  "PRG-T02-C03-U05": {
+    "id": "40c3818f-8ba0-812a-8c77-cd095707b203",
+    "title": "React Hook Form Fundamentals"
+  },
+  "PRG-T02-C03-U04": {
+    "id": "40c3818f-8ba0-81e6-afd0-f5fc185d539c",
+    "title": "Field-level and Form-level Errors"
+  },
+  "PRG-T02-C03-U03": {
+    "id": "40c3818f-8ba0-81e1-b587-f9d685811ab9",
+    "title": "Schema Validation with Zod"
+  },
+  "PRG-T02-C03-U02": {
+    "id": "40c3818f-8ba0-8189-8bd8-fea6c214e818",
+    "title": "Form State and Submission"
+  },
+  "PRG-T02-C03-U01": {
+    "id": "40c3818f-8ba0-8178-88c6-f72c4388fc18",
+    "title": "Controlled and Uncontrolled Inputs"
+  },
+  "PRG-T02-C02-U07": {
+    "id": "40c3818f-8ba0-810b-8b62-df312b3fc077",
+    "title": "Error and Retry Strategies"
+  },
+  "PRG-T02-C02-U06": {
+    "id": "40c3818f-8ba0-8140-8089-c0d1b62eb947",
+    "title": "Pagination and Filtering"
+  },
+  "PRG-T02-C02-U05": {
+    "id": "40c3818f-8ba0-8188-893f-ebe6fdd7248e",
+    "title": "Mutations and Optimistic Updates"
+  },
+  "PRG-T02-C02-U04": {
+    "id": "40c3818f-8ba0-8142-b40e-e272d3fe783d",
+    "title": "Refetching and Cache Invalidation"
+  },
+  "PRG-T02-C02-U03": {
+    "id": "40c3818f-8ba0-8108-bc52-c8c21fe1e6b3",
+    "title": "Caching and Query Keys"
+  },
+  "PRG-T02-C02-U02": {
+    "id": "40c3818f-8ba0-812a-8e46-d00f096e8d51",
+    "title": "Fetching Data and Async UI States"
+  },
+  "PRG-T02-C02-U01": {
+    "id": "40c3818f-8ba0-8117-9e22-cdab0e89c53e",
+    "title": "Local State vs Server State"
+  },
+  "PRG-T02-C01-U09": {
+    "id": "40c3818f-8ba0-8178-9edb-e952ca9a9ffb",
+    "title": "Component Architecture"
+  },
+  "PRG-T02-C01-U08": {
+    "id": "40c3818f-8ba0-8136-9de1-f2b663671711",
+    "title": "Custom Hooks"
+  },
+  "PRG-T02-C01-U07": {
+    "id": "40c3818f-8ba0-8152-b238-d0f22e7f0b96",
+    "title": "Refs and DOM Access"
+  },
+  "PRG-T02-C01-U06": {
+    "id": "40c3818f-8ba0-81e5-b941-fd3c224037eb",
+    "title": "Effects and Synchronization"
+  },
+  "PRG-T02-C01-U05": {
+    "id": "40c3818f-8ba0-816b-ab00-f3f475c10629",
+    "title": "State Updates and Immutability"
+  },
+  "PRG-T02-C01-U04": {
+    "id": "40c3818f-8ba0-8133-a51c-e3b1adbac3a2",
+    "title": "Rendering and Re-rendering"
+  },
+  "PRG-T02-C01-U03": {
+    "id": "40c3818f-8ba0-81dc-ae1f-d8fff86d48db",
+    "title": "State and Event Handling"
+  },
+  "PRG-T02-C01-U02": {
+    "id": "40c3818f-8ba0-8170-a28d-ccc3c9f30b90",
+    "title": "Props and Component Composition"
+  },
+  "PRG-T02-C01-U01": {
+    "id": "40c3818f-8ba0-81c4-9aa8-e69a51418f73",
+    "title": "JSX and Component Basics"
+  },
+  "PRG-T01-C03-U08": {
+    "id": "40c3818f-8ba0-812b-860b-dd3322c6c59f",
+    "title": "Packaging and Documentation"
+  },
+  "PRG-T01-C03-U07": {
+    "id": "40c3818f-8ba0-81cf-870d-edcde8e542c8",
+    "title": "Testing Utility Functions"
+  },
+  "PRG-T01-C03-U06": {
+    "id": "40c3818f-8ba0-81a9-979d-cd302bea370c",
+    "title": "Error Handling and Edge Cases"
+  },
+  "PRG-T01-C03-U05": {
+    "id": "40c3818f-8ba0-81b6-b255-f5cce14152f4",
+    "title": "Reusable Generic Utilities"
+  },
+  "PRG-T01-C03-U04": {
+    "id": "40c3818f-8ba0-8193-bdee-e1c3641027f0",
+    "title": "Map, Set and Common Data Structures"
+  },
+  "PRG-T01-C03-U03": {
+    "id": "40c3818f-8ba0-817f-ad7a-d1ac6725f3b0",
+    "title": "Object Transformations"
+  },
+  "PRG-T01-C03-U02": {
+    "id": "40c3818f-8ba0-8148-b79a-d4602d502163",
+    "title": "Array Transformations"
+  },
+  "PRG-T01-C03-U01": {
+    "id": "40c3818f-8ba0-81a8-8524-c6fce354e90f",
+    "title": "Problem Decomposition"
+  },
+  "PRG-T01-C02-U09": {
+    "id": "40c3818f-8ba0-81b1-ae76-f49460b5c7ea",
+    "title": "Typing Functions and API Responses"
+  },
+  "PRG-T01-C02-U08": {
+    "id": "40c3818f-8ba0-8129-abe5-f217d632f6ee",
+    "title": "Strict Mode and tsconfig"
+  },
+  "PRG-T01-C02-U07": {
+    "id": "40c3818f-8ba0-812d-b809-ca2f025a3f58",
+    "title": "Discriminated Unions"
+  },
+  "PRG-T01-C02-U06": {
+    "id": "40c3818f-8ba0-81a7-bdc0-fee9d24595a5",
+    "title": "Utility Types"
+  },
+  "PRG-T01-C02-U05": {
+    "id": "40c3818f-8ba0-812f-a580-c3094409e004",
+    "title": "Generics"
+  },
+  "PRG-T01-C02-U04": {
+    "id": "40c3818f-8ba0-81fa-8d5c-de102b5aafed",
+    "title": "Type Narrowing and Guards"
+  },
+  "PRG-T01-C02-U03": {
+    "id": "40c3818f-8ba0-81ad-9b14-f29f8543aaac",
+    "title": "Union Types"
+  },
+  "PRG-T01-C02-U02": {
+    "id": "40c3818f-8ba0-8126-8265-cc4b0a9a3017",
+    "title": "Primitive, Literal and Object Types"
+  },
+  "PRG-T01-C02-U01": {
+    "id": "40c3818f-8ba0-815f-9d44-df21f67cdf3e",
+    "title": "Type Annotations and Type Inference"
+  },
+  "PRG-T01-C01-U08": {
+    "id": "40c3818f-8ba0-8112-a3f7-c75044721219",
+    "title": "Error Handling Patterns"
+  },
+  "PRG-T01-C01-U07": {
+    "id": "40c3818f-8ba0-8138-b450-e408257b9e0e",
+    "title": "Event Loop and Concurrency"
+  },
+  "PRG-T01-C01-U06": {
+    "id": "40c3818f-8ba0-81d5-a9d4-c5543a215167",
+    "title": "Promises and Async/Await"
+  },
+  "PRG-T01-C01-U05": {
+    "id": "40c3818f-8ba0-81fb-ac4c-e1c82d55af47",
+    "title": "Modules and Module Systems"
+  },
+  "PRG-T01-C01-U04": {
+    "id": "40c3818f-8ba0-811e-9382-f58d2f22e051",
+    "title": "Prototypes and Inheritance"
+  },
+  "PRG-T01-C01-U03": {
+    "id": "40c3818f-8ba0-814e-ade8-cbbd741d35fc",
+    "title": "this and Binding"
+  },
+  "PRG-T01-C01-U02": {
+    "id": "40c3818f-8ba0-81c0-a5cd-d4a29317c857",
+    "title": "Closures"
+  },
+  "PRG-T01-C01-U01": {
+    "id": "40c3818f-8ba0-812a-9682-fe371831ae8d",
+    "title": "Execution Context and Scope"
+  },
+  "PRG-T00-C03-U06": {
+    "id": "40c3818f-8ba0-8195-941a-ce11e6ddfe98",
+    "title": "README and Issue Tracking"
+  },
+  "PRG-T00-C03-U05": {
+    "id": "40c3818f-8ba0-81f4-a326-da98368dc4ff",
+    "title": "GitHub Workflow and Pull Requests"
+  },
+  "PRG-T00-C03-U04": {
+    "id": "40c3818f-8ba0-81b6-a57f-c35d0814b47b",
+    "title": "Branches, Commits and Merge"
+  },
+  "PRG-T00-C03-U03": {
+    "id": "40c3818f-8ba0-8166-9421-fe59c818fd5a",
+    "title": "Git Repository Basics"
+  },
+  "PRG-T00-C03-U02": {
+    "id": "40c3818f-8ba0-818f-b5ee-d4dd4060d68d",
+    "title": "npm and Package Scripts"
+  },
+  "PRG-T00-C03-U01": {
+    "id": "40c3818f-8ba0-816e-922f-ff8d75d0ef98",
+    "title": "Terminal and Project Structure"
+  },
+  "PRG-T00-C02-U07": {
+    "id": "40c3818f-8ba0-8105-b83e-dc71c3f8d012",
+    "title": "Reading and Debugging Existing Code"
+  },
+  "PRG-T00-C02-U06": {
+    "id": "40c3818f-8ba0-81f1-acb1-d49d8cb69e43",
+    "title": "TypeScript Basics"
+  },
+  "PRG-T00-C02-U05": {
+    "id": "40c3818f-8ba0-8112-aacd-dd21e9c75200",
+    "title": "Promises and Async/Await"
+  },
+  "PRG-T00-C02-U04": {
+    "id": "40c3818f-8ba0-81be-b149-da2c35834436",
+    "title": "DOM and Browser Events"
+  },
+  "PRG-T00-C02-U03": {
+    "id": "40c3818f-8ba0-8174-9fc6-d536ef06d992",
+    "title": "Arrays and Objects"
+  },
+  "PRG-T00-C02-U02": {
+    "id": "40c3818f-8ba0-81c0-b879-ed366c2549c9",
+    "title": "Functions and Scope"
+  },
+  "PRG-T00-C02-U01": {
+    "id": "40c3818f-8ba0-8152-bdf0-d6ad997e2fc9",
+    "title": "Variables, Types and Operators"
+  },
+  "PRG-T00-C01-U08": {
+    "id": "40c3818f-8ba0-811a-b96e-f8b97df1ee7f",
+    "title": "Browser DevTools"
+  },
+  "PRG-T00-C01-U07": {
+    "id": "40c3818f-8ba0-8107-9f71-fe97ee7cea80",
+    "title": "Accessibility and Keyboard Navigation"
+  },
+  "PRG-T00-C01-U06": {
+    "id": "40c3818f-8ba0-81f4-a18b-e6e2002f54dd",
+    "title": "Responsive Design"
+  },
+  "PRG-T00-C01-U05": {
+    "id": "40c3818f-8ba0-8117-8823-d48dc44e1ccd",
+    "title": "Flexbox and Grid"
+  },
+  "PRG-T00-C01-U04": {
+    "id": "40c3818f-8ba0-818c-abaa-cd52ecdb0e7d",
+    "title": "Box Model and Layout"
+  },
+  "PRG-T00-C01-U03": {
+    "id": "40c3818f-8ba0-814a-9e74-ee202369f10f",
+    "title": "CSS Fundamentals"
+  },
+  "PRG-T00-C01-U02": {
+    "id": "40c3818f-8ba0-8160-9434-f64db443ba46",
+    "title": "Semantic HTML"
+  },
+  "PRG-T00-C01-U01": {
+    "id": "40c3818f-8ba0-813a-b89c-eb7e63ceda61",
+    "title": "How the Web Works"
+  },
+  "PHY-T01-C22-U03": {
+    "id": "4013818f-8ba0-810f-8d40-c44d7baad234",
+    "title": "Quantum Numbers and Atomic Spectra"
+  },
+  "PHY-T01-C23-U03": {
+    "id": "4013818f-8ba0-8139-8055-f05052f1ab3e",
+    "title": "Fundamental Forces"
+  },
+  "PHY-T01-C22-U04": {
+    "id": "4013818f-8ba0-8146-b791-ff462d468452",
+    "title": "The Quantum Mechanical Model of the Atom"
+  },
+  "PHY-T01-C21-U02": {
+    "id": "4013818f-8ba0-8147-ac6a-f212b92f69ff",
+    "title": "The Photoelectric Effect"
+  },
+  "PHY-T01-C23-U01": {
+    "id": "4013818f-8ba0-8148-80fc-c673c8002750",
+    "title": "The Standard Model of Particle Physics"
+  },
+  "PHY-T01-C23-U02": {
+    "id": "4013818f-8ba0-8159-80a7-ff4d4b914518",
+    "title": "Quarks, Leptons, and Bosons"
+  },
+  "PHY-T01-C22-U01": {
+    "id": "4013818f-8ba0-816f-aa73-cde430a15523",
+    "title": "Discovery of the Electron and the Nucleus"
+  },
+  "PHY-T01-C23-U04": {
+    "id": "4013818f-8ba0-817b-b4ec-ddc61789b383",
+    "title": "Particle Accelerators and Detectors"
+  },
+  "PHY-T01-C21-U03": {
+    "id": "4013818f-8ba0-81af-8f2e-d815a920b73f",
+    "title": "Photon Momentum and Compton Scattering"
+  },
+  "PHY-T01-C21-U01": {
+    "id": "4013818f-8ba0-81db-b520-c388460e1987",
+    "title": "Blackbody Radiation and Planck's Hypothesis"
+  },
+  "PHY-T01-C22-U02": {
+    "id": "4013818f-8ba0-81ee-aa0f-d49a42a100a3",
+    "title": "Bohr's Model of the Atom"
+  },
+  "PHY-T01-C21-U04": {
+    "id": "4013818f-8ba0-81f0-a575-e8367607f68f",
+    "title": "Wave-Particle Duality"
+  },
+  "PHY-T01-C18-U02": {
+    "id": "4013818f-8ba0-8102-92d2-c332f5d9d9ee",
+    "title": "Electric Field"
+  },
+  "PHY-T01-C19-U03": {
+    "id": "4013818f-8ba0-8102-bde2-cf04095b4c70",
+    "title": "Kirchhoff's Rules"
+  },
+  "PHY-T01-C19-U01": {
+    "id": "4013818f-8ba0-8104-8dc8-e1c385e69e0b",
+    "title": "Electric Current and Ohm's Law"
+  },
+  "PHY-T01-C17-U02": {
+    "id": "4013818f-8ba0-8107-b12c-e2e5aab87b2b",
+    "title": "Interference and Young's Double-Slit Experiment"
+  },
+  "PHY-T01-C20-U01": {
+    "id": "4013818f-8ba0-8120-8364-c3e80c9b632c",
+    "title": "Magnets and Magnetic Fields"
+  },
+  "PHY-T01-C17-U03": {
+    "id": "4013818f-8ba0-8123-961b-eecb919ccb4f",
+    "title": "Thin Film Interference"
+  },
+  "PHY-T01-C17-U01": {
+    "id": "4013818f-8ba0-8142-a1ae-ef2751550b2d",
+    "title": "Diffraction"
+  },
+  "PHY-T01-C19-U02": {
+    "id": "4013818f-8ba0-8149-ad8a-fa8e8c116600",
+    "title": "Series and Parallel Circuits"
+  },
+  "PHY-T01-C18-U04": {
+    "id": "4013818f-8ba0-815e-bc04-f4d18da129d3",
+    "title": "Conductors and Insulators"
+  },
+  "PHY-T01-C16-U01": {
+    "id": "4013818f-8ba0-8160-972a-fa46917db748",
+    "title": "Image Formation by Mirrors"
+  },
+  "PHY-T01-C18-U01": {
+    "id": "4013818f-8ba0-819c-a8d9-d6204950f716",
+    "title": "Electric Charge and Coulomb's Law"
+  },
+  "PHY-T01-C19-U04": {
+    "id": "4013818f-8ba0-81ac-9af4-d523a97337ab",
+    "title": "RC Circuits"
+  },
+  "PHY-T01-C16-U02": {
+    "id": "4013818f-8ba0-81b2-b950-f744a4ffe5f3",
+    "title": "Image Formation by Lenses"
+  },
+  "PHY-T01-C16-U03": {
+    "id": "4013818f-8ba0-81b4-a76b-c5de5446239d",
+    "title": "The Thin Lens Equation"
+  },
+  "PHY-T01-C18-U03": {
+    "id": "4013818f-8ba0-81c8-90d8-ffdf7359b110",
+    "title": "Electric Potential and Capacitance"
+  },
+  "PHY-T01-C20-U03": {
+    "id": "4013818f-8ba0-81c9-9bfe-c55cd191c2ec",
+    "title": "Electromagnetic Induction and Faraday's Law"
+  },
+  "PHY-T01-C20-U02": {
+    "id": "4013818f-8ba0-81d6-8da8-d15299ec4802",
+    "title": "Magnetic Force on Moving Charges and Currents"
+  },
+  "PHY-T01-C20-U04": {
+    "id": "4013818f-8ba0-81df-afed-deb5e670312f",
+    "title": "Electric Generators and Transformers"
+  },
+  "PHY-T01-C12-U02": {
+    "id": "4013818f-8ba0-8100-b634-c13e726910a2",
+    "title": "Kinetic Theory of Gases"
+  },
+  "PHY-T01-C15-U01": {
+    "id": "4013818f-8ba0-8104-961c-ec25525f9870",
+    "title": "The Nature of Light"
+  },
+  "PHY-T01-C14-U01": {
+    "id": "4013818f-8ba0-8111-a2c9-c2206355da14",
+    "title": "Speed of Sound and Sound Intensity"
+  },
+  "PHY-T01-C10-U02": {
+    "id": "4013818f-8ba0-8117-ad48-ec56858d2a95",
+    "title": "Consequences of Special Relativity"
+  },
+  "PHY-T01-C13-U04": {
+    "id": "4013818f-8ba0-812f-8e13-e7bf13bcfd12",
+    "title": "Standing Waves and Resonance"
+  },
+  "PHY-T01-C14-U03": {
+    "id": "4013818f-8ba0-8137-a66b-f1e324922aff",
+    "title": "Sound Interference and Beats"
+  },
+  "PHY-T01-C12-U03": {
+    "id": "4013818f-8ba0-8167-938b-cf2de36dc623",
+    "title": "Phase Changes and Latent Heat"
+  },
+  "PHY-T01-C13-U02": {
+    "id": "4013818f-8ba0-817b-966c-c681718fb105",
+    "title": "Wave Properties: Speed, Amplitude, Frequency, Wavelength"
+  },
+  "PHY-T01-C10-U01": {
+    "id": "4013818f-8ba0-8184-892d-f2bfa481a17e",
+    "title": "Postulates of Special Relativity"
+  },
+  "PHY-T01-C15-U03": {
+    "id": "4013818f-8ba0-8196-b4b2-e19cc152a2d8",
+    "title": "Total Internal Reflection"
+  },
+  "PHY-T01-C14-U02": {
+    "id": "4013818f-8ba0-8198-ad3c-f32b4668b574",
+    "title": "Doppler Effect"
+  },
+  "PHY-T01-C15-U02": {
+    "id": "4013818f-8ba0-81b3-b160-f2b33f582e33",
+    "title": "Reflection and Refraction"
+  },
+  "PHY-T01-C12-U01": {
+    "id": "4013818f-8ba0-81cc-9ec4-eac19d18e524",
+    "title": "Temperature, Thermal Expansion, and Ideal Gas Law"
+  },
+  "PHY-T01-C13-U01": {
+    "id": "4013818f-8ba0-81d4-ba3c-dfdc1640216e",
+    "title": "Types of Waves"
+  },
+  "PHY-T01-C13-U03": {
+    "id": "4013818f-8ba0-81ee-96d1-feaaca13704d",
+    "title": "Wave Interference and Superposition"
+  },
+  "PHY-T01-C15-U04": {
+    "id": "4013818f-8ba0-81ff-82cd-f39f77c9feec",
+    "title": "Dispersion and Color"
+  },
+  "PHY-T01-C11-U03": {
+    "id": "4013818f-8ba0-818e-bbea-f9139acda2a5",
+    "title": "First Law of Thermodynamics"
+  },
+  "PHY-T01-C11-U02": {
+    "id": "4013818f-8ba0-8199-a21b-dd66945773e0",
+    "title": "Heat and Heat Capacity"
+  },
+  "PHY-T01-C09-U01": {
+    "id": "4013818f-8ba0-81a9-be8a-fe95bc3f4eb1",
+    "title": "Work and Kinetic Energy"
+  },
+  "PHY-T01-C09-U03": {
+    "id": "4013818f-8ba0-81aa-a8fd-d592ee5f1c36",
+    "title": "Power"
+  },
+  "PHY-T01-C11-U01": {
+    "id": "4013818f-8ba0-81c0-8fb9-df42a74c6af8",
+    "title": "Temperature and Thermal Equilibrium"
+  },
+  "PHY-T01-C09-U02": {
+    "id": "4013818f-8ba0-81c5-83b4-e28ffe10b57f",
+    "title": "Potential Energy and Conservation of Energy"
+  },
+  "PHY-T01-C09-U04": {
+    "id": "4013818f-8ba0-81de-a9a2-dfc0b2820411",
+    "title": "Simple Machines"
+  },
+  "PHY-T01-C11-U04": {
+    "id": "4013818f-8ba0-81f7-9622-cc52c108184e",
+    "title": "Second Law of Thermodynamics"
+  },
+  "PHY-T01-C08-U03": {
+    "id": "4013818f-8ba0-811d-a22e-f251e91240c4",
+    "title": "Conservation of Momentum"
+  },
+  "PHY-T01-C05-U03": {
+    "id": "4013818f-8ba0-8126-86d3-cf9245ea66bb",
+    "title": "Projectile Motion"
+  },
+  "PHY-T01-C06-U03": {
+    "id": "4013818f-8ba0-8135-9099-eca67f1922c6",
+    "title": "Uniform Circular Motion"
+  },
+  "PHY-T01-C05-U02": {
+    "id": "4013818f-8ba0-8143-a880-f5327df60ec1",
+    "title": "Vector Addition and Subtraction: Analytical Methods"
+  },
+  "PHY-T01-C06-U01": {
+    "id": "4013818f-8ba0-8161-b5c1-c340fa06970d",
+    "title": "Simple Harmonic Motion"
+  },
+  "PHY-T01-C07-U01": {
+    "id": "4013818f-8ba0-816c-8868-da1b6c5e91bd",
+    "title": "Newton's Universal Law of Gravitation"
+  },
+  "PHY-T01-C06-U04": {
+    "id": "4013818f-8ba0-8173-a02e-d543a6922699",
+    "title": "Centripetal Force"
+  },
+  "PHY-T01-C08-U04": {
+    "id": "4013818f-8ba0-8179-8d05-db9884a72d52",
+    "title": "Elastic and Inelastic Collisions"
+  },
+  "PHY-T01-C08-U02": {
+    "id": "4013818f-8ba0-8186-8e00-fda584eca8fc",
+    "title": "Impulse"
+  },
+  "PHY-T01-C08-U01": {
+    "id": "4013818f-8ba0-81a4-a2dd-e2ea457463aa",
+    "title": "Linear Momentum and Force"
+  },
+  "PHY-T01-C05-U01": {
+    "id": "4013818f-8ba0-81a8-962a-c850874890ac",
+    "title": "Vector Addition and Subtraction: Graphical Methods"
+  },
+  "PHY-T01-C06-U02": {
+    "id": "4013818f-8ba0-81bf-a88b-dfe205c8d112",
+    "title": "Energy in Simple Harmonic Motion"
+  },
+  "PHY-T01-C07-U02": {
+    "id": "4013818f-8ba0-81f2-8b15-d3631d09f3c9",
+    "title": "Kepler's Laws"
+  },
+  "PHY-T01-C05-U04": {
+    "id": "4013818f-8ba0-81f8-81d8-d745976fd26f",
+    "title": "Inclined Planes"
+  },
+  "PHY-T01-C04-U01": {
+    "id": "4013818f-8ba0-8111-a1cc-f87087c41890",
+    "title": "Force"
+  },
+  "PHY-T01-C04-U03": {
+    "id": "4013818f-8ba0-8115-9525-dc332894fefc",
+    "title": "Newton's Second Law of Motion"
+  },
+  "PHY-T01-C04-U04": {
+    "id": "4013818f-8ba0-812e-9a8e-d77a48d70ba5",
+    "title": "Newton's Third Law of Motion"
+  },
+  "PHY-T01-C01-U01": {
+    "id": "4013818f-8ba0-8137-88fb-cc4a0115eb65",
+    "title": "Physics: Definitions and Applications"
+  },
+  "PHY-T01-C04-U02": {
+    "id": "4013818f-8ba0-813f-b0ba-c70480deeca3",
+    "title": "Newton's First Law of Motion: Inertia"
+  },
+  "PHY-T01-C03-U01": {
+    "id": "4013818f-8ba0-8151-b869-eae07e1ed08e",
+    "title": "Acceleration"
+  },
+  "PHY-T01-C01-U03": {
+    "id": "4013818f-8ba0-8186-a1e2-f3492b903218",
+    "title": "The Language of Physics: Physical Quantities and Units"
+  },
+  "PHY-T01-C02-U02": {
+    "id": "4013818f-8ba0-8196-a3b7-f53294704c60",
+    "title": "Speed and Velocity"
+  },
+  "PHY-T01-C02-U03": {
+    "id": "4013818f-8ba0-8198-b350-f47eeea07569",
+    "title": "Position vs. Time Graphs"
+  },
+  "PHY-T01-C02-U04": {
+    "id": "4013818f-8ba0-81b1-85c0-f9e4ab50cf22",
+    "title": "Velocity vs. Time Graphs"
+  },
+  "PHY-T01-C03-U02": {
+    "id": "4013818f-8ba0-81b7-8e3b-e589ca0ab57f",
+    "title": "Representing Acceleration with Equations and Graphs"
+  },
+  "PHY-T01-C02-U01": {
+    "id": "4013818f-8ba0-81c6-a55f-d0941255ae69",
+    "title": "Relative Motion, Distance, and Displacement"
+  },
+  "PHY-T01-C01-U02": {
+    "id": "4013818f-8ba0-81e8-bea9-d62eb9fe8063",
+    "title": "The Scientific Methods"
+  },
+  "MTH-T02-C12-U07": {
+    "id": "4013818f-8ba0-8101-863b-ccb0897ac3b8",
+    "title": "Probability"
+  },
+  "MTH-T02-C12-U06": {
+    "id": "4013818f-8ba0-8149-b612-c9b965f9cb28",
+    "title": "Binomial Theorem"
+  },
+  "MTH-T02-C11-U04": {
+    "id": "4013818f-8ba0-815a-a4b9-f2f74b2d516c",
+    "title": "Rotation of Axes"
+  },
+  "MTH-T02-C12-U05": {
+    "id": "4013818f-8ba0-816f-944c-f50441ed03c7",
+    "title": "Counting Principles"
+  },
+  "MTH-T02-C11-U02": {
+    "id": "4013818f-8ba0-8177-8bf3-cb5b1df37451",
+    "title": "The Hyperbola"
+  },
+  "MTH-T02-C11-U01": {
+    "id": "4013818f-8ba0-81a1-bf04-c8e464bd9440",
+    "title": "The Ellipse"
+  },
+  "MTH-T02-C12-U01": {
+    "id": "4013818f-8ba0-81a3-bc9b-d4717acfd88c",
+    "title": "Sequences and Their Notations"
+  },
+  "MTH-T02-C12-U03": {
+    "id": "4013818f-8ba0-81be-b0ea-e8311862fa77",
+    "title": "Geometric Sequences"
+  },
+  "MTH-T02-C12-U04": {
+    "id": "4013818f-8ba0-81c6-9eb2-e57e020413a7",
+    "title": "Series and Their Notations"
+  },
+  "MTH-T02-C12-U02": {
+    "id": "4013818f-8ba0-81ce-8167-d9d3c917562e",
+    "title": "Arithmetic Sequences"
+  },
+  "MTH-T02-C11-U05": {
+    "id": "4013818f-8ba0-81d6-b415-e62c0fb4060a",
+    "title": "Conic Sections in Polar Coordinates"
+  },
+  "MTH-T02-C11-U03": {
+    "id": "4013818f-8ba0-81d7-b0ab-fc448d9d8c0f",
+    "title": "The Parabola"
+  },
+  "MTH-T02-C10-U02": {
+    "id": "4013818f-8ba0-810f-b6ae-c0de8940aaf9",
+    "title": "Systems of Linear Equations: Three Variables"
+  },
+  "MTH-T02-C10-U08": {
+    "id": "4013818f-8ba0-811d-b66d-efcb512a6ed5",
+    "title": "Solving Systems with Cramer's Rule"
+  },
+  "MTH-T02-C10-U07": {
+    "id": "4013818f-8ba0-8127-91d6-e8473116d1f7",
+    "title": "Solving Systems with Inverses"
+  },
+  "MTH-T02-C09-U06": {
+    "id": "4013818f-8ba0-813d-931f-ca6ba561cb12",
+    "title": "Parametric Equations"
+  },
+  "MTH-T02-C10-U01": {
+    "id": "4013818f-8ba0-814a-aafd-fd391f562580",
+    "title": "Systems of Linear Equations: Two Variables"
+  },
+  "MTH-T02-C10-U05": {
+    "id": "4013818f-8ba0-814b-a5de-dd13e454190a",
+    "title": "Matrices and Matrix Operations"
+  },
+  "MTH-T02-C10-U04": {
+    "id": "4013818f-8ba0-8163-9e10-d36858def746",
+    "title": "Partial Fractions"
+  },
+  "MTH-T02-C09-U04": {
+    "id": "4013818f-8ba0-8166-a9ce-fb841d305601",
+    "title": "Polar Coordinates: Graphs"
+  },
+  "MTH-T02-C10-U06": {
+    "id": "4013818f-8ba0-8173-95f8-d0534e3b494a",
+    "title": "Solving Systems with Gaussian Elimination"
+  },
+  "MTH-T02-C09-U05": {
+    "id": "4013818f-8ba0-817b-b7ea-f0b86add2c9a",
+    "title": "Polar Form of Complex Numbers"
+  },
+  "MTH-T02-C09-U01": {
+    "id": "4013818f-8ba0-8187-a15c-f3ba4e2fb72e",
+    "title": "Non-right Triangles: Law of Sines"
+  },
+  "MTH-T02-C10-U03": {
+    "id": "4013818f-8ba0-819a-86f8-d04de7ad41f4",
+    "title": "Systems of Nonlinear Equations and Inequalities"
+  },
+  "MTH-T02-C09-U08": {
+    "id": "4013818f-8ba0-81aa-92cb-cc1e355d8f36",
+    "title": "Vectors"
+  },
+  "MTH-T02-C09-U03": {
+    "id": "4013818f-8ba0-81c6-87bc-c85c86cd251b",
+    "title": "Polar Coordinates"
+  },
+  "MTH-T02-C09-U02": {
+    "id": "4013818f-8ba0-81cf-a576-d349798ba192",
+    "title": "Non-right Triangles: Law of Cosines"
+  },
+  "MTH-T02-C09-U07": {
+    "id": "4013818f-8ba0-81f0-b533-c54f10de4af5",
+    "title": "Parametric Equations: Graphs"
+  },
+  "MTH-T02-C08-U05": {
+    "id": "4013818f-8ba0-8104-a778-f97f148d3e85",
+    "title": "Solving Trigonometric Equations"
+  },
+  "MTH-T02-C08-U04": {
+    "id": "4013818f-8ba0-8105-9c83-eb94aae0a7c9",
+    "title": "Sum-to-Product and Product-to-Sum Formulas"
+  },
+  "MTH-T02-C07-U01": {
+    "id": "4013818f-8ba0-811f-8d13-d82c1250da20",
+    "title": "Graphs of the Sine and Cosine Functions"
+  },
+  "MTH-T02-C06-U02": {
+    "id": "4013818f-8ba0-812f-a323-c54b266eb98e",
+    "title": "Right Triangle Trigonometry"
+  },
+  "MTH-T02-C08-U01": {
+    "id": "4013818f-8ba0-8133-ae1d-f96447b69a72",
+    "title": "Verifying Trigonometric Identities"
+  },
+  "MTH-T02-C06-U01": {
+    "id": "4013818f-8ba0-813d-8f0b-fec0d16cd9ee",
+    "title": "Angles"
+  },
+  "MTH-T02-C07-U03": {
+    "id": "4013818f-8ba0-815c-9c26-e10abe3674d7",
+    "title": "Inverse Trigonometric Functions"
+  },
+  "MTH-T02-C06-U03": {
+    "id": "4013818f-8ba0-815e-8f77-c355a8e20374",
+    "title": "Unit Circle"
+  },
+  "MTH-T02-C07-U02": {
+    "id": "4013818f-8ba0-8161-8cfd-d7b8f2d7fd9c",
+    "title": "Graphs of the Other Trigonometric Functions"
+  },
+  "MTH-T02-C08-U02": {
+    "id": "4013818f-8ba0-81a0-a0f1-dd4c15e7e4ad",
+    "title": "Sum and Difference Identities"
+  },
+  "MTH-T02-C08-U03": {
+    "id": "4013818f-8ba0-81d1-a1ab-e2753e32cccd",
+    "title": "Double-Angle, Half-Angle, and Reduction Formulas"
+  },
+  "MTH-T02-C06-U04": {
+    "id": "4013818f-8ba0-81ec-89dc-d29cb7c377ca",
+    "title": "The Other Trigonometric Functions"
+  },
+  "MTH-T02-C05-U07": {
+    "id": "4013818f-8ba0-811e-bbb0-ccc25adcb673",
+    "title": "Exponential and Logarithmic Models"
+  },
+  "MTH-T02-C05-U03": {
+    "id": "4013818f-8ba0-8140-ac7d-e61d5bc252a9",
+    "title": "Logarithmic Functions"
+  },
+  "MTH-T02-C05-U01": {
+    "id": "4013818f-8ba0-8143-b939-e514f8fe7007",
+    "title": "Exponential Functions"
+  },
+  "MTH-T02-C05-U08": {
+    "id": "4013818f-8ba0-815d-9860-c74422e3e8e9",
+    "title": "Fitting Exponential Models to Data"
+  },
+  "MTH-T02-C05-U02": {
+    "id": "4013818f-8ba0-816b-982e-d7ff2fc98360",
+    "title": "Graphs of Exponential Functions"
+  },
+  "MTH-T02-C05-U06": {
+    "id": "4013818f-8ba0-819c-99f0-fcbeb775f64f",
+    "title": "Exponential and Logarithmic Equations"
+  },
+  "MTH-T02-C05-U04": {
+    "id": "4013818f-8ba0-81ad-bcf9-fcce87f160e5",
+    "title": "Graphs of Logarithmic Functions"
+  },
+  "MTH-T02-C05-U05": {
+    "id": "4013818f-8ba0-81cc-8a88-e3af94fe5557",
+    "title": "Logarithmic Properties"
+  },
+  "MTH-T02-C04-U02": {
+    "id": "4013818f-8ba0-8112-ae07-efae177e6abf",
+    "title": "Power Functions and Polynomial Functions"
+  },
+  "MTH-T02-C04-U01": {
+    "id": "4013818f-8ba0-8117-bb04-f63d268151f8",
+    "title": "Quadratic Functions"
+  },
+  "MTH-T02-C04-U07": {
+    "id": "4013818f-8ba0-811e-a0aa-cf2107cc511a",
+    "title": "Inverses and Radical Functions"
+  },
+  "MTH-T02-C04-U05": {
+    "id": "4013818f-8ba0-815d-a0b3-db91b84ddc87",
+    "title": "Zeros of Polynomial Functions"
+  },
+  "MTH-T02-C04-U08": {
+    "id": "4013818f-8ba0-8160-af23-ecfb6ac1b3bb",
+    "title": "Modeling Using Variation"
+  },
+  "MTH-T02-C04-U03": {
+    "id": "4013818f-8ba0-81a1-833f-d1bfcaed1830",
+    "title": "Graphs of Polynomial Functions"
+  },
+  "MTH-T02-C04-U06": {
+    "id": "4013818f-8ba0-81c5-b9c4-e60e721830fd",
+    "title": "Rational Functions"
+  },
+  "MTH-T02-C04-U04": {
+    "id": "4013818f-8ba0-81e7-850e-cba45bfaddb5",
+    "title": "Dividing Polynomials"
+  },
+  "MTH-T01-C11-U04": {
+    "id": "4013818f-8ba0-8102-a903-dc6acfb4a3c7",
+    "title": "Solve Equations with Fraction or Decimal Coefficients"
+  },
+  "MTH-T01-C10-U01": {
+    "id": "4013818f-8ba0-8114-b9ae-f38e8820bfc7",
+    "title": "Rational and Irrational Numbers"
+  },
+  "MTH-T01-C10-U05": {
+    "id": "4013818f-8ba0-811d-9fe8-d54ca8b47275",
+    "title": "Systems of Measurement"
+  },
+  "MTH-T01-C10-U04": {
+    "id": "4013818f-8ba0-812b-9f5c-c6f7558b1cdd",
+    "title": "Properties of Identity, Inverses, and Zero"
+  },
+  "MTH-T01-C10-U02": {
+    "id": "4013818f-8ba0-8163-800c-d36d29f07767",
+    "title": "Commutative and Associative Properties"
+  },
+  "MTH-T01-C11-U03": {
+    "id": "4013818f-8ba0-816c-aae9-d39f74a0f00d",
+    "title": "Solve Equations with Variables and Constants on Both Sides"
+  },
+  "MTH-T01-C11-U02": {
+    "id": "4013818f-8ba0-818c-af47-d28cede3959d",
+    "title": "Solve Equations Using the Division and Multiplication Properties of Equality"
+  },
+  "MTH-T01-C11-U01": {
+    "id": "4013818f-8ba0-81af-858f-f4cc01facaf8",
+    "title": "Solve Equations Using the Subtraction and Addition Properties of Equality"
+  },
+  "MTH-T01-C10-U03": {
+    "id": "4013818f-8ba0-81de-9258-e2094f59f58e",
+    "title": "Distributive Property"
+  },
+  "MTH-T01-C01-U01": {
+    "id": "4013818f-8ba0-8101-9ea2-f41cccb7c65e",
+    "title": "Introduction to Whole Numbers"
+  },
+  "MTH-T01-C01-U03": {
+    "id": "4013818f-8ba0-8103-8402-fb3987c6d1ee",
+    "title": "Subtract Whole Numbers"
+  },
+  "MTH-T01-C02-U02": {
+    "id": "4013818f-8ba0-8115-82dd-e0802015f192",
+    "title": "Evaluate, Simplify, and Translate Expressions"
+  },
+  "MTH-T01-C02-U03": {
+    "id": "4013818f-8ba0-8133-80ce-d8f2bceb6559",
+    "title": "Solving Equations Using the Subtraction and Addition Properties of Equality"
+  },
+  "MTH-T01-C02-U04": {
+    "id": "4013818f-8ba0-813a-aac0-d3d5555a4b74",
+    "title": "Find Multiples and Factors"
+  },
+  "MTH-T01-C01-U02": {
+    "id": "4013818f-8ba0-8150-819b-e5fb7b3d678a",
+    "title": "Add Whole Numbers"
+  },
+  "MTH-T01-C01-U04": {
+    "id": "4013818f-8ba0-8166-b68a-e314f28dfb6a",
+    "title": "Multiply Whole Numbers"
+  },
+  "MTH-T01-C01-U05": {
+    "id": "4013818f-8ba0-8176-9e56-ef57b84fdc5c",
+    "title": "Divide Whole Numbers"
+  },
+  "MTH-T01-C02-U01": {
+    "id": "4013818f-8ba0-81b7-ba97-d9ce54ac936e",
+    "title": "Use the Language of Algebra"
+  },
+  "MTH-T01-C02-U05": {
+    "id": "4013818f-8ba0-81df-846f-db0c5bcb11d0",
+    "title": "Prime Factorization and the Least Common Multiple"
+  },
+  "MTH-T02-C03-U03": {
+    "id": "4013818f-8ba0-80bf-8405-d5c44774cd63",
+    "title": "Fitting Linear Models to Data"
+  },
+  "MTH-T02-C03-U02": {
+    "id": "4013818f-8ba0-80ba-a391-f072c69ed3fe",
+    "title": "Modeling with Linear Functions"
+  },
+  "MTH-T02-C03-U01": {
+    "id": "4013818f-8ba0-80e8-91fb-d70dc76b09eb",
+    "title": "Linear Functions"
+  },
+  "MTH-T02-C02-U07": {
+    "id": "4013818f-8ba0-80dd-a7de-c2b14647b109",
+    "title": "Inverse Functions"
+  },
+  "MTH-T02-C02-U06": {
+    "id": "4013818f-8ba0-8098-8387-d69ccab1068b",
+    "title": "Absolute Value Functions"
+  },
+  "MTH-T02-C02-U05": {
+    "id": "4013818f-8ba0-80be-96ec-ce9a227a22e8",
+    "title": "Transformation of Functions"
+  },
+  "MTH-T02-C02-U04": {
+    "id": "4013818f-8ba0-801a-b140-f195b9cedd20",
+    "title": "Composition of Functions"
+  },
+  "MTH-T02-C02-U03": {
+    "id": "4013818f-8ba0-80c6-a895-f33a5e47b0fe",
+    "title": "Rates of Change and Behavior of Graphs"
+  },
+  "MTH-T02-C02-U02": {
+    "id": "4013818f-8ba0-8001-941c-f55f55ebd5ba",
+    "title": "Domain and Range"
+  },
+  "MTH-T02-C02-U01": {
+    "id": "4013818f-8ba0-8003-ae37-db6a7429c6a4",
+    "title": "Functions and Function Notation"
+  },
+  "MTH-T02-C01-U04": {
+    "id": "4013818f-8ba0-801d-a9ee-d256c93cfde6",
+    "title": "Linear Inequalities and Absolute Value Inequalities"
+  },
+  "MTH-T02-C01-U03": {
+    "id": "4013818f-8ba0-809b-b25a-e9644f41da6e",
+    "title": "Other Types of Equations"
+  },
+  "MTH-T02-C01-U02": {
+    "id": "4013818f-8ba0-806c-a511-f855104da7a6",
+    "title": "Quadratic Equations"
+  },
+  "MTH-T02-C01-U01": {
+    "id": "4013818f-8ba0-80d7-896b-ef2080bbc74a",
+    "title": "Complex Numbers"
+  },
+  "MTH-T01-C09-U06": {
+    "id": "4003818f-8ba0-8024-a1c4-f00e620f8255",
+    "title": "Simplify Roots with Scientific Notation"
+  },
+  "MTH-T01-C09-U05": {
+    "id": "4003818f-8ba0-80c9-b1ea-f3be5fa3f5c6",
+    "title": "Roots and Fractional Exponents"
+  },
+  "MTH-T01-C09-U04": {
+    "id": "4003818f-8ba0-804c-86eb-c79a0c2c6509",
+    "title": "Properties of Roots"
+  },
+  "MTH-T01-C09-U03": {
+    "id": "4003818f-8ba0-8027-a4bd-fdc3e9d1b0a8",
+    "title": "Cube Roots"
+  },
+  "MTH-T01-C09-U02": {
+    "id": "4003818f-8ba0-804f-851c-f156adbc6ea6",
+    "title": "Simplify Square Roots"
+  },
+  "MTH-T01-C09-U01": {
+    "id": "4003818f-8ba0-80ee-9bc1-cadec43e3bdf",
+    "title": "Introduction to Square Roots"
+  },
+  "MTH-T01-C08-U06": {
+    "id": "4003818f-8ba0-8060-9669-e9cae446f0d3",
+    "title": "Scientific Notation"
+  },
+  "MTH-T01-C08-U05": {
+    "id": "4003818f-8ba0-807d-964d-de72efaa1182",
+    "title": "Negative and Zero Exponents"
+  },
+  "MTH-T01-C08-U04": {
+    "id": "4003818f-8ba0-8051-983a-c4950f91ccce",
+    "title": "Power Rules of Exponents"
+  },
+  "MTH-T01-C08-U03": {
+    "id": "4003818f-8ba0-8032-934e-dedb8bc1db54",
+    "title": "Division Properties of Exponents"
+  },
+  "MTH-T01-C08-U02": {
+    "id": "4003818f-8ba0-809e-a4d5-ff224888c92c",
+    "title": "Multiplication Properties of Exponents"
+  },
+  "MTH-T01-C08-U01": {
+    "id": "4003818f-8ba0-8078-8d82-e20d81e3a64c",
+    "title": "Introduction to Exponents"
+  },
+  "MTH-T01-C07-U06": {
+    "id": "4003818f-8ba0-8039-ae46-ec0c78300084",
+    "title": "Applications of Proportions"
+  },
+  "MTH-T01-C07-U05": {
+    "id": "4003818f-8ba0-80df-b8ab-eb07980577d4",
+    "title": "Inverse Proportion"
+  },
+  "MTH-T01-C07-U04": {
+    "id": "4003818f-8ba0-805f-8235-fe4cbb556d5a",
+    "title": "Direct Proportion"
+  },
+  "MTH-T01-C07-U03": {
+    "id": "4003818f-8ba0-804c-aa9b-e942d2e5e6b5",
+    "title": "Solving Proportions"
+  },
+  "MTH-T01-C07-U02": {
+    "id": "4003818f-8ba0-8060-a35e-ce17166571bc",
+    "title": "Rates and Unit Rates"
+  },
+  "MTH-T01-C07-U01": {
+    "id": "4003818f-8ba0-80e0-80c4-caa5d99927dd",
+    "title": "Understanding Ratios"
+  },
+  "MTH-T01-C13-U06": {
+    "id": "4003818f-8ba0-802d-8c26-d84edfe73086",
+    "title": "Introduction to Factoring Polynomials"
+  },
+  "MTH-T01-C13-U05": {
+    "id": "4003818f-8ba0-80de-b7d3-e44aac2cce5a",
+    "title": "Integer Exponents and Scientific Notation"
+  },
+  "MTH-T01-C13-U04": {
+    "id": "4003818f-8ba0-80e2-af7b-d0a4659a493b",
+    "title": "Divide Monomials"
+  },
+  "MTH-T01-C13-U03": {
+    "id": "4003818f-8ba0-8045-9e39-e600af05ce5d",
+    "title": "Multiply Polynomials"
+  },
+  "MTH-T01-C13-U02": {
+    "id": "4003818f-8ba0-803d-a312-d6b116939a8f",
+    "title": "Use Multiplication Properties of Exponents"
+  },
+  "MTH-T01-C13-U01": {
+    "id": "4003818f-8ba0-80a4-bccf-d508c9f4b081",
+    "title": "Add and Subtract Polynomials"
+  },
+  "MTH-T01-C14-U01": {
+    "id": "4003818f-8ba0-8019-9274-d604fb3f7aee",
+    "title": "Understand Slope of a Line"
+  },
+  "MTH-T01-C14-U02": {
+    "id": "4003818f-8ba0-809d-b4f6-c640c10c0e64",
+    "title": "Graphing with Intercepts"
+  },
+  "MTH-T01-C14-U03": {
+    "id": "4003818f-8ba0-80fd-925b-d5caee9981eb",
+    "title": "Graphing Linear Equations"
+  },
+  "MTH-T01-C14-U04": {
+    "id": "4003818f-8ba0-80e6-987e-c4421379d87b",
+    "title": "Use the Rectangular Coordinate System"
+  },
+  "MTH-T01-C12-U07": {
+    "id": "4003818f-8ba0-80a8-b26c-e8e09aaad949",
+    "title": "Solve a Formula for a Specific Variable"
+  },
+  "MTH-T01-C12-U06": {
+    "id": "4003818f-8ba0-80ca-bf64-cabe4a56586d",
+    "title": "Solve Geometry Applications: Volume and Surface Area"
+  },
+  "MTH-T01-C12-U05": {
+    "id": "4003818f-8ba0-80ce-8853-efc959517a90",
+    "title": "Solve Geometry Applications: Circles and Irregular Figures"
+  },
+  "MTH-T01-C12-U04": {
+    "id": "4003818f-8ba0-80bb-8205-d0d4b4cd606f",
+    "title": "Use Properties of Rectangles, Triangles, and Trapezoids"
+  },
+  "MTH-T01-C12-U03": {
+    "id": "4003818f-8ba0-8045-9e0d-d81747fad236",
+    "title": "Use Properties of Angles, Triangles, and the Pythagorean Theorem"
+  },
+  "MTH-T01-C12-U02": {
+    "id": "4003818f-8ba0-803d-ad56-f30d85a42b05",
+    "title": "Solve Money Applications"
+  },
+  "MTH-T01-C12-U01": {
+    "id": "4003818f-8ba0-806c-877a-ddacd5737ef0",
+    "title": "Use a Problem Solving Strategy"
+  },
+  "MTH-T01-C05-U07": {
+    "id": "4003818f-8ba0-80c9-b1df-dba94297e6f7",
+    "title": "Simplify and Use Square Roots"
+  },
+  "MTH-T01-C05-U06": {
+    "id": "4003818f-8ba0-8060-a14b-dd765b712944",
+    "title": "Ratios and Rate"
+  },
+  "MTH-T01-C05-U05": {
+    "id": "4003818f-8ba0-8001-b76c-dd6715d39718",
+    "title": "Averages and Probability"
+  },
+  "MTH-T01-C05-U04": {
+    "id": "4003818f-8ba0-80c0-8f68-d71adb943579",
+    "title": "Solve Equations with Decimals"
+  },
+  "MTH-T01-C05-U03": {
+    "id": "4003818f-8ba0-804a-b29c-c34872d97440",
+    "title": "Decimals and Fractions"
+  },
+  "MTH-T01-C05-U02": {
+    "id": "4003818f-8ba0-80e5-bc1d-eeed541f61d5",
+    "title": "Decimal Operations"
+  },
+  "MTH-T01-C05-U01": {
+    "id": "4003818f-8ba0-807e-a63c-faa2ceced5ce",
+    "title": "Decimals"
+  },
+  "MTH-T01-C04-U06": {
+    "id": "4003818f-8ba0-8086-9938-c89d899242fb",
+    "title": "Solve Equations with Fractions"
+  },
+  "MTH-T01-C04-U01": {
+    "id": "4003818f-8ba0-8072-a6b5-f6c69391859b",
+    "title": "Add and Subtract Mixed Numbers"
+  },
+  "MTH-T01-C04-U03": {
+    "id": "4003818f-8ba0-801b-aca6-fac5a05f5e8d",
+    "title": "Add and Subtract Fractions with Different Denominators"
+  },
+  "MTH-T01-C04-U02": {
+    "id": "4003818f-8ba0-80ea-aa0b-eddf13f20ec3",
+    "title": "Add and Subtract Fractions with Common Denominators"
+  },
+  "MTH-T01-C04-U05": {
+    "id": "4003818f-8ba0-8072-b471-f53464fe9bc5",
+    "title": "Multiply and Divide Mixed Numbers and Complex Fractions"
+  },
+  "MTH-T01-C04-U04": {
+    "id": "4003818f-8ba0-8078-8047-dab83d952aa6",
+    "title": "Multiply and Divide Fractions"
+  },
+  "MTH-T01-C06-U05": {
+    "id": "4003818f-8ba0-80fb-8c5b-f7b4c761400d",
+    "title": "Solve Proportions and their Applications"
+  },
+  "MTH-T01-C06-U04": {
+    "id": "4003818f-8ba0-801b-8eb1-c8b21c6f5598",
+    "title": "Solve Simple Interest Applications"
+  },
+  "MTH-T01-C06-U03": {
+    "id": "4003818f-8ba0-80e3-9460-c674d01a977a",
+    "title": "Solve Sales Tax, Commission, and Discount Applications"
+  },
+  "MTH-T01-C06-U02": {
+    "id": "4003818f-8ba0-8024-ab7a-e2290d3b8462",
+    "title": "Solve General Applications of Percent"
+  },
+  "MTH-T01-C06-U01": {
+    "id": "4003818f-8ba0-8065-878d-eaca8cba534c",
+    "title": "Understand Percent"
+  },
+  "MTH-T01-C03-U05": {
+    "id": "4003818f-8ba0-80f4-816c-fd31ae788267",
+    "title": "Solve Equations Using Integers; The Division Property of Equality"
+  },
+  "MTH-T01-C03-U04": {
+    "id": "4003818f-8ba0-8003-86f1-db39506f633a",
+    "title": "Multiply and Divide Integers"
+  },
+  "MTH-T01-C03-U03": {
+    "id": "4003818f-8ba0-802e-991f-f164f1ebedba",
+    "title": "Subtract Integers"
+  },
+  "MTH-T01-C03-U02": {
+    "id": "4003818f-8ba0-8023-bf5e-ca64ed6226a4",
+    "title": "Add Integers"
+  },
+  "MTH-T01-C03-U01": {
+    "id": "4003818f-8ba0-8092-8c76-df300f273feb",
+    "title": "Introduction to Integers"
+  },
+  "R001": {
+    "id": "40c3818f-8ba0-8016-a3ad-ec7ecdeece29",
+    "title": "MDN – HTML",
+    "url": "https://developer.mozilla.org/en-US/docs/Web/HTML"
+  },
+  "R002": {
+    "id": "40c3818f-8ba0-808a-ad0b-ce226c9ef355",
+    "title": "MDN – CSS",
+    "url": "https://developer.mozilla.org/en-US/docs/Web/CSS"
+  },
+  "R003": {
+    "id": "40c3818f-8ba0-8095-b57f-c3835853d700",
+    "title": "MDN – JavaScript Guide",
+    "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide"
+  },
+  "R004": {
+    "id": "40c3818f-8ba0-80de-b35b-f1e5a84c768f",
+    "title": "TypeScript Handbook",
+    "url": "https://www.typescriptlang.org/docs/handbook/intro.html"
+  },
+  "R005": {
+    "id": "40c3818f-8ba0-8018-92d3-c542a71e2e88",
+    "title": "React – Learn",
+    "url": "https://react.dev/learn"
+  },
+  "R006": {
+    "id": "40c3818f-8ba0-8074-8859-dc396300b4f5",
+    "title": "React – API Reference",
+    "url": "https://react.dev/reference/react"
+  },
+  "R007": {
+    "id": "40c3818f-8ba0-80e3-a6da-ded9939b1543",
+    "title": "TanStack Query Docs",
+    "url": "https://tanstack.com/query/latest/docs/framework/react/overview"
+  },
+  "R008": {
+    "id": "40c3818f-8ba0-8016-95ec-f0789a63a619",
+    "title": "React Hook Form Docs",
+    "url": "https://react-hook-form.com/get-started"
+  },
+  "R009": {
+    "id": "40c3818f-8ba0-8051-b409-eadd61d2d61f",
+    "title": "Zod Docs",
+    "url": "https://zod.dev/"
+  },
+  "R010": {
+    "id": "40c3818f-8ba0-80d9-b110-c21792942738",
+    "title": "Tailwind CSS Docs",
+    "url": "https://tailwindcss.com/docs"
+  },
+  "R011": {
+    "id": "40c3818f-8ba0-8022-9b15-fc5e8ac90a10",
+    "title": "Next.js Learn",
+    "url": "https://nextjs.org/learn"
+  },
+  "R012": {
+    "id": "40c3818f-8ba0-80f4-8a77-d033e339e96c",
+    "title": "Next.js App Router Docs",
+    "url": "https://nextjs.org/docs/app"
+  },
+  "R013": {
+    "id": "40c3818f-8ba0-8037-8138-faf367c98cfc",
+    "title": "Node.js Learn",
+    "url": "https://nodejs.org/en/learn"
+  },
+  "R014": {
+    "id": "40c3818f-8ba0-80ba-8669-d37e29f4afad",
+    "title": "Express Guide",
+    "url": "https://expressjs.com/en/guide/routing.html"
+  },
+  "R015": {
+    "id": "40c3818f-8ba0-8095-bc52-d732971e6df9",
+    "title": "PostgreSQL Tutorial",
+    "url": "https://www.postgresql.org/docs/current/tutorial.html"
+  },
+  "R016": {
+    "id": "40c3818f-8ba0-80c0-aa91-ceb0a2e21d01",
+    "title": "PostgreSQL Documentation",
+    "url": "https://www.postgresql.org/docs/current/"
+  },
+  "R017": {
+    "id": "40c3818f-8ba0-80d3-bb56-db80e4fad5bd",
+    "title": "Prisma ORM Docs",
+    "url": "https://www.prisma.io/docs"
+  },
+  "R018": {
+    "id": "40c3818f-8ba0-80ab-8aba-e72a22a14818",
+    "title": "OWASP Top 10",
+    "url": "https://owasp.org/www-project-top-ten/"
+  },
+  "R019": {
+    "id": "40c3818f-8ba0-80ba-9c1e-c6af37465b58",
+    "title": "MDN – HTTP Cookies",
+    "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies"
+  },
+  "R020": {
+    "id": "40c3818f-8ba0-809c-92da-e1702df898cb",
+    "title": "Auth.js Documentation",
+    "url": "https://authjs.dev/"
+  },
+  "R021": {
+    "id": "40c3818f-8ba0-8030-8a5d-fada9cd66bf2",
+    "title": "Vitest Guide",
+    "url": "https://vitest.dev/guide/"
+  },
+  "R022": {
+    "id": "40c3818f-8ba0-8050-b2a6-f0060c76d7a8",
+    "title": "Testing Library – React",
+    "url": "https://testing-library.com/docs/react-testing-library/intro/"
+  },
+  "R023": {
+    "id": "40c3818f-8ba0-80d9-a951-eeb89f10c922",
+    "title": "Playwright Docs",
+    "url": "https://playwright.dev/docs/intro"
+  },
+  "R024": {
+    "id": "40c3818f-8ba0-80bf-832e-f32d0f0e20b0",
+    "title": "Redis Documentation",
+    "url": "https://redis.io/docs/latest/"
+  },
+  "R025": {
+    "id": "40c3818f-8ba0-8044-bb7b-c72dcfabc607",
+    "title": "MDN – WebSocket",
+    "url": "https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API"
+  },
+  "R026": {
+    "id": "40c3818f-8ba0-80c4-a8d3-decb078c2e44",
+    "title": "Docker Get Started",
+    "url": "https://docs.docker.com/get-started/"
+  },
+  "R027": {
+    "id": "40c3818f-8ba0-8086-bd7d-c8e704542751",
+    "title": "GitHub Actions Docs",
+    "url": "https://docs.github.com/en/actions"
+  },
+  "R028": {
+    "id": "40c3818f-8ba0-8059-9dc0-d9fdeacf913b",
+    "title": "Vercel Documentation",
+    "url": "https://vercel.com/docs"
+  },
+  "R029": {
+    "id": "40c3818f-8ba0-800a-bc61-c36edbd5967c",
+    "title": "Git – Book",
+    "url": "https://git-scm.com/book/en/v2"
+  },
+  "R030": {
+    "id": "40c3818f-8ba0-80d4-8096-cb54d64b2379",
+    "title": "HTTP – MDN",
+    "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP"
+  },
+  "R031": {
+    "id": "40c3818f-8ba0-8048-b0f8-d41a2adaaf76",
+    "title": "Node.js Test Runner",
+    "url": "https://nodejs.org/api/test.html"
+  },
+  "R032": {
+    "id": "40c3818f-8ba0-80f7-9b26-da130e78f47b",
+    "title": "Web.dev – Learn Performance",
+    "url": "https://web.dev/learn/performance/"
+  },
+  "R033": {
+    "id": "40c3818f-8ba0-809e-afd3-c8f1708c7e7b",
+    "title": "Web.dev – Learn Accessibility",
+    "url": "https://web.dev/learn/accessibility/"
+  },
+  "R034": {
+    "id": "40c3818f-8ba0-80a2-a804-c622b7cc907e",
+    "title": "Prisma – Relations",
+    "url": "https://www.prisma.io/docs/orm/prisma-schema/data-model/relations"
+  },
+  "R035": {
+    "id": "40c3818f-8ba0-8093-bae8-d7291df6fd24",
+    "title": "OpenStax – Prealgebra 2e",
+    "url": "https://openstax.org/books/prealgebra-2e/pages/1-introduction"
+  },
+  "R036": {
+    "id": "40c3818f-8ba0-8186-9904-d450c62170aa",
+    "title": "OpenStax – Algebra and Trigonometry 2e",
+    "url": "https://openstax.org/books/algebra-and-trigonometry-2e/pages/preface"
+  },
+  "DRILLS_DB": {
+    "id": "40d3818f-8ba0-8125-8cae-ea0de6183186",
+    "title": "Learning Practice & Drills"
+  },
+  "DRL-MTH-T02-C01-U01-01": {
+    "id": "40d3818f-8ba0-81ea-bcee-d511a0d09ff7",
+    "title": "Complex Numbers — Verified Math Drill (5 Qs · Mixed Exam Mode)"
+  },
+  "DRL-PRG-T03-C01-U01-01": {
+    "id": "40d3818f-8ba0-8130-b9f9-eb31c185129f",
+    "title": "Next.js Project Structure — Architecture & Env Boundary Drill"
+  },
+  "DRL-MTH-T02-C01-U01-10": {
+    "id": "40d3818f-8ba0-81c6-a53e-c34471bc761b",
+    "title": "Complex Numbers — Verified Math Drill (5 Qs · Level 4 - Applied Synthesis)"
+  },
+  "DRL-MTH-T02-C01-U01-04": {
+    "id": "40d3818f-8ba0-81af-8367-f92d38e6c073",
+    "title": "Complex Numbers — Verified Math Drill (10 Qs · Level 4 - Applied Synthesis)"
+  },
+  "DRL-MTH-T01-C12-01": {
+    "id": "40d3818f-8ba0-8100-bf40-da97b94f0434",
+    "title": "Math Models and Geometry — Verified Math Drill (5 Qs · Mixed Exam Mode)"
+  },
+  "DRL-MTH-T02-C01-U01-05": {
+    "id": "40d3818f-8ba0-8170-a8a6-c284abc044d8",
+    "title": "Complex Numbers — Verified Math Drill (10 Qs · Level 4 - Applied Synthesis)"
+  },
+  "DRL-MTH-T02-C01-U01-12": {
+    "id": "40e3818f-8ba0-81f5-b6b5-dd20fe322161",
+    "title": "Complex Numbers — Verified Math Drill (5 Qs · Mixed Exam Mode)"
+  },
+  "DRL-PRG-T01-C01-01": {
+    "id": "40e3818f-8ba0-817f-a932-f3336cbc0f05",
+    "title": "JavaScript Deep Dive — Verified Programming Drill (5 Qs · Mixed Exam Mode)"
+  }
+}

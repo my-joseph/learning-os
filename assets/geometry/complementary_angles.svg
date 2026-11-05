@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 380" width="100%" height="100%">
+  <defs>
+    <style>
+      .label { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 19px; font-weight: 600; fill: #1f2937; }
+      .formula { font-family: "KaTeX_Math", "Times New Roman", serif; font-size: 21px; font-weight: bold; fill: #059669; }
+    </style>
+  </defs>
+  <rect width="100%" height="100%" fill="#f8fafc" rx="12"/>
+  
+  <!-- Right Angle Box at Origin (100, 300) -->
+  <rect x="100" y="260" width="40" height="40" fill="#ecfdf5" stroke="#10b981" stroke-width="2"/>
+  
+  <!-- Shaded Angle Sectors -->
+  <!-- Angle 1 Sector (0 to 35 deg) -->
+  <path d="M 100,300 L 350,300 A 180 180 0 0 0 312,175 Z" fill="#fed7aa" opacity="0.6"/>
+  <!-- Angle 2 Sector (35 to 90 deg) -->
+  <path d="M 100,300 L 312,175 A 180 180 0 0 0 100,120 Z" fill="#bfdbfe" opacity="0.6"/>
+
+  <!-- Rays -->
+  <!-- Horizontal Ray -->
+  <line x1="100" y1="300" x2="420" y2="300" stroke="#1f2937" stroke-width="3.5" marker-end="url(#arrow)"/>
+  <!-- Vertical Ray -->
+  <line x1="100" y1="300" x2="100" y2="60" stroke="#1f2937" stroke-width="3.5"/>
+  <!-- Dividing Ray at 35 degrees -->
+  <line x1="100" y1="300" x2="360" y2="140" stroke="#d97706" stroke-width="3.5" stroke-dasharray="2,2"/>
+  
+  <!-- Ray Arrows -->
+  <polygon points="420,300 405,293 405,307" fill="#1f2937"/>
+  <polygon points="100,60 93,75 107,75" fill="#1f2937"/>
+  <polygon points="360,140 344,142 353,155" fill="#d97706"/>
+
+  <!-- Angle Labels -->
+  <text x="240" y="275" class="label" fill="#c2410c">∠1 (35°)</text>
+  <text x="175" y="195" class="label" fill="#1d4ed8">∠2 (55°)</text>
+  
+  <!-- Origin -->
+  <circle cx="100" cy="300" r="5" fill="#1f2937"/>
+  <text x="75" y="325" class="label" font-size="17">Vertex O</text>
+
+  <!-- Formula Banner -->
+  <rect x="130" y="20" width="240" height="42" rx="8" fill="#dcfce7" stroke="#10b981" stroke-width="1.5"/>
+  <text x="250" y="48" class="formula" text-anchor="middle">∠1 + ∠2 = 90° (Complementary)</text>
+</svg>

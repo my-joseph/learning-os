@@ -1,0 +1,486 @@
+{
+  "schemaVersion": "2.0-prg",
+  "drillId": "DRL-PRG-T01-C01-02",
+  "subject": "PRG",
+  "unitCode": "PRG-T01-C01",
+  "unitTitle": "JavaScript Deep Dive",
+  "chapterCode": "PRG-T01-C01",
+  "topicCode": "PRG-T01",
+  "unitNotionUrl": "https://www.notion.so/40c3818f8ba08122af62ef0327e2a3c7",
+  "createdAt": "2026-11-04 21:26:02",
+  "config": {
+    "questionCount": 5,
+    "difficulty": "ALL",
+    "difficultyMode": "Mixed Exam Mode"
+  },
+  "mistakeTags": [
+    {
+      "id": "microtask-order",
+      "name": "Microtask vs Macrotask Queue Order",
+      "label": "Microtask Queue Priority",
+      "autoFrom": [
+        "microtask-order"
+      ]
+    },
+    {
+      "id": "var-vs-let-scope",
+      "name": "var vs let Lexical Scope in Loops",
+      "label": "Loop Variable Scope",
+      "autoFrom": [
+        "var-vs-let-scope"
+      ]
+    },
+    {
+      "id": "stale-closure",
+      "name": "Stale Closure Reference",
+      "label": "Stale Closure",
+      "autoFrom": [
+        "stale-closure"
+      ]
+    },
+    {
+      "id": "this-binding-lost",
+      "name": "Lost this Binding in Detached Method / Callback",
+      "label": "Lost this Binding",
+      "autoFrom": [
+        "this-binding-lost"
+      ]
+    },
+    {
+      "id": "prototype-mutation",
+      "name": "Prototype Object Mutation vs Own Property Shadowing",
+      "label": "Prototype Mutation",
+      "autoFrom": [
+        "prototype-mutation"
+      ]
+    },
+    {
+      "id": "unhandled-rejection",
+      "name": "Promise Rejection and Catch Return Flow",
+      "label": "Promise Catch Flow",
+      "autoFrom": [
+        "unhandled-rejection"
+      ]
+    },
+    {
+      "id": "hoisting-order",
+      "name": "Declaration Hoisting and Temporal Dead Zone",
+      "label": "Hoisting & TDZ",
+      "autoFrom": [
+        "hoisting-order"
+      ]
+    }
+  ],
+  "problems": [
+    {
+      "category": "Event Loop and Concurrency",
+      "context": "Call Stack vs Microtasks vs Macrotasks",
+      "prompt": "Determine the order of console output when the following JavaScript code runs to completion. Trace the Call Stack, Microtask Queue, and Task Queue.",
+      "codeSnippet": "console.log(1);\n\nsetTimeout(() => {\n  console.log(2);\n}, 0);\n\nPromise.resolve().then(() => {\n  console.log(300);\n});\n\nqueueMicrotask(() => {\n  console.log(4);\n});\n\nconsole.log(500);",
+      "language": "javascript",
+      "codeType": "predict-output",
+      "answerSpec": {
+        "type": "code_output",
+        "tokens": [
+          "1",
+          "500",
+          "300",
+          "4",
+          "2"
+        ],
+        "value": "1, 500, 300, 4, 2",
+        "commonTrapTag": "microtask-order"
+      },
+      "answerPlain": "1, 500, 300, 4, 2",
+      "answerDisplay": "1, 500, 300, 4, 2",
+      "inputHint": "e.g. A, B, C, D, E (comma or newline-separated)",
+      "checkpointHint": "Differentiate the synchronous execution phase from the Microtask queue, then the Macrotask queue.",
+      "commonTrapTag": "microtask-order",
+      "steps": [
+        {
+          "latex": "\\text{Call Stack (Synchronous): } 1, 500",
+          "explain": "Top-level statements execute first synchronously. console.log(1) runs immediately, setTimeout schedules a Macrotask, Promise.resolve().then schedules a Microtask, queueMicrotask schedules another Microtask, and console.log(500) runs on the Call Stack."
+        },
+        {
+          "latex": "\\text{Microtask Queue: } 300, 4",
+          "explain": "Once the Call Stack empties, the engine flushes all pending Microtasks in FIFO order: Promise.then logs 300, then queueMicrotask logs 4."
+        },
+        {
+          "latex": "\\text{Task Queue (Macrotasks): } 2",
+          "explain": "Only after the Microtask Queue is completely drained does the event loop pick the next Macrotask from the Task Queue: the setTimeout callback logs 2."
+        }
+      ],
+      "references": [
+        "PRG-T01-C01-U07",
+        "PRG-T01-C01-U06"
+      ],
+      "id": "Q01",
+      "templateKey": "event_loop_concurrency",
+      "level": 2,
+      "levelLabel": "Standard Exam",
+      "referenceBadges": [
+        {
+          "code": "PRG-T01-C01-U07",
+          "title": "Event Loop and Concurrency",
+          "notionUrl": "https://www.notion.so/40c3818f8ba08138b450e408257b9e0e"
+        },
+        {
+          "code": "PRG-T01-C01-U06",
+          "title": "Promises and Async/Await",
+          "notionUrl": "https://www.notion.so/40c3818f8ba081d5a9d4c5543a215167"
+        }
+      ],
+      "state": {
+        "userInput": " 1 500 300 4 1",
+        "score": 0.5,
+        "divergedStep": null,
+        "mistakes": [
+          "microtask-order"
+        ],
+        "lastCheck": {
+          "verdict": "partial",
+          "message": "Some outputs matched, but the sequence or values diverged.",
+          "components": [
+            {
+              "label": "Output #1",
+              "ok": true
+            },
+            {
+              "label": "Output #2",
+              "ok": true
+            },
+            {
+              "label": "Output #3",
+              "ok": true
+            },
+            {
+              "label": "Output #4",
+              "ok": true
+            },
+            {
+              "label": "Output #5",
+              "ok": false
+            }
+          ],
+          "diagnostics": [
+            {
+              "code": "microtask-order",
+              "message": "Remember: The Call Stack runs first to completion. Microtasks (Promises, queueMicrotask) run immediately after each stack frame empties, BEFORE any Macrotask (setTimeout, setInterval) from the Task Queue."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "category": "Event Loop and Concurrency",
+      "context": "Call Stack vs Microtasks vs Macrotasks",
+      "prompt": "Determine the order of console output when the following JavaScript code runs to completion. Trace the Call Stack, Microtask Queue, and Task Queue.",
+      "codeSnippet": "console.log(10);\n\nsetTimeout(() => {\n  console.log(20);\n}, 0);\n\nPromise.resolve().then(() => {\n  console.log(30);\n});\n\nqueueMicrotask(() => {\n  console.log(4);\n});\n\nconsole.log(500);",
+      "language": "javascript",
+      "codeType": "predict-output",
+      "answerSpec": {
+        "type": "code_output",
+        "tokens": [
+          "10",
+          "500",
+          "30",
+          "4",
+          "20"
+        ],
+        "value": "10, 500, 30, 4, 20",
+        "commonTrapTag": "microtask-order"
+      },
+      "answerPlain": "10, 500, 30, 4, 20",
+      "answerDisplay": "10, 500, 30, 4, 20",
+      "inputHint": "e.g. A, B, C, D, E (comma or newline-separated)",
+      "checkpointHint": "Differentiate the synchronous execution phase from the Microtask queue, then the Macrotask queue.",
+      "commonTrapTag": "microtask-order",
+      "steps": [
+        {
+          "latex": "\\text{Call Stack (Synchronous): } 10, 500",
+          "explain": "Top-level statements execute first synchronously. console.log(10) runs immediately, setTimeout schedules a Macrotask, Promise.resolve().then schedules a Microtask, queueMicrotask schedules another Microtask, and console.log(500) runs on the Call Stack."
+        },
+        {
+          "latex": "\\text{Microtask Queue: } 30, 4",
+          "explain": "Once the Call Stack empties, the engine flushes all pending Microtasks in FIFO order: Promise.then logs 30, then queueMicrotask logs 4."
+        },
+        {
+          "latex": "\\text{Task Queue (Macrotasks): } 20",
+          "explain": "Only after the Microtask Queue is completely drained does the event loop pick the next Macrotask from the Task Queue: the setTimeout callback logs 20."
+        }
+      ],
+      "references": [
+        "PRG-T01-C01-U07",
+        "PRG-T01-C01-U06"
+      ],
+      "id": "Q02",
+      "templateKey": "event_loop_concurrency",
+      "level": 2,
+      "levelLabel": "Standard Exam",
+      "referenceBadges": [
+        {
+          "code": "PRG-T01-C01-U07",
+          "title": "Event Loop and Concurrency",
+          "notionUrl": "https://www.notion.so/40c3818f8ba08138b450e408257b9e0e"
+        },
+        {
+          "code": "PRG-T01-C01-U06",
+          "title": "Promises and Async/Await",
+          "notionUrl": "https://www.notion.so/40c3818f8ba081d5a9d4c5543a215167"
+        }
+      ],
+      "state": {
+        "userInput": "a",
+        "score": 0,
+        "divergedStep": null,
+        "mistakes": [
+          "microtask-order"
+        ],
+        "lastCheck": {
+          "verdict": "incorrect",
+          "message": "Output sequence does not match.",
+          "components": [
+            {
+              "label": "Output #1",
+              "ok": false
+            },
+            {
+              "label": "Output #2",
+              "ok": false
+            },
+            {
+              "label": "Output #3",
+              "ok": false
+            },
+            {
+              "label": "Output #4",
+              "ok": false
+            },
+            {
+              "label": "Output #5",
+              "ok": false
+            }
+          ],
+          "diagnostics": [
+            {
+              "code": "microtask-order",
+              "message": "Remember: The Call Stack runs first to completion. Microtasks (Promises, queueMicrotask) run immediately after each stack frame empties, BEFORE any Macrotask (setTimeout, setInterval) from the Task Queue."
+            },
+            {
+              "code": "token_count_mismatch",
+              "message": "Expected 5 output values, but received 1."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "category": "Event Loop and Concurrency",
+      "context": "Call Stack vs Microtasks vs Macrotasks",
+      "prompt": "Determine the order of console output when the following JavaScript code runs to completion. Trace the Call Stack, Microtask Queue, and Task Queue.",
+      "codeSnippet": "console.log(1);\n\nsetTimeout(() => {\n  console.log(2);\n}, 0);\n\nPromise.resolve().then(() => {\n  console.log(30);\n});\n\nqueueMicrotask(() => {\n  console.log(40);\n});\n\nconsole.log(500);",
+      "language": "javascript",
+      "codeType": "predict-output",
+      "answerSpec": {
+        "type": "code_output",
+        "tokens": [
+          "1",
+          "500",
+          "30",
+          "40",
+          "2"
+        ],
+        "value": "1, 500, 30, 40, 2",
+        "commonTrapTag": "microtask-order"
+      },
+      "answerPlain": "1, 500, 30, 40, 2",
+      "answerDisplay": "1, 500, 30, 40, 2",
+      "inputHint": "e.g. A, B, C, D, E (comma or newline-separated)",
+      "checkpointHint": "Differentiate the synchronous execution phase from the Microtask queue, then the Macrotask queue.",
+      "commonTrapTag": "microtask-order",
+      "steps": [
+        {
+          "latex": "\\text{Call Stack (Synchronous): } 1, 500",
+          "explain": "Top-level statements execute first synchronously. console.log(1) runs immediately, setTimeout schedules a Macrotask, Promise.resolve().then schedules a Microtask, queueMicrotask schedules another Microtask, and console.log(500) runs on the Call Stack."
+        },
+        {
+          "latex": "\\text{Microtask Queue: } 30, 40",
+          "explain": "Once the Call Stack empties, the engine flushes all pending Microtasks in FIFO order: Promise.then logs 30, then queueMicrotask logs 40."
+        },
+        {
+          "latex": "\\text{Task Queue (Macrotasks): } 2",
+          "explain": "Only after the Microtask Queue is completely drained does the event loop pick the next Macrotask from the Task Queue: the setTimeout callback logs 2."
+        }
+      ],
+      "references": [
+        "PRG-T01-C01-U07",
+        "PRG-T01-C01-U06"
+      ],
+      "id": "Q03",
+      "templateKey": "event_loop_concurrency",
+      "level": 2,
+      "levelLabel": "Standard Exam",
+      "referenceBadges": [
+        {
+          "code": "PRG-T01-C01-U07",
+          "title": "Event Loop and Concurrency",
+          "notionUrl": "https://www.notion.so/40c3818f8ba08138b450e408257b9e0e"
+        },
+        {
+          "code": "PRG-T01-C01-U06",
+          "title": "Promises and Async/Await",
+          "notionUrl": "https://www.notion.so/40c3818f8ba081d5a9d4c5543a215167"
+        }
+      ],
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "category": "Event Loop and Concurrency",
+      "context": "Call Stack vs Microtasks vs Macrotasks",
+      "prompt": "Determine the order of console output when the following JavaScript code runs to completion. Trace the Call Stack, Microtask Queue, and Task Queue.",
+      "codeSnippet": "console.log(1);\n\nsetTimeout(() => {\n  console.log(20);\n}, 0);\n\nPromise.resolve().then(() => {\n  console.log(3);\n});\n\nqueueMicrotask(() => {\n  console.log(400);\n});\n\nconsole.log(5);",
+      "language": "javascript",
+      "codeType": "predict-output",
+      "answerSpec": {
+        "type": "code_output",
+        "tokens": [
+          "1",
+          "5",
+          "3",
+          "400",
+          "20"
+        ],
+        "value": "1, 5, 3, 400, 20",
+        "commonTrapTag": "microtask-order"
+      },
+      "answerPlain": "1, 5, 3, 400, 20",
+      "answerDisplay": "1, 5, 3, 400, 20",
+      "inputHint": "e.g. A, B, C, D, E (comma or newline-separated)",
+      "checkpointHint": "Differentiate the synchronous execution phase from the Microtask queue, then the Macrotask queue.",
+      "commonTrapTag": "microtask-order",
+      "steps": [
+        {
+          "latex": "\\text{Call Stack (Synchronous): } 1, 5",
+          "explain": "Top-level statements execute first synchronously. console.log(1) runs immediately, setTimeout schedules a Macrotask, Promise.resolve().then schedules a Microtask, queueMicrotask schedules another Microtask, and console.log(5) runs on the Call Stack."
+        },
+        {
+          "latex": "\\text{Microtask Queue: } 3, 400",
+          "explain": "Once the Call Stack empties, the engine flushes all pending Microtasks in FIFO order: Promise.then logs 3, then queueMicrotask logs 400."
+        },
+        {
+          "latex": "\\text{Task Queue (Macrotasks): } 20",
+          "explain": "Only after the Microtask Queue is completely drained does the event loop pick the next Macrotask from the Task Queue: the setTimeout callback logs 20."
+        }
+      ],
+      "references": [
+        "PRG-T01-C01-U07",
+        "PRG-T01-C01-U06"
+      ],
+      "id": "Q04",
+      "templateKey": "event_loop_concurrency",
+      "level": 2,
+      "levelLabel": "Standard Exam",
+      "referenceBadges": [
+        {
+          "code": "PRG-T01-C01-U07",
+          "title": "Event Loop and Concurrency",
+          "notionUrl": "https://www.notion.so/40c3818f8ba08138b450e408257b9e0e"
+        },
+        {
+          "code": "PRG-T01-C01-U06",
+          "title": "Promises and Async/Await",
+          "notionUrl": "https://www.notion.so/40c3818f8ba081d5a9d4c5543a215167"
+        }
+      ],
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "category": "Event Loop and Concurrency",
+      "context": "Call Stack vs Microtasks vs Macrotasks",
+      "prompt": "Determine the order of console output when the following JavaScript code runs to completion. Trace the Call Stack, Microtask Queue, and Task Queue.",
+      "codeSnippet": "console.log(10);\n\nsetTimeout(() => {\n  console.log(2);\n}, 0);\n\nPromise.resolve().then(() => {\n  console.log(300);\n});\n\nqueueMicrotask(() => {\n  console.log(4);\n});\n\nconsole.log(5);",
+      "language": "javascript",
+      "codeType": "predict-output",
+      "answerSpec": {
+        "type": "code_output",
+        "tokens": [
+          "10",
+          "5",
+          "300",
+          "4",
+          "2"
+        ],
+        "value": "10, 5, 300, 4, 2",
+        "commonTrapTag": "microtask-order"
+      },
+      "answerPlain": "10, 5, 300, 4, 2",
+      "answerDisplay": "10, 5, 300, 4, 2",
+      "inputHint": "e.g. A, B, C, D, E (comma or newline-separated)",
+      "checkpointHint": "Differentiate the synchronous execution phase from the Microtask queue, then the Macrotask queue.",
+      "commonTrapTag": "microtask-order",
+      "steps": [
+        {
+          "latex": "\\text{Call Stack (Synchronous): } 10, 5",
+          "explain": "Top-level statements execute first synchronously. console.log(10) runs immediately, setTimeout schedules a Macrotask, Promise.resolve().then schedules a Microtask, queueMicrotask schedules another Microtask, and console.log(5) runs on the Call Stack."
+        },
+        {
+          "latex": "\\text{Microtask Queue: } 300, 4",
+          "explain": "Once the Call Stack empties, the engine flushes all pending Microtasks in FIFO order: Promise.then logs 300, then queueMicrotask logs 4."
+        },
+        {
+          "latex": "\\text{Task Queue (Macrotasks): } 2",
+          "explain": "Only after the Microtask Queue is completely drained does the event loop pick the next Macrotask from the Task Queue: the setTimeout callback logs 2."
+        }
+      ],
+      "references": [
+        "PRG-T01-C01-U07",
+        "PRG-T01-C01-U06"
+      ],
+      "id": "Q05",
+      "templateKey": "event_loop_concurrency",
+      "level": 2,
+      "levelLabel": "Standard Exam",
+      "referenceBadges": [
+        {
+          "code": "PRG-T01-C01-U07",
+          "title": "Event Loop and Concurrency",
+          "notionUrl": "https://www.notion.so/40c3818f8ba08138b450e408257b9e0e"
+        },
+        {
+          "code": "PRG-T01-C01-U06",
+          "title": "Promises and Async/Await",
+          "notionUrl": "https://www.notion.so/40c3818f8ba081d5a9d4c5543a215167"
+        }
+      ],
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    }
+  ],
+  "sessionSummary": {
+    "practiceStatus": "Ready",
+    "score": 0,
+    "maxScore": 5,
+    "accuracyPct": 0,
+    "mistakeCategories": [],
+    "divergedStepsSummary": "No diverged steps logged.",
+    "attemptDate": null
+  },
+  "localFilePath": "/Users/Joseph/Documents/antigravity/brave-borg/drills/data/PRG-T01-C01/DRL-PRG-T01-C01-02.json"
+}

@@ -1,0 +1,28 @@
+@import "katex/dist/katex.min.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #0d1017;
+  --foreground: #e6edf3;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+  line-height: 1.6;
+}
+
+/* Click-to-Highlight dimming utility */
+.has-active .step-row {
+  opacity: 0.35;
+  filter: grayscale(20%);
+}
+
+.katex-display {
+  margin: 0.35em 0 !important;
+  text-align: left !important;
+}

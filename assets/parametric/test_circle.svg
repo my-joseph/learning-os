@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 360" width="100%" height="100%">
+  <defs><style>
+    .label { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 18px; font-weight: 600; fill: #1f2937; }
+    .sublabel { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 14px; fill: #4b5563; }
+    .formula { font-family: "KaTeX_Math", "Times New Roman", serif; font-size: 20px; font-weight: bold; }
+    .badge-title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; }
+</style></defs>
+  <rect width="100%" height="100%" fill="#f8fafc" rx="12"/>
+
+  <!-- Circle Perimeter and Area -->
+  <circle cx="190" cy="190" r="120" fill="#fffbeb" stroke="#f59e0b" stroke-width="3"/>
+  <circle cx="190" cy="190" r="5" fill="#1f2937"/>
+  <text x="180" y="178" class="label" font-size="15">Center O</text>
+
+  <!-- Horizontal Diameter Chord -->
+  <line x1="70" y1="190" x2="310" y2="190" stroke="#ea580c" stroke-width="2.5" stroke-dasharray="4,3"/>
+  <circle cx="70" cy="190" r="4" fill="#ea580c"/>
+  <circle cx="310" cy="190" r="4" fill="#ea580c"/>
+  <text x="130.0" y="214" class="label" fill="#ea580c" text-anchor="middle">Diameter d = 14 m</text>
+
+  <!-- Slanted Radius Ray -->
+  <line x1="190" y1="190" x2="274.84" y2="105.16000000000001" stroke="#d97706" stroke-width="3.5"/>
+  <circle cx="274.84" cy="105.16000000000001" r="4" fill="#d97706"/>
+  <text x="252.0" y="143.0" class="label" fill="#d97706" text-anchor="middle">Radius r = 7 m</text>
+
+  <!-- Formula Panel -->
+  <rect x="350" y="80" width="170" height="190" rx="8" fill="#fef3c7" stroke="#fcd34d" stroke-width="1.5"/>
+  <text x="435" y="108" class="badge-title" fill="#92400e" text-anchor="middle">Circle Invariants</text>
+  <text x="435" y="145" class="formula" fill="#d97706" text-anchor="middle">r = d / 2</text>
+  <text x="435" y="180" class="formula" fill="#d97706" text-anchor="middle">C = 2πr = πd</text>
+  <text x="435" y="215" class="formula" fill="#d97706" text-anchor="middle">A = π r²</text>
+  <rect x="365" y="235" width="140" height="24" rx="4" fill="#fee2e2"/>
+  <text x="435" y="251" class="badge-title" fill="#b91c1c" text-anchor="middle" font-size="10">Never square d directly!</text>
+</svg>

@@ -1,0 +1,29 @@
+{
+  "MASTER": "40c3818f-8ba0-8002-92f1-e971793125e3",
+  "00_CORE": "rules/00_core.md",
+  "01_ARCH": {
+    "id": "40f3818f-8ba0-81a0-9a14-c09b5ebd18f4",
+    "title": "01_ARCH — Learning Architecture, Database Relations & Progress Tracking",
+    "file": "rules/01_arch.md"
+  },
+  "02_PEDAGOGY": {
+    "id": "40f3818f-8ba0-8199-a1fc-e7f1a8c6e9f9",
+    "title": "02_PEDAGOGY — Curriculum Design, Active Recall & Practice Guides",
+    "file": "rules/02_pedagogy.md"
+  },
+  "03_STEM": {
+    "id": "40f3818f-8ba0-810b-a5f3-c463b3f6ba2e",
+    "title": "03_STEM — Mathematics, Physics & Parametric Visual Standards",
+    "file": "rules/03_stem.md"
+  },
+  "04_CODE": {
+    "id": "40f3818f-8ba0-810b-b102-cdeda2333c17",
+    "title": "04_CODE — Programming Practice, Test Suites & Terminal Labs",
+    "file": "rules/04_code.md"
+  },
+  "05_QA": {
+    "id": "40f3818f-8ba0-81c8-aad9-f3336ac628a7",
+    "title": "05_QA — Implementation Workflow, Quality Assurance & Audit Protocol",
+    "file": "rules/05_qa.md"
+  }
+}

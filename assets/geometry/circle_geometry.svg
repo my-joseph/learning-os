@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 380" width="100%" height="100%">
+  <defs>
+    <style>
+      .label { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 19px; font-weight: 600; fill: #1f2937; }
+      .formula { font-family: "KaTeX_Math", "Times New Roman", serif; font-size: 20px; font-weight: bold; fill: #b91c1c; }
+      .warn { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 15px; font-weight: 700; fill: #b91c1c; }
+    </style>
+  </defs>
+  <rect width="100%" height="100%" fill="#f8fafc" rx="12"/>
+  
+  <!-- The Circle -->
+  <circle cx="200" cy="200" r="140" fill="#f0fdf4" stroke="#16a34a" stroke-width="3"/>
+  
+  <!-- Center Point O -->
+  <circle cx="200" cy="200" r="5" fill="#1f2937"/>
+  <text x="195" y="185" class="label" font-size="16">Center O</text>
+  
+  <!-- Diameter Line (dashed top across) -->
+  <line x1="60" y1="200" x2="340" y2="200" stroke="#ea580c" stroke-width="3"/>
+  <!-- Diameter Arrow Endcaps -->
+  <circle cx="60" cy="200" r="4" fill="#ea580c"/>
+  <circle cx="340" cy="200" r="4" fill="#ea580c"/>
+  
+  <!-- Radius Line (highlighted angled upwards) -->
+  <line x1="200" y1="200" x2="299" y2="101" stroke="#2563eb" stroke-width="3.5"/>
+  <circle cx="299" cy="101" r="4" fill="#2563eb"/>
+  
+  <!-- Radius Label -->
+  <text x="235" y="140" class="label" fill="#2563eb">Radius r</text>
+  
+  <!-- Diameter Label -->
+  <text x="120" y="235" class="label" fill="#ea580c">Diameter d = 2r</text>
+  
+  <!-- Circumference Callout -->
+  <path d="M 330,150 Q 360,170 380,200" fill="none" stroke="#16a34a" stroke-width="2" stroke-dasharray="4,4"/>
+  <text x="360" y="150" class="label" fill="#16a34a" font-size="17">Circumference C = 2πr = πd</text>
+
+  <!-- Formula Panel on Right -->
+  <rect x="360" y="230" width="165" height="110" rx="8" fill="#fef2f2" stroke="#f87171" stroke-width="1.5"/>
+  <text x="442" y="258" class="warn" text-anchor="middle">CRITICAL RULE:</text>
+  <text x="442" y="285" class="formula" text-anchor="middle" font-size="18">r = d / 2</text>
+  <text x="442" y="315" class="formula" text-anchor="middle" font-size="18">A = π r²</text>
+  <text x="442" y="332" class="warn" text-anchor="middle" font-size="11" fill="#7f1d1d">Never square d directly!</text>
+</svg>

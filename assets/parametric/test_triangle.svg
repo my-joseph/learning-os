@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 360" width="100%" height="100%">
+  <defs><style>
+    .label { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 18px; font-weight: 600; fill: #1f2937; }
+    .sublabel { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 14px; fill: #4b5563; }
+    .formula { font-family: "KaTeX_Math", "Times New Roman", serif; font-size: 20px; font-weight: bold; }
+    .badge-title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; }
+</style></defs>
+  <rect width="100%" height="100%" fill="#f8fafc" rx="12"/>
+  
+  <!-- Right Triangle Polygon -->
+  <polygon points="90,290 370.0,290 90,80.0" fill="#ecfdf5" stroke="#10b981" stroke-width="3" stroke-linejoin="round"/>
+  
+  <!-- Right Angle Square -->
+  <rect x="90" y="264.0" width="26.0" height="26.0" fill="none" stroke="#059669" stroke-width="2"/>
+  <circle cx="103.0" cy="277.0" r="2" fill="#059669"/>
+
+  <!-- Labels -->
+  <!-- Height / Leg a -->
+  <text x="70" y="185.0" class="label" text-anchor="end">Height a = 12 cm</text>
+  
+  <!-- Base / Leg b -->
+  <text x="230.0" y="320" class="label" text-anchor="middle">Base b = 16 cm</text>
+  
+  <!-- Hypotenuse c -->
+  <text x="255.0" y="175.0" class="label" fill="#059669" text-anchor="middle">Hypotenuse c = 20 cm</text>
+  
+  <!-- Vertices -->
+  <circle cx="90" cy="290" r="4" fill="#059669"/>
+  <circle cx="370.0" cy="290" r="4" fill="#059669"/>
+  <circle cx="90" cy="80.0" r="4" fill="#059669"/>
+
+  <!-- Formula Badge -->
+  <rect x="330" y="25" width="165" height="55" rx="8" fill="#d1fae5" stroke="#6ee7b7" stroke-width="1.5"/>
+  <text x="412" y="45" class="badge-title" fill="#065f46" text-anchor="middle">Pythagorean Invariant</text>
+  <text x="412" y="68" class="formula" fill="#059669" text-anchor="middle">a² + b² = c²</text>
+</svg>

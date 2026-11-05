@@ -1,0 +1,41 @@
+{
+  "labId": "LAB-PRG-T03-C01-01",
+  "title": "Full-Stack E-Commerce Core & Checkout Engine",
+  "subject": "PRG",
+  "unitCode": "PRG-T03-C01-U01",
+  "chapterCode": "PRG-T03-C01",
+  "topicCode": "PRG-T03",
+  "difficulty": "Level 4 - Applied Synthesis",
+  "scopeLevel": "Unit Drill",
+  "testCommand": "node --experimental-strip-types --test --test-reporter=junit tests/*.test.ts",
+  "milestones": [
+    {
+      "id": "M1",
+      "title": "Domain Models & Schema Validation",
+      "points": 25,
+      "testPattern": "m1_schemas",
+      "mistakeCategory": "Schema Invalidation / Type Guard Flaw"
+    },
+    {
+      "id": "M2",
+      "title": "Pricing & Tiered Discount Engine",
+      "points": 25,
+      "testPattern": "m2_pricing",
+      "mistakeCategory": "Financial Precision & Rounding Trap"
+    },
+    {
+      "id": "M3",
+      "title": "Order State Machine & Transition Guards",
+      "points": 25,
+      "testPattern": "m3_state_machine",
+      "mistakeCategory": "Invalid State Machine Transition"
+    },
+    {
+      "id": "M4",
+      "title": "Async Concurrency & Inventory Lock",
+      "points": 25,
+      "testPattern": "m4_inventory_lock",
+      "mistakeCategory": "Concurrency Race Condition & Rollback Failure"
+    }
+  ]
+}

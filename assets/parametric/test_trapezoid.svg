@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 360" width="100%" height="100%">
+  <defs><style>
+    .label { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 18px; font-weight: 600; fill: #1f2937; }
+    .sublabel { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 14px; fill: #4b5563; }
+    .formula { font-family: "KaTeX_Math", "Times New Roman", serif; font-size: 20px; font-weight: bold; }
+    .badge-title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; }
+</style></defs>
+  <rect width="100%" height="100%" fill="#f8fafc" rx="12"/>
+
+  <!-- Trapezoid Polygon -->
+  <polygon points="80,270 360.0,270 300.0,150.0 140.0,150.0" fill="#eef2ff" stroke="#6366f1" stroke-width="3" stroke-linejoin="round"/>
+
+  <!-- Altitude Dashed Line -->
+  <line x1="140.0" y1="150.0" x2="140.0" y2="270" stroke="#4f46e5" stroke-width="2.5" stroke-dasharray="4,3"/>
+  <rect x="140.0" y="252.0" width="18.0" height="18.0" fill="none" stroke="#4f46e5" stroke-width="1.5"/>
+  <text x="128.0" y="215.0" class="label" fill="#4f46e5" text-anchor="end">Altitude h = 6 ft</text>
+
+  <!-- Base Labels -->
+  <!-- Top Base b2 -->
+  <text x="220.0" y="136.0" class="label" text-anchor="middle">Top b₂ = 8 ft</text>
+  <!-- Bottom Base b1 -->
+  <text x="220.0" y="300" class="label" text-anchor="middle">Base b₁ = 14 ft</text>
+
+  <!-- Formula Panel -->
+  <rect x="340" y="40" width="165" height="130" rx="8" fill="#e0e7ff" stroke="#a5b4fc" stroke-width="1.5"/>
+  <text x="422" y="68" class="badge-title" fill="#3730a3" text-anchor="middle">Trapezoid Area</text>
+  <text x="422" y="105" class="formula" fill="#4f46e5" text-anchor="middle" font-size="18">A = ½ h(b₁ + b₂)</text>
+  <text x="422" y="140" class="sublabel" text-anchor="middle" font-size="12">Decomposes to:</text>
+  <text x="422" y="156" class="sublabel" text-anchor="middle" font-size="12">Triangle + Rectangle</text>
+</svg>

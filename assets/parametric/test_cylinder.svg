@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 360" width="100%" height="100%">
+  <defs><style>
+    .label { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 18px; font-weight: 600; fill: #1f2937; }
+    .sublabel { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 14px; fill: #4b5563; }
+    .formula { font-family: "KaTeX_Math", "Times New Roman", serif; font-size: 20px; font-weight: bold; }
+    .badge-title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; }
+</style></defs>
+  <rect width="100%" height="100%" fill="#f8fafc" rx="12"/>
+
+  <!-- Top Ellipse -->
+  <ellipse cx="170" cy="90" rx="85" ry="26" fill="#ede9fe" stroke="#8b5cf6" stroke-width="3"/>
+  
+  <!-- Cylinder Lateral Body Fill -->
+  <path d="M 85,90 L 85,260 A 85 26 0 0 0 255,260 L 255,90 Z" fill="#f5f3ff" stroke="none"/>
+  <!-- Lateral Side Lines -->
+  <line x1="85" y1="90" x2="85" y2="260" stroke="#8b5cf6" stroke-width="3"/>
+  <line x1="255" y1="90" x2="255" y2="260" stroke="#8b5cf6" stroke-width="3"/>
+
+  <!-- Bottom Ellipse -->
+  <!-- Front half (solid) -->
+  <path d="M 85,260 A 85 26 0 0 0 255,260" fill="none" stroke="#8b5cf6" stroke-width="3"/>
+  <!-- Back half (dashed hidden line) -->
+  <path d="M 85,260 A 85 26 0 0 1 255,260" fill="none" stroke="#8b5cf6" stroke-width="2" stroke-dasharray="4,4"/>
+
+  <!-- Radius Marker on Top Base -->
+  <line x1="170" y1="90" x2="255" y2="90" stroke="#7c3aed" stroke-width="3"/>
+  <circle cx="170" cy="90" r="3" fill="#1f2937"/>
+  <circle cx="255" cy="90" r="3" fill="#7c3aed"/>
+  <text x="212.5" y="80" class="label" fill="#7c3aed" text-anchor="middle">Radius r = 5 cm</text>
+
+  <!-- Height Marker on Right -->
+  <line x1="280" y1="90" x2="280" y2="260" stroke="#6d28d9" stroke-width="2.5"/>
+  <line x1="273" y1="90" x2="287" y2="90" stroke="#6d28d9" stroke-width="2"/>
+  <line x1="273" y1="260" x2="287" y2="260" stroke="#6d28d9" stroke-width="2"/>
+  <text x="310" y="180.0" class="label" fill="#6d28d9" text-anchor="middle">Altitude h = 12 cm</text>
+
+  <!-- Formula Panel -->
+  <rect x="330" y="45" width="170" height="150" rx="8" fill="#ede9fe" stroke="#c4b5fd" stroke-width="1.5"/>
+  <text x="415" y="73" class="badge-title" fill="#5b21b6" text-anchor="middle">3D Cylinder Invariants</text>
+  <text x="415" y="105" class="formula" fill="#7c3aed" text-anchor="middle">V = π r² h</text>
+  <text x="415" y="140" class="formula" fill="#7c3aed" text-anchor="middle" font-size="16">A_lat = 2πrh</text>
+  <text x="415" y="170" class="formula" fill="#7c3aed" text-anchor="middle" font-size="16">A_tot = 2πr² + 2πrh</text>
+</svg>
