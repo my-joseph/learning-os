@@ -206,8 +206,11 @@ export interface Problem {
   visibleTests?: TestCase[];
   hiddenTests?: TestCase[];
   workspaceFile?: string;
+  workspaceDir?: string;
   cursorUrl?: string;
   vscodeUrl?: string;
+  cursorFolderUrl?: string;
+  vscodeFolderUrl?: string;
   visual?: VisualSpec;
   answerSpec: AnswerSpec;
   answerDisplay: string;

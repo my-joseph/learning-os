@@ -172,17 +172,23 @@ const {{ {entry_name} }} = require('./{src_filename}');
         test_scripts[f"test:{pid.lower()}"] = f"node --test {test_filename}"
 
         abs_src = os.path.abspath(src_path)
+        abs_ws = os.path.abspath(ws_dir)
         manifest["files"][pid] = {
             "sourcePath": abs_src,
             "testPath": os.path.abspath(test_path),
             "cursorUrl": f"cursor://file/{abs_src}",
             "vscodeUrl": f"vscode://file/{abs_src}",
+            "cursorFolderUrl": f"cursor://file/{abs_ws}",
+            "vscodeFolderUrl": f"vscode://file/{abs_ws}",
             "relativeSrc": os.path.join("drills", "workspace", drill_id, src_filename),
         }
 
         prob["workspaceFile"] = os.path.join("drills", "workspace", drill_id, src_filename)
+        prob["workspaceDir"] = abs_ws
         prob["cursorUrl"] = f"cursor://file/{abs_src}"
         prob["vscodeUrl"] = f"vscode://file/{abs_src}"
+        prob["cursorFolderUrl"] = f"cursor://file/{abs_ws}"
+        prob["vscodeFolderUrl"] = f"vscode://file/{abs_ws}"
         prob["archetype"] = archetype
 
         readme_problems.append({

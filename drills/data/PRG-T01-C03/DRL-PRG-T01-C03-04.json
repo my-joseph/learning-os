@@ -181,10 +181,12 @@
       ],
       "state": {
         "userInput": "",
-        "score": null,
+        "userCode": "/**\n * LEGACY SUBSCRIPTION BILLING MODULE\n * \n * MISSION:\n * 1. Maintain 100% backward compatibility with all existing legacy tests.\n * 2. Add support for the new 'family' plan:\n *    - Base price: $34.99 (includes 2 members).\n *    - Extra members: +$8.99 per member over 2, up to 6 members max.\n *    - If account.members > 6, throw RangeError('Family plan allows max 6 members').\n * 3. Add support for 'annualCommitment':\n *    - If account.annualCommitment is true, apply 15% discount on plan subtotal before tax.\n * 4. Refactor the tangled switch-statement into clean, decoupled architecture.\n */\nfunction calculateMonthlyBill(account) {\n  if (!account || !account.plan) {\n    throw new TypeError('Account with valid plan required');\n  }\n\n  let planSubtotal = 0;\n  if (account.plan === 'basic') {\n    planSubtotal = 9.99;\n  } else if (account.plan === 'pro') {\n    planSubtotal = 24.99;\n  } else if (account.plan === 'enterprise') {\n    planSubtotal = 99.99;\n    const seats = account.seats || 10;\n    if (seats > 10) {\n      planSubtotal += (seats - 10) * 5.00;\n    }\n  } else {\n    throw new RangeError('Unknown subscription plan: ' + account.plan);\n  }\n\n  // TODO: Add support for 'family' plan and 'annualCommitment' discount\n  const discount = 0;\n  const taxableSubtotal = planSubtotal - discount;\n  const tax = account.taxExempt ? 0 : Math.round(taxableSubtotal * 0.08 * 100) / 100;\n  const total = Math.round((taxableSubtotal + tax) * 100) / 100;\n\n  return { plan: account.plan, planSubtotal, discount, tax, total };\n}\n\nmodule.exports = { calculateMonthlyBill };\n",
+        "score": 1,
         "divergedStep": null,
         "mistakes": [],
-        "lastCheck": null
+        "lastCheck": null,
+        "lastTestReport": null
       },
       "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-04/Q01_calculateMonthlyBill.js",
       "cursorUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T01-C03-04/Q01_calculateMonthlyBill.js",
@@ -275,10 +277,12 @@
       ],
       "state": {
         "userInput": "",
+        "userCode": "const EventEmitter = require('node:events');\n\n/**\n * Event-Driven Sliding Window Rate Limiter.\n * \n * Specifications:\n * - Extends EventEmitter.\n * - constructor({ maxRequests = 5, windowMs = 1000 })\n * - consume(key):\n *     Checks how many requests key has made within the trailing windowMs window.\n *     If requests < maxRequests:\n *       Record invocation timestamp, return { allowed: true, remaining: number, resetMs: number }.\n *     If requests >= maxRequests:\n *       Emit 'blocked' event with arguments (key, resetMs).\n *       Return { allowed: false, remaining: 0, resetMs: number }.\n * - reset(key): Clears recorded history for key.\n */\nclass RateLimiter extends EventEmitter {\n  constructor({ maxRequests = 5, windowMs = 1000 } = {}) {\n    super();\n    this.maxRequests = maxRequests;\n    this.windowMs = windowMs;\n    // TODO: Initialize data structures for tracking timestamps per key\n  }\n\n  consume(key) {\n    // TODO: Implement sliding window logic and emit 'blocked' on limit breach\n  }\n\n  reset(key) {\n    // TODO: Reset history for key\n  }\n}\n\nmodule.exports = { RateLimiter };\n",
         "score": null,
         "divergedStep": null,
         "mistakes": [],
-        "lastCheck": null
+        "lastCheck": null,
+        "lastTestReport": null
       },
       "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-04/Q02_RateLimiter.js",
       "cursorUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T01-C03-04/Q02_RateLimiter.js",
@@ -363,10 +367,12 @@
       ],
       "state": {
         "userInput": "",
+        "userCode": "function groupBy(collection, iteratee) {\n  // TODO: Group elements of collection into an object based on iteratee\n  return {};\n}\n\nmodule.exports = { groupBy };\n",
         "score": null,
         "divergedStep": null,
         "mistakes": [],
-        "lastCheck": null
+        "lastCheck": null,
+        "lastTestReport": null
       },
       "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-04/Q03_groupBy.js",
       "cursorUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T01-C03-04/Q03_groupBy.js",
@@ -451,10 +457,12 @@
       ],
       "state": {
         "userInput": "",
+        "userCode": "function debounce(fn, delay) {\n  let timer = null;\n\n  return function(...args) {\n    // TODO: Clear previous timer and schedule new invocation preserving 'this' and args\n  };\n}\n\nmodule.exports = { debounce };\n",
         "score": null,
         "divergedStep": null,
         "mistakes": [],
-        "lastCheck": null
+        "lastCheck": null,
+        "lastTestReport": null
       },
       "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-04/Q04_debounce.js",
       "cursorUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T01-C03-04/Q04_debounce.js",
@@ -545,10 +553,12 @@
       ],
       "state": {
         "userInput": "",
+        "userCode": "/**\n * Calculates final pricing for an e-commerce order.\n * \n * Invariants:\n * - order.items must be a non-empty array of items with price >= 0 and integer quantity > 0.\n * - Throw RangeError for invalid item price, quantity, or empty items array.\n * - Coupons:\n *     'PERCENT10': 10% off subtotal up to $20 max discount.\n *     'FIXED15': $15 off if subtotal >= $50, else $0.\n *     'FREESHIP': Free shipping.\n * - Shipping: $8 standard; free if post-discount subtotal >= $100, isVip is true, or coupon is 'FREESHIP'.\n * - Tax: 7% on taxable items (where item.taxable !== false) applied to discounted taxable subtotal.\n * - Return: { subtotal, discount, shipping, tax, total, currency: 'USD' } with 2 decimal precision.\n */\nfunction calculateOrderTotal(order) {\n  // TODO: Implement defensive validation and pricing pipeline\n}\n\nmodule.exports = { calculateOrderTotal };\n",
         "score": null,
         "divergedStep": null,
         "mistakes": [],
-        "lastCheck": null
+        "lastCheck": null,
+        "lastTestReport": null
       },
       "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-04/Q05_calculateOrderTotal.js",
       "cursorUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T01-C03-04/Q05_calculateOrderTotal.js",
@@ -561,8 +571,8 @@
     "maxScore": 5,
     "accuracyPct": 0,
     "mistakeCategories": [],
-    "divergedStepsSummary": "No diverged steps logged.",
+    "divergedStepsSummary": "",
     "attemptDate": null
   },
-  "localFilePath": "drills/data/PRG-T01-C03/DRL-PRG-T01-C03-04.json"
+  "localFilePath": "/Users/Joseph/Documents/antigravity/brave-borg/drills/data/PRG-T01-C03/DRL-PRG-T01-C03-04.json"
 }

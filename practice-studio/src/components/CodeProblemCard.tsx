@@ -165,6 +165,13 @@ export const CodeProblemCard: React.FC<CodeProblemCardProps> = ({
 
   const terminalCommand = `cd ${workspaceDir} && npm test`;
 
+  const vscodeFolderUrl =
+    problem.vscodeFolderUrl ||
+    (problem.vscodeUrl ? problem.vscodeUrl.substring(0, problem.vscodeUrl.lastIndexOf("/")) : "");
+  const cursorFolderUrl =
+    problem.cursorFolderUrl ||
+    (problem.cursorUrl ? problem.cursorUrl.substring(0, problem.cursorUrl.lastIndexOf("/")) : "");
+
   const handleCopyCmd = () => {
     navigator.clipboard.writeText(terminalCommand);
     setCopiedCmd(true);
@@ -436,23 +443,36 @@ export const CodeProblemCard: React.FC<CodeProblemCardProps> = ({
 
             {/* Hero Launch Buttons Row */}
             <div className="flex flex-wrap items-center gap-2.5">
-              {problem.vscodeUrl && (
+              {vscodeFolderUrl && (
                 <a
-                  href={problem.vscodeUrl}
+                  href={vscodeFolderUrl}
+                  title="Open entire drill workspace folder in VS Code (Terminal will be set to this folder automatically)"
                   className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs md:text-sm font-semibold transition-all shadow-md hover:shadow-blue-500/20 active:scale-[0.98]"
                 >
-                  <ExternalLink className="w-4 h-4" />
-                  Launch in VS Code
+                  <FolderOpen className="w-4 h-4" />
+                  Open Workspace in VS Code
                 </a>
               )}
 
-              {problem.cursorUrl && (
+              {problem.vscodeUrl && (
                 <a
-                  href={problem.cursorUrl}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs md:text-sm font-semibold transition-all shadow-md hover:shadow-cyan-500/20 active:scale-[0.98]"
+                  href={problem.vscodeUrl}
+                  title="Open this specific problem source file only"
+                  className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl bg-[#1c2438] hover:bg-[#25304a] text-blue-300 border border-blue-500/30 text-xs font-medium transition-colors"
                 >
-                  <ExternalLink className="w-4 h-4" />
-                  Launch in Cursor
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  Open File Only
+                </a>
+              )}
+
+              {cursorFolderUrl && (
+                <a
+                  href={cursorFolderUrl}
+                  title="Open entire drill workspace folder in Cursor"
+                  className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs md:text-sm font-semibold transition-all shadow-md hover:shadow-cyan-500/20 active:scale-[0.98]"
+                >
+                  <FolderOpen className="w-4 h-4" />
+                  Cursor
                 </a>
               )}
 
@@ -480,19 +500,29 @@ export const CodeProblemCard: React.FC<CodeProblemCardProps> = ({
             </div>
 
             {/* Quick Terminal Command Snippet */}
-            <div className="mt-3.5 pt-3 border-t border-[#1e2a44] flex flex-wrap items-center justify-between gap-2">
-              <div className="flex items-center gap-2 font-mono text-xs text-slate-300 overflow-x-auto">
-                <span className="text-emerald-400 font-bold select-none">$</span>
-                <code className="text-sky-300">{terminalCommand}</code>
+            <div className="mt-3.5 pt-3 border-t border-[#1e2a44] space-y-2">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-2 font-mono text-xs text-slate-300 overflow-x-auto">
+                  <span className="text-emerald-400 font-bold select-none">$</span>
+                  <code className="text-sky-300">{terminalCommand}</code>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleCopyCmd}
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-[#0f1422] hover:bg-[#1f2b45] text-slate-300 text-[11px] font-mono border border-[#232f48] transition-colors"
+                >
+                  {copiedCmd ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3 text-slate-400" />}
+                  {copiedCmd ? "Copied Command!" : "Copy Command"}
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={handleCopyCmd}
-                className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-[#0f1422] hover:bg-[#1f2b45] text-slate-300 text-[11px] font-mono border border-[#232f48] transition-colors"
-              >
-                {copiedCmd ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3 text-slate-400" />}
-                {copiedCmd ? "Copied Command!" : "Copy Command"}
-              </button>
+
+              <div className="text-[11px] text-slate-400 leading-relaxed bg-[#0b0f1a] p-2.5 rounded-xl border border-slate-800/80 flex items-start gap-2">
+                <span className="text-amber-400 font-bold text-xs shrink-0 mt-0.5">💡 แนะนำ:</span>
+                <div>
+                  หากกด <strong className="text-sky-300">Open Workspace in VS Code</strong> (เปิดทั้งโฟลเดอร์) เมื่อเปิด Terminal ใน VS Code (<kbd className="px-1 py-0.5 rounded bg-black/50 text-[10px] font-mono border border-slate-700">Ctrl+`</kbd>) สามารถพิมพ์ <code className="text-emerald-300 font-bold font-mono">npm test</code> ได้ทันทีโดยไม่ต้องพิมพ์ cd!
+                  (หากเปิด Terminal จากภายนอก ให้ก๊อปปี้คำสั่ง <code className="text-sky-300 font-mono">{terminalCommand}</code> ด้านบนไปรัน)
+                </div>
+              </div>
             </div>
           </div>
 
