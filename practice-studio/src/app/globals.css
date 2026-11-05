@@ -7,6 +7,18 @@
 :root {
   --background: #0d1017;
   --foreground: #e6edf3;
+  --card-bg: #151924;
+  --card-border: #2c354d;
+}
+
+html.light,
+body.light,
+.light {
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --card-bg: #ffffff;
+  --card-border: #e2e8f0;
+  color-scheme: light;
 }
 
 body {
@@ -14,6 +26,7 @@ body {
   background: var(--background);
   font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
   line-height: 1.6;
+  transition: background-color 0.2s ease, color 0.15s ease;
 }
 
 /* Click-to-Highlight dimming utility */
@@ -25,4 +38,345 @@ body {
 .katex-display {
   margin: 0.35em 0 !important;
   text-align: left !important;
+}
+
+/* ============================================================================
+   LIGHT MODE STYLING ENGINE (Non-breaking style-only layer)
+   ============================================================================ */
+
+/* 1. Page Background & Layout */
+html.light,
+html.light body,
+.light .min-h-screen.bg-\[\#0d1017\] {
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+}
+
+/* 2. Top Header Sticky Bar */
+.light header.bg-\[\#151924\]\/90 {
+  background-color: rgba(255, 255, 255, 0.92) !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.08), 0 2px 6px -1px rgba(15, 23, 42, 0.04) !important;
+}
+
+.light header .h-10.bg-\[\#2c354d\] {
+  background-color: #e2e8f0 !important;
+}
+
+/* 3. Primary Card Containers */
+.light article.bg-\[\#151924\],
+.light article.bg-\[\#121622\],
+.light section.bg-gradient-to-br {
+  background: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.06), 0 1px 2px -1px rgba(15, 23, 42, 0.04) !important;
+}
+
+/* 4. Controls, Inputs, Selects, and Secondary Bars */
+.light .bg-\[\#1d2333\],
+.light .bg-\[\#1b2234\],
+.light .bg-\[\#1b2233\],
+.light .bg-\[\#1a2133\],
+.light .bg-\[\#1e273b\],
+.light .bg-\[\#1f273b\],
+.light .bg-\[\#1f2638\],
+.light .bg-\[\#1e2538\],
+.light .bg-\[\#161c2b\],
+.light .bg-\[\#161d2c\],
+.light .bg-\[\#171d2c\],
+.light .bg-\[\#283550\] {
+  background-color: #f8fafc !important;
+}
+
+.light select.bg-\[\#1d2333\] {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+}
+
+.light select option {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+}
+
+.light select optgroup {
+  background-color: #f1f5f9 !important;
+  color: #475569 !important;
+}
+
+/* 5. Inner display boxes, math boxes, plain text CAS, solutions */
+.light .bg-\[\#10141f\],
+.light .bg-\[\#10131d\],
+.light .bg-\[\#0e121a\],
+.light .bg-\[\#0e121b\],
+.light .bg-\[\#0c1017\],
+.light .bg-\[\#0c0f17\],
+.light .bg-\[\#0a0d14\],
+.light .bg-\[\#141824\],
+.light .bg-\[\#141925\] {
+  background-color: #f8fafc !important;
+}
+
+.light .bg-\[\#131a29\] {
+  background-color: #f0f9ff !important;
+  border-color: #bae6fd !important;
+}
+
+.light .bg-\[\#171d2c\] {
+  background-color: #eef2ff !important;
+  border-color: #c7d2fe !important;
+}
+
+/* 6. Hint Callouts & Diagnostics */
+.light .bg-\[\#121826\],
+.light .bg-\[\#141b2b\] {
+  background-color: #fffbeb !important;
+  border-color: #fde68a !important;
+  color: #92400e !important;
+}
+
+.light .bg-emerald-950\/40 {
+  background-color: #ecfdf5 !important;
+  border-color: #a7f3d0 !important;
+  color: #065f46 !important;
+}
+
+.light .bg-amber-950\/40 {
+  background-color: #fffbeb !important;
+  border-color: #fde68a !important;
+  color: #92400e !important;
+}
+
+.light .bg-rose-950\/40 {
+  background-color: #fff1f2 !important;
+  border-color: #fecdd3 !important;
+  color: #9f1239 !important;
+}
+
+/* 7. Borders */
+.light .border-\[\#2c354d\],
+.light .border-\[\#263147\],
+.light .border-\[\#232a3d\],
+.light .border-\[\#2b3752\],
+.light .border-\[\#283550\],
+.light .border-\[\#222b40\],
+.light .border-\[\#222a3d\],
+.light .border-\[\#1f2638\],
+.light .border-\[\#232b3d\] {
+  border-color: #e2e8f0 !important;
+}
+
+.light .border-dashed.border-\[\#2c354d\] {
+  border-color: #cbd5e1 !important;
+}
+
+/* 8. Typography Overrides */
+.light h1.text-white,
+.light h2.text-white,
+.light h3.text-white {
+  color: #0f172a !important;
+}
+
+.light .text-slate-100 {
+  color: #0f172a !important;
+}
+
+.light .text-slate-200 {
+  color: #1e293b !important;
+}
+
+.light .text-slate-300 {
+  color: #334155 !important;
+}
+
+.light .text-slate-400 {
+  color: #64748b !important;
+}
+
+.light .text-slate-500 {
+  color: #64748b !important;
+}
+
+.light .text-indigo-200 {
+  color: #4338ca !important;
+}
+
+.light .text-indigo-300 {
+  color: #4f46e5 !important;
+}
+
+.light .text-sky-300 {
+  color: #0284c7 !important;
+}
+
+.light .text-sky-400 {
+  color: #0369a1 !important;
+}
+
+.light .text-amber-200,
+.light .text-amber-300 {
+  color: #b45309 !important;
+}
+
+.light .text-amber-400 {
+  color: #b45309 !important;
+}
+
+.light .text-emerald-200,
+.light .text-emerald-300 {
+  color: #047857 !important;
+}
+
+.light .text-rose-200,
+.light .text-rose-300 {
+  color: #b91c1c !important;
+}
+
+/* 9. StepRow Derivations */
+.light .grid.items-center.bg-\[\#1d2333\] {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+}
+
+.light .grid.items-center.bg-\[\#1d2333\]:hover {
+  border-color: #cbd5e1 !important;
+}
+
+.light .grid.items-center.bg-\[\#1d2333\].border-amber-500,
+.light .grid.items-center.bg-amber-500\/10 {
+  background-color: #fffbeb !important;
+  border-color: #f59e0b !important;
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2) !important;
+}
+
+.light .border-amber-400.text-amber-100 {
+  border-color: #d97706 !important;
+  color: #92400e !important;
+}
+
+.light .grid.items-center.\!border-rose-500,
+.light .grid.items-center.\!bg-rose-500\/10 {
+  background-color: #fef2f2 !important;
+  border-color: #ef4444 !important;
+}
+
+.light .bg-rose-500\/10.text-rose-300 {
+  background-color: #fff1f2 !important;
+  color: #b91c1c !important;
+  border-color: #fecdd3 !important;
+}
+
+.light .bg-rose-500\/10.text-rose-300:hover {
+  background-color: #fee2e2 !important;
+}
+
+/* 10. KaTeX Rendering in Light Mode */
+.light .katex,
+.light .katex-display {
+  color: #0f172a !important;
+}
+
+.light .katex .mord,
+.light .katex .mbin,
+.light .katex .mrel,
+.light .katex .mopen,
+.light .katex .mclose,
+.light .katex .mpunct,
+.light .katex .minner {
+  color: #0f172a !important;
+}
+
+/* 11. VS Code Block & Editor */
+.light .bg-\[\#1e1e1e\] {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+}
+
+.light .bg-\[\#252526\] {
+  background-color: #f6f8fa !important;
+  border-color: #e2e8f0 !important;
+}
+
+.light .border-\[\#2d2d2d\],
+.light .border-\[\#1f1f1f\],
+.light .border-x-\[\#282828\] {
+  border-color: #e2e8f0 !important;
+}
+
+.light td.text-\[\#858585\] {
+  color: #94a3b8 !important;
+}
+
+.light tr.group:hover {
+  background-color: #f1f5f9 !important;
+}
+
+.light .bg-\[\#264f78\]\/60 {
+  background-color: #e0f2fe !important;
+  border-color: #38bdf8 !important;
+}
+
+.light textarea.bg-\[\#1e1e1e\] {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+}
+
+/* VS Code Syntax Token Highlighting for Light Theme */
+.light .tok-plain { color: #24292f !important; }
+.light .tok-comment { color: #6e7781 !important; }
+.light .tok-string { color: #0a3069 !important; }
+.light .tok-keyword { color: #cf222e !important; }
+.light .tok-control { color: #cf222e !important; }
+.light .tok-builtin { color: #953800 !important; }
+.light .tok-method { color: #8250df !important; }
+.light .tok-number { color: #0550ae !important; }
+.light .tok-constant { color: #0550ae !important; }
+
+/* 12. SVG & Visual Renderer Text */
+.light .fill-slate-200 {
+  fill: #0f172a !important;
+  filter: none !important;
+}
+
+.light .fill-amber-400 {
+  fill: #b45309 !important;
+  filter: none !important;
+}
+
+.light .fill-slate-400 {
+  fill: #64748b !important;
+}
+
+.light polyline[stroke="#cbd5e1"] {
+  stroke: #475569 !important;
+}
+
+.light .bg-\[\#121724\]\/90 {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  border-color: #e2e8f0 !important;
+}
+
+/* 13. Theme Toggle Button Styling */
+.theme-toggle-btn {
+  background-color: #1d2333;
+  color: #cbd5e1;
+  border-color: #2c354d;
+}
+
+.theme-toggle-btn:hover {
+  background-color: #263147;
+  color: #ffffff;
+  border-color: #3b4766;
+}
+
+.light .theme-toggle-btn {
+  background-color: #ffffff !important;
+  color: #334155 !important;
+  border-color: #cbd5e1 !important;
+}
+
+.light .theme-toggle-btn:hover {
+  background-color: #f1f5f9 !important;
+  color: #0f172a !important;
+  border-color: #94a3b8 !important;
 }

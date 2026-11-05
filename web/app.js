@@ -661,6 +661,42 @@ async function handleSyncToNotion() {
   }
 }
 
+function initTheme() {
+  try {
+    const saved = localStorage.getItem("studio_theme");
+    if (saved === "light") {
+      document.documentElement.classList.add("light");
+      document.body.classList.add("light");
+      updateThemeBtnText("light");
+    } else {
+      updateThemeBtnText("dark");
+    }
+  } catch (e) {
+    // ignore
+  }
+}
+
+function toggleTheme() {
+  const isLight = document.documentElement.classList.toggle("light");
+  document.body.classList.toggle("light", isLight);
+  const theme = isLight ? "light" : "dark";
+  try {
+    localStorage.setItem("studio_theme", theme);
+  } catch (e) {
+    // ignore
+  }
+  updateThemeBtnText(theme);
+}
+
+function updateThemeBtnText(theme) {
+  const btn = document.getElementById("btnThemeToggle");
+  if (btn) {
+    btn.innerHTML = theme === "light" ? "🌙 Dark" : "☀️ Light";
+    btn.title = theme === "light" ? "Switch to Dark Mode" : "Switch to Light Mode";
+  }
+}
+
 window.addEventListener("DOMContentLoaded", () => {
+  initTheme();
   fetchDrillList();
 });
