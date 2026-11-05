@@ -15,7 +15,7 @@ To prevent context window bloat and instruction dilution, the Learning System ru
 
 | Task / Activity | Required Rule Modules | Key Invariants Covered |
 | :--- | :--- | :--- |
-| **All Tasks (Universal)** | `rules/00_core.md` | Scope protection, source of truth, user content preservation, English-only mandate |
+| **All Tasks (Universal)** | `rules/00_core.md` | Scope protection, source of truth, user content preservation, English-only mandate, Git hygiene & version control |
 | **Database, Relations & Schema** | `rules/00_core.md`<br>`rules/01_arch.md` | Topic ➔ Chapter ➔ Unit hierarchy, property completeness, `@page` mentions, Status vs. Mastery (0–4) |
 | **Curriculum Design & Content Authoring** | `rules/00_core.md`<br>`rules/02_pedagogy.md` | Reference structure, Active Recall toggles, 4-tier Practice Guides (no problem dumps), Feynman workspace |
 | **Mathematics & Physics (`MTH`, `PHY`)** | `rules/00_core.md`<br>`rules/03_stem.md` | Vertical LaTeX derivations (`\begin{aligned}`), KaTeX formatting, Parametric SVG Diagrams, native Notion file uploads |

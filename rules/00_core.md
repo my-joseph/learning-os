@@ -106,6 +106,12 @@ Do not skip analysis and immediately generate generic content.
 - **Notion as Presentation & Review Dashboard:** Notion serves as the primary human-facing presentation layer, active recall interface, and spaced retention ledger.
 - **Mandatory Synchronization:** All rule updates, additions, or refinements must be made in local Markdown files first, version-controlled with Git, and synchronized to the Notion Master Rule Hub and Sub-Pages via `python3 sync_rules_to_notion.py`. Manual edits on Notion rule pages that diverge from local files are strictly prohibited.
 
+### 9. Version Control & Git Hygiene Protocol
+- **Strict Secrets Invariant:** Never commit `.env`, private tokens, or credential files. Ensure `.gitignore` is always active and verified before staging.
+- **Milestone Checkpoint Commits:** Create clean, semantic Git commits (`feat:`, `fix:`, `refactor:`) immediately upon completing significant batches, tool upgrades, or modular updates.
+- **Isolated Branching for Experiments:** Whenever performing experimental UI overhauls, CSS styling changes, or architecture refactoring, AI must create an isolated branch (`experiment/<feature-name>`). Never perform high-risk UI/styling experiments directly on `main`.
+- **Remote Synchronization:** Push verified commits to GitHub (`origin main`) after completing confirmed milestones so the remote repository remains a mirror of the local-first source of truth.
+
 ---
 
 ## PART 4 — Final Governing Principle
