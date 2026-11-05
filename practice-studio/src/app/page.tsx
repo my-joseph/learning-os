@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { Plus, RefreshCw, Send, CheckCircle2, AlertCircle, RotateCcw, Sun, Moon } from "lucide-react";
+import { Plus, RefreshCw, Send, CheckCircle2, AlertCircle, RotateCcw } from "lucide-react";
 import {
   DrillDocument,
   DrillListItem,
@@ -27,56 +27,6 @@ export default function PracticeStudioPage() {
     text: string;
     type: "pass" | "warn" | "fail";
   } | null>(null);
-
-  // Light / Dark Theme State
-  const [theme, setTheme] = useState<"dark" | "light">("dark");
-
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem("studio_theme") as "dark" | "light" | null;
-      if (saved === "light" || saved === "dark") {
-        setTheme(saved);
-        if (saved === "light") {
-          document.documentElement.classList.add("light");
-        } else {
-          document.documentElement.classList.remove("light");
-        }
-      } else if (document.documentElement.classList.contains("light")) {
-        setTheme("light");
-      }
-    } catch {
-      // ignore
-    }
-  }, []);
-
-  const toggleTheme = useCallback(() => {
-    setTheme((prev) => {
-      const next = prev === "dark" ? "light" : "dark";
-      try {
-        localStorage.setItem("studio_theme", next);
-      } catch {
-        // ignore
-      }
-      if (next === "light") {
-        document.documentElement.classList.add("light");
-      } else {
-        document.documentElement.classList.remove("light");
-      }
-      return next;
-    });
-  }, []);
-
-  // Keyboard shortcut: Cmd/Ctrl + Shift + L to toggle theme
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.shiftKey && (e.key === "L" || e.key === "l")) {
-        e.preventDefault();
-        toggleTheme();
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [toggleTheme]);
 
   const saveTimerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -556,30 +506,10 @@ export default function PracticeStudioPage() {
                 type="button"
                 onClick={handleSyncToNotion}
                 disabled={isSyncing || !currentDrill}
-                className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold text-xs px-3.5 py-1.5 rounded-lg transition-colors shadow-sm"
+                className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-slate-950 font-bold text-xs px-3.5 py-1.5 rounded-lg transition-colors shadow-sm"
               >
-                {isSyncing ? <RefreshCw className="w-3.5 h-3.5 animate-spin text-white" /> : <Send className="w-3.5 h-3.5 text-white" />}
+                {isSyncing ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
                 Grade &amp; Sync to Notion
-              </button>
-
-              <button
-                type="button"
-                onClick={toggleTheme}
-                title={theme === "light" ? "Switch to Dark Mode (Cmd+Shift+L)" : "Switch to Light Mode (Cmd+Shift+L)"}
-                aria-label="Toggle Light or Dark Mode"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border font-semibold text-xs theme-toggle-btn transition-colors shadow-sm"
-              >
-                {theme === "light" ? (
-                  <>
-                    <Moon className="w-3.5 h-3.5 text-indigo-600" />
-                    <span>Dark</span>
-                  </>
-                ) : (
-                  <>
-                    <Sun className="w-3.5 h-3.5 text-amber-400" />
-                    <span>Light</span>
-                  </>
-                )}
               </button>
             </div>
           </div>

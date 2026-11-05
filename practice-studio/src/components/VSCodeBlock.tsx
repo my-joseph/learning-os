@@ -240,7 +240,7 @@ export const VSCodeBlock: React.FC<VSCodeBlockProps> = ({
           <button
             type="button"
             onClick={handleCopy}
-            className="vscode-copy-btn inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-white px-2.5 py-1 rounded bg-[#2d2d2d] hover:bg-[#383838] border border-[#3c3c3c] transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-white px-2 py-1 rounded bg-[#2d2d2d] hover:bg-[#383838] border border-[#3c3c3c] transition-colors"
           >
             {copied ? (
               <>
@@ -316,7 +316,6 @@ export const VSCodeBlock: React.FC<VSCodeBlockProps> = ({
                       return (
                         <span
                           key={tIdx}
-                          className={`tok-${tok.type}`}
                           style={{
                             color,
                             fontStyle: isItalic ? "italic" : "normal",
