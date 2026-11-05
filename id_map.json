@@ -321,7 +321,7 @@
   },
   "PHY-T01-C07": {
     "id": "4013818f-8ba0-80fb-8ffc-e8f44aaafa85",
-    "title": "Newton\u2019s Law of Gravitation"
+    "title": "Newton’s Law of Gravitation"
   },
   "PHY-T01-C06": {
     "id": "4013818f-8ba0-8086-8592-d4f937fe1dfe",
@@ -333,7 +333,7 @@
   },
   "PHY-T01-C04": {
     "id": "4013818f-8ba0-803d-af82-d9d6d2f7a0d3",
-    "title": "Forces and Newton\u2019s Laws of Motion"
+    "title": "Forces and Newton’s Laws of Motion"
   },
   "PHY-T01-C03": {
     "id": "4013818f-8ba0-8052-bbb1-c4697f073a26",
@@ -2273,17 +2273,17 @@
   },
   "R001": {
     "id": "40c3818f-8ba0-8016-a3ad-ec7ecdeece29",
-    "title": "MDN \u2013 HTML",
+    "title": "MDN – HTML",
     "url": "https://developer.mozilla.org/en-US/docs/Web/HTML"
   },
   "R002": {
     "id": "40c3818f-8ba0-808a-ad0b-ce226c9ef355",
-    "title": "MDN \u2013 CSS",
+    "title": "MDN – CSS",
     "url": "https://developer.mozilla.org/en-US/docs/Web/CSS"
   },
   "R003": {
     "id": "40c3818f-8ba0-8095-b57f-c3835853d700",
-    "title": "MDN \u2013 JavaScript Guide",
+    "title": "MDN – JavaScript Guide",
     "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide"
   },
   "R004": {
@@ -2293,12 +2293,12 @@
   },
   "R005": {
     "id": "40c3818f-8ba0-8018-92d3-c542a71e2e88",
-    "title": "React \u2013 Learn",
+    "title": "React – Learn",
     "url": "https://react.dev/learn"
   },
   "R006": {
     "id": "40c3818f-8ba0-8074-8859-dc396300b4f5",
-    "title": "React \u2013 API Reference",
+    "title": "React – API Reference",
     "url": "https://react.dev/reference/react"
   },
   "R007": {
@@ -2363,7 +2363,7 @@
   },
   "R019": {
     "id": "40c3818f-8ba0-80ba-9c1e-c6af37465b58",
-    "title": "MDN \u2013 HTTP Cookies",
+    "title": "MDN – HTTP Cookies",
     "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies"
   },
   "R020": {
@@ -2378,7 +2378,7 @@
   },
   "R022": {
     "id": "40c3818f-8ba0-8050-b2a6-f0060c76d7a8",
-    "title": "Testing Library \u2013 React",
+    "title": "Testing Library – React",
     "url": "https://testing-library.com/docs/react-testing-library/intro/"
   },
   "R023": {
@@ -2393,7 +2393,7 @@
   },
   "R025": {
     "id": "40c3818f-8ba0-8044-bb7b-c72dcfabc607",
-    "title": "MDN \u2013 WebSocket",
+    "title": "MDN – WebSocket",
     "url": "https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API"
   },
   "R026": {
@@ -2413,12 +2413,12 @@
   },
   "R029": {
     "id": "40c3818f-8ba0-800a-bc61-c36edbd5967c",
-    "title": "Git \u2013 Book",
+    "title": "Git – Book",
     "url": "https://git-scm.com/book/en/v2"
   },
   "R030": {
     "id": "40c3818f-8ba0-80d4-8096-cb54d64b2379",
-    "title": "HTTP \u2013 MDN",
+    "title": "HTTP – MDN",
     "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP"
   },
   "R031": {
@@ -2428,27 +2428,27 @@
   },
   "R032": {
     "id": "40c3818f-8ba0-80f7-9b26-da130e78f47b",
-    "title": "Web.dev \u2013 Learn Performance",
+    "title": "Web.dev – Learn Performance",
     "url": "https://web.dev/learn/performance/"
   },
   "R033": {
     "id": "40c3818f-8ba0-809e-afd3-c8f1708c7e7b",
-    "title": "Web.dev \u2013 Learn Accessibility",
+    "title": "Web.dev – Learn Accessibility",
     "url": "https://web.dev/learn/accessibility/"
   },
   "R034": {
     "id": "40c3818f-8ba0-80a2-a804-c622b7cc907e",
-    "title": "Prisma \u2013 Relations",
+    "title": "Prisma – Relations",
     "url": "https://www.prisma.io/docs/orm/prisma-schema/data-model/relations"
   },
   "R035": {
     "id": "40c3818f-8ba0-8093-bae8-d7291df6fd24",
-    "title": "OpenStax \u2013 Prealgebra 2e",
+    "title": "OpenStax – Prealgebra 2e",
     "url": "https://openstax.org/books/prealgebra-2e/pages/1-introduction"
   },
   "R036": {
     "id": "40c3818f-8ba0-8186-9904-d450c62170aa",
-    "title": "OpenStax \u2013 Algebra and Trigonometry 2e",
+    "title": "OpenStax – Algebra and Trigonometry 2e",
     "url": "https://openstax.org/books/algebra-and-trigonometry-2e/pages/preface"
   },
   "DRILLS_DB": {
@@ -2457,35 +2457,39 @@
   },
   "DRL-MTH-T02-C01-U01-01": {
     "id": "40d3818f-8ba0-81ea-bcee-d511a0d09ff7",
-    "title": "Complex Numbers \u2014 Verified Math Drill (5 Qs \u00b7 Mixed Exam Mode)"
+    "title": "Complex Numbers — Verified Math Drill (5 Qs · Mixed Exam Mode)"
   },
   "DRL-PRG-T03-C01-U01-01": {
     "id": "40d3818f-8ba0-8130-b9f9-eb31c185129f",
-    "title": "Next.js Project Structure \u2014 Architecture & Env Boundary Drill"
+    "title": "Next.js Project Structure — Architecture & Env Boundary Drill"
   },
   "DRL-MTH-T01-C12-02": {
     "id": "40d3818f-8ba0-8122-933b-f77ff6387f7e",
-    "title": "Math Models and Geometry \u2014 Verified Math Drill (5 Qs \u00b7 Mixed Exam Mode)"
+    "title": "Math Models and Geometry — Verified Math Drill (5 Qs · Mixed Exam Mode)"
   },
   "DRL-MTH-T01-C12-03": {
     "id": "40d3818f-8ba0-8195-9f5d-cbd86ffa3bc9",
-    "title": "Math Models and Geometry \u2014 Verified Math Drill (5 Qs \u00b7 Mixed Exam Mode)"
+    "title": "Math Models and Geometry — Verified Math Drill (5 Qs · Mixed Exam Mode)"
   },
   "DRL-PRG-T01-C01-01": {
     "id": "40e3818f-8ba0-817f-a932-f3336cbc0f05",
-    "title": "JavaScript Deep Dive \u2014 Verified Programming Drill (5 Qs \u00b7 Mixed Exam Mode)"
+    "title": "JavaScript Deep Dive — Verified Programming Drill (5 Qs · Mixed Exam Mode)"
   },
   "DRL-PRG-T01-C03-01": {
     "id": "40e3818f-8ba0-81d5-9725-fb1a8b3cd5ff",
-    "title": "Problem Solving & Utility Toolkit \u2014 Verified Programming Drill (3 Qs \u00b7 Mixed Exam Mode)"
+    "title": "Problem Solving & Utility Toolkit — Verified Programming Drill (3 Qs · Mixed Exam Mode)"
   },
   "LAB-PRG-T03-C01-01": {
     "id": "40e3818f-8ba0-81c8-b1fe-d2c7e5d2e259",
-    "title": "Full-Stack E-Commerce Core & Checkout Engine \u2014 Terminal Code Lab (75/100 pts)"
+    "title": "Full-Stack E-Commerce Core & Checkout Engine — Terminal Code Lab (75/100 pts)"
   },
   "R037": {
     "id": "40f3818f-8ba0-81af-b58f-d8dfa226389b",
-    "title": "OpenStax \u2013 Physics",
+    "title": "OpenStax – Physics",
     "url": "https://openstax.org/books/physics/pages/preface"
+  },
+  "DRL-PRG-T01-C01-03": {
+    "id": "40f3818f-8ba0-8167-a97f-c1bea918d3ca",
+    "title": "JavaScript Deep Dive — Verified Programming Drill (3 Qs · Mixed Exam Mode)"
   }
 }

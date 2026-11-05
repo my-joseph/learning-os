@@ -295,8 +295,8 @@
         }
       ],
       "state": {
-        "userInput": "",
-        "score": 0,
+        "userInput": "function debounce(fn, delay) {\n  let timer = null;\n\n  return function(...args) {\n    clearTimeout(timer);\n    timer = setTimeout(() => {\n      fn.apply(this, args);\n    }, delay);\n  };\n}\n\nmodule.exports = { debounce };",
+        "score": 1,
         "divergedStep": null,
         "mistakes": [
           "empty-input-handling"
@@ -322,5 +322,5 @@
     "divergedStepsSummary": "Q02 (Loss of 'this' Context in Higher-Order Functions, Failure to Clear Previous Timer in Debounce/Throttle, Cache Check Flaw with Falsy Values (0 / false / null)) | Q03 (Crash on Empty Array or Null Input)",
     "attemptDate": "2026-11-04"
   },
-  "localFilePath": "drills/data/PRG-T01-C03/DRL-PRG-T01-C03-01.json"
+  "localFilePath": "/Users/Joseph/Documents/antigravity/brave-borg/drills/data/PRG-T01-C03/DRL-PRG-T01-C03-01.json"
 }

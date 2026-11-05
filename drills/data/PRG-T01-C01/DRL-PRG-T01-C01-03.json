@@ -253,13 +253,13 @@
     }
   ],
   "sessionSummary": {
-    "practiceStatus": "Ready",
+    "practiceStatus": "Needs Retry",
     "score": 0,
     "maxScore": 3,
     "accuracyPct": 0,
     "mistakeCategories": [],
     "divergedStepsSummary": "No diverged steps logged.",
-    "attemptDate": null
+    "attemptDate": "2026-11-05"
   },
-  "localFilePath": "/Users/Joseph/Documents/antigravity/brave-borg/drills/data/PRG-T01-C01/DRL-PRG-T01-C01-03.json"
+  "localFilePath": "drills/data/PRG-T01-C01/DRL-PRG-T01-C01-03.json"
 }
