@@ -15,6 +15,10 @@ import {
   ExternalLink,
   Code2,
   FileCheck,
+  Copy,
+  Check,
+  FolderOpen,
+  Sparkles,
 } from "lucide-react";
 import { Problem, MistakeTag, CheckResult, TestRunReport } from "@/types/drill";
 import { NotionBadge } from "./NotionBadge";
@@ -57,7 +61,6 @@ export const CodeProblemCard: React.FC<CodeProblemCardProps> = ({
     problem.codeType === "implement" ||
     problem.codeType === "refactor";
 
-  const [activeTab, setActiveTab] = useState<"code" | "tests">("code");
   const [userCode, setUserCode] = useState<string>(
     problem.state?.userCode || problem.starterCode || problem.codeSnippet || ""
   );
@@ -67,6 +70,31 @@ export const CodeProblemCard: React.FC<CodeProblemCardProps> = ({
     problem.state?.lastTestReport || null
   );
   const [isReloadingFromDisk, setIsReloadingFromDisk] = useState(false);
+  const [copiedCmd, setCopiedCmd] = useState(false);
+  const [copiedPath, setCopiedPath] = useState(false);
+  const [showAiReview, setShowAiReview] = useState(false);
+
+  const workspacePath = problem.workspaceFile || "";
+  const workspaceDir = workspacePath.includes("/")
+    ? workspacePath.substring(0, workspacePath.lastIndexOf("/"))
+    : ".";
+  const filename = workspacePath.includes("/")
+    ? workspacePath.substring(workspacePath.lastIndexOf("/") + 1)
+    : workspacePath || "solution.js";
+
+  const terminalCommand = `cd ${workspaceDir} && npm test`;
+
+  const handleCopyCmd = () => {
+    navigator.clipboard.writeText(terminalCommand);
+    setCopiedCmd(true);
+    setTimeout(() => setCopiedCmd(false), 1500);
+  };
+
+  const handleCopyPath = () => {
+    navigator.clipboard.writeText(workspacePath);
+    setCopiedPath(true);
+    setTimeout(() => setCopiedPath(false), 1500);
+  };
 
   // Sync userCode when problem changes
   React.useEffect(() => {
@@ -228,166 +256,182 @@ export const CodeProblemCard: React.FC<CodeProblemCardProps> = ({
       </div>
 
       {/* ========================================================================= */}
-      {/* CASE A: KATA / FUNCTION IMPLEMENTATION WORKSPACE (Phase 2 Architecture)  */}
+      {/* CASE A: 100% LOCAL IDE MISSION CONTROL (VS Code & Cursor Execution)      */}
       {/* ========================================================================= */}
       {isKata ? (
-        <div className="mb-5">
-          {/* Real IDE Integration Bar (Cursor & VS Code Deep Links) */}
-          <div className="flex flex-wrap items-center justify-between gap-2 p-3 bg-[#161c2b] border border-[#263147] rounded-xl mb-3">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs font-semibold text-slate-300 flex items-center gap-1.5 font-mono">
-                <Code2 className="w-4 h-4 text-sky-400" />
-                Local Workspace:
-              </span>
+        <div className="mb-5 space-y-4">
+          {/* Mission Control Cockpit Banner */}
+          <div className="p-4 bg-gradient-to-r from-[#131b2e] via-[#161f36] to-[#121726] border border-[#263554] rounded-2xl shadow-lg">
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+              <div className="flex items-center gap-2">
+                <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-sky-500/10 text-sky-300 border border-sky-500/30 text-xs font-mono font-semibold">
+                  <Terminal className="w-3.5 h-3.5 text-sky-400" />
+                  100% Local IDE Execution Mandate
+                </span>
+                <span className="text-xs text-slate-400 font-sans hidden sm:inline">
+                  • Write and debug exclusively in your editor
+                </span>
+              </div>
 
-              {/* Open in Cursor Button */}
-              {problem.cursorUrl && (
-                <a
-                  href={problem.cursorUrl}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-[#1e273b] hover:bg-[#283550] text-sky-300 border border-sky-500/30 text-xs font-mono font-medium transition-colors"
+              {/* Path copy */}
+              {workspacePath && (
+                <button
+                  type="button"
+                  onClick={handleCopyPath}
+                  title="Click to copy file path"
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#0f1422] hover:bg-[#1a233a] border border-[#232f48] text-slate-300 text-[11px] font-mono transition-colors"
                 >
-                  <ExternalLink className="w-3 h-3" />
-                  Open in Cursor
-                </a>
+                  <FolderOpen className="w-3 h-3 text-sky-400" />
+                  <span className="truncate max-w-[200px] md:max-w-xs">{workspacePath}</span>
+                  {copiedPath ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3 text-slate-400" />}
+                </button>
               )}
+            </div>
 
-              {/* Open in VS Code Button */}
+            {/* Hero Launch Buttons Row */}
+            <div className="flex flex-wrap items-center gap-2.5">
               {problem.vscodeUrl && (
                 <a
                   href={problem.vscodeUrl}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-[#1e273b] hover:bg-[#283550] text-indigo-300 border border-indigo-500/30 text-xs font-mono font-medium transition-colors"
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs md:text-sm font-semibold transition-all shadow-md hover:shadow-blue-500/20 active:scale-[0.98]"
                 >
-                  <ExternalLink className="w-3 h-3" />
-                  Open in VS Code
+                  <ExternalLink className="w-4 h-4" />
+                  Launch in VS Code
                 </a>
               )}
 
-              {/* Reload Code from Disk Button */}
-              {problem.workspaceFile && (
-                <button
-                  type="button"
-                  onClick={handleReloadFromDisk}
-                  disabled={isReloadingFromDisk}
-                  title="Reload current code from local disk"
-                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-[#1e273b] hover:bg-[#283550] text-slate-300 border border-[#2b3752] text-xs font-medium transition-colors disabled:opacity-50"
+              {problem.cursorUrl && (
+                <a
+                  href={problem.cursorUrl}
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs md:text-sm font-semibold transition-all shadow-md hover:shadow-cyan-500/20 active:scale-[0.98]"
                 >
-                  <RefreshCw className={`w-3 h-3 ${isReloadingFromDisk ? "animate-spin" : ""}`} />
-                  Sync from disk
-                </button>
+                  <ExternalLink className="w-4 h-4" />
+                  Launch in Cursor
+                </a>
               )}
 
-              {/* Reset Code to Starter Button */}
+              <button
+                type="button"
+                onClick={handleReloadFromDisk}
+                disabled={isReloadingFromDisk}
+                title="Sync and read latest saved code from local disk"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-[#1c2438] hover:bg-[#25304a] text-slate-200 border border-[#2b3a5a] text-xs font-semibold transition-colors disabled:opacity-50"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 text-sky-400 ${isReloadingFromDisk ? "animate-spin" : ""}`} />
+                {isReloadingFromDisk ? "Reading Disk..." : "Sync from Disk"}
+              </button>
+
               <button
                 type="button"
                 onClick={handleResetCode}
                 disabled={isResettingCode}
-                title="Reset code block back to initial starter code"
-                className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-[#1e273b] hover:bg-rose-500/10 hover:text-rose-300 text-slate-400 border border-[#2b3752] text-xs font-medium transition-colors disabled:opacity-50"
+                title="Reset local file on disk back to starter code"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-[#1c2438] hover:bg-rose-500/10 hover:text-rose-300 text-slate-400 border border-[#2b3a5a] text-xs font-medium transition-colors disabled:opacity-50"
               >
-                <RotateCcw className={`w-3 h-3 ${isResettingCode ? "animate-spin" : ""}`} />
-                Reset to starter
+                <RotateCcw className={`w-3.5 h-3.5 ${isResettingCode ? "animate-spin" : ""}`} />
+                Reset Starter
               </button>
             </div>
 
-            {/* Relative path display */}
-            {problem.workspaceFile && (
-              <span className="text-[11px] text-slate-400 font-mono truncate max-w-xs">
-                {problem.workspaceFile}
-              </span>
-            )}
-          </div>
-
-          {/* Editor Tabs: Source Code vs Visible Test Suite */}
-          <div className="flex items-center gap-2 mb-2 border-b border-[#263147] pb-1">
-            <button
-              type="button"
-              onClick={() => setActiveTab("code")}
-              className={`px-3 py-1 rounded-t-lg text-xs font-mono font-semibold transition-colors flex items-center gap-1.5 ${
-                activeTab === "code"
-                  ? "bg-[#1e1e1e] text-white border-t border-x border-[#2d2d2d]"
-                  : "text-slate-400 hover:text-slate-200"
-              }`}
-            >
-              <Code2 className="w-3.5 h-3.5 text-sky-400" />
-              Source Code
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setActiveTab("tests")}
-              className={`px-3 py-1 rounded-t-lg text-xs font-mono font-semibold transition-colors flex items-center gap-1.5 ${
-                activeTab === "tests"
-                  ? "bg-[#1e1e1e] text-white border-t border-x border-[#2d2d2d]"
-                  : "text-slate-400 hover:text-slate-200"
-              }`}
-            >
-              <FileCheck className="w-3.5 h-3.5 text-emerald-400" />
-              Visible Test Cases ({problem.visibleTests?.length || 0})
-            </button>
-          </div>
-
-          {/* In-Browser Code Editor & Visible Tests Viewer */}
-          {activeTab === "code" ? (
-            <div className="bg-[#1e1e1e] border border-[#2d2d2d] rounded-xl overflow-hidden shadow-inner mb-4">
-              <div className="px-3 py-1.5 bg-[#252526] border-b border-[#1f1f1f] text-xs font-mono text-slate-400 flex items-center justify-between">
-                <span>In-Studio Editor (Syncs with local file or runs directly)</span>
-                <span className="text-[11px] text-slate-500">JavaScript / Node.js</span>
+            {/* Quick Terminal Command Snippet */}
+            <div className="mt-3.5 pt-3 border-t border-[#1e2a44] flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2 font-mono text-xs text-slate-300 overflow-x-auto">
+                <span className="text-emerald-400 font-bold select-none">$</span>
+                <code className="text-sky-300">{terminalCommand}</code>
               </div>
-              <textarea
-                value={userCode}
-                onChange={(e) => {
-                  setUserCode(e.target.value);
-                  onInputChange(e.target.value);
-                }}
-                rows={12}
-                spellCheck={false}
-                placeholder="// Write your solution function here..."
-                className="w-full p-4 bg-[#1e1e1e] text-slate-100 font-mono text-xs md:text-sm leading-relaxed focus:outline-none resize-y"
-              />
+              <button
+                type="button"
+                onClick={handleCopyCmd}
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-[#0f1422] hover:bg-[#1f2b45] text-slate-300 text-[11px] font-mono border border-[#232f48] transition-colors"
+              >
+                {copiedCmd ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3 text-slate-400" />}
+                {copiedCmd ? "Copied Command!" : "Copy Command"}
+              </button>
             </div>
-          ) : (
-            <div className="bg-[#1e1e1e] border border-[#2d2d2d] rounded-xl p-4 mb-4 font-mono text-xs md:text-sm text-slate-200 overflow-x-auto space-y-3">
-              <div className="text-xs text-slate-400 mb-2 font-sans">
-                These tests are executed to verify your implementation:
+          </div>
+
+          {/* Acceptance Criteria & Behavioral Requirements */}
+          {problem.visibleTests && problem.visibleTests.length > 0 && (
+            <div className="p-4 bg-[#111624] border border-[#222c42] rounded-2xl">
+              <div className="flex items-center justify-between mb-2.5 pb-2 border-b border-[#1b2336]">
+                <span className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5 font-mono">
+                  <FileCheck className="w-4 h-4 text-emerald-400" />
+                  Acceptance Criteria & Test Matrix ({problem.visibleTests.length} Scenarios)
+                </span>
+                <span className="text-[11px] text-slate-400 font-mono">
+                  Functional Behavioral Suite
+                </span>
               </div>
-              {problem.visibleTests?.map((t, i) => (
-                <div key={t.id || i} className="p-3 bg-[#141824] border border-[#222b40] rounded-lg">
-                  <div className="text-xs font-semibold text-emerald-400 mb-1">
-                    ✔ Test #{i + 1}: {t.name}
+              <div className="space-y-2">
+                {problem.visibleTests.map((t, idx) => (
+                  <div key={t.id || idx} className="p-2.5 bg-[#151b2c] border border-[#1f283e] rounded-xl flex items-start gap-2.5 text-xs">
+                    <span className="w-5 h-5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center justify-center font-mono font-bold text-[10px] shrink-0 mt-0.5">
+                      {idx + 1}
+                    </span>
+                    <div className="flex-1 font-mono">
+                      <div className="text-slate-200 font-semibold mb-1">{t.name}</div>
+                      <pre className="text-[11px] text-slate-400 overflow-x-auto whitespace-pre bg-black/30 p-2 rounded border border-white/5">
+                        <code>{t.testCode.trim()}</code>
+                      </pre>
+                    </div>
                   </div>
-                  <pre className="text-xs text-slate-300 overflow-x-auto whitespace-pre font-mono">
-                    <code>{t.testCode}</code>
-                  </pre>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           )}
 
-          {/* Run Test Suite Action Row */}
-          <div className="flex flex-wrap items-center gap-3 mb-4">
+          {/* Current Code on Disk Preview (Read-Only VSCodeBlock) */}
+          <div className="border border-[#222c42] rounded-2xl overflow-hidden bg-[#1e1e1e] shadow-md">
+            <div className="px-3.5 py-2 bg-[#252526] border-b border-[#1f1f1f] text-xs font-mono text-slate-300 flex items-center justify-between">
+              <span className="flex items-center gap-1.5">
+                <Code2 className="w-3.5 h-3.5 text-sky-400" />
+                Live Disk Preview: <strong className="text-white">{filename}</strong> (Read-Only)
+              </span>
+              <span className="text-[11px] text-slate-400">
+                Edit in VS Code ➔ Click &quot;Run Tests&quot; or &quot;Sync from Disk&quot;
+              </span>
+            </div>
+            <VSCodeBlock
+              code={userCode || problem.starterCode || "// Open file in VS Code to begin implementing..."}
+              language={problem.language || "javascript"}
+              filename={filename}
+            />
+          </div>
+
+          {/* Action Row */}
+          <div className="flex flex-wrap items-center gap-2.5 pt-1">
             <button
               type="button"
               onClick={handleRunTests}
               disabled={isRunningTests}
-              className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs md:text-sm font-semibold transition-colors shadow-sm flex items-center gap-2 disabled:opacity-50"
+              className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs md:text-sm font-semibold transition-all shadow-md hover:shadow-emerald-500/20 active:scale-[0.98] flex items-center gap-2 disabled:opacity-50"
             >
               {isRunningTests ? (
                 <>
                   <RefreshCw className="w-4 h-4 animate-spin" />
-                  Executing Test Suite in Node...
+                  Executing Local Tests...
                 </>
               ) : (
                 <>
                   <Play className="w-4 h-4 fill-white" />
-                  Run Test Suite
+                  Run Tests (Local Node)
                 </>
               )}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setShowAiReview(!showAiReview)}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#1c2438] hover:bg-indigo-600/20 text-indigo-300 border border-indigo-500/30 text-xs font-semibold transition-colors"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+              {showAiReview ? "Hide AI Review Guide" : "Request AI Architectural Review"}
             </button>
 
             <button
               type="button"
               onClick={() => setShowHint(!showHint)}
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[#1a2133] hover:bg-amber-500/10 text-slate-300 hover:text-amber-300 border border-[#2b3752] text-xs font-medium transition-colors"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#1c2438] hover:bg-amber-500/10 text-slate-300 hover:text-amber-300 border border-[#2b3a5a] text-xs font-medium transition-colors"
             >
               <Lightbulb className="w-3.5 h-3.5 text-amber-400" />
               Checkpoint Hint
@@ -396,12 +440,32 @@ export const CodeProblemCard: React.FC<CodeProblemCardProps> = ({
             <button
               type="button"
               onClick={() => setShowSolution(!showSolution)}
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[#1a2133] hover:bg-indigo-600/20 text-slate-300 hover:text-white border border-[#2b3752] text-xs font-medium transition-colors"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#1c2438] hover:bg-slate-700/50 text-slate-300 hover:text-white border border-[#2b3a5a] text-xs font-medium transition-colors"
             >
               {showSolution ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-              {showSolution ? "Hide Canonical Solution" : "Reveal Canonical Solution"}
+              {showSolution ? "Hide Reference" : "Reveal Canonical Reference"}
             </button>
           </div>
+
+          {/* AI Code Review Guided Prompt Box */}
+          {showAiReview && (
+            <div className="p-4 bg-gradient-to-br from-indigo-950/40 via-[#161a2b] to-[#121624] border border-indigo-500/40 rounded-2xl text-xs md:text-sm text-indigo-100 shadow-md">
+              <div className="flex items-center gap-2 font-semibold text-indigo-300 mb-2">
+                <Sparkles className="w-4 h-4 text-indigo-400" />
+                Senior AI Code Review & Architectural Guided Prompt
+              </div>
+              <p className="text-xs text-slate-300 leading-relaxed mb-3">
+                After your automated tests pass, copy this prompt and send it to your AI coding assistant (Antigravity, Claude, or Cursor) in VS Code to receive a comprehensive Pull Request Architecture Review:
+              </p>
+              <div className="p-3 bg-black/50 border border-indigo-500/20 rounded-xl font-mono text-xs text-indigo-200 select-all whitespace-pre-wrap leading-relaxed">
+                {`Please act as a Senior Tech Lead and perform a Pull Request Code Review on my implementation in file \`${workspacePath}\` for Unit ${problem.references?.[0] || "PRG"}.
+Review my code against:
+1. Separation of Concerns & Clean Code standards
+2. Boundary invariants, edge cases, and error handling
+3. Design Patterns & potential refactoring to make the architecture more maintainable and decoupled.`}
+              </div>
+            </div>
+          )}
 
           {/* Test Runner Results Panel */}
           {testReport && (
