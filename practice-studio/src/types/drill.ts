@@ -158,6 +158,22 @@ export interface ProblemState {
   userCode?: string;
 }
 
+export type EngineeringArchetype =
+  | "problem-solving"
+  | "debugging"
+  | "code-tracing"
+  | "refactoring"
+  | "project-based";
+
+export type EngineeringCompetency =
+  | "data-handling"
+  | "state-management"
+  | "component-design"
+  | "api-integration"
+  | "typescript"
+  | "architecture"
+  | "performance";
+
 export interface Problem {
   id: string;
   templateKey: string;
@@ -170,7 +186,20 @@ export interface Problem {
   plainText?: string;
   codeSnippet?: string;
   language?: string;
-  codeType?: "predict-output" | "find-bug" | "type-puzzle" | "kata" | "implement" | "refactor" | string;
+  codeType?:
+    | "problem-solving"
+    | "debugging"
+    | "code-tracing"
+    | "refactoring"
+    | "project-based"
+    | "kata"
+    | "implement"
+    | "refactor"
+    | "find-bug"
+    | "predict-output"
+    | string;
+  archetype?: EngineeringArchetype;
+  competencies?: EngineeringCompetency[];
   starterCode?: string;
   solutionCode?: string;
   entryPoint?: string;

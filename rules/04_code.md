@@ -26,20 +26,50 @@ Programming cannot be evaluated solely by mechanical test scripts like mathemati
 
 ---
 
-## PART 2 — Four Real-World Problem Archetypes
+## PART 2 — Five Real-World Problem Archetypes
 
-All programming exercises generated in the system must belong to one of these 4 real-world archetypes, eliminating synthetic toy snippets:
+All programming exercises generated in the system must belong to one of these 5 real-world archetypes, eliminating synthetic toy snippets:
 
 | Archetype | Cognitive Focus | Description & Learner Experience | Evaluation Method |
 | :--- | :--- | :--- | :--- |
-| **1. Business Requirements & Acceptance Criteria** | Feature Engineering & Invariants | AI presents a realistic business scenario (e.g. Tiered Subscription Billing, Cart Voucher Engine) with 4–6 clear Acceptance Criteria and boundary edge cases. | Automated Acceptance Suite (`npm test`) |
-| **2. Refactoring on Legacy Code under Test** | Code Craftsmanship & Clean Code | Learner is given a working but messy, tightly coupled 150–200 line codebase covered by passing tests. The mission is to refactor into clean patterns without breaking any test. | Regression Tests (Green) + AI Structural Review |
-| **3. Bug Triage & Root Cause Analysis** | Systemic Debugging & Tracing | Learner receives a multi-file project with a reproducing failing test (e.g. race condition, cache desynchronization, memory leak). Must isolate the root cause and fix it cleanly. | Failing Test turns Green + Root Cause Explanation |
-| **4. Multi-Milestone Architecture Labs** | System Architecture & Synthesis | Full-repository projects developed in `labs/` progressing through a 4-to-5 tier milestone sequence. | Milestone JUnit Runner (`npm run submit`) + Notion Sync |
+| **1. Problem Solving** | Logic & Algorithms with Clear I/O | Practical algorithms and business logic with well-defined inputs, outputs, and edge conditions (e.g. streaming log parser, nested data aggregators, rate limiters, token evaluators). | Automated Acceptance Suite (`npm test`) |
+| **2. Debugging** | Systemic Debugging & Root Cause Analysis | Analyzing broken, bug-ridden code, diagnosing root causes (e.g. race conditions, off-by-one, silent state mutations, unhandled promise rejections), and fixing them without modifying tests. | Failing Acceptance Tests turn Green |
+| **3. Code Tracing** | Mental Execution Model & Flow Prediction | Reading complex real-world code and predicting output, call stack order, event loop microtask execution, or scope closure resolution before running. | Deterministic Value Check + Flow Step Verification |
+| **4. Code Modification & Refactoring** | Clean Architecture & Safe Extensibility | Given a working but tangled legacy codebase covered by passing tests, add new business requirements and refactor into clean, decoupled design patterns without breaking existing tests. | Green Regression Suite + AI Architectural PR Review |
+| **5. Project-Based** | Systems Synthesis & Multi-Module Architecture | Building a complete, working production subsystem from scratch (e.g. In-memory Cache with TTL, Pub-Sub Event Bus, Cart & Tiered Voucher Engine, REST Client with Retry/Circuit Breaker). | Milestone Acceptance Tests + AI Senior Lead Architecture Review |
 
 ---
 
-## PART 3 — Problem Generation & Quality Protocol
+## PART 3 — Seven Core Engineering Competencies
+
+Every drill and lab in `PRG` must explicitly target and develop one or more of these 7 essential engineering competencies:
+
+1. **Data Handling:** Advanced filtering, sorting, indexing, searching, grouping, normalization, and immutable transformations of complex or nested datasets.
+2. **State Management:** Controlling application state, state machine transitions, immutable reducers, optimistic updates, and reactive store synchronization.
+3. **Component & Modular Design:** Designing reusable, composable, and decoupled modules, utilities, and headless interfaces with clear boundaries and dependency injection.
+4. **API Integration:** Connecting to and managing remote data, handling network latency, exponential backoff retries, cursor pagination, abort controllers, and error resilience.
+5. **TypeScript & Type Systems:** Designing bulletproof types, interfaces, generics, discriminated unions, utility types, and runtime schema validation (e.g. Zod).
+6. **Architecture & Separation of Concerns:** Domain-driven layering, Repository pattern, Clean/Hexagonal architecture, and single-responsibility decomposition.
+7. **Performance & Optimization:** Profiling and optimizing hot paths, memoization, debouncing/throttling, indexing, eliminating $O(N^2)$ bottlenecks, and memory leak prevention.
+
+---
+
+## PART 4 — Universal Six-Step Pedagogical Practice Loop
+
+All programming drills and labs enforce this systematic, professional engineering loop:
+
+$$\text{Think Before Coding} \longrightarrow \text{Hands-On Implementation} \longrightarrow \text{Automated Testing} \longrightarrow \text{Code Explanation} \longrightarrow \text{Refactor} \longrightarrow \text{Scale Difficulty}$$
+
+1. **Think Before Coding (Mental Model & Invariant Planning):** Before writing a single line of code, review the business context, input/output contracts, and potential boundary traps. Sketch the mental model, data transformations, and state transitions.
+2. **Hands-On Implementation (Local IDE Execution):** Launch VS Code or Cursor directly via one-click deep links. Implement the logic using real IDE tools, linting, type systems, and autocomplete.
+3. **Automated Testing (Acceptance Testing):** Run local test suites in the terminal (`npm test`). Iterate until all visible scenarios and edge-case acceptance criteria pass with 100% green.
+4. **Code Explanation (AI Senior Lead PR Review):** Articulate why the solution works, explain algorithmic trade-offs, and request an AI Senior Tech Lead architectural review focusing on the 7 core engineering competencies.
+5. **Refactor (Clean Code & Decoupling):** Eliminate code smells, extract single-responsibility helpers, improve naming, optimize hot paths, and refine type annotations while keeping tests green.
+6. **Scale Difficulty (Edge Scaling & Extension):** Progress to higher difficulty tiers, stricter performance constraints, or additional real-world business constraints.
+
+---
+
+## PART 5 — Problem Generation & Quality Protocol
 
 ### 3. Sources of Truth & Context Inspection
 - **Mandatory Context Inspection:** Before authoring any problem, AI must inspect the parent Notion Unit Page for (a) Core Concepts, (b) Common Pitfalls & Traps, and (c) Learning Objectives, cross-referenced with `id_map.json`.
@@ -48,7 +78,7 @@ All programming exercises generated in the system must belong to one of these 4 
 
 ---
 
-## PART 4 — Universal Five-Tier Milestone Taxonomy (Labs)
+## PART 6 — Universal Five-Tier Milestone Taxonomy (Labs)
 
 Every multi-milestone project lab adheres to a standardized milestone sequence:
 - **M1 — Contracts & Schemas:** Domain models, TypeScript interfaces, DTOs, Zod schemas, invariant validators, configuration parsers.
@@ -59,7 +89,7 @@ Every multi-milestone project lab adheres to a standardized milestone sequence:
 
 ---
 
-## PART 5 — Eight-Step AI Authoring Pipeline
+## PART 7 — Eight-Step AI Authoring Pipeline
 
 AI must execute the following pipeline in strict sequential order:
 1. **Spec Definition:** Create `lab.config.json` defining metadata, dependencies, and milestone point allocations.
@@ -73,7 +103,7 @@ AI must execute the following pipeline in strict sequential order:
 
 ---
 
-## PART 6 — Terminal Telemetry Engine (`submit_lab.py`)
+## PART 8 — Terminal Telemetry Engine (`submit_lab.py`)
 
 - **Standard Terminal Lifecycle:** Developer iterates locally with `npm test` (or `npm run test:watch`). Once milestones are implemented, developer runs `npm run submit`.
 - **Runner-Agnostic JUnit XML Standard:** Telemetry engine parses standard JUnit XML (`--test-reporter=junit`), ensuring universal compatibility across Node, Vitest, Jest, Pytest, and Go.
@@ -81,7 +111,7 @@ AI must execute the following pipeline in strict sequential order:
 
 ---
 
-## PART 7 — Interactive Studio & Storage Architecture
+## PART 9 — Interactive Studio & Storage Architecture
 
 1. **Clean Architectural Separation:**
    - **JSON Data Layer (`drills/data/<UNIT>/`):** Pure verified problem specs, Acceptance Criteria, and session states without HTML pollution.

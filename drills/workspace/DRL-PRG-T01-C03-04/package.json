@@ -1,0 +1,16 @@
+{
+  "name": "drl-prg-t01-c03-04-workspace",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Local IDE Workspace for DRL-PRG-T01-C03-04 (PRG-T01-C03 - Problem Solving & Utility Toolkit)",
+  "scripts": {
+    "test": "node --test *.test.js",
+    "test:watch": "node --test --watch *.test.js",
+    "test:q01": "node --test Q01_calculateMonthlyBill.test.js",
+    "test:q02": "node --test Q02_RateLimiter.test.js",
+    "test:q03": "node --test Q03_groupBy.test.js",
+    "test:q04": "node --test Q04_debounce.test.js",
+    "test:q05": "node --test Q05_calculateOrderTotal.test.js"
+  },
+  "devDependencies": {}
+}

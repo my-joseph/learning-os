@@ -131,19 +131,27 @@ def verify_problem(p, id_map=None):
     snippet = p.get("codeSnippet", "")
     spec = p.get("answerSpec", {})
     stype = spec.get("type")
+    ctype = p.get("codeType", "")
+    archetype = p.get("archetype", "")
 
-    if p.get("codeType") in ("kata", "implement", "refactor"):
+    is_suite = (
+        ctype in ("kata", "implement", "refactor", "problem-solving", "debugging", "refactoring", "project-based")
+        or archetype in ("problem-solving", "debugging", "refactoring", "project-based")
+        or bool(p.get("visibleTests"))
+    )
+
+    if is_suite:
         sol = p.get("solutionCode") or v.get("solutionCode")
         if not sol:
-            _fail(pid, "Kata problem must provide solutionCode for pre-execution verification")
+            _fail(pid, "Programming suite problem must provide solutionCode for pre-execution verification")
 
         from code_engine.test_runner import run_tests
         report = run_tests(sol, p.get("visibleTests", []), p.get("hiddenTests", []))
         if not report.get("allPassed"):
             _fail(pid, f"Canonical solution failed test suite: {report}")
-        return  # Kata verification complete
+        return  # Suite verification complete
 
-    elif stype in ("code_output", "predict_output") or p.get("codeType") == "predict-output":
+    elif stype in ("code_output", "predict_output") or ctype == "predict-output" or archetype == "code-tracing":
         if not snippet:
             _fail(pid, "predict-output problem must provide codeSnippet for execution verification")
 

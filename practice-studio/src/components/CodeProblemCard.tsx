@@ -20,10 +20,66 @@ import {
   FolderOpen,
   Sparkles,
 } from "lucide-react";
-import { Problem, MistakeTag, CheckResult, TestRunReport } from "@/types/drill";
+import {
+  Problem,
+  MistakeTag,
+  CheckResult,
+  TestRunReport,
+  EngineeringArchetype,
+  EngineeringCompetency,
+} from "@/types/drill";
 import { NotionBadge } from "./NotionBadge";
 import { VSCodeBlock } from "./VSCodeBlock";
 import { FormattedText } from "./FormattedText";
+
+const ARCHETYPE_CONFIG: Record<
+  EngineeringArchetype,
+  { label: string; thaiLabel: string; badgeClass: string; icon: string }
+> = {
+  "problem-solving": {
+    label: "Problem Solving",
+    thaiLabel: "ฝึกแก้ปัญหาด้วย Logic & Algorithm",
+    badgeClass: "bg-emerald-950/80 text-emerald-300 border-emerald-600/40",
+    icon: "⚡",
+  },
+  "debugging": {
+    label: "Debugging",
+    thaiLabel: "ฝึกวิเคราะห์และแก้ไข Bug",
+    badgeClass: "bg-rose-950/80 text-rose-300 border-rose-600/40",
+    icon: "🐛",
+  },
+  "code-tracing": {
+    label: "Code Tracing",
+    thaiLabel: "ฝึกอ่านโค้ด & คาดการณ์ผลลัพธ์",
+    badgeClass: "bg-amber-950/80 text-amber-300 border-amber-600/40",
+    icon: "🔍",
+  },
+  "refactoring": {
+    label: "Refactoring",
+    thaiLabel: "ฝึกปรับปรุงโครงสร้าง & ขยายความสามารถ",
+    badgeClass: "bg-purple-950/80 text-purple-300 border-purple-600/40",
+    icon: "🛠️",
+  },
+  "project-based": {
+    label: "Project-Based",
+    thaiLabel: "ฝึกสร้างระบบจริงตาม Requirement",
+    badgeClass: "bg-blue-950/80 text-blue-300 border-blue-600/40",
+    icon: "🏗️",
+  },
+};
+
+const COMPETENCY_CONFIG: Record<
+  EngineeringCompetency,
+  { label: string; color: string }
+> = {
+  "data-handling": { label: "Data Handling", color: "bg-cyan-500/10 text-cyan-300 border-cyan-500/30" },
+  "state-management": { label: "State Management", color: "bg-indigo-500/10 text-indigo-300 border-indigo-500/30" },
+  "component-design": { label: "Component Design", color: "bg-teal-500/10 text-teal-300 border-teal-500/30" },
+  "api-integration": { label: "API Integration", color: "bg-sky-500/10 text-sky-300 border-sky-500/30" },
+  "typescript": { label: "TypeScript", color: "bg-blue-500/10 text-blue-300 border-blue-500/30" },
+  "architecture": { label: "Architecture", color: "bg-violet-500/10 text-violet-300 border-violet-500/30" },
+  "performance": { label: "Performance", color: "bg-amber-500/10 text-amber-300 border-amber-500/30" },
+};
 
 interface CodeProblemCardProps {
   problem: Problem;
@@ -54,12 +110,37 @@ export const CodeProblemCard: React.FC<CodeProblemCardProps> = ({
 }) => {
   const [showHint, setShowHint] = useState(false);
   const [showSolution, setShowSolution] = useState(false);
+  const [showPedagogyLoop, setShowPedagogyLoop] = useState(false);
 
-  // Kata / Function implementation state
-  const isKata =
+  // Archetype & Competency mapping
+  const effectiveArchetype: EngineeringArchetype =
+    problem.archetype ||
+    (problem.codeType === "debugging" || problem.codeType === "find-bug"
+      ? "debugging"
+      : problem.codeType === "code-tracing" || problem.codeType === "predict-output"
+      ? "code-tracing"
+      : problem.codeType === "refactoring" || problem.codeType === "refactor"
+      ? "refactoring"
+      : problem.codeType === "project-based"
+      ? "project-based"
+      : "problem-solving");
+
+  const archetypeMeta =
+    ARCHETYPE_CONFIG[effectiveArchetype] || ARCHETYPE_CONFIG["problem-solving"];
+
+  // In Local IDE Mandate: Any problem with a workspace file, tests, or coding archetype uses IDE Cockpit
+  const isIdeExecution =
+    Boolean(problem.workspaceFile) ||
+    Boolean(problem.visibleTests && problem.visibleTests.length > 0) ||
     problem.codeType === "kata" ||
     problem.codeType === "implement" ||
-    problem.codeType === "refactor";
+    problem.codeType === "refactor" ||
+    effectiveArchetype === "problem-solving" ||
+    effectiveArchetype === "debugging" ||
+    effectiveArchetype === "refactoring" ||
+    effectiveArchetype === "project-based";
+
+  const isKata = isIdeExecution;
 
   const [userCode, setUserCode] = useState<string>(
     problem.state?.userCode || problem.starterCode || problem.codeSnippet || ""
@@ -212,17 +293,31 @@ export const CodeProblemCard: React.FC<CodeProblemCardProps> = ({
         <div className="flex flex-wrap items-center gap-2">
           <span className="font-bold text-base text-indigo-300 flex items-center gap-2">
             <span
-              className={`px-2 py-0.5 rounded-md text-xs font-mono font-semibold uppercase ${
-                isKata
-                  ? "bg-emerald-950/70 text-emerald-300 border border-emerald-700/40"
-                  : "bg-indigo-950/70 text-indigo-300 border border-indigo-700/40"
-              }`}
+              className={`px-2.5 py-0.5 rounded-md text-xs font-mono font-semibold uppercase border flex items-center gap-1.5 ${archetypeMeta.badgeClass}`}
+              title={archetypeMeta.thaiLabel}
             >
-              {isKata ? "KATA" : "CODE"}
+              <span>{archetypeMeta.icon}</span>
+              <span>{archetypeMeta.label}</span>
             </span>
             Problem {index + 1}{" "}
             <span className="text-slate-400 font-normal">({problem.id})</span>
           </span>
+
+          {problem.competencies && problem.competencies.length > 0 && (
+            <div className="flex flex-wrap items-center gap-1.5 ml-1">
+              {problem.competencies.map((comp) => {
+                const cfg = COMPETENCY_CONFIG[comp] || { label: comp, color: "bg-slate-800 text-slate-300 border-slate-700" };
+                return (
+                  <span
+                    key={comp}
+                    className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${cfg.color}`}
+                  >
+                    {cfg.label}
+                  </span>
+                );
+              })}
+            </div>
+          )}
 
           {problem.context && (
             <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 font-mono">
@@ -248,6 +343,57 @@ export const CodeProblemCard: React.FC<CodeProblemCardProps> = ({
             Level {problem.level} · {problem.levelLabel}
           </span>
         </div>
+      </div>
+
+      {/* 6-Step Pedagogical Practice Loop Stepper */}
+      <div className="mb-4">
+        <button
+          type="button"
+          onClick={() => setShowPedagogyLoop(!showPedagogyLoop)}
+          className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-indigo-300 transition-colors py-1 px-2.5 rounded-lg hover:bg-slate-800/40 border border-transparent hover:border-slate-800"
+        >
+          <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+          <span className="font-semibold text-slate-300">หลักการฝึก 6 ขั้นตอน:</span>
+          <span className="font-mono text-slate-400 hidden sm:inline">
+            คิดเองก่อนเขียน ➔ ลงมือทำ ➔ ทดสอบ ➔ อธิบายโค้ด ➔ Refactor ➔ เพิ่มความยาก
+          </span>
+          {showPedagogyLoop ? (
+            <ChevronUp className="w-3 h-3 text-slate-400" />
+          ) : (
+            <ChevronDown className="w-3 h-3 text-slate-400" />
+          )}
+        </button>
+
+        {showPedagogyLoop && (
+          <div className="mt-2.5 p-3.5 bg-[#0e1320] border border-[#1f293d] rounded-xl text-xs space-y-2 animate-in fade-in duration-200">
+            <div className="grid grid-cols-1 md:grid-cols-6 gap-2">
+              <div className="p-2.5 rounded-lg bg-[#141b2c] border border-sky-900/40">
+                <div className="font-bold text-sky-300 mb-1 text-[11px]">1. คิดเองก่อนเขียน</div>
+                <div className="text-[11px] text-slate-400 leading-tight">ทำความเข้าใจ I/O, invariants และวาง mental model ก่อนพิมพ์โค้ด</div>
+              </div>
+              <div className="p-2.5 rounded-lg bg-[#141b2c] border border-emerald-900/40">
+                <div className="font-bold text-emerald-300 mb-1 text-[11px]">2. ลงมือทำ</div>
+                <div className="text-[11px] text-slate-400 leading-tight">เปิดไฟล์ใน VS Code / Cursor แล้วเขียนโค้ดด้วย dev tools เต็มที่</div>
+              </div>
+              <div className="p-2.5 rounded-lg bg-[#141b2c] border border-amber-900/40">
+                <div className="font-bold text-amber-300 mb-1 text-[11px]">3. ทดสอบ</div>
+                <div className="text-[11px] text-slate-400 leading-tight">รัน local tests ใน terminal ($ npm test) จนผ่านครบ 100%</div>
+              </div>
+              <div className="p-2.5 rounded-lg bg-[#141b2c] border border-indigo-900/40">
+                <div className="font-bold text-indigo-300 mb-1 text-[11px]">4. อธิบายโค้ด</div>
+                <div className="text-[11px] text-slate-400 leading-tight">ขอ AI Senior Tech Lead ตรวจ Architecture & Code Review ใน workspace</div>
+              </div>
+              <div className="p-2.5 rounded-lg bg-[#141b2c] border border-purple-900/40">
+                <div className="font-bold text-purple-300 mb-1 text-[11px]">5. Refactor</div>
+                <div className="text-[11px] text-slate-400 leading-tight">แยกโมดูล, Clean Code, ลด coupling โดยเทสทั้งหมดยังต้องเขียว</div>
+              </div>
+              <div className="p-2.5 rounded-lg bg-[#141b2c] border border-rose-900/40">
+                <div className="font-bold text-rose-300 mb-1 text-[11px]">6. เพิ่มความยาก</div>
+                <div className="text-[11px] text-slate-400 leading-tight">ขยาย scale ข้อมูล, ทดสอบ stress edge cases และ constraints ที่เข้มข้นขึ้น</div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Problem Prompt */}
@@ -452,17 +598,22 @@ export const CodeProblemCard: React.FC<CodeProblemCardProps> = ({
             <div className="p-4 bg-gradient-to-br from-indigo-950/40 via-[#161a2b] to-[#121624] border border-indigo-500/40 rounded-2xl text-xs md:text-sm text-indigo-100 shadow-md">
               <div className="flex items-center gap-2 font-semibold text-indigo-300 mb-2">
                 <Sparkles className="w-4 h-4 text-indigo-400" />
-                Senior AI Code Review & Architectural Guided Prompt
+                Senior AI Code Review &amp; Architectural Guided Prompt
               </div>
               <p className="text-xs text-slate-300 leading-relaxed mb-3">
                 After your automated tests pass, copy this prompt and send it to your AI coding assistant (Antigravity, Claude, or Cursor) in VS Code to receive a comprehensive Pull Request Architecture Review:
               </p>
               <div className="p-3 bg-black/50 border border-indigo-500/20 rounded-xl font-mono text-xs text-indigo-200 select-all whitespace-pre-wrap leading-relaxed">
-                {`Please act as a Senior Tech Lead and perform a Pull Request Code Review on my implementation in file \`${workspacePath}\` for Unit ${problem.references?.[0] || "PRG"}.
-Review my code against:
-1. Separation of Concerns & Clean Code standards
-2. Boundary invariants, edge cases, and error handling
-3. Design Patterns & potential refactoring to make the architecture more maintainable and decoupled.`}
+{`Please act as a Senior Tech Lead and conduct an Architecture & Clean Code Review on my implementation in file \`${workspacePath}\` (${archetypeMeta.label}).
+
+Target Competencies: ${problem.competencies && problem.competencies.length > 0 ? problem.competencies.join(", ") : "Architecture, Clean Code, Performance"}
+
+Please evaluate my code against:
+1. Architecture & Separation of Concerns (SOLID, clean module boundaries, decoupling)
+2. State Management & Data Handling invariants (edge condition handling, immutability)
+3. TypeScript / JSDoc typing precision and contract integrity
+4. Performance & Hot Paths (algorithmic time/space complexity, avoiding unnecessary allocations)
+5. Clean Code & Refactoring trade-offs (how to make this more production-grade)`}
               </div>
             </div>
           )}
