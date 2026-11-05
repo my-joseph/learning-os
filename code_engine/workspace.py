@@ -106,6 +106,7 @@ def materialize_drill_workspace(drill_doc: dict, root_dir: str = ".") -> dict:
     test_scripts = {
         "test": "node --test *.test.js",
         "test:watch": "node --test --watch *.test.js",
+        "review": "python3 ../../../code_engine/review.py",
     }
     readme_problems = []
 
@@ -240,6 +241,10 @@ const {{ {entry_name} }} = require('./{src_filename}');
         "",
         "# Run tests for a specific question",
         "npm run test:q01",
+        "",
+        "# Request Senior Tech Lead AI PR Review (packages code & copies prompt to clipboard)",
+        "npm run review",
+        "npm run review q01",
         "```",
         "",
         "## Exercises in this Workspace",

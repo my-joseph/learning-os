@@ -625,15 +625,36 @@ export const CodeProblemCard: React.FC<CodeProblemCardProps> = ({
 
           {/* AI Code Review Guided Prompt Box */}
           {showAiReview && (
-            <div className="p-4 bg-gradient-to-br from-indigo-950/40 via-[#161a2b] to-[#121624] border border-indigo-500/40 rounded-2xl text-xs md:text-sm text-indigo-100 shadow-md">
-              <div className="flex items-center gap-2 font-semibold text-indigo-300 mb-2">
+            <div className="p-4 bg-gradient-to-br from-indigo-950/40 via-[#161a2b] to-[#121624] border border-indigo-500/40 rounded-2xl text-xs md:text-sm text-indigo-100 shadow-md space-y-3">
+              <div className="flex items-center gap-2 font-semibold text-indigo-300">
                 <Sparkles className="w-4 h-4 text-indigo-400" />
-                Senior AI Code Review &amp; Architectural Guided Prompt
+                Senior Tech Lead AI Code Review (Local Terminal &amp; Editor Bridge)
               </div>
-              <p className="text-xs text-slate-300 leading-relaxed mb-3">
-                After your automated tests pass, copy this prompt and send it to your AI coding assistant (Antigravity, Claude, or Cursor) in VS Code to receive a comprehensive Pull Request Architecture Review:
-              </p>
-              <div className="p-3 bg-black/50 border border-indigo-500/20 rounded-xl font-mono text-xs text-indigo-200 select-all whitespace-pre-wrap leading-relaxed">
+              <div className="p-3 bg-[#0a0e1c] border border-indigo-500/30 rounded-xl space-y-2">
+                <div className="text-xs text-slate-300">
+                  <strong className="text-emerald-300">วิธีที่ 1 (อัตโนมัติ รวดเร็วที่สุด):</strong> รันคำสั่งนี้ใน VS Code Terminal (<kbd className="px-1 py-0.5 rounded bg-black/60 text-[10px] font-mono border border-slate-700">Ctrl+`</kbd>):
+                </div>
+                <div className="flex items-center justify-between gap-2 p-2 bg-black/60 rounded-lg border border-indigo-500/20 font-mono text-xs">
+                  <span className="text-emerald-400 font-bold select-none">$</span>
+                  <code className="text-sky-300 font-bold">npm run review {problem.id.toLowerCase()}</code>
+                  <button
+                    type="button"
+                    onClick={() => navigator.clipboard.writeText(`npm run review ${problem.id.toLowerCase()}`)}
+                    className="px-2.5 py-1 rounded bg-indigo-950 hover:bg-indigo-900 text-indigo-300 text-[11px] border border-indigo-600/30 transition-colors"
+                  >
+                    Copy
+                  </button>
+                </div>
+                <p className="text-[11px] text-slate-400 leading-relaxed">
+                  ⚡ ระบบจะรวบรวมโค้ดที่คุณเขียน, ผลการรันเทส, และเกณฑ์สถาปัตยกรรม 5 มิติ สร้างไฟล์ <code className="text-indigo-300">PR_REVIEW_REQUEST.md</code> และ <strong>copy ลง Clipboard อัตโนมัติ</strong> จากนั้นเพียงกด <kbd className="px-1 py-0.5 rounded bg-black/60 text-[10px] font-mono border border-slate-700">Cmd+V</kbd> ในช่องแชท AI (Antigravity / Cursor) เพื่อรับการรีวิวได้ทันที!
+                </p>
+              </div>
+
+              <div className="pt-2">
+                <div className="text-xs text-slate-400 mb-1.5 font-medium">
+                  วิธีที่ 2 (ก๊อปปี้ Prompt ไปวางเองโดยตรง):
+                </div>
+                <div className="p-3 bg-black/50 border border-indigo-500/20 rounded-xl font-mono text-[11px] text-indigo-200 select-all whitespace-pre-wrap leading-relaxed max-h-48 overflow-y-auto">
 {`Please act as a Senior Tech Lead and conduct an Architecture & Clean Code Review on my implementation in file \`${workspacePath}\` (${archetypeMeta.label}).
 
 Target Competencies: ${problem.competencies && problem.competencies.length > 0 ? problem.competencies.join(", ") : "Architecture, Clean Code, Performance"}
@@ -644,6 +665,7 @@ Please evaluate my code against:
 3. TypeScript / JSDoc typing precision and contract integrity
 4. Performance & Hot Paths (algorithmic time/space complexity, avoiding unnecessary allocations)
 5. Clean Code & Refactoring trade-offs (how to make this more production-grade)`}
+                </div>
               </div>
             </div>
           )}

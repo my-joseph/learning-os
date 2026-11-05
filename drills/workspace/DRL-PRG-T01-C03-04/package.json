@@ -6,6 +6,7 @@
   "scripts": {
     "test": "node --test *.test.js",
     "test:watch": "node --test --watch *.test.js",
+    "review": "python3 ../../../code_engine/review.py",
     "test:q01": "node --test Q01_calculateMonthlyBill.test.js",
     "test:q02": "node --test Q02_RateLimiter.test.js",
     "test:q03": "node --test Q03_groupBy.test.js",

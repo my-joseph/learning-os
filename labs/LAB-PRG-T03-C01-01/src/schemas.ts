@@ -20,9 +20,7 @@ export function validateProduct(input: any): Product {
     throw new ValidationError("Product id must be a non-empty string");
   }
   if (typeof input.sku !== "string" || !SKU_REGEX.test(input.sku)) {
-    throw new ValidationError(
-      `Invalid SKU format: ${input.sku}. Expected format like 'PRD-1001'`,
-    );
+    throw new ValidationError(`Invalid SKU format: ${input.sku}. Expected format like 'PRD-1001'`);
   }
   if (typeof input.name !== "string" || !input.name.trim()) {
     throw new ValidationError("Product name must be a non-empty string");
@@ -32,18 +30,14 @@ export function validateProduct(input: any): Product {
     !Number.isInteger(input.unitPriceInCents) ||
     input.unitPriceInCents <= 0
   ) {
-    throw new ValidationError(
-      "unitPriceInCents must be a positive integer greater than 0",
-    );
+    throw new ValidationError("unitPriceInCents must be a positive integer greater than 0");
   }
   if (
     typeof input.stockQuantity !== "number" ||
     !Number.isInteger(input.stockQuantity) ||
     input.stockQuantity < 0
   ) {
-    throw new ValidationError(
-      "stockQuantity must be a non-negative integer >= 0",
-    );
+    throw new ValidationError("stockQuantity must be a non-negative integer >= 0");
   }
 
   return {
@@ -58,3 +52,28 @@ export function validateProduct(input: any): Product {
 /**
  * Validates a CartItem and cross-references with product inventory.
  */
+export function validateCartItem(input: any, products: Map<string, Product>): CartItem {
+  if (!input || typeof input !== "object") {
+    throw new ValidationError("CartItem must be a non-null object");
+  }
+  if (typeof input.productId !== "string" || !input.productId.trim()) {
+    throw new ValidationError("CartItem productId must be a non-empty string");
+  }
+  const product = products.get(input.productId);
+  if (!product) {
+    throw new ValidationError(`Referenced product not found: ${input.productId}`);
+  }
+  if (
+    typeof input.quantity !== "number" ||
+    !Number.isInteger(input.quantity) ||
+    input.quantity <= 0
+  ) {
+    throw new ValidationError("CartItem quantity must be a positive integer >= 1");
+  }
+
+  return {
+    productId: product.id,
+    quantity: input.quantity,
+    unitPriceInCents: product.unitPriceInCents,
+  };
+}
