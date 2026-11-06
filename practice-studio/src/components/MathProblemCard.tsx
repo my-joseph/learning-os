@@ -23,6 +23,43 @@ interface MathProblemCardProps {
   onResetProblem: () => void;
 }
 
+const getSafeMathPlaceholder = (hint?: string, problem?: Problem): string => {
+  if (!hint) return "Type final answer or solve on paper...";
+
+  const acceptedList: string[] = [];
+  if (problem?.answerSpec?.accepted) {
+    for (const a of problem.answerSpec.accepted) {
+      if (a !== undefined && a !== null) {
+        acceptedList.push(String(a).toLowerCase().trim());
+      }
+    }
+  }
+  if (problem?.answerPlain) {
+    acceptedList.push(String(problem.answerPlain).toLowerCase().trim());
+  }
+  if (problem?.answerDisplay) {
+    const raw = String(problem.answerDisplay)
+      .replace(/[\$\\]/g, "")
+      .replace(/\\[a-zA-Z]+/g, "")
+      .replace(/\^\{\\circ\}/g, "")
+      .trim()
+      .toLowerCase();
+    if (raw) acceptedList.push(raw);
+  }
+
+  const lowerHint = hint.toLowerCase();
+  const hasLeak = acceptedList.some((ans) => ans.length >= 2 && lowerHint.includes(ans));
+
+  if (!hasLeak) return hint;
+
+  const stripped = hint.replace(/\s*\([^)]*e\.g\.[^)]*\)/gi, "").trim();
+  if (stripped && !acceptedList.some((ans) => ans.length >= 2 && stripped.toLowerCase().includes(ans))) {
+    return stripped;
+  }
+
+  return "Type final answer or solve on paper...";
+};
+
 export const MathProblemCard: React.FC<MathProblemCardProps> = ({
   problem,
   index,
@@ -150,7 +187,7 @@ export const MathProblemCard: React.FC<MathProblemCardProps> = ({
             onKeyDown={(e) => {
               if (e.key === "Enter") onCheckAnswer();
             }}
-            placeholder={problem.inputHint || "Type final answer or solve on paper..."}
+            placeholder={getSafeMathPlaceholder(problem.inputHint, problem)}
             className="flex-1 min-w-[240px] font-mono text-sm bg-[#1d2333] text-slate-100 border border-[#2c354d] rounded-lg px-3 py-2 focus:outline-none focus:border-indigo-500"
           />
         )}

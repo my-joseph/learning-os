@@ -60,7 +60,7 @@
       },
       "answerDisplay": "53^\\circ",
       "answerPlain": "53",
-      "inputHint": "Enter the integer angle measure in degrees (e.g. 53).",
+      "inputHint": "Enter the integer angle measure in degrees.",
       "checkpointHint": "Complementary angles sum to $90^\\circ$.",
       "commonTrapTag": "angle-complement-vs-supplement",
       "steps": [
@@ -526,5 +526,5 @@
       }
     }
   ],
-  "localFilePath": "/Users/Joseph/Documents/antigravity/brave-borg/drills/data/MTH-T01-C12-U03/DRL-MTH-T01-C12-04.json"
+  "localFilePath": "drills/data/MTH-T01-C12-U03/DRL-MTH-T01-C12-04.json"
 }

@@ -63,3 +63,9 @@ All visual assets (SVGs, diagrams, charts) must be uploaded directly to Notion's
    }
    ```
 *(Notion automatically converts this into a permanent native AWS S3 hosted file with type `file`, guaranteeing instant loading, zero rate-limiting, and 100% vector sharpness).*
+
+### 6. Strict Zero-Leak Placeholder & Hint Invariant in Math & Physics Drills
+- When generating STEM drills (`math_engine.generate` or manual problem JSONs):
+  - `inputHint` and `placeholder` must specify the expected unit or syntax (e.g., `Enter the integer angle measure in degrees`, `Enter leg length in meters`).
+  - **Never** include the solution value in an example (e.g., writing `(e.g. 53)` when the solution is `53^\circ`, or `(e.g. 12)` when the solution is `12\text{ feet}`).
+  - Intermediate hints (`checkpointHint`) must provide mathematical formulas or invariant identities (e.g., `Complementary angles sum to $90^\circ$`), never the numerical result of the current problem.

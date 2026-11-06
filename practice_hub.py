@@ -14,6 +14,7 @@ Math Practice Player Server & Notion Auto-Sync Bridge (http://localhost:8765)
 import glob
 import json
 import os
+import re
 import urllib.parse
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 
@@ -72,10 +73,45 @@ def list_all_drills():
     return items
 
 
+def validate_and_sanitize_drill_doc(drill_doc: dict) -> None:
+    """
+    Strict Invariant: Zero-Leak Placeholder & Hint Policy.
+    Detects and scrubs any answer spoilers or accidental e.g. leaks in inputHint.
+    """
+    for p in drill_doc.get("problems", []):
+        accepted_tokens = set()
+        for a in p.get("answerSpec", {}).get("accepted", []):
+            s = str(a).strip().lower()
+            if len(s) >= 2:
+                accepted_tokens.add(s)
+        plain = str(p.get("answerPlain", "")).strip().lower()
+        if len(plain) >= 2:
+            accepted_tokens.add(plain)
+        disp = str(p.get("answerDisplay", "")).strip().lower()
+        clean_disp = re.sub(r"\\[a-zA-Z]+|\$|\{|\}|\^", "", disp).strip()
+        if len(clean_disp) >= 2:
+            accepted_tokens.add(clean_disp)
+
+        input_hint = p.get("inputHint")
+        if input_hint:
+            lower_hint = input_hint.lower()
+            leaked = [tok for tok in accepted_tokens if tok in lower_hint]
+            if leaked:
+                cleaned = re.sub(r"\s*\([^)]*e\.g\.[^)]*\)", "", input_hint, flags=re.IGNORECASE).strip()
+                if not any(tok in cleaned.lower() for tok in accepted_tokens) and len(cleaned) > 5:
+                    p["inputHint"] = cleaned
+                else:
+                    if p.get("codeType") == "predict-output" or drill_doc.get("subject") == "PRG":
+                        p["inputHint"] = "Type predicted output..."
+                    else:
+                        p["inputHint"] = "Type final answer..."
+
+
 def save_drill_doc(drill_doc: dict):
     drill_id = drill_doc.get("drillId")
     if not drill_id:
         raise ValueError("Missing drillId")
+    validate_and_sanitize_drill_doc(drill_doc)
     unit_code = drill_doc.get("unitCode", "MTH-T02-C01-U01")
     unit_dir = os.path.join(DATA_ROOT, unit_code)
     os.makedirs(unit_dir, exist_ok=True)

@@ -118,3 +118,13 @@ Instead, every Unit, Chapter, and Topic must provide a **thorough, content-speci
   2. Any technical term that matches a registered Concept Vault record must be linked natively using `@Page` mentions (`[[CON-<KEY>]]`).
   3. This ensures the student can hover/click any unfamiliar term to open a 60-second recovery note (What is it, Analogy, How it works, Comparison, Gotchas) without breaking their reading flow.
   4. If a fundamental concept appears frequently but has no existing Concept Vault entry, AI should proactively register a concise Concept Note to expand the vault continuously.
+
+---
+
+### 10. Strict Invariant: Zero Answer Leakage in Exercise Placeholders & Hints
+- **Pedagogical Integrity of Active Recall:** The entire educational purpose of drills and active recall exercises is **effortful cognitive retrieval**. If the answer or an exact solution example is leaked in the placeholder, the task collapses into mindless mechanical typing, destroying learning retention.
+- **The Placeholder Leak Trap:** Authors and AI generators must **NEVER** write examples that reveal the answer (e.g. writing `(e.g. 401)` when the answer is `401`, or `(e.g. 53)` when the solution is `53^\circ`, or `SYN -> SYN-ACK -> ACK` in the placeholder when that is the sequence to deduce).
+- **Format Contracts vs. Solutions:**
+  - *Permitted:* Syntax boundaries, data types, and formatting conventions (e.g., `Enter 3-digit HTTP status code`, `Enter integer in degrees`, `Enter 3-packet sequence (e.g. AAA -> BBB -> CCC)`).
+  - *Strictly Forbidden:* Providing the correct answer as an example or giving hints that reduce the search space to a trivial copy-paste.
+- **Disjoint Examples Mandate:** Any example used in `inputHint`, `placeholder`, or `checkpointHint` must be strictly disjoint from `answerSpec.accepted`, `answerPlain`, and `answerDisplay`.

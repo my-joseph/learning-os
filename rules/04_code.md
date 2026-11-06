@@ -122,6 +122,17 @@ To ensure maximum cognitive clarity and mirror real-world engineering specificat
   3. **Curriculum & Concept Cross-References:** Native `@Page` mentions linking to parent Units, Chapters, and registered `Concept Vault` cards.
 - **Subsequent Result Sync:** The user will practice locally or in Practice Studio. Only upon completion does the user or submit runner sync the live `Score`, `Mistake Categories`, and error telemetry to update the existing page record.
 
+### 7. Strict Zero-Leak Placeholder & Hint Policy for Programming Drills
+- **Anti-Spoiler Guardrail for Web Drills:** For `predict-output`, `code-tracing`, and conceptual triage questions rendered in Practice Studio:
+  - `inputHint` is mapped directly to the interactive HTML input `placeholder`.
+  - **Strictly Prohibited:** Never include the correct output token, HTTP status code, method, or sequence in `inputHint` or `placeholder`.
+  - **Disjoint Counter-Examples:** If formatting examples are provided, they must be unrelated tokens or counter-examples from different domains.
+    - *Bad (Leaking):* `"Type the 3-digit status code (e.g. 401)."` (when answer is 401)
+    - *Good (Disjoint):* `"Enter 3-digit HTTP status code (e.g. 200, 500)"`
+    - *Bad (Leaking):* `"Type the sequence: SYN -> SYN-ACK -> ACK"` (when that is the exact answer)
+    - *Good (Disjoint):* `"Enter 3-packet flag sequence (e.g. AAA -> BBB -> CCC)"`
+  - **Automated Validation Invariant:** All authoring scripts must run `validate_and_sanitize_drill_doc` to programmatically reject or scrub any placeholder matching `answerSpec.accepted` before saving or syncing to Notion.
+
 ---
 
 ## PART 6 — Universal Five-Tier Milestone Taxonomy (Labs)

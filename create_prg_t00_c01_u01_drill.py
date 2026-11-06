@@ -39,8 +39,8 @@ def build_drill_doc(id_map):
             },
             "answerDisplay": "Authoritative Nameserver",
             "answerPlain": "Authoritative Nameserver",
-            "inputHint": "Type the server tier name (e.g. Authoritative Nameserver).",
-            "checkpointHint": "Root points to TLD (.com); TLD points to the Authoritative server for example.com.",
+            "inputHint": "Enter server tier name (e.g. Root Server or Resolver)",
+            "checkpointHint": "Root points to TLD; TLD points to the server tier with the zone file.",
             "commonTrapTag": "dns-server-tier",
             "steps": [
                 {
@@ -75,8 +75,8 @@ def build_drill_doc(id_map):
             },
             "answerDisplay": "SYN -> SYN-ACK -> ACK",
             "answerPlain": "SYN -> SYN-ACK -> ACK",
-            "inputHint": "Type the sequence: SYN -> SYN-ACK -> ACK",
-            "checkpointHint": "Client Synchronizes (SYN), Server Sync-Acknowledges (SYN-ACK), Client Acknowledges (ACK).",
+            "inputHint": "Enter 3-packet flag sequence (e.g. AAA -> BBB -> CCC)",
+            "checkpointHint": "Client initiates sync, server acknowledges & syncs, client completes handshake.",
             "commonTrapTag": "tcp-handshake-order",
             "steps": [
                 {
@@ -111,8 +111,8 @@ def build_drill_doc(id_map):
             },
             "answerDisplay": "TLS (Transport Layer Security)",
             "answerPlain": "TLS",
-            "inputHint": "Type the protocol acronym (e.g. TLS or TLS 1.3).",
-            "checkpointHint": "TLS (Transport Layer Security) replaced SSL.",
+            "inputHint": "Enter security protocol acronym (e.g. SSH, IPsec)",
+            "checkpointHint": "This protocol superseded SSL and negotiates symmetric session keys.",
             "commonTrapTag": "auth-401-vs-403",
             "steps": [
                 {
@@ -143,8 +143,8 @@ def build_drill_doc(id_map):
             },
             "answerDisplay": "GET",
             "answerPlain": "GET",
-            "inputHint": "Type the HTTP method name (e.g. GET).",
-            "checkpointHint": "The first token in an HTTP request line is always the HTTP Method.",
+            "inputHint": "Enter HTTP method in uppercase (e.g. POST, PUT)",
+            "checkpointHint": "The first token in an HTTP wire protocol request line is always the HTTP Method.",
             "commonTrapTag": "http-method-misuse",
             "steps": [
                 {
@@ -171,8 +171,8 @@ def build_drill_doc(id_map):
             },
             "answerDisplay": "401 Unauthorized",
             "answerPlain": "401",
-            "inputHint": "Type the 3-digit status code (e.g. 401).",
-            "checkpointHint": "401 indicates authentication credentials are completely missing or invalid.",
+            "inputHint": "Enter 3-digit HTTP status code (e.g. 200, 500)",
+            "checkpointHint": "Signals that authentication credentials are required or invalid (unauthenticated).",
             "commonTrapTag": "auth-401-vs-403",
             "steps": [
                 {
@@ -199,8 +199,8 @@ def build_drill_doc(id_map):
             },
             "answerDisplay": "403 Forbidden",
             "answerPlain": "403",
-            "inputHint": "Type the 3-digit status code (e.g. 403).",
-            "checkpointHint": "Identity is known (authenticated), but the user lacks sufficient permission.",
+            "inputHint": "Enter 3-digit HTTP status code (e.g. 200, 500)",
+            "checkpointHint": "Identity is confirmed, but the account lacks sufficient permissions for this operation.",
             "commonTrapTag": "auth-401-vs-403",
             "steps": [
                 {
@@ -227,8 +227,8 @@ def build_drill_doc(id_map):
             },
             "answerDisplay": "502 Bad Gateway",
             "answerPlain": "502",
-            "inputHint": "Type the 3-digit status code (e.g. 502).",
-            "checkpointHint": "502 Bad Gateway means the upstream server returned an invalid response or closed unexpectedly.",
+            "inputHint": "Enter 3-digit HTTP status code (e.g. 200, 404)",
+            "checkpointHint": "Signals that an intermediate proxy received an invalid response or socket drop from upstream.",
             "commonTrapTag": "gateway-502-vs-504",
             "steps": [
                 {
@@ -255,8 +255,8 @@ def build_drill_doc(id_map):
             },
             "answerDisplay": "504 Gateway Timeout",
             "answerPlain": "504",
-            "inputHint": "Type the 3-digit status code (e.g. 504).",
-            "checkpointHint": "504 indicates the proxy did not receive a timely response from the upstream server.",
+            "inputHint": "Enter 3-digit HTTP status code (e.g. 200, 404)",
+            "checkpointHint": "Signals that an intermediate proxy timed out waiting for the upstream service to reply.",
             "commonTrapTag": "gateway-502-vs-504",
             "steps": [
                 {
@@ -283,8 +283,8 @@ def build_drill_doc(id_map):
             },
             "answerDisplay": "304 Not Modified",
             "answerPlain": "304",
-            "inputHint": "Type the 3-digit status code (e.g. 304).",
-            "checkpointHint": "304 Not Modified tells the client its cached copy is still fresh.",
+            "inputHint": "Enter 3-digit HTTP status code (e.g. 200, 301)",
+            "checkpointHint": "Informs client that cached resource is still fresh, so payload body is omitted.",
             "commonTrapTag": "cache-conditional-304",
             "steps": [
                 {
@@ -311,8 +311,8 @@ def build_drill_doc(id_map):
             },
             "answerDisplay": "101 Switching Protocols",
             "answerPlain": "101",
-            "inputHint": "Type the 3-digit status code (e.g. 101).",
-            "checkpointHint": "101 Switching Protocols is the HTTP response code for protocol upgrades.",
+            "inputHint": "Enter 3-digit HTTP status code (e.g. 200, 400)",
+            "checkpointHint": "Informs client that server agrees to upgrade framing protocol over existing connection.",
             "commonTrapTag": "protocol-switch-101",
             "steps": [
                 {

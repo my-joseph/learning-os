@@ -57,11 +57,17 @@ Never invent property values, relationships, learning progress, resource content
 ### 5. Strict English-Only Content Rule
 All generated content across Topic, Chapter, Unit, and Resource pages (including section headings, conceptual explanations, worked examples, `Practice Guide`, `Active Recall`, and `My Implementation & Mistake Log` prompts) must be written strictly in **English**. Never leave non-English (e.g., Thai) text inside Notion learning pages. *(Conversations with the user in chat remain in polite Thai).*
 
+### 6. Strict Zero-Leak Placeholder & Hint Policy (Anti-Spoiler Invariant)
+- **Zero-Leak Invariant:** When authoring drills, interactive exercises, code tracing tasks, or active recall questions, `inputHint`, `placeholder`, and intermediate hints (`checkpointHint`) must **NEVER** contain the correct answer, any substring or synonym of the accepted answers, or an example (`e.g.`) that gives away the solution.
+- **Contract & Syntax Only:** Placeholders and input hints are strictly confined to specifying data format, syntax, or contract boundaries (e.g., `Enter 3-digit HTTP status code`, `Enter sequence (e.g. AAA -> BBB -> CCC)`, `Enter integer angle measure in degrees`).
+- **Strictly Disjoint Counter-Examples:** If an example is provided inside an input hint (using `e.g.`), it **MUST** be a counter-example, dummy token, or unrelated category value that is strictly disjoint from `answerSpec.accepted`, `answerPlain`, and `answerDisplay`. Using the correct answer as an example in a placeholder is a critical pedagogical failure.
+- **Pre-Sync Validation Guard:** All generator scripts, player servers, and API endpoints must programmatically validate and sanitize drill specifications to eliminate leaks before saving to disk or synchronizing with Notion databases.
+
 ---
 
 ## PART 3 — Automation & Scale Principles
 
-### 6. AI-Driven Implementation at Scale
+### 7. AI-Driven Implementation at Scale
 The system is intended to support hundreds of learning Units without requiring the user to manually write every page. AI should:
 - Read existing database records.
 - Understand relations and learning context.
@@ -77,7 +83,7 @@ Do not require the user to manually create the initial content structure for eve
 - Unverified information must be identified.
 - Existing user content must be protected.
 
-### 7. Three-Phase Generation Workflow
+### 8. Three-Phase Generation Workflow
 Always separate analysis from generation and finalize with cross-referencing:
 
 #### Phase A — Analyze
@@ -107,13 +113,13 @@ Always separate analysis from generation and finalize with cross-referencing:
 
 Do not skip analysis and immediately generate generic content.
 
-### 8. Local-First Architecture & Notion Auto-Sync Protocol
+### 9. Local-First Architecture & Notion Auto-Sync Protocol
 - **Canonical Source of Truth:** System implementation rules (`rules/*.md`), drill schemas (`drills/data/`), lab configs (`lab.config.json`), and parametric visual engines (`math_engine/`) are authored and maintained Local-First in the workspace repository.
 - **Direct Agent Tooling & Zero-Latency Execution:** AI agents and subagents must read local Markdown and JSON files directly using standard file tools. This guarantees sub-millisecond retrieval, eliminates API network latency / rate limit hazards, and preserves LLM context window with 3–4x higher token density than raw Notion API JSON blocks.
 - **Notion as Presentation & Review Dashboard:** Notion serves as the primary human-facing presentation layer, active recall interface, and spaced retention ledger.
 - **Mandatory Synchronization:** All rule updates, additions, or refinements must be made in local Markdown files first, version-controlled with Git, and synchronized to the Notion Master Rule Hub and Sub-Pages via `python3 sync_rules_to_notion.py`. Manual edits on Notion rule pages that diverge from local files are strictly prohibited.
 
-### 9. Version Control & Git Hygiene Protocol
+### 10. Version Control & Git Hygiene Protocol
 - **Strict Secrets Invariant:** Never commit `.env`, private tokens, or credential files. Ensure `.gitignore` is always active and verified before staging.
 - **Milestone Checkpoint Commits:** Create clean, semantic Git commits (`feat:`, `fix:`, `refactor:`) immediately upon completing significant batches, tool upgrades, or modular updates.
 - **Isolated Branching for Experiments:** Whenever performing experimental UI overhauls, CSS styling changes, or architecture refactoring, AI must create an isolated branch (`experiment/<feature-name>`). Never perform high-risk UI/styling experiments directly on `main`.

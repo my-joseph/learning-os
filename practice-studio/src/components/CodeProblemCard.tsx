@@ -95,6 +95,38 @@ interface CodeProblemCardProps {
   onResetProblem: () => void;
 }
 
+const getSafePlaceholder = (hint?: string, problem?: Problem): string => {
+  if (!hint) return "Type predicted output...";
+
+  const acceptedList: string[] = [];
+  if (problem?.answerSpec?.accepted) {
+    for (const a of problem.answerSpec.accepted) {
+      if (typeof a === "string" && a.trim()) {
+        acceptedList.push(a.toLowerCase().trim());
+      }
+    }
+  }
+  if (problem?.answerPlain && typeof problem.answerPlain === "string") {
+    acceptedList.push(problem.answerPlain.toLowerCase().trim());
+  }
+  if (problem?.answerDisplay && typeof problem.answerDisplay === "string") {
+    acceptedList.push(problem.answerDisplay.toLowerCase().trim());
+  }
+
+  const lowerHint = hint.toLowerCase();
+  const hasLeak = acceptedList.some((ans) => ans.length >= 2 && lowerHint.includes(ans));
+
+  if (!hasLeak) return hint;
+
+  // If leak is inside an (e.g. ...), strip out the (e.g. ...) segment
+  const stripped = hint.replace(/\s*\([^)]*e\.g\.[^)]*\)/gi, "").trim();
+  if (stripped && !acceptedList.some((ans) => ans.length >= 2 && stripped.toLowerCase().includes(ans))) {
+    return stripped;
+  }
+
+  return "Type predicted output...";
+};
+
 export const CodeProblemCard: React.FC<CodeProblemCardProps> = ({
   problem,
   index,
@@ -804,7 +836,7 @@ Please evaluate my code against:
                   onKeyDown={(e) => {
                     if (e.key === "Enter") onCheckAnswer();
                   }}
-                  placeholder={problem.inputHint || "Type predicted output..."}
+                  placeholder={getSafePlaceholder(problem.inputHint, problem)}
                   className="flex-1 bg-transparent font-mono text-xs md:text-sm text-slate-100 focus:outline-none placeholder:text-slate-500"
                 />
               </div>
