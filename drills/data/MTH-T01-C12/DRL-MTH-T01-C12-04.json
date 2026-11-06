@@ -24,13 +24,18 @@
       "id": "pythagoras-leg-subtraction",
       "name": "Pythagorean Leg vs Hypotenuse Error",
       "label": "Added instead of subtracted when finding a leg: a^2 = c^2 - b^2",
-      "autoFrom": ["whole_sign_flip"]
+      "autoFrom": [
+        "whole_sign_flip"
+      ]
     },
     {
       "id": "arithmetic-slip",
       "name": "Arithmetic Slip",
       "label": "Basic arithmetic or square root calculation slip",
-      "autoFrom": ["off_by_factor", "rounding"]
+      "autoFrom": [
+        "off_by_factor",
+        "rounding"
+      ]
     },
     {
       "id": "triangle-sum-180",
@@ -71,7 +76,14 @@
           "latex": "\\theta_2 = 90^\\circ - 37^\\circ = 53^\\circ",
           "explain": "Subtract 37 degrees from 90 degrees to find the complement."
         }
-      ]
+      ],
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
     },
     {
       "id": "Q02",
@@ -104,7 +116,14 @@
           "latex": "m\\angle B = 180^\\circ - 124^\\circ = 56^\\circ",
           "explain": "Subtract 124 degrees from 180 degrees."
         }
-      ]
+      ],
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
     },
     {
       "id": "Q03",
@@ -137,7 +156,14 @@
           "latex": "x = \\frac{90}{3} = 30",
           "explain": "Divide both sides by 3."
         }
-      ]
+      ],
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
     },
     {
       "id": "Q04",
@@ -174,7 +200,14 @@
           "latex": "m\\angle C = 180^\\circ - 121^\\circ = 59^\\circ",
           "explain": "Subtract 121 degrees from 180 degrees."
         }
-      ]
+      ],
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
     },
     {
       "id": "Q05",
@@ -207,7 +240,14 @@
           "latex": "\\beta = 90^\\circ - 26^\\circ = 64^\\circ",
           "explain": "Subtract 26 degrees from 90 degrees."
         }
-      ]
+      ],
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
     },
     {
       "id": "Q06",
@@ -244,7 +284,14 @@
           "latex": "m\\angle Q = \\frac{130^\\circ}{2} = 65^\\circ",
           "explain": "Divide by 2 to find each base angle."
         }
-      ]
+      ],
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
     },
     {
       "id": "Q07",
@@ -285,7 +332,14 @@
           "latex": "c = \\sqrt{100} = 10",
           "explain": "Take the principal square root."
         }
-      ]
+      ],
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
     },
     {
       "id": "Q08",
@@ -326,7 +380,14 @@
           "latex": "a = \\sqrt{25} = 5",
           "explain": "Take the positive square root."
         }
-      ]
+      ],
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
     },
     {
       "id": "Q09",
@@ -367,7 +428,14 @@
           "latex": "h = \\sqrt{144} = 12",
           "explain": "Take square root: the ladder reaches 12 feet up the wall."
         }
-      ]
+      ],
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
     },
     {
       "id": "Q10",
@@ -408,7 +476,14 @@
           "latex": "c = \\sqrt{289} = 17",
           "explain": "Take square root: sqrt(289) = 17 feet."
         }
-      ]
+      ],
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
     }
   ]
 }

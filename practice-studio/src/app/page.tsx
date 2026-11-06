@@ -55,7 +55,22 @@ export default function PracticeStudioPage() {
       const res = await fetch(`/api/drill?id=${encodeURIComponent(id)}`);
       if (!res.ok) throw new Error("Could not load drill");
       const doc: DrillDocument = await res.json();
-      setCurrentDrill(doc);
+      const normalizedDoc: DrillDocument = {
+        ...doc,
+        problems: (doc.problems || []).map((p) => ({
+          ...p,
+          state: {
+            userInput: p.state?.userInput || "",
+            userCode: p.state?.userCode || p.starterCode || p.codeSnippet || "",
+            score: p.state?.score ?? null,
+            divergedStep: p.state?.divergedStep ?? null,
+            mistakes: p.state?.mistakes || [],
+            lastCheck: p.state?.lastCheck || null,
+            lastTestReport: p.state?.lastTestReport || null,
+          },
+        })),
+      };
+      setCurrentDrill(normalizedDoc);
 
       // sync top config
       if (doc.config) {
@@ -338,7 +353,7 @@ export default function PracticeStudioPage() {
 
   // Compute live score
   const liveScore = currentDrill
-    ? currentDrill.problems.reduce((acc, p) => acc + (p.state.score || 0), 0)
+    ? currentDrill.problems.reduce((acc, p) => acc + (p.state?.score || 0), 0)
     : 0;
   const maxScore = currentDrill?.problems.length || 0;
   const accuracyPct = maxScore > 0 ? Math.round((liveScore / maxScore) * 1000) / 10 : 0;
@@ -357,15 +372,15 @@ export default function PracticeStudioPage() {
     const divergedList: string[] = [];
 
     currentDrill.problems.forEach((p) => {
-      p.state.mistakes.forEach((tid) => {
+      (p.state?.mistakes || []).forEach((tid) => {
         const rawName = tagMap.get(tid) || tid;
         mistakeNames.add(rawName.replace(/,/g, " /").trim());
       });
-      if (typeof p.state.divergedStep === "number") {
+      if (typeof p.state?.divergedStep === "number") {
         const st = p.steps[p.state.divergedStep];
         divergedList.push(`${p.id} (Step ${p.state.divergedStep + 1}: ${st ? st.explain : "Diverged"})`);
-      } else if (p.state.score !== null && p.state.score < 1 && p.state.mistakes.length > 0) {
-        divergedList.push(`${p.id} (${p.state.mistakes.map((t) => tagMap.get(t) || t).join(", ")})`);
+      } else if (p.state?.score !== null && p.state?.score !== undefined && p.state.score < 1 && (p.state?.mistakes || []).length > 0) {
+        divergedList.push(`${p.id} (${(p.state?.mistakes || []).map((t) => tagMap.get(t) || t).join(", ")})`);
       }
     });
 
