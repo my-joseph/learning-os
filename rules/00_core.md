@@ -77,8 +77,8 @@ Do not require the user to manually create the initial content structure for eve
 - Unverified information must be identified.
 - Existing user content must be protected.
 
-### 7. Two-Phase Generation Workflow
-Always separate analysis from generation:
+### 7. Three-Phase Generation Workflow
+Always separate analysis from generation and finalize with cross-referencing:
 
 #### Phase A — Analyze
 - Inspect database properties.
@@ -97,6 +97,12 @@ Always separate analysis from generation:
 - Create relevant Active Recall questions.
 - Add source attribution.
 - Verify completeness and consistency.
+
+#### Phase C — Final-Pass: Concept Vault Cross-Referencing & Auto-Linking
+- After generating or updating any page, drill, or problem specification, cross-reference the generated text against the `Concept Vault` database and `id_map.json` (all keys prefixed with `CON-`).
+- Detect matching domain terms and technical keywords (e.g., `TCP 3-Way Handshake`, `DNS`, `TLS`, `HTTP`, `WebSocket`).
+- Automatically bind matching terms using native `@Page` mentions (`[[CON-<KEY>]]`), turning dry terminology into an interactive, Wikipedia-style knowledge graph.
+- Verify that every technical prerequisite or specialized concept provides instantaneous 1-click lookup.
 
 Do not skip analysis and immediately generate generic content.
 

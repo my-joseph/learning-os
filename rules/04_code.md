@@ -108,6 +108,11 @@ To ensure maximum cognitive clarity and mirror real-world engineering specificat
   3. **Strict Code Identifier Typography:** Every code symbol, variable/parameter (`order.items`, `subtotal`), literal value (`"PERCENT10"`, `true`, `8 USD`), and Error type (`RangeError`, `TypeError`) must be formatted as inline code with backticks.
   4. **Explicit Return Schema Contract:** Multi-key return objects or data structures must be explicitly written out as an inline code contract (e.g. `{ subtotal, discount, shipping, tax, total, currency: 'USD' }`) or code block so the developer never has to guess the shape.
 
+### 5. Final-Pass Concept Vault Cross-Referencing & Auto-Linking Protocol
+- **Final-Pass Cross-Reference:** In the final step of generating any drill problem, lab specification, or question README, AI must cross-reference the generated text against the `Concept Vault` database and `id_map.json` (keys prefixed with `CON-*`).
+- **Automatic Semantic Keyword Matching:** When the problem text references a foundational concept (e.g. `TCP 3-Way Handshake`, `DNS`, `TLS`, `HTTP`, `WebSocket`, `Sliding Window Rate Limiter`, `Promises`, `Closures`), AI must bind that term using a native `@Page` mention (`[[CON-<KEY>]]`).
+- **Instant In-Context Recovery:** This allows the developer to click or hover on the concept while solving the drill in their workspace to instantly review its invariants, mental model, and failure traps without breaking their focus.
+
 ---
 
 ## PART 6 — Universal Five-Tier Milestone Taxonomy (Labs)
@@ -121,7 +126,7 @@ Every multi-milestone project lab adheres to a standardized milestone sequence:
 
 ---
 
-## PART 7 — Eight-Step AI Authoring Pipeline
+## PART 7 — Nine-Step AI Authoring Pipeline
 
 AI must execute the following pipeline in strict sequential order:
 1. **Spec Definition:** Create `lab.config.json` defining metadata, dependencies, and milestone point allocations.
@@ -131,7 +136,8 @@ AI must execute the following pipeline in strict sequential order:
 5. **Scaffolding Starter Code:** Strip the canonical solution into starter skeleton files with clear `// TODO [Milestone X]` markers.
 6. **Package Scripts Configuration:** Configure `package.json` scripts (`test`, `test:watch`, `submit`).
 7. **Baseline Negative Verification:** Run tests against starter code to confirm it fails gracefully with descriptive errors.
-8. **Notion Registration:** Register the lab record in the `Learning Practice & Drills` database (`Format: "Code Test Suite"`).
+8. **Final-Pass Concept Vault Auto-Linking:** Cross-reference problem specifications and README text against `Concept Vault` in `id_map.json`, automatically linking all matching domain keywords.
+9. **Notion Registration:** Register the lab record in the `Learning Practice & Drills` database (`Format: "Code Test Suite"`).
 
 ---
 

@@ -108,3 +108,13 @@ Instead, every Unit, Chapter, and Topic must provide a **thorough, content-speci
 2. **Must-Be-Automatic Foundations:** Specify the non-negotiable core skills across the Topic that must become effortless before advancing.
 3. **Cross-Chapter Traps:** Highlight systemic misconceptions or integration bugs that span multiple Chapters.
 4. **Bridge to Next Topics in Roadmap:** Map out how this Topic directly feeds into upcoming Topics in `MTH`, `PHY`, and `PRG` using clickable `@Page` mentions.
+
+---
+
+### 9. Wikipedia-Style Concept Vault & Final-Pass Auto-Linking Protocol
+- **Concept Retention Invariant:** Technical terms, foundational protocols, and architectural models (e.g. `TCP 3-Way Handshake`, `DNS`, `TLS`, `HTTP`, `WebSocket`, `Event Loop`, `Closures`) are indexed centrally in the `Concept Vault` (`id_map.json` under `CON-*`).
+- **Mandatory Final-Pass Cross-Reference:** During the final step of generating or updating any Unit, Chapter, Topic, or Practice problem:
+  1. AI must inspect the generated text against all registered `Concept Vault` records in `id_map.json`.
+  2. Any technical term that matches a registered Concept Vault record must be linked natively using `@Page` mentions (`[[CON-<KEY>]]`).
+  3. This ensures the student can hover/click any unfamiliar term to open a 60-second recovery note (What is it, Analogy, How it works, Comparison, Gotchas) without breaking their reading flow.
+  4. If a fundamental concept appears frequently but has no existing Concept Vault entry, AI should proactively register a concise Concept Note to expand the vault continuously.

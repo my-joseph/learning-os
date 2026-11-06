@@ -143,6 +143,50 @@ def parse_rt(text, id_map):
                 out.append(rt(p, bold=is_bold))
     return out if out else [rt("")]
 
+def auto_link_concepts(text, id_map, max_per_concept=1):
+    """
+    Final-Pass Auto-Linker:
+    Scans generated text for registered Concept Vault terms (prefixed with CON-)
+    and automatically wraps matching terms in [[CON-<KEY>]] tokens if not already linked.
+    """
+    if not text:
+        return text
+
+    # Extract all registered Concept Vault items
+    concept_entries = []
+    for k, v in id_map.items():
+        if k.startswith("CON-") and isinstance(v, dict):
+            title = v.get("title", "")
+            terms = {title}
+            if "(" in title and ")" in title:
+                short = title.split("(")[0].strip()
+                inside = title.split("(")[1].split(")")[0].strip()
+                if len(short) >= 3:
+                    terms.add(short)
+                if len(inside) >= 4:
+                    terms.add(inside)
+            # Also capture distinctive leading word if title ends in Protocol, Anatomy, Architecture, etc.
+            for suffix in [" Protocol", " Anatomy", " Architecture", " System"]:
+                if title.endswith(suffix):
+                    base_word = title[:-len(suffix)].strip()
+                    if len(base_word) >= 3:
+                        terms.add(base_word)
+            for t in terms:
+                concept_entries.append((k, t))
+
+    # Sort descending by length so longer phrases match before substrings
+    concept_entries.sort(key=lambda x: len(x[1]), reverse=True)
+
+    result = text
+    for c_key, term in concept_entries:
+        token = f"[[{c_key}]]"
+        if token in result:
+            continue
+        pattern = rf"(?<!\[\[)(?<!`)\b{re.escape(term)}\b(?!\]\])(?!`)"
+        result = re.sub(pattern, token, result, count=max_per_concept)
+
+    return result
+
 def validate_blocks_clean(blocks, label=""):
     dumped = json.dumps(blocks, ensure_ascii=False)
     unresolved_match = re.search(r"\[\[[A-Z0-9\-]+\]\]", dumped)
