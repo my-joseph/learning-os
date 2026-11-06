@@ -1,0 +1,414 @@
+{
+  "schemaVersion": "2.0-math",
+  "drillId": "DRL-MTH-T01-C12-04",
+  "subject": "MATH",
+  "unitCode": "MTH-T01-C12-U03",
+  "unitTitle": "Use Properties of Angles, Triangles, and the Pythagorean Theorem",
+  "chapterCode": "MTH-T01-C12",
+  "topicCode": "MTH-T01",
+  "unitNotionUrl": "https://www.notion.so/4003818f8ba080459e0dd81747fad236",
+  "createdAt": "2026-11-06 20:12:00",
+  "config": {
+    "questionCount": 10,
+    "difficulty": "LEVEL_1",
+    "difficultyMode": "Level 1 - Foundation & Direct Application"
+  },
+  "mistakeTags": [
+    {
+      "id": "angle-complement-vs-supplement",
+      "name": "Complementary vs Supplementary Confusion",
+      "label": "Confused 90° sum (complementary) with 180° sum (supplementary)",
+      "autoFrom": []
+    },
+    {
+      "id": "pythagoras-leg-subtraction",
+      "name": "Pythagorean Leg vs Hypotenuse Error",
+      "label": "Added instead of subtracted when finding a leg: a^2 = c^2 - b^2",
+      "autoFrom": ["whole_sign_flip"]
+    },
+    {
+      "id": "arithmetic-slip",
+      "name": "Arithmetic Slip",
+      "label": "Basic arithmetic or square root calculation slip",
+      "autoFrom": ["off_by_factor", "rounding"]
+    },
+    {
+      "id": "triangle-sum-180",
+      "name": "Triangle Interior Angle Sum Error",
+      "label": "Interior angles of a triangle must sum to exactly 180°",
+      "autoFrom": []
+    }
+  ],
+  "problems": [
+    {
+      "id": "Q01",
+      "category": "Core Skill",
+      "context": "Angles: Complementary Angles",
+      "level": 1,
+      "levelLabel": "Level 1 - Foundation",
+      "prompt": "Two angles are complementary. If the measure of the first angle is $37^\\circ$, find the measure of the second angle in degrees.",
+      "display": "\\theta_1 + \\theta_2 = 90^\\circ",
+      "plainText": "90 - 37",
+      "answerSpec": {
+        "type": "number",
+        "value": 53
+      },
+      "answerDisplay": "53^\\circ",
+      "answerPlain": "53",
+      "inputHint": "Enter the integer angle measure in degrees (e.g. 53).",
+      "checkpointHint": "Complementary angles sum to $90^\\circ$.",
+      "commonTrapTag": "angle-complement-vs-supplement",
+      "steps": [
+        {
+          "latex": "\\theta_1 + \\theta_2 = 90^\\circ",
+          "explain": "Definition of complementary angles: their measures sum to 90 degrees."
+        },
+        {
+          "latex": "37^\\circ + \\theta_2 = 90^\\circ",
+          "explain": "Substitute the given angle measure 37 degrees."
+        },
+        {
+          "latex": "\\theta_2 = 90^\\circ - 37^\\circ = 53^\\circ",
+          "explain": "Subtract 37 degrees from 90 degrees to find the complement."
+        }
+      ]
+    },
+    {
+      "id": "Q02",
+      "category": "Core Skill",
+      "context": "Angles: Supplementary Angles (Linear Pair)",
+      "level": 1,
+      "levelLabel": "Level 1 - Foundation",
+      "prompt": "Angle $\\angle A$ and angle $\\angle B$ are supplementary. If $m\\angle A = 124^\\circ$, find $m\\angle B$ in degrees.",
+      "display": "m\\angle A + m\\angle B = 180^\\circ",
+      "plainText": "180 - 124",
+      "answerSpec": {
+        "type": "number",
+        "value": 56
+      },
+      "answerDisplay": "56^\\circ",
+      "answerPlain": "56",
+      "inputHint": "Enter the integer angle measure in degrees.",
+      "checkpointHint": "Supplementary angles sum to $180^\\circ$.",
+      "commonTrapTag": "angle-complement-vs-supplement",
+      "steps": [
+        {
+          "latex": "m\\angle A + m\\angle B = 180^\\circ",
+          "explain": "Definition of supplementary angles: their measures sum to 180 degrees."
+        },
+        {
+          "latex": "124^\\circ + m\\angle B = 180^\\circ",
+          "explain": "Substitute 124 degrees for angle A."
+        },
+        {
+          "latex": "m\\angle B = 180^\\circ - 124^\\circ = 56^\\circ",
+          "explain": "Subtract 124 degrees from 180 degrees."
+        }
+      ]
+    },
+    {
+      "id": "Q03",
+      "category": "Core Skill",
+      "context": "Angles: Vertical Angles Invariant",
+      "level": 1,
+      "levelLabel": "Level 1 - Foundation",
+      "prompt": "Two straight lines intersect, forming vertical angles. One angle measures $(3x - 15)^\\circ$ and the opposite vertical angle measures $75^\\circ$. Find the value of $x$.",
+      "display": "3x - 15 = 75",
+      "plainText": "3x - 15 = 75",
+      "answerSpec": {
+        "type": "number",
+        "value": 30
+      },
+      "answerDisplay": "x = 30",
+      "answerPlain": "30",
+      "inputHint": "Enter the integer value of x.",
+      "checkpointHint": "Vertical angles are equal: set $3x - 15 = 75$.",
+      "commonTrapTag": "arithmetic-slip",
+      "steps": [
+        {
+          "latex": "3x - 15 = 75",
+          "explain": "Vertical angles are equal in measure."
+        },
+        {
+          "latex": "3x = 75 + 15 = 90",
+          "explain": "Add 15 to both sides."
+        },
+        {
+          "latex": "x = \\frac{90}{3} = 30",
+          "explain": "Divide both sides by 3."
+        }
+      ]
+    },
+    {
+      "id": "Q04",
+      "category": "Core Skill",
+      "context": "Triangles: Triangle Angle Sum Theorem",
+      "level": 1,
+      "levelLabel": "Level 1 - Foundation",
+      "prompt": "In triangle $\\triangle ABC$, two interior angles measure $m\\angle A = 48^\\circ$ and $m\\angle B = 73^\\circ$. Find the measure of the third angle $m\\angle C$ in degrees.",
+      "display": "m\\angle A + m\\angle B + m\\angle C = 180^\\circ",
+      "plainText": "180 - (48 + 73)",
+      "answerSpec": {
+        "type": "number",
+        "value": 59
+      },
+      "answerDisplay": "59^\\circ",
+      "answerPlain": "59",
+      "inputHint": "Enter the integer angle measure in degrees.",
+      "checkpointHint": "Sum of all three angles in any triangle is $180^\\circ$.",
+      "commonTrapTag": "triangle-sum-180",
+      "steps": [
+        {
+          "latex": "m\\angle A + m\\angle B + m\\angle C = 180^\\circ",
+          "explain": "The interior angles of any triangle sum to 180 degrees."
+        },
+        {
+          "latex": "48^\\circ + 73^\\circ + m\\angle C = 180^\\circ",
+          "explain": "Substitute the given angles 48 degrees and 73 degrees."
+        },
+        {
+          "latex": "121^\\circ + m\\angle C = 180^\\circ",
+          "explain": "Sum the two known angles: 48 + 73 = 121 degrees."
+        },
+        {
+          "latex": "m\\angle C = 180^\\circ - 121^\\circ = 59^\\circ",
+          "explain": "Subtract 121 degrees from 180 degrees."
+        }
+      ]
+    },
+    {
+      "id": "Q05",
+      "category": "Core Skill",
+      "context": "Triangles: Right Triangle Acute Angles",
+      "level": 1,
+      "levelLabel": "Level 1 - Foundation",
+      "prompt": "In a right-angled triangle, one acute angle measures $26^\\circ$. Find the measure of the other acute angle in degrees.",
+      "display": "\\alpha + \\beta = 90^\\circ",
+      "plainText": "90 - 26",
+      "answerSpec": {
+        "type": "number",
+        "value": 64
+      },
+      "answerDisplay": "64^\\circ",
+      "answerPlain": "64",
+      "inputHint": "Enter the integer angle measure in degrees.",
+      "checkpointHint": "In a right triangle, the two acute angles sum to $90^\\circ$.",
+      "commonTrapTag": "triangle-sum-180",
+      "steps": [
+        {
+          "latex": "\\alpha + \\beta = 90^\\circ",
+          "explain": "Since one angle is 90 degrees, the remaining two acute angles are complementary."
+        },
+        {
+          "latex": "26^\\circ + \\beta = 90^\\circ",
+          "explain": "Substitute the known acute angle 26 degrees."
+        },
+        {
+          "latex": "\\beta = 90^\\circ - 26^\\circ = 64^\\circ",
+          "explain": "Subtract 26 degrees from 90 degrees."
+        }
+      ]
+    },
+    {
+      "id": "Q06",
+      "category": "Core Skill",
+      "context": "Triangles: Isosceles Triangle Base Angles",
+      "level": 1,
+      "levelLabel": "Level 1 - Foundation",
+      "prompt": "In an isosceles triangle $\\triangle PQR$, the vertex angle $\\angle P$ measures $50^\\circ$, and legs $PQ = PR$. Find the measure of base angle $\\angle Q$ in degrees.",
+      "display": "2\\theta + 50^\\circ = 180^\\circ",
+      "plainText": "(180 - 50) / 2",
+      "answerSpec": {
+        "type": "number",
+        "value": 65
+      },
+      "answerDisplay": "65^\\circ",
+      "answerPlain": "65",
+      "inputHint": "Enter the integer angle measure in degrees.",
+      "checkpointHint": "The base angles of an isosceles triangle are equal: $2\\theta + 50^\\circ = 180^\\circ$.",
+      "commonTrapTag": "triangle-sum-180",
+      "steps": [
+        {
+          "latex": "m\\angle P + m\\angle Q + m\\angle R = 180^\\circ",
+          "explain": "Sum of angles in triangle PQR is 180 degrees."
+        },
+        {
+          "latex": "50^\\circ + 2(m\\angle Q) = 180^\\circ",
+          "explain": "In an isosceles triangle with PQ = PR, base angles are equal: angle Q = angle R."
+        },
+        {
+          "latex": "2(m\\angle Q) = 180^\\circ - 50^\\circ = 130^\\circ",
+          "explain": "Subtract 50 degrees from 180 degrees."
+        },
+        {
+          "latex": "m\\angle Q = \\frac{130^\\circ}{2} = 65^\\circ",
+          "explain": "Divide by 2 to find each base angle."
+        }
+      ]
+    },
+    {
+      "id": "Q07",
+      "category": "Core Skill",
+      "context": "Pythagorean Theorem: Hypotenuse Calculation",
+      "level": 1,
+      "levelLabel": "Level 1 - Foundation",
+      "prompt": "A right triangle has legs of length $a = 6\\text{ cm}$ and $b = 8\\text{ cm}$. Find the exact length of the hypotenuse $c$ in centimeters.",
+      "display": "c = \\sqrt{a^2 + b^2}",
+      "plainText": "sqrt(6^2 + 8^2)",
+      "answerSpec": {
+        "type": "number",
+        "value": 10
+      },
+      "answerDisplay": "10\\text{ cm}",
+      "answerPlain": "10",
+      "inputHint": "Enter the integer hypotenuse length.",
+      "checkpointHint": "$c^2 = a^2 + b^2 = 36 + 64 = 100$.",
+      "commonTrapTag": "pythagoras-leg-subtraction",
+      "steps": [
+        {
+          "latex": "a^2 + b^2 = c^2",
+          "explain": "Pythagorean Theorem for a right triangle with hypotenuse c."
+        },
+        {
+          "latex": "6^2 + 8^2 = c^2",
+          "explain": "Substitute leg lengths a = 6 and b = 8."
+        },
+        {
+          "latex": "36 + 64 = c^2",
+          "explain": "Evaluate squares: 6^2 = 36 and 8^2 = 64."
+        },
+        {
+          "latex": "c^2 = 100",
+          "explain": "Sum: 36 + 64 = 100."
+        },
+        {
+          "latex": "c = \\sqrt{100} = 10",
+          "explain": "Take the principal square root."
+        }
+      ]
+    },
+    {
+      "id": "Q08",
+      "category": "Core Skill",
+      "context": "Pythagorean Theorem: Solving for Unknown Leg",
+      "level": 1,
+      "levelLabel": "Level 1 - Foundation",
+      "prompt": "A right triangle has a hypotenuse of length $c = 13\\text{ m}$ and one leg of length $b = 12\\text{ m}$. Find the length of the other leg $a$ in meters.",
+      "display": "a = \\sqrt{c^2 - b^2}",
+      "plainText": "sqrt(13^2 - 12^2)",
+      "answerSpec": {
+        "type": "number",
+        "value": 5
+      },
+      "answerDisplay": "5\\text{ m}",
+      "answerPlain": "5",
+      "inputHint": "Enter the integer leg length.",
+      "checkpointHint": "Subtract to find a leg: $a^2 = c^2 - b^2 = 169 - 144 = 25$.",
+      "commonTrapTag": "pythagoras-leg-subtraction",
+      "steps": [
+        {
+          "latex": "a^2 + b^2 = c^2",
+          "explain": "Pythagorean Theorem."
+        },
+        {
+          "latex": "a^2 + 12^2 = 13^2",
+          "explain": "Substitute known leg b = 12 and hypotenuse c = 13."
+        },
+        {
+          "latex": "a^2 + 144 = 169",
+          "explain": "Square the numbers: 12^2 = 144 and 13^2 = 169."
+        },
+        {
+          "latex": "a^2 = 169 - 144 = 25",
+          "explain": "Subtract 144 from both sides to isolate a^2."
+        },
+        {
+          "latex": "a = \\sqrt{25} = 5",
+          "explain": "Take the positive square root."
+        }
+      ]
+    },
+    {
+      "id": "Q09",
+      "category": "Core Skill",
+      "context": "Pythagorean Theorem: Real-World Modeling (Ladder)",
+      "level": 1,
+      "levelLabel": "Level 1 - Foundation",
+      "prompt": "A 15-foot ladder leans against a vertical wall. The base of the ladder is positioned 9 feet away from the base of the wall. How many feet up the wall does the ladder reach?",
+      "display": "h^2 + 9^2 = 15^2",
+      "plainText": "sqrt(15^2 - 9^2)",
+      "answerSpec": {
+        "type": "number",
+        "value": 12
+      },
+      "answerDisplay": "12\\text{ feet}",
+      "answerPlain": "12",
+      "inputHint": "Enter the integer height in feet.",
+      "checkpointHint": "The ladder is the hypotenuse ($c = 15$). Height is a leg: $h^2 = 15^2 - 9^2$.",
+      "commonTrapTag": "pythagoras-leg-subtraction",
+      "steps": [
+        {
+          "latex": "h^2 + d^2 = L^2",
+          "explain": "Model the wall, ground, and ladder as a right triangle where ladder L is hypotenuse."
+        },
+        {
+          "latex": "h^2 + 9^2 = 15^2",
+          "explain": "Substitute ground distance d = 9 and ladder length L = 15."
+        },
+        {
+          "latex": "h^2 + 81 = 225",
+          "explain": "Evaluate squares: 9^2 = 81 and 15^2 = 225."
+        },
+        {
+          "latex": "h^2 = 225 - 81 = 144",
+          "explain": "Subtract 81 from both sides."
+        },
+        {
+          "latex": "h = \\sqrt{144} = 12",
+          "explain": "Take square root: the ladder reaches 12 feet up the wall."
+        }
+      ]
+    },
+    {
+      "id": "Q10",
+      "category": "Core Skill",
+      "context": "Pythagorean Theorem: Hypotenuse Calculation (8-15-17)",
+      "level": 1,
+      "levelLabel": "Level 1 - Foundation",
+      "prompt": "The two perpendicular legs of a right triangular sail measure $a = 8\\text{ ft}$ and $b = 15\\text{ ft}$. Find the length of the hypotenuse $c$ in feet.",
+      "display": "c = \\sqrt{8^2 + 15^2}",
+      "plainText": "sqrt(8^2 + 15^2)",
+      "answerSpec": {
+        "type": "number",
+        "value": 17
+      },
+      "answerDisplay": "17\\text{ ft}",
+      "answerPlain": "17",
+      "inputHint": "Enter the integer hypotenuse length in feet.",
+      "checkpointHint": "$c^2 = 8^2 + 15^2 = 64 + 225 = 289$.",
+      "commonTrapTag": "arithmetic-slip",
+      "steps": [
+        {
+          "latex": "a^2 + b^2 = c^2",
+          "explain": "Pythagorean Theorem."
+        },
+        {
+          "latex": "8^2 + 15^2 = c^2",
+          "explain": "Substitute leg lengths a = 8 and b = 15."
+        },
+        {
+          "latex": "64 + 225 = c^2",
+          "explain": "Evaluate squares: 8^2 = 64 and 15^2 = 225."
+        },
+        {
+          "latex": "c^2 = 289",
+          "explain": "Sum: 64 + 225 = 289."
+        },
+        {
+          "latex": "c = \\sqrt{289} = 17",
+          "explain": "Take square root: sqrt(289) = 17 feet."
+        }
+      ]
+    }
+  ]
+}

@@ -2515,5 +2515,10 @@
   "CON-WEBSOCKET": {
     "id": "4103818f-8ba0-8158-8e79-f89d21a435a6",
     "title": "WebSocket Protocol"
+  },
+  "DRL-MTH-T01-C12-04": {
+    "id": "local-DRL-MTH-T01-C12-04",
+    "title": "Use Properties of Angles, Triangles, and the Pythagorean Theorem — Foundation Drill (10 Qs · Level 1)",
+    "file": "drills/data/MTH-T01-C12/DRL-MTH-T01-C12-04.json"
   }
 }
