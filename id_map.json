@@ -2491,5 +2491,29 @@
   "DRL-PRG-T01-C01-03": {
     "id": "40f3818f-8ba0-8167-a97f-c1bea918d3ca",
     "title": "JavaScript Deep Dive — Verified Programming Drill (3 Qs · Mixed Exam Mode)"
+  },
+  "CONCEPT_VAULT_DB": {
+    "id": "4103818f-8ba0-8164-aa0d-eeb2d6cb65b0",
+    "title": "Concept Vault"
+  },
+  "CON-DNS": {
+    "id": "4103818f-8ba0-81a9-80f2-dd2f28af9a2c",
+    "title": "DNS (Domain Name System)"
+  },
+  "CON-TCP-HANDSHAKE": {
+    "id": "4103818f-8ba0-817c-812d-f5f53fa78b71",
+    "title": "TCP 3-Way Handshake"
+  },
+  "CON-TLS": {
+    "id": "4103818f-8ba0-815a-bb7d-ec9b6065d062",
+    "title": "TLS & Modern Encryption"
+  },
+  "CON-HTTP": {
+    "id": "4103818f-8ba0-81cc-97b0-d1c9e6f29250",
+    "title": "HTTP Protocol Anatomy"
+  },
+  "CON-WEBSOCKET": {
+    "id": "4103818f-8ba0-8158-8e79-f89d21a435a6",
+    "title": "WebSocket Protocol"
   }
 }

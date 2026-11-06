@@ -210,19 +210,19 @@ def build_prg_t00_c01_u01(id_map):
             color="blue_background",
         ),
         h2("1. Core Concepts & Architectural Mental Model", id_map),
-        bullet("**1. DNS Resolution (Translating Hostname to IP Address):**", id_map, children=[
-            bullet("When a user requests `https://example.com/api/users`, the browser first checks local DNS caches (browser cache, OS cache, router cache). If not cached, it queries the recursive resolver, root nameserver, TLD nameserver (`.com`), and authoritative nameserver to resolve the domain to an IP address (e.g. `93.184.216.34`).", id_map),
+        bullet("**1. DNS Resolution ([[CON-DNS]]):**", id_map, children=[
+            bullet("When a user requests `https://example.com/api/users`, the browser first checks local [[CON-DNS]] caches (browser cache, OS cache, router cache). If not cached, it queries the recursive resolver, root nameserver, TLD nameserver (`.com`), and authoritative nameserver to resolve the domain to an IP address (e.g. `93.184.216.34`).", id_map),
         ]),
         bullet("**2. TCP Connection & TLS Handshake:**", id_map, children=[
-            bullet("To establish a reliable connection over IP, the client and server execute a **TCP 3-Way Handshake**: `SYN` (client) -> `SYN-ACK` (server) -> `ACK` (client).", id_map),
-            bullet("For secure HTTPS (port 443), TLS 1.3 performs cryptographic key exchange to authenticate the server's certificate and establish symmetric encryption before application data travels.", id_map),
+            bullet("To establish a reliable connection over IP, the client and server execute a [[CON-TCP-HANDSHAKE]]: `SYN` (client) -> `SYN-ACK` (server) -> `ACK` (client).", id_map),
+            bullet("For secure HTTPS (port 443), [[CON-TLS]] performs cryptographic key exchange to authenticate the server's certificate and establish symmetric encryption before application data travels.", id_map),
         ]),
-        bullet("**3. HTTP Request & Response Anatomy:**", id_map, children=[
+        bullet("**3. HTTP Request & Response Anatomy ([[CON-HTTP]]):**", id_map, children=[
             bullet("**Request:** Method (`GET`, `POST`, `PUT`, `DELETE`, `PATCH`), URI path, HTTP version, and headers (`Host`, `User-Agent`, `Accept`, `Authorization`, `Cookie`).", id_map),
             bullet("**Response:** Status line (HTTP version, Status code, Reason phrase), headers (`Content-Type`, `Cache-Control`, `Set-Cookie`), and payload body.", id_map),
         ]),
         bullet("**4. Standard HTTP Status Code Classes:**", id_map, children=[
-            bullet("`1xx` Informational: Request received, continuing process (e.g. `101 Switching Protocols` for WebSocket).", id_map),
+            bullet("`1xx` Informational: Request received, continuing process (e.g. `101 Switching Protocols` for [[CON-WEBSOCKET]]).", id_map),
             bullet("`2xx` Success: Action successfully received and accepted (`200 OK`, `201 Created`, `204 No Content`).", id_map),
             bullet("`3xx` Redirection: Further action needed (`301 Moved Permanently`, `302 Found`, `304 Not Modified` for cache hits).", id_map),
             bullet("`4xx` Client Error: Invalid client request (`400 Bad Request`, `401 Unauthorized`, `403 Forbidden`, `404 Not Found`, `429 Too Many Requests`).", id_map),
