@@ -1,0 +1,434 @@
+# -*- coding: utf-8 -*-
+"""
+Generator script for DRL-PRG-T00-C01-U01-01:
+Network Lifecycle & HTTP Protocols — Foundation Drill (10 Qs · Level 1)
+Enforces:
+1. Complete Level 1 problem set (DNS, TCP, TLS, HTTP, Status Codes 401/403/502/504, Caching, WebSockets)
+2. Final-Pass Concept Vault Cross-Referencing & Auto-Linking
+3. Immediate Pristine Notion Sync on Creation
+"""
+import json
+import os
+import sys
+from apply_rules_and_test_pages import auto_link_concepts, load_env
+from practice_hub import sync_drill_to_notion
+
+DRILL_ID = "DRL-PRG-T00-C01-U01-01"
+UNIT_CODE = "PRG-T00-C01-U01"
+CHAPTER_CODE = "PRG-T00-C01"
+TOPIC_CODE = "PRG-T00"
+UNIT_TITLE = "Network Lifecycle & HTTP Protocols"
+
+def build_drill_doc(id_map):
+    raw_problems = [
+        {
+            "id": "Q01",
+            "category": "Network Fundamentals",
+            "context": "DNS: Recursive to Authoritative Resolution",
+            "level": 1,
+            "levelLabel": "Level 1 - Foundation",
+            "codeType": "predict-output",
+            "archetype": "code-tracing",
+            "competencies": ["logic", "debugging"],
+            "prompt": "A browser queries DNS for `api.example.com`. It traverses the local cache, recursive resolver, root nameserver, and `.com` TLD nameserver. Which specific server tier holds the definitive A or AAAA IP address record for `api.example.com`?",
+            "codeSnippet": "// DNS Query Traversal:\n// Browser Cache -> OS Cache -> Recursive Resolver -> Root (.) -> TLD (.com) -> [?]\n",
+            "language": "javascript",
+            "answerSpec": {
+                "type": "text",
+                "accepted": ["authoritative", "authoritative nameserver", "authoritative server", "authoritative name server"]
+            },
+            "answerDisplay": "Authoritative Nameserver",
+            "answerPlain": "Authoritative Nameserver",
+            "inputHint": "Type the server tier name (e.g. Authoritative Nameserver).",
+            "checkpointHint": "Root points to TLD (.com); TLD points to the Authoritative server for example.com.",
+            "commonTrapTag": "dns-server-tier",
+            "steps": [
+                {
+                    "latex": "\\text{Client} \\to \\text{Root} \\to \\text{TLD (.com)}",
+                    "explain": "The Recursive Resolver queries root servers (.) to find the .com TLD servers."
+                },
+                {
+                    "latex": "\\text{TLD} \\to \\text{Authoritative Nameserver}",
+                    "explain": "The TLD server (.com) refers the query to the Authoritative nameserver configured for example.com (e.g., ns1.example.com)."
+                },
+                {
+                    "latex": "\\text{Authoritative Nameserver} \\to \\text{IP Record}",
+                    "explain": "The Authoritative nameserver returns the definitive A record containing the IP address (e.g., 93.184.216.34)."
+                }
+            ]
+        },
+        {
+            "id": "Q02",
+            "category": "Transport Protocols",
+            "context": "TCP: Connection Handshake Sequence",
+            "level": 1,
+            "levelLabel": "Level 1 - Foundation",
+            "codeType": "predict-output",
+            "archetype": "code-tracing",
+            "competencies": ["logic", "testing"],
+            "prompt": "Before an HTTP request can be transmitted, the TCP 3-Way Handshake establishes a synchronized connection. What is the standard 3-packet flag sequence exchanged between client and server? (Format: FLAG -> FLAG -> FLAG)",
+            "codeSnippet": "Client --- [ Packet 1 ] ---> Server\nClient <--- [ Packet 2 ] --- Server\nClient --- [ Packet 3 ] ---> Server (ESTABLISHED)\n",
+            "language": "plain text",
+            "answerSpec": {
+                "type": "text",
+                "accepted": ["syn -> syn-ack -> ack", "syn, syn-ack, ack", "syn syn-ack ack", "syn-synack-ack"]
+            },
+            "answerDisplay": "SYN -> SYN-ACK -> ACK",
+            "answerPlain": "SYN -> SYN-ACK -> ACK",
+            "inputHint": "Type the sequence: SYN -> SYN-ACK -> ACK",
+            "checkpointHint": "Client Synchronizes (SYN), Server Sync-Acknowledges (SYN-ACK), Client Acknowledges (ACK).",
+            "commonTrapTag": "tcp-handshake-order",
+            "steps": [
+                {
+                    "latex": "\\text{Client} \\xrightarrow{\\text{SYN}} \\text{Server}",
+                    "explain": "Client initiates connection with SYN packet and random initial sequence number."
+                },
+                {
+                    "latex": "\\text{Server} \\xrightarrow{\\text{SYN-ACK}} \\text{Client}",
+                    "explain": "Server acknowledges client's sequence number and sends its own SYN sequence number."
+                },
+                {
+                    "latex": "\\text{Client} \\xrightarrow{\\text{ACK}} \\text{Server}",
+                    "explain": "Client acknowledges server's SYN. Connection is established and application data can travel."
+                }
+            ]
+        },
+        {
+            "id": "Q03",
+            "category": "Security & Encryption",
+            "context": "TLS: Transport Layer Security & HTTPS",
+            "level": 1,
+            "levelLabel": "Level 1 - Foundation",
+            "codeType": "predict-output",
+            "archetype": "code-tracing",
+            "competencies": ["logic"],
+            "prompt": "In HTTPS (port 443), what cryptographic security protocol operates directly on top of TCP to verify the server's digital certificate and establish symmetric encryption before application data travels?",
+            "codeSnippet": "// Network Protocol Stack:\n// Application Layer: HTTP\n// Security Layer:    [ ? ] (Port 443 HTTPS)\n// Transport Layer:   TCP\n// Internet Layer:    IP\n",
+            "language": "javascript",
+            "answerSpec": {
+                "type": "text",
+                "accepted": ["tls", "tls 1.3", "transport layer security", "tls/ssl", "tls1.3"]
+            },
+            "answerDisplay": "TLS (Transport Layer Security)",
+            "answerPlain": "TLS",
+            "inputHint": "Type the protocol acronym (e.g. TLS or TLS 1.3).",
+            "checkpointHint": "TLS (Transport Layer Security) replaced SSL.",
+            "commonTrapTag": "auth-401-vs-403",
+            "steps": [
+                {
+                    "latex": "\\text{TCP Handshake} \\to \\text{TLS Handshake} \\to \\text{HTTP Request}",
+                    "explain": "TCP establishes socket connection, then TLS verifies certificate and establishes session encryption keys."
+                },
+                {
+                    "latex": "\\text{Confidentiality} + \\text{Authentication} + \\text{Integrity}",
+                    "explain": "TLS guarantees you communicate with the real server, encrypted, with tamper-proof packet validation."
+                }
+            ]
+        },
+        {
+            "id": "Q04",
+            "category": "HTTP Protocol Anatomy",
+            "context": "HTTP Request: Wire Protocol Anatomy",
+            "level": 1,
+            "levelLabel": "Level 1 - Foundation",
+            "codeType": "predict-output",
+            "archetype": "code-tracing",
+            "competencies": ["logic"],
+            "prompt": "Examine the raw HTTP request line below. What is the exact HTTP Method specified for this transaction?",
+            "codeSnippet": "GET /api/v2/products/electronics?sort=price_asc HTTP/1.1\nHost: store.example.com\nUser-Agent: Mozilla/5.0\nAccept: application/json\n",
+            "language": "plain text",
+            "answerSpec": {
+                "type": "text",
+                "accepted": ["get"]
+            },
+            "answerDisplay": "GET",
+            "answerPlain": "GET",
+            "inputHint": "Type the HTTP method name (e.g. GET).",
+            "checkpointHint": "The first token in an HTTP request line is always the HTTP Method.",
+            "commonTrapTag": "http-method-misuse",
+            "steps": [
+                {
+                    "latex": "\\text{[Method]} \\; \\text{[Request-URI]} \\; \\text{[HTTP-Version]}",
+                    "explain": "Anatomy of an HTTP Request line: 'GET' is the Method, followed by the resource URI and HTTP version."
+                }
+            ]
+        },
+        {
+            "id": "Q05",
+            "category": "HTTP Status Codes",
+            "context": "Status Code Triage: Authentication Required",
+            "level": 1,
+            "levelLabel": "Level 1 - Foundation",
+            "codeType": "predict-output",
+            "archetype": "code-tracing",
+            "competencies": ["debugging", "logic"],
+            "prompt": "An anonymous user attempts to access `/api/user/profile` without providing an Authorization header or session token. What 3-digit HTTP status code must the server return to signal that authentication credentials are required?",
+            "codeSnippet": "// Incoming Request:\n// GET /api/user/profile HTTP/1.1\n// Host: api.example.com\n// (No Authorization or Cookie header present)\n\n// Expected Response Status Line:\n// HTTP/1.1 [ ? ] ...\n",
+            "language": "javascript",
+            "answerSpec": {
+                "type": "text",
+                "accepted": ["401", "401 unauthorized", "unauthorized"]
+            },
+            "answerDisplay": "401 Unauthorized",
+            "answerPlain": "401",
+            "inputHint": "Type the 3-digit status code (e.g. 401).",
+            "checkpointHint": "401 indicates authentication credentials are completely missing or invalid.",
+            "commonTrapTag": "auth-401-vs-403",
+            "steps": [
+                {
+                    "latex": "401 \\text{ Unauthorized} = \\text{Unauthenticated (Identity unknown / login required)}",
+                    "explain": "401 Unauthorized means the request lacks valid authentication credentials. The user must log in."
+                }
+            ]
+        },
+        {
+            "id": "Q06",
+            "category": "HTTP Status Codes",
+            "context": "Status Code Triage: Authorization & Roles",
+            "level": 1,
+            "levelLabel": "Level 1 - Foundation",
+            "codeType": "predict-output",
+            "archetype": "code-tracing",
+            "competencies": ["debugging", "logic"],
+            "prompt": "A user is authenticated with a valid JWT token confirming their identity as `viewer`. When they attempt to `DELETE /api/users/99`, the server confirms who they are, but rejects the action because only `admin` has deletion rights. What 3-digit status code should the server return?",
+            "codeSnippet": "// Incoming Request:\n// DELETE /api/users/99 HTTP/1.1\n// Authorization: Bearer <valid_jwt_with_role_viewer>\n\n// Expected Server Response:\n// HTTP/1.1 [ ? ] ...\n",
+            "language": "javascript",
+            "answerSpec": {
+                "type": "text",
+                "accepted": ["403", "403 forbidden", "forbidden"]
+            },
+            "answerDisplay": "403 Forbidden",
+            "answerPlain": "403",
+            "inputHint": "Type the 3-digit status code (e.g. 403).",
+            "checkpointHint": "Identity is known (authenticated), but the user lacks sufficient permission.",
+            "commonTrapTag": "auth-401-vs-403",
+            "steps": [
+                {
+                    "latex": "403 \\text{ Forbidden} = \\text{Authenticated, but access denied (Insufficient permissions)}",
+                    "explain": "403 Forbidden indicates the server understood the request and verified identity, but refuses to authorize access."
+                }
+            ]
+        },
+        {
+            "id": "Q07",
+            "category": "HTTP Status Codes",
+            "context": "Status Code Triage: Reverse Proxy & Upstream Crashes",
+            "level": 1,
+            "levelLabel": "Level 1 - Foundation",
+            "codeType": "predict-output",
+            "archetype": "code-tracing",
+            "competencies": ["debugging"],
+            "prompt": "An Nginx reverse proxy forwards an API request to a backend Node.js microservice. The Node.js process crashes immediately due to an uncaught exception, abruptly severing the TCP socket before sending any valid response. What 3-digit HTTP status code will Nginx return to the client?",
+            "codeSnippet": "Client ---> [ Nginx Proxy ] ---> [ Node.js Microservice ] (Process Crashed!)\nClient <--- [ HTTP/1.1 ??? ] <--- [ Socket Closed Uncleanly ]\n",
+            "language": "plain text",
+            "answerSpec": {
+                "type": "text",
+                "accepted": ["502", "502 bad gateway", "bad gateway"]
+            },
+            "answerDisplay": "502 Bad Gateway",
+            "answerPlain": "502",
+            "inputHint": "Type the 3-digit status code (e.g. 502).",
+            "checkpointHint": "502 Bad Gateway means the upstream server returned an invalid response or closed unexpectedly.",
+            "commonTrapTag": "gateway-502-vs-504",
+            "steps": [
+                {
+                    "latex": "502 \\text{ Bad Gateway} = \\text{Invalid, corrupt or terminated response from upstream server}",
+                    "explain": "The proxy received an invalid response or unexpected TCP socket termination from the origin server."
+                }
+            ]
+        },
+        {
+            "id": "Q08",
+            "category": "HTTP Status Codes",
+            "context": "Status Code Triage: Upstream Gateway Timeout",
+            "level": 1,
+            "levelLabel": "Level 1 - Foundation",
+            "codeType": "predict-output",
+            "archetype": "code-tracing",
+            "competencies": ["debugging"],
+            "prompt": "An API Gateway is configured with a 10-second response timeout. It proxies an analytics request to a legacy reporting service. The reporting service takes 35 seconds to query the database. What 3-digit status code will the API Gateway return to the user after 10 seconds of silence?",
+            "codeSnippet": "// Gateway timer: 10,000ms\n// Upstream elapsed: 10,001ms (No headers or bytes received yet)\n// Gateway aborts wait and sends: HTTP/1.1 [ ? ]\n",
+            "language": "javascript",
+            "answerSpec": {
+                "type": "text",
+                "accepted": ["504", "504 gateway timeout", "gateway timeout"]
+            },
+            "answerDisplay": "504 Gateway Timeout",
+            "answerPlain": "504",
+            "inputHint": "Type the 3-digit status code (e.g. 504).",
+            "checkpointHint": "504 indicates the proxy did not receive a timely response from the upstream server.",
+            "commonTrapTag": "gateway-502-vs-504",
+            "steps": [
+                {
+                    "latex": "504 \\text{ Gateway Timeout} = \\text{Upstream failed to respond before proxy timer expired}",
+                    "explain": "The server acting as a gateway did not receive a timely response from the upstream server specified by the URI."
+                }
+            ]
+        },
+        {
+            "id": "Q09",
+            "category": "HTTP Caching",
+            "context": "HTTP Caching: Conditional Validation",
+            "level": 1,
+            "levelLabel": "Level 1 - Foundation",
+            "codeType": "predict-output",
+            "archetype": "code-tracing",
+            "competencies": ["performance"],
+            "prompt": "A browser sends a conditional GET request with header `If-None-Match: \"abc123etag\"`. The server checks the file and finds the ETag hash is unchanged. What 3-digit HTTP status code is returned with an empty body to instruct the browser to render from its disk cache?",
+            "codeSnippet": "// Client Request:\n// GET /logo.png HTTP/1.1\n// If-None-Match: \"abc123etag\"\n\n// Server Response:\n// HTTP/1.1 [ ? ] ...\n// ETag: \"abc123etag\"\n// (No body transmitted)\n",
+            "language": "javascript",
+            "answerSpec": {
+                "type": "text",
+                "accepted": ["304", "304 not modified", "not modified"]
+            },
+            "answerDisplay": "304 Not Modified",
+            "answerPlain": "304",
+            "inputHint": "Type the 3-digit status code (e.g. 304).",
+            "checkpointHint": "304 Not Modified tells the client its cached copy is still fresh.",
+            "commonTrapTag": "cache-conditional-304",
+            "steps": [
+                {
+                    "latex": "304 \\text{ Not Modified} = \\text{ETag matches; payload body omitted to save bandwidth}",
+                    "explain": "Informs the client that the cached version is valid, so no resource body needs to be retransmitted."
+                }
+            ]
+        },
+        {
+            "id": "Q10",
+            "category": "Web Platform Protocols",
+            "context": "WebSockets: Protocol Switching Handshake",
+            "level": 1,
+            "levelLabel": "Level 1 - Foundation",
+            "codeType": "predict-output",
+            "archetype": "code-tracing",
+            "competencies": ["logic"],
+            "prompt": "When establishing a WebSocket connection, the client initiates an HTTP handshake with headers `Upgrade: websocket` and `Connection: Upgrade`. What 3-digit status code does the server return to confirm that it agrees to switch protocols from HTTP to WebSocket?",
+            "codeSnippet": "// Client Handshake:\n// GET /chat HTTP/1.1\n// Upgrade: websocket\n// Connection: Upgrade\n\n// Server Acceptance:\n// HTTP/1.1 [ ? ] ...\n// Upgrade: websocket\n// Connection: Upgrade\n",
+            "language": "javascript",
+            "answerSpec": {
+                "type": "text",
+                "accepted": ["101", "101 switching protocols", "switching protocols"]
+            },
+            "answerDisplay": "101 Switching Protocols",
+            "answerPlain": "101",
+            "inputHint": "Type the 3-digit status code (e.g. 101).",
+            "checkpointHint": "101 Switching Protocols is the HTTP response code for protocol upgrades.",
+            "commonTrapTag": "protocol-switch-101",
+            "steps": [
+                {
+                    "latex": "101 \\text{ Switching Protocols} = \\text{Client/Server transition from HTTP to WebSocket frame protocol}",
+                    "explain": "Server agrees to upgrade the TCP connection from half-duplex HTTP to persistent full-duplex WebSocket framing."
+                }
+            ]
+        }
+    ]
+
+    # Apply auto_link_concepts and initialize state
+    problems = []
+    for p in raw_problems:
+        p["prompt"] = auto_link_concepts(p["prompt"], id_map)
+        if p.get("checkpointHint"):
+            p["checkpointHint"] = auto_link_concepts(p["checkpointHint"], id_map)
+        for st in p.get("steps", []):
+            if "explain" in st:
+                st["explain"] = auto_link_concepts(st["explain"], id_map)
+        p["state"] = {
+            "userInput": "",
+            "score": None,
+            "divergedStep": None,
+            "mistakes": [],
+            "lastCheck": None
+        }
+        problems.append(p)
+
+    mistake_tags = [
+        {
+            "id": "dns-server-tier",
+            "name": "DNS Server Tier Confusion",
+            "label": "Confused TLD nameserver with Authoritative nameserver"
+        },
+        {
+            "id": "tcp-handshake-order",
+            "name": "TCP Handshake Sequence Error",
+            "label": "Incorrect TCP 3-way handshake flag order (must be SYN -> SYN-ACK -> ACK)"
+        },
+        {
+            "id": "auth-401-vs-403",
+            "name": "401 vs 403 Authentication Distinction",
+            "label": "Confused 401 Unauthorized (unauthenticated) with 403 Forbidden (authenticated but no permission)"
+        },
+        {
+            "id": "gateway-502-vs-504",
+            "name": "502 vs 504 Gateway Distinction",
+            "label": "Confused 502 Bad Gateway (upstream crash/invalid) with 504 Gateway Timeout (upstream timer expired)"
+        },
+        {
+            "id": "cache-conditional-304",
+            "name": "Conditional Cache Response Error",
+            "label": "Confused 304 Not Modified cache hit response with error or redirect status"
+        },
+        {
+            "id": "protocol-switch-101",
+            "name": "Protocol Upgrade Code Error",
+            "label": "Confused 101 Switching Protocols with 200 OK or 3xx redirect in WebSocket upgrade"
+        },
+        {
+            "id": "http-method-misuse",
+            "name": "HTTP Method Anatomy Error",
+            "label": "Incorrect identification of HTTP wire protocol request line method"
+        }
+    ]
+
+    doc = {
+        "schemaVersion": "2.0-prg",
+        "drillId": DRILL_ID,
+        "subject": "PRG",
+        "unitCode": UNIT_CODE,
+        "unitTitle": UNIT_TITLE,
+        "chapterCode": CHAPTER_CODE,
+        "topicCode": TOPIC_CODE,
+        "unitNotionUrl": f"https://www.notion.so/{id_map[UNIT_CODE]['id'].replace('-', '')}",
+        "createdAt": "2026-11-06 22:30:00",
+        "config": {
+            "questionCount": len(problems),
+            "difficulty": "LEVEL_1",
+            "difficultyMode": "Level 1 - Foundation & Protocol Invariants"
+        },
+        "mistakeTags": mistake_tags,
+        "problems": problems
+    }
+    return doc
+
+def main():
+    with open("id_map.json", "r", encoding="utf-8") as f:
+        id_map = json.load(f)
+
+    doc = build_drill_doc(id_map)
+
+    # 1. Save local drill JSON file
+    unit_dir = os.path.join("drills", "data", UNIT_CODE)
+    os.makedirs(unit_dir, exist_ok=True)
+    local_path = os.path.join(unit_dir, f"{DRILL_ID}.json")
+    with open(local_path, "w", encoding="utf-8") as f:
+        json.dump(doc, f, ensure_ascii=False, indent=2)
+    print(f"✓ Saved local drill JSON to: {local_path}")
+
+    # 2. Register in id_map.json
+    id_map[DRILL_ID] = {
+        "id": f"local-{DRILL_ID}",
+        "title": f"{UNIT_TITLE} — Foundation Drill (10 Qs · Level 1)",
+        "file": local_path
+    }
+    with open("id_map.json", "w", encoding="utf-8") as f:
+        json.dump(id_map, f, ensure_ascii=False, indent=2)
+    print(f"✓ Registered {DRILL_ID} in id_map.json")
+
+    # 3. Mandatory Immediate Pristine Sync to Notion
+    print("--- SYNCHRONIZING PRISTINE DRILL RECORD TO NOTION DATABASE ---")
+    res = sync_drill_to_notion(doc)
+    print("Sync Result:", res)
+
+    print(f"\n🎉 {DRILL_ID} successfully created and synchronized to Notion in Pristine Ready state!")
+
+if __name__ == "__main__":
+    main()

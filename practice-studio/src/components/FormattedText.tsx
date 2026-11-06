@@ -12,10 +12,10 @@ export const FormattedText: React.FC<FormattedTextProps> = ({
   text,
   className = "",
 }) => {
-  // Regex to split inline tokens: math ($...$), bold (**...**), backtick code (`...`), or quoted identifier ('...')
+  // Regex to split inline tokens: math ($...$), bold (**...**), backtick code (`...`), concept vault token ([[...]]), or quoted identifier ('...')
   const inlineRegex = useMemo(
     () =>
-      /(\$[^$]+\$|\*\*[^*]+\*\*|`[^`]+`|(?<=^|[\s(,;])'[\w$][\w$.():\s,\-=><\[\]]*?'(?=[\s),;.:!?]|$))/g,
+      /(\$[^$]+\$|\*\*[^*]+\*\*|`[^`]+`|\[\[[\w-]+\]\]|(?<=^|[\s(,;])'[\w$][\w$.():\s,\-=><\[\]]*?'(?=[\s),;.:!?]|$))/g,
     []
   );
 
@@ -76,6 +76,22 @@ export const FormattedText: React.FC<FormattedTextProps> = ({
           >
             {code}
           </code>
+        );
+      }
+
+      // 4. Concept Vault Token: [[KEY]]
+      if (seg.startsWith("[[") && seg.endsWith("]]") && seg.length >= 4) {
+        const key = seg.slice(2, -2);
+        const displayLabel = key.startsWith("CON-") ? key.replace("CON-", "").replace(/-/g, " ") : key;
+        return (
+          <span
+            key={idx}
+            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[0.85em] font-medium bg-emerald-950/70 text-emerald-300 border border-emerald-500/50 shadow-sm align-baseline"
+            title={`Concept Vault: ${key}`}
+          >
+            <span className="text-[0.78em] opacity-80">📖</span>
+            <span>{displayLabel}</span>
+          </span>
         );
       }
 

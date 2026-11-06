@@ -78,11 +78,23 @@
         }
       ],
       "state": {
-        "userInput": "",
-        "score": null,
+        "userInput": "53",
+        "userCode": "",
+        "score": 1,
         "divergedStep": null,
         "mistakes": [],
-        "lastCheck": null
+        "lastCheck": {
+          "verdict": "correct",
+          "message": "Correct.",
+          "components": [
+            {
+              "label": "Value",
+              "ok": true
+            }
+          ],
+          "diagnostics": []
+        },
+        "lastTestReport": null
       }
     },
     {
@@ -118,11 +130,23 @@
         }
       ],
       "state": {
-        "userInput": "",
-        "score": null,
+        "userInput": "56",
+        "userCode": "",
+        "score": 1,
         "divergedStep": null,
         "mistakes": [],
-        "lastCheck": null
+        "lastCheck": {
+          "verdict": "correct",
+          "message": "Correct.",
+          "components": [
+            {
+              "label": "Value",
+              "ok": true
+            }
+          ],
+          "diagnostics": []
+        },
+        "lastTestReport": null
       }
     },
     {
@@ -159,10 +183,12 @@
       ],
       "state": {
         "userInput": "",
+        "userCode": "",
         "score": null,
         "divergedStep": null,
         "mistakes": [],
-        "lastCheck": null
+        "lastCheck": null,
+        "lastTestReport": null
       }
     },
     {
@@ -203,10 +229,12 @@
       ],
       "state": {
         "userInput": "",
+        "userCode": "",
         "score": null,
         "divergedStep": null,
         "mistakes": [],
-        "lastCheck": null
+        "lastCheck": null,
+        "lastTestReport": null
       }
     },
     {
@@ -243,10 +271,12 @@
       ],
       "state": {
         "userInput": "",
+        "userCode": "",
         "score": null,
         "divergedStep": null,
         "mistakes": [],
-        "lastCheck": null
+        "lastCheck": null,
+        "lastTestReport": null
       }
     },
     {
@@ -287,10 +317,12 @@
       ],
       "state": {
         "userInput": "",
+        "userCode": "",
         "score": null,
         "divergedStep": null,
         "mistakes": [],
-        "lastCheck": null
+        "lastCheck": null,
+        "lastTestReport": null
       }
     },
     {
@@ -335,10 +367,12 @@
       ],
       "state": {
         "userInput": "",
+        "userCode": "",
         "score": null,
         "divergedStep": null,
         "mistakes": [],
-        "lastCheck": null
+        "lastCheck": null,
+        "lastTestReport": null
       }
     },
     {
@@ -383,10 +417,12 @@
       ],
       "state": {
         "userInput": "",
+        "userCode": "",
         "score": null,
         "divergedStep": null,
         "mistakes": [],
-        "lastCheck": null
+        "lastCheck": null,
+        "lastTestReport": null
       }
     },
     {
@@ -431,10 +467,12 @@
       ],
       "state": {
         "userInput": "",
+        "userCode": "",
         "score": null,
         "divergedStep": null,
         "mistakes": [],
-        "lastCheck": null
+        "lastCheck": null,
+        "lastTestReport": null
       }
     },
     {
@@ -479,11 +517,14 @@
       ],
       "state": {
         "userInput": "",
+        "userCode": "",
         "score": null,
         "divergedStep": null,
         "mistakes": [],
-        "lastCheck": null
+        "lastCheck": null,
+        "lastTestReport": null
       }
     }
-  ]
+  ],
+  "localFilePath": "/Users/Joseph/Documents/antigravity/brave-borg/drills/data/MTH-T01-C12-U03/DRL-MTH-T01-C12-04.json"
 }

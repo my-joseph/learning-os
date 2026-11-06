@@ -165,12 +165,29 @@ def auto_link_concepts(text, id_map, max_per_concept=1):
                     terms.add(short)
                 if len(inside) >= 4:
                     terms.add(inside)
-            # Also capture distinctive leading word if title ends in Protocol, Anatomy, Architecture, etc.
-            for suffix in [" Protocol", " Anatomy", " Architecture", " System"]:
-                if title.endswith(suffix):
-                    base_word = title[:-len(suffix)].strip()
-                    if len(base_word) >= 3:
-                        terms.add(base_word)
+            # Also split by '&' or '/'
+            if "&" in title:
+                for part in title.split("&"):
+                    if len(part.strip()) >= 3:
+                        terms.add(part.strip())
+            if "/" in title:
+                for part in title.split("/"):
+                    if len(part.strip()) >= 3:
+                        terms.add(part.strip())
+            if " 3-Way " in title:
+                terms.add(title.replace(" 3-Way ", " "))
+            # Iteratively capture leading words if title ends in Protocol, Anatomy, Architecture, etc.
+            curr = title
+            for _ in range(3):
+                matched = False
+                for suffix in [" Protocol", " Anatomy", " Architecture", " System"]:
+                    if curr.endswith(suffix):
+                        curr = curr[:-len(suffix)].strip()
+                        if len(curr) >= 3:
+                            terms.add(curr)
+                        matched = True
+                if not matched:
+                    break
             for t in terms:
                 concept_entries.append((k, t))
 
@@ -224,12 +241,29 @@ def divider_block():
 def eq_block(expr):
     return {"object": "block", "type": "equation", "equation": {"expression": expr}}
 
+NOTION_VALID_LANGUAGES = {
+    "abap", "abc", "agda", "arduino", "ascii art", "assembly", "bash", "basic", "bnf", "c",
+    "c#", "c++", "clojure", "coffeescript", "coq", "css", "dart", "dhall", "diff", "docker",
+    "ebnf", "elixir", "elm", "erlang", "f#", "flow", "fortran", "gherkin", "glsl", "go",
+    "graphql", "groovy", "haskell", "hcl", "html", "idris", "java", "javascript", "json",
+    "julia", "kotlin", "latex", "less", "lisp", "livescript", "llvm ir", "lua", "makefile",
+    "markdown", "markup", "matlab", "mathematica", "mermaid", "nix", "notion formula",
+    "objective-c", "ocaml", "pascal", "perl", "php", "plain text", "powershell", "prolog",
+    "protobuf", "purescript", "python", "r", "racket", "reason", "ruby", "rust", "sass",
+    "scala", "scheme", "scss", "shell", "smalltalk", "solidity", "sql", "swift", "toml",
+    "typescript", "vb.net", "verilog", "vhdl", "visual basic", "webassembly", "xml", "yaml",
+    "java/c/c++/c#"
+}
+
 def code_block(code_str, lang="typescript"):
+    norm_lang = (lang or "plain text").lower()
+    if norm_lang not in NOTION_VALID_LANGUAGES:
+        norm_lang = "plain text"
     return {
         "object": "block",
         "type": "code",
         "code": {
-            "language": lang,
+            "language": norm_lang,
             "rich_text": [rt(code_str)],
         },
     }
