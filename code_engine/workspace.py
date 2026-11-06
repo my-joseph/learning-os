@@ -34,6 +34,68 @@ COMPETENCY_LABELS = {
     "performance": "Performance & Optimization",
 }
 
+ENVIRONMENT_PRESETS = {
+    "node-vanilla": {
+        "description": "Standard Node.js Native Runner (CommonJS/ESM)",
+        "defaultExt": "js",
+        "scripts": {
+            "test": "node --test *.test.js",
+            "test:watch": "node --test --watch *.test.js",
+            "review": "python3 ../../../code_engine/review.py",
+            "submit": "python3 ../../../code_engine/submit.py",
+        },
+        "devDependencies": {},
+    },
+    "typescript-strict": {
+        "description": "Strict TypeScript Native Runner with Typecheck Check",
+        "defaultExt": "ts",
+        "scripts": {
+            "test": "node --experimental-strip-types --test *.test.ts",
+            "test:watch": "node --experimental-strip-types --test --watch *.test.ts",
+            "typecheck": "tsc --noEmit",
+            "review": "python3 ../../../code_engine/review.py",
+            "submit": "python3 ../../../code_engine/submit.py",
+        },
+        "devDependencies": {
+            "typescript": "^5.0.0",
+            "@types/node": "^20.0.0",
+        },
+    },
+    "react-dom": {
+        "description": "React Component & Custom Hook Environment (Vitest / React Testing Library)",
+        "defaultExt": "tsx",
+        "scripts": {
+            "test": "vitest run",
+            "test:watch": "vitest",
+            "review": "python3 ../../../code_engine/review.py",
+            "submit": "python3 ../../../code_engine/submit.py",
+        },
+        "devDependencies": {
+            "vitest": "^1.3.0",
+            "@testing-library/react": "^14.2.0",
+            "@testing-library/react-hooks": "^8.0.1",
+            "jsdom": "^24.0.0",
+            "react": "^18.2.0",
+            "react-dom": "^18.2.0",
+        },
+    },
+    "backend-sqlite": {
+        "description": "Backend Database & Transaction Environment with In-Memory SQLite",
+        "defaultExt": "ts",
+        "scripts": {
+            "test": "node --experimental-strip-types --test *.test.ts",
+            "test:watch": "node --experimental-strip-types --test --watch *.test.ts",
+            "review": "python3 ../../../code_engine/review.py",
+            "submit": "python3 ../../../code_engine/submit.py",
+        },
+        "devDependencies": {
+            "better-sqlite3": "^9.4.0",
+            "@types/better-sqlite3": "^7.6.9",
+            "@types/node": "^20.0.0",
+        },
+    },
+}
+
 
 def get_entry_name(prob: dict) -> str:
     entry = prob.get("entryPoint")
@@ -92,6 +154,10 @@ def materialize_drill_workspace(drill_doc: dict, root_dir: str = ".") -> dict:
     drill_id = drill_doc.get("drillId", "UNKNOWN_DRILL")
     unit_code = drill_doc.get("unitCode", "PRG")
     unit_title = drill_doc.get("unitTitle", "Programming Practice")
+    preset_key = drill_doc.get("environment", "node-vanilla")
+    preset = ENVIRONMENT_PRESETS.get(preset_key, ENVIRONMENT_PRESETS["node-vanilla"])
+    ext = preset.get("defaultExt", "js")
+
     ws_dir = os.path.join(root_dir, "drills", "workspace", drill_id)
     canonical_dir = os.path.join(ws_dir, ".canonical")
     os.makedirs(ws_dir, exist_ok=True)
@@ -99,16 +165,12 @@ def materialize_drill_workspace(drill_doc: dict, root_dir: str = ".") -> dict:
 
     manifest = {
         "drillId": drill_id,
+        "environment": preset_key,
         "workspaceDir": os.path.abspath(ws_dir),
         "files": {},
     }
 
-    test_scripts = {
-        "test": "node --test *.test.js",
-        "test:watch": "node --test --watch *.test.js",
-        "review": "python3 ../../../code_engine/review.py",
-        "submit": "python3 ../../../code_engine/submit.py",
-    }
+    test_scripts = dict(preset["scripts"])
     readme_problems = []
 
     for prob in drill_doc.get("problems", []):
@@ -124,9 +186,9 @@ def materialize_drill_workspace(drill_doc: dict, root_dir: str = ".") -> dict:
 
         pid = prob.get("id", "Q01")
         entry_name = get_entry_name(prob)
-        src_filename = f"{pid}_{entry_name}.js"
-        test_filename = f"{pid}_{entry_name}.test.js"
-        canonical_filename = f"{pid}_{entry_name}.js"
+        src_filename = f"{pid}_{entry_name}.{ext}"
+        test_filename = f"{pid}_{entry_name}.test.{ext}"
+        canonical_filename = f"{pid}_{entry_name}.{ext}"
 
         src_path = os.path.join(ws_dir, src_filename)
         test_path = os.path.join(ws_dir, test_filename)
@@ -149,7 +211,7 @@ def materialize_drill_workspace(drill_doc: dict, root_dir: str = ".") -> dict:
             with open(canonical_path, "w", encoding="utf-8") as f:
                 f.write(sol_code.strip() + "\n")
 
-        # 3. Write Runnable Test File
+        # 3. Write Visible Test File
         test_blocks = []
         for idx, t in enumerate(prob.get("visibleTests", []), 1):
             t_name = json.dumps(f"[{pid}-T{idx:02d}] " + t.get("name", f"scenario {idx}"))
@@ -160,18 +222,47 @@ test({t_name}, async () => {{
 }});
 """)
 
-        test_content = f"""// Auto-generated test suite for {drill_id} {pid}
-const test = require('node:test');
-const assert = require('node:assert');
-const {{ {entry_name} }} = require('./{src_filename}');
+        test_header = f"// Auto-generated visible test suite for {drill_id} {pid}\n"
+        if preset_key in ("typescript-strict", "backend-sqlite"):
+            test_header += "import test from 'node:test';\nimport assert from 'node:assert';\n"
+            test_header += f"import {{ {entry_name} }} from './{src_filename}';\n\n"
+        else:
+            test_header += f"const test = require('node:test');\nconst assert = require('node:assert');\nconst {{ {entry_name} }} = require('./{src_filename}');\n\n"
 
-{ "".join(test_blocks) }
-"""
+        test_content = test_header + "".join(test_blocks)
         with open(test_path, "w", encoding="utf-8") as f:
             f.write(test_content.strip() + "\n")
 
+        # 4. Write Hidden Trap Tests (Anti-Cheat / Advanced Boundary Invariants)
+        hidden_tests = prob.get("hiddenTests", [])
+        if hidden_tests:
+            hidden_blocks = []
+            for idx, ht in enumerate(hidden_tests, 1):
+                ht_name = json.dumps(f"[{pid}-HIDDEN-T{idx:02d}] " + ht.get("name", f"hidden trap scenario {idx}"))
+                ht_code = ht.get("testCode", "").strip()
+                hidden_blocks.append(f"""
+test({ht_name}, async () => {{
+  {ht_code}
+}});
+""")
+            hidden_header = f"// Hidden Trap Test Suite for {drill_id} {pid}\n"
+            if preset_key in ("typescript-strict", "backend-sqlite"):
+                hidden_header += "import test from 'node:test';\nimport assert from 'node:assert';\n"
+                hidden_header += f"import {{ {entry_name} }} from '../{src_filename}';\n\n"
+            else:
+                hidden_header += f"const test = require('node:test');\nconst assert = require('node:assert');\nconst {{ {entry_name} }} = require('../{src_filename}');\n\n"
+
+            hidden_test_path = os.path.join(canonical_dir, f"{pid}_{entry_name}.hidden.test.{ext}")
+            with open(hidden_test_path, "w", encoding="utf-8") as f:
+                f.write((hidden_header + "".join(hidden_blocks)).strip() + "\n")
+
         # Register npm test script per problem
-        test_scripts[f"test:{pid.lower()}"] = f"node --test {test_filename}"
+        if preset_key == "react-dom":
+            test_scripts[f"test:{pid.lower()}"] = f"vitest run {test_filename}"
+        elif preset_key in ("typescript-strict", "backend-sqlite"):
+            test_scripts[f"test:{pid.lower()}"] = f"node --experimental-strip-types --test {test_filename}"
+        else:
+            test_scripts[f"test:{pid.lower()}"] = f"node --test {test_filename}"
 
         abs_src = os.path.abspath(src_path)
         abs_ws = os.path.abspath(ws_dir)
@@ -201,6 +292,7 @@ const {{ {entry_name} }} = require('./{src_filename}');
             "archetype": ARCHETYPE_LABELS.get(archetype, archetype),
             "prompt": prob.get("prompt", ""),
             "criteria_count": len(prob.get("visibleTests", [])),
+            "hidden_count": len(hidden_tests),
         })
 
     # 4. Write package.json in workspace
@@ -209,9 +301,9 @@ const {{ {entry_name} }} = require('./{src_filename}');
         "name": f"{drill_id.lower()}-workspace",
         "version": "1.0.0",
         "private": True,
-        "description": f"Local IDE Workspace for {drill_id} ({unit_code} - {unit_title})",
+        "description": f"Local IDE Workspace for {drill_id} ({unit_code} - {unit_title}) [{preset_key}]",
         "scripts": test_scripts,
-        "devDependencies": {},
+        "devDependencies": preset.get("devDependencies", {}),
     }
     with open(pkg_json_path, "w", encoding="utf-8") as f:
         json.dump(pkg_data, f, indent=2)
@@ -222,6 +314,7 @@ const {{ {entry_name} }} = require('./{src_filename}');
     readme_lines = [
         f"# {drill_id} — {unit_code}: {unit_title}",
         "",
+        f"> **Environment Preset:** `{preset_key}` — {preset['description']}",
         "> **100% Local IDE Mandate**: All problem solving, refactoring, and debugging must be performed natively in your IDE (VS Code / Cursor).",
         "",
         "## Universal 6-Step Pedagogical Practice Loop",
@@ -247,7 +340,7 @@ const {{ {entry_name} }} = require('./{src_filename}');
         "npm run review",
         "npm run review q01",
         "",
-        "# Grade all exercises and sync score & telemetry to Notion",
+        "# Grade all exercises (runs visible + hidden trap tests) and sync to Notion",
         "npm run submit",
         "```",
         "",
@@ -256,10 +349,13 @@ const {{ {entry_name} }} = require('./{src_filename}');
     ]
 
     for p in readme_problems:
+        scenario_str = f"{p['criteria_count']} visible scenarios"
+        if p.get("hidden_count"):
+            scenario_str += f" (+ {p['hidden_count']} hidden trap tests)"
         readme_lines.extend([
             f"### {p['pid']} — `{p['src']}`",
             f"- **Archetype:** {p['archetype']}",
-            f"- **Acceptance Scenarios:** {p['criteria_count']} test cases in `{p['test']}`",
+            f"- **Acceptance Scenarios:** {scenario_str} in `{p['test']}`",
             f"- **Requirement:** {p['prompt']}",
             f"- **Run Single Suite:** `npm run test:{p['pid'].lower()}`",
             "",

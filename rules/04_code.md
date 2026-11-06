@@ -38,6 +38,29 @@ All programming exercises generated in the system must belong to one of these 5 
 | **4. Code Modification & Refactoring** | Clean Architecture & Safe Extensibility | Given a working but tangled legacy codebase covered by passing tests, add new business requirements and refactor into clean, decoupled design patterns without breaking existing tests. | Green Regression Suite + AI Architectural PR Review |
 | **5. Project-Based** | Systems Synthesis & Multi-Module Architecture | Building a complete, working production subsystem from scratch (e.g. In-memory Cache with TTL, Pub-Sub Event Bus, Cart & Tiered Voucher Engine, REST Client with Retry/Circuit Breaker). | Milestone Acceptance Tests + AI Senior Lead Architecture Review |
 
+### 1. Archetype Specification Blueprints & Contracts
+
+Every problem generated must adhere to its archetype structural contract:
+1. **Problem Solving Blueprint:**
+   - Must specify `entryPoint` function or class with explicit parameter/return shapes.
+   - Must define boundary invariants (empty array, zero/negative, type bounds).
+   - Must include at least 3 visible scenarios covering happy path and edge conditions.
+2. **Debugging Blueprint:**
+   - Must provide `starterCode` containing a realistic production bug (not a typo or trivial syntax error).
+   - Must provide a Reproducer Test case reproducing the failure.
+   - Must provide Anti-Regression test cases verifying unaffected legacy behavior.
+   - Fix must resolve the reproducer test without modifying test suites.
+3. **Code Tracing Blueprint:**
+   - Must provide deterministic multi-step snippet (e.g. event loop queue, closure scope).
+   - Must specify exact expected stdout tokens or execution sequence.
+4. **Refactoring Blueprint:**
+   - Must provide working legacy codebase passing all baseline regression tests.
+   - Must specify concrete code smells to eliminate (e.g. nested switch, shared mutable state).
+   - Must specify new feature requirements that demand an extensible design pattern.
+5. **Project-Based Blueprint:**
+   - Multi-module domain architecture (e.g. schemas, services, state machine).
+   - Tiered milestones with progressive acceptance tests.
+
 ---
 
 ## PART 3 — Seven Core Engineering Competencies
@@ -118,6 +141,13 @@ AI must execute the following pipeline in strict sequential order:
 - **Runner-Agnostic JUnit XML Standard:** Telemetry engine parses standard JUnit XML (`--test-reporter=junit`), ensuring universal compatibility across Node, Vitest, Jest, Pytest, and Go.
 - **Automated Notion Database Sync:** Evaluates points per milestone, maps failures to sanitized Mistake Categories, and updates Notion page properties and expandable toggle blocks with error traces.
 
+### 1. Mandatory Engineering Gotchas & Invariants
+- **Gotcha 1 (Notion Multi-Select Comma Ban):** Notion strictly rejects any multi_select option containing commas `,`. AI and scripts must sanitize via `.replace(/,/g, " /")` before payload delivery.
+- **Gotcha 2 (Filesystem Anchor Search):** Never assume current working directory. Scripts must locate repository root via filesystem anchor search (`find_repo_root`).
+- **Gotcha 3 (Node 24 Native Type-Stripping Imports):** Pure TypeScript types and interfaces must use `import type { ... }` so Node strips them away completely at compile time.
+- **Gotcha 4 (Unhandled Async Promises in Tests):** All async test cases must be properly `await`ed and timers/connections cleaned up in `after()` to prevent frozen processes.
+- **Gotcha 5 (Notion API Icon Whitelist):** Use only standard Notion icon names (e.g. `"code"`, `"target"`). Programming exercises must use `"code"`.
+
 ---
 
 ## PART 9 — Interactive Studio & Storage Architecture
@@ -128,3 +158,19 @@ AI must execute the following pipeline in strict sequential order:
    - **Central Next.js Practice Studio (`practice-studio`):** Mission Control Dashboard, launcher links, and live telemetry viewer.
    - **Notion Database (`Learning Practice & Drills`):** Permanent retention record and spaced review ledger.
 2. **Zero In-Browser Textareas:** Studio renders clean requirement specifications, test runners reading from disk, and mistake logs, delegating all code editing to the local IDE.
+
+---
+
+## PART 10 — Workspace Environment Presets & Dual-Tier Testing
+
+### 1. Standardized Environment Presets
+Workspaces are scaffolded using one of 4 environment presets:
+1. **`node-vanilla`:** Standard Node.js native runner (`node --test *.test.js`) for algorithmic utilities and core JavaScript.
+2. **`typescript-strict`:** Native TypeScript execution with typecheck validation (`node --experimental-strip-types --test *.test.ts` and `tsc --noEmit`).
+3. **`react-dom`:** Frontend Component & Custom Hook environment (`vitest run` with jsdom and `@testing-library/react`).
+4. **`backend-sqlite`:** In-memory transactional database environment using `better-sqlite3`.
+
+### 2. Dual-Tier Test Suite Architecture
+To ensure high engineering integrity and prevent hardcoded return hacks:
+- **Visible Acceptance Tests (`visibleTests`):** Scaffolded into `<PID>_<name>.test.*` for rapid local feedback and TDD iteration.
+- **Hidden Trap Tests (`hiddenTests`):** Scaffolded into `.canonical/<PID>_<name>.hidden.test.*` and evaluated during `npm run submit`. Tests boundary invariants, scale limits, and poison payloads to verify true generalized logic.

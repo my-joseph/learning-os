@@ -81,8 +81,20 @@ def notion_request(method: str, endpoint: str, token: str, payload: dict = None,
 
 
 def run_tests_junit(ws_dir: Path) -> list:
-    """Executes node --test with JUnit reporter and parses testcases."""
-    cmd = "node --test --test-reporter=junit *.test.js"
+    """Executes test suite with JUnit reporter and parses visible + hidden testcases."""
+    has_ts = bool(list(ws_dir.glob("*.test.ts")))
+    canonical_dir = ws_dir / ".canonical"
+    has_hidden = bool(list(canonical_dir.glob("*.hidden.test.*"))) if canonical_dir.exists() else False
+
+    if has_ts:
+        cmd = "node --experimental-strip-types --test --test-reporter=junit *.test.ts"
+        if has_hidden:
+            cmd += " .canonical/*.hidden.test.ts"
+    else:
+        cmd = "node --test --test-reporter=junit *.test.js"
+        if has_hidden:
+            cmd += " .canonical/*.hidden.test.js"
+
     proc = subprocess.run(cmd, shell=True, cwd=ws_dir, capture_output=True, text=True)
     raw = proc.stdout + "\n" + proc.stderr
 
@@ -113,10 +125,13 @@ def run_tests_junit(ws_dir: Path) -> list:
         fail_msg = ""
         if is_fail:
             fail_msg = f_elem.attrib.get("message", f_elem.text or "Assertion failed")
+        
+        is_hidden = "HIDDEN" in name.upper() or ".canonical" in tc.attrib.get("file", "")
         cases.append({
             "name": name,
             "passed": not is_fail,
             "failure_msg": fail_msg,
+            "is_hidden": is_hidden,
         })
     return cases
 
@@ -262,19 +277,28 @@ def main():
 
     for qid in sorted(q_groups.keys()):
         tcs = q_groups[qid]
+        vis_tcs = [tc for tc in tcs if not tc.get("is_hidden")]
+        hid_tcs = [tc for tc in tcs if tc.get("is_hidden")]
+
+        vis_pass = sum(1 for tc in vis_tcs if tc["passed"])
+        hid_pass = sum(1 for tc in hid_tcs if tc["passed"])
         all_pass = all(tc["passed"] for tc in tcs)
-        pass_count = sum(1 for tc in tcs if tc["passed"])
+
         if all_pass:
             total_passed += 1
         else:
             first_fail = next(tc for tc in tcs if not tc["passed"])
-            failing_reasons.append(f"[{qid}] {first_fail['name']}: {first_fail['failure_msg'][:80]}")
+            prefix = "[HIDDEN TRAP] " if first_fail.get("is_hidden") else ""
+            failing_reasons.append(f"[{qid}] {prefix}{first_fail['name']}: {first_fail['failure_msg'][:80]}")
 
         evaluated_questions.append({
             "qid": qid,
             "passed": all_pass,
-            "pass_count": pass_count,
-            "total_count": len(tcs),
+            "vis_pass": vis_pass,
+            "vis_total": len(vis_tcs),
+            "hid_pass": hid_pass,
+            "hid_total": len(hid_tcs),
+            "hidden_breached": (vis_pass == len(vis_tcs) and hid_pass < len(hid_tcs)) if hid_tcs else False,
         })
 
     max_score = len(evaluated_questions)
@@ -284,8 +308,12 @@ def main():
     print(f"\n{BOLD}Question Acceptance Breakdown:{RESET}")
     for eq in evaluated_questions:
         mark = f"{GREEN}✔ PASS{RESET}" if eq["passed"] else f"{RED}✗ FAIL{RESET}"
-        ratio = f"{eq['pass_count']}/{eq['total_count']} scenarios"
-        print(f"  [{eq['qid']}] Exercise Acceptance Suite: {mark}  ({ratio})")
+        detail = f"{eq['vis_pass']}/{eq['vis_total']} visible"
+        if eq['hid_total'] > 0:
+            detail += f" + {eq['hid_pass']}/{eq['hid_total']} hidden traps"
+        print(f"  [{eq['qid']}] Exercise Acceptance Suite: {mark}  ({detail})")
+        if eq["hidden_breached"]:
+            print(f"      {YELLOW}⚠ Notice: Visible scenarios passed, but Hidden Trap tests failed (Boundary/Hardcode trap).{RESET}")
 
     pct = round((total_passed / max_score * 100), 1) if max_score > 0 else 0.0
     print(f"\n{BOLD}-------------------------------------------------------------------------{RESET}")

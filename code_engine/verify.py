@@ -65,6 +65,43 @@ def check_prompt_readability(pid, prompt: str):
             )
 
 
+def check_archetype_contract(pid, prob: dict):
+    """Enforces Blueprint Contracts across the 5 Real-World Archetypes."""
+    archetype = prob.get("archetype")
+    if not archetype:
+        return
+
+    valid_archetypes = {
+        "problem-solving",
+        "debugging",
+        "code-tracing",
+        "refactoring",
+        "project-based",
+    }
+    if archetype not in valid_archetypes:
+        _fail(pid, f"Invalid archetype '{archetype}'. Must be one of: {sorted(valid_archetypes)}")
+
+    if archetype == "debugging":
+        if not prob.get("starterCode") and not prob.get("codeSnippet"):
+            _fail(pid, "Debugging problem must provide starterCode containing the defect")
+        if not prob.get("visibleTests"):
+            _fail(pid, "Debugging problem must provide visibleTests including a reproducer scenario")
+
+    elif archetype == "refactoring":
+        if not prob.get("starterCode"):
+            _fail(pid, "Refactoring problem must provide legacy starterCode to be refactored")
+        if not prob.get("solutionCode"):
+            _fail(pid, "Refactoring problem must provide clean decoupled solutionCode")
+
+    elif archetype == "code-tracing":
+        if not prob.get("codeSnippet"):
+            _fail(pid, "Code-tracing problem must provide codeSnippet for execution tracing")
+
+    elif archetype == "problem-solving":
+        if not prob.get("visibleTests") and not prob.get("solutionCode"):
+            _fail(pid, "Problem-solving problem must provide visibleTests and solutionCode")
+
+
 def run_node(code: str, timeout: float = 3.0):
     """Executes JS in Node.js and returns (stdout, stderr, exit_code)."""
     try:
@@ -130,6 +167,7 @@ def verify_problem(p, id_map=None):
         if fld in p:
             check_text_safety(pid, fld, p[fld])
     check_prompt_readability(pid, p.get("prompt", ""))
+    check_archetype_contract(pid, p)
 
     # 2. Anti-Answer-Leak
     check_anti_leak(pid, p)
