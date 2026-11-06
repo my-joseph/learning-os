@@ -113,6 +113,15 @@ To ensure maximum cognitive clarity and mirror real-world engineering specificat
 - **Automatic Semantic Keyword Matching:** When the problem text references a foundational concept (e.g. `TCP 3-Way Handshake`, `DNS`, `TLS`, `HTTP`, `WebSocket`, `Sliding Window Rate Limiter`, `Promises`, `Closures`), AI must bind that term using a native `@Page` mention (`[[CON-<KEY>]]`).
 - **Instant In-Context Recovery:** This allows the developer to click or hover on the concept while solving the drill in their workspace to instantly review its invariants, mental model, and failure traps without breaking their focus.
 
+### 6. Immediate Pristine Notion Sync on Drill Creation
+- **Mandatory Immediate Sync:** Whenever a drill file (`drills/data/**/*.json`) or code lab is authored or generated, AI must immediately synchronize a pristine initial snapshot into the `Learning Practice & Drills` Notion database. Never leave a newly generated drill existing only on local disk.
+- **Initial Pristine State:** The initial Notion page must be populated in an unattempted state (`Score = null / 0`, `Practice Status = "Ready"`, `Mistake Categories = []`, `Attempt Date = null`).
+- **Comprehensive Body Content:** The initial page body must immediately provide:
+  1. **Drill Overview & Focus:** Core learning objectives, primary skills drilled, and critical invariant failure modes to avoid.
+  2. **Question Inventory & Breakdown:** Exact count and listing of all problems, hints, diagrams, and full vertical step-by-step solutions (in expandable toggle blocks).
+  3. **Curriculum & Concept Cross-References:** Native `@Page` mentions linking to parent Units, Chapters, and registered `Concept Vault` cards.
+- **Subsequent Result Sync:** The user will practice locally or in Practice Studio. Only upon completion does the user or submit runner sync the live `Score`, `Mistake Categories`, and error telemetry to update the existing page record.
+
 ---
 
 ## PART 6 — Universal Five-Tier Milestone Taxonomy (Labs)

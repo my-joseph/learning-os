@@ -30,8 +30,15 @@ from apply_rules_and_test_pages import (
     replace_page_blocks,
     toggle_block,
 )
-from math_engine.answer_check import check_answer
-from math_engine.generate import generate_drill_set
+try:
+    from math_engine.answer_check import check_answer
+except ImportError:
+    check_answer = None
+
+try:
+    from math_engine.generate import generate_drill_set
+except ImportError:
+    generate_drill_set = None
 
 PORT = 8765
 DATA_ROOT = "drills/data"
@@ -167,15 +174,42 @@ def sync_drill_to_notion(drill_doc: dict) -> dict:
     # Populate Notion Drill Page Body with clean 100% English formatting
     player_url = f"http://localhost:3000/?drill={drill_id}"
     callout_color = "blue_background" if is_prg else "purple_background"
+
+    # Extract Focus & Trap badges
+    mistake_tags = drill_doc.get("mistakeTags", [])
+    trap_bullets = [
+        bullet(f"**Trap:** `{tag.get('name', tag.get('id'))}` — {tag.get('label', '')}", id_map)
+        for tag in mistake_tags[:4]
+    ] if mistake_tags else [bullet("Enforce fundamental invariants and verify step-by-step logic.", id_map)]
+
+    status_badge = (
+        f"**Session Score:** `{score}/{max_score}` ({round((score/max_score)*100, 1)}%) — Status: **{status}**"
+        if attempt_date or status != "Ready"
+        else "**Session Status:** `Ready for Practice` — Awaiting learner attempt in Practice Studio / Terminal."
+    )
+
     blocks = [
         callout_block(
             f"**Interactive {drill_kind} Drill (`{drill_id}`):** Data file `{path}` | Open in Practice Studio at `{player_url}`.\n"
-            f"Scope: [[{unit_code}]] | Chapter: [[{chapter_code}]] | Topic: [[{topic_code}]] | Config: `{q_count} Questions ({diff_mode})`",
+            f"Scope: [[{unit_code}]] | Chapter: [[{chapter_code}]] | Topic: [[{topic_code}]] | Config: `{q_count} Questions ({diff_mode})`\n"
+            f"{status_badge}",
             id_map,
             color=callout_color,
         ),
         divider_block(),
-        h2("Verified Question Set & Step-by-Step Solutions", id_map),
+        h2("1. Drill Blueprint & Learning Focus", id_map),
+        p_block(
+            f"This drill tests foundational mastery for [[{unit_code}]]. "
+            f"Solve each problem independently before consulting the step-by-step verification toggles below.",
+            id_map,
+        ),
+        bullet("**Core Objectives:**", id_map, children=[
+            bullet(f"Verify and solidify understanding of `{unit_title}`.", id_map),
+            bullet(f"Solve all {q_count} questions adhering to exact formula and invariant boundaries.", id_map),
+        ]),
+        bullet("**Common Traps & Invariant Guardrails:**", id_map, children=trap_bullets),
+        divider_block(),
+        h2("2. Question Inventory & Step-by-Step Solutions", id_map),
     ]
 
     for p in problems:

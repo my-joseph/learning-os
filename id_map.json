@@ -2455,42 +2455,10 @@
     "id": "40d3818f-8ba0-8125-8cae-ea0de6183186",
     "title": "Learning Practice & Drills"
   },
-  "DRL-MTH-T02-C01-U01-01": {
-    "id": "40d3818f-8ba0-81ea-bcee-d511a0d09ff7",
-    "title": "Complex Numbers — Verified Math Drill (5 Qs · Mixed Exam Mode)"
-  },
-  "DRL-PRG-T03-C01-U01-01": {
-    "id": "40d3818f-8ba0-8130-b9f9-eb31c185129f",
-    "title": "Next.js Project Structure — Architecture & Env Boundary Drill"
-  },
-  "DRL-MTH-T01-C12-02": {
-    "id": "40d3818f-8ba0-8122-933b-f77ff6387f7e",
-    "title": "Math Models and Geometry — Verified Math Drill (5 Qs · Mixed Exam Mode)"
-  },
-  "DRL-MTH-T01-C12-03": {
-    "id": "40d3818f-8ba0-8195-9f5d-cbd86ffa3bc9",
-    "title": "Math Models and Geometry — Verified Math Drill (5 Qs · Mixed Exam Mode)"
-  },
-  "DRL-PRG-T01-C01-01": {
-    "id": "40e3818f-8ba0-817f-a932-f3336cbc0f05",
-    "title": "JavaScript Deep Dive — Verified Programming Drill (5 Qs · Mixed Exam Mode)"
-  },
-  "DRL-PRG-T01-C03-01": {
-    "id": "40e3818f-8ba0-81d5-9725-fb1a8b3cd5ff",
-    "title": "Problem Solving & Utility Toolkit — Verified Programming Drill (3 Qs · Mixed Exam Mode)"
-  },
-  "LAB-PRG-T03-C01-01": {
-    "id": "40e3818f-8ba0-81c8-b1fe-d2c7e5d2e259",
-    "title": "Full-Stack E-Commerce Core & Checkout Engine — Terminal Code Lab (100/100 pts)"
-  },
   "R037": {
     "id": "40f3818f-8ba0-81af-b58f-d8dfa226389b",
     "title": "OpenStax – Physics",
     "url": "https://openstax.org/books/physics/pages/preface"
-  },
-  "DRL-PRG-T01-C01-03": {
-    "id": "40f3818f-8ba0-8167-a97f-c1bea918d3ca",
-    "title": "JavaScript Deep Dive — Verified Programming Drill (3 Qs · Mixed Exam Mode)"
   },
   "CONCEPT_VAULT_DB": {
     "id": "4103818f-8ba0-8164-aa0d-eeb2d6cb65b0",
@@ -2517,8 +2485,7 @@
     "title": "WebSocket Protocol"
   },
   "DRL-MTH-T01-C12-04": {
-    "id": "local-DRL-MTH-T01-C12-04",
-    "title": "Use Properties of Angles, Triangles, and the Pythagorean Theorem — Foundation Drill (10 Qs · Level 1)",
-    "file": "drills/data/MTH-T01-C12/DRL-MTH-T01-C12-04.json"
+    "id": "4103818f-8ba0-81cf-97ce-d41ff9f3ddc5",
+    "title": "Use Properties of Angles, Triangles, and the Pythagorean Theorem — Verified Math Drill (10 Qs · Level 1 - Foundation & Direct Application)"
   }
 }

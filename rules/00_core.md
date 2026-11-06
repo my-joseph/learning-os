@@ -98,10 +98,11 @@ Always separate analysis from generation and finalize with cross-referencing:
 - Add source attribution.
 - Verify completeness and consistency.
 
-#### Phase C — Final-Pass: Concept Vault Cross-Referencing & Auto-Linking
+#### Phase C — Final-Pass: Concept Vault Cross-Referencing & Immediate Notion Sync
 - After generating or updating any page, drill, or problem specification, cross-reference the generated text against the `Concept Vault` database and `id_map.json` (all keys prefixed with `CON-`).
 - Detect matching domain terms and technical keywords (e.g., `TCP 3-Way Handshake`, `DNS`, `TLS`, `HTTP`, `WebSocket`).
 - Automatically bind matching terms using native `@Page` mentions (`[[CON-<KEY>]]`), turning dry terminology into an interactive, Wikipedia-style knowledge graph.
+- **Pristine Drill Sync Requirement:** Whenever a drill file (`drills/data/**/*.json`) or code lab is generated, immediately synchronize the initial pristine unattempted record (`Practice Status: "Ready"`, `Score: null/0`) into the `Learning Practice & Drills` Notion database with full question breakdown and learning focus. Never leave a newly authored drill existing only on local disk awaiting manual user sync.
 - Verify that every technical prerequisite or specialized concept provides instantaneous 1-click lookup.
 
 Do not skip analysis and immediately generate generic content.
