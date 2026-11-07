@@ -153,6 +153,7 @@ export interface ProblemState {
   score: number | null;
   divergedStep: number | null;
   mistakes: string[];
+  skipped?: boolean;
   lastCheck?: CheckResult | null;
   lastTestReport?: TestRunReport | null;
   userCode?: string;
@@ -242,6 +243,8 @@ export interface SessionSummary {
   score: number;
   maxScore: number;
   accuracyPct: number;
+  skippedCount?: number;
+  skippedProblems?: string[];
   mistakeCategories: string[];
   divergedStepsSummary: string;
   attemptDate: string | null;

@@ -128,3 +128,25 @@ Instead, every Unit, Chapter, and Topic must provide a **thorough, content-speci
   - *Permitted:* Syntax boundaries, data types, and formatting conventions (e.g., `Enter 3-digit HTTP status code`, `Enter integer in degrees`, `Enter 3-packet sequence (e.g. AAA -> BBB -> CCC)`).
   - *Strictly Forbidden:* Providing the correct answer as an example or giving hints that reduce the search space to a trivial copy-paste.
 - **Disjoint Examples Mandate:** Any example used in `inputHint`, `placeholder`, or `checkpointHint` must be strictly disjoint from `answerSpec.accepted`, `answerPlain`, and `answerDisplay`.
+
+---
+
+### 11. Adaptive Interaction Modes: Multiple Choice vs. Direct Input
+- **Decision Engine (`interactionMode: "adaptive"`):** AI problem generators dynamically determine whether each problem should be **Multiple Choice (`type: "choice"`)** or **Direct Input (`type: "text"` / `"predict-output"` / `"number"`)** based on pedagogical effectiveness:
+  - **When to choose Multiple Choice (`choice`):**
+    - Conceptual discrimination between closely related entities (e.g., 401 Unauthorized vs. 403 Forbidden; 502 Bad Gateway vs. 504 Gateway Timeout).
+    - Identifying the correct architectural statement or edge-case trade-off among plausible system designs.
+    - **High-Quality Distractors Rule:** All 3 wrong options (distractors) must represent actual, prevalent student misconceptions or common failure modes—never silly, trivial, or joke answers. Distractors must force rigorous conceptual precision.
+  - **When to choose Direct Input (`text` / `predict-output`):**
+    - Tracing execution order or exact sequence (e.g., Call Stack, Event Loop microtasks, TCP 3-Way Handshake flag sequence).
+    - Numerical calculations, exact HTTP status code recall, or formula outputs where multiple choice would spoil the answer space.
+
+---
+
+### 12. Skip Option & Concept Gap Telemetry
+- **No Penalized Guessing:** When a learner genuinely does not know a concept, blind guessing corrupts error telemetry and promotes false confidence.
+- **Skip Protocol:**
+  - The UI provides an explicit **"Skip (Don't Know)"** action on every problem.
+  - Skipping sets score to `0`, flags `skipped: true`, and assigns a `concept-gap` mistake tag.
+  - **Instant Learning Loop:** Skipping immediately unrolls the mental model hint and vertical step-by-step solution, allowing the learner to immediately learn the missing prerequisite without frustration.
+  - **Notion Spaced Repetition Ledger:** Skipped questions are logged specifically as **Concept Gaps** in Notion (`Skipped Questions for Review`), surfacing them as the highest priority items for subsequent review sessions.

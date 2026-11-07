@@ -218,8 +218,12 @@ def sync_drill_to_notion(drill_doc: dict) -> dict:
         for tag in mistake_tags[:4]
     ] if mistake_tags else [bullet("Enforce fundamental invariants and verify step-by-step logic.", id_map)]
 
+    skipped_count = int(summary.get("skippedCount", sum(1 for p in problems if p.get("state", {}).get("skipped"))))
+    skipped_problems = summary.get("skippedProblems", [f"{p['id']} ({p.get('context') or p.get('category')})" for p in problems if p.get("state", {}).get("skipped")])
+
+    skipped_str = f" | **Concept Gaps (Skipped):** `{skipped_count}`" if skipped_count > 0 else ""
     status_badge = (
-        f"**Session Score:** `{score}/{max_score}` ({round((score/max_score)*100, 1)}%) — Status: **{status}**"
+        f"**Session Score:** `{score}/{max_score}` ({round((score/max_score)*100, 1)}%) — Status: **{status}**{skipped_str}"
         if attempt_date or status != "Ready"
         else "**Session Status:** `Ready for Practice` — Awaiting learner attempt in Practice Studio / Terminal."
     )
@@ -244,9 +248,20 @@ def sync_drill_to_notion(drill_doc: dict) -> dict:
             bullet(f"Solve all {q_count} questions adhering to exact formula and invariant boundaries.", id_map),
         ]),
         bullet("**Common Traps & Invariant Guardrails:**", id_map, children=trap_bullets),
+    ]
+
+    if skipped_count > 0:
+        blocks.append(callout_block(
+            f"**Review Priority (Concept Gaps):** The learner skipped {skipped_count} questions without guessing: "
+            + ", ".join(skipped_problems) + ". Prioritize these topics during the next Spaced Review.",
+            id_map,
+            color="orange_background",
+        ))
+
+    blocks.extend([
         divider_block(),
         h2("2. Question Inventory & Step-by-Step Solutions", id_map),
-    ]
+    ])
 
     for p in problems:
         ref_str = " ".join(f"([[{r}]])" for r in p.get("references", []) if r in id_map)
@@ -257,6 +272,13 @@ def sync_drill_to_notion(drill_doc: dict) -> dict:
             children.append(code_block(p["codeSnippet"], lang=p.get("language", "javascript")))
         elif p.get("display"):
             children.append(eq_block(p["display"]))
+
+        if p.get("answerSpec", {}).get("type") == "choice" and p.get("answerSpec", {}).get("options"):
+            opt_bullets = [
+                bullet(f"**Option {opt['id']}:** {opt['label']}", id_map)
+                for opt in p["answerSpec"]["options"]
+            ]
+            children.append(bullet("**Multiple Choice Options:**", id_map, children=opt_bullets))
 
         if p.get("plainText"):
             children.append(p_block(f"**Plain-Text / CAS Input:** `{p['plainText']}`", id_map))

@@ -133,6 +133,19 @@ To ensure maximum cognitive clarity and mirror real-world engineering specificat
     - *Good (Disjoint):* `"Enter 3-packet flag sequence (e.g. AAA -> BBB -> CCC)"`
   - **Automated Validation Invariant:** All authoring scripts must run `validate_and_sanitize_drill_doc` to programmatically reject or scrub any placeholder matching `answerSpec.accepted` before saving or syncing to Notion.
 
+### 8. Adaptive Choice vs. Input & Skip Telemetry Standards
+- **Adaptive Question Decision Framework:** In programming drills, AI generator scripts must evaluate the learning objective of each problem:
+  - Use `type: "choice"` with 4 options for:
+    - Status code triage when comparing authentication vs. authorization (401 vs 403) or gateway failures (502 vs 504).
+    - Conceptual questions where distinguishing subtle protocol transitions (e.g. WebSocket 101 vs 200 vs 301) requires evaluating precise statements.
+    - Architecture triage: diagnosing whether an issue is caused by thread pool exhaustion, socket disconnection, or DNS resolution failure.
+  - Use `type: "text"` / `predict-output` for:
+    - Exact syntax parsing (HTTP method token, header name, status code number).
+    - Sequential traces (TCP flag ordering, event loop execution order).
+- **Skip Protocol Integration:**
+  - Every programming drill supports the `Skip (Don't Know)` action in Practice Studio.
+  - Skipped items are explicitly recorded in `sessionSummary.skippedProblems` and synchronized to Notion, ensuring that unlearned concepts are tracked as high-priority revision targets.
+
 ---
 
 ## PART 6 — Universal Five-Tier Milestone Taxonomy (Labs)

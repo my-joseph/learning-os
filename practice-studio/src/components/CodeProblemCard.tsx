@@ -19,6 +19,7 @@ import {
   Check,
   FolderOpen,
   Sparkles,
+  HelpCircle,
 } from "lucide-react";
 import {
   Problem,
@@ -88,6 +89,7 @@ interface CodeProblemCardProps {
   activeStep: number | null;
   onInputChange: (val: string) => void;
   onCheckAnswer: () => void;
+  onSkip?: () => void;
   onToggleStepHighlight: (stepIdx: number) => void;
   onMarkDivergedStep: (stepIdx: number) => void;
   onSetScore: (score: number) => void;
@@ -134,6 +136,7 @@ export const CodeProblemCard: React.FC<CodeProblemCardProps> = ({
   activeStep,
   onInputChange,
   onCheckAnswer,
+  onSkip,
   onToggleStepHighlight,
   onMarkDivergedStep,
   onSetScore,
@@ -378,6 +381,11 @@ export const CodeProblemCard: React.FC<CodeProblemCardProps> = ({
           >
             <RotateCcw className="w-3.5 h-3.5" />
           </button>
+          {problem.state.skipped && (
+            <span className="text-xs px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/30 font-medium">
+              Skipped (Concept Gap)
+            </span>
+          )}
           <span className="text-xs px-2.5 py-0.5 rounded-full bg-[#1b2234] text-slate-300 border border-[#2b3752]">
             Level {problem.level} · {problem.levelLabel}
           </span>
@@ -818,8 +826,48 @@ Please evaluate my code against:
             </div>
           )}
 
+          {/* Multiple Choice Selection */}
+          {problem.answerSpec.type === "choice" && problem.answerSpec.options && (
+            <div className="mb-4">
+              <div className="text-xs text-slate-400 mb-2 flex items-center gap-1.5 font-sans font-medium">
+                <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+                <span>Select the correct resolution / architectural statement:</span>
+              </div>
+              <div className="grid grid-cols-1 gap-2.5">
+                {problem.answerSpec.options.map((opt) => {
+                  const isSelected = problem.state.userInput === opt.id;
+                  return (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      onClick={() => onInputChange(opt.id)}
+                      className={`w-full text-left p-3 rounded-xl border transition-all flex items-start gap-3 ${
+                        isSelected
+                          ? "bg-indigo-600/20 border-indigo-500 text-white shadow-md shadow-indigo-500/10"
+                          : "bg-[#111726]/80 hover:bg-[#161f33] border-[#263147] text-slate-200 hover:border-slate-500"
+                      }`}
+                    >
+                      <span
+                        className={`inline-flex items-center justify-center w-6 h-6 rounded-md text-xs font-bold shrink-0 transition-colors ${
+                          isSelected
+                            ? "bg-indigo-600 text-white"
+                            : "bg-[#1d263b] text-slate-300 border border-[#2b3752]"
+                        }`}
+                      >
+                        {opt.id}
+                      </span>
+                      <div className="flex-1 text-xs md:text-sm pt-0.5 leading-relaxed">
+                        <FormattedText text={opt.label} />
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* Terminal Output Predictor Input */}
-          {!isFindBug && (
+          {!isFindBug && problem.answerSpec.type !== "choice" && (
             <div className="mb-4">
               <div className="text-xs text-slate-400 mb-1.5 flex items-center gap-1.5 font-mono">
                 <Terminal className="w-3.5 h-3.5 text-emerald-400" />
@@ -853,6 +901,22 @@ Please evaluate my code against:
               Check Answer
             </button>
 
+            {onSkip && (
+              <button
+                type="button"
+                onClick={() => {
+                  setShowHint(true);
+                  setShowSolution(true);
+                  onSkip();
+                }}
+                title="I don't know this concept yet — skip without penalty and review solution"
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[#1a2133] hover:bg-rose-500/15 text-slate-300 hover:text-rose-300 border border-[#2b3752] hover:border-rose-500/40 text-xs font-medium transition-colors"
+              >
+                <HelpCircle className="w-3.5 h-3.5 text-rose-400" />
+                <span>Skip (Don't Know)</span>
+              </button>
+            )}
+
             <button
               type="button"
               onClick={() => setShowHint(!showHint)}
@@ -880,6 +944,8 @@ Please evaluate my code against:
                   ? "bg-emerald-950/40 border-emerald-500/40 text-emerald-200"
                   : lastCheck.verdict === "partial"
                   ? "bg-amber-950/40 border-amber-500/40 text-amber-200"
+                  : problem.state.skipped || (lastCheck.verdict as string) === "skipped"
+                  ? "bg-amber-950/30 border-amber-500/40 text-amber-200"
                   : "bg-rose-950/40 border-rose-500/40 text-rose-200"
               }`}
             >
@@ -888,6 +954,8 @@ Please evaluate my code against:
                   <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                 ) : lastCheck.verdict === "partial" ? (
                   <AlertTriangle className="w-4 h-4 text-amber-400" />
+                ) : problem.state.skipped || (lastCheck.verdict as string) === "skipped" ? (
+                  <HelpCircle className="w-4 h-4 text-amber-400" />
                 ) : (
                   <XCircle className="w-4 h-4 text-rose-400" />
                 )}

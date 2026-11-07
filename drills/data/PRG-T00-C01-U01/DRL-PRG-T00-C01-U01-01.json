@@ -11,7 +11,8 @@
   "config": {
     "questionCount": 10,
     "difficulty": "LEVEL_1",
-    "difficultyMode": "Level 1 - Foundation & Protocol Invariants"
+    "difficultyMode": "Level 1 - Foundation & Protocol Invariants",
+    "interactionMode": "adaptive (5 Choice · 5 Direct Input)"
   },
   "mistakeTags": [
     {
@@ -67,17 +68,30 @@
       "codeSnippet": "// DNS Query Traversal:\n// Browser Cache -> OS Cache -> Recursive Resolver -> Root (.) -> TLD (.com) -> [?]\n",
       "language": "javascript",
       "answerSpec": {
-        "type": "text",
-        "accepted": [
-          "authoritative",
-          "authoritative nameserver",
-          "authoritative server",
-          "authoritative name server"
-        ]
+        "type": "choice",
+        "options": [
+          {
+            "id": "A",
+            "label": "Root Nameserver (.)"
+          },
+          {
+            "id": "B",
+            "label": "Top-Level Domain (TLD) Nameserver (.com)"
+          },
+          {
+            "id": "C",
+            "label": "Authoritative Nameserver (e.g. ns1.example.com)"
+          },
+          {
+            "id": "D",
+            "label": "Recursive Resolver (ISP or public 8.8.8.8)"
+          }
+        ],
+        "correct": "C"
       },
-      "answerDisplay": "Authoritative Nameserver",
-      "answerPlain": "Authoritative Nameserver",
-      "inputHint": "Enter server tier name (e.g. Root Server or Resolver)",
+      "answerDisplay": "Option C (Authoritative Nameserver)",
+      "answerPlain": "C",
+      "inputHint": "Select the correct server tier (A, B, C, or D).",
       "checkpointHint": "Root points to TLD; TLD points to the server tier with the zone file.",
       "commonTrapTag": "dns-server-tier",
       "steps": [
@@ -168,18 +182,30 @@
       "codeSnippet": "// Network Protocol Stack:\n// Application Layer: HTTP\n// Security Layer:    [ ? ] (Port 443 HTTPS)\n// Transport Layer:   TCP\n// Internet Layer:    IP\n",
       "language": "javascript",
       "answerSpec": {
-        "type": "text",
-        "accepted": [
-          "tls",
-          "tls 1.3",
-          "transport layer security",
-          "tls/ssl",
-          "tls1.3"
-        ]
+        "type": "choice",
+        "options": [
+          {
+            "id": "A",
+            "label": "TLS (Transport Layer Security)"
+          },
+          {
+            "id": "B",
+            "label": "SSH (Secure Shell)"
+          },
+          {
+            "id": "C",
+            "label": "IPSec (Internet Protocol Security)"
+          },
+          {
+            "id": "D",
+            "label": "DNSSEC (Domain Name System Security Extensions)"
+          }
+        ],
+        "correct": "A"
       },
-      "answerDisplay": "TLS (Transport Layer Security)",
-      "answerPlain": "TLS",
-      "inputHint": "Enter security protocol acronym (e.g. SSH, IPsec)",
+      "answerDisplay": "Option A (TLS — Transport Layer Security)",
+      "answerPlain": "A",
+      "inputHint": "Select the cryptographic protocol (A, B, C, or D).",
       "checkpointHint": "This protocol superseded SSL and negotiates symmetric session keys.",
       "commonTrapTag": "auth-401-vs-403",
       "steps": [
@@ -297,16 +323,30 @@
       "codeSnippet": "// Incoming Request:\n// DELETE /api/users/99 HTTP/1.1\n// Authorization: Bearer <valid_jwt_with_role_viewer>\n\n// Expected Server Response:\n// HTTP/1.1 [ ? ] ...\n",
       "language": "javascript",
       "answerSpec": {
-        "type": "text",
-        "accepted": [
-          "403",
-          "403 forbidden",
-          "forbidden"
-        ]
+        "type": "choice",
+        "options": [
+          {
+            "id": "A",
+            "label": "401 Unauthorized — Identity credentials are completely missing, expired, or invalid."
+          },
+          {
+            "id": "B",
+            "label": "403 Forbidden — Identity is verified, but permissions/role are insufficient for this action."
+          },
+          {
+            "id": "C",
+            "label": "405 Method Not Allowed — The server does not support the DELETE verb on this resource."
+          },
+          {
+            "id": "D",
+            "label": "422 Unprocessable Entity — The token syntax is valid, but payload data is corrupted."
+          }
+        ],
+        "correct": "B"
       },
-      "answerDisplay": "403 Forbidden",
-      "answerPlain": "403",
-      "inputHint": "Enter 3-digit HTTP status code (e.g. 200, 500)",
+      "answerDisplay": "Option B (403 Forbidden)",
+      "answerPlain": "B",
+      "inputHint": "Select the appropriate status code resolution (A, B, C, or D).",
       "checkpointHint": "Identity is confirmed, but the account lacks sufficient permissions for this operation.",
       "commonTrapTag": "auth-401-vs-403",
       "steps": [
@@ -338,16 +378,30 @@
       "codeSnippet": "Client ---> [ Nginx Proxy ] ---> [ Node.js Microservice ] (Process Crashed!)\nClient <--- [ HTTP/1.1 ??? ] <--- [ Socket Closed Uncleanly ]\n",
       "language": "plain text",
       "answerSpec": {
-        "type": "text",
-        "accepted": [
-          "502",
-          "502 bad gateway",
-          "bad gateway"
-        ]
+        "type": "choice",
+        "options": [
+          {
+            "id": "A",
+            "label": "504 Gateway Timeout — Upstream worker did not complete processing before proxy timer expired."
+          },
+          {
+            "id": "B",
+            "label": "502 Bad Gateway — Upstream crashed or abruptly severed TCP socket without valid HTTP response."
+          },
+          {
+            "id": "C",
+            "label": "500 Internal Server Error — The Nginx reverse proxy itself encountered an unhandled crash."
+          },
+          {
+            "id": "D",
+            "label": "503 Service Unavailable — Proxy administrator deliberately disabled all upstream backend nodes."
+          }
+        ],
+        "correct": "B"
       },
-      "answerDisplay": "502 Bad Gateway",
-      "answerPlain": "502",
-      "inputHint": "Enter 3-digit HTTP status code (e.g. 200, 404)",
+      "answerDisplay": "Option B (502 Bad Gateway)",
+      "answerPlain": "B",
+      "inputHint": "Select the reverse proxy failure code (A, B, C, or D).",
       "checkpointHint": "Signals that an intermediate proxy received an invalid response or socket drop from upstream.",
       "commonTrapTag": "gateway-502-vs-504",
       "steps": [
@@ -461,16 +515,30 @@
       "codeSnippet": "// Client Handshake:\n// GET /chat HTTP/1.1\n// Upgrade: websocket\n// Connection: Upgrade\n\n// Server Acceptance:\n// HTTP/1.1 [ ? ] ...\n// Upgrade: websocket\n// Connection: Upgrade\n",
       "language": "javascript",
       "answerSpec": {
-        "type": "text",
-        "accepted": [
-          "101",
-          "101 switching protocols",
-          "switching protocols"
-        ]
+        "type": "choice",
+        "options": [
+          {
+            "id": "A",
+            "label": "200 OK — Handshake succeeded and HTTP half-duplex transaction completes."
+          },
+          {
+            "id": "B",
+            "label": "101 Switching Protocols — Server agrees to transition TCP connection to WebSocket framing."
+          },
+          {
+            "id": "C",
+            "label": "301 Moved Permanently — Client is redirected to reconnect via wss:// URI protocol."
+          },
+          {
+            "id": "D",
+            "label": "204 No Content — Connection upgrade acknowledged but no duplex channel is opened."
+          }
+        ],
+        "correct": "B"
       },
-      "answerDisplay": "101 Switching Protocols",
-      "answerPlain": "101",
-      "inputHint": "Enter 3-digit HTTP status code (e.g. 200, 400)",
+      "answerDisplay": "Option B (101 Switching Protocols)",
+      "answerPlain": "B",
+      "inputHint": "Select the protocol switching status code (A, B, C, or D).",
       "checkpointHint": "Informs client that server agrees to upgrade framing protocol over existing connection.",
       "commonTrapTag": "protocol-switch-101",
       "steps": [

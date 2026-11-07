@@ -288,6 +288,40 @@ export default function PracticeStudioPage() {
     triggerAutoSave(updated);
   };
 
+  // Skip Problem (User does not know concept yet - avoid blind guessing)
+  const handleSkipProblem = (probId: string) => {
+    if (!currentDrill) return;
+    const updated: DrillDocument = {
+      ...currentDrill,
+      problems: currentDrill.problems.map((p) => {
+        if (p.id !== probId) return p;
+        const autoTags = p.commonTrapTag ? [p.commonTrapTag] : [];
+        return {
+          ...p,
+          state: {
+            ...p.state,
+            userInput: p.state.userInput || "(Skipped)",
+            score: 0,
+            skipped: true,
+            mistakes: Array.from(new Set([...(p.state.mistakes || []), ...autoTags])),
+            lastCheck: {
+              verdict: "skipped" as any,
+              message: "Skipped (Concept Gap / Unsure) — Review step-by-step solution below to solidify mental model.",
+              components: [],
+              diagnostics: [],
+            },
+          },
+        };
+      }),
+    };
+    setCurrentDrill(updated);
+    triggerAutoSave(updated);
+    setStatus({
+      text: `Question ${probId} marked as Skipped (Concept Gap). Step-by-step solution expanded.`,
+      type: "warn",
+    });
+  };
+
   // Reset Single Problem
   const handleResetProblem = (probId: string) => {
     if (!currentDrill) return;
@@ -357,21 +391,29 @@ export default function PracticeStudioPage() {
     : 0;
   const maxScore = currentDrill?.problems.length || 0;
   const accuracyPct = maxScore > 0 ? Math.round((liveScore / maxScore) * 1000) / 10 : 0;
+  const skippedCount = currentDrill
+    ? currentDrill.problems.filter((p) => p.state?.skipped).length
+    : 0;
 
   // Sync to Notion
   const handleSyncToNotion = async () => {
     if (!currentDrill) return;
     setIsSyncing(true);
     setStatus({
-      text: `Syncing ${currentDrill.drillId} (${liveScore}/${maxScore}) to Notion...`,
+      text: `Syncing ${currentDrill.drillId} (${liveScore}/${maxScore}${skippedCount > 0 ? ` · ${skippedCount} skipped` : ""}) to Notion...`,
       type: "warn",
     });
 
     const tagMap = new Map((currentDrill.mistakeTags || []).map((t) => [t.id, t.name]));
     const mistakeNames = new Set<string>();
     const divergedList: string[] = [];
+    const skippedProblems: string[] = [];
 
     currentDrill.problems.forEach((p) => {
+      if (p.state?.skipped) {
+        skippedProblems.push(`${p.id} (${p.context || p.category})`);
+        divergedList.push(`${p.id} [SKIPPED - Concept Gap]`);
+      }
       (p.state?.mistakes || []).forEach((tid) => {
         const rawName = tagMap.get(tid) || tid;
         mistakeNames.add(rawName.replace(/,/g, " /").trim());
@@ -379,7 +421,7 @@ export default function PracticeStudioPage() {
       if (typeof p.state?.divergedStep === "number") {
         const st = p.steps[p.state.divergedStep];
         divergedList.push(`${p.id} (Step ${p.state.divergedStep + 1}: ${st ? st.explain : "Diverged"})`);
-      } else if (p.state?.score !== null && p.state?.score !== undefined && p.state.score < 1 && (p.state?.mistakes || []).length > 0) {
+      } else if (p.state?.score !== null && p.state?.score !== undefined && p.state.score < 1 && (p.state?.mistakes || []).length > 0 && !p.state?.skipped) {
         divergedList.push(`${p.id} (${(p.state?.mistakes || []).map((t) => tagMap.get(t) || t).join(", ")})`);
       }
     });
@@ -391,6 +433,8 @@ export default function PracticeStudioPage() {
         score: liveScore,
         maxScore,
         accuracyPct,
+        skippedCount: skippedProblems.length,
+        skippedProblems,
         mistakeCategories: Array.from(mistakeNames),
         divergedStepsSummary: divergedList.length > 0 ? divergedList.join(" | ") : "No diverged steps logged.",
         attemptDate: new Date().toISOString().slice(0, 10),
@@ -507,6 +551,12 @@ export default function PracticeStudioPage() {
                 Score: {liveScore} / {maxScore} ({accuracyPct}%)
               </span>
 
+              {skippedCount > 0 && (
+                <span className="text-xs font-bold px-2.5 py-1.5 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/30">
+                  Skipped: {skippedCount}
+                </span>
+              )}
+
               <button
                 type="button"
                 onClick={handleResetAll}
@@ -620,6 +670,7 @@ export default function PracticeStudioPage() {
               activeStep={activeSteps[prob.id] ?? null}
               onInputChange={(val) => handleInputChange(prob.id, val)}
               onCheckAnswer={() => handleCheckAnswer(prob.id)}
+              onSkip={() => handleSkipProblem(prob.id)}
               onToggleStepHighlight={(stepIdx) => handleToggleStepHighlight(prob.id, stepIdx)}
               onMarkDivergedStep={(stepIdx) => handleMarkDivergedStep(prob.id, stepIdx)}
               onSetScore={(score) => handleSetScore(prob.id, score)}

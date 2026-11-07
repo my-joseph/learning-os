@@ -13,6 +13,7 @@ interface ProblemCardProps {
   activeStep: number | null;
   onInputChange: (val: string) => void;
   onCheckAnswer: () => void;
+  onSkip?: () => void;
   onToggleStepHighlight: (stepIdx: number) => void;
   onMarkDivergedStep: (stepIdx: number) => void;
   onSetScore: (score: number) => void;

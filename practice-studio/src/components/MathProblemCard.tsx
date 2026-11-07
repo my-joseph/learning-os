@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Copy, Check, ChevronDown, ChevronUp, Lightbulb, RotateCcw } from "lucide-react";
+import { Copy, Check, ChevronDown, ChevronUp, Lightbulb, RotateCcw, HelpCircle } from "lucide-react";
 import { Problem, MistakeTag, CheckResult } from "@/types/drill";
 import { MathBlock } from "./MathRender";
 import { FormattedText } from "./FormattedText";
@@ -16,6 +16,7 @@ interface MathProblemCardProps {
   activeStep: number | null;
   onInputChange: (val: string) => void;
   onCheckAnswer: () => void;
+  onSkip?: () => void;
   onToggleStepHighlight: (stepIdx: number) => void;
   onMarkDivergedStep: (stepIdx: number) => void;
   onSetScore: (score: number) => void;
@@ -67,6 +68,7 @@ export const MathProblemCard: React.FC<MathProblemCardProps> = ({
   activeStep,
   onInputChange,
   onCheckAnswer,
+  onSkip,
   onToggleStepHighlight,
   onMarkDivergedStep,
   onSetScore,
@@ -114,6 +116,11 @@ export const MathProblemCard: React.FC<MathProblemCardProps> = ({
           >
             <RotateCcw className="w-3.5 h-3.5" />
           </button>
+          {problem.state.skipped && (
+            <span className="text-xs px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/30 font-medium">
+              Skipped (Concept Gap)
+            </span>
+          )}
           <span className="text-xs px-2.5 py-0.5 rounded-full bg-[#1d2333] text-slate-400 border border-[#2c354d]">
             Level {problem.level}
           </span>
@@ -199,6 +206,22 @@ export const MathProblemCard: React.FC<MathProblemCardProps> = ({
         >
           Check Answer
         </button>
+
+        {onSkip && (
+          <button
+            type="button"
+            onClick={() => {
+              setShowHint(true);
+              setShowSolution(true);
+              onSkip();
+            }}
+            title="I don't know this concept yet — skip without penalty and review solution"
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[#1d2333] hover:bg-rose-500/15 text-slate-300 hover:text-rose-300 border border-[#2c354d] hover:border-rose-500/40 text-sm font-medium transition-colors"
+          >
+            <HelpCircle className="w-3.5 h-3.5 text-rose-400" />
+            <span>Skip (Don't Know)</span>
+          </button>
+        )}
 
         <button
           type="button"
