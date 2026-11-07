@@ -114,7 +114,7 @@ export interface CheckDiagnostic {
 }
 
 export interface CheckResult {
-  verdict: "correct" | "equivalent_not_in_form" | "partial" | "incorrect" | "parse_error";
+  verdict: "correct" | "equivalent_not_in_form" | "partial" | "incorrect" | "parse_error" | "skipped";
   message: string;
   components: CheckComponent[];
   diagnostics: CheckDiagnostic[];

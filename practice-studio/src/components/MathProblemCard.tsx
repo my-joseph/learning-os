@@ -219,7 +219,7 @@ export const MathProblemCard: React.FC<MathProblemCardProps> = ({
             className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[#1d2333] hover:bg-rose-500/15 text-slate-300 hover:text-rose-300 border border-[#2c354d] hover:border-rose-500/40 text-sm font-medium transition-colors"
           >
             <HelpCircle className="w-3.5 h-3.5 text-rose-400" />
-            <span>Skip (Don't Know)</span>
+            <span>Skip (Don&apos;t Know)</span>
           </button>
         )}
 

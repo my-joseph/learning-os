@@ -316,6 +316,7 @@ export const VSCodeBlock: React.FC<VSCodeBlockProps> = ({
                       return (
                         <span
                           key={tIdx}
+                          className={`vscode-token-${tok.type}`}
                           style={{
                             color,
                             fontStyle: isItalic ? "italic" : "normal",

@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { ChevronLeft, ChevronRight, CheckCircle2, XCircle, HelpCircle, LayoutGrid, Eye } from "lucide-react";
+import { ChevronLeft, ChevronRight, LayoutGrid, Eye } from "lucide-react";
 import { Problem } from "@/types/drill";
 
 interface QuizPaginationBarProps {
@@ -152,7 +152,7 @@ export const QuizPaginationBar: React.FC<QuizPaginationBarProps> = ({
             let statusLabel = "Unanswered";
 
             if (isCorrect) {
-              colorCls = "bg-emerald-500 hover:bg-emerald-400 text-slate-950 border-emerald-400 shadow-sm shadow-emerald-500/25";
+              colorCls = "bg-emerald-500 hover:bg-emerald-400 text-white font-bold border-emerald-400 shadow-sm shadow-emerald-500/25";
               statusLabel = "Correct";
             } else if (isIncorrect) {
               colorCls = "bg-rose-500 hover:bg-rose-400 text-white border-rose-400 shadow-sm shadow-rose-500/25";

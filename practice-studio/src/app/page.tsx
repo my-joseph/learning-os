@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { Plus, RefreshCw, Send, CheckCircle2, AlertCircle, RotateCcw, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, RefreshCw, Send, CheckCircle2, AlertCircle, RotateCcw, ChevronLeft, ChevronRight, Sun, Moon } from "lucide-react";
 import {
   DrillDocument,
   DrillListItem,
@@ -17,6 +17,37 @@ export default function PracticeStudioPage() {
   const [activeSteps, setActiveSteps] = useState<{ [probId: string]: number | null }>({});
   const [currentProblemIndex, setCurrentProblemIndex] = useState<number>(0);
   const [viewMode, setViewMode] = useState<"quiz" | "all">("quiz");
+  const [theme, setTheme] = useState<"light" | "dark">("light");
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("practice_studio_theme") as "light" | "dark" | null;
+      const initial = saved || "light";
+      setTheme(initial);
+      if (initial === "light") {
+        document.documentElement.classList.add("light");
+        document.documentElement.classList.remove("dark");
+      } else {
+        document.documentElement.classList.add("dark");
+        document.documentElement.classList.remove("light");
+      }
+    } catch {}
+  }, []);
+
+  const handleToggleTheme = () => {
+    const next = theme === "light" ? "dark" : "light";
+    setTheme(next);
+    try {
+      localStorage.setItem("practice_studio_theme", next);
+    } catch {}
+    if (next === "light") {
+      document.documentElement.classList.add("light");
+      document.documentElement.classList.remove("dark");
+    } else {
+      document.documentElement.classList.add("dark");
+      document.documentElement.classList.remove("light");
+    }
+  };
 
   // Pre-Gen Config State
   const [cfgUnit, setCfgUnit] = useState("MTH-T02-C01-U01");
@@ -309,7 +340,7 @@ export default function PracticeStudioPage() {
             skipped: true,
             mistakes: Array.from(new Set([...(p.state.mistakes || []), ...autoTags])),
             lastCheck: {
-              verdict: "skipped" as any,
+              verdict: "skipped",
               message: "Skipped (Concept Gap / Unsure) — Review step-by-step solution below to solidify mental model.",
               components: [],
               diagnostics: [],
@@ -391,14 +422,16 @@ export default function PracticeStudioPage() {
   };
 
   // Quiz Pagination Navigation Handlers
-  const handlePrevQuestion = () => {
+  const handlePrevQuestion = useCallback(() => {
     setCurrentProblemIndex((prev) => (prev > 0 ? prev - 1 : prev));
-  };
+  }, []);
 
-  const handleNextQuestion = () => {
-    if (!currentDrill) return;
-    setCurrentProblemIndex((prev) => (prev < currentDrill.problems.length - 1 ? prev + 1 : prev));
-  };
+  const handleNextQuestion = useCallback(() => {
+    setCurrentProblemIndex((prev) => {
+      const maxIdx = (currentDrill?.problems.length ?? 1) - 1;
+      return prev < maxIdx ? prev + 1 : prev;
+    });
+  }, [currentDrill]);
 
   const handleSelectQuestion = (idx: number) => {
     setCurrentProblemIndex(idx);
@@ -426,7 +459,7 @@ export default function PracticeStudioPage() {
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [viewMode, currentDrill]);
+  }, [viewMode, handlePrevQuestion, handleNextQuestion]);
 
   // Compute live score
   const liveScore = currentDrill
@@ -614,10 +647,29 @@ export default function PracticeStudioPage() {
                 type="button"
                 onClick={handleSyncToNotion}
                 disabled={isSyncing || !currentDrill}
-                className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-slate-950 font-bold text-xs px-3.5 py-1.5 rounded-lg transition-colors shadow-sm"
+                className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold text-xs px-3.5 py-1.5 rounded-lg transition-colors shadow-sm"
               >
                 {isSyncing ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
                 Grade &amp; Sync to Notion
+              </button>
+
+              <button
+                type="button"
+                onClick={handleToggleTheme}
+                title={theme === "light" ? "Switch to Dark Mode" : "Switch to Light Mode"}
+                className="inline-flex items-center gap-1.5 bg-[#1d2333] hover:bg-[#252e42] text-slate-200 font-semibold text-xs px-2.5 py-1.5 rounded-lg border border-[#2c354d] transition-colors shadow-sm"
+              >
+                {theme === "light" ? (
+                  <>
+                    <Moon className="w-3.5 h-3.5 text-indigo-600" />
+                    <span>Dark</span>
+                  </>
+                ) : (
+                  <>
+                    <Sun className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Light</span>
+                  </>
+                )}
               </button>
             </div>
           </div>
