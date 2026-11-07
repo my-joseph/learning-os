@@ -135,7 +135,7 @@ export const QuizPaginationBar: React.FC<QuizPaginationBarProps> = ({
         </button>
 
         {/* Question Number Pills */}
-        <div className="flex-1 flex flex-wrap items-center justify-center gap-1.5 px-1 overflow-x-auto py-1">
+        <div className="flex-1 flex flex-wrap items-center justify-center gap-2 px-2 py-2.5 overflow-x-auto">
           {problems.map((prob, idx) => {
             const isSkipped = prob.state?.skipped === true;
             const hasScore = prob.state?.score !== null && prob.state?.score !== undefined;
@@ -163,7 +163,7 @@ export const QuizPaginationBar: React.FC<QuizPaginationBarProps> = ({
             }
 
             const activeRing = isActive
-              ? "ring-2 ring-indigo-400 ring-offset-2 ring-offset-[#0d1017] scale-110 z-10 font-black"
+              ? "ring-2 ring-indigo-500 ring-offset-2 ring-offset-[#0d1017] scale-105 z-10 font-black shadow-md"
               : "opacity-90 hover:opacity-100 font-semibold";
 
             return (

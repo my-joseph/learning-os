@@ -127,13 +127,21 @@ html.light .border-\[\#232a3d\],
 html.light .border-\[\#1f293d\],
 html.light .border-\[\#263554\],
 html.light .border-\[\#232f48\],
-html.light .border-\[\#263147\] {
+html.light .border-\[\#263147\],
+html.light .border-\[\#2b3a5a\],
+html.light .border-\[\#222c42\],
+html.light .border-\[\#1f283e\],
+html.light .border-\[\#232b3d\],
+html.light .border-\[\#222a3d\] {
   border-color: #e2e8f0 !important;
 }
 
 /* --- 3. Card & Header Containers --- */
-html.light .bg-\[\#151924\] {
+html.light article,
+html.light .bg-\[\#151924\],
+html.light .bg-\[\#121622\] {
   background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05) !important;
 }
 
@@ -175,7 +183,23 @@ html.light .bg-\[\#182032\],
 html.light .bg-\[\#1b2233\],
 html.light .bg-\[\#1f2638\],
 html.light .bg-\[\#1f273b\],
-html.light .bg-\[\#161f33\] {
+html.light .bg-\[\#161f33\],
+html.light .bg-\[\#141b2c\],
+html.light .bg-\[\#0f1422\],
+html.light .bg-\[\#1a233a\],
+html.light .bg-\[\#25304a\],
+html.light .bg-\[\#1f2b45\],
+html.light .bg-\[\#0b0f1a\],
+html.light .bg-\[\#111624\],
+html.light .bg-\[\#151b2c\],
+html.light .bg-\[\#0a0e1c\],
+html.light .bg-\[\#171d2c\],
+html.light .bg-\[\#111726\],
+html.light .bg-\[\#141b2b\],
+html.light .bg-\[\#0e121a\],
+html.light .bg-\[\#141925\],
+html.light .bg-\[\#1e2538\],
+html.light .bg-\[\#161d2c\] {
   background-color: #f8fafc !important;
 }
 
@@ -215,30 +239,68 @@ html.light .bg-\[\#0c0f17\],
 html.light .bg-\[\#0c1017\],
 html.light .bg-\[\#10131d\],
 html.light .bg-\[\#0f1422\],
-html.light .bg-\[\#141b2c\],
 html.light .bg-\[\#111726\]\/80 {
   background-color: #f1f5f9 !important;
 }
 
 /* --- 5. Pills, Badges & Status Banners --- */
-html.light .bg-emerald-500\/10 {
+/* Archetype Badges */
+html.light .bg-amber-950\/80 {
+  background-color: #fffbeb !important;
+  color: #b45309 !important;
+  border-color: #fde68a !important;
+}
+html.light .bg-emerald-950\/80 {
   background-color: #ecfdf5 !important;
-  border-color: #a7f3d0 !important;
   color: #047857 !important;
+  border-color: #a7f3d0 !important;
+}
+html.light .bg-rose-950\/80 {
+  background-color: #fff1f2 !important;
+  color: #be123c !important;
+  border-color: #fecdd3 !important;
+}
+html.light .bg-purple-950\/80 {
+  background-color: #faf5ff !important;
+  color: #7e22ce !important;
+  border-color: #e9d5ff !important;
+}
+html.light .bg-blue-950\/80 {
+  background-color: #eff6ff !important;
+  color: #1d4ed8 !important;
+  border-color: #bfdbfe !important;
+}
+html.light .bg-emerald-950\/70 {
+  background-color: #ecfdf5 !important;
+  color: #047857 !important;
+  border-color: #a7f3d0 !important;
 }
 
+/* Competency Badges */
+html.light .bg-cyan-500\/10 {
+  background-color: #ecfeff !important;
+  border-color: #a5f3fc !important;
+  color: #0e7490 !important;
+}
+html.light .bg-teal-500\/10 {
+  background-color: #f0fdfa !important;
+  border-color: #99f6e4 !important;
+  color: #0f766e !important;
+}
+html.light .bg-violet-500\/10 {
+  background-color: #f5f3ff !important;
+  border-color: #ddd6fe !important;
+  color: #6d28d9 !important;
+}
+
+html.light .bg-emerald-500\/10,
 html.light .bg-emerald-500\/15 {
   background-color: #ecfdf5 !important;
   border-color: #a7f3d0 !important;
   color: #047857 !important;
 }
 
-html.light .bg-rose-500\/10 {
-  background-color: #fff1f2 !important;
-  border-color: #fecdd3 !important;
-  color: #be123c !important;
-}
-
+html.light .bg-rose-500\/10,
 html.light .bg-rose-500\/15 {
   background-color: #fff1f2 !important;
   border-color: #fecdd3 !important;
@@ -268,6 +330,18 @@ html.light .bg-slate-500\/20 {
   background-color: #f1f5f9 !important;
   border-color: #cbd5e1 !important;
   color: #475569 !important;
+}
+
+/* Concept Vault & Inline Code Tokens */
+html.light code.bg-\[\#131a29\] {
+  background-color: #f0f9ff !important;
+  border-color: #bae6fd !important;
+  color: #0369a1 !important;
+}
+html.light code.bg-\[\#171d2c\] {
+  background-color: #fffbeb !important;
+  border-color: #fde68a !important;
+  color: #b45309 !important;
 }
 
 /* --- 6. Quiz Pagination Bar in Light Mode --- */
@@ -305,14 +379,35 @@ html.light button.bg-slate-500 {
   color: #ffffff !important;
 }
 
-/* Active question ring offset */
+/* Active question ring offset & color */
 html.light .ring-offset-\[\#0d1017\] {
   --tw-ring-offset-color: #ffffff !important;
+}
+
+html.light .ring-indigo-400,
+html.light .ring-indigo-500 {
+  --tw-ring-color: #6366f1 !important;
 }
 
 /* Scoring button active ring */
 html.light .ring-2.ring-white {
   --tw-ring-color: #6366f1 !important;
+}
+
+/* MCQ Option Button in Code Problem Card */
+html.light button.bg-\[\#111726\]\/80,
+html.light button.bg-\[\#111726\] {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  color: #1e293b !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.04) !important;
+}
+
+html.light button.bg-\[\#111726\]\/80:hover,
+html.light button.bg-\[\#111726\]:hover {
+  background-color: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
 }
 
 /* MCQ Selected Option in Code Problem Card */
@@ -323,6 +418,24 @@ html.light .bg-indigo-600\/20 {
 
 html.light .bg-indigo-600\/20 * {
   color: #1e1b4b !important;
+}
+
+/* MCQ Option Letter Box [A], [B], [C], [D] */
+html.light .bg-\[\#1d263b\] {
+  background-color: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+  color: #334155 !important;
+}
+
+/* Terminal Prediction Input Row */
+html.light .bg-\[\#0c1017\] {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+}
+
+html.light .bg-\[\#0c1017\] input {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
 }
 
 /* Line number buttons (Find-bug) */
@@ -341,17 +454,50 @@ html.light button.bg-\[\#1f273b\]:hover {
 /* --- 7. Interactive Buttons & Actions in Light Mode --- */
 /* Secondary action buttons */
 html.light button.bg-\[\#1d2333\],
+html.light button.bg-\[\#1a2133\],
 html.light button.bg-\[\#1b2336\],
 html.light button.bg-\[\#1c2438\] {
-  background-color: #f8fafc !important;
+  background-color: #ffffff !important;
   border-color: #e2e8f0 !important;
   color: #334155 !important;
 }
 
 html.light button.bg-\[\#1d2333\]:hover,
+html.light button.bg-\[\#1a2133\]:hover,
 html.light button.bg-\[\#1b2336\]:hover,
 html.light button.bg-\[\#1c2438\]:hover {
+  background-color: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+/* Solution breakdown drawer in CodeProblemCard */
+html.light .bg-\[\#0e121a\] {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+}
+
+html.light .bg-\[\#141925\] {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+}
+
+html.light .bg-\[\#1e2538\] {
   background-color: #f1f5f9 !important;
+  color: #475569 !important;
+}
+
+/* Score buttons & Mistake tag pills in CodeProblemCard */
+html.light button.bg-\[\#1b2234\],
+html.light button.bg-\[\#161d2c\] {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  color: #475569 !important;
+}
+
+html.light button.bg-\[\#1b2234\]:hover,
+html.light button.bg-\[\#161d2c\]:hover {
+  background-color: #f8fafc !important;
   border-color: #cbd5e1 !important;
   color: #0f172a !important;
 }

@@ -803,7 +803,6 @@ export default function PracticeStudioPage() {
                       >
                         <ChevronLeft className="w-4 h-4" />
                         <span>Previous Question</span>
-                        <kbd className="hidden sm:inline-block text-[10px] bg-[#10141f] text-slate-400 px-1.5 py-0.5 rounded border border-[#2c3852]">←</kbd>
                       </button>
 
                       <div className="text-xs font-mono text-slate-400 flex items-center gap-1.5">
@@ -820,7 +819,6 @@ export default function PracticeStudioPage() {
                         className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs md:text-sm font-semibold bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 disabled:hover:bg-indigo-600 text-white transition-colors shadow-sm"
                       >
                         <span>Next Question</span>
-                        <kbd className="hidden sm:inline-block text-[10px] bg-indigo-900/60 text-indigo-200 px-1.5 py-0.5 rounded border border-indigo-400/40">→</kbd>
                         <ChevronRight className="w-4 h-4" />
                       </button>
                     </div>
