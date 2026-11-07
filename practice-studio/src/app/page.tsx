@@ -1,19 +1,22 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { Plus, RefreshCw, Send, CheckCircle2, AlertCircle, RotateCcw } from "lucide-react";
+import { Plus, RefreshCw, Send, CheckCircle2, AlertCircle, RotateCcw, ChevronLeft, ChevronRight } from "lucide-react";
 import {
   DrillDocument,
   DrillListItem,
   CheckResult,
 } from "@/types/drill";
 import { ProblemCard } from "@/components/ProblemCard";
+import { QuizPaginationBar } from "@/components/QuizPaginationBar";
 
 export default function PracticeStudioPage() {
   const [drills, setDrills] = useState<DrillListItem[]>([]);
   const [currentDrill, setCurrentDrill] = useState<DrillDocument | null>(null);
   const [selectedDrillId, setSelectedDrillId] = useState<string>("");
   const [activeSteps, setActiveSteps] = useState<{ [probId: string]: number | null }>({});
+  const [currentProblemIndex, setCurrentProblemIndex] = useState<number>(0);
+  const [viewMode, setViewMode] = useState<"quiz" | "all">("quiz");
 
   // Pre-Gen Config State
   const [cfgUnit, setCfgUnit] = useState("MTH-T02-C01-U01");
@@ -71,6 +74,7 @@ export default function PracticeStudioPage() {
         })),
       };
       setCurrentDrill(normalizedDoc);
+      setCurrentProblemIndex(0);
 
       // sync top config
       if (doc.config) {
@@ -378,12 +382,51 @@ export default function PracticeStudioPage() {
       },
     };
     setCurrentDrill(updated);
+    setCurrentProblemIndex(0);
     triggerAutoSave(updated);
     setStatus({
       text: `Reset ${currentDrill.drillId} to initial state. Ready for a new practice run!`,
       type: "pass",
     });
   };
+
+  // Quiz Pagination Navigation Handlers
+  const handlePrevQuestion = () => {
+    setCurrentProblemIndex((prev) => (prev > 0 ? prev - 1 : prev));
+  };
+
+  const handleNextQuestion = () => {
+    if (!currentDrill) return;
+    setCurrentProblemIndex((prev) => (prev < currentDrill.problems.length - 1 ? prev + 1 : prev));
+  };
+
+  const handleSelectQuestion = (idx: number) => {
+    setCurrentProblemIndex(idx);
+    if (viewMode === "all" && currentDrill?.problems[idx]) {
+      const el = document.getElementById(`problem-${currentDrill.problems[idx].id}`);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }
+  };
+
+  // Keyboard navigation for arrow keys in Quiz Mode
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA")) {
+        return;
+      }
+      if (viewMode !== "quiz") return;
+      if (e.key === "ArrowLeft") {
+        handlePrevQuestion();
+      } else if (e.key === "ArrowRight") {
+        handleNextQuestion();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [viewMode, currentDrill]);
 
   // Compute live score
   const liveScore = currentDrill
@@ -658,26 +701,103 @@ export default function PracticeStudioPage() {
           </section>
         )}
 
-        {/* Problems List */}
+        {/* Quiz Pagination Navigation Bar */}
+        {currentDrill && currentDrill.problems.length > 0 && (
+          <QuizPaginationBar
+            totalQuestions={currentDrill.problems.length}
+            currentIndex={currentProblemIndex}
+            problems={currentDrill.problems}
+            viewMode={viewMode}
+            onSelectQuestion={handleSelectQuestion}
+            onPrev={handlePrevQuestion}
+            onNext={handleNextQuestion}
+            onToggleViewMode={(mode) => setViewMode(mode)}
+          />
+        )}
+
+        {/* Problems Main Area */}
         <main className="space-y-5">
-          {currentDrill?.problems.map((prob, idx) => (
-            <ProblemCard
-              key={prob.id}
-              problem={prob}
-              index={idx}
-              subject={currentDrill.subject}
-              mistakeTags={currentDrill.mistakeTags || []}
-              activeStep={activeSteps[prob.id] ?? null}
-              onInputChange={(val) => handleInputChange(prob.id, val)}
-              onCheckAnswer={() => handleCheckAnswer(prob.id)}
-              onSkip={() => handleSkipProblem(prob.id)}
-              onToggleStepHighlight={(stepIdx) => handleToggleStepHighlight(prob.id, stepIdx)}
-              onMarkDivergedStep={(stepIdx) => handleMarkDivergedStep(prob.id, stepIdx)}
-              onSetScore={(score) => handleSetScore(prob.id, score)}
-              onToggleMistakeTag={(tagId) => handleToggleMistakeTag(prob.id, tagId)}
-              onResetProblem={() => handleResetProblem(prob.id)}
-            />
-          ))}
+          {viewMode === "quiz" && currentDrill && currentDrill.problems[currentProblemIndex] ? (
+            <div>
+              {/* Single Problem Focus in Quiz Mode */}
+              {(() => {
+                const prob = currentDrill.problems[currentProblemIndex];
+                const idx = currentProblemIndex;
+                return (
+                  <div key={prob.id} className="animate-in fade-in duration-150">
+                    <ProblemCard
+                      problem={prob}
+                      index={idx}
+                      subject={currentDrill.subject}
+                      mistakeTags={currentDrill.mistakeTags || []}
+                      activeStep={activeSteps[prob.id] ?? null}
+                      onInputChange={(val) => handleInputChange(prob.id, val)}
+                      onCheckAnswer={() => handleCheckAnswer(prob.id)}
+                      onSkip={() => handleSkipProblem(prob.id)}
+                      onToggleStepHighlight={(stepIdx) => handleToggleStepHighlight(prob.id, stepIdx)}
+                      onMarkDivergedStep={(stepIdx) => handleMarkDivergedStep(prob.id, stepIdx)}
+                      onSetScore={(score) => handleSetScore(prob.id, score)}
+                      onToggleMistakeTag={(tagId) => handleToggleMistakeTag(prob.id, tagId)}
+                      onResetProblem={() => handleResetProblem(prob.id)}
+                    />
+
+                    {/* Bottom Question Navigation Footer */}
+                    <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-[#141926]/90 border border-[#2b3752] rounded-2xl shadow-lg mt-4">
+                      <button
+                        type="button"
+                        onClick={handlePrevQuestion}
+                        disabled={currentProblemIndex === 0}
+                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs md:text-sm font-semibold bg-[#1c2438] hover:bg-[#25304a] disabled:opacity-40 disabled:hover:bg-[#1c2438] text-slate-200 border border-[#2c3852] transition-colors"
+                      >
+                        <ChevronLeft className="w-4 h-4" />
+                        <span>Previous Question</span>
+                        <kbd className="hidden sm:inline-block text-[10px] bg-[#10141f] text-slate-400 px-1.5 py-0.5 rounded border border-[#2c3852]">←</kbd>
+                      </button>
+
+                      <div className="text-xs font-mono text-slate-400 flex items-center gap-1.5">
+                        <span>Question</span>
+                        <strong className="text-white bg-[#1c2438] px-2 py-0.5 rounded border border-[#2c3852]">{currentProblemIndex + 1}</strong>
+                        <span>of</span>
+                        <strong className="text-slate-300">{currentDrill.problems.length}</strong>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={handleNextQuestion}
+                        disabled={currentProblemIndex === currentDrill.problems.length - 1}
+                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs md:text-sm font-semibold bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 disabled:hover:bg-indigo-600 text-white transition-colors shadow-sm"
+                      >
+                        <span>Next Question</span>
+                        <kbd className="hidden sm:inline-block text-[10px] bg-indigo-900/60 text-indigo-200 px-1.5 py-0.5 rounded border border-indigo-400/40">→</kbd>
+                        <ChevronRight className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+          ) : (
+            /* All Problems in Scroll Mode */
+            currentDrill?.problems.map((prob, idx) => (
+              <div key={prob.id} id={`problem-${prob.id}`}>
+                <ProblemCard
+                  problem={prob}
+                  index={idx}
+                  subject={currentDrill.subject}
+                  mistakeTags={currentDrill.mistakeTags || []}
+                  activeStep={activeSteps[prob.id] ?? null}
+                  onInputChange={(val) => handleInputChange(prob.id, val)}
+                  onCheckAnswer={() => handleCheckAnswer(prob.id)}
+                  onSkip={() => handleSkipProblem(prob.id)}
+                  onToggleStepHighlight={(stepIdx) => handleToggleStepHighlight(prob.id, stepIdx)}
+                  onMarkDivergedStep={(stepIdx) => handleMarkDivergedStep(prob.id, stepIdx)}
+                  onSetScore={(score) => handleSetScore(prob.id, score)}
+                  onToggleMistakeTag={(tagId) => handleToggleMistakeTag(prob.id, tagId)}
+                  onResetProblem={() => handleResetProblem(prob.id)}
+                />
+              </div>
+            ))
+          )}
         </main>
       </div>
     </div>

@@ -110,10 +110,12 @@
       ],
       "state": {
         "userInput": "",
+        "userCode": "// DNS Query Traversal:\n// Browser Cache -> OS Cache -> Recursive Resolver -> Root (.) -> TLD (.com) -> [?]\n",
         "score": null,
         "divergedStep": null,
         "mistakes": [],
-        "lastCheck": null
+        "lastCheck": null,
+        "lastTestReport": null
       }
     },
     {
@@ -161,10 +163,12 @@
       ],
       "state": {
         "userInput": "",
+        "userCode": "Client --- [ Packet 1 ] ---> Server\nClient <--- [ Packet 2 ] --- Server\nClient --- [ Packet 3 ] ---> Server (ESTABLISHED)\n",
         "score": null,
         "divergedStep": null,
         "mistakes": [],
-        "lastCheck": null
+        "lastCheck": null,
+        "lastTestReport": null
       }
     },
     {
@@ -219,11 +223,21 @@
         }
       ],
       "state": {
-        "userInput": "",
-        "score": null,
+        "userInput": "(Skipped)",
+        "userCode": "// Network Protocol Stack:\n// Application Layer: HTTP\n// Security Layer:    [ ? ] (Port 443 HTTPS)\n// Transport Layer:   TCP\n// Internet Layer:    IP\n",
+        "score": 0,
         "divergedStep": null,
-        "mistakes": [],
-        "lastCheck": null
+        "mistakes": [
+          "auth-401-vs-403"
+        ],
+        "lastCheck": {
+          "verdict": "skipped",
+          "message": "Skipped (Concept Gap / Unsure) — Review step-by-step solution below to solidify mental model.",
+          "components": [],
+          "diagnostics": []
+        },
+        "lastTestReport": null,
+        "skipped": true
       }
     },
     {
@@ -259,10 +273,12 @@
       ],
       "state": {
         "userInput": "",
+        "userCode": "GET /api/v2/products/electronics?sort=price_asc HTTP/1.1\nHost: store.example.com\nUser-Agent: Mozilla/5.0\nAccept: application/json\n",
         "score": null,
         "divergedStep": null,
         "mistakes": [],
-        "lastCheck": null
+        "lastCheck": null,
+        "lastTestReport": null
       }
     },
     {
@@ -301,10 +317,12 @@
       ],
       "state": {
         "userInput": "",
+        "userCode": "// Incoming Request:\n// GET /api/user/profile HTTP/1.1\n// Host: api.example.com\n// (No Authorization or Cookie header present)\n\n// Expected Response Status Line:\n// HTTP/1.1 [ ? ] ...\n",
         "score": null,
         "divergedStep": null,
         "mistakes": [],
-        "lastCheck": null
+        "lastCheck": null,
+        "lastTestReport": null
       }
     },
     {
@@ -357,10 +375,12 @@
       ],
       "state": {
         "userInput": "",
+        "userCode": "// Incoming Request:\n// DELETE /api/users/99 HTTP/1.1\n// Authorization: Bearer <valid_jwt_with_role_viewer>\n\n// Expected Server Response:\n// HTTP/1.1 [ ? ] ...\n",
         "score": null,
         "divergedStep": null,
         "mistakes": [],
-        "lastCheck": null
+        "lastCheck": null,
+        "lastTestReport": null
       }
     },
     {
@@ -412,10 +432,12 @@
       ],
       "state": {
         "userInput": "",
+        "userCode": "Client ---> [ Nginx Proxy ] ---> [ Node.js Microservice ] (Process Crashed!)\nClient <--- [ HTTP/1.1 ??? ] <--- [ Socket Closed Uncleanly ]\n",
         "score": null,
         "divergedStep": null,
         "mistakes": [],
-        "lastCheck": null
+        "lastCheck": null,
+        "lastTestReport": null
       }
     },
     {
@@ -453,10 +475,12 @@
       ],
       "state": {
         "userInput": "",
+        "userCode": "// Gateway timer: 10,000ms\n// Upstream elapsed: 10,001ms (No headers or bytes received yet)\n// Gateway aborts wait and sends: HTTP/1.1 [ ? ]\n",
         "score": null,
         "divergedStep": null,
         "mistakes": [],
-        "lastCheck": null
+        "lastCheck": null,
+        "lastTestReport": null
       }
     },
     {
@@ -494,10 +518,12 @@
       ],
       "state": {
         "userInput": "",
+        "userCode": "// Client Request:\n// GET /logo.png HTTP/1.1\n// If-None-Match: \"abc123etag\"\n\n// Server Response:\n// HTTP/1.1 [ ? ] ...\n// ETag: \"abc123etag\"\n// (No body transmitted)\n",
         "score": null,
         "divergedStep": null,
         "mistakes": [],
-        "lastCheck": null
+        "lastCheck": null,
+        "lastTestReport": null
       }
     },
     {
@@ -549,12 +575,14 @@
       ],
       "state": {
         "userInput": "",
+        "userCode": "// Client Handshake:\n// GET /chat HTTP/1.1\n// Upgrade: websocket\n// Connection: Upgrade\n\n// Server Acceptance:\n// HTTP/1.1 [ ? ] ...\n// Upgrade: websocket\n// Connection: Upgrade\n",
         "score": null,
         "divergedStep": null,
         "mistakes": [],
-        "lastCheck": null
+        "lastCheck": null,
+        "lastTestReport": null
       }
     }
   ],
-  "localFilePath": "drills/data/PRG-T00-C01-U01/DRL-PRG-T00-C01-U01-01.json"
+  "localFilePath": "/Users/Joseph/Documents/antigravity/brave-borg/drills/data/PRG-T00-C01-U01/DRL-PRG-T00-C01-U01-01.json"
 }
