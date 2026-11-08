@@ -308,8 +308,22 @@ export default function PracticeStudioPage() {
             newMistakes.add(tag.id);
           }
         });
-        if (result.verdict === "incorrect" && prob.commonTrapTag && newMistakes.size === 0) {
-          newMistakes.add(prob.commonTrapTag);
+        if (result.verdict === "incorrect") {
+          let chosenOptionTrapTag: string | undefined;
+          if (prob.answerSpec?.type === "choice" && Array.isArray(prob.answerSpec.options)) {
+            const chosen = prob.answerSpec.options.find(
+              (o) => String(o.id).trim() === String(inputVal).trim()
+            );
+            if (chosen && chosen.trapTag) {
+              chosenOptionTrapTag = chosen.trapTag;
+            }
+          }
+
+          if (chosenOptionTrapTag) {
+            newMistakes.add(chosenOptionTrapTag);
+          } else if (prob.commonTrapTag && newMistakes.size === 0) {
+            newMistakes.add(prob.commonTrapTag);
+          }
         }
 
         return {

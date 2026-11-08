@@ -15,6 +15,8 @@ import math
 import random
 from typing import Any
 
+from math_engine.templates.flaw_utils import build_flaw_choice_problem
+
 try:
     import numpy as np
     HAS_NUMPY = True
@@ -465,6 +467,7 @@ def t_vector_add_scale(rng: random.Random, form: str | None = None, level: int =
             "commonTrapTag": "vector-scalar-solve-sign-slip",
             "steps": steps,
             "inputHint": "Enter a scalar integer value",
+            "checkpointHint": "Subtract vector u from w, then divide component-wise to solve for scalar c.",
             "verificationLevel": "machine-verified",
             "verify": {
                 "source": str(c),
@@ -477,7 +480,7 @@ def t_vector_add_scale(rng: random.Random, form: str | None = None, level: int =
 # Template 2: vector-dot-product
 # ---------------------------------------------------------------------------
 def t_vector_dot_product(rng: random.Random, form: str | None = None, level: int = 2) -> dict[str, Any]:
-    available_forms = ["direct", "orthogonal-param", "magnitude", "unit-vector"]
+    available_forms = ["direct", "orthogonal-param"]
     if not form or form not in available_forms:
         form = rng.choice(available_forms)
 
@@ -551,6 +554,7 @@ def t_vector_dot_product(rng: random.Random, form: str | None = None, level: int
             "commonTrapTag": "dot-sign-slip",
             "steps": steps,
             "inputHint": "Enter a scalar integer value",
+            "checkpointHint": "Multiply matching components together: x1*x2 + y1*y2 + z1*z2, then sum the products.",
             "verificationLevel": "machine-verified",
             "verify": {
                 "source": str(dot_val),
@@ -558,7 +562,7 @@ def t_vector_dot_product(rng: random.Random, form: str | None = None, level: int
             },
         }
 
-    elif form == "orthogonal-param":
+    else:
         # Form 2: Orthogonality condition u . v = 0, solve for parameter k (Level 2)
         # u = <a, b, c>, v = <x, y, k>
         # a*x + b*y + c*k = 0 => c*k = -(a*x + b*y) => k = -(a*x + b*y)/c
@@ -622,7 +626,7 @@ def t_vector_dot_product(rng: random.Random, form: str | None = None, level: int
         return {
             "form": "orthogonal-param",
             "level": 2,
-            "skill": "VEC-MAGNITUDE-ORTHOGONAL",
+            "skill": "VEC-ORTHOGONAL",
             "category": "Orthogonal Vectors",
             "archetype": "problem-solving",
             "prompt": prompt,
@@ -639,6 +643,7 @@ def t_vector_dot_product(rng: random.Random, form: str | None = None, level: int
             "commonTrapTag": "orthogonal-sign-slip",
             "steps": steps,
             "inputHint": "Enter the scalar value of k",
+            "checkpointHint": "Two vectors are orthogonal if their dot product equals zero. Set u . v = 0 and solve for k.",
             "verificationLevel": "machine-verified",
             "verify": {
                 "source": str(k),
@@ -646,8 +651,17 @@ def t_vector_dot_product(rng: random.Random, form: str | None = None, level: int
             },
         }
 
-    elif form == "magnitude":
-        # Form 3: Vector Magnitude in R^3 using exact Pythagorean quadruples (Level 2)
+
+# ---------------------------------------------------------------------------
+# Template 3: vector-magnitude
+# ---------------------------------------------------------------------------
+def t_vector_magnitude(rng: random.Random, form: str | None = None, level: int = 1) -> dict[str, Any]:
+    available_forms = ["magnitude", "unit-vector", "flaw-distribute-sqrt"]
+    if not form or form not in available_forms:
+        form = rng.choice(available_forms)
+
+    if form == "magnitude":
+        # Form 1: Vector Magnitude in R^3 using exact Pythagorean quadruples (Level 1)
         # e.g. (1, 2, 2) -> 3, (2, 3, 6) -> 7, (1, 4, 8) -> 9, (4, 4, 7) -> 9, (2, 6, 9) -> 11
         quadruples = [
             ([1, 2, 2], 3),
@@ -701,8 +715,8 @@ def t_vector_dot_product(rng: random.Random, form: str | None = None, level: int
 
         return {
             "form": "magnitude",
-            "level": 2,
-            "skill": "VEC-MAGNITUDE-ORTHOGONAL",
+            "level": 1,
+            "skill": "VEC-MAGNITUDE",
             "category": "Vector Magnitude",
             "archetype": "problem-solving",
             "prompt": prompt,
@@ -719,6 +733,7 @@ def t_vector_dot_product(rng: random.Random, form: str | None = None, level: int
             "commonTrapTag": "magnitude-distribute-sqrt",
             "steps": steps,
             "inputHint": "Enter the scalar magnitude value",
+            "checkpointHint": "Apply the Euclidean norm formula: square each component, sum them together, and evaluate the radical.",
             "verificationLevel": "machine-verified",
             "verify": {
                 "source": str(mag),
@@ -726,8 +741,8 @@ def t_vector_dot_product(rng: random.Random, form: str | None = None, level: int
             },
         }
 
-    else:
-        # Form 4: Unit Vector Normalization in R^2 or R^3 with radicals (sqrt(2), sqrt(3)) or integer magnitude
+    elif form == "unit-vector":
+        # Form 2: Unit Vector Normalization in R^2 or R^3 with radicals (sqrt(2), sqrt(3)) or integer magnitude
         variant = rng.choice(["radical-2", "radical-3", "integer-quad"])
         if variant == "radical-2":
             s1 = rng.choice([-1, 1])
@@ -847,7 +862,7 @@ def t_vector_dot_product(rng: random.Random, form: str | None = None, level: int
         return {
             "form": "unit-vector",
             "level": 2,
-            "skill": "VEC-MAGNITUDE-ORTHOGONAL",
+            "skill": "VEC-MAGNITUDE",
             "category": "Unit Vector",
             "archetype": "problem-solving",
             "prompt": prompt,
@@ -865,6 +880,7 @@ def t_vector_dot_product(rng: random.Random, form: str | None = None, level: int
             "commonTrapTag": "unit-vector-forgot-magnitude",
             "steps": steps,
             "inputHint": f"Enter vector components like <{', '.join(['x', 'y', 'z'][:dim])}>",
+            "checkpointHint": "Calculate the vector magnitude first, then divide each component by the magnitude.",
             "verificationLevel": "machine-verified",
             "verify": {
                 "vector": ans_comps,
@@ -872,6 +888,74 @@ def t_vector_dot_product(rng: random.Random, form: str | None = None, level: int
                 "trapValue": trap_plain,
             },
         }
+
+    else:
+        # Form 3: Find the Flaw: Distributing square root over sum of squares (Level 3)
+        quadruples = [
+            ([1, 2, 2], 3),
+            ([2, 3, 6], 7),
+            ([1, 4, 8], 9),
+            ([4, 4, 7], 9),
+            ([2, 6, 9], 11),
+            ([6, 6, 7], 11),
+            ([3, 4, 12], 13),
+        ]
+        base_quad, mag = rng.choice(quadruples)
+        signs = [rng.choice([-1, 1]) for _ in range(3)]
+        perm = list(range(3))
+        rng.shuffle(perm)
+        u = [signs[i] * base_quad[perm[i]] for i in range(3)]
+        sum_sq = u[0]**2 + u[1]**2 + u[2]**2
+        u_latex = _fmt_vec_latex(u)
+
+        # Flawed derivation: distributes sqrt across addition in Line 2
+        sum_abs = abs(u[0]) + abs(u[1]) + abs(u[2])
+        shown_lines = [
+            f"\\|\\vec{{u}}\\| = \\sqrt{{({u[0]})^2 + ({u[1]})^2 + ({u[2]})^2}}",
+            f"= \\sqrt{{({u[0]})^2}} + \\sqrt{{({u[1]})^2}} + \\sqrt{{({u[2]})^2}}",
+            f"= {abs(u[0])} + {abs(u[1])} + {abs(u[2])} = {sum_abs}",
+        ]
+
+        steps = [
+            {
+                "latex": f"\\|\\vec{{u}}\\| = \\sqrt{{({u[0]})^2 + ({u[1]})^2 + ({u[2]})^2}}",
+                "explain": "Step 1 (True formulation): Apply the Euclidean norm formula for vector magnitude.",
+                "eq": (f"sqrt({sum_sq})", str(mag)),
+            },
+            {
+                "latex": f"\\|\\vec{{u}}\\| = \\sqrt{{{sum_sq}}} = {mag}",
+                "explain": f"Line 2 is wrong: The student wrote ${shown_lines[1]}$, but the square root does not distribute across addition (\\sqrt{{x+y}} \\neq \\sqrt{{x}} + \\sqrt{{y}}). True evaluation: $\\|\\vec{{u}}\\| = \\sqrt{{{sum_sq}}} = {mag}$.",
+                "eq": (f"sqrt({sum_sq})", str(mag)),
+            },
+            {
+                "latex": f"\\|\\vec{{u}}\\| = {mag}",
+                "explain": "Step 3 (True value): Evaluate the square root of the sum of squares.",
+                "val": str(mag),
+            },
+        ]
+
+        vals = [f"sqrt({sum_sq})", str(sum_abs), None]
+        line_trap_map = {1: "formula-setup", 2: "magnitude-distribute-sqrt", 3: "arithmetic-slip"}
+
+        prob = build_flaw_choice_problem(
+            prompt=f"A student calculated the magnitude of the vector $\\vec{{u}} = {u_latex}$ as shown below. Which line contains the FIRST error?",
+            shown_lines=shown_lines,
+            steps=steps,
+            flaw_line=2,
+            line_trap_map=line_trap_map,
+            verify_source=str(mag),
+            vals=vals,
+            form_prefix="flaw-line",
+            category="Trap & Edge Case",
+            checkpoint_hint="Work through the vector magnitude formula step-by-step on scratch paper, then compare your derivation with each line of the student's work to identify where the steps first diverge.",
+            common_trap_tag="magnitude-distribute-sqrt",
+            flaw_tag="magnitude-distribute-sqrt",
+        )
+        prob["form"] = "flaw-distribute-sqrt"
+        prob["skill"] = "VEC-MAGNITUDE"
+        prob["level"] = 3
+        prob["verificationLevel"] = "machine-verified"
+        return prob
 
 
 TEMPLATES: list[dict[str, Any]] = [
@@ -917,20 +1001,34 @@ TEMPLATES: list[dict[str, Any]] = [
             },
             "orthogonal-param": {
                 "level": 2,
-                "skill": "VEC-MAGNITUDE-ORTHOGONAL",
+                "skill": "VEC-ORTHOGONAL",
                 "trapTag": "orthogonal-sign-slip",
             },
+        },
+        "build": t_vector_dot_product,
+    },
+    {
+        "key": "vector-magnitude",
+        "level": 1,
+        "skill": "VEC-MAGNITUDE",
+        "verificationLevel": "machine-verified",
+        "forms": {
             "magnitude": {
-                "level": 2,
-                "skill": "VEC-MAGNITUDE-ORTHOGONAL",
+                "level": 1,
+                "skill": "VEC-MAGNITUDE",
                 "trapTag": "magnitude-distribute-sqrt",
             },
             "unit-vector": {
                 "level": 2,
-                "skill": "VEC-MAGNITUDE-ORTHOGONAL",
+                "skill": "VEC-MAGNITUDE",
                 "trapTag": "unit-vector-forgot-magnitude",
             },
+            "flaw-distribute-sqrt": {
+                "level": 3,
+                "skill": "VEC-MAGNITUDE",
+                "trapTag": "magnitude-distribute-sqrt",
+            },
         },
-        "build": t_vector_dot_product,
+        "build": t_vector_magnitude,
     },
 ]

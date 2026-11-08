@@ -215,10 +215,11 @@ class SecurityVisitor(ast.NodeVisitor):
         ast.USub,
     )
 
-    def __init__(self, allowed_names, allowed_funcs=None, trusted=False):
+    def __init__(self, allowed_names, allowed_funcs=None, trusted=False, variables=None):
         self.allowed_names = set(allowed_names)
         self.allowed_funcs = set(allowed_funcs) if allowed_funcs is not None else set(WHITELIST_FUNCS.keys())
         self.trusted = trusted
+        self.variables = set(variables) if variables is not None else None
 
     def generic_visit(self, node):
         if not isinstance(node.func if isinstance(node, ast.Call) else node, self.ALLOWED_NODES):
@@ -267,7 +268,19 @@ class SecurityVisitor(ast.NodeVisitor):
                     exp_val = -node.right.operand.value
                 elif isinstance(node.right.op, ast.UAdd):
                     exp_val = node.right.operand.value
-            exp_limit = 1000 if self.trusted else 100
+            # Determine base type for exponent limit:
+            # - If trusted (internal template evaluation): limit is 1000
+            # - If base is imaginary unit i/I: reduces mod 4 cheaply, limit is 1000
+            # - If base is purely numeric constant: limit is 1000 (blocks 2**1001, allows 2**30)
+            # - If base is symbolic / contains variables: limit is 100 (blocks (k+1)**101, allows (x+1)**30)
+            is_imag_unit = isinstance(node.left, ast.Name) and node.left.id in ("i", "I", "j", "k") and not self.variables
+            is_pure_num = all(not (isinstance(n, ast.Name) and (self.variables is None or n.id in self.variables)) for n in ast.walk(node.left))
+
+            if self.trusted or is_imag_unit or is_pure_num:
+                exp_limit = 1000
+            else:
+                exp_limit = 100
+
             if exp_val is not None and abs(exp_val) > exp_limit:
                 raise SafeParseError(f"Exponent magnitude {exp_val} exceeds limit {exp_limit}")
             if isinstance(node.left, ast.BinOp) and isinstance(node.left.op, ast.Pow):
@@ -402,7 +415,7 @@ def safe_parse(raw, variables=None, evaluate=True, allow_i=True, allowed_funcs=N
             allowed_names.discard("i")
         allowed_names.discard("I")
 
-    SecurityVisitor(allowed_names, allowed_funcs=funcs.keys(), trusted=trusted).visit(tree)
+    SecurityVisitor(allowed_names, allowed_funcs=funcs.keys(), trusted=trusted, variables=variables).visit(tree)
 
     transformed_tree = ASTTransformer(evaluate=evaluate).visit(tree)
     ast.fix_missing_locations(transformed_tree)

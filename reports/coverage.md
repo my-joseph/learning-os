@@ -1,7 +1,7 @@
 # Coverage & Skills Taxonomy Report
 
-> **Data Directory Scanned**: `/var/folders/wy/3q1fdk252w55cs0y71qgbx340000gn/T/tmpe9sf21gr`  
-> **Skills Taxonomy Registered**: 42 skills across 6 domains
+> **Data Directory Scanned**: `drills/data`  
+> **Skills Taxonomy Registered**: 43 skills across 6 domains
 
 ---
 
@@ -52,7 +52,8 @@
 | `vectors` | `VEC-ADD-SCALE` | Vector Addition and Scalar Multiplication | `foundational` | L1, L2 | `vector-add-scale` | `add-sub`, `missing-scalar`, `scalar-mult` | 0 |
 | `vectors` | `VEC-DOT-PRODUCT` | Vector Dot Product and Algebraic Properties | `intermediate` | L2 | `vector-dot-product` | `direct` | 0 |
 | `vectors` | `VEC-LINEAR-COMBINATION` | Linear Combinations and Basis Representation | `intermediate` | L2 | `vector-add-scale` | `linear-combination` | 0 |
-| `vectors` | `VEC-MAGNITUDE-ORTHOGONAL` | Vector Magnitude, Unit Vectors, and Orthogonality | `intermediate` | L2 | `vector-dot-product` | `magnitude`, `orthogonal-param`, `unit-vector` | 0 |
+| `vectors` | `VEC-MAGNITUDE` | Calculate Vector Magnitude and Normalized Unit Vectors | `foundational` | L1, L2, L3 | `vector-magnitude` | `flaw-distribute-sqrt`, `magnitude`, `unit-vector` | 0 |
+| `vectors` | `VEC-ORTHOGONAL` | Determine Vector Orthogonality and Parameter Solutions | `intermediate` | L2 | `vector-dot-product` | `orthogonal-param` | 0 |
 
 ### 1.1 การตรวจสอบความซ้ำซ้อนในไฟล์ `-studio` (Studio File Deduplication Audit)
 
@@ -74,7 +75,7 @@
 
 ### 2.1 Skill ที่มี Template แล้ว แต่ยังไม่มีโจทย์จริงใน `drills/data`
 
-มีทั้งหมด **12** Skills ที่มี Template ใน code engine / math engine พร้อมสร้างโจทย์ แต่ยังไม่เคยรัน generate บันทึกไฟล์ลงใน `drills/data/`:
+มีทั้งหมด **13** Skills ที่มี Template ใน code engine / math engine พร้อมสร้างโจทย์ แต่ยังไม่เคยรัน generate บันทึกไฟล์ลงใน `drills/data/`:
 
 | Skill ID | Domain | Registered Template | สาเหตุ / สถานะ |
 | :--- | :--- | :--- | :--- |
@@ -89,7 +90,8 @@
 | `VEC-ADD-SCALE` | `vectors` | `vector-add-scale` | ยังไม่มีการสร้างชุดฝึกที่ครอบคลุม skill นี้ |
 | `VEC-DOT-PRODUCT` | `vectors` | `vector-dot-product` | ยังไม่มีการสร้างชุดฝึกที่ครอบคลุม skill นี้ |
 | `VEC-LINEAR-COMBINATION` | `vectors` | `vector-add-scale` | ยังไม่มีการสร้างชุดฝึกที่ครอบคลุม skill นี้ |
-| `VEC-MAGNITUDE-ORTHOGONAL` | `vectors` | `vector-dot-product` | ยังไม่มีการสร้างชุดฝึกที่ครอบคลุม skill นี้ |
+| `VEC-MAGNITUDE` | `vectors` | `vector-magnitude` | ยังไม่มีการสร้างชุดฝึกที่ครอบคลุม skill นี้ |
+| `VEC-ORTHOGONAL` | `vectors` | `vector-dot-product` | ยังไม่มีการสร้างชุดฝึกที่ครอบคลุม skill นี้ |
 
 ### 2.2 ระดับความยากที่แต่ละ Domain ขาด (Missing Levels per Domain)
 
@@ -102,7 +104,7 @@
 | `javascript_core` | L1, L2, L3, L4 | ครบถ้วน (None) | มีโจทย์ครบตั้งแต่ L1 (scope hoisting) ถึง L4 (prototype chain mutation) |
 | `software_architecture` | L1, L2, L3, L4 | ครบถ้วน (None) | มีโจทย์ครบตั้งแต่ L1 (kata_groupby) ถึง L4 (sliding-window rate limiter) |
 | `calculus` | L1, L2, L3 | **L4** |  |
-| `vectors` | L1, L2 | **L3**, **L4** |  |
+| `vectors` | L1, L2, L3 | **L4** |  |
 
 ---
 
@@ -148,11 +150,11 @@
 | 15 | `software_architecture` | `PRG-ARCH-ASYNC-CACHE-RACE` | Debug Race Conditions and Stampedes in Async Caches | `advanced` | `PRG-JS-PROMISE-ASYNC-FLOW` |
 | 16 | `calculus` | `CAL-DIFF-CHAIN` | Compute Derivatives of Composite Functions via Chain Rule | `intermediate` | `CAL-DIFF-POWER` |
 | 17 | `vectors` | `VEC-LINEAR-COMBINATION` | Linear Combinations and Basis Representation | `intermediate` | `VEC-ADD-SCALE` |
-| 18 | `vectors` | `VEC-MAGNITUDE-ORTHOGONAL` | Vector Magnitude, Unit Vectors, and Orthogonality | `intermediate` | `VEC-DOT-PRODUCT` |
+| 18 | `vectors` | `VEC-ORTHOGONAL` | Determine Vector Orthogonality and Parameter Solutions | `intermediate` | `VEC-DOT-PRODUCT` |
 
 ### 3.3 รากที่ยังไม่เคยฝึก (Unpracticed Root Skills)
 
-มีทั้งหมด **24** ทักษะรากฐานที่ไม่มี Hard Prerequisite ผูกมัด (0 Hard Prerequisites) พร้อมให้ผู้เรียนเริ่มฝึกเป็นจุดเริ่มต้นได้ทันที:
+มีทั้งหมด **25** ทักษะรากฐานที่ไม่มี Hard Prerequisite ผูกมัด (0 Hard Prerequisites) พร้อมให้ผู้เรียนเริ่มฝึกเป็นจุดเริ่มต้นได้ทันที:
 
 | ลำดับ | Domain | Skill ID | Skill Name | Tier | ประวัติการฝึก | สถานะความพร้อม |
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |
@@ -174,12 +176,13 @@
 | 16 | `software_architecture` | `PRG-KATA-MEMOIZE` | Implement Unary Function Memoization with Falsy Support | `intermediate` | ยังไม่เคยฝึก (0 ข้อ) | พร้อมเริ่มทันที (0 Prereqs) |
 | 17 | `calculus` | `CAL-DIFF-POWER` | Compute Derivatives of Monomials and Polynomials via Power Rule | `foundational` | ยังไม่เคยฝึก (0 ข้อ) | พร้อมเริ่มทันที (0 Prereqs) |
 | 18 | `vectors` | `VEC-ADD-SCALE` | Vector Addition and Scalar Multiplication | `foundational` | ยังไม่เคยฝึก (0 ข้อ) | พร้อมเริ่มทันที (0 Prereqs) |
-| 19 | `vectors` | `VEC-DOT-PRODUCT` | Vector Dot Product and Algebraic Properties | `intermediate` | ยังไม่เคยฝึก (0 ข้อ) | พร้อมเริ่มทันที (0 Prereqs) |
-| 20 | `geometry` | `GEO-CIRCLE-AREA-RADIUS` | Calculate Circular Area in Terms of Pi Given Radius | `intermediate` | 1 ข้อ (100%) | พร้อมเริ่มทันที (0 Prereqs) |
-| 21 | `software_architecture` | `PRG-ARCH-REFACTOR-SUBSCRIPTION` | Refactor Monolithic Legacy Subscriptions to Clean Modules | `advanced` | 1 ข้อ (100%) | พร้อมเริ่มทันที (0 Prereqs) |
-| 22 | `software_architecture` | `PRG-ARCH-PROJECT-RATE-LIMITER` | Implement Stateful Sliding-Window Rate Limiter Architecture | `expert` | 1 ข้อ (0%) | พร้อมเริ่มทันที (0 Prereqs) |
-| 23 | `software_architecture` | `PRG-KATA-GROUPBY` | Implement Generic Collection Grouping by Key Selector | `foundational` | 1 ข้อ (100%) | พร้อมเริ่มทันที (0 Prereqs) |
-| 24 | `software_architecture` | `PRG-ARCH-PIPELINE-PRICING` | Model Business Pipeline Pricing with Precedence Order | `intermediate` | 1 ข้อ (100%) | พร้อมเริ่มทันที (0 Prereqs) |
+| 19 | `vectors` | `VEC-MAGNITUDE` | Calculate Vector Magnitude and Normalized Unit Vectors | `foundational` | ยังไม่เคยฝึก (0 ข้อ) | พร้อมเริ่มทันที (0 Prereqs) |
+| 20 | `vectors` | `VEC-DOT-PRODUCT` | Vector Dot Product and Algebraic Properties | `intermediate` | ยังไม่เคยฝึก (0 ข้อ) | พร้อมเริ่มทันที (0 Prereqs) |
+| 21 | `geometry` | `GEO-CIRCLE-AREA-RADIUS` | Calculate Circular Area in Terms of Pi Given Radius | `intermediate` | 1 ข้อ (100%) | พร้อมเริ่มทันที (0 Prereqs) |
+| 22 | `software_architecture` | `PRG-ARCH-REFACTOR-SUBSCRIPTION` | Refactor Monolithic Legacy Subscriptions to Clean Modules | `advanced` | 1 ข้อ (100%) | พร้อมเริ่มทันที (0 Prereqs) |
+| 23 | `software_architecture` | `PRG-ARCH-PROJECT-RATE-LIMITER` | Implement Stateful Sliding-Window Rate Limiter Architecture | `expert` | 1 ข้อ (0%) | พร้อมเริ่มทันที (0 Prereqs) |
+| 24 | `software_architecture` | `PRG-KATA-GROUPBY` | Implement Generic Collection Grouping by Key Selector | `foundational` | 1 ข้อ (100%) | พร้อมเริ่มทันที (0 Prereqs) |
+| 25 | `software_architecture` | `PRG-ARCH-PIPELINE-PRICING` | Model Business Pipeline Pricing with Precedence Order | `intermediate` | 1 ข้อ (100%) | พร้อมเริ่มทันที (0 Prereqs) |
 
 ---
 
@@ -227,8 +230,9 @@
 | :---: | :--- | :---: | :--- | :--- |
 | 1 | `sign-slip` | **6** | `add-subtract`, `evaluate-polynomial`, `find-the-flaw`, `multiply`, `rotation-2d`, `square-binomial` | `MTH-COMPLEX-ADDITION`, `MTH-COMPLEX-DIAGNOSTIC-FLAW`, `MTH-COMPLEX-EVALUATE-POLYNOMIAL`, `MTH-COMPLEX-GEOMETRIC-ROTATION`, `MTH-COMPLEX-MULTIPLICATION`, `MTH-COMPLEX-SQUARE-BINOMIAL` |
 | 2 | `conjugate-denominator` | **3** | `ac-current`, `divide-conjugate`, `parallel-impedance` | `MTH-COMPLEX-AC-OHMS-LAW`, `MTH-COMPLEX-DIVISION-CONJUGATE`, `MTH-COMPLEX-PARALLEL-IMPEDANCE` |
-| 3 | `circle-diameter-radius` | **2** | `circle-area-pi`, `cylinder-volume` | `GEO-CIRCLE-AREA-DIAMETER`, `GEO-CIRCLE-AREA-RADIUS`, `GEO-CYLINDER-VOLUME-DIAMETER` |
-| 4 | `power-cycle` | **2** | `power-of-i`, `power-sum` | `MTH-COMPLEX-POWER-I-MOD4`, `MTH-COMPLEX-POWER-SUM` |
+| 3 | `arithmetic-slip` | **2** | `diff-chain-rule`, `vector-magnitude` | `CAL-DIFF-CHAIN`, `VEC-MAGNITUDE` |
+| 4 | `circle-diameter-radius` | **2** | `circle-area-pi`, `cylinder-volume` | `GEO-CIRCLE-AREA-DIAMETER`, `GEO-CIRCLE-AREA-RADIUS`, `GEO-CYLINDER-VOLUME-DIAMETER` |
+| 5 | `power-cycle` | **2** | `power-of-i`, `power-sum` | `MTH-COMPLEX-POWER-I-MOD4`, `MTH-COMPLEX-POWER-SUM` |
 
 ---
 
@@ -239,7 +243,7 @@
 > - `hard`: ไม่สามารถทำหรือทำความเข้าใจปลายทางได้เลยหากขาดทักษะต้นทาง (Strict Technical Prerequisite)
 > - `soft`: ช่วยให้เรียนรู้ปลายทางได้ง่ายขึ้นตามลำดับการสอน แต่ทางเทคนิคสามารถศึกษาขนานกันได้ (Pedagogical Flow)
 
-### 5.1 ตารางความสัมพันธ์ 27 เส้น Prerequisite ใน `skills_taxonomy.json`
+### 5.1 ตารางความสัมพันธ์ 28 เส้น Prerequisite ใน `skills_taxonomy.json`
 
 | ลำดับ | Source Skill (ต้นทาง) | Target Skill (ปลายทาง) | Strength | เหตุผลทางเทคนิคและการสอน (Rationale) |
 | :---: | :--- | :--- | :---: | :--- |
@@ -247,29 +251,30 @@
 | 2 | `GEO-CIRCLE-AREA-RADIUS` | `GEO-CYLINDER-VOLUME-RADIUS` | **`hard`** | Cylinder volume V = pi*r^2*h strictly requires computing the circular base area. |
 | 3 | `GEO-CYLINDER-VOLUME-RADIUS` | `GEO-CYLINDER-VOLUME-DIAMETER` | **`hard`** | Cylinder volume from diameter requires base cylinder volume formula plus diameter scaling. |
 | 4 | `GEO-RIGHT-TRIANGLE-HYP` | `GEO-RIGHT-TRIANGLE-LEG` | **`hard`** | Solving for missing leg b = sqrt(c^2 - a^2) strictly requires the Pythagorean theorem relation. |
-| 5 | `GEO-RIGHT-TRIANGLE-LEG` | `GEO-RIGHT-TRIANGLE-APPLIED` | `soft` | Pedagogical ordering: mastering algebraic leg subtraction eases word problem formulation. |
-| 6 | `GEO-TRAPEZOID-AREA` | `GEO-TRAPEZOID-HEIGHT` | **`hard`** | Solving height h = 2A/(a+b) strictly requires knowledge of the trapezoid area formula. |
-| 7 | `MTH-COMPLEX-ADDITION` | `MTH-COMPLEX-SUBTRACTION` | `soft` | Pedagogical ordering: complex subtraction extends addition with negative distribution. |
-| 8 | `MTH-COMPLEX-DIVISION-CONJUGATE` | `MTH-COMPLEX-AC-OHMS-LAW` | **`hard`** | Computing AC current I = V / Z strictly requires conjugate complex division. |
-| 9 | `MTH-COMPLEX-DIVISION-CONJUGATE` | `MTH-COMPLEX-PARALLEL-IMPEDANCE` | **`hard`** | Synthesizing parallel impedance Zeq = (Z1*Z2)/(Z1+Z2) strictly requires conjugate division. |
-| 10 | `MTH-COMPLEX-MULTIPLICATION` | `MTH-COMPLEX-DIAGNOSTIC-FLAW` | **`hard`** | Spotting flaws in multi-step complex derivations strictly requires mastery of complex multiplication. |
-| 11 | `MTH-COMPLEX-MULTIPLICATION` | `MTH-COMPLEX-DIVISION-CONJUGATE` | **`hard`** | Conjugate division multiplies numerator and denominator by conjugate using FOIL multiplication. |
-| 12 | `MTH-COMPLEX-MULTIPLICATION` | `MTH-COMPLEX-EVALUATE-POLYNOMIAL` | **`hard`** | Evaluating P(z) = a*z^2 + b*z + c strictly requires computing powers and products via complex multiplication. |
-| 13 | `MTH-COMPLEX-MULTIPLICATION` | `MTH-COMPLEX-GEOMETRIC-ROTATION` | **`hard`** | 2D geometric transformation in the Argand plane is mathematically defined by complex multiplication. |
-| 14 | `MTH-COMPLEX-MULTIPLICATION` | `MTH-COMPLEX-SQUARE-BINOMIAL` | **`hard`** | Squaring a complex binomial is an algebraic specialization of complex multiplication. |
-| 15 | `MTH-COMPLEX-POWER-I-MOD4` | `MTH-COMPLEX-POWER-SUM` | **`hard`** | Summing geometric series of i^k strictly requires modulo-4 cyclic reduction of powers of i. |
-| 16 | `MTH-COMPLEX-RADICAL-SIMPLIFY` | `MTH-COMPLEX-ADDITION` | `soft` | Pedagogical ordering: standard complex numbers a + bi can be added without prior radical simplification of negatives. |
-| 17 | `MTH-COMPLEX-RADICAL-SIMPLIFY` | `MTH-COMPLEX-PRINCIPAL-ROOT-TRAP` | **`hard`** | Detecting sqrt(-a)*sqrt(-b) != sqrt(ab) fallacy strictly requires simplifying sqrt(-a) = i*sqrt(a). |
-| 18 | `PRG-JS-EVENT-LOOP-MICROTASK` | `PRG-JS-PROMISE-ASYNC-FLOW` | `soft` | Pedagogical ordering: microtask queue knowledge clarifies Promise then/catch callback interleaving. |
-| 19 | `PRG-JS-PROMISE-ASYNC-FLOW` | `PRG-ARCH-ASYNC-CACHE-RACE` | **`hard`** | Debugging async race conditions and stampedes strictly requires mastering Promise lifecycle and rejection handling. |
-| 20 | `PRG-JS-SCOPE-HOISTING-VAR` | `PRG-JS-SCOPE-HOISTING-LET` | `soft` | Pedagogical ordering: let loop iteration binding can be learned as standard lexical scoping, var provides historical comparison. |
-| 21 | `PRG-KATA-DEBOUNCE` | `PRG-ARCH-PROJECT-RATE-LIMITER` | `soft` | Pedagogical ordering: timer debouncing concepts ease sliding-window rate limiting design. |
-| 22 | `PRG-KATA-GROUPBY` | `PRG-ARCH-PIPELINE-PRICING` | `soft` | Pedagogical ordering: collection aggregation helpers aid structured pipeline pricing transforms. |
-| 23 | `PRG-KATA-MEMOIZE` | `PRG-ARCH-ASYNC-CACHE-RACE` | `soft` | Pedagogical ordering: synchronous memoization establishes caching intuition before async concurrency. |
-| 24 | `CAL-DIFF-POWER` | `CAL-DIFF-CHAIN` | **`hard`** | Chain rule strictly requires mastery of basic power rule derivatives. |
-| 25 | `VEC-ADD-SCALE` | `VEC-DOT-PRODUCT` | `soft` | Strict technical prerequisite. |
-| 26 | `VEC-ADD-SCALE` | `VEC-LINEAR-COMBINATION` | **`hard`** | Strict technical prerequisite. |
-| 27 | `VEC-DOT-PRODUCT` | `VEC-MAGNITUDE-ORTHOGONAL` | **`hard`** | Strict technical prerequisite. |
+| 5 | `GEO-RIGHT-TRIANGLE-HYP` | `VEC-MAGNITUDE` | `soft` | Strict technical prerequisite. |
+| 6 | `GEO-RIGHT-TRIANGLE-LEG` | `GEO-RIGHT-TRIANGLE-APPLIED` | `soft` | Pedagogical ordering: mastering algebraic leg subtraction eases word problem formulation. |
+| 7 | `GEO-TRAPEZOID-AREA` | `GEO-TRAPEZOID-HEIGHT` | **`hard`** | Solving height h = 2A/(a+b) strictly requires knowledge of the trapezoid area formula. |
+| 8 | `MTH-COMPLEX-ADDITION` | `MTH-COMPLEX-SUBTRACTION` | `soft` | Pedagogical ordering: complex subtraction extends addition with negative distribution. |
+| 9 | `MTH-COMPLEX-DIVISION-CONJUGATE` | `MTH-COMPLEX-AC-OHMS-LAW` | **`hard`** | Computing AC current I = V / Z strictly requires conjugate complex division. |
+| 10 | `MTH-COMPLEX-DIVISION-CONJUGATE` | `MTH-COMPLEX-PARALLEL-IMPEDANCE` | **`hard`** | Synthesizing parallel impedance Zeq = (Z1*Z2)/(Z1+Z2) strictly requires conjugate division. |
+| 11 | `MTH-COMPLEX-MULTIPLICATION` | `MTH-COMPLEX-DIAGNOSTIC-FLAW` | **`hard`** | Spotting flaws in multi-step complex derivations strictly requires mastery of complex multiplication. |
+| 12 | `MTH-COMPLEX-MULTIPLICATION` | `MTH-COMPLEX-DIVISION-CONJUGATE` | **`hard`** | Conjugate division multiplies numerator and denominator by conjugate using FOIL multiplication. |
+| 13 | `MTH-COMPLEX-MULTIPLICATION` | `MTH-COMPLEX-EVALUATE-POLYNOMIAL` | **`hard`** | Evaluating P(z) = a*z^2 + b*z + c strictly requires computing powers and products via complex multiplication. |
+| 14 | `MTH-COMPLEX-MULTIPLICATION` | `MTH-COMPLEX-GEOMETRIC-ROTATION` | **`hard`** | 2D geometric transformation in the Argand plane is mathematically defined by complex multiplication. |
+| 15 | `MTH-COMPLEX-MULTIPLICATION` | `MTH-COMPLEX-SQUARE-BINOMIAL` | **`hard`** | Squaring a complex binomial is an algebraic specialization of complex multiplication. |
+| 16 | `MTH-COMPLEX-POWER-I-MOD4` | `MTH-COMPLEX-POWER-SUM` | **`hard`** | Summing geometric series of i^k strictly requires modulo-4 cyclic reduction of powers of i. |
+| 17 | `MTH-COMPLEX-RADICAL-SIMPLIFY` | `MTH-COMPLEX-ADDITION` | `soft` | Pedagogical ordering: standard complex numbers a + bi can be added without prior radical simplification of negatives. |
+| 18 | `MTH-COMPLEX-RADICAL-SIMPLIFY` | `MTH-COMPLEX-PRINCIPAL-ROOT-TRAP` | **`hard`** | Detecting sqrt(-a)*sqrt(-b) != sqrt(ab) fallacy strictly requires simplifying sqrt(-a) = i*sqrt(a). |
+| 19 | `PRG-JS-EVENT-LOOP-MICROTASK` | `PRG-JS-PROMISE-ASYNC-FLOW` | `soft` | Pedagogical ordering: microtask queue knowledge clarifies Promise then/catch callback interleaving. |
+| 20 | `PRG-JS-PROMISE-ASYNC-FLOW` | `PRG-ARCH-ASYNC-CACHE-RACE` | **`hard`** | Debugging async race conditions and stampedes strictly requires mastering Promise lifecycle and rejection handling. |
+| 21 | `PRG-JS-SCOPE-HOISTING-VAR` | `PRG-JS-SCOPE-HOISTING-LET` | `soft` | Pedagogical ordering: let loop iteration binding can be learned as standard lexical scoping, var provides historical comparison. |
+| 22 | `PRG-KATA-DEBOUNCE` | `PRG-ARCH-PROJECT-RATE-LIMITER` | `soft` | Pedagogical ordering: timer debouncing concepts ease sliding-window rate limiting design. |
+| 23 | `PRG-KATA-GROUPBY` | `PRG-ARCH-PIPELINE-PRICING` | `soft` | Pedagogical ordering: collection aggregation helpers aid structured pipeline pricing transforms. |
+| 24 | `PRG-KATA-MEMOIZE` | `PRG-ARCH-ASYNC-CACHE-RACE` | `soft` | Pedagogical ordering: synchronous memoization establishes caching intuition before async concurrency. |
+| 25 | `CAL-DIFF-POWER` | `CAL-DIFF-CHAIN` | **`hard`** | Chain rule strictly requires mastery of basic power rule derivatives. |
+| 26 | `VEC-ADD-SCALE` | `VEC-DOT-PRODUCT` | `soft` | Strict technical prerequisite. |
+| 27 | `VEC-ADD-SCALE` | `VEC-LINEAR-COMBINATION` | **`hard`** | Strict technical prerequisite. |
+| 28 | `VEC-DOT-PRODUCT` | `VEC-ORTHOGONAL` | **`hard`** | Strict technical prerequisite. |
 
 ### 5.2 แผนภาพความสัมพันธ์แบบ DAG (Direct Acyclic Graph)
 
@@ -322,9 +327,11 @@ flowchart TD
     subgraph Vectors [Domain: Vectors]
         VEC_ADD_SCALE["VEC-ADD-SCALE"] -.->|soft| VEC_DOT_PRODUCT["VEC-DOT-PRODUCT"]
         VEC_ADD_SCALE["VEC-ADD-SCALE"] ==>|hard| VEC_LINEAR_COMBINATION["VEC-LINEAR-COMBINATION"]
-        VEC_DOT_PRODUCT["VEC-DOT-PRODUCT"] ==>|hard| VEC_MAGNITUDE_ORTHOGONAL["VEC-MAGNITUDE-ORTHOGONAL"]
+        VEC_DOT_PRODUCT["VEC-DOT-PRODUCT"] ==>|hard| VEC_ORTHOGONAL["VEC-ORTHOGONAL"]
+        VEC_MAGNITUDE["VEC-MAGNITUDE"]
     end
 
     %% Cross-domain relationship
+    GEO_RIGHT_TRIANGLE_HYP["GEO-RIGHT-TRIANGLE-HYP"] -.->|soft| VEC_MAGNITUDE["VEC-MAGNITUDE"]
     PRG_JS_PROMISE_ASYNC_FLOW["PRG-JS-PROMISE-ASYNC-FLOW"] ==>|hard| PRG_ARCH_ASYNC_CACHE_RACE["PRG-ARCH-ASYNC-CACHE-RACE"]
 ```

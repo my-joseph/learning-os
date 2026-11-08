@@ -368,6 +368,13 @@ def check_gate_anti_leak(
             c_str = str(c).strip().lower()
             if len(c_str) >= 2 and c_str not in ("x", "y", "z", "i", "j", "k"):
                 ans_comps.append(c_str)
+    elif spec.get("type") == "complex":
+        raw_val = str(spec.get("value") or ans_plain)
+        nums = re.findall(r"-?\b\d+(?:/\d+)?\b", raw_val)
+        for n in nums:
+            n_clean = n.strip().lower()
+            if len(n_clean) >= 2 and n_clean not in ("-1", "1", "0", "-2", "2"):
+                ans_comps.append(n_clean)
 
     ans_norm = ans_plain.lower()
 
@@ -376,17 +383,72 @@ def check_gate_anti_leak(
 
         # 1. Direct answerPlain leak
         if ans_norm and len(ans_norm) >= 1:
-            if re.search(r"(?<![0-9a-zA-Z_.])" + re.escape(ans_norm) + r"(?![0-9a-zA-Z_])", hint_lower):
+            # For choice questions, answerPlain is an option ID ('1', '2', '3', 'A', 'B');
+            # do not flag standalone math digits or letters in hint expressions as answer leaks
+            if spec.get("type") == "choice" and len(ans_norm) <= 2:
+                pass
+            elif re.search(r"(?<![0-9a-zA-Z_.^{])" + re.escape(ans_norm) + r"(?![0-9a-zA-Z_}])", hint_lower):
                 raise QualityError(
                     "G1",
                     pid,
                     f"คำใบ้รั่ว (Anti-Leak): พบเฉลย '{ans_plain}' ในฟิลด์ '{fname}' ({hint[:80]})",
                 )
 
-        # 2. Vector/Tuple component leak (for non-trivial components e.g. -1/sqrt(2), 2x+1)
+        # 1b. Choice question: hint must never reveal correct option label or value
+        if spec.get("type") == "choice":
+            correct_id = str(spec.get("correct") or ans_plain).strip()
+            options = spec.get("options", [])
+            correct_opt = next((o for o in options if str(o.get("id")).strip() == correct_id), None)
+            if correct_opt:
+                forbidden_targets = []
+                for field in ("label", "text", "value"):
+                    val = str(correct_opt.get(field) or "").strip()
+                    if val and len(val) >= 3:
+                        forbidden_targets.append(val.lower())
+                if correct_id:
+                    forbidden_targets.append(f"line {correct_id}".lower())
+                    forbidden_targets.append(f"option {correct_id}".lower())
+
+                for target in forbidden_targets:
+                    if re.search(r"(?<![0-9a-zA-Z_.^{])" + re.escape(target) + r"(?![0-9a-zA-Z_}])", hint_lower):
+                        raise QualityError(
+                            "G1",
+                            pid,
+                            f"คำใบ้รั่ว (Anti-Leak): พบข้อความของตัวเลือกที่ถูก '{target}' ในฟิลด์ '{fname}' ({hint[:80]})",
+                        )
+
+        # 1c. Flaw / Diagnostic (L3): hint must be process-oriented and never spoil flaw type or position
+        is_flaw = (
+            prob.get("level") == 3
+            or "flaw" in str(prob.get("form", "")).lower()
+            or "flaw" in str(spec.get("commonTrapTag", "")).lower()
+            or "flaw" in str(prob.get("commonTrapTag", "")).lower()
+            or bool(prob.get("flawTag"))
+        )
+        if is_flaw and fname == "checkpointHint":
+            # Check for position spoilers: e.g. "line 2", "second step"
+            if re.search(r"\bline\s*\d+\b", hint_lower) or re.search(r"\b(?:first|second|third|fourth)\s+step\b", hint_lower):
+                raise QualityError(
+                    "G1",
+                    pid,
+                    f"คำใบ้รั่ว (Flaw Anti-Leak): ห้ามระบุตำแหน่งบรรทัดหรือลำดับขั้นใน '{fname}' ({hint[:80]})",
+                )
+            # Check for specific flaw mechanism keywords
+            forbidden_flaw_kws = ["distribute", "distributing", "inner derivative", "sign error", "sign slip", "sign-slip"]
+            for kw in forbidden_flaw_kws:
+                if kw in hint_lower:
+                    raise QualityError(
+                        "G1",
+                        pid,
+                        f"คำใบ้รั่ว (Flaw Anti-Leak): ห้ามระบุชนิดข้อผิด '{kw}' ใน '{fname}' ({hint[:80]})",
+                    )
+
+        # 2. Vector/Tuple/Complex component leak
         for c in ans_comps:
-            if len(c) >= 2 and not c.isdigit() and c not in ("-1", "1", "0", "2", "-2", "x", "y", "z", "i", "j", "k"):
-                if re.search(r"(?<![0-9a-zA-Z_.])" + re.escape(c) + r"(?![0-9a-zA-Z_])", hint_lower):
+            # Allow single digits like 0, 1, 2 or variables; check non-trivial components
+            is_trivial_num = c.isdigit() and int(c) < 10
+            if len(c) >= 2 and not is_trivial_num and c not in ("-1", "1", "0", "2", "-2", "x", "y", "z", "i", "j", "k"):
+                if re.search(r"(?<![0-9a-zA-Z_.^{])" + re.escape(c) + r"(?![0-9a-zA-Z_}])", hint_lower):
                     raise QualityError(
                         "G1",
                         pid,

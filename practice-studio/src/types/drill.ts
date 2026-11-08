@@ -67,6 +67,8 @@ export interface Step {
 export interface ChoiceOption {
   id: string;
   label: string;
+  trapTag?: string;
+  tag?: string;
 }
 
 export interface AnswerSpec {
@@ -99,6 +101,7 @@ export interface AnswerSpec {
   correctLine?: number;
   flawExplanation?: string;
   commonTrapTag?: string;
+  flawTag?: string;
 }
 
 export interface ReferenceBadge {
@@ -224,6 +227,7 @@ export interface Problem {
   inputHint?: string;
   checkpointHint: string;
   commonTrapTag?: string;
+  flawTag?: string;
   form?: string;
   skill?: string;
   verificationLevel?: "machine-verified" | "partial" | "human-reviewed";

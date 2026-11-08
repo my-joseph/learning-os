@@ -825,7 +825,7 @@ module.exports = { AsyncCache };
         "answerDisplay": "AsyncCache.prototype.getOrFetch",
         "inputHint": "Open AsyncCache in VS Code, inspect failing concurrency tests, and implement inFlight deduplication",
         "checkpointHint": (
-            "Store the active fetch Promise in an inFlight Map, and delete it inside a finally block."
+            "Trace concurrent invocations of the cache helper to identify where simultaneous in-flight requests can cause redundant network fetches."
         ),
         "commonTrapTag": "race-condition-cache-stampede",
         "steps": [

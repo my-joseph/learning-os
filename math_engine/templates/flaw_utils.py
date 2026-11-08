@@ -19,8 +19,9 @@ def build_flaw_choice_problem(
     vals: list[Any],
     form_prefix: str = "flaw-line",
     category: str = "Trap & Edge Case",
-    checkpoint_hint: str = "Compute the derivation yourself first to check each step.",
+    checkpoint_hint: str = "Work through the derivation step-by-step on scratch paper, then compare your solution line by line with the student's work to identify where they diverge.",
     common_trap_tag: str = "flaw-selection",
+    flaw_tag: str | None = None,
     variables: list[str] | None = None,
 ) -> dict[str, Any]:
     """Constructs a standard machine-verified find-the-flaw problem."""
@@ -35,6 +36,16 @@ def build_flaw_choice_problem(
     ]
     trap_choice = str((flaw_line % num_lines) + 1)
 
+    # Invariant: Step explaining the flaw must reference the student's erroneous LaTeX line
+    flaw_idx = flaw_line - 1
+    if 0 <= flaw_idx < len(steps):
+        erroneous_line = shown_lines[flaw_idx]
+        exp = steps[flaw_idx].get("explain", "")
+        if erroneous_line not in exp:
+            steps[flaw_idx]["explain"] = f"Line {flaw_line} is wrong: The student wrote ${erroneous_line}$, but this is incorrect. {exp}"
+
+    actual_flaw_tag = flaw_tag or line_trap_map.get(flaw_line) or common_trap_tag
+
     prob = {
         "form": f"{form_prefix}-{flaw_line}",
         "category": category,
@@ -47,6 +58,7 @@ def build_flaw_choice_problem(
         "inputHint": "Choose a line",
         "checkpointHint": checkpoint_hint,
         "commonTrapTag": common_trap_tag,
+        "flawTag": actual_flaw_tag,
         "steps": steps,
         "verify": {
             "source": verify_source,

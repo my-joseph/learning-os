@@ -111,6 +111,7 @@ def build_sample_sheet(template_key: str, seed: int = 42) -> str:
         skill = form_cfg.get("skill") or prob.get("skill") or tpl.get("skill", "UNSPECIFIED")
         vlevel = prob.get("verificationLevel") or tpl.get("verificationLevel", "machine-verified")
         trap_tag = prob.get("commonTrapTag") or tpl.get("trapTag", "none")
+        flaw_tag = prob.get("flawTag")
         trap_value = prob.get("trapValue") or (prob.get("verify") or {}).get("trapValue") or "(None)"
         ans_plain = prob.get("answerPlain") or prob.get("answerDisplay") or "-"
         ans_display = prob.get("answerDisplay") or ans_plain
@@ -119,13 +120,23 @@ def build_sample_sheet(template_key: str, seed: int = 42) -> str:
         prompt = prob.get("prompt", "").strip()
         code_snippet = prob.get("codeSnippet")
         code_language = prob.get("language", "javascript")
+        display = prob.get("display")
+        options = (prob.get("answerSpec") or {}).get("options") or prob.get("options") or []
+        input_hint = prob.get("inputHint") or "(None)"
+        checkpoint_hint = prob.get("checkpointHint") or "(None)"
 
-        lines.extend([
-            "",
-            f"## Form {idx}/{len(forms_dict)}: `{form_name}`",
-            "",
-            "| Property | Value |",
-            "| :--- | :--- |",
+        # Anti-leak validation on learner hints
+        from quality_rules import check_gate_anti_leak, QualityError
+        is_code = prob.get("archetype") in ("code-tracing", "debugging", "refactoring") or bool(prob.get("codeSnippet"))
+        try:
+            check_gate_anti_leak(prob, is_code=is_code)
+            anti_leak_status = "PASS (No answer leaks detected in hints)"
+        except QualityError as exc:
+            anti_leak_status = f"FAIL ({exc.reason})"
+        except Exception as exc:
+            anti_leak_status = f"ERROR ({exc})"
+
+        meta_rows = [
             f"| **Form** | `{form_name}` |",
             f"| **Level** | **L{level}** |",
             f"| **Skill ID** | `{skill}` |",
@@ -133,11 +144,52 @@ def build_sample_sheet(template_key: str, seed: int = 42) -> str:
             f"| **Step Count** | `{step_count}` steps |",
             f"| **Canonical Answer** | `{ans_plain}` |",
             f"| **Trap Value** | `{trap_value}` |",
-            f"| **Trap Tag** | `{trap_tag}` |",
+            f"| **Learner Trap Tag** | `{trap_tag}` |",
+        ]
+        if flaw_tag:
+            meta_rows.append(f"| **Flaw Tag (To Diagnose)** | `{flaw_tag}` |")
+
+        lines.extend([
+            "",
+            f"## Form {idx}/{len(forms_dict)}: `{form_name}`",
+            "",
+            "| Property | Value |",
+            "| :--- | :--- |",
+            *meta_rows,
             "",
             "### Problem Prompt",
             "",
             prompt,
+        ])
+
+        if display:
+            disp_clean = str(display).strip()
+            disp_str = disp_clean if disp_clean.startswith("$$") else f"$${disp_clean}$$"
+            lines.extend([
+                "",
+                "### Display & Student Work",
+                "",
+                disp_str,
+            ])
+
+        if options:
+            lines.extend([
+                "",
+                "### Options",
+            ])
+            for opt in options:
+                opt_id = opt.get("id", "")
+                opt_label = opt.get("label") or opt.get("text") or opt.get("value") or ""
+                opt_trap = opt.get("trapTag") or opt.get("tag")
+                trap_suffix = f" (Trap: `{opt_trap}`)" if opt_trap else ""
+                lines.append(f"- `[{opt_id}]` {opt_label}{trap_suffix}")
+
+        lines.extend([
+            "",
+            "### Learner Hints & Anti-Leak Validation",
+            f"- **Input Hint (`inputHint`)**: `{input_hint}`",
+            f"- **Checkpoint Hint (`checkpointHint`)**: `{checkpoint_hint}`",
+            f"- **Anti-Leak Verification**: `{anti_leak_status}`",
         ])
 
         if code_snippet:

@@ -56,7 +56,7 @@ def complex_answer(a, b, forms=("a+bi", "reduced_fraction")):
         "answerSpec": {"type": "complex", "value": f"{a} + ({b})*I", "forms": list(forms)},
         "answerDisplay": cx(a, b),
         "answerPlain": cx_plain(a, b),
-        "inputHint": "Standard form, e.g. 12 - 35i or -8/17 + 15/17 i",
+        "inputHint": "Standard form: a + bi",
     }
 
 
@@ -119,7 +119,7 @@ def t_add_sub(rng, form=None):
         "display": f"({cx(a, b)}) {op} ({cx(c, d)})",
         "plainText": f"({cx_plain(a, b)}) {op} ({cx_plain(c, d)})",
         **complex_answer(A, B),
-        "checkpointHint": f"The real parts combine to ${num(A)}$.",
+        "checkpointHint": "Combine the real parts together and the imaginary parts together.",
         "commonTrapTag": trap_tag,
         "steps": [
             S(f"({cx(a, b)}) {op} ({cx(c, d)}) = {terms([(a, ''), (b, 'i'), (s * c, ''), (s * d, 'i')])}",
@@ -150,7 +150,7 @@ def t_power_i(rng, form=None):
         "display": f"i^{{{n}}}",
         "plainText": f"i^{n}",
         **complex_answer(sp.re(sp.sympify(sym_v)), sp.im(sp.sympify(sym_v))),
-        "inputHint": "One of 1, i, -1, -i",
+        "inputHint": "Enter the simplified form (a or bi)",
         "checkpointHint": f"Divide the exponent by $4$ and keep only the remainder.",
         "commonTrapTag": "power-cycle",
         "steps": [
@@ -258,7 +258,7 @@ def t_multiply(rng, form=None):
             "answerDisplay": str(k),
             "answerPlain": str(k),
             "inputHint": "Enter integer value for k",
-            "checkpointHint": f"In FOIL, the product of the imaginary terms is $(ki)({num(d)}i) = {num(d)}k \\cdot i^2 = {num(-d)}k$.",
+            "checkpointHint": "In FOIL, remember that multiplying the imaginary terms produces a real value from i-squared.",
             "trapValue": str(k_trap),
             "commonTrapTag": "sign-slip",
             "steps": steps,
@@ -481,7 +481,7 @@ def t_eval_poly(rng, form=None):
         "display": f"f({z}) = ({z})^2 {'+' if p > 0 else '-'} {abs(p)}({z}){q_part}",
         "plainText": f"({cx_plain(a, b)})^2 + ({p})*({cx_plain(a, b)}) + ({q})",
         **complex_answer(A, B),
-        "checkpointHint": f"First compute $({z})^2 = {cx(x2r, x2i)}$.",
+        "checkpointHint": "Substitute the complex number for x, compute the squared term, and distribute the linear coefficient.",
         "commonTrapTag": "sign-slip",
         "steps": [
             S(f"f({z}) = ({z})^2 {'+' if p > 0 else '-'} {abs(p)}({z}){q_part}",
@@ -514,8 +514,8 @@ def t_principal_root(rng, form=None):
         "display": f"\\sqrt{{-{a}}}\\cdot\\sqrt{{-{b}}}",
         "plainText": f"sqrt(-{a})*sqrt(-{b})",
         **complex_answer(-P, 0),
-        "inputHint": "e.g. -15 or -24",
-        "checkpointHint": f"Rewrite each factor with $i$ first: $\\sqrt{{-{a}}} = {_i_radical(k1, m)}$.",
+        "inputHint": "Enter simplified integer or standard form complex number",
+        "checkpointHint": "Factor out the imaginary unit: rewrite each negative radical using \\sqrt{-1} = i before multiplying.",
         "commonTrapTag": "principal-root",
         "steps": [
             S(f"\\sqrt{{-{a}}}\\cdot\\sqrt{{-{b}}} = ({_i_radical(k1, m)})({_i_radical(k2, m)})",
@@ -597,23 +597,25 @@ def t_find_flaw(rng, form=None):
             f"= {cx(ac - bd, ad + wbc)}",
         ]
         vals = [f"{ac} + ({ad})*I + ({wbc})*I + ({bd})*I**2", None, None]
-        why = f"Line 1 is wrong: the Inner product is $({cx(0, b)})({num(c)}) = {terms([(bc, 'i')])}$, not ${terms([(wbc, 'i')])}$."
+        why = f"Line 1 is wrong: The student wrote ${shown[0]}$, but the Inner product is $({cx(0, b)})({num(c)}) = {terms([(bc, 'i')])}$, not ${terms([(wbc, 'i')])}$."
     elif kind == 2:  # i^2 treated as +1
         shown = [correct[0][0],
                  f"= {terms([(ac, ''), (ad + bc, 'i')], keep_zero=True)} {'-' if bd < 0 else '+'} {abs(bd)}(1)",
                  f"= {cx(ac + bd, ad + bc)}"]
         vals = [correct[0][1], f"{ac} + ({ad + bc})*I + ({bd})*(1)", None]
-        why = "Line 2 is wrong: it replaced $i^2$ with $+1$ instead of $-1$."
+        why = f"Line 2 is wrong: The student wrote ${shown[1]}$, replacing $i^2$ with $+1$ instead of $-1$."
     else:  # combining error in the final line
         shown = [correct[0][0], correct[1][0], f"= {cx(ac + bd, ad + bc)}"]
         vals = [correct[0][1], correct[1][1], cx_sym(ac + bd, ad + bc)]
-        why = f"Line 3 is wrong: ${num(bd)}(-1) = {num(-bd)}$, so the real part is ${num(ac)} {'+' if -bd >= 0 else '-'} {abs(bd)} = {num(A)}$."
+        why = f"Line 3 is wrong: The student wrote ${shown[2]}$, but ${num(bd)}(-1) = {num(-bd)}$, so the real part is ${num(ac)} {'+' if -bd >= 0 else '-'} {abs(bd)} = {num(A)}$."
     flaw_line = kind
     aligned = "\\begin{aligned}" + " \\\\ ".join(
         f"&\\text{{Line {i + 1}: }}\\; {ln}" for i, ln in enumerate(shown)) + "\\end{aligned}"
-    steps = [S(correct[0][0], ("Correct Line 1. " if kind != 1 else why + " Correct version shown.") + " FOIL every pair of terms.", correct[0][1]),
-             S(correct[1][0], (why + " Correct version shown." if kind == 2 else "Correct Line 2: combine imaginary terms and use $i^2 = -1$."), correct[1][1]),
-             S(correct[2][0], (why if kind == 3 else "Correct Line 3: combine the real parts.") + f" The true product is ${cx(A, B)}$.", correct[2][1])]
+    steps = [
+        S(correct[0][0], why if kind == 1 else "Step 1 (True FOIL expansion): Multiply every pair of terms.", correct[0][1]),
+        S(correct[1][0], why if kind == 2 else "Step 2 (True evaluation): Combine imaginary terms and substitute $i^2 = -1$.", correct[1][1]),
+        S(correct[2][0], why if kind == 3 else f"Step 3 (True product): Combine the real parts to get ${cx(A, B)}$.", correct[2][1]),
+    ]
     line_trap_map = {1: "arithmetic", 2: "sign-slip", 3: "standard-form"}
     options = [
         {"id": str(i), "label": f"Line {i}", "trapTag": line_trap_map[i]}
@@ -630,8 +632,9 @@ def t_find_flaw(rng, form=None):
         "answerDisplay": f"\\text{{Line {flaw_line}}}",
         "answerPlain": str(flaw_line),
         "inputHint": "Choose a line",
-        "checkpointHint": f"Compute the product yourself first; the correct result is not ${cx(*_last_vals(kind, ac, ad, bc, bd))}$.",
+        "checkpointHint": "Work through the multiplication step-by-step on scratch paper, then compare your derivation line by line with the student's solution to identify the first incorrect step.",
         "commonTrapTag": "sign-slip",
+        "flawTag": line_trap_map[flaw_line],
         "steps": steps,
         "verify": {
             "source": f"{cx_sym(a, b)}*{cx_sym(c, d)}",
@@ -669,7 +672,7 @@ def t_ac_current(rng, form=None):
         "display": f"I = \\frac{{{V}}}{{{cx(Rr, X)}}}",
         "plainText": f"{V}/({cx_plain(Rr, X)})",
         **complex_answer(A, B),
-        "checkpointHint": f"Multiply by the conjugate ${cx(Rr, -X)}$; the denominator becomes ${D}$.",
+        "checkpointHint": "Multiply numerator and denominator by the complex conjugate of the denominator, then simplify.",
         "commonTrapTag": "conjugate-denominator",
         "steps": [
             S(f"I = \\frac{{V}}{{Z}} = \\frac{{{V}}}{{{cx(Rr, X)}}}", "Substitute the given voltage and impedance into Ohm's law.", f"{V}/{cx_sym(Rr, X)}"),
@@ -729,8 +732,8 @@ def t_rotation(rng, form=None):
         "answerSpec": {"type": "tuple", "values": [str(X), str(Y)], "labels": ["x'", "y'"], "acceptComplex": True},
         "answerDisplay": f"({num(X)}, {num(Y)})",
         "answerPlain": f"({X}, {Y})",
-        "inputHint": "e.g. (4, -2) or 4 - 2i",
-        "checkpointHint": f"After the rotation only, the point is $({num(rx)}, {num(ry)})$.",
+        "inputHint": "Enter coordinates as (x', y')",
+        "checkpointHint": "First apply complex multiplication to rotate the point, then add the translation vector.",
         "commonTrapTag": trap_tag,
         "steps": [
             S(f"z = {cx(x, y)}", f"Represent the point $({x}, {y})$ as a complex number.", eq=[zs, f"{x} + ({y})*I"]),

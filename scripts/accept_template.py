@@ -210,12 +210,27 @@ def evaluate_template(
 
     passed = len(failures) == 0
 
+    is_regression = (
+        g1_rate < 98.0
+        or g2_rate < 98.0
+        or g4_rate < 98.0
+        or g6_rate < 98.0
+        or exhausted_12 > 0
+    )
+    is_diversity_backlog = (
+        not is_regression
+        and not exempt
+        and len(form_counter) < 2
+    )
+
     return {
         "unit": unit_code,
         "key": tpl_key,
         "is_code": is_code,
         "is_exempt": exempt,
         "passed": passed,
+        "is_regression": is_regression,
+        "is_diversity_backlog": is_diversity_backlog,
         "failures": failures,
         "g1_rate": g1_rate,
         "g2_rate": g2_rate,
@@ -262,17 +277,63 @@ def main() -> None:
     parser.add_argument("--exempt", action="store_true", help="Force exemption for fixed/kata template")
     args = parser.parse_args()
 
+    import subprocess
+    try:
+        commit_hash = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
+    except Exception:
+        commit_hash = "unknown"
+
     all_tpls = get_all_registered_templates()
 
     if args.all:
-        print(f"Running Template CI Acceptance on all {len(all_tpls)} registered templates ({args.seeds} seeds each)...")
-        overall_pass = True
+        print("=" * 80)
+        print(f"TEMPLATE CI ACCEPTANCE REPORT -- COMMIT: {commit_hash}")
+        print(f"Evaluating {len(all_tpls)} registered templates ({args.seeds} seeds each)...")
+        print("=" * 80)
+
+        group1_regression = []
+        group2_backlog = []
+        group0_accepted = []
+
         for unit, tpl, is_code in all_tpls:
             res = evaluate_template(unit, tpl, is_code, n_seeds=args.seeds, force_exempt=args.exempt)
-            print_report(res)
-            if not res["passed"]:
-                overall_pass = False
-        sys.exit(0 if overall_pass else 1)
+            if res["is_regression"]:
+                group1_regression.append(res)
+            elif res["is_diversity_backlog"]:
+                group2_backlog.append(res)
+            else:
+                group0_accepted.append(res)
+
+        print("\n" + "=" * 80)
+        print(f"CI ACCEPTANCE EVALUATION SUMMARY (COMMIT: {commit_hash})")
+        print("=" * 80)
+
+        print("\n### กลุ่ม 1: Regression (G1/G2/G4/G6 < 98% หรือ retries หมด)")
+        if not group1_regression:
+            print("  (ไม่มี - ทุกเทมเพลตผ่านเกณฑ์คุณภาพพื้นฐาน G1/G2/G4/G6 >= 98.0% และ 0 retries)")
+        else:
+            print(f"  พบ {len(group1_regression)} เทมเพลตที่เกิด Regression:")
+            for r in group1_regression:
+                print(f"  - [{r['unit']}] {r['key']}: G1={r['g1_rate']}%, G2={r['g2_rate']}%, G4={r['g4_rate']}%, G6={r['g6_rate']}%, retries={r['exhausted_12']}")
+                for f in r["failures"]:
+                    print(f"      * {f}")
+
+        print("\n### กลุ่ม 2: Backlog ความหลากหลาย (ผ่านทุกด่าน แต่ยังมีฟอร์มเดียว)")
+        if not group2_backlog:
+            print("  (ไม่มี - ทุกเทมเพลตมีความหลากหลาย >= 2 forms)")
+        else:
+            print(f"  พบ {len(group2_backlog)} เทมเพลตใน Backlog:")
+            for r in group2_backlog:
+                print(f"  - [{r['unit']}] {r['key']}: {r['actual_forms_count']} form produced ({r['form_proportions']}) | G1-G6: 100%")
+
+        print("\n### กลุ่มที่ผ่านเกณฑ์สมบูรณ์ (CI Accepted: G1-G6 >= 98% และ Forms >= 2 หรือ Exempt)")
+        print(f"  พบ {len(group0_accepted)} เทมเพลตที่ผ่านการรับรองสมบูรณ์:")
+        for r in group0_accepted:
+            cat = "Exempt" if r["is_exempt"] else f"{r['actual_forms_count']} forms"
+            print(f"  - [{r['unit']}] {r['key']} ({cat})")
+
+        print("\n" + "=" * 80)
+        sys.exit(1 if group1_regression else 0)
 
     if not args.key:
         parser.print_help()

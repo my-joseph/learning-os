@@ -399,7 +399,7 @@ def build_find_bug_this_binding(rng: random.Random, form: str | None = None) -> 
         "answerDisplay": f"Line {correct_line}",
         "inputHint": "e.g. 4 (click on the line above or enter line number)",
         "checkpointHint": (
-            "Look for where the function reference is decoupled from its parent object."
+            "Trace the method invocation and execution context step-by-step to verify whether the receiver object remains bound at runtime."
         ),
         "commonTrapTag": "this-binding-lost",
         "steps": [

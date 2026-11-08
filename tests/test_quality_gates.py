@@ -514,16 +514,19 @@ class TestQualityGates(unittest.TestCase):
         """Test 16: scripts.coverage_report and scripts.sample_sheet produce valid Markdown."""
         from scripts.coverage_report import generate_coverage_report
         from scripts.sample_sheet import build_sample_sheet
+        import tempfile
 
-        # 1. Coverage report
-        cov_content = generate_coverage_report()
-        self.assertTrue(os.path.exists("reports/coverage.md"))
-        self.assertIn("Coverage & Skills Taxonomy Report", cov_content)
-        self.assertIn("GEO-CYLINDER-VOLUME-RADIUS", cov_content)
-        self.assertIn("MTH-COMPLEX-RADICAL-SIMPLIFY", cov_content)
-        self.assertIn("PRG-JS-THIS-BINDING-DEBUG", cov_content)
-        self.assertIn("PRG-ARCH-PROJECT-RATE-LIMITER", cov_content)
-        self.assertIn("Missing Levels per Domain", cov_content)
+        # 1. Coverage report written to isolated tempdir
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp_cov = os.path.join(tmp_dir, "coverage.md")
+            cov_content = generate_coverage_report(output_path=tmp_cov)
+            self.assertTrue(os.path.exists(tmp_cov))
+            self.assertIn("Coverage & Skills Taxonomy Report", cov_content)
+            self.assertIn("GEO-CYLINDER-VOLUME-RADIUS", cov_content)
+            self.assertIn("MTH-COMPLEX-RADICAL-SIMPLIFY", cov_content)
+            self.assertIn("PRG-JS-THIS-BINDING-DEBUG", cov_content)
+            self.assertIn("PRG-ARCH-PROJECT-RATE-LIMITER", cov_content)
+            self.assertIn("Missing Levels per Domain", cov_content)
 
         # 2. Sample sheet for math template (cylinder-volume)
         sheet_cyl = build_sample_sheet("cylinder-volume", seed=42)
@@ -574,7 +577,7 @@ class TestQualityGates(unittest.TestCase):
             tax = json.load(f)
 
         skills = tax.get("skills", {})
-        self.assertEqual(len(skills), 42)
+        self.assertEqual(len(skills), 43)
         domain_skill_counts = Counter(sdata.get("domain") for sdata in skills.values())
         self.assertEqual(
             dict(domain_skill_counts),
@@ -584,7 +587,7 @@ class TestQualityGates(unittest.TestCase):
                 "geometry": 9,
                 "javascript_core": 6,
                 "software_architecture": 7,
-                "vectors": 4,
+                "vectors": 5,
             },
         )
 
@@ -611,7 +614,7 @@ class TestQualityGates(unittest.TestCase):
                 adj[src].append(sid)
                 in_degree[sid] += 1
 
-        self.assertEqual(len(edges), 27)
+        self.assertEqual(len(edges), 28)
         edge_domains = Counter()
         for src, sid, _ in edges:
             src_dom = skills[src]["domain"]
@@ -625,6 +628,7 @@ class TestQualityGates(unittest.TestCase):
                 "calculus": 1,
                 "complex_numbers": 11,
                 "geometry": 6,
+                "geometry->vectors": 1,
                 "javascript_core": 2,
                 "javascript_core->software_architecture": 1,
                 "software_architecture": 3,
@@ -643,7 +647,8 @@ class TestQualityGates(unittest.TestCase):
         # Verify vectors domain prerequisites
         self.assertIn(("VEC-ADD-SCALE", "VEC-DOT-PRODUCT", "soft"), edges)
         self.assertIn(("VEC-ADD-SCALE", "VEC-LINEAR-COMBINATION", "hard"), edges)
-        self.assertIn(("VEC-DOT-PRODUCT", "VEC-MAGNITUDE-ORTHOGONAL", "hard"), edges)
+        self.assertIn(("VEC-DOT-PRODUCT", "VEC-ORTHOGONAL", "hard"), edges)
+        self.assertIn(("GEO-RIGHT-TRIANGLE-HYP", "VEC-MAGNITUDE", "soft"), edges)
 
         # Verify soft edges demoted from hard per pedagogical definition
         soft_add = ("MTH-COMPLEX-RADICAL-SIMPLIFY", "MTH-COMPLEX-ADDITION", "soft")
@@ -668,7 +673,7 @@ class TestQualityGates(unittest.TestCase):
         """Test 19: coverage_report outputs studio deduplication audit and 3-part 'Ready to Learn' section."""
         from scripts.coverage_report import generate_coverage_report
 
-        content = generate_coverage_report()
+        content = generate_coverage_report(output_path=None)
         self.assertIn("Studio File Deduplication Audit", content)
         self.assertIn("DRL-MTH-T01-C12-01-studio-attempt.json", content)
         self.assertIn("DRL-MTH-T01-C12-02-studio.json", content)
@@ -678,7 +683,7 @@ class TestQualityGates(unittest.TestCase):
         self.assertIn("แนะนำถัดไป (Top 3 Recommendations)", content)
         self.assertIn("ทักษะที่ถูกล็อก (Locked Skills)", content)
         self.assertIn("รากที่ยังไม่เคยฝึก (Unpracticed Root Skills)", content)
-        self.assertIn("ตารางความสัมพันธ์ 27 เส้น Prerequisite", content)
+        self.assertIn("ตารางความสัมพันธ์ 28 เส้น Prerequisite", content)
         self.assertIn("flowchart TD", content)
 
     def test_20_tolerance_and_decimal_approximation(self) -> None:
@@ -1122,6 +1127,264 @@ TEMPLATES = [
         }
         res = check_gate_anti_leak(p_clean)
         self.assertTrue(res["passed"])
+
+        # Targeted positive/negative anti-leak test cases:
+        # 1. Must be rejected: hint "The real parts combine to $16$." when answer is 16 + 3i
+        p_re_leak = {
+            "id": "LEAK_RE_PART",
+            "answerPlain": "16 + 3i",
+            "answerSpec": {"type": "complex", "value": "16 + (3)*I"},
+            "checkpointHint": "The real parts combine to $16$.",
+        }
+        with self.assertRaises(QualityError):
+            check_gate_anti_leak(p_re_leak)
+
+        # 2. Must be rejected: hint "the answer is 24" when answer is 24
+        p_num_leak = {
+            "id": "LEAK_EXACT_NUM",
+            "answerPlain": "24",
+            "answerSpec": {"type": "number", "value": "24"},
+            "checkpointHint": "the answer is 24",
+        }
+        with self.assertRaises(QualityError):
+            check_gate_anti_leak(p_num_leak)
+
+        # 3. Must be rejected: hint printing value/label of correct choice
+        p_choice_leak = {
+            "id": "LEAK_CHOICE_OPT",
+            "answerPlain": "2",
+            "answerSpec": {
+                "type": "choice",
+                "options": [{"id": "1", "label": "Line 1"}, {"id": "2", "label": "Line 2"}],
+                "correct": "2",
+            },
+            "checkpointHint": "The student made an error in Line 2.",
+        }
+        with self.assertRaises(QualityError):
+            check_gate_anti_leak(p_choice_leak)
+
+        # 4. Must pass: hint containing $i^2 = -1$ when answer contains digit 2
+        p_i_sq_pass = {
+            "id": "PASS_I_SQUARED",
+            "answerPlain": "2",
+            "answerSpec": {"type": "number", "value": "2"},
+            "checkpointHint": "Remember that $i^2 = -1$.",
+        }
+        res_i = check_gate_anti_leak(p_i_sq_pass)
+        self.assertTrue(res_i["passed"])
+
+        # 5. Must pass: hint "square each component"
+        p_sq_pass = {
+            "id": "PASS_SQUARE_COMP",
+            "answerPlain": "<3, 4>",
+            "answerSpec": {"type": "vector", "components": [3, 4]},
+            "checkpointHint": "square each component",
+        }
+        res_sq = check_gate_anti_leak(p_sq_pass)
+        self.assertTrue(res_sq["passed"])
+
+    def test_26_all_templates_and_forms_ci_pass(self) -> None:
+        """Test 26: All registered templates across math and code units pass G1, G2, G4, G6 with 0 exhausted retries."""
+        import random
+        from scripts.accept_template import get_all_registered_templates
+        from quality_rules import check_gate_g1, check_gate_g2, check_gate_g4, check_gate_g6, QualityError
+
+        all_tpls = get_all_registered_templates()
+        self.assertGreaterEqual(len(all_tpls), 33)
+
+        for unit, tpl, is_code in all_tpls:
+            key = tpl.get("key", "")
+            forms = list(tpl["forms"].keys()) if isinstance(tpl.get("forms"), dict) else tpl.get("forms", ["direct"])
+            for form_name in forms:
+                for seed in range(1, 11):
+                    prob = None
+                    last_err = None
+                    for attempt in range(12):
+                        rng = random.Random(seed * 1000 + attempt * 73 + 42)
+                        try:
+                            if "form" in tpl["build"].__code__.co_varnames:
+                                cand = tpl["build"](rng, form=form_name)
+                            else:
+                                cand = tpl["build"](rng)
+                            cand["id"] = f"{key}_{form_name}_s{seed}"
+                            cand["templateKey"] = key
+                            finfo = tpl.get("forms", {}).get(form_name, {}) if isinstance(tpl.get("forms"), dict) else {}
+                            cand["level"] = finfo.get("level", tpl.get("level", 1))
+                            cand["skill"] = finfo.get("skill", tpl.get("skill", ""))
+                            cand["verificationLevel"] = tpl.get("verificationLevel", "machine-verified")
+
+                            # Gates check
+                            g1 = check_gate_g1(cand, is_code=is_code)
+                            self.assertTrue(g1["passed"])
+                            g2 = check_gate_g2(cand)
+                            self.assertTrue(g2["passed"])
+                            g4 = check_gate_g4(cand, is_code=is_code)
+                            self.assertTrue(g4["passed"])
+                            g6 = check_gate_g6(cand, is_code=is_code)
+                            self.assertTrue(g6["passed"])
+                            prob = cand
+                            break
+                        except Exception as exc:
+                            last_err = exc
+
+                    self.assertIsNotNone(
+                        prob,
+                        f"Template '{key}' [{form_name}] exhausted 12 retries on seed {seed}: {last_err}",
+                    )
+
+    def test_27_sample_sheet_flaw_forms_and_hints(self) -> None:
+        """Test 27: Sample sheet for find-the-flaw forms displays all student lines, options, and both hint fields."""
+        from scripts.sample_sheet import build_sample_sheet
+
+        # 1. vector-magnitude
+        sheet_vec = build_sample_sheet("vector-magnitude", seed=42)
+        self.assertIn("## Form 3/3: `flaw-distribute-sqrt`", sheet_vec)
+        self.assertIn("### Display & Student Work", sheet_vec)
+        self.assertIn("Line 1:", sheet_vec)
+        self.assertIn("Line 2:", sheet_vec)
+        self.assertIn("Line 3:", sheet_vec)
+        self.assertIn("### Options", sheet_vec)
+        self.assertIn("- `[1]` Line 1", sheet_vec)
+        self.assertIn("- `[2]` Line 2", sheet_vec)
+        self.assertIn("- `[3]` Line 3", sheet_vec)
+        self.assertIn("**Input Hint (`inputHint`)**: `Choose a line`", sheet_vec)
+        self.assertIn("**Checkpoint Hint (`checkpointHint`)**:", sheet_vec)
+        self.assertNotIn("**Checkpoint Hint (`checkpointHint`)**: `(None)`", sheet_vec)
+        self.assertIn("**Anti-Leak Verification**: `PASS", sheet_vec)
+
+        # 2. diff-chain-rule
+        sheet_diff = build_sample_sheet("diff-chain-rule", seed=42)
+        self.assertIn("## Form 3/5: `flaw-line-1`", sheet_diff)
+        self.assertIn("### Display & Student Work", sheet_diff)
+        self.assertIn("Line 1:", sheet_diff)
+        self.assertIn("Line 2:", sheet_diff)
+        self.assertIn("Line 3:", sheet_diff)
+        self.assertIn("### Options", sheet_diff)
+        self.assertIn("- `[1]` Line 1", sheet_diff)
+        self.assertIn("- `[2]` Line 2", sheet_diff)
+        self.assertIn("- `[3]` Line 3", sheet_diff)
+        self.assertIn("**Input Hint (`inputHint`)**: `Choose a line`", sheet_diff)
+        self.assertIn("**Checkpoint Hint (`checkpointHint`)**:", sheet_diff)
+        self.assertNotIn("**Checkpoint Hint (`checkpointHint`)**: `(None)`", sheet_diff)
+        self.assertIn("**Anti-Leak Verification**: `PASS", sheet_diff)
+
+    def test_28_contract_references_and_touchpoints_exist(self) -> None:
+        """Test 28: All files, env vars, and CLI modules referenced in 06_template_contract.md exist."""
+        import importlib
+        touchpoints = [
+            "rules/06_template_contract.md",
+            "rules/02_pedagogy.md",
+            "rules/00_core.md",
+            "skills_taxonomy.json",
+            "math_engine/answer_spec_registry.py",
+            "math_engine/answer_check.py",
+            "math_engine/verify.py",
+            "quality_rules.py",
+            "practice-studio/src/types/drill.ts",
+            "practice-studio/src/components/MathProblemCard.tsx",
+        ]
+        for path in touchpoints:
+            self.assertTrue(os.path.exists(path), f"Touchpoint file {path} referenced in contract does not exist")
+
+        cli_modules = [
+            "scripts.accept_template",
+            "scripts.sample_sheet",
+            "scripts.coverage_report",
+            "math_engine.generate",
+            "code_engine.generate",
+            "math_engine.audit",
+        ]
+        for mod_name in cli_modules:
+            mod = importlib.import_module(mod_name)
+            self.assertIsNotNone(mod, f"CLI module {mod_name} could not be imported")
+
+    def test_29_flaw_hint_rejects_spoilers(self) -> None:
+        """Test 29: Level 3 Find-the-Flaw hints reject spoiler keywords and line positions."""
+        import copy
+        from math_engine.templates.mth_vectors import t_vector_magnitude
+        from math_engine.templates.mth_calc_diff import t_diff_chain
+        from quality_rules import check_gate_anti_leak, QualityError
+        import random
+
+        rng = random.Random(42)
+        p_vec = t_vector_magnitude(rng, form="flaw-distribute-sqrt")
+        p_diff = t_diff_chain(rng, form="flaw-line-2")
+
+        # Clean hints must pass
+        self.assertTrue(check_gate_anti_leak(p_vec)["passed"])
+        self.assertTrue(check_gate_anti_leak(p_diff)["passed"])
+
+        # Spoilers that must be rejected with QualityError G1:
+        bad_hints = [
+            "Recall that square root does not distribute across addition.",
+            "Check Line 2 for calculation errors.",
+            "Inspect the second step closely.",
+            "Remember to multiply by the inner derivative.",
+            "Watch out for a sign slip in the second row.",
+        ]
+        for bad_h in bad_hints:
+            mut_vec = copy.deepcopy(p_vec)
+            mut_vec["checkpointHint"] = bad_h
+            with self.assertRaises(QualityError, msg=f"Should reject spoiler hint: {bad_h}") as ctx:
+                check_gate_anti_leak(mut_vec)
+            self.assertEqual(ctx.exception.gate, "G1")
+
+    def test_30_flaw_step_explains_student_error_with_latex(self) -> None:
+        """Test 30: Step at flaw_line in Find-the-Flaw displays the student's flawed LaTeX line."""
+        import random
+        from math_engine.templates.mth_vectors import t_vector_magnitude
+        from math_engine.templates.mth_calc_diff import t_diff_chain
+        from math_engine.templates.mth_t02_c01_u01 import t_find_flaw
+
+        # 1. vector-magnitude flaw-distribute-sqrt
+        p_vec = t_vector_magnitude(random.Random(42), form="flaw-distribute-sqrt")
+        explain_vec = p_vec["steps"][1]["explain"]  # flaw_line = 2
+        self.assertIn("\\sqrt{(", explain_vec)
+        self.assertIn("The student wrote", explain_vec)
+
+        # 2. diff-chain-rule flaw-line-1..3
+        for fl in (1, 2, 3):
+            p_diff = t_diff_chain(random.Random(42), form=f"flaw-line-{fl}")
+            explain_diff = p_diff["steps"][fl - 1]["explain"]
+            self.assertIn("The student wrote", explain_diff)
+            self.assertIn("$", explain_diff)
+
+        # 3. complex find-the-flaw flaw-line-1..3
+        for fl in (1, 2, 3):
+            p_cplx = t_find_flaw(random.Random(42), form=f"flaw-line-{fl}")
+            explain_cplx = p_cplx["steps"][fl - 1]["explain"]
+            self.assertIn("The student wrote", explain_cplx)
+            self.assertIn("$", explain_cplx)
+
+    def test_31_cli_templates_and_focus_tag_filtering(self) -> None:
+        """Test 31: generate_drill_set correctly filters by --templates and --focus-tag."""
+        import tempfile
+        from math_engine.generate import generate_drill_set
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            old_dry = os.environ.get("NOTION_DRY_RUN")
+            os.environ["NOTION_DRY_RUN"] = "1"
+            try:
+                doc = generate_drill_set(
+                    unit_code="MTH-T02-C01-U01",
+                    count=4,
+                    difficulty="ALL",
+                    seed=42,
+                    templates="multiply,divide-conjugate",
+                    focus_tags="conjugate-denominator",
+                    data_root=tmp_dir,
+                )
+                self.assertEqual(len(doc["problems"]), 4)
+                allowed_keys = {"multiply", "divide-conjugate"}
+                for p in doc["problems"]:
+                    self.assertIn(p["templateKey"], allowed_keys)
+                has_focus = any(p.get("commonTrapTag") == "conjugate-denominator" for p in doc["problems"])
+                self.assertTrue(has_focus, "At least one problem must match focus tag conjugate-denominator")
+            finally:
+                if old_dry is not None:
+                    os.environ["NOTION_DRY_RUN"] = old_dry
+                else:
+                    os.environ.pop("NOTION_DRY_RUN", None)
 
 
 if __name__ == "__main__":

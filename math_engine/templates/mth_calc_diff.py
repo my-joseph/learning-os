@@ -361,21 +361,21 @@ def t_diff_chain(rng: random.Random, form: str | None = None) -> dict[str, Any]:
             shown_l1 = f"f'(x) = \\frac{{d}}{{du}}[u^{{{n}}}]"  # omitted inner derivative in formulation
             shown_lines = [shown_l1, f"= {n}({inner_tex})^{{{n - 1}}}", f"= {n}({inner_tex})^{{{n - 1}}}"]
             vals = [f"{n}*({a}*x + 1)**{n - 1}", None, None]
-            why = "Line 1 is wrong: the chain rule formula requires multiplying by $\\frac{d}{dx}[g(x)]$, which was omitted."
+            why = f"Line 1 is wrong: The student wrote ${shown_lines[0]}$, omitting the inner derivative factor $\\frac{{d}}{{dx}}[{inner_tex}]$. True formulation: ${correct_l1}$."
         elif flaw_line == 2:
             shown_lines = [correct_l1, f"= {n}({inner_tex})^{{{n - 1}}} \\cdot 1", f"= {n}({inner_tex})^{{{n - 1}}}"]
             vals = [None, f"{n}*({a}*x + 1)**{n-1} * 1", None]
-            why = f"Line 2 is wrong: $\\frac{{d}}{{dx}}[{inner_tex}] = {a}$, but the student differentiated it as $1$."
+            why = f"Line 2 is wrong: The student wrote ${shown_lines[1]}$, but $\\frac{{d}}{{dx}}[{inner_tex}] = {a}$ (differentiated as $1$). True evaluation: ${correct_l2}$."
         else:
             wrong_mult = n + a
             shown_lines = [correct_l1, correct_l2, f"= {wrong_mult}({inner_tex})^{{{n - 1}}}"]
             vals = [None, f"{n}*({a}*x + 1)**{n - 1} * {a}", f"{wrong_mult}*({a}*x + 1)**{n - 1}"]
-            why = f"Line 3 is wrong: ${n} \\cdot {a} = {n * a}$, but the student added them to get ${wrong_mult}$."
+            why = f"Line 3 is wrong: The student wrote ${shown_lines[2]}$, but ${n} \\cdot {a} = {n * a}$ (added instead of multiplied). True derivative: ${correct_l3}$."
 
         steps = [
-            _step(("Correct Line 1. " if flaw_line != 1 else why + " ") + f"True formulation: ${correct_l1}$.", correct_l1),
-            _step(("Correct Line 2. " if flaw_line != 2 else why + " ") + f"True evaluation: ${correct_l2}$.", correct_l2, f"{n}*({a}*x + 1)**{n - 1} * {a}"),
-            _step(("Correct Line 3. " if flaw_line != 3 else why + " ") + f"True derivative: ${correct_l3}$.", correct_l3, f"{n * a}*({a}*x + 1)**{n - 1}"),
+            _step(why if flaw_line == 1 else f"Step 1 (True formulation): ${correct_l1}$.", correct_l1),
+            _step(why if flaw_line == 2 else f"Step 2 (True evaluation): ${correct_l2}$.", correct_l2, f"{n}*({a}*x + 1)**{n - 1} * {a}"),
+            _step(why if flaw_line == 3 else f"Step 3 (True derivative): ${correct_l3}$.", correct_l3, f"{n * a}*({a}*x + 1)**{n - 1}"),
         ]
 
         line_trap_map = {1: "chain-rule-omission", 2: "diff-inner-derivative-error", 3: "arithmetic-slip"}
@@ -390,8 +390,9 @@ def t_diff_chain(rng: random.Random, form: str | None = None) -> dict[str, Any]:
             vals=vals,
             form_prefix="flaw-line",
             category="Diagnostic & Trap",
-            checkpoint_hint="Apply the chain rule yourself first; check if the inner derivative was correctly multiplied.",
+            checkpoint_hint="Differentiate the composite function step-by-step on scratch paper, then compare your derivation line by line with the student's solution to pinpoint the first incorrect step.",
             common_trap_tag="diff-forgot-inner-derivative",
+            flaw_tag=line_trap_map[flaw_line],
             variables=["x"],
         )
         prob["skill"] = "CAL-DIFF-CHAIN"

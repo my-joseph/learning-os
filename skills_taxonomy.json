@@ -1123,8 +1123,37 @@
         }
       }
     },
-    "VEC-MAGNITUDE-ORTHOGONAL": {
-      "name": "Vector Magnitude, Unit Vectors, and Orthogonality",
+    "VEC-MAGNITUDE": {
+      "name": "Calculate Vector Magnitude and Normalized Unit Vectors",
+      "domain": "vectors",
+      "tier": "foundational",
+      "prerequisites": [
+        {
+          "skill": "GEO-RIGHT-TRIANGLE-HYP",
+          "strength": "soft"
+        }
+      ],
+      "g2_profile": {
+        "1": {
+          "min_steps": 1,
+          "max_steps": 3
+        },
+        "2": {
+          "min_steps": 2,
+          "max_steps": 4
+        },
+        "3": {
+          "min_steps": 2,
+          "max_steps": 5
+        },
+        "4": {
+          "min_steps": 2,
+          "max_steps": 6
+        }
+      }
+    },
+    "VEC-ORTHOGONAL": {
+      "name": "Determine Vector Orthogonality and Parameter Solutions",
       "domain": "vectors",
       "tier": "intermediate",
       "prerequisites": [

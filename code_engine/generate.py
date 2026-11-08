@@ -115,11 +115,17 @@ def _round_robin_pick(pool, k, rng):
     return picks[:k]
 
 
-def _pick_template_schedule(templates, count, difficulty, focus_tags, rng):
+def _pick_template_schedule(templates, count, difficulty, focus_tags, rng, template_filter=None):
     all_pairs = _expand_template_pairs(templates)
 
+    if template_filter:
+        tpl_set = {t.strip() for t in template_filter} if isinstance(template_filter, (list, tuple, set)) else {t.strip() for t in str(template_filter).split(",")}
+        filtered = [p for p in all_pairs if p["key"] in tpl_set]
+        if filtered:
+            all_pairs = filtered
+
     if focus_tags:
-        tags_set = set(focus_tags) if isinstance(focus_tags, (list, tuple, set)) else {str(focus_tags)}
+        tags_set = set(focus_tags) if isinstance(focus_tags, (list, tuple, set)) else {t.strip() for t in str(focus_tags).split(",")}
         matched = [
             p for p in all_pairs
             if p["key"] in tags_set
@@ -148,6 +154,7 @@ def generate_drill_set(
     drill_id=None,
     seed=None,
     focus_tags=None,
+    templates=None,
     data_root=None,
     rules=None,
 ):
@@ -182,7 +189,7 @@ def generate_drill_set(
 
     def _build_attempt(attempt_seed: int):
         rng = random.Random(attempt_seed)
-        schedule = _pick_template_schedule(mod.TEMPLATES, count, difficulty, focus_tags, rng)
+        schedule = _pick_template_schedule(mod.TEMPLATES, count, difficulty, focus_tags, rng, template_filter=templates)
         unique_tpls = {s["key"]: s["template"] for s in schedule}.values()
         available_forms_count = sum(len(t.get("forms") or ["direct"]) for t in unique_tpls)
 
@@ -325,6 +332,7 @@ if __name__ == "__main__":
     parser.add_argument("--difficulty", default="ALL", help="Difficulty: ALL, 1, 2, 3, or 4")
     parser.add_argument("--id", default=None, help="Explicit drill ID (e.g. DRL-PRG-T01-C01-01)")
     parser.add_argument("--seed", type=int, default=None, help="Random seed for deterministic generation")
+    parser.add_argument("--templates", default=None, help="Comma-separated template keys (e.g. scope_hoisting_loop)")
     parser.add_argument("--focus-tag", action="append", default=[], help="Remediation mistake tag to prioritize")
     args = parser.parse_args()
 
@@ -334,5 +342,6 @@ if __name__ == "__main__":
         difficulty=args.difficulty,
         drill_id=args.id,
         seed=args.seed,
+        templates=args.templates,
         focus_tags=args.focus_tag,
     )
