@@ -1,0 +1,1148 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "version": "1.0",
+  "skills": {
+    "GEO-RIGHT-TRIANGLE-HYP": {
+      "name": "Calculate Hypotenuse via Pythagorean Theorem",
+      "domain": "geometry",
+      "tier": "foundational",
+      "prerequisites": [],
+      "g2_profile": {
+        "1": {
+          "min_steps": 1,
+          "max_steps": 3
+        },
+        "2": {
+          "min_steps": 2,
+          "max_steps": 4
+        },
+        "3": {
+          "min_steps": 2,
+          "max_steps": 5
+        },
+        "4": {
+          "min_steps": 2,
+          "max_steps": 6
+        }
+      }
+    },
+    "GEO-RIGHT-TRIANGLE-LEG": {
+      "name": "Solve for Missing Leg via Pythagorean Theorem",
+      "domain": "geometry",
+      "tier": "intermediate",
+      "prerequisites": [
+        {
+          "skill": "GEO-RIGHT-TRIANGLE-HYP",
+          "strength": "hard"
+        }
+      ],
+      "g2_profile": {
+        "1": {
+          "min_steps": 1,
+          "max_steps": 3
+        },
+        "2": {
+          "min_steps": 2,
+          "max_steps": 4
+        },
+        "3": {
+          "min_steps": 2,
+          "max_steps": 5
+        },
+        "4": {
+          "min_steps": 2,
+          "max_steps": 6
+        }
+      }
+    },
+    "GEO-RIGHT-TRIANGLE-APPLIED": {
+      "name": "Apply Pythagorean Theorem to Contextual Distance Models",
+      "domain": "geometry",
+      "tier": "intermediate",
+      "prerequisites": [
+        {
+          "skill": "GEO-RIGHT-TRIANGLE-LEG",
+          "strength": "soft"
+        }
+      ],
+      "g2_profile": {
+        "1": {
+          "min_steps": 1,
+          "max_steps": 3
+        },
+        "2": {
+          "min_steps": 2,
+          "max_steps": 4
+        },
+        "3": {
+          "min_steps": 2,
+          "max_steps": 5
+        },
+        "4": {
+          "min_steps": 2,
+          "max_steps": 6
+        }
+      }
+    },
+    "GEO-TRAPEZOID-AREA": {
+      "name": "Calculate Trapezoid Area from Bases and Height",
+      "domain": "geometry",
+      "tier": "intermediate",
+      "prerequisites": [],
+      "g2_profile": {
+        "1": {
+          "min_steps": 1,
+          "max_steps": 3
+        },
+        "2": {
+          "min_steps": 2,
+          "max_steps": 4
+        },
+        "3": {
+          "min_steps": 2,
+          "max_steps": 5
+        },
+        "4": {
+          "min_steps": 2,
+          "max_steps": 6
+        }
+      }
+    },
+    "GEO-TRAPEZOID-HEIGHT": {
+      "name": "Solve for Missing Trapezoid Height Given Area and Bases",
+      "domain": "geometry",
+      "tier": "intermediate",
+      "prerequisites": [
+        {
+          "skill": "GEO-TRAPEZOID-AREA",
+          "strength": "hard"
+        }
+      ],
+      "g2_profile": {
+        "1": {
+          "min_steps": 1,
+          "max_steps": 3
+        },
+        "2": {
+          "min_steps": 2,
+          "max_steps": 4
+        },
+        "3": {
+          "min_steps": 2,
+          "max_steps": 5
+        },
+        "4": {
+          "min_steps": 2,
+          "max_steps": 6
+        }
+      }
+    },
+    "GEO-CIRCLE-AREA-RADIUS": {
+      "name": "Calculate Circular Area in Terms of Pi Given Radius",
+      "domain": "geometry",
+      "tier": "intermediate",
+      "prerequisites": [],
+      "g2_profile": {
+        "1": {
+          "min_steps": 1,
+          "max_steps": 3
+        },
+        "2": {
+          "min_steps": 2,
+          "max_steps": 4
+        },
+        "3": {
+          "min_steps": 2,
+          "max_steps": 5
+        },
+        "4": {
+          "min_steps": 2,
+          "max_steps": 6
+        }
+      }
+    },
+    "GEO-CIRCLE-AREA-DIAMETER": {
+      "name": "Calculate Circular Area in Terms of Pi Given Diameter",
+      "domain": "geometry",
+      "tier": "intermediate",
+      "prerequisites": [
+        {
+          "skill": "GEO-CIRCLE-AREA-RADIUS",
+          "strength": "hard"
+        }
+      ],
+      "g2_profile": {
+        "1": {
+          "min_steps": 1,
+          "max_steps": 3
+        },
+        "2": {
+          "min_steps": 2,
+          "max_steps": 4
+        },
+        "3": {
+          "min_steps": 2,
+          "max_steps": 5
+        },
+        "4": {
+          "min_steps": 2,
+          "max_steps": 6
+        }
+      }
+    },
+    "GEO-CYLINDER-VOLUME-RADIUS": {
+      "name": "Calculate Exact Cylinder Volume Given Radius and Height",
+      "domain": "geometry",
+      "tier": "intermediate",
+      "prerequisites": [
+        {
+          "skill": "GEO-CIRCLE-AREA-RADIUS",
+          "strength": "hard"
+        }
+      ],
+      "g2_profile": {
+        "1": {
+          "min_steps": 1,
+          "max_steps": 3
+        },
+        "2": {
+          "min_steps": 2,
+          "max_steps": 4
+        },
+        "3": {
+          "min_steps": 2,
+          "max_steps": 5
+        },
+        "4": {
+          "min_steps": 2,
+          "max_steps": 6
+        }
+      }
+    },
+    "GEO-CYLINDER-VOLUME-DIAMETER": {
+      "name": "Calculate Exact Cylinder Volume Given Diameter and Height",
+      "domain": "geometry",
+      "tier": "intermediate",
+      "prerequisites": [
+        {
+          "skill": "GEO-CYLINDER-VOLUME-RADIUS",
+          "strength": "hard"
+        }
+      ],
+      "g2_profile": {
+        "1": {
+          "min_steps": 1,
+          "max_steps": 3
+        },
+        "2": {
+          "min_steps": 2,
+          "max_steps": 4
+        },
+        "3": {
+          "min_steps": 2,
+          "max_steps": 5
+        },
+        "4": {
+          "min_steps": 2,
+          "max_steps": 6
+        }
+      }
+    },
+    "MTH-COMPLEX-RADICAL-SIMPLIFY": {
+      "name": "Simplify Principal Square Root of Negative Real Numbers",
+      "domain": "complex_numbers",
+      "tier": "foundational",
+      "prerequisites": [],
+      "g2_profile": {
+        "1": {
+          "min_steps": 1,
+          "max_steps": 3
+        },
+        "2": {
+          "min_steps": 2,
+          "max_steps": 4
+        },
+        "3": {
+          "min_steps": 2,
+          "max_steps": 5
+        },
+        "4": {
+          "min_steps": 2,
+          "max_steps": 6
+        }
+      }
+    },
+    "MTH-COMPLEX-ADDITION": {
+      "name": "Add Complex Numbers in Standard Form",
+      "domain": "complex_numbers",
+      "tier": "foundational",
+      "prerequisites": [
+        {
+          "skill": "MTH-COMPLEX-RADICAL-SIMPLIFY",
+          "strength": "soft"
+        }
+      ],
+      "g2_profile": {
+        "1": {
+          "min_steps": 1,
+          "max_steps": 3
+        },
+        "2": {
+          "min_steps": 2,
+          "max_steps": 4
+        },
+        "3": {
+          "min_steps": 2,
+          "max_steps": 5
+        },
+        "4": {
+          "min_steps": 2,
+          "max_steps": 6
+        }
+      }
+    },
+    "MTH-COMPLEX-SUBTRACTION": {
+      "name": "Subtract Complex Numbers in Standard Form",
+      "domain": "complex_numbers",
+      "tier": "foundational",
+      "prerequisites": [
+        {
+          "skill": "MTH-COMPLEX-ADDITION",
+          "strength": "soft"
+        }
+      ],
+      "g2_profile": {
+        "1": {
+          "min_steps": 1,
+          "max_steps": 3
+        },
+        "2": {
+          "min_steps": 2,
+          "max_steps": 4
+        },
+        "3": {
+          "min_steps": 2,
+          "max_steps": 5
+        },
+        "4": {
+          "min_steps": 2,
+          "max_steps": 6
+        }
+      }
+    },
+    "MTH-COMPLEX-POWER-I-MOD4": {
+      "name": "Evaluate Integer Powers of Imaginary Unit Modulo 4",
+      "domain": "complex_numbers",
+      "tier": "foundational",
+      "prerequisites": [],
+      "g2_profile": {
+        "1": {
+          "min_steps": 1,
+          "max_steps": 3
+        },
+        "2": {
+          "min_steps": 2,
+          "max_steps": 4
+        },
+        "3": {
+          "min_steps": 2,
+          "max_steps": 5
+        },
+        "4": {
+          "min_steps": 2,
+          "max_steps": 6
+        }
+      }
+    },
+    "MTH-COMPLEX-MULTIPLICATION": {
+      "name": "Multiply Complex Binomials via Distributive FOIL",
+      "domain": "complex_numbers",
+      "tier": "intermediate",
+      "prerequisites": [],
+      "g2_profile": {
+        "1": {
+          "min_steps": 1,
+          "max_steps": 3
+        },
+        "2": {
+          "min_steps": 2,
+          "max_steps": 4
+        },
+        "3": {
+          "min_steps": 2,
+          "max_steps": 5
+        },
+        "4": {
+          "min_steps": 2,
+          "max_steps": 6
+        }
+      }
+    },
+    "MTH-COMPLEX-DIVISION-CONJUGATE": {
+      "name": "Divide Complex Numbers via Conjugate Rationalization",
+      "domain": "complex_numbers",
+      "tier": "intermediate",
+      "prerequisites": [
+        {
+          "skill": "MTH-COMPLEX-MULTIPLICATION",
+          "strength": "hard"
+        }
+      ],
+      "g2_profile": {
+        "1": {
+          "min_steps": 1,
+          "max_steps": 3
+        },
+        "2": {
+          "min_steps": 2,
+          "max_steps": 4
+        },
+        "3": {
+          "min_steps": 2,
+          "max_steps": 5
+        },
+        "4": {
+          "min_steps": 2,
+          "max_steps": 6
+        }
+      }
+    },
+    "MTH-COMPLEX-SQUARE-BINOMIAL": {
+      "name": "Square Complex Binomials",
+      "domain": "complex_numbers",
+      "tier": "intermediate",
+      "prerequisites": [
+        {
+          "skill": "MTH-COMPLEX-MULTIPLICATION",
+          "strength": "hard"
+        }
+      ],
+      "g2_profile": {
+        "1": {
+          "min_steps": 1,
+          "max_steps": 3
+        },
+        "2": {
+          "min_steps": 2,
+          "max_steps": 4
+        },
+        "3": {
+          "min_steps": 2,
+          "max_steps": 5
+        },
+        "4": {
+          "min_steps": 2,
+          "max_steps": 6
+        }
+      }
+    },
+    "MTH-COMPLEX-EVALUATE-POLYNOMIAL": {
+      "name": "Evaluate Polynomial Expressions at Complex Roots",
+      "domain": "complex_numbers",
+      "tier": "intermediate",
+      "prerequisites": [
+        {
+          "skill": "MTH-COMPLEX-MULTIPLICATION",
+          "strength": "hard"
+        }
+      ],
+      "g2_profile": {
+        "1": {
+          "min_steps": 1,
+          "max_steps": 3
+        },
+        "2": {
+          "min_steps": 2,
+          "max_steps": 4
+        },
+        "3": {
+          "min_steps": 2,
+          "max_steps": 5
+        },
+        "4": {
+          "min_steps": 2,
+          "max_steps": 6
+        }
+      }
+    },
+    "MTH-COMPLEX-PRINCIPAL-ROOT-TRAP": {
+      "name": "Resolve Radical Fallacy for Negative Radicands",
+      "domain": "complex_numbers",
+      "tier": "advanced",
+      "prerequisites": [
+        {
+          "skill": "MTH-COMPLEX-RADICAL-SIMPLIFY",
+          "strength": "hard"
+        }
+      ],
+      "g2_profile": {
+        "1": {
+          "min_steps": 1,
+          "max_steps": 3
+        },
+        "2": {
+          "min_steps": 2,
+          "max_steps": 4
+        },
+        "3": {
+          "min_steps": 2,
+          "max_steps": 5
+        },
+        "4": {
+          "min_steps": 2,
+          "max_steps": 6
+        }
+      }
+    },
+    "MTH-COMPLEX-POWER-SUM": {
+      "name": "Compute Geometric Sum of Consecutive Powers of i",
+      "domain": "complex_numbers",
+      "tier": "intermediate",
+      "prerequisites": [
+        {
+          "skill": "MTH-COMPLEX-POWER-I-MOD4",
+          "strength": "hard"
+        }
+      ],
+      "g2_profile": {
+        "1": {
+          "min_steps": 1,
+          "max_steps": 3
+        },
+        "2": {
+          "min_steps": 2,
+          "max_steps": 4
+        },
+        "3": {
+          "min_steps": 2,
+          "max_steps": 5
+        },
+        "4": {
+          "min_steps": 2,
+          "max_steps": 6
+        }
+      }
+    },
+    "MTH-COMPLEX-DIAGNOSTIC-FLAW": {
+      "name": "Diagnose Step Errors in Complex Algebraic Derivations",
+      "domain": "complex_numbers",
+      "tier": "advanced",
+      "prerequisites": [
+        {
+          "skill": "MTH-COMPLEX-MULTIPLICATION",
+          "strength": "hard"
+        }
+      ],
+      "g2_profile": {
+        "1": {
+          "min_steps": 1,
+          "max_steps": 3
+        },
+        "2": {
+          "min_steps": 2,
+          "max_steps": 4
+        },
+        "3": {
+          "min_steps": 1,
+          "max_steps": 5
+        },
+        "4": {
+          "min_steps": 2,
+          "max_steps": 6
+        }
+      }
+    },
+    "MTH-COMPLEX-AC-OHMS-LAW": {
+      "name": "Calculate AC Voltage and Current via Complex Impedance",
+      "domain": "complex_numbers",
+      "tier": "expert",
+      "prerequisites": [
+        {
+          "skill": "MTH-COMPLEX-DIVISION-CONJUGATE",
+          "strength": "hard"
+        }
+      ],
+      "g2_profile": {
+        "1": {
+          "min_steps": 1,
+          "max_steps": 3
+        },
+        "2": {
+          "min_steps": 2,
+          "max_steps": 4
+        },
+        "3": {
+          "min_steps": 2,
+          "max_steps": 5
+        },
+        "4": {
+          "min_steps": 2,
+          "max_steps": 6
+        }
+      }
+    },
+    "MTH-COMPLEX-GEOMETRIC-ROTATION": {
+      "name": "Transform 2D Vectors via Complex Multiplication in Argand Plane",
+      "domain": "complex_numbers",
+      "tier": "expert",
+      "prerequisites": [
+        {
+          "skill": "MTH-COMPLEX-MULTIPLICATION",
+          "strength": "hard"
+        }
+      ],
+      "g2_profile": {
+        "1": {
+          "min_steps": 1,
+          "max_steps": 3
+        },
+        "2": {
+          "min_steps": 2,
+          "max_steps": 4
+        },
+        "3": {
+          "min_steps": 2,
+          "max_steps": 5
+        },
+        "4": {
+          "min_steps": 2,
+          "max_steps": 6
+        }
+      }
+    },
+    "MTH-COMPLEX-PARALLEL-IMPEDANCE": {
+      "name": "Synthesize Equivalent Impedance for Parallel AC Circuits",
+      "domain": "complex_numbers",
+      "tier": "expert",
+      "prerequisites": [
+        {
+          "skill": "MTH-COMPLEX-DIVISION-CONJUGATE",
+          "strength": "hard"
+        }
+      ],
+      "g2_profile": {
+        "1": {
+          "min_steps": 1,
+          "max_steps": 3
+        },
+        "2": {
+          "min_steps": 2,
+          "max_steps": 4
+        },
+        "3": {
+          "min_steps": 2,
+          "max_steps": 5
+        },
+        "4": {
+          "min_steps": 2,
+          "max_steps": 6
+        }
+      }
+    },
+    "PRG-JS-SCOPE-HOISTING-VAR": {
+      "name": "Trace var Loop Closure Capture and Function Scope",
+      "domain": "javascript_core",
+      "tier": "foundational",
+      "prerequisites": [],
+      "g2_profile": {
+        "1": {
+          "min_steps": 1,
+          "max_steps": 3
+        },
+        "2": {
+          "min_steps": 2,
+          "max_steps": 4
+        },
+        "3": {
+          "min_steps": 2,
+          "max_steps": 5
+        },
+        "4": {
+          "min_steps": 2,
+          "max_steps": 6
+        }
+      }
+    },
+    "PRG-JS-SCOPE-HOISTING-LET": {
+      "name": "Trace let Block Scope Binding per Loop Iteration",
+      "domain": "javascript_core",
+      "tier": "foundational",
+      "prerequisites": [
+        {
+          "skill": "PRG-JS-SCOPE-HOISTING-VAR",
+          "strength": "soft"
+        }
+      ],
+      "g2_profile": {
+        "1": {
+          "min_steps": 1,
+          "max_steps": 3
+        },
+        "2": {
+          "min_steps": 2,
+          "max_steps": 4
+        },
+        "3": {
+          "min_steps": 2,
+          "max_steps": 5
+        },
+        "4": {
+          "min_steps": 2,
+          "max_steps": 6
+        }
+      }
+    },
+    "PRG-JS-EVENT-LOOP-MICROTASK": {
+      "name": "Predict Microtask vs Macrotask Execution Order",
+      "domain": "javascript_core",
+      "tier": "intermediate",
+      "prerequisites": [],
+      "g2_profile": {
+        "1": {
+          "min_steps": 1,
+          "max_steps": 3
+        },
+        "2": {
+          "min_steps": 2,
+          "max_steps": 4
+        },
+        "3": {
+          "min_steps": 2,
+          "max_steps": 5
+        },
+        "4": {
+          "min_steps": 2,
+          "max_steps": 6
+        }
+      }
+    },
+    "PRG-JS-PROMISE-ASYNC-FLOW": {
+      "name": "Trace Asynchronous Promise Rejection and Resolution Flow",
+      "domain": "javascript_core",
+      "tier": "intermediate",
+      "prerequisites": [
+        {
+          "skill": "PRG-JS-EVENT-LOOP-MICROTASK",
+          "strength": "soft"
+        }
+      ],
+      "g2_profile": {
+        "1": {
+          "min_steps": 1,
+          "max_steps": 3
+        },
+        "2": {
+          "min_steps": 2,
+          "max_steps": 4
+        },
+        "3": {
+          "min_steps": 2,
+          "max_steps": 5
+        },
+        "4": {
+          "min_steps": 2,
+          "max_steps": 6
+        }
+      }
+    },
+    "PRG-JS-THIS-BINDING-DEBUG": {
+      "name": "Debug Lost this Context in Detached Callbacks",
+      "domain": "javascript_core",
+      "tier": "advanced",
+      "prerequisites": [],
+      "g2_profile": {
+        "1": {
+          "min_steps": 1,
+          "max_steps": 3
+        },
+        "2": {
+          "min_steps": 2,
+          "max_steps": 4
+        },
+        "3": {
+          "min_steps": 1,
+          "max_steps": 5
+        },
+        "4": {
+          "min_steps": 2,
+          "max_steps": 6
+        }
+      }
+    },
+    "PRG-JS-PROTOTYPE-CHAIN-MUTATION": {
+      "name": "Analyze Prototype Chain Mutations and Inheritance",
+      "domain": "javascript_core",
+      "tier": "expert",
+      "prerequisites": [],
+      "g2_profile": {
+        "1": {
+          "min_steps": 1,
+          "max_steps": 3
+        },
+        "2": {
+          "min_steps": 2,
+          "max_steps": 4
+        },
+        "3": {
+          "min_steps": 2,
+          "max_steps": 5
+        },
+        "4": {
+          "min_steps": 2,
+          "max_steps": 6
+        }
+      }
+    },
+    "PRG-ARCH-PIPELINE-PRICING": {
+      "name": "Model Business Pipeline Pricing with Precedence Order",
+      "domain": "software_architecture",
+      "tier": "intermediate",
+      "prerequisites": [
+        {
+          "skill": "PRG-KATA-GROUPBY",
+          "strength": "soft"
+        }
+      ],
+      "g2_profile": {
+        "1": {
+          "min_steps": 1,
+          "max_steps": 3
+        },
+        "2": {
+          "min_steps": 2,
+          "max_steps": 4
+        },
+        "3": {
+          "min_steps": 2,
+          "max_steps": 5
+        },
+        "4": {
+          "min_steps": 2,
+          "max_steps": 6
+        }
+      }
+    },
+    "PRG-ARCH-ASYNC-CACHE-RACE": {
+      "name": "Debug Race Conditions and Stampedes in Async Caches",
+      "domain": "software_architecture",
+      "tier": "advanced",
+      "prerequisites": [
+        {
+          "skill": "PRG-JS-PROMISE-ASYNC-FLOW",
+          "strength": "hard"
+        },
+        {
+          "skill": "PRG-KATA-MEMOIZE",
+          "strength": "soft"
+        }
+      ],
+      "g2_profile": {
+        "1": {
+          "min_steps": 1,
+          "max_steps": 3
+        },
+        "2": {
+          "min_steps": 2,
+          "max_steps": 4
+        },
+        "3": {
+          "min_steps": 1,
+          "max_steps": 6
+        },
+        "4": {
+          "min_steps": 2,
+          "max_steps": 6
+        }
+      }
+    },
+    "PRG-ARCH-REFACTOR-SUBSCRIPTION": {
+      "name": "Refactor Monolithic Legacy Subscriptions to Clean Modules",
+      "domain": "software_architecture",
+      "tier": "advanced",
+      "prerequisites": [],
+      "g2_profile": {
+        "1": {
+          "min_steps": 1,
+          "max_steps": 3
+        },
+        "2": {
+          "min_steps": 2,
+          "max_steps": 4
+        },
+        "3": {
+          "min_steps": 1,
+          "max_steps": 6
+        },
+        "4": {
+          "min_steps": 2,
+          "max_steps": 6
+        }
+      }
+    },
+    "PRG-ARCH-PROJECT-RATE-LIMITER": {
+      "name": "Implement Stateful Sliding-Window Rate Limiter Architecture",
+      "domain": "software_architecture",
+      "tier": "expert",
+      "prerequisites": [
+        {
+          "skill": "PRG-KATA-DEBOUNCE",
+          "strength": "soft"
+        }
+      ],
+      "g2_profile": {
+        "1": {
+          "min_steps": 1,
+          "max_steps": 3
+        },
+        "2": {
+          "min_steps": 2,
+          "max_steps": 4
+        },
+        "3": {
+          "min_steps": 2,
+          "max_steps": 5
+        },
+        "4": {
+          "min_steps": 2,
+          "max_steps": 8
+        }
+      }
+    },
+    "PRG-KATA-DEBOUNCE": {
+      "name": "Implement Function Debounce with Trailing Edge Execution",
+      "domain": "software_architecture",
+      "tier": "intermediate",
+      "prerequisites": [],
+      "g2_profile": {
+        "1": {
+          "min_steps": 1,
+          "max_steps": 3
+        },
+        "2": {
+          "min_steps": 1,
+          "max_steps": 5
+        },
+        "3": {
+          "min_steps": 2,
+          "max_steps": 5
+        },
+        "4": {
+          "min_steps": 2,
+          "max_steps": 6
+        }
+      }
+    },
+    "PRG-KATA-GROUPBY": {
+      "name": "Implement Generic Collection Grouping by Key Selector",
+      "domain": "software_architecture",
+      "tier": "foundational",
+      "prerequisites": [],
+      "g2_profile": {
+        "1": {
+          "min_steps": 1,
+          "max_steps": 4
+        },
+        "2": {
+          "min_steps": 2,
+          "max_steps": 4
+        },
+        "3": {
+          "min_steps": 2,
+          "max_steps": 5
+        },
+        "4": {
+          "min_steps": 2,
+          "max_steps": 6
+        }
+      }
+    },
+    "PRG-KATA-MEMOIZE": {
+      "name": "Implement Unary Function Memoization with Falsy Support",
+      "domain": "software_architecture",
+      "tier": "intermediate",
+      "prerequisites": [],
+      "g2_profile": {
+        "1": {
+          "min_steps": 1,
+          "max_steps": 3
+        },
+        "2": {
+          "min_steps": 1,
+          "max_steps": 5
+        },
+        "3": {
+          "min_steps": 2,
+          "max_steps": 5
+        },
+        "4": {
+          "min_steps": 2,
+          "max_steps": 6
+        }
+      }
+    },
+    "CAL-DIFF-POWER": {
+      "name": "Compute Derivatives of Monomials and Polynomials via Power Rule",
+      "domain": "calculus",
+      "tier": "foundational",
+      "prerequisites": [],
+      "g2_profile": {
+        "1": {
+          "min_steps": 1,
+          "max_steps": 3
+        },
+        "2": {
+          "min_steps": 2,
+          "max_steps": 4
+        },
+        "3": {
+          "min_steps": 2,
+          "max_steps": 5
+        },
+        "4": {
+          "min_steps": 2,
+          "max_steps": 6
+        }
+      }
+    },
+    "CAL-DIFF-CHAIN": {
+      "name": "Compute Derivatives of Composite Functions via Chain Rule",
+      "domain": "calculus",
+      "tier": "intermediate",
+      "prerequisites": [
+        {
+          "skill": "CAL-DIFF-POWER",
+          "strength": "hard"
+        }
+      ],
+      "g2_profile": {
+        "1": {
+          "min_steps": 1,
+          "max_steps": 3
+        },
+        "2": {
+          "min_steps": 3,
+          "max_steps": 6
+        },
+        "3": {
+          "min_steps": 1,
+          "max_steps": 5
+        },
+        "4": {
+          "min_steps": 2,
+          "max_steps": 6
+        }
+      }
+    },
+    "VEC-ADD-SCALE": {
+      "name": "Vector Addition and Scalar Multiplication",
+      "domain": "vectors",
+      "tier": "foundational",
+      "prerequisites": [],
+      "g2_profile": {
+        "1": {
+          "min_steps": 1,
+          "max_steps": 3
+        },
+        "2": {
+          "min_steps": 2,
+          "max_steps": 4
+        },
+        "3": {
+          "min_steps": 2,
+          "max_steps": 5
+        },
+        "4": {
+          "min_steps": 2,
+          "max_steps": 6
+        }
+      }
+    },
+    "VEC-LINEAR-COMBINATION": {
+      "name": "Linear Combinations and Basis Representation",
+      "domain": "vectors",
+      "tier": "intermediate",
+      "prerequisites": [
+        {
+          "skill": "VEC-ADD-SCALE",
+          "strength": "hard"
+        }
+      ],
+      "g2_profile": {
+        "1": {
+          "min_steps": 1,
+          "max_steps": 3
+        },
+        "2": {
+          "min_steps": 2,
+          "max_steps": 4
+        },
+        "3": {
+          "min_steps": 2,
+          "max_steps": 5
+        },
+        "4": {
+          "min_steps": 2,
+          "max_steps": 6
+        }
+      }
+    },
+    "VEC-DOT-PRODUCT": {
+      "name": "Vector Dot Product and Algebraic Properties",
+      "domain": "vectors",
+      "tier": "intermediate",
+      "prerequisites": [
+        {
+          "skill": "VEC-ADD-SCALE",
+          "strength": "soft"
+        }
+      ],
+      "g2_profile": {
+        "1": {
+          "min_steps": 1,
+          "max_steps": 3
+        },
+        "2": {
+          "min_steps": 2,
+          "max_steps": 4
+        },
+        "3": {
+          "min_steps": 2,
+          "max_steps": 5
+        },
+        "4": {
+          "min_steps": 2,
+          "max_steps": 6
+        }
+      }
+    },
+    "VEC-MAGNITUDE-ORTHOGONAL": {
+      "name": "Vector Magnitude, Unit Vectors, and Orthogonality",
+      "domain": "vectors",
+      "tier": "intermediate",
+      "prerequisites": [
+        {
+          "skill": "VEC-DOT-PRODUCT",
+          "strength": "hard"
+        }
+      ],
+      "g2_profile": {
+        "1": {
+          "min_steps": 1,
+          "max_steps": 3
+        },
+        "2": {
+          "min_steps": 2,
+          "max_steps": 4
+        },
+        "3": {
+          "min_steps": 2,
+          "max_steps": 5
+        },
+        "4": {
+          "min_steps": 2,
+          "max_steps": 6
+        }
+      }
+    }
+  }
+}

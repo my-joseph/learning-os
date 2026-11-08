@@ -1,0 +1,1489 @@
+{
+  "templates": [
+    {
+      "unit": "MTH-T01-C12",
+      "key": "pythagoras-hypotenuse",
+      "level": 1,
+      "is_code": false,
+      "declared_forms_count": 3,
+      "declared_forms": [
+        "direct",
+        "reverse",
+        "contextual"
+      ],
+      "actual_forms_count": 3,
+      "form_proportions": {
+        "direct": 33.0,
+        "reverse": 31.0,
+        "contextual": 36.0
+      },
+      "g1_pass_rate": 100.0,
+      "g2_pass_rate": 100.0,
+      "g4_pass_rate": 100.0,
+      "avg_retries": 0.0,
+      "exhausted_12": 0,
+      "distinct_fingerprints": 3,
+      "fingerprint_examples": [
+        "pythagoras-hypotenuse|contextual|sqrt(#^# + #^#) [ctx]",
+        "pythagoras-hypotenuse|reverse|sqrt(#^# - #^#)",
+        "pythagoras-hypotenuse|direct|sqrt(#^# + #^#)"
+      ]
+    },
+    {
+      "unit": "MTH-T01-C12",
+      "key": "trapezoid-area",
+      "level": 2,
+      "is_code": false,
+      "declared_forms_count": 2,
+      "declared_forms": [
+        "direct",
+        "reverse"
+      ],
+      "actual_forms_count": 2,
+      "form_proportions": {
+        "direct": 50.5,
+        "reverse": 49.5
+      },
+      "g1_pass_rate": 100.0,
+      "g2_pass_rate": 100.0,
+      "g4_pass_rate": 100.0,
+      "avg_retries": 0.0,
+      "exhausted_12": 0,
+      "distinct_fingerprints": 2,
+      "fingerprint_examples": [
+        "trapezoid-area|reverse|(# * #) / (# + #)",
+        "trapezoid-area|direct|(#/#)*(# + #)*#"
+      ]
+    },
+    {
+      "unit": "MTH-T01-C12",
+      "key": "circle-area-pi",
+      "level": 2,
+      "is_code": false,
+      "declared_forms_count": 2,
+      "declared_forms": [
+        "direct",
+        "from-diameter"
+      ],
+      "actual_forms_count": 2,
+      "form_proportions": {
+        "direct": 54.0,
+        "from-diameter": 46.0
+      },
+      "g1_pass_rate": 100.0,
+      "g2_pass_rate": 100.0,
+      "g4_pass_rate": 100.0,
+      "avg_retries": 0.0,
+      "exhausted_12": 0,
+      "distinct_fingerprints": 2,
+      "fingerprint_examples": [
+        "circle-area-pi|direct|pi * #^#",
+        "circle-area-pi|from-diameter|pi * (#/#)^#"
+      ]
+    },
+    {
+      "unit": "MTH-T01-C12",
+      "key": "cylinder-volume",
+      "level": 3,
+      "is_code": false,
+      "declared_forms_count": 2,
+      "declared_forms": [
+        "direct",
+        "from-diameter"
+      ],
+      "actual_forms_count": 2,
+      "form_proportions": {
+        "direct": 51.5,
+        "from-diameter": 48.5
+      },
+      "g1_pass_rate": 100.0,
+      "g2_pass_rate": 100.0,
+      "g4_pass_rate": 89.5,
+      "avg_retries": 0.12,
+      "exhausted_12": 0,
+      "distinct_fingerprints": 2,
+      "fingerprint_examples": [
+        "cylinder-volume|from-diameter|pi * (#/#)^# * #",
+        "cylinder-volume|direct|pi * #^# * #"
+      ]
+    },
+    {
+      "unit": "MTH-T02-C01-U01",
+      "key": "radical-standard-form",
+      "level": 1,
+      "is_code": false,
+      "declared_forms_count": 1,
+      "declared_forms": [
+        "direct"
+      ],
+      "actual_forms_count": 1,
+      "form_proportions": {
+        "direct": 100.0
+      },
+      "g1_pass_rate": 100.0,
+      "g2_pass_rate": 100.0,
+      "g4_pass_rate": 100.0,
+      "avg_retries": 0.0,
+      "exhausted_12": 0,
+      "distinct_fingerprints": 2,
+      "fingerprint_examples": [
+        "radical-standard-form|direct|-# + sqrt(-#)",
+        "radical-standard-form|direct|# + sqrt(-#)"
+      ]
+    },
+    {
+      "unit": "MTH-T02-C01-U01",
+      "key": "add-subtract",
+      "level": 1,
+      "is_code": false,
+      "declared_forms_count": 2,
+      "declared_forms": [
+        "addition",
+        "subtraction"
+      ],
+      "actual_forms_count": 2,
+      "form_proportions": {
+        "addition": 50.0,
+        "subtraction": 50.0
+      },
+      "g1_pass_rate": 100.0,
+      "g2_pass_rate": 100.0,
+      "g4_pass_rate": 100.0,
+      "avg_retries": 0.0,
+      "exhausted_12": 0,
+      "distinct_fingerprints": 67,
+      "fingerprint_examples": [
+        "add-subtract|addition|(-# + #i) + (# - #i)",
+        "add-subtract|addition|(-# - #i) + (# + i)",
+        "add-subtract|addition|(-# + #i) + (-# - i)"
+      ]
+    },
+    {
+      "unit": "MTH-T02-C01-U01",
+      "key": "power-of-i",
+      "level": 1,
+      "is_code": false,
+      "declared_forms_count": 4,
+      "declared_forms": [
+        "rem-0",
+        "rem-1",
+        "rem-2",
+        "rem-3"
+      ],
+      "actual_forms_count": 4,
+      "form_proportions": {
+        "rem-2": 24.5,
+        "rem-3": 24.0,
+        "rem-0": 27.5,
+        "rem-1": 24.0
+      },
+      "g1_pass_rate": 100.0,
+      "g2_pass_rate": 100.0,
+      "g4_pass_rate": 100.0,
+      "avg_retries": 0.0,
+      "exhausted_12": 0,
+      "distinct_fingerprints": 4,
+      "fingerprint_examples": [
+        "power-of-i|rem-0|i^#",
+        "power-of-i|rem-2|i^#",
+        "power-of-i|rem-1|i^#"
+      ]
+    },
+    {
+      "unit": "MTH-T02-C01-U01",
+      "key": "multiply",
+      "level": 2,
+      "is_code": false,
+      "declared_forms_count": 1,
+      "declared_forms": [
+        "direct"
+      ],
+      "actual_forms_count": 1,
+      "form_proportions": {
+        "direct": 100.0
+      },
+      "g1_pass_rate": 100.0,
+      "g2_pass_rate": 100.0,
+      "g4_pass_rate": 100.0,
+      "avg_retries": 0.0,
+      "exhausted_12": 0,
+      "distinct_fingerprints": 43,
+      "fingerprint_examples": [
+        "multiply|direct|(-# + #i)*(# - i)",
+        "multiply|direct|(# - #i)*(# + i)",
+        "multiply|direct|(-# - #i)*(# - #i)"
+      ]
+    },
+    {
+      "unit": "MTH-T02-C01-U01",
+      "key": "divide-conjugate",
+      "level": 2,
+      "is_code": false,
+      "declared_forms_count": 1,
+      "declared_forms": [
+        "direct"
+      ],
+      "actual_forms_count": 1,
+      "form_proportions": {
+        "direct": 100.0
+      },
+      "g1_pass_rate": 100.0,
+      "g2_pass_rate": 100.0,
+      "g4_pass_rate": 100.0,
+      "avg_retries": 0.0,
+      "exhausted_12": 0,
+      "distinct_fingerprints": 44,
+      "fingerprint_examples": [
+        "divide-conjugate|direct|(-# - #i)/(# + #i)",
+        "divide-conjugate|direct|(# + #i)/(# - i)",
+        "divide-conjugate|direct|(# - #i)/(-# + #i)"
+      ]
+    },
+    {
+      "unit": "MTH-T02-C01-U01",
+      "key": "square-binomial",
+      "level": 2,
+      "is_code": false,
+      "declared_forms_count": 1,
+      "declared_forms": [
+        "direct"
+      ],
+      "actual_forms_count": 1,
+      "form_proportions": {
+        "direct": 100.0
+      },
+      "g1_pass_rate": 100.0,
+      "g2_pass_rate": 100.0,
+      "g4_pass_rate": 100.0,
+      "avg_retries": 0.0,
+      "exhausted_12": 0,
+      "distinct_fingerprints": 8,
+      "fingerprint_examples": [
+        "square-binomial|direct|(# + #i)^#",
+        "square-binomial|direct|(-# - i)^#",
+        "square-binomial|direct|(-# - #i)^#"
+      ]
+    },
+    {
+      "unit": "MTH-T02-C01-U01",
+      "key": "evaluate-polynomial",
+      "level": 2,
+      "is_code": false,
+      "declared_forms_count": 1,
+      "declared_forms": [
+        "direct"
+      ],
+      "actual_forms_count": 1,
+      "form_proportions": {
+        "direct": 100.0
+      },
+      "g1_pass_rate": 100.0,
+      "g2_pass_rate": 100.0,
+      "g4_pass_rate": 100.0,
+      "avg_retries": 0.0,
+      "exhausted_12": 0,
+      "distinct_fingerprints": 31,
+      "fingerprint_examples": [
+        "evaluate-polynomial|direct|(# - i)^# + (#)*(# - i) + (#)",
+        "evaluate-polynomial|direct|(-# + i)^# + (#)*(-# + i) + (#)",
+        "evaluate-polynomial|direct|(# - #i)^# + (-#)*(# - #i) + (-#)"
+      ]
+    },
+    {
+      "unit": "MTH-T02-C01-U01",
+      "key": "principal-root-trap",
+      "level": 3,
+      "is_code": false,
+      "declared_forms_count": 1,
+      "declared_forms": [
+        "direct"
+      ],
+      "actual_forms_count": 1,
+      "form_proportions": {
+        "direct": 100.0
+      },
+      "g1_pass_rate": 100.0,
+      "g2_pass_rate": 100.0,
+      "g4_pass_rate": 100.0,
+      "avg_retries": 0.0,
+      "exhausted_12": 0,
+      "distinct_fingerprints": 1,
+      "fingerprint_examples": [
+        "principal-root-trap|direct|sqrt(-#)*sqrt(-#)"
+      ]
+    },
+    {
+      "unit": "MTH-T02-C01-U01",
+      "key": "power-sum",
+      "level": 3,
+      "is_code": false,
+      "declared_forms_count": 1,
+      "declared_forms": [
+        "direct"
+      ],
+      "actual_forms_count": 1,
+      "form_proportions": {
+        "direct": 100.0
+      },
+      "g1_pass_rate": 100.0,
+      "g2_pass_rate": 100.0,
+      "g4_pass_rate": 100.0,
+      "avg_retries": 0.0,
+      "exhausted_12": 0,
+      "distinct_fingerprints": 8,
+      "fingerprint_examples": [
+        "power-sum|direct|(#)*i^# + (#)*i^# + (#)*i^#",
+        "power-sum|direct|(#)*i^# + (#)*i^# + (-#)*i^#",
+        "power-sum|direct|(-#)*i^# + (#)*i^# + (-#)*i^#"
+      ]
+    },
+    {
+      "unit": "MTH-T02-C01-U01",
+      "key": "find-the-flaw",
+      "level": 3,
+      "is_code": false,
+      "declared_forms_count": 3,
+      "declared_forms": [
+        "flaw-line-1",
+        "flaw-line-2",
+        "flaw-line-3"
+      ],
+      "actual_forms_count": 3,
+      "form_proportions": {
+        "flaw-line-3": 37.5,
+        "flaw-line-2": 30.5,
+        "flaw-line-1": 32.0
+      },
+      "g1_pass_rate": 100.0,
+      "g2_pass_rate": 100.0,
+      "g4_pass_rate": 100.0,
+      "avg_retries": 0.0,
+      "exhausted_12": 0,
+      "distinct_fingerprints": 100,
+      "fingerprint_examples": [
+        "find-the-flaw|flaw-line-3|(-# + i)*(-# - #i)",
+        "find-the-flaw|flaw-line-3|(# - #i)*(-# + i)",
+        "find-the-flaw|flaw-line-2|(# - #i)*(-# - #i)"
+      ]
+    },
+    {
+      "unit": "MTH-T02-C01-U01",
+      "key": "ac-current",
+      "level": 4,
+      "is_code": false,
+      "declared_forms_count": 1,
+      "declared_forms": [
+        "direct"
+      ],
+      "actual_forms_count": 1,
+      "form_proportions": {
+        "direct": 100.0
+      },
+      "g1_pass_rate": 100.0,
+      "g2_pass_rate": 100.0,
+      "g4_pass_rate": 100.0,
+      "avg_retries": 0.0,
+      "exhausted_12": 0,
+      "distinct_fingerprints": 3,
+      "fingerprint_examples": [
+        "ac-current|direct|#/(# + #i)",
+        "ac-current|direct|#/(# - #i)",
+        "ac-current|direct|#/(# - i)"
+      ]
+    },
+    {
+      "unit": "MTH-T02-C01-U01",
+      "key": "rotation-2d",
+      "level": 4,
+      "is_code": false,
+      "declared_forms_count": 3,
+      "declared_forms": [
+        "rot-i",
+        "rot--1",
+        "rot--i"
+      ],
+      "actual_forms_count": 3,
+      "form_proportions": {
+        "rot--i": 33.5,
+        "rot--1": 33.0,
+        "rot-i": 33.5
+      },
+      "g1_pass_rate": 100.0,
+      "g2_pass_rate": 100.0,
+      "g4_pass_rate": 100.0,
+      "avg_retries": 0.0,
+      "exhausted_12": 0,
+      "distinct_fingerprints": 85,
+      "fingerprint_examples": [
+        "rotation-2d|rot-i|(i)*(# + #i) + (# - i)",
+        "rotation-2d|rot--i|(-i)*(# - #i) + (# + i)",
+        "rotation-2d|rot-i|(i)*(-# - #i) + (-# + #i)"
+      ]
+    },
+    {
+      "unit": "MTH-T02-C01-U01",
+      "key": "parallel-impedance",
+      "level": 4,
+      "is_code": false,
+      "declared_forms_count": 1,
+      "declared_forms": [
+        "direct"
+      ],
+      "actual_forms_count": 1,
+      "form_proportions": {
+        "direct": 100.0
+      },
+      "g1_pass_rate": 100.0,
+      "g2_pass_rate": 100.0,
+      "g4_pass_rate": 100.0,
+      "avg_retries": 0.0,
+      "exhausted_12": 0,
+      "distinct_fingerprints": 14,
+      "fingerprint_examples": [
+        "parallel-impedance|direct|((# - #i)*(# - i))/((# - #i) + (# - i))",
+        "parallel-impedance|direct|((# + i)*(# + i))/((# + i) + (# + i))",
+        "parallel-impedance|direct|((# - #i)*(# + i))/((# - #i) + (# + i))"
+      ]
+    },
+    {
+      "unit": "PRG-T01-C01",
+      "key": "scope_hoisting_loop",
+      "level": 1,
+      "is_code": true,
+      "declared_forms_count": 2,
+      "declared_forms": [
+        "var-loop",
+        "let-loop"
+      ],
+      "actual_forms_count": 2,
+      "form_proportions": {
+        "let-loop": 49.0,
+        "var-loop": 51.0
+      },
+      "g1_pass_rate": 100.0,
+      "g2_pass_rate": 100.0,
+      "g4_pass_rate": 100.0,
+      "avg_retries": 0.0,
+      "exhausted_12": 0,
+      "distinct_fingerprints": 2,
+      "fingerprint_examples": [
+        "scope_hoisting_loop|let-loop|const funcs = []; for (let i = #; i < #; i++) { funcs.push(() => i); } console.log(funcs[#]()); console.log(funcs[#]());",
+        "scope_hoisting_loop|var-loop|const funcs = []; for (var i = #; i < #; i++) { funcs.push(() => i); } console.log(funcs[#]()); console.log(funcs[#]());"
+      ]
+    },
+    {
+      "unit": "PRG-T01-C01",
+      "key": "event_loop_concurrency",
+      "level": 2,
+      "is_code": true,
+      "declared_forms_count": 1,
+      "declared_forms": [
+        "direct"
+      ],
+      "actual_forms_count": 1,
+      "form_proportions": {
+        "direct": 100.0
+      },
+      "g1_pass_rate": 100.0,
+      "g2_pass_rate": 100.0,
+      "g4_pass_rate": 100.0,
+      "avg_retries": 0.0,
+      "exhausted_12": 0,
+      "distinct_fingerprints": 1,
+      "fingerprint_examples": [
+        "event_loop_concurrency|direct|// Task A: Synchronous log console.log('A'); // Task B: Macrotask (setTimeout #ms) setTimeout(() => { console.log('B'); }, #); // Task C: Microtask (Promise) Promise.resolve().then(() => { console.log('C'); }); // Task D: Microtask (queueMicrotask) queueMicrotask(() => { console.log('D'); }); // Task E: Synchronous log console.log('E');"
+      ]
+    },
+    {
+      "unit": "PRG-T01-C01",
+      "key": "promise_async_flow",
+      "level": 2,
+      "is_code": true,
+      "declared_forms_count": 2,
+      "declared_forms": [
+        "reject-catch",
+        "resolve-then"
+      ],
+      "actual_forms_count": 2,
+      "form_proportions": {
+        "reject-catch": 51.0,
+        "resolve-then": 49.0
+      },
+      "g1_pass_rate": 100.0,
+      "g2_pass_rate": 100.0,
+      "g4_pass_rate": 100.0,
+      "avg_retries": 0.0,
+      "exhausted_12": 0,
+      "distinct_fingerprints": 2,
+      "fingerprint_examples": [
+        "promise_async_flow|reject-catch|async function compute(n) { if (n < #) { throw new Error('below_threshold'); } return n * #; } compute(#) .catch(() => #) .then(val => { console.log(val + #); });",
+        "promise_async_flow|resolve-then|async function compute(n) { if (n < #) { throw new Error('below_threshold'); } return n * #; } compute(#) .catch(() => #) .then(val => { console.log(val + #); });"
+      ]
+    },
+    {
+      "unit": "PRG-T01-C01",
+      "key": "find_bug_this_binding",
+      "level": 3,
+      "is_code": true,
+      "declared_forms_count": 1,
+      "declared_forms": [
+        "direct"
+      ],
+      "actual_forms_count": 1,
+      "form_proportions": {
+        "direct": 100.0
+      },
+      "g1_pass_rate": 100.0,
+      "g2_pass_rate": 100.0,
+      "g4_pass_rate": 100.0,
+      "avg_retries": 0.0,
+      "exhausted_12": 0,
+      "distinct_fingerprints": 9,
+      "fingerprint_examples": [
+        "find_bug_this_binding|direct|class Service { constructor(name, role) { this.name = name; this.role = role; } getDetails() { return `${this.name} (${this.role})`; } } const s = new Service('Bob', 'Engineer'); const execute = s.getDetails; console.log(execute());",
+        "find_bug_this_binding|direct|class Service { constructor(name, role) { this.name = name; this.role = role; } getDetails() { return `${this.name} (${this.role})`; } } const s = new Service('Alice', 'Architect'); const execute = s.getDetails; console.log(execute());",
+        "find_bug_this_binding|direct|class Service { constructor(name, role) { this.name = name; this.role = role; } getDetails() { return `${this.name} (${this.role})`; } } const s = new Service('Charlie', 'Architect'); const execute = s.getDetails; console.log(execute());"
+      ]
+    },
+    {
+      "unit": "PRG-T01-C01",
+      "key": "prototype_chain_mutation",
+      "level": 4,
+      "is_code": true,
+      "declared_forms_count": 1,
+      "declared_forms": [
+        "direct"
+      ],
+      "actual_forms_count": 1,
+      "form_proportions": {
+        "direct": 100.0
+      },
+      "g1_pass_rate": 100.0,
+      "g2_pass_rate": 100.0,
+      "g4_pass_rate": 100.0,
+      "avg_retries": 0.0,
+      "exhausted_12": 0,
+      "distinct_fingerprints": 3,
+      "fingerprint_examples": [
+        "prototype_chain_mutation|direct|const proto = { config: #, tags: ['init'] }; const child = Object.create(proto); child.config = #; child.tags.push('itemA'); console.log(proto.config); console.log(proto.tags.length); console.log(child.config);",
+        "prototype_chain_mutation|direct|const proto = { config: #, tags: ['init'] }; const child = Object.create(proto); child.config = #; child.tags.push('itemB'); console.log(proto.config); console.log(proto.tags.length); console.log(child.config);",
+        "prototype_chain_mutation|direct|const proto = { config: #, tags: ['init'] }; const child = Object.create(proto); child.config = #; child.tags.push('itemC'); console.log(proto.config); console.log(proto.tags.length); console.log(child.config);"
+      ]
+    },
+    {
+      "unit": "PRG-T01-C03",
+      "key": "order_pricing_pipeline",
+      "level": 2,
+      "is_code": true,
+      "declared_forms_count": 1,
+      "declared_forms": [
+        "direct"
+      ],
+      "actual_forms_count": 1,
+      "form_proportions": {
+        "direct": 100.0
+      },
+      "g1_pass_rate": 100.0,
+      "g2_pass_rate": 100.0,
+      "g4_pass_rate": 100.0,
+      "avg_retries": 0.0,
+      "exhausted_12": 0,
+      "distinct_fingerprints": 1,
+      "fingerprint_examples": [
+        "order_pricing_pipeline|direct|calculateOrderTotal"
+      ]
+    },
+    {
+      "unit": "PRG-T01-C03",
+      "key": "debugging_async_cache",
+      "level": 3,
+      "is_code": true,
+      "declared_forms_count": 1,
+      "declared_forms": [
+        "direct"
+      ],
+      "actual_forms_count": 1,
+      "form_proportions": {
+        "direct": 100.0
+      },
+      "g1_pass_rate": 100.0,
+      "g2_pass_rate": 100.0,
+      "g4_pass_rate": 100.0,
+      "avg_retries": 0.0,
+      "exhausted_12": 0,
+      "distinct_fingerprints": 1,
+      "fingerprint_examples": [
+        "debugging_async_cache|direct|AsyncCache"
+      ]
+    },
+    {
+      "unit": "PRG-T01-C03",
+      "key": "refactor_legacy_subscription",
+      "level": 3,
+      "is_code": true,
+      "declared_forms_count": 1,
+      "declared_forms": [
+        "direct"
+      ],
+      "actual_forms_count": 1,
+      "form_proportions": {
+        "direct": 100.0
+      },
+      "g1_pass_rate": 100.0,
+      "g2_pass_rate": 100.0,
+      "g4_pass_rate": 100.0,
+      "avg_retries": 0.0,
+      "exhausted_12": 0,
+      "distinct_fingerprints": 1,
+      "fingerprint_examples": [
+        "refactor_legacy_subscription|direct|calculateMonthlyBill"
+      ]
+    },
+    {
+      "unit": "PRG-T01-C03",
+      "key": "project_rate_limiter",
+      "level": 4,
+      "is_code": true,
+      "declared_forms_count": 1,
+      "declared_forms": [
+        "direct"
+      ],
+      "actual_forms_count": 1,
+      "form_proportions": {
+        "direct": 100.0
+      },
+      "g1_pass_rate": 100.0,
+      "g2_pass_rate": 100.0,
+      "g4_pass_rate": 100.0,
+      "avg_retries": 0.0,
+      "exhausted_12": 0,
+      "distinct_fingerprints": 1,
+      "fingerprint_examples": [
+        "project_rate_limiter|direct|RateLimiter"
+      ]
+    },
+    {
+      "unit": "PRG-T01-C03",
+      "key": "kata_debounce",
+      "level": 2,
+      "is_code": true,
+      "declared_forms_count": 1,
+      "declared_forms": [
+        "direct"
+      ],
+      "actual_forms_count": 1,
+      "form_proportions": {
+        "direct": 100.0
+      },
+      "g1_pass_rate": 100.0,
+      "g2_pass_rate": 100.0,
+      "g4_pass_rate": 100.0,
+      "avg_retries": 0.0,
+      "exhausted_12": 0,
+      "distinct_fingerprints": 1,
+      "fingerprint_examples": [
+        "kata_debounce|direct|debounce"
+      ]
+    },
+    {
+      "unit": "PRG-T01-C03",
+      "key": "kata_groupby",
+      "level": 1,
+      "is_code": true,
+      "declared_forms_count": 1,
+      "declared_forms": [
+        "direct"
+      ],
+      "actual_forms_count": 1,
+      "form_proportions": {
+        "direct": 100.0
+      },
+      "g1_pass_rate": 100.0,
+      "g2_pass_rate": 100.0,
+      "g4_pass_rate": 100.0,
+      "avg_retries": 0.0,
+      "exhausted_12": 0,
+      "distinct_fingerprints": 1,
+      "fingerprint_examples": [
+        "kata_groupby|direct|groupBy"
+      ]
+    },
+    {
+      "unit": "PRG-T01-C03",
+      "key": "kata_memoize",
+      "level": 2,
+      "is_code": true,
+      "declared_forms_count": 1,
+      "declared_forms": [
+        "direct"
+      ],
+      "actual_forms_count": 1,
+      "form_proportions": {
+        "direct": 100.0
+      },
+      "g1_pass_rate": 100.0,
+      "g2_pass_rate": 100.0,
+      "g4_pass_rate": 100.0,
+      "avg_retries": 0.0,
+      "exhausted_12": 0,
+      "distinct_fingerprints": 1,
+      "fingerprint_examples": [
+        "kata_memoize|direct|memoize"
+      ]
+    }
+  ],
+  "examples": {
+    "MTH-T01-C12::pythagoras-hypotenuse": {
+      "direct": {
+        "unit": "MTH-T01-C12",
+        "key": "pythagoras-hypotenuse",
+        "level": 1,
+        "form": "direct",
+        "prompt": "Find the length of the hypotenuse $c$ of the right triangle with legs $a = 9$ and $b = 12$.",
+        "display": "c = \\sqrt{9^2 + 12^2}",
+        "plainText": "sqrt(9^2 + 12^2)",
+        "answer": "15",
+        "steps_count": 3,
+        "steps": [
+          "c = \\sqrt{a^2 + b^2} = \\sqrt{9^2 + 12^2}",
+          "= \\sqrt{81 + 144} = \\sqrt{225}",
+          "= 15"
+        ]
+      },
+      "reverse": {
+        "unit": "MTH-T01-C12",
+        "key": "pythagoras-hypotenuse",
+        "level": 1,
+        "form": "reverse",
+        "prompt": "Find the length of the unknown leg $a$ of a right triangle with hypotenuse $c = 17$ and leg $b = 15$.",
+        "display": "a = \\sqrt{17^2 - 15^2}",
+        "plainText": "sqrt(17^2 - 15^2)",
+        "answer": "8",
+        "steps_count": 3,
+        "steps": [
+          "a = \\sqrt{c^2 - b^2} = \\sqrt{17^2 - 15^2}",
+          "= \\sqrt{289 - 225} = \\sqrt{64}",
+          "= 8"
+        ]
+      },
+      "contextual": {
+        "unit": "MTH-T01-C12",
+        "key": "pythagoras-hypotenuse",
+        "level": 1,
+        "form": "contextual",
+        "prompt": "A guy wire stretches from the top of a $12$-meter vertical pole to a ground anchor $5$ meters from the base. Find the exact length $c$ of the wire.",
+        "display": "c = \\sqrt{12^2 + 5^2}",
+        "plainText": "sqrt(12^2 + 5^2) [ctx]",
+        "answer": "13",
+        "steps_count": 3,
+        "steps": [
+          "c = \\sqrt{a^2 + b^2} = \\sqrt{12^2 + 5^2}",
+          "= \\sqrt{144 + 25} = \\sqrt{169}",
+          "= 13"
+        ]
+      }
+    },
+    "MTH-T01-C12::trapezoid-area": {
+      "direct": {
+        "unit": "MTH-T01-C12",
+        "key": "trapezoid-area",
+        "level": 2,
+        "form": "direct",
+        "prompt": "Find the area $A$ of the trapezoid with parallel bases $b_1 = 10$, $b_2 = 14$, and height $h = 4$.",
+        "display": "A = \\frac{1}{2}(b_1 + b_2)h",
+        "plainText": "(1/2)*(10 + 14)*4",
+        "answer": "48",
+        "steps_count": 3,
+        "steps": [
+          "A = \\frac{1}{2}(b_1 + b_2)h = \\frac{1}{2}(10 + 14)(4)",
+          "= \\frac{1}{2}(24)(4)",
+          "= 48"
+        ]
+      },
+      "reverse": {
+        "unit": "MTH-T01-C12",
+        "key": "trapezoid-area",
+        "level": 2,
+        "form": "reverse",
+        "prompt": "A trapezoid with parallel bases $b_1 = 12$ and $b_2 = 18$ has an area of $A = 90$. Find its height $h$.",
+        "display": "h = \\frac{2A}{b_1 + b_2}",
+        "plainText": "(2 * 90) / (12 + 18)",
+        "answer": "6",
+        "steps_count": 3,
+        "steps": [
+          "h = \\frac{2A}{b_1 + b_2} = \\frac{2(90)}{12 + 18}",
+          "= \\frac{180}{30}",
+          "= 6"
+        ]
+      }
+    },
+    "MTH-T01-C12::circle-area-pi": {
+      "direct": {
+        "unit": "MTH-T01-C12",
+        "key": "circle-area-pi",
+        "level": 2,
+        "form": "direct",
+        "prompt": "Find the exact area $A$ of a circle with radius $r = 7$ (in terms of $\\pi$).",
+        "display": "A = \\pi r^2",
+        "plainText": "pi * 7^2",
+        "answer": "49\\pi",
+        "steps_count": 2,
+        "steps": [
+          "A = \\pi r^2 = \\pi(7)^2",
+          "= 49\\pi"
+        ]
+      },
+      "from-diameter": {
+        "unit": "MTH-T01-C12",
+        "key": "circle-area-pi",
+        "level": 2,
+        "form": "from-diameter",
+        "prompt": "Find the exact area $A$ of a circle with diameter $d = 18$ (in terms of $\\pi$).",
+        "display": "A = \\pi \\left(\\frac{d}{2}\\right)^2",
+        "plainText": "pi * (18/2)^2",
+        "answer": "81\\pi",
+        "steps_count": 2,
+        "steps": [
+          "r = \\frac{d}{2} = \\frac{18}{2} = 9",
+          "A = \\pi(9)^2 = 81\\pi"
+        ]
+      }
+    },
+    "MTH-T01-C12::cylinder-volume": {
+      "direct": {
+        "unit": "MTH-T01-C12",
+        "key": "cylinder-volume",
+        "level": 3,
+        "form": "direct",
+        "prompt": "Find the exact volume $V$ of a right circular cylinder with radius $r = 4$ and height $h = 6$ (in terms of $\\pi$).",
+        "display": "V = \\pi r^2 h",
+        "plainText": "pi * 4^2 * 6",
+        "answer": "96\\pi",
+        "steps_count": 3,
+        "steps": [
+          "V = \\pi r^2 h = \\pi(4)^2(6)",
+          "= \\pi(16)(6)",
+          "= 96\\pi"
+        ]
+      },
+      "from-diameter": {
+        "unit": "MTH-T01-C12",
+        "key": "cylinder-volume",
+        "level": 3,
+        "form": "from-diameter",
+        "prompt": "Find the exact volume $V$ of a right circular cylinder with diameter $d = 10$ and height $h = 10$ (in terms of $\\pi$).",
+        "display": "V = \\pi \\left(\\frac{d}{2}\\right)^2 h",
+        "plainText": "pi * (10/2)^2 * 10",
+        "answer": "250\\pi",
+        "steps_count": 3,
+        "steps": [
+          "r = \\frac{10}{2} = 5, \\quad V = \\pi(5)^2(10)",
+          "= \\pi(25)(10)",
+          "= 250\\pi"
+        ]
+      }
+    },
+    "MTH-T02-C01-U01::radical-standard-form": {
+      "direct": {
+        "unit": "MTH-T02-C01-U01",
+        "key": "radical-standard-form",
+        "level": 1,
+        "form": "direct",
+        "prompt": "Write the number in standard form $a + bi$ with the radical fully simplified.",
+        "display": "-8 + \\sqrt{-112}",
+        "plainText": "-8 + sqrt(-112)",
+        "answer": "-8 + 4\\sqrt{7}\\,i",
+        "steps_count": 3,
+        "steps": [
+          "-8 + \\sqrt{-112} = -8 + \\sqrt{-1}\\cdot\\sqrt{112}",
+          "= -8 + i\\sqrt{16\\cdot 7}",
+          "= -8 + 4\\sqrt{7}\\,i"
+        ]
+      }
+    },
+    "MTH-T02-C01-U01::add-subtract": {
+      "addition": {
+        "unit": "MTH-T02-C01-U01",
+        "key": "add-subtract",
+        "level": 1,
+        "form": "addition",
+        "prompt": "Simplify and write the result in standard form $a + bi$.",
+        "display": "(9 - 8i) + (-6 - 9i)",
+        "plainText": "(9 - 8i) + (-6 - 9i)",
+        "answer": "3 - 17i",
+        "steps_count": 3,
+        "steps": [
+          "(9 - 8i) + (-6 - 9i) = 9 - 8i - 6 - 9i",
+          "= (9 - 6) + (-8 - 9)i",
+          "= 3 - 17i"
+        ]
+      },
+      "subtraction": {
+        "unit": "MTH-T02-C01-U01",
+        "key": "add-subtract",
+        "level": 1,
+        "form": "subtraction",
+        "prompt": "Simplify and write the result in standard form $a + bi$.",
+        "display": "(3 - 4i) - (-1 - 8i)",
+        "plainText": "(3 - 4i) - (-1 - 8i)",
+        "answer": "4 + 4i",
+        "steps_count": 3,
+        "steps": [
+          "(3 - 4i) - (-1 - 8i) = 3 - 4i + 1 + 8i",
+          "= (3 + 1) + (-4 + 8)i",
+          "= 4 + 4i"
+        ]
+      }
+    },
+    "MTH-T02-C01-U01::power-of-i": {
+      "rem-2": {
+        "unit": "MTH-T02-C01-U01",
+        "key": "power-of-i",
+        "level": 1,
+        "form": "rem-2",
+        "prompt": "Simplify the power of $i$.",
+        "display": "i^{170}",
+        "plainText": "i^170",
+        "answer": "-1",
+        "steps_count": 3,
+        "steps": [
+          "i^{170} = i^{4\\cdot 42 + 2} = (i^4)^{42}\\cdot i^{2}",
+          "= 1^{42}\\cdot i^{2}",
+          "= -1"
+        ]
+      },
+      "rem-3": {
+        "unit": "MTH-T02-C01-U01",
+        "key": "power-of-i",
+        "level": 1,
+        "form": "rem-3",
+        "prompt": "Simplify the power of $i$.",
+        "display": "i^{183}",
+        "plainText": "i^183",
+        "answer": "-i",
+        "steps_count": 3,
+        "steps": [
+          "i^{183} = i^{4\\cdot 45 + 3} = (i^4)^{45}\\cdot i^{3}",
+          "= 1^{45}\\cdot i^{3}",
+          "= -i"
+        ]
+      },
+      "rem-0": {
+        "unit": "MTH-T02-C01-U01",
+        "key": "power-of-i",
+        "level": 1,
+        "form": "rem-0",
+        "prompt": "Simplify the power of $i$.",
+        "display": "i^{140}",
+        "plainText": "i^140",
+        "answer": "1",
+        "steps_count": 3,
+        "steps": [
+          "i^{140} = i^{4\\cdot 35 + 0} = (i^4)^{35}\\cdot i^{0}",
+          "= 1^{35}\\cdot i^{0}",
+          "= 1"
+        ]
+      },
+      "rem-1": {
+        "unit": "MTH-T02-C01-U01",
+        "key": "power-of-i",
+        "level": 1,
+        "form": "rem-1",
+        "prompt": "Simplify the power of $i$.",
+        "display": "i^{157}",
+        "plainText": "i^157",
+        "answer": "i",
+        "steps_count": 3,
+        "steps": [
+          "i^{157} = i^{4\\cdot 39 + 1} = (i^4)^{39}\\cdot i^{1}",
+          "= 1^{39}\\cdot i^{1}",
+          "= i"
+        ]
+      }
+    },
+    "MTH-T02-C01-U01::multiply": {
+      "direct": {
+        "unit": "MTH-T02-C01-U01",
+        "key": "multiply",
+        "level": 2,
+        "form": "direct",
+        "prompt": "Multiply and write the product in standard form $a + bi$.",
+        "display": "(2 + 7i)(5 - 3i)",
+        "plainText": "(2 + 7i)*(5 - 3i)",
+        "answer": "31 + 29i",
+        "steps_count": 3,
+        "steps": [
+          "(2 + 7i)(5 - 3i) = 10 - 6i + 35i - 21i^2",
+          "= 10 + 29i - 21(-1)",
+          "= 31 + 29i"
+        ]
+      }
+    },
+    "MTH-T02-C01-U01::divide-conjugate": {
+      "direct": {
+        "unit": "MTH-T02-C01-U01",
+        "key": "divide-conjugate",
+        "level": 2,
+        "form": "direct",
+        "prompt": "Divide and write the quotient in standard form $a + bi$.",
+        "display": "\\frac{-6 - 9i}{4 - i}",
+        "plainText": "(-6 - 9i)/(4 - i)",
+        "answer": "-\\frac{15}{17} - \\frac{42}{17}i",
+        "steps_count": 4,
+        "steps": [
+          "\\frac{-6 - 9i}{4 - i} = \\frac{(-6 - 9i)(4 + i)}{(4 - i)(4 + i)}",
+          "= \\frac{-24 - 6i - 36i - 9i^2}{4^2 + (-1)^2}",
+          "= \\frac{-15 - 42i}{17}",
+          "= -\\frac{15}{17} - \\frac{42}{17}i"
+        ]
+      }
+    },
+    "MTH-T02-C01-U01::square-binomial": {
+      "direct": {
+        "unit": "MTH-T02-C01-U01",
+        "key": "square-binomial",
+        "level": 2,
+        "form": "direct",
+        "prompt": "Expand and write the result in standard form $a + bi$.",
+        "display": "(1 - 7i)^2",
+        "plainText": "(1 - 7i)^2",
+        "answer": "-48 - 14i",
+        "steps_count": 3,
+        "steps": [
+          "(1 - 7i)^2 = 1^2 + 2(1)(-7i) + (-7i)^2",
+          "= 1 - 14i + 49i^2",
+          "= -48 - 14i"
+        ]
+      }
+    },
+    "MTH-T02-C01-U01::evaluate-polynomial": {
+      "direct": {
+        "unit": "MTH-T02-C01-U01",
+        "key": "evaluate-polynomial",
+        "level": 2,
+        "form": "direct",
+        "prompt": "Let $f(x) = x^2 + 4x - 9$. Evaluate $f(-4 - 3i)$ and write the result in standard form $a + bi$.",
+        "display": "f(-4 - 3i) = (-4 - 3i)^2 + 4(-4 - 3i) - 9",
+        "plainText": "(-4 - 3i)^2 + (4)*(-4 - 3i) + (-9)",
+        "answer": "-18 + 12i",
+        "steps_count": 3,
+        "steps": [
+          "f(-4 - 3i) = (-4 - 3i)^2 + 4(-4 - 3i) - 9",
+          "= (7 + 24i) + (-16 - 12i) - 9",
+          "= -18 + 12i"
+        ]
+      }
+    },
+    "MTH-T02-C01-U01::principal-root-trap": {
+      "direct": {
+        "unit": "MTH-T02-C01-U01",
+        "key": "principal-root-trap",
+        "level": 3,
+        "form": "direct",
+        "prompt": "Simplify the product. Be careful with the rule $\\sqrt{x}\\cdot\\sqrt{y} = \\sqrt{xy}$.",
+        "display": "\\sqrt{-112}\\cdot\\sqrt{-28}",
+        "plainText": "sqrt(-112)*sqrt(-28)",
+        "answer": "-56",
+        "steps_count": 3,
+        "steps": [
+          "\\sqrt{-112}\\cdot\\sqrt{-28} = (4\\sqrt{7}\\,i)(2\\sqrt{7}\\,i)",
+          "= 8(\\sqrt{7})^2\\, i^2",
+          "= 56(-1) = -56"
+        ]
+      }
+    },
+    "MTH-T02-C01-U01::power-sum": {
+      "direct": {
+        "unit": "MTH-T02-C01-U01",
+        "key": "power-sum",
+        "level": 3,
+        "form": "direct",
+        "prompt": "Simplify and write the result in standard form $a + bi$.",
+        "display": "-i^{83} - 5i^{125} - 4i^{107}",
+        "plainText": "(-1)*i^83 + (-5)*i^125 + (-4)*i^107",
+        "answer": "0",
+        "steps_count": 3,
+        "steps": [
+          "-i^{83} - 5i^{125} - 4i^{107} = -i^{3} - 5i^{1} - 4i^{3}",
+          "= -1(-i) - 5(i) - 4(-i)",
+          "= 0"
+        ]
+      }
+    },
+    "MTH-T02-C01-U01::find-the-flaw": {
+      "flaw-line-3": {
+        "unit": "MTH-T02-C01-U01",
+        "key": "find-the-flaw",
+        "level": 3,
+        "form": "flaw-line-3",
+        "prompt": "A student multiplied two complex numbers as shown. Which line contains the FIRST error?",
+        "display": "\\begin{aligned}&\\text{Line 1: }\\; (3 + 6i)(-2 - 6i) = -6 - 18i - 12i - 36i^2 \\\\ &\\text{Line 2: }\\; = -6 - 30i - 36(-1) \\\\ &\\text{Line 3: }\\; = -42 - 30i\\end{aligned}",
+        "plainText": "(3 + 6i)*(-2 - 6i)",
+        "answer": "\\text{Line 3}",
+        "steps_count": 3,
+        "steps": [
+          "(3 + 6i)(-2 - 6i) = -6 - 18i - 12i - 36i^2",
+          "= -6 - 30i - 36(-1)",
+          "= 30 - 30i"
+        ]
+      },
+      "flaw-line-2": {
+        "unit": "MTH-T02-C01-U01",
+        "key": "find-the-flaw",
+        "level": 3,
+        "form": "flaw-line-2",
+        "prompt": "A student multiplied two complex numbers as shown. Which line contains the FIRST error?",
+        "display": "\\begin{aligned}&\\text{Line 1: }\\; (-1 - 2i)(5 + 6i) = -5 - 6i - 10i - 12i^2 \\\\ &\\text{Line 2: }\\; = -5 - 16i - 12(1) \\\\ &\\text{Line 3: }\\; = -17 - 16i\\end{aligned}",
+        "plainText": "(-1 - 2i)*(5 + 6i)",
+        "answer": "\\text{Line 2}",
+        "steps_count": 3,
+        "steps": [
+          "(-1 - 2i)(5 + 6i) = -5 - 6i - 10i - 12i^2",
+          "= -5 - 16i - 12(-1)",
+          "= 7 - 16i"
+        ]
+      },
+      "flaw-line-1": {
+        "unit": "MTH-T02-C01-U01",
+        "key": "find-the-flaw",
+        "level": 3,
+        "form": "flaw-line-1",
+        "prompt": "A student multiplied two complex numbers as shown. Which line contains the FIRST error?",
+        "display": "\\begin{aligned}&\\text{Line 1: }\\; (-3 - 6i)(6 + i) = -18 - 3i + 36i - 6i^2 \\\\ &\\text{Line 2: }\\; = -18 + 33i - 6(-1) \\\\ &\\text{Line 3: }\\; = -12 + 33i\\end{aligned}",
+        "plainText": "(-3 - 6i)*(6 + i)",
+        "answer": "\\text{Line 1}",
+        "steps_count": 3,
+        "steps": [
+          "(-3 - 6i)(6 + i) = -18 - 3i - 36i - 6i^2",
+          "= -18 - 39i - 6(-1)",
+          "= -12 - 39i"
+        ]
+      }
+    },
+    "MTH-T02-C01-U01::ac-current": {
+      "direct": {
+        "unit": "MTH-T02-C01-U01",
+        "key": "ac-current",
+        "level": 4,
+        "form": "direct",
+        "prompt": "In an AC circuit the voltage phasor is $V = 30$ volts and the impedance is $Z = 1 - 3i$ ohms. Using Ohm's law $I = \\dfrac{V}{Z}$, find the current phasor $I$ in standard form $a + bi$ (amperes).",
+        "display": "I = \\frac{30}{1 - 3i}",
+        "plainText": "30/(1 - 3i)",
+        "answer": "3 + 9i",
+        "steps_count": 4,
+        "steps": [
+          "I = \\frac{V}{Z} = \\frac{30}{1 - 3i}",
+          "= \\frac{30(1 + 3i)}{(1 - 3i)(1 + 3i)}",
+          "= \\frac{30 + 90i}{1^2 + (-3)^2}",
+          "= 3 + 9i"
+        ]
+      }
+    },
+    "MTH-T02-C01-U01::rotation-2d": {
+      "rot--i": {
+        "unit": "MTH-T02-C01-U01",
+        "key": "rotation-2d",
+        "level": 4,
+        "form": "rot--i",
+        "prompt": "In a 2D game engine, points are stored as complex numbers $z = x + yi$. Multiplying by $-i$ rotates a point $90^\\circ clockwise$ about the origin. The point $(9, -8)$ is rotated $90^\\circ clockwise$ and then translated by $w = 5 - 5i$. Find the new point $(x', y')$.",
+        "display": "z' = -i(9 - 8i) + (5 - 5i)",
+        "plainText": "(-i)*(9 - 8i) + (5 - 5i)",
+        "answer": "(-3, -14)",
+        "steps_count": 3,
+        "steps": [
+          "z = 9 - 8i",
+          "-i(9 - 8i) = -9i + 8i^2 = -8 - 9i",
+          "z' = (-8 - 9i) + (5 - 5i) = -3 - 14i"
+        ]
+      },
+      "rot--1": {
+        "unit": "MTH-T02-C01-U01",
+        "key": "rotation-2d",
+        "level": 4,
+        "form": "rot--1",
+        "prompt": "In a 2D game engine, points are stored as complex numbers $z = x + yi$. Multiplying by $-1$ rotates a point $180^\\circ$ about the origin. The point $(4, 2)$ is rotated $180^\\circ$ and then translated by $w = -2 + 5i$. Find the new point $(x', y')$.",
+        "display": "z' = -1 \\cdot (4 + 2i) + (-2 + 5i)",
+        "plainText": "(-1)*(4 + 2i) + (-2 + 5i)",
+        "answer": "(-6, 3)",
+        "steps_count": 3,
+        "steps": [
+          "z = 4 + 2i",
+          "-1\\cdot(4 + 2i) = -4 - 2i",
+          "z' = (-4 - 2i) + (-2 + 5i) = -6 + 3i"
+        ]
+      },
+      "rot-i": {
+        "unit": "MTH-T02-C01-U01",
+        "key": "rotation-2d",
+        "level": 4,
+        "form": "rot-i",
+        "prompt": "In a 2D game engine, points are stored as complex numbers $z = x + yi$. Multiplying by $i$ rotates a point $90^\\circ counterclockwise$ about the origin. The point $(-3, -9)$ is rotated $90^\\circ counterclockwise$ and then translated by $w = 6 + i$. Find the new point $(x', y')$.",
+        "display": "z' = i(-3 - 9i) + (6 + i)",
+        "plainText": "(i)*(-3 - 9i) + (6 + i)",
+        "answer": "(15, -2)",
+        "steps_count": 3,
+        "steps": [
+          "z = -3 - 9i",
+          "i(-3 - 9i) = -3i - 9i^2 = 9 - 3i",
+          "z' = (9 - 3i) + (6 + i) = 15 - 2i"
+        ]
+      }
+    },
+    "MTH-T02-C01-U01::parallel-impedance": {
+      "direct": {
+        "unit": "MTH-T02-C01-U01",
+        "key": "parallel-impedance",
+        "level": 4,
+        "form": "direct",
+        "prompt": "Two branches with impedances $Z_1 = 5 + 6i$ ohms and $Z_2 = 3 - 6i$ ohms are connected in parallel. Find the equivalent impedance $Z_{eq} = \\dfrac{Z_1 Z_2}{Z_1 + Z_2}$ in standard form $a + bi$.",
+        "display": "Z_{eq} = \\frac{(5 + 6i)(3 - 6i)}{(5 + 6i) + (3 - 6i)}",
+        "plainText": "((5 + 6i)*(3 - 6i))/((5 + 6i) + (3 - 6i))",
+        "answer": "\\frac{51}{8} - \\frac{3}{2}i",
+        "steps_count": 3,
+        "steps": [
+          "Z_1 Z_2 = (5 + 6i)(3 - 6i) = 51 - 12i",
+          "Z_1 + Z_2 = 8",
+          "Z_{eq} = \\frac{51 - 12i}{8} = \\frac{51}{8} - \\frac{3}{2}i"
+        ]
+      }
+    },
+    "PRG-T01-C01::scope_hoisting_loop": {
+      "let-loop": {
+        "unit": "PRG-T01-C01",
+        "key": "scope_hoisting_loop",
+        "level": 1,
+        "form": "let-loop",
+        "prompt": "Predict the exact terminal output when the following JavaScript snippet executes. Note the variable declaration used in the loop header.",
+        "display": "",
+        "plainText": "",
+        "answer": "0, 2",
+        "steps_count": 2,
+        "steps": [
+          "\\text{Binding Strategy: } let",
+          "\\text{Output: } [0, 2]"
+        ]
+      },
+      "var-loop": {
+        "unit": "PRG-T01-C01",
+        "key": "scope_hoisting_loop",
+        "level": 1,
+        "form": "var-loop",
+        "prompt": "Predict the exact terminal output when the following JavaScript snippet executes. Note the variable declaration used in the loop header.",
+        "display": "",
+        "plainText": "",
+        "answer": "3, 3",
+        "steps_count": 2,
+        "steps": [
+          "\\text{Binding Strategy: } var",
+          "\\text{Output: } [3, 3]"
+        ]
+      }
+    },
+    "PRG-T01-C01::event_loop_concurrency": {
+      "direct": {
+        "unit": "PRG-T01-C01",
+        "key": "event_loop_concurrency",
+        "level": 2,
+        "form": "direct",
+        "prompt": "Trace the execution of Tasks [A, B, C, D, E] through the Call Stack, Microtask Queue, and Task Queue. Predict the exact letter sequence printed to the console.",
+        "display": "",
+        "plainText": "",
+        "answer": "A, E, C, D, B",
+        "steps_count": 3,
+        "steps": [
+          "\\text{Call Stack (Synchronous): A, E}",
+          "\\text{Microtask Queue: C, D}",
+          "\\text{Task Queue (Macrotask): B}"
+        ]
+      }
+    },
+    "PRG-T01-C01::promise_async_flow": {
+      "reject-catch": {
+        "unit": "PRG-T01-C01",
+        "key": "promise_async_flow",
+        "level": 2,
+        "form": "reject-catch",
+        "prompt": "Analyze the asynchronous execution flow below. Predict the single integer printed to the terminal.",
+        "display": "",
+        "plainText": "",
+        "answer": "110",
+        "steps_count": 2,
+        "steps": [
+          "\\text{Initial Call: } \\text{compute}(25)",
+          "\\text{Chain Resolution: } \\text{Output} = 110"
+        ]
+      },
+      "resolve-then": {
+        "unit": "PRG-T01-C01",
+        "key": "promise_async_flow",
+        "level": 2,
+        "form": "resolve-then",
+        "prompt": "Analyze the asynchronous execution flow below. Predict the single integer printed to the terminal.",
+        "display": "",
+        "plainText": "",
+        "answer": "76",
+        "steps_count": 2,
+        "steps": [
+          "\\text{Initial Call: } \\text{compute}(25)",
+          "\\text{Chain Resolution: } \\text{Output} = 76"
+        ]
+      }
+    },
+    "PRG-T01-C01::find_bug_this_binding": {
+      "direct": {
+        "unit": "PRG-T01-C01",
+        "key": "find_bug_this_binding",
+        "level": 3,
+        "form": "direct",
+        "prompt": "The following JavaScript code snippet throws a TypeError: Cannot read properties of undefined (reading 'name') when executed in strict mode. Identify the line number where the reference is extracted without its receiver context.",
+        "display": "",
+        "plainText": "",
+        "answer": "Line 11",
+        "steps_count": 3,
+        "steps": [
+          "\\text{Root Cause at Line } 11",
+          "\\text{{Invocation at Line 12}}",
+          "\\text{{Remediation}}"
+        ]
+      }
+    },
+    "PRG-T01-C01::prototype_chain_mutation": {
+      "direct": {
+        "unit": "PRG-T01-C01",
+        "key": "prototype_chain_mutation",
+        "level": 4,
+        "form": "direct",
+        "prompt": "Analyze the prototype relationship created via Object.create. Predict the three outputs printed to the console in order.",
+        "display": "",
+        "plainText": "",
+        "answer": "50, 2, 200",
+        "steps_count": 3,
+        "steps": [
+          "\\text{Property Assignment: } \\text{child.config} = 200",
+          "\\text{Array Mutation: } \\text{child.tags.push}('itemA')",
+          "\\text{Own Property Read: } \\text{child.config} = 200"
+        ]
+      }
+    },
+    "PRG-T01-C03::order_pricing_pipeline": {
+      "direct": {
+        "unit": "PRG-T01-C03",
+        "key": "order_pricing_pipeline",
+        "level": 2,
+        "form": "direct",
+        "prompt": "Implement `calculateOrderTotal(order)` for an e-commerce platform.\n\n**Validation Invariants:**\n- `order.items` must be a non-empty array.\n- Each item must have `price >= 0` and integer `quantity > 0`.\n- Throw `RangeError` if validation fails or items is empty.\n\n**Discount & Coupon Rules:**\n- `PERCENT10`: 10% discount on subtotal, capped at 20 USD max.\n- `FIXED15`: 15 USD discount if subtotal >= 50 USD, else 0 USD.\n- `FREESHIP`: Free shipping voucher.\n\n**Shipping Policy:**\n- Standard shipping is 8 USD.\n- Free shipping if post-discount subtotal >= 100 USD, or `isVip` is `true`, or coupon is `FREESHIP`.\n\n**Taxation & Output Contract:**\n- Apply 7% sales tax on taxable items (`item.taxable !== false`) on the discounted taxable amount.\n- Return price breakdown: `{ subtotal, discount, shipping, tax, total, currency: 'USD' }` (rounded to 2 decimals).",
+        "display": "",
+        "plainText": "",
+        "answer": "calculateOrderTotal(order)",
+        "steps_count": 2,
+        "steps": [
+          "\\text{Input Validation: } \\text{if (!order || !order.items.length) throw RangeError}",
+          "\\text{Tax Base: } \\text{taxableDiscounted = taxableSubtotal - (discount \\times taxRatio)}"
+        ]
+      }
+    },
+    "PRG-T01-C03::debugging_async_cache": {
+      "direct": {
+        "unit": "PRG-T01-C03",
+        "key": "debugging_async_cache",
+        "level": 3,
+        "form": "direct",
+        "prompt": "Diagnose and fix two critical defects in `AsyncCache`:\n\n**1. Cache Stampede (Concurrency Bug):**\n- Simultaneous calls to `getOrFetch(key, fetcher)` fire redundant `fetcher` calls.\n- Deduplicate in-flight Promises using an `inFlight` Map so all concurrent requests share the single active Promise.\n- Ensure `inFlight` key is deleted in a `finally` block even if the fetch fails.\n\n**2. State Mutation Leak (Defensive Copying):**\n- Returning cached references directly allows external callers to mutate internal cache state.\n- Defensively clone cached results before returning to callers.",
+        "display": "",
+        "plainText": "",
+        "answer": "AsyncCache.prototype.getOrFetch",
+        "steps_count": 2,
+        "steps": [
+          "\\text{Promise Sharing: } \\text{if (this.inFlight.has(key)) return this.inFlight.get(key)}",
+          "\\text{Cleanup Invariant: } \\text{try \\{ ... \\} finally \\{ this.inFlight.delete(key); \\}}"
+        ]
+      }
+    },
+    "PRG-T01-C03::refactor_legacy_subscription": {
+      "direct": {
+        "unit": "PRG-T01-C03",
+        "key": "refactor_legacy_subscription",
+        "level": 3,
+        "form": "direct",
+        "prompt": "Refactor `calculateMonthlyBill(account)` to support new business requirements without breaking existing plans:\n\n**New Plan: 'family':**\n- Base price: 34.99 USD (includes 2 members).\n- Add-on members: +8.99 USD per extra member over 2, up to 6 members max.\n- Guard Invariant: If `account.members > 6`, throw `RangeError('Family plan allows max 6 members')`.\n\n**New Feature: Annual Commitment:**\n- If `account.annualCommitment` is `true`, apply a 15% discount on the plan subtotal before tax.\n\n**Refactoring Objective:**\n- Keep all legacy plans (`basic`, `pro`, `enterprise`) 100% green.\n- Decouple the tangled `switch`/`if-else` statement into clean strategy configuration dictionaries.",
+        "display": "",
+        "plainText": "",
+        "answer": "calculateMonthlyBill(account)",
+        "steps_count": 2,
+        "steps": [
+          "\\text{Strategy Pattern: } \\text{const PLAN_CONFIG = \\{ basic: \\{...\\}, family: \\{...\\} \\}}",
+          "\\text{Discount Invariant: } \\text{taxableSubtotal = planSubtotal - discount}"
+        ]
+      }
+    },
+    "PRG-T01-C03::project_rate_limiter": {
+      "direct": {
+        "unit": "PRG-T01-C03",
+        "key": "project_rate_limiter",
+        "level": 4,
+        "form": "direct",
+        "prompt": "Build an event-driven `RateLimiter` class implementing a sliding window algorithm extending `EventEmitter`.\n\n**Constructor:**\n- `new RateLimiter({ maxRequests = 5, windowMs = 1000 })`\n\n**Methods & Invariants:**\n- `consume(key)`: Allows up to `maxRequests` within `windowMs`.\n- Returns `{ allowed: true, remaining: number, resetMs: number }`.\n- On limit breach: emit `'blocked'` event with `(key, resetMs)` and return `{ allowed: false, remaining: 0, resetMs }`.\n- `reset(key)`: Clears recorded history for the specified key.",
+        "display": "",
+        "plainText": "",
+        "answer": "RateLimiter subsystem",
+        "steps_count": 2,
+        "steps": [
+          "\\text{Sliding Window: } \\text{timestamps.filter(t => now - t < this.windowMs)}",
+          "\\text{Event Dispatch: } \\text{this.emit('blocked', key, resetMs)}"
+        ]
+      }
+    },
+    "PRG-T01-C03::kata_debounce": {
+      "direct": {
+        "unit": "PRG-T01-C03",
+        "key": "kata_debounce",
+        "level": 2,
+        "form": "direct",
+        "prompt": "Implement a production-grade `debounce(fn, delay)` utility in JavaScript.\n\n**Behavioral Requirements:**\n- Delays executing `fn` until `delay` milliseconds have elapsed since the last invocation.\n- Repeated calls within the delay window must reset the timer and postpone execution.\n- Must preserve the invocation `this` context and forward all received arguments.\n- Supports `0ms` delay as a macrotask deferral.",
+        "display": "",
+        "plainText": "",
+        "answer": "debounce(fn, delay)",
+        "steps_count": 2,
+        "steps": [
+          "\\text{Closure Scope: } \\text{let timer = null;}",
+          "\\text{Timer Reset: } \\text{clearTimeout(timer); timer = setTimeout(...);}"
+        ]
+      }
+    },
+    "PRG-T01-C03::kata_groupby": {
+      "direct": {
+        "unit": "PRG-T01-C03",
+        "key": "kata_groupby",
+        "level": 1,
+        "form": "direct",
+        "prompt": "Implement a `groupBy(collection, iteratee)` utility in JavaScript.\n\n**Behavioral Requirements:**\n- Splits `collection` into sets grouped by the result of running each value through `iteratee`.\n- `iteratee` can be either a function (e.g. `Math.floor`) or a string property name (e.g. `'type'`).\n- Return an empty object `{}` if `collection` is `null`, `undefined`, or an empty array.",
+        "display": "",
+        "plainText": "",
+        "answer": "groupBy(collection, iteratee)",
+        "steps_count": 2,
+        "steps": [
+          "\\text{Guard Clause: } \\text{if (!collection || !Array.isArray(collection)) return \\{\\};}",
+          "\\text{Iteratee Normalization: } \\text{typeof iteratee === 'function' ? iteratee : item => item[iteratee]}"
+        ]
+      }
+    },
+    "PRG-T01-C03::kata_memoize": {
+      "direct": {
+        "unit": "PRG-T01-C03",
+        "key": "kata_memoize",
+        "level": 2,
+        "form": "direct",
+        "prompt": "Implement `memoize(fn, resolver)` in JavaScript.\n\n**Behavioral Requirements:**\n- Returns a memoized function caching the result of calling `fn`.\n- If `resolver` is provided, use it to compute the cache key; otherwise default to `args[0]`.\n- Correctly cache falsy return values (`0`, `false`, `null`, `''`) without re-evaluating.\n- Expose the underlying cache `Map` on `memoized.cache`.",
+        "display": "",
+        "plainText": "",
+        "answer": "memoize(fn, resolver)",
+        "steps_count": 2,
+        "steps": [
+          "\\text{Cache Data Structure: } \\text{const cache = new Map()}",
+          "\\text{Cache Key Resolution: } \\text{typeof resolver === 'function' ? resolver(...) : args[0]}"
+        ]
+      }
+    }
+  },
+  "n_seeds": 200
+}
