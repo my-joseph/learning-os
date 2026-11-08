@@ -72,7 +72,7 @@ def _expand_template_pairs(templates):
                     "form": fname,
                     "level": finfo.get("level", t.get("level", 1)),
                     "skill": finfo.get("skill"),
-                    "trapTag": t.get("trapTag"),
+                    "trapTag": finfo.get("trapTag", t.get("trapTag")),
                     "verificationLevel": t.get("verificationLevel", "machine-verified"),
                 })
         elif isinstance(forms, (list, tuple)):
@@ -115,7 +115,7 @@ def _round_robin_pick(pool, k, rng):
     return picks[:k]
 
 
-def _pick_template_schedule(templates, count, difficulty, focus_tags, rng, template_filter=None):
+def _pick_template_schedule(templates, count, difficulty, focus_tags, rng, template_filter=None, unit_code=None):
     all_pairs = _expand_template_pairs(templates)
 
     if template_filter:
@@ -140,7 +140,13 @@ def _pick_template_schedule(templates, count, difficulty, focus_tags, rng, templ
         lv = int(difficulty)
         pool = [p for p in all_pairs if p["level"] == lv]
         if not pool:
-            pool = list(all_pairs)
+            avail = sorted(set(p.get("level", 1) for p in all_pairs))
+            unit_name = unit_code or "UNKNOWN"
+            raise ValueError(
+                f"Unit '{unit_name}' has no templates supporting difficulty level L{lv}. "
+                f"Available levels are: {avail}. "
+                f"Cannot silently fallback to lower difficulty levels."
+            )
         return _round_robin_pick(pool, count, rng)
 
     # Mixed Exam Mode: round-robin on (template, form) within a single set
@@ -189,7 +195,7 @@ def generate_drill_set(
 
     def _build_attempt(attempt_seed: int):
         rng = random.Random(attempt_seed)
-        schedule = _pick_template_schedule(mod.TEMPLATES, count, difficulty, focus_tags, rng, template_filter=templates)
+        schedule = _pick_template_schedule(mod.TEMPLATES, count, difficulty, focus_tags, rng, template_filter=templates, unit_code=unit_code)
         unique_tpls = {s["key"]: s["template"] for s in schedule}.values()
         available_forms_count = sum(len(t.get("forms") or ["direct"]) for t in unique_tpls)
 
@@ -253,8 +259,14 @@ def generate_drill_set(
                 })
             prob["referenceBadges"] = ref_badges
 
-            # Remove internal verification fields while keeping form, fingerprint, qualityGates
-            prob.pop("verify", None)
+            # Remove internal verification fields while keeping form, fingerprint, qualityGates, trapValue, flaw, trapCode
+            v_dict = prob.pop("verify", None) or {}
+            if "trapValue" in v_dict and "trapValue" not in prob:
+                prob["trapValue"] = v_dict["trapValue"]
+            if "flaw" in v_dict and "flaw" not in prob:
+                prob["flaw"] = v_dict["flaw"]
+            if "trapCode" in v_dict and "trapCode" not in prob:
+                prob["trapCode"] = v_dict["trapCode"]
 
             # Per-problem attempt state
             prob["state"] = {
@@ -319,7 +331,8 @@ def generate_drill_set(
         studio_dir = os.path.join("practice-studio", data_root, unit_code)
         os.makedirs(studio_dir, exist_ok=True)
         studio_path = os.path.join(studio_dir, f"{drill_id}.json")
-        shutil.copyfile(file_path, studio_path)
+        if os.path.realpath(file_path) != os.path.realpath(studio_path):
+            shutil.copyfile(file_path, studio_path)
 
     print(f"[Verified & Saved] {file_path}")
     return drill_doc

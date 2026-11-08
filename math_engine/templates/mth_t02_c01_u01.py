@@ -189,7 +189,7 @@ def t_multiply(rng, form=None):
             "display": f"({cx(a, b)})({cx(c, d)})",
             "plainText": f"({cx_plain(a, b)})*({cx_plain(c, d)})",
             **complex_answer(A, B),
-            "checkpointHint": f"After FOIL, the $i^2$ term is ${terms([(bd, 'i^2')])}$, which equals ${num(-bd)}$.",
+            "checkpointHint": "Expand with FOIL and remember that $i^2 = -1$ changes the sign of the last term.",
             "commonTrapTag": "sign-slip",
             "steps": [
                 S(f"({cx(a, b)})({cx(c, d)}) = {terms([(ac, ''), (ad, 'i'), (bc, 'i'), (bd, 'i^2')])}",
@@ -297,7 +297,7 @@ def t_multiply(rng, form=None):
             "plainText": f"({num(k)}i)*({cx_plain(a, b)})",
             **complex_answer(ans_re, ans_im),
             "inputHint": "Enter complex number in standard form a + bi",
-            "checkpointHint": f"Remember that $i \\cdot i = i^2 = -1$, so $({num(k)}i)({num(b)}i) = {num(ans_re)}$.",
+            "checkpointHint": "Distribute the term across the parentheses, remembering that $i \\cdot i = i^2 = -1$.",
             "commonTrapTag": "sign-slip",
             "steps": steps,
             "verify": {"source": src, "trapValue": cx_plain(trap_re, ans_im)},
@@ -410,10 +410,11 @@ def t_divide(rng, form=None):
         src = f"({cx_sym(a, b)})/({d}*I)"
         num_expanded = terms([(-a * d, 'i'), (-b * d, 'i^2')])
         num_sub = terms([(b * d, ''), (-a * d, 'i')])
-        conj_denom = f"-{d}i" if d > 0 else f"{abs(d)}i"
+        d_str = "i" if d == 1 else ("-i" if d == -1 else f"{d}i")
+        conj_denom = "-i" if d == 1 else ("i" if d == -1 else (f"-{d}i" if d > 0 else f"{abs(d)}i"))
         denom_sq = d * d
         steps = [
-            S(f"\\frac{{{cx(a, b)}}}{{{num(d)}i}} = \\frac{{({cx(a, b)})({conj_denom})}}{{({num(d)}i)({conj_denom})}}",
+            S(f"\\frac{{{cx(a, b)}}}{{{d_str}}} = \\frac{{({cx(a, b)})({conj_denom})}}{{({d_str})({conj_denom})}}",
               f"Multiply numerator and denominator by the conjugate ${conj_denom}$.", src),
             S(f"= \\frac{{{num_expanded}}}{{{denom_sq}}} = \\frac{{{num_sub}}}{{{denom_sq}}}",
               "Substitute $i^2 = -1$ in numerator and denominator.", src),
@@ -426,8 +427,8 @@ def t_divide(rng, form=None):
             "level": 2,
             "verificationLevel": "machine-verified",
             "prompt": "Divide and write the quotient in standard form $a + bi$.",
-            "display": f"\\frac{{{cx(a, b)}}}{{{num(d)}i}}",
-            "plainText": f"({cx_plain(a, b)})/({num(d)}i)",
+            "display": f"\\frac{{{cx(a, b)}}}{{{d_str}}}",
+            "plainText": f"({cx_plain(a, b)})/({d_str})",
             **complex_answer(rA, rB),
             "inputHint": "Enter complex number in standard form a + bi (fractions allowed)",
             "checkpointHint": "Multiplying by $-i$ swaps real and imaginary parts: $1/i = -i$.",

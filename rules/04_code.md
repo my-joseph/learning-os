@@ -15,6 +15,16 @@ All code authoring, multi-file browsing, refactoring, and debugging must take pl
 - **Local IDE (VS Code / Cursor):** The primary execution cockpit. Developers write real TypeScript/JavaScript, run real-time tests via terminal (`npm test`), and submit results via `npm run submit`.
 - **Practice Studio (Web Dashboard):** The Mission Control & Telemetry Hub. Displays business scenarios, Acceptance Criteria, deep launcher links (`vscode://` / `cursor://`), live test execution reports, mistake categorization, and spaced retention tracking.
 
+### 1.1 Local Workspace Deep Linking Contract (Folder vs. Single-File Invariant)
+To maintain the 100% Local IDE Execution mandate without breaking IDE context, all launcher links between Practice Studio and the local IDE must obey this strict contract:
+- **Primary Workspace Launcher MUST target the Folder Directory (`vscodeFolderUrl` / `cursorFolderUrl`)**:  
+  Clicking "Open in VS Code" or "Open in Cursor" MUST open the entire workspace folder (`vscode://file/<abs_workspace_dir>`), NEVER an isolated single file (`vscode://file/<abs_file_path>`).  
+  *Why*: Opening an isolated file launches the IDE in "No Folder Opened" mode. The IDE fails to discover `package.json`, disables the NPM Scripts explorer, and defaults the integrated terminal to the user's home or root directory instead of the problem directory. Opening the workspace folder guarantees `package.json` scripts (`npm test`, `npm run test:q01`) and terminal paths work instantly.
+- **Secondary Jump-to-File Link (`vscodeUrl` / `cursorUrl`)**:  
+  An optional "Open File" button may exist to jump directly into the source file or a specific line, but it must never replace or overwrite the primary folder-level launcher action.
+- **Defensive Frontend Resolution**:  
+  If problem metadata omits `vscodeFolderUrl`, Practice Studio must compute the folder directory from `workspaceDir` or `workspaceFile` (by trimming filename), and must **never** fall back to opening an isolated file in place of the folder.
+
 ### 2. Dual-Engine Evaluation: Automated Tests vs. AI Architectural Review
 Programming cannot be evaluated solely by mechanical test scripts like mathematics:
 1. **Engine A — Automated Test Scripts (Functional Correctness):**

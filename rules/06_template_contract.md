@@ -47,6 +47,16 @@ TEMPLATES = [
 ]
 ```
 
+### 1.3 กฎของโจทย์เขียนโค้ดและ Workspace Deep Links (Coding Kata Workspace Contract)
+สำหรับโจทย์ประเภทเขียนโค้ด (`codeType` เป็น `kata`, `implement`, `refactor` หรือมี `visibleTests`/`starterCode`):
+1. **การสร้าง Workspace บนดิสก์**: ต้องเรียก `code_engine.workspace.materialize_drill_workspace` เพื่อสร้างโครงสร้าง `drills/workspace/<DRILL_ID>/` ที่มี `package.json`, `README.md`, ซอร์สโค้ดเริ่มต้น และไฟล์เทสต์
+2. **Metadata Deep Links ระดับโฟลเดอร์ vs ไฟล์เดี่ยว**:
+   - **ระดับโฟลเดอร์ (Folder-Level)**: ต้องระบุ `workspaceDir` (Absolute Path), `vscodeFolderUrl` (`vscode://file/<abs_ws>`), และ `cursorFolderUrl` (`cursor://file/<abs_ws>`)
+   - **ระดับไฟล์ (File-Level)**: ต้องระบุ `workspaceFile` (Path ไฟล์), `vscodeUrl` (`vscode://file/<abs_src>`), และ `cursorUrl` (`cursor://file/<abs_src>`)
+3. **Invariants ห้ามละเมิด**:
+   - ปุ่มหลัก "Open in VS Code" / "Open in Cursor" ในหน้า Practice Studio **ต้องเปิดโฟลเดอร์ Workspace เสมอ** (`vscodeFolderUrl`) ห้ามชี้หรือ fallback เป็นไฟล์เดี่ยว เพื่อให้ VS Code ตรวจพบ `package.json`, แสดงแผง NPM Scripts, และเปิด Terminal ถูก Directory ทันที
+   - การเปิดไฟล์เดี่ยว (`vscodeUrl`) อนุญาตให้เป็นปุ่มรอง "Open File" เท่านั้น
+
 ---
 
 ## 2. นิยามระดับ L1–L4, Tier และ `g2_profile` (Levels vs Tiers)
@@ -63,6 +73,11 @@ TEMPLATES = [
 | **L2** | **Reverse Solve / Multi-step Synthesis** | แก้สมการย้อนหาพารามิเตอร์ หรือคำนวณแปลงค่าหลายขั้น | 2–4 steps |
 | **L3** | **Trap, Flaw Diagnosis & Edge Cases** | วิเคราะห์จุดผิดพลาด (Find-the-Flaw) หรือกับดักเชิงแนวคิด | 2–5 steps (ต้องมี trap/flaw ที่ตรวจได้จริง) |
 | **L4** | **Applied / Multi-concept Constraint** | นำไปประยุกต์ข้ามโดเมน หรือมีเงื่อนไขบังคับหลายด้าน | 2–6 steps (ต้องมี >= 2 concepts หรือเงื่อนไขเสริม) |
+
+### 2.1 กฎห้าม Silent Fallback ระดับความยาก (Strict Difficulty Level Invariant)
+เมื่อผู้เรียนหรือระบบสั่งเจเนอเรตโจทย์โดยระบุระดับความยากแบบเจาะจง (`difficulty in ('1', '2', '3', '4')`):
+1. **ห้ามมี Silent Fallback เด็ดขาด**: หากยูนิตนั้นยังไม่มีเทมเพลตที่รองรับระดับความยากดังกล่าว ตัว Generator (`math_engine.generate` และ `code_engine.generate`) **ต้อง raise `ValueError` แสดงรายชื่อระดับความยากที่ยูนิตนั้นมีจริงทันที** ห้ามแอบ fallback ไปสุ่มหยิบโจทย์ระดับอื่นมาแทนโดยเด็ดขาด
+2. **ป้ายหัวไฟล์ต้องตรงกับโจทย์จริง**: ทุกข้อในชุดโจทย์ (`problems`) ต้องมี `prob["level"]` ตรงกับค่า `config.difficulty` ที่ระบุเสมอ ห้ามให้มีโจทย์เลเวลอื่นหลุดเข้าไปในชุดโจทย์ที่ระบุเลเวลเฉพาะ
 
 ---
 
