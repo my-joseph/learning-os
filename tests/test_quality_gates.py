@@ -37,9 +37,10 @@ class TestQualityGates(unittest.TestCase):
         cls._orig_notion_dry_run = os.environ.get("NOTION_DRY_RUN")
         os.environ["NOTION_DRY_RUN"] = "1"
         cls._tmp_dir = tempfile.TemporaryDirectory()
-        base_files = sorted([f for f in glob.glob("drills/data/**/*.json", recursive=True) if "MTH-CALC-DIFF" not in f])
+        fixture_root = "tests/fixtures/legacy_drills" if os.path.exists("tests/fixtures/legacy_drills") else "drills/data"
+        base_files = sorted([f for f in glob.glob(f"{fixture_root}/**/*.json", recursive=True) if "MTH-CALC-DIFF" not in f])
         for src_path in base_files:
-            rel = os.path.relpath(src_path, "drills/data")
+            rel = os.path.relpath(src_path, fixture_root)
             dst_path = os.path.join(cls._tmp_dir.name, rel)
             os.makedirs(os.path.dirname(dst_path), exist_ok=True)
             shutil.copyfile(src_path, dst_path)
@@ -349,9 +350,12 @@ class TestQualityGates(unittest.TestCase):
             problems = drill["problems"]
             self.assertEqual(len(problems), 20)
 
+            from math_engine.templates.mth_t01_c12 import TEMPLATES as C12_TEMPLATES
+            expected_cells = min(20, sum(len(t["forms"]) for t in C12_TEMPLATES))
             skill_cells = set((p["templateKey"], p["form"], p.get("commonTrapTag")) for p in problems)
-            # All 9 available (template, form, trapTag) combinations in MTH-T01-C12 must be present
-            self.assertEqual(len(skill_cells), 9)
+            # All available (template, form, trapTag) combinations in MTH-T01-C12 must be present
+            self.assertGreaterEqual(expected_cells, 9)
+            self.assertEqual(len(skill_cells), expected_cells)
 
             for p in problems:
                 self.assertIn("skill", p)
@@ -1380,6 +1384,75 @@ TEMPLATES = [
                     self.assertIn(p["templateKey"], allowed_keys)
                 has_focus = any(p.get("commonTrapTag") == "conjugate-denominator" for p in doc["problems"])
                 self.assertTrue(has_focus, "At least one problem must match focus tag conjugate-denominator")
+            finally:
+                if old_dry is not None:
+                    os.environ["NOTION_DRY_RUN"] = old_dry
+                else:
+                    os.environ.pop("NOTION_DRY_RUN", None)
+
+    def test_32_no_silent_fallback_on_unsupported_difficulty(self) -> None:
+        """Test 32: Generator strictly rejects unsupported difficulty levels rather than silently falling back."""
+        import tempfile
+        from math_engine.generate import generate_drill_set
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            old_dry = os.environ.get("NOTION_DRY_RUN")
+            old_pilot = os.environ.get("ENABLE_PILOT_DRILLS")
+            os.environ["NOTION_DRY_RUN"] = "1"
+            os.environ["ENABLE_PILOT_DRILLS"] = "1"
+            try:
+                # MTH-VECTORS currently supports L1, L2, L3 but NOT L4
+                with self.assertRaises(ValueError) as ctx:
+                    generate_drill_set(
+                        unit_code="MTH-VECTORS",
+                        count=3,
+                        difficulty="4",
+                        data_root=tmp_dir,
+                    )
+                self.assertIn("has no templates supporting difficulty level L4", str(ctx.exception))
+                self.assertIn("Cannot silently fallback", str(ctx.exception))
+            finally:
+                if old_dry is not None:
+                    os.environ["NOTION_DRY_RUN"] = old_dry
+                else:
+                    os.environ.pop("NOTION_DRY_RUN", None)
+                if old_pilot is not None:
+                    os.environ["ENABLE_PILOT_DRILLS"] = old_pilot
+                else:
+                    os.environ.pop("ENABLE_PILOT_DRILLS", None)
+
+    def test_33_mth_t01_c12_l3_and_l4_generation(self) -> None:
+        """Test 33: MTH-T01-C12 reliably generates genuine L3 and L4 problems meeting quality gates."""
+        import tempfile
+        from math_engine.generate import generate_drill_set
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            old_dry = os.environ.get("NOTION_DRY_RUN")
+            os.environ["NOTION_DRY_RUN"] = "1"
+            try:
+                # Generate Level 4
+                doc_l4 = generate_drill_set(
+                    unit_code="MTH-T01-C12",
+                    count=4,
+                    difficulty="4",
+                    seed=101,
+                    data_root=tmp_dir,
+                )
+                self.assertEqual(len(doc_l4["problems"]), 4)
+                for p in doc_l4["problems"]:
+                    self.assertEqual(p["level"], 4, f"Problem {p['id']} must be Level 4")
+
+                # Generate Level 3
+                doc_l3 = generate_drill_set(
+                    unit_code="MTH-T01-C12",
+                    count=4,
+                    difficulty="3",
+                    seed=202,
+                    data_root=tmp_dir,
+                )
+                self.assertEqual(len(doc_l3["problems"]), 4)
+                for p in doc_l3["problems"]:
+                    self.assertEqual(p["level"], 3, f"Problem {p['id']} must be Level 3")
             finally:
                 if old_dry is not None:
                     os.environ["NOTION_DRY_RUN"] = old_dry
