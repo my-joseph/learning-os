@@ -7,7 +7,7 @@
   "chapterCode": "MTH-T01-C12",
   "topicCode": "MTH-T01",
   "unitNotionUrl": "https://www.notion.so/4003818f8ba080cfbf95ef15001d8a52",
-  "createdAt": "2026-11-08 17:14:03",
+  "createdAt": "2026-11-08 21:07:55",
   "config": {
     "questionCount": 5,
     "difficulty": "4",
@@ -26,6 +26,12 @@
       "id": "formula-perimeter-area",
       "label": "Confused perimeter formula with area formula",
       "name": "Perimeter vs Area Confusion",
+      "autoFrom": []
+    },
+    {
+      "id": "formula-circumference-area-confusion",
+      "label": "Computed circumference 2*pi*r instead of area pi*r^2",
+      "name": "Circumference for Area Confusion",
       "autoFrom": []
     },
     {
@@ -48,6 +54,14 @@
       "id": "circle-diameter-radius",
       "label": "Used diameter instead of radius in formula",
       "name": "Diameter vs Radius Confusion",
+      "autoFrom": [
+        "off_by_factor"
+      ]
+    },
+    {
+      "id": "cylinder-diameter-as-radius-trap",
+      "label": "Used diameter directly as radius in cylinder volume formula: pi * d^2 * h",
+      "name": "Diameter as Radius in Volume Trap",
       "autoFrom": [
         "off_by_factor"
       ]
@@ -118,6 +132,214 @@
   ],
   "problems": [
     {
+      "form": "bottom-triangle",
+      "category": "Interleaved Synthesis",
+      "context": "Geometry: Trapezoid Lower Diagonal Triangle",
+      "references": [
+        "MTH-T01-C12-U03",
+        "MTH-T01-C12-U04"
+      ],
+      "prompt": "In an isosceles trapezoid $ABCD$, the parallel bases are $AB = 4$ and $CD = 18$, and the non-parallel legs are $AD = BC = 25$. Diagonals $AC$ and $BD$ intersect at point $E$. Find the exact area of lower triangle $CDE$.",
+      "display": "\\text{Trapezoid } ABCD:\\ AB = 4,\\ CD = 18,\\ AD = BC = 25 \\implies \\text{Area}(\\triangle CDE) = ?",
+      "plainText": "(1/2) * 18 * sqrt(25^2 - ((18 - 4)/2)^2) * (18/(4 + 18))",
+      "answerSpec": {
+        "type": "expression",
+        "value": "1944/11"
+      },
+      "answerDisplay": "\\frac{1944}{11}",
+      "answerPlain": "1944/11",
+      "inputHint": "Enter exact fraction or integer e.g. 35/4 or 42",
+      "checkpointHint": "Find trapezoid height $h$ via the Pythagorean theorem on the leg projection, then partition $h$ using similarity ratio $CD : (AB + CD)$.",
+      "commonTrapTag": "trapezoid-diagonal-bisect-trap",
+      "trapDerivation": "(18 * 24) / 4",
+      "steps": [
+        {
+          "latex": "x = \\frac{18 - 4}{2} = 7, \\quad h = \\sqrt{25^2 - 7^2} = 24",
+          "explain": "Symmetrical base offset gives a right triangle with hypotenuse 25 and base 7."
+        },
+        {
+          "latex": "\\triangle ABE \\sim \\triangle CDE \\implies \\frac{h_1}{h_2} = \\frac{4}{18} = \\frac{2}{9}",
+          "explain": "Since $AB \\parallel CD$, alternate interior angles make $\\triangle ABE \\sim \\triangle CDE$."
+        },
+        {
+          "latex": "h_2 = 24 \\times \\frac{9}{2 + 9} = 216/11",
+          "explain": "The lower triangle takes fraction 9/(2+9) of the total height 24."
+        },
+        {
+          "latex": "\\text{Area}(\\triangle CDE) = \\frac{1}{2} \\times 18 \\times 216/11 = 1944/11",
+          "explain": "Calculate area of triangle $CDE$: $\\frac{1}{2} \\times \\text{base} \\times h_2$."
+        }
+      ],
+      "level": 4,
+      "skill": "GEO-TRAPEZOID-HEIGHT",
+      "verificationLevel": "machine-verified",
+      "id": "Q01",
+      "templateKey": "trapezoid-similar-triangles",
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "trapezoid-similar-triangles|bottom-triangle|(#/#) * # * sqrt(#^# - ((# - #)/#)^#) * (#/(# + #))",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 4,
+          "hasTrapOrFlaw": true,
+          "skill": "GEO-TRAPEZOID-HEIGHT",
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "trapezoid-diagonal-bisect-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 15
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "trapezoid-similar-triangles|bottom-triangle|(#/#) * # * sqrt(#^# - ((# - #)/#)^#) * (#/(# + #))",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C12-U03",
+          "title": "Use Properties of Angles, Triangles, and the Pythagorean Theorem",
+          "notionUrl": "https://www.notion.so/4003818f8ba080459e0dd81747fad236"
+        },
+        {
+          "code": "MTH-T01-C12-U04",
+          "title": "Use Properties of Rectangles, Triangles, and Trapezoids",
+          "notionUrl": "https://www.notion.so/4003818f8ba080bb8205d0d4b4cd606f"
+        }
+      ],
+      "trapValue": "108",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "single-lune",
+      "category": "Interleaved Synthesis",
+      "context": "Geometry: Single Lune of Hippocrates",
+      "references": [
+        "MTH-T01-C12-U04",
+        "MTH-T01-C12-U05"
+      ],
+      "prompt": "A square of side length $s = 20$ is inscribed inside a circle. Four congruent semicircles are drawn externally on the four sides of the square as diameters, forming four congruent crescent-shaped Lunes of Hippocrates outside the circumscribed circle. Find the exact area of ONE such lune.",
+      "display": "\\text{Single Lune on square of side } s = 20 \\implies \\text{Area}(\\text{1 lune}) = ?",
+      "plainText": "(20^2) / 4",
+      "answerSpec": {
+        "type": "number",
+        "value": "100"
+      },
+      "answerDisplay": "100",
+      "answerPlain": "100",
+      "inputHint": "Enter the integer area of one lune",
+      "checkpointHint": "First find the total area of all four lunes by subtracting the circumscribed circle from the square plus four semicircles, then divide by 4 by symmetry.",
+      "commonTrapTag": "pi-retained-in-lunes-trap",
+      "trapDerivation": "400",
+      "steps": [
+        {
+          "latex": "A_{\\text{square}} = 20^2 = 400, \\quad A_{\\text{circle}} = \\pi(10\\sqrt{2})^2 = 200\\pi",
+          "explain": "Find the area of the inscribed square and circumscribed circle."
+        },
+        {
+          "latex": "A_{\\text{4 semicircles}} = 4 \\times \\left(\\frac{1}{2}\\pi (10)^2\\right) = 200\\pi",
+          "explain": "The four outer semicircles have total area $200\\pi$, matching the circumscribed circle."
+        },
+        {
+          "latex": "A_{\\text{1 lune}} = \\frac{A_{\\text{square}} + A_{\\text{4 semicircles}} - A_{\\text{circle}}}{4} = \\frac{400}{4} = 100",
+          "explain": "The $\\pi$ terms cancel out, leaving one-fourth of the square's area for each lune."
+        }
+      ],
+      "level": 4,
+      "skill": "GEO-CIRCLE-AREA-DIAMETER",
+      "verificationLevel": "machine-verified",
+      "id": "Q02",
+      "templateKey": "lunes-hippocrates",
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "lunes-hippocrates|single-lune|(#^#) / #",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "GEO-CIRCLE-AREA-DIAMETER",
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "pi-retained-in-lunes-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "lunes-hippocrates|single-lune|(#^#) / #",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C12-U04",
+          "title": "Use Properties of Rectangles, Triangles, and Trapezoids",
+          "notionUrl": "https://www.notion.so/4003818f8ba080bb8205d0d4b4cd606f"
+        },
+        {
+          "code": "MTH-T01-C12-U05",
+          "title": "Solve Geometry Applications: Circles and Irregular Figures",
+          "notionUrl": "https://www.notion.so/4003818f8ba080ce8853efc959517a90"
+        }
+      ],
+      "trapValue": "400",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
       "form": "direct",
       "category": "Interleaved Synthesis",
       "context": "Geometry: Circles & Lunes of Hippocrates",
@@ -137,6 +359,7 @@
       "inputHint": "Enter the integer area (pi cancels out!)",
       "checkpointHint": "Calculate the total area of the four semicircles plus the area of the square, then subtract the area of the circumscribed circle. Notice how the terms involving $\\pi$ cancel out.",
       "commonTrapTag": "pi-retained-in-lunes-trap",
+      "trapDerivation": "36 / 2",
       "steps": [
         {
           "latex": "A_{\\text{square}} = 6^2 = 36",
@@ -158,7 +381,7 @@
       "level": 4,
       "skill": "GEO-CIRCLE-AREA-DIAMETER",
       "verificationLevel": "machine-verified",
-      "id": "Q01",
+      "id": "Q03",
       "templateKey": "lunes-hippocrates",
       "levelLabel": "Level 4 - Applied Synthesis",
       "fingerprint": "lunes-hippocrates|direct|#^# + #*pi - #*pi",
@@ -223,216 +446,6 @@
       }
     },
     {
-      "form": "bottom-triangle",
-      "category": "Interleaved Synthesis",
-      "context": "Geometry: Trapezoid Lower Diagonal Triangle",
-      "references": [
-        "MTH-T01-C12-U03",
-        "MTH-T01-C12-U04"
-      ],
-      "prompt": "In an isosceles trapezoid $ABCD$, the parallel bases are $AB = 6$ and $CD = 16$, and the non-parallel legs are $AD = BC = 13$. Diagonals $AC$ and $BD$ intersect at point $E$. Find the exact area of lower triangle $CDE$.",
-      "display": "\\text{Trapezoid } ABCD:\\ AB = 6,\\ CD = 16,\\ AD = BC = 13 \\implies \\text{Area}(\\triangle CDE) = ?",
-      "plainText": "(1/2) * 16 * sqrt(13^2 - ((16 - 6)/2)^2) * (16/(6 + 16))",
-      "answerSpec": {
-        "type": "expression",
-        "value": "768/11"
-      },
-      "answerDisplay": "\\frac{768}{11}",
-      "answerPlain": "768/11",
-      "inputHint": "Enter exact fraction or integer e.g. 35/4 or 42",
-      "checkpointHint": "Find trapezoid height $h$ via the Pythagorean theorem on the leg projection, then partition $h$ using similarity ratio $CD : (AB + CD)$.",
-      "commonTrapTag": "trapezoid-diagonal-bisect-trap",
-      "steps": [
-        {
-          "latex": "x = \\frac{16 - 6}{2} = 5, \\quad h = \\sqrt{13^2 - 5^2} = 12",
-          "explain": "Symmetrical base offset gives a right triangle with hypotenuse 13 and base 5."
-        },
-        {
-          "latex": "\\triangle ABE \\sim \\triangle CDE \\implies \\frac{h_1}{h_2} = \\frac{6}{16} = \\frac{3}{8}",
-          "explain": "Since $AB \\parallel CD$, alternate interior angles make $\\triangle ABE \\sim \\triangle CDE$."
-        },
-        {
-          "latex": "h_2 = 12 \\times \\frac{8}{3 + 8} = 96/11",
-          "explain": "The lower triangle takes fraction 8/(3+8) of the total height 12."
-        },
-        {
-          "latex": "\\text{Area}(\\triangle CDE) = \\frac{1}{2} \\times 16 \\times 96/11 = 768/11",
-          "explain": "Calculate area of triangle $CDE$: $\\frac{1}{2} \\times \\text{base} \\times h_2$."
-        }
-      ],
-      "level": 4,
-      "skill": "GEO-TRAPEZOID-HEIGHT",
-      "verificationLevel": "machine-verified",
-      "id": "Q02",
-      "templateKey": "trapezoid-similar-triangles",
-      "levelLabel": "Level 4 - Applied Synthesis",
-      "fingerprint": "trapezoid-similar-triangles|bottom-triangle|(#/#) * # * sqrt(#^# - ((# - #)/#)^#) * (#/(# + #))",
-      "qualityGates": {
-        "G1": {
-          "passed": true,
-          "archetype": "math-standard"
-        },
-        "G2": {
-          "passed": true,
-          "level": 4,
-          "stepCount": 4,
-          "hasTrapOrFlaw": true,
-          "skill": "GEO-TRAPEZOID-HEIGHT",
-          "stepRange": [
-            2,
-            6
-          ]
-        },
-        "G4": {
-          "passed": true,
-          "trapTag": "trapezoid-diagonal-bisect-trap",
-          "trapValueVerified": true,
-          "weakDistractors": 0,
-          "provenanceDistractors": 0
-        },
-        "G6": {
-          "passed": true,
-          "fieldsChecked": 15
-        },
-        "antiLeak": {
-          "passed": true,
-          "hintsChecked": 2
-        },
-        "verificationLevel": "machine-verified",
-        "weakDistractors": 0,
-        "G3": {
-          "passed": true,
-          "fingerprint": "trapezoid-similar-triangles|bottom-triangle|(#/#) * # * sqrt(#^# - ((# - #)/#)^#) * (#/(# + #))",
-          "maxAllowedPerFingerprint": 1
-        }
-      },
-      "referenceBadges": [
-        {
-          "code": "MTH-T01-C12-U03",
-          "title": "Use Properties of Angles, Triangles, and the Pythagorean Theorem",
-          "notionUrl": "https://www.notion.so/4003818f8ba080459e0dd81747fad236"
-        },
-        {
-          "code": "MTH-T01-C12-U04",
-          "title": "Use Properties of Rectangles, Triangles, and Trapezoids",
-          "notionUrl": "https://www.notion.so/4003818f8ba080bb8205d0d4b4cd606f"
-        }
-      ],
-      "trapValue": "48",
-      "state": {
-        "userInput": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "lastCheck": null
-      }
-    },
-    {
-      "form": "direct",
-      "category": "Interleaved Synthesis",
-      "context": "Geometry: Trapezoid & Similar Triangles Partition",
-      "references": [
-        "MTH-T01-C12-U03",
-        "MTH-T01-C12-U04"
-      ],
-      "prompt": "In an isosceles trapezoid $ABCD$, the parallel bases are $AB = 12$ and $CD = 28$, and the non-parallel legs are $AD = BC = 17$. Diagonals $AC$ and $BD$ intersect at point $E$. Find the exact area of triangle $ABE$.",
-      "display": "\\text{Trapezoid } ABCD:\\ AB = 12,\\ CD = 28,\\ AD = BC = 17 \\implies \\text{Area}(\\triangle ABE) = ?",
-      "plainText": "(1/2) * 12 * sqrt(17^2 - ((28 - 12)/2)^2) * (12/(12 + 28))",
-      "answerSpec": {
-        "type": "expression",
-        "value": "27"
-      },
-      "answerDisplay": "27",
-      "answerPlain": "27",
-      "inputHint": "Enter exact fraction or integer e.g. 35/4 or 42",
-      "checkpointHint": "Find trapezoid height $h$ by projecting $AB$ onto $CD$ to get leg base offset $(CD - AB)/2$, then calculate $h = \\sqrt{\\text{leg}^2 - \\text{offset}^2}$. Use similar triangles $\\triangle ABE \\sim \\triangle CDE$ with ratio $AB : CD$ to partition the height.",
-      "commonTrapTag": "trapezoid-diagonal-bisect-trap",
-      "steps": [
-        {
-          "latex": "x = \\frac{28 - 12}{2} = 8, \\quad h = \\sqrt{17^2 - 8^2} = \\sqrt{289 - 64} = 15",
-          "explain": "Symmetrical base offset gives a right triangle with hypotenuse 17 and base 8."
-        },
-        {
-          "latex": "\\triangle ABE \\sim \\triangle CDE \\implies \\frac{h_1}{h_2} = \\frac{12}{28} = \\frac{3}{7}",
-          "explain": "Since $AB \\parallel CD$, alternate interior angles make $\\triangle ABE \\sim \\triangle CDE$."
-        },
-        {
-          "latex": "h_1 = 15 \\times \\frac{3}{3 + 7} = 9/2",
-          "explain": "The total height 15 is partitioned in ratio 3:7."
-        },
-        {
-          "latex": "\\text{Area}(\\triangle ABE) = \\frac{1}{2} \\times 12 \\times 9/2 = 27",
-          "explain": "Calculate area of triangle $ABE$: $\\frac{1}{2} \\times \\text{base} \\times h_1$."
-        }
-      ],
-      "level": 4,
-      "skill": "GEO-TRAPEZOID-HEIGHT",
-      "verificationLevel": "machine-verified",
-      "id": "Q03",
-      "templateKey": "trapezoid-similar-triangles",
-      "levelLabel": "Level 4 - Applied Synthesis",
-      "fingerprint": "trapezoid-similar-triangles|direct|(#/#) * # * sqrt(#^# - ((# - #)/#)^#) * (#/(# + #))",
-      "qualityGates": {
-        "G1": {
-          "passed": true,
-          "archetype": "math-standard"
-        },
-        "G2": {
-          "passed": true,
-          "level": 4,
-          "stepCount": 4,
-          "hasTrapOrFlaw": true,
-          "skill": "GEO-TRAPEZOID-HEIGHT",
-          "stepRange": [
-            2,
-            6
-          ]
-        },
-        "G4": {
-          "passed": true,
-          "trapTag": "trapezoid-diagonal-bisect-trap",
-          "trapValueVerified": true,
-          "weakDistractors": 0,
-          "provenanceDistractors": 0
-        },
-        "G6": {
-          "passed": true,
-          "fieldsChecked": 15
-        },
-        "antiLeak": {
-          "passed": true,
-          "hintsChecked": 2
-        },
-        "verificationLevel": "machine-verified",
-        "weakDistractors": 0,
-        "G3": {
-          "passed": true,
-          "fingerprint": "trapezoid-similar-triangles|direct|(#/#) * # * sqrt(#^# - ((# - #)/#)^#) * (#/(# + #))",
-          "maxAllowedPerFingerprint": 1
-        }
-      },
-      "referenceBadges": [
-        {
-          "code": "MTH-T01-C12-U03",
-          "title": "Use Properties of Angles, Triangles, and the Pythagorean Theorem",
-          "notionUrl": "https://www.notion.so/4003818f8ba080459e0dd81747fad236"
-        },
-        {
-          "code": "MTH-T01-C12-U04",
-          "title": "Use Properties of Rectangles, Triangles, and Trapezoids",
-          "notionUrl": "https://www.notion.so/4003818f8ba080bb8205d0d4b4cd606f"
-        }
-      ],
-      "trapValue": "45",
-      "state": {
-        "userInput": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "lastCheck": null
-      }
-    },
-    {
       "form": "side-triangle",
       "category": "Interleaved Synthesis",
       "context": "Geometry: Trapezoid Flank Diagonal Triangle",
@@ -452,6 +465,7 @@
       "inputHint": "Enter exact fraction or integer e.g. 35/4 or 42",
       "checkpointHint": "Find total height $h$, compute $\\text{Area}(\\triangle ABD) = \\frac{1}{2}(AB)h$, and subtract $\\text{Area}(\\triangle ABE)$ found via similar triangles.",
       "commonTrapTag": "trapezoid-diagonal-bisect-trap",
+      "trapDerivation": "((12 + 28) * 15) / 8",
       "steps": [
         {
           "latex": "x = \\frac{28 - 12}{2} = 8, \\quad h = \\sqrt{17^2 - 8^2} = 15",
@@ -534,46 +548,51 @@
       }
     },
     {
-      "form": "single-lune",
+      "form": "direct",
       "category": "Interleaved Synthesis",
-      "context": "Geometry: Single Lune of Hippocrates",
+      "context": "Geometry: Trapezoid & Similar Triangles Partition",
       "references": [
-        "MTH-T01-C12-U04",
-        "MTH-T01-C12-U05"
+        "MTH-T01-C12-U03",
+        "MTH-T01-C12-U04"
       ],
-      "prompt": "A square of side length $s = 20$ is inscribed inside a circle. Four congruent semicircles are drawn externally on the four sides of the square as diameters, forming four congruent crescent-shaped Lunes of Hippocrates outside the circumscribed circle. Find the exact area of ONE such lune.",
-      "display": "\\text{Single Lune on square of side } s = 20 \\implies \\text{Area}(\\text{1 lune}) = ?",
-      "plainText": "(20^2) / 4",
+      "prompt": "In an isosceles trapezoid $ABCD$, the parallel bases are $AB = 4$ and $CD = 18$, and the non-parallel legs are $AD = BC = 25$. Diagonals $AC$ and $BD$ intersect at point $E$. Find the exact area of triangle $ABE$.",
+      "display": "\\text{Trapezoid } ABCD:\\ AB = 4,\\ CD = 18,\\ AD = BC = 25 \\implies \\text{Area}(\\triangle ABE) = ?",
+      "plainText": "(1/2) * 4 * sqrt(25^2 - ((18 - 4)/2)^2) * (4/(4 + 18))",
       "answerSpec": {
-        "type": "number",
-        "value": "100"
+        "type": "expression",
+        "value": "96/11"
       },
-      "answerDisplay": "100",
-      "answerPlain": "100",
-      "inputHint": "Enter the integer area of one lune",
-      "checkpointHint": "First find the total area of all four lunes by subtracting the circumscribed circle from the square plus four semicircles, then divide by 4 by symmetry.",
-      "commonTrapTag": "pi-retained-in-lunes-trap",
+      "answerDisplay": "\\frac{96}{11}",
+      "answerPlain": "96/11",
+      "inputHint": "Enter exact fraction or integer e.g. 35/4 or 42",
+      "checkpointHint": "Find trapezoid height $h$ by projecting $AB$ onto $CD$ to get leg base offset $(CD - AB)/2$, then calculate $h = \\sqrt{\\text{leg}^2 - \\text{offset}^2}$. Use similar triangles $\\triangle ABE \\sim \\triangle CDE$ with ratio $AB : CD$ to partition the height.",
+      "commonTrapTag": "trapezoid-diagonal-bisect-trap",
+      "trapDerivation": "(4 * 24) / 4",
       "steps": [
         {
-          "latex": "A_{\\text{square}} = 20^2 = 400, \\quad A_{\\text{circle}} = \\pi(10\\sqrt{2})^2 = 200\\pi",
-          "explain": "Find the area of the inscribed square and circumscribed circle."
+          "latex": "x = \\frac{18 - 4}{2} = 7, \\quad h = \\sqrt{25^2 - 7^2} = \\sqrt{625 - 49} = 24",
+          "explain": "Symmetrical base offset gives a right triangle with hypotenuse 25 and base 7."
         },
         {
-          "latex": "A_{\\text{4 semicircles}} = 4 \\times \\left(\\frac{1}{2}\\pi (10)^2\\right) = 200\\pi",
-          "explain": "The four outer semicircles have total area $200\\pi$, matching the circumscribed circle."
+          "latex": "\\triangle ABE \\sim \\triangle CDE \\implies \\frac{h_1}{h_2} = \\frac{4}{18} = \\frac{2}{9}",
+          "explain": "Since $AB \\parallel CD$, alternate interior angles make $\\triangle ABE \\sim \\triangle CDE$."
         },
         {
-          "latex": "A_{\\text{1 lune}} = \\frac{A_{\\text{square}} + A_{\\text{4 semicircles}} - A_{\\text{circle}}}{4} = \\frac{400}{4} = 100",
-          "explain": "The $\\pi$ terms cancel out, leaving one-fourth of the square's area for each lune."
+          "latex": "h_1 = 24 \\times \\frac{2}{2 + 9} = 48/11",
+          "explain": "The total height 24 is partitioned in ratio 2:9."
+        },
+        {
+          "latex": "\\text{Area}(\\triangle ABE) = \\frac{1}{2} \\times 4 \\times 48/11 = 96/11",
+          "explain": "Calculate area of triangle $ABE$: $\\frac{1}{2} \\times \\text{base} \\times h_1$."
         }
       ],
       "level": 4,
-      "skill": "GEO-CIRCLE-AREA-DIAMETER",
+      "skill": "GEO-TRAPEZOID-HEIGHT",
       "verificationLevel": "machine-verified",
       "id": "Q05",
-      "templateKey": "lunes-hippocrates",
+      "templateKey": "trapezoid-similar-triangles",
       "levelLabel": "Level 4 - Applied Synthesis",
-      "fingerprint": "lunes-hippocrates|single-lune|(#^#) / #",
+      "fingerprint": "trapezoid-similar-triangles|direct|(#/#) * # * sqrt(#^# - ((# - #)/#)^#) * (#/(# + #))",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -582,9 +601,9 @@
         "G2": {
           "passed": true,
           "level": 4,
-          "stepCount": 3,
+          "stepCount": 4,
           "hasTrapOrFlaw": true,
-          "skill": "GEO-CIRCLE-AREA-DIAMETER",
+          "skill": "GEO-TRAPEZOID-HEIGHT",
           "stepRange": [
             2,
             6
@@ -592,14 +611,14 @@
         },
         "G4": {
           "passed": true,
-          "trapTag": "pi-retained-in-lunes-trap",
+          "trapTag": "trapezoid-diagonal-bisect-trap",
           "trapValueVerified": true,
           "weakDistractors": 0,
           "provenanceDistractors": 0
         },
         "G6": {
           "passed": true,
-          "fieldsChecked": 13
+          "fieldsChecked": 15
         },
         "antiLeak": {
           "passed": true,
@@ -609,23 +628,23 @@
         "weakDistractors": 0,
         "G3": {
           "passed": true,
-          "fingerprint": "lunes-hippocrates|single-lune|(#^#) / #",
+          "fingerprint": "trapezoid-similar-triangles|direct|(#/#) * # * sqrt(#^# - ((# - #)/#)^#) * (#/(# + #))",
           "maxAllowedPerFingerprint": 1
         }
       },
       "referenceBadges": [
         {
+          "code": "MTH-T01-C12-U03",
+          "title": "Use Properties of Angles, Triangles, and the Pythagorean Theorem",
+          "notionUrl": "https://www.notion.so/4003818f8ba080459e0dd81747fad236"
+        },
+        {
           "code": "MTH-T01-C12-U04",
           "title": "Use Properties of Rectangles, Triangles, and Trapezoids",
           "notionUrl": "https://www.notion.so/4003818f8ba080bb8205d0d4b4cd606f"
-        },
-        {
-          "code": "MTH-T01-C12-U05",
-          "title": "Solve Geometry Applications: Circles and Irregular Figures",
-          "notionUrl": "https://www.notion.so/4003818f8ba080ce8853efc959517a90"
         }
       ],
-      "trapValue": "400",
+      "trapValue": "24",
       "state": {
         "userInput": "",
         "score": null,

@@ -7,7 +7,7 @@
   "chapterCode": "MTH-T01-C03",
   "topicCode": "MTH-T01",
   "unitNotionUrl": "https://www.notion.so/4003818f8ba0806586fef4b5d423cd59",
-  "createdAt": "2026-11-08 17:14:03",
+  "createdAt": "2026-11-08 20:18:03",
   "config": {
     "questionCount": 8,
     "difficulty": "ALL",
@@ -53,29 +53,29 @@
       "references": [
         "MTH-T01-C03-U04"
       ],
-      "prompt": "Evaluate the integer expression $-7^2 - (-2)^2$.",
-      "display": "-7^2 - (-2)^2",
-      "plainText": "(0 - 7^2) and (2^2) [beta]",
+      "prompt": "Evaluate the integer expression $-4^2 - (-6)^2$.",
+      "display": "-4^2 - (-6)^2",
+      "plainText": "(0 - 4^2) and (6^2)",
       "answerSpec": {
         "type": "number",
-        "value": "-53"
+        "value": "-52"
       },
-      "answerDisplay": "-53",
-      "answerPlain": "-53",
+      "answerDisplay": "-52",
+      "answerPlain": "-52",
       "inputHint": "Enter the exact signed integer value",
       "checkpointHint": "Distinguish carefully between an unparenthesized negated power and a parenthesized negative base squared.",
       "commonTrapTag": "c03-negated-square-precedence-trap",
       "steps": [
         {
-          "latex": "-7^2 = -(49) = -49",
+          "latex": "-4^2 = -(16) = -16",
           "explain": "Without parentheses around the negative sign, the exponent applies only to the base integer."
         },
         {
-          "latex": "(-2)^2 = (-2)(-2) = 4",
+          "latex": "(-6)^2 = (-6)(-6) = 36",
           "explain": "With parentheses, the negative base is squared to produce a positive integer."
         },
         {
-          "latex": "-49 - 4 = -53",
+          "latex": "-16 - 36 = -52",
           "explain": "Subtract the second square from the negated first square."
         }
       ],
@@ -85,7 +85,7 @@
       "id": "Q01",
       "templateKey": "c03-negated-power-order-trap",
       "levelLabel": "Level 3 - Trap & Diagnostic",
-      "fingerprint": "c03-negated-power-order-trap|direct|(# - #^#) and (#^#) [beta]",
+      "fingerprint": "c03-negated-power-order-trap|direct|(# - #^#) and (#^#)",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -121,7 +121,7 @@
         "weakDistractors": 0,
         "G3": {
           "passed": true,
-          "fingerprint": "c03-negated-power-order-trap|direct|(# - #^#) and (#^#) [beta]",
+          "fingerprint": "c03-negated-power-order-trap|direct|(# - #^#) and (#^#)",
           "maxAllowedPerFingerprint": 1
         }
       },
@@ -132,7 +132,7 @@
           "notionUrl": "https://www.notion.so/4003818f8ba0800386f1db39506f633a"
         }
       ],
-      "trapValue": "45",
+      "trapValue": "-20",
       "state": {
         "userInput": "",
         "score": null,
@@ -148,29 +148,29 @@
       "references": [
         "MTH-T01-C03-U05"
       ],
-      "prompt": "Find the integer $x$ that satisfies the equation $-5x + 11 = 91$.",
-      "display": "-5x + 11 = 91 \\implies x = ?",
-      "plainText": "(0 - 5)*x + 11 = 91 [beta]",
+      "prompt": "Find the integer $x$ that satisfies the equation $-4x + 10 = 42$.",
+      "display": "-4x + 10 = 42 \\implies x = ?",
+      "plainText": "(0 - 4)*x + 10 = 42",
       "answerSpec": {
         "type": "number",
-        "value": "-16"
+        "value": "-8"
       },
-      "answerDisplay": "-16",
-      "answerPlain": "-16",
+      "answerDisplay": "-8",
+      "answerPlain": "-8",
       "inputHint": "Enter the exact signed integer value",
       "checkpointHint": "Subtract the constant from both sides first, then divide by the negative coefficient, paying close attention to the sign of the quotient.",
       "commonTrapTag": "c03-signed-division-sign-error",
       "steps": [
         {
-          "latex": "-5x = 91 - 11 = 80",
+          "latex": "-4x = 42 - 10 = 32",
           "explain": "Subtract the constant term from both sides."
         },
         {
-          "latex": "x = \\frac{80}{-5}",
+          "latex": "x = \\frac{32}{-4}",
           "explain": "Divide both sides by the negative coefficient."
         },
         {
-          "latex": "x = -16",
+          "latex": "x = -8",
           "explain": "A positive integer divided by a negative integer yields a negative quotient."
         }
       ],
@@ -180,7 +180,7 @@
       "id": "Q02",
       "templateKey": "c03-signed-mult-div-equations",
       "levelLabel": "Level 2 - Standard Exam",
-      "fingerprint": "c03-signed-mult-div-equations|reverse|(# - #)*x + # = # [beta]",
+      "fingerprint": "c03-signed-mult-div-equations|reverse|(# - #)*x + # = #",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -216,7 +216,7 @@
         "weakDistractors": 0,
         "G3": {
           "passed": true,
-          "fingerprint": "c03-signed-mult-div-equations|reverse|(# - #)*x + # = # [beta]",
+          "fingerprint": "c03-signed-mult-div-equations|reverse|(# - #)*x + # = #",
           "maxAllowedPerFingerprint": 1
         }
       },
@@ -227,7 +227,7 @@
           "notionUrl": "https://www.notion.so/4003818f8ba080f4816cfd31ae788267"
         }
       ],
-      "trapValue": "16",
+      "trapValue": "8",
       "state": {
         "userInput": "",
         "score": null,
@@ -243,29 +243,29 @@
       "references": [
         "MTH-T01-C03-U05"
       ],
-      "prompt": "Solve the integer equation $-8x + 20 = 76$ for $x$.",
-      "display": "-8x + 20 = 76",
-      "plainText": "(0 - 8)*x + 20 = 76 [epsilon]",
+      "prompt": "Solve the integer equation $-6x + 23 = 107$ for $x$.",
+      "display": "-6x + 23 = 107",
+      "plainText": "(0 - 6)*x + 23 = 107",
       "answerSpec": {
         "type": "number",
-        "value": "-7"
+        "value": "-14"
       },
-      "answerDisplay": "-7",
-      "answerPlain": "-7",
+      "answerDisplay": "-14",
+      "answerPlain": "-14",
       "inputHint": "Enter the exact signed integer value",
       "checkpointHint": "Subtract the constant from both sides first, then divide by the negative coefficient, paying close attention to the sign of the quotient.",
       "commonTrapTag": "c03-signed-division-sign-error",
       "steps": [
         {
-          "latex": "-8x = 76 - 20 = 56",
+          "latex": "-6x = 107 - 23 = 84",
           "explain": "Subtract the constant term from both sides."
         },
         {
-          "latex": "x = \\frac{56}{-8}",
+          "latex": "x = \\frac{84}{-6}",
           "explain": "Divide both sides by the negative coefficient."
         },
         {
-          "latex": "x = -7",
+          "latex": "x = -14",
           "explain": "A positive integer divided by a negative integer yields a negative quotient."
         }
       ],
@@ -275,7 +275,7 @@
       "id": "Q03",
       "templateKey": "c03-signed-mult-div-equations",
       "levelLabel": "Level 2 - Standard Exam",
-      "fingerprint": "c03-signed-mult-div-equations|direct|(# - #)*x + # = # [epsilon]",
+      "fingerprint": "c03-signed-mult-div-equations|direct|(# - #)*x + # = #",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -311,7 +311,7 @@
         "weakDistractors": 0,
         "G3": {
           "passed": true,
-          "fingerprint": "c03-signed-mult-div-equations|direct|(# - #)*x + # = # [epsilon]",
+          "fingerprint": "c03-signed-mult-div-equations|direct|(# - #)*x + # = #",
           "maxAllowedPerFingerprint": 1
         }
       },
@@ -322,7 +322,7 @@
           "notionUrl": "https://www.notion.so/4003818f8ba080f4816cfd31ae788267"
         }
       ],
-      "trapValue": "7",
+      "trapValue": "14",
       "state": {
         "userInput": "",
         "score": null,
@@ -338,29 +338,29 @@
       "references": [
         "MTH-T01-C03-U03"
       ],
-      "prompt": "Evaluate the signed integer expression $-33 + 35 - (-21)$.",
-      "display": "-33 + 35 - (-21)",
-      "plainText": "(0 - 33) + 35 + 21 [zeta]",
+      "prompt": "Evaluate the signed integer expression $-24 + 17 - (-21)$.",
+      "display": "-24 + 17 - (-21)",
+      "plainText": "(0 - 24) + 17 + 21",
       "answerSpec": {
         "type": "number",
-        "value": "23"
+        "value": "14"
       },
-      "answerDisplay": "23",
-      "answerPlain": "23",
+      "answerDisplay": "14",
+      "answerPlain": "14",
       "inputHint": "Enter the exact signed integer value",
       "checkpointHint": "Rewrite subtracting a negative as adding a positive, then combine the signed integers from left to right.",
       "commonTrapTag": "c03-double-negative-slip",
       "steps": [
         {
-          "latex": "-33 + 35 = 2",
+          "latex": "-24 + 17 = -7",
           "explain": "Combine the first two signed integers."
         },
         {
-          "latex": "2 + 21",
+          "latex": "-7 + 21",
           "explain": "Add the positive increment to the intermediate result."
         },
         {
-          "latex": "= 23",
+          "latex": "= 14",
           "explain": "Simplify to obtain the final signed integer."
         }
       ],
@@ -370,7 +370,7 @@
       "id": "Q04",
       "templateKey": "c03-abs-value-integer-add",
       "levelLabel": "Level 1 - Foundation",
-      "fingerprint": "c03-abs-value-integer-add|direct|(# - #) + # + # [zeta]",
+      "fingerprint": "c03-abs-value-integer-add|direct|(# - #) + # + #",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -406,7 +406,7 @@
         "weakDistractors": 0,
         "G3": {
           "passed": true,
-          "fingerprint": "c03-abs-value-integer-add|direct|(# - #) + # + # [zeta]",
+          "fingerprint": "c03-abs-value-integer-add|direct|(# - #) + # + #",
           "maxAllowedPerFingerprint": 1
         }
       },
@@ -417,7 +417,7 @@
           "notionUrl": "https://www.notion.so/4003818f8ba0802e991ff164f1ebedba"
         }
       ],
-      "trapValue": "-19",
+      "trapValue": "-28",
       "state": {
         "userInput": "",
         "score": null,
@@ -433,29 +433,29 @@
       "references": [
         "MTH-T01-C03-U03"
       ],
-      "prompt": "A submersible is at an elevation of $-40$ meters relative to sea level. It ascends $33$ meters and then ascends another $15$ meters. What is its new elevation in meters?",
-      "display": "-40 + 33 + 15",
-      "plainText": "(0 - 40) + 33 + 15 [beta]",
+      "prompt": "A submersible is at an elevation of $-42$ meters relative to sea level. It ascends $35$ meters and then ascends another $21$ meters. What is its new elevation in meters?",
+      "display": "-42 + 35 + 21",
+      "plainText": "(0 - 42) + 35 + 21",
       "answerSpec": {
         "type": "number",
-        "value": "8"
+        "value": "14"
       },
-      "answerDisplay": "8",
-      "answerPlain": "8",
+      "answerDisplay": "14",
+      "answerPlain": "14",
       "inputHint": "Enter the exact signed integer value",
       "checkpointHint": "Rewrite subtracting a negative as adding a positive, then combine the signed integers from left to right.",
       "commonTrapTag": "c03-double-negative-slip",
       "steps": [
         {
-          "latex": "-40 + 33 = -7",
+          "latex": "-42 + 35 = -7",
           "explain": "Combine the first two signed integers."
         },
         {
-          "latex": "-7 + 15",
+          "latex": "-7 + 21",
           "explain": "Add the positive increment to the intermediate result."
         },
         {
-          "latex": "= 8",
+          "latex": "= 14",
           "explain": "Simplify to obtain the final signed integer."
         }
       ],
@@ -465,7 +465,7 @@
       "id": "Q05",
       "templateKey": "c03-abs-value-integer-add",
       "levelLabel": "Level 1 - Foundation",
-      "fingerprint": "c03-abs-value-integer-add|elevation|(# - #) + # + # [beta]",
+      "fingerprint": "c03-abs-value-integer-add|elevation|(# - #) + # + #",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -501,7 +501,7 @@
         "weakDistractors": 0,
         "G3": {
           "passed": true,
-          "fingerprint": "c03-abs-value-integer-add|elevation|(# - #) + # + # [beta]",
+          "fingerprint": "c03-abs-value-integer-add|elevation|(# - #) + # + #",
           "maxAllowedPerFingerprint": 1
         }
       },
@@ -512,7 +512,7 @@
           "notionUrl": "https://www.notion.so/4003818f8ba0802e991ff164f1ebedba"
         }
       ],
-      "trapValue": "-22",
+      "trapValue": "-28",
       "state": {
         "userInput": "",
         "score": null,
@@ -529,29 +529,29 @@
         "MTH-T01-C03-U03",
         "MTH-T01-C03-U04"
       ],
-      "prompt": "A deep-sea drilling rig starts at an elevation of $21$ meters above a reference datum, descends at $5$ meters per minute for $9$ minutes, and then ascends at $4$ meters per minute for $5$ minutes. Find its final elevation relative to the datum.",
-      "display": "E = 21 - 5(9) + 4(5)",
-      "plainText": "21 - 5*9 + 4*5 [alpha]",
+      "prompt": "A deep-sea drilling rig starts at an elevation of $17$ meters above a reference datum, descends at $9$ meters per minute for $9$ minutes, and then ascends at $7$ meters per minute for $3$ minutes. Find its final elevation relative to the datum.",
+      "display": "E = 17 - 9(9) + 7(3)",
+      "plainText": "17 - 9*9 + 7*3",
       "answerSpec": {
         "type": "number",
-        "value": "-4"
+        "value": "-43"
       },
-      "answerDisplay": "-4",
-      "answerPlain": "-4",
+      "answerDisplay": "-43",
+      "answerPlain": "-43",
       "inputHint": "Enter the exact signed integer value",
       "checkpointHint": "Multiply each signed rate of change by its duration, then add the net changes to the initial value.",
       "commonTrapTag": "c03-net-integer-change-trap",
       "steps": [
         {
-          "latex": "\\Delta_1 = (9)(-5) = -45",
+          "latex": "\\Delta_1 = (9)(-9) = -81",
           "explain": "Compute the signed change during the first phase."
         },
         {
-          "latex": "\\Delta_2 = (5)(4) = 20",
+          "latex": "\\Delta_2 = (3)(7) = 21",
           "explain": "Compute the signed change during the second phase."
         },
         {
-          "latex": "\\text{Final} = 21 - 45 + 20 = -4",
+          "latex": "\\text{Final} = 17 - 81 + 21 = -43",
           "explain": "Combine the initial value with both net changes."
         }
       ],
@@ -561,7 +561,7 @@
       "id": "Q06",
       "templateKey": "c03-thermal-depth-integer-synthesis",
       "levelLabel": "Level 4 - Applied Synthesis",
-      "fingerprint": "c03-thermal-depth-integer-synthesis|direct|# - #*# + #*# [alpha]",
+      "fingerprint": "c03-thermal-depth-integer-synthesis|direct|# - #*# + #*#",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -597,7 +597,7 @@
         "weakDistractors": 0,
         "G3": {
           "passed": true,
-          "fingerprint": "c03-thermal-depth-integer-synthesis|direct|# - #*# + #*# [alpha]",
+          "fingerprint": "c03-thermal-depth-integer-synthesis|direct|# - #*# + #*#",
           "maxAllowedPerFingerprint": 1
         }
       },
@@ -613,7 +613,7 @@
           "notionUrl": "https://www.notion.so/4003818f8ba0800386f1db39506f633a"
         }
       ],
-      "trapValue": "46",
+      "trapValue": "77",
       "state": {
         "userInput": "",
         "score": null,
@@ -629,21 +629,21 @@
       "references": [
         "MTH-T01-C03-U04"
       ],
-      "prompt": "Evaluate the integer expression $-8^2 + |(-4)(7)|$.",
-      "display": "-8^2 + |(-4)(7)|",
-      "plainText": "(0 - 8^2) and (4^2) [gamma]",
+      "prompt": "Evaluate the integer expression $-3^2 + |(-4)(7)|$.",
+      "display": "-3^2 + |(-4)(7)|",
+      "plainText": "(0 - 3^2) and (4^2)",
       "answerSpec": {
         "type": "number",
-        "value": "-36"
+        "value": "19"
       },
-      "answerDisplay": "-36",
-      "answerPlain": "-36",
+      "answerDisplay": "19",
+      "answerPlain": "19",
       "inputHint": "Enter the exact signed integer value",
       "checkpointHint": "Distinguish carefully between an unparenthesized negated power and a parenthesized negative base squared.",
       "commonTrapTag": "c03-negated-square-precedence-trap",
       "steps": [
         {
-          "latex": "-8^2 = -(8^2) = -64",
+          "latex": "-3^2 = -(3^2) = -9",
           "explain": "Exponentiation binds tighter than unary negation, so square first and then negate."
         },
         {
@@ -651,7 +651,7 @@
           "explain": "Evaluate the product inside the absolute value bars and take its non-negative magnitude."
         },
         {
-          "latex": "-64 + 28 = -36",
+          "latex": "-9 + 28 = 19",
           "explain": "Add the two results to find the exact value."
         }
       ],
@@ -661,7 +661,7 @@
       "id": "Q07",
       "templateKey": "c03-negated-power-order-trap",
       "levelLabel": "Level 3 - Trap & Diagnostic",
-      "fingerprint": "c03-negated-power-order-trap|nested-abs|(# - #^#) and (#^#) [gamma]",
+      "fingerprint": "c03-negated-power-order-trap|nested-abs|(# - #^#) and (#^#)",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -697,7 +697,7 @@
         "weakDistractors": 0,
         "G3": {
           "passed": true,
-          "fingerprint": "c03-negated-power-order-trap|nested-abs|(# - #^#) and (#^#) [gamma]",
+          "fingerprint": "c03-negated-power-order-trap|nested-abs|(# - #^#) and (#^#)",
           "maxAllowedPerFingerprint": 1
         }
       },
@@ -708,7 +708,7 @@
           "notionUrl": "https://www.notion.so/4003818f8ba0800386f1db39506f633a"
         }
       ],
-      "trapValue": "92",
+      "trapValue": "37",
       "state": {
         "userInput": "",
         "score": null,
@@ -725,29 +725,29 @@
         "MTH-T01-C03-U03",
         "MTH-T01-C03-U04"
       ],
-      "prompt": "A high-altitude weather probe starts at $24^\\circ\\text{C}$. Its temperature changes by $-8^\\circ\\text{C}$ per hour for $6$ hours during ascent, and then changes by $+7^\\circ\\text{C}$ per hour for $4$ hours. What is the final temperature in degrees Celsius?",
-      "display": "T = 24 + (6)(-8) + (4)(7)",
-      "plainText": "24 - 8*6 + 7*4 [epsilon]",
+      "prompt": "A high-altitude weather probe starts at $28^\\circ\\text{C}$. Its temperature changes by $-5^\\circ\\text{C}$ per hour for $9$ hours during ascent, and then changes by $+7^\\circ\\text{C}$ per hour for $5$ hours. What is the final temperature in degrees Celsius?",
+      "display": "T = 28 + (9)(-5) + (5)(7)",
+      "plainText": "28 - 5*9 + 7*5",
       "answerSpec": {
         "type": "number",
-        "value": "4"
+        "value": "18"
       },
-      "answerDisplay": "4",
-      "answerPlain": "4",
+      "answerDisplay": "18",
+      "answerPlain": "18",
       "inputHint": "Enter the exact signed integer value",
       "checkpointHint": "Multiply each signed rate of change by its duration, then add the net changes to the initial value.",
       "commonTrapTag": "c03-net-integer-change-trap",
       "steps": [
         {
-          "latex": "\\Delta_1 = (6)(-8) = -48",
+          "latex": "\\Delta_1 = (9)(-5) = -45",
           "explain": "Compute the signed change during the first phase."
         },
         {
-          "latex": "\\Delta_2 = (4)(7) = 28",
+          "latex": "\\Delta_2 = (5)(7) = 35",
           "explain": "Compute the signed change during the second phase."
         },
         {
-          "latex": "\\text{Final} = 24 - 48 + 28 = 4",
+          "latex": "\\text{Final} = 28 - 45 + 35 = 18",
           "explain": "Combine the initial value with both net changes."
         }
       ],
@@ -757,7 +757,7 @@
       "id": "Q08",
       "templateKey": "c03-thermal-depth-integer-synthesis",
       "levelLabel": "Level 4 - Applied Synthesis",
-      "fingerprint": "c03-thermal-depth-integer-synthesis|contextual|# - #*# + #*# [epsilon]",
+      "fingerprint": "c03-thermal-depth-integer-synthesis|contextual|# - #*# + #*#",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -793,7 +793,7 @@
         "weakDistractors": 0,
         "G3": {
           "passed": true,
-          "fingerprint": "c03-thermal-depth-integer-synthesis|contextual|# - #*# + #*# [epsilon]",
+          "fingerprint": "c03-thermal-depth-integer-synthesis|contextual|# - #*# + #*#",
           "maxAllowedPerFingerprint": 1
         }
       },
@@ -809,7 +809,7 @@
           "notionUrl": "https://www.notion.so/4003818f8ba0800386f1db39506f633a"
         }
       ],
-      "trapValue": "44",
+      "trapValue": "38",
       "state": {
         "userInput": "",
         "score": null,

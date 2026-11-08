@@ -1,0 +1,1608 @@
+{
+  "schemaVersion": "2.0-math",
+  "drillId": "DRL-MTH-T01-C12-03",
+  "subject": "MATH",
+  "unitCode": "MTH-T01-C12",
+  "unitTitle": "Math Models and Geometry",
+  "chapterCode": "MTH-T01-C12",
+  "topicCode": "MTH-T01",
+  "unitNotionUrl": "https://www.notion.so/4003818f8ba080cfbf95ef15001d8a52",
+  "createdAt": "2026-11-08 21:54:29",
+  "config": {
+    "questionCount": 8,
+    "difficulty": "ALL",
+    "difficultyMode": "Mixed Exam Mode"
+  },
+  "mistakeTags": [
+    {
+      "id": "pythagoras-hypotenuse",
+      "label": "Added instead of subtracted for a leg ($a^2 = c^2 - b^2$)",
+      "name": "Pythagorean Leg vs Hypotenuse Error",
+      "description": "Adds squared leg lengths instead of subtracting when solving for an unknown right-triangle leg.",
+      "autoFrom": [
+        "whole_sign_flip"
+      ]
+    },
+    {
+      "id": "formula-perimeter-area",
+      "label": "Confused perimeter formula with area formula",
+      "name": "Perimeter vs Area Confusion",
+      "description": "Confuses perimeter boundary calculation with area formula.",
+      "autoFrom": []
+    },
+    {
+      "id": "formula-circumference-area-confusion",
+      "label": "Computed circumference 2*pi*r instead of area pi*r^2",
+      "name": "Circumference for Area Confusion",
+      "description": "Calculates circumference 2*pi*r instead of circle area pi*r^2.",
+      "autoFrom": []
+    },
+    {
+      "id": "trapezoid-height",
+      "label": "Forgot factor of 2 in numerator when solving for height",
+      "name": "Trapezoid Height Factor Error",
+      "description": "Forgot factor of 2 in numerator when solving for height.",
+      "autoFrom": [
+        "off_by_factor"
+      ]
+    },
+    {
+      "id": "trapezoid-reverse-omit-double-factor",
+      "label": "Forgot factor of 2 in numerator when solving for height: h = A / (b1 + b2)",
+      "name": "Trapezoid Reverse Double Factor Omission",
+      "description": "Forgets the factor of 2 in numerator when solving for height from trapezoid area: h = A / (b1 + b2).",
+      "autoFrom": [
+        "off_by_factor"
+      ]
+    },
+    {
+      "id": "omitted-half-factor",
+      "label": "Forgot 1/2 in trapezoid area: $A = 1/2(b_1 + b_2)h$",
+      "name": "Trapezoid Omitted Half Factor",
+      "description": "Omits the 1/2 factor in the trapezoid area formula: (b1 + b2)*h.",
+      "autoFrom": [
+        "off_by_factor"
+      ]
+    },
+    {
+      "id": "circle-diameter-radius",
+      "label": "Used diameter instead of radius in formula",
+      "name": "Diameter vs Radius Confusion",
+      "description": "Uses diameter instead of radius in formula.",
+      "autoFrom": [
+        "off_by_factor"
+      ]
+    },
+    {
+      "id": "circle-diameter-as-radius-trap",
+      "label": "Used diameter directly as radius in circle area: pi * d^2",
+      "name": "Circle Diameter as Radius Trap",
+      "description": "Squares diameter directly as radius when computing circle area: pi * d^2.",
+      "autoFrom": [
+        "off_by_factor"
+      ]
+    },
+    {
+      "id": "cylinder-diameter-as-radius-trap",
+      "label": "Used diameter directly as radius in cylinder volume formula: pi * d^2 * h",
+      "name": "Diameter as Radius in Volume Trap",
+      "description": "Uses diameter directly as radius in cylinder volume formula: pi * d^2 * h.",
+      "autoFrom": [
+        "off_by_factor"
+      ]
+    },
+    {
+      "id": "volume-surface-area",
+      "label": "Confused volume ($V$) with surface area ($SA$)",
+      "name": "Volume vs Surface Area Error",
+      "description": "Confuses 3D solid volume with total surface area.",
+      "autoFrom": []
+    },
+    {
+      "id": "linear-addition-trap",
+      "label": "Added legs linearly without squaring ($c = a + b$)",
+      "name": "Linear Addition Trap",
+      "description": "Adds right-triangle legs linearly without squaring: c = a + b.",
+      "autoFrom": []
+    },
+    {
+      "id": "pythagoras-leg-subtraction",
+      "label": "Subtracted hypotenuse and leg linearly ($a = c - b$)",
+      "name": "Linear Leg Subtraction Error",
+      "description": "Subtracts hypotenuse and leg linearly without squaring: a = c - b.",
+      "autoFrom": []
+    },
+    {
+      "id": "path-distance-vs-displacement",
+      "label": "Calculated total perimeter path instead of straight-line distance",
+      "name": "Path vs Displacement Error",
+      "description": "Calculates total travel path distance instead of shortest straight-line Pythagorean displacement.",
+      "autoFrom": []
+    },
+    {
+      "id": "arithmetic-slip",
+      "label": "Arithmetic / calculation slip",
+      "name": "Arithmetic Slip",
+      "description": "Calculation error in intermediate arithmetic steps.",
+      "autoFrom": [
+        "rounding",
+        "off_by_factor"
+      ]
+    },
+    {
+      "id": "whole-triangle-inradius-confusion",
+      "label": "Computed inradius of parent triangle instead of divided altitude sub-triangle",
+      "name": "Parent vs Sub-Triangle Inradius Confusion",
+      "description": "Calculates inradius of the parent right triangle instead of the specified sub-triangle.",
+      "autoFrom": []
+    },
+    {
+      "id": "trapezoid-diagonal-bisect-trap",
+      "label": "Assumed trapezoid diagonals bisect each other instead of using similar triangle ratio",
+      "name": "Trapezoid Diagonal Bisection Fallacy",
+      "description": "Assumes trapezoid diagonals bisect height equally instead of partitioning via similar triangle ratio.",
+      "autoFrom": []
+    },
+    {
+      "id": "pi-retained-in-lunes-trap",
+      "label": "Retained pi factor in area of lunes of Hippocrates (failing to recognize pi cancellation)",
+      "name": "Lunes Pi Factor Retention Trap",
+      "description": "Fails to recognize cancellation of pi in Lunes of Hippocrates composite area.",
+      "autoFrom": []
+    },
+    {
+      "id": "lunes-half-area-trap",
+      "label": "Computed area for only half of the lunes (2 instead of 4) in Lunes of Hippocrates",
+      "name": "Lunes Half Area Trap",
+      "description": "Computes area for only half of the lunes (2 instead of 4) in Lunes of Hippocrates.",
+      "autoFrom": []
+    },
+    {
+      "id": "lunes-total-instead-of-single-trap",
+      "label": "Computed total combined area of all four lunes instead of dividing by four for a single lune",
+      "name": "Lunes Total Instead of Single Trap",
+      "description": "Computes the total combined area of all four lunes instead of dividing by four for a single lune.",
+      "autoFrom": []
+    },
+    {
+      "id": "frustum-cylinder-average-trap",
+      "label": "Averaged radii and computed as cylinder instead of conical frustum",
+      "name": "Frustum Average Cylinder Error",
+      "description": "Averages conical frustum base radii and computes as cylinder instead of frustum volume.",
+      "autoFrom": []
+    },
+    {
+      "id": "internal-boundary-double-count-trap",
+      "label": "Included internal boundary face in composite solid surface area",
+      "name": "Internal Boundary Face Double Count",
+      "description": "Erroneously counts the internal junction face between joined solids in composite surface area.",
+      "autoFrom": []
+    }
+  ],
+  "problems": [
+    {
+      "form": "direct",
+      "category": "Trap & Edge Case",
+      "context": "Geometry: 3D Solids",
+      "references": [
+        "MTH-T01-C12-U06"
+      ],
+      "prompt": "Find the exact volume $V$ of a right circular cylinder with radius $r = 4$ and height $h = 10$ (in terms of $\\pi$).",
+      "display": "V = \\pi (4)^2(10)",
+      "plainText": "pi * 4^2 * 10",
+      "visual": {
+        "type": "geometry-3d-wireframe",
+        "viewBox": {
+          "width": 300,
+          "height": 190
+        },
+        "elements": [
+          {
+            "type": "cylinder",
+            "center": [
+              150,
+              95
+            ],
+            "radiusX": 55,
+            "radiusY": 16,
+            "height": 90,
+            "stroke": "#38bdf8",
+            "fill": "rgba(56, 189, 248, 0.08)"
+          },
+          {
+            "type": "line",
+            "points": [
+              [
+                150,
+                50
+              ],
+              [
+                205,
+                50
+              ]
+            ],
+            "stroke": "#cbd5e1",
+            "strokeDasharray": "2 2"
+          },
+          {
+            "type": "dimension-label",
+            "start": [
+              150,
+              50
+            ],
+            "end": [
+              205,
+              50
+            ],
+            "label": "r = 4",
+            "position": "top",
+            "offset": 8
+          },
+          {
+            "type": "dimension-label",
+            "start": [
+              215,
+              50
+            ],
+            "end": [
+              215,
+              140
+            ],
+            "label": "h = 10",
+            "position": "right",
+            "offset": 12,
+            "highlight": true
+          }
+        ]
+      },
+      "answerSpec": {
+        "type": "expression",
+        "value": "160*pi",
+        "variables": [
+          "pi"
+        ]
+      },
+      "answerDisplay": "160\\pi",
+      "answerPlain": "160 pi",
+      "inputHint": "Enter exact form with pi, e.g. 230 pi or 470*pi",
+      "checkpointHint": "The base area is $B = \\pi r^2 = 16\\pi$.",
+      "commonTrapTag": "volume-surface-area",
+      "trapDerivation": "(2 * 4 * 10 + 2 * 4**2) * pi",
+      "steps": [
+        {
+          "latex": "V = \\pi r^2 h = \\pi(4)^2(10)",
+          "explain": "Substitute the radius and height into the cylinder volume formula."
+        },
+        {
+          "latex": "= \\pi(16)(10)",
+          "explain": "Evaluate the circular base area: $4^2 = 16$."
+        },
+        {
+          "latex": "= 160\\pi",
+          "explain": "Multiply by the height: $16 \\times 10 = 160$."
+        }
+      ],
+      "level": 2,
+      "skill": "GEO-CYLINDER-VOLUME-RADIUS",
+      "verificationLevel": "machine-verified",
+      "id": "Q01",
+      "templateKey": "cylinder-volume",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "cylinder-volume|direct|pi * #^# * #",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "GEO-CYLINDER-VOLUME-RADIUS",
+          "stepRange": [
+            2,
+            4
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "volume-surface-area",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "cylinder-volume|direct|pi * #^# * #",
+          "maxAllowedPerFingerprint": 2
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C12-U06",
+          "title": "Solve Geometry Applications: Volume and Surface Area",
+          "notionUrl": "https://www.notion.so/4003818f8ba080cabf64cabe4a56586d"
+        }
+      ],
+      "trapValue": "112 pi",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "from-diameter",
+      "category": "Trap & Edge Case",
+      "context": "Geometry: 3D Solids (Diameter Trap)",
+      "references": [
+        "MTH-T01-C12-U06"
+      ],
+      "prompt": "Find the exact volume $V$ of a right circular cylinder with diameter $d = 10$ and height $h = 8$ (in terms of $\\pi$).",
+      "display": "V = \\pi \\left(\\frac{10}{2}\\right)^2(8)",
+      "plainText": "pi * (10/2)^2 * 8",
+      "visual": {
+        "type": "geometry-3d-wireframe",
+        "viewBox": {
+          "width": 300,
+          "height": 190
+        },
+        "elements": [
+          {
+            "type": "cylinder",
+            "center": [
+              150,
+              95
+            ],
+            "radiusX": 55,
+            "radiusY": 16,
+            "height": 90,
+            "stroke": "#38bdf8",
+            "fill": "rgba(56, 189, 248, 0.08)"
+          },
+          {
+            "type": "line",
+            "points": [
+              [
+                150,
+                50
+              ],
+              [
+                205,
+                50
+              ]
+            ],
+            "stroke": "#cbd5e1",
+            "strokeDasharray": "2 2"
+          },
+          {
+            "type": "dimension-label",
+            "start": [
+              150,
+              50
+            ],
+            "end": [
+              205,
+              50
+            ],
+            "label": "r = 5",
+            "position": "top",
+            "offset": 8
+          },
+          {
+            "type": "dimension-label",
+            "start": [
+              215,
+              50
+            ],
+            "end": [
+              215,
+              140
+            ],
+            "label": "h = 8",
+            "position": "right",
+            "offset": 12,
+            "highlight": true
+          }
+        ]
+      },
+      "answerSpec": {
+        "type": "expression",
+        "value": "200*pi",
+        "variables": [
+          "pi"
+        ]
+      },
+      "answerDisplay": "200\\pi",
+      "answerPlain": "200 pi",
+      "inputHint": "Enter exact form with pi, e.g. 230 pi or 470*pi",
+      "checkpointHint": "Halve the diameter to get radius $r = 5$, then compute $B = \\pi r^2 = 25\\pi$.",
+      "commonTrapTag": "cylinder-diameter-as-radius-trap",
+      "trapDerivation": "10**2 * 8 * pi",
+      "steps": [
+        {
+          "latex": "r = \\frac{10}{2} = 5, \\quad V = \\pi(5)^2(8)",
+          "explain": "Convert diameter to radius $r$ and substitute into the volume formula."
+        },
+        {
+          "latex": "= \\pi(25)(8)",
+          "explain": "Evaluate the circular base area: $5^2 = 25$."
+        },
+        {
+          "latex": "= 200\\pi",
+          "explain": "Multiply by the height: $25 \\times 8 = 200$."
+        }
+      ],
+      "level": 2,
+      "skill": "GEO-CYLINDER-VOLUME-DIAMETER",
+      "verificationLevel": "machine-verified",
+      "id": "Q02",
+      "templateKey": "cylinder-volume",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "cylinder-volume|from-diameter|pi * (#/#)^# * #",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "GEO-CYLINDER-VOLUME-DIAMETER",
+          "stepRange": [
+            2,
+            4
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "cylinder-diameter-as-radius-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "cylinder-volume|from-diameter|pi * (#/#)^# * #",
+          "maxAllowedPerFingerprint": 2
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C12-U06",
+          "title": "Solve Geometry Applications: Volume and Surface Area",
+          "notionUrl": "https://www.notion.so/4003818f8ba080cabf64cabe4a56586d"
+        }
+      ],
+      "trapValue": "800 pi",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "reverse",
+      "category": "Core Skill",
+      "context": "Geometry: Quadrilaterals (Unknown Height)",
+      "references": [
+        "MTH-T01-C12-U04"
+      ],
+      "prompt": "A trapezoid with parallel bases $b_1 = 12$ and $b_2 = 18$ has an area of $A = 90$. Find its height $h$.",
+      "display": "h = \\frac{2(90)}{12 + 18}",
+      "plainText": "(2 * 90) / (12 + 18)",
+      "visual": {
+        "type": "geometry-2d",
+        "viewBox": {
+          "width": 320,
+          "height": 180
+        },
+        "elements": [
+          {
+            "type": "polygon",
+            "points": [
+              [
+                70,
+                140
+              ],
+              [
+                240,
+                140
+              ],
+              [
+                210,
+                60
+              ],
+              [
+                90,
+                60
+              ]
+            ],
+            "stroke": "#10b981",
+            "fill": "rgba(16, 185, 129, 0.08)"
+          },
+          {
+            "type": "line",
+            "points": [
+              [
+                90,
+                60
+              ],
+              [
+                90,
+                140
+              ]
+            ],
+            "stroke": "#94a3b8",
+            "strokeDasharray": "3 3"
+          },
+          {
+            "type": "dimension-label",
+            "start": [
+              90,
+              60
+            ],
+            "end": [
+              210,
+              60
+            ],
+            "label": "b₁ = 12",
+            "position": "top",
+            "offset": 10
+          },
+          {
+            "type": "dimension-label",
+            "start": [
+              70,
+              140
+            ],
+            "end": [
+              240,
+              140
+            ],
+            "label": "b₂ = 18",
+            "position": "bottom",
+            "offset": 14
+          },
+          {
+            "type": "dimension-label",
+            "start": [
+              90,
+              60
+            ],
+            "end": [
+              90,
+              140
+            ],
+            "label": "h = 6",
+            "position": "right",
+            "offset": 10,
+            "highlight": true
+          }
+        ]
+      },
+      "answerSpec": {
+        "type": "number",
+        "value": "6",
+        "forms": [
+          "exact"
+        ]
+      },
+      "answerDisplay": "6",
+      "answerPlain": "6",
+      "inputHint": "Enter number, e.g. 235 or 479",
+      "checkpointHint": "Multiply area by $2$ before dividing by $b_1 + b_2 = 30$.",
+      "commonTrapTag": "trapezoid-reverse-omit-double-factor",
+      "trapDerivation": "90 // (12 + 18)",
+      "steps": [
+        {
+          "latex": "h = \\frac{2A}{b_1 + b_2} = \\frac{2(90)}{12 + 18}",
+          "explain": "Solve the trapezoid area formula for height $h$ and substitute known values."
+        },
+        {
+          "latex": "= \\frac{180}{30}",
+          "explain": "Double the area and sum the parallel bases."
+        },
+        {
+          "latex": "= 6",
+          "explain": "Divide to obtain the height $h$."
+        }
+      ],
+      "level": 2,
+      "skill": "GEO-TRAPEZOID-HEIGHT",
+      "verificationLevel": "machine-verified",
+      "id": "Q03",
+      "templateKey": "trapezoid-area",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "trapezoid-area|reverse|(# * #) / (# + #)",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "GEO-TRAPEZOID-HEIGHT",
+          "stepRange": [
+            2,
+            4
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "trapezoid-reverse-omit-double-factor",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "trapezoid-area|reverse|(# * #) / (# + #)",
+          "maxAllowedPerFingerprint": 2
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C12-U04",
+          "title": "Use Properties of Rectangles, Triangles, and Trapezoids",
+          "notionUrl": "https://www.notion.so/4003818f8ba080bb8205d0d4b4cd606f"
+        }
+      ],
+      "trapValue": "3",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "direct",
+      "category": "Core Skill",
+      "context": "Geometry: Quadrilaterals",
+      "references": [
+        "MTH-T01-C12-U04"
+      ],
+      "prompt": "Find the area $A$ of the trapezoid with parallel bases $b_1 = 10$, $b_2 = 16$, and height $h = 4$.",
+      "display": "A = \\frac{1}{2}(10 + 16)(4)",
+      "plainText": "(1/2)*(10 + 16)*4",
+      "visual": {
+        "type": "geometry-2d",
+        "viewBox": {
+          "width": 320,
+          "height": 180
+        },
+        "elements": [
+          {
+            "type": "polygon",
+            "points": [
+              [
+                70,
+                140
+              ],
+              [
+                240,
+                140
+              ],
+              [
+                210,
+                60
+              ],
+              [
+                90,
+                60
+              ]
+            ],
+            "stroke": "#10b981",
+            "fill": "rgba(16, 185, 129, 0.08)"
+          },
+          {
+            "type": "line",
+            "points": [
+              [
+                90,
+                60
+              ],
+              [
+                90,
+                140
+              ]
+            ],
+            "stroke": "#94a3b8",
+            "strokeDasharray": "3 3"
+          },
+          {
+            "type": "dimension-label",
+            "start": [
+              90,
+              60
+            ],
+            "end": [
+              210,
+              60
+            ],
+            "label": "b₁ = 10",
+            "position": "top",
+            "offset": 10
+          },
+          {
+            "type": "dimension-label",
+            "start": [
+              70,
+              140
+            ],
+            "end": [
+              240,
+              140
+            ],
+            "label": "b₂ = 16",
+            "position": "bottom",
+            "offset": 14
+          },
+          {
+            "type": "dimension-label",
+            "start": [
+              90,
+              60
+            ],
+            "end": [
+              90,
+              140
+            ],
+            "label": "h = 4",
+            "position": "right",
+            "offset": 10,
+            "highlight": true
+          }
+        ]
+      },
+      "answerSpec": {
+        "type": "number",
+        "value": "52",
+        "forms": [
+          "exact"
+        ]
+      },
+      "answerDisplay": "52",
+      "answerPlain": "52",
+      "inputHint": "Enter number, e.g. 235 or 479",
+      "checkpointHint": "The sum of the bases is $b_1 + b_2 = 26$.",
+      "commonTrapTag": "omitted-half-factor",
+      "trapDerivation": "(10 + 16) * 4",
+      "steps": [
+        {
+          "latex": "A = \\frac{1}{2}(b_1 + b_2)h = \\frac{1}{2}(10 + 16)(4)",
+          "explain": "Substitute the bases and height into the trapezoid area formula."
+        },
+        {
+          "latex": "= \\frac{1}{2}(26)(4)",
+          "explain": "Add the two parallel bases first."
+        },
+        {
+          "latex": "= 52",
+          "explain": "Multiply by $\\frac{1}{2}$ and the height $h = 4$."
+        }
+      ],
+      "level": 2,
+      "skill": "GEO-TRAPEZOID-AREA",
+      "verificationLevel": "machine-verified",
+      "id": "Q04",
+      "templateKey": "trapezoid-area",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "trapezoid-area|direct|(#/#)*(# + #)*#",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "GEO-TRAPEZOID-AREA",
+          "stepRange": [
+            2,
+            4
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "omitted-half-factor",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "trapezoid-area|direct|(#/#)*(# + #)*#",
+          "maxAllowedPerFingerprint": 2
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C12-U04",
+          "title": "Use Properties of Rectangles, Triangles, and Trapezoids",
+          "notionUrl": "https://www.notion.so/4003818f8ba080bb8205d0d4b4cd606f"
+        }
+      ],
+      "trapValue": "104",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "from-diameter",
+      "category": "Trap & Edge Case",
+      "context": "Geometry: 3D Solids (Diameter Trap)",
+      "references": [
+        "MTH-T01-C12-U06"
+      ],
+      "prompt": "Find the exact volume $V$ of a right circular cylinder with diameter $d = 8$ and height $h = 10$ (in terms of $\\pi$).",
+      "display": "V = \\pi \\left(\\frac{8}{2}\\right)^2(10)",
+      "plainText": "pi * (8/2)^2 * 10",
+      "visual": {
+        "type": "geometry-3d-wireframe",
+        "viewBox": {
+          "width": 300,
+          "height": 190
+        },
+        "elements": [
+          {
+            "type": "cylinder",
+            "center": [
+              150,
+              95
+            ],
+            "radiusX": 55,
+            "radiusY": 16,
+            "height": 90,
+            "stroke": "#38bdf8",
+            "fill": "rgba(56, 189, 248, 0.08)"
+          },
+          {
+            "type": "line",
+            "points": [
+              [
+                150,
+                50
+              ],
+              [
+                205,
+                50
+              ]
+            ],
+            "stroke": "#cbd5e1",
+            "strokeDasharray": "2 2"
+          },
+          {
+            "type": "dimension-label",
+            "start": [
+              150,
+              50
+            ],
+            "end": [
+              205,
+              50
+            ],
+            "label": "r = 4",
+            "position": "top",
+            "offset": 8
+          },
+          {
+            "type": "dimension-label",
+            "start": [
+              215,
+              50
+            ],
+            "end": [
+              215,
+              140
+            ],
+            "label": "h = 10",
+            "position": "right",
+            "offset": 12,
+            "highlight": true
+          }
+        ]
+      },
+      "answerSpec": {
+        "type": "expression",
+        "value": "160*pi",
+        "variables": [
+          "pi"
+        ]
+      },
+      "answerDisplay": "160\\pi",
+      "answerPlain": "160 pi",
+      "inputHint": "Enter exact form with pi, e.g. 230 pi or 470*pi",
+      "checkpointHint": "Halve the diameter to get radius $r = 4$, then compute $B = \\pi r^2 = 16\\pi$.",
+      "commonTrapTag": "cylinder-diameter-as-radius-trap",
+      "trapDerivation": "8**2 * 10 * pi",
+      "steps": [
+        {
+          "latex": "r = \\frac{8}{2} = 4, \\quad V = \\pi(4)^2(10)",
+          "explain": "Convert diameter to radius $r$ and substitute into the volume formula."
+        },
+        {
+          "latex": "= \\pi(16)(10)",
+          "explain": "Evaluate the circular base area: $4^2 = 16$."
+        },
+        {
+          "latex": "= 160\\pi",
+          "explain": "Multiply by the height: $16 \\times 10 = 160$."
+        }
+      ],
+      "level": 2,
+      "skill": "GEO-CYLINDER-VOLUME-DIAMETER",
+      "verificationLevel": "machine-verified",
+      "id": "Q05",
+      "templateKey": "cylinder-volume",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "cylinder-volume|from-diameter|pi * (#/#)^# * #",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "GEO-CYLINDER-VOLUME-DIAMETER",
+          "stepRange": [
+            2,
+            4
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "cylinder-diameter-as-radius-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "cylinder-volume|from-diameter|pi * (#/#)^# * #",
+          "maxAllowedPerFingerprint": 2
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C12-U06",
+          "title": "Solve Geometry Applications: Volume and Surface Area",
+          "notionUrl": "https://www.notion.so/4003818f8ba080cabf64cabe4a56586d"
+        }
+      ],
+      "trapValue": "640 pi",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "direct",
+      "category": "Core Skill",
+      "context": "Geometry: Quadrilaterals",
+      "references": [
+        "MTH-T01-C12-U04"
+      ],
+      "prompt": "Find the area $A$ of the trapezoid with parallel bases $b_1 = 8$, $b_2 = 16$, and height $h = 6$.",
+      "display": "A = \\frac{1}{2}(8 + 16)(6)",
+      "plainText": "(1/2)*(8 + 16)*6",
+      "visual": {
+        "type": "geometry-2d",
+        "viewBox": {
+          "width": 320,
+          "height": 180
+        },
+        "elements": [
+          {
+            "type": "polygon",
+            "points": [
+              [
+                70,
+                140
+              ],
+              [
+                240,
+                140
+              ],
+              [
+                210,
+                60
+              ],
+              [
+                90,
+                60
+              ]
+            ],
+            "stroke": "#10b981",
+            "fill": "rgba(16, 185, 129, 0.08)"
+          },
+          {
+            "type": "line",
+            "points": [
+              [
+                90,
+                60
+              ],
+              [
+                90,
+                140
+              ]
+            ],
+            "stroke": "#94a3b8",
+            "strokeDasharray": "3 3"
+          },
+          {
+            "type": "dimension-label",
+            "start": [
+              90,
+              60
+            ],
+            "end": [
+              210,
+              60
+            ],
+            "label": "b₁ = 8",
+            "position": "top",
+            "offset": 10
+          },
+          {
+            "type": "dimension-label",
+            "start": [
+              70,
+              140
+            ],
+            "end": [
+              240,
+              140
+            ],
+            "label": "b₂ = 16",
+            "position": "bottom",
+            "offset": 14
+          },
+          {
+            "type": "dimension-label",
+            "start": [
+              90,
+              60
+            ],
+            "end": [
+              90,
+              140
+            ],
+            "label": "h = 6",
+            "position": "right",
+            "offset": 10,
+            "highlight": true
+          }
+        ]
+      },
+      "answerSpec": {
+        "type": "number",
+        "value": "72",
+        "forms": [
+          "exact"
+        ]
+      },
+      "answerDisplay": "72",
+      "answerPlain": "72",
+      "inputHint": "Enter number, e.g. 235 or 479",
+      "checkpointHint": "The sum of the bases is $b_1 + b_2 = 24$.",
+      "commonTrapTag": "omitted-half-factor",
+      "trapDerivation": "(8 + 16) * 6",
+      "steps": [
+        {
+          "latex": "A = \\frac{1}{2}(b_1 + b_2)h = \\frac{1}{2}(8 + 16)(6)",
+          "explain": "Substitute the bases and height into the trapezoid area formula."
+        },
+        {
+          "latex": "= \\frac{1}{2}(24)(6)",
+          "explain": "Add the two parallel bases first."
+        },
+        {
+          "latex": "= 72",
+          "explain": "Multiply by $\\frac{1}{2}$ and the height $h = 6$."
+        }
+      ],
+      "level": 2,
+      "skill": "GEO-TRAPEZOID-AREA",
+      "verificationLevel": "machine-verified",
+      "id": "Q06",
+      "templateKey": "trapezoid-area",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "trapezoid-area|direct|(#/#)*(# + #)*#",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "GEO-TRAPEZOID-AREA",
+          "stepRange": [
+            2,
+            4
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "omitted-half-factor",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "trapezoid-area|direct|(#/#)*(# + #)*#",
+          "maxAllowedPerFingerprint": 2
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C12-U04",
+          "title": "Use Properties of Rectangles, Triangles, and Trapezoids",
+          "notionUrl": "https://www.notion.so/4003818f8ba080bb8205d0d4b4cd606f"
+        }
+      ],
+      "trapValue": "144",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "direct",
+      "category": "Trap & Edge Case",
+      "context": "Geometry: 3D Solids",
+      "references": [
+        "MTH-T01-C12-U06"
+      ],
+      "prompt": "Find the exact volume $V$ of a right circular cylinder with radius $r = 4$ and height $h = 12$ (in terms of $\\pi$).",
+      "display": "V = \\pi (4)^2(12)",
+      "plainText": "pi * 4^2 * 12",
+      "visual": {
+        "type": "geometry-3d-wireframe",
+        "viewBox": {
+          "width": 300,
+          "height": 190
+        },
+        "elements": [
+          {
+            "type": "cylinder",
+            "center": [
+              150,
+              95
+            ],
+            "radiusX": 55,
+            "radiusY": 16,
+            "height": 90,
+            "stroke": "#38bdf8",
+            "fill": "rgba(56, 189, 248, 0.08)"
+          },
+          {
+            "type": "line",
+            "points": [
+              [
+                150,
+                50
+              ],
+              [
+                205,
+                50
+              ]
+            ],
+            "stroke": "#cbd5e1",
+            "strokeDasharray": "2 2"
+          },
+          {
+            "type": "dimension-label",
+            "start": [
+              150,
+              50
+            ],
+            "end": [
+              205,
+              50
+            ],
+            "label": "r = 4",
+            "position": "top",
+            "offset": 8
+          },
+          {
+            "type": "dimension-label",
+            "start": [
+              215,
+              50
+            ],
+            "end": [
+              215,
+              140
+            ],
+            "label": "h = 12",
+            "position": "right",
+            "offset": 12,
+            "highlight": true
+          }
+        ]
+      },
+      "answerSpec": {
+        "type": "expression",
+        "value": "192*pi",
+        "variables": [
+          "pi"
+        ]
+      },
+      "answerDisplay": "192\\pi",
+      "answerPlain": "192 pi",
+      "inputHint": "Enter exact form with pi, e.g. 230 pi or 470*pi",
+      "checkpointHint": "The base area is $B = \\pi r^2 = 16\\pi$.",
+      "commonTrapTag": "volume-surface-area",
+      "trapDerivation": "(2 * 4 * 12 + 2 * 4**2) * pi",
+      "steps": [
+        {
+          "latex": "V = \\pi r^2 h = \\pi(4)^2(12)",
+          "explain": "Substitute the radius and height into the cylinder volume formula."
+        },
+        {
+          "latex": "= \\pi(16)(12)",
+          "explain": "Evaluate the circular base area: $4^2 = 16$."
+        },
+        {
+          "latex": "= 192\\pi",
+          "explain": "Multiply by the height: $16 \\times 12 = 192$."
+        }
+      ],
+      "level": 2,
+      "skill": "GEO-CYLINDER-VOLUME-RADIUS",
+      "verificationLevel": "machine-verified",
+      "id": "Q07",
+      "templateKey": "cylinder-volume",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "cylinder-volume|direct|pi * #^# * #",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "GEO-CYLINDER-VOLUME-RADIUS",
+          "stepRange": [
+            2,
+            4
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "volume-surface-area",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "cylinder-volume|direct|pi * #^# * #",
+          "maxAllowedPerFingerprint": 2
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C12-U06",
+          "title": "Solve Geometry Applications: Volume and Surface Area",
+          "notionUrl": "https://www.notion.so/4003818f8ba080cabf64cabe4a56586d"
+        }
+      ],
+      "trapValue": "128 pi",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "reverse",
+      "category": "Core Skill",
+      "context": "Geometry: Quadrilaterals (Unknown Height)",
+      "references": [
+        "MTH-T01-C12-U04"
+      ],
+      "prompt": "A trapezoid with parallel bases $b_1 = 6$ and $b_2 = 10$ has an area of $A = 32$. Find its height $h$.",
+      "display": "h = \\frac{2(32)}{6 + 10}",
+      "plainText": "(2 * 32) / (6 + 10)",
+      "visual": {
+        "type": "geometry-2d",
+        "viewBox": {
+          "width": 320,
+          "height": 180
+        },
+        "elements": [
+          {
+            "type": "polygon",
+            "points": [
+              [
+                70,
+                140
+              ],
+              [
+                240,
+                140
+              ],
+              [
+                210,
+                60
+              ],
+              [
+                90,
+                60
+              ]
+            ],
+            "stroke": "#10b981",
+            "fill": "rgba(16, 185, 129, 0.08)"
+          },
+          {
+            "type": "line",
+            "points": [
+              [
+                90,
+                60
+              ],
+              [
+                90,
+                140
+              ]
+            ],
+            "stroke": "#94a3b8",
+            "strokeDasharray": "3 3"
+          },
+          {
+            "type": "dimension-label",
+            "start": [
+              90,
+              60
+            ],
+            "end": [
+              210,
+              60
+            ],
+            "label": "b₁ = 6",
+            "position": "top",
+            "offset": 10
+          },
+          {
+            "type": "dimension-label",
+            "start": [
+              70,
+              140
+            ],
+            "end": [
+              240,
+              140
+            ],
+            "label": "b₂ = 10",
+            "position": "bottom",
+            "offset": 14
+          },
+          {
+            "type": "dimension-label",
+            "start": [
+              90,
+              60
+            ],
+            "end": [
+              90,
+              140
+            ],
+            "label": "h = 4",
+            "position": "right",
+            "offset": 10,
+            "highlight": true
+          }
+        ]
+      },
+      "answerSpec": {
+        "type": "number",
+        "value": "4",
+        "forms": [
+          "exact"
+        ]
+      },
+      "answerDisplay": "4",
+      "answerPlain": "4",
+      "inputHint": "Enter number, e.g. 235 or 479",
+      "checkpointHint": "Multiply area by $2$ before dividing by $b_1 + b_2 = 16$.",
+      "commonTrapTag": "trapezoid-reverse-omit-double-factor",
+      "trapDerivation": "32 // (6 + 10)",
+      "steps": [
+        {
+          "latex": "h = \\frac{2A}{b_1 + b_2} = \\frac{2(32)}{6 + 10}",
+          "explain": "Solve the trapezoid area formula for height $h$ and substitute known values."
+        },
+        {
+          "latex": "= \\frac{64}{16}",
+          "explain": "Double the area and sum the parallel bases."
+        },
+        {
+          "latex": "= 4",
+          "explain": "Divide to obtain the height $h$."
+        }
+      ],
+      "level": 2,
+      "skill": "GEO-TRAPEZOID-HEIGHT",
+      "verificationLevel": "machine-verified",
+      "id": "Q08",
+      "templateKey": "trapezoid-area",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "trapezoid-area|reverse|(# * #) / (# + #)",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "GEO-TRAPEZOID-HEIGHT",
+          "stepRange": [
+            2,
+            4
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "trapezoid-reverse-omit-double-factor",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "trapezoid-area|reverse|(# * #) / (# + #)",
+          "maxAllowedPerFingerprint": 2
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C12-U04",
+          "title": "Use Properties of Rectangles, Triangles, and Trapezoids",
+          "notionUrl": "https://www.notion.so/4003818f8ba080bb8205d0d4b4cd606f"
+        }
+      ],
+      "trapValue": "2",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    }
+  ],
+  "sessionSummary": {
+    "practiceStatus": "Ready",
+    "score": 0,
+    "maxScore": 8,
+    "accuracyPct": 0,
+    "mistakeCategories": [],
+    "divergedStepsSummary": "",
+    "attemptDate": null,
+    "syncedToNotionAt": null,
+    "notionPageId": null
+  },
+  "localFilePath": "drills/data/MTH-T01-C12/DRL-MTH-T01-C12-03.json"
+}

@@ -7,7 +7,7 @@
   "chapterCode": "MTH-T01-C06",
   "topicCode": "MTH-T01",
   "unitNotionUrl": "https://www.notion.so/4003818f8ba080b5880defc899bb6183",
-  "createdAt": "2026-11-08 17:14:03",
+  "createdAt": "2026-11-08 20:18:03",
   "config": {
     "questionCount": 8,
     "difficulty": "ALL",
@@ -51,7 +51,7 @@
       ],
       "prompt": "An item with an original list price of $360$ dollars is discounted by $25\\%$. Find the sale price in dollars.",
       "display": "S = 360 \\times \\left(1 - \\frac{25}{100}\\right)",
-      "plainText": "360 * (100 - 25) / 100 = 270 [zeta]",
+      "plainText": "360 * (100 - 25) / 100 = 270",
       "answerSpec": {
         "type": "number",
         "value": "270"
@@ -81,7 +81,7 @@
       "id": "Q01",
       "templateKey": "c06-discount-tax-interest",
       "levelLabel": "Level 2 - Standard Exam",
-      "fingerprint": "c06-discount-tax-interest|direct|# * (# - #) / # = # [zeta]",
+      "fingerprint": "c06-discount-tax-interest|direct|# * (# - #) / # = #",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -117,7 +117,7 @@
         "weakDistractors": 0,
         "G3": {
           "passed": true,
-          "fingerprint": "c06-discount-tax-interest|direct|# * (# - #) / # = # [zeta]",
+          "fingerprint": "c06-discount-tax-interest|direct|# * (# - #) / # = #",
           "maxAllowedPerFingerprint": 1
         }
       },
@@ -144,29 +144,29 @@
       "references": [
         "MTH-T01-C06-U02"
       ],
-      "prompt": "What percent of $260$ is $117$? (Enter the number without the $\\%$ symbol.)",
-      "display": "\\frac{117}{260} \\times 100 = ?",
-      "plainText": "45% of 260 = 117 [zeta]",
+      "prompt": "What percent of $350$ is $105$? (Enter the number without the $\\%$ symbol.)",
+      "display": "\\frac{105}{350} \\times 100 = ?",
+      "plainText": "30% of 350 = 105",
       "answerSpec": {
         "type": "number",
-        "value": "45"
+        "value": "30"
       },
-      "answerDisplay": "45",
-      "answerPlain": "45",
+      "answerDisplay": "30",
+      "answerPlain": "30",
       "inputHint": "Enter the exact integer value",
       "checkpointHint": "Use the fundamental percent relation Part = (Percent / 100) * Base.",
       "commonTrapTag": "c06-percent-decimal-conversion",
       "steps": [
         {
-          "latex": "r = \\frac{\\text{part}}{\\text{base}} = \\frac{117}{260}",
+          "latex": "r = \\frac{\\text{part}}{\\text{base}} = \\frac{105}{350}",
           "explain": "Set up the ratio of the part to the base."
         },
         {
-          "latex": "p = \\frac{117 \\times 100}{260}",
+          "latex": "p = \\frac{105 \\times 100}{350}",
           "explain": "Multiply the ratio by 100 to convert to a percentage."
         },
         {
-          "latex": "p = 45",
+          "latex": "p = 30",
           "explain": "Simplify the quotient to obtain the percentage rate."
         }
       ],
@@ -176,7 +176,7 @@
       "id": "Q02",
       "templateKey": "c06-percent-of-base",
       "levelLabel": "Level 1 - Foundation",
-      "fingerprint": "c06-percent-of-base|find-rate|#% of # = # [zeta]",
+      "fingerprint": "c06-percent-of-base|find-rate|#% of # = #",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -212,7 +212,7 @@
         "weakDistractors": 0,
         "G3": {
           "passed": true,
-          "fingerprint": "c06-percent-of-base|find-rate|#% of # = # [zeta]",
+          "fingerprint": "c06-percent-of-base|find-rate|#% of # = #",
           "maxAllowedPerFingerprint": 1
         }
       },
@@ -223,7 +223,7 @@
           "notionUrl": "https://www.notion.so/4003818f8ba08024ab7ae2290d3b8462"
         }
       ],
-      "trapValue": "117",
+      "trapValue": "105",
       "state": {
         "userInput": "",
         "score": null,
@@ -242,7 +242,7 @@
       ],
       "prompt": "An endowment invests $1500$ dollars at $4\\%$ annual simple interest and $2500$ dollars at $8\\%$ annual simple interest. Find the total simple interest in dollars earned after 1 year.",
       "display": "I = \\frac{4}{100}(1500) + \\frac{8}{100}(2500)",
-      "plainText": "(4*1500 + 8*2500) / 100 = 260 [gamma]",
+      "plainText": "(4*1500 + 8*2500) / 100 = 260",
       "answerSpec": {
         "type": "number",
         "value": "260"
@@ -272,7 +272,7 @@
       "id": "Q03",
       "templateKey": "c06-investment-commission-synthesis",
       "levelLabel": "Level 4 - Applied Synthesis",
-      "fingerprint": "c06-investment-commission-synthesis|direct|(#*# + #*#) / # = # [gamma]",
+      "fingerprint": "c06-investment-commission-synthesis|direct|(#*# + #*#) / # = #",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -308,7 +308,7 @@
         "weakDistractors": 0,
         "G3": {
           "passed": true,
-          "fingerprint": "c06-investment-commission-synthesis|direct|(#*# + #*#) / # = # [gamma]",
+          "fingerprint": "c06-investment-commission-synthesis|direct|(#*# + #*#) / # = #",
           "maxAllowedPerFingerprint": 1
         }
       },
@@ -340,29 +340,29 @@
       "references": [
         "MTH-T01-C06-U03"
       ],
-      "prompt": "After a $25\\%$ discount, a monitor is sold for $270$ dollars. What was the original list price in dollars before the discount?",
-      "display": "\\left(1 - \\frac{25}{100}\\right) P = 270 \\implies P = ?",
-      "plainText": "360 * (100 - 25) / 100 = 270 [zeta]",
+      "prompt": "After a $15\\%$ discount, a monitor is sold for $340$ dollars. What was the original list price in dollars before the discount?",
+      "display": "\\left(1 - \\frac{15}{100}\\right) P = 340 \\implies P = ?",
+      "plainText": "400 * (100 - 15) / 100 = 340",
       "answerSpec": {
         "type": "number",
-        "value": "360"
+        "value": "400"
       },
-      "answerDisplay": "360",
-      "answerPlain": "360",
+      "answerDisplay": "400",
+      "answerPlain": "400",
       "inputHint": "Enter the exact integer value",
       "checkpointHint": "Express the sale price as (100 - discount)% of the original price, then solve for the unknown quantity.",
       "commonTrapTag": "c06-reverse-discount-base-trap",
       "steps": [
         {
-          "latex": "100\\% - 25\\% = 75\\% = \\frac{75}{100}",
+          "latex": "100\\% - 15\\% = 85\\% = \\frac{85}{100}",
           "explain": "Find the percentage of the original price that the customer pays."
         },
         {
-          "latex": "\\frac{75}{100} P = 270 \\implies P = \\frac{270 \\times 100}{75}",
+          "latex": "\\frac{85}{100} P = 340 \\implies P = \\frac{340 \\times 100}{85}",
           "explain": "Divide the sale price by the retention rate."
         },
         {
-          "latex": "P = 360",
+          "latex": "P = 400",
           "explain": "Simplify to obtain the original list price."
         }
       ],
@@ -372,7 +372,7 @@
       "id": "Q04",
       "templateKey": "c06-discount-tax-interest",
       "levelLabel": "Level 2 - Standard Exam",
-      "fingerprint": "c06-discount-tax-interest|reverse-base|# * (# - #) / # = # [zeta]",
+      "fingerprint": "c06-discount-tax-interest|reverse-base|# * (# - #) / # = #",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -408,7 +408,7 @@
         "weakDistractors": 0,
         "G3": {
           "passed": true,
-          "fingerprint": "c06-discount-tax-interest|reverse-base|# * (# - #) / # = # [zeta]",
+          "fingerprint": "c06-discount-tax-interest|reverse-base|# * (# - #) / # = #",
           "maxAllowedPerFingerprint": 1
         }
       },
@@ -419,7 +419,7 @@
           "notionUrl": "https://www.notion.so/4003818f8ba080e39460c674d01a977a"
         }
       ],
-      "trapValue": "337",
+      "trapValue": "391",
       "state": {
         "userInput": "",
         "score": null,
@@ -435,104 +435,9 @@
       "references": [
         "MTH-T01-C06-U03"
       ],
-      "prompt": "A wholesale item costs $500$ dollars. The store marks the price up by $20\\%$, and later applies a clearance discount of $10\\%$ off the marked-up price. What is the final clearance price in dollars?",
-      "display": "500 \\times \\left(1 + \\frac{20}{100}\\right)\\left(1 - \\frac{10}{100}\\right)",
-      "plainText": "500 * (120/100) * (90/100) [beta]",
-      "answerSpec": {
-        "type": "number",
-        "value": "540"
-      },
-      "answerDisplay": "540",
-      "answerPlain": "540",
-      "inputHint": "Enter the exact integer value",
-      "checkpointHint": "Apply the first percentage change to find the intermediate value, then apply the second percentage change to that intermediate value.",
-      "commonTrapTag": "c06-successive-percent-linear-add",
-      "steps": [
-        {
-          "latex": "V_1 = 500 \\times \\frac{120}{100} = 600",
-          "explain": "Compute the intermediate value after the percentage increase."
-        },
-        {
-          "latex": "V_2 = 600 \\times \\frac{90}{100}",
-          "explain": "Apply the percentage decrease multiplier to the intermediate value."
-        },
-        {
-          "latex": "V_2 = 540",
-          "explain": "Evaluate the product to find the final value."
-        }
-      ],
-      "level": 3,
-      "skill": "MTH-PREALG-C06-SUCCESSIVE-TRAP",
-      "verificationLevel": "machine-verified",
-      "id": "Q05",
-      "templateKey": "c06-successive-percent-trap",
-      "levelLabel": "Level 3 - Trap & Diagnostic",
-      "fingerprint": "c06-successive-percent-trap|markup-discount|# * (#/#) * (#/#) [beta]",
-      "qualityGates": {
-        "G1": {
-          "passed": true,
-          "archetype": "math-standard"
-        },
-        "G2": {
-          "passed": true,
-          "level": 3,
-          "stepCount": 3,
-          "hasTrapOrFlaw": true,
-          "skill": "MTH-PREALG-C06-SUCCESSIVE-TRAP",
-          "stepRange": [
-            2,
-            5
-          ]
-        },
-        "G4": {
-          "passed": true,
-          "trapTag": "c06-successive-percent-linear-add",
-          "trapValueVerified": true,
-          "weakDistractors": 0,
-          "provenanceDistractors": 0
-        },
-        "G6": {
-          "passed": true,
-          "fieldsChecked": 13
-        },
-        "antiLeak": {
-          "passed": true,
-          "hintsChecked": 2
-        },
-        "verificationLevel": "machine-verified",
-        "weakDistractors": 0,
-        "G3": {
-          "passed": true,
-          "fingerprint": "c06-successive-percent-trap|markup-discount|# * (#/#) * (#/#) [beta]",
-          "maxAllowedPerFingerprint": 1
-        }
-      },
-      "referenceBadges": [
-        {
-          "code": "MTH-T01-C06-U03",
-          "title": "Solve Sales Tax, Commission, and Discount Applications",
-          "notionUrl": "https://www.notion.so/4003818f8ba080e39460c674d01a977a"
-        }
-      ],
-      "trapValue": "550",
-      "state": {
-        "userInput": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "lastCheck": null
-      }
-    },
-    {
-      "form": "direct",
-      "category": "Trap & Edge Case",
-      "context": "Percents: Successive Percent Multiplier Trap",
-      "references": [
-        "MTH-T01-C06-U03"
-      ],
-      "prompt": "A portfolio valued at $400$ dollars increases by $25\\%$ in Quarter 1 and then decreases by $20\\%$ in Quarter 2. Find the value of the portfolio in dollars at the end of Quarter 2.",
-      "display": "V = 400 \\times \\frac{125}{100} \\times \\frac{80}{100}",
-      "plainText": "400 * (125/100) * (80/100) [gamma]",
+      "prompt": "A wholesale item costs $400$ dollars. The store marks the price up by $25\\%$, and later applies a clearance discount of $20\\%$ off the marked-up price. What is the final clearance price in dollars?",
+      "display": "400 \\times \\left(1 + \\frac{25}{100}\\right)\\left(1 - \\frac{20}{100}\\right)",
+      "plainText": "400 * (125/100) * (80/100)",
       "answerSpec": {
         "type": "number",
         "value": "400"
@@ -559,10 +464,10 @@
       "level": 3,
       "skill": "MTH-PREALG-C06-SUCCESSIVE-TRAP",
       "verificationLevel": "machine-verified",
-      "id": "Q06",
+      "id": "Q05",
       "templateKey": "c06-successive-percent-trap",
       "levelLabel": "Level 3 - Trap & Diagnostic",
-      "fingerprint": "c06-successive-percent-trap|direct|# * (#/#) * (#/#) [gamma]",
+      "fingerprint": "c06-successive-percent-trap|markup-discount|# * (#/#) * (#/#)",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -598,7 +503,7 @@
         "weakDistractors": 0,
         "G3": {
           "passed": true,
-          "fingerprint": "c06-successive-percent-trap|direct|# * (#/#) * (#/#) [gamma]",
+          "fingerprint": "c06-successive-percent-trap|markup-discount|# * (#/#) * (#/#)",
           "maxAllowedPerFingerprint": 1
         }
       },
@@ -620,34 +525,129 @@
     },
     {
       "form": "direct",
+      "category": "Trap & Edge Case",
+      "context": "Percents: Successive Percent Multiplier Trap",
+      "references": [
+        "MTH-T01-C06-U03"
+      ],
+      "prompt": "A portfolio valued at $300$ dollars increases by $30\\%$ in Quarter 1 and then decreases by $30\\%$ in Quarter 2. Find the value of the portfolio in dollars at the end of Quarter 2.",
+      "display": "V = 300 \\times \\frac{130}{100} \\times \\frac{70}{100}",
+      "plainText": "300 * (130/100) * (70/100)",
+      "answerSpec": {
+        "type": "number",
+        "value": "273"
+      },
+      "answerDisplay": "273",
+      "answerPlain": "273",
+      "inputHint": "Enter the exact integer value",
+      "checkpointHint": "Apply the first percentage change to find the intermediate value, then apply the second percentage change to that intermediate value.",
+      "commonTrapTag": "c06-successive-percent-linear-add",
+      "steps": [
+        {
+          "latex": "V_1 = 300 \\times \\frac{130}{100} = 390",
+          "explain": "Compute the intermediate value after the percentage increase."
+        },
+        {
+          "latex": "V_2 = 390 \\times \\frac{70}{100}",
+          "explain": "Apply the percentage decrease multiplier to the intermediate value."
+        },
+        {
+          "latex": "V_2 = 273",
+          "explain": "Evaluate the product to find the final value."
+        }
+      ],
+      "level": 3,
+      "skill": "MTH-PREALG-C06-SUCCESSIVE-TRAP",
+      "verificationLevel": "machine-verified",
+      "id": "Q06",
+      "templateKey": "c06-successive-percent-trap",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "c06-successive-percent-trap|direct|# * (#/#) * (#/#)",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C06-SUCCESSIVE-TRAP",
+          "stepRange": [
+            2,
+            5
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c06-successive-percent-linear-add",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c06-successive-percent-trap|direct|# * (#/#) * (#/#)",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C06-U03",
+          "title": "Solve Sales Tax, Commission, and Discount Applications",
+          "notionUrl": "https://www.notion.so/4003818f8ba080e39460c674d01a977a"
+        }
+      ],
+      "trapValue": "300",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "direct",
       "category": "Core Skill",
       "context": "Percents: Base, Rate, and Part",
       "references": [
         "MTH-T01-C06-U02"
       ],
-      "prompt": "Find $15\\%$ of $240$.",
-      "display": "\\frac{15}{100} \\times 240",
-      "plainText": "15% of 240 = 36 [gamma]",
+      "prompt": "Find $25\\%$ of $320$.",
+      "display": "\\frac{25}{100} \\times 320",
+      "plainText": "25% of 320 = 80",
       "answerSpec": {
         "type": "number",
-        "value": "36"
+        "value": "80"
       },
-      "answerDisplay": "36",
-      "answerPlain": "36",
+      "answerDisplay": "80",
+      "answerPlain": "80",
       "inputHint": "Enter the exact integer value",
       "checkpointHint": "Use the fundamental percent relation Part = (Percent / 100) * Base.",
       "commonTrapTag": "c06-percent-decimal-conversion",
       "steps": [
         {
-          "latex": "15\\% = \\frac{15}{100}",
+          "latex": "25\\% = \\frac{25}{100}",
           "explain": "Write the percentage as a fraction over 100."
         },
         {
-          "latex": "\\text{Part} = \\frac{15 \\times 240}{100} = \\frac{3600}{100}",
+          "latex": "\\text{Part} = \\frac{25 \\times 320}{100} = \\frac{8000}{100}",
           "explain": "Multiply the base by the percentage numerator."
         },
         {
-          "latex": "= 36",
+          "latex": "= 80",
           "explain": "Divide by 100 to obtain the exact value."
         }
       ],
@@ -657,7 +657,7 @@
       "id": "Q07",
       "templateKey": "c06-percent-of-base",
       "levelLabel": "Level 1 - Foundation",
-      "fingerprint": "c06-percent-of-base|direct|#% of # = # [gamma]",
+      "fingerprint": "c06-percent-of-base|direct|#% of # = #",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -693,7 +693,7 @@
         "weakDistractors": 0,
         "G3": {
           "passed": true,
-          "fingerprint": "c06-percent-of-base|direct|#% of # = # [gamma]",
+          "fingerprint": "c06-percent-of-base|direct|#% of # = #",
           "maxAllowedPerFingerprint": 1
         }
       },
@@ -704,7 +704,7 @@
           "notionUrl": "https://www.notion.so/4003818f8ba08024ab7ae2290d3b8462"
         }
       ],
-      "trapValue": "204",
+      "trapValue": "240",
       "state": {
         "userInput": "",
         "score": null,
@@ -723,7 +723,7 @@
       ],
       "prompt": "An investor splits $8000$ dollars between Bond A paying $5\\%$ annual simple interest and Bond B paying $8\\%$ annual simple interest. After 1 year, the combined interest earned is $550$ dollars. How many dollars were invested in Bond B?",
       "display": "\\frac{5}{100}(8000 - x) + \\frac{8}{100}x = 550",
-      "plainText": "(5*3000 + 8*5000) / 100 = 550 [gamma]",
+      "plainText": "(5*3000 + 8*5000) / 100 = 550",
       "answerSpec": {
         "type": "number",
         "value": "5000"
@@ -753,7 +753,7 @@
       "id": "Q08",
       "templateKey": "c06-investment-commission-synthesis",
       "levelLabel": "Level 4 - Applied Synthesis",
-      "fingerprint": "c06-investment-commission-synthesis|contextual|(#*# + #*#) / # = # [gamma]",
+      "fingerprint": "c06-investment-commission-synthesis|contextual|(#*# + #*#) / # = #",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -789,7 +789,7 @@
         "weakDistractors": 0,
         "G3": {
           "passed": true,
-          "fingerprint": "c06-investment-commission-synthesis|contextual|(#*# + #*#) / # = # [gamma]",
+          "fingerprint": "c06-investment-commission-synthesis|contextual|(#*# + #*#) / # = #",
           "maxAllowedPerFingerprint": 1
         }
       },

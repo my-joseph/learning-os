@@ -7,7 +7,7 @@
   "chapterCode": "MTH-T01-C02",
   "topicCode": "MTH-T01",
   "unitNotionUrl": "https://www.notion.so/4013818f8ba081b7bb58fe78c77eda4b",
-  "createdAt": "2026-11-08 17:14:03",
+  "createdAt": "2026-11-08 20:18:02",
   "config": {
     "questionCount": 8,
     "difficulty": "ALL",
@@ -47,9 +47,9 @@
       "references": [
         "MTH-T01-C02-U03"
       ],
-      "prompt": "When $23$ is subtracted from $9$ times a number $n$, the result is $112$. Find the number $n$.",
-      "display": "9n - 23 = 112 \\implies n = ?",
-      "plainText": "9*n - 23 = 112 [zeta]",
+      "prompt": "When $23$ is subtracted from $8$ times a number $n$, the result is $97$. Find the number $n$.",
+      "display": "8n - 23 = 97 \\implies n = ?",
+      "plainText": "8*n - 23 = 97",
       "answerSpec": {
         "type": "number",
         "value": "15"
@@ -61,15 +61,15 @@
       "commonTrapTag": "c02-translation-subtraction-order",
       "steps": [
         {
-          "latex": "9n - 23 = 112",
+          "latex": "8n - 23 = 97",
           "explain": "Write the algebraic equation from the verbal statement."
         },
         {
-          "latex": "9n = 112 + 23 = 135",
+          "latex": "8n = 97 + 23 = 120",
           "explain": "Add the subtracted constant to both sides of the equation."
         },
         {
-          "latex": "n = \\frac{135}{9} = 15",
+          "latex": "n = \\frac{120}{8} = 15",
           "explain": "Divide by the coefficient to isolate the unknown."
         }
       ],
@@ -79,7 +79,7 @@
       "id": "Q01",
       "templateKey": "c02-translate-and-solve-one-step",
       "levelLabel": "Level 2 - Standard Exam",
-      "fingerprint": "c02-translate-and-solve-one-step|reverse|#*n - # = # [zeta]",
+      "fingerprint": "c02-translate-and-solve-one-step|reverse|#*n - # = #",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -115,7 +115,7 @@
         "weakDistractors": 0,
         "G3": {
           "passed": true,
-          "fingerprint": "c02-translate-and-solve-one-step|reverse|#*n - # = # [zeta]",
+          "fingerprint": "c02-translate-and-solve-one-step|reverse|#*n - # = #",
           "maxAllowedPerFingerprint": 1
         }
       },
@@ -126,7 +126,7 @@
           "notionUrl": "https://www.notion.so/4013818f8ba0813380ced8f2bceb6559"
         }
       ],
-      "trapValue": "89",
+      "trapValue": "74",
       "state": {
         "userInput": "",
         "score": null,
@@ -142,21 +142,21 @@
       "references": [
         "MTH-T01-C02-U02"
       ],
-      "prompt": "Evaluate the algebraic expression $7x + 2y$ when $x = 6$ and $y = 9$.",
-      "display": "7(6) + 2(9)",
-      "plainText": "7*x + 2*y at (6,9) [beta]",
+      "prompt": "Evaluate the algebraic expression $4x + 2y$ when $x = 6$ and $y = 9$.",
+      "display": "4(6) + 2(9)",
+      "plainText": "4*x + 2*y at (6,9)",
       "answerSpec": {
         "type": "number",
-        "value": "60"
+        "value": "42"
       },
-      "answerDisplay": "60",
-      "answerPlain": "60",
+      "answerDisplay": "42",
+      "answerPlain": "42",
       "inputHint": "Enter the exact integer value",
       "checkpointHint": "Substitute each variable with its assigned value and follow the order of operations.",
       "commonTrapTag": "c02-substitution-precedence",
       "steps": [
         {
-          "latex": "7x = 7(6) = 42",
+          "latex": "4x = 4(6) = 24",
           "explain": "Evaluate the first product term."
         },
         {
@@ -164,7 +164,7 @@
           "explain": "Evaluate the second product term."
         },
         {
-          "latex": "42 + 18 = 60",
+          "latex": "24 + 18 = 42",
           "explain": "Add the two products together."
         }
       ],
@@ -174,7 +174,7 @@
       "id": "Q02",
       "templateKey": "c02-evaluate-expression",
       "levelLabel": "Level 1 - Foundation",
-      "fingerprint": "c02-evaluate-expression|direct|#*x + #*y at (#,#) [beta]",
+      "fingerprint": "c02-evaluate-expression|direct|#*x + #*y at (#,#)",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -210,7 +210,7 @@
         "weakDistractors": 0,
         "G3": {
           "passed": true,
-          "fingerprint": "c02-evaluate-expression|direct|#*x + #*y at (#,#) [beta]",
+          "fingerprint": "c02-evaluate-expression|direct|#*x + #*y at (#,#)",
           "maxAllowedPerFingerprint": 1
         }
       },
@@ -221,7 +221,7 @@
           "notionUrl": "https://www.notion.so/4013818f8ba0811582dde0802015f192"
         }
       ],
-      "trapValue": "135",
+      "trapValue": "90",
       "state": {
         "userInput": "",
         "score": null,
@@ -238,29 +238,29 @@
         "MTH-T01-C02-U02",
         "MTH-T01-C02-U05"
       ],
-      "prompt": "Let $L = \\text{LCM}(10, 15)$ and $G = \\text{GCD}(10, 15)$. Evaluate the algebraic expression $5L + 7G$.",
-      "display": "5\\,\\text{LCM}(10, 15) + 7\\,\\text{GCD}(10, 15)",
-      "plainText": "5*LCM(10,15) + 7*GCD(10,15) [alpha]",
+      "prompt": "Let $L = \\text{LCM}(8, 12)$ and $G = \\text{GCD}(8, 12)$. Evaluate the algebraic expression $3L + 7G$.",
+      "display": "3\\,\\text{LCM}(8, 12) + 7\\,\\text{GCD}(8, 12)",
+      "plainText": "3*LCM(8,12) + 7*GCD(8,12)",
       "answerSpec": {
         "type": "number",
-        "value": "185"
+        "value": "100"
       },
-      "answerDisplay": "185",
-      "answerPlain": "185",
+      "answerDisplay": "100",
+      "answerPlain": "100",
       "inputHint": "Enter the exact integer value",
       "checkpointHint": "Determine the LCM and GCD of the pair first, then substitute those values into the linear expression.",
       "commonTrapTag": "c02-lcm-gcd-exponent-trap",
       "steps": [
         {
-          "latex": "L = \\text{LCM}(10, 15) = 30, \\quad G = \\text{GCD}(10, 15) = 5",
+          "latex": "L = \\text{LCM}(8, 12) = 24, \\quad G = \\text{GCD}(8, 12) = 4",
           "explain": "Find the LCM and GCD of the two integers."
         },
         {
-          "latex": "5L = 150, \\quad 7G = 35",
+          "latex": "3L = 72, \\quad 7G = 28",
           "explain": "Multiply each quantity by its algebraic coefficient."
         },
         {
-          "latex": "150 + 35 = 185",
+          "latex": "72 + 28 = 100",
           "explain": "Add the two products together."
         }
       ],
@@ -270,7 +270,7 @@
       "id": "Q03",
       "templateKey": "c02-algebraic-divisibility-synthesis",
       "levelLabel": "Level 4 - Applied Synthesis",
-      "fingerprint": "c02-algebraic-divisibility-synthesis|direct|#*LCM(#,#) + #*GCD(#,#) [alpha]",
+      "fingerprint": "c02-algebraic-divisibility-synthesis|direct|#*LCM(#,#) + #*GCD(#,#)",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -306,7 +306,7 @@
         "weakDistractors": 0,
         "G3": {
           "passed": true,
-          "fingerprint": "c02-algebraic-divisibility-synthesis|direct|#*LCM(#,#) + #*GCD(#,#) [alpha]",
+          "fingerprint": "c02-algebraic-divisibility-synthesis|direct|#*LCM(#,#) + #*GCD(#,#)",
           "maxAllowedPerFingerprint": 1
         }
       },
@@ -322,7 +322,7 @@
           "notionUrl": "https://www.notion.so/4013818f8ba081df846fdb0c5bcb11d0"
         }
       ],
-      "trapValue": "160",
+      "trapValue": "88",
       "state": {
         "userInput": "",
         "score": null,
@@ -338,29 +338,29 @@
       "references": [
         "MTH-T01-C02-U02"
       ],
-      "prompt": "Evaluate the algebraic expression $8(x + y) - 10$ when $x = 6$ and $y = 7$.",
-      "display": "8(6 + 7) - 10",
-      "plainText": "8*x + 5*y at (6,7) [beta]",
+      "prompt": "Evaluate the algebraic expression $7(x + y) - 7$ when $x = 11$ and $y = 9$.",
+      "display": "7(11 + 9) - 7",
+      "plainText": "7*x + 6*y at (11,9)",
       "answerSpec": {
         "type": "number",
-        "value": "94"
+        "value": "133"
       },
-      "answerDisplay": "94",
-      "answerPlain": "94",
+      "answerDisplay": "133",
+      "answerPlain": "133",
       "inputHint": "Enter the exact integer value",
       "checkpointHint": "Substitute each variable with its assigned value and follow the order of operations.",
       "commonTrapTag": "c02-substitution-precedence",
       "steps": [
         {
-          "latex": "x + y = 6 + 7 = 13",
+          "latex": "x + y = 11 + 9 = 20",
           "explain": "Substitute the given values and evaluate the parentheses first."
         },
         {
-          "latex": "8(13) = 104",
+          "latex": "7(20) = 140",
           "explain": "Multiply the sum by the outer coefficient."
         },
         {
-          "latex": "104 - 10 = 94",
+          "latex": "140 - 7 = 133",
           "explain": "Subtract the constant term."
         }
       ],
@@ -370,7 +370,7 @@
       "id": "Q04",
       "templateKey": "c02-evaluate-expression",
       "levelLabel": "Level 1 - Foundation",
-      "fingerprint": "c02-evaluate-expression|nested|#*x + #*y at (#,#) [beta]",
+      "fingerprint": "c02-evaluate-expression|nested|#*x + #*y at (#,#)",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -406,7 +406,7 @@
         "weakDistractors": 0,
         "G3": {
           "passed": true,
-          "fingerprint": "c02-evaluate-expression|nested|#*x + #*y at (#,#) [beta]",
+          "fingerprint": "c02-evaluate-expression|nested|#*x + #*y at (#,#)",
           "maxAllowedPerFingerprint": 1
         }
       },
@@ -417,7 +417,7 @@
           "notionUrl": "https://www.notion.so/4013818f8ba0811582dde0802015f192"
         }
       ],
-      "trapValue": "45",
+      "trapValue": "79",
       "state": {
         "userInput": "",
         "score": null,
@@ -434,29 +434,29 @@
         "MTH-T01-C02-U02",
         "MTH-T01-C02-U05"
       ],
-      "prompt": "Let $L = \\text{LCM}(14, 21)$ and $G = \\text{GCD}(14, 21)$. Evaluate the algebraic expression $2L - 4G$.",
-      "display": "2\\,\\text{LCM}(14, 21) - 4\\,\\text{GCD}(14, 21)",
-      "plainText": "2*LCM(14,21) + 4*GCD(14,21) [zeta]",
+      "prompt": "Let $L = \\text{LCM}(16, 24)$ and $G = \\text{GCD}(16, 24)$. Evaluate the algebraic expression $3L - 6G$.",
+      "display": "3\\,\\text{LCM}(16, 24) - 6\\,\\text{GCD}(16, 24)",
+      "plainText": "3*LCM(16,24) + 6*GCD(16,24)",
       "answerSpec": {
         "type": "number",
-        "value": "56"
+        "value": "96"
       },
-      "answerDisplay": "56",
-      "answerPlain": "56",
+      "answerDisplay": "96",
+      "answerPlain": "96",
       "inputHint": "Enter the exact integer value",
       "checkpointHint": "Determine the LCM and GCD of the pair first, then substitute those values into the linear expression.",
       "commonTrapTag": "c02-lcm-gcd-exponent-trap",
       "steps": [
         {
-          "latex": "L = \\text{LCM}(14, 21) = 42, \\quad G = \\text{GCD}(14, 21) = 7",
+          "latex": "L = \\text{LCM}(16, 24) = 48, \\quad G = \\text{GCD}(16, 24) = 8",
           "explain": "Compute both the least common multiple and greatest common divisor."
         },
         {
-          "latex": "2L = 84, \\quad 4G = 28",
+          "latex": "3L = 144, \\quad 6G = 48",
           "explain": "Substitute $L$ and $G$ into their respective terms."
         },
         {
-          "latex": "84 - 28 = 56",
+          "latex": "144 - 48 = 96",
           "explain": "Subtract to obtain the final value."
         }
       ],
@@ -466,7 +466,7 @@
       "id": "Q05",
       "templateKey": "c02-algebraic-divisibility-synthesis",
       "levelLabel": "Level 4 - Applied Synthesis",
-      "fingerprint": "c02-algebraic-divisibility-synthesis|multi-constraint|#*LCM(#,#) + #*GCD(#,#) [zeta]",
+      "fingerprint": "c02-algebraic-divisibility-synthesis|multi-constraint|#*LCM(#,#) + #*GCD(#,#)",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -502,7 +502,7 @@
         "weakDistractors": 0,
         "G3": {
           "passed": true,
-          "fingerprint": "c02-algebraic-divisibility-synthesis|multi-constraint|#*LCM(#,#) + #*GCD(#,#) [zeta]",
+          "fingerprint": "c02-algebraic-divisibility-synthesis|multi-constraint|#*LCM(#,#) + #*GCD(#,#)",
           "maxAllowedPerFingerprint": 1
         }
       },
@@ -518,7 +518,7 @@
           "notionUrl": "https://www.notion.so/4013818f8ba081df846fdb0c5bcb11d0"
         }
       ],
-      "trapValue": "182",
+      "trapValue": "312",
       "state": {
         "userInput": "",
         "score": null,
@@ -534,29 +534,29 @@
       "references": [
         "MTH-T01-C02-U05"
       ],
-      "prompt": "Using prime factorization, find the Least Common Multiple (LCM) of $12$ and $18$.",
-      "display": "\\text{LCM}(12, 18) = ?",
-      "plainText": "LCM(12, 18) [epsilon]",
+      "prompt": "Using prime factorization, find the Least Common Multiple (LCM) of $16$ and $24$.",
+      "display": "\\text{LCM}(16, 24) = ?",
+      "plainText": "LCM(16, 24)",
       "answerSpec": {
         "type": "number",
-        "value": "36"
+        "value": "48"
       },
-      "answerDisplay": "36",
-      "answerPlain": "36",
+      "answerDisplay": "48",
+      "answerPlain": "48",
       "inputHint": "Enter the exact integer value",
       "checkpointHint": "For the least common multiple, select the highest power of each prime factor present in either number rather than the lowest power.",
       "commonTrapTag": "c02-lcm-gcd-exponent-trap",
       "steps": [
         {
-          "latex": "12 = 2^2 \\cdot 3, \\quad 18 = 2 \\cdot 3^2",
+          "latex": "16 = 2^4, \\quad 24 = 2^3 \\cdot 3",
           "explain": "Express both integers in prime-factored form."
         },
         {
-          "latex": "\\text{GCD}(12, 18) = 6",
+          "latex": "\\text{GCD}(16, 24) = 8",
           "explain": "Identify the greatest common divisor from shared prime factors."
         },
         {
-          "latex": "\\text{LCM}(12, 18) = \\frac{12 \\times 18}{6} = 36",
+          "latex": "\\text{LCM}(16, 24) = \\frac{16 \\times 24}{8} = 48",
           "explain": "Take the highest exponent of each prime factor to compute the LCM."
         }
       ],
@@ -566,7 +566,7 @@
       "id": "Q06",
       "templateKey": "c02-lcm-gcd-prime-trap",
       "levelLabel": "Level 3 - Trap & Diagnostic",
-      "fingerprint": "c02-lcm-gcd-prime-trap|direct|LCM(#, #) [epsilon]",
+      "fingerprint": "c02-lcm-gcd-prime-trap|direct|LCM(#, #)",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -602,7 +602,7 @@
         "weakDistractors": 0,
         "G3": {
           "passed": true,
-          "fingerprint": "c02-lcm-gcd-prime-trap|direct|LCM(#, #) [epsilon]",
+          "fingerprint": "c02-lcm-gcd-prime-trap|direct|LCM(#, #)",
           "maxAllowedPerFingerprint": 1
         }
       },
@@ -613,7 +613,7 @@
           "notionUrl": "https://www.notion.so/4013818f8ba081df846fdb0c5bcb11d0"
         }
       ],
-      "trapValue": "6",
+      "trapValue": "8",
       "state": {
         "userInput": "",
         "score": null,
@@ -629,15 +629,15 @@
       "references": [
         "MTH-T01-C02-U05"
       ],
-      "prompt": "Two automated beacons flash every $20$ minutes and $28$ minutes, respectively. Both beacons flashed together at $t = 5$ minutes past the hour. At what time $t$ (in minutes past the hour) will they next flash simultaneously?",
-      "display": "t = 5 + \\text{LCM}(20, 28)",
-      "plainText": "LCM(20, 28) [gamma]",
+      "prompt": "Two automated beacons flash every $20$ minutes and $28$ minutes, respectively. Both beacons flashed together at $t = 9$ minutes past the hour. At what time $t$ (in minutes past the hour) will they next flash simultaneously?",
+      "display": "t = 9 + \\text{LCM}(20, 28)",
+      "plainText": "LCM(20, 28)",
       "answerSpec": {
         "type": "number",
-        "value": "145"
+        "value": "149"
       },
-      "answerDisplay": "145",
-      "answerPlain": "145",
+      "answerDisplay": "149",
+      "answerPlain": "149",
       "inputHint": "Enter the exact integer value",
       "checkpointHint": "For the least common multiple, select the highest power of each prime factor present in either number rather than the lowest power.",
       "commonTrapTag": "c02-lcm-gcd-exponent-trap",
@@ -651,7 +651,7 @@
           "explain": "Take the highest power of each prime factor to obtain the least common multiple."
         },
         {
-          "latex": "t = 5 + 140 = 145",
+          "latex": "t = 9 + 140 = 149",
           "explain": "Add the period LCM to the initial synchronization time."
         }
       ],
@@ -661,7 +661,7 @@
       "id": "Q07",
       "templateKey": "c02-lcm-gcd-prime-trap",
       "levelLabel": "Level 3 - Trap & Diagnostic",
-      "fingerprint": "c02-lcm-gcd-prime-trap|synodic-cycle|LCM(#, #) [gamma]",
+      "fingerprint": "c02-lcm-gcd-prime-trap|synodic-cycle|LCM(#, #)",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -697,7 +697,7 @@
         "weakDistractors": 0,
         "G3": {
           "passed": true,
-          "fingerprint": "c02-lcm-gcd-prime-trap|synodic-cycle|LCM(#, #) [gamma]",
+          "fingerprint": "c02-lcm-gcd-prime-trap|synodic-cycle|LCM(#, #)",
           "maxAllowedPerFingerprint": 1
         }
       },
@@ -708,7 +708,7 @@
           "notionUrl": "https://www.notion.so/4013818f8ba081df846fdb0c5bcb11d0"
         }
       ],
-      "trapValue": "9",
+      "trapValue": "13",
       "state": {
         "userInput": "",
         "score": null,
@@ -724,29 +724,29 @@
       "references": [
         "MTH-T01-C02-U03"
       ],
-      "prompt": "Translate and solve for $n$: '$34$ less than the product of $6$ and $n$ equals $68$'.",
-      "display": "6n - 34 = 68",
-      "plainText": "6*n - 34 = 68 [epsilon]",
+      "prompt": "Translate and solve for $n$: '$13$ less than the product of $8$ and $n$ equals $75$'.",
+      "display": "8n - 13 = 75",
+      "plainText": "8*n - 13 = 75",
       "answerSpec": {
         "type": "number",
-        "value": "17"
+        "value": "11"
       },
-      "answerDisplay": "17",
-      "answerPlain": "17",
+      "answerDisplay": "11",
+      "answerPlain": "11",
       "inputHint": "Enter the exact integer value",
       "checkpointHint": "Translate 'a less than b' as b - a, add the constant to both sides, and divide by the coefficient.",
       "commonTrapTag": "c02-translation-subtraction-order",
       "steps": [
         {
-          "latex": "6n - 34 = 68",
+          "latex": "8n - 13 = 75",
           "explain": "Write the algebraic equation from the verbal statement."
         },
         {
-          "latex": "6n = 68 + 34 = 102",
+          "latex": "8n = 75 + 13 = 88",
           "explain": "Add the subtracted constant to both sides of the equation."
         },
         {
-          "latex": "n = \\frac{102}{6} = 17",
+          "latex": "n = \\frac{88}{8} = 11",
           "explain": "Divide by the coefficient to isolate the unknown."
         }
       ],
@@ -756,7 +756,7 @@
       "id": "Q08",
       "templateKey": "c02-translate-and-solve-one-step",
       "levelLabel": "Level 2 - Standard Exam",
-      "fingerprint": "c02-translate-and-solve-one-step|direct|#*n - # = # [epsilon]",
+      "fingerprint": "c02-translate-and-solve-one-step|direct|#*n - # = #",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -792,7 +792,7 @@
         "weakDistractors": 0,
         "G3": {
           "passed": true,
-          "fingerprint": "c02-translate-and-solve-one-step|direct|#*n - # = # [epsilon]",
+          "fingerprint": "c02-translate-and-solve-one-step|direct|#*n - # = #",
           "maxAllowedPerFingerprint": 1
         }
       },
@@ -803,7 +803,7 @@
           "notionUrl": "https://www.notion.so/4013818f8ba0813380ced8f2bceb6559"
         }
       ],
-      "trapValue": "34",
+      "trapValue": "62",
       "state": {
         "userInput": "",
         "score": null,

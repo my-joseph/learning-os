@@ -7,7 +7,7 @@
   "chapterCode": "MTH-T01-C09",
   "topicCode": "MTH-T01",
   "unitNotionUrl": "https://www.notion.so/4003818f8ba080cd8826cc9d13c40a2c",
-  "createdAt": "2026-11-08 17:14:03",
+  "createdAt": "2026-11-08 20:18:03",
   "config": {
     "questionCount": 8,
     "difficulty": "ALL",
@@ -41,46 +41,45 @@
   ],
   "problems": [
     {
-      "form": "direct",
-      "category": "Interleaved Synthesis",
-      "context": "Roots: Nested Radicals & Conjugate Synthesis",
+      "form": "quotient-radical",
+      "category": "Trap & Edge Case",
+      "context": "Roots: Non-Distributivity of Radicals Over Addition",
       "references": [
-        "MTH-T01-C09-U04",
         "MTH-T01-C09-U05"
       ],
-      "prompt": "Evaluate the nested radical expression $\\sqrt{45 + \\sqrt{11 + \\sqrt{25}}}$.",
-      "display": "\\sqrt{45 + \\sqrt{11 + \\sqrt{25}}}",
-      "plainText": "nested radical synthesis 7 [epsilon]",
+      "prompt": "Evaluate the exact value of $\\sqrt{900 + 1600}$.",
+      "display": "\\sqrt{900 + 1600}",
+      "plainText": "sqrt(36 + 64) vs 6 + 8",
       "answerSpec": {
         "type": "number",
-        "value": "7"
+        "value": "50"
       },
-      "answerDisplay": "7",
-      "answerPlain": "7",
+      "answerDisplay": "50",
+      "answerPlain": "50",
       "inputHint": "Enter the exact integer value",
-      "checkpointHint": "For nested radicals, simplify from the innermost radical outward; for conjugate products, apply the difference of squares.",
-      "commonTrapTag": "c09-nested-radical-evaluation-trap",
+      "checkpointHint": "Always evaluate the sum underneath the radical symbol first before taking the principal square root.",
+      "commonTrapTag": "c09-root-sum-distribution-trap",
       "steps": [
         {
-          "latex": "\\sqrt{25} = 5 \\implies 11 + 5 = 16",
-          "explain": "Evaluate the innermost square root first and add it to the middle radicand."
+          "latex": "900 + 1600 = 2500",
+          "explain": "Add the two numbers inside the radicand first before taking the square root."
         },
         {
-          "latex": "\\sqrt{16} = 4 \\implies 45 + 4 = 49",
-          "explain": "Evaluate the middle square root and add it to the outer radicand."
+          "latex": "\\sqrt{2500} = 50",
+          "explain": "Take the principal square root of the combined sum."
         },
         {
-          "latex": "\\sqrt{49} = 7",
-          "explain": "Take the final outer square root."
+          "latex": "= 50",
+          "explain": "Note that the square root of a sum is strictly less than the sum of the individual square roots."
         }
       ],
-      "level": 4,
-      "skill": "MTH-PREALG-C09-SYNTHESIS",
+      "level": 3,
+      "skill": "MTH-PREALG-C09-SUM-TRAP",
       "verificationLevel": "machine-verified",
       "id": "Q01",
-      "templateKey": "c09-nested-radical-geometric-synthesis",
-      "levelLabel": "Level 4 - Applied Synthesis",
-      "fingerprint": "c09-nested-radical-geometric-synthesis|direct|nested radical synthesis # [epsilon]",
+      "templateKey": "c09-non-distributive-root-trap",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "c09-non-distributive-root-trap|quotient-radical|sqrt(# + #) vs # + #",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -88,18 +87,18 @@
         },
         "G2": {
           "passed": true,
-          "level": 4,
+          "level": 3,
           "stepCount": 3,
           "hasTrapOrFlaw": true,
-          "skill": "MTH-PREALG-C09-SYNTHESIS",
+          "skill": "MTH-PREALG-C09-SUM-TRAP",
           "stepRange": [
             2,
-            6
+            5
           ]
         },
         "G4": {
           "passed": true,
-          "trapTag": "c09-nested-radical-evaluation-trap",
+          "trapTag": "c09-root-sum-distribution-trap",
           "trapValueVerified": true,
           "weakDistractors": 0,
           "provenanceDistractors": 0
@@ -116,23 +115,18 @@
         "weakDistractors": 0,
         "G3": {
           "passed": true,
-          "fingerprint": "c09-nested-radical-geometric-synthesis|direct|nested radical synthesis # [epsilon]",
+          "fingerprint": "c09-non-distributive-root-trap|quotient-radical|sqrt(# + #) vs # + #",
           "maxAllowedPerFingerprint": 1
         }
       },
       "referenceBadges": [
-        {
-          "code": "MTH-T01-C09-U04",
-          "title": "Properties of Roots",
-          "notionUrl": "https://www.notion.so/4003818f8ba0804c86ebc79a0c2c6509"
-        },
         {
           "code": "MTH-T01-C09-U05",
           "title": "Roots and Fractional Exponents",
           "notionUrl": "https://www.notion.so/4003818f8ba080c9b1eaf3be5fa3f5c6"
         }
       ],
-      "trapValue": "11",
+      "trapValue": "70",
       "state": {
         "userInput": "",
         "score": null,
@@ -143,44 +137,234 @@
     },
     {
       "form": "direct",
+      "category": "Trap & Edge Case",
+      "context": "Roots: Non-Distributivity of Radicals Over Addition",
+      "references": [
+        "MTH-T01-C09-U05"
+      ],
+      "prompt": "Compute the exact difference $(\\sqrt{81} + \\sqrt{144}) - \\sqrt{81 + 144}$.",
+      "display": "(\\sqrt{81} + \\sqrt{144}) - \\sqrt{81 + 144}",
+      "plainText": "sqrt(81 + 144) vs 9 + 12",
+      "answerSpec": {
+        "type": "number",
+        "value": "6"
+      },
+      "answerDisplay": "6",
+      "answerPlain": "6",
+      "inputHint": "Enter the exact integer value",
+      "checkpointHint": "Always evaluate the sum underneath the radical symbol first before taking the principal square root.",
+      "commonTrapTag": "c09-root-sum-distribution-trap",
+      "steps": [
+        {
+          "latex": "\\sqrt{81} + \\sqrt{144} = 9 + 12 = 21",
+          "explain": "Evaluate the sum of the separate square roots."
+        },
+        {
+          "latex": "\\sqrt{81 + 144} = \\sqrt{225} = 15",
+          "explain": "Add the terms under the second radical before taking the square root."
+        },
+        {
+          "latex": "21 - 15 = 6",
+          "explain": "Subtract the two values to see the non-zero discrepancy."
+        }
+      ],
+      "level": 3,
+      "skill": "MTH-PREALG-C09-SUM-TRAP",
+      "verificationLevel": "machine-verified",
+      "id": "Q02",
+      "templateKey": "c09-non-distributive-root-trap",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "c09-non-distributive-root-trap|direct|sqrt(# + #) vs # + #",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C09-SUM-TRAP",
+          "stepRange": [
+            2,
+            5
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c09-root-sum-distribution-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c09-non-distributive-root-trap|direct|sqrt(# + #) vs # + #",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C09-U05",
+          "title": "Roots and Fractional Exponents",
+          "notionUrl": "https://www.notion.so/4003818f8ba080c9b1eaf3be5fa3f5c6"
+        }
+      ],
+      "trapValue": "0",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "direct",
+      "category": "Core Skill",
+      "context": "Roots: Principal Square and Cube Roots",
+      "references": [
+        "MTH-T01-C09-U01"
+      ],
+      "prompt": "Evaluate the radical expression $2\\sqrt{64} - \\sqrt{25}$.",
+      "display": "2\\sqrt{64} - \\sqrt{25}",
+      "plainText": "2*sqrt(64) op root(4)",
+      "answerSpec": {
+        "type": "number",
+        "value": "11"
+      },
+      "answerDisplay": "11",
+      "answerPlain": "11",
+      "inputHint": "Enter the exact integer value",
+      "checkpointHint": "Evaluate each principal root first, then perform the multiplication and addition or subtraction.",
+      "commonTrapTag": "c09-root-halving-trap",
+      "steps": [
+        {
+          "latex": "\\sqrt{64} = 8, \\quad \\sqrt{25} = 5",
+          "explain": "Take the principal square root of each perfect square."
+        },
+        {
+          "latex": "2\\sqrt{64} = 2(8) = 16",
+          "explain": "Multiply the first root by its coefficient."
+        },
+        {
+          "latex": "16 - 5 = 11",
+          "explain": "Subtract the second root."
+        }
+      ],
+      "level": 1,
+      "skill": "MTH-PREALG-C09-ROOT-EVAL",
+      "verificationLevel": "machine-verified",
+      "id": "Q03",
+      "templateKey": "c09-perfect-square-cube-roots",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "c09-perfect-square-cube-roots|direct|#*sqrt(#) op root(#)",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C09-ROOT-EVAL",
+          "stepRange": [
+            1,
+            3
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c09-root-halving-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c09-perfect-square-cube-roots|direct|#*sqrt(#) op root(#)",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C09-U01",
+          "title": "Introduction to Square Roots",
+          "notionUrl": "https://www.notion.so/4003818f8ba080ee9bc1cadec43e3bdf"
+        }
+      ],
+      "trapValue": "27",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "radical-equation",
       "category": "Reverse Reasoning",
       "context": "Roots: Solving Radical Equations",
       "references": [
         "MTH-T01-C09-U06"
       ],
-      "prompt": "Find the real number $x$ such that the principal square root of $3x + 70$ equals $10$.",
-      "display": "\\sqrt{3x + 70} = 10",
-      "plainText": "sqrt(3*x + 70) = 10 [delta]",
+      "prompt": "Solve the radical equation for $x$: $\\sqrt{4x - 19} = 7$.",
+      "display": "\\sqrt{4x - 19} = 7 \\implies x = ?",
+      "plainText": "sqrt(4*x - 19) = 7",
       "answerSpec": {
         "type": "number",
-        "value": "10"
+        "value": "17"
       },
-      "answerDisplay": "10",
-      "answerPlain": "10",
+      "answerDisplay": "17",
+      "answerPlain": "17",
       "inputHint": "Enter the exact integer value",
       "checkpointHint": "Square both sides of the equation to eliminate the radical, then solve the resulting linear equation.",
       "commonTrapTag": "c09-radical-equation-unsquared-trap",
       "steps": [
         {
-          "latex": "3x + 70 = 10^2 = 100",
+          "latex": "4x - 19 = 7^2 = 49",
           "explain": "Square both sides of the equation."
         },
         {
-          "latex": "3x = 30",
+          "latex": "4x = 68",
           "explain": "Isolate the variable term on the left-hand side."
         },
         {
-          "latex": "x = \\frac{30}{3} = 10",
+          "latex": "x = \\frac{68}{4} = 17",
           "explain": "Divide by the coefficient to find $x$."
         }
       ],
       "level": 2,
       "skill": "MTH-PREALG-C09-RADICAL-EQ",
       "verificationLevel": "machine-verified",
-      "id": "Q02",
+      "id": "Q04",
       "templateKey": "c09-simplify-like-radicals",
       "levelLabel": "Level 2 - Standard Exam",
-      "fingerprint": "c09-simplify-like-radicals|direct|sqrt(#*x + #) = # [delta]",
+      "fingerprint": "c09-simplify-like-radicals|radical-equation|sqrt(#*x - #) = #",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -216,7 +400,7 @@
         "weakDistractors": 0,
         "G3": {
           "passed": true,
-          "fingerprint": "c09-simplify-like-radicals|direct|sqrt(#*x + #) = # [delta]",
+          "fingerprint": "c09-simplify-like-radicals|radical-equation|sqrt(#*x - #) = #",
           "maxAllowedPerFingerprint": 1
         }
       },
@@ -227,7 +411,197 @@
           "notionUrl": "https://www.notion.so/4003818f8ba08024a1c4f00e620f8255"
         }
       ],
-      "trapValue": "-17",
+      "trapValue": "8",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "direct",
+      "category": "Reverse Reasoning",
+      "context": "Roots: Solving Radical Equations",
+      "references": [
+        "MTH-T01-C09-U06"
+      ],
+      "prompt": "Find the real number $x$ such that the principal square root of $2x + 69$ equals $9$.",
+      "display": "\\sqrt{2x + 69} = 9",
+      "plainText": "sqrt(2*x + 69) = 9",
+      "answerSpec": {
+        "type": "number",
+        "value": "6"
+      },
+      "answerDisplay": "6",
+      "answerPlain": "6",
+      "inputHint": "Enter the exact integer value",
+      "checkpointHint": "Square both sides of the equation to eliminate the radical, then solve the resulting linear equation.",
+      "commonTrapTag": "c09-radical-equation-unsquared-trap",
+      "steps": [
+        {
+          "latex": "2x + 69 = 9^2 = 81",
+          "explain": "Square both sides of the equation."
+        },
+        {
+          "latex": "2x = 12",
+          "explain": "Isolate the variable term on the left-hand side."
+        },
+        {
+          "latex": "x = \\frac{12}{2} = 6",
+          "explain": "Divide by the coefficient to find $x$."
+        }
+      ],
+      "level": 2,
+      "skill": "MTH-PREALG-C09-RADICAL-EQ",
+      "verificationLevel": "machine-verified",
+      "id": "Q05",
+      "templateKey": "c09-simplify-like-radicals",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "c09-simplify-like-radicals|direct|sqrt(#*x + #) = #",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C09-RADICAL-EQ",
+          "stepRange": [
+            2,
+            4
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c09-radical-equation-unsquared-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c09-simplify-like-radicals|direct|sqrt(#*x + #) = #",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C09-U06",
+          "title": "Simplify Roots with Scientific Notation",
+          "notionUrl": "https://www.notion.so/4003818f8ba08024a1c4f00e620f8255"
+        }
+      ],
+      "trapValue": "-26",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "combined",
+      "category": "Core Skill",
+      "context": "Roots: Principal Square and Cube Roots",
+      "references": [
+        "MTH-T01-C09-U01"
+      ],
+      "prompt": "Evaluate the radical expression $5\\sqrt{121} + \\sqrt[3]{27}$.",
+      "display": "5\\sqrt{121} + \\sqrt[3]{27}",
+      "plainText": "5*sqrt(121) op root(3)",
+      "answerSpec": {
+        "type": "number",
+        "value": "58"
+      },
+      "answerDisplay": "58",
+      "answerPlain": "58",
+      "inputHint": "Enter the exact integer value",
+      "checkpointHint": "Evaluate each principal root first, then perform the multiplication and addition or subtraction.",
+      "commonTrapTag": "c09-root-halving-trap",
+      "steps": [
+        {
+          "latex": "\\sqrt{121} = 11, \\quad \\sqrt[3]{27} = 3",
+          "explain": "Evaluate the principal square root and the cube root."
+        },
+        {
+          "latex": "5\\sqrt{121} = 5(11) = 55",
+          "explain": "Multiply the square root by its outer coefficient."
+        },
+        {
+          "latex": "55 + 3 = 58",
+          "explain": "Add the two results."
+        }
+      ],
+      "level": 1,
+      "skill": "MTH-PREALG-C09-ROOT-EVAL",
+      "verificationLevel": "machine-verified",
+      "id": "Q06",
+      "templateKey": "c09-perfect-square-cube-roots",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "c09-perfect-square-cube-roots|combined|#*sqrt(#) op root(#)",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C09-ROOT-EVAL",
+          "stepRange": [
+            1,
+            3
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c09-root-halving-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c09-perfect-square-cube-roots|combined|#*sqrt(#) op root(#)",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C09-U01",
+          "title": "Introduction to Square Roots",
+          "notionUrl": "https://www.notion.so/4003818f8ba080ee9bc1cadec43e3bdf"
+        }
+      ],
+      "trapValue": "303",
       "state": {
         "userInput": "",
         "score": null,
@@ -244,39 +618,39 @@
         "MTH-T01-C09-U04",
         "MTH-T01-C09-U05"
       ],
-      "prompt": "Evaluate the product $(9 - 2\\sqrt{5})(9 + 2\\sqrt{5})$ and multiply the result by $3$.",
-      "display": "3(9 - 2\\sqrt{5})(9 + 2\\sqrt{5})",
-      "plainText": "nested radical synthesis 183 [epsilon]",
+      "prompt": "Evaluate the product $(7 - 3\\sqrt{2})(7 + 3\\sqrt{2})$ and multiply the result by $4$.",
+      "display": "4(7 - 3\\sqrt{2})(7 + 3\\sqrt{2})",
+      "plainText": "nested radical synthesis 124",
       "answerSpec": {
         "type": "number",
-        "value": "183"
+        "value": "124"
       },
-      "answerDisplay": "183",
-      "answerPlain": "183",
+      "answerDisplay": "124",
+      "answerPlain": "124",
       "inputHint": "Enter the exact integer value",
       "checkpointHint": "For nested radicals, simplify from the innermost radical outward; for conjugate products, apply the difference of squares.",
       "commonTrapTag": "c09-nested-radical-evaluation-trap",
       "steps": [
         {
-          "latex": "(9 - 2\\sqrt{5})(9 + 2\\sqrt{5}) = 9^2 - (2\\sqrt{5})^2",
+          "latex": "(7 - 3\\sqrt{2})(7 + 3\\sqrt{2}) = 7^2 - (3\\sqrt{2})^2",
           "explain": "Apply the difference of squares identity $(u - v)(u + v) = u^2 - v^2$."
         },
         {
-          "latex": "= 81 - 20 = 61",
+          "latex": "= 49 - 18 = 31",
           "explain": "Evaluate both squared terms so the radical cancels cleanly."
         },
         {
-          "latex": "3 \\times (61) = 183",
+          "latex": "4 \\times (31) = 124",
           "explain": "Multiply by the outer integer factor."
         }
       ],
       "level": 4,
       "skill": "MTH-PREALG-C09-SYNTHESIS",
       "verificationLevel": "machine-verified",
-      "id": "Q03",
+      "id": "Q07",
       "templateKey": "c09-nested-radical-geometric-synthesis",
       "levelLabel": "Level 4 - Applied Synthesis",
-      "fingerprint": "c09-nested-radical-geometric-synthesis|radical-conjugate|nested radical synthesis # [epsilon]",
+      "fingerprint": "c09-nested-radical-geometric-synthesis|radical-conjugate|nested radical synthesis #",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -312,7 +686,7 @@
         "weakDistractors": 0,
         "G3": {
           "passed": true,
-          "fingerprint": "c09-nested-radical-geometric-synthesis|radical-conjugate|nested radical synthesis # [epsilon]",
+          "fingerprint": "c09-nested-radical-geometric-synthesis|radical-conjugate|nested radical synthesis #",
           "maxAllowedPerFingerprint": 1
         }
       },
@@ -328,7 +702,7 @@
           "notionUrl": "https://www.notion.so/4003818f8ba080c9b1eaf3be5fa3f5c6"
         }
       ],
-      "trapValue": "19",
+      "trapValue": "13",
       "state": {
         "userInput": "",
         "score": null,
@@ -339,424 +713,45 @@
     },
     {
       "form": "direct",
-      "category": "Core Skill",
-      "context": "Roots: Principal Square and Cube Roots",
+      "category": "Interleaved Synthesis",
+      "context": "Roots: Nested Radicals & Conjugate Synthesis",
       "references": [
-        "MTH-T01-C09-U01"
-      ],
-      "prompt": "Evaluate the radical expression $4\\sqrt{169} - \\sqrt{25}$.",
-      "display": "4\\sqrt{169} - \\sqrt{25}",
-      "plainText": "4*sqrt(169) op root(2) [zeta]",
-      "answerSpec": {
-        "type": "number",
-        "value": "47"
-      },
-      "answerDisplay": "47",
-      "answerPlain": "47",
-      "inputHint": "Enter the exact integer value",
-      "checkpointHint": "Evaluate each principal root first, then perform the multiplication and addition or subtraction.",
-      "commonTrapTag": "c09-root-halving-trap",
-      "steps": [
-        {
-          "latex": "\\sqrt{169} = 13, \\quad \\sqrt{25} = 5",
-          "explain": "Take the principal square root of each perfect square."
-        },
-        {
-          "latex": "4\\sqrt{169} = 4(13) = 52",
-          "explain": "Multiply the first root by its coefficient."
-        },
-        {
-          "latex": "52 - 5 = 47",
-          "explain": "Subtract the second root."
-        }
-      ],
-      "level": 1,
-      "skill": "MTH-PREALG-C09-ROOT-EVAL",
-      "verificationLevel": "machine-verified",
-      "id": "Q04",
-      "templateKey": "c09-perfect-square-cube-roots",
-      "levelLabel": "Level 1 - Foundation",
-      "fingerprint": "c09-perfect-square-cube-roots|direct|#*sqrt(#) op root(#) [zeta]",
-      "qualityGates": {
-        "G1": {
-          "passed": true,
-          "archetype": "math-standard"
-        },
-        "G2": {
-          "passed": true,
-          "level": 1,
-          "stepCount": 3,
-          "hasTrapOrFlaw": true,
-          "skill": "MTH-PREALG-C09-ROOT-EVAL",
-          "stepRange": [
-            1,
-            3
-          ]
-        },
-        "G4": {
-          "passed": true,
-          "trapTag": "c09-root-halving-trap",
-          "trapValueVerified": true,
-          "weakDistractors": 0,
-          "provenanceDistractors": 0
-        },
-        "G6": {
-          "passed": true,
-          "fieldsChecked": 13
-        },
-        "antiLeak": {
-          "passed": true,
-          "hintsChecked": 2
-        },
-        "verificationLevel": "machine-verified",
-        "weakDistractors": 0,
-        "G3": {
-          "passed": true,
-          "fingerprint": "c09-perfect-square-cube-roots|direct|#*sqrt(#) op root(#) [zeta]",
-          "maxAllowedPerFingerprint": 1
-        }
-      },
-      "referenceBadges": [
-        {
-          "code": "MTH-T01-C09-U01",
-          "title": "Introduction to Square Roots",
-          "notionUrl": "https://www.notion.so/4003818f8ba080ee9bc1cadec43e3bdf"
-        }
-      ],
-      "trapValue": "79",
-      "state": {
-        "userInput": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "lastCheck": null
-      }
-    },
-    {
-      "form": "quotient-radical",
-      "category": "Trap & Edge Case",
-      "context": "Roots: Non-Distributivity of Radicals Over Addition",
-      "references": [
+        "MTH-T01-C09-U04",
         "MTH-T01-C09-U05"
       ],
-      "prompt": "Evaluate the exact value of $\\sqrt{3600 + 6400}$.",
-      "display": "\\sqrt{3600 + 6400}",
-      "plainText": "sqrt(144 + 256) vs 12 + 16 [beta]",
+      "prompt": "Evaluate the nested radical expression $\\sqrt{60 + \\sqrt{12 + \\sqrt{16}}}$.",
+      "display": "\\sqrt{60 + \\sqrt{12 + \\sqrt{16}}}",
+      "plainText": "nested radical synthesis 8",
       "answerSpec": {
         "type": "number",
-        "value": "100"
+        "value": "8"
       },
-      "answerDisplay": "100",
-      "answerPlain": "100",
+      "answerDisplay": "8",
+      "answerPlain": "8",
       "inputHint": "Enter the exact integer value",
-      "checkpointHint": "Always evaluate the sum underneath the radical symbol first before taking the principal square root.",
-      "commonTrapTag": "c09-root-sum-distribution-trap",
+      "checkpointHint": "For nested radicals, simplify from the innermost radical outward; for conjugate products, apply the difference of squares.",
+      "commonTrapTag": "c09-nested-radical-evaluation-trap",
       "steps": [
         {
-          "latex": "3600 + 6400 = 10000",
-          "explain": "Add the two numbers inside the radicand first before taking the square root."
+          "latex": "\\sqrt{16} = 4 \\implies 12 + 4 = 16",
+          "explain": "Evaluate the innermost square root first and add it to the middle radicand."
         },
         {
-          "latex": "\\sqrt{10000} = 100",
-          "explain": "Take the principal square root of the combined sum."
+          "latex": "\\sqrt{16} = 4 \\implies 60 + 4 = 64",
+          "explain": "Evaluate the middle square root and add it to the outer radicand."
         },
         {
-          "latex": "= 100",
-          "explain": "Note that the square root of a sum is strictly less than the sum of the individual square roots."
+          "latex": "\\sqrt{64} = 8",
+          "explain": "Take the final outer square root."
         }
       ],
-      "level": 3,
-      "skill": "MTH-PREALG-C09-SUM-TRAP",
-      "verificationLevel": "machine-verified",
-      "id": "Q05",
-      "templateKey": "c09-non-distributive-root-trap",
-      "levelLabel": "Level 3 - Trap & Diagnostic",
-      "fingerprint": "c09-non-distributive-root-trap|quotient-radical|sqrt(# + #) vs # + # [beta]",
-      "qualityGates": {
-        "G1": {
-          "passed": true,
-          "archetype": "math-standard"
-        },
-        "G2": {
-          "passed": true,
-          "level": 3,
-          "stepCount": 3,
-          "hasTrapOrFlaw": true,
-          "skill": "MTH-PREALG-C09-SUM-TRAP",
-          "stepRange": [
-            2,
-            5
-          ]
-        },
-        "G4": {
-          "passed": true,
-          "trapTag": "c09-root-sum-distribution-trap",
-          "trapValueVerified": true,
-          "weakDistractors": 0,
-          "provenanceDistractors": 0
-        },
-        "G6": {
-          "passed": true,
-          "fieldsChecked": 13
-        },
-        "antiLeak": {
-          "passed": true,
-          "hintsChecked": 2
-        },
-        "verificationLevel": "machine-verified",
-        "weakDistractors": 0,
-        "G3": {
-          "passed": true,
-          "fingerprint": "c09-non-distributive-root-trap|quotient-radical|sqrt(# + #) vs # + # [beta]",
-          "maxAllowedPerFingerprint": 1
-        }
-      },
-      "referenceBadges": [
-        {
-          "code": "MTH-T01-C09-U05",
-          "title": "Roots and Fractional Exponents",
-          "notionUrl": "https://www.notion.so/4003818f8ba080c9b1eaf3be5fa3f5c6"
-        }
-      ],
-      "trapValue": "140",
-      "state": {
-        "userInput": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "lastCheck": null
-      }
-    },
-    {
-      "form": "radical-equation",
-      "category": "Reverse Reasoning",
-      "context": "Roots: Solving Radical Equations",
-      "references": [
-        "MTH-T01-C09-U06"
-      ],
-      "prompt": "Solve the radical equation for $x$: $\\sqrt{5x + 20} = 10$.",
-      "display": "\\sqrt{5x + 20} = 10 \\implies x = ?",
-      "plainText": "sqrt(5*x + 20) = 10 [beta]",
-      "answerSpec": {
-        "type": "number",
-        "value": "16"
-      },
-      "answerDisplay": "16",
-      "answerPlain": "16",
-      "inputHint": "Enter the exact integer value",
-      "checkpointHint": "Square both sides of the equation to eliminate the radical, then solve the resulting linear equation.",
-      "commonTrapTag": "c09-radical-equation-unsquared-trap",
-      "steps": [
-        {
-          "latex": "5x + 20 = 10^2 = 100",
-          "explain": "Square both sides of the equation."
-        },
-        {
-          "latex": "5x = 80",
-          "explain": "Isolate the variable term on the left-hand side."
-        },
-        {
-          "latex": "x = \\frac{80}{5} = 16",
-          "explain": "Divide by the coefficient to find $x$."
-        }
-      ],
-      "level": 2,
-      "skill": "MTH-PREALG-C09-RADICAL-EQ",
-      "verificationLevel": "machine-verified",
-      "id": "Q06",
-      "templateKey": "c09-simplify-like-radicals",
-      "levelLabel": "Level 2 - Standard Exam",
-      "fingerprint": "c09-simplify-like-radicals|radical-equation|sqrt(#*x + #) = # [beta]",
-      "qualityGates": {
-        "G1": {
-          "passed": true,
-          "archetype": "math-standard"
-        },
-        "G2": {
-          "passed": true,
-          "level": 2,
-          "stepCount": 3,
-          "hasTrapOrFlaw": true,
-          "skill": "MTH-PREALG-C09-RADICAL-EQ",
-          "stepRange": [
-            2,
-            4
-          ]
-        },
-        "G4": {
-          "passed": true,
-          "trapTag": "c09-radical-equation-unsquared-trap",
-          "trapValueVerified": true,
-          "weakDistractors": 0,
-          "provenanceDistractors": 0
-        },
-        "G6": {
-          "passed": true,
-          "fieldsChecked": 13
-        },
-        "antiLeak": {
-          "passed": true,
-          "hintsChecked": 2
-        },
-        "verificationLevel": "machine-verified",
-        "weakDistractors": 0,
-        "G3": {
-          "passed": true,
-          "fingerprint": "c09-simplify-like-radicals|radical-equation|sqrt(#*x + #) = # [beta]",
-          "maxAllowedPerFingerprint": 1
-        }
-      },
-      "referenceBadges": [
-        {
-          "code": "MTH-T01-C09-U06",
-          "title": "Simplify Roots with Scientific Notation",
-          "notionUrl": "https://www.notion.so/4003818f8ba08024a1c4f00e620f8255"
-        }
-      ],
-      "trapValue": "0",
-      "state": {
-        "userInput": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "lastCheck": null
-      }
-    },
-    {
-      "form": "combined",
-      "category": "Core Skill",
-      "context": "Roots: Principal Square and Cube Roots",
-      "references": [
-        "MTH-T01-C09-U01"
-      ],
-      "prompt": "Evaluate the radical expression $4\\sqrt{49} + \\sqrt[3]{125}$.",
-      "display": "4\\sqrt{49} + \\sqrt[3]{125}",
-      "plainText": "4*sqrt(49) op root(5) [delta]",
-      "answerSpec": {
-        "type": "number",
-        "value": "33"
-      },
-      "answerDisplay": "33",
-      "answerPlain": "33",
-      "inputHint": "Enter the exact integer value",
-      "checkpointHint": "Evaluate each principal root first, then perform the multiplication and addition or subtraction.",
-      "commonTrapTag": "c09-root-halving-trap",
-      "steps": [
-        {
-          "latex": "\\sqrt{49} = 7, \\quad \\sqrt[3]{125} = 5",
-          "explain": "Evaluate the principal square root and the cube root."
-        },
-        {
-          "latex": "4\\sqrt{49} = 4(7) = 28",
-          "explain": "Multiply the square root by its outer coefficient."
-        },
-        {
-          "latex": "28 + 5 = 33",
-          "explain": "Add the two results."
-        }
-      ],
-      "level": 1,
-      "skill": "MTH-PREALG-C09-ROOT-EVAL",
-      "verificationLevel": "machine-verified",
-      "id": "Q07",
-      "templateKey": "c09-perfect-square-cube-roots",
-      "levelLabel": "Level 1 - Foundation",
-      "fingerprint": "c09-perfect-square-cube-roots|combined|#*sqrt(#) op root(#) [delta]",
-      "qualityGates": {
-        "G1": {
-          "passed": true,
-          "archetype": "math-standard"
-        },
-        "G2": {
-          "passed": true,
-          "level": 1,
-          "stepCount": 3,
-          "hasTrapOrFlaw": true,
-          "skill": "MTH-PREALG-C09-ROOT-EVAL",
-          "stepRange": [
-            1,
-            3
-          ]
-        },
-        "G4": {
-          "passed": true,
-          "trapTag": "c09-root-halving-trap",
-          "trapValueVerified": true,
-          "weakDistractors": 0,
-          "provenanceDistractors": 0
-        },
-        "G6": {
-          "passed": true,
-          "fieldsChecked": 13
-        },
-        "antiLeak": {
-          "passed": true,
-          "hintsChecked": 2
-        },
-        "verificationLevel": "machine-verified",
-        "weakDistractors": 0,
-        "G3": {
-          "passed": true,
-          "fingerprint": "c09-perfect-square-cube-roots|combined|#*sqrt(#) op root(#) [delta]",
-          "maxAllowedPerFingerprint": 1
-        }
-      },
-      "referenceBadges": [
-        {
-          "code": "MTH-T01-C09-U01",
-          "title": "Introduction to Square Roots",
-          "notionUrl": "https://www.notion.so/4003818f8ba080ee9bc1cadec43e3bdf"
-        }
-      ],
-      "trapValue": "101",
-      "state": {
-        "userInput": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "lastCheck": null
-      }
-    },
-    {
-      "form": "direct",
-      "category": "Trap & Edge Case",
-      "context": "Roots: Non-Distributivity of Radicals Over Addition",
-      "references": [
-        "MTH-T01-C09-U05"
-      ],
-      "prompt": "Compute the exact difference $(\\sqrt{25} + \\sqrt{144}) - \\sqrt{25 + 144}$.",
-      "display": "(\\sqrt{25} + \\sqrt{144}) - \\sqrt{25 + 144}",
-      "plainText": "sqrt(25 + 144) vs 5 + 12 [beta]",
-      "answerSpec": {
-        "type": "number",
-        "value": "4"
-      },
-      "answerDisplay": "4",
-      "answerPlain": "4",
-      "inputHint": "Enter the exact integer value",
-      "checkpointHint": "Always evaluate the sum underneath the radical symbol first before taking the principal square root.",
-      "commonTrapTag": "c09-root-sum-distribution-trap",
-      "steps": [
-        {
-          "latex": "\\sqrt{25} + \\sqrt{144} = 5 + 12 = 17",
-          "explain": "Evaluate the sum of the separate square roots."
-        },
-        {
-          "latex": "\\sqrt{25 + 144} = \\sqrt{169} = 13",
-          "explain": "Add the terms under the second radical before taking the square root."
-        },
-        {
-          "latex": "17 - 13 = 4",
-          "explain": "Subtract the two values to see the non-zero discrepancy."
-        }
-      ],
-      "level": 3,
-      "skill": "MTH-PREALG-C09-SUM-TRAP",
+      "level": 4,
+      "skill": "MTH-PREALG-C09-SYNTHESIS",
       "verificationLevel": "machine-verified",
       "id": "Q08",
-      "templateKey": "c09-non-distributive-root-trap",
-      "levelLabel": "Level 3 - Trap & Diagnostic",
-      "fingerprint": "c09-non-distributive-root-trap|direct|sqrt(# + #) vs # + # [beta]",
+      "templateKey": "c09-nested-radical-geometric-synthesis",
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "c09-nested-radical-geometric-synthesis|direct|nested radical synthesis #",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -764,18 +759,18 @@
         },
         "G2": {
           "passed": true,
-          "level": 3,
+          "level": 4,
           "stepCount": 3,
           "hasTrapOrFlaw": true,
-          "skill": "MTH-PREALG-C09-SUM-TRAP",
+          "skill": "MTH-PREALG-C09-SYNTHESIS",
           "stepRange": [
             2,
-            5
+            6
           ]
         },
         "G4": {
           "passed": true,
-          "trapTag": "c09-root-sum-distribution-trap",
+          "trapTag": "c09-nested-radical-evaluation-trap",
           "trapValueVerified": true,
           "weakDistractors": 0,
           "provenanceDistractors": 0
@@ -792,18 +787,23 @@
         "weakDistractors": 0,
         "G3": {
           "passed": true,
-          "fingerprint": "c09-non-distributive-root-trap|direct|sqrt(# + #) vs # + # [beta]",
+          "fingerprint": "c09-nested-radical-geometric-synthesis|direct|nested radical synthesis #",
           "maxAllowedPerFingerprint": 1
         }
       },
       "referenceBadges": [
+        {
+          "code": "MTH-T01-C09-U04",
+          "title": "Properties of Roots",
+          "notionUrl": "https://www.notion.so/4003818f8ba0804c86ebc79a0c2c6509"
+        },
         {
           "code": "MTH-T01-C09-U05",
           "title": "Roots and Fractional Exponents",
           "notionUrl": "https://www.notion.so/4003818f8ba080c9b1eaf3be5fa3f5c6"
         }
       ],
-      "trapValue": "0",
+      "trapValue": "12",
       "state": {
         "userInput": "",
         "score": null,

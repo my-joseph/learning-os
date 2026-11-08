@@ -7,7 +7,7 @@
   "chapterCode": "MTH-T01-C08",
   "topicCode": "MTH-T01",
   "unitNotionUrl": "https://www.notion.so/4003818f8ba080b3bcc3c7e76ffdae10",
-  "createdAt": "2026-11-08 17:14:03",
+  "createdAt": "2026-11-08 20:18:03",
   "config": {
     "questionCount": 8,
     "difficulty": "ALL",
@@ -49,29 +49,29 @@
       "references": [
         "MTH-T01-C08-U01"
       ],
-      "prompt": "Evaluate the exact value of $2^3 + 2^3$.",
-      "display": "2^3 + 2^3",
-      "plainText": "sum of identical powers 16 [beta]",
+      "prompt": "Evaluate the exact value of $2^4 + 2^4$.",
+      "display": "2^4 + 2^4",
+      "plainText": "sum of identical powers 32",
       "answerSpec": {
         "type": "number",
-        "value": "16"
+        "value": "32"
       },
-      "answerDisplay": "16",
-      "answerPlain": "16",
+      "answerDisplay": "32",
+      "answerPlain": "32",
       "inputHint": "Enter the exact integer value",
       "checkpointHint": "Factor out the common power rather than adding exponents or bases directly across an addition sign.",
       "commonTrapTag": "c08-same-base-sum-exponent-trap",
       "steps": [
         {
-          "latex": "2^3 + 2^3 = 2 \\cdot 2^3",
+          "latex": "2^4 + 2^4 = 2 \\cdot 2^4",
           "explain": "Combine the two identical terms by factoring out 2."
         },
         {
-          "latex": "2 \\cdot 2^3 = 2^{3 + 1} = 2^{4}",
+          "latex": "2 \\cdot 2^4 = 2^{4 + 1} = 2^{5}",
           "explain": "Apply the product property of exponents."
         },
         {
-          "latex": "2^{4} = 16",
+          "latex": "2^{5} = 32",
           "explain": "Evaluate the power of 2."
         }
       ],
@@ -81,7 +81,7 @@
       "id": "Q01",
       "templateKey": "c08-power-tower-addition-trap",
       "levelLabel": "Level 3 - Trap & Diagnostic",
-      "fingerprint": "c08-power-tower-addition-trap|direct|sum of identical powers # [beta]",
+      "fingerprint": "c08-power-tower-addition-trap|direct|sum of identical powers #",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -117,7 +117,7 @@
         "weakDistractors": 0,
         "G3": {
           "passed": true,
-          "fingerprint": "c08-power-tower-addition-trap|direct|sum of identical powers # [beta]",
+          "fingerprint": "c08-power-tower-addition-trap|direct|sum of identical powers #",
           "maxAllowedPerFingerprint": 1
         }
       },
@@ -128,7 +128,7 @@
           "notionUrl": "https://www.notion.so/4003818f8ba080788d82e20d81e3a64c"
         }
       ],
-      "trapValue": "64",
+      "trapValue": "256",
       "state": {
         "userInput": "",
         "score": null,
@@ -147,7 +147,7 @@
       ],
       "prompt": "Solve for the integer exponent $x$ by converting to a common prime base: $4^3 \\cdot 8^2 = 2^x$.",
       "display": "4^3 \\cdot 8^2 = 2^x",
-      "plainText": "4^3 * 8^2 = 2^x [beta]",
+      "plainText": "4^3 * 8^2 = 2^x",
       "answerSpec": {
         "type": "number",
         "value": "12"
@@ -177,7 +177,7 @@
       "id": "Q02",
       "templateKey": "c08-scientific-notation-growth-synthesis",
       "levelLabel": "Level 4 - Applied Synthesis",
-      "fingerprint": "c08-scientific-notation-growth-synthesis|direct|#^# * #^# = #^x [beta]",
+      "fingerprint": "c08-scientific-notation-growth-synthesis|direct|#^# * #^# = #^x",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -213,7 +213,7 @@
         "weakDistractors": 0,
         "G3": {
           "passed": true,
-          "fingerprint": "c08-scientific-notation-growth-synthesis|direct|#^# * #^# = #^x [beta]",
+          "fingerprint": "c08-scientific-notation-growth-synthesis|direct|#^# * #^# = #^x",
           "maxAllowedPerFingerprint": 1
         }
       },
@@ -245,29 +245,29 @@
       "references": [
         "MTH-T01-C08-U02"
       ],
-      "prompt": "Evaluate the exponential quotient $\\frac{3^3 \\cdot 3^4}{3^4}$.",
-      "display": "\\frac{3^3 \\cdot 3^4}{3^4}",
-      "plainText": "(3^3 * 3^4) / 3^4 [epsilon]",
+      "prompt": "Evaluate the exponential quotient $\\frac{2^3 \\cdot 2^4}{2^4}$.",
+      "display": "\\frac{2^3 \\cdot 2^4}{2^4}",
+      "plainText": "(2^3 * 2^4) / 2^4",
       "answerSpec": {
         "type": "number",
-        "value": "27"
+        "value": "8"
       },
-      "answerDisplay": "27",
-      "answerPlain": "27",
+      "answerDisplay": "8",
+      "answerPlain": "8",
       "inputHint": "Enter the exact integer value",
       "checkpointHint": "Add the exponents when multiplying powers with the same base, then subtract the denominator's exponent.",
       "commonTrapTag": "c08-exponent-product-multiply-trap",
       "steps": [
         {
-          "latex": "3^3 \\cdot 3^4 = 3^{3 + 4} = 3^{7}",
+          "latex": "2^3 \\cdot 2^4 = 2^{3 + 4} = 2^{7}",
           "explain": "Apply the product property of exponents in the numerator."
         },
         {
-          "latex": "\\frac{3^{7}}{3^4} = 3^{7 - 4} = 3^{3}",
+          "latex": "\\frac{2^{7}}{2^4} = 2^{7 - 4} = 2^{3}",
           "explain": "Apply the quotient property by subtracting exponents."
         },
         {
-          "latex": "3^{3} = 27",
+          "latex": "2^{3} = 8",
           "explain": "Evaluate the power to get the exact integer."
         }
       ],
@@ -277,7 +277,7 @@
       "id": "Q03",
       "templateKey": "c08-product-quotient-powers",
       "levelLabel": "Level 1 - Foundation",
-      "fingerprint": "c08-product-quotient-powers|quotient|(#^# * #^#) / #^# [epsilon]",
+      "fingerprint": "c08-product-quotient-powers|quotient|(#^# * #^#) / #^#",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -313,7 +313,7 @@
         "weakDistractors": 0,
         "G3": {
           "passed": true,
-          "fingerprint": "c08-product-quotient-powers|quotient|(#^# * #^#) / #^# [epsilon]",
+          "fingerprint": "c08-product-quotient-powers|quotient|(#^# * #^#) / #^#",
           "maxAllowedPerFingerprint": 1
         }
       },
@@ -324,7 +324,7 @@
           "notionUrl": "https://www.notion.so/4003818f8ba0809ea4d5ff224888c92c"
         }
       ],
-      "trapValue": "6561",
+      "trapValue": "256",
       "state": {
         "userInput": "",
         "score": null,
@@ -341,29 +341,29 @@
         "MTH-T01-C08-U01",
         "MTH-T01-C08-U03"
       ],
-      "prompt": "A computing cluster scales its throughput by a factor of $8^3$ in Phase 1 and by a factor of $16^2$ in Phase 2. If the combined scaling factor equals $2^x$, find the exact integer $x$.",
-      "display": "8^3 \\cdot 16^2 = 2^x \\implies x = ?",
-      "plainText": "8^3 * 16^2 = 2^x [zeta]",
+      "prompt": "A computing cluster scales its throughput by a factor of $4^3$ in Phase 1 and by a factor of $8^2$ in Phase 2. If the combined scaling factor equals $2^x$, find the exact integer $x$.",
+      "display": "4^3 \\cdot 8^2 = 2^x \\implies x = ?",
+      "plainText": "4^3 * 8^2 = 2^x",
       "answerSpec": {
         "type": "number",
-        "value": "17"
+        "value": "12"
       },
-      "answerDisplay": "17",
-      "answerPlain": "17",
+      "answerDisplay": "12",
+      "answerPlain": "12",
       "inputHint": "Enter the exact integer value",
       "checkpointHint": "Rewrite each composite base as a power of the prime base, apply the power property, and sum the resulting exponents.",
       "commonTrapTag": "c08-common-base-conversion-trap",
       "steps": [
         {
-          "latex": "8^3 = (2^3)^3 = 2^{9}",
+          "latex": "4^3 = (2^2)^3 = 2^{6}",
+          "explain": "Rewrite $4$ as $2^2$ and multiply the exponents."
+        },
+        {
+          "latex": "8^2 = (2^3)^2 = 2^{6}",
           "explain": "Rewrite $8$ as $2^3$ and multiply the exponents."
         },
         {
-          "latex": "16^2 = (2^4)^2 = 2^{8}",
-          "explain": "Rewrite $16$ as $2^4$ and multiply the exponents."
-        },
-        {
-          "latex": "x = 9 + 8 = 17",
+          "latex": "x = 6 + 6 = 12",
           "explain": "Add the exponents of the common prime base."
         }
       ],
@@ -373,7 +373,7 @@
       "id": "Q04",
       "templateKey": "c08-scientific-notation-growth-synthesis",
       "levelLabel": "Level 4 - Applied Synthesis",
-      "fingerprint": "c08-scientific-notation-growth-synthesis|exponential-doubling|#^# * #^# = #^x [zeta]",
+      "fingerprint": "c08-scientific-notation-growth-synthesis|exponential-doubling|#^# * #^# = #^x",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -409,7 +409,7 @@
         "weakDistractors": 0,
         "G3": {
           "passed": true,
-          "fingerprint": "c08-scientific-notation-growth-synthesis|exponential-doubling|#^# * #^# = #^x [zeta]",
+          "fingerprint": "c08-scientific-notation-growth-synthesis|exponential-doubling|#^# * #^# = #^x",
           "maxAllowedPerFingerprint": 1
         }
       },
@@ -441,29 +441,29 @@
       "references": [
         "MTH-T01-C08-U03"
       ],
-      "prompt": "Find the integer exponent $k$ that satisfies $\\left(5^4\\right)^2 \\cdot 5^4 = 5^k$.",
-      "display": "\\left(5^4\\right)^2 \\cdot 5^4 = 5^k \\implies k = ?",
-      "plainText": "power rule 5^4^2 [beta]",
+      "prompt": "Find the integer exponent $k$ that satisfies $\\left(5^3\\right)^3 \\cdot 5^2 = 5^k$.",
+      "display": "\\left(5^3\\right)^3 \\cdot 5^2 = 5^k \\implies k = ?",
+      "plainText": "power rule 5^3^3",
       "answerSpec": {
         "type": "number",
-        "value": "12"
+        "value": "11"
       },
-      "answerDisplay": "12",
-      "answerPlain": "12",
+      "answerDisplay": "11",
+      "answerPlain": "11",
       "inputHint": "Enter the exact integer value",
       "checkpointHint": "Raise every factor inside the parentheses to the outer power and multiply exponents when raising a power to a power.",
       "commonTrapTag": "c08-power-of-product-unscaled-coeff",
       "steps": [
         {
-          "latex": "\\left(5^4\\right)^2 = 5^{4 \\times 2} = 5^{8}",
+          "latex": "\\left(5^3\\right)^3 = 5^{3 \\times 3} = 5^{9}",
           "explain": "Use the power-of-a-power rule to multiply the exponents."
         },
         {
-          "latex": "5^{8} \\cdot 5^4 = 5^{8 + 4} = 5^{12}",
+          "latex": "5^{9} \\cdot 5^2 = 5^{9 + 2} = 5^{11}",
           "explain": "Add the exponents of the common base."
         },
         {
-          "latex": "k = 12",
+          "latex": "k = 11",
           "explain": "Equate the exponents of the identical base."
         }
       ],
@@ -473,7 +473,7 @@
       "id": "Q05",
       "templateKey": "c08-power-of-product-neg-exp",
       "levelLabel": "Level 2 - Standard Exam",
-      "fingerprint": "c08-power-of-product-neg-exp|solve-exponent|power rule #^#^# [beta]",
+      "fingerprint": "c08-power-of-product-neg-exp|solve-exponent|power rule #^#^#",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -509,7 +509,7 @@
         "weakDistractors": 0,
         "G3": {
           "passed": true,
-          "fingerprint": "c08-power-of-product-neg-exp|solve-exponent|power rule #^#^# [beta]",
+          "fingerprint": "c08-power-of-product-neg-exp|solve-exponent|power rule #^#^#",
           "maxAllowedPerFingerprint": 1
         }
       },
@@ -520,7 +520,7 @@
           "notionUrl": "https://www.notion.so/4003818f8ba08032934ededb8bc1db54"
         }
       ],
-      "trapValue": "10",
+      "trapValue": "8",
       "state": {
         "userInput": "",
         "score": null,
@@ -536,29 +536,29 @@
       "references": [
         "MTH-T01-C08-U02"
       ],
-      "prompt": "Simplify and evaluate the exact integer value of $(5^4 \\cdot 5^2) \\div 5^3$.",
-      "display": "(5^4 \\cdot 5^2) \\div 5^3",
-      "plainText": "(5^4 * 5^2) / 5^3 [zeta]",
+      "prompt": "Simplify and evaluate the exact integer value of $(5^5 \\cdot 5^4) \\div 5^7$.",
+      "display": "(5^5 \\cdot 5^4) \\div 5^7",
+      "plainText": "(5^5 * 5^4) / 5^7",
       "answerSpec": {
         "type": "number",
-        "value": "125"
+        "value": "25"
       },
-      "answerDisplay": "125",
-      "answerPlain": "125",
+      "answerDisplay": "25",
+      "answerPlain": "25",
       "inputHint": "Enter the exact integer value",
       "checkpointHint": "Add the exponents when multiplying powers with the same base, then subtract the denominator's exponent.",
       "commonTrapTag": "c08-exponent-product-multiply-trap",
       "steps": [
         {
-          "latex": "5^4 \\cdot 5^2 = 5^{4 + 2} = 5^{6}",
+          "latex": "5^5 \\cdot 5^4 = 5^{5 + 4} = 5^{9}",
           "explain": "Apply the product property of exponents in the numerator."
         },
         {
-          "latex": "\\frac{5^{6}}{5^3} = 5^{6 - 3} = 5^{3}",
+          "latex": "\\frac{5^{9}}{5^7} = 5^{9 - 7} = 5^{2}",
           "explain": "Apply the quotient property by subtracting exponents."
         },
         {
-          "latex": "5^{3} = 125",
+          "latex": "5^{2} = 25",
           "explain": "Evaluate the power to get the exact integer."
         }
       ],
@@ -568,7 +568,7 @@
       "id": "Q06",
       "templateKey": "c08-product-quotient-powers",
       "levelLabel": "Level 1 - Foundation",
-      "fingerprint": "c08-product-quotient-powers|direct|(#^# * #^#) / #^# [zeta]",
+      "fingerprint": "c08-product-quotient-powers|direct|(#^# * #^#) / #^#",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -604,7 +604,7 @@
         "weakDistractors": 0,
         "G3": {
           "passed": true,
-          "fingerprint": "c08-product-quotient-powers|direct|(#^# * #^#) / #^# [zeta]",
+          "fingerprint": "c08-product-quotient-powers|direct|(#^# * #^#) / #^#",
           "maxAllowedPerFingerprint": 1
         }
       },
@@ -615,7 +615,7 @@
           "notionUrl": "https://www.notion.so/4003818f8ba0809ea4d5ff224888c92c"
         }
       ],
-      "trapValue": "3125",
+      "trapValue": "1220703125",
       "state": {
         "userInput": "",
         "score": null,
@@ -631,9 +631,9 @@
       "references": [
         "MTH-T01-C08-U01"
       ],
-      "prompt": "The sum of $3$ identical exponential terms $\\underbrace{3^5 + 3^5 + \\dots + 3^5}_{3\\text{ terms}}$ can be written as a single power $3^n$. Find the exponent $n$.",
-      "display": "3 \\cdot 3^5 = 3^n \\implies n = ?",
-      "plainText": "sum of identical powers 6 [zeta]",
+      "prompt": "The sum of $4$ identical exponential terms $\\underbrace{4^5 + 4^5 + \\dots + 4^5}_{4\\text{ terms}}$ can be written as a single power $4^n$. Find the exponent $n$.",
+      "display": "4 \\cdot 4^5 = 4^n \\implies n = ?",
+      "plainText": "sum of identical powers 6",
       "answerSpec": {
         "type": "number",
         "value": "6"
@@ -645,11 +645,11 @@
       "commonTrapTag": "c08-same-base-sum-exponent-trap",
       "steps": [
         {
-          "latex": "\\underbrace{3^5 + \\dots + 3^5}_{3\\text{ terms}} = 3 \\cdot 3^5",
+          "latex": "\\underbrace{4^5 + \\dots + 4^5}_{4\\text{ terms}} = 4 \\cdot 4^5",
           "explain": "Factor out the common exponential term to rewrite repeated addition as multiplication."
         },
         {
-          "latex": "3 \\cdot 3^5 = 3^{5 + 1} = 3^{6}",
+          "latex": "4 \\cdot 4^5 = 4^{5 + 1} = 4^{6}",
           "explain": "Add the implicit exponent of 1 to the exponent $k$."
         },
         {
@@ -663,7 +663,7 @@
       "id": "Q07",
       "templateKey": "c08-power-tower-addition-trap",
       "levelLabel": "Level 3 - Trap & Diagnostic",
-      "fingerprint": "c08-power-tower-addition-trap|same-base-sum|sum of identical powers # [zeta]",
+      "fingerprint": "c08-power-tower-addition-trap|same-base-sum|sum of identical powers #",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -699,7 +699,7 @@
         "weakDistractors": 0,
         "G3": {
           "passed": true,
-          "fingerprint": "c08-power-tower-addition-trap|same-base-sum|sum of identical powers # [zeta]",
+          "fingerprint": "c08-power-tower-addition-trap|same-base-sum|sum of identical powers #",
           "maxAllowedPerFingerprint": 1
         }
       },
@@ -710,7 +710,7 @@
           "notionUrl": "https://www.notion.so/4003818f8ba080788d82e20d81e3a64c"
         }
       ],
-      "trapValue": "15",
+      "trapValue": "20",
       "state": {
         "userInput": "",
         "score": null,
@@ -726,29 +726,29 @@
       "references": [
         "MTH-T01-C08-U03"
       ],
-      "prompt": "Evaluate the expression $(2x^2)^2$ when $x = 3$.",
-      "display": "(2x^2)^2 \\quad \\text{at } x = 3",
-      "plainText": "power rule 2^4^3 [beta]",
+      "prompt": "Evaluate the expression $(4x^2)^3$ when $x = 2$.",
+      "display": "(4x^2)^3 \\quad \\text{at } x = 2",
+      "plainText": "power rule 5^3^2",
       "answerSpec": {
         "type": "number",
-        "value": "324"
+        "value": "4096"
       },
-      "answerDisplay": "324",
-      "answerPlain": "324",
+      "answerDisplay": "4096",
+      "answerPlain": "4096",
       "inputHint": "Enter the exact integer value",
       "checkpointHint": "Raise every factor inside the parentheses to the outer power and multiply exponents when raising a power to a power.",
       "commonTrapTag": "c08-power-of-product-unscaled-coeff",
       "steps": [
         {
-          "latex": "(2x^2)^2 = 2^2 \\cdot x^{2 \\times 2} = 4 x^{4}",
+          "latex": "(4x^2)^3 = 4^3 \\cdot x^{2 \\times 3} = 64 x^{6}",
           "explain": "Apply the outer exponent to both the numerical coefficient and the variable factor."
         },
         {
-          "latex": "x^{4} = 3^{4} = 81",
+          "latex": "x^{6} = 2^{6} = 64",
           "explain": "Substitute the given value of $x$ and evaluate its power."
         },
         {
-          "latex": "4 \\times 81 = 324",
+          "latex": "64 \\times 64 = 4096",
           "explain": "Multiply the powered coefficient by the variable power."
         }
       ],
@@ -758,7 +758,7 @@
       "id": "Q08",
       "templateKey": "c08-power-of-product-neg-exp",
       "levelLabel": "Level 2 - Standard Exam",
-      "fingerprint": "c08-power-of-product-neg-exp|direct|power rule #^#^# [beta]",
+      "fingerprint": "c08-power-of-product-neg-exp|direct|power rule #^#^#",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -794,7 +794,7 @@
         "weakDistractors": 0,
         "G3": {
           "passed": true,
-          "fingerprint": "c08-power-of-product-neg-exp|direct|power rule #^#^# [beta]",
+          "fingerprint": "c08-power-of-product-neg-exp|direct|power rule #^#^#",
           "maxAllowedPerFingerprint": 1
         }
       },
@@ -805,7 +805,7 @@
           "notionUrl": "https://www.notion.so/4003818f8ba08032934ededb8bc1db54"
         }
       ],
-      "trapValue": "162",
+      "trapValue": "256",
       "state": {
         "userInput": "",
         "score": null,

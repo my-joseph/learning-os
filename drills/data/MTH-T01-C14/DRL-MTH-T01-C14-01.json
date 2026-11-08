@@ -7,7 +7,7 @@
   "chapterCode": "MTH-T01-C14",
   "topicCode": "MTH-T01",
   "unitNotionUrl": "https://www.notion.so/4003818f8ba080479b02f51945184734",
-  "createdAt": "2026-11-08 17:16:18",
+  "createdAt": "2026-11-08 20:18:03",
   "config": {
     "questionCount": 8,
     "difficulty": "ALL",
@@ -45,203 +45,7 @@
   ],
   "problems": [
     {
-      "form": "direct",
-      "category": "Reverse Reasoning",
-      "context": "Graphs: Slope Formula & Missing Coordinate",
-      "references": [
-        "MTH-T01-C14-U04"
-      ],
-      "prompt": "Find the slope $m$ of the line passing through the points $(-5, 3)$ and $(-1, -5)$.",
-      "display": "m = \\frac{-5 - (3)}{-1 - (-5)}",
-      "plainText": "slope (-5,3) to (-1,-5) [epsilon]",
-      "answerSpec": {
-        "type": "number",
-        "value": "-2"
-      },
-      "answerDisplay": "-2",
-      "answerPlain": "-2",
-      "inputHint": "Enter the exact signed integer value",
-      "checkpointHint": "Use the slope formula m = (y2 - y1) / (x2 - x1) keeping the subtraction order consistent in numerator and denominator.",
-      "commonTrapTag": "c14-slope-run-over-rise-trap",
-      "steps": [
-        {
-          "latex": "\\Delta y = -5 - (3) = -8",
-          "explain": "Compute the change in $y$ (vertical rise)."
-        },
-        {
-          "latex": "\\Delta x = -1 - (-5) = 4",
-          "explain": "Compute the change in $x$ (horizontal run)."
-        },
-        {
-          "latex": "m = \\frac{-8}{4} = -2",
-          "explain": "Divide the vertical rise by the horizontal run."
-        }
-      ],
-      "level": 2,
-      "skill": "MTH-PREALG-C14-SLOPE",
-      "verificationLevel": "machine-verified",
-      "id": "Q01",
-      "templateKey": "c14-slope-two-points",
-      "levelLabel": "Level 2 - Standard Exam",
-      "fingerprint": "c14-slope-two-points|direct|slope (-#,#) to (-#,-#) [epsilon]",
-      "qualityGates": {
-        "G1": {
-          "passed": true,
-          "archetype": "math-standard"
-        },
-        "G2": {
-          "passed": true,
-          "level": 2,
-          "stepCount": 3,
-          "hasTrapOrFlaw": true,
-          "skill": "MTH-PREALG-C14-SLOPE",
-          "stepRange": [
-            2,
-            4
-          ]
-        },
-        "G4": {
-          "passed": true,
-          "trapTag": "c14-slope-run-over-rise-trap",
-          "trapValueVerified": true,
-          "weakDistractors": 0,
-          "provenanceDistractors": 0
-        },
-        "G6": {
-          "passed": true,
-          "fieldsChecked": 13
-        },
-        "antiLeak": {
-          "passed": true,
-          "hintsChecked": 2
-        },
-        "verificationLevel": "machine-verified",
-        "weakDistractors": 0,
-        "G3": {
-          "passed": true,
-          "fingerprint": "c14-slope-two-points|direct|slope (-#,#) to (-#,-#) [epsilon]",
-          "maxAllowedPerFingerprint": 1
-        }
-      },
-      "referenceBadges": [
-        {
-          "code": "MTH-T01-C14-U04",
-          "title": "Use the Rectangular Coordinate System",
-          "notionUrl": "https://www.notion.so/4003818f8ba080e6987ec4421379d87b"
-        }
-      ],
-      "trapValue": "2",
-      "state": {
-        "userInput": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "lastCheck": null
-      }
-    },
-    {
-      "form": "bisector-intercept",
-      "category": "Trap & Edge Case",
-      "context": "Graphs: Perpendicular Bisector & Collinearity Traps",
-      "references": [
-        "MTH-T01-C14-U01",
-        "MTH-T01-C14-U04"
-      ],
-      "prompt": "Segment $AB$ has endpoints $A(-2, 1)$ and $B(6, 5)$. Line $L$ is the perpendicular bisector of segment $AB$. Find the $y$-intercept $b$ of line $L$ (where $L$ is written as $y = mx + b$).",
-      "display": "A(-2, 1),\\ B(6, 5) \\implies L \\perp AB \\text{ at } M(2, 3) \\implies b = ?",
-      "plainText": "coord trap bisector-intercept 7 [zeta]",
-      "answerSpec": {
-        "type": "number",
-        "value": "7"
-      },
-      "answerDisplay": "7",
-      "answerPlain": "7",
-      "inputHint": "Enter the exact signed integer value",
-      "checkpointHint": "For perpendicular lines use the negative reciprocal slope -1/m; for collinear points equate the slopes of adjacent segments.",
-      "commonTrapTag": "c14-perpendicular-slope-sign-trap",
-      "steps": [
-        {
-          "latex": "M = \\left(\\frac{-2 + 6}{2}, \\frac{1 + 5}{2}\\right) = (2, 3)",
-          "explain": "Find the midpoint $M$ of segment $AB$."
-        },
-        {
-          "latex": "m_{AB} = \\frac{5 - (1)}{6 - (-2)} = \\frac{1}{2} \\implies m_L = -2",
-          "explain": "Take the negative reciprocal of $m_{AB} = 1/2$ to get perpendicular slope $m_L = -2$."
-        },
-        {
-          "latex": "b = y_M - m_L x_M = 3 - (-2)(2) = 7",
-          "explain": "Substitute midpoint $M$ into $y = m_L x + b$ to solve for $b$."
-        }
-      ],
-      "level": 3,
-      "skill": "MTH-PREALG-C14-PERP-TRAP",
-      "verificationLevel": "machine-verified",
-      "id": "Q02",
-      "templateKey": "c14-perpendicular-bisector-trap",
-      "levelLabel": "Level 3 - Trap & Diagnostic",
-      "fingerprint": "c14-perpendicular-bisector-trap|bisector-intercept|coord trap bisector-intercept # [zeta]",
-      "qualityGates": {
-        "G1": {
-          "passed": true,
-          "archetype": "math-standard"
-        },
-        "G2": {
-          "passed": true,
-          "level": 3,
-          "stepCount": 3,
-          "hasTrapOrFlaw": true,
-          "skill": "MTH-PREALG-C14-PERP-TRAP",
-          "stepRange": [
-            2,
-            5
-          ]
-        },
-        "G4": {
-          "passed": true,
-          "trapTag": "c14-perpendicular-slope-sign-trap",
-          "trapValueVerified": true,
-          "weakDistractors": 0,
-          "provenanceDistractors": 0
-        },
-        "G6": {
-          "passed": true,
-          "fieldsChecked": 13
-        },
-        "antiLeak": {
-          "passed": true,
-          "hintsChecked": 2
-        },
-        "verificationLevel": "machine-verified",
-        "weakDistractors": 0,
-        "G3": {
-          "passed": true,
-          "fingerprint": "c14-perpendicular-bisector-trap|bisector-intercept|coord trap bisector-intercept # [zeta]",
-          "maxAllowedPerFingerprint": 1
-        }
-      },
-      "referenceBadges": [
-        {
-          "code": "MTH-T01-C14-U01",
-          "title": "Understand Slope of a Line",
-          "notionUrl": "https://www.notion.so/4003818f8ba080199274d604fb3f7aee"
-        },
-        {
-          "code": "MTH-T01-C14-U04",
-          "title": "Use the Rectangular Coordinate System",
-          "notionUrl": "https://www.notion.so/4003818f8ba080e6987ec4421379d87b"
-        }
-      ],
-      "trapValue": "-1",
-      "state": {
-        "userInput": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "lastCheck": null
-      }
-    },
-    {
-      "form": "lattice-points",
+      "form": "reflection-point",
       "category": "Interleaved Synthesis",
       "context": "Graphs: Coordinate Geometry Multi-Concept Synthesis",
       "references": [
@@ -249,39 +53,39 @@
         "MTH-T01-C14-U03",
         "MTH-T01-C14-U04"
       ],
-      "prompt": "Line $L$ has equation $5x + 6y = 120$. How many lattice points $(x, y)$ (points where both $x$ and $y$ are integers) lie on the line segment of $L$ in the first quadrant ($x \\ge 0,\\ y \\ge 0$, including both axis intercepts)?",
-      "display": "5x + 6y = 120,\\quad x, y \\in \\mathbb{Z}_{\\ge 0} \\implies N_{\\text{lattice}} = ?",
-      "plainText": "coord synthesis lattice-points 5 [alpha]",
+      "prompt": "Point $P(7, 3)$ is reflected across the line $L: y = 2x - 1$ to its mirror image $P'(x', y')$. Find the sum of coordinates $x' + y'$ of the reflected point.",
+      "display": "P(7, 3) \\xrightarrow{\\text{reflect across } y = 2x - 1} P'(x', y') \\implies x' + y' = ?",
+      "plainText": "coord synthesis reflection-point 6",
       "answerSpec": {
         "type": "number",
-        "value": "5"
+        "value": "6"
       },
-      "answerDisplay": "5",
-      "answerPlain": "5",
+      "answerDisplay": "6",
+      "answerPlain": "6",
       "inputHint": "Enter the exact signed integer value",
       "checkpointHint": "Combine intersection coordinates, perpendicular slope relations, or greatest common divisor step counts to determine the geometric invariant.",
       "commonTrapTag": "c14-lattice-endpoint-exclusion-trap",
       "steps": [
         {
-          "latex": "A = (24, 0), \\quad B = (0, 20)",
-          "explain": "Find the x-intercept and y-intercept bounding the first-quadrant segment."
+          "latex": "M = \\left(\\frac{7 + x'}{2}, \\frac{3 + y'}{2}\\right) = (3, 5) \\text{ lies on } L",
+          "explain": "The foot of the perpendicular from $P$ to line $L$ is the midpoint $M$ of $PP'$."
         },
         {
-          "latex": "\\gcd(|\\Delta x|, |\\Delta y|) = \\gcd(24, 20) = 4",
-          "explain": "Compute the greatest common divisor of the horizontal and vertical spans."
+          "latex": "x' = 2(3) - 7 = -1, \\quad y' = 2(5) - (3) = 7",
+          "explain": "Double the midpoint coordinates and subtract the original coordinates of $P$."
         },
         {
-          "latex": "N_{\\text{lattice}} = \\gcd(24, 20) + 1 = 4 + 1 = 5",
-          "explain": "Add 1 to include both endpoints of the segment."
+          "latex": "x' + y' = -1 + (7) = 6",
+          "explain": "Sum the coordinates of the reflected image $P'$."
         }
       ],
       "level": 4,
       "skill": "MTH-PREALG-C14-SYNTHESIS",
       "verificationLevel": "machine-verified",
-      "id": "Q03",
+      "id": "Q01",
       "templateKey": "c14-coordinate-geometry-synthesis",
       "levelLabel": "Level 4 - Applied Synthesis",
-      "fingerprint": "c14-coordinate-geometry-synthesis|lattice-points|coord synthesis lattice-points # [alpha]",
+      "fingerprint": "c14-coordinate-geometry-synthesis|reflection-point|coord synthesis reflection-point #",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -317,7 +121,7 @@
         "weakDistractors": 0,
         "G3": {
           "passed": true,
-          "fingerprint": "c14-coordinate-geometry-synthesis|lattice-points|coord synthesis lattice-points # [alpha]",
+          "fingerprint": "c14-coordinate-geometry-synthesis|reflection-point|coord synthesis reflection-point #",
           "maxAllowedPerFingerprint": 1
         }
       },
@@ -338,7 +142,7 @@
           "notionUrl": "https://www.notion.so/4003818f8ba080e6987ec4421379d87b"
         }
       ],
-      "trapValue": "4",
+      "trapValue": "10",
       "state": {
         "userInput": "",
         "score": null,
@@ -348,36 +152,244 @@
       }
     },
     {
-      "form": "direct",
+      "form": "lattice-points",
+      "category": "Interleaved Synthesis",
+      "context": "Graphs: Coordinate Geometry Multi-Concept Synthesis",
+      "references": [
+        "MTH-T01-C14-U02",
+        "MTH-T01-C14-U03",
+        "MTH-T01-C14-U04"
+      ],
+      "prompt": "Line $L$ has equation $2x + 5y = 70$. How many lattice points $(x, y)$ (points where both $x$ and $y$ are integers) lie on the line segment of $L$ in the first quadrant ($x \\ge 0,\\ y \\ge 0$, including both axis intercepts)?",
+      "display": "2x + 5y = 70,\\quad x, y \\in \\mathbb{Z}_{\\ge 0} \\implies N_{\\text{lattice}} = ?",
+      "plainText": "coord synthesis lattice-points 8",
+      "answerSpec": {
+        "type": "number",
+        "value": "8"
+      },
+      "answerDisplay": "8",
+      "answerPlain": "8",
+      "inputHint": "Enter the exact signed integer value",
+      "checkpointHint": "Combine intersection coordinates, perpendicular slope relations, or greatest common divisor step counts to determine the geometric invariant.",
+      "commonTrapTag": "c14-lattice-endpoint-exclusion-trap",
+      "steps": [
+        {
+          "latex": "A = (35, 0), \\quad B = (0, 14)",
+          "explain": "Find the x-intercept and y-intercept bounding the first-quadrant segment."
+        },
+        {
+          "latex": "\\gcd(|\\Delta x|, |\\Delta y|) = \\gcd(35, 14) = 7",
+          "explain": "Compute the greatest common divisor of the horizontal and vertical spans."
+        },
+        {
+          "latex": "N_{\\text{lattice}} = \\gcd(35, 14) + 1 = 7 + 1 = 8",
+          "explain": "Add 1 to include both endpoints of the segment."
+        }
+      ],
+      "level": 4,
+      "skill": "MTH-PREALG-C14-SYNTHESIS",
+      "verificationLevel": "machine-verified",
+      "id": "Q02",
+      "templateKey": "c14-coordinate-geometry-synthesis",
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "c14-coordinate-geometry-synthesis|lattice-points|coord synthesis lattice-points #",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C14-SYNTHESIS",
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c14-lattice-endpoint-exclusion-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c14-coordinate-geometry-synthesis|lattice-points|coord synthesis lattice-points #",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C14-U02",
+          "title": "Graphing with Intercepts",
+          "notionUrl": "https://www.notion.so/4003818f8ba0809db4f6c640c10c0e64"
+        },
+        {
+          "code": "MTH-T01-C14-U03",
+          "title": "Graphing Linear Equations",
+          "notionUrl": "https://www.notion.so/4003818f8ba080fd925bd5caee9981eb"
+        },
+        {
+          "code": "MTH-T01-C14-U04",
+          "title": "Use the Rectangular Coordinate System",
+          "notionUrl": "https://www.notion.so/4003818f8ba080e6987ec4421379d87b"
+        }
+      ],
+      "trapValue": "7",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "collinear-parameter",
+      "category": "Trap & Edge Case",
+      "context": "Graphs: Perpendicular Bisector & Collinearity Traps",
+      "references": [
+        "MTH-T01-C14-U01",
+        "MTH-T01-C14-U04"
+      ],
+      "prompt": "Three distinct points $A(1, -2)$, $B(4, 7)$, and $C(6, k + 8)$ are collinear in the coordinate plane. Find the exact value of $k$.",
+      "display": "m_{AB} = m_{BC} \\implies \\frac{7 - (-2)}{4 - (1)} = \\frac{(k + 8) - (7)}{6 - (4)}",
+      "plainText": "coord trap collinear-parameter 5",
+      "answerSpec": {
+        "type": "number",
+        "value": "5"
+      },
+      "answerDisplay": "5",
+      "answerPlain": "5",
+      "inputHint": "Enter the exact signed integer value",
+      "checkpointHint": "For perpendicular lines use the negative reciprocal slope -1/m; for collinear points equate the slopes of adjacent segments.",
+      "commonTrapTag": "c14-perpendicular-slope-sign-trap",
+      "steps": [
+        {
+          "latex": "m_{AB} = \\frac{7 - (-2)}{4 - (1)} = 3",
+          "explain": "Calculate the slope of segment $AB$."
+        },
+        {
+          "latex": "y_C = 7 + 3(6 - 4) = 13",
+          "explain": "Use collinearity to find the required y-coordinate of point $C$."
+        },
+        {
+          "latex": "k + 8 = 13 \\implies k = 5",
+          "explain": "Solve the linear relation for parameter $k$."
+        }
+      ],
+      "level": 3,
+      "skill": "MTH-PREALG-C14-PERP-TRAP",
+      "verificationLevel": "machine-verified",
+      "id": "Q03",
+      "templateKey": "c14-perpendicular-bisector-trap",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "c14-perpendicular-bisector-trap|collinear-parameter|coord trap collinear-parameter #",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C14-PERP-TRAP",
+          "stepRange": [
+            2,
+            5
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c14-perpendicular-slope-sign-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c14-perpendicular-bisector-trap|collinear-parameter|coord trap collinear-parameter #",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C14-U01",
+          "title": "Understand Slope of a Line",
+          "notionUrl": "https://www.notion.so/4003818f8ba080199274d604fb3f7aee"
+        },
+        {
+          "code": "MTH-T01-C14-U04",
+          "title": "Use the Rectangular Coordinate System",
+          "notionUrl": "https://www.notion.so/4003818f8ba080e6987ec4421379d87b"
+        }
+      ],
+      "trapValue": "-5",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "intercept-sum",
       "category": "Core Skill",
       "context": "Graphs: Coordinate Axes & Linear Intercepts",
       "references": [
         "MTH-T01-C14-U03"
       ],
-      "prompt": "Find the $x$-coordinate of the $x$-intercept of the line $2x + 7y = 42$.",
-      "display": "2x + 7y = 42,\\quad y = 0 \\implies x = ?",
-      "plainText": "2*x + 7*y = 42 intercepts [delta]",
+      "prompt": "A line is given by the standard equation $6x + 3y = 54$ in the rectangular coordinate plane. Find the sum of its $x$-intercept value and its $y$-intercept value.",
+      "display": "6x + 3y = 54 \\implies a_{\\text{int}} + b_{\\text{int}} = ?",
+      "plainText": "6*x + 3*y = 54 intercepts",
       "answerSpec": {
         "type": "number",
-        "value": "21"
+        "value": "27"
       },
-      "answerDisplay": "21",
-      "answerPlain": "21",
+      "answerDisplay": "27",
+      "answerPlain": "27",
       "inputHint": "Enter the exact integer value",
       "checkpointHint": "To find the x-intercept set y = 0; to find the y-intercept set x = 0.",
       "commonTrapTag": "c14-intercept-axis-swap-trap",
       "steps": [
         {
-          "latex": "2x + 7(0) = 42",
-          "explain": "Substitute $y = 0$ into the linear equation to locate the $x$-intercept."
+          "latex": "y = 0 \\implies 6x = 54 \\implies a_{\\text{int}} = 9",
+          "explain": "Set $y = 0$ to find the $x$-intercept."
         },
         {
-          "latex": "2x = 42 \\implies x = \\frac{42}{2}",
-          "explain": "Divide both sides by the coefficient of $x$."
+          "latex": "x = 0 \\implies 3y = 54 \\implies b_{\\text{int}} = 18",
+          "explain": "Set $x = 0$ to find the $y$-intercept."
         },
         {
-          "latex": "x = 21",
-          "explain": "State the $x$-intercept value."
+          "latex": "a_{\\text{int}} + b_{\\text{int}} = 9 + 18 = 27",
+          "explain": "Add the two intercept coordinates."
         }
       ],
       "level": 1,
@@ -386,7 +398,7 @@
       "id": "Q04",
       "templateKey": "c14-midpoint-intercepts",
       "levelLabel": "Level 1 - Foundation",
-      "fingerprint": "c14-midpoint-intercepts|direct|#*x + #*y = # intercepts [delta]",
+      "fingerprint": "c14-midpoint-intercepts|intercept-sum|#*x + #*y = # intercepts",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -422,7 +434,7 @@
         "weakDistractors": 0,
         "G3": {
           "passed": true,
-          "fingerprint": "c14-midpoint-intercepts|direct|#*x + #*y = # intercepts [delta]",
+          "fingerprint": "c14-midpoint-intercepts|intercept-sum|#*x + #*y = # intercepts",
           "maxAllowedPerFingerprint": 1
         }
       },
@@ -433,7 +445,7 @@
           "notionUrl": "https://www.notion.so/4003818f8ba080fd925bd5caee9981eb"
         }
       ],
-      "trapValue": "6",
+      "trapValue": "9",
       "state": {
         "userInput": "",
         "score": null,
@@ -443,46 +455,45 @@
       }
     },
     {
-      "form": "direct",
-      "category": "Trap & Edge Case",
-      "context": "Graphs: Perpendicular Bisector & Collinearity Traps",
+      "form": "missing-coordinate",
+      "category": "Reverse Reasoning",
+      "context": "Graphs: Slope Formula & Missing Coordinate",
       "references": [
-        "MTH-T01-C14-U01",
         "MTH-T01-C14-U04"
       ],
-      "prompt": "Line $L$ is the perpendicular bisector of the segment connecting $P(-1, 3)$ and $Q(5, 5)$. If line $L$ has equation $y = mx + b$, find the value of $b$.",
-      "display": "P(-1, 3),\\ Q(5, 5) \\implies y = mx + b \\implies b = ?",
-      "plainText": "coord trap direct 10 [gamma]",
+      "prompt": "The line passing through the points $(-2, 1)$ and $(0, k)$ has a slope of $m = 4$. Find the missing coordinate $k$.",
+      "display": "\\frac{k - (1)}{0 - (-2)} = 4 \\implies k = ?",
+      "plainText": "slope (-2,1) to (0,9)",
       "answerSpec": {
         "type": "number",
-        "value": "10"
+        "value": "9"
       },
-      "answerDisplay": "10",
-      "answerPlain": "10",
+      "answerDisplay": "9",
+      "answerPlain": "9",
       "inputHint": "Enter the exact signed integer value",
-      "checkpointHint": "For perpendicular lines use the negative reciprocal slope -1/m; for collinear points equate the slopes of adjacent segments.",
-      "commonTrapTag": "c14-perpendicular-slope-sign-trap",
+      "checkpointHint": "Use the slope formula m = (y2 - y1) / (x2 - x1) keeping the subtraction order consistent in numerator and denominator.",
+      "commonTrapTag": "c14-slope-run-over-rise-trap",
       "steps": [
         {
-          "latex": "M = \\left(\\frac{-1 + 5}{2}, \\frac{3 + 5}{2}\\right) = (2, 4)",
-          "explain": "Compute the midpoint $M$ of segment $PQ$."
+          "latex": "\\Delta x = 0 - (-2) = 2",
+          "explain": "Compute the horizontal run between the two points."
         },
         {
-          "latex": "m_{PQ} = \\frac{5 - 3}{5 - (-1)} = \\frac{1}{3} \\implies m_L = -3",
-          "explain": "Compute $m_{PQ} = 1/3$ and take its negative reciprocal $m_L = -3$."
+          "latex": "k - (1) = m \\cdot \\Delta x = (4)(2) = 8",
+          "explain": "Multiply the slope by the horizontal run to find the vertical rise."
         },
         {
-          "latex": "b = 4 - (-3)(2) = 10",
-          "explain": "Substitute the midpoint coordinates to find the y-intercept $b$."
+          "latex": "k = 1 + (8) = 9",
+          "explain": "Add the vertical rise to the initial y-coordinate."
         }
       ],
-      "level": 3,
-      "skill": "MTH-PREALG-C14-PERP-TRAP",
+      "level": 2,
+      "skill": "MTH-PREALG-C14-SLOPE",
       "verificationLevel": "machine-verified",
       "id": "Q05",
-      "templateKey": "c14-perpendicular-bisector-trap",
-      "levelLabel": "Level 3 - Trap & Diagnostic",
-      "fingerprint": "c14-perpendicular-bisector-trap|direct|coord trap direct # [gamma]",
+      "templateKey": "c14-slope-two-points",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "c14-slope-two-points|missing-coordinate|slope (-#,#) to (#,#)",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -490,18 +501,18 @@
         },
         "G2": {
           "passed": true,
-          "level": 3,
+          "level": 2,
           "stepCount": 3,
           "hasTrapOrFlaw": true,
-          "skill": "MTH-PREALG-C14-PERP-TRAP",
+          "skill": "MTH-PREALG-C14-SLOPE",
           "stepRange": [
             2,
-            5
+            4
           ]
         },
         "G4": {
           "passed": true,
-          "trapTag": "c14-perpendicular-slope-sign-trap",
+          "trapTag": "c14-slope-run-over-rise-trap",
           "trapValueVerified": true,
           "weakDistractors": 0,
           "provenanceDistractors": 0
@@ -518,23 +529,18 @@
         "weakDistractors": 0,
         "G3": {
           "passed": true,
-          "fingerprint": "c14-perpendicular-bisector-trap|direct|coord trap direct # [gamma]",
+          "fingerprint": "c14-slope-two-points|missing-coordinate|slope (-#,#) to (#,#)",
           "maxAllowedPerFingerprint": 1
         }
       },
       "referenceBadges": [
-        {
-          "code": "MTH-T01-C14-U01",
-          "title": "Understand Slope of a Line",
-          "notionUrl": "https://www.notion.so/4003818f8ba080199274d604fb3f7aee"
-        },
         {
           "code": "MTH-T01-C14-U04",
           "title": "Use the Rectangular Coordinate System",
           "notionUrl": "https://www.notion.so/4003818f8ba080e6987ec4421379d87b"
         }
       ],
-      "trapValue": "-2",
+      "trapValue": "-7",
       "state": {
         "userInput": "",
         "score": null,
@@ -544,7 +550,7 @@
       }
     },
     {
-      "form": "reflection-point",
+      "form": "direct",
       "category": "Interleaved Synthesis",
       "context": "Graphs: Coordinate Geometry Multi-Concept Synthesis",
       "references": [
@@ -552,30 +558,30 @@
         "MTH-T01-C14-U03",
         "MTH-T01-C14-U04"
       ],
-      "prompt": "Point $P(7, 4)$ is reflected across the line $L: y = 2x + 5$ to its mirror image $P'(x', y')$. Find the sum of coordinates $x' + y'$ of the reflected point.",
-      "display": "P(7, 4) \\xrightarrow{\\text{reflect across } y = 2x + 5} P'(x', y') \\implies x' + y' = ?",
-      "plainText": "coord synthesis reflection-point 5 [epsilon]",
+      "prompt": "In the rectangular coordinate plane, line $L_1$ is given by $y = 2x + 8$ and line $L_2$ is given by $y = -2x + 16$. Find the exact area of the triangle bounded by $L_1$, $L_2$, and the $x$-axis ($y = 0$).",
+      "display": "L_1: y = 2x + 8,\\quad L_2: y = -2x + 16,\\quad y = 0 \\implies \\text{Area} = ?",
+      "plainText": "coord synthesis direct 72",
       "answerSpec": {
         "type": "number",
-        "value": "5"
+        "value": "72"
       },
-      "answerDisplay": "5",
-      "answerPlain": "5",
+      "answerDisplay": "72",
+      "answerPlain": "72",
       "inputHint": "Enter the exact signed integer value",
       "checkpointHint": "Combine intersection coordinates, perpendicular slope relations, or greatest common divisor step counts to determine the geometric invariant.",
       "commonTrapTag": "c14-lattice-endpoint-exclusion-trap",
       "steps": [
         {
-          "latex": "M = \\left(\\frac{7 + x'}{2}, \\frac{4 + y'}{2}\\right) = (1, 7) \\text{ lies on } L",
-          "explain": "The foot of the perpendicular from $P$ to line $L$ is the midpoint $M$ of $PP'$."
+          "latex": "2x + 8 = -2x + 16 \\implies x = 2,\\ y = 12",
+          "explain": "Find the intersection vertex of $L_1$ and $L_2$, which gives triangle height $h = y_I$."
         },
         {
-          "latex": "x' = 2(1) - 7 = -5, \\quad y' = 2(7) - (4) = 10",
-          "explain": "Double the midpoint coordinates and subtract the original coordinates of $P$."
+          "latex": "x_1 = -4, \\quad x_2 = 8 \\implies \\text{base} = 8 - (-4) = 12",
+          "explain": "Find the x-intercepts of both lines and subtract to get the base along the x-axis."
         },
         {
-          "latex": "x' + y' = -5 + (10) = 5",
-          "explain": "Sum the coordinates of the reflected image $P'$."
+          "latex": "\\text{Area} = \\frac{1}{2} \\times 12 \\times 12 = 72",
+          "explain": "Compute half the product of the base and height."
         }
       ],
       "level": 4,
@@ -584,7 +590,7 @@
       "id": "Q06",
       "templateKey": "c14-coordinate-geometry-synthesis",
       "levelLabel": "Level 4 - Applied Synthesis",
-      "fingerprint": "c14-coordinate-geometry-synthesis|reflection-point|coord synthesis reflection-point # [epsilon]",
+      "fingerprint": "c14-coordinate-geometry-synthesis|direct|coord synthesis direct #",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -620,7 +626,7 @@
         "weakDistractors": 0,
         "G3": {
           "passed": true,
-          "fingerprint": "c14-coordinate-geometry-synthesis|reflection-point|coord synthesis reflection-point # [epsilon]",
+          "fingerprint": "c14-coordinate-geometry-synthesis|direct|coord synthesis direct #",
           "maxAllowedPerFingerprint": 1
         }
       },
@@ -641,7 +647,7 @@
           "notionUrl": "https://www.notion.so/4003818f8ba080e6987ec4421379d87b"
         }
       ],
-      "trapValue": "11",
+      "trapValue": "144",
       "state": {
         "userInput": "",
         "score": null,
@@ -652,46 +658,44 @@
     },
     {
       "form": "direct",
-      "category": "Interleaved Synthesis",
-      "context": "Graphs: Coordinate Geometry Multi-Concept Synthesis",
+      "category": "Core Skill",
+      "context": "Graphs: Coordinate Axes & Linear Intercepts",
       "references": [
-        "MTH-T01-C14-U02",
-        "MTH-T01-C14-U03",
-        "MTH-T01-C14-U04"
+        "MTH-T01-C14-U03"
       ],
-      "prompt": "In the rectangular coordinate plane, line $L_1$ is given by $y = 3x + 9$ and line $L_2$ is given by $y = -3x + 27$. Find the exact area of the triangle bounded by $L_1$, $L_2$, and the $x$-axis ($y = 0$).",
-      "display": "L_1: y = 3x + 9,\\quad L_2: y = -3x + 27,\\quad y = 0 \\implies \\text{Area} = ?",
-      "plainText": "coord synthesis direct 108 [epsilon]",
+      "prompt": "Find the $x$-coordinate of the $x$-intercept of the line $3x + 4y = 36$.",
+      "display": "3x + 4y = 36,\\quad y = 0 \\implies x = ?",
+      "plainText": "3*x + 4*y = 36 intercepts",
       "answerSpec": {
         "type": "number",
-        "value": "108"
+        "value": "12"
       },
-      "answerDisplay": "108",
-      "answerPlain": "108",
-      "inputHint": "Enter the exact signed integer value",
-      "checkpointHint": "Combine intersection coordinates, perpendicular slope relations, or greatest common divisor step counts to determine the geometric invariant.",
-      "commonTrapTag": "c14-lattice-endpoint-exclusion-trap",
+      "answerDisplay": "12",
+      "answerPlain": "12",
+      "inputHint": "Enter the exact integer value",
+      "checkpointHint": "To find the x-intercept set y = 0; to find the y-intercept set x = 0.",
+      "commonTrapTag": "c14-intercept-axis-swap-trap",
       "steps": [
         {
-          "latex": "3x + 9 = -3x + 27 \\implies x = 3,\\ y = 18",
-          "explain": "Find the intersection vertex of $L_1$ and $L_2$, which gives triangle height $h = y_I$."
+          "latex": "3x + 4(0) = 36",
+          "explain": "Substitute $y = 0$ into the linear equation to locate the $x$-intercept."
         },
         {
-          "latex": "x_1 = -3, \\quad x_2 = 9 \\implies \\text{base} = 9 - (-3) = 12",
-          "explain": "Find the x-intercepts of both lines and subtract to get the base along the x-axis."
+          "latex": "3x = 36 \\implies x = \\frac{36}{3}",
+          "explain": "Divide both sides by the coefficient of $x$."
         },
         {
-          "latex": "\\text{Area} = \\frac{1}{2} \\times 12 \\times 18 = 108",
-          "explain": "Compute half the product of the base and height."
+          "latex": "x = 12",
+          "explain": "State the $x$-intercept value."
         }
       ],
-      "level": 4,
-      "skill": "MTH-PREALG-C14-SYNTHESIS",
+      "level": 1,
+      "skill": "MTH-PREALG-C14-INTERCEPTS",
       "verificationLevel": "machine-verified",
       "id": "Q07",
-      "templateKey": "c14-coordinate-geometry-synthesis",
-      "levelLabel": "Level 4 - Applied Synthesis",
-      "fingerprint": "c14-coordinate-geometry-synthesis|direct|coord synthesis direct # [epsilon]",
+      "templateKey": "c14-midpoint-intercepts",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "c14-midpoint-intercepts|direct|#*x + #*y = # intercepts",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -699,18 +703,18 @@
         },
         "G2": {
           "passed": true,
-          "level": 4,
+          "level": 1,
           "stepCount": 3,
           "hasTrapOrFlaw": true,
-          "skill": "MTH-PREALG-C14-SYNTHESIS",
+          "skill": "MTH-PREALG-C14-INTERCEPTS",
           "stepRange": [
-            2,
-            6
+            1,
+            3
           ]
         },
         "G4": {
           "passed": true,
-          "trapTag": "c14-lattice-endpoint-exclusion-trap",
+          "trapTag": "c14-intercept-axis-swap-trap",
           "trapValueVerified": true,
           "weakDistractors": 0,
           "provenanceDistractors": 0
@@ -727,28 +731,18 @@
         "weakDistractors": 0,
         "G3": {
           "passed": true,
-          "fingerprint": "c14-coordinate-geometry-synthesis|direct|coord synthesis direct # [epsilon]",
+          "fingerprint": "c14-midpoint-intercepts|direct|#*x + #*y = # intercepts",
           "maxAllowedPerFingerprint": 1
         }
       },
       "referenceBadges": [
         {
-          "code": "MTH-T01-C14-U02",
-          "title": "Graphing with Intercepts",
-          "notionUrl": "https://www.notion.so/4003818f8ba0809db4f6c640c10c0e64"
-        },
-        {
           "code": "MTH-T01-C14-U03",
           "title": "Graphing Linear Equations",
           "notionUrl": "https://www.notion.so/4003818f8ba080fd925bd5caee9981eb"
-        },
-        {
-          "code": "MTH-T01-C14-U04",
-          "title": "Use the Rectangular Coordinate System",
-          "notionUrl": "https://www.notion.so/4003818f8ba080e6987ec4421379d87b"
         }
       ],
-      "trapValue": "216",
+      "trapValue": "9",
       "state": {
         "userInput": "",
         "score": null,
@@ -758,37 +752,37 @@
       }
     },
     {
-      "form": "collinear-parameter",
+      "form": "bisector-intercept",
       "category": "Trap & Edge Case",
       "context": "Graphs: Perpendicular Bisector & Collinearity Traps",
       "references": [
         "MTH-T01-C14-U01",
         "MTH-T01-C14-U04"
       ],
-      "prompt": "Three distinct points $A(1, -2)$, $B(4, 7)$, and $C(6, k + 8)$ are collinear in the coordinate plane. Find the exact value of $k$.",
-      "display": "m_{AB} = m_{BC} \\implies \\frac{7 - (-2)}{4 - (1)} = \\frac{(k + 8) - (7)}{6 - (4)}",
-      "plainText": "coord trap collinear-parameter 5 [beta]",
+      "prompt": "Segment $AB$ has endpoints $A(-2, 1)$ and $B(6, 5)$. Line $L$ is the perpendicular bisector of segment $AB$. Find the $y$-intercept $b$ of line $L$ (where $L$ is written as $y = mx + b$).",
+      "display": "A(-2, 1),\\ B(6, 5) \\implies L \\perp AB \\text{ at } M(2, 3) \\implies b = ?",
+      "plainText": "coord trap bisector-intercept 7",
       "answerSpec": {
         "type": "number",
-        "value": "5"
+        "value": "7"
       },
-      "answerDisplay": "5",
-      "answerPlain": "5",
+      "answerDisplay": "7",
+      "answerPlain": "7",
       "inputHint": "Enter the exact signed integer value",
       "checkpointHint": "For perpendicular lines use the negative reciprocal slope -1/m; for collinear points equate the slopes of adjacent segments.",
       "commonTrapTag": "c14-perpendicular-slope-sign-trap",
       "steps": [
         {
-          "latex": "m_{AB} = \\frac{7 - (-2)}{4 - (1)} = 3",
-          "explain": "Calculate the slope of segment $AB$."
+          "latex": "M = \\left(\\frac{-2 + 6}{2}, \\frac{1 + 5}{2}\\right) = (2, 3)",
+          "explain": "Find the midpoint $M$ of segment $AB$."
         },
         {
-          "latex": "y_C = 7 + 3(6 - 4) = 13",
-          "explain": "Use collinearity to find the required y-coordinate of point $C$."
+          "latex": "m_{AB} = \\frac{5 - (1)}{6 - (-2)} = \\frac{1}{2} \\implies m_L = -2",
+          "explain": "Take the negative reciprocal of $m_{AB} = 1/2$ to get perpendicular slope $m_L = -2$."
         },
         {
-          "latex": "k + 8 = 13 \\implies k = 5",
-          "explain": "Solve the linear relation for parameter $k$."
+          "latex": "b = y_M - m_L x_M = 3 - (-2)(2) = 7",
+          "explain": "Substitute midpoint $M$ into $y = m_L x + b$ to solve for $b$."
         }
       ],
       "level": 3,
@@ -797,7 +791,7 @@
       "id": "Q08",
       "templateKey": "c14-perpendicular-bisector-trap",
       "levelLabel": "Level 3 - Trap & Diagnostic",
-      "fingerprint": "c14-perpendicular-bisector-trap|collinear-parameter|coord trap collinear-parameter # [beta]",
+      "fingerprint": "c14-perpendicular-bisector-trap|bisector-intercept|coord trap bisector-intercept #",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -833,7 +827,7 @@
         "weakDistractors": 0,
         "G3": {
           "passed": true,
-          "fingerprint": "c14-perpendicular-bisector-trap|collinear-parameter|coord trap collinear-parameter # [beta]",
+          "fingerprint": "c14-perpendicular-bisector-trap|bisector-intercept|coord trap bisector-intercept #",
           "maxAllowedPerFingerprint": 1
         }
       },
@@ -849,7 +843,7 @@
           "notionUrl": "https://www.notion.so/4003818f8ba080e6987ec4421379d87b"
         }
       ],
-      "trapValue": "-5",
+      "trapValue": "-1",
       "state": {
         "userInput": "",
         "score": null,

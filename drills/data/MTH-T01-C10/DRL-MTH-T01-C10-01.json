@@ -7,7 +7,7 @@
   "chapterCode": "MTH-T01-C10",
   "topicCode": "MTH-T01",
   "unitNotionUrl": "https://www.notion.so/4013818f8ba081abb640e0ca95982e40",
-  "createdAt": "2026-11-08 17:14:03",
+  "createdAt": "2026-11-08 20:18:03",
   "config": {
     "questionCount": 8,
     "difficulty": "ALL",
@@ -53,29 +53,29 @@
       "references": [
         "MTH-T01-C10-U03"
       ],
-      "prompt": "Use the distributive property to evaluate $14(20 + 4)$.",
-      "display": "14(20 + 4)",
-      "plainText": "14*(20 op 4) [alpha]",
+      "prompt": "Use the distributive property to evaluate $6(50 + 7)$.",
+      "display": "6(50 + 7)",
+      "plainText": "6*(50 op 7)",
       "answerSpec": {
         "type": "number",
-        "value": "336"
+        "value": "342"
       },
-      "answerDisplay": "336",
-      "answerPlain": "336",
+      "answerDisplay": "342",
+      "answerPlain": "342",
       "inputHint": "Enter the exact integer value",
       "checkpointHint": "Multiply the outside factor by every term inside the parentheses before combining.",
       "commonTrapTag": "c10-partial-distribution-slip",
       "steps": [
         {
-          "latex": "14(20 + 4) = 14 \\times 20 + 14 \\times 4",
+          "latex": "6(50 + 7) = 6 \\times 50 + 6 \\times 7",
           "explain": "Distribute the factor across both terms inside the parentheses."
         },
         {
-          "latex": "= 280 + 56",
+          "latex": "= 300 + 42",
           "explain": "Compute each individual product."
         },
         {
-          "latex": "= 336",
+          "latex": "= 342",
           "explain": "Add the two products."
         }
       ],
@@ -85,7 +85,7 @@
       "id": "Q01",
       "templateKey": "c10-distributive-collect-terms",
       "levelLabel": "Level 1 - Foundation",
-      "fingerprint": "c10-distributive-collect-terms|direct|#*(# op #) [alpha]",
+      "fingerprint": "c10-distributive-collect-terms|direct|#*(# op #)",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -121,7 +121,7 @@
         "weakDistractors": 0,
         "G3": {
           "passed": true,
-          "fingerprint": "c10-distributive-collect-terms|direct|#*(# op #) [alpha]",
+          "fingerprint": "c10-distributive-collect-terms|direct|#*(# op #)",
           "maxAllowedPerFingerprint": 1
         }
       },
@@ -132,7 +132,7 @@
           "notionUrl": "https://www.notion.so/4013818f8ba081de9258e2094f59f58e"
         }
       ],
-      "trapValue": "284",
+      "trapValue": "307",
       "state": {
         "userInput": "",
         "score": null,
@@ -142,45 +142,140 @@
       }
     },
     {
-      "form": "direct",
+      "form": "mental-split",
+      "category": "Core Skill",
+      "context": "Real Numbers: Distributive Property",
+      "references": [
+        "MTH-T01-C10-U03"
+      ],
+      "prompt": "Use the distributive property to evaluate $9 \\times 44$ by rewriting $44$ as $(50 - 6)$.",
+      "display": "9(50 - 6) = 9(50) - 9(6)",
+      "plainText": "9*(50 op 6)",
+      "answerSpec": {
+        "type": "number",
+        "value": "396"
+      },
+      "answerDisplay": "396",
+      "answerPlain": "396",
+      "inputHint": "Enter the exact integer value",
+      "checkpointHint": "Multiply the outside factor by every term inside the parentheses before combining.",
+      "commonTrapTag": "c10-partial-distribution-slip",
+      "steps": [
+        {
+          "latex": "9(50 - 6) = 9 \\times 50 - 9 \\times 6",
+          "explain": "Distribute the outer factor across both terms in the difference."
+        },
+        {
+          "latex": "= 450 - 54",
+          "explain": "Evaluate each product separately."
+        },
+        {
+          "latex": "= 396",
+          "explain": "Subtract the second product from the first."
+        }
+      ],
+      "level": 1,
+      "skill": "MTH-PREALG-C10-DISTRIBUTE",
+      "verificationLevel": "machine-verified",
+      "id": "Q02",
+      "templateKey": "c10-distributive-collect-terms",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "c10-distributive-collect-terms|mental-split|#*(# op #)",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C10-DISTRIBUTE",
+          "stepRange": [
+            1,
+            3
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c10-partial-distribution-slip",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c10-distributive-collect-terms|mental-split|#*(# op #)",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C10-U03",
+          "title": "Distributive Property",
+          "notionUrl": "https://www.notion.so/4013818f8ba081de9258e2094f59f58e"
+        }
+      ],
+      "trapValue": "444",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "unit-conversion",
       "category": "Reverse Reasoning",
       "context": "Real Numbers: Distributive & Associative Equation",
       "references": [
         "MTH-T01-C10-U02"
       ],
-      "prompt": "Find the real number $x$ that satisfies $9(x + 5) + 7x = 205$.",
-      "display": "9(x + 5) + 7x = 205",
-      "plainText": "9*(x + 5) + 7*x = 205 [delta]",
+      "prompt": "Using the distributive and associative properties, solve for $x$: $6(x + 10) + 4x = 130$.",
+      "display": "6(x + 10) + 4x = 130 \\implies x = ?",
+      "plainText": "6*(x + 10) + 4*x = 130",
       "answerSpec": {
         "type": "number",
-        "value": "10"
+        "value": "7"
       },
-      "answerDisplay": "10",
-      "answerPlain": "10",
+      "answerDisplay": "7",
+      "answerPlain": "7",
       "inputHint": "Enter the exact integer value",
       "checkpointHint": "Distribute the factor over the parentheses, combine like variable terms using the associative property, and isolate the variable.",
       "commonTrapTag": "c10-partial-distribution-slip",
       "steps": [
         {
-          "latex": "9x + 45 + 7x = 205",
+          "latex": "6x + 60 + 4x = 130",
           "explain": "Apply the distributive property to expand the parenthesized term."
         },
         {
-          "latex": "16x + 45 = 205 \\implies 16x = 160",
+          "latex": "10x + 60 = 130 \\implies 10x = 70",
           "explain": "Combine like variable terms and subtract the constant term."
         },
         {
-          "latex": "x = \\frac{160}{16} = 10",
+          "latex": "x = \\frac{70}{10} = 7",
           "explain": "Multiply by the multiplicative inverse of the coefficient."
         }
       ],
       "level": 2,
       "skill": "MTH-PREALG-C10-ASSOC-INV",
       "verificationLevel": "machine-verified",
-      "id": "Q02",
+      "id": "Q03",
       "templateKey": "c10-additive-multiplicative-inverse",
       "levelLabel": "Level 2 - Standard Exam",
-      "fingerprint": "c10-additive-multiplicative-inverse|direct|#*(x + #) + #*x = # [delta]",
+      "fingerprint": "c10-additive-multiplicative-inverse|unit-conversion|#*(x + #) + #*x = #",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -216,7 +311,7 @@
         "weakDistractors": 0,
         "G3": {
           "passed": true,
-          "fingerprint": "c10-additive-multiplicative-inverse|direct|#*(x + #) + #*x = # [delta]",
+          "fingerprint": "c10-additive-multiplicative-inverse|unit-conversion|#*(x + #) + #*x = #",
           "maxAllowedPerFingerprint": 1
         }
       },
@@ -237,110 +332,15 @@
       }
     },
     {
-      "form": "nested-brackets",
-      "category": "Trap & Edge Case",
-      "context": "Real Numbers: Negative Distributive Sign Trap",
-      "references": [
-        "MTH-T01-C10-U03"
-      ],
-      "prompt": "Evaluate the expression $82 - 4(13 - 8) - 10$ by applying the distributive property.",
-      "display": "82 - 4(13 - 8) - 10",
-      "plainText": "82 - 4*(13 - 8) [epsilon]",
-      "answerSpec": {
-        "type": "number",
-        "value": "52"
-      },
-      "answerDisplay": "52",
-      "answerPlain": "52",
-      "inputHint": "Enter the exact integer value",
-      "checkpointHint": "When expanding parentheses preceded by a minus sign, remember that multiplying two negative numbers yields a positive product.",
-      "commonTrapTag": "c10-negative-distribution-sign-trap",
-      "steps": [
-        {
-          "latex": "-4(13 - 8) = -4(13) + (-4)(-8) = -52 + 32",
-          "explain": "Distribute the negative factor across the inner difference, flipping the sign of the subtracted term."
-        },
-        {
-          "latex": "82 - 52 + 32 - 10",
-          "explain": "Substitute the distributed terms into the main expression."
-        },
-        {
-          "latex": "= 52",
-          "explain": "Combine the integer terms from left to right."
-        }
-      ],
-      "level": 3,
-      "skill": "MTH-PREALG-C10-NEG-DIST-TRAP",
-      "verificationLevel": "machine-verified",
-      "id": "Q03",
-      "templateKey": "c10-negative-distribution-trap",
-      "levelLabel": "Level 3 - Trap & Diagnostic",
-      "fingerprint": "c10-negative-distribution-trap|nested-brackets|# - #*(# - #) [epsilon]",
-      "qualityGates": {
-        "G1": {
-          "passed": true,
-          "archetype": "math-standard"
-        },
-        "G2": {
-          "passed": true,
-          "level": 3,
-          "stepCount": 3,
-          "hasTrapOrFlaw": true,
-          "skill": "MTH-PREALG-C10-NEG-DIST-TRAP",
-          "stepRange": [
-            2,
-            5
-          ]
-        },
-        "G4": {
-          "passed": true,
-          "trapTag": "c10-negative-distribution-sign-trap",
-          "trapValueVerified": true,
-          "weakDistractors": 0,
-          "provenanceDistractors": 0
-        },
-        "G6": {
-          "passed": true,
-          "fieldsChecked": 13
-        },
-        "antiLeak": {
-          "passed": true,
-          "hintsChecked": 2
-        },
-        "verificationLevel": "machine-verified",
-        "weakDistractors": 0,
-        "G3": {
-          "passed": true,
-          "fingerprint": "c10-negative-distribution-trap|nested-brackets|# - #*(# - #) [epsilon]",
-          "maxAllowedPerFingerprint": 1
-        }
-      },
-      "referenceBadges": [
-        {
-          "code": "MTH-T01-C10-U03",
-          "title": "Distributive Property",
-          "notionUrl": "https://www.notion.so/4013818f8ba081de9258e2094f59f58e"
-        }
-      ],
-      "trapValue": "-12",
-      "state": {
-        "userInput": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "lastCheck": null
-      }
-    },
-    {
-      "form": "unit-conversion",
+      "form": "direct",
       "category": "Reverse Reasoning",
       "context": "Real Numbers: Distributive & Associative Equation",
       "references": [
         "MTH-T01-C10-U02"
       ],
-      "prompt": "Using the distributive and associative properties, solve for $x$: $8(x + 6) + 6x = 202$.",
-      "display": "8(x + 6) + 6x = 202 \\implies x = ?",
-      "plainText": "8*(x + 6) + 6*x = 202 [gamma]",
+      "prompt": "Find the real number $x$ that satisfies $9(x + 7) + 8x = 250$.",
+      "display": "9(x + 7) + 8x = 250",
+      "plainText": "9*(x + 7) + 8*x = 250",
       "answerSpec": {
         "type": "number",
         "value": "11"
@@ -352,15 +352,15 @@
       "commonTrapTag": "c10-partial-distribution-slip",
       "steps": [
         {
-          "latex": "8x + 48 + 6x = 202",
+          "latex": "9x + 63 + 8x = 250",
           "explain": "Apply the distributive property to expand the parenthesized term."
         },
         {
-          "latex": "14x + 48 = 202 \\implies 14x = 154",
+          "latex": "17x + 63 = 250 \\implies 17x = 187",
           "explain": "Combine like variable terms and subtract the constant term."
         },
         {
-          "latex": "x = \\frac{154}{14} = 11",
+          "latex": "x = \\frac{187}{17} = 11",
           "explain": "Multiply by the multiplicative inverse of the coefficient."
         }
       ],
@@ -370,7 +370,7 @@
       "id": "Q04",
       "templateKey": "c10-additive-multiplicative-inverse",
       "levelLabel": "Level 2 - Standard Exam",
-      "fingerprint": "c10-additive-multiplicative-inverse|unit-conversion|#*(x + #) + #*x = # [gamma]",
+      "fingerprint": "c10-additive-multiplicative-inverse|direct|#*(x + #) + #*x = #",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -406,7 +406,7 @@
         "weakDistractors": 0,
         "G3": {
           "passed": true,
-          "fingerprint": "c10-additive-multiplicative-inverse|unit-conversion|#*(x + #) + #*x = # [gamma]",
+          "fingerprint": "c10-additive-multiplicative-inverse|direct|#*(x + #) + #*x = #",
           "maxAllowedPerFingerprint": 1
         }
       },
@@ -427,140 +427,45 @@
       }
     },
     {
-      "form": "mental-split",
-      "category": "Core Skill",
-      "context": "Real Numbers: Distributive Property",
-      "references": [
-        "MTH-T01-C10-U03"
-      ],
-      "prompt": "Use the distributive property to evaluate $8 \\times 25$ by rewriting $25$ as $(30 - 5)$.",
-      "display": "8(30 - 5) = 8(30) - 8(5)",
-      "plainText": "8*(30 op 5) [gamma]",
-      "answerSpec": {
-        "type": "number",
-        "value": "200"
-      },
-      "answerDisplay": "200",
-      "answerPlain": "200",
-      "inputHint": "Enter the exact integer value",
-      "checkpointHint": "Multiply the outside factor by every term inside the parentheses before combining.",
-      "commonTrapTag": "c10-partial-distribution-slip",
-      "steps": [
-        {
-          "latex": "8(30 - 5) = 8 \\times 30 - 8 \\times 5",
-          "explain": "Distribute the outer factor across both terms in the difference."
-        },
-        {
-          "latex": "= 240 - 40",
-          "explain": "Evaluate each product separately."
-        },
-        {
-          "latex": "= 200",
-          "explain": "Subtract the second product from the first."
-        }
-      ],
-      "level": 1,
-      "skill": "MTH-PREALG-C10-DISTRIBUTE",
-      "verificationLevel": "machine-verified",
-      "id": "Q05",
-      "templateKey": "c10-distributive-collect-terms",
-      "levelLabel": "Level 1 - Foundation",
-      "fingerprint": "c10-distributive-collect-terms|mental-split|#*(# op #) [gamma]",
-      "qualityGates": {
-        "G1": {
-          "passed": true,
-          "archetype": "math-standard"
-        },
-        "G2": {
-          "passed": true,
-          "level": 1,
-          "stepCount": 3,
-          "hasTrapOrFlaw": true,
-          "skill": "MTH-PREALG-C10-DISTRIBUTE",
-          "stepRange": [
-            1,
-            3
-          ]
-        },
-        "G4": {
-          "passed": true,
-          "trapTag": "c10-partial-distribution-slip",
-          "trapValueVerified": true,
-          "weakDistractors": 0,
-          "provenanceDistractors": 0
-        },
-        "G6": {
-          "passed": true,
-          "fieldsChecked": 13
-        },
-        "antiLeak": {
-          "passed": true,
-          "hintsChecked": 2
-        },
-        "verificationLevel": "machine-verified",
-        "weakDistractors": 0,
-        "G3": {
-          "passed": true,
-          "fingerprint": "c10-distributive-collect-terms|mental-split|#*(# op #) [gamma]",
-          "maxAllowedPerFingerprint": 1
-        }
-      },
-      "referenceBadges": [
-        {
-          "code": "MTH-T01-C10-U03",
-          "title": "Distributive Property",
-          "notionUrl": "https://www.notion.so/4013818f8ba081de9258e2094f59f58e"
-        }
-      ],
-      "trapValue": "235",
-      "state": {
-        "userInput": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "lastCheck": null
-      }
-    },
-    {
       "form": "direct",
       "category": "Trap & Edge Case",
       "context": "Real Numbers: Negative Distributive Sign Trap",
       "references": [
         "MTH-T01-C10-U03"
       ],
-      "prompt": "Evaluate $70 - 4(11 - 11)$ carefully tracking the sign when distributing $-4$.",
-      "display": "70 - 4(11 - 11)",
-      "plainText": "70 - 4*(11 - 11) [delta]",
+      "prompt": "Evaluate $73 - 5(15 - 10)$ carefully tracking the sign when distributing $-5$.",
+      "display": "73 - 5(15 - 10)",
+      "plainText": "73 - 5*(15 - 10)",
       "answerSpec": {
         "type": "number",
-        "value": "70"
+        "value": "48"
       },
-      "answerDisplay": "70",
-      "answerPlain": "70",
+      "answerDisplay": "48",
+      "answerPlain": "48",
       "inputHint": "Enter the exact integer value",
       "checkpointHint": "When expanding parentheses preceded by a minus sign, remember that multiplying two negative numbers yields a positive product.",
       "commonTrapTag": "c10-negative-distribution-sign-trap",
       "steps": [
         {
-          "latex": "-4(11 - 11) = -44 + 44",
+          "latex": "-5(15 - 10) = -75 + 50",
           "explain": "Multiplying $-b$ by $-d$ produces a positive product $+bd$."
         },
         {
-          "latex": "70 - 44 + 44",
+          "latex": "73 - 75 + 50",
           "explain": "Combine the initial integer with the distributed terms."
         },
         {
-          "latex": "= 70",
+          "latex": "= 48",
           "explain": "Simplify to obtain the exact result."
         }
       ],
       "level": 3,
       "skill": "MTH-PREALG-C10-NEG-DIST-TRAP",
       "verificationLevel": "machine-verified",
-      "id": "Q06",
+      "id": "Q05",
       "templateKey": "c10-negative-distribution-trap",
       "levelLabel": "Level 3 - Trap & Diagnostic",
-      "fingerprint": "c10-negative-distribution-trap|direct|# - #*(# - #) [delta]",
+      "fingerprint": "c10-negative-distribution-trap|direct|# - #*(# - #)",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -596,7 +501,7 @@
         "weakDistractors": 0,
         "G3": {
           "passed": true,
-          "fingerprint": "c10-negative-distribution-trap|direct|# - #*(# - #) [delta]",
+          "fingerprint": "c10-negative-distribution-trap|direct|# - #*(# - #)",
           "maxAllowedPerFingerprint": 1
         }
       },
@@ -607,7 +512,7 @@
           "notionUrl": "https://www.notion.so/4013818f8ba081de9258e2094f59f58e"
         }
       ],
-      "trapValue": "-18",
+      "trapValue": "-52",
       "state": {
         "userInput": "",
         "score": null,
@@ -617,46 +522,45 @@
       }
     },
     {
-      "form": "unit-rate-conversion",
-      "category": "Interleaved Synthesis",
-      "context": "Real Numbers: Algebraic Factoring & Unit Conversion Synthesis",
+      "form": "nested-brackets",
+      "category": "Trap & Edge Case",
+      "context": "Real Numbers: Negative Distributive Sign Trap",
       "references": [
-        "MTH-T01-C10-U03",
-        "MTH-T01-C10-U05"
+        "MTH-T01-C10-U03"
       ],
-      "prompt": "An autonomous drone flies at a constant speed of $5$ meters per second. Using unit conversion properties ($1\\text{ km} = 1000\\text{ m}$ and $1\\text{ hour} = 3600\\text{ seconds}$), how many kilometers does the drone travel in $3$ hours?",
-      "display": "D = 5\\frac{\\text{m}}{\\text{s}} \\times \\frac{3600\\text{ s}}{1\\text{ hr}} \\times \\frac{1\\text{ km}}{1000\\text{ m}} \\times 3\\text{ hr}",
-      "plainText": "real properties synthesis 54 [beta]",
+      "prompt": "Evaluate the expression $56 - 3(10 - 5) - 8$ by applying the distributive property.",
+      "display": "56 - 3(10 - 5) - 8",
+      "plainText": "56 - 3*(10 - 5)",
       "answerSpec": {
         "type": "number",
-        "value": "54"
+        "value": "33"
       },
-      "answerDisplay": "54",
-      "answerPlain": "54",
+      "answerDisplay": "33",
+      "answerPlain": "33",
       "inputHint": "Enter the exact integer value",
-      "checkpointHint": "Group terms sharing a common factor or align dimensional unit ratios so intermediate units cancel cleanly.",
-      "commonTrapTag": "c10-dimensional-unit-conversion-trap",
+      "checkpointHint": "When expanding parentheses preceded by a minus sign, remember that multiplying two negative numbers yields a positive product.",
+      "commonTrapTag": "c10-negative-distribution-sign-trap",
       "steps": [
         {
-          "latex": "v_{\\text{km/h}} = 5 \\times \\frac{3600}{1000} = 18\\text{ km/h}",
-          "explain": "Convert meters per second to kilometers per hour by multiplying by $3600/1000$."
+          "latex": "-3(10 - 5) = -3(10) + (-3)(-5) = -30 + 15",
+          "explain": "Distribute the negative factor across the inner difference, flipping the sign of the subtracted term."
         },
         {
-          "latex": "D = 18 \\times 3",
-          "explain": "Multiply the speed in km/h by the duration in hours."
+          "latex": "56 - 30 + 15 - 8",
+          "explain": "Substitute the distributed terms into the main expression."
         },
         {
-          "latex": "D = 54",
-          "explain": "Obtain the total distance in kilometers."
+          "latex": "= 33",
+          "explain": "Combine the integer terms from left to right."
         }
       ],
-      "level": 4,
-      "skill": "MTH-PREALG-C10-SYNTHESIS",
+      "level": 3,
+      "skill": "MTH-PREALG-C10-NEG-DIST-TRAP",
       "verificationLevel": "machine-verified",
-      "id": "Q07",
-      "templateKey": "c10-real-closure-measurement-synthesis",
-      "levelLabel": "Level 4 - Applied Synthesis",
-      "fingerprint": "c10-real-closure-measurement-synthesis|unit-rate-conversion|real properties synthesis # [beta]",
+      "id": "Q06",
+      "templateKey": "c10-negative-distribution-trap",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "c10-negative-distribution-trap|nested-brackets|# - #*(# - #)",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -664,18 +568,18 @@
         },
         "G2": {
           "passed": true,
-          "level": 4,
+          "level": 3,
           "stepCount": 3,
           "hasTrapOrFlaw": true,
-          "skill": "MTH-PREALG-C10-SYNTHESIS",
+          "skill": "MTH-PREALG-C10-NEG-DIST-TRAP",
           "stepRange": [
             2,
-            6
+            5
           ]
         },
         "G4": {
           "passed": true,
-          "trapTag": "c10-dimensional-unit-conversion-trap",
+          "trapTag": "c10-negative-distribution-sign-trap",
           "trapValueVerified": true,
           "weakDistractors": 0,
           "provenanceDistractors": 0
@@ -692,7 +596,7 @@
         "weakDistractors": 0,
         "G3": {
           "passed": true,
-          "fingerprint": "c10-real-closure-measurement-synthesis|unit-rate-conversion|real properties synthesis # [beta]",
+          "fingerprint": "c10-negative-distribution-trap|nested-brackets|# - #*(# - #)",
           "maxAllowedPerFingerprint": 1
         }
       },
@@ -701,14 +605,9 @@
           "code": "MTH-T01-C10-U03",
           "title": "Distributive Property",
           "notionUrl": "https://www.notion.so/4013818f8ba081de9258e2094f59f58e"
-        },
-        {
-          "code": "MTH-T01-C10-U05",
-          "title": "Systems of Measurement",
-          "notionUrl": "https://www.notion.so/4013818f8ba0811d9fe8d54ca8b47275"
         }
       ],
-      "trapValue": "0",
+      "trapValue": "3",
       "state": {
         "userInput": "",
         "score": null,
@@ -725,39 +624,39 @@
         "MTH-T01-C10-U03",
         "MTH-T01-C10-U05"
       ],
-      "prompt": "Use the distributive, commutative, and associative properties of real numbers to evaluate $24 \\times 50 - 25 + 24 \\times 50$.",
-      "display": "24 \\times 50 - 25 + 24 \\times 50",
-      "plainText": "real properties synthesis 2375 [gamma]",
+      "prompt": "Use the distributive, commutative, and associative properties of real numbers to evaluate $23 \\times 60 - 56 + 23 \\times 40$.",
+      "display": "23 \\times 60 - 56 + 23 \\times 40",
+      "plainText": "real properties synthesis 2244",
       "answerSpec": {
         "type": "number",
-        "value": "2375"
+        "value": "2244"
       },
-      "answerDisplay": "2375",
-      "answerPlain": "2375",
+      "answerDisplay": "2244",
+      "answerPlain": "2244",
       "inputHint": "Enter the exact integer value",
       "checkpointHint": "Group terms sharing a common factor or align dimensional unit ratios so intermediate units cancel cleanly.",
       "commonTrapTag": "c10-dimensional-unit-conversion-trap",
       "steps": [
         {
-          "latex": "= (24 \\times 50 + 24 \\times 50) - 25",
+          "latex": "= (23 \\times 60 + 23 \\times 40) - 56",
           "explain": "Use the commutative and associative properties to group the products sharing factor $k$."
         },
         {
-          "latex": "= 24(50 + 50) - 25 = 24(100) - 25",
+          "latex": "= 23(60 + 40) - 56 = 23(100) - 56",
           "explain": "Factor out the common multiplier using the distributive property."
         },
         {
-          "latex": "= 2400 - 25 = 2375",
+          "latex": "= 2300 - 56 = 2244",
           "explain": "Subtract the offset from the product."
         }
       ],
       "level": 4,
       "skill": "MTH-PREALG-C10-SYNTHESIS",
       "verificationLevel": "machine-verified",
-      "id": "Q08",
+      "id": "Q07",
       "templateKey": "c10-real-closure-measurement-synthesis",
       "levelLabel": "Level 4 - Applied Synthesis",
-      "fingerprint": "c10-real-closure-measurement-synthesis|direct|real properties synthesis # [gamma]",
+      "fingerprint": "c10-real-closure-measurement-synthesis|direct|real properties synthesis #",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -793,7 +692,7 @@
         "weakDistractors": 0,
         "G3": {
           "passed": true,
-          "fingerprint": "c10-real-closure-measurement-synthesis|direct|real properties synthesis # [gamma]",
+          "fingerprint": "c10-real-closure-measurement-synthesis|direct|real properties synthesis #",
           "maxAllowedPerFingerprint": 1
         }
       },
@@ -809,7 +708,108 @@
           "notionUrl": "https://www.notion.so/4013818f8ba0811d9fe8d54ca8b47275"
         }
       ],
-      "trapValue": "1225",
+      "trapValue": "1364",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "unit-rate-conversion",
+      "category": "Interleaved Synthesis",
+      "context": "Real Numbers: Algebraic Factoring & Unit Conversion Synthesis",
+      "references": [
+        "MTH-T01-C10-U03",
+        "MTH-T01-C10-U05"
+      ],
+      "prompt": "An autonomous drone flies at a constant speed of $5$ meters per second. Using unit conversion properties ($1\\text{ km} = 1000\\text{ m}$ and $1\\text{ hour} = 3600\\text{ seconds}$), how many kilometers does the drone travel in $4$ hours?",
+      "display": "D = 5\\frac{\\text{m}}{\\text{s}} \\times \\frac{3600\\text{ s}}{1\\text{ hr}} \\times \\frac{1\\text{ km}}{1000\\text{ m}} \\times 4\\text{ hr}",
+      "plainText": "real properties synthesis 72",
+      "answerSpec": {
+        "type": "number",
+        "value": "72"
+      },
+      "answerDisplay": "72",
+      "answerPlain": "72",
+      "inputHint": "Enter the exact integer value",
+      "checkpointHint": "Group terms sharing a common factor or align dimensional unit ratios so intermediate units cancel cleanly.",
+      "commonTrapTag": "c10-dimensional-unit-conversion-trap",
+      "steps": [
+        {
+          "latex": "v_{\\text{km/h}} = 5 \\times \\frac{3600}{1000} = 18\\text{ km/h}",
+          "explain": "Convert meters per second to kilometers per hour by multiplying by $3600/1000$."
+        },
+        {
+          "latex": "D = 18 \\times 4",
+          "explain": "Multiply the speed in km/h by the duration in hours."
+        },
+        {
+          "latex": "D = 72",
+          "explain": "Obtain the total distance in kilometers."
+        }
+      ],
+      "level": 4,
+      "skill": "MTH-PREALG-C10-SYNTHESIS",
+      "verificationLevel": "machine-verified",
+      "id": "Q08",
+      "templateKey": "c10-real-closure-measurement-synthesis",
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "c10-real-closure-measurement-synthesis|unit-rate-conversion|real properties synthesis #",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C10-SYNTHESIS",
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c10-dimensional-unit-conversion-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c10-real-closure-measurement-synthesis|unit-rate-conversion|real properties synthesis #",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C10-U03",
+          "title": "Distributive Property",
+          "notionUrl": "https://www.notion.so/4013818f8ba081de9258e2094f59f58e"
+        },
+        {
+          "code": "MTH-T01-C10-U05",
+          "title": "Systems of Measurement",
+          "notionUrl": "https://www.notion.so/4013818f8ba0811d9fe8d54ca8b47275"
+        }
+      ],
+      "trapValue": "1",
       "state": {
         "userInput": "",
         "score": null,
