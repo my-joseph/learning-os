@@ -468,7 +468,6 @@ def generate_coverage_report(data_dir: str | None = None, output_path: str = "re
     lines: list[str] = [
         "# Coverage & Skills Taxonomy Report",
         "",
-        f"> **Generated at**: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}  ",
         f"> **Data Directory Scanned**: `{data_dir}`  ",
         f"> **Skills Taxonomy Registered**: {len(skills_meta)} skills across {len(set(s.get('domain') for s in skills_meta.values()))} domains",
         "",

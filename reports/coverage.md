@@ -1,7 +1,6 @@
 # Coverage & Skills Taxonomy Report
 
-> **Generated at**: 2026-11-08 10:49:12  
-> **Data Directory Scanned**: `/var/folders/wy/3q1fdk252w55cs0y71qgbx340000gn/T/tmpdr23d03a`  
+> **Data Directory Scanned**: `/var/folders/wy/3q1fdk252w55cs0y71qgbx340000gn/T/tmpe9sf21gr`  
 > **Skills Taxonomy Registered**: 42 skills across 6 domains
 
 ---
