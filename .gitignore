@@ -45,3 +45,7 @@ yarn-error.log*
 *.tsbuildinfo
 coverage/
 PR_REVIEW_REQUEST.md
+
+# Scratch and Sample Reports
+scratch/
+reports/samples/
