@@ -87,7 +87,12 @@ class EqualTimeoutError(BaseException):
 
 def _run_with_timeout(func, args=(), kwargs=None, timeout_sec=1.5):
     kwargs = kwargs or {}
+    timer_active = False
     if hasattr(signal, "SIGALRM") and threading.current_thread() is threading.main_thread():
+        rem, _ = signal.getitimer(signal.ITIMER_REAL)
+        timer_active = (rem > 0)
+
+    if hasattr(signal, "SIGALRM") and threading.current_thread() is threading.main_thread() and not timer_active:
         def _handler(signum, frame):
             raise EqualTimeoutError("is_equal computation timed out")
 
@@ -99,13 +104,26 @@ def _run_with_timeout(func, args=(), kwargs=None, timeout_sec=1.5):
             signal.setitimer(signal.ITIMER_REAL, 0)
             signal.signal(signal.SIGALRM, old_handler)
     else:
-        import concurrent.futures
-        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
-            future = executor.submit(func, *args, **kwargs)
+        res = [None]
+        err = [None]
+        done = threading.Event()
+
+        def _worker():
             try:
-                return future.result(timeout=timeout_sec)
-            except concurrent.futures.TimeoutError:
-                raise EqualTimeoutError("is_equal computation timed out")
+                res[0] = func(*args, **kwargs)
+            except BaseException as e:
+                err[0] = e
+            finally:
+                done.set()
+
+        t = threading.Thread(target=_worker, daemon=True)
+        t.start()
+        finished = done.wait(timeout=timeout_sec)
+        if not finished:
+            raise EqualTimeoutError("is_equal computation timed out")
+        if err[0] is not None:
+            raise err[0]
+        return res[0]
 
 FORM_MESSAGES = {
     "unseparated": "The value is correct, but it is not separated into standard form $a + bi$ (distribute or split the fraction).",
@@ -801,9 +819,10 @@ def check_number(spec, raw):
         )
         if is_vec:
             try:
+                vars_list = spec.get("variables") or []
                 toks = _tokenize_vector(s_raw)
                 for t in toks:
-                    safe_parse(t, allow_i=False)
+                    safe_parse(t, variables=vars_list, allow_i=False)
                 return {
                     "verdict": "incorrect",
                     "message": "Expected a scalar number, but received a vector. (If calculating a dot product, remember to sum the component products: $u_1 v_1 + u_2 v_2 + u_3 v_3$).",
@@ -975,6 +994,102 @@ def check_text(spec, raw):
     return {"verdict": "correct" if ok else "incorrect", "message": "Correct." if ok else "Does not match the accepted answers.", "components": [{"label": "Answer", "ok": ok}], "diagnostics": []}
 
 
+def _check_parallel_numeric(user_comps, expected_comps, vars_list=None):
+    if not vars_list:
+        try:
+            pivot_idx = None
+            for i, e in enumerate(expected_comps):
+                try:
+                    if abs(float(e)) > 1e-12:
+                        pivot_idx = i
+                        break
+                except Exception:
+                    continue
+            if pivot_idx is None:
+                return None
+
+            val_e_pivot = float(expected_comps[pivot_idx])
+            val_u_pivot = float(user_comps[pivot_idx])
+            if abs(val_e_pivot) < 1e-12 or abs(val_u_pivot) < 1e-12:
+                return None
+            k = val_u_pivot / val_e_pivot
+            for u, e in zip(user_comps, expected_comps):
+                if abs(float(u) - k * float(e)) > 1e-5 * max(1.0, abs(float(u))):
+                    return None
+            return k
+        except Exception:
+            return None
+    else:
+        syms = [sp.Symbol(v) for v in vars_list]
+        try:
+            fixed_points = [
+                {s: sp.Rational(base + i * 2, 1) for i, s in enumerate(syms)}
+                for base in (2, 3, 5)
+            ]
+            sample_ks = []
+            for pt in fixed_points:
+                pivot_idx = None
+                for i, e in enumerate(expected_comps):
+                    try:
+                        v_e = float(e.subs(pt))
+                        if abs(v_e) > 1e-6:
+                            pivot_idx = i
+                            break
+                    except Exception:
+                        continue
+                if pivot_idx is None:
+                    continue
+
+                val_e = float(expected_comps[pivot_idx].subs(pt))
+                val_u = float(user_comps[pivot_idx].subs(pt))
+                if abs(val_e) < 1e-6 or abs(val_u) < 1e-9:
+                    continue
+                k = val_u / val_e
+                all_match = True
+                for u, e in zip(user_comps, expected_comps):
+                    u_val = float(u.subs(pt))
+                    e_val = float(e.subs(pt))
+                    if abs(u_val - k * e_val) > 1e-5 * max(1.0, abs(u_val)):
+                        all_match = False
+                        break
+                if not all_match:
+                    return None
+                sample_ks.append(k)
+
+            if len(sample_ks) >= 2 and all(abs(k - sample_ks[0]) < 1e-5 for k in sample_ks):
+                return sample_ks[0]
+            return None
+        except Exception:
+            return None
+
+
+def _format_scalar_multiple_ratio(k_val):
+    """Formats scalar multiple ratio cleanly to integer, simple fraction, or simple radical (sqrt(2), sqrt(3))."""
+    import math
+    # 1. Exact or simple rational fraction (e.g. 5, 3/2, -2/3)
+    try:
+        q = sp.nsimplify(k_val, rational=True)
+        if abs(k_val - float(q)) < 1e-5 and getattr(q, "q", 1) <= 20:
+            return sp.latex(q)
+    except Exception:
+        pass
+
+    # 2. Simple rational multiple of sqrt(2) or sqrt(3) (e.g. \sqrt{2}, 2\sqrt{2}, \frac{\sqrt{2}}{2}, \sqrt{3})
+    for rad_sym, rad_val in [(sp.sqrt(2), math.sqrt(2)), (sp.sqrt(3), math.sqrt(3))]:
+        try:
+            ratio = k_val / rad_val
+            q = sp.nsimplify(ratio, rational=True)
+            if abs(ratio - float(q)) < 1e-4 and getattr(q, "q", 1) <= 10:
+                return sp.latex(q * rad_sym)
+        except Exception:
+            pass
+
+    # 3. Clean decimal fallback
+    if abs(k_val - round(k_val)) < 1e-5:
+        return str(int(round(k_val)))
+    return f"{k_val:.3f}"
+
+
 def check_vector(spec, raw):
     vars_list = spec.get("variables") or []
 
@@ -1032,53 +1147,70 @@ def check_vector(spec, raw):
                 "diagnostics": [],
             }
 
+        # Determine verdict strictly from component comparison first
+        verdict = "partial" if (spec.get("allowPartial") and any(comp_matches)) else "incorrect"
+        message = "Some components match." if verdict == "partial" else "Not equal to the verified vector."
+
+        # Diagnostics (parallel/swapped/sign): isolated so timeouts or errors discard diagnostics and keep determined verdict
         diags = []
-        # 2. Parallel / scalar multiple check
-        pivot_idx = next((i for i, e in enumerate(expected_comps) if e != 0), None)
-        if pivot_idx is not None:
-            try:
-                def _calc_ratio():
-                    return sp.simplify(user_comps[pivot_idx] / expected_comps[pivot_idx])
-                ratio = _run_with_timeout(_calc_ratio, timeout_sec=0.5)
-                if ratio != 0:
-                    is_parallel = all(is_equal(user_comps[j], ratio * expected_comps[j], variables=vars_list, tolerance=tol, timeout=0.5) for j in range(len(expected_comps)))
-                    if is_parallel:
-                        if is_equal(ratio, -1, variables=vars_list):
-                            diags.append({
-                                "code": "scalar_multiple",
-                                "message": "Your vector points in the opposite direction (factor of -1). Check negative signs."
-                            })
+        try:
+            def _gather_diagnostics():
+                d_list = []
+                # 2. Parallel / scalar multiple check (numeric substitution, no sp.simplify)
+                k_ratio = _check_parallel_numeric(user_comps, expected_comps, vars_list)
+                is_opposite_dir = False
+                if k_ratio is not None and abs(k_ratio) > 1e-6:
+                    if abs(k_ratio - (-1.0)) < 1e-5:
+                        is_opposite_dir = True
+                        d_list.append({
+                            "code": "scalar_multiple",
+                            "message": "Your vector points in the opposite direction (factor of -1). Check negative signs."
+                        })
+                    else:
+                        k_disp = _format_scalar_multiple_ratio(k_ratio)
+                        d_list.append({
+                            "code": "scalar_multiple",
+                            "message": f"Your vector is parallel to the correct answer but differs by a scalar factor of ${k_disp}$."
+                        })
+
+                # 3. Swapped order / permutation check
+                if not d_list:
+                    from itertools import permutations
+                    is_swapped = False
+                    for p in permutations(range(len(expected_comps))):
+                        if list(p) == list(range(len(expected_comps))):
+                            continue
+                        if all(is_equal(user_comps[p[i]], expected_comps[i], variables=vars_list, tolerance=tol, timeout=0.08) for i in range(len(expected_comps))):
+                            is_swapped = True
+                            break
+                    if is_swapped:
+                        d_list.append({
+                            "code": "swapped_order",
+                            "message": "The vector components are swapped or entered in the wrong order."
+                        })
+
+                # 4. Component sign error check (skipped if parallel(-1) already reported)
+                if not is_opposite_dir:
+                    inverted_indices = []
+                    for i, (u, e) in enumerate(zip(user_comps, expected_comps)):
+                        if not comp_matches[i] and e != 0 and is_equal(u, -e, variables=vars_list, tolerance=tol, timeout=0.08):
+                            inverted_indices.append(i + 1)
+                    if inverted_indices:
+                        if len(inverted_indices) == 1:
+                            sign_msg = f"Component {inverted_indices[0]} has the opposite sign."
                         else:
-                            diags.append({
-                                "code": "scalar_multiple",
-                                "message": f"Your vector is parallel to the correct answer but differs by a scalar factor of ${sp.latex(ratio)}$."
-                            })
-            except Exception:
-                pass
+                            comps_str = ", ".join(str(x) for x in inverted_indices[:-1]) + f" and {inverted_indices[-1]}"
+                            sign_msg = f"Components {comps_str} have the opposite sign."
+                        d_list.append({
+                            "code": "component_sign_error",
+                            "message": sign_msg,
+                        })
 
-        # 3. Swapped order / permutation check
-        if not diags:
-            from itertools import permutations
-            is_swapped = False
-            for p in permutations(range(len(expected_comps))):
-                if list(p) == list(range(len(expected_comps))):
-                    continue
-                if all(is_equal(user_comps[p[i]], expected_comps[i], variables=vars_list, tolerance=tol, timeout=0.5) for i in range(len(expected_comps))):
-                    is_swapped = True
-                    break
-            if is_swapped:
-                diags.append({
-                    "code": "swapped_order",
-                    "message": "The vector components are swapped or entered in the wrong order."
-                })
+                return d_list
 
-        # 4. Component sign error check
-        for i, (u, e) in enumerate(zip(user_comps, expected_comps)):
-            if not comp_matches[i] and e != 0 and is_equal(u, -e, variables=vars_list, tolerance=tol, timeout=0.5):
-                diags.append({
-                    "code": "component_sign_error",
-                    "message": f"Component {i + 1} has the opposite sign."
-                })
+            diags = _run_with_timeout(_gather_diagnostics, timeout_sec=0.15)
+        except (Exception, EqualTimeoutError):
+            diags = []
 
         # Deduplicate diagnostics by code
         seen_codes = set()
@@ -1089,10 +1221,9 @@ def check_vector(spec, raw):
                 seen_codes.add(c)
                 unique_diags.append(d)
 
-        verdict = "partial" if (spec.get("allowPartial") and any(comp_matches)) else "incorrect"
         return {
             "verdict": verdict,
-            "message": "Some components match." if verdict == "partial" else "Not equal to the verified vector.",
+            "message": message,
             "components": comps,
             "diagnostics": unique_diags,
         }

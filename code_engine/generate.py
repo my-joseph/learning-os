@@ -162,7 +162,7 @@ def generate_drill_set(
     base_seed = seed if seed is not None else random.randint(1, 10_000_000)
     id_map = load_id_map()
     mod = load_unit(unit_code)
-    if (getattr(mod, "IS_PILOT", False) or getattr(mod, "PILOT", False)) and not os.environ.get("ENABLE_PILOT_DRILLS"):
+    if getattr(mod, "IS_PILOT", False) and not os.environ.get("ENABLE_PILOT_DRILLS"):
         raise ValueError(
             f"Unit '{unit_code}' is currently flagged as PILOT. Generation of persistent drill files is blocked unless ENABLE_PILOT_DRILLS=1 is set."
         )

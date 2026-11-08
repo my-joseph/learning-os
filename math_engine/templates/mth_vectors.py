@@ -53,7 +53,6 @@ UNIT = "MTH-VECTORS"
 TITLE = "Vectors: Operations, Scaling, and Dot Product"
 CHAPTER_CODE = "MTH-VECTORS"
 TOPIC_CODE = "MTH-VEC"
-PILOT = True
 IS_PILOT = True
 
 MISTAKE_TAGS = [
@@ -881,7 +880,6 @@ TEMPLATES: list[dict[str, Any]] = [
         "level": 1,
         "skill": "VEC-ADD-SCALE",
         "verificationLevel": "machine-verified",
-        "is_pilot": True,
         "forms": {
             "add-sub": {
                 "level": 1,
@@ -911,7 +909,6 @@ TEMPLATES: list[dict[str, Any]] = [
         "level": 2,
         "skill": "VEC-DOT-PRODUCT",
         "verificationLevel": "machine-verified",
-        "is_pilot": True,
         "forms": {
             "direct": {
                 "level": 2,

@@ -931,6 +931,28 @@ TEMPLATES = [
         self.assertEqual(res_sign["verdict"], "incorrect")
         self.assertTrue(any(d["code"] == "component_sign_error" for d in res_sign["diagnostics"]))
 
+        # Component sign error on components 1 and 3 of 3D vector (consolidated single message)
+        res_sign_1_3 = check_answer(spec3d, "<-1, -2, -3>")
+        self.assertEqual(res_sign_1_3["verdict"], "incorrect")
+        diag_sign_1_3 = next((d for d in res_sign_1_3["diagnostics"] if d["code"] == "component_sign_error"), None)
+        self.assertIsNotNone(diag_sign_1_3)
+        self.assertIn("Components 1 and 3 have the opposite sign.", diag_sign_1_3["message"])
+
+        # Invert entire vector: reported as scalar_multiple (-1), component_sign_error skipped
+        res_invert_all = check_answer(spec3d, "<-1, 2, -3>")
+        self.assertEqual(res_invert_all["verdict"], "incorrect")
+        self.assertTrue(any(d["code"] == "scalar_multiple" and "factor of -1" in d["message"] for d in res_invert_all["diagnostics"]))
+        self.assertFalse(any(d["code"] == "component_sign_error" for d in res_invert_all["diagnostics"]))
+
+        # Scalar multiple formatting via nsimplify (e.g. \sqrt{2} rather than 1.414)
+        spec_unit_rad = {"type": "vector", "components": ["-1/sqrt(2)", "1/sqrt(2)"]}
+        res_sqrt2 = check_answer(spec_unit_rad, "<-1, 1>")
+        self.assertEqual(res_sqrt2["verdict"], "incorrect")
+        diag_scale = next((d for d in res_sqrt2["diagnostics"] if d["code"] == "scalar_multiple"), None)
+        self.assertIsNotNone(diag_scale)
+        self.assertIn(r"\sqrt{2}", diag_scale["message"])
+        self.assertNotIn("1.414", diag_scale["message"])
+
         # 4. Unit vector notation: only enabled when vectorNotation is True
         spec_unit = {"type": "vector", "components": [2, 3, -4], "vectorNotation": True}
         res_unit_i = check_answer(spec_unit, "2i + 3j - 4k")
@@ -1059,6 +1081,23 @@ TEMPLATES = [
         # 4. Heavy input with variables does not hang and respects limits
         res_heavy = check_answer(var_spec, "<(t+1)**1000, cos(t)>")
         self.assertIn(res_heavy["verdict"], ("invalid input", "incorrect"))
+
+        # 5. Heavy input: <(t+1)**100, 2> vs <(t+2)**100, 2> returns 'incorrect' in < 200 ms
+        import time
+        heavy_spec = {"type": "vector", "components": ["(t+2)**100", "2"], "variables": ["t"]}
+        t_start = time.perf_counter()
+        res_heavy_mismatch = check_answer(heavy_spec, "<(t+1)**100, 2>")
+        t_elapsed = time.perf_counter() - t_start
+        self.assertEqual(res_heavy_mismatch["verdict"], "incorrect")
+        self.assertLess(t_elapsed, 0.200, f"Heavy mismatch took {t_elapsed*1000:.2f} ms, expected < 200 ms")
+
+        # Also when compared against scalar (t+2)**100
+        num_heavy_spec = {"type": "number", "value": "(t+2)**100", "variables": ["t"]}
+        t_start2 = time.perf_counter()
+        res_num_mismatch = check_answer(num_heavy_spec, "<(t+1)**100, 2>")
+        t_elapsed2 = time.perf_counter() - t_start2
+        self.assertEqual(res_num_mismatch["verdict"], "incorrect")
+        self.assertLess(t_elapsed2, 0.200)
 
     def test_22_anti_leak_gate(self) -> None:
         """Test 22: Anti-leak gate rejects prompts or hints containing answers or spoiler examples."""
