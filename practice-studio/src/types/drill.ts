@@ -101,6 +101,7 @@ export interface AnswerSpec {
   correctLine?: number;
   flawExplanation?: string;
   commonTrapTag?: string;
+  trapValue?: string;
   flawTag?: string;
 }
 
@@ -125,6 +126,7 @@ export interface CheckResult {
   message: string;
   components: CheckComponent[];
   diagnostics: CheckDiagnostic[];
+  trapMatched?: boolean;
 }
 
 export interface TestCase {
@@ -155,6 +157,14 @@ export interface TestRunReport {
   rawOutput?: string;
 }
 
+export interface AttemptRecord {
+  input: string;
+  ts: string;
+  verdict: string;
+  diagnosticCodes?: string[];
+  matchedTrap?: string;
+}
+
 export interface ProblemState {
   userInput: string;
   score: number | null;
@@ -165,6 +175,9 @@ export interface ProblemState {
   lastCheck?: CheckResult | null;
   lastTestReport?: TestRunReport | null;
   userCode?: string;
+  attempts?: AttemptRecord[];
+  hintsRevealed?: number;
+  durationMs?: number;
 }
 
 export type EngineeringArchetype =
@@ -227,6 +240,7 @@ export interface Problem {
   inputHint?: string;
   checkpointHint: string;
   commonTrapTag?: string;
+  trapValue?: string;
   flawTag?: string;
   form?: string;
   skill?: string;

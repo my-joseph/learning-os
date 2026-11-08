@@ -30,6 +30,16 @@ import {
   DrillListItem,
   CheckResult,
 } from "@/types/drill";
+import { applyCheckResult, applySkip, applyDivergedStep } from "@/lib/applyCheckResult";
+import {
+  createTelemetryTimerState,
+  setActiveProblem,
+  setVisibility,
+  recordHint,
+  consumeAttempt,
+  resetProblemTimer,
+  TelemetryTimerState,
+} from "@/lib/telemetryTimer";
 import { ProblemCard } from "@/components/ProblemCard";
 import { QuizPaginationBar } from "@/components/QuizPaginationBar";
 import { FormattedText } from "@/components/FormattedText";
@@ -52,6 +62,32 @@ export default function PracticeStudioPage() {
 
   // Pre-Sync Review custom status override
   const [statusOverride, setStatusOverride] = useState<"Graded" | "Needs Retry" | null>(null);
+
+  // Minimal telemetry: robust timer measuring visible active problem time & hint telemetry
+  const timerStateRef = useRef<TelemetryTimerState>(createTelemetryTimerState());
+
+  useEffect(() => {
+    if (!currentDrill || !currentDrill.problems.length) return;
+    const currentProb = currentDrill.problems[currentProblemIndex];
+    if (currentProb) {
+      timerStateRef.current = setActiveProblem(timerStateRef.current, currentProb.id, Date.now());
+    }
+  }, [currentDrill, currentProblemIndex]);
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      const isVisible = !document.hidden;
+      timerStateRef.current = setVisibility(timerStateRef.current, isVisible, Date.now());
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, []);
+
+  const handleHintRevealed = (probId: string) => {
+    timerStateRef.current = recordHint(timerStateRef.current, probId);
+  };
 
   // Auto-hide sticky header on scroll down, reveal on scroll up
   const [showHeader, setShowHeader] = useState(true);
@@ -286,55 +322,25 @@ export default function PracticeStudioPage() {
         body: JSON.stringify({
           subject: currentDrill.subject,
           answerSpec: p.answerSpec,
+          trapValue: p.trapValue,
           input: inputVal,
         }),
       });
 
       const result: CheckResult = await res.json();
 
+      const { durationMs, hintsRevealed, nextState } = consumeAttempt(timerStateRef.current, probId, Date.now());
+      timerStateRef.current = nextState;
+      const hintsCount = hintsRevealed + (p.state?.hintsRevealed || 0);
+
       const updatedProblems = currentDrill.problems.map((prob) => {
         if (prob.id !== probId) return prob;
-
-        let autoScore = prob.state.score;
-        if (result.verdict === "correct") autoScore = 1;
-        else if (result.verdict === "equivalent_not_in_form" || result.verdict === "partial")
-          autoScore = 0.5;
-        else if (result.verdict === "incorrect") autoScore = 0;
-
-        const newMistakes = new Set(prob.state.mistakes);
-        const diagCodes = new Set((result.diagnostics || []).map((d) => d.code));
-        (currentDrill.mistakeTags || []).forEach((tag) => {
-          if (tag.autoFrom?.some((c) => diagCodes.has(c))) {
-            newMistakes.add(tag.id);
-          }
-        });
-        if (result.verdict === "incorrect") {
-          let chosenOptionTrapTag: string | undefined;
-          if (prob.answerSpec?.type === "choice" && Array.isArray(prob.answerSpec.options)) {
-            const chosen = prob.answerSpec.options.find(
-              (o) => String(o.id).trim() === String(inputVal).trim()
-            );
-            if (chosen && chosen.trapTag) {
-              chosenOptionTrapTag = chosen.trapTag;
-            }
-          }
-
-          if (chosenOptionTrapTag) {
-            newMistakes.add(chosenOptionTrapTag);
-          } else if (prob.commonTrapTag && newMistakes.size === 0) {
-            newMistakes.add(prob.commonTrapTag);
-          }
-        }
-
         return {
           ...prob,
-          state: {
-            ...prob.state,
-            score: autoScore,
-            skipped: false,
-            mistakes: Array.from(newMistakes),
-            lastCheck: result,
-          },
+          state: applyCheckResult(prob, inputVal, result, currentDrill.mistakeTags || [], {
+            durationMs,
+            hintsRevealed: hintsCount,
+          }),
         };
       });
 
@@ -392,19 +398,9 @@ export default function PracticeStudioPage() {
       ...currentDrill,
       problems: currentDrill.problems.map((p) => {
         if (p.id !== probId) return p;
-        const isCurrent = p.state.divergedStep === stepIdx;
-        const newDiverged = isCurrent ? null : stepIdx;
-        const mistakes = new Set(p.state.mistakes);
-        if (p.commonTrapTag && !isCurrent) mistakes.add(p.commonTrapTag);
-
         return {
           ...p,
-          state: {
-            ...p.state,
-            divergedStep: newDiverged,
-            score: p.state.score === null || p.state.score === 1 ? 0.5 : p.state.score,
-            mistakes: Array.from(mistakes),
-          },
+          state: applyDivergedStep(p, stepIdx),
         };
       }),
     };
@@ -449,27 +445,23 @@ export default function PracticeStudioPage() {
   // Skip Problem
   const handleSkipProblem = (probId: string) => {
     if (!currentDrill) return;
+    const p = currentDrill.problems.find((item) => item.id === probId);
+    if (!p) return;
+
+    const { durationMs, hintsRevealed, nextState } = consumeAttempt(timerStateRef.current, probId, Date.now());
+    timerStateRef.current = nextState;
+    const hintsCount = hintsRevealed + (p.state?.hintsRevealed || 0);
+
     const updated: DrillDocument = {
       ...currentDrill,
-      problems: currentDrill.problems.map((p) => {
-        if (p.id !== probId) return p;
-        const autoTags = p.commonTrapTag ? [p.commonTrapTag] : [];
+      problems: currentDrill.problems.map((prob) => {
+        if (prob.id !== probId) return prob;
         return {
-          ...p,
-          state: {
-            ...p.state,
-            userInput: p.state.userInput || "(Skipped)",
-            score: 0,
-            skipped: true,
-            mistakes: Array.from(new Set([...(p.state.mistakes || []), ...autoTags])),
-            lastCheck: {
-              verdict: "skipped",
-              message:
-                "Skipped (Concept Gap / Unsure) — Review step-by-step solution below to solidify mental model.",
-              components: [],
-              diagnostics: [],
-            },
-          },
+          ...prob,
+          state: applySkip(prob, {
+            durationMs,
+            hintsRevealed: hintsCount,
+          }),
         };
       }),
     };
@@ -480,6 +472,7 @@ export default function PracticeStudioPage() {
   // Reset Single Problem
   const handleResetProblem = (probId: string) => {
     if (!currentDrill) return;
+    timerStateRef.current = resetProblemTimer(timerStateRef.current, probId);
     const updated = {
       ...currentDrill,
       problems: currentDrill.problems.map((p) => {
@@ -496,6 +489,9 @@ export default function PracticeStudioPage() {
             skipped: false,
             lastCheck: null,
             lastTestReport: null,
+            attempts: [],
+            hintsRevealed: 0,
+            durationMs: 0,
           },
         };
       }),
@@ -1142,6 +1138,7 @@ export default function PracticeStudioPage() {
                       onToggleMistakeTag={(tagId) => handleToggleMistakeTag(prob.id, tagId)}
                       onMistakeNoteChange={(note) => handleMistakeNoteChange(prob.id, note)}
                       onResetProblem={() => handleResetProblem(prob.id)}
+                      onHintRevealed={() => handleHintRevealed(prob.id)}
                     />
 
                     {/* Bottom Question Navigation Footer */}

@@ -5,8 +5,13 @@ import { getDrillsDataDir, getPythonBin, getWorkspaceRoot } from "@/lib/paths";
 
 export async function POST(req: NextRequest) {
   try {
-    const { unitCode = "MTH-T02-C01-U01", count = 5, difficulty = "ALL" } =
-      await req.json();
+    const {
+      unitCode = "MTH-T02-C01-U01",
+      count = 5,
+      difficulty = "ALL",
+      focusTags,
+      focus_tags,
+    } = await req.json();
 
     const rootDir = getWorkspaceRoot();
     const pythonBin = getPythonBin(rootDir);
@@ -22,19 +27,29 @@ export async function POST(req: NextRequest) {
       process.cwd(),
     ].join(path.delimiter);
 
+    const cliArgs = [
+      "-m",
+      engineModule,
+      "--unit",
+      unitCode,
+      "--count",
+      String(count),
+      "--difficulty",
+      String(difficulty),
+    ];
+
+    const tagParam = focusTags || focus_tags;
+    if (tagParam) {
+      cliArgs.push(
+        "--focus-tag",
+        Array.isArray(tagParam) ? tagParam.join(",") : String(tagParam)
+      );
+    }
+
     return new Promise<NextResponse>((resolve) => {
       const proc = spawn(
         pythonBin,
-        [
-          "-m",
-          engineModule,
-          "--unit",
-          unitCode,
-          "--count",
-          String(count),
-          "--difficulty",
-          String(difficulty),
-        ],
+        cliArgs,
         {
           cwd: rootDir,
           env: {

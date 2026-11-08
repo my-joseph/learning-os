@@ -20,6 +20,7 @@ interface ProblemCardProps {
   onToggleMistakeTag: (tagId: string) => void;
   onMistakeNoteChange: (note: string) => void;
   onResetProblem: () => void;
+  onHintRevealed?: () => void;
 }
 
 export const ProblemCard: React.FC<ProblemCardProps> = (props) => {

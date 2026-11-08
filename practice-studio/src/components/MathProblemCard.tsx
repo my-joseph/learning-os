@@ -35,6 +35,7 @@ interface MathProblemCardProps {
   onToggleMistakeTag: (tagId: string) => void;
   onMistakeNoteChange: (note: string) => void;
   onResetProblem: () => void;
+  onHintRevealed?: () => void;
 }
 
 const getSafeMathPlaceholder = (hint?: string, problem?: Problem): string => {
@@ -88,6 +89,7 @@ export const MathProblemCard: React.FC<MathProblemCardProps> = ({
   onToggleMistakeTag,
   onMistakeNoteChange,
   onResetProblem,
+  onHintRevealed,
 }) => {
   const [copied, setCopied] = useState(false);
   const [showHint, setShowHint] = useState(false);
@@ -277,7 +279,12 @@ export const MathProblemCard: React.FC<MathProblemCardProps> = ({
 
         <button
           type="button"
-          onClick={() => setShowHint(!showHint)}
+          onClick={() => {
+            if (!showHint && onHintRevealed) {
+              onHintRevealed();
+            }
+            setShowHint(!showHint);
+          }}
           className="inline-flex items-center gap-1.5 h-10 px-3.5 rounded-xl bg-slate-100 dark:bg-[#1d2333] hover:bg-amber-50 dark:hover:bg-amber-500/10 text-slate-700 dark:text-slate-300 hover:text-amber-800 dark:hover:text-amber-300 border border-slate-200 dark:border-[#2c354d] text-sm font-medium transition-colors"
         >
           <Lightbulb className="w-4 h-4 text-amber-500 dark:text-amber-400" />
@@ -297,6 +304,9 @@ export const MathProblemCard: React.FC<MathProblemCardProps> = ({
           <button
             type="button"
             onClick={() => {
+              if (!showHint && onHintRevealed) {
+                onHintRevealed();
+              }
               setShowHint(true);
               setShowSolution(true);
               onSkip();
