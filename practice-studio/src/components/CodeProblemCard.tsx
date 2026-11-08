@@ -13,6 +13,7 @@ import {
   Play,
   RefreshCw,
   Code2,
+  FileCode2,
   FileCheck,
   Check,
   FolderOpen,
@@ -185,19 +186,31 @@ export const CodeProblemCard: React.FC<CodeProblemCardProps> = ({
   const [copiedCmd, setCopiedCmd] = useState(false);
 
   const workspacePath = problem.workspaceFile || "";
-  const workspaceDir = workspacePath.includes("/")
-    ? workspacePath.substring(0, workspacePath.lastIndexOf("/"))
-    : ".";
+  const workspaceDir =
+    problem.workspaceDir ||
+    (workspacePath.includes("/")
+      ? workspacePath.substring(0, workspacePath.lastIndexOf("/"))
+      : ".");
   const filename = workspacePath.includes("/")
     ? workspacePath.substring(workspacePath.lastIndexOf("/") + 1)
     : workspacePath || "solution.js";
 
   const terminalCommand = `cd ${workspaceDir} && npm test`;
 
+  // Explicit folder URL: MUST target directory to ensure package.json & terminal open in workspace
   const vscodeFolderUrl =
     problem.vscodeFolderUrl ||
+    (problem.workspaceDir ? `vscode://file/${problem.workspaceDir}` : "") ||
+    (workspaceDir && workspaceDir !== "."
+      ? `vscode://file/${workspaceDir.startsWith("/") ? workspaceDir : "/" + workspaceDir}`
+      : "");
+
+  // Optional direct file URL for jumping into the source file
+  const vscodeFileUrl =
     problem.vscodeUrl ||
-    "";
+    (problem.workspaceFile
+      ? `vscode://file/${problem.workspaceFile.startsWith("/") ? problem.workspaceFile : "/" + problem.workspaceFile}`
+      : "");
 
   const handleCopyCmd = () => {
     navigator.clipboard.writeText(terminalCommand);
@@ -425,11 +438,22 @@ export const CodeProblemCard: React.FC<CodeProblemCardProps> = ({
               {vscodeFolderUrl && (
                 <a
                   href={vscodeFolderUrl}
-                  title="Open workspace in VS Code"
+                  title="Open workspace in VS Code (loads package.json and terminal in workspace)"
                   className="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold transition-all shadow-sm"
                 >
                   <FolderOpen className="w-4 h-4" />
                   <span>Open in VS Code</span>
+                </a>
+              )}
+
+              {vscodeFileUrl && vscodeFileUrl !== vscodeFolderUrl && (
+                <a
+                  href={vscodeFileUrl}
+                  title={`Open ${filename} directly in editor`}
+                  className="inline-flex items-center gap-1.5 h-10 px-3 rounded-xl bg-white dark:bg-[#1d2333] hover:bg-slate-100 dark:hover:bg-[#25304a] text-slate-700 dark:text-slate-300 text-xs font-mono border border-slate-200 dark:border-[#2c354d] transition-colors"
+                >
+                  <FileCode2 className="w-3.5 h-3.5 text-blue-500" />
+                  <span>Open File</span>
                 </a>
               )}
 

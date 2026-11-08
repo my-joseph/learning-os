@@ -936,12 +936,25 @@ export default function PracticeStudioPage() {
                               PRG-T01-C03 · Utility Toolkit (VS Code Katas)
                             </option>
                           </optgroup>
-                          <optgroup label="Mathematics (MTH-T01 / T02)">
+                          <optgroup label="Prealgebra (MTH-T01)">
+                            <option value="MTH-T01-C01">MTH-T01-C01 · Whole Numbers</option>
+                            <option value="MTH-T01-C02">MTH-T01-C02 · The Language of Algebra</option>
+                            <option value="MTH-T01-C03">MTH-T01-C03 · Integers</option>
+                            <option value="MTH-T01-C04">MTH-T01-C04 · Fractions</option>
+                            <option value="MTH-T01-C05">MTH-T01-C05 · Decimals</option>
+                            <option value="MTH-T01-C06">MTH-T01-C06 · Percents</option>
+                            <option value="MTH-T01-C07">MTH-T01-C07 · Proportional &amp; Ratio</option>
+                            <option value="MTH-T01-C08">MTH-T01-C08 · Exponents</option>
+                            <option value="MTH-T01-C09">MTH-T01-C09 · Roots</option>
+                            <option value="MTH-T01-C10">MTH-T01-C10 · Properties of Real Numbers</option>
+                            <option value="MTH-T01-C11">MTH-T01-C11 · Solving Linear Equations</option>
+                            <option value="MTH-T01-C12">MTH-T01-C12 · Math Models &amp; Geometry</option>
+                            <option value="MTH-T01-C13">MTH-T01-C13 · Polynomials</option>
+                            <option value="MTH-T01-C14">MTH-T01-C14 · Graphs</option>
+                          </optgroup>
+                          <optgroup label="Algebra &amp; Trigonometry (MTH-T02)">
                             <option value="MTH-T02-C01-U01">
                               MTH-T02-C01-U01 · Complex Numbers
-                            </option>
-                            <option value="MTH-T01-C12">
-                              MTH-T01-C12 · Math Models & Geometry
                             </option>
                           </optgroup>
                         </select>
