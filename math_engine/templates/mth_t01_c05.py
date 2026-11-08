@@ -12,13 +12,11 @@ MISTAKE_TAGS = [
     {"id": "c05-weighted-average-unweighted-trap", "label": "Averaged group means directly without weighting by group sizes", "name": "Unweighted Group Mean Fallacy", "autoFrom": []},
 ]
 
-_TAGS = ["alpha", "beta", "gamma", "delta", "epsilon", "zeta"]
 
 
 def t_c05_foundation(rng, form=None):
     if form not in ("direct", "rate"):
         form = rng.choice(["direct", "rate"])
-    tag = rng.choice(_TAGS)
     cases = [
         ("2.5", 6, "3.2", 5, 15, 16, 31, 19),
         ("1.5", 8, "2.5", 4, 12, 10, 22, 14),
@@ -40,7 +38,7 @@ def t_c05_foundation(rng, form=None):
         "references": ["MTH-T01-C05-U02"],
         "prompt": prompt,
         "display": disp,
-        "plainText": f"{n1}*{d1} + {n2}*{d2} [{tag}]",
+        "plainText": f"{n1}*{d1} + {n2}*{d2}",
         "answerSpec": {"type": "number", "value": str(ans)},
         "answerDisplay": str(ans),
         "answerPlain": str(ans),
@@ -59,7 +57,6 @@ def t_c05_foundation(rng, form=None):
 def t_c05_reverse(rng, form=None):
     if form not in ("direct", "missing-score"):
         form = rng.choice(["direct", "missing-score"])
-    tag = rng.choice(_TAGS)
     s1 = rng.randint(72, 88)
     s2 = rng.randint(74, 90)
     s3 = rng.randint(76, 92)
@@ -83,7 +80,7 @@ def t_c05_reverse(rng, form=None):
         "references": ["MTH-T01-C05-U05"],
         "prompt": prompt,
         "display": disp,
-        "plainText": f"({s1} + {s2} + {s3} + x) / 4 = {target_mean} [{tag}]",
+        "plainText": f"({s1} + {s2} + {s3} + x) / 4 = {target_mean}",
         "answerSpec": {"type": "number", "value": str(ans)},
         "answerDisplay": str(ans),
         "answerPlain": str(ans),
@@ -102,7 +99,6 @@ def t_c05_reverse(rng, form=None):
 def t_c05_trap(rng, form=None):
     if form not in ("direct", "combined"):
         form = rng.choice(["direct", "combined"])
-    tag = rng.choice(_TAGS)
     cases = [
         ("3.6", "0.04", 360, 4, 90, 9),
         ("4.8", "0.06", 480, 6, 80, 8),
@@ -140,7 +136,7 @@ def t_c05_trap(rng, form=None):
         "references": ["MTH-T01-C05-U02"],
         "prompt": prompt,
         "display": disp,
-        "plainText": f"({num_d}) / ({den_d}) [{tag}]",
+        "plainText": f"({num_d}) / ({den_d})",
         "answerSpec": {"type": "number", "value": str(ans)},
         "answerDisplay": str(ans),
         "answerPlain": str(ans),
@@ -155,7 +151,6 @@ def t_c05_trap(rng, form=None):
 def t_c05_synthesis(rng, form=None):
     if form not in ("direct", "contextual"):
         form = rng.choice(["direct", "contextual"])
-    tag = rng.choice(_TAGS)
     cases = [
         (10, 78, 15, 88, 84, 83),
         (12, 75, 18, 85, 81, 80),
@@ -180,7 +175,7 @@ def t_c05_synthesis(rng, form=None):
         "references": ["MTH-T01-C05-U05", "MTH-T01-C05-U06"],
         "prompt": prompt,
         "display": disp,
-        "plainText": f"({n1}*{m1} + {n2}*{m2}) / ({n1} + {n2}) [{tag}]",
+        "plainText": f"({n1}*{m1} + {n2}*{m2}) / ({n1} + {n2})",
         "answerSpec": {"type": "number", "value": str(ans)},
         "answerDisplay": str(ans),
         "answerPlain": str(ans),

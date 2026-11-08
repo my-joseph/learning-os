@@ -34,23 +34,42 @@ def load_all_templates() -> dict[str, tuple[str, dict[str, Any]]]:
     from code_engine.templates import get_all_unit_modules as get_code_modules
 
     registry: dict[str, tuple[str, dict[str, Any]]] = {}
+
     for unit, mod in get_math_modules():
         mod_name = getattr(mod, "__name__", f"math_engine.{unit}")
         for tpl in getattr(mod, "TEMPLATES", []):
             key = tpl.get("key") or tpl.get("name")
             if key:
                 registry[key] = (mod_name, tpl)
+
     for unit, mod in get_code_modules():
         mod_name = getattr(mod, "__name__", f"code_engine.{unit}")
         for tpl in getattr(mod, "TEMPLATES", []):
             key = tpl.get("key") or tpl.get("name")
             if key:
                 registry[key] = (mod_name, tpl)
+
     return registry
+
+
+def load_all_mistake_tag_descriptions() -> dict[str, str]:
+    """Loads all mistake tag descriptions from registered modules."""
+    from math_engine.templates import get_all_unit_modules as get_math_modules
+    from code_engine.templates import get_all_unit_modules as get_code_modules
+
+    tag_descriptions: dict[str, str] = {}
+    for _, mod in list(get_math_modules()) + list(get_code_modules()):
+        for tag_def in getattr(mod, "MISTAKE_TAGS", []):
+            if isinstance(tag_def, dict) and "id" in tag_def:
+                desc = tag_def.get("description") or tag_def.get("label") or ""
+                if desc:
+                    tag_descriptions[tag_def["id"]] = desc
+    return tag_descriptions
 
 
 def build_sample_sheet(template_key: str, seed: int = 42) -> str:
     registry = load_all_templates()
+    tag_descriptions = load_all_mistake_tag_descriptions()
     if template_key not in registry:
         keys_list = "\n  - ".join(sorted(registry.keys()))
         raise KeyError(
@@ -136,6 +155,9 @@ def build_sample_sheet(template_key: str, seed: int = 42) -> str:
         except Exception as exc:
             anti_leak_status = f"ERROR ({exc})"
 
+        trap_desc = tag_descriptions.get(trap_tag, "")
+        trap_tag_display = f"`{trap_tag}`" + (f" — *{trap_desc}*" if trap_desc else "")
+
         meta_rows = [
             f"| **Form** | `{form_name}` |",
             f"| **Level** | **L{level}** |",
@@ -144,10 +166,21 @@ def build_sample_sheet(template_key: str, seed: int = 42) -> str:
             f"| **Step Count** | `{step_count}` steps |",
             f"| **Canonical Answer** | `{ans_plain}` |",
             f"| **Trap Value** | `{trap_value}` |",
-            f"| **Learner Trap Tag** | `{trap_tag}` |",
+            f"| **Learner Trap Tag** | {trap_tag_display} |",
         ]
+        trap_derivation = prob.get("trapDerivation")
+        td_eval = ""
+        if trap_derivation:
+            try:
+                from math_engine.answer_check import to_expr
+                td_eval = str(to_expr(trap_derivation, variables=prob.get("variables") or prob.get("answerSpec", {}).get("variables") or ["x"]))
+            except Exception:
+                td_eval = "err"
+            meta_rows.append(f"| **Trap Derivation** | `{trap_derivation}` $\\implies$ `{td_eval}` |")
         if flaw_tag:
-            meta_rows.append(f"| **Flaw Tag (To Diagnose)** | `{flaw_tag}` |")
+            flaw_desc = tag_descriptions.get(flaw_tag, "")
+            flaw_display = f"`{flaw_tag}`" + (f" — *{flaw_desc}*" if flaw_desc else "")
+            meta_rows.append(f"| **Flaw Tag (To Diagnose)** | {flaw_display} |")
 
         lines.extend([
             "",
@@ -205,7 +238,11 @@ def build_sample_sheet(template_key: str, seed: int = 42) -> str:
             "### Expected Answer & Provenance",
             f"- **Display Form**: `{ans_display}`",
             f"- **Plain/Eval Form**: `{ans_plain}`",
-            f"- **Trap & Distractor Value**: `{trap_value}` (Tag: `{trap_tag}`)",
+            f"- **Trap & Distractor Value**: `{trap_value}` (Tag: `{trap_tag}`{f' — {trap_desc}' if trap_desc else ''})",
+        ])
+        if trap_derivation:
+            lines.append(f"- **Trap Derivation**: `{trap_derivation}` = `{td_eval}`")
+        lines.extend([
             "",
             "### Step-by-Step Derivation",
         ])

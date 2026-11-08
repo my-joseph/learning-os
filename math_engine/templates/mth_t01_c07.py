@@ -12,13 +12,11 @@ MISTAKE_TAGS = [
     {"id": "c07-arithmetic-mean-speed-trap", "label": "Averaged round-trip speeds arithmetically instead of using harmonic mean", "name": "Round-Trip Harmonic Speed Trap", "autoFrom": []},
 ]
 
-_TAGS = ["alpha", "beta", "gamma", "delta", "epsilon", "zeta"]
 
 
 def t_c07_foundation(rng, form=None):
     if form not in ("direct", "unit-rate"):
         form = rng.choice(["direct", "unit-rate"])
-    tag = rng.choice(_TAGS)
     a = rng.randint(3, 9)
     b = rng.randint(4, 11)
     if a == b:
@@ -41,7 +39,7 @@ def t_c07_foundation(rng, form=None):
         "references": ["MTH-T01-C07-U02"],
         "prompt": prompt,
         "display": disp,
-        "plainText": f"{a}/{b} = x/{d} [{tag}]",
+        "plainText": f"{a}/{b} = x/{d}",
         "answerSpec": {"type": "number", "value": str(ans)},
         "answerDisplay": str(ans),
         "answerPlain": str(ans),
@@ -60,7 +58,6 @@ def t_c07_foundation(rng, form=None):
 def t_c07_reverse(rng, form=None):
     if form not in ("direct", "reverse-scale"):
         form = rng.choice(["direct", "reverse-scale"])
-    tag = rng.choice(_TAGS)
     ratios = [(2, 3), (3, 5), (4, 5), (3, 7), (5, 7), (4, 9)]
     r1, r2 = rng.choice(ratios)
     mult = rng.randint(8, 25)
@@ -94,7 +91,7 @@ def t_c07_reverse(rng, form=None):
         "references": ["MTH-T01-C07-U03"],
         "prompt": prompt,
         "display": disp,
-        "plainText": f"ratio {r1}:{r2} with mult {mult} [{tag}]",
+        "plainText": f"ratio {r1}:{r2} with mult {mult}",
         "answerSpec": {"type": "number", "value": str(ans)},
         "answerDisplay": str(ans),
         "answerPlain": str(ans),
@@ -109,7 +106,6 @@ def t_c07_reverse(rng, form=None):
 def t_c07_trap(rng, form=None):
     if form not in ("direct", "volume-scale"):
         form = rng.choice(["direct", "volume-scale"])
-    tag = rng.choice(_TAGS)
     k = rng.choice([2, 3, 4, 5])
     base_area = rng.randint(12, 35)
     if form == "volume-scale":
@@ -139,7 +135,7 @@ def t_c07_trap(rng, form=None):
         "references": ["MTH-T01-C07-U04"],
         "prompt": prompt,
         "display": disp,
-        "plainText": f"{base_area} * {k}^d [{tag}]",
+        "plainText": f"{base_area} * {k}^d",
         "answerSpec": {"type": "number", "value": str(ans)},
         "answerDisplay": str(ans),
         "answerPlain": str(ans),
@@ -154,7 +150,6 @@ def t_c07_trap(rng, form=None):
 def t_c07_synthesis(rng, form=None):
     if form not in ("direct", "combined-work"):
         form = rng.choice(["direct", "combined-work"])
-    tag = rng.choice(_TAGS)
     cases = [
         (30, 60, 40, 45, 20),
         (40, 60, 48, 50, 24),
@@ -190,7 +185,7 @@ def t_c07_synthesis(rng, form=None):
         "references": ["MTH-T01-C07-U01", "MTH-T01-C07-U06"],
         "prompt": prompt,
         "display": disp,
-        "plainText": f"(2*{v1}*{v2})/({v1}+{v2}) [{tag}]",
+        "plainText": f"(2*{v1}*{v2})/({v1}+{v2})",
         "answerSpec": {"type": "number", "value": str(ans)},
         "answerDisplay": str(ans),
         "answerPlain": str(ans),

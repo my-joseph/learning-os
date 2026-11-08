@@ -143,7 +143,54 @@ def verify_problem(p, id_map=None, rules=None):
                 if re.search(r'(?<![0-9a-zA-Z])' + re.escape(leaked) + r'(?![0-9a-zA-Z])', hint):
                     _fail(pid, f"inputHint leaks exact answer {leaked!r}: {hint!r}")
 
-    # 6. Quality Gates (G1, G2, G4)
+    # 6. Trap derivation verification
+    trap_kind = p.get("trapKind")
+    if trap_kind == "selection":
+        # Form selects an option or line number; derivation is exempt
+        pass
+    elif "trapDerivation" in p and p["trapDerivation"] is not None:
+        td = str(p["trapDerivation"]).strip()
+        # Trap derivation must express an operational misconception, not a raw numeric literal
+        if re.match(r"^-?\d+(\.\d+)?$", td):
+            raise QualityError("G4", pid, f"trapDerivation '{td}' is purely numeric. It must express an operational derivation of student error, or set trapKind='selection'.")
+        tv = v.get("trapValue")
+        if tv is None:
+            raise QualityError("G4", pid, f"trapDerivation '{td}' present but verify.trapValue is missing")
+        td_expr = to_expr(td, variables=vars_list, trusted=True)
+        tv_expr = to_expr(tv, variables=vars_list, trusted=True)
+        if not is_equal(td_expr, tv_expr, variables=vars_list):
+            raise QualityError("G4", pid, f"trapDerivation '{td}' evaluates to {td_expr} != trapValue '{tv}' ({tv_expr})")
+
+        # Gate: trapDerivation must not consist purely of numbers absent from prompt.
+        # Template sends trapGivens (numbers in prompt used in derivation), and gate verifies
+        # that derivation contains at least 2 distinct givens. trapKind="selection" is exempt.
+        if p.get("trapKind") != "selection":
+            if "trapGivens" in p and p["trapGivens"] is not None:
+                givens = p["trapGivens"]
+                prompt_text = str(p.get("prompt", ""))
+                for g in givens:
+                    if str(g) not in prompt_text:
+                        raise QualityError("G4", pid, f"trapGiven '{g}' does not appear in prompt: {prompt_text}")
+                td_tokens = set(re.findall(r"\b\d+\b", td))
+                matched_givens = {str(g) for g in givens if str(g) in td_tokens}
+                if len(matched_givens) < 2:
+                    raise QualityError(
+                        "G4",
+                        pid,
+                        f"trapDerivation '{td}' must contain at least 2 distinct givens from trapGivens ({givens}), found {len(matched_givens)}: {matched_givens}"
+                    )
+            else:
+                is_c01_or_c12 = any(
+                    isinstance(ref, str) and (ref.startswith("MTH-T01-C01") or ref.startswith("MTH-T01-C12"))
+                    for ref in p.get("references", [])
+                )
+                if is_c01_or_c12:
+                    raise QualityError("G4", pid, f"Templates in C01 and C12 must provide 'trapGivens'")
+    else:
+        import logging
+        logging.getLogger("math_engine.verify").warning(f"[{pid}] Template form has no trapDerivation field")
+
+    # 7. Quality Gates (G1, G2, G4)
     verify_quality_gates(p, is_code=False, rules=rules)
     return True
 

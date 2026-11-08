@@ -13,18 +13,16 @@ MISTAKE_TAGS = [
     {"id": "c14-lattice-endpoint-exclusion-trap", "label": "Forgot to add 1 when counting inclusive integer lattice points on a segment", "name": "Lattice Endpoint Fencepost Trap", "autoFrom": []},
 ]
 
-_TAGS = ["alpha", "beta", "gamma", "delta", "epsilon", "zeta"]
 
 
 def t_c14_foundation(rng, form=None):
     if form not in ("direct", "intercept-sum"):
         form = rng.choice(["direct", "intercept-sum"])
-    tag = rng.choice(_TAGS)
     a = rng.choice([2, 3, 4, 5, 6])
     b = rng.choice([3, 4, 5, 6, 7])
     if a == b:
         b += 1
-    k = rng.randint(1, 3)
+    k = rng.randint(2, 4)
     C = a * b * k
     x_int = C // a
     y_int = C // b
@@ -55,7 +53,7 @@ def t_c14_foundation(rng, form=None):
         "references": ["MTH-T01-C14-U03"],
         "prompt": prompt,
         "display": disp,
-        "plainText": f"{a}*x + {b}*y = {C} intercepts [{tag}]",
+        "plainText": f"{a}*x + {b}*y = {C} intercepts",
         "answerSpec": {"type": "number", "value": str(ans)},
         "answerDisplay": str(ans),
         "answerPlain": str(ans),
@@ -70,7 +68,6 @@ def t_c14_foundation(rng, form=None):
 def t_c14_reverse(rng, form=None):
     if form not in ("direct", "missing-coordinate"):
         form = rng.choice(["direct", "missing-coordinate"])
-    tag = rng.choice(_TAGS)
     x1 = rng.randint(-6, 3)
     y1 = rng.randint(-5, 5)
     dx = rng.choice([2, 3, 4, 5])
@@ -104,7 +101,7 @@ def t_c14_reverse(rng, form=None):
         "references": ["MTH-T01-C14-U04"],
         "prompt": prompt,
         "display": disp,
-        "plainText": f"slope ({x1},{y1}) to ({x2},{y2}) [{tag}]",
+        "plainText": f"slope ({x1},{y1}) to ({x2},{y2})",
         "answerSpec": {"type": "number", "value": str(ans)},
         "answerDisplay": str(ans),
         "answerPlain": str(ans),
@@ -119,7 +116,6 @@ def t_c14_reverse(rng, form=None):
 def t_c14_trap(rng, form=None):
     if form not in ("direct", "collinear-parameter", "bisector-intercept"):
         form = rng.choice(["direct", "collinear-parameter", "bisector-intercept"])
-    tag = rng.choice(_TAGS)
     if form == "collinear-parameter":
         cases = [
             (1, 2, 3, 6, 5, 10, 4, 2),
@@ -181,7 +177,7 @@ def t_c14_trap(rng, form=None):
         "references": ["MTH-T01-C14-U01", "MTH-T01-C14-U04"],
         "prompt": prompt,
         "display": disp,
-        "plainText": f"coord trap {form} {ans} [{tag}]",
+        "plainText": f"coord trap {form} {ans}",
         "answerSpec": {"type": "number", "value": str(ans)},
         "answerDisplay": str(ans),
         "answerPlain": str(ans),
@@ -196,7 +192,6 @@ def t_c14_trap(rng, form=None):
 def t_c14_synthesis(rng, form=None):
     if form not in ("direct", "reflection-point", "lattice-points"):
         form = rng.choice(["direct", "reflection-point", "lattice-points"])
-    tag = rng.choice(_TAGS)
     if form == "reflection-point":
         cases = [
             (2, 1, 6, 3, 2, 5, 5, 9),
@@ -257,7 +252,7 @@ def t_c14_synthesis(rng, form=None):
         "references": ["MTH-T01-C14-U02", "MTH-T01-C14-U03", "MTH-T01-C14-U04"],
         "prompt": prompt,
         "display": disp,
-        "plainText": f"coord synthesis {form} {ans} [{tag}]",
+        "plainText": f"coord synthesis {form} {ans}",
         "answerSpec": {"type": "number", "value": str(ans)},
         "answerDisplay": str(ans),
         "answerPlain": str(ans),

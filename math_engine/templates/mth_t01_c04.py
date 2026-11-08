@@ -13,7 +13,6 @@ MISTAKE_TAGS = [
     {"id": "c04-remainder-fraction-base-trap", "label": "Subtracted sequential fractions from original whole instead of remaining fraction", "name": "Sequential Fractional Remainder Trap", "autoFrom": []},
 ]
 
-_TAGS = ["alpha", "beta", "gamma", "delta", "epsilon", "zeta"]
 
 
 def _fstr(fr: Fraction) -> str:
@@ -23,7 +22,6 @@ def _fstr(fr: Fraction) -> str:
 def t_c04_foundation(rng, form=None):
     if form not in ("direct", "reciprocal"):
         form = rng.choice(["direct", "reciprocal"])
-    tag = rng.choice(_TAGS)
     pairs = [
         (Fraction(3, 4), Fraction(8, 9)),
         (Fraction(5, 6), Fraction(9, 10)),
@@ -62,7 +60,7 @@ def t_c04_foundation(rng, form=None):
         "references": ["MTH-T01-C04-U02"],
         "prompt": prompt,
         "display": disp,
-        "plainText": f"({f1}) op ({f2}) [{tag}]",
+        "plainText": f"({f1}) op ({f2})",
         "answerSpec": {"type": "number", "value": ans_s},
         "answerDisplay": format_frac_latex(ans_s),
         "answerPlain": ans_s,
@@ -77,7 +75,6 @@ def t_c04_foundation(rng, form=None):
 def t_c04_reverse(rng, form=None):
     if form not in ("direct", "missing-term"):
         form = rng.choice(["direct", "missing-term"])
-    tag = rng.choice(_TAGS)
     cases = [
         (Fraction(2, 3), Fraction(3, 4), 12),
         (Fraction(3, 5), Fraction(1, 2), 10),
@@ -119,7 +116,7 @@ def t_c04_reverse(rng, form=None):
         "references": ["MTH-T01-C04-U05"],
         "prompt": prompt,
         "display": disp,
-        "plainText": f"({f1}) + ({f2}) lcd {lcd} [{tag}]",
+        "plainText": f"({f1}) + ({f2}) lcd {lcd}",
         "answerSpec": {"type": "number", "value": ans_s},
         "answerDisplay": format_frac_latex(ans_s),
         "answerPlain": ans_s,
@@ -134,7 +131,6 @@ def t_c04_reverse(rng, form=None):
 def t_c04_trap(rng, form=None):
     if form not in ("direct", "difference"):
         form = rng.choice(["direct", "difference"])
-    tag = rng.choice(_TAGS)
     cases = [
         (Fraction(1, 2), Fraction(1, 3), Fraction(5, 12)),
         (Fraction(2, 3), Fraction(1, 4), Fraction(11, 24)),
@@ -174,7 +170,7 @@ def t_c04_trap(rng, form=None):
         "references": ["MTH-T01-C04-U03"],
         "prompt": prompt,
         "display": disp,
-        "plainText": f"(({a}) and ({b})) / ({c}) [{tag}]",
+        "plainText": f"(({a}) and ({b})) / ({c})",
         "answerSpec": {"type": "number", "value": ans_s},
         "answerDisplay": format_frac_latex(ans_s),
         "answerPlain": ans_s,
@@ -189,7 +185,6 @@ def t_c04_trap(rng, form=None):
 def t_c04_synthesis(rng, form=None):
     if form not in ("direct", "contextual"):
         form = rng.choice(["direct", "contextual"])
-    tag = rng.choice(_TAGS)
     cases = [
         (Fraction(1, 3), Fraction(1, 4), 120),
         (Fraction(1, 4), Fraction(1, 3), 180),
@@ -229,7 +224,7 @@ def t_c04_synthesis(rng, form=None):
         "references": ["MTH-T01-C04-U02", "MTH-T01-C04-U05"],
         "prompt": prompt,
         "display": disp,
-        "plainText": f"{total} * (1 - {f1}) * (1 - {f2}) [{tag}]",
+        "plainText": f"{total} * (1 - {f1}) * (1 - {f2})",
         "answerSpec": {"type": "number", "value": str(ans)},
         "answerDisplay": str(ans),
         "answerPlain": str(ans),

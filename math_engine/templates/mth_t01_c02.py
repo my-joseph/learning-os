@@ -13,13 +13,11 @@ MISTAKE_TAGS = [
     {"id": "c02-synodic-offset-trap", "label": "Forgot initial offset when computing next simultaneous cycle occurrence", "name": "Simultaneous Cycle Offset Omission", "autoFrom": []},
 ]
 
-_TAGS = ["alpha", "beta", "gamma", "delta", "epsilon", "zeta"]
 
 
 def t_c02_foundation(rng, form=None):
     if form not in ("direct", "nested"):
         form = rng.choice(["direct", "nested"])
-    tag = rng.choice(_TAGS)
     a = rng.randint(3, 8)
     x = rng.randint(4, 11)
     b = rng.randint(2, 7)
@@ -52,7 +50,7 @@ def t_c02_foundation(rng, form=None):
         "references": ["MTH-T01-C02-U02"],
         "prompt": prompt,
         "display": disp,
-        "plainText": f"{a}*x + {b}*y at ({x},{y}) [{tag}]",
+        "plainText": f"{a}*x + {b}*y at ({x},{y})",
         "answerSpec": {"type": "number", "value": str(ans)},
         "answerDisplay": str(ans),
         "answerPlain": str(ans),
@@ -67,14 +65,16 @@ def t_c02_foundation(rng, form=None):
 def t_c02_reverse(rng, form=None):
     if form not in ("direct", "reverse"):
         form = rng.choice(["direct", "reverse"])
-    tag = rng.choice(_TAGS)
-    k = rng.randint(3, 9)
-    m = rng.randint(11, 35)
-    target = k * rng.randint(8, 22) - m
-    while target <= m:
-        target = k * rng.randint(12, 28) - m
-    ans = (target + m) // k
-    trap = target - m
+    while True:
+        k = rng.randint(3, 9)
+        m = rng.randint(11, 35)
+        target = k * rng.randint(8, 22) - m
+        while target <= m:
+            target = k * rng.randint(12, 28) - m
+        ans = (target + m) // k
+        trap = target - m
+        if trap != ans:
+            break
     if form == "reverse":
         prompt = f"When ${m}$ is subtracted from ${k}$ times a number $n$, the result is ${target}$. Find the number $n$."
         disp = f"{k}n - {m} = {target} \\implies n = ?"
@@ -88,7 +88,7 @@ def t_c02_reverse(rng, form=None):
         "references": ["MTH-T01-C02-U03"],
         "prompt": prompt,
         "display": disp,
-        "plainText": f"{k}*n - {m} = {target} [{tag}]",
+        "plainText": f"{k}*n - {m} = {target}",
         "answerSpec": {"type": "number", "value": str(ans)},
         "answerDisplay": str(ans),
         "answerPlain": str(ans),
@@ -107,7 +107,6 @@ def t_c02_reverse(rng, form=None):
 def t_c02_trap(rng, form=None):
     if form not in ("direct", "synodic-cycle"):
         form = rng.choice(["direct", "synodic-cycle"])
-    tag = rng.choice(_TAGS)
     pairs = [
         (12, 18, "2^2 \\cdot 3", "2 \\cdot 3^2"),
         (24, 36, "2^3 \\cdot 3", "2^2 \\cdot 3^2"),
@@ -147,7 +146,7 @@ def t_c02_trap(rng, form=None):
         "references": ["MTH-T01-C02-U05"],
         "prompt": prompt,
         "display": disp,
-        "plainText": f"LCM({a}, {b}) [{tag}]",
+        "plainText": f"LCM({a}, {b})",
         "answerSpec": {"type": "number", "value": str(ans)},
         "answerDisplay": str(ans),
         "answerPlain": str(ans),
@@ -162,7 +161,6 @@ def t_c02_trap(rng, form=None):
 def t_c02_synthesis(rng, form=None):
     if form not in ("direct", "multi-constraint"):
         form = rng.choice(["direct", "multi-constraint"])
-    tag = rng.choice(_TAGS)
     pairs = [(8, 12), (10, 15), (12, 18), (14, 21), (16, 24)]
     a, b = rng.choice(pairs)
     g = math.gcd(a, b)
@@ -196,7 +194,7 @@ def t_c02_synthesis(rng, form=None):
         "references": ["MTH-T01-C02-U02", "MTH-T01-C02-U05"],
         "prompt": prompt,
         "display": disp,
-        "plainText": f"{k}*LCM({a},{b}) + {c}*GCD({a},{b}) [{tag}]",
+        "plainText": f"{k}*LCM({a},{b}) + {c}*GCD({a},{b})",
         "answerSpec": {"type": "number", "value": str(ans)},
         "answerDisplay": str(ans),
         "answerPlain": str(ans),

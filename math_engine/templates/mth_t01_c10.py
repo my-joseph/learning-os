@@ -12,13 +12,11 @@ MISTAKE_TAGS = [
     {"id": "c10-dimensional-unit-conversion-trap", "label": "Divided instead of multiplied by unit conversion factor in multi-step conversion", "name": "Dimensional Analysis Conversion Trap", "autoFrom": ["off_by_factor"]},
 ]
 
-_TAGS = ["alpha", "beta", "gamma", "delta", "epsilon", "zeta"]
 
 
 def t_c10_foundation(rng, form=None):
     if form not in ("direct", "mental-split"):
         form = rng.choice(["direct", "mental-split"])
-    tag = rng.choice(_TAGS)
     a = rng.randint(6, 14)
     b = rng.choice([20, 30, 40, 50])
     c = rng.randint(3, 9)
@@ -49,7 +47,7 @@ def t_c10_foundation(rng, form=None):
         "references": ["MTH-T01-C10-U03"],
         "prompt": prompt,
         "display": disp,
-        "plainText": f"{a}*({b} op {c}) [{tag}]",
+        "plainText": f"{a}*({b} op {c})",
         "answerSpec": {"type": "number", "value": str(ans)},
         "answerDisplay": str(ans),
         "answerPlain": str(ans),
@@ -64,7 +62,6 @@ def t_c10_foundation(rng, form=None):
 def t_c10_reverse(rng, form=None):
     if form not in ("direct", "unit-conversion"):
         form = rng.choice(["direct", "unit-conversion"])
-    tag = rng.choice(_TAGS)
     a = rng.randint(4, 9)
     b = rng.randint(5, 12)
     c = rng.randint(3, 8)
@@ -87,7 +84,7 @@ def t_c10_reverse(rng, form=None):
         "references": ["MTH-T01-C10-U02"],
         "prompt": prompt,
         "display": disp,
-        "plainText": f"{a}*(x + {b}) + {c}*x = {rhs} [{tag}]",
+        "plainText": f"{a}*(x + {b}) + {c}*x = {rhs}",
         "answerSpec": {"type": "number", "value": str(ans)},
         "answerDisplay": str(ans),
         "answerPlain": str(ans),
@@ -106,7 +103,6 @@ def t_c10_reverse(rng, form=None):
 def t_c10_trap(rng, form=None):
     if form not in ("direct", "nested-brackets"):
         form = rng.choice(["direct", "nested-brackets"])
-    tag = rng.choice(_TAGS)
     a = rng.randint(40, 85)
     b = rng.randint(3, 8)
     c = rng.randint(9, 18)
@@ -139,7 +135,7 @@ def t_c10_trap(rng, form=None):
         "references": ["MTH-T01-C10-U03"],
         "prompt": prompt,
         "display": disp,
-        "plainText": f"{a} - {b}*({c} - {d}) [{tag}]",
+        "plainText": f"{a} - {b}*({c} - {d})",
         "answerSpec": {"type": "number", "value": str(ans)},
         "answerDisplay": str(ans),
         "answerPlain": str(ans),
@@ -154,7 +150,6 @@ def t_c10_trap(rng, form=None):
 def t_c10_synthesis(rng, form=None):
     if form not in ("direct", "unit-rate-conversion"):
         form = rng.choice(["direct", "unit-rate-conversion"])
-    tag = rng.choice(_TAGS)
     if form == "unit-rate-conversion":
         mps = rng.choice([5, 10, 15, 20, 25, 30])
         hours = rng.choice([2, 3, 4])
@@ -189,7 +184,7 @@ def t_c10_synthesis(rng, form=None):
         "references": ["MTH-T01-C10-U03", "MTH-T01-C10-U05"],
         "prompt": prompt,
         "display": disp,
-        "plainText": f"real properties synthesis {ans} [{tag}]",
+        "plainText": f"real properties synthesis {ans}",
         "answerSpec": {"type": "number", "value": str(ans)},
         "answerDisplay": str(ans),
         "answerPlain": str(ans),

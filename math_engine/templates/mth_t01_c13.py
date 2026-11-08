@@ -12,19 +12,19 @@ MISTAKE_TAGS = [
     {"id": "c13-difference-of-squares-frame-trap", "label": "Subtracted inner dimension linearly instead of subtracting inner polynomial area", "name": "Polynomial Frame Area Trap", "autoFrom": []},
 ]
 
-_TAGS = ["alpha", "beta", "gamma", "delta", "epsilon", "zeta"]
 
 
 def t_c13_foundation(rng, form=None):
     if form not in ("direct", "evaluate"):
         form = rng.choice(["direct", "evaluate"])
-    tag = rng.choice(_TAGS)
     a1 = rng.randint(2, 6)
     b1 = rng.randint(3, 9)
     c1 = rng.randint(2, 8)
     a2 = rng.randint(2, 5)
     b2 = rng.randint(2, 7)
     c2 = rng.randint(3, 9)
+    while b2 == c2:
+        c2 = rng.randint(3, 9)
     x_val = rng.choice([2, 3])
     if form == "evaluate":
         A = a1 + a2
@@ -59,7 +59,7 @@ def t_c13_foundation(rng, form=None):
         "references": ["MTH-T01-C13-U01"],
         "prompt": prompt,
         "display": disp,
-        "plainText": f"poly add sub {a1}*x^2 + {b1}*x + {c1} [{tag}]",
+        "plainText": f"poly add sub {a1}*x^2 + {b1}*x + {c1}",
         "answerSpec": {"type": "number", "value": str(ans)},
         "answerDisplay": str(ans),
         "answerPlain": str(ans),
@@ -74,7 +74,6 @@ def t_c13_foundation(rng, form=None):
 def t_c13_reverse(rng, form=None):
     if form not in ("direct", "missing-middle-coeff"):
         form = rng.choice(["direct", "missing-middle-coeff"])
-    tag = rng.choice(_TAGS)
     a = rng.randint(2, 5)
     b = rng.randint(3, 8)
     c = rng.randint(2, 6)
@@ -114,7 +113,7 @@ def t_c13_reverse(rng, form=None):
         "references": ["MTH-T01-C13-U03"],
         "prompt": prompt,
         "display": disp,
-        "plainText": f"({a}*x op {b})*({c}*x + {d}) [{tag}]",
+        "plainText": f"({a}*x op {b})*({c}*x + {d})",
         "answerSpec": {"type": "number", "value": str(ans)},
         "answerDisplay": str(ans),
         "answerPlain": str(ans),
@@ -129,7 +128,6 @@ def t_c13_reverse(rng, form=None):
 def t_c13_trap(rng, form=None):
     if form not in ("direct", "subtracted-polynomial-sign-trap"):
         form = rng.choice(["direct", "subtracted-polynomial-sign-trap"])
-    tag = rng.choice(_TAGS)
     a = rng.randint(2, 5)
     b = rng.randint(3, 7)
     x_val = rng.choice([2, 3, 4])
@@ -160,7 +158,7 @@ def t_c13_trap(rng, form=None):
         "references": ["MTH-T01-C13-U04"],
         "prompt": prompt,
         "display": disp,
-        "plainText": f"({a}*x - {b})^2 cross term [{tag}]",
+        "plainText": f"({a}*x - {b})^2 cross term",
         "answerSpec": {"type": "number", "value": str(ans)},
         "answerDisplay": str(ans),
         "answerPlain": str(ans),
@@ -175,7 +173,6 @@ def t_c13_trap(rng, form=None):
 def t_c13_synthesis(rng, form=None):
     if form not in ("direct", "quotient-identity"):
         form = rng.choice(["direct", "quotient-identity"])
-    tag = rng.choice(_TAGS)
     a = rng.randint(3, 7)
     b = rng.randint(2, 6)
     x_val = rng.randint(4, 9)
@@ -208,7 +205,7 @@ def t_c13_synthesis(rng, form=None):
         "references": ["MTH-T01-C13-U03", "MTH-T01-C13-U04"],
         "prompt": prompt,
         "display": disp,
-        "plainText": f"poly identity synthesis {a}*x and {b} [{tag}]",
+        "plainText": f"poly identity synthesis {a}*x and {b}",
         "answerSpec": {"type": "number", "value": str(ans)},
         "answerDisplay": str(ans),
         "answerPlain": str(ans),

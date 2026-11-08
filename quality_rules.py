@@ -40,15 +40,18 @@ class QualityError(Exception):
     def __init__(
         self,
         gate: str,
-        problem_id: str,
-        reason: str,
+        problem_id: str | None = None,
+        reason: str | None = None,
         details: dict[str, Any] | None = None,
     ) -> None:
+        if reason is None and problem_id is not None:
+            reason = problem_id
+            problem_id = "SET"
         self.gate = gate
-        self.problem_id = problem_id
-        self.reason = reason
+        self.problem_id = problem_id or "SET"
+        self.reason = reason or ""
         self.details = details or {}
-        super().__init__(f"[{gate}] ข้อ {problem_id}: {reason}")
+        super().__init__(f"[{self.gate}] ข้อ {self.problem_id}: {self.reason}")
 
 
 # ---------------------------------------------------------------------------

@@ -143,6 +143,19 @@ def _pick_template_schedule(templates, count, difficulty, focus_tags, rng, templ
         if matched:
             return _round_robin_pick(matched, count, rng)
 
+        available_tags = sorted(set(
+            [p["key"] for p in all_pairs if p.get("key")] +
+            [p["trapTag"] for p in all_pairs if p.get("trapTag")] +
+            [p["skill"] for p in all_pairs if p.get("skill")] +
+            [p["form"] for p in all_pairs if p.get("form")]
+        ))
+        unit_name = unit_code or "Current Unit"
+        raise ValueError(
+            f"No templates match requested focus_tags: {focus_tags} in '{unit_name}'. "
+            f"Available tags for this unit: {available_tags}. "
+            f"Cannot silently fallback to default schedule."
+        )
+
     if difficulty in ("1", "2", "3", "4"):
         lv = int(difficulty)
         pool = [p for p in all_pairs if p["level"] == lv]
@@ -201,14 +214,40 @@ def generate_drill_set(
             print(msg)
 
     def _build_attempt(attempt_seed: int):
+        from collections import Counter
         rng = random.Random(attempt_seed)
         schedule = _pick_template_schedule(mod.TEMPLATES, count, difficulty, focus_tags, rng, template_filter=templates, unit_code=unit_code)
         unique_tpls = {s["key"]: s["template"] for s in schedule}.values()
         available_forms_count = sum(len(t.get("forms") or ["direct"]) for t in unique_tpls)
 
+        # Pre-measure unique problem space for each (template, form) required in schedule
+        req_counts = Counter((s["key"], s["form"]) for s in schedule)
+        for (k, f), req_num in req_counts.items():
+            tpl_item = next(s["template"] for s in schedule if s["key"] == k)
+            meas_rng = random.Random(1337)
+            distinct_samples = set()
+            for s_idx in range(min(150, max(req_num * 5, 50))):
+                meas_rng.seed(s_idx * 997 + 13)
+                try:
+                    c = tpl_item["build"](meas_rng, form=f)
+                except TypeError:
+                    c = tpl_item["build"](meas_rng)
+                p_text = c.get("prompt", "")
+                a_text = c.get("answerPlain", c.get("answerDisplay", ""))
+                distinct_samples.add((p_text, a_text))
+            
+            capacity = len(distinct_samples)
+            if req_num > capacity:
+                raise ValueError(
+                    f"Requested {req_num} problems for template '{k}' (form '{f}'), "
+                    f"but measured unique problem space is only {capacity}. "
+                    f"Cannot generate without duplicate problems."
+                )
+
         attempt_problems = []
         seen_displays = set()
         seen_fingerprints = set()
+        seen_prompts_answers = set()
 
         for idx, sched_item in enumerate(schedule, 1):
             tpl = sched_item["template"]
@@ -218,7 +257,7 @@ def generate_drill_set(
             build_fn = tpl["build"]
 
             prob = None
-            for _ in range(12):
+            for _ in range(25):
                 try:
                     candidate = build_fn(rng, form=target_form)
                 except TypeError:
@@ -228,22 +267,51 @@ def generate_drill_set(
                 if target_skill:
                     candidate["skill"] = target_skill
                 candidate["verificationLevel"] = sched_item.get("verificationLevel", "machine-verified")
+                
+                disp = candidate.get("display", "").strip()
                 cand_fp = compute_fingerprint(candidate, template_key=tpl["key"])
-                if candidate["display"] not in seen_displays and cand_fp not in seen_fingerprints:
+                p_key = (
+                    candidate.get("prompt", "").strip(),
+                    str(candidate.get("answerPlain", candidate.get("answerDisplay", ""))).strip(),
+                )
+                if p_key not in seen_prompts_answers and disp not in seen_displays and cand_fp not in seen_fingerprints:
                     prob = candidate
-                    seen_displays.add(candidate["display"])
+                    seen_displays.add(disp)
                     seen_fingerprints.add(cand_fp)
+                    seen_prompts_answers.add(p_key)
                     break
+
             if prob is None:
-                try:
-                    prob = build_fn(rng, form=target_form)
-                except TypeError:
-                    prob = build_fn(rng)
-                prob["form"] = prob.get("form", target_form)
-                prob["level"] = target_level
-                if target_skill:
-                    prob["skill"] = target_skill
-                prob["verificationLevel"] = sched_item.get("verificationLevel", "machine-verified")
+                # If seen_fingerprints saturated under form pool relaxation, match distinct (prompt, answer) and distinct display
+                for _ in range(25):
+                    try:
+                        candidate = build_fn(rng, form=target_form)
+                    except TypeError:
+                        candidate = build_fn(rng)
+                    candidate["form"] = candidate.get("form", target_form)
+                    candidate["level"] = target_level
+                    if target_skill:
+                        candidate["skill"] = target_skill
+                    candidate["verificationLevel"] = sched_item.get("verificationLevel", "machine-verified")
+                    
+                    disp = candidate.get("display", "").strip()
+                    cand_fp = compute_fingerprint(candidate, template_key=tpl["key"])
+                    p_key = (
+                        candidate.get("prompt", "").strip(),
+                        str(candidate.get("answerPlain", candidate.get("answerDisplay", ""))).strip(),
+                    )
+                    if p_key not in seen_prompts_answers and disp not in seen_displays:
+                        prob = candidate
+                        seen_displays.add(disp)
+                        seen_fingerprints.add(cand_fp)
+                        seen_prompts_answers.add(p_key)
+                        break
+
+            if prob is None:
+                raise RuntimeError(
+                    f"Could not generate unique problem (distinct prompt+answer and display) "
+                    f"for template '{tpl['key']}' form '{target_form}' after retries."
+                )
 
             prob_id = f"Q{idx:02d}"
             prob["id"] = prob_id
@@ -342,7 +410,7 @@ if __name__ == "__main__":
     parser.add_argument("--drill-id", default=None)
     parser.add_argument("--seed", type=int, default=None)
     parser.add_argument("--templates", default=None, help="Comma-separated template keys (e.g. multiply,divide-conjugate)")
-    parser.add_argument("--focus-tag", default=None, help="Prioritize mistake tag, form, or skill (e.g. conjugate-denominator)")
+    parser.add_argument("--focus-tag", "--focus-tags", dest="focus_tag", default=None, help="Prioritize mistake tag, form, or skill (e.g. conjugate-denominator)")
     args = parser.parse_args()
     generate_drill_set(
         unit_code=args.unit,

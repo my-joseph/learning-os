@@ -12,13 +12,11 @@ MISTAKE_TAGS = [
     {"id": "c06-simple-interest-split-trap", "label": "Swapped interest rates between split investment principals", "name": "Split Principal Interest Rate Swap", "autoFrom": []},
 ]
 
-_TAGS = ["alpha", "beta", "gamma", "delta", "epsilon", "zeta"]
 
 
 def t_c06_foundation(rng, form=None):
     if form not in ("direct", "find-rate"):
         form = rng.choice(["direct", "find-rate"])
-    tag = rng.choice(_TAGS)
     cases = [
         (15, 240, 36),
         (25, 320, 80),
@@ -55,7 +53,7 @@ def t_c06_foundation(rng, form=None):
         "references": ["MTH-T01-C06-U02"],
         "prompt": prompt,
         "display": disp,
-        "plainText": f"{pct}% of {base} = {part} [{tag}]",
+        "plainText": f"{pct}% of {base} = {part}",
         "answerSpec": {"type": "number", "value": str(ans)},
         "answerDisplay": str(ans),
         "answerPlain": str(ans),
@@ -70,7 +68,6 @@ def t_c06_foundation(rng, form=None):
 def t_c06_reverse(rng, form=None):
     if form not in ("direct", "reverse-base"):
         form = rng.choice(["direct", "reverse-base"])
-    tag = rng.choice(_TAGS)
     cases = [
         (20, 250, 200, 240),
         (25, 360, 270, 337),
@@ -107,7 +104,7 @@ def t_c06_reverse(rng, form=None):
         "references": ["MTH-T01-C06-U03"],
         "prompt": prompt,
         "display": disp,
-        "plainText": f"{orig} * (100 - {disc_pct}) / 100 = {sale} [{tag}]",
+        "plainText": f"{orig} * (100 - {disc_pct}) / 100 = {sale}",
         "answerSpec": {"type": "number", "value": str(ans)},
         "answerDisplay": str(ans),
         "answerPlain": str(ans),
@@ -122,7 +119,6 @@ def t_c06_reverse(rng, form=None):
 def t_c06_trap(rng, form=None):
     if form not in ("direct", "markup-discount"):
         form = rng.choice(["direct", "markup-discount"])
-    tag = rng.choice(_TAGS)
     cases = [
         (200, 20, 20, 240, 192),
         (300, 30, 30, 390, 273),
@@ -151,7 +147,7 @@ def t_c06_trap(rng, form=None):
         "references": ["MTH-T01-C06-U03"],
         "prompt": prompt,
         "display": disp,
-        "plainText": f"{base} * ({100 + up_pct}/100) * ({100 - down_pct}/100) [{tag}]",
+        "plainText": f"{base} * ({100 + up_pct}/100) * ({100 - down_pct}/100)",
         "answerSpec": {"type": "number", "value": str(ans)},
         "answerDisplay": str(ans),
         "answerPlain": str(ans),
@@ -170,7 +166,6 @@ def t_c06_trap(rng, form=None):
 def t_c06_synthesis(rng, form=None):
     if form not in ("direct", "contextual"):
         form = rng.choice(["direct", "contextual"])
-    tag = rng.choice(_TAGS)
     cases = [
         (5000, 2000, 3000, 4, 7, 80, 210, 290, 310),
         (6000, 2500, 3500, 4, 6, 100, 210, 310, 290),
@@ -206,7 +201,7 @@ def t_c06_synthesis(rng, form=None):
         "references": ["MTH-T01-C06-U02", "MTH-T01-C06-U04"],
         "prompt": prompt,
         "display": disp,
-        "plainText": f"({r1}*{p1} + {r2}*{p2}) / 100 = {tot_i} [{tag}]",
+        "plainText": f"({r1}*{p1} + {r2}*{p2}) / 100 = {tot_i}",
         "answerSpec": {"type": "number", "value": str(ans)},
         "answerDisplay": str(ans),
         "answerPlain": str(ans),

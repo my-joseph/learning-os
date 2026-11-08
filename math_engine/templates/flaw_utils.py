@@ -58,6 +58,8 @@ def build_flaw_choice_problem(
         "inputHint": "Choose a line",
         "checkpointHint": checkpoint_hint,
         "commonTrapTag": common_trap_tag,
+        "trapKind": "selection",
+        "trapDerivation": None,
         "flawTag": actual_flaw_tag,
         "steps": steps,
         "verify": {

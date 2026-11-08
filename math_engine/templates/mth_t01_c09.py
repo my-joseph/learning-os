@@ -12,13 +12,11 @@ MISTAKE_TAGS = [
     {"id": "c09-nested-radical-evaluation-trap", "label": "Evaluated outer radical before simplifying inner nested radical", "name": "Nested Radical Inside-Out Trap", "autoFrom": []},
 ]
 
-_TAGS = ["alpha", "beta", "gamma", "delta", "epsilon", "zeta"]
 
 
 def t_c09_foundation(rng, form=None):
     if form not in ("direct", "combined"):
         form = rng.choice(["direct", "combined"])
-    tag = rng.choice(_TAGS)
     a = rng.choice([6, 7, 8, 9, 11, 12, 13])
     b = rng.choice([2, 3, 4, 5])
     k = rng.randint(2, 5)
@@ -51,7 +49,7 @@ def t_c09_foundation(rng, form=None):
         "references": ["MTH-T01-C09-U01"],
         "prompt": prompt,
         "display": disp,
-        "plainText": f"{k}*sqrt({a*a}) op root({b}) [{tag}]",
+        "plainText": f"{k}*sqrt({a*a}) op root({b})",
         "answerSpec": {"type": "number", "value": str(ans)},
         "answerDisplay": str(ans),
         "answerPlain": str(ans),
@@ -66,7 +64,6 @@ def t_c09_foundation(rng, form=None):
 def t_c09_reverse(rng, form=None):
     if form not in ("direct", "radical-equation"):
         form = rng.choice(["direct", "radical-equation"])
-    tag = rng.choice(_TAGS)
     a = rng.choice([2, 3, 4, 5])
     x = rng.randint(6, 18)
     r = rng.randint(5, 11)
@@ -90,7 +87,7 @@ def t_c09_reverse(rng, form=None):
         "references": ["MTH-T01-C09-U06"],
         "prompt": prompt,
         "display": disp,
-        "plainText": f"sqrt({a}*x {b_sign} {b_abs}) = {r} [{tag}]",
+        "plainText": f"sqrt({a}*x {b_sign} {b_abs}) = {r}",
         "answerSpec": {"type": "number", "value": str(ans)},
         "answerDisplay": str(ans),
         "answerPlain": str(ans),
@@ -109,7 +106,6 @@ def t_c09_reverse(rng, form=None):
 def t_c09_trap(rng, form=None):
     if form not in ("direct", "quotient-radical"):
         form = rng.choice(["direct", "quotient-radical"])
-    tag = rng.choice(_TAGS)
     triples = [(6, 8, 10), (5, 12, 13), (8, 15, 17), (9, 12, 15), (12, 16, 20), (7, 24, 25)]
     a, b, c = rng.choice(triples)
     if form == "quotient-radical":
@@ -140,7 +136,7 @@ def t_c09_trap(rng, form=None):
         "references": ["MTH-T01-C09-U05"],
         "prompt": prompt,
         "display": disp,
-        "plainText": f"sqrt({a*a} + {b*b}) vs {a} + {b} [{tag}]",
+        "plainText": f"sqrt({a*a} + {b*b}) vs {a} + {b}",
         "answerSpec": {"type": "number", "value": str(ans)},
         "answerDisplay": str(ans),
         "answerPlain": str(ans),
@@ -155,7 +151,6 @@ def t_c09_trap(rng, form=None):
 def t_c09_synthesis(rng, form=None):
     if form not in ("direct", "radical-conjugate"):
         form = rng.choice(["direct", "radical-conjugate"])
-    tag = rng.choice(_TAGS)
     if form == "radical-conjugate":
         a = rng.randint(5, 11)
         b = rng.choice([2, 3, 5, 6, 7])
@@ -175,7 +170,7 @@ def t_c09_synthesis(rng, form=None):
         ]
     else:
         cases = [
-            (21, 12, 9, 4, 2, 16, 4, 25, 5, 8),
+            (21, 12, 16, 4, 16, 4, 25, 5, 5, 8),
             (32, 13, 9, 3, 16, 4, 36, 6, 6, 9),
             (45, 11, 25, 5, 16, 4, 49, 7, 7, 11),
             (60, 12, 16, 4, 16, 4, 64, 8, 8, 12),
@@ -196,7 +191,7 @@ def t_c09_synthesis(rng, form=None):
         "references": ["MTH-T01-C09-U04", "MTH-T01-C09-U05"],
         "prompt": prompt,
         "display": disp,
-        "plainText": f"nested radical synthesis {ans} [{tag}]",
+        "plainText": f"nested radical synthesis {ans}",
         "answerSpec": {"type": "number", "value": str(ans)},
         "answerDisplay": str(ans),
         "answerPlain": str(ans),

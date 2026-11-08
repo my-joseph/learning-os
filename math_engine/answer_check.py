@@ -55,10 +55,11 @@ WHITELIST_FUNCS = {
     "conjugate": sp.conjugate,
 }
 
-# Functions allowed only for trusted internal evaluation (e.g. verify.source, step validation)
+# Functions allowed only for trusted internal evaluation (e.g. verify.source, step validation, trapDerivation)
 TRUSTED_INTERNAL_FUNCS = {
     **WHITELIST_FUNCS,
     "diff": sp.diff,
+    "floor": sp.floor,
 }
 
 # Vetted extra functions that individual problem answerSpec may optionally whitelist via allowFuncs
@@ -222,9 +223,9 @@ class SecurityVisitor(ast.NodeVisitor):
         self.variables = set(variables) if variables is not None else None
 
     def generic_visit(self, node):
-        if not isinstance(node.func if isinstance(node, ast.Call) else node, self.ALLOWED_NODES):
-            pass
-        if not isinstance(node, self.ALLOWED_NODES):
+        allowed_nodes = self.ALLOWED_NODES + ((ast.FloorDiv,) if self.trusted else ())
+        target = node.func if isinstance(node, ast.Call) else node
+        if not isinstance(target, allowed_nodes):
             raise SafeParseError(f"Disallowed syntax: {type(node).__name__}")
         super().generic_visit(node)
 
@@ -357,9 +358,15 @@ class ASTTransformer(ast.NodeTransformer):
                 keywords=[]
             )
         elif isinstance(node.value, float):
+            if not self.evaluate:
+                return ast.Call(
+                    func=ast.Name(id="_Float", ctx=ast.Load()),
+                    args=[node],
+                    keywords=[]
+                )
             return ast.Call(
-                func=ast.Name(id="_Float", ctx=ast.Load()),
-                args=[node],
+                func=ast.Name(id="_Rational", ctx=ast.Load()),
+                args=[ast.Constant(value=str(node.value))],
                 keywords=[]
             )
         return node
@@ -424,6 +431,7 @@ def safe_parse(raw, variables=None, evaluate=True, allow_i=True, allowed_funcs=N
         "__builtins__": {},
         "_Integer": sp.Integer,
         "_Float": sp.Float,
+        "_Rational": lambda v: sp.Rational(str(v)),
         "_uneval_add": _uneval_add,
         "_uneval_sub": _uneval_sub,
         "_uneval_mul": _uneval_mul,
@@ -550,8 +558,10 @@ def to_expr(value, variables=None, trusted=True):
         return None
     if isinstance(value, sp.Basic):
         return value
-    if isinstance(value, (int, float)):
-        return sp.nsimplify(value)
+    if isinstance(value, int) and not isinstance(value, bool):
+        return sp.Integer(value)
+    if isinstance(value, float):
+        return sp.Rational(str(value))
     if isinstance(value, (list, tuple)):
         return sp.Matrix([to_expr(x, variables=variables, trusted=trusted) for x in value])
     s = str(value).strip()
@@ -671,6 +681,42 @@ def _has_large_exponent(expr, threshold=20):
     return False
 
 
+def _is_allowed_diagnostic_factor(ratio):
+    """
+    Check if ratio is one of the allowed diagnostic factors:
+    -1, 2, 1/2, 10^k, 1/10^k, pi, 1/pi, integers 3..12, or 1/3..1/12.
+    """
+    try:
+        if ratio == 1:
+            return False
+        if ratio == -1:
+            return True
+        # Check pi and 1/pi
+        if sp.simplify(ratio - sp.pi) == 0 or sp.simplify(ratio - 1/sp.pi) == 0:
+            return True
+        if not ratio.is_number:
+            return False
+        # Integer 2..12 or 10^k
+        if ratio.is_integer:
+            val = int(ratio)
+            if 2 <= val <= 12:
+                return True
+            if val > 12:
+                s = str(val)
+                return s.startswith("1") and all(c == "0" for c in s[1:])
+        # Rational 1/2..1/12 or 1/10^k
+        if ratio.is_rational and ratio > 0:
+            p, q = ratio.p, ratio.q
+            if p == 1:
+                if 2 <= q <= 12:
+                    return True
+                s = str(q)
+                return s.startswith("1") and all(c == "0" for c in s[1:])
+    except Exception:
+        pass
+    return False
+
+
 def generic_value_diagnostics(u, e, variables=None):
     """Diagnostics that apply to any scalar / expression comparison."""
     if _has_large_exponent(u, threshold=20) or _has_large_exponent(e, threshold=20):
@@ -682,6 +728,9 @@ def generic_value_diagnostics(u, e, variables=None):
             return diags
         if e != 0 and u != 0 and is_equal(u, 1 / e, variables):
             diags.append({"code": "reciprocal", "message": "Your answer is the reciprocal of the correct value. Check which quantity is in the numerator."})
+            return diags
+        if not variables and numeric_close(u, e):
+            diags.append({"code": "rounding", "message": "Your answer is numerically close but not exact. Check rounding or keep exact fractions / radicals."})
             return diags
         if e != 0 and u != 0:
             # Fast check: only simplify if ratio could be constant
@@ -699,7 +748,7 @@ def generic_value_diagnostics(u, e, variables=None):
                     pass
             if can_be_const:
                 ratio = sp.simplify(u / e)
-                if ratio.is_number and ratio.is_rational and ratio not in (1, -1):
+                if _is_allowed_diagnostic_factor(ratio):
                     diags.append({"code": "off_by_factor", "message": f"Your answer differs from the correct value by a constant factor of ${sp.latex(ratio)}$."})
                     return diags
         if variables:
@@ -720,8 +769,6 @@ def generic_value_diagnostics(u, e, variables=None):
                 if offset.is_number and offset != 0:
                     diags.append({"code": "constant_offset", "message": f"Your expression differs from the correct one by the constant ${sp.latex(offset)}$."})
                     return diags
-        if not variables and numeric_close(u, e):
-            diags.append({"code": "rounding", "message": "Your answer is numerically close but not exact. Check rounding or keep exact fractions / radicals."})
     except Exception:
         pass
     return diags
@@ -1286,4 +1333,40 @@ def check_answer(spec, raw):
 
 if __name__ == "__main__":
     payload = json.loads(sys.stdin.read() or "{}")
-    print(json.dumps(check_answer(payload.get("answerSpec", {}), payload.get("input", ""))))
+    spec = payload.get("answerSpec", {})
+    user_input = payload.get("input", "")
+    res = check_answer(spec, user_input)
+
+    trap_val = payload.get("trapValue")
+    if res.get("verdict") == "incorrect" and trap_val is not None:
+        spec_type = spec.get("type")
+        trap_matched = False
+        try:
+            trap_spec = dict(spec)
+            if spec_type in ("number", "expression", "complex"):
+                trap_spec["value"] = str(trap_val)
+            elif spec_type == "vector":
+                trap_spec["value"] = trap_val
+                trap_spec.pop("components", None)
+                trap_spec.pop("values", None)
+            elif spec_type == "tuple":
+                if isinstance(trap_val, (list, tuple)):
+                    trap_spec["values"] = list(trap_val)
+                elif isinstance(trap_val, str):
+                    parts = [p.strip() for p in re.sub(r"^\s*[\(\[\{<]|[\)\]\}>]\s*$", "", trap_val).split(",") if p.strip()]
+                    trap_spec["values"] = parts
+                else:
+                    trap_spec["values"] = [trap_val]
+
+            fn = CHECKERS.get(spec_type)
+            if fn:
+                trap_res = fn(trap_spec, user_input)
+                if trap_res.get("verdict") == "correct":
+                    trap_matched = True
+        except Exception:
+            trap_matched = False
+
+        if trap_matched:
+            res["trapMatched"] = True
+
+    print(json.dumps(res))

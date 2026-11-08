@@ -19,21 +19,27 @@ UNIT = "MTH-T01-C12"
 TITLE = "Math Models and Geometry"
 
 MISTAKE_TAGS = [
-    {"id": "pythagoras-hypotenuse", "label": "Added instead of subtracted for a leg ($a^2 = c^2 - b^2$)", "name": "Pythagorean Leg vs Hypotenuse Error", "autoFrom": ["whole_sign_flip"]},
-    {"id": "formula-perimeter-area", "label": "Confused perimeter formula with area formula", "name": "Perimeter vs Area Confusion", "autoFrom": []},
-    {"id": "trapezoid-height", "label": "Forgot factor of 2 in numerator when solving for height", "name": "Trapezoid Height Factor Error", "autoFrom": ["off_by_factor"]},
-    {"id": "omitted-half-factor", "label": "Forgot 1/2 in trapezoid area: $A = 1/2(b_1 + b_2)h$", "name": "Trapezoid Omitted Half Factor", "autoFrom": ["off_by_factor"]},
-    {"id": "circle-diameter-radius", "label": "Used diameter instead of radius in formula", "name": "Diameter vs Radius Confusion", "autoFrom": ["off_by_factor"]},
-    {"id": "volume-surface-area", "label": "Confused volume ($V$) with surface area ($SA$)", "name": "Volume vs Surface Area Error", "autoFrom": []},
-    {"id": "linear-addition-trap", "label": "Added legs linearly without squaring ($c = a + b$)", "name": "Linear Addition Trap", "autoFrom": []},
-    {"id": "pythagoras-leg-subtraction", "label": "Subtracted hypotenuse and leg linearly ($a = c - b$)", "name": "Linear Leg Subtraction Error", "autoFrom": []},
-    {"id": "path-distance-vs-displacement", "label": "Calculated total perimeter path instead of straight-line distance", "name": "Path vs Displacement Error", "autoFrom": []},
-    {"id": "arithmetic-slip", "label": "Arithmetic / calculation slip", "name": "Arithmetic Slip", "autoFrom": ["rounding", "off_by_factor"]},
-    {"id": "whole-triangle-inradius-confusion", "label": "Computed inradius of parent triangle instead of divided altitude sub-triangle", "name": "Parent vs Sub-Triangle Inradius Confusion", "autoFrom": []},
-    {"id": "trapezoid-diagonal-bisect-trap", "label": "Assumed trapezoid diagonals bisect each other instead of using similar triangle ratio", "name": "Trapezoid Diagonal Bisection Fallacy", "autoFrom": []},
-    {"id": "pi-retained-in-lunes-trap", "label": "Retained pi factor in area of lunes of Hippocrates (failing to recognize pi cancellation)", "name": "Lunes Pi Factor Retention Trap", "autoFrom": []},
-    {"id": "frustum-cylinder-average-trap", "label": "Averaged radii and computed as cylinder instead of conical frustum", "name": "Frustum Average Cylinder Error", "autoFrom": []},
-    {"id": "internal-boundary-double-count-trap", "label": "Included internal boundary face in composite solid surface area", "name": "Internal Boundary Face Double Count", "autoFrom": []},
+    {"id": "pythagoras-hypotenuse", "label": "Added instead of subtracted for a leg ($a^2 = c^2 - b^2$)", "name": "Pythagorean Leg vs Hypotenuse Error", "description": "Adds squared leg lengths instead of subtracting when solving for an unknown right-triangle leg.", "autoFrom": ["whole_sign_flip"]},
+    {"id": "formula-perimeter-area", "label": "Confused perimeter formula with area formula", "name": "Perimeter vs Area Confusion", "description": "Confuses perimeter boundary calculation with area formula.", "autoFrom": []},
+    {"id": "formula-circumference-area-confusion", "label": "Computed circumference 2*pi*r instead of area pi*r^2", "name": "Circumference for Area Confusion", "description": "Calculates circumference 2*pi*r instead of circle area pi*r^2.", "autoFrom": []},
+    {"id": "trapezoid-height", "label": "Forgot factor of 2 in numerator when solving for height", "name": "Trapezoid Height Factor Error", "description": "Forgot factor of 2 in numerator when solving for height.", "autoFrom": ["off_by_factor"]},
+    {"id": "trapezoid-reverse-omit-double-factor", "label": "Forgot factor of 2 in numerator when solving for height: h = A / (b1 + b2)", "name": "Trapezoid Reverse Double Factor Omission", "description": "Forgets the factor of 2 in numerator when solving for height from trapezoid area: h = A / (b1 + b2).", "autoFrom": ["off_by_factor"]},
+    {"id": "omitted-half-factor", "label": "Forgot 1/2 in trapezoid area: $A = 1/2(b_1 + b_2)h$", "name": "Trapezoid Omitted Half Factor", "description": "Omits the 1/2 factor in the trapezoid area formula: (b1 + b2)*h.", "autoFrom": ["off_by_factor"]},
+    {"id": "circle-diameter-radius", "label": "Used diameter instead of radius in formula", "name": "Diameter vs Radius Confusion", "description": "Uses diameter instead of radius in formula.", "autoFrom": ["off_by_factor"]},
+    {"id": "circle-diameter-as-radius-trap", "label": "Used diameter directly as radius in circle area: pi * d^2", "name": "Circle Diameter as Radius Trap", "description": "Squares diameter directly as radius when computing circle area: pi * d^2.", "autoFrom": ["off_by_factor"]},
+    {"id": "cylinder-diameter-as-radius-trap", "label": "Used diameter directly as radius in cylinder volume formula: pi * d^2 * h", "name": "Diameter as Radius in Volume Trap", "description": "Uses diameter directly as radius in cylinder volume formula: pi * d^2 * h.", "autoFrom": ["off_by_factor"]},
+    {"id": "volume-surface-area", "label": "Confused volume ($V$) with surface area ($SA$)", "name": "Volume vs Surface Area Error", "description": "Confuses 3D solid volume with total surface area.", "autoFrom": []},
+    {"id": "linear-addition-trap", "label": "Added legs linearly without squaring ($c = a + b$)", "name": "Linear Addition Trap", "description": "Adds right-triangle legs linearly without squaring: c = a + b.", "autoFrom": []},
+    {"id": "pythagoras-leg-subtraction", "label": "Subtracted hypotenuse and leg linearly ($a = c - b$)", "name": "Linear Leg Subtraction Error", "description": "Subtracts hypotenuse and leg linearly without squaring: a = c - b.", "autoFrom": []},
+    {"id": "path-distance-vs-displacement", "label": "Calculated total perimeter path instead of straight-line distance", "name": "Path vs Displacement Error", "description": "Calculates total travel path distance instead of shortest straight-line Pythagorean displacement.", "autoFrom": []},
+    {"id": "arithmetic-slip", "label": "Arithmetic / calculation slip", "name": "Arithmetic Slip", "description": "Calculation error in intermediate arithmetic steps.", "autoFrom": ["rounding", "off_by_factor"]},
+    {"id": "whole-triangle-inradius-confusion", "label": "Computed inradius of parent triangle instead of divided altitude sub-triangle", "name": "Parent vs Sub-Triangle Inradius Confusion", "description": "Calculates inradius of the parent right triangle instead of the specified sub-triangle.", "autoFrom": []},
+    {"id": "trapezoid-diagonal-bisect-trap", "label": "Assumed trapezoid diagonals bisect each other instead of using similar triangle ratio", "name": "Trapezoid Diagonal Bisection Fallacy", "description": "Assumes trapezoid diagonals bisect height equally instead of partitioning via similar triangle ratio.", "autoFrom": []},
+    {"id": "pi-retained-in-lunes-trap", "label": "Retained pi factor in area of lunes of Hippocrates (failing to recognize pi cancellation)", "name": "Lunes Pi Factor Retention Trap", "description": "Fails to recognize cancellation of pi in Lunes of Hippocrates composite area.", "autoFrom": []},
+    {"id": "lunes-half-area-trap", "label": "Computed area for only half of the lunes (2 instead of 4) in Lunes of Hippocrates", "name": "Lunes Half Area Trap", "description": "Computes area for only half of the lunes (2 instead of 4) in Lunes of Hippocrates.", "autoFrom": []},
+    {"id": "lunes-total-instead-of-single-trap", "label": "Computed total combined area of all four lunes instead of dividing by four for a single lune", "name": "Lunes Total Instead of Single Trap", "description": "Computes the total combined area of all four lunes instead of dividing by four for a single lune.", "autoFrom": []},
+    {"id": "frustum-cylinder-average-trap", "label": "Averaged radii and computed as cylinder instead of conical frustum", "name": "Frustum Average Cylinder Error", "description": "Averages conical frustum base radii and computes as cylinder instead of frustum volume.", "autoFrom": []},
+    {"id": "internal-boundary-double-count-trap", "label": "Included internal boundary face in composite solid surface area", "name": "Internal Boundary Face Double Count", "description": "Erroneously counts the internal junction face between joined solids in composite surface area.", "autoFrom": []},
 ]
 
 def S(latex, explain, val=None, eq=None):
@@ -121,6 +127,8 @@ def t_pythagoras_hypotenuse(rng, form=None):
             "inputHint": "Enter integer, e.g. 31 or 47",
             "checkpointHint": f"Subtract squares to find a leg: $a^2 = c^2 - b^2 = {c * c} - {b * b} = {a_sq}$.",
             "commonTrapTag": "pythagoras-leg-subtraction",
+            "trapDerivation": f"{c} - {b}",
+            "trapGivens": [c, b],
             "steps": [
                 S(f"a = \\sqrt{{c^2 - b^2}} = \\sqrt{{{c}^2 - {b}^2}}", "Solve the Pythagorean formula for leg $a$ and substitute $c$ and $b$.", f"sqrt({c}**2 - {b}**2)"),
                 S(f"= \\sqrt{{{c * c} - {b * b}}} = \\sqrt{{{a_sq}}}", "Square hypotenuse and leg, then subtract under the radical.", f"sqrt({a_sq})"),
@@ -153,6 +161,8 @@ def t_pythagoras_hypotenuse(rng, form=None):
         "inputHint": "Enter integer, e.g. 31 or 47",
         "checkpointHint": f"Evaluate $a^2 + b^2 = {a * a} + {b * b} = {c_sq}$.",
         "commonTrapTag": trap_tag,
+        "trapDerivation": f"{a} + {b}",
+        "trapGivens": [a, b],
         "steps": [
             S(f"c = \\sqrt{{a^2 + b^2}} = \\sqrt{{{a}^2 + {b}^2}}", "Write the Pythagorean formula solved for hypotenuse $c$ and substitute the legs.", f"sqrt({a}**2 + {b}**2)"),
             S(f"= \\sqrt{{{a * a} + {b * b}}} = \\sqrt{{{c_sq}}}", "Square both legs and add under the radical.", f"sqrt({c_sq})"),
@@ -167,8 +177,8 @@ def t_pythagoras_hypotenuse(rng, form=None):
 def t_trapezoid_area(rng, form=None):
     b1 = rng.choice([6, 8, 10, 12])
     b2 = b1 + rng.choice([4, 6, 8])
-    h = rng.choice([4, 5, 6, 8])
-    area = R(b1 + b2) * h / 2
+    h = rng.choice([4, 6, 8, 10])
+    area = (b1 + b2) * h // 2
 
     # SVG coordinates
     top_w = 90
@@ -227,14 +237,14 @@ def t_trapezoid_area(rng, form=None):
     if form is None:
         form = rng.choice(["direct", "reverse"])
     if form == "reverse":
-        trap_val = str(R(area) / (b1 + b2))
+        trap_val = str(area // (b1 + b2))
         return {
             "form": "reverse",
             "category": "Core Skill",
             "context": "Geometry: Quadrilaterals (Unknown Height)",
             "references": ["MTH-T01-C12-U04"],
             "prompt": f"A trapezoid with parallel bases $b_1 = {b1}$ and $b_2 = {b2}$ has an area of $A = {area}$. Find its height $h$.",
-            "display": f"h = \\frac{{2A}}{{b_1 + b_2}}",
+            "display": f"h = \\frac{{2({area})}}{{{b1} + {b2}}}",
             "plainText": f"(2 * {area}) / ({b1} + {b2})",
             "visual": visual,
             "answerSpec": {"type": "number", "value": str(h), "forms": ["exact"]},
@@ -242,7 +252,9 @@ def t_trapezoid_area(rng, form=None):
             "answerPlain": str(h),
             "inputHint": "Enter number, e.g. 235 or 479",
             "checkpointHint": f"Multiply area by $2$ before dividing by $b_1 + b_2 = {b1 + b2}$.",
-            "commonTrapTag": "trapezoid-height",
+            "commonTrapTag": "trapezoid-reverse-omit-double-factor",
+            "trapDerivation": f"{area} // ({b1} + {b2})",
+            "trapGivens": [b1, b2, area],
             "steps": [
                 S(f"h = \\frac{{2A}}{{b_1 + b_2}} = \\frac{{2({area})}}{{{b1} + {b2}}}", "Solve the trapezoid area formula for height $h$ and substitute known values.", f"(2*{area})/({b1} + {b2})"),
                 S(f"= \\frac{{{2 * area}}}{{{b1 + b2}}}", "Double the area and sum the parallel bases.", f"({2 * area})/({b1 + b2})"),
@@ -258,7 +270,7 @@ def t_trapezoid_area(rng, form=None):
         "context": "Geometry: Quadrilaterals",
         "references": ["MTH-T01-C12-U04"],
         "prompt": f"Find the area $A$ of the trapezoid with parallel bases $b_1 = {b1}$, $b_2 = {b2}$, and height $h = {h}$.",
-        "display": f"A = \\frac{{1}}{{2}}(b_1 + b_2)h",
+        "display": f"A = \\frac{{1}}{{2}}({b1} + {b2})({h})",
         "plainText": f"(1/2)*({b1} + {b2})*{h}",
         "visual": visual,
         "answerSpec": {"type": "number", "value": str(area), "forms": ["exact"]},
@@ -267,6 +279,8 @@ def t_trapezoid_area(rng, form=None):
         "inputHint": "Enter number, e.g. 235 or 479",
         "checkpointHint": f"The sum of the bases is $b_1 + b_2 = {b1 + b2}$.",
         "commonTrapTag": "omitted-half-factor",
+        "trapDerivation": f"({b1} + {b2}) * {h}",
+        "trapGivens": [b1, b2, h],
         "steps": [
             S(f"A = \\frac{{1}}{{2}}(b_1 + b_2)h = \\frac{{1}}{{2}}({b1} + {b2})({h})", "Substitute the bases and height into the trapezoid area formula.", f"(1/2)*({b1} + {b2})*{h}"),
             S(f"= \\frac{{1}}{{2}}({b1 + b2})({h})", "Add the two parallel bases first.", f"(1/2)*{b1 + b2}*{h}"),
@@ -321,8 +335,8 @@ def t_circle_area_in_terms_of_pi(rng, form=None):
             "category": "Core Skill",
             "context": "Geometry: Circles (Given Diameter)",
             "references": ["MTH-T01-C12-U05"],
-            "prompt": f"Find the exact area $A$ of a circle with diameter $d = {d}$ (in terms of $\\pi$).",
-            "display": f"A = \\pi \\left(\\frac{{d}}{{2}}\\right)^2",
+            "prompt": f"Find the exact area $A$ of a circle with diameter $d = {d}$ and radius $r = {r}$ (in terms of $\\pi$).",
+            "display": f"A = \\pi \\left(\\frac{{{d}}}{{2}}\\right)^2",
             "plainText": f"pi * ({d}/2)^2",
             "visual": visual,
             "answerSpec": {"type": "expression", "value": f"{area_coeff}*pi", "variables": ["pi"]},
@@ -330,7 +344,9 @@ def t_circle_area_in_terms_of_pi(rng, form=None):
             "answerPlain": f"{area_coeff} pi",
             "inputHint": "Enter exact form with pi, e.g. 230 pi or 470*pi",
             "checkpointHint": f"First halve the diameter to get radius $r = {r}$, then square it.",
-            "commonTrapTag": "circle-diameter-radius",
+            "commonTrapTag": "circle-diameter-as-radius-trap",
+            "trapDerivation": f"{d} * (2 * {r}) * pi",
+            "trapGivens": [d, r],
             "steps": [
                 S(f"r = \\frac{{d}}{{2}} = \\frac{{{d}}}{{2}} = {r}", "Halve the diameter to obtain the radius $r$, then substitute into $A = \\pi r^2$.", eq=(f"{d}/2", str(r))),
                 S(f"A = \\pi({r})^2 = {area_coeff}\\pi", f"Square the radius ${r}^2 = {area_coeff}$ and leave $\\pi$ exact.", f"{area_coeff}*pi"),
@@ -344,8 +360,8 @@ def t_circle_area_in_terms_of_pi(rng, form=None):
         "category": "Core Skill",
         "context": "Geometry: Circles",
         "references": ["MTH-T01-C12-U05"],
-        "prompt": f"Find the exact area $A$ of a circle with radius $r = {r}$ (in terms of $\\pi$).",
-        "display": f"A = \\pi r^2",
+        "prompt": f"Find the exact area $A$ of a circle with radius $r = {r}$ and diameter $d = {d}$ (in terms of $\\pi$).",
+        "display": f"A = \\pi ({r})^2",
         "plainText": f"pi * {r}^2",
         "visual": visual,
         "answerSpec": {"type": "expression", "value": f"{area_coeff}*pi", "variables": ["pi"]},
@@ -353,7 +369,9 @@ def t_circle_area_in_terms_of_pi(rng, form=None):
         "answerPlain": f"{area_coeff} pi",
         "inputHint": "Enter exact form with pi, e.g. 230 pi or 470*pi",
         "checkpointHint": f"The radius squared is $r^2 = {r}^2 = {area_coeff}$.",
-        "commonTrapTag": "formula-perimeter-area",
+        "commonTrapTag": "formula-circumference-area-confusion",
+        "trapDerivation": f"({d} // {r}) * {r} * pi",
+        "trapGivens": [d, r],
         "steps": [
             S(f"A = \\pi r^2 = \\pi({r})^2", "Write the circle area formula and substitute the radius $r$.", f"pi*{r}**2"),
             S(f"= {area_coeff}\\pi", f"Square the radius: ${r}^2 = {area_coeff}$. Leave $\\pi$ exact.", f"{area_coeff}*pi"),
@@ -368,7 +386,7 @@ def t_cylinder_volume(rng, form=None):
     while True:
         r = rng.choice([2, 3, 4, 5])
         h = rng.choice([6, 8, 10, 12])
-        if 2 * r * h + 2 * r * r != r * r * h:
+        if r != h and 2 * r != h and 2 * r * h + 2 * r * r != r * r * h:
             break
     v_coeff = r * r * h
 
@@ -423,7 +441,7 @@ def t_cylinder_volume(rng, form=None):
             "context": "Geometry: 3D Solids (Diameter Trap)",
             "references": ["MTH-T01-C12-U06"],
             "prompt": f"Find the exact volume $V$ of a right circular cylinder with diameter $d = {d}$ and height $h = {h}$ (in terms of $\\pi$).",
-            "display": f"V = \\pi \\left(\\frac{{d}}{{2}}\\right)^2 h",
+            "display": f"V = \\pi \\left(\\frac{{{d}}}{{2}}\\right)^2({h})",
             "plainText": f"pi * ({d}/2)^2 * {h}",
             "visual": visual,
             "answerSpec": {"type": "expression", "value": f"{v_coeff}*pi", "variables": ["pi"]},
@@ -431,7 +449,9 @@ def t_cylinder_volume(rng, form=None):
             "answerPlain": f"{v_coeff} pi",
             "inputHint": "Enter exact form with pi, e.g. 230 pi or 470*pi",
             "checkpointHint": f"Halve the diameter to get radius $r = {r}$, then compute $B = \\pi r^2 = {r * r}\\pi$.",
-            "commonTrapTag": "circle-diameter-radius",
+            "commonTrapTag": "cylinder-diameter-as-radius-trap",
+            "trapDerivation": f"{d}**2 * {h} * pi",
+            "trapGivens": [d, h],
             "steps": [
                 S(f"r = \\frac{{{d}}}{{2}} = {r}, \\quad V = \\pi({r})^2({h})", "Convert diameter to radius $r$ and substitute into the volume formula.", f"pi*{r}**2*{h}"),
                 S(f"= \\pi({r * r})({h})", f"Evaluate the circular base area: ${r}^2 = {r * r}$.", f"pi*{r * r}*{h}"),
@@ -447,7 +467,7 @@ def t_cylinder_volume(rng, form=None):
         "context": "Geometry: 3D Solids",
         "references": ["MTH-T01-C12-U06"],
         "prompt": f"Find the exact volume $V$ of a right circular cylinder with radius $r = {r}$ and height $h = {h}$ (in terms of $\\pi$).",
-        "display": f"V = \\pi r^2 h",
+        "display": f"V = \\pi ({r})^2({h})",
         "plainText": f"pi * {r}^2 * {h}",
         "visual": visual,
         "answerSpec": {"type": "expression", "value": f"{v_coeff}*pi", "variables": ["pi"]},
@@ -456,6 +476,8 @@ def t_cylinder_volume(rng, form=None):
         "inputHint": "Enter exact form with pi, e.g. 230 pi or 470*pi",
         "checkpointHint": f"The base area is $B = \\pi r^2 = {r * r}\\pi$.",
         "commonTrapTag": "volume-surface-area",
+        "trapDerivation": f"(2 * {r} * {h} + 2 * {r}**2) * pi",
+        "trapGivens": [r, h],
         "steps": [
             S(f"V = \\pi r^2 h = \\pi({r})^2({h})", "Substitute the radius and height into the cylinder volume formula.", f"pi*{r}**2*{h}"),
             S(f"= \\pi({r * r})({h})", f"Evaluate the circular base area: ${r}^2 = {r * r}$.", f"pi*{r * r}*{h}"),
@@ -498,6 +520,8 @@ def t_pythagoras_altitude_inradius(rng, form=None):
             "inputHint": "Enter the integer radius of the inscribed circle",
             "checkpointHint": "Subtract $AD$ from $AB$ to find segment $DB$, use the Geometric Mean Theorem for altitude $CD$, find leg $BC$, and apply the right-triangle inradius formula.",
             "commonTrapTag": "whole-triangle-inradius-confusion",
+            "trapDerivation": f"(sqrt({ab} * {ad}) + sqrt({ab} * ({ab} - {ad})) - {ab}) / 2",
+            "trapGivens": [ab, ad],
             "verify": {"source": str(r_bcd), "trapValue": str(trap_r)},
             "steps": [
                 S(f"DB = AB - AD = {ab} - {ad} = {db}, \\quad CD = \\sqrt{{AD \\cdot DB}} = \\sqrt{{{ad} \\cdot {db}}} = {cd}",
@@ -527,6 +551,8 @@ def t_pythagoras_altitude_inradius(rng, form=None):
         "inputHint": "Enter the integer radius of the inscribed circle",
         "checkpointHint": "Use the Geometric Mean Theorem to find altitude $CD = \\sqrt{AD \\cdot DB}$. Then apply the Pythagorean theorem on $\\triangle ACD$ to find leg $AC$. Finally, use the right triangle inradius formula $r = \\frac{a + b - c}{2}$.",
         "commonTrapTag": "whole-triangle-inradius-confusion",
+        "trapDerivation": f"(sqrt({ab} * {ad}) + sqrt({ab} * {db}) - {ab}) / 2",
+        "trapGivens": [ab, ad, db],
         "verify": {"source": str(r), "trapValue": str(trap_r)},
         "steps": [
             S(f"CD^2 = AD \\cdot DB = {ad} \\cdot {db} = {ad * db} \\implies CD = {cd}",
@@ -547,8 +573,8 @@ def t_pythagoras_altitude_inradius(rng, form=None):
 # ---------------------------------------------------------------------------
 def t_trapezoid_similar_triangles_area(rng, form=None):
     cases = [
-        {"b1": 10, "b2": 24, "leg": 25, "x": 7, "h": 24, "r1": 5, "r2": 12, "h1_str": "120/17", "h2_str": "288/17", "area_top": "600/17", "area_bot": "3456/17", "area_side": "1440/17", "trap_top": "60", "trap_bot": "144", "trap_side": "84"},
-        {"b1": 6, "b2": 16, "leg": 13, "x": 5, "h": 12, "r1": 3, "r2": 8, "h1_str": "36/11", "h2_str": "96/11", "area_top": "108/11", "area_bot": "768/11", "area_side": "288/11", "trap_top": "18", "trap_bot": "48", "trap_side": "30"},
+        {"b1": 10, "b2": 24, "leg": 25, "x": 7, "h": 24, "r1": 5, "r2": 12, "h1_str": "120/17", "h2_str": "288/17", "area_top": "600/17", "area_bot": "3456/17", "area_side": "1440/17", "trap_top": "60", "trap_bot": "144", "trap_side": "102"},
+        {"b1": 6, "b2": 16, "leg": 13, "x": 5, "h": 12, "r1": 3, "r2": 8, "h1_str": "36/11", "h2_str": "96/11", "area_top": "108/11", "area_bot": "768/11", "area_side": "288/11", "trap_top": "18", "trap_bot": "48", "trap_side": "33"},
         {"b1": 8, "b2": 24, "leg": 17, "x": 8, "h": 15, "r1": 1, "r2": 3, "h1_str": "15/4", "h2_str": "45/4", "area_top": "15", "area_bot": "135", "area_side": "45", "trap_top": "30", "trap_bot": "90", "trap_side": "60"},
         {"b1": 4, "b2": 18, "leg": 25, "x": 7, "h": 24, "r1": 2, "r2": 9, "h1_str": "48/11", "h2_str": "216/11", "area_top": "96/11", "area_bot": "1944/11", "area_side": "432/11", "trap_top": "24", "trap_bot": "108", "trap_side": "66"},
         {"b1": 12, "b2": 28, "leg": 17, "x": 8, "h": 15, "r1": 3, "r2": 7, "h1_str": "9/2", "h2_str": "21/2", "area_top": "27", "area_bot": "147", "area_side": "63", "trap_top": "45", "trap_bot": "105", "trap_side": "75"},
@@ -578,6 +604,8 @@ def t_trapezoid_similar_triangles_area(rng, form=None):
             "inputHint": "Enter exact fraction or integer e.g. 35/4 or 42",
             "checkpointHint": "Find trapezoid height $h$ via the Pythagorean theorem on the leg projection, then partition $h$ using similarity ratio $CD : (AB + CD)$.",
             "commonTrapTag": "trapezoid-diagonal-bisect-trap",
+            "trapDerivation": f"({b2} * sqrt({leg}**2 - (({b2} - {b1})/2)**2)) / 4",
+            "trapGivens": [b1, b2, leg],
             "verify": {"source": area_str, "trapValue": trap_area},
             "steps": [
                 S(f"x = \\frac{{{b2} - {b1}}}{{2}} = {x}, \\quad h = \\sqrt{{{leg}^2 - {x}^2}} = {h}",
@@ -617,6 +645,10 @@ def t_trapezoid_similar_triangles_area(rng, form=None):
             "inputHint": "Enter exact fraction or integer e.g. 35/4 or 42",
             "checkpointHint": "Find total height $h$, compute $\\text{Area}(\\triangle ABD) = \\frac{1}{2}(AB)h$, and subtract $\\text{Area}(\\triangle ABE)$ found via similar triangles.",
             "commonTrapTag": "trapezoid-diagonal-bisect-trap",
+            # Learner trap derivation: assuming diagonals bisect height/area equally gives (1/4)*Area(trapezoid) = ((b1 + b2)*h)/8.
+            # True mathematical flank area is (b1 * b2 * h) / (2 * (b1 + b2)).
+            "trapDerivation": f"(({b1} + {b2}) * sqrt({leg}**2 - (({b2} - {b1})/2)**2)) / 8",
+            "trapGivens": [b1, b2, leg],
             "verify": {"source": area_str, "trapValue": trap_area},
             "steps": [
                 S(f"x = \\frac{{{b2} - {b1}}}{{2}} = {x}, \\quad h = \\sqrt{{{leg}^2 - {x}^2}} = {h}",
@@ -649,6 +681,8 @@ def t_trapezoid_similar_triangles_area(rng, form=None):
         "inputHint": "Enter exact fraction or integer e.g. 35/4 or 42",
         "checkpointHint": "Find trapezoid height $h$ by projecting $AB$ onto $CD$ to get leg base offset $(CD - AB)/2$, then calculate $h = \\sqrt{\\text{leg}^2 - \\text{offset}^2}$. Use similar triangles $\\triangle ABE \\sim \\triangle CDE$ with ratio $AB : CD$ to partition the height.",
         "commonTrapTag": "trapezoid-diagonal-bisect-trap",
+        "trapDerivation": f"({b1} * sqrt({leg}**2 - (({b2} - {b1})/2)**2)) / 4",
+        "trapGivens": [b1, b2, leg],
         "verify": {"source": area_str, "trapValue": trap_area},
         "steps": [
             S(f"x = \\frac{{{b2} - {b1}}}{{2}} = {x}, \\quad h = \\sqrt{{{leg}^2 - {x}^2}} = \\sqrt{{{leg*leg} - {x*x}}} = {h}",
@@ -686,7 +720,7 @@ def t_lunes_of_hippocrates(rng, form=None):
             "category": "Interleaved Synthesis",
             "context": "Geometry: Single Lune of Hippocrates",
             "references": ["MTH-T01-C12-U04", "MTH-T01-C12-U05"],
-            "prompt": f"A square of side length $s = {s}$ is inscribed inside a circle. Four congruent semicircles are drawn externally on the four sides of the square as diameters, forming four congruent crescent-shaped Lunes of Hippocrates outside the circumscribed circle. Find the exact area of ONE such lune.",
+            "prompt": f"A square of side length $s = {s}$ is inscribed inside a circle. A set of $4$ congruent semicircles are drawn externally on the $4$ sides of the square as diameters, forming $4$ congruent crescent-shaped Lunes of Hippocrates outside the circumscribed circle. Find the exact area of ONE such lune.",
             "display": f"\\text{{Single Lune on square of side }} s = {s} \\implies \\text{{Area}}(\\text{{1 lune}}) = ?",
             "plainText": f"({s}^2) / 4",
             "answerSpec": {"type": "number", "value": str(single_lune)},
@@ -694,7 +728,9 @@ def t_lunes_of_hippocrates(rng, form=None):
             "answerPlain": str(single_lune),
             "inputHint": "Enter the integer area of one lune",
             "checkpointHint": "First find the total area of all four lunes by subtracting the circumscribed circle from the square plus four semicircles, then divide by 4 by symmetry.",
-            "commonTrapTag": "pi-retained-in-lunes-trap",
+            "commonTrapTag": "lunes-total-instead-of-single-trap",
+            "trapDerivation": f"({s}**2 // 4) * 4",
+            "trapGivens": [s, 4],
             "verify": {"source": str(single_lune), "trapValue": str(s2)},
             "steps": [
                 S(f"A_{{\\text{{square}}}} = {s}^2 = {s2}, \\quad A_{{\\text{{circle}}}} = \\pi({s//2}\\sqrt{{2}})^2 = {circle_area_pi}\\pi",
@@ -715,7 +751,7 @@ def t_lunes_of_hippocrates(rng, form=None):
         "category": "Interleaved Synthesis",
         "context": "Geometry: Circles & Lunes of Hippocrates",
         "references": ["MTH-T01-C12-U04", "MTH-T01-C12-U05"],
-        "prompt": f"A square of side length $s = {s}$ is inscribed inside a circle. Four semicircles are drawn externally on the four sides of the square as diameters. The region outside the circumscribed circle but inside the four semicircles forms four crescent-shaped regions known as the Lunes of Hippocrates. Find the exact total area of all four lunes.",
+        "prompt": f"A square of side length $s = {s}$ is inscribed inside a circle. A set of $4$ semicircles are drawn externally on the $4$ sides of the square as diameters. The region outside the circumscribed circle but inside the $4$ semicircles forms $4$ crescent-shaped regions known as the Lunes of Hippocrates. Find the exact total area of all $4$ lunes.",
         "display": f"\\text{{Lunes of Hippocrates on square of side }} s = {s} \\implies \\text{{Total Area}} = ?",
         "plainText": f"{s}^2 + {circle_area_pi}*pi - {circle_area_pi}*pi",
         "answerSpec": {"type": "number", "value": str(s2)},
@@ -723,7 +759,9 @@ def t_lunes_of_hippocrates(rng, form=None):
         "answerPlain": str(s2),
         "inputHint": "Enter the integer area (pi cancels out!)",
         "checkpointHint": "Calculate the total area of the four semicircles plus the area of the square, then subtract the area of the circumscribed circle. Notice how the terms involving $\\pi$ cancel out.",
-        "commonTrapTag": "pi-retained-in-lunes-trap",
+        "commonTrapTag": "lunes-half-area-trap",
+        "trapDerivation": f"({s}**2 * 2) // 4",
+        "trapGivens": [s, 4],
         "verify": {"source": str(s2), "trapValue": str(circle_area_pi)},
         "steps": [
             S(f"A_{{\\text{{square}}}} = {s}^2 = {s2}",
@@ -775,6 +813,8 @@ def t_conical_frustum_volume(rng, form=None):
             "inputHint": "Enter exact form with pi, e.g. 150 pi or 150*pi",
             "checkpointHint": "Halve the base diameter to get $R = D/2$, use similar triangles to determine the top cone radius at height $H - h$, and subtract the top cone volume from the full cone volume.",
             "commonTrapTag": "frustum-cylinder-average-trap",
+            "trapDerivation": f"pi * ((({D} // 2) + (({D} // 2) * ({H} - {h})) // {H}) / 2)**2 * {h}",
+            "trapGivens": [D, H, h],
             "verify": {"source": f"{v_coeff}*pi", "trapValue": f"{trap_v}*pi"},
             "steps": [
                 S(f"R = \\frac{{{D}}}{{2}} = {R}, \\quad h_{{\\text{{top}}}} = {H} - {h} = {h_top} \\implies r_{{\\text{{top}}}} = {R} \\times \\frac{{{h_top}}}{{{H}}} = {r_top}",
@@ -804,6 +844,8 @@ def t_conical_frustum_volume(rng, form=None):
         "inputHint": "Enter exact form with pi, e.g. 150 pi or 150*pi",
         "checkpointHint": "The top smaller cone has height $H - h$. Use similar triangles to determine the top radius $r_{\\text{top}}$, then subtract the volume of the smaller cone from the total volume of the original cone.",
         "commonTrapTag": "frustum-cylinder-average-trap",
+        "trapDerivation": f"pi * (({R} + ({R} * ({H} - {h})) // {H}) / 2)**2 * {h}",
+        "trapGivens": [R, H, h],
         "verify": {"source": f"{v_coeff}*pi", "trapValue": f"{trap_v}*pi"},
         "steps": [
             S(f"h_{{\\text{{top}}}} = {H} - {h} = {h_top}, \\quad r_{{\\text{{top}}}} = {R} \\times \\frac{{{h_top}}}{{{H}}} = {r_top}",
@@ -889,40 +931,41 @@ def t_find_flaw_composite_surface_area(rng, form=None):
     prob["context"] = "Geometry: 3D Solids Diagnostic Flaw"
     prob["references"] = ["MTH-T01-C12-U06"]
     prob["plainText"] = f"Find flaw in: SA for r={r}, h={h} (flaw-{flaw_line})"
+    prob["trapDerivation"] = str(prob["verify"]["trapValue"])
     return prob
 
 TEMPLATES = [
     {
         "key": "pythagoras-hypotenuse",
-        "trapTag": "pythagoras-hypotenuse",
+        "trapTag": "linear-addition-trap",
         "level": 1,
         "verificationLevel": "machine-verified",
         "forms": {
-            "direct": {"level": 1, "skill": "GEO-RIGHT-TRIANGLE-HYP"},
-            "reverse": {"level": 2, "skill": "GEO-RIGHT-TRIANGLE-LEG"},
-            "contextual": {"level": 2, "skill": "GEO-RIGHT-TRIANGLE-APPLIED"},
+            "direct": {"level": 1, "skill": "GEO-RIGHT-TRIANGLE-HYP", "trapTag": "linear-addition-trap"},
+            "reverse": {"level": 2, "skill": "GEO-RIGHT-TRIANGLE-LEG", "trapTag": "pythagoras-leg-subtraction"},
+            "contextual": {"level": 2, "skill": "GEO-RIGHT-TRIANGLE-APPLIED", "trapTag": "path-distance-vs-displacement"},
         },
         "build": t_pythagoras_hypotenuse,
     },
     {
         "key": "trapezoid-area",
-        "trapTag": "trapezoid-height",
+        "trapTag": "omitted-half-factor",
         "level": 2,
         "verificationLevel": "machine-verified",
         "forms": {
-            "direct": {"level": 2, "skill": "GEO-TRAPEZOID-AREA"},
-            "reverse": {"level": 2, "skill": "GEO-TRAPEZOID-HEIGHT"},
+            "direct": {"level": 2, "skill": "GEO-TRAPEZOID-AREA", "trapTag": "omitted-half-factor"},
+            "reverse": {"level": 2, "skill": "GEO-TRAPEZOID-HEIGHT", "trapTag": "trapezoid-reverse-omit-double-factor"},
         },
         "build": t_trapezoid_area,
     },
     {
         "key": "circle-area-pi",
-        "trapTag": "circle-diameter-radius",
+        "trapTag": "formula-circumference-area-confusion",
         "level": 2,
         "verificationLevel": "machine-verified",
         "forms": {
-            "direct": {"level": 2, "skill": "GEO-CIRCLE-AREA-RADIUS"},
-            "from-diameter": {"level": 2, "skill": "GEO-CIRCLE-AREA-DIAMETER"},
+            "direct": {"level": 2, "skill": "GEO-CIRCLE-AREA-RADIUS", "trapTag": "formula-circumference-area-confusion"},
+            "from-diameter": {"level": 2, "skill": "GEO-CIRCLE-AREA-DIAMETER", "trapTag": "circle-diameter-as-radius-trap"},
         },
         "build": t_circle_area_in_terms_of_pi,
     },
@@ -932,8 +975,8 @@ TEMPLATES = [
         "level": 2,
         "verificationLevel": "machine-verified",
         "forms": {
-            "direct": {"level": 2, "skill": "GEO-CYLINDER-VOLUME-RADIUS"},
-            "from-diameter": {"level": 2, "skill": "GEO-CYLINDER-VOLUME-DIAMETER"},
+            "direct": {"level": 2, "skill": "GEO-CYLINDER-VOLUME-RADIUS", "trapTag": "volume-surface-area"},
+            "from-diameter": {"level": 2, "skill": "GEO-CYLINDER-VOLUME-DIAMETER", "trapTag": "cylinder-diameter-as-radius-trap"},
         },
         "build": t_cylinder_volume,
     },
@@ -943,8 +986,8 @@ TEMPLATES = [
         "level": 3,
         "verificationLevel": "machine-verified",
         "forms": {
-            "direct": {"level": 3, "skill": "GEO-RIGHT-TRIANGLE-APPLIED"},
-            "missing-segment": {"level": 3, "skill": "GEO-RIGHT-TRIANGLE-APPLIED"},
+            "direct": {"level": 3, "skill": "GEO-RIGHT-TRIANGLE-APPLIED", "trapTag": "whole-triangle-inradius-confusion"},
+            "missing-segment": {"level": 3, "skill": "GEO-RIGHT-TRIANGLE-APPLIED", "trapTag": "whole-triangle-inradius-confusion"},
         },
         "build": t_pythagoras_altitude_inradius,
     },
@@ -954,20 +997,20 @@ TEMPLATES = [
         "level": 4,
         "verificationLevel": "machine-verified",
         "forms": {
-            "direct": {"level": 4, "skill": "GEO-TRAPEZOID-HEIGHT"},
-            "bottom-triangle": {"level": 4, "skill": "GEO-TRAPEZOID-HEIGHT"},
-            "side-triangle": {"level": 4, "skill": "GEO-TRAPEZOID-HEIGHT"},
+            "direct": {"level": 4, "skill": "GEO-TRAPEZOID-HEIGHT", "trapTag": "trapezoid-diagonal-bisect-trap"},
+            "bottom-triangle": {"level": 4, "skill": "GEO-TRAPEZOID-HEIGHT", "trapTag": "trapezoid-diagonal-bisect-trap"},
+            "side-triangle": {"level": 4, "skill": "GEO-TRAPEZOID-HEIGHT", "trapTag": "trapezoid-diagonal-bisect-trap"},
         },
         "build": t_trapezoid_similar_triangles_area,
     },
     {
         "key": "lunes-hippocrates",
-        "trapTag": "pi-retained-in-lunes-trap",
+        "trapTag": "lunes-half-area-trap",
         "level": 4,
         "verificationLevel": "machine-verified",
         "forms": {
-            "direct": {"level": 4, "skill": "GEO-CIRCLE-AREA-DIAMETER"},
-            "single-lune": {"level": 4, "skill": "GEO-CIRCLE-AREA-DIAMETER"},
+            "direct": {"level": 4, "skill": "GEO-CIRCLE-AREA-DIAMETER", "trapTag": "lunes-half-area-trap"},
+            "single-lune": {"level": 4, "skill": "GEO-CIRCLE-AREA-DIAMETER", "trapTag": "lunes-total-instead-of-single-trap"},
         },
         "build": t_lunes_of_hippocrates,
     },
@@ -977,8 +1020,8 @@ TEMPLATES = [
         "level": 3,
         "verificationLevel": "machine-verified",
         "forms": {
-            "direct": {"level": 3, "skill": "GEO-CYLINDER-VOLUME-DIAMETER"},
-            "from-diameter": {"level": 3, "skill": "GEO-CYLINDER-VOLUME-DIAMETER"},
+            "direct": {"level": 3, "skill": "GEO-CYLINDER-VOLUME-DIAMETER", "trapTag": "frustum-cylinder-average-trap"},
+            "from-diameter": {"level": 3, "skill": "GEO-CYLINDER-VOLUME-DIAMETER", "trapTag": "frustum-cylinder-average-trap"},
         },
         "build": t_conical_frustum_volume,
     },
@@ -988,8 +1031,8 @@ TEMPLATES = [
         "level": 3,
         "verificationLevel": "machine-verified",
         "forms": {
-            "flaw-line-2": {"level": 3, "skill": "GEO-CYLINDER-VOLUME-RADIUS"},
-            "flaw-line-3": {"level": 3, "skill": "GEO-CYLINDER-VOLUME-RADIUS"},
+            "flaw-line-2": {"level": 3, "skill": "GEO-CYLINDER-VOLUME-RADIUS", "trapTag": "internal-boundary-double-count-trap"},
+            "flaw-line-3": {"level": 3, "skill": "GEO-CYLINDER-VOLUME-RADIUS", "trapTag": "internal-boundary-double-count-trap"},
         },
         "build": t_find_flaw_composite_surface_area,
     },

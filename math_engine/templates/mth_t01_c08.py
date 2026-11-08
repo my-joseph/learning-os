@@ -12,13 +12,11 @@ MISTAKE_TAGS = [
     {"id": "c08-common-base-conversion-trap", "label": "Failed to convert composite bases to a common prime base before equating exponents", "name": "Common Prime Base Conversion Trap", "autoFrom": []},
 ]
 
-_TAGS = ["alpha", "beta", "gamma", "delta", "epsilon", "zeta"]
 
 
 def t_c08_foundation(rng, form=None):
     if form not in ("direct", "quotient"):
         form = rng.choice(["direct", "quotient"])
-    tag = rng.choice(_TAGS)
     base = rng.choice([2, 3, 5])
     m = rng.randint(3, 5)
     n = rng.randint(2, 4)
@@ -41,7 +39,7 @@ def t_c08_foundation(rng, form=None):
         "references": ["MTH-T01-C08-U02"],
         "prompt": prompt,
         "display": disp,
-        "plainText": f"({base}^{m} * {base}^{n}) / {base}^{p} [{tag}]",
+        "plainText": f"({base}^{m} * {base}^{n}) / {base}^{p}",
         "answerSpec": {"type": "number", "value": str(ans)},
         "answerDisplay": str(ans),
         "answerPlain": str(ans),
@@ -60,7 +58,6 @@ def t_c08_foundation(rng, form=None):
 def t_c08_reverse(rng, form=None):
     if form not in ("direct", "solve-exponent"):
         form = rng.choice(["direct", "solve-exponent"])
-    tag = rng.choice(_TAGS)
     base = rng.choice([2, 3, 5])
     a = rng.randint(2, 4)
     b = rng.randint(2, 3)
@@ -96,7 +93,7 @@ def t_c08_reverse(rng, form=None):
         "references": ["MTH-T01-C08-U03"],
         "prompt": prompt,
         "display": disp,
-        "plainText": f"power rule {base}^{a}^{b} [{tag}]",
+        "plainText": f"power rule {base}^{a}^{b}",
         "answerSpec": {"type": "number", "value": str(ans)},
         "answerDisplay": str(ans),
         "answerPlain": str(ans),
@@ -111,7 +108,6 @@ def t_c08_reverse(rng, form=None):
 def t_c08_trap(rng, form=None):
     if form not in ("direct", "same-base-sum"):
         form = rng.choice(["direct", "same-base-sum"])
-    tag = rng.choice(_TAGS)
     if form == "same-base-sum":
         base = rng.choice([2, 3, 4])
         k = rng.randint(3, 5)
@@ -144,7 +140,7 @@ def t_c08_trap(rng, form=None):
         "references": ["MTH-T01-C08-U01"],
         "prompt": prompt,
         "display": disp,
-        "plainText": f"sum of identical powers {ans} [{tag}]",
+        "plainText": f"sum of identical powers {ans}",
         "answerSpec": {"type": "number", "value": str(ans)},
         "answerDisplay": str(ans),
         "answerPlain": str(ans),
@@ -159,7 +155,6 @@ def t_c08_trap(rng, form=None):
 def t_c08_synthesis(rng, form=None):
     if form not in ("direct", "exponential-doubling"):
         form = rng.choice(["direct", "exponential-doubling"])
-    tag = rng.choice(_TAGS)
     cases = [
         (2, 4, 8, 3, 2, 14, 5),
         (2, 4, 16, 4, 3, 20, 7),
@@ -184,7 +179,7 @@ def t_c08_synthesis(rng, form=None):
         "references": ["MTH-T01-C08-U01", "MTH-T01-C08-U03"],
         "prompt": prompt,
         "display": disp,
-        "plainText": f"{b1}^{e1} * {b2}^{e2} = {p}^x [{tag}]",
+        "plainText": f"{b1}^{e1} * {b2}^{e2} = {p}^x",
         "answerSpec": {"type": "number", "value": str(ans)},
         "answerDisplay": str(ans),
         "answerPlain": str(ans),

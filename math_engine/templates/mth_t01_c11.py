@@ -12,13 +12,11 @@ MISTAKE_TAGS = [
     {"id": "c11-consecutive-parity-step-trap", "label": "Used x+1, x+2 instead of x+2, x+4 for consecutive even/odd integers", "name": "Consecutive Parity Step Trap", "autoFrom": []},
 ]
 
-_TAGS = ["alpha", "beta", "gamma", "delta", "epsilon", "zeta"]
 
 
 def t_c11_foundation(rng, form=None):
     if form not in ("direct", "negative-coeff"):
         form = rng.choice(["direct", "negative-coeff"])
-    tag = rng.choice(_TAGS)
     a = rng.randint(4, 11)
     x = rng.randint(5, 16)
     b = rng.randint(7, 29)
@@ -51,7 +49,7 @@ def t_c11_foundation(rng, form=None):
         "references": ["MTH-T01-C11-U02"],
         "prompt": prompt,
         "display": disp,
-        "plainText": f"{a}*x and {b} = {rhs} [{tag}]",
+        "plainText": f"{a}*x and {b} = {rhs}",
         "answerSpec": {"type": "number", "value": str(ans)},
         "answerDisplay": str(ans),
         "answerPlain": str(ans),
@@ -66,7 +64,6 @@ def t_c11_foundation(rng, form=None):
 def t_c11_reverse(rng, form=None):
     if form not in ("direct", "grouped"):
         form = rng.choice(["direct", "grouped"])
-    tag = rng.choice(_TAGS)
     x = rng.randint(4, 14)
     a = rng.randint(6, 12)
     c = rng.randint(2, a - 2)
@@ -101,7 +98,7 @@ def t_c11_reverse(rng, form=None):
         "references": ["MTH-T01-C11-U03"],
         "prompt": prompt,
         "display": disp,
-        "plainText": f"{a}*x + {b} = {c}*x + {d} [{tag}]",
+        "plainText": f"{a}*x + {b} = {c}*x + {d}",
         "answerSpec": {"type": "number", "value": str(ans)},
         "answerDisplay": str(ans),
         "answerPlain": str(ans),
@@ -116,7 +113,6 @@ def t_c11_reverse(rng, form=None):
 def t_c11_trap(rng, form=None):
     if form not in ("direct", "unscaled-constant-trap"):
         form = rng.choice(["direct", "unscaled-constant-trap"])
-    tag = rng.choice(_TAGS)
     cases = [
         (3, 5, 1, 2, 11, -9),
         (5, 3, 2, 3, 14, -4),
@@ -140,7 +136,7 @@ def t_c11_trap(rng, form=None):
         "references": ["MTH-T01-C11-U04"],
         "prompt": prompt,
         "display": disp,
-        "plainText": f"(x + {a})/2 - (x - {c})/3 = {k} [{tag}]",
+        "plainText": f"(x + {a})/2 - (x - {c})/3 = {k}",
         "answerSpec": {"type": "number", "value": str(ans)},
         "answerDisplay": str(ans),
         "answerPlain": str(ans),
@@ -159,7 +155,6 @@ def t_c11_trap(rng, form=None):
 def t_c11_synthesis(rng, form=None):
     if form not in ("direct", "parametric-root"):
         form = rng.choice(["direct", "parametric-root"])
-    tag = rng.choice(_TAGS)
     if form == "parametric-root":
         x_root = rng.randint(3, 8)
         a = rng.randint(4, 9)
@@ -206,7 +201,7 @@ def t_c11_synthesis(rng, form=None):
         "references": ["MTH-T01-C11-U03", "MTH-T01-C11-U04"],
         "prompt": prompt,
         "display": disp,
-        "plainText": f"linear synthesis {ans} [{tag}]",
+        "plainText": f"linear synthesis {ans}",
         "answerSpec": {"type": "number", "value": str(ans)},
         "answerDisplay": str(ans),
         "answerPlain": str(ans),

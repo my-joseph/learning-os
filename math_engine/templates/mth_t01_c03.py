@@ -12,13 +12,11 @@ MISTAKE_TAGS = [
     {"id": "c03-net-integer-change-trap", "label": "Reversed directional signs in multi-stage integer change", "name": "Directional Integer Sign Trap", "autoFrom": []},
 ]
 
-_TAGS = ["alpha", "beta", "gamma", "delta", "epsilon", "zeta"]
 
 
 def t_c03_foundation(rng, form=None):
     if form not in ("direct", "elevation"):
         form = rng.choice(["direct", "elevation"])
-    tag = rng.choice(_TAGS)
     a = rng.randint(15, 45)
     b = rng.randint(12, 38)
     c = rng.randint(8, 25)
@@ -37,7 +35,7 @@ def t_c03_foundation(rng, form=None):
         "references": ["MTH-T01-C03-U03"],
         "prompt": prompt,
         "display": disp,
-        "plainText": f"(0 - {a}) + {b} + {c} [{tag}]",
+        "plainText": f"(0 - {a}) + {b} + {c}",
         "answerSpec": {"type": "number", "value": str(ans)},
         "answerDisplay": str(ans),
         "answerPlain": str(ans),
@@ -56,7 +54,6 @@ def t_c03_foundation(rng, form=None):
 def t_c03_reverse(rng, form=None):
     if form not in ("direct", "reverse"):
         form = rng.choice(["direct", "reverse"])
-    tag = rng.choice(_TAGS)
     a = rng.randint(4, 11)
     x = -rng.randint(5, 16)
     b = rng.randint(7, 24)
@@ -76,7 +73,7 @@ def t_c03_reverse(rng, form=None):
         "references": ["MTH-T01-C03-U05"],
         "prompt": prompt,
         "display": disp,
-        "plainText": f"(0 - {a})*x + {b} = {rhs} [{tag}]",
+        "plainText": f"(0 - {a})*x + {b} = {rhs}",
         "answerSpec": {"type": "number", "value": str(ans)},
         "answerDisplay": str(ans),
         "answerPlain": str(ans),
@@ -95,7 +92,6 @@ def t_c03_reverse(rng, form=None):
 def t_c03_trap(rng, form=None):
     if form not in ("direct", "nested-abs"):
         form = rng.choice(["direct", "nested-abs"])
-    tag = rng.choice(_TAGS)
     a = rng.randint(3, 8)
     b = rng.randint(2, 6)
     c = rng.randint(4, 12)
@@ -126,7 +122,7 @@ def t_c03_trap(rng, form=None):
         "references": ["MTH-T01-C03-U04"],
         "prompt": prompt,
         "display": disp,
-        "plainText": f"(0 - {a}^2) and ({b}^2) [{tag}]",
+        "plainText": f"(0 - {a}^2) and ({b}^2)",
         "answerSpec": {"type": "number", "value": str(ans)},
         "answerDisplay": str(ans),
         "answerPlain": str(ans),
@@ -141,7 +137,6 @@ def t_c03_trap(rng, form=None):
 def t_c03_synthesis(rng, form=None):
     if form not in ("direct", "contextual"):
         form = rng.choice(["direct", "contextual"])
-    tag = rng.choice(_TAGS)
     t0 = rng.randint(10, 28)
     drop_rate = rng.randint(4, 9)
     hrs_drop = rng.randint(5, 9)
@@ -162,7 +157,7 @@ def t_c03_synthesis(rng, form=None):
         "references": ["MTH-T01-C03-U03", "MTH-T01-C03-U04"],
         "prompt": prompt,
         "display": disp,
-        "plainText": f"{t0} - {drop_rate}*{hrs_drop} + {rise_rate}*{hrs_rise} [{tag}]",
+        "plainText": f"{t0} - {drop_rate}*{hrs_drop} + {rise_rate}*{hrs_rise}",
         "answerSpec": {"type": "number", "value": str(ans)},
         "answerDisplay": str(ans),
         "answerPlain": str(ans),
