@@ -3,6 +3,8 @@ import { spawn } from "child_process";
 import path from "path";
 import { getPythonBin, getWorkspaceRoot } from "@/lib/paths";
 
+const TIMEOUT_MS = 5000;
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -26,10 +28,31 @@ export async function POST(req: NextRequest) {
     ].join(path.delimiter);
 
     return new Promise<NextResponse>((resolve) => {
+      let isSettled = false;
+
       const proc = spawn(pythonBin, ["-m", engineModule], {
         cwd: rootDir,
         env: { ...process.env, PYTHONPATH: pythonPath },
       });
+
+      const timer = setTimeout(() => {
+        if (!isSettled) {
+          isSettled = true;
+          try {
+            proc.kill("SIGKILL");
+          } catch {
+            // Process might have already closed
+          }
+          resolve(
+            NextResponse.json({
+              verdict: "invalid input",
+              message: "The input is too complex and evaluation timed out (Evaluation timed out after 5s)",
+              components: [],
+              diagnostics: [],
+            })
+          );
+        }
+      }, TIMEOUT_MS);
 
       let stdout = "";
       let stderr = "";
@@ -43,16 +66,20 @@ export async function POST(req: NextRequest) {
       });
 
       proc.on("close", (code) => {
+        clearTimeout(timer);
+        if (isSettled) return;
+        isSettled = true;
+
         if (code !== 0) {
           resolve(
             NextResponse.json(
               {
-                verdict: "parse_error",
-                message: `SymPy error: ${stderr || "Process exited with code " + code}`,
+                verdict: "invalid input",
+                message: `Calculation error: ${stderr || "Process exited with code " + code}`,
                 components: [],
                 diagnostics: [],
               },
-              { status: 500 }
+              { status: 200 }
             )
           );
           return;
@@ -66,12 +93,12 @@ export async function POST(req: NextRequest) {
           resolve(
             NextResponse.json(
               {
-                verdict: "parse_error",
-                message: `Failed to parse SymPy result: ${errMsg}`,
+                verdict: "invalid input",
+                message: `Failed to parse result: ${errMsg}`,
                 components: [],
                 diagnostics: [],
               },
-              { status: 500 }
+              { status: 200 }
             )
           );
         }
@@ -84,7 +111,7 @@ export async function POST(req: NextRequest) {
     const errMsg = err instanceof Error ? err.message : String(err);
     return NextResponse.json(
       {
-        verdict: "parse_error",
+        verdict: "invalid input",
         message: `Internal server error: ${errMsg}`,
         components: [],
         diagnostics: [],

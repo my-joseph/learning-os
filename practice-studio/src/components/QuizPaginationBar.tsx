@@ -1,18 +1,18 @@
 "use client";
 
 import React from "react";
-import { ChevronLeft, ChevronRight, LayoutGrid, Eye } from "lucide-react";
+import { ChevronLeft, ChevronRight, ClipboardCheck, Eye } from "lucide-react";
 import { Problem } from "@/types/drill";
 
 interface QuizPaginationBarProps {
   totalQuestions: number;
   currentIndex: number;
   problems: Problem[];
-  viewMode: "quiz" | "all";
+  viewMode: "quiz" | "review";
   onSelectQuestion: (index: number) => void;
   onPrev: () => void;
   onNext: () => void;
-  onToggleViewMode: (mode: "quiz" | "all") => void;
+  onToggleViewMode: (mode: "quiz" | "review") => void;
 }
 
 export const QuizPaginationBar: React.FC<QuizPaginationBarProps> = ({
@@ -25,117 +25,21 @@ export const QuizPaginationBar: React.FC<QuizPaginationBarProps> = ({
   onNext,
   onToggleViewMode,
 }) => {
-  // Compute counts
-  let correctCount = 0;
-  let incorrectCount = 0;
-  let skippedCount = 0;
-  let unattemptedCount = 0;
-
-  problems.forEach((p) => {
-    const isSkipped = p.state?.skipped === true;
-    const hasScore = p.state?.score !== null && p.state?.score !== undefined;
-    if (isSkipped) {
-      skippedCount++;
-    } else if (hasScore) {
-      if ((p.state?.score ?? 0) > 0) {
-        correctCount++;
-      } else {
-        incorrectCount++;
-      }
-    } else {
-      unattemptedCount++;
-    }
-  });
-
-  const progressPct = totalQuestions > 0 ? Math.round(((correctCount + incorrectCount + skippedCount) / totalQuestions) * 100) : 0;
-
   return (
-    <nav
-      aria-label="Quiz question navigation"
-      className="sticky top-20 z-40 bg-[#151a27]/95 backdrop-blur-md border border-[#2b3752] rounded-2xl p-3.5 mb-6 shadow-xl transition-all"
-    >
-      {/* Top Row: Question counter, quick stats pills, and View Mode switcher */}
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-3 pb-2.5 border-b border-[#242f47]">
-        <div className="flex items-center gap-2.5">
-          <span className="text-xs font-bold text-slate-400 uppercase tracking-wider font-mono">
-            {viewMode === "quiz" ? (
-              <>
-                Question <span className="text-white text-sm font-black">{currentIndex + 1}</span> of {totalQuestions}
-              </>
-            ) : (
-              <>All {totalQuestions} Questions</>
-            )}
-          </span>
-          <span className="text-[11px] font-mono text-slate-400 bg-[#1c2438] px-2 py-0.5 rounded-full border border-[#2c3852]">
-            {progressPct}% Completed
-          </span>
-        </div>
-
-        {/* Live Status Indicators (Correct=Green, Incorrect=Red, Skipped=Gray) */}
-        <div className="flex flex-wrap items-center gap-1.5 text-[11px] font-medium font-mono">
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-            {correctCount} Correct
-          </span>
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-rose-500/15 text-rose-400 border border-rose-500/30">
-            <span className="w-1.5 h-1.5 rounded-full bg-rose-400" />
-            {incorrectCount} Incorrect
-          </span>
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-500/20 text-slate-300 border border-slate-500/40">
-            <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
-            {skippedCount} Skipped
-          </span>
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#131926] text-slate-400 border border-[#25324b]">
-            <span className="w-1.5 h-1.5 rounded-full bg-slate-500" />
-            {unattemptedCount} Left
-          </span>
-        </div>
-
-        {/* Mode Switcher: Focus (Quiz) vs Scroll All */}
-        <div className="flex items-center bg-[#0e1320] p-0.5 rounded-lg border border-[#242f47]">
-          <button
-            type="button"
-            onClick={() => onToggleViewMode("quiz")}
-            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold transition-all ${
-              viewMode === "quiz"
-                ? "bg-indigo-600 text-white shadow-sm"
-                : "text-slate-400 hover:text-slate-200"
-            }`}
-            title="Focus on 1 question at a time (Quiz Mode)"
-          >
-            <Eye className="w-3.5 h-3.5" />
-            <span>Focus Mode</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => onToggleViewMode("all")}
-            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold transition-all ${
-              viewMode === "all"
-                ? "bg-indigo-600 text-white shadow-sm"
-                : "text-slate-400 hover:text-slate-200"
-            }`}
-            title="View all questions in a scrolling list"
-          >
-            <LayoutGrid className="w-3.5 h-3.5" />
-            <span>View All</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Bottom Row: Prev Button, Numbered Pagination Buttons, Next Button */}
-      <div className="flex items-center justify-between gap-2">
+    <div className="flex items-center justify-between gap-3 pt-2.5 border-t border-slate-200 dark:border-[#242f47]">
+      {/* Left: Prev/Next & Question Number Pills (No Scrollbar, Generous Spacing & Uncropped Ring) */}
+      <div className="flex items-center gap-2 flex-1 min-w-0">
         <button
           type="button"
           onClick={onPrev}
           disabled={viewMode === "quiz" ? currentIndex === 0 : false}
-          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold bg-[#1b2336] hover:bg-[#232d44] disabled:opacity-40 disabled:hover:bg-[#1b2336] text-slate-200 border border-[#2b3852] transition-colors shadow-sm shrink-0"
+          className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-[#1b2336] hover:bg-slate-200 dark:hover:bg-[#232d44] disabled:opacity-40 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-[#2b3852] transition-colors shrink-0"
+          title="Previous Question (ArrowLeft)"
         >
           <ChevronLeft className="w-4 h-4" />
-          <span className="hidden sm:inline">Prev</span>
         </button>
 
-        {/* Question Number Pills */}
-        <div className="flex-1 flex flex-wrap items-center justify-center gap-2 px-2 py-2.5 overflow-x-auto">
+        <div className="flex items-center gap-2 overflow-x-auto py-1.5 px-1.5 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           {problems.map((prob, idx) => {
             const isSkipped = prob.state?.skipped === true;
             const hasScore = prob.state?.score !== null && prob.state?.score !== undefined;
@@ -143,27 +47,27 @@ export const QuizPaginationBar: React.FC<QuizPaginationBarProps> = ({
             const isIncorrect = hasScore && (prob.state?.score ?? 0) === 0 && !isSkipped;
             const isActive = viewMode === "quiz" && currentIndex === idx;
 
-            // Strict user color rule:
-            // Correct = Green (สีเขียว)
-            // Incorrect = Red (สีแดง)
-            // Skipped = Gray (สีเทา)
-            // Unattempted = Slate outline
-            let colorCls = "bg-[#182032] text-slate-300 border-[#2b3752] hover:border-indigo-400/60 hover:text-white";
+            let colorCls =
+              "bg-white dark:bg-[#182032] text-slate-700 dark:text-slate-300 border-slate-300 dark:border-[#2b3752] hover:border-indigo-400";
             let statusLabel = "Unanswered";
 
             if (isCorrect) {
-              colorCls = "bg-emerald-500 hover:bg-emerald-400 text-white font-bold border-emerald-400 shadow-sm shadow-emerald-500/25";
-              statusLabel = "Correct";
+              colorCls =
+                "bg-emerald-600 hover:bg-emerald-500 text-white font-bold border-emerald-500 shadow-sm";
+              statusLabel = `Score: ${prob.state?.score}`;
             } else if (isIncorrect) {
-              colorCls = "bg-rose-500 hover:bg-rose-400 text-white border-rose-400 shadow-sm shadow-rose-500/25";
-              statusLabel = "Incorrect";
+              colorCls =
+                "bg-rose-600 hover:bg-rose-500 text-white font-bold border-rose-500 shadow-sm";
+              statusLabel = "Incorrect (0)";
             } else if (isSkipped) {
-              colorCls = "bg-slate-500 hover:bg-slate-400 text-slate-100 border-slate-400 shadow-sm";
+              // Ghost style for skipped question: transparent background, dashed border, muted text
+              colorCls =
+                "bg-transparent hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 dark:text-slate-500 border border-dashed border-slate-300 dark:border-slate-600 font-medium";
               statusLabel = "Skipped (Concept Gap)";
             }
 
             const activeRing = isActive
-              ? "ring-2 ring-indigo-500 ring-offset-2 ring-offset-[#0d1017] scale-105 z-10 font-black shadow-md"
+              ? "ring-2 ring-indigo-500 ring-offset-2 ring-offset-white dark:ring-offset-[#151924] z-10 font-black"
               : "opacity-90 hover:opacity-100 font-semibold";
 
             return (
@@ -171,8 +75,8 @@ export const QuizPaginationBar: React.FC<QuizPaginationBarProps> = ({
                 key={prob.id}
                 type="button"
                 onClick={() => onSelectQuestion(idx)}
-                title={`Q${idx + 1} (${prob.id}) — ${statusLabel}`}
-                className={`relative w-8 h-8 rounded-lg border text-xs flex items-center justify-center font-mono transition-all transform ${colorCls} ${activeRing}`}
+                title={`Question ${idx + 1} (${prob.id}) — ${statusLabel}`}
+                className={`relative w-8 h-8 rounded-lg border text-xs flex items-center justify-center font-mono transition-all shrink-0 ${colorCls} ${activeRing}`}
               >
                 {idx + 1}
               </button>
@@ -184,12 +88,42 @@ export const QuizPaginationBar: React.FC<QuizPaginationBarProps> = ({
           type="button"
           onClick={onNext}
           disabled={viewMode === "quiz" ? currentIndex === totalQuestions - 1 : false}
-          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold bg-[#1b2336] hover:bg-[#232d44] disabled:opacity-40 disabled:hover:bg-[#1b2336] text-slate-200 border border-[#2b3852] transition-colors shadow-sm shrink-0"
+          className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-[#1b2336] hover:bg-slate-200 dark:hover:bg-[#232d44] disabled:opacity-40 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-[#2b3852] transition-colors shrink-0"
+          title="Next Question (ArrowRight)"
         >
-          <span className="hidden sm:inline">Next</span>
           <ChevronRight className="w-4 h-4" />
         </button>
       </div>
-    </nav>
+
+      {/* Right: Icon-Only Mode Switcher (Focus Mode vs Pre-Sync Review) */}
+      <div className="flex items-center gap-1 bg-slate-100 dark:bg-[#0e1320] p-1 rounded-xl border border-slate-200 dark:border-[#242f47] shrink-0">
+        <button
+          type="button"
+          onClick={() => onToggleViewMode("quiz")}
+          title="Focus Mode (Single Question)"
+          aria-label="Focus Mode (Single Question)"
+          className={`inline-flex items-center justify-center w-8 h-8 rounded-lg transition-all ${
+            viewMode === "quiz"
+              ? "bg-indigo-600 text-white shadow-sm"
+              : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+          }`}
+        >
+          <Eye className="w-4 h-4" />
+        </button>
+        <button
+          type="button"
+          onClick={() => onToggleViewMode("review")}
+          title="Pre-Sync Review & Summary"
+          aria-label="Pre-Sync Review & Summary"
+          className={`inline-flex items-center justify-center w-8 h-8 rounded-lg transition-all ${
+            viewMode === "review"
+              ? "bg-emerald-600 text-white shadow-sm"
+              : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+          }`}
+        >
+          <ClipboardCheck className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
   );
 };

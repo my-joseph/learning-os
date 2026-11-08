@@ -25,6 +25,13 @@ export function getWorkspaceRoot(): string {
   return parent;
 }
 
+export function getDrillsDataDir(): string {
+  if (process.env.DRILLS_DATA_DIR) {
+    return path.resolve(process.env.DRILLS_DATA_DIR);
+  }
+  return path.join(getWorkspaceRoot(), "drills", "data");
+}
+
 export function getPythonBin(rootDir: string): string {
   const localVenv = path.join(rootDir, ".venv", "bin", "python");
   if (fs.existsSync(localVenv)) {

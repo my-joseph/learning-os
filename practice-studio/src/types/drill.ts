@@ -35,7 +35,7 @@ export interface VisualElement {
 
 /**
  * Universal Interactive Capability Spec
- * รองรับทั้ง Geometry, Vectors, Function Slopes, Kinematics ในอนาคต
+ * Supports Geometry, Vectors, Function Slopes, and Kinematics
  */
 export interface InteractiveSpec {
   mode: "pythagoras-drag" | "cylinder-slider" | "trapezoid-drag" | "circle-radius-drag" | "vector-scrub" | "slope-probe";
@@ -56,7 +56,7 @@ export interface VisualSpec {
   type: "geometry-2d" | "geometry-3d-wireframe" | "coordinate-plane" | "physics-diagram";
   viewBox: { width: number; height: number };
   elements: VisualElement[];
-  interactive?: InteractiveSpec; // เปิดใช้งาน Interactive Playground
+  interactive?: InteractiveSpec; // Interactive Playground Specification
 }
 
 export interface Step {
@@ -76,6 +76,7 @@ export interface AnswerSpec {
     | "expression"
     | "solution_set"
     | "tuple"
+    | "vector"
     | "choice"
     | "text"
     | "code_output"
@@ -86,6 +87,9 @@ export interface AnswerSpec {
   forms?: string[];
   variables?: string[];
   values?: string[];
+  components?: (number | string)[];
+  dimension?: number;
+  vectorNotation?: boolean;
   labels?: string[];
   acceptComplex?: boolean;
   options?: ChoiceOption[];
@@ -114,7 +118,7 @@ export interface CheckDiagnostic {
 }
 
 export interface CheckResult {
-  verdict: "correct" | "equivalent_not_in_form" | "partial" | "incorrect" | "parse_error" | "skipped";
+  verdict: "correct" | "equivalent_not_in_form" | "partial" | "incorrect" | "parse_error" | "invalid input" | "skipped";
   message: string;
   components: CheckComponent[];
   diagnostics: CheckDiagnostic[];
@@ -153,6 +157,7 @@ export interface ProblemState {
   score: number | null;
   divergedStep: number | null;
   mistakes: string[];
+  mistakeNote?: string;
   skipped?: boolean;
   lastCheck?: CheckResult | null;
   lastTestReport?: TestRunReport | null;
@@ -219,6 +224,11 @@ export interface Problem {
   inputHint?: string;
   checkpointHint: string;
   commonTrapTag?: string;
+  form?: string;
+  skill?: string;
+  verificationLevel?: "machine-verified" | "partial" | "human-reviewed";
+  fingerprint?: string;
+  qualityGates?: Record<string, unknown>;
   steps: Step[];
   references?: string[];
   referenceBadges?: ReferenceBadge[];
@@ -271,10 +281,15 @@ export interface DrillDocument {
 
 export interface DrillListItem {
   drillId: string;
+  subject?: "MATH" | "PRG";
   unitCode: string;
   unitTitle: string;
   createdAt: string;
   questionCount: number;
   difficultyMode: string;
+  practiceStatus?: "Ready" | "In Progress" | "Graded" | "Needs Retry";
+  score?: number;
+  maxScore?: number;
+  answeredCount?: number;
   localFilePath: string;
 }

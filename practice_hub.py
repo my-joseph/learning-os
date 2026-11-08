@@ -42,17 +42,20 @@ except ImportError:
     generate_drill_set = None
 
 PORT = 8765
-DATA_ROOT = "drills/data"
+
+
+def get_data_root() -> str:
+    return os.environ.get("DRILLS_DATA_DIR", "drills/data")
 
 
 def find_drill_file(drill_id: str):
-    pattern = os.path.join(DATA_ROOT, "*", f"{drill_id}.json")
+    pattern = os.path.join(get_data_root(), "*", f"{drill_id}.json")
     matches = glob.glob(pattern)
     return matches[0] if matches else None
 
 
 def list_all_drills():
-    files = glob.glob(os.path.join(DATA_ROOT, "*", "DRL-*.json"))
+    files = glob.glob(os.path.join(get_data_root(), "*", "DRL-*.json"))
     items = []
     for path in files:
         try:
@@ -113,7 +116,7 @@ def save_drill_doc(drill_doc: dict):
         raise ValueError("Missing drillId")
     validate_and_sanitize_drill_doc(drill_doc)
     unit_code = drill_doc.get("unitCode", "MTH-T02-C01-U01")
-    unit_dir = os.path.join(DATA_ROOT, unit_code)
+    unit_dir = os.path.join(get_data_root(), unit_code)
     os.makedirs(unit_dir, exist_ok=True)
     path = os.path.join(unit_dir, f"{drill_id}.json")
     drill_doc["localFilePath"] = path
@@ -122,8 +125,11 @@ def save_drill_doc(drill_doc: dict):
     return path
 
 
-def sync_drill_to_notion(drill_doc: dict) -> dict:
-    path = save_drill_doc(drill_doc)
+def _mention_or_code(code: str, id_map: dict) -> str:
+    return f"[[{code}]]" if code in id_map else f"`{code}`"
+
+
+def _sync_drill_to_notion_inner(drill_doc: dict, path: str) -> dict:
     env = load_env()
     token = env.get("NOTION_TOKEN")
     with open("id_map.json", "r", encoding="utf-8") as f:
@@ -231,7 +237,7 @@ def sync_drill_to_notion(drill_doc: dict) -> dict:
     blocks = [
         callout_block(
             f"**Interactive {drill_kind} Drill (`{drill_id}`):** Data file `{path}` | Open in Practice Studio at `{player_url}`.\n"
-            f"Scope: [[{unit_code}]] | Chapter: [[{chapter_code}]] | Topic: [[{topic_code}]] | Config: `{q_count} Questions ({diff_mode})`\n"
+            f"Scope: {_mention_or_code(unit_code, id_map)} | Chapter: {_mention_or_code(chapter_code, id_map)} | Topic: {_mention_or_code(topic_code, id_map)} | Config: `{q_count} Questions ({diff_mode})`\n"
             f"{status_badge}",
             id_map,
             color=callout_color,
@@ -239,7 +245,7 @@ def sync_drill_to_notion(drill_doc: dict) -> dict:
         divider_block(),
         h2("1. Drill Blueprint & Learning Focus", id_map),
         p_block(
-            f"This drill tests foundational mastery for [[{unit_code}]]. "
+            f"This drill tests foundational mastery for {_mention_or_code(unit_code, id_map)}. "
             f"Solve each problem independently before consulting the step-by-step verification toggles below.",
             id_map,
         ),
@@ -342,6 +348,29 @@ def sync_drill_to_notion(drill_doc: dict) -> dict:
             pass
 
     return {"ok": True, "drillPageId": page_id, "parentPageId": parent_page_id}
+
+
+def sync_drill_to_notion(drill_doc: dict) -> dict:
+    path = save_drill_doc(drill_doc)
+    is_dry_run = os.environ.get("NOTION_DRY_RUN", "").lower() in ("1", "true", "yes") or drill_doc.get("dryRun")
+    if is_dry_run:
+        return {
+            "ok": True,
+            "localFilePath": path,
+            "drillPageId": f"mock-{drill_doc.get('drillId')}",
+            "parentPageId": None,
+            "dryRun": True,
+        }
+    try:
+        return _sync_drill_to_notion_inner(drill_doc, path)
+    except Exception as err:
+        return {
+            "ok": True,
+            "localFilePath": path,
+            "drillPageId": None,
+            "degraded": True,
+            "warning": f"Notion sync degraded gracefully: {err}",
+        }
 
 
 class MathPlayerHandler(SimpleHTTPRequestHandler):

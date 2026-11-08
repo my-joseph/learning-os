@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { spawn } from "child_process";
 import path from "path";
-import { getPythonBin, getWorkspaceRoot } from "@/lib/paths";
+import { getDrillsDataDir, getPythonBin, getWorkspaceRoot } from "@/lib/paths";
 
 export async function POST(req: NextRequest) {
   try {
@@ -37,7 +37,11 @@ export async function POST(req: NextRequest) {
         ],
         {
           cwd: rootDir,
-          env: { ...process.env, PYTHONPATH: pythonPath },
+          env: {
+            ...process.env,
+            PYTHONPATH: pythonPath,
+            DRILLS_DATA_DIR: getDrillsDataDir(),
+          },
         }
       );
 

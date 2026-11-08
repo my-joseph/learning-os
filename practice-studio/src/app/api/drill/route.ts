@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
-import { getWorkspaceRoot } from "@/lib/paths";
+import { getDrillsDataDir } from "@/lib/paths";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -11,8 +11,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Missing drill id" }, { status: 400 });
   }
 
-  const rootDir = getWorkspaceRoot();
-  const dataDir = path.join(rootDir, "drills", "data");
+  const dataDir = getDrillsDataDir();
 
   if (!fs.existsSync(dataDir)) {
     return NextResponse.json({ error: "No data dir" }, { status: 404 });
