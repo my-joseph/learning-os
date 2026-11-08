@@ -1,0 +1,4 @@
+# Core Mathematical and Symbolic Computation (Pinned to runtime environment)
+sympy==1.14.0
+mpmath==1.3.0
+numpy==2.5.4

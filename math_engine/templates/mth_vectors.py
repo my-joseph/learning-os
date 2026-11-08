@@ -53,6 +53,8 @@ UNIT = "MTH-VECTORS"
 TITLE = "Vectors: Operations, Scaling, and Dot Product"
 CHAPTER_CODE = "MTH-VECTORS"
 TOPIC_CODE = "MTH-VEC"
+PILOT = True
+IS_PILOT = True
 
 MISTAKE_TAGS = [
     {
@@ -72,6 +74,12 @@ MISTAKE_TAGS = [
         "label": "Sign slip when multiplying negative scalar in linear combination",
         "name": "Linear Combination Sign Slip",
         "autoFrom": ["component_sign_error"],
+    },
+    {
+        "id": "vector-scalar-solve-sign-slip",
+        "label": "Sign error when isolating missing scalar (reversed vector subtraction w - u)",
+        "name": "Scalar Solve Subtraction Sign Slip",
+        "autoFrom": ["whole_sign_flip"],
     },
     {
         "id": "dot-sign-slip",
@@ -150,7 +158,7 @@ def _fmt_signed(val: int) -> str:
 # Template 1: vector-add-scale
 # ---------------------------------------------------------------------------
 def t_vector_add_scale(rng: random.Random, form: str | None = None, level: int = 1) -> dict[str, Any]:
-    available_forms = ["add-sub", "scalar-mult", "linear-combination", "missing-vector"]
+    available_forms = ["add-sub", "scalar-mult", "linear-combination", "missing-scalar"]
     if not form or form not in available_forms:
         form = rng.choice(available_forms)
 
@@ -395,79 +403,73 @@ def t_vector_add_scale(rng: random.Random, form: str | None = None, level: int =
         }
 
     else:
-        # Form 4: Reverse Reasoning - Solve for missing vector v such that u + v = w (Level 2)
+        # Form 4: Reverse Reasoning - Solve for missing real scalar c such that u + c*v = w (Level 2)
+        c = 0
+        while c == 0:
+            c = rng.choice([-4, -3, -2, 2, 3, 4, 5])
+
+        v = [rng.choice([-4, -3, -2, -1, 1, 2, 3, 4]) for _ in range(3)]
         u = [rng.choice([-5, -4, -3, -2, -1, 1, 2, 3, 4, 5]) for _ in range(3)]
-        v = [rng.choice([-5, -4, -3, -2, -1, 1, 2, 3, 4, 5]) for _ in range(3)]
-        w = [u[i] + v[i] for i in range(3)]
+        w = [u[i] + c * v[i] for i in range(3)]
 
-        sp_res = [sp.Integer(w[i]) - sp.Integer(u[i]) for i in range(3)]
-        np_res = _np_vec_sub(w, u)
-        _dual_verify_vector(sp_res, np_res)
-
-        ans_comps = [int(x) for x in sp_res]
-        ans_latex = _fmt_vec_latex(ans_comps)
-        ans_plain = _fmt_vec_plain(ans_comps)
-
-        # Trap: student added instead of subtracting when isolating v: v_trap = w + u
-        trap_comps = [w[i] + u[i] for i in range(3)]
-        while trap_comps == ans_comps:
-            trap_comps[1] += 2
-        trap_plain = _fmt_vec_plain(trap_comps)
+        sp_w = [sp.Integer(u[i]) + sp.Integer(c) * sp.Integer(v[i]) for i in range(3)]
+        np_w = _np_vec_add(u, _np_vec_scale(c, v))
+        _dual_verify_vector(sp_w, np_w)
 
         u_latex = _fmt_vec_latex(u)
+        v_latex = _fmt_vec_latex(v)
         w_latex = _fmt_vec_latex(w)
 
-        prompt = f"Given vector $\\vec{{u}} = {u_latex}$ and the vector sum $\\vec{{u}} + \\vec{{v}} = {w_latex}$, find the unknown vector $\\vec{{v}}$."
-        display = "\\vec{u} + \\vec{v} = \\vec{w}"
+        diff_comps = [w[i] - u[i] for i in range(3)]
+        diff_latex = _fmt_vec_latex(diff_comps)
+
+        trap_c = -c
+        prompt = f"Given vectors $\\vec{{u}} = {u_latex}$ and $\\vec{{v}} = {v_latex}$, and their linear combination $\\vec{{u}} + c\\vec{{v}} = {w_latex}$, determine the value of the real scalar $c$."
+        display = "\\vec{u} + c\\vec{v} = \\vec{w}"
 
         step1_rhs = f"{w_latex} - {u_latex}"
-        step2_rhs_parts = [f"{w[i]} - ({u[i]})" if u[i] < 0 else f"{w[i]} - {u[i]}" for i in range(3)]
-        step2_rhs = f"\\langle {', '.join(step2_rhs_parts)} \\rangle"
-
         steps = [
             {
-                "latex": f"\\vec{{v}} = \\vec{{w}} - \\vec{{u}} = {step1_rhs}",
-                "explain": "Isolate the unknown vector v by subtracting vector u from both sides.",
-                "eq": (ans_plain, ans_plain),
+                "latex": f"c\\vec{{v}} = \\vec{{w}} - \\vec{{u}} = {step1_rhs} = {diff_latex}",
+                "explain": "Isolate the scaled vector c*v by subtracting vector u from vector w.",
+                "eq": (diff_latex, diff_latex),
             },
             {
-                "latex": f"\\vec{{v}} = {step2_rhs}",
-                "explain": "Subtract components of vector u from vector w.",
-                "eq": (ans_plain, ans_plain),
+                "latex": f"c({v[0]}) = {diff_comps[0]} \\implies c = \\frac{{{diff_comps[0]}}}{{{v[0]}}} = {c}",
+                "explain": "Equate the corresponding first component to solve for the scalar c.",
+                "eq": (f"c*{v[0]}", str(diff_comps[0])),
             },
             {
-                "latex": f"\\vec{{v}} = {ans_latex}",
-                "explain": "Simplify each component to obtain vector v.",
-                "val": ans_plain,
+                "latex": f"c = {c}",
+                "explain": f"Verify consistency with the other components: {diff_comps[1]}/{v[1]} = {c} and {diff_comps[2]}/{v[2]} = {c}.",
+                "val": str(c),
             },
         ]
 
         return {
-            "form": "missing-vector",
+            "form": "missing-scalar",
             "level": 2,
             "skill": "VEC-ADD-SCALE",
-            "category": "Vector Reverse Solve",
+            "category": "Vector Reverse Parameter Solve",
             "archetype": "problem-solving",
             "prompt": prompt,
             "display": display,
-            "plainText": f"Find v such that u + v = w for u={u_latex}, w={w_latex}",
-            "answerDisplay": ans_latex,
-            "answerPlain": ans_plain,
+            "plainText": f"Find real scalar c such that u + c*v = w for u={u_latex}, v={v_latex}, w={w_latex}",
+            "answerDisplay": str(c),
+            "answerPlain": str(c),
             "answerSpec": {
-                "type": "vector",
-                "components": ans_comps,
-                "dimension": 3,
-                "commonTrapTag": "vector-sub-sign-slip",
+                "type": "number",
+                "value": str(c),
+                "commonTrapTag": "vector-scalar-solve-sign-slip",
             },
-            "trapValue": trap_plain,
-            "commonTrapTag": "vector-sub-sign-slip",
+            "trapValue": str(trap_c),
+            "commonTrapTag": "vector-scalar-solve-sign-slip",
             "steps": steps,
-            "inputHint": "Enter vector components like <x, y, z>",
+            "inputHint": "Enter a scalar integer value",
             "verificationLevel": "machine-verified",
             "verify": {
-                "vector": [str(c) for c in ans_comps],
-                "source": ans_plain,
-                "trapValue": trap_plain,
+                "source": str(c),
+                "trapValue": str(trap_c),
             },
         }
 
@@ -561,8 +563,12 @@ def t_vector_dot_product(rng: random.Random, form: str | None = None, level: int
         # Form 2: Orthogonality condition u . v = 0, solve for parameter k (Level 2)
         # u = <a, b, c>, v = <x, y, k>
         # a*x + b*y + c*k = 0 => c*k = -(a*x + b*y) => k = -(a*x + b*y)/c
-        c = rng.choice([-3, -2, 2, 3])
-        k = rng.choice([-5, -4, -3, -2, -1, 1, 2, 3, 4, 5])
+        c = 0
+        while c == 0:
+            c = rng.choice([-3, -2, 2, 3])
+        k = 0
+        while k == 0:
+            k = rng.choice([-5, -4, -3, -2, -1, 1, 2, 3, 4, 5])
         assert k != 0, "k must be non-zero for trap=-k provenance"
         target_sum = -c * k  # a*x + b*y = target_sum
 
@@ -722,20 +728,17 @@ def t_vector_dot_product(rng: random.Random, form: str | None = None, level: int
         }
 
     else:
-        # Form 4: Unit Vector Normalization in R^2 (with radicals) or R^3 (Level 2)
-        # Using 2D with components 1, 1 gives 1/sqrt(2)
-        dim2 = rng.choice([True, False])
-        if dim2:
+        # Form 4: Unit Vector Normalization in R^2 or R^3 with radicals (sqrt(2), sqrt(3)) or integer magnitude
+        variant = rng.choice(["radical-2", "radical-3", "integer-quad"])
+        if variant == "radical-2":
             s1 = rng.choice([-1, 1])
             s2 = rng.choice([-1, 1])
             u = [s1, s2]
-            sp_mag = sp.sqrt(2)
             ans_comps = [f"{s1}/sqrt(2)", f"{s2}/sqrt(2)"]
-            ans_latex = f"\\langle \\frac{{{s1}}}{{\\sqrt{{2}}}}, \\frac{{{s2}}}{{\\sqrt{{2}}}} \\rangle" if s1 > 0 else f"\\langle -\\frac{{1}}{{\\sqrt{{2}}}}, \\frac{{{s2}}}{{\\sqrt{{2}}}} \\rangle"
-            if s2 < 0:
-                ans_latex = ans_latex.replace(f"\\frac{{-1}}{{\\sqrt{{2}}}}", "-\\frac{1}{\\sqrt{2}}")
+            c1_latex = "\\frac{1}{\\sqrt{2}}" if s1 > 0 else "-\\frac{1}{\\sqrt{2}}"
+            c2_latex = "\\frac{1}{\\sqrt{2}}" if s2 > 0 else "-\\frac{1}{\\sqrt{2}}"
+            ans_latex = f"\\langle {c1_latex}, {c2_latex} \\rangle"
             ans_plain = f"<{s1}/sqrt(2), {s2}/sqrt(2)>"
-            # Trap: forgot dividing by magnitude
             trap_comps = u
             trap_plain = _fmt_vec_plain(trap_comps)
             u_latex = _fmt_vec_latex(u)
@@ -759,45 +762,62 @@ def t_vector_dot_product(rng: random.Random, form: str | None = None, level: int
                     "val": ans_plain,
                 },
             ]
+            dim = 2
 
-            return {
-                "form": "unit-vector",
-                "level": 2,
-                "skill": "VEC-MAGNITUDE-ORTHOGONAL",
-                "category": "Unit Vector",
-                "archetype": "problem-solving",
-                "prompt": prompt,
-                "display": display,
-                "plainText": f"Unit vector in direction of u={u_latex}",
-                "answerDisplay": ans_latex,
-                "answerPlain": ans_plain,
-                "answerSpec": {
-                    "type": "vector",
-                    "components": ans_comps,
-                    "dimension": 2,
-                    "commonTrapTag": "unit-vector-forgot-magnitude",
+        elif variant == "radical-3":
+            s1 = rng.choice([-1, 1])
+            s2 = rng.choice([-1, 1])
+            s3 = rng.choice([-1, 1])
+            u = [s1, s2, s3]
+            ans_comps = [f"{s1}/sqrt(3)", f"{s2}/sqrt(3)", f"{s3}/sqrt(3)"]
+            c1_latex = "\\frac{1}{\\sqrt{3}}" if s1 > 0 else "-\\frac{1}{\\sqrt{3}}"
+            c2_latex = "\\frac{1}{\\sqrt{3}}" if s2 > 0 else "-\\frac{1}{\\sqrt{3}}"
+            c3_latex = "\\frac{1}{\\sqrt{3}}" if s3 > 0 else "-\\frac{1}{\\sqrt{3}}"
+            ans_latex = f"\\langle {c1_latex}, {c2_latex}, {c3_latex} \\rangle"
+            ans_plain = f"<{s1}/sqrt(3), {s2}/sqrt(3), {s3}/sqrt(3)>"
+            trap_comps = u
+            trap_plain = _fmt_vec_plain(trap_comps)
+            u_latex = _fmt_vec_latex(u)
+
+            sp_vec = [sp.Rational(s, 1) / sp.sqrt(3) for s in u]
+            np_vec = [float(x) / math.sqrt(3.0) for x in u]
+            _dual_verify_vector(sp_vec, np_vec)
+
+            prompt = f"Find the unit vector $\\hat{{u}}$ in the direction of $\\vec{{u}} = {u_latex}$."
+            display = "\\hat{u}"
+
+            steps = [
+                {
+                    "latex": "\\|\\vec{u}\\| = \\sqrt{1^2 + 1^2 + 1^2} = \\sqrt{3}",
+                    "explain": "Calculate the magnitude of the given vector.",
+                    "eq": (ans_plain, ans_plain),
                 },
-                "trapValue": trap_plain,
-                "commonTrapTag": "unit-vector-forgot-magnitude",
-                "steps": steps,
-                "inputHint": "Enter vector components like <1/sqrt(2), 1/sqrt(2)>",
-                "verificationLevel": "machine-verified",
-                "verify": {
-                    "vector": ans_comps,
-                    "source": ans_plain,
-                    "trapValue": trap_plain,
+                {
+                    "latex": f"\\hat{{u}} = \\frac{{\\vec{{u}}}}{{\\|\\vec{{u}}\\|}} = {ans_latex}",
+                    "explain": "Divide each component by the magnitude to normalize.",
+                    "val": ans_plain,
                 },
-            }
+            ]
+            dim = 3
+
         else:
-            # 3D with Pythagorean quadruple (1, 2, 2) -> mag 3
-            signs = [rng.choice([-1, 1]) for _ in range(3)]
-            base = [1, 2, 2]
+            # integer-quad: 3D with Pythagorean quadruples giving exact integer magnitude
+            quadruples = [
+                ([1, 2, 2], 3),
+                ([2, 3, 6], 7),
+                ([1, 4, 8], 9),
+                ([3, 4, 12], 13),
+            ]
+            base_quad, mag = rng.choice(quadruples)
+            base = list(base_quad)
             rng.shuffle(base)
+            signs = [rng.choice([-1, 1]) for _ in range(3)]
             u = [signs[i] * base[i] for i in range(3)]
-            mag = 3
-            ans_comps = [f"{u[0]}/3", f"{u[1]}/3", f"{u[2]}/3"]
-            ans_latex = f"\\langle \\frac{{{u[0]}}}{{3}}, \\frac{{{u[1]}}}{{3}}, \\frac{{{u[2]}}}{{3}} \\rangle"
-            ans_plain = f"<{u[0]}/3, {u[1]}/3, {u[2]}/3>"
+
+            ans_comps = [f"{u[0]}/{mag}", f"{u[1]}/{mag}", f"{u[2]}/{mag}"]
+            ans_parts = [f"\\frac{{{u[i]}}}{{{mag}}}" if u[i] > 0 else f"-\\frac{{{abs(u[i])}}}{{{mag}}}" for i in range(3)]
+            ans_latex = f"\\langle {', '.join(ans_parts)} \\rangle"
+            ans_plain = f"<{u[0]}/{mag}, {u[1]}/{mag}, {u[2]}/{mag}>"
 
             sp_vec = [sp.Rational(u[i], mag) for i in range(3)]
             np_vec = [float(x) / float(mag) for x in u]
@@ -810,9 +830,10 @@ def t_vector_dot_product(rng: random.Random, form: str | None = None, level: int
             prompt = f"Find the unit vector $\\hat{{u}}$ in the direction of $\\vec{{u}} = {u_latex}$."
             display = "\\hat{u}"
 
+            sum_sq = u[0]**2 + u[1]**2 + u[2]**2
             steps = [
                 {
-                    "latex": f"\\|\\vec{{u}}\\| = \\sqrt{{{u[0]**2} + {u[1]**2} + {u[2]**2}}} = 3",
+                    "latex": f"\\|\\vec{{u}}\\| = \\sqrt{{{u[0]**2} + {u[1]**2} + {u[2]**2}}} = \\sqrt{{{sum_sq}}} = {mag}",
                     "explain": "Calculate the magnitude of the given vector.",
                     "eq": (ans_plain, ans_plain),
                 },
@@ -822,35 +843,36 @@ def t_vector_dot_product(rng: random.Random, form: str | None = None, level: int
                     "val": ans_plain,
                 },
             ]
+            dim = 3
 
-            return {
-                "form": "unit-vector",
-                "level": 2,
-                "skill": "VEC-MAGNITUDE-ORTHOGONAL",
-                "category": "Unit Vector",
-                "archetype": "problem-solving",
-                "prompt": prompt,
-                "display": display,
-                "plainText": f"Unit vector in direction of u={u_latex}",
-                "answerDisplay": ans_latex,
-                "answerPlain": ans_plain,
-                "answerSpec": {
-                    "type": "vector",
-                    "components": ans_comps,
-                    "dimension": 3,
-                    "commonTrapTag": "unit-vector-forgot-magnitude",
-                },
-                "trapValue": trap_plain,
+        return {
+            "form": "unit-vector",
+            "level": 2,
+            "skill": "VEC-MAGNITUDE-ORTHOGONAL",
+            "category": "Unit Vector",
+            "archetype": "problem-solving",
+            "prompt": prompt,
+            "display": display,
+            "plainText": f"Unit vector in direction of u={u_latex}",
+            "answerDisplay": ans_latex,
+            "answerPlain": ans_plain,
+            "answerSpec": {
+                "type": "vector",
+                "components": ans_comps,
+                "dimension": dim,
                 "commonTrapTag": "unit-vector-forgot-magnitude",
-                "steps": steps,
-                "inputHint": "Enter vector components like <x, y, z>",
-                "verificationLevel": "machine-verified",
-                "verify": {
-                    "vector": ans_comps,
-                    "source": ans_plain,
-                    "trapValue": trap_plain,
-                },
-            }
+            },
+            "trapValue": trap_plain,
+            "commonTrapTag": "unit-vector-forgot-magnitude",
+            "steps": steps,
+            "inputHint": f"Enter vector components like <{', '.join(['x', 'y', 'z'][:dim])}>",
+            "verificationLevel": "machine-verified",
+            "verify": {
+                "vector": ans_comps,
+                "source": ans_plain,
+                "trapValue": trap_plain,
+            },
+        }
 
 
 TEMPLATES: list[dict[str, Any]] = [
@@ -859,6 +881,7 @@ TEMPLATES: list[dict[str, Any]] = [
         "level": 1,
         "skill": "VEC-ADD-SCALE",
         "verificationLevel": "machine-verified",
+        "is_pilot": True,
         "forms": {
             "add-sub": {
                 "level": 1,
@@ -875,10 +898,10 @@ TEMPLATES: list[dict[str, Any]] = [
                 "skill": "VEC-LINEAR-COMBINATION",
                 "trapTag": "vector-linear-comb-sign-slip",
             },
-            "missing-vector": {
+            "missing-scalar": {
                 "level": 2,
                 "skill": "VEC-ADD-SCALE",
-                "trapTag": "vector-sub-sign-slip",
+                "trapTag": "vector-scalar-solve-sign-slip",
             },
         },
         "build": t_vector_add_scale,
@@ -888,6 +911,7 @@ TEMPLATES: list[dict[str, Any]] = [
         "level": 2,
         "skill": "VEC-DOT-PRODUCT",
         "verificationLevel": "machine-verified",
+        "is_pilot": True,
         "forms": {
             "direct": {
                 "level": 2,

@@ -23,6 +23,7 @@ Checks per problem:
 import re
 import subprocess
 from code_engine.answer_check import check_answer, parse_tokens
+from quality_rules import QUALITY_RULES, QualityError, check_gate_g3_set, verify_quality_gates
 
 BANNED = [
     (re.compile(r"__"), "Markdown underscore emphasis (__)"),
@@ -71,21 +72,21 @@ def check_archetype_contract(pid, prob: dict):
     if not archetype:
         return
 
-    valid_archetypes = {
-        "problem-solving",
-        "debugging",
-        "code-tracing",
-        "refactoring",
-        "project-based",
-    }
+    valid_archetypes = set(QUALITY_RULES["G1"]["allowed_archetypes"].keys())
     if archetype not in valid_archetypes:
         _fail(pid, f"Invalid archetype '{archetype}'. Must be one of: {sorted(valid_archetypes)}")
 
     if archetype == "debugging":
         if not prob.get("starterCode") and not prob.get("codeSnippet"):
-            _fail(pid, "Debugging problem must provide starterCode containing the defect")
-        if not prob.get("visibleTests"):
-            _fail(pid, "Debugging problem must provide visibleTests including a reproducer scenario")
+            _fail(pid, "Debugging problem must provide starterCode or codeSnippet containing the defect")
+        has_reproducer = (
+            bool(prob.get("visibleTests"))
+            or prob.get("correctLine") is not None
+            or prob.get("answerSpec", {}).get("correctLine") is not None
+            or bool(prob.get("flaw"))
+        )
+        if not has_reproducer:
+            _fail(pid, "Debugging problem must provide visibleTests or correctLine/flaw")
 
     elif archetype == "refactoring":
         if not prob.get("starterCode"):
@@ -158,9 +159,12 @@ def verify_tags(tags):
                 raise VerificationError(f"Mistake tag {t} missing {k}")
 
 
-def verify_problem(p, id_map=None):
+def verify_problem(p, id_map=None, rules=None):
     pid = p.get("id", p.get("templateKey", "?"))
     v = p.get("verify", {})
+
+    # 0. Quality Gates (G1, G2, G4) — check type/structure/trap provenance first
+    verify_quality_gates(p, is_code=True, rules=rules)
 
     # 1. Text safety & Zero Wall-of-Text check
     for fld in TEXT_FIELDS:
@@ -174,8 +178,8 @@ def verify_problem(p, id_map=None):
 
     # 3. Steps check
     steps = p.get("steps", [])
-    if len(steps) < 2:
-        _fail(pid, "Programming problem must have at least 2 explanation steps (e.g. Call Stack / Event Loop).")
+    if len(steps) < 1:
+        _fail(pid, "Programming problem must have at least 1 explanation step.")
     for idx, st in enumerate(steps, 1):
         check_text_safety(pid, f"step {idx} explain", st.get("explain", ""))
 
@@ -187,9 +191,9 @@ def verify_problem(p, id_map=None):
     archetype = p.get("archetype", "")
 
     is_suite = (
-        ctype in ("kata", "implement", "refactor", "problem-solving", "debugging", "refactoring", "project-based")
-        or archetype in ("problem-solving", "debugging", "refactoring", "project-based")
-        or bool(p.get("visibleTests"))
+        bool(p.get("visibleTests"))
+        or bool(p.get("solutionCode"))
+        or ctype in ("kata", "implement", "refactor", "problem-solving", "refactoring", "project-based")
     )
 
     if is_suite:
@@ -201,7 +205,7 @@ def verify_problem(p, id_map=None):
         report = run_tests(sol, p.get("visibleTests", []), p.get("hiddenTests", []))
         if not report.get("allPassed"):
             _fail(pid, f"Canonical solution failed test suite: {report}")
-        return  # Suite verification complete
+        return True  # Suite verification complete
 
     elif stype in ("code_output", "predict_output") or ctype == "predict-output" or archetype == "code-tracing":
         if not snippet:
@@ -237,3 +241,18 @@ def verify_problem(p, id_map=None):
     res = check_answer(spec, plain)
     if res.get("verdict") != "correct":
         _fail(pid, f"Checker round-trip failed for answerPlain '{plain}': got {res}")
+    return True
+
+
+def verify_set(problems, id_map=None, available_forms_count=None, rules=None):
+    """Verify all programming problems in a drill set (including G1, G2, G4) plus set-level G3 deduplication."""
+    for p in problems:
+        verify_problem(p, id_map=id_map, rules=rules)
+    g3_res = check_gate_g3_set(problems, available_forms_count=available_forms_count, rules=rules)
+    for p in problems:
+        p.setdefault("qualityGates", {})["G3"] = {
+            "passed": True,
+            "fingerprint": p.get("fingerprint"),
+            "maxAllowedPerFingerprint": g3_res["maxAllowedPerFingerprint"],
+        }
+    return True

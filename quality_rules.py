@@ -337,8 +337,99 @@ def _run_js_snippet(snippet: str, timeout_sec: int = 5) -> tuple[bool, str, str]
             os.remove(tmp_path)
 
 
+def check_gate_anti_leak(
+    prob: dict[str, Any],
+    is_code: bool = False,
+    rules: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Anti-Leak Quality Gate (Rule 6 Zero-Leak Invariant).
+
+    Verifies that inputHint, checkpointHint, and placeholder:
+    1. Do not contain answerPlain or component answers as substrings.
+    2. Any candidate examples provided (e.g. 'like ...', 'e.g. ...') do NOT evaluate
+       to 'correct' when checked by check_answer.
+    """
+    pid = prob.get("id", "UNKNOWN")
+    spec = prob.get("answerSpec") or {}
+    ans_plain = str(prob.get("answerPlain") or "").strip()
+
+    visible_hints: list[tuple[str, str]] = []
+    for f in ("inputHint", "checkpointHint", "placeholder"):
+        val = prob.get(f) or spec.get(f)
+        if isinstance(val, str) and val.strip():
+            visible_hints.append((f, val.strip()))
+
+    if not visible_hints:
+        return {"passed": True, "hintsChecked": 0}
+
+    ans_comps: list[str] = []
+    if spec.get("type") in ("vector", "tuple") and (spec.get("components") or spec.get("values")):
+        for c in (spec.get("components") or spec.get("values")):
+            c_str = str(c).strip().lower()
+            if len(c_str) >= 2 and c_str not in ("x", "y", "z", "i", "j", "k"):
+                ans_comps.append(c_str)
+
+    ans_norm = ans_plain.lower()
+
+    for fname, hint in visible_hints:
+        hint_lower = hint.lower()
+
+        # 1. Direct answerPlain leak
+        if ans_norm and len(ans_norm) >= 1:
+            if re.search(r"(?<![0-9a-zA-Z_.])" + re.escape(ans_norm) + r"(?![0-9a-zA-Z_])", hint_lower):
+                raise QualityError(
+                    "G1",
+                    pid,
+                    f"คำใบ้รั่ว (Anti-Leak): พบเฉลย '{ans_plain}' ในฟิลด์ '{fname}' ({hint[:80]})",
+                )
+
+        # 2. Vector/Tuple component leak (for non-trivial components e.g. -1/sqrt(2), 2x+1)
+        for c in ans_comps:
+            if len(c) >= 2 and not c.isdigit() and c not in ("-1", "1", "0", "2", "-2", "x", "y", "z", "i", "j", "k"):
+                if re.search(r"(?<![0-9a-zA-Z_.])" + re.escape(c) + r"(?![0-9a-zA-Z_])", hint_lower):
+                    raise QualityError(
+                        "G1",
+                        pid,
+                        f"คำใบ้รั่ว (Anti-Leak): พบองค์ประกอบเฉลย '{c}' ในฟิลด์ '{fname}' ({hint[:80]})",
+                    )
+
+        # 3. Candidate example evaluation against check_answer
+        raw_candidates: list[str] = []
+        raw_candidates.extend(re.findall(r"[<(\[][^>\])]+[>\])]", hint))
+        for match in re.finditer(r"(?:like|e\.g\.|example|เช่น)\s*([^,;()]+(?:\s*,\s*[^,;()]+)*)", hint, re.IGNORECASE):
+            raw_candidates.append(match.group(1).strip())
+        for match in re.finditer(r"\((?:e\.g\.|like)\s*([^)]+)\)", hint, re.IGNORECASE):
+            raw_candidates.append(match.group(1).strip())
+
+        for rc in raw_candidates:
+            for tok in re.split(r",|\bor\b", rc):
+                tok_clean = tok.strip()
+                if not tok_clean:
+                    continue
+                # Skip dummy structural placeholders
+                if re.match(r"^[<(\[]\s*[xyz](?:\s*,\s*[xyz])*\s*[>\])]$", tok_clean, re.IGNORECASE):
+                    continue
+                if tok_clean.lower() in ("x", "y", "z", "<x, y, z>", "<x, y>"):
+                    continue
+                try:
+                    res = _dispatch_check_answer(spec, tok_clean, is_code=is_code)
+                    if res.get("verdict") == "correct":
+                        raise QualityError(
+                            "G1",
+                            pid,
+                            f"คำใบ้รั่ว (Anti-Leak): ตัวอย่าง '{tok_clean}' ในฟิลด์ '{fname}' ได้รับการตรวจว่าถูกต้อง (ห้ามใส่คำตอบที่ถูกต้องเป็นตัวอย่างใน hint)",
+                        )
+                except QualityError:
+                    raise
+                except Exception:
+                    pass
+
+    return {"passed": True, "hintsChecked": len(visible_hints)}
+
+
 def check_gate_g1(prob: dict[str, Any], is_code: bool = False, rules: dict[str, Any] | None = None) -> dict[str, Any]:
-    """G1: Verify that problem archetype/codeType matches actual content."""
+    """G1: Verify that problem archetype/codeType matches actual content and anti-leak invariant."""
+    check_gate_anti_leak(prob, is_code=is_code, rules=rules)
     cfg = (rules or QUALITY_RULES)["G1"]
     pid = prob.get("id", "UNKNOWN")
     archetype = prob.get("archetype")
@@ -951,11 +1042,10 @@ def verify_quality_gates(
         "G2": g2_res,
         "G4": g4_res,
         "G6": g6_res,
+        "antiLeak": check_gate_anti_leak(prob, is_code=is_code, rules=active_rules),
         "verificationLevel": verif_level,
         "weakDistractors": g4_res.get("weakDistractors", 0),
     }
-    prob["qualityGates"] = gates_report
-    return gates_report
     prob["qualityGates"] = gates_report
     return gates_report
 

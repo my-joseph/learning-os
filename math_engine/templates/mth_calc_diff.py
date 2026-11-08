@@ -205,7 +205,7 @@ def t_diff_power(rng: random.Random, form: str | None = None) -> dict[str, Any]:
             "answerSpec": {"type": "expression", "value": ans_str, "variables": ["x"]},
             "answerDisplay": ans_latex,
             "answerPlain": ans_str,
-            "inputHint": "Enter derivative in terms of x (e.g. -42*x^-7 or -15/x^4)",
+            "inputHint": "Enter derivative in terms of x (e.g. -99*x^-8 or -99/x^8)",
             "checkpointHint": "Rewrite 1/x^n as x^(-n) before applying the power rule; remember -n - 1.",
             "commonTrapTag": "diff-negative-power-increment",
             "steps": steps,

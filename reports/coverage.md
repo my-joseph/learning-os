@@ -1,7 +1,7 @@
 # Coverage & Skills Taxonomy Report
 
-> **Generated at**: 2026-11-08 09:48:06  
-> **Data Directory Scanned**: `drills/data`  
+> **Generated at**: 2026-11-08 10:49:12  
+> **Data Directory Scanned**: `/var/folders/wy/3q1fdk252w55cs0y71qgbx340000gn/T/tmpdr23d03a`  
 > **Skills Taxonomy Registered**: 42 skills across 6 domains
 
 ---
@@ -48,9 +48,9 @@
 | `software_architecture` | `PRG-KATA-DEBOUNCE` | Implement Function Debounce with Trailing Edge Execution | `intermediate` | L2 | `kata_debounce` | `direct` | **3** |
 | `software_architecture` | `PRG-KATA-GROUPBY` | Implement Generic Collection Grouping by Key Selector | `foundational` | L1 | `kata_groupby` | `direct` | **5** |
 | `software_architecture` | `PRG-KATA-MEMOIZE` | Implement Unary Function Memoization with Falsy Support | `intermediate` | L2 | `kata_memoize` | `direct` | **4** |
-| `calculus` | `CAL-DIFF-CHAIN` | Compute Derivatives of Composite Functions via Chain Rule | `intermediate` | L2, L3 | `diff-chain-rule` | `composite-transcendental`, `direct-power`, `flaw-line-1`, `flaw-line-2`, `flaw-line-3` | **8** |
-| `calculus` | `CAL-DIFF-POWER` | Compute Derivatives of Monomials and Polynomials via Power Rule | `foundational` | L1 | `diff-power-rule` | `direct-polynomial`, `rewrite-negative-or-radical` | **2** |
-| `vectors` | `VEC-ADD-SCALE` | Vector Addition and Scalar Multiplication | `foundational` | L1, L2 | `vector-add-scale` | `add-sub`, `missing-vector`, `scalar-mult` | 0 |
+| `calculus` | `CAL-DIFF-CHAIN` | Compute Derivatives of Composite Functions via Chain Rule | `intermediate` | L2, L3 | `diff-chain-rule` | `composite-transcendental`, `direct-power`, `flaw-line-1`, `flaw-line-2`, `flaw-line-3` | 0 |
+| `calculus` | `CAL-DIFF-POWER` | Compute Derivatives of Monomials and Polynomials via Power Rule | `foundational` | L1 | `diff-power-rule` | `direct-polynomial`, `rewrite-negative-or-radical` | 0 |
+| `vectors` | `VEC-ADD-SCALE` | Vector Addition and Scalar Multiplication | `foundational` | L1, L2 | `vector-add-scale` | `add-sub`, `missing-scalar`, `scalar-mult` | 0 |
 | `vectors` | `VEC-DOT-PRODUCT` | Vector Dot Product and Algebraic Properties | `intermediate` | L2 | `vector-dot-product` | `direct` | 0 |
 | `vectors` | `VEC-LINEAR-COMBINATION` | Linear Combinations and Basis Representation | `intermediate` | L2 | `vector-add-scale` | `linear-combination` | 0 |
 | `vectors` | `VEC-MAGNITUDE-ORTHOGONAL` | Vector Magnitude, Unit Vectors, and Orthogonality | `intermediate` | L2 | `vector-dot-product` | `magnitude`, `orthogonal-param`, `unit-vector` | 0 |
@@ -75,7 +75,7 @@
 
 ### 2.1 Skill ที่มี Template แล้ว แต่ยังไม่มีโจทย์จริงใน `drills/data`
 
-มีทั้งหมด **10** Skills ที่มี Template ใน code engine / math engine พร้อมสร้างโจทย์ แต่ยังไม่เคยรัน generate บันทึกไฟล์ลงใน `drills/data/`:
+มีทั้งหมด **12** Skills ที่มี Template ใน code engine / math engine พร้อมสร้างโจทย์ แต่ยังไม่เคยรัน generate บันทึกไฟล์ลงใน `drills/data/`:
 
 | Skill ID | Domain | Registered Template | สาเหตุ / สถานะ |
 | :--- | :--- | :--- | :--- |
@@ -85,6 +85,8 @@
 | `GEO-TRAPEZOID-HEIGHT` | `geometry` | `trapezoid-area` | Form ทางเลือกหรือโจทย์ประยุกต์ของ template ยังไม่ถูกสุ่มลงในชุดฝึก 2 ชุดแรก |
 | `MTH-COMPLEX-SUBTRACTION` | `complex_numbers` | `add-subtract` | Unit `MTH-T02-C01-U01` อยู่ในสตูดิโอ ยังไม่ได้ generate ลงใน `drills/data/` ส่วนกลาง |
 | `PRG-JS-SCOPE-HOISTING-LET` | `javascript_core` | `scope_hoisting_loop` | Unit `PRG-T01-C01` มี template แล้ว แต่ยังไม่ได้รัน generate ชุดฝึกในโฟลเดอร์นี้ |
+| `CAL-DIFF-CHAIN` | `calculus` | `diff-chain-rule` | ยังไม่มีการสร้างชุดฝึกที่ครอบคลุม skill นี้ |
+| `CAL-DIFF-POWER` | `calculus` | `diff-power-rule` | ยังไม่มีการสร้างชุดฝึกที่ครอบคลุม skill นี้ |
 | `VEC-ADD-SCALE` | `vectors` | `vector-add-scale` | ยังไม่มีการสร้างชุดฝึกที่ครอบคลุม skill นี้ |
 | `VEC-DOT-PRODUCT` | `vectors` | `vector-dot-product` | ยังไม่มีการสร้างชุดฝึกที่ครอบคลุม skill นี้ |
 | `VEC-LINEAR-COMBINATION` | `vectors` | `vector-add-scale` | ยังไม่มีการสร้างชุดฝึกที่ครอบคลุม skill นี้ |
@@ -171,14 +173,14 @@
 | 14 | `javascript_core` | `PRG-JS-PROMISE-ASYNC-FLOW` | Trace Asynchronous Promise Rejection and Resolution Flow | `intermediate` | ยังไม่เคยฝึก (0 ข้อ) | พร้อมเริ่มทันที (0 Prereqs) |
 | 15 | `software_architecture` | `PRG-KATA-DEBOUNCE` | Implement Function Debounce with Trailing Edge Execution | `intermediate` | ยังไม่เคยฝึก (0 ข้อ) | พร้อมเริ่มทันที (0 Prereqs) |
 | 16 | `software_architecture` | `PRG-KATA-MEMOIZE` | Implement Unary Function Memoization with Falsy Support | `intermediate` | ยังไม่เคยฝึก (0 ข้อ) | พร้อมเริ่มทันที (0 Prereqs) |
-| 17 | `vectors` | `VEC-ADD-SCALE` | Vector Addition and Scalar Multiplication | `foundational` | ยังไม่เคยฝึก (0 ข้อ) | พร้อมเริ่มทันที (0 Prereqs) |
-| 18 | `vectors` | `VEC-DOT-PRODUCT` | Vector Dot Product and Algebraic Properties | `intermediate` | ยังไม่เคยฝึก (0 ข้อ) | พร้อมเริ่มทันที (0 Prereqs) |
-| 19 | `geometry` | `GEO-CIRCLE-AREA-RADIUS` | Calculate Circular Area in Terms of Pi Given Radius | `intermediate` | 1 ข้อ (100%) | พร้อมเริ่มทันที (0 Prereqs) |
-| 20 | `software_architecture` | `PRG-ARCH-REFACTOR-SUBSCRIPTION` | Refactor Monolithic Legacy Subscriptions to Clean Modules | `advanced` | 1 ข้อ (100%) | พร้อมเริ่มทันที (0 Prereqs) |
-| 21 | `software_architecture` | `PRG-ARCH-PROJECT-RATE-LIMITER` | Implement Stateful Sliding-Window Rate Limiter Architecture | `expert` | 1 ข้อ (0%) | พร้อมเริ่มทันที (0 Prereqs) |
-| 22 | `software_architecture` | `PRG-KATA-GROUPBY` | Implement Generic Collection Grouping by Key Selector | `foundational` | 1 ข้อ (100%) | พร้อมเริ่มทันที (0 Prereqs) |
-| 23 | `software_architecture` | `PRG-ARCH-PIPELINE-PRICING` | Model Business Pipeline Pricing with Precedence Order | `intermediate` | 1 ข้อ (100%) | พร้อมเริ่มทันที (0 Prereqs) |
-| 24 | `calculus` | `CAL-DIFF-POWER` | Compute Derivatives of Monomials and Polynomials via Power Rule | `foundational` | 1 ข้อ (10000%) | พร้อมเริ่มทันที (0 Prereqs) |
+| 17 | `calculus` | `CAL-DIFF-POWER` | Compute Derivatives of Monomials and Polynomials via Power Rule | `foundational` | ยังไม่เคยฝึก (0 ข้อ) | พร้อมเริ่มทันที (0 Prereqs) |
+| 18 | `vectors` | `VEC-ADD-SCALE` | Vector Addition and Scalar Multiplication | `foundational` | ยังไม่เคยฝึก (0 ข้อ) | พร้อมเริ่มทันที (0 Prereqs) |
+| 19 | `vectors` | `VEC-DOT-PRODUCT` | Vector Dot Product and Algebraic Properties | `intermediate` | ยังไม่เคยฝึก (0 ข้อ) | พร้อมเริ่มทันที (0 Prereqs) |
+| 20 | `geometry` | `GEO-CIRCLE-AREA-RADIUS` | Calculate Circular Area in Terms of Pi Given Radius | `intermediate` | 1 ข้อ (100%) | พร้อมเริ่มทันที (0 Prereqs) |
+| 21 | `software_architecture` | `PRG-ARCH-REFACTOR-SUBSCRIPTION` | Refactor Monolithic Legacy Subscriptions to Clean Modules | `advanced` | 1 ข้อ (100%) | พร้อมเริ่มทันที (0 Prereqs) |
+| 22 | `software_architecture` | `PRG-ARCH-PROJECT-RATE-LIMITER` | Implement Stateful Sliding-Window Rate Limiter Architecture | `expert` | 1 ข้อ (0%) | พร้อมเริ่มทันที (0 Prereqs) |
+| 23 | `software_architecture` | `PRG-KATA-GROUPBY` | Implement Generic Collection Grouping by Key Selector | `foundational` | 1 ข้อ (100%) | พร้อมเริ่มทันที (0 Prereqs) |
+| 24 | `software_architecture` | `PRG-ARCH-PIPELINE-PRICING` | Model Business Pipeline Pricing with Precedence Order | `intermediate` | 1 ข้อ (100%) | พร้อมเริ่มทันที (0 Prereqs) |
 
 ---
 

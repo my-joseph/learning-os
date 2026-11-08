@@ -232,7 +232,8 @@ module.exports = { debounce };
             },
         ],
         "references": ["PRG-T01-C03-U04", "PRG-T01-C03-U01"],
-        "verify": {"solutionCode": solution},
+        "form": "direct",
+        "verify": {"solutionCode": solution, "trapValue": "missing clearTimeout(timer) before setTimeout"},
     }
 
 
@@ -374,7 +375,8 @@ module.exports = { groupBy };
             },
         ],
         "references": ["PRG-T01-C03-U02", "PRG-T01-C03-U01"],
-        "verify": {"solutionCode": solution},
+        "form": "direct",
+        "verify": {"solutionCode": solution, "trapValue": "TypeError: Cannot read properties of null (reading 'reduce')"},
     }
 
 
@@ -600,7 +602,8 @@ module.exports = { calculateOrderTotal };
             },
         ],
         "references": ["PRG-T01-C03-U03", "PRG-T01-C03-U01"],
-        "verify": {"solutionCode": solution},
+        "form": "direct",
+        "verify": {"solutionCode": solution, "trapValue": "tax computed on pre-discount subtotal (4.20 instead of 3.78)"},
     }
 
 
@@ -840,9 +843,10 @@ module.exports = { AsyncCache };
             },
         ],
         "references": ["PRG-T01-C03-U05", "PRG-T01-C03-U04"],
-        "verify": {"solutionCode": solution},
+        "form": "direct",
+        "verify": {"solutionCode": solution, "trapValue": "fetchCount === 3 (duplicate concurrent fetches without inFlight Map)"},
     }
-
+    
 
 # ============================================================================
 # ARCHETYPE 4: Code Modification & Refactoring — Legacy Subscription Billing (Level 3)
@@ -1062,7 +1066,8 @@ module.exports = { calculateMonthlyBill };
             },
         ],
         "references": ["PRG-T01-C03-U07", "PRG-T01-C03-U01"],
-        "verify": {"solutionCode": solution},
+        "form": "direct",
+        "verify": {"solutionCode": solution, "trapValue": "RangeError: Unknown subscription plan: family"},
     }
 
 
@@ -1272,7 +1277,8 @@ module.exports = { RateLimiter };
             },
         ],
         "references": ["PRG-T01-C03-U08", "PRG-T01-C03-U01"],
-        "verify": {"solutionCode": solution},
+        "form": "direct",
+        "verify": {"solutionCode": solution, "trapValue": "expired timestamps never evicted from window"},
     }
 
 
@@ -1410,7 +1416,8 @@ module.exports = { memoize };
             },
         ],
         "references": ["PRG-T01-C03-U05", "PRG-T01-C03-U04"],
-        "verify": {"solutionCode": solution},
+        "form": "direct",
+        "verify": {"solutionCode": solution, "trapValue": "if (cache.get(key)) treats falsy 0 as cache miss"},
     }
 
 
@@ -1418,43 +1425,60 @@ TEMPLATES = [
     {
         "key": "order_pricing_pipeline",
         "level": 2,
+        "verificationLevel": "machine-verified",
         "trapTag": "tax-discount-order-inversion",
+        "forms": {"direct": {"level": 2, "skill": "PRG-ARCH-PIPELINE-PRICING"}},
         "build": build_order_pricing_pipeline,
     },
     {
         "key": "debugging_async_cache",
         "level": 3,
+        "verificationLevel": "machine-verified",
         "trapTag": "race-condition-cache-stampede",
+        "forms": {"direct": {"level": 3, "skill": "PRG-ARCH-ASYNC-CACHE-RACE"}},
         "build": build_debugging_async_cache,
     },
     {
         "key": "refactor_legacy_subscription",
         "level": 3,
+        "verificationLevel": "machine-verified",
         "trapTag": "legacy-coupling-regression",
+        "forms": {"direct": {"level": 3, "skill": "PRG-ARCH-REFACTOR-SUBSCRIPTION"}},
         "build": build_refactor_legacy_subscription,
     },
     {
         "key": "project_rate_limiter",
         "level": 4,
+        "verificationLevel": "machine-verified",
         "trapTag": "rate-limit-window-leak",
+        "forms": {"direct": {"level": 4, "skill": "PRG-ARCH-PROJECT-RATE-LIMITER"}},
         "build": build_project_rate_limiter,
     },
     {
         "key": "kata_debounce",
         "level": 2,
+        "verificationLevel": "machine-verified",
+        "is_kata": True,
         "trapTag": "timer-cancellation-flaw",
+        "forms": {"direct": {"level": 2, "skill": "PRG-KATA-DEBOUNCE"}},
         "build": build_kata_debounce,
     },
     {
         "key": "kata_groupby",
         "level": 1,
+        "verificationLevel": "machine-verified",
+        "is_kata": True,
         "trapTag": "empty-input-handling",
+        "forms": {"direct": {"level": 1, "skill": "PRG-KATA-GROUPBY"}},
         "build": build_kata_groupby,
     },
     {
         "key": "kata_memoize",
         "level": 2,
+        "verificationLevel": "machine-verified",
+        "is_kata": True,
         "trapTag": "unhandled-falsy-cache",
+        "forms": {"direct": {"level": 2, "skill": "PRG-KATA-MEMOIZE"}},
         "build": build_kata_memoize,
     },
 ]

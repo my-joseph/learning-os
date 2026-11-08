@@ -26,6 +26,18 @@ MISTAKE_TAGS = [
         "autoFrom": ["var-vs-let-scope"],
     },
     {
+        "id": "let-closure-shadowing",
+        "name": "Let Block Binding vs Shared Var Binding",
+        "label": "Let Scope Shadowing",
+        "autoFrom": ["var-vs-let-scope"],
+    },
+    {
+        "id": "unconditional-catch-execution",
+        "name": "Assumed Catch Handler Runs on Resolved Promise",
+        "label": "Unconditional Catch Execution",
+        "autoFrom": ["unhandled-rejection"],
+    },
+    {
         "id": "stale-closure",
         "name": "Stale Closure Reference",
         "label": "Stale Closure",
@@ -61,8 +73,13 @@ MISTAKE_TAGS = [
 # ============================================================================
 # TEMPLATE 1: Scope & Hoisting Output Prediction (Level 1 Foundation)
 # ============================================================================
-def build_scope_hoisting_loop(rng: random.Random) -> dict:
-    use_var = rng.choice([True, False])
+def build_scope_hoisting_loop(rng: random.Random, form: str | None = None) -> dict:
+    if form == "var-loop":
+        use_var = True
+    elif form == "let-loop":
+        use_var = False
+    else:
+        use_var = rng.choice([True, False])
     n = rng.choice([3, 4, 5])
     idx_a = 0
     idx_b = n - 1
@@ -99,7 +116,11 @@ def build_scope_hoisting_loop(rng: random.Random) -> dict:
         f"Executing funcs[{idx_a}]() yields {lines[0]}, and funcs[{idx_b}]() yields {lines[1]}."
     )
 
+    trap_val = f"{idx_a}, {idx_b}" if use_var else f"{n}, {n}"
+    trap_tag = "var-vs-let-scope" if var_keyword == "var" else "let-closure-shadowing"
     return {
+        "form": f"{var_keyword}-loop",
+        "archetype": "code-tracing",
         "category": "Scope and Closures",
         "context": f"Variable Scope ({var_keyword})",
         "prompt": (
@@ -113,7 +134,7 @@ def build_scope_hoisting_loop(rng: random.Random) -> dict:
             "type": "code_output",
             "tokens": lines,
             "value": answer_plain,
-            "commonTrapTag": "var-vs-let-scope",
+            "commonTrapTag": trap_tag,
         },
         "answerPlain": answer_plain,
         "answerDisplay": answer_plain,
@@ -121,20 +142,20 @@ def build_scope_hoisting_loop(rng: random.Random) -> dict:
         "checkpointHint": (
             f"Check whether '{var_keyword}' creates a new binding per iteration or reuses a shared single binding."
         ),
-        "commonTrapTag": "var-vs-let-scope",
+        "commonTrapTag": trap_tag,
         "steps": [
             {"latex": f"\\text{{Binding Strategy: }} {var_keyword}", "explain": step1_explain},
             {"latex": f"\\text{{Output: }} [{lines[0]}, {lines[1]}]", "explain": step2_explain},
         ],
         "references": ["PRG-T01-C01-U01", "PRG-T01-C01-U02"],
-        "verify": {"source": answer_plain},
+        "verify": {"source": answer_plain, "trapValue": trap_val},
     }
 
 
 # ============================================================================
 # TEMPLATE 2: Event Loop & Concurrency Interleaving (Level 2 Standard Exam)
 # ============================================================================
-def build_event_loop_concurrency(rng: random.Random) -> dict:
+def build_event_loop_concurrency(rng: random.Random, form: str | None = None) -> dict:
     code = (
         "// Task A: Synchronous log\n"
         "console.log('A');\n\n"
@@ -162,6 +183,8 @@ def build_event_loop_concurrency(rng: random.Random) -> dict:
     answer_plain = ", ".join(lines)
 
     return {
+        "form": "direct",
+        "archetype": "code-tracing",
         "category": "Event Loop and Concurrency",
         "context": "Call Stack vs Microtasks vs Macrotasks",
         "prompt": (
@@ -210,16 +233,23 @@ def build_event_loop_concurrency(rng: random.Random) -> dict:
             },
         ],
         "references": ["PRG-T01-C01-U07", "PRG-T01-C01-U06"],
-        "verify": {"source": answer_plain},
+        "verify": {"source": answer_plain, "trapValue": "A, E, B, C, D"},
     }
 
 
 # ============================================================================
 # TEMPLATE 3: Promise Chaining & Error Recovery (Level 2 Standard Exam)
 # ============================================================================
-def build_promise_async_flow(rng: random.Random) -> dict:
-    threshold = rng.choice([10, 20, 50])
-    input_val = rng.choice([5, 15, 25, 60])
+def build_promise_async_flow(rng: random.Random, form: str | None = None) -> dict:
+    if form == "reject-catch":
+        threshold = rng.choice([20, 50])
+        input_val = rng.choice([5, 10, 15])
+    elif form == "resolve-then":
+        threshold = rng.choice([10, 20])
+        input_val = rng.choice([25, 60])
+    else:
+        threshold = rng.choice([10, 20, 50])
+        input_val = rng.choice([5, 15, 25, 60])
     factor = rng.choice([2, 3])
     fallback = rng.choice([100, 200])
     addend = rng.choice([1, 5, 10])
@@ -260,7 +290,11 @@ def build_promise_async_flow(rng: random.Random) -> dict:
         f"The .then() handler receives {input_val * factor} and logs {input_val * factor} + {addend} = {lines[0]}."
     )
 
+    trap_val = str(input_val * factor + addend) if is_below else str(fallback + addend)
+    trap_tag = "unhandled-rejection" if is_below else "unconditional-catch-execution"
     return {
+        "form": "reject-catch" if is_below else "resolve-then",
+        "archetype": "code-tracing",
         "category": "Promises and Error Handling",
         "context": "Promise Rejection Recovery",
         "prompt": (
@@ -274,7 +308,7 @@ def build_promise_async_flow(rng: random.Random) -> dict:
             "type": "code_output",
             "tokens": lines,
             "value": answer_plain,
-            "commonTrapTag": "unhandled-rejection",
+            "commonTrapTag": trap_tag,
         },
         "answerPlain": answer_plain,
         "answerDisplay": answer_plain,
@@ -282,7 +316,7 @@ def build_promise_async_flow(rng: random.Random) -> dict:
         "checkpointHint": (
             "Check whether the async function throws or returns, and whether .catch handles it."
         ),
-        "commonTrapTag": "unhandled-rejection",
+        "commonTrapTag": trap_tag,
         "steps": [
             {
                 "latex": f"\\text{{Initial Call: }} \\text{{compute}}({input_val})",
@@ -294,14 +328,14 @@ def build_promise_async_flow(rng: random.Random) -> dict:
             },
         ],
         "references": ["PRG-T01-C01-U06", "PRG-T01-C01-U08"],
-        "verify": {"source": answer_plain},
+        "verify": {"source": answer_plain, "trapValue": trap_val},
     }
 
 
 # ============================================================================
 # TEMPLATE 4: Find the Bug — Lost 'this' Binding (Level 3 Trap & Diagnostic)
 # ============================================================================
-def build_find_bug_this_binding(rng: random.Random) -> dict:
+def build_find_bug_this_binding(rng: random.Random, form: str | None = None) -> dict:
     name = rng.choice(["Alice", "Bob", "Charlie"])
     role = rng.choice(["Engineer", "Architect", "Designer"])
 
@@ -340,6 +374,9 @@ def build_find_bug_this_binding(rng: random.Random) -> dict:
     )
 
     return {
+        "form": "direct",
+        "archetype": "debugging",
+        "correctLine": correct_line,
         "category": "this and Binding",
         "context": "Detached Method Reference",
         "prompt": (
@@ -391,6 +428,7 @@ def build_find_bug_this_binding(rng: random.Random) -> dict:
         "verify": {
             "fixedSnippet": fixed_code,
             "source": str(correct_line),
+            "trapValue": "7",
         },
     }
 
@@ -398,7 +436,7 @@ def build_find_bug_this_binding(rng: random.Random) -> dict:
 # ============================================================================
 # TEMPLATE 5: Prototype Chain Mutation vs Shadowing (Level 4 Applied Synthesis)
 # ============================================================================
-def build_prototype_chain_mutation(rng: random.Random) -> dict:
+def build_prototype_chain_mutation(rng: random.Random, form: str | None = None) -> dict:
     val_proto = rng.choice([10, 20, 50])
     val_child = rng.choice([100, 200, 500])
     tag = rng.choice(["itemA", "itemB", "itemC"])
@@ -420,7 +458,10 @@ def build_prototype_chain_mutation(rng: random.Random) -> dict:
     lines = stdout.splitlines()
     answer_plain = ", ".join(lines)
 
+    trap_val = f"{val_child}, 1, {val_child}"
     return {
+        "form": "direct",
+        "archetype": "code-tracing",
         "category": "Prototypes and Inheritance",
         "context": "Prototype Mutation vs Own Property Shadowing",
         "prompt": (
@@ -465,8 +506,8 @@ def build_prototype_chain_mutation(rng: random.Random) -> dict:
                 ),
             },
         ],
-        "references": ["PRG-T01-C01-U04"],
-        "verify": {"source": answer_plain},
+        "references": ["PRG-T01-C01-U04", "PRG-T01-C01-U01"],
+        "verify": {"source": answer_plain, "trapValue": trap_val},
     }
 
 
@@ -474,31 +515,47 @@ TEMPLATES = [
     {
         "key": "scope_hoisting_loop",
         "level": 1,
+        "verificationLevel": "machine-verified",
         "trapTag": "var-vs-let-scope",
+        "forms": {
+            "var-loop": {"level": 1, "skill": "PRG-JS-SCOPE-HOISTING-VAR"},
+            "let-loop": {"level": 1, "skill": "PRG-JS-SCOPE-HOISTING-LET"},
+        },
         "build": build_scope_hoisting_loop,
     },
     {
         "key": "event_loop_concurrency",
         "level": 2,
+        "verificationLevel": "machine-verified",
         "trapTag": "microtask-order",
+        "forms": {"direct": {"level": 2, "skill": "PRG-JS-EVENT-LOOP-MICROTASK"}},
         "build": build_event_loop_concurrency,
     },
     {
         "key": "promise_async_flow",
         "level": 2,
+        "verificationLevel": "machine-verified",
         "trapTag": "unhandled-rejection",
+        "forms": {
+            "reject-catch": {"level": 2, "skill": "PRG-JS-PROMISE-ASYNC-FLOW"},
+            "resolve-then": {"level": 2, "skill": "PRG-JS-PROMISE-ASYNC-FLOW"},
+        },
         "build": build_promise_async_flow,
     },
     {
         "key": "find_bug_this_binding",
         "level": 3,
+        "verificationLevel": "machine-verified",
         "trapTag": "this-binding-lost",
+        "forms": {"direct": {"level": 3, "skill": "PRG-JS-THIS-BINDING-DEBUG"}},
         "build": build_find_bug_this_binding,
     },
     {
         "key": "prototype_chain_mutation",
         "level": 4,
+        "verificationLevel": "machine-verified",
         "trapTag": "prototype-mutation",
+        "forms": {"direct": {"level": 4, "skill": "PRG-JS-PROTOTYPE-CHAIN-MUTATION"}},
         "build": build_prototype_chain_mutation,
     },
 ]

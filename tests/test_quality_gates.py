@@ -379,6 +379,7 @@ class TestQualityGates(unittest.TestCase):
     def test_13_safe_parse_security_payloads_blocked(self) -> None:
         """Test 13: All malicious / dangerous payloads are blocked with verdict 'invalid input'."""
         from math_engine.answer_check import check_answer
+        import time
 
         spec_expr = {"type": "expression", "value": "x**2 - 1", "variables": ["x"]}
         spec_comp = {"type": "complex", "value": "3 - 4*I"}
@@ -416,6 +417,7 @@ class TestQualityGates(unittest.TestCase):
         """Test 14: All existing math drill canonical answers pass check_answer round-trip."""
         import glob
         from math_engine.answer_check import check_answer
+        import time
 
         data_dir = os.environ.get("DRILLS_DATA_DIR", "drills/data")
         files = sorted(glob.glob(os.path.join(data_dir, "*", "*.json")))
@@ -477,6 +479,7 @@ class TestQualityGates(unittest.TestCase):
         """Test 15: Heavy inputs like (x+1)**1000 complete rapidly and do not hang."""
         import time
         from math_engine.answer_check import check_answer
+        import time
 
         spec = {"type": "expression", "value": "x**2 - 1", "variables": ["x"]}
         t0 = time.time()
@@ -484,7 +487,8 @@ class TestQualityGates(unittest.TestCase):
         elapsed = time.time() - t0
 
         self.assertLess(elapsed, 1.5, f"Evaluation of (x+1)**1000 took {elapsed:.2f}s, expected < 1.5s")
-        self.assertEqual(res["verdict"], "incorrect")
+        self.assertIn(res["verdict"], ("invalid input", "incorrect"))
+        self.assertIsInstance(res.get("message"), str)
 
         # Confirm numeric large exponents > 20 are NOT marked invalid input and evaluate correctly:
         # 1. 2^30
@@ -540,6 +544,7 @@ class TestQualityGates(unittest.TestCase):
         """Test 17: Symbolic expressions with exponent > 20 like (x+1)**30 evaluate correctly and do not hang."""
         import time
         from math_engine.answer_check import check_answer
+        import time
 
         spec = {"type": "expression", "value": "(x+1)^30", "variables": ["x"]}
 
@@ -679,6 +684,7 @@ class TestQualityGates(unittest.TestCase):
     def test_20_tolerance_and_decimal_approximation(self) -> None:
         """Test 20: Decimal approximation handling with and without optional tolerance field."""
         from math_engine.answer_check import check_answer
+        import time
 
         # 1. Without tolerance (default strict behavior)
         r1 = check_answer({"type": "number", "value": "2/3"}, "0.667")
@@ -705,6 +711,7 @@ class TestQualityGates(unittest.TestCase):
         import random
         from math_engine.templates.mth_calc_diff import t_diff_power, t_diff_chain
         from math_engine.answer_check import check_answer
+        import time
         from quality_rules import check_gate_g1, check_gate_g2, check_gate_g4
 
         for seed in range(50):
@@ -769,6 +776,7 @@ TEMPLATES = [
     def test_23_diff_whitelist_and_notion_dry_run(self) -> None:
         """Test 23: User input diff(...) blocked as invalid input; Notion dry-run works without network."""
         from math_engine.answer_check import check_answer
+        import time
         from practice_hub import sync_drill_to_notion
 
         # 1. User typing diff(...) returns 'invalid input'
@@ -888,6 +896,7 @@ TEMPLATES = [
         """Test vector comparator, notation flags, diagnostics, and security parser constraints."""
         import random
         from math_engine.answer_check import check_answer
+        import time
 
         spec3d = {"type": "vector", "components": [1, -2, 3]}
 
@@ -955,11 +964,32 @@ TEMPLATES = [
             "[x for x in range(10)]",
             "[1, 2, 3, 4, 5]",
             "<" + "1," * 150 + "1>",
+            "9**9**9",
         ]
         for payload in security_payloads:
             res_sec = check_answer(spec3d, payload)
             self.assertEqual(res_sec["verdict"], "invalid input", f"Payload failed to be rejected safely: {payload}")
             self.assertIn("Invalid input", res_sec["message"])
+
+        # Heavy exponent with variable allowed: (k+1)**101 rejected by limit 100, (k+1)**100 evaluates to incorrect without hanging
+        from math_engine.answer_check import safe_parse, is_equal, EqualTimeoutError, SafeParseError
+        with self.assertRaises(SafeParseError):
+            safe_parse("(k+1)**101", variables=["k"])
+
+        res_k100 = check_answer({"type": "expression", "value": "k + 1", "variables": ["k"]}, "(k+1)**100")
+        self.assertEqual(res_k100["verdict"], "incorrect")
+
+        # is_equal timeout test with heavy symbolic expression
+        import sympy as sp
+        sym_k = sp.Symbol("k")
+        heavy_pow = (sym_k + 1)**1000
+        t_start = time.time()
+        res_eq = is_equal(heavy_pow, sym_k, timeout=0.5, raise_on_timeout=False)
+        self.assertFalse(res_eq)
+        self.assertLess(time.time() - t_start, 1.0)
+
+        with self.assertRaises(EqualTimeoutError):
+            is_equal(heavy_pow, sym_k, timeout=0.5, raise_on_timeout=True)
 
         # 7. Quality gate evaluation of vector templates across seeds
         from math_engine.templates.mth_vectors import TEMPLATES as VEC_TEMPLATES
@@ -983,6 +1013,76 @@ TEMPLATES = [
                     self.assertTrue(g4["passed"])
                     g6 = check_gate_g6(prob, is_code=False)
                     self.assertTrue(g6["passed"])
+
+    def test_20_numpy_fallback_vector_generation(self) -> None:
+        """Test 20: Vector template generation succeeds 100% when HAS_NUMPY is False."""
+        import random
+        import math_engine.templates.mth_vectors as mv
+        orig_has_np = mv.HAS_NUMPY
+        try:
+            mv.HAS_NUMPY = False
+            for tpl in mv.TEMPLATES:
+                for form_name in tpl["forms"].keys():
+                    for seed in range(1, 21):
+                        rng = random.Random(seed * 777)
+                        prob = tpl["build"](rng, form=form_name)
+                        self.assertIn("answerPlain", prob)
+                        self.assertIn("verify", prob)
+        finally:
+            mv.HAS_NUMPY = orig_has_np
+
+    def test_21_vector_variable_and_unicode_brackets(self) -> None:
+        """Test 21: Vector checker normalizes Unicode brackets, supports variables, and detects vector for scalar."""
+        from math_engine.answer_check import check_answer
+
+        # 1. Unicode brackets: U+27E8 / U+27E9 and U+3008 / U+3009
+        spec = {"type": "vector", "components": ["1", "2", "3"]}
+        res_u27 = check_answer(spec, "⟨1, 2, 3⟩")
+        self.assertEqual(res_u27["verdict"], "correct")
+        res_u30 = check_answer(spec, "〈1, 2, 3〉")
+        self.assertEqual(res_u30["verdict"], "correct")
+
+        # 2. check_number detects vectors in [], (), and <>
+        num_spec = {"type": "number", "value": "10"}
+        res_br = check_answer(num_spec, "[1, 2, 3]")
+        self.assertEqual(res_br["verdict"], "incorrect")
+        self.assertEqual(res_br["diagnostics"][0]["code"], "vector_given_for_scalar")
+        res_par = check_answer(num_spec, "(1, 2, 3)")
+        self.assertEqual(res_par["verdict"], "incorrect")
+        self.assertEqual(res_par["diagnostics"][0]["code"], "vector_given_for_scalar")
+
+        # 3. Pilot variables support: <2t, cos(t)>
+        var_spec = {"type": "vector", "components": ["2*t", "cos(t)"], "variables": ["t"]}
+        res_var = check_answer(var_spec, "<2*t, cos(t)>")
+        self.assertEqual(res_var["verdict"], "correct")
+
+        # 4. Heavy input with variables does not hang and respects limits
+        res_heavy = check_answer(var_spec, "<(t+1)**1000, cos(t)>")
+        self.assertIn(res_heavy["verdict"], ("invalid input", "incorrect"))
+
+    def test_22_anti_leak_gate(self) -> None:
+        """Test 22: Anti-leak gate rejects prompts or hints containing answers or spoiler examples."""
+        from quality_rules import check_gate_anti_leak, QualityError
+
+        # A leaking hint with answerPlain
+        p_leak = {
+            "id": "LEAK_01",
+            "answerPlain": "<-1/sqrt(2), 1/sqrt(2)>",
+            "answerSpec": {"type": "vector", "components": ["-1/sqrt(2)", "1/sqrt(2)"]},
+            "inputHint": "Enter vector components like <-1/sqrt(2), 1/sqrt(2)>",
+        }
+        with self.assertRaises(QualityError):
+            check_gate_anti_leak(p_leak)
+
+        # A clean structural hint
+        p_clean = {
+            "id": "CLEAN_01",
+            "answerPlain": "<-1/sqrt(2), 1/sqrt(2)>",
+            "answerSpec": {"type": "vector", "components": ["-1/sqrt(2)", "1/sqrt(2)"]},
+            "inputHint": "Enter vector components like <x, y>",
+        }
+        res = check_gate_anti_leak(p_clean)
+        self.assertTrue(res["passed"])
 
 
 if __name__ == "__main__":

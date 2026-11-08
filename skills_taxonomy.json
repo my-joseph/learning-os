@@ -1,6 +1,14 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "version": "1.0",
+  "domain_order": [
+    "geometry",
+    "complex_numbers",
+    "javascript_core",
+    "software_architecture",
+    "calculus",
+    "vectors"
+  ],
   "skills": {
     "GEO-RIGHT-TRIANGLE-HYP": {
       "name": "Calculate Hypotenuse via Pythagorean Theorem",
