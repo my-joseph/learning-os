@@ -1,0 +1,834 @@
+{
+  "schemaVersion": "2.0-math",
+  "drillId": "DRL-MTH-T01-C03-01",
+  "subject": "MATH",
+  "unitCode": "MTH-T01-C03",
+  "unitTitle": "Integers",
+  "chapterCode": "MTH-T01-C03",
+  "topicCode": "MTH-T01",
+  "unitNotionUrl": "https://www.notion.so/4003818f8ba0806586fef4b5d423cd59",
+  "createdAt": "2026-11-08 17:14:03",
+  "config": {
+    "questionCount": 8,
+    "difficulty": "ALL",
+    "difficultyMode": "Mixed Exam Mode"
+  },
+  "mistakeTags": [
+    {
+      "id": "c03-double-negative-slip",
+      "label": "Failed to convert subtracting a negative into addition",
+      "name": "Double Negative Subtraction Slip",
+      "autoFrom": [
+        "whole_sign_flip"
+      ]
+    },
+    {
+      "id": "c03-signed-division-sign-error",
+      "label": "Lost negative sign when dividing integers of opposite signs",
+      "name": "Signed Division Sign Error",
+      "autoFrom": [
+        "whole_sign_flip"
+      ]
+    },
+    {
+      "id": "c03-negated-square-precedence-trap",
+      "label": "Evaluated -a^2 as (-a)^2 instead of -(a^2)",
+      "name": "Negated Power Precedence Trap",
+      "autoFrom": [
+        "whole_sign_flip"
+      ]
+    },
+    {
+      "id": "c03-net-integer-change-trap",
+      "label": "Reversed directional signs in multi-stage integer change",
+      "name": "Directional Integer Sign Trap",
+      "autoFrom": []
+    }
+  ],
+  "problems": [
+    {
+      "form": "direct",
+      "category": "Trap & Edge Case",
+      "context": "Integers: Negated Power Precedence Trap",
+      "references": [
+        "MTH-T01-C03-U04"
+      ],
+      "prompt": "Evaluate the integer expression $-7^2 - (-2)^2$.",
+      "display": "-7^2 - (-2)^2",
+      "plainText": "(0 - 7^2) and (2^2) [beta]",
+      "answerSpec": {
+        "type": "number",
+        "value": "-53"
+      },
+      "answerDisplay": "-53",
+      "answerPlain": "-53",
+      "inputHint": "Enter the exact signed integer value",
+      "checkpointHint": "Distinguish carefully between an unparenthesized negated power and a parenthesized negative base squared.",
+      "commonTrapTag": "c03-negated-square-precedence-trap",
+      "steps": [
+        {
+          "latex": "-7^2 = -(49) = -49",
+          "explain": "Without parentheses around the negative sign, the exponent applies only to the base integer."
+        },
+        {
+          "latex": "(-2)^2 = (-2)(-2) = 4",
+          "explain": "With parentheses, the negative base is squared to produce a positive integer."
+        },
+        {
+          "latex": "-49 - 4 = -53",
+          "explain": "Subtract the second square from the negated first square."
+        }
+      ],
+      "level": 3,
+      "skill": "MTH-PREALG-C03-POWER-TRAP",
+      "verificationLevel": "machine-verified",
+      "id": "Q01",
+      "templateKey": "c03-negated-power-order-trap",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "c03-negated-power-order-trap|direct|(# - #^#) and (#^#) [beta]",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C03-POWER-TRAP",
+          "stepRange": [
+            2,
+            5
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c03-negated-square-precedence-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c03-negated-power-order-trap|direct|(# - #^#) and (#^#) [beta]",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C03-U04",
+          "title": "Multiply and Divide Integers",
+          "notionUrl": "https://www.notion.so/4003818f8ba0800386f1db39506f633a"
+        }
+      ],
+      "trapValue": "45",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "reverse",
+      "category": "Reverse Reasoning",
+      "context": "Integers: Signed Multiplication & Division Equations",
+      "references": [
+        "MTH-T01-C03-U05"
+      ],
+      "prompt": "Find the integer $x$ that satisfies the equation $-5x + 11 = 91$.",
+      "display": "-5x + 11 = 91 \\implies x = ?",
+      "plainText": "(0 - 5)*x + 11 = 91 [beta]",
+      "answerSpec": {
+        "type": "number",
+        "value": "-16"
+      },
+      "answerDisplay": "-16",
+      "answerPlain": "-16",
+      "inputHint": "Enter the exact signed integer value",
+      "checkpointHint": "Subtract the constant from both sides first, then divide by the negative coefficient, paying close attention to the sign of the quotient.",
+      "commonTrapTag": "c03-signed-division-sign-error",
+      "steps": [
+        {
+          "latex": "-5x = 91 - 11 = 80",
+          "explain": "Subtract the constant term from both sides."
+        },
+        {
+          "latex": "x = \\frac{80}{-5}",
+          "explain": "Divide both sides by the negative coefficient."
+        },
+        {
+          "latex": "x = -16",
+          "explain": "A positive integer divided by a negative integer yields a negative quotient."
+        }
+      ],
+      "level": 2,
+      "skill": "MTH-PREALG-C03-MULT-DIV",
+      "verificationLevel": "machine-verified",
+      "id": "Q02",
+      "templateKey": "c03-signed-mult-div-equations",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "c03-signed-mult-div-equations|reverse|(# - #)*x + # = # [beta]",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C03-MULT-DIV",
+          "stepRange": [
+            2,
+            4
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c03-signed-division-sign-error",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c03-signed-mult-div-equations|reverse|(# - #)*x + # = # [beta]",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C03-U05",
+          "title": "Solve Equations Using Integers; The Division Property of Equality",
+          "notionUrl": "https://www.notion.so/4003818f8ba080f4816cfd31ae788267"
+        }
+      ],
+      "trapValue": "16",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "direct",
+      "category": "Reverse Reasoning",
+      "context": "Integers: Signed Multiplication & Division Equations",
+      "references": [
+        "MTH-T01-C03-U05"
+      ],
+      "prompt": "Solve the integer equation $-8x + 20 = 76$ for $x$.",
+      "display": "-8x + 20 = 76",
+      "plainText": "(0 - 8)*x + 20 = 76 [epsilon]",
+      "answerSpec": {
+        "type": "number",
+        "value": "-7"
+      },
+      "answerDisplay": "-7",
+      "answerPlain": "-7",
+      "inputHint": "Enter the exact signed integer value",
+      "checkpointHint": "Subtract the constant from both sides first, then divide by the negative coefficient, paying close attention to the sign of the quotient.",
+      "commonTrapTag": "c03-signed-division-sign-error",
+      "steps": [
+        {
+          "latex": "-8x = 76 - 20 = 56",
+          "explain": "Subtract the constant term from both sides."
+        },
+        {
+          "latex": "x = \\frac{56}{-8}",
+          "explain": "Divide both sides by the negative coefficient."
+        },
+        {
+          "latex": "x = -7",
+          "explain": "A positive integer divided by a negative integer yields a negative quotient."
+        }
+      ],
+      "level": 2,
+      "skill": "MTH-PREALG-C03-MULT-DIV",
+      "verificationLevel": "machine-verified",
+      "id": "Q03",
+      "templateKey": "c03-signed-mult-div-equations",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "c03-signed-mult-div-equations|direct|(# - #)*x + # = # [epsilon]",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C03-MULT-DIV",
+          "stepRange": [
+            2,
+            4
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c03-signed-division-sign-error",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c03-signed-mult-div-equations|direct|(# - #)*x + # = # [epsilon]",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C03-U05",
+          "title": "Solve Equations Using Integers; The Division Property of Equality",
+          "notionUrl": "https://www.notion.so/4003818f8ba080f4816cfd31ae788267"
+        }
+      ],
+      "trapValue": "7",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "direct",
+      "category": "Core Skill",
+      "context": "Integers: Signed Addition and Subtraction",
+      "references": [
+        "MTH-T01-C03-U03"
+      ],
+      "prompt": "Evaluate the signed integer expression $-33 + 35 - (-21)$.",
+      "display": "-33 + 35 - (-21)",
+      "plainText": "(0 - 33) + 35 + 21 [zeta]",
+      "answerSpec": {
+        "type": "number",
+        "value": "23"
+      },
+      "answerDisplay": "23",
+      "answerPlain": "23",
+      "inputHint": "Enter the exact signed integer value",
+      "checkpointHint": "Rewrite subtracting a negative as adding a positive, then combine the signed integers from left to right.",
+      "commonTrapTag": "c03-double-negative-slip",
+      "steps": [
+        {
+          "latex": "-33 + 35 = 2",
+          "explain": "Combine the first two signed integers."
+        },
+        {
+          "latex": "2 + 21",
+          "explain": "Add the positive increment to the intermediate result."
+        },
+        {
+          "latex": "= 23",
+          "explain": "Simplify to obtain the final signed integer."
+        }
+      ],
+      "level": 1,
+      "skill": "MTH-PREALG-C03-ADD-SUB",
+      "verificationLevel": "machine-verified",
+      "id": "Q04",
+      "templateKey": "c03-abs-value-integer-add",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "c03-abs-value-integer-add|direct|(# - #) + # + # [zeta]",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C03-ADD-SUB",
+          "stepRange": [
+            1,
+            3
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c03-double-negative-slip",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c03-abs-value-integer-add|direct|(# - #) + # + # [zeta]",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C03-U03",
+          "title": "Subtract Integers",
+          "notionUrl": "https://www.notion.so/4003818f8ba0802e991ff164f1ebedba"
+        }
+      ],
+      "trapValue": "-19",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "elevation",
+      "category": "Core Skill",
+      "context": "Integers: Signed Addition and Subtraction",
+      "references": [
+        "MTH-T01-C03-U03"
+      ],
+      "prompt": "A submersible is at an elevation of $-40$ meters relative to sea level. It ascends $33$ meters and then ascends another $15$ meters. What is its new elevation in meters?",
+      "display": "-40 + 33 + 15",
+      "plainText": "(0 - 40) + 33 + 15 [beta]",
+      "answerSpec": {
+        "type": "number",
+        "value": "8"
+      },
+      "answerDisplay": "8",
+      "answerPlain": "8",
+      "inputHint": "Enter the exact signed integer value",
+      "checkpointHint": "Rewrite subtracting a negative as adding a positive, then combine the signed integers from left to right.",
+      "commonTrapTag": "c03-double-negative-slip",
+      "steps": [
+        {
+          "latex": "-40 + 33 = -7",
+          "explain": "Combine the first two signed integers."
+        },
+        {
+          "latex": "-7 + 15",
+          "explain": "Add the positive increment to the intermediate result."
+        },
+        {
+          "latex": "= 8",
+          "explain": "Simplify to obtain the final signed integer."
+        }
+      ],
+      "level": 1,
+      "skill": "MTH-PREALG-C03-ADD-SUB",
+      "verificationLevel": "machine-verified",
+      "id": "Q05",
+      "templateKey": "c03-abs-value-integer-add",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "c03-abs-value-integer-add|elevation|(# - #) + # + # [beta]",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C03-ADD-SUB",
+          "stepRange": [
+            1,
+            3
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c03-double-negative-slip",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c03-abs-value-integer-add|elevation|(# - #) + # + # [beta]",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C03-U03",
+          "title": "Subtract Integers",
+          "notionUrl": "https://www.notion.so/4003818f8ba0802e991ff164f1ebedba"
+        }
+      ],
+      "trapValue": "-22",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "direct",
+      "category": "Interleaved Synthesis",
+      "context": "Integers: Multi-Stage Signed Rate Synthesis",
+      "references": [
+        "MTH-T01-C03-U03",
+        "MTH-T01-C03-U04"
+      ],
+      "prompt": "A deep-sea drilling rig starts at an elevation of $21$ meters above a reference datum, descends at $5$ meters per minute for $9$ minutes, and then ascends at $4$ meters per minute for $5$ minutes. Find its final elevation relative to the datum.",
+      "display": "E = 21 - 5(9) + 4(5)",
+      "plainText": "21 - 5*9 + 4*5 [alpha]",
+      "answerSpec": {
+        "type": "number",
+        "value": "-4"
+      },
+      "answerDisplay": "-4",
+      "answerPlain": "-4",
+      "inputHint": "Enter the exact signed integer value",
+      "checkpointHint": "Multiply each signed rate of change by its duration, then add the net changes to the initial value.",
+      "commonTrapTag": "c03-net-integer-change-trap",
+      "steps": [
+        {
+          "latex": "\\Delta_1 = (9)(-5) = -45",
+          "explain": "Compute the signed change during the first phase."
+        },
+        {
+          "latex": "\\Delta_2 = (5)(4) = 20",
+          "explain": "Compute the signed change during the second phase."
+        },
+        {
+          "latex": "\\text{Final} = 21 - 45 + 20 = -4",
+          "explain": "Combine the initial value with both net changes."
+        }
+      ],
+      "level": 4,
+      "skill": "MTH-PREALG-C03-SYNTHESIS",
+      "verificationLevel": "machine-verified",
+      "id": "Q06",
+      "templateKey": "c03-thermal-depth-integer-synthesis",
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "c03-thermal-depth-integer-synthesis|direct|# - #*# + #*# [alpha]",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C03-SYNTHESIS",
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c03-net-integer-change-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c03-thermal-depth-integer-synthesis|direct|# - #*# + #*# [alpha]",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C03-U03",
+          "title": "Subtract Integers",
+          "notionUrl": "https://www.notion.so/4003818f8ba0802e991ff164f1ebedba"
+        },
+        {
+          "code": "MTH-T01-C03-U04",
+          "title": "Multiply and Divide Integers",
+          "notionUrl": "https://www.notion.so/4003818f8ba0800386f1db39506f633a"
+        }
+      ],
+      "trapValue": "46",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "nested-abs",
+      "category": "Trap & Edge Case",
+      "context": "Integers: Negated Power Precedence Trap",
+      "references": [
+        "MTH-T01-C03-U04"
+      ],
+      "prompt": "Evaluate the integer expression $-8^2 + |(-4)(7)|$.",
+      "display": "-8^2 + |(-4)(7)|",
+      "plainText": "(0 - 8^2) and (4^2) [gamma]",
+      "answerSpec": {
+        "type": "number",
+        "value": "-36"
+      },
+      "answerDisplay": "-36",
+      "answerPlain": "-36",
+      "inputHint": "Enter the exact signed integer value",
+      "checkpointHint": "Distinguish carefully between an unparenthesized negated power and a parenthesized negative base squared.",
+      "commonTrapTag": "c03-negated-square-precedence-trap",
+      "steps": [
+        {
+          "latex": "-8^2 = -(8^2) = -64",
+          "explain": "Exponentiation binds tighter than unary negation, so square first and then negate."
+        },
+        {
+          "latex": "|(-4)(7)| = |-28| = 28",
+          "explain": "Evaluate the product inside the absolute value bars and take its non-negative magnitude."
+        },
+        {
+          "latex": "-64 + 28 = -36",
+          "explain": "Add the two results to find the exact value."
+        }
+      ],
+      "level": 3,
+      "skill": "MTH-PREALG-C03-POWER-TRAP",
+      "verificationLevel": "machine-verified",
+      "id": "Q07",
+      "templateKey": "c03-negated-power-order-trap",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "c03-negated-power-order-trap|nested-abs|(# - #^#) and (#^#) [gamma]",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C03-POWER-TRAP",
+          "stepRange": [
+            2,
+            5
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c03-negated-square-precedence-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c03-negated-power-order-trap|nested-abs|(# - #^#) and (#^#) [gamma]",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C03-U04",
+          "title": "Multiply and Divide Integers",
+          "notionUrl": "https://www.notion.so/4003818f8ba0800386f1db39506f633a"
+        }
+      ],
+      "trapValue": "92",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "contextual",
+      "category": "Interleaved Synthesis",
+      "context": "Integers: Multi-Stage Signed Rate Synthesis",
+      "references": [
+        "MTH-T01-C03-U03",
+        "MTH-T01-C03-U04"
+      ],
+      "prompt": "A high-altitude weather probe starts at $24^\\circ\\text{C}$. Its temperature changes by $-8^\\circ\\text{C}$ per hour for $6$ hours during ascent, and then changes by $+7^\\circ\\text{C}$ per hour for $4$ hours. What is the final temperature in degrees Celsius?",
+      "display": "T = 24 + (6)(-8) + (4)(7)",
+      "plainText": "24 - 8*6 + 7*4 [epsilon]",
+      "answerSpec": {
+        "type": "number",
+        "value": "4"
+      },
+      "answerDisplay": "4",
+      "answerPlain": "4",
+      "inputHint": "Enter the exact signed integer value",
+      "checkpointHint": "Multiply each signed rate of change by its duration, then add the net changes to the initial value.",
+      "commonTrapTag": "c03-net-integer-change-trap",
+      "steps": [
+        {
+          "latex": "\\Delta_1 = (6)(-8) = -48",
+          "explain": "Compute the signed change during the first phase."
+        },
+        {
+          "latex": "\\Delta_2 = (4)(7) = 28",
+          "explain": "Compute the signed change during the second phase."
+        },
+        {
+          "latex": "\\text{Final} = 24 - 48 + 28 = 4",
+          "explain": "Combine the initial value with both net changes."
+        }
+      ],
+      "level": 4,
+      "skill": "MTH-PREALG-C03-SYNTHESIS",
+      "verificationLevel": "machine-verified",
+      "id": "Q08",
+      "templateKey": "c03-thermal-depth-integer-synthesis",
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "c03-thermal-depth-integer-synthesis|contextual|# - #*# + #*# [epsilon]",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C03-SYNTHESIS",
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c03-net-integer-change-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c03-thermal-depth-integer-synthesis|contextual|# - #*# + #*# [epsilon]",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C03-U03",
+          "title": "Subtract Integers",
+          "notionUrl": "https://www.notion.so/4003818f8ba0802e991ff164f1ebedba"
+        },
+        {
+          "code": "MTH-T01-C03-U04",
+          "title": "Multiply and Divide Integers",
+          "notionUrl": "https://www.notion.so/4003818f8ba0800386f1db39506f633a"
+        }
+      ],
+      "trapValue": "44",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    }
+  ],
+  "sessionSummary": {
+    "practiceStatus": "Ready",
+    "score": 0,
+    "maxScore": 8,
+    "accuracyPct": 0,
+    "mistakeCategories": [],
+    "divergedStepsSummary": "",
+    "attemptDate": null,
+    "syncedToNotionAt": null,
+    "notionPageId": null
+  },
+  "localFilePath": "drills/data/MTH-T01-C03/DRL-MTH-T01-C03-01.json"
+}

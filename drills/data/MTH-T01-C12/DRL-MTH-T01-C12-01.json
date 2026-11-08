@@ -7,9 +7,9 @@
   "chapterCode": "MTH-T01-C12",
   "topicCode": "MTH-T01",
   "unitNotionUrl": "https://www.notion.so/4003818f8ba080cfbf95ef15001d8a52",
-  "createdAt": "2026-11-07 17:01:36",
+  "createdAt": "2026-11-08 17:14:03",
   "config": {
-    "questionCount": 20,
+    "questionCount": 8,
     "difficulty": "ALL",
     "difficultyMode": "Mixed Exam Mode"
   },
@@ -30,15 +30,23 @@
     },
     {
       "id": "trapezoid-height",
-      "label": "Forgot $\\frac{1}{2}$ in trapezoid area: $A = \\frac{1}{2}(b_1 + b_2)h$",
-      "name": "Trapezoid Area Constant Error",
+      "label": "Forgot factor of 2 in numerator when solving for height",
+      "name": "Trapezoid Height Factor Error",
+      "autoFrom": [
+        "off_by_factor"
+      ]
+    },
+    {
+      "id": "omitted-half-factor",
+      "label": "Forgot 1/2 in trapezoid area: $A = 1/2(b_1 + b_2)h$",
+      "name": "Trapezoid Omitted Half Factor",
       "autoFrom": [
         "off_by_factor"
       ]
     },
     {
       "id": "circle-diameter-radius",
-      "label": "Used diameter instead of radius in $\\pi r^2$",
+      "label": "Used diameter instead of radius in formula",
       "name": "Diameter vs Radius Confusion",
       "autoFrom": [
         "off_by_factor"
@@ -51,6 +59,24 @@
       "autoFrom": []
     },
     {
+      "id": "linear-addition-trap",
+      "label": "Added legs linearly without squaring ($c = a + b$)",
+      "name": "Linear Addition Trap",
+      "autoFrom": []
+    },
+    {
+      "id": "pythagoras-leg-subtraction",
+      "label": "Subtracted hypotenuse and leg linearly ($a = c - b$)",
+      "name": "Linear Leg Subtraction Error",
+      "autoFrom": []
+    },
+    {
+      "id": "path-distance-vs-displacement",
+      "label": "Calculated total perimeter path instead of straight-line distance",
+      "name": "Path vs Displacement Error",
+      "autoFrom": []
+    },
+    {
       "id": "arithmetic-slip",
       "label": "Arithmetic / calculation slip",
       "name": "Arithmetic Slip",
@@ -58,113 +84,121 @@
         "rounding",
         "off_by_factor"
       ]
+    },
+    {
+      "id": "whole-triangle-inradius-confusion",
+      "label": "Computed inradius of parent triangle instead of divided altitude sub-triangle",
+      "name": "Parent vs Sub-Triangle Inradius Confusion",
+      "autoFrom": []
+    },
+    {
+      "id": "trapezoid-diagonal-bisect-trap",
+      "label": "Assumed trapezoid diagonals bisect each other instead of using similar triangle ratio",
+      "name": "Trapezoid Diagonal Bisection Fallacy",
+      "autoFrom": []
+    },
+    {
+      "id": "pi-retained-in-lunes-trap",
+      "label": "Retained pi factor in area of lunes of Hippocrates (failing to recognize pi cancellation)",
+      "name": "Lunes Pi Factor Retention Trap",
+      "autoFrom": []
+    },
+    {
+      "id": "frustum-cylinder-average-trap",
+      "label": "Averaged radii and computed as cylinder instead of conical frustum",
+      "name": "Frustum Average Cylinder Error",
+      "autoFrom": []
+    },
+    {
+      "id": "internal-boundary-double-count-trap",
+      "label": "Included internal boundary face in composite solid surface area",
+      "name": "Internal Boundary Face Double Count",
+      "autoFrom": []
     }
   ],
   "problems": [
     {
-      "category": "Core Skill",
-      "context": "Geometry: 3D Solids",
+      "form": "from-diameter",
+      "category": "Trap & Edge Case",
+      "context": "Geometry: 3D Conical Frustum from Diameter",
       "references": [
         "MTH-T01-C12-U06"
       ],
-      "prompt": "Find the exact volume $V$ of a right circular cylinder with radius $r = 2$ and height $h = 8$ (in terms of $\\pi$).",
-      "display": "V = \\pi r^2 h",
-      "plainText": "pi * 2^2 * 8",
-      "visual": {
-        "type": "geometry-3d-wireframe",
-        "viewBox": {
-          "width": 300,
-          "height": 190
-        },
-        "elements": [
-          {
-            "type": "cylinder",
-            "center": [
-              150,
-              95
-            ],
-            "radiusX": 55,
-            "radiusY": 16,
-            "height": 90,
-            "stroke": "#38bdf8",
-            "fill": "rgba(56, 189, 248, 0.08)"
-          },
-          {
-            "type": "line",
-            "points": [
-              [
-                150,
-                50
-              ],
-              [
-                205,
-                50
-              ]
-            ],
-            "stroke": "#cbd5e1",
-            "strokeDasharray": "2 2"
-          },
-          {
-            "type": "dimension-label",
-            "start": [
-              150,
-              50
-            ],
-            "end": [
-              205,
-              50
-            ],
-            "label": "r = 2",
-            "position": "top",
-            "offset": 8
-          },
-          {
-            "type": "dimension-label",
-            "start": [
-              215,
-              50
-            ],
-            "end": [
-              215,
-              140
-            ],
-            "label": "h = 8",
-            "position": "right",
-            "offset": 12,
-            "highlight": true
-          }
-        ]
-      },
+      "prompt": "A right circular cone has base diameter $D = 24$ and total height $H = 16$. The cone is truncated by a plane parallel to the base at a distance of $h = 4$ above the base, forming a conical frustum. Find the exact volume of this frustum in terms of $\\pi$.",
+      "display": "\\text{Frustum of Cone: } D = 24,\\ H = 16,\\ h = 4 \\implies V = ?",
+      "plainText": "(1/3)*pi*((24/2)^2)*16 - (1/3)*pi*((9)^2)*12",
       "answerSpec": {
         "type": "expression",
-        "value": "32*pi",
+        "value": "444*pi",
         "variables": [
           "pi"
         ]
       },
-      "answerDisplay": "32\\pi",
-      "answerPlain": "32 pi",
-      "inputHint": "Enter exact form with pi, e.g. 230 pi or 470*pi",
-      "checkpointHint": "The base area is $B = \\pi r^2 = 4\\pi$.",
-      "commonTrapTag": "volume-surface-area",
+      "answerDisplay": "444\\pi",
+      "answerPlain": "444 pi",
+      "inputHint": "Enter exact form with pi, e.g. 150 pi or 150*pi",
+      "checkpointHint": "Halve the base diameter to get $R = D/2$, use similar triangles to determine the top cone radius at height $H - h$, and subtract the top cone volume from the full cone volume.",
+      "commonTrapTag": "frustum-cylinder-average-trap",
       "steps": [
         {
-          "latex": "V = \\pi r^2 h = \\pi(2)^2(8)",
-          "explain": "Substitute the radius and height into the cylinder volume formula."
+          "latex": "R = \\frac{24}{2} = 12, \\quad h_{\\text{top}} = 16 - 4 = 12 \\implies r_{\\text{top}} = 12 \\times \\frac{12}{16} = 9",
+          "explain": "Convert diameter to radius $R = 12$ and find top cone radius $r_{\\text{top}} = 9$ by similar triangles."
         },
         {
-          "latex": "= \\pi(4)(8)",
-          "explain": "Evaluate the base area: $2^2 = 4$."
+          "latex": "V_{\\text{total}} = \\frac{1}{3}\\pi (12^2)(16) = 768\\pi, \\quad V_{\\text{top}} = \\frac{1}{3}\\pi (9^2)(12) = 324\\pi",
+          "explain": "Compute volumes of original cone and removed top cone via $V = \\frac{1}{3}\\pi r^2 h$."
         },
         {
-          "latex": "= 32\\pi",
-          "explain": "Multiply by the height: $4 \\times 8 = 32$."
+          "latex": "V_{\\text{frustum}} = V_{\\text{total}} - V_{\\text{top}} = 768\\pi - 324\\pi = 444\\pi",
+          "explain": "Subtract volumes: $768\\pi - 324\\pi = 444\\pi$."
         }
       ],
+      "level": 3,
+      "skill": "GEO-CYLINDER-VOLUME-DIAMETER",
+      "verificationLevel": "machine-verified",
       "id": "Q01",
-      "templateKey": "cylinder-volume",
-      "level": 3,
+      "templateKey": "cone-frustum-volume",
       "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "cone-frustum-volume|from-diameter|(#/#)*pi*((#/#)^#)*# - (#/#)*pi*((#)^#)*#",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "GEO-CYLINDER-VOLUME-DIAMETER",
+          "stepRange": [
+            2,
+            5
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "frustum-cylinder-average-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "cone-frustum-volume|from-diameter|(#/#)*pi*((#/#)^#)*# - (#/#)*pi*((#)^#)*#",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
       "referenceBadges": [
         {
           "code": "MTH-T01-C12-U06",
@@ -172,521 +206,97 @@
           "notionUrl": "https://www.notion.so/4003818f8ba080cabf64cabe4a56586d"
         }
       ],
+      "trapValue": "441*pi",
       "state": {
         "userInput": "",
-        "userCode": "",
         "score": null,
         "divergedStep": null,
         "mistakes": [],
-        "mistakeNote": "",
-        "skipped": false,
-        "lastCheck": null,
-        "lastTestReport": null
+        "lastCheck": null
       }
     },
     {
-      "category": "Core Skill",
-      "context": "Geometry: Pythagorean Theorem",
-      "references": [
-        "MTH-T01-C12-U03"
-      ],
-      "prompt": "Find the length of the hypotenuse $c$ of the right triangle with legs $a = 12$ and $b = 5$.",
-      "display": "c = \\sqrt{12^2 + 5^2}",
-      "plainText": "sqrt(12^2 + 5^2)",
-      "visual": {
-        "type": "geometry-2d",
-        "viewBox": {
-          "width": 320,
-          "height": 190
-        },
-        "elements": [
-          {
-            "type": "polygon",
-            "points": [
-              [
-                50,
-                160
-              ],
-              [
-                110,
-                160
-              ],
-              [
-                50,
-                20
-              ]
-            ],
-            "stroke": "#818cf8",
-            "fill": "rgba(129, 140, 248, 0.08)",
-            "rightAngleAt": [
-              50,
-              160
-            ]
-          },
-          {
-            "type": "dimension-label",
-            "start": [
-              50,
-              20
-            ],
-            "end": [
-              50,
-              160
-            ],
-            "label": "a = 12",
-            "position": "left",
-            "offset": 12
-          },
-          {
-            "type": "dimension-label",
-            "start": [
-              50,
-              160
-            ],
-            "end": [
-              110,
-              160
-            ],
-            "label": "b = 5",
-            "position": "bottom",
-            "offset": 14
-          },
-          {
-            "type": "dimension-label",
-            "start": [
-              50,
-              20
-            ],
-            "end": [
-              110,
-              160
-            ],
-            "label": "c = ?",
-            "position": "hypotenuse",
-            "offset": 14,
-            "highlight": true
-          }
-        ]
-      },
-      "answerSpec": {
-        "type": "number",
-        "value": "13",
-        "forms": [
-          "exact"
-        ]
-      },
-      "answerDisplay": "13",
-      "answerPlain": "13",
-      "inputHint": "Enter integer, e.g. 31 or 47",
-      "checkpointHint": "Evaluate $a^2 + b^2 = 144 + 25 = 169$.",
-      "commonTrapTag": "pythagoras-hypotenuse",
-      "steps": [
-        {
-          "latex": "c = \\sqrt{a^2 + b^2} = \\sqrt{12^2 + 5^2}",
-          "explain": "Write the Pythagorean formula solved for hypotenuse $c$ and substitute the legs."
-        },
-        {
-          "latex": "= \\sqrt{144 + 25} = \\sqrt{169}",
-          "explain": "Square both legs and add under the radical."
-        },
-        {
-          "latex": "= 13",
-          "explain": "Evaluate the exact square root to find the length of the hypotenuse $c$."
-        }
-      ],
-      "id": "Q02",
-      "templateKey": "pythagoras-hypotenuse",
-      "level": 1,
-      "levelLabel": "Level 1 - Foundation",
-      "referenceBadges": [
-        {
-          "code": "MTH-T01-C12-U03",
-          "title": "Use Properties of Angles, Triangles, and the Pythagorean Theorem",
-          "notionUrl": "https://www.notion.so/4003818f8ba080459e0dd81747fad236"
-        }
-      ],
-      "state": {
-        "userInput": "",
-        "userCode": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "mistakeNote": "",
-        "skipped": false,
-        "lastCheck": null,
-        "lastTestReport": null
-      }
-    },
-    {
-      "category": "Core Skill",
-      "context": "Geometry: Pythagorean Theorem",
-      "references": [
-        "MTH-T01-C12-U03"
-      ],
-      "prompt": "Find the length of the hypotenuse $c$ of the right triangle with legs $a = 6$ and $b = 8$.",
-      "display": "c = \\sqrt{6^2 + 8^2}",
-      "plainText": "sqrt(6^2 + 8^2)",
-      "visual": {
-        "type": "geometry-2d",
-        "viewBox": {
-          "width": 320,
-          "height": 190
-        },
-        "elements": [
-          {
-            "type": "polygon",
-            "points": [
-              [
-                50,
-                160
-              ],
-              [
-                190,
-                160
-              ],
-              [
-                50,
-                55
-              ]
-            ],
-            "stroke": "#818cf8",
-            "fill": "rgba(129, 140, 248, 0.08)",
-            "rightAngleAt": [
-              50,
-              160
-            ]
-          },
-          {
-            "type": "dimension-label",
-            "start": [
-              50,
-              55
-            ],
-            "end": [
-              50,
-              160
-            ],
-            "label": "a = 6",
-            "position": "left",
-            "offset": 12
-          },
-          {
-            "type": "dimension-label",
-            "start": [
-              50,
-              160
-            ],
-            "end": [
-              190,
-              160
-            ],
-            "label": "b = 8",
-            "position": "bottom",
-            "offset": 14
-          },
-          {
-            "type": "dimension-label",
-            "start": [
-              50,
-              55
-            ],
-            "end": [
-              190,
-              160
-            ],
-            "label": "c = ?",
-            "position": "hypotenuse",
-            "offset": 14,
-            "highlight": true
-          }
-        ]
-      },
-      "answerSpec": {
-        "type": "number",
-        "value": "10",
-        "forms": [
-          "exact"
-        ]
-      },
-      "answerDisplay": "10",
-      "answerPlain": "10",
-      "inputHint": "Enter integer, e.g. 31 or 47",
-      "checkpointHint": "Evaluate $a^2 + b^2 = 36 + 64 = 100$.",
-      "commonTrapTag": "pythagoras-hypotenuse",
-      "steps": [
-        {
-          "latex": "c = \\sqrt{a^2 + b^2} = \\sqrt{6^2 + 8^2}",
-          "explain": "Write the Pythagorean formula solved for hypotenuse $c$ and substitute the legs."
-        },
-        {
-          "latex": "= \\sqrt{36 + 64} = \\sqrt{100}",
-          "explain": "Square both legs and add under the radical."
-        },
-        {
-          "latex": "= 10",
-          "explain": "Evaluate the exact square root to find the length of the hypotenuse $c$."
-        }
-      ],
-      "id": "Q03",
-      "templateKey": "pythagoras-hypotenuse",
-      "level": 1,
-      "levelLabel": "Level 1 - Foundation",
-      "referenceBadges": [
-        {
-          "code": "MTH-T01-C12-U03",
-          "title": "Use Properties of Angles, Triangles, and the Pythagorean Theorem",
-          "notionUrl": "https://www.notion.so/4003818f8ba080459e0dd81747fad236"
-        }
-      ],
-      "state": {
-        "userInput": "",
-        "userCode": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "mistakeNote": "",
-        "skipped": false,
-        "lastCheck": null,
-        "lastTestReport": null
-      }
-    },
-    {
-      "category": "Core Skill",
-      "context": "Geometry: Pythagorean Theorem",
-      "references": [
-        "MTH-T01-C12-U03"
-      ],
-      "prompt": "Find the length of the hypotenuse $c$ of the right triangle with legs $a = 9$ and $b = 12$.",
-      "display": "c = \\sqrt{9^2 + 12^2}",
-      "plainText": "sqrt(9^2 + 12^2)",
-      "visual": {
-        "type": "geometry-2d",
-        "viewBox": {
-          "width": 320,
-          "height": 190
-        },
-        "elements": [
-          {
-            "type": "polygon",
-            "points": [
-              [
-                50,
-                160
-              ],
-              [
-                190,
-                160
-              ],
-              [
-                50,
-                55
-              ]
-            ],
-            "stroke": "#818cf8",
-            "fill": "rgba(129, 140, 248, 0.08)",
-            "rightAngleAt": [
-              50,
-              160
-            ]
-          },
-          {
-            "type": "dimension-label",
-            "start": [
-              50,
-              55
-            ],
-            "end": [
-              50,
-              160
-            ],
-            "label": "a = 9",
-            "position": "left",
-            "offset": 12
-          },
-          {
-            "type": "dimension-label",
-            "start": [
-              50,
-              160
-            ],
-            "end": [
-              190,
-              160
-            ],
-            "label": "b = 12",
-            "position": "bottom",
-            "offset": 14
-          },
-          {
-            "type": "dimension-label",
-            "start": [
-              50,
-              55
-            ],
-            "end": [
-              190,
-              160
-            ],
-            "label": "c = ?",
-            "position": "hypotenuse",
-            "offset": 14,
-            "highlight": true
-          }
-        ]
-      },
-      "answerSpec": {
-        "type": "number",
-        "value": "15",
-        "forms": [
-          "exact"
-        ]
-      },
-      "answerDisplay": "15",
-      "answerPlain": "15",
-      "inputHint": "Enter integer, e.g. 31 or 47",
-      "checkpointHint": "Evaluate $a^2 + b^2 = 81 + 144 = 225$.",
-      "commonTrapTag": "pythagoras-hypotenuse",
-      "steps": [
-        {
-          "latex": "c = \\sqrt{a^2 + b^2} = \\sqrt{9^2 + 12^2}",
-          "explain": "Write the Pythagorean formula solved for hypotenuse $c$ and substitute the legs."
-        },
-        {
-          "latex": "= \\sqrt{81 + 144} = \\sqrt{225}",
-          "explain": "Square both legs and add under the radical."
-        },
-        {
-          "latex": "= 15",
-          "explain": "Evaluate the exact square root to find the length of the hypotenuse $c$."
-        }
-      ],
-      "id": "Q04",
-      "templateKey": "pythagoras-hypotenuse",
-      "level": 1,
-      "levelLabel": "Level 1 - Foundation",
-      "referenceBadges": [
-        {
-          "code": "MTH-T01-C12-U03",
-          "title": "Use Properties of Angles, Triangles, and the Pythagorean Theorem",
-          "notionUrl": "https://www.notion.so/4003818f8ba080459e0dd81747fad236"
-        }
-      ],
-      "state": {
-        "userInput": "",
-        "userCode": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "mistakeNote": "",
-        "skipped": false,
-        "lastCheck": null,
-        "lastTestReport": null
-      }
-    },
-    {
-      "category": "Core Skill",
-      "context": "Geometry: 3D Solids",
+      "form": "direct",
+      "category": "Trap & Edge Case",
+      "context": "Geometry: 3D Conical Frustum",
       "references": [
         "MTH-T01-C12-U06"
       ],
-      "prompt": "Find the exact volume $V$ of a right circular cylinder with radius $r = 3$ and height $h = 10$ (in terms of $\\pi$).",
-      "display": "V = \\pi r^2 h",
-      "plainText": "pi * 3^2 * 10",
-      "visual": {
-        "type": "geometry-3d-wireframe",
-        "viewBox": {
-          "width": 300,
-          "height": 190
-        },
-        "elements": [
-          {
-            "type": "cylinder",
-            "center": [
-              150,
-              95
-            ],
-            "radiusX": 55,
-            "radiusY": 16,
-            "height": 90,
-            "stroke": "#38bdf8",
-            "fill": "rgba(56, 189, 248, 0.08)"
-          },
-          {
-            "type": "line",
-            "points": [
-              [
-                150,
-                50
-              ],
-              [
-                205,
-                50
-              ]
-            ],
-            "stroke": "#cbd5e1",
-            "strokeDasharray": "2 2"
-          },
-          {
-            "type": "dimension-label",
-            "start": [
-              150,
-              50
-            ],
-            "end": [
-              205,
-              50
-            ],
-            "label": "r = 3",
-            "position": "top",
-            "offset": 8
-          },
-          {
-            "type": "dimension-label",
-            "start": [
-              215,
-              50
-            ],
-            "end": [
-              215,
-              140
-            ],
-            "label": "h = 10",
-            "position": "right",
-            "offset": 12,
-            "highlight": true
-          }
-        ]
-      },
+      "prompt": "A right circular cone has base radius $R = 6$ and total height $H = 8$. The cone is truncated by a plane parallel to the base at a distance of $h = 4$ above the base, forming a conical frustum. Find the exact volume of this frustum in terms of $\\pi$.",
+      "display": "\\text{Frustum of Cone: } R = 6,\\ H = 8,\\ \\text{height of frustum } h = 4 \\implies V = ?",
+      "plainText": "(1/3)*pi*(6^2)*8 - (1/3)*pi*(3^2)*4",
       "answerSpec": {
         "type": "expression",
-        "value": "90*pi",
+        "value": "84*pi",
         "variables": [
           "pi"
         ]
       },
-      "answerDisplay": "90\\pi",
-      "answerPlain": "90 pi",
-      "inputHint": "Enter exact form with pi, e.g. 230 pi or 470*pi",
-      "checkpointHint": "The base area is $B = \\pi r^2 = 9\\pi$.",
-      "commonTrapTag": "volume-surface-area",
+      "answerDisplay": "84\\pi",
+      "answerPlain": "84 pi",
+      "inputHint": "Enter exact form with pi, e.g. 150 pi or 150*pi",
+      "checkpointHint": "The top smaller cone has height $H - h$. Use similar triangles to determine the top radius $r_{\\text{top}}$, then subtract the volume of the smaller cone from the total volume of the original cone.",
+      "commonTrapTag": "frustum-cylinder-average-trap",
       "steps": [
         {
-          "latex": "V = \\pi r^2 h = \\pi(3)^2(10)",
-          "explain": "Substitute the radius and height into the cylinder volume formula."
+          "latex": "h_{\\text{top}} = 8 - 4 = 4, \\quad r_{\\text{top}} = 6 \\times \\frac{4}{8} = 3",
+          "explain": "Similar triangles give top cone radius $r_{\\text{top}} = 3$ at height 4."
         },
         {
-          "latex": "= \\pi(9)(10)",
-          "explain": "Evaluate the base area: $3^2 = 9$."
+          "latex": "V_{\\text{total}} = \\frac{1}{3}\\pi (6^2)(8) = 96\\pi, \\quad V_{\\text{top}} = \\frac{1}{3}\\pi (3^2)(4) = 12\\pi",
+          "explain": "Compute volumes of original cone and removed top cone via $V = \\frac{1}{3}\\pi r^2 h$."
         },
         {
-          "latex": "= 90\\pi",
-          "explain": "Multiply by the height: $9 \\times 10 = 90$."
+          "latex": "V_{\\text{frustum}} = V_{\\text{total}} - V_{\\text{top}} = 96\\pi - 12\\pi = 84\\pi",
+          "explain": "Subtract volumes: $96\\pi - 12\\pi = 84\\pi$."
         }
       ],
-      "id": "Q05",
-      "templateKey": "cylinder-volume",
       "level": 3,
+      "skill": "GEO-CYLINDER-VOLUME-DIAMETER",
+      "verificationLevel": "machine-verified",
+      "id": "Q02",
+      "templateKey": "cone-frustum-volume",
       "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "cone-frustum-volume|direct|(#/#)*pi*(#^#)*# - (#/#)*pi*(#^#)*#",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "GEO-CYLINDER-VOLUME-DIAMETER",
+          "stepRange": [
+            2,
+            5
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "frustum-cylinder-average-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "cone-frustum-volume|direct|(#/#)*pi*(#^#)*# - (#/#)*pi*(#^#)*#",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
       "referenceBadges": [
         {
           "code": "MTH-T01-C12-U06",
@@ -694,175 +304,130 @@
           "notionUrl": "https://www.notion.so/4003818f8ba080cabf64cabe4a56586d"
         }
       ],
+      "trapValue": "81*pi",
       "state": {
         "userInput": "",
-        "userCode": "",
         "score": null,
         "divergedStep": null,
         "mistakes": [],
-        "mistakeNote": "",
-        "skipped": false,
-        "lastCheck": null,
-        "lastTestReport": null
+        "lastCheck": null
       }
     },
     {
-      "category": "Core Skill",
-      "context": "Geometry: Quadrilaterals",
+      "form": "direct",
+      "category": "Interleaved Synthesis",
+      "context": "Geometry: Trapezoid & Similar Triangles Partition",
       "references": [
+        "MTH-T01-C12-U03",
         "MTH-T01-C12-U04"
       ],
-      "prompt": "Find the area $A$ of the trapezoid with parallel bases $b_1 = 12$, $b_2 = 18$, and height $h = 8$.",
-      "display": "A = \\frac{1}{2}(b_1 + b_2)h",
-      "plainText": "(1/2)*(12 + 18)*8",
-      "visual": {
-        "type": "geometry-2d",
-        "viewBox": {
-          "width": 320,
-          "height": 180
-        },
-        "elements": [
-          {
-            "type": "polygon",
-            "points": [
-              [
-                70,
-                140
-              ],
-              [
-                240,
-                140
-              ],
-              [
-                210,
-                60
-              ],
-              [
-                90,
-                60
-              ]
-            ],
-            "stroke": "#10b981",
-            "fill": "rgba(16, 185, 129, 0.08)"
-          },
-          {
-            "type": "line",
-            "points": [
-              [
-                90,
-                60
-              ],
-              [
-                90,
-                140
-              ]
-            ],
-            "stroke": "#94a3b8",
-            "strokeDasharray": "3 3"
-          },
-          {
-            "type": "dimension-label",
-            "start": [
-              90,
-              60
-            ],
-            "end": [
-              210,
-              60
-            ],
-            "label": "b₁ = 12",
-            "position": "top",
-            "offset": 10
-          },
-          {
-            "type": "dimension-label",
-            "start": [
-              70,
-              140
-            ],
-            "end": [
-              240,
-              140
-            ],
-            "label": "b₂ = 18",
-            "position": "bottom",
-            "offset": 14
-          },
-          {
-            "type": "dimension-label",
-            "start": [
-              90,
-              60
-            ],
-            "end": [
-              90,
-              140
-            ],
-            "label": "h = 8",
-            "position": "right",
-            "offset": 10,
-            "highlight": true
-          }
-        ]
-      },
+      "prompt": "In an isosceles trapezoid $ABCD$, the parallel bases are $AB = 6$ and $CD = 16$, and the non-parallel legs are $AD = BC = 13$. Diagonals $AC$ and $BD$ intersect at point $E$. Find the exact area of triangle $ABE$.",
+      "display": "\\text{Trapezoid } ABCD:\\ AB = 6,\\ CD = 16,\\ AD = BC = 13 \\implies \\text{Area}(\\triangle ABE) = ?",
+      "plainText": "(1/2) * 6 * sqrt(13^2 - ((16 - 6)/2)^2) * (6/(6 + 16))",
       "answerSpec": {
-        "type": "number",
-        "value": "120",
-        "forms": [
-          "exact"
-        ]
+        "type": "expression",
+        "value": "108/11"
       },
-      "answerDisplay": "120",
-      "answerPlain": "120",
-      "inputHint": "Enter number, e.g. 235 or 479",
-      "checkpointHint": "The sum of the bases is $b_1 + b_2 = 30$.",
-      "commonTrapTag": "trapezoid-height",
+      "answerDisplay": "\\frac{108}{11}",
+      "answerPlain": "108/11",
+      "inputHint": "Enter exact fraction or integer e.g. 35/4 or 42",
+      "checkpointHint": "Find trapezoid height $h$ by projecting $AB$ onto $CD$ to get leg base offset $(CD - AB)/2$, then calculate $h = \\sqrt{\\text{leg}^2 - \\text{offset}^2}$. Use similar triangles $\\triangle ABE \\sim \\triangle CDE$ with ratio $AB : CD$ to partition the height.",
+      "commonTrapTag": "trapezoid-diagonal-bisect-trap",
       "steps": [
         {
-          "latex": "A = \\frac{1}{2}(b_1 + b_2)h = \\frac{1}{2}(12 + 18)(8)",
-          "explain": "Substitute the bases and height into the trapezoid area formula."
+          "latex": "x = \\frac{16 - 6}{2} = 5, \\quad h = \\sqrt{13^2 - 5^2} = \\sqrt{169 - 25} = 12",
+          "explain": "Symmetrical base offset gives a right triangle with hypotenuse 13 and base 5."
         },
         {
-          "latex": "= \\frac{1}{2}(30)(8)",
-          "explain": "Add the two parallel bases first."
+          "latex": "\\triangle ABE \\sim \\triangle CDE \\implies \\frac{h_1}{h_2} = \\frac{6}{16} = \\frac{3}{8}",
+          "explain": "Since $AB \\parallel CD$, alternate interior angles make $\\triangle ABE \\sim \\triangle CDE$."
         },
         {
-          "latex": "= 120",
-          "explain": "Multiply by $\\frac{1}{2}$ and the height $h = 8$."
+          "latex": "h_1 = 12 \\times \\frac{3}{3 + 8} = 36/11",
+          "explain": "The total height 12 is partitioned in ratio 3:8."
+        },
+        {
+          "latex": "\\text{Area}(\\triangle ABE) = \\frac{1}{2} \\times 6 \\times 36/11 = 108/11",
+          "explain": "Calculate area of triangle $ABE$: $\\frac{1}{2} \\times \\text{base} \\times h_1$."
         }
       ],
-      "id": "Q06",
-      "templateKey": "trapezoid-area",
-      "level": 2,
-      "levelLabel": "Level 2 - Standard Exam",
+      "level": 4,
+      "skill": "GEO-TRAPEZOID-HEIGHT",
+      "verificationLevel": "machine-verified",
+      "id": "Q03",
+      "templateKey": "trapezoid-similar-triangles",
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "trapezoid-similar-triangles|direct|(#/#) * # * sqrt(#^# - ((# - #)/#)^#) * (#/(# + #))",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 4,
+          "hasTrapOrFlaw": true,
+          "skill": "GEO-TRAPEZOID-HEIGHT",
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "trapezoid-diagonal-bisect-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 15
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "trapezoid-similar-triangles|direct|(#/#) * # * sqrt(#^# - ((# - #)/#)^#) * (#/(# + #))",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
       "referenceBadges": [
+        {
+          "code": "MTH-T01-C12-U03",
+          "title": "Use Properties of Angles, Triangles, and the Pythagorean Theorem",
+          "notionUrl": "https://www.notion.so/4003818f8ba080459e0dd81747fad236"
+        },
         {
           "code": "MTH-T01-C12-U04",
           "title": "Use Properties of Rectangles, Triangles, and Trapezoids",
           "notionUrl": "https://www.notion.so/4003818f8ba080bb8205d0d4b4cd606f"
         }
       ],
+      "trapValue": "18",
       "state": {
         "userInput": "",
-        "userCode": "",
         "score": null,
         "divergedStep": null,
         "mistakes": [],
-        "mistakeNote": "",
-        "skipped": false,
-        "lastCheck": null,
-        "lastTestReport": null
+        "lastCheck": null
       }
     },
     {
+      "form": "from-diameter",
       "category": "Core Skill",
-      "context": "Geometry: Circles",
+      "context": "Geometry: Circles (Given Diameter)",
       "references": [
         "MTH-T01-C12-U05"
       ],
-      "prompt": "Find the exact area $A$ of a circle with radius $r = 5$ (in terms of $\\pi$).",
-      "display": "A = \\pi r^2",
-      "plainText": "pi * 5^2",
+      "prompt": "Find the exact area $A$ of a circle with diameter $d = 10$ (in terms of $\\pi$).",
+      "display": "A = \\pi \\left(\\frac{d}{2}\\right)^2",
+      "plainText": "pi * (10/2)^2",
       "visual": {
         "type": "geometry-2d",
         "viewBox": {
@@ -922,22 +487,64 @@
       "answerDisplay": "25\\pi",
       "answerPlain": "25 pi",
       "inputHint": "Enter exact form with pi, e.g. 230 pi or 470*pi",
-      "checkpointHint": "The radius squared is $r^2 = 5^2 = 25$.",
+      "checkpointHint": "First halve the diameter to get radius $r = 5$, then square it.",
       "commonTrapTag": "circle-diameter-radius",
       "steps": [
         {
-          "latex": "A = \\pi r^2 = \\pi(5)^2",
-          "explain": "Write the circle area formula and substitute the radius $r$."
+          "latex": "r = \\frac{d}{2} = \\frac{10}{2} = 5",
+          "explain": "Halve the diameter to obtain the radius $r$, then substitute into $A = \\pi r^2$."
         },
         {
-          "latex": "= 25\\pi",
-          "explain": "Square the radius: $5^2 = 25$. Leave $\\pi$ exact."
+          "latex": "A = \\pi(5)^2 = 25\\pi",
+          "explain": "Square the radius $5^2 = 25$ and leave $\\pi$ exact."
         }
       ],
-      "id": "Q07",
-      "templateKey": "circle-area-pi",
       "level": 2,
+      "skill": "GEO-CIRCLE-AREA-DIAMETER",
+      "verificationLevel": "machine-verified",
+      "id": "Q04",
+      "templateKey": "circle-area-pi",
       "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "circle-area-pi|from-diameter|pi * (#/#)^#",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": "GEO-CIRCLE-AREA-DIAMETER",
+          "stepRange": [
+            2,
+            4
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "circle-diameter-radius",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 11
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "circle-area-pi|from-diameter|pi * (#/#)^#",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
       "referenceBadges": [
         {
           "code": "MTH-T01-C12-U05",
@@ -945,1184 +552,25 @@
           "notionUrl": "https://www.notion.so/4003818f8ba080ce8853efc959517a90"
         }
       ],
+      "trapValue": "100 pi",
       "state": {
         "userInput": "",
-        "userCode": "",
         "score": null,
         "divergedStep": null,
         "mistakes": [],
-        "mistakeNote": "",
-        "skipped": false,
-        "lastCheck": null,
-        "lastTestReport": null
+        "lastCheck": null
       }
     },
     {
+      "form": "reverse",
       "category": "Core Skill",
-      "context": "Geometry: 3D Solids",
-      "references": [
-        "MTH-T01-C12-U06"
-      ],
-      "prompt": "Find the exact volume $V$ of a right circular cylinder with radius $r = 2$ and height $h = 6$ (in terms of $\\pi$).",
-      "display": "V = \\pi r^2 h",
-      "plainText": "pi * 2^2 * 6",
-      "visual": {
-        "type": "geometry-3d-wireframe",
-        "viewBox": {
-          "width": 300,
-          "height": 190
-        },
-        "elements": [
-          {
-            "type": "cylinder",
-            "center": [
-              150,
-              95
-            ],
-            "radiusX": 55,
-            "radiusY": 16,
-            "height": 90,
-            "stroke": "#38bdf8",
-            "fill": "rgba(56, 189, 248, 0.08)"
-          },
-          {
-            "type": "line",
-            "points": [
-              [
-                150,
-                50
-              ],
-              [
-                205,
-                50
-              ]
-            ],
-            "stroke": "#cbd5e1",
-            "strokeDasharray": "2 2"
-          },
-          {
-            "type": "dimension-label",
-            "start": [
-              150,
-              50
-            ],
-            "end": [
-              205,
-              50
-            ],
-            "label": "r = 2",
-            "position": "top",
-            "offset": 8
-          },
-          {
-            "type": "dimension-label",
-            "start": [
-              215,
-              50
-            ],
-            "end": [
-              215,
-              140
-            ],
-            "label": "h = 6",
-            "position": "right",
-            "offset": 12,
-            "highlight": true
-          }
-        ]
-      },
-      "answerSpec": {
-        "type": "expression",
-        "value": "24*pi",
-        "variables": [
-          "pi"
-        ]
-      },
-      "answerDisplay": "24\\pi",
-      "answerPlain": "24 pi",
-      "inputHint": "Enter exact form with pi, e.g. 230 pi or 470*pi",
-      "checkpointHint": "The base area is $B = \\pi r^2 = 4\\pi$.",
-      "commonTrapTag": "volume-surface-area",
-      "steps": [
-        {
-          "latex": "V = \\pi r^2 h = \\pi(2)^2(6)",
-          "explain": "Substitute the radius and height into the cylinder volume formula."
-        },
-        {
-          "latex": "= \\pi(4)(6)",
-          "explain": "Evaluate the base area: $2^2 = 4$."
-        },
-        {
-          "latex": "= 24\\pi",
-          "explain": "Multiply by the height: $4 \\times 6 = 24$."
-        }
-      ],
-      "id": "Q08",
-      "templateKey": "cylinder-volume",
-      "level": 3,
-      "levelLabel": "Level 3 - Trap & Diagnostic",
-      "referenceBadges": [
-        {
-          "code": "MTH-T01-C12-U06",
-          "title": "Solve Geometry Applications: Volume and Surface Area",
-          "notionUrl": "https://www.notion.so/4003818f8ba080cabf64cabe4a56586d"
-        }
-      ],
-      "state": {
-        "userInput": "",
-        "userCode": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "mistakeNote": "",
-        "skipped": false,
-        "lastCheck": null,
-        "lastTestReport": null
-      }
-    },
-    {
-      "category": "Core Skill",
-      "context": "Geometry: Quadrilaterals",
-      "references": [
-        "MTH-T01-C12-U04"
-      ],
-      "prompt": "Find the area $A$ of the trapezoid with parallel bases $b_1 = 8$, $b_2 = 14$, and height $h = 8$.",
-      "display": "A = \\frac{1}{2}(b_1 + b_2)h",
-      "plainText": "(1/2)*(8 + 14)*8",
-      "visual": {
-        "type": "geometry-2d",
-        "viewBox": {
-          "width": 320,
-          "height": 180
-        },
-        "elements": [
-          {
-            "type": "polygon",
-            "points": [
-              [
-                70,
-                140
-              ],
-              [
-                240,
-                140
-              ],
-              [
-                210,
-                60
-              ],
-              [
-                90,
-                60
-              ]
-            ],
-            "stroke": "#10b981",
-            "fill": "rgba(16, 185, 129, 0.08)"
-          },
-          {
-            "type": "line",
-            "points": [
-              [
-                90,
-                60
-              ],
-              [
-                90,
-                140
-              ]
-            ],
-            "stroke": "#94a3b8",
-            "strokeDasharray": "3 3"
-          },
-          {
-            "type": "dimension-label",
-            "start": [
-              90,
-              60
-            ],
-            "end": [
-              210,
-              60
-            ],
-            "label": "b₁ = 8",
-            "position": "top",
-            "offset": 10
-          },
-          {
-            "type": "dimension-label",
-            "start": [
-              70,
-              140
-            ],
-            "end": [
-              240,
-              140
-            ],
-            "label": "b₂ = 14",
-            "position": "bottom",
-            "offset": 14
-          },
-          {
-            "type": "dimension-label",
-            "start": [
-              90,
-              60
-            ],
-            "end": [
-              90,
-              140
-            ],
-            "label": "h = 8",
-            "position": "right",
-            "offset": 10,
-            "highlight": true
-          }
-        ]
-      },
-      "answerSpec": {
-        "type": "number",
-        "value": "88",
-        "forms": [
-          "exact"
-        ]
-      },
-      "answerDisplay": "88",
-      "answerPlain": "88",
-      "inputHint": "Enter number, e.g. 235 or 479",
-      "checkpointHint": "The sum of the bases is $b_1 + b_2 = 22$.",
-      "commonTrapTag": "trapezoid-height",
-      "steps": [
-        {
-          "latex": "A = \\frac{1}{2}(b_1 + b_2)h = \\frac{1}{2}(8 + 14)(8)",
-          "explain": "Substitute the bases and height into the trapezoid area formula."
-        },
-        {
-          "latex": "= \\frac{1}{2}(22)(8)",
-          "explain": "Add the two parallel bases first."
-        },
-        {
-          "latex": "= 88",
-          "explain": "Multiply by $\\frac{1}{2}$ and the height $h = 8$."
-        }
-      ],
-      "id": "Q09",
-      "templateKey": "trapezoid-area",
-      "level": 2,
-      "levelLabel": "Level 2 - Standard Exam",
-      "referenceBadges": [
-        {
-          "code": "MTH-T01-C12-U04",
-          "title": "Use Properties of Rectangles, Triangles, and Trapezoids",
-          "notionUrl": "https://www.notion.so/4003818f8ba080bb8205d0d4b4cd606f"
-        }
-      ],
-      "state": {
-        "userInput": "",
-        "userCode": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "mistakeNote": "",
-        "skipped": false,
-        "lastCheck": null,
-        "lastTestReport": null
-      }
-    },
-    {
-      "category": "Core Skill",
-      "context": "Geometry: Quadrilaterals",
-      "references": [
-        "MTH-T01-C12-U04"
-      ],
-      "prompt": "Find the area $A$ of the trapezoid with parallel bases $b_1 = 12$, $b_2 = 18$, and height $h = 8$.",
-      "display": "A = \\frac{1}{2}(b_1 + b_2)h",
-      "plainText": "(1/2)*(12 + 18)*8",
-      "visual": {
-        "type": "geometry-2d",
-        "viewBox": {
-          "width": 320,
-          "height": 180
-        },
-        "elements": [
-          {
-            "type": "polygon",
-            "points": [
-              [
-                70,
-                140
-              ],
-              [
-                240,
-                140
-              ],
-              [
-                210,
-                60
-              ],
-              [
-                90,
-                60
-              ]
-            ],
-            "stroke": "#10b981",
-            "fill": "rgba(16, 185, 129, 0.08)"
-          },
-          {
-            "type": "line",
-            "points": [
-              [
-                90,
-                60
-              ],
-              [
-                90,
-                140
-              ]
-            ],
-            "stroke": "#94a3b8",
-            "strokeDasharray": "3 3"
-          },
-          {
-            "type": "dimension-label",
-            "start": [
-              90,
-              60
-            ],
-            "end": [
-              210,
-              60
-            ],
-            "label": "b₁ = 12",
-            "position": "top",
-            "offset": 10
-          },
-          {
-            "type": "dimension-label",
-            "start": [
-              70,
-              140
-            ],
-            "end": [
-              240,
-              140
-            ],
-            "label": "b₂ = 18",
-            "position": "bottom",
-            "offset": 14
-          },
-          {
-            "type": "dimension-label",
-            "start": [
-              90,
-              60
-            ],
-            "end": [
-              90,
-              140
-            ],
-            "label": "h = 8",
-            "position": "right",
-            "offset": 10,
-            "highlight": true
-          }
-        ]
-      },
-      "answerSpec": {
-        "type": "number",
-        "value": "120",
-        "forms": [
-          "exact"
-        ]
-      },
-      "answerDisplay": "120",
-      "answerPlain": "120",
-      "inputHint": "Enter number, e.g. 235 or 479",
-      "checkpointHint": "The sum of the bases is $b_1 + b_2 = 30$.",
-      "commonTrapTag": "trapezoid-height",
-      "steps": [
-        {
-          "latex": "A = \\frac{1}{2}(b_1 + b_2)h = \\frac{1}{2}(12 + 18)(8)",
-          "explain": "Substitute the bases and height into the trapezoid area formula."
-        },
-        {
-          "latex": "= \\frac{1}{2}(30)(8)",
-          "explain": "Add the two parallel bases first."
-        },
-        {
-          "latex": "= 120",
-          "explain": "Multiply by $\\frac{1}{2}$ and the height $h = 8$."
-        }
-      ],
-      "id": "Q10",
-      "templateKey": "trapezoid-area",
-      "level": 2,
-      "levelLabel": "Level 2 - Standard Exam",
-      "referenceBadges": [
-        {
-          "code": "MTH-T01-C12-U04",
-          "title": "Use Properties of Rectangles, Triangles, and Trapezoids",
-          "notionUrl": "https://www.notion.so/4003818f8ba080bb8205d0d4b4cd606f"
-        }
-      ],
-      "state": {
-        "userInput": "",
-        "userCode": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "mistakeNote": "",
-        "skipped": false,
-        "lastCheck": null,
-        "lastTestReport": null
-      }
-    },
-    {
-      "category": "Core Skill",
-      "context": "Geometry: Pythagorean Theorem",
+      "context": "Geometry: Pythagorean Theorem (Unknown Leg)",
       "references": [
         "MTH-T01-C12-U03"
       ],
-      "prompt": "Find the length of the hypotenuse $c$ of the right triangle with legs $a = 5$ and $b = 12$.",
-      "display": "c = \\sqrt{5^2 + 12^2}",
-      "plainText": "sqrt(5^2 + 12^2)",
-      "visual": {
-        "type": "geometry-2d",
-        "viewBox": {
-          "width": 320,
-          "height": 190
-        },
-        "elements": [
-          {
-            "type": "polygon",
-            "points": [
-              [
-                50,
-                160
-              ],
-              [
-                190,
-                160
-              ],
-              [
-                50,
-                102
-              ]
-            ],
-            "stroke": "#818cf8",
-            "fill": "rgba(129, 140, 248, 0.08)",
-            "rightAngleAt": [
-              50,
-              160
-            ]
-          },
-          {
-            "type": "dimension-label",
-            "start": [
-              50,
-              102
-            ],
-            "end": [
-              50,
-              160
-            ],
-            "label": "a = 5",
-            "position": "left",
-            "offset": 12
-          },
-          {
-            "type": "dimension-label",
-            "start": [
-              50,
-              160
-            ],
-            "end": [
-              190,
-              160
-            ],
-            "label": "b = 12",
-            "position": "bottom",
-            "offset": 14
-          },
-          {
-            "type": "dimension-label",
-            "start": [
-              50,
-              102
-            ],
-            "end": [
-              190,
-              160
-            ],
-            "label": "c = ?",
-            "position": "hypotenuse",
-            "offset": 14,
-            "highlight": true
-          }
-        ]
-      },
-      "answerSpec": {
-        "type": "number",
-        "value": "13",
-        "forms": [
-          "exact"
-        ]
-      },
-      "answerDisplay": "13",
-      "answerPlain": "13",
-      "inputHint": "Enter integer, e.g. 31 or 47",
-      "checkpointHint": "Evaluate $a^2 + b^2 = 25 + 144 = 169$.",
-      "commonTrapTag": "pythagoras-hypotenuse",
-      "steps": [
-        {
-          "latex": "c = \\sqrt{a^2 + b^2} = \\sqrt{5^2 + 12^2}",
-          "explain": "Write the Pythagorean formula solved for hypotenuse $c$ and substitute the legs."
-        },
-        {
-          "latex": "= \\sqrt{25 + 144} = \\sqrt{169}",
-          "explain": "Square both legs and add under the radical."
-        },
-        {
-          "latex": "= 13",
-          "explain": "Evaluate the exact square root to find the length of the hypotenuse $c$."
-        }
-      ],
-      "id": "Q11",
-      "templateKey": "pythagoras-hypotenuse",
-      "level": 1,
-      "levelLabel": "Level 1 - Foundation",
-      "referenceBadges": [
-        {
-          "code": "MTH-T01-C12-U03",
-          "title": "Use Properties of Angles, Triangles, and the Pythagorean Theorem",
-          "notionUrl": "https://www.notion.so/4003818f8ba080459e0dd81747fad236"
-        }
-      ],
-      "state": {
-        "userInput": "",
-        "userCode": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "mistakeNote": "",
-        "skipped": false,
-        "lastCheck": null,
-        "lastTestReport": null
-      }
-    },
-    {
-      "category": "Core Skill",
-      "context": "Geometry: Circles",
-      "references": [
-        "MTH-T01-C12-U05"
-      ],
-      "prompt": "Find the exact area $A$ of a circle with radius $r = 6$ (in terms of $\\pi$).",
-      "display": "A = \\pi r^2",
-      "plainText": "pi * 6^2",
-      "visual": {
-        "type": "geometry-2d",
-        "viewBox": {
-          "width": 300,
-          "height": 180
-        },
-        "elements": [
-          {
-            "type": "circle",
-            "center": [
-              150,
-              90
-            ],
-            "radius": 55,
-            "stroke": "#38bdf8",
-            "fill": "rgba(56, 189, 248, 0.08)"
-          },
-          {
-            "type": "line",
-            "points": [
-              [
-                150,
-                90
-              ],
-              [
-                205,
-                90
-              ]
-            ],
-            "stroke": "#cbd5e1",
-            "strokeDasharray": "2 2"
-          },
-          {
-            "type": "dimension-label",
-            "start": [
-              150,
-              90
-            ],
-            "end": [
-              205,
-              90
-            ],
-            "label": "r = 6",
-            "position": "top",
-            "offset": 8,
-            "highlight": true
-          }
-        ]
-      },
-      "answerSpec": {
-        "type": "expression",
-        "value": "36*pi",
-        "variables": [
-          "pi"
-        ]
-      },
-      "answerDisplay": "36\\pi",
-      "answerPlain": "36 pi",
-      "inputHint": "Enter exact form with pi, e.g. 230 pi or 470*pi",
-      "checkpointHint": "The radius squared is $r^2 = 6^2 = 36$.",
-      "commonTrapTag": "circle-diameter-radius",
-      "steps": [
-        {
-          "latex": "A = \\pi r^2 = \\pi(6)^2",
-          "explain": "Write the circle area formula and substitute the radius $r$."
-        },
-        {
-          "latex": "= 36\\pi",
-          "explain": "Square the radius: $6^2 = 36$. Leave $\\pi$ exact."
-        }
-      ],
-      "id": "Q12",
-      "templateKey": "circle-area-pi",
-      "level": 2,
-      "levelLabel": "Level 2 - Standard Exam",
-      "referenceBadges": [
-        {
-          "code": "MTH-T01-C12-U05",
-          "title": "Solve Geometry Applications: Circles and Irregular Figures",
-          "notionUrl": "https://www.notion.so/4003818f8ba080ce8853efc959517a90"
-        }
-      ],
-      "state": {
-        "userInput": "",
-        "userCode": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "mistakeNote": "",
-        "skipped": false,
-        "lastCheck": null,
-        "lastTestReport": null
-      }
-    },
-    {
-      "category": "Core Skill",
-      "context": "Geometry: Circles",
-      "references": [
-        "MTH-T01-C12-U05"
-      ],
-      "prompt": "Find the exact area $A$ of a circle with radius $r = 8$ (in terms of $\\pi$).",
-      "display": "A = \\pi r^2",
-      "plainText": "pi * 8^2",
-      "visual": {
-        "type": "geometry-2d",
-        "viewBox": {
-          "width": 300,
-          "height": 180
-        },
-        "elements": [
-          {
-            "type": "circle",
-            "center": [
-              150,
-              90
-            ],
-            "radius": 55,
-            "stroke": "#38bdf8",
-            "fill": "rgba(56, 189, 248, 0.08)"
-          },
-          {
-            "type": "line",
-            "points": [
-              [
-                150,
-                90
-              ],
-              [
-                205,
-                90
-              ]
-            ],
-            "stroke": "#cbd5e1",
-            "strokeDasharray": "2 2"
-          },
-          {
-            "type": "dimension-label",
-            "start": [
-              150,
-              90
-            ],
-            "end": [
-              205,
-              90
-            ],
-            "label": "r = 8",
-            "position": "top",
-            "offset": 8,
-            "highlight": true
-          }
-        ]
-      },
-      "answerSpec": {
-        "type": "expression",
-        "value": "64*pi",
-        "variables": [
-          "pi"
-        ]
-      },
-      "answerDisplay": "64\\pi",
-      "answerPlain": "64 pi",
-      "inputHint": "Enter exact form with pi, e.g. 230 pi or 470*pi",
-      "checkpointHint": "The radius squared is $r^2 = 8^2 = 64$.",
-      "commonTrapTag": "circle-diameter-radius",
-      "steps": [
-        {
-          "latex": "A = \\pi r^2 = \\pi(8)^2",
-          "explain": "Write the circle area formula and substitute the radius $r$."
-        },
-        {
-          "latex": "= 64\\pi",
-          "explain": "Square the radius: $8^2 = 64$. Leave $\\pi$ exact."
-        }
-      ],
-      "id": "Q13",
-      "templateKey": "circle-area-pi",
-      "level": 2,
-      "levelLabel": "Level 2 - Standard Exam",
-      "referenceBadges": [
-        {
-          "code": "MTH-T01-C12-U05",
-          "title": "Solve Geometry Applications: Circles and Irregular Figures",
-          "notionUrl": "https://www.notion.so/4003818f8ba080ce8853efc959517a90"
-        }
-      ],
-      "state": {
-        "userInput": "",
-        "userCode": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "mistakeNote": "",
-        "skipped": false,
-        "lastCheck": null,
-        "lastTestReport": null
-      }
-    },
-    {
-      "category": "Core Skill",
-      "context": "Geometry: Circles",
-      "references": [
-        "MTH-T01-C12-U05"
-      ],
-      "prompt": "Find the exact area $A$ of a circle with radius $r = 9$ (in terms of $\\pi$).",
-      "display": "A = \\pi r^2",
-      "plainText": "pi * 9^2",
-      "visual": {
-        "type": "geometry-2d",
-        "viewBox": {
-          "width": 300,
-          "height": 180
-        },
-        "elements": [
-          {
-            "type": "circle",
-            "center": [
-              150,
-              90
-            ],
-            "radius": 55,
-            "stroke": "#38bdf8",
-            "fill": "rgba(56, 189, 248, 0.08)"
-          },
-          {
-            "type": "line",
-            "points": [
-              [
-                150,
-                90
-              ],
-              [
-                205,
-                90
-              ]
-            ],
-            "stroke": "#cbd5e1",
-            "strokeDasharray": "2 2"
-          },
-          {
-            "type": "dimension-label",
-            "start": [
-              150,
-              90
-            ],
-            "end": [
-              205,
-              90
-            ],
-            "label": "r = 9",
-            "position": "top",
-            "offset": 8,
-            "highlight": true
-          }
-        ]
-      },
-      "answerSpec": {
-        "type": "expression",
-        "value": "81*pi",
-        "variables": [
-          "pi"
-        ]
-      },
-      "answerDisplay": "81\\pi",
-      "answerPlain": "81 pi",
-      "inputHint": "Enter exact form with pi, e.g. 230 pi or 470*pi",
-      "checkpointHint": "The radius squared is $r^2 = 9^2 = 81$.",
-      "commonTrapTag": "circle-diameter-radius",
-      "steps": [
-        {
-          "latex": "A = \\pi r^2 = \\pi(9)^2",
-          "explain": "Write the circle area formula and substitute the radius $r$."
-        },
-        {
-          "latex": "= 81\\pi",
-          "explain": "Square the radius: $9^2 = 81$. Leave $\\pi$ exact."
-        }
-      ],
-      "id": "Q14",
-      "templateKey": "circle-area-pi",
-      "level": 2,
-      "levelLabel": "Level 2 - Standard Exam",
-      "referenceBadges": [
-        {
-          "code": "MTH-T01-C12-U05",
-          "title": "Solve Geometry Applications: Circles and Irregular Figures",
-          "notionUrl": "https://www.notion.so/4003818f8ba080ce8853efc959517a90"
-        }
-      ],
-      "state": {
-        "userInput": "",
-        "userCode": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "mistakeNote": "",
-        "skipped": false,
-        "lastCheck": null,
-        "lastTestReport": null
-      }
-    },
-    {
-      "category": "Core Skill",
-      "context": "Geometry: Quadrilaterals",
-      "references": [
-        "MTH-T01-C12-U04"
-      ],
-      "prompt": "Find the area $A$ of the trapezoid with parallel bases $b_1 = 12$, $b_2 = 16$, and height $h = 8$.",
-      "display": "A = \\frac{1}{2}(b_1 + b_2)h",
-      "plainText": "(1/2)*(12 + 16)*8",
-      "visual": {
-        "type": "geometry-2d",
-        "viewBox": {
-          "width": 320,
-          "height": 180
-        },
-        "elements": [
-          {
-            "type": "polygon",
-            "points": [
-              [
-                70,
-                140
-              ],
-              [
-                240,
-                140
-              ],
-              [
-                210,
-                60
-              ],
-              [
-                90,
-                60
-              ]
-            ],
-            "stroke": "#10b981",
-            "fill": "rgba(16, 185, 129, 0.08)"
-          },
-          {
-            "type": "line",
-            "points": [
-              [
-                90,
-                60
-              ],
-              [
-                90,
-                140
-              ]
-            ],
-            "stroke": "#94a3b8",
-            "strokeDasharray": "3 3"
-          },
-          {
-            "type": "dimension-label",
-            "start": [
-              90,
-              60
-            ],
-            "end": [
-              210,
-              60
-            ],
-            "label": "b₁ = 12",
-            "position": "top",
-            "offset": 10
-          },
-          {
-            "type": "dimension-label",
-            "start": [
-              70,
-              140
-            ],
-            "end": [
-              240,
-              140
-            ],
-            "label": "b₂ = 16",
-            "position": "bottom",
-            "offset": 14
-          },
-          {
-            "type": "dimension-label",
-            "start": [
-              90,
-              60
-            ],
-            "end": [
-              90,
-              140
-            ],
-            "label": "h = 8",
-            "position": "right",
-            "offset": 10,
-            "highlight": true
-          }
-        ]
-      },
-      "answerSpec": {
-        "type": "number",
-        "value": "112",
-        "forms": [
-          "exact"
-        ]
-      },
-      "answerDisplay": "112",
-      "answerPlain": "112",
-      "inputHint": "Enter number, e.g. 235 or 479",
-      "checkpointHint": "The sum of the bases is $b_1 + b_2 = 28$.",
-      "commonTrapTag": "trapezoid-height",
-      "steps": [
-        {
-          "latex": "A = \\frac{1}{2}(b_1 + b_2)h = \\frac{1}{2}(12 + 16)(8)",
-          "explain": "Substitute the bases and height into the trapezoid area formula."
-        },
-        {
-          "latex": "= \\frac{1}{2}(28)(8)",
-          "explain": "Add the two parallel bases first."
-        },
-        {
-          "latex": "= 112",
-          "explain": "Multiply by $\\frac{1}{2}$ and the height $h = 8$."
-        }
-      ],
-      "id": "Q15",
-      "templateKey": "trapezoid-area",
-      "level": 2,
-      "levelLabel": "Level 2 - Standard Exam",
-      "referenceBadges": [
-        {
-          "code": "MTH-T01-C12-U04",
-          "title": "Use Properties of Rectangles, Triangles, and Trapezoids",
-          "notionUrl": "https://www.notion.so/4003818f8ba080bb8205d0d4b4cd606f"
-        }
-      ],
-      "state": {
-        "userInput": "",
-        "userCode": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "mistakeNote": "",
-        "skipped": false,
-        "lastCheck": null,
-        "lastTestReport": null
-      }
-    },
-    {
-      "category": "Core Skill",
-      "context": "Geometry: Quadrilaterals",
-      "references": [
-        "MTH-T01-C12-U04"
-      ],
-      "prompt": "Find the area $A$ of the trapezoid with parallel bases $b_1 = 6$, $b_2 = 10$, and height $h = 5$.",
-      "display": "A = \\frac{1}{2}(b_1 + b_2)h",
-      "plainText": "(1/2)*(6 + 10)*5",
-      "visual": {
-        "type": "geometry-2d",
-        "viewBox": {
-          "width": 320,
-          "height": 180
-        },
-        "elements": [
-          {
-            "type": "polygon",
-            "points": [
-              [
-                70,
-                140
-              ],
-              [
-                240,
-                140
-              ],
-              [
-                210,
-                60
-              ],
-              [
-                90,
-                60
-              ]
-            ],
-            "stroke": "#10b981",
-            "fill": "rgba(16, 185, 129, 0.08)"
-          },
-          {
-            "type": "line",
-            "points": [
-              [
-                90,
-                60
-              ],
-              [
-                90,
-                140
-              ]
-            ],
-            "stroke": "#94a3b8",
-            "strokeDasharray": "3 3"
-          },
-          {
-            "type": "dimension-label",
-            "start": [
-              90,
-              60
-            ],
-            "end": [
-              210,
-              60
-            ],
-            "label": "b₁ = 6",
-            "position": "top",
-            "offset": 10
-          },
-          {
-            "type": "dimension-label",
-            "start": [
-              70,
-              140
-            ],
-            "end": [
-              240,
-              140
-            ],
-            "label": "b₂ = 10",
-            "position": "bottom",
-            "offset": 14
-          },
-          {
-            "type": "dimension-label",
-            "start": [
-              90,
-              60
-            ],
-            "end": [
-              90,
-              140
-            ],
-            "label": "h = 5",
-            "position": "right",
-            "offset": 10,
-            "highlight": true
-          }
-        ]
-      },
-      "answerSpec": {
-        "type": "number",
-        "value": "40",
-        "forms": [
-          "exact"
-        ]
-      },
-      "answerDisplay": "40",
-      "answerPlain": "40",
-      "inputHint": "Enter number, e.g. 235 or 479",
-      "checkpointHint": "The sum of the bases is $b_1 + b_2 = 16$.",
-      "commonTrapTag": "trapezoid-height",
-      "steps": [
-        {
-          "latex": "A = \\frac{1}{2}(b_1 + b_2)h = \\frac{1}{2}(6 + 10)(5)",
-          "explain": "Substitute the bases and height into the trapezoid area formula."
-        },
-        {
-          "latex": "= \\frac{1}{2}(16)(5)",
-          "explain": "Add the two parallel bases first."
-        },
-        {
-          "latex": "= 40",
-          "explain": "Multiply by $\\frac{1}{2}$ and the height $h = 5$."
-        }
-      ],
-      "id": "Q16",
-      "templateKey": "trapezoid-area",
-      "level": 2,
-      "levelLabel": "Level 2 - Standard Exam",
-      "referenceBadges": [
-        {
-          "code": "MTH-T01-C12-U04",
-          "title": "Use Properties of Rectangles, Triangles, and Trapezoids",
-          "notionUrl": "https://www.notion.so/4003818f8ba080bb8205d0d4b4cd606f"
-        }
-      ],
-      "state": {
-        "userInput": "",
-        "userCode": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "mistakeNote": "",
-        "skipped": false,
-        "lastCheck": null,
-        "lastTestReport": null
-      }
-    },
-    {
-      "category": "Core Skill",
-      "context": "Geometry: Pythagorean Theorem",
-      "references": [
-        "MTH-T01-C12-U03"
-      ],
-      "prompt": "Find the length of the hypotenuse $c$ of the right triangle with legs $a = 8$ and $b = 15$.",
-      "display": "c = \\sqrt{8^2 + 15^2}",
-      "plainText": "sqrt(8^2 + 15^2)",
+      "prompt": "Find the length of the unknown leg $a$ of a right triangle with hypotenuse $c = 17$ and leg $b = 15$.",
+      "display": "a = \\sqrt{17^2 - 15^2}",
+      "plainText": "sqrt(17^2 - 15^2)",
       "visual": {
         "type": "geometry-2d",
         "viewBox": {
@@ -2163,7 +611,7 @@
               50,
               160
             ],
-            "label": "a = 8",
+            "label": "a = ?",
             "position": "left",
             "offset": 12
           },
@@ -2191,7 +639,7 @@
               190,
               160
             ],
-            "label": "c = ?",
+            "label": "c = 17",
             "position": "hypotenuse",
             "offset": 14,
             "highlight": true
@@ -2200,34 +648,76 @@
       },
       "answerSpec": {
         "type": "number",
-        "value": "17",
+        "value": "8",
         "forms": [
           "exact"
         ]
       },
-      "answerDisplay": "17",
-      "answerPlain": "17",
+      "answerDisplay": "8",
+      "answerPlain": "8",
       "inputHint": "Enter integer, e.g. 31 or 47",
-      "checkpointHint": "Evaluate $a^2 + b^2 = 64 + 225 = 289$.",
-      "commonTrapTag": "pythagoras-hypotenuse",
+      "checkpointHint": "Subtract squares to find a leg: $a^2 = c^2 - b^2 = 289 - 225 = 64$.",
+      "commonTrapTag": "pythagoras-leg-subtraction",
       "steps": [
         {
-          "latex": "c = \\sqrt{a^2 + b^2} = \\sqrt{8^2 + 15^2}",
-          "explain": "Write the Pythagorean formula solved for hypotenuse $c$ and substitute the legs."
+          "latex": "a = \\sqrt{c^2 - b^2} = \\sqrt{17^2 - 15^2}",
+          "explain": "Solve the Pythagorean formula for leg $a$ and substitute $c$ and $b$."
         },
         {
-          "latex": "= \\sqrt{64 + 225} = \\sqrt{289}",
-          "explain": "Square both legs and add under the radical."
+          "latex": "= \\sqrt{289 - 225} = \\sqrt{64}",
+          "explain": "Square hypotenuse and leg, then subtract under the radical."
         },
         {
-          "latex": "= 17",
-          "explain": "Evaluate the exact square root to find the length of the hypotenuse $c$."
+          "latex": "= 8",
+          "explain": "Evaluate the principal square root to find leg $a$."
         }
       ],
-      "id": "Q17",
+      "level": 2,
+      "skill": "GEO-RIGHT-TRIANGLE-LEG",
+      "verificationLevel": "machine-verified",
+      "id": "Q05",
       "templateKey": "pythagoras-hypotenuse",
-      "level": 1,
-      "levelLabel": "Level 1 - Foundation",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "pythagoras-hypotenuse|reverse|sqrt(#^# - #^#)",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "GEO-RIGHT-TRIANGLE-LEG",
+          "stepRange": [
+            2,
+            4
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "pythagoras-leg-subtraction",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "pythagoras-hypotenuse|reverse|sqrt(#^# - #^#)",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
       "referenceBadges": [
         {
           "code": "MTH-T01-C12-U03",
@@ -2235,122 +725,303 @@
           "notionUrl": "https://www.notion.so/4003818f8ba080459e0dd81747fad236"
         }
       ],
+      "trapValue": "2",
       "state": {
         "userInput": "",
-        "userCode": "",
         "score": null,
         "divergedStep": null,
         "mistakes": [],
-        "mistakeNote": "",
-        "skipped": false,
-        "lastCheck": null,
-        "lastTestReport": null
+        "lastCheck": null
       }
     },
     {
+      "form": "reverse",
       "category": "Core Skill",
-      "context": "Geometry: 3D Solids",
+      "context": "Geometry: Quadrilaterals (Unknown Height)",
       "references": [
-        "MTH-T01-C12-U06"
+        "MTH-T01-C12-U04"
       ],
-      "prompt": "Find the exact volume $V$ of a right circular cylinder with radius $r = 5$ and height $h = 8$ (in terms of $\\pi$).",
-      "display": "V = \\pi r^2 h",
-      "plainText": "pi * 5^2 * 8",
+      "prompt": "A trapezoid with parallel bases $b_1 = 12$ and $b_2 = 20$ has an area of $A = 128$. Find its height $h$.",
+      "display": "h = \\frac{2A}{b_1 + b_2}",
+      "plainText": "(2 * 128) / (12 + 20)",
       "visual": {
-        "type": "geometry-3d-wireframe",
+        "type": "geometry-2d",
         "viewBox": {
-          "width": 300,
-          "height": 190
+          "width": 320,
+          "height": 180
         },
         "elements": [
           {
-            "type": "cylinder",
-            "center": [
-              150,
-              95
+            "type": "polygon",
+            "points": [
+              [
+                70,
+                140
+              ],
+              [
+                240,
+                140
+              ],
+              [
+                210,
+                60
+              ],
+              [
+                90,
+                60
+              ]
             ],
-            "radiusX": 55,
-            "radiusY": 16,
-            "height": 90,
-            "stroke": "#38bdf8",
-            "fill": "rgba(56, 189, 248, 0.08)"
+            "stroke": "#10b981",
+            "fill": "rgba(16, 185, 129, 0.08)"
           },
           {
             "type": "line",
             "points": [
               [
-                150,
-                50
+                90,
+                60
               ],
               [
-                205,
-                50
+                90,
+                140
               ]
             ],
-            "stroke": "#cbd5e1",
-            "strokeDasharray": "2 2"
+            "stroke": "#94a3b8",
+            "strokeDasharray": "3 3"
           },
           {
             "type": "dimension-label",
             "start": [
-              150,
-              50
+              90,
+              60
             ],
             "end": [
-              205,
-              50
+              210,
+              60
             ],
-            "label": "r = 5",
+            "label": "b₁ = 12",
             "position": "top",
-            "offset": 8
+            "offset": 10
           },
           {
             "type": "dimension-label",
             "start": [
-              215,
-              50
+              70,
+              140
             ],
             "end": [
-              215,
+              240,
+              140
+            ],
+            "label": "b₂ = 20",
+            "position": "bottom",
+            "offset": 14
+          },
+          {
+            "type": "dimension-label",
+            "start": [
+              90,
+              60
+            ],
+            "end": [
+              90,
               140
             ],
             "label": "h = 8",
             "position": "right",
-            "offset": 12,
+            "offset": 10,
             "highlight": true
           }
         ]
       },
       "answerSpec": {
-        "type": "expression",
-        "value": "200*pi",
-        "variables": [
-          "pi"
+        "type": "number",
+        "value": "8",
+        "forms": [
+          "exact"
         ]
       },
-      "answerDisplay": "200\\pi",
-      "answerPlain": "200 pi",
-      "inputHint": "Enter exact form with pi, e.g. 230 pi or 470*pi",
-      "checkpointHint": "The base area is $B = \\pi r^2 = 25\\pi$.",
-      "commonTrapTag": "volume-surface-area",
+      "answerDisplay": "8",
+      "answerPlain": "8",
+      "inputHint": "Enter number, e.g. 235 or 479",
+      "checkpointHint": "Multiply area by $2$ before dividing by $b_1 + b_2 = 32$.",
+      "commonTrapTag": "trapezoid-height",
       "steps": [
         {
-          "latex": "V = \\pi r^2 h = \\pi(5)^2(8)",
-          "explain": "Substitute the radius and height into the cylinder volume formula."
+          "latex": "h = \\frac{2A}{b_1 + b_2} = \\frac{2(128)}{12 + 20}",
+          "explain": "Solve the trapezoid area formula for height $h$ and substitute known values."
         },
         {
-          "latex": "= \\pi(25)(8)",
-          "explain": "Evaluate the base area: $5^2 = 25$."
+          "latex": "= \\frac{256}{32}",
+          "explain": "Double the area and sum the parallel bases."
         },
         {
-          "latex": "= 200\\pi",
-          "explain": "Multiply by the height: $25 \\times 8 = 200$."
+          "latex": "= 8",
+          "explain": "Divide to obtain the height $h$."
         }
       ],
-      "id": "Q18",
-      "templateKey": "cylinder-volume",
+      "level": 2,
+      "skill": "GEO-TRAPEZOID-HEIGHT",
+      "verificationLevel": "machine-verified",
+      "id": "Q06",
+      "templateKey": "trapezoid-area",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "trapezoid-area|reverse|(# * #) / (# + #)",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "GEO-TRAPEZOID-HEIGHT",
+          "stepRange": [
+            2,
+            4
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "trapezoid-height",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "trapezoid-area|reverse|(# * #) / (# + #)",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C12-U04",
+          "title": "Use Properties of Rectangles, Triangles, and Trapezoids",
+          "notionUrl": "https://www.notion.so/4003818f8ba080bb8205d0d4b4cd606f"
+        }
+      ],
+      "trapValue": "4",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "flaw-line-3",
+      "category": "Trap & Edge Case",
+      "prompt": "A composite solid consists of a right circular cylinder with radius $r = 5$ and height $h = 7$, capped at one end with a hemispherical dome of the same radius $r = 5$. A student calculates the total exterior surface area as shown. Which line contains the FIRST error?",
+      "display": "\\begin{aligned}&\\text{Line 1: }\\; SA = \\pi(5)^2 + 2\\pi(5)(7) + 2\\pi(5)^2 \\\\ &\\text{Line 2: }\\; = 25\\pi + 70\\pi + 50\\pi \\\\ &\\text{Line 3: }\\; = 170\\pi\\end{aligned}",
+      "plainText": "Find flaw in: SA for r=5, h=7 (flaw-3)",
+      "answerSpec": {
+        "type": "choice",
+        "options": [
+          {
+            "id": "1",
+            "label": "Line 1",
+            "trapTag": "volume-surface-area"
+          },
+          {
+            "id": "2",
+            "label": "Line 2",
+            "trapTag": "internal-boundary-double-count-trap"
+          },
+          {
+            "id": "3",
+            "label": "Line 3",
+            "trapTag": "arithmetic-slip"
+          }
+        ],
+        "correct": "3"
+      },
+      "answerDisplay": "\\text{Line 3}",
+      "answerPlain": "3",
+      "inputHint": "Choose a line",
+      "checkpointHint": "Work through the derivation step-by-step on scratch paper, then compare your solution line by line with the student's work to identify where they diverge.",
+      "commonTrapTag": "internal-boundary-double-count-trap",
+      "flawTag": "arithmetic-slip",
+      "steps": [
+        {
+          "latex": "SA = \\pi(5)^2 + 2\\pi(5)(7) + 2\\pi(5)^2",
+          "explain": "Sum the exposed bottom circle $\\pi r^2$, lateral sleeve $2\\pi r h$, and curved hemisphere $2\\pi r^2$."
+        },
+        {
+          "latex": "= 25\\pi + 70\\pi + 50\\pi",
+          "explain": "Evaluate each component: $25\\pi$, $70\\pi$, and curved dome $50\\pi$."
+        },
+        {
+          "latex": "= 145\\pi",
+          "explain": "Line 3 is wrong: The student wrote $= 170\\pi$, but this is incorrect. Combine like terms in $\\pi$ to obtain $145\\pi$."
+        }
+      ],
+      "variables": [
+        "pi"
+      ],
+      "context": "Geometry: 3D Solids Diagnostic Flaw",
+      "references": [
+        "MTH-T01-C12-U06"
+      ],
       "level": 3,
+      "skill": "GEO-CYLINDER-VOLUME-RADIUS",
+      "verificationLevel": "machine-verified",
+      "id": "Q07",
+      "templateKey": "find-flaw-composite-surface-area",
       "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "find-flaw-composite-surface-area|flaw-line-3|Find flaw in: SA for r=#, h=# (flaw-#)",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "GEO-CYLINDER-VOLUME-RADIUS",
+          "stepRange": [
+            2,
+            5
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "internal-boundary-double-count-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 2
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 16
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "find-flaw-composite-surface-area|flaw-line-3|Find flaw in: SA for r=#, h=# (flaw-#)",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
       "referenceBadges": [
         {
           "code": "MTH-T01-C12-U06",
@@ -2358,142 +1029,25 @@
           "notionUrl": "https://www.notion.so/4003818f8ba080cabf64cabe4a56586d"
         }
       ],
+      "trapValue": "1",
+      "flaw": {
+        "values": [
+          "145*pi",
+          "145*pi",
+          "170*pi"
+        ],
+        "firstWrong": 3
+      },
       "state": {
         "userInput": "",
-        "userCode": "",
         "score": null,
         "divergedStep": null,
         "mistakes": [],
-        "mistakeNote": "",
-        "skipped": false,
-        "lastCheck": null,
-        "lastTestReport": null
+        "lastCheck": null
       }
     },
     {
-      "category": "Core Skill",
-      "context": "Geometry: 3D Solids",
-      "references": [
-        "MTH-T01-C12-U06"
-      ],
-      "prompt": "Find the exact volume $V$ of a right circular cylinder with radius $r = 4$ and height $h = 8$ (in terms of $\\pi$).",
-      "display": "V = \\pi r^2 h",
-      "plainText": "pi * 4^2 * 8",
-      "visual": {
-        "type": "geometry-3d-wireframe",
-        "viewBox": {
-          "width": 300,
-          "height": 190
-        },
-        "elements": [
-          {
-            "type": "cylinder",
-            "center": [
-              150,
-              95
-            ],
-            "radiusX": 55,
-            "radiusY": 16,
-            "height": 90,
-            "stroke": "#38bdf8",
-            "fill": "rgba(56, 189, 248, 0.08)"
-          },
-          {
-            "type": "line",
-            "points": [
-              [
-                150,
-                50
-              ],
-              [
-                205,
-                50
-              ]
-            ],
-            "stroke": "#cbd5e1",
-            "strokeDasharray": "2 2"
-          },
-          {
-            "type": "dimension-label",
-            "start": [
-              150,
-              50
-            ],
-            "end": [
-              205,
-              50
-            ],
-            "label": "r = 4",
-            "position": "top",
-            "offset": 8
-          },
-          {
-            "type": "dimension-label",
-            "start": [
-              215,
-              50
-            ],
-            "end": [
-              215,
-              140
-            ],
-            "label": "h = 8",
-            "position": "right",
-            "offset": 12,
-            "highlight": true
-          }
-        ]
-      },
-      "answerSpec": {
-        "type": "expression",
-        "value": "128*pi",
-        "variables": [
-          "pi"
-        ]
-      },
-      "answerDisplay": "128\\pi",
-      "answerPlain": "128 pi",
-      "inputHint": "Enter exact form with pi, e.g. 230 pi or 470*pi",
-      "checkpointHint": "The base area is $B = \\pi r^2 = 16\\pi$.",
-      "commonTrapTag": "volume-surface-area",
-      "steps": [
-        {
-          "latex": "V = \\pi r^2 h = \\pi(4)^2(8)",
-          "explain": "Substitute the radius and height into the cylinder volume formula."
-        },
-        {
-          "latex": "= \\pi(16)(8)",
-          "explain": "Evaluate the base area: $4^2 = 16$."
-        },
-        {
-          "latex": "= 128\\pi",
-          "explain": "Multiply by the height: $16 \\times 8 = 128$."
-        }
-      ],
-      "id": "Q19",
-      "templateKey": "cylinder-volume",
-      "level": 3,
-      "levelLabel": "Level 3 - Trap & Diagnostic",
-      "referenceBadges": [
-        {
-          "code": "MTH-T01-C12-U06",
-          "title": "Solve Geometry Applications: Volume and Surface Area",
-          "notionUrl": "https://www.notion.so/4003818f8ba080cabf64cabe4a56586d"
-        }
-      ],
-      "state": {
-        "userInput": "",
-        "userCode": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "mistakeNote": "",
-        "skipped": false,
-        "lastCheck": null,
-        "lastTestReport": null
-      }
-    },
-    {
+      "form": "direct",
       "category": "Core Skill",
       "context": "Geometry: Pythagorean Theorem",
       "references": [
@@ -2588,7 +1142,7 @@
       "answerPlain": "5",
       "inputHint": "Enter integer, e.g. 31 or 47",
       "checkpointHint": "Evaluate $a^2 + b^2 = 16 + 9 = 25$.",
-      "commonTrapTag": "pythagoras-hypotenuse",
+      "commonTrapTag": "linear-addition-trap",
       "steps": [
         {
           "latex": "c = \\sqrt{a^2 + b^2} = \\sqrt{4^2 + 3^2}",
@@ -2603,10 +1157,52 @@
           "explain": "Evaluate the exact square root to find the length of the hypotenuse $c$."
         }
       ],
-      "id": "Q20",
-      "templateKey": "pythagoras-hypotenuse",
       "level": 1,
+      "skill": "GEO-RIGHT-TRIANGLE-HYP",
+      "verificationLevel": "machine-verified",
+      "id": "Q08",
+      "templateKey": "pythagoras-hypotenuse",
       "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "pythagoras-hypotenuse|direct|sqrt(#^# + #^#)",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "GEO-RIGHT-TRIANGLE-HYP",
+          "stepRange": [
+            1,
+            3
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "linear-addition-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "pythagoras-hypotenuse|direct|sqrt(#^# + #^#)",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
       "referenceBadges": [
         {
           "code": "MTH-T01-C12-U03",
@@ -2614,29 +1210,26 @@
           "notionUrl": "https://www.notion.so/4003818f8ba080459e0dd81747fad236"
         }
       ],
+      "trapValue": "7",
       "state": {
         "userInput": "",
-        "userCode": "",
         "score": null,
         "divergedStep": null,
         "mistakes": [],
-        "mistakeNote": "",
-        "skipped": false,
-        "lastCheck": null,
-        "lastTestReport": null
+        "lastCheck": null
       }
     }
   ],
   "sessionSummary": {
-    "practiceStatus": "Needs Retry",
+    "practiceStatus": "Ready",
     "score": 0,
-    "maxScore": 20,
+    "maxScore": 8,
     "accuracyPct": 0,
-    "skippedCount": 0,
-    "skippedProblems": [],
     "mistakeCategories": [],
-    "divergedStepsSummary": "No diverged steps logged.",
-    "attemptDate": "2026-11-07"
+    "divergedStepsSummary": "",
+    "attemptDate": null,
+    "syncedToNotionAt": null,
+    "notionPageId": "4113818f-8ba0-8187-9717-f933406fd277"
   },
   "localFilePath": "drills/data/MTH-T01-C12/DRL-MTH-T01-C12-01.json"
 }

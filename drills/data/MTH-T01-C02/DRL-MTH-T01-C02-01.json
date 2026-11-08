@@ -1,0 +1,828 @@
+{
+  "schemaVersion": "2.0-math",
+  "drillId": "DRL-MTH-T01-C02-01",
+  "subject": "MATH",
+  "unitCode": "MTH-T01-C02",
+  "unitTitle": "The Language of Algebra",
+  "chapterCode": "MTH-T01-C02",
+  "topicCode": "MTH-T01",
+  "unitNotionUrl": "https://www.notion.so/4013818f8ba081b7bb58fe78c77eda4b",
+  "createdAt": "2026-11-08 17:14:03",
+  "config": {
+    "questionCount": 8,
+    "difficulty": "ALL",
+    "difficultyMode": "Mixed Exam Mode"
+  },
+  "mistakeTags": [
+    {
+      "id": "c02-substitution-precedence",
+      "label": "Added before multiplying when evaluating algebraic expression",
+      "name": "Algebraic Evaluation Precedence Slip",
+      "autoFrom": []
+    },
+    {
+      "id": "c02-translation-subtraction-order",
+      "label": "Reversed order of 'a less than b' during equation translation",
+      "name": "Subtraction Translation Order Reversal",
+      "autoFrom": []
+    },
+    {
+      "id": "c02-lcm-gcd-exponent-trap",
+      "label": "Took minimum prime exponents (GCD) instead of maximum prime exponents (LCM)",
+      "name": "LCM vs GCD Prime Exponent Trap",
+      "autoFrom": []
+    },
+    {
+      "id": "c02-synodic-offset-trap",
+      "label": "Forgot initial offset when computing next simultaneous cycle occurrence",
+      "name": "Simultaneous Cycle Offset Omission",
+      "autoFrom": []
+    }
+  ],
+  "problems": [
+    {
+      "form": "reverse",
+      "category": "Reverse Reasoning",
+      "context": "Language of Algebra: Verbal Translation & Solution",
+      "references": [
+        "MTH-T01-C02-U03"
+      ],
+      "prompt": "When $23$ is subtracted from $9$ times a number $n$, the result is $112$. Find the number $n$.",
+      "display": "9n - 23 = 112 \\implies n = ?",
+      "plainText": "9*n - 23 = 112 [zeta]",
+      "answerSpec": {
+        "type": "number",
+        "value": "15"
+      },
+      "answerDisplay": "15",
+      "answerPlain": "15",
+      "inputHint": "Enter the exact integer value",
+      "checkpointHint": "Translate 'a less than b' as b - a, add the constant to both sides, and divide by the coefficient.",
+      "commonTrapTag": "c02-translation-subtraction-order",
+      "steps": [
+        {
+          "latex": "9n - 23 = 112",
+          "explain": "Write the algebraic equation from the verbal statement."
+        },
+        {
+          "latex": "9n = 112 + 23 = 135",
+          "explain": "Add the subtracted constant to both sides of the equation."
+        },
+        {
+          "latex": "n = \\frac{135}{9} = 15",
+          "explain": "Divide by the coefficient to isolate the unknown."
+        }
+      ],
+      "level": 2,
+      "skill": "MTH-PREALG-C02-TRANSLATE",
+      "verificationLevel": "machine-verified",
+      "id": "Q01",
+      "templateKey": "c02-translate-and-solve-one-step",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "c02-translate-and-solve-one-step|reverse|#*n - # = # [zeta]",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C02-TRANSLATE",
+          "stepRange": [
+            2,
+            4
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c02-translation-subtraction-order",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c02-translate-and-solve-one-step|reverse|#*n - # = # [zeta]",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C02-U03",
+          "title": "Solving Equations Using the Subtraction and Addition Properties of Equality",
+          "notionUrl": "https://www.notion.so/4013818f8ba0813380ced8f2bceb6559"
+        }
+      ],
+      "trapValue": "89",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "direct",
+      "category": "Core Skill",
+      "context": "Language of Algebra: Expression Evaluation",
+      "references": [
+        "MTH-T01-C02-U02"
+      ],
+      "prompt": "Evaluate the algebraic expression $7x + 2y$ when $x = 6$ and $y = 9$.",
+      "display": "7(6) + 2(9)",
+      "plainText": "7*x + 2*y at (6,9) [beta]",
+      "answerSpec": {
+        "type": "number",
+        "value": "60"
+      },
+      "answerDisplay": "60",
+      "answerPlain": "60",
+      "inputHint": "Enter the exact integer value",
+      "checkpointHint": "Substitute each variable with its assigned value and follow the order of operations.",
+      "commonTrapTag": "c02-substitution-precedence",
+      "steps": [
+        {
+          "latex": "7x = 7(6) = 42",
+          "explain": "Evaluate the first product term."
+        },
+        {
+          "latex": "2y = 2(9) = 18",
+          "explain": "Evaluate the second product term."
+        },
+        {
+          "latex": "42 + 18 = 60",
+          "explain": "Add the two products together."
+        }
+      ],
+      "level": 1,
+      "skill": "MTH-PREALG-C02-EVAL",
+      "verificationLevel": "machine-verified",
+      "id": "Q02",
+      "templateKey": "c02-evaluate-expression",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "c02-evaluate-expression|direct|#*x + #*y at (#,#) [beta]",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C02-EVAL",
+          "stepRange": [
+            1,
+            3
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c02-substitution-precedence",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c02-evaluate-expression|direct|#*x + #*y at (#,#) [beta]",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C02-U02",
+          "title": "Evaluate, Simplify, and Translate Expressions",
+          "notionUrl": "https://www.notion.so/4013818f8ba0811582dde0802015f192"
+        }
+      ],
+      "trapValue": "135",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "direct",
+      "category": "Interleaved Synthesis",
+      "context": "Language of Algebra: LCM/GCD Algebraic Synthesis",
+      "references": [
+        "MTH-T01-C02-U02",
+        "MTH-T01-C02-U05"
+      ],
+      "prompt": "Let $L = \\text{LCM}(10, 15)$ and $G = \\text{GCD}(10, 15)$. Evaluate the algebraic expression $5L + 7G$.",
+      "display": "5\\,\\text{LCM}(10, 15) + 7\\,\\text{GCD}(10, 15)",
+      "plainText": "5*LCM(10,15) + 7*GCD(10,15) [alpha]",
+      "answerSpec": {
+        "type": "number",
+        "value": "185"
+      },
+      "answerDisplay": "185",
+      "answerPlain": "185",
+      "inputHint": "Enter the exact integer value",
+      "checkpointHint": "Determine the LCM and GCD of the pair first, then substitute those values into the linear expression.",
+      "commonTrapTag": "c02-lcm-gcd-exponent-trap",
+      "steps": [
+        {
+          "latex": "L = \\text{LCM}(10, 15) = 30, \\quad G = \\text{GCD}(10, 15) = 5",
+          "explain": "Find the LCM and GCD of the two integers."
+        },
+        {
+          "latex": "5L = 150, \\quad 7G = 35",
+          "explain": "Multiply each quantity by its algebraic coefficient."
+        },
+        {
+          "latex": "150 + 35 = 185",
+          "explain": "Add the two products together."
+        }
+      ],
+      "level": 4,
+      "skill": "MTH-PREALG-C02-SYNTHESIS",
+      "verificationLevel": "machine-verified",
+      "id": "Q03",
+      "templateKey": "c02-algebraic-divisibility-synthesis",
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "c02-algebraic-divisibility-synthesis|direct|#*LCM(#,#) + #*GCD(#,#) [alpha]",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C02-SYNTHESIS",
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c02-lcm-gcd-exponent-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c02-algebraic-divisibility-synthesis|direct|#*LCM(#,#) + #*GCD(#,#) [alpha]",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C02-U02",
+          "title": "Evaluate, Simplify, and Translate Expressions",
+          "notionUrl": "https://www.notion.so/4013818f8ba0811582dde0802015f192"
+        },
+        {
+          "code": "MTH-T01-C02-U05",
+          "title": "Prime Factorization and the Least Common Multiple",
+          "notionUrl": "https://www.notion.so/4013818f8ba081df846fdb0c5bcb11d0"
+        }
+      ],
+      "trapValue": "160",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "nested",
+      "category": "Core Skill",
+      "context": "Language of Algebra: Expression Evaluation",
+      "references": [
+        "MTH-T01-C02-U02"
+      ],
+      "prompt": "Evaluate the algebraic expression $8(x + y) - 10$ when $x = 6$ and $y = 7$.",
+      "display": "8(6 + 7) - 10",
+      "plainText": "8*x + 5*y at (6,7) [beta]",
+      "answerSpec": {
+        "type": "number",
+        "value": "94"
+      },
+      "answerDisplay": "94",
+      "answerPlain": "94",
+      "inputHint": "Enter the exact integer value",
+      "checkpointHint": "Substitute each variable with its assigned value and follow the order of operations.",
+      "commonTrapTag": "c02-substitution-precedence",
+      "steps": [
+        {
+          "latex": "x + y = 6 + 7 = 13",
+          "explain": "Substitute the given values and evaluate the parentheses first."
+        },
+        {
+          "latex": "8(13) = 104",
+          "explain": "Multiply the sum by the outer coefficient."
+        },
+        {
+          "latex": "104 - 10 = 94",
+          "explain": "Subtract the constant term."
+        }
+      ],
+      "level": 1,
+      "skill": "MTH-PREALG-C02-EVAL",
+      "verificationLevel": "machine-verified",
+      "id": "Q04",
+      "templateKey": "c02-evaluate-expression",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "c02-evaluate-expression|nested|#*x + #*y at (#,#) [beta]",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C02-EVAL",
+          "stepRange": [
+            1,
+            3
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c02-substitution-precedence",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c02-evaluate-expression|nested|#*x + #*y at (#,#) [beta]",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C02-U02",
+          "title": "Evaluate, Simplify, and Translate Expressions",
+          "notionUrl": "https://www.notion.so/4013818f8ba0811582dde0802015f192"
+        }
+      ],
+      "trapValue": "45",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "multi-constraint",
+      "category": "Interleaved Synthesis",
+      "context": "Language of Algebra: LCM/GCD Algebraic Synthesis",
+      "references": [
+        "MTH-T01-C02-U02",
+        "MTH-T01-C02-U05"
+      ],
+      "prompt": "Let $L = \\text{LCM}(14, 21)$ and $G = \\text{GCD}(14, 21)$. Evaluate the algebraic expression $2L - 4G$.",
+      "display": "2\\,\\text{LCM}(14, 21) - 4\\,\\text{GCD}(14, 21)",
+      "plainText": "2*LCM(14,21) + 4*GCD(14,21) [zeta]",
+      "answerSpec": {
+        "type": "number",
+        "value": "56"
+      },
+      "answerDisplay": "56",
+      "answerPlain": "56",
+      "inputHint": "Enter the exact integer value",
+      "checkpointHint": "Determine the LCM and GCD of the pair first, then substitute those values into the linear expression.",
+      "commonTrapTag": "c02-lcm-gcd-exponent-trap",
+      "steps": [
+        {
+          "latex": "L = \\text{LCM}(14, 21) = 42, \\quad G = \\text{GCD}(14, 21) = 7",
+          "explain": "Compute both the least common multiple and greatest common divisor."
+        },
+        {
+          "latex": "2L = 84, \\quad 4G = 28",
+          "explain": "Substitute $L$ and $G$ into their respective terms."
+        },
+        {
+          "latex": "84 - 28 = 56",
+          "explain": "Subtract to obtain the final value."
+        }
+      ],
+      "level": 4,
+      "skill": "MTH-PREALG-C02-SYNTHESIS",
+      "verificationLevel": "machine-verified",
+      "id": "Q05",
+      "templateKey": "c02-algebraic-divisibility-synthesis",
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "c02-algebraic-divisibility-synthesis|multi-constraint|#*LCM(#,#) + #*GCD(#,#) [zeta]",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C02-SYNTHESIS",
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c02-lcm-gcd-exponent-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c02-algebraic-divisibility-synthesis|multi-constraint|#*LCM(#,#) + #*GCD(#,#) [zeta]",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C02-U02",
+          "title": "Evaluate, Simplify, and Translate Expressions",
+          "notionUrl": "https://www.notion.so/4013818f8ba0811582dde0802015f192"
+        },
+        {
+          "code": "MTH-T01-C02-U05",
+          "title": "Prime Factorization and the Least Common Multiple",
+          "notionUrl": "https://www.notion.so/4013818f8ba081df846fdb0c5bcb11d0"
+        }
+      ],
+      "trapValue": "182",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "direct",
+      "category": "Trap & Edge Case",
+      "context": "Language of Algebra: Prime Factorization & LCM Trap",
+      "references": [
+        "MTH-T01-C02-U05"
+      ],
+      "prompt": "Using prime factorization, find the Least Common Multiple (LCM) of $12$ and $18$.",
+      "display": "\\text{LCM}(12, 18) = ?",
+      "plainText": "LCM(12, 18) [epsilon]",
+      "answerSpec": {
+        "type": "number",
+        "value": "36"
+      },
+      "answerDisplay": "36",
+      "answerPlain": "36",
+      "inputHint": "Enter the exact integer value",
+      "checkpointHint": "For the least common multiple, select the highest power of each prime factor present in either number rather than the lowest power.",
+      "commonTrapTag": "c02-lcm-gcd-exponent-trap",
+      "steps": [
+        {
+          "latex": "12 = 2^2 \\cdot 3, \\quad 18 = 2 \\cdot 3^2",
+          "explain": "Express both integers in prime-factored form."
+        },
+        {
+          "latex": "\\text{GCD}(12, 18) = 6",
+          "explain": "Identify the greatest common divisor from shared prime factors."
+        },
+        {
+          "latex": "\\text{LCM}(12, 18) = \\frac{12 \\times 18}{6} = 36",
+          "explain": "Take the highest exponent of each prime factor to compute the LCM."
+        }
+      ],
+      "level": 3,
+      "skill": "MTH-PREALG-C02-LCM-TRAP",
+      "verificationLevel": "machine-verified",
+      "id": "Q06",
+      "templateKey": "c02-lcm-gcd-prime-trap",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "c02-lcm-gcd-prime-trap|direct|LCM(#, #) [epsilon]",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C02-LCM-TRAP",
+          "stepRange": [
+            2,
+            5
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c02-lcm-gcd-exponent-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c02-lcm-gcd-prime-trap|direct|LCM(#, #) [epsilon]",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C02-U05",
+          "title": "Prime Factorization and the Least Common Multiple",
+          "notionUrl": "https://www.notion.so/4013818f8ba081df846fdb0c5bcb11d0"
+        }
+      ],
+      "trapValue": "6",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "synodic-cycle",
+      "category": "Trap & Edge Case",
+      "context": "Language of Algebra: Prime Factorization & LCM Trap",
+      "references": [
+        "MTH-T01-C02-U05"
+      ],
+      "prompt": "Two automated beacons flash every $20$ minutes and $28$ minutes, respectively. Both beacons flashed together at $t = 5$ minutes past the hour. At what time $t$ (in minutes past the hour) will they next flash simultaneously?",
+      "display": "t = 5 + \\text{LCM}(20, 28)",
+      "plainText": "LCM(20, 28) [gamma]",
+      "answerSpec": {
+        "type": "number",
+        "value": "145"
+      },
+      "answerDisplay": "145",
+      "answerPlain": "145",
+      "inputHint": "Enter the exact integer value",
+      "checkpointHint": "For the least common multiple, select the highest power of each prime factor present in either number rather than the lowest power.",
+      "commonTrapTag": "c02-lcm-gcd-exponent-trap",
+      "steps": [
+        {
+          "latex": "20 = 2^2 \\cdot 5, \\quad 28 = 2^2 \\cdot 7",
+          "explain": "Find the prime factorization of each period."
+        },
+        {
+          "latex": "\\text{LCM}(20, 28) = 140",
+          "explain": "Take the highest power of each prime factor to obtain the least common multiple."
+        },
+        {
+          "latex": "t = 5 + 140 = 145",
+          "explain": "Add the period LCM to the initial synchronization time."
+        }
+      ],
+      "level": 3,
+      "skill": "MTH-PREALG-C02-LCM-TRAP",
+      "verificationLevel": "machine-verified",
+      "id": "Q07",
+      "templateKey": "c02-lcm-gcd-prime-trap",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "c02-lcm-gcd-prime-trap|synodic-cycle|LCM(#, #) [gamma]",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C02-LCM-TRAP",
+          "stepRange": [
+            2,
+            5
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c02-lcm-gcd-exponent-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c02-lcm-gcd-prime-trap|synodic-cycle|LCM(#, #) [gamma]",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C02-U05",
+          "title": "Prime Factorization and the Least Common Multiple",
+          "notionUrl": "https://www.notion.so/4013818f8ba081df846fdb0c5bcb11d0"
+        }
+      ],
+      "trapValue": "9",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "direct",
+      "category": "Reverse Reasoning",
+      "context": "Language of Algebra: Verbal Translation & Solution",
+      "references": [
+        "MTH-T01-C02-U03"
+      ],
+      "prompt": "Translate and solve for $n$: '$34$ less than the product of $6$ and $n$ equals $68$'.",
+      "display": "6n - 34 = 68",
+      "plainText": "6*n - 34 = 68 [epsilon]",
+      "answerSpec": {
+        "type": "number",
+        "value": "17"
+      },
+      "answerDisplay": "17",
+      "answerPlain": "17",
+      "inputHint": "Enter the exact integer value",
+      "checkpointHint": "Translate 'a less than b' as b - a, add the constant to both sides, and divide by the coefficient.",
+      "commonTrapTag": "c02-translation-subtraction-order",
+      "steps": [
+        {
+          "latex": "6n - 34 = 68",
+          "explain": "Write the algebraic equation from the verbal statement."
+        },
+        {
+          "latex": "6n = 68 + 34 = 102",
+          "explain": "Add the subtracted constant to both sides of the equation."
+        },
+        {
+          "latex": "n = \\frac{102}{6} = 17",
+          "explain": "Divide by the coefficient to isolate the unknown."
+        }
+      ],
+      "level": 2,
+      "skill": "MTH-PREALG-C02-TRANSLATE",
+      "verificationLevel": "machine-verified",
+      "id": "Q08",
+      "templateKey": "c02-translate-and-solve-one-step",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "c02-translate-and-solve-one-step|direct|#*n - # = # [epsilon]",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C02-TRANSLATE",
+          "stepRange": [
+            2,
+            4
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c02-translation-subtraction-order",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c02-translate-and-solve-one-step|direct|#*n - # = # [epsilon]",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C02-U03",
+          "title": "Solving Equations Using the Subtraction and Addition Properties of Equality",
+          "notionUrl": "https://www.notion.so/4013818f8ba0813380ced8f2bceb6559"
+        }
+      ],
+      "trapValue": "34",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    }
+  ],
+  "sessionSummary": {
+    "practiceStatus": "Ready",
+    "score": 0,
+    "maxScore": 8,
+    "accuracyPct": 0,
+    "mistakeCategories": [],
+    "divergedStepsSummary": "",
+    "attemptDate": null,
+    "syncedToNotionAt": null,
+    "notionPageId": null
+  },
+  "localFilePath": "drills/data/MTH-T01-C02/DRL-MTH-T01-C02-01.json"
+}

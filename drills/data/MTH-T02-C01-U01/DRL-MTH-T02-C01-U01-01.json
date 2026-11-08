@@ -7,9 +7,9 @@
   "chapterCode": "MTH-T02-C01",
   "topicCode": "MTH-T02",
   "unitNotionUrl": "https://www.notion.so/4013818f8ba080d7896bef2080bbc74a",
-  "createdAt": "2026-11-03 23:13:04",
+  "createdAt": "2026-11-08 17:14:04",
   "config": {
-    "questionCount": 5,
+    "questionCount": 8,
     "difficulty": "ALL",
     "difficultyMode": "Mixed Exam Mode"
   },
@@ -22,6 +22,22 @@
         "imag_sign_flip",
         "real_sign_flip",
         "whole_sign_flip"
+      ]
+    },
+    {
+      "id": "distribute-negative-error",
+      "label": "Did not distribute minus sign to imaginary component",
+      "name": "Distribute Negative Error",
+      "autoFrom": [
+        "imag_sign_flip"
+      ]
+    },
+    {
+      "id": "rotation-direction-inversion",
+      "label": "Rotated in reverse direction (clockwise vs counterclockwise)",
+      "name": "Rotation Direction Error",
+      "autoFrom": [
+        "swapped_parts"
       ]
     },
     {
@@ -86,42 +102,86 @@
   ],
   "problems": [
     {
-      "category": "Combined with Prior Units",
-      "prompt": "Let $f(x) = x^2 - 2x + 10$. Evaluate $f(1 + 3i)$ and write the result in standard form $a + bi$.",
-      "display": "f(1 + 3i) = (1 + 3i)^2 - 2(1 + 3i) + 10",
-      "plainText": "(1 + 3i)^2 + (-2)*(1 + 3i) + (10)",
+      "form": "reciprocal",
+      "category": "Multiplicative Inverse",
+      "skill": "MTH-COMPLEX-DIVISION-CONJUGATE",
+      "level": 2,
+      "verificationLevel": "machine-verified",
+      "prompt": "Find the reciprocal (multiplicative inverse) of $z = -3 - i$ in standard form $a + bi$.",
+      "display": "\\frac{1}{-3 - i}",
+      "plainText": "1/(-3 - i)",
       "answerSpec": {
         "type": "complex",
-        "value": "0 + (0)*I",
+        "value": "-3/10 + (1/10)*I",
         "forms": [
           "a+bi",
           "reduced_fraction"
         ]
       },
-      "answerDisplay": "0",
-      "answerPlain": "0",
-      "inputHint": "Standard form, e.g. 3 - 4i or -8/17 + 15/17 i",
-      "checkpointHint": "First compute $(1 + 3i)^2 = -8 + 6i$.",
-      "commonTrapTag": "sign-slip",
+      "answerDisplay": "-\\frac{3}{10} + \\frac{1}{10}i",
+      "answerPlain": "(-3/10) + (1/10)i",
+      "inputHint": "Enter complex number in standard form a + bi (fractions allowed)",
+      "checkpointHint": "The conjugate of $-3 - i$ is $-3 + i$; denominator is $10$.",
+      "commonTrapTag": "conjugate-denominator",
       "steps": [
         {
-          "latex": "f(1 + 3i) = (1 + 3i)^2 - 2(1 + 3i) + 10",
-          "explain": "Substitute the complex number for every $x$, keeping it in parentheses."
+          "latex": "\\frac{1}{-3 - i} = \\frac{1 \\cdot (-3 + i)}{(-3 - i)(-3 + i)}",
+          "explain": "Multiply numerator and denominator by the complex conjugate $-3 + i$."
         },
         {
-          "latex": "= (-8 + 6i) + (-2 - 6i) + 10",
-          "explain": "Square first: $(1 + 3i)^2 = 1^2 + 2(1)(3i) + (3i)^2 = -8 + 6i$. Then distribute $-2$."
+          "latex": "= \\frac{-3 + i}{(-3)^2 + (-1)^2} = \\frac{-3 + i}{10}",
+          "explain": "The denominator expands to $c^2 + d^2 = (-3)^2 + (-1)^2 = 10$."
         },
         {
-          "latex": "= 0",
-          "explain": "Add the real parts and the imaginary parts separately. A result of $0$ means the number is a root of $f$."
+          "latex": "= -\\frac{3}{10} + \\frac{1}{10}i",
+          "explain": "Split into real and imaginary components in standard form $a + bi$."
         }
       ],
       "id": "Q01",
-      "templateKey": "evaluate-polynomial",
-      "level": 2,
+      "templateKey": "divide-conjugate",
       "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "divide-conjugate|reciprocal|#/(-# - i)",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-COMPLEX-DIVISION-CONJUGATE",
+          "stepRange": [
+            2,
+            4
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "conjugate-denominator",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "divide-conjugate|reciprocal|#/(-# - i)",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
       "referenceBadges": [],
+      "trapValue": "(-3/10) - (1/10)i",
       "state": {
         "userInput": "",
         "score": null,
@@ -131,146 +191,86 @@
       }
     },
     {
+      "form": "rem-0",
       "category": "Core Skill",
-      "prompt": "Simplify and write the result in standard form $a + bi$.",
-      "display": "(-3 - 4i) - (-7 + 5i)",
-      "plainText": "(-3 - 4i) - (-7 + 5i)",
+      "prompt": "Simplify the power of $i$.",
+      "display": "i^{164}",
+      "plainText": "i^164",
       "answerSpec": {
         "type": "complex",
-        "value": "4 + (-9)*I",
+        "value": "1 + (0)*I",
         "forms": [
           "a+bi",
           "reduced_fraction"
         ]
       },
-      "answerDisplay": "4 - 9i",
-      "answerPlain": "4 - 9i",
-      "inputHint": "Standard form, e.g. 3 - 4i or -8/17 + 15/17 i",
-      "checkpointHint": "The real parts combine to $4$.",
-      "commonTrapTag": "sign-slip",
-      "steps": [
-        {
-          "latex": "(-3 - 4i) - (-7 + 5i) = -3 - 4i + 7 - 5i",
-          "explain": "Distribute the minus sign to BOTH parts of the second number."
-        },
-        {
-          "latex": "= (-3 + 7) + (-4 - 5)i",
-          "explain": "Group the real parts together and the imaginary parts together."
-        },
-        {
-          "latex": "= 4 - 9i",
-          "explain": "Real part $4$, imaginary part $-9$."
-        }
-      ],
-      "id": "Q02",
-      "templateKey": "add-subtract",
-      "level": 1,
-      "levelLabel": "Level 1 - Foundation",
-      "referenceBadges": [],
-      "state": {
-        "userInput": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "lastCheck": null
-      }
-    },
-    {
-      "category": "Cross-Subject Application",
-      "context": "Graphics and Algorithms Application",
-      "references": [
-        "PRG-T01-C03"
-      ],
-      "prompt": "In a 2D game engine, points are stored as complex numbers $z = x + yi$. Multiplying by $i$ rotates a point $90^\\circ counterclockwise$ about the origin. The point $(-3, 6)$ is rotated $90^\\circ counterclockwise$ and then translated by $w = 6 - i$. Find the new point $(x', y')$.",
-      "display": "z' = i(-3 + 6i) + (6 - i)",
-      "plainText": "(i)*(-3 + 6i) + (6 - i)",
-      "answerSpec": {
-        "type": "tuple",
-        "values": [
-          "0",
-          "-4"
-        ],
-        "labels": [
-          "x'",
-          "y'"
-        ],
-        "acceptComplex": true
-      },
-      "answerDisplay": "(0, -4)",
-      "answerPlain": "(0, -4)",
-      "inputHint": "e.g. (5, 3)  or  5 + 3i",
-      "checkpointHint": "After the rotation only, the point is $(-6, -3)$.",
-      "commonTrapTag": "sign-slip",
-      "steps": [
-        {
-          "latex": "z = -3 + 6i",
-          "explain": "Represent the point $(-3, 6)$ as a complex number."
-        },
-        {
-          "latex": "i(-3 + 6i) = -3i + 6i^2 = -6 - 3i",
-          "explain": "Multiply by $i$ and use $i^2 = -1$: the point $(x, y)$ maps to $(-y, x)$."
-        },
-        {
-          "latex": "z' = (-6 - 3i) + (6 - i) = -4i",
-          "explain": "Add the translation $w$ component-wise. The new point is $(0, -4)$."
-        }
-      ],
-      "id": "Q03",
-      "templateKey": "rotation-2d",
-      "level": 4,
-      "levelLabel": "Level 4 - Applied Synthesis",
-      "referenceBadges": [
-        {
-          "code": "PRG-T01-C03",
-          "title": "Problem Solving & Utility Toolkit",
-          "notionUrl": "https://www.notion.so/40c3818f8ba0815f8356d8e9627e7c24"
-        }
-      ],
-      "state": {
-        "userInput": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "lastCheck": null
-      }
-    },
-    {
-      "category": "Trap & Edge Case",
-      "prompt": "Simplify and write the result in standard form $a + bi$.",
-      "display": "i^{91} - 2i^{111} - 4i^{61}",
-      "plainText": "(1)*i^91 + (-2)*i^111 + (-4)*i^61",
-      "answerSpec": {
-        "type": "complex",
-        "value": "0 + (-3)*I",
-        "forms": [
-          "a+bi",
-          "reduced_fraction"
-        ]
-      },
-      "answerDisplay": "-3i",
-      "answerPlain": "-3i",
-      "inputHint": "Standard form, e.g. 3 - 4i or -8/17 + 15/17 i",
-      "checkpointHint": "The remainders of the exponents divided by $4$ are $3, 3, 1$.",
+      "answerDisplay": "1",
+      "answerPlain": "1",
+      "inputHint": "Enter the simplified form (a or bi)",
+      "checkpointHint": "Divide the exponent by $4$ and keep only the remainder.",
       "commonTrapTag": "power-cycle",
       "steps": [
         {
-          "latex": "i^{91} - 2i^{111} - 4i^{61} = i^{3} - 2i^{3} - 4i^{1}",
-          "explain": "Reduce each exponent modulo $4$: $91 = 4\\cdot 22 + 3, 111 = 4\\cdot 27 + 3, 61 = 4\\cdot 15 + 1$."
+          "latex": "i^{164} = i^{4\\cdot 41 + 0} = (i^4)^{41}\\cdot 1",
+          "explain": "Divide the exponent by $4$: $164 = 4 \\cdot 41 + 0$, then split the power."
         },
         {
-          "latex": "= 1(-i) - 2(-i) - 4(i)",
-          "explain": "Replace each power using the cycle $i^0 = 1$, $i^1 = i$, $i^2 = -1$, $i^3 = -i$."
+          "latex": "= 1^{41}\\cdot 1",
+          "explain": "Use $i^4 = 1$, so any power of $i^4$ equals $1$."
         },
         {
-          "latex": "= -3i",
-          "explain": "Combine the real terms and the imaginary terms; watch the sign of each coefficient."
+          "latex": "= 1",
+          "explain": "Use the cycle: $i^0 = 1$."
         }
       ],
-      "id": "Q04",
-      "templateKey": "power-sum",
-      "level": 3,
-      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "level": 1,
+      "skill": "MTH-COMPLEX-POWER-I-MOD4",
+      "verificationLevel": "machine-verified",
+      "id": "Q02",
+      "templateKey": "power-of-i",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "power-of-i|rem-0|i^#",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-COMPLEX-POWER-I-MOD4",
+          "stepRange": [
+            1,
+            3
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "power-cycle",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "power-of-i|rem-0|i^#",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
       "referenceBadges": [],
+      "trapValue": "i",
       "state": {
         "userInput": "",
         "score": null,
@@ -280,42 +280,551 @@
       }
     },
     {
-      "category": "Core Skill",
-      "prompt": "Multiply and write the product in standard form $a + bi$.",
-      "display": "(-1 - 3i)(-4 - 6i)",
-      "plainText": "(-1 - 3i)*(-4 - 6i)",
+      "form": "pure-imaginary-denom",
+      "category": "Monomial Denominator",
+      "skill": "MTH-COMPLEX-DIVISION-CONJUGATE",
+      "level": 2,
+      "verificationLevel": "machine-verified",
+      "prompt": "Divide and write the quotient in standard form $a + bi$.",
+      "display": "\\frac{6 + i}{-i}",
+      "plainText": "(6 + i)/(-i)",
       "answerSpec": {
         "type": "complex",
-        "value": "-14 + (18)*I",
+        "value": "-1 + (6)*I",
         "forms": [
           "a+bi",
           "reduced_fraction"
         ]
       },
-      "answerDisplay": "-14 + 18i",
-      "answerPlain": "-14 + 18i",
-      "inputHint": "Standard form, e.g. 3 - 4i or -8/17 + 15/17 i",
-      "checkpointHint": "After FOIL, the $i^2$ term is $18i^2$, which equals $-18$.",
+      "answerDisplay": "-1 + 6i",
+      "answerPlain": "-1 + 6i",
+      "inputHint": "Enter complex number in standard form a + bi (fractions allowed)",
+      "checkpointHint": "Multiplying by $-i$ swaps real and imaginary parts: $1/i = -i$.",
+      "commonTrapTag": "conjugate-denominator",
+      "steps": [
+        {
+          "latex": "\\frac{6 + i}{-i} = \\frac{(6 + i)(i)}{(-i)(i)}",
+          "explain": "Multiply numerator and denominator by the conjugate $i$."
+        },
+        {
+          "latex": "= \\frac{6i + i^2}{1} = \\frac{-1 + 6i}{1}",
+          "explain": "Substitute $i^2 = -1$ in numerator and denominator."
+        },
+        {
+          "latex": "= -1 + 6i",
+          "explain": "Reduce each fraction and write in standard form $a + bi$."
+        }
+      ],
+      "id": "Q03",
+      "templateKey": "divide-conjugate",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "divide-conjugate|pure-imaginary-denom|(# + i)/(-i)",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-COMPLEX-DIVISION-CONJUGATE",
+          "stepRange": [
+            2,
+            4
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "conjugate-denominator",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "divide-conjugate|pure-imaginary-denom|(# + i)/(-i)",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
+      "referenceBadges": [],
+      "trapValue": "-6 - i",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "rem-3",
+      "category": "Core Skill",
+      "prompt": "Simplify the power of $i$.",
+      "display": "i^{195}",
+      "plainText": "i^195",
+      "answerSpec": {
+        "type": "complex",
+        "value": "0 + (-1)*I",
+        "forms": [
+          "a+bi",
+          "reduced_fraction"
+        ]
+      },
+      "answerDisplay": "-i",
+      "answerPlain": "-i",
+      "inputHint": "Enter the simplified form (a or bi)",
+      "checkpointHint": "Divide the exponent by $4$ and keep only the remainder.",
+      "commonTrapTag": "power-cycle",
+      "steps": [
+        {
+          "latex": "i^{195} = i^{4\\cdot 48 + 3} = (i^4)^{48}\\cdot i^{3}",
+          "explain": "Divide the exponent by $4$: $195 = 4 \\cdot 48 + 3$, then split the power."
+        },
+        {
+          "latex": "= 1^{48}\\cdot i^{3}",
+          "explain": "Use $i^4 = 1$, so any power of $i^4$ equals $1$."
+        },
+        {
+          "latex": "= -i",
+          "explain": "Use the cycle: $i^3 = -i$."
+        }
+      ],
+      "level": 1,
+      "skill": "MTH-COMPLEX-POWER-I-MOD4",
+      "verificationLevel": "machine-verified",
+      "id": "Q04",
+      "templateKey": "power-of-i",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "power-of-i|rem-3|i^#",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-COMPLEX-POWER-I-MOD4",
+          "stepRange": [
+            1,
+            3
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "power-cycle",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "power-of-i|rem-3|i^#",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
+      "referenceBadges": [],
+      "trapValue": "1",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "rem-2",
+      "category": "Core Skill",
+      "prompt": "Simplify the power of $i$.",
+      "display": "i^{30}",
+      "plainText": "i^30",
+      "answerSpec": {
+        "type": "complex",
+        "value": "-1 + (0)*I",
+        "forms": [
+          "a+bi",
+          "reduced_fraction"
+        ]
+      },
+      "answerDisplay": "-1",
+      "answerPlain": "-1",
+      "inputHint": "Enter the simplified form (a or bi)",
+      "checkpointHint": "Divide the exponent by $4$ and keep only the remainder.",
+      "commonTrapTag": "power-cycle",
+      "steps": [
+        {
+          "latex": "i^{30} = i^{4\\cdot 7 + 2} = (i^4)^{7}\\cdot i^{2}",
+          "explain": "Divide the exponent by $4$: $30 = 4 \\cdot 7 + 2$, then split the power."
+        },
+        {
+          "latex": "= 1^{7}\\cdot i^{2}",
+          "explain": "Use $i^4 = 1$, so any power of $i^4$ equals $1$."
+        },
+        {
+          "latex": "= -1",
+          "explain": "Use the cycle: $i^2 = -1$."
+        }
+      ],
+      "level": 1,
+      "skill": "MTH-COMPLEX-POWER-I-MOD4",
+      "verificationLevel": "machine-verified",
+      "id": "Q05",
+      "templateKey": "power-of-i",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "power-of-i|rem-2|i^#",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-COMPLEX-POWER-I-MOD4",
+          "stepRange": [
+            1,
+            3
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "power-cycle",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "power-of-i|rem-2|i^#",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
+      "referenceBadges": [],
+      "trapValue": "-i",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "addition",
+      "category": "Core Skill",
+      "prompt": "Simplify and write the result in standard form $a + bi$.",
+      "display": "(9 - 7i) + (4 + 7i)",
+      "plainText": "(9 - 7i) + (4 + 7i)",
+      "answerSpec": {
+        "type": "complex",
+        "value": "13 + (0)*I",
+        "forms": [
+          "a+bi",
+          "reduced_fraction"
+        ]
+      },
+      "answerDisplay": "13",
+      "answerPlain": "13",
+      "inputHint": "Standard form: a + bi",
+      "checkpointHint": "Combine the real parts together and the imaginary parts together.",
       "commonTrapTag": "sign-slip",
       "steps": [
         {
-          "latex": "(-1 - 3i)(-4 - 6i) = 4 + 6i + 12i + 18i^2",
-          "explain": "Distribute every term (FOIL: First, Outer, Inner, Last)."
+          "latex": "(9 - 7i) + (4 + 7i) = 9 - 7i + 4 + 7i",
+          "explain": "Remove the parentheses."
         },
         {
-          "latex": "= 4 + 18i + 18(-1)",
-          "explain": "Combine the two imaginary terms and substitute $i^2 = -1$."
+          "latex": "= (9 + 4) + (-7 + 7)i",
+          "explain": "Group the real parts together and the imaginary parts together."
         },
         {
-          "latex": "= -14 + 18i",
-          "explain": "The last term becomes $-18$; add it to the real part: $4 - 18 = -14$."
+          "latex": "= 13",
+          "explain": "Real part $13$, imaginary part $0$."
         }
       ],
-      "id": "Q05",
-      "templateKey": "multiply",
-      "level": 2,
-      "levelLabel": "Level 2 - Standard Exam",
+      "level": 1,
+      "skill": "MTH-COMPLEX-ADDITION",
+      "verificationLevel": "machine-verified",
+      "id": "Q06",
+      "templateKey": "add-subtract",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "add-subtract|addition|(# - #i) + (# + #i)",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-COMPLEX-ADDITION",
+          "stepRange": [
+            1,
+            3
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "sign-slip",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "add-subtract|addition|(# - #i) + (# + #i)",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
       "referenceBadges": [],
+      "trapValue": "5 - 14i",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "rem-1",
+      "category": "Core Skill",
+      "prompt": "Simplify the power of $i$.",
+      "display": "i^{161}",
+      "plainText": "i^161",
+      "answerSpec": {
+        "type": "complex",
+        "value": "0 + (1)*I",
+        "forms": [
+          "a+bi",
+          "reduced_fraction"
+        ]
+      },
+      "answerDisplay": "i",
+      "answerPlain": "i",
+      "inputHint": "Enter the simplified form (a or bi)",
+      "checkpointHint": "Divide the exponent by $4$ and keep only the remainder.",
+      "commonTrapTag": "power-cycle",
+      "steps": [
+        {
+          "latex": "i^{161} = i^{4\\cdot 40 + 1} = (i^4)^{40}\\cdot i",
+          "explain": "Divide the exponent by $4$: $161 = 4 \\cdot 40 + 1$, then split the power."
+        },
+        {
+          "latex": "= 1^{40}\\cdot i",
+          "explain": "Use $i^4 = 1$, so any power of $i^4$ equals $1$."
+        },
+        {
+          "latex": "= i",
+          "explain": "Use the cycle: $i$."
+        }
+      ],
+      "level": 1,
+      "skill": "MTH-COMPLEX-POWER-I-MOD4",
+      "verificationLevel": "machine-verified",
+      "id": "Q07",
+      "templateKey": "power-of-i",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "power-of-i|rem-1|i^#",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-COMPLEX-POWER-I-MOD4",
+          "stepRange": [
+            1,
+            3
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "power-cycle",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "power-of-i|rem-1|i^#",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
+      "referenceBadges": [],
+      "trapValue": "-1",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "direct",
+      "category": "Cross-Subject Application",
+      "context": "Physics Application: AC Circuits",
+      "references": [
+        "MTH-T02-C01-U01",
+        "PHY-T01-C19"
+      ],
+      "prompt": "In an AC circuit the voltage phasor is $V = 100$ volts and the impedance is $Z = 8 - 6i$ ohms. Using Ohm's law $I = \\dfrac{V}{Z}$, find the current phasor $I$ in standard form $a + bi$ (amperes).",
+      "display": "I = \\frac{100}{8 - 6i}",
+      "plainText": "100/(8 - 6i)",
+      "answerSpec": {
+        "type": "complex",
+        "value": "8 + (6)*I",
+        "forms": [
+          "a+bi",
+          "reduced_fraction"
+        ]
+      },
+      "answerDisplay": "8 + 6i",
+      "answerPlain": "8 + 6i",
+      "inputHint": "Standard form: a + bi",
+      "checkpointHint": "Multiply numerator and denominator by the complex conjugate of the denominator, then simplify.",
+      "commonTrapTag": "conjugate-denominator",
+      "steps": [
+        {
+          "latex": "I = \\frac{V}{Z} = \\frac{100}{8 - 6i}",
+          "explain": "Substitute the given voltage and impedance into Ohm's law."
+        },
+        {
+          "latex": "= \\frac{100(8 + 6i)}{(8 - 6i)(8 + 6i)}",
+          "explain": "Multiply the numerator and denominator by the conjugate $8 + 6i$."
+        },
+        {
+          "latex": "= \\frac{800 + 600i}{8^2 + (-6)^2}",
+          "explain": "Distribute in the numerator; the denominator is $R^2 + X^2$."
+        },
+        {
+          "latex": "= 8 + 6i",
+          "explain": "Divide both parts by $100$ and reduce. The real part is the in-phase current; the imaginary part is the reactive (quadrature) current."
+        }
+      ],
+      "level": 4,
+      "skill": "MTH-COMPLEX-AC-OHMS-LAW",
+      "verificationLevel": "machine-verified",
+      "id": "Q08",
+      "templateKey": "ac-current",
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "ac-current|direct|#/(# - #i)",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 4,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-COMPLEX-AC-OHMS-LAW",
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "conjugate-denominator",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 15
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "ac-current|direct|#/(# - #i)",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C01-U01",
+          "title": "Complex Numbers",
+          "notionUrl": "https://www.notion.so/4013818f8ba080d7896bef2080bbc74a"
+        },
+        {
+          "code": "PHY-T01-C19",
+          "title": "Electrical Circuits",
+          "notionUrl": "https://www.notion.so/4013818f8ba080ac9f43fd7ff5aa6235"
+        }
+      ],
+      "trapValue": "8 - 6i",
       "state": {
         "userInput": "",
         "score": null,
@@ -328,13 +837,13 @@
   "sessionSummary": {
     "practiceStatus": "Ready",
     "score": 0,
-    "maxScore": 5,
+    "maxScore": 8,
     "accuracyPct": 0,
     "mistakeCategories": [],
     "divergedStepsSummary": "",
     "attemptDate": null,
     "syncedToNotionAt": null,
-    "notionPageId": "40d3818f-8ba0-81ea-bcee-d511a0d09ff7"
+    "notionPageId": null
   },
   "localFilePath": "drills/data/MTH-T02-C01-U01/DRL-MTH-T02-C01-U01-01.json"
 }

@@ -1,0 +1,830 @@
+{
+  "schemaVersion": "2.0-math",
+  "drillId": "DRL-MTH-T01-C13-01",
+  "subject": "MATH",
+  "unitCode": "MTH-T01-C13",
+  "unitTitle": "Polynomials",
+  "chapterCode": "MTH-T01-C13",
+  "topicCode": "MTH-T01",
+  "unitNotionUrl": "https://www.notion.so/4003818f8ba080599a7bc4f58dde1acc",
+  "createdAt": "2026-11-08 17:16:18",
+  "config": {
+    "questionCount": 8,
+    "difficulty": "ALL",
+    "difficultyMode": "Mixed Exam Mode"
+  },
+  "mistakeTags": [
+    {
+      "id": "c13-polynomial-subtraction-sign-slip",
+      "label": "Failed to distribute minus sign to all terms of subtracted polynomial",
+      "name": "Polynomial Subtraction Sign Slip",
+      "autoFrom": [
+        "whole_sign_flip"
+      ]
+    },
+    {
+      "id": "c13-foil-middle-term-omission",
+      "label": "Omitted or miscalculated outer/inner cross terms in FOIL binomial multiplication",
+      "name": "FOIL Cross-Term Error",
+      "autoFrom": []
+    },
+    {
+      "id": "c13-freshman-dream-square-trap",
+      "label": "Squared binomial as (ax - b)^2 = a^2 x^2 + b^2, omitting -2abx cross term",
+      "name": "Freshman's Dream Binomial Square Trap",
+      "autoFrom": []
+    },
+    {
+      "id": "c13-difference-of-squares-frame-trap",
+      "label": "Subtracted inner dimension linearly instead of subtracting inner polynomial area",
+      "name": "Polynomial Frame Area Trap",
+      "autoFrom": []
+    }
+  ],
+  "problems": [
+    {
+      "form": "subtracted-polynomial-sign-trap",
+      "category": "Trap & Edge Case",
+      "context": "Polynomials: Binomial Square Cross-Term Trap",
+      "references": [
+        "MTH-T01-C13-U04"
+      ],
+      "prompt": "Expand $(2x - 6)^2 - (4x^2 + 36)$ and find the coefficient of $x$ in the simplified result.",
+      "display": "(2x - 6)^2 - (4x^2 + 36) = Bx \\implies B = ?",
+      "plainText": "(2*x - 6)^2 cross term [delta]",
+      "answerSpec": {
+        "type": "number",
+        "value": "-24"
+      },
+      "answerDisplay": "-24",
+      "answerPlain": "-24",
+      "inputHint": "Enter the exact signed integer value",
+      "checkpointHint": "Remember that squaring a binomial always produces a middle cross term equal to twice the product of the two terms.",
+      "commonTrapTag": "c13-freshman-dream-square-trap",
+      "steps": [
+        {
+          "latex": "(2x - 6)^2 = 4x^2 - 2(2)(6)x + 36 = 4x^2 - 24x + 36",
+          "explain": "Use the binomial square identity $(u - v)^2 = u^2 - 2uv + v^2$."
+        },
+        {
+          "latex": "(4x^2 - 24x + 36) - (4x^2 + 36) = -24x",
+          "explain": "Subtract the quadratic and constant terms, leaving the cross term."
+        },
+        {
+          "latex": "B = -24",
+          "explain": "State the coefficient of $x$."
+        }
+      ],
+      "level": 3,
+      "skill": "MTH-PREALG-C13-SPECIAL-PROD",
+      "verificationLevel": "machine-verified",
+      "id": "Q01",
+      "templateKey": "c13-binomial-square-freshman-trap",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "c13-binomial-square-freshman-trap|subtracted-polynomial-sign-trap|(#*x - #)^# cross term [delta]",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C13-SPECIAL-PROD",
+          "stepRange": [
+            2,
+            5
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c13-freshman-dream-square-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c13-binomial-square-freshman-trap|subtracted-polynomial-sign-trap|(#*x - #)^# cross term [delta]",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C13-U04",
+          "title": "Divide Monomials",
+          "notionUrl": "https://www.notion.so/4003818f8ba080e2af7bd0a4659a493b"
+        }
+      ],
+      "trapValue": "0",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "missing-middle-coeff",
+      "category": "Reverse Reasoning",
+      "context": "Polynomials: FOIL Binomial Expansion & Coefficient Recovery",
+      "references": [
+        "MTH-T01-C13-U03"
+      ],
+      "prompt": "When the binomial product $(2x - 4)(6x + 6)$ is expanded into standard form $Ax^2 + Bx + C$, what is the linear coefficient $B$?",
+      "display": "(2x - 4)(6x + 6) = Ax^2 + Bx + C \\implies B = ?",
+      "plainText": "(2*x op 4)*(6*x + 6) [gamma]",
+      "answerSpec": {
+        "type": "number",
+        "value": "-12"
+      },
+      "answerDisplay": "-12",
+      "answerPlain": "-12",
+      "inputHint": "Enter the exact signed integer value",
+      "checkpointHint": "Use FOIL (First, Outer, Inner, Last) and combine the Outer and Inner products to form the linear x-term.",
+      "commonTrapTag": "c13-foil-middle-term-omission",
+      "steps": [
+        {
+          "latex": "\\text{Outer} = (2x)(6) = 12x, \\quad \\text{Inner} = (-4)(6x) = -24x",
+          "explain": "Compute the Outer and Inner products using FOIL."
+        },
+        {
+          "latex": "Bx = (12 - 24)x = -12x",
+          "explain": "Combine the Outer and Inner linear terms."
+        },
+        {
+          "latex": "B = -12",
+          "explain": "Extract the linear coefficient $B$."
+        }
+      ],
+      "level": 2,
+      "skill": "MTH-PREALG-C13-FOIL",
+      "verificationLevel": "machine-verified",
+      "id": "Q02",
+      "templateKey": "c13-multiply-binomials-foil",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "c13-multiply-binomials-foil|missing-middle-coeff|(#*x op #)*(#*x + #) [gamma]",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C13-FOIL",
+          "stepRange": [
+            2,
+            4
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c13-foil-middle-term-omission",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c13-multiply-binomials-foil|missing-middle-coeff|(#*x op #)*(#*x + #) [gamma]",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C13-U03",
+          "title": "Multiply Polynomials",
+          "notionUrl": "https://www.notion.so/4003818f8ba080459e39e600af05ce5d"
+        }
+      ],
+      "trapValue": "36",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "direct",
+      "category": "Trap & Edge Case",
+      "context": "Polynomials: Binomial Square Cross-Term Trap",
+      "references": [
+        "MTH-T01-C13-U04"
+      ],
+      "prompt": "Expand the binomial square $(2x + 7)^2$ and evaluate it at $x = 3$.",
+      "display": "(2x + 7)^2 \\quad \\text{at } x = 3",
+      "plainText": "(2*x - 7)^2 cross term [gamma]",
+      "answerSpec": {
+        "type": "number",
+        "value": "169"
+      },
+      "answerDisplay": "169",
+      "answerPlain": "169",
+      "inputHint": "Enter the exact signed integer value",
+      "checkpointHint": "Remember that squaring a binomial always produces a middle cross term equal to twice the product of the two terms.",
+      "commonTrapTag": "c13-freshman-dream-square-trap",
+      "steps": [
+        {
+          "latex": "(2x + 7)^2 = 4x^2 + 28x + 49",
+          "explain": "Expand using $(u + v)^2 = u^2 + 2uv + v^2$, including the middle cross term $2uv$."
+        },
+        {
+          "latex": "= 4(3^2) + 28(3) + 49 = 36 + 84 + 49",
+          "explain": "Substitute $x = 3$ into each term."
+        },
+        {
+          "latex": "= 169",
+          "explain": "Sum all three terms."
+        }
+      ],
+      "level": 3,
+      "skill": "MTH-PREALG-C13-SPECIAL-PROD",
+      "verificationLevel": "machine-verified",
+      "id": "Q03",
+      "templateKey": "c13-binomial-square-freshman-trap",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "c13-binomial-square-freshman-trap|direct|(#*x - #)^# cross term [gamma]",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C13-SPECIAL-PROD",
+          "stepRange": [
+            2,
+            5
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c13-freshman-dream-square-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c13-binomial-square-freshman-trap|direct|(#*x - #)^# cross term [gamma]",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C13-U04",
+          "title": "Divide Monomials",
+          "notionUrl": "https://www.notion.so/4003818f8ba080e2af7bd0a4659a493b"
+        }
+      ],
+      "trapValue": "85",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "direct",
+      "category": "Interleaved Synthesis",
+      "context": "Polynomials: Special Products & Invariant Area Synthesis",
+      "references": [
+        "MTH-T01-C13-U03",
+        "MTH-T01-C13-U04"
+      ],
+      "prompt": "An outer rectangular solar panel has length $(4x + 3)$ and width $(4x - 3)$. An inner cutout has length $(4x + 5)$ and width $(4x - 5)$. Find the constant difference $(\\text{Area}_{\\text{outer}} - \\text{Area}_{\\text{inner}})$, which is independent of $x$.",
+      "display": "(4x + 3)(4x - 3) - (4x + 5)(4x - 5)",
+      "plainText": "poly identity synthesis 4*x and 3 [beta]",
+      "answerSpec": {
+        "type": "number",
+        "value": "16"
+      },
+      "answerDisplay": "16",
+      "answerPlain": "16",
+      "inputHint": "Enter the exact integer value",
+      "checkpointHint": "Expand each product using the difference of squares or square of a binomial identity, then cancel opposing terms.",
+      "commonTrapTag": "c13-difference-of-squares-frame-trap",
+      "steps": [
+        {
+          "latex": "\\text{Area}_{\\text{outer}} = (4x + 3)(4x - 3) = 16x^2 - 9",
+          "explain": "Expand the outer product using the difference of squares."
+        },
+        {
+          "latex": "\\text{Area}_{\\text{inner}} = (4x + 5)(4x - 5) = 16x^2 - 25",
+          "explain": "Expand the inner product using the difference of squares."
+        },
+        {
+          "latex": "(16x^2 - 9) - (16x^2 - 25) = 25 - 9 = 16",
+          "explain": "Subtract the two polynomials so the quadratic terms cancel."
+        }
+      ],
+      "level": 4,
+      "skill": "MTH-PREALG-C13-SYNTHESIS",
+      "verificationLevel": "machine-verified",
+      "id": "Q04",
+      "templateKey": "c13-polynomial-identity-area-synthesis",
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "c13-polynomial-identity-area-synthesis|direct|poly identity synthesis #*x and # [beta]",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C13-SYNTHESIS",
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c13-difference-of-squares-frame-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c13-polynomial-identity-area-synthesis|direct|poly identity synthesis #*x and # [beta]",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C13-U03",
+          "title": "Multiply Polynomials",
+          "notionUrl": "https://www.notion.so/4003818f8ba080459e39e600af05ce5d"
+        },
+        {
+          "code": "MTH-T01-C13-U04",
+          "title": "Divide Monomials",
+          "notionUrl": "https://www.notion.so/4003818f8ba080e2af7bd0a4659a493b"
+        }
+      ],
+      "trapValue": "2",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "evaluate",
+      "category": "Core Skill",
+      "context": "Polynomials: Addition, Subtraction, and Evaluation",
+      "references": [
+        "MTH-T01-C13-U01"
+      ],
+      "prompt": "Let $P(x) = (4x^2 + 5x + 5) + (2x^2 - 2x + 7)$. Simplify $P(x)$ and evaluate $P(3)$.",
+      "display": "P(x) = (4x^2 + 5x + 5) + (2x^2 - 2x + 7) \\quad \\text{at } x = 3",
+      "plainText": "poly add sub 4*x^2 + 5*x + 5 [alpha]",
+      "answerSpec": {
+        "type": "number",
+        "value": "75"
+      },
+      "answerDisplay": "75",
+      "answerPlain": "75",
+      "inputHint": "Enter the exact integer value",
+      "checkpointHint": "Distribute any minus sign across all terms of the subtracted polynomial, then group like powers of x.",
+      "commonTrapTag": "c13-polynomial-subtraction-sign-slip",
+      "steps": [
+        {
+          "latex": "P(x) = (4 + 2)x^2 + (5 - 2)x + (5 + 7)",
+          "explain": "Group like terms by degree."
+        },
+        {
+          "latex": "P(3) = 6(3^2) + (3)(3) + 12",
+          "explain": "Substitute $x = 3$ into the combined polynomial."
+        },
+        {
+          "latex": "P(3) = 54 + (9) + 12 = 75",
+          "explain": "Evaluate and sum the terms."
+        }
+      ],
+      "level": 1,
+      "skill": "MTH-PREALG-C13-ADD-SUB",
+      "verificationLevel": "machine-verified",
+      "id": "Q05",
+      "templateKey": "c13-add-subtract-polynomials",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "c13-add-subtract-polynomials|evaluate|poly add sub #*x^# + #*x + # [alpha]",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C13-ADD-SUB",
+          "stepRange": [
+            1,
+            3
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c13-polynomial-subtraction-sign-slip",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c13-add-subtract-polynomials|evaluate|poly add sub #*x^# + #*x + # [alpha]",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C13-U01",
+          "title": "Add and Subtract Polynomials",
+          "notionUrl": "https://www.notion.so/4003818f8ba080a4bccfd508c9f4b081"
+        }
+      ],
+      "trapValue": "87",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "quotient-identity",
+      "category": "Interleaved Synthesis",
+      "context": "Polynomials: Special Products & Invariant Area Synthesis",
+      "references": [
+        "MTH-T01-C13-U03",
+        "MTH-T01-C13-U04"
+      ],
+      "prompt": "Simplify the polynomial identity $(5x + 2)^2 - (5x - 2)^2$ and evaluate the resulting expression at $x = 6$.",
+      "display": "(5x + 2)^2 - (5x - 2)^2 \\quad \\text{at } x = 6",
+      "plainText": "poly identity synthesis 5*x and 2 [delta]",
+      "answerSpec": {
+        "type": "number",
+        "value": "240"
+      },
+      "answerDisplay": "240",
+      "answerPlain": "240",
+      "inputHint": "Enter the exact integer value",
+      "checkpointHint": "Expand each product using the difference of squares or square of a binomial identity, then cancel opposing terms.",
+      "commonTrapTag": "c13-difference-of-squares-frame-trap",
+      "steps": [
+        {
+          "latex": "(5x + 2)^2 = 25x^2 + 20x + 4, \\quad (5x - 2)^2 = 25x^2 - 20x + 4",
+          "explain": "Expand both binomial squares."
+        },
+        {
+          "latex": "(5x + 2)^2 - (5x - 2)^2 = 40x",
+          "explain": "Subtracting cancels the squared terms and doubles the middle term to $4abx$."
+        },
+        {
+          "latex": "40(6) = 240",
+          "explain": "Evaluate at $x = 6$."
+        }
+      ],
+      "level": 4,
+      "skill": "MTH-PREALG-C13-SYNTHESIS",
+      "verificationLevel": "machine-verified",
+      "id": "Q06",
+      "templateKey": "c13-polynomial-identity-area-synthesis",
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "c13-polynomial-identity-area-synthesis|quotient-identity|poly identity synthesis #*x and # [delta]",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C13-SYNTHESIS",
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c13-difference-of-squares-frame-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c13-polynomial-identity-area-synthesis|quotient-identity|poly identity synthesis #*x and # [delta]",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C13-U03",
+          "title": "Multiply Polynomials",
+          "notionUrl": "https://www.notion.so/4003818f8ba080459e39e600af05ce5d"
+        },
+        {
+          "code": "MTH-T01-C13-U04",
+          "title": "Divide Monomials",
+          "notionUrl": "https://www.notion.so/4003818f8ba080e2af7bd0a4659a493b"
+        }
+      ],
+      "trapValue": "120",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "direct",
+      "category": "Reverse Reasoning",
+      "context": "Polynomials: FOIL Binomial Expansion & Coefficient Recovery",
+      "references": [
+        "MTH-T01-C13-U03"
+      ],
+      "prompt": "Find the positive integer $k$ such that the expansion of $(5x + 7)(2x + k)$ has a linear ($x$) coefficient equal to $34$.",
+      "display": "(5x + 7)(2x + k) = 10x^2 + 34x + 7k \\implies k = ?",
+      "plainText": "(5*x op 7)*(2*x + 6) [epsilon]",
+      "answerSpec": {
+        "type": "number",
+        "value": "4"
+      },
+      "answerDisplay": "4",
+      "answerPlain": "4",
+      "inputHint": "Enter the exact signed integer value",
+      "checkpointHint": "Use FOIL (First, Outer, Inner, Last) and combine the Outer and Inner products to form the linear x-term.",
+      "commonTrapTag": "c13-foil-middle-term-omission",
+      "steps": [
+        {
+          "latex": "\\text{Linear term} = (5k + 14)x = 34x",
+          "explain": "Express the coefficient of $x$ from the Outer and Inner products."
+        },
+        {
+          "latex": "5k = 34 - 14 = 20",
+          "explain": "Subtract the Inner product contribution from both sides."
+        },
+        {
+          "latex": "k = \\frac{20}{5} = 4",
+          "explain": "Divide by the leading coefficient $a$."
+        }
+      ],
+      "level": 2,
+      "skill": "MTH-PREALG-C13-FOIL",
+      "verificationLevel": "machine-verified",
+      "id": "Q07",
+      "templateKey": "c13-multiply-binomials-foil",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "c13-multiply-binomials-foil|direct|(#*x op #)*(#*x + #) [epsilon]",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C13-FOIL",
+          "stepRange": [
+            2,
+            4
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c13-foil-middle-term-omission",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c13-multiply-binomials-foil|direct|(#*x op #)*(#*x + #) [epsilon]",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C13-U03",
+          "title": "Multiply Polynomials",
+          "notionUrl": "https://www.notion.so/4003818f8ba080459e39e600af05ce5d"
+        }
+      ],
+      "trapValue": "20",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "direct",
+      "category": "Core Skill",
+      "context": "Polynomials: Addition, Subtraction, and Evaluation",
+      "references": [
+        "MTH-T01-C13-U01"
+      ],
+      "prompt": "Simplify the polynomial difference $(4x^2 + 8x + 7) - (-5x^2 - 4x + 7)$ and find the sum of its resulting coefficients ($A + B + C$ in $Ax^2 + Bx + C$).",
+      "display": "(4x^2 + 8x + 7) - (-5x^2 - 4x + 7) = Ax^2 + Bx + C",
+      "plainText": "poly add sub 4*x^2 + 8*x + 7 [beta]",
+      "answerSpec": {
+        "type": "number",
+        "value": "21"
+      },
+      "answerDisplay": "21",
+      "answerPlain": "21",
+      "inputHint": "Enter the exact integer value",
+      "checkpointHint": "Distribute any minus sign across all terms of the subtracted polynomial, then group like powers of x.",
+      "commonTrapTag": "c13-polynomial-subtraction-sign-slip",
+      "steps": [
+        {
+          "latex": "= 4x^2 + 8x + 7 + 5x^2 + 4x - 7",
+          "explain": "Distribute the subtraction sign across every term in the second polynomial."
+        },
+        {
+          "latex": "= 9x^2 + 12x + (0)",
+          "explain": "Combine like terms of degree 2, degree 1, and degree 0."
+        },
+        {
+          "latex": "A + B + C = 9 + 12 + (0) = 21",
+          "explain": "Sum the three resulting coefficients."
+        }
+      ],
+      "level": 1,
+      "skill": "MTH-PREALG-C13-ADD-SUB",
+      "verificationLevel": "machine-verified",
+      "id": "Q08",
+      "templateKey": "c13-add-subtract-polynomials",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "c13-add-subtract-polynomials|direct|poly add sub #*x^# + #*x + # [beta]",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C13-ADD-SUB",
+          "stepRange": [
+            1,
+            3
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c13-polynomial-subtraction-sign-slip",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c13-add-subtract-polynomials|direct|poly add sub #*x^# + #*x + # [beta]",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C13-U01",
+          "title": "Add and Subtract Polynomials",
+          "notionUrl": "https://www.notion.so/4003818f8ba080a4bccfd508c9f4b081"
+        }
+      ],
+      "trapValue": "27",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    }
+  ],
+  "sessionSummary": {
+    "practiceStatus": "Ready",
+    "score": 0,
+    "maxScore": 8,
+    "accuracyPct": 0,
+    "mistakeCategories": [],
+    "divergedStepsSummary": "",
+    "attemptDate": null,
+    "syncedToNotionAt": null,
+    "notionPageId": null
+  },
+  "localFilePath": "drills/data/MTH-T01-C13/DRL-MTH-T01-C13-01.json"
+}

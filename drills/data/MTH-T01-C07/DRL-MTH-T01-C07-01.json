@@ -1,0 +1,830 @@
+{
+  "schemaVersion": "2.0-math",
+  "drillId": "DRL-MTH-T01-C07-01",
+  "subject": "MATH",
+  "unitCode": "MTH-T01-C07",
+  "unitTitle": "Proportional & Ratio",
+  "chapterCode": "MTH-T01-C07",
+  "topicCode": "MTH-T01",
+  "unitNotionUrl": "https://www.notion.so/4003818f8ba080da9ecec25762c28b7d",
+  "createdAt": "2026-11-08 17:14:03",
+  "config": {
+    "questionCount": 8,
+    "difficulty": "ALL",
+    "difficultyMode": "Mixed Exam Mode"
+  },
+  "mistakeTags": [
+    {
+      "id": "c07-cross-multiply-inversion",
+      "label": "Multiplied numerator by numerator instead of cross-multiplying proportion",
+      "name": "Proportion Cross-Multiplication Inversion",
+      "autoFrom": []
+    },
+    {
+      "id": "c07-ratio-part-vs-whole-trap",
+      "label": "Divided total by single ratio part instead of sum of ratio parts",
+      "name": "Ratio Part vs Whole Partition Trap",
+      "autoFrom": []
+    },
+    {
+      "id": "c07-area-linear-scale-trap",
+      "label": "Scaled area by linear scale factor k instead of k^2",
+      "name": "Area vs Linear Scale Factor Trap",
+      "autoFrom": [
+        "off_by_factor"
+      ]
+    },
+    {
+      "id": "c07-arithmetic-mean-speed-trap",
+      "label": "Averaged round-trip speeds arithmetically instead of using harmonic mean",
+      "name": "Round-Trip Harmonic Speed Trap",
+      "autoFrom": []
+    }
+  ],
+  "problems": [
+    {
+      "form": "direct",
+      "category": "Reverse Reasoning",
+      "context": "Proportions: Ratio Partitioning",
+      "references": [
+        "MTH-T01-C07-U03"
+      ],
+      "prompt": "A sum of $208$ dollars is partitioned between two research teams in the ratio $4 : 9$. How many dollars does the team with the larger share receive?",
+      "display": "\\text{Share}_2 = 208 \\times \\frac{9}{4 + 9}",
+      "plainText": "ratio 4:9 with mult 16 [zeta]",
+      "answerSpec": {
+        "type": "number",
+        "value": "144"
+      },
+      "answerDisplay": "144",
+      "answerPlain": "144",
+      "inputHint": "Enter the exact integer value",
+      "checkpointHint": "Sum the individual ratio parts to relate each part to the whole quantity.",
+      "commonTrapTag": "c07-ratio-part-vs-whole-trap",
+      "steps": [
+        {
+          "latex": "\\text{Total parts} = 4 + 9 = 13",
+          "explain": "Sum the parts of the ratio."
+        },
+        {
+          "latex": "\\text{One part} = \\frac{208}{13} = 16",
+          "explain": "Divide the total amount by the sum of the ratio parts."
+        },
+        {
+          "latex": "\\text{Larger share} = 9 \\times 16 = 144",
+          "explain": "Multiply the larger ratio number by one part."
+        }
+      ],
+      "level": 2,
+      "skill": "MTH-PREALG-C07-RATIO-SHARE",
+      "verificationLevel": "machine-verified",
+      "id": "Q01",
+      "templateKey": "c07-similar-figures-scale",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "c07-similar-figures-scale|direct|ratio #:# with mult # [zeta]",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C07-RATIO-SHARE",
+          "stepRange": [
+            2,
+            4
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c07-ratio-part-vs-whole-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c07-similar-figures-scale|direct|ratio #:# with mult # [zeta]",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C07-U03",
+          "title": "Solving Proportions",
+          "notionUrl": "https://www.notion.so/4003818f8ba0804caa9be942d2e5e6b5"
+        }
+      ],
+      "trapValue": "23",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "direct",
+      "category": "Core Skill",
+      "context": "Proportions: Cross-Multiplication & Scaling",
+      "references": [
+        "MTH-T01-C07-U02"
+      ],
+      "prompt": "Solve the proportion for $x$: $\\frac{4}{6} = \\frac{x}{42}$.",
+      "display": "\\frac{4}{6} = \\frac{x}{42} \\implies x = ?",
+      "plainText": "4/6 = x/42 [gamma]",
+      "answerSpec": {
+        "type": "number",
+        "value": "28"
+      },
+      "answerDisplay": "28",
+      "answerPlain": "28",
+      "inputHint": "Enter the exact integer value",
+      "checkpointHint": "Cross-multiply the proportion and divide by the coefficient of the unknown variable.",
+      "commonTrapTag": "c07-cross-multiply-inversion",
+      "steps": [
+        {
+          "latex": "6x = 4 \\times 42 = 168",
+          "explain": "Cross-multiply the proportion."
+        },
+        {
+          "latex": "x = \\frac{168}{6}",
+          "explain": "Divide both sides by the denominator coefficient."
+        },
+        {
+          "latex": "x = 28",
+          "explain": "Simplify the quotient."
+        }
+      ],
+      "level": 1,
+      "skill": "MTH-PREALG-C07-PROPORTION",
+      "verificationLevel": "machine-verified",
+      "id": "Q02",
+      "templateKey": "c07-unit-rate-proportion",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "c07-unit-rate-proportion|direct|#/# = x/# [gamma]",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C07-PROPORTION",
+          "stepRange": [
+            1,
+            3
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c07-cross-multiply-inversion",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c07-unit-rate-proportion|direct|#/# = x/# [gamma]",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C07-U02",
+          "title": "Rates and Unit Rates",
+          "notionUrl": "https://www.notion.so/4003818f8ba08060a35ece17166571bc"
+        }
+      ],
+      "trapValue": "168",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "unit-rate",
+      "category": "Core Skill",
+      "context": "Proportions: Cross-Multiplication & Scaling",
+      "references": [
+        "MTH-T01-C07-U02"
+      ],
+      "prompt": "A machine processes $8$ wafers every $6$ minutes. At this constant rate, how many wafers $x$ will it process in $42$ minutes?",
+      "display": "\\frac{8}{6} = \\frac{x}{42}",
+      "plainText": "8/6 = x/42 [beta]",
+      "answerSpec": {
+        "type": "number",
+        "value": "56"
+      },
+      "answerDisplay": "56",
+      "answerPlain": "56",
+      "inputHint": "Enter the exact integer value",
+      "checkpointHint": "Cross-multiply the proportion and divide by the coefficient of the unknown variable.",
+      "commonTrapTag": "c07-cross-multiply-inversion",
+      "steps": [
+        {
+          "latex": "6x = 8 \\times 42 = 336",
+          "explain": "Cross-multiply the proportion."
+        },
+        {
+          "latex": "x = \\frac{336}{6}",
+          "explain": "Divide both sides by the denominator coefficient."
+        },
+        {
+          "latex": "x = 56",
+          "explain": "Simplify the quotient."
+        }
+      ],
+      "level": 1,
+      "skill": "MTH-PREALG-C07-PROPORTION",
+      "verificationLevel": "machine-verified",
+      "id": "Q03",
+      "templateKey": "c07-unit-rate-proportion",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "c07-unit-rate-proportion|unit-rate|#/# = x/# [beta]",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C07-PROPORTION",
+          "stepRange": [
+            1,
+            3
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c07-cross-multiply-inversion",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c07-unit-rate-proportion|unit-rate|#/# = x/# [beta]",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C07-U02",
+          "title": "Rates and Unit Rates",
+          "notionUrl": "https://www.notion.so/4003818f8ba08060a35ece17166571bc"
+        }
+      ],
+      "trapValue": "336",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "volume-scale",
+      "category": "Trap & Edge Case",
+      "context": "Proportions: Similar Figures Area & Volume Scaling Trap",
+      "references": [
+        "MTH-T01-C07-U04"
+      ],
+      "prompt": "A scale model of a storage tank has a volume of $14$ cubic centimeters. If every linear dimension of the full-size tank is $2$ times the corresponding dimension of the model, what is the volume of the full-size tank in cubic centimeters?",
+      "display": "V_{\\text{new}} = k^3 V_0 = (2)^3 (14)",
+      "plainText": "14 * 2^d [gamma]",
+      "answerSpec": {
+        "type": "number",
+        "value": "112"
+      },
+      "answerDisplay": "112",
+      "answerPlain": "112",
+      "inputHint": "Enter the exact integer value",
+      "checkpointHint": "Remember that scaling all linear dimensions by k multiplies area by k^2 and volume by k^3.",
+      "commonTrapTag": "c07-area-linear-scale-trap",
+      "steps": [
+        {
+          "latex": "\\text{Linear scale factor } k = 2 \\implies \\text{Volume scale factor} = k^3 = 2^3 = 8",
+          "explain": "Volume scales by the cube of the linear similarity factor."
+        },
+        {
+          "latex": "V_{\\text{new}} = 14 \\times 8",
+          "explain": "Multiply the original volume by the cubic scale factor."
+        },
+        {
+          "latex": "V_{\\text{new}} = 112",
+          "explain": "Evaluate the product."
+        }
+      ],
+      "level": 3,
+      "skill": "MTH-PREALG-C07-SCALE-TRAP",
+      "verificationLevel": "machine-verified",
+      "id": "Q04",
+      "templateKey": "c07-area-scale-factor-trap",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "c07-area-scale-factor-trap|volume-scale|# * #^d [gamma]",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C07-SCALE-TRAP",
+          "stepRange": [
+            2,
+            5
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c07-area-linear-scale-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c07-area-scale-factor-trap|volume-scale|# * #^d [gamma]",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C07-U04",
+          "title": "Direct Proportion",
+          "notionUrl": "https://www.notion.so/4003818f8ba0805f8235fe4cbb556d5a"
+        }
+      ],
+      "trapValue": "28",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "combined-work",
+      "category": "Interleaved Synthesis",
+      "context": "Proportions & Rates: Harmonic Speed & Combined Work Synthesis",
+      "references": [
+        "MTH-T01-C07-U01",
+        "MTH-T01-C07-U06"
+      ],
+      "prompt": "Pump A can empty a basin alone in $30$ minutes, and Pump B can empty the same basin alone in $60$ minutes. Working together simultaneously at their constant rates, how many minutes will it take them to empty the basin?",
+      "display": "\\frac{1}{30} + \\frac{1}{60} = \\frac{1}{t} \\implies t = ?",
+      "plainText": "(2*30*60)/(30+60) [beta]",
+      "answerSpec": {
+        "type": "number",
+        "value": "20"
+      },
+      "answerDisplay": "20",
+      "answerPlain": "20",
+      "inputHint": "Enter the exact integer value",
+      "checkpointHint": "Combine rates (reciprocals of time) rather than averaging times or speeds directly.",
+      "commonTrapTag": "c07-arithmetic-mean-speed-trap",
+      "steps": [
+        {
+          "latex": "R_{\\text{combined}} = \\frac{1}{30} + \\frac{1}{60} = \\frac{90}{1800}",
+          "explain": "Add the individual unit work rates."
+        },
+        {
+          "latex": "t = \\frac{30 \\times 60}{30 + 60} = \\frac{1800}{90}",
+          "explain": "Take the reciprocal of the combined rate to find total time."
+        },
+        {
+          "latex": "t = 20",
+          "explain": "Simplify the quotient."
+        }
+      ],
+      "level": 4,
+      "skill": "MTH-PREALG-C07-SYNTHESIS",
+      "verificationLevel": "machine-verified",
+      "id": "Q05",
+      "templateKey": "c07-harmonic-speed-work-synthesis",
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "c07-harmonic-speed-work-synthesis|combined-work|(#*#*#)/(#+#) [beta]",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C07-SYNTHESIS",
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c07-arithmetic-mean-speed-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c07-harmonic-speed-work-synthesis|combined-work|(#*#*#)/(#+#) [beta]",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C07-U01",
+          "title": "Understanding Ratios",
+          "notionUrl": "https://www.notion.so/4003818f8ba080e080c4caa5d99927dd"
+        },
+        {
+          "code": "MTH-T01-C07-U06",
+          "title": "Applications of Proportions",
+          "notionUrl": "https://www.notion.so/4003818f8ba08039ae46ec0c78300084"
+        }
+      ],
+      "trapValue": "45",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "direct",
+      "category": "Interleaved Synthesis",
+      "context": "Proportions & Rates: Harmonic Speed & Combined Work Synthesis",
+      "references": [
+        "MTH-T01-C07-U01",
+        "MTH-T01-C07-U06"
+      ],
+      "prompt": "A train travels from Station A to Station B at a constant speed of $40\\text{ km/h}$ and immediately returns along the exact same route from Station B to Station A at $60\\text{ km/h}$. What is the train's average speed for the entire round trip in km/h?",
+      "display": "v_{\\text{avg}} = \\frac{2 v_1 v_2}{v_1 + v_2} = \\frac{2(40)(60)}{40 + 60}",
+      "plainText": "(2*40*60)/(40+60) [delta]",
+      "answerSpec": {
+        "type": "number",
+        "value": "48"
+      },
+      "answerDisplay": "48",
+      "answerPlain": "48",
+      "inputHint": "Enter the exact integer value",
+      "checkpointHint": "Combine rates (reciprocals of time) rather than averaging times or speeds directly.",
+      "commonTrapTag": "c07-arithmetic-mean-speed-trap",
+      "steps": [
+        {
+          "latex": "t_{\\text{total}} = \\frac{d}{40} + \\frac{d}{60} = d\\left(\\frac{100}{2400}\\right)",
+          "explain": "Express total round-trip time in terms of one-way distance $d$."
+        },
+        {
+          "latex": "v_{\\text{avg}} = \\frac{2d}{t_{\\text{total}}} = \\frac{2(40)(60)}{40 + 60}",
+          "explain": "Divide total distance $2d$ by total time to get the harmonic mean."
+        },
+        {
+          "latex": "v_{\\text{avg}} = 48",
+          "explain": "Evaluate the harmonic mean."
+        }
+      ],
+      "level": 4,
+      "skill": "MTH-PREALG-C07-SYNTHESIS",
+      "verificationLevel": "machine-verified",
+      "id": "Q06",
+      "templateKey": "c07-harmonic-speed-work-synthesis",
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "c07-harmonic-speed-work-synthesis|direct|(#*#*#)/(#+#) [delta]",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C07-SYNTHESIS",
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c07-arithmetic-mean-speed-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c07-harmonic-speed-work-synthesis|direct|(#*#*#)/(#+#) [delta]",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C07-U01",
+          "title": "Understanding Ratios",
+          "notionUrl": "https://www.notion.so/4003818f8ba080e080c4caa5d99927dd"
+        },
+        {
+          "code": "MTH-T01-C07-U06",
+          "title": "Applications of Proportions",
+          "notionUrl": "https://www.notion.so/4003818f8ba08039ae46ec0c78300084"
+        }
+      ],
+      "trapValue": "50",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "direct",
+      "category": "Trap & Edge Case",
+      "context": "Proportions: Similar Figures Area & Volume Scaling Trap",
+      "references": [
+        "MTH-T01-C07-U04"
+      ],
+      "prompt": "Triangle $T_1$ has an area of $20$ square meters. Triangle $T_2$ is similar to $T_1$ with every side length multiplied by a scale factor of $k = 5$. Find the area of triangle $T_2$ in square meters.",
+      "display": "A_2 = k^2 A_1 = (5)^2 (20)",
+      "plainText": "20 * 5^d [beta]",
+      "answerSpec": {
+        "type": "number",
+        "value": "500"
+      },
+      "answerDisplay": "500",
+      "answerPlain": "500",
+      "inputHint": "Enter the exact integer value",
+      "checkpointHint": "Remember that scaling all linear dimensions by k multiplies area by k^2 and volume by k^3.",
+      "commonTrapTag": "c07-area-linear-scale-trap",
+      "steps": [
+        {
+          "latex": "\\text{Linear scale factor } k = 5 \\implies \\text{Area scale factor} = k^2 = 5^2 = 25",
+          "explain": "For similar figures, area scales as the square of the linear scale factor."
+        },
+        {
+          "latex": "A_2 = 20 \\times 25",
+          "explain": "Multiply the original area by the squared scale factor."
+        },
+        {
+          "latex": "A_2 = 500",
+          "explain": "Compute the exact area."
+        }
+      ],
+      "level": 3,
+      "skill": "MTH-PREALG-C07-SCALE-TRAP",
+      "verificationLevel": "machine-verified",
+      "id": "Q07",
+      "templateKey": "c07-area-scale-factor-trap",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "c07-area-scale-factor-trap|direct|# * #^d [beta]",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C07-SCALE-TRAP",
+          "stepRange": [
+            2,
+            5
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c07-area-linear-scale-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c07-area-scale-factor-trap|direct|# * #^d [beta]",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C07-U04",
+          "title": "Direct Proportion",
+          "notionUrl": "https://www.notion.so/4003818f8ba0805f8235fe4cbb556d5a"
+        }
+      ],
+      "trapValue": "100",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "reverse-scale",
+      "category": "Reverse Reasoning",
+      "context": "Proportions: Ratio Partitioning",
+      "references": [
+        "MTH-T01-C07-U03"
+      ],
+      "prompt": "Two alloy components are mixed in the ratio $3 : 5$. If the heavier component weighs $80$ grams, what is the total weight of the mixture in grams?",
+      "display": "\\frac{\\text{Total}}{3 + 5} = \\frac{80}{5}",
+      "plainText": "ratio 3:5 with mult 16 [alpha]",
+      "answerSpec": {
+        "type": "number",
+        "value": "128"
+      },
+      "answerDisplay": "128",
+      "answerPlain": "128",
+      "inputHint": "Enter the exact integer value",
+      "checkpointHint": "Sum the individual ratio parts to relate each part to the whole quantity.",
+      "commonTrapTag": "c07-ratio-part-vs-whole-trap",
+      "steps": [
+        {
+          "latex": "k = \\frac{80}{5} = 16",
+          "explain": "Find the weight corresponding to one ratio unit."
+        },
+        {
+          "latex": "\\text{Total parts} = 3 + 5 = 8",
+          "explain": "Add the ratio parts to get total parts."
+        },
+        {
+          "latex": "\\text{Total} = 8 \\times 16 = 128",
+          "explain": "Multiply total parts by the unit multiplier."
+        }
+      ],
+      "level": 2,
+      "skill": "MTH-PREALG-C07-RATIO-SHARE",
+      "verificationLevel": "machine-verified",
+      "id": "Q08",
+      "templateKey": "c07-similar-figures-scale",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "c07-similar-figures-scale|reverse-scale|ratio #:# with mult # [alpha]",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C07-RATIO-SHARE",
+          "stepRange": [
+            2,
+            4
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c07-ratio-part-vs-whole-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c07-similar-figures-scale|reverse-scale|ratio #:# with mult # [alpha]",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C07-U03",
+          "title": "Solving Proportions",
+          "notionUrl": "https://www.notion.so/4003818f8ba0804caa9be942d2e5e6b5"
+        }
+      ],
+      "trapValue": "83",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    }
+  ],
+  "sessionSummary": {
+    "practiceStatus": "Ready",
+    "score": 0,
+    "maxScore": 8,
+    "accuracyPct": 0,
+    "mistakeCategories": [],
+    "divergedStepsSummary": "",
+    "attemptDate": null,
+    "syncedToNotionAt": null,
+    "notionPageId": null
+  },
+  "localFilePath": "drills/data/MTH-T01-C07/DRL-MTH-T01-C07-01.json"
+}

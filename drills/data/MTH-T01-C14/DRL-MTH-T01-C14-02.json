@@ -1,0 +1,595 @@
+{
+  "schemaVersion": "2.0-math",
+  "drillId": "DRL-MTH-T01-C14-02",
+  "subject": "MATH",
+  "unitCode": "MTH-T01-C14",
+  "unitTitle": "Graphs",
+  "chapterCode": "MTH-T01-C14",
+  "topicCode": "MTH-T01",
+  "unitNotionUrl": "https://www.notion.so/4003818f8ba080479b02f51945184734",
+  "createdAt": "2026-11-08 17:16:18",
+  "config": {
+    "questionCount": 5,
+    "difficulty": "4",
+    "difficultyMode": "Level 4 - Applied Synthesis"
+  },
+  "mistakeTags": [
+    {
+      "id": "c14-intercept-axis-swap-trap",
+      "label": "Set x=0 instead of y=0 when solving for x-intercept",
+      "name": "Coordinate Axis Intercept Swap",
+      "autoFrom": []
+    },
+    {
+      "id": "c14-slope-run-over-rise-trap",
+      "label": "Computed slope as run over rise (dx/dy) instead of rise over run (dy/dx)",
+      "name": "Slope Reciprocal Inversion",
+      "autoFrom": [
+        "reciprocal"
+      ]
+    },
+    {
+      "id": "c14-perpendicular-slope-sign-trap",
+      "label": "Took reciprocal without negating sign for perpendicular line slope",
+      "name": "Perpendicular Slope Sign Omission",
+      "autoFrom": [
+        "whole_sign_flip"
+      ]
+    },
+    {
+      "id": "c14-lattice-endpoint-exclusion-trap",
+      "label": "Forgot to add 1 when counting inclusive integer lattice points on a segment",
+      "name": "Lattice Endpoint Fencepost Trap",
+      "autoFrom": []
+    }
+  ],
+  "problems": [
+    {
+      "form": "lattice-points",
+      "category": "Interleaved Synthesis",
+      "context": "Graphs: Coordinate Geometry Multi-Concept Synthesis",
+      "references": [
+        "MTH-T01-C14-U02",
+        "MTH-T01-C14-U03",
+        "MTH-T01-C14-U04"
+      ],
+      "prompt": "Line $L$ has equation $2x + 5y = 70$. How many lattice points $(x, y)$ (points where both $x$ and $y$ are integers) lie on the line segment of $L$ in the first quadrant ($x \\ge 0,\\ y \\ge 0$, including both axis intercepts)?",
+      "display": "2x + 5y = 70,\\quad x, y \\in \\mathbb{Z}_{\\ge 0} \\implies N_{\\text{lattice}} = ?",
+      "plainText": "coord synthesis lattice-points 8 [epsilon]",
+      "answerSpec": {
+        "type": "number",
+        "value": "8"
+      },
+      "answerDisplay": "8",
+      "answerPlain": "8",
+      "inputHint": "Enter the exact signed integer value",
+      "checkpointHint": "Combine intersection coordinates, perpendicular slope relations, or greatest common divisor step counts to determine the geometric invariant.",
+      "commonTrapTag": "c14-lattice-endpoint-exclusion-trap",
+      "steps": [
+        {
+          "latex": "A = (35, 0), \\quad B = (0, 14)",
+          "explain": "Find the x-intercept and y-intercept bounding the first-quadrant segment."
+        },
+        {
+          "latex": "\\gcd(|\\Delta x|, |\\Delta y|) = \\gcd(35, 14) = 7",
+          "explain": "Compute the greatest common divisor of the horizontal and vertical spans."
+        },
+        {
+          "latex": "N_{\\text{lattice}} = \\gcd(35, 14) + 1 = 7 + 1 = 8",
+          "explain": "Add 1 to include both endpoints of the segment."
+        }
+      ],
+      "level": 4,
+      "skill": "MTH-PREALG-C14-SYNTHESIS",
+      "verificationLevel": "machine-verified",
+      "id": "Q01",
+      "templateKey": "c14-coordinate-geometry-synthesis",
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "c14-coordinate-geometry-synthesis|lattice-points|coord synthesis lattice-points # [epsilon]",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C14-SYNTHESIS",
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c14-lattice-endpoint-exclusion-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c14-coordinate-geometry-synthesis|lattice-points|coord synthesis lattice-points # [epsilon]",
+          "maxAllowedPerFingerprint": 2
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C14-U02",
+          "title": "Graphing with Intercepts",
+          "notionUrl": "https://www.notion.so/4003818f8ba0809db4f6c640c10c0e64"
+        },
+        {
+          "code": "MTH-T01-C14-U03",
+          "title": "Graphing Linear Equations",
+          "notionUrl": "https://www.notion.so/4003818f8ba080fd925bd5caee9981eb"
+        },
+        {
+          "code": "MTH-T01-C14-U04",
+          "title": "Use the Rectangular Coordinate System",
+          "notionUrl": "https://www.notion.so/4003818f8ba080e6987ec4421379d87b"
+        }
+      ],
+      "trapValue": "7",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "reflection-point",
+      "category": "Interleaved Synthesis",
+      "context": "Graphs: Coordinate Geometry Multi-Concept Synthesis",
+      "references": [
+        "MTH-T01-C14-U02",
+        "MTH-T01-C14-U03",
+        "MTH-T01-C14-U04"
+      ],
+      "prompt": "Point $P(8, 4)$ is reflected across the line $L: y = 2x + 3$ to its mirror image $P'(x', y')$. Find the sum of coordinates $x' + y'$ of the reflected point.",
+      "display": "P(8, 4) \\xrightarrow{\\text{reflect across } y = 2x + 3} P'(x', y') \\implies x' + y' = ?",
+      "plainText": "coord synthesis reflection-point 6 [gamma]",
+      "answerSpec": {
+        "type": "number",
+        "value": "6"
+      },
+      "answerDisplay": "6",
+      "answerPlain": "6",
+      "inputHint": "Enter the exact signed integer value",
+      "checkpointHint": "Combine intersection coordinates, perpendicular slope relations, or greatest common divisor step counts to determine the geometric invariant.",
+      "commonTrapTag": "c14-lattice-endpoint-exclusion-trap",
+      "steps": [
+        {
+          "latex": "M = \\left(\\frac{8 + x'}{2}, \\frac{4 + y'}{2}\\right) = (2, 7) \\text{ lies on } L",
+          "explain": "The foot of the perpendicular from $P$ to line $L$ is the midpoint $M$ of $PP'$."
+        },
+        {
+          "latex": "x' = 2(2) - 8 = -4, \\quad y' = 2(7) - (4) = 10",
+          "explain": "Double the midpoint coordinates and subtract the original coordinates of $P$."
+        },
+        {
+          "latex": "x' + y' = -4 + (10) = 6",
+          "explain": "Sum the coordinates of the reflected image $P'$."
+        }
+      ],
+      "level": 4,
+      "skill": "MTH-PREALG-C14-SYNTHESIS",
+      "verificationLevel": "machine-verified",
+      "id": "Q02",
+      "templateKey": "c14-coordinate-geometry-synthesis",
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "c14-coordinate-geometry-synthesis|reflection-point|coord synthesis reflection-point # [gamma]",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C14-SYNTHESIS",
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c14-lattice-endpoint-exclusion-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c14-coordinate-geometry-synthesis|reflection-point|coord synthesis reflection-point # [gamma]",
+          "maxAllowedPerFingerprint": 2
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C14-U02",
+          "title": "Graphing with Intercepts",
+          "notionUrl": "https://www.notion.so/4003818f8ba0809db4f6c640c10c0e64"
+        },
+        {
+          "code": "MTH-T01-C14-U03",
+          "title": "Graphing Linear Equations",
+          "notionUrl": "https://www.notion.so/4003818f8ba080fd925bd5caee9981eb"
+        },
+        {
+          "code": "MTH-T01-C14-U04",
+          "title": "Use the Rectangular Coordinate System",
+          "notionUrl": "https://www.notion.so/4003818f8ba080e6987ec4421379d87b"
+        }
+      ],
+      "trapValue": "12",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "direct",
+      "category": "Interleaved Synthesis",
+      "context": "Graphs: Coordinate Geometry Multi-Concept Synthesis",
+      "references": [
+        "MTH-T01-C14-U02",
+        "MTH-T01-C14-U03",
+        "MTH-T01-C14-U04"
+      ],
+      "prompt": "In the rectangular coordinate plane, line $L_1$ is given by $y = 3x + 9$ and line $L_2$ is given by $y = -3x + 27$. Find the exact area of the triangle bounded by $L_1$, $L_2$, and the $x$-axis ($y = 0$).",
+      "display": "L_1: y = 3x + 9,\\quad L_2: y = -3x + 27,\\quad y = 0 \\implies \\text{Area} = ?",
+      "plainText": "coord synthesis direct 108 [alpha]",
+      "answerSpec": {
+        "type": "number",
+        "value": "108"
+      },
+      "answerDisplay": "108",
+      "answerPlain": "108",
+      "inputHint": "Enter the exact signed integer value",
+      "checkpointHint": "Combine intersection coordinates, perpendicular slope relations, or greatest common divisor step counts to determine the geometric invariant.",
+      "commonTrapTag": "c14-lattice-endpoint-exclusion-trap",
+      "steps": [
+        {
+          "latex": "3x + 9 = -3x + 27 \\implies x = 3,\\ y = 18",
+          "explain": "Find the intersection vertex of $L_1$ and $L_2$, which gives triangle height $h = y_I$."
+        },
+        {
+          "latex": "x_1 = -3, \\quad x_2 = 9 \\implies \\text{base} = 9 - (-3) = 12",
+          "explain": "Find the x-intercepts of both lines and subtract to get the base along the x-axis."
+        },
+        {
+          "latex": "\\text{Area} = \\frac{1}{2} \\times 12 \\times 18 = 108",
+          "explain": "Compute half the product of the base and height."
+        }
+      ],
+      "level": 4,
+      "skill": "MTH-PREALG-C14-SYNTHESIS",
+      "verificationLevel": "machine-verified",
+      "id": "Q03",
+      "templateKey": "c14-coordinate-geometry-synthesis",
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "c14-coordinate-geometry-synthesis|direct|coord synthesis direct # [alpha]",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C14-SYNTHESIS",
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c14-lattice-endpoint-exclusion-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c14-coordinate-geometry-synthesis|direct|coord synthesis direct # [alpha]",
+          "maxAllowedPerFingerprint": 2
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C14-U02",
+          "title": "Graphing with Intercepts",
+          "notionUrl": "https://www.notion.so/4003818f8ba0809db4f6c640c10c0e64"
+        },
+        {
+          "code": "MTH-T01-C14-U03",
+          "title": "Graphing Linear Equations",
+          "notionUrl": "https://www.notion.so/4003818f8ba080fd925bd5caee9981eb"
+        },
+        {
+          "code": "MTH-T01-C14-U04",
+          "title": "Use the Rectangular Coordinate System",
+          "notionUrl": "https://www.notion.so/4003818f8ba080e6987ec4421379d87b"
+        }
+      ],
+      "trapValue": "216",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "reflection-point",
+      "category": "Interleaved Synthesis",
+      "context": "Graphs: Coordinate Geometry Multi-Concept Synthesis",
+      "references": [
+        "MTH-T01-C14-U02",
+        "MTH-T01-C14-U03",
+        "MTH-T01-C14-U04"
+      ],
+      "prompt": "Point $P(7, 3)$ is reflected across the line $L: y = 2x - 1$ to its mirror image $P'(x', y')$. Find the sum of coordinates $x' + y'$ of the reflected point.",
+      "display": "P(7, 3) \\xrightarrow{\\text{reflect across } y = 2x - 1} P'(x', y') \\implies x' + y' = ?",
+      "plainText": "coord synthesis reflection-point 6 [zeta]",
+      "answerSpec": {
+        "type": "number",
+        "value": "6"
+      },
+      "answerDisplay": "6",
+      "answerPlain": "6",
+      "inputHint": "Enter the exact signed integer value",
+      "checkpointHint": "Combine intersection coordinates, perpendicular slope relations, or greatest common divisor step counts to determine the geometric invariant.",
+      "commonTrapTag": "c14-lattice-endpoint-exclusion-trap",
+      "steps": [
+        {
+          "latex": "M = \\left(\\frac{7 + x'}{2}, \\frac{3 + y'}{2}\\right) = (3, 5) \\text{ lies on } L",
+          "explain": "The foot of the perpendicular from $P$ to line $L$ is the midpoint $M$ of $PP'$."
+        },
+        {
+          "latex": "x' = 2(3) - 7 = -1, \\quad y' = 2(5) - (3) = 7",
+          "explain": "Double the midpoint coordinates and subtract the original coordinates of $P$."
+        },
+        {
+          "latex": "x' + y' = -1 + (7) = 6",
+          "explain": "Sum the coordinates of the reflected image $P'$."
+        }
+      ],
+      "level": 4,
+      "skill": "MTH-PREALG-C14-SYNTHESIS",
+      "verificationLevel": "machine-verified",
+      "id": "Q04",
+      "templateKey": "c14-coordinate-geometry-synthesis",
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "c14-coordinate-geometry-synthesis|reflection-point|coord synthesis reflection-point # [zeta]",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C14-SYNTHESIS",
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c14-lattice-endpoint-exclusion-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c14-coordinate-geometry-synthesis|reflection-point|coord synthesis reflection-point # [zeta]",
+          "maxAllowedPerFingerprint": 2
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C14-U02",
+          "title": "Graphing with Intercepts",
+          "notionUrl": "https://www.notion.so/4003818f8ba0809db4f6c640c10c0e64"
+        },
+        {
+          "code": "MTH-T01-C14-U03",
+          "title": "Graphing Linear Equations",
+          "notionUrl": "https://www.notion.so/4003818f8ba080fd925bd5caee9981eb"
+        },
+        {
+          "code": "MTH-T01-C14-U04",
+          "title": "Use the Rectangular Coordinate System",
+          "notionUrl": "https://www.notion.so/4003818f8ba080e6987ec4421379d87b"
+        }
+      ],
+      "trapValue": "10",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "lattice-points",
+      "category": "Interleaved Synthesis",
+      "context": "Graphs: Coordinate Geometry Multi-Concept Synthesis",
+      "references": [
+        "MTH-T01-C14-U02",
+        "MTH-T01-C14-U03",
+        "MTH-T01-C14-U04"
+      ],
+      "prompt": "Line $L$ has equation $3x + 5y = 90$. How many lattice points $(x, y)$ (points where both $x$ and $y$ are integers) lie on the line segment of $L$ in the first quadrant ($x \\ge 0,\\ y \\ge 0$, including both axis intercepts)?",
+      "display": "3x + 5y = 90,\\quad x, y \\in \\mathbb{Z}_{\\ge 0} \\implies N_{\\text{lattice}} = ?",
+      "plainText": "coord synthesis lattice-points 7 [gamma]",
+      "answerSpec": {
+        "type": "number",
+        "value": "7"
+      },
+      "answerDisplay": "7",
+      "answerPlain": "7",
+      "inputHint": "Enter the exact signed integer value",
+      "checkpointHint": "Combine intersection coordinates, perpendicular slope relations, or greatest common divisor step counts to determine the geometric invariant.",
+      "commonTrapTag": "c14-lattice-endpoint-exclusion-trap",
+      "steps": [
+        {
+          "latex": "A = (30, 0), \\quad B = (0, 18)",
+          "explain": "Find the x-intercept and y-intercept bounding the first-quadrant segment."
+        },
+        {
+          "latex": "\\gcd(|\\Delta x|, |\\Delta y|) = \\gcd(30, 18) = 6",
+          "explain": "Compute the greatest common divisor of the horizontal and vertical spans."
+        },
+        {
+          "latex": "N_{\\text{lattice}} = \\gcd(30, 18) + 1 = 6 + 1 = 7",
+          "explain": "Add 1 to include both endpoints of the segment."
+        }
+      ],
+      "level": 4,
+      "skill": "MTH-PREALG-C14-SYNTHESIS",
+      "verificationLevel": "machine-verified",
+      "id": "Q05",
+      "templateKey": "c14-coordinate-geometry-synthesis",
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "c14-coordinate-geometry-synthesis|lattice-points|coord synthesis lattice-points # [gamma]",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C14-SYNTHESIS",
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c14-lattice-endpoint-exclusion-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c14-coordinate-geometry-synthesis|lattice-points|coord synthesis lattice-points # [gamma]",
+          "maxAllowedPerFingerprint": 2
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C14-U02",
+          "title": "Graphing with Intercepts",
+          "notionUrl": "https://www.notion.so/4003818f8ba0809db4f6c640c10c0e64"
+        },
+        {
+          "code": "MTH-T01-C14-U03",
+          "title": "Graphing Linear Equations",
+          "notionUrl": "https://www.notion.so/4003818f8ba080fd925bd5caee9981eb"
+        },
+        {
+          "code": "MTH-T01-C14-U04",
+          "title": "Use the Rectangular Coordinate System",
+          "notionUrl": "https://www.notion.so/4003818f8ba080e6987ec4421379d87b"
+        }
+      ],
+      "trapValue": "6",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    }
+  ],
+  "sessionSummary": {
+    "practiceStatus": "Ready",
+    "score": 0,
+    "maxScore": 5,
+    "accuracyPct": 0,
+    "mistakeCategories": [],
+    "divergedStepsSummary": "",
+    "attemptDate": null,
+    "syncedToNotionAt": null,
+    "notionPageId": null
+  },
+  "localFilePath": "drills/data/MTH-T01-C14/DRL-MTH-T01-C14-02.json"
+}

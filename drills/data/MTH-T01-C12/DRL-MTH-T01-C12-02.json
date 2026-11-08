@@ -7,7 +7,7 @@
   "chapterCode": "MTH-T01-C12",
   "topicCode": "MTH-T01",
   "unitNotionUrl": "https://www.notion.so/4003818f8ba080cfbf95ef15001d8a52",
-  "createdAt": "2026-11-07 19:37:09",
+  "createdAt": "2026-11-08 17:14:03",
   "config": {
     "questionCount": 5,
     "difficulty": "4",
@@ -30,15 +30,23 @@
     },
     {
       "id": "trapezoid-height",
-      "label": "Forgot $\\frac{1}{2}$ in trapezoid area: $A = \\frac{1}{2}(b_1 + b_2)h$",
-      "name": "Trapezoid Area Constant Error",
+      "label": "Forgot factor of 2 in numerator when solving for height",
+      "name": "Trapezoid Height Factor Error",
+      "autoFrom": [
+        "off_by_factor"
+      ]
+    },
+    {
+      "id": "omitted-half-factor",
+      "label": "Forgot 1/2 in trapezoid area: $A = 1/2(b_1 + b_2)h$",
+      "name": "Trapezoid Omitted Half Factor",
       "autoFrom": [
         "off_by_factor"
       ]
     },
     {
       "id": "circle-diameter-radius",
-      "label": "Used diameter instead of radius in $\\pi r^2$",
+      "label": "Used diameter instead of radius in formula",
       "name": "Diameter vs Radius Confusion",
       "autoFrom": [
         "off_by_factor"
@@ -51,6 +59,24 @@
       "autoFrom": []
     },
     {
+      "id": "linear-addition-trap",
+      "label": "Added legs linearly without squaring ($c = a + b$)",
+      "name": "Linear Addition Trap",
+      "autoFrom": []
+    },
+    {
+      "id": "pythagoras-leg-subtraction",
+      "label": "Subtracted hypotenuse and leg linearly ($a = c - b$)",
+      "name": "Linear Leg Subtraction Error",
+      "autoFrom": []
+    },
+    {
+      "id": "path-distance-vs-displacement",
+      "label": "Calculated total perimeter path instead of straight-line distance",
+      "name": "Path vs Displacement Error",
+      "autoFrom": []
+    },
+    {
       "id": "arithmetic-slip",
       "label": "Arithmetic / calculation slip",
       "name": "Arithmetic Slip",
@@ -58,100 +84,136 @@
         "rounding",
         "off_by_factor"
       ]
+    },
+    {
+      "id": "whole-triangle-inradius-confusion",
+      "label": "Computed inradius of parent triangle instead of divided altitude sub-triangle",
+      "name": "Parent vs Sub-Triangle Inradius Confusion",
+      "autoFrom": []
+    },
+    {
+      "id": "trapezoid-diagonal-bisect-trap",
+      "label": "Assumed trapezoid diagonals bisect each other instead of using similar triangle ratio",
+      "name": "Trapezoid Diagonal Bisection Fallacy",
+      "autoFrom": []
+    },
+    {
+      "id": "pi-retained-in-lunes-trap",
+      "label": "Retained pi factor in area of lunes of Hippocrates (failing to recognize pi cancellation)",
+      "name": "Lunes Pi Factor Retention Trap",
+      "autoFrom": []
+    },
+    {
+      "id": "frustum-cylinder-average-trap",
+      "label": "Averaged radii and computed as cylinder instead of conical frustum",
+      "name": "Frustum Average Cylinder Error",
+      "autoFrom": []
+    },
+    {
+      "id": "internal-boundary-double-count-trap",
+      "label": "Included internal boundary face in composite solid surface area",
+      "name": "Internal Boundary Face Double Count",
+      "autoFrom": []
     }
   ],
   "problems": [
     {
-      "category": "Core Skill",
-      "context": "Geometry: Circles",
+      "form": "direct",
+      "category": "Interleaved Synthesis",
+      "context": "Geometry: Circles & Lunes of Hippocrates",
       "references": [
+        "MTH-T01-C12-U04",
         "MTH-T01-C12-U05"
       ],
-      "prompt": "Find the exact area $A$ of a circle with radius $r = 10$ (in terms of $\\pi$).",
-      "display": "A = \\pi r^2",
-      "plainText": "pi * 10^2",
-      "visual": {
-        "type": "geometry-2d",
-        "viewBox": {
-          "width": 300,
-          "height": 180
-        },
-        "elements": [
-          {
-            "type": "circle",
-            "center": [
-              150,
-              90
-            ],
-            "radius": 55,
-            "stroke": "#38bdf8",
-            "fill": "rgba(56, 189, 248, 0.08)"
-          },
-          {
-            "type": "line",
-            "points": [
-              [
-                150,
-                90
-              ],
-              [
-                205,
-                90
-              ]
-            ],
-            "stroke": "#cbd5e1",
-            "strokeDasharray": "2 2"
-          },
-          {
-            "type": "dimension-label",
-            "start": [
-              150,
-              90
-            ],
-            "end": [
-              205,
-              90
-            ],
-            "label": "r = 10",
-            "position": "top",
-            "offset": 8,
-            "highlight": true
-          }
-        ]
-      },
+      "prompt": "A square of side length $s = 6$ is inscribed inside a circle. Four semicircles are drawn externally on the four sides of the square as diameters. The region outside the circumscribed circle but inside the four semicircles forms four crescent-shaped regions known as the Lunes of Hippocrates. Find the exact total area of all four lunes.",
+      "display": "\\text{Lunes of Hippocrates on square of side } s = 6 \\implies \\text{Total Area} = ?",
+      "plainText": "6^2 + 18*pi - 18*pi",
       "answerSpec": {
-        "type": "expression",
-        "value": "100*pi",
-        "variables": [
-          "pi"
-        ]
+        "type": "number",
+        "value": "36"
       },
-      "answerDisplay": "100\\pi",
-      "answerPlain": "100 pi",
-      "inputHint": "Enter exact form with pi, e.g. 230 pi or 470*pi",
-      "checkpointHint": "The radius squared is $r^2 = 10^2 = 100$.",
-      "commonTrapTag": "circle-diameter-radius",
+      "answerDisplay": "36",
+      "answerPlain": "36",
+      "inputHint": "Enter the integer area (pi cancels out!)",
+      "checkpointHint": "Calculate the total area of the four semicircles plus the area of the square, then subtract the area of the circumscribed circle. Notice how the terms involving $\\pi$ cancel out.",
+      "commonTrapTag": "pi-retained-in-lunes-trap",
       "steps": [
         {
-          "latex": "A = \\pi r^2 = \\pi(10)^2",
-          "explain": "Write the circle area formula and substitute the radius $r$."
+          "latex": "A_{\\text{square}} = 6^2 = 36",
+          "explain": "The inscribed square has area $6 \\times 6 = 36$."
         },
         {
-          "latex": "= 100\\pi",
-          "explain": "Square the radius: $10^2 = 100$. Leave $\\pi$ exact."
+          "latex": "R = \\frac{6\\sqrt{2}}{2} = 3\\sqrt{2} \\implies A_{\\text{circle}} = \\pi(3\\sqrt{2})^2 = 18\\pi",
+          "explain": "The diameter of the circumscribed circle is the diagonal of the square."
+        },
+        {
+          "latex": "A_{\\text{4 semicircles}} = 4 \\times \\left(\\frac{1}{2}\\pi (3)^2\\right) = 18\\pi",
+          "explain": "Each side of length 6 is the diameter of a semicircle with radius 3."
+        },
+        {
+          "latex": "A_{\\text{lunes}} = (A_{\\text{square}} + A_{\\text{4 semicircles}}) - A_{\\text{circle}} = (36 + 18\\pi) - 18\\pi = 36",
+          "explain": "The area of the circumscribed circle perfectly cancels the area of the four semicircles, leaving exactly the area of the square!"
         }
       ],
+      "level": 4,
+      "skill": "GEO-CIRCLE-AREA-DIAMETER",
+      "verificationLevel": "machine-verified",
       "id": "Q01",
-      "templateKey": "circle-area-pi",
-      "level": 2,
-      "levelLabel": "Level 2 - Standard Exam",
+      "templateKey": "lunes-hippocrates",
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "lunes-hippocrates|direct|#^# + #*pi - #*pi",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 4,
+          "hasTrapOrFlaw": true,
+          "skill": "GEO-CIRCLE-AREA-DIAMETER",
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "pi-retained-in-lunes-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 15
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "lunes-hippocrates|direct|#^# + #*pi - #*pi",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
       "referenceBadges": [
+        {
+          "code": "MTH-T01-C12-U04",
+          "title": "Use Properties of Rectangles, Triangles, and Trapezoids",
+          "notionUrl": "https://www.notion.so/4003818f8ba080bb8205d0d4b4cd606f"
+        },
         {
           "code": "MTH-T01-C12-U05",
           "title": "Solve Geometry Applications: Circles and Irregular Figures",
           "notionUrl": "https://www.notion.so/4003818f8ba080ce8853efc959517a90"
         }
       ],
+      "trapValue": "18",
       "state": {
         "userInput": "",
         "score": null,
@@ -161,389 +223,102 @@
       }
     },
     {
-      "category": "Core Skill",
-      "context": "Geometry: Pythagorean Theorem",
+      "form": "bottom-triangle",
+      "category": "Interleaved Synthesis",
+      "context": "Geometry: Trapezoid Lower Diagonal Triangle",
       "references": [
-        "MTH-T01-C12-U03"
+        "MTH-T01-C12-U03",
+        "MTH-T01-C12-U04"
       ],
-      "prompt": "Find the length of the hypotenuse $c$ of the right triangle with legs $a = 15$ and $b = 8$.",
-      "display": "c = \\sqrt{15^2 + 8^2}",
-      "plainText": "sqrt(15^2 + 8^2)",
-      "visual": {
-        "type": "geometry-2d",
-        "viewBox": {
-          "width": 320,
-          "height": 190
-        },
-        "elements": [
-          {
-            "type": "polygon",
-            "points": [
-              [
-                50,
-                160
-              ],
-              [
-                124,
-                160
-              ],
-              [
-                50,
-                20
-              ]
-            ],
-            "stroke": "#818cf8",
-            "fill": "rgba(129, 140, 248, 0.08)",
-            "rightAngleAt": [
-              50,
-              160
-            ]
-          },
-          {
-            "type": "dimension-label",
-            "start": [
-              50,
-              20
-            ],
-            "end": [
-              50,
-              160
-            ],
-            "label": "a = 15",
-            "position": "left",
-            "offset": 12
-          },
-          {
-            "type": "dimension-label",
-            "start": [
-              50,
-              160
-            ],
-            "end": [
-              124,
-              160
-            ],
-            "label": "b = 8",
-            "position": "bottom",
-            "offset": 14
-          },
-          {
-            "type": "dimension-label",
-            "start": [
-              50,
-              20
-            ],
-            "end": [
-              124,
-              160
-            ],
-            "label": "c = ?",
-            "position": "hypotenuse",
-            "offset": 14,
-            "highlight": true
-          }
-        ]
-      },
+      "prompt": "In an isosceles trapezoid $ABCD$, the parallel bases are $AB = 6$ and $CD = 16$, and the non-parallel legs are $AD = BC = 13$. Diagonals $AC$ and $BD$ intersect at point $E$. Find the exact area of lower triangle $CDE$.",
+      "display": "\\text{Trapezoid } ABCD:\\ AB = 6,\\ CD = 16,\\ AD = BC = 13 \\implies \\text{Area}(\\triangle CDE) = ?",
+      "plainText": "(1/2) * 16 * sqrt(13^2 - ((16 - 6)/2)^2) * (16/(6 + 16))",
       "answerSpec": {
-        "type": "number",
-        "value": "17",
-        "forms": [
-          "exact"
-        ]
+        "type": "expression",
+        "value": "768/11"
       },
-      "answerDisplay": "17",
-      "answerPlain": "17",
-      "inputHint": "Enter integer, e.g. 31 or 47",
-      "checkpointHint": "Evaluate $a^2 + b^2 = 225 + 64 = 289$.",
-      "commonTrapTag": "pythagoras-hypotenuse",
+      "answerDisplay": "\\frac{768}{11}",
+      "answerPlain": "768/11",
+      "inputHint": "Enter exact fraction or integer e.g. 35/4 or 42",
+      "checkpointHint": "Find trapezoid height $h$ via the Pythagorean theorem on the leg projection, then partition $h$ using similarity ratio $CD : (AB + CD)$.",
+      "commonTrapTag": "trapezoid-diagonal-bisect-trap",
       "steps": [
         {
-          "latex": "c = \\sqrt{a^2 + b^2} = \\sqrt{15^2 + 8^2}",
-          "explain": "Write the Pythagorean formula solved for hypotenuse $c$ and substitute the legs."
+          "latex": "x = \\frac{16 - 6}{2} = 5, \\quad h = \\sqrt{13^2 - 5^2} = 12",
+          "explain": "Symmetrical base offset gives a right triangle with hypotenuse 13 and base 5."
         },
         {
-          "latex": "= \\sqrt{225 + 64} = \\sqrt{289}",
-          "explain": "Square both legs and add under the radical."
+          "latex": "\\triangle ABE \\sim \\triangle CDE \\implies \\frac{h_1}{h_2} = \\frac{6}{16} = \\frac{3}{8}",
+          "explain": "Since $AB \\parallel CD$, alternate interior angles make $\\triangle ABE \\sim \\triangle CDE$."
         },
         {
-          "latex": "= 17",
-          "explain": "Evaluate the exact square root to find the length of the hypotenuse $c$."
+          "latex": "h_2 = 12 \\times \\frac{8}{3 + 8} = 96/11",
+          "explain": "The lower triangle takes fraction 8/(3+8) of the total height 12."
+        },
+        {
+          "latex": "\\text{Area}(\\triangle CDE) = \\frac{1}{2} \\times 16 \\times 96/11 = 768/11",
+          "explain": "Calculate area of triangle $CDE$: $\\frac{1}{2} \\times \\text{base} \\times h_2$."
         }
       ],
+      "level": 4,
+      "skill": "GEO-TRAPEZOID-HEIGHT",
+      "verificationLevel": "machine-verified",
       "id": "Q02",
-      "templateKey": "pythagoras-hypotenuse",
-      "level": 1,
-      "levelLabel": "Level 1 - Foundation",
+      "templateKey": "trapezoid-similar-triangles",
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "trapezoid-similar-triangles|bottom-triangle|(#/#) * # * sqrt(#^# - ((# - #)/#)^#) * (#/(# + #))",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 4,
+          "hasTrapOrFlaw": true,
+          "skill": "GEO-TRAPEZOID-HEIGHT",
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "trapezoid-diagonal-bisect-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 15
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "trapezoid-similar-triangles|bottom-triangle|(#/#) * # * sqrt(#^# - ((# - #)/#)^#) * (#/(# + #))",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
       "referenceBadges": [
         {
           "code": "MTH-T01-C12-U03",
           "title": "Use Properties of Angles, Triangles, and the Pythagorean Theorem",
           "notionUrl": "https://www.notion.so/4003818f8ba080459e0dd81747fad236"
-        }
-      ],
-      "state": {
-        "userInput": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "lastCheck": null
-      }
-    },
-    {
-      "category": "Core Skill",
-      "context": "Geometry: 3D Solids",
-      "references": [
-        "MTH-T01-C12-U06"
-      ],
-      "prompt": "Find the exact volume $V$ of a right circular cylinder with radius $r = 3$ and height $h = 6$ (in terms of $\\pi$).",
-      "display": "V = \\pi r^2 h",
-      "plainText": "pi * 3^2 * 6",
-      "visual": {
-        "type": "geometry-3d-wireframe",
-        "viewBox": {
-          "width": 300,
-          "height": 190
         },
-        "elements": [
-          {
-            "type": "cylinder",
-            "center": [
-              150,
-              95
-            ],
-            "radiusX": 55,
-            "radiusY": 16,
-            "height": 90,
-            "stroke": "#38bdf8",
-            "fill": "rgba(56, 189, 248, 0.08)"
-          },
-          {
-            "type": "line",
-            "points": [
-              [
-                150,
-                50
-              ],
-              [
-                205,
-                50
-              ]
-            ],
-            "stroke": "#cbd5e1",
-            "strokeDasharray": "2 2"
-          },
-          {
-            "type": "dimension-label",
-            "start": [
-              150,
-              50
-            ],
-            "end": [
-              205,
-              50
-            ],
-            "label": "r = 3",
-            "position": "top",
-            "offset": 8
-          },
-          {
-            "type": "dimension-label",
-            "start": [
-              215,
-              50
-            ],
-            "end": [
-              215,
-              140
-            ],
-            "label": "h = 6",
-            "position": "right",
-            "offset": 12,
-            "highlight": true
-          }
-        ]
-      },
-      "answerSpec": {
-        "type": "expression",
-        "value": "54*pi",
-        "variables": [
-          "pi"
-        ]
-      },
-      "answerDisplay": "54\\pi",
-      "answerPlain": "54 pi",
-      "inputHint": "Enter exact form with pi, e.g. 230 pi or 470*pi",
-      "checkpointHint": "The base area is $B = \\pi r^2 = 9\\pi$.",
-      "commonTrapTag": "volume-surface-area",
-      "steps": [
-        {
-          "latex": "V = \\pi r^2 h = \\pi(3)^2(6)",
-          "explain": "Substitute the radius and height into the cylinder volume formula."
-        },
-        {
-          "latex": "= \\pi(9)(6)",
-          "explain": "Evaluate the base area: $3^2 = 9$."
-        },
-        {
-          "latex": "= 54\\pi",
-          "explain": "Multiply by the height: $9 \\times 6 = 54$."
-        }
-      ],
-      "id": "Q03",
-      "templateKey": "cylinder-volume",
-      "level": 3,
-      "levelLabel": "Level 3 - Trap & Diagnostic",
-      "referenceBadges": [
-        {
-          "code": "MTH-T01-C12-U06",
-          "title": "Solve Geometry Applications: Volume and Surface Area",
-          "notionUrl": "https://www.notion.so/4003818f8ba080cabf64cabe4a56586d"
-        }
-      ],
-      "state": {
-        "userInput": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "lastCheck": null
-      }
-    },
-    {
-      "category": "Core Skill",
-      "context": "Geometry: Quadrilaterals",
-      "references": [
-        "MTH-T01-C12-U04"
-      ],
-      "prompt": "Find the area $A$ of the trapezoid with parallel bases $b_1 = 10$, $b_2 = 16$, and height $h = 4$.",
-      "display": "A = \\frac{1}{2}(b_1 + b_2)h",
-      "plainText": "(1/2)*(10 + 16)*4",
-      "visual": {
-        "type": "geometry-2d",
-        "viewBox": {
-          "width": 320,
-          "height": 180
-        },
-        "elements": [
-          {
-            "type": "polygon",
-            "points": [
-              [
-                70,
-                140
-              ],
-              [
-                240,
-                140
-              ],
-              [
-                210,
-                60
-              ],
-              [
-                90,
-                60
-              ]
-            ],
-            "stroke": "#10b981",
-            "fill": "rgba(16, 185, 129, 0.08)"
-          },
-          {
-            "type": "line",
-            "points": [
-              [
-                90,
-                60
-              ],
-              [
-                90,
-                140
-              ]
-            ],
-            "stroke": "#94a3b8",
-            "strokeDasharray": "3 3"
-          },
-          {
-            "type": "dimension-label",
-            "start": [
-              90,
-              60
-            ],
-            "end": [
-              210,
-              60
-            ],
-            "label": "b₁ = 10",
-            "position": "top",
-            "offset": 10
-          },
-          {
-            "type": "dimension-label",
-            "start": [
-              70,
-              140
-            ],
-            "end": [
-              240,
-              140
-            ],
-            "label": "b₂ = 16",
-            "position": "bottom",
-            "offset": 14
-          },
-          {
-            "type": "dimension-label",
-            "start": [
-              90,
-              60
-            ],
-            "end": [
-              90,
-              140
-            ],
-            "label": "h = 4",
-            "position": "right",
-            "offset": 10,
-            "highlight": true
-          }
-        ]
-      },
-      "answerSpec": {
-        "type": "number",
-        "value": "52",
-        "forms": [
-          "exact"
-        ]
-      },
-      "answerDisplay": "52",
-      "answerPlain": "52",
-      "inputHint": "Enter number, e.g. 235 or 479",
-      "checkpointHint": "The sum of the bases is $b_1 + b_2 = 26$.",
-      "commonTrapTag": "trapezoid-height",
-      "steps": [
-        {
-          "latex": "A = \\frac{1}{2}(b_1 + b_2)h = \\frac{1}{2}(10 + 16)(4)",
-          "explain": "Substitute the bases and height into the trapezoid area formula."
-        },
-        {
-          "latex": "= \\frac{1}{2}(26)(4)",
-          "explain": "Add the two parallel bases first."
-        },
-        {
-          "latex": "= 52",
-          "explain": "Multiply by $\\frac{1}{2}$ and the height $h = 4$."
-        }
-      ],
-      "id": "Q04",
-      "templateKey": "trapezoid-area",
-      "level": 2,
-      "levelLabel": "Level 2 - Standard Exam",
-      "referenceBadges": [
         {
           "code": "MTH-T01-C12-U04",
           "title": "Use Properties of Rectangles, Triangles, and Trapezoids",
           "notionUrl": "https://www.notion.so/4003818f8ba080bb8205d0d4b4cd606f"
         }
       ],
+      "trapValue": "48",
       "state": {
         "userInput": "",
         "score": null,
@@ -553,116 +328,304 @@
       }
     },
     {
-      "category": "Core Skill",
-      "context": "Geometry: 3D Solids",
+      "form": "direct",
+      "category": "Interleaved Synthesis",
+      "context": "Geometry: Trapezoid & Similar Triangles Partition",
       "references": [
-        "MTH-T01-C12-U06"
+        "MTH-T01-C12-U03",
+        "MTH-T01-C12-U04"
       ],
-      "prompt": "Find the exact volume $V$ of a right circular cylinder with radius $r = 2$ and height $h = 12$ (in terms of $\\pi$).",
-      "display": "V = \\pi r^2 h",
-      "plainText": "pi * 2^2 * 12",
-      "visual": {
-        "type": "geometry-3d-wireframe",
-        "viewBox": {
-          "width": 300,
-          "height": 190
-        },
-        "elements": [
-          {
-            "type": "cylinder",
-            "center": [
-              150,
-              95
-            ],
-            "radiusX": 55,
-            "radiusY": 16,
-            "height": 90,
-            "stroke": "#38bdf8",
-            "fill": "rgba(56, 189, 248, 0.08)"
-          },
-          {
-            "type": "line",
-            "points": [
-              [
-                150,
-                50
-              ],
-              [
-                205,
-                50
-              ]
-            ],
-            "stroke": "#cbd5e1",
-            "strokeDasharray": "2 2"
-          },
-          {
-            "type": "dimension-label",
-            "start": [
-              150,
-              50
-            ],
-            "end": [
-              205,
-              50
-            ],
-            "label": "r = 2",
-            "position": "top",
-            "offset": 8
-          },
-          {
-            "type": "dimension-label",
-            "start": [
-              215,
-              50
-            ],
-            "end": [
-              215,
-              140
-            ],
-            "label": "h = 12",
-            "position": "right",
-            "offset": 12,
-            "highlight": true
-          }
-        ]
-      },
+      "prompt": "In an isosceles trapezoid $ABCD$, the parallel bases are $AB = 12$ and $CD = 28$, and the non-parallel legs are $AD = BC = 17$. Diagonals $AC$ and $BD$ intersect at point $E$. Find the exact area of triangle $ABE$.",
+      "display": "\\text{Trapezoid } ABCD:\\ AB = 12,\\ CD = 28,\\ AD = BC = 17 \\implies \\text{Area}(\\triangle ABE) = ?",
+      "plainText": "(1/2) * 12 * sqrt(17^2 - ((28 - 12)/2)^2) * (12/(12 + 28))",
       "answerSpec": {
         "type": "expression",
-        "value": "48*pi",
-        "variables": [
-          "pi"
-        ]
+        "value": "27"
       },
-      "answerDisplay": "48\\pi",
-      "answerPlain": "48 pi",
-      "inputHint": "Enter exact form with pi, e.g. 230 pi or 470*pi",
-      "checkpointHint": "The base area is $B = \\pi r^2 = 4\\pi$.",
-      "commonTrapTag": "volume-surface-area",
+      "answerDisplay": "27",
+      "answerPlain": "27",
+      "inputHint": "Enter exact fraction or integer e.g. 35/4 or 42",
+      "checkpointHint": "Find trapezoid height $h$ by projecting $AB$ onto $CD$ to get leg base offset $(CD - AB)/2$, then calculate $h = \\sqrt{\\text{leg}^2 - \\text{offset}^2}$. Use similar triangles $\\triangle ABE \\sim \\triangle CDE$ with ratio $AB : CD$ to partition the height.",
+      "commonTrapTag": "trapezoid-diagonal-bisect-trap",
       "steps": [
         {
-          "latex": "V = \\pi r^2 h = \\pi(2)^2(12)",
-          "explain": "Substitute the radius and height into the cylinder volume formula."
+          "latex": "x = \\frac{28 - 12}{2} = 8, \\quad h = \\sqrt{17^2 - 8^2} = \\sqrt{289 - 64} = 15",
+          "explain": "Symmetrical base offset gives a right triangle with hypotenuse 17 and base 8."
         },
         {
-          "latex": "= \\pi(4)(12)",
-          "explain": "Evaluate the base area: $2^2 = 4$."
+          "latex": "\\triangle ABE \\sim \\triangle CDE \\implies \\frac{h_1}{h_2} = \\frac{12}{28} = \\frac{3}{7}",
+          "explain": "Since $AB \\parallel CD$, alternate interior angles make $\\triangle ABE \\sim \\triangle CDE$."
         },
         {
-          "latex": "= 48\\pi",
-          "explain": "Multiply by the height: $4 \\times 12 = 48$."
+          "latex": "h_1 = 15 \\times \\frac{3}{3 + 7} = 9/2",
+          "explain": "The total height 15 is partitioned in ratio 3:7."
+        },
+        {
+          "latex": "\\text{Area}(\\triangle ABE) = \\frac{1}{2} \\times 12 \\times 9/2 = 27",
+          "explain": "Calculate area of triangle $ABE$: $\\frac{1}{2} \\times \\text{base} \\times h_1$."
         }
       ],
-      "id": "Q05",
-      "templateKey": "cylinder-volume",
-      "level": 3,
-      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "level": 4,
+      "skill": "GEO-TRAPEZOID-HEIGHT",
+      "verificationLevel": "machine-verified",
+      "id": "Q03",
+      "templateKey": "trapezoid-similar-triangles",
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "trapezoid-similar-triangles|direct|(#/#) * # * sqrt(#^# - ((# - #)/#)^#) * (#/(# + #))",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 4,
+          "hasTrapOrFlaw": true,
+          "skill": "GEO-TRAPEZOID-HEIGHT",
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "trapezoid-diagonal-bisect-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 15
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "trapezoid-similar-triangles|direct|(#/#) * # * sqrt(#^# - ((# - #)/#)^#) * (#/(# + #))",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
       "referenceBadges": [
         {
-          "code": "MTH-T01-C12-U06",
-          "title": "Solve Geometry Applications: Volume and Surface Area",
-          "notionUrl": "https://www.notion.so/4003818f8ba080cabf64cabe4a56586d"
+          "code": "MTH-T01-C12-U03",
+          "title": "Use Properties of Angles, Triangles, and the Pythagorean Theorem",
+          "notionUrl": "https://www.notion.so/4003818f8ba080459e0dd81747fad236"
+        },
+        {
+          "code": "MTH-T01-C12-U04",
+          "title": "Use Properties of Rectangles, Triangles, and Trapezoids",
+          "notionUrl": "https://www.notion.so/4003818f8ba080bb8205d0d4b4cd606f"
         }
       ],
+      "trapValue": "45",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "side-triangle",
+      "category": "Interleaved Synthesis",
+      "context": "Geometry: Trapezoid Flank Diagonal Triangle",
+      "references": [
+        "MTH-T01-C12-U03",
+        "MTH-T01-C12-U04"
+      ],
+      "prompt": "In an isosceles trapezoid $ABCD$, the parallel bases are $AB = 12$ and $CD = 28$, and the non-parallel legs are $AD = BC = 17$. Diagonals $AC$ and $BD$ intersect at point $E$. Find the exact area of flank triangle $ADE$.",
+      "display": "\\text{Trapezoid } ABCD:\\ AB = 12,\\ CD = 28,\\ AD = BC = 17 \\implies \\text{Area}(\\triangle ADE) = ?",
+      "plainText": "(1/2) * 12 * sqrt(17^2 - ((28 - 12)/2)^2) * (28/(12 + 28))",
+      "answerSpec": {
+        "type": "expression",
+        "value": "63"
+      },
+      "answerDisplay": "63",
+      "answerPlain": "63",
+      "inputHint": "Enter exact fraction or integer e.g. 35/4 or 42",
+      "checkpointHint": "Find total height $h$, compute $\\text{Area}(\\triangle ABD) = \\frac{1}{2}(AB)h$, and subtract $\\text{Area}(\\triangle ABE)$ found via similar triangles.",
+      "commonTrapTag": "trapezoid-diagonal-bisect-trap",
+      "steps": [
+        {
+          "latex": "x = \\frac{28 - 12}{2} = 8, \\quad h = \\sqrt{17^2 - 8^2} = 15",
+          "explain": "Use the Pythagorean theorem on the leg projection to find height $h = 15$."
+        },
+        {
+          "latex": "h_1 = 15 \\times \\frac{3}{3 + 7} = 9/2 \\implies \\text{Area}(\\triangle ABE) = \\frac{1}{2}(12)(9/2) = 27",
+          "explain": "Use similarity ratio $AB : CD$ to find height $h_1$ and area of upper triangle $ABE$."
+        },
+        {
+          "latex": "\\text{Area}(\\triangle ABD) = \\frac{1}{2}(12)(15) = 90 \\implies \\text{Area}(\\triangle ADE) = 90 - 27 = 63",
+          "explain": "Subtract $\\text{Area}(\\triangle ABE)$ from $\\text{Area}(\\triangle ABD)$."
+        }
+      ],
+      "level": 4,
+      "skill": "GEO-TRAPEZOID-HEIGHT",
+      "verificationLevel": "machine-verified",
+      "id": "Q04",
+      "templateKey": "trapezoid-similar-triangles",
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "trapezoid-similar-triangles|side-triangle|(#/#) * # * sqrt(#^# - ((# - #)/#)^#) * (#/(# + #))",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "GEO-TRAPEZOID-HEIGHT",
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "trapezoid-diagonal-bisect-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "trapezoid-similar-triangles|side-triangle|(#/#) * # * sqrt(#^# - ((# - #)/#)^#) * (#/(# + #))",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C12-U03",
+          "title": "Use Properties of Angles, Triangles, and the Pythagorean Theorem",
+          "notionUrl": "https://www.notion.so/4003818f8ba080459e0dd81747fad236"
+        },
+        {
+          "code": "MTH-T01-C12-U04",
+          "title": "Use Properties of Rectangles, Triangles, and Trapezoids",
+          "notionUrl": "https://www.notion.so/4003818f8ba080bb8205d0d4b4cd606f"
+        }
+      ],
+      "trapValue": "75",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "single-lune",
+      "category": "Interleaved Synthesis",
+      "context": "Geometry: Single Lune of Hippocrates",
+      "references": [
+        "MTH-T01-C12-U04",
+        "MTH-T01-C12-U05"
+      ],
+      "prompt": "A square of side length $s = 20$ is inscribed inside a circle. Four congruent semicircles are drawn externally on the four sides of the square as diameters, forming four congruent crescent-shaped Lunes of Hippocrates outside the circumscribed circle. Find the exact area of ONE such lune.",
+      "display": "\\text{Single Lune on square of side } s = 20 \\implies \\text{Area}(\\text{1 lune}) = ?",
+      "plainText": "(20^2) / 4",
+      "answerSpec": {
+        "type": "number",
+        "value": "100"
+      },
+      "answerDisplay": "100",
+      "answerPlain": "100",
+      "inputHint": "Enter the integer area of one lune",
+      "checkpointHint": "First find the total area of all four lunes by subtracting the circumscribed circle from the square plus four semicircles, then divide by 4 by symmetry.",
+      "commonTrapTag": "pi-retained-in-lunes-trap",
+      "steps": [
+        {
+          "latex": "A_{\\text{square}} = 20^2 = 400, \\quad A_{\\text{circle}} = \\pi(10\\sqrt{2})^2 = 200\\pi",
+          "explain": "Find the area of the inscribed square and circumscribed circle."
+        },
+        {
+          "latex": "A_{\\text{4 semicircles}} = 4 \\times \\left(\\frac{1}{2}\\pi (10)^2\\right) = 200\\pi",
+          "explain": "The four outer semicircles have total area $200\\pi$, matching the circumscribed circle."
+        },
+        {
+          "latex": "A_{\\text{1 lune}} = \\frac{A_{\\text{square}} + A_{\\text{4 semicircles}} - A_{\\text{circle}}}{4} = \\frac{400}{4} = 100",
+          "explain": "The $\\pi$ terms cancel out, leaving one-fourth of the square's area for each lune."
+        }
+      ],
+      "level": 4,
+      "skill": "GEO-CIRCLE-AREA-DIAMETER",
+      "verificationLevel": "machine-verified",
+      "id": "Q05",
+      "templateKey": "lunes-hippocrates",
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "lunes-hippocrates|single-lune|(#^#) / #",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "GEO-CIRCLE-AREA-DIAMETER",
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "pi-retained-in-lunes-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "lunes-hippocrates|single-lune|(#^#) / #",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C12-U04",
+          "title": "Use Properties of Rectangles, Triangles, and Trapezoids",
+          "notionUrl": "https://www.notion.so/4003818f8ba080bb8205d0d4b4cd606f"
+        },
+        {
+          "code": "MTH-T01-C12-U05",
+          "title": "Solve Geometry Applications: Circles and Irregular Figures",
+          "notionUrl": "https://www.notion.so/4003818f8ba080ce8853efc959517a90"
+        }
+      ],
+      "trapValue": "400",
       "state": {
         "userInput": "",
         "score": null,

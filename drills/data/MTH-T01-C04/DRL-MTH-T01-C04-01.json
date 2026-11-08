@@ -1,0 +1,832 @@
+{
+  "schemaVersion": "2.0-math",
+  "drillId": "DRL-MTH-T01-C04-01",
+  "subject": "MATH",
+  "unitCode": "MTH-T01-C04",
+  "unitTitle": "Fractions",
+  "chapterCode": "MTH-T01-C04",
+  "topicCode": "MTH-T01",
+  "unitNotionUrl": "https://www.notion.so/4003818f8ba080548960c0514eb841aa",
+  "createdAt": "2026-11-08 17:14:03",
+  "config": {
+    "questionCount": 8,
+    "difficulty": "ALL",
+    "difficultyMode": "Mixed Exam Mode"
+  },
+  "mistakeTags": [
+    {
+      "id": "c04-reciprocal-omission",
+      "label": "Multiplied directly by divisor fraction without inverting reciprocal",
+      "name": "Fraction Division Reciprocal Omission",
+      "autoFrom": [
+        "reciprocal"
+      ]
+    },
+    {
+      "id": "c04-unlike-denominator-direct-add",
+      "label": "Added numerators and denominators directly without common denominator",
+      "name": "Unlike Denominator Direct Addition Trap",
+      "autoFrom": []
+    },
+    {
+      "id": "c04-complex-fraction-inversion-trap",
+      "label": "Multiplied numerator by denominator in a complex fraction instead of dividing",
+      "name": "Complex Fraction Inversion Trap",
+      "autoFrom": [
+        "reciprocal"
+      ]
+    },
+    {
+      "id": "c04-remainder-fraction-base-trap",
+      "label": "Subtracted sequential fractions from original whole instead of remaining fraction",
+      "name": "Sequential Fractional Remainder Trap",
+      "autoFrom": []
+    }
+  ],
+  "problems": [
+    {
+      "form": "direct",
+      "category": "Reverse Reasoning",
+      "context": "Fractions: Unlike Denominators & Missing Addend",
+      "references": [
+        "MTH-T01-C04-U05"
+      ],
+      "prompt": "Add the fractions with unlike denominators and express in lowest terms: $\\frac{3}{7} + \\frac{5}{14}$.",
+      "display": "\\frac{3}{7} + \\frac{5}{14}",
+      "plainText": "(3/7) + (5/14) lcd 14 [alpha]",
+      "answerSpec": {
+        "type": "number",
+        "value": "11/14"
+      },
+      "answerDisplay": "\\frac{11}{14}",
+      "answerPlain": "11/14",
+      "inputHint": "Enter the exact integer or reduced fraction p/q",
+      "checkpointHint": "Convert both fractions to equivalent fractions sharing their least common denominator before adding or subtracting numerators.",
+      "commonTrapTag": "c04-unlike-denominator-direct-add",
+      "steps": [
+        {
+          "latex": "\\text{LCD}(7, 14) = 14",
+          "explain": "Find the least common denominator of the two fractions."
+        },
+        {
+          "latex": "= \\frac{6}{14} + \\frac{5}{14}",
+          "explain": "Convert each fraction to an equivalent fraction with the common denominator."
+        },
+        {
+          "latex": "= \\frac{11}{14}",
+          "explain": "Add the numerators and simplify."
+        }
+      ],
+      "level": 2,
+      "skill": "MTH-PREALG-C04-UNLIKE-ADD",
+      "verificationLevel": "machine-verified",
+      "id": "Q01",
+      "templateKey": "c04-unlike-denom-add-sub",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "c04-unlike-denom-add-sub|direct|(#/#) + (#/#) lcd # [alpha]",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C04-UNLIKE-ADD",
+          "stepRange": [
+            2,
+            4
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c04-unlike-denominator-direct-add",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c04-unlike-denom-add-sub|direct|(#/#) + (#/#) lcd # [alpha]",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C04-U05",
+          "title": "Multiply and Divide Mixed Numbers and Complex Fractions",
+          "notionUrl": "https://www.notion.so/4003818f8ba08072b471f53464fe9bc5"
+        }
+      ],
+      "trapValue": "8/21",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "contextual",
+      "category": "Interleaved Synthesis",
+      "context": "Fractions: Sequential Remainder Synthesis",
+      "references": [
+        "MTH-T01-C04-U02",
+        "MTH-T01-C04-U05"
+      ],
+      "prompt": "An engineering grant spends $\\frac{2}{5}$ of its total budget on hardware, and then spends $\\frac{1}{3}$ of the REMAINING budget on cloud compute. If $60$ thousand dollars remains unspent, what was the initial total budget (in thousands of dollars)?",
+      "display": "B \\cdot \\left(1 - \\frac{2}{5}\\right)\\left(1 - \\frac{1}{3}\\right) = 60",
+      "plainText": "150 * (1 - 2/5) * (1 - 1/3) [gamma]",
+      "answerSpec": {
+        "type": "number",
+        "value": "150"
+      },
+      "answerDisplay": "150",
+      "answerPlain": "150",
+      "inputHint": "Enter the exact integer value",
+      "checkpointHint": "Notice that the second fraction applies to the remainder after the first stage, not to the original whole.",
+      "commonTrapTag": "c04-remainder-fraction-base-trap",
+      "steps": [
+        {
+          "latex": "\\text{Remaining fraction after hardware} = 1 - \\frac{2}{5} = \\frac{3}{5}",
+          "explain": "Find the fraction of the budget left after the first allocation."
+        },
+        {
+          "latex": "\\text{Final remaining fraction} = \\frac{3}{5} \\times \\left(1 - \\frac{1}{3}\\right) = \\frac{2}{5}",
+          "explain": "Multiply by the fraction remaining after the second allocation."
+        },
+        {
+          "latex": "B = 60 \\div \\frac{2}{5} = 150",
+          "explain": "Divide the final dollar amount by the final remaining fraction."
+        }
+      ],
+      "level": 4,
+      "skill": "MTH-PREALG-C04-SYNTHESIS",
+      "verificationLevel": "machine-verified",
+      "id": "Q02",
+      "templateKey": "c04-fractional-partition-synthesis",
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "c04-fractional-partition-synthesis|contextual|# * (# - #/#) * (# - #/#) [gamma]",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C04-SYNTHESIS",
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c04-remainder-fraction-base-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c04-fractional-partition-synthesis|contextual|# * (# - #/#) * (# - #/#) [gamma]",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C04-U02",
+          "title": "Add and Subtract Fractions with Common Denominators",
+          "notionUrl": "https://www.notion.so/4003818f8ba080eaaa0beddf13f20ec3"
+        },
+        {
+          "code": "MTH-T01-C04-U05",
+          "title": "Multiply and Divide Mixed Numbers and Complex Fractions",
+          "notionUrl": "https://www.notion.so/4003818f8ba08072b471f53464fe9bc5"
+        }
+      ],
+      "trapValue": "225",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "direct",
+      "category": "Trap & Edge Case",
+      "context": "Fractions: Complex Fraction Reciprocal Trap",
+      "references": [
+        "MTH-T01-C04-U03"
+      ],
+      "prompt": "Simplify the complex fraction to lowest terms: $\\dfrac{\\frac{1}{2} + \\frac{1}{3}}{\\frac{5}{12}}$.",
+      "display": "\\frac{\\frac{1}{2} + \\frac{1}{3}}{\\frac{5}{12}}",
+      "plainText": "((1/2) and (1/3)) / (5/12) [zeta]",
+      "answerSpec": {
+        "type": "number",
+        "value": "2"
+      },
+      "answerDisplay": "2",
+      "answerPlain": "2",
+      "inputHint": "Enter the exact integer or reduced fraction p/q",
+      "checkpointHint": "Simplify the numerator into a single fraction first, then multiply by the reciprocal of the denominator fraction.",
+      "commonTrapTag": "c04-complex-fraction-inversion-trap",
+      "steps": [
+        {
+          "latex": "\\text{Numerator} = \\frac{1}{2} + \\frac{1}{3} = \\frac{5}{6}",
+          "explain": "Add the fractions in the numerator over their common denominator."
+        },
+        {
+          "latex": "\\frac{5}{6} \\div \\frac{5}{12} = \\frac{5}{6} \\times \\frac{12}{5}",
+          "explain": "Invert the denominator fraction and multiply."
+        },
+        {
+          "latex": "= 2",
+          "explain": "Cancel common factors to obtain lowest terms."
+        }
+      ],
+      "level": 3,
+      "skill": "MTH-PREALG-C04-COMPLEX-TRAP",
+      "verificationLevel": "machine-verified",
+      "id": "Q03",
+      "templateKey": "c04-complex-fraction-trap",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "c04-complex-fraction-trap|direct|((#/#) and (#/#)) / (#/#) [zeta]",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C04-COMPLEX-TRAP",
+          "stepRange": [
+            2,
+            5
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c04-complex-fraction-inversion-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c04-complex-fraction-trap|direct|((#/#) and (#/#)) / (#/#) [zeta]",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C04-U03",
+          "title": "Add and Subtract Fractions with Different Denominators",
+          "notionUrl": "https://www.notion.so/4003818f8ba0801baca6fac5a05f5e8d"
+        }
+      ],
+      "trapValue": "25/72",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "missing-term",
+      "category": "Reverse Reasoning",
+      "context": "Fractions: Unlike Denominators & Missing Addend",
+      "references": [
+        "MTH-T01-C04-U05"
+      ],
+      "prompt": "Solve for the fraction $x$ in lowest terms: $x + \\frac{7}{10} = \\frac{5}{6}$.",
+      "display": "x + \\frac{7}{10} = \\frac{5}{6}",
+      "plainText": "(7/10) + (2/15) lcd 30 [beta]",
+      "answerSpec": {
+        "type": "number",
+        "value": "2/15"
+      },
+      "answerDisplay": "\\frac{2}{15}",
+      "answerPlain": "2/15",
+      "inputHint": "Enter the exact integer or reduced fraction p/q",
+      "checkpointHint": "Convert both fractions to equivalent fractions sharing their least common denominator before adding or subtracting numerators.",
+      "commonTrapTag": "c04-unlike-denominator-direct-add",
+      "steps": [
+        {
+          "latex": "x = \\frac{5}{6} - \\frac{7}{10}",
+          "explain": "Subtract the known fraction from both sides."
+        },
+        {
+          "latex": "x = \\frac{25 - 21}{30}",
+          "explain": "Rewrite both fractions over the least common denominator $30$."
+        },
+        {
+          "latex": "x = \\frac{2}{15}",
+          "explain": "Subtract the numerators and reduce to lowest terms."
+        }
+      ],
+      "level": 2,
+      "skill": "MTH-PREALG-C04-UNLIKE-ADD",
+      "verificationLevel": "machine-verified",
+      "id": "Q04",
+      "templateKey": "c04-unlike-denom-add-sub",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "c04-unlike-denom-add-sub|missing-term|(#/#) + (#/#) lcd # [beta]",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C04-UNLIKE-ADD",
+          "stepRange": [
+            2,
+            4
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c04-unlike-denominator-direct-add",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c04-unlike-denom-add-sub|missing-term|(#/#) + (#/#) lcd # [beta]",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C04-U05",
+          "title": "Multiply and Divide Mixed Numbers and Complex Fractions",
+          "notionUrl": "https://www.notion.so/4003818f8ba08072b471f53464fe9bc5"
+        }
+      ],
+      "trapValue": "1/2",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "difference",
+      "category": "Trap & Edge Case",
+      "context": "Fractions: Complex Fraction Reciprocal Trap",
+      "references": [
+        "MTH-T01-C04-U03"
+      ],
+      "prompt": "Simplify the complex fraction to lowest terms: $\\dfrac{\\frac{3}{5} - \\frac{1}{2}}{\\frac{11}{20}}$.",
+      "display": "\\frac{\\frac{3}{5} - \\frac{1}{2}}{\\frac{11}{20}}",
+      "plainText": "((3/5) and (1/2)) / (11/20) [gamma]",
+      "answerSpec": {
+        "type": "number",
+        "value": "2/11"
+      },
+      "answerDisplay": "\\frac{2}{11}",
+      "answerPlain": "2/11",
+      "inputHint": "Enter the exact integer or reduced fraction p/q",
+      "checkpointHint": "Simplify the numerator into a single fraction first, then multiply by the reciprocal of the denominator fraction.",
+      "commonTrapTag": "c04-complex-fraction-inversion-trap",
+      "steps": [
+        {
+          "latex": "\\text{Numerator} = \\frac{3}{5} - \\frac{1}{2} = \\frac{1}{10}",
+          "explain": "Combine the fractions in the numerator first."
+        },
+        {
+          "latex": "\\frac{1}{10} \\div \\frac{11}{20} = \\frac{1}{10} \\times \\frac{20}{11}",
+          "explain": "Rewrite the main fraction bar as division and multiply by the reciprocal of the denominator."
+        },
+        {
+          "latex": "= \\frac{2}{11}",
+          "explain": "Simplify the product to lowest terms."
+        }
+      ],
+      "level": 3,
+      "skill": "MTH-PREALG-C04-COMPLEX-TRAP",
+      "verificationLevel": "machine-verified",
+      "id": "Q05",
+      "templateKey": "c04-complex-fraction-trap",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "c04-complex-fraction-trap|difference|((#/#) and (#/#)) / (#/#) [gamma]",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C04-COMPLEX-TRAP",
+          "stepRange": [
+            2,
+            5
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c04-complex-fraction-inversion-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c04-complex-fraction-trap|difference|((#/#) and (#/#)) / (#/#) [gamma]",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C04-U03",
+          "title": "Add and Subtract Fractions with Different Denominators",
+          "notionUrl": "https://www.notion.so/4003818f8ba0801baca6fac5a05f5e8d"
+        }
+      ],
+      "trapValue": "11/200",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "reciprocal",
+      "category": "Core Skill",
+      "context": "Fractions: Multiplication and Division",
+      "references": [
+        "MTH-T01-C04-U02"
+      ],
+      "prompt": "Divide the fractions and express the result in lowest terms: $\\frac{5}{8} \\div \\frac{12}{25}$.",
+      "display": "\\frac{5}{8} \\div \\frac{12}{25}",
+      "plainText": "(5/8) op (12/25) [gamma]",
+      "answerSpec": {
+        "type": "number",
+        "value": "125/96"
+      },
+      "answerDisplay": "\\frac{125}{96}",
+      "answerPlain": "125/96",
+      "inputHint": "Enter the exact integer or reduced fraction p/q",
+      "checkpointHint": "For fraction division, invert the second fraction and multiply, then cancel common factors.",
+      "commonTrapTag": "c04-reciprocal-omission",
+      "steps": [
+        {
+          "latex": "\\frac{5}{8} \\div \\frac{12}{25} = \\frac{5}{8} \\times \\frac{25}{12}",
+          "explain": "Multiply by the reciprocal of the divisor fraction."
+        },
+        {
+          "latex": "= \\frac{125}{96}",
+          "explain": "Multiply the numerators and multiply the denominators."
+        },
+        {
+          "latex": "= \\frac{125}{96}",
+          "explain": "Reduce by dividing numerator and denominator by their greatest common factor."
+        }
+      ],
+      "level": 1,
+      "skill": "MTH-PREALG-C04-MULT-DIV",
+      "verificationLevel": "machine-verified",
+      "id": "Q06",
+      "templateKey": "c04-fraction-mult-div",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "c04-fraction-mult-div|reciprocal|(#/#) op (#/#) [gamma]",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C04-MULT-DIV",
+          "stepRange": [
+            1,
+            3
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c04-reciprocal-omission",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c04-fraction-mult-div|reciprocal|(#/#) op (#/#) [gamma]",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C04-U02",
+          "title": "Add and Subtract Fractions with Common Denominators",
+          "notionUrl": "https://www.notion.so/4003818f8ba080eaaa0beddf13f20ec3"
+        }
+      ],
+      "trapValue": "3/10",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "direct",
+      "category": "Interleaved Synthesis",
+      "context": "Fractions: Sequential Remainder Synthesis",
+      "references": [
+        "MTH-T01-C04-U02",
+        "MTH-T01-C04-U05"
+      ],
+      "prompt": "A reservoir holds $150$ megaliters of water. During Month 1, $\\frac{2}{5}$ of the water is released. During Month 2, $\\frac{1}{3}$ of the REMAINING water is released. How many megaliters of water remain in the reservoir at the end of Month 2?",
+      "display": "150 \\times \\left(1 - \\frac{2}{5}\\right)\\left(1 - \\frac{1}{3}\\right)",
+      "plainText": "150 * (1 - 2/5) * (1 - 1/3) [beta]",
+      "answerSpec": {
+        "type": "number",
+        "value": "60"
+      },
+      "answerDisplay": "60",
+      "answerPlain": "60",
+      "inputHint": "Enter the exact integer value",
+      "checkpointHint": "Notice that the second fraction applies to the remainder after the first stage, not to the original whole.",
+      "commonTrapTag": "c04-remainder-fraction-base-trap",
+      "steps": [
+        {
+          "latex": "R_1 = 150 \\times \\left(1 - \\frac{2}{5}\\right) = 90",
+          "explain": "Compute the volume remaining after Month 1."
+        },
+        {
+          "latex": "R_2 = 90 \\times \\left(1 - \\frac{1}{3}\\right)",
+          "explain": "Apply the second retention factor to the remaining volume."
+        },
+        {
+          "latex": "R_2 = 60",
+          "explain": "Evaluate the product to find the final remaining volume."
+        }
+      ],
+      "level": 4,
+      "skill": "MTH-PREALG-C04-SYNTHESIS",
+      "verificationLevel": "machine-verified",
+      "id": "Q07",
+      "templateKey": "c04-fractional-partition-synthesis",
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "c04-fractional-partition-synthesis|direct|# * (# - #/#) * (# - #/#) [beta]",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C04-SYNTHESIS",
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c04-remainder-fraction-base-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c04-fractional-partition-synthesis|direct|# * (# - #/#) * (# - #/#) [beta]",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C04-U02",
+          "title": "Add and Subtract Fractions with Common Denominators",
+          "notionUrl": "https://www.notion.so/4003818f8ba080eaaa0beddf13f20ec3"
+        },
+        {
+          "code": "MTH-T01-C04-U05",
+          "title": "Multiply and Divide Mixed Numbers and Complex Fractions",
+          "notionUrl": "https://www.notion.so/4003818f8ba08072b471f53464fe9bc5"
+        }
+      ],
+      "trapValue": "40",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "direct",
+      "category": "Core Skill",
+      "context": "Fractions: Multiplication and Division",
+      "references": [
+        "MTH-T01-C04-U02"
+      ],
+      "prompt": "Multiply the fractions and simplify to lowest terms: $\\frac{3}{4} \\times \\frac{8}{9}$.",
+      "display": "\\frac{3}{4} \\times \\frac{8}{9}",
+      "plainText": "(3/4) op (8/9) [delta]",
+      "answerSpec": {
+        "type": "number",
+        "value": "2/3"
+      },
+      "answerDisplay": "\\frac{2}{3}",
+      "answerPlain": "2/3",
+      "inputHint": "Enter the exact integer or reduced fraction p/q",
+      "checkpointHint": "For fraction division, invert the second fraction and multiply, then cancel common factors.",
+      "commonTrapTag": "c04-reciprocal-omission",
+      "steps": [
+        {
+          "latex": "\\frac{3 \\times 8}{4 \\times 9} = \\frac{24}{36}",
+          "explain": "Multiply the numerators together and the denominators together."
+        },
+        {
+          "latex": "= \\frac{2}{3}",
+          "explain": "Cancel common factors between numerator and denominator."
+        },
+        {
+          "latex": "\\text{Simplified} = \\frac{2}{3}",
+          "explain": "Confirm the fraction is in lowest terms."
+        }
+      ],
+      "level": 1,
+      "skill": "MTH-PREALG-C04-MULT-DIV",
+      "verificationLevel": "machine-verified",
+      "id": "Q08",
+      "templateKey": "c04-fraction-mult-div",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "c04-fraction-mult-div|direct|(#/#) op (#/#) [delta]",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C04-MULT-DIV",
+          "stepRange": [
+            1,
+            3
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c04-reciprocal-omission",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c04-fraction-mult-div|direct|(#/#) op (#/#) [delta]",
+          "maxAllowedPerFingerprint": 1
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C04-U02",
+          "title": "Add and Subtract Fractions with Common Denominators",
+          "notionUrl": "https://www.notion.so/4003818f8ba080eaaa0beddf13f20ec3"
+        }
+      ],
+      "trapValue": "27/32",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    }
+  ],
+  "sessionSummary": {
+    "practiceStatus": "Ready",
+    "score": 0,
+    "maxScore": 8,
+    "accuracyPct": 0,
+    "mistakeCategories": [],
+    "divergedStepsSummary": "",
+    "attemptDate": null,
+    "syncedToNotionAt": null,
+    "notionPageId": null
+  },
+  "localFilePath": "drills/data/MTH-T01-C04/DRL-MTH-T01-C04-01.json"
+}

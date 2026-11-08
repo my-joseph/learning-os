@@ -1,0 +1,2082 @@
+{
+  "schemaVersion": "2.0-math",
+  "drillId": "DRL-MTH-T01-C11-02",
+  "subject": "MATH",
+  "unitCode": "MTH-T01-C11",
+  "unitTitle": "Solving Linear Equations",
+  "chapterCode": "MTH-T01-C11",
+  "topicCode": "MTH-T01",
+  "unitNotionUrl": "https://www.notion.so/4013818f8ba08104973cee2c1d2a2cd1",
+  "createdAt": "2026-11-08 17:29:30",
+  "config": {
+    "questionCount": 20,
+    "difficulty": "4",
+    "difficultyMode": "Level 4 - Applied Synthesis"
+  },
+  "mistakeTags": [
+    {
+      "id": "c11-constant-transposition-sign",
+      "label": "Added instead of subtracted constant when transposing across equals sign",
+      "name": "Constant Transposition Sign Slip",
+      "autoFrom": [
+        "whole_sign_flip"
+      ]
+    },
+    {
+      "id": "c11-variable-grouping-sign-slip",
+      "label": "Combined variable terms across equals sign with wrong sign",
+      "name": "Variable Transposition Sign Slip",
+      "autoFrom": [
+        "whole_sign_flip"
+      ]
+    },
+    {
+      "id": "c11-fraction-numerator-sign-trap",
+      "label": "Failed to distribute subtraction sign across entire second numerator when clearing fractions",
+      "name": "Fractional Numerator Subtraction Trap",
+      "autoFrom": [
+        "whole_sign_flip"
+      ]
+    },
+    {
+      "id": "c11-consecutive-parity-step-trap",
+      "label": "Used x+1, x+2 instead of x+2, x+4 for consecutive even/odd integers",
+      "name": "Consecutive Parity Step Trap",
+      "autoFrom": []
+    }
+  ],
+  "problems": [
+    {
+      "form": "direct",
+      "category": "Interleaved Synthesis",
+      "context": "Linear Equations: Multi-Condition & Parametric Synthesis",
+      "references": [
+        "MTH-T01-C11-U03",
+        "MTH-T01-C11-U04"
+      ],
+      "prompt": "Three consecutive even integers $n,\\ n+2,\\ n+4$ satisfy the weighted linear equation $2n + 3(n + 2) + (n + 4) = 202$. Find the LARGEST of the three consecutive even integers.",
+      "display": "2n + 3(n + 2) + (n + 4) = 202 \\implies n + 4 = ?",
+      "plainText": "linear synthesis 36 [delta]",
+      "answerSpec": {
+        "type": "number",
+        "value": "36"
+      },
+      "answerDisplay": "36",
+      "answerPlain": "36",
+      "inputHint": "Enter the exact integer value",
+      "checkpointHint": "Set up the linear equation in terms of the unknown, solve for the base variable, and evaluate the requested target quantity.",
+      "commonTrapTag": "c11-consecutive-parity-step-trap",
+      "steps": [
+        {
+          "latex": "2n + 3n + 6 + n + 4 = 202 \\implies 6n + 10 = 202",
+          "explain": "Expand and combine the variable terms and constants."
+        },
+        {
+          "latex": "6n = 192 \\implies n = 32",
+          "explain": "Solve for the smallest even integer $n$."
+        },
+        {
+          "latex": "n + 4 = 32 + 4 = 36",
+          "explain": "Add 4 to obtain the largest of the three consecutive even integers."
+        }
+      ],
+      "level": 4,
+      "skill": "MTH-PREALG-C11-SYNTHESIS",
+      "verificationLevel": "machine-verified",
+      "id": "Q01",
+      "templateKey": "c11-parametric-consecutive-linear-synthesis",
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "c11-parametric-consecutive-linear-synthesis|direct|linear synthesis # [delta]",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C11-SYNTHESIS",
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c11-consecutive-parity-step-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c11-parametric-consecutive-linear-synthesis|direct|linear synthesis # [delta]",
+          "maxAllowedPerFingerprint": 10
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C11-U03",
+          "title": "Solve Equations with Variables and Constants on Both Sides",
+          "notionUrl": "https://www.notion.so/4013818f8ba0816caae9d39f74a0f00d"
+        },
+        {
+          "code": "MTH-T01-C11-U04",
+          "title": "Solve Equations with Fraction or Decimal Coefficients",
+          "notionUrl": "https://www.notion.so/4013818f8ba08102a903dc6acfb4a3c7"
+        }
+      ],
+      "trapValue": "32",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "parametric-root",
+      "category": "Interleaved Synthesis",
+      "context": "Linear Equations: Multi-Condition & Parametric Synthesis",
+      "references": [
+        "MTH-T01-C11-U03",
+        "MTH-T01-C11-U04"
+      ],
+      "prompt": "If $x = 3$ is the solution to the parametric linear equation $k x - 27 = 18$, find the exact value of the parameter $k$.",
+      "display": "k(3) - 27 = 18 \\implies k = ?",
+      "plainText": "linear synthesis 15 [delta]",
+      "answerSpec": {
+        "type": "number",
+        "value": "15"
+      },
+      "answerDisplay": "15",
+      "answerPlain": "15",
+      "inputHint": "Enter the exact integer value",
+      "checkpointHint": "Set up the linear equation in terms of the unknown, solve for the base variable, and evaluate the requested target quantity.",
+      "commonTrapTag": "c11-consecutive-parity-step-trap",
+      "steps": [
+        {
+          "latex": "3k - 27 = 18",
+          "explain": "Substitute the known solution $x = 3$ into the equation."
+        },
+        {
+          "latex": "3k = 18 + 27 = 45",
+          "explain": "Add the constant term to both sides."
+        },
+        {
+          "latex": "k = \\frac{45}{3} = 15",
+          "explain": "Divide by the coefficient of $k$."
+        }
+      ],
+      "level": 4,
+      "skill": "MTH-PREALG-C11-SYNTHESIS",
+      "verificationLevel": "machine-verified",
+      "id": "Q02",
+      "templateKey": "c11-parametric-consecutive-linear-synthesis",
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "c11-parametric-consecutive-linear-synthesis|parametric-root|linear synthesis # [delta]",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C11-SYNTHESIS",
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c11-consecutive-parity-step-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c11-parametric-consecutive-linear-synthesis|parametric-root|linear synthesis # [delta]",
+          "maxAllowedPerFingerprint": 10
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C11-U03",
+          "title": "Solve Equations with Variables and Constants on Both Sides",
+          "notionUrl": "https://www.notion.so/4013818f8ba0816caae9d39f74a0f00d"
+        },
+        {
+          "code": "MTH-T01-C11-U04",
+          "title": "Solve Equations with Fraction or Decimal Coefficients",
+          "notionUrl": "https://www.notion.so/4013818f8ba08102a903dc6acfb4a3c7"
+        }
+      ],
+      "trapValue": "-3",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "parametric-root",
+      "category": "Interleaved Synthesis",
+      "context": "Linear Equations: Multi-Condition & Parametric Synthesis",
+      "references": [
+        "MTH-T01-C11-U03",
+        "MTH-T01-C11-U04"
+      ],
+      "prompt": "If $x = 3$ is the solution to the parametric linear equation $k x - 39 = 18$, find the exact value of the parameter $k$.",
+      "display": "k(3) - 39 = 18 \\implies k = ?",
+      "plainText": "linear synthesis 19 [alpha]",
+      "answerSpec": {
+        "type": "number",
+        "value": "19"
+      },
+      "answerDisplay": "19",
+      "answerPlain": "19",
+      "inputHint": "Enter the exact integer value",
+      "checkpointHint": "Set up the linear equation in terms of the unknown, solve for the base variable, and evaluate the requested target quantity.",
+      "commonTrapTag": "c11-consecutive-parity-step-trap",
+      "steps": [
+        {
+          "latex": "3k - 39 = 18",
+          "explain": "Substitute the known solution $x = 3$ into the equation."
+        },
+        {
+          "latex": "3k = 18 + 39 = 57",
+          "explain": "Add the constant term to both sides."
+        },
+        {
+          "latex": "k = \\frac{57}{3} = 19",
+          "explain": "Divide by the coefficient of $k$."
+        }
+      ],
+      "level": 4,
+      "skill": "MTH-PREALG-C11-SYNTHESIS",
+      "verificationLevel": "machine-verified",
+      "id": "Q03",
+      "templateKey": "c11-parametric-consecutive-linear-synthesis",
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "c11-parametric-consecutive-linear-synthesis|parametric-root|linear synthesis # [alpha]",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C11-SYNTHESIS",
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c11-consecutive-parity-step-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c11-parametric-consecutive-linear-synthesis|parametric-root|linear synthesis # [alpha]",
+          "maxAllowedPerFingerprint": 10
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C11-U03",
+          "title": "Solve Equations with Variables and Constants on Both Sides",
+          "notionUrl": "https://www.notion.so/4013818f8ba0816caae9d39f74a0f00d"
+        },
+        {
+          "code": "MTH-T01-C11-U04",
+          "title": "Solve Equations with Fraction or Decimal Coefficients",
+          "notionUrl": "https://www.notion.so/4013818f8ba08102a903dc6acfb4a3c7"
+        }
+      ],
+      "trapValue": "-7",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "direct",
+      "category": "Interleaved Synthesis",
+      "context": "Linear Equations: Multi-Condition & Parametric Synthesis",
+      "references": [
+        "MTH-T01-C11-U03",
+        "MTH-T01-C11-U04"
+      ],
+      "prompt": "Three consecutive even integers $n,\\ n+2,\\ n+4$ satisfy the weighted linear equation $2n + 3(n + 2) + (n + 4) = 130$. Find the LARGEST of the three consecutive even integers.",
+      "display": "2n + 3(n + 2) + (n + 4) = 130 \\implies n + 4 = ?",
+      "plainText": "linear synthesis 24 [gamma]",
+      "answerSpec": {
+        "type": "number",
+        "value": "24"
+      },
+      "answerDisplay": "24",
+      "answerPlain": "24",
+      "inputHint": "Enter the exact integer value",
+      "checkpointHint": "Set up the linear equation in terms of the unknown, solve for the base variable, and evaluate the requested target quantity.",
+      "commonTrapTag": "c11-consecutive-parity-step-trap",
+      "steps": [
+        {
+          "latex": "2n + 3n + 6 + n + 4 = 130 \\implies 6n + 10 = 130",
+          "explain": "Expand and combine the variable terms and constants."
+        },
+        {
+          "latex": "6n = 120 \\implies n = 20",
+          "explain": "Solve for the smallest even integer $n$."
+        },
+        {
+          "latex": "n + 4 = 20 + 4 = 24",
+          "explain": "Add 4 to obtain the largest of the three consecutive even integers."
+        }
+      ],
+      "level": 4,
+      "skill": "MTH-PREALG-C11-SYNTHESIS",
+      "verificationLevel": "machine-verified",
+      "id": "Q04",
+      "templateKey": "c11-parametric-consecutive-linear-synthesis",
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "c11-parametric-consecutive-linear-synthesis|direct|linear synthesis # [gamma]",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C11-SYNTHESIS",
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c11-consecutive-parity-step-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c11-parametric-consecutive-linear-synthesis|direct|linear synthesis # [gamma]",
+          "maxAllowedPerFingerprint": 10
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C11-U03",
+          "title": "Solve Equations with Variables and Constants on Both Sides",
+          "notionUrl": "https://www.notion.so/4013818f8ba0816caae9d39f74a0f00d"
+        },
+        {
+          "code": "MTH-T01-C11-U04",
+          "title": "Solve Equations with Fraction or Decimal Coefficients",
+          "notionUrl": "https://www.notion.so/4013818f8ba08102a903dc6acfb4a3c7"
+        }
+      ],
+      "trapValue": "20",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "parametric-root",
+      "category": "Interleaved Synthesis",
+      "context": "Linear Equations: Multi-Condition & Parametric Synthesis",
+      "references": [
+        "MTH-T01-C11-U03",
+        "MTH-T01-C11-U04"
+      ],
+      "prompt": "If $x = 3$ is the solution to the parametric linear equation $k x - 42 = 12$, find the exact value of the parameter $k$.",
+      "display": "k(3) - 42 = 12 \\implies k = ?",
+      "plainText": "linear synthesis 18 [zeta]",
+      "answerSpec": {
+        "type": "number",
+        "value": "18"
+      },
+      "answerDisplay": "18",
+      "answerPlain": "18",
+      "inputHint": "Enter the exact integer value",
+      "checkpointHint": "Set up the linear equation in terms of the unknown, solve for the base variable, and evaluate the requested target quantity.",
+      "commonTrapTag": "c11-consecutive-parity-step-trap",
+      "steps": [
+        {
+          "latex": "3k - 42 = 12",
+          "explain": "Substitute the known solution $x = 3$ into the equation."
+        },
+        {
+          "latex": "3k = 12 + 42 = 54",
+          "explain": "Add the constant term to both sides."
+        },
+        {
+          "latex": "k = \\frac{54}{3} = 18",
+          "explain": "Divide by the coefficient of $k$."
+        }
+      ],
+      "level": 4,
+      "skill": "MTH-PREALG-C11-SYNTHESIS",
+      "verificationLevel": "machine-verified",
+      "id": "Q05",
+      "templateKey": "c11-parametric-consecutive-linear-synthesis",
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "c11-parametric-consecutive-linear-synthesis|parametric-root|linear synthesis # [zeta]",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C11-SYNTHESIS",
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c11-consecutive-parity-step-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c11-parametric-consecutive-linear-synthesis|parametric-root|linear synthesis # [zeta]",
+          "maxAllowedPerFingerprint": 10
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C11-U03",
+          "title": "Solve Equations with Variables and Constants on Both Sides",
+          "notionUrl": "https://www.notion.so/4013818f8ba0816caae9d39f74a0f00d"
+        },
+        {
+          "code": "MTH-T01-C11-U04",
+          "title": "Solve Equations with Fraction or Decimal Coefficients",
+          "notionUrl": "https://www.notion.so/4013818f8ba08102a903dc6acfb4a3c7"
+        }
+      ],
+      "trapValue": "-10",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "direct",
+      "category": "Interleaved Synthesis",
+      "context": "Linear Equations: Multi-Condition & Parametric Synthesis",
+      "references": [
+        "MTH-T01-C11-U03",
+        "MTH-T01-C11-U04"
+      ],
+      "prompt": "Three consecutive even integers $n,\\ n+2,\\ n+4$ satisfy the weighted linear equation $2n + 3(n + 2) + (n + 4) = 238$. Find the LARGEST of the three consecutive even integers.",
+      "display": "2n + 3(n + 2) + (n + 4) = 238 \\implies n + 4 = ?",
+      "plainText": "linear synthesis 42 [alpha]",
+      "answerSpec": {
+        "type": "number",
+        "value": "42"
+      },
+      "answerDisplay": "42",
+      "answerPlain": "42",
+      "inputHint": "Enter the exact integer value",
+      "checkpointHint": "Set up the linear equation in terms of the unknown, solve for the base variable, and evaluate the requested target quantity.",
+      "commonTrapTag": "c11-consecutive-parity-step-trap",
+      "steps": [
+        {
+          "latex": "2n + 3n + 6 + n + 4 = 238 \\implies 6n + 10 = 238",
+          "explain": "Expand and combine the variable terms and constants."
+        },
+        {
+          "latex": "6n = 228 \\implies n = 38",
+          "explain": "Solve for the smallest even integer $n$."
+        },
+        {
+          "latex": "n + 4 = 38 + 4 = 42",
+          "explain": "Add 4 to obtain the largest of the three consecutive even integers."
+        }
+      ],
+      "level": 4,
+      "skill": "MTH-PREALG-C11-SYNTHESIS",
+      "verificationLevel": "machine-verified",
+      "id": "Q06",
+      "templateKey": "c11-parametric-consecutive-linear-synthesis",
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "c11-parametric-consecutive-linear-synthesis|direct|linear synthesis # [alpha]",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C11-SYNTHESIS",
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c11-consecutive-parity-step-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c11-parametric-consecutive-linear-synthesis|direct|linear synthesis # [alpha]",
+          "maxAllowedPerFingerprint": 10
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C11-U03",
+          "title": "Solve Equations with Variables and Constants on Both Sides",
+          "notionUrl": "https://www.notion.so/4013818f8ba0816caae9d39f74a0f00d"
+        },
+        {
+          "code": "MTH-T01-C11-U04",
+          "title": "Solve Equations with Fraction or Decimal Coefficients",
+          "notionUrl": "https://www.notion.so/4013818f8ba08102a903dc6acfb4a3c7"
+        }
+      ],
+      "trapValue": "38",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "direct",
+      "category": "Interleaved Synthesis",
+      "context": "Linear Equations: Multi-Condition & Parametric Synthesis",
+      "references": [
+        "MTH-T01-C11-U03",
+        "MTH-T01-C11-U04"
+      ],
+      "prompt": "Three consecutive even integers $n,\\ n+2,\\ n+4$ satisfy the weighted linear equation $2n + 3(n + 2) + (n + 4) = 274$. Find the LARGEST of the three consecutive even integers.",
+      "display": "2n + 3(n + 2) + (n + 4) = 274 \\implies n + 4 = ?",
+      "plainText": "linear synthesis 48 [epsilon]",
+      "answerSpec": {
+        "type": "number",
+        "value": "48"
+      },
+      "answerDisplay": "48",
+      "answerPlain": "48",
+      "inputHint": "Enter the exact integer value",
+      "checkpointHint": "Set up the linear equation in terms of the unknown, solve for the base variable, and evaluate the requested target quantity.",
+      "commonTrapTag": "c11-consecutive-parity-step-trap",
+      "steps": [
+        {
+          "latex": "2n + 3n + 6 + n + 4 = 274 \\implies 6n + 10 = 274",
+          "explain": "Expand and combine the variable terms and constants."
+        },
+        {
+          "latex": "6n = 264 \\implies n = 44",
+          "explain": "Solve for the smallest even integer $n$."
+        },
+        {
+          "latex": "n + 4 = 44 + 4 = 48",
+          "explain": "Add 4 to obtain the largest of the three consecutive even integers."
+        }
+      ],
+      "level": 4,
+      "skill": "MTH-PREALG-C11-SYNTHESIS",
+      "verificationLevel": "machine-verified",
+      "id": "Q07",
+      "templateKey": "c11-parametric-consecutive-linear-synthesis",
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "c11-parametric-consecutive-linear-synthesis|direct|linear synthesis # [epsilon]",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C11-SYNTHESIS",
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c11-consecutive-parity-step-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c11-parametric-consecutive-linear-synthesis|direct|linear synthesis # [epsilon]",
+          "maxAllowedPerFingerprint": 10
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C11-U03",
+          "title": "Solve Equations with Variables and Constants on Both Sides",
+          "notionUrl": "https://www.notion.so/4013818f8ba0816caae9d39f74a0f00d"
+        },
+        {
+          "code": "MTH-T01-C11-U04",
+          "title": "Solve Equations with Fraction or Decimal Coefficients",
+          "notionUrl": "https://www.notion.so/4013818f8ba08102a903dc6acfb4a3c7"
+        }
+      ],
+      "trapValue": "44",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "parametric-root",
+      "category": "Interleaved Synthesis",
+      "context": "Linear Equations: Multi-Condition & Parametric Synthesis",
+      "references": [
+        "MTH-T01-C11-U03",
+        "MTH-T01-C11-U04"
+      ],
+      "prompt": "If $x = 3$ is the solution to the parametric linear equation $k x - 30 = 12$, find the exact value of the parameter $k$.",
+      "display": "k(3) - 30 = 12 \\implies k = ?",
+      "plainText": "linear synthesis 14 [epsilon]",
+      "answerSpec": {
+        "type": "number",
+        "value": "14"
+      },
+      "answerDisplay": "14",
+      "answerPlain": "14",
+      "inputHint": "Enter the exact integer value",
+      "checkpointHint": "Set up the linear equation in terms of the unknown, solve for the base variable, and evaluate the requested target quantity.",
+      "commonTrapTag": "c11-consecutive-parity-step-trap",
+      "steps": [
+        {
+          "latex": "3k - 30 = 12",
+          "explain": "Substitute the known solution $x = 3$ into the equation."
+        },
+        {
+          "latex": "3k = 12 + 30 = 42",
+          "explain": "Add the constant term to both sides."
+        },
+        {
+          "latex": "k = \\frac{42}{3} = 14",
+          "explain": "Divide by the coefficient of $k$."
+        }
+      ],
+      "level": 4,
+      "skill": "MTH-PREALG-C11-SYNTHESIS",
+      "verificationLevel": "machine-verified",
+      "id": "Q08",
+      "templateKey": "c11-parametric-consecutive-linear-synthesis",
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "c11-parametric-consecutive-linear-synthesis|parametric-root|linear synthesis # [epsilon]",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C11-SYNTHESIS",
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c11-consecutive-parity-step-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c11-parametric-consecutive-linear-synthesis|parametric-root|linear synthesis # [epsilon]",
+          "maxAllowedPerFingerprint": 10
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C11-U03",
+          "title": "Solve Equations with Variables and Constants on Both Sides",
+          "notionUrl": "https://www.notion.so/4013818f8ba0816caae9d39f74a0f00d"
+        },
+        {
+          "code": "MTH-T01-C11-U04",
+          "title": "Solve Equations with Fraction or Decimal Coefficients",
+          "notionUrl": "https://www.notion.so/4013818f8ba08102a903dc6acfb4a3c7"
+        }
+      ],
+      "trapValue": "-6",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "parametric-root",
+      "category": "Interleaved Synthesis",
+      "context": "Linear Equations: Multi-Condition & Parametric Synthesis",
+      "references": [
+        "MTH-T01-C11-U03",
+        "MTH-T01-C11-U04"
+      ],
+      "prompt": "If $x = 3$ is the solution to the parametric linear equation $k x - 30 = 18$, find the exact value of the parameter $k$.",
+      "display": "k(3) - 30 = 18 \\implies k = ?",
+      "plainText": "linear synthesis 16 [beta]",
+      "answerSpec": {
+        "type": "number",
+        "value": "16"
+      },
+      "answerDisplay": "16",
+      "answerPlain": "16",
+      "inputHint": "Enter the exact integer value",
+      "checkpointHint": "Set up the linear equation in terms of the unknown, solve for the base variable, and evaluate the requested target quantity.",
+      "commonTrapTag": "c11-consecutive-parity-step-trap",
+      "steps": [
+        {
+          "latex": "3k - 30 = 18",
+          "explain": "Substitute the known solution $x = 3$ into the equation."
+        },
+        {
+          "latex": "3k = 18 + 30 = 48",
+          "explain": "Add the constant term to both sides."
+        },
+        {
+          "latex": "k = \\frac{48}{3} = 16",
+          "explain": "Divide by the coefficient of $k$."
+        }
+      ],
+      "level": 4,
+      "skill": "MTH-PREALG-C11-SYNTHESIS",
+      "verificationLevel": "machine-verified",
+      "id": "Q09",
+      "templateKey": "c11-parametric-consecutive-linear-synthesis",
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "c11-parametric-consecutive-linear-synthesis|parametric-root|linear synthesis # [beta]",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C11-SYNTHESIS",
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c11-consecutive-parity-step-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c11-parametric-consecutive-linear-synthesis|parametric-root|linear synthesis # [beta]",
+          "maxAllowedPerFingerprint": 10
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C11-U03",
+          "title": "Solve Equations with Variables and Constants on Both Sides",
+          "notionUrl": "https://www.notion.so/4013818f8ba0816caae9d39f74a0f00d"
+        },
+        {
+          "code": "MTH-T01-C11-U04",
+          "title": "Solve Equations with Fraction or Decimal Coefficients",
+          "notionUrl": "https://www.notion.so/4013818f8ba08102a903dc6acfb4a3c7"
+        }
+      ],
+      "trapValue": "-4",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "direct",
+      "category": "Interleaved Synthesis",
+      "context": "Linear Equations: Multi-Condition & Parametric Synthesis",
+      "references": [
+        "MTH-T01-C11-U03",
+        "MTH-T01-C11-U04"
+      ],
+      "prompt": "Three consecutive even integers $n,\\ n+2,\\ n+4$ satisfy the weighted linear equation $2n + 3(n + 2) + (n + 4) = 166$. Find the LARGEST of the three consecutive even integers.",
+      "display": "2n + 3(n + 2) + (n + 4) = 166 \\implies n + 4 = ?",
+      "plainText": "linear synthesis 30 [zeta]",
+      "answerSpec": {
+        "type": "number",
+        "value": "30"
+      },
+      "answerDisplay": "30",
+      "answerPlain": "30",
+      "inputHint": "Enter the exact integer value",
+      "checkpointHint": "Set up the linear equation in terms of the unknown, solve for the base variable, and evaluate the requested target quantity.",
+      "commonTrapTag": "c11-consecutive-parity-step-trap",
+      "steps": [
+        {
+          "latex": "2n + 3n + 6 + n + 4 = 166 \\implies 6n + 10 = 166",
+          "explain": "Expand and combine the variable terms and constants."
+        },
+        {
+          "latex": "6n = 156 \\implies n = 26",
+          "explain": "Solve for the smallest even integer $n$."
+        },
+        {
+          "latex": "n + 4 = 26 + 4 = 30",
+          "explain": "Add 4 to obtain the largest of the three consecutive even integers."
+        }
+      ],
+      "level": 4,
+      "skill": "MTH-PREALG-C11-SYNTHESIS",
+      "verificationLevel": "machine-verified",
+      "id": "Q10",
+      "templateKey": "c11-parametric-consecutive-linear-synthesis",
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "c11-parametric-consecutive-linear-synthesis|direct|linear synthesis # [zeta]",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C11-SYNTHESIS",
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c11-consecutive-parity-step-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c11-parametric-consecutive-linear-synthesis|direct|linear synthesis # [zeta]",
+          "maxAllowedPerFingerprint": 10
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C11-U03",
+          "title": "Solve Equations with Variables and Constants on Both Sides",
+          "notionUrl": "https://www.notion.so/4013818f8ba0816caae9d39f74a0f00d"
+        },
+        {
+          "code": "MTH-T01-C11-U04",
+          "title": "Solve Equations with Fraction or Decimal Coefficients",
+          "notionUrl": "https://www.notion.so/4013818f8ba08102a903dc6acfb4a3c7"
+        }
+      ],
+      "trapValue": "26",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "direct",
+      "category": "Interleaved Synthesis",
+      "context": "Linear Equations: Multi-Condition & Parametric Synthesis",
+      "references": [
+        "MTH-T01-C11-U03",
+        "MTH-T01-C11-U04"
+      ],
+      "prompt": "Three consecutive even integers $n,\\ n+2,\\ n+4$ satisfy the weighted linear equation $2n + 3(n + 2) + (n + 4) = 226$. Find the LARGEST of the three consecutive even integers.",
+      "display": "2n + 3(n + 2) + (n + 4) = 226 \\implies n + 4 = ?",
+      "plainText": "linear synthesis 40 [beta]",
+      "answerSpec": {
+        "type": "number",
+        "value": "40"
+      },
+      "answerDisplay": "40",
+      "answerPlain": "40",
+      "inputHint": "Enter the exact integer value",
+      "checkpointHint": "Set up the linear equation in terms of the unknown, solve for the base variable, and evaluate the requested target quantity.",
+      "commonTrapTag": "c11-consecutive-parity-step-trap",
+      "steps": [
+        {
+          "latex": "2n + 3n + 6 + n + 4 = 226 \\implies 6n + 10 = 226",
+          "explain": "Expand and combine the variable terms and constants."
+        },
+        {
+          "latex": "6n = 216 \\implies n = 36",
+          "explain": "Solve for the smallest even integer $n$."
+        },
+        {
+          "latex": "n + 4 = 36 + 4 = 40",
+          "explain": "Add 4 to obtain the largest of the three consecutive even integers."
+        }
+      ],
+      "level": 4,
+      "skill": "MTH-PREALG-C11-SYNTHESIS",
+      "verificationLevel": "machine-verified",
+      "id": "Q11",
+      "templateKey": "c11-parametric-consecutive-linear-synthesis",
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "c11-parametric-consecutive-linear-synthesis|direct|linear synthesis # [beta]",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C11-SYNTHESIS",
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c11-consecutive-parity-step-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c11-parametric-consecutive-linear-synthesis|direct|linear synthesis # [beta]",
+          "maxAllowedPerFingerprint": 10
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C11-U03",
+          "title": "Solve Equations with Variables and Constants on Both Sides",
+          "notionUrl": "https://www.notion.so/4013818f8ba0816caae9d39f74a0f00d"
+        },
+        {
+          "code": "MTH-T01-C11-U04",
+          "title": "Solve Equations with Fraction or Decimal Coefficients",
+          "notionUrl": "https://www.notion.so/4013818f8ba08102a903dc6acfb4a3c7"
+        }
+      ],
+      "trapValue": "36",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "parametric-root",
+      "category": "Interleaved Synthesis",
+      "context": "Linear Equations: Multi-Condition & Parametric Synthesis",
+      "references": [
+        "MTH-T01-C11-U03",
+        "MTH-T01-C11-U04"
+      ],
+      "prompt": "If $x = 3$ is the solution to the parametric linear equation $k x - 27 = 24$, find the exact value of the parameter $k$.",
+      "display": "k(3) - 27 = 24 \\implies k = ?",
+      "plainText": "linear synthesis 17 [gamma]",
+      "answerSpec": {
+        "type": "number",
+        "value": "17"
+      },
+      "answerDisplay": "17",
+      "answerPlain": "17",
+      "inputHint": "Enter the exact integer value",
+      "checkpointHint": "Set up the linear equation in terms of the unknown, solve for the base variable, and evaluate the requested target quantity.",
+      "commonTrapTag": "c11-consecutive-parity-step-trap",
+      "steps": [
+        {
+          "latex": "3k - 27 = 24",
+          "explain": "Substitute the known solution $x = 3$ into the equation."
+        },
+        {
+          "latex": "3k = 24 + 27 = 51",
+          "explain": "Add the constant term to both sides."
+        },
+        {
+          "latex": "k = \\frac{51}{3} = 17",
+          "explain": "Divide by the coefficient of $k$."
+        }
+      ],
+      "level": 4,
+      "skill": "MTH-PREALG-C11-SYNTHESIS",
+      "verificationLevel": "machine-verified",
+      "id": "Q12",
+      "templateKey": "c11-parametric-consecutive-linear-synthesis",
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "c11-parametric-consecutive-linear-synthesis|parametric-root|linear synthesis # [gamma]",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C11-SYNTHESIS",
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c11-consecutive-parity-step-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c11-parametric-consecutive-linear-synthesis|parametric-root|linear synthesis # [gamma]",
+          "maxAllowedPerFingerprint": 10
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C11-U03",
+          "title": "Solve Equations with Variables and Constants on Both Sides",
+          "notionUrl": "https://www.notion.so/4013818f8ba0816caae9d39f74a0f00d"
+        },
+        {
+          "code": "MTH-T01-C11-U04",
+          "title": "Solve Equations with Fraction or Decimal Coefficients",
+          "notionUrl": "https://www.notion.so/4013818f8ba08102a903dc6acfb4a3c7"
+        }
+      ],
+      "trapValue": "-1",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "parametric-root",
+      "category": "Interleaved Synthesis",
+      "context": "Linear Equations: Multi-Condition & Parametric Synthesis",
+      "references": [
+        "MTH-T01-C11-U03",
+        "MTH-T01-C11-U04"
+      ],
+      "prompt": "If $x = 3$ is the solution to the parametric linear equation $k x - 18 = 12$, find the exact value of the parameter $k$.",
+      "display": "k(3) - 18 = 12 \\implies k = ?",
+      "plainText": "linear synthesis 10 [delta]",
+      "answerSpec": {
+        "type": "number",
+        "value": "10"
+      },
+      "answerDisplay": "10",
+      "answerPlain": "10",
+      "inputHint": "Enter the exact integer value",
+      "checkpointHint": "Set up the linear equation in terms of the unknown, solve for the base variable, and evaluate the requested target quantity.",
+      "commonTrapTag": "c11-consecutive-parity-step-trap",
+      "steps": [
+        {
+          "latex": "3k - 18 = 12",
+          "explain": "Substitute the known solution $x = 3$ into the equation."
+        },
+        {
+          "latex": "3k = 12 + 18 = 30",
+          "explain": "Add the constant term to both sides."
+        },
+        {
+          "latex": "k = \\frac{30}{3} = 10",
+          "explain": "Divide by the coefficient of $k$."
+        }
+      ],
+      "level": 4,
+      "skill": "MTH-PREALG-C11-SYNTHESIS",
+      "verificationLevel": "machine-verified",
+      "id": "Q13",
+      "templateKey": "c11-parametric-consecutive-linear-synthesis",
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "c11-parametric-consecutive-linear-synthesis|parametric-root|linear synthesis # [delta]",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C11-SYNTHESIS",
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c11-consecutive-parity-step-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c11-parametric-consecutive-linear-synthesis|parametric-root|linear synthesis # [delta]",
+          "maxAllowedPerFingerprint": 10
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C11-U03",
+          "title": "Solve Equations with Variables and Constants on Both Sides",
+          "notionUrl": "https://www.notion.so/4013818f8ba0816caae9d39f74a0f00d"
+        },
+        {
+          "code": "MTH-T01-C11-U04",
+          "title": "Solve Equations with Fraction or Decimal Coefficients",
+          "notionUrl": "https://www.notion.so/4013818f8ba08102a903dc6acfb4a3c7"
+        }
+      ],
+      "trapValue": "-2",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "direct",
+      "category": "Interleaved Synthesis",
+      "context": "Linear Equations: Multi-Condition & Parametric Synthesis",
+      "references": [
+        "MTH-T01-C11-U03",
+        "MTH-T01-C11-U04"
+      ],
+      "prompt": "Three consecutive even integers $n,\\ n+2,\\ n+4$ satisfy the weighted linear equation $2n + 3(n + 2) + (n + 4) = 226$. Find the LARGEST of the three consecutive even integers.",
+      "display": "2n + 3(n + 2) + (n + 4) = 226 \\implies n + 4 = ?",
+      "plainText": "linear synthesis 40 [gamma]",
+      "answerSpec": {
+        "type": "number",
+        "value": "40"
+      },
+      "answerDisplay": "40",
+      "answerPlain": "40",
+      "inputHint": "Enter the exact integer value",
+      "checkpointHint": "Set up the linear equation in terms of the unknown, solve for the base variable, and evaluate the requested target quantity.",
+      "commonTrapTag": "c11-consecutive-parity-step-trap",
+      "steps": [
+        {
+          "latex": "2n + 3n + 6 + n + 4 = 226 \\implies 6n + 10 = 226",
+          "explain": "Expand and combine the variable terms and constants."
+        },
+        {
+          "latex": "6n = 216 \\implies n = 36",
+          "explain": "Solve for the smallest even integer $n$."
+        },
+        {
+          "latex": "n + 4 = 36 + 4 = 40",
+          "explain": "Add 4 to obtain the largest of the three consecutive even integers."
+        }
+      ],
+      "level": 4,
+      "skill": "MTH-PREALG-C11-SYNTHESIS",
+      "verificationLevel": "machine-verified",
+      "id": "Q14",
+      "templateKey": "c11-parametric-consecutive-linear-synthesis",
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "c11-parametric-consecutive-linear-synthesis|direct|linear synthesis # [gamma]",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C11-SYNTHESIS",
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c11-consecutive-parity-step-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c11-parametric-consecutive-linear-synthesis|direct|linear synthesis # [gamma]",
+          "maxAllowedPerFingerprint": 10
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C11-U03",
+          "title": "Solve Equations with Variables and Constants on Both Sides",
+          "notionUrl": "https://www.notion.so/4013818f8ba0816caae9d39f74a0f00d"
+        },
+        {
+          "code": "MTH-T01-C11-U04",
+          "title": "Solve Equations with Fraction or Decimal Coefficients",
+          "notionUrl": "https://www.notion.so/4013818f8ba08102a903dc6acfb4a3c7"
+        }
+      ],
+      "trapValue": "36",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "parametric-root",
+      "category": "Interleaved Synthesis",
+      "context": "Linear Equations: Multi-Condition & Parametric Synthesis",
+      "references": [
+        "MTH-T01-C11-U03",
+        "MTH-T01-C11-U04"
+      ],
+      "prompt": "If $x = 3$ is the solution to the parametric linear equation $k x - 24 = 21$, find the exact value of the parameter $k$.",
+      "display": "k(3) - 24 = 21 \\implies k = ?",
+      "plainText": "linear synthesis 15 [delta]",
+      "answerSpec": {
+        "type": "number",
+        "value": "15"
+      },
+      "answerDisplay": "15",
+      "answerPlain": "15",
+      "inputHint": "Enter the exact integer value",
+      "checkpointHint": "Set up the linear equation in terms of the unknown, solve for the base variable, and evaluate the requested target quantity.",
+      "commonTrapTag": "c11-consecutive-parity-step-trap",
+      "steps": [
+        {
+          "latex": "3k - 24 = 21",
+          "explain": "Substitute the known solution $x = 3$ into the equation."
+        },
+        {
+          "latex": "3k = 21 + 24 = 45",
+          "explain": "Add the constant term to both sides."
+        },
+        {
+          "latex": "k = \\frac{45}{3} = 15",
+          "explain": "Divide by the coefficient of $k$."
+        }
+      ],
+      "level": 4,
+      "skill": "MTH-PREALG-C11-SYNTHESIS",
+      "verificationLevel": "machine-verified",
+      "id": "Q15",
+      "templateKey": "c11-parametric-consecutive-linear-synthesis",
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "c11-parametric-consecutive-linear-synthesis|parametric-root|linear synthesis # [delta]",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C11-SYNTHESIS",
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c11-consecutive-parity-step-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c11-parametric-consecutive-linear-synthesis|parametric-root|linear synthesis # [delta]",
+          "maxAllowedPerFingerprint": 10
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C11-U03",
+          "title": "Solve Equations with Variables and Constants on Both Sides",
+          "notionUrl": "https://www.notion.so/4013818f8ba0816caae9d39f74a0f00d"
+        },
+        {
+          "code": "MTH-T01-C11-U04",
+          "title": "Solve Equations with Fraction or Decimal Coefficients",
+          "notionUrl": "https://www.notion.so/4013818f8ba08102a903dc6acfb4a3c7"
+        }
+      ],
+      "trapValue": "-1",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "direct",
+      "category": "Interleaved Synthesis",
+      "context": "Linear Equations: Multi-Condition & Parametric Synthesis",
+      "references": [
+        "MTH-T01-C11-U03",
+        "MTH-T01-C11-U04"
+      ],
+      "prompt": "Three consecutive even integers $n,\\ n+2,\\ n+4$ satisfy the weighted linear equation $2n + 3(n + 2) + (n + 4) = 226$. Find the LARGEST of the three consecutive even integers.",
+      "display": "2n + 3(n + 2) + (n + 4) = 226 \\implies n + 4 = ?",
+      "plainText": "linear synthesis 40 [gamma]",
+      "answerSpec": {
+        "type": "number",
+        "value": "40"
+      },
+      "answerDisplay": "40",
+      "answerPlain": "40",
+      "inputHint": "Enter the exact integer value",
+      "checkpointHint": "Set up the linear equation in terms of the unknown, solve for the base variable, and evaluate the requested target quantity.",
+      "commonTrapTag": "c11-consecutive-parity-step-trap",
+      "steps": [
+        {
+          "latex": "2n + 3n + 6 + n + 4 = 226 \\implies 6n + 10 = 226",
+          "explain": "Expand and combine the variable terms and constants."
+        },
+        {
+          "latex": "6n = 216 \\implies n = 36",
+          "explain": "Solve for the smallest even integer $n$."
+        },
+        {
+          "latex": "n + 4 = 36 + 4 = 40",
+          "explain": "Add 4 to obtain the largest of the three consecutive even integers."
+        }
+      ],
+      "level": 4,
+      "skill": "MTH-PREALG-C11-SYNTHESIS",
+      "verificationLevel": "machine-verified",
+      "id": "Q16",
+      "templateKey": "c11-parametric-consecutive-linear-synthesis",
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "c11-parametric-consecutive-linear-synthesis|direct|linear synthesis # [gamma]",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C11-SYNTHESIS",
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c11-consecutive-parity-step-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c11-parametric-consecutive-linear-synthesis|direct|linear synthesis # [gamma]",
+          "maxAllowedPerFingerprint": 10
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C11-U03",
+          "title": "Solve Equations with Variables and Constants on Both Sides",
+          "notionUrl": "https://www.notion.so/4013818f8ba0816caae9d39f74a0f00d"
+        },
+        {
+          "code": "MTH-T01-C11-U04",
+          "title": "Solve Equations with Fraction or Decimal Coefficients",
+          "notionUrl": "https://www.notion.so/4013818f8ba08102a903dc6acfb4a3c7"
+        }
+      ],
+      "trapValue": "36",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "parametric-root",
+      "category": "Interleaved Synthesis",
+      "context": "Linear Equations: Multi-Condition & Parametric Synthesis",
+      "references": [
+        "MTH-T01-C11-U03",
+        "MTH-T01-C11-U04"
+      ],
+      "prompt": "If $x = 3$ is the solution to the parametric linear equation $k x - 39 = 15$, find the exact value of the parameter $k$.",
+      "display": "k(3) - 39 = 15 \\implies k = ?",
+      "plainText": "linear synthesis 18 [delta]",
+      "answerSpec": {
+        "type": "number",
+        "value": "18"
+      },
+      "answerDisplay": "18",
+      "answerPlain": "18",
+      "inputHint": "Enter the exact integer value",
+      "checkpointHint": "Set up the linear equation in terms of the unknown, solve for the base variable, and evaluate the requested target quantity.",
+      "commonTrapTag": "c11-consecutive-parity-step-trap",
+      "steps": [
+        {
+          "latex": "3k - 39 = 15",
+          "explain": "Substitute the known solution $x = 3$ into the equation."
+        },
+        {
+          "latex": "3k = 15 + 39 = 54",
+          "explain": "Add the constant term to both sides."
+        },
+        {
+          "latex": "k = \\frac{54}{3} = 18",
+          "explain": "Divide by the coefficient of $k$."
+        }
+      ],
+      "level": 4,
+      "skill": "MTH-PREALG-C11-SYNTHESIS",
+      "verificationLevel": "machine-verified",
+      "id": "Q17",
+      "templateKey": "c11-parametric-consecutive-linear-synthesis",
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "c11-parametric-consecutive-linear-synthesis|parametric-root|linear synthesis # [delta]",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C11-SYNTHESIS",
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c11-consecutive-parity-step-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c11-parametric-consecutive-linear-synthesis|parametric-root|linear synthesis # [delta]",
+          "maxAllowedPerFingerprint": 10
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C11-U03",
+          "title": "Solve Equations with Variables and Constants on Both Sides",
+          "notionUrl": "https://www.notion.so/4013818f8ba0816caae9d39f74a0f00d"
+        },
+        {
+          "code": "MTH-T01-C11-U04",
+          "title": "Solve Equations with Fraction or Decimal Coefficients",
+          "notionUrl": "https://www.notion.so/4013818f8ba08102a903dc6acfb4a3c7"
+        }
+      ],
+      "trapValue": "-8",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "direct",
+      "category": "Interleaved Synthesis",
+      "context": "Linear Equations: Multi-Condition & Parametric Synthesis",
+      "references": [
+        "MTH-T01-C11-U03",
+        "MTH-T01-C11-U04"
+      ],
+      "prompt": "Three consecutive even integers $n,\\ n+2,\\ n+4$ satisfy the weighted linear equation $2n + 3(n + 2) + (n + 4) = 262$. Find the LARGEST of the three consecutive even integers.",
+      "display": "2n + 3(n + 2) + (n + 4) = 262 \\implies n + 4 = ?",
+      "plainText": "linear synthesis 46 [beta]",
+      "answerSpec": {
+        "type": "number",
+        "value": "46"
+      },
+      "answerDisplay": "46",
+      "answerPlain": "46",
+      "inputHint": "Enter the exact integer value",
+      "checkpointHint": "Set up the linear equation in terms of the unknown, solve for the base variable, and evaluate the requested target quantity.",
+      "commonTrapTag": "c11-consecutive-parity-step-trap",
+      "steps": [
+        {
+          "latex": "2n + 3n + 6 + n + 4 = 262 \\implies 6n + 10 = 262",
+          "explain": "Expand and combine the variable terms and constants."
+        },
+        {
+          "latex": "6n = 252 \\implies n = 42",
+          "explain": "Solve for the smallest even integer $n$."
+        },
+        {
+          "latex": "n + 4 = 42 + 4 = 46",
+          "explain": "Add 4 to obtain the largest of the three consecutive even integers."
+        }
+      ],
+      "level": 4,
+      "skill": "MTH-PREALG-C11-SYNTHESIS",
+      "verificationLevel": "machine-verified",
+      "id": "Q18",
+      "templateKey": "c11-parametric-consecutive-linear-synthesis",
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "c11-parametric-consecutive-linear-synthesis|direct|linear synthesis # [beta]",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C11-SYNTHESIS",
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c11-consecutive-parity-step-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c11-parametric-consecutive-linear-synthesis|direct|linear synthesis # [beta]",
+          "maxAllowedPerFingerprint": 10
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C11-U03",
+          "title": "Solve Equations with Variables and Constants on Both Sides",
+          "notionUrl": "https://www.notion.so/4013818f8ba0816caae9d39f74a0f00d"
+        },
+        {
+          "code": "MTH-T01-C11-U04",
+          "title": "Solve Equations with Fraction or Decimal Coefficients",
+          "notionUrl": "https://www.notion.so/4013818f8ba08102a903dc6acfb4a3c7"
+        }
+      ],
+      "trapValue": "42",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "parametric-root",
+      "category": "Interleaved Synthesis",
+      "context": "Linear Equations: Multi-Condition & Parametric Synthesis",
+      "references": [
+        "MTH-T01-C11-U03",
+        "MTH-T01-C11-U04"
+      ],
+      "prompt": "If $x = 3$ is the solution to the parametric linear equation $k x - 36 = 24$, find the exact value of the parameter $k$.",
+      "display": "k(3) - 36 = 24 \\implies k = ?",
+      "plainText": "linear synthesis 20 [beta]",
+      "answerSpec": {
+        "type": "number",
+        "value": "20"
+      },
+      "answerDisplay": "20",
+      "answerPlain": "20",
+      "inputHint": "Enter the exact integer value",
+      "checkpointHint": "Set up the linear equation in terms of the unknown, solve for the base variable, and evaluate the requested target quantity.",
+      "commonTrapTag": "c11-consecutive-parity-step-trap",
+      "steps": [
+        {
+          "latex": "3k - 36 = 24",
+          "explain": "Substitute the known solution $x = 3$ into the equation."
+        },
+        {
+          "latex": "3k = 24 + 36 = 60",
+          "explain": "Add the constant term to both sides."
+        },
+        {
+          "latex": "k = \\frac{60}{3} = 20",
+          "explain": "Divide by the coefficient of $k$."
+        }
+      ],
+      "level": 4,
+      "skill": "MTH-PREALG-C11-SYNTHESIS",
+      "verificationLevel": "machine-verified",
+      "id": "Q19",
+      "templateKey": "c11-parametric-consecutive-linear-synthesis",
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "c11-parametric-consecutive-linear-synthesis|parametric-root|linear synthesis # [beta]",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C11-SYNTHESIS",
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c11-consecutive-parity-step-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c11-parametric-consecutive-linear-synthesis|parametric-root|linear synthesis # [beta]",
+          "maxAllowedPerFingerprint": 10
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C11-U03",
+          "title": "Solve Equations with Variables and Constants on Both Sides",
+          "notionUrl": "https://www.notion.so/4013818f8ba0816caae9d39f74a0f00d"
+        },
+        {
+          "code": "MTH-T01-C11-U04",
+          "title": "Solve Equations with Fraction or Decimal Coefficients",
+          "notionUrl": "https://www.notion.so/4013818f8ba08102a903dc6acfb4a3c7"
+        }
+      ],
+      "trapValue": "-4",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "form": "direct",
+      "category": "Interleaved Synthesis",
+      "context": "Linear Equations: Multi-Condition & Parametric Synthesis",
+      "references": [
+        "MTH-T01-C11-U03",
+        "MTH-T01-C11-U04"
+      ],
+      "prompt": "Three consecutive even integers $n,\\ n+2,\\ n+4$ satisfy the weighted linear equation $2n + 3(n + 2) + (n + 4) = 130$. Find the LARGEST of the three consecutive even integers.",
+      "display": "2n + 3(n + 2) + (n + 4) = 130 \\implies n + 4 = ?",
+      "plainText": "linear synthesis 24 [epsilon]",
+      "answerSpec": {
+        "type": "number",
+        "value": "24"
+      },
+      "answerDisplay": "24",
+      "answerPlain": "24",
+      "inputHint": "Enter the exact integer value",
+      "checkpointHint": "Set up the linear equation in terms of the unknown, solve for the base variable, and evaluate the requested target quantity.",
+      "commonTrapTag": "c11-consecutive-parity-step-trap",
+      "steps": [
+        {
+          "latex": "2n + 3n + 6 + n + 4 = 130 \\implies 6n + 10 = 130",
+          "explain": "Expand and combine the variable terms and constants."
+        },
+        {
+          "latex": "6n = 120 \\implies n = 20",
+          "explain": "Solve for the smallest even integer $n$."
+        },
+        {
+          "latex": "n + 4 = 20 + 4 = 24",
+          "explain": "Add 4 to obtain the largest of the three consecutive even integers."
+        }
+      ],
+      "level": 4,
+      "skill": "MTH-PREALG-C11-SYNTHESIS",
+      "verificationLevel": "machine-verified",
+      "id": "Q20",
+      "templateKey": "c11-parametric-consecutive-linear-synthesis",
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "c11-parametric-consecutive-linear-synthesis|direct|linear synthesis # [epsilon]",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": "MTH-PREALG-C11-SYNTHESIS",
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c11-consecutive-parity-step-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "machine-verified",
+        "weakDistractors": 0,
+        "G3": {
+          "passed": true,
+          "fingerprint": "c11-parametric-consecutive-linear-synthesis|direct|linear synthesis # [epsilon]",
+          "maxAllowedPerFingerprint": 10
+        }
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C11-U03",
+          "title": "Solve Equations with Variables and Constants on Both Sides",
+          "notionUrl": "https://www.notion.so/4013818f8ba0816caae9d39f74a0f00d"
+        },
+        {
+          "code": "MTH-T01-C11-U04",
+          "title": "Solve Equations with Fraction or Decimal Coefficients",
+          "notionUrl": "https://www.notion.so/4013818f8ba08102a903dc6acfb4a3c7"
+        }
+      ],
+      "trapValue": "20",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    }
+  ],
+  "sessionSummary": {
+    "practiceStatus": "Ready",
+    "score": 0,
+    "maxScore": 20,
+    "accuracyPct": 0,
+    "mistakeCategories": [],
+    "divergedStepsSummary": "",
+    "attemptDate": null,
+    "syncedToNotionAt": null,
+    "notionPageId": null
+  },
+  "localFilePath": "/Users/Joseph/Documents/antigravity/brave-borg/drills/data/MTH-T01-C11/DRL-MTH-T01-C11-02.json"
+}
