@@ -54,8 +54,12 @@ Never invent property values, relationships, learning progress, resource content
 - Add or improve content while respecting the existing design system.
 - Generated content must remain editable by the user.
 
-### 5. Strict English-Only Content Rule
-All generated content across Topic, Chapter, Unit, and Resource pages (including section headings, conceptual explanations, worked examples, `Practice Guide`, `Active Recall`, and `My Implementation & Mistake Log` prompts) must be written strictly in **English**. Never leave non-English (e.g., Thai) text inside Notion learning pages. *(Conversations with the user in chat remain in polite Thai).*
+### 5. Strict 100% English-Only Content & Web UI Invariant
+- **Notion Learning Pages:** All generated content across Topic, Chapter, Unit, and Resource pages (including section headings, conceptual explanations, worked examples, `Practice Guide`, `Active Recall`, and `My Implementation & Mistake Log` prompts) must be written strictly in **100% English**.
+- **Practice Studio Web Application (`practice-studio/src/**/*`):** Every UI element in the web application — including buttons, headers, badges, filter tabs, input placeholders, tooltips (`title` / `aria-label`), empty states, status banners, Pre-Sync Review labels, and code comments — **MUST be written strictly in 100% English**.
+- **Zero Non-English UI Tolerance:** Never insert Thai (`[\u0E00-\u0E7F]`) or other non-English strings into React components, TypeScript files, or drill JSON metadata. *(Only direct conversational responses with the user in the chat interface remain in polite Thai).*
+- **Lucide Icons Only (Zero Emoji UI Invariant):** Never use Unicode emojis inside Practice Studio UI components or Notion sync UI controls; always use semantic vector icons from `lucide-react`.
+- **Mandatory `<FormattedText />` Rendering for Inline Math & Code Tokens:** Every dynamic text field rendered in Practice Studio (`problem.prompt`, `problem.context`, `answerSpec.options[].label`, `steps[].explain`, `checkpointHint`, and **especially `mistakeTags[].label`**) **MUST** be rendered via `<FormattedText text={...} />` (never raw `{t.label}` JSX interpolation) so that inline KaTeX math (`$...$`), code tokens (`` `...` ``), and Concept Vault mentions (`[[CON-...]]`) always render properly without leaking raw LaTeX delimiters.
 
 ### 6. Strict Zero-Leak Placeholder & Hint Policy (Anti-Spoiler Invariant)
 - **Zero-Leak Invariant:** When authoring drills, interactive exercises, code tracing tasks, or active recall questions, `inputHint`, `placeholder`, and intermediate hints (`checkpointHint`) must **NEVER** contain the correct answer, any substring or synonym of the accepted answers, or an example (`e.g.`) that gives away the solution.

@@ -82,7 +82,11 @@
         "userCode": "",
         "score": 1,
         "divergedStep": null,
-        "mistakes": [],
+        "mistakes": [
+          "angle-complement-vs-supplement"
+        ],
+        "mistakeNote": "",
+        "skipped": false,
         "lastCheck": {
           "verdict": "correct",
           "message": "Correct.",
@@ -135,6 +139,8 @@
         "score": 1,
         "divergedStep": null,
         "mistakes": [],
+        "mistakeNote": "",
+        "skipped": false,
         "lastCheck": {
           "verdict": "correct",
           "message": "Correct.",
@@ -182,12 +188,31 @@
         }
       ],
       "state": {
-        "userInput": "",
+        "userInput": "9",
         "userCode": "",
-        "score": null,
+        "score": 0,
         "divergedStep": null,
-        "mistakes": [],
-        "lastCheck": null,
+        "mistakes": [
+          "arithmetic-slip"
+        ],
+        "mistakeNote": "",
+        "skipped": false,
+        "lastCheck": {
+          "verdict": "incorrect",
+          "message": "Not equal to the verified answer.",
+          "components": [
+            {
+              "label": "Value",
+              "ok": false
+            }
+          ],
+          "diagnostics": [
+            {
+              "code": "off_by_factor",
+              "message": "Your answer differs from the correct value by a constant factor of $\\frac{3}{10}$."
+            }
+          ]
+        },
         "lastTestReport": null
       }
     },
@@ -228,12 +253,21 @@
         }
       ],
       "state": {
-        "userInput": "",
+        "userInput": "(Skipped)",
         "userCode": "",
-        "score": null,
+        "score": 0,
         "divergedStep": null,
-        "mistakes": [],
-        "lastCheck": null,
+        "mistakes": [
+          "triangle-sum-180"
+        ],
+        "mistakeNote": "",
+        "skipped": true,
+        "lastCheck": {
+          "verdict": "skipped",
+          "message": "Skipped (Concept Gap / Unsure) — Review step-by-step solution below to solidify mental model.",
+          "components": [],
+          "diagnostics": []
+        },
         "lastTestReport": null
       }
     },
@@ -270,12 +304,21 @@
         }
       ],
       "state": {
-        "userInput": "",
+        "userInput": "(Skipped)",
         "userCode": "",
-        "score": null,
+        "score": 0,
         "divergedStep": null,
-        "mistakes": [],
-        "lastCheck": null,
+        "mistakes": [
+          "triangle-sum-180"
+        ],
+        "mistakeNote": "",
+        "skipped": true,
+        "lastCheck": {
+          "verdict": "skipped",
+          "message": "Skipped (Concept Gap / Unsure) — Review step-by-step solution below to solidify mental model.",
+          "components": [],
+          "diagnostics": []
+        },
         "lastTestReport": null
       }
     },
@@ -316,12 +359,22 @@
         }
       ],
       "state": {
-        "userInput": "",
+        "userInput": "(Skipped)",
         "userCode": "",
-        "score": null,
+        "score": 0,
         "divergedStep": null,
-        "mistakes": [],
-        "lastCheck": null,
+        "mistakes": [
+          "angle-complement-vs-supplement",
+          "triangle-sum-180"
+        ],
+        "mistakeNote": "",
+        "skipped": true,
+        "lastCheck": {
+          "verdict": "skipped",
+          "message": "Skipped (Concept Gap / Unsure) — Review step-by-step solution below to solidify mental model.",
+          "components": [],
+          "diagnostics": []
+        },
         "lastTestReport": null
       }
     },
@@ -371,6 +424,8 @@
         "score": null,
         "divergedStep": null,
         "mistakes": [],
+        "mistakeNote": "",
+        "skipped": false,
         "lastCheck": null,
         "lastTestReport": null
       }
@@ -421,6 +476,8 @@
         "score": null,
         "divergedStep": null,
         "mistakes": [],
+        "mistakeNote": "",
+        "skipped": false,
         "lastCheck": null,
         "lastTestReport": null
       }
@@ -471,6 +528,8 @@
         "score": null,
         "divergedStep": null,
         "mistakes": [],
+        "mistakeNote": "",
+        "skipped": false,
         "lastCheck": null,
         "lastTestReport": null
       }
@@ -521,10 +580,12 @@
         "score": null,
         "divergedStep": null,
         "mistakes": [],
+        "mistakeNote": "",
+        "skipped": false,
         "lastCheck": null,
         "lastTestReport": null
       }
     }
   ],
-  "localFilePath": "drills/data/MTH-T01-C12-U03/DRL-MTH-T01-C12-04.json"
+  "localFilePath": "/Users/Joseph/Documents/antigravity/brave-borg/drills/data/MTH-T01-C12-U03/DRL-MTH-T01-C12-04.json"
 }
