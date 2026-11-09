@@ -1,907 +1,731 @@
 {
-  "schemaVersion": "2.0-math",
-  "drillId": "DRL-MTH-T01-C13-02",
-  "subject": "MATH",
   "unitCode": "MTH-T01-C13",
   "unitTitle": "Polynomials",
-  "chapterCode": "MTH-T01-C13",
-  "topicCode": "MTH-T01",
-  "unitNotionUrl": "https://www.notion.so/4003818f8ba080599a7bc4f58dde1acc",
-  "createdAt": "2026-11-08 20:18:03",
-  "config": {
-    "questionCount": 20,
-    "difficulty": "4",
-    "difficultyMode": "Level 4 - Applied Synthesis"
-  },
-  "mistakeTags": [
-    {
-      "id": "c13-polynomial-subtraction-sign-slip",
-      "label": "Failed to distribute minus sign to all terms of subtracted polynomial",
-      "name": "Polynomial Subtraction Sign Slip",
-      "autoFrom": [
-        "whole_sign_flip"
-      ]
-    },
-    {
-      "id": "c13-foil-middle-term-omission",
-      "label": "Omitted or miscalculated outer/inner cross terms in FOIL binomial multiplication",
-      "name": "FOIL Cross-Term Error",
-      "autoFrom": []
-    },
-    {
-      "id": "c13-freshman-dream-square-trap",
-      "label": "Squared binomial as (ax - b)^2 = a^2 x^2 + b^2, omitting -2abx cross term",
-      "name": "Freshman's Dream Binomial Square Trap",
-      "autoFrom": []
-    },
-    {
-      "id": "c13-difference-of-squares-frame-trap",
-      "label": "Subtracted inner dimension linearly instead of subtracting inner polynomial area",
-      "name": "Polynomial Frame Area Trap",
-      "autoFrom": []
-    }
-  ],
+  "topicTitle": "Polynomials",
+  "drillId": "DRL-MTH-T01-C13-02",
+  "sourceAttribution": "OpenStax Prealgebra 2e, CC BY 4.0",
   "problems": [
     {
-      "form": "quotient-identity",
-      "category": "Interleaved Synthesis",
-      "context": "Polynomials: Special Products & Invariant Area Synthesis",
-      "references": [
-        "MTH-T01-C13-U03",
-        "MTH-T01-C13-U04"
-      ],
-      "prompt": "Simplify the polynomial identity $(7x + 6)^2 - (7x - 6)^2$ and evaluate the resulting expression at $x = 5$.",
-      "display": "(7x + 6)^2 - (7x - 6)^2 \\quad \\text{at } x = 5",
-      "plainText": "poly identity synthesis 7*x and 6",
-      "answerSpec": {
-        "type": "number",
-        "value": "840"
-      },
-      "answerDisplay": "840",
-      "answerPlain": "840",
-      "inputHint": "Enter the exact integer value",
-      "checkpointHint": "Expand each product using the difference of squares or square of a binomial identity, then cancel opposing terms.",
-      "commonTrapTag": "c13-difference-of-squares-frame-trap",
-      "steps": [
-        {
-          "latex": "(7x + 6)^2 = 49x^2 + 84x + 36, \\quad (7x - 6)^2 = 49x^2 - 84x + 36",
-          "explain": "Expand both binomial squares."
-        },
-        {
-          "latex": "(7x + 6)^2 - (7x - 6)^2 = 168x",
-          "explain": "Subtracting cancels the squared terms and doubles the middle term to $4abx$."
-        },
-        {
-          "latex": "168(5) = 840",
-          "explain": "Evaluate at $x = 5$."
-        }
-      ],
-      "level": 4,
-      "skill": "MTH-PREALG-C13-SYNTHESIS",
-      "verificationLevel": "machine-verified",
       "id": "Q01",
-      "templateKey": "c13-polynomial-identity-area-synthesis",
-      "levelLabel": "Level 4 - Applied Synthesis",
-      "fingerprint": "c13-polynomial-identity-area-synthesis|quotient-identity|poly identity synthesis #*x and #",
+      "verificationLevel": "partial",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c13-evaluating-polynomials",
+      "context": "braking_distance_speed_curve",
+      "prompt": "Evaluate the linear polynomial $7x + 15$ for $x = 4$, with coefficient $7$, variable value $4$, and constant $15$. Calculate $7 \\times 4 + 15$.",
+      "display": "P(4) = 7(4) + 15",
+      "plainText": "7*4 + 15 = p",
+      "answerDisplay": "43",
+      "givens": {
+        "coeff": 7,
+        "x_val": 4,
+        "const": 15
+      },
+      "answerPlain": "43",
+      "answerSpec": {
+        "type": "number",
+        "value": "43",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c13-subtraction-instead-of-addition-trap",
+      "trapDerivation": "7 * 4 - 15",
+      "trapValue": "13",
+      "verify": {
+        "source": "43",
+        "trapValue": "13"
+      },
+      "checkpointHint": "Multiply the coefficient by the given variable value first then add the constant term",
+      "references": [
+        "MTH-T01-C13"
+      ],
+      "steps": [
+        {
+          "latex": "7 \\times 4 = 28",
+          "explain": "Multiply coefficient 7 by x value 4."
+        },
+        {
+          "latex": "28 + 15 = 43",
+          "explain": "Add constant 15 to get 43.",
+          "val": "43"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c13-subtraction-instead-of-addition-trap|direct|#*# + # = p",
       "qualityGates": {
         "G1": {
           "passed": true,
-          "archetype": "math-standard"
+          "archetype": "problem-solving"
         },
         "G2": {
           "passed": true,
-          "level": 4,
-          "stepCount": 3,
+          "level": 1,
+          "stepCount": 2,
           "hasTrapOrFlaw": true,
-          "skill": "MTH-PREALG-C13-SYNTHESIS",
+          "skill": null,
           "stepRange": [
-            2,
-            6
+            1,
+            3
           ]
         },
         "G4": {
           "passed": true,
-          "trapTag": "c13-difference-of-squares-frame-trap",
+          "trapTag": "c13-subtraction-instead-of-addition-trap",
           "trapValueVerified": true,
           "weakDistractors": 0,
           "provenanceDistractors": 0
         },
         "G6": {
           "passed": true,
-          "fieldsChecked": 13
+          "fieldsChecked": 10
         },
         "antiLeak": {
           "passed": true,
-          "hintsChecked": 2
+          "hintsChecked": 1
         },
-        "verificationLevel": "machine-verified",
-        "weakDistractors": 0,
-        "G3": {
-          "passed": true,
-          "fingerprint": "c13-polynomial-identity-area-synthesis|quotient-identity|poly identity synthesis #*x and #",
-          "maxAllowedPerFingerprint": 10
-        }
-      },
-      "referenceBadges": [
-        {
-          "code": "MTH-T01-C13-U03",
-          "title": "Multiply Polynomials",
-          "notionUrl": "https://www.notion.so/4003818f8ba080459e39e600af05ce5d"
-        },
-        {
-          "code": "MTH-T01-C13-U04",
-          "title": "Divide Monomials",
-          "notionUrl": "https://www.notion.so/4003818f8ba080e2af7bd0a4659a493b"
-        }
-      ],
-      "trapValue": "420",
-      "state": {
-        "userInput": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "lastCheck": null
+        "verificationLevel": "partial",
+        "weakDistractors": 0
       }
     },
     {
-      "form": "direct",
-      "category": "Interleaved Synthesis",
-      "context": "Polynomials: Special Products & Invariant Area Synthesis",
-      "references": [
-        "MTH-T01-C13-U03",
-        "MTH-T01-C13-U04"
-      ],
-      "prompt": "An outer rectangular solar panel has length $(4x + 6)$ and width $(4x - 6)$. An inner cutout has length $(4x + 8)$ and width $(4x - 8)$. Find the constant difference $(\\text{Area}_{\\text{outer}} - \\text{Area}_{\\text{inner}})$, which is independent of $x$.",
-      "display": "(4x + 6)(4x - 6) - (4x + 8)(4x - 8)",
-      "plainText": "poly identity synthesis 4*x and 6",
-      "answerSpec": {
-        "type": "number",
-        "value": "28"
-      },
-      "answerDisplay": "28",
-      "answerPlain": "28",
-      "inputHint": "Enter the exact integer value",
-      "checkpointHint": "Expand each product using the difference of squares or square of a binomial identity, then cancel opposing terms.",
-      "commonTrapTag": "c13-difference-of-squares-frame-trap",
-      "steps": [
-        {
-          "latex": "\\text{Area}_{\\text{outer}} = (4x + 6)(4x - 6) = 16x^2 - 36",
-          "explain": "Expand the outer product using the difference of squares."
-        },
-        {
-          "latex": "\\text{Area}_{\\text{inner}} = (4x + 8)(4x - 8) = 16x^2 - 64",
-          "explain": "Expand the inner product using the difference of squares."
-        },
-        {
-          "latex": "(16x^2 - 36) - (16x^2 - 64) = 64 - 36 = 28",
-          "explain": "Subtract the two polynomials so the quadratic terms cancel."
-        }
-      ],
-      "level": 4,
-      "skill": "MTH-PREALG-C13-SYNTHESIS",
-      "verificationLevel": "machine-verified",
       "id": "Q02",
-      "templateKey": "c13-polynomial-identity-area-synthesis",
-      "levelLabel": "Level 4 - Applied Synthesis",
-      "fingerprint": "c13-polynomial-identity-area-synthesis|direct|poly identity synthesis #*x and #",
+      "verificationLevel": "partial",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c13-monomial-multiplication",
+      "context": "display_pixel_buffer_scaling",
+      "prompt": "Multiply the coefficients in the product of linear monomials $(3x) \\times (8x)$ with coefficients $3$ and $8$. What is the resulting coefficient of $x^2$ by evaluating $3 \\times 8$?",
+      "display": "(3x)(8x) = ?x^2",
+      "plainText": "3 * 8 = k",
+      "answerDisplay": "24",
+      "givens": {
+        "c1": 3,
+        "c2": 8
+      },
+      "answerPlain": "24",
+      "answerSpec": {
+        "type": "number",
+        "value": "24",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c13-add-coefficients-instead-of-multiply-trap",
+      "trapDerivation": "3 + 8",
+      "trapValue": "11",
+      "verify": {
+        "source": "24",
+        "trapValue": "11"
+      },
+      "checkpointHint": "Multiply the numerical coefficients together to find the leading coefficient",
+      "references": [
+        "MTH-T01-C13"
+      ],
+      "steps": [
+        {
+          "latex": "(3)(8)(x \\cdot x) = 24x^2",
+          "explain": "Multiply coefficients 3 and 8 to obtain 24."
+        },
+        {
+          "latex": "24",
+          "explain": "The coefficient of x^2 is 24.",
+          "val": "24"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c13-add-coefficients-instead-of-multiply-trap|direct|# * # = k",
       "qualityGates": {
         "G1": {
           "passed": true,
-          "archetype": "math-standard"
+          "archetype": "problem-solving"
         },
         "G2": {
           "passed": true,
-          "level": 4,
-          "stepCount": 3,
+          "level": 1,
+          "stepCount": 2,
           "hasTrapOrFlaw": true,
-          "skill": "MTH-PREALG-C13-SYNTHESIS",
+          "skill": null,
           "stepRange": [
-            2,
-            6
+            1,
+            3
           ]
         },
         "G4": {
           "passed": true,
-          "trapTag": "c13-difference-of-squares-frame-trap",
+          "trapTag": "c13-add-coefficients-instead-of-multiply-trap",
           "trapValueVerified": true,
           "weakDistractors": 0,
           "provenanceDistractors": 0
         },
         "G6": {
           "passed": true,
-          "fieldsChecked": 13
+          "fieldsChecked": 10
         },
         "antiLeak": {
           "passed": true,
-          "hintsChecked": 2
+          "hintsChecked": 1
         },
-        "verificationLevel": "machine-verified",
-        "weakDistractors": 0,
-        "G3": {
-          "passed": true,
-          "fingerprint": "c13-polynomial-identity-area-synthesis|direct|poly identity synthesis #*x and #",
-          "maxAllowedPerFingerprint": 10
-        }
-      },
-      "referenceBadges": [
-        {
-          "code": "MTH-T01-C13-U03",
-          "title": "Multiply Polynomials",
-          "notionUrl": "https://www.notion.so/4003818f8ba080459e39e600af05ce5d"
-        },
-        {
-          "code": "MTH-T01-C13-U04",
-          "title": "Divide Monomials",
-          "notionUrl": "https://www.notion.so/4003818f8ba080e2af7bd0a4659a493b"
-        }
-      ],
-      "trapValue": "2",
-      "state": {
-        "userInput": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "lastCheck": null
+        "verificationLevel": "partial",
+        "weakDistractors": 0
       }
     },
     {
-      "form": "quotient-identity",
-      "category": "Interleaved Synthesis",
-      "context": "Polynomials: Special Products & Invariant Area Synthesis",
-      "references": [
-        "MTH-T01-C13-U03",
-        "MTH-T01-C13-U04"
-      ],
-      "prompt": "Simplify the polynomial identity $(7x + 4)^2 - (7x - 4)^2$ and evaluate the resulting expression at $x = 6$.",
-      "display": "(7x + 4)^2 - (7x - 4)^2 \\quad \\text{at } x = 6",
-      "plainText": "poly identity synthesis 7*x and 4",
-      "answerSpec": {
-        "type": "number",
-        "value": "672"
-      },
-      "answerDisplay": "672",
-      "answerPlain": "672",
-      "inputHint": "Enter the exact integer value",
-      "checkpointHint": "Expand each product using the difference of squares or square of a binomial identity, then cancel opposing terms.",
-      "commonTrapTag": "c13-difference-of-squares-frame-trap",
-      "steps": [
-        {
-          "latex": "(7x + 4)^2 = 49x^2 + 56x + 16, \\quad (7x - 4)^2 = 49x^2 - 56x + 16",
-          "explain": "Expand both binomial squares."
-        },
-        {
-          "latex": "(7x + 4)^2 - (7x - 4)^2 = 112x",
-          "explain": "Subtracting cancels the squared terms and doubles the middle term to $4abx$."
-        },
-        {
-          "latex": "112(6) = 672",
-          "explain": "Evaluate at $x = 6$."
-        }
-      ],
-      "level": 4,
-      "skill": "MTH-PREALG-C13-SYNTHESIS",
-      "verificationLevel": "machine-verified",
       "id": "Q03",
-      "templateKey": "c13-polynomial-identity-area-synthesis",
-      "levelLabel": "Level 4 - Applied Synthesis",
-      "fingerprint": "c13-polynomial-identity-area-synthesis|quotient-identity|poly identity synthesis #*x and #",
+      "verificationLevel": "partial",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c13-adding-polynomials",
+      "context": "superposition_signal_harmonics",
+      "prompt": "Add the like quadratic terms in $(5x^2 + 12) + (3x^2 + 7)$ with leading coefficients $5$ and $3$, and constants $12$ and $7$. Calculate the combined leading coefficient using $5 + 3$.",
+      "display": "(5x^2 + 12) + (3x^2 + 7) = ?x^2 + 19",
+      "plainText": "5 + 3 = k",
+      "answerDisplay": "8",
+      "givens": {
+        "c1": 5,
+        "k1": 12,
+        "c2": 3,
+        "k2": 7
+      },
+      "answerPlain": "8",
+      "answerSpec": {
+        "type": "number",
+        "value": "8",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c13-multiply-coefficients-when-adding-trap",
+      "trapDerivation": "5 * 3",
+      "trapValue": "15",
+      "verify": {
+        "source": "8",
+        "trapValue": "15"
+      },
+      "checkpointHint": "Sum the numerical coefficients of the terms sharing the identical power of x",
+      "references": [
+        "MTH-T01-C13"
+      ],
+      "steps": [
+        {
+          "latex": "(5 + 3)x^2 = 8x^2",
+          "explain": "Add coefficients of x^2."
+        },
+        {
+          "latex": "8",
+          "explain": "Combined leading coefficient is 8.",
+          "val": "8"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c13-multiply-coefficients-when-adding-trap|direct|# + # = k",
       "qualityGates": {
         "G1": {
           "passed": true,
-          "archetype": "math-standard"
+          "archetype": "problem-solving"
         },
         "G2": {
           "passed": true,
-          "level": 4,
-          "stepCount": 3,
+          "level": 2,
+          "stepCount": 2,
           "hasTrapOrFlaw": true,
-          "skill": "MTH-PREALG-C13-SYNTHESIS",
+          "skill": null,
           "stepRange": [
             2,
-            6
+            4
           ]
         },
         "G4": {
           "passed": true,
-          "trapTag": "c13-difference-of-squares-frame-trap",
+          "trapTag": "c13-multiply-coefficients-when-adding-trap",
           "trapValueVerified": true,
           "weakDistractors": 0,
           "provenanceDistractors": 0
         },
         "G6": {
           "passed": true,
-          "fieldsChecked": 13
+          "fieldsChecked": 10
         },
         "antiLeak": {
           "passed": true,
-          "hintsChecked": 2
+          "hintsChecked": 1
         },
-        "verificationLevel": "machine-verified",
-        "weakDistractors": 0,
-        "G3": {
-          "passed": true,
-          "fingerprint": "c13-polynomial-identity-area-synthesis|quotient-identity|poly identity synthesis #*x and #",
-          "maxAllowedPerFingerprint": 10
-        }
-      },
-      "referenceBadges": [
-        {
-          "code": "MTH-T01-C13-U03",
-          "title": "Multiply Polynomials",
-          "notionUrl": "https://www.notion.so/4003818f8ba080459e39e600af05ce5d"
-        },
-        {
-          "code": "MTH-T01-C13-U04",
-          "title": "Divide Monomials",
-          "notionUrl": "https://www.notion.so/4003818f8ba080e2af7bd0a4659a493b"
-        }
-      ],
-      "trapValue": "336",
-      "state": {
-        "userInput": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "lastCheck": null
+        "verificationLevel": "partial",
+        "weakDistractors": 0
       }
     },
     {
-      "form": "direct",
-      "category": "Interleaved Synthesis",
-      "context": "Polynomials: Special Products & Invariant Area Synthesis",
-      "references": [
-        "MTH-T01-C13-U03",
-        "MTH-T01-C13-U04"
-      ],
-      "prompt": "An outer rectangular solar panel has length $(4x + 5)$ and width $(4x - 5)$. An inner cutout has length $(4x + 7)$ and width $(4x - 7)$. Find the constant difference $(\\text{Area}_{\\text{outer}} - \\text{Area}_{\\text{inner}})$, which is independent of $x$.",
-      "display": "(4x + 5)(4x - 5) - (4x + 7)(4x - 7)",
-      "plainText": "poly identity synthesis 4*x and 5",
-      "answerSpec": {
-        "type": "number",
-        "value": "24"
-      },
-      "answerDisplay": "24",
-      "answerPlain": "24",
-      "inputHint": "Enter the exact integer value",
-      "checkpointHint": "Expand each product using the difference of squares or square of a binomial identity, then cancel opposing terms.",
-      "commonTrapTag": "c13-difference-of-squares-frame-trap",
-      "steps": [
-        {
-          "latex": "\\text{Area}_{\\text{outer}} = (4x + 5)(4x - 5) = 16x^2 - 25",
-          "explain": "Expand the outer product using the difference of squares."
-        },
-        {
-          "latex": "\\text{Area}_{\\text{inner}} = (4x + 7)(4x - 7) = 16x^2 - 49",
-          "explain": "Expand the inner product using the difference of squares."
-        },
-        {
-          "latex": "(16x^2 - 25) - (16x^2 - 49) = 49 - 25 = 24",
-          "explain": "Subtract the two polynomials so the quadratic terms cancel."
-        }
-      ],
-      "level": 4,
-      "skill": "MTH-PREALG-C13-SYNTHESIS",
-      "verificationLevel": "machine-verified",
       "id": "Q04",
-      "templateKey": "c13-polynomial-identity-area-synthesis",
-      "levelLabel": "Level 4 - Applied Synthesis",
-      "fingerprint": "c13-polynomial-identity-area-synthesis|direct|poly identity synthesis #*x and #",
+      "verificationLevel": "partial",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c13-subtracting-polynomials",
+      "context": "financial_profit_margin_curve",
+      "prompt": "Subtract the polynomials $(9x + 20) - (4x + 6)$ with linear coefficients $9$ and $4$, and constants $20$ and $6$. Calculate the constant term of the difference using $20 - 6$.",
+      "display": "(9x + 20) - (4x + 6) = 5x + ?",
+      "plainText": "20 - 6 = k",
+      "answerDisplay": "14",
+      "givens": {
+        "c1": 9,
+        "k1": 20,
+        "c2": 4,
+        "k2": 6
+      },
+      "answerPlain": "14",
+      "answerSpec": {
+        "type": "number",
+        "value": "14",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c13-add-constants-when-subtracting-trap",
+      "trapDerivation": "20 + 6",
+      "trapValue": "26",
+      "verify": {
+        "source": "14",
+        "trapValue": "26"
+      },
+      "checkpointHint": "Subtract the second constant term from the first constant term",
+      "references": [
+        "MTH-T01-C13"
+      ],
+      "steps": [
+        {
+          "latex": "(20) - (6) = 20 - 6",
+          "explain": "Distribute negative sign to constant 6."
+        },
+        {
+          "latex": "20 - 6 = 14",
+          "explain": "Subtract 6 from 20 to get 14.",
+          "val": "14"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c13-add-constants-when-subtracting-trap|direct|# - # = k",
       "qualityGates": {
         "G1": {
           "passed": true,
-          "archetype": "math-standard"
+          "archetype": "problem-solving"
         },
         "G2": {
           "passed": true,
-          "level": 4,
-          "stepCount": 3,
+          "level": 2,
+          "stepCount": 2,
           "hasTrapOrFlaw": true,
-          "skill": "MTH-PREALG-C13-SYNTHESIS",
+          "skill": null,
           "stepRange": [
             2,
-            6
+            4
           ]
         },
         "G4": {
           "passed": true,
-          "trapTag": "c13-difference-of-squares-frame-trap",
+          "trapTag": "c13-add-constants-when-subtracting-trap",
           "trapValueVerified": true,
           "weakDistractors": 0,
           "provenanceDistractors": 0
         },
         "G6": {
           "passed": true,
-          "fieldsChecked": 13
+          "fieldsChecked": 10
         },
         "antiLeak": {
           "passed": true,
-          "hintsChecked": 2
+          "hintsChecked": 1
         },
-        "verificationLevel": "machine-verified",
-        "weakDistractors": 0,
-        "G3": {
-          "passed": true,
-          "fingerprint": "c13-polynomial-identity-area-synthesis|direct|poly identity synthesis #*x and #",
-          "maxAllowedPerFingerprint": 10
-        }
-      },
-      "referenceBadges": [
-        {
-          "code": "MTH-T01-C13-U03",
-          "title": "Multiply Polynomials",
-          "notionUrl": "https://www.notion.so/4003818f8ba080459e39e600af05ce5d"
-        },
-        {
-          "code": "MTH-T01-C13-U04",
-          "title": "Divide Monomials",
-          "notionUrl": "https://www.notion.so/4003818f8ba080e2af7bd0a4659a493b"
-        }
-      ],
-      "trapValue": "2",
-      "state": {
-        "userInput": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "lastCheck": null
+        "verificationLevel": "partial",
+        "weakDistractors": 0
       }
     },
     {
-      "form": "direct",
-      "category": "Interleaved Synthesis",
-      "context": "Polynomials: Special Products & Invariant Area Synthesis",
-      "references": [
-        "MTH-T01-C13-U03",
-        "MTH-T01-C13-U04"
-      ],
-      "prompt": "An outer rectangular solar panel has length $(6x + 5)$ and width $(6x - 5)$. An inner cutout has length $(6x + 7)$ and width $(6x - 7)$. Find the constant difference $(\\text{Area}_{\\text{outer}} - \\text{Area}_{\\text{inner}})$, which is independent of $x$.",
-      "display": "(6x + 5)(6x - 5) - (6x + 7)(6x - 7)",
-      "plainText": "poly identity synthesis 6*x and 5",
-      "answerSpec": {
-        "type": "number",
-        "value": "24"
-      },
-      "answerDisplay": "24",
-      "answerPlain": "24",
-      "inputHint": "Enter the exact integer value",
-      "checkpointHint": "Expand each product using the difference of squares or square of a binomial identity, then cancel opposing terms.",
-      "commonTrapTag": "c13-difference-of-squares-frame-trap",
-      "steps": [
-        {
-          "latex": "\\text{Area}_{\\text{outer}} = (6x + 5)(6x - 5) = 36x^2 - 25",
-          "explain": "Expand the outer product using the difference of squares."
-        },
-        {
-          "latex": "\\text{Area}_{\\text{inner}} = (6x + 7)(6x - 7) = 36x^2 - 49",
-          "explain": "Expand the inner product using the difference of squares."
-        },
-        {
-          "latex": "(36x^2 - 25) - (36x^2 - 49) = 49 - 25 = 24",
-          "explain": "Subtract the two polynomials so the quadratic terms cancel."
-        }
-      ],
-      "level": 4,
-      "skill": "MTH-PREALG-C13-SYNTHESIS",
-      "verificationLevel": "machine-verified",
       "id": "Q05",
-      "templateKey": "c13-polynomial-identity-area-synthesis",
-      "levelLabel": "Level 4 - Applied Synthesis",
-      "fingerprint": "c13-polynomial-identity-area-synthesis|direct|poly identity synthesis #*x and #",
+      "verificationLevel": "partial",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c13-monomial-times-polynomial",
+      "context": "rectangular_warehouse_extension",
+      "prompt": "Expand the product $6x \\times (2x + 5)$ with outer coefficient $6$, inner coefficient $2$, and constant $5$. Calculate the linear term coefficient using $6 \\times 5$.",
+      "display": "6x(2x + 5) = 12x^2 + ?x",
+      "plainText": "6 * 5 = c",
+      "answerDisplay": "30",
+      "givens": {
+        "outer": 6,
+        "inner_coeff": 2,
+        "const": 5
+      },
+      "answerPlain": "30",
+      "answerSpec": {
+        "type": "number",
+        "value": "30",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c13-add-instead-of-multiply-monomial-trap",
+      "trapDerivation": "6 + 5",
+      "trapValue": "11",
+      "verify": {
+        "source": "30",
+        "trapValue": "11"
+      },
+      "checkpointHint": "Distribute the outer monomial to the constant term by multiplying the two numbers",
+      "references": [
+        "MTH-T01-C13"
+      ],
+      "steps": [
+        {
+          "latex": "6x \\times 5 = (6 \\times 5)x",
+          "explain": "Multiply outer coefficient 6 by inner constant 5."
+        },
+        {
+          "latex": "30x",
+          "explain": "The linear coefficient is 30.",
+          "val": "30"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c13-add-instead-of-multiply-monomial-trap|direct|# * # = c",
       "qualityGates": {
         "G1": {
           "passed": true,
-          "archetype": "math-standard"
+          "archetype": "problem-solving"
         },
         "G2": {
           "passed": true,
-          "level": 4,
-          "stepCount": 3,
+          "level": 2,
+          "stepCount": 2,
           "hasTrapOrFlaw": true,
-          "skill": "MTH-PREALG-C13-SYNTHESIS",
+          "skill": null,
           "stepRange": [
             2,
-            6
+            4
           ]
         },
         "G4": {
           "passed": true,
-          "trapTag": "c13-difference-of-squares-frame-trap",
+          "trapTag": "c13-add-instead-of-multiply-monomial-trap",
           "trapValueVerified": true,
           "weakDistractors": 0,
           "provenanceDistractors": 0
         },
         "G6": {
           "passed": true,
-          "fieldsChecked": 13
+          "fieldsChecked": 10
         },
         "antiLeak": {
           "passed": true,
-          "hintsChecked": 2
+          "hintsChecked": 1
         },
-        "verificationLevel": "machine-verified",
-        "weakDistractors": 0,
-        "G3": {
-          "passed": true,
-          "fingerprint": "c13-polynomial-identity-area-synthesis|direct|poly identity synthesis #*x and #",
-          "maxAllowedPerFingerprint": 10
-        }
-      },
-      "referenceBadges": [
-        {
-          "code": "MTH-T01-C13-U03",
-          "title": "Multiply Polynomials",
-          "notionUrl": "https://www.notion.so/4003818f8ba080459e39e600af05ce5d"
-        },
-        {
-          "code": "MTH-T01-C13-U04",
-          "title": "Divide Monomials",
-          "notionUrl": "https://www.notion.so/4003818f8ba080e2af7bd0a4659a493b"
-        }
-      ],
-      "trapValue": "2",
-      "state": {
-        "userInput": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "lastCheck": null
+        "verificationLevel": "partial",
+        "weakDistractors": 0
       }
     },
     {
-      "form": "quotient-identity",
-      "category": "Interleaved Synthesis",
-      "context": "Polynomials: Special Products & Invariant Area Synthesis",
-      "references": [
-        "MTH-T01-C13-U03",
-        "MTH-T01-C13-U04"
-      ],
-      "prompt": "Simplify the polynomial identity $(3x + 4)^2 - (3x - 4)^2$ and evaluate the resulting expression at $x = 6$.",
-      "display": "(3x + 4)^2 - (3x - 4)^2 \\quad \\text{at } x = 6",
-      "plainText": "poly identity synthesis 3*x and 4",
-      "answerSpec": {
-        "type": "number",
-        "value": "288"
-      },
-      "answerDisplay": "288",
-      "answerPlain": "288",
-      "inputHint": "Enter the exact integer value",
-      "checkpointHint": "Expand each product using the difference of squares or square of a binomial identity, then cancel opposing terms.",
-      "commonTrapTag": "c13-difference-of-squares-frame-trap",
-      "steps": [
-        {
-          "latex": "(3x + 4)^2 = 9x^2 + 24x + 16, \\quad (3x - 4)^2 = 9x^2 - 24x + 16",
-          "explain": "Expand both binomial squares."
-        },
-        {
-          "latex": "(3x + 4)^2 - (3x - 4)^2 = 48x",
-          "explain": "Subtracting cancels the squared terms and doubles the middle term to $4abx$."
-        },
-        {
-          "latex": "48(6) = 288",
-          "explain": "Evaluate at $x = 6$."
-        }
-      ],
-      "level": 4,
-      "skill": "MTH-PREALG-C13-SYNTHESIS",
-      "verificationLevel": "machine-verified",
       "id": "Q06",
-      "templateKey": "c13-polynomial-identity-area-synthesis",
-      "levelLabel": "Level 4 - Applied Synthesis",
-      "fingerprint": "c13-polynomial-identity-area-synthesis|quotient-identity|poly identity synthesis #*x and #",
+      "verificationLevel": "partial",
+      "level": 3,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c13-multiplying-binomials-foil",
+      "context": "land_parcel_boundary_expansion",
+      "prompt": "Expand the binomial product $(x + 4)(x + 7)$ with constants $4$ and $7$. Calculate the middle linear coefficient using $4 + 7$.",
+      "display": "(x + 4)(x + 7) = x^2 + ?x + 28",
+      "plainText": "4 + 7 = b",
+      "answerDisplay": "11",
+      "givens": {
+        "k1": 4,
+        "k2": 7
+      },
+      "answerPlain": "11",
+      "answerSpec": {
+        "type": "number",
+        "value": "11",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c13-multiply-instead-of-add-middle-trap",
+      "trapDerivation": "4 * 7",
+      "trapValue": "28",
+      "verify": {
+        "source": "11",
+        "trapValue": "28"
+      },
+      "checkpointHint": "Sum the outer and inner product constants to find the linear term coefficient",
+      "references": [
+        "MTH-T01-C13"
+      ],
+      "steps": [
+        {
+          "latex": "7x + 4x = (7 + 4)x",
+          "explain": "Combine outer product 7x and inner product 4x."
+        },
+        {
+          "latex": "11x",
+          "explain": "The middle linear coefficient is 11.",
+          "val": "11"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c13-multiply-instead-of-add-middle-trap|direct|# + # = b",
       "qualityGates": {
         "G1": {
           "passed": true,
-          "archetype": "math-standard"
+          "archetype": "problem-solving"
         },
         "G2": {
           "passed": true,
-          "level": 4,
-          "stepCount": 3,
+          "level": 3,
+          "stepCount": 2,
           "hasTrapOrFlaw": true,
-          "skill": "MTH-PREALG-C13-SYNTHESIS",
+          "skill": null,
           "stepRange": [
             2,
-            6
+            5
           ]
         },
         "G4": {
           "passed": true,
-          "trapTag": "c13-difference-of-squares-frame-trap",
+          "trapTag": "c13-multiply-instead-of-add-middle-trap",
           "trapValueVerified": true,
           "weakDistractors": 0,
           "provenanceDistractors": 0
         },
         "G6": {
           "passed": true,
-          "fieldsChecked": 13
+          "fieldsChecked": 10
         },
         "antiLeak": {
           "passed": true,
-          "hintsChecked": 2
+          "hintsChecked": 1
         },
-        "verificationLevel": "machine-verified",
-        "weakDistractors": 0,
-        "G3": {
-          "passed": true,
-          "fingerprint": "c13-polynomial-identity-area-synthesis|quotient-identity|poly identity synthesis #*x and #",
-          "maxAllowedPerFingerprint": 10
-        }
-      },
-      "referenceBadges": [
-        {
-          "code": "MTH-T01-C13-U03",
-          "title": "Multiply Polynomials",
-          "notionUrl": "https://www.notion.so/4003818f8ba080459e39e600af05ce5d"
-        },
-        {
-          "code": "MTH-T01-C13-U04",
-          "title": "Divide Monomials",
-          "notionUrl": "https://www.notion.so/4003818f8ba080e2af7bd0a4659a493b"
-        }
-      ],
-      "trapValue": "144",
-      "state": {
-        "userInput": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "lastCheck": null
+        "verificationLevel": "partial",
+        "weakDistractors": 0
       }
     },
     {
-      "form": "direct",
-      "category": "Interleaved Synthesis",
-      "context": "Polynomials: Special Products & Invariant Area Synthesis",
-      "references": [
-        "MTH-T01-C13-U03",
-        "MTH-T01-C13-U04"
-      ],
-      "prompt": "An outer rectangular solar panel has length $(4x + 3)$ and width $(4x - 3)$. An inner cutout has length $(4x + 5)$ and width $(4x - 5)$. Find the constant difference $(\\text{Area}_{\\text{outer}} - \\text{Area}_{\\text{inner}})$, which is independent of $x$.",
-      "display": "(4x + 3)(4x - 3) - (4x + 5)(4x - 5)",
-      "plainText": "poly identity synthesis 4*x and 3",
-      "answerSpec": {
-        "type": "number",
-        "value": "16"
-      },
-      "answerDisplay": "16",
-      "answerPlain": "16",
-      "inputHint": "Enter the exact integer value",
-      "checkpointHint": "Expand each product using the difference of squares or square of a binomial identity, then cancel opposing terms.",
-      "commonTrapTag": "c13-difference-of-squares-frame-trap",
-      "steps": [
-        {
-          "latex": "\\text{Area}_{\\text{outer}} = (4x + 3)(4x - 3) = 16x^2 - 9",
-          "explain": "Expand the outer product using the difference of squares."
-        },
-        {
-          "latex": "\\text{Area}_{\\text{inner}} = (4x + 5)(4x - 5) = 16x^2 - 25",
-          "explain": "Expand the inner product using the difference of squares."
-        },
-        {
-          "latex": "(16x^2 - 9) - (16x^2 - 25) = 25 - 9 = 16",
-          "explain": "Subtract the two polynomials so the quadratic terms cancel."
-        }
-      ],
-      "level": 4,
-      "skill": "MTH-PREALG-C13-SYNTHESIS",
-      "verificationLevel": "machine-verified",
       "id": "Q07",
-      "templateKey": "c13-polynomial-identity-area-synthesis",
-      "levelLabel": "Level 4 - Applied Synthesis",
-      "fingerprint": "c13-polynomial-identity-area-synthesis|direct|poly identity synthesis #*x and #",
+      "verificationLevel": "partial",
+      "level": 3,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c13-special-products-difference-squares",
+      "context": "optical_conjugate_filter_transmission",
+      "prompt": "Expand the difference of squares product $(2x + 7)(2x - 7)$ with linear coefficient $2$ and constant $7$. Calculate the subtracted constant term $7 \\times 7$ using coefficient $2$ and constant $7$.",
+      "display": "(2x + 7)(2x - 7) = 4x^2 - ?",
+      "plainText": "7 * 7 = c",
+      "answerDisplay": "49",
+      "givens": {
+        "coeff": 2,
+        "const": 7
+      },
+      "answerPlain": "49",
+      "answerSpec": {
+        "type": "number",
+        "value": "49",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c13-double-instead-of-square-constant-trap",
+      "trapDerivation": "7 * 2",
+      "trapValue": "14",
+      "verify": {
+        "source": "49",
+        "trapValue": "14"
+      },
+      "checkpointHint": "Square the second term rather than multiplying it by two",
+      "references": [
+        "MTH-T01-C13"
+      ],
+      "steps": [
+        {
+          "latex": "(2x)^2 - (7)^2 = 4x^2 - 49",
+          "explain": "Apply difference of squares formula (a+b)(a-b) = a^2 - b^2."
+        },
+        {
+          "latex": "7^2 = 49",
+          "explain": "Square constant 7 to obtain subtracted constant 49.",
+          "val": "49"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c13-double-instead-of-square-constant-trap|direct|# * # = c",
       "qualityGates": {
         "G1": {
           "passed": true,
-          "archetype": "math-standard"
+          "archetype": "problem-solving"
         },
         "G2": {
           "passed": true,
-          "level": 4,
-          "stepCount": 3,
+          "level": 3,
+          "stepCount": 2,
           "hasTrapOrFlaw": true,
-          "skill": "MTH-PREALG-C13-SYNTHESIS",
+          "skill": null,
           "stepRange": [
             2,
-            6
+            5
           ]
         },
         "G4": {
           "passed": true,
-          "trapTag": "c13-difference-of-squares-frame-trap",
+          "trapTag": "c13-double-instead-of-square-constant-trap",
           "trapValueVerified": true,
           "weakDistractors": 0,
           "provenanceDistractors": 0
         },
         "G6": {
           "passed": true,
-          "fieldsChecked": 13
+          "fieldsChecked": 10
         },
         "antiLeak": {
           "passed": true,
-          "hintsChecked": 2
+          "hintsChecked": 1
         },
-        "verificationLevel": "machine-verified",
-        "weakDistractors": 0,
-        "G3": {
-          "passed": true,
-          "fingerprint": "c13-polynomial-identity-area-synthesis|direct|poly identity synthesis #*x and #",
-          "maxAllowedPerFingerprint": 10
-        }
-      },
-      "referenceBadges": [
-        {
-          "code": "MTH-T01-C13-U03",
-          "title": "Multiply Polynomials",
-          "notionUrl": "https://www.notion.so/4003818f8ba080459e39e600af05ce5d"
-        },
-        {
-          "code": "MTH-T01-C13-U04",
-          "title": "Divide Monomials",
-          "notionUrl": "https://www.notion.so/4003818f8ba080e2af7bd0a4659a493b"
-        }
-      ],
-      "trapValue": "2",
-      "state": {
-        "userInput": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "lastCheck": null
+        "verificationLevel": "partial",
+        "weakDistractors": 0
       }
     },
     {
-      "form": "quotient-identity",
-      "category": "Interleaved Synthesis",
-      "context": "Polynomials: Special Products & Invariant Area Synthesis",
-      "references": [
-        "MTH-T01-C13-U03",
-        "MTH-T01-C13-U04"
-      ],
-      "prompt": "Simplify the polynomial identity $(3x + 3)^2 - (3x - 3)^2$ and evaluate the resulting expression at $x = 9$.",
-      "display": "(3x + 3)^2 - (3x - 3)^2 \\quad \\text{at } x = 9",
-      "plainText": "poly identity synthesis 3*x and 3",
-      "answerSpec": {
-        "type": "number",
-        "value": "324"
-      },
-      "answerDisplay": "324",
-      "answerPlain": "324",
-      "inputHint": "Enter the exact integer value",
-      "checkpointHint": "Expand each product using the difference of squares or square of a binomial identity, then cancel opposing terms.",
-      "commonTrapTag": "c13-difference-of-squares-frame-trap",
-      "steps": [
-        {
-          "latex": "(3x + 3)^2 = 9x^2 + 18x + 9, \\quad (3x - 3)^2 = 9x^2 - 18x + 9",
-          "explain": "Expand both binomial squares."
-        },
-        {
-          "latex": "(3x + 3)^2 - (3x - 3)^2 = 36x",
-          "explain": "Subtracting cancels the squared terms and doubles the middle term to $4abx$."
-        },
-        {
-          "latex": "36(9) = 324",
-          "explain": "Evaluate at $x = 9$."
-        }
-      ],
-      "level": 4,
-      "skill": "MTH-PREALG-C13-SYNTHESIS",
-      "verificationLevel": "machine-verified",
       "id": "Q08",
-      "templateKey": "c13-polynomial-identity-area-synthesis",
-      "levelLabel": "Level 4 - Applied Synthesis",
-      "fingerprint": "c13-polynomial-identity-area-synthesis|quotient-identity|poly identity synthesis #*x and #",
+      "verificationLevel": "partial",
+      "level": 3,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c13-factoring-greatest-common-factor",
+      "context": "code_expression_refactoring",
+      "prompt": "Factor out the greatest common factor from $18x + 24$ with coefficients $18$ and $24$. If the common factor is $6$, calculate the remaining quotient $24 \\div 6$ using values $18$, $24$, and $6$.",
+      "display": "18x + 24 = 6(3x + ?)",
+      "plainText": "24 / 6 = q",
+      "answerDisplay": "4",
+      "givens": {
+        "term1": 18,
+        "term2": 24,
+        "gcf": 6
+      },
+      "answerPlain": "4",
+      "answerSpec": {
+        "type": "number",
+        "value": "4",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c13-subtract-instead-of-divide-gcf-trap",
+      "trapDerivation": "24 - 6",
+      "trapValue": "18",
+      "verify": {
+        "source": "4",
+        "trapValue": "18"
+      },
+      "checkpointHint": "Divide the second polynomial term by the greatest common factor",
+      "references": [
+        "MTH-T01-C13"
+      ],
+      "steps": [
+        {
+          "latex": "\\frac{24}{6} = 4",
+          "explain": "Divide 24 by common factor 6."
+        },
+        {
+          "latex": "6(3x + 4)",
+          "explain": "The remaining constant term is 4.",
+          "val": "4"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c13-subtract-instead-of-divide-gcf-trap|direct|# / # = q",
       "qualityGates": {
         "G1": {
           "passed": true,
-          "archetype": "math-standard"
+          "archetype": "problem-solving"
         },
         "G2": {
           "passed": true,
-          "level": 4,
-          "stepCount": 3,
+          "level": 3,
+          "stepCount": 2,
           "hasTrapOrFlaw": true,
-          "skill": "MTH-PREALG-C13-SYNTHESIS",
+          "skill": null,
           "stepRange": [
             2,
-            6
+            5
           ]
         },
         "G4": {
           "passed": true,
-          "trapTag": "c13-difference-of-squares-frame-trap",
+          "trapTag": "c13-subtract-instead-of-divide-gcf-trap",
           "trapValueVerified": true,
           "weakDistractors": 0,
           "provenanceDistractors": 0
         },
         "G6": {
           "passed": true,
-          "fieldsChecked": 13
+          "fieldsChecked": 10
         },
         "antiLeak": {
           "passed": true,
-          "hintsChecked": 2
+          "hintsChecked": 1
         },
-        "verificationLevel": "machine-verified",
-        "weakDistractors": 0,
-        "G3": {
-          "passed": true,
-          "fingerprint": "c13-polynomial-identity-area-synthesis|quotient-identity|poly identity synthesis #*x and #",
-          "maxAllowedPerFingerprint": 10
-        }
-      },
-      "referenceBadges": [
-        {
-          "code": "MTH-T01-C13-U03",
-          "title": "Multiply Polynomials",
-          "notionUrl": "https://www.notion.so/4003818f8ba080459e39e600af05ce5d"
-        },
-        {
-          "code": "MTH-T01-C13-U04",
-          "title": "Divide Monomials",
-          "notionUrl": "https://www.notion.so/4003818f8ba080e2af7bd0a4659a493b"
-        }
-      ],
-      "trapValue": "162",
-      "state": {
-        "userInput": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "lastCheck": null
+        "verificationLevel": "partial",
+        "weakDistractors": 0
       }
     },
     {
-      "form": "direct",
-      "category": "Interleaved Synthesis",
-      "context": "Polynomials: Special Products & Invariant Area Synthesis",
-      "references": [
-        "MTH-T01-C13-U03",
-        "MTH-T01-C13-U04"
-      ],
-      "prompt": "An outer rectangular solar panel has length $(4x + 4)$ and width $(4x - 4)$. An inner cutout has length $(4x + 6)$ and width $(4x - 6)$. Find the constant difference $(\\text{Area}_{\\text{outer}} - \\text{Area}_{\\text{inner}})$, which is independent of $x$.",
-      "display": "(4x + 4)(4x - 4) - (4x + 6)(4x - 6)",
-      "plainText": "poly identity synthesis 4*x and 4",
-      "answerSpec": {
-        "type": "number",
-        "value": "20"
-      },
-      "answerDisplay": "20",
-      "answerPlain": "20",
-      "inputHint": "Enter the exact integer value",
-      "checkpointHint": "Expand each product using the difference of squares or square of a binomial identity, then cancel opposing terms.",
-      "commonTrapTag": "c13-difference-of-squares-frame-trap",
-      "steps": [
-        {
-          "latex": "\\text{Area}_{\\text{outer}} = (4x + 4)(4x - 4) = 16x^2 - 16",
-          "explain": "Expand the outer product using the difference of squares."
-        },
-        {
-          "latex": "\\text{Area}_{\\text{inner}} = (4x + 6)(4x - 6) = 16x^2 - 36",
-          "explain": "Expand the inner product using the difference of squares."
-        },
-        {
-          "latex": "(16x^2 - 16) - (16x^2 - 36) = 36 - 16 = 20",
-          "explain": "Subtract the two polynomials so the quadratic terms cancel."
-        }
-      ],
-      "level": 4,
-      "skill": "MTH-PREALG-C13-SYNTHESIS",
-      "verificationLevel": "machine-verified",
       "id": "Q09",
-      "templateKey": "c13-polynomial-identity-area-synthesis",
-      "levelLabel": "Level 4 - Applied Synthesis",
-      "fingerprint": "c13-polynomial-identity-area-synthesis|direct|poly identity synthesis #*x and #",
+      "verificationLevel": "partial",
+      "level": 4,
+      "category": "Applied Problem",
+      "archetype": "problem-solving",
+      "archetypeKey": "c13-factoring-quadratic-trinomials-modeling",
+      "context": "architectural_courtyard_layout",
+      "prompt": "A rectangular courtyard has area represented by the quadratic trinomial $x^2 + 9x + 20$ with linear coefficient $9$ and constant $20$. Find the larger integer factor in the factored form $(x + p)(x + q)$ where the factors sum to $9$ and multiply to $20$.",
+      "display": "x^2 + 9x + 20 = (x + 4)(x + 5)",
+      "plainText": "factor(x^2 + 9*x + 20)",
+      "answerDisplay": "5",
+      "givens": {
+        "linear_coeff": 9,
+        "const_term": 20
+      },
+      "answerPlain": "5",
+      "answerSpec": {
+        "type": "number",
+        "value": "5",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c13-factor-subtraction-trap",
+      "trapDerivation": "20 - 9",
+      "trapValue": "11",
+      "verify": {
+        "source": "5",
+        "trapValue": "11"
+      },
+      "checkpointHint": "Identify two positive integers that multiply to the constant term and add up to the linear coefficient",
+      "references": [
+        "MTH-T01-C13",
+        "OpenStax Prealgebra 2e §10.3"
+      ],
+      "competencies": [
+        "quadratic-trinomial-factoring",
+        "polynomial-area-dimension-modeling"
+      ],
+      "constraints": [
+        "positive integer binomial factors",
+        "monic quadratic trinomial"
+      ],
+      "steps": [
+        {
+          "latex": "4 \\times 5 = 20 \\land 4 + 5 = 9",
+          "explain": "Find factor pair of 20 that sums to 9."
+        },
+        {
+          "latex": "(x + 4)(x + 5)",
+          "explain": "Factors are 4 and 5; the larger factor is 5.",
+          "val": "5"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c13-factor-subtraction-trap|direct|factor(x^# + #*x + #)",
       "qualityGates": {
         "G1": {
           "passed": true,
-          "archetype": "math-standard"
+          "archetype": "problem-solving"
         },
         "G2": {
           "passed": true,
           "level": 4,
-          "stepCount": 3,
+          "stepCount": 2,
           "hasTrapOrFlaw": true,
-          "skill": "MTH-PREALG-C13-SYNTHESIS",
+          "skill": null,
           "stepRange": [
             2,
             6
@@ -909,302 +733,89 @@
         },
         "G4": {
           "passed": true,
-          "trapTag": "c13-difference-of-squares-frame-trap",
+          "trapTag": "c13-factor-subtraction-trap",
           "trapValueVerified": true,
           "weakDistractors": 0,
           "provenanceDistractors": 0
         },
         "G6": {
           "passed": true,
-          "fieldsChecked": 13
+          "fieldsChecked": 10
         },
         "antiLeak": {
           "passed": true,
-          "hintsChecked": 2
+          "hintsChecked": 1
         },
-        "verificationLevel": "machine-verified",
-        "weakDistractors": 0,
-        "G3": {
-          "passed": true,
-          "fingerprint": "c13-polynomial-identity-area-synthesis|direct|poly identity synthesis #*x and #",
-          "maxAllowedPerFingerprint": 10
-        }
-      },
-      "referenceBadges": [
-        {
-          "code": "MTH-T01-C13-U03",
-          "title": "Multiply Polynomials",
-          "notionUrl": "https://www.notion.so/4003818f8ba080459e39e600af05ce5d"
-        },
-        {
-          "code": "MTH-T01-C13-U04",
-          "title": "Divide Monomials",
-          "notionUrl": "https://www.notion.so/4003818f8ba080e2af7bd0a4659a493b"
-        }
-      ],
-      "trapValue": "2",
-      "state": {
-        "userInput": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "lastCheck": null
+        "verificationLevel": "partial",
+        "weakDistractors": 0
       }
     },
     {
-      "form": "quotient-identity",
-      "category": "Interleaved Synthesis",
-      "context": "Polynomials: Special Products & Invariant Area Synthesis",
-      "references": [
-        "MTH-T01-C13-U03",
-        "MTH-T01-C13-U04"
-      ],
-      "prompt": "Simplify the polynomial identity $(7x + 2)^2 - (7x - 2)^2$ and evaluate the resulting expression at $x = 6$.",
-      "display": "(7x + 2)^2 - (7x - 2)^2 \\quad \\text{at } x = 6",
-      "plainText": "poly identity synthesis 7*x and 2",
-      "answerSpec": {
-        "type": "number",
-        "value": "336"
-      },
-      "answerDisplay": "336",
-      "answerPlain": "336",
-      "inputHint": "Enter the exact integer value",
-      "checkpointHint": "Expand each product using the difference of squares or square of a binomial identity, then cancel opposing terms.",
-      "commonTrapTag": "c13-difference-of-squares-frame-trap",
-      "steps": [
-        {
-          "latex": "(7x + 2)^2 = 49x^2 + 28x + 4, \\quad (7x - 2)^2 = 49x^2 - 28x + 4",
-          "explain": "Expand both binomial squares."
-        },
-        {
-          "latex": "(7x + 2)^2 - (7x - 2)^2 = 56x",
-          "explain": "Subtracting cancels the squared terms and doubles the middle term to $4abx$."
-        },
-        {
-          "latex": "56(6) = 336",
-          "explain": "Evaluate at $x = 6$."
-        }
-      ],
-      "level": 4,
-      "skill": "MTH-PREALG-C13-SYNTHESIS",
-      "verificationLevel": "machine-verified",
       "id": "Q10",
-      "templateKey": "c13-polynomial-identity-area-synthesis",
-      "levelLabel": "Level 4 - Applied Synthesis",
-      "fingerprint": "c13-polynomial-identity-area-synthesis|quotient-identity|poly identity synthesis #*x and #",
-      "qualityGates": {
-        "G1": {
-          "passed": true,
-          "archetype": "math-standard"
-        },
-        "G2": {
-          "passed": true,
-          "level": 4,
-          "stepCount": 3,
-          "hasTrapOrFlaw": true,
-          "skill": "MTH-PREALG-C13-SYNTHESIS",
-          "stepRange": [
-            2,
-            6
-          ]
-        },
-        "G4": {
-          "passed": true,
-          "trapTag": "c13-difference-of-squares-frame-trap",
-          "trapValueVerified": true,
-          "weakDistractors": 0,
-          "provenanceDistractors": 0
-        },
-        "G6": {
-          "passed": true,
-          "fieldsChecked": 13
-        },
-        "antiLeak": {
-          "passed": true,
-          "hintsChecked": 2
-        },
-        "verificationLevel": "machine-verified",
-        "weakDistractors": 0,
-        "G3": {
-          "passed": true,
-          "fingerprint": "c13-polynomial-identity-area-synthesis|quotient-identity|poly identity synthesis #*x and #",
-          "maxAllowedPerFingerprint": 10
-        }
+      "verificationLevel": "partial",
+      "level": 4,
+      "category": "Applied Problem",
+      "archetype": "problem-solving",
+      "archetypeKey": "c13-applied-polynomial-kinematics-synthesis",
+      "context": "sounding_rocket_trajectory",
+      "prompt": "A sounding rocket has height modeled by a quadratic polynomial with velocity coefficient $80$ and gravity parameter $16$. The flight duration until ground impact is found by dividing velocity by gravity: calculate $80 \\div 16$ with parameters $80$ and $16$.",
+      "display": "t = \\frac{80}{16} = ?",
+      "plainText": "80 / 16 = t",
+      "answerDisplay": "5",
+      "givens": {
+        "velocity": 80,
+        "gravity": 16
       },
-      "referenceBadges": [
-        {
-          "code": "MTH-T01-C13-U03",
-          "title": "Multiply Polynomials",
-          "notionUrl": "https://www.notion.so/4003818f8ba080459e39e600af05ce5d"
-        },
-        {
-          "code": "MTH-T01-C13-U04",
-          "title": "Divide Monomials",
-          "notionUrl": "https://www.notion.so/4003818f8ba080e2af7bd0a4659a493b"
-        }
-      ],
-      "trapValue": "168",
-      "state": {
-        "userInput": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "lastCheck": null
-      }
-    },
-    {
-      "form": "quotient-identity",
-      "category": "Interleaved Synthesis",
-      "context": "Polynomials: Special Products & Invariant Area Synthesis",
-      "references": [
-        "MTH-T01-C13-U03",
-        "MTH-T01-C13-U04"
-      ],
-      "prompt": "Simplify the polynomial identity $(4x + 5)^2 - (4x - 5)^2$ and evaluate the resulting expression at $x = 6$.",
-      "display": "(4x + 5)^2 - (4x - 5)^2 \\quad \\text{at } x = 6",
-      "plainText": "poly identity synthesis 4*x and 5",
+      "answerPlain": "5",
       "answerSpec": {
         "type": "number",
-        "value": "480"
+        "value": "5",
+        "tolerance": 0.001
       },
-      "answerDisplay": "480",
-      "answerPlain": "480",
-      "inputHint": "Enter the exact integer value",
-      "checkpointHint": "Expand each product using the difference of squares or square of a binomial identity, then cancel opposing terms.",
-      "commonTrapTag": "c13-difference-of-squares-frame-trap",
+      "commonTrapTag": "c13-linear-velocity-extrapolation-trap",
+      "trapDerivation": "80 - 16",
+      "trapValue": "64",
+      "verify": {
+        "source": "5",
+        "trapValue": "64"
+      },
+      "checkpointHint": "Divide the initial launch velocity parameter by the downward gravity parameter",
+      "references": [
+        "MTH-T01-C13",
+        "OpenStax Prealgebra 2e §10.5"
+      ],
+      "competencies": [
+        "polynomial-kinematics-factoring",
+        "quadratic-zero-root-synthesis"
+      ],
+      "constraints": [
+        "strictly positive elapsed duration",
+        "parabolic projectile trajectory"
+      ],
       "steps": [
         {
-          "latex": "(4x + 5)^2 = 16x^2 + 40x + 25, \\quad (4x - 5)^2 = 16x^2 - 40x + 25",
-          "explain": "Expand both binomial squares."
+          "latex": "h(t) = 16t(5 - t) = 0",
+          "explain": "Factor polynomial 80t - 16t^2 by extracting common factor 16t."
         },
         {
-          "latex": "(4x + 5)^2 - (4x - 5)^2 = 80x",
-          "explain": "Subtracting cancels the squared terms and doubles the middle term to $4abx$."
-        },
-        {
-          "latex": "80(6) = 480",
-          "explain": "Evaluate at $x = 6$."
+          "latex": "t = \\frac{80}{16} = 5",
+          "explain": "Solve 5 - t = 0 to get flight duration 5 seconds.",
+          "val": "5"
         }
       ],
-      "level": 4,
-      "skill": "MTH-PREALG-C13-SYNTHESIS",
-      "verificationLevel": "machine-verified",
-      "id": "Q11",
-      "templateKey": "c13-polynomial-identity-area-synthesis",
-      "levelLabel": "Level 4 - Applied Synthesis",
-      "fingerprint": "c13-polynomial-identity-area-synthesis|quotient-identity|poly identity synthesis #*x and #",
-      "qualityGates": {
-        "G1": {
-          "passed": true,
-          "archetype": "math-standard"
-        },
-        "G2": {
-          "passed": true,
-          "level": 4,
-          "stepCount": 3,
-          "hasTrapOrFlaw": true,
-          "skill": "MTH-PREALG-C13-SYNTHESIS",
-          "stepRange": [
-            2,
-            6
-          ]
-        },
-        "G4": {
-          "passed": true,
-          "trapTag": "c13-difference-of-squares-frame-trap",
-          "trapValueVerified": true,
-          "weakDistractors": 0,
-          "provenanceDistractors": 0
-        },
-        "G6": {
-          "passed": true,
-          "fieldsChecked": 13
-        },
-        "antiLeak": {
-          "passed": true,
-          "hintsChecked": 2
-        },
-        "verificationLevel": "machine-verified",
-        "weakDistractors": 0,
-        "G3": {
-          "passed": true,
-          "fingerprint": "c13-polynomial-identity-area-synthesis|quotient-identity|poly identity synthesis #*x and #",
-          "maxAllowedPerFingerprint": 10
-        }
-      },
-      "referenceBadges": [
-        {
-          "code": "MTH-T01-C13-U03",
-          "title": "Multiply Polynomials",
-          "notionUrl": "https://www.notion.so/4003818f8ba080459e39e600af05ce5d"
-        },
-        {
-          "code": "MTH-T01-C13-U04",
-          "title": "Divide Monomials",
-          "notionUrl": "https://www.notion.so/4003818f8ba080e2af7bd0a4659a493b"
-        }
-      ],
-      "trapValue": "240",
-      "state": {
-        "userInput": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "lastCheck": null
-      }
-    },
-    {
       "form": "direct",
-      "category": "Interleaved Synthesis",
-      "context": "Polynomials: Special Products & Invariant Area Synthesis",
-      "references": [
-        "MTH-T01-C13-U03",
-        "MTH-T01-C13-U04"
-      ],
-      "prompt": "An outer rectangular solar panel has length $(6x + 6)$ and width $(6x - 6)$. An inner cutout has length $(6x + 8)$ and width $(6x - 8)$. Find the constant difference $(\\text{Area}_{\\text{outer}} - \\text{Area}_{\\text{inner}})$, which is independent of $x$.",
-      "display": "(6x + 6)(6x - 6) - (6x + 8)(6x - 8)",
-      "plainText": "poly identity synthesis 6*x and 6",
-      "answerSpec": {
-        "type": "number",
-        "value": "28"
-      },
-      "answerDisplay": "28",
-      "answerPlain": "28",
-      "inputHint": "Enter the exact integer value",
-      "checkpointHint": "Expand each product using the difference of squares or square of a binomial identity, then cancel opposing terms.",
-      "commonTrapTag": "c13-difference-of-squares-frame-trap",
-      "steps": [
-        {
-          "latex": "\\text{Area}_{\\text{outer}} = (6x + 6)(6x - 6) = 36x^2 - 36",
-          "explain": "Expand the outer product using the difference of squares."
-        },
-        {
-          "latex": "\\text{Area}_{\\text{inner}} = (6x + 8)(6x - 8) = 36x^2 - 64",
-          "explain": "Expand the inner product using the difference of squares."
-        },
-        {
-          "latex": "(36x^2 - 36) - (36x^2 - 64) = 64 - 36 = 28",
-          "explain": "Subtract the two polynomials so the quadratic terms cancel."
-        }
-      ],
-      "level": 4,
-      "skill": "MTH-PREALG-C13-SYNTHESIS",
-      "verificationLevel": "machine-verified",
-      "id": "Q12",
-      "templateKey": "c13-polynomial-identity-area-synthesis",
-      "levelLabel": "Level 4 - Applied Synthesis",
-      "fingerprint": "c13-polynomial-identity-area-synthesis|direct|poly identity synthesis #*x and #",
+      "fingerprint": "c13-linear-velocity-extrapolation-trap|direct|# / # = t",
       "qualityGates": {
         "G1": {
           "passed": true,
-          "archetype": "math-standard"
+          "archetype": "problem-solving"
         },
         "G2": {
           "passed": true,
           "level": 4,
-          "stepCount": 3,
+          "stepCount": 2,
           "hasTrapOrFlaw": true,
-          "skill": "MTH-PREALG-C13-SYNTHESIS",
+          "skill": null,
           "stepRange": [
             2,
             6
@@ -1212,861 +823,37 @@
         },
         "G4": {
           "passed": true,
-          "trapTag": "c13-difference-of-squares-frame-trap",
+          "trapTag": "c13-linear-velocity-extrapolation-trap",
           "trapValueVerified": true,
           "weakDistractors": 0,
           "provenanceDistractors": 0
         },
         "G6": {
           "passed": true,
-          "fieldsChecked": 13
+          "fieldsChecked": 10
         },
         "antiLeak": {
           "passed": true,
-          "hintsChecked": 2
+          "hintsChecked": 1
         },
-        "verificationLevel": "machine-verified",
-        "weakDistractors": 0,
-        "G3": {
-          "passed": true,
-          "fingerprint": "c13-polynomial-identity-area-synthesis|direct|poly identity synthesis #*x and #",
-          "maxAllowedPerFingerprint": 10
-        }
-      },
-      "referenceBadges": [
-        {
-          "code": "MTH-T01-C13-U03",
-          "title": "Multiply Polynomials",
-          "notionUrl": "https://www.notion.so/4003818f8ba080459e39e600af05ce5d"
-        },
-        {
-          "code": "MTH-T01-C13-U04",
-          "title": "Divide Monomials",
-          "notionUrl": "https://www.notion.so/4003818f8ba080e2af7bd0a4659a493b"
-        }
-      ],
-      "trapValue": "2",
-      "state": {
-        "userInput": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "lastCheck": null
-      }
-    },
-    {
-      "form": "quotient-identity",
-      "category": "Interleaved Synthesis",
-      "context": "Polynomials: Special Products & Invariant Area Synthesis",
-      "references": [
-        "MTH-T01-C13-U03",
-        "MTH-T01-C13-U04"
-      ],
-      "prompt": "Simplify the polynomial identity $(3x + 6)^2 - (3x - 6)^2$ and evaluate the resulting expression at $x = 8$.",
-      "display": "(3x + 6)^2 - (3x - 6)^2 \\quad \\text{at } x = 8",
-      "plainText": "poly identity synthesis 3*x and 6",
-      "answerSpec": {
-        "type": "number",
-        "value": "576"
-      },
-      "answerDisplay": "576",
-      "answerPlain": "576",
-      "inputHint": "Enter the exact integer value",
-      "checkpointHint": "Expand each product using the difference of squares or square of a binomial identity, then cancel opposing terms.",
-      "commonTrapTag": "c13-difference-of-squares-frame-trap",
-      "steps": [
-        {
-          "latex": "(3x + 6)^2 = 9x^2 + 36x + 36, \\quad (3x - 6)^2 = 9x^2 - 36x + 36",
-          "explain": "Expand both binomial squares."
-        },
-        {
-          "latex": "(3x + 6)^2 - (3x - 6)^2 = 72x",
-          "explain": "Subtracting cancels the squared terms and doubles the middle term to $4abx$."
-        },
-        {
-          "latex": "72(8) = 576",
-          "explain": "Evaluate at $x = 8$."
-        }
-      ],
-      "level": 4,
-      "skill": "MTH-PREALG-C13-SYNTHESIS",
-      "verificationLevel": "machine-verified",
-      "id": "Q13",
-      "templateKey": "c13-polynomial-identity-area-synthesis",
-      "levelLabel": "Level 4 - Applied Synthesis",
-      "fingerprint": "c13-polynomial-identity-area-synthesis|quotient-identity|poly identity synthesis #*x and #",
-      "qualityGates": {
-        "G1": {
-          "passed": true,
-          "archetype": "math-standard"
-        },
-        "G2": {
-          "passed": true,
-          "level": 4,
-          "stepCount": 3,
-          "hasTrapOrFlaw": true,
-          "skill": "MTH-PREALG-C13-SYNTHESIS",
-          "stepRange": [
-            2,
-            6
-          ]
-        },
-        "G4": {
-          "passed": true,
-          "trapTag": "c13-difference-of-squares-frame-trap",
-          "trapValueVerified": true,
-          "weakDistractors": 0,
-          "provenanceDistractors": 0
-        },
-        "G6": {
-          "passed": true,
-          "fieldsChecked": 13
-        },
-        "antiLeak": {
-          "passed": true,
-          "hintsChecked": 2
-        },
-        "verificationLevel": "machine-verified",
-        "weakDistractors": 0,
-        "G3": {
-          "passed": true,
-          "fingerprint": "c13-polynomial-identity-area-synthesis|quotient-identity|poly identity synthesis #*x and #",
-          "maxAllowedPerFingerprint": 10
-        }
-      },
-      "referenceBadges": [
-        {
-          "code": "MTH-T01-C13-U03",
-          "title": "Multiply Polynomials",
-          "notionUrl": "https://www.notion.so/4003818f8ba080459e39e600af05ce5d"
-        },
-        {
-          "code": "MTH-T01-C13-U04",
-          "title": "Divide Monomials",
-          "notionUrl": "https://www.notion.so/4003818f8ba080e2af7bd0a4659a493b"
-        }
-      ],
-      "trapValue": "288",
-      "state": {
-        "userInput": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "lastCheck": null
-      }
-    },
-    {
-      "form": "direct",
-      "category": "Interleaved Synthesis",
-      "context": "Polynomials: Special Products & Invariant Area Synthesis",
-      "references": [
-        "MTH-T01-C13-U03",
-        "MTH-T01-C13-U04"
-      ],
-      "prompt": "An outer rectangular solar panel has length $(6x + 3)$ and width $(6x - 3)$. An inner cutout has length $(6x + 5)$ and width $(6x - 5)$. Find the constant difference $(\\text{Area}_{\\text{outer}} - \\text{Area}_{\\text{inner}})$, which is independent of $x$.",
-      "display": "(6x + 3)(6x - 3) - (6x + 5)(6x - 5)",
-      "plainText": "poly identity synthesis 6*x and 3",
-      "answerSpec": {
-        "type": "number",
-        "value": "16"
-      },
-      "answerDisplay": "16",
-      "answerPlain": "16",
-      "inputHint": "Enter the exact integer value",
-      "checkpointHint": "Expand each product using the difference of squares or square of a binomial identity, then cancel opposing terms.",
-      "commonTrapTag": "c13-difference-of-squares-frame-trap",
-      "steps": [
-        {
-          "latex": "\\text{Area}_{\\text{outer}} = (6x + 3)(6x - 3) = 36x^2 - 9",
-          "explain": "Expand the outer product using the difference of squares."
-        },
-        {
-          "latex": "\\text{Area}_{\\text{inner}} = (6x + 5)(6x - 5) = 36x^2 - 25",
-          "explain": "Expand the inner product using the difference of squares."
-        },
-        {
-          "latex": "(36x^2 - 9) - (36x^2 - 25) = 25 - 9 = 16",
-          "explain": "Subtract the two polynomials so the quadratic terms cancel."
-        }
-      ],
-      "level": 4,
-      "skill": "MTH-PREALG-C13-SYNTHESIS",
-      "verificationLevel": "machine-verified",
-      "id": "Q14",
-      "templateKey": "c13-polynomial-identity-area-synthesis",
-      "levelLabel": "Level 4 - Applied Synthesis",
-      "fingerprint": "c13-polynomial-identity-area-synthesis|direct|poly identity synthesis #*x and #",
-      "qualityGates": {
-        "G1": {
-          "passed": true,
-          "archetype": "math-standard"
-        },
-        "G2": {
-          "passed": true,
-          "level": 4,
-          "stepCount": 3,
-          "hasTrapOrFlaw": true,
-          "skill": "MTH-PREALG-C13-SYNTHESIS",
-          "stepRange": [
-            2,
-            6
-          ]
-        },
-        "G4": {
-          "passed": true,
-          "trapTag": "c13-difference-of-squares-frame-trap",
-          "trapValueVerified": true,
-          "weakDistractors": 0,
-          "provenanceDistractors": 0
-        },
-        "G6": {
-          "passed": true,
-          "fieldsChecked": 13
-        },
-        "antiLeak": {
-          "passed": true,
-          "hintsChecked": 2
-        },
-        "verificationLevel": "machine-verified",
-        "weakDistractors": 0,
-        "G3": {
-          "passed": true,
-          "fingerprint": "c13-polynomial-identity-area-synthesis|direct|poly identity synthesis #*x and #",
-          "maxAllowedPerFingerprint": 10
-        }
-      },
-      "referenceBadges": [
-        {
-          "code": "MTH-T01-C13-U03",
-          "title": "Multiply Polynomials",
-          "notionUrl": "https://www.notion.so/4003818f8ba080459e39e600af05ce5d"
-        },
-        {
-          "code": "MTH-T01-C13-U04",
-          "title": "Divide Monomials",
-          "notionUrl": "https://www.notion.so/4003818f8ba080e2af7bd0a4659a493b"
-        }
-      ],
-      "trapValue": "2",
-      "state": {
-        "userInput": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "lastCheck": null
-      }
-    },
-    {
-      "form": "quotient-identity",
-      "category": "Interleaved Synthesis",
-      "context": "Polynomials: Special Products & Invariant Area Synthesis",
-      "references": [
-        "MTH-T01-C13-U03",
-        "MTH-T01-C13-U04"
-      ],
-      "prompt": "Simplify the polynomial identity $(4x + 2)^2 - (4x - 2)^2$ and evaluate the resulting expression at $x = 6$.",
-      "display": "(4x + 2)^2 - (4x - 2)^2 \\quad \\text{at } x = 6",
-      "plainText": "poly identity synthesis 4*x and 2",
-      "answerSpec": {
-        "type": "number",
-        "value": "192"
-      },
-      "answerDisplay": "192",
-      "answerPlain": "192",
-      "inputHint": "Enter the exact integer value",
-      "checkpointHint": "Expand each product using the difference of squares or square of a binomial identity, then cancel opposing terms.",
-      "commonTrapTag": "c13-difference-of-squares-frame-trap",
-      "steps": [
-        {
-          "latex": "(4x + 2)^2 = 16x^2 + 16x + 4, \\quad (4x - 2)^2 = 16x^2 - 16x + 4",
-          "explain": "Expand both binomial squares."
-        },
-        {
-          "latex": "(4x + 2)^2 - (4x - 2)^2 = 32x",
-          "explain": "Subtracting cancels the squared terms and doubles the middle term to $4abx$."
-        },
-        {
-          "latex": "32(6) = 192",
-          "explain": "Evaluate at $x = 6$."
-        }
-      ],
-      "level": 4,
-      "skill": "MTH-PREALG-C13-SYNTHESIS",
-      "verificationLevel": "machine-verified",
-      "id": "Q15",
-      "templateKey": "c13-polynomial-identity-area-synthesis",
-      "levelLabel": "Level 4 - Applied Synthesis",
-      "fingerprint": "c13-polynomial-identity-area-synthesis|quotient-identity|poly identity synthesis #*x and #",
-      "qualityGates": {
-        "G1": {
-          "passed": true,
-          "archetype": "math-standard"
-        },
-        "G2": {
-          "passed": true,
-          "level": 4,
-          "stepCount": 3,
-          "hasTrapOrFlaw": true,
-          "skill": "MTH-PREALG-C13-SYNTHESIS",
-          "stepRange": [
-            2,
-            6
-          ]
-        },
-        "G4": {
-          "passed": true,
-          "trapTag": "c13-difference-of-squares-frame-trap",
-          "trapValueVerified": true,
-          "weakDistractors": 0,
-          "provenanceDistractors": 0
-        },
-        "G6": {
-          "passed": true,
-          "fieldsChecked": 13
-        },
-        "antiLeak": {
-          "passed": true,
-          "hintsChecked": 2
-        },
-        "verificationLevel": "machine-verified",
-        "weakDistractors": 0,
-        "G3": {
-          "passed": true,
-          "fingerprint": "c13-polynomial-identity-area-synthesis|quotient-identity|poly identity synthesis #*x and #",
-          "maxAllowedPerFingerprint": 10
-        }
-      },
-      "referenceBadges": [
-        {
-          "code": "MTH-T01-C13-U03",
-          "title": "Multiply Polynomials",
-          "notionUrl": "https://www.notion.so/4003818f8ba080459e39e600af05ce5d"
-        },
-        {
-          "code": "MTH-T01-C13-U04",
-          "title": "Divide Monomials",
-          "notionUrl": "https://www.notion.so/4003818f8ba080e2af7bd0a4659a493b"
-        }
-      ],
-      "trapValue": "96",
-      "state": {
-        "userInput": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "lastCheck": null
-      }
-    },
-    {
-      "form": "direct",
-      "category": "Interleaved Synthesis",
-      "context": "Polynomials: Special Products & Invariant Area Synthesis",
-      "references": [
-        "MTH-T01-C13-U03",
-        "MTH-T01-C13-U04"
-      ],
-      "prompt": "An outer rectangular solar panel has length $(6x + 2)$ and width $(6x - 2)$. An inner cutout has length $(6x + 4)$ and width $(6x - 4)$. Find the constant difference $(\\text{Area}_{\\text{outer}} - \\text{Area}_{\\text{inner}})$, which is independent of $x$.",
-      "display": "(6x + 2)(6x - 2) - (6x + 4)(6x - 4)",
-      "plainText": "poly identity synthesis 6*x and 2",
-      "answerSpec": {
-        "type": "number",
-        "value": "12"
-      },
-      "answerDisplay": "12",
-      "answerPlain": "12",
-      "inputHint": "Enter the exact integer value",
-      "checkpointHint": "Expand each product using the difference of squares or square of a binomial identity, then cancel opposing terms.",
-      "commonTrapTag": "c13-difference-of-squares-frame-trap",
-      "steps": [
-        {
-          "latex": "\\text{Area}_{\\text{outer}} = (6x + 2)(6x - 2) = 36x^2 - 4",
-          "explain": "Expand the outer product using the difference of squares."
-        },
-        {
-          "latex": "\\text{Area}_{\\text{inner}} = (6x + 4)(6x - 4) = 36x^2 - 16",
-          "explain": "Expand the inner product using the difference of squares."
-        },
-        {
-          "latex": "(36x^2 - 4) - (36x^2 - 16) = 16 - 4 = 12",
-          "explain": "Subtract the two polynomials so the quadratic terms cancel."
-        }
-      ],
-      "level": 4,
-      "skill": "MTH-PREALG-C13-SYNTHESIS",
-      "verificationLevel": "machine-verified",
-      "id": "Q16",
-      "templateKey": "c13-polynomial-identity-area-synthesis",
-      "levelLabel": "Level 4 - Applied Synthesis",
-      "fingerprint": "c13-polynomial-identity-area-synthesis|direct|poly identity synthesis #*x and #",
-      "qualityGates": {
-        "G1": {
-          "passed": true,
-          "archetype": "math-standard"
-        },
-        "G2": {
-          "passed": true,
-          "level": 4,
-          "stepCount": 3,
-          "hasTrapOrFlaw": true,
-          "skill": "MTH-PREALG-C13-SYNTHESIS",
-          "stepRange": [
-            2,
-            6
-          ]
-        },
-        "G4": {
-          "passed": true,
-          "trapTag": "c13-difference-of-squares-frame-trap",
-          "trapValueVerified": true,
-          "weakDistractors": 0,
-          "provenanceDistractors": 0
-        },
-        "G6": {
-          "passed": true,
-          "fieldsChecked": 13
-        },
-        "antiLeak": {
-          "passed": true,
-          "hintsChecked": 2
-        },
-        "verificationLevel": "machine-verified",
-        "weakDistractors": 0,
-        "G3": {
-          "passed": true,
-          "fingerprint": "c13-polynomial-identity-area-synthesis|direct|poly identity synthesis #*x and #",
-          "maxAllowedPerFingerprint": 10
-        }
-      },
-      "referenceBadges": [
-        {
-          "code": "MTH-T01-C13-U03",
-          "title": "Multiply Polynomials",
-          "notionUrl": "https://www.notion.so/4003818f8ba080459e39e600af05ce5d"
-        },
-        {
-          "code": "MTH-T01-C13-U04",
-          "title": "Divide Monomials",
-          "notionUrl": "https://www.notion.so/4003818f8ba080e2af7bd0a4659a493b"
-        }
-      ],
-      "trapValue": "2",
-      "state": {
-        "userInput": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "lastCheck": null
-      }
-    },
-    {
-      "form": "direct",
-      "category": "Interleaved Synthesis",
-      "context": "Polynomials: Special Products & Invariant Area Synthesis",
-      "references": [
-        "MTH-T01-C13-U03",
-        "MTH-T01-C13-U04"
-      ],
-      "prompt": "An outer rectangular solar panel has length $(3x + 6)$ and width $(3x - 6)$. An inner cutout has length $(3x + 8)$ and width $(3x - 8)$. Find the constant difference $(\\text{Area}_{\\text{outer}} - \\text{Area}_{\\text{inner}})$, which is independent of $x$.",
-      "display": "(3x + 6)(3x - 6) - (3x + 8)(3x - 8)",
-      "plainText": "poly identity synthesis 3*x and 6",
-      "answerSpec": {
-        "type": "number",
-        "value": "28"
-      },
-      "answerDisplay": "28",
-      "answerPlain": "28",
-      "inputHint": "Enter the exact integer value",
-      "checkpointHint": "Expand each product using the difference of squares or square of a binomial identity, then cancel opposing terms.",
-      "commonTrapTag": "c13-difference-of-squares-frame-trap",
-      "steps": [
-        {
-          "latex": "\\text{Area}_{\\text{outer}} = (3x + 6)(3x - 6) = 9x^2 - 36",
-          "explain": "Expand the outer product using the difference of squares."
-        },
-        {
-          "latex": "\\text{Area}_{\\text{inner}} = (3x + 8)(3x - 8) = 9x^2 - 64",
-          "explain": "Expand the inner product using the difference of squares."
-        },
-        {
-          "latex": "(9x^2 - 36) - (9x^2 - 64) = 64 - 36 = 28",
-          "explain": "Subtract the two polynomials so the quadratic terms cancel."
-        }
-      ],
-      "level": 4,
-      "skill": "MTH-PREALG-C13-SYNTHESIS",
-      "verificationLevel": "machine-verified",
-      "id": "Q17",
-      "templateKey": "c13-polynomial-identity-area-synthesis",
-      "levelLabel": "Level 4 - Applied Synthesis",
-      "fingerprint": "c13-polynomial-identity-area-synthesis|direct|poly identity synthesis #*x and #",
-      "qualityGates": {
-        "G1": {
-          "passed": true,
-          "archetype": "math-standard"
-        },
-        "G2": {
-          "passed": true,
-          "level": 4,
-          "stepCount": 3,
-          "hasTrapOrFlaw": true,
-          "skill": "MTH-PREALG-C13-SYNTHESIS",
-          "stepRange": [
-            2,
-            6
-          ]
-        },
-        "G4": {
-          "passed": true,
-          "trapTag": "c13-difference-of-squares-frame-trap",
-          "trapValueVerified": true,
-          "weakDistractors": 0,
-          "provenanceDistractors": 0
-        },
-        "G6": {
-          "passed": true,
-          "fieldsChecked": 13
-        },
-        "antiLeak": {
-          "passed": true,
-          "hintsChecked": 2
-        },
-        "verificationLevel": "machine-verified",
-        "weakDistractors": 0,
-        "G3": {
-          "passed": true,
-          "fingerprint": "c13-polynomial-identity-area-synthesis|direct|poly identity synthesis #*x and #",
-          "maxAllowedPerFingerprint": 10
-        }
-      },
-      "referenceBadges": [
-        {
-          "code": "MTH-T01-C13-U03",
-          "title": "Multiply Polynomials",
-          "notionUrl": "https://www.notion.so/4003818f8ba080459e39e600af05ce5d"
-        },
-        {
-          "code": "MTH-T01-C13-U04",
-          "title": "Divide Monomials",
-          "notionUrl": "https://www.notion.so/4003818f8ba080e2af7bd0a4659a493b"
-        }
-      ],
-      "trapValue": "2",
-      "state": {
-        "userInput": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "lastCheck": null
-      }
-    },
-    {
-      "form": "quotient-identity",
-      "category": "Interleaved Synthesis",
-      "context": "Polynomials: Special Products & Invariant Area Synthesis",
-      "references": [
-        "MTH-T01-C13-U03",
-        "MTH-T01-C13-U04"
-      ],
-      "prompt": "Simplify the polynomial identity $(3x + 2)^2 - (3x - 2)^2$ and evaluate the resulting expression at $x = 6$.",
-      "display": "(3x + 2)^2 - (3x - 2)^2 \\quad \\text{at } x = 6",
-      "plainText": "poly identity synthesis 3*x and 2",
-      "answerSpec": {
-        "type": "number",
-        "value": "144"
-      },
-      "answerDisplay": "144",
-      "answerPlain": "144",
-      "inputHint": "Enter the exact integer value",
-      "checkpointHint": "Expand each product using the difference of squares or square of a binomial identity, then cancel opposing terms.",
-      "commonTrapTag": "c13-difference-of-squares-frame-trap",
-      "steps": [
-        {
-          "latex": "(3x + 2)^2 = 9x^2 + 12x + 4, \\quad (3x - 2)^2 = 9x^2 - 12x + 4",
-          "explain": "Expand both binomial squares."
-        },
-        {
-          "latex": "(3x + 2)^2 - (3x - 2)^2 = 24x",
-          "explain": "Subtracting cancels the squared terms and doubles the middle term to $4abx$."
-        },
-        {
-          "latex": "24(6) = 144",
-          "explain": "Evaluate at $x = 6$."
-        }
-      ],
-      "level": 4,
-      "skill": "MTH-PREALG-C13-SYNTHESIS",
-      "verificationLevel": "machine-verified",
-      "id": "Q18",
-      "templateKey": "c13-polynomial-identity-area-synthesis",
-      "levelLabel": "Level 4 - Applied Synthesis",
-      "fingerprint": "c13-polynomial-identity-area-synthesis|quotient-identity|poly identity synthesis #*x and #",
-      "qualityGates": {
-        "G1": {
-          "passed": true,
-          "archetype": "math-standard"
-        },
-        "G2": {
-          "passed": true,
-          "level": 4,
-          "stepCount": 3,
-          "hasTrapOrFlaw": true,
-          "skill": "MTH-PREALG-C13-SYNTHESIS",
-          "stepRange": [
-            2,
-            6
-          ]
-        },
-        "G4": {
-          "passed": true,
-          "trapTag": "c13-difference-of-squares-frame-trap",
-          "trapValueVerified": true,
-          "weakDistractors": 0,
-          "provenanceDistractors": 0
-        },
-        "G6": {
-          "passed": true,
-          "fieldsChecked": 13
-        },
-        "antiLeak": {
-          "passed": true,
-          "hintsChecked": 2
-        },
-        "verificationLevel": "machine-verified",
-        "weakDistractors": 0,
-        "G3": {
-          "passed": true,
-          "fingerprint": "c13-polynomial-identity-area-synthesis|quotient-identity|poly identity synthesis #*x and #",
-          "maxAllowedPerFingerprint": 10
-        }
-      },
-      "referenceBadges": [
-        {
-          "code": "MTH-T01-C13-U03",
-          "title": "Multiply Polynomials",
-          "notionUrl": "https://www.notion.so/4003818f8ba080459e39e600af05ce5d"
-        },
-        {
-          "code": "MTH-T01-C13-U04",
-          "title": "Divide Monomials",
-          "notionUrl": "https://www.notion.so/4003818f8ba080e2af7bd0a4659a493b"
-        }
-      ],
-      "trapValue": "72",
-      "state": {
-        "userInput": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "lastCheck": null
-      }
-    },
-    {
-      "form": "direct",
-      "category": "Interleaved Synthesis",
-      "context": "Polynomials: Special Products & Invariant Area Synthesis",
-      "references": [
-        "MTH-T01-C13-U03",
-        "MTH-T01-C13-U04"
-      ],
-      "prompt": "An outer rectangular solar panel has length $(7x + 5)$ and width $(7x - 5)$. An inner cutout has length $(7x + 7)$ and width $(7x - 7)$. Find the constant difference $(\\text{Area}_{\\text{outer}} - \\text{Area}_{\\text{inner}})$, which is independent of $x$.",
-      "display": "(7x + 5)(7x - 5) - (7x + 7)(7x - 7)",
-      "plainText": "poly identity synthesis 7*x and 5",
-      "answerSpec": {
-        "type": "number",
-        "value": "24"
-      },
-      "answerDisplay": "24",
-      "answerPlain": "24",
-      "inputHint": "Enter the exact integer value",
-      "checkpointHint": "Expand each product using the difference of squares or square of a binomial identity, then cancel opposing terms.",
-      "commonTrapTag": "c13-difference-of-squares-frame-trap",
-      "steps": [
-        {
-          "latex": "\\text{Area}_{\\text{outer}} = (7x + 5)(7x - 5) = 49x^2 - 25",
-          "explain": "Expand the outer product using the difference of squares."
-        },
-        {
-          "latex": "\\text{Area}_{\\text{inner}} = (7x + 7)(7x - 7) = 49x^2 - 49",
-          "explain": "Expand the inner product using the difference of squares."
-        },
-        {
-          "latex": "(49x^2 - 25) - (49x^2 - 49) = 49 - 25 = 24",
-          "explain": "Subtract the two polynomials so the quadratic terms cancel."
-        }
-      ],
-      "level": 4,
-      "skill": "MTH-PREALG-C13-SYNTHESIS",
-      "verificationLevel": "machine-verified",
-      "id": "Q19",
-      "templateKey": "c13-polynomial-identity-area-synthesis",
-      "levelLabel": "Level 4 - Applied Synthesis",
-      "fingerprint": "c13-polynomial-identity-area-synthesis|direct|poly identity synthesis #*x and #",
-      "qualityGates": {
-        "G1": {
-          "passed": true,
-          "archetype": "math-standard"
-        },
-        "G2": {
-          "passed": true,
-          "level": 4,
-          "stepCount": 3,
-          "hasTrapOrFlaw": true,
-          "skill": "MTH-PREALG-C13-SYNTHESIS",
-          "stepRange": [
-            2,
-            6
-          ]
-        },
-        "G4": {
-          "passed": true,
-          "trapTag": "c13-difference-of-squares-frame-trap",
-          "trapValueVerified": true,
-          "weakDistractors": 0,
-          "provenanceDistractors": 0
-        },
-        "G6": {
-          "passed": true,
-          "fieldsChecked": 13
-        },
-        "antiLeak": {
-          "passed": true,
-          "hintsChecked": 2
-        },
-        "verificationLevel": "machine-verified",
-        "weakDistractors": 0,
-        "G3": {
-          "passed": true,
-          "fingerprint": "c13-polynomial-identity-area-synthesis|direct|poly identity synthesis #*x and #",
-          "maxAllowedPerFingerprint": 10
-        }
-      },
-      "referenceBadges": [
-        {
-          "code": "MTH-T01-C13-U03",
-          "title": "Multiply Polynomials",
-          "notionUrl": "https://www.notion.so/4003818f8ba080459e39e600af05ce5d"
-        },
-        {
-          "code": "MTH-T01-C13-U04",
-          "title": "Divide Monomials",
-          "notionUrl": "https://www.notion.so/4003818f8ba080e2af7bd0a4659a493b"
-        }
-      ],
-      "trapValue": "2",
-      "state": {
-        "userInput": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "lastCheck": null
-      }
-    },
-    {
-      "form": "quotient-identity",
-      "category": "Interleaved Synthesis",
-      "context": "Polynomials: Special Products & Invariant Area Synthesis",
-      "references": [
-        "MTH-T01-C13-U03",
-        "MTH-T01-C13-U04"
-      ],
-      "prompt": "Simplify the polynomial identity $(5x + 2)^2 - (5x - 2)^2$ and evaluate the resulting expression at $x = 9$.",
-      "display": "(5x + 2)^2 - (5x - 2)^2 \\quad \\text{at } x = 9",
-      "plainText": "poly identity synthesis 5*x and 2",
-      "answerSpec": {
-        "type": "number",
-        "value": "360"
-      },
-      "answerDisplay": "360",
-      "answerPlain": "360",
-      "inputHint": "Enter the exact integer value",
-      "checkpointHint": "Expand each product using the difference of squares or square of a binomial identity, then cancel opposing terms.",
-      "commonTrapTag": "c13-difference-of-squares-frame-trap",
-      "steps": [
-        {
-          "latex": "(5x + 2)^2 = 25x^2 + 20x + 4, \\quad (5x - 2)^2 = 25x^2 - 20x + 4",
-          "explain": "Expand both binomial squares."
-        },
-        {
-          "latex": "(5x + 2)^2 - (5x - 2)^2 = 40x",
-          "explain": "Subtracting cancels the squared terms and doubles the middle term to $4abx$."
-        },
-        {
-          "latex": "40(9) = 360",
-          "explain": "Evaluate at $x = 9$."
-        }
-      ],
-      "level": 4,
-      "skill": "MTH-PREALG-C13-SYNTHESIS",
-      "verificationLevel": "machine-verified",
-      "id": "Q20",
-      "templateKey": "c13-polynomial-identity-area-synthesis",
-      "levelLabel": "Level 4 - Applied Synthesis",
-      "fingerprint": "c13-polynomial-identity-area-synthesis|quotient-identity|poly identity synthesis #*x and #",
-      "qualityGates": {
-        "G1": {
-          "passed": true,
-          "archetype": "math-standard"
-        },
-        "G2": {
-          "passed": true,
-          "level": 4,
-          "stepCount": 3,
-          "hasTrapOrFlaw": true,
-          "skill": "MTH-PREALG-C13-SYNTHESIS",
-          "stepRange": [
-            2,
-            6
-          ]
-        },
-        "G4": {
-          "passed": true,
-          "trapTag": "c13-difference-of-squares-frame-trap",
-          "trapValueVerified": true,
-          "weakDistractors": 0,
-          "provenanceDistractors": 0
-        },
-        "G6": {
-          "passed": true,
-          "fieldsChecked": 13
-        },
-        "antiLeak": {
-          "passed": true,
-          "hintsChecked": 2
-        },
-        "verificationLevel": "machine-verified",
-        "weakDistractors": 0,
-        "G3": {
-          "passed": true,
-          "fingerprint": "c13-polynomial-identity-area-synthesis|quotient-identity|poly identity synthesis #*x and #",
-          "maxAllowedPerFingerprint": 10
-        }
-      },
-      "referenceBadges": [
-        {
-          "code": "MTH-T01-C13-U03",
-          "title": "Multiply Polynomials",
-          "notionUrl": "https://www.notion.so/4003818f8ba080459e39e600af05ce5d"
-        },
-        {
-          "code": "MTH-T01-C13-U04",
-          "title": "Divide Monomials",
-          "notionUrl": "https://www.notion.so/4003818f8ba080e2af7bd0a4659a493b"
-        }
-      ],
-      "trapValue": "180",
-      "state": {
-        "userInput": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "lastCheck": null
+        "verificationLevel": "partial",
+        "weakDistractors": 0
       }
     }
   ],
+  "title": "Polynomials — Verified Math Drill (10 Qs)",
+  "schemaVersion": "2.0-math",
+  "subject": "MATH",
+  "createdAt": "2026-11-09 20:41:58",
+  "config": {
+    "questionCount": 10,
+    "difficulty": "ALL",
+    "difficultyMode": "AI Synthesized Reasoning Mode"
+  },
   "sessionSummary": {
     "practiceStatus": "Ready",
     "score": 0,
-    "maxScore": 20,
+    "maxScore": 10,
     "accuracyPct": 0,
     "mistakeCategories": [],
     "divergedStepsSummary": "",

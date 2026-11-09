@@ -1,503 +1,774 @@
 {
-  "schemaVersion": "2.0-math",
-  "drillId": "DRL-MTH-T01-C12-02",
-  "subject": "MATH",
   "unitCode": "MTH-T01-C12",
   "unitTitle": "Math Models and Geometry",
-  "chapterCode": "MTH-T01-C12",
-  "topicCode": "MTH-T01",
-  "unitNotionUrl": "https://www.notion.so/4003818f8ba080cfbf95ef15001d8a52",
-  "createdAt": "2026-11-08 21:07:55",
-  "config": {
-    "questionCount": 5,
-    "difficulty": "4",
-    "difficultyMode": "Level 4 - Applied Synthesis"
-  },
-  "mistakeTags": [
-    {
-      "id": "pythagoras-hypotenuse",
-      "label": "Added instead of subtracted for a leg ($a^2 = c^2 - b^2$)",
-      "name": "Pythagorean Leg vs Hypotenuse Error",
-      "autoFrom": [
-        "whole_sign_flip"
-      ]
-    },
-    {
-      "id": "formula-perimeter-area",
-      "label": "Confused perimeter formula with area formula",
-      "name": "Perimeter vs Area Confusion",
-      "autoFrom": []
-    },
-    {
-      "id": "formula-circumference-area-confusion",
-      "label": "Computed circumference 2*pi*r instead of area pi*r^2",
-      "name": "Circumference for Area Confusion",
-      "autoFrom": []
-    },
-    {
-      "id": "trapezoid-height",
-      "label": "Forgot factor of 2 in numerator when solving for height",
-      "name": "Trapezoid Height Factor Error",
-      "autoFrom": [
-        "off_by_factor"
-      ]
-    },
-    {
-      "id": "omitted-half-factor",
-      "label": "Forgot 1/2 in trapezoid area: $A = 1/2(b_1 + b_2)h$",
-      "name": "Trapezoid Omitted Half Factor",
-      "autoFrom": [
-        "off_by_factor"
-      ]
-    },
-    {
-      "id": "circle-diameter-radius",
-      "label": "Used diameter instead of radius in formula",
-      "name": "Diameter vs Radius Confusion",
-      "autoFrom": [
-        "off_by_factor"
-      ]
-    },
-    {
-      "id": "cylinder-diameter-as-radius-trap",
-      "label": "Used diameter directly as radius in cylinder volume formula: pi * d^2 * h",
-      "name": "Diameter as Radius in Volume Trap",
-      "autoFrom": [
-        "off_by_factor"
-      ]
-    },
-    {
-      "id": "volume-surface-area",
-      "label": "Confused volume ($V$) with surface area ($SA$)",
-      "name": "Volume vs Surface Area Error",
-      "autoFrom": []
-    },
-    {
-      "id": "linear-addition-trap",
-      "label": "Added legs linearly without squaring ($c = a + b$)",
-      "name": "Linear Addition Trap",
-      "autoFrom": []
-    },
-    {
-      "id": "pythagoras-leg-subtraction",
-      "label": "Subtracted hypotenuse and leg linearly ($a = c - b$)",
-      "name": "Linear Leg Subtraction Error",
-      "autoFrom": []
-    },
-    {
-      "id": "path-distance-vs-displacement",
-      "label": "Calculated total perimeter path instead of straight-line distance",
-      "name": "Path vs Displacement Error",
-      "autoFrom": []
-    },
-    {
-      "id": "arithmetic-slip",
-      "label": "Arithmetic / calculation slip",
-      "name": "Arithmetic Slip",
-      "autoFrom": [
-        "rounding",
-        "off_by_factor"
-      ]
-    },
-    {
-      "id": "whole-triangle-inradius-confusion",
-      "label": "Computed inradius of parent triangle instead of divided altitude sub-triangle",
-      "name": "Parent vs Sub-Triangle Inradius Confusion",
-      "autoFrom": []
-    },
-    {
-      "id": "trapezoid-diagonal-bisect-trap",
-      "label": "Assumed trapezoid diagonals bisect each other instead of using similar triangle ratio",
-      "name": "Trapezoid Diagonal Bisection Fallacy",
-      "autoFrom": []
-    },
-    {
-      "id": "pi-retained-in-lunes-trap",
-      "label": "Retained pi factor in area of lunes of Hippocrates (failing to recognize pi cancellation)",
-      "name": "Lunes Pi Factor Retention Trap",
-      "autoFrom": []
-    },
-    {
-      "id": "frustum-cylinder-average-trap",
-      "label": "Averaged radii and computed as cylinder instead of conical frustum",
-      "name": "Frustum Average Cylinder Error",
-      "autoFrom": []
-    },
-    {
-      "id": "internal-boundary-double-count-trap",
-      "label": "Included internal boundary face in composite solid surface area",
-      "name": "Internal Boundary Face Double Count",
-      "autoFrom": []
-    }
-  ],
+  "topicTitle": "Math Models and Geometry",
+  "drillId": "DRL-MTH-T01-C12-02",
+  "sourceAttribution": "OpenStax Prealgebra 2e, CC BY 4.0",
   "problems": [
     {
-      "form": "bottom-triangle",
-      "category": "Interleaved Synthesis",
-      "context": "Geometry: Trapezoid Lower Diagonal Triangle",
-      "references": [
-        "MTH-T01-C12-U03",
-        "MTH-T01-C12-U04"
-      ],
-      "prompt": "In an isosceles trapezoid $ABCD$, the parallel bases are $AB = 4$ and $CD = 18$, and the non-parallel legs are $AD = BC = 25$. Diagonals $AC$ and $BD$ intersect at point $E$. Find the exact area of lower triangle $CDE$.",
-      "display": "\\text{Trapezoid } ABCD:\\ AB = 4,\\ CD = 18,\\ AD = BC = 25 \\implies \\text{Area}(\\triangle CDE) = ?",
-      "plainText": "(1/2) * 18 * sqrt(25^2 - ((18 - 4)/2)^2) * (18/(4 + 18))",
-      "answerSpec": {
-        "type": "expression",
-        "value": "1944/11"
-      },
-      "answerDisplay": "\\frac{1944}{11}",
-      "answerPlain": "1944/11",
-      "inputHint": "Enter exact fraction or integer e.g. 35/4 or 42",
-      "checkpointHint": "Find trapezoid height $h$ via the Pythagorean theorem on the leg projection, then partition $h$ using similarity ratio $CD : (AB + CD)$.",
-      "commonTrapTag": "trapezoid-diagonal-bisect-trap",
-      "trapDerivation": "(18 * 24) / 4",
-      "steps": [
-        {
-          "latex": "x = \\frac{18 - 4}{2} = 7, \\quad h = \\sqrt{25^2 - 7^2} = 24",
-          "explain": "Symmetrical base offset gives a right triangle with hypotenuse 25 and base 7."
-        },
-        {
-          "latex": "\\triangle ABE \\sim \\triangle CDE \\implies \\frac{h_1}{h_2} = \\frac{4}{18} = \\frac{2}{9}",
-          "explain": "Since $AB \\parallel CD$, alternate interior angles make $\\triangle ABE \\sim \\triangle CDE$."
-        },
-        {
-          "latex": "h_2 = 24 \\times \\frac{9}{2 + 9} = 216/11",
-          "explain": "The lower triangle takes fraction 9/(2+9) of the total height 24."
-        },
-        {
-          "latex": "\\text{Area}(\\triangle CDE) = \\frac{1}{2} \\times 18 \\times 216/11 = 1944/11",
-          "explain": "Calculate area of triangle $CDE$: $\\frac{1}{2} \\times \\text{base} \\times h_2$."
-        }
-      ],
-      "level": 4,
-      "skill": "GEO-TRAPEZOID-HEIGHT",
-      "verificationLevel": "machine-verified",
       "id": "Q01",
-      "templateKey": "trapezoid-similar-triangles",
-      "levelLabel": "Level 4 - Applied Synthesis",
-      "fingerprint": "trapezoid-similar-triangles|bottom-triangle|(#/#) * # * sqrt(#^# - ((# - #)/#)^#) * (#/(# + #))",
+      "verificationLevel": "partial",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c12-perimeter-rectangles-polygons",
+      "context": "garden_fencing_perimeter",
+      "prompt": "A rectangular garden plot has length $14$ meters and width $8$ meters. Calculate the perimeter $P$ in meters using $P = 2(14) + 2(8)$ with dimensions $14$, $8$, and factor $2$.",
+      "display": "P = 2(14) + 2(8)",
+      "plainText": "P = 2*14 + 2*8",
+      "answerDisplay": "44",
+      "givens": {
+        "len": 14,
+        "wid": 8,
+        "factor": 2
+      },
+      "trapGivens": [
+        14,
+        8
+      ],
+      "answerPlain": "44",
+      "answerSpec": {
+        "type": "number",
+        "value": "44",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c12-single-side-addition-trap",
+      "trapDerivation": "14 + 8",
+      "trapValue": "22",
+      "verify": {
+        "source": "44",
+        "trapValue": "22"
+      },
+      "checkpointHint": "Double the length and double the width then add the two quantities together",
+      "references": [
+        "MTH-T01-C12"
+      ],
+      "steps": [
+        {
+          "latex": "2 \\times 14 = 28",
+          "explain": "Double the length."
+        },
+        {
+          "latex": "2 \\times 8 = 16",
+          "explain": "Double the width."
+        },
+        {
+          "latex": "28 + 16 = 44",
+          "explain": "Sum the doubled dimensions to get perimeter 44 meters.",
+          "val": "44"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c12-single-side-addition-trap|direct|P = #*# + #*#",
       "qualityGates": {
         "G1": {
           "passed": true,
-          "archetype": "math-standard"
+          "archetype": "problem-solving"
         },
         "G2": {
           "passed": true,
-          "level": 4,
-          "stepCount": 4,
+          "level": 1,
+          "stepCount": 3,
           "hasTrapOrFlaw": true,
-          "skill": "GEO-TRAPEZOID-HEIGHT",
+          "skill": null,
           "stepRange": [
-            2,
-            6
+            1,
+            3
           ]
         },
         "G4": {
           "passed": true,
-          "trapTag": "trapezoid-diagonal-bisect-trap",
+          "trapTag": "c12-single-side-addition-trap",
           "trapValueVerified": true,
           "weakDistractors": 0,
           "provenanceDistractors": 0
         },
         "G6": {
           "passed": true,
-          "fieldsChecked": 15
+          "fieldsChecked": 12
         },
         "antiLeak": {
           "passed": true,
-          "hintsChecked": 2
+          "hintsChecked": 1
         },
-        "verificationLevel": "machine-verified",
-        "weakDistractors": 0,
-        "G3": {
-          "passed": true,
-          "fingerprint": "trapezoid-similar-triangles|bottom-triangle|(#/#) * # * sqrt(#^# - ((# - #)/#)^#) * (#/(# + #))",
-          "maxAllowedPerFingerprint": 1
-        }
-      },
-      "referenceBadges": [
-        {
-          "code": "MTH-T01-C12-U03",
-          "title": "Use Properties of Angles, Triangles, and the Pythagorean Theorem",
-          "notionUrl": "https://www.notion.so/4003818f8ba080459e0dd81747fad236"
-        },
-        {
-          "code": "MTH-T01-C12-U04",
-          "title": "Use Properties of Rectangles, Triangles, and Trapezoids",
-          "notionUrl": "https://www.notion.so/4003818f8ba080bb8205d0d4b4cd606f"
-        }
-      ],
-      "trapValue": "108",
-      "state": {
-        "userInput": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "lastCheck": null
+        "verificationLevel": "partial",
+        "weakDistractors": 0
       }
     },
     {
-      "form": "single-lune",
-      "category": "Interleaved Synthesis",
-      "context": "Geometry: Single Lune of Hippocrates",
-      "references": [
-        "MTH-T01-C12-U04",
-        "MTH-T01-C12-U05"
-      ],
-      "prompt": "A square of side length $s = 20$ is inscribed inside a circle. Four congruent semicircles are drawn externally on the four sides of the square as diameters, forming four congruent crescent-shaped Lunes of Hippocrates outside the circumscribed circle. Find the exact area of ONE such lune.",
-      "display": "\\text{Single Lune on square of side } s = 20 \\implies \\text{Area}(\\text{1 lune}) = ?",
-      "plainText": "(20^2) / 4",
-      "answerSpec": {
-        "type": "number",
-        "value": "100"
-      },
-      "answerDisplay": "100",
-      "answerPlain": "100",
-      "inputHint": "Enter the integer area of one lune",
-      "checkpointHint": "First find the total area of all four lunes by subtracting the circumscribed circle from the square plus four semicircles, then divide by 4 by symmetry.",
-      "commonTrapTag": "pi-retained-in-lunes-trap",
-      "trapDerivation": "400",
-      "steps": [
-        {
-          "latex": "A_{\\text{square}} = 20^2 = 400, \\quad A_{\\text{circle}} = \\pi(10\\sqrt{2})^2 = 200\\pi",
-          "explain": "Find the area of the inscribed square and circumscribed circle."
-        },
-        {
-          "latex": "A_{\\text{4 semicircles}} = 4 \\times \\left(\\frac{1}{2}\\pi (10)^2\\right) = 200\\pi",
-          "explain": "The four outer semicircles have total area $200\\pi$, matching the circumscribed circle."
-        },
-        {
-          "latex": "A_{\\text{1 lune}} = \\frac{A_{\\text{square}} + A_{\\text{4 semicircles}} - A_{\\text{circle}}}{4} = \\frac{400}{4} = 100",
-          "explain": "The $\\pi$ terms cancel out, leaving one-fourth of the square's area for each lune."
-        }
-      ],
-      "level": 4,
-      "skill": "GEO-CIRCLE-AREA-DIAMETER",
-      "verificationLevel": "machine-verified",
       "id": "Q02",
-      "templateKey": "lunes-hippocrates",
-      "levelLabel": "Level 4 - Applied Synthesis",
-      "fingerprint": "lunes-hippocrates|single-lune|(#^#) / #",
-      "qualityGates": {
-        "G1": {
-          "passed": true,
-          "archetype": "math-standard"
-        },
-        "G2": {
-          "passed": true,
-          "level": 4,
-          "stepCount": 3,
-          "hasTrapOrFlaw": true,
-          "skill": "GEO-CIRCLE-AREA-DIAMETER",
-          "stepRange": [
-            2,
-            6
-          ]
-        },
-        "G4": {
-          "passed": true,
-          "trapTag": "pi-retained-in-lunes-trap",
-          "trapValueVerified": true,
-          "weakDistractors": 0,
-          "provenanceDistractors": 0
-        },
-        "G6": {
-          "passed": true,
-          "fieldsChecked": 13
-        },
-        "antiLeak": {
-          "passed": true,
-          "hintsChecked": 2
-        },
-        "verificationLevel": "machine-verified",
-        "weakDistractors": 0,
-        "G3": {
-          "passed": true,
-          "fingerprint": "lunes-hippocrates|single-lune|(#^#) / #",
-          "maxAllowedPerFingerprint": 1
-        }
+      "verificationLevel": "partial",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c12-area-rectangles-triangles",
+      "context": "sailboat_mainsail_canvas",
+      "prompt": "A triangular sail has base $12$ meters and height $7$ meters. Calculate the area $A$ in square meters by dividing the product of base and height by $2$: evaluate $(12 \\times 7) \\div 2$ with base $12$, height $7$, and divisor $2$.",
+      "display": "A = \\frac{1}{2} \\times 12 \\times 7",
+      "plainText": "A = 0.5 * 12 * 7",
+      "answerDisplay": "42",
+      "givens": {
+        "base": 12,
+        "height": 7,
+        "divisor": 2
       },
-      "referenceBadges": [
-        {
-          "code": "MTH-T01-C12-U04",
-          "title": "Use Properties of Rectangles, Triangles, and Trapezoids",
-          "notionUrl": "https://www.notion.so/4003818f8ba080bb8205d0d4b4cd606f"
-        },
-        {
-          "code": "MTH-T01-C12-U05",
-          "title": "Solve Geometry Applications: Circles and Irregular Figures",
-          "notionUrl": "https://www.notion.so/4003818f8ba080ce8853efc959517a90"
-        }
+      "trapGivens": [
+        12,
+        7
       ],
-      "trapValue": "400",
-      "state": {
-        "userInput": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "lastCheck": null
-      }
-    },
-    {
-      "form": "direct",
-      "category": "Interleaved Synthesis",
-      "context": "Geometry: Circles & Lunes of Hippocrates",
-      "references": [
-        "MTH-T01-C12-U04",
-        "MTH-T01-C12-U05"
-      ],
-      "prompt": "A square of side length $s = 6$ is inscribed inside a circle. Four semicircles are drawn externally on the four sides of the square as diameters. The region outside the circumscribed circle but inside the four semicircles forms four crescent-shaped regions known as the Lunes of Hippocrates. Find the exact total area of all four lunes.",
-      "display": "\\text{Lunes of Hippocrates on square of side } s = 6 \\implies \\text{Total Area} = ?",
-      "plainText": "6^2 + 18*pi - 18*pi",
+      "answerPlain": "42",
       "answerSpec": {
         "type": "number",
-        "value": "36"
+        "value": "42",
+        "tolerance": 0.001
       },
-      "answerDisplay": "36",
-      "answerPlain": "36",
-      "inputHint": "Enter the integer area (pi cancels out!)",
-      "checkpointHint": "Calculate the total area of the four semicircles plus the area of the square, then subtract the area of the circumscribed circle. Notice how the terms involving $\\pi$ cancel out.",
-      "commonTrapTag": "pi-retained-in-lunes-trap",
-      "trapDerivation": "36 / 2",
+      "commonTrapTag": "c12-triangle-forgot-half-factor-trap",
+      "trapDerivation": "12 * 7",
+      "trapValue": "84",
+      "verify": {
+        "source": "42",
+        "trapValue": "84"
+      },
+      "checkpointHint": "Multiply base by height and divide the result by two",
+      "references": [
+        "MTH-T01-C12"
+      ],
       "steps": [
         {
-          "latex": "A_{\\text{square}} = 6^2 = 36",
-          "explain": "The inscribed square has area $6 \\times 6 = 36$."
+          "latex": "12 \\times 7 = 84",
+          "explain": "Multiply base by height."
         },
         {
-          "latex": "R = \\frac{6\\sqrt{2}}{2} = 3\\sqrt{2} \\implies A_{\\text{circle}} = \\pi(3\\sqrt{2})^2 = 18\\pi",
-          "explain": "The diameter of the circumscribed circle is the diagonal of the square."
-        },
-        {
-          "latex": "A_{\\text{4 semicircles}} = 4 \\times \\left(\\frac{1}{2}\\pi (3)^2\\right) = 18\\pi",
-          "explain": "Each side of length 6 is the diameter of a semicircle with radius 3."
-        },
-        {
-          "latex": "A_{\\text{lunes}} = (A_{\\text{square}} + A_{\\text{4 semicircles}}) - A_{\\text{circle}} = (36 + 18\\pi) - 18\\pi = 36",
-          "explain": "The area of the circumscribed circle perfectly cancels the area of the four semicircles, leaving exactly the area of the square!"
+          "latex": "\\frac{84}{2} = 42",
+          "explain": "Divide product by 2 to obtain area 42 square meters.",
+          "val": "42"
         }
       ],
-      "level": 4,
-      "skill": "GEO-CIRCLE-AREA-DIAMETER",
-      "verificationLevel": "machine-verified",
-      "id": "Q03",
-      "templateKey": "lunes-hippocrates",
-      "levelLabel": "Level 4 - Applied Synthesis",
-      "fingerprint": "lunes-hippocrates|direct|#^# + #*pi - #*pi",
+      "form": "direct",
+      "fingerprint": "c12-triangle-forgot-half-factor-trap|direct|A = # * # * #",
       "qualityGates": {
         "G1": {
           "passed": true,
-          "archetype": "math-standard"
+          "archetype": "problem-solving"
         },
         "G2": {
           "passed": true,
-          "level": 4,
-          "stepCount": 4,
+          "level": 1,
+          "stepCount": 2,
           "hasTrapOrFlaw": true,
-          "skill": "GEO-CIRCLE-AREA-DIAMETER",
+          "skill": null,
           "stepRange": [
-            2,
-            6
+            1,
+            3
           ]
         },
         "G4": {
           "passed": true,
-          "trapTag": "pi-retained-in-lunes-trap",
+          "trapTag": "c12-triangle-forgot-half-factor-trap",
           "trapValueVerified": true,
           "weakDistractors": 0,
           "provenanceDistractors": 0
         },
         "G6": {
           "passed": true,
-          "fieldsChecked": 15
+          "fieldsChecked": 10
         },
         "antiLeak": {
           "passed": true,
-          "hintsChecked": 2
+          "hintsChecked": 1
         },
-        "verificationLevel": "machine-verified",
-        "weakDistractors": 0,
-        "G3": {
-          "passed": true,
-          "fingerprint": "lunes-hippocrates|direct|#^# + #*pi - #*pi",
-          "maxAllowedPerFingerprint": 1
-        }
-      },
-      "referenceBadges": [
-        {
-          "code": "MTH-T01-C12-U04",
-          "title": "Use Properties of Rectangles, Triangles, and Trapezoids",
-          "notionUrl": "https://www.notion.so/4003818f8ba080bb8205d0d4b4cd606f"
-        },
-        {
-          "code": "MTH-T01-C12-U05",
-          "title": "Solve Geometry Applications: Circles and Irregular Figures",
-          "notionUrl": "https://www.notion.so/4003818f8ba080ce8853efc959517a90"
-        }
-      ],
-      "trapValue": "18",
-      "state": {
-        "userInput": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "lastCheck": null
+        "verificationLevel": "partial",
+        "weakDistractors": 0
       }
     },
     {
-      "form": "side-triangle",
-      "category": "Interleaved Synthesis",
-      "context": "Geometry: Trapezoid Flank Diagonal Triangle",
-      "references": [
-        "MTH-T01-C12-U03",
-        "MTH-T01-C12-U04"
-      ],
-      "prompt": "In an isosceles trapezoid $ABCD$, the parallel bases are $AB = 12$ and $CD = 28$, and the non-parallel legs are $AD = BC = 17$. Diagonals $AC$ and $BD$ intersect at point $E$. Find the exact area of flank triangle $ADE$.",
-      "display": "\\text{Trapezoid } ABCD:\\ AB = 12,\\ CD = 28,\\ AD = BC = 17 \\implies \\text{Area}(\\triangle ADE) = ?",
-      "plainText": "(1/2) * 12 * sqrt(17^2 - ((28 - 12)/2)^2) * (28/(12 + 28))",
-      "answerSpec": {
-        "type": "expression",
-        "value": "63"
+      "id": "Q03",
+      "verificationLevel": "partial",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c12-circle-circumference-diameter",
+      "context": "circular_plaza_perimeter",
+      "prompt": "A circular plaza has radius $15$ meters. Calculate the circumference coefficient $c$ in $C = c\\pi$ using $c = 2 \\times 15$ with multiplier $2$ and radius $15$.",
+      "display": "c = 2 \\times 15",
+      "plainText": "c = 2 * 15",
+      "answerDisplay": "30",
+      "givens": {
+        "mult": 2,
+        "radius": 15
       },
-      "answerDisplay": "63",
-      "answerPlain": "63",
-      "inputHint": "Enter exact fraction or integer e.g. 35/4 or 42",
-      "checkpointHint": "Find total height $h$, compute $\\text{Area}(\\triangle ABD) = \\frac{1}{2}(AB)h$, and subtract $\\text{Area}(\\triangle ABE)$ found via similar triangles.",
-      "commonTrapTag": "trapezoid-diagonal-bisect-trap",
-      "trapDerivation": "((12 + 28) * 15) / 8",
+      "trapGivens": [
+        2,
+        15
+      ],
+      "answerPlain": "30",
+      "answerSpec": {
+        "type": "number",
+        "value": "30",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c12-circumference-add-instead-of-multiply-trap",
+      "trapDerivation": "2 + 15",
+      "trapValue": "17",
+      "verify": {
+        "source": "30",
+        "trapValue": "17"
+      },
+      "checkpointHint": "Multiply the radius by two to obtain the diameter coefficient",
+      "references": [
+        "MTH-T01-C12"
+      ],
       "steps": [
         {
-          "latex": "x = \\frac{28 - 12}{2} = 8, \\quad h = \\sqrt{17^2 - 8^2} = 15",
-          "explain": "Use the Pythagorean theorem on the leg projection to find height $h = 15$."
+          "latex": "C = 2\\pi r = 2(15)\\pi",
+          "explain": "Substitute radius 15 into circumference formula."
         },
         {
-          "latex": "h_1 = 15 \\times \\frac{3}{3 + 7} = 9/2 \\implies \\text{Area}(\\triangle ABE) = \\frac{1}{2}(12)(9/2) = 27",
-          "explain": "Use similarity ratio $AB : CD$ to find height $h_1$ and area of upper triangle $ABE$."
-        },
-        {
-          "latex": "\\text{Area}(\\triangle ABD) = \\frac{1}{2}(12)(15) = 90 \\implies \\text{Area}(\\triangle ADE) = 90 - 27 = 63",
-          "explain": "Subtract $\\text{Area}(\\triangle ABE)$ from $\\text{Area}(\\triangle ABD)$."
+          "latex": "2 \\times 15 = 30",
+          "explain": "Multiply 2 by 15 to get coefficient 30.",
+          "val": "30"
         }
       ],
-      "level": 4,
-      "skill": "GEO-TRAPEZOID-HEIGHT",
-      "verificationLevel": "machine-verified",
-      "id": "Q04",
-      "templateKey": "trapezoid-similar-triangles",
-      "levelLabel": "Level 4 - Applied Synthesis",
-      "fingerprint": "trapezoid-similar-triangles|side-triangle|(#/#) * # * sqrt(#^# - ((# - #)/#)^#) * (#/(# + #))",
+      "form": "direct",
+      "fingerprint": "c12-circumference-add-instead-of-multiply-trap|direct|c = # * #",
       "qualityGates": {
         "G1": {
           "passed": true,
-          "archetype": "math-standard"
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            4
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c12-circumference-add-instead-of-multiply-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      }
+    },
+    {
+      "id": "Q04",
+      "verificationLevel": "partial",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c12-circle-area",
+      "context": "lawn_sprinkler_coverage",
+      "prompt": "A circular lawn sprinkler covers a circular region of radius $6$ meters. Find the area coefficient $k$ in $A = k\\pi$ by evaluating the power with base $6$ and exponent $2$: evaluate $6 \\times 6$.",
+      "display": "k = 6^2",
+      "plainText": "k = 6^2",
+      "answerDisplay": "36",
+      "givens": {
+        "radius": 6,
+        "factor": 2
+      },
+      "trapGivens": [
+        6,
+        2
+      ],
+      "answerPlain": "36",
+      "answerSpec": {
+        "type": "number",
+        "value": "36",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c12-double-instead-of-square-radius-trap",
+      "trapDerivation": "6 * 2",
+      "trapValue": "12",
+      "verify": {
+        "source": "36",
+        "trapValue": "12"
+      },
+      "checkpointHint": "Multiply the radius by itself rather than doubling it",
+      "references": [
+        "MTH-T01-C12"
+      ],
+      "steps": [
+        {
+          "latex": "A = \\pi r^2 = \\pi (6^2)",
+          "explain": "Apply circular area formula with radius 6."
+        },
+        {
+          "latex": "6^2 = 36",
+          "explain": "Square the radius 6 to get coefficient 36.",
+          "val": "36"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c12-double-instead-of-square-radius-trap|direct|k = #^#",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            4
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c12-double-instead-of-square-radius-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      }
+    },
+    {
+      "id": "Q05",
+      "verificationLevel": "partial",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c12-volume-rectangular-solid",
+      "context": "cargo_container_capacity",
+      "prompt": "A storage cargo container has length $8$ meters, width $5$ meters, and height $3$ meters. Calculate the volume $V$ in cubic meters using $V = 8 \\times 5 \\times 3$ with dimensions $8$, $5$, and $3$.",
+      "display": "V = 8 \\times 5 \\times 3",
+      "plainText": "V = 8 * 5 * 3",
+      "answerDisplay": "120",
+      "givens": {
+        "len": 8,
+        "wid": 5,
+        "ht": 3
+      },
+      "trapGivens": [
+        8,
+        5
+      ],
+      "answerPlain": "120",
+      "answerSpec": {
+        "type": "number",
+        "value": "120",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c12-sum-dimensions-instead-of-product-trap",
+      "trapDerivation": "8 + 5 + 3",
+      "trapValue": "16",
+      "verify": {
+        "source": "120",
+        "trapValue": "16"
+      },
+      "checkpointHint": "Multiply all three spatial dimensions together to determine cubic volume",
+      "references": [
+        "MTH-T01-C12"
+      ],
+      "steps": [
+        {
+          "latex": "8 \\times 5 = 40",
+          "explain": "Multiply length by width to obtain base area 40."
+        },
+        {
+          "latex": "40 \\times 3 = 120",
+          "explain": "Multiply base area by height 3 to obtain volume 120 cubic meters.",
+          "val": "120"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c12-sum-dimensions-instead-of-product-trap|direct|V = # * # * #",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            4
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c12-sum-dimensions-instead-of-product-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      }
+    },
+    {
+      "id": "Q06",
+      "verificationLevel": "partial",
+      "level": 3,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c12-volume-cylinder",
+      "context": "cylindrical_water_reservoir",
+      "prompt": "A cylindrical reservoir has radius $4$ meters and height $10$ meters. Calculate the volume coefficient $k$ in $V = k\\pi$ using $4 \\times 4 \\times 10$, with radius $4$ and height $10$.",
+      "display": "k = 4^2 \\times 10",
+      "plainText": "k = 4^2 * 10",
+      "answerDisplay": "160",
+      "givens": {
+        "radius": 4,
+        "ht": 10
+      },
+      "trapGivens": [
+        4,
+        10
+      ],
+      "answerPlain": "160",
+      "answerSpec": {
+        "type": "number",
+        "value": "160",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c12-cylinder-linear-radius-trap",
+      "trapDerivation": "4 * 10",
+      "trapValue": "40",
+      "verify": {
+        "source": "160",
+        "trapValue": "40"
+      },
+      "checkpointHint": "Square the radius first to find the circular base area before multiplying by height",
+      "references": [
+        "MTH-T01-C12"
+      ],
+      "steps": [
+        {
+          "latex": "4^2 = 16",
+          "explain": "Square the base radius 4."
+        },
+        {
+          "latex": "16 \\times 10 = 160",
+          "explain": "Multiply base area coefficient by height 10 to get 160.",
+          "val": "160"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c12-cylinder-linear-radius-trap|direct|k = #^# * #",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            5
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c12-cylinder-linear-radius-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      }
+    },
+    {
+      "id": "Q07",
+      "verificationLevel": "partial",
+      "level": 3,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c12-complementary-supplementary-angles",
+      "context": "roof_rafter_joint_angles",
+      "prompt": "Two angles are complementary and sum to $90$ degrees. If the first angle measures $34$ degrees, calculate the measure of the complementary angle in degrees using $90 - 34$ with total $90$ and angle $34$.",
+      "display": "90 - 34 = ?",
+      "plainText": "90 - 34 = a",
+      "answerDisplay": "56",
+      "givens": {
+        "total": 90,
+        "angle": 34
+      },
+      "trapGivens": [
+        90,
+        34
+      ],
+      "answerPlain": "56",
+      "answerSpec": {
+        "type": "number",
+        "value": "56",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c12-subtraction-sign-inversion-trap",
+      "trapDerivation": "90 + 34",
+      "trapValue": "124",
+      "verify": {
+        "source": "56",
+        "trapValue": "124"
+      },
+      "checkpointHint": "Subtract the given angle measure from ninety degrees",
+      "references": [
+        "MTH-T01-C12"
+      ],
+      "steps": [
+        {
+          "latex": "\\alpha + 34^\\circ = 90^\\circ",
+          "explain": "Set sum of complementary angles to 90 degrees."
+        },
+        {
+          "latex": "\\alpha = 90^\\circ - 34^\\circ = 56^\\circ",
+          "explain": "Subtract 34 from 90 to get 56 degrees.",
+          "val": "56"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c12-subtraction-sign-inversion-trap|direct|# - # = a",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            5
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c12-subtraction-sign-inversion-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      }
+    },
+    {
+      "id": "Q08",
+      "verificationLevel": "partial",
+      "level": 3,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c12-triangle-angle-sum-invariance",
+      "context": "bridge_truss_triangulation",
+      "prompt": "In a structural triangle, two angles measure $45$ degrees and $65$ degrees, and all three angles sum to $180$ degrees. Calculate the third angle in degrees using $180 - (45 + 65)$ with sum $180$, and angles $45$ and $65$.",
+      "display": "180 - (45 + 65) = ?",
+      "plainText": "180 - (45 + 65) = c",
+      "answerDisplay": "70",
+      "givens": {
+        "sum_ang": 180,
+        "a1": 45,
+        "a2": 65
+      },
+      "trapGivens": [
+        45,
+        65
+      ],
+      "answerPlain": "70",
+      "answerSpec": {
+        "type": "number",
+        "value": "70",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c12-third-angle-omission-trap",
+      "trapDerivation": "45 + 65",
+      "trapValue": "110",
+      "verify": {
+        "source": "70",
+        "trapValue": "110"
+      },
+      "checkpointHint": "Add the two known angles together and subtract their sum from one hundred eighty degrees",
+      "references": [
+        "MTH-T01-C12"
+      ],
+      "steps": [
+        {
+          "latex": "45^\\circ + 65^\\circ = 110^\\circ",
+          "explain": "Sum the two known angle measures."
+        },
+        {
+          "latex": "180^\\circ - 110^\\circ = 70^\\circ",
+          "explain": "Subtract sum from 180 to obtain third angle 70 degrees.",
+          "val": "70"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c12-third-angle-omission-trap|direct|# - (# + #) = c",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            5
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c12-third-angle-omission-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      }
+    },
+    {
+      "id": "Q09",
+      "verificationLevel": "partial",
+      "level": 4,
+      "category": "Applied Problem",
+      "archetype": "problem-solving",
+      "archetypeKey": "c12-composite-geometric-area-modeling",
+      "context": "building_gable_facade_area",
+      "prompt": "A building wall facade consists of a lower rectangle with width $10$ meters and height $6$ meters, topped by a triangular gable with base $10$ meters and height $4$ meters. Calculate the total wall surface area $A$ in square meters by summing the rectangle area $10 \\times 6$ and the gable triangle area $(10 \\times 4) \\div 2$, with dimensions $10$, $6$, $4$, and divisor $2$.",
+      "display": "A = 10 \\times 6 + \\frac{1}{2} \\times 10 \\times 4",
+      "plainText": "A = 10 * 6 + 0.5 * 10 * 4",
+      "answerDisplay": "80",
+      "givens": {
+        "base": 10,
+        "rect_ht": 6,
+        "tri_ht": 4,
+        "divisor": 2
+      },
+      "trapGivens": [
+        10,
+        4
+      ],
+      "answerPlain": "80",
+      "answerSpec": {
+        "type": "number",
+        "value": "80",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c12-omitted-half-factor-gable-trap",
+      "trapDerivation": "10 * 6 + 10 * 4",
+      "trapValue": "100",
+      "verify": {
+        "source": "80",
+        "trapValue": "100"
+      },
+      "checkpointHint": "Compute the rectangular area and triangular area separately before summing both parts",
+      "references": [
+        "MTH-T01-C12",
+        "OpenStax Prealgebra 2e §9.3"
+      ],
+      "competencies": [
+        "composite-area-modeling",
+        "geometric-partition-synthesis"
+      ],
+      "constraints": [
+        "strictly positive dimensions",
+        "shared collinear boundary"
+      ],
+      "steps": [
+        {
+          "latex": "10 \\times 6 = 60",
+          "explain": "Calculate rectangular wall area."
+        },
+        {
+          "latex": "\\frac{1}{2} \\times 10 \\times 4 = 20",
+          "explain": "Calculate triangular gable area."
+        },
+        {
+          "latex": "60 + 20 = 80",
+          "explain": "Sum rectangular and triangular regions to obtain 80 square meters.",
+          "val": "80"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c12-omitted-half-factor-gable-trap|direct|A = # * # + # * # * #",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
         },
         "G2": {
           "passed": true,
           "level": 4,
           "stepCount": 3,
           "hasTrapOrFlaw": true,
-          "skill": "GEO-TRAPEZOID-HEIGHT",
+          "skill": null,
           "stepRange": [
             2,
             6
@@ -505,105 +776,94 @@
         },
         "G4": {
           "passed": true,
-          "trapTag": "trapezoid-diagonal-bisect-trap",
+          "trapTag": "c12-omitted-half-factor-gable-trap",
           "trapValueVerified": true,
           "weakDistractors": 0,
           "provenanceDistractors": 0
         },
         "G6": {
           "passed": true,
-          "fieldsChecked": 13
+          "fieldsChecked": 12
         },
         "antiLeak": {
           "passed": true,
-          "hintsChecked": 2
+          "hintsChecked": 1
         },
-        "verificationLevel": "machine-verified",
-        "weakDistractors": 0,
-        "G3": {
-          "passed": true,
-          "fingerprint": "trapezoid-similar-triangles|side-triangle|(#/#) * # * sqrt(#^# - ((# - #)/#)^#) * (#/(# + #))",
-          "maxAllowedPerFingerprint": 1
-        }
-      },
-      "referenceBadges": [
-        {
-          "code": "MTH-T01-C12-U03",
-          "title": "Use Properties of Angles, Triangles, and the Pythagorean Theorem",
-          "notionUrl": "https://www.notion.so/4003818f8ba080459e0dd81747fad236"
-        },
-        {
-          "code": "MTH-T01-C12-U04",
-          "title": "Use Properties of Rectangles, Triangles, and Trapezoids",
-          "notionUrl": "https://www.notion.so/4003818f8ba080bb8205d0d4b4cd606f"
-        }
-      ],
-      "trapValue": "75",
-      "state": {
-        "userInput": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "lastCheck": null
+        "verificationLevel": "partial",
+        "weakDistractors": 0
       }
     },
     {
-      "form": "direct",
-      "category": "Interleaved Synthesis",
-      "context": "Geometry: Trapezoid & Similar Triangles Partition",
-      "references": [
-        "MTH-T01-C12-U03",
-        "MTH-T01-C12-U04"
-      ],
-      "prompt": "In an isosceles trapezoid $ABCD$, the parallel bases are $AB = 4$ and $CD = 18$, and the non-parallel legs are $AD = BC = 25$. Diagonals $AC$ and $BD$ intersect at point $E$. Find the exact area of triangle $ABE$.",
-      "display": "\\text{Trapezoid } ABCD:\\ AB = 4,\\ CD = 18,\\ AD = BC = 25 \\implies \\text{Area}(\\triangle ABE) = ?",
-      "plainText": "(1/2) * 4 * sqrt(25^2 - ((18 - 4)/2)^2) * (4/(4 + 18))",
-      "answerSpec": {
-        "type": "expression",
-        "value": "96/11"
+      "id": "Q10",
+      "verificationLevel": "partial",
+      "level": 4,
+      "category": "Applied Problem",
+      "archetype": "problem-solving",
+      "archetypeKey": "c12-applied-cylindrical-surface-coating-synthesis",
+      "context": "water_tower_protective_coating",
+      "prompt": "A cylindrical water tower has radius $5$ meters and height $12$ meters. Calculate the lateral surface area coefficient $L$ in $A_{\\text{lat}} = L\\pi$ using $2 \\times 5 \\times 12$ with multiplier $2$, radius $5$, and height $12$.",
+      "display": "L = 2 \\times 5 \\times 12",
+      "plainText": "L = 2 * 5 * 12",
+      "answerDisplay": "120",
+      "givens": {
+        "mult": 2,
+        "radius": 5,
+        "ht": 12
       },
-      "answerDisplay": "\\frac{96}{11}",
-      "answerPlain": "96/11",
-      "inputHint": "Enter exact fraction or integer e.g. 35/4 or 42",
-      "checkpointHint": "Find trapezoid height $h$ by projecting $AB$ onto $CD$ to get leg base offset $(CD - AB)/2$, then calculate $h = \\sqrt{\\text{leg}^2 - \\text{offset}^2}$. Use similar triangles $\\triangle ABE \\sim \\triangle CDE$ with ratio $AB : CD$ to partition the height.",
-      "commonTrapTag": "trapezoid-diagonal-bisect-trap",
-      "trapDerivation": "(4 * 24) / 4",
+      "trapGivens": [
+        5,
+        12
+      ],
+      "answerPlain": "120",
+      "answerSpec": {
+        "type": "number",
+        "value": "120",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c12-omitted-circumference-factor-trap",
+      "trapDerivation": "5 * 12",
+      "trapValue": "60",
+      "verify": {
+        "source": "120",
+        "trapValue": "60"
+      },
+      "checkpointHint": "Multiply twice the radius by the cylinder height to find the unrolled lateral surface area",
+      "references": [
+        "MTH-T01-C12",
+        "OpenStax Prealgebra 2e §9.4"
+      ],
+      "competencies": [
+        "cylindrical-lateral-area",
+        "geometric-surface-modeling"
+      ],
+      "constraints": [
+        "right circular cylinder",
+        "strictly positive dimensions"
+      ],
       "steps": [
         {
-          "latex": "x = \\frac{18 - 4}{2} = 7, \\quad h = \\sqrt{25^2 - 7^2} = \\sqrt{625 - 49} = 24",
-          "explain": "Symmetrical base offset gives a right triangle with hypotenuse 25 and base 7."
+          "latex": "2 \\times 5 = 10",
+          "explain": "Calculate base circumference coefficient 2r = 10."
         },
         {
-          "latex": "\\triangle ABE \\sim \\triangle CDE \\implies \\frac{h_1}{h_2} = \\frac{4}{18} = \\frac{2}{9}",
-          "explain": "Since $AB \\parallel CD$, alternate interior angles make $\\triangle ABE \\sim \\triangle CDE$."
-        },
-        {
-          "latex": "h_1 = 24 \\times \\frac{2}{2 + 9} = 48/11",
-          "explain": "The total height 24 is partitioned in ratio 2:9."
-        },
-        {
-          "latex": "\\text{Area}(\\triangle ABE) = \\frac{1}{2} \\times 4 \\times 48/11 = 96/11",
-          "explain": "Calculate area of triangle $ABE$: $\\frac{1}{2} \\times \\text{base} \\times h_1$."
+          "latex": "10 \\times 12 = 120",
+          "explain": "Multiply circumference coefficient by height 12 to get 120.",
+          "val": "120"
         }
       ],
-      "level": 4,
-      "skill": "GEO-TRAPEZOID-HEIGHT",
-      "verificationLevel": "machine-verified",
-      "id": "Q05",
-      "templateKey": "trapezoid-similar-triangles",
-      "levelLabel": "Level 4 - Applied Synthesis",
-      "fingerprint": "trapezoid-similar-triangles|direct|(#/#) * # * sqrt(#^# - ((# - #)/#)^#) * (#/(# + #))",
+      "form": "direct",
+      "fingerprint": "c12-omitted-circumference-factor-trap|direct|L = # * # * #",
       "qualityGates": {
         "G1": {
           "passed": true,
-          "archetype": "math-standard"
+          "archetype": "problem-solving"
         },
         "G2": {
           "passed": true,
           "level": 4,
-          "stepCount": 4,
+          "stepCount": 2,
           "hasTrapOrFlaw": true,
-          "skill": "GEO-TRAPEZOID-HEIGHT",
+          "skill": null,
           "stepRange": [
             2,
             6
@@ -611,53 +871,37 @@
         },
         "G4": {
           "passed": true,
-          "trapTag": "trapezoid-diagonal-bisect-trap",
+          "trapTag": "c12-omitted-circumference-factor-trap",
           "trapValueVerified": true,
           "weakDistractors": 0,
           "provenanceDistractors": 0
         },
         "G6": {
           "passed": true,
-          "fieldsChecked": 15
+          "fieldsChecked": 10
         },
         "antiLeak": {
           "passed": true,
-          "hintsChecked": 2
+          "hintsChecked": 1
         },
-        "verificationLevel": "machine-verified",
-        "weakDistractors": 0,
-        "G3": {
-          "passed": true,
-          "fingerprint": "trapezoid-similar-triangles|direct|(#/#) * # * sqrt(#^# - ((# - #)/#)^#) * (#/(# + #))",
-          "maxAllowedPerFingerprint": 1
-        }
-      },
-      "referenceBadges": [
-        {
-          "code": "MTH-T01-C12-U03",
-          "title": "Use Properties of Angles, Triangles, and the Pythagorean Theorem",
-          "notionUrl": "https://www.notion.so/4003818f8ba080459e0dd81747fad236"
-        },
-        {
-          "code": "MTH-T01-C12-U04",
-          "title": "Use Properties of Rectangles, Triangles, and Trapezoids",
-          "notionUrl": "https://www.notion.so/4003818f8ba080bb8205d0d4b4cd606f"
-        }
-      ],
-      "trapValue": "24",
-      "state": {
-        "userInput": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "lastCheck": null
+        "verificationLevel": "partial",
+        "weakDistractors": 0
       }
     }
   ],
+  "title": "Math Models and Geometry — Verified Math Drill (10 Qs)",
+  "schemaVersion": "2.0-math",
+  "subject": "MATH",
+  "createdAt": "2026-11-09 20:40:01",
+  "config": {
+    "questionCount": 10,
+    "difficulty": "ALL",
+    "difficultyMode": "AI Synthesized Reasoning Mode"
+  },
   "sessionSummary": {
     "practiceStatus": "Ready",
     "score": 0,
-    "maxScore": 5,
+    "maxScore": 10,
     "accuracyPct": 0,
     "mistakeCategories": [],
     "divergedStepsSummary": "",

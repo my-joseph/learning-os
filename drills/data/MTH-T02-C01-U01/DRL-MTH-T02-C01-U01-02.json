@@ -1,0 +1,872 @@
+{
+  "unitCode": "MTH-T02-C01-U01",
+  "unitTitle": "Complex Numbers",
+  "topicTitle": "Complex Numbers",
+  "drillId": "DRL-MTH-T02-C01-U01-02",
+  "sourceAttribution": "OpenStax Intermediate Algebra 2e, CC BY 4.0",
+  "problems": [
+    {
+      "id": "Q01",
+      "verificationLevel": "partial",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-imaginary-unit-definition",
+      "context": "ac_phasor_scaling",
+      "prompt": "Evaluate the expression $3i^2 + 10$ using the fundamental identity $i^2 = -1$. By substituting $-1$, calculate $10 - 3$ with constant $10$ and coefficient $3$.",
+      "display": "3i^2 + 10 = 3(-1) + 10 = ?",
+      "plainText": "10 - 3 = v",
+      "answerDisplay": "7",
+      "givens": {
+        "const": 10,
+        "coeff": 3,
+        "unit_val": 1
+      },
+      "answerPlain": "7",
+      "answerSpec": {
+        "type": "number",
+        "value": "7",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "t02-c01-u01-addition-instead-of-multiplication-trap",
+      "trapDerivation": "10 + 3",
+      "trapValue": "13",
+      "verify": {
+        "source": "7",
+        "trapValue": "13"
+      },
+      "checkpointHint": "Substitute negative one for the imaginary unit squared and evaluate the resulting arithmetic",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "steps": [
+        {
+          "latex": "i^2 = -1 \\implies 3i^2 + 10 = 3(-1) + 10",
+          "explain": "Substitute -1 for i^2."
+        },
+        {
+          "latex": "-3 + 10 = 7",
+          "explain": "Add -3 and 10 to obtain 7.",
+          "val": "7"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "t02-c01-u01-addition-instead-of-multiplication-trap|direct|# - # = v",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            1,
+            3
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c01-u01-addition-instead-of-multiplication-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      }
+    },
+    {
+      "id": "Q02",
+      "verificationLevel": "partial",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-square-root-negative-numbers",
+      "context": "undamped_circuit_resonance",
+      "prompt": "Simplify the radical $\\sqrt{-36}$ into imaginary form $bi$. Find the positive real coefficient $b$ using radicand magnitude $36$ and index $2$, evaluating $\\sqrt{36}$.",
+      "display": "\\sqrt{-36} = i\\sqrt{36} = ?i",
+      "plainText": "sqrt(36) = b",
+      "answerDisplay": "6",
+      "givens": {
+        "radicand": 36,
+        "idx": 2
+      },
+      "answerPlain": "6",
+      "answerSpec": {
+        "type": "number",
+        "value": "6",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "t02-c01-u01-divide-by-two-instead-of-root-trap",
+      "trapDerivation": "36 / 2",
+      "trapValue": "18",
+      "verify": {
+        "source": "6",
+        "trapValue": "18"
+      },
+      "checkpointHint": "Factor out the imaginary unit and extract the principal square root of the positive radicand",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "steps": [
+        {
+          "latex": "\\sqrt{-36} = \\sqrt{-1} \\times \\sqrt{36} = i\\sqrt{36}",
+          "explain": "Separate imaginary factor."
+        },
+        {
+          "latex": "\\sqrt{36} = 6 \\implies 6i",
+          "explain": "Extract square root of 36 to get coefficient 6.",
+          "val": "6"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "t02-c01-u01-divide-by-two-instead-of-root-trap|direct|sqrt(#) = b",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            1,
+            3
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c01-u01-divide-by-two-instead-of-root-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      }
+    },
+    {
+      "id": "Q03",
+      "verificationLevel": "partial",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-adding-complex-numbers",
+      "context": "phasor_voltage_superposition",
+      "prompt": "Add the complex numbers $(8 + 5i) + (4 + 9i)$ with real parts $8$ and $4$, and imaginary parts $5$ and $9$. Calculate the combined real component using $8 + 4$.",
+      "display": "(8 + 5i) + (4 + 9i) = (8 + 4) + (5 + 9)i",
+      "plainText": "8 + 4 = r",
+      "answerDisplay": "12",
+      "givens": {
+        "r1": 8,
+        "r2": 4,
+        "i1": 5,
+        "i2": 9
+      },
+      "answerPlain": "12",
+      "answerSpec": {
+        "type": "number",
+        "value": "12",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "t02-c01-u01-multiply-real-parts-trap",
+      "trapDerivation": "8 * 4",
+      "trapValue": "32",
+      "verify": {
+        "source": "12",
+        "trapValue": "32"
+      },
+      "checkpointHint": "Sum the real parts independently from the imaginary parts",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "steps": [
+        {
+          "latex": "\\text{Re} = 8 + 4 = 12",
+          "explain": "Add the real parts."
+        },
+        {
+          "latex": "12",
+          "explain": "The combined real component is 12.",
+          "val": "12"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "t02-c01-u01-multiply-real-parts-trap|direct|# + # = r",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            4
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c01-u01-multiply-real-parts-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      }
+    },
+    {
+      "id": "Q04",
+      "verificationLevel": "partial",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-subtracting-complex-numbers",
+      "context": "differential_voltage_drop",
+      "prompt": "Subtract the complex numbers $(15 + 12i) - (6 + 5i)$ with real parts $15$ and $6$, and imaginary parts $12$ and $5$. Calculate the resulting imaginary component using $12 - 5$.",
+      "display": "(15 + 12i) - (6 + 5i) = 9 + (12 - 5)i",
+      "plainText": "12 - 5 = im",
+      "answerDisplay": "7",
+      "givens": {
+        "r1": 15,
+        "r2": 6,
+        "i1": 12,
+        "i2": 5
+      },
+      "answerPlain": "7",
+      "answerSpec": {
+        "type": "number",
+        "value": "7",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "t02-c01-u01-add-imaginary-parts-in-subtraction-trap",
+      "trapDerivation": "12 + 5",
+      "trapValue": "17",
+      "verify": {
+        "source": "7",
+        "trapValue": "17"
+      },
+      "checkpointHint": "Subtract the second imaginary coefficient from the first imaginary coefficient",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "steps": [
+        {
+          "latex": "\\text{Im} = 12 - 5 = 7",
+          "explain": "Subtract imaginary coefficients."
+        },
+        {
+          "latex": "7",
+          "explain": "The resulting imaginary component is 7.",
+          "val": "7"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "t02-c01-u01-add-imaginary-parts-in-subtraction-trap|direct|# - # = im",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            4
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c01-u01-add-imaginary-parts-in-subtraction-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      }
+    },
+    {
+      "id": "Q05",
+      "verificationLevel": "partial",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-multiplying-pure-imaginary",
+      "context": "rf_reactive_power_coupling",
+      "prompt": "Multiply the pure imaginary numbers $(4i) \\times (6i)$ with coefficients $4$ and $6$. Applying $i^2 = -1$ yields $-(4 \\times 6)$. Calculate the absolute magnitude of the product using $4 \\times 6$.",
+      "display": "|(4i)(6i)| = |24i^2| = |-24|",
+      "plainText": "4 * 6 = p",
+      "answerDisplay": "24",
+      "givens": {
+        "c1": 4,
+        "c2": 6,
+        "unit_val": 1
+      },
+      "answerPlain": "24",
+      "answerSpec": {
+        "type": "number",
+        "value": "24",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "t02-c01-u01-add-pure-imaginary-coefficients-trap",
+      "trapDerivation": "4 + 6",
+      "trapValue": "10",
+      "verify": {
+        "source": "24",
+        "trapValue": "10"
+      },
+      "checkpointHint": "Multiply the real coefficients together and substitute negative one for i squared",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "steps": [
+        {
+          "latex": "(4i)(6i) = (4 \\times 6)i^2 = 24(-1) = -24",
+          "explain": "Multiply coefficients and apply i^2 = -1."
+        },
+        {
+          "latex": "|-24| = 24",
+          "explain": "The absolute product magnitude is 24.",
+          "val": "24"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "t02-c01-u01-add-pure-imaginary-coefficients-trap|direct|# * # = p",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            4
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c01-u01-add-pure-imaginary-coefficients-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      }
+    },
+    {
+      "id": "Q06",
+      "verificationLevel": "partial",
+      "level": 3,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-multiplying-complex-binomials",
+      "context": "dsp_fourier_kernel_modulation",
+      "prompt": "Expand the complex binomial product $(2 + 3i)(4 + 5i)$ with coefficients $2$, $3$, $4$, and $5$. Calculate the resulting imaginary part using $2 \\times 5 + 3 \\times 4$.",
+      "display": "\\text{Im}((2 + 3i)(4 + 5i)) = 2(5) + 3(4)",
+      "plainText": "2*5 + 3*4 = im",
+      "answerDisplay": "22",
+      "givens": {
+        "a": 2,
+        "b": 3,
+        "c": 4,
+        "d": 5
+      },
+      "answerPlain": "22",
+      "answerSpec": {
+        "type": "number",
+        "value": "22",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "t02-c01-u01-wrong-product-sum-trap",
+      "trapDerivation": "2 * 4 + 3 * 5",
+      "trapValue": "23",
+      "verify": {
+        "source": "22",
+        "trapValue": "23"
+      },
+      "checkpointHint": "Multiply outer terms and inner terms and sum the two products to find the imaginary coefficient",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "steps": [
+        {
+          "latex": "2(5) = 10 \\land 3(4) = 12",
+          "explain": "Compute outer and inner products."
+        },
+        {
+          "latex": "10 + 12 = 22",
+          "explain": "Sum outer and inner products to obtain imaginary coefficient 22.",
+          "val": "22"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "t02-c01-u01-wrong-product-sum-trap|direct|#*# + #*# = im",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            5
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c01-u01-wrong-product-sum-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      }
+    },
+    {
+      "id": "Q07",
+      "verificationLevel": "partial",
+      "level": 3,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-complex-conjugates-modulus",
+      "context": "signal_envelope_magnitude",
+      "prompt": "For the complex number $z = 3 + 4i$ with real part $3$ and imaginary part $4$, evaluate the product with its conjugate $z\\bar{z} = 3^2 + 4^2$. Calculate $3 \\times 3 + 4 \\times 4$ with components $3$ and $4$.",
+      "display": "z\\bar{z} = 3^2 + 4^2 = 9 + 16",
+      "plainText": "3^2 + 4^2 = m",
+      "answerDisplay": "25",
+      "givens": {
+        "re": 3,
+        "im": 4
+      },
+      "answerPlain": "25",
+      "answerSpec": {
+        "type": "number",
+        "value": "25",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "t02-c01-u01-multiply-parts-instead-of-sum-squares-trap",
+      "trapDerivation": "3 * 4",
+      "trapValue": "12",
+      "verify": {
+        "source": "25",
+        "trapValue": "12"
+      },
+      "checkpointHint": "Square the real part, square the imaginary part, and add the two squares together",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "steps": [
+        {
+          "latex": "3^2 = 9 \\land 4^2 = 16",
+          "explain": "Square real part 3 and imaginary part 4."
+        },
+        {
+          "latex": "9 + 16 = 25",
+          "explain": "Sum of squares equals 25.",
+          "val": "25"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "t02-c01-u01-multiply-parts-instead-of-sum-squares-trap|direct|#^# + #^# = m",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            5
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c01-u01-multiply-parts-instead-of-sum-squares-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      }
+    },
+    {
+      "id": "Q08",
+      "verificationLevel": "partial",
+      "level": 3,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-dividing-complex-numbers",
+      "context": "ac_admittance_inversion",
+      "prompt": "Simplify the complex quotient $\\frac{20}{3 + i}$ by rationalizing the denominator with conjugate $3 - i$. The squared modulus denominator is $10$. Calculate the real part by dividing $20 \\times 3$ by $10$: evaluate $(20 \\times 3) \\div 10$ with parameters $20$, $3$, and $10$.",
+      "display": "\\text{Re}\\left(\\frac{20(3 - i)}{10}\\right) = \\frac{20 \\times 3}{10}",
+      "plainText": "(20 * 3) / 10 = r",
+      "answerDisplay": "6",
+      "givens": {
+        "num": 20,
+        "real_part": 3,
+        "mod_sq": 10
+      },
+      "answerPlain": "6",
+      "answerSpec": {
+        "type": "number",
+        "value": "6",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "t02-c01-u01-omit-conjugate-multiplier-trap",
+      "trapDerivation": "20 / 10",
+      "trapValue": "2",
+      "verify": {
+        "source": "6",
+        "trapValue": "2"
+      },
+      "checkpointHint": "Multiply the numerator by the conjugate real part and divide by the squared modulus denominator",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "steps": [
+        {
+          "latex": "20 \\times 3 = 60",
+          "explain": "Multiply numerator by real part of conjugate."
+        },
+        {
+          "latex": "\\frac{60}{10} = 6",
+          "explain": "Divide 60 by denominator modulus 10 to obtain 6.",
+          "val": "6"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "t02-c01-u01-omit-conjugate-multiplier-trap|direct|(# * #) / # = r",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            5
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c01-u01-omit-conjugate-multiplier-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      }
+    },
+    {
+      "id": "Q09",
+      "verificationLevel": "partial",
+      "level": 4,
+      "category": "Applied Problem",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-rlc-impedance-synthesis",
+      "context": "ac_audio_filter_impedance",
+      "prompt": "An AC circuit contains resistance $12$ ohms and inductive reactance $16$ ohms, with impedance $Z = 12 + 16i$. Calculate the total impedance magnitude $|Z| = \\sqrt{12^2 + 16^2}$ in ohms with resistance $12$ and reactance $16$.",
+      "display": "|Z| = \\sqrt{12^2 + 16^2} = \\sqrt{144 + 256}",
+      "plainText": "sqrt(12^2 + 16^2) = z",
+      "answerDisplay": "20",
+      "givens": {
+        "res": 12,
+        "react": 16
+      },
+      "answerPlain": "20",
+      "answerSpec": {
+        "type": "number",
+        "value": "20",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "t02-c01-u01-scalar-sum-of-impedance-trap",
+      "trapDerivation": "12 + 16",
+      "trapValue": "28",
+      "verify": {
+        "source": "20",
+        "trapValue": "28"
+      },
+      "checkpointHint": "Square both the real and imaginary parts, sum the squares, and compute the square root of that sum",
+      "references": [
+        "MTH-T02-C01-U01",
+        "OpenStax Intermediate Algebra 2e §8.8"
+      ],
+      "competencies": [
+        "ac-impedance-magnitude-synthesis",
+        "complex-phasor-modulus-modeling"
+      ],
+      "constraints": [
+        "strictly positive resistive component",
+        "inductive reactance phasor"
+      ],
+      "steps": [
+        {
+          "latex": "12^2 = 144 \\land 16^2 = 256",
+          "explain": "Square resistance 12 and reactance 16."
+        },
+        {
+          "latex": "144 + 256 = 400",
+          "explain": "Sum the squared components to get 400."
+        },
+        {
+          "latex": "\\sqrt{400} = 20",
+          "explain": "Extract square root of 400 to obtain impedance magnitude 20 ohms.",
+          "val": "20"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "t02-c01-u01-scalar-sum-of-impedance-trap|direct|sqrt(#^# + #^#) = z",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c01-u01-scalar-sum-of-impedance-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 12
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      }
+    },
+    {
+      "id": "Q10",
+      "verificationLevel": "partial",
+      "level": 4,
+      "category": "Applied Problem",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-quadratic-formula-complex-roots",
+      "context": "damped_harmonic_oscillator_roots",
+      "prompt": "A damped harmonic oscillator has roots with imaginary part given by $\\frac{\\sqrt{64}}{2}$. Calculate the magnitude of this imaginary component by evaluating $8 \\div 2$ with root parameter $8$ and denominator $2$.",
+      "display": "\\text{Im}(x) = \\frac{8}{2} = ?",
+      "plainText": "8 / 2 = im",
+      "answerDisplay": "4",
+      "givens": {
+        "radicand": 64,
+        "numerator": 8,
+        "denominator": 2
+      },
+      "answerPlain": "4",
+      "answerSpec": {
+        "type": "number",
+        "value": "4",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "t02-c01-u01-subtraction-instead-of-division-root-trap",
+      "trapDerivation": "8 - 2",
+      "trapValue": "6",
+      "verify": {
+        "source": "4",
+        "trapValue": "6"
+      },
+      "checkpointHint": "Divide the extracted square root magnitude by two to find the imaginary coefficient",
+      "references": [
+        "MTH-T02-C01-U01",
+        "OpenStax Intermediate Algebra 2e §9.3"
+      ],
+      "competencies": [
+        "complex-conjugate-roots",
+        "quadratic-discriminant-synthesis"
+      ],
+      "constraints": [
+        "negative discriminant",
+        "conjugate pair imaginary magnitude"
+      ],
+      "steps": [
+        {
+          "latex": "\\sqrt{64} = 8",
+          "explain": "Extract square root of 64 to obtain 8."
+        },
+        {
+          "latex": "\\frac{8}{2} = 4",
+          "explain": "Divide 8 by 2 to find imaginary root component 4.",
+          "val": "4"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "t02-c01-u01-subtraction-instead-of-division-root-trap|direct|# / # = im",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c01-u01-subtraction-instead-of-division-root-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      }
+    }
+  ],
+  "title": "Complex Numbers — Verified Math Drill (10 Qs)",
+  "schemaVersion": "2.0-math",
+  "subject": "MATH",
+  "createdAt": "2026-11-09 20:45:53",
+  "config": {
+    "questionCount": 10,
+    "difficulty": "ALL",
+    "difficultyMode": "AI Synthesized Reasoning Mode"
+  },
+  "sessionSummary": {
+    "practiceStatus": "Ready",
+    "score": 0,
+    "maxScore": 10,
+    "accuracyPct": 0,
+    "mistakeCategories": [],
+    "divergedStepsSummary": "",
+    "attemptDate": null,
+    "syncedToNotionAt": null,
+    "notionPageId": null
+  },
+  "localFilePath": "drills/data/MTH-T02-C01-U01/DRL-MTH-T02-C01-U01-02.json"
+}

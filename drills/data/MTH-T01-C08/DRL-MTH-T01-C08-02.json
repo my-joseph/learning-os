@@ -1,1008 +1,741 @@
 {
-  "schemaVersion": "2.0-math",
-  "drillId": "DRL-MTH-T01-C08-02",
-  "subject": "MATH",
   "unitCode": "MTH-T01-C08",
   "unitTitle": "Exponents",
-  "chapterCode": "MTH-T01-C08",
-  "topicCode": "MTH-T01",
-  "unitNotionUrl": "https://www.notion.so/4003818f8ba080b3bcc3c7e76ffdae10",
-  "createdAt": "2026-11-08 20:18:03",
-  "config": {
-    "questionCount": 10,
-    "difficulty": "4",
-    "difficultyMode": "Level 4 - Applied Synthesis"
-  },
-  "mistakeTags": [
-    {
-      "id": "c08-exponent-product-multiply-trap",
-      "label": "Multiplied exponents instead of adding when multiplying same base",
-      "name": "Product Rule Exponent Multiplication Trap",
-      "autoFrom": []
-    },
-    {
-      "id": "c08-power-of-product-unscaled-coeff",
-      "label": "Forgot to raise numerical coefficient to outer exponent in (a*b)^n",
-      "name": "Power of Product Coefficient Trap",
-      "autoFrom": [
-        "off_by_factor"
-      ]
-    },
-    {
-      "id": "c08-same-base-sum-exponent-trap",
-      "label": "Added exponents across addition (2^a + 2^a != 2^(2a))",
-      "name": "Same-Base Addition Exponent Trap",
-      "autoFrom": []
-    },
-    {
-      "id": "c08-common-base-conversion-trap",
-      "label": "Failed to convert composite bases to a common prime base before equating exponents",
-      "name": "Common Prime Base Conversion Trap",
-      "autoFrom": []
-    }
-  ],
+  "topicTitle": "Exponents",
+  "drillId": "DRL-MTH-T01-C08-02",
+  "sourceAttribution": "OpenStax Prealgebra 2e, CC BY 4.0",
   "problems": [
     {
-      "form": "direct",
-      "category": "Interleaved Synthesis",
-      "context": "Exponents: Common Prime Base Exponential Equation",
-      "references": [
-        "MTH-T01-C08-U01",
-        "MTH-T01-C08-U03"
-      ],
-      "prompt": "Solve for the integer exponent $x$ by converting to a common prime base: $4^4 \\cdot 16^3 = 2^x$.",
-      "display": "4^4 \\cdot 16^3 = 2^x",
-      "plainText": "4^4 * 16^3 = 2^x",
-      "answerSpec": {
-        "type": "number",
-        "value": "20"
-      },
-      "answerDisplay": "20",
-      "answerPlain": "20",
-      "inputHint": "Enter the exact integer value",
-      "checkpointHint": "Rewrite each composite base as a power of the prime base, apply the power property, and sum the resulting exponents.",
-      "commonTrapTag": "c08-common-base-conversion-trap",
-      "steps": [
-        {
-          "latex": "4^4 = (2^2)^4 = 2^{8}",
-          "explain": "Rewrite $4$ as $2^2$ and multiply the exponents."
-        },
-        {
-          "latex": "16^3 = (2^4)^3 = 2^{12}",
-          "explain": "Rewrite $16$ as $2^4$ and multiply the exponents."
-        },
-        {
-          "latex": "x = 8 + 12 = 20",
-          "explain": "Add the exponents of the common prime base."
-        }
-      ],
-      "level": 4,
-      "skill": "MTH-PREALG-C08-SYNTHESIS",
-      "verificationLevel": "machine-verified",
       "id": "Q01",
-      "templateKey": "c08-scientific-notation-growth-synthesis",
-      "levelLabel": "Level 4 - Applied Synthesis",
-      "fingerprint": "c08-scientific-notation-growth-synthesis|direct|#^# * #^# = #^x",
+      "verificationLevel": "partial",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c08-product-rule-like-bases",
+      "context": "computer_memory_byte_scaling",
+      "prompt": "Simplify the product of exponential terms sharing base $2$, with first exponent $3$ and second exponent $4$: evaluate $2^3 \\times 2^4$.",
+      "display": "2^3 \\times 2^4 = 2^?",
+      "plainText": "2^3 * 2^4 = 2^k",
+      "answerDisplay": "128",
+      "givens": {
+        "base": 2,
+        "exp1": 3,
+        "exp2": 4
+      },
+      "answerPlain": "128",
+      "answerSpec": {
+        "type": "number",
+        "value": "128",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c08-exponent-multiplication-trap",
+      "trapDerivation": "2 ** (3 * 4)",
+      "trapValue": "4096",
+      "verify": {
+        "source": "128",
+        "trapValue": "4096"
+      },
+      "checkpointHint": "Add the exponents while keeping the common base unchanged",
+      "references": [
+        "MTH-T01-C08"
+      ],
+      "steps": [
+        {
+          "latex": "2^3 \\times 2^4 = 2^{3 + 4}",
+          "explain": "Apply product rule for like bases by adding exponents."
+        },
+        {
+          "latex": "2^7 = 128",
+          "explain": "Evaluate 2 to the 7th power to get 128.",
+          "val": "128"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c08-exponent-multiplication-trap|direct|#^# * #^# = #^k",
       "qualityGates": {
         "G1": {
           "passed": true,
-          "archetype": "math-standard"
+          "archetype": "problem-solving"
         },
         "G2": {
           "passed": true,
-          "level": 4,
-          "stepCount": 3,
+          "level": 1,
+          "stepCount": 2,
           "hasTrapOrFlaw": true,
-          "skill": "MTH-PREALG-C08-SYNTHESIS",
+          "skill": null,
           "stepRange": [
-            2,
-            6
+            1,
+            3
           ]
         },
         "G4": {
           "passed": true,
-          "trapTag": "c08-common-base-conversion-trap",
+          "trapTag": "c08-exponent-multiplication-trap",
           "trapValueVerified": true,
           "weakDistractors": 0,
           "provenanceDistractors": 0
         },
         "G6": {
           "passed": true,
-          "fieldsChecked": 13
+          "fieldsChecked": 10
         },
         "antiLeak": {
           "passed": true,
-          "hintsChecked": 2
+          "hintsChecked": 1
         },
-        "verificationLevel": "machine-verified",
-        "weakDistractors": 0,
-        "G3": {
-          "passed": true,
-          "fingerprint": "c08-scientific-notation-growth-synthesis|direct|#^# * #^# = #^x",
-          "maxAllowedPerFingerprint": 5
-        }
-      },
-      "referenceBadges": [
-        {
-          "code": "MTH-T01-C08-U01",
-          "title": "Introduction to Exponents",
-          "notionUrl": "https://www.notion.so/4003818f8ba080788d82e20d81e3a64c"
-        },
-        {
-          "code": "MTH-T01-C08-U03",
-          "title": "Division Properties of Exponents",
-          "notionUrl": "https://www.notion.so/4003818f8ba08032934ededb8bc1db54"
-        }
-      ],
-      "trapValue": "7",
-      "state": {
-        "userInput": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "lastCheck": null
+        "verificationLevel": "partial",
+        "weakDistractors": 0
       }
     },
     {
-      "form": "exponential-doubling",
-      "category": "Interleaved Synthesis",
-      "context": "Exponents: Common Prime Base Exponential Equation",
-      "references": [
-        "MTH-T01-C08-U01",
-        "MTH-T01-C08-U03"
-      ],
-      "prompt": "A computing cluster scales its throughput by a factor of $9^3$ in Phase 1 and by a factor of $81^2$ in Phase 2. If the combined scaling factor equals $3^x$, find the exact integer $x$.",
-      "display": "9^3 \\cdot 81^2 = 3^x \\implies x = ?",
-      "plainText": "9^3 * 81^2 = 3^x",
-      "answerSpec": {
-        "type": "number",
-        "value": "14"
-      },
-      "answerDisplay": "14",
-      "answerPlain": "14",
-      "inputHint": "Enter the exact integer value",
-      "checkpointHint": "Rewrite each composite base as a power of the prime base, apply the power property, and sum the resulting exponents.",
-      "commonTrapTag": "c08-common-base-conversion-trap",
-      "steps": [
-        {
-          "latex": "9^3 = (3^2)^3 = 3^{6}",
-          "explain": "Rewrite $9$ as $3^2$ and multiply the exponents."
-        },
-        {
-          "latex": "81^2 = (3^4)^2 = 3^{8}",
-          "explain": "Rewrite $81$ as $3^4$ and multiply the exponents."
-        },
-        {
-          "latex": "x = 6 + 8 = 14",
-          "explain": "Add the exponents of the common prime base."
-        }
-      ],
-      "level": 4,
-      "skill": "MTH-PREALG-C08-SYNTHESIS",
-      "verificationLevel": "machine-verified",
       "id": "Q02",
-      "templateKey": "c08-scientific-notation-growth-synthesis",
-      "levelLabel": "Level 4 - Applied Synthesis",
-      "fingerprint": "c08-scientific-notation-growth-synthesis|exponential-doubling|#^# * #^# = #^x",
+      "verificationLevel": "partial",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c08-quotient-rule-like-bases",
+      "context": "astronomical_distance_ratio",
+      "prompt": "Evaluate the quotient of exponential terms with base $3$, numerator exponent $6$, and denominator exponent $2$: calculate $\\frac{3^6}{3^2}$.",
+      "display": "\\frac{3^6}{3^2} = 3^? = ?",
+      "plainText": "3^6 / 3^2",
+      "answerDisplay": "81",
+      "givens": {
+        "base": 3,
+        "exp_num": 6,
+        "exp_den": 2
+      },
+      "answerPlain": "81",
+      "answerSpec": {
+        "type": "number",
+        "value": "81",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c08-exponent-division-trap",
+      "trapDerivation": "3 ** (6 / 2)",
+      "trapValue": "27",
+      "verify": {
+        "source": "81",
+        "trapValue": "27"
+      },
+      "checkpointHint": "Subtract the denominator exponent from the numerator exponent while retaining the base",
+      "references": [
+        "MTH-T01-C08"
+      ],
+      "steps": [
+        {
+          "latex": "\\frac{3^6}{3^2} = 3^{6 - 2}",
+          "explain": "Subtract exponents using the quotient rule."
+        },
+        {
+          "latex": "3^4 = 81",
+          "explain": "Evaluate 3 to the 4th power to obtain 81.",
+          "val": "81"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c08-exponent-division-trap|direct|#^# / #^#",
       "qualityGates": {
         "G1": {
           "passed": true,
-          "archetype": "math-standard"
+          "archetype": "problem-solving"
         },
         "G2": {
           "passed": true,
-          "level": 4,
-          "stepCount": 3,
+          "level": 1,
+          "stepCount": 2,
           "hasTrapOrFlaw": true,
-          "skill": "MTH-PREALG-C08-SYNTHESIS",
+          "skill": null,
           "stepRange": [
-            2,
-            6
+            1,
+            3
           ]
         },
         "G4": {
           "passed": true,
-          "trapTag": "c08-common-base-conversion-trap",
+          "trapTag": "c08-exponent-division-trap",
           "trapValueVerified": true,
           "weakDistractors": 0,
           "provenanceDistractors": 0
         },
         "G6": {
           "passed": true,
-          "fieldsChecked": 13
+          "fieldsChecked": 10
         },
         "antiLeak": {
           "passed": true,
-          "hintsChecked": 2
+          "hintsChecked": 1
         },
-        "verificationLevel": "machine-verified",
-        "weakDistractors": 0,
-        "G3": {
-          "passed": true,
-          "fingerprint": "c08-scientific-notation-growth-synthesis|exponential-doubling|#^# * #^# = #^x",
-          "maxAllowedPerFingerprint": 5
-        }
-      },
-      "referenceBadges": [
-        {
-          "code": "MTH-T01-C08-U01",
-          "title": "Introduction to Exponents",
-          "notionUrl": "https://www.notion.so/4003818f8ba080788d82e20d81e3a64c"
-        },
-        {
-          "code": "MTH-T01-C08-U03",
-          "title": "Division Properties of Exponents",
-          "notionUrl": "https://www.notion.so/4003818f8ba08032934ededb8bc1db54"
-        }
-      ],
-      "trapValue": "5",
-      "state": {
-        "userInput": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "lastCheck": null
+        "verificationLevel": "partial",
+        "weakDistractors": 0
       }
     },
     {
-      "form": "exponential-doubling",
-      "category": "Interleaved Synthesis",
-      "context": "Exponents: Common Prime Base Exponential Equation",
-      "references": [
-        "MTH-T01-C08-U01",
-        "MTH-T01-C08-U03"
-      ],
-      "prompt": "A computing cluster scales its throughput by a factor of $8^3$ in Phase 1 and by a factor of $16^2$ in Phase 2. If the combined scaling factor equals $2^x$, find the exact integer $x$.",
-      "display": "8^3 \\cdot 16^2 = 2^x \\implies x = ?",
-      "plainText": "8^3 * 16^2 = 2^x",
-      "answerSpec": {
-        "type": "number",
-        "value": "17"
-      },
-      "answerDisplay": "17",
-      "answerPlain": "17",
-      "inputHint": "Enter the exact integer value",
-      "checkpointHint": "Rewrite each composite base as a power of the prime base, apply the power property, and sum the resulting exponents.",
-      "commonTrapTag": "c08-common-base-conversion-trap",
-      "steps": [
-        {
-          "latex": "8^3 = (2^3)^3 = 2^{9}",
-          "explain": "Rewrite $8$ as $2^3$ and multiply the exponents."
-        },
-        {
-          "latex": "16^2 = (2^4)^2 = 2^{8}",
-          "explain": "Rewrite $16$ as $2^4$ and multiply the exponents."
-        },
-        {
-          "latex": "x = 9 + 8 = 17",
-          "explain": "Add the exponents of the common prime base."
-        }
-      ],
-      "level": 4,
-      "skill": "MTH-PREALG-C08-SYNTHESIS",
-      "verificationLevel": "machine-verified",
       "id": "Q03",
-      "templateKey": "c08-scientific-notation-growth-synthesis",
-      "levelLabel": "Level 4 - Applied Synthesis",
-      "fingerprint": "c08-scientific-notation-growth-synthesis|exponential-doubling|#^# * #^# = #^x",
+      "verificationLevel": "partial",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c08-power-of-a-power",
+      "context": "cryptographic_key_permutation",
+      "prompt": "Evaluate the nested power expression having base $2$, inner exponent $2$, and outer exponent $3$: calculate $(2^2)^3$.",
+      "display": "(2^2)^3 = 2^? = ?",
+      "plainText": "(2^2)^3",
+      "answerDisplay": "64",
+      "givens": {
+        "base": 2,
+        "inner_exp": 2,
+        "outer_exp": 3
+      },
+      "answerPlain": "64",
+      "answerSpec": {
+        "type": "number",
+        "value": "64",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c08-power-addition-confusion",
+      "trapDerivation": "2 ** (2 + 3)",
+      "trapValue": "32",
+      "verify": {
+        "source": "64",
+        "trapValue": "32"
+      },
+      "checkpointHint": "Multiply the inner exponent by the outer exponent when raising a power to a power",
+      "references": [
+        "MTH-T01-C08"
+      ],
+      "steps": [
+        {
+          "latex": "(2^2)^3 = 2^{2 \\times 3}",
+          "explain": "Multiply the exponents together."
+        },
+        {
+          "latex": "2^6 = 64",
+          "explain": "Evaluate 2 to the 6th power to obtain 64.",
+          "val": "64"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c08-power-addition-confusion|direct|(#^#)^#",
       "qualityGates": {
         "G1": {
           "passed": true,
-          "archetype": "math-standard"
+          "archetype": "problem-solving"
         },
         "G2": {
           "passed": true,
-          "level": 4,
-          "stepCount": 3,
+          "level": 2,
+          "stepCount": 2,
           "hasTrapOrFlaw": true,
-          "skill": "MTH-PREALG-C08-SYNTHESIS",
+          "skill": null,
           "stepRange": [
             2,
-            6
+            4
           ]
         },
         "G4": {
           "passed": true,
-          "trapTag": "c08-common-base-conversion-trap",
+          "trapTag": "c08-power-addition-confusion",
           "trapValueVerified": true,
           "weakDistractors": 0,
           "provenanceDistractors": 0
         },
         "G6": {
           "passed": true,
-          "fieldsChecked": 13
+          "fieldsChecked": 10
         },
         "antiLeak": {
           "passed": true,
-          "hintsChecked": 2
+          "hintsChecked": 1
         },
-        "verificationLevel": "machine-verified",
-        "weakDistractors": 0,
-        "G3": {
-          "passed": true,
-          "fingerprint": "c08-scientific-notation-growth-synthesis|exponential-doubling|#^# * #^# = #^x",
-          "maxAllowedPerFingerprint": 5
-        }
-      },
-      "referenceBadges": [
-        {
-          "code": "MTH-T01-C08-U01",
-          "title": "Introduction to Exponents",
-          "notionUrl": "https://www.notion.so/4003818f8ba080788d82e20d81e3a64c"
-        },
-        {
-          "code": "MTH-T01-C08-U03",
-          "title": "Division Properties of Exponents",
-          "notionUrl": "https://www.notion.so/4003818f8ba08032934ededb8bc1db54"
-        }
-      ],
-      "trapValue": "5",
-      "state": {
-        "userInput": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "lastCheck": null
+        "verificationLevel": "partial",
+        "weakDistractors": 0
       }
     },
     {
-      "form": "direct",
-      "category": "Interleaved Synthesis",
-      "context": "Exponents: Common Prime Base Exponential Equation",
-      "references": [
-        "MTH-T01-C08-U01",
-        "MTH-T01-C08-U03"
-      ],
-      "prompt": "Solve for the integer exponent $x$ by converting to a common prime base: $4^3 \\cdot 8^2 = 2^x$.",
-      "display": "4^3 \\cdot 8^2 = 2^x",
-      "plainText": "4^3 * 8^2 = 2^x",
-      "answerSpec": {
-        "type": "number",
-        "value": "12"
-      },
-      "answerDisplay": "12",
-      "answerPlain": "12",
-      "inputHint": "Enter the exact integer value",
-      "checkpointHint": "Rewrite each composite base as a power of the prime base, apply the power property, and sum the resulting exponents.",
-      "commonTrapTag": "c08-common-base-conversion-trap",
-      "steps": [
-        {
-          "latex": "4^3 = (2^2)^3 = 2^{6}",
-          "explain": "Rewrite $4$ as $2^2$ and multiply the exponents."
-        },
-        {
-          "latex": "8^2 = (2^3)^2 = 2^{6}",
-          "explain": "Rewrite $8$ as $2^3$ and multiply the exponents."
-        },
-        {
-          "latex": "x = 6 + 6 = 12",
-          "explain": "Add the exponents of the common prime base."
-        }
-      ],
-      "level": 4,
-      "skill": "MTH-PREALG-C08-SYNTHESIS",
-      "verificationLevel": "machine-verified",
       "id": "Q04",
-      "templateKey": "c08-scientific-notation-growth-synthesis",
-      "levelLabel": "Level 4 - Applied Synthesis",
-      "fingerprint": "c08-scientific-notation-growth-synthesis|direct|#^# * #^# = #^x",
+      "verificationLevel": "partial",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c08-power-of-a-product",
+      "context": "physics_kinetic_energy_scaling",
+      "prompt": "Expand and evaluate the product of factors $3$ and $2$ raised to exponent power $3$: calculate $(3 \\times 2)^3$.",
+      "display": "(3 \\times 2)^3 = 3^? \\times 2^? = ?",
+      "plainText": "(3 * 2)^3",
+      "answerDisplay": "216",
+      "givens": {
+        "factor1": 3,
+        "factor2": 2,
+        "power": 3
+      },
+      "answerPlain": "216",
+      "answerSpec": {
+        "type": "number",
+        "value": "216",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c08-coefficient-power-omission",
+      "trapDerivation": "3 * (2 ** 3)",
+      "trapValue": "24",
+      "verify": {
+        "source": "216",
+        "trapValue": "24"
+      },
+      "checkpointHint": "Distribute the outer exponent to each individual factor within the product",
+      "references": [
+        "MTH-T01-C08"
+      ],
+      "steps": [
+        {
+          "latex": "(3 \\times 2)^3 = 3^3 \\times 2^3",
+          "explain": "Distribute exponent 3 to both factors 3 and 2."
+        },
+        {
+          "latex": "27 \\times 8 = 216",
+          "explain": "Evaluate 3 cubed as 27 and 2 cubed as 8, then multiply to obtain 216.",
+          "val": "216"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c08-coefficient-power-omission|direct|(# * #)^#",
       "qualityGates": {
         "G1": {
           "passed": true,
-          "archetype": "math-standard"
+          "archetype": "problem-solving"
         },
         "G2": {
           "passed": true,
-          "level": 4,
-          "stepCount": 3,
+          "level": 2,
+          "stepCount": 2,
           "hasTrapOrFlaw": true,
-          "skill": "MTH-PREALG-C08-SYNTHESIS",
+          "skill": null,
           "stepRange": [
             2,
-            6
+            4
           ]
         },
         "G4": {
           "passed": true,
-          "trapTag": "c08-common-base-conversion-trap",
+          "trapTag": "c08-coefficient-power-omission",
           "trapValueVerified": true,
           "weakDistractors": 0,
           "provenanceDistractors": 0
         },
         "G6": {
           "passed": true,
-          "fieldsChecked": 13
+          "fieldsChecked": 10
         },
         "antiLeak": {
           "passed": true,
-          "hintsChecked": 2
+          "hintsChecked": 1
         },
-        "verificationLevel": "machine-verified",
-        "weakDistractors": 0,
-        "G3": {
-          "passed": true,
-          "fingerprint": "c08-scientific-notation-growth-synthesis|direct|#^# * #^# = #^x",
-          "maxAllowedPerFingerprint": 5
-        }
-      },
-      "referenceBadges": [
-        {
-          "code": "MTH-T01-C08-U01",
-          "title": "Introduction to Exponents",
-          "notionUrl": "https://www.notion.so/4003818f8ba080788d82e20d81e3a64c"
-        },
-        {
-          "code": "MTH-T01-C08-U03",
-          "title": "Division Properties of Exponents",
-          "notionUrl": "https://www.notion.so/4003818f8ba08032934ededb8bc1db54"
-        }
-      ],
-      "trapValue": "5",
-      "state": {
-        "userInput": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "lastCheck": null
+        "verificationLevel": "partial",
+        "weakDistractors": 0
       }
     },
     {
-      "form": "exponential-doubling",
-      "category": "Interleaved Synthesis",
-      "context": "Exponents: Common Prime Base Exponential Equation",
-      "references": [
-        "MTH-T01-C08-U01",
-        "MTH-T01-C08-U03"
-      ],
-      "prompt": "A computing cluster scales its throughput by a factor of $4^4$ in Phase 1 and by a factor of $16^3$ in Phase 2. If the combined scaling factor equals $2^x$, find the exact integer $x$.",
-      "display": "4^4 \\cdot 16^3 = 2^x \\implies x = ?",
-      "plainText": "4^4 * 16^3 = 2^x",
-      "answerSpec": {
-        "type": "number",
-        "value": "20"
-      },
-      "answerDisplay": "20",
-      "answerPlain": "20",
-      "inputHint": "Enter the exact integer value",
-      "checkpointHint": "Rewrite each composite base as a power of the prime base, apply the power property, and sum the resulting exponents.",
-      "commonTrapTag": "c08-common-base-conversion-trap",
-      "steps": [
-        {
-          "latex": "4^4 = (2^2)^4 = 2^{8}",
-          "explain": "Rewrite $4$ as $2^2$ and multiply the exponents."
-        },
-        {
-          "latex": "16^3 = (2^4)^3 = 2^{12}",
-          "explain": "Rewrite $16$ as $2^4$ and multiply the exponents."
-        },
-        {
-          "latex": "x = 8 + 12 = 20",
-          "explain": "Add the exponents of the common prime base."
-        }
-      ],
-      "level": 4,
-      "skill": "MTH-PREALG-C08-SYNTHESIS",
-      "verificationLevel": "machine-verified",
       "id": "Q05",
-      "templateKey": "c08-scientific-notation-growth-synthesis",
-      "levelLabel": "Level 4 - Applied Synthesis",
-      "fingerprint": "c08-scientific-notation-growth-synthesis|exponential-doubling|#^# * #^# = #^x",
-      "qualityGates": {
-        "G1": {
-          "passed": true,
-          "archetype": "math-standard"
-        },
-        "G2": {
-          "passed": true,
-          "level": 4,
-          "stepCount": 3,
-          "hasTrapOrFlaw": true,
-          "skill": "MTH-PREALG-C08-SYNTHESIS",
-          "stepRange": [
-            2,
-            6
-          ]
-        },
-        "G4": {
-          "passed": true,
-          "trapTag": "c08-common-base-conversion-trap",
-          "trapValueVerified": true,
-          "weakDistractors": 0,
-          "provenanceDistractors": 0
-        },
-        "G6": {
-          "passed": true,
-          "fieldsChecked": 13
-        },
-        "antiLeak": {
-          "passed": true,
-          "hintsChecked": 2
-        },
-        "verificationLevel": "machine-verified",
-        "weakDistractors": 0,
-        "G3": {
-          "passed": true,
-          "fingerprint": "c08-scientific-notation-growth-synthesis|exponential-doubling|#^# * #^# = #^x",
-          "maxAllowedPerFingerprint": 5
-        }
+      "verificationLevel": "partial",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c08-zero-exponent-property",
+      "context": "control_systems_steady_state_gain",
+      "prompt": "Evaluate the arithmetic expression with coefficient $8$, base $5$ raised to power $0$, and constant $7$: calculate $8 \\times 5^0 + 7$.",
+      "display": "8 \\times 5^0 + 7 = ?",
+      "plainText": "8 * 5^0 + 7",
+      "answerDisplay": "15",
+      "givens": {
+        "coeff": 8,
+        "base": 5,
+        "power": 0,
+        "constant": 7
       },
-      "referenceBadges": [
-        {
-          "code": "MTH-T01-C08-U01",
-          "title": "Introduction to Exponents",
-          "notionUrl": "https://www.notion.so/4003818f8ba080788d82e20d81e3a64c"
-        },
-        {
-          "code": "MTH-T01-C08-U03",
-          "title": "Division Properties of Exponents",
-          "notionUrl": "https://www.notion.so/4003818f8ba08032934ededb8bc1db54"
-        }
-      ],
+      "answerPlain": "15",
+      "answerSpec": {
+        "type": "number",
+        "value": "15",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c08-zero-power-evaluates-to-zero",
+      "trapDerivation": "8 * 0 + 7",
       "trapValue": "7",
-      "state": {
-        "userInput": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "lastCheck": null
+      "verify": {
+        "source": "15",
+        "trapValue": "7"
+      },
+      "checkpointHint": "Recall that any non-zero real number raised to the zero power equals one",
+      "references": [
+        "MTH-T01-C08"
+      ],
+      "steps": [
+        {
+          "latex": "5^0 = 1",
+          "explain": "Apply zero exponent rule to evaluate 5 to the power zero as 1."
+        },
+        {
+          "latex": "8 \\times 1 + 7 = 8 + 7 = 15",
+          "explain": "Multiply 8 by 1 and add 7 to obtain 15.",
+          "val": "15"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c08-zero-power-evaluates-to-zero|direct|# * #^# + #",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            4
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c08-zero-power-evaluates-to-zero",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
       }
     },
     {
-      "form": "direct",
-      "category": "Interleaved Synthesis",
-      "context": "Exponents: Common Prime Base Exponential Equation",
-      "references": [
-        "MTH-T01-C08-U01",
-        "MTH-T01-C08-U03"
-      ],
-      "prompt": "Solve for the integer exponent $x$ by converting to a common prime base: $8^3 \\cdot 16^2 = 2^x$.",
-      "display": "8^3 \\cdot 16^2 = 2^x",
-      "plainText": "8^3 * 16^2 = 2^x",
-      "answerSpec": {
-        "type": "number",
-        "value": "17"
-      },
-      "answerDisplay": "17",
-      "answerPlain": "17",
-      "inputHint": "Enter the exact integer value",
-      "checkpointHint": "Rewrite each composite base as a power of the prime base, apply the power property, and sum the resulting exponents.",
-      "commonTrapTag": "c08-common-base-conversion-trap",
-      "steps": [
-        {
-          "latex": "8^3 = (2^3)^3 = 2^{9}",
-          "explain": "Rewrite $8$ as $2^3$ and multiply the exponents."
-        },
-        {
-          "latex": "16^2 = (2^4)^2 = 2^{8}",
-          "explain": "Rewrite $16$ as $2^4$ and multiply the exponents."
-        },
-        {
-          "latex": "x = 9 + 8 = 17",
-          "explain": "Add the exponents of the common prime base."
-        }
-      ],
-      "level": 4,
-      "skill": "MTH-PREALG-C08-SYNTHESIS",
-      "verificationLevel": "machine-verified",
       "id": "Q06",
-      "templateKey": "c08-scientific-notation-growth-synthesis",
-      "levelLabel": "Level 4 - Applied Synthesis",
-      "fingerprint": "c08-scientific-notation-growth-synthesis|direct|#^# * #^# = #^x",
+      "verificationLevel": "partial",
+      "level": 3,
+      "category": "Trap & Diagnostic",
+      "archetype": "problem-solving",
+      "archetypeKey": "c08-negative-exponent-reciprocal",
+      "context": "nanotechnology_particle_diameter",
+      "prompt": "Evaluate the expression with base $4$ and negative power exponent $2$: calculate $4^{-2}$ as a simplified irreducible fraction.",
+      "display": "4^{-2} = \\frac{1}{4^?} = ?",
+      "plainText": "4^(-2)",
+      "answerDisplay": "\\frac{1}{16}",
+      "givens": {
+        "base": 4,
+        "neg_exp": 2
+      },
+      "answerPlain": "1/16",
+      "answerSpec": {
+        "type": "number",
+        "value": "1/16",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c08-negative-base-sign-confusion",
+      "trapDerivation": "-1 * (4 * 2)",
+      "trapValue": "-8",
+      "verify": {
+        "source": "1/16",
+        "trapValue": "-8"
+      },
+      "checkpointHint": "Rewrite the negative exponent as the reciprocal of the positive power",
+      "references": [
+        "MTH-T01-C08"
+      ],
+      "steps": [
+        {
+          "latex": "4^{-2} = \\frac{1}{4^2}",
+          "explain": "Convert negative power to positive power in denominator."
+        },
+        {
+          "latex": "\\frac{1}{16}",
+          "explain": "Evaluate 4 squared in the denominator to obtain 1/16.",
+          "val": "1/16"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c08-negative-base-sign-confusion|direct|#^(-#)",
       "qualityGates": {
         "G1": {
           "passed": true,
-          "archetype": "math-standard"
+          "archetype": "problem-solving"
         },
         "G2": {
           "passed": true,
-          "level": 4,
-          "stepCount": 3,
+          "level": 3,
+          "stepCount": 2,
           "hasTrapOrFlaw": true,
-          "skill": "MTH-PREALG-C08-SYNTHESIS",
+          "skill": null,
           "stepRange": [
             2,
-            6
+            5
           ]
         },
         "G4": {
           "passed": true,
-          "trapTag": "c08-common-base-conversion-trap",
+          "trapTag": "c08-negative-base-sign-confusion",
           "trapValueVerified": true,
           "weakDistractors": 0,
           "provenanceDistractors": 0
         },
         "G6": {
           "passed": true,
-          "fieldsChecked": 13
+          "fieldsChecked": 10
         },
         "antiLeak": {
           "passed": true,
-          "hintsChecked": 2
+          "hintsChecked": 1
         },
-        "verificationLevel": "machine-verified",
-        "weakDistractors": 0,
-        "G3": {
-          "passed": true,
-          "fingerprint": "c08-scientific-notation-growth-synthesis|direct|#^# * #^# = #^x",
-          "maxAllowedPerFingerprint": 5
-        }
-      },
-      "referenceBadges": [
-        {
-          "code": "MTH-T01-C08-U01",
-          "title": "Introduction to Exponents",
-          "notionUrl": "https://www.notion.so/4003818f8ba080788d82e20d81e3a64c"
-        },
-        {
-          "code": "MTH-T01-C08-U03",
-          "title": "Division Properties of Exponents",
-          "notionUrl": "https://www.notion.so/4003818f8ba08032934ededb8bc1db54"
-        }
-      ],
-      "trapValue": "5",
-      "state": {
-        "userInput": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "lastCheck": null
+        "verificationLevel": "partial",
+        "weakDistractors": 0
       }
     },
     {
-      "form": "exponential-doubling",
-      "category": "Interleaved Synthesis",
-      "context": "Exponents: Common Prime Base Exponential Equation",
-      "references": [
-        "MTH-T01-C08-U01",
-        "MTH-T01-C08-U03"
-      ],
-      "prompt": "A computing cluster scales its throughput by a factor of $9^2$ in Phase 1 and by a factor of $27^3$ in Phase 2. If the combined scaling factor equals $3^x$, find the exact integer $x$.",
-      "display": "9^2 \\cdot 27^3 = 3^x \\implies x = ?",
-      "plainText": "9^2 * 27^3 = 3^x",
-      "answerSpec": {
-        "type": "number",
-        "value": "13"
-      },
-      "answerDisplay": "13",
-      "answerPlain": "13",
-      "inputHint": "Enter the exact integer value",
-      "checkpointHint": "Rewrite each composite base as a power of the prime base, apply the power property, and sum the resulting exponents.",
-      "commonTrapTag": "c08-common-base-conversion-trap",
-      "steps": [
-        {
-          "latex": "9^2 = (3^2)^2 = 3^{4}",
-          "explain": "Rewrite $9$ as $3^2$ and multiply the exponents."
-        },
-        {
-          "latex": "27^3 = (3^3)^3 = 3^{9}",
-          "explain": "Rewrite $27$ as $3^3$ and multiply the exponents."
-        },
-        {
-          "latex": "x = 4 + 9 = 13",
-          "explain": "Add the exponents of the common prime base."
-        }
-      ],
-      "level": 4,
-      "skill": "MTH-PREALG-C08-SYNTHESIS",
-      "verificationLevel": "machine-verified",
       "id": "Q07",
-      "templateKey": "c08-scientific-notation-growth-synthesis",
-      "levelLabel": "Level 4 - Applied Synthesis",
-      "fingerprint": "c08-scientific-notation-growth-synthesis|exponential-doubling|#^# * #^# = #^x",
+      "verificationLevel": "partial",
+      "level": 3,
+      "category": "Trap & Diagnostic",
+      "archetype": "problem-solving",
+      "archetypeKey": "c08-power-of-a-quotient",
+      "context": "probability_repeated_independent_trials",
+      "prompt": "Evaluate the fractional power with numerator $2$ and denominator $3$ raised to exponent power $4$: calculate $(\\frac{2}{3})^4$ as an irreducible fraction.",
+      "display": "\\left(\\frac{2}{3}\\right)^4 = \\frac{2^4}{3^4} = ?",
+      "plainText": "(2/3)^4",
+      "answerDisplay": "\\frac{16}{81}",
+      "givens": {
+        "numerator": 2,
+        "denominator": 3,
+        "power": 4
+      },
+      "answerPlain": "16/81",
+      "answerSpec": {
+        "type": "number",
+        "value": "16/81",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c08-numerator-only-power-slip",
+      "trapDerivation": "(2 ** 4) / 3",
+      "trapValue": "16/3",
+      "verify": {
+        "source": "16/81",
+        "trapValue": "16/3"
+      },
+      "checkpointHint": "Apply the exponent to both the numerator and the denominator independently",
+      "references": [
+        "MTH-T01-C08"
+      ],
+      "steps": [
+        {
+          "latex": "\\left(\\frac{2}{3}\\right)^4 = \\frac{2^4}{3^4}",
+          "explain": "Raise both numerator 2 and denominator 3 to the 4th power."
+        },
+        {
+          "latex": "\\frac{16}{81}",
+          "explain": "Calculate 2^4 = 16 and 3^4 = 81 to obtain 16/81.",
+          "val": "16/81"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c08-numerator-only-power-slip|direct|(#/#)^#",
       "qualityGates": {
         "G1": {
           "passed": true,
-          "archetype": "math-standard"
+          "archetype": "problem-solving"
         },
         "G2": {
           "passed": true,
-          "level": 4,
-          "stepCount": 3,
+          "level": 3,
+          "stepCount": 2,
           "hasTrapOrFlaw": true,
-          "skill": "MTH-PREALG-C08-SYNTHESIS",
+          "skill": null,
           "stepRange": [
             2,
-            6
+            5
           ]
         },
         "G4": {
           "passed": true,
-          "trapTag": "c08-common-base-conversion-trap",
+          "trapTag": "c08-numerator-only-power-slip",
           "trapValueVerified": true,
           "weakDistractors": 0,
           "provenanceDistractors": 0
         },
         "G6": {
           "passed": true,
-          "fieldsChecked": 13
+          "fieldsChecked": 10
         },
         "antiLeak": {
           "passed": true,
-          "hintsChecked": 2
+          "hintsChecked": 1
         },
-        "verificationLevel": "machine-verified",
-        "weakDistractors": 0,
-        "G3": {
-          "passed": true,
-          "fingerprint": "c08-scientific-notation-growth-synthesis|exponential-doubling|#^# * #^# = #^x",
-          "maxAllowedPerFingerprint": 5
-        }
-      },
-      "referenceBadges": [
-        {
-          "code": "MTH-T01-C08-U01",
-          "title": "Introduction to Exponents",
-          "notionUrl": "https://www.notion.so/4003818f8ba080788d82e20d81e3a64c"
-        },
-        {
-          "code": "MTH-T01-C08-U03",
-          "title": "Division Properties of Exponents",
-          "notionUrl": "https://www.notion.so/4003818f8ba08032934ededb8bc1db54"
-        }
-      ],
-      "trapValue": "5",
-      "state": {
-        "userInput": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "lastCheck": null
+        "verificationLevel": "partial",
+        "weakDistractors": 0
       }
     },
     {
-      "form": "direct",
-      "category": "Interleaved Synthesis",
-      "context": "Exponents: Common Prime Base Exponential Equation",
-      "references": [
-        "MTH-T01-C08-U01",
-        "MTH-T01-C08-U03"
-      ],
-      "prompt": "Solve for the integer exponent $x$ by converting to a common prime base: $9^3 \\cdot 81^2 = 3^x$.",
-      "display": "9^3 \\cdot 81^2 = 3^x",
-      "plainText": "9^3 * 81^2 = 3^x",
-      "answerSpec": {
-        "type": "number",
-        "value": "14"
-      },
-      "answerDisplay": "14",
-      "answerPlain": "14",
-      "inputHint": "Enter the exact integer value",
-      "checkpointHint": "Rewrite each composite base as a power of the prime base, apply the power property, and sum the resulting exponents.",
-      "commonTrapTag": "c08-common-base-conversion-trap",
-      "steps": [
-        {
-          "latex": "9^3 = (3^2)^3 = 3^{6}",
-          "explain": "Rewrite $9$ as $3^2$ and multiply the exponents."
-        },
-        {
-          "latex": "81^2 = (3^4)^2 = 3^{8}",
-          "explain": "Rewrite $81$ as $3^4$ and multiply the exponents."
-        },
-        {
-          "latex": "x = 6 + 8 = 14",
-          "explain": "Add the exponents of the common prime base."
-        }
-      ],
-      "level": 4,
-      "skill": "MTH-PREALG-C08-SYNTHESIS",
-      "verificationLevel": "machine-verified",
       "id": "Q08",
-      "templateKey": "c08-scientific-notation-growth-synthesis",
-      "levelLabel": "Level 4 - Applied Synthesis",
-      "fingerprint": "c08-scientific-notation-growth-synthesis|direct|#^# * #^# = #^x",
-      "qualityGates": {
-        "G1": {
-          "passed": true,
-          "archetype": "math-standard"
-        },
-        "G2": {
-          "passed": true,
-          "level": 4,
-          "stepCount": 3,
-          "hasTrapOrFlaw": true,
-          "skill": "MTH-PREALG-C08-SYNTHESIS",
-          "stepRange": [
-            2,
-            6
-          ]
-        },
-        "G4": {
-          "passed": true,
-          "trapTag": "c08-common-base-conversion-trap",
-          "trapValueVerified": true,
-          "weakDistractors": 0,
-          "provenanceDistractors": 0
-        },
-        "G6": {
-          "passed": true,
-          "fieldsChecked": 13
-        },
-        "antiLeak": {
-          "passed": true,
-          "hintsChecked": 2
-        },
-        "verificationLevel": "machine-verified",
-        "weakDistractors": 0,
-        "G3": {
-          "passed": true,
-          "fingerprint": "c08-scientific-notation-growth-synthesis|direct|#^# * #^# = #^x",
-          "maxAllowedPerFingerprint": 5
-        }
+      "verificationLevel": "partial",
+      "level": 3,
+      "category": "Trap & Diagnostic",
+      "archetype": "problem-solving",
+      "archetypeKey": "c08-scientific-notation-multiplication",
+      "context": "microbiology_bacterial_culture_census",
+      "prompt": "Evaluate the product of numbers in scientific notation with mantissas $2$ and $4$ and base $10$ powers $3$ and $5$: calculate $(2 \\times 10^3) \\times (4 \\times 10^5)$ as an integer.",
+      "display": "(2 \\times 10^3) \\times (4 \\times 10^5) = (2 \\times 4) \\times 10^{3+5} = ?",
+      "plainText": "(2 * 10^3) * (4 * 10^5)",
+      "answerDisplay": "800000000",
+      "givens": {
+        "m1": 2,
+        "m2": 4,
+        "base": 10,
+        "p1": 3,
+        "p2": 5
       },
-      "referenceBadges": [
+      "answerPlain": "800000000",
+      "answerSpec": {
+        "type": "number",
+        "value": "800000000",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c08-scientific-power-multiplication-slip",
+      "trapDerivation": "(2 * 4) * 10**(3 + 2)",
+      "trapValue": "800000",
+      "verify": {
+        "source": "800000000",
+        "trapValue": "800000"
+      },
+      "checkpointHint": "Multiply the mantissa coefficients and add the base powers of ten",
+      "references": [
+        "MTH-T01-C08"
+      ],
+      "steps": [
         {
-          "code": "MTH-T01-C08-U01",
-          "title": "Introduction to Exponents",
-          "notionUrl": "https://www.notion.so/4003818f8ba080788d82e20d81e3a64c"
+          "latex": "(2 \\times 4) \\times 10^{3 + 5} = 8 \\times 10^8",
+          "explain": "Multiply coefficients 2 * 4 = 8 and sum exponents 3 + 5 = 8."
         },
         {
-          "code": "MTH-T01-C08-U03",
-          "title": "Division Properties of Exponents",
-          "notionUrl": "https://www.notion.so/4003818f8ba08032934ededb8bc1db54"
+          "latex": "8 \\times 10^8 = 800000000",
+          "explain": "Expand scientific notation to integer 800,000,000.",
+          "val": "800000000"
         }
       ],
-      "trapValue": "5",
-      "state": {
-        "userInput": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "lastCheck": null
-      }
-    },
-    {
       "form": "direct",
-      "category": "Interleaved Synthesis",
-      "context": "Exponents: Common Prime Base Exponential Equation",
-      "references": [
-        "MTH-T01-C08-U01",
-        "MTH-T01-C08-U03"
-      ],
-      "prompt": "Solve for the integer exponent $x$ by converting to a common prime base: $9^2 \\cdot 27^3 = 3^x$.",
-      "display": "9^2 \\cdot 27^3 = 3^x",
-      "plainText": "9^2 * 27^3 = 3^x",
-      "answerSpec": {
-        "type": "number",
-        "value": "13"
-      },
-      "answerDisplay": "13",
-      "answerPlain": "13",
-      "inputHint": "Enter the exact integer value",
-      "checkpointHint": "Rewrite each composite base as a power of the prime base, apply the power property, and sum the resulting exponents.",
-      "commonTrapTag": "c08-common-base-conversion-trap",
-      "steps": [
-        {
-          "latex": "9^2 = (3^2)^2 = 3^{4}",
-          "explain": "Rewrite $9$ as $3^2$ and multiply the exponents."
-        },
-        {
-          "latex": "27^3 = (3^3)^3 = 3^{9}",
-          "explain": "Rewrite $27$ as $3^3$ and multiply the exponents."
-        },
-        {
-          "latex": "x = 4 + 9 = 13",
-          "explain": "Add the exponents of the common prime base."
-        }
-      ],
-      "level": 4,
-      "skill": "MTH-PREALG-C08-SYNTHESIS",
-      "verificationLevel": "machine-verified",
-      "id": "Q09",
-      "templateKey": "c08-scientific-notation-growth-synthesis",
-      "levelLabel": "Level 4 - Applied Synthesis",
-      "fingerprint": "c08-scientific-notation-growth-synthesis|direct|#^# * #^# = #^x",
+      "fingerprint": "c08-scientific-power-multiplication-slip|direct|(# * #^#) * (# * #^#)",
       "qualityGates": {
         "G1": {
           "passed": true,
-          "archetype": "math-standard"
+          "archetype": "problem-solving"
         },
         "G2": {
           "passed": true,
-          "level": 4,
-          "stepCount": 3,
+          "level": 3,
+          "stepCount": 2,
           "hasTrapOrFlaw": true,
-          "skill": "MTH-PREALG-C08-SYNTHESIS",
+          "skill": null,
           "stepRange": [
             2,
-            6
+            5
           ]
         },
         "G4": {
           "passed": true,
-          "trapTag": "c08-common-base-conversion-trap",
+          "trapTag": "c08-scientific-power-multiplication-slip",
           "trapValueVerified": true,
           "weakDistractors": 0,
           "provenanceDistractors": 0
         },
         "G6": {
           "passed": true,
-          "fieldsChecked": 13
+          "fieldsChecked": 10
         },
         "antiLeak": {
           "passed": true,
-          "hintsChecked": 2
+          "hintsChecked": 1
         },
-        "verificationLevel": "machine-verified",
-        "weakDistractors": 0,
-        "G3": {
-          "passed": true,
-          "fingerprint": "c08-scientific-notation-growth-synthesis|direct|#^# * #^# = #^x",
-          "maxAllowedPerFingerprint": 5
-        }
-      },
-      "referenceBadges": [
-        {
-          "code": "MTH-T01-C08-U01",
-          "title": "Introduction to Exponents",
-          "notionUrl": "https://www.notion.so/4003818f8ba080788d82e20d81e3a64c"
-        },
-        {
-          "code": "MTH-T01-C08-U03",
-          "title": "Division Properties of Exponents",
-          "notionUrl": "https://www.notion.so/4003818f8ba08032934ededb8bc1db54"
-        }
-      ],
-      "trapValue": "5",
-      "state": {
-        "userInput": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "lastCheck": null
+        "verificationLevel": "partial",
+        "weakDistractors": 0
       }
     },
     {
-      "form": "exponential-doubling",
+      "id": "Q09",
+      "verificationLevel": "partial",
+      "level": 4,
       "category": "Interleaved Synthesis",
-      "context": "Exponents: Common Prime Base Exponential Equation",
-      "references": [
-        "MTH-T01-C08-U01",
-        "MTH-T01-C08-U03"
-      ],
-      "prompt": "A computing cluster scales its throughput by a factor of $4^3$ in Phase 1 and by a factor of $8^2$ in Phase 2. If the combined scaling factor equals $2^x$, find the exact integer $x$.",
-      "display": "4^3 \\cdot 8^2 = 2^x \\implies x = ?",
-      "plainText": "4^3 * 8^2 = 2^x",
+      "archetype": "problem-solving",
+      "archetypeKey": "c08-nested-monomial-exponent-simplification",
+      "context": "quantum_mechanics_wavefunction_normalization",
+      "prompt": "Evaluate the simplified integer value of the rational power expression with base $2$, numerator powers $3$ and $4$, and denominator powers $7$ and $3$: calculate $\\frac{(2^3)^4}{2^7 \\times 2^3}$.",
+      "display": "\\frac{(2^3)^4}{2^7 \\times 2^3} = \\frac{2^{12}}{2^{10}} = 2^? = ?",
+      "plainText": "(2^3)^4 / (2^7 * 2^3)",
+      "answerDisplay": "4",
+      "givens": {
+        "base": 2,
+        "inner_p": 3,
+        "outer_p": 4,
+        "den_p1": 7,
+        "den_p2": 3
+      },
+      "answerPlain": "4",
       "answerSpec": {
         "type": "number",
-        "value": "12"
+        "value": "4",
+        "tolerance": 0.001
       },
-      "answerDisplay": "12",
-      "answerPlain": "12",
-      "inputHint": "Enter the exact integer value",
-      "checkpointHint": "Rewrite each composite base as a power of the prime base, apply the power property, and sum the resulting exponents.",
-      "commonTrapTag": "c08-common-base-conversion-trap",
+      "commonTrapTag": "c08-nested-sign-cancellation-error",
+      "trapDerivation": "2 ** (3 * 4 - 7)",
+      "trapValue": "32",
+      "verify": {
+        "source": "4",
+        "trapValue": "32"
+      },
+      "checkpointHint": "Simplify numerator by multiplying exponents and denominator by adding exponents before subtracting",
+      "references": [
+        "MTH-T01-C08",
+        "OpenStax Prealgebra 2e §10.2"
+      ],
+      "competencies": [
+        "nested-power-laws",
+        "multi-step-monomial-reduction"
+      ],
+      "constraints": [
+        "positive integer powers",
+        "identical prime base"
+      ],
       "steps": [
         {
-          "latex": "4^3 = (2^2)^3 = 2^{6}",
-          "explain": "Rewrite $4$ as $2^2$ and multiply the exponents."
+          "latex": "\\text{Numerator: } (2^3)^4 = 2^{3 \\times 4} = 2^{12}",
+          "explain": "Multiply exponents in numerator to get 2^12."
         },
         {
-          "latex": "8^2 = (2^3)^2 = 2^{6}",
-          "explain": "Rewrite $8$ as $2^3$ and multiply the exponents."
+          "latex": "\\text{Denominator: } 2^7 \\times 2^3 = 2^{7 + 3} = 2^{10}",
+          "explain": "Add exponents in denominator to get 2^10."
         },
         {
-          "latex": "x = 6 + 6 = 12",
-          "explain": "Add the exponents of the common prime base."
+          "latex": "\\frac{2^{12}}{2^{10}} = 2^{12 - 10} = 2^2 = 4",
+          "explain": "Subtract exponents to obtain 2^2 = 4.",
+          "val": "4"
         }
       ],
-      "level": 4,
-      "skill": "MTH-PREALG-C08-SYNTHESIS",
-      "verificationLevel": "machine-verified",
-      "id": "Q10",
-      "templateKey": "c08-scientific-notation-growth-synthesis",
-      "levelLabel": "Level 4 - Applied Synthesis",
-      "fingerprint": "c08-scientific-notation-growth-synthesis|exponential-doubling|#^# * #^# = #^x",
+      "form": "direct",
+      "fingerprint": "c08-nested-sign-cancellation-error|direct|(#^#)^# / (#^# * #^#)",
       "qualityGates": {
         "G1": {
           "passed": true,
-          "archetype": "math-standard"
+          "archetype": "problem-solving"
         },
         "G2": {
           "passed": true,
           "level": 4,
           "stepCount": 3,
           "hasTrapOrFlaw": true,
-          "skill": "MTH-PREALG-C08-SYNTHESIS",
+          "skill": null,
           "stepRange": [
             2,
             6
@@ -1010,49 +743,128 @@
         },
         "G4": {
           "passed": true,
-          "trapTag": "c08-common-base-conversion-trap",
+          "trapTag": "c08-nested-sign-cancellation-error",
           "trapValueVerified": true,
           "weakDistractors": 0,
           "provenanceDistractors": 0
         },
         "G6": {
           "passed": true,
-          "fieldsChecked": 13
+          "fieldsChecked": 12
         },
         "antiLeak": {
           "passed": true,
-          "hintsChecked": 2
+          "hintsChecked": 1
         },
-        "verificationLevel": "machine-verified",
-        "weakDistractors": 0,
-        "G3": {
-          "passed": true,
-          "fingerprint": "c08-scientific-notation-growth-synthesis|exponential-doubling|#^# * #^# = #^x",
-          "maxAllowedPerFingerprint": 5
-        }
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      }
+    },
+    {
+      "id": "Q10",
+      "verificationLevel": "partial",
+      "level": 4,
+      "category": "Interleaved Synthesis",
+      "archetype": "problem-solving",
+      "archetypeKey": "c08-exponential-growth-doubling-time",
+      "context": "epidemiology_pathogen_spread_tracking",
+      "prompt": "A biological culture has an initial count of $150$ cells and doubles its population every $6$ hours. Find the total cell population after $24$ hours.",
+      "display": "N = 150 \\times 2^{\\frac{24}{6}} = 150 \\times 2^? = ?",
+      "plainText": "N = 150 * 2^(24 / 6)",
+      "answerDisplay": "2400",
+      "givens": {
+        "initial_cells": 150,
+        "doubling_hours": 6,
+        "total_hours": 24
       },
-      "referenceBadges": [
+      "answerPlain": "2400",
+      "answerSpec": {
+        "type": "number",
+        "value": "2400",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c08-linear-growth-extrapolation-trap",
+      "trapDerivation": "150 + 150 * (24 / 6)",
+      "trapValue": "750",
+      "verify": {
+        "source": "2400",
+        "trapValue": "750"
+      },
+      "checkpointHint": "Compute the number of doubling periods by dividing total hours by doubling interval and evaluate as power of two",
+      "references": [
+        "MTH-T01-C08",
+        "OpenStax Prealgebra 2e §10.4"
+      ],
+      "competencies": [
+        "exponential-growth-synthesis",
+        "doubling-period-modeling"
+      ],
+      "constraints": [
+        "discrete doubling intervals",
+        "strictly positive population"
+      ],
+      "steps": [
         {
-          "code": "MTH-T01-C08-U01",
-          "title": "Introduction to Exponents",
-          "notionUrl": "https://www.notion.so/4003818f8ba080788d82e20d81e3a64c"
+          "latex": "\\text{Doubling periods } k = \\frac{24}{6} = 4",
+          "explain": "Divide total elapsed hours 24 by doubling interval 6 to get 4 periods."
         },
         {
-          "code": "MTH-T01-C08-U03",
-          "title": "Division Properties of Exponents",
-          "notionUrl": "https://www.notion.so/4003818f8ba08032934ededb8bc1db54"
+          "latex": "2^4 = 16",
+          "explain": "Calculate doubling factor 2 to the 4th power = 16."
+        },
+        {
+          "latex": "N = 150 \\times 16 = 2400",
+          "explain": "Multiply initial count 150 by 16 to obtain 2400 cells.",
+          "val": "2400"
         }
       ],
-      "trapValue": "5",
-      "state": {
-        "userInput": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "lastCheck": null
+      "form": "direct",
+      "fingerprint": "c08-linear-growth-extrapolation-trap|direct|N = # * #^(# / #)",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c08-linear-growth-extrapolation-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 12
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
       }
     }
   ],
+  "title": "Exponents — Verified Math Drill (10 Qs)",
+  "schemaVersion": "2.0-math",
+  "subject": "MATH",
+  "createdAt": "2026-11-09 20:27:34",
+  "config": {
+    "questionCount": 10,
+    "difficulty": "ALL",
+    "difficultyMode": "AI Synthesized Reasoning Mode"
+  },
   "sessionSummary": {
     "practiceStatus": "Ready",
     "score": 0,

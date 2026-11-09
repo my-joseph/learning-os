@@ -1,0 +1,207 @@
+{
+  "unitCode": "MTH-T01-C09",
+  "topicTitle": "Roots",
+  "description": "Comprehensive reasoning vault for radical expressions, square roots, higher-index roots, radical operations, and radical equations.",
+  "archetypes": [
+    {
+      "archetypeKey": "c09-perfect-square-evaluation",
+      "level": 1,
+      "name": "Evaluating Principal Square Roots",
+      "coreConcept": "The principal square root of a non-negative number n is the unique non-negative number r such that r^2 = n.",
+      "mentalModel": "Geometric side length of a square region with known area.",
+      "governingRelation": "\\sqrt{n} = r \\iff r^2 = n \\land r \\ge 0",
+      "cognitiveTraps": [
+        "c09-divide-by-two-trap",
+        "c09-square-instead-of-root-trap"
+      ],
+      "versatileDomains": [
+        "square_tiling",
+        "grid_layouts",
+        "pixel_arrays"
+      ],
+      "usedContexts": [
+        "square_tiling_floor_plan"
+      ]
+    },
+    {
+      "archetypeKey": "c09-square-root-fractions",
+      "level": 1,
+      "name": "Square Roots of Fractions and Rational Numbers",
+      "coreConcept": "Quotient property of radicals allows evaluating numerator and denominator independently: sqrt(a/b) = sqrt(a)/sqrt(b).",
+      "mentalModel": "Independent square extraction across ratio dimensions.",
+      "governingRelation": "\\sqrt{\\frac{a}{b}} = \\frac{\\sqrt{a}}{\\sqrt{b}}",
+      "cognitiveTraps": [
+        "c09-root-only-numerator-trap",
+        "c09-fraction-square-trap"
+      ],
+      "versatileDomains": [
+        "probability_ratios",
+        "optical_apertures",
+        "scale_reductions"
+      ],
+      "usedContexts": [
+        "optical_lens_magnification"
+      ]
+    },
+    {
+      "archetypeKey": "c09-simplify-radical-factoring",
+      "level": 2,
+      "name": "Simplifying Radicals via Prime Factorization and Product Property",
+      "coreConcept": "Factor the radicand into perfect square factors and irreducible parts: sqrt(k^2 * m) = k * sqrt(m).",
+      "mentalModel": "Extracting completed pairs out of the radical enclosure.",
+      "governingRelation": "\\sqrt{a \\cdot b} = \\sqrt{a} \\cdot \\sqrt{b}",
+      "cognitiveTraps": [
+        "c09-incomplete-factorization-trap",
+        "c09-add-radicands-trap"
+      ],
+      "versatileDomains": [
+        "pendulum_mechanics",
+        "signal_processing",
+        "electrical_reactance"
+      ],
+      "usedContexts": [
+        "pendulum_oscillation_period"
+      ]
+    },
+    {
+      "archetypeKey": "c09-multiplying-radicals",
+      "level": 2,
+      "name": "Multiplying Radicals and Combining Like Factors",
+      "coreConcept": "Multiply radicands under a common radical index, then extract perfect square factors: sqrt(a) * sqrt(b) = sqrt(ab).",
+      "mentalModel": "Consolidating geometric dimensions under a single radical canopy.",
+      "governingRelation": "\\sqrt{a} \\cdot \\sqrt{b} = \\sqrt{ab}",
+      "cognitiveTraps": [
+        "c09-multiply-into-radicand-trap",
+        "c09-forget-simplify-after-mult-trap"
+      ],
+      "versatileDomains": [
+        "geometric_mean_flow",
+        "acoustics",
+        "fluid_dynamics"
+      ],
+      "usedContexts": [
+        "fluid_venturi_flow"
+      ]
+    },
+    {
+      "archetypeKey": "c09-dividing-and-rationalizing",
+      "level": 2,
+      "name": "Quotient Property and Denominator Rationalization",
+      "coreConcept": "Remove radicals from the denominator by multiplying numerator and denominator by appropriate radical factor: c / sqrt(b) = c*sqrt(b) / b.",
+      "mentalModel": "Multiplying by a disguised unit one to cleanse the denominator.",
+      "governingRelation": "\\frac{c}{\\sqrt{b}} \\cdot \\frac{\\sqrt{b}}{\\sqrt{b}} = \\frac{c\\sqrt{b}}{b}",
+      "cognitiveTraps": [
+        "c09-denominator-radical-cancellation-trap",
+        "c09-invert-rationalize-trap"
+      ],
+      "versatileDomains": [
+        "camera_aperture_stops",
+        "rf_antenna_impedance",
+        "surveying"
+      ],
+      "usedContexts": [
+        "rf_transmission_impedance"
+      ]
+    },
+    {
+      "archetypeKey": "c09-adding-subtracting-like-radicals",
+      "level": 3,
+      "name": "Combining Radical Expressions with Common Radicands",
+      "coreConcept": "Like radicals behave like algebraic like terms: a*sqrt(x) + b*sqrt(x) = (a+b)*sqrt(x).",
+      "mentalModel": "Distributive factoring of common irrational units.",
+      "governingRelation": "a\\sqrt{x} + b\\sqrt{x} = (a+b)\\sqrt{x}",
+      "cognitiveTraps": [
+        "c09-add-radicands-together-trap",
+        "c09-drop-radical-symbol-trap"
+      ],
+      "versatileDomains": [
+        "structural_truss_perimeters",
+        "vector_resolutions",
+        "civil_engineering"
+      ],
+      "usedContexts": [
+        "bridge_truss_strut_lengths"
+      ]
+    },
+    {
+      "archetypeKey": "c09-binomial-radical-multiplication",
+      "level": 3,
+      "name": "Multiplying Binomial Expressions with Radicals",
+      "coreConcept": "Expand radical binomials using distributive FOIL property: (a + sqrt(b))^2 = a^2 + 2a*sqrt(b) + b.",
+      "mentalModel": "Four-quadrant geometric area expansion with irrational components.",
+      "governingRelation": "(a + \\sqrt{b})^2 = a^2 + 2a\\sqrt{b} + b",
+      "cognitiveTraps": [
+        "c09-freshman-dream-radical-square-trap",
+        "c09-sign-distribution-trap"
+      ],
+      "versatileDomains": [
+        "quantum_state_amplitudes",
+        "complex_load_impedance",
+        "orbital_mechanics"
+      ],
+      "usedContexts": [
+        "electrical_generator_load"
+      ]
+    },
+    {
+      "archetypeKey": "c09-higher-index-roots",
+      "level": 3,
+      "name": "Evaluating Cube Roots and Higher-Index Radicals",
+      "coreConcept": "The nth root of a is the real number r such that r^n = a: cubing a real number preserves sign.",
+      "mentalModel": "Three-dimensional cube edge length from cubic volume.",
+      "governingRelation": "\\sqrt[3]{a} = r \\iff r^3 = a",
+      "cognitiveTraps": [
+        "c09-cube-root-divided-by-three-trap",
+        "c09-higher-index-square-trap"
+      ],
+      "versatileDomains": [
+        "cube_storage_containers",
+        "spherical_bubble_expansion",
+        "materials_science"
+      ],
+      "usedContexts": [
+        "cubic_storage_crate_volume"
+      ]
+    },
+    {
+      "archetypeKey": "c09-pythagorean-radical-modeling",
+      "level": 4,
+      "name": "Pythagorean Theorem and Radical Distance Modeling",
+      "coreConcept": "In a right triangle with legs a and b, the hypotenuse is c = sqrt(a^2 + b^2).",
+      "mentalModel": "Euclidean metric distance invariance in two dimensions.",
+      "governingRelation": "c = \\sqrt{a^2 + b^2}",
+      "cognitiveTraps": [
+        "c09-linear-sum-instead-of-pythagorean-trap",
+        "c09-leg-hypotenuse-swap-trap"
+      ],
+      "versatileDomains": [
+        "drone_flight_path",
+        "cable_guy_wire_tension",
+        "geodetic_surveying"
+      ],
+      "usedContexts": [
+        "drone_waypoint_direct_distance"
+      ]
+    },
+    {
+      "archetypeKey": "c09-radical-equation-extraneous-solutions",
+      "level": 4,
+      "name": "Solving Radical Equations and Checking Solutions",
+      "coreConcept": "Isolate the radical and square both sides: sqrt(a*x + b) = c implies a*x + b = c^2, then verify.",
+      "mentalModel": "Reversible algebraic operation followed by domain consistency audit.",
+      "governingRelation": "\\sqrt{ax + b} = c \\implies ax + b = c^2",
+      "cognitiveTraps": [
+        "c09-forget-to-square-constant-trap",
+        "c09-omit-constant-term-trap"
+      ],
+      "versatileDomains": [
+        "skid_mark_velocity_physics",
+        "hydraulic_flow_pressure",
+        "atmospheric_lapse_rate"
+      ],
+      "usedContexts": [
+        "traffic_accident_speed_estimation"
+      ]
+    }
+  ]
+}

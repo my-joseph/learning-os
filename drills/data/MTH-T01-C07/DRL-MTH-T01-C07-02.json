@@ -1,0 +1,875 @@
+{
+  "unitCode": "MTH-T01-C07",
+  "unitTitle": "Propotional & Radio",
+  "topicTitle": "Proportional & Ratio",
+  "drillId": "DRL-MTH-T01-C07-02",
+  "sourceAttribution": "OpenStax Prealgebra 2e, CC BY 4.0",
+  "problems": [
+    {
+      "id": "Q01",
+      "verificationLevel": "partial",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c07-ratio-simplification-part-to-part",
+      "context": "quality_inspection_batch_ratio",
+      "prompt": "In a manufacturing facility, an inspection batch has $18$ passing components and $24$ defective components. Express the simplified ratio of passing components to defective components as an irreducible fraction.",
+      "display": "\\frac{18}{24} = ?",
+      "plainText": "18/24 = ?",
+      "answerDisplay": "\\frac{3}{4}",
+      "givens": {
+        "passing": 18,
+        "defective": 24
+      },
+      "answerPlain": "3/4",
+      "answerSpec": {
+        "type": "number",
+        "value": "3/4",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c07-subtraction-ratio-error",
+      "trapDerivation": "(24 - 18) / 24",
+      "trapValue": "1/4",
+      "verify": {
+        "source": "3/4",
+        "trapValue": "1/4"
+      },
+      "checkpointHint": "Divide both terms of the ratio by their greatest common divisor to obtain simplest form",
+      "references": [
+        "MTH-T01-C07"
+      ],
+      "steps": [
+        {
+          "latex": "\\gcd(18, 24) = 6",
+          "explain": "Find the greatest common divisor of 18 and 24."
+        },
+        {
+          "latex": "\\frac{18 \\div 6}{24 \\div 6} = \\frac{3}{4}",
+          "explain": "Divide numerator and denominator by 6 to obtain 3/4.",
+          "val": "3/4"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c07-subtraction-ratio-error|direct|#/# = ?",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            1,
+            3
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c07-subtraction-ratio-error",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      }
+    },
+    {
+      "id": "Q02",
+      "verificationLevel": "partial",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c07-unit-rate-comparison",
+      "context": "fuel_consumption_efficiency_rate",
+      "prompt": "A fleet transport truck travels $420$ kilometers on $35$ liters of diesel fuel. Calculate the unit fuel efficiency rate in kilometers per liter.",
+      "display": "\\text{Unit Rate} = \\frac{420\\text{ km}}{35\\text{ L}} = ?",
+      "plainText": "Unit Rate = 420 / 35",
+      "answerDisplay": "12",
+      "givens": {
+        "distance": 420,
+        "fuel": 35
+      },
+      "answerPlain": "12",
+      "answerSpec": {
+        "type": "number",
+        "value": "12",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c07-inverted-unit-rate-slip",
+      "trapDerivation": "420 - 35 * 11",
+      "trapValue": "35",
+      "verify": {
+        "source": "12",
+        "trapValue": "35"
+      },
+      "checkpointHint": "Divide total distance traveled by total volume of fuel consumed",
+      "references": [
+        "MTH-T01-C07"
+      ],
+      "steps": [
+        {
+          "latex": "\\text{Rate} = \\frac{420}{35}",
+          "explain": "Set up division of distance by fuel volume."
+        },
+        {
+          "latex": "\\frac{420}{35} = 12",
+          "explain": "Compute quotient to find 12 kilometers per liter.",
+          "val": "12"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c07-inverted-unit-rate-slip|direct|Unit Rate = # / #",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            1,
+            3
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c07-inverted-unit-rate-slip",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      }
+    },
+    {
+      "id": "Q03",
+      "verificationLevel": "partial",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c07-proportional-scaling-direct",
+      "context": "culinary_recipe_yield_scaling",
+      "prompt": "A commercial bakery recipe requires $15$ kilograms of flour to produce $60$ loaves of bread. How many kilograms of flour are required to produce $180$ loaves of bread?",
+      "display": "\\frac{15\\text{ kg}}{60\\text{ loaves}} = \\frac{x\\text{ kg}}{180\\text{ loaves}}",
+      "plainText": "15 / 60 = x / 180",
+      "answerDisplay": "45",
+      "givens": {
+        "base_flour": 15,
+        "base_loaves": 60,
+        "target_loaves": 180
+      },
+      "answerPlain": "45",
+      "answerSpec": {
+        "type": "number",
+        "value": "45",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c07-additive-scaling-slip",
+      "trapDerivation": "15 + (180 - 60)",
+      "trapValue": "135",
+      "verify": {
+        "source": "45",
+        "trapValue": "135"
+      },
+      "checkpointHint": "Multiply the base ingredient amount by the ratio of target loaves to base loaves",
+      "references": [
+        "MTH-T01-C07"
+      ],
+      "steps": [
+        {
+          "latex": "\\text{Scale Factor} = \\frac{180}{60} = 3",
+          "explain": "Determine scale multiplier from 60 to 180 loaves."
+        },
+        {
+          "latex": "x = 15 \\times 3 = 45",
+          "explain": "Multiply base flour 15 kg by 3 to get 45 kg.",
+          "val": "45"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c07-additive-scaling-slip|direct|# / # = x / #",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            4
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c07-additive-scaling-slip",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      }
+    },
+    {
+      "id": "Q04",
+      "verificationLevel": "partial",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c07-proportion-cross-product-isolation",
+      "context": "medical_dosage_saline_infusion",
+      "prompt": "Solve the proportion for the unknown volume $x$: $\\frac{4}{7} = \\frac{x}{56}$.",
+      "display": "\\frac{4}{7} = \\frac{x}{56} \\implies x = ?",
+      "plainText": "4/7 = x/56",
+      "answerDisplay": "32",
+      "givens": {
+        "num": 4,
+        "den": 7,
+        "target_den": 56
+      },
+      "answerPlain": "32",
+      "answerSpec": {
+        "type": "number",
+        "value": "32",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c07-cross-product-operator-confusion",
+      "trapDerivation": "(4 * 7) + 56 / 7",
+      "trapValue": "36",
+      "verify": {
+        "source": "32",
+        "trapValue": "36"
+      },
+      "checkpointHint": "Cross multiply numerators and denominators to isolate the unknown variable",
+      "references": [
+        "MTH-T01-C07"
+      ],
+      "steps": [
+        {
+          "latex": "7x = 4 \\times 56",
+          "explain": "Set cross products equal to each other."
+        },
+        {
+          "latex": "7x = 224 \\implies x = \\frac{224}{7} = 32",
+          "explain": "Divide 224 by 7 to obtain x = 32.",
+          "val": "32"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c07-cross-product-operator-confusion|direct|#/# = x/#",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            4
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c07-cross-product-operator-confusion",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      }
+    },
+    {
+      "id": "Q05",
+      "verificationLevel": "partial",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c07-part-to-whole-ratio-partition",
+      "context": "construction_concrete_aggregate_batch",
+      "prompt": "A batch of concrete aggregate mixes sand and gravel in a ratio of $3$ to $5$. If the total weight of the aggregate mixture is $640$ kilograms, find the weight of gravel in kilograms.",
+      "display": "\\text{Gravel} = 640 \\times \\frac{5}{3 + 5} = ?",
+      "plainText": "Gravel = 640 * (5 / (3 + 5))",
+      "answerDisplay": "400",
+      "givens": {
+        "sand_parts": 3,
+        "gravel_parts": 5,
+        "total_weight": 640
+      },
+      "answerPlain": "400",
+      "answerSpec": {
+        "type": "number",
+        "value": "400",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c07-part-to-part-denominator-error",
+      "trapDerivation": "640 * 3 / (3 + 5)",
+      "trapValue": "240",
+      "verify": {
+        "source": "400",
+        "trapValue": "240"
+      },
+      "checkpointHint": "Sum the ratio parts to find the total partition units before multiplying by the target share",
+      "references": [
+        "MTH-T01-C07"
+      ],
+      "steps": [
+        {
+          "latex": "3 + 5 = 8\\text{ total parts}",
+          "explain": "Find total number of ratio parts."
+        },
+        {
+          "latex": "\\text{Weight of 1 part} = \\frac{640}{8} = 80",
+          "explain": "Divide total weight by 8 parts to get 80 kg per part."
+        },
+        {
+          "latex": "\\text{Gravel weight} = 5 \\times 80 = 400",
+          "explain": "Multiply 5 gravel parts by 80 kg to get 400 kg.",
+          "val": "400"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c07-part-to-part-denominator-error|direct|Gravel = # * (# / (# + #))",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            4
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c07-part-to-part-denominator-error",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 12
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      }
+    },
+    {
+      "id": "Q06",
+      "verificationLevel": "partial",
+      "level": 3,
+      "category": "Trap & Diagnostic",
+      "archetype": "problem-solving",
+      "archetypeKey": "c07-scale-drawing-map-conversion",
+      "context": "architectural_blueprint_room_span",
+      "prompt": "On an architectural blueprint, the scale specification is $1$ centimeter represents $4$ meters. If a conference hall measures $9$ centimeters on the blueprint, what is the actual length of the hall in meters?",
+      "display": "\\text{Scale: } 1\\text{ cm} : 4\\text{ m} \\implies 9\\text{ cm} \\to ?\\text{ m}",
+      "plainText": "Actual = 9 * 4",
+      "answerDisplay": "36",
+      "givens": {
+        "scale_map": 1,
+        "scale_real": 4,
+        "drawing_length": 9
+      },
+      "answerPlain": "36",
+      "answerSpec": {
+        "type": "number",
+        "value": "36",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c07-scale-division-inversion",
+      "trapDerivation": "9 + 4",
+      "trapValue": "13",
+      "verify": {
+        "source": "36",
+        "trapValue": "13"
+      },
+      "checkpointHint": "Multiply the blueprint measurement by the real meters represented per drawing centimeter",
+      "references": [
+        "MTH-T01-C07"
+      ],
+      "steps": [
+        {
+          "latex": "\\text{Real length} = 9\\text{ cm} \\times 4\\frac{\\text{m}}{\\text{cm}}",
+          "explain": "Multiply drawing length by the scale multiplier."
+        },
+        {
+          "latex": "9 \\times 4 = 36\\text{ meters}",
+          "explain": "Compute product to obtain 36 meters.",
+          "val": "36"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c07-scale-division-inversion|direct|Actual = # * #",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            5
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c07-scale-division-inversion",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      }
+    },
+    {
+      "id": "Q07",
+      "verificationLevel": "partial",
+      "level": 3,
+      "category": "Trap & Diagnostic",
+      "archetype": "problem-solving",
+      "archetypeKey": "c07-inverse-proportion-rate-time",
+      "context": "warehouse_crew_container_unloading",
+      "prompt": "A logistics crew of $6$ warehouse workers unloads a container freight ship in $12$ hours. If the warehouse manager increases the crew to $9$ workers working at the same rate, how many hours will it take to unload the container ship?",
+      "display": "6 \\times 12 = 9 \\times t \\implies t = ?",
+      "plainText": "6 * 12 = 9 * t",
+      "answerDisplay": "8",
+      "givens": {
+        "workers_initial": 6,
+        "hours_initial": 12,
+        "workers_new": 9
+      },
+      "answerPlain": "8",
+      "answerSpec": {
+        "type": "number",
+        "value": "8",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c07-direct-scaling-on-inverse-trap",
+      "trapDerivation": "(9 * 12) / 6",
+      "trapValue": "18",
+      "verify": {
+        "source": "8",
+        "trapValue": "18"
+      },
+      "checkpointHint": "Recognize that worker count and unloading time vary inversely with constant total worker hours",
+      "references": [
+        "MTH-T01-C07"
+      ],
+      "steps": [
+        {
+          "latex": "\\text{Total Workload} = 6 \\times 12 = 72\\text{ worker-hours}",
+          "explain": "Compute constant product of worker count and hours."
+        },
+        {
+          "latex": "t = \\frac{72}{9} = 8\\text{ hours}",
+          "explain": "Divide total workload by 9 workers to find 8 hours.",
+          "val": "8"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c07-direct-scaling-on-inverse-trap|direct|# * # = # * t",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            5
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c07-direct-scaling-on-inverse-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      }
+    },
+    {
+      "id": "Q08",
+      "verificationLevel": "partial",
+      "level": 3,
+      "category": "Trap & Diagnostic",
+      "archetype": "problem-solving",
+      "archetypeKey": "c07-currency-exchange-rate-conversion",
+      "context": "international_cargo_freight_pricing",
+      "prompt": "An international shipping company charges $25$ dollars per cargo package. If the foreign currency exchange rate is $34$ baht per dollar, calculate the shipping charge in baht for a shipment containing $3$ cargo packages.",
+      "display": "3\\text{ packages} \\times 25\\frac{\\text{USD}}{\\text{package}} \\times 34\\frac{\\text{THB}}{\\text{USD}} = ?",
+      "plainText": "3 * 25 * 34",
+      "answerDisplay": "2550",
+      "givens": {
+        "rate_usd": 25,
+        "rate_thb": 34,
+        "packages": 3
+      },
+      "answerPlain": "2550",
+      "answerSpec": {
+        "type": "number",
+        "value": "2550",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c07-exchange-rate-reciprocal-slip",
+      "trapDerivation": "(25 * 34) + 3",
+      "trapValue": "853",
+      "verify": {
+        "source": "2550",
+        "trapValue": "853"
+      },
+      "checkpointHint": "Multiply the package count by dollars per package and then multiply by the exchange rate in baht",
+      "references": [
+        "MTH-T01-C07"
+      ],
+      "steps": [
+        {
+          "latex": "\\text{Cost in USD} = 3 \\times 25 = 75\\text{ dollars}",
+          "explain": "Find total cost in dollars for 3 packages."
+        },
+        {
+          "latex": "\\text{Cost in THB} = 75 \\times 34 = 2550\\text{ baht}",
+          "explain": "Convert dollars to baht by multiplying by 34.",
+          "val": "2550"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c07-exchange-rate-reciprocal-slip|direct|# * # * #",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            5
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c07-exchange-rate-reciprocal-slip",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      }
+    },
+    {
+      "id": "Q09",
+      "verificationLevel": "partial",
+      "level": 4,
+      "category": "Interleaved Synthesis",
+      "archetype": "problem-solving",
+      "archetypeKey": "c07-constrained-three-way-mixture-proportion",
+      "context": "metallurgical_bronze_alloy_casting",
+      "prompt": "A foundry casts a bronze sculpture batch weighing $270$ kilograms using copper, tin, and zinc in the ratio of $14$ to $3$ to $1$. Calculate the mass of copper in kilograms required for the casting.",
+      "display": "\\text{Copper} = 270 \\times \\frac{14}{14 + 3 + 1} = ?",
+      "plainText": "Copper = 270 * (14 / (14 + 3 + 1))",
+      "answerDisplay": "210",
+      "givens": {
+        "copper_part": 14,
+        "tin_part": 3,
+        "zinc_part": 1,
+        "total_alloy": 270
+      },
+      "answerPlain": "210",
+      "answerSpec": {
+        "type": "number",
+        "value": "210",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c07-two-way-sum-denominator-omission",
+      "trapDerivation": "270 * 14 / (14 + 3)",
+      "trapValue": "3780/17",
+      "verify": {
+        "source": "210",
+        "trapValue": "3780/17"
+      },
+      "checkpointHint": "Sum all three alloy component parts to find the denominator before computing the copper share",
+      "references": [
+        "MTH-T01-C07",
+        "OpenStax Prealgebra 2e §6.5"
+      ],
+      "competencies": [
+        "multi-component-ratio-synthesis",
+        "mass-fraction-allocation"
+      ],
+      "constraints": [
+        "positive component masses",
+        "sum of parts matches total"
+      ],
+      "steps": [
+        {
+          "latex": "14 + 3 + 1 = 18\\text{ total parts}",
+          "explain": "Sum all three mixture parts: 14 + 3 + 1 = 18."
+        },
+        {
+          "latex": "\\text{Unit part} = \\frac{270}{18} = 15\\text{ kg}",
+          "explain": "Divide total alloy 270 kg by 18 parts to find 15 kg per part."
+        },
+        {
+          "latex": "\\text{Copper} = 14 \\times 15 = 210\\text{ kg}",
+          "explain": "Multiply 14 copper parts by 15 kg to get 210 kg.",
+          "val": "210"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c07-two-way-sum-denominator-omission|direct|Copper = # * (# / (# + # + #))",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c07-two-way-sum-denominator-omission",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 12
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      }
+    },
+    {
+      "id": "Q10",
+      "verificationLevel": "partial",
+      "level": 4,
+      "category": "Interleaved Synthesis",
+      "archetype": "problem-solving",
+      "archetypeKey": "c07-gear-train-transmission-ratio-synthesis",
+      "context": "wind_turbine_generator_gearbox",
+      "prompt": "A wind turbine rotor with $72$ teeth drives a high-speed generator pinion with $18$ teeth. If the rotor turns at $25$ revolutions per minute, calculate the rotational speed of the generator pinion in revolutions per minute.",
+      "display": "72 \\times 25 = 18 \\times \\omega_2 \\implies \\omega_2 = ?",
+      "plainText": "72 * 25 = 18 * omega_2",
+      "answerDisplay": "100",
+      "givens": {
+        "rotor_teeth": 72,
+        "pinion_teeth": 18,
+        "rotor_speed": 25
+      },
+      "answerPlain": "100",
+      "answerSpec": {
+        "type": "number",
+        "value": "100",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c07-transmission-ratio-inversion-trap",
+      "trapDerivation": "(18 * 25) / 72",
+      "trapValue": "25/4",
+      "verify": {
+        "source": "100",
+        "trapValue": "25/4"
+      },
+      "checkpointHint": "Equate the product of rotor teeth and rotor speed to pinion teeth and pinion speed to solve for output speed",
+      "references": [
+        "MTH-T01-C07",
+        "OpenStax Prealgebra 2e §7.1"
+      ],
+      "competencies": [
+        "angular-velocity-invariance",
+        "transmission-ratio-inversion"
+      ],
+      "constraints": [
+        "positive gear teeth",
+        "rotational equilibrium"
+      ],
+      "steps": [
+        {
+          "latex": "N_1 \\omega_1 = N_2 \\omega_2 \\implies 72 \\times 25 = 18 \\times \\omega_2",
+          "explain": "Set up mechanical gear ratio conservation equation."
+        },
+        {
+          "latex": "1800 = 18 \\omega_2 \\implies \\omega_2 = \\frac{1800}{18} = 100",
+          "explain": "Divide 1800 by 18 to obtain generator pinion speed of 100 RPM.",
+          "val": "100"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c07-transmission-ratio-inversion-trap|direct|# * # = # * omega_#",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c07-transmission-ratio-inversion-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      }
+    }
+  ],
+  "title": "Propotional & Radio — Verified Math Drill (10 Qs)",
+  "schemaVersion": "2.0-math",
+  "subject": "MATH",
+  "createdAt": "2026-11-09 20:24:30",
+  "config": {
+    "questionCount": 10,
+    "difficulty": "ALL",
+    "difficultyMode": "AI Synthesized Reasoning Mode"
+  },
+  "sessionSummary": {
+    "practiceStatus": "Ready",
+    "score": 0,
+    "maxScore": 10,
+    "accuracyPct": 0,
+    "mistakeCategories": [],
+    "divergedStepsSummary": "",
+    "attemptDate": null,
+    "syncedToNotionAt": null,
+    "notionPageId": null
+  },
+  "localFilePath": "drills/data/MTH-T01-C07/DRL-MTH-T01-C07-02.json"
+}

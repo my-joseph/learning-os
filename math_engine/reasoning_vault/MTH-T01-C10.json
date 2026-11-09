@@ -1,0 +1,207 @@
+{
+  "unitCode": "MTH-T01-C10",
+  "topicTitle": "The Properties of Real Numbers",
+  "description": "Comprehensive reasoning vault for properties of real numbers including commutative, associative, identity, inverse, distributive properties, and properties of zero.",
+  "archetypes": [
+    {
+      "archetypeKey": "c10-commutative-property",
+      "level": 1,
+      "name": "Commutative Property of Addition and Multiplication",
+      "coreConcept": "Changing the order of addends or factors does not change the sum or product: a + b = b + a and a * b = b * a.",
+      "mentalModel": "Reversible sequence in item summation or rectangular array rotation.",
+      "governingRelation": "a + b = b + a \\land a \\cdot b = b \\cdot a",
+      "cognitiveTraps": [
+        "c10-order-sensitivity-trap",
+        "c10-subtraction-commutative-trap"
+      ],
+      "versatileDomains": [
+        "grocery_checkout",
+        "transaction_sequencing",
+        "sensor_aggregation"
+      ],
+      "usedContexts": [
+        "grocery_price_tally"
+      ]
+    },
+    {
+      "archetypeKey": "c10-associative-property",
+      "level": 1,
+      "name": "Associative Property of Addition and Multiplication",
+      "coreConcept": "Changing the grouping of addends or factors does not change the result: (a + b) + c = a + (b + c) and (ab)c = a(bc).",
+      "mentalModel": "Re-grouping sub-assemblies without changing the total count.",
+      "governingRelation": "(a + b) + c = a + (b + c) \\land (a \\cdot b) \\cdot c = a \\cdot (b \\cdot c)",
+      "cognitiveTraps": [
+        "c10-grouping-order-trap",
+        "c10-division-associative-trap"
+      ],
+      "versatileDomains": [
+        "network_packet_batching",
+        "portfolio_asset_grouping",
+        "inventory_bundling"
+      ],
+      "usedContexts": [
+        "network_packet_batching"
+      ]
+    },
+    {
+      "archetypeKey": "c10-identity-and-inverse-properties",
+      "level": 2,
+      "name": "Additive and Multiplicative Identities and Inverses",
+      "coreConcept": "Identity elements preserve value (a + 0 = a, a * 1 = a); inverse elements produce identities (a + (-a) = 0, a * (1/a) = 1).",
+      "mentalModel": "Neutral elements and exact countervailing cancellations.",
+      "governingRelation": "a + (-a) = 0 \\land a \\cdot \\frac{1}{a} = 1",
+      "cognitiveTraps": [
+        "c10-identity-confusion-trap",
+        "c10-zero-reciprocal-trap"
+      ],
+      "versatileDomains": [
+        "accounting_neutralization",
+        "sensor_offset_calibration",
+        "resistor_balance"
+      ],
+      "usedContexts": [
+        "sensor_offset_calibration"
+      ]
+    },
+    {
+      "archetypeKey": "c10-distributive-property-expansion",
+      "level": 2,
+      "name": "Distributive Property of Multiplication over Addition",
+      "coreConcept": "Multiplying a sum by a factor is equal to summing the individual products: a(b + c) = ab + ac.",
+      "mentalModel": "Partitioning a large rectangular area into two adjacent sub-rectangles.",
+      "governingRelation": "a(b + c) = ab + ac",
+      "cognitiveTraps": [
+        "c10-partial-distribution-trap",
+        "c10-sign-distribution-trap"
+      ],
+      "versatileDomains": [
+        "wholesale_pricing",
+        "area_partitioning",
+        "wage_overtime_calculation"
+      ],
+      "usedContexts": [
+        "wholesale_parts_order"
+      ]
+    },
+    {
+      "archetypeKey": "c10-properties-of-zero",
+      "level": 2,
+      "name": "Multiplication by Zero and Division with Zero",
+      "coreConcept": "The product of any real number and zero is zero (a * 0 = 0); zero divided by non-zero is zero; division by zero is undefined.",
+      "mentalModel": "Null signal attenuation versus impossible partition.",
+      "governingRelation": "a \\cdot 0 = 0 \\land \\frac{0}{a} = 0 \\quad (a \\ne 0)",
+      "cognitiveTraps": [
+        "c10-undefined-division-trap",
+        "c10-zero-multiplication-identity-trap"
+      ],
+      "versatileDomains": [
+        "telemetry_signal_attenuation",
+        "digital_null_detection",
+        "financial_write_off"
+      ],
+      "usedContexts": [
+        "control_loop_null_signal"
+      ]
+    },
+    {
+      "archetypeKey": "c10-combining-like-terms-distributive",
+      "level": 3,
+      "name": "Factoring and Combining Like Terms via Reverse Distribution",
+      "coreConcept": "Use distributive property in reverse to consolidate algebraic terms: ax + bx = (a + b)x.",
+      "mentalModel": "Summing multiple measurements of a shared underlying unit.",
+      "governingRelation": "ax + bx = (a + b)x",
+      "cognitiveTraps": [
+        "c10-variable-power-addition-trap",
+        "c10-unlike-terms-combination-trap"
+      ],
+      "versatileDomains": [
+        "circuit_current_superposition",
+        "revenue_stream_consolidation",
+        "force_vector_sum"
+      ],
+      "usedContexts": [
+        "circuit_mesh_currents"
+      ]
+    },
+    {
+      "archetypeKey": "c10-order-of-operations-grouping",
+      "level": 3,
+      "name": "Order of Operations with Real Numbers and Nested Grouping",
+      "coreConcept": "Evaluate expressions following parentheses, exponents, multiplication/division left-to-right, addition/subtraction left-to-right.",
+      "mentalModel": "Strict precedence pipeline in algebraic compilation.",
+      "governingRelation": "P \\to E \\to MD \\to AS \\text{ (left to right)}",
+      "cognitiveTraps": [
+        "c10-addition-before-multiplication-trap",
+        "c10-left-right-precedence-trap"
+      ],
+      "versatileDomains": [
+        "formula_engine_evaluation",
+        "financial_dividend_tax",
+        "aerospace_telemetry_scaling"
+      ],
+      "usedContexts": [
+        "aerospace_telemetry_scaling"
+      ]
+    },
+    {
+      "archetypeKey": "c10-multi-step-rational-arithmetic",
+      "level": 3,
+      "name": "Compound Operations with Rational Numbers and Fractions",
+      "coreConcept": "Combine fractions, division, and multiplication using commutative and associative restructuring.",
+      "mentalModel": "Parallel fraction arithmetic with precedence barriers.",
+      "governingRelation": "\\frac{a}{b} + c \\cdot d",
+      "cognitiveTraps": [
+        "c10-premature-addition-before-division-trap",
+        "c10-fraction-inversion-trap"
+      ],
+      "versatileDomains": [
+        "chemical_mixture_dilution",
+        "server_load_balancing",
+        "hydraulic_flow_ratio"
+      ],
+      "usedContexts": [
+        "chemical_mixture_dilution"
+      ]
+    },
+    {
+      "archetypeKey": "c10-applied-distributive-cost-modeling",
+      "level": 4,
+      "name": "Applied Distributive Pricing and Tiered Cost Modeling",
+      "coreConcept": "Model composite real-world commercial costs using distributed unit discounts and fixed surcharges: T = N(P - D) + F.",
+      "mentalModel": "Multi-tier commercial invoice expansion.",
+      "governingRelation": "T = N(P - D) + F",
+      "cognitiveTraps": [
+        "c10-undistributed-discount-trap",
+        "c10-surcharge-multiplication-trap"
+      ],
+      "versatileDomains": [
+        "cloud_resource_billing",
+        "freight_logistics_tariffs",
+        "manufacturing_batch_cost"
+      ],
+      "usedContexts": [
+        "cloud_storage_invoice_calculation"
+      ]
+    },
+    {
+      "archetypeKey": "c10-invariant-property-equivalence-synthesis",
+      "level": 4,
+      "name": "Algebraic Invariance and Rational Property Synthesis",
+      "coreConcept": "Synthesize distributive, associative, and inverse cancellation properties to verify mathematical identities across composite expressions.",
+      "mentalModel": "Structural symmetry and algebraic invariant reduction.",
+      "governingRelation": "\\frac{a(b + c) - ab}{a} = c \\quad (a \\ne 0)",
+      "cognitiveTraps": [
+        "c10-incomplete-cancellation-trap",
+        "c10-subtraction-misdistribution-trap"
+      ],
+      "versatileDomains": [
+        "cryptographic_checksum_invariance",
+        "thermodynamic_efficiency_ratio",
+        "control_loop_gain_neutralization"
+      ],
+      "usedContexts": [
+        "cryptographic_checksum_invariance"
+      ]
+    }
+  ]
+}
