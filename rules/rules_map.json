@@ -29,5 +29,9 @@
   "06_TEMPLATE_CONTRACT": {
     "title": "06_TEMPLATE_CONTRACT — Problem Template & Quality Gate Engineering Contract",
     "file": "rules/06_template_contract.md"
+  },
+  "07_PROBLEM_GENERATION": {
+    "title": "07_PROBLEM_GENERATION — Drill Composition, Weak-Spot Targeting, Progression & AI-Written Problem Verification",
+    "file": "rules/07_problem_generation.md"
   }
 }

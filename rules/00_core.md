@@ -11,7 +11,7 @@
 ### 1. Read Applicable Rule Modules
 Before starting any implementation task involving the Learning System:
 1. Read this Core Rule Module (`rules/00_core.md`).
-2. Read the specific domain module corresponding to the task (e.g., `01_arch.md` for schemas, `02_pedagogy.md` for content, `03_stem.md` for math/physics, `04_code.md` for programming, `05_qa.md` for audits, `06_template_contract.md` for problem templates & quality gates).
+2. Read the specific domain module corresponding to the task (e.g., `01_arch.md` for schemas, `02_pedagogy.md` for content, `03_stem.md` for math/physics, `04_code.md` for programming, `05_qa.md` for audits, `06_template_contract.md` for problem templates & quality gates, `07_problem_generation.md` for drill composition, weak-spot targeting & progression).
 3. Understand the current task and its requested scope.
 4. Inspect the existing Notion databases, properties, relations, views, and page structures relevant to the task.
 5. Identify existing conventions and dependencies.
