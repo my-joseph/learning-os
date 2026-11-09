@@ -562,7 +562,7 @@
           "explain": "Simplify 180 - 10 to 170."
         },
         {
-          "latex": "\theta = \frac{170^\\circ}{5}",
+          "latex": "\theta = \\frac{170^\\circ}{5}",
           "explain": "Divide both sides by 5."
         },
         {
@@ -656,39 +656,39 @@
       ],
       "steps": [
         {
-          "latex": "\\left(\frac{34 + 10}{2}\right) \\sqrt{15^2 - \\left(\frac{34 - 10}{2}\right)^2} = A",
+          "latex": "\\left(\\frac{34 + 10}{2}\\right) \\sqrt{15^2 - \\left(\\frac{34 - 10}{2}\\right)^2} = A",
           "explain": "Set up the trapezoid area formula combining average base and Pythagorean height."
         },
         {
-          "latex": "\frac{34 + 10}{2} \\sqrt{15^2 - \\left(\frac{34 - 10}{2}\right)^2} = A",
+          "latex": "\\frac{34 + 10}{2} \\sqrt{15^2 - \\left(\\frac{34 - 10}{2}\\right)^2} = A",
           "explain": "Remove outer parentheses around the average base term."
         },
         {
-          "latex": "\frac{44}{2} \\sqrt{15^2 - \\left(\frac{34 - 10}{2}\right)^2} = A",
+          "latex": "\\frac{44}{2} \\sqrt{15^2 - \\left(\\frac{34 - 10}{2}\\right)^2} = A",
           "explain": "Simplify 34 + 10 to 44."
         },
         {
-          "latex": "\frac{44}{2} \\sqrt{15^2 - \\left(\frac{24}{2}\right)^2} = A",
+          "latex": "\\frac{44}{2} \\sqrt{15^2 - \\left(\\frac{24}{2}\\right)^2} = A",
           "explain": "Simplify 34 - 10 to 24."
         },
         {
-          "latex": "\frac{44}{2} \\sqrt{15^2 - 12^2} = A",
+          "latex": "\\frac{44}{2} \\sqrt{15^2 - 12^2} = A",
           "explain": "Simplify 24 / 2 to 12."
         },
         {
-          "latex": "\frac{44}{2} \\sqrt{225 - 12^2} = A",
+          "latex": "\\frac{44}{2} \\sqrt{225 - 12^2} = A",
           "explain": "Simplify 15^2 to 225."
         },
         {
-          "latex": "\frac{44}{2} \\sqrt{225 - 144} = A",
+          "latex": "\\frac{44}{2} \\sqrt{225 - 144} = A",
           "explain": "Simplify 12^2 to 144."
         },
         {
-          "latex": "\frac{44}{2} \\sqrt{81} = A",
+          "latex": "\\frac{44}{2} \\sqrt{81} = A",
           "explain": "Simplify 225 - 144 to 81."
         },
         {
-          "latex": "\frac{44}{2} \times 9 = A",
+          "latex": "\\frac{44}{2} \times 9 = A",
           "explain": "Since 9 x 9 = 81, the square root of 81 is 9."
         },
         {

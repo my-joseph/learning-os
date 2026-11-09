@@ -44,6 +44,31 @@ def normalize_prompt_numbers(prompt: str) -> List[float]:
     return nums
 
 
+def heal_latex_string(s: str) -> str:
+    """Repairs common escape artifact collisions in LaTeX strings caused by unescaped backslashes."""
+    if not isinstance(s, str):
+        return s
+    # 1. Direct control-char prefix repair for LaTeX macros
+    s = s.replace("\f" + "rac", r"\frac")
+    s = s.replace("\r" + "ight", r"\right")
+    s = s.replace("\b" + "egin", r"\begin")
+    s = s.replace("\b" + "ar", r"\bar")
+    s = s.replace("\t" + "ext", r"\text")
+    s = s.replace("\t" + "imes", r"\times")
+    s = s.replace("\t" + "heta", r"\theta")
+
+    # 2. Stray control characters
+    s = s.replace("\f", "")
+    s = s.replace("\r", "")
+    s = s.replace("\b", "")
+    s = s.replace("\x0b", "")
+
+    # 3. Textual unescaped macro repair (only if NOT already preceded by backslash)
+    s = re.sub(r"(?<!\\)\brac\{", r"\\frac{", s)
+    s = re.sub(r"(?<!\\)\bright([)\]}|.])", r"\\right\1", s)
+    return s
+
+
 def validate_ai_problem_contract(prob: Dict[str, Any]) -> bool:
     """
     Enforces strict rules for AI-written problems (Contract 07 §4, 00_core §6):
@@ -184,6 +209,23 @@ def validate_ai_problem_contract(prob: Dict[str, Any]) -> bool:
     prompt = prob.get("prompt", "")
     if not re.search(r"\$[^$]+\$", prompt):
         raise AiContractError(f"[{pid}] Prompt must contain LaTeX formatting with '$...$' around numbers or variables.")
+
+    # 8. Zero-Corrupted-LaTeX Guard: Validate and heal any control-character escape artifacts (\f -> rac, \r -> ight)
+    for field in ("display", "answerDisplay", "prompt"):
+        if field in prob and isinstance(prob[field], str):
+            prob[field] = heal_latex_string(prob[field])
+            if re.search(r"[\x0c\r\x08\x0b]", prob[field]):
+                raise AiContractError(f"[{pid}] LaTeX field '{field}' contains invalid control characters: {repr(prob[field])}")
+            if re.search(r"(?:^|(?<=[\s({\[]))rac\{", prob[field]) or re.search(r"(?:^|(?<=[\s({\[]))ight[)\]}]", prob[field]):
+                raise AiContractError(f"[{pid}] LaTeX field '{field}' contains corrupted LaTeX macros: {repr(prob[field])}")
+
+    for s_idx, st in enumerate(prob.get("steps", [])):
+        if "latex" in st and isinstance(st["latex"], str):
+            st["latex"] = heal_latex_string(st["latex"])
+            if re.search(r"[\x0c\r\x08\x0b]", st["latex"]):
+                raise AiContractError(f"[{pid}] Step {s_idx + 1} 'latex' contains invalid control characters: {repr(st['latex'])}")
+            if re.search(r"(?:^|(?<=[\s({\[]))rac\{", st["latex"]) or re.search(r"(?:^|(?<=[\s({\[]))ight[)\]}]", st["latex"]):
+                raise AiContractError(f"[{pid}] Step {s_idx + 1} 'latex' contains corrupted LaTeX macros: {repr(st['latex'])}")
 
     return True
 

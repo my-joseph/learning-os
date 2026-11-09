@@ -283,6 +283,84 @@ class TestAiDrillIngest(unittest.TestCase):
             self.assertEqual(saved.get("unitTitle"), "Whole Numbers")
             self.assertIn("Whole Numbers", saved.get("title", ""))
 
+    def test_ingest_heals_and_protects_against_corrupted_latex(self):
+        """Rule 8: Ingest heals Python escape artifact collisions (\f -> rac, \r -> ight) and rejects unrecoverable corruption."""
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            corrupted_drill = {
+                "unitCode": "MTH-T01-C01",
+                "problems": [
+                    {
+                        "id": "Q01",
+                        "level": 1,
+                        "verificationLevel": "partial",
+                        "checkpointHint": "Use expanded notation.",
+                        "givens": {"a": 10, "b": 5},
+                        "prompt": "Calculate $10 + 5$.",
+                        "display": "\x0crac{10}{5} = ?",  # Corrupted form-feed from unescaped \frac
+                        "plainText": "10 / 5",
+                        "trapDerivation": "10 * 5",
+                        "verify": {"source": "2", "trapValue": "50"},
+                        "answerSpec": {"type": "number", "value": "2"},
+                        "answerPlain": "2",
+                        "answerDisplay": "2",
+                        "steps": [
+                            {
+                                "latex": "\\left(\x0crac{10}{5}\right) = 2",  # Corrupted form-feed & carriage-return
+                                "explain": "Healed step",
+                                "val": "2",
+                            }
+                        ],
+                    }
+                ],
+            }
+            saved = ingest_ai_drill(corrupted_drill, data_root=tmp_dir)
+            p = saved["problems"][0]
+            # Should be healed into proper \frac and \right
+            self.assertIn(r"\frac{10}{5}", p["display"])
+            self.assertNotIn("\x0c", p["display"])
+            self.assertIn(r"\frac{10}{5}", p["steps"][0]["latex"])
+            self.assertIn(r"\right", p["steps"][0]["latex"])
+            self.assertNotIn("\x0c", p["steps"][0]["latex"])
+            self.assertNotIn("\r", p["steps"][0]["latex"])
+
+    def test_all_active_drills_have_zero_corrupted_latex(self):
+        """Audit all active drill JSON files to certify zero LaTeX escape corruption (00_core §6)."""
+        import glob
+        import json
+        import re
+
+        control_pattern = re.compile(r"[\x0c\r\x08\x0b]")
+        broken_pattern = re.compile(r"(?<!\\)\brac\{|(?<!\\)\bright[)\]}]")
+
+        for filepath in glob.glob("drills/data/**/*.json", recursive=True):
+            with open(filepath, "r", encoding="utf-8") as f:
+                data = json.load(f)
+
+            for prob in data.get("problems", []):
+                pid = prob.get("id", "?")
+                for field in ("display", "answerDisplay", "prompt"):
+                    val = prob.get(field)
+                    if isinstance(val, str):
+                        self.assertFalse(
+                            bool(control_pattern.search(val)),
+                            f"{filepath} [{pid}] field '{field}' contains control characters: {repr(val)}",
+                        )
+                        self.assertFalse(
+                            bool(broken_pattern.search(val)),
+                            f"{filepath} [{pid}] field '{field}' contains broken LaTeX macro: {repr(val)}",
+                        )
+                for s_idx, st in enumerate(prob.get("steps", [])):
+                    latex_val = st.get("latex")
+                    if isinstance(latex_val, str):
+                        self.assertFalse(
+                            bool(control_pattern.search(latex_val)),
+                            f"{filepath} [{pid}] step {s_idx + 1} contains control characters: {repr(latex_val)}",
+                        )
+                        self.assertFalse(
+                            bool(broken_pattern.search(latex_val)),
+                            f"{filepath} [{pid}] step {s_idx + 1} contains broken LaTeX macro: {repr(latex_val)}",
+                        )
+
 
 if __name__ == "__main__":
     unittest.main()
