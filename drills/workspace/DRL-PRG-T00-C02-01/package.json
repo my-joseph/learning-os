@@ -8,11 +8,11 @@
     "test:watch": "node --test --watch *.test.js",
     "review": "python3 ../../../code_engine/review.py",
     "submit": "python3 ../../../code_engine/submit.py",
-    "test:q01": "node --test Q01_deepEqual.test.js",
-    "test:q02": "node --test Q02_pipe.test.js",
-    "test:q03": "node --test Q03_flatten.test.js",
-    "test:q04": "node --test Q04_retry.test.js",
-    "test:q05": "node --test Q05_createEventEmitter.test.js"
+    "test:q01": "node --test Q01_sanitizeConfig.test.js",
+    "test:q02": "node --test Q02_createCounterRegistry.test.js",
+    "test:q03": "node --test Q03_aggregateCategoryRevenue.test.js",
+    "test:q04": "node --test Q04_settleAllSettled.test.js",
+    "test:q05": "node --test Q05_createPaymentStateMachine.test.js"
   },
   "devDependencies": {}
 }

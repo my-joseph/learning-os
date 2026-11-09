@@ -32,34 +32,70 @@ npm run submit
 
 ## Exercises in this Workspace
 
-### Q01 — `Q01_deepEqual.js`
+### Q01 — `Q01_sanitizeConfig.js`
 - **Archetype:** Problem Solving (Logic & Algorithm)
-- **Acceptance Scenarios:** 3 visible scenarios (+ 3 hidden trap tests) in `Q01_deepEqual.test.js`
-- **Requirement:** Implement deepEqual(a, b) in JavaScript to perform structural recursive equality comparison between two arbitrary values (primitives, NaN, null, arrays, and nested plain objects).
+- **Acceptance Scenarios:** 2 visible scenarios (+ 1 hidden trap tests) in `Q01_sanitizeConfig.test.js`
+- **Requirement:** Implement `sanitizeConfig(rawConfig, schema)` for microservice environment configurations.
+
+**System Requirements:**
+- `schema` defines expected keys and their default primitive values: `{ [key: string]: string | number | boolean }`.
+- For each key in `schema`: if `rawConfig[key]` is `null` or `undefined`, fall back to `schema[key]`.
+- Crucial: Legitimate falsy primitive values (`0`, `false`, `""`) in `rawConfig` must be preserved and NOT overwritten by defaults.
+- Discard any extraneous keys in `rawConfig` that are not present in `schema`.
 - **Run Single Suite:** `npm run test:q01`
 
-### Q02 — `Q02_pipe.js`
+### Q02 — `Q02_createCounterRegistry.js`
 - **Archetype:** Problem Solving (Logic & Algorithm)
-- **Acceptance Scenarios:** 2 visible scenarios (+ 3 hidden trap tests) in `Q02_pipe.test.js`
-- **Requirement:** Implement pipe(...fns) in JavaScript. It takes any number of functions and returns a new function that composes them from left to right. The first function may accept multiple arguments.
+- **Acceptance Scenarios:** 2 visible scenarios (+ 1 hidden trap tests) in `Q02_createCounterRegistry.test.js`
+- **Requirement:** Implement `createCounterRegistry()` to track high-throughput microservice metrics.
+
+**System Requirements:**
+- `increment(metric, amount = 1)`: Increases the integer counter for `metric` by `amount`. Defaults to starting at 0.
+- `getCount(metric)`: Returns the current count for `metric`, or `0` if not yet incremented.
+- `getSnapshot()`: Returns a snapshot plain object containing `{ [metric]: count }`.
+- Immutability & Encapsulation: Mutating the object returned by `getSnapshot()` must NOT alter internal registry state.
 - **Run Single Suite:** `npm run test:q02`
 
-### Q03 — `Q03_flatten.js`
-- **Archetype:** Problem Solving (Logic & Algorithm)
-- **Acceptance Scenarios:** 3 visible scenarios (+ 3 hidden trap tests) in `Q03_flatten.test.js`
-- **Requirement:** Implement flatten(array, depth = 1) in JavaScript without using Array.prototype.flat. It flattens nested arrays recursively up to depth, preserving falsy elements without mutating the input.
+### Q03 — `Q03_aggregateCategoryRevenue.js`
+- **Archetype:** Debugging (Bug Triage & Root Cause)
+- **Acceptance Scenarios:** 2 visible scenarios (+ 1 hidden trap tests) in `Q03_aggregateCategoryRevenue.test.js`
+- **Requirement:** Debug `aggregateCategoryRevenue(transactions)` in an e-commerce revenue accounting service.
+
+**System Requirements:**
+- `transactions`: Array of `{ category: string, amount: number, status: 'completed' | 'refunded' | 'pending' }`.
+- Sum total net revenue per category: completed transactions add `amount`, refunded transactions subtract `amount`, pending are ignored.
+- Immutability Contract: Input `transactions` array and its items must remain strictly unmodified (no in-place sorting or mutations).
+- Return format: Object `{ [category]: netRevenue }` rounded to 2 decimal places.
 - **Run Single Suite:** `npm run test:q03`
 
-### Q04 — `Q04_retry.js`
+### Q04 — `Q04_settleAllSettled.js`
 - **Archetype:** Problem Solving (Logic & Algorithm)
-- **Acceptance Scenarios:** 2 visible scenarios (+ 2 hidden trap tests) in `Q04_retry.test.js`
-- **Requirement:** Implement retry(asyncFn, retries = 3, delayMs = 100) in JavaScript. It executes asyncFn(). If it fails, wait delayMs and retry, up to retries times. If all attempts fail, reject with the final error.
+- **Acceptance Scenarios:** 2 visible scenarios (+ 1 hidden trap tests) in `Q04_settleAllSettled.test.js`
+- **Requirement:** Implement `settleAllSettled(taskFns)` for parallel microservice health telemetry.
+
+**System Requirements:**
+- `taskFns`: Array of zero-argument async functions returning Promises.
+- Execute all task functions concurrently in parallel.
+- Returns a Promise resolving to an array of result descriptors in original order:
+  - For fulfilled tasks: `{ status: 'fulfilled', value: <result> }`
+  - For rejected tasks: `{ status: 'rejected', reason: <error> }`
+- Resilient Concurrency: Rejection of any single task must NOT abort or fast-fail the remaining tasks.
 - **Run Single Suite:** `npm run test:q04`
 
-### Q05 — `Q05_createEventEmitter.js`
+### Q05 — `Q05_createPaymentStateMachine.js`
 - **Archetype:** Problem Solving (Logic & Algorithm)
-- **Acceptance Scenarios:** 2 visible scenarios (+ 2 hidden trap tests) in `Q05_createEventEmitter.test.js`
-- **Requirement:** Implement createEventEmitter() in JavaScript with methods on(event, listener), emit(event, ...args), once(event, listener), and listenerCount(event). The on method must return an unsubscribe() function.
+- **Acceptance Scenarios:** 2 visible scenarios (+ 1 hidden trap tests) in `Q05_createPaymentStateMachine.test.js`
+- **Requirement:** Implement `createPaymentStateMachine(options = {})` for e-commerce checkout transaction lifecycles.
+
+**State Transitions Specification:**
+- Initial state: `INITIAL`.
+- Allowed transition actions:
+  - `INITIAL` -> `dispatch({ type: 'AUTHORIZE', orderId, amount })` -> transitions to `AUTHORIZED`.
+  - `AUTHORIZED` -> `dispatch({ type: 'CAPTURE' })` -> transitions to `SETTLED`.
+  - `AUTHORIZED` -> `dispatch({ type: 'VOID' })` -> transitions to `VOIDED`.
+- Invalid Transitions: Dispatching an action incompatible with current state throws `Error('INVALID_STATE_TRANSITION')`.
+- Terminal States: `SETTLED` and `VOIDED` are final; any subsequent dispatch must throw.
+- `getState()`: Returns `{ status, orderId, amount }`.
 - **Run Single Suite:** `npm run test:q05`
 
 ## Requesting an AI Architectural Review

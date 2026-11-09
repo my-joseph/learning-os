@@ -1,0 +1,182 @@
+{
+  "unitCode": "PRG-T01-C01",
+  "unitTitle": "JavaScript Deep Dive",
+  "description": "Advanced JavaScript runtime semantics, prototypes, lexical environments, deep cloning, and functional composition archetypes.",
+  "archetypes": [
+    {
+      "archetypeKey": "prg-c01-scope-shadowing-guard",
+      "level": 1,
+      "archetype": "problem-solving",
+      "name": "Lexical Scope Boundary & Variable Shadowing Guard",
+      "competencies": [
+        "scope",
+        "hoisting",
+        "lexical-environment"
+      ],
+      "coreConcept": "Enforcing block scoping and preventing variable leakage across execution contexts, ensuring outer variables remain accessible without accidental variable shadowing.",
+      "mentalModel": [
+        "1. Isolate variable bindings inside explicit block and function scopes.",
+        "2. Prevent reassignment of outer lexical identifiers.",
+        "3. Guarantee clean execution environment without polluting global scope."
+      ],
+      "governingInvariant": "innerBindings shadow within block without mutating outer scope bindings",
+      "cognitiveTraps": [
+        {
+          "trapTag": "var-hoisting-leak",
+          "name": "Var Declaration Scope Leak",
+          "description": "Using var instead of let/const causes variable hoisting to function scope, leaking loop variables.",
+          "reproducer": "Loop with var i; check outer scope or timeout callback; all closures see terminal i."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "plugin_sandbox_context",
+          "description": "Isolating plugin options from modifying host runtime configuration."
+        }
+      ],
+      "usedContexts": [
+        "plugin_sandbox_context"
+      ]
+    },
+    {
+      "archetypeKey": "prg-c01-prototype-this-binding",
+      "level": 2,
+      "archetype": "problem-solving",
+      "name": "Prototype Inheritance & Explicit This Binding Invoker",
+      "competencies": [
+        "prototypes",
+        "this-binding",
+        "object-model"
+      ],
+      "coreConcept": "Managing dynamic this context binding across detached callbacks and delegating method resolution through the prototype chain.",
+      "mentalModel": [
+        "1. Explicitly bind context receiver to handlers using Function.prototype.bind or arrow wrappers.",
+        "2. Maintain prototype delegation links via Object.create or ES6 classes.",
+        "3. Prevent losing execution context when passing methods as event or timer callbacks."
+      ],
+      "governingInvariant": "detachedMethod() executes with bound target receiver as this",
+      "cognitiveTraps": [
+        {
+          "trapTag": "detached-method-context-loss",
+          "name": "Detached Method Context Loss",
+          "description": "Passing object.method as a bare callback strips this binding, resulting in undefined or global this.",
+          "reproducer": "const cb = obj.method; cb(); throws TypeError cannot read property of undefined."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "event_emitter_subscriber_delegate",
+          "description": "Binding subscriber service instances to pub/sub event handlers safely."
+        }
+      ],
+      "usedContexts": [
+        "event_emitter_subscriber_delegate"
+      ]
+    },
+    {
+      "archetypeKey": "prg-c01-coercion-type-converter",
+      "level": 2,
+      "archetype": "debugging",
+      "name": "Object-to-Primitive Coercion & ValueOf Protocol",
+      "competencies": [
+        "type-coercion",
+        "valueof-protocol",
+        "debugging"
+      ],
+      "coreConcept": "Diagnosing and remediating defects in arithmetic and string coercion routines implementing Symbol.toPrimitive, valueOf, and toString protocols.",
+      "mentalModel": [
+        "1. Trace object-to-primitive conversion steps: preferredType hint ('number', 'string', 'default').",
+        "2. Validate that valueOf and toString return valid primitive values.",
+        "3. Ensure mathematical operations receive numeric primitives rather than string concatenations."
+      ],
+      "governingInvariant": "Symbol.toPrimitive(hint) returns primitive adhering to operand expectations",
+      "cognitiveTraps": [
+        {
+          "trapTag": "valueof-string-concatenation-bug",
+          "name": "String Concatenation in Numeric Arithmetic",
+          "description": "Returning string from valueOf causes '+' operator to perform string concatenation instead of addition.",
+          "reproducer": "Passing object with valueOf() => '10'; obj + 5 yields '105' instead of 15."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "money_currency_value_object",
+          "description": "Fixing financial currency value objects to perform accurate arithmetic comparisons."
+        }
+      ],
+      "usedContexts": [
+        "money_currency_value_object"
+      ]
+    },
+    {
+      "archetypeKey": "prg-c01-deep-clone-circular",
+      "level": 3,
+      "archetype": "problem-solving",
+      "name": "Deep Object Cloner with Circular Reference Handling",
+      "competencies": [
+        "memory-model",
+        "recursion",
+        "deep-clone"
+      ],
+      "coreConcept": "Recursively duplicating nested objects, arrays, and primitive fields while tracking visited object references via a Map/WeakMap to prevent infinite recursion on circular graphs.",
+      "mentalModel": [
+        "1. Base case: Return primitive values and functions as-is.",
+        "2. Check reference tracker: If object was already cloned, return existing clone reference.",
+        "3. Initialize new container (Array or Object) and register in reference map before recursively copying properties."
+      ],
+      "governingInvariant": "clone !== original; clone.circularRef === clone; deep mutations do not affect original",
+      "cognitiveTraps": [
+        {
+          "trapTag": "circular-reference-stack-overflow",
+          "name": "Call Stack Overflow on Self-Referential Graph",
+          "description": "Naive JSON.parse(JSON.stringify(x)) or un-memoized recursion crashes with RangeError: Maximum call stack size exceeded.",
+          "reproducer": "const a = {}; a.self = a; deepClone(a); crashes without reference tracking."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "redux_state_snapshot_cloner",
+          "description": "Cloning state trees for time-travel debugging and snapshot isolation."
+        }
+      ],
+      "usedContexts": [
+        "redux_state_snapshot_cloner"
+      ]
+    },
+    {
+      "archetypeKey": "prg-c01-async-middleware-pipe",
+      "level": 4,
+      "archetype": "problem-solving",
+      "name": "Asynchronous Function Composition & Middleware Pipeline",
+      "competencies": [
+        "async-flow",
+        "functional-programming",
+        "middleware-architecture"
+      ],
+      "coreConcept": "Constructing an onion-style asynchronous pipeline (similar to Koa/Express) that chains async middleware functions sequentially with next() downstream dispatch and upstream return propagation.",
+      "mentalModel": [
+        "1. Enforce that next() cannot be invoked multiple times in a single middleware frame.",
+        "2. Cascade execution downstream by awaiting the returned promise of next().",
+        "3. Catch downstream exceptions and allow upstream middleware to handle or rethrow them."
+      ],
+      "governingInvariant": "dispatch(i) executes middleware[i](context, next); multiple next() calls throw 'next() called multiple times'",
+      "cognitiveTraps": [
+        {
+          "trapTag": "multiple-next-invocation",
+          "name": "Multiple Next Invocation Defect",
+          "description": "Calling next() twice in one middleware branches execution and corrupts pipeline flow.",
+          "reproducer": "Middleware calls await next(); await next(); downstream executes duplicate operations."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "http_api_gateway_middleware",
+          "description": "Asynchronous HTTP request processing pipeline handling auth, rate-limiting, and logging."
+        }
+      ],
+      "usedContexts": [
+        "http_api_gateway_middleware"
+      ]
+    }
+  ]
+}
