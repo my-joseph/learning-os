@@ -227,6 +227,21 @@ def validate_ai_problem_contract(prob: Dict[str, Any]) -> bool:
             if re.search(r"(?:^|(?<=[\s({\[]))rac\{", st["latex"]) or re.search(r"(?:^|(?<=[\s({\[]))ight[)\]}]", st["latex"]):
                 raise AiContractError(f"[{pid}] Step {s_idx + 1} 'latex' contains corrupted LaTeX macros: {repr(st['latex'])}")
 
+    # 9. Granular Step-by-Step Derivation Standard (00_core §7, 03_stem §1, 06 §2.1)
+    steps = prob.get("steps", [])
+    if not steps or not isinstance(steps, list):
+        raise AiContractError(f"[{pid}] Math problem must provide a non-empty 'steps' array.")
+
+    for s_idx, st in enumerate(steps):
+        if not isinstance(st, dict):
+            raise AiContractError(f"[{pid}] Step {s_idx + 1} must be an object with 'latex' and 'explain'.")
+        latex_str = st.get("latex", "")
+        explain_str = st.get("explain", "")
+        if not latex_str or not latex_str.strip():
+            raise AiContractError(f"[{pid}] Step {s_idx + 1} must have a non-empty 'latex' equation.")
+        if not explain_str or not explain_str.strip():
+            raise AiContractError(f"[{pid}] Step {s_idx + 1} must have an action-oriented 'explain' string.")
+
     return True
 
 

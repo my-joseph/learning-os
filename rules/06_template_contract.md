@@ -67,14 +67,19 @@ TEMPLATES = [
 > - **Template Usage**: ในระบบเทมเพลตปัจจุบัน ฟิลด์ `level` (L1–L4) ถูกนำมาใช้กำหนด **ชนิดงานทางพุทธิปัญญา (Cognitive Task Type)** ของโจทย์ในแต่ละ `form` เพื่อควบคุมจำนวน steps และโครงสร้างของโจทย์ผ่าน `g2_profile` ใน `skills_taxonomy.json`
 > - **Tier**: ใน `skills_taxonomy.json` (`foundational`, `intermediate`, `advanced`, `expert`) บ่งบอกลำดับความลึกขององค์ความรู้ในหลักสูตร ไม่ผูกขาดกับ Level เดียว
 
-| Level | Cognitive Task Type ในเทมเพลต | ลักษณะโครงสร้าง | ขอบเขต Steps ใน G2 (ค่าเริ่มต้น) |
-| :---: | :--- | :--- | :---: |
-| **L1** | **Direct Computation / Recall** | คำนวณตรงไปตรงมาตามสูตรหรือนิยามแกนหลัก ไม่ซับซ้อน | 1–3 steps |
-| **L2** | **Reverse Solve / Multi-step Synthesis** | แก้สมการย้อนหาพารามิเตอร์ หรือคำนวณแปลงค่าหลายขั้น | 2–4 steps |
-| **L3** | **Trap, Flaw Diagnosis & Edge Cases** | วิเคราะห์จุดผิดพลาด (Find-the-Flaw) หรือกับดักเชิงแนวคิด | 2–5 steps (ต้องมี trap/flaw ที่ตรวจได้จริง) |
-| **L4** | **Applied / Multi-concept Constraint** | นำไปประยุกต์ข้ามโดเมน หรือมีเงื่อนไขบังคับหลายด้าน | 2–6 steps (ต้องมี >= 2 concepts หรือเงื่อนไขเสริม) |
+| Level | Cognitive Task Type ในเทมเพลต | ลักษณะโครงสร้าง | ขอบเขต Steps ใน G2 | เป้าหมายความละเอียด Granular Steps |
+| :---: | :--- | :--- | :---: | :---: |
+| **L1** | **Direct Computation / Recall** | คำนวณตรงไปตรงมาตามสูตรหรือนิยามแกนหลัก | 1–10 steps | 2–5 micro-steps |
+| **L2** | **Reverse Solve / Multi-step Synthesis** | แก้สมการย้อนหาพารามิเตอร์ หรือแปลงค่าหลายขั้น | 2–15 steps | 4–8 micro-steps |
+| **L3** | **Trap, Flaw Diagnosis & Edge Cases** | วิเคราะห์จุดผิดพลาด หรือกับดักเชิงแนวคิดหลายชั้น | 2–20 steps | 5–12 micro-steps |
+| **L4** | **Applied / Multi-concept Constraint** | นำไปประยุกต์ข้ามโดเมน หรือมีเงื่อนไขบังคับหลายด้าน | 2–25 steps | 7–20 micro-steps |
 
-### 2.1 กฎห้าม Silent Fallback ระดับความยาก (Strict Difficulty Level Invariant)
+### 2.1 มาตรฐานการแจกแจงวิธีทำย่อยแบบละเอียด (Granular Step Derivation Standard)
+1. **One Transformation per Step**: แต่ละ step ในอาเรย์ `steps` ของโจทย์คณิตศาสตร์ต้องแสดงการเปลี่ยนแปลงเพียง 1 กระบวนการเท่านั้น (เช่น ปลดวงเล็บ $\rightarrow$ ทอนเลข $\rightarrow$ ยกกำลัง $\rightarrow$ ลบเลขในกรณฑ์ $\rightarrow$ ถอดราก $\rightarrow$ คำนวณผลลัพธ์)
+2. **ห้ามรวบสมการลูกโซ่ในบรรทัดเดียว (Anti-Chaining Invariant)**: ห้ามเขียน $A = B = C = D$ ใน step เดียวเด็ดขาด (เช่น ห้ามเขียน $\sqrt{15^2 - 12^2} = \sqrt{225 - 144} = \sqrt{81} = 9$) เพื่อให้ฟังก์ชัน "Mark Diverged Step" บนหน้าเว็บสามารถชี้จุดที่ผู้เรียนคำนวณผิดได้อย่างแม่นยำ
+3. **คำอธิบายชัดเจน (Action-Oriented `explain`)**: ทุกบรรทัดต้องระบุการกระทำที่สอดคล้องกับสมการอย่างชัดเจน
+
+### 2.2 กฎห้าม Silent Fallback ระดับความยาก (Strict Difficulty Level Invariant)
 เมื่อผู้เรียนหรือระบบสั่งเจเนอเรตโจทย์โดยระบุระดับความยากแบบเจาะจง (`difficulty in ('1', '2', '3', '4')`):
 1. **ห้ามมี Silent Fallback เด็ดขาด**: หากยูนิตนั้นยังไม่มีเทมเพลตที่รองรับระดับความยากดังกล่าว ตัว Generator (`math_engine.generate` และ `code_engine.generate`) **ต้อง raise `ValueError` แสดงรายชื่อระดับความยากที่ยูนิตนั้นมีจริงทันที** ห้ามแอบ fallback ไปสุ่มหยิบโจทย์ระดับอื่นมาแทนโดยเด็ดขาด
 2. **ป้ายหัวไฟล์ต้องตรงกับโจทย์จริง**: ทุกข้อในชุดโจทย์ (`problems`) ต้องมี `prob["level"]` ตรงกับค่า `config.difficulty` ที่ระบุเสมอ ห้ามให้มีโจทย์เลเวลอื่นหลุดเข้าไปในชุดโจทย์ที่ระบุเลเวลเฉพาะ

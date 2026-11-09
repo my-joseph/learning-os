@@ -38,6 +38,8 @@
   2. **Zero-Number Hint (00_core §6)**: `checkpointHint` must contain strictly ZERO numbers from the problem. It must express only abstract mathematical relationships, formulas, or self-monitoring process verification steps (06 §3.4).
   3. **Trap Derivation (06 §3)**: `trapDerivation` must be an operational expression referencing at least 2 distinct givens, evaluate exactly to `trapValue`, and satisfy `check_answer(trapValue) == incorrect` with `trapMatched: True`.
   4. **Strict Verification Level**: All AI-written problems must carry `verificationLevel: "partial"` until verified by a blind solve.
+  5. **Granular Step-by-Step Derivation Standard (00_core §7, 03_STEM §1, 06 §2.1)**: Every math problem must provide vertical, line-by-line derivation steps where each step represents a single mathematical transformation. Never chain multiple equalities horizontally ($A = B = C = D$). Every step must include an action-oriented `explain` string.
+  6. **Zero-Corrupted-LaTeX Guard (00_core §5)**: Automatically heal and reject any LaTeX escape artifact collisions (`\x0c` / `\f` formfeed, `\r` carriage return, `\x08` backspace).
 - `[code]` **Mandatory AI Contract Guard for Code (`validate_ai_code_contract`)**:
   1. **Zero Toy Code Guard (04_CODE §5.3)**: Reject `foo`, `bar`, `baz`, `test1`, `funcA`, or meaningless variables in prompt, code, and test suites. Must model realistic production domains.
   2. **Zero Wall-of-Text Guard (04_CODE §4)**: Prompt > 250 characters must be structured with Markdown sections (`**` or `###`), bullet points (`- `), and code identifiers in backticks (`` ` ``).

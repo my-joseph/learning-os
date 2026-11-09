@@ -6,12 +6,17 @@ export type VisualElementType =
   | "angle-arc"
   | "cylinder"
   | "box-3d"
-  | "cone";
+  | "cone"
+  | "point"
+  | "axis"
+  | "grid"
+  | "text";
 
 export interface VisualElement {
   type: VisualElementType;
   points?: [number, number][];
   center?: [number, number];
+  coord?: [number, number];
   radius?: number;
   radiusX?: number;
   radiusY?: number;
@@ -31,6 +36,10 @@ export interface VisualElement {
   highlight?: boolean;
   startAngle?: number;
   endAngle?: number;
+  x?: number;
+  y?: number;
+  fontSize?: number;
+  color?: string;
 }
 
 /**

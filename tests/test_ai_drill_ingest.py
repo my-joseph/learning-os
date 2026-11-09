@@ -234,6 +234,7 @@ class TestAiDrillIngest(unittest.TestCase):
             "trapDerivation": "50 * 20",
             "verify": {"source": "10", "trapValue": "1000"},
             "answerSpec": {"type": "number", "value": "10"},
+            "steps": [{"latex": "0.20 \\times 50 = 10", "explain": "Multiply decimal rate by base", "val": "10"}],
         }
         self.assertTrue(validate_ai_problem_contract(dict(base_prob)))
 

@@ -8,19 +8,23 @@
 
 ## PART 1 — Mathematical Notation & Derivation Standards
 
-### 1. Vertical Step-by-Step Derivation Rule
-When showing mathematical equation solving, algebraic simplification, or worked examples in `MTH` and `PHY` pages:
+### 1. Vertical Step-by-Step Derivation & Anti-Clumping Rule
+When showing mathematical equation solving, algebraic simplification, worked examples, or drill problem derivations:
 - **Never** chain multiple `=` steps horizontally across a single line ($A = B = C = D$).
-- **Always** format step-by-step mathematical working **vertically from top to bottom** using native Notion block `equation` elements with LaTeX:
+- **Always** format step-by-step mathematical working **vertically from top to bottom** with each row representing a **single discrete transformation**:
   ```latex
   \begin{aligned}
-    2x + 5 &= 15 \\
-    2x &= 15 - 5 \\
-    2x &= 10 \\
-    x &= 5
+    \left(\frac{34 + 10}{2}\right) \sqrt{15^2 - \left(\frac{34 - 10}{2}\right)^2} &= A \\
+    \frac{34 + 10}{2} \sqrt{15^2 - \left(\frac{34 - 10}{2}\right)^2} &= A \\
+    \frac{44}{2} \sqrt{15^2 - \left(\frac{34 - 10}{2}\right)^2} &= A \\
+    \frac{44}{2} \sqrt{15^2 - 12^2} &= A \\
+    \frac{44}{2} \sqrt{225 - 144} &= A \\
+    \frac{44}{2} \sqrt{81} &= A \\
+    22 \times 9 &= A \\
+    A &= 198
   \end{aligned}
   ```
-- (or sequential vertical `equation` blocks under each explanatory step) so every transformation step stacks downward clearly, exactly like real mathematical writing.
+- **Granular Derivation Invariant (Photomath / Line-by-Line Standard):** Each row in the drill `steps` array must represent a single calculation step. Smashing multiple operations together (e.g. $\sqrt{15^2 - 12^2} = \sqrt{225 - 144} = \sqrt{81} = 9$) is strictly forbidden because it breaks the learner's ability to click "Mark Diverged Step" on the exact operation where their scratchpad calculation diverged.
 
 ### 2. KaTeX Notation & UI Rendering Standards
 - **Inline Math:** Use KaTeX inline syntax (`$expr$`) for isolated symbols, variables, units, and short expressions (e.g., $x \in \mathbb{R}$, $v = 10\text{ m/s}$, $a^2 + b^2 = c^2$).
