@@ -1,0 +1,327 @@
+{
+  "unitCode": "MTH-T01-C05",
+  "topicTitle": "Decimals & Precision Scales",
+  "description": "Reasoning Schemas & Problem-Solving Archetypes for Decimals, Place Value Rounding, Four Arithmetic Operations, Fraction Conversions, Unit Prices, and Statistical Means.",
+  "archetypes": [
+    {
+      "archetypeKey": "c05-decimal-place-value-rounding",
+      "level": 1,
+      "name": "Decimal Positional Rounding & Threshold Test (การปัดเศษทศนิยมตามตำแหน่งที่กำหนด)",
+      "coreConcept": "Rounding a decimal to a target positional scale based on whether the decisive subsequent digit is >= 5.",
+      "mentalModel": [
+        "1. Identify the target rounding place value digit.",
+        "2. Inspect the test digit immediately to the right.",
+        "3. If test digit >= 5 round up target digit; otherwise keep target digit unchanged and truncate trailing digits."
+      ],
+      "governingRelation": "R = round(N, 10^(-k))",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c05-decimal-truncation-slip",
+          "description": "Adding the rounding base directly or truncating without rounding up.",
+          "trapFormula": "N + 10^(-k)"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "biochemical_assay_spectrometry",
+          "description": "Rounding optical density absorbance values for clinical reporting."
+        },
+        {
+          "domain": "precision_machining_caliper_tolerance",
+          "description": "Rounding milling depth offsets to nearest hundredth millimeter."
+        }
+      ],
+      "usedContexts": [
+        "biochemical_assay_spectrometry"
+      ]
+    },
+    {
+      "archetypeKey": "c05-decimal-addition-alignment",
+      "level": 1,
+      "name": "Columnar Decimal Alignment & Addition (การตั้งบวกทศนิยมตรงตำแหน่งจุด)",
+      "coreConcept": "Aligning decimal addends strictly by their decimal point ensures proper place value positional summation.",
+      "mentalModel": [
+        "1. Line up addends vertically matching decimal points.",
+        "2. Pad trailing zero place values if necessary.",
+        "3. Add columns from right to left carrying tens across place boundaries."
+      ],
+      "governingRelation": "S = a + b",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c05-right-alignment-decimal-offset",
+          "description": "Subtracting instead of adding, or misaligning columns.",
+          "trapFormula": "a - b"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "retail_pos_sales_receipt_tally",
+          "description": "Summing grocery item price receipts at point of sale."
+        },
+        {
+          "domain": "surveyor_elevation_transit_delta",
+          "description": "Summing vertical benchmark elevation offsets."
+        }
+      ],
+      "usedContexts": [
+        "retail_pos_sales_receipt_tally"
+      ]
+    },
+    {
+      "archetypeKey": "c05-decimal-subtraction-borrowing",
+      "level": 2,
+      "name": "Decimal Subtraction with Zero-Padded Regrouping (การลบทศนิยมแบบเติมศูนย์และกระจายหลัก)",
+      "coreConcept": "Padding minuend with trailing zeros allows systematic column borrowing when subtracting decimals of unequal lengths.",
+      "mentalModel": [
+        "1. Align decimal points vertically.",
+        "2. Append zeros to minuend to match precision depth.",
+        "3. Execute regrouping and column subtraction."
+      ],
+      "governingRelation": "D = a - b",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c05-blank-subtraction-digit-drop",
+          "description": "Adding terms together instead of subtracting with regrouping.",
+          "trapFormula": "a + b"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "chemical_analytical_balance_tare_weight",
+          "description": "Calculating net reagent mass by subtracting tare beaker mass from gross mass."
+        },
+        {
+          "domain": "petroleum_pipeline_metering_flow",
+          "description": "Computing net fuel batch delivery from initial and final meter readings."
+        }
+      ],
+      "usedContexts": [
+        "chemical_analytical_balance_tare_weight"
+      ]
+    },
+    {
+      "archetypeKey": "c05-decimal-multiplication-digit-counting",
+      "level": 2,
+      "name": "Decimal Multiplication & Positional Point Placement (การคูณทศนิยมและการนับตำแหน่งจุด)",
+      "coreConcept": "Multiplying factors as integers, then setting decimal places equal to the sum of decimal places in all factors.",
+      "mentalModel": [
+        "1. Multiply factors ignoring decimal points.",
+        "2. Count total decimal places across all factor terms.",
+        "3. Insert decimal point counting from right to left in product."
+      ],
+      "governingRelation": "P = a * b, dec(P) = dec(a) + dec(b)",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c05-decimal-point-alignment-in-multiplication",
+          "description": "Adding terms instead of multiplying, or misplacing decimal point.",
+          "trapFormula": "a + b"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "industrial_wire_electrical_resistance",
+          "description": "Calculating total electrical wire resistance from unit per-meter rates."
+        },
+        {
+          "domain": "pharmaceutical_microgram_dosage_scaling",
+          "description": "Scaling pediatric liquid doses based on body weight coefficients."
+        }
+      ],
+      "usedContexts": [
+        "industrial_wire_electrical_resistance"
+      ]
+    },
+    {
+      "archetypeKey": "c05-decimal-division-divisor-shifting",
+      "level": 2,
+      "name": "Decimal Division via Power-of-10 Divisor Normalization (การหารทศนิยมโดยเลื่อนจุดตัวหารเป็นจำนวนเต็ม)",
+      "coreConcept": "Multiplying both dividend and divisor by 10^k eliminates divisor decimals, enabling standard long division.",
+      "mentalModel": [
+        "1. Shift divisor decimal point k places right to form an integer.",
+        "2. Shift dividend decimal point k places right.",
+        "3. Perform long division placing quotient decimal directly above adjusted dividend."
+      ],
+      "governingRelation": "a / b = (a * 10^k) / (b * 10^k)",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c05-unilateral-divisor-shift-slip",
+          "description": "Shifting divisor without shifting dividend equally, shrinking quotient by a factor of 10.",
+          "trapFormula": "(a / b) / 10"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "semiconductor_wafer_yield_density",
+          "description": "Calculating chip yield density across silicon wafer surface."
+        },
+        {
+          "domain": "fuel_efficiency_km_per_liter",
+          "description": "Computing vehicle travel distance per liter of fuel."
+        }
+      ],
+      "usedContexts": [
+        "semiconductor_wafer_yield_density"
+      ]
+    },
+    {
+      "archetypeKey": "c05-fraction-to-decimal-conversion",
+      "level": 3,
+      "name": "Rational Fraction to Terminating Decimal Conversion (การแปลงเศษส่วนเป็นทศนิยม)",
+      "coreConcept": "Dividing numerator by denominator via decimal long division converts rational fractions into terminating decimals.",
+      "mentalModel": [
+        "1. Set numerator as dividend and denominator as divisor.",
+        "2. Append decimal point and trailing zeros to dividend.",
+        "3. Divide until remainder reaches zero or repeating cycle is established."
+      ],
+      "governingRelation": "d = a / b",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c05-fraction-decimal-inversion-trap",
+          "description": "Misplacing decimal point scale by a power of 10 during division.",
+          "trapFormula": "a / (b * 10)"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "precision_sheet_metal_thickness_gauge",
+          "description": "Converting architectural fractional gauge specifications to decimal millimeters."
+        },
+        {
+          "domain": "optics_lens_magnification_factor",
+          "description": "Translating fractional aperture ratios into decimal f-stop multipliers."
+        }
+      ],
+      "usedContexts": [
+        "precision_sheet_metal_thickness_gauge"
+      ]
+    },
+    {
+      "archetypeKey": "c05-decimal-unit-price-comparison",
+      "level": 3,
+      "name": "Unit Price Normalization & Economic Comparison (การเปรียบเทียบราคาต่อหน่วยของสินค้า)",
+      "coreConcept": "Dividing total cost by quantity yields the normalized unit rate, enabling objective price comparison.",
+      "mentalModel": [
+        "1. Identify total purchase price and packaged quantity.",
+        "2. Compute unit price: Cost / Quantity.",
+        "3. Compare unit price against alternative packages."
+      ],
+      "governingRelation": "Unit_Price = Total_Cost / Total_Quantity",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c05-quantity-per-dollar-inversion-slip",
+          "description": "Subtracting quantity from cost instead of computing ratio.",
+          "trapFormula": "(Total_Cost - Total_Quantity) / Total_Quantity"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "supermarket_bulk_packaging_audit",
+          "description": "Comparing unit costs across bulk and standard consumer food packages."
+        },
+        {
+          "domain": "fleet_vehicle_fuel_procurement",
+          "description": "Evaluating bulk depot diesel pricing against commercial pump rates."
+        }
+      ],
+      "usedContexts": [
+        "supermarket_bulk_packaging_audit"
+      ]
+    },
+    {
+      "archetypeKey": "c05-decimal-one-step-linear-equation",
+      "level": 3,
+      "name": "Decimal Linear Equation Inversion (การแก้สมการเชิงเส้นสัมประสิทธิ์ทศนิยม)",
+      "coreConcept": "Isolating an unknown multiplied by a decimal coefficient by applying the division property of equality: a * x = b <=> x = b / a.",
+      "mentalModel": [
+        "1. Identify the decimal coefficient multiplying the unknown.",
+        "2. Divide both sides by the decimal coefficient.",
+        "3. Simplify quotient to isolate the variable."
+      ],
+      "governingRelation": "a * x = b <=> x = b / a",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c05-decimal-multiplication-inversion-slip",
+          "description": "Multiplying target by coefficient instead of dividing.",
+          "trapFormula": "b * a"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "telecom_roaming_data_rate_metering",
+          "description": "Calculating total data volume consumed from total billing charge."
+        },
+        {
+          "domain": "commercial_laundry_detergent_infusion",
+          "description": "Determining liquid detergent pump dosage cycles."
+        }
+      ],
+      "usedContexts": [
+        "telecom_roaming_data_rate_metering"
+      ]
+    },
+    {
+      "archetypeKey": "c05-constrained-multi-tier-decimal-utility-tariff",
+      "level": 4,
+      "name": "Multi-Tier Stepped Decimal Utility Tariff Model (แบบจำลองอัตราก้าวหน้าค่าน้ำค่าไฟทศนิยม)",
+      "coreConcept": "Evaluating compound piecewise billing functions where consumption up to threshold is billed at base rate and excess at premium rate.",
+      "mentalModel": [
+        "1. Compute cost for base tier: threshold * base_rate.",
+        "2. Compute excess volume: total_usage - threshold.",
+        "3. Multiply excess volume by premium rate and sum tier costs."
+      ],
+      "governingRelation": "Cost = base_rate * threshold + premium_rate * (total - threshold)",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c05-flat-top-tier-overbilling-trap",
+          "description": "Applying the top tier rate across the entire consumption volume.",
+          "trapFormula": "total * premium_rate"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "municipal_water_metering_tariff",
+          "description": "Calculating municipal commercial water billing under progressive drought rates."
+        },
+        {
+          "domain": "cloud_server_egress_bandwidth_tier",
+          "description": "Billing cloud CDN egress traffic under tiered per-gigabyte pricing."
+        }
+      ],
+      "usedContexts": [
+        "municipal_water_metering_tariff"
+      ]
+    },
+    {
+      "archetypeKey": "c05-decimal-mean-weighted-sensor-fusion",
+      "level": 4,
+      "name": "Weighted Decimal Arithmetic Mean Sensor Fusion (ค่าเฉลี่ยถ่วงน้ำหนักทศนิยมของการตรวจวัดเซนเซอร์)",
+      "coreConcept": "Back-calculating a target observation required to achieve a specified overall arithmetic mean: x_N = N * mean - sum(existing).",
+      "mentalModel": [
+        "1. Calculate total required sum: N * target_mean.",
+        "2. Sum existing observations: sum(x_1 ... x_{N-1}).",
+        "3. Subtract existing sum from required sum to find target observation."
+      ],
+      "governingRelation": "x_N = N * target_mean - sum(existing)",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c05-mean-sum-divisor-neglect",
+          "description": "Subtracting an incomplete subset of observations from target sum.",
+          "trapFormula": "N * target_mean - sum(partial_existing)"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "environmental_air_quality_pm25_monitoring",
+          "description": "Calculating required evening PM2.5 reading to maintain daily clean air compliance."
+        },
+        {
+          "domain": "clinical_patient_blood_glucose_titration",
+          "description": "Determining post-prandial glucose threshold to meet target mean glycemic levels."
+        }
+      ],
+      "usedContexts": [
+        "environmental_air_quality_pm25_monitoring"
+      ]
+    }
+  ]
+}

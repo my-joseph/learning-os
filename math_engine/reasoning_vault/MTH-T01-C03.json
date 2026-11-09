@@ -1,0 +1,327 @@
+{
+  "unitCode": "MTH-T01-C03",
+  "topicTitle": "Integers & Signed Operations",
+  "description": "Reasoning Schemas & Problem-Solving Archetypes for Negative Integers, Absolute Value, Signed Arithmetic Rules, and Linear Equations.",
+  "archetypes": [
+    {
+      "archetypeKey": "c03-signed-temperature-elevation-difference",
+      "level": 1,
+      "name": "Signed Elevation/Temperature Absolute Range (ความแตกต่างของค่าติดลบและบวกในโลกจริง)",
+      "coreConcept": "Computing net distance or range between positive and negative values across zero: Delta = y - x.",
+      "mentalModel": [
+        "1. Identify the reference initial value and terminal value.",
+        "2. Set up the difference expression: terminal - initial.",
+        "3. Subtracting a negative integer becomes adding its positive magnitude."
+      ],
+      "governingRelation": "Delta = T_2 - T_1",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c03-signed-difference-subtraction-drop",
+          "description": "Subtracting positive magnitudes directly, ignoring the negative direction.",
+          "trapFormula": "T_2 - abs(T_1)"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "meteorological_polar_station",
+          "description": "Measuring extreme diurnal air temperature shifts."
+        },
+        {
+          "domain": "deep_sea_bathymetry_trench",
+          "description": "Measuring vertical distance between surface and ocean trench."
+        }
+      ],
+      "usedContexts": [
+        "deep_sea_bathymetry_trench"
+      ]
+    },
+    {
+      "archetypeKey": "c03-bank-overdraft-ledger-balance",
+      "level": 1,
+      "name": "Bank Overdraft Ledger Cumulative Balance (การบันทึกยอดเงินติดลบและการฝากถอน)",
+      "coreConcept": "Successive deposits (positive) and debits (negative) update an integer balance.",
+      "mentalModel": [
+        "1. Represent overdrawn balance as a negative integer.",
+        "2. Represent credit deposit as a positive integer.",
+        "3. Add signed quantities to find the resulting balance."
+      ],
+      "governingRelation": "B = B_0 + D",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c03-withdrawal-sign-addition-trap",
+          "description": "Adding both numbers as positive magnitudes without acknowledging debt.",
+          "trapFormula": "D + abs(B_0)"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "commercial_bank_account_ledger",
+          "description": "Tracking corporate checking balance after overdraft resolution."
+        },
+        {
+          "domain": "corporate_petty_cash_reserve",
+          "description": "Balancing emergency branch cash drawers."
+        }
+      ],
+      "usedContexts": [
+        "commercial_bank_account_ledger"
+      ]
+    },
+    {
+      "archetypeKey": "c03-signed-addition-opposite-signs",
+      "level": 2,
+      "name": "Signed Addition with Opposite Signs (การบวกจำนวนเต็มต่างเครื่องหมาย)",
+      "coreConcept": "Adding integers of opposite signs requires taking the difference of their absolute values and preserving the sign of the larger magnitude.",
+      "mentalModel": [
+        "1. Compare absolute values of the two addends.",
+        "2. Subtract the smaller absolute value from the larger.",
+        "3. Affix the sign of the addend with the greater absolute value."
+      ],
+      "governingRelation": "a + b = sign(larger) * (|a| - |b|)",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c03-opposite-signs-sum-trap",
+          "description": "Adding magnitudes together and blindly making the result negative.",
+          "trapFormula": "-(|a| + |b|)"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "warehouse_stock_inventory_adjustment",
+          "description": "Reconciling damaged returns against incoming shipments."
+        },
+        {
+          "domain": "power_grid_load_generation_delta",
+          "description": "Balancing regional power generation vs deficit draw."
+        }
+      ],
+      "usedContexts": [
+        "warehouse_stock_inventory_adjustment"
+      ]
+    },
+    {
+      "archetypeKey": "c03-signed-subtraction-adding-opposite",
+      "level": 2,
+      "name": "Signed Subtraction as Adding the Opposite (การลบจำนวนเต็มด้วยการบวกจำนวนตรงข้าม)",
+      "coreConcept": "Subtracting an integer is algebraically equivalent to adding its additive inverse: a - b = a + (-b).",
+      "mentalModel": [
+        "1. Identify the minuend and subtrahend.",
+        "2. Transform subtraction into addition of the opposite.",
+        "3. Combine according to signed addition rules."
+      ],
+      "governingRelation": "-a - b = -a + (-b) = -(a + b)",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c03-double-negative-retention-trap",
+          "description": "Subtracting absolute values instead of accumulating negative totals.",
+          "trapFormula": "a - b"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "subterranean_mining_elevator_depth",
+          "description": "Tracking descent of mining elevator cage deeper below surface."
+        },
+        {
+          "domain": "satellite_orbital_altitude_correction",
+          "description": "Applying sequential negative orbital altitude adjustments."
+        }
+      ],
+      "usedContexts": [
+        "subterranean_mining_elevator_depth"
+      ]
+    },
+    {
+      "archetypeKey": "c03-signed-multiplication-parity",
+      "level": 2,
+      "name": "Signed Multiplication Parity & Scaling (การคูณจำนวนเต็มและสมบัติเครื่องหมาย)",
+      "coreConcept": "The product of two negative integers is strictly positive: (-a) * (-b) = ab.",
+      "mentalModel": [
+        "1. Count the number of negative signs among the factors.",
+        "2. An even count of negative factors yields a positive product.",
+        "3. Multiply absolute values."
+      ],
+      "governingRelation": "(-a) * (-b) = a * b",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c03-multiplication-negative-preservation-trap",
+          "description": "Retaining a negative sign in the product of two negative factors.",
+          "trapFormula": "-a * b"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "financial_short_position_valuation",
+          "description": "Calculating gains from negative price movement in short positions."
+        },
+        {
+          "domain": "cryogenic_cooling_cycle_rate",
+          "description": "Scaling thermal extraction across multiple refrigeration stages."
+        }
+      ],
+      "usedContexts": [
+        "financial_short_position_valuation"
+      ]
+    },
+    {
+      "archetypeKey": "c03-signed-quotient-partition",
+      "level": 3,
+      "name": "Signed Integer Division Partitioning (การหารจำนวนเต็มลบและเครื่องหมายผลหาร)",
+      "coreConcept": "Dividing integers with unlike signs produces a negative quotient: (-A) / B = -(A / B).",
+      "mentalModel": [
+        "1. Divide absolute magnitudes to find base numerical quotient.",
+        "2. Determine quotient sign: opposite signs yield negative.",
+        "3. Verify by checking product of divisor and quotient."
+      ],
+      "governingRelation": "(-A) / B = -(A / B)",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c03-division-sign-inversion-trap",
+          "description": "Dropping the negative sign, producing a positive quotient.",
+          "trapFormula": "A / B"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "corporate_quarterly_debt_amortization",
+          "description": "Calculating average periodic reduction from total quarterly debt."
+        },
+        {
+          "domain": "subsea_pipeline_pressure_depletion",
+          "description": "Determining hourly pressure change during controlled blowdown."
+        }
+      ],
+      "usedContexts": [
+        "corporate_quarterly_debt_amortization"
+      ]
+    },
+    {
+      "archetypeKey": "c03-signed-pemdas-hierarchical-evaluation",
+      "level": 3,
+      "name": "Signed Order of Operations with Nested Negatives (ลำดับการคำนวณจำนวนเต็มพร้อมวงเล็บและเครื่องหมายลบ)",
+      "coreConcept": "Operator precedence strictly governs expressions with signed values: multiplication precedes subtraction.",
+      "mentalModel": [
+        "1. Perform multiplications involving signed factors first.",
+        "2. Rewrite subtraction of negative product as addition.",
+        "3. Compute final addition."
+      ],
+      "governingRelation": "a - b * (-c) = a - (-bc) = a + bc",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c03-pemdas-signed-left-to-right-bias",
+          "description": "Subtracting before multiplying negative factor.",
+          "trapFormula": "(a - b) * (-c)"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "aerospace_trajectory_acceleration_vector",
+          "description": "Evaluating net ballistic thrust under opposing gravitational deceleration."
+        },
+        {
+          "domain": "thermodynamic_entropy_balance",
+          "description": "Calculating heat engine energy states from enthalpy deltas."
+        }
+      ],
+      "usedContexts": [
+        "aerospace_trajectory_acceleration_vector"
+      ]
+    },
+    {
+      "archetypeKey": "c03-signed-expression-evaluation",
+      "level": 3,
+      "name": "Bivariate Signed Algebraic Expression Evaluation (การประเมินค่านิพจน์พีชคณิตจำนวนเต็มสองตัวแปร)",
+      "coreConcept": "Substituting negative values into algebraic terms requires tracking coefficient signs and double negatives.",
+      "mentalModel": [
+        "1. Place negative integers into variable grouping parentheses.",
+        "2. Multiply coefficients by signed inputs.",
+        "3. Combine resulting positive and negative terms."
+      ],
+      "governingRelation": "V = c1 * (-x) - c2 * (-y) = -c1*x + c2*y",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c03-double-negative-coefficient-leak",
+          "description": "Failing to turn subtracting a negative product into addition.",
+          "trapFormula": "-c1*x - c2*y"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "structural_truss_stress_analysis",
+          "description": "Evaluating tension and compression loads on bridge joint nodes."
+        },
+        {
+          "domain": "chemical_reaction_free_energy_delta",
+          "description": "Evaluating Gibbs free energy from enthalpy and entropy terms."
+        }
+      ],
+      "usedContexts": [
+        "structural_truss_stress_analysis"
+      ]
+    },
+    {
+      "archetypeKey": "c03-signed-linear-equation-two-step",
+      "level": 4,
+      "name": "Two-Step Linear Equation with Signed Integers (การแก้สมการเชิงเส้นสองขั้นตอนที่เกี่ยวข้องกับจำนวนเต็มลบ)",
+      "coreConcept": "Isolating unknown variables in linear equations involving negative coefficients and negative targets.",
+      "mentalModel": [
+        "1. Subtract constant from both sides to isolate variable term.",
+        "2. Divide both sides by the negative coefficient.",
+        "3. Observe negative divided by negative produces positive solution."
+      ],
+      "governingRelation": "-a * x + b = -c <=> -a * x = -c - b <=> x = (-c - b) / (-a)",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c03-subtraction-additive-slip-in-equation",
+          "description": "Adding the constant instead of subtracting when isolating the negative term.",
+          "trapFormula": "(-c + b) / (-a)"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "autonomous_deep_submersible_ballast",
+          "description": "Calculating ballast ejection time during emergency ascent."
+        },
+        {
+          "domain": "high_altitude_balloon_descent_rate",
+          "description": "Finding duration required to reach designated atmospheric landing zone."
+        }
+      ],
+      "usedContexts": [
+        "autonomous_deep_submersible_ballast"
+      ]
+    },
+    {
+      "archetypeKey": "c03-conjoint-temperature-depth-synthesis",
+      "level": 4,
+      "name": "Multi-Tier Signed Rate Optimization & Net Threshold (แบบจำลองการเปลี่ยนแปลงเชิงอัตราสองมิติของจำนวนเต็ม)",
+      "coreConcept": "Modeling compound real-world systems starting at sub-zero states undergoing uniform positive rate accumulation.",
+      "mentalModel": [
+        "1. Set initial condition as negative base integer.",
+        "2. Compute accumulated change: rate * duration.",
+        "3. Add accumulated change to base value to determine final state."
+      ],
+      "governingRelation": "T_final = -T_0 + rate * t",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c03-accumulated-rate-direction-inversion",
+          "description": "Subtracting the accumulated change from the negative base, worsening deficit.",
+          "trapFormula": "-T_0 - rate * t"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "geothermal_wellbore_drilling_telemetry",
+          "description": "Predicting drill-bit core temperature at target depth."
+        },
+        {
+          "domain": "hydroelectric_pumped_storage_cycling",
+          "description": "Monitoring water volume recovery from initial reservoir deficit."
+        }
+      ],
+      "usedContexts": [
+        "geothermal_wellbore_drilling_telemetry"
+      ]
+    }
+  ]
+}

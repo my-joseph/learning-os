@@ -241,6 +241,7 @@ def ingest_ai_drill(
     drill_doc: Dict[str, Any],
     data_root: Optional[str] = None,
     rules: Optional[Dict[str, Any]] = None,
+    vault_dir: Optional[str] = None,
 ) -> Dict[str, Any]:
     """
     Verifies every problem in an AI-generated drill document using Machine Quality Gates G1–G6,
@@ -310,6 +311,13 @@ def ingest_ai_drill(
 
     with open(file_path, "w", encoding="utf-8") as f:
         json.dump(drill_doc, f, ensure_ascii=False, indent=2)
+
+    # Rotate and update usedContexts in Reasoning Vault
+    for prob in problems:
+        arch_key = prob.get("archetypeKey")
+        ctx = prob.get("context")
+        if arch_key and ctx:
+            mark_context_used(unit_code, arch_key, ctx, vault_dir=vault_dir)
 
     print(f"  [AI Verified & Saved] {file_path} ({len(problems)} problems)")
     return drill_doc

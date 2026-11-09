@@ -1,0 +1,327 @@
+{
+  "unitCode": "MTH-T01-C04",
+  "topicTitle": "Fractions & Invariant Ratios",
+  "description": "Reasoning Schemas & Problem-Solving Archetypes for Fraction Simplification, Arithmetic Operations, Reciprocals, Complex Fractions, and Rational Word Problems.",
+  "archetypes": [
+    {
+      "archetypeKey": "c04-fraction-simplification-gcf",
+      "level": 1,
+      "name": "Fraction Reduction via Greatest Common Factor (การทอนเศษส่วนอย่างต่ำด้วย ห.ร.ม.)",
+      "coreConcept": "Dividing both numerator and denominator by their greatest common factor reduces a fraction to canonical simplest form.",
+      "mentalModel": [
+        "1. Find the greatest common factor of the numerator and denominator.",
+        "2. Divide numerator and denominator by the GCF.",
+        "3. Verify that the resulting numerator and denominator are coprime."
+      ],
+      "governingRelation": "a / b = (a / gcd(a, b)) / (b / gcd(a, b))",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c04-partial-common-factor-reduction",
+          "description": "Subtracting components or reducing by an incomplete common factor.",
+          "trapFormula": "(b - a) / b"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "laboratory_chemical_dilution_ratio",
+          "description": "Simplifying chemical solution concentration ratios."
+        },
+        {
+          "domain": "survey_sampling_voter_share",
+          "description": "Expressing representative respondent ratios in irreducible fractions."
+        }
+      ],
+      "usedContexts": [
+        "laboratory_chemical_dilution_ratio"
+      ]
+    },
+    {
+      "archetypeKey": "c04-fraction-multiplication-product",
+      "level": 1,
+      "name": "Fraction Multiplication Across Numerators and Denominators (การคูณเศษส่วนตรงตามนิยาม)",
+      "coreConcept": "The product of fractions is computed by multiplying numerators straight across and multiplying denominators straight across.",
+      "mentalModel": [
+        "1. Multiply numerators together: a * c.",
+        "2. Multiply denominators together: b * d.",
+        "3. Reduce the resulting fraction product to lowest terms."
+      ],
+      "governingRelation": "(a / b) * (c / d) = (a * c) / (b * d)",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c04-cross-multiplication-confusion",
+          "description": "Cross-multiplying numerators and denominators when multiplying rather than dividing.",
+          "trapFormula": "(a * d) / (b * c)"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "solar_photovoltaic_efficiency_scaling",
+          "description": "Scaling photovoltaic power yield across chained efficiency losses."
+        },
+        {
+          "domain": "culinary_recipe_batch_scaling",
+          "description": "Scaling ingredient mass fractions for commercial bakery batches."
+        }
+      ],
+      "usedContexts": [
+        "solar_photovoltaic_efficiency_scaling"
+      ]
+    },
+    {
+      "archetypeKey": "c04-fraction-division-reciprocal-inversion",
+      "level": 2,
+      "name": "Fraction Division via Reciprocal Multiplication (การหารเศษส่วนด้วยส่วนกลับ)",
+      "coreConcept": "Dividing by a non-zero fraction is algebraically identical to multiplying by its reciprocal: Keep-Change-Flip.",
+      "mentalModel": [
+        "1. Retain the dividend fraction unchanged.",
+        "2. Invert the divisor fraction to form its multiplicative reciprocal.",
+        "3. Multiply numerators and denominators, simplifying common factors."
+      ],
+      "governingRelation": "(a / b) / (c / d) = (a / b) * (d / c) = (a * d) / (b * c)",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c04-first-fraction-reciprocal-flip",
+          "description": "Multiplying directly straight across without inverting the divisor.",
+          "trapFormula": "(a * c) / (b * d)"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "textile_cutting_fabric_yield",
+          "description": "Calculating number of garment cuts obtainable from a fractional fabric roll."
+        },
+        {
+          "domain": "pharmaceutical_liquid_dose_dispensing",
+          "description": "Determining syringe doses from fractional bulk medicinal vials."
+        }
+      ],
+      "usedContexts": [
+        "textile_cutting_fabric_yield"
+      ]
+    },
+    {
+      "archetypeKey": "c04-fraction-addition-like-denominators",
+      "level": 2,
+      "name": "Fraction Addition with Common Denominators (การบวกเศษส่วนที่มีส่วนเท่ากัน)",
+      "coreConcept": "Fractions with identical unit partitions are combined by summing numerators over the preserved common denominator.",
+      "mentalModel": [
+        "1. Verify that both denominators are identical.",
+        "2. Sum numerators: a + b.",
+        "3. Keep the shared denominator unchanged."
+      ],
+      "governingRelation": "a / d + b / d = (a + b) / d",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c04-denominator-addition-fallacy",
+          "description": "Adding denominators together as well as numerators.",
+          "trapFormula": "(a + b) / (d + d)"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "civil_road_paving_segment_progress",
+          "description": "Tracking cumulative highway paving progress across consecutive days."
+        },
+        {
+          "domain": "agricultural_irrigation_canal_filling",
+          "description": "Summing water volume increments in an irrigation ditch."
+        }
+      ],
+      "usedContexts": [
+        "civil_road_paving_segment_progress"
+      ]
+    },
+    {
+      "archetypeKey": "c04-fraction-addition-unlike-denominators-lcd",
+      "level": 2,
+      "name": "Fraction Addition via Least Common Denominator (การบวกเศษส่วนส่วนไม่เท่ากันด้วย ค.ร.น.)",
+      "coreConcept": "Adding fractions with unequal denominators requires finding the least common denominator to scale terms into equivalent fractions.",
+      "mentalModel": [
+        "1. Compute the least common multiple of both denominators (LCD).",
+        "2. Multiply numerator and denominator of each fraction by the required factor.",
+        "3. Add the scaled numerators over the common LCD."
+      ],
+      "governingRelation": "a / b + c / d = (a*d + b*c) / (b * d)",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c04-naive-numerator-denominator-sum",
+          "description": "Adding top to top and bottom to bottom without finding a common denominator.",
+          "trapFormula": "(a + c) / (b + d)"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "aerospace_composite_alloy_composition",
+          "description": "Combining mass fractions of resin and carbon matrix in aerospace parts."
+        },
+        {
+          "domain": "structural_concrete_slump_mixture",
+          "description": "Aggregating volumetric cement and aggregate mix ratios."
+        }
+      ],
+      "usedContexts": [
+        "aerospace_composite_alloy_composition"
+      ]
+    },
+    {
+      "archetypeKey": "c04-mixed-number-regrouping-subtraction",
+      "level": 3,
+      "name": "Mixed Number Subtraction with Denominator Regrouping (การลบจำนวนคละแบบกระจายหน่วย)",
+      "coreConcept": "Subtracting fractional values requiring decomposition of whole integer units into equivalent fractional parts.",
+      "mentalModel": [
+        "1. Express measurements as improper fractions or regrouped mixed units.",
+        "2. Subtract numerators over the common denominator.",
+        "3. Simplify resulting improper fraction or mixed number."
+      ],
+      "governingRelation": "a / d - b / d = (a - b) / d",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c04-subtraction-inversion-on-regrouping",
+          "description": "Adding instead of subtracting the fractional lengths.",
+          "trapFormula": "(a + b) / d"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "carpentry_timber_beam_trimming",
+          "description": "Cutting off specified lengths from structural architectural joists."
+        },
+        {
+          "domain": "plumbing_pipe_segment_installation",
+          "description": "Trimming drainage PVC pipes during plumbing installation."
+        }
+      ],
+      "usedContexts": [
+        "carpentry_timber_beam_trimming"
+      ]
+    },
+    {
+      "archetypeKey": "c04-complex-fraction-simplification",
+      "level": 3,
+      "name": "Complex Fraction Compound Reduction (การลดรูปเศษส่วนซ้อน)",
+      "coreConcept": "Simplifying rational expressions where both numerator and denominator contain fractions: (a/b) / (c/d) = (ad) / (bc).",
+      "mentalModel": [
+        "1. Identify the primary division bar separating numerator and denominator fractions.",
+        "2. Multiply the numerator fraction by the reciprocal of the denominator fraction.",
+        "3. Cancel common prime factors to reach canonical form."
+      ],
+      "governingRelation": "(a / b) / (c / d) = (a * d) / (b * c)",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c04-nested-fraction-inversion-slip",
+          "description": "Multiplying directly without inverting the denominator fraction.",
+          "trapFormula": "(a * c) / (b * d)"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "electrical_network_conductance_ratio",
+          "description": "Calculating ratio of parallel branch conductances in DC circuits."
+        },
+        {
+          "domain": "financial_liquidity_current_ratio",
+          "description": "Evaluating quick liquidity asset ratios from financial balances."
+        }
+      ],
+      "usedContexts": [
+        "electrical_network_conductance_ratio"
+      ]
+    },
+    {
+      "archetypeKey": "c04-fraction-one-step-linear-equation",
+      "level": 3,
+      "name": "Fractional Coefficient Linear Equation Inversion (การแก้สมการเชิงเส้นสัมประสิทธิ์เศษส่วน)",
+      "coreConcept": "Isolating an unknown variable multiplied by a fraction by applying the reciprocal property of equality: (a/b)x = c <=> x = c * (b/a).",
+      "mentalModel": [
+        "1. Identify the fractional coefficient multiplying the unknown variable.",
+        "2. Multiply both sides of the equation by the reciprocal of the coefficient.",
+        "3. Simplify the product to isolate the unknown quantity."
+      ],
+      "governingRelation": "(a / b) * x = c <=> x = (c * b) / a",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c04-direct-coefficient-multiplication",
+          "description": "Multiplying by the fraction directly rather than its reciprocal.",
+          "trapFormula": "(c * a) / b"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "water_treatment_chlorine_infusion",
+          "description": "Calculating total capacity of water treatment storage tanks."
+        },
+        {
+          "domain": "confectionery_syrup_volume_proportion",
+          "description": "Finding total syrup vat batch volume from fractional recipe requirements."
+        }
+      ],
+      "usedContexts": [
+        "water_treatment_chlorine_infusion"
+      ]
+    },
+    {
+      "archetypeKey": "c04-constrained-fractional-tank-drain-rate",
+      "level": 4,
+      "name": "Multi-Pipe Invariant Fractional Work Rate Model (แบบจำลองอัตราการทำงานเชิงเศษส่วนของท่อระบายน้ำ)",
+      "coreConcept": "Harmonic rate superposition where opposing filling and emptying rates yield net volumetric accumulation rate.",
+      "mentalModel": [
+        "1. Express filling rate as 1 / t_fill and emptying rate as 1 / t_drain.",
+        "2. Subtract draining rate from filling rate to obtain net rate: 1 / T.",
+        "3. Invert net fractional rate to determine total time to completely fill."
+      ],
+      "governingRelation": "1 / T = 1 / t_1 - 1 / t_2 <=> T = (t_1 * t_2) / (t_2 - t_1)",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c04-work-rate-arithmetic-mean-trap",
+          "description": "Subtracting elapsed times directly rather than combining rates harmonically.",
+          "trapFormula": "t_2 - t_1"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "industrial_chemical_reactor_drainage",
+          "description": "Sizing fill and drain cycles in continuous chemical synthesis reactors."
+        },
+        {
+          "domain": "aquaculture_tank_filtration_cycle",
+          "description": "Balancing inflow and filtration cycling times in fish hatcheries."
+        }
+      ],
+      "usedContexts": [
+        "industrial_chemical_reactor_drainage"
+      ]
+    },
+    {
+      "archetypeKey": "c04-multi-stage-fractional-remainder-synthesis",
+      "level": 4,
+      "name": "Multi-Stage Successive Fraction Allocation (การจัดสรรทรัพยากรแบบหักส่วนที่เหลือหลายขั้นตอน)",
+      "coreConcept": "Chained resource depletion models where fractions apply sequentially to remaining portions rather than initial totals.",
+      "mentalModel": [
+        "1. Calculate fraction remaining after first stage: 1 - f_1.",
+        "2. Multiply by fraction remaining after second stage: (1 - f_1) * (1 - f_2).",
+        "3. Set equal to known terminal residue and invert to solve for initial reserve."
+      ],
+      "governingRelation": "T * (1 - f_1) * (1 - f_2) = R <=> T = R / ((1 - f_1) * (1 - f_2))",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c04-naive-fraction-addition-on-remainder",
+          "description": "Adding fractions together without taking the remainder into account.",
+          "trapFormula": "(R * d_1 * d_2) / (d_1 * d_2 - (d_1 + d_2))"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "emergency_grain_silo_reserve_relief",
+          "description": "Back-calculating initial famine grain reserve from sequential humanitarian dispatches."
+        },
+        {
+          "domain": "university_endowment_fund_disbursement",
+          "description": "Auditing university research endowment reserves after sequential grant rounds."
+        }
+      ],
+      "usedContexts": [
+        "emergency_grain_silo_reserve_relief"
+      ]
+    }
+  ]
+}
