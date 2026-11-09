@@ -131,7 +131,9 @@
         },
         "verificationLevel": "partial",
         "weakDistractors": 0
-      }
+      },
+      "archetypeKey": "c06-rate-base-part-triad",
+      "archetype": "problem-solving"
     },
     {
       "id": "Q02",
@@ -222,7 +224,9 @@
         },
         "verificationLevel": "partial",
         "weakDistractors": 0
-      }
+      },
+      "archetypeKey": "c06-pre-change-base-recovery",
+      "archetype": "problem-solving"
     },
     {
       "id": "Q03",
@@ -318,7 +322,9 @@
         },
         "verificationLevel": "partial",
         "weakDistractors": 0
-      }
+      },
+      "archetypeKey": "c06-simple-interest-time-scaling",
+      "archetype": "problem-solving"
     },
     {
       "id": "Q04",
@@ -416,7 +422,9 @@
         },
         "verificationLevel": "partial",
         "weakDistractors": 0
-      }
+      },
+      "archetypeKey": "c06-invariant-component-under-variable-total",
+      "archetype": "problem-solving"
     }
   ],
   "createdAt": "2026-11-09 14:08:40",

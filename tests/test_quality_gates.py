@@ -1537,6 +1537,65 @@ TEMPLATES = [
                 else:
                     os.environ.pop("ENABLE_PILOT_DRILLS", None)
 
+    def test_17_active_drills_system_certification(self) -> None:
+        """Test 17: Certify 100% of active production drills in drills/data meet modern reasoning vault invariants."""
+        import re
+        from math_engine.ai_drill_ingest import validate_ai_problem_contract
+
+        active_root = "drills/data"
+        self.assertTrue(os.path.exists(active_root), f"{active_root} must exist")
+        drill_files = sorted(glob.glob(f"{active_root}/**/*.json", recursive=True))
+        self.assertGreaterEqual(len(drill_files), 19, f"Expected at least 19 active drills, found {len(drill_files)}")
+
+        total_checked = 0
+        for fpath in drill_files:
+            with open(fpath, "r", encoding="utf-8") as f:
+                drill = json.load(f)
+
+            ucode = drill.get("unitCode")
+            subject = drill.get("subject") or ("PRG" if "PRG" in ucode else "MATH")
+            problems = drill.get("problems", [])
+            self.assertGreater(len(problems), 0, f"{fpath} has no problems")
+
+            vault_path = (
+                f"math_engine/reasoning_vault/{ucode}.json"
+                if subject == "MATH"
+                else f"code_engine/reasoning_vault/{ucode}.json"
+            )
+            self.assertTrue(os.path.exists(vault_path), f"Missing reasoning vault for {fpath}: {vault_path}")
+
+            with open(vault_path, "r", encoding="utf-8") as vf:
+                vdoc = json.load(vf)
+                vault_keys = {a.get("archetypeKey") for a in vdoc.get("archetypes", [])}
+
+            for p in problems:
+                total_checked += 1
+                pid = p.get("id")
+                akey = p.get("archetypeKey")
+                self.assertIn(
+                    akey,
+                    vault_keys,
+                    f"Problem {pid} in {fpath} references archetypeKey '{akey}' not in vault {vault_path}"
+                )
+
+                hint = p.get("checkpointHint", "")
+                digits = re.findall(r"\b\d+\b", hint)
+                self.assertEqual(
+                    digits,
+                    [],
+                    f"Problem {pid} in {fpath} has digits in checkpointHint: {digits}"
+                )
+
+                if subject == "MATH":
+                    self.assertTrue(p.get("display"), f"{fpath} {pid} missing display")
+                    self.assertTrue(p.get("plainText"), f"{fpath} {pid} missing plainText")
+                    self.assertTrue(p.get("answerDisplay"), f"{fpath} {pid} missing answerDisplay")
+                    # Contract validation: two-way matching, safe parser trap evaluation
+                    validate_ai_problem_contract(p)
+
+        self.assertGreaterEqual(total_checked, 170)
+
+
 
 if __name__ == "__main__":
     unittest.main()

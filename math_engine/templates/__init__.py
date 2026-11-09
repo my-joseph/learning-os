@@ -1,10 +1,24 @@
 # -*- coding: utf-8 -*-
-"""Auto-discovering Registry of Math Unit template modules."""
+"""[LEGACY/ARCHIVED] Auto-discovering Registry of Math Unit template modules.
+
+ARCHITECTURAL NOTICE (Phase 4 Modernization):
+This template subsystem has been deprecated and archived. All active production drills
+in `drills/data/` now originate exclusively from the Autonomous Reasoning Vault pipeline
+(`math_engine.reasoning_vault` and `math_engine.ai_drill_ingest`) adhering to the AI Problem
+Contract Guard and Quality Gates G1-G6.
+
+This module is retained strictly for legacy fixture testing and regression benchmarks.
+Do not author new drill generators in this directory.
+"""
 import importlib
 import os
 import pkgutil
+import warnings
 from types import ModuleType
 from typing import Any
+
+IS_DEPRECATED_SUBSYSTEM = True
+
 
 _CACHE: dict[str, ModuleType] = {}
 _MODULE_MAP: dict[str, str] = {}
