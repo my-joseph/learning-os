@@ -51,7 +51,8 @@
         }
       ],
       "usedContexts": [
-        "cloud_api_gateway_burst_throttle"
+        "cloud_api_gateway_burst_throttle",
+        "iot_telemetry_beacon_uplink"
       ]
     },
     {
@@ -204,7 +205,59 @@
           "description": "Search engine crawler indexing pages with strict host-level concurrency limits."
         }
       ],
-      "usedContexts": []
+      "usedContexts": [
+        "crypto_exchange_orderbook_cache"
+      ]
+    },
+    {
+      "archetypeKey": "prg-c03-circuit-breaker-state-machine",
+      "level": 4,
+      "archetype": "problem-solving",
+      "name": "Stateful Circuit Breaker with Half-Open Probe",
+      "competencies": [
+        "state-management",
+        "architecture",
+        "api-integration"
+      ],
+      "coreConcept": "Distributed fault tolerance pattern protecting failing remote services by short-circuiting calls across CLOSED, OPEN, and HALF_OPEN states.",
+      "mentalModel": [
+        "1. Initialize in CLOSED state with failure count = 0.",
+        "2. When in CLOSED: execute async operation. Reset failures to 0 on success. On failure, increment failure count; if failures >= threshold, transition to OPEN and record openedAt = Date.now().",
+        "3. When in OPEN: check if (Date.now() - openedAt) >= resetTimeoutMs. If not, fast-fail immediately throwing a circuit-open error. If cooldown has elapsed, transition to HALF_OPEN.",
+        "4. When in HALF_OPEN: permit a single trial execution probe. If probe succeeds, transition to CLOSED and reset failures. If probe fails, transition back to OPEN and refresh openedAt."
+      ],
+      "governingInvariant": "state in ('CLOSED', 'OPEN', 'HALF_OPEN'); OPEN fast-fails within cooldown; HALF_OPEN executes canary probe",
+      "cognitiveTraps": [
+        {
+          "trapTag": "half-open-concurrent-stampede",
+          "name": "Concurrent Probing Stampede in Half-Open State",
+          "description": "Allowing multiple concurrent requests to slip through during HALF_OPEN instead of isolating a single canary probe.",
+          "reproducer": "Send 5 concurrent requests during cooldown expiration; without single-probe lock, all 5 hit failing remote service."
+        },
+        {
+          "trapTag": "failure-counter-persistence-leak",
+          "name": "Failure Counter Persistence Leak",
+          "description": "Failing to reset consecutive failure count to zero upon successful probe recovery in CLOSED state.",
+          "reproducer": "Trip circuit, wait for recovery, execute 1 success, execute 1 failure; without reset, 1 failure re-trips circuit immediately."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "interbank_clearing_switch",
+          "description": "National interbank instant settlement switch connecting to central bank clearing house."
+        },
+        {
+          "domain": "telecom_sms_gateway",
+          "description": "Bulk SMS notification dispatcher routing alerts across upstream telecom aggregators."
+        },
+        {
+          "domain": "cloud_db_read_replica",
+          "description": "Database routing pool isolating an unhealthy read replica during replication lag spikes."
+        }
+      ],
+      "usedContexts": [
+        "fintech_core_banking_interbank_switch"
+      ]
     }
   ]
 }

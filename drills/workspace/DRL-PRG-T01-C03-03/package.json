@@ -1,0 +1,16 @@
+{
+  "name": "drl-prg-t01-c03-03-workspace",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Local IDE Workspace for DRL-PRG-T01-C03-03 (PRG-T01-C03 - Programming Practice) [node-vanilla]",
+  "scripts": {
+    "test": "node --test *.test.js",
+    "test:watch": "node --test --watch *.test.js",
+    "review": "python3 ../../../code_engine/review.py",
+    "submit": "python3 ../../../code_engine/submit.py",
+    "test:q01": "node --test Q01_createTelemetryRateLimiter.test.js",
+    "test:q02": "node --test Q02_createCoalescingAsyncCache.test.js",
+    "test:q03": "node --test Q03_createCircuitBreaker.test.js"
+  },
+  "devDependencies": {}
+}
