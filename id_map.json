@@ -2507,5 +2507,9 @@
   "DRL-MTH-CALC-DIFF-01": {
     "id": "4113818f-8ba0-81c3-8372-e1e0208907a0",
     "title": "Calculus: Differentiation Rules — Verified Math Drill (10 Qs · Mixed Exam Mode)"
+  },
+  "MTH-SYNTHESIS": {
+    "id": "4003818f-8ba0-80cf-bf95-ef15001d8a99",
+    "title": "Multi-Topic Mathematical Synthesis"
   }
 }

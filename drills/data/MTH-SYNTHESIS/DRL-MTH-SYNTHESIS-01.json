@@ -1,0 +1,451 @@
+{
+  "schemaVersion": "2.0-math",
+  "unitCode": "MTH-SYNTHESIS",
+  "unitTitle": "Multi-Topic Mathematical Synthesis",
+  "topicCode": "MTH-T01",
+  "chapterCode": "MTH-T01-SYN",
+  "config": {
+    "questionCount": 3,
+    "difficulty": "5",
+    "difficultyMode": "Level 5 - Non-Routine Synthesis"
+  },
+  "problems": [
+    {
+      "id": "Q01",
+      "level": 5,
+      "levelLabel": "Level 5 - Non-Routine Synthesis",
+      "category": "Interleaved Synthesis",
+      "archetypeKey": "syn-c12-c09-c05-spatial-radical-metric",
+      "skill": "GEO-RIGHT-TRIANGLE-LEG",
+      "context": "structural_space_truss_diagonal",
+      "prompt": "An aerospace structural truss frame has dimensions of width 6 m, length 8 m, and height 24 m. First, determine the exact space diagonal distance $d$ across the opposite corners. Next, calculate the clearance aspect ratio $\\frac{d}{7}$ and express it rounded to two decimal places.",
+      "display": "d = \\sqrt{6^2 + 8^2 + 24^2}, \\quad \\text{Ratio} = \\frac{d}{7}",
+      "plainText": "d = sqrt(6^2 + 8^2 + 24^2), Ratio = d / 7",
+      "givens": {
+        "w": 6,
+        "l": 8,
+        "h": 24,
+        "divisor": 7
+      },
+      "steps": [
+        {
+          "latex": "d^2 = w^2 + l^2 + h^2",
+          "explain": "Set up the 3D space diagonal formula using the Pythagorean theorem."
+        },
+        {
+          "latex": "d^2 = 6^2 + 8^2 + 24^2",
+          "explain": "Substitute given dimensions into the space diagonal equation."
+        },
+        {
+          "latex": "d^2 = 36 + 8^2 + 24^2",
+          "explain": "Evaluate 6^2 to 36."
+        },
+        {
+          "latex": "d^2 = 36 + 64 + 24^2",
+          "explain": "Evaluate 8^2 to 64."
+        },
+        {
+          "latex": "d^2 = 36 + 64 + 576",
+          "explain": "Evaluate 24^2 to 576."
+        },
+        {
+          "latex": "d^2 = 100 + 576",
+          "explain": "Simplify 36 + 64 to 100."
+        },
+        {
+          "latex": "d^2 = 676",
+          "explain": "Simplify 100 + 576 to 676."
+        },
+        {
+          "latex": "d = \\sqrt{676}",
+          "explain": "Take the principal square root of both sides."
+        },
+        {
+          "latex": "d = 26",
+          "explain": "Simplify square root of 676 to 26 meters."
+        },
+        {
+          "latex": "\\text{Ratio} = \\frac{26}{7}",
+          "explain": "Form the clearance ratio with divisor 7."
+        },
+        {
+          "latex": "\\text{Ratio} \\approx 3.7142857",
+          "explain": "Evaluate fraction division to higher decimal precision."
+        },
+        {
+          "latex": "\\text{Ratio} = 3.71",
+          "explain": "Round the final clearance ratio to two decimal places.",
+          "val": "3.71"
+        }
+      ],
+      "verify": {
+        "source": "3.71",
+        "trapValue": "24/7"
+      },
+      "answerSpec": {
+        "type": "number",
+        "value": "3.71",
+        "commonTrapTag": "c12-3d-dimension-omission-trap",
+        "trapValue": "24/7"
+      },
+      "answerDisplay": "3.71",
+      "answerPlain": "3.71",
+      "inputHint": "Enter the final decimal rounded to 2 decimal places (e.g. 5.12)",
+      "checkpointHint": "First compute the Euclidean space diagonal using the sum of squared orthogonal dimensions, then divide by the scale divisor and round.",
+      "trapGivens": [
+        24,
+        7
+      ],
+      "trapDerivation": "24 / 7",
+      "references": [
+        "MTH-T01-C12",
+        "MTH-T01-C09",
+        "MTH-T01-C05"
+      ],
+      "verificationLevel": "partial",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": []
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C12",
+          "title": "Math Models and Geometry",
+          "notionUrl": "https://www.notion.so/4003818f8ba080cfbf95ef15001d8a52"
+        },
+        {
+          "code": "MTH-T01-C09",
+          "title": "Roots",
+          "notionUrl": "https://www.notion.so/4003818f8ba080cd8826cc9d13c40a2c"
+        },
+        {
+          "code": "MTH-T01-C05",
+          "title": "Decimals",
+          "notionUrl": "https://www.notion.so/4003818f8ba080bf9e2bde83e73f026b"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "Interleaved Synthesis|direct|d = sqrt(#^# + #^# + #^#), Ratio = d / #",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 5,
+          "stepCount": 12,
+          "hasTrapOrFlaw": false,
+          "skill": "GEO-RIGHT-TRIANGLE-LEG",
+          "stepRange": [
+            3,
+            50
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c12-3d-dimension-omission-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 31
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      }
+    },
+    {
+      "id": "Q02",
+      "level": 5,
+      "levelLabel": "Level 5 - Non-Routine Synthesis",
+      "category": "Interleaved Synthesis",
+      "archetypeKey": "syn-c12-c09-c05-annulus-inscribed-circle-radical",
+      "skill": "GEO-RIGHT-TRIANGLE-LEG",
+      "context": "hydraulic_cylinder_seal_gasket",
+      "prompt": "A hydraulic cylinder seal gasket is manufactured as a circular annulus with outer radius $R = 15$ mm and inner radius $r = 12$ mm. Determine the cross-sectional ring area $A_{\\text{ring}} = \\pi (R^2 - r^2)$ using $\\pi \\approx 3.14159$ and round to one decimal place.",
+      "display": "A_{\\text{ring}} = 3.14159 \\times (15^2 - 12^2)",
+      "plainText": "A_ring = 3.14159 * (15^2 - 12^2)",
+      "givens": {
+        "R": 15,
+        "r": 12,
+        "pi_approx": 3.14159
+      },
+      "steps": [
+        {
+          "latex": "R^2 - r^2 = 15^2 - 12^2",
+          "explain": "Substitute outer and inner radii into difference of squares."
+        },
+        {
+          "latex": "R^2 - r^2 = 225 - 12^2",
+          "explain": "Evaluate 15^2 to 225."
+        },
+        {
+          "latex": "R^2 - r^2 = 225 - 144",
+          "explain": "Evaluate 12^2 to 144."
+        },
+        {
+          "latex": "R^2 - r^2 = 81",
+          "explain": "Simplify 225 - 144 to 81."
+        },
+        {
+          "latex": "A_{\\text{ring}} = 3.14159 \\times 81",
+          "explain": "Multiply radius difference by pi approximation."
+        },
+        {
+          "latex": "A_{\\text{ring}} = 254.46879",
+          "explain": "Compute the multiplication."
+        },
+        {
+          "latex": "A_{\\text{ring}} = 254.5",
+          "explain": "Round final area to one decimal place.",
+          "val": "254.5"
+        }
+      ],
+      "verify": {
+        "source": "254.5",
+        "trapValue": "15 - 12"
+      },
+      "answerSpec": {
+        "type": "number",
+        "value": "254.5",
+        "commonTrapTag": "c12-linear-radius-difference-trap",
+        "trapValue": "3"
+      },
+      "answerDisplay": "254.5",
+      "answerPlain": "254.5",
+      "inputHint": "Enter the rounded decimal area in mm squared (e.g. 128.4)",
+      "checkpointHint": "Compute the difference of squared radii rather than subtracting radii before squaring, then multiply by the given decimal representation.",
+      "trapGivens": [
+        15,
+        12
+      ],
+      "trapDerivation": "15 - 12",
+      "references": [
+        "MTH-T01-C12",
+        "MTH-T01-C09",
+        "MTH-T01-C05"
+      ],
+      "verificationLevel": "partial",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": []
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C12",
+          "title": "Math Models and Geometry",
+          "notionUrl": "https://www.notion.so/4003818f8ba080cfbf95ef15001d8a52"
+        },
+        {
+          "code": "MTH-T01-C09",
+          "title": "Roots",
+          "notionUrl": "https://www.notion.so/4003818f8ba080cd8826cc9d13c40a2c"
+        },
+        {
+          "code": "MTH-T01-C05",
+          "title": "Decimals",
+          "notionUrl": "https://www.notion.so/4003818f8ba080bf9e2bde83e73f026b"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "Interleaved Synthesis|direct|A_ring = # * (#^# - #^#)",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 5,
+          "stepCount": 7,
+          "hasTrapOrFlaw": false,
+          "skill": "GEO-RIGHT-TRIANGLE-LEG",
+          "stepRange": [
+            3,
+            50
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c12-linear-radius-difference-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 21
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      }
+    },
+    {
+      "id": "Q03",
+      "level": 5,
+      "levelLabel": "Level 5 - Non-Routine Synthesis",
+      "category": "Interleaved Synthesis",
+      "archetypeKey": "syn-c12-c09-c05-frustum-slant-metric",
+      "skill": "GEO-RIGHT-TRIANGLE-LEG",
+      "context": "grain_silo_discharge_hopper",
+      "prompt": "A conical discharge hopper has an upper radius of 14 m, a lower discharge radius of 6 m, and a vertical height of 15 m. Determine the slant height $s = \\sqrt{h^2 + (R - r)^2}$ in exact simplified form.",
+      "display": "s = \\sqrt{15^2 + (14 - 6)^2}",
+      "plainText": "s = sqrt(15^2 + (14 - 6)^2)",
+      "givens": {
+        "R": 14,
+        "r": 6,
+        "h": 15
+      },
+      "steps": [
+        {
+          "latex": "\\Delta r = 14 - 6",
+          "explain": "Compute the horizontal radius difference."
+        },
+        {
+          "latex": "\\Delta r = 8",
+          "explain": "Simplify 14 - 6 to 8."
+        },
+        {
+          "latex": "s^2 = 15^2 + 8^2",
+          "explain": "Substitute height and radial offset into Pythagorean equation."
+        },
+        {
+          "latex": "s^2 = 225 + 8^2",
+          "explain": "Evaluate 15^2 to 225."
+        },
+        {
+          "latex": "s^2 = 225 + 64",
+          "explain": "Evaluate 8^2 to 64."
+        },
+        {
+          "latex": "s^2 = 289",
+          "explain": "Simplify 225 + 64 to 289."
+        },
+        {
+          "latex": "s = \\sqrt{289}",
+          "explain": "Take the principal square root of 289."
+        },
+        {
+          "latex": "s = 17",
+          "explain": "Simplify square root of 289 to 17 meters.",
+          "val": "17"
+        }
+      ],
+      "verify": {
+        "source": "17",
+        "trapValue": "15 + 6"
+      },
+      "answerSpec": {
+        "type": "number",
+        "value": "17",
+        "commonTrapTag": "c12-slant-vertical-height-confusion-trap",
+        "trapValue": "21"
+      },
+      "answerDisplay": "17",
+      "answerPlain": "17",
+      "inputHint": "Enter integer meters (e.g. 25)",
+      "checkpointHint": "Calculate the difference between the radii first to form the base leg of the right triangle, then apply the Pythagorean theorem.",
+      "trapGivens": [
+        15,
+        6
+      ],
+      "trapDerivation": "15 + 6",
+      "references": [
+        "MTH-T01-C12",
+        "MTH-T01-C09",
+        "MTH-T01-C05"
+      ],
+      "verificationLevel": "partial",
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": []
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C12",
+          "title": "Math Models and Geometry",
+          "notionUrl": "https://www.notion.so/4003818f8ba080cfbf95ef15001d8a52"
+        },
+        {
+          "code": "MTH-T01-C09",
+          "title": "Roots",
+          "notionUrl": "https://www.notion.so/4003818f8ba080cd8826cc9d13c40a2c"
+        },
+        {
+          "code": "MTH-T01-C05",
+          "title": "Decimals",
+          "notionUrl": "https://www.notion.so/4003818f8ba080bf9e2bde83e73f026b"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "Interleaved Synthesis|direct|s = sqrt(#^# + (# - #)^#)",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 5,
+          "stepCount": 8,
+          "hasTrapOrFlaw": false,
+          "skill": "GEO-RIGHT-TRIANGLE-LEG",
+          "stepRange": [
+            3,
+            50
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c12-slant-vertical-height-confusion-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 23
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      }
+    }
+  ],
+  "drillId": "DRL-MTH-SYNTHESIS-01",
+  "title": "Multi-Topic Mathematical Synthesis — Verified Math Drill (3 Qs)",
+  "subject": "MATH",
+  "createdAt": "2026-11-09 23:14:24",
+  "sessionSummary": {
+    "practiceStatus": "Ready",
+    "score": 0,
+    "maxScore": 3,
+    "accuracyPct": 0,
+    "mistakeCategories": [],
+    "divergedStepsSummary": "",
+    "attemptDate": null,
+    "syncedToNotionAt": null,
+    "notionPageId": null
+  },
+  "localFilePath": "drills/data/MTH-SYNTHESIS/DRL-MTH-SYNTHESIS-01.json"
+}

@@ -73,6 +73,7 @@ TEMPLATES = [
 | **L2** | **Reverse Solve / Multi-step Synthesis** | แก้สมการย้อนหาพารามิเตอร์ หรือแปลงค่าหลายขั้น | 2–15 steps | 4–8 micro-steps |
 | **L3** | **Trap, Flaw Diagnosis & Edge Cases** | วิเคราะห์จุดผิดพลาด หรือกับดักเชิงแนวคิดหลายชั้น | 2–20 steps | 5–12 micro-steps |
 | **L4** | **Applied / Multi-concept Constraint** | นำไปประยุกต์ข้ามโดเมน หรือมีเงื่อนไขบังคับหลายด้าน | 2–25 steps | 7–20 micro-steps |
+| **L5** | **Non-Routine Synthesis & Multi-Domain Interleaving** | ผสมผสานองค์ความรู้ข้ามบทเรียน (เช่น เรขาคณิต + กรณฑ์ + ทศนิยม) ไม่มีสูตรสำเร็จ ต้องวิเคราะห์เชิงโครงสร้าง | 3–50 steps | บังคับ Single Transformation per Step (Anti-Clumping) ตาม 00_core §7 |
 
 ### 2.1 มาตรฐานการแจกแจงวิธีทำย่อยแบบละเอียด (Granular Step Derivation Standard)
 1. **One Transformation per Step**: แต่ละ step ในอาเรย์ `steps` ของโจทย์คณิตศาสตร์ต้องแสดงการเปลี่ยนแปลงเพียง 1 กระบวนการเท่านั้น (เช่น ปลดวงเล็บ $\rightarrow$ ทอนเลข $\rightarrow$ ยกกำลัง $\rightarrow$ ลบเลขในกรณฑ์ $\rightarrow$ ถอดราก $\rightarrow$ คำนวณผลลัพธ์)
@@ -80,7 +81,7 @@ TEMPLATES = [
 3. **คำอธิบายชัดเจน (Action-Oriented `explain`)**: ทุกบรรทัดต้องระบุการกระทำที่สอดคล้องกับสมการอย่างชัดเจน
 
 ### 2.2 กฎห้าม Silent Fallback ระดับความยาก (Strict Difficulty Level Invariant)
-เมื่อผู้เรียนหรือระบบสั่งเจเนอเรตโจทย์โดยระบุระดับความยากแบบเจาะจง (`difficulty in ('1', '2', '3', '4')`):
+เมื่อผู้เรียนหรือระบบสั่งเจเนอเรตโจทย์โดยระบุระดับความยากแบบเจาะจง (`difficulty in ('1', '2', '3', '4', '5')`):
 1. **ห้ามมี Silent Fallback เด็ดขาด**: หากยูนิตนั้นยังไม่มีเทมเพลตที่รองรับระดับความยากดังกล่าว ตัว Generator (`math_engine.generate` และ `code_engine.generate`) **ต้อง raise `ValueError` แสดงรายชื่อระดับความยากที่ยูนิตนั้นมีจริงทันที** ห้ามแอบ fallback ไปสุ่มหยิบโจทย์ระดับอื่นมาแทนโดยเด็ดขาด
 2. **ป้ายหัวไฟล์ต้องตรงกับโจทย์จริง**: ทุกข้อในชุดโจทย์ (`problems`) ต้องมี `prob["level"]` ตรงกับค่า `config.difficulty` ที่ระบุเสมอ ห้ามให้มีโจทย์เลเวลอื่นหลุดเข้าไปในชุดโจทย์ที่ระบุเลเวลเฉพาะ
 

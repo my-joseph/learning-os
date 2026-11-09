@@ -142,6 +142,13 @@ INITIAL_PROPOSAL_RULES: dict[str, Any] = {
                 "min_concepts": 2,
                 "allow_constraint_alternative": True,
             },
+            5: {
+                "min_steps": 3,
+                "max_steps": 50,
+                "require_trap_or_flaw": False,
+                "min_concepts": 1,
+                "allow_constraint_alternative": True,
+            },
         },
     },
     "G3": {
@@ -246,6 +253,13 @@ QUALITY_RULES: dict[str, Any] = {
                 "max_steps": 25,
                 "require_trap_or_flaw": False,
                 "min_concepts": 2,
+                "allow_constraint_alternative": True,
+            },
+            5: {
+                "min_steps": 3,
+                "max_steps": 50,
+                "require_trap_or_flaw": False,
+                "min_concepts": 1,
                 "allow_constraint_alternative": True,
             },
         },
@@ -709,15 +723,15 @@ def check_gate_g2(prob: dict[str, Any], rules: dict[str, Any] | None = None) -> 
             f"ติดป้าย L{level} แต่มี {step_count} steps ซึ่งไม่อยู่ในเกณฑ์ L{level}{source_note} ({min_s}-{effective_max_s} steps)",
         )
 
-    if level == 4:
+    if level in (4, 5):
         concept_count, has_constraint = _count_concepts_or_constraints(prob)
-        min_c = l_rule.get("min_concepts", 2)
+        min_c = l_rule.get("min_concepts", 1)
         allow_alt = l_rule.get("allow_constraint_alternative", True)
         if concept_count < min_c and not (allow_alt and has_constraint):
             raise QualityError(
                 "G2",
                 pid,
-                f"ติดป้าย L4 แต่ใช้เพียง {concept_count} concept และไม่มี constraint เพิ่มเติม (ต้องใช้ >= {min_c} concepts หรือมี constraint เพิ่ม)",
+                f"ติดป้าย L{level} แต่ใช้เพียง {concept_count} concept และไม่มี constraint เพิ่มเติม (ต้องใช้ >= {min_c} concepts หรือมี constraint เพิ่ม)",
             )
 
     return {

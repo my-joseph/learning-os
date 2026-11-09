@@ -7,13 +7,14 @@
 **Labels:** `[code]` = enforced by tooling today. `[manual]` = procedure for the agent or learner; no tooling yet.
 
 ## 1. Scope and composition
-- `[code]` A drill's scope is one Unit (`--unit`). The generator draws only from that Unit.
-- [code] Default count is 5. --difficulty takes one level (1-4) or ALL; any other value, or a level the Unit has no templates for, raises ValueError (06 §2.1).
+- `[code]` A standard drill's scope is one Unit (`--unit`), or a Synthesis Drill (`MTH-SYNTHESIS`) for multi-topic cross-domain practice.
+- `[code]` Default count is 5. `--difficulty` takes one level (1-5) or ALL; any other value, or a level the Unit has no templates for, raises ValueError (06 §2.1).
 - Composition follows the Unit Practice Guide (02 §8) as a sequence of drills, not a mix inside one drill. `[manual]` Per study session on a Unit:
   1. Core drill: `--difficulty 1` or `2` (or `ALL`), including at least one reverse form.
   2. Trap drill: `--difficulty 3`, or a weak-spot drill (section 2).
   3. Prior-unit review drill: a separate drill on an earlier Unit (no cross-Unit mixing).
   4. Applied drill: `--difficulty 4` when the Unit has L4 templates.
+  5. Synthesis drill: `--difficulty 5` for cross-topic interleaving and non-routine problem solving.
 - If the Unit lacks enough distinct problems for the requested count, the generator must raise an error; never duplicate (06 §2.1, G3).
 
 ## 2. Weak-spot targeting

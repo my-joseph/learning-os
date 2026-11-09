@@ -241,6 +241,21 @@ def validate_ai_problem_contract(prob: Dict[str, Any]) -> bool:
             raise AiContractError(f"[{pid}] Step {s_idx + 1} must have a non-empty 'latex' equation.")
         if not explain_str or not explain_str.strip():
             raise AiContractError(f"[{pid}] Step {s_idx + 1} must have an action-oriented 'explain' string.")
+        # Anti-Clumping check: 1 discrete transformation per step for Level >= 5 (rules/00_core.md §7, 03_stem.md §1)
+        if prob.get("level", 1) >= 5 and "\\begin" not in latex_str and latex_str.count("=") > 1:
+            raise AiContractError(
+                f"[{pid}] Step {s_idx + 1} violates 00_core §7 / 03_stem §1: horizontal equality chaining is forbidden ('{latex_str}'). Each step must isolate a single discrete algebraic transformation."
+            )
+
+    # 10. Spatial / Parametric Visual Spec Guard (rules/03_stem.md Part 2)
+    if "visual" in prob:
+        vis = prob["visual"]
+        if not isinstance(vis, dict):
+            raise AiContractError(f"[{pid}] 'visual' must be a dictionary specification.")
+        if "type" not in vis or "viewBox" not in vis or "elements" not in vis:
+            raise AiContractError(f"[{pid}] 'visual' specification must contain 'type', 'viewBox', and 'elements'.")
+        if not isinstance(vis.get("elements"), list) or len(vis["elements"]) == 0:
+            raise AiContractError(f"[{pid}] 'visual.elements' must be a non-empty list of visual elements.")
 
     return True
 
@@ -334,11 +349,36 @@ def ingest_ai_drill(
     active_rules = rules or QUALITY_RULES
 
     # Machine Verification of all problems
+    id_map = {}
+    id_map_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "id_map.json")
+    if os.path.exists(id_map_path):
+        try:
+            with open(id_map_path, "r", encoding="utf-8") as f:
+                id_map = json.load(f)
+        except Exception:
+            pass
+
     for idx, prob in enumerate(problems, 1):
         if "id" not in prob:
             prob["id"] = f"Q{idx:02d}"
         if "verificationLevel" not in prob:
             prob["verificationLevel"] = "partial"
+        # Auto-resolve referenceBadges if references are provided
+        refs = prob.get("references")
+        if refs and not prob.get("referenceBadges") and id_map:
+            badges = []
+            for ref in refs:
+                entry = id_map.get(ref, {})
+                title = entry.get("title", ref) if isinstance(entry, dict) else ref
+                raw_id = (entry.get("id", "") if isinstance(entry, dict) else str(entry)).replace("-", "")
+                notion_url = f"https://www.notion.so/{raw_id}" if raw_id else None
+                badges.append({
+                    "code": ref,
+                    "title": title,
+                    "notionUrl": notion_url,
+                })
+            prob["referenceBadges"] = badges
+
         validate_ai_problem_contract(prob)
         # Run gate checks (G1-G6)
         verify_problem(prob, rules=active_rules)

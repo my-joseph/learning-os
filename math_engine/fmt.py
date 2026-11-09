@@ -7,6 +7,7 @@ LEVEL_LABELS = {
     2: "Level 2 - Standard Exam",
     3: "Level 3 - Trap & Diagnostic",
     4: "Level 4 - Applied Synthesis",
+    5: "Level 5 - Non-Routine Synthesis",
 }
 
 

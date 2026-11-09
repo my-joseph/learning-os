@@ -60,6 +60,7 @@ TRUSTED_INTERNAL_FUNCS = {
     **WHITELIST_FUNCS,
     "diff": sp.diff,
     "floor": sp.floor,
+    "round": round,
 }
 
 # Vetted extra functions that individual problem answerSpec may optionally whitelist via allowFuncs
