@@ -12,7 +12,7 @@
       "archetype": "problem-solving",
       "archetypeKey": "c05-decimal-place-value-rounding",
       "context": "biochemical_assay_spectrometry",
-      "prompt": "A spectrometry reading measures an absorbance of 4.386 units. For laboratory reporting, round 4.386 to the nearest 0.01 units.",
+      "prompt": "A spectrometry reading measures an absorbance of $4.386$ units. For laboratory reporting, round $4.386$ to the nearest $0.01$ units.",
       "givens": {
         "absorbance": 4.386,
         "rounding_base": 0.01
@@ -46,7 +46,7 @@
         }
       ],
       "form": "direct",
-      "fingerprint": "c05-decimal-truncation-slip|direct|A spectrometry reading measures an absorbance of # units. For laboratory reporting, round # to the nearest # units.",
+      "fingerprint": "c05-decimal-truncation-slip|direct|round(#, #) = ?",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -72,7 +72,7 @@
         },
         "G6": {
           "passed": true,
-          "fieldsChecked": 7
+          "fieldsChecked": 10
         },
         "antiLeak": {
           "passed": true,
@@ -80,7 +80,10 @@
         },
         "verificationLevel": "partial",
         "weakDistractors": 0
-      }
+      },
+      "display": "\\text{Round } 4.386 \\text{ to nearest } 0.01 = ?",
+      "plainText": "round(4.386, 2) = ?",
+      "answerDisplay": "4.39"
     },
     {
       "id": "Q02",
@@ -90,7 +93,7 @@
       "archetype": "problem-solving",
       "archetypeKey": "c05-decimal-addition-alignment",
       "context": "retail_pos_sales_receipt_tally",
-      "prompt": "A customer purchases two grocery items priced at 14.85 dollars and 6.40 dollars. Calculate the total bill in dollars.",
+      "prompt": "A customer purchases two grocery items priced at $14.85$ dollars and $6.40$ dollars. Calculate the total bill in dollars.",
       "givens": {
         "item_a": 14.85,
         "item_b": 6.4
@@ -124,7 +127,7 @@
         }
       ],
       "form": "direct",
-      "fingerprint": "c05-right-alignment-decimal-offset|direct|A customer purchases two grocery items priced at # dollars and # dollars. Calculate the total bill in dollars.",
+      "fingerprint": "c05-right-alignment-decimal-offset|direct|# + # = ?",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -150,7 +153,7 @@
         },
         "G6": {
           "passed": true,
-          "fieldsChecked": 7
+          "fieldsChecked": 10
         },
         "antiLeak": {
           "passed": true,
@@ -158,7 +161,10 @@
         },
         "verificationLevel": "partial",
         "weakDistractors": 0
-      }
+      },
+      "display": "14.85 + 6.40 = ?",
+      "plainText": "14.85 + 6.40 = ?",
+      "answerDisplay": "21.25"
     },
     {
       "id": "Q03",
@@ -168,7 +174,7 @@
       "archetype": "problem-solving",
       "archetypeKey": "c05-decimal-subtraction-borrowing",
       "context": "chemical_analytical_balance_tare_weight",
-      "prompt": "An analytical balance weighs a beaker with reagent at 52.40 grams. After removing the beaker which has an empty tare weight of 18.75 grams, find the net weight of the reagent in grams.",
+      "prompt": "An analytical balance weighs a beaker with reagent at $52.40$ grams. After removing the beaker which has an empty tare weight of $18.75$ grams, find the net weight of the reagent in grams.",
       "givens": {
         "gross_weight": 52.4,
         "tare_weight": 18.75
@@ -202,7 +208,7 @@
         }
       ],
       "form": "direct",
-      "fingerprint": "c05-blank-subtraction-digit-drop|direct|An analytical balance weighs a beaker with reagent at # grams. After removing the beaker which has an empty tare weight of # grams, find the net weight of the reagent in grams.",
+      "fingerprint": "c05-blank-subtraction-digit-drop|direct|# - # = ?",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -228,7 +234,7 @@
         },
         "G6": {
           "passed": true,
-          "fieldsChecked": 7
+          "fieldsChecked": 10
         },
         "antiLeak": {
           "passed": true,
@@ -236,7 +242,10 @@
         },
         "verificationLevel": "partial",
         "weakDistractors": 0
-      }
+      },
+      "display": "52.40 - 18.75 = ?",
+      "plainText": "52.40 - 18.75 = ?",
+      "answerDisplay": "33.65"
     },
     {
       "id": "Q04",
@@ -246,7 +255,7 @@
       "archetype": "problem-solving",
       "archetypeKey": "c05-decimal-multiplication-digit-counting",
       "context": "industrial_wire_electrical_resistance",
-      "prompt": "A specialized copper conductor has an electrical resistance of 0.45 ohms per meter. Calculate the total resistance in ohms for a segment measuring 3.6 meters.",
+      "prompt": "A specialized copper conductor has an electrical resistance of $0.45$ ohms per meter. Calculate the total resistance in ohms for a segment measuring $3.6$ meters.",
       "givens": {
         "resistance_rate": 0.45,
         "length": 3.6
@@ -280,7 +289,7 @@
         }
       ],
       "form": "direct",
-      "fingerprint": "c05-decimal-point-alignment-in-multiplication|direct|A specialized copper conductor has an electrical resistance of # ohms per meter. Calculate the total resistance in ohms for a segment measuring # meters.",
+      "fingerprint": "c05-decimal-point-alignment-in-multiplication|direct|# * # = ?",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -306,7 +315,7 @@
         },
         "G6": {
           "passed": true,
-          "fieldsChecked": 7
+          "fieldsChecked": 10
         },
         "antiLeak": {
           "passed": true,
@@ -314,7 +323,10 @@
         },
         "verificationLevel": "partial",
         "weakDistractors": 0
-      }
+      },
+      "display": "0.45 \\times 3.6 = ?",
+      "plainText": "0.45 * 3.6 = ?",
+      "answerDisplay": "1.62"
     },
     {
       "id": "Q05",
@@ -324,7 +336,7 @@
       "archetype": "problem-solving",
       "archetypeKey": "c05-decimal-division-divisor-shifting",
       "context": "semiconductor_wafer_yield_density",
-      "prompt": "An automated inspection station tests microchips across a silicon wafer. Evaluate the quotient 5.4 / 0.09 to find the number of standard microchip segments.",
+      "prompt": "An automated inspection station tests microchips across a silicon wafer. Evaluate the quotient $5.4 \\div 0.09$ to find the number of standard microchip segments.",
       "givens": {
         "dividend": 5.4,
         "divisor": 0.09
@@ -358,7 +370,7 @@
         }
       ],
       "form": "direct",
-      "fingerprint": "c05-unilateral-divisor-shift-slip|direct|An automated inspection station tests microchips across a silicon wafer. Evaluate the quotient # / # to find the number of standard microchip segments.",
+      "fingerprint": "c05-unilateral-divisor-shift-slip|direct|# / # = ?",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -384,7 +396,7 @@
         },
         "G6": {
           "passed": true,
-          "fieldsChecked": 7
+          "fieldsChecked": 10
         },
         "antiLeak": {
           "passed": true,
@@ -392,7 +404,10 @@
         },
         "verificationLevel": "partial",
         "weakDistractors": 0
-      }
+      },
+      "display": "5.4 \\div 0.09 = ?",
+      "plainText": "5.4 / 0.09 = ?",
+      "answerDisplay": "60"
     },
     {
       "id": "Q06",
@@ -402,7 +417,7 @@
       "archetype": "problem-solving",
       "archetypeKey": "c05-fraction-to-decimal-conversion",
       "context": "precision_sheet_metal_thickness_gauge",
-      "prompt": "A sheet metal manufacturer specifies a plate thickness of 7/8 millimeters. Convert 7/8 into an exact decimal representation.",
+      "prompt": "A sheet metal manufacturer specifies a plate thickness of $\\frac{7}{8}$ millimeters. Convert $\\frac{7}{8}$ into an exact decimal representation.",
       "givens": {
         "numerator": 7,
         "denominator": 8
@@ -436,7 +451,7 @@
         }
       ],
       "form": "direct",
-      "fingerprint": "c05-fraction-decimal-inversion-trap|direct|A sheet metal manufacturer specifies a plate thickness of #/# millimeters. Convert #/# into an exact decimal representation.",
+      "fingerprint": "c05-fraction-decimal-inversion-trap|direct|# / # = ?",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -462,7 +477,7 @@
         },
         "G6": {
           "passed": true,
-          "fieldsChecked": 7
+          "fieldsChecked": 10
         },
         "antiLeak": {
           "passed": true,
@@ -470,7 +485,10 @@
         },
         "verificationLevel": "partial",
         "weakDistractors": 0
-      }
+      },
+      "display": "\\frac{7}{8} = ?",
+      "plainText": "7 / 8 = ?",
+      "answerDisplay": "0.875"
     },
     {
       "id": "Q07",
@@ -480,7 +498,7 @@
       "archetype": "problem-solving",
       "archetypeKey": "c05-decimal-unit-price-comparison",
       "context": "supermarket_bulk_packaging_audit",
-      "prompt": "A wholesale distributor sells a 15-kilogram sack of organic flour for 42 dollars. Calculate the unit price in dollars per kilogram.",
+      "prompt": "A wholesale distributor sells a $15$-kilogram sack of organic flour for $42$ dollars. Calculate the unit price in dollars per kilogram.",
       "givens": {
         "quantity": 15,
         "cost": 42
@@ -514,7 +532,7 @@
         }
       ],
       "form": "direct",
-      "fingerprint": "c05-quantity-per-dollar-inversion-slip|direct|A wholesale distributor sells a #-kilogram sack of organic flour for # dollars. Calculate the unit price in dollars per kilogram.",
+      "fingerprint": "c05-quantity-per-dollar-inversion-slip|direct|# / # = ?",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -540,7 +558,7 @@
         },
         "G6": {
           "passed": true,
-          "fieldsChecked": 7
+          "fieldsChecked": 10
         },
         "antiLeak": {
           "passed": true,
@@ -548,7 +566,10 @@
         },
         "verificationLevel": "partial",
         "weakDistractors": 0
-      }
+      },
+      "display": "\\frac{42}{15} = ?",
+      "plainText": "42 / 15 = ?",
+      "answerDisplay": "2.8"
     },
     {
       "id": "Q08",
@@ -558,7 +579,7 @@
       "archetype": "problem-solving",
       "archetypeKey": "c05-decimal-one-step-linear-equation",
       "context": "telecom_roaming_data_rate_metering",
-      "prompt": "A mobile roaming provider charges 0.25 dollars per megabyte of data. If an international traveler incurs a total data charge of 35 dollars, solve the linear equation 0.25 * m = 35 to find the data usage m in megabytes.",
+      "prompt": "A mobile roaming provider charges $0.25$ dollars per megabyte of data. If an international traveler incurs a total data charge of $35$ dollars, solve the linear equation $0.25 \\times m = 35$ to find the data usage $m$ in megabytes.",
       "givens": {
         "rate": 0.25,
         "total_bill": 35
@@ -592,7 +613,7 @@
         }
       ],
       "form": "direct",
-      "fingerprint": "c05-decimal-multiplication-inversion-slip|direct|A mobile roaming provider charges # dollars per megabyte of data. If an international traveler incurs a total data charge of # dollars, solve the linear equation # * m = # to find the data usage m in megabytes.",
+      "fingerprint": "c05-decimal-multiplication-inversion-slip|direct|# * m = #",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -618,7 +639,7 @@
         },
         "G6": {
           "passed": true,
-          "fieldsChecked": 7
+          "fieldsChecked": 10
         },
         "antiLeak": {
           "passed": true,
@@ -626,7 +647,10 @@
         },
         "verificationLevel": "partial",
         "weakDistractors": 0
-      }
+      },
+      "display": "0.25m = 35 \\implies m = ?",
+      "plainText": "0.25 * m = 35",
+      "answerDisplay": "140"
     },
     {
       "id": "Q09",
@@ -636,7 +660,7 @@
       "archetype": "problem-solving",
       "archetypeKey": "c05-constrained-multi-tier-decimal-utility-tariff",
       "context": "municipal_water_metering_tariff",
-      "prompt": "A municipal water utility charges a base rate of 1.20 dollars per cubic meter for the first 25 cubic meters of consumption, and 1.80 dollars per cubic meter for all consumption exceeding 25 cubic meters. If a commercial laundry facility uses 45 cubic meters of water, calculate the total water bill in dollars.",
+      "prompt": "A municipal water utility charges a base rate of $1.20$ dollars per cubic meter for the first $25$ cubic meters of consumption, and $1.80$ dollars per cubic meter for all consumption exceeding $25$ cubic meters. If a commercial laundry facility uses $45$ cubic meters of water, calculate the total water bill in dollars.",
       "givens": {
         "base_rate": 1.2,
         "tier_limit": 25,
@@ -685,7 +709,7 @@
         }
       ],
       "form": "direct",
-      "fingerprint": "c05-flat-top-tier-overbilling-trap|direct|A municipal water utility charges a base rate of # dollars per cubic meter for the first # cubic meters of consumption, and # dollars per cubic meter for all consumption exceeding # cubic meters. If a commercial laundry facility uses # cubic meters of water, calculate the total water bill in dollars.",
+      "fingerprint": "c05-flat-top-tier-overbilling-trap|direct|# * # + (# - #) * # = ?",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -711,7 +735,7 @@
         },
         "G6": {
           "passed": true,
-          "fieldsChecked": 9
+          "fieldsChecked": 12
         },
         "antiLeak": {
           "passed": true,
@@ -719,7 +743,10 @@
         },
         "verificationLevel": "partial",
         "weakDistractors": 0
-      }
+      },
+      "display": "25 \\times 1.20 + (45 - 25) \\times 1.80 = ?",
+      "plainText": "25 * 1.20 + (45 - 25) * 1.80 = ?",
+      "answerDisplay": "66"
     },
     {
       "id": "Q10",
@@ -729,7 +756,7 @@
       "archetype": "problem-solving",
       "archetypeKey": "c05-decimal-mean-weighted-sensor-fusion",
       "context": "environmental_air_quality_pm25_monitoring",
-      "prompt": "An environmental station monitors particulate matter across 4 daily readings. The first 3 readings are 18.5, 22.4, and 16.1 micrograms per cubic meter. What must the 4th reading be in micrograms per cubic meter so that the mean of all 4 readings equals exactly 20.2 micrograms per cubic meter?",
+      "prompt": "An environmental station monitors particulate matter across $4$ daily readings. The first $3$ readings are $18.5$, $22.4$, and $16.1$ micrograms per cubic meter. What must the $4$th reading be in micrograms per cubic meter so that the mean of all $4$ readings equals exactly $20.2$ micrograms per cubic meter?",
       "givens": {
         "total_count": 4,
         "sub_count": 3,
@@ -780,7 +807,7 @@
         }
       ],
       "form": "direct",
-      "fingerprint": "c05-mean-sum-divisor-neglect|direct|An environmental station monitors particulate matter across # daily readings. The first # readings are #, #, and # micrograms per cubic meter. What must the #th reading be in micrograms per cubic meter so that the mean of all # readings equals exactly # micrograms per cubic meter?",
+      "fingerprint": "c05-mean-sum-divisor-neglect|direct|# * # - (# + # + #) = ?",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -806,7 +833,7 @@
         },
         "G6": {
           "passed": true,
-          "fieldsChecked": 9
+          "fieldsChecked": 12
         },
         "antiLeak": {
           "passed": true,
@@ -814,7 +841,10 @@
         },
         "verificationLevel": "partial",
         "weakDistractors": 0
-      }
+      },
+      "display": "4 \\times 20.2 - (18.5 + 22.4 + 16.1) = ?",
+      "plainText": "4 * 20.2 - (18.5 + 22.4 + 16.1) = ?",
+      "answerDisplay": "23.8"
     }
   ],
   "schemaVersion": "2.0-math",
@@ -836,5 +866,7 @@
     "syncedToNotionAt": null,
     "notionPageId": null
   },
-  "localFilePath": "drills/data/MTH-T01-C05/DRL-MTH-T01-C05-02.json"
+  "localFilePath": "drills/data/MTH-T01-C05/DRL-MTH-T01-C05-02.json",
+  "unitTitle": "Decimals",
+  "title": "Decimals — Verified Math Drill (10 Qs · Mixed Exam Mode)"
 }

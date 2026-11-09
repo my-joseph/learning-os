@@ -741,7 +741,7 @@ export default function PracticeStudioPage() {
                   <div className="min-w-0 space-y-0.5">
                     <div className="text-xs md:text-sm font-bold leading-snug text-slate-900 dark:text-white truncate max-w-[240px] sm:max-w-[360px] md:max-w-[440px]">
                       {currentDrill
-                        ? `${currentDrill.unitTitle} (${currentDrill.unitCode})`
+                        ? `${currentDrill.unitTitle || currentDrill.unitCode} (${currentDrill.unitCode})`
                         : "Select Practice Drill"}
                     </div>
                     {currentDrill && (
@@ -847,7 +847,7 @@ export default function PracticeStudioPage() {
                                     {d.subject || "MATH"}
                                   </span>
                                   <span className="text-xs font-bold text-slate-900 dark:text-white truncate">
-                                    {d.unitTitle}
+                                    {d.unitTitle || d.unitCode}
                                   </span>
                                 </div>
                                 <div className="text-[11px] font-mono text-slate-500 dark:text-slate-400">
@@ -1257,7 +1257,7 @@ export default function PracticeStudioPage() {
                     Unit &amp; Drill ID
                   </span>
                   <strong className="text-sm text-slate-900 dark:text-white block">
-                    {currentDrill.unitTitle}
+                    {currentDrill.unitTitle || currentDrill.unitCode}
                   </strong>
                   <span className="font-mono text-slate-500 dark:text-slate-400">
                     {currentDrill.drillId} · {currentDrill.unitCode}

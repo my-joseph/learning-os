@@ -12,7 +12,7 @@
       "archetype": "problem-solving",
       "archetypeKey": "c02-verbal-to-algebraic-translation",
       "context": "sensor_temperature_threshold",
-      "prompt": "A climate sensor calibration formula adjusts temperature readings. When the base temperature reading is 28 degrees Celsius, the calibrated reading is evaluated by subtracting 9 degrees from 28. What is the calibrated reading in degrees Celsius?",
+      "prompt": "A climate sensor calibration formula adjusts temperature readings. When the base temperature reading is $28$ degrees Celsius, the calibrated reading is evaluated by subtracting $9$ degrees from $28$. What is the calibrated reading in degrees Celsius?",
       "givens": {
         "base_reading": 28,
         "offset": 9
@@ -50,7 +50,7 @@
         }
       ],
       "form": "direct",
-      "fingerprint": "c02-subtraction-order-reversal|direct|A climate sensor calibration formula adjusts temperature readings. When the base temperature reading is # degrees Celsius, the calibrated reading is evaluated by subtracting # degrees from #. What is the calibrated reading in degrees Celsius?",
+      "fingerprint": "c02-subtraction-order-reversal|direct|# - # = ?",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -76,7 +76,7 @@
         },
         "G6": {
           "passed": true,
-          "fieldsChecked": 7
+          "fieldsChecked": 10
         },
         "antiLeak": {
           "passed": true,
@@ -84,7 +84,10 @@
         },
         "verificationLevel": "partial",
         "weakDistractors": 0
-      }
+      },
+      "display": "28 - 9 = ?",
+      "plainText": "28 - 9 = ?",
+      "answerDisplay": "19"
     },
     {
       "id": "Q02",
@@ -94,7 +97,7 @@
       "archetype": "problem-solving",
       "archetypeKey": "c02-expression-variable-substitution",
       "context": "electric_scooter_fare_calculation",
-      "prompt": "The fare in dollars for an electric scooter ride is calculated by evaluating the algebraic expression 3 * m + 4, where m is the trip duration in minutes. Calculate the total fare when m is 8.",
+      "prompt": "The fare in dollars for an electric scooter ride is calculated by evaluating the algebraic expression $3 \\times m + 4$, where $m$ is the trip duration in minutes. Calculate the total fare when $m$ is $8$.",
       "givens": {
         "multiplier": 3,
         "base_fee": 4,
@@ -133,7 +136,7 @@
         }
       ],
       "form": "direct",
-      "fingerprint": "c02-multiplication-concatenation-trap|direct|The fare in dollars for an electric scooter ride is calculated by evaluating the algebraic expression # * m + #, where m is the trip duration in minutes. Calculate the total fare when m is #.",
+      "fingerprint": "c02-multiplication-concatenation-trap|direct|# * # + # = ?",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -159,7 +162,7 @@
         },
         "G6": {
           "passed": true,
-          "fieldsChecked": 7
+          "fieldsChecked": 10
         },
         "antiLeak": {
           "passed": true,
@@ -167,7 +170,10 @@
         },
         "verificationLevel": "partial",
         "weakDistractors": 0
-      }
+      },
+      "display": "3 \\times (8) + 4 = ?",
+      "plainText": "3 * 8 + 4 = ?",
+      "answerDisplay": "28"
     },
     {
       "id": "Q03",
@@ -177,7 +183,7 @@
       "archetype": "problem-solving",
       "archetypeKey": "c02-combining-like-terms-univariate",
       "context": "retail_inventory_batch_merging",
-      "prompt": "A warehouse receives two shipments of components where each container holds x components. The morning shipment brings 14 containers and the afternoon shipment brings 19 containers. When combining both shipments, evaluate the total number of components if x is 5.",
+      "prompt": "A warehouse receives two shipments of components where each container holds $x$ components. The morning shipment brings $14$ containers and the afternoon shipment brings $19$ containers. When combining both shipments, evaluate the total number of components if $x$ is $5$.",
       "givens": {
         "morning_containers": 14,
         "afternoon_containers": 19,
@@ -216,7 +222,7 @@
         }
       ],
       "form": "direct",
-      "fingerprint": "c02-variable-power-merging-trap|direct|A warehouse receives two shipments of components where each container holds x components. The morning shipment brings # containers and the afternoon shipment brings # containers. When combining both shipments, evaluate the total number of components if x is #.",
+      "fingerprint": "c02-variable-power-merging-trap|direct|#*# + #*# = ?",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -242,7 +248,7 @@
         },
         "G6": {
           "passed": true,
-          "fieldsChecked": 7
+          "fieldsChecked": 10
         },
         "antiLeak": {
           "passed": true,
@@ -250,7 +256,10 @@
         },
         "verificationLevel": "partial",
         "weakDistractors": 0
-      }
+      },
+      "display": "14x + 19x \\implies 33 \\times (5) = ?",
+      "plainText": "14*5 + 19*5 = ?",
+      "answerDisplay": "165"
     },
     {
       "id": "Q04",
@@ -260,7 +269,7 @@
       "archetype": "problem-solving",
       "archetypeKey": "c02-distributive-property-expansion",
       "context": "agricultural_greenhouse_fertilizer_dosing",
-      "prompt": "A greenhouse automation system applies fertilizer across 4 zones according to the expression 4 * (2 * x + 7) milliliters. Evaluate the total milliliters applied when x is 6.",
+      "prompt": "A greenhouse automation system applies fertilizer across $4$ zones according to the expression $4 \\times (2 \\times x + 7)$ milliliters. Evaluate the total milliliters applied when $x$ is $6$.",
       "givens": {
         "zones": 4,
         "multiplier": 2,
@@ -300,7 +309,7 @@
         }
       ],
       "form": "direct",
-      "fingerprint": "c02-partial-distribution-neglect|direct|A greenhouse automation system applies fertilizer across # zones according to the expression # * (# * x + #) milliliters. Evaluate the total milliliters applied when x is #.",
+      "fingerprint": "c02-partial-distribution-neglect|direct|# * (#*# + #) = ?",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -326,7 +335,7 @@
         },
         "G6": {
           "passed": true,
-          "fieldsChecked": 7
+          "fieldsChecked": 10
         },
         "antiLeak": {
           "passed": true,
@@ -334,7 +343,10 @@
         },
         "verificationLevel": "partial",
         "weakDistractors": 0
-      }
+      },
+      "display": "4 \\times (2(6) + 7) = ?",
+      "plainText": "4 * (2*6 + 7) = ?",
+      "answerDisplay": "76"
     },
     {
       "id": "Q05",
@@ -344,7 +356,7 @@
       "archetype": "problem-solving",
       "archetypeKey": "c02-additive-equality-inversion",
       "context": "aviation_fuel_reserve_calculation",
-      "prompt": "An aircraft begins flight with an unknown fuel reserve x liters. After consuming 145 liters during ascent, exactly 620 liters remain in the main tank. Find the initial fuel reserve x in liters.",
+      "prompt": "An aircraft begins flight with an unknown fuel reserve $x$ liters. After consuming $145$ liters during ascent, exactly $620$ liters remain in the main tank. Find the initial fuel reserve $x$ in liters.",
       "givens": {
         "consumed": 145,
         "remaining": 620
@@ -382,7 +394,7 @@
         }
       ],
       "form": "direct",
-      "fingerprint": "c02-operation-sign-inversion-omission|direct|An aircraft begins flight with an unknown fuel reserve x liters. After consuming # liters during ascent, exactly # liters remain in the main tank. Find the initial fuel reserve x in liters.",
+      "fingerprint": "c02-operation-sign-inversion-omission|direct|x - # = #",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -408,7 +420,7 @@
         },
         "G6": {
           "passed": true,
-          "fieldsChecked": 7
+          "fieldsChecked": 10
         },
         "antiLeak": {
           "passed": true,
@@ -416,7 +428,10 @@
         },
         "verificationLevel": "partial",
         "weakDistractors": 0
-      }
+      },
+      "display": "x - 145 = 620 \\implies x = ?",
+      "plainText": "x - 145 = 620",
+      "answerDisplay": "765"
     },
     {
       "id": "Q06",
@@ -426,7 +441,7 @@
       "archetype": "problem-solving",
       "archetypeKey": "c02-multiplicative-equality-inversion",
       "context": "solar_array_power_generation",
-      "prompt": "A commercial solar installation generates 960 kilowatt-hours of electrical energy across 16 identical collector panels. If each collector panel produces x kilowatt-hours, solve the equation 16 * x = 960 to find x.",
+      "prompt": "A commercial solar installation generates $960$ kilowatt-hours of electrical energy across $16$ identical collector panels. If each collector panel produces $x$ kilowatt-hours, solve the equation $16 \\times x = 960$ to find $x$.",
       "givens": {
         "total_power": 960,
         "panel_count": 16
@@ -464,7 +479,7 @@
         }
       ],
       "form": "direct",
-      "fingerprint": "c02-reciprocal-multiplication-confusion|direct|A commercial solar installation generates # kilowatt-hours of electrical energy across # identical collector panels. If each collector panel produces x kilowatt-hours, solve the equation # * x = # to find x.",
+      "fingerprint": "c02-reciprocal-multiplication-confusion|direct|# * x = #",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -490,7 +505,7 @@
         },
         "G6": {
           "passed": true,
-          "fieldsChecked": 7
+          "fieldsChecked": 10
         },
         "antiLeak": {
           "passed": true,
@@ -498,7 +513,10 @@
         },
         "verificationLevel": "partial",
         "weakDistractors": 0
-      }
+      },
+      "display": "16x = 960 \\implies x = ?",
+      "plainText": "16 * x = 960",
+      "answerDisplay": "60"
     },
     {
       "id": "Q07",
@@ -508,7 +526,7 @@
       "archetype": "problem-solving",
       "archetypeKey": "c02-two-variable-formula-evaluation",
       "context": "perimeter_fence_construction",
-      "prompt": "A secure perimeter fence around a rectangular storage yard is calculated using the formula 2 * L + 2 * W meters. If the measured length L is 45 meters and the width W is 28 meters, calculate the total fence length in meters.",
+      "prompt": "A secure perimeter fence around a rectangular storage yard is calculated using the formula $2 \\times L + 2 \\times W$ meters. If the measured length $L$ is $45$ meters and the width $W$ is $28$ meters, calculate the total fence length in meters.",
       "givens": {
         "factor": 2,
         "length": 45,
@@ -547,7 +565,7 @@
         }
       ],
       "form": "direct",
-      "fingerprint": "c02-semi-perimeter-underestimate|direct|A secure perimeter fence around a rectangular storage yard is calculated using the formula # * L + # * W meters. If the measured length L is # meters and the width W is # meters, calculate the total fence length in meters.",
+      "fingerprint": "c02-semi-perimeter-underestimate|direct|#*# + #*# = ?",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -573,7 +591,7 @@
         },
         "G6": {
           "passed": true,
-          "fieldsChecked": 7
+          "fieldsChecked": 10
         },
         "antiLeak": {
           "passed": true,
@@ -581,7 +599,10 @@
         },
         "verificationLevel": "partial",
         "weakDistractors": 0
-      }
+      },
+      "display": "P = 2(45) + 2(28) = ?",
+      "plainText": "2*45 + 2*28 = ?",
+      "answerDisplay": "146"
     },
     {
       "id": "Q08",
@@ -591,7 +612,7 @@
       "archetype": "problem-solving",
       "archetypeKey": "c02-nested-distributive-simplification",
       "context": "telecom_bandwidth_tier_pricing",
-      "prompt": "A telecommunications network calculates bandwidth charges across two regions using the expression 3 * (x + 12) + 5 * (x + 4) gigabytes. Find the total gigabytes consumed when x is 10.",
+      "prompt": "A telecommunications network calculates bandwidth charges across two regions using the expression $3 \\times (x + 12) + 5 \\times (x + 4)$ gigabytes. Find the total gigabytes consumed when $x$ is $10$.",
       "givens": {
         "tier1_coeff": 3,
         "tier1_base": 12,
@@ -632,7 +653,7 @@
         }
       ],
       "form": "direct",
-      "fingerprint": "c02-distributive-coefficient-omission|direct|A telecommunications network calculates bandwidth charges across two regions using the expression # * (x + #) + # * (x + #) gigabytes. Find the total gigabytes consumed when x is #.",
+      "fingerprint": "c02-distributive-coefficient-omission|direct|#*(# + #) + #*(# + #) = ?",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -658,7 +679,7 @@
         },
         "G6": {
           "passed": true,
-          "fieldsChecked": 7
+          "fieldsChecked": 10
         },
         "antiLeak": {
           "passed": true,
@@ -666,7 +687,10 @@
         },
         "verificationLevel": "partial",
         "weakDistractors": 0
-      }
+      },
+      "display": "3(10 + 12) + 5(10 + 4) = ?",
+      "plainText": "3*(10 + 12) + 5*(10 + 4) = ?",
+      "answerDisplay": "136"
     },
     {
       "id": "Q09",
@@ -676,7 +700,7 @@
       "archetype": "problem-solving",
       "archetypeKey": "c02-constrained-perimeter-unknown-model",
       "context": "urban_park_boundary_fencing",
-      "prompt": "An urban park design specifies a rectangular garden whose length is 3 meters longer than 2 times its width w. The total perimeter enclosing the garden is 78 meters. Find the width w in meters.",
+      "prompt": "An urban park design specifies a rectangular garden whose length is $3$ meters longer than $2$ times its width $w$. The total perimeter enclosing the garden is $78$ meters. Find the width $w$ in meters.",
       "givens": {
         "length_offset": 3,
         "length_multiplier": 2,
@@ -728,7 +752,7 @@
         }
       ],
       "form": "direct",
-      "fingerprint": "c02-semi-perimeter-algebraic-confusion|direct|An urban park design specifies a rectangular garden whose length is # meters longer than # times its width w. The total perimeter enclosing the garden is # meters. Find the width w in meters.",
+      "fingerprint": "c02-semi-perimeter-algebraic-confusion|direct|#*(#*w + #) + #*w = #",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -754,7 +778,7 @@
         },
         "G6": {
           "passed": true,
-          "fieldsChecked": 9
+          "fieldsChecked": 12
         },
         "antiLeak": {
           "passed": true,
@@ -762,7 +786,10 @@
         },
         "verificationLevel": "partial",
         "weakDistractors": 0
-      }
+      },
+      "display": "2(2w + 3) + 2w = 78 \\implies w = ?",
+      "plainText": "2*(2*w + 3) + 2*w = 78",
+      "answerDisplay": "12"
     },
     {
       "id": "Q10",
@@ -772,7 +799,7 @@
       "archetype": "problem-solving",
       "archetypeKey": "c02-consecutive-integer-sum-inversion",
       "context": "production_shift_serial_numbering",
-      "prompt": "An automated factory assigns three consecutive integers as batch identification codes. The sum of these 3 consecutive integer codes is 84. Find the value of the largest of the three integer codes.",
+      "prompt": "An automated factory assigns three consecutive integers as batch identification codes. The sum of these $3$ consecutive integer codes is $84$. Find the value of the largest of the three integer codes.",
       "givens": {
         "item_count": 3,
         "total_sum": 84
@@ -823,7 +850,7 @@
         }
       ],
       "form": "direct",
-      "fingerprint": "c02-mean-consecutive-reporting-trap|direct|An automated factory assigns three consecutive integers as batch identification codes. The sum of these # consecutive integer codes is #. Find the value of the largest of the three integer codes.",
+      "fingerprint": "c02-mean-consecutive-reporting-trap|direct|n + (n + #) + (n + #) = #",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -849,7 +876,7 @@
         },
         "G6": {
           "passed": true,
-          "fieldsChecked": 9
+          "fieldsChecked": 12
         },
         "antiLeak": {
           "passed": true,
@@ -857,7 +884,10 @@
         },
         "verificationLevel": "partial",
         "weakDistractors": 0
-      }
+      },
+      "display": "n + (n + 1) + (n + 2) = 84 \\implies n + 2 = ?",
+      "plainText": "n + (n + 1) + (n + 2) = 84",
+      "answerDisplay": "29"
     }
   ],
   "schemaVersion": "2.0-math",
@@ -879,5 +909,7 @@
     "syncedToNotionAt": null,
     "notionPageId": null
   },
-  "localFilePath": "drills/data/MTH-T01-C02/DRL-MTH-T01-C02-02.json"
+  "localFilePath": "drills/data/MTH-T01-C02/DRL-MTH-T01-C02-02.json",
+  "unitTitle": "The Language of Algebra",
+  "title": "The Language of Algebra — Verified Math Drill (10 Qs · Mixed Exam Mode)"
 }

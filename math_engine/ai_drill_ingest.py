@@ -169,6 +169,20 @@ def validate_ai_problem_contract(prob: Dict[str, Any]) -> bool:
             if trap_chk.get("verdict") != "correct":
                 raise AiContractError(f"[{pid}] trapValue '{tv}' failed trap checker match.")
 
+    # 6. Display LaTeX and plainText integrity for math problems (prevent undefined/unrendered equation bugs)
+    display = prob.get("display")
+    if not display or not isinstance(display, str) or not display.strip():
+        raise AiContractError(f"[{pid}] Math problem must provide a non-empty LaTeX 'display' equation.")
+
+    plain_text = prob.get("plainText")
+    if not plain_text or not isinstance(plain_text, str) or not plain_text.strip():
+        raise AiContractError(f"[{pid}] Math problem must provide a non-empty CAS 'plainText' string.")
+
+    # 7. Prompt must contain LaTeX math delimiters ($...$) for formulas/numbers
+    prompt = prob.get("prompt", "")
+    if not re.search(r"\$[^$]+\$", prompt):
+        raise AiContractError(f"[{pid}] Prompt must contain LaTeX formatting with '$...$' around numbers or variables.")
+
     return True
 
 
@@ -274,6 +288,24 @@ def ingest_ai_drill(
     if not drill_id:
         drill_id = next_drill_id(unit_code, data_root=data_root)
         drill_doc["drillId"] = drill_id
+
+    # Auto-resolve unitTitle from id_map.json if missing
+    if not drill_doc.get("unitTitle"):
+        id_map_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "id_map.json")
+        if os.path.exists(id_map_path):
+            try:
+                with open(id_map_path, "r", encoding="utf-8") as f:
+                    id_map = json.load(f)
+                if unit_code in id_map and isinstance(id_map[unit_code], dict):
+                    drill_doc["unitTitle"] = id_map[unit_code].get("title")
+            except Exception:
+                pass
+
+    if not drill_doc.get("unitTitle"):
+        drill_doc["unitTitle"] = drill_doc.get("topicTitle") or unit_code
+
+    if not drill_doc.get("title"):
+        drill_doc["title"] = f"{drill_doc['unitTitle']} — Verified Math Drill ({len(problems)} Qs)"
 
     drill_doc["schemaVersion"] = drill_doc.get("schemaVersion", "2.0-math")
     drill_doc["subject"] = drill_doc.get("subject", "MATH")

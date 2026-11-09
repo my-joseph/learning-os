@@ -48,6 +48,7 @@ class TestAiDrillIngest(unittest.TestCase):
                 "problems": [
                     {
                         "id": "Q01",
+                        "level": 1,
                         "verificationLevel": "partial",
                         "templateKey": "c06-invariant-component-under-variable-total",
                         "level": 4,
@@ -102,12 +103,14 @@ class TestAiDrillIngest(unittest.TestCase):
                 "problems": [
                     {
                         "id": "Q01",
+                        "level": 1,
                         "verificationLevel": "partial",
                         "templateKey": "c06-rate-base-part-triad",
                         "level": 1,
                         "givens": {"rate": 20, "base": 50},
-                        "prompt": "Find 20% of 50.",
-                        "display": "20% * 50 = ?",
+                        "prompt": "Find $20\\%$ of $50$.",
+                        "display": "20\\% \\times 50 = ?",
+                        "plainText": "0.20 * 50 = ?",
                         "answerSpec": {"type": "number", "value": "10"},
                         "answerDisplay": "10",
                         "answerPlain": "10",
@@ -217,6 +220,68 @@ class TestAiDrillIngest(unittest.TestCase):
             }
             with self.assertRaises(AiContractError):
                 ingest_ai_drill(bad_drill, data_root=tmp_dir)
+
+    def test_contract_guard_rejects_missing_display_or_plaintext_or_latex(self):
+        """validate_ai_problem_contract enforces display, plainText, and $ in prompt."""
+        base_prob = {
+            "id": "Q01",
+            "verificationLevel": "partial",
+            "checkpointHint": "Use fractional form.",
+            "givens": {"rate": 20, "base": 50},
+            "prompt": "Find $20\\%$ of $50$.",
+            "display": "20\\% \\times 50 = ?",
+            "plainText": "0.20 * 50 = ?",
+            "trapDerivation": "50 * 20",
+            "verify": {"source": "10", "trapValue": "1000"},
+            "answerSpec": {"type": "number", "value": "10"},
+        }
+        self.assertTrue(validate_ai_problem_contract(dict(base_prob)))
+
+        # Missing display
+        no_display = dict(base_prob)
+        no_display.pop("display")
+        with self.assertRaises(AiContractError):
+            validate_ai_problem_contract(no_display)
+
+        # Missing plainText
+        no_plain = dict(base_prob)
+        no_plain.pop("plainText")
+        with self.assertRaises(AiContractError):
+            validate_ai_problem_contract(no_plain)
+
+        # Missing LaTeX delimiter $ in prompt
+        no_latex = dict(base_prob)
+        no_latex["prompt"] = "Find 20% of 50."
+        with self.assertRaises(AiContractError):
+            validate_ai_problem_contract(no_latex)
+
+    def test_ingest_auto_resolves_unit_title(self):
+        """ingest_ai_drill automatically populates unitTitle from id_map.json."""
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            drill = {
+                "unitCode": "MTH-T01-C01",
+                "problems": [
+                    {
+                        "id": "Q01",
+                        "level": 1,
+                        "verificationLevel": "partial",
+                        "checkpointHint": "Use expanded notation.",
+                        "givens": {"a": 10, "b": 5},
+                        "prompt": "Calculate $10 + 5$.",
+                        "display": "10 + 5 = ?",
+                        "plainText": "10 + 5",
+                        "trapDerivation": "10 * 5",
+                        "verify": {"source": "15", "trapValue": "50"},
+                        "answerSpec": {"type": "number", "value": "15"},
+                        "answerPlain": "15",
+                        "answerDisplay": "15",
+                        "steps": [{"latex": "10 + 5 = 15", "explain": "Direct sum", "val": "15"}],
+                    }
+                ],
+            }
+            saved = ingest_ai_drill(drill, data_root=tmp_dir)
+            self.assertEqual(saved.get("unitTitle"), "Whole Numbers")
+            self.assertIn("Whole Numbers", saved.get("title", ""))
 
 
 if __name__ == "__main__":

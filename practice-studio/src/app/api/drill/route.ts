@@ -22,7 +22,23 @@ export async function GET(req: NextRequest) {
     const filePath = path.join(dataDir, unit, `${id}.json`);
     if (fs.existsSync(filePath)) {
       const content = fs.readFileSync(filePath, "utf-8");
-      return NextResponse.json(JSON.parse(content));
+      const doc = JSON.parse(content);
+
+      if (!doc.unitTitle && doc.unitCode) {
+        try {
+          const idMapPath = path.join(process.cwd(), "id_map.json");
+          if (fs.existsSync(idMapPath)) {
+            const idMap = JSON.parse(fs.readFileSync(idMapPath, "utf-8"));
+            doc.unitTitle = idMap[doc.unitCode]?.title || doc.unitCode;
+          } else {
+            doc.unitTitle = doc.unitCode;
+          }
+        } catch {
+          doc.unitTitle = doc.unitCode;
+        }
+      }
+
+      return NextResponse.json(doc);
     }
   }
 
