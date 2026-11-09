@@ -169,7 +169,7 @@ def generate_drill_set(
     count = int(count)
     difficulty = str(difficulty).upper()
     if difficulty not in DIFFICULTY_MODES:
-        difficulty = "ALL"
+        raise ValueError(f"Unknown difficulty '{difficulty}'. Valid values: ALL, 1, 2, 3, 4")
 
     active_rules = rules or QUALITY_RULES
     base_seed = seed if seed is not None else random.randint(1, 10_000_000)

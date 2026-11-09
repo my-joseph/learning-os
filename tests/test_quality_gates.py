@@ -1459,6 +1459,84 @@ TEMPLATES = [
                 else:
                     os.environ.pop("NOTION_DRY_RUN", None)
 
+    def test_34_unknown_difficulty_values_raise_value_error(self) -> None:
+        """Test 34: Unknown difficulty values raise ValueError; valid ALL and 3 work; unsupported level raises ValueError."""
+        import tempfile
+        from math_engine.generate import generate_drill_set as generate_math_drill_set
+        from code_engine.generate import generate_drill_set as generate_code_drill_set
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            old_dry = os.environ.get("NOTION_DRY_RUN")
+            old_pilot = os.environ.get("ENABLE_PILOT_DRILLS")
+            os.environ["NOTION_DRY_RUN"] = "1"
+            os.environ["ENABLE_PILOT_DRILLS"] = "1"
+            try:
+                # 1. Unknown difficulty values "1,2" and "foo" raise ValueError in math_engine
+                for bad_diff in ["1,2", "foo"]:
+                    with self.assertRaises(ValueError) as ctx:
+                        generate_math_drill_set(
+                            unit_code="MTH-T02-C01-U01",
+                            count=3,
+                            difficulty=bad_diff,
+                            data_root=tmp_dir,
+                        )
+                    self.assertIn(f"Unknown difficulty '{bad_diff.upper()}'", str(ctx.exception))
+                    self.assertIn("Valid values: ALL, 1, 2, 3, 4", str(ctx.exception))
+
+                # 2. Unknown difficulty values "1,2" and "foo" raise ValueError in code_engine
+                for bad_diff in ["1,2", "foo"]:
+                    with self.assertRaises(ValueError) as ctx:
+                        generate_code_drill_set(
+                            unit_code="PRG-T01-C01",
+                            count=3,
+                            difficulty=bad_diff,
+                            data_root=tmp_dir,
+                        )
+                    self.assertIn(f"Unknown difficulty '{bad_diff.upper()}'", str(ctx.exception))
+                    self.assertIn("Valid values: ALL, 1, 2, 3, 4", str(ctx.exception))
+
+                # 3. Valid "ALL" and "3" still work on units that have them
+                doc_all = generate_math_drill_set(
+                    unit_code="MTH-T01-C12",
+                    count=3,
+                    difficulty="ALL",
+                    seed=42,
+                    data_root=tmp_dir,
+                )
+                self.assertEqual(len(doc_all["problems"]), 3)
+                self.assertEqual(doc_all["config"]["difficulty"], "ALL")
+
+                doc_l3 = generate_math_drill_set(
+                    unit_code="MTH-T01-C12",
+                    count=3,
+                    difficulty="3",
+                    seed=43,
+                    data_root=tmp_dir,
+                )
+                self.assertEqual(len(doc_l3["problems"]), 3)
+                self.assertEqual(doc_l3["config"]["difficulty"], "3")
+                for p in doc_l3["problems"]:
+                    self.assertEqual(p["level"], 3)
+
+                # 4. Unit lacking requested level still raises ValueError as before
+                with self.assertRaises(ValueError) as ctx:
+                    generate_math_drill_set(
+                        unit_code="MTH-VECTORS",
+                        count=3,
+                        difficulty="4",
+                        data_root=tmp_dir,
+                    )
+                self.assertIn("has no templates supporting difficulty level L4", str(ctx.exception))
+            finally:
+                if old_dry is not None:
+                    os.environ["NOTION_DRY_RUN"] = old_dry
+                else:
+                    os.environ.pop("NOTION_DRY_RUN", None)
+                if old_pilot is not None:
+                    os.environ["ENABLE_PILOT_DRILLS"] = old_pilot
+                else:
+                    os.environ.pop("ENABLE_PILOT_DRILLS", None)
+
 
 if __name__ == "__main__":
     unittest.main()
