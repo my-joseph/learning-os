@@ -1,0 +1,306 @@
+{
+  "schemaVersion": "2.0-prg",
+  "drillId": "DRL-PRG-T01-C03-02",
+  "subject": "PRG",
+  "unitCode": "PRG-T01-C03",
+  "unitTitle": "Problem Solving & Utility Toolkit",
+  "chapterCode": "PRG-T01-C03",
+  "topicCode": "PRG-T01",
+  "unitNotionUrl": "https://www.notion.so/40c3818f8ba0815f8356d8e9627e7c24",
+  "environment": "node-vanilla",
+  "sourceAttribution": {
+    "curriculum": "Antigravity Autonomous Engineering Synthesis",
+    "spec": "RFC 6585 (Rate Limiting), Stripe Webhooks, Exponential Backoff RFC",
+    "license": "CC BY 4.0"
+  },
+  "config": {
+    "questionCount": 3,
+    "difficulty": "ALL",
+    "difficultyMode": "AI Contract Guarded Engineering"
+  },
+  "mistakeTags": [
+    {
+      "id": "rate-limit-window-leak",
+      "name": "Rate Limit Window State Leak",
+      "label": "Tokens accrued exceeded bucket capacity or state leaked across clients",
+      "autoFrom": [
+        "rate-limit-window-leak"
+      ]
+    },
+    {
+      "id": "webhook-timing-replay-drift",
+      "name": "Webhook Insecure Comparison or Replay Drift",
+      "label": "Non-constant time string equality or missing timestamp tolerance check",
+      "autoFrom": [
+        "webhook-timing-replay-drift"
+      ]
+    },
+    {
+      "id": "exponential-backoff-scaling-error",
+      "name": "Exponential Backoff Interval or Short-Circuit Flaw",
+      "label": "Delay grew linearly instead of exponentially or retried client 4xx errors",
+      "autoFrom": [
+        "exponential-backoff-scaling-error"
+      ]
+    }
+  ],
+  "problems": [
+    {
+      "id": "Q01",
+      "verificationLevel": "partial",
+      "level": 3,
+      "category": "Trap & Edge Case",
+      "archetype": "problem-solving",
+      "archetypeKey": "prg-c03-token-bucket-rate-limiter",
+      "context": "cloud_api_gateway_burst_throttle",
+      "commonTrapTag": "rate-limit-window-leak",
+      "trapValue": "false",
+      "entryPoint": "createTokenBucketLimiter",
+      "prompt": "Implement `createTokenBucketLimiter(options)` for an API Gateway to regulate bursty HTTP traffic.\n\n**System Architecture & Options:**\n- `capacity`: Maximum burst capacity (positive integer).\n- `refillRate`: Tokens added per second (positive number).\n- `initialTokens`: Optional starting token count; defaults to `capacity`.\n\n**Operational Invariants:**\n- `consume(cost = 1)`: Calculates tokens accrued based on elapsed milliseconds since last check.\n- Clamps the current token balance to `capacity` to prevent unbounded accumulation during idle periods.\n- If `tokens >= cost`, atomically decrements balance by `cost` and returns `true`.\n- If `tokens < cost`, leaves balance intact and returns `false`.",
+      "inputHint": "Maintain internal state across calls via closure variables for tokens and timestamp",
+      "starterCode": "function createTokenBucketLimiter({ capacity, refillRate, initialTokens }) {\n  let tokens = initialTokens !== undefined ? initialTokens : capacity;\n  let lastTimestamp = Date.now();\n\n  return {\n    consume(cost = 1) {\n      // TODO: Refill tokens proportionally to elapsed milliseconds and deduct cost atomically\n      return false;\n    }\n  };\n}\n\nmodule.exports = { createTokenBucketLimiter };\n",
+      "solutionCode": "function createTokenBucketLimiter({ capacity, refillRate, initialTokens }) {\n  let tokens = initialTokens !== undefined ? initialTokens : capacity;\n  let lastTimestamp = Date.now();\n\n  return {\n    consume(cost = 1) {\n      const now = Date.now();\n      const elapsedSec = (now - lastTimestamp) / 1000;\n      tokens = Math.min(capacity, tokens + elapsedSec * refillRate);\n      lastTimestamp = now;\n\n      if (tokens >= cost) {\n        tokens -= cost;\n        return true;\n      }\n      return false;\n    }\n  };\n}\n\nmodule.exports = { createTokenBucketLimiter };\n",
+      "visibleTests": [
+        {
+          "name": "should consume tokens up to capacity and reject excessive demand",
+          "testCode": "const limiter = createTokenBucketLimiter({ capacity: 3, refillRate: 10 });\nassert.strictEqual(limiter.consume(1), true);\nassert.strictEqual(limiter.consume(2), true);\nassert.strictEqual(limiter.consume(1), false);\n"
+        },
+        {
+          "name": "should refill tokens over elapsed time interval",
+          "testCode": "const limiter = createTokenBucketLimiter({ capacity: 2, refillRate: 100, initialTokens: 0 });\nassert.strictEqual(limiter.consume(1), false);\nawait new Promise(r => setTimeout(r, 30));\nassert.strictEqual(limiter.consume(1), true);\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "should clamp accrued tokens at maximum capacity during long idle",
+          "testCode": "const limiter = createTokenBucketLimiter({ capacity: 4, refillRate: 1000, initialTokens: 0 });\nawait new Promise(r => setTimeout(r, 20));\nassert.strictEqual(limiter.consume(4), true);\nassert.strictEqual(limiter.consume(1), false);\n"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Calculate elapsed seconds using high-precision timestamps, adding accrued tokens to the balance."
+        },
+        {
+          "explain": "Clamp token count at capacity, update timestamp, and deduct cost when sufficient tokens exist."
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "rate-limit-window-leak|direct|createTokenBucketLimiter",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            5
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "rate-limit-window-leak",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 4
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-02/Q01_createTokenBucketLimiter.js",
+      "workspaceDir": "/Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T01-C03-02",
+      "cursorUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T01-C03-02/Q01_createTokenBucketLimiter.js",
+      "vscodeUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T01-C03-02/Q01_createTokenBucketLimiter.js",
+      "cursorFolderUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T01-C03-02",
+      "vscodeFolderUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T01-C03-02"
+    },
+    {
+      "id": "Q02",
+      "verificationLevel": "partial",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "debugging",
+      "archetypeKey": "prg-c03-webhook-hmac-verifier",
+      "context": "stripe_billing_webhook_agent",
+      "entryPoint": "verifyWebhookSignature",
+      "prompt": "Debug `verifyWebhookSignature(payload, signatureHeader, secret, toleranceSeconds)` in a payment webhook receiver.\n\n**Defect Analysis:**\n- The legacy starter implementation compares signatures with naive equality `===`, vulnerable to timing side-channels.\n- The legacy implementation ignores timestamp drift, permitting stale replayed requests.\n\n**Target Invariants:**\n- Extract `timestamp` and `v1` signature hex from `signatureHeader` formatted as `t=<timestamp>,v1=<signatureHex>`.\n- Validate that `Math.abs(currentTimeSec - timestamp) <= toleranceSeconds` (default $300$ seconds). Reject if outside window.\n- Compute expected HMAC-SHA256 hex digest using `crypto.createHmac('sha256', secret)`.\n- Compare computed digest and received `v1` signature using `crypto.timingSafeEqual` over Buffers of equal byte length.",
+      "inputHint": "Use crypto.timingSafeEqual on Buffer instances and enforce timestamp expiration",
+      "starterCode": "const crypto = require('crypto');\n\nfunction verifyWebhookSignature(payload, signatureHeader, secret, toleranceSeconds = 300) {\n  const parts = signatureHeader.split(',');\n  let timestamp = null;\n  let signatureHex = null;\n\n  for (const part of parts) {\n    const [key, val] = part.split('=');\n    if (key === 't') timestamp = parseInt(val, 10);\n    if (key === 'v1') signatureHex = val;\n  }\n\n  if (!timestamp || !signatureHex) return false;\n\n  // BUG 1: Missing timestamp expiration check (replays accepted)\n  // BUG 2: Naive string equality comparison vulnerable to timing attacks\n  const expectedHex = crypto.createHmac('sha256', secret).update(`${timestamp}.${payload}`).digest('hex');\n  return expectedHex === signatureHex;\n}\n\nmodule.exports = { verifyWebhookSignature };\n",
+      "solutionCode": "const crypto = require('crypto');\n\nfunction verifyWebhookSignature(payload, signatureHeader, secret, toleranceSeconds = 300) {\n  const parts = signatureHeader.split(',');\n  let timestamp = null;\n  let signatureHex = null;\n\n  for (const part of parts) {\n    const [key, val] = part.split('=');\n    if (key === 't') timestamp = parseInt(val, 10);\n    if (key === 'v1') signatureHex = val;\n  }\n\n  if (!timestamp || !signatureHex) return false;\n\n  const currentSec = Math.floor(Date.now() / 1000);\n  if (Math.abs(currentSec - timestamp) > toleranceSeconds) {\n    return false;\n  }\n\n  const expectedHex = crypto.createHmac('sha256', secret).update(`${timestamp}.${payload}`).digest('hex');\n  const expectedBuf = Buffer.from(expectedHex, 'utf8');\n  const signatureBuf = Buffer.from(signatureHex, 'utf8');\n\n  if (expectedBuf.length !== signatureBuf.length) {\n    return false;\n  }\n\n  return crypto.timingSafeEqual(expectedBuf, signatureBuf);\n}\n\nmodule.exports = { verifyWebhookSignature };\n",
+      "visibleTests": [
+        {
+          "name": "should verify valid signature within valid timestamp window",
+          "testCode": "const crypto = require('crypto');\nconst secret = 'whsec_test_secret_key_123';\nconst payload = '{\"event\":\"charge.succeeded\",\"amount\":2500}';\nconst now = Math.floor(Date.now() / 1000);\nconst sig = crypto.createHmac('sha256', secret).update(`${now}.${payload}`).digest('hex');\nconst header = `t=${now},v1=${sig}`;\n\nassert.strictEqual(verifyWebhookSignature(payload, header, secret, 300), true);\n"
+        },
+        {
+          "name": "should reject replayed request with expired timestamp (Reproducer Test)",
+          "testCode": "const crypto = require('crypto');\nconst secret = 'whsec_test_secret_key_123';\nconst payload = '{\"event\":\"charge.succeeded\",\"amount\":2500}';\nconst expiredTime = Math.floor(Date.now() / 1000) - 600;\nconst sig = crypto.createHmac('sha256', secret).update(`${expiredTime}.${payload}`).digest('hex');\nconst header = `t=${expiredTime},v1=${sig}`;\n\n// Starter code BUG: returns true because signature matches; fixed code MUST return false\nassert.strictEqual(verifyWebhookSignature(payload, header, secret, 300), false);\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "should reject tampered payload or altered secret",
+          "testCode": "const crypto = require('crypto');\nconst secret = 'whsec_test_secret_key_123';\nconst payload = '{\"event\":\"charge.succeeded\",\"amount\":2500}';\nconst now = Math.floor(Date.now() / 1000);\nconst sig = crypto.createHmac('sha256', secret).update(`${now}.${payload}`).digest('hex');\nconst header = `t=${now},v1=${sig}`;\n\nassert.strictEqual(verifyWebhookSignature('{\"event\":\"charge.tampered\"}', header, secret, 300), false);\n"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Extract timestamp and v1 signature token from the formatted header string."
+        },
+        {
+          "explain": "Enforce maximum timestamp tolerance drift, then compare HMAC digests in constant time using crypto.timingSafeEqual."
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "Core Skill|direct|verifyWebhookSignature",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "debugging"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            4
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": null,
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 4
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-02/Q02_verifyWebhookSignature.js",
+      "workspaceDir": "/Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T01-C03-02",
+      "cursorUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T01-C03-02/Q02_verifyWebhookSignature.js",
+      "vscodeUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T01-C03-02/Q02_verifyWebhookSignature.js",
+      "cursorFolderUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T01-C03-02",
+      "vscodeFolderUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T01-C03-02"
+    },
+    {
+      "id": "Q03",
+      "verificationLevel": "partial",
+      "level": 3,
+      "category": "State Management & Concurrency",
+      "archetype": "problem-solving",
+      "archetypeKey": "prg-c03-exponential-backoff-retry",
+      "context": "resilient_payment_rpc_client",
+      "commonTrapTag": "unconditional-retry-loop",
+      "trapValue": "RangeError",
+      "entryPoint": "retryWithExponentialBackoff",
+      "prompt": "Implement `retryWithExponentialBackoff(asyncOperation, options)` for resilient inter-service RPC calls.\n\n**Configuration Options:**\n- `maxRetries`: Maximum retry attempts before giving up (default $3$).\n- `baseDelayMs`: Initial backoff delay in milliseconds (default $10$).\n- `maxDelayMs`: Cap on maximum backoff delay (default $200$).\n- `isRetryable`: Predicate function `(error) => boolean` determining if error is transient.\n\n**Execution Flow & Invariants:**\n- Executes `asyncOperation()`.\n- On success: resolves with the operation result immediately.\n- On failure: checks `isRetryable(error)`. If `false`, immediately throws the error without retrying.\n- If retries are exhausted (`attempt >= maxRetries`), throws the last encountered error.\n- Computes exponential delay: `Math.min(maxDelayMs, baseDelayMs * Math.pow(2, attempt))`.",
+      "inputHint": "Handle non-retryable errors immediately and scale delays exponentially up to maxDelayMs",
+      "starterCode": "async function retryWithExponentialBackoff(asyncOperation, options = {}) {\n  // TODO: implement retry orchestrator with exponential delay\n  return asyncOperation();\n}\n\nmodule.exports = { retryWithExponentialBackoff };\n",
+      "solutionCode": "async function retryWithExponentialBackoff(asyncOperation, options = {}) {\n  const maxRetries = options.maxRetries !== undefined ? options.maxRetries : 3;\n  const baseDelayMs = options.baseDelayMs !== undefined ? options.baseDelayMs : 10;\n  const maxDelayMs = options.maxDelayMs !== undefined ? options.maxDelayMs : 200;\n  const isRetryable = options.isRetryable || (() => true);\n\n  let attempt = 0;\n  while (true) {\n    try {\n      return await asyncOperation();\n    } catch (err) {\n      if (!isRetryable(err) || attempt >= maxRetries) {\n        throw err;\n      }\n      const delay = Math.min(maxDelayMs, baseDelayMs * Math.pow(2, attempt));\n      await new Promise(resolve => setTimeout(resolve, delay));\n      attempt++;\n    }\n  }\n}\n\nmodule.exports = { retryWithExponentialBackoff };\n",
+      "visibleTests": [
+        {
+          "name": "should resolve successfully after transient failures",
+          "testCode": "let calls = 0;\nconst flakyTask = async () => {\n  calls++;\n  if (calls < 3) throw new Error('Network reset');\n  return 'SUCCESS';\n};\n\nconst result = await retryWithExponentialBackoff(flakyTask, { maxRetries: 3, baseDelayMs: 5 });\nassert.strictEqual(result, 'SUCCESS');\nassert.strictEqual(calls, 3);\n"
+        },
+        {
+          "name": "should not retry non-transient client errors",
+          "testCode": "let calls = 0;\nconst clientErrorTask = async () => {\n  calls++;\n  const err = new Error('Bad Request');\n  err.statusCode = 400;\n  throw err;\n};\n\nawait assert.rejects(\n  async () => {\n    await retryWithExponentialBackoff(clientErrorTask, {\n      maxRetries: 3,\n      baseDelayMs: 5,\n      isRetryable: (e) => e.statusCode >= 500\n    });\n  },\n  (err) => {\n    assert.strictEqual(err.statusCode, 400);\n    return true;\n  }\n);\nassert.strictEqual(calls, 1);\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "should throw last error when retries are exhausted",
+          "testCode": "let calls = 0;\nconst persistentFailure = async () => {\n  calls++;\n  throw new Error('Permanent database failure');\n};\n\nawait assert.rejects(\n  async () => {\n    await retryWithExponentialBackoff(persistentFailure, { maxRetries: 2, baseDelayMs: 5 });\n  },\n  /Permanent database failure/\n);\nassert.strictEqual(calls, 3);\n"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Invoke the asynchronous operation within an iterative loop tracking retry attempts."
+        },
+        {
+          "explain": "Intercept errors, short-circuit non-retryable failures immediately, and scale backoff delays exponentially."
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "unconditional-retry-loop|direct|retryWithExponentialBackoff",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            5
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "unconditional-retry-loop",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 4
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-02/Q03_retryWithExponentialBackoff.js",
+      "workspaceDir": "/Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T01-C03-02",
+      "cursorUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T01-C03-02/Q03_retryWithExponentialBackoff.js",
+      "vscodeUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T01-C03-02/Q03_retryWithExponentialBackoff.js",
+      "cursorFolderUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T01-C03-02",
+      "vscodeFolderUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T01-C03-02"
+    }
+  ],
+  "createdAt": "2026-11-09 14:31:37",
+  "sessionSummary": {
+    "practiceStatus": "Ready",
+    "score": 0,
+    "maxScore": 3,
+    "accuracyPct": 0,
+    "mistakeCategories": [],
+    "divergedStepsSummary": "",
+    "attemptDate": null,
+    "syncedToNotionAt": null,
+    "notionPageId": null
+  },
+  "localFilePath": "drills/data/PRG-T01-C03/DRL-PRG-T01-C03-02.json"
+}

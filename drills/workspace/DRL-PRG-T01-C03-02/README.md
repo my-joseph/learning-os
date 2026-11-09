@@ -32,85 +32,57 @@ npm run submit
 
 ## Exercises in this Workspace
 
-### Q01 — `Q01_RateLimiter.js`
-- **Archetype:** Project-Based (Multi-Module Architecture)
-- **Acceptance Scenarios:** 3 visible scenarios (+ 2 hidden trap tests) in `Q01_RateLimiter.test.js`
-- **Requirement:** Build an event-driven `RateLimiter` class implementing a sliding window algorithm extending `EventEmitter`.
+### Q01 — `Q01_createTokenBucketLimiter.js`
+- **Archetype:** Problem Solving (Logic & Algorithm)
+- **Acceptance Scenarios:** 2 visible scenarios (+ 1 hidden trap tests) in `Q01_createTokenBucketLimiter.test.js`
+- **Requirement:** Implement `createTokenBucketLimiter(options)` for an API Gateway to regulate bursty HTTP traffic.
 
-**Constructor:**
-- `new RateLimiter({ maxRequests = 5, windowMs = 1000 })`
+**System Architecture & Options:**
+- `capacity`: Maximum burst capacity (positive integer).
+- `refillRate`: Tokens added per second (positive number).
+- `initialTokens`: Optional starting token count; defaults to `capacity`.
 
-**Methods & Invariants:**
-- `consume(key)`: Allows up to `maxRequests` within `windowMs`.
-- Returns `{ allowed: true, remaining: number, resetMs: number }`.
-- On limit breach: emit `'blocked'` event with `(key, resetMs)` and return `{ allowed: false, remaining: 0, resetMs }`.
-- `reset(key)`: Clears recorded history for the specified key.
+**Operational Invariants:**
+- `consume(cost = 1)`: Calculates tokens accrued based on elapsed milliseconds since last check.
+- Clamps the current token balance to `capacity` to prevent unbounded accumulation during idle periods.
+- If `tokens >= cost`, atomically decrements balance by `cost` and returns `true`.
+- If `tokens < cost`, leaves balance intact and returns `false`.
 - **Run Single Suite:** `npm run test:q01`
 
-### Q02 — `Q02_groupBy.js`
-- **Archetype:** Problem Solving (Logic & Algorithm)
-- **Acceptance Scenarios:** 2 visible scenarios (+ 2 hidden trap tests) in `Q02_groupBy.test.js`
-- **Requirement:** Implement a `groupBy(collection, iteratee)` utility in JavaScript.
+### Q02 — `Q02_verifyWebhookSignature.js`
+- **Archetype:** Debugging (Bug Triage & Root Cause)
+- **Acceptance Scenarios:** 2 visible scenarios (+ 1 hidden trap tests) in `Q02_verifyWebhookSignature.test.js`
+- **Requirement:** Debug `verifyWebhookSignature(payload, signatureHeader, secret, toleranceSeconds)` in a payment webhook receiver.
 
-**Behavioral Requirements:**
-- Splits `collection` into sets grouped by the result of running each value through `iteratee`.
-- `iteratee` can be either a function (e.g. `Math.floor`) or a string property name (e.g. `'type'`).
-- Return an empty object `{}` if `collection` is `null`, `undefined`, or an empty array.
+**Defect Analysis:**
+- The legacy starter implementation compares signatures with naive equality `===`, vulnerable to timing side-channels.
+- The legacy implementation ignores timestamp drift, permitting stale replayed requests.
+
+**Target Invariants:**
+- Extract `timestamp` and `v1` signature hex from `signatureHeader` formatted as `t=<timestamp>,v1=<signatureHex>`.
+- Validate that `Math.abs(currentTimeSec - timestamp) <= toleranceSeconds` (default $300$ seconds). Reject if outside window.
+- Compute expected HMAC-SHA256 hex digest using `crypto.createHmac('sha256', secret)`.
+- Compare computed digest and received `v1` signature using `crypto.timingSafeEqual` over Buffers of equal byte length.
 - **Run Single Suite:** `npm run test:q02`
 
-### Q03 — `Q03_calculateMonthlyBill.js`
-- **Archetype:** Refactoring (Clean Code & Safe Extensibility)
-- **Acceptance Scenarios:** 3 visible scenarios (+ 2 hidden trap tests) in `Q03_calculateMonthlyBill.test.js`
-- **Requirement:** Refactor `calculateMonthlyBill(account)` to support new business requirements without breaking existing plans:
+### Q03 — `Q03_retryWithExponentialBackoff.js`
+- **Archetype:** Problem Solving (Logic & Algorithm)
+- **Acceptance Scenarios:** 2 visible scenarios (+ 1 hidden trap tests) in `Q03_retryWithExponentialBackoff.test.js`
+- **Requirement:** Implement `retryWithExponentialBackoff(asyncOperation, options)` for resilient inter-service RPC calls.
 
-**New Plan: 'family':**
-- Base price: 34.99 USD (includes 2 members).
-- Add-on members: +8.99 USD per extra member over 2, up to 6 members max.
-- Guard Invariant: If `account.members > 6`, throw `RangeError('Family plan allows max 6 members')`.
+**Configuration Options:**
+- `maxRetries`: Maximum retry attempts before giving up (default $3$).
+- `baseDelayMs`: Initial backoff delay in milliseconds (default $10$).
+- `maxDelayMs`: Cap on maximum backoff delay (default $200$).
+- `isRetryable`: Predicate function `(error) => boolean` determining if error is transient.
 
-**New Feature: Annual Commitment:**
-- If `account.annualCommitment` is `true`, apply a 15% discount on the plan subtotal before tax.
-
-**Refactoring Objective:**
-- Keep all legacy plans (`basic`, `pro`, `enterprise`) 100% green.
-- Decouple the tangled `switch`/`if-else` statement into clean strategy configuration dictionaries.
+**Execution Flow & Invariants:**
+- Executes `asyncOperation()`.
+- On success: resolves with the operation result immediately.
+- On failure: checks `isRetryable(error)`. If `false`, immediately throws the error without retrying.
+- If retries are exhausted (`attempt >= maxRetries`), throws the last encountered error.
+- Computes exponential delay: `Math.min(maxDelayMs, baseDelayMs * Math.pow(2, attempt))`.
 - **Run Single Suite:** `npm run test:q03`
-
-### Q04 — `Q04_memoize.js`
-- **Archetype:** Problem Solving (Logic & Algorithm)
-- **Acceptance Scenarios:** 2 visible scenarios (+ 2 hidden trap tests) in `Q04_memoize.test.js`
-- **Requirement:** Implement `memoize(fn, resolver)` in JavaScript.
-
-**Behavioral Requirements:**
-- Returns a memoized function caching the result of calling `fn`.
-- If `resolver` is provided, use it to compute the cache key; otherwise default to `args[0]`.
-- Correctly cache falsy return values (`0`, `false`, `null`, `''`) without re-evaluating.
-- Expose the underlying cache `Map` on `memoized.cache`.
-- **Run Single Suite:** `npm run test:q04`
-
-### Q05 — `Q05_calculateOrderTotal.js`
-- **Archetype:** Problem Solving (Logic & Algorithm)
-- **Acceptance Scenarios:** 3 visible scenarios (+ 2 hidden trap tests) in `Q05_calculateOrderTotal.test.js`
-- **Requirement:** Implement `calculateOrderTotal(order)` for an e-commerce platform.
-
-**Validation Invariants:**
-- `order.items` must be a non-empty array.
-- Each item must have `price >= 0` and integer `quantity > 0`.
-- Throw `RangeError` if validation fails or items is empty.
-
-**Discount & Coupon Rules:**
-- `PERCENT10`: 10% discount on subtotal, capped at 20 USD max.
-- `FIXED15`: 15 USD discount if subtotal >= 50 USD, else 0 USD.
-- `FREESHIP`: Free shipping voucher.
-
-**Shipping Policy:**
-- Standard shipping is 8 USD.
-- Free shipping if post-discount subtotal >= 100 USD, or `isVip` is `true`, or coupon is `FREESHIP`.
-
-**Taxation & Output Contract:**
-- Apply 7% sales tax on taxable items (`item.taxable !== false`) on the discounted taxable amount.
-- Return price breakdown: `{ subtotal, discount, shipping, tax, total, currency: 'USD' }` (rounded to 2 decimals).
-- **Run Single Suite:** `npm run test:q05`
 
 ## Requesting an AI Architectural Review
 Once your automated acceptance tests pass 100%, copy this prompt and ask Antigravity / Cursor AI:
