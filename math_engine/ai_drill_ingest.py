@@ -10,13 +10,166 @@ import argparse
 import datetime
 import json
 import os
+import re
 from typing import Any, Dict, List, Optional
 
 from math_engine.generate import next_drill_id
 from math_engine.verify import verify_problem
+from math_engine.answer_check import check_answer, CHECKERS, to_expr, is_equal
 from quality_rules import QUALITY_RULES
 
 VAULT_DIR = os.path.join(os.path.dirname(__file__), "reasoning_vault")
+
+
+class AiContractError(Exception):
+    """Raised when an AI-generated problem violates Contract 07 §4 or 00_core §6."""
+    pass
+
+
+def normalize_prompt_numbers(prompt: str) -> List[float]:
+    """Extracts numbers from prompt text, handling commas in numbers and removing unit exponents."""
+    text = prompt
+    while re.search(r"(\d+),(\d+)", text):
+        text = re.sub(r"(\d+),(\d+)", r"\g<1>\g<2>", text)
+    text = re.sub(r"\^\{?[23]\}?", "", text)
+    raw_nums = re.findall(r"\b\d+(?:\.\d+)?\b", text)
+    nums = []
+    for r in raw_nums:
+        try:
+            nums.append(float(r))
+        except ValueError:
+            pass
+    return nums
+
+
+def validate_ai_problem_contract(prob: Dict[str, Any]) -> bool:
+    """
+    Enforces strict rules for AI-written problems (Contract 07 §4, 00_core §6):
+    1. Zero-Number rule in checkpointHint
+    2. Two-way check: prompt numbers must match givens, and all givens must appear in prompt
+    3. trapDerivation must evaluate to trapValue via safe parser (to_expr/is_equal) and reference >= 2 givens
+    4. verificationLevel must be 'partial' until blind-solve
+    5. Full simulation of check_answer and trap matching across answer types
+    """
+    pid = prob.get("id", "?")
+
+    # 1. Verification level must be partial (or human-verified)
+    level = prob.get("verificationLevel", "partial")
+    if level not in ("partial", "human-verified"):
+        raise AiContractError(
+            f"[{pid}] AI-written problem must have verificationLevel='partial' until blind-solve (found '{level}')."
+        )
+    prob["verificationLevel"] = level
+
+    # 2. Checkpoint Hint must not contain numbers (00_core §6)
+    hint = prob.get("checkpointHint", "")
+    if hint:
+        nums = re.findall(r"\b\d+\b", hint)
+        if nums:
+            raise AiContractError(
+                f"[{pid}] checkpointHint violates 00_core §6: must contain no numbers, found {nums}: {hint}"
+            )
+
+    # 3. Givens two-way completeness check
+    givens = prob.get("givens")
+    if not givens or not isinstance(givens, dict):
+        raise AiContractError(f"[{pid}] Problem must specify a 'givens' dictionary.")
+
+    prompt = prob.get("prompt", "")
+    prompt_numbers = normalize_prompt_numbers(prompt)
+
+    givens_floats = {}
+    for k, v in givens.items():
+        try:
+            givens_floats[k] = float(v)
+        except Exception:
+            pass
+
+    # Forward: every number in prompt must be defined in givens
+    for p_num in prompt_numbers:
+        if not any(abs(p_num - g_val) < 1e-6 for g_val in givens_floats.values()):
+            raise AiContractError(
+                f"[{pid}] Number '{p_num}' in prompt is not defined in givens ({givens})"
+            )
+
+    # Backward: every given must appear in prompt
+    for g_key, g_val in givens_floats.items():
+        if not any(abs(g_val - p_num) < 1e-6 for p_num in prompt_numbers):
+            raise AiContractError(
+                f"[{pid}] Given '{g_key}={g_val}' does not appear in prompt: '{prompt}'"
+            )
+
+    # 4. Trap derivation integrity via Safe Parser (to_expr + is_equal)
+    td = prob.get("trapDerivation")
+    tv = prob.get("verify", {}).get("trapValue") or prob.get("trapValue")
+    if not td or tv is None:
+        raise AiContractError(f"[{pid}] Missing trapDerivation or trapValue.")
+
+    if re.fullmatch(r"^\s*[-+]?\d*\.?\d+\s*$", str(td)):
+        raise AiContractError(f"[{pid}] trapDerivation '{td}' cannot be a bare number.")
+
+    vars_list = prob.get("answerSpec", {}).get("variables") or prob.get("variables") or ["x"]
+    td_expr = to_expr(str(td), variables=vars_list, trusted=True)
+    tv_expr = to_expr(str(tv), variables=vars_list, trusted=True)
+    if not is_equal(td_expr, tv_expr, variables=vars_list):
+        raise AiContractError(
+            f"[{pid}] trapDerivation '{td}' evaluates to {td_expr} != trapValue '{tv}' ({tv_expr})"
+        )
+
+    # Check that at least 2 distinct givens appear in trapDerivation
+    td_tokens = re.findall(r"\b\d+(?:\.\d+)?\b", str(td))
+    td_token_vals = [float(t) for t in td_tokens]
+
+    matched_given_keys = set()
+    for g_key, g_val in givens_floats.items():
+        for t_val in td_token_vals:
+            if abs(t_val - g_val) < 1e-6:
+                matched_given_keys.add(g_key)
+                break
+            if abs(t_val - (g_val / 100.0)) < 1e-6:
+                matched_given_keys.add(g_key)
+                break
+
+    if len(matched_given_keys) < 2:
+        raise AiContractError(
+            f"[{pid}] trapDerivation '{td}' must contain at least 2 distinct givens from {givens}, found {len(matched_given_keys)}: {matched_given_keys}"
+        )
+
+    # 5. Check answer simulation and trap matching across answer types
+    spec = prob.get("answerSpec", {})
+    if spec and "type" in spec:
+        chk = check_answer(spec, str(tv))
+        if chk.get("verdict") == "correct":
+            raise AiContractError(f"[{pid}] trapValue '{tv}' evaluated as correct by check_answer!")
+
+        spec_type = spec.get("type")
+        trap_spec = dict(spec)
+        if spec_type in ("number", "expression", "complex"):
+            trap_spec["value"] = str(tv)
+        elif spec_type == "vector":
+            trap_spec["value"] = tv
+            trap_spec.pop("components", None)
+            trap_spec.pop("values", None)
+        elif spec_type == "tuple":
+            if isinstance(tv, (list, tuple)):
+                trap_spec["values"] = list(tv)
+            elif isinstance(tv, str):
+                parts = [
+                    p.strip()
+                    for p in re.sub(r"^\s*[\(\[\{<]|[\)\]\}>]\s*$", "", tv).split(",")
+                    if p.strip()
+                ]
+                trap_spec["values"] = parts
+            else:
+                trap_spec["values"] = [tv]
+
+        fn = CHECKERS.get(spec_type)
+        if fn:
+            trap_chk = fn(trap_spec, str(tv))
+            if trap_chk.get("verdict") != "correct":
+                raise AiContractError(f"[{pid}] trapValue '{tv}' failed trap checker match.")
+
+    return True
 
 
 def get_vault_path(unit_code: str, vault_dir: Optional[str] = None) -> str:
@@ -111,7 +264,8 @@ def ingest_ai_drill(
         if "id" not in prob:
             prob["id"] = f"Q{idx:02d}"
         if "verificationLevel" not in prob:
-            prob["verificationLevel"] = "machine-verified"
+            prob["verificationLevel"] = "partial"
+        validate_ai_problem_contract(prob)
         # Run gate checks (G1-G6)
         verify_problem(prob, rules=active_rules)
 
@@ -125,6 +279,8 @@ def ingest_ai_drill(
     drill_doc["createdAt"] = drill_doc.get(
         "createdAt", datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     )
+    if "sourceAttribution" in drill_doc:
+        drill_doc["sourceAttribution"] = drill_doc["sourceAttribution"]
     drill_doc["config"] = drill_doc.get(
         "config",
         {

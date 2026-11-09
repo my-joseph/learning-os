@@ -1,0 +1,435 @@
+{
+  "schemaVersion": "2.0-math",
+  "drillId": "DRL-MTH-T01-C06-02",
+  "subject": "MATH",
+  "unitCode": "MTH-T01-C06",
+  "unitTitle": "Percents",
+  "chapterCode": "MTH-T01-C06",
+  "topicCode": "MTH-T01",
+  "unitNotionUrl": "https://www.notion.so/4003818f8ba080b5880defc899bb6183",
+  "sourceAttribution": {
+    "curriculum": "Antigravity Dynamic Synthesis",
+    "benchmarkReference": "OpenStax Prealgebra 2e",
+    "license": "CC BY 4.0"
+  },
+  "config": {
+    "questionCount": 4,
+    "difficulty": "ALL",
+    "difficultyMode": "AI Contract Guarded Reasoning"
+  },
+  "mistakeTags": [
+    {
+      "id": "c06-percent-decimal-conversion",
+      "name": "Percent to Decimal Conversion Error",
+      "label": "Failed to divide by 100 when converting percent to decimal or fraction",
+      "autoFrom": [
+        "off_by_factor"
+      ]
+    },
+    {
+      "id": "c06-reverse-discount-base-trap",
+      "name": "Reverse Discount Base Trap",
+      "label": "Applied discount percentage to the discounted sale price instead of original price",
+      "autoFrom": []
+    },
+    {
+      "id": "c06-interest-month-time-trap",
+      "name": "Interest Month-to-Year Omission",
+      "label": "Omitted dividing duration in months by 12 when computing annual simple interest",
+      "autoFrom": []
+    },
+    {
+      "id": "c06-variable-base-neglect",
+      "name": "Variable Base Mixture Neglect",
+      "label": "Multiplied target concentration difference by initial weight, ignoring added mass in denominator",
+      "autoFrom": []
+    }
+  ],
+  "problems": [
+    {
+      "id": "Q01",
+      "verificationLevel": "partial",
+      "templateKey": "c06-rate-base-part-triad",
+      "level": 1,
+      "levelLabel": "Level 1 - Core Foundations",
+      "category": "Basic Percent Equation",
+      "references": [
+        "MTH-T01-C06-U01"
+      ],
+      "givens": {
+        "total_pages": 350,
+        "read_pct": 40
+      },
+      "prompt": "A comprehensive history textbook contains $350$ pages. A university student has read $40\\%$ of the total pages during the first study week. How many pages has the student completed?",
+      "display": "40\\% \\times 350 = ?",
+      "plainText": "0.40 * 350 = ?",
+      "answerSpec": {
+        "type": "number",
+        "value": "140"
+      },
+      "answerDisplay": "140",
+      "answerPlain": "140",
+      "inputHint": "Enter the completed page count as an integer",
+      "checkpointHint": "Express the percentage rate in decimal or fractional form, then multiply by the total page count.",
+      "commonTrapTag": "c06-percent-decimal-conversion",
+      "trapDerivation": "350 * 40",
+      "verify": {
+        "source": "140",
+        "trapValue": "14000"
+      },
+      "steps": [
+        {
+          "latex": "40\\% = \\frac{40}{100} = 0.40",
+          "explain": "Convert the percentage into decimal form.",
+          "eq": [
+            "40 / 100",
+            "0.4"
+          ]
+        },
+        {
+          "latex": "\\text{Pages} = 350 \\times 0.40 = 140",
+          "explain": "Multiply total page base by the rate.",
+          "val": "140",
+          "eq": [
+            "350 * 0.40",
+            "140"
+          ]
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c06-rate-base-part-triad|direct|# * # = ?",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            1,
+            3
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c06-percent-decimal-conversion",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 11
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      }
+    },
+    {
+      "id": "Q02",
+      "verificationLevel": "partial",
+      "templateKey": "c06-pre-change-base-recovery",
+      "level": 2,
+      "levelLabel": "Level 2 - Applied Inversion",
+      "category": "Pre-Change Base Recovery",
+      "references": [
+        "MTH-T01-C06-U03"
+      ],
+      "givens": {
+        "discount_pct": 20,
+        "sale_price": 480
+      },
+      "prompt": "At a conservatory music store, an acoustic cello is offered at a $20\\%$ clearance discount for a final sale price of $480$ dollars. What was the regular retail price of the cello in dollars before the discount?",
+      "display": "P_{\\text{orig}} \\times (1 - 0.20) = 480 \\implies P_{\\text{orig}} = ?",
+      "plainText": "P * (1 - 0.20) = 480",
+      "answerSpec": {
+        "type": "number",
+        "value": "600"
+      },
+      "answerDisplay": "600",
+      "answerPlain": "600",
+      "inputHint": "Enter the original retail price in dollars as an integer",
+      "checkpointHint": "Subtract the discount rate from unity to find the paid fraction of the original cost, then divide the sale price by this fraction to recover the initial price.",
+      "commonTrapTag": "c06-reverse-discount-base-trap",
+      "trapDerivation": "480 * (1 + 20 / 100)",
+      "verify": {
+        "source": "600",
+        "trapValue": "576"
+      },
+      "steps": [
+        {
+          "latex": "\\text{Paid Fraction} = 100\\% - 20\\% = 80\\% = 0.80",
+          "explain": "Subtract the discount rate from 100% to determine the paid retention multiplier.",
+          "eq": [
+            "1 - 0.20",
+            "0.80"
+          ]
+        },
+        {
+          "latex": "0.80 \\times P_{\\text{orig}} = 480",
+          "explain": "Equate 80% of original price to the sale price."
+        },
+        {
+          "latex": "P_{\\text{orig}} = \\frac{480}{0.80} = 600",
+          "explain": "Divide the discounted price by 0.80 to isolate the original base price.",
+          "val": "600",
+          "eq": [
+            "480 / 0.80",
+            "600"
+          ]
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c06-pre-change-base-recovery|direct|P * (# - #) = #",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            4
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c06-reverse-discount-base-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      }
+    },
+    {
+      "id": "Q03",
+      "verificationLevel": "partial",
+      "templateKey": "c06-simple-interest-time-scaling",
+      "level": 3,
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "category": "Simple Interest Scaling",
+      "references": [
+        "MTH-T01-C06-U04"
+      ],
+      "givens": {
+        "principal": 12000,
+        "annual_rate": 5,
+        "duration_months": 9
+      },
+      "prompt": "A small commercial bakery borrowed $12,000$ dollars through an equipment financing loan at an annual simple interest rate of $5\\%$. How many dollars in interest did the bakery owe after $9\\text{ months}$?",
+      "display": "I = 12000 \\times 0.05 \\times \\left(\\frac{9}{12}\\right) = ?",
+      "plainText": "12000 * 0.05 * (9 / 12)",
+      "answerSpec": {
+        "type": "number",
+        "value": "450"
+      },
+      "answerDisplay": "450",
+      "answerPlain": "450",
+      "inputHint": "Enter the accrued interest in dollars as an integer",
+      "checkpointHint": "Check the time dimension carefully: convert the duration from months to fractional years before applying the linear interest formula.",
+      "commonTrapTag": "c06-interest-month-time-trap",
+      "trapDerivation": "12000 * (5 / 100) * 9",
+      "verify": {
+        "source": "450",
+        "trapValue": "5400"
+      },
+      "steps": [
+        {
+          "latex": "t = \\frac{9}{12} = \\frac{3}{4}\\text{ year}",
+          "explain": "Convert 9 months into fractional year by dividing by 12.",
+          "eq": [
+            "9 / 12",
+            "3 / 4"
+          ]
+        },
+        {
+          "latex": "I = 12000 \\times 0.05 \\times \\frac{3}{4}",
+          "explain": "Substitute principal, annual rate, and scaled time into I = P * r * t.",
+          "eq": [
+            "12000 * 0.05",
+            "600"
+          ]
+        },
+        {
+          "latex": "I = 600 \\times \\frac{3}{4} = 450",
+          "explain": "Multiply to determine the total simple interest owed.",
+          "val": "450",
+          "eq": [
+            "600 * (3/4)",
+            "450"
+          ]
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c06-simple-interest-time-scaling|direct|# * # * (# / #)",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            5
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c06-interest-month-time-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      }
+    },
+    {
+      "id": "Q04",
+      "verificationLevel": "partial",
+      "templateKey": "c06-invariant-component-under-variable-total",
+      "level": 4,
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "category": "Interleaved Synthesis",
+      "references": [
+        "MTH-T01-C06-U02",
+        "MTH-T01-C06-U04"
+      ],
+      "givens": {
+        "initial_weight": 200,
+        "initial_conc": 40,
+        "added_conc": 100,
+        "target_conc": 50
+      },
+      "prompt": "A metalsmith at an artisan jewelry workshop has an ingot of gold alloy weighing $200$ grams with a pure gold concentration of $40\\%$. How many grams of pure $100\\%$ gold must be melted and added into the alloy so that the final gold concentration becomes $50\\%$?",
+      "display": "\\frac{200 \\times 40\\% + x}{200 + x} = 50\\% \\implies x = ?",
+      "plainText": "(200 * 0.40 + x) / (200 + x) = 0.50",
+      "answerSpec": {
+        "type": "number",
+        "value": "40"
+      },
+      "answerDisplay": "40",
+      "answerPlain": "40",
+      "inputHint": "Enter the exact mass of added pure gold in grams",
+      "checkpointHint": "Identify the complementary metallic constituent whose absolute mass is unchanged by the addition. Calculate this invariant mass from the initial alloy, then equate it to the complementary fraction of the expanded final mixture.",
+      "commonTrapTag": "c06-variable-base-neglect",
+      "trapDerivation": "200 * (50 / 100 - 40 / 100)",
+      "verify": {
+        "source": "40",
+        "trapValue": "20"
+      },
+      "steps": [
+        {
+          "latex": "M_{\\text{copper}} = 200 \\times (1 - 0.40) = 200 \\times 0.60 = 120\\text{ g}",
+          "explain": "Determine the mass of copper which remains invariant during the gold addition.",
+          "eq": [
+            "200 * 0.60",
+            "120"
+          ]
+        },
+        {
+          "latex": "120 = (1 - 0.50) \\times M_{\\text{final}} = 0.50 M_{\\text{final}} \\implies M_{\\text{final}} = \\frac{120}{0.50} = 240\\text{ g}",
+          "explain": "Equate invariant copper to the remaining 50% fraction of the expanded final ingot.",
+          "eq": [
+            "120 / 0.50",
+            "240"
+          ]
+        },
+        {
+          "latex": "x = M_{\\text{final}} - 200 = 240 - 200 = 40\\text{ g}",
+          "explain": "Subtract the initial ingot mass to find the mass of pure gold added.",
+          "val": "40",
+          "eq": [
+            "240 - 200",
+            "40"
+          ]
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c06-invariant-component-under-variable-total|direct|(# * # + x) / (# + x) = #",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "math-standard"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c06-variable-base-neglect",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      }
+    }
+  ],
+  "createdAt": "2026-11-09 14:08:40",
+  "sessionSummary": {
+    "practiceStatus": "Ready",
+    "score": 0,
+    "maxScore": 4,
+    "accuracyPct": 0,
+    "mistakeCategories": [],
+    "divergedStepsSummary": "",
+    "attemptDate": null,
+    "syncedToNotionAt": null,
+    "notionPageId": null
+  },
+  "localFilePath": "drills/data/MTH-T01-C06/DRL-MTH-T01-C06-02.json"
+}

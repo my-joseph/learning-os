@@ -39,7 +39,11 @@
           "description": "SSD storage capacity used by multimedia files."
         }
       ],
-      "usedContexts": ["arithmetic:abstract_numbers"]
+      "usedContexts": [
+        "arithmetic:abstract_numbers",
+        "solar_battery_storage",
+        "academic_textbook_reading_progress"
+      ]
     },
     {
       "archetypeKey": "c06-pre-change-base-recovery",
@@ -78,7 +82,11 @@
           "description": "Remaining battery power on an EV vehicle after a road trip leg."
         }
       ],
-      "usedContexts": ["retail_hardware:monitor_sale"]
+      "usedContexts": [
+        "retail_hardware:monitor_sale",
+        "artisan_leather_backpack",
+        "conservatory_orchestral_cello_clearance"
+      ]
     },
     {
       "archetypeKey": "c06-relative-change-base-shift",
@@ -116,7 +124,9 @@
           "description": "Daily active user (DAU) metric change after a product update."
         }
       ],
-      "usedContexts": []
+      "usedContexts": [
+        "cloud_server_subscription"
+      ]
     },
     {
       "archetypeKey": "c06-successive-multipliers-compounding",
@@ -154,7 +164,11 @@
           "description": "Subscriber base surge during holiday season followed by post-holiday churn."
         }
       ],
-      "usedContexts": ["investment_portfolio:quarterly_shift", "commercial_merchandising:clearance"]
+      "usedContexts": [
+        "investment_portfolio:quarterly_shift",
+        "commercial_merchandising:clearance",
+        "boutique_designer_coat_seasonal"
+      ]
     },
     {
       "archetypeKey": "c06-parallel-vs-cascading-rates",
@@ -188,7 +202,9 @@
           "description": "Nightly room charge with city tourism assessment and county occupancy tax."
         }
       ],
-      "usedContexts": []
+      "usedContexts": [
+        "restaurant_dining_meal_tax_tip"
+      ]
     },
     {
       "archetypeKey": "c06-invariant-component-under-variable-total",
@@ -232,7 +248,10 @@
           "description": "Saline solution evaporation or salt addition."
         }
       ],
-      "usedContexts": []
+      "usedContexts": [
+        "chemistry_antiseptic_alcohol",
+        "jewelry_metallurgy_gold_copper_smelting"
+      ]
     },
     {
       "archetypeKey": "c06-weighted-split-conservation",
@@ -270,7 +289,100 @@
           "description": "Theater hall seating with general admission (80% occupancy) and VIP box (95% occupancy)."
         }
       ],
-      "usedContexts": ["split_fixed_income:bonds"]
+      "usedContexts": [
+        "split_fixed_income:bonds",
+        "municipal_vs_corporate_bonds"
+      ]
+    },
+    {
+      "archetypeKey": "c06-simple-interest-time-scaling",
+      "level": 3,
+      "name": "Simple Interest Time Scaling & Balance Accrual (ดอกเบี้ยคงต้นและการปรับสเกลหน่วยเวลา)",
+      "source": "OpenStax Prealgebra 2e §6.4",
+      "coreConcept": "Interest accrues linearly according to I = P * r * t where rate r is annual (per year). When time t is given in months, it must be converted to years (t = months / 12). Total maturity value is A = P + I.",
+      "mentalModel": [
+        "1. Identify principal P, annual rate r, and duration t.",
+        "2. Convert time to years: if in months, t = months / 12.",
+        "3. Calculate interest: I = P * (r / 100) * (months / 12).",
+        "4. If total maturity balance is requested, add P + I."
+      ],
+      "governingRelation": "I = P * (r / 100) * (m / 12)",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c06-interest-month-time-trap",
+          "description": "Substituted raw month count directly without dividing by 12, inflating interest by 12x.",
+          "trapFormula": "I_trap = P * (r / 100) * m"
+        },
+        {
+          "trapTag": "c06-interest-principal-omission",
+          "description": "Reported only interest I when asked for total repayment A = P + I.",
+          "trapFormula": "A_trap = I"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "certificate_of_deposit",
+          "description": "Fixed-term savings deposit at a community credit union."
+        },
+        {
+          "domain": "equipment_microloan",
+          "description": "Short-term small business loan for shop equipment."
+        },
+        {
+          "domain": "tuition_installment",
+          "description": "Deferred tuition installment plan over 6 to 9 months."
+        },
+        {
+          "domain": "invoice_penalty",
+          "description": "Commercial invoice late payment interest penalty."
+        }
+      ],
+      "usedContexts": [
+        "certificate_of_deposit",
+        "bakery_equipment_financing_loan"
+      ]
+    },
+    {
+      "archetypeKey": "c06-proportional-rate-scaling",
+      "level": 2,
+      "name": "Proportional Rate Equivalence & Cross-Scaling (สัดส่วนอัตราคงที่และการเทียบข้ามมิติ)",
+      "source": "OpenStax Prealgebra 2e §6.5",
+      "coreConcept": "Two equal ratios form a proportion a/b = c/d <=> a*d = b*c. Enables scaling between two distinct dimensions (e.g. weight to dosage, distance to fuel).",
+      "mentalModel": [
+        "1. Align matching units: UnitA_1 / UnitB_1 = UnitA_2 / UnitB_2.",
+        "2. Set up cross products: a * d = b * c.",
+        "3. Solve for unknown dimension by dividing by the paired coefficient."
+      ],
+      "governingRelation": "a / b = c / d => x = (b * c) / a",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c06-inverted-proportion-trap",
+          "description": "Inverted one ratio (e.g. A/B = D/C), flipping the scaling multiplier.",
+          "trapFormula": "x_trap = (a * c) / b"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "pediatric_dosing",
+          "description": "Prescribing liquid medicine dosage in ml per kg of child weight."
+        },
+        {
+          "domain": "cartography_scale",
+          "description": "Map distance in cm scaled to actual terrain distance in km."
+        },
+        {
+          "domain": "fuel_telemetry",
+          "description": "Vehicle fuel consumption in liters per 100 km."
+        },
+        {
+          "domain": "culinary_scaling",
+          "description": "Bakery recipe ingredient scaling for batch size changes."
+        }
+      ],
+      "usedContexts": [
+        "pediatric_dosing",
+        "cartography_scale"
+      ]
     }
   ]
 }

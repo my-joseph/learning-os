@@ -27,11 +27,19 @@
 - `[manual]` Move up when the last 5 items at a level score >= 80% including >= 1 reverse; move down when < 50%.
 - Difficulty comes from reasoning, not arithmetic size.
 
-## 4. Problems not produced by a tested template
-- `[manual]` No generator path produces them today. They are allowed for conceptual, formula-selection and word-heavy items; procedural skills use templates.
-- Required: typed givens and a solution; prompt and answer derived from the same givens; every number in the prompt is a given; `trapDerivation` built from the learner's wrong step (06 §3).
-- `[code]` V1 automatic: `verify_problem` on the standalone JSON, round-trip through `check_answer`, trap != answer, anti-leak, G6.
-- `[manual]` V2 blind solve: a separate session receives only the prompt and returns an answer; compare through `check_answer`. Mismatch or "ambiguous" = reject. Without V1 and V2 the problem is `verificationLevel: "partial"`, never `machine-verified`.
+## 4. Problems not produced by a tested template (AI Generation & Reasoning Vault)
+- `[manual]` **Autonomous Source Discovery Mandate**: When asked to expand problem archetypes or generate novel problems for a Unit, the AI assistant **must autonomously search, retrieve, and parse authoritative external curricula** (e.g., OpenStax, LibreTexts, AoPS, AMC 8/10, Singapore Math) via web search or curriculum scrapers. The AI **must never require the learner to provide or upload source materials** unless the learner explicitly offers their own specific problem.
+- `[code]` **Reasoning Vault & Gap Analysis (`math_engine/reasoning_vault/<unit_code>.json`)**:
+  - The AI inspects existing registered archetypes for the Unit.
+  - Existing patterns are skipped; novel mathematical structures are extracted into mental models, governing relations, and cognitive traps, and registered via `register_archetype()`.
+  - The AI rotates surface contexts across real-world domains (e.g., battery storage, cloud bills, medical dosing) and updates `usedContexts` to prevent object repetition.
+- `[code]` **Mandatory AI Contract Guard (`validate_ai_problem_contract`)**:
+  1. **Typed Givens**: Every numeric literal appearing in `prompt` (excluding standard year tokens) must map directly to an entry in `givens`.
+  2. **Zero-Number Hint (00_core §6)**: `checkpointHint` must contain strictly ZERO numbers from the problem. It must express only abstract mathematical relationships, formulas, or self-monitoring process verification steps (06 §3.4).
+  3. **Trap Derivation (06 §3)**: `trapDerivation` must be an operational expression referencing at least 2 distinct givens, evaluate exactly to `trapValue`, and satisfy `check_answer(trapValue) == incorrect` with `trapMatched: True`.
+  4. **Strict Verification Level**: All AI-written problems must carry `verificationLevel: "partial"` until verified by a blind solve.
+- `[code]` V1 automatic: `verify_problem` (G1–G6 item gates) and `validate_ai_problem_contract`.
+- `[manual]` V2 blind solve: a separate session receives only the prompt and returns an answer; compare through `check_answer`. Mismatch or "ambiguous" = reject. Without V1 and V2 the problem remains `verificationLevel: "partial"`, never `machine-verified`.
 - `[manual]` V3 human: the learner reads the first 3 items of every new AI-written type (06 §8 checklist).
 
 ## 5. Test drills and Notion
