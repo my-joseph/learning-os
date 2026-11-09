@@ -136,7 +136,7 @@ def run_tests(user_code: str, visible_tests: list, hidden_tests: list, timeout_s
             return report
         else:
             return {
-                "allPassed": false,
+                "allPassed": False,
                 "score": 0,
                 "passedCount": 0,
                 "totalCount": len(visible_tests) + len(hidden_tests),
