@@ -67,18 +67,21 @@ TEMPLATES = [
 > - **Template Usage**: ในระบบเทมเพลตปัจจุบัน ฟิลด์ `level` (L1–L4) ถูกนำมาใช้กำหนด **ชนิดงานทางพุทธิปัญญา (Cognitive Task Type)** ของโจทย์ในแต่ละ `form` เพื่อควบคุมจำนวน steps และโครงสร้างของโจทย์ผ่าน `g2_profile` ใน `skills_taxonomy.json`
 > - **Tier**: ใน `skills_taxonomy.json` (`foundational`, `intermediate`, `advanced`, `expert`) บ่งบอกลำดับความลึกขององค์ความรู้ในหลักสูตร ไม่ผูกขาดกับ Level เดียว
 
-| Level | Cognitive Task Type ในเทมเพลต | ลักษณะโครงสร้าง | ขอบเขต Steps ใน G2 | เป้าหมายความละเอียด Granular Steps |
-| :---: | :--- | :--- | :---: | :---: |
-| **L1** | **Direct Computation / Recall** | คำนวณตรงไปตรงมาตามสูตรหรือนิยามแกนหลัก | 1–10 steps | 2–5 micro-steps |
-| **L2** | **Reverse Solve / Multi-step Synthesis** | แก้สมการย้อนหาพารามิเตอร์ หรือแปลงค่าหลายขั้น | 2–15 steps | 4–8 micro-steps |
+| Level | Cognitive Task Type ในเทมเพลต | ลักษณะโครงสร้าง | ขอบเขต Steps ใน G2 | เป้าหมายความละเอียด Granular Steps (บังคับทุก Level L1–L5) |
+| :---: | :--- | :--- | :---: | :--- |
+| **L1** | **Direct Computation / Recall** | คำนวณตรงไปตรงมาตามสูตรหรือนิยามแกนหลัก | 1–10 steps | 2–5 micro-steps (2–3 steps สำหรับ L1 ถือว่าถูกต้องและเพียงพอ) |
+| **L2** | **Reverse Solve / Multi-step Synthesis** | แก้สมการย้อนหาพารามิเตอร์ หรือแปลงค่าหลายขั้น | 2–15 steps | 3–8 micro-steps |
 | **L3** | **Trap, Flaw Diagnosis & Edge Cases** | วิเคราะห์จุดผิดพลาด หรือกับดักเชิงแนวคิดหลายชั้น | 2–20 steps | 5–12 micro-steps |
 | **L4** | **Applied / Multi-concept Constraint** | นำไปประยุกต์ข้ามโดเมน หรือมีเงื่อนไขบังคับหลายด้าน | 2–25 steps | 7–20 micro-steps |
-| **L5** | **Non-Routine Synthesis & Multi-Domain Interleaving** | ผสมผสานองค์ความรู้ข้ามบทเรียน (เช่น เรขาคณิต + กรณฑ์ + ทศนิยม) ไม่มีสูตรสำเร็จ ต้องวิเคราะห์เชิงโครงสร้าง | 3–50 steps | บังคับ Single Transformation per Step (Anti-Clumping) ตาม 00_core §7 |
+| **L5** | **Non-Routine Synthesis & Multi-Domain Interleaving** | ผสมผสานองค์ความรู้ข้ามบทเรียน (เช่น เรขาคณิต + กรณฑ์ + ทศนิยม) ไม่มีสูตรสำเร็จ ต้องวิเคราะห์เชิงโครงสร้าง | 3–50 steps | 10–25+ micro-steps (โจทย์ยากข้ามโดเมน) |
 
-### 2.1 มาตรฐานการแจกแจงวิธีทำย่อยแบบละเอียด (Granular Step Derivation Standard)
-1. **One Transformation per Step**: แต่ละ step ในอาเรย์ `steps` ของโจทย์คณิตศาสตร์ต้องแสดงการเปลี่ยนแปลงเพียง 1 กระบวนการเท่านั้น (เช่น ปลดวงเล็บ $\rightarrow$ ทอนเลข $\rightarrow$ ยกกำลัง $\rightarrow$ ลบเลขในกรณฑ์ $\rightarrow$ ถอดราก $\rightarrow$ คำนวณผลลัพธ์)
-2. **ห้ามรวบสมการลูกโซ่ในบรรทัดเดียว (Anti-Chaining Invariant)**: ห้ามเขียน $A = B = C = D$ ใน step เดียวเด็ดขาด (เช่น ห้ามเขียน $\sqrt{15^2 - 12^2} = \sqrt{225 - 144} = \sqrt{81} = 9$) เพื่อให้ฟังก์ชัน "Mark Diverged Step" บนหน้าเว็บสามารถชี้จุดที่ผู้เรียนคำนวณผิดได้อย่างแม่นยำ
-3. **คำอธิบายชัดเจน (Action-Oriented `explain`)**: ทุกบรรทัดต้องระบุการกระทำที่สอดคล้องกับสมการอย่างชัดเจน
+### 2.1 มาตรฐานการแจกแจงวิธีทำย่อยแบบละเอียด (Granular Step Derivation Standard — บังคับใช้ทุก Level L1–L5)
+> [!IMPORTANT]
+> มาตรฐาน Photomath Single-Transformation Standard นี้ **ใช้บังคับกับโจทย์ทุกข้อในทุกระดับ (L1 ถึง L5)** ไม่ได้จำกัดเฉพาะ Level 5 เท่านั้น โดยจำนวน step ทั้งหมดจะแปรผันตามระดับความยาก (ตั้งแต่ 1–25 steps โดยทั่วไป หรือสูงสุด 50 steps สำหรับ L5; หากเป็นโจทย์ Level 1 ที่เรียบง่าย การมี 2–3 steps ก็ถือว่าถูกต้องและสมบูรณ์แล้ว)
+
+1. **One Transformation per Step (Universal Anti-Clumping)**: แต่ละ step ในอาเรย์ `steps` ของโจทย์คณิตศาสตร์ทุกข้อ ทุกระดับความยาก ต้องแสดงการเปลี่ยนแปลงเพียง 1 กระบวนการเท่านั้น (เช่น แทนค่าตัวแปร $\rightarrow$ กระจายสัมประสิทธิ์ $\rightarrow$ ย้ายข้างตัวแปร $\rightarrow$ รวมพจน์ที่คล้ายกัน $\rightarrow$ ทอนเศษส่วน $\rightarrow$ ถอดราก $\rightarrow$ คำนวณคำตอบสุดท้าย)
+2. **ห้ามรวบสมการลูกโซ่ในบรรทัดเดียว (Universal Anti-Chaining Invariant)**: ห้ามเขียน $A = B = C = D$ หรือการเขียนสมการหลายตัวคั่นด้วยลูกศร/จุลภาคใน step เดียวเด็ดขาด (เช่น ห้ามเขียน $\sqrt{15^2 - 12^2} = \sqrt{225 - 144} = \sqrt{81} = 9$) เพื่อให้ฟังก์ชัน "Mark Diverged Step" บนหน้าเว็บ Practice Studio สามารถระบุจุดที่ผู้เรียนคำนวณผิดพลาดได้อย่างแม่นยำในทุกระดับความยาก
+3. **คำอธิบายชัดเจน (Action-Oriented `explain`)**: ทุกบรรทัดต้องระบุการกระทำทางคณิตศาสตร์ที่สอดคล้องกับสมการอย่างชัดเจน เพื่อสนับสนุนระบบการวินิจฉัยความเข้าใจผิดของผู้เรียน
 
 ### 2.2 กฎห้าม Silent Fallback ระดับความยาก (Strict Difficulty Level Invariant)
 เมื่อผู้เรียนหรือระบบสั่งเจเนอเรตโจทย์โดยระบุระดับความยากแบบเจาะจง (`difficulty in ('1', '2', '3', '4', '5')`):

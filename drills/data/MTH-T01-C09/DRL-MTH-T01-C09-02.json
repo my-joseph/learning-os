@@ -285,8 +285,12 @@
       ],
       "steps": [
         {
-          "latex": "\\sqrt{8} \\times \\sqrt{18} = \\sqrt{8 \\times 18} = \\sqrt{144}",
+          "latex": "\\sqrt{8} \\times \\sqrt{18} = \\sqrt{8 \\times 18}",
           "explain": "Combine under single radical."
+        },
+        {
+          "latex": "\\sqrt{8 \\times 18} = \\sqrt{144}",
+          "explain": "Evaluate intermediate step."
         },
         {
           "latex": "\\sqrt{144} = 12",
@@ -610,8 +614,12 @@
       ],
       "steps": [
         {
-          "latex": "4^3 = 4 \\times 4 \\times 4 = 64",
+          "latex": "4^3 = 4 \\times 4 \\times 4",
           "explain": "Test integer powers for cube of 64."
+        },
+        {
+          "latex": "4 \\times 4 \\times 4 = 64",
+          "explain": "Evaluate intermediate step."
         },
         {
           "latex": "\\sqrt[3]{64} = 4",
@@ -700,8 +708,12 @@
       ],
       "steps": [
         {
-          "latex": "d = \\sqrt{9^2 + 12^2} = \\sqrt{81 + 144}",
+          "latex": "d = \\sqrt{9^2 + 12^2}",
           "explain": "Square the eastward and northward distances."
+        },
+        {
+          "latex": "d = \\sqrt{81 + 144}",
+          "explain": "Evaluate intermediate step."
         },
         {
           "latex": "\\sqrt{225} = 15",
@@ -791,16 +803,28 @@
       ],
       "steps": [
         {
-          "latex": "2x + 7 = 5^2 = 25",
+          "latex": "2x + 7 = 5^2",
           "explain": "Square both sides of the equation."
         },
         {
-          "latex": "2x = 25 - 7 = 18",
+          "latex": "5^2 = 25",
+          "explain": "Evaluate intermediate step."
+        },
+        {
+          "latex": "2x = 25 - 7",
           "explain": "Subtract 7 from 25."
         },
         {
-          "latex": "x = \\frac{18}{2} = 9",
-          "explain": "Divide by 2 to find x = 9.",
+          "latex": "25 - 7 = 18",
+          "explain": "Evaluate intermediate step."
+        },
+        {
+          "latex": "x = \\frac{18}{2}",
+          "explain": "Divide by 2 to find x = 9."
+        },
+        {
+          "latex": "x = 9",
+          "explain": "Simplify to obtain 9.",
           "val": "9"
         }
       ],

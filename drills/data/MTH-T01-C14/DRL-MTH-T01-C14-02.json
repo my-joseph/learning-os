@@ -203,8 +203,12 @@
       ],
       "steps": [
         {
-          "latex": "\\Delta x = x_2 - x_1 = 12 - 4",
+          "latex": "\\Delta x = x_2 - x_1",
           "explain": "Set up horizontal distance between coordinates."
+        },
+        {
+          "latex": "x_2 - x_1 = 12 - 4",
+          "explain": "Evaluate intermediate step."
         },
         {
           "latex": "12 - 4 = 8",
@@ -286,16 +290,28 @@
       ],
       "steps": [
         {
-          "latex": "\\Delta y = 11 - 3 = 8",
+          "latex": "\\Delta y = 11 - 3",
           "explain": "Calculate vertical rise 8."
         },
         {
-          "latex": "\\Delta x = 6 - 2 = 4",
+          "latex": "11 - 3 = 8",
+          "explain": "Evaluate intermediate step."
+        },
+        {
+          "latex": "\\Delta x = 6 - 2",
           "explain": "Calculate horizontal run 4."
         },
         {
-          "latex": "m = \\frac{8}{4} = 2",
-          "explain": "Divide 8 by 4 to obtain slope 2.",
+          "latex": "6 - 2 = 4",
+          "explain": "Evaluate intermediate step."
+        },
+        {
+          "latex": "m = \\frac{8}{4}",
+          "explain": "Divide 8 by 4 to obtain slope 2."
+        },
+        {
+          "latex": "m = 2",
+          "explain": "Simplify to obtain 2.",
           "val": "2"
         }
       ],
@@ -371,8 +387,12 @@
       ],
       "steps": [
         {
-          "latex": "m = 3 \\land b = 14",
-          "explain": "Identify slope 3 and intercept 14 from slope-intercept form."
+          "latex": "m = 3",
+          "explain": "Identify slope 3 and intercept 14 from slope-intercept form. - condition 1"
+        },
+        {
+          "latex": "b = 14",
+          "explain": "Identify slope 3 and intercept 14 from slope-intercept form. - condition 2"
         },
         {
           "latex": "3 + 14 = 17",
@@ -456,8 +476,12 @@
           "explain": "Extract slope of line L1."
         },
         {
-          "latex": "m_2 = m_1 = 5",
-          "explain": "Parallel lines have equal slope; therefore m2 = 5.",
+          "latex": "m_2 = m_1",
+          "explain": "Parallel lines have equal slope; therefore m2 = 5."
+        },
+        {
+          "latex": "m_2 = 5",
+          "explain": "Simplify to obtain 5.",
           "val": "5"
         }
       ],
@@ -798,16 +822,28 @@
       ],
       "steps": [
         {
-          "latex": "\\Delta x = 25 - 5 = 20",
+          "latex": "\\Delta x = 25 - 5",
           "explain": "Calculate horizontal width."
         },
         {
-          "latex": "\\Delta y = 30 - 10 = 20",
+          "latex": "25 - 5 = 20",
+          "explain": "Evaluate intermediate step."
+        },
+        {
+          "latex": "\\Delta y = 30 - 10",
           "explain": "Calculate vertical height."
         },
         {
-          "latex": "A = 20 \\times 20 = 400",
-          "explain": "Multiply width by height to obtain area 400 square units.",
+          "latex": "30 - 10 = 20",
+          "explain": "Evaluate intermediate step."
+        },
+        {
+          "latex": "A = 20 \\times 20",
+          "explain": "Multiply width by height to obtain area 400 square units."
+        },
+        {
+          "latex": "A = 400",
+          "explain": "Simplify to obtain 400.",
           "val": "400"
         }
       ],

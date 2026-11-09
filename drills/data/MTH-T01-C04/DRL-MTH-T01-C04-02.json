@@ -44,8 +44,12 @@
           "explain": "Find the greatest common factor of 48 and 60."
         },
         {
-          "latex": "\\frac{48}{60} = \\frac{48 \\div 12}{60 \\div 12} = \\frac{4}{5}",
-          "explain": "Divide numerator and denominator by 12 to get 4/5.",
+          "latex": "\\frac{48}{60} = \\frac{48 \\div 12}{60 \\div 12}",
+          "explain": "Divide numerator and denominator by 12 to get 4/5."
+        },
+        {
+          "latex": "\\frac{48 \\div 12}{60 \\div 12} = \\frac{4}{5}",
+          "explain": "Simplify to obtain 4/5.",
           "val": "4/5"
         }
       ],
@@ -127,8 +131,12 @@
       ],
       "steps": [
         {
-          "latex": "\\frac{3}{4} \\times \\frac{2}{5} = \\frac{3 \\times 2}{4 \\times 5} = \\frac{6}{20}",
+          "latex": "\\frac{3}{4} \\times \\frac{2}{5} = \\frac{3 \\times 2}{4 \\times 5}",
           "explain": "Multiply numerators and denominators straight across."
+        },
+        {
+          "latex": "\\frac{3 \\times 2}{4 \\times 5} = \\frac{6}{20}",
+          "explain": "Evaluate intermediate step."
         },
         {
           "latex": "\\frac{6}{20} = \\frac{3}{10}",
@@ -650,12 +658,20 @@
       ],
       "steps": [
         {
-          "latex": "\\frac{3}{5}x = 45 \\implies x = 45 \\times \\frac{5}{3}",
-          "explain": "Multiply both sides by reciprocal 5/3."
+          "latex": "\\frac{3}{5}x = 45",
+          "explain": "Multiply both sides by reciprocal 5/3. (Part 1)"
         },
         {
-          "latex": "x = \\frac{225}{3} = 75",
-          "explain": "Calculate 45 * 5 / 3 = 75 liters.",
+          "latex": "x = 45 \\times \\frac{5}{3}",
+          "explain": "Multiply both sides by reciprocal 5/3. (Part 2)"
+        },
+        {
+          "latex": "x = \\frac{225}{3}",
+          "explain": "Calculate 45 * 5 / 3 = 75 liters."
+        },
+        {
+          "latex": "x = 75",
+          "explain": "Simplify to obtain 75.",
           "val": "75"
         }
       ],
@@ -748,8 +764,12 @@
           "explain": "Formulate net filling rate by subtracting drainage rate from inflow rate."
         },
         {
-          "latex": "\\frac{5}{30} - \\frac{3}{30} = \\frac{2}{30} = \\frac{1}{15}",
+          "latex": "\\frac{5}{30} - \\frac{3}{30} = \\frac{2}{30}",
           "explain": "Convert to common denominator 30 and subtract to find net rate 1/15 per hour."
+        },
+        {
+          "latex": "\\frac{2}{30} = \\frac{1}{15}",
+          "explain": "Evaluate intermediate step."
         },
         {
           "latex": "T = 15",
@@ -845,16 +865,36 @@
       ],
       "steps": [
         {
-          "latex": "1 - \\frac{1}{3} = \\frac{2}{3}, \\quad 1 - \\frac{1}{4} = \\frac{3}{4}",
-          "explain": "Find remaining fraction factor after each dispatch stage."
+          "latex": "1 - \\frac{1}{3} = \\frac{2}{3}",
+          "explain": "Find remaining fraction factor after each dispatch stage. - component 1"
         },
         {
-          "latex": "\\text{Fraction}_{\\text{rem}} = \\frac{2}{3} \\times \\frac{3}{4} = \\frac{6}{12} = \\frac{1}{2}",
+          "latex": "1 - \\frac{1}{4} = \\frac{3}{4}",
+          "explain": "Find remaining fraction factor after each dispatch stage. - component 2"
+        },
+        {
+          "latex": "\\text{Fraction}_{\\text{rem}} = \\frac{2}{3} \\times \\frac{3}{4}",
           "explain": "Multiply stage factors to find total fraction remaining is 1/2."
         },
         {
-          "latex": "\\frac{1}{2} T = 60 \\implies T = 60 \\times 2 = 120",
-          "explain": "Multiply 60 by 2 to find initial reserve 120 tons.",
+          "latex": "\\frac{2}{3} \\times \\frac{3}{4} = \\frac{6}{12}",
+          "explain": "Evaluate intermediate step."
+        },
+        {
+          "latex": "\\frac{6}{12} = \\frac{1}{2}",
+          "explain": "Evaluate intermediate step."
+        },
+        {
+          "latex": "\\frac{1}{2} T = 60",
+          "explain": "Multiply 60 by 2 to find initial reserve 120 tons. (Part 1)"
+        },
+        {
+          "latex": "T = 60 \\times 2",
+          "explain": "Multiply 60 by 2 to find initial reserve 120 tons. (Part 2)"
+        },
+        {
+          "latex": "T = 120",
+          "explain": "Evaluate intermediate step.",
           "val": "120"
         }
       ],

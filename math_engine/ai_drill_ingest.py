@@ -241,8 +241,8 @@ def validate_ai_problem_contract(prob: Dict[str, Any]) -> bool:
             raise AiContractError(f"[{pid}] Step {s_idx + 1} must have a non-empty 'latex' equation.")
         if not explain_str or not explain_str.strip():
             raise AiContractError(f"[{pid}] Step {s_idx + 1} must have an action-oriented 'explain' string.")
-        # Anti-Clumping check: 1 discrete transformation per step for Level >= 5 (rules/00_core.md §7, 03_stem.md §1)
-        if prob.get("level", 1) >= 5 and "\\begin" not in latex_str and latex_str.count("=") > 1:
+        # Anti-Clumping check: 1 discrete transformation per step across all levels L1-L5 (rules/00_core.md §7, 03_stem.md §1)
+        if "\\begin" not in latex_str and latex_str.count("=") > 1:
             raise AiContractError(
                 f"[{pid}] Step {s_idx + 1} violates 00_core §7 / 03_stem §1: horizontal equality chaining is forbidden ('{latex_str}'). Each step must isolate a single discrete algebraic transformation."
             )

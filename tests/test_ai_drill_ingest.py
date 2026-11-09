@@ -69,17 +69,29 @@ class TestAiDrillIngest(unittest.TestCase):
                         "verify": {"source": "60", "trapValue": "45"},
                         "steps": [
                             S(
-                                "\\text{Water} = 300 \\times (1 - 0.10) = 270\\text{ g}",
+                                "\\text{Water} = 300 \\times (1 - 0.10)",
                                 "Calculate the invariant mass of water which does not change.",
+                            ),
+                            S(
+                                "\\text{Water} = 270\\text{ g}",
+                                "Simplify the invariant water mass to 270 grams.",
                                 eq=["300 * (1 - 0.10)", "270"],
                             ),
                             S(
-                                "270 = (1 - 0.25) \\times T_{\\text{new}} = 0.75 T_{\\text{new}} \\implies T_{\\text{new}} = 360\\text{ g}",
+                                "270 = 0.75 \\times T_{\\text{new}}",
                                 "Equate the water mass to 75% of the expanded new total mixture.",
+                            ),
+                            S(
+                                "T_{\\text{new}} = 360\\text{ g}",
+                                "Solve for the new total mixture mass.",
                                 eq=["270 / 0.75", "360"],
                             ),
                             S(
-                                "x = T_{\\text{new}} - 300 = 360 - 300 = 60\\text{ g}",
+                                "x = T_{\\text{new}} - 300",
+                                "Set up difference between new total mass and initial mass.",
+                            ),
+                            S(
+                                "x = 60\\text{ g}",
                                 "Subtract the initial mixture mass to find the pure sugar added.",
                                 val="60",
                                 eq=["360 - 300", "60"],

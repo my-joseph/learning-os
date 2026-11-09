@@ -203,12 +203,20 @@
       ],
       "steps": [
         {
-          "latex": "5x = 60 - 15 = 45",
+          "latex": "5x = 60 - 15",
           "explain": "Subtract constant 15 from both sides."
         },
         {
-          "latex": "x = \\frac{45}{5} = 9",
-          "explain": "Divide both sides by coefficient 5 to get 9.",
+          "latex": "60 - 15 = 45",
+          "explain": "Evaluate intermediate step."
+        },
+        {
+          "latex": "x = \\frac{45}{5}",
+          "explain": "Divide both sides by coefficient 5 to get 9."
+        },
+        {
+          "latex": "x = 9",
+          "explain": "Simplify to obtain 9.",
           "val": "9"
         }
       ],
@@ -294,8 +302,12 @@
           "explain": "Simplify terms to 4x = 28."
         },
         {
-          "latex": "x = \\frac{28}{4} = 7",
-          "explain": "Divide by 4 to find x = 7.",
+          "latex": "x = \\frac{28}{4}",
+          "explain": "Divide by 4 to find x = 7."
+        },
+        {
+          "latex": "x = 7",
+          "explain": "Simplify to obtain 7.",
           "val": "7"
         }
       ],
@@ -372,12 +384,20 @@
       ],
       "steps": [
         {
-          "latex": "x + 3 = \\frac{32}{4} = 8",
+          "latex": "x + 3 = \\frac{32}{4}",
           "explain": "Divide both sides by multiplier 4."
         },
         {
-          "latex": "x = 8 - 3 = 5",
-          "explain": "Subtract 3 from 8 to isolate x = 5.",
+          "latex": "\\frac{32}{4} = 8",
+          "explain": "Evaluate intermediate step."
+        },
+        {
+          "latex": "x = 8 - 3",
+          "explain": "Subtract 3 from 8 to isolate x = 5."
+        },
+        {
+          "latex": "x = 5",
+          "explain": "Simplify to obtain 5.",
           "val": "5"
         }
       ],
@@ -454,12 +474,20 @@
       ],
       "steps": [
         {
-          "latex": "\\frac{x}{3} = 11 - 5 = 6",
+          "latex": "\\frac{x}{3} = 11 - 5",
           "explain": "Subtract 5 from both sides."
         },
         {
-          "latex": "x = 6 \\times 3 = 18",
-          "explain": "Multiply both sides by denominator 3 to obtain 18.",
+          "latex": "11 - 5 = 6",
+          "explain": "Evaluate intermediate step."
+        },
+        {
+          "latex": "x = 6 \\times 3",
+          "explain": "Multiply both sides by denominator 3 to obtain 18."
+        },
+        {
+          "latex": "x = 18",
+          "explain": "Simplify to obtain 18.",
           "val": "18"
         }
       ],
@@ -536,16 +564,28 @@
       ],
       "steps": [
         {
-          "latex": "10(0.4x + 1.2) = 10(3.6) \\implies 4x + 12 = 36",
-          "explain": "Multiply all terms by 10 to eliminate decimals."
+          "latex": "10(0.4x + 1.2) = 10(3.6)",
+          "explain": "Multiply all terms by 10 to eliminate decimals. (Part 1)"
         },
         {
-          "latex": "4x = 36 - 12 = 24",
+          "latex": "4x + 12 = 36",
+          "explain": "Multiply all terms by 10 to eliminate decimals. (Part 2)"
+        },
+        {
+          "latex": "4x = 36 - 12",
           "explain": "Subtract 12 from both sides."
         },
         {
-          "latex": "x = \\frac{24}{4} = 6",
-          "explain": "Divide by 4 to obtain x = 6.",
+          "latex": "36 - 12 = 24",
+          "explain": "Evaluate intermediate step."
+        },
+        {
+          "latex": "x = \\frac{24}{4}",
+          "explain": "Divide by 4 to obtain x = 6."
+        },
+        {
+          "latex": "x = 6",
+          "explain": "Simplify to obtain 6.",
           "val": "6"
         }
       ],
@@ -626,12 +666,20 @@
           "explain": "Multiply 2 by 18 to get 36."
         },
         {
-          "latex": "2W = 54 - 36 = 18",
+          "latex": "2W = 54 - 36",
           "explain": "Subtract 36 from 54."
         },
         {
-          "latex": "W = \\frac{18}{2} = 9",
-          "explain": "Divide 18 by 2 to obtain width 9 centimeters.",
+          "latex": "54 - 36 = 18",
+          "explain": "Evaluate intermediate step."
+        },
+        {
+          "latex": "W = \\frac{18}{2}",
+          "explain": "Divide 18 by 2 to obtain width 9 centimeters."
+        },
+        {
+          "latex": "W = 9",
+          "explain": "Simplify to obtain 9.",
           "val": "9"
         }
       ],
@@ -725,8 +773,12 @@
           "explain": "Obtain net contribution margin 20 dollars per gadget."
         },
         {
-          "latex": "x = \\frac{2400}{20} = 120",
-          "explain": "Divide fixed overhead 2400 by 20 to find break-even quantity 120 units.",
+          "latex": "x = \\frac{2400}{20}",
+          "explain": "Divide fixed overhead 2400 by 20 to find break-even quantity 120 units."
+        },
+        {
+          "latex": "x = 120",
+          "explain": "Simplify to obtain 120.",
           "val": "120"
         }
       ],
@@ -820,8 +872,12 @@
           "explain": "Set combined distance equal to total separation 450 km."
         },
         {
-          "latex": "t = \\frac{450}{150} = 3",
-          "explain": "Divide 450 by 150 to find meeting time 3 hours.",
+          "latex": "t = \\frac{450}{150}",
+          "explain": "Divide 450 by 150 to find meeting time 3 hours."
+        },
+        {
+          "latex": "t = 3",
+          "explain": "Simplify to obtain 3.",
           "val": "3"
         }
       ],

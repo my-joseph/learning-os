@@ -220,8 +220,12 @@
       ],
       "steps": [
         {
-          "latex": "C = 2\\pi r = 2(15)\\pi",
+          "latex": "C = 2\\pi r",
           "explain": "Substitute radius 15 into circumference formula."
+        },
+        {
+          "latex": "C = 2(15)\\pi",
+          "explain": "Evaluate intermediate step."
         },
         {
           "latex": "2 \\times 15 = 30",
@@ -305,8 +309,12 @@
       ],
       "steps": [
         {
-          "latex": "A = \\pi r^2 = \\pi (6^2)",
+          "latex": "A = \\pi r^2",
           "explain": "Apply circular area formula with radius 6."
+        },
+        {
+          "latex": "A = \\pi (6^2)",
+          "explain": "Evaluate intermediate step."
         },
         {
           "latex": "6^2 = 36",
@@ -565,8 +573,12 @@
           "explain": "Set sum of complementary angles to 90 degrees."
         },
         {
-          "latex": "\\alpha = 90^\\circ - 34^\\circ = 56^\\circ",
-          "explain": "Subtract 34 from 90 to get 56 degrees.",
+          "latex": "\\alpha = 90^\\circ - 34^\\circ",
+          "explain": "Subtract 34 from 90 to get 56 degrees."
+        },
+        {
+          "latex": "\\alpha = 56^\\circ",
+          "explain": "Simplify to obtain 56.",
           "val": "56"
         }
       ],

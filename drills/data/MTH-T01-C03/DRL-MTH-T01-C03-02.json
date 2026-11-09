@@ -210,8 +210,12 @@
       ],
       "steps": [
         {
-          "latex": "|-38| - |15| = 38 - 15 = 23",
+          "latex": "|-38| - |15| = 38 - 15",
           "explain": "Find difference between absolute values."
+        },
+        {
+          "latex": "38 - 15 = 23",
+          "explain": "Evaluate intermediate step."
         },
         {
           "latex": "-(23) = -23",
@@ -555,8 +559,12 @@
           "explain": "Multiply 4 by -8 first following precedence rules."
         },
         {
-          "latex": "35 - (-32) = 35 + 32 = 67",
-          "explain": "Subtract -32 by adding 32 to 35 to obtain 67.",
+          "latex": "35 - (-32) = 35 + 32",
+          "explain": "Subtract -32 by adding 32 to 35 to obtain 67."
+        },
+        {
+          "latex": "35 + 32 = 67",
+          "explain": "Simplify to obtain 67.",
           "val": "67"
         }
       ],
@@ -737,12 +745,20 @@
           "explain": "State the two-step linear equation."
         },
         {
-          "latex": "-4d = -48 - 32 = -80",
+          "latex": "-4d = -48 - 32",
           "explain": "Subtract 32 from both sides."
         },
         {
-          "latex": "d = \\frac{-80}{-4} = 20",
-          "explain": "Divide both sides by -4 to obtain d = 20.",
+          "latex": "-48 - 32 = -80",
+          "explain": "Evaluate intermediate step."
+        },
+        {
+          "latex": "d = \\frac{-80}{-4}",
+          "explain": "Divide both sides by -4 to obtain d = 20."
+        },
+        {
+          "latex": "d = 20",
+          "explain": "Simplify to obtain 20.",
           "val": "20"
         }
       ],
@@ -836,8 +852,12 @@
           "explain": "Formulate equation for net temperature after 5 hours."
         },
         {
-          "latex": "T = -15 + 40 = 25",
-          "explain": "Multiply 8 by 5 to get 40, then add to -15 to obtain 25 degrees.",
+          "latex": "T = -15 + 40",
+          "explain": "Multiply 8 by 5 to get 40, then add to -15 to obtain 25 degrees."
+        },
+        {
+          "latex": "T = 25",
+          "explain": "Simplify to obtain 25.",
           "val": "25"
         }
       ],

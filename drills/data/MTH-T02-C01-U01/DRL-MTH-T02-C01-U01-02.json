@@ -41,8 +41,12 @@
       ],
       "steps": [
         {
-          "latex": "i^2 = -1 \\implies 3i^2 + 10 = 3(-1) + 10",
-          "explain": "Substitute -1 for i^2."
+          "latex": "i^2 = -1",
+          "explain": "Substitute -1 for i^2. (Part 1)"
+        },
+        {
+          "latex": "3i^2 + 10 = 3(-1) + 10",
+          "explain": "Substitute -1 for i^2. (Part 2)"
         },
         {
           "latex": "-3 + 10 = 7",
@@ -122,8 +126,12 @@
       ],
       "steps": [
         {
-          "latex": "\\sqrt{-36} = \\sqrt{-1} \\times \\sqrt{36} = i\\sqrt{36}",
+          "latex": "\\sqrt{-36} = \\sqrt{-1} \\times \\sqrt{36}",
           "explain": "Separate imaginary factor."
+        },
+        {
+          "latex": "\\sqrt{-1} \\times \\sqrt{36} = i\\sqrt{36}",
+          "explain": "Evaluate intermediate step."
         },
         {
           "latex": "\\sqrt{36} = 6 \\implies 6i",
@@ -205,8 +213,12 @@
       ],
       "steps": [
         {
-          "latex": "\\text{Re} = 8 + 4 = 12",
+          "latex": "\\text{Re} = 8 + 4",
           "explain": "Add the real parts."
+        },
+        {
+          "latex": "\\text{Re} = 12",
+          "explain": "Evaluate intermediate step."
         },
         {
           "latex": "12",
@@ -288,8 +300,12 @@
       ],
       "steps": [
         {
-          "latex": "\\text{Im} = 12 - 5 = 7",
+          "latex": "\\text{Im} = 12 - 5",
           "explain": "Subtract imaginary coefficients."
+        },
+        {
+          "latex": "\\text{Im} = 7",
+          "explain": "Evaluate intermediate step."
         },
         {
           "latex": "7",
@@ -370,8 +386,16 @@
       ],
       "steps": [
         {
-          "latex": "(4i)(6i) = (4 \\times 6)i^2 = 24(-1) = -24",
+          "latex": "(4i)(6i) = (4 \\times 6)i^2",
           "explain": "Multiply coefficients and apply i^2 = -1."
+        },
+        {
+          "latex": "(4 \\times 6)i^2 = 24(-1)",
+          "explain": "Evaluate intermediate step."
+        },
+        {
+          "latex": "24(-1) = -24",
+          "explain": "Evaluate intermediate step."
         },
         {
           "latex": "|-24| = 24",
@@ -453,8 +477,12 @@
       ],
       "steps": [
         {
-          "latex": "2(5) = 10 \\land 3(4) = 12",
-          "explain": "Compute outer and inner products."
+          "latex": "2(5) = 10",
+          "explain": "Compute outer and inner products. - condition 1"
+        },
+        {
+          "latex": "3(4) = 12",
+          "explain": "Compute outer and inner products. - condition 2"
         },
         {
           "latex": "10 + 12 = 22",
@@ -534,8 +562,12 @@
       ],
       "steps": [
         {
-          "latex": "3^2 = 9 \\land 4^2 = 16",
-          "explain": "Square real part 3 and imaginary part 4."
+          "latex": "3^2 = 9",
+          "explain": "Square real part 3 and imaginary part 4. - condition 1"
+        },
+        {
+          "latex": "4^2 = 16",
+          "explain": "Square real part 3 and imaginary part 4. - condition 2"
         },
         {
           "latex": "9 + 16 = 25",
@@ -706,8 +738,12 @@
       ],
       "steps": [
         {
-          "latex": "12^2 = 144 \\land 16^2 = 256",
-          "explain": "Square resistance 12 and reactance 16."
+          "latex": "12^2 = 144",
+          "explain": "Square resistance 12 and reactance 16. - condition 1"
+        },
+        {
+          "latex": "16^2 = 256",
+          "explain": "Square resistance 12 and reactance 16. - condition 2"
         },
         {
           "latex": "144 + 256 = 400",

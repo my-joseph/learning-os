@@ -203,12 +203,20 @@
       ],
       "steps": [
         {
-          "latex": "\\text{Scale Factor} = \\frac{180}{60} = 3",
+          "latex": "\\text{Scale Factor} = \\frac{180}{60}",
           "explain": "Determine scale multiplier from 60 to 180 loaves."
         },
         {
-          "latex": "x = 15 \\times 3 = 45",
-          "explain": "Multiply base flour 15 kg by 3 to get 45 kg.",
+          "latex": "\\text{Scale Factor} = 3",
+          "explain": "Evaluate intermediate step."
+        },
+        {
+          "latex": "x = 15 \\times 3",
+          "explain": "Multiply base flour 15 kg by 3 to get 45 kg."
+        },
+        {
+          "latex": "x = 45",
+          "explain": "Simplify to obtain 45.",
           "val": "45"
         }
       ],
@@ -289,8 +297,16 @@
           "explain": "Set cross products equal to each other."
         },
         {
-          "latex": "7x = 224 \\implies x = \\frac{224}{7} = 32",
-          "explain": "Divide 224 by 7 to obtain x = 32.",
+          "latex": "7x = 224",
+          "explain": "Divide 224 by 7 to obtain x = 32. (Part 1)"
+        },
+        {
+          "latex": "x = \\frac{224}{7}",
+          "explain": "Divide 224 by 7 to obtain x = 32. (Part 2)"
+        },
+        {
+          "latex": "x = 32",
+          "explain": "Evaluate intermediate step.",
           "val": "32"
         }
       ],
@@ -371,12 +387,20 @@
           "explain": "Find total number of ratio parts."
         },
         {
-          "latex": "\\text{Weight of 1 part} = \\frac{640}{8} = 80",
+          "latex": "\\text{Weight of 1 part} = \\frac{640}{8}",
           "explain": "Divide total weight by 8 parts to get 80 kg per part."
         },
         {
-          "latex": "\\text{Gravel weight} = 5 \\times 80 = 400",
-          "explain": "Multiply 5 gravel parts by 80 kg to get 400 kg.",
+          "latex": "\\text{Weight of 1 part} = 80",
+          "explain": "Evaluate intermediate step."
+        },
+        {
+          "latex": "\\text{Gravel weight} = 5 \\times 80",
+          "explain": "Multiply 5 gravel parts by 80 kg to get 400 kg."
+        },
+        {
+          "latex": "\\text{Gravel weight} = 400",
+          "explain": "Simplify to obtain 400.",
           "val": "400"
         }
       ],
@@ -535,12 +559,20 @@
       ],
       "steps": [
         {
-          "latex": "\\text{Total Workload} = 6 \\times 12 = 72\\text{ worker-hours}",
+          "latex": "\\text{Total Workload} = 6 \\times 12",
           "explain": "Compute constant product of worker count and hours."
         },
         {
-          "latex": "t = \\frac{72}{9} = 8\\text{ hours}",
-          "explain": "Divide total workload by 9 workers to find 8 hours.",
+          "latex": "\\text{Total Workload} = 72\\text{ worker-hours}",
+          "explain": "Evaluate intermediate step."
+        },
+        {
+          "latex": "t = \\frac{72}{9}",
+          "explain": "Divide total workload by 9 workers to find 8 hours."
+        },
+        {
+          "latex": "t = 8\\text{ hours}",
+          "explain": "Simplify to obtain 8.",
           "val": "8"
         }
       ],
@@ -617,12 +649,20 @@
       ],
       "steps": [
         {
-          "latex": "\\text{Cost in USD} = 3 \\times 25 = 75\\text{ dollars}",
+          "latex": "\\text{Cost in USD} = 3 \\times 25",
           "explain": "Find total cost in dollars for 3 packages."
         },
         {
-          "latex": "\\text{Cost in THB} = 75 \\times 34 = 2550\\text{ baht}",
-          "explain": "Convert dollars to baht by multiplying by 34.",
+          "latex": "\\text{Cost in USD} = 75\\text{ dollars}",
+          "explain": "Evaluate intermediate step."
+        },
+        {
+          "latex": "\\text{Cost in THB} = 75 \\times 34",
+          "explain": "Convert dollars to baht by multiplying by 34."
+        },
+        {
+          "latex": "\\text{Cost in THB} = 2550\\text{ baht}",
+          "explain": "Simplify to obtain 2550.",
           "val": "2550"
         }
       ],
@@ -713,12 +753,20 @@
           "explain": "Sum all three mixture parts: 14 + 3 + 1 = 18."
         },
         {
-          "latex": "\\text{Unit part} = \\frac{270}{18} = 15\\text{ kg}",
+          "latex": "\\text{Unit part} = \\frac{270}{18}",
           "explain": "Divide total alloy 270 kg by 18 parts to find 15 kg per part."
         },
         {
-          "latex": "\\text{Copper} = 14 \\times 15 = 210\\text{ kg}",
-          "explain": "Multiply 14 copper parts by 15 kg to get 210 kg.",
+          "latex": "\\text{Unit part} = 15\\text{ kg}",
+          "explain": "Evaluate intermediate step."
+        },
+        {
+          "latex": "\\text{Copper} = 14 \\times 15",
+          "explain": "Multiply 14 copper parts by 15 kg to get 210 kg."
+        },
+        {
+          "latex": "\\text{Copper} = 210\\text{ kg}",
+          "explain": "Simplify to obtain 210.",
           "val": "210"
         }
       ],
@@ -804,12 +852,24 @@
       ],
       "steps": [
         {
-          "latex": "N_1 \\omega_1 = N_2 \\omega_2 \\implies 72 \\times 25 = 18 \\times \\omega_2",
-          "explain": "Set up mechanical gear ratio conservation equation."
+          "latex": "N_1 \\omega_1 = N_2 \\omega_2",
+          "explain": "Set up mechanical gear ratio conservation equation. (Part 1)"
         },
         {
-          "latex": "1800 = 18 \\omega_2 \\implies \\omega_2 = \\frac{1800}{18} = 100",
-          "explain": "Divide 1800 by 18 to obtain generator pinion speed of 100 RPM.",
+          "latex": "72 \\times 25 = 18 \\times \\omega_2",
+          "explain": "Set up mechanical gear ratio conservation equation. (Part 2)"
+        },
+        {
+          "latex": "1800 = 18 \\omega_2",
+          "explain": "Divide 1800 by 18 to obtain generator pinion speed of 100 RPM. (Part 1)"
+        },
+        {
+          "latex": "\\omega_2 = \\frac{1800}{18}",
+          "explain": "Divide 1800 by 18 to obtain generator pinion speed of 100 RPM. (Part 2)"
+        },
+        {
+          "latex": "\\omega_2 = 100",
+          "explain": "Evaluate intermediate step.",
           "val": "100"
         }
       ],

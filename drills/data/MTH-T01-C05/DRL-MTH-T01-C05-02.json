@@ -283,8 +283,12 @@
           "explain": "Multiply whole integers 45 and 36."
         },
         {
-          "latex": "1620 \\times 10^{-3} = 1.620 = 1.62",
-          "explain": "Shift decimal 3 places left for 2 + 1 decimal places.",
+          "latex": "1620 \\times 10^{-3} = 1.620",
+          "explain": "Shift decimal 3 places left for 2 + 1 decimal places."
+        },
+        {
+          "latex": "1.620 = 1.62",
+          "explain": "Simplify to obtain 1.62.",
           "val": "1.62"
         }
       ],
@@ -603,12 +607,20 @@
       ],
       "steps": [
         {
-          "latex": "0.25m = 35 \\implies m = \\frac{35}{0.25}",
-          "explain": "Divide both sides by 0.25."
+          "latex": "0.25m = 35",
+          "explain": "Divide both sides by 0.25. (Part 1)"
         },
         {
-          "latex": "m = \\frac{3500}{25} = 140",
-          "explain": "Multiply numerator and denominator by 100 to get m = 140 megabytes.",
+          "latex": "m = \\frac{35}{0.25}",
+          "explain": "Divide both sides by 0.25. (Part 2)"
+        },
+        {
+          "latex": "m = \\frac{3500}{25}",
+          "explain": "Multiply numerator and denominator by 100 to get m = 140 megabytes."
+        },
+        {
+          "latex": "m = 140",
+          "explain": "Simplify to obtain 140.",
           "val": "140"
         }
       ],
@@ -695,12 +707,24 @@
       ],
       "steps": [
         {
-          "latex": "\\text{Tier 1} = 25 \\times 1.20 = 30",
+          "latex": "\\text{Tier 1} = 25 \\times 1.20",
           "explain": "Calculate charge for the initial 25 cubic meters."
         },
         {
-          "latex": "\\text{Tier 2} = (45 - 25) \\times 1.80 = 20 \\times 1.80 = 36",
+          "latex": "\\text{Tier 1} = 30",
+          "explain": "Evaluate intermediate step."
+        },
+        {
+          "latex": "\\text{Tier 2} = (45 - 25) \\times 1.80",
           "explain": "Calculate charge for the 20 cubic meters of excess consumption."
+        },
+        {
+          "latex": "\\text{Tier 2} = 20 \\times 1.80",
+          "explain": "Evaluate intermediate step."
+        },
+        {
+          "latex": "\\text{Tier 2} = 36",
+          "explain": "Evaluate intermediate step."
         },
         {
           "latex": "30 + 36 = 66",

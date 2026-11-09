@@ -79,16 +79,24 @@
       },
       "steps": [
         {
-          "latex": "40\\% = \\frac{40}{100} = 0.40",
-          "explain": "Convert the percentage into decimal form.",
+          "latex": "40\\% = \\frac{40}{100}",
+          "explain": "Convert the percentage into decimal form."
+        },
+        {
+          "latex": "\\frac{40}{100} = 0.40",
+          "explain": "Evaluate intermediate step.",
           "eq": [
             "40 / 100",
             "0.4"
           ]
         },
         {
-          "latex": "\\text{Pages} = 350 \\times 0.40 = 140",
-          "explain": "Multiply total page base by the rate.",
+          "latex": "\\text{Pages} = 350 \\times 0.40",
+          "explain": "Multiply total page base by the rate."
+        },
+        {
+          "latex": "\\text{Pages} = 140",
+          "explain": "Simplify to obtain 140.",
           "val": "140",
           "eq": [
             "350 * 0.40",
@@ -168,8 +176,16 @@
       },
       "steps": [
         {
-          "latex": "\\text{Paid Fraction} = 100\\% - 20\\% = 80\\% = 0.80",
-          "explain": "Subtract the discount rate from 100% to determine the paid retention multiplier.",
+          "latex": "\\text{Paid Fraction} = 100\\% - 20\\%",
+          "explain": "Subtract the discount rate from 100% to determine the paid retention multiplier."
+        },
+        {
+          "latex": "\\text{Paid Fraction} = 80\\%",
+          "explain": "Evaluate intermediate step."
+        },
+        {
+          "latex": "\\text{Paid Fraction} = 0.80",
+          "explain": "Evaluate intermediate step.",
           "eq": [
             "1 - 0.20",
             "0.80"
@@ -180,8 +196,12 @@
           "explain": "Equate 80% of original price to the sale price."
         },
         {
-          "latex": "P_{\\text{orig}} = \\frac{480}{0.80} = 600",
-          "explain": "Divide the discounted price by 0.80 to isolate the original base price.",
+          "latex": "P_{\\text{orig}} = \\frac{480}{0.80}",
+          "explain": "Divide the discounted price by 0.80 to isolate the original base price."
+        },
+        {
+          "latex": "\\frac{480}{0.80} = 600",
+          "explain": "Simplify to obtain 600.",
           "val": "600",
           "eq": [
             "480 / 0.80",
@@ -262,8 +282,12 @@
       },
       "steps": [
         {
-          "latex": "t = \\frac{9}{12} = \\frac{3}{4}\\text{ year}",
-          "explain": "Convert 9 months into fractional year by dividing by 12.",
+          "latex": "t = \\frac{9}{12}",
+          "explain": "Convert 9 months into fractional year by dividing by 12."
+        },
+        {
+          "latex": "t = \\frac{3}{4}\\text{ year}",
+          "explain": "Evaluate intermediate step.",
           "eq": [
             "9 / 12",
             "3 / 4"
@@ -278,8 +302,12 @@
           ]
         },
         {
-          "latex": "I = 600 \\times \\frac{3}{4} = 450",
-          "explain": "Multiply to determine the total simple interest owed.",
+          "latex": "I = 600 \\times \\frac{3}{4}",
+          "explain": "Multiply to determine the total simple interest owed."
+        },
+        {
+          "latex": "I = 450",
+          "explain": "Simplify to obtain 450.",
           "val": "450",
           "eq": [
             "600 * (3/4)",
@@ -362,24 +390,52 @@
       },
       "steps": [
         {
-          "latex": "M_{\\text{copper}} = 200 \\times (1 - 0.40) = 200 \\times 0.60 = 120\\text{ g}",
-          "explain": "Determine the mass of copper which remains invariant during the gold addition.",
+          "latex": "M_{\\text{copper}} = 200 \\times (1 - 0.40)",
+          "explain": "Determine the mass of copper which remains invariant during the gold addition."
+        },
+        {
+          "latex": "200 \\times (1 - 0.40) = 200 \\times 0.60",
+          "explain": "Evaluate intermediate step."
+        },
+        {
+          "latex": "200 \\times 0.60 = 120\\text{ g}",
+          "explain": "Evaluate intermediate step.",
           "eq": [
             "200 * 0.60",
             "120"
           ]
         },
         {
-          "latex": "120 = (1 - 0.50) \\times M_{\\text{final}} = 0.50 M_{\\text{final}} \\implies M_{\\text{final}} = \\frac{120}{0.50} = 240\\text{ g}",
-          "explain": "Equate invariant copper to the remaining 50% fraction of the expanded final ingot.",
+          "latex": "120 = (1 - 0.50) \\times M_{\\text{final}}",
+          "explain": "Equate invariant copper to the remaining 50% fraction of the expanded final ingot. (Part 1)"
+        },
+        {
+          "latex": "(1 - 0.50) \\times M_{\\text{final}} = 0.50 M_{\\text{final}}",
+          "explain": "Evaluate intermediate step."
+        },
+        {
+          "latex": "M_{\\text{final}} = \\frac{120}{0.50}",
+          "explain": "Equate invariant copper to the remaining 50% fraction of the expanded final ingot. (Part 2)"
+        },
+        {
+          "latex": "\\frac{120}{0.50} = 240\\text{ g}",
+          "explain": "Evaluate intermediate step.",
           "eq": [
             "120 / 0.50",
             "240"
           ]
         },
         {
-          "latex": "x = M_{\\text{final}} - 200 = 240 - 200 = 40\\text{ g}",
-          "explain": "Subtract the initial ingot mass to find the mass of pure gold added.",
+          "latex": "x = M_{\\text{final}} - 200",
+          "explain": "Subtract the initial ingot mass to find the mass of pure gold added."
+        },
+        {
+          "latex": "x = 240 - 200",
+          "explain": "Evaluate intermediate step."
+        },
+        {
+          "latex": "x = 40\\text{ g}",
+          "explain": "Simplify to obtain 40.",
           "val": "40",
           "eq": [
             "240 - 200",

@@ -374,8 +374,12 @@
           "explain": "Apply zero exponent rule to evaluate 5 to the power zero as 1."
         },
         {
-          "latex": "8 \\times 1 + 7 = 8 + 7 = 15",
-          "explain": "Multiply 8 by 1 and add 7 to obtain 15.",
+          "latex": "8 \\times 1 + 7 = 8 + 7",
+          "explain": "Multiply 8 by 1 and add 7 to obtain 15."
+        },
+        {
+          "latex": "8 + 7 = 15",
+          "explain": "Simplify to obtain 15.",
           "val": "15"
         }
       ],
@@ -710,16 +714,32 @@
       ],
       "steps": [
         {
-          "latex": "\\text{Numerator: } (2^3)^4 = 2^{3 \\times 4} = 2^{12}",
+          "latex": "\\text{Numerator: } (2^3)^4 = 2^{3 \\times 4}",
           "explain": "Multiply exponents in numerator to get 2^12."
         },
         {
-          "latex": "\\text{Denominator: } 2^7 \\times 2^3 = 2^{7 + 3} = 2^{10}",
+          "latex": "2^{3 \\times 4} = 2^{12}",
+          "explain": "Evaluate intermediate step."
+        },
+        {
+          "latex": "\\text{Denominator: } 2^7 \\times 2^3 = 2^{7 + 3}",
           "explain": "Add exponents in denominator to get 2^10."
         },
         {
-          "latex": "\\frac{2^{12}}{2^{10}} = 2^{12 - 10} = 2^2 = 4",
-          "explain": "Subtract exponents to obtain 2^2 = 4.",
+          "latex": "2^{7 + 3} = 2^{10}",
+          "explain": "Evaluate intermediate step."
+        },
+        {
+          "latex": "\\frac{2^{12}}{2^{10}} = 2^{12 - 10}",
+          "explain": "Subtract exponents to obtain 2^2 = 4."
+        },
+        {
+          "latex": "2^{12 - 10} = 2^2",
+          "explain": "Evaluate intermediate step."
+        },
+        {
+          "latex": "2^2 = 4",
+          "explain": "Simplify to obtain 4.",
           "val": "4"
         }
       ],
@@ -805,16 +825,24 @@
       ],
       "steps": [
         {
-          "latex": "\\text{Doubling periods } k = \\frac{24}{6} = 4",
+          "latex": "\\text{Doubling periods } k = \\frac{24}{6}",
           "explain": "Divide total elapsed hours 24 by doubling interval 6 to get 4 periods."
+        },
+        {
+          "latex": "\\frac{24}{6} = 4",
+          "explain": "Evaluate intermediate step."
         },
         {
           "latex": "2^4 = 16",
           "explain": "Calculate doubling factor 2 to the 4th power = 16."
         },
         {
-          "latex": "N = 150 \\times 16 = 2400",
-          "explain": "Multiply initial count 150 by 16 to obtain 2400 cells.",
+          "latex": "N = 150 \\times 16",
+          "explain": "Multiply initial count 150 by 16 to obtain 2400 cells."
+        },
+        {
+          "latex": "N = 2400",
+          "explain": "Simplify to obtain 2400.",
           "val": "2400"
         }
       ],

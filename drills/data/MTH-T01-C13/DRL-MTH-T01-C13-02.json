@@ -704,8 +704,12 @@
       ],
       "steps": [
         {
-          "latex": "4 \\times 5 = 20 \\land 4 + 5 = 9",
-          "explain": "Find factor pair of 20 that sums to 9."
+          "latex": "4 \\times 5 = 20",
+          "explain": "Find factor pair of 20 that sums to 9. - condition 1"
+        },
+        {
+          "latex": "4 + 5 = 9",
+          "explain": "Find factor pair of 20 that sums to 9. - condition 2"
         },
         {
           "latex": "(x + 4)(x + 5)",
@@ -794,12 +798,20 @@
       ],
       "steps": [
         {
-          "latex": "h(t) = 16t(5 - t) = 0",
+          "latex": "h(t) = 16t(5 - t)",
           "explain": "Factor polynomial 80t - 16t^2 by extracting common factor 16t."
         },
         {
-          "latex": "t = \\frac{80}{16} = 5",
-          "explain": "Solve 5 - t = 0 to get flight duration 5 seconds.",
+          "latex": "16t(5 - t) = 0",
+          "explain": "Evaluate intermediate step."
+        },
+        {
+          "latex": "t = \\frac{80}{16}",
+          "explain": "Solve 5 - t = 0 to get flight duration 5 seconds."
+        },
+        {
+          "latex": "t = 5",
+          "explain": "Simplify to obtain 5.",
           "val": "5"
         }
       ],

@@ -519,12 +519,20 @@
       ],
       "steps": [
         {
-          "latex": "168 = 2^3 \\times 3 \\times 7, \\quad 180 = 2^2 \\times 3^2 \\times 5",
-          "explain": "Prime factorize both dimensions."
+          "latex": "168 = 2^3 \\times 3 \\times 7",
+          "explain": "Prime factorize both dimensions. - component 1"
         },
         {
-          "latex": "\\gcd(168, 180) = 2^2 \\times 3 = 12",
-          "explain": "Take the product of common prime factors with minimum powers to find GCD 12.",
+          "latex": "180 = 2^2 \\times 3^2 \\times 5",
+          "explain": "Prime factorize both dimensions. - component 2"
+        },
+        {
+          "latex": "\\gcd(168, 180) = 2^2 \\times 3",
+          "explain": "Take the product of common prime factors with minimum powers to find GCD 12."
+        },
+        {
+          "latex": "2^2 \\times 3 = 12",
+          "explain": "Simplify to obtain 12.",
           "val": "12"
         }
       ],
@@ -612,12 +620,24 @@
       ],
       "steps": [
         {
-          "latex": "24 = 2^3 \\times 3, \\quad 36 = 2^2 \\times 3^2",
-          "explain": "Find prime factorizations of 24 and 36."
+          "latex": "24 = 2^3 \\times 3",
+          "explain": "Find prime factorizations of 24 and 36. - component 1"
         },
         {
-          "latex": "\\text{lcm}(24, 36) = 2^3 \\times 3^2 = 8 \\times 9 = 72",
-          "explain": "Compute LCM by taking maximum power of each prime factor.",
+          "latex": "36 = 2^2 \\times 3^2",
+          "explain": "Find prime factorizations of 24 and 36. - component 2"
+        },
+        {
+          "latex": "\\text{lcm}(24, 36) = 2^3 \\times 3^2",
+          "explain": "Compute LCM by taking maximum power of each prime factor."
+        },
+        {
+          "latex": "2^3 \\times 3^2 = 8 \\times 9",
+          "explain": "Evaluate intermediate step."
+        },
+        {
+          "latex": "8 \\times 9 = 72",
+          "explain": "Simplify to obtain 72.",
           "val": "72"
         }
       ],
@@ -711,8 +731,12 @@
           "explain": "Perform multiplication first."
         },
         {
-          "latex": "48 - 42 + 15 = 6 + 15 = 21",
-          "explain": "Perform subtraction and addition from left to right.",
+          "latex": "48 - 42 + 15 = 6 + 15",
+          "explain": "Perform subtraction and addition from left to right."
+        },
+        {
+          "latex": "6 + 15 = 21",
+          "explain": "Simplify to obtain 21.",
           "val": "21"
         }
       ],
@@ -809,8 +833,12 @@
           "explain": "Calculate product of GCD and LCM."
         },
         {
-          "latex": "b = \\frac{5880}{70} = 84",
-          "explain": "Divide by known parameter to find the second clock frequency.",
+          "latex": "b = \\frac{5880}{70}",
+          "explain": "Divide by known parameter to find the second clock frequency."
+        },
+        {
+          "latex": "b = 84",
+          "explain": "Simplify to obtain 84.",
           "val": "84"
         }
       ],
@@ -900,16 +928,28 @@
       ],
       "steps": [
         {
-          "latex": "12 - 10 = 2, \\quad 18 - 16 = 2 \\implies N + 2 \\text{ is divisible by 12 and 18}",
-          "explain": "Identify constant deficit offset of 2 capsules."
+          "latex": "12 - 10 = 2",
+          "explain": "Identify constant deficit offset of 2 capsules. (Part 1) - component 1"
+        },
+        {
+          "latex": "18 - 16 = 2",
+          "explain": "Identify constant deficit offset of 2 capsules. (Part 1) - component 2"
+        },
+        {
+          "latex": "N + 2 \\text{ is divisible by 12 and 18}",
+          "explain": "Identify constant deficit offset of 2 capsules. (Part 2)"
         },
         {
           "latex": "\\text{lcm}(12, 18) = 36",
           "explain": "Find the least common multiple of 12 and 18."
         },
         {
-          "latex": "N = 36 - 2 = 34",
-          "explain": "Subtract the deficit offset to obtain the minimal positive count 34.",
+          "latex": "N = 36 - 2",
+          "explain": "Subtract the deficit offset to obtain the minimal positive count 34."
+        },
+        {
+          "latex": "N = 34",
+          "explain": "Simplify to obtain 34.",
           "val": "34"
         }
       ],

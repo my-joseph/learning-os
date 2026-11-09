@@ -212,8 +212,12 @@
       ],
       "steps": [
         {
-          "latex": "14x + 19x = (14 + 19)x = 33x",
+          "latex": "14x + 19x = (14 + 19)x",
           "explain": "Combine like terms by adding container coefficients 14 and 19."
+        },
+        {
+          "latex": "(14 + 19)x = 33x",
+          "explain": "Evaluate intermediate step."
         },
         {
           "latex": "33 \\times 5 = 165",
@@ -388,8 +392,12 @@
           "explain": "Formulate linear equation representing remaining fuel."
         },
         {
-          "latex": "x = 620 + 145 = 765",
-          "explain": "Add 145 to both sides to find initial fuel 765.",
+          "latex": "x = 620 + 145",
+          "explain": "Add 145 to both sides to find initial fuel 765."
+        },
+        {
+          "latex": "x = 765",
+          "explain": "Simplify to obtain 765.",
           "val": "765"
         }
       ],
@@ -473,8 +481,12 @@
           "explain": "State the multiplicative equation."
         },
         {
-          "latex": "x = \\frac{960}{16} = 60",
-          "explain": "Divide both sides by 16 to find x = 60.",
+          "latex": "x = \\frac{960}{16}",
+          "explain": "Divide both sides by 16 to find x = 60."
+        },
+        {
+          "latex": "x = 60",
+          "explain": "Simplify to obtain 60.",
           "val": "60"
         }
       ],
@@ -559,8 +571,12 @@
           "explain": "Substitute length 45 and width 28 into the perimeter formula."
         },
         {
-          "latex": "P = 90 + 56 = 146",
-          "explain": "Calculate products and sum to get 146 meters.",
+          "latex": "P = 90 + 56",
+          "explain": "Calculate products and sum to get 146 meters."
+        },
+        {
+          "latex": "P = 146",
+          "explain": "Simplify to obtain 146.",
           "val": "146"
         }
       ],
@@ -738,16 +754,28 @@
       ],
       "steps": [
         {
-          "latex": "P = 2(2w + 3) + 2w = 78",
+          "latex": "P = 2(2w + 3) + 2w",
           "explain": "Substitute length L = 2w + 3 into the perimeter formula."
         },
         {
-          "latex": "4w + 6 + 2w = 78 \\implies 6w + 6 = 78",
-          "explain": "Distribute and combine like terms to simplify the equation."
+          "latex": "P = 78",
+          "explain": "Evaluate intermediate step."
         },
         {
-          "latex": "6w = 72 \\implies w = 12",
-          "explain": "Subtract 6 and divide by 6 to isolate width w = 12.",
+          "latex": "4w + 6 + 2w = 78",
+          "explain": "Distribute and combine like terms to simplify the equation. (Part 1)"
+        },
+        {
+          "latex": "6w + 6 = 78",
+          "explain": "Distribute and combine like terms to simplify the equation. (Part 2)"
+        },
+        {
+          "latex": "6w = 72",
+          "explain": "Subtract 6 and divide by 6 to isolate width w = 12. (Part 1)"
+        },
+        {
+          "latex": "w = 12",
+          "explain": "Subtract 6 and divide by 6 to isolate width w = 12. (Part 2)",
           "val": "12"
         }
       ],
@@ -840,12 +868,24 @@
           "explain": "Let the consecutive integers be n, n+1, and n+2, summing to 84."
         },
         {
-          "latex": "3n + 3 = 84 \\implies 3n = 81 \\implies n = 27",
-          "explain": "Solve the linear equation to find the smallest integer n = 27."
+          "latex": "3n + 3 = 84",
+          "explain": "Solve the linear equation to find the smallest integer n = 27. (Part 1)"
         },
         {
-          "latex": "n + 2 = 27 + 2 = 29",
-          "explain": "Add 2 to find the largest integer 29.",
+          "latex": "3n = 81",
+          "explain": "Solve the linear equation to find the smallest integer n = 27. (Part 2)"
+        },
+        {
+          "latex": "n = 27",
+          "explain": "Solve the linear equation to find the smallest integer n = 27. (Part 3)"
+        },
+        {
+          "latex": "n + 2 = 27 + 2",
+          "explain": "Add 2 to find the largest integer 29."
+        },
+        {
+          "latex": "27 + 2 = 29",
+          "explain": "Simplify to obtain 29.",
           "val": "29"
         }
       ],

@@ -812,8 +812,12 @@
       ],
       "steps": [
         {
-          "latex": "8(12 + 6) - 8(6) = 8(12) + 8(6) - 8(6) = 8(12)",
+          "latex": "8(12 + 6) - 8(6) = 8(12) + 8(6) - 8(6)",
           "explain": "Distribute 8 and cancel opposite terms 8(6) and -8(6)."
+        },
+        {
+          "latex": "8(12) + 8(6) - 8(6) = 8(12)",
+          "explain": "Evaluate intermediate step."
         },
         {
           "latex": "\\frac{8(12)}{8} = 12",
