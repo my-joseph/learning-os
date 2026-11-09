@@ -1,0 +1,956 @@
+{
+  "unitCode": "MTH-T01-C12",
+  "unitTitle": "Math Models and Geometry",
+  "topicTitle": "Math Models and Geometry",
+  "drillId": "DRL-MTH-T01-C12-03",
+  "sourceAttribution": "OpenStax Prealgebra 2e, CC BY 4.0",
+  "title": "Math Models and Geometry — Advanced Problem Set (10 Qs)",
+  "config": {
+    "questionCount": 10,
+    "difficulty": "3-4",
+    "difficultyMode": "Advanced Diagnostic & Applied Synthesis"
+  },
+  "problems": [
+    {
+      "id": "Q01",
+      "verificationLevel": "partial",
+      "level": 3,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c12-trapezoid-area-modeling",
+      "context": "highway_embankment_cross_section",
+      "prompt": "A highway embankment has a trapezoidal cross-section with top base $14$ meters, bottom base $26$ meters, height $8$ meters, and division factor $2$. Calculate the cross-sectional area $A$ in square meters by dividing the sum of the bases by $2$ and multiplying by height: evaluate $((14 + 26) \\div 2) \\times 8$ with bases $14$ and $26$, height $8$, and divisor $2$.",
+      "display": "A = \\frac{14 + 26}{2} \\times 8 = ?",
+      "plainText": "((14 + 26) / 2) * 8 = a",
+      "answerDisplay": "160",
+      "givens": {
+        "top_base": 14,
+        "bottom_base": 26,
+        "height": 8,
+        "divisor": 2
+      },
+      "trapGivens": [
+        14,
+        26
+      ],
+      "answerPlain": "160",
+      "answerSpec": {
+        "type": "number",
+        "value": "160",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c12-omit-half-factor-trapezoid-trap",
+      "trapDerivation": "(14 + 26) * 8",
+      "trapValue": "320",
+      "verify": {
+        "source": "160",
+        "trapValue": "320"
+      },
+      "checkpointHint": "Sum the two parallel bases divide by two and multiply the resulting average width by the vertical height",
+      "references": [
+        "MTH-T01-C12"
+      ],
+      "steps": [
+        {
+          "latex": "14 + 26 = 40",
+          "explain": "Sum parallel top and bottom bases."
+        },
+        {
+          "latex": "\\frac{40}{2} = 20",
+          "explain": "Divide sum of bases by 2 to get average width."
+        },
+        {
+          "latex": "20 \\times 8 = 160",
+          "explain": "Multiply average width by height 8 to obtain area 160 square meters.",
+          "val": "160"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c12-omit-half-factor-trapezoid-trap|direct|((# + #) / #) * # = a",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            5
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c12-omit-half-factor-trapezoid-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 12
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      }
+    },
+    {
+      "id": "Q02",
+      "verificationLevel": "partial",
+      "level": 3,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c12-cone-volume-modeling",
+      "context": "conical_grain_funnel_hopper",
+      "prompt": "A conical industrial hopper has base radius $6$ meters and height $15$ meters. Calculate the volume coefficient $k$ in $V = k\\pi$ by dividing the product of squared radius and height by $3$: evaluate $(6 \\times 6 \\times 15) \\div 3$ with radius $6$, height $15$, and divisor $3$.",
+      "display": "k = \\frac{6^2 \\times 15}{3} = ?",
+      "plainText": "(6^2 * 15) / 3 = k",
+      "answerDisplay": "180",
+      "givens": {
+        "radius": 6,
+        "height": 15,
+        "divisor": 3
+      },
+      "trapGivens": [
+        6,
+        15
+      ],
+      "answerPlain": "180",
+      "answerSpec": {
+        "type": "number",
+        "value": "180",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c12-cylinder-cone-factor-omission-trap",
+      "trapDerivation": "6 * 6 * 15",
+      "trapValue": "540",
+      "verify": {
+        "source": "180",
+        "trapValue": "540"
+      },
+      "checkpointHint": "Square the base radius multiply by vertical height and divide the product by three",
+      "references": [
+        "MTH-T01-C12"
+      ],
+      "steps": [
+        {
+          "latex": "6^2 = 36",
+          "explain": "Square the base radius 6."
+        },
+        {
+          "latex": "36 \\times 15 = 540",
+          "explain": "Multiply base area coefficient by vertical height 15."
+        },
+        {
+          "latex": "\\frac{540}{3} = 180",
+          "explain": "Divide by 3 to obtain cone volume coefficient 180.",
+          "val": "180"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c12-cylinder-cone-factor-omission-trap|direct|(#^# * #) / # = k",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            5
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c12-cylinder-cone-factor-omission-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 12
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      }
+    },
+    {
+      "id": "Q03",
+      "verificationLevel": "partial",
+      "level": 3,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c12-transversal-parallel-angles",
+      "context": "railroad_switch_transversal_alignment",
+      "prompt": "Two parallel railway tracks are intersected by a diagonal switch rail line. Two consecutive interior angles on the same side of the transversal sum to $180$ degrees. If one interior angle measures $112$ degrees, calculate the measure of the adjacent interior angle in degrees using $180 - 112$ with total $180$ and angle $112$.",
+      "display": "180 - 112 = ?",
+      "plainText": "180 - 112 = a",
+      "answerDisplay": "68",
+      "givens": {
+        "sum_ang": 180,
+        "known_ang": 112
+      },
+      "trapGivens": [
+        180,
+        112
+      ],
+      "answerPlain": "68",
+      "answerSpec": {
+        "type": "number",
+        "value": "68",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c12-consecutive-interior-equal-assumption-trap",
+      "trapDerivation": "180 + 112",
+      "trapValue": "292",
+      "verify": {
+        "source": "68",
+        "trapValue": "292"
+      },
+      "checkpointHint": "Subtract the known interior angle measure from one hundred eighty degrees",
+      "references": [
+        "MTH-T01-C12"
+      ],
+      "steps": [
+        {
+          "latex": "\\alpha + 112^\\circ = 180^\\circ",
+          "explain": "Set sum of consecutive interior angles to 180 degrees."
+        },
+        {
+          "latex": "\\alpha = 180^\\circ - 112^\\circ = 68^\\circ",
+          "explain": "Subtract 112 from 180 to obtain 68 degrees.",
+          "val": "68"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c12-consecutive-interior-equal-assumption-trap|direct|# - # = a",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            5
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c12-consecutive-interior-equal-assumption-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      }
+    },
+    {
+      "id": "Q04",
+      "verificationLevel": "partial",
+      "level": 3,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c12-volume-cylinder",
+      "context": "hydraulic_accumulator_piston_bore",
+      "prompt": "A high-pressure hydraulic cylinder has bore radius $5$ centimeters and stroke length $14$ centimeters. Calculate the volume coefficient $k$ in $V = k\\pi$ by multiplying the square of the radius by stroke length: evaluate $5 \\times 5 \\times 14$ with radius $5$ and height $14$.",
+      "display": "k = 5^2 \\times 14 = ?",
+      "plainText": "5^2 * 14 = k",
+      "answerDisplay": "350",
+      "givens": {
+        "radius": 5,
+        "height": 14
+      },
+      "trapGivens": [
+        5,
+        14
+      ],
+      "answerPlain": "350",
+      "answerSpec": {
+        "type": "number",
+        "value": "350",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c12-cylinder-linear-radius-trap",
+      "trapDerivation": "5 * 14",
+      "trapValue": "70",
+      "verify": {
+        "source": "350",
+        "trapValue": "70"
+      },
+      "checkpointHint": "Square the cylinder radius first before multiplying by the cylinder height",
+      "references": [
+        "MTH-T01-C12"
+      ],
+      "steps": [
+        {
+          "latex": "5^2 = 25",
+          "explain": "Square the cylinder bore radius 5."
+        },
+        {
+          "latex": "25 \\times 14 = 350",
+          "explain": "Multiply base coefficient 25 by stroke 14 to get 350.",
+          "val": "350"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c12-cylinder-linear-radius-trap|direct|#^# * # = k",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            5
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c12-cylinder-linear-radius-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      }
+    },
+    {
+      "id": "Q05",
+      "verificationLevel": "partial",
+      "level": 3,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c12-complementary-supplementary-angles",
+      "context": "solar_tracker_panel_zenith_tilt",
+      "prompt": "A dual-axis solar tracker measures a sun elevation angle of $58$ degrees above the horizontal ground line. The elevation angle and the ground alignment angle form a linear pair summing to $180$ degrees. Calculate the supplementary ground alignment angle in degrees using $180 - 58$ with total $180$ and angle $58$.",
+      "display": "180 - 58 = ?",
+      "plainText": "180 - 58 = a",
+      "answerDisplay": "122",
+      "givens": {
+        "total": 180,
+        "elevation": 58
+      },
+      "trapGivens": [
+        180,
+        58
+      ],
+      "answerPlain": "122",
+      "answerSpec": {
+        "type": "number",
+        "value": "122",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c12-complementary-transversal-trap",
+      "trapDerivation": "180 + 58",
+      "trapValue": "238",
+      "verify": {
+        "source": "122",
+        "trapValue": "238"
+      },
+      "checkpointHint": "Subtract the elevation angle from one hundred eighty degrees for a supplementary pair",
+      "references": [
+        "MTH-T01-C12"
+      ],
+      "steps": [
+        {
+          "latex": "\\theta + 58^\\circ = 180^\\circ",
+          "explain": "Set linear pair sum to 180 degrees."
+        },
+        {
+          "latex": "\\theta = 180^\\circ - 58^\\circ = 122^\\circ",
+          "explain": "Subtract 58 from 180 to obtain 122 degrees.",
+          "val": "122"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c12-complementary-transversal-trap|direct|# - # = a",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            5
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c12-complementary-transversal-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      }
+    },
+    {
+      "id": "Q06",
+      "verificationLevel": "partial",
+      "level": 4,
+      "category": "Applied Problem",
+      "archetype": "problem-solving",
+      "archetypeKey": "c12-pythagorean-geometric-distance-synthesis",
+      "context": "warehouse_mezzanine_access_ramp",
+      "prompt": "An industrial warehouse mezzanine is accessible via an inclined cargo ramp with horizontal floor run $24$ meters and vertical platform elevation $10$ meters. Calculate the inclined ramp travel length $d$ in meters using the Pythagorean relation $\\sqrt{24 \\times 24 + 10 \\times 10}$ with horizontal run $24$ and vertical rise $10$.",
+      "display": "d = \\sqrt{24^2 + 10^2} = ?",
+      "plainText": "sqrt(24^2 + 10^2) = d",
+      "answerDisplay": "26",
+      "givens": {
+        "run": 24,
+        "rise": 10
+      },
+      "trapGivens": [
+        24,
+        10
+      ],
+      "answerPlain": "26",
+      "answerSpec": {
+        "type": "number",
+        "value": "26",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c12-linear-distance-sum-trap",
+      "trapDerivation": "24 + 10",
+      "trapValue": "34",
+      "verify": {
+        "source": "26",
+        "trapValue": "34"
+      },
+      "checkpointHint": "Square the horizontal run square the vertical rise add both squares and take the square root",
+      "references": [
+        "MTH-T01-C12",
+        "OpenStax Prealgebra 2e §9.5"
+      ],
+      "competencies": [
+        "pythagorean-ramp-modeling",
+        "euclidean-metric-synthesis"
+      ],
+      "constraints": [
+        "orthogonal floor and elevation axes",
+        "strictly positive ramp length"
+      ],
+      "steps": [
+        {
+          "latex": "24^2 = 576 \\land 10^2 = 100",
+          "explain": "Square horizontal run 24 and vertical rise 10."
+        },
+        {
+          "latex": "576 + 100 = 676",
+          "explain": "Sum the two squares to obtain 676."
+        },
+        {
+          "latex": "\\sqrt{676} = 26",
+          "explain": "Extract square root of 676 to find ramp length 26 meters.",
+          "val": "26"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c12-linear-distance-sum-trap|direct|sqrt(#^# + #^#) = d",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c12-linear-distance-sum-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 12
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      }
+    },
+    {
+      "id": "Q07",
+      "verificationLevel": "partial",
+      "level": 4,
+      "category": "Applied Problem",
+      "archetype": "problem-solving",
+      "archetypeKey": "c12-annulus-shaded-region-synthesis",
+      "context": "aircraft_turbofan_casing_annulus",
+      "prompt": "An aircraft turbofan nacelle duct has an outer casing radius of $13$ decimeters and an inner rotor hub radius of $5$ decimeters. Calculate the annular airflow passage area coefficient $k$ in $A = k\\pi$ by subtracting the inner radius squared from the outer radius squared: evaluate $13 \\times 13 - 5 \\times 5$ with outer radius $13$ and inner radius $5$.",
+      "display": "k = 13^2 - 5^2 = ?",
+      "plainText": "13^2 - 5^2 = k",
+      "answerDisplay": "144",
+      "givens": {
+        "outer_rad": 13,
+        "inner_rad": 5
+      },
+      "trapGivens": [
+        13,
+        5
+      ],
+      "answerPlain": "144",
+      "answerSpec": {
+        "type": "number",
+        "value": "144",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c12-square-of-difference-annulus-trap",
+      "trapDerivation": "(13 - 5) * (13 - 5)",
+      "trapValue": "64",
+      "verify": {
+        "source": "144",
+        "trapValue": "64"
+      },
+      "checkpointHint": "Square each radius independently before subtracting the smaller square from the larger square",
+      "references": [
+        "MTH-T01-C12",
+        "OpenStax Prealgebra 2e §9.4"
+      ],
+      "competencies": [
+        "concentric-annulus-area",
+        "circular-boundary-partition"
+      ],
+      "constraints": [
+        "concentric circular geometry",
+        "strictly positive airflow area"
+      ],
+      "steps": [
+        {
+          "latex": "13^2 = 169 \\land 5^2 = 25",
+          "explain": "Square outer radius 13 and inner radius 5."
+        },
+        {
+          "latex": "169 - 25 = 144",
+          "explain": "Subtract inner area coefficient from outer area coefficient to get 144.",
+          "val": "144"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c12-square-of-difference-annulus-trap|direct|#^# - #^# = k",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c12-square-of-difference-annulus-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      }
+    },
+    {
+      "id": "Q08",
+      "verificationLevel": "partial",
+      "level": 4,
+      "category": "Applied Problem",
+      "archetype": "problem-solving",
+      "archetypeKey": "c12-composite-geometric-area-modeling",
+      "context": "community_swimming_pool_deck_layout",
+      "prompt": "A community aquatic facility has a central rectangular pool of length $20$ meters and width $10$ meters, flanked by two identical triangular splash extensions each having base $10$ meters and extension height $6$ meters. Calculate the total water surface area $A$ in square meters by adding the central rectangle area $20 \\times 10$ to the combined two triangles area $10 \\times 6$: evaluate $20 \\times 10 + 10 \\times 6$ with length $20$, width $10$, and extension height $6$.",
+      "display": "A = 20(10) + 10(6) = ?",
+      "plainText": "20*10 + 10*6 = a",
+      "answerDisplay": "260",
+      "givens": {
+        "len": 20,
+        "wid": 10,
+        "ext_ht": 6
+      },
+      "trapGivens": [
+        20,
+        6
+      ],
+      "answerPlain": "260",
+      "answerSpec": {
+        "type": "number",
+        "value": "260",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c12-subtraction-instead-of-addition-composite-trap",
+      "trapDerivation": "20 * 10 - 10 * 6",
+      "trapValue": "140",
+      "verify": {
+        "source": "260",
+        "trapValue": "140"
+      },
+      "checkpointHint": "Calculate the rectangular section area and add the combined area of both flanking triangular extensions",
+      "references": [
+        "MTH-T01-C12",
+        "OpenStax Prealgebra 2e §9.3"
+      ],
+      "competencies": [
+        "composite-polygonal-area",
+        "symmetric-geometric-decomposition"
+      ],
+      "constraints": [
+        "symmetric planar layout",
+        "non-overlapping contiguous partitions"
+      ],
+      "steps": [
+        {
+          "latex": "20 \\times 10 = 200",
+          "explain": "Calculate central rectangular pool area."
+        },
+        {
+          "latex": "2 \\times \\left(\\frac{1}{2} \\times 10 \\times 6\\right) = 60",
+          "explain": "Calculate combined area of two triangular extensions."
+        },
+        {
+          "latex": "200 + 60 = 260",
+          "explain": "Sum rectangular and triangular sections to get 260 square meters.",
+          "val": "260"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c12-subtraction-instead-of-addition-composite-trap|direct|#*# + #*# = a",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c12-subtraction-instead-of-addition-composite-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 12
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      }
+    },
+    {
+      "id": "Q09",
+      "verificationLevel": "partial",
+      "level": 4,
+      "category": "Applied Problem",
+      "archetype": "problem-solving",
+      "archetypeKey": "c12-composite-silo-volume-synthesis",
+      "context": "agricultural_feed_silo_geometry",
+      "prompt": "A farm grain silo consists of a cylindrical lower tower of radius $6$ meters and height $20$ meters, topped by a conical cap with radius $6$ meters, height $9$ meters, and division factor $3$. Calculate the total storage volume coefficient $k$ in $V = k\\pi$ by adding the cylinder volume $6 \\times 6 \\times 20$ to the cone volume $(6 \\times 6 \\times 9) \\div 3$: evaluate $6 \\times 6 \\times 20 + (6 \\times 6 \\times 9) \\div 3$ with radius $6$, cylinder height $20$, cone height $9$, and divisor $3$.",
+      "display": "k = 6^2(20) + \\frac{6^2(9)}{3} = ?",
+      "plainText": "6^2 * 20 + (6^2 * 9) / 3 = k",
+      "answerDisplay": "828",
+      "givens": {
+        "radius": 6,
+        "cyl_ht": 20,
+        "cone_ht": 9,
+        "divisor": 3
+      },
+      "trapGivens": [
+        6,
+        20
+      ],
+      "answerPlain": "828",
+      "answerSpec": {
+        "type": "number",
+        "value": "828",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c12-cone-cap-volume-omission-trap",
+      "trapDerivation": "6 * 6 * 20",
+      "trapValue": "720",
+      "verify": {
+        "source": "828",
+        "trapValue": "720"
+      },
+      "checkpointHint": "Compute the cylinder volume coefficient and add the cone volume coefficient with its one third factor",
+      "references": [
+        "MTH-T01-C12",
+        "OpenStax Prealgebra 2e §9.6"
+      ],
+      "competencies": [
+        "composite-solid-volume-synthesis",
+        "cylindrical-conical-decomposition"
+      ],
+      "constraints": [
+        "shared circular junction radius",
+        "strictly positive vertical heights"
+      ],
+      "steps": [
+        {
+          "latex": "6^2 \\times 20 = 720",
+          "explain": "Calculate cylinder volume coefficient."
+        },
+        {
+          "latex": "\\frac{6^2 \\times 9}{3} = \\frac{324}{3} = 108",
+          "explain": "Calculate conical cap volume coefficient."
+        },
+        {
+          "latex": "720 + 108 = 828",
+          "explain": "Sum both coefficients to obtain total silo volume coefficient 828.",
+          "val": "828"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c12-cone-cap-volume-omission-trap|direct|#^# * # + (#^# * #) / # = k",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c12-cone-cap-volume-omission-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 12
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      }
+    },
+    {
+      "id": "Q10",
+      "verificationLevel": "partial",
+      "level": 4,
+      "category": "Applied Problem",
+      "archetype": "problem-solving",
+      "archetypeKey": "c12-applied-cylindrical-surface-coating-synthesis",
+      "context": "subsea_pipeline_protective_coating",
+      "prompt": "A cylindrical subsea sensor casing of radius $4$ decimeters and length $25$ decimeters requires protective marine epoxy over its entire outer surface, including lateral sides and both circular ends. Calculate the total surface area coefficient $S$ in $A = S\\pi$ using $2 \\times 4 \\times 25 + 2 \\times 4 \\times 4$ with radius $4$, length $25$, and factor $2$.",
+      "display": "S = 2(4)(25) + 2(4^2) = ?",
+      "plainText": "2*4*25 + 2*4^2 = s",
+      "answerDisplay": "232",
+      "givens": {
+        "radius": 4,
+        "length": 25,
+        "factor": 2
+      },
+      "trapGivens": [
+        4,
+        25
+      ],
+      "answerPlain": "232",
+      "answerSpec": {
+        "type": "number",
+        "value": "232",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c12-omit-two-end-bases-trap",
+      "trapDerivation": "2 * 4 * 25",
+      "trapValue": "200",
+      "verify": {
+        "source": "232",
+        "trapValue": "200"
+      },
+      "checkpointHint": "Calculate the unrolled lateral surface area and add the areas of both circular end caps",
+      "references": [
+        "MTH-T01-C12",
+        "OpenStax Prealgebra 2e §9.4"
+      ],
+      "competencies": [
+        "total-cylindrical-surface-area",
+        "closed-solid-coating-modeling"
+      ],
+      "constraints": [
+        "closed cylinder with two circular bases",
+        "strictly positive dimensions"
+      ],
+      "steps": [
+        {
+          "latex": "2 \\times 4 \\times 25 = 200",
+          "explain": "Calculate lateral surface area coefficient."
+        },
+        {
+          "latex": "2 \\times (4^2) = 2 \\times 16 = 32",
+          "explain": "Calculate combined area coefficient of both circular end caps."
+        },
+        {
+          "latex": "200 + 32 = 232",
+          "explain": "Sum lateral and end cap coefficients to obtain total surface area coefficient 232.",
+          "val": "232"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c12-omit-two-end-bases-trap|direct|#*#*# + #*#^# = s",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c12-omit-two-end-bases-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 12
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      }
+    }
+  ],
+  "schemaVersion": "2.0-math",
+  "subject": "MATH",
+  "createdAt": "2026-11-09 21:06:10",
+  "sessionSummary": {
+    "practiceStatus": "Ready",
+    "score": 0,
+    "maxScore": 10,
+    "accuracyPct": 0,
+    "mistakeCategories": [],
+    "divergedStepsSummary": "",
+    "attemptDate": null,
+    "syncedToNotionAt": null,
+    "notionPageId": null
+  },
+  "localFilePath": "drills/data/MTH-T01-C12/DRL-MTH-T01-C12-03.json"
+}
