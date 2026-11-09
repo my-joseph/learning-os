@@ -32,6 +32,8 @@ def normalize_prompt_numbers(prompt: str) -> List[float]:
     while re.search(r"(\d+),(\d+)", text):
         text = re.sub(r"(\d+),(\d+)", r"\g<1>\g<2>", text)
     text = re.sub(r"\^\{?[23]\}?", "", text)
+    # Separate numeric coefficients from variables, units, and LaTeX macros (e.g. 3x -> 3 x, 4\theta -> 4 \theta, 15m -> 15 m)
+    text = re.sub(r"(?<=\d)(?=[a-zA-Z\\])", " ", text)
     raw_nums = re.findall(r"\b\d+(?:\.\d+)?\b", text)
     nums = []
     for r in raw_nums:

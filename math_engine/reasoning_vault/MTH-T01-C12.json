@@ -20,7 +20,8 @@
         "circuit_board_perimeter"
       ],
       "usedContexts": [
-        "garden_fencing_perimeter"
+        "garden_fencing_perimeter",
+        "solar_farm_inverter_substation_lot"
       ]
     },
     {
@@ -128,9 +129,9 @@
       "archetypeKey": "c12-complementary-supplementary-angles",
       "level": 3,
       "name": "Complementary and Supplementary Angle Relationships",
-      "coreConcept": "Two angles are complementary if their sum is 90 degrees; supplementary if their sum is 180 degrees.",
-      "mentalModel": "Decomposing a right angle or straight flat line.",
-      "governingRelation": "\\alpha + \\beta = 90^\\circ \\land \\gamma + \\delta = 180^\\circ",
+      "coreConcept": "Solve for unknown angles in complementary (90 degrees) or supplementary (180 degrees) pairs via algebraic equations or multi-step geometric constraints.",
+      "mentalModel": "Decomposing an angle pair into algebraic expressions summing to a right or straight angle.",
+      "governingRelation": "(m\\theta + k) + \\theta = 90^\\circ \\lor (m\\theta + k) + \\theta = 180^\\circ",
       "cognitiveTraps": [
         "c12-complementary-supplementary-confusion-trap",
         "c12-subtraction-sign-inversion-trap"
@@ -162,7 +163,8 @@
         "geodetic_positioning"
       ],
       "usedContexts": [
-        "bridge_truss_triangulation"
+        "bridge_truss_triangulation",
+        "telescope_truss_cantilever_bracket"
       ]
     },
     {
@@ -183,7 +185,8 @@
       ],
       "usedContexts": [
         "building_gable_facade_area",
-        "community_swimming_pool_deck_layout"
+        "community_swimming_pool_deck_layout",
+        "intermodal_freight_cargo_diagonal"
       ]
     },
     {
@@ -204,7 +207,8 @@
       ],
       "usedContexts": [
         "water_tower_protective_coating",
-        "subsea_pipeline_protective_coating"
+        "subsea_pipeline_protective_coating",
+        "deep_sea_titanium_submersible_hull"
       ]
     },
     {
@@ -224,7 +228,8 @@
         "roof_mansard_surface"
       ],
       "usedContexts": [
-        "highway_embankment_cross_section"
+        "highway_embankment_cross_section",
+        "highway_embankment_retention_basin"
       ]
     },
     {
@@ -251,9 +256,9 @@
       "archetypeKey": "c12-transversal-parallel-angles",
       "level": 3,
       "name": "Transversal Angle Pairs on Parallel Lines",
-      "coreConcept": "Consecutive interior angles formed by a transversal intersecting parallel lines are supplementary: alpha + beta = 180 degrees.",
-      "mentalModel": "Sliding an intersection template along parallel rails.",
-      "governingRelation": "\\alpha + \\beta = 180^\\circ \\land \\alpha = \\gamma",
+      "coreConcept": "Consecutive interior angles formed by a transversal intersecting parallel lines sum to 180 degrees; setup and solve linear algebraic equations to determine angle measures.",
+      "mentalModel": "Sliding an intersection template along parallel rails and setting up algebraic sums.",
+      "governingRelation": "(ax + b) + (cx + d) = 180^\\circ",
       "cognitiveTraps": [
         "c12-consecutive-interior-equal-assumption-trap",
         "c12-complementary-transversal-trap"
@@ -264,7 +269,8 @@
         "optical_prism_deviation"
       ],
       "usedContexts": [
-        "railroad_switch_transversal_alignment"
+        "railroad_switch_transversal_alignment",
+        "high_speed_rail_cant_deflection"
       ]
     },
     {
@@ -284,7 +290,8 @@
         "aircraft_glide_slope"
       ],
       "usedContexts": [
-        "warehouse_mezzanine_access_ramp"
+        "warehouse_mezzanine_access_ramp",
+        "coastal_breakwater_riprap_triangulation"
       ]
     },
     {
