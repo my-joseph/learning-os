@@ -211,8 +211,20 @@ export default function PracticeStudioPage() {
         setCfgUnit(doc.unitCode);
       }
       if (doc.config) {
-        setCfgCount(doc.config.questionCount || 5);
-        setCfgDifficulty(doc.config.difficulty || "ALL");
+        const allowedCounts = [5, 8, 10, 15, 20];
+        const loadedCount = Number(doc.config.questionCount);
+        if (allowedCounts.includes(loadedCount)) {
+          setCfgCount(loadedCount);
+        } else {
+          setCfgCount(5);
+        }
+        const allowedDiffs = ["ALL", "1", "2", "3", "4"];
+        const loadedDiff = String(doc.config.difficulty || "ALL").toUpperCase();
+        if (allowedDiffs.includes(loadedDiff)) {
+          setCfgDifficulty(loadedDiff);
+        } else {
+          setCfgDifficulty("ALL");
+        }
       }
       setActiveSteps({});
     } catch (err: unknown) {
@@ -967,6 +979,7 @@ export default function PracticeStudioPage() {
                             className="w-full bg-slate-50 dark:bg-[#1d2333] border border-slate-200 dark:border-[#2c354d] rounded-lg px-2.5 py-2 text-xs text-slate-900 dark:text-slate-200"
                           >
                             <option value={5}>5 Questions</option>
+                            <option value={8}>8 Questions</option>
                             <option value={10}>10 Questions</option>
                             <option value={15}>15 Questions</option>
                             <option value={20}>20 Questions</option>
