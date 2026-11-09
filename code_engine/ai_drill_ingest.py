@@ -183,6 +183,244 @@ def check_dual_pre_execution(pid: str, prob: Dict[str, Any]) -> None:
             )
 
 
+# ---------------------------------------------------------------------------
+# Anti-Spoonfeeding & Mutation Testing Guards
+# ---------------------------------------------------------------------------
+SPOONFEEDING_PROMPT_PATTERN = re.compile(
+    r"(?:\*\*|#{1,4}\s*|\b)(Defect Analysis|Root Cause Analysis|Bug Analysis|Root Cause|Defect Cause)(?:\*\*|:|\b)",
+    re.IGNORECASE,
+)
+
+SPOONFEEDING_COMMENT_PATTERN = re.compile(
+    r"(?://|/\*)\s*(?:BUG|DEFECT|FIX HERE|FIX ME|SOLUTION|ERROR)\b",
+    re.IGNORECASE,
+)
+
+SPOONFEEDING_HINT_PATTERN = re.compile(
+    r"\b(secondary\s+Map|use\s+closure|new\s+Map\(\)|state\s+machine)\b",
+    re.IGNORECASE,
+)
+
+SET_TIMEOUT_PATTERN = re.compile(r"setTimeout\s*\([^,]+,\s*(\d+)\s*\)")
+
+
+def check_anti_spoonfeeding(pid: str, prob: Dict[str, Any]) -> None:
+    """Enforces Anti-Spoonfeeding Guard (04_CODE §4, §7):
+    - No 'Defect Analysis' or 'Root Cause' in prompt.
+    - No '// BUG:' or '// FIX HERE:' in starterCode.
+    - No naming of internal data structures (e.g. 'secondary Map', 'use closure') in hints.
+    """
+    prompt = prob.get("prompt", "")
+    m_prompt = SPOONFEEDING_PROMPT_PATTERN.search(prompt)
+    if m_prompt:
+        raise AiContractError(
+            f"[{pid}] Anti-Spoonfeeding Guard violated: prompt contains explicit defect analysis header '{m_prompt.group()}'. "
+            "Specify observable behavior and SLA contracts instead of spoon-feeding the bug."
+        )
+
+    starter = prob.get("starterCode", "")
+    m_starter = SPOONFEEDING_COMMENT_PATTERN.search(starter)
+    if m_starter:
+        raise AiContractError(
+            f"[{pid}] Anti-Spoonfeeding Guard violated: starterCode contains spoiler comment '{m_starter.group()}'. "
+            "Do not point out bug locations with inline comments."
+        )
+
+    hints = []
+    for k in ("inputHint", "placeholder", "checkpointHint"):
+        v = prob.get(k)
+        if isinstance(v, str):
+            hints.append((k, v))
+    spec = prob.get("answerSpec") or {}
+    for k in ("inputHint", "placeholder"):
+        v = spec.get(k)
+        if isinstance(v, str):
+            hints.append((f"answerSpec.{k}", v))
+
+    for h_name, h_val in hints:
+        m_hint = SPOONFEEDING_HINT_PATTERN.search(h_val)
+        if m_hint:
+            raise AiContractError(
+                f"[{pid}] Anti-Spoonfeeding Guard violated: {h_name} contains explicit data structure spoon-feeding '{m_hint.group()}'. "
+                "Use behavioral or contract hints instead of prescribing implementation details."
+            )
+
+
+def check_deterministic_clock(pid: str, prob: Dict[str, Any]) -> None:
+    """Enforces Deterministic Clock Invariant:
+    Time-based tests using setTimeout > 50ms must support/use an injectable clock (e.g. options.now).
+    """
+    tests = prob.get("visibleTests", []) + prob.get("hiddenTests", [])
+    prompt = prob.get("prompt", "")
+    sol = prob.get("solutionCode", "")
+
+    for t in tests:
+        code = t.get("testCode", "")
+        for match in SET_TIMEOUT_PATTERN.finditer(code):
+            delay = int(match.group(1))
+            if delay > 50:
+                # Strip Date.now to prevent false positives
+                clean_text = re.sub(r"Date\.now", "", prompt + " " + code + " " + sol)
+                has_clock = bool(re.search(r"\b(options\.now|now\s*[:=,]|fakeTime)\b", clean_text, re.IGNORECASE))
+                if not has_clock:
+                    raise AiContractError(
+                        f"[{pid}] Deterministic Clock Invariant violated: test '{t.get('name')}' uses "
+                        f"setTimeout with delay {delay}ms (> 50ms) without an injectable clock (options.now). "
+                        "Inject a deterministic clock to prevent flaky test execution."
+                    )
+
+
+def generate_mutants_for_problem(prob: Dict[str, Any]) -> List[Dict[str, str]]:
+    """Generates synthetic mutants (cheating, constant returns, bypassed logic) for a problem."""
+    entry_point = prob.get("entryPoint")
+    if not entry_point:
+        return []
+
+    mutants = []
+
+    # Mutant 1: Always returns constant true / empty object / CLOSED
+    m1 = f"""
+function {entry_point}() {{
+  return {{
+    consume: () => true,
+    get: async () => ({{}}),
+    execute: async () => 'MUTANT_OK',
+    getState: () => 'CLOSED'
+  }};
+}}
+module.exports = {{ {entry_point} }};
+"""
+    mutants.append({"name": "always_true_or_closed", "code": m1})
+
+    # Mutant 2: Always returns false / throws / OPEN
+    m2 = f"""
+function {entry_point}() {{
+  return {{
+    consume: () => false,
+    get: async () => {{ throw new Error('MUTANT_FAIL'); }},
+    execute: async () => {{ throw new Error('CIRCUIT_BREAKER_OPEN'); }},
+    getState: () => 'OPEN'
+  }};
+}}
+module.exports = {{ {entry_point} }};
+"""
+    mutants.append({"name": "always_false_or_open", "code": m2})
+
+    # Mutant 3: Rate Limiter bypass (always refills to capacity on call)
+    if "limiter" in entry_point.lower() or "ratelimit" in entry_point.lower():
+        m3 = f"""
+function {entry_point}({{ capacity = 10, refillRate = 1, initialTokens, now = Date.now }} = {{}}) {{
+  return {{
+    consume(cost = 1) {{
+      // Mutant cheater: sets tokens = capacity every call
+      return cost <= capacity;
+    }}
+  }};
+}}
+module.exports = {{ {entry_point} }};
+"""
+        mutants.append({"name": "bypass_capacity_clamp", "code": m3})
+
+    # Mutant 4: Circuit Breaker that never resets failure count on success
+    if "circuit" in entry_point.lower() or "breaker" in entry_point.lower():
+        m4 = f"""
+function {entry_point}(asyncOperation, options = {{}}) {{
+  const failureThreshold = options.failureThreshold !== undefined ? options.failureThreshold : 3;
+  const resetTimeoutMs = options.resetTimeoutMs !== undefined ? options.resetTimeoutMs : 50;
+  const now = options.now || Date.now;
+
+  let state = 'CLOSED';
+  let failureCount = 0;
+  let openedAt = 0;
+
+  return {{
+    async execute(...args) {{
+      const currentTime = now();
+      if (state === 'OPEN') {{
+        if (currentTime - openedAt >= resetTimeoutMs) {{
+          state = 'HALF_OPEN';
+        }} else {{
+          throw new Error('CIRCUIT_BREAKER_OPEN');
+        }}
+      }}
+      try {{
+        const res = await asyncOperation(...args);
+        // BUG MUTANT: Omit failureCount = 0 on success in CLOSED!
+        if (state === 'HALF_OPEN') {{
+          state = 'CLOSED';
+        }}
+        return res;
+      }} catch (err) {{
+        failureCount++;
+        if (state === 'HALF_OPEN' || failureCount >= failureThreshold) {{
+          state = 'OPEN';
+          openedAt = now();
+        }}
+        throw err;
+      }}
+    }},
+    getState() {{
+      if (state === 'OPEN' && now() - openedAt >= resetTimeoutMs) return 'HALF_OPEN';
+      return state;
+    }}
+  }};
+}}
+module.exports = {{ {entry_point} }};
+"""
+        mutants.append({"name": "no_failure_count_reset_on_success", "code": m4})
+
+    # Mutant 5: Async Cache that ignores inFlight coalescing (the starterCode bug)
+    if "cache" in entry_point.lower():
+        m5 = f"""
+function {entry_point}(fetchFn) {{
+  const cache = new Map();
+  return {{
+    async get(key) {{
+      if (cache.has(key)) return cache.get(key);
+      // BUG MUTANT: no in-flight promise sharing
+      const data = await fetchFn(key);
+      cache.set(key, data);
+      return data;
+    }}
+  }};
+}}
+module.exports = {{ {entry_point} }};
+"""
+        mutants.append({"name": "no_in_flight_coalescing", "code": m5})
+
+    return mutants
+
+
+def check_mutation_testing(pid: str, prob: Dict[str, Any]) -> None:
+    """Enforces Mutation Testing Guard (Anti-Green-Illusion Guard):
+    Runs mutated / cheating implementations against the problem's test suites.
+    The test suite MUST fail on every mutant. If any mutant passes, tests are too weak.
+    """
+    sol = prob.get("solutionCode")
+    visible = prob.get("visibleTests", [])
+    hidden = prob.get("hiddenTests", [])
+
+    if not sol or not (visible or hidden):
+        return
+
+    mutants = generate_mutants_for_problem(prob)
+    custom_mutants = prob.get("verify", {}).get("mutants") or prob.get("mutants") or []
+    mutants.extend(custom_mutants)
+
+    for m in mutants:
+        m_name = m.get("name", "unnamed_mutant")
+        m_code = m.get("code", "")
+        if not m_code:
+            continue
+
+        report = run_tests(m_code, visible, hidden, timeout_sec=2.0)
+        if report.get("allPassed"):
+            raise AiContractError(
+                f"[{pid}] Anti-Green-Illusion Guard: Test suite failed Mutation Testing for mutant '{m_name}'. "
+                "Mutant code passed all tests! Add stricter assertions or edge-case tests to kill this mutant."
+            )
+
+
 def validate_ai_code_contract(prob: Dict[str, Any]) -> bool:
     """
     Enforces strict rules for AI-written programming problems (04_CODE, 07_PROBLEM_GEN §4):
@@ -190,7 +428,10 @@ def validate_ai_code_contract(prob: Dict[str, Any]) -> bool:
     2. Zero Toy Code Guard: No foo/bar/baz/test1 in prompt, code, or tests
     3. Zero Wall-of-Text Guard: Prompt > 250 chars requires bullets, sections, and backticks
     4. Zero-Leak Hint Guard: Hints do not spoil answers, methods, or bug lines
-    5. Dual Pre-Execution Verification: Canonical is 100% Green; Debugging starterCode is Red
+    5. Anti-Spoonfeeding Guard: No defect analysis headers, // BUG: comments, or explicit data structure hints
+    6. Deterministic Clock Invariant: Time-based tests > 50ms must support injectable clock
+    7. Dual Pre-Execution Verification: Canonical is 100% Green; Debugging starterCode is Red
+    8. Mutation Testing Guard (Anti-Green-Illusion): Test suite must kill all synthetic mutants
     """
     pid = prob.get("id", "?")
 
@@ -222,8 +463,17 @@ def validate_ai_code_contract(prob: Dict[str, Any]) -> bool:
     # 4. Zero-Leak Hint Guard
     check_zero_leak_hint(pid, prob)
 
-    # 5. Dual Pre-Execution Verification
+    # 5. Anti-Spoonfeeding Guard
+    check_anti_spoonfeeding(pid, prob)
+
+    # 6. Deterministic Clock Invariant
+    check_deterministic_clock(pid, prob)
+
+    # 7. Dual Pre-Execution Verification
     check_dual_pre_execution(pid, prob)
+
+    # 8. Mutation Testing Guard (Anti-Green-Illusion)
+    check_mutation_testing(pid, prob)
 
     return True
 

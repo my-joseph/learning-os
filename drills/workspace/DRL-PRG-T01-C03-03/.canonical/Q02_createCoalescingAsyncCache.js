@@ -11,15 +11,15 @@ function createCoalescingAsyncCache(fetchFn) {
         return inFlight.get(key);
       }
 
-      const promise = (async () => {
-        try {
-          const data = await fetchFn(key);
+      const promise = Promise.resolve()
+        .then(() => fetchFn(key))
+        .then((data) => {
           cache.set(key, data);
           return data;
-        } finally {
+        })
+        .finally(() => {
           inFlight.delete(key);
-        }
-      })();
+        });
 
       inFlight.set(key, promise);
       return promise;

@@ -11,7 +11,8 @@ const flakyClearingHouse = async () => {
   throw new Error('Clearing house gateway error');
 };
 
-const breaker = createCircuitBreaker(flakyClearingHouse, { failureThreshold: 3, resetTimeoutMs: 40 });
+let fakeTime = 1000;
+const breaker = createCircuitBreaker(flakyClearingHouse, { failureThreshold: 3, resetTimeoutMs: 40, now: () => fakeTime });
 
 for (let i = 0; i < 3; i++) {
   await assert.rejects(async () => breaker.execute(), /Clearing house gateway error/);
@@ -22,23 +23,24 @@ await assert.rejects(async () => breaker.execute(), /CIRCUIT_BREAKER_OPEN/);
 assert.strictEqual(failures, 3);
 });
 
-test("[Q03-T02] should transition to HALF_OPEN after cooldown and recover to CLOSED on probe success", async () => {
-  let healthy = false;
-const remoteService = async () => {
-  if (!healthy) throw new Error('Outage');
-  return 'SETTLED_TX_OK';
+test("[Q03-T02] should reset failure counter on successful execution preventing premature tripping", async () => {
+  let calls = 0;
+const unstableGateway = async () => {
+  calls++;
+  if (calls === 1 || calls === 3) throw new Error('Transient error');
+  return 'SUCCESS';
 };
 
-const breaker = createCircuitBreaker(remoteService, { failureThreshold: 2, resetTimeoutMs: 30 });
-await assert.rejects(async () => breaker.execute(), /Outage/);
-await assert.rejects(async () => breaker.execute(), /Outage/);
-assert.strictEqual(breaker.getState(), 'OPEN');
+let fakeTime = 1000;
+const breaker = createCircuitBreaker(unstableGateway, { failureThreshold: 2, now: () => fakeTime });
 
-await new Promise(r => setTimeout(r, 40));
-assert.strictEqual(breaker.getState(), 'HALF_OPEN');
+await assert.rejects(async () => breaker.execute(), /Transient error/);
+assert.strictEqual(breaker.getState(), 'CLOSED');
 
-healthy = true;
-const probeResult = await breaker.execute();
-assert.strictEqual(probeResult, 'SETTLED_TX_OK');
+const res = await breaker.execute();
+assert.strictEqual(res, 'SUCCESS');
+assert.strictEqual(breaker.getState(), 'CLOSED');
+
+await assert.rejects(async () => breaker.execute(), /Transient error/);
 assert.strictEqual(breaker.getState(), 'CLOSED');
 });

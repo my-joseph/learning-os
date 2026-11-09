@@ -225,6 +225,77 @@ class TestAiCodeIngest(unittest.TestCase):
             validate_ai_code_contract(prob)
         self.assertIn("must have verificationLevel='partial'", str(ctx.exception))
 
+    def test_validate_rejects_spoonfeeding(self):
+        """Verifies Anti-Spoonfeeding Guard against defect analysis, bug comments, and data structure hints."""
+        # 1. Defect Analysis header in prompt
+        prob = self._create_valid_problem()
+        prob["prompt"] = (
+            "Implement `createTokenBucketRateLimiter(options)`.\n\n"
+            "**Defect Analysis:**\n"
+            "- The previous code had a bug where timestamp was never updated.\n\n"
+            "**Requirements:**\n"
+            "- `capacity`: max tokens."
+        )
+        with self.assertRaises(AiContractError) as ctx:
+            validate_ai_code_contract(prob)
+        self.assertIn("Anti-Spoonfeeding Guard violated", str(ctx.exception))
+        self.assertIn("defect analysis", str(ctx.exception).lower())
+
+        # 2. Bug comments in starter code
+        prob = self._create_valid_problem()
+        prob["starterCode"] = (
+            "function createTokenBucketRateLimiter() {\n"
+            "  // BUG: fix this return value\n"
+            "  return { consume: () => false };\n"
+            "}\n"
+            "module.exports = { createTokenBucketRateLimiter };\n"
+        )
+        with self.assertRaises(AiContractError) as ctx:
+            validate_ai_code_contract(prob)
+        self.assertIn("Anti-Spoonfeeding Guard violated", str(ctx.exception))
+        self.assertIn("spoiler comment", str(ctx.exception))
+
+        # 3. Explicit data structure hints
+        prob = self._create_valid_problem()
+        prob["inputHint"] = "Maintain state using a secondary Map and use closure"
+        with self.assertRaises(AiContractError) as ctx:
+            validate_ai_code_contract(prob)
+        self.assertIn("Anti-Spoonfeeding Guard violated", str(ctx.exception))
+
+    def test_validate_rejects_non_deterministic_clock(self):
+        """Verifies Deterministic Clock Invariant against flaky setTimeout > 50ms without clock injection."""
+        prob = self._create_valid_problem()
+        prob["prompt"] = "Implement `createTokenBucketRateLimiter(options)`.\n\n- `capacity`: number."
+        prob["visibleTests"] = [
+            {
+                "name": "flaky real time test",
+                "testCode": "await new Promise(r => setTimeout(r, 200));\nassert.strictEqual(true, true);\n"
+            }
+        ]
+        with self.assertRaises(AiContractError) as ctx:
+            validate_ai_code_contract(prob)
+        self.assertIn("Deterministic Clock Invariant violated", str(ctx.exception))
+
+    def test_validate_rejects_weak_tests_passing_mutants(self):
+        """Verifies Anti-Green-Illusion Guard rejects test suites that fail to kill cheating mutants."""
+        prob = self._create_valid_problem()
+        # Weak test suite that only tests a single consume(1) that returns true
+        prob["visibleTests"] = [
+            {
+                "name": "weak test",
+                "testCode": (
+                    "const limiter = createTokenBucketRateLimiter({ capacity: 5, refillRatePerSecond: 1 });\n"
+                    "assert.strictEqual(limiter.consume(1), true);\n"
+                )
+            }
+        ]
+        prob["hiddenTests"] = []
+
+        with self.assertRaises(AiContractError) as ctx:
+            validate_ai_code_contract(prob)
+        self.assertIn("Anti-Green-Illusion Guard", str(ctx.exception))
+        self.assertIn("Mutation Testing", str(ctx.exception))
+
     def test_full_ingest_pipeline_in_temp_dir(self):
         """Tests full end-to-end ingest into temporary data and workspace directories."""
         with tempfile.TemporaryDirectory() as tmp_data_dir, tempfile.TemporaryDirectory() as tmp_ws_dir:

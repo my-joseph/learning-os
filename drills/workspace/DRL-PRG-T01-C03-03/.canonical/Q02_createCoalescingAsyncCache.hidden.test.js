@@ -4,16 +4,17 @@ const assert = require('node:assert');
 const { createCoalescingAsyncCache } = require('../Q02_createCoalescingAsyncCache.js');
 
 
-test("[Q02-HIDDEN-T01] should clean up in-flight map after promise rejects", async () => {
+test("[Q02-HIDDEN-T01] should handle synchronous and asynchronous errors and clean up in-flight state", async () => {
   let attempt = 0;
-const failingFetcher = async (symbol) => {
+const syncFailingFetcher = (symbol) => {
   attempt++;
-  if (attempt === 1) throw new Error('Network timeout');
-  return { symbol, status: 'RECOVERED' };
+  if (attempt === 1) throw new Error('Synchronous API crash');
+  return Promise.resolve({ symbol, status: 'RECOVERED' });
 };
 
-const cache = createCoalescingAsyncCache(failingFetcher);
-await assert.rejects(async () => cache.get('SOL-USD'), /Network timeout/);
+const cache = createCoalescingAsyncCache(syncFailingFetcher);
+await assert.rejects(async () => cache.get('SOL-USD'), /Synchronous API crash/);
 const recovered = await cache.get('SOL-USD');
 assert.strictEqual(recovered.status, 'RECOVERED');
+assert.strictEqual(attempt, 2);
 });

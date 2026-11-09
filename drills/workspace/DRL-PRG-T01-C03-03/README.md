@@ -37,32 +37,29 @@ npm run submit
 - **Acceptance Scenarios:** 2 visible scenarios (+ 1 hidden trap tests) in `Q01_createTelemetryRateLimiter.test.js`
 - **Requirement:** Implement `createTelemetryRateLimiter(options)` for connected IoT fleet telematics beacons transmitting sensor metrics over cellular satellite.
 
-**System Architecture & Options:**
-- `capacity`: Maximum burst packet allowance (positive integer).
-- `refillRate`: Accrued transmission tokens per second (positive number).
-- `initialTokens`: Initial transmission allowance; defaults to `capacity`.
+**Configuration Options:**
+- `capacity`: Maximum burst packet allowance ceiling (positive integer).
+- `refillRate`: Continuous token replenishment rate in tokens per second (positive number).
+- `initialTokens`: Initial transmission allowance (defaults to `capacity`).
+- `now`: Optional timestamp provider returning milliseconds (defaults to `Date.now`).
 
-**Operational Invariants:**
-- `consume(cost = 1)`: Computes tokens accrued proportionally to elapsed milliseconds since the last token check.
-- Clamps the token balance to `capacity` to prevent unbounded bursts after prolonged transmission sleep.
-- If `tokens >= cost`, decrements balance by `cost` and returns `true`.
-- If `tokens < cost`, preserves balance without decrement and returns `false`.
-- Updates the last timestamp to current time only when refill calculations occur.
+**Behavior & SLA Invariants:**
+- `consume(cost = 1)`: Replenishes tokens continuously proportional to elapsed time since the previous check.
+- Clamps the token balance to `capacity` to prevent unbounded bursts after prolonged sleep.
+- If `tokens >= cost`, atomically deducts `cost` and returns `true`.
+- If `tokens < cost`, preserves balance without deduction and returns `false`.
 - **Run Single Suite:** `npm run test:q01`
 
 ### Q02 — `Q02_createCoalescingAsyncCache.js`
 - **Archetype:** Debugging (Bug Triage & Root Cause)
 - **Acceptance Scenarios:** 2 visible scenarios (+ 1 hidden trap tests) in `Q02_createCoalescingAsyncCache.test.js`
-- **Requirement:** Debug `createCoalescingAsyncCache(fetchFn)` for high-frequency cryptocurrency orderbook feeds.
+- **Requirement:** Implement `createCoalescingAsyncCache(fetchFn)` for high-frequency cryptocurrency orderbook feeds.
 
-**Defect Analysis:**
-- The legacy starter implementation directly calls `fetchFn(key)` whenever a cache miss occurs without tracking in-flight promises.
-- When concurrent requests arrive simultaneously before the first fetch resolves, it triggers a catastrophic cache stampede (multiple redundant network requests).
-
-**Target Invariants:**
-- If `key` is present in `cache`, immediately return the cached data.
-- If an asynchronous fetch for `key` is already in-flight, return the existing in-flight `Promise`.
-- Otherwise, initiate `fetchFn(key)`, store the promise in `inFlightMap`, and clean up `inFlightMap` in a `finally` block once settled.
+**System Requirements:**
+- `get(key)`: Retrieves data for `key`, delegating to `fetchFn(key)` on cache misses.
+- Caches resolved values indefinitely for subsequent sequential lookups.
+- Coalesces simultaneous concurrent requests for the same unresolved `key` onto a single active `fetchFn` execution to prevent cache stampedes.
+- Cleans up in-flight state upon settlement so future requests can retry if an operation fails.
 - **Run Single Suite:** `npm run test:q02`
 
 ### Q03 — `Q03_createCircuitBreaker.js`
@@ -70,16 +67,16 @@ npm run submit
 - **Acceptance Scenarios:** 2 visible scenarios (+ 1 hidden trap tests) in `Q03_createCircuitBreaker.test.js`
 - **Requirement:** Implement `createCircuitBreaker(asyncOperation, options)` for a core banking interbank switch connecting to a central clearing house.
 
-**State Machine Architecture:**
-- `CLOSED`: Normal operation. Remote calls execute directly. Consecutive successes reset the failure counter to `0`.
-- `OPEN`: Dependency failure isolation. If consecutive failures reach `failureThreshold`, the breaker trips to `OPEN` and records `openedAt = Date.now()`. All incoming calls fast-fail immediately throwing `new Error('CIRCUIT_BREAKER_OPEN')` without invoking `asyncOperation`.
-- `HALF_OPEN`: Trial recovery probe. Once `resetTimeoutMs` has elapsed since opening, the breaker permits a single canary execution to test upstream health.
-  - If the canary probe succeeds: transitions immediately to `CLOSED` and resets failure count.
-  - If the canary probe fails: trips back to `OPEN` and resets the `openedAt` cooldown timer.
-
 **Configuration Options:**
 - `failureThreshold`: Consecutive failures needed to trip breaker (default $3$).
 - `resetTimeoutMs`: Milliseconds to remain `OPEN` before probing in `HALF_OPEN` (default $50$).
+- `now`: Optional timestamp provider returning milliseconds (defaults to `Date.now`).
+
+**State Machine Specification:**
+- `getState()`: Returns current state: `'CLOSED' | 'OPEN' | 'HALF_OPEN'`.
+- `execute(...args)`: In `CLOSED`, executes `asyncOperation(...args)`. Consecutive failures increment counter; reaching `failureThreshold` trips breaker to `OPEN`. A successful call resets failure count to `0`.
+- In `OPEN`: Fast-fails immediately throwing `new Error('CIRCUIT_BREAKER_OPEN')` without invoking `asyncOperation` until `resetTimeoutMs` elapses.
+- In `HALF_OPEN`: Allows exactly one single canary probe request to test upstream health. Concurrent requests during probing fast-fail with `CIRCUIT_BREAKER_OPEN`. If probe succeeds, transitions to `CLOSED` and resets failure count; if probe fails, returns to `OPEN` and resets cooldown timer.
 - **Run Single Suite:** `npm run test:q03`
 
 ## Requesting an AI Architectural Review

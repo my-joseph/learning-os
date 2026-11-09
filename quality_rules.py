@@ -910,8 +910,21 @@ def check_gate_g4(prob: dict[str, Any], is_code: bool = False, rules: dict[str, 
             )
 
     # 2. Trap Tag -> Trap Value provenance check
+    is_code_suite = is_code and bool(prob.get("solutionCode") or prob.get("visibleTests"))
     trap_val = prob.get("trapValue") if "trapValue" in prob else v.get("trapValue")
-    if trap_tag and cfg.get("require_trap_value_when_trap_tag_present", True):
+    if is_code_suite:
+        # Code Suite Gate G4 Realignment:
+        # Debugging requires defective starterCode that fails tests (verified in pre-execution)
+        # Problem solving / refactoring requires boundary/hidden test coverage
+        archetype = prob.get("archetype") or prob.get("codeType", "problem-solving")
+        if archetype == "debugging":
+            if not prob.get("starterCode"):
+                raise QualityError("G4", pid, "โจทย์ Code Debugging ต้องมี starterCode ที่มีจุดบกพร่องจริง")
+        elif archetype in ("problem-solving", "refactoring", "project-based"):
+            has_boundary = bool(prob.get("hiddenTests")) or len(prob.get("visibleTests", [])) >= 2
+            if not has_boundary:
+                raise QualityError("G4", pid, "โจทย์ Code ต้องมีอย่างน้อย 1 Boundary/Trap test หรือ hiddenTests")
+    elif trap_tag and cfg.get("require_trap_value_when_trap_tag_present", True):
         if spec.get("type") == "code_output":
             if trap_val is None and not v.get("trapCode"):
                 raise QualityError(

@@ -5,15 +5,20 @@ const { createTelemetryRateLimiter } = require('./Q01_createTelemetryRateLimiter
 
 
 test("[Q01-T01] should allow telemetry bursts up to capacity and reject excessive packets", async () => {
-  const limiter = createTelemetryRateLimiter({ capacity: 3, refillRate: 10 });
+  let fakeTime = 1000;
+const limiter = createTelemetryRateLimiter({ capacity: 3, refillRate: 10, now: () => fakeTime });
 assert.strictEqual(limiter.consume(1), true);
 assert.strictEqual(limiter.consume(2), true);
 assert.strictEqual(limiter.consume(1), false);
 });
 
-test("[Q01-T02] should accumulate transmission tokens over elapsed sleep duration", async () => {
-  const limiter = createTelemetryRateLimiter({ capacity: 2, refillRate: 100, initialTokens: 0 });
+test("[Q01-T02] should accumulate transmission tokens incrementally across fractional time intervals", async () => {
+  let fakeTime = 1000;
+const limiter = createTelemetryRateLimiter({ capacity: 2, refillRate: 1, initialTokens: 0, now: () => fakeTime });
 assert.strictEqual(limiter.consume(1), false);
-await new Promise(r => setTimeout(r, 30));
+fakeTime += 500;
+assert.strictEqual(limiter.consume(1), false);
+fakeTime += 500;
 assert.strictEqual(limiter.consume(1), true);
+assert.strictEqual(limiter.consume(1), false);
 });

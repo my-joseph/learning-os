@@ -156,6 +156,21 @@ To ensure maximum cognitive clarity and mirror real-world engineering specificat
   - Every programming drill supports the `Skip (Don't Know)` action in Practice Studio.
   - Skipped items are explicitly recorded in `sessionSummary.skippedProblems` and synchronized to Notion, ensuring that unlearned concepts are tracked as high-priority revision targets.
 
+### 9. Anti-Spoonfeeding & Authentic Problem-Solving Standard
+To foster genuine diagnostic intuition and systems-level debugging skills:
+- **Zero Root-Cause Spoon-Feeding:** Prompts must specify observable behavioral symptoms, expected invariants, and SLA contracts. Never include `Defect Analysis:` or `Root Cause Analysis:` sections in debugging prompts that tell the learner what is wrong before they inspect the code.
+- **Zero Inline Bug Pointer Comments:** Starter code must never contain comments like `// BUG:`, `// DEFECT:`, or `// FIX HERE:` marking the flaw. The learner must trace execution and diagnose root causes independently using the reproducer test.
+- **Contract-Focused Hints:** Hints must prompt self-monitoring questions or highlight contract boundaries. Never name specific internal data structures (e.g. `secondary Map`, `use closure`, `new Map()`) that reduce the exercise to mechanical transcription.
+
+### 10. Mutation Testing Standard (Anti-Green-Illusion Mandate)
+- **Zero Green Illusion:** A test suite is only valid if it actively rejects incorrect or cheating implementations.
+- **Automated Mutant Verification:** All suite-based programming exercises must undergo automated mutation testing during AI ingestion. Synthetic mutants (e.g. constant return `return true`, capacity bypass `tokens = capacity`, omission of failure counter reset, missing error cleanup) are executed against the suite.
+- **Mandatory Mutant Killing:** If any mutant passes the test suite, the problem is rejected with `Anti-Green-Illusion Guard violated`. Authors must write stricter assertions, boundary checks, and state-transition tests.
+
+### 11. Deterministic Clock Invariant for Time-Dependent Code
+- **Zero Flaky Real-Time Execution:** Algorithms involving time (rate limiters, token buckets, cache expiration/TTL, circuit breaker cooldowns, exponential backoff) must accept an injectable clock (`options.now = Date.now`).
+- **Test Suite Determinism:** Acceptance tests must manipulate simulated clock timestamps rather than relying on non-deterministic real-world `setTimeout` (> 50ms). This guarantees instantaneous (< 100ms), 100% reproducible test runs in CI/CD without timer jitter.
+
 ---
 
 ## PART 6 — Universal Five-Tier Milestone Taxonomy (Labs)

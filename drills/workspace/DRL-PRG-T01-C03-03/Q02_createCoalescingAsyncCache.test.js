@@ -39,6 +39,5 @@ const results = await Promise.all([
 
 assert.strictEqual(results.length, 5);
 assert.strictEqual(results[0].depth, 100);
-// STARTER CODE BUG: fetchCount becomes 5; FIXED CODE MUST BE 1
 assert.strictEqual(fetchCount, 1);
 });

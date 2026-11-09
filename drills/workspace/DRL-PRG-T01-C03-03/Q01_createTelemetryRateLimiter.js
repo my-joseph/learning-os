@@ -1,10 +1,10 @@
-function createTelemetryRateLimiter({ capacity, refillRate, initialTokens }) {
+function createTelemetryRateLimiter({ capacity, refillRate, initialTokens, now = Date.now }) {
   let tokens = initialTokens !== undefined ? initialTokens : capacity;
-  let lastTimestamp = Date.now();
+  let lastTimestamp = now();
 
   return {
     consume(cost = 1) {
-      // TODO: calculate elapsed time, clamp tokens to capacity, and deduct cost
+      // TODO: implement continuous rate limiting with capacity clamping
       return false;
     }
   };

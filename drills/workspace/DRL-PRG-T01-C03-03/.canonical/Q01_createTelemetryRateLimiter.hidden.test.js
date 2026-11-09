@@ -4,9 +4,13 @@ const assert = require('node:assert');
 const { createTelemetryRateLimiter } = require('../Q01_createTelemetryRateLimiter.js');
 
 
-test("[Q01-HIDDEN-T01] should clamp tokens at maximum capacity during long satellite disconnection", async () => {
-  const limiter = createTelemetryRateLimiter({ capacity: 4, refillRate: 1000, initialTokens: 0 });
-await new Promise(r => setTimeout(r, 20));
-assert.strictEqual(limiter.consume(4), true);
+test("[Q01-HIDDEN-T01] should enforce capacity ceiling without cheating or overflow", async () => {
+  let fakeTime = 10000;
+const limiter = createTelemetryRateLimiter({ capacity: 5, refillRate: 2, initialTokens: 0, now: () => fakeTime });
+fakeTime += 1000;
+assert.strictEqual(limiter.consume(5), false);
+assert.strictEqual(limiter.consume(2), true);
+fakeTime += 100000;
+assert.strictEqual(limiter.consume(5), true);
 assert.strictEqual(limiter.consume(1), false);
 });
