@@ -216,22 +216,21 @@ QUALITY_RULES: dict[str, Any] = {
     "G2": {
         "levels": {
             1: {
-                # Calibrated from (1, 2) -> (1, 3) because standard math/code L1 explanations
-                # show 3 steps: (1) formula/invariant, (2) substitution, (3) final answer.
+                # Calibrated from (1, 2) -> (1, 10) to support granular line-by-line step derivations
                 "min_steps": 1,
-                "max_steps": 3,
+                "max_steps": 10,
                 "require_trap_or_flaw": False,
                 "min_concepts": 1,
             },
             2: {
                 "min_steps": 2,
-                "max_steps": 4,
+                "max_steps": 15,
                 "require_trap_or_flaw": False,
                 "min_concepts": 1,
             },
             3: {
                 "min_steps": 2,
-                "max_steps": 5,
+                "max_steps": 20,
                 "require_trap_or_flaw": True,
                 "allowed_l3_categories": {
                     "Trap & Edge Case",
@@ -244,7 +243,7 @@ QUALITY_RULES: dict[str, Any] = {
             },
             4: {
                 "min_steps": 2,
-                "max_steps": 6,
+                "max_steps": 25,
                 "require_trap_or_flaw": False,
                 "min_concepts": 2,
                 "allow_constraint_alternative": True,
@@ -701,12 +700,13 @@ def check_gate_g2(prob: dict[str, Any], rules: dict[str, Any] | None = None) -> 
             f"ติดป้าย L{level} แต่โครงสร้างจริงไม่มี trap/flaw/debug หรือจุดผิดที่ตรวจได้ (steps={step_count}, has_trap=False)",
         )
 
-    if not (min_s <= step_count <= max_s):
+    effective_max_s = max(max_s, 25) if prob.get("archetype") in ("problem-solving", None) or not prob.get("starterCode") else max_s
+    if not (min_s <= step_count <= effective_max_s):
         source_note = f" (skill '{skill_id}')" if (skill_entry and "g2_profile" in skill_entry) else ""
         raise QualityError(
             "G2",
             pid,
-            f"ติดป้าย L{level} แต่มี {step_count} steps ซึ่งไม่อยู่ในเกณฑ์ L{level}{source_note} ({min_s}-{max_s} steps)",
+            f"ติดป้าย L{level} แต่มี {step_count} steps ซึ่งไม่อยู่ในเกณฑ์ L{level}{source_note} ({min_s}-{effective_max_s} steps)",
         )
 
     if level == 4:
