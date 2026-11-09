@@ -8,16 +8,12 @@
     "test:watch": "node --test --watch *.test.js",
     "review": "python3 ../../../code_engine/review.py",
     "submit": "python3 ../../../code_engine/submit.py",
-    "test:q01": "node --test Q01_groupBy.test.js",
-    "test:q02": "node --test Q02_calculateMonthlyBill.test.js",
-    "test:q03": "node --test Q03_AsyncCache.test.js",
-    "test:q04": "node --test Q04_RateLimiter.test.js",
-    "test:q05": "node --test Q05_calculateOrderTotal.test.js",
-    "test:q06": "node --test Q06_groupBy.test.js",
-    "test:q07": "node --test Q07_memoize.test.js",
-    "test:q08": "node --test Q08_memoize.test.js",
-    "test:q09": "node --test Q09_debounce.test.js",
-    "test:q10": "node --test Q10_RateLimiter.test.js"
+    "test:q01": "node --test Q01_RateLimiter.test.js",
+    "test:q02": "node --test Q02_debounce.test.js",
+    "test:q03": "node --test Q03_calculateMonthlyBill.test.js",
+    "test:q04": "node --test Q04_memoize.test.js",
+    "test:q05": "node --test Q05_groupBy.test.js",
+    "test:q06": "node --test Q06_AsyncCache.test.js"
   },
   "devDependencies": {}
 }

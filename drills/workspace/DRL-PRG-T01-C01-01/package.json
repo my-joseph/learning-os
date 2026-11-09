@@ -1,0 +1,13 @@
+{
+  "name": "drl-prg-t01-c01-01-workspace",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Local IDE Workspace for DRL-PRG-T01-C01-01 (PRG-T01-C01 - JavaScript Deep Dive) [node-vanilla]",
+  "scripts": {
+    "test": "node --test *.test.js",
+    "test:watch": "node --test --watch *.test.js",
+    "review": "python3 ../../../code_engine/review.py",
+    "submit": "python3 ../../../code_engine/submit.py"
+  },
+  "devDependencies": {}
+}

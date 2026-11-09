@@ -1,0 +1,74 @@
+# DRL-PRG-T00-C02-01 — PRG-T00-C02: JavaScript & TypeScript Baseline
+
+> **Environment Preset:** `node-vanilla` — Standard Node.js Native Runner (CommonJS/ESM)
+> **100% Local IDE Mandate**: All problem solving, refactoring, and debugging must be performed natively in your IDE (VS Code / Cursor).
+
+## Universal 6-Step Pedagogical Practice Loop
+1. **คิดเองก่อนเขียน (Mental Model)**: Review the Acceptance Criteria and boundary traps before typing.
+2. **ลงมือทำ (Local IDE)**: Open the source file in VS Code or Cursor and implement the logic.
+3. **ทดสอบ (Automated Acceptance Testing)**: Run `npm test` or `npm run test:<qid>` in this directory.
+4. **อธิบายโค้ด (AI Senior Lead PR Review)**: Articulate your algorithm and request an AI Senior Tech Lead architectural review.
+5. **Refactor (Clean Architecture)**: Decouple helpers, clean code smells, and optimize hot paths while keeping tests green.
+6. **เพิ่มความยาก (Progression)**: Scale up test inputs and edge cases.
+
+## Quick Terminal Commands
+```bash
+# Run all acceptance test suites in this workspace
+npm test
+
+# Run tests in watch mode while editing
+npm run test:watch
+
+# Run tests for a specific question
+npm run test:q01
+
+# Request Senior Tech Lead AI PR Review (packages code & copies prompt to clipboard)
+npm run review
+npm run review q01
+
+# Grade all exercises (runs visible + hidden trap tests) and sync to Notion
+npm run submit
+```
+
+## Exercises in this Workspace
+
+### Q01 — `Q01_deepEqual.js`
+- **Archetype:** Problem Solving (Logic & Algorithm)
+- **Acceptance Scenarios:** 3 visible scenarios (+ 3 hidden trap tests) in `Q01_deepEqual.test.js`
+- **Requirement:** Implement deepEqual(a, b) in JavaScript to perform structural recursive equality comparison between two arbitrary values (primitives, NaN, null, arrays, and nested plain objects).
+- **Run Single Suite:** `npm run test:q01`
+
+### Q02 — `Q02_pipe.js`
+- **Archetype:** Problem Solving (Logic & Algorithm)
+- **Acceptance Scenarios:** 2 visible scenarios (+ 3 hidden trap tests) in `Q02_pipe.test.js`
+- **Requirement:** Implement pipe(...fns) in JavaScript. It takes any number of functions and returns a new function that composes them from left to right. The first function may accept multiple arguments.
+- **Run Single Suite:** `npm run test:q02`
+
+### Q03 — `Q03_flatten.js`
+- **Archetype:** Problem Solving (Logic & Algorithm)
+- **Acceptance Scenarios:** 3 visible scenarios (+ 3 hidden trap tests) in `Q03_flatten.test.js`
+- **Requirement:** Implement flatten(array, depth = 1) in JavaScript without using Array.prototype.flat. It flattens nested arrays recursively up to depth, preserving falsy elements without mutating the input.
+- **Run Single Suite:** `npm run test:q03`
+
+### Q04 — `Q04_retry.js`
+- **Archetype:** Problem Solving (Logic & Algorithm)
+- **Acceptance Scenarios:** 2 visible scenarios (+ 2 hidden trap tests) in `Q04_retry.test.js`
+- **Requirement:** Implement retry(asyncFn, retries = 3, delayMs = 100) in JavaScript. It executes asyncFn(). If it fails, wait delayMs and retry, up to retries times. If all attempts fail, reject with the final error.
+- **Run Single Suite:** `npm run test:q04`
+
+### Q05 — `Q05_createEventEmitter.js`
+- **Archetype:** Problem Solving (Logic & Algorithm)
+- **Acceptance Scenarios:** 2 visible scenarios (+ 2 hidden trap tests) in `Q05_createEventEmitter.test.js`
+- **Requirement:** Implement createEventEmitter() in JavaScript with methods on(event, listener), emit(event, ...args), once(event, listener), and listenerCount(event). The on method must return an unsubscribe() function.
+- **Run Single Suite:** `npm run test:q05`
+
+## Requesting an AI Architectural Review
+Once your automated acceptance tests pass 100%, copy this prompt and ask Antigravity / Cursor AI:
+```text
+Please act as a Senior Tech Lead and conduct an Architecture & Code Craftsmanship Review on my implementation in `DRL-PRG-T00-C02-01`.
+Evaluate my code across:
+1. Separation of Concerns & Clean Code standards
+2. State Management & Data Handling invariants
+3. TypeScript typing / JSDoc precision and edge case resilience
+4. Performance hot paths, algorithmic complexity, and decoupling suggestions
+```
