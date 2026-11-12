@@ -45,6 +45,24 @@
         "warehouse_floor_epoxy_coating",
         "gable_roof_end_panel",
         "regatta_pennant_cutting"
+      ],
+      "figureBuilders": [
+        {
+          "fn": "build_rectangle_figure",
+          "args": {
+            "width": "length",
+            "height": "width"
+          },
+          "title": "Rectangle"
+        },
+        {
+          "fn": "build_right_triangle_figure",
+          "args": {
+            "base": "base",
+            "height": "height"
+          },
+          "title": "Triangle"
+        }
       ]
     },
     {
@@ -65,6 +83,15 @@
       ],
       "usedContexts": [
         "circular_plaza_perimeter"
+      ],
+      "figureBuilders": [
+        {
+          "fn": "build_circle_figure",
+          "args": {
+            "radius": "radius"
+          },
+          "title": "Circle"
+        }
       ]
     },
     {
@@ -87,6 +114,25 @@
         "lawn_sprinkler_coverage",
         "ornamental_fountain_basin_surface",
         "circular_skylight_glass"
+      ],
+      "figureBuilders": [
+        {
+          "fn": "build_circle_figure",
+          "args": {
+            "radius": "diameter/2"
+          },
+          "labels": {
+            "label_radius": "d = {diameter:g}"
+          },
+          "title": "Circle"
+        },
+        {
+          "fn": "build_circle_figure",
+          "args": {
+            "radius": "radius"
+          },
+          "title": "Circle"
+        }
       ]
     },
     {
@@ -109,6 +155,35 @@
         "cargo_container_capacity",
         "shipping_crate_capacity",
         "aquarium_tank_water_volume"
+      ],
+      "figureBuilders": [
+        {
+          "fn": "build_box3d_figure",
+          "args": {
+            "width": "width",
+            "length": "length",
+            "height": "height"
+          },
+          "title": "Rectangular Solid"
+        },
+        {
+          "fn": "build_box3d_figure",
+          "args": {
+            "width": "width",
+            "length": "length",
+            "height": "depth"
+          },
+          "title": "Rectangular Solid"
+        },
+        {
+          "fn": "build_box3d_figure",
+          "args": {
+            "width": "wid",
+            "length": "len",
+            "height": "ht"
+          },
+          "title": "Rectangular Solid"
+        }
       ]
     },
     {
@@ -131,6 +206,24 @@
         "cylindrical_water_reservoir",
         "hydraulic_accumulator_piston_bore",
         "grain_bin_cylindrical_capacity"
+      ],
+      "figureBuilders": [
+        {
+          "fn": "build_cylinder_figure",
+          "args": {
+            "radius": "radius",
+            "height": "height"
+          },
+          "title": "Cylinder"
+        },
+        {
+          "fn": "build_cylinder_figure",
+          "args": {
+            "radius": "radius",
+            "height": "ht"
+          },
+          "title": "Cylinder"
+        }
       ]
     },
     {
@@ -239,6 +332,22 @@
         "highway_embankment_cross_section",
         "highway_embankment_retention_basin",
         "canal_lining_cross_section"
+      ],
+      "figureBuilders": [
+        {
+          "fn": "build_trapezoid_figure",
+          "args": {
+            "top_base": "base_2",
+            "bottom_base": "base_1",
+            "sloped_side": "height*1.25"
+          },
+          "labels": {
+            "label_top": "{base_2:g}",
+            "label_bottom": "{base_1:g}",
+            "label_height": "h = {height:g}"
+          },
+          "title": "Trapezoid"
+        }
       ]
     },
     {

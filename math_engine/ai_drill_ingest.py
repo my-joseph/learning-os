@@ -13,6 +13,7 @@ import os
 import re
 from typing import Any, Dict, List, Optional
 
+from math_engine.figure_autofill import autofill_problem_figure
 from math_engine.generate import next_drill_id
 from math_engine.verify import verify_problem
 from math_engine.answer_check import check_answer, CHECKERS, to_expr, is_equal
@@ -247,7 +248,24 @@ def validate_ai_problem_contract(prob: Dict[str, Any]) -> bool:
                 f"[{pid}] Step {s_idx + 1} violates 00_core §7 / 03_stem §1: horizontal equality chaining is forbidden ('{latex_str}'). Each step must isolate a single discrete algebraic transformation."
             )
 
-    # 10. Spatial / Parametric Visual Spec Guard (rules/03_stem.md Part 2)
+    # 10. Spatial / Parametric Visual & Figure Spec Guard (rules/03_stem.md Part 2)
+    if "figure" in prob:
+        fig = prob["figure"]
+        if not isinstance(fig, dict):
+            raise AiContractError(f"[{pid}] 'figure' must be a dictionary specification.")
+        if "kind" not in fig:
+            raise AiContractError(f"[{pid}] 'figure' specification must contain 'kind'.")
+        if fig["kind"] == "geometry_2d":
+            if "points" not in fig or not isinstance(fig["points"], dict):
+                raise AiContractError(f"[{pid}] 'geometry_2d' figure must contain a 'points' dict.")
+            if "shapes" not in fig or not isinstance(fig["shapes"], list) or len(fig["shapes"]) == 0:
+                raise AiContractError(f"[{pid}] 'geometry_2d' figure must contain a non-empty 'shapes' list.")
+        elif fig["kind"] == "cartesian_graph":
+            if "xRange" not in fig or "yRange" not in fig:
+                raise AiContractError(f"[{pid}] 'cartesian_graph' figure must contain 'xRange' and 'yRange'.")
+            if "plots" not in fig or not isinstance(fig["plots"], list) or len(fig["plots"]) == 0:
+                raise AiContractError(f"[{pid}] 'cartesian_graph' figure must contain a non-empty 'plots' list.")
+
     if "visual" in prob:
         vis = prob["visual"]
         if not isinstance(vis, dict):
@@ -379,6 +397,8 @@ def ingest_ai_drill(
                 })
             prob["referenceBadges"] = badges
 
+        # Rule 11: auto-attach parametric figure from vault archetype `figureBuilders` (03_stem §3)
+        autofill_problem_figure(prob, load_reasoning_vault(unit_code, vault_dir=vault_dir).get("archetypes", []))
         validate_ai_problem_contract(prob)
         # Run gate checks (G1-G6)
         verify_problem(prob, rules=active_rules)

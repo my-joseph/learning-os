@@ -1,3 +1,5 @@
+import { MathFigureSpec } from "./figure";
+
 export type VisualElementType =
   | "polygon"
   | "circle"
@@ -242,6 +244,7 @@ export interface Problem {
   vscodeUrl?: string;
   cursorFolderUrl?: string;
   vscodeFolderUrl?: string;
+  figure?: MathFigureSpec;
   visual?: VisualSpec;
   answerSpec: AnswerSpec;
   answerDisplay: string;

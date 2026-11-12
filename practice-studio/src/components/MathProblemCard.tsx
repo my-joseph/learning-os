@@ -19,7 +19,7 @@ import { Problem, MistakeTag, CheckResult } from "@/types/drill";
 import { MathBlock } from "./MathRender";
 import { FormattedText } from "./FormattedText";
 import { StepRow } from "./StepRow";
-import { VisualRenderer } from "./VisualRenderer";
+import { MathFigure } from "./MathFigure";
 
 interface MathProblemCardProps {
   problem: Problem;
@@ -164,8 +164,10 @@ export const MathProblemCard: React.FC<MathProblemCardProps> = ({
         <FormattedText text={problem.prompt} />
       </div>
 
-      {/* Visual Engine: Render 2D/3D Diagram or Physics Visual */}
-      {problem.visual && <VisualRenderer visual={problem.visual} />}
+      {/* Visual Engine: Render 2D/3D Diagram, Geometry, or Cartesian Graph */}
+      {(problem.figure || problem.visual) && (
+        <MathFigure figure={problem.figure || problem.visual!} />
+      )}
 
       {/* LaTeX Display Box + Compact Plain-Text Copy */}
       {(problem.display || problem.plainText) && (
