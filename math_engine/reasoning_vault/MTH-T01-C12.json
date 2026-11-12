@@ -245,6 +245,18 @@
       "usedContexts": [
         "roof_rafter_joint_angles",
         "solar_tracker_panel_zenith_tilt"
+      ],
+      "figureBuilders": [
+        {
+          "fn": "build_angle_pair_figure",
+          "args": {
+            "total": "total",
+            "known": "angle"
+          },
+          "labels": {
+            "label_known": "{angle:g}^\\circ"
+          }
+        }
       ]
     },
     {
@@ -266,6 +278,15 @@
       "usedContexts": [
         "bridge_truss_triangulation",
         "telescope_truss_cantilever_bracket"
+      ],
+      "figureBuilders": [
+        {
+          "fn": "build_triangle_angles_figure",
+          "args": {
+            "angle_a": "a1",
+            "angle_b": "a2"
+          }
+        }
       ]
     },
     {
@@ -288,6 +309,16 @@
         "building_gable_facade_area",
         "community_swimming_pool_deck_layout",
         "intermodal_freight_cargo_diagonal"
+      ],
+      "figureBuilders": [
+        {
+          "fn": "build_gable_facade_figure",
+          "args": {
+            "width": "base",
+            "rect_height": "rect_ht",
+            "tri_height": "tri_ht"
+          }
+        }
       ]
     },
     {
@@ -310,6 +341,16 @@
         "water_tower_protective_coating",
         "subsea_pipeline_protective_coating",
         "deep_sea_titanium_submersible_hull"
+      ],
+      "figureBuilders": [
+        {
+          "fn": "build_cylinder_figure",
+          "args": {
+            "radius": "radius",
+            "height": "ht"
+          },
+          "title": "Cylinder"
+        }
       ]
     },
     {
@@ -369,6 +410,16 @@
       "usedContexts": [
         "conical_grain_funnel_hopper",
         "volcano_ash_cone_model"
+      ],
+      "figureBuilders": [
+        {
+          "fn": "build_cone_figure",
+          "args": {
+            "radius": "radius",
+            "height": "height"
+          },
+          "title": "Cone"
+        }
       ]
     },
     {

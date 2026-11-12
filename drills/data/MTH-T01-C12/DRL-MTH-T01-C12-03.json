@@ -806,35 +806,35 @@
       ],
       "steps": [
         {
-          "latex": "(4\theta + 10^\\circ) + \theta = 180^\\circ",
+          "latex": "(4\\theta + 10^\\circ) + \\theta = 180^\\circ",
           "explain": "Set linear pair supplementary equation to 180 degrees."
         },
         {
-          "latex": "4\theta + 10^\\circ + \theta = 180^\\circ",
+          "latex": "4\\theta + 10^\\circ + \\theta = 180^\\circ",
           "explain": "Remove parentheses."
         },
         {
-          "latex": "(4\theta + \theta) + 10^\\circ = 180^\\circ",
+          "latex": "(4\\theta + \\theta) + 10^\\circ = 180^\\circ",
           "explain": "Group like angle variable terms together."
         },
         {
-          "latex": "5\theta + 10^\\circ = 180^\\circ",
+          "latex": "5\\theta + 10^\\circ = 180^\\circ",
           "explain": "Simplify 4 theta + theta to 5 theta."
         },
         {
-          "latex": "5\theta = 180^\\circ - 10^\\circ",
+          "latex": "5\\theta = 180^\\circ - 10^\\circ",
           "explain": "Subtract 10 degrees from both sides."
         },
         {
-          "latex": "5\theta = 170^\\circ",
+          "latex": "5\\theta = 170^\\circ",
           "explain": "Simplify 180 - 10 to 170."
         },
         {
-          "latex": "\theta = \\frac{170^\\circ}{5}",
+          "latex": "\\theta = \\frac{170^\\circ}{5}",
           "explain": "Divide both sides by 5."
         },
         {
-          "latex": "\theta = 34^\\circ",
+          "latex": "\\theta = 34^\\circ",
           "explain": "Simplify 170 / 5 to 34 degrees.",
           "val": "34"
         }
@@ -1018,11 +1018,11 @@
           "explain": "Simplify 225 - 144 to 81."
         },
         {
-          "latex": "\\frac{44}{2} \times 9 = A",
+          "latex": "\\frac{44}{2} \\times 9 = A",
           "explain": "Since 9 x 9 = 81, the square root of 81 is 9."
         },
         {
-          "latex": "22 \times 9 = A",
+          "latex": "22 \\times 9 = A",
           "explain": "Simplify 44 / 2 to 22."
         },
         {

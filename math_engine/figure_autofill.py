@@ -71,3 +71,8 @@ def autofill_problem_figure(prob: Dict[str, Any], archetypes: List[Dict[str, Any
         prob["figure"] = fig
         return True
     return False
+
+
+def archetype_requires_figure(prob: Dict[str, Any], archetypes: List[Dict[str, Any]]) -> bool:
+    arch = next((x for x in archetypes if x.get("archetypeKey") == prob.get("archetypeKey")), None)
+    return bool(arch and arch.get("figureBuilders"))

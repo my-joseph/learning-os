@@ -1097,3 +1097,131 @@ def _render_cartesian_to_svg(fig: Dict[str, Any], th: Dict[str, str], svg_w: int
   <rect width="100%" height="100%" fill="#f8fafc" rx="16" />
   {inner}
 </svg>"""
+
+
+def build_cone_figure(
+    radius: float,
+    height: float,
+    theme: str = "amber",
+    title: Optional[str] = None,
+) -> Dict[str, Any]:
+    """Builds a semantic MathFigure for a right circular cone (radius r, vertical height h)."""
+    ry = radius * 0.3
+    pts = {
+        "C_BOT": [0, 0],
+        "L_BOT": [-radius, 0],
+        "R_BOT": [radius, 0],
+        "APEX": [0, height],
+    }
+    shapes = [
+        {"type": "segment", "from": "L_BOT", "to": "APEX"},
+        {"type": "segment", "from": "R_BOT", "to": "APEX"},
+        {"type": "ellipse", "center": "C_BOT", "radiusX": radius, "radiusY": ry, "fill": True},
+        {"type": "segment", "from": "C_BOT", "to": "APEX", "strokeDasharray": "3 3"},
+        {"type": "segment", "from": "C_BOT", "to": "R_BOT", "strokeDasharray": "2 2"},
+    ]
+    labels = [
+        {"type": "segment", "p1": "C_BOT", "p2": "APEX", "text": f"h = {height:g}", "side": "left"},
+        {"type": "segment", "p1": "C_BOT", "p2": "R_BOT", "text": f"r = {radius:g}", "side": "bottom"},
+    ]
+    return {
+        "kind": "geometry_2d",
+        "theme": theme,
+        "title": title or "Cone",
+        "points": pts,
+        "shapes": shapes,
+        "labels": labels,
+    }
+
+
+def build_angle_pair_figure(
+    total: float,
+    known: float,
+    label_known: Optional[str] = None,
+    label_unknown: str = "?",
+    theme: str = "rose",
+    title: Optional[str] = None,
+) -> Dict[str, Any]:
+    """Two adjacent angles sharing a vertex whose sum is `total` (90 = complementary, 180 = supplementary)."""
+    r = 4.0
+    def pt(deg: float) -> List[float]:
+        return [round(r * math.cos(math.radians(deg)), 3), round(r * math.sin(math.radians(deg)), 3)]
+    pts = {"O": [0, 0], "R": pt(0), "U": pt(known), "S": pt(total)}
+    return {
+        "kind": "geometry_2d",
+        "theme": theme,
+        "title": title or ("Complementary Angles" if abs(total - 90) < 1e-9 else "Adjacent Angles"),
+        "points": pts,
+        "shapes": [
+            {"type": "segment", "from": "O", "to": "R"},
+            {"type": "segment", "from": "O", "to": "U"},
+            {"type": "segment", "from": "O", "to": "S"},
+        ],
+        "markers": [
+            {"type": "angle_arc", "vertex": "O", "arm1": "R", "arm2": "U", "label": label_known or f"{known:g}^\\circ", "radius": 30},
+            {"type": "angle_arc", "vertex": "O", "arm1": "U", "arm2": "S", "label": label_unknown, "radius": 44},
+        ],
+    }
+
+
+def build_triangle_angles_figure(
+    angle_a: float,
+    angle_b: float,
+    theme: str = "indigo",
+    title: Optional[str] = None,
+) -> Dict[str, Any]:
+    """Triangle with two known base angles and an unknown third angle at the apex."""
+    c = 180.0 - angle_a - angle_b
+    base = 8.0
+    side_ac = base * math.sin(math.radians(angle_b)) / math.sin(math.radians(c))
+    pts = {
+        "A": [0, 0],
+        "B": [base, 0],
+        "C": [round(side_ac * math.cos(math.radians(angle_a)), 3), round(side_ac * math.sin(math.radians(angle_a)), 3)],
+    }
+    return {
+        "kind": "geometry_2d",
+        "theme": theme,
+        "title": title or "Triangle Angles",
+        "points": pts,
+        "shapes": [{"type": "polygon", "vertices": ["A", "B", "C"], "fill": True}],
+        "markers": [
+            {"type": "angle_arc", "vertex": "A", "arm1": "B", "arm2": "C", "label": f"{angle_a:g}^\\circ", "radius": 26},
+            {"type": "angle_arc", "vertex": "B", "arm1": "C", "arm2": "A", "label": f"{angle_b:g}^\\circ", "radius": 26},
+            {"type": "angle_arc", "vertex": "C", "arm1": "A", "arm2": "B", "label": "?", "radius": 24},
+        ],
+    }
+
+
+def build_gable_facade_figure(
+    width: float,
+    rect_height: float,
+    tri_height: float,
+    theme: str = "emerald",
+    title: Optional[str] = None,
+) -> Dict[str, Any]:
+    """Composite facade: a rectangle topped by an isosceles triangular gable of the same width."""
+    pts = {
+        "BL": [0, 0],
+        "BR": [width, 0],
+        "TR": [width, rect_height],
+        "TL": [0, rect_height],
+        "PK": [width / 2, rect_height + tri_height],
+        "MID": [width / 2, rect_height],
+    }
+    return {
+        "kind": "geometry_2d",
+        "theme": theme,
+        "title": title or "Gable Facade",
+        "points": pts,
+        "shapes": [
+            {"type": "polygon", "vertices": ["BL", "BR", "TR", "PK", "TL"], "fill": True},
+            {"type": "segment", "from": "TL", "to": "TR", "strokeDasharray": "3 3"},
+            {"type": "segment", "from": "MID", "to": "PK", "strokeDasharray": "2 2"},
+        ],
+        "labels": [
+            {"type": "segment", "p1": "BL", "p2": "BR", "text": f"{width:g}", "side": "bottom"},
+            {"type": "segment", "p1": "BR", "p2": "TR", "text": f"{rect_height:g}", "side": "right"},
+            {"type": "segment", "p1": "MID", "p2": "PK", "text": f"{tri_height:g}", "side": "right"},
+        ],
+    }

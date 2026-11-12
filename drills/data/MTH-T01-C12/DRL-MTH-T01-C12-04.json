@@ -1519,6 +1519,76 @@
         },
         "verificationLevel": "partial",
         "weakDistractors": 0
+      },
+      "figure": {
+        "kind": "geometry_2d",
+        "theme": "amber",
+        "title": "Cone",
+        "points": {
+          "C_BOT": [
+            0,
+            0
+          ],
+          "L_BOT": [
+            -6.0,
+            0
+          ],
+          "R_BOT": [
+            6.0,
+            0
+          ],
+          "APEX": [
+            0,
+            10.0
+          ]
+        },
+        "shapes": [
+          {
+            "type": "segment",
+            "from": "L_BOT",
+            "to": "APEX"
+          },
+          {
+            "type": "segment",
+            "from": "R_BOT",
+            "to": "APEX"
+          },
+          {
+            "type": "ellipse",
+            "center": "C_BOT",
+            "radiusX": 6.0,
+            "radiusY": 1.7999999999999998,
+            "fill": true
+          },
+          {
+            "type": "segment",
+            "from": "C_BOT",
+            "to": "APEX",
+            "strokeDasharray": "3 3"
+          },
+          {
+            "type": "segment",
+            "from": "C_BOT",
+            "to": "R_BOT",
+            "strokeDasharray": "2 2"
+          }
+        ],
+        "labels": [
+          {
+            "type": "segment",
+            "p1": "C_BOT",
+            "p2": "APEX",
+            "text": "h = 10",
+            "side": "left"
+          },
+          {
+            "type": "segment",
+            "p1": "C_BOT",
+            "p2": "R_BOT",
+            "text": "r = 6",
+            "side": "bottom"
+          }
+        ]
       }
     },
     {

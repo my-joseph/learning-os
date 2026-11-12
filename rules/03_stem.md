@@ -78,4 +78,4 @@ All visual assets (SVGs, diagrams, charts) must be uploaded directly to Notion's
 ### 3.1 Automatic Figure Attachment (Rule 11)
 - Every Reasoning Vault archetype that depicts a spatial shape (rectangle, triangle, circle, trapezoid, 3D solid) **must** declare `figureBuilders` (`fn` from `math_engine/figure_builder.py`, `args` as arithmetic over `givens` keys, optional `labels`).
 - `ai_drill_ingest.ingest_ai_drill` calls `math_engine/figure_autofill.py` to attach `figure` automatically from `givens`, so the figure always matches the numbers in the prompt. AI never needs to be told to draw.
-- A problem that deliberately has no figure must set `figureWaiver` with a reason. Archetypes without a matching builder (e.g. cone) are the only exception until a builder exists.
+- A problem that deliberately has no figure must set `figureWaiver` with a reason. **Guard:** if an archetype declares `figureBuilders` and no figure can be built from `givens` (and no `figureWaiver`), ingestion raises `AiContractError`. Archetypes without `figureBuilders` are exempt until a builder exists.

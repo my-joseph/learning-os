@@ -1102,6 +1102,64 @@
         "skipped": false,
         "lastCheck": null,
         "lastTestReport": null
+      },
+      "figure": {
+        "kind": "geometry_2d",
+        "theme": "rose",
+        "title": "Complementary Angles",
+        "points": {
+          "O": [
+            0,
+            0
+          ],
+          "R": [
+            4.0,
+            0.0
+          ],
+          "U": [
+            3.316,
+            2.237
+          ],
+          "S": [
+            0.0,
+            4.0
+          ]
+        },
+        "shapes": [
+          {
+            "type": "segment",
+            "from": "O",
+            "to": "R"
+          },
+          {
+            "type": "segment",
+            "from": "O",
+            "to": "U"
+          },
+          {
+            "type": "segment",
+            "from": "O",
+            "to": "S"
+          }
+        ],
+        "markers": [
+          {
+            "type": "angle_arc",
+            "vertex": "O",
+            "arm1": "R",
+            "arm2": "U",
+            "label": "34^\\circ",
+            "radius": 30
+          },
+          {
+            "type": "angle_arc",
+            "vertex": "O",
+            "arm1": "U",
+            "arm2": "S",
+            "label": "?",
+            "radius": 44
+          }
+        ]
       }
     },
     {
@@ -1199,6 +1257,62 @@
         "skipped": false,
         "lastCheck": null,
         "lastTestReport": null
+      },
+      "figure": {
+        "kind": "geometry_2d",
+        "theme": "indigo",
+        "title": "Triangle Angles",
+        "points": {
+          "A": [
+            0,
+            0
+          ],
+          "B": [
+            8.0,
+            0
+          ],
+          "C": [
+            5.456,
+            5.456
+          ]
+        },
+        "shapes": [
+          {
+            "type": "polygon",
+            "vertices": [
+              "A",
+              "B",
+              "C"
+            ],
+            "fill": true
+          }
+        ],
+        "markers": [
+          {
+            "type": "angle_arc",
+            "vertex": "A",
+            "arm1": "B",
+            "arm2": "C",
+            "label": "45^\\circ",
+            "radius": 26
+          },
+          {
+            "type": "angle_arc",
+            "vertex": "B",
+            "arm1": "C",
+            "arm2": "A",
+            "label": "65^\\circ",
+            "radius": 26
+          },
+          {
+            "type": "angle_arc",
+            "vertex": "C",
+            "arm1": "A",
+            "arm2": "B",
+            "label": "?",
+            "radius": 24
+          }
+        ]
       }
     },
     {
@@ -1310,6 +1424,85 @@
         "skipped": false,
         "lastCheck": null,
         "lastTestReport": null
+      },
+      "figure": {
+        "kind": "geometry_2d",
+        "theme": "emerald",
+        "title": "Gable Facade",
+        "points": {
+          "BL": [
+            0,
+            0
+          ],
+          "BR": [
+            10.0,
+            0
+          ],
+          "TR": [
+            10.0,
+            6.0
+          ],
+          "TL": [
+            0,
+            6.0
+          ],
+          "PK": [
+            5.0,
+            10.0
+          ],
+          "MID": [
+            5.0,
+            6.0
+          ]
+        },
+        "shapes": [
+          {
+            "type": "polygon",
+            "vertices": [
+              "BL",
+              "BR",
+              "TR",
+              "PK",
+              "TL"
+            ],
+            "fill": true
+          },
+          {
+            "type": "segment",
+            "from": "TL",
+            "to": "TR",
+            "strokeDasharray": "3 3"
+          },
+          {
+            "type": "segment",
+            "from": "MID",
+            "to": "PK",
+            "strokeDasharray": "2 2"
+          }
+        ],
+        "labels": [
+          {
+            "type": "segment",
+            "p1": "BL",
+            "p2": "BR",
+            "text": "10",
+            "side": "bottom"
+          },
+          {
+            "type": "segment",
+            "p1": "BR",
+            "p2": "TR",
+            "text": "6",
+            "side": "right"
+          },
+          {
+            "type": "segment",
+            "p1": "MID",
+            "p2": "PK",
+            "text": "4",
+            "side": "right"
+          }
+        ]
       }
     },
     {
@@ -1416,6 +1609,85 @@
         "skipped": false,
         "lastCheck": null,
         "lastTestReport": null
+      },
+      "figure": {
+        "kind": "geometry_2d",
+        "theme": "blue",
+        "title": "Cylinder",
+        "points": {
+          "C_BOT": [
+            0,
+            0
+          ],
+          "C_TOP": [
+            0,
+            12.0
+          ],
+          "L_BOT": [
+            -5.0,
+            0
+          ],
+          "R_BOT": [
+            5.0,
+            0
+          ],
+          "L_TOP": [
+            -5.0,
+            12.0
+          ],
+          "R_TOP": [
+            5.0,
+            12.0
+          ]
+        },
+        "shapes": [
+          {
+            "type": "segment",
+            "from": "L_BOT",
+            "to": "L_TOP"
+          },
+          {
+            "type": "segment",
+            "from": "R_BOT",
+            "to": "R_TOP"
+          },
+          {
+            "type": "ellipse",
+            "center": "C_BOT",
+            "radiusX": 5.0,
+            "radiusY": 1.5,
+            "strokeDasharray": "3 3"
+          },
+          {
+            "type": "ellipse",
+            "center": "C_TOP",
+            "radiusX": 5.0,
+            "radiusY": 1.5,
+            "fill": true
+          },
+          {
+            "type": "segment",
+            "from": "C_TOP",
+            "to": "R_TOP",
+            "strokeDasharray": "2 2"
+          }
+        ],
+        "labels": [
+          {
+            "type": "segment",
+            "p1": "L_BOT",
+            "p2": "L_TOP",
+            "text": "h = 12\\text{ dm}",
+            "side": "left"
+          },
+          {
+            "type": "segment",
+            "p1": "C_TOP",
+            "p2": "R_TOP",
+            "text": "r = 5\\text{ dm}",
+            "side": "top"
+          }
+        ]
       }
     }
   ],

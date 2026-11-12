@@ -13,7 +13,7 @@ import os
 import re
 from typing import Any, Dict, List, Optional
 
-from math_engine.figure_autofill import autofill_problem_figure
+from math_engine.figure_autofill import autofill_problem_figure, archetype_requires_figure
 from math_engine.generate import next_drill_id
 from math_engine.verify import verify_problem
 from math_engine.answer_check import check_answer, CHECKERS, to_expr, is_equal
@@ -278,6 +278,18 @@ def validate_ai_problem_contract(prob: Dict[str, Any]) -> bool:
     return True
 
 
+def require_figure_if_declared(prob: Dict[str, Any], archetypes: List[Dict[str, Any]]) -> None:
+    """Rule 11 guard (03_stem §3.1): archetypes with `figureBuilders` demand a figure or a `figureWaiver`."""
+    if "figure" in prob or prob.get("figureWaiver"):
+        return
+    if archetype_requires_figure(prob, archetypes):
+        raise AiContractError(
+            f"[{prob.get('id', '?')}] Rule 11 violated: archetype '{prob.get('archetypeKey')}' declares figureBuilders "
+            f"but no figure could be built from givens {list(prob.get('givens', {}))}. "
+            f"Use matching given keys or set 'figureWaiver' with a reason."
+        )
+
+
 def get_vault_path(unit_code: str, vault_dir: Optional[str] = None) -> str:
     dir_path = vault_dir or os.environ.get("REASONING_VAULT_DIR") or VAULT_DIR
     os.makedirs(dir_path, exist_ok=True)
@@ -398,7 +410,9 @@ def ingest_ai_drill(
             prob["referenceBadges"] = badges
 
         # Rule 11: auto-attach parametric figure from vault archetype `figureBuilders` (03_stem §3)
-        autofill_problem_figure(prob, load_reasoning_vault(unit_code, vault_dir=vault_dir).get("archetypes", []))
+        vault_archs = load_reasoning_vault(unit_code, vault_dir=vault_dir).get("archetypes", [])
+        autofill_problem_figure(prob, vault_archs)
+        require_figure_if_declared(prob, vault_archs)
         validate_ai_problem_contract(prob)
         # Run gate checks (G1-G6)
         verify_problem(prob, rules=active_rules)
