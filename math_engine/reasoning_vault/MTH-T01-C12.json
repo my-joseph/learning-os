@@ -41,7 +41,10 @@
         "solar_panel_footprint"
       ],
       "usedContexts": [
-        "sailboat_mainsail_canvas"
+        "sailboat_mainsail_canvas",
+        "warehouse_floor_epoxy_coating",
+        "gable_roof_end_panel",
+        "regatta_pennant_cutting"
       ]
     },
     {
@@ -81,7 +84,9 @@
         "manhole_cover_casting"
       ],
       "usedContexts": [
-        "lawn_sprinkler_coverage"
+        "lawn_sprinkler_coverage",
+        "ornamental_fountain_basin_surface",
+        "circular_skylight_glass"
       ]
     },
     {
@@ -101,7 +106,9 @@
         "server_rack_space"
       ],
       "usedContexts": [
-        "cargo_container_capacity"
+        "cargo_container_capacity",
+        "shipping_crate_capacity",
+        "aquarium_tank_water_volume"
       ]
     },
     {
@@ -122,7 +129,8 @@
       ],
       "usedContexts": [
         "cylindrical_water_reservoir",
-        "hydraulic_accumulator_piston_bore"
+        "hydraulic_accumulator_piston_bore",
+        "grain_bin_cylindrical_capacity"
       ]
     },
     {
@@ -229,7 +237,8 @@
       ],
       "usedContexts": [
         "highway_embankment_cross_section",
-        "highway_embankment_retention_basin"
+        "highway_embankment_retention_basin",
+        "canal_lining_cross_section"
       ]
     },
     {
@@ -249,7 +258,8 @@
         "radar_horn_antenna"
       ],
       "usedContexts": [
-        "conical_grain_funnel_hopper"
+        "conical_grain_funnel_hopper",
+        "volcano_ash_cone_model"
       ]
     },
     {
