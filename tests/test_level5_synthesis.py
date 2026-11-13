@@ -46,6 +46,7 @@ class TestLevel5Synthesis(unittest.TestCase):
             "governingRelation": "d = \\sqrt{w^2 + l^2 + h^2}",
             "cognitiveTraps": [
                 "c12-3d-dimension-omission-trap",
+                "c12-height-divisor-only-trap",
                 "c09-premature-radical-sum-trap",
                 "c05-intermediate-rounding-error-trap",
             ],
@@ -114,6 +115,8 @@ class TestLevel5Synthesis(unittest.TestCase):
             "inputHint": "Enter the final decimal rounded to 2 decimal places (e.g. 5.12)",
             "checkpointHint": "First compute the Euclidean space diagonal using the sum of squared orthogonal dimensions, then divide by the scale divisor and round.",
             "trapGivens": [24, 7],
+            "commonTrapTag": "c12-height-divisor-only-trap",
+            "blindSolve": {"answer": "3.71", "level": 5, "ambiguous": False},
             "trapDerivation": "24 / 7",
             "references": ["MTH-T01-C12", "MTH-T01-C09", "MTH-T01-C05"],
             "verificationLevel": "partial",
