@@ -6,8 +6,8 @@ import urllib.error
 
 import pytest
 
-import notion_client
-from notion_client import load_env, notion_request
+from notion_sync import client as notion_client
+from notion_sync.client import load_env, notion_request
 
 
 class FakeResp(io.BytesIO):
@@ -68,7 +68,17 @@ def test_request_http_error_after_retries_raises_runtime_error(monkeypatch):
         notion_request("GET", "x", "t", max_retries=2)
 
 
-def test_old_import_path_still_works():
+def test_archived_scripts_keep_their_import_path(monkeypatch):
+    # Archived scripts run as `python3 archive/<script>.py`, so archive/ is on sys.path and they
+    # import `apply_rules_and_test_pages`; it must hand them the live client and block helpers.
+    import os
+    import sys
+
+    from notion_sync import blocks
+
+    monkeypatch.syspath_prepend(os.path.join(os.path.dirname(os.path.dirname(__file__)), "archive"))
+    sys.modules.pop("apply_rules_and_test_pages", None)
     import apply_rules_and_test_pages as a
 
     assert a.notion_request is notion_request and a.load_env is load_env
+    assert a.parse_rt is blocks.parse_rt and a.callout_block is blocks.callout_block

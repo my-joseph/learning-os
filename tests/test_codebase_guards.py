@@ -16,7 +16,7 @@ import urllib.error
 import warnings
 from unittest import mock
 
-import notion_client
+from notion_sync import client as notion_client
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CONTROL_CHARS = "\f\b\x0b\a"
@@ -71,8 +71,8 @@ def _http_error(code, headers=None):
 
 
 class NotionRequestRetry(unittest.TestCase):
-    @mock.patch("notion_client.time.sleep")
-    @mock.patch("notion_client.urllib.request.urlopen")
+    @mock.patch("notion_sync.client.time.sleep")
+    @mock.patch("notion_sync.client.urllib.request.urlopen")
     def test_400_fails_fast(self, urlopen, sleep):
         urlopen.side_effect = _http_error(400)
         with self.assertRaises(RuntimeError) as ctx:
@@ -81,8 +81,8 @@ class NotionRequestRetry(unittest.TestCase):
         self.assertEqual(urlopen.call_count, 1)
         sleep.assert_not_called()
 
-    @mock.patch("notion_client.time.sleep")
-    @mock.patch("notion_client.urllib.request.urlopen")
+    @mock.patch("notion_sync.client.time.sleep")
+    @mock.patch("notion_sync.client.urllib.request.urlopen")
     def test_429_retries_with_retry_after(self, urlopen, sleep):
         ok = mock.MagicMock()
         ok.__enter__.return_value.read.return_value = b'{"ok": true}'
@@ -92,7 +92,7 @@ class NotionRequestRetry(unittest.TestCase):
 
 
 class MissingToken(unittest.TestCase):
-    @mock.patch("notion_client.urllib.request.urlopen")
+    @mock.patch("notion_sync.client.urllib.request.urlopen")
     def test_missing_token_fails_before_any_request(self, urlopen):
         for token in (None, "", "None", "  "):
             with self.subTest(token=token):
@@ -111,7 +111,7 @@ class ReplacePageContent(unittest.TestCase):
                 return {"results": [{"id": "old1"}, {"id": "old2"}], "has_more": False}
             return {}
 
-        with mock.patch("notion_client.notion_request", side_effect=fake):
+        with mock.patch("notion_sync.client.notion_request", side_effect=fake):
             failed = notion_client.replace_page_content("page", [{"type": "divider"}], "tok")
 
         self.assertEqual(failed, [])
@@ -127,7 +127,7 @@ class ReplacePageContent(unittest.TestCase):
                 raise RuntimeError("network down")
             raise AssertionError("must not delete when append failed")
 
-        with mock.patch("notion_client.notion_request", side_effect=fake):
+        with mock.patch("notion_sync.client.notion_request", side_effect=fake):
             with self.assertRaises(RuntimeError):
                 notion_client.replace_page_content("page", [{"type": "divider"}], "tok")
 

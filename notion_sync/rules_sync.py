@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Local-First Auto-Sync to Notion:
+Local-First Auto-Sync to Notion (run from the repo root: `python3 -m notion_sync.rules_sync [--dry-run]`):
 Synchronizes modular rules from local Markdown files (`rules/*.md`)
 into Notion Master Rules Hub and its 7 specialized Sub-Pages.
 """
@@ -11,31 +11,28 @@ import os
 import re
 from concurrent.futures import ThreadPoolExecutor
 
-import apply_rules_and_test_pages
-from apply_rules_and_test_pages import (
+from notion_sync import blocks as _blocks
+from notion_sync.blocks import (
     callout_block,
     divider_block,
-    get_all_blocks,
     h2,
-    load_env,
     mention_page,
-    notion_request,
     p_block,
     replace_page_blocks,
     rt,
     validate_blocks_clean,
 )
-from notion_client import require_token
-from test_md_parser import md_to_notion_blocks
-from upgrade_mth_t01_batch2 import audit_page
+from notion_sync.client import get_all_blocks, load_env, notion_request, require_token
+from notion_sync.md_blocks import md_to_notion_blocks
+from notion_sync.page_audit import audit_page
 
 # Support double-backtick code spans in markdown (e.g. in 00_core.md)
-apply_rules_and_test_pages.INNER_TOKEN_RE = re.compile(r"(\[\[[A-Z0-9\-]+\]\]|\$[^\$]+\$|``(?:.+?)``|`[^`]+`)")
-orig_parse_rt = apply_rules_and_test_pages.parse_rt
+_blocks.INNER_TOKEN_RE = re.compile(r"(\[\[[A-Z0-9\-]+\]\]|\$[^\$]+\$|``(?:.+?)``|`[^`]+`)")
+orig_parse_rt = _blocks.parse_rt
 
 
 def _safe_parse_rt(text, id_map):
-    bold_chunks = apply_rules_and_test_pages.BOLD_SPLIT_RE.split(text)
+    bold_chunks = _blocks.BOLD_SPLIT_RE.split(text)
     out = []
     for chunk in bold_chunks:
         if not chunk:
@@ -46,7 +43,7 @@ def _safe_parse_rt(text, id_map):
             is_bold = True
             inner_str = chunk[2:-2]
 
-        parts = apply_rules_and_test_pages.INNER_TOKEN_RE.split(inner_str)
+        parts = _blocks.INNER_TOKEN_RE.split(inner_str)
         for p in parts:
             if not p:
                 continue
@@ -54,21 +51,21 @@ def _safe_parse_rt(text, id_map):
                 fid = p[2:-2]
                 if fid not in id_map:
                     raise ValueError(f"Unknown Full ID in [[{fid}]] within text: {text}")
-                out.append(apply_rules_and_test_pages.mention_page(id_map[fid]["id"], bold=is_bold))
+                out.append(_blocks.mention_page(id_map[fid]["id"], bold=is_bold))
             elif p.startswith("$") and p.endswith("$") and len(p) > 2:
-                out.append(apply_rules_and_test_pages.eq_inline(p[1:-1], bold=is_bold))
+                out.append(_blocks.eq_inline(p[1:-1], bold=is_bold))
             elif p.startswith("``") and p.endswith("``") and len(p) >= 4:
-                out.append(apply_rules_and_test_pages.rt(p[2:-2].strip(), bold=is_bold, code=True))
+                out.append(_blocks.rt(p[2:-2].strip(), bold=is_bold, code=True))
             elif p.startswith("`") and p.endswith("`") and len(p) > 2:
-                out.append(apply_rules_and_test_pages.rt(p[1:-1], bold=is_bold, code=True))
+                out.append(_blocks.rt(p[1:-1], bold=is_bold, code=True))
             else:
                 if "[[" in p or "]]" in p:
                     raise ValueError(f"Unparsed bracket token in '{p}' within text: {text}")
-                out.append(apply_rules_and_test_pages.rt(p, bold=is_bold))
-    return out if out else [apply_rules_and_test_pages.rt("")]
+                out.append(_blocks.rt(p, bold=is_bold))
+    return out if out else [_blocks.rt("")]
 
 
-apply_rules_and_test_pages.parse_rt = _safe_parse_rt
+_blocks.parse_rt = _safe_parse_rt
 
 MASTER_RULES_PID = "40c3818f-8ba0-8002-92f1-e971793125e3"
 RULES_DIR = "rules"

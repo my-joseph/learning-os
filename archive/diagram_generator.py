@@ -306,7 +306,7 @@ def upload_svg_to_notion(svg_str, filename, token):
     via Notion File Upload API (/v1/file_uploads).
     Returns the file_upload_id.
     """
-    from notion_client import notion_request
+    from notion_sync.client import notion_request
 
     ssl_ctx = ssl.create_default_context()
     ssl_ctx.check_hostname = False

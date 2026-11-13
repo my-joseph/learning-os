@@ -1,7 +1,9 @@
+"""Convert a rules Markdown file into Notion blocks (headings, callouts, lists, to-dos, code, math)."""
+
 import json
 import re
 
-from apply_rules_and_test_pages import parse_rt, validate_blocks_clean
+from notion_sync.blocks import parse_rt, validate_blocks_clean
 
 
 def md_to_notion_blocks(md_text, id_map):

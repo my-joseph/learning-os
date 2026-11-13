@@ -34,4 +34,4 @@ To prevent context window bloat and instruction dilution, the Learning System ru
    - 3–4x higher token density compared to Notion JSON block structures
    - Full Git version control and rollback history
 2. **Notion Child Pages** serve as the clean, human-readable presentation layer in the Notion workspace.
-3. **Auto-Sync:** Run `python3 sync_rules_to_notion.py` to synchronize any local rule modifications directly to Notion.
+3. **Auto-Sync:** Run `python3 -m notion_sync.rules_sync` (add `--dry-run` to preview) from the repo root to synchronize any local rule modifications directly to Notion.

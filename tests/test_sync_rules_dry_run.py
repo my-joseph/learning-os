@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Tests for sync_rules_to_notion.py:
+Tests for notion_sync/rules_sync.py:
 1. Verify --dry-run makes zero network calls (urllib / requests / notion_request)
 2. Verify --dry-run does not modify rules/rules_map.json
 3. Verify rules_map merge preserves all existing entries (06, 07, custom keys)
@@ -12,7 +12,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from sync_rules_to_notion import (
+from notion_sync.rules_sync import (
     RULES_MAP_FILE,
     SUB_MODULES,
     get_or_create_sub_pages,
@@ -28,7 +28,7 @@ class TestSyncRulesDryRun(unittest.TestCase):
         self.assertIn("07_PROBLEM_GENERATION", keys)
         self.assertEqual(len(SUB_MODULES), 7)
 
-    @patch("apply_rules_and_test_pages.notion_request")
+    @patch("notion_sync.client.notion_request")
     @patch("urllib.request.urlopen")
     def test_dry_run_makes_no_network_calls(self, mock_urlopen, mock_notion):
         """Dry-run must not invoke urllib.request.urlopen or notion_request."""
@@ -92,8 +92,8 @@ class TestSyncRulesDryRun(unittest.TestCase):
                 return {"id": created_ids.pop(0)}
 
             with (
-                patch("sync_rules_to_notion.get_all_blocks", return_value=mock_blocks),
-                patch("sync_rules_to_notion.notion_request", side_effect=mock_notion_post),
+                patch("notion_sync.rules_sync.get_all_blocks", return_value=mock_blocks),
+                patch("notion_sync.rules_sync.notion_request", side_effect=mock_notion_post),
             ):
                 merged = get_or_create_sub_pages(
                     master_pid="dummy-master",

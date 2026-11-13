@@ -7,7 +7,7 @@
 
 ## Rules (read first, do not copy here)
 - Before any task: read @rules/README.md (task→module routing) and @rules/00_core.md, then the domain module.
-- Rule edits: change `rules/*.md` locally first; sync with `python3 sync_rules_to_notion.py` only when asked.
+- Rule edits: change `rules/*.md` locally first; sync with `python3 -m notion_sync.rules_sync` (from repo root) only when asked.
 
 ## Tech Stack
 - Python 3.14 (stdlib `urllib` for Notion REST; `sympy`, `numpy` for math engine). Deps: `requirements.txt` (runtime), `requirements-dev.txt` (+pytest, ruff). CI runs Python 3.12.
@@ -34,7 +34,7 @@
 - New drill/lab: sync a pristine record to Notion per `rules/00_core.md` §8 — only with the user's go-ahead for Notion writes.
 
 ## Refactor in Progress
-- Goals: (1) merge duplicated root vs `practice-studio/` files into one source; (2) Python cleanup: `archive/` for one-shot legacy (done), one Notion client + env loader (done for root modules), `requirements.txt` (done); a `scripts/` package layout is NOT done; (3) Next.js studio as the only UI (done); (4) add tests + CI (done: pytest, ruff, GitHub Actions; CI not yet confirmed green on GitHub).
+- Goals: (1) merge duplicated root vs `practice-studio/` files into one source; (2) Python cleanup: `archive/` for one-shot legacy (done), one Notion client + env loader (done for root modules), `requirements.txt` (done); a `scripts/` package layout is NOT done; (3) Next.js studio as the only UI (done); (4) add tests + CI (done: pytest, ruff, GitHub Actions; CI green on PRs #2–#4).
 - Rules: preserve existing behavior; refactor commits separate from feature/bugfix commits; all tests pass at the end of every phase; no Notion writes while verifying.
 - Status (update at the end of every phase):
 
@@ -42,15 +42,16 @@
 | :-- | :-- | :-- |
 | P0 | Safety net: requirements, pytest, CI, lint baseline fixed | done (PR #1) |
 | P1 | Move one-shot scripts to `archive/` | done (34 moved; 7 root modules kept because live code imports them) |
-| P2 | Shared Notion client + env loader | done for root modules (`notion_client.py`); `code_engine/submit.py` and `labs/common/submit_lab.py` keep their own variants (different retry/env-quote behavior) |
+| P2 | Shared Notion client + env loader | done (`notion_sync/client.py`); `code_engine/submit.py` and `labs/common/submit_lab.py` keep their own variants (different retry/env-quote behavior) |
 | P3 | Merge duplicated root/studio files | done (root is canonical; stale `practice-studio/` copies removed) |
-| P4 | Retire `practice_hub.py` + `web/` | done (hub server and legacy UI deleted; `drill_sync.py` keeps validator, save and Notion sync) |
-| P5 | ruff format/lint + type hints | done (ruff config, CI checks; hints on `notion_client`/`drill_sync` public funcs only; `archive/`, studio excluded) |
+| P4 | Retire `practice_hub.py` + `web/` | done (hub server and legacy UI deleted; `notion_sync/drill_sync.py` keeps validator, save and Notion sync) |
+| P5 | ruff format/lint + type hints | done (ruff config, CI checks; hints on `notion_sync.client`/`notion_sync.drill_sync` public funcs only; `archive/`, studio excluded) |
+| P6 | Notion layer as `notion_sync/` package; dead figure modules + one-shot page content to `archive/` | done (root keeps only `quality_rules.py`) |
 
 ## Gotchas / Do-Not
 - Never commit or print `.env` (`NOTION_TOKEN`, `NOTION_DATABASE_ID`). `.env`, `.venv`, `node_modules` are gitignored and absent in fresh worktrees; scripts read `.env` relative to the CWD, so run from repo root.
-- Root is canonical for `math_engine/`, `code_engine/`, `drills/`, `id_map.json`, `drill_sync.py`. `practice-studio/` has no copies (only a `code_engine` symlink to `../code_engine`); the Studio API routes read root via `src/lib/paths.ts`. Never recreate copies; `code_engine.generate` no longer mirrors into `practice-studio/`.
-- 34 one-shot scripts (`*_builder.py`, `upgrade_*`, `create_*`, `fix_*`, `deploy_*`, `clean_*`, `patch_*`, ...) now live in `archive/` and mostly write to Notion. Never run them unasked; if required: `PYTHONPATH=. python3 archive/<script>.py` from repo root. Root keeps only live modules: `notion_client.py` (shared Notion REST client + `.env` loader; applies process-wide IPv4/timeout on import; TLS always verified; retries only network errors/409/429/5xx; raises `MissingNotionToken` before any request; `replace_page_content` appends new blocks before deleting old ones), `apply_rules_and_test_pages.py` (page-building helpers; re-exports the client names), `drill_sync.py` (zero-leak validator + Notion sync; spawned by studio `sync-notion` route), `sync_rules_to_notion.py` + its imports `test_md_parser.py`, `upgrade_mth_t01_batch2.py`, `mth_t01_batch2_{data,units}.py` (still coupled to the rules-sync script; candidate for later cleanup).
+- Root is canonical for `math_engine/`, `code_engine/`, `drills/`, `id_map.json`, `notion_sync/`. `practice-studio/` has no copies (only a `code_engine` symlink to `../code_engine`); the Studio API routes read root via `src/lib/paths.ts`. Never recreate copies; `code_engine.generate` no longer mirrors into `practice-studio/`.
+- 34 one-shot scripts (`*_builder.py`, `upgrade_*`, `create_*`, `fix_*`, `deploy_*`, `clean_*`, `patch_*`, ...) live in `archive/` and mostly write to Notion. Never run them unasked; if required: `PYTHONPATH=. python3 archive/<script>.py` from repo root (`archive/apply_rules_and_test_pages.py` re-exports the live helpers for them). All Notion code is in the `notion_sync/` package: `client` (REST client + `.env` loader; process-wide IPv4/timeout on import; TLS always verified; retries only network errors/409/429/5xx; raises `MissingNotionToken` before any request; `replace_page_content` appends before deleting), `blocks` (rich text/block builders), `md_blocks` (rules Markdown -> blocks), `page_audit`, `rules_sync` (`python3 -m notion_sync.rules_sync [--dry-run]`), `drill_sync` (zero-leak validator + save + Notion sync; spawned by the studio `sync-notion` route). Root `.py` files: only `quality_rules.py` (shared quality gates; reads `skills_taxonomy.json`).
 - Never hand-edit `id_map.json` (Notion page-ID registry, incl. `CON-*` concept keys).
 - Drill hints/placeholders must never leak the answer (zero-leak rule, `rules/00_core.md` §6). AI-written math prompts must not give away the solution either (`rules/07` §4.7, enforced at ingest); audit with `python scripts/audit_solution_leaks.py [UNIT] [--display]`.
 - Notion multi-select values cannot contain commas; use only whitelisted Notion icon names.

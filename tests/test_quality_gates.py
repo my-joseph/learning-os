@@ -794,8 +794,8 @@ TEMPLATES = [
     def test_23_diff_whitelist_and_notion_dry_run(self) -> None:
         """Test 23: User input diff(...) blocked as invalid input; Notion dry-run works without network."""
 
-        from drill_sync import sync_drill_to_notion
         from math_engine.answer_check import check_answer
+        from notion_sync.drill_sync import sync_drill_to_notion
 
         # 1. User typing diff(...) returns 'invalid input'
         spec = {"type": "expression", "value": "2*x", "variables": ["x"]}

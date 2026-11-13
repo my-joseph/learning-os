@@ -8,13 +8,14 @@ Drill persistence + Notion sync (used by practice-studio's /api/sync-notion rout
 - sync_drill_to_notion: save, then sync score/mistakes/steps to Notion ('Learning Practice & Drills')
 
 Extracted from the retired practice_hub.py (P4). Run from the repo root (relative paths).
+Imported by practice-studio's sync-notion route as `notion_sync.drill_sync`.
 """
 
 import json
 import os
 import re
 
-from apply_rules_and_test_pages import (
+from notion_sync.blocks import (
     bullet,
     callout_block,
     code_block,
@@ -25,7 +26,7 @@ from apply_rules_and_test_pages import (
     replace_page_blocks,
     toggle_block,
 )
-from notion_client import load_env, notion_request
+from notion_sync.client import load_env, notion_request
 
 
 def get_data_root() -> str:
