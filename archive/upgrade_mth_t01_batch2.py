@@ -18,7 +18,7 @@ from apply_rules_and_test_pages import (
 from mth_t01_batch2_data import CHAPTER_DATA
 from mth_t01_batch2_units import UNIT_DATA
 from notion_sync.client import get_all_blocks, load_env, notion_request
-from notion_sync.page_audit import audit_page  # noqa: F401  (re-export for finish_batch2_and_audit.py)
+from page_audit import audit_page  # noqa: F401  (re-export for finish_batch2_and_audit.py)
 
 
 def build_chapter_blocks(ch_code, ch_data, id_map, preserved_drill_logs):

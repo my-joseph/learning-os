@@ -26,12 +26,11 @@ To prevent context window bloat and instruction dilution, the Learning System ru
 
 ---
 
-## Local-First & Auto-Sync Protocol
+## Local-Only Rules
 
 1. **Local Markdown Files (`rules/*.md`)** serve as the primary **Source of Truth** for AI agent operations, offering:
    - Zero network latency (`< 1ms` local file read)
    - Zero API rate limits or connection reset risks
    - 3–4x higher token density compared to Notion JSON block structures
    - Full Git version control and rollback history
-2. **Notion Child Pages** serve as the clean, human-readable presentation layer in the Notion workspace.
-3. **Auto-Sync:** Run `python3 -m notion_sync.rules_sync` (add `--dry-run` to preview) from the repo root to synchronize any local rule modifications directly to Notion.
+2. **No Notion copy:** rules are **not** synced to Notion (retired 2026-11-13; nobody read them there). Edit `rules/*.md` and commit; that is the whole workflow. Any old rule pages left in Notion are stale and must never be used as a reference. The retired sync code is in `archive/rules_sync.py`.

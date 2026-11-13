@@ -123,11 +123,11 @@ Always separate analysis from generation and finalize with cross-referencing:
 
 Do not skip analysis and immediately generate generic content.
 
-### 9. Local-First Architecture & Notion Auto-Sync Protocol
+### 9. Local-First Architecture
 - **Canonical Source of Truth:** System implementation rules (`rules/*.md`), drill schemas (`drills/data/`), lab configs (`lab.config.json`), and parametric visual engines (`math_engine/`) are authored and maintained Local-First in the workspace repository.
 - **Direct Agent Tooling & Zero-Latency Execution:** AI agents and subagents must read local Markdown and JSON files directly using standard file tools. This guarantees sub-millisecond retrieval, eliminates API network latency / rate limit hazards, and preserves LLM context window with 3–4x higher token density than raw Notion API JSON blocks.
 - **Notion as Presentation & Review Dashboard:** Notion serves as the primary human-facing presentation layer, active recall interface, and spaced retention ledger.
-- **Mandatory Synchronization:** All rule updates, additions, or refinements must be made in local Markdown files first, version-controlled with Git, and synchronized to the Notion Master Rule Hub and Sub-Pages via `python3 -m notion_sync.rules_sync` (run from the repo root). Manual edits on Notion rule pages that diverge from local files are strictly prohibited.
+- **Rules Are Local-Only:** Rule updates, additions, or refinements are made in `rules/*.md` and version-controlled with Git. Rules are not synced to Notion; any old rule pages in Notion are stale and must not be read or edited as a reference.
 
 ### 10. Version Control & Git Hygiene Protocol
 - **Strict Secrets Invariant:** Never commit `.env`, private tokens, or credential files. Ensure `.gitignore` is always active and verified before staging.

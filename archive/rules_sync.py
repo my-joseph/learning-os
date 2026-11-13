@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-Local-First Auto-Sync to Notion (run from the repo root: `python3 -m notion_sync.rules_sync [--dry-run]`):
+RETIRED: rules are no longer synced to Notion (local rules/*.md are the only copy).
+Kept for reference. Former Local-First Auto-Sync to Notion:
 Synchronizes modular rules from local Markdown files (`rules/*.md`)
 into Notion Master Rules Hub and its 7 specialized Sub-Pages.
 """
@@ -23,8 +24,8 @@ from notion_sync.blocks import (
     validate_blocks_clean,
 )
 from notion_sync.client import get_all_blocks, load_env, notion_request, require_token
-from notion_sync.md_blocks import md_to_notion_blocks
-from notion_sync.page_audit import audit_page
+from md_blocks import md_to_notion_blocks
+from page_audit import audit_page
 
 # Support double-backtick code spans in markdown (e.g. in 00_core.md)
 _blocks.INNER_TOKEN_RE = re.compile(r"(\[\[[A-Z0-9\-]+\]\]|\$[^\$]+\$|``(?:.+?)``|`[^`]+`)")
@@ -69,7 +70,7 @@ _blocks.parse_rt = _safe_parse_rt
 
 MASTER_RULES_PID = "40c3818f-8ba0-8002-92f1-e971793125e3"
 RULES_DIR = "rules"
-RULES_MAP_FILE = os.path.join(RULES_DIR, "rules_map.json")
+RULES_MAP_FILE = os.path.join("archive", "rules_map.json")  # rules sync retired; kept for reference
 
 SUB_MODULES = [
     {
