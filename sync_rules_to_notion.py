@@ -8,10 +8,8 @@ into Notion Master Rules Hub and its 5 specialized Sub-Pages.
 import json
 import os
 import re
+from notion_client import get_all_blocks, load_env, notion_request
 from apply_rules_and_test_pages import (
-    load_env,
-    notion_request,
-    get_all_blocks,
     replace_page_blocks,
     validate_blocks_clean,
     parse_rt,

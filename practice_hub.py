@@ -18,6 +18,7 @@ import re
 import urllib.parse
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 
+from notion_client import load_env, notion_request
 from apply_rules_and_test_pages import (
     bullet,
     callout_block,
@@ -25,8 +26,6 @@ from apply_rules_and_test_pages import (
     divider_block,
     eq_block,
     h2,
-    load_env,
-    notion_request,
     p_block,
     replace_page_blocks,
     toggle_block,
