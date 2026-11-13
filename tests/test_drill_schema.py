@@ -1,4 +1,5 @@
 """Committed drill JSON files must keep the shape the Studio (src/types/drill.ts) relies on."""
+
 import glob
 import json
 

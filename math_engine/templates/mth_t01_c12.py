@@ -10,21 +10,51 @@ Units covered:
 Every geometry template exports a standard declarative `visual` specification (VisualSpec)
 rendered precisely via SVG on the client side.
 """
-import math
-import sympy as sp
-from math_engine.fmt import R, num, num_plain, terms
+
+from math_engine.fmt import R
 
 UNIT = "MTH-T01-C12"
 TITLE = "Math Models and Geometry"
 
 MISTAKE_TAGS = [
-    {"id": "pythagoras-hypotenuse", "label": "Added instead of subtracted for a leg ($a^2 = c^2 - b^2$)", "name": "Pythagorean Leg vs Hypotenuse Error", "autoFrom": ["whole_sign_flip"]},
-    {"id": "formula-perimeter-area", "label": "Confused perimeter formula with area formula", "name": "Perimeter vs Area Confusion", "autoFrom": []},
-    {"id": "trapezoid-height", "label": "Forgot $\\frac{1}{2}$ in trapezoid area: $A = \\frac{1}{2}(b_1 + b_2)h$", "name": "Trapezoid Area Constant Error", "autoFrom": ["off_by_factor"]},
-    {"id": "circle-diameter-radius", "label": "Used diameter instead of radius in $\\pi r^2$", "name": "Diameter vs Radius Confusion", "autoFrom": ["off_by_factor"]},
-    {"id": "volume-surface-area", "label": "Confused volume ($V$) with surface area ($SA$)", "name": "Volume vs Surface Area Error", "autoFrom": []},
-    {"id": "arithmetic-slip", "label": "Arithmetic / calculation slip", "name": "Arithmetic Slip", "autoFrom": ["rounding", "off_by_factor"]},
+    {
+        "id": "pythagoras-hypotenuse",
+        "label": "Added instead of subtracted for a leg ($a^2 = c^2 - b^2$)",
+        "name": "Pythagorean Leg vs Hypotenuse Error",
+        "autoFrom": ["whole_sign_flip"],
+    },
+    {
+        "id": "formula-perimeter-area",
+        "label": "Confused perimeter formula with area formula",
+        "name": "Perimeter vs Area Confusion",
+        "autoFrom": [],
+    },
+    {
+        "id": "trapezoid-height",
+        "label": "Forgot $\\frac{1}{2}$ in trapezoid area: $A = \\frac{1}{2}(b_1 + b_2)h$",
+        "name": "Trapezoid Area Constant Error",
+        "autoFrom": ["off_by_factor"],
+    },
+    {
+        "id": "circle-diameter-radius",
+        "label": "Used diameter instead of radius in $\\pi r^2$",
+        "name": "Diameter vs Radius Confusion",
+        "autoFrom": ["off_by_factor"],
+    },
+    {
+        "id": "volume-surface-area",
+        "label": "Confused volume ($V$) with surface area ($SA$)",
+        "name": "Volume vs Surface Area Error",
+        "autoFrom": [],
+    },
+    {
+        "id": "arithmetic-slip",
+        "label": "Arithmetic / calculation slip",
+        "name": "Arithmetic Slip",
+        "autoFrom": ["rounding", "off_by_factor"],
+    },
 ]
+
 
 def S(latex, explain, val=None, eq=None):
     step = {"latex": latex, "explain": explain}
@@ -33,6 +63,7 @@ def S(latex, explain, val=None, eq=None):
     if eq is not None:
         step["eq"] = eq
     return step
+
 
 # ---------------------------------------------------------------------------
 # Template 1 (U03): Pythagorean Theorem - Find Hypotenuse (Level 1 Foundation)
@@ -107,12 +138,21 @@ def t_pythagoras_hypotenuse(rng):
         "checkpointHint": f"Evaluate $a^2 + b^2 = {a * a} + {b * b} = {c_sq}$.",
         "commonTrapTag": "pythagoras-hypotenuse",
         "steps": [
-            S(f"c = \\sqrt{{a^2 + b^2}} = \\sqrt{{{a}^2 + {b}^2}}", "Write the Pythagorean formula solved for hypotenuse $c$ and substitute the legs.", f"sqrt({a}**2 + {b}**2)"),
-            S(f"= \\sqrt{{{a * a} + {b * b}}} = \\sqrt{{{c_sq}}}", "Square both legs and add under the radical.", f"sqrt({c_sq})"),
+            S(
+                f"c = \\sqrt{{a^2 + b^2}} = \\sqrt{{{a}^2 + {b}^2}}",
+                "Write the Pythagorean formula solved for hypotenuse $c$ and substitute the legs.",
+                f"sqrt({a}**2 + {b}**2)",
+            ),
+            S(
+                f"= \\sqrt{{{a * a} + {b * b}}} = \\sqrt{{{c_sq}}}",
+                "Square both legs and add under the radical.",
+                f"sqrt({c_sq})",
+            ),
             S(f"= {c}", "Evaluate the exact square root to find the length of the hypotenuse $c$.", str(c)),
         ],
         "verify": {"source": f"sqrt({a}**2 + {b}**2)"},
     }
+
 
 # ---------------------------------------------------------------------------
 # Template 2 (U04): Area & Perimeter of Trapezoid (Level 2 Standard Exam)
@@ -128,10 +168,10 @@ def t_trapezoid_area(rng):
     bot_w = 170
     h_px = 80
     ox, oy = 70, 140
-    p1 = [ox, oy]                    # bottom left
-    p2 = [ox + bot_w, oy]            # bottom right
-    p3 = [ox + bot_w - 30, oy - h_px]# top right
-    p4 = [ox + 20, oy - h_px]        # top left
+    p1 = [ox, oy]  # bottom left
+    p2 = [ox + bot_w, oy]  # bottom right
+    p3 = [ox + bot_w - 30, oy - h_px]  # top right
+    p4 = [ox + 20, oy - h_px]  # top left
 
     visual = {
         "type": "geometry-2d",
@@ -182,7 +222,7 @@ def t_trapezoid_area(rng):
         "context": "Geometry: Quadrilaterals",
         "references": ["MTH-T01-C12-U04"],
         "prompt": f"Find the area $A$ of the trapezoid with parallel bases $b_1 = {b1}$, $b_2 = {b2}$, and height $h = {h}$.",
-        "display": f"A = \\frac{{1}}{{2}}(b_1 + b_2)h",
+        "display": "A = \\frac{1}{2}(b_1 + b_2)h",
         "plainText": f"(1/2)*({b1} + {b2})*{h}",
         "visual": visual,
         "answerSpec": {"type": "number", "value": str(area), "forms": ["exact"]},
@@ -192,12 +232,17 @@ def t_trapezoid_area(rng):
         "checkpointHint": f"The sum of the bases is $b_1 + b_2 = {b1 + b2}$.",
         "commonTrapTag": "trapezoid-height",
         "steps": [
-            S(f"A = \\frac{{1}}{{2}}(b_1 + b_2)h = \\frac{{1}}{{2}}({b1} + {b2})({h})", "Substitute the bases and height into the trapezoid area formula.", f"(1/2)*({b1} + {b2})*{h}"),
+            S(
+                f"A = \\frac{{1}}{{2}}(b_1 + b_2)h = \\frac{{1}}{{2}}({b1} + {b2})({h})",
+                "Substitute the bases and height into the trapezoid area formula.",
+                f"(1/2)*({b1} + {b2})*{h}",
+            ),
             S(f"= \\frac{{1}}{{2}}({b1 + b2})({h})", "Add the two parallel bases first.", f"(1/2)*{b1 + b2}*{h}"),
             S(f"= {area}", f"Multiply by $\\frac{{1}}{{2}}$ and the height $h = {h}$.", str(area)),
         ],
         "verify": {"source": f"(1/2)*({b1} + {b2})*{h}"},
     }
+
 
 # ---------------------------------------------------------------------------
 # Template 3 (U05): Circle Area & Circumference (Level 2 Standard Exam)
@@ -240,7 +285,7 @@ def t_circle_area_in_terms_of_pi(rng):
         "context": "Geometry: Circles",
         "references": ["MTH-T01-C12-U05"],
         "prompt": f"Find the exact area $A$ of a circle with radius $r = {r}$ (in terms of $\\pi$).",
-        "display": f"A = \\pi r^2",
+        "display": "A = \\pi r^2",
         "plainText": f"pi * {r}^2",
         "visual": visual,
         "answerSpec": {"type": "expression", "value": f"{area_coeff}*pi", "variables": ["pi"]},
@@ -250,11 +295,20 @@ def t_circle_area_in_terms_of_pi(rng):
         "checkpointHint": f"The radius squared is $r^2 = {r}^2 = {area_coeff}$.",
         "commonTrapTag": "circle-diameter-radius",
         "steps": [
-            S(f"A = \\pi r^2 = \\pi({r})^2", "Write the circle area formula and substitute the radius $r$.", f"pi*{r}**2"),
-            S(f"= {area_coeff}\\pi", f"Square the radius: ${r}^2 = {area_coeff}$. Leave $\\pi$ exact.", f"{area_coeff}*pi"),
+            S(
+                f"A = \\pi r^2 = \\pi({r})^2",
+                "Write the circle area formula and substitute the radius $r$.",
+                f"pi*{r}**2",
+            ),
+            S(
+                f"= {area_coeff}\\pi",
+                f"Square the radius: ${r}^2 = {area_coeff}$. Leave $\\pi$ exact.",
+                f"{area_coeff}*pi",
+            ),
         ],
         "verify": {"source": f"pi*{r}**2"},
     }
+
 
 # ---------------------------------------------------------------------------
 # Template 4 (U06): Cylinder Volume (Level 3 Applied)
@@ -308,7 +362,7 @@ def t_cylinder_volume(rng):
         "context": "Geometry: 3D Solids",
         "references": ["MTH-T01-C12-U06"],
         "prompt": f"Find the exact volume $V$ of a right circular cylinder with radius $r = {r}$ and height $h = {h}$ (in terms of $\\pi$).",
-        "display": f"V = \\pi r^2 h",
+        "display": "V = \\pi r^2 h",
         "plainText": f"pi * {r}^2 * {h}",
         "visual": visual,
         "answerSpec": {"type": "expression", "value": f"{v_coeff}*pi", "variables": ["pi"]},
@@ -318,12 +372,17 @@ def t_cylinder_volume(rng):
         "checkpointHint": f"The base area is $B = \\pi r^2 = {r * r}\\pi$.",
         "commonTrapTag": "volume-surface-area",
         "steps": [
-            S(f"V = \\pi r^2 h = \\pi({r})^2({h})", "Substitute the radius and height into the cylinder volume formula.", f"pi*{r}**2*{h}"),
+            S(
+                f"V = \\pi r^2 h = \\pi({r})^2({h})",
+                "Substitute the radius and height into the cylinder volume formula.",
+                f"pi*{r}**2*{h}",
+            ),
             S(f"= \\pi({r * r})({h})", f"Evaluate the base area: ${r}^2 = {r * r}$.", f"pi*{r * r}*{h}"),
             S(f"= {v_coeff}\\pi", f"Multiply by the height: ${r * r} \\times {h} = {v_coeff}$.", f"{v_coeff}*pi"),
         ],
         "verify": {"source": f"pi*{r}**2*{h}"},
     }
+
 
 TEMPLATES = [
     {"key": "pythagoras-hypotenuse", "trapTag": "pythagoras-hypotenuse", "level": 1, "build": t_pythagoras_hypotenuse},

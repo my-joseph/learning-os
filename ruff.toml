@@ -6,4 +6,5 @@ line-length = 120
 [lint]
 select = ["E", "F", "W", "I"]
 # Long prose/data strings cannot be wrapped; the formatter handles code lines.
-ignore = ["E501"]
+# W291/W293: trailing whitespace inside generated markdown/SVG strings is output content.
+ignore = ["E501", "W291", "W293"]

@@ -1,4 +1,5 @@
 """Notion client behavior (fully mocked: no network, no Notion writes)."""
+
 import io
 import json
 import urllib.error
@@ -38,8 +39,7 @@ def test_request_sends_headers_and_json(monkeypatch):
 
     monkeypatch.setattr(notion_client.urllib.request, "urlopen", fake_urlopen)
     assert notion_request("POST", "pages", "tok", {"a": 1}) == {"ok": True}
-    assert seen == {"url": "https://api.notion.com/v1/pages", "method": "POST",
-                    "auth": "Bearer tok", "body": {"a": 1}}
+    assert seen == {"url": "https://api.notion.com/v1/pages", "method": "POST", "auth": "Bearer tok", "body": {"a": 1}}
 
 
 def test_request_retries_then_succeeds(monkeypatch):
@@ -70,4 +70,5 @@ def test_request_http_error_after_retries_raises_runtime_error(monkeypatch):
 
 def test_old_import_path_still_works():
     import apply_rules_and_test_pages as a
+
     assert a.notion_request is notion_request and a.load_env is load_env

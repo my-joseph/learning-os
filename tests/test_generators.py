@@ -1,4 +1,5 @@
 """Seeded generation must be deterministic and produce well-formed drill docs (hermetic: tmp dir)."""
+
 import shutil
 
 import pytest

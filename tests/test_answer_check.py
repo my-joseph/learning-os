@@ -1,4 +1,5 @@
 """Characterization tests: lock in current checker behavior (no network, no Notion)."""
+
 import pytest
 
 from code_engine.answer_check import check_answer as code_check

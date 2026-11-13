@@ -7,15 +7,16 @@ via `npm run submit`, evaluates question-by-question acceptance criteria,
 records execution telemetry, and syncs to Notion 'Learning Practice & Drills'.
 100% self-contained with Python standard library.
 """
-import os
-import sys
-import json
-import ssl
-import time
-import urllib.request
-import urllib.error
-import subprocess
+
 import datetime
+import json
+import os
+import ssl
+import subprocess
+import sys
+import time
+import urllib.error
+import urllib.request
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
@@ -74,7 +75,7 @@ def notion_request(method: str, endpoint: str, token: str, payload: dict = None,
                 return json.loads(resp.read().decode("utf-8"))
         except urllib.error.HTTPError as e:
             if e.code in (409, 429, 500, 502, 503, 504) and attempt < max_retries - 1:
-                time.sleep(1.5 * (2 ** attempt))
+                time.sleep(1.5 * (2**attempt))
                 continue
             body = e.read().decode("utf-8", errors="ignore")
             raise RuntimeError(f"HTTP {e.code} on {method} {endpoint}: {body}") from e
@@ -108,7 +109,7 @@ def run_tests_junit(ws_dir: Path) -> list:
     end_tag = "</testsuites>"
     end_idx = xml_text.rfind(end_tag)
     if end_idx != -1:
-        xml_text = xml_text[:end_idx + len(end_tag)]
+        xml_text = xml_text[: end_idx + len(end_tag)]
 
     try:
         root = ET.fromstring(xml_text)
@@ -125,14 +126,16 @@ def run_tests_junit(ws_dir: Path) -> list:
         fail_msg = ""
         if is_fail:
             fail_msg = f_elem.attrib.get("message", f_elem.text or "Assertion failed")
-        
+
         is_hidden = "HIDDEN" in name.upper() or ".canonical" in tc.attrib.get("file", "")
-        cases.append({
-            "name": name,
-            "passed": not is_fail,
-            "failure_msg": fail_msg,
-            "is_hidden": is_hidden,
-        })
+        cases.append(
+            {
+                "name": name,
+                "passed": not is_fail,
+                "failure_msg": fail_msg,
+                "is_hidden": is_hidden,
+            }
+        )
     return cases
 
 
@@ -185,7 +188,9 @@ def sync_drill_telemetry_to_notion(repo_root: Path, ws_dir: Path, drill_doc: dic
         "Score": {"number": summary.get("score", 0)},
         "Max Score": {"number": summary.get("maxScore", 5)},
         "Mistake Categories": {"multi_select": cleaned_tags},
-        "Diverged Steps Summary": {"rich_text": [{"type": "text", "text": {"content": (summary.get("divergedStepsSummary") or "")[:1900]}}]},
+        "Diverged Steps Summary": {
+            "rich_text": [{"type": "text", "text": {"content": (summary.get("divergedStepsSummary") or "")[:1900]}}]
+        },
         "Local File Path": {"rich_text": [{"type": "text", "text": {"content": rel_path}}]},
         "Attempt Date": {"date": {"start": now_iso}},
     }
@@ -291,29 +296,33 @@ def main():
             prefix = "[HIDDEN TRAP] " if first_fail.get("is_hidden") else ""
             failing_reasons.append(f"[{qid}] {prefix}{first_fail['name']}: {first_fail['failure_msg'][:80]}")
 
-        evaluated_questions.append({
-            "qid": qid,
-            "passed": all_pass,
-            "vis_pass": vis_pass,
-            "vis_total": len(vis_tcs),
-            "hid_pass": hid_pass,
-            "hid_total": len(hid_tcs),
-            "hidden_breached": (vis_pass == len(vis_tcs) and hid_pass < len(hid_tcs)) if hid_tcs else False,
-        })
+        evaluated_questions.append(
+            {
+                "qid": qid,
+                "passed": all_pass,
+                "vis_pass": vis_pass,
+                "vis_total": len(vis_tcs),
+                "hid_pass": hid_pass,
+                "hid_total": len(hid_tcs),
+                "hidden_breached": (vis_pass == len(vis_tcs) and hid_pass < len(hid_tcs)) if hid_tcs else False,
+            }
+        )
 
     max_score = len(evaluated_questions)
-    all_green = (total_passed == max_score and max_score > 0)
+    all_green = total_passed == max_score and max_score > 0
     practice_status = "Graded" if all_green else "Needs Retry"
 
     print(f"\n{BOLD}Question Acceptance Breakdown:{RESET}")
     for eq in evaluated_questions:
         mark = f"{GREEN}✔ PASS{RESET}" if eq["passed"] else f"{RED}✗ FAIL{RESET}"
         detail = f"{eq['vis_pass']}/{eq['vis_total']} visible"
-        if eq['hid_total'] > 0:
+        if eq["hid_total"] > 0:
             detail += f" + {eq['hid_pass']}/{eq['hid_total']} hidden traps"
         print(f"  [{eq['qid']}] Exercise Acceptance Suite: {mark}  ({detail})")
         if eq["hidden_breached"]:
-            print(f"      {YELLOW}⚠ Notice: Visible scenarios passed, but Hidden Trap tests failed (Boundary/Hardcode trap).{RESET}")
+            print(
+                f"      {YELLOW}⚠ Notice: Visible scenarios passed, but Hidden Trap tests failed (Boundary/Hardcode trap).{RESET}"
+            )
 
     pct = round((total_passed / max_score * 100), 1) if max_score > 0 else 0.0
     print(f"\n{BOLD}-------------------------------------------------------------------------{RESET}")
@@ -329,7 +338,9 @@ def main():
         "maxScore": max_score,
         "practiceStatus": practice_status,
         "mistakeCategories": ["Assertion Failure / Unhandled Edge Case"] if not all_green else [],
-        "divergedStepsSummary": " | ".join(failing_reasons) if failing_reasons else "All question test suites passed 100% verified.",
+        "divergedStepsSummary": " | ".join(failing_reasons)
+        if failing_reasons
+        else "All question test suites passed 100% verified.",
         "attemptDate": datetime.datetime.now(datetime.timezone.utc).isoformat(),
     }
 

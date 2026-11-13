@@ -2,6 +2,7 @@
 """
 Proxy runner for AI Senior Tech Lead PR Review in Labs.
 """
+
 import sys
 from pathlib import Path
 
@@ -15,5 +16,6 @@ if not engine_review.exists():
     sys.exit(1)
 
 import subprocess
+
 res = subprocess.run([sys.executable, str(engine_review)] + sys.argv[1:])
 sys.exit(res.returncode)

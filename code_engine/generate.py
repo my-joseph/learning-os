@@ -7,6 +7,7 @@ Generates ONLY the exact number of questions requested in the Pre-Generation Con
 attaches resolved Notion deep links for cross-subject references, and writes the
 clean JSON file to drills/data/<UNIT_CODE>/<DRILL_ID>.json.
 """
+
 import argparse
 import datetime
 import glob
@@ -146,11 +147,13 @@ def generate_drill_set(
         for ref_code in prob.get("references", []):
             entry = id_map.get(ref_code, {})
             ref_title = entry.get("title", ref_code) if isinstance(entry, dict) else ref_code
-            ref_badges.append({
-                "code": ref_code,
-                "title": ref_title,
-                "notionUrl": notion_url_for(ref_code, id_map),
-            })
+            ref_badges.append(
+                {
+                    "code": ref_code,
+                    "title": ref_title,
+                    "notionUrl": notion_url_for(ref_code, id_map),
+                }
+            )
         prob["referenceBadges"] = ref_badges
 
         # Remove internal verification fields
@@ -204,6 +207,7 @@ def generate_drill_set(
     }
 
     from code_engine.workspace import materialize_drill_workspace
+
     materialize_drill_workspace(drill_doc)
 
     with open(file_path, "w", encoding="utf-8") as f:

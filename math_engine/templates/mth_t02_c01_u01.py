@@ -10,6 +10,7 @@ Every template returns a problem dict. Each step carries `val` (SymPy value of t
 or `eq` ([lhs, rhs] that must be equal). math_engine.verify enforces all of these before any JSON is written.
 Text fields: plain English + inline `$...$` only. No Markdown, no [[ID]] tokens, no \\displaystyle.
 """
+
 import sympy as sp
 
 from math_engine.fmt import R, cx, cx_plain, cx_sym, nonzero, num, sq, terms
@@ -18,19 +19,54 @@ UNIT = "MTH-T02-C01-U01"
 TITLE = "Complex Numbers"
 
 MISTAKE_TAGS = [
-    {"id": "sign-slip", "label": "Sign slip with $i^2 = -1$", "name": "Sign Slip (i^2 = -1)",
-     "autoFrom": ["imag_sign_flip", "real_sign_flip", "whole_sign_flip"]},
-    {"id": "principal-root", "label": "Combined $\\sqrt{-a}\\cdot\\sqrt{-b}$ into $\\sqrt{ab}$", "name": "Principal Root Trap", "autoFrom": []},
-    {"id": "conjugate-denominator", "label": "Conjugate denominator: wrote $c^2 - d^2$ instead of $c^2 + d^2$", "name": "Conjugate Denominator Error",
-     "autoFrom": ["complex_denominator"]},
-    {"id": "power-cycle", "label": "Power cycle of $i$: wrong remainder of $n \\div 4$", "name": "Power of i Cycle Error", "autoFrom": []},
-    {"id": "standard-form", "label": "Not in standard form $a + bi$", "name": "Unseparated Standard Form",
-     "autoFrom": ["unseparated", "unexpanded_power", "uncombined_terms", "unreduced_fraction"]},
-    {"id": "radical-simplify", "label": "Radical not simplified, e.g. $\\sqrt{48} = 4\\sqrt{3}$", "name": "Radical Simplification Error",
-     "autoFrom": ["unsimplified_radical"]},
-    {"id": "arithmetic", "label": "Arithmetic slip (FOIL or combining like terms)", "name": "Arithmetic Slip",
-     "autoFrom": ["off_by_factor", "rounding", "swapped_parts", "constant_offset"]},
-    {"id": "setup", "label": "Wrong setup or formula", "name": "Setup or Formula Error", "autoFrom": ["reciprocal", "wrong_component_count"]},
+    {
+        "id": "sign-slip",
+        "label": "Sign slip with $i^2 = -1$",
+        "name": "Sign Slip (i^2 = -1)",
+        "autoFrom": ["imag_sign_flip", "real_sign_flip", "whole_sign_flip"],
+    },
+    {
+        "id": "principal-root",
+        "label": "Combined $\\sqrt{-a}\\cdot\\sqrt{-b}$ into $\\sqrt{ab}$",
+        "name": "Principal Root Trap",
+        "autoFrom": [],
+    },
+    {
+        "id": "conjugate-denominator",
+        "label": "Conjugate denominator: wrote $c^2 - d^2$ instead of $c^2 + d^2$",
+        "name": "Conjugate Denominator Error",
+        "autoFrom": ["complex_denominator"],
+    },
+    {
+        "id": "power-cycle",
+        "label": "Power cycle of $i$: wrong remainder of $n \\div 4$",
+        "name": "Power of i Cycle Error",
+        "autoFrom": [],
+    },
+    {
+        "id": "standard-form",
+        "label": "Not in standard form $a + bi$",
+        "name": "Unseparated Standard Form",
+        "autoFrom": ["unseparated", "unexpanded_power", "uncombined_terms", "unreduced_fraction"],
+    },
+    {
+        "id": "radical-simplify",
+        "label": "Radical not simplified, e.g. $\\sqrt{48} = 4\\sqrt{3}$",
+        "name": "Radical Simplification Error",
+        "autoFrom": ["unsimplified_radical"],
+    },
+    {
+        "id": "arithmetic",
+        "label": "Arithmetic slip (FOIL or combining like terms)",
+        "name": "Arithmetic Slip",
+        "autoFrom": ["off_by_factor", "rounding", "swapped_parts", "constant_offset"],
+    },
+    {
+        "id": "setup",
+        "label": "Wrong setup or formula",
+        "name": "Setup or Formula Error",
+        "autoFrom": ["reciprocal", "wrong_component_count"],
+    },
 ]
 
 I_POW_VALUE = {0: ("1", "1"), 1: ("i", "I"), 2: ("-1", "-1"), 3: ("-i", "-I")}
@@ -77,12 +113,21 @@ def t_radical(rng):
         "checkpointHint": f"Factor the radicand as ${a} = {k * k} \\cdot {m}$ and use $\\sqrt{{-1}} = i$.",
         "commonTrapTag": "radical-simplify",
         "steps": [
-            S(f"{c} + \\sqrt{{-{a}}} = {c} + \\sqrt{{-1}}\\cdot\\sqrt{{{a}}}",
-              "Split off the factor $-1$. This is valid here because only one radicand is negative.", f"{c} + sqrt(-1)*sqrt({a})"),
-            S(f"= {c} + i\\sqrt{{{k * k}\\cdot {m}}}",
-              f"Replace $\\sqrt{{-1}}$ with $i$ and factor out the largest perfect square ${k * k}$.", f"{c} + I*sqrt({k * k}*{m})"),
-            S(f"= {c} + {k}\\sqrt{{{m}}}\\,i",
-              f"Take $\\sqrt{{{k * k}}} = {k}$ outside the radical. Real part ${c}$, imaginary part ${k}\\sqrt{{{m}}}$.", f"{c} + {k}*sqrt({m})*I"),
+            S(
+                f"{c} + \\sqrt{{-{a}}} = {c} + \\sqrt{{-1}}\\cdot\\sqrt{{{a}}}",
+                "Split off the factor $-1$. This is valid here because only one radicand is negative.",
+                f"{c} + sqrt(-1)*sqrt({a})",
+            ),
+            S(
+                f"= {c} + i\\sqrt{{{k * k}\\cdot {m}}}",
+                f"Replace $\\sqrt{{-1}}$ with $i$ and factor out the largest perfect square ${k * k}$.",
+                f"{c} + I*sqrt({k * k}*{m})",
+            ),
+            S(
+                f"= {c} + {k}\\sqrt{{{m}}}\\,i",
+                f"Take $\\sqrt{{{k * k}}} = {k}$ outside the radical. Real part ${c}$, imaginary part ${k}\\sqrt{{{m}}}$.",
+                f"{c} + {k}*sqrt({m})*I",
+            ),
         ],
         "verify": {"source": src},
     }
@@ -94,7 +139,9 @@ def t_add_sub(rng):
     op = "+" if s == 1 else "-"
     A, B = a + s * c, b + s * d
     src = f"{cx_sym(a, b)} {op} {cx_sym(c, d)}"
-    distribute = "Remove the parentheses." if s == 1 else "Distribute the minus sign to BOTH parts of the second number."
+    distribute = (
+        "Remove the parentheses." if s == 1 else "Distribute the minus sign to BOTH parts of the second number."
+    )
     return {
         "category": "Core Skill",
         "prompt": "Simplify and write the result in standard form $a + bi$.",
@@ -104,10 +151,16 @@ def t_add_sub(rng):
         "checkpointHint": f"The real parts combine to ${num(A)}$.",
         "commonTrapTag": "sign-slip",
         "steps": [
-            S(f"({cx(a, b)}) {op} ({cx(c, d)}) = {terms([(a, ''), (b, 'i'), (s * c, ''), (s * d, 'i')])}",
-              distribute, f"{a} + {b}*I + ({s * c}) + ({s * d})*I"),
-            S(f"= ({terms([(a, ''), (s * c, '')])}) + ({terms([(b, ''), (s * d, '')])})i",
-              "Group the real parts together and the imaginary parts together.", f"({a} + ({s * c})) + ({b} + ({s * d}))*I"),
+            S(
+                f"({cx(a, b)}) {op} ({cx(c, d)}) = {terms([(a, ''), (b, 'i'), (s * c, ''), (s * d, 'i')])}",
+                distribute,
+                f"{a} + {b}*I + ({s * c}) + ({s * d})*I",
+            ),
+            S(
+                f"= ({terms([(a, ''), (s * c, '')])}) + ({terms([(b, ''), (s * d, '')])})i",
+                "Group the real parts together and the imaginary parts together.",
+                f"({a} + ({s * c})) + ({b} + ({s * d}))*I",
+            ),
             S(f"= {cx(A, B)}", f"Real part ${num(A)}$, imaginary part ${num(B)}$.", cx_sym(A, B)),
         ],
         "verify": {"source": src},
@@ -125,11 +178,14 @@ def t_power_i(rng):
         "plainText": f"i^{n}",
         **complex_answer(sp.re(sp.sympify(sym_v)), sp.im(sp.sympify(sym_v))),
         "inputHint": "One of 1, i, -1, -i",
-        "checkpointHint": f"Divide the exponent by $4$ and keep only the remainder.",
+        "checkpointHint": "Divide the exponent by $4$ and keep only the remainder.",
         "commonTrapTag": "power-cycle",
         "steps": [
-            S(f"i^{{{n}}} = i^{{4\\cdot {q} + {r}}} = (i^4)^{{{q}}}\\cdot i^{{{r}}}",
-              f"Divide the exponent by $4$: ${n} = 4 \\cdot {q} + {r}$, then split the power.", f"(I**4)**{q} * I**{r}"),
+            S(
+                f"i^{{{n}}} = i^{{4\\cdot {q} + {r}}} = (i^4)^{{{q}}}\\cdot i^{{{r}}}",
+                f"Divide the exponent by $4$: ${n} = 4 \\cdot {q} + {r}$, then split the power.",
+                f"(I**4)**{q} * I**{r}",
+            ),
             S(f"= 1^{{{q}}}\\cdot i^{{{r}}}", "Use $i^4 = 1$, so any power of $i^4$ equals $1$.", f"1 * I**{r}"),
             S(f"= {latex_v}", f"Use the cycle value {I_POW_RULE[r]}.", sym_v),
         ],
@@ -154,11 +210,21 @@ def t_multiply(rng):
         "checkpointHint": f"After FOIL, the $i^2$ term is ${terms([(bd, 'i^2')])}$, which equals ${num(-bd)}$.",
         "commonTrapTag": "sign-slip",
         "steps": [
-            S(f"({cx(a, b)})({cx(c, d)}) = {terms([(ac, ''), (ad, 'i'), (bc, 'i'), (bd, 'i^2')])}",
-              "Distribute every term (FOIL: First, Outer, Inner, Last).", f"{ac} + ({ad})*I + ({bc})*I + ({bd})*I**2"),
-            S(f"= {terms([(ac, ''), (ad + bc, 'i')], keep_zero=True)} {'-' if bd < 0 else '+'} {abs(bd)}(-1)",
-              "Combine the two imaginary terms and substitute $i^2 = -1$.", f"{ac} + ({ad + bc})*I + ({bd})*(-1)"),
-            S(f"= {cx(A, B)}", f"The last term becomes ${num(-bd)}$; add it to the real part: ${num(ac)} {'+' if -bd >= 0 else '-'} {abs(bd)} = {num(A)}$.", cx_sym(A, B)),
+            S(
+                f"({cx(a, b)})({cx(c, d)}) = {terms([(ac, ''), (ad, 'i'), (bc, 'i'), (bd, 'i^2')])}",
+                "Distribute every term (FOIL: First, Outer, Inner, Last).",
+                f"{ac} + ({ad})*I + ({bc})*I + ({bd})*I**2",
+            ),
+            S(
+                f"= {terms([(ac, ''), (ad + bc, 'i')], keep_zero=True)} {'-' if bd < 0 else '+'} {abs(bd)}(-1)",
+                "Combine the two imaginary terms and substitute $i^2 = -1$.",
+                f"{ac} + ({ad + bc})*I + ({bd})*(-1)",
+            ),
+            S(
+                f"= {cx(A, B)}",
+                f"The last term becomes ${num(-bd)}$; add it to the real part: ${num(ac)} {'+' if -bd >= 0 else '-'} {abs(bd)} = {num(A)}$.",
+                cx_sym(A, B),
+            ),
         ],
         "verify": {"source": src},
     }
@@ -171,16 +237,24 @@ def _division_steps(a, b, c, d, lead=None):
     num_l, den_l = cx(a, b), cx(c, d)
     first = lead if lead else f"\\frac{{{num_l}}}{{{den_l}}}"
     steps = [
-        S(f"{first} = \\frac{{({num_l})({cx(c, -d)})}}{{({den_l})({cx(c, -d)})}}",
-          f"Multiply the numerator and denominator by the conjugate ${cx(c, -d)}$ of the denominator.",
-          f"({cx_sym(a, b)}*{cx_sym(c, -d)})/({cx_sym(c, d)}*{cx_sym(c, -d)})"),
-        S(f"= \\frac{{{terms([(a * c, ''), (-a * d, 'i'), (b * c, 'i'), (-b * d, 'i^2')])}}}{{{sq(c)} + {sq(d)}}}",
-          "Expand the numerator with FOIL. The denominator is $(c + di)(c - di) = c^2 + d^2$ (always a plus sign).",
-          f"({a * c} + ({-a * d})*I + ({b * c})*I + ({-b * d})*I**2)/(({c})**2 + ({d})**2)"),
+        S(
+            f"{first} = \\frac{{({num_l})({cx(c, -d)})}}{{({den_l})({cx(c, -d)})}}",
+            f"Multiply the numerator and denominator by the conjugate ${cx(c, -d)}$ of the denominator.",
+            f"({cx_sym(a, b)}*{cx_sym(c, -d)})/({cx_sym(c, d)}*{cx_sym(c, -d)})",
+        ),
+        S(
+            f"= \\frac{{{terms([(a * c, ''), (-a * d, 'i'), (b * c, 'i'), (-b * d, 'i^2')])}}}{{{sq(c)} + {sq(d)}}}",
+            "Expand the numerator with FOIL. The denominator is $(c + di)(c - di) = c^2 + d^2$ (always a plus sign).",
+            f"({a * c} + ({-a * d})*I + ({b * c})*I + ({-b * d})*I**2)/(({c})**2 + ({d})**2)",
+        ),
         S(f"= \\frac{{{cx(A, B)}}}{{{D}}}", "Substitute $i^2 = -1$ and combine like terms.", f"{cx_sym(A, B)}/{D}"),
     ]
     rA, rB = R(A) / D, R(B) / D
-    explain = f"Split into real and imaginary parts and reduce each fraction." if (rA.q != 1 or rB.q != 1) else f"Divide each part by ${D}$."
+    explain = (
+        "Split into real and imaginary parts and reduce each fraction."
+        if (rA.q != 1 or rB.q != 1)
+        else f"Divide each part by ${D}$."
+    )
     if D != 1:
         steps.append(S(f"= {cx(rA, rB)}", explain, cx_sym(rA, rB)))
     return steps, rA, rB
@@ -222,11 +296,21 @@ def t_square(rng):
         "checkpointHint": f"Use $(a + bi)^2 = a^2 + 2abi + b^2 i^2$. Here $b^2 i^2 = {num(-b * b)}$.",
         "commonTrapTag": "sign-slip",
         "steps": [
-            S(f"({cx(a, b)})^2 = {sq(a)} + 2({num(a)})({cx(0, b)}) + ({cx(0, b)})^2",
-              "Apply the square of a binomial: $(x + y)^2 = x^2 + 2xy + y^2$.", f"({a})**2 + 2*({a})*({b}*I) + ({b}*I)**2"),
-            S(f"= {terms([(a * a, ''), (2 * a * b, 'i'), (b * b, 'i^2')])}",
-              "Evaluate each square and product; note $(bi)^2 = b^2 i^2$.", f"{a * a} + ({2 * a * b})*I + {b * b}*I**2"),
-            S(f"= {cx(A, B)}", f"Use $i^2 = -1$, so ${b * b}i^2 = {num(-b * b)}$, then combine the real parts.", cx_sym(A, B)),
+            S(
+                f"({cx(a, b)})^2 = {sq(a)} + 2({num(a)})({cx(0, b)}) + ({cx(0, b)})^2",
+                "Apply the square of a binomial: $(x + y)^2 = x^2 + 2xy + y^2$.",
+                f"({a})**2 + 2*({a})*({b}*I) + ({b}*I)**2",
+            ),
+            S(
+                f"= {terms([(a * a, ''), (2 * a * b, 'i'), (b * b, 'i^2')])}",
+                "Evaluate each square and product; note $(bi)^2 = b^2 i^2$.",
+                f"{a * a} + ({2 * a * b})*I + {b * b}*I**2",
+            ),
+            S(
+                f"= {cx(A, B)}",
+                f"Use $i^2 = -1$, so ${b * b}i^2 = {num(-b * b)}$, then combine the real parts.",
+                cx_sym(A, B),
+            ),
         ],
         "verify": {"source": f"{cx_sym(a, b)}**2"},
     }
@@ -253,12 +337,22 @@ def t_eval_poly(rng):
         "checkpointHint": f"First compute $({z})^2 = {cx(x2r, x2i)}$.",
         "commonTrapTag": "sign-slip",
         "steps": [
-            S(f"f({z}) = ({z})^2 {'+' if p > 0 else '-'} {abs(p)}({z}){q_part}",
-              "Substitute the complex number for every $x$, keeping it in parentheses.", src),
-            S(f"= ({cx(x2r, x2i)}) + ({cx(p * a, p * b)}){q_part}",
-              f"Square first: $({z})^2 = {sq(a)} + 2({num(a)})({cx(0, b)}) + ({cx(0, b)})^2 = {cx(x2r, x2i)}$. Then distribute ${p}$.",
-              f"{cx_sym(x2r, x2i)} + {cx_sym(p * a, p * b)} + ({q})"),
-            S(f"= {cx(A, B)}", "Add the real parts and the imaginary parts separately." + (" A result of $0$ means the number is a root of $f$." if A == 0 and B == 0 else ""), cx_sym(A, B)),
+            S(
+                f"f({z}) = ({z})^2 {'+' if p > 0 else '-'} {abs(p)}({z}){q_part}",
+                "Substitute the complex number for every $x$, keeping it in parentheses.",
+                src,
+            ),
+            S(
+                f"= ({cx(x2r, x2i)}) + ({cx(p * a, p * b)}){q_part}",
+                f"Square first: $({z})^2 = {sq(a)} + 2({num(a)})({cx(0, b)}) + ({cx(0, b)})^2 = {cx(x2r, x2i)}$. Then distribute ${p}$.",
+                f"{cx_sym(x2r, x2i)} + {cx_sym(p * a, p * b)} + ({q})",
+            ),
+            S(
+                f"= {cx(A, B)}",
+                "Add the real parts and the imaginary parts separately."
+                + (" A result of $0$ means the number is a root of $f$." if A == 0 and B == 0 else ""),
+                cx_sym(A, B),
+            ),
         ],
         "verify": {"source": src},
     }
@@ -286,11 +380,16 @@ def t_principal_root(rng):
         "checkpointHint": f"Rewrite each factor with $i$ first: $\\sqrt{{-{a}}} = {_i_radical(k1, m)}$.",
         "commonTrapTag": "principal-root",
         "steps": [
-            S(f"\\sqrt{{-{a}}}\\cdot\\sqrt{{-{b}}} = ({_i_radical(k1, m)})({_i_radical(k2, m)})",
-              "Convert each radical to $i$-form FIRST. Combining into $\\sqrt{(-a)(-b)}$ is invalid because $\\sqrt{x}\\sqrt{y} = \\sqrt{xy}$ only holds for $x, y \\ge 0$.",
-              f"({k1}*sqrt({m})*I)*({k2}*sqrt({m})*I)"),
-            S(f"= {k1 * k2}" + ("" if m == 1 else f"(\\sqrt{{{m}}})^2") + "\\, i^2",
-              "Multiply the coefficients, the radicals, and the $i$ factors separately.", f"{k1 * k2}*sqrt({m})**2*I**2"),
+            S(
+                f"\\sqrt{{-{a}}}\\cdot\\sqrt{{-{b}}} = ({_i_radical(k1, m)})({_i_radical(k2, m)})",
+                "Convert each radical to $i$-form FIRST. Combining into $\\sqrt{(-a)(-b)}$ is invalid because $\\sqrt{x}\\sqrt{y} = \\sqrt{xy}$ only holds for $x, y \\ge 0$.",
+                f"({k1}*sqrt({m})*I)*({k2}*sqrt({m})*I)",
+            ),
+            S(
+                f"= {k1 * k2}" + ("" if m == 1 else f"(\\sqrt{{{m}}})^2") + "\\, i^2",
+                "Multiply the coefficients, the radicals, and the $i$ factors separately.",
+                f"{k1 * k2}*sqrt({m})**2*I**2",
+            ),
             S(f"= {P}(-1) = {num(-P)}", f"Use $i^2 = -1$. The tempting answer ${P}$ is wrong by a sign.", f"{-P}"),
         ],
         "verify": {"source": f"sqrt(-{a})*sqrt(-{b})"},
@@ -301,7 +400,7 @@ def t_power_sum(rng):
     exps = rng.sample(range(10, 130), 3)
     coefs = [nonzero(rng, -5, 5) for _ in range(3)]
     rems = [e % 4 for e in exps]
-    total = sum(c * sp.I ** r for c, r in zip(coefs, rems))
+    total = sum(c * sp.I**r for c, r in zip(coefs, rems))
     A, B = sp.re(total), sp.im(total)
     display = terms([(c, f"i^{{{e}}}") for c, e in zip(coefs, exps)])
     reduced = terms([(c, f"i^{{{r}}}") for c, r in zip(coefs, rems)], keep_zero=True)
@@ -321,11 +420,21 @@ def t_power_sum(rng):
         "checkpointHint": f"The remainders of the exponents divided by $4$ are ${rems[0]}, {rems[1]}, {rems[2]}$.",
         "commonTrapTag": "power-cycle",
         "steps": [
-            S(f"{display} = {reduced}", f"Reduce each exponent modulo $4$: ${mods}$.",
-              " + ".join(f"({c})*I**{r}" for c, r in zip(coefs, rems))),
-            S(f"= {substituted}", "Replace each power using the cycle $i^0 = 1$, $i^1 = i$, $i^2 = -1$, $i^3 = -i$.",
-              " + ".join(f"({c})*({ {0: '1', 1: 'I', 2: '-1', 3: '-I'}[r] })" for c, r in zip(coefs, rems))),
-            S(f"= {cx(A, B)}", "Combine the real terms and the imaginary terms; watch the sign of each coefficient.", cx_sym(A, B)),
+            S(
+                f"{display} = {reduced}",
+                f"Reduce each exponent modulo $4$: ${mods}$.",
+                " + ".join(f"({c})*I**{r}" for c, r in zip(coefs, rems)),
+            ),
+            S(
+                f"= {substituted}",
+                "Replace each power using the cycle $i^0 = 1$, $i^1 = i$, $i^2 = -1$, $i^3 = -i$.",
+                " + ".join(f"({c})*({ {0: '1', 1: 'I', 2: '-1', 3: '-I'}[r] })" for c, r in zip(coefs, rems)),
+            ),
+            S(
+                f"= {cx(A, B)}",
+                "Combine the real terms and the imaginary terms; watch the sign of each coefficient.",
+                cx_sym(A, B),
+            ),
         ],
         "verify": {"source": src},
     }
@@ -340,8 +449,14 @@ def t_find_flaw(rng):
     A, B = ac - bd, ad + bc
     head = f"({cx(a, b)})({cx(c, d)})"
     correct = [
-        (f"{head} = {terms([(ac, ''), (ad, 'i'), (bc, 'i'), (bd, 'i^2')])}", f"{ac} + ({ad})*I + ({bc})*I + ({bd})*I**2"),
-        (f"= {terms([(ac, ''), (ad + bc, 'i')], keep_zero=True)} {'-' if bd < 0 else '+'} {abs(bd)}(-1)", f"{ac} + ({ad + bc})*I + ({bd})*(-1)"),
+        (
+            f"{head} = {terms([(ac, ''), (ad, 'i'), (bc, 'i'), (bd, 'i^2')])}",
+            f"{ac} + ({ad})*I + ({bc})*I + ({bd})*I**2",
+        ),
+        (
+            f"= {terms([(ac, ''), (ad + bc, 'i')], keep_zero=True)} {'-' if bd < 0 else '+'} {abs(bd)}(-1)",
+            f"{ac} + ({ad + bc})*I + ({bd})*(-1)",
+        ),
         (f"= {cx(A, B)}", cx_sym(A, B)),
     ]
     kind = rng.choice([1, 2, 3])
@@ -355,9 +470,11 @@ def t_find_flaw(rng):
         vals = [f"{ac} + ({ad})*I + ({wbc})*I + ({bd})*I**2", None, None]
         why = f"Line 1 is wrong: the Inner product is $({cx(0, b)})({num(c)}) = {terms([(bc, 'i')])}$, not ${terms([(wbc, 'i')])}$."
     elif kind == 2:  # i^2 treated as +1
-        shown = [correct[0][0],
-                 f"= {terms([(ac, ''), (ad + bc, 'i')], keep_zero=True)} {'-' if bd < 0 else '+'} {abs(bd)}(1)",
-                 f"= {cx(ac + bd, ad + bc)}"]
+        shown = [
+            correct[0][0],
+            f"= {terms([(ac, ''), (ad + bc, 'i')], keep_zero=True)} {'-' if bd < 0 else '+'} {abs(bd)}(1)",
+            f"= {cx(ac + bd, ad + bc)}",
+        ]
         vals = [correct[0][1], f"{ac} + ({ad + bc})*I + ({bd})*(1)", None]
         why = "Line 2 is wrong: it replaced $i^2$ with $+1$ instead of $-1$."
     else:  # combining error in the final line
@@ -365,17 +482,42 @@ def t_find_flaw(rng):
         vals = [correct[0][1], correct[1][1], cx_sym(ac + bd, ad + bc)]
         why = f"Line 3 is wrong: ${num(bd)}(-1) = {num(-bd)}$, so the real part is ${num(ac)} {'+' if -bd >= 0 else '-'} {abs(bd)} = {num(A)}$."
     flaw_line = kind
-    aligned = "\\begin{aligned}" + " \\\\ ".join(
-        f"&\\text{{Line {i + 1}: }}\\; {ln}" for i, ln in enumerate(shown)) + "\\end{aligned}"
-    steps = [S(correct[0][0], ("Correct Line 1. " if kind != 1 else why + " Correct version shown.") + " FOIL every pair of terms.", correct[0][1]),
-             S(correct[1][0], (why + " Correct version shown." if kind == 2 else "Correct Line 2: combine imaginary terms and use $i^2 = -1$."), correct[1][1]),
-             S(correct[2][0], (why if kind == 3 else "Correct Line 3: combine the real parts.") + f" The true product is ${cx(A, B)}$.", correct[2][1])]
+    aligned = (
+        "\\begin{aligned}"
+        + " \\\\ ".join(f"&\\text{{Line {i + 1}: }}\\; {ln}" for i, ln in enumerate(shown))
+        + "\\end{aligned}"
+    )
+    steps = [
+        S(
+            correct[0][0],
+            ("Correct Line 1. " if kind != 1 else why + " Correct version shown.") + " FOIL every pair of terms.",
+            correct[0][1],
+        ),
+        S(
+            correct[1][0],
+            (
+                why + " Correct version shown."
+                if kind == 2
+                else "Correct Line 2: combine imaginary terms and use $i^2 = -1$."
+            ),
+            correct[1][1],
+        ),
+        S(
+            correct[2][0],
+            (why if kind == 3 else "Correct Line 3: combine the real parts.") + f" The true product is ${cx(A, B)}$.",
+            correct[2][1],
+        ),
+    ]
     return {
         "category": "Trap & Edge Case",
         "prompt": "A student multiplied two complex numbers as shown. Which line contains the FIRST error?",
         "display": aligned,
         "plainText": f"({cx_plain(a, b)})*({cx_plain(c, d)})",
-        "answerSpec": {"type": "choice", "options": [{"id": str(i), "label": f"Line {i}"} for i in (1, 2, 3)], "correct": str(flaw_line)},
+        "answerSpec": {
+            "type": "choice",
+            "options": [{"id": str(i), "label": f"Line {i}"} for i in (1, 2, 3)],
+            "correct": str(flaw_line),
+        },
         "answerDisplay": f"\\text{{Line {flaw_line}}}",
         "answerPlain": str(flaw_line),
         "inputHint": "Choose a line",
@@ -408,19 +550,33 @@ def t_ac_current(rng):
         "context": "Physics Application: AC Circuits",
         "references": ["PHY-T01-C19"],
         "prompt": f"In an AC circuit the voltage phasor is $V = {V}$ volts and the impedance is $Z = {cx(Rr, X)}$ ohms. "
-                  f"Using Ohm's law $I = \\dfrac{{V}}{{Z}}$, find the current phasor $I$ in standard form $a + bi$ (amperes).",
+        f"Using Ohm's law $I = \\dfrac{{V}}{{Z}}$, find the current phasor $I$ in standard form $a + bi$ (amperes).",
         "display": f"I = \\frac{{{V}}}{{{cx(Rr, X)}}}",
         "plainText": f"{V}/({cx_plain(Rr, X)})",
         **complex_answer(A, B),
         "checkpointHint": f"Multiply by the conjugate ${cx(Rr, -X)}$; the denominator becomes ${D}$.",
         "commonTrapTag": "conjugate-denominator",
         "steps": [
-            S(f"I = \\frac{{V}}{{Z}} = \\frac{{{V}}}{{{cx(Rr, X)}}}", "Substitute the given voltage and impedance into Ohm's law.", f"{V}/{cx_sym(Rr, X)}"),
-            S(f"= \\frac{{{V}({cx(Rr, -X)})}}{{({cx(Rr, X)})({cx(Rr, -X)})}}", f"Multiply the numerator and denominator by the conjugate ${cx(Rr, -X)}$.",
-              f"({V}*{cx_sym(Rr, -X)})/({cx_sym(Rr, X)}*{cx_sym(Rr, -X)})"),
-            S(f"= \\frac{{{cx(V * Rr, -V * X)}}}{{{sq(Rr)} + {sq(X)}}}", "Distribute in the numerator; the denominator is $R^2 + X^2$.",
-              f"{cx_sym(V * Rr, -V * X)}/({Rr}**2 + ({X})**2)"),
-            S(f"= {cx(A, B)}", f"Divide both parts by ${D}$ and reduce. The real part is the in-phase current; the imaginary part is the reactive (quadrature) current.", cx_sym(A, B)),
+            S(
+                f"I = \\frac{{V}}{{Z}} = \\frac{{{V}}}{{{cx(Rr, X)}}}",
+                "Substitute the given voltage and impedance into Ohm's law.",
+                f"{V}/{cx_sym(Rr, X)}",
+            ),
+            S(
+                f"= \\frac{{{V}({cx(Rr, -X)})}}{{({cx(Rr, X)})({cx(Rr, -X)})}}",
+                f"Multiply the numerator and denominator by the conjugate ${cx(Rr, -X)}$.",
+                f"({V}*{cx_sym(Rr, -X)})/({cx_sym(Rr, X)}*{cx_sym(Rr, -X)})",
+            ),
+            S(
+                f"= \\frac{{{cx(V * Rr, -V * X)}}}{{{sq(Rr)} + {sq(X)}}}",
+                "Distribute in the numerator; the denominator is $R^2 + X^2$.",
+                f"{cx_sym(V * Rr, -V * X)}/({Rr}**2 + ({X})**2)",
+            ),
+            S(
+                f"= {cx(A, B)}",
+                f"Divide both parts by ${D}$ and reduce. The real part is the in-phase current; the imaginary part is the reactive (quadrature) current.",
+                cx_sym(A, B),
+            ),
         ],
         "verify": {"source": f"{V}/{cx_sym(Rr, X)}"},
     }
@@ -429,9 +585,13 @@ def t_ac_current(rng):
 def t_rotation(rng):
     x, y = nonzero(rng, -9, 9), nonzero(rng, -9, 9)
     p, q = nonzero(rng, -6, 6), nonzero(rng, -6, 6)
-    rot = rng.choice([("i", "I", "90^\\circ counterclockwise", (0, 1)),
-                      ("-1", "-1", "180^\\circ", (-1, 0)),
-                      ("-i", "-I", "90^\\circ clockwise", (0, -1))])
+    rot = rng.choice(
+        [
+            ("i", "I", "90^\\circ counterclockwise", (0, 1)),
+            ("-1", "-1", "180^\\circ", (-1, 0)),
+            ("-i", "-I", "90^\\circ clockwise", (0, -1)),
+        ]
+    )
     rl, rs, rname, (ra, rb) = rot
     zr = sp.expand(sp.sympify(rs) * (x + y * sp.I))
     rx, ry = sp.re(zr), sp.im(zr)
@@ -451,7 +611,7 @@ def t_rotation(rng):
         "context": "Graphics and Algorithms Application",
         "references": ["PRG-T01-C03"],
         "prompt": f"In a 2D game engine, points are stored as complex numbers $z = x + yi$. Multiplying by ${rl}$ rotates a point ${rname}$ about the origin. "
-                  f"The point $({x}, {y})$ is rotated ${rname}$ and then translated by $w = {cx(p, q)}$. Find the new point $(x', y')$.",
+        f"The point $({x}, {y})$ is rotated ${rname}$ and then translated by $w = {cx(p, q)}$. Find the new point $(x', y')$.",
         "display": f"z' = {rl if rl != '-1' else '-1 \\cdot '}({cx(x, y)}) + ({cx(p, q)})",
         "plainText": f"({rs.replace('I', 'i')})*({cx_plain(x, y)}) + ({cx_plain(p, q)})",
         "answerSpec": {"type": "tuple", "values": [str(X), str(Y)], "labels": ["x'", "y'"], "acceptComplex": True},
@@ -463,8 +623,11 @@ def t_rotation(rng):
         "steps": [
             S(f"z = {cx(x, y)}", f"Represent the point $({x}, {y})$ as a complex number.", eq=[zs, f"{x} + ({y})*I"]),
             S(mult_row, mult_expl, eq=[f"({rs})*{zs}", cx_sym(rx, ry)]),
-            S(f"z' = ({cx(rx, ry)}) + ({cx(p, q)}) = {cx(X, Y)}", f"Add the translation $w$ component-wise. The new point is $({num(X)}, {num(Y)})$.",
-              eq=[f"({rs})*{zs} + {cx_sym(p, q)}", cx_sym(X, Y)]),
+            S(
+                f"z' = ({cx(rx, ry)}) + ({cx(p, q)}) = {cx(X, Y)}",
+                f"Add the translation $w$ component-wise. The new point is $({num(X)}, {num(Y)})$.",
+                eq=[f"({rs})*{zs} + {cx_sym(p, q)}", cx_sym(X, Y)],
+            ),
         ],
         "verify": {"tuple": [f"re(({rs})*{zs} + {cx_sym(p, q)})", f"im(({rs})*{zs} + {cx_sym(p, q)})"]},
     }
@@ -481,12 +644,26 @@ def t_parallel(rng):
     val = sp.expand_complex((a + b * sp.I) * (c + d * sp.I) / ((a + c) + (b + d) * sp.I))
     A, B = sp.re(val), sp.im(val)
     steps = [
-        S(f"Z_1 Z_2 = ({cx(a, b)})({cx(c, d)}) = {cx(Pr, Pi)}", "Multiply the impedances (FOIL, then $i^2 = -1$).", eq=[f"{cx_sym(a, b)}*{cx_sym(c, d)}", cx_sym(Pr, Pi)]),
-        S(f"Z_1 + Z_2 = {cx(Sr, Si)}", "Add the real parts and the imaginary parts.", eq=[f"{cx_sym(a, b)}+{cx_sym(c, d)}", cx_sym(Sr, Si)]),
+        S(
+            f"Z_1 Z_2 = ({cx(a, b)})({cx(c, d)}) = {cx(Pr, Pi)}",
+            "Multiply the impedances (FOIL, then $i^2 = -1$).",
+            eq=[f"{cx_sym(a, b)}*{cx_sym(c, d)}", cx_sym(Pr, Pi)],
+        ),
+        S(
+            f"Z_1 + Z_2 = {cx(Sr, Si)}",
+            "Add the real parts and the imaginary parts.",
+            eq=[f"{cx_sym(a, b)}+{cx_sym(c, d)}", cx_sym(Sr, Si)],
+        ),
     ]
     src = f"({cx_sym(a, b)}*{cx_sym(c, d)})/({cx_sym(a, b)}+{cx_sym(c, d)})"
     if Si == 0:
-        steps.append(S(f"Z_{{eq}} = \\frac{{{cx(Pr, Pi)}}}{{{Sr}}} = {cx(A, B)}", "The sum is real, so divide each part directly.", eq=[src, cx_sym(A, B)]))
+        steps.append(
+            S(
+                f"Z_{{eq}} = \\frac{{{cx(Pr, Pi)}}}{{{Sr}}} = {cx(A, B)}",
+                "The sum is real, so divide each part directly.",
+                eq=[src, cx_sym(A, B)],
+            )
+        )
     else:
         div_steps, rA, rB = _division_steps(Pr, Pi, Sr, Si, lead=f"Z_{{eq}} = \\frac{{{cx(Pr, Pi)}}}{{{cx(Sr, Si)}}}")
         for st in div_steps:
@@ -497,7 +674,7 @@ def t_parallel(rng):
         "context": "Physics Application: Parallel Impedance",
         "references": ["PHY-T01-C19"],
         "prompt": f"Two branches with impedances $Z_1 = {cx(a, b)}$ ohms and $Z_2 = {cx(c, d)}$ ohms are connected in parallel. "
-                  f"Find the equivalent impedance $Z_{{eq}} = \\dfrac{{Z_1 Z_2}}{{Z_1 + Z_2}}$ in standard form $a + bi$.",
+        f"Find the equivalent impedance $Z_{{eq}} = \\dfrac{{Z_1 Z_2}}{{Z_1 + Z_2}}$ in standard form $a + bi$.",
         "display": f"Z_{{eq}} = \\frac{{({cx(a, b)})({cx(c, d)})}}{{({cx(a, b)}) + ({cx(c, d)})}}",
         "plainText": f"(({cx_plain(a, b)})*({cx_plain(c, d)}))/(({cx_plain(a, b)}) + ({cx_plain(c, d)}))",
         **complex_answer(A, B),

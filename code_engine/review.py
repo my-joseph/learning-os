@@ -8,11 +8,11 @@ packages execution telemetry, user code, acceptance invariants,
 and copies the formatted prompt to the system clipboard for immediate
 in-editor AI review (Antigravity / Cursor / Claude chat).
 """
-import os
-import sys
+
 import json
-import subprocess
 import shutil
+import subprocess
+import sys
 from pathlib import Path
 
 # ANSI Terminal Colors
@@ -60,15 +60,17 @@ def run_tests_summary(cwd: Path) -> dict:
         )
         combined = proc.stdout + "\n" + proc.stderr
         passed = proc.returncode == 0
-        
+
         # Extract summary lines
         lines = [line.strip() for line in combined.splitlines() if line.strip()]
         summary_lines = [l for l in lines if l.startswith("ℹ") or "pass" in l.lower() or "fail" in l.lower()]
-        
+
         return {
             "passed": passed,
             "returncode": proc.returncode,
-            "summary": "\n".join(summary_lines[-5:]) if summary_lines else ("All tests passed" if passed else "Tests failed"),
+            "summary": "\n".join(summary_lines[-5:])
+            if summary_lines
+            else ("All tests passed" if passed else "Tests failed"),
             "raw_output": combined,
         }
     except Exception as e:
@@ -163,7 +165,9 @@ def build_lab_review(ws_dir: Path) -> tuple[str, str]:
 
     ms_list = []
     for ms in milestones:
-        ms_list.append(f"- **[{ms['id']}] {ms['title']}** ({ms['points']} pts) — *Mistake Trap:* `{ms.get('mistakeCategory', 'General')}`")
+        ms_list.append(
+            f"- **[{ms['id']}] {ms['title']}** ({ms['points']} pts) — *Mistake Trap:* `{ms.get('mistakeCategory', 'General')}`"
+        )
 
     code_sections = []
     for sf in src_files:
@@ -237,7 +241,7 @@ def main():
 
     # Detect whether this is a Lab or a Drill Workspace
     is_lab = (ws_dir / "lab.config.json").exists()
-    
+
     if is_lab:
         review_text, target_label = build_lab_review(ws_dir)
     else:
@@ -266,7 +270,7 @@ def main():
     print(f"  2. Paste directly: {CYAN}Cmd + V{RESET} (the full review request is in your clipboard).")
     print(f"     {DIM}— OR —{RESET}")
     print(f"  3. Tag the file in chat: {CYAN}@PR_REVIEW_REQUEST.md{RESET} and ask:")
-    print(f"     {BOLD}\"Please conduct the Senior Tech Lead Review on this PR.\"{RESET}\n")
+    print(f'     {BOLD}"Please conduct the Senior Tech Lead Review on this PR."{RESET}\n')
     print(f"{BOLD}{CYAN}========================================================================={RESET}\n")
 
 

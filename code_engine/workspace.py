@@ -13,6 +13,7 @@ Standardizes local workspace scaffolding for Real-World Engineering Drills:
 Generates one-click IDE deep links (cursor://file/... and vscode://file/...)
 so developers can write and debug in their real IDE with full LSP, keybindings, and tools.
 """
+
 import json
 import os
 
@@ -125,7 +126,9 @@ def build_starter_header(prob: dict, drill_id: str) -> str:
     archetype = get_problem_archetype(prob)
     archetype_title = ARCHETYPE_LABELS.get(archetype, archetype.upper())
     competencies = prob.get("competencies", [])
-    comp_str = ", ".join(COMPETENCY_LABELS.get(c, c) for c in competencies) if competencies else "Engineering Fundamentals"
+    comp_str = (
+        ", ".join(COMPETENCY_LABELS.get(c, c) for c in competencies) if competencies else "Engineering Fundamentals"
+    )
     prompt = prob.get("prompt", "")
 
     header = f"""/**
@@ -177,7 +180,17 @@ def materialize_drill_workspace(drill_doc: dict, root_dir: str = ".") -> dict:
         ctype = prob.get("codeType")
         archetype = get_problem_archetype(prob)
         is_code = (
-            ctype in ("kata", "implement", "refactor", "problem-solving", "debugging", "code-tracing", "refactoring", "project-based")
+            ctype
+            in (
+                "kata",
+                "implement",
+                "refactor",
+                "problem-solving",
+                "debugging",
+                "code-tracing",
+                "refactoring",
+                "project-based",
+            )
             or bool(prob.get("visibleTests"))
             or bool(prob.get("starterCode"))
         )
@@ -195,7 +208,10 @@ def materialize_drill_workspace(drill_doc: dict, root_dir: str = ".") -> dict:
         canonical_path = os.path.join(canonical_dir, canonical_filename)
 
         # 1. Author Starter Code
-        starter_body = prob.get("starterCode") or f"function {entry_name}() {{\n  // TODO: implement\n}}\n\nmodule.exports = {{ {entry_name} }};\n"
+        starter_body = (
+            prob.get("starterCode")
+            or f"function {entry_name}() {{\n  // TODO: implement\n}}\n\nmodule.exports = {{ {entry_name} }};\n"
+        )
         if not starter_body.strip().startswith("/**"):
             starter_content = build_starter_header(prob, drill_id) + "\n" + starter_body.strip() + "\n"
         else:
@@ -284,16 +300,18 @@ test({ht_name}, async () => {{
         prob["vscodeFolderUrl"] = f"vscode://file/{abs_ws}"
         prob["archetype"] = archetype
 
-        readme_problems.append({
-            "pid": pid,
-            "entry": entry_name,
-            "src": src_filename,
-            "test": test_filename,
-            "archetype": ARCHETYPE_LABELS.get(archetype, archetype),
-            "prompt": prob.get("prompt", ""),
-            "criteria_count": len(prob.get("visibleTests", [])),
-            "hidden_count": len(hidden_tests),
-        })
+        readme_problems.append(
+            {
+                "pid": pid,
+                "entry": entry_name,
+                "src": src_filename,
+                "test": test_filename,
+                "archetype": ARCHETYPE_LABELS.get(archetype, archetype),
+                "prompt": prob.get("prompt", ""),
+                "criteria_count": len(prob.get("visibleTests", [])),
+                "hidden_count": len(hidden_tests),
+            }
+        )
 
     # 4. Write package.json in workspace
     pkg_json_path = os.path.join(ws_dir, "package.json")
@@ -352,28 +370,32 @@ test({ht_name}, async () => {{
         scenario_str = f"{p['criteria_count']} visible scenarios"
         if p.get("hidden_count"):
             scenario_str += f" (+ {p['hidden_count']} hidden trap tests)"
-        readme_lines.extend([
-            f"### {p['pid']} — `{p['src']}`",
-            f"- **Archetype:** {p['archetype']}",
-            f"- **Acceptance Scenarios:** {scenario_str} in `{p['test']}`",
-            f"- **Requirement:** {p['prompt']}",
-            f"- **Run Single Suite:** `npm run test:{p['pid'].lower()}`",
-            "",
-        ])
+        readme_lines.extend(
+            [
+                f"### {p['pid']} — `{p['src']}`",
+                f"- **Archetype:** {p['archetype']}",
+                f"- **Acceptance Scenarios:** {scenario_str} in `{p['test']}`",
+                f"- **Requirement:** {p['prompt']}",
+                f"- **Run Single Suite:** `npm run test:{p['pid'].lower()}`",
+                "",
+            ]
+        )
 
-    readme_lines.extend([
-        "## Requesting an AI Architectural Review",
-        "Once your automated acceptance tests pass 100%, copy this prompt and ask Antigravity / Cursor AI:",
-        "```text",
-        f"Please act as a Senior Tech Lead and conduct an Architecture & Code Craftsmanship Review on my implementation in `{drill_id}`.",
-        "Evaluate my code across:",
-        "1. Separation of Concerns & Clean Code standards",
-        "2. State Management & Data Handling invariants",
-        "3. TypeScript typing / JSDoc precision and edge case resilience",
-        "4. Performance hot paths, algorithmic complexity, and decoupling suggestions",
-        "```",
-        "",
-    ])
+    readme_lines.extend(
+        [
+            "## Requesting an AI Architectural Review",
+            "Once your automated acceptance tests pass 100%, copy this prompt and ask Antigravity / Cursor AI:",
+            "```text",
+            f"Please act as a Senior Tech Lead and conduct an Architecture & Code Craftsmanship Review on my implementation in `{drill_id}`.",
+            "Evaluate my code across:",
+            "1. Separation of Concerns & Clean Code standards",
+            "2. State Management & Data Handling invariants",
+            "3. TypeScript typing / JSDoc precision and edge case resilience",
+            "4. Performance hot paths, algorithmic complexity, and decoupling suggestions",
+            "```",
+            "",
+        ]
+    )
 
     with open(readme_path, "w", encoding="utf-8") as f:
         f.write("\n".join(readme_lines))

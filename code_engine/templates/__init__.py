@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """Registry of Programming Unit/Chapter template modules."""
+
 import importlib
 
 UNIT_MODULES = {
@@ -26,8 +27,5 @@ UNIT_MODULES = {
 
 def load_unit(unit_code: str):
     if unit_code not in UNIT_MODULES:
-        raise KeyError(
-            f"No programming templates registered for {unit_code}. "
-            f"Registered: {', '.join(UNIT_MODULES)}"
-        )
+        raise KeyError(f"No programming templates registered for {unit_code}. Registered: {', '.join(UNIT_MODULES)}")
     return importlib.import_module(UNIT_MODULES[unit_code])

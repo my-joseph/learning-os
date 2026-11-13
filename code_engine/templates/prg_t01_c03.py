@@ -22,6 +22,7 @@ And the 7 Core Engineering Competencies:
 All problems are execution-verified against Node.js test runner during generation.
 Materializes starter files and test files in drills/workspace/ for real Cursor/VS Code work.
 """
+
 import random
 
 TITLE = "Problem Solving & Utility Toolkit"
@@ -211,9 +212,7 @@ module.exports = { debounce };
         "answerPlain": "debounce implementation",
         "answerDisplay": "debounce(fn, delay)",
         "inputHint": "Implement in Cursor / VS Code and run tests in terminal",
-        "checkpointHint": (
-            "Store timer in closure scope and invoke clearTimeout(timer) before scheduling setTimeout."
-        ),
+        "checkpointHint": ("Store timer in closure scope and invoke clearTimeout(timer) before scheduling setTimeout."),
         "commonTrapTag": "timer-cancellation-flaw",
         "steps": [
             {
@@ -355,9 +354,7 @@ module.exports = { groupBy };
         "answerPlain": "groupBy implementation",
         "answerDisplay": "groupBy(collection, iteratee)",
         "inputHint": "Implement in Cursor / VS Code and run tests in terminal",
-        "checkpointHint": (
-            "Check if iteratee is typeof function vs string property, and reduce over collection."
-        ),
+        "checkpointHint": ("Check if iteratee is typeof function vs string property, and reduce over collection."),
         "commonTrapTag": "empty-input-handling",
         "steps": [
             {
@@ -821,9 +818,7 @@ module.exports = { AsyncCache };
         "answerPlain": "AsyncCache debugging fix",
         "answerDisplay": "AsyncCache.prototype.getOrFetch",
         "inputHint": "Open AsyncCache in VS Code, inspect failing concurrency tests, and implement inFlight deduplication",
-        "checkpointHint": (
-            "Store the active fetch Promise in an inFlight Map, and delete it inside a finally block."
-        ),
+        "checkpointHint": ("Store the active fetch Promise in an inFlight Map, and delete it inside a finally block."),
         "commonTrapTag": "race-condition-cache-stampede",
         "steps": [
             {
@@ -1056,9 +1051,7 @@ module.exports = { calculateMonthlyBill };
             },
             {
                 "latex": "\\text{Discount Invariant: } \\text{taxableSubtotal = planSubtotal - discount}",
-                "explain": (
-                    "Apply the annual commitment discount to the subtotal before computing sales tax."
-                ),
+                "explain": ("Apply the annual commitment discount to the subtotal before computing sales tax."),
             },
         ],
         "references": ["PRG-T01-C03-U07", "PRG-T01-C03-U01"],
@@ -1253,9 +1246,7 @@ module.exports = { RateLimiter };
         "answerPlain": "RateLimiter implementation",
         "answerDisplay": "RateLimiter subsystem",
         "inputHint": "Implement RateLimiter in VS Code extending EventEmitter with sliding timestamp array",
-        "checkpointHint": (
-            "Filter timestamp arrays to drop entries older than windowMs before evaluating length."
-        ),
+        "checkpointHint": ("Filter timestamp arrays to drop entries older than windowMs before evaluating length."),
         "commonTrapTag": "rate-limit-window-leak",
         "steps": [
             {
@@ -1266,9 +1257,7 @@ module.exports = { RateLimiter };
             },
             {
                 "latex": "\\text{Event Dispatch: } \\text{this.emit('blocked', key, resetMs)}",
-                "explain": (
-                    "Trigger real-time telemetry events allowing consumers to log or trigger blacklists."
-                ),
+                "explain": ("Trigger real-time telemetry events allowing consumers to log or trigger blacklists."),
             },
         ],
         "references": ["PRG-T01-C03-U08", "PRG-T01-C03-U01"],

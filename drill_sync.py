@@ -9,11 +9,11 @@ Drill persistence + Notion sync (used by practice-studio's /api/sync-notion rout
 
 Extracted from the retired practice_hub.py (P4). Run from the repo root (relative paths).
 """
+
 import json
 import os
 import re
 
-from notion_client import load_env, notion_request
 from apply_rules_and_test_pages import (
     bullet,
     callout_block,
@@ -25,6 +25,7 @@ from apply_rules_and_test_pages import (
     replace_page_blocks,
     toggle_block,
 )
+from notion_client import load_env, notion_request
 
 DATA_ROOT = "drills/data"
 
@@ -132,7 +133,9 @@ def sync_drill_to_notion(drill_doc: dict) -> dict:
         "Practice Status": {"select": {"name": status}},
         "Score": {"number": score},
         "Max Score": {"number": max_score},
-        "Mistake Categories": {"multi_select": [{"name": tag.replace(",", " /")[:100].strip()} for tag in mistake_cats]},
+        "Mistake Categories": {
+            "multi_select": [{"name": tag.replace(",", " /")[:100].strip()} for tag in mistake_cats]
+        },
         "Diverged Steps Summary": {"rich_text": [{"type": "text", "text": {"content": diverged_summary[:1900]}}]},
         "Local File Path": {"rich_text": [{"type": "text", "text": {"content": path}}]},
     }
@@ -169,17 +172,24 @@ def sync_drill_to_notion(drill_doc: dict) -> dict:
 
     # Extract Focus & Trap badges
     mistake_tags = drill_doc.get("mistakeTags", [])
-    trap_bullets = [
-        bullet(f"**Trap:** `{tag.get('name', tag.get('id'))}` — {tag.get('label', '')}", id_map)
-        for tag in mistake_tags[:4]
-    ] if mistake_tags else [bullet("Enforce fundamental invariants and verify step-by-step logic.", id_map)]
+    trap_bullets = (
+        [
+            bullet(f"**Trap:** `{tag.get('name', tag.get('id'))}` — {tag.get('label', '')}", id_map)
+            for tag in mistake_tags[:4]
+        ]
+        if mistake_tags
+        else [bullet("Enforce fundamental invariants and verify step-by-step logic.", id_map)]
+    )
 
     skipped_count = int(summary.get("skippedCount", sum(1 for p in problems if p.get("state", {}).get("skipped"))))
-    skipped_problems = summary.get("skippedProblems", [f"{p['id']} ({p.get('context') or p.get('category')})" for p in problems if p.get("state", {}).get("skipped")])
+    skipped_problems = summary.get(
+        "skippedProblems",
+        [f"{p['id']} ({p.get('context') or p.get('category')})" for p in problems if p.get("state", {}).get("skipped")],
+    )
 
     skipped_str = f" | **Concept Gaps (Skipped):** `{skipped_count}`" if skipped_count > 0 else ""
     status_badge = (
-        f"**Session Score:** `{score}/{max_score}` ({round((score/max_score)*100, 1)}%) — Status: **{status}**{skipped_str}"
+        f"**Session Score:** `{score}/{max_score}` ({round((score / max_score) * 100, 1)}%) — Status: **{status}**{skipped_str}"
         if attempt_date or status != "Ready"
         else "**Session Status:** `Ready for Practice` — Awaiting learner attempt in Practice Studio / Terminal."
     )
@@ -199,29 +209,40 @@ def sync_drill_to_notion(drill_doc: dict) -> dict:
             f"Solve each problem independently before consulting the step-by-step verification toggles below.",
             id_map,
         ),
-        bullet("**Core Objectives:**", id_map, children=[
-            bullet(f"Verify and solidify understanding of `{unit_title}`.", id_map),
-            bullet(f"Solve all {q_count} questions adhering to exact formula and invariant boundaries.", id_map),
-        ]),
+        bullet(
+            "**Core Objectives:**",
+            id_map,
+            children=[
+                bullet(f"Verify and solidify understanding of `{unit_title}`.", id_map),
+                bullet(f"Solve all {q_count} questions adhering to exact formula and invariant boundaries.", id_map),
+            ],
+        ),
         bullet("**Common Traps & Invariant Guardrails:**", id_map, children=trap_bullets),
     ]
 
     if skipped_count > 0:
-        blocks.append(callout_block(
-            f"**Review Priority (Concept Gaps):** The learner skipped {skipped_count} questions without guessing: "
-            + ", ".join(skipped_problems) + ". Prioritize these topics during the next Spaced Review.",
-            id_map,
-            color="orange_background",
-        ))
+        blocks.append(
+            callout_block(
+                f"**Review Priority (Concept Gaps):** The learner skipped {skipped_count} questions without guessing: "
+                + ", ".join(skipped_problems)
+                + ". Prioritize these topics during the next Spaced Review.",
+                id_map,
+                color="orange_background",
+            )
+        )
 
-    blocks.extend([
-        divider_block(),
-        h2("2. Question Inventory & Step-by-Step Solutions", id_map),
-    ])
+    blocks.extend(
+        [
+            divider_block(),
+            h2("2. Question Inventory & Step-by-Step Solutions", id_map),
+        ]
+    )
 
     for p in problems:
         ref_str = " ".join(f"([[{r}]])" for r in p.get("references", []) if r in id_map)
-        header_line = f"**{p['id']} ({p['levelLabel']} — {p['category']}):** {p['prompt']}" + (f" {ref_str}" if ref_str else "")
+        header_line = f"**{p['id']} ({p['levelLabel']} — {p['category']}):** {p['prompt']}" + (
+            f" {ref_str}" if ref_str else ""
+        )
         children = []
 
         if p.get("codeSnippet"):
@@ -231,8 +252,7 @@ def sync_drill_to_notion(drill_doc: dict) -> dict:
 
         if p.get("answerSpec", {}).get("type") == "choice" and p.get("answerSpec", {}).get("options"):
             opt_bullets = [
-                bullet(f"**Option {opt['id']}:** {opt['label']}", id_map)
-                for opt in p["answerSpec"]["options"]
+                bullet(f"**Option {opt['id']}:** {opt['label']}", id_map) for opt in p["answerSpec"]["options"]
             ]
             children.append(bullet("**Multiple Choice Options:**", id_map, children=opt_bullets))
 

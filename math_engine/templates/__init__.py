@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """Registry of Unit template modules. Add one line per new Unit template module."""
+
 import importlib
 
 UNIT_MODULES = {

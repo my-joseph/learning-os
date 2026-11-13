@@ -4,6 +4,7 @@
 Moved verbatim from apply_rules_and_test_pages.py (P2 refactor). Importing this module applies the
 process-wide IPv4-only and 15s default socket timeout settings, exactly as before.
 """
+
 import json
 import os
 import socket
@@ -13,6 +14,7 @@ import urllib.error
 import urllib.request
 
 socket.setdefaulttimeout(15)
+
 
 def load_env(path=".env"):
     env = {}
@@ -25,10 +27,15 @@ def load_env(path=".env"):
                     env[k.strip()] = v.strip()
     return env
 
+
 # Force IPv4 to avoid macOS / Cloudflare IPv6 socket hang
 orig_getaddrinfo = socket.getaddrinfo
+
+
 def getaddrinfo_ipv4(host, port, family=0, type=0, proto=0, flags=0):
     return orig_getaddrinfo(host, port, socket.AF_INET, type, proto, flags)
+
+
 socket.getaddrinfo = getaddrinfo_ipv4
 
 SSL_CTX = (
@@ -36,6 +43,7 @@ SSL_CTX = (
     if os.path.exists("/etc/ssl/cert.pem")
     else ssl._create_unverified_context()
 )
+
 
 def notion_request(method, endpoint, token, payload=None, max_retries=7):
     url = f"https://api.notion.com/v1/{endpoint}"
@@ -51,15 +59,23 @@ def notion_request(method, endpoint, token, payload=None, max_retries=7):
             req = urllib.request.Request(url, data=data, headers=headers, method=method)
             with urllib.request.urlopen(req, context=SSL_CTX, timeout=30) as resp:
                 return json.loads(resp.read().decode("utf-8"))
-        except (urllib.error.HTTPError, urllib.error.URLError, ConnectionResetError, ssl.SSLError, TimeoutError, OSError) as e:
+        except (
+            urllib.error.HTTPError,
+            urllib.error.URLError,
+            ConnectionResetError,
+            ssl.SSLError,
+            TimeoutError,
+            OSError,
+        ) as e:
             if attempt < max_retries - 1:
-                wait = 1.5 * (2 ** attempt)
+                wait = 1.5 * (2**attempt)
                 time.sleep(wait)
                 continue
             if isinstance(e, urllib.error.HTTPError):
                 body = e.read().decode("utf-8", errors="ignore")
                 raise RuntimeError(f"HTTP {e.code} on {method} {endpoint}: {body}") from e
             raise e
+
 
 def get_all_blocks(block_id, token):
     blocks = []

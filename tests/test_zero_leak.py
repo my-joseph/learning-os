@@ -1,4 +1,5 @@
 """Zero-leak invariant (rules/00_core.md section 6): hints must never contain the answer."""
+
 import copy
 
 from drill_sync import validate_and_sanitize_drill_doc
@@ -29,7 +30,9 @@ def test_disjoint_hint_is_unchanged():
 
 
 def test_all_committed_drills_have_no_leaking_hints():
-    import glob, json
+    import glob
+    import json
+
     for path in glob.glob("drills/data/*/DRL-*.json"):
         with open(path, encoding="utf-8") as f:
             doc = json.load(f)
