@@ -1,22 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Math Practice Player Server & Notion Auto-Sync Bridge (http://localhost:8765)
-- Serves the single-instance Math Practice Player at http://localhost:8765/
-- GET  /api/drills          -> Lists all .json drill sets under drills/data/<UNIT>/<DRILL_ID>.json
-- GET  /api/drill?id=...    -> Returns the full .json drill document
-- POST /api/generate-drill  -> Runs Pre-Generation Config -> verified .json via math_engine.generate
-- POST /api/check-answer    -> Runs flexible SymPy answer checker via math_engine.answer_check
-- POST /api/save-state      -> Persists in-progress user state into the drill's .json file
-- POST /api/sync-notion     -> Saves .json AND syncs score, mistake tags, diverged steps, and verified
-                               problem toggles to Notion ('Learning Practice & Drills' + Unit Mistake Log)
+Drill persistence + Notion sync (used by practice-studio's /api/sync-notion route).
+
+- validate_and_sanitize_drill_doc: zero-leak guard for inputHint (rules/00_core.md section 6)
+- save_drill_doc: validate, then write drills/data/<UNIT>/<DRILL_ID>.json
+- sync_drill_to_notion: save, then sync score/mistakes/steps to Notion ('Learning Practice & Drills')
+
+Extracted from the retired practice_hub.py (P4). Run from the repo root (relative paths).
 """
-import glob
 import json
 import os
 import re
-import urllib.parse
-from http.server import HTTPServer, SimpleHTTPRequestHandler
 
 from notion_client import load_env, notion_request
 from apply_rules_and_test_pages import (
@@ -30,46 +25,8 @@ from apply_rules_and_test_pages import (
     replace_page_blocks,
     toggle_block,
 )
-try:
-    from math_engine.answer_check import check_answer
-except ImportError:
-    check_answer = None
 
-try:
-    from math_engine.generate import generate_drill_set
-except ImportError:
-    generate_drill_set = None
-
-PORT = 8765
 DATA_ROOT = "drills/data"
-
-
-def find_drill_file(drill_id: str):
-    pattern = os.path.join(DATA_ROOT, "*", f"{drill_id}.json")
-    matches = glob.glob(pattern)
-    return matches[0] if matches else None
-
-
-def list_all_drills():
-    files = glob.glob(os.path.join(DATA_ROOT, "*", "DRL-*.json"))
-    items = []
-    for path in files:
-        try:
-            with open(path, "r", encoding="utf-8") as f:
-                doc = json.load(f)
-            items.append({
-                "drillId": doc.get("drillId"),
-                "unitCode": doc.get("unitCode"),
-                "unitTitle": doc.get("unitTitle"),
-                "createdAt": doc.get("createdAt", ""),
-                "questionCount": doc.get("config", {}).get("questionCount", len(doc.get("problems", []))),
-                "difficultyMode": doc.get("config", {}).get("difficultyMode", "Mixed Exam Mode"),
-                "localFilePath": path,
-            })
-        except Exception:
-            continue
-    items.sort(key=lambda x: (x["createdAt"], x["drillId"]), reverse=True)
-    return items
 
 
 def validate_and_sanitize_drill_doc(drill_doc: dict) -> None:
@@ -341,75 +298,3 @@ def sync_drill_to_notion(drill_doc: dict) -> dict:
             pass
 
     return {"ok": True, "drillPageId": page_id, "parentPageId": parent_page_id}
-
-
-class MathPlayerHandler(SimpleHTTPRequestHandler):
-    def end_headers(self):
-        self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type")
-        super().end_headers()
-
-    def do_OPTIONS(self):
-        self.send_response(200)
-        self.end_headers()
-
-    def _send_json(self, code: int, obj: dict):
-        body = json.dumps(obj, ensure_ascii=False).encode("utf-8")
-        self.send_response(code)
-        self.send_header("Content-Type", "application/json; charset=utf-8")
-        self.end_headers()
-        self.wfile.write(body)
-
-    def do_GET(self):
-        parsed = urllib.parse.urlparse(self.path)
-        if parsed.path in ("/", "/index.html"):
-            self.path = "/web/index.html"
-            return super().do_GET()
-        if parsed.path == "/api/drills":
-            return self._send_json(200, {"drills": list_all_drills()})
-        if parsed.path == "/api/drill":
-            qs = urllib.parse.parse_qs(parsed.query)
-            drill_id = (qs.get("id") or [""])[0]
-            fpath = find_drill_file(drill_id)
-            if not fpath:
-                return self._send_json(404, {"error": f"Drill {drill_id} not found"})
-            with open(fpath, "r", encoding="utf-8") as f:
-                return self._send_json(200, json.load(f))
-        return super().do_GET()
-
-    def do_POST(self):
-        length = int(self.headers.get("Content-Length", "0"))
-        raw = self.rfile.read(length).decode("utf-8") if length > 0 else "{}"
-        try:
-            payload = json.loads(raw)
-        except Exception:
-            return self._send_json(400, {"ok": False, "error": "Invalid JSON"})
-
-        try:
-            if self.path == "/api/check-answer":
-                res = check_answer(payload.get("answerSpec", {}), payload.get("input", ""))
-                return self._send_json(200, res)
-            if self.path == "/api/generate-drill":
-                doc = generate_drill_set(
-                    unit_code=payload.get("unitCode", "MTH-T02-C01-U01"),
-                    count=int(payload.get("count", 5)),
-                    difficulty=payload.get("difficulty", "ALL"),
-                )
-                return self._send_json(200, {"ok": True, "drillId": doc["drillId"], "localFilePath": doc["localFilePath"]})
-            if self.path == "/api/save-state":
-                path = save_drill_doc(payload)
-                return self._send_json(200, {"ok": True, "localFilePath": path})
-            if self.path == "/api/sync-notion":
-                res = sync_drill_to_notion(payload)
-                return self._send_json(200, res)
-            return self._send_json(404, {"ok": False, "error": "Unknown endpoint"})
-        except Exception as e:
-            return self._send_json(500, {"ok": False, "error": str(e)})
-
-
-if __name__ == "__main__":
-    os.chdir(os.path.dirname(os.path.abspath(__file__)))
-    server = HTTPServer(("127.0.0.1", PORT), MathPlayerHandler)
-    print(f"Math Practice Player running at http://localhost:{PORT}")
-    server.serve_forever()

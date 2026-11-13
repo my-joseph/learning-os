@@ -1,7 +1,7 @@
 """Zero-leak invariant (rules/00_core.md section 6): hints must never contain the answer."""
 import copy
 
-from practice_hub import validate_and_sanitize_drill_doc
+from drill_sync import validate_and_sanitize_drill_doc
 
 
 def _doc(hint, accepted, subject="PRG", **extra):
@@ -36,3 +36,17 @@ def test_all_committed_drills_have_no_leaking_hints():
         before = copy.deepcopy(doc)
         validate_and_sanitize_drill_doc(doc)
         assert doc == before, f"leaking inputHint in {path}"
+
+
+def test_save_drill_doc_sanitizes_and_writes(tmp_path, monkeypatch):
+    import json
+
+    from drill_sync import save_drill_doc
+
+    monkeypatch.chdir(tmp_path)
+    doc = _doc("Type the 3-digit status code (e.g. 401).", ["401"], codeType="predict-output")
+    doc.update({"drillId": "DRL-X-01", "unitCode": "PRG-X"})
+    path = save_drill_doc(doc)
+    saved = json.loads((tmp_path / path).read_text(encoding="utf-8"))
+    assert path.endswith("PRG-X/DRL-X-01.json")
+    assert "401" not in saved["problems"][0]["inputHint"]

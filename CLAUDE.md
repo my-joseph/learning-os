@@ -33,7 +33,7 @@
 - New drill/lab: sync a pristine record to Notion per `rules/00_core.md` §8 — only with the user's go-ahead for Notion writes.
 
 ## Refactor in Progress
-- Goals: (1) merge duplicated root vs `practice-studio/` files into one source; (2) Python as a package: `scripts/`, `archive/` for one-shot legacy, one Notion client + env loader, `requirements.txt`; (3) Next.js studio as the only UI (retire `practice_hub.py` + `web/`); (4) add tests + CI.
+- Goals: (1) merge duplicated root vs `practice-studio/` files into one source; (2) Python as a package: `scripts/`, `archive/` for one-shot legacy, one Notion client + env loader, `requirements.txt`; (3) Next.js studio as the only UI (done); (4) add tests + CI.
 - Rules: preserve existing behavior; refactor commits separate from feature/bugfix commits; all tests pass at the end of every phase; no Notion writes while verifying.
 - Status (update at the end of every phase):
 
@@ -43,14 +43,13 @@
 | P1 | Move one-shot scripts to `archive/` | done (34 moved; 7 root modules kept because live code imports them) |
 | P2 | Shared Notion client + env loader | done for root modules (`notion_client.py`); `code_engine/submit.py` and `labs/common/submit_lab.py` keep their own variants (different retry/env-quote behavior) |
 | P3 | Merge duplicated root/studio files | done (root is canonical; stale `practice-studio/` copies removed) |
-| P4 | Retire `practice_hub.py` + `web/` (move `validate_and_sanitize_drill_doc` first — tests import it from there) | not started |
+| P4 | Retire `practice_hub.py` + `web/` | done (hub server and legacy UI deleted; `drill_sync.py` keeps validator, save and Notion sync) |
 | P5 | ruff format/lint + type hints | not started |
 
 ## Gotchas / Do-Not
 - Never commit or print `.env` (`NOTION_TOKEN`, `NOTION_DATABASE_ID`). `.env`, `.venv`, `node_modules` are gitignored and absent in fresh worktrees; scripts read `.env` relative to the CWD, so run from repo root.
-- Root is canonical for `math_engine/`, `code_engine/`, `drills/`, `id_map.json`, `practice_hub.py`. `practice-studio/` has no copies (only a `code_engine` symlink to `../code_engine`); the Studio API routes read root via `src/lib/paths.ts`. Never recreate copies; `code_engine.generate` no longer mirrors into `practice-studio/`.
-- 34 one-shot scripts (`*_builder.py`, `upgrade_*`, `create_*`, `fix_*`, `deploy_*`, `clean_*`, `patch_*`, ...) now live in `archive/` and mostly write to Notion. Never run them unasked; if required: `PYTHONPATH=. python3 archive/<script>.py` from repo root. Root keeps only live modules: `notion_client.py` (shared Notion REST client + `.env` loader; applies process-wide IPv4/timeout on import), `apply_rules_and_test_pages.py` (page-building helpers; re-exports the client names), `practice_hub.py` (imported by studio `sync-notion` route), `sync_rules_to_notion.py` + its imports `test_md_parser.py`, `upgrade_mth_t01_batch2.py`, `mth_t01_batch2_{data,units}.py` (untangle in P2).
-- `practice_hub.py` + `web/` (port 8765) are legacy.
+- Root is canonical for `math_engine/`, `code_engine/`, `drills/`, `id_map.json`, `drill_sync.py`. `practice-studio/` has no copies (only a `code_engine` symlink to `../code_engine`); the Studio API routes read root via `src/lib/paths.ts`. Never recreate copies; `code_engine.generate` no longer mirrors into `practice-studio/`.
+- 34 one-shot scripts (`*_builder.py`, `upgrade_*`, `create_*`, `fix_*`, `deploy_*`, `clean_*`, `patch_*`, ...) now live in `archive/` and mostly write to Notion. Never run them unasked; if required: `PYTHONPATH=. python3 archive/<script>.py` from repo root. Root keeps only live modules: `notion_client.py` (shared Notion REST client + `.env` loader; applies process-wide IPv4/timeout on import), `apply_rules_and_test_pages.py` (page-building helpers; re-exports the client names), `drill_sync.py` (zero-leak validator + Notion sync; spawned by studio `sync-notion` route), `sync_rules_to_notion.py` + its imports `test_md_parser.py`, `upgrade_mth_t01_batch2.py`, `mth_t01_batch2_{data,units}.py` (untangle in P2).
 - Never hand-edit `id_map.json` (Notion page-ID registry, incl. `CON-*` concept keys).
 - Drill hints/placeholders must never leak the answer (zero-leak rule, `rules/00_core.md` §6).
 - Notion multi-select values cannot contain commas; use only whitelisted Notion icon names.
