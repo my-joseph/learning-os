@@ -130,8 +130,14 @@ def _pick_template_schedule(templates, count, difficulty, focus_tags, rng, templ
             else {t.strip() for t in str(template_filter).split(",")}
         )
         filtered = [p for p in all_pairs if p["key"] in tpl_set]
-        if filtered:
-            all_pairs = filtered
+        if not filtered:
+            raise ValueError(
+                f"No templates match requested template filter: {sorted(tpl_set)} in "
+                f"'{unit_code or 'Current Unit'}'. "
+                f"Available templates: {sorted({p['key'] for p in all_pairs})}. "
+                f"Cannot silently fallback to all templates."
+            )
+        all_pairs = filtered
 
     if focus_tags:
         tags_set = (
@@ -147,7 +153,7 @@ def _pick_template_schedule(templates, count, difficulty, focus_tags, rng, templ
         if matched:
             return _round_robin_pick(matched, count, rng)
 
-    if difficulty in ("1", "2", "3", "4"):
+    if difficulty in ("1", "2", "3", "4", "5"):
         lv = int(difficulty)
         pool = [p for p in all_pairs if p["level"] == lv]
         if not pool:
@@ -180,7 +186,7 @@ def generate_drill_set(
     count = int(count)
     difficulty = str(difficulty).upper()
     if difficulty not in DIFFICULTY_MODES:
-        raise ValueError(f"Unknown difficulty '{difficulty}'. Valid values: ALL, 1, 2, 3, 4")
+        raise ValueError(f"Unknown difficulty '{difficulty}'. Valid values: ALL, 1, 2, 3, 4, 5")
 
     active_rules = rules or QUALITY_RULES
     base_seed = seed if seed is not None else random.randint(1, 10_000_000)
@@ -330,7 +336,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate verified programming drill JSON.")
     parser.add_argument("--unit", default="PRG-T01-C01", help="Unit or Chapter code (e.g. PRG-T01-C01)")
     parser.add_argument("--count", type=int, default=5, help="Number of questions (e.g. 5, 10, 15, 20)")
-    parser.add_argument("--difficulty", default="ALL", help="Difficulty: ALL, 1, 2, 3, or 4")
+    parser.add_argument("--difficulty", default="ALL", help="Difficulty: ALL, 1, 2, 3, 4, or 5")
     parser.add_argument("--id", default=None, help="Explicit drill ID (e.g. DRL-PRG-T01-C01-01)")
     parser.add_argument("--seed", type=int, default=None, help="Random seed for deterministic generation")
     parser.add_argument("--templates", default=None, help="Comma-separated template keys (e.g. scope_hoisting_loop)")
