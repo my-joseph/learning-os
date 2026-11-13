@@ -416,6 +416,52 @@ def require_figure_if_declared(prob: Dict[str, Any], archetypes: List[Dict[str, 
         )
 
 
+def validate_against_vault(prob: Dict[str, Any], archetypes: List[Dict[str, Any]], unit_code: str) -> None:
+    """Gates that need the vault or a blind solve (07 §4), shared by --check and ingest.
+
+    - archetypeKey must be a vault archetype, and commonTrapTag one of its cognitiveTraps,
+      so trapMatched telemetry only ever reports misconceptions the vault defines.
+    - L4/L5 problems must carry a `blindSolve` record from a separate solver that saw only
+      the prompt: matching answer, not ambiguous, and an assigned level no lower than `level`.
+      G2 counts structure (steps, concepts, constraints, category) and cannot judge demand.
+    """
+    pid = prob.get("id", "?")
+    key = prob.get("archetypeKey")
+    arch = next((a for a in archetypes if a.get("archetypeKey") == key), None)
+    if arch is None:
+        raise AiContractError(f"[{pid}] archetypeKey '{key}' is not in the {unit_code} reasoning vault.")
+
+    tag = prob.get("commonTrapTag")
+    # Vaults list traps either as tag strings or as {"trapTag": ..., "description": ...}.
+    traps = [t.get("trapTag") if isinstance(t, dict) else t for t in arch.get("cognitiveTraps") or []]
+    if tag not in traps:
+        raise AiContractError(
+            f"[{pid}] commonTrapTag '{tag}' is not one of archetype '{key}' cognitiveTraps {traps}. "
+            f"Use a listed tag, or propose adding the trap to the vault first."
+        )
+
+    level = prob.get("level")
+    if isinstance(level, int) and level >= 4:
+        bs = prob.get("blindSolve")
+        if not isinstance(bs, dict) or "answer" not in bs or "level" not in bs or "ambiguous" not in bs:
+            raise AiContractError(
+                f"[{pid}] L{level} problem needs a 'blindSolve' record "
+                f"{{'answer', 'level', 'ambiguous'}} from a separate solver that saw only the prompt (07 §4 V2)."
+            )
+        if bs["ambiguous"]:
+            raise AiContractError(f"[{pid}] Blind solver found the prompt ambiguous.")
+        spec = prob.get("answerSpec") or {}
+        if check_answer(spec, str(bs["answer"])).get("verdict") != "correct":
+            raise AiContractError(
+                f"[{pid}] Blind-solve answer '{bs['answer']}' does not match answerSpec '{spec.get('value')}'."
+            )
+        if not isinstance(bs["level"], int) or bs["level"] < level:
+            raise AiContractError(
+                f"[{pid}] Labelled L{level} but the blind solver rated it L{bs['level']}. "
+                f"Relabel it or redesign it; do not change category or add constraints to pass G2."
+            )
+
+
 def get_vault_path(unit_code: str, vault_dir: Optional[str] = None) -> str:
     dir_path = vault_dir or os.environ.get("REASONING_VAULT_DIR") or VAULT_DIR
     os.makedirs(dir_path, exist_ok=True)
@@ -493,17 +539,16 @@ def check_ai_drill(
         return ["Drill document has no 'problems'."]
 
     vault_archs = load_reasoning_vault(unit_code, vault_dir=vault_dir).get("archetypes", [])
-    vault_keys = {a.get("archetypeKey") for a in vault_archs}
     errors: List[str] = []
     for idx, original in enumerate(problems, 1):
         prob = copy.deepcopy(original)
         prob.setdefault("id", f"Q{idx:02d}")
         prob.setdefault("verificationLevel", "partial")
         pid = prob["id"]
-        if prob.get("archetypeKey") not in vault_keys:
-            errors.append(
-                f"[{pid}] archetypeKey '{prob.get('archetypeKey')}' is not in the {unit_code} reasoning vault."
-            )
+        try:
+            validate_against_vault(prob, vault_archs, unit_code)
+        except AiContractError as exc:
+            errors.append(str(exc))
         try:
             autofill_problem_figure(prob, vault_archs)
             require_figure_if_declared(prob, vault_archs)
@@ -573,6 +618,7 @@ def ingest_ai_drill(
 
         # Rule 11: auto-attach parametric figure from vault archetype `figureBuilders` (03_stem §3)
         vault_archs = load_reasoning_vault(unit_code, vault_dir=vault_dir).get("archetypes", [])
+        validate_against_vault(prob, vault_archs, unit_code)
         autofill_problem_figure(prob, vault_archs)
         require_figure_if_declared(prob, vault_archs)
         validate_ai_problem_contract(prob)

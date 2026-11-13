@@ -72,6 +72,7 @@ def perimeter_problem(**overrides):
         "answerPlain": "44",
         "answerDisplay": "44",
         "checkpointHint": "Fencing goes around all four sides.",
+        "commonTrapTag": "c12-perimeter-half-trap",
         "steps": [
             {"latex": "2 \\times 14 = 28", "explain": "Double the length."},
             {"latex": "2 \\times 8 = 16", "explain": "Double the width."},
@@ -192,7 +193,13 @@ class CheckAiDrill(unittest.TestCase):
         import os
 
         with open(os.path.join(tmp, "MTH-T01-C12.json"), "w", encoding="utf-8") as f:
-            json.dump({"unitCode": "MTH-T01-C12", "archetypes": [{"archetypeKey": "c12-perimeter"}]}, f)
+            json.dump(
+                {
+                    "unitCode": "MTH-T01-C12",
+                    "archetypes": [{"archetypeKey": "c12-perimeter", "cognitiveTraps": ["c12-perimeter-half-trap"]}],
+                },
+                f,
+            )
 
     def test_reports_every_error_and_saves_nothing(self):
         import os
@@ -237,7 +244,15 @@ class IngestFillsSyncFields(unittest.TestCase):
             vault = os.path.join(tmp, "vault")
             os.makedirs(vault)
             with open(os.path.join(vault, "MTH-T01-C12.json"), "w", encoding="utf-8") as f:
-                json.dump({"unitCode": "MTH-T01-C12", "archetypes": [{"archetypeKey": "c12-perimeter"}]}, f)
+                json.dump(
+                    {
+                        "unitCode": "MTH-T01-C12",
+                        "archetypes": [
+                            {"archetypeKey": "c12-perimeter", "cognitiveTraps": ["c12-perimeter-half-trap"]}
+                        ],
+                    },
+                    f,
+                )
             custom = perimeter_problem(id="Q02", archetypeKey="c12-perimeter", levelLabel="Level 1 - Core Foundations")
             doc = {"unitCode": "MTH-T01-C12", "problems": [perimeter_problem(archetypeKey="c12-perimeter"), custom]}
             saved = ingest_ai_drill(doc, data_root=os.path.join(tmp, "data"), vault_dir=vault)
