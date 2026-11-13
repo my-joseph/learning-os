@@ -84,7 +84,7 @@ MTH_CHAPTERS_DATA = {
         "title": "Integers",
         "objective": "Represent signed numbers on the number line, evaluate absolute value, perform all four operations on integers, and solve integer equations.",
         "criteria": "Evaluate complex signed-number expressions and solve integer equations with zero sign errors.",
-        "role": "Extends the Whole Numbers ($\{0, 1, 2, \\dots\}$) to the full set of Integers ($\{\\dots, -2, -1, 0, 1, 2, \\dots\}$) by introducing additive inverses (opposites) and magnitude (absolute value).",
+        "role": "Extends the Whole Numbers ($\\{0, 1, 2, \\dots\\}$) to the full set of Integers ($\\{\\dots, -2, -1, 0, 1, 2, \\dots\\}$) by introducing additive inverses (opposites) and magnitude (absolute value).",
         "source_section": "OpenStax Prealgebra 2e — Chapter 3: Integers (Sections 3.1–3.5)",
         "concepts": [
             "Opposites vs. Absolute Value: $-a$ denotes the additive inverse (opposite) of $a$ (so if $a = -5$, then $-a = 5$), whereas $|a|$ denotes distance from $0$ on the number line (always non-negative: $|a| \\ge 0$).",
@@ -100,7 +100,7 @@ MTH_CHAPTERS_DATA = {
         "title": "Fractions",
         "objective": "Perform addition, subtraction, multiplication, and division on fractions, mixed numbers, and complex fractions, and solve fractional equations.",
         "criteria": "Simplify complex fractions, operate on mixed numbers, and solve equations involving fractional coefficients and constants.",
-        "role": "Introduces Rational Numbers ($\mathbb{Q}$) in fractional form $\\frac{a}{b}$ ($b \\ne 0$), which are essential for algebraic manipulation, rates of change (slope), and rational expressions.",
+        "role": "Introduces Rational Numbers ($\\mathbb{Q}$) in fractional form $\\frac{a}{b}$ ($b \\ne 0$), which are essential for algebraic manipulation, rates of change (slope), and rational expressions.",
         "source_section": "OpenStax Prealgebra 2e — Chapter 4: Fractions (Sections 4.1–4.7)",
         "concepts": [
             "Equivalent Fractions & Fundamental Property: Multiplying or dividing numerator and denominator by the same nonzero number preserves value ($\\frac{a \\cdot k}{b \\cdot k} = \\frac{a}{b}$) because $\\frac{k}{k} = 1$.",
@@ -196,10 +196,10 @@ MTH_CHAPTERS_DATA = {
         "title": "The Properties of Real Numbers",
         "objective": "Classify real numbers into rational and irrational sets, apply field axioms (commutative, associative, distributive, identity, inverse, zero), and convert between measurement systems.",
         "criteria": "Classify real numbers accurately, justify algebraic simplifications by naming the exact axiom used, and perform dimensional analysis unit conversions.",
-        "role": "Unifies all number types studied so far into the complete Real Number System ($\mathbb{R} = \\mathbb{Q} \\cup \\text{Irrationals}$) and formalizes the structural axioms that make algebraic manipulation legal.",
+        "role": "Unifies all number types studied so far into the complete Real Number System ($\\mathbb{R} = \\mathbb{Q} \\cup \\text{Irrationals}$) and formalizes the structural axioms that make algebraic manipulation legal.",
         "source_section": "OpenStax Prealgebra 2e — Chapter 7: The Properties of Real Numbers (Sections 7.1–7.5)",
         "concepts": [
-            "Real Number Hierarchy: $\\mathbb{N} \\subset \\mathbb{W} \\subset \\mathbb{Z} \\subset \\mathbb{Q} \\subset \\mathbb{R}$. Rational numbers ($\mathbb{Q}$) have terminating or repeating decimal expansions; Irrational numbers ($\\sqrt{2}, \\pi$) have non-terminating, non-repeating expansions.",
+            "Real Number Hierarchy: $\\mathbb{N} \\subset \\mathbb{W} \\subset \\mathbb{Z} \\subset \\mathbb{Q} \\subset \\mathbb{R}$. Rational numbers ($\\mathbb{Q}$) have terminating or repeating decimal expansions; Irrational numbers ($\\sqrt{2}, \\pi$) have non-terminating, non-repeating expansions.",
             "Field Axioms: Commutative ($a+b=b+a, ab=ba$), Associative ($(a+b)+c=a+(b+c)$), Distributive ($a(b+c)=ab+ac$), Identities ($0$ for $+$, $1$ for $\\times$), and Inverses ($a+(-a)=0$, $a \\cdot \\frac{1}{a}=1$ for $a \\ne 0$).",
             "Dimensional Analysis (Unit Factor Method): Multiply by unit conversion fractions equal to $1$ arranged so unwanted units cancel diagonally."
         ],
@@ -260,7 +260,7 @@ MTH_CHAPTERS_DATA = {
         "title": "Graphs",
         "objective": "Plot points and linear equations on the rectangular coordinate plane, find x- and y-intercepts, and compute and interpret the slope of a line.",
         "criteria": "Graph any two-variable linear equation using point plotting, intercepts, and slope-intercept form ($y = mx + b$).",
-        "role": "Connects symbolic algebra (two-variable linear equations $Ax + By = C$) to analytic geometry (lines in the Cartesian plane $\mathbb{R}^2$), introducing rate of change (slope $m$).",
+        "role": "Connects symbolic algebra (two-variable linear equations $Ax + By = C$) to analytic geometry (lines in the Cartesian plane $\\mathbb{R}^2$), introducing rate of change (slope $m$).",
         "source_section": "OpenStax Prealgebra 2e — Chapter 11: Graphs (Sections 11.1–11.4)",
         "concepts": [
             "Cartesian Coordinate Correspondence: Every ordered pair $(x, y)$ corresponds to a unique point in the plane, and the graph of an equation in $x$ and $y$ is the set of all points $(x, y)$ that make the equation true.",

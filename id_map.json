@@ -2491,5 +2491,25 @@
   "DRL-PRG-T00-C01-U01-01": {
     "id": "4103818f-8ba0-816e-8395-c66c72f8dcfd",
     "title": "Network Lifecycle & HTTP Protocols — Verified Programming Drill (10 Qs · Level 1 - Foundation & Protocol Invariants)"
+  },
+  "DRL-MTH-T01-C12-01": {
+    "id": "4113818f-8ba0-8187-9717-f933406fd277",
+    "title": "Math Models and Geometry — Verified Math Drill (20 Qs · Mixed Exam Mode)"
+  },
+  "DRL-MTH-CALC-DIFF-99": {
+    "id": "4113818f-8ba0-8142-a0a2-eb4051550182",
+    "title": "Calculus: Differentiation Rules — Verified Math Drill (1 Qs · Mixed Exam Mode)"
+  },
+  "DRL-MTH-CALC-DIFF-TEMP": {
+    "id": "4113818f-8ba0-8101-9b2b-d682d5bbb5de",
+    "title": "Calculus: Differentiation Rules — Verified Math Drill (1 Qs · Mixed Exam Mode)"
+  },
+  "DRL-MTH-CALC-DIFF-01": {
+    "id": "4113818f-8ba0-81c3-8372-e1e0208907a0",
+    "title": "Calculus: Differentiation Rules — Verified Math Drill (10 Qs · Mixed Exam Mode)"
+  },
+  "MTH-SYNTHESIS": {
+    "id": "4003818f-8ba0-80cf-bf95-ef15001d8a99",
+    "title": "Multi-Topic Mathematical Synthesis"
   }
 }

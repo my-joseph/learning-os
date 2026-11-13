@@ -1,0 +1,327 @@
+{
+  "unitCode": "MTH-T01-C02",
+  "topicTitle": "Language of Algebra & Unknowns",
+  "description": "Reasoning Schemas & Problem-Solving Archetypes for Variables, Algebraic Expressions, Linear Properties of Equality, Like Terms, and Word Problems.",
+  "archetypes": [
+    {
+      "archetypeKey": "c02-verbal-to-algebraic-translation",
+      "level": 1,
+      "name": "Verbal Phrase to Algebraic Expression Translation (การแปลงข้อความภาษาเป็นนิพจน์พีชคณิต)",
+      "coreConcept": "Translating operational keywords into algebraic operations while preserving proper operand order.",
+      "mentalModel": [
+        "1. Identify the base variable or quantity.",
+        "2. Determine the operation keyword (difference, sum, less than, times).",
+        "3. Structure the terms preserving strict non-commutative order for subtraction and division."
+      ],
+      "governingRelation": "E = c * x +/- k",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c02-subtraction-order-reversal",
+          "description": "Reversing subtraction operand order when translating 'less than'.",
+          "trapFormula": "k - x"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "sensor_temperature_threshold",
+          "description": "Adjusting baseline ambient temperature sensor readings."
+        },
+        {
+          "domain": "warehouse_storage_capacity",
+          "description": "Subtracting damaged pallets from nominal holding capacity."
+        }
+      ],
+      "usedContexts": [
+        "sensor_temperature_threshold"
+      ]
+    },
+    {
+      "archetypeKey": "c02-expression-variable-substitution",
+      "level": 1,
+      "name": "Algebraic Expression Single-Variable Evaluation (การแทนค่าตัวแปรเดี่ยวในนิพจน์)",
+      "coreConcept": "Replacing a variable symbol with a numeric scalar and computing the arithmetic value following operator precedence.",
+      "mentalModel": [
+        "1. Substitute the numeric value into the variable placeholder.",
+        "2. Perform multiplications and divisions first.",
+        "3. Perform additions and subtractions to find the final scalar."
+      ],
+      "governingRelation": "V = a * x + b",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c02-multiplication-concatenation-trap",
+          "description": "Adding before multiplying or concatenating digits instead of multiplying.",
+          "trapFormula": "a * (x + b)"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "electric_scooter_fare_calculation",
+          "description": "Evaluating metered travel fare based on minutes ridden."
+        },
+        {
+          "domain": "cloud_compute_billing_rate",
+          "description": "Computing cloud VM billing based on uptime hours."
+        }
+      ],
+      "usedContexts": [
+        "electric_scooter_fare_calculation"
+      ]
+    },
+    {
+      "archetypeKey": "c02-combining-like-terms-univariate",
+      "level": 2,
+      "name": "Univariate Like Terms Simplification (การรวมพจน์ที่คล้ายกันตัวแปรเดียว)",
+      "coreConcept": "Terms sharing identical variable factors are combined by adding their coefficients via the distributive law.",
+      "mentalModel": [
+        "1. Identify terms containing identical variable powers.",
+        "2. Combine numerical coefficients algebraically: (a + b)x.",
+        "3. Evaluate or simplify the resulting single-term expression."
+      ],
+      "governingRelation": "a * x + b * x = (a + b) * x",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c02-variable-power-merging-trap",
+          "description": "Subtracting coefficients instead of adding, or altering variable power.",
+          "trapFormula": "(b - a) * x"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "retail_inventory_batch_merging",
+          "description": "Combining shipments of identical part crates."
+        },
+        {
+          "domain": "fiber_optic_cable_spool_assembly",
+          "description": "Merging cable lengths across multiple production spools."
+        }
+      ],
+      "usedContexts": [
+        "retail_inventory_batch_merging"
+      ]
+    },
+    {
+      "archetypeKey": "c02-distributive-property-expansion",
+      "level": 2,
+      "name": "Distributive Property Monomial Expansion (การแจกแจงเอกนามคูณทวินาม)",
+      "coreConcept": "Multiplying an outside factor across every individual term inside parentheses: a(bx + c) = abx + ac.",
+      "mentalModel": [
+        "1. Multiply outer factor by the first internal term.",
+        "2. Multiply outer factor by the constant term.",
+        "3. Sum both product terms preserving operational signs."
+      ],
+      "governingRelation": "a * (b * x + c) = a * b * x + a * c",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c02-partial-distribution-neglect",
+          "description": "Multiplying the outer factor by the first term only, ignoring the constant term.",
+          "trapFormula": "a * b * x + c"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "agricultural_greenhouse_fertilizer_dosing",
+          "description": "Scaling nutrient dosing batches across greenhouse zones."
+        },
+        {
+          "domain": "shipping_container_bulk_packing",
+          "description": "Distributing standard package sets across cargo pallets."
+        }
+      ],
+      "usedContexts": [
+        "agricultural_greenhouse_fertilizer_dosing"
+      ]
+    },
+    {
+      "archetypeKey": "c02-additive-equality-inversion",
+      "level": 2,
+      "name": "Additive Equality One-Step Equation (การแก้สมการขั้นตอนเดียวด้วยสมบัติการบวก/ลบ)",
+      "coreConcept": "Maintaining equality balance by inverting an added or subtracted constant: x +/- a = b.",
+      "mentalModel": [
+        "1. Identify the operation linking the variable and constant.",
+        "2. Apply the inverse operation equally to both sides of the equation.",
+        "3. Simplify to isolate the variable."
+      ],
+      "governingRelation": "x - a = b <=> x = b + a",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c02-operation-sign-inversion-omission",
+          "description": "Repeating the original operation instead of applying the inverse.",
+          "trapFormula": "b - a"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "aviation_fuel_reserve_calculation",
+          "description": "Back-calculating initial takeoff fuel from fuel burned and remaining fuel."
+        },
+        {
+          "domain": "reservoir_water_inflow_monitoring",
+          "description": "Determining initial reservoir capacity before scheduled discharge."
+        }
+      ],
+      "usedContexts": [
+        "aviation_fuel_reserve_calculation"
+      ]
+    },
+    {
+      "archetypeKey": "c02-multiplicative-equality-inversion",
+      "level": 3,
+      "name": "Multiplicative Equality One-Step Equation (การแก้สมการขั้นตอนเดียวด้วยสมบัติการคูณ/หาร)",
+      "coreConcept": "Isolating an unknown multiplier by applying the division property of equality: a * x = b <=> x = b / a.",
+      "mentalModel": [
+        "1. Identify the coefficient multiplying the variable.",
+        "2. Divide both sides of the equation by the non-zero coefficient.",
+        "3. Verify the quotient satisfies the original equality."
+      ],
+      "governingRelation": "a * x = b <=> x = b / a",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c02-reciprocal-multiplication-confusion",
+          "description": "Adding coefficient to target or multiplying instead of dividing.",
+          "trapFormula": "b + a"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "solar_array_power_generation",
+          "description": "Finding individual panel generation from total farm wattage."
+        },
+        {
+          "domain": "assembly_line_cycle_pacing",
+          "description": "Calculating per-unit cycle time from total batch duration."
+        }
+      ],
+      "usedContexts": [
+        "solar_array_power_generation"
+      ]
+    },
+    {
+      "archetypeKey": "c02-two-variable-formula-evaluation",
+      "level": 3,
+      "name": "Bivariate Geometric/Physical Formula Evaluation (การคำนวณค่าสูตรสองตัวแปร)",
+      "coreConcept": "Evaluating multi-variable expressions where distinct parameters govern orthogonal dimensions: P = 2L + 2W.",
+      "mentalModel": [
+        "1. Map each measured physical input to its assigned variable.",
+        "2. Multiply each variable by its respective geometric formula coefficient.",
+        "3. Sum component contributions to obtain total metric."
+      ],
+      "governingRelation": "P = 2 * L + 2 * W",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c02-semi-perimeter-underestimate",
+          "description": "Summing length and width without doubling, yielding half the perimeter.",
+          "trapFormula": "L + W"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "perimeter_fence_construction",
+          "description": "Sizing security boundary fencing around industrial yards."
+        },
+        {
+          "domain": "server_memory_cache_sizing",
+          "description": "Allocating dual-channel cache memory across processing cores."
+        }
+      ],
+      "usedContexts": [
+        "perimeter_fence_construction"
+      ]
+    },
+    {
+      "archetypeKey": "c02-nested-distributive-simplification",
+      "level": 3,
+      "name": "Nested Distributive and Like Terms Simplification (การกระจายและรวมพจน์หลายชั้น)",
+      "coreConcept": "Expanding multiple grouped linear binomials and collecting like terms systematically: a(x + b) + c(x + d).",
+      "mentalModel": [
+        "1. Distribute each external multiplier across its respective binomial group.",
+        "2. Group variable terms together and constant terms together.",
+        "3. Combine like terms to arrive at canonical simplified form."
+      ],
+      "governingRelation": "a*(x + b) + c*(x + d) = (a + c)*x + (a*b + c*d)",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c02-distributive-coefficient-omission",
+          "description": "Adding group coefficients directly to variables without multiplying constants.",
+          "trapFormula": "(a + c) * x + b + d"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "telecom_bandwidth_tier_pricing",
+          "description": "Aggregating tiered network traffic rates across operational zones."
+        },
+        {
+          "domain": "structural_beam_load_distribution",
+          "description": "Computing composite bending moments across grouped beam supports."
+        }
+      ],
+      "usedContexts": [
+        "telecom_bandwidth_tier_pricing"
+      ]
+    },
+    {
+      "archetypeKey": "c02-constrained-perimeter-unknown-model",
+      "level": 4,
+      "name": "Constrained Geometric Perimeter Unknown Model (แบบจำลองความยาวรอบรูปตัวแปรเดี่ยวพร้อมเงื่อนไขบังคับ)",
+      "coreConcept": "Setting up and solving an algebraic equation where length is defined as a linear function of width under fixed perimeter constraints.",
+      "mentalModel": [
+        "1. Express length algebraically in terms of width: L = m * W + k.",
+        "2. Substitute algebraic length expression into perimeter equation: 2(mW + k) + 2W = P.",
+        "3. Expand and solve linear equation to isolate width."
+      ],
+      "governingRelation": "P = 2 * (m * W + k) + 2 * W <=> P = (2*m + 2)*W + 2*k",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c02-semi-perimeter-algebraic-confusion",
+          "description": "Equating L + W to P rather than 2L + 2W, causing an erroneous isolated width.",
+          "trapFormula": "(P - k) / (m + 1)"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "urban_park_boundary_fencing",
+          "description": "Optimizing dimensions of a municipal park under perimeter constraints."
+        },
+        {
+          "domain": "data_center_rack_enclosure",
+          "description": "Sizing server room floor footprint given strict boundary limits."
+        }
+      ],
+      "usedContexts": [
+        "urban_park_boundary_fencing"
+      ]
+    },
+    {
+      "archetypeKey": "c02-consecutive-integer-sum-inversion",
+      "level": 4,
+      "name": "Consecutive Integer Word Problem Synthesis (โจทย์ปัญหาผลรวมจำนวนเต็มเรียงกันเชิงพีชคณิต)",
+      "coreConcept": "Translating verbal descriptions of consecutive sequence integers into a solvable linear algebraic equation.",
+      "mentalModel": [
+        "1. Represent consecutive integers algebraically: n, n+1, n+2.",
+        "2. Formulate sum equation: n + (n+1) + (n+2) = 3n + 3 = S.",
+        "3. Solve for base integer n and add offset to return requested member."
+      ],
+      "governingRelation": "3 * n + 3 = S <=> n = (S - 3) / 3",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c02-mean-consecutive-reporting-trap",
+          "description": "Reporting the mean integer (S / 3) instead of the largest integer.",
+          "trapFormula": "S / 3"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "production_shift_serial_numbering",
+          "description": "Validating sequential assembly line serial codes from checksum sums."
+        },
+        {
+          "domain": "sensor_telemetry_timestamp_packets",
+          "description": "Reconstructing chronological packet sequence headers."
+        }
+      ],
+      "usedContexts": [
+        "production_shift_serial_numbering"
+      ]
+    }
+  ]
+}

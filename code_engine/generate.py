@@ -12,12 +12,20 @@ import argparse
 import datetime
 import glob
 import json
+import logging
 import os
 import random
 
 from code_engine.fmt import DIFFICULTY_MODES, LEVEL_LABELS
 from code_engine.templates import load_unit
 from code_engine.verify import verify_problem, verify_tags
+from quality_rules import (
+    QUALITY_RULES,
+    compute_fingerprint,
+    generate_with_quality_retries,
+)
+
+logger = logging.getLogger(__name__)
 
 
 def load_id_map(path="id_map.json"):
@@ -35,7 +43,9 @@ def notion_url_for(code, id_map):
     return f"https://www.notion.so/{raw_id}"
 
 
-def next_drill_id(unit_code, data_root="drills/data"):
+def next_drill_id(unit_code, data_root=None):
+    if data_root is None:
+        data_root = os.environ.get("DRILLS_DATA_DIR", "drills/data")
     unit_dir = os.path.join(data_root, unit_code)
     os.makedirs(unit_dir, exist_ok=True)
     existing = sorted(glob.glob(os.path.join(unit_dir, f"DRL-{unit_code}-*.json")))
@@ -48,50 +58,110 @@ def next_drill_id(unit_code, data_root="drills/data"):
     return f"DRL-{unit_code}-{max_num + 1:02d}"
 
 
-def _pick_template_schedule(templates, count, difficulty, focus_tags, rng):
+def _expand_template_pairs(templates):
+    """Expand templates into (template, form) scheduling units."""
+    pairs = []
+    for t in templates:
+        forms = t.get("forms")
+        if isinstance(forms, dict):
+            for fname, finfo in forms.items():
+                pairs.append(
+                    {
+                        "template": t,
+                        "key": t["key"],
+                        "form": fname,
+                        "level": finfo.get("level", t.get("level", 1)),
+                        "skill": finfo.get("skill"),
+                        "trapTag": finfo.get("trapTag", t.get("trapTag")),
+                        "verificationLevel": t.get("verificationLevel", "machine-verified"),
+                    }
+                )
+        elif isinstance(forms, (list, tuple)):
+            for fname in forms:
+                pairs.append(
+                    {
+                        "template": t,
+                        "key": t["key"],
+                        "form": fname,
+                        "level": t.get("level", 1),
+                        "skill": t.get("skill"),
+                        "trapTag": t.get("trapTag"),
+                        "verificationLevel": t.get("verificationLevel", "machine-verified"),
+                    }
+                )
+        else:
+            pairs.append(
+                {
+                    "template": t,
+                    "key": t["key"],
+                    "form": "direct",
+                    "level": t.get("level", 1),
+                    "skill": t.get("skill"),
+                    "trapTag": t.get("trapTag"),
+                    "verificationLevel": t.get("verificationLevel", "machine-verified"),
+                }
+            )
+    return pairs
+
+
+def _round_robin_pick(pool, k, rng):
+    """Pick k items from pool using round-robin across shuffled pool items."""
+    if not pool:
+        return []
+    shuffled_pool = list(pool)
+    rng.shuffle(shuffled_pool)
+    picks = []
+    idx = 0
+    while len(picks) < k:
+        picks.append(shuffled_pool[idx % len(shuffled_pool)])
+        idx += 1
+        if idx % len(shuffled_pool) == 0:
+            rng.shuffle(shuffled_pool)
+    return picks[:k]
+
+
+def _pick_template_schedule(templates, count, difficulty, focus_tags, rng, template_filter=None, unit_code=None):
+    all_pairs = _expand_template_pairs(templates)
+
+    if template_filter:
+        tpl_set = (
+            {t.strip() for t in template_filter}
+            if isinstance(template_filter, (list, tuple, set))
+            else {t.strip() for t in str(template_filter).split(",")}
+        )
+        filtered = [p for p in all_pairs if p["key"] in tpl_set]
+        if filtered:
+            all_pairs = filtered
+
     if focus_tags:
-        tags_set = set(focus_tags) if isinstance(focus_tags, (list, tuple, set)) else {str(focus_tags)}
-        matched = [t for t in templates if t.get("key") in tags_set or t.get("trapTag") in tags_set]
+        tags_set = (
+            set(focus_tags)
+            if isinstance(focus_tags, (list, tuple, set))
+            else {t.strip() for t in str(focus_tags).split(",")}
+        )
+        matched = [
+            p
+            for p in all_pairs
+            if p["key"] in tags_set or p["trapTag"] in tags_set or p.get("skill") in tags_set or p["form"] in tags_set
+        ]
         if matched:
-            schedule = []
-            while len(schedule) < count:
-                batch = list(matched)
-                rng.shuffle(batch)
-                schedule.extend(batch)
-            return schedule[:count]
+            return _round_robin_pick(matched, count, rng)
 
     if difficulty in ("1", "2", "3", "4"):
         lv = int(difficulty)
-        pool = [t for t in templates if t["level"] == lv]
+        pool = [p for p in all_pairs if p["level"] == lv]
         if not pool:
-            pool = list(templates)
-        schedule = []
-        while len(schedule) < count:
-            batch = list(pool)
-            rng.shuffle(batch)
-            schedule.extend(batch)
-        return schedule[:count]
+            avail = sorted(set(p.get("level", 1) for p in all_pairs))
+            unit_name = unit_code or "UNKNOWN"
+            raise ValueError(
+                f"Unit '{unit_name}' has no templates supporting difficulty level L{lv}. "
+                f"Available levels are: {avail}. "
+                f"Cannot silently fallback to lower difficulty levels."
+            )
+        return _round_robin_pick(pool, count, rng)
 
-    # Mixed Exam Mode: proportional allocation across Levels 1, 2, 3, 4 (25%, 40%, 20%, 15%)
-    by_level = {lv: [t for t in templates if t["level"] == lv] for lv in (1, 2, 3, 4)}
-    n1 = max(1, round(count * 0.25))
-    n2 = max(1, round(count * 0.40))
-    n3 = max(1, round(count * 0.20))
-    n4 = max(0, count - (n1 + n2 + n3))
-    counts = {1: n1, 2: n2, 3: n3, 4: n4}
-
-    schedule = []
-    for lv, k in counts.items():
-        pool = by_level.get(lv) or templates
-        picks = []
-        while len(picks) < k:
-            b = list(pool)
-            rng.shuffle(b)
-            picks.extend(b)
-        schedule.extend(picks[:k])
-
-    rng.shuffle(schedule)
-    return schedule[:count]
+    # Mixed Exam Mode: round-robin on (template, form) within a single set
+    return _round_robin_pick(all_pairs, count, rng)
 
 
 def generate_drill_set(
@@ -101,73 +171,131 @@ def generate_drill_set(
     drill_id=None,
     seed=None,
     focus_tags=None,
-    data_root="drills/data",
+    templates=None,
+    data_root=None,
+    rules=None,
 ):
+    if data_root is None:
+        data_root = os.environ.get("DRILLS_DATA_DIR", "drills/data")
     count = int(count)
     difficulty = str(difficulty).upper()
     if difficulty not in DIFFICULTY_MODES:
-        difficulty = "ALL"
+        raise ValueError(f"Unknown difficulty '{difficulty}'. Valid values: ALL, 1, 2, 3, 4")
 
-    rng = random.Random(seed)
+    active_rules = rules or QUALITY_RULES
+    base_seed = seed if seed is not None else random.randint(1, 10_000_000)
     id_map = load_id_map()
     mod = load_unit(unit_code)
+    if getattr(mod, "IS_PILOT", False) and not os.environ.get("ENABLE_PILOT_DRILLS"):
+        raise ValueError(
+            f"Unit '{unit_code}' is currently flagged as PILOT. Generation of persistent drill files is blocked unless ENABLE_PILOT_DRILLS=1 is set."
+        )
     verify_tags(mod.MISTAKE_TAGS)
 
     if not drill_id:
         drill_id = next_drill_id(unit_code, data_root=data_root)
 
-    schedule = _pick_template_schedule(mod.TEMPLATES, count, difficulty, focus_tags, rng)
+    # Warn if any template in the unit only supports 1 form
+    warn_msg = active_rules["G3"].get("single_form_warning_msg", "template นี้ผลิตได้โครงเดียว")
+    for tpl in mod.TEMPLATES:
+        forms = tpl.get("forms") or ["direct"]
+        if len(forms) <= 1 and active_rules["G3"].get("warn_single_form_template", True):
+            msg = f"[QualityGate-G3] Template '{tpl['key']}': {warn_msg}"
+            logger.warning(msg)
+            print(msg)
 
-    problems = []
-    seen_snippets = set()
+    def _build_attempt(attempt_seed: int):
+        rng = random.Random(attempt_seed)
+        schedule = _pick_template_schedule(
+            mod.TEMPLATES, count, difficulty, focus_tags, rng, template_filter=templates, unit_code=unit_code
+        )
+        unique_tpls = {s["key"]: s["template"] for s in schedule}.values()
+        available_forms_count = sum(len(t.get("forms") or ["direct"]) for t in unique_tpls)
 
-    for idx, tpl in enumerate(schedule, 1):
-        prob = None
-        for _ in range(12):
-            candidate = tpl["build"](rng)
-            snip = candidate.get("codeSnippet", "")
-            if snip not in seen_snippets:
-                prob = candidate
-                seen_snippets.add(snip)
-                break
-        if prob is None:
-            prob = tpl["build"](rng)
+        attempt_problems = []
+        seen_snippets = set()
+        seen_fingerprints = set()
 
-        prob_id = f"Q{idx:02d}"
-        prob["id"] = prob_id
-        prob["templateKey"] = tpl["key"]
-        prob["level"] = tpl["level"]
-        prob["levelLabel"] = LEVEL_LABELS[tpl["level"]]
+        for idx, sched_item in enumerate(schedule, 1):
+            tpl = sched_item["template"]
+            target_form = sched_item["form"]
+            target_level = sched_item["level"]
+            target_skill = sched_item.get("skill")
+            build_fn = tpl["build"]
 
-        # Pre-Execution Verification via Node.js
-        verify_problem(prob, id_map=id_map)
+            prob = None
+            for _ in range(12):
+                try:
+                    candidate = build_fn(rng, form=target_form)
+                except TypeError:
+                    candidate = build_fn(rng)
+                candidate["form"] = candidate.get("form", target_form)
+                candidate["level"] = target_level
+                if target_skill:
+                    candidate["skill"] = target_skill
+                candidate["verificationLevel"] = sched_item.get("verificationLevel", "machine-verified")
+                snip = candidate.get("codeSnippet", "") or candidate.get("starterCode", "")
+                cand_fp = compute_fingerprint(candidate, template_key=tpl["key"])
+                if snip not in seen_snippets and cand_fp not in seen_fingerprints:
+                    prob = candidate
+                    seen_snippets.add(snip)
+                    seen_fingerprints.add(cand_fp)
+                    break
+            if prob is None:
+                try:
+                    prob = build_fn(rng, form=target_form)
+                except TypeError:
+                    prob = build_fn(rng)
+                prob["form"] = prob.get("form", target_form)
+                prob["level"] = target_level
+                if target_skill:
+                    prob["skill"] = target_skill
+                prob["verificationLevel"] = sched_item.get("verificationLevel", "machine-verified")
 
-        # Resolve Notion reference badges
-        ref_badges = []
-        for ref_code in prob.get("references", []):
-            entry = id_map.get(ref_code, {})
-            ref_title = entry.get("title", ref_code) if isinstance(entry, dict) else ref_code
-            ref_badges.append(
-                {
-                    "code": ref_code,
-                    "title": ref_title,
-                    "notionUrl": notion_url_for(ref_code, id_map),
-                }
-            )
-        prob["referenceBadges"] = ref_badges
+            prob_id = f"Q{idx:02d}"
+            prob["id"] = prob_id
+            prob["templateKey"] = tpl["key"]
+            prob["levelLabel"] = LEVEL_LABELS.get(target_level, f"Level {target_level}")
 
-        # Remove internal verification fields
-        prob.pop("verify", None)
+            # Pre-Execution Verification via Node.js + Quality Gates (G1, G2, G4)
+            verify_problem(prob, id_map=id_map, rules=active_rules)
 
-        # Per-problem attempt state
-        prob["state"] = {
-            "userInput": "",
-            "score": None,
-            "divergedStep": None,
-            "mistakes": [],
-            "lastCheck": None,
-        }
-        problems.append(prob)
+            # Resolve Notion reference badges
+            ref_badges = []
+            for ref_code in prob.get("references", []):
+                entry = id_map.get(ref_code, {})
+                ref_title = entry.get("title", ref_code) if isinstance(entry, dict) else ref_code
+                ref_badges.append(
+                    {
+                        "code": ref_code,
+                        "title": ref_title,
+                        "notionUrl": notion_url_for(ref_code, id_map),
+                    }
+                )
+            prob["referenceBadges"] = ref_badges
+
+            # Remove internal verification fields while keeping form, fingerprint, qualityGates, trapValue, flaw, trapCode
+            v_dict = prob.pop("verify", None) or {}
+            if "trapValue" in v_dict and "trapValue" not in prob:
+                prob["trapValue"] = v_dict["trapValue"]
+            if "flaw" in v_dict and "flaw" not in prob:
+                prob["flaw"] = v_dict["flaw"]
+            if "trapCode" in v_dict and "trapCode" not in prob:
+                prob["trapCode"] = v_dict["trapCode"]
+
+            # Per-problem attempt state
+            prob["state"] = {
+                "userInput": "",
+                "score": None,
+                "divergedStep": None,
+                "mistakes": [],
+                "lastCheck": None,
+            }
+            attempt_problems.append(prob)
+
+        return attempt_problems, available_forms_count
+
+    problems = generate_with_quality_retries(_build_attempt, base_seed=base_seed, rules=active_rules)
 
     parts = unit_code.split("-")
     topic_code = f"{parts[0]}-{parts[1]}" if len(parts) >= 2 else unit_code
@@ -206,9 +334,10 @@ def generate_drill_set(
         "localFilePath": file_path,
     }
 
-    from code_engine.workspace import materialize_drill_workspace
+    if data_root == "drills/data":
+        from code_engine.workspace import materialize_drill_workspace
 
-    materialize_drill_workspace(drill_doc)
+        materialize_drill_workspace(drill_doc)
 
     with open(file_path, "w", encoding="utf-8") as f:
         json.dump(drill_doc, f, ensure_ascii=False, indent=2)
@@ -224,6 +353,7 @@ if __name__ == "__main__":
     parser.add_argument("--difficulty", default="ALL", help="Difficulty: ALL, 1, 2, 3, or 4")
     parser.add_argument("--id", default=None, help="Explicit drill ID (e.g. DRL-PRG-T01-C01-01)")
     parser.add_argument("--seed", type=int, default=None, help="Random seed for deterministic generation")
+    parser.add_argument("--templates", default=None, help="Comma-separated template keys (e.g. scope_hoisting_loop)")
     parser.add_argument("--focus-tag", action="append", default=[], help="Remediation mistake tag to prioritize")
     args = parser.parse_args()
 
@@ -233,5 +363,6 @@ if __name__ == "__main__":
         difficulty=args.difficulty,
         drill_id=args.id,
         seed=args.seed,
+        templates=args.templates,
         focus_tags=args.focus_tag,
     )

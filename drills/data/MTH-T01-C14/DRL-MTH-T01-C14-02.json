@@ -1,0 +1,909 @@
+{
+  "unitCode": "MTH-T01-C14",
+  "unitTitle": "Graphs",
+  "topicTitle": "Graphs",
+  "drillId": "DRL-MTH-T01-C14-02",
+  "sourceAttribution": "OpenStax Prealgebra 2e, CC BY 4.0",
+  "problems": [
+    {
+      "id": "Q01",
+      "verificationLevel": "partial",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c14-plotting-points-quadrants",
+      "context": "gps_waypoint_mapping",
+      "prompt": "A coordinate point $P$ is located at abscissa $6$ and ordinate $8$. Calculate the sum of its coordinate values using $6 + 8$ with coordinate values $6$ and $8$.",
+      "display": "6 + 8 = ?",
+      "plainText": "6 + 8 = s",
+      "answerDisplay": "14",
+      "givens": {
+        "x_val": 6,
+        "y_val": 8
+      },
+      "answerPlain": "14",
+      "answerSpec": {
+        "type": "number",
+        "value": "14",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c14-coordinate-subtraction-trap",
+      "trapDerivation": "8 - 6",
+      "trapValue": "2",
+      "verify": {
+        "source": "14",
+        "trapValue": "2"
+      },
+      "checkpointHint": "Add the horizontal coordinate and vertical coordinate together",
+      "references": [
+        "MTH-T01-C14"
+      ],
+      "steps": [
+        {
+          "latex": "x + y = 6 + 8",
+          "explain": "Substitute coordinate values 6 and 8 into the sum."
+        },
+        {
+          "latex": "6 + 8 = 14",
+          "explain": "Add the two values to obtain 14.",
+          "val": "14"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c14-coordinate-subtraction-trap|direct|# + # = s",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            1,
+            3
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c14-coordinate-subtraction-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      }
+    },
+    {
+      "id": "Q02",
+      "verificationLevel": "partial",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c14-intercepts-linear-equations",
+      "context": "budget_allocation_extremes",
+      "prompt": "Find the horizontal intercept of the linear equation $4x = 24$ by calculating $24 \\div 4$ with total $24$ and coefficient $4$.",
+      "display": "4x = 24 \\implies x = \\frac{24}{4}",
+      "plainText": "24 / 4 = x",
+      "answerDisplay": "6",
+      "givens": {
+        "total": 24,
+        "coeff": 4
+      },
+      "answerPlain": "6",
+      "answerSpec": {
+        "type": "number",
+        "value": "6",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c14-subtract-instead-of-divide-intercept-trap",
+      "trapDerivation": "24 - 4",
+      "trapValue": "20",
+      "verify": {
+        "source": "6",
+        "trapValue": "20"
+      },
+      "checkpointHint": "Divide the constant total by the coefficient of x to determine the horizontal intercept",
+      "references": [
+        "MTH-T01-C14"
+      ],
+      "steps": [
+        {
+          "latex": "\\frac{4x}{4} = \\frac{24}{4}",
+          "explain": "Divide both sides by 4."
+        },
+        {
+          "latex": "x = 6",
+          "explain": "Quotient 24 / 4 = 6 is the horizontal intercept.",
+          "val": "6"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c14-subtract-instead-of-divide-intercept-trap|direct|# / # = x",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            1,
+            3
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c14-subtract-instead-of-divide-intercept-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      }
+    },
+    {
+      "id": "Q03",
+      "verificationLevel": "partial",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c14-horizontal-vertical-lines",
+      "context": "drone_horizontal_corridor",
+      "prompt": "A drone flies along a constant horizontal line with altitude $9$. It travels from horizontal coordinate $4$ to horizontal coordinate $12$. Calculate the horizontal displacement using $12 - 4$ with altitude $9$ and positions $12$ and $4$.",
+      "display": "\\Delta x = 12 - 4",
+      "plainText": "12 - 4 = d",
+      "answerDisplay": "8",
+      "givens": {
+        "alt": 9,
+        "x1": 4,
+        "x2": 12
+      },
+      "answerPlain": "8",
+      "answerSpec": {
+        "type": "number",
+        "value": "8",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c14-add-coordinates-instead-of-subtract-trap",
+      "trapDerivation": "12 + 4",
+      "trapValue": "16",
+      "verify": {
+        "source": "8",
+        "trapValue": "16"
+      },
+      "checkpointHint": "Subtract the initial horizontal position from the final horizontal position",
+      "references": [
+        "MTH-T01-C14"
+      ],
+      "steps": [
+        {
+          "latex": "\\Delta x = x_2 - x_1",
+          "explain": "Set up horizontal distance between coordinates."
+        },
+        {
+          "latex": "x_2 - x_1 = 12 - 4",
+          "explain": "Evaluate intermediate step."
+        },
+        {
+          "latex": "12 - 4 = 8",
+          "explain": "Subtract 4 from 12 to obtain displacement 8 units.",
+          "val": "8"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c14-add-coordinates-instead-of-subtract-trap|direct|# - # = d",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            4
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c14-add-coordinates-instead-of-subtract-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      }
+    },
+    {
+      "id": "Q04",
+      "verificationLevel": "partial",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c14-slope-through-two-points",
+      "context": "roadway_grade_gradient",
+      "prompt": "Find the slope $m$ of the line passing through points $(2, 3)$ and $(6, 11)$. Calculate the vertical change divided by horizontal change using $(11 - 3) \\div (6 - 2)$ with coordinate numbers $2$, $3$, $6$, and $11$.",
+      "display": "m = \\frac{11 - 3}{6 - 2} = \\frac{8}{4}",
+      "plainText": "(11 - 3) / (6 - 2) = m",
+      "answerDisplay": "2",
+      "givens": {
+        "x1": 2,
+        "y1": 3,
+        "x2": 6,
+        "y2": 11
+      },
+      "answerPlain": "2",
+      "answerSpec": {
+        "type": "number",
+        "value": "2",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c14-delta-subtraction-trap",
+      "trapDerivation": "(11 - 3) - (6 - 2)",
+      "trapValue": "4",
+      "verify": {
+        "source": "2",
+        "trapValue": "4"
+      },
+      "checkpointHint": "Divide the change in vertical coordinates by the change in horizontal coordinates",
+      "references": [
+        "MTH-T01-C14"
+      ],
+      "steps": [
+        {
+          "latex": "\\Delta y = 11 - 3",
+          "explain": "Calculate vertical rise 8."
+        },
+        {
+          "latex": "11 - 3 = 8",
+          "explain": "Evaluate intermediate step."
+        },
+        {
+          "latex": "\\Delta x = 6 - 2",
+          "explain": "Calculate horizontal run 4."
+        },
+        {
+          "latex": "6 - 2 = 4",
+          "explain": "Evaluate intermediate step."
+        },
+        {
+          "latex": "m = \\frac{8}{4}",
+          "explain": "Divide 8 by 4 to obtain slope 2."
+        },
+        {
+          "latex": "m = 2",
+          "explain": "Simplify to obtain 2.",
+          "val": "2"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c14-delta-subtraction-trap|direct|(# - #) / (# - #) = m",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            4
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c14-delta-subtraction-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 12
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      }
+    },
+    {
+      "id": "Q05",
+      "verificationLevel": "partial",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c14-slope-intercept-form",
+      "context": "sensor_linear_calibration_curve",
+      "prompt": "A sensor calibration graph follows the linear equation $y = 3x + 14$ with slope $3$ and vertical intercept $14$. Calculate the sum of the slope and intercept using $3 + 14$ with values $3$ and $14$.",
+      "display": "m + b = 3 + 14",
+      "plainText": "3 + 14 = s",
+      "answerDisplay": "17",
+      "givens": {
+        "slope": 3,
+        "intercept": 14
+      },
+      "answerPlain": "17",
+      "answerSpec": {
+        "type": "number",
+        "value": "17",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c14-slope-intercept-difference-trap",
+      "trapDerivation": "14 - 3",
+      "trapValue": "11",
+      "verify": {
+        "source": "17",
+        "trapValue": "11"
+      },
+      "checkpointHint": "Sum the slope coefficient and the constant intercept directly",
+      "references": [
+        "MTH-T01-C14"
+      ],
+      "steps": [
+        {
+          "latex": "m = 3",
+          "explain": "Identify slope 3 and intercept 14 from slope-intercept form. - condition 1"
+        },
+        {
+          "latex": "b = 14",
+          "explain": "Identify slope 3 and intercept 14 from slope-intercept form. - condition 2"
+        },
+        {
+          "latex": "3 + 14 = 17",
+          "explain": "Sum 3 and 14 to get 17.",
+          "val": "17"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c14-slope-intercept-difference-trap|direct|# + # = s",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            4
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c14-slope-intercept-difference-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      }
+    },
+    {
+      "id": "Q06",
+      "verificationLevel": "partial",
+      "level": 3,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c14-parallel-lines-equal-slope",
+      "context": "railway_track_parallelism",
+      "prompt": "Line $L_1$ has equation $y = 5x + 8$ with slope $5$ and intercept $8$. A parallel line $L_2$ has identical slope $5$. What is the common slope value $5$ sharing parameter $8$?",
+      "display": "m_2 = m_1 = 5",
+      "plainText": "m_2 = 5",
+      "answerDisplay": "5",
+      "givens": {
+        "slope": 5,
+        "ref_k": 8
+      },
+      "answerPlain": "5",
+      "answerSpec": {
+        "type": "number",
+        "value": "5",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c14-parallel-slope-intercept-difference-trap",
+      "trapDerivation": "8 - 5",
+      "trapValue": "3",
+      "verify": {
+        "source": "5",
+        "trapValue": "3"
+      },
+      "checkpointHint": "Recall that parallel lines in a coordinate plane possess identical slope values",
+      "references": [
+        "MTH-T01-C14"
+      ],
+      "steps": [
+        {
+          "latex": "m_1 = 5",
+          "explain": "Extract slope of line L1."
+        },
+        {
+          "latex": "m_2 = m_1",
+          "explain": "Parallel lines have equal slope; therefore m2 = 5."
+        },
+        {
+          "latex": "m_2 = 5",
+          "explain": "Simplify to obtain 5.",
+          "val": "5"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c14-parallel-slope-intercept-difference-trap|direct|m_# = #",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            5
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c14-parallel-slope-intercept-difference-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      }
+    },
+    {
+      "id": "Q07",
+      "verificationLevel": "partial",
+      "level": 3,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c14-midpoint-coordinate-formula",
+      "context": "telecom_relay_placement",
+      "prompt": "Calculate the horizontal midpoint coordinate between endpoints with $x$-coordinates $4$ and $16$ by evaluating $(4 + 16) \\div 2$ with coordinates $4$ and $16$, and divisor $2$.",
+      "display": "x_M = \\frac{4 + 16}{2}",
+      "plainText": "(4 + 16) / 2 = m",
+      "answerDisplay": "10",
+      "givens": {
+        "x1": 4,
+        "x2": 16,
+        "divisor": 2
+      },
+      "answerPlain": "10",
+      "answerSpec": {
+        "type": "number",
+        "value": "10",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c14-midpoint-subtraction-trap",
+      "trapDerivation": "(16 - 4) / 2",
+      "trapValue": "6",
+      "verify": {
+        "source": "10",
+        "trapValue": "6"
+      },
+      "checkpointHint": "Add the two coordinates together and divide their sum by two",
+      "references": [
+        "MTH-T01-C14"
+      ],
+      "steps": [
+        {
+          "latex": "4 + 16 = 20",
+          "explain": "Sum the two endpoint coordinates."
+        },
+        {
+          "latex": "\\frac{20}{2} = 10",
+          "explain": "Divide 20 by 2 to find midpoint coordinate 10.",
+          "val": "10"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c14-midpoint-subtraction-trap|direct|(# + #) / # = m",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            5
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c14-midpoint-subtraction-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      }
+    },
+    {
+      "id": "Q08",
+      "verificationLevel": "partial",
+      "level": 3,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c14-perpendicular-lines-negative-reciprocal",
+      "context": "orthogonal_drainage_gradient",
+      "prompt": "A drainage grid line with total length $20$ meters is divided into intervals using scale factor $4$. Calculate the spacing interval by evaluating $20 \\div 4$ with total length $20$ and scale factor $4$.",
+      "display": "\\frac{20}{4} = ?",
+      "plainText": "20 / 4 = d",
+      "answerDisplay": "5",
+      "givens": {
+        "total_len": 20,
+        "scale_factor": 4
+      },
+      "answerPlain": "5",
+      "answerSpec": {
+        "type": "number",
+        "value": "5",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c14-scale-subtraction-trap",
+      "trapDerivation": "20 - 4",
+      "trapValue": "16",
+      "verify": {
+        "source": "5",
+        "trapValue": "16"
+      },
+      "checkpointHint": "Divide the total grid length parameter by the orthogonal slope scaling factor",
+      "references": [
+        "MTH-T01-C14"
+      ],
+      "steps": [
+        {
+          "latex": "\\frac{20}{4} = 5",
+          "explain": "Divide total length 20 by scale factor 4."
+        },
+        {
+          "latex": "5",
+          "explain": "The interval spacing is 5 meters.",
+          "val": "5"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c14-scale-subtraction-trap|direct|# / # = d",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            5
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c14-scale-subtraction-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      }
+    },
+    {
+      "id": "Q09",
+      "verificationLevel": "partial",
+      "level": 4,
+      "category": "Applied Problem",
+      "archetype": "problem-solving",
+      "archetypeKey": "c14-linear-cost-graph-modeling",
+      "context": "commercial_fleet_mileage_cost",
+      "prompt": "A delivery vehicle fleet models monthly maintenance cost via the linear graph $C = 3x + 450$, where $x$ is activity units, marginal rate is $3$ dollars per unit, and base fixed overhead is $450$ dollars. If a vehicle runs $50$ units in a month, calculate the total cost $C$ in dollars using $3 \\times 50 + 450$ with marginal rate $3$, activity $50$, and fixed cost $450$.",
+      "display": "C = 3(50) + 450",
+      "plainText": "3 * 50 + 450 = c",
+      "answerDisplay": "600",
+      "givens": {
+        "rate": 3,
+        "activity": 50,
+        "fixed": 450
+      },
+      "answerPlain": "600",
+      "answerSpec": {
+        "type": "number",
+        "value": "600",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c14-omit-fixed-overhead-cost-trap",
+      "trapDerivation": "3 * 50",
+      "trapValue": "150",
+      "verify": {
+        "source": "600",
+        "trapValue": "150"
+      },
+      "checkpointHint": "Multiply the marginal rate by activity units then add the base fixed overhead cost",
+      "references": [
+        "MTH-T01-C14",
+        "OpenStax Prealgebra 2e §11.4"
+      ],
+      "competencies": [
+        "linear-cost-function-modeling",
+        "slope-intercept-graph-interpretation"
+      ],
+      "constraints": [
+        "non-negative operational mileage",
+        "strictly positive fixed overhead"
+      ],
+      "steps": [
+        {
+          "latex": "3 \\times 50 = 150",
+          "explain": "Calculate variable activity cost."
+        },
+        {
+          "latex": "150 + 450 = 600",
+          "explain": "Add fixed overhead 450 to get total cost 600 dollars.",
+          "val": "600"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c14-omit-fixed-overhead-cost-trap|direct|# * # + # = c",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c14-omit-fixed-overhead-cost-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      }
+    },
+    {
+      "id": "Q10",
+      "verificationLevel": "partial",
+      "level": 4,
+      "category": "Applied Problem",
+      "archetype": "problem-solving",
+      "archetypeKey": "c14-coordinate-distance-area-synthesis",
+      "context": "solar_farm_boundary_acreage",
+      "prompt": "A rectangular solar array layout has vertices on Cartesian coordinates with horizontal boundary from $x = 5$ to $x = 25$ and vertical boundary from $y = 10$ to $y = 30$. Calculate the total enclosed area in square coordinate units using $(25 - 5) \\times (30 - 10)$ with boundary coordinates $5$, $25$, $10$, and $30$.",
+      "display": "A = (25 - 5)(30 - 10) = 20 \\times 20",
+      "plainText": "(25 - 5) * (30 - 10) = a",
+      "answerDisplay": "400",
+      "givens": {
+        "x1": 5,
+        "x2": 25,
+        "y1": 10,
+        "y2": 30
+      },
+      "answerPlain": "400",
+      "answerSpec": {
+        "type": "number",
+        "value": "400",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c14-semi-perimeter-instead-of-area-trap",
+      "trapDerivation": "(25 - 5) + (30 - 10)",
+      "trapValue": "40",
+      "verify": {
+        "source": "400",
+        "trapValue": "40"
+      },
+      "checkpointHint": "Find the horizontal width and vertical height by subtracting boundary coordinates and multiply the two dimensions",
+      "references": [
+        "MTH-T01-C14",
+        "OpenStax Prealgebra 2e §11.5"
+      ],
+      "competencies": [
+        "coordinate-geometry-area-synthesis",
+        "cartesian-dimension-partition"
+      ],
+      "constraints": [
+        "strictly positive rectangular boundary",
+        "axis-aligned coordinate vertices"
+      ],
+      "steps": [
+        {
+          "latex": "\\Delta x = 25 - 5",
+          "explain": "Calculate horizontal width."
+        },
+        {
+          "latex": "25 - 5 = 20",
+          "explain": "Evaluate intermediate step."
+        },
+        {
+          "latex": "\\Delta y = 30 - 10",
+          "explain": "Calculate vertical height."
+        },
+        {
+          "latex": "30 - 10 = 20",
+          "explain": "Evaluate intermediate step."
+        },
+        {
+          "latex": "A = 20 \\times 20",
+          "explain": "Multiply width by height to obtain area 400 square units."
+        },
+        {
+          "latex": "A = 400",
+          "explain": "Simplify to obtain 400.",
+          "val": "400"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c14-semi-perimeter-instead-of-area-trap|direct|(# - #) * (# - #) = a",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c14-semi-perimeter-instead-of-area-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 12
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      }
+    }
+  ],
+  "title": "Graphs — Verified Math Drill (10 Qs)",
+  "schemaVersion": "2.0-math",
+  "subject": "MATH",
+  "createdAt": "2026-11-09 20:43:29",
+  "config": {
+    "questionCount": 10,
+    "difficulty": "ALL",
+    "difficultyMode": "AI Synthesized Reasoning Mode"
+  },
+  "sessionSummary": {
+    "practiceStatus": "Ready",
+    "score": 0,
+    "maxScore": 10,
+    "accuracyPct": 0,
+    "mistakeCategories": [],
+    "divergedStepsSummary": "",
+    "attemptDate": null,
+    "syncedToNotionAt": null,
+    "notionPageId": null
+  },
+  "localFilePath": "drills/data/MTH-T01-C14/DRL-MTH-T01-C14-02.json"
+}

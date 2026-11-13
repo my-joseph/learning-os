@@ -1,0 +1,508 @@
+{
+  "unitCode": "MTH-T01-C12",
+  "topicTitle": "Math Models and Geometry",
+  "description": "Comprehensive reasoning vault for geometry formulas, perimeter, area of polygons and circles, volume of solids, angle relationships, and composite geometric modeling.",
+  "archetypes": [
+    {
+      "archetypeKey": "c12-perimeter-rectangles-polygons",
+      "level": 1,
+      "name": "Perimeter of Rectangles and Regular Polygons",
+      "coreConcept": "Perimeter is the total linear distance around the exterior boundary: P = 2L + 2W.",
+      "mentalModel": "Walking along the fence line of a rectangular enclosure.",
+      "governingRelation": "P = 2L + 2W",
+      "cognitiveTraps": [
+        "c12-perimeter-area-formula-confusion-trap",
+        "c12-single-side-addition-trap"
+      ],
+      "versatileDomains": [
+        "garden_fencing",
+        "picture_framing",
+        "circuit_board_perimeter"
+      ],
+      "usedContexts": [
+        "garden_fencing_perimeter",
+        "solar_farm_inverter_substation_lot"
+      ]
+    },
+    {
+      "archetypeKey": "c12-area-rectangles-triangles",
+      "level": 1,
+      "name": "Area of Rectangles and Right Triangles",
+      "coreConcept": "Area measures two-dimensional surface coverage: rectangle area A = L * W, triangle area A = (1/2) * b * h.",
+      "mentalModel": "Tiling a plane with unit square squares versus bisecting a rectangle.",
+      "governingRelation": "A_{\\text{rect}} = L \\cdot W \\land A_{\\text{tri}} = \\frac{1}{2} b h",
+      "cognitiveTraps": [
+        "c12-triangle-forgot-half-factor-trap",
+        "c12-perimeter-instead-of-area-trap"
+      ],
+      "versatileDomains": [
+        "sail_canvas_cutting",
+        "roof_truss_sheathing",
+        "solar_panel_footprint"
+      ],
+      "usedContexts": [
+        "sailboat_mainsail_canvas",
+        "warehouse_floor_epoxy_coating",
+        "gable_roof_end_panel",
+        "regatta_pennant_cutting"
+      ],
+      "figureBuilders": [
+        {
+          "fn": "build_rectangle_figure",
+          "args": {
+            "width": "length",
+            "height": "width"
+          },
+          "title": "Rectangle"
+        },
+        {
+          "fn": "build_right_triangle_figure",
+          "args": {
+            "base": "base",
+            "height": "height"
+          },
+          "title": "Triangle"
+        }
+      ]
+    },
+    {
+      "archetypeKey": "c12-circle-circumference-diameter",
+      "level": 2,
+      "name": "Circumference of Circles and Ratio Invariance",
+      "coreConcept": "The circumference of a circle is proportional to its diameter by constant pi: C = 2*pi*r.",
+      "mentalModel": "Unrolling the outer rim of a circular wheel along a flat path.",
+      "governingRelation": "C = 2\\pi r = \\pi d",
+      "cognitiveTraps": [
+        "c12-diameter-radius-confusion-trap",
+        "c12-circumference-area-formula-swap-trap"
+      ],
+      "versatileDomains": [
+        "circular_plaza_boundary",
+        "bicycle_wheel_rotation",
+        "pipeline_casing"
+      ],
+      "usedContexts": [
+        "circular_plaza_perimeter"
+      ],
+      "figureBuilders": [
+        {
+          "fn": "build_circle_figure",
+          "args": {
+            "radius": "radius"
+          },
+          "title": "Circle"
+        }
+      ]
+    },
+    {
+      "archetypeKey": "c12-circle-area",
+      "level": 2,
+      "name": "Area of Circles via Radius Squaring",
+      "coreConcept": "The area enclosed by a circle is pi times the square of the radius: A = pi * r^2.",
+      "mentalModel": "Slicing a circle into wedge sectors rearranged into a pseudo-rectangle of width r and length pi*r.",
+      "governingRelation": "A = \\pi r^2",
+      "cognitiveTraps": [
+        "c12-double-instead-of-square-radius-trap",
+        "c12-square-diameter-instead-of-radius-trap"
+      ],
+      "versatileDomains": [
+        "lawn_sprinkler_coverage",
+        "satellite_dish_aperture",
+        "manhole_cover_casting"
+      ],
+      "usedContexts": [
+        "lawn_sprinkler_coverage",
+        "ornamental_fountain_basin_surface",
+        "circular_skylight_glass"
+      ],
+      "figureBuilders": [
+        {
+          "fn": "build_circle_figure",
+          "args": {
+            "radius": "diameter/2"
+          },
+          "labels": {
+            "label_radius": "d = {diameter:g}"
+          },
+          "title": "Circle"
+        },
+        {
+          "fn": "build_circle_figure",
+          "args": {
+            "radius": "radius"
+          },
+          "title": "Circle"
+        }
+      ]
+    },
+    {
+      "archetypeKey": "c12-volume-rectangular-solid",
+      "level": 2,
+      "name": "Volume of Rectangular Solids and Prisms",
+      "coreConcept": "Volume measures three-dimensional space capacity: V = L * W * H.",
+      "mentalModel": "Stacking unit cubic blocks into a three-dimensional rectangular grid.",
+      "governingRelation": "V = L \\cdot W \\cdot H",
+      "cognitiveTraps": [
+        "c12-sum-dimensions-instead-of-product-trap",
+        "c12-surface-area-instead-of-volume-trap"
+      ],
+      "versatileDomains": [
+        "shipping_container_cargo",
+        "water_storage_reservoir",
+        "server_rack_space"
+      ],
+      "usedContexts": [
+        "cargo_container_capacity",
+        "shipping_crate_capacity",
+        "aquarium_tank_water_volume"
+      ],
+      "figureBuilders": [
+        {
+          "fn": "build_box3d_figure",
+          "args": {
+            "width": "width",
+            "length": "length",
+            "height": "height"
+          },
+          "title": "Rectangular Solid"
+        },
+        {
+          "fn": "build_box3d_figure",
+          "args": {
+            "width": "width",
+            "length": "length",
+            "height": "depth"
+          },
+          "title": "Rectangular Solid"
+        },
+        {
+          "fn": "build_box3d_figure",
+          "args": {
+            "width": "wid",
+            "length": "len",
+            "height": "ht"
+          },
+          "title": "Rectangular Solid"
+        }
+      ]
+    },
+    {
+      "archetypeKey": "c12-volume-cylinder",
+      "level": 3,
+      "name": "Volume of Right Circular Cylinders",
+      "coreConcept": "Volume of a cylinder is base area multiplied by height: V = pi * r^2 * h.",
+      "mentalModel": "Extruding a circular base through vertical height h.",
+      "governingRelation": "V = \\pi r^2 h",
+      "cognitiveTraps": [
+        "c12-cylinder-linear-radius-trap",
+        "c12-cylinder-surface-area-confusion-trap"
+      ],
+      "versatileDomains": [
+        "cylindrical_water_storage",
+        "hydraulic_ram_fluid",
+        "grain_silo_capacity"
+      ],
+      "usedContexts": [
+        "cylindrical_water_reservoir",
+        "hydraulic_accumulator_piston_bore",
+        "grain_bin_cylindrical_capacity"
+      ],
+      "figureBuilders": [
+        {
+          "fn": "build_cylinder_figure",
+          "args": {
+            "radius": "radius",
+            "height": "height"
+          },
+          "title": "Cylinder"
+        },
+        {
+          "fn": "build_cylinder_figure",
+          "args": {
+            "radius": "radius",
+            "height": "ht"
+          },
+          "title": "Cylinder"
+        }
+      ]
+    },
+    {
+      "archetypeKey": "c12-complementary-supplementary-angles",
+      "level": 3,
+      "name": "Complementary and Supplementary Angle Relationships",
+      "coreConcept": "Solve for unknown angles in complementary (90 degrees) or supplementary (180 degrees) pairs via algebraic equations or multi-step geometric constraints.",
+      "mentalModel": "Decomposing an angle pair into algebraic expressions summing to a right or straight angle.",
+      "governingRelation": "(m\\theta + k) + \\theta = 90^\\circ \\lor (m\\theta + k) + \\theta = 180^\\circ",
+      "cognitiveTraps": [
+        "c12-complementary-supplementary-confusion-trap",
+        "c12-subtraction-sign-inversion-trap"
+      ],
+      "versatileDomains": [
+        "roof_pitch_angle",
+        "optical_reflection_path",
+        "surveying_azimuth"
+      ],
+      "usedContexts": [
+        "roof_rafter_joint_angles",
+        "solar_tracker_panel_zenith_tilt"
+      ],
+      "figureBuilders": [
+        {
+          "fn": "build_angle_pair_figure",
+          "args": {
+            "total": "total",
+            "known": "angle"
+          },
+          "labels": {
+            "label_known": "{angle:g}^\\circ"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "c12-triangle-angle-sum-invariance",
+      "level": 3,
+      "name": "Triangle Interior Angle Sum Invariance",
+      "coreConcept": "The sum of the interior angle measures of any Euclidean triangle is identically 180 degrees.",
+      "mentalModel": "Bringing all three triangle vertices together along a straight line.",
+      "governingRelation": "A + B + C = 180^\\circ",
+      "cognitiveTraps": [
+        "c12-triangle-sum-360-confusion-trap",
+        "c12-third-angle-omission-trap"
+      ],
+      "versatileDomains": [
+        "triangulation_surveying",
+        "bridge_truss_stability",
+        "geodetic_positioning"
+      ],
+      "usedContexts": [
+        "bridge_truss_triangulation",
+        "telescope_truss_cantilever_bracket"
+      ],
+      "figureBuilders": [
+        {
+          "fn": "build_triangle_angles_figure",
+          "args": {
+            "angle_a": "a1",
+            "angle_b": "a2"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "c12-composite-geometric-area-modeling",
+      "level": 4,
+      "name": "Composite Geometric Area Partition and Synthesis",
+      "coreConcept": "Decompose complex geometric shapes into elementary non-overlapping regions and sum their areas.",
+      "mentalModel": "Modular sub-assembly of architectural blueprints.",
+      "governingRelation": "A_{\\text{total}} = L \\cdot W + \\frac{1}{2} b h",
+      "cognitiveTraps": [
+        "c12-omitted-subregion-area-trap",
+        "c12-shared-boundary-double-count-trap"
+      ],
+      "versatileDomains": [
+        "building_gable_facade",
+        "athletic_field_marking",
+        "sheet_metal_blanking"
+      ],
+      "usedContexts": [
+        "building_gable_facade_area",
+        "community_swimming_pool_deck_layout",
+        "intermodal_freight_cargo_diagonal"
+      ],
+      "figureBuilders": [
+        {
+          "fn": "build_gable_facade_figure",
+          "args": {
+            "width": "base",
+            "rect_height": "rect_ht",
+            "tri_height": "tri_ht"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "c12-applied-cylindrical-surface-coating-synthesis",
+      "level": 4,
+      "name": "Cylindrical Lateral Surface Area Modeling",
+      "coreConcept": "The lateral surface area of a cylinder unrolls into a rectangle of length 2*pi*r and height h: A_lat = 2*pi*r*h.",
+      "mentalModel": "Unrolling a cylindrical soup can label onto a flat table.",
+      "governingRelation": "A_{\\text{lat}} = 2\\pi r h",
+      "cognitiveTraps": [
+        "c12-omitted-circumference-factor-trap",
+        "c12-area-square-radius-confusion-trap"
+      ],
+      "versatileDomains": [
+        "water_tower_protective_coating",
+        "chemical_pipeline_insulation",
+        "aerospace_fuselage_shielding"
+      ],
+      "usedContexts": [
+        "water_tower_protective_coating",
+        "subsea_pipeline_protective_coating",
+        "deep_sea_titanium_submersible_hull"
+      ],
+      "figureBuilders": [
+        {
+          "fn": "build_cylinder_figure",
+          "args": {
+            "radius": "radius",
+            "height": "ht"
+          },
+          "title": "Cylinder"
+        }
+      ]
+    },
+    {
+      "archetypeKey": "c12-trapezoid-area-modeling",
+      "level": 3,
+      "name": "Area of Trapezoidal Cross-Sections",
+      "coreConcept": "The area of a trapezoid is the average of parallel bases multiplied by perpendicular height: A = (1/2)*(b1 + b2)*h.",
+      "mentalModel": "Averaging two parallel boundaries into an equivalent rectangular strip.",
+      "governingRelation": "A = \\frac{b_1 + b_2}{2} h",
+      "cognitiveTraps": [
+        "c12-omit-half-factor-trapezoid-trap",
+        "c12-multiply-bases-instead-of-sum-trap"
+      ],
+      "versatileDomains": [
+        "canal_cross_section",
+        "highway_embankment",
+        "roof_mansard_surface"
+      ],
+      "usedContexts": [
+        "highway_embankment_cross_section",
+        "highway_embankment_retention_basin",
+        "canal_lining_cross_section"
+      ],
+      "figureBuilders": [
+        {
+          "fn": "build_trapezoid_figure",
+          "args": {
+            "top_base": "base_2",
+            "bottom_base": "base_1",
+            "sloped_side": "height*1.25"
+          },
+          "labels": {
+            "label_top": "{base_2:g}",
+            "label_bottom": "{base_1:g}",
+            "label_height": "h = {height:g}"
+          },
+          "title": "Trapezoid"
+        }
+      ]
+    },
+    {
+      "archetypeKey": "c12-cone-volume-modeling",
+      "level": 3,
+      "name": "Volume of Right Circular Cones",
+      "coreConcept": "The volume of a cone is exactly one-third the volume of a cylinder with identical base and height: V = (1/3)*pi*r^2*h.",
+      "mentalModel": "Pyramidal convergence of circular slices toward an apex.",
+      "governingRelation": "V = \\frac{1}{3} \\pi r^2 h",
+      "cognitiveTraps": [
+        "c12-cylinder-cone-factor-omission-trap",
+        "c12-cone-linear-radius-trap"
+      ],
+      "versatileDomains": [
+        "grain_funnel_hopper",
+        "volcanic_cinder_cone",
+        "radar_horn_antenna"
+      ],
+      "usedContexts": [
+        "conical_grain_funnel_hopper",
+        "volcano_ash_cone_model"
+      ],
+      "figureBuilders": [
+        {
+          "fn": "build_cone_figure",
+          "args": {
+            "radius": "radius",
+            "height": "height"
+          },
+          "title": "Cone"
+        }
+      ]
+    },
+    {
+      "archetypeKey": "c12-transversal-parallel-angles",
+      "level": 3,
+      "name": "Transversal Angle Pairs on Parallel Lines",
+      "coreConcept": "Consecutive interior angles formed by a transversal intersecting parallel lines sum to 180 degrees; setup and solve linear algebraic equations to determine angle measures.",
+      "mentalModel": "Sliding an intersection template along parallel rails and setting up algebraic sums.",
+      "governingRelation": "(ax + b) + (cx + d) = 180^\\circ",
+      "cognitiveTraps": [
+        "c12-consecutive-interior-equal-assumption-trap",
+        "c12-complementary-transversal-trap"
+      ],
+      "versatileDomains": [
+        "railway_switch_alignment",
+        "architectural_rafter_chevron",
+        "optical_prism_deviation"
+      ],
+      "usedContexts": [
+        "railroad_switch_transversal_alignment",
+        "high_speed_rail_cant_deflection"
+      ]
+    },
+    {
+      "archetypeKey": "c12-pythagorean-geometric-distance-synthesis",
+      "level": 4,
+      "name": "Pythagorean Theorem for Spatial Incline and Diagonal Synthesis",
+      "coreConcept": "Compute inclined spatial distance and hypotenuse lengths across orthogonal geometric structures: d = sqrt(run^2 + rise^2).",
+      "mentalModel": "Direct Euclidean diagonal spanning perpendicular coordinates.",
+      "governingRelation": "d = \\sqrt{a^2 + b^2}",
+      "cognitiveTraps": [
+        "c12-linear-distance-sum-trap",
+        "c12-hypotenuse-square-omission-trap"
+      ],
+      "versatileDomains": [
+        "warehouse_mezzanine_ramp",
+        "cable_stayed_suspension",
+        "aircraft_glide_slope"
+      ],
+      "usedContexts": [
+        "warehouse_mezzanine_access_ramp",
+        "coastal_breakwater_riprap_triangulation"
+      ]
+    },
+    {
+      "archetypeKey": "c12-annulus-shaded-region-synthesis",
+      "level": 4,
+      "name": "Concentric Annular Region Area Modeling",
+      "coreConcept": "Calculate the surface area of a circular ring by subtracting inner concentric circle area from outer circle area: A = pi*(R^2 - r^2).",
+      "mentalModel": "Punching out a smaller circular core from a larger circular disk.",
+      "governingRelation": "A = \\pi (R^2 - r^2)",
+      "cognitiveTraps": [
+        "c12-square-of-difference-annulus-trap",
+        "c12-linear-radius-difference-trap"
+      ],
+      "versatileDomains": [
+        "turbofan_nacelle_duct",
+        "hydraulic_gasket_ring",
+        "circular_race_track_pavement"
+      ],
+      "usedContexts": [
+        "aircraft_turbofan_casing_annulus"
+      ]
+    },
+    {
+      "archetypeKey": "c12-composite-silo-volume-synthesis",
+      "level": 4,
+      "name": "Composite Multi-Solid Storage Volume Synthesis",
+      "coreConcept": "Synthesize total 3D storage volume by summing distinct geometric solid sections with shared boundary dimensions: V = V_cyl + V_cone.",
+      "mentalModel": "Modular vertical stacking of standard Euclidean solid bodies.",
+      "governingRelation": "V_{\\text{total}} = \\pi r^2 h_1 + \\frac{1}{3}\\pi r^2 h_2",
+      "cognitiveTraps": [
+        "c12-cone-cap-volume-omission-trap",
+        "c12-double-count-junction-area-trap"
+      ],
+      "versatileDomains": [
+        "agricultural_feed_silo",
+        "rocket_propellant_tank",
+        "water_treatment_clarifier"
+      ],
+      "usedContexts": [
+        "agricultural_feed_silo_geometry"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,282 @@
+{
+  "unitCode": "PRG-T00-C02",
+  "unitTitle": "JavaScript & TypeScript Baseline",
+  "description": "Empirical reasoning schemas and archetypes for baseline JavaScript runtime mechanics and TypeScript type safety (U01 to U07).",
+  "archetypes": [
+    {
+      "archetypeKey": "prg-c02-primitive-coercion-guard",
+      "level": 1,
+      "archetype": "problem-solving",
+      "name": "Defensive Primitive Sanitization & Coercion Guard",
+      "competencies": [
+        "type-coercion",
+        "primitive-semantics",
+        "defensive-programming"
+      ],
+      "coreConcept": "Distinguishing primitive types from reference values, enforcing strict equality, and handling nullish values (null/undefined) safely without overwriting legitimate falsy values (0, false, empty string).",
+      "mentalModel": [
+        "1. Identify whether incoming properties are primitive values (number, string, boolean) or missing (null, undefined).",
+        "2. Use strict equality (===) and nullish coalescing (??) instead of logical OR (||) to preserve legitimate 0 or false values.",
+        "3. Return sanitized data transfer object conforming to the schema specification."
+      ],
+      "governingInvariant": "sanitizedValue = (inputVal !== null && inputVal !== undefined) ? inputVal : defaultValue",
+      "cognitiveTraps": [
+        {
+          "trapTag": "falsy-numeric-zero-overwrite",
+          "name": "Falsy Zero Value Overwrite",
+          "description": "Using 'val || defaultVal' overwrites valid 0 or empty string with default values.",
+          "reproducer": "Pass { timeoutSec: 0 }; with || default of 30, it incorrectly yields 30 instead of 0."
+        },
+        {
+          "trapTag": "loose-equality-type-coercion",
+          "name": "Loose Equality Implicit Coercion",
+          "description": "Comparing with '==' causes unintended coercion between false, 0, and empty strings.",
+          "reproducer": "Comparing '' == 0 returns true, bypassing empty string validation."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "api_config_sanitizer",
+          "description": "Sanitizing environment variable overrides for microservice configuration."
+        },
+        {
+          "domain": "form_input_normalizer",
+          "description": "Normalizing user settings where 0 or false are valid operational thresholds."
+        }
+      ],
+      "usedContexts": [
+        "api_config_sanitizer"
+      ]
+    },
+    {
+      "archetypeKey": "prg-c02-lexical-closure-factory",
+      "level": 2,
+      "archetype": "problem-solving",
+      "name": "Encapsulated Lexical Scope & Closure State Factory",
+      "competencies": [
+        "closures",
+        "lexical-scope",
+        "encapsulation"
+      ],
+      "coreConcept": "Creating private state enclosed within execution context boundaries, exposing controlled accessors without leaking internal data structures.",
+      "mentalModel": [
+        "1. Initialize private state variables inside the outer factory function frame.",
+        "2. Return an object interface whose methods form closures over the private state.",
+        "3. Ensure external mutation cannot compromise internal state references."
+      ],
+      "governingInvariant": "privateState accessible exclusively through returned accessor functions; outer lexical frame retained in heap",
+      "cognitiveTraps": [
+        {
+          "trapTag": "closure-shared-reference-leak",
+          "name": "Internal Reference Escape",
+          "description": "Returning a direct reference to an internal mutable array or object allows external mutation bypassing encapsulation.",
+          "reproducer": "Call state.getAll(); mutate returned array; internal registry is corrupted without calling add()."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "metrics_counter_registry",
+          "description": "Thread-safe event counter tracking request latency buckets and hit counts."
+        },
+        {
+          "domain": "auth_token_vault",
+          "description": "In-memory token vault holding ephemeral credentials with controlled expiration."
+        }
+      ],
+      "usedContexts": [
+        "metrics_counter_registry"
+      ]
+    },
+    {
+      "archetypeKey": "prg-c02-immutable-array-pipeline",
+      "level": 2,
+      "archetype": "problem-solving",
+      "name": "Immutable Collection Transformation Pipeline",
+      "competencies": [
+        "array-transformations",
+        "immutability",
+        "functional-programming"
+      ],
+      "coreConcept": "Processing and summarizing datasets using pure transformation pipelines (map, filter, reduce) without mutating input collections.",
+      "mentalModel": [
+        "1. Filter input records by required business status or timestamp range.",
+        "2. Map/transform matching records into normalized reporting schemas.",
+        "3. Reduce into structured aggregations (grouping by key, summing totals, computing percentiles)."
+      ],
+      "governingInvariant": "outputCollection = reduce(filter(map(inputCollection))); inputCollection deeply unchanged",
+      "cognitiveTraps": [
+        {
+          "trapTag": "in-place-array-mutation",
+          "name": "In-Place Array Sort Mutation",
+          "description": "Calling Array.prototype.sort() directly on input array mutates the original order unexpectedly.",
+          "reproducer": "Call sortOrders(orders); check original orders array order; order was permanently altered."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "ecommerce_order_revenue_analyzer",
+          "description": "Aggregating daily settlement revenue by category with tax breakdowns."
+        },
+        {
+          "domain": "audit_log_telemetry_aggregator",
+          "description": "Summarizing microservice error counts grouped by HTTP response code."
+        }
+      ],
+      "usedContexts": [
+        "ecommerce_order_revenue_analyzer"
+      ]
+    },
+    {
+      "archetypeKey": "prg-c02-event-delegation-dispatcher",
+      "level": 3,
+      "archetype": "debugging",
+      "name": "DOM Event Delegation & Propagation Controller",
+      "competencies": [
+        "dom-events",
+        "event-delegation",
+        "debugging"
+      ],
+      "coreConcept": "Managing dynamic UI interactions via parent delegation, accounting for event bubbling from nested child elements (e.g. icons, spans inside buttons), and preventing event propagation issues.",
+      "mentalModel": [
+        "1. Attach a single listener to the container element rather than each child row.",
+        "2. On event trigger, traverse upward using event.target.closest(selector) to match the interactive boundary.",
+        "3. Ensure clicks on nested children (icons, bold tags) trigger the correct handler with the parent dataset attributes."
+      ],
+      "governingInvariant": "delegatedTarget = event.target.closest('[data-action]'); handler executed with target dataset attributes",
+      "cognitiveTraps": [
+        {
+          "trapTag": "nested-target-traversal-bug",
+          "name": "Direct Target Assumption on Nested Elements",
+          "description": "Inspecting event.target.dataset directly instead of event.target.closest('[data-action]') fails when clicking inner <span> or <i>.",
+          "reproducer": "Simulate click with event.target = <span> nested inside <button data-action='delete'>; target.dataset is empty."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "virtualized_data_table_actions",
+          "description": "Handling row action buttons (edit, delete, view) in high-throughput virtualized data tables."
+        },
+        {
+          "domain": "dynamic_kanban_board",
+          "description": "Managing interactive task card interactions across dynamic columns."
+        }
+      ],
+      "usedContexts": []
+    },
+    {
+      "archetypeKey": "prg-c02-async-promise-combinator",
+      "level": 3,
+      "archetype": "problem-solving",
+      "name": "Resilient Async Microtask & Promise Combinator",
+      "competencies": [
+        "async-await",
+        "promises",
+        "concurrency"
+      ],
+      "coreConcept": "Orchestrating concurrent asynchronous operations with partial failure tolerance, microtask coordination, and deterministic timeout aborts.",
+      "mentalModel": [
+        "1. Accept an array of asynchronous tasks and execute them concurrently.",
+        "2. Isolate failures so that individual task rejections do not abort surviving tasks.",
+        "3. Return structured settlement results partitioned into fulfilled values and rejected errors."
+      ],
+      "governingInvariant": "results.length === tasks.length; all promises settled before resolving combinator",
+      "cognitiveTraps": [
+        {
+          "trapTag": "unhandled-rejection-fast-fail",
+          "name": "Premature Fast-Fail with Promise.all",
+          "description": "Using Promise.all for independent tasks causes a single transient failure to abort all other valid results.",
+          "reproducer": "3 tasks run; task 2 fails; results of task 1 and 3 are lost."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "microservice_health_aggregator",
+          "description": "Aggregating upstream service dependency health checks with per-service latency."
+        },
+        {
+          "domain": "parallel_asset_preloader",
+          "description": "Preloading critical UI assets in parallel with graceful fallbacks."
+        }
+      ],
+      "usedContexts": [
+        "microservice_health_aggregator"
+      ]
+    },
+    {
+      "archetypeKey": "prg-c02-discriminated-union-narrowing",
+      "level": 4,
+      "archetype": "problem-solving",
+      "name": "Discriminated Union & State Machine Reducer",
+      "competencies": [
+        "typescript",
+        "type-narrowing",
+        "state-machine"
+      ],
+      "coreConcept": "Implementing strict runtime and compile-time state transitions using discriminated union action patterns and type narrowing guards, enforcing exhaustive coverage without unhandled branches.",
+      "mentalModel": [
+        "1. Define distinct states and event actions characterized by a common discriminant property (e.g. 'type' or 'status').",
+        "2. In the transition reducer, narrow action payload types based on the discriminant.",
+        "3. Reject invalid state-to-state transitions with descriptive domain errors, guaranteeing state consistency."
+      ],
+      "governingInvariant": "newState = transition(currentState, action); invalid transitions throw InvalidStateTransitionError",
+      "cognitiveTraps": [
+        {
+          "trapTag": "unhandled-state-transition-fallthrough",
+          "name": "State Mutation on Invalid Transition",
+          "description": "Permitting transition actions from incompatible states (e.g. CANCELLED -> SHIPPED) corrupts domain state integrity.",
+          "reproducer": "Dispatch PAY event on an already REFUNDED order; status changes to COMPLETED."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "payment_checkout_state_machine",
+          "description": "Managing e-commerce payment checkout flow (INITIAL -> AUTHORIZED -> CAPTURED / VOIDED)."
+        },
+        {
+          "domain": "iot_firmware_ota_updater",
+          "description": "Enforcing device firmware update lifecycle (IDLE -> DOWNLOADING -> VERIFYING -> FLASHING)."
+        }
+      ],
+      "usedContexts": [
+        "payment_checkout_state_machine"
+      ]
+    },
+    {
+      "archetypeKey": "prg-c02-reproducible-defect-isolation",
+      "level": 2,
+      "archetype": "debugging",
+      "name": "Diagnostic Debugging & Minimal Reproducer Isolation",
+      "competencies": [
+        "debugging",
+        "test-driven-investigation",
+        "code-comprehension"
+      ],
+      "coreConcept": "Locating and remediating subtle logical bugs and boundary defects in existing code guided by reproducer test suites without causing regressions.",
+      "mentalModel": [
+        "1. Run test suite to observe exact assertion failure and reproducer input.",
+        "2. Trace variable state changes step-by-step through the defective execution path.",
+        "3. Apply targeted remediation preserving external function signature and existing behavior."
+      ],
+      "governingInvariant": "failing reproducer test turns Green; all existing baseline tests remain Green",
+      "cognitiveTraps": [
+        {
+          "trapTag": "superficial-patch-regression",
+          "name": "Special-Case Patching Instead of Root-Cause Fix",
+          "description": "Adding an ad-hoc if statement for the specific test case rather than fixing the underlying logical equation.",
+          "reproducer": "Add 'if (x === 42) return true;' passing test 1 but failing boundary test with x = 43."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "query_string_url_codec",
+          "description": "Fixing URL query string serializer for repeated keys and special character encoding."
+        },
+        {
+          "domain": "nested_property_path_accessor",
+          "description": "Fixing deep object path getter ('a.b.c') when encountering null or intermediate primitives."
+        }
+      ],
+      "usedContexts": []
+    }
+  ]
+}

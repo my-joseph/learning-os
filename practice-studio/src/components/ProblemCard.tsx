@@ -12,19 +12,23 @@ interface ProblemCardProps {
   mistakeTags: MistakeTag[];
   activeStep: number | null;
   onInputChange: (val: string) => void;
-  onCheckAnswer: () => void;
+  onCheckAnswer: () => Promise<void> | void;
   onSkip?: () => void;
   onToggleStepHighlight: (stepIdx: number) => void;
   onMarkDivergedStep: (stepIdx: number) => void;
   onSetScore: (score: number) => void;
   onToggleMistakeTag: (tagId: string) => void;
+  onMistakeNoteChange: (note: string) => void;
   onResetProblem: () => void;
+  onHintRevealed?: () => void;
+  onSetupRevealed?: () => void;
 }
 
 export const ProblemCard: React.FC<ProblemCardProps> = (props) => {
   const isCode =
     props.subject === "PRG" ||
     Boolean(props.problem.codeSnippet) ||
+    Boolean(props.problem.workspaceFile) ||
     props.problem.codeType === "predict-output" ||
     props.problem.codeType === "find-bug";
 

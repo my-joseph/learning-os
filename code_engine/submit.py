@@ -32,7 +32,7 @@ RESET = "\033[0m"
 SSL_CTX = (
     ssl.create_default_context(cafile="/etc/ssl/cert.pem")
     if os.path.exists("/etc/ssl/cert.pem")
-    else ssl._create_unverified_context()
+    else ssl.create_default_context()
 )
 
 

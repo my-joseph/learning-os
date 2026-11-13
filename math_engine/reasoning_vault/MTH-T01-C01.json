@@ -1,0 +1,328 @@
+{
+  "unitCode": "MTH-T01-C01",
+  "topicTitle": "Whole Numbers & Divisibility",
+  "description": "Reasoning Schemas & Problem-Solving Archetypes for Whole Numbers, Arithmetic Operations, Prime Factorization, GCD/LCM, and Divisibility Rules.",
+  "archetypes": [
+    {
+      "archetypeKey": "c01-place-value-partition",
+      "level": 1,
+      "name": "Place Value Expanded Partition (การกระจายค่าประจำหลัก)",
+      "coreConcept": "Decomposing numbers into base-10 positional components where each digit value is weighted by its power of 10.",
+      "mentalModel": [
+        "1. Identify the positional column of each digit.",
+        "2. Multiply digit by positional weight (units, tens, hundreds, thousands).",
+        "3. Sum weighted components to reconstruct the integer."
+      ],
+      "governingRelation": "N = d_n * 10^n + ... + d_1 * 10 + d_0",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c01-place-value-misalignment",
+          "description": "Misinterpreting zero in intermediate position, compressing positional weight.",
+          "trapFormula": "d_thousands * 100 + d_tens * 10"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "bank_ledger_denomination",
+          "description": "Counting currency banknotes by denomination."
+        },
+        {
+          "domain": "warehouse_pallet_inventory",
+          "description": "Counting bulk pallets, boxes, and individual items."
+        }
+      ],
+      "usedContexts": [
+        "bank_vault_cash_audit"
+      ]
+    },
+    {
+      "archetypeKey": "c01-nearest-rounding-boundary",
+      "level": 1,
+      "name": "Positional Rounding & Halfway Boundary (การปัดเศษตามค่าประจำหลัก)",
+      "coreConcept": "Replacing a number with an approximate value to a given place value based on the test digit (>= 5 rounds up, < 5 rounds down).",
+      "mentalModel": [
+        "1. Locate the rounding target place value digit.",
+        "2. Inspect the decisive digit immediately to the right.",
+        "3. If digit >= 5 add 1 to target place and zero out remaining; else preserve target and zero out remaining."
+      ],
+      "governingRelation": "R = round(N, 10^k)",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c01-rounding-down-neglect",
+          "description": "Always rounding down or truncating without inspecting the decisive next digit.",
+          "trapFormula": "truncate(N, 10^k)"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "budget_cost_estimation",
+          "description": "Rounding procurement expenses to nearest thousand."
+        },
+        {
+          "domain": "marathon_distance_marker",
+          "description": "Estimating running trail distances."
+        }
+      ],
+      "usedContexts": [
+        "marathon_registration_audit"
+      ]
+    },
+    {
+      "archetypeKey": "c01-division-quotient-remainder",
+      "level": 2,
+      "name": "Quotient & Remainder Division Partitioning (การหารจำนวนเต็มและเศษ)",
+      "coreConcept": "The division algorithm partitions a dividend into a whole number quotient of equal divisor packets plus an integer remainder strictly less than the divisor.",
+      "mentalModel": [
+        "1. Determine maximum integer quotient q such that q * divisor <= dividend.",
+        "2. Subtract q * divisor from dividend to calculate integer remainder r.",
+        "3. Verify that 0 <= r < divisor."
+      ],
+      "governingRelation": "dividend = divisor * quotient + remainder",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c01-remainder-subtraction-inversion",
+          "description": "Subtracting divisor from dividend once rather than dividing across all packets.",
+          "trapFormula": "dividend - divisor"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "shipping_crate_packaging",
+          "description": "Packing manufactured goods into shipping boxes."
+        },
+        {
+          "domain": "server_cluster_load_sharding",
+          "description": "Distributing client tasks across worker nodes."
+        }
+      ],
+      "usedContexts": [
+        "hardware_tool_packaging"
+      ]
+    },
+    {
+      "archetypeKey": "c01-prime-factor-canonical-tree",
+      "level": 2,
+      "name": "Canonical Prime Factorization (การแยกตัวประกอบเฉพาะ)",
+      "coreConcept": "Every integer greater than 1 has a unique decomposition into a product of prime powers.",
+      "mentalModel": [
+        "1. Test divisibility by ascending primes (2, 3, 5, 7...).",
+        "2. Extract prime factors repeatedly until reaching 1.",
+        "3. Count exponents of distinct prime factors."
+      ],
+      "governingRelation": "N = p_1^{a_1} * p_2^{a_2} * ... * p_k^{a_k}",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c01-composite-factor-premature-stop",
+          "description": "Stopping at a composite factor instead of factoring completely to primes.",
+          "trapFormula": "composite_factor + 1"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "cryptographic_key_subfield",
+          "description": "Factoring composite modulus components."
+        },
+        {
+          "domain": "gear_ratio_teeth_matching",
+          "description": "Matching prime teeth numbers for uniform wear."
+        }
+      ],
+      "usedContexts": [
+        "cryptographic_modulus_audit"
+      ]
+    },
+    {
+      "archetypeKey": "c01-divisibility-conjoint-rules",
+      "level": 2,
+      "name": "Conjoint Composite Divisibility Testing (เกณฑ์การหารลงตัวของจำนวนประกอบ)",
+      "coreConcept": "A number is divisible by a composite modulus m = a * b (where gcd(a, b) = 1) if and only if it is divisible by both a and b.",
+      "mentalModel": [
+        "1. Factor composite divisor into coprime components (e.g. 15 = 3 * 5).",
+        "2. Test divisibility by each coprime factor using terminal digit and digit sum rules.",
+        "3. If all coprime tests pass, the number is divisible by the composite modulus."
+      ],
+      "governingRelation": "m | N <=> (a | N) and (b | N) where gcd(a, b) = 1",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c01-sum-of-digits-rule-overextension",
+          "description": "Incorrectly applying the sum-of-digits rule to divisors other than 3 or 9.",
+          "trapFormula": "sum_digits(N) % m"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "quality_batch_inspection",
+          "description": "Grouping production runs into batches of 6, 12, or 15."
+        },
+        {
+          "domain": "data_packet_checksum_stride",
+          "description": "Verifying memory word alignment."
+        }
+      ],
+      "usedContexts": [
+        "logistics_pallet_divisibility"
+      ]
+    },
+    {
+      "archetypeKey": "c01-gcd-euclidean-reduction",
+      "level": 3,
+      "name": "Greatest Common Divisor via Euclidean Reduction (ห.ร.ม. และขั้นตอนวิธีแบบยุคลิด)",
+      "coreConcept": "The greatest common divisor of two integers is the largest integer dividing both, invariant under Euclidean subtraction: gcd(a, b) = gcd(b, a mod b).",
+      "mentalModel": [
+        "1. Set larger number as dividend and smaller as divisor.",
+        "2. Compute remainder.",
+        "3. Replace dividend with divisor and divisor with remainder until remainder is 0; last non-zero remainder is GCD."
+      ],
+      "governingRelation": "gcd(a, b) = gcd(b, a mod b)",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c01-gcd-difference-underestimate",
+          "description": "Assuming the difference (a - b) is always the GCD without factoring.",
+          "trapFormula": "abs(a - b)"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "tile_flooring_tessellation",
+          "description": "Determining largest square tile side length to cover floor without cuts."
+        },
+        {
+          "domain": "fabric_cutting_strip_width",
+          "description": "Cutting ribbons of equal max length without waste."
+        }
+      ],
+      "usedContexts": [
+        "tile_flooring_tessellation"
+      ]
+    },
+    {
+      "archetypeKey": "c01-lcm-cyclical-coincidence",
+      "level": 3,
+      "name": "Least Common Multiple Periodic Coincidence (ค.ร.น. และจุดบรรจบของรอบเวลา)",
+      "coreConcept": "The least common multiple of two positive integers is the smallest positive integer divisible by both, governing periodic simultaneous occurrences.",
+      "mentalModel": [
+        "1. Find prime factorization of both cycle periods.",
+        "2. Take maximum power for each prime.",
+        "3. Compute product to determine first simultaneous coincidence timestamp."
+      ],
+      "governingRelation": "lcm(a, b) = (a * b) / gcd(a, b)",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c01-lcm-product-overestimate",
+          "description": "Multiplying the two numbers directly without dividing by common factors.",
+          "trapFormula": "a * b"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "transit_bus_schedule_coincidence",
+          "description": "Finding when two bus lines depart terminal together."
+        },
+        {
+          "domain": "astronomy_planetary_alignment",
+          "description": "Calculating orbital conjunction recurrence intervals."
+        }
+      ],
+      "usedContexts": [
+        "transit_bus_schedule_coincidence"
+      ]
+    },
+    {
+      "archetypeKey": "c01-pemdas-hierarchical-evaluation",
+      "level": 3,
+      "name": "Hierarchical Order of Operations (ลำดับการคำนวณขั้นสูง)",
+      "coreConcept": "Mathematical expressions evaluate deterministically according to precedence: Parentheses, Exponents, Multiplication & Division (left to right), Addition & Subtraction (left to right).",
+      "mentalModel": [
+        "1. Simplify expressions inside innermost grouping brackets.",
+        "2. Evaluate exponential powers.",
+        "3. Perform multiplication and division from left to right.",
+        "4. Perform addition and subtraction from left to right."
+      ],
+      "governingRelation": "P -> E -> (M / D) -> (A / S)",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c01-pemdas-left-to-right-bias",
+          "description": "Performing addition/subtraction before multiplication/division due to reading left to right.",
+          "trapFormula": "(a - b) * c"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "engineering_stress_formula",
+          "description": "Calculating composite structural loads from grouped component terms."
+        },
+        {
+          "domain": "financial_payroll_withholding",
+          "description": "Computing net pay after tiered bonus multipliers and deductions."
+        }
+      ],
+      "usedContexts": [
+        "engineering_stress_formula"
+      ]
+    },
+    {
+      "archetypeKey": "c01-gcd-lcm-duality-inversion",
+      "level": 4,
+      "name": "GCD-LCM Duality Invariant Inversion (ความสัมพันธ์สมมูล ห.ร.ม. และ ค.ร.น.)",
+      "coreConcept": "The fundamental invariant gcd(a, b) * lcm(a, b) = a * b enables solving for an unknown number given its counterpart and both extrema.",
+      "mentalModel": [
+        "1. State the duality conservation law: gcd(a, b) * lcm(a, b) = a * b.",
+        "2. Substitute known gcd, lcm, and one known term a.",
+        "3. Divide product (gcd * lcm) by a to isolate the unknown counterpart b."
+      ],
+      "governingRelation": "b = (gcd * lcm) / a",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c01-duality-additive-confusion",
+          "description": "Adding gcd and lcm instead of multiplying them before dividing.",
+          "trapFormula": "(gcd + lcm) * a"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "distributed_clock_synchronization",
+          "description": "Computing network synchronization intervals between clock domains."
+        },
+        {
+          "domain": "signal_processing_filter_design",
+          "description": "Harmonizing frequency modulation bandwidths."
+        }
+      ],
+      "usedContexts": [
+        "distributed_clock_synchronization"
+      ]
+    },
+    {
+      "archetypeKey": "c01-constrained-modular-batching",
+      "level": 4,
+      "name": "Constrained Multi-Packet Remainder Optimization (การจัดชุดแบบมีเงื่อนไขเศษตกค้าง)",
+      "coreConcept": "Finding a quantity satisfying simultaneous modular packing constraints across multiple pack sizes with fixed non-zero remainders.",
+      "mentalModel": [
+        "1. Express target quantity as a system of congruences: N = q1 * m1 + r1 = q2 * m2 + r2.",
+        "2. Identify structural offsets or common remainder differences (N + c is divisible by both m1 and m2).",
+        "3. Apply lcm(m1, m2) and subtract offset to find minimal positive solution."
+      ],
+      "governingRelation": "N = lcm(m_1, m_2) - c",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c01-modular-direct-sum-trap",
+          "description": "Multiplying packaging sizes and adding both remainders directly.",
+          "trapFormula": "m1 * m2 + r1 + r2"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "pharmaceutical_capsule_blister_pack",
+          "description": "Optimizing pill packaging into blister cards and bulk cartons."
+        },
+        {
+          "domain": "satellite_telemetry_frame_shaping",
+          "description": "Sizing data buffers across variable-length transmission windows."
+        }
+      ],
+      "usedContexts": [
+        "pharmaceutical_capsule_blister_pack"
+      ]
+    }
+  ]
+}

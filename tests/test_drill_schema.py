@@ -16,5 +16,9 @@ def test_drill_has_core_fields(path):
         assert key in doc, f"{path} missing {key}"
     assert doc["problems"], f"{path} has no problems"
     for p in doc["problems"]:
-        assert "id" in p and "prompt" in p and "answerSpec" in p
+        assert "id" in p and "prompt" in p
+        # Test-graded code problems are checked by visible/hidden tests, not an answerSpec.
+        if p.get("visibleTests") or p.get("hiddenTests"):
+            continue
+        assert "answerSpec" in p, f"{path} {p['id']} has neither answerSpec nor tests"
         assert "type" in p["answerSpec"]

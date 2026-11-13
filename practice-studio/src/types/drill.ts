@@ -1,3 +1,5 @@
+import { MathFigureSpec } from "./figure";
+
 export type VisualElementType =
   | "polygon"
   | "circle"
@@ -6,12 +8,17 @@ export type VisualElementType =
   | "angle-arc"
   | "cylinder"
   | "box-3d"
-  | "cone";
+  | "cone"
+  | "point"
+  | "axis"
+  | "grid"
+  | "text";
 
 export interface VisualElement {
   type: VisualElementType;
   points?: [number, number][];
   center?: [number, number];
+  coord?: [number, number];
   radius?: number;
   radiusX?: number;
   radiusY?: number;
@@ -31,11 +38,15 @@ export interface VisualElement {
   highlight?: boolean;
   startAngle?: number;
   endAngle?: number;
+  x?: number;
+  y?: number;
+  fontSize?: number;
+  color?: string;
 }
 
 /**
  * Universal Interactive Capability Spec
- * รองรับทั้ง Geometry, Vectors, Function Slopes, Kinematics ในอนาคต
+ * Supports Geometry, Vectors, Function Slopes, and Kinematics
  */
 export interface InteractiveSpec {
   mode: "pythagoras-drag" | "cylinder-slider" | "trapezoid-drag" | "circle-radius-drag" | "vector-scrub" | "slope-probe";
@@ -56,7 +67,7 @@ export interface VisualSpec {
   type: "geometry-2d" | "geometry-3d-wireframe" | "coordinate-plane" | "physics-diagram";
   viewBox: { width: number; height: number };
   elements: VisualElement[];
-  interactive?: InteractiveSpec; // เปิดใช้งาน Interactive Playground
+  interactive?: InteractiveSpec; // Interactive Playground Specification
 }
 
 export interface Step {
@@ -67,6 +78,8 @@ export interface Step {
 export interface ChoiceOption {
   id: string;
   label: string;
+  trapTag?: string;
+  tag?: string;
 }
 
 export interface AnswerSpec {
@@ -76,6 +89,7 @@ export interface AnswerSpec {
     | "expression"
     | "solution_set"
     | "tuple"
+    | "vector"
     | "choice"
     | "text"
     | "code_output"
@@ -86,6 +100,9 @@ export interface AnswerSpec {
   forms?: string[];
   variables?: string[];
   values?: string[];
+  components?: (number | string)[];
+  dimension?: number;
+  vectorNotation?: boolean;
   labels?: string[];
   acceptComplex?: boolean;
   options?: ChoiceOption[];
@@ -95,6 +112,8 @@ export interface AnswerSpec {
   correctLine?: number;
   flawExplanation?: string;
   commonTrapTag?: string;
+  trapValue?: string;
+  flawTag?: string;
 }
 
 export interface ReferenceBadge {
@@ -114,10 +133,11 @@ export interface CheckDiagnostic {
 }
 
 export interface CheckResult {
-  verdict: "correct" | "equivalent_not_in_form" | "partial" | "incorrect" | "parse_error" | "skipped";
+  verdict: "correct" | "equivalent_not_in_form" | "partial" | "incorrect" | "parse_error" | "invalid input" | "skipped";
   message: string;
   components: CheckComponent[];
   diagnostics: CheckDiagnostic[];
+  trapMatched?: boolean;
 }
 
 export interface TestCase {
@@ -148,15 +168,31 @@ export interface TestRunReport {
   rawOutput?: string;
 }
 
+export interface AttemptRecord {
+  input: string;
+  ts: string;
+  verdict: string;
+  diagnosticCodes?: string[];
+  matchedTrap?: string;
+  /** Learner opened the equation set-up before submitting this attempt (assisted, not independent). */
+  setupRevealed?: boolean;
+}
+
 export interface ProblemState {
   userInput: string;
   score: number | null;
   divergedStep: number | null;
   mistakes: string[];
+  mistakeNote?: string;
   skipped?: boolean;
   lastCheck?: CheckResult | null;
   lastTestReport?: TestRunReport | null;
   userCode?: string;
+  attempts?: AttemptRecord[];
+  hintsRevealed?: number;
+  /** Set when the learner opens the equation set-up before any answer has been checked. */
+  setupRevealedBeforeAnswer?: boolean;
+  durationMs?: number;
 }
 
 export type EngineeringArchetype =
@@ -212,6 +248,7 @@ export interface Problem {
   vscodeUrl?: string;
   cursorFolderUrl?: string;
   vscodeFolderUrl?: string;
+  figure?: MathFigureSpec;
   visual?: VisualSpec;
   answerSpec: AnswerSpec;
   answerDisplay: string;
@@ -219,6 +256,13 @@ export interface Problem {
   inputHint?: string;
   checkpointHint: string;
   commonTrapTag?: string;
+  trapValue?: string;
+  flawTag?: string;
+  form?: string;
+  skill?: string;
+  verificationLevel?: "machine-verified" | "partial" | "human-reviewed";
+  fingerprint?: string;
+  qualityGates?: Record<string, unknown>;
   steps: Step[];
   references?: string[];
   referenceBadges?: ReferenceBadge[];
@@ -271,10 +315,15 @@ export interface DrillDocument {
 
 export interface DrillListItem {
   drillId: string;
+  subject?: "MATH" | "PRG";
   unitCode: string;
   unitTitle: string;
   createdAt: string;
   questionCount: number;
   difficultyMode: string;
+  practiceStatus?: "Ready" | "In Progress" | "Graded" | "Needs Retry";
+  score?: number;
+  maxScore?: number;
+  answeredCount?: number;
   localFilePath: string;
 }

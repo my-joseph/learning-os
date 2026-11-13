@@ -1,0 +1,927 @@
+{
+  "unitCode": "MTH-T01-C03",
+  "topicTitle": "Integers & Signed Operations",
+  "drillId": "DRL-MTH-T01-C03-02",
+  "sourceAttribution": "OpenStax Prealgebra 2e, CC BY 4.0",
+  "problems": [
+    {
+      "id": "Q01",
+      "verificationLevel": "partial",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c03-signed-temperature-elevation-difference",
+      "context": "deep_sea_bathymetry_trench",
+      "prompt": "A deep-sea bathymetry probe records a surface water temperature of $14$ degrees Celsius and a deep trench temperature of $8$ degrees below zero. Evaluate $14 - (-8)$ to calculate the total temperature difference in degrees Celsius.",
+      "givens": {
+        "surface_temp": 14,
+        "deep_drop": 8
+      },
+      "answerPlain": "22",
+      "answerSpec": {
+        "type": "number",
+        "value": "22",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c03-signed-difference-subtraction-drop",
+      "trapDerivation": "14 - 8",
+      "trapValue": "6",
+      "trapGivens": [
+        14,
+        8
+      ],
+      "verify": {
+        "source": "22",
+        "trapValue": "6"
+      },
+      "checkpointHint": "Add the opposite integer when evaluating the subtraction of a negative value",
+      "references": [
+        "MTH-T01-C03"
+      ],
+      "steps": [
+        {
+          "latex": "14 - (-8) = 14 + 8",
+          "explain": "Rewrite subtraction of a negative number as addition of its positive opposite."
+        },
+        {
+          "latex": "14 + 8 = 22",
+          "explain": "Add 14 and 8 to get 22.",
+          "val": "22"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c03-signed-difference-subtraction-drop|direct|# - (-#) = ?",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            1,
+            3
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c03-signed-difference-subtraction-drop",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "display": "14 - (-8) = ?",
+      "plainText": "14 - (-8) = ?",
+      "answerDisplay": "22"
+    },
+    {
+      "id": "Q02",
+      "verificationLevel": "partial",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c03-bank-overdraft-ledger-balance",
+      "context": "commercial_bank_account_ledger",
+      "prompt": "A corporate ledger begins with an overdrawn balance of $45$ dollars below zero. The treasury deposits $120$ dollars into the account. What is the updated account balance in dollars?",
+      "givens": {
+        "overdrawn": 45,
+        "deposit": 120
+      },
+      "answerPlain": "75",
+      "answerSpec": {
+        "type": "number",
+        "value": "75",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c03-withdrawal-sign-addition-trap",
+      "trapDerivation": "120 + 45",
+      "trapValue": "165",
+      "trapGivens": [
+        120,
+        45
+      ],
+      "verify": {
+        "source": "75",
+        "trapValue": "165"
+      },
+      "checkpointHint": "Combine the deposit with the negative starting balance by taking the difference of their absolute values",
+      "references": [
+        "MTH-T01-C03"
+      ],
+      "steps": [
+        {
+          "latex": "-45 + 120 = 120 - 45",
+          "explain": "Combine the negative starting balance with the positive credit deposit."
+        },
+        {
+          "latex": "120 - 45 = 75",
+          "explain": "Subtract 45 from 120 to find balance 75.",
+          "val": "75"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c03-withdrawal-sign-addition-trap|direct|-# + # = ?",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            1,
+            3
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c03-withdrawal-sign-addition-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "display": "-45 + 120 = ?",
+      "plainText": "-45 + 120 = ?",
+      "answerDisplay": "75"
+    },
+    {
+      "id": "Q03",
+      "verificationLevel": "partial",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c03-signed-addition-opposite-signs",
+      "context": "warehouse_stock_inventory_adjustment",
+      "prompt": "Evaluate the signed arithmetic sum: $-38 + 15$.",
+      "givens": {
+        "first_term": 38,
+        "second_term": 15
+      },
+      "answerPlain": "-23",
+      "answerSpec": {
+        "type": "number",
+        "value": "-23",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c03-opposite-signs-sum-trap",
+      "trapDerivation": "-38 - 15",
+      "trapValue": "-53",
+      "trapGivens": [
+        38,
+        15
+      ],
+      "verify": {
+        "source": "-23",
+        "trapValue": "-53"
+      },
+      "checkpointHint": "Subtract the smaller absolute value from the larger absolute value and apply the sign of the larger magnitude",
+      "references": [
+        "MTH-T01-C03"
+      ],
+      "steps": [
+        {
+          "latex": "|-38| - |15| = 38 - 15",
+          "explain": "Find difference between absolute values."
+        },
+        {
+          "latex": "38 - 15 = 23",
+          "explain": "Evaluate intermediate step."
+        },
+        {
+          "latex": "-(23) = -23",
+          "explain": "Assign negative sign because 38 has larger absolute value than 15.",
+          "val": "-23"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c03-opposite-signs-sum-trap|direct|-# + # = ?",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            4
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c03-opposite-signs-sum-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "display": "-38 + 15 = ?",
+      "plainText": "-38 + 15 = ?",
+      "answerDisplay": "-23"
+    },
+    {
+      "id": "Q04",
+      "verificationLevel": "partial",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c03-signed-subtraction-adding-opposite",
+      "context": "subterranean_mining_elevator_depth",
+      "prompt": "Evaluate the subtraction of signed integers: $-24 - 19$.",
+      "givens": {
+        "first_val": 24,
+        "second_val": 19
+      },
+      "answerPlain": "-43",
+      "answerSpec": {
+        "type": "number",
+        "value": "-43",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c03-double-negative-retention-trap",
+      "trapDerivation": "24 - 19",
+      "trapValue": "5",
+      "trapGivens": [
+        24,
+        19
+      ],
+      "verify": {
+        "source": "-43",
+        "trapValue": "5"
+      },
+      "checkpointHint": "Rewrite subtraction as adding the opposite integer and combine like negative terms",
+      "references": [
+        "MTH-T01-C03"
+      ],
+      "steps": [
+        {
+          "latex": "-24 - 19 = -24 + (-19)",
+          "explain": "Rewrite subtraction as addition of negative 19."
+        },
+        {
+          "latex": "-(24 + 19) = -43",
+          "explain": "Add magnitudes and assign negative sign to get -43.",
+          "val": "-43"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c03-double-negative-retention-trap|direct|-# - # = ?",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            4
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c03-double-negative-retention-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "display": "-24 - 19 = ?",
+      "plainText": "-24 - 19 = ?",
+      "answerDisplay": "-43"
+    },
+    {
+      "id": "Q05",
+      "verificationLevel": "partial",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c03-signed-multiplication-parity",
+      "context": "financial_short_position_valuation",
+      "prompt": "Evaluate the product of the two signed integers: $-7 \\times (-12)$.",
+      "givens": {
+        "factor_a": 7,
+        "factor_b": 12
+      },
+      "answerPlain": "84",
+      "answerSpec": {
+        "type": "number",
+        "value": "84",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c03-multiplication-negative-preservation-trap",
+      "trapDerivation": "-7 * 12",
+      "trapValue": "-84",
+      "trapGivens": [
+        7,
+        12
+      ],
+      "verify": {
+        "source": "84",
+        "trapValue": "-84"
+      },
+      "checkpointHint": "Remember that the product of two numbers sharing identical negative signs yields a positive result",
+      "references": [
+        "MTH-T01-C03"
+      ],
+      "steps": [
+        {
+          "latex": "(-7) \\times (-12) = +(7 \\times 12)",
+          "explain": "Negative times negative yields a positive product."
+        },
+        {
+          "latex": "7 \\times 12 = 84",
+          "explain": "Multiply 7 by 12 to get 84.",
+          "val": "84"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c03-multiplication-negative-preservation-trap|direct|(-#) * (-#) = ?",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            4
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c03-multiplication-negative-preservation-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "display": "(-7) \\times (-12) = ?",
+      "plainText": "(-7) * (-12) = ?",
+      "answerDisplay": "84"
+    },
+    {
+      "id": "Q06",
+      "verificationLevel": "partial",
+      "level": 3,
+      "category": "Trap & Diagnostic",
+      "archetype": "problem-solving",
+      "archetypeKey": "c03-signed-quotient-partition",
+      "context": "corporate_quarterly_debt_amortization",
+      "prompt": "A municipal water reservoir records a total depletion of $180$ million liters over $15$ days of drought. Evaluate $-180 \\div 15$ to find the mean daily change in million liters.",
+      "givens": {
+        "depletion": 180,
+        "days": 15
+      },
+      "answerPlain": "-12",
+      "answerSpec": {
+        "type": "number",
+        "value": "-12",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c03-division-sign-inversion-trap",
+      "trapDerivation": "180 / 15",
+      "trapValue": "12",
+      "trapGivens": [
+        180,
+        15
+      ],
+      "verify": {
+        "source": "-12",
+        "trapValue": "12"
+      },
+      "checkpointHint": "Dividing a negative dividend by a positive divisor yields a strictly negative quotient",
+      "references": [
+        "MTH-T01-C03"
+      ],
+      "steps": [
+        {
+          "latex": "\\frac{-180}{15} = -\\left(\\frac{180}{15}\\right)",
+          "explain": "Determine that the quotient of unlike signs is negative."
+        },
+        {
+          "latex": "-\\left(12\\right) = -12",
+          "explain": "Divide 180 by 15 to obtain -12.",
+          "val": "-12"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c03-division-sign-inversion-trap|direct|-# / # = ?",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            5
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c03-division-sign-inversion-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "display": "\\frac{-180}{15} = ?",
+      "plainText": "-180 / 15 = ?",
+      "answerDisplay": "-12"
+    },
+    {
+      "id": "Q07",
+      "verificationLevel": "partial",
+      "level": 3,
+      "category": "Trap & Diagnostic",
+      "archetype": "problem-solving",
+      "archetypeKey": "c03-signed-pemdas-hierarchical-evaluation",
+      "context": "aerospace_trajectory_acceleration_vector",
+      "prompt": "Evaluate the arithmetic expression with signed terms: $35 - 4 \\times (-8)$.",
+      "givens": {
+        "lead_term": 35,
+        "coeff": 4,
+        "multiplier": 8
+      },
+      "answerPlain": "67",
+      "answerSpec": {
+        "type": "number",
+        "value": "67",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c03-pemdas-signed-left-to-right-bias",
+      "trapDerivation": "(35 - 4) * (-8)",
+      "trapValue": "-248",
+      "trapGivens": [
+        35,
+        4
+      ],
+      "verify": {
+        "source": "67",
+        "trapValue": "-248"
+      },
+      "checkpointHint": "Perform multiplication before subtraction while carefully tracking negative signs",
+      "references": [
+        "MTH-T01-C03"
+      ],
+      "steps": [
+        {
+          "latex": "4 \\times (-8) = -32",
+          "explain": "Multiply 4 by -8 first following precedence rules."
+        },
+        {
+          "latex": "35 - (-32) = 35 + 32",
+          "explain": "Subtract -32 by adding 32 to 35 to obtain 67."
+        },
+        {
+          "latex": "35 + 32 = 67",
+          "explain": "Simplify to obtain 67.",
+          "val": "67"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c03-pemdas-signed-left-to-right-bias|direct|# - # * (-#) = ?",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            5
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c03-pemdas-signed-left-to-right-bias",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "display": "35 - 4 \\times (-8) = ?",
+      "plainText": "35 - 4 * (-8) = ?",
+      "answerDisplay": "67"
+    },
+    {
+      "id": "Q08",
+      "verificationLevel": "partial",
+      "level": 3,
+      "category": "Trap & Diagnostic",
+      "archetype": "problem-solving",
+      "archetypeKey": "c03-signed-expression-evaluation",
+      "context": "structural_truss_stress_analysis",
+      "prompt": "Evaluate the algebraic expression $5 \\times x - 3 \\times y$ when $x$ is $-6$ and $y$ is $-4$.",
+      "givens": {
+        "x_coeff": 5,
+        "y_coeff": 3,
+        "x_val": 6,
+        "y_val": 4
+      },
+      "answerPlain": "-18",
+      "answerSpec": {
+        "type": "number",
+        "value": "-18",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c03-double-negative-coefficient-leak",
+      "trapDerivation": "5 * (-6) - 3 * 4",
+      "trapValue": "-42",
+      "trapGivens": [
+        5,
+        3
+      ],
+      "verify": {
+        "source": "-18",
+        "trapValue": "-42"
+      },
+      "checkpointHint": "Substitute the negative values into each term and simplify products before performing final subtraction",
+      "references": [
+        "MTH-T01-C03"
+      ],
+      "steps": [
+        {
+          "latex": "5(-6) - 3(-4) = -30 - (-12)",
+          "explain": "Substitute x = -6 and y = -4 into terms."
+        },
+        {
+          "latex": "-30 + 12 = -18",
+          "explain": "Add 12 to -30 to get -18.",
+          "val": "-18"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c03-double-negative-coefficient-leak|direct|#*(-#) - #*(-#) = ?",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            5
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c03-double-negative-coefficient-leak",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "display": "5(-6) - 3(-4) = ?",
+      "plainText": "5*(-6) - 3*(-4) = ?",
+      "answerDisplay": "-18"
+    },
+    {
+      "id": "Q09",
+      "verificationLevel": "partial",
+      "level": 4,
+      "category": "Interleaved Synthesis",
+      "archetype": "problem-solving",
+      "archetypeKey": "c03-signed-linear-equation-two-step",
+      "context": "autonomous_deep_submersible_ballast",
+      "prompt": "An autonomous research submarine descends along a linear descent profile governed by the equation $-4 \\times d + 32 = -48$, where $d$ represents time elapsed in minutes. Solve for the time elapsed $d$.",
+      "givens": {
+        "rate": 4,
+        "initial_offset": 32,
+        "target": 48
+      },
+      "answerPlain": "20",
+      "answerSpec": {
+        "type": "number",
+        "value": "20",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c03-subtraction-additive-slip-in-equation",
+      "trapDerivation": "(-48 + 32) / (-4)",
+      "trapValue": "4",
+      "trapGivens": [
+        48,
+        32
+      ],
+      "verify": {
+        "source": "20",
+        "trapValue": "4"
+      },
+      "checkpointHint": "Isolate the variable term by subtracting the constant before dividing by the negative rate coefficient",
+      "references": [
+        "MTH-T01-C03",
+        "OpenStax Prealgebra 2e §3.5"
+      ],
+      "competencies": [
+        "signed-linear-inversion",
+        "negative-division-properties"
+      ],
+      "constraints": [
+        "non-negative duration",
+        "two-step isolation"
+      ],
+      "steps": [
+        {
+          "latex": "-4d + 32 = -48",
+          "explain": "State the two-step linear equation."
+        },
+        {
+          "latex": "-4d = -48 - 32",
+          "explain": "Subtract 32 from both sides."
+        },
+        {
+          "latex": "-48 - 32 = -80",
+          "explain": "Evaluate intermediate step."
+        },
+        {
+          "latex": "d = \\frac{-80}{-4}",
+          "explain": "Divide both sides by -4 to obtain d = 20."
+        },
+        {
+          "latex": "d = 20",
+          "explain": "Simplify to obtain 20.",
+          "val": "20"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c03-subtraction-additive-slip-in-equation|direct|-#*d + # = -#",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c03-subtraction-additive-slip-in-equation",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 12
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "display": "-4d + 32 = -48 \\implies d = ?",
+      "plainText": "-4*d + 32 = -48",
+      "answerDisplay": "20"
+    },
+    {
+      "id": "Q10",
+      "verificationLevel": "partial",
+      "level": 4,
+      "category": "Interleaved Synthesis",
+      "archetype": "problem-solving",
+      "archetypeKey": "c03-conjoint-temperature-depth-synthesis",
+      "context": "geothermal_wellbore_drilling_telemetry",
+      "prompt": "A geothermal probe descends through bedrock starting at an initial temperature of $-15$ degrees Celsius. During the first phase of drilling, friction and geothermal gradient heat the probe at $8$ degrees Celsius per hour for $5$ consecutive hours. Calculate the probe temperature in degrees Celsius at the end of this phase.",
+      "givens": {
+        "initial_temp": 15,
+        "heating_rate": 8,
+        "duration": 5
+      },
+      "answerPlain": "25",
+      "answerSpec": {
+        "type": "number",
+        "value": "25",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c03-accumulated-rate-direction-inversion",
+      "trapDerivation": "-15 - 8 * 5",
+      "trapValue": "-55",
+      "trapGivens": [
+        15,
+        8
+      ],
+      "verify": {
+        "source": "25",
+        "trapValue": "-55"
+      },
+      "checkpointHint": "Multiply the hourly heating rate by duration and add the product to the initial negative temperature",
+      "references": [
+        "MTH-T01-C03",
+        "OpenStax Prealgebra 2e §3.2"
+      ],
+      "competencies": [
+        "multi-phase-signed-modeling",
+        "rate-accumulation"
+      ],
+      "constraints": [
+        "initial sub-zero state",
+        "constant warming rate"
+      ],
+      "steps": [
+        {
+          "latex": "T = -15 + 8 \\times 5",
+          "explain": "Formulate equation for net temperature after 5 hours."
+        },
+        {
+          "latex": "T = -15 + 40",
+          "explain": "Multiply 8 by 5 to get 40, then add to -15 to obtain 25 degrees."
+        },
+        {
+          "latex": "T = 25",
+          "explain": "Simplify to obtain 25.",
+          "val": "25"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c03-accumulated-rate-direction-inversion|direct|-# + # * # = ?",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c03-accumulated-rate-direction-inversion",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "display": "-15 + 8 \\times 5 = ?",
+      "plainText": "-15 + 8 * 5 = ?",
+      "answerDisplay": "25"
+    }
+  ],
+  "schemaVersion": "2.0-math",
+  "subject": "MATH",
+  "createdAt": "2026-11-09 19:38:18",
+  "config": {
+    "questionCount": 10,
+    "difficulty": "ALL",
+    "difficultyMode": "AI Synthesized Reasoning Mode"
+  },
+  "sessionSummary": {
+    "practiceStatus": "Ready",
+    "score": 0,
+    "maxScore": 10,
+    "accuracyPct": 0,
+    "mistakeCategories": [],
+    "divergedStepsSummary": "",
+    "attemptDate": null,
+    "syncedToNotionAt": null,
+    "notionPageId": null
+  },
+  "localFilePath": "drills/data/MTH-T01-C03/DRL-MTH-T01-C03-02.json",
+  "unitTitle": "Integers",
+  "title": "Integers — Verified Math Drill (10 Qs · Mixed Exam Mode)"
+}

@@ -25,5 +25,13 @@
     "id": "40f3818f-8ba0-81c8-aad9-f3336ac628a7",
     "title": "05_QA — Implementation Workflow, Quality Assurance & Audit Protocol",
     "file": "rules/05_qa.md"
+  },
+  "06_TEMPLATE_CONTRACT": {
+    "title": "06_TEMPLATE_CONTRACT — Problem Template & Quality Gate Engineering Contract",
+    "file": "rules/06_template_contract.md"
+  },
+  "07_PROBLEM_GENERATION": {
+    "title": "07_PROBLEM_GENERATION — Drill Composition, Weak-Spot Targeting, Progression & AI-Written Problem Verification",
+    "file": "rules/07_problem_generation.md"
   }
 }

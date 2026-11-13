@@ -14,9 +14,8 @@ Checks per problem:
 
 import re
 
-import sympy as sp
-
 from math_engine.answer_check import check_answer, is_equal, to_expr
+from quality_rules import QualityError, check_gate_g3_set, verify_quality_gates
 
 BANNED = [
     (re.compile(r"\*\*"), "Markdown bold (**)"),
@@ -54,30 +53,32 @@ def check_text_safety(pid, label, text, is_latex=False):
             _fail(pid, f"{label} is a LaTeX field and must not contain $ delimiters: {text[:120]}")
 
 
-def verify_problem(p, id_map=None):
+def verify_problem(p, id_map=None, rules=None):
     pid = p.get("id", p.get("templateKey", "?"))
     v = p.get("verify", {})
-    src = to_expr(v["source"]) if "source" in v else None
+    vars_list = p.get("answerSpec", {}).get("variables") or p.get("variables") or ["x"]
+    src = to_expr(v["source"], variables=vars_list) if "source" in v else None
 
     # 1. Steps
     if not p.get("steps"):
         _fail(pid, "no solution steps")
     checked = 0
+    has_machine_tags = any(("val" in st or "eq" in st) for st in p["steps"])
     for i, st in enumerate(p["steps"], 1):
         if "val" in st:
             if src is None:
                 _fail(pid, f"step {i} has val but problem has no verify.source")
-            if not is_equal(to_expr(st["val"]), src):
+            if not is_equal(to_expr(st["val"], variables=vars_list), src, variables=vars_list):
                 _fail(pid, f"step {i} value {st['val']} != source {v['source']}")
             checked += 1
         if "eq" in st:
             lhs, rhs = st["eq"]
-            if not is_equal(to_expr(lhs), to_expr(rhs)):
+            if not is_equal(to_expr(lhs, variables=vars_list), to_expr(rhs, variables=vars_list), variables=vars_list):
                 _fail(pid, f"step {i} equality fails: {lhs} != {rhs}")
             checked += 1
         check_text_safety(pid, f"step {i} explain", st["explain"])
         check_text_safety(pid, f"step {i} latex", st["latex"], is_latex=True)
-    if checked == 0:
+    if ("verify" in p or has_machine_tags) and checked == 0:
         _fail(pid, "no step carries a machine check (val / eq)")
 
     # 2. Answer vs source
@@ -89,17 +90,29 @@ def verify_problem(p, id_map=None):
         ):
             _fail(pid, f"answer {spec['value']} != source {v['source']}")
     elif t == "tuple":
-        exprs = [sp.sympify(e) for e in v["tuple"]]
+        exprs = [to_expr(e, variables=vars_list) for e in v["tuple"]]
         for got, want in zip(spec["values"], exprs):
-            if not is_equal(to_expr(got), want):
+            if not is_equal(to_expr(got, variables=vars_list), want, variables=vars_list):
                 _fail(pid, f"tuple component {got} != {want}")
+    elif t == "vector":
+        expected_comps = spec.get("components") or spec.get("values") or []
+        if "vector" in v:
+            v_comps = [to_expr(e, variables=vars_list) for e in v["vector"]]
+            for got, want in zip(expected_comps, v_comps):
+                if not is_equal(to_expr(got, variables=vars_list), want, variables=vars_list):
+                    _fail(pid, f"vector component {got} != {want}")
+        elif src is not None:
+            v_mat = to_expr(src)
+            for i, got in enumerate(expected_comps):
+                if not is_equal(to_expr(got, variables=vars_list), v_mat[i], variables=vars_list):
+                    _fail(pid, f"vector component {got} != {v_mat[i]}")
     elif t == "choice" and "flaw" in v:
         fl = v["flaw"]
         k = fl["firstWrong"]
         for idx, val in enumerate(fl["values"], 1):
             if val is None:
                 continue
-            same = is_equal(to_expr(val), src)
+            same = is_equal(to_expr(val, variables=vars_list), src, variables=vars_list)
             if idx < k and not same:
                 _fail(pid, f"flaw line {idx} should be correct")
             if idx == k and same:
@@ -130,6 +143,79 @@ def verify_problem(p, id_map=None):
             if leaked and leaked not in ["1", "i", "-1", "-i", "choice"]:
                 if re.search(r"(?<![0-9a-zA-Z])" + re.escape(leaked) + r"(?![0-9a-zA-Z])", hint):
                     _fail(pid, f"inputHint leaks exact answer {leaked!r}: {hint!r}")
+
+    # 6. Trap derivation verification
+    trap_kind = p.get("trapKind")
+    if trap_kind == "selection":
+        # Form selects an option or line number; derivation is exempt
+        pass
+    elif "trapDerivation" in p and p["trapDerivation"] is not None:
+        td = str(p["trapDerivation"]).strip()
+        # Trap derivation must express an operational misconception, not a raw numeric literal
+        if re.match(r"^-?\d+(\.\d+)?$", td):
+            raise QualityError(
+                "G4",
+                pid,
+                f"trapDerivation '{td}' is purely numeric. It must express an operational derivation of student error, or set trapKind='selection'.",
+            )
+        tv = v.get("trapValue")
+        if tv is None:
+            raise QualityError("G4", pid, f"trapDerivation '{td}' present but verify.trapValue is missing")
+        td_expr = to_expr(td, variables=vars_list, trusted=True)
+        tv_expr = to_expr(tv, variables=vars_list, trusted=True)
+        if not is_equal(td_expr, tv_expr, variables=vars_list):
+            raise QualityError(
+                "G4", pid, f"trapDerivation '{td}' evaluates to {td_expr} != trapValue '{tv}' ({tv_expr})"
+            )
+
+        # Gate: trapDerivation must not consist purely of numbers absent from prompt.
+        # Template sends trapGivens (numbers in prompt used in derivation), and gate verifies
+        # that derivation contains at least 2 distinct givens. trapKind="selection" is exempt.
+        if p.get("trapKind") != "selection":
+            if "trapGivens" in p and p["trapGivens"] is not None:
+                givens = p["trapGivens"]
+                prompt_text = str(p.get("prompt", ""))
+                # Formula constants (07 §4 `constants`) are part of the method and need not be stated.
+                constant_strs = {str(v) for v in (p.get("constants") or {}).values()}
+                for g in givens:
+                    if str(g) not in prompt_text and str(g) not in constant_strs:
+                        raise QualityError("G4", pid, f"trapGiven '{g}' does not appear in prompt: {prompt_text}")
+                td_tokens = set(re.findall(r"\b\d+\b", td))
+                matched_givens = {str(g) for g in givens if str(g) in td_tokens}
+                if len(matched_givens) < 2:
+                    raise QualityError(
+                        "G4",
+                        pid,
+                        f"trapDerivation '{td}' must contain at least 2 distinct givens from trapGivens ({givens}), found {len(matched_givens)}: {matched_givens}",
+                    )
+            else:
+                is_c01_or_c12 = any(
+                    isinstance(ref, str) and (ref.startswith("MTH-T01-C01") or ref.startswith("MTH-T01-C12"))
+                    for ref in p.get("references", [])
+                )
+                if is_c01_or_c12:
+                    raise QualityError("G4", pid, "Templates in C01 and C12 must provide 'trapGivens'")
+    else:
+        import logging
+
+        logging.getLogger("math_engine.verify").warning(f"[{pid}] Template form has no trapDerivation field")
+
+    # 7. Quality Gates (G1, G2, G4)
+    verify_quality_gates(p, is_code=False, rules=rules)
+    return True
+
+
+def verify_set(problems, id_map=None, available_forms_count=None, rules=None):
+    """Verify all problems in a drill set (including G1, G2, G4) plus set-level G3 deduplication."""
+    for p in problems:
+        verify_problem(p, id_map=id_map, rules=rules)
+    g3_res = check_gate_g3_set(problems, available_forms_count=available_forms_count, rules=rules)
+    for p in problems:
+        p.setdefault("qualityGates", {})["G3"] = {
+            "passed": True,
+            "fingerprint": p.get("fingerprint"),
+            "maxAllowedPerFingerprint": g3_res["maxAllowedPerFingerprint"],
+        }
     return True
 
 

@@ -1,0 +1,438 @@
+{
+  "unitCode": "PRG-T01-C01",
+  "unitTitle": "JavaScript Deep Dive",
+  "drillId": "DRL-PRG-T01-C01-02",
+  "environment": "node-vanilla",
+  "sourceAttribution": "Advanced ECMAScript 2024 Runtime Standards, CC BY 4.0",
+  "problems": [
+    {
+      "id": "Q01",
+      "verificationLevel": "partial",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "prg-c01-scope-shadowing-guard",
+      "context": "plugin_sandbox_context",
+      "entryPoint": "createSandboxContext",
+      "prompt": "Implement `createSandboxContext(parentConfig)` for isolated plugin execution environments.\n\n**System Requirements:**\n- `get(key)`: Retrieves `key` from the local child context, or delegates to `parentConfig` if not overridden locally.\n- `set(key, value)`: Stores `key` strictly in the local child context without mutating or polluting `parentConfig`.\n- `has(key)`: Returns `true` if `key` exists in either child context or parent context.\n- Scope Isolation: Mutating child properties must NEVER alter `parentConfig` properties.",
+      "inputHint": "Maintain local variable bindings and delegate fallback lookups to parentConfig without mutating it",
+      "starterCode": "function createSandboxContext(parentConfig = {}) {\n  // TODO: implement isolated scope sandbox context\n  return {\n    get(key) {},\n    set(key, value) {},\n    has(key) { return false; }\n  };\n}\n\nmodule.exports = { createSandboxContext };\n",
+      "solutionCode": "function createSandboxContext(parentConfig = {}) {\n  const localStore = new Map();\n\n  return {\n    get(key) {\n      if (localStore.has(key)) {\n        return localStore.get(key);\n      }\n      return parentConfig[key];\n    },\n    set(key, value) {\n      localStore.set(key, value);\n    },\n    has(key) {\n      return localStore.has(key) || (key in parentConfig);\n    }\n  };\n}\n\nmodule.exports = { createSandboxContext };\n",
+      "visibleTests": [
+        {
+          "name": "should shadow parent properties locally without mutating parent config",
+          "testCode": "const parent = { env: 'production', timeout: 5000 };\nconst sandbox = createSandboxContext(parent);\nassert.strictEqual(sandbox.get('env'), 'production');\nsandbox.set('env', 'testing');\nassert.strictEqual(sandbox.get('env'), 'testing');\nassert.strictEqual(parent.env, 'production', 'Parent config must remain immutable!');\n"
+        },
+        {
+          "name": "should verify property presence across local and parent scopes",
+          "testCode": "const parent = { version: '1.0' };\nconst sandbox = createSandboxContext(parent);\nsandbox.set('debug', true);\nassert.strictEqual(sandbox.has('version'), true);\nassert.strictEqual(sandbox.has('debug'), true);\nassert.strictEqual(sandbox.has('unknown'), false);\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "should handle missing parent properties returning undefined",
+          "testCode": "const sandbox = createSandboxContext({});\nassert.strictEqual(sandbox.get('missing'), undefined);\n"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Maintain child bindings in a dedicated Map while reading parent properties on cache miss."
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "Core Skill|direct|createSandboxContext",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 1,
+          "hasTrapOrFlaw": false,
+          "skill": null,
+          "stepRange": [
+            1,
+            3
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": null,
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 3
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-02/Q01_createSandboxContext.js",
+      "workspaceDir": "/Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T01-C01-02",
+      "cursorUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T01-C01-02/Q01_createSandboxContext.js",
+      "vscodeUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T01-C01-02/Q01_createSandboxContext.js",
+      "cursorFolderUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T01-C01-02",
+      "vscodeFolderUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T01-C01-02"
+    },
+    {
+      "id": "Q02",
+      "verificationLevel": "partial",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "prg-c01-prototype-this-binding",
+      "context": "event_emitter_subscriber_delegate",
+      "entryPoint": "bindMethodReceiver",
+      "prompt": "Implement `bindMethodReceiver(targetInstance, methodNames)` for detached pub/sub event listeners.\n\n**System Requirements:**\n- `targetInstance`: An object or class instance containing member methods.\n- `methodNames`: Array of string method names to bind.\n- Binds each method on `targetInstance` so that detached calls (e.g. `const cb = targetInstance.method; cb()`) retain `this === targetInstance`.\n- Preserves prototype method inheritance and passes through all arguments and return values.\n- Returns `targetInstance` for fluent chaining.",
+      "inputHint": "Explicitly bind member functions to targetInstance in-place",
+      "starterCode": "function bindMethodReceiver(targetInstance, methodNames) {\n  // TODO: implement context binding for detached methods\n  return targetInstance;\n}\n\nmodule.exports = { bindMethodReceiver };\n",
+      "solutionCode": "function bindMethodReceiver(targetInstance, methodNames) {\n  for (const name of methodNames) {\n    if (typeof targetInstance[name] === 'function') {\n      targetInstance[name] = targetInstance[name].bind(targetInstance);\n    }\n  }\n  return targetInstance;\n}\n\nmodule.exports = { bindMethodReceiver };\n",
+      "visibleTests": [
+        {
+          "name": "should preserve this context when method is detached and invoked as bare function",
+          "testCode": "class UserNotifier {\n  constructor(serviceName) { this.serviceName = serviceName; }\n  notify(user) { return `[${this.serviceName}] Alert sent to ${user}`; }\n}\nconst notifier = new UserNotifier('AuthService');\nbindMethodReceiver(notifier, ['notify']);\nconst detached = notifier.notify;\nassert.strictEqual(detached('Alice'), '[AuthService] Alert sent to Alice');\n"
+        },
+        {
+          "name": "should return the targetInstance for fluent method chaining",
+          "testCode": "const obj = { value: 42, getValue() { return this.value; } };\nconst res = bindMethodReceiver(obj, ['getValue']);\nassert.strictEqual(res, obj);\nconst getVal = res.getValue;\nassert.strictEqual(getVal(), 42);\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "should safely ignore non-function property names in methodNames array",
+          "testCode": "const obj = { count: 10 };\nbindMethodReceiver(obj, ['count', 'missingMethod']);\nassert.strictEqual(obj.count, 10);\n"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Iterate target method names and bind each function receiver to the targetInstance."
+        },
+        {
+          "explain": "Return the bound instance preserving fluent invocation."
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "Core Skill|direct|bindMethodReceiver",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 2,
+          "hasTrapOrFlaw": false,
+          "skill": null,
+          "stepRange": [
+            2,
+            4
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": null,
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 4
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-02/Q02_bindMethodReceiver.js",
+      "workspaceDir": "/Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T01-C01-02",
+      "cursorUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T01-C01-02/Q02_bindMethodReceiver.js",
+      "vscodeUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T01-C01-02/Q02_bindMethodReceiver.js",
+      "cursorFolderUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T01-C01-02",
+      "vscodeFolderUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T01-C01-02"
+    },
+    {
+      "id": "Q03",
+      "verificationLevel": "partial",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "debugging",
+      "archetypeKey": "prg-c01-coercion-type-converter",
+      "context": "money_currency_value_object",
+      "entryPoint": "createCurrencyAmount",
+      "prompt": "Debug `createCurrencyAmount(amount, currency)` in a fintech ledger calculation engine.\n\n**System Requirements:**\n- Returns an immutable Value Object representing a monetary amount.\n- In numeric arithmetic contexts (`+`, `-`, `>`, `<`), the object must evaluate to its numeric `amount`.\n- In string contexts (template literals, string concatenation), it evaluates to formatted `\"<amount> <currency>\"`.\n- Strict Numeric Addition: `createCurrencyAmount(100, 'USD') + 50` must yield `150`, NOT `\"100 USD50\"`.",
+      "inputHint": "Implement Symbol.toPrimitive checking hint for number vs string coercions",
+      "starterCode": "function createCurrencyAmount(amount, currency) {\n  // Defective implementation where valueOf returns string causing string concatenation\n  return {\n    amount,\n    currency,\n    valueOf() {\n      return `${amount} ${currency}`;\n    },\n    toString() {\n      return `${amount} ${currency}`;\n    }\n  };\n}\n\nmodule.exports = { createCurrencyAmount };\n",
+      "solutionCode": "function createCurrencyAmount(amount, currency) {\n  return {\n    amount,\n    currency,\n    [Symbol.toPrimitive](hint) {\n      if (hint === 'string') {\n        return `${amount} ${currency}`;\n      }\n      return amount;\n    },\n    valueOf() {\n      return amount;\n    },\n    toString() {\n      return `${amount} ${currency}`;\n    }\n  };\n}\n\nmodule.exports = { createCurrencyAmount };\n",
+      "visibleTests": [
+        {
+          "name": "should perform numeric addition and comparison rather than string concatenation (Reproducer Test)",
+          "testCode": "const money = createCurrencyAmount(100, 'USD');\nconst sum = money + 50;\nassert.strictEqual(sum, 150, 'Failed: money + 50 must yield numeric 150!');\nassert.strictEqual(money > 80, true);\n"
+        },
+        {
+          "name": "should format cleanly in explicit string contexts",
+          "testCode": "const money = createCurrencyAmount(250.5, 'EUR');\nassert.strictEqual(`${money}`, '250.5 EUR');\nassert.strictEqual(String(money), '250.5 EUR');\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "should support subtraction between two currency objects",
+          "testCode": "const m1 = createCurrencyAmount(300, 'GBP');\nconst m2 = createCurrencyAmount(120, 'GBP');\nassert.strictEqual(m1 - m2, 180);\n"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Implement Symbol.toPrimitive returning numeric amount for 'number' or 'default' hints."
+        },
+        {
+          "explain": "Format string as amount and currency code when hint is 'string'."
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "Core Skill|direct|createCurrencyAmount",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "debugging"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            4
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": null,
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 4
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-02/Q03_createCurrencyAmount.js",
+      "workspaceDir": "/Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T01-C01-02",
+      "cursorUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T01-C01-02/Q03_createCurrencyAmount.js",
+      "vscodeUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T01-C01-02/Q03_createCurrencyAmount.js",
+      "cursorFolderUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T01-C01-02",
+      "vscodeFolderUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T01-C01-02"
+    },
+    {
+      "id": "Q04",
+      "verificationLevel": "partial",
+      "level": 3,
+      "category": "Trap & Edge Case",
+      "commonTrapTag": "circular-reference-stack-overflow",
+      "archetype": "problem-solving",
+      "archetypeKey": "prg-c01-deep-clone-circular",
+      "context": "redux_state_snapshot_cloner",
+      "entryPoint": "deepCloneCircular",
+      "prompt": "Implement `deepCloneCircular(target)` for deep state tree cloning with cyclic reference handling.\n\n**System Requirements:**\n- Recursively clone all nested plain objects and arrays.\n- Primitive values (`number`, `string`, `boolean`, `null`, `undefined`) and functions are returned as-is.\n- Circular References: Self-referential or cross-referencing objects must be preserved in the cloned graph without throwing `RangeError: Maximum call stack size exceeded`.\n- Complete Mutation Isolation: Mutating properties on the clone must NEVER modify the original target object.",
+      "inputHint": "Track visited object references in a WeakMap or Map to return already-created clones on circular cycles",
+      "starterCode": "function deepCloneCircular(target) {\n  // TODO: implement recursive deep clone with circular graph resolution\n  return target;\n}\n\nmodule.exports = { deepCloneCircular };\n",
+      "solutionCode": "function deepCloneCircular(target, seen = new Map()) {\n  if (target === null || typeof target !== 'object') {\n    return target;\n  }\n\n  if (seen.has(target)) {\n    return seen.get(target);\n  }\n\n  const clone = Array.isArray(target) ? [] : {};\n  seen.set(target, clone);\n\n  for (const [key, val] of Object.entries(target)) {\n    clone[key] = deepCloneCircular(val, seen);\n  }\n\n  return clone;\n}\n\nmodule.exports = { deepCloneCircular };\n",
+      "visibleTests": [
+        {
+          "name": "should deeply clone nested objects and arrays with total mutation isolation",
+          "testCode": "const original = { user: { name: 'Alice', roles: ['admin', 'dev'] } };\nconst copy = deepCloneCircular(original);\nassert.deepStrictEqual(copy, original);\nassert.notStrictEqual(copy, original);\nassert.notStrictEqual(copy.user, original.user);\nassert.notStrictEqual(copy.user.roles, original.user.roles);\ncopy.user.roles.push('security');\nassert.strictEqual(original.user.roles.length, 2, 'Original array was mutated!');\n"
+        },
+        {
+          "name": "should preserve circular references without infinite recursion or stack overflow",
+          "testCode": "const circularObj = { id: 'root' };\ncircularObj.self = circularObj;\ncircularObj.child = { parent: circularObj };\nconst cloned = deepCloneCircular(circularObj);\nassert.notStrictEqual(cloned, circularObj);\nassert.strictEqual(cloned.self, cloned, 'Circular self-reference was not preserved!');\nassert.strictEqual(cloned.child.parent, cloned, 'Child parent reference was not preserved!');\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "should handle primitives, functions, and null cleanly",
+          "testCode": "const fn = () => 42;\nassert.strictEqual(deepCloneCircular(100), 100);\nassert.strictEqual(deepCloneCircular(null), null);\nassert.strictEqual(deepCloneCircular(fn), fn);\n"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Check whether target has already been visited in seen map and return cached clone."
+        },
+        {
+          "explain": "Recursively clone object properties while registering new container in seen map."
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "circular-reference-stack-overflow|direct|deepCloneCircular",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            5
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "circular-reference-stack-overflow",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 4
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-02/Q04_deepCloneCircular.js",
+      "workspaceDir": "/Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T01-C01-02",
+      "cursorUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T01-C01-02/Q04_deepCloneCircular.js",
+      "vscodeUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T01-C01-02/Q04_deepCloneCircular.js",
+      "cursorFolderUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T01-C01-02",
+      "vscodeFolderUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T01-C01-02"
+    },
+    {
+      "id": "Q05",
+      "verificationLevel": "partial",
+      "level": 4,
+      "category": "State Management & Concurrency",
+      "archetype": "problem-solving",
+      "archetypeKey": "prg-c01-async-middleware-pipe",
+      "context": "http_api_gateway_middleware",
+      "entryPoint": "composeAsyncMiddleware",
+      "prompt": "Implement `composeAsyncMiddleware(middlewares)` for an onion-model API gateway request pipeline.\n\n**Pipeline Specification:**\n- `middlewares`: Array of functions with signature `async (context, next) => void`.\n- Returns an executable runner: `async (context) => void`.\n- Flow: Each middleware executes sequentially, delegating to the downstream middleware by calling `await next()`.\n- Multiple Next Guard: If a single middleware calls `next()` more than once, throw `Error('next() called multiple times')`.\n- Upstream Return: Once the downstream completes, control flows back up the stack (onion-style).\n- Error Bubbling: Uncaught exceptions in downstream middleware propagate back to upstream catch blocks.",
+      "inputHint": "Track invocation index across dispatch steps to prevent duplicate next calls",
+      "starterCode": "function composeAsyncMiddleware(middlewares) {\n  // TODO: implement onion-model asynchronous middleware composition\n  return async function(context) {};\n}\n\nmodule.exports = { composeAsyncMiddleware };\n",
+      "solutionCode": "function composeAsyncMiddleware(middlewares) {\n  return function(context) {\n    let lastIndex = -1;\n\n    function dispatch(i) {\n      if (i <= lastIndex) {\n        return Promise.reject(new Error('next() called multiple times'));\n      }\n      lastIndex = i;\n      const fn = middlewares[i];\n      if (!fn) {\n        return Promise.resolve();\n      }\n      try {\n        return Promise.resolve(fn(context, () => dispatch(i + 1)));\n      } catch (err) {\n        return Promise.reject(err);\n      }\n    }\n\n    return dispatch(0);\n  };\n}\n\nmodule.exports = { composeAsyncMiddleware };\n",
+      "visibleTests": [
+        {
+          "name": "should execute middlewares in onion sequence downstream and upstream",
+          "testCode": "const executionLog = [];\nconst m1 = async (ctx, next) => {\n  executionLog.push('m1_enter');\n  ctx.state += ':m1';\n  await next();\n  executionLog.push('m1_exit');\n};\nconst m2 = async (ctx, next) => {\n  executionLog.push('m2_enter');\n  ctx.state += ':m2';\n  await next();\n  executionLog.push('m2_exit');\n};\nconst pipeline = composeAsyncMiddleware([m1, m2]);\nconst ctx = { state: 'init' };\nawait pipeline(ctx);\nassert.strictEqual(ctx.state, 'init:m1:m2');\nassert.deepStrictEqual(executionLog, ['m1_enter', 'm2_enter', 'm2_exit', 'm1_exit']);\n"
+        },
+        {
+          "name": "should reject when next is invoked multiple times in a single middleware",
+          "testCode": "const badMiddleware = async (ctx, next) => {\n  await next();\n  await next(); // Illegal second call\n};\nconst pipeline = composeAsyncMiddleware([badMiddleware]);\nawait assert.rejects(async () => pipeline({}), /next\\(\\) called multiple times/);\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "should propagate downstream errors back to upstream catch blocks",
+          "testCode": "let caughtError = null;\nconst errorHandler = async (ctx, next) => {\n  try { await next(); } catch (err) { caughtError = err.message; }\n};\nconst crasher = async () => { throw new Error('Database connection failed'); };\nconst pipeline = composeAsyncMiddleware([errorHandler, crasher]);\nawait pipeline({});\nassert.strictEqual(caughtError, 'Database connection failed');\n"
+        }
+      ],
+      "references": [
+        "RFC-HTTP-MIDDLEWARE",
+        "ECMA-262-ASYNC"
+      ],
+      "competencies": [
+        "async-flow",
+        "middleware-architecture"
+      ],
+      "steps": [
+        {
+          "explain": "Dispatch middleware chain sequentially passing recursive next closure."
+        },
+        {
+          "explain": "Enforce single-dispatch guard per middleware frame throwing on duplicate invocations."
+        },
+        {
+          "explain": "Allow upstream handlers to catch downstream rejections."
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "State Management & Concurrency|direct|composeAsyncMiddleware",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 3,
+          "hasTrapOrFlaw": false,
+          "skill": null,
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": null,
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 5
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-02/Q05_composeAsyncMiddleware.js",
+      "workspaceDir": "/Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T01-C01-02",
+      "cursorUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T01-C01-02/Q05_composeAsyncMiddleware.js",
+      "vscodeUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T01-C01-02/Q05_composeAsyncMiddleware.js",
+      "cursorFolderUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T01-C01-02",
+      "vscodeFolderUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T01-C01-02"
+    }
+  ],
+  "schemaVersion": "2.0-code",
+  "subject": "PRG",
+  "createdAt": "2026-11-09 18:59:35",
+  "config": {
+    "questionCount": 5,
+    "difficulty": "ALL",
+    "difficultyMode": "AI Synthesized Engineering Mode"
+  },
+  "sessionSummary": {
+    "practiceStatus": "Ready",
+    "score": 0,
+    "maxScore": 5,
+    "accuracyPct": 0,
+    "mistakeCategories": [],
+    "divergedStepsSummary": "",
+    "attemptDate": null,
+    "syncedToNotionAt": null,
+    "notionPageId": null
+  },
+  "localFilePath": "drills/data/PRG-T01-C01/DRL-PRG-T01-C01-02.json"
+}

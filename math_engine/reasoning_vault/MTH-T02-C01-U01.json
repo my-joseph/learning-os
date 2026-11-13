@@ -1,0 +1,207 @@
+{
+  "unitCode": "MTH-T02-C01-U01",
+  "topicTitle": "Complex Numbers",
+  "description": "Comprehensive reasoning vault for complex numbers, imaginary unit powers, square roots of negative numbers, addition, subtraction, multiplication, conjugates, division, modulus, and AC circuit impedance synthesis.",
+  "archetypes": [
+    {
+      "archetypeKey": "t02-c01-u01-imaginary-unit-definition",
+      "level": 1,
+      "name": "Imaginary Unit Definition and Fundamental Identity",
+      "coreConcept": "The imaginary unit i satisfies i^2 = -1, allowing evaluation of expressions with negative square roots.",
+      "mentalModel": "Quarter-turn 90-degree phase rotation on the complex Argand plane.",
+      "governingRelation": "i^2 = -1 \\land i^{4k+r} = i^r",
+      "cognitiveTraps": [
+        "t02-c01-u01-i-squared-positive-one-trap",
+        "t02-c01-u01-power-of-i-remainder-trap"
+      ],
+      "versatileDomains": [
+        "ac_phasor_rotation",
+        "quantum_phase_factor",
+        "signal_quadrature_demodulation"
+      ],
+      "usedContexts": [
+        "ac_phasor_scaling"
+      ]
+    },
+    {
+      "archetypeKey": "t02-c01-u01-square-root-negative-numbers",
+      "level": 1,
+      "name": "Square Roots of Negative Real Numbers",
+      "coreConcept": "Express square roots of negative numbers as pure imaginary numbers: sqrt(-n) = i*sqrt(n) for n > 0.",
+      "mentalModel": "Factoring out the negative unit as imaginary dimension.",
+      "governingRelation": "\\sqrt{-n} = i\\sqrt{n} \\quad (n > 0)",
+      "cognitiveTraps": [
+        "t02-c01-u01-drop-imaginary-unit-trap",
+        "t02-c01-u01-square-negative-radicand-trap"
+      ],
+      "versatileDomains": [
+        "rlc_circuit_damping",
+        "undamped_natural_frequency",
+        "control_system_poles"
+      ],
+      "usedContexts": [
+        "undamped_circuit_resonance"
+      ]
+    },
+    {
+      "archetypeKey": "t02-c01-u01-adding-complex-numbers",
+      "level": 2,
+      "name": "Addition of Complex Numbers in Standard Form",
+      "coreConcept": "Combine real parts with real parts and imaginary parts with imaginary parts: (a+bi) + (c+di) = (a+c) + (b+d)i.",
+      "mentalModel": "Two-dimensional vector addition of orthogonal components.",
+      "governingRelation": "(a + bi) + (c + di) = (a + c) + (b + d)i",
+      "cognitiveTraps": [
+        "t02-c01-u01-add-real-and-imaginary-parts-trap",
+        "t02-c01-u01-imaginary-unit-squared-in-sum-trap"
+      ],
+      "versatileDomains": [
+        "phasor_voltage_summation",
+        "rf_superposition",
+        "vector_impedance_mesh"
+      ],
+      "usedContexts": [
+        "phasor_voltage_superposition"
+      ]
+    },
+    {
+      "archetypeKey": "t02-c01-u01-subtracting-complex-numbers",
+      "level": 2,
+      "name": "Subtraction of Complex Numbers via Component Difference",
+      "coreConcept": "Distribute negative sign across both real and imaginary terms: (a+bi) - (c+di) = (a-c) + (b-d)i.",
+      "mentalModel": "Reversing the subtrahend vector before vector addition.",
+      "governingRelation": "(a + bi) - (c + di) = (a - c) + (b - d)i",
+      "cognitiveTraps": [
+        "t02-c01-u01-forgot-to-distribute-negative-to-imaginary-trap",
+        "t02-c01-u01-subtraction-order-swap-trap"
+      ],
+      "versatileDomains": [
+        "differential_voltage_drop",
+        "phase_lag_subtraction",
+        "radar_doppler_delta"
+      ],
+      "usedContexts": [
+        "differential_voltage_drop"
+      ]
+    },
+    {
+      "archetypeKey": "t02-c01-u01-multiplying-pure-imaginary",
+      "level": 2,
+      "name": "Multiplying Pure Imaginary Numbers",
+      "coreConcept": "Product of pure imaginary numbers yields a real number using i^2 = -1: (bi)(di) = -bd.",
+      "mentalModel": "Two consecutive 90-degree rotations resulting in a 180-degree reflection into the negative real line.",
+      "governingRelation": "(bi)(di) = -bd",
+      "cognitiveTraps": [
+        "t02-c01-u01-forgot-i-squared-negative-sign-trap",
+        "t02-c01-u01-retain-imaginary-unit-trap"
+      ],
+      "versatileDomains": [
+        "rf_reactive_power",
+        "capacitive_inductive_cancellation",
+        "waveguide_impedance"
+      ],
+      "usedContexts": [
+        "rf_reactive_power_coupling"
+      ]
+    },
+    {
+      "archetypeKey": "t02-c01-u01-multiplying-complex-binomials",
+      "level": 3,
+      "name": "Multiplying Complex Numbers via FOIL Expansion",
+      "coreConcept": "Expand four terms and simplify i^2 = -1 to separate into real and imaginary parts: (a+bi)(c+di) = (ac-bd) + (ad+bc)i.",
+      "mentalModel": "Combined rotational scaling of complex vectors.",
+      "governingRelation": "(a + bi)(c + di) = (ac - bd) + (ad + bc)i",
+      "cognitiveTraps": [
+        "t02-c01-u01-positive-last-term-trap",
+        "t02-c01-u01-cross-term-omission-trap"
+      ],
+      "versatileDomains": [
+        "complex_power_s_vi",
+        "dsp_fourier_kernel",
+        "polar_cartesian_modulation"
+      ],
+      "usedContexts": [
+        "dsp_fourier_kernel_modulation"
+      ]
+    },
+    {
+      "archetypeKey": "t02-c01-u01-complex-conjugates-modulus",
+      "level": 3,
+      "name": "Complex Conjugates and Modulus Product",
+      "coreConcept": "Multiplying a complex number by its conjugate eliminates imaginary part: (a+bi)(a-bi) = a^2 + b^2 = |z|^2.",
+      "mentalModel": "Reflecting across real axis to create pure real magnitude squared.",
+      "governingRelation": "(a + bi)(a - bi) = a^2 + b^2 \\land |z| = \\sqrt{a^2 + b^2}",
+      "cognitiveTraps": [
+        "t02-c01-u01-difference-of-squares-minus-sign-trap",
+        "t02-c01-u01-conjugate-real-sign-flip-trap"
+      ],
+      "versatileDomains": [
+        "power_factor_apparent_power",
+        "quantum_probability_density",
+        "signal_envelope_magnitude"
+      ],
+      "usedContexts": [
+        "signal_envelope_magnitude"
+      ]
+    },
+    {
+      "archetypeKey": "t02-c01-u01-dividing-complex-numbers",
+      "level": 3,
+      "name": "Dividing Complex Numbers via Denominator Conjugate Rationalization",
+      "coreConcept": "Multiply numerator and denominator by denominator conjugate to make denominator real: (a+bi)/(c+di) = ((a+bi)(c-di))/(c^2+d^2).",
+      "mentalModel": "Normalizing complex ratios to a common real denominator scale.",
+      "governingRelation": "\\frac{a + bi}{c + di} = \\frac{(a + bi)(c - di)}{c^2 + d^2}",
+      "cognitiveTraps": [
+        "t02-c01-u01-divide-real-and-imag-parts-directly-trap",
+        "t02-c01-u01-denominator-conjugate-sign-error-trap"
+      ],
+      "versatileDomains": [
+        "ac_admittance_inversion",
+        "transfer_function_deconvolution",
+        "transmission_reflection_coefficient"
+      ],
+      "usedContexts": [
+        "ac_admittance_inversion"
+      ]
+    },
+    {
+      "archetypeKey": "t02-c01-u01-rlc-impedance-synthesis",
+      "level": 4,
+      "name": "AC Circuit Series Impedance and Magnitude Modeling",
+      "coreConcept": "Model AC circuit impedance as complex vector Z = R + iX, where magnitude is |Z| = sqrt(R^2 + X^2).",
+      "mentalModel": "Phasor impedance triangle combining dissipative resistance with reactive energy storage.",
+      "governingRelation": "|Z| = \\sqrt{R^2 + X^2}",
+      "cognitiveTraps": [
+        "t02-c01-u01-scalar-sum-of-impedance-trap",
+        "t02-c01-u01-reactance-sign-inversion-trap"
+      ],
+      "versatileDomains": [
+        "ac_power_distribution_grid",
+        "audio_filter_cross_over",
+        "radio_rf_tuning"
+      ],
+      "usedContexts": [
+        "ac_audio_filter_impedance"
+      ]
+    },
+    {
+      "archetypeKey": "t02-c01-u01-quadratic-formula-complex-roots",
+      "level": 4,
+      "name": "Quadratic Formula with Complex Conjugate Solutions",
+      "coreConcept": "Solve quadratic equations with negative discriminant to extract complex conjugate roots: x = (-b +- i*sqrt(|D|)) / (2a).",
+      "mentalModel": "Oscillatory natural frequencies under underdamped dynamics.",
+      "governingRelation": "ax^2 + bx + c = 0 \\implies x = \\frac{-b \\pm i\\sqrt{4ac - b^2}}{2a}",
+      "cognitiveTraps": [
+        "t02-c01-u01-real-square-root-assumption-trap",
+        "t02-c01-u01-sign-under-radical-trap"
+      ],
+      "versatileDomains": [
+        "underdamped_harmonic_oscillator",
+        "control_system_stability_damping",
+        "aerospace_flutter_poles"
+      ],
+      "usedContexts": [
+        "damped_harmonic_oscillator_roots"
+      ]
+    }
+  ]
+}

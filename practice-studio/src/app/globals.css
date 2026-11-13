@@ -6,7 +6,30 @@
 
 :root {
   --background: #0d1017;
-  --foreground: #e6edf3;
+  --foreground: #f1f5f9;
+  --bg-canvas: #0d1017;
+  --bg-surface: #151924;
+  --bg-elevated: #1d2333;
+  --bg-well: #10141f;
+  --border-subtle: #2c354d;
+  --text-primary: #f1f5f9;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  color-scheme: dark;
+}
+
+html.light {
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --bg-canvas: #f8fafc;
+  --bg-surface: #ffffff;
+  --bg-elevated: #f1f5f9;
+  --bg-well: #f8fafc;
+  --border-subtle: #e2e8f0;
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #64748b;
+  color-scheme: light;
 }
 
 body {
@@ -14,15 +37,70 @@ body {
   background: var(--background);
   font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
   line-height: 1.6;
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 /* Click-to-Highlight dimming utility */
-.has-active .step-row {
-  opacity: 0.35;
-  filter: grayscale(20%);
+.has-active .step-row:not(.step-row-active) {
+  opacity: 0.45;
 }
 
 .katex-display {
   margin: 0.35em 0 !important;
   text-align: left !important;
+}
+
+/* KaTeX color inheritance */
+.katex,
+.katex-display,
+.katex-html {
+  color: inherit;
+}
+
+/* ========================================================================== */
+/* LIGHT MODE OVERRIDES FOR LEGACY CLASSES & CODE TOKENS                      */
+/* ========================================================================== */
+
+html.light body {
+  background-color: #f8fafc;
+  color: #0f172a;
+}
+
+/* VS Code Tokens in Light Mode */
+html.light .vscode-token-comment {
+  color: #008000 !important;
+  font-style: italic;
+}
+
+html.light .vscode-token-string {
+  color: #a31515 !important;
+}
+
+html.light .vscode-token-keyword {
+  color: #0000ff !important;
+}
+
+html.light .vscode-token-control {
+  color: #af00db !important;
+}
+
+html.light .vscode-token-builtin {
+  color: #267f99 !important;
+}
+
+html.light .vscode-token-method {
+  color: #795e26 !important;
+}
+
+html.light .vscode-token-number {
+  color: #098658 !important;
+}
+
+html.light .vscode-token-constant {
+  color: #0000ff !important;
+  font-weight: bold;
+}
+
+html.light .vscode-token-plain {
+  color: #1f2328 !important;
 }

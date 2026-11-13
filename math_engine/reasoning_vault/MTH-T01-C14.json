@@ -1,0 +1,207 @@
+{
+  "unitCode": "MTH-T01-C14",
+  "topicTitle": "Graphs",
+  "description": "Comprehensive reasoning vault for Cartesian coordinate system, plotting points, quadrants, intercepts, horizontal and vertical lines, slope calculation, slope-intercept form, parallel and perpendicular slopes, and coordinate modeling.",
+  "archetypes": [
+    {
+      "archetypeKey": "c14-plotting-points-quadrants",
+      "level": 1,
+      "name": "Cartesian Coordinate Plane and Point Identification",
+      "coreConcept": "Locate ordered pairs (x, y) relative to origin and determine coordinate quadrants based on signs of abscissa and ordinate.",
+      "mentalModel": "Two orthogonal number lines intersecting at origin (0, 0).",
+      "governingRelation": "(x, y) \\in \\mathbb{R}^2",
+      "cognitiveTraps": [
+        "c14-swap-x-y-coordinates-trap",
+        "c14-quadrant-numbering-direction-trap"
+      ],
+      "versatileDomains": [
+        "gps_waypoint_mapping",
+        "computer_display_pixel_space",
+        "surveying_grid"
+      ],
+      "usedContexts": [
+        "gps_waypoint_mapping"
+      ]
+    },
+    {
+      "archetypeKey": "c14-intercepts-linear-equations",
+      "level": 1,
+      "name": "Finding X- and Y-Intercepts of Linear Graphs",
+      "coreConcept": "Determine where a line crosses coordinate axes by setting y = 0 for x-intercept and x = 0 for y-intercept.",
+      "mentalModel": "Boundary collision points of a linear trajectory with coordinate axes.",
+      "governingRelation": "Ax + By = C \\implies x_{\\text{int}} = \\frac{C}{A} \\quad (y=0)",
+      "cognitiveTraps": [
+        "c14-intercept-axis-swap-trap",
+        "c14-divide-by-wrong-coefficient-trap"
+      ],
+      "versatileDomains": [
+        "budget_allocation_extremes",
+        "reservoir_fill_empty_bounds",
+        "clearance_line_limits"
+      ],
+      "usedContexts": [
+        "budget_allocation_extremes"
+      ]
+    },
+    {
+      "archetypeKey": "c14-horizontal-vertical-lines",
+      "level": 2,
+      "name": "Equations of Horizontal and Vertical Lines",
+      "coreConcept": "Horizontal lines have equation y = c and zero slope; vertical lines have equation x = c and undefined slope.",
+      "mentalModel": "Fixed altitude trajectories versus plumb line vertical fences.",
+      "governingRelation": "y = c \\implies m = 0 \\land x = c \\implies m \\text{ undefined}",
+      "cognitiveTraps": [
+        "c14-horizontal-vertical-equation-swap-trap",
+        "c14-zero-versus-undefined-slope-trap"
+      ],
+      "versatileDomains": [
+        "machining_datum_lines",
+        "elevation_contours",
+        "cad_alignment_guides"
+      ],
+      "usedContexts": [
+        "drone_horizontal_corridor"
+      ]
+    },
+    {
+      "archetypeKey": "c14-slope-through-two-points",
+      "level": 2,
+      "name": "Calculating Slope from Two Coordinate Points",
+      "coreConcept": "Slope measures rate of vertical change per unit horizontal change: m = (y2 - y1) / (x2 - x1).",
+      "mentalModel": "Steepness ratio of vertical rise to horizontal run.",
+      "governingRelation": "m = \\frac{\\Delta y}{\\Delta x} = \\frac{y_2 - y_1}{x_2 - x_1}",
+      "cognitiveTraps": [
+        "c14-run-over-rise-inversion-trap",
+        "c14-delta-subtraction-order-mismatch-trap"
+      ],
+      "versatileDomains": [
+        "road_grade_gradient",
+        "pipeline_drainage_pitch",
+        "roof_truss_slope"
+      ],
+      "usedContexts": [
+        "roadway_grade_gradient"
+      ]
+    },
+    {
+      "archetypeKey": "c14-slope-intercept-form",
+      "level": 2,
+      "name": "Slope-Intercept Form y = mx + b",
+      "coreConcept": "Identify rate of change m and initial baseline offset b from linear equation y = mx + b.",
+      "mentalModel": "Starting elevation plus continuous steady-state climb rate.",
+      "governingRelation": "y = mx + b",
+      "cognitiveTraps": [
+        "c14-slope-intercept-coefficient-swap-trap",
+        "c14-standard-form-sign-flip-trap"
+      ],
+      "versatileDomains": [
+        "linear_depreciation_trajectory",
+        "hourly_billing_rate_model",
+        "sensor_calibration_slope"
+      ],
+      "usedContexts": [
+        "sensor_linear_calibration_curve"
+      ]
+    },
+    {
+      "archetypeKey": "c14-parallel-lines-equal-slope",
+      "level": 3,
+      "name": "Parallel Lines and Slope Equality Invariant",
+      "coreConcept": "Two non-vertical lines are parallel if and only if they have equal slopes: m1 = m2.",
+      "mentalModel": "Equidistant trajectories maintaining constant separation indefinitely.",
+      "governingRelation": "L_1 \\parallel L_2 \\iff m_1 = m_2",
+      "cognitiveTraps": [
+        "c14-parallel-negative-reciprocal-trap",
+        "c14-intercept-matching-confusion-trap"
+      ],
+      "versatileDomains": [
+        "railway_track_parallelism",
+        "optical_collimated_beams",
+        "surveying_offset_traverses"
+      ],
+      "usedContexts": [
+        "railway_track_parallelism"
+      ]
+    },
+    {
+      "archetypeKey": "c14-midpoint-coordinate-formula",
+      "level": 3,
+      "name": "Midpoint Coordinates of Line Segments",
+      "coreConcept": "The midpoint coordinate is the arithmetic mean of endpoint coordinates: ((x1 + x2)/2, (y1 + y2)/2).",
+      "mentalModel": "Equilibrium center of mass of two coordinate endpoints.",
+      "governingRelation": "M = \\left(\\frac{x_1 + x_2}{2}, \\frac{y_1 + y_2}{2}\\right)",
+      "cognitiveTraps": [
+        "c14-subtract-coordinates-for-midpoint-trap",
+        "c14-forgot-to-divide-by-two-trap"
+      ],
+      "versatileDomains": [
+        "geographical_distribution_center",
+        "structural_bridge_cable_midpoint",
+        "telecom_relay_placement"
+      ],
+      "usedContexts": [
+        "telecom_relay_placement"
+      ]
+    },
+    {
+      "archetypeKey": "c14-perpendicular-lines-negative-reciprocal",
+      "level": 3,
+      "name": "Perpendicular Lines and Orthogonal Slopes",
+      "coreConcept": "Two non-vertical lines are perpendicular if and only if their slopes multiply to -1: m1 * m2 = -1.",
+      "mentalModel": "Quarter-turn rotation (90 degrees) flipping and inverting rise and run.",
+      "governingRelation": "L_1 \\perp L_2 \\iff m_1 \\cdot m_2 = -1",
+      "cognitiveTraps": [
+        "c14-forgot-negative-sign-inversion-trap",
+        "c14-perpendicular-equal-slope-trap"
+      ],
+      "versatileDomains": [
+        "orthogonal_architectural_walls",
+        "normal_vector_surface_reflection",
+        "navigation_cross_bearings"
+      ],
+      "usedContexts": [
+        "orthogonal_drainage_gradient"
+      ]
+    },
+    {
+      "archetypeKey": "c14-linear-cost-graph-modeling",
+      "level": 4,
+      "name": "Applied Linear Cost Modeling and Slope Interpretation",
+      "coreConcept": "Interpret the physical meaning of slope as marginal cost and y-intercept as fixed operational overhead in empirical cost models.",
+      "mentalModel": "Linear fiscal trajectory composed of fixed base plus variable activity cost.",
+      "governingRelation": "C(x) = mx + b \\implies m = \\frac{\\Delta C}{\\Delta x}",
+      "cognitiveTraps": [
+        "c14-marginal-cost-fixed-overhead-swap-trap",
+        "c14-average-cost-instead-of-marginal-trap"
+      ],
+      "versatileDomains": [
+        "commercial_fleet_mileage_cost",
+        "cloud_compute_hourly_cost",
+        "telecommunications_metered_billing"
+      ],
+      "usedContexts": [
+        "commercial_fleet_mileage_cost"
+      ]
+    },
+    {
+      "archetypeKey": "c14-coordinate-distance-area-synthesis",
+      "level": 4,
+      "name": "Cartesian Coordinate Area and Dimension Synthesis",
+      "coreConcept": "Synthesize coordinate differences to determine dimensional lengths and calculate enclosed polygonal area on a coordinate grid.",
+      "mentalModel": "Mapping Cartesian boundary deltas into planar surface area.",
+      "governingRelation": "A = \\Delta x \\cdot \\Delta y = (x_2 - x_1)(y_2 - y_1)",
+      "cognitiveTraps": [
+        "c14-coordinate-delta-sum-instead-of-diff-trap",
+        "c14-semi-perimeter-instead-of-area-trap"
+      ],
+      "versatileDomains": [
+        "solar_farm_boundary_acreage",
+        "drone_search_perimeter",
+        "geographical_parcel_area"
+      ],
+      "usedContexts": [
+        "solar_farm_boundary_acreage"
+      ]
+    }
+  ]
+}

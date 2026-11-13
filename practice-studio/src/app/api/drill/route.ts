@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
-import { getWorkspaceRoot } from "@/lib/paths";
+import { getDrillsDataDir, getWorkspaceRoot, isSafeId } from "@/lib/paths";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -10,9 +10,11 @@ export async function GET(req: NextRequest) {
   if (!id) {
     return NextResponse.json({ error: "Missing drill id" }, { status: 400 });
   }
+  if (!isSafeId(id)) {
+    return NextResponse.json({ error: "Invalid drill id" }, { status: 400 });
+  }
 
-  const rootDir = getWorkspaceRoot();
-  const dataDir = path.join(rootDir, "drills", "data");
+  const dataDir = getDrillsDataDir();
 
   if (!fs.existsSync(dataDir)) {
     return NextResponse.json({ error: "No data dir" }, { status: 404 });
@@ -23,7 +25,23 @@ export async function GET(req: NextRequest) {
     const filePath = path.join(dataDir, unit, `${id}.json`);
     if (fs.existsSync(filePath)) {
       const content = fs.readFileSync(filePath, "utf-8");
-      return NextResponse.json(JSON.parse(content));
+      const doc = JSON.parse(content);
+
+      if (!doc.unitTitle && doc.unitCode) {
+        try {
+          const idMapPath = path.join(getWorkspaceRoot(), "id_map.json");
+          if (fs.existsSync(idMapPath)) {
+            const idMap = JSON.parse(fs.readFileSync(idMapPath, "utf-8"));
+            doc.unitTitle = idMap[doc.unitCode]?.title || doc.unitCode;
+          } else {
+            doc.unitTitle = doc.unitCode;
+          }
+        } catch {
+          doc.unitTitle = doc.unitCode;
+        }
+      }
+
+      return NextResponse.json(doc);
     }
   }
 

@@ -1,0 +1,593 @@
+{
+  "schemaVersion": "2.0-math",
+  "drillId": "DRL-MTH-T02-C01-U01-02",
+  "subject": "MATH",
+  "unitCode": "MTH-T02-C01-U01",
+  "unitTitle": "Complex Numbers",
+  "chapterCode": "MTH-T02-C01",
+  "topicCode": "MTH-T02",
+  "unitNotionUrl": "https://www.notion.so/4013818f8ba080d7896bef2080bbc74a",
+  "createdAt": "2026-11-04 00:03:29",
+  "config": {
+    "questionCount": 10,
+    "difficulty": "ALL",
+    "difficultyMode": "Mixed Exam Mode"
+  },
+  "mistakeTags": [
+    {
+      "id": "sign-slip",
+      "label": "Sign slip with $i^2 = -1$",
+      "name": "Sign Slip (i^2 = -1)",
+      "autoFrom": [
+        "imag_sign_flip",
+        "real_sign_flip",
+        "whole_sign_flip"
+      ]
+    },
+    {
+      "id": "principal-root",
+      "label": "Combined $\\sqrt{-a}\\cdot\\sqrt{-b}$ into $\\sqrt{ab}$",
+      "name": "Principal Root Trap",
+      "autoFrom": []
+    },
+    {
+      "id": "conjugate-denominator",
+      "label": "Conjugate denominator: wrote $c^2 - d^2$ instead of $c^2 + d^2$",
+      "name": "Conjugate Denominator Error",
+      "autoFrom": [
+        "complex_denominator"
+      ]
+    },
+    {
+      "id": "power-cycle",
+      "label": "Power cycle of $i$: wrong remainder of $n \\div 4$",
+      "name": "Power of i Cycle Error",
+      "autoFrom": []
+    },
+    {
+      "id": "standard-form",
+      "label": "Not in standard form $a + bi$",
+      "name": "Unseparated Standard Form",
+      "autoFrom": [
+        "unseparated",
+        "unexpanded_power",
+        "uncombined_terms",
+        "unreduced_fraction"
+      ]
+    },
+    {
+      "id": "radical-simplify",
+      "label": "Radical not simplified, e.g. $\\sqrt{48} = 4\\sqrt{3}$",
+      "name": "Radical Simplification Error",
+      "autoFrom": [
+        "unsimplified_radical"
+      ]
+    },
+    {
+      "id": "arithmetic",
+      "label": "Arithmetic slip (FOIL or combining like terms)",
+      "name": "Arithmetic Slip",
+      "autoFrom": [
+        "off_by_factor",
+        "rounding",
+        "swapped_parts",
+        "constant_offset"
+      ]
+    },
+    {
+      "id": "setup",
+      "label": "Wrong setup or formula",
+      "name": "Setup or Formula Error",
+      "autoFrom": [
+        "reciprocal",
+        "wrong_component_count"
+      ]
+    }
+  ],
+  "problems": [
+    {
+      "category": "Core Skill",
+      "prompt": "Divide and write the quotient in standard form $a + bi$.",
+      "display": "\\frac{-5 + 4i}{2 + i}",
+      "plainText": "(-5 + 4i)/(2 + i)",
+      "answerSpec": {
+        "type": "complex",
+        "value": "-6/5 + (13/5)*I",
+        "forms": [
+          "a+bi",
+          "reduced_fraction"
+        ]
+      },
+      "answerDisplay": "-\\frac{6}{5} + \\frac{13}{5}i",
+      "answerPlain": "(-6/5) + (13/5)i",
+      "inputHint": "Standard form, e.g. 3 - 4i or -8/17 + 15/17 i",
+      "checkpointHint": "The new denominator is $2^2 + 1^2 = 5$.",
+      "commonTrapTag": "conjugate-denominator",
+      "steps": [
+        {
+          "latex": "\\frac{-5 + 4i}{2 + i} = \\frac{(-5 + 4i)(2 - i)}{(2 + i)(2 - i)}",
+          "explain": "Multiply the numerator and denominator by the conjugate $2 - i$ of the denominator."
+        },
+        {
+          "latex": "= \\frac{-10 + 5i + 8i - 4i^2}{2^2 + 1^2}",
+          "explain": "Expand the numerator with FOIL. The denominator is $(c + di)(c - di) = c^2 + d^2$ (always a plus sign)."
+        },
+        {
+          "latex": "= \\frac{-6 + 13i}{5}",
+          "explain": "Substitute $i^2 = -1$ and combine like terms."
+        },
+        {
+          "latex": "= -\\frac{6}{5} + \\frac{13}{5}i",
+          "explain": "Split into real and imaginary parts and reduce each fraction."
+        }
+      ],
+      "id": "Q01",
+      "templateKey": "divide-conjugate",
+      "level": 2,
+      "levelLabel": "Level 2 - Standard Exam",
+      "referenceBadges": [],
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "category": "Cross-Subject Application",
+      "context": "Physics Application: AC Circuits",
+      "references": [
+        "PHY-T01-C19"
+      ],
+      "prompt": "In an AC circuit the voltage phasor is $V = 10$ volts and the impedance is $Z = 1 - 3i$ ohms. Using Ohm's law $I = \\dfrac{V}{Z}$, find the current phasor $I$ in standard form $a + bi$ (amperes).",
+      "display": "I = \\frac{10}{1 - 3i}",
+      "plainText": "10/(1 - 3i)",
+      "answerSpec": {
+        "type": "complex",
+        "value": "1 + (3)*I",
+        "forms": [
+          "a+bi",
+          "reduced_fraction"
+        ]
+      },
+      "answerDisplay": "1 + 3i",
+      "answerPlain": "1 + 3i",
+      "inputHint": "Standard form, e.g. 3 - 4i or -8/17 + 15/17 i",
+      "checkpointHint": "Multiply by the conjugate $1 + 3i$; the denominator becomes $10$.",
+      "commonTrapTag": "conjugate-denominator",
+      "steps": [
+        {
+          "latex": "I = \\frac{V}{Z} = \\frac{10}{1 - 3i}",
+          "explain": "Substitute the given voltage and impedance into Ohm's law."
+        },
+        {
+          "latex": "= \\frac{10(1 + 3i)}{(1 - 3i)(1 + 3i)}",
+          "explain": "Multiply the numerator and denominator by the conjugate $1 + 3i$."
+        },
+        {
+          "latex": "= \\frac{10 + 30i}{1^2 + (-3)^2}",
+          "explain": "Distribute in the numerator; the denominator is $R^2 + X^2$."
+        },
+        {
+          "latex": "= 1 + 3i",
+          "explain": "Divide both parts by $10$ and reduce. The real part is the in-phase current; the imaginary part is the reactive (quadrature) current."
+        }
+      ],
+      "id": "Q02",
+      "templateKey": "ac-current",
+      "level": 4,
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "referenceBadges": [
+        {
+          "code": "PHY-T01-C19",
+          "title": "Electrical Circuits",
+          "notionUrl": "https://www.notion.so/4013818f8ba080ac9f43fd7ff5aa6235"
+        }
+      ],
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "category": "Core Skill",
+      "prompt": "Expand and write the result in standard form $a + bi$.",
+      "display": "(8 - 3i)^2",
+      "plainText": "(8 - 3i)^2",
+      "answerSpec": {
+        "type": "complex",
+        "value": "55 + (-48)*I",
+        "forms": [
+          "a+bi",
+          "reduced_fraction"
+        ]
+      },
+      "answerDisplay": "55 - 48i",
+      "answerPlain": "55 - 48i",
+      "inputHint": "Standard form, e.g. 3 - 4i or -8/17 + 15/17 i",
+      "checkpointHint": "Use $(a + bi)^2 = a^2 + 2abi + b^2 i^2$. Here $b^2 i^2 = -9$.",
+      "commonTrapTag": "sign-slip",
+      "steps": [
+        {
+          "latex": "(8 - 3i)^2 = 8^2 + 2(8)(-3i) + (-3i)^2",
+          "explain": "Apply the square of a binomial: $(x + y)^2 = x^2 + 2xy + y^2$."
+        },
+        {
+          "latex": "= 64 - 48i + 9i^2",
+          "explain": "Evaluate each square and product; note $(bi)^2 = b^2 i^2$."
+        },
+        {
+          "latex": "= 55 - 48i",
+          "explain": "Use $i^2 = -1$, so $9i^2 = -9$, then combine the real parts."
+        }
+      ],
+      "id": "Q03",
+      "templateKey": "square-binomial",
+      "level": 2,
+      "levelLabel": "Level 2 - Standard Exam",
+      "referenceBadges": [],
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "category": "Trap & Edge Case",
+      "prompt": "A student multiplied two complex numbers as shown. Which line contains the FIRST error?",
+      "display": "\\begin{aligned}&\\text{Line 1: }\\; (-1 + 2i)(-6 - 3i) = 6 + 3i - 12i - 6i^2 \\\\ &\\text{Line 2: }\\; = 6 - 9i - 6(-1) \\\\ &\\text{Line 3: }\\; = -9i\\end{aligned}",
+      "plainText": "(-1 + 2i)*(-6 - 3i)",
+      "answerSpec": {
+        "type": "choice",
+        "options": [
+          {
+            "id": "1",
+            "label": "Line 1"
+          },
+          {
+            "id": "2",
+            "label": "Line 2"
+          },
+          {
+            "id": "3",
+            "label": "Line 3"
+          }
+        ],
+        "correct": "3"
+      },
+      "answerDisplay": "\\text{Line 3}",
+      "answerPlain": "3",
+      "inputHint": "Choose a line",
+      "checkpointHint": "Compute the product yourself first; the correct result is not $-9i$.",
+      "commonTrapTag": "sign-slip",
+      "steps": [
+        {
+          "latex": "(-1 + 2i)(-6 - 3i) = 6 + 3i - 12i - 6i^2",
+          "explain": "Correct Line 1.  FOIL every pair of terms."
+        },
+        {
+          "latex": "= 6 - 9i - 6(-1)",
+          "explain": "Correct Line 2: combine imaginary terms and use $i^2 = -1$."
+        },
+        {
+          "latex": "= 12 - 9i",
+          "explain": "Line 3 is wrong: $-6(-1) = 6$, so the real part is $6 + 6 = 12$. The true product is $12 - 9i$."
+        }
+      ],
+      "id": "Q04",
+      "templateKey": "find-the-flaw",
+      "level": 3,
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "referenceBadges": [],
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "category": "Core Skill",
+      "prompt": "Multiply and write the product in standard form $a + bi$.",
+      "display": "(-2 - 2i)(-7 - 4i)",
+      "plainText": "(-2 - 2i)*(-7 - 4i)",
+      "answerSpec": {
+        "type": "complex",
+        "value": "6 + (22)*I",
+        "forms": [
+          "a+bi",
+          "reduced_fraction"
+        ]
+      },
+      "answerDisplay": "6 + 22i",
+      "answerPlain": "6 + 22i",
+      "inputHint": "Standard form, e.g. 3 - 4i or -8/17 + 15/17 i",
+      "checkpointHint": "After FOIL, the $i^2$ term is $8i^2$, which equals $-8$.",
+      "commonTrapTag": "sign-slip",
+      "steps": [
+        {
+          "latex": "(-2 - 2i)(-7 - 4i) = 14 + 8i + 14i + 8i^2",
+          "explain": "Distribute every term (FOIL: First, Outer, Inner, Last)."
+        },
+        {
+          "latex": "= 14 + 22i + 8(-1)",
+          "explain": "Combine the two imaginary terms and substitute $i^2 = -1$."
+        },
+        {
+          "latex": "= 6 + 22i",
+          "explain": "The last term becomes $-8$; add it to the real part: $14 - 8 = 6$."
+        }
+      ],
+      "id": "Q05",
+      "templateKey": "multiply",
+      "level": 2,
+      "levelLabel": "Level 2 - Standard Exam",
+      "referenceBadges": [],
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "category": "Combined with Prior Units",
+      "prompt": "Let $f(x) = x^2 + 5x + 6$. Evaluate $f(-3 - 4i)$ and write the result in standard form $a + bi$.",
+      "display": "f(-3 - 4i) = (-3 - 4i)^2 + 5(-3 - 4i) + 6",
+      "plainText": "(-3 - 4i)^2 + (5)*(-3 - 4i) + (6)",
+      "answerSpec": {
+        "type": "complex",
+        "value": "-16 + (4)*I",
+        "forms": [
+          "a+bi",
+          "reduced_fraction"
+        ]
+      },
+      "answerDisplay": "-16 + 4i",
+      "answerPlain": "-16 + 4i",
+      "inputHint": "Standard form, e.g. 3 - 4i or -8/17 + 15/17 i",
+      "checkpointHint": "First compute $(-3 - 4i)^2 = -7 + 24i$.",
+      "commonTrapTag": "sign-slip",
+      "steps": [
+        {
+          "latex": "f(-3 - 4i) = (-3 - 4i)^2 + 5(-3 - 4i) + 6",
+          "explain": "Substitute the complex number for every $x$, keeping it in parentheses."
+        },
+        {
+          "latex": "= (-7 + 24i) + (-15 - 20i) + 6",
+          "explain": "Square first: $(-3 - 4i)^2 = (-3)^2 + 2(-3)(-4i) + (-4i)^2 = -7 + 24i$. Then distribute $5$."
+        },
+        {
+          "latex": "= -16 + 4i",
+          "explain": "Add the real parts and the imaginary parts separately."
+        }
+      ],
+      "id": "Q06",
+      "templateKey": "evaluate-polynomial",
+      "level": 2,
+      "levelLabel": "Level 2 - Standard Exam",
+      "referenceBadges": [],
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "category": "Cross-Subject Application",
+      "context": "Graphics and Algorithms Application",
+      "references": [
+        "PRG-T01-C03"
+      ],
+      "prompt": "In a 2D game engine, points are stored as complex numbers $z = x + yi$. Multiplying by $-i$ rotates a point $90^\\circ clockwise$ about the origin. The point $(5, 7)$ is rotated $90^\\circ clockwise$ and then translated by $w = 6 - 6i$. Find the new point $(x', y')$.",
+      "display": "z' = -i(5 + 7i) + (6 - 6i)",
+      "plainText": "(-i)*(5 + 7i) + (6 - 6i)",
+      "answerSpec": {
+        "type": "tuple",
+        "values": [
+          "13",
+          "-11"
+        ],
+        "labels": [
+          "x'",
+          "y'"
+        ],
+        "acceptComplex": true
+      },
+      "answerDisplay": "(13, -11)",
+      "answerPlain": "(13, -11)",
+      "inputHint": "e.g. (5, 3)  or  5 + 3i",
+      "checkpointHint": "After the rotation only, the point is $(7, -5)$.",
+      "commonTrapTag": "sign-slip",
+      "steps": [
+        {
+          "latex": "z = 5 + 7i",
+          "explain": "Represent the point $(5, 7)$ as a complex number."
+        },
+        {
+          "latex": "-i(5 + 7i) = -5i - 7i^2 = 7 - 5i",
+          "explain": "Multiply by $-i$ and use $i^2 = -1$: the point $(x, y)$ maps to $(y, -x)$."
+        },
+        {
+          "latex": "z' = (7 - 5i) + (6 - 6i) = 13 - 11i",
+          "explain": "Add the translation $w$ component-wise. The new point is $(13, -11)$."
+        }
+      ],
+      "id": "Q07",
+      "templateKey": "rotation-2d",
+      "level": 4,
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "referenceBadges": [
+        {
+          "code": "PRG-T01-C03",
+          "title": "Problem Solving & Utility Toolkit",
+          "notionUrl": "https://www.notion.so/40c3818f8ba0815f8356d8e9627e7c24"
+        }
+      ],
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "category": "Core Skill",
+      "prompt": "Write the number in standard form $a + bi$ with the radical fully simplified.",
+      "display": "-7 + \\sqrt{-108}",
+      "plainText": "-7 + sqrt(-108)",
+      "answerSpec": {
+        "type": "complex",
+        "value": "-7 + 6*sqrt(3)*I",
+        "forms": [
+          "a+bi",
+          "simplified_radical"
+        ]
+      },
+      "answerDisplay": "-7 + 6\\sqrt{3}\\,i",
+      "answerPlain": "-7 + 6sqrt(3) i",
+      "inputHint": "e.g. 3 + 2sqrt(5) i",
+      "checkpointHint": "Factor the radicand as $108 = 36 \\cdot 3$ and use $\\sqrt{-1} = i$.",
+      "commonTrapTag": "radical-simplify",
+      "steps": [
+        {
+          "latex": "-7 + \\sqrt{-108} = -7 + \\sqrt{-1}\\cdot\\sqrt{108}",
+          "explain": "Split off the factor $-1$. This is valid here because only one radicand is negative."
+        },
+        {
+          "latex": "= -7 + i\\sqrt{36\\cdot 3}",
+          "explain": "Replace $\\sqrt{-1}$ with $i$ and factor out the largest perfect square $36$."
+        },
+        {
+          "latex": "= -7 + 6\\sqrt{3}\\,i",
+          "explain": "Take $\\sqrt{36} = 6$ outside the radical. Real part $-7$, imaginary part $6\\sqrt{3}$."
+        }
+      ],
+      "id": "Q08",
+      "templateKey": "radical-standard-form",
+      "level": 1,
+      "levelLabel": "Level 1 - Foundation",
+      "referenceBadges": [],
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "category": "Core Skill",
+      "prompt": "Simplify the power of $i$.",
+      "display": "i^{159}",
+      "plainText": "i^159",
+      "answerSpec": {
+        "type": "complex",
+        "value": "0 + (-1)*I",
+        "forms": [
+          "a+bi",
+          "reduced_fraction"
+        ]
+      },
+      "answerDisplay": "-i",
+      "answerPlain": "-i",
+      "inputHint": "One of 1, i, -1, -i",
+      "checkpointHint": "Divide the exponent by $4$ and keep only the remainder.",
+      "commonTrapTag": "power-cycle",
+      "steps": [
+        {
+          "latex": "i^{159} = i^{4\\cdot 39 + 3} = (i^4)^{39}\\cdot i^{3}",
+          "explain": "Divide the exponent by $4$: $159 = 4 \\cdot 39 + 3$, then split the power."
+        },
+        {
+          "latex": "= 1^{39}\\cdot i^{3}",
+          "explain": "Use $i^4 = 1$, so any power of $i^4$ equals $1$."
+        },
+        {
+          "latex": "= -i",
+          "explain": "Use the cycle value $i^3 = -i$."
+        }
+      ],
+      "id": "Q09",
+      "templateKey": "power-of-i",
+      "level": 1,
+      "levelLabel": "Level 1 - Foundation",
+      "referenceBadges": [],
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    },
+    {
+      "category": "Trap & Edge Case",
+      "prompt": "Simplify and write the result in standard form $a + bi$.",
+      "display": "4i^{26} + 3i^{25} - 2i^{94}",
+      "plainText": "(4)*i^26 + (3)*i^25 + (-2)*i^94",
+      "answerSpec": {
+        "type": "complex",
+        "value": "-2 + (3)*I",
+        "forms": [
+          "a+bi",
+          "reduced_fraction"
+        ]
+      },
+      "answerDisplay": "-2 + 3i",
+      "answerPlain": "-2 + 3i",
+      "inputHint": "Standard form, e.g. 3 - 4i or -8/17 + 15/17 i",
+      "checkpointHint": "The remainders of the exponents divided by $4$ are $2, 1, 2$.",
+      "commonTrapTag": "power-cycle",
+      "steps": [
+        {
+          "latex": "4i^{26} + 3i^{25} - 2i^{94} = 4i^{2} + 3i^{1} - 2i^{2}",
+          "explain": "Reduce each exponent modulo $4$: $26 = 4\\cdot 6 + 2, 25 = 4\\cdot 6 + 1, 94 = 4\\cdot 23 + 2$."
+        },
+        {
+          "latex": "= 4(-1) + 3(i) - 2(-1)",
+          "explain": "Replace each power using the cycle $i^0 = 1$, $i^1 = i$, $i^2 = -1$, $i^3 = -i$."
+        },
+        {
+          "latex": "= -2 + 3i",
+          "explain": "Combine the real terms and the imaginary terms; watch the sign of each coefficient."
+        }
+      ],
+      "id": "Q10",
+      "templateKey": "power-sum",
+      "level": 3,
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "referenceBadges": [],
+      "state": {
+        "userInput": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "lastCheck": null
+      }
+    }
+  ],
+  "sessionSummary": {
+    "practiceStatus": "Ready",
+    "score": 0,
+    "maxScore": 10,
+    "accuracyPct": 0,
+    "mistakeCategories": [],
+    "divergedStepsSummary": "",
+    "attemptDate": null,
+    "syncedToNotionAt": null,
+    "notionPageId": null
+  },
+  "localFilePath": "drills/data/MTH-T02-C01-U01/DRL-MTH-T02-C01-U01-02.json"
+}

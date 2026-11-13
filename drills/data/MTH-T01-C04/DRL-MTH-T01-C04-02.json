@@ -1,0 +1,964 @@
+{
+  "unitCode": "MTH-T01-C04",
+  "topicTitle": "Fractions & Invariant Ratios",
+  "drillId": "DRL-MTH-T01-C04-02",
+  "sourceAttribution": "OpenStax Prealgebra 2e, CC BY 4.0",
+  "problems": [
+    {
+      "id": "Q01",
+      "verificationLevel": "partial",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c04-fraction-simplification-gcf",
+      "context": "laboratory_chemical_dilution_ratio",
+      "prompt": "A laboratory chemical solution contains $48$ milliliters of solute dissolved in $60$ milliliters of total liquid. Express the ratio of solute to total liquid as a simplified irreducible fraction.",
+      "givens": {
+        "solute": 48,
+        "total_liquid": 60
+      },
+      "answerPlain": "4/5",
+      "answerSpec": {
+        "type": "number",
+        "value": "4/5",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c04-partial-common-factor-reduction",
+      "trapDerivation": "(60 - 48) / 60",
+      "trapValue": "1/5",
+      "trapGivens": [
+        60,
+        48
+      ],
+      "verify": {
+        "source": "4/5",
+        "trapValue": "1/5"
+      },
+      "checkpointHint": "Divide both the numerator and denominator by their greatest common divisor to obtain simplest form",
+      "references": [
+        "MTH-T01-C04"
+      ],
+      "steps": [
+        {
+          "latex": "\\gcd(48, 60) = 12",
+          "explain": "Find the greatest common factor of 48 and 60."
+        },
+        {
+          "latex": "\\frac{48}{60} = \\frac{48 \\div 12}{60 \\div 12}",
+          "explain": "Divide numerator and denominator by 12 to get 4/5."
+        },
+        {
+          "latex": "\\frac{48 \\div 12}{60 \\div 12} = \\frac{4}{5}",
+          "explain": "Simplify to obtain 4/5.",
+          "val": "4/5"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c04-partial-common-factor-reduction|direct|# / # = ?",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            1,
+            3
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c04-partial-common-factor-reduction",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "display": "\\frac{48}{60} = ?",
+      "plainText": "48 / 60 = ?",
+      "answerDisplay": "\\frac{4}{5}"
+    },
+    {
+      "id": "Q02",
+      "verificationLevel": "partial",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c04-fraction-multiplication-product",
+      "context": "solar_photovoltaic_efficiency_scaling",
+      "prompt": "An experimental solar cell produces $\\frac{3}{4}$ of its standard rated power during overcast conditions. When dust accumulation further reduces this output to $\\frac{2}{5}$ of its overcast level, calculate the resulting fraction of standard power produced.",
+      "givens": {
+        "num1": 3,
+        "den1": 4,
+        "num2": 2,
+        "den2": 5
+      },
+      "answerPlain": "3/10",
+      "answerSpec": {
+        "type": "number",
+        "value": "3/10",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c04-cross-multiplication-confusion",
+      "trapDerivation": "(3 * 5) / (4 * 2)",
+      "trapValue": "15/8",
+      "trapGivens": [
+        3,
+        4
+      ],
+      "verify": {
+        "source": "3/10",
+        "trapValue": "15/8"
+      },
+      "checkpointHint": "Multiply numerators together and multiply denominators together before simplifying common factors",
+      "references": [
+        "MTH-T01-C04"
+      ],
+      "steps": [
+        {
+          "latex": "\\frac{3}{4} \\times \\frac{2}{5} = \\frac{3 \\times 2}{4 \\times 5}",
+          "explain": "Multiply numerators and denominators straight across."
+        },
+        {
+          "latex": "\\frac{3 \\times 2}{4 \\times 5} = \\frac{6}{20}",
+          "explain": "Evaluate intermediate step."
+        },
+        {
+          "latex": "\\frac{6}{20} = \\frac{3}{10}",
+          "explain": "Simplify 6/20 by dividing numerator and denominator by 2 to get 3/10.",
+          "val": "3/10"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c04-cross-multiplication-confusion|direct|(#/#) * (#/#) = ?",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            1,
+            3
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c04-cross-multiplication-confusion",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "display": "\\frac{3}{4} \\times \\frac{2}{5} = ?",
+      "plainText": "(3/4) * (2/5) = ?",
+      "answerDisplay": "\\frac{3}{10}"
+    },
+    {
+      "id": "Q03",
+      "verificationLevel": "partial",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c04-fraction-division-reciprocal-inversion",
+      "context": "textile_cutting_fabric_yield",
+      "prompt": "A textile artisan has $\\frac{7}{8}$ of a bolt of silk fabric. Each custom scarf requires $\\frac{1}{4}$ of a bolt. How many scarves can be completed from this fabric?",
+      "givens": {
+        "fabric_num": 7,
+        "fabric_den": 8,
+        "scarf_num": 1,
+        "scarf_den": 4
+      },
+      "answerPlain": "7/2",
+      "answerSpec": {
+        "type": "number",
+        "value": "7/2",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c04-first-fraction-reciprocal-flip",
+      "trapDerivation": "(7 * 1) / (8 * 4)",
+      "trapValue": "7/32",
+      "trapGivens": [
+        7,
+        8
+      ],
+      "verify": {
+        "source": "7/2",
+        "trapValue": "7/32"
+      },
+      "checkpointHint": "Invert the divisor fraction and multiply by its reciprocal",
+      "references": [
+        "MTH-T01-C04"
+      ],
+      "steps": [
+        {
+          "latex": "\\frac{7}{8} \\div \\frac{1}{4} = \\frac{7}{8} \\times \\frac{4}{1}",
+          "explain": "Convert division to multiplication by inverting 1/4 to 4/1."
+        },
+        {
+          "latex": "\\frac{28}{8} = \\frac{7}{2}",
+          "explain": "Multiply and simplify 28/8 by dividing by 4 to get 7/2.",
+          "val": "7/2"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c04-first-fraction-reciprocal-flip|direct|(#/#) / (#/#) = ?",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            4
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c04-first-fraction-reciprocal-flip",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "display": "\\frac{7}{8} \\div \\frac{1}{4} = ?",
+      "plainText": "(7/8) / (1/4) = ?",
+      "answerDisplay": "\\frac{7}{2}"
+    },
+    {
+      "id": "Q04",
+      "verificationLevel": "partial",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c04-fraction-addition-like-denominators",
+      "context": "civil_road_paving_segment_progress",
+      "prompt": "A paving crew constructs $\\frac{3}{11}$ of a highway segment on Monday and $\\frac{5}{11}$ of the same highway segment on Tuesday. What total fraction of the highway segment is completed over the two days?",
+      "givens": {
+        "monday_num": 3,
+        "denominator": 11,
+        "tuesday_num": 5
+      },
+      "answerPlain": "8/11",
+      "answerSpec": {
+        "type": "number",
+        "value": "8/11",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c04-denominator-addition-fallacy",
+      "trapDerivation": "(3 + 5) / (11 + 11)",
+      "trapValue": "4/11",
+      "trapGivens": [
+        3,
+        11
+      ],
+      "verify": {
+        "source": "8/11",
+        "trapValue": "4/11"
+      },
+      "checkpointHint": "Sum the numerators while keeping the common denominator unchanged",
+      "references": [
+        "MTH-T01-C04"
+      ],
+      "steps": [
+        {
+          "latex": "\\frac{3}{11} + \\frac{5}{11} = \\frac{3 + 5}{11}",
+          "explain": "Add numerators over the common denominator 11."
+        },
+        {
+          "latex": "\\frac{8}{11}",
+          "explain": "Sum 3 + 5 to obtain 8/11.",
+          "val": "8/11"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c04-denominator-addition-fallacy|direct|#/# + #/# = ?",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            4
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c04-denominator-addition-fallacy",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "display": "\\frac{3}{11} + \\frac{5}{11} = ?",
+      "plainText": "3/11 + 5/11 = ?",
+      "answerDisplay": "\\frac{8}{11}"
+    },
+    {
+      "id": "Q05",
+      "verificationLevel": "partial",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c04-fraction-addition-unlike-denominators-lcd",
+      "context": "aerospace_composite_alloy_composition",
+      "prompt": "A composite material specification requires $\\frac{2}{3}$ kilogram of polymer resin and $\\frac{1}{5}$ kilogram of reinforcing fiber per batch. Find the total mass in kilograms of the composite batch.",
+      "givens": {
+        "resin_num": 2,
+        "resin_den": 3,
+        "fiber_num": 1,
+        "fiber_den": 5
+      },
+      "answerPlain": "13/15",
+      "answerSpec": {
+        "type": "number",
+        "value": "13/15",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c04-naive-numerator-denominator-sum",
+      "trapDerivation": "(2 + 1) / (3 + 5)",
+      "trapValue": "3/8",
+      "trapGivens": [
+        2,
+        3
+      ],
+      "verify": {
+        "source": "13/15",
+        "trapValue": "3/8"
+      },
+      "checkpointHint": "Find the least common denominator to convert both fractions to equivalent forms before adding",
+      "references": [
+        "MTH-T01-C04"
+      ],
+      "steps": [
+        {
+          "latex": "\\text{LCD}(3, 5) = 15",
+          "explain": "Find the least common denominator of 3 and 5."
+        },
+        {
+          "latex": "\\frac{2 \\times 5}{15} + \\frac{1 \\times 3}{15} = \\frac{10}{15} + \\frac{3}{15}",
+          "explain": "Convert each fraction into equivalent fifteenths."
+        },
+        {
+          "latex": "\\frac{10 + 3}{15} = \\frac{13}{15}",
+          "explain": "Sum the numerators to get 13/15.",
+          "val": "13/15"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c04-naive-numerator-denominator-sum|direct|#/# + #/# = ?",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            4
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c04-naive-numerator-denominator-sum",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 12
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "display": "\\frac{2}{3} + \\frac{1}{5} = ?",
+      "plainText": "2/3 + 1/5 = ?",
+      "answerDisplay": "\\frac{13}{15}"
+    },
+    {
+      "id": "Q06",
+      "verificationLevel": "partial",
+      "level": 3,
+      "category": "Trap & Diagnostic",
+      "archetype": "problem-solving",
+      "archetypeKey": "c04-mixed-number-regrouping-subtraction",
+      "context": "carpentry_timber_beam_trimming",
+      "prompt": "A master carpenter trims a timber beam of length $\\frac{15}{4}$ meters by cutting off a segment measuring $\\frac{7}{4}$ meters. Find the remaining length of the timber beam in meters as a simplified fraction.",
+      "givens": {
+        "initial_num": 15,
+        "denominator": 4,
+        "cut_num": 7
+      },
+      "answerPlain": "2",
+      "answerSpec": {
+        "type": "number",
+        "value": "2",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c04-subtraction-inversion-on-regrouping",
+      "trapDerivation": "(15 + 7) / 4",
+      "trapValue": "11/2",
+      "trapGivens": [
+        15,
+        4
+      ],
+      "verify": {
+        "source": "2",
+        "trapValue": "11/2"
+      },
+      "checkpointHint": "Subtract the cut length from the initial length preserving the common denominator",
+      "references": [
+        "MTH-T01-C04"
+      ],
+      "steps": [
+        {
+          "latex": "\\frac{15}{4} - \\frac{7}{4} = \\frac{15 - 7}{4}",
+          "explain": "Subtract numerators over the common denominator 4."
+        },
+        {
+          "latex": "\\frac{8}{4} = 2",
+          "explain": "Simplify 8/4 to obtain whole integer 2.",
+          "val": "2"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c04-subtraction-inversion-on-regrouping|direct|#/# - #/# = ?",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            5
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c04-subtraction-inversion-on-regrouping",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "display": "\\frac{15}{4} - \\frac{7}{4} = ?",
+      "plainText": "15/4 - 7/4 = ?",
+      "answerDisplay": "2"
+    },
+    {
+      "id": "Q07",
+      "verificationLevel": "partial",
+      "level": 3,
+      "category": "Trap & Diagnostic",
+      "archetype": "problem-solving",
+      "archetypeKey": "c04-complex-fraction-simplification",
+      "context": "electrical_network_conductance_ratio",
+      "prompt": "An electrical engineer simplifies the complex conductance ratio $\\frac{5/6}{2/3}$. What is the simplified irreducible value of this ratio?",
+      "givens": {
+        "top_num": 5,
+        "top_den": 6,
+        "bot_num": 2,
+        "bot_den": 3
+      },
+      "answerPlain": "5/4",
+      "answerSpec": {
+        "type": "number",
+        "value": "5/4",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c04-nested-fraction-inversion-slip",
+      "trapDerivation": "(5 * 2) / (6 * 3)",
+      "trapValue": "5/9",
+      "trapGivens": [
+        5,
+        6
+      ],
+      "verify": {
+        "source": "5/4",
+        "trapValue": "5/9"
+      },
+      "checkpointHint": "Multiply the top numerator fraction by the reciprocal of the bottom denominator fraction",
+      "references": [
+        "MTH-T01-C04"
+      ],
+      "steps": [
+        {
+          "latex": "\\frac{5/6}{2/3} = \\frac{5}{6} \\times \\frac{3}{2}",
+          "explain": "Multiply the numerator fraction 5/6 by the reciprocal 3/2."
+        },
+        {
+          "latex": "\\frac{15}{12} = \\frac{5}{4}",
+          "explain": "Simplify 15/12 by dividing by 3 to get 5/4.",
+          "val": "5/4"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c04-nested-fraction-inversion-slip|direct|(#/#) / (#/#) = ?",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            5
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c04-nested-fraction-inversion-slip",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "display": "\\frac{\\frac{5}{6}}{\\frac{2}{3}} = ?",
+      "plainText": "(5/6) / (2/3) = ?",
+      "answerDisplay": "\\frac{5}{4}"
+    },
+    {
+      "id": "Q08",
+      "verificationLevel": "partial",
+      "level": 3,
+      "category": "Trap & Diagnostic",
+      "archetype": "problem-solving",
+      "archetypeKey": "c04-fraction-one-step-linear-equation",
+      "context": "water_treatment_chlorine_infusion",
+      "prompt": "A water purification plant adds liquid chlorine such that $\\frac{3}{5}$ of the total required tank volume $x$ equals $45$ liters. Solve the equation $\\frac{3}{5} \\times x = 45$ to find the total tank volume $x$ in liters.",
+      "givens": {
+        "coeff_num": 3,
+        "coeff_den": 5,
+        "target": 45
+      },
+      "answerPlain": "75",
+      "answerSpec": {
+        "type": "number",
+        "value": "75",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c04-direct-coefficient-multiplication",
+      "trapDerivation": "(45 * 3) / 5",
+      "trapValue": "27",
+      "trapGivens": [
+        45,
+        3
+      ],
+      "verify": {
+        "source": "75",
+        "trapValue": "27"
+      },
+      "checkpointHint": "Multiply both sides by the reciprocal of the fractional coefficient to isolate the unknown",
+      "references": [
+        "MTH-T01-C04"
+      ],
+      "steps": [
+        {
+          "latex": "\\frac{3}{5}x = 45",
+          "explain": "Multiply both sides by reciprocal 5/3. (Part 1)"
+        },
+        {
+          "latex": "x = 45 \\times \\frac{5}{3}",
+          "explain": "Multiply both sides by reciprocal 5/3. (Part 2)"
+        },
+        {
+          "latex": "x = \\frac{225}{3}",
+          "explain": "Calculate 45 * 5 / 3 = 75 liters."
+        },
+        {
+          "latex": "x = 75",
+          "explain": "Simplify to obtain 75.",
+          "val": "75"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c04-direct-coefficient-multiplication|direct|(#/#) * x = #",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            5
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c04-direct-coefficient-multiplication",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "display": "\\frac{3}{5}x = 45 \\implies x = ?",
+      "plainText": "(3/5) * x = 45",
+      "answerDisplay": "75"
+    },
+    {
+      "id": "Q09",
+      "verificationLevel": "partial",
+      "level": 4,
+      "category": "Interleaved Synthesis",
+      "archetype": "problem-solving",
+      "archetypeKey": "c04-constrained-fractional-tank-drain-rate",
+      "context": "industrial_chemical_reactor_drainage",
+      "prompt": "An industrial holding vat is filled by an inflow pipe in $6$ hours and emptied by a drainage valve in $10$ hours. If both the pipe and the valve are left open simultaneously, after how many hours will the empty vat become completely full?",
+      "givens": {
+        "fill_time": 6,
+        "drain_time": 10
+      },
+      "answerPlain": "15",
+      "answerSpec": {
+        "type": "number",
+        "value": "15",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c04-work-rate-arithmetic-mean-trap",
+      "trapDerivation": "10 - 6",
+      "trapValue": "4",
+      "trapGivens": [
+        10,
+        6
+      ],
+      "verify": {
+        "source": "15",
+        "trapValue": "4"
+      },
+      "checkpointHint": "Subtract the fractional emptying rate from the fractional filling rate to find the net hourly rate",
+      "references": [
+        "MTH-T01-C04",
+        "OpenStax Prealgebra 2e §4.5"
+      ],
+      "competencies": [
+        "fractional-work-rate-synthesis",
+        "harmonic-rate-inversion"
+      ],
+      "constraints": [
+        "inflow exceeds outflow",
+        "positive net filling time"
+      ],
+      "steps": [
+        {
+          "latex": "\\text{Rate}_{\\text{net}} = \\frac{1}{6} - \\frac{1}{10}",
+          "explain": "Formulate net filling rate by subtracting drainage rate from inflow rate."
+        },
+        {
+          "latex": "\\frac{5}{30} - \\frac{3}{30} = \\frac{2}{30}",
+          "explain": "Convert to common denominator 30 and subtract to find net rate 1/15 per hour."
+        },
+        {
+          "latex": "\\frac{2}{30} = \\frac{1}{15}",
+          "explain": "Evaluate intermediate step."
+        },
+        {
+          "latex": "T = 15",
+          "explain": "Invert net rate to obtain total filling duration of 15 hours.",
+          "val": "15"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c04-work-rate-arithmetic-mean-trap|direct|#/# - #/# = #/T",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c04-work-rate-arithmetic-mean-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 12
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "display": "\\frac{1}{6} - \\frac{1}{10} = \\frac{1}{T} \\implies T = ?",
+      "plainText": "1/6 - 1/10 = 1/T",
+      "answerDisplay": "15"
+    },
+    {
+      "id": "Q10",
+      "verificationLevel": "partial",
+      "level": 4,
+      "category": "Interleaved Synthesis",
+      "archetype": "problem-solving",
+      "archetypeKey": "c04-multi-stage-fractional-remainder-synthesis",
+      "context": "emergency_grain_silo_reserve_relief",
+      "prompt": "An agricultural emergency silo holds an unknown initial reserve of grain in tons. During the first relief dispatch, $\\frac{1}{3}$ of the initial grain reserve is distributed. During the second dispatch, $\\frac{1}{4}$ of the remaining grain is distributed. Exactly $60$ tons of grain remain in the silo after both dispatches. Calculate the initial grain reserve in tons.",
+      "givens": {
+        "first_num": 1,
+        "first_den": 3,
+        "second_num": 1,
+        "second_den": 4,
+        "final_reserve": 60
+      },
+      "answerPlain": "120",
+      "answerSpec": {
+        "type": "number",
+        "value": "120",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c04-naive-fraction-addition-on-remainder",
+      "trapDerivation": "(60 * 3 * 4) / (3 * 4 - (4 + 3))",
+      "trapValue": "144",
+      "trapGivens": [
+        60,
+        3
+      ],
+      "verify": {
+        "source": "120",
+        "trapValue": "144"
+      },
+      "checkpointHint": "Calculate the fractional portion remaining after each stage before equating to the final reserve",
+      "references": [
+        "MTH-T01-C04",
+        "OpenStax Prealgebra 2e §4.3"
+      ],
+      "competencies": [
+        "multi-stage-remainder-synthesis",
+        "fractional-back-calculation"
+      ],
+      "constraints": [
+        "strictly positive reserve",
+        "successive stage fractions"
+      ],
+      "steps": [
+        {
+          "latex": "1 - \\frac{1}{3} = \\frac{2}{3}",
+          "explain": "Find remaining fraction factor after each dispatch stage. - component 1"
+        },
+        {
+          "latex": "1 - \\frac{1}{4} = \\frac{3}{4}",
+          "explain": "Find remaining fraction factor after each dispatch stage. - component 2"
+        },
+        {
+          "latex": "\\text{Fraction}_{\\text{rem}} = \\frac{2}{3} \\times \\frac{3}{4}",
+          "explain": "Multiply stage factors to find total fraction remaining is 1/2."
+        },
+        {
+          "latex": "\\frac{2}{3} \\times \\frac{3}{4} = \\frac{6}{12}",
+          "explain": "Evaluate intermediate step."
+        },
+        {
+          "latex": "\\frac{6}{12} = \\frac{1}{2}",
+          "explain": "Evaluate intermediate step."
+        },
+        {
+          "latex": "\\frac{1}{2} T = 60",
+          "explain": "Multiply 60 by 2 to find initial reserve 120 tons. (Part 1)"
+        },
+        {
+          "latex": "T = 60 \\times 2",
+          "explain": "Multiply 60 by 2 to find initial reserve 120 tons. (Part 2)"
+        },
+        {
+          "latex": "T = 120",
+          "explain": "Evaluate intermediate step.",
+          "val": "120"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c04-naive-fraction-addition-on-remainder|direct|(# - #/#) * (# - #/#) * T = #",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c04-naive-fraction-addition-on-remainder",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 12
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "display": "\\left(1 - \\frac{1}{3}\\right)\\left(1 - \\frac{1}{4}\\right) T = 60 \\implies T = ?",
+      "plainText": "(1 - 1/3) * (1 - 1/4) * T = 60",
+      "answerDisplay": "120"
+    }
+  ],
+  "schemaVersion": "2.0-math",
+  "subject": "MATH",
+  "createdAt": "2026-11-09 19:40:08",
+  "config": {
+    "questionCount": 10,
+    "difficulty": "ALL",
+    "difficultyMode": "AI Synthesized Reasoning Mode"
+  },
+  "sessionSummary": {
+    "practiceStatus": "Ready",
+    "score": 0,
+    "maxScore": 10,
+    "accuracyPct": 0,
+    "mistakeCategories": [],
+    "divergedStepsSummary": "",
+    "attemptDate": null,
+    "syncedToNotionAt": null,
+    "notionPageId": null
+  },
+  "localFilePath": "drills/data/MTH-T01-C04/DRL-MTH-T01-C04-02.json",
+  "unitTitle": "Fractions",
+  "title": "Fractions — Verified Math Drill (10 Qs · Mixed Exam Mode)"
+}

@@ -1,0 +1,388 @@
+{
+  "unitCode": "MTH-T01-C06",
+  "topicTitle": "Percents",
+  "description": "Reasoning Schemas & Problem-Solving Archetypes for Percents. Focuses on mental models, invariant conservation, and algebraic inversion across versatile real-world domains.",
+  "archetypes": [
+    {
+      "archetypeKey": "c06-rate-base-part-triad",
+      "level": 1,
+      "name": "Part-Base-Rate Triad (สัดส่วนพื้นฐานและย้อนกลับ)",
+      "coreConcept": "Percents express a ratio relative to 100. Relates three quantities: Part = (Rate / 100) * Base, Rate = (Part / Base) * 100, Base = (Part * 100) / Rate.",
+      "mentalModel": [
+        "1. Identify which entity represents the complete whole (the 100% Base).",
+        "2. Identify the specific sub-portion (the Part) and the comparative ratio (the Rate).",
+        "3. Isolate the missing entity using dimensional multiplication or division by 100."
+      ],
+      "governingRelation": "Part = (Rate / 100) * Base",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c06-percent-decimal-conversion",
+          "description": "Failed to divide by 100 when converting percent to decimal or fraction, scaling the result by 100x.",
+          "trapFormula": "Part_trap = Rate * Base"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "reading_progress",
+          "description": "Reading pages of a book (e.g. read 35% of a 240-page textbook)."
+        },
+        {
+          "domain": "device_battery",
+          "description": "Smartphone battery discharge or power bank capacity."
+        },
+        {
+          "domain": "attendance",
+          "description": "Student attendance or conference registration turnout."
+        },
+        {
+          "domain": "storage_drive",
+          "description": "SSD storage capacity used by multimedia files."
+        }
+      ],
+      "usedContexts": [
+        "arithmetic:abstract_numbers",
+        "solar_battery_storage",
+        "academic_textbook_reading_progress"
+      ]
+    },
+    {
+      "archetypeKey": "c06-pre-change-base-recovery",
+      "level": 2,
+      "name": "Pre-Change Base Recovery (การย้อนหาค่าตั้งต้นก่อนการเปลี่ยนแปลง)",
+      "coreConcept": "When a value changes by r%, the final value represents (100 ± r)% of the original base. Recovering the original base requires dividing by the retention multiplier, NOT applying the percentage to the final price.",
+      "mentalModel": [
+        "1. Identify whether the change is an increase or decrease.",
+        "2. Write the retention multiplier: M = (100 - discount)% or (100 + markup)%.",
+        "3. Set up the equation: M * Original = Final.",
+        "4. Solve for Original: Original = Final / M."
+      ],
+      "governingRelation": "P_original = S_final / (1 - r_discount / 100)",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c06-reverse-discount-base-trap",
+          "description": "Applied discount percentage directly to the final discounted price and added it back, yielding an underestimated base.",
+          "trapFormula": "P_trap = S_final * (1 + r_discount / 100)"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "retail_hardware",
+          "description": "Discounted electronics, tools, or monitors on sale."
+        },
+        {
+          "domain": "payroll_salary",
+          "description": "Take-home pay after standard tax/benefit deduction to recover gross salary."
+        },
+        {
+          "domain": "storage_volume",
+          "description": "Remaining liquid in a commercial tank after an operational evaporation/loss."
+        },
+        {
+          "domain": "sports_stamina",
+          "description": "Remaining battery power on an EV vehicle after a road trip leg."
+        }
+      ],
+      "usedContexts": [
+        "retail_hardware:monitor_sale",
+        "artisan_leather_backpack",
+        "conservatory_orchestral_cello_clearance"
+      ]
+    },
+    {
+      "archetypeKey": "c06-relative-change-base-shift",
+      "level": 2,
+      "name": "Relative Change & Base-Shift Asymmetry (อัตราการเปลี่ยนแปลงและการสลับฐาน)",
+      "coreConcept": "Percent change is always calculated with respect to the initial (old) state: Δ / Old. Because Old ≠ New, an increase of X% from A to B does NOT equal a decrease of X% from B to A.",
+      "mentalModel": [
+        "1. Calculate the absolute change: |New - Old|.",
+        "2. Crucial Pivot: Identify the strictly chronological baseline (the Old value).",
+        "3. Divide change by the Old value and multiply by 100%."
+      ],
+      "governingRelation": "PercentChange = ((V_new - V_old) / V_old) * 100",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c06-percent-change-wrong-base",
+          "description": "Divided the absolute change by the new final value instead of the initial baseline.",
+          "trapFormula": "Rate_trap = ((V_new - V_old) / V_new) * 100"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "fitness_training",
+          "description": "Weekly running mileage or cycling benchmark improvement."
+        },
+        {
+          "domain": "cloud_infrastructure",
+          "description": "Monthly AWS server compute bill reduction or spike."
+        },
+        {
+          "domain": "city_demographics",
+          "description": "Municipality population change between two census periods."
+        },
+        {
+          "domain": "app_engagement",
+          "description": "Daily active user (DAU) metric change after a product update."
+        }
+      ],
+      "usedContexts": [
+        "cloud_server_subscription"
+      ]
+    },
+    {
+      "archetypeKey": "c06-successive-multipliers-compounding",
+      "level": 3,
+      "name": "Successive Multiplier Compounding (การเปลี่ยนแปลงต่อเนื่องแบบตัวคูณทบ)",
+      "coreConcept": "Sequential percentage changes apply to intermediate updated bases, multiplying compounding factors (1 + r1)(1 - r2). They NEVER add linearly.",
+      "mentalModel": [
+        "1. Translate each percentage step into its respective decimal multiplier: (1 + r_up/100) or (1 - r_down/100).",
+        "2. Chain the multipliers sequentially: V_final = V_0 * M1 * M2.",
+        "3. Never combine percentages by simple addition or subtraction."
+      ],
+      "governingRelation": "V_final = V_0 * (1 + r1 / 100) * (1 - r2 / 100)",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c06-successive-percent-linear-add",
+          "description": "Added/subtracted successive percentages linearly (e.g. +20% then -20% = 0% net change).",
+          "trapFormula": "V_trap = V_0 * (1 + (r1 - r2) / 100)"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "investment_portfolio",
+          "description": "Stock portfolio moving up in Q1 and declining in Q2."
+        },
+        {
+          "domain": "commercial_merchandising",
+          "description": "Wholesale goods marked up by retailer, then discounted during clearance."
+        },
+        {
+          "domain": "material_expansion",
+          "description": "Metal alloy thermal expansion followed by contraction."
+        },
+        {
+          "domain": "streaming_subscribers",
+          "description": "Subscriber base surge during holiday season followed by post-holiday churn."
+        }
+      ],
+      "usedContexts": [
+        "investment_portfolio:quarterly_shift",
+        "commercial_merchandising:clearance",
+        "boutique_designer_coat_seasonal"
+      ]
+    },
+    {
+      "archetypeKey": "c06-parallel-vs-cascading-rates",
+      "level": 3,
+      "name": "Parallel Subtotal Additions vs. Cascading (หลายอัตราส่วนบนฐานเดียวกัน)",
+      "coreConcept": "When multiple fees, taxes, or tips are assessed on a transaction, examine contract definitions: independent parallel rates add to the same base subtotal, whereas cascading fees apply sequentially.",
+      "mentalModel": [
+        "1. Identify the common baseline (subtotal before taxes and gratuity).",
+        "2. Calculate each component independently from the common baseline.",
+        "3. Total = Subtotal * (1 + Rate_tax/100 + Rate_tip/100) for parallel additions."
+      ],
+      "governingRelation": "Total = Base * (1 + r_tax / 100 + r_tip / 100)",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c06-tax-tip-compounding-confusion",
+          "description": "Cascaded the gratuity on top of the taxed total instead of the original subtotal.",
+          "trapFormula": "Total_trap = Base * (1 + r_tax / 100) * (1 + r_tip / 100)"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "restaurant_hospitality",
+          "description": "Dining bill with state sales tax and staff service tip assessed on subtotal."
+        },
+        {
+          "domain": "employee_payroll",
+          "description": "Gross monthly paycheck with health insurance (4%) and 401(k) deduction (6%) on gross."
+        },
+        {
+          "domain": "hotel_booking",
+          "description": "Nightly room charge with city tourism assessment and county occupancy tax."
+        }
+      ],
+      "usedContexts": [
+        "restaurant_dining_meal_tax_tip"
+      ]
+    },
+    {
+      "archetypeKey": "c06-invariant-component-under-variable-total",
+      "level": 4,
+      "name": "Invariant Component under Variable Total (การปรับสัดส่วนโดยเติมองค์ประกอบเดียวเมื่อฐานรวมเปลี่ยน)",
+      "coreConcept": "Adding a pure single component changes both that component and the total base, but the UNTOUCHED component remains constant in absolute quantity. Equating the invariant quantity across initial and final states gives the closed-form solution.",
+      "mentalModel": [
+        "1. Identify the Invariant: Which component is NOT being added or removed?",
+        "2. Calculate the absolute amount of the invariant component in the initial state.",
+        "3. In the new state, the invariant component must constitute (100 - C_target)% of the new total.",
+        "4. Set up: Invariant = (100 - C_target)% * Total_new. Solve for Total_new.",
+        "5. Added quantity = Total_new - Total_initial."
+      ],
+      "governingRelation": "x_added = Total_initial * (C_target - C_initial) / (100 - C_target)",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c06-variable-base-neglect",
+          "description": "Added quantity x only to the numerator, forgetting that the total denominator also expands by x.",
+          "trapFormula": "x_trap = Total_initial * (C_target - C_initial) / 100"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "culinary_beverage",
+          "description": "Fresh orange juice with 10% natural sugar; how many grams of pure sugar to add so sweetness reaches 25%?"
+        },
+        {
+          "domain": "esports_analytics",
+          "description": "Gaming team with 40% win rate across 20 matches; how many consecutive wins needed to reach a 60% win rate?"
+        },
+        {
+          "domain": "club_membership",
+          "description": "Student club of 50 members is 30% female; how many new female members to recruit so female share is 50%?"
+        },
+        {
+          "domain": "portfolio_rebalancing",
+          "description": "Investment portfolio of $100k has 20% equity; how much cash to inject directly into equity to achieve 40% equity weighting?"
+        },
+        {
+          "domain": "chemistry_solutions",
+          "description": "Saline solution evaporation or salt addition."
+        }
+      ],
+      "usedContexts": [
+        "chemistry_antiseptic_alcohol",
+        "jewelry_metallurgy_gold_copper_smelting"
+      ]
+    },
+    {
+      "archetypeKey": "c06-weighted-split-conservation",
+      "level": 4,
+      "name": "Weighted Split Conservation (การแบ่งส่วนย่อยและสมดุลผลรวม)",
+      "coreConcept": "A single pool of resources is divided into two segments with different percentage rates. Given total pool and total weighted return/yield, express one unknown as (Total - x) to solve a linear conservation equation.",
+      "mentalModel": [
+        "1. Define the variable x for one of the segments, and (Total - x) for the other.",
+        "2. Write the weighted contribution equation: (r1/100)*x + (r2/100)*(Total - x) = Overall_Yield.",
+        "3. Clear denominators by multiplying by 100, expand, isolate x, and solve."
+      ],
+      "governingRelation": "(r1 / 100) * x + (r2 / 100) * (Total - x) = Target_Yield",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c06-simple-interest-split-trap",
+          "description": "Swapped interest rates or coefficients between the two segments, solving for the wrong allocation.",
+          "trapFormula": "x_swapped = (100 * Target_Yield - r2 * Total) / (r1 - r2)"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "split_fixed_income",
+          "description": "Capital split between government treasury bond (low yield) and corporate bond (high yield)."
+        },
+        {
+          "domain": "coffee_bean_blending",
+          "description": "Blending mild beans (10% premium) and dark roast beans (4% discount) for target blended margin."
+        },
+        {
+          "domain": "metallurgy_alloy",
+          "description": "Melting two brass scrap alloys with 60% and 85% copper content to achieve a target alloy weight."
+        },
+        {
+          "domain": "dual_tier_ticketing",
+          "description": "Theater hall seating with general admission (80% occupancy) and VIP box (95% occupancy)."
+        }
+      ],
+      "usedContexts": [
+        "split_fixed_income:bonds",
+        "municipal_vs_corporate_bonds"
+      ]
+    },
+    {
+      "archetypeKey": "c06-simple-interest-time-scaling",
+      "level": 3,
+      "name": "Simple Interest Time Scaling & Balance Accrual (ดอกเบี้ยคงต้นและการปรับสเกลหน่วยเวลา)",
+      "source": "OpenStax Prealgebra 2e §6.4",
+      "coreConcept": "Interest accrues linearly according to I = P * r * t where rate r is annual (per year). When time t is given in months, it must be converted to years (t = months / 12). Total maturity value is A = P + I.",
+      "mentalModel": [
+        "1. Identify principal P, annual rate r, and duration t.",
+        "2. Convert time to years: if in months, t = months / 12.",
+        "3. Calculate interest: I = P * (r / 100) * (months / 12).",
+        "4. If total maturity balance is requested, add P + I."
+      ],
+      "governingRelation": "I = P * (r / 100) * (m / 12)",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c06-interest-month-time-trap",
+          "description": "Substituted raw month count directly without dividing by 12, inflating interest by 12x.",
+          "trapFormula": "I_trap = P * (r / 100) * m"
+        },
+        {
+          "trapTag": "c06-interest-principal-omission",
+          "description": "Reported only interest I when asked for total repayment A = P + I.",
+          "trapFormula": "A_trap = I"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "certificate_of_deposit",
+          "description": "Fixed-term savings deposit at a community credit union."
+        },
+        {
+          "domain": "equipment_microloan",
+          "description": "Short-term small business loan for shop equipment."
+        },
+        {
+          "domain": "tuition_installment",
+          "description": "Deferred tuition installment plan over 6 to 9 months."
+        },
+        {
+          "domain": "invoice_penalty",
+          "description": "Commercial invoice late payment interest penalty."
+        }
+      ],
+      "usedContexts": [
+        "certificate_of_deposit",
+        "bakery_equipment_financing_loan"
+      ]
+    },
+    {
+      "archetypeKey": "c06-proportional-rate-scaling",
+      "level": 2,
+      "name": "Proportional Rate Equivalence & Cross-Scaling (สัดส่วนอัตราคงที่และการเทียบข้ามมิติ)",
+      "source": "OpenStax Prealgebra 2e §6.5",
+      "coreConcept": "Two equal ratios form a proportion a/b = c/d <=> a*d = b*c. Enables scaling between two distinct dimensions (e.g. weight to dosage, distance to fuel).",
+      "mentalModel": [
+        "1. Align matching units: UnitA_1 / UnitB_1 = UnitA_2 / UnitB_2.",
+        "2. Set up cross products: a * d = b * c.",
+        "3. Solve for unknown dimension by dividing by the paired coefficient."
+      ],
+      "governingRelation": "a / b = c / d => x = (b * c) / a",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c06-inverted-proportion-trap",
+          "description": "Inverted one ratio (e.g. A/B = D/C), flipping the scaling multiplier.",
+          "trapFormula": "x_trap = (a * c) / b"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "pediatric_dosing",
+          "description": "Prescribing liquid medicine dosage in ml per kg of child weight."
+        },
+        {
+          "domain": "cartography_scale",
+          "description": "Map distance in cm scaled to actual terrain distance in km."
+        },
+        {
+          "domain": "fuel_telemetry",
+          "description": "Vehicle fuel consumption in liters per 100 km."
+        },
+        {
+          "domain": "culinary_scaling",
+          "description": "Bakery recipe ingredient scaling for batch size changes."
+        }
+      ],
+      "usedContexts": [
+        "pediatric_dosing",
+        "cartography_scale"
+      ]
+    }
+  ]
+}

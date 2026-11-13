@@ -1,0 +1,438 @@
+{
+  "unitCode": "PRG-T00-C02",
+  "unitTitle": "JavaScript & TypeScript Baseline",
+  "drillId": "DRL-PRG-T00-C02-01",
+  "environment": "node-vanilla",
+  "sourceAttribution": "JavaScript & TypeScript Runtime Standards (MDN & ECMAScript 2024), CC BY 4.0",
+  "problems": [
+    {
+      "id": "Q01",
+      "verificationLevel": "partial",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "prg-c02-primitive-coercion-guard",
+      "context": "api_config_sanitizer",
+      "entryPoint": "sanitizeConfig",
+      "prompt": "Implement `sanitizeConfig(rawConfig, schema)` for microservice environment configurations.\n\n**System Requirements:**\n- `schema` defines expected keys and their default primitive values: `{ [key: string]: string | number | boolean }`.\n- For each key in `schema`: if `rawConfig[key]` is `null` or `undefined`, fall back to `schema[key]`.\n- Crucial: Legitimate falsy primitive values (`0`, `false`, `\"\"`) in `rawConfig` must be preserved and NOT overwritten by defaults.\n- Discard any extraneous keys in `rawConfig` that are not present in `schema`.",
+      "inputHint": "Distinguish between nullish values (null/undefined) and valid falsy primitives using nullish coalescing",
+      "starterCode": "function sanitizeConfig(rawConfig, schema) {\n  // TODO: implement defensive config sanitization\n  return {};\n}\n\nmodule.exports = { sanitizeConfig };\n",
+      "solutionCode": "function sanitizeConfig(rawConfig, schema) {\n  const sanitized = {};\n  const safeRaw = rawConfig || {};\n  for (const [key, defaultVal] of Object.entries(schema)) {\n    const rawVal = safeRaw[key];\n    sanitized[key] = (rawVal !== null && rawVal !== undefined) ? rawVal : defaultVal;\n  }\n  return sanitized;\n}\n\nmodule.exports = { sanitizeConfig };\n",
+      "visibleTests": [
+        {
+          "name": "should preserve legitimate falsy values like zero, false, and empty string",
+          "testCode": "const schema = { retries: 3, debug: true, prefix: 'APP_' };\nconst raw = { retries: 0, debug: false, prefix: '' };\nconst result = sanitizeConfig(raw, schema);\nassert.strictEqual(result.retries, 0);\nassert.strictEqual(result.debug, false);\nassert.strictEqual(result.prefix, '');\n"
+        },
+        {
+          "name": "should use default values when properties are null, undefined, or missing",
+          "testCode": "const schema = { port: 8080, host: 'localhost', ssl: false };\nconst raw = { port: null, host: undefined };\nconst result = sanitizeConfig(raw, schema);\nassert.strictEqual(result.port, 8080);\nassert.strictEqual(result.host, 'localhost');\nassert.strictEqual(result.ssl, false);\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "should discard extraneous keys not present in schema",
+          "testCode": "const schema = { allowed: true };\nconst raw = { allowed: false, maliciousPayload: 'DROP TABLE', token: 'secret' };\nconst result = sanitizeConfig(raw, schema);\nassert.strictEqual(result.allowed, false);\nassert.strictEqual(result.maliciousPayload, undefined);\nassert.strictEqual(result.token, undefined);\nassert.deepStrictEqual(Object.keys(result), ['allowed']);\n"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Iterate schema keys using nullish check to preserve legitimate falsy values."
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "Core Skill|direct|sanitizeConfig",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 1,
+          "hasTrapOrFlaw": false,
+          "skill": null,
+          "stepRange": [
+            1,
+            3
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": null,
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 3
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "workspaceFile": "drills/workspace/DRL-PRG-T00-C02-01/Q01_sanitizeConfig.js",
+      "workspaceDir": "/Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-01",
+      "cursorUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-01/Q01_sanitizeConfig.js",
+      "vscodeUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-01/Q01_sanitizeConfig.js",
+      "cursorFolderUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-01",
+      "vscodeFolderUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-01"
+    },
+    {
+      "id": "Q02",
+      "verificationLevel": "partial",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "prg-c02-lexical-closure-factory",
+      "context": "metrics_counter_registry",
+      "entryPoint": "createCounterRegistry",
+      "prompt": "Implement `createCounterRegistry()` to track high-throughput microservice metrics.\n\n**System Requirements:**\n- `increment(metric, amount = 1)`: Increases the integer counter for `metric` by `amount`. Defaults to starting at 0.\n- `getCount(metric)`: Returns the current count for `metric`, or `0` if not yet incremented.\n- `getSnapshot()`: Returns a snapshot plain object containing `{ [metric]: count }`.\n- Immutability & Encapsulation: Mutating the object returned by `getSnapshot()` must NOT alter internal registry state.",
+      "inputHint": "Return a shallow clone in getSnapshot to prevent external mutation of encapsulated state",
+      "starterCode": "function createCounterRegistry() {\n  // TODO: implement encapsulated metric counter registry\n  return {\n    increment(metric, amount = 1) {},\n    getCount(metric) { return 0; },\n    getSnapshot() { return {}; }\n  };\n}\n\nmodule.exports = { createCounterRegistry };\n",
+      "solutionCode": "function createCounterRegistry() {\n  const metrics = new Map();\n\n  return {\n    increment(metric, amount = 1) {\n      const current = metrics.get(metric) || 0;\n      metrics.set(metric, current + amount);\n    },\n    getCount(metric) {\n      return metrics.get(metric) || 0;\n    },\n    getSnapshot() {\n      const snapshot = {};\n      for (const [k, v] of metrics.entries()) {\n        snapshot[k] = v;\n      }\n      return snapshot;\n    }\n  };\n}\n\nmodule.exports = { createCounterRegistry };\n",
+      "visibleTests": [
+        {
+          "name": "should record and accumulate counts across multiple metrics",
+          "testCode": "const registry = createCounterRegistry();\nassert.strictEqual(registry.getCount('http_requests'), 0);\nregistry.increment('http_requests');\nregistry.increment('http_requests', 4);\nregistry.increment('db_errors', 2);\nassert.strictEqual(registry.getCount('http_requests'), 5);\nassert.strictEqual(registry.getCount('db_errors'), 2);\n"
+        },
+        {
+          "name": "should protect internal registry state from external mutation via snapshot",
+          "testCode": "const registry = createCounterRegistry();\nregistry.increment('api_calls', 10);\nconst snapshot = registry.getSnapshot();\nassert.strictEqual(snapshot.api_calls, 10);\nsnapshot.api_calls = 999; // Attempt external corruption\nassert.strictEqual(registry.getCount('api_calls'), 10);\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "should handle default increment amount and multiple distinct metrics",
+          "testCode": "const registry = createCounterRegistry();\nregistry.increment('m1');\nregistry.increment('m2', 0);\nassert.strictEqual(registry.getCount('m1'), 1);\nassert.strictEqual(registry.getCount('m2'), 0);\nassert.strictEqual(registry.getCount('unknown'), 0);\n"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Maintain internal metrics in a closure-scoped store."
+        },
+        {
+          "explain": "Expose accessors returning defensive copies to preserve encapsulation."
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "Core Skill|direct|createCounterRegistry",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 2,
+          "hasTrapOrFlaw": false,
+          "skill": null,
+          "stepRange": [
+            2,
+            4
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": null,
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 4
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "workspaceFile": "drills/workspace/DRL-PRG-T00-C02-01/Q02_createCounterRegistry.js",
+      "workspaceDir": "/Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-01",
+      "cursorUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-01/Q02_createCounterRegistry.js",
+      "vscodeUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-01/Q02_createCounterRegistry.js",
+      "cursorFolderUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-01",
+      "vscodeFolderUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-01"
+    },
+    {
+      "id": "Q03",
+      "verificationLevel": "partial",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "debugging",
+      "archetypeKey": "prg-c02-immutable-array-pipeline",
+      "context": "ecommerce_order_revenue_analyzer",
+      "entryPoint": "aggregateCategoryRevenue",
+      "prompt": "Debug `aggregateCategoryRevenue(transactions)` in an e-commerce revenue accounting service.\n\n**System Requirements:**\n- `transactions`: Array of `{ category: string, amount: number, status: 'completed' | 'refunded' | 'pending' }`.\n- Sum total net revenue per category: completed transactions add `amount`, refunded transactions subtract `amount`, pending are ignored.\n- Immutability Contract: Input `transactions` array and its items must remain strictly unmodified (no in-place sorting or mutations).\n- Return format: Object `{ [category]: netRevenue }` rounded to 2 decimal places.",
+      "inputHint": "Avoid mutating the input transaction array and aggregate using pure collection traversal",
+      "starterCode": "function aggregateCategoryRevenue(transactions) {\n  // Naive implementation with destructive in-place mutation and sorting\n  transactions.sort((a, b) => a.category.localeCompare(b.category));\n  const revenue = {};\n  for (const tx of transactions) {\n    if (tx.status === 'pending') continue;\n    revenue[tx.category] = (revenue[tx.category] || 0) + tx.amount;\n  }\n  return revenue;\n}\n\nmodule.exports = { aggregateCategoryRevenue };\n",
+      "solutionCode": "function aggregateCategoryRevenue(transactions) {\n  const revenue = {};\n  for (const tx of transactions) {\n    if (tx.status === 'completed') {\n      revenue[tx.category] = (revenue[tx.category] || 0) + tx.amount;\n    } else if (tx.status === 'refunded') {\n      revenue[tx.category] = (revenue[tx.category] || 0) - tx.amount;\n    }\n  }\n  for (const cat of Object.keys(revenue)) {\n    revenue[cat] = Math.round(revenue[cat] * 100) / 100;\n  }\n  return revenue;\n}\n\nmodule.exports = { aggregateCategoryRevenue };\n",
+      "visibleTests": [
+        {
+          "name": "should calculate net revenue per category accounting for refunds and completed orders",
+          "testCode": "const txs = [\n  { category: 'hardware', amount: 150, status: 'completed' },\n  { category: 'software', amount: 80, status: 'completed' },\n  { category: 'hardware', amount: 50, status: 'refunded' },\n  { category: 'software', amount: 200, status: 'pending' }\n];\nconst res = aggregateCategoryRevenue(txs);\nassert.strictEqual(res.hardware, 100);\nassert.strictEqual(res.software, 80);\n"
+        },
+        {
+          "name": "should not mutate the original order or elements of the input array (Reproducer Test)",
+          "testCode": "const txs = [\n  { category: 'zebra', amount: 100, status: 'completed' },\n  { category: 'apple', amount: 50, status: 'completed' }\n];\nconst originalFirst = txs[0].category;\naggregateCategoryRevenue(txs);\nassert.strictEqual(txs[0].category, originalFirst, 'Input array was mutated in-place by sort!');\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "should handle empty transactions array gracefully",
+          "testCode": "const res = aggregateCategoryRevenue([]);\nassert.deepStrictEqual(res, {});\n"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Traverse transactions without calling in-place mutators like sort."
+        },
+        {
+          "explain": "Deduct refunded amounts and omit pending transactions."
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "Core Skill|direct|aggregateCategoryRevenue",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "debugging"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            4
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": null,
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 4
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "workspaceFile": "drills/workspace/DRL-PRG-T00-C02-01/Q03_aggregateCategoryRevenue.js",
+      "workspaceDir": "/Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-01",
+      "cursorUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-01/Q03_aggregateCategoryRevenue.js",
+      "vscodeUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-01/Q03_aggregateCategoryRevenue.js",
+      "cursorFolderUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-01",
+      "vscodeFolderUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-01"
+    },
+    {
+      "id": "Q04",
+      "verificationLevel": "partial",
+      "level": 3,
+      "category": "Trap & Edge Case",
+      "commonTrapTag": "unhandled-rejection-fast-fail",
+      "archetype": "problem-solving",
+      "archetypeKey": "prg-c02-async-promise-combinator",
+      "context": "microservice_health_aggregator",
+      "entryPoint": "settleAllSettled",
+      "prompt": "Implement `settleAllSettled(taskFns)` for parallel microservice health telemetry.\n\n**System Requirements:**\n- `taskFns`: Array of zero-argument async functions returning Promises.\n- Execute all task functions concurrently in parallel.\n- Returns a Promise resolving to an array of result descriptors in original order:\n  - For fulfilled tasks: `{ status: 'fulfilled', value: <result> }`\n  - For rejected tasks: `{ status: 'rejected', reason: <error> }`\n- Resilient Concurrency: Rejection of any single task must NOT abort or fast-fail the remaining tasks.",
+      "inputHint": "Map each task promise with dedicated fulfillment and catch handlers so Promise.all never rejects",
+      "starterCode": "function settleAllSettled(taskFns) {\n  // TODO: implement resilient concurrent promise settlement\n  return Promise.resolve([]);\n}\n\nmodule.exports = { settleAllSettled };\n",
+      "solutionCode": "function settleAllSettled(taskFns) {\n  const promises = taskFns.map(fn => {\n    return Promise.resolve()\n      .then(() => fn())\n      .then(value => ({ status: 'fulfilled', value }))\n      .catch(reason => ({ status: 'rejected', reason }));\n  });\n  return Promise.all(promises);\n}\n\nmodule.exports = { settleAllSettled };\n",
+      "visibleTests": [
+        {
+          "name": "should resolve all concurrent tasks with mixed fulfillment and rejection",
+          "testCode": "const tasks = [\n  async () => 'auth_healthy',\n  async () => { throw new Error('db_timeout'); },\n  async () => 'cache_healthy'\n];\nconst results = await settleAllSettled(tasks);\nassert.strictEqual(results.length, 3);\nassert.strictEqual(results[0].status, 'fulfilled');\nassert.strictEqual(results[0].value, 'auth_healthy');\nassert.strictEqual(results[1].status, 'rejected');\nassert.strictEqual(results[1].reason.message, 'db_timeout');\nassert.strictEqual(results[2].status, 'fulfilled');\nassert.strictEqual(results[2].value, 'cache_healthy');\n"
+        },
+        {
+          "name": "should handle synchronous exceptions thrown inside task functions gracefully",
+          "testCode": "const tasks = [\n  () => { throw new Error('sync_crash'); }\n];\nconst results = await settleAllSettled(tasks);\nassert.strictEqual(results[0].status, 'rejected');\nassert.strictEqual(results[0].reason.message, 'sync_crash');\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "should preserve original input order when tasks complete out-of-order",
+          "testCode": "const tasks = [\n  () => new Promise(r => setTimeout(() => r('slow'), 30)),\n  () => new Promise(r => setTimeout(() => r('fast'), 5))\n];\nconst results = await settleAllSettled(tasks);\nassert.strictEqual(results[0].value, 'slow');\nassert.strictEqual(results[1].value, 'fast');\n"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Map each task into a wrapped Promise that catches rejection into an error descriptor."
+        },
+        {
+          "explain": "Await all wrapped promises with Promise.all preserving task ordering."
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "unhandled-rejection-fast-fail|direct|settleAllSettled",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            5
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "unhandled-rejection-fast-fail",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 4
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "workspaceFile": "drills/workspace/DRL-PRG-T00-C02-01/Q04_settleAllSettled.js",
+      "workspaceDir": "/Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-01",
+      "cursorUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-01/Q04_settleAllSettled.js",
+      "vscodeUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-01/Q04_settleAllSettled.js",
+      "cursorFolderUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-01",
+      "vscodeFolderUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-01"
+    },
+    {
+      "id": "Q05",
+      "verificationLevel": "partial",
+      "level": 4,
+      "category": "State Management & Concurrency",
+      "archetype": "problem-solving",
+      "archetypeKey": "prg-c02-discriminated-union-narrowing",
+      "context": "payment_checkout_state_machine",
+      "entryPoint": "createPaymentStateMachine",
+      "prompt": "Implement `createPaymentStateMachine(options = {})` for e-commerce checkout transaction lifecycles.\n\n**State Transitions Specification:**\n- Initial state: `INITIAL`.\n- Allowed transition actions:\n  - `INITIAL` -> `dispatch({ type: 'AUTHORIZE', orderId, amount })` -> transitions to `AUTHORIZED`.\n  - `AUTHORIZED` -> `dispatch({ type: 'CAPTURE' })` -> transitions to `SETTLED`.\n  - `AUTHORIZED` -> `dispatch({ type: 'VOID' })` -> transitions to `VOIDED`.\n- Invalid Transitions: Dispatching an action incompatible with current state throws `Error('INVALID_STATE_TRANSITION')`.\n- Terminal States: `SETTLED` and `VOIDED` are final; any subsequent dispatch must throw.\n- `getState()`: Returns `{ status, orderId, amount }`.",
+      "inputHint": "Validate current status before applying state transitions and throw on illegal action types",
+      "starterCode": "function createPaymentStateMachine(options = {}) {\n  // TODO: implement payment transaction state machine\n  return {\n    dispatch(action) {},\n    getState() { return { status: 'INITIAL' }; }\n  };\n}\n\nmodule.exports = { createPaymentStateMachine };\n",
+      "solutionCode": "function createPaymentStateMachine(options = {}) {\n  let status = 'INITIAL';\n  let orderId = null;\n  let amount = null;\n\n  return {\n    dispatch(action) {\n      if (!action || !action.type) throw new Error('INVALID_ACTION');\n\n      if (status === 'INITIAL') {\n        if (action.type === 'AUTHORIZE') {\n          status = 'AUTHORIZED';\n          orderId = action.orderId;\n          amount = action.amount;\n          return;\n        }\n        throw new Error('INVALID_STATE_TRANSITION');\n      }\n\n      if (status === 'AUTHORIZED') {\n        if (action.type === 'CAPTURE') {\n          status = 'SETTLED';\n          return;\n        }\n        if (action.type === 'VOID') {\n          status = 'VOIDED';\n          return;\n        }\n        throw new Error('INVALID_STATE_TRANSITION');\n      }\n\n      // Terminal states SETTLED or VOIDED\n      throw new Error('INVALID_STATE_TRANSITION');\n    },\n\n    getState() {\n      return { status, orderId, amount };\n    }\n  };\n}\n\nmodule.exports = { createPaymentStateMachine };\n",
+      "visibleTests": [
+        {
+          "name": "should transition through complete authorization and capture lifecycle",
+          "testCode": "const fsm = createPaymentStateMachine();\nassert.strictEqual(fsm.getState().status, 'INITIAL');\nfsm.dispatch({ type: 'AUTHORIZE', orderId: 'ord-101', amount: 250 });\nassert.strictEqual(fsm.getState().status, 'AUTHORIZED');\nassert.strictEqual(fsm.getState().amount, 250);\nfsm.dispatch({ type: 'CAPTURE' });\nassert.strictEqual(fsm.getState().status, 'SETTLED');\n"
+        },
+        {
+          "name": "should reject invalid transitions and throw INVALID_STATE_TRANSITION",
+          "testCode": "const fsm = createPaymentStateMachine();\nassert.throws(() => fsm.dispatch({ type: 'CAPTURE' }), /INVALID_STATE_TRANSITION/);\nfsm.dispatch({ type: 'AUTHORIZE', orderId: 'ord-102', amount: 50 });\nfsm.dispatch({ type: 'VOID' });\nassert.strictEqual(fsm.getState().status, 'VOIDED');\nassert.throws(() => fsm.dispatch({ type: 'CAPTURE' }), /INVALID_STATE_TRANSITION/);\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "should prevent transitions on unknown action types in authorized state",
+          "testCode": "const fsm = createPaymentStateMachine();\nfsm.dispatch({ type: 'AUTHORIZE', orderId: 'ord-103', amount: 99 });\nassert.throws(() => fsm.dispatch({ type: 'UNKNOWN_OP' }), /INVALID_STATE_TRANSITION/);\nassert.strictEqual(fsm.getState().status, 'AUTHORIZED');\n"
+        }
+      ],
+      "references": [
+        "RFC-FSM-01",
+        "ISO-8583"
+      ],
+      "competencies": [
+        "typescript",
+        "state-machine"
+      ],
+      "steps": [
+        {
+          "explain": "Verify action applicability against current state."
+        },
+        {
+          "explain": "Transition into target state and record transaction attributes."
+        },
+        {
+          "explain": "Reject invalid transitions and transitions from terminal states."
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "State Management & Concurrency|direct|createPaymentStateMachine",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 3,
+          "hasTrapOrFlaw": false,
+          "skill": null,
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": null,
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 5
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "workspaceFile": "drills/workspace/DRL-PRG-T00-C02-01/Q05_createPaymentStateMachine.js",
+      "workspaceDir": "/Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-01",
+      "cursorUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-01/Q05_createPaymentStateMachine.js",
+      "vscodeUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-01/Q05_createPaymentStateMachine.js",
+      "cursorFolderUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-01",
+      "vscodeFolderUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-01"
+    }
+  ],
+  "schemaVersion": "2.0-code",
+  "subject": "PRG",
+  "createdAt": "2026-11-09 18:57:46",
+  "config": {
+    "questionCount": 5,
+    "difficulty": "ALL",
+    "difficultyMode": "AI Synthesized Engineering Mode"
+  },
+  "sessionSummary": {
+    "practiceStatus": "Ready",
+    "score": 0,
+    "maxScore": 5,
+    "accuracyPct": 0,
+    "mistakeCategories": [],
+    "divergedStepsSummary": "",
+    "attemptDate": null,
+    "syncedToNotionAt": null,
+    "notionPageId": null
+  },
+  "localFilePath": "drills/data/PRG-T00-C02/DRL-PRG-T00-C02-01.json"
+}

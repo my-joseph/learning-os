@@ -1,13 +1,16 @@
 # -*- coding: utf-8 -*-
 import json
 import re
-from concurrent.futures import ThreadPoolExecutor
 
-from notion_client import (  # noqa: F401  (re-exported for existing importers)
+# Network layer lives in notion_client.py; re-exported here so existing
+# `from apply_rules_and_test_pages import load_env, notion_request` keeps working.
+from notion_client import (  # noqa: F401
     SSL_CTX,
+    append_blocks,
     get_all_blocks,
     load_env,
     notion_request,
+    replace_page_content,
 )
 
 
@@ -359,19 +362,7 @@ def toggle_block(question_text, answer_blocks, id_map):
 
 def replace_page_blocks(page_id, new_blocks, label, token):
     validate_blocks_clean(new_blocks, label=label)
-    existing = get_all_blocks(page_id, token)
-
-    def del_block(b_id):
-        try:
-            notion_request("DELETE", f"blocks/{b_id}", token)
-        except Exception:
-            pass
-
-    with ThreadPoolExecutor(max_workers=5) as pool:
-        list(pool.map(del_block, [b["id"] for b in existing]))
-    for i in range(0, len(new_blocks), 50):
-        chunk = new_blocks[i : i + 50]
-        notion_request("PATCH", f"blocks/{page_id}/children", token, {"children": chunk})
+    replace_page_content(page_id, new_blocks, token, label=label)
 
 
 def update_rules_page(rules_id, id_map, token):

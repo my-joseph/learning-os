@@ -1,0 +1,70 @@
+{
+  "unitCode": "MTH-SYNTHESIS",
+  "unitTitle": "Multi-Topic Mathematical Synthesis",
+  "sourceCurriculum": "Interleaved Cross-Domain Synthesis (OpenStax Prealgebra 2e & Geometry Foundations)",
+  "archetypes": [
+    {
+      "archetypeKey": "syn-c12-c09-c05-spatial-radical-metric",
+      "level": 5,
+      "name": "Spatial Incline & Radical Metric Synthesis",
+      "coreConcept": "Synthesize 3D spatial diagonal and incline distances, simplify to exact radical form, and compute precision decimal bounds.",
+      "mentalModel": "Space diagonal in 3D Euclidean solid coupled with radical extraction and metric rounding.",
+      "governingRelation": "d = \\sqrt{w^2 + l^2 + h^2}, \\quad \\text{Ratio} = \\frac{d}{k}",
+      "cognitiveTraps": [
+        "c12-3d-dimension-omission-trap",
+        "c09-premature-radical-sum-trap",
+        "c05-intermediate-rounding-error-trap"
+      ],
+      "versatileDomains": [
+        "structural_space_truss_diagonal",
+        "subsea_anchor_cable_triangulation",
+        "aerospace_sensor_mast_clearance"
+      ],
+      "usedContexts": [
+        "structural_space_truss_diagonal"
+      ]
+    },
+    {
+      "archetypeKey": "syn-c12-c09-c05-annulus-inscribed-circle-radical",
+      "level": 5,
+      "name": "Annulus & Inscribed Radical Metric Synthesis",
+      "coreConcept": "Compute concentric circular boundaries with exact radical chords, expressing area and perimeter differences under specified decimal tolerance.",
+      "mentalModel": "Pythagorean chord tangent to inner boundary generating exact radical radius difference.",
+      "governingRelation": "R^2 - r^2 = \\left(\\frac{L}{2}\\right)^2, \\quad A_{\\text{ring}} = \\pi (R^2 - r^2)",
+      "cognitiveTraps": [
+        "c12-linear-radius-difference-trap",
+        "c09-square-root-distribution-trap",
+        "c05-pi-truncation-precision-trap"
+      ],
+      "versatileDomains": [
+        "optical_lens_spacer_machining",
+        "hydraulic_cylinder_seal_gasket",
+        "flywheel_rotational_mass_ring"
+      ],
+      "usedContexts": [
+        "hydraulic_cylinder_seal_gasket"
+      ]
+    },
+    {
+      "archetypeKey": "syn-c12-c09-c05-frustum-slant-metric",
+      "level": 5,
+      "name": "Conical Frustum Slant & Radical Flow Metric",
+      "coreConcept": "Determine the slant height of a truncated conical reservoir using Pythagorean difference of radii, reduce exact radical, and estimate metric volume rate.",
+      "mentalModel": "Right trapezoid axial cross-section yielding hypotenuse slant height with radical and decimal scaling.",
+      "governingRelation": "s = \\sqrt{h^2 + (R - r)^2}",
+      "cognitiveTraps": [
+        "c12-slant-vertical-height-confusion-trap",
+        "c09-sum-of-squares-root-trap",
+        "c05-subtraction-order-sign-trap"
+      ],
+      "versatileDomains": [
+        "water_treatment_clarifier_funnel",
+        "grain_silo_discharge_hopper",
+        "centrifugal_cyclone_separator"
+      ],
+      "usedContexts": [
+        "grain_silo_discharge_hopper"
+      ]
+    }
+  ]
+}

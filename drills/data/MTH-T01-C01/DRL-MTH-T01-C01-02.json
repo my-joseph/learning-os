@@ -1,0 +1,1019 @@
+{
+  "unitCode": "MTH-T01-C01",
+  "topicTitle": "Whole Numbers & Divisibility",
+  "drillId": "DRL-MTH-T01-C01-02",
+  "sourceAttribution": "OpenStax Prealgebra 2e, CC BY 4.0",
+  "problems": [
+    {
+      "id": "Q01",
+      "verificationLevel": "partial",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c01-place-value-partition",
+      "context": "bank_vault_cash_audit",
+      "prompt": "In a regional treasury vault, an auditor verifies a stack of currency notes consisting of $7$ thousands notes, $4$ hundreds notes, $8$ tens notes, and $5$ ones notes. Calculate the total cash value in dollars.",
+      "givens": {
+        "thousands": 7,
+        "hundreds": 4,
+        "tens": 8,
+        "ones": 5
+      },
+      "answerPlain": "7485",
+      "answerSpec": {
+        "type": "number",
+        "value": "7485",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c01-place-value-misalignment",
+      "trapDerivation": "7 * 100 + 4 * 10 + 8 * 1 + 5",
+      "trapValue": "753",
+      "trapGivens": [
+        7,
+        4
+      ],
+      "verify": {
+        "source": "7485",
+        "trapValue": "753"
+      },
+      "checkpointHint": "Multiply each digit count by its positional base value and sum the total components",
+      "references": [
+        "MTH-T01-C01",
+        "OpenStax Prealgebra 2e §1.4"
+      ],
+      "competencies": [
+        "arithmetic-duality",
+        "algebraic-inversion"
+      ],
+      "constraints": [
+        "positive integer solution"
+      ],
+      "steps": [
+        {
+          "latex": "7 \\times 1000 + 4 \\times 100 + 8 \\times 10 + 5 \\times 1",
+          "explain": "Multiply each note count by its positional face value."
+        },
+        {
+          "latex": "7000 + 400 + 80 + 5 = 7485",
+          "explain": "Sum the positional components to obtain 7485.",
+          "val": "7485"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c01-place-value-misalignment|direct|#*# + #*# + #*# + # = ?",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            1,
+            3
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c01-place-value-misalignment",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "display": "7 \\times 1000 + 4 \\times 100 + 8 \\times 10 + 5 \\times 1 = ?",
+      "plainText": "7*1000 + 4*100 + 8*10 + 5 = ?",
+      "answerDisplay": "7485"
+    },
+    {
+      "id": "Q02",
+      "verificationLevel": "partial",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c01-nearest-rounding-boundary",
+      "context": "marathon_registration_audit",
+      "prompt": "An observatory records $3450$ star clusters across $100$ observation sectors. The lead astronomer rounds the star cluster count $3450$ to the nearest $100$. What is the rounded count?",
+      "givens": {
+        "clusters": 3450,
+        "rounding_base": 100
+      },
+      "answerPlain": "3500",
+      "answerSpec": {
+        "type": "number",
+        "value": "3500",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c01-rounding-down-neglect",
+      "trapDerivation": "3450 + 100",
+      "trapValue": "3550",
+      "trapGivens": [
+        3450,
+        100
+      ],
+      "verify": {
+        "source": "3500",
+        "trapValue": "3550"
+      },
+      "checkpointHint": "Inspect the decisive tens digit to decide whether to round up or down to the nearest hundred",
+      "references": [
+        "MTH-T01-C01",
+        "OpenStax Prealgebra 2e §1.4"
+      ],
+      "competencies": [
+        "arithmetic-duality",
+        "algebraic-inversion"
+      ],
+      "constraints": [
+        "positive integer solution"
+      ],
+      "steps": [
+        {
+          "latex": "\\text{tens digit} = 5 \\ge 5",
+          "explain": "Inspect the tens digit 5 to test the halfway threshold."
+        },
+        {
+          "latex": "3450 \\to 3500",
+          "explain": "Round up to the nearest hundred 3500.",
+          "val": "3500"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c01-rounding-down-neglect|direct|round(#, -#) = ?",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            1,
+            3
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c01-rounding-down-neglect",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "display": "\\text{Round } 3450 \\text{ to nearest } 100 = ?",
+      "plainText": "round(3450, -2) = ?",
+      "answerDisplay": "3500"
+    },
+    {
+      "id": "Q03",
+      "verificationLevel": "partial",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c01-division-quotient-remainder",
+      "context": "hardware_tool_packaging",
+      "prompt": "A manufacturing facility produces $1547$ precision bolts. The packaging machine packs them into cartons holding $36$ bolts each. How many leftover bolts remain unpacked after forming all complete cartons?",
+      "givens": {
+        "bolts": 1547,
+        "carton_capacity": 36
+      },
+      "answerPlain": "35",
+      "answerSpec": {
+        "type": "number",
+        "value": "35",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c01-remainder-subtraction-inversion",
+      "trapDerivation": "1547 - 36",
+      "trapValue": "1511",
+      "trapGivens": [
+        1547,
+        36
+      ],
+      "verify": {
+        "source": "35",
+        "trapValue": "1511"
+      },
+      "checkpointHint": "Divide the total items by carton capacity to find the whole quotient and extract the remaining portion",
+      "references": [
+        "MTH-T01-C01",
+        "OpenStax Prealgebra 2e §1.4"
+      ],
+      "competencies": [
+        "arithmetic-duality",
+        "algebraic-inversion"
+      ],
+      "constraints": [
+        "positive integer solution"
+      ],
+      "steps": [
+        {
+          "latex": "1547 = 36 \\times 42 + 35",
+          "explain": "Perform long division of 1547 by 36 to get quotient 42 with remainder 35."
+        },
+        {
+          "latex": "35 < 36",
+          "explain": "The remainder is 35.",
+          "val": "35"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c01-remainder-subtraction-inversion|direct|# % # = ?",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            4
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c01-remainder-subtraction-inversion",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "display": "1547 \\div 36 \\implies \\text{Remainder } r = ?",
+      "plainText": "1547 % 36 = ?",
+      "answerDisplay": "35"
+    },
+    {
+      "id": "Q04",
+      "verificationLevel": "partial",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c01-prime-factor-canonical-tree",
+      "context": "cryptographic_modulus_audit",
+      "prompt": "Find the exponent of the prime factor $2$ in the canonical prime factorization of $720$.",
+      "givens": {
+        "prime": 2,
+        "target": 720
+      },
+      "answerPlain": "4",
+      "answerSpec": {
+        "type": "number",
+        "value": "4",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c01-composite-factor-premature-stop",
+      "trapDerivation": "720 / (2 * 45)",
+      "trapValue": "8",
+      "trapGivens": [
+        2,
+        720
+      ],
+      "verify": {
+        "source": "4",
+        "trapValue": "8"
+      },
+      "checkpointHint": "Divide the target integer repeatedly by the prime factor to find the exponent",
+      "references": [
+        "MTH-T01-C01",
+        "OpenStax Prealgebra 2e §1.4"
+      ],
+      "competencies": [
+        "arithmetic-duality",
+        "algebraic-inversion"
+      ],
+      "constraints": [
+        "positive integer solution"
+      ],
+      "steps": [
+        {
+          "latex": "720 = 2^4 \\times 3^2 \\times 5",
+          "explain": "Decompose 720 completely into prime factors."
+        },
+        {
+          "latex": "4",
+          "explain": "The exponent of the prime factor 2 is 4.",
+          "val": "4"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c01-composite-factor-premature-stop|direct|exponent_of(#, factor(#)) = ?",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            4
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c01-composite-factor-premature-stop",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "display": "720 = 2^a \\times 3^b \\times 5^c \\implies a = ?",
+      "plainText": "exponent_of(2, factor(720)) = ?",
+      "answerDisplay": "4"
+    },
+    {
+      "id": "Q05",
+      "verificationLevel": "partial",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c01-divisibility-conjoint-rules",
+      "context": "logistics_pallet_divisibility",
+      "prompt": "A distributor has $2340$ solar panels to distribute evenly across delivery vans with capacity $15$ panels each. How many panels would remain if distributed evenly?",
+      "givens": {
+        "panels": 2340,
+        "capacity": 15
+      },
+      "answerPlain": "0",
+      "answerSpec": {
+        "type": "number",
+        "value": "0",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c01-sum-of-digits-rule-overextension",
+      "trapDerivation": "(2340 / 15) - 150",
+      "trapValue": "6",
+      "trapGivens": [
+        2340,
+        15
+      ],
+      "verify": {
+        "source": "0",
+        "trapValue": "6"
+      },
+      "checkpointHint": "Check divisibility by both three and five to evaluate whether any remainder exists",
+      "references": [
+        "MTH-T01-C01",
+        "OpenStax Prealgebra 2e §1.4"
+      ],
+      "competencies": [
+        "arithmetic-duality",
+        "algebraic-inversion"
+      ],
+      "constraints": [
+        "positive integer solution"
+      ],
+      "steps": [
+        {
+          "latex": "2+3+4+0 = 9 \\implies 3 \\mid 2340",
+          "explain": "The sum of digits is 9, so 2340 is divisible by 3."
+        },
+        {
+          "latex": "5 \\mid 2340",
+          "explain": "The last digit is 0, so 2340 is divisible by 5."
+        },
+        {
+          "latex": "15 \\mid 2340 \\implies r = 0",
+          "explain": "Since 2340 is divisible by both 3 and 5, it is divisible by 15 with remainder 0.",
+          "val": "0"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c01-sum-of-digits-rule-overextension|direct|# % # = ?",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            4
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c01-sum-of-digits-rule-overextension",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 12
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "display": "2340 \\pmod{15} = ?",
+      "plainText": "2340 % 15 = ?",
+      "answerDisplay": "0"
+    },
+    {
+      "id": "Q06",
+      "verificationLevel": "partial",
+      "level": 3,
+      "category": "Trap & Diagnostic",
+      "archetype": "problem-solving",
+      "archetypeKey": "c01-gcd-euclidean-reduction",
+      "context": "tile_flooring_tessellation",
+      "prompt": "An architect tiles a rectangular conference room measuring $168$ centimeters by $180$ centimeters using the largest possible square ceramic tiles without cutting. What is the side length in centimeters of each square tile?",
+      "givens": {
+        "width": 168,
+        "length": 180
+      },
+      "answerPlain": "12",
+      "answerSpec": {
+        "type": "number",
+        "value": "12",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c01-gcd-difference-underestimate",
+      "trapDerivation": "(180 - 168) / 2",
+      "trapValue": "6",
+      "trapGivens": [
+        180,
+        168
+      ],
+      "verify": {
+        "source": "12",
+        "trapValue": "6"
+      },
+      "checkpointHint": "Compute the greatest common divisor of the dimensions to find the maximum square tile size",
+      "references": [
+        "MTH-T01-C01",
+        "OpenStax Prealgebra 2e §1.4"
+      ],
+      "competencies": [
+        "arithmetic-duality",
+        "algebraic-inversion"
+      ],
+      "constraints": [
+        "positive integer solution"
+      ],
+      "steps": [
+        {
+          "latex": "168 = 2^3 \\times 3 \\times 7",
+          "explain": "Prime factorize both dimensions. - component 1"
+        },
+        {
+          "latex": "180 = 2^2 \\times 3^2 \\times 5",
+          "explain": "Prime factorize both dimensions. - component 2"
+        },
+        {
+          "latex": "\\gcd(168, 180) = 2^2 \\times 3",
+          "explain": "Take the product of common prime factors with minimum powers to find GCD 12."
+        },
+        {
+          "latex": "2^2 \\times 3 = 12",
+          "explain": "Simplify to obtain 12.",
+          "val": "12"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c01-gcd-difference-underestimate|direct|gcd(#, #) = ?",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            5
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c01-gcd-difference-underestimate",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "display": "\\gcd(168, 180) = ?",
+      "plainText": "gcd(168, 180) = ?",
+      "answerDisplay": "12"
+    },
+    {
+      "id": "Q07",
+      "verificationLevel": "partial",
+      "level": 3,
+      "category": "Trap & Diagnostic",
+      "archetype": "problem-solving",
+      "archetypeKey": "c01-lcm-cyclical-coincidence",
+      "context": "transit_bus_schedule_coincidence",
+      "prompt": "Two transit buses depart from the central terminal at the same moment. Route Alpha repeats its loop every $24$ minutes, while Route Beta repeats its loop every $36$ minutes. After how many minutes will both buses depart simultaneously from the terminal again?",
+      "givens": {
+        "route_alpha": 24,
+        "route_beta": 36
+      },
+      "answerPlain": "72",
+      "answerSpec": {
+        "type": "number",
+        "value": "72",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c01-lcm-product-overestimate",
+      "trapDerivation": "24 + 36",
+      "trapValue": "60",
+      "trapGivens": [
+        24,
+        36
+      ],
+      "verify": {
+        "source": "72",
+        "trapValue": "60"
+      },
+      "checkpointHint": "Determine the least common multiple of the two loop durations to find the simultaneous coincidence time",
+      "references": [
+        "MTH-T01-C01",
+        "OpenStax Prealgebra 2e §1.4"
+      ],
+      "competencies": [
+        "arithmetic-duality",
+        "algebraic-inversion"
+      ],
+      "constraints": [
+        "positive integer solution"
+      ],
+      "steps": [
+        {
+          "latex": "24 = 2^3 \\times 3",
+          "explain": "Find prime factorizations of 24 and 36. - component 1"
+        },
+        {
+          "latex": "36 = 2^2 \\times 3^2",
+          "explain": "Find prime factorizations of 24 and 36. - component 2"
+        },
+        {
+          "latex": "\\text{lcm}(24, 36) = 2^3 \\times 3^2",
+          "explain": "Compute LCM by taking maximum power of each prime factor."
+        },
+        {
+          "latex": "2^3 \\times 3^2 = 8 \\times 9",
+          "explain": "Evaluate intermediate step."
+        },
+        {
+          "latex": "8 \\times 9 = 72",
+          "explain": "Simplify to obtain 72.",
+          "val": "72"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c01-lcm-product-overestimate|direct|lcm(#, #) = ?",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            5
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c01-lcm-product-overestimate",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "display": "\\text{lcm}(24, 36) = ?",
+      "plainText": "lcm(24, 36) = ?",
+      "answerDisplay": "72"
+    },
+    {
+      "id": "Q08",
+      "verificationLevel": "partial",
+      "level": 3,
+      "category": "Trap & Diagnostic",
+      "archetype": "problem-solving",
+      "archetypeKey": "c01-pemdas-hierarchical-evaluation",
+      "context": "engineering_stress_formula",
+      "prompt": "Evaluate the arithmetic expression: $48 - 6 \\times 7 + 15$.",
+      "givens": {
+        "first_term": 48,
+        "coeff": 6,
+        "factor": 7,
+        "last_term": 15
+      },
+      "answerPlain": "21",
+      "answerSpec": {
+        "type": "number",
+        "value": "21",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c01-pemdas-left-to-right-bias",
+      "trapDerivation": "(48 - 6) * 7 + 15",
+      "trapValue": "309",
+      "trapGivens": [
+        48,
+        6
+      ],
+      "verify": {
+        "source": "21",
+        "trapValue": "309"
+      },
+      "checkpointHint": "Perform multiplication before addition and subtraction following standard operational precedence",
+      "references": [
+        "MTH-T01-C01",
+        "OpenStax Prealgebra 2e §1.4"
+      ],
+      "competencies": [
+        "arithmetic-duality",
+        "algebraic-inversion"
+      ],
+      "constraints": [
+        "positive integer solution"
+      ],
+      "steps": [
+        {
+          "latex": "6 \\times 7 = 42",
+          "explain": "Perform multiplication first."
+        },
+        {
+          "latex": "48 - 42 + 15 = 6 + 15",
+          "explain": "Perform subtraction and addition from left to right."
+        },
+        {
+          "latex": "6 + 15 = 21",
+          "explain": "Simplify to obtain 21.",
+          "val": "21"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c01-pemdas-left-to-right-bias|direct|# - # * # + # = ?",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            5
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c01-pemdas-left-to-right-bias",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "display": "48 - 6 \\times 7 + 15 = ?",
+      "plainText": "48 - 6 * 7 + 15 = ?",
+      "answerDisplay": "21"
+    },
+    {
+      "id": "Q09",
+      "verificationLevel": "partial",
+      "level": 4,
+      "category": "Interleaved Synthesis",
+      "archetype": "problem-solving",
+      "archetypeKey": "c01-gcd-lcm-duality-inversion",
+      "context": "distributed_clock_synchronization",
+      "prompt": "Two network synchronization clocks have a greatest common divisor of $14$ and a least common multiple of $420$. If one clock frequency parameter is $70$, find the value of the other clock frequency parameter.",
+      "givens": {
+        "gcd": 14,
+        "lcm": 420,
+        "clock_a": 70
+      },
+      "answerPlain": "84",
+      "answerSpec": {
+        "type": "number",
+        "value": "84",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c01-duality-additive-confusion",
+      "trapDerivation": "(420 - 70) / 14",
+      "trapValue": "25",
+      "trapGivens": [
+        420,
+        70
+      ],
+      "verify": {
+        "source": "84",
+        "trapValue": "25"
+      },
+      "checkpointHint": "Apply the product invariance rule relating the greatest common divisor and least common multiple of two numbers",
+      "references": [
+        "MTH-T01-C01",
+        "OpenStax Prealgebra 2e §1.4"
+      ],
+      "competencies": [
+        "arithmetic-duality",
+        "algebraic-inversion"
+      ],
+      "constraints": [
+        "positive integer solution"
+      ],
+      "steps": [
+        {
+          "latex": "\\gcd(a, b) \\times \\text{lcm}(a, b) = a \\times b",
+          "explain": "State the GCD-LCM duality relationship."
+        },
+        {
+          "latex": "14 \\times 420 = 5880",
+          "explain": "Calculate product of GCD and LCM."
+        },
+        {
+          "latex": "b = \\frac{5880}{70}",
+          "explain": "Divide by known parameter to find the second clock frequency."
+        },
+        {
+          "latex": "b = 84",
+          "explain": "Simplify to obtain 84.",
+          "val": "84"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c01-duality-additive-confusion|direct|a * # = # * #",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c01-duality-additive-confusion",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 12
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "display": "a \\times 70 = 14 \\times 420 \\implies a = ?",
+      "plainText": "a * 70 = 14 * 420",
+      "answerDisplay": "84"
+    },
+    {
+      "id": "Q10",
+      "verificationLevel": "partial",
+      "level": 4,
+      "category": "Interleaved Synthesis",
+      "archetype": "problem-solving",
+      "archetypeKey": "c01-constrained-modular-batching",
+      "context": "pharmaceutical_capsule_blister_pack",
+      "prompt": "A pharmacist packages capsules into boxes. Packing in groups of $12$ leaves $10$ capsules remaining, and packing in groups of $18$ leaves $16$ capsules remaining. What is the smallest positive number of capsules that satisfies both packaging conditions?",
+      "givens": {
+        "box_small": 12,
+        "rem_small": 10,
+        "box_large": 18,
+        "rem_large": 16
+      },
+      "answerPlain": "34",
+      "answerSpec": {
+        "type": "number",
+        "value": "34",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c01-modular-direct-sum-trap",
+      "trapDerivation": "12 + 10 + 18 + 16",
+      "trapValue": "56",
+      "trapGivens": [
+        12,
+        10
+      ],
+      "verify": {
+        "source": "34",
+        "trapValue": "56"
+      },
+      "checkpointHint": "Notice that adding two capsules creates complete packets in both packaging sizes",
+      "references": [
+        "MTH-T01-C01",
+        "OpenStax Prealgebra 2e §1.4"
+      ],
+      "competencies": [
+        "arithmetic-duality",
+        "algebraic-inversion"
+      ],
+      "constraints": [
+        "positive integer solution"
+      ],
+      "steps": [
+        {
+          "latex": "12 - 10 = 2",
+          "explain": "Identify constant deficit offset of 2 capsules. (Part 1) - component 1"
+        },
+        {
+          "latex": "18 - 16 = 2",
+          "explain": "Identify constant deficit offset of 2 capsules. (Part 1) - component 2"
+        },
+        {
+          "latex": "N + 2 \\text{ is divisible by 12 and 18}",
+          "explain": "Identify constant deficit offset of 2 capsules. (Part 2)"
+        },
+        {
+          "latex": "\\text{lcm}(12, 18) = 36",
+          "explain": "Find the least common multiple of 12 and 18."
+        },
+        {
+          "latex": "N = 36 - 2",
+          "explain": "Subtract the deficit offset to obtain the minimal positive count 34."
+        },
+        {
+          "latex": "N = 34",
+          "explain": "Simplify to obtain 34.",
+          "val": "34"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c01-modular-direct-sum-trap|direct|min_N(N % # == # and N % # == #) = ?",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c01-modular-direct-sum-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 12
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "display": "N \\equiv 10 \\pmod{12}, \\quad N \\equiv 16 \\pmod{18} \\implies N = ?",
+      "plainText": "min_N(N % 12 == 10 and N % 18 == 16) = ?",
+      "answerDisplay": "34"
+    }
+  ],
+  "schemaVersion": "2.0-math",
+  "subject": "MATH",
+  "createdAt": "2026-11-09 19:32:56",
+  "config": {
+    "questionCount": 10,
+    "difficulty": "ALL",
+    "difficultyMode": "AI Synthesized Reasoning Mode"
+  },
+  "sessionSummary": {
+    "practiceStatus": "Ready",
+    "score": 0,
+    "maxScore": 10,
+    "accuracyPct": 0,
+    "mistakeCategories": [],
+    "divergedStepsSummary": "",
+    "attemptDate": null,
+    "syncedToNotionAt": null,
+    "notionPageId": null
+  },
+  "localFilePath": "drills/data/MTH-T01-C01/DRL-MTH-T01-C01-02.json",
+  "unitTitle": "Whole Numbers",
+  "title": "Whole Numbers — Verified Math Drill (10 Qs · Mixed Exam Mode)"
+}

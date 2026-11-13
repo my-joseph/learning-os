@@ -1,0 +1,277 @@
+{
+  "unitCode": "PRG-T01-C03",
+  "drillId": "DRL-PRG-T01-C03-03",
+  "environment": "node-vanilla",
+  "sourceAttribution": {
+    "curriculum": "Antigravity Autonomous Engineering Synthesis",
+    "spec": "Token Bucket Traffic Shaping (RFC 9110 HTTP Semantics), Martin Fowler Circuit Breaker Pattern, In-Flight Query Coalescing",
+    "license": "CC BY 4.0"
+  },
+  "problems": [
+    {
+      "id": "Q01",
+      "verificationLevel": "partial",
+      "level": 3,
+      "category": "Trap & Edge Case",
+      "archetype": "problem-solving",
+      "archetypeKey": "prg-c03-token-bucket-rate-limiter",
+      "context": "iot_telemetry_beacon_uplink",
+      "commonTrapTag": "rate-limit-window-leak",
+      "entryPoint": "createTelemetryRateLimiter",
+      "prompt": "Implement `createTelemetryRateLimiter(options)` for connected IoT fleet telematics beacons transmitting sensor metrics over cellular satellite.\n\n**Configuration Options:**\n- `capacity`: Maximum burst packet allowance ceiling (positive integer).\n- `refillRate`: Continuous token replenishment rate in tokens per second (positive number).\n- `initialTokens`: Initial transmission allowance (defaults to `capacity`).\n- `now`: Optional timestamp provider returning milliseconds (defaults to `Date.now`).\n\n**Behavior & SLA Invariants:**\n- `consume(cost = 1)`: Replenishes tokens continuously proportional to elapsed time since the previous check.\n- Clamps the token balance to `capacity` to prevent unbounded bursts after prolonged sleep.\n- If `tokens >= cost`, atomically deducts `cost` and returns `true`.\n- If `tokens < cost`, preserves balance without deduction and returns `false`.",
+      "inputHint": "Track elapsed time between requests and replenish tokens proportional to refillRate without exceeding capacity ceiling",
+      "starterCode": "function createTelemetryRateLimiter({ capacity, refillRate, initialTokens, now = Date.now }) {\n  let tokens = initialTokens !== undefined ? initialTokens : capacity;\n  let lastTimestamp = now();\n\n  return {\n    consume(cost = 1) {\n      // TODO: implement continuous rate limiting with capacity clamping\n      return false;\n    }\n  };\n}\n\nmodule.exports = { createTelemetryRateLimiter };\n",
+      "solutionCode": "function createTelemetryRateLimiter({ capacity, refillRate, initialTokens, now = Date.now }) {\n  let tokens = initialTokens !== undefined ? initialTokens : capacity;\n  let lastTimestamp = now();\n\n  return {\n    consume(cost = 1) {\n      const currentTime = now();\n      const elapsedSec = (currentTime - lastTimestamp) / 1000;\n      tokens = Math.min(capacity, tokens + elapsedSec * refillRate);\n      lastTimestamp = currentTime;\n\n      if (tokens >= cost) {\n        tokens -= cost;\n        return true;\n      }\n      return false;\n    }\n  };\n}\n\nmodule.exports = { createTelemetryRateLimiter };\n",
+      "visibleTests": [
+        {
+          "name": "should allow telemetry bursts up to capacity and reject excessive packets",
+          "testCode": "let fakeTime = 1000;\nconst limiter = createTelemetryRateLimiter({ capacity: 3, refillRate: 10, now: () => fakeTime });\nassert.strictEqual(limiter.consume(1), true);\nassert.strictEqual(limiter.consume(2), true);\nassert.strictEqual(limiter.consume(1), false);\n"
+        },
+        {
+          "name": "should accumulate transmission tokens incrementally across fractional time intervals",
+          "testCode": "let fakeTime = 1000;\nconst limiter = createTelemetryRateLimiter({ capacity: 2, refillRate: 1, initialTokens: 0, now: () => fakeTime });\nassert.strictEqual(limiter.consume(1), false);\nfakeTime += 500;\nassert.strictEqual(limiter.consume(1), false);\nfakeTime += 500;\nassert.strictEqual(limiter.consume(1), true);\nassert.strictEqual(limiter.consume(1), false);\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "should enforce capacity ceiling without cheating or overflow",
+          "testCode": "let fakeTime = 10000;\nconst limiter = createTelemetryRateLimiter({ capacity: 5, refillRate: 2, initialTokens: 0, now: () => fakeTime });\nfakeTime += 1000;\nassert.strictEqual(limiter.consume(5), false);\nassert.strictEqual(limiter.consume(2), true);\nfakeTime += 100000;\nassert.strictEqual(limiter.consume(5), true);\nassert.strictEqual(limiter.consume(1), false);\n"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Calculate elapsed seconds using high-precision timestamps, adding accrued tokens to the balance."
+        },
+        {
+          "explain": "Clamp token count at capacity, update timestamp, and deduct cost when sufficient tokens exist."
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "rate-limit-window-leak|direct|createTelemetryRateLimiter",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            5
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "rate-limit-window-leak",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 4
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-03/Q01_createTelemetryRateLimiter.js",
+      "workspaceDir": "/Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T01-C03-03",
+      "cursorUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T01-C03-03/Q01_createTelemetryRateLimiter.js",
+      "vscodeUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T01-C03-03/Q01_createTelemetryRateLimiter.js",
+      "cursorFolderUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T01-C03-03",
+      "vscodeFolderUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T01-C03-03"
+    },
+    {
+      "id": "Q02",
+      "verificationLevel": "partial",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "debugging",
+      "archetypeKey": "prg-c03-concurrent-promise-pool",
+      "context": "crypto_exchange_orderbook_cache",
+      "entryPoint": "createCoalescingAsyncCache",
+      "prompt": "Implement `createCoalescingAsyncCache(fetchFn)` for high-frequency cryptocurrency orderbook feeds.\n\n**System Requirements:**\n- `get(key)`: Retrieves data for `key`, delegating to `fetchFn(key)` on cache misses.\n- Caches resolved values indefinitely for subsequent sequential lookups.\n- Coalesces simultaneous concurrent requests for the same unresolved `key` onto a single active `fetchFn` execution to prevent cache stampedes.\n- Cleans up in-flight state upon settlement so future requests can retry if an operation fails.",
+      "inputHint": "Ensure concurrent requests for an unresolved key share the same underlying asynchronous execution before settlement",
+      "starterCode": "function createCoalescingAsyncCache(fetchFn) {\n  const cache = new Map();\n\n  return {\n    async get(key) {\n      if (cache.has(key)) {\n        return cache.get(key);\n      }\n      const data = await fetchFn(key);\n      cache.set(key, data);\n      return data;\n    }\n  };\n}\n\nmodule.exports = { createCoalescingAsyncCache };\n",
+      "solutionCode": "function createCoalescingAsyncCache(fetchFn) {\n  const cache = new Map();\n  const inFlight = new Map();\n\n  return {\n    async get(key) {\n      if (cache.has(key)) {\n        return cache.get(key);\n      }\n      if (inFlight.has(key)) {\n        return inFlight.get(key);\n      }\n\n      const promise = Promise.resolve()\n        .then(() => fetchFn(key))\n        .then((data) => {\n          cache.set(key, data);\n          return data;\n        })\n        .finally(() => {\n          inFlight.delete(key);\n        });\n\n      inFlight.set(key, promise);\n      return promise;\n    }\n  };\n}\n\nmodule.exports = { createCoalescingAsyncCache };\n",
+      "visibleTests": [
+        {
+          "name": "should retrieve cached values on subsequent sequential requests",
+          "testCode": "let fetchCount = 0;\nconst mockFetcher = async (symbol) => {\n  fetchCount++;\n  return { symbol, price: 65000 };\n};\n\nconst cache = createCoalescingAsyncCache(mockFetcher);\nconst first = await cache.get('BTC-USD');\nconst second = await cache.get('BTC-USD');\n\nassert.strictEqual(first.price, 65000);\nassert.strictEqual(second.price, 65000);\nassert.strictEqual(fetchCount, 1);\n"
+        },
+        {
+          "name": "should coalesce concurrent in-flight requests into a single fetch (Reproducer Test)",
+          "testCode": "let fetchCount = 0;\nconst slowFetcher = async (symbol) => {\n  fetchCount++;\n  await new Promise(r => setTimeout(r, 25));\n  return { symbol, depth: 100 };\n};\n\nconst cache = createCoalescingAsyncCache(slowFetcher);\nconst results = await Promise.all([\n  cache.get('ETH-USD'),\n  cache.get('ETH-USD'),\n  cache.get('ETH-USD'),\n  cache.get('ETH-USD'),\n  cache.get('ETH-USD')\n]);\n\nassert.strictEqual(results.length, 5);\nassert.strictEqual(results[0].depth, 100);\nassert.strictEqual(fetchCount, 1);\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "should handle synchronous and asynchronous errors and clean up in-flight state",
+          "testCode": "let attempt = 0;\nconst syncFailingFetcher = (symbol) => {\n  attempt++;\n  if (attempt === 1) throw new Error('Synchronous API crash');\n  return Promise.resolve({ symbol, status: 'RECOVERED' });\n};\n\nconst cache = createCoalescingAsyncCache(syncFailingFetcher);\nawait assert.rejects(async () => cache.get('SOL-USD'), /Synchronous API crash/);\nconst recovered = await cache.get('SOL-USD');\nassert.strictEqual(recovered.status, 'RECOVERED');\nassert.strictEqual(attempt, 2);\n"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Maintain an in-flight Promise map alongside the completed cache store."
+        },
+        {
+          "explain": "Share in-flight promises among concurrent callers and remove from the map in a finally block."
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "Core Skill|direct|createCoalescingAsyncCache",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "debugging"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            4
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": null,
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 4
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-03/Q02_createCoalescingAsyncCache.js",
+      "workspaceDir": "/Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T01-C03-03",
+      "cursorUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T01-C03-03/Q02_createCoalescingAsyncCache.js",
+      "vscodeUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T01-C03-03/Q02_createCoalescingAsyncCache.js",
+      "cursorFolderUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T01-C03-03",
+      "vscodeFolderUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T01-C03-03"
+    },
+    {
+      "id": "Q03",
+      "verificationLevel": "partial",
+      "level": 4,
+      "category": "State Management & Concurrency",
+      "archetype": "problem-solving",
+      "archetypeKey": "prg-c03-circuit-breaker-state-machine",
+      "context": "fintech_core_banking_interbank_switch",
+      "entryPoint": "createCircuitBreaker",
+      "prompt": "Implement `createCircuitBreaker(asyncOperation, options)` for a core banking interbank switch connecting to a central clearing house.\n\n**Configuration Options:**\n- `failureThreshold`: Consecutive failures needed to trip breaker (default $3$).\n- `resetTimeoutMs`: Milliseconds to remain `OPEN` before probing in `HALF_OPEN` (default $50$).\n- `now`: Optional timestamp provider returning milliseconds (defaults to `Date.now`).\n\n**State Machine Specification:**\n- `getState()`: Returns current state: `'CLOSED' | 'OPEN' | 'HALF_OPEN'`.\n- `execute(...args)`: In `CLOSED`, executes `asyncOperation(...args)`. Consecutive failures increment counter; reaching `failureThreshold` trips breaker to `OPEN`. A successful call resets failure count to `0`.\n- In `OPEN`: Fast-fails immediately throwing `new Error('CIRCUIT_BREAKER_OPEN')` without invoking `asyncOperation` until `resetTimeoutMs` elapses.\n- In `HALF_OPEN`: Allows exactly one single canary probe request to test upstream health. Concurrent requests during probing fast-fail with `CIRCUIT_BREAKER_OPEN`. If probe succeeds, transitions to `CLOSED` and resets failure count; if probe fails, returns to `OPEN` and resets cooldown timer.",
+      "inputHint": "Manage transitions between CLOSED, OPEN, and HALF_OPEN states while enforcing isolated canary probe execution and resetting failure thresholds on success",
+      "starterCode": "function createCircuitBreaker(asyncOperation, options = {}) {\n  // TODO: implement three-state circuit breaker state machine\n  return {\n    async execute(...args) {\n      return asyncOperation(...args);\n    },\n    getState() {\n      return 'CLOSED';\n    }\n  };\n}\n\nmodule.exports = { createCircuitBreaker };\n",
+      "solutionCode": "function createCircuitBreaker(asyncOperation, options = {}) {\n  const failureThreshold = options.failureThreshold !== undefined ? options.failureThreshold : 3;\n  const resetTimeoutMs = options.resetTimeoutMs !== undefined ? options.resetTimeoutMs : 50;\n  const now = options.now || Date.now;\n\n  let state = 'CLOSED';\n  let failureCount = 0;\n  let openedAt = 0;\n  let probing = false;\n\n  return {\n    async execute(...args) {\n      const currentTime = now();\n\n      if (state === 'OPEN') {\n        if (currentTime - openedAt >= resetTimeoutMs) {\n          state = 'HALF_OPEN';\n        } else {\n          throw new Error('CIRCUIT_BREAKER_OPEN');\n        }\n      }\n\n      if (state === 'HALF_OPEN') {\n        if (probing) {\n          throw new Error('CIRCUIT_BREAKER_OPEN');\n        }\n        probing = true;\n      }\n\n      try {\n        const result = await asyncOperation(...args);\n        state = 'CLOSED';\n        failureCount = 0;\n        probing = false;\n        return result;\n      } catch (err) {\n        failureCount++;\n        if (state === 'HALF_OPEN' || failureCount >= failureThreshold) {\n          state = 'OPEN';\n          openedAt = now();\n        }\n        probing = false;\n        throw err;\n      }\n    },\n    getState() {\n      if (state === 'OPEN' && now() - openedAt >= resetTimeoutMs) {\n        return 'HALF_OPEN';\n      }\n      return state;\n    }\n  };\n}\n\nmodule.exports = { createCircuitBreaker };\n",
+      "visibleTests": [
+        {
+          "name": "should execute normally in CLOSED state and trip to OPEN after failure threshold",
+          "testCode": "let failures = 0;\nconst flakyClearingHouse = async () => {\n  failures++;\n  throw new Error('Clearing house gateway error');\n};\n\nlet fakeTime = 1000;\nconst breaker = createCircuitBreaker(flakyClearingHouse, { failureThreshold: 3, resetTimeoutMs: 40, now: () => fakeTime });\n\nfor (let i = 0; i < 3; i++) {\n  await assert.rejects(async () => breaker.execute(), /Clearing house gateway error/);\n}\n\nassert.strictEqual(breaker.getState(), 'OPEN');\nawait assert.rejects(async () => breaker.execute(), /CIRCUIT_BREAKER_OPEN/);\nassert.strictEqual(failures, 3);\n"
+        },
+        {
+          "name": "should reset failure counter on successful execution preventing premature tripping",
+          "testCode": "let calls = 0;\nconst unstableGateway = async () => {\n  calls++;\n  if (calls === 1 || calls === 3) throw new Error('Transient error');\n  return 'SUCCESS';\n};\n\nlet fakeTime = 1000;\nconst breaker = createCircuitBreaker(unstableGateway, { failureThreshold: 2, now: () => fakeTime });\n\nawait assert.rejects(async () => breaker.execute(), /Transient error/);\nassert.strictEqual(breaker.getState(), 'CLOSED');\n\nconst res = await breaker.execute();\nassert.strictEqual(res, 'SUCCESS');\nassert.strictEqual(breaker.getState(), 'CLOSED');\n\nawait assert.rejects(async () => breaker.execute(), /Transient error/);\nassert.strictEqual(breaker.getState(), 'CLOSED');\n"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "should isolate exactly one canary probe under concurrent requests in HALF_OPEN",
+          "testCode": "let remoteCalls = 0;\nlet fakeTime = 5000;\nlet shouldFail = true;\nconst slowRemote = async () => {\n  remoteCalls++;\n  if (shouldFail) throw new Error('Upstream down');\n  await new Promise(r => setTimeout(r, 20));\n  return 'PROBE_SUCCESS';\n};\n\nconst breaker = createCircuitBreaker(slowRemote, { failureThreshold: 1, resetTimeoutMs: 50, now: () => fakeTime });\nawait assert.rejects(async () => breaker.execute(), /Upstream down/);\nassert.strictEqual(breaker.getState(), 'OPEN');\n\nfakeTime += 60;\nassert.strictEqual(breaker.getState(), 'HALF_OPEN');\n\nshouldFail = false;\nconst outcomes = await Promise.allSettled([\n  breaker.execute(),\n  breaker.execute(),\n  breaker.execute(),\n  breaker.execute()\n]);\n\nconst successes = outcomes.filter(o => o.status === 'fulfilled');\nconst rejected = outcomes.filter(o => o.status === 'rejected');\n\nassert.strictEqual(successes.length, 1);\nassert.strictEqual(successes[0].value, 'PROBE_SUCCESS');\nassert.strictEqual(rejected.length, 3);\nfor (const r of rejected) {\n  assert.match(r.reason.message, /CIRCUIT_BREAKER_OPEN/);\n}\nassert.strictEqual(remoteCalls, 2);\nassert.strictEqual(breaker.getState(), 'CLOSED');\n"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Initialize circuit breaker state machine tracking failure counter, cooldown timestamp, and active state (CLOSED, OPEN, HALF_OPEN)."
+        },
+        {
+          "explain": "Intercept calls in OPEN state to fast-fail without network invocation until resetTimeout expires."
+        },
+        {
+          "explain": "Execute single canary probe in HALF_OPEN state, transitioning back to CLOSED on success or refreshing OPEN cooldown on failure."
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "State Management & Concurrency|direct|createCircuitBreaker",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 3,
+          "hasTrapOrFlaw": false,
+          "skill": null,
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": null,
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 5
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-03/Q03_createCircuitBreaker.js",
+      "workspaceDir": "/Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T01-C03-03",
+      "cursorUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T01-C03-03/Q03_createCircuitBreaker.js",
+      "vscodeUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T01-C03-03/Q03_createCircuitBreaker.js",
+      "cursorFolderUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T01-C03-03",
+      "vscodeFolderUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T01-C03-03"
+    }
+  ],
+  "schemaVersion": "2.0-code",
+  "subject": "PRG",
+  "createdAt": "2026-11-09 15:17:16",
+  "config": {
+    "questionCount": 3,
+    "difficulty": "ALL",
+    "difficultyMode": "AI Synthesized Engineering Mode"
+  },
+  "sessionSummary": {
+    "practiceStatus": "Ready",
+    "score": 0,
+    "maxScore": 3,
+    "accuracyPct": 0,
+    "mistakeCategories": [],
+    "divergedStepsSummary": "",
+    "attemptDate": null,
+    "syncedToNotionAt": null,
+    "notionPageId": null
+  },
+  "localFilePath": "drills/data/PRG-T01-C03/DRL-PRG-T01-C03-03.json",
+  "unitTitle": "Problem Solving & Utility Toolkit"
+}

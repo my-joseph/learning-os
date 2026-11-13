@@ -1,0 +1,1715 @@
+{
+  "unitCode": "MTH-T01-C12",
+  "unitTitle": "Math Models and Geometry",
+  "topicTitle": "Math Models and Geometry",
+  "drillId": "DRL-MTH-T01-C12-02",
+  "sourceAttribution": "OpenStax Prealgebra 2e, CC BY 4.0",
+  "problems": [
+    {
+      "id": "Q01",
+      "verificationLevel": "partial",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c12-perimeter-rectangles-polygons",
+      "context": "garden_fencing_perimeter",
+      "prompt": "A rectangular garden plot has length $14$ meters and width $8$ meters. Calculate the perimeter $P$ in meters using $P = 2(14) + 2(8)$ with dimensions $14$, $8$, and factor $2$.",
+      "display": "P = 2(14) + 2(8)",
+      "plainText": "P = 2*14 + 2*8",
+      "figure": {
+        "kind": "geometry_2d",
+        "theme": "emerald",
+        "title": "Garden Plot Dimensions",
+        "points": {
+          "A": [
+            0,
+            0
+          ],
+          "B": [
+            14,
+            0
+          ],
+          "C": [
+            14,
+            8
+          ],
+          "D": [
+            0,
+            8
+          ]
+        },
+        "shapes": [
+          {
+            "type": "polygon",
+            "vertices": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ],
+            "fill": true
+          }
+        ],
+        "markers": [
+          {
+            "type": "right_angle",
+            "vertex": "A",
+            "arm1": "B",
+            "arm2": "D"
+          }
+        ],
+        "labels": [
+          {
+            "type": "segment",
+            "p1": "A",
+            "p2": "B",
+            "text": "14\\text{ m}",
+            "side": "bottom"
+          },
+          {
+            "type": "segment",
+            "p1": "B",
+            "p2": "C",
+            "text": "8\\text{ m}",
+            "side": "right"
+          }
+        ]
+      },
+      "answerDisplay": "44",
+      "givens": {
+        "len": 14,
+        "wid": 8,
+        "factor": 2
+      },
+      "trapGivens": [
+        14,
+        8
+      ],
+      "answerPlain": "44",
+      "answerSpec": {
+        "type": "number",
+        "value": "44",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c12-single-side-addition-trap",
+      "trapDerivation": "14 + 8",
+      "trapValue": "22",
+      "verify": {
+        "source": "44",
+        "trapValue": "22"
+      },
+      "checkpointHint": "Double the length and double the width then add the two quantities together",
+      "references": [
+        "MTH-T01-C12"
+      ],
+      "steps": [
+        {
+          "latex": "2 \\times 14 = 28",
+          "explain": "Double the length."
+        },
+        {
+          "latex": "2 \\times 8 = 16",
+          "explain": "Double the width."
+        },
+        {
+          "latex": "28 + 16 = 44",
+          "explain": "Sum the doubled dimensions to get perimeter 44 meters.",
+          "val": "44"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c12-single-side-addition-trap|direct|P = #*# + #*#",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            1,
+            3
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c12-single-side-addition-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 12
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "state": {
+        "userInput": "",
+        "userCode": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "mistakeNote": "",
+        "skipped": false,
+        "lastCheck": null,
+        "lastTestReport": null
+      }
+    },
+    {
+      "id": "Q02",
+      "verificationLevel": "partial",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c12-area-rectangles-triangles",
+      "context": "sailboat_mainsail_canvas",
+      "prompt": "A triangular sail has base $12$ meters and height $7$ meters. Calculate the area $A$ in square meters by dividing the product of base and height by $2$: evaluate $(12 \\times 7) \\div 2$ with base $12$, height $7$, and divisor $2$.",
+      "display": "A = \\frac{1}{2} \\times 12 \\times 7",
+      "plainText": "A = 0.5 * 12 * 7",
+      "answerDisplay": "42",
+      "givens": {
+        "base": 12,
+        "height": 7,
+        "divisor": 2
+      },
+      "trapGivens": [
+        12,
+        7
+      ],
+      "answerPlain": "42",
+      "answerSpec": {
+        "type": "number",
+        "value": "42",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c12-triangle-forgot-half-factor-trap",
+      "trapDerivation": "12 * 7",
+      "trapValue": "84",
+      "verify": {
+        "source": "42",
+        "trapValue": "84"
+      },
+      "checkpointHint": "Multiply base by height and divide the result by two",
+      "references": [
+        "MTH-T01-C12"
+      ],
+      "steps": [
+        {
+          "latex": "12 \\times 7 = 84",
+          "explain": "Multiply base by height."
+        },
+        {
+          "latex": "\\frac{84}{2} = 42",
+          "explain": "Divide product by 2 to obtain area 42 square meters.",
+          "val": "42"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c12-triangle-forgot-half-factor-trap|direct|A = # * # * #",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            1,
+            3
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c12-triangle-forgot-half-factor-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "state": {
+        "userInput": "",
+        "userCode": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "mistakeNote": "",
+        "skipped": false,
+        "lastCheck": null,
+        "lastTestReport": null
+      },
+      "figure": {
+        "kind": "geometry_2d",
+        "theme": "emerald",
+        "title": "Triangle",
+        "points": {
+          "A": [
+            0,
+            0
+          ],
+          "B": [
+            12.0,
+            0
+          ],
+          "C": [
+            0,
+            7.0
+          ]
+        },
+        "shapes": [
+          {
+            "type": "polygon",
+            "vertices": [
+              "A",
+              "B",
+              "C"
+            ],
+            "fill": true
+          }
+        ],
+        "markers": [
+          {
+            "type": "right_angle",
+            "vertex": "A",
+            "arm1": "B",
+            "arm2": "C"
+          }
+        ],
+        "labels": [
+          {
+            "type": "segment",
+            "p1": "A",
+            "p2": "B",
+            "text": "12",
+            "side": "bottom"
+          },
+          {
+            "type": "segment",
+            "p1": "A",
+            "p2": "C",
+            "text": "7",
+            "side": "left"
+          },
+          {
+            "type": "segment",
+            "p1": "C",
+            "p2": "B",
+            "text": "\\sqrt{193}",
+            "side": "hypotenuse",
+            "highlight": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "Q03",
+      "verificationLevel": "partial",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c12-circle-circumference-diameter",
+      "context": "circular_plaza_perimeter",
+      "prompt": "A circular plaza has radius $15$ meters. Calculate the circumference coefficient $c$ in $C = c\\pi$ using $c = 2 \\times 15$ with multiplier $2$ and radius $15$.",
+      "display": "c = 2 \\times 15",
+      "plainText": "c = 2 * 15",
+      "answerDisplay": "30",
+      "givens": {
+        "mult": 2,
+        "radius": 15
+      },
+      "trapGivens": [
+        2,
+        15
+      ],
+      "answerPlain": "30",
+      "answerSpec": {
+        "type": "number",
+        "value": "30",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c12-circumference-add-instead-of-multiply-trap",
+      "trapDerivation": "2 + 15",
+      "trapValue": "17",
+      "verify": {
+        "source": "30",
+        "trapValue": "17"
+      },
+      "checkpointHint": "Multiply the radius by two to obtain the diameter coefficient",
+      "references": [
+        "MTH-T01-C12"
+      ],
+      "steps": [
+        {
+          "latex": "C = 2\\pi r",
+          "explain": "Substitute radius 15 into circumference formula."
+        },
+        {
+          "latex": "C = 2(15)\\pi",
+          "explain": "Evaluate intermediate step."
+        },
+        {
+          "latex": "2 \\times 15 = 30",
+          "explain": "Multiply 2 by 15 to get coefficient 30.",
+          "val": "30"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c12-circumference-add-instead-of-multiply-trap|direct|c = # * #",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            4
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c12-circumference-add-instead-of-multiply-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "state": {
+        "userInput": "",
+        "userCode": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "mistakeNote": "",
+        "skipped": false,
+        "lastCheck": null,
+        "lastTestReport": null
+      },
+      "figure": {
+        "kind": "geometry_2d",
+        "theme": "blue",
+        "title": "Circle",
+        "points": {
+          "O": [
+            0,
+            0
+          ],
+          "P": [
+            15.0,
+            0
+          ]
+        },
+        "shapes": [
+          {
+            "type": "circle",
+            "center": "O",
+            "radius": 15.0,
+            "fill": true
+          },
+          {
+            "type": "segment",
+            "from": "O",
+            "to": "P",
+            "strokeDasharray": "3 3"
+          }
+        ],
+        "labels": [
+          {
+            "type": "point",
+            "point": "O",
+            "text": "O",
+            "position": "bottom-left"
+          },
+          {
+            "type": "segment",
+            "p1": "O",
+            "p2": "P",
+            "text": "r = 15",
+            "side": "top"
+          }
+        ]
+      }
+    },
+    {
+      "id": "Q04",
+      "verificationLevel": "partial",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c12-circle-area",
+      "context": "lawn_sprinkler_coverage",
+      "prompt": "A circular lawn sprinkler covers a circular region of radius $6$ meters. Find the area coefficient $k$ in $A = k\\pi$ by evaluating the power with base $6$ and exponent $2$: evaluate $6 \\times 6$.",
+      "display": "k = 6^2",
+      "plainText": "k = 6^2",
+      "answerDisplay": "36",
+      "givens": {
+        "radius": 6,
+        "factor": 2
+      },
+      "trapGivens": [
+        6,
+        2
+      ],
+      "answerPlain": "36",
+      "answerSpec": {
+        "type": "number",
+        "value": "36",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c12-double-instead-of-square-radius-trap",
+      "trapDerivation": "6 * 2",
+      "trapValue": "12",
+      "verify": {
+        "source": "36",
+        "trapValue": "12"
+      },
+      "checkpointHint": "Multiply the radius by itself rather than doubling it",
+      "references": [
+        "MTH-T01-C12"
+      ],
+      "steps": [
+        {
+          "latex": "A = \\pi r^2",
+          "explain": "Apply circular area formula with radius 6."
+        },
+        {
+          "latex": "A = \\pi (6^2)",
+          "explain": "Evaluate intermediate step."
+        },
+        {
+          "latex": "6^2 = 36",
+          "explain": "Square the radius 6 to get coefficient 36.",
+          "val": "36"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c12-double-instead-of-square-radius-trap|direct|k = #^#",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            4
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c12-double-instead-of-square-radius-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "state": {
+        "userInput": "",
+        "userCode": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "mistakeNote": "",
+        "skipped": false,
+        "lastCheck": null,
+        "lastTestReport": null
+      },
+      "figure": {
+        "kind": "geometry_2d",
+        "theme": "blue",
+        "title": "Circle",
+        "points": {
+          "O": [
+            0,
+            0
+          ],
+          "P": [
+            6.0,
+            0
+          ]
+        },
+        "shapes": [
+          {
+            "type": "circle",
+            "center": "O",
+            "radius": 6.0,
+            "fill": true
+          },
+          {
+            "type": "segment",
+            "from": "O",
+            "to": "P",
+            "strokeDasharray": "3 3"
+          }
+        ],
+        "labels": [
+          {
+            "type": "point",
+            "point": "O",
+            "text": "O",
+            "position": "bottom-left"
+          },
+          {
+            "type": "segment",
+            "p1": "O",
+            "p2": "P",
+            "text": "r = 6",
+            "side": "top"
+          }
+        ]
+      }
+    },
+    {
+      "id": "Q05",
+      "verificationLevel": "partial",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c12-volume-rectangular-solid",
+      "context": "cargo_container_capacity",
+      "prompt": "A storage cargo container has length $8$ meters, width $5$ meters, and height $3$ meters. Calculate the volume $V$ in cubic meters using $V = 8 \\times 5 \\times 3$ with dimensions $8$, $5$, and $3$.",
+      "display": "V = 8 \\times 5 \\times 3",
+      "plainText": "V = 8 * 5 * 3",
+      "answerDisplay": "120",
+      "givens": {
+        "len": 8,
+        "wid": 5,
+        "ht": 3
+      },
+      "trapGivens": [
+        8,
+        5
+      ],
+      "answerPlain": "120",
+      "answerSpec": {
+        "type": "number",
+        "value": "120",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c12-sum-dimensions-instead-of-product-trap",
+      "trapDerivation": "8 + 5 + 3",
+      "trapValue": "16",
+      "verify": {
+        "source": "120",
+        "trapValue": "16"
+      },
+      "checkpointHint": "Multiply all three spatial dimensions together to determine cubic volume",
+      "references": [
+        "MTH-T01-C12"
+      ],
+      "steps": [
+        {
+          "latex": "8 \\times 5 = 40",
+          "explain": "Multiply length by width to obtain base area 40."
+        },
+        {
+          "latex": "40 \\times 3 = 120",
+          "explain": "Multiply base area by height 3 to obtain volume 120 cubic meters.",
+          "val": "120"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c12-sum-dimensions-instead-of-product-trap|direct|V = # * # * #",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            4
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c12-sum-dimensions-instead-of-product-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "state": {
+        "userInput": "",
+        "userCode": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "mistakeNote": "",
+        "skipped": false,
+        "lastCheck": null,
+        "lastTestReport": null
+      },
+      "figure": {
+        "kind": "geometry_2d",
+        "theme": "emerald",
+        "title": "Rectangular Solid",
+        "points": {
+          "F1": [
+            0,
+            0
+          ],
+          "F2": [
+            5.0,
+            0
+          ],
+          "F3": [
+            5.0,
+            3.0
+          ],
+          "F4": [
+            0,
+            3.0
+          ],
+          "B1": [
+            3.6,
+            2.8
+          ],
+          "B2": [
+            8.6,
+            2.8
+          ],
+          "B3": [
+            8.6,
+            5.8
+          ],
+          "B4": [
+            3.6,
+            5.8
+          ]
+        },
+        "shapes": [
+          {
+            "type": "polygon",
+            "vertices": [
+              "F1",
+              "F2",
+              "F3",
+              "F4"
+            ],
+            "fill": true
+          },
+          {
+            "type": "polygon",
+            "vertices": [
+              "F4",
+              "F3",
+              "B3",
+              "B4"
+            ],
+            "fill": true
+          },
+          {
+            "type": "polygon",
+            "vertices": [
+              "F2",
+              "B2",
+              "B3",
+              "F3"
+            ],
+            "fill": true
+          },
+          {
+            "type": "segment",
+            "from": "F1",
+            "to": "B1",
+            "strokeDasharray": "3 3"
+          },
+          {
+            "type": "segment",
+            "from": "B1",
+            "to": "B2",
+            "strokeDasharray": "3 3"
+          },
+          {
+            "type": "segment",
+            "from": "B1",
+            "to": "B4",
+            "strokeDasharray": "3 3"
+          },
+          {
+            "type": "segment",
+            "from": "F1",
+            "to": "B3",
+            "strokeDasharray": "4 2",
+            "strokeWidth": 2.5,
+            "stroke": "#ea580c"
+          }
+        ],
+        "labels": [
+          {
+            "type": "segment",
+            "p1": "F1",
+            "p2": "F2",
+            "text": "w = 5\\text{ m}",
+            "side": "bottom"
+          },
+          {
+            "type": "segment",
+            "p1": "F2",
+            "p2": "B2",
+            "text": "l = 8\\text{ m}",
+            "side": "right"
+          },
+          {
+            "type": "segment",
+            "p1": "F1",
+            "p2": "F4",
+            "text": "h = 3\\text{ m}",
+            "side": "left"
+          }
+        ]
+      }
+    },
+    {
+      "id": "Q06",
+      "verificationLevel": "partial",
+      "level": 3,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c12-volume-cylinder",
+      "context": "cylindrical_water_reservoir",
+      "prompt": "A cylindrical reservoir has radius $4$ meters and height $10$ meters. Calculate the volume coefficient $k$ in $V = k\\pi$ using $4 \\times 4 \\times 10$, with radius $4$ and height $10$.",
+      "display": "k = 4^2 \\times 10",
+      "plainText": "k = 4^2 * 10",
+      "answerDisplay": "160",
+      "givens": {
+        "radius": 4,
+        "ht": 10
+      },
+      "trapGivens": [
+        4,
+        10
+      ],
+      "answerPlain": "160",
+      "answerSpec": {
+        "type": "number",
+        "value": "160",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c12-cylinder-linear-radius-trap",
+      "trapDerivation": "4 * 10",
+      "trapValue": "40",
+      "verify": {
+        "source": "160",
+        "trapValue": "40"
+      },
+      "checkpointHint": "Square the radius first to find the circular base area before multiplying by height",
+      "references": [
+        "MTH-T01-C12"
+      ],
+      "steps": [
+        {
+          "latex": "4^2 = 16",
+          "explain": "Square the base radius 4."
+        },
+        {
+          "latex": "16 \\times 10 = 160",
+          "explain": "Multiply base area coefficient by height 10 to get 160.",
+          "val": "160"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c12-cylinder-linear-radius-trap|direct|k = #^# * #",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            5
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c12-cylinder-linear-radius-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "state": {
+        "userInput": "",
+        "userCode": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "mistakeNote": "",
+        "skipped": false,
+        "lastCheck": null,
+        "lastTestReport": null
+      },
+      "figure": {
+        "kind": "geometry_2d",
+        "theme": "blue",
+        "title": "Cylinder",
+        "points": {
+          "C_BOT": [
+            0,
+            0
+          ],
+          "C_TOP": [
+            0,
+            10.0
+          ],
+          "L_BOT": [
+            -4.0,
+            0
+          ],
+          "R_BOT": [
+            4.0,
+            0
+          ],
+          "L_TOP": [
+            -4.0,
+            10.0
+          ],
+          "R_TOP": [
+            4.0,
+            10.0
+          ]
+        },
+        "shapes": [
+          {
+            "type": "segment",
+            "from": "L_BOT",
+            "to": "L_TOP"
+          },
+          {
+            "type": "segment",
+            "from": "R_BOT",
+            "to": "R_TOP"
+          },
+          {
+            "type": "ellipse",
+            "center": "C_BOT",
+            "radiusX": 4.0,
+            "radiusY": 1.2,
+            "strokeDasharray": "3 3"
+          },
+          {
+            "type": "ellipse",
+            "center": "C_TOP",
+            "radiusX": 4.0,
+            "radiusY": 1.2,
+            "fill": true
+          },
+          {
+            "type": "segment",
+            "from": "C_TOP",
+            "to": "R_TOP",
+            "strokeDasharray": "2 2"
+          }
+        ],
+        "labels": [
+          {
+            "type": "segment",
+            "p1": "L_BOT",
+            "p2": "L_TOP",
+            "text": "h = 10\\text{ dm}",
+            "side": "left"
+          },
+          {
+            "type": "segment",
+            "p1": "C_TOP",
+            "p2": "R_TOP",
+            "text": "r = 4\\text{ dm}",
+            "side": "top"
+          }
+        ]
+      }
+    },
+    {
+      "id": "Q07",
+      "verificationLevel": "partial",
+      "level": 3,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c12-complementary-supplementary-angles",
+      "context": "roof_rafter_joint_angles",
+      "prompt": "Two angles are complementary and sum to $90$ degrees. If the first angle measures $34$ degrees, calculate the measure of the complementary angle in degrees using $90 - 34$ with total $90$ and angle $34$.",
+      "display": "90 - 34 = ?",
+      "plainText": "90 - 34 = a",
+      "answerDisplay": "56",
+      "givens": {
+        "total": 90,
+        "angle": 34
+      },
+      "trapGivens": [
+        90,
+        34
+      ],
+      "answerPlain": "56",
+      "answerSpec": {
+        "type": "number",
+        "value": "56",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c12-subtraction-sign-inversion-trap",
+      "trapDerivation": "90 + 34",
+      "trapValue": "124",
+      "verify": {
+        "source": "56",
+        "trapValue": "124"
+      },
+      "checkpointHint": "Subtract the given angle measure from ninety degrees",
+      "references": [
+        "MTH-T01-C12"
+      ],
+      "steps": [
+        {
+          "latex": "\\alpha + 34^\\circ = 90^\\circ",
+          "explain": "Set sum of complementary angles to 90 degrees."
+        },
+        {
+          "latex": "\\alpha = 90^\\circ - 34^\\circ",
+          "explain": "Subtract 34 from 90 to get 56 degrees."
+        },
+        {
+          "latex": "\\alpha = 56^\\circ",
+          "explain": "Simplify to obtain 56.",
+          "val": "56"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c12-subtraction-sign-inversion-trap|direct|# - # = a",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            5
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c12-subtraction-sign-inversion-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "state": {
+        "userInput": "",
+        "userCode": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "mistakeNote": "",
+        "skipped": false,
+        "lastCheck": null,
+        "lastTestReport": null
+      },
+      "figure": {
+        "kind": "geometry_2d",
+        "theme": "rose",
+        "title": "Complementary Angles",
+        "points": {
+          "O": [
+            0,
+            0
+          ],
+          "R": [
+            4.0,
+            0.0
+          ],
+          "U": [
+            3.316,
+            2.237
+          ],
+          "S": [
+            0.0,
+            4.0
+          ]
+        },
+        "shapes": [
+          {
+            "type": "segment",
+            "from": "O",
+            "to": "R"
+          },
+          {
+            "type": "segment",
+            "from": "O",
+            "to": "U"
+          },
+          {
+            "type": "segment",
+            "from": "O",
+            "to": "S"
+          }
+        ],
+        "markers": [
+          {
+            "type": "angle_arc",
+            "vertex": "O",
+            "arm1": "R",
+            "arm2": "U",
+            "label": "34^\\circ",
+            "radius": 30
+          },
+          {
+            "type": "angle_arc",
+            "vertex": "O",
+            "arm1": "U",
+            "arm2": "S",
+            "label": "?",
+            "radius": 44
+          }
+        ]
+      }
+    },
+    {
+      "id": "Q08",
+      "verificationLevel": "partial",
+      "level": 3,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c12-triangle-angle-sum-invariance",
+      "context": "bridge_truss_triangulation",
+      "prompt": "In a structural triangle, two angles measure $45$ degrees and $65$ degrees, and all three angles sum to $180$ degrees. Calculate the third angle in degrees using $180 - (45 + 65)$ with sum $180$, and angles $45$ and $65$.",
+      "display": "180 - (45 + 65) = ?",
+      "plainText": "180 - (45 + 65) = c",
+      "answerDisplay": "70",
+      "givens": {
+        "sum_ang": 180,
+        "a1": 45,
+        "a2": 65
+      },
+      "trapGivens": [
+        45,
+        65
+      ],
+      "answerPlain": "70",
+      "answerSpec": {
+        "type": "number",
+        "value": "70",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c12-third-angle-omission-trap",
+      "trapDerivation": "45 + 65",
+      "trapValue": "110",
+      "verify": {
+        "source": "70",
+        "trapValue": "110"
+      },
+      "checkpointHint": "Add the two known angles together and subtract their sum from one hundred eighty degrees",
+      "references": [
+        "MTH-T01-C12"
+      ],
+      "steps": [
+        {
+          "latex": "45^\\circ + 65^\\circ = 110^\\circ",
+          "explain": "Sum the two known angle measures."
+        },
+        {
+          "latex": "180^\\circ - 110^\\circ = 70^\\circ",
+          "explain": "Subtract sum from 180 to obtain third angle 70 degrees.",
+          "val": "70"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c12-third-angle-omission-trap|direct|# - (# + #) = c",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            5
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c12-third-angle-omission-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "state": {
+        "userInput": "",
+        "userCode": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "mistakeNote": "",
+        "skipped": false,
+        "lastCheck": null,
+        "lastTestReport": null
+      },
+      "figure": {
+        "kind": "geometry_2d",
+        "theme": "indigo",
+        "title": "Triangle Angles",
+        "points": {
+          "A": [
+            0,
+            0
+          ],
+          "B": [
+            8.0,
+            0
+          ],
+          "C": [
+            5.456,
+            5.456
+          ]
+        },
+        "shapes": [
+          {
+            "type": "polygon",
+            "vertices": [
+              "A",
+              "B",
+              "C"
+            ],
+            "fill": true
+          }
+        ],
+        "markers": [
+          {
+            "type": "angle_arc",
+            "vertex": "A",
+            "arm1": "B",
+            "arm2": "C",
+            "label": "45^\\circ",
+            "radius": 26
+          },
+          {
+            "type": "angle_arc",
+            "vertex": "B",
+            "arm1": "C",
+            "arm2": "A",
+            "label": "65^\\circ",
+            "radius": 26
+          },
+          {
+            "type": "angle_arc",
+            "vertex": "C",
+            "arm1": "A",
+            "arm2": "B",
+            "label": "?",
+            "radius": 24
+          }
+        ]
+      }
+    },
+    {
+      "id": "Q09",
+      "verificationLevel": "partial",
+      "level": 4,
+      "category": "Applied Problem",
+      "archetype": "problem-solving",
+      "archetypeKey": "c12-composite-geometric-area-modeling",
+      "context": "building_gable_facade_area",
+      "prompt": "A building wall facade consists of a lower rectangle with width $10$ meters and height $6$ meters, topped by a triangular gable with base $10$ meters and height $4$ meters. Calculate the total wall surface area $A$ in square meters by summing the rectangle area $10 \\times 6$ and the gable triangle area $(10 \\times 4) \\div 2$, with dimensions $10$, $6$, $4$, and divisor $2$.",
+      "display": "A = 10 \\times 6 + \\frac{1}{2} \\times 10 \\times 4",
+      "plainText": "A = 10 * 6 + 0.5 * 10 * 4",
+      "answerDisplay": "80",
+      "givens": {
+        "base": 10,
+        "rect_ht": 6,
+        "tri_ht": 4,
+        "divisor": 2
+      },
+      "trapGivens": [
+        10,
+        4
+      ],
+      "answerPlain": "80",
+      "answerSpec": {
+        "type": "number",
+        "value": "80",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c12-omitted-half-factor-gable-trap",
+      "trapDerivation": "10 * 6 + 10 * 4",
+      "trapValue": "100",
+      "verify": {
+        "source": "80",
+        "trapValue": "100"
+      },
+      "checkpointHint": "Compute the rectangular area and triangular area separately before summing both parts",
+      "references": [
+        "MTH-T01-C12",
+        "OpenStax Prealgebra 2e §9.3"
+      ],
+      "competencies": [
+        "composite-area-modeling",
+        "geometric-partition-synthesis"
+      ],
+      "constraints": [
+        "strictly positive dimensions",
+        "shared collinear boundary"
+      ],
+      "steps": [
+        {
+          "latex": "10 \\times 6 = 60",
+          "explain": "Calculate rectangular wall area."
+        },
+        {
+          "latex": "\\frac{1}{2} \\times 10 \\times 4 = 20",
+          "explain": "Calculate triangular gable area."
+        },
+        {
+          "latex": "60 + 20 = 80",
+          "explain": "Sum rectangular and triangular regions to obtain 80 square meters.",
+          "val": "80"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c12-omitted-half-factor-gable-trap|direct|A = # * # + # * # * #",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c12-omitted-half-factor-gable-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 12
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "state": {
+        "userInput": "",
+        "userCode": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "mistakeNote": "",
+        "skipped": false,
+        "lastCheck": null,
+        "lastTestReport": null
+      },
+      "figure": {
+        "kind": "geometry_2d",
+        "theme": "emerald",
+        "title": "Gable Facade",
+        "points": {
+          "BL": [
+            0,
+            0
+          ],
+          "BR": [
+            10.0,
+            0
+          ],
+          "TR": [
+            10.0,
+            6.0
+          ],
+          "TL": [
+            0,
+            6.0
+          ],
+          "PK": [
+            5.0,
+            10.0
+          ],
+          "MID": [
+            5.0,
+            6.0
+          ]
+        },
+        "shapes": [
+          {
+            "type": "polygon",
+            "vertices": [
+              "BL",
+              "BR",
+              "TR",
+              "PK",
+              "TL"
+            ],
+            "fill": true
+          },
+          {
+            "type": "segment",
+            "from": "TL",
+            "to": "TR",
+            "strokeDasharray": "3 3"
+          },
+          {
+            "type": "segment",
+            "from": "MID",
+            "to": "PK",
+            "strokeDasharray": "2 2"
+          }
+        ],
+        "labels": [
+          {
+            "type": "segment",
+            "p1": "BL",
+            "p2": "BR",
+            "text": "10",
+            "side": "bottom"
+          },
+          {
+            "type": "segment",
+            "p1": "BR",
+            "p2": "TR",
+            "text": "6",
+            "side": "right"
+          },
+          {
+            "type": "segment",
+            "p1": "MID",
+            "p2": "PK",
+            "text": "4",
+            "side": "right"
+          }
+        ]
+      }
+    },
+    {
+      "id": "Q10",
+      "verificationLevel": "partial",
+      "level": 4,
+      "category": "Applied Problem",
+      "archetype": "problem-solving",
+      "archetypeKey": "c12-applied-cylindrical-surface-coating-synthesis",
+      "context": "water_tower_protective_coating",
+      "prompt": "A cylindrical water tower has radius $5$ meters and height $12$ meters. Calculate the lateral surface area coefficient $L$ in $A_{\\text{lat}} = L\\pi$ using $2 \\times 5 \\times 12$ with multiplier $2$, radius $5$, and height $12$.",
+      "display": "L = 2 \\times 5 \\times 12",
+      "plainText": "L = 2 * 5 * 12",
+      "answerDisplay": "120",
+      "givens": {
+        "mult": 2,
+        "radius": 5,
+        "ht": 12
+      },
+      "trapGivens": [
+        5,
+        12
+      ],
+      "answerPlain": "120",
+      "answerSpec": {
+        "type": "number",
+        "value": "120",
+        "tolerance": 0.001
+      },
+      "commonTrapTag": "c12-omitted-circumference-factor-trap",
+      "trapDerivation": "5 * 12",
+      "trapValue": "60",
+      "verify": {
+        "source": "120",
+        "trapValue": "60"
+      },
+      "checkpointHint": "Multiply twice the radius by the cylinder height to find the unrolled lateral surface area",
+      "references": [
+        "MTH-T01-C12",
+        "OpenStax Prealgebra 2e §9.4"
+      ],
+      "competencies": [
+        "cylindrical-lateral-area",
+        "geometric-surface-modeling"
+      ],
+      "constraints": [
+        "right circular cylinder",
+        "strictly positive dimensions"
+      ],
+      "steps": [
+        {
+          "latex": "2 \\times 5 = 10",
+          "explain": "Calculate base circumference coefficient 2r = 10."
+        },
+        {
+          "latex": "10 \\times 12 = 120",
+          "explain": "Multiply circumference coefficient by height 12 to get 120.",
+          "val": "120"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c12-omitted-circumference-factor-trap|direct|L = # * # * #",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            6
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c12-omitted-circumference-factor-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "state": {
+        "userInput": "",
+        "userCode": "",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "mistakeNote": "",
+        "skipped": false,
+        "lastCheck": null,
+        "lastTestReport": null
+      },
+      "figure": {
+        "kind": "geometry_2d",
+        "theme": "blue",
+        "title": "Cylinder",
+        "points": {
+          "C_BOT": [
+            0,
+            0
+          ],
+          "C_TOP": [
+            0,
+            12.0
+          ],
+          "L_BOT": [
+            -5.0,
+            0
+          ],
+          "R_BOT": [
+            5.0,
+            0
+          ],
+          "L_TOP": [
+            -5.0,
+            12.0
+          ],
+          "R_TOP": [
+            5.0,
+            12.0
+          ]
+        },
+        "shapes": [
+          {
+            "type": "segment",
+            "from": "L_BOT",
+            "to": "L_TOP"
+          },
+          {
+            "type": "segment",
+            "from": "R_BOT",
+            "to": "R_TOP"
+          },
+          {
+            "type": "ellipse",
+            "center": "C_BOT",
+            "radiusX": 5.0,
+            "radiusY": 1.5,
+            "strokeDasharray": "3 3"
+          },
+          {
+            "type": "ellipse",
+            "center": "C_TOP",
+            "radiusX": 5.0,
+            "radiusY": 1.5,
+            "fill": true
+          },
+          {
+            "type": "segment",
+            "from": "C_TOP",
+            "to": "R_TOP",
+            "strokeDasharray": "2 2"
+          }
+        ],
+        "labels": [
+          {
+            "type": "segment",
+            "p1": "L_BOT",
+            "p2": "L_TOP",
+            "text": "h = 12\\text{ dm}",
+            "side": "left"
+          },
+          {
+            "type": "segment",
+            "p1": "C_TOP",
+            "p2": "R_TOP",
+            "text": "r = 5\\text{ dm}",
+            "side": "top"
+          }
+        ]
+      }
+    }
+  ],
+  "title": "Math Models and Geometry — Verified Math Drill (10 Qs)",
+  "schemaVersion": "2.0-math",
+  "subject": "MATH",
+  "createdAt": "2026-11-09 20:40:01",
+  "config": {
+    "questionCount": 10,
+    "difficulty": "ALL",
+    "difficultyMode": "AI Synthesized Reasoning Mode"
+  },
+  "sessionSummary": {
+    "practiceStatus": "Ready",
+    "score": 0,
+    "maxScore": 10,
+    "accuracyPct": 0,
+    "mistakeCategories": [],
+    "divergedStepsSummary": "",
+    "attemptDate": null,
+    "syncedToNotionAt": null,
+    "notionPageId": null
+  },
+  "localFilePath": "/Users/Joseph/Documents/antigravity/brave-borg/drills/data/MTH-T01-C12/DRL-MTH-T01-C12-02.json"
+}

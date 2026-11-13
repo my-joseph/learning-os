@@ -15,10 +15,10 @@
 - Labs: TypeScript run via `node --experimental-strip-types` (no build step).
 
 ## Commands (verified 2026-11-13 unless marked)
-- Studio (run in `practice-studio/`): `npm ci`, `npm run dev` (http://localhost:3000, TODO: verify), `npm run lint`, `npm run build`.
+- Studio (run in `practice-studio/`): `npm ci`, `npm run dev` (http://127.0.0.1:3000, bound to localhost only), `npm run lint`, `npm run build`.
 - Generate drills (run from repo root): `python3 -m math_engine.generate --unit <UNIT> --count <N> --difficulty <D>` and `python3 -m code_engine.generate --unit <UNIT> --count <N>` (`--help` verified; full run not verified).
 - Lab (run in `labs/LAB-PRG-T03-C01-01/`): `npm test` (21 tests pass). `npm run submit` writes to Notion — only on request.
-- Python tests (repo root): `pip install -r requirements-dev.txt && python -m pytest` (21 pass; hermetic, no Notion/network).
+- Python tests (repo root): `pip install -r requirements-dev.txt && python -m pytest` (152 pass; hermetic, no Notion/network). Studio unit tests: `npm run test:telemetry` in `practice-studio/`.
 - CI: `.github/workflows/ci.yml` runs pytest, studio lint+build, lab tests. No Makefile/Dockerfile. TODO: verify any other command before using it.
 
 ## Conventions (target — apply to new/changed code)
@@ -50,9 +50,9 @@
 ## Gotchas / Do-Not
 - Never commit or print `.env` (`NOTION_TOKEN`, `NOTION_DATABASE_ID`). `.env`, `.venv`, `node_modules` are gitignored and absent in fresh worktrees; scripts read `.env` relative to the CWD, so run from repo root.
 - Root is canonical for `math_engine/`, `code_engine/`, `drills/`, `id_map.json`, `drill_sync.py`. `practice-studio/` has no copies (only a `code_engine` symlink to `../code_engine`); the Studio API routes read root via `src/lib/paths.ts`. Never recreate copies; `code_engine.generate` no longer mirrors into `practice-studio/`.
-- 34 one-shot scripts (`*_builder.py`, `upgrade_*`, `create_*`, `fix_*`, `deploy_*`, `clean_*`, `patch_*`, ...) now live in `archive/` and mostly write to Notion. Never run them unasked; if required: `PYTHONPATH=. python3 archive/<script>.py` from repo root. Root keeps only live modules: `notion_client.py` (shared Notion REST client + `.env` loader; applies process-wide IPv4/timeout on import), `apply_rules_and_test_pages.py` (page-building helpers; re-exports the client names), `drill_sync.py` (zero-leak validator + Notion sync; spawned by studio `sync-notion` route), `sync_rules_to_notion.py` + its imports `test_md_parser.py`, `upgrade_mth_t01_batch2.py`, `mth_t01_batch2_{data,units}.py` (still coupled to the rules-sync script; candidate for later cleanup).
+- 34 one-shot scripts (`*_builder.py`, `upgrade_*`, `create_*`, `fix_*`, `deploy_*`, `clean_*`, `patch_*`, ...) now live in `archive/` and mostly write to Notion. Never run them unasked; if required: `PYTHONPATH=. python3 archive/<script>.py` from repo root. Root keeps only live modules: `notion_client.py` (shared Notion REST client + `.env` loader; applies process-wide IPv4/timeout on import; TLS always verified; retries only network errors/409/429/5xx; raises `MissingNotionToken` before any request; `replace_page_content` appends new blocks before deleting old ones), `apply_rules_and_test_pages.py` (page-building helpers; re-exports the client names), `drill_sync.py` (zero-leak validator + Notion sync; spawned by studio `sync-notion` route), `sync_rules_to_notion.py` + its imports `test_md_parser.py`, `upgrade_mth_t01_batch2.py`, `mth_t01_batch2_{data,units}.py` (still coupled to the rules-sync script; candidate for later cleanup).
 - Never hand-edit `id_map.json` (Notion page-ID registry, incl. `CON-*` concept keys).
-- Drill hints/placeholders must never leak the answer (zero-leak rule, `rules/00_core.md` §6).
+- Drill hints/placeholders must never leak the answer (zero-leak rule, `rules/00_core.md` §6). AI-written math prompts must not give away the solution either (`rules/07` §4.7, enforced at ingest); audit with `python scripts/audit_solution_leaks.py [UNIT] [--display]`.
 - Notion multi-select values cannot contain commas; use only whitelisted Notion icon names.
 - `code_engine.generate` writes CWD-relative side effects (`drills/workspace/<ID>/`). Tests must `monkeypatch.chdir(tmp_path)`.
 

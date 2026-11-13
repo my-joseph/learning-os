@@ -1,0 +1,263 @@
+{
+  "unitCode": "PRG-T01-C03",
+  "unitTitle": "Problem Solving & Utility Toolkit",
+  "description": "Autonomous Reasoning Schemas & Engineering Archetypes for PRG-T01-C03 (Async Architectures, Resilient Systems, Caching, and High-Throughput Utilities).",
+  "archetypes": [
+    {
+      "archetypeKey": "prg-c03-token-bucket-rate-limiter",
+      "level": 3,
+      "archetype": "problem-solving",
+      "name": "Token Bucket Burst Rate Limiter",
+      "competencies": [
+        "state-management",
+        "performance",
+        "api-integration"
+      ],
+      "coreConcept": "Token Bucket algorithm for traffic shaping and burst-tolerant rate limiting. Generates tokens at a constant rate up to a max capacity; requests consume tokens atomically.",
+      "mentalModel": [
+        "1. Store capacity (maxTokens), refillRatePerSecond, currentTokens, and lastRefillTimestamp.",
+        "2. On each consume(tokensToConsume = 1) call: calculate elapsed milliseconds since lastRefillTimestamp.",
+        "3. Add newly accrued tokens: (elapsedMs / 1000) * refillRatePerSecond.",
+        "4. Clamp currentTokens to capacity, and update lastRefillTimestamp to current time.",
+        "5. If currentTokens >= tokensToConsume, decrement currentTokens and return true; otherwise return false."
+      ],
+      "governingInvariant": "currentTokens = min(capacity, currentTokens + elapsed_sec * refill_rate); allowed = (currentTokens >= cost)",
+      "cognitiveTraps": [
+        {
+          "trapTag": "rate-limit-window-leak",
+          "name": "Timestamp Update on Rejected Request",
+          "description": "Updating lastRefillTimestamp when a request is rejected, which discards partially accumulated refill time and starves future requests.",
+          "reproducer": "Call consume() when empty, wait 50% of refill time, call consume() again; if timestamp was reset, refill starts from zero instead of completing."
+        },
+        {
+          "trapTag": "token-bucket-overflow-neglect",
+          "name": "Token Capacity Overflow Neglect",
+          "description": "Failing to clamp accumulated tokens at max capacity, permitting an unbounded burst after prolonged idle periods.",
+          "reproducer": "Idle for 10x capacity duration, then fire burst of capacity * 2 requests; without clamp, all succeed."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "api_gateway_throttle",
+          "description": "API Gateway throttling incoming tenant HTTP requests to prevent backend saturation."
+        },
+        {
+          "domain": "payment_webhook_burst",
+          "description": "Fintech payment processing pipeline rate limiting outward webhook deliveries."
+        },
+        {
+          "domain": "websocket_chat_guard",
+          "description": "Real-time chat server limiting broadcast message volume per connected socket client."
+        }
+      ],
+      "usedContexts": [
+        "cloud_api_gateway_burst_throttle",
+        "iot_telemetry_beacon_uplink"
+      ]
+    },
+    {
+      "archetypeKey": "prg-c03-webhook-hmac-verifier",
+      "level": 2,
+      "archetype": "debugging",
+      "name": "Timing-Safe Webhook HMAC Signature Verifier",
+      "competencies": [
+        "architecture",
+        "api-integration"
+      ],
+      "coreConcept": "Cryptographic webhook authenticity verification using HMAC-SHA256, constant-time buffer comparison, and timestamp tolerance anti-replay validation.",
+      "mentalModel": [
+        "1. Extract timestamp and signature hex from webhook header (e.g., 't=1690000000,v1=abc123...').",
+        "2. Check timestamp drift: Math.abs(currentTime - timestamp) <= toleranceSeconds to thwart replay attacks.",
+        "3. Compute expected HMAC-SHA256 over `${timestamp}.${rawPayload}` using the shared webhook secret.",
+        "4. Convert expected and provided signatures to Buffer instances of equal length.",
+        "5. Compare digests using crypto.timingSafeEqual() to prevent timing side-channel attacks."
+      ],
+      "governingInvariant": "timingSafeEqual(Buffer.from(computedHex), Buffer.from(signatureHex)) && abs(now - timestamp) <= tolerance",
+      "cognitiveTraps": [
+        {
+          "trapTag": "timing-attack-vulnerability",
+          "name": "Naive String Equality Comparison",
+          "description": "Using standard JavaScript '===' comparison which terminates early on the first mismatched byte, leaking cryptographic timing clues.",
+          "reproducer": "Compare signatures byte by byte; standard === returns in variable execution time proportional to matching prefix length."
+        },
+        {
+          "trapTag": "replay-attack-window-omission",
+          "name": "Missing Timestamp Tolerance Validation",
+          "description": "Verifying the HMAC signature without verifying that the payload timestamp falls within the allowed validity window.",
+          "reproducer": "Send a valid payload from 2 days ago; without timestamp check, replayed payload is accepted."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "stripe_payment_webhook",
+          "description": "E-commerce billing receiver verifying Stripe charge.succeeded webhook signatures."
+        },
+        {
+          "domain": "github_actions_dispatch",
+          "description": "CI/CD webhook agent verifying GitHub push event HMAC signatures."
+        },
+        {
+          "domain": "shopify_inventory_sync",
+          "description": "Warehouse management system receiving inventory update webhooks."
+        }
+      ],
+      "usedContexts": [
+        "stripe_billing_webhook_agent"
+      ]
+    },
+    {
+      "archetypeKey": "prg-c03-exponential-backoff-retry",
+      "level": 3,
+      "archetype": "problem-solving",
+      "name": "Exponential Backoff & Jittered Retry Orchestrator",
+      "competencies": [
+        "api-integration",
+        "state-management"
+      ],
+      "coreConcept": "Resilient async operation executor handling transient failures with exponential delay scaling, random full jitter to prevent thundering herds, and selective error classification.",
+      "mentalModel": [
+        "1. Loop from attempt = 0 up to maxRetries.",
+        "2. Invoke asynchronous operation inside a try/catch block.",
+        "3. On success, return result immediately.",
+        "4. On error, verify if error is retryable (e.g., isRetryable(err) == true or HTTP status >= 500 or ECONNRESET).",
+        "5. If error is not retryable or attempt == maxRetries, throw error immediately.",
+        "6. Calculate backoff delay: min(maxDelayMs, baseDelayMs * 2^attempt) with full jitter (Math.random() * delay).",
+        "7. Sleep for calculated delay, then proceed to next attempt."
+      ],
+      "governingInvariant": "delay = min(maxDelay, baseDelay * (2 ** attempt)); actualSleep = random() * delay; retryCount <= maxRetries",
+      "cognitiveTraps": [
+        {
+          "trapTag": "unconditional-retry-loop",
+          "name": "Unconditional 4xx Client Error Retrying",
+          "description": "Retrying non-transient client errors (e.g. 400 Bad Request, 401 Unauthorized, 404 Not Found) that can never succeed on retry.",
+          "reproducer": "Call retryWithBackoff with a function returning HTTP 400; retrying wastes compute and locks API keys."
+        },
+        {
+          "trapTag": "thundering-herd-no-jitter",
+          "name": "Missing Random Jitter in Backoff Delay",
+          "description": "Using deterministic backoff delay across concurrent clients, causing periodic waves of synchronized traffic spikes.",
+          "reproducer": "Simulate 100 failed requests; without jitter, all 100 retry simultaneously at exact 1s, 2s, 4s marks."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "fintech_banking_rpc",
+          "description": "Core banking microservice sending inter-service RPC commands with transient failover."
+        },
+        {
+          "domain": "cloud_storage_uploader",
+          "description": "Multi-part object storage upload worker retrying on network drops."
+        },
+        {
+          "domain": "iot_telemetry_beacon",
+          "description": "Connected device telemetry client publishing sensor metrics over unreliable cellular connections."
+        }
+      ],
+      "usedContexts": [
+        "resilient_payment_rpc_client"
+      ]
+    },
+    {
+      "archetypeKey": "prg-c03-concurrent-promise-pool",
+      "level": 4,
+      "archetype": "problem-solving",
+      "name": "Bounded Concurrency Async Promise Pool",
+      "competencies": [
+        "performance",
+        "architecture",
+        "data-handling"
+      ],
+      "coreConcept": "Controlled concurrency task orchestrator limiting active in-flight promises to a maximum pool size K, preventing resource exhaustion while preserving item result ordering.",
+      "mentalModel": [
+        "1. Create an output results array sized equal to input tasks array.",
+        "2. Maintain an atomic index cursor tracking the next unassigned task.",
+        "3. Spawn exactly min(concurrency, tasks.length) worker loop promises.",
+        "4. Each worker loop repeatedly grabs the next task index, awaits the task fn(items[index]), and stores the result into results[index].",
+        "5. Worker exits when cursor exceeds items.length.",
+        "6. Await Promise.all(workers) and return the ordered results array."
+      ],
+      "governingInvariant": "activeWorkers <= concurrencyLimit; results.length == items.length; results[i] corresponds to items[i]",
+      "cognitiveTraps": [
+        {
+          "trapTag": "promise-all-unbounded-flood",
+          "name": "Unbounded Concurrency Flood",
+          "description": "Executing Promise.all(items.map(fn)) on thousands of items, exhausting database connection pools or socket descriptors.",
+          "reproducer": "Pass 1,000 tasks with concurrency limit of 5; verify at no point do active promises exceed 5."
+        },
+        {
+          "trapTag": "out-of-order-result-corruption",
+          "name": "Out-of-Order Result Array Corruption",
+          "description": "Pushing completed task results into a dynamic array as they finish instead of indexing by original position.",
+          "reproducer": "Pass tasks with varying completion durations; verify result order matches input order, not completion order."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "batch_media_transcoder",
+          "description": "Video processing service transcoding user video assets with bounded CPU worker slots."
+        },
+        {
+          "domain": "enterprise_db_migrator",
+          "description": "Database migration CLI migrating user records across shards with max 10 concurrent connections."
+        },
+        {
+          "domain": "web_crawler_indexer",
+          "description": "Search engine crawler indexing pages with strict host-level concurrency limits."
+        }
+      ],
+      "usedContexts": [
+        "crypto_exchange_orderbook_cache"
+      ]
+    },
+    {
+      "archetypeKey": "prg-c03-circuit-breaker-state-machine",
+      "level": 4,
+      "archetype": "problem-solving",
+      "name": "Stateful Circuit Breaker with Half-Open Probe",
+      "competencies": [
+        "state-management",
+        "architecture",
+        "api-integration"
+      ],
+      "coreConcept": "Distributed fault tolerance pattern protecting failing remote services by short-circuiting calls across CLOSED, OPEN, and HALF_OPEN states.",
+      "mentalModel": [
+        "1. Initialize in CLOSED state with failure count = 0.",
+        "2. When in CLOSED: execute async operation. Reset failures to 0 on success. On failure, increment failure count; if failures >= threshold, transition to OPEN and record openedAt = Date.now().",
+        "3. When in OPEN: check if (Date.now() - openedAt) >= resetTimeoutMs. If not, fast-fail immediately throwing a circuit-open error. If cooldown has elapsed, transition to HALF_OPEN.",
+        "4. When in HALF_OPEN: permit a single trial execution probe. If probe succeeds, transition to CLOSED and reset failures. If probe fails, transition back to OPEN and refresh openedAt."
+      ],
+      "governingInvariant": "state in ('CLOSED', 'OPEN', 'HALF_OPEN'); OPEN fast-fails within cooldown; HALF_OPEN executes canary probe",
+      "cognitiveTraps": [
+        {
+          "trapTag": "half-open-concurrent-stampede",
+          "name": "Concurrent Probing Stampede in Half-Open State",
+          "description": "Allowing multiple concurrent requests to slip through during HALF_OPEN instead of isolating a single canary probe.",
+          "reproducer": "Send 5 concurrent requests during cooldown expiration; without single-probe lock, all 5 hit failing remote service."
+        },
+        {
+          "trapTag": "failure-counter-persistence-leak",
+          "name": "Failure Counter Persistence Leak",
+          "description": "Failing to reset consecutive failure count to zero upon successful probe recovery in CLOSED state.",
+          "reproducer": "Trip circuit, wait for recovery, execute 1 success, execute 1 failure; without reset, 1 failure re-trips circuit immediately."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "interbank_clearing_switch",
+          "description": "National interbank instant settlement switch connecting to central bank clearing house."
+        },
+        {
+          "domain": "telecom_sms_gateway",
+          "description": "Bulk SMS notification dispatcher routing alerts across upstream telecom aggregators."
+        },
+        {
+          "domain": "cloud_db_read_replica",
+          "description": "Database routing pool isolating an unhealthy read replica during replication lag spikes."
+        }
+      ],
+      "usedContexts": [
+        "fintech_core_banking_interbank_switch"
+      ]
+    }
+  ]
+}

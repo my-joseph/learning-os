@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { spawn } from "child_process";
 import path from "path";
 import fs from "fs";
-import { getPythonBin, getWorkspaceRoot } from "@/lib/paths";
+import { getDrillsDataDir, getPythonBin, getWorkspaceRoot, isSafeId } from "@/lib/paths";
 
 export async function POST(req: NextRequest) {
   try {
@@ -13,9 +13,12 @@ export async function POST(req: NextRequest) {
     if (!drillId) {
       return NextResponse.json({ ok: false, error: "Missing drillId" }, { status: 400 });
     }
+    if (!isSafeId(drillId) || !isSafeId(unitCode)) {
+      return NextResponse.json({ ok: false, error: "Invalid drillId or unitCode" }, { status: 400 });
+    }
 
-    const rootDir = getWorkspaceRoot();
-    const unitDir = path.join(rootDir, "drills", "data", unitCode);
+    const dataDir = getDrillsDataDir();
+    const unitDir = path.join(dataDir, unitCode);
     if (!fs.existsSync(unitDir)) {
       fs.mkdirSync(unitDir, { recursive: true });
     }
@@ -25,7 +28,13 @@ export async function POST(req: NextRequest) {
     fs.writeFileSync(targetPath, JSON.stringify(drillDoc, null, 2), "utf-8");
 
     // Call python notion sync helper
+    const rootDir = getWorkspaceRoot();
     const pythonBin = getPythonBin(rootDir);
+
+    const isDryRun =
+      Boolean(drillDoc.dryRun) ||
+      process.env.NOTION_DRY_RUN === "1" ||
+      process.env.NOTION_DRY_RUN === "true";
 
     return new Promise<NextResponse>((resolve) => {
       const proc = spawn(
@@ -42,7 +51,12 @@ print(json.dumps(res))
         ],
         {
           cwd: rootDir,
-          env: { ...process.env, PYTHONPATH: rootDir },
+          env: {
+            ...process.env,
+            PYTHONPATH: rootDir,
+            DRILLS_DATA_DIR: dataDir,
+            NOTION_DRY_RUN: isDryRun ? "1" : (process.env.NOTION_DRY_RUN || ""),
+          },
         }
       );
 

@@ -1,0 +1,327 @@
+{
+  "unitCode": "MTH-T01-C07",
+  "topicTitle": "Proportional & Ratio",
+  "description": "Reasoning Schemas & Problem-Solving Archetypes for Ratios, Rates, Proportions, Scale Drawings, Inverse Variation, and Mechanical Transmission.",
+  "archetypes": [
+    {
+      "archetypeKey": "c07-ratio-simplification-part-to-part",
+      "level": 1,
+      "name": "Part-to-Part Ratio Simplification (การทอนอัตราส่วนส่วนต่อส่วนอย่างต่ำ)",
+      "coreConcept": "Dividing both terms of a ratio by their greatest common factor preserves proportional invariance.",
+      "mentalModel": [
+        "1. Express comparison as a fraction a / b.",
+        "2. Determine greatest common factor gcd(a, b).",
+        "3. Divide both terms by GCF to obtain irreducible ratio."
+      ],
+      "governingRelation": "a / b = (a / gcd(a, b)) / (b / gcd(a, b))",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c07-subtraction-ratio-error",
+          "description": "Subtracting terms instead of dividing by GCF.",
+          "trapFormula": "(b - a) / b"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "quality_inspection_batch_ratio",
+          "description": "Comparing defect rates to passing production units."
+        },
+        {
+          "domain": "chemical_solution_reagent_mix",
+          "description": "Comparing volumetric acid to solvent proportions."
+        }
+      ],
+      "usedContexts": [
+        "quality_inspection_batch_ratio"
+      ]
+    },
+    {
+      "archetypeKey": "c07-unit-rate-comparison",
+      "level": 1,
+      "name": "Unit Rate Evaluation (การคำนวณอัตราต่อหนึ่งหน่วย)",
+      "coreConcept": "A unit rate normalizes a rate comparison to a single unit denominator: r = quantity / units.",
+      "mentalModel": [
+        "1. Identify total quantity and associated measurement units.",
+        "2. Formulate rate fraction: quantity / count.",
+        "3. Compute decimal or integer quotient to find unit rate."
+      ],
+      "governingRelation": "r = quantity / count",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c07-inverted-unit-rate-slip",
+          "description": "Inverting the division, placing units over quantity.",
+          "trapFormula": "count / quantity"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "fuel_consumption_efficiency_rate",
+          "description": "Calculating kilometers traveled per liter of fuel."
+        },
+        {
+          "domain": "data_streaming_download_speed",
+          "description": "Evaluating megabytes transferred per second."
+        }
+      ],
+      "usedContexts": [
+        "fuel_consumption_efficiency_rate"
+      ]
+    },
+    {
+      "archetypeKey": "c07-proportional-scaling-direct",
+      "level": 2,
+      "name": "Direct Proportional Scaling (การคูณขยายตามสัดส่วนโดยตรง)",
+      "coreConcept": "Under constant unit rate k, the dependent quantity scales linearly: y = k * x.",
+      "mentalModel": [
+        "1. Find constant unit rate k = y_0 / x_0.",
+        "2. Multiply unit rate by new independent magnitude x_new.",
+        "3. Verify proportional consistency."
+      ],
+      "governingRelation": "y = (y_0 / x_0) * x_new",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c07-additive-scaling-slip",
+          "description": "Adding difference in x directly to y instead of multiplying.",
+          "trapFormula": "y_0 + (x_new - x_0)"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "culinary_recipe_yield_scaling",
+          "description": "Scaling baking ingredient masses for increased servings."
+        },
+        {
+          "domain": "commercial_printing_press_throughput",
+          "description": "Projecting brochure print counts across scheduled press hours."
+        }
+      ],
+      "usedContexts": [
+        "culinary_recipe_yield_scaling"
+      ]
+    },
+    {
+      "archetypeKey": "c07-proportion-cross-product-isolation",
+      "level": 2,
+      "name": "Proportion Cross-Product Inversion (การแก้สัดส่วนด้วยผลคูณไขว้)",
+      "coreConcept": "In any proportion a / b = x / d, the cross products are invariant: a * d = b * x <=> x = (a * d) / b.",
+      "mentalModel": [
+        "1. Set up proportion equation matching corresponding units.",
+        "2. Apply cross multiplication equality: a * d = b * x.",
+        "3. Divide by b to isolate unknown x."
+      ],
+      "governingRelation": "a / b = x / d <=> x = (a * d) / b",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c07-cross-product-operator-confusion",
+          "description": "Dividing a by d and multiplying by b.",
+          "trapFormula": "(a * b) / d"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "medical_dosage_saline_infusion",
+          "description": "Calculating IV drip volume based on patient body mass."
+        },
+        {
+          "domain": "fertilizer_agricultural_area_coverage",
+          "description": "Determining fertilizer mass required for expanded acreage."
+        }
+      ],
+      "usedContexts": [
+        "medical_dosage_saline_infusion"
+      ]
+    },
+    {
+      "archetypeKey": "c07-part-to-whole-ratio-partition",
+      "level": 2,
+      "name": "Part-to-Whole Ratio Partitioning (การแบ่งส่วนตามอัตราส่วนจากยอดรวม)",
+      "coreConcept": "A ratio a:b distributes a total sum T into parts proportional to fractional shares a / (a + b) and b / (a + b).",
+      "mentalModel": [
+        "1. Sum ratio parts: total_parts = a + b.",
+        "2. Compute value of a single part: T / (a + b).",
+        "3. Multiply single part value by requested component ratio term."
+      ],
+      "governingRelation": "Part_A = T * (a / (a + b))",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c07-part-to-part-denominator-error",
+          "description": "Dividing total directly by ratio term b rather than sum of parts.",
+          "trapFormula": "T / b"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "corporate_equity_dividend_distribution",
+          "description": "Distributing shareholder dividends across share classes."
+        },
+        {
+          "domain": "construction_concrete_aggregate_batch",
+          "description": "Allocating gravel and sand weights from total mix mass."
+        }
+      ],
+      "usedContexts": [
+        "construction_concrete_aggregate_batch"
+      ]
+    },
+    {
+      "archetypeKey": "c07-scale-drawing-map-conversion",
+      "level": 3,
+      "name": "Scale Factor Architectural Conversion (การคำนวณอัตราส่วนมาตราส่วนแผนผัง)",
+      "coreConcept": "A scale factor 1 : S translates miniature blueprint distances into full physical dimensions: Real = Map * S.",
+      "mentalModel": [
+        "1. Identify unit scale equivalence (e.g. 1 cm = S meters).",
+        "2. Set up scaling ratio: Map_dist / Real_dist = 1 / S.",
+        "3. Multiply drawing distance by scale factor S to determine real distance."
+      ],
+      "governingRelation": "Real = Drawing * S",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c07-scale-division-inversion",
+          "description": "Dividing blueprint measurement by S instead of multiplying.",
+          "trapFormula": "Drawing / S"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "architectural_blueprint_room_span",
+          "description": "Translating drafting blueprint lengths into building spans."
+        },
+        {
+          "domain": "geological_survey_topographic_mapping",
+          "description": "Converting map distances to real mountain trail lengths."
+        }
+      ],
+      "usedContexts": [
+        "architectural_blueprint_room_span"
+      ]
+    },
+    {
+      "archetypeKey": "c07-inverse-proportion-rate-time",
+      "level": 3,
+      "name": "Inverse Proportion Constant Product Invariance (การแปรผกผันและผลคูณคงที่)",
+      "coreConcept": "When two variables vary inversely, their product remains constant: w_1 * t_1 = w_2 * t_2 <=> t_2 = (w_1 * t_1) / w_2.",
+      "mentalModel": [
+        "1. Recognize inverse relationship: more workers means less time.",
+        "2. Calculate invariant total workload product: W = w_1 * t_1.",
+        "3. Divide total product by new worker count w_2 to find new duration."
+      ],
+      "governingRelation": "w_1 * t_1 = w_2 * t_2 <=> t_2 = (w_1 * t_1) / w_2",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c07-direct-scaling-on-inverse-trap",
+          "description": "Treating inverse relation as direct, scaling time upward.",
+          "trapFormula": "(w_2 * t_1) / w_1"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "warehouse_crew_container_unloading",
+          "description": "Determining completion hours with expanded crew size."
+        },
+        {
+          "domain": "irrigation_pump_water_evacuation",
+          "description": "Calculating drainage time when adding parallel pumps."
+        }
+      ],
+      "usedContexts": [
+        "warehouse_crew_container_unloading"
+      ]
+    },
+    {
+      "archetypeKey": "c07-currency-exchange-rate-conversion",
+      "level": 3,
+      "name": "Multi-Factor Dimensional Rate Conversion (การแปลงอัตราแลกเปลี่ยนและการแปลงหน่วย)",
+      "coreConcept": "Chained conversion factors cancel unwanted units through dimensional analysis multiplication.",
+      "mentalModel": [
+        "1. Write starting quantity with initial units.",
+        "2. Align conversion ratios so numerator and denominator units cancel.",
+        "3. Compute product of unit rate factors."
+      ],
+      "governingRelation": "Target = Initial * (Unit_Target / Unit_Initial)",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c07-exchange-rate-reciprocal-slip",
+          "description": "Dividing by conversion factor instead of multiplying.",
+          "trapFormula": "Initial / Rate"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "international_cargo_freight_pricing",
+          "description": "Converting shipping weight charges across international currencies."
+        },
+        {
+          "domain": "telecommunications_data_bandwidth_units",
+          "description": "Converting kilobits per second to megabytes per minute."
+        }
+      ],
+      "usedContexts": [
+        "international_cargo_freight_pricing"
+      ]
+    },
+    {
+      "archetypeKey": "c07-constrained-three-way-mixture-proportion",
+      "level": 4,
+      "name": "Three-Way Constrained Mixture Proportion (การจัดสัดส่วนผสมสามตัวแปรตามเงื่อนไข)",
+      "coreConcept": "Distributing a fixed total quantity among three components under a compound ratio a:b:c.",
+      "mentalModel": [
+        "1. Sum total ratio parts: S = a + b + c.",
+        "2. Determine unit scale value: u = Total / S.",
+        "3. Calculate individual component masses and verify total sum matches."
+      ],
+      "governingRelation": "X = Total * (a / (a + b + c))",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c07-two-way-sum-denominator-omission",
+          "description": "Omitting the third ratio term when summing denominator parts.",
+          "trapFormula": "Total * (a / (a + b))"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "metallurgical_bronze_alloy_casting",
+          "description": "Blending copper, tin, and zinc under strict alloy ratios."
+        },
+        {
+          "domain": "pharmaceutical_compound_ointment_base",
+          "description": "Compounding medicinal cream from active agent, oil, and water."
+        }
+      ],
+      "usedContexts": [
+        "metallurgical_bronze_alloy_casting"
+      ]
+    },
+    {
+      "archetypeKey": "c07-gear-train-transmission-ratio-synthesis",
+      "level": 4,
+      "name": "Compound Transmission Speed Ratio Synthesis (การคำนวณอัตราทดเกียร์และรอบหมุน)",
+      "coreConcept": "Meshed gear tooth counts and rotational speeds adhere to angular velocity invariance: N_1 * omega_1 = N_2 * omega_2.",
+      "mentalModel": [
+        "1. State conservation of linear tooth velocity: N_1 * omega_1 = N_2 * omega_2.",
+        "2. Substitute tooth counts and input rotational speed.",
+        "3. Divide product by output gear tooth count to isolate output speed."
+      ],
+      "governingRelation": "omega_2 = (N_1 * omega_1) / N_2",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c07-transmission-ratio-inversion-trap",
+          "description": "Multiplying by output tooth count and dividing by input tooth count.",
+          "trapFormula": "(N_2 * omega_1) / N_1"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "wind_turbine_generator_gearbox",
+          "description": "Calculating generator shaft RPM from turbine blade rotation speed."
+        },
+        {
+          "domain": "industrial_conveyor_motor_drive",
+          "description": "Determining conveyor pulley rotation speed from motor gearbox."
+        }
+      ],
+      "usedContexts": [
+        "wind_turbine_generator_gearbox"
+      ]
+    }
+  ]
+}

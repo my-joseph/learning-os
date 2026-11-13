@@ -464,7 +464,7 @@ MTH_UNITS_B = {
         ],
         "recall": [
             ("In $\\frac{12x^8}{4x^2}$, why is the result $3x^6$ instead of $3x^4$ or $8x^6$?", "The coefficients $12$ and $4$ are divided ($12 \\div 4 = 3$), whereas the exponents of the common base $x$ are subtracted ($8 - 2 = 6$)."),
-            ("When simplifying $\\frac{x^3}{x^8}$ by canceling $x^3$ from top and bottom, why is the numerator $1$ ($\frac{1}{x^5}$) and not $0$?", "Because $x^3 \\div x^3 = 1$, leaving $1$ in the numerator.")
+            ("When simplifying $\\frac{x^3}{x^8}$ by canceling $x^3$ from top and bottom, why is the numerator $1$ ($\\frac{1}{x^5}$) and not $0$?", "Because $x^3 \\div x^3 = 1$, leaving $1$ in the numerator.")
         ]
     },
     "MTH-T01-C08-U04": {

@@ -15,6 +15,16 @@ All code authoring, multi-file browsing, refactoring, and debugging must take pl
 - **Local IDE (VS Code / Cursor):** The primary execution cockpit. Developers write real TypeScript/JavaScript, run real-time tests via terminal (`npm test`), and submit results via `npm run submit`.
 - **Practice Studio (Web Dashboard):** The Mission Control & Telemetry Hub. Displays business scenarios, Acceptance Criteria, deep launcher links (`vscode://` / `cursor://`), live test execution reports, mistake categorization, and spaced retention tracking.
 
+### 1.1 Local Workspace Deep Linking Contract (Folder vs. Single-File Invariant)
+To maintain the 100% Local IDE Execution mandate without breaking IDE context, all launcher links between Practice Studio and the local IDE must obey this strict contract:
+- **Primary Workspace Launcher MUST target the Folder Directory (`vscodeFolderUrl` / `cursorFolderUrl`)**:  
+  Clicking "Open in VS Code" or "Open in Cursor" MUST open the entire workspace folder (`vscode://file/<abs_workspace_dir>`), NEVER an isolated single file (`vscode://file/<abs_file_path>`).  
+  *Why*: Opening an isolated file launches the IDE in "No Folder Opened" mode. The IDE fails to discover `package.json`, disables the NPM Scripts explorer, and defaults the integrated terminal to the user's home or root directory instead of the problem directory. Opening the workspace folder guarantees `package.json` scripts (`npm test`, `npm run test:q01`) and terminal paths work instantly.
+- **Secondary Jump-to-File Link (`vscodeUrl` / `cursorUrl`)**:  
+  An optional "Open File" button may exist to jump directly into the source file or a specific line, but it must never replace or overwrite the primary folder-level launcher action.
+- **Defensive Frontend Resolution**:  
+  If problem metadata omits `vscodeFolderUrl`, Practice Studio must compute the folder directory from `workspaceDir` or `workspaceFile` (by trimming filename), and must **never** fall back to opening an isolated file in place of the folder.
+
 ### 2. Dual-Engine Evaluation: Automated Tests vs. AI Architectural Review
 Programming cannot be evaluated solely by mechanical test scripts like mathematics:
 1. **Engine A — Automated Test Scripts (Functional Correctness):**
@@ -145,6 +155,21 @@ To ensure maximum cognitive clarity and mirror real-world engineering specificat
 - **Skip Protocol Integration:**
   - Every programming drill supports the `Skip (Don't Know)` action in Practice Studio.
   - Skipped items are explicitly recorded in `sessionSummary.skippedProblems` and synchronized to Notion, ensuring that unlearned concepts are tracked as high-priority revision targets.
+
+### 9. Anti-Spoonfeeding & Authentic Problem-Solving Standard
+To foster genuine diagnostic intuition and systems-level debugging skills:
+- **Zero Root-Cause Spoon-Feeding:** Prompts must specify observable behavioral symptoms, expected invariants, and SLA contracts. Never include `Defect Analysis:` or `Root Cause Analysis:` sections in debugging prompts that tell the learner what is wrong before they inspect the code.
+- **Zero Inline Bug Pointer Comments:** Starter code must never contain comments like `// BUG:`, `// DEFECT:`, or `// FIX HERE:` marking the flaw. The learner must trace execution and diagnose root causes independently using the reproducer test.
+- **Contract-Focused Hints:** Hints must prompt self-monitoring questions or highlight contract boundaries. Never name specific internal data structures (e.g. `secondary Map`, `use closure`, `new Map()`) that reduce the exercise to mechanical transcription.
+
+### 10. Mutation Testing Standard (Anti-Green-Illusion Mandate)
+- **Zero Green Illusion:** A test suite is only valid if it actively rejects incorrect or cheating implementations.
+- **Automated Mutant Verification:** All suite-based programming exercises must undergo automated mutation testing during AI ingestion. Synthetic mutants (e.g. constant return `return true`, capacity bypass `tokens = capacity`, omission of failure counter reset, missing error cleanup) are executed against the suite.
+- **Mandatory Mutant Killing:** If any mutant passes the test suite, the problem is rejected with `Anti-Green-Illusion Guard violated`. Authors must write stricter assertions, boundary checks, and state-transition tests.
+
+### 11. Deterministic Clock Invariant for Time-Dependent Code
+- **Zero Flaky Real-Time Execution:** Algorithms involving time (rate limiters, token buckets, cache expiration/TTL, circuit breaker cooldowns, exponential backoff) must accept an injectable clock (`options.now = Date.now`).
+- **Test Suite Determinism:** Acceptance tests must manipulate simulated clock timestamps rather than relying on non-deterministic real-world `setTimeout` (> 50ms). This guarantees instantaneous (< 100ms), 100% reproducible test runs in CI/CD without timer jitter.
 
 ---
 

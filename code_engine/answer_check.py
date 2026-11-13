@@ -125,7 +125,7 @@ def check_code_output(spec: dict, raw: str) -> dict:
         )
 
     is_partial = any(c["ok"] for c in comps)
-    verdict = "partial" if is_partial else "incorrect"
+    verdict = "partial" if (spec.get("allowPartial") and is_partial) else "incorrect"
     return {
         "verdict": verdict,
         "message": (

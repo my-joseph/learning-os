@@ -8,24 +8,29 @@
 
 ## PART 1 — Mathematical Notation & Derivation Standards
 
-### 1. Vertical Step-by-Step Derivation Rule
-When showing mathematical equation solving, algebraic simplification, or worked examples in `MTH` and `PHY` pages:
+### 1. Vertical Step-by-Step Derivation & Anti-Clumping Rule
+When showing mathematical equation solving, algebraic simplification, worked examples, or drill problem derivations:
 - **Never** chain multiple `=` steps horizontally across a single line ($A = B = C = D$).
-- **Always** format step-by-step mathematical working **vertically from top to bottom** using native Notion block `equation` elements with LaTeX:
+- **Always** format step-by-step mathematical working **vertically from top to bottom** with each row representing a **single discrete transformation**:
   ```latex
   \begin{aligned}
-    2x + 5 &= 15 \\
-    2x &= 15 - 5 \\
-    2x &= 10 \\
-    x &= 5
+    \left(\frac{34 + 10}{2}\right) \sqrt{15^2 - \left(\frac{34 - 10}{2}\right)^2} &= A \\
+    \frac{34 + 10}{2} \sqrt{15^2 - \left(\frac{34 - 10}{2}\right)^2} &= A \\
+    \frac{44}{2} \sqrt{15^2 - \left(\frac{34 - 10}{2}\right)^2} &= A \\
+    \frac{44}{2} \sqrt{15^2 - 12^2} &= A \\
+    \frac{44}{2} \sqrt{225 - 144} &= A \\
+    \frac{44}{2} \sqrt{81} &= A \\
+    22 \times 9 &= A \\
+    A &= 198
   \end{aligned}
   ```
-- (or sequential vertical `equation` blocks under each explanatory step) so every transformation step stacks downward clearly, exactly like real mathematical writing.
+- **Granular Derivation Invariant (Photomath / Line-by-Line Standard):** Each row in the drill `steps` array must represent a single calculation step. Smashing multiple operations together (e.g. $\sqrt{15^2 - 12^2} = \sqrt{225 - 144} = \sqrt{81} = 9$) is strictly forbidden because it breaks the learner's ability to click "Mark Diverged Step" on the exact operation where their scratchpad calculation diverged.
 
-### 2. KaTeX Notation Standards
+### 2. KaTeX Notation & UI Rendering Standards
 - **Inline Math:** Use KaTeX inline syntax (`$expr$`) for isolated symbols, variables, units, and short expressions (e.g., $x \in \mathbb{R}$, $v = 10\text{ m/s}$, $a^2 + b^2 = c^2$).
 - **Block Equations:** Use native Notion `equation` blocks for major formulas, theorems, multi-line systems, and formal derivations.
 - **Annotated Steps:** Pair complex algebraic transformations with brief explanatory text preceding or following the equation block to explain *why* an operation was performed (e.g., *"Divide both sides by the non-zero coefficient"*).
+- **Mandatory `<FormattedText />` for Mistake Tags & UI Pills:** Whenever a `mistakeTags[].label`, `context`, `option.label`, or diagnostic message in `practice-studio` contains inline LaTeX (`$...$`), it **MUST** be rendered through `<FormattedText text={label} />` (never raw string `{t.label}`), and its pill container must use flexible height (`min-h-[28px] py-1`) rather than rigid fixed height so fractions (e.g., `$\frac{1}{2}$`) and exponents never clip or display raw `$` delimiters.
 
 ---
 
@@ -69,3 +74,8 @@ All visual assets (SVGs, diagrams, charts) must be uploaded directly to Notion's
   - `inputHint` and `placeholder` must specify the expected unit or syntax (e.g., `Enter the integer angle measure in degrees`, `Enter leg length in meters`).
   - **Never** include the solution value in an example (e.g., writing `(e.g. 53)` when the solution is `53^\circ`, or `(e.g. 12)` when the solution is `12\text{ feet}`).
   - Intermediate hints (`checkpointHint`) must provide mathematical formulas or invariant identities (e.g., `Complementary angles sum to $90^\circ$`), never the numerical result of the current problem.
+
+### 3.1 Automatic Figure Attachment (Rule 11)
+- Every Reasoning Vault archetype that depicts a spatial shape (rectangle, triangle, circle, trapezoid, 3D solid) **must** declare `figureBuilders` (`fn` from `math_engine/figure_builder.py`, `args` as arithmetic over `givens` keys, optional `labels`).
+- `ai_drill_ingest.ingest_ai_drill` calls `math_engine/figure_autofill.py` to attach `figure` automatically from `givens`, so the figure always matches the numbers in the prompt. AI never needs to be told to draw.
+- A problem that deliberately has no figure must set `figureWaiver` with a reason. **Guard:** if an archetype declares `figureBuilders` and no figure can be built from `givens` (and no `figureWaiver`), ingestion raises `AiContractError`. Archetypes without `figureBuilders` are exempt until a builder exists.

@@ -1,0 +1,227 @@
+{
+  "unitCode": "MTH-T01-C13",
+  "topicTitle": "Polynomials",
+  "description": "Comprehensive reasoning vault for polynomial expressions, classification, addition, subtraction, multiplication by monomials and binomials, FOIL method, special products, GCF factoring, and quadratic trinomial factoring.",
+  "archetypes": [
+    {
+      "archetypeKey": "c13-polynomial-degree-classification",
+      "level": 1,
+      "name": "Polynomial Degree and Term Classification",
+      "coreConcept": "Identify the degree of a polynomial as the highest exponent of the variable and classify by number of terms.",
+      "mentalModel": "Dominant exponent tier determining asymptotic growth rate.",
+      "governingRelation": "\\deg(P) = \\max_i (\\deg(t_i))",
+      "cognitiveTraps": [
+        "c13-degree-coefficient-confusion-trap",
+        "c13-constant-term-degree-trap"
+      ],
+      "versatileDomains": [
+        "algorithmic_growth_order",
+        "curve_fitting_degree",
+        "signal_filter_taps"
+      ],
+      "usedContexts": [
+        "filter_polynomial_order"
+      ]
+    },
+    {
+      "archetypeKey": "c13-evaluating-polynomials",
+      "level": 1,
+      "name": "Evaluating Polynomials for Given Variable Values",
+      "coreConcept": "Substitute a numerical value into the polynomial variable and evaluate following order of operations.",
+      "mentalModel": "Passing a control input through an algebraic transfer function.",
+      "governingRelation": "P(k) = a k^2 + b k + c",
+      "cognitiveTraps": [
+        "c13-exponent-before-coefficient-trap",
+        "c13-negative-input-sign-trap"
+      ],
+      "versatileDomains": [
+        "projectile_height_trajectory",
+        "stopping_distance_braking",
+        "cost_curve_evaluation"
+      ],
+      "usedContexts": [
+        "braking_distance_speed_curve"
+      ]
+    },
+    {
+      "archetypeKey": "c13-monomial-multiplication",
+      "level": 1,
+      "name": "Multiplying Monomials via Exponent Rules",
+      "coreConcept": "Multiply numerical coefficients and apply product rule for variables: (ax)(bx) = ab*x^2.",
+      "mentalModel": "Scaling area dimensions by combining linear measurement factors.",
+      "governingRelation": "(a x^m)(b x^n) = ab x^{m+n}",
+      "cognitiveTraps": [
+        "c13-add-coefficients-instead-of-multiply-trap",
+        "c13-multiply-exponents-instead-of-add-trap"
+      ],
+      "versatileDomains": [
+        "cross_sectional_expansion",
+        "rf_power_density",
+        "pixel_buffer_scaling"
+      ],
+      "usedContexts": [
+        "display_pixel_buffer_scaling"
+      ]
+    },
+    {
+      "archetypeKey": "c13-adding-polynomials",
+      "level": 2,
+      "name": "Adding Polynomials and Combining Like Terms",
+      "coreConcept": "Consolidate terms with matching variable parts and identical powers: (ax^2 + bx) + (cx^2 + dx) = (a+c)x^2 + (b+d)x.",
+      "mentalModel": "Summing sorted bins of identical dimensional units.",
+      "governingRelation": "(ax^2 + c) + (bx^2 + d) = (a+b)x^2 + (c+d)",
+      "cognitiveTraps": [
+        "c13-add-exponents-when-combining-trap",
+        "c13-unlike-terms-merging-trap"
+      ],
+      "versatileDomains": [
+        "revenue_stream_consolidation",
+        "superposition_signals",
+        "structural_load_summation"
+      ],
+      "usedContexts": [
+        "superposition_signal_harmonics"
+      ]
+    },
+    {
+      "archetypeKey": "c13-subtracting-polynomials",
+      "level": 2,
+      "name": "Subtracting Polynomials via Sign Inversion",
+      "coreConcept": "Subtract a polynomial by adding its additive inverse, distributing the negative sign to all terms.",
+      "mentalModel": "Flipping polarity of all incoming downstream components before combining.",
+      "governingRelation": "(A) - (B) = A + (-1) \\cdot B",
+      "cognitiveTraps": [
+        "c13-distribute-negative-first-term-only-trap",
+        "c13-subtraction-sign-flip-trap"
+      ],
+      "versatileDomains": [
+        "profit_revenue_minus_cost",
+        "net_displacement_profile",
+        "inventory_variance"
+      ],
+      "usedContexts": [
+        "financial_profit_margin_curve"
+      ]
+    },
+    {
+      "archetypeKey": "c13-monomial-times-polynomial",
+      "level": 2,
+      "name": "Multiplying a Polynomial by a Monomial",
+      "coreConcept": "Distribute the monomial multiplier to each term in the polynomial: ax(bx + c) = ab*x^2 + ac*x.",
+      "mentalModel": "Broadcasting a scaling factor across all sub-channels.",
+      "governingRelation": "ax(bx + c) = ab x^2 + ac x",
+      "cognitiveTraps": [
+        "c13-forgot-to-multiply-coefficients-trap",
+        "c13-forgot-to-add-exponents-trap"
+      ],
+      "versatileDomains": [
+        "rectangular_area_expansion",
+        "power_distribution_loss",
+        "scaled_volume"
+      ],
+      "usedContexts": [
+        "rectangular_warehouse_extension"
+      ]
+    },
+    {
+      "archetypeKey": "c13-multiplying-binomials-foil",
+      "level": 3,
+      "name": "Multiplying Binomials using the FOIL Method",
+      "coreConcept": "Multiply four distinct pairs: First, Outer, Inner, Last, and combine middle like terms.",
+      "mentalModel": "Two-by-two area matrix expansion.",
+      "governingRelation": "(x + a)(x + b) = x^2 + (a+b)x + ab",
+      "cognitiveTraps": [
+        "c13-omitted-middle-terms-trap",
+        "c13-sign-multiplication-trap"
+      ],
+      "versatileDomains": [
+        "land_lot_dimension_expansion",
+        "genetics_punnett_square",
+        "joint_probability_expansion"
+      ],
+      "usedContexts": [
+        "land_parcel_boundary_expansion"
+      ]
+    },
+    {
+      "archetypeKey": "c13-special-products-difference-squares",
+      "level": 3,
+      "name": "Special Product: Difference of Squares Expansion",
+      "coreConcept": "Product of sum and difference of identical terms results in difference of squares: (ax + b)(ax - b) = a^2*x^2 - b^2.",
+      "mentalModel": "Symmetric cancellation of cross-diagonal terms.",
+      "governingRelation": "(ax + b)(ax - b) = a^2 x^2 - b^2",
+      "cognitiveTraps": [
+        "c13-middle-term-included-trap",
+        "c13-difference-of-squares-sign-trap"
+      ],
+      "versatileDomains": [
+        "optics_conjugate_filters",
+        "cross_sectional_hollow_core",
+        "balanced_signal_cancellation"
+      ],
+      "usedContexts": [
+        "optical_conjugate_filter_transmission"
+      ]
+    },
+    {
+      "archetypeKey": "c13-factoring-greatest-common-factor",
+      "level": 3,
+      "name": "Factoring Out the Greatest Common Monomial Factor",
+      "coreConcept": "Identify the highest degree monomial dividing every term and extract via reverse distribution: abx + ac = a(bx + c).",
+      "mentalModel": "Factoring out common architectural modules.",
+      "governingRelation": "abx + ac = a(bx + c)",
+      "cognitiveTraps": [
+        "c13-incomplete-gcf-extraction-trap",
+        "c13-forgot-unit-one-term-trap"
+      ],
+      "versatileDomains": [
+        "code_refactoring_common_subexpression",
+        "manufacturing_batch_standardization",
+        "data_compression"
+      ],
+      "usedContexts": [
+        "code_expression_refactoring"
+      ]
+    },
+    {
+      "archetypeKey": "c13-factoring-quadratic-trinomials-modeling",
+      "level": 4,
+      "name": "Factoring Quadratic Trinomials for Geometric Dimensions",
+      "coreConcept": "Factor monic quadratic trinomial x^2 + bx + c into (x + p)(x + q) where p + q = b and p*q = c to determine geometric dimensions.",
+      "mentalModel": "Reconstructing rectangle length and width from total area polynomial.",
+      "governingRelation": "x^2 + (p+q)x + pq = (x+p)(x+q)",
+      "cognitiveTraps": [
+        "c13-factor-sum-product-swap-trap",
+        "c13-sign-factorization-mismatch-trap"
+      ],
+      "versatileDomains": [
+        "architectural_room_layout",
+        "shipping_pallet_geometry",
+        "ic_die_area_allocation"
+      ],
+      "usedContexts": [
+        "architectural_courtyard_layout"
+      ]
+    },
+    {
+      "archetypeKey": "c13-applied-polynomial-kinematics-synthesis",
+      "level": 4,
+      "name": "Polynomial Kinematics and Parabolic Root Synthesis",
+      "coreConcept": "Model projectile trajectory height using quadratic polynomials and factor to determine time of flight and ground impact.",
+      "mentalModel": "Parabolic arc root extraction in classical mechanics.",
+      "governingRelation": "h(t) = v_0 t - g t^2 = 0 \\implies t = \\frac{v_0}{g}",
+      "cognitiveTraps": [
+        "c13-quadratic-coefficient-sign-trap",
+        "c13-linear-velocity-extrapolation-trap"
+      ],
+      "versatileDomains": [
+        "sounding_rocket_trajectory",
+        "water_jet_parabolic_fountain",
+        "ballistics_flight_time"
+      ],
+      "usedContexts": [
+        "sounding_rocket_trajectory"
+      ]
+    }
+  ]
+}

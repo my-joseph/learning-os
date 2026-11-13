@@ -21,6 +21,8 @@ To prevent context window bloat and instruction dilution, the Learning System ru
 | **Mathematics & Physics (`MTH`, `PHY`)** | `rules/00_core.md`<br>`rules/03_stem.md` | Vertical LaTeX derivations (`\begin{aligned}`), KaTeX formatting, Parametric SVG Diagrams, native Notion file uploads |
 | **Programming Drills & Labs (`PRG`)** | `rules/00_core.md`<br>`rules/04_code.md` | 100% VS Code execution mandate, Dual-Engine evaluation (Tests + AI Review), 4 Real-World Archetypes, 5-tier milestone taxonomy, terminal telemetry (`submit_lab.py`) |
 | **Verification, Audit & Delivery** | `rules/00_core.md`<br>`rules/05_qa.md` | 5-dimension QA checklist, scripted Notion API audit (`unlinked = 0`), reporting protocol |
+| **Problem Templates & Quality Gates** | `rules/00_core.md`<br>`rules/06_template_contract.md` | L1–L4 taxonomy, trap provenance & operational derivations, machine verification gates G1–G6, verification levels, reporting protocol |
+| **Drill Composition & Problem Generation** | `rules/00_core.md`<br>`rules/07_problem_generation.md` | Drill composition (sequence of drills), weak-spot targeting (`trapMatched` signals), progression rules, AI-written problem verification (V1–V3) |
 
 ---
 

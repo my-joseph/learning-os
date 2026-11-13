@@ -1,0 +1,207 @@
+{
+  "unitCode": "MTH-T01-C11",
+  "topicTitle": "Solving Linear Equations",
+  "description": "Comprehensive reasoning vault for solving linear equations in one variable, including one-step, two-step, variables on both sides, distributive equations, fraction and decimal clearing, and applied linear modeling.",
+  "archetypes": [
+    {
+      "archetypeKey": "c11-one-step-linear-equations",
+      "level": 1,
+      "name": "One-Step Linear Equations via Addition and Subtraction Properties",
+      "coreConcept": "Isolate the variable by applying inverse operations to both sides of the equation: x + a = b implies x = b - a.",
+      "mentalModel": "Balanced scale pan: removing identical weights maintains equilibrium.",
+      "governingRelation": "x + a = b \\iff x = b - a",
+      "cognitiveTraps": [
+        "c11-sign-flip-trap",
+        "c11-division-property-inversion-trap"
+      ],
+      "versatileDomains": [
+        "balance_reconciliation",
+        "temperature_offset",
+        "depletion_tracking"
+      ],
+      "usedContexts": [
+        "account_balance_reconciliation"
+      ]
+    },
+    {
+      "archetypeKey": "c11-one-step-division-multiplication",
+      "level": 1,
+      "name": "One-Step Linear Equations via Multiplication and Division Properties",
+      "coreConcept": "Isolate the variable with unit coefficient by dividing or multiplying both sides: ax = b implies x = b / a.",
+      "mentalModel": "Partitioning identical groups across the balance.",
+      "governingRelation": "ax = b \\iff x = \\frac{b}{a} \\quad (a \\ne 0)",
+      "cognitiveTraps": [
+        "c11-subtraction-instead-of-division-trap",
+        "c11-reciprocal-multiplication-trap"
+      ],
+      "versatileDomains": [
+        "unit_pricing",
+        "speed_distance_time",
+        "batch_yield"
+      ],
+      "usedContexts": [
+        "batch_production_sizing"
+      ]
+    },
+    {
+      "archetypeKey": "c11-two-step-linear-equations",
+      "level": 2,
+      "name": "Two-Step Linear Equations ax + b = c",
+      "coreConcept": "Undo operations in reverse order of operations: subtract constant term b first, then divide by coefficient a.",
+      "mentalModel": "Unwrapping nested layers: peel off additive outer layer before multiplicative core.",
+      "governingRelation": "ax + b = c \\iff x = \\frac{c - b}{a}",
+      "cognitiveTraps": [
+        "c11-divide-before-subtract-trap",
+        "c11-sign-addition-instead-of-subtraction-trap"
+      ],
+      "versatileDomains": [
+        "taxi_meter_fare",
+        "utility_standing_charge",
+        "rental_daily_mileage_cost"
+      ],
+      "usedContexts": [
+        "utility_service_billing"
+      ]
+    },
+    {
+      "archetypeKey": "c11-variables-both-sides",
+      "level": 2,
+      "name": "Linear Equations with Variables on Both Sides ax + b = cx + d",
+      "coreConcept": "Collect all variable terms onto one side and all constant terms onto the opposite side: (a - c)x = d - b.",
+      "mentalModel": "Consolidating identical tokens to one side of the scale.",
+      "governingRelation": "ax + b = cx + d \\iff (a - c)x = d - b",
+      "cognitiveTraps": [
+        "c11-cross-equality-sign-error-trap",
+        "c11-combine-unlike-terms-across-equals-trap"
+      ],
+      "versatileDomains": [
+        "break_even_production",
+        "plan_comparison_crossover",
+        "subscription_threshold"
+      ],
+      "usedContexts": [
+        "phone_plan_crossover_pricing"
+      ]
+    },
+    {
+      "archetypeKey": "c11-distributive-linear-equations",
+      "level": 2,
+      "name": "Linear Equations with Grouping Symbols and Distributive Property",
+      "coreConcept": "Eliminate parentheses by distributing the multiplier to each term before isolating variables: a(x + b) = c implies ax + ab = c.",
+      "mentalModel": "Unboxing identical kits into individual components.",
+      "governingRelation": "a(x + b) = c \\iff x = \\frac{c}{a} - b",
+      "cognitiveTraps": [
+        "c11-partial-distribution-linear-trap",
+        "c11-outer-coefficient-subtraction-trap"
+      ],
+      "versatileDomains": [
+        "batch_packaging_assembly",
+        "multi_person_shared_expense",
+        "perimeter_scaling"
+      ],
+      "usedContexts": [
+        "shared_project_budgeting"
+      ]
+    },
+    {
+      "archetypeKey": "c11-fraction-clearing-lcd",
+      "level": 3,
+      "name": "Clearing Fractions in Linear Equations via LCD Multiplication",
+      "coreConcept": "Multiply every term on both sides by the least common denominator to convert rational coefficients to integers.",
+      "mentalModel": "Rescaling all measurements to a common denominator grid.",
+      "governingRelation": "\\text{LCD} \\cdot \\left(\\frac{x}{a} + b\\right) = \\text{LCD} \\cdot c",
+      "cognitiveTraps": [
+        "c11-forget-to-multiply-integer-term-trap",
+        "c11-lcd-numerator-multiplication-trap"
+      ],
+      "versatileDomains": [
+        "chemical_solution_concentration",
+        "pipe_flow_joint_rate",
+        "parallel_resistor_current"
+      ],
+      "usedContexts": [
+        "pipe_inflow_reservoir_filling"
+      ]
+    },
+    {
+      "archetypeKey": "c11-decimal-clearing-equations",
+      "level": 3,
+      "name": "Clearing Decimal Coefficients via Powers of Ten",
+      "coreConcept": "Multiply all terms by 10^k corresponding to the greatest number of decimal places to ensure exact integer arithmetic.",
+      "mentalModel": "Shifting currency units from dollars to exact cents.",
+      "governingRelation": "10^k \\cdot (ax + b) = 10^k \\cdot c",
+      "cognitiveTraps": [
+        "c11-unequal-decimal-shift-trap",
+        "c11-misplaced-decimal-point-trap"
+      ],
+      "versatileDomains": [
+        "currency_cents_clearing",
+        "sales_tax_computation",
+        "chemical_dilution_percentage"
+      ],
+      "usedContexts": [
+        "sales_tax_billing_calculation"
+      ]
+    },
+    {
+      "archetypeKey": "c11-literal-equations-rearrangement",
+      "level": 3,
+      "name": "Solving Geometric and Physics Formulas for a Specified Variable",
+      "coreConcept": "Treat other variables as constants and isolate the target variable using standard balance operations.",
+      "mentalModel": "Algebraic transposition of geometric parameters.",
+      "governingRelation": "P = 2L + 2W \\iff W = \\frac{P - 2L}{2}",
+      "cognitiveTraps": [
+        "c11-partial-coefficient-division-trap",
+        "c11-transposition-sign-error-trap"
+      ],
+      "versatileDomains": [
+        "perimeter_geometry_isolation",
+        "kinematics_velocity_isolation",
+        "electrical_power_formula"
+      ],
+      "usedContexts": [
+        "perimeter_geometry_isolation"
+      ]
+    },
+    {
+      "archetypeKey": "c11-break-even-financial-synthesis",
+      "level": 4,
+      "name": "Applied Linear Break-Even and Cost-Revenue Synthesis",
+      "coreConcept": "Model commercial viability by equating total revenue to total fixed plus variable costs: P*x = F + V*x, yielding break-even volume x = F / (P - V).",
+      "mentalModel": "Intersecting linear trajectories of expenditure and income.",
+      "governingRelation": "P \\cdot x = F + V \\cdot x \\implies x = \\frac{F}{P - V}",
+      "cognitiveTraps": [
+        "c11-contribution-margin-inversion-trap",
+        "c11-fixed-cost-variable-confusion-trap"
+      ],
+      "versatileDomains": [
+        "manufacturing_break_even",
+        "solar_payback_threshold",
+        "publishing_print_run"
+      ],
+      "usedContexts": [
+        "artisan_manufacturing_break_even"
+      ]
+    },
+    {
+      "archetypeKey": "c11-uniform-motion-head-to-head-modeling",
+      "level": 4,
+      "name": "Uniform Motion Systems: Converging and Opposing Velocities",
+      "coreConcept": "Model collinear closing distance using combined rates: (r1 + r2)*t = D, yielding time to encounter t = D / (r1 + r2).",
+      "mentalModel": "Collapsing interval between opposing velocity vectors.",
+      "governingRelation": "(r_1 + r_2)t = D \\implies t = \\frac{D}{r_1 + r_2}",
+      "cognitiveTraps": [
+        "c11-rate-subtraction-instead-of-sum-trap",
+        "c11-distance-rate-inversion-trap"
+      ],
+      "versatileDomains": [
+        "high_speed_rail_encounter",
+        "aviation_corridor_convergence",
+        "autonomous_vehicle_rendezvous"
+      ],
+      "usedContexts": [
+        "high_speed_rail_encounter"
+      ]
+    }
+  ]
+}

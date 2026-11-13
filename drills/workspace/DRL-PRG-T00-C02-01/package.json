@@ -1,0 +1,18 @@
+{
+  "name": "drl-prg-t00-c02-01-workspace",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Local IDE Workspace for DRL-PRG-T00-C02-01 (PRG-T00-C02 - JavaScript & TypeScript Baseline) [node-vanilla]",
+  "scripts": {
+    "test": "node --test *.test.js",
+    "test:watch": "node --test --watch *.test.js",
+    "review": "python3 ../../../code_engine/review.py",
+    "submit": "python3 ../../../code_engine/submit.py",
+    "test:q01": "node --test Q01_sanitizeConfig.test.js",
+    "test:q02": "node --test Q02_createCounterRegistry.test.js",
+    "test:q03": "node --test Q03_aggregateCategoryRevenue.test.js",
+    "test:q04": "node --test Q04_settleAllSettled.test.js",
+    "test:q05": "node --test Q05_createPaymentStateMachine.test.js"
+  },
+  "devDependencies": {}
+}
