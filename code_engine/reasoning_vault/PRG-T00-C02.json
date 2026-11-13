@@ -45,7 +45,11 @@
         }
       ],
       "usedContexts": [
-        "api_config_sanitizer"
+        "api_config_sanitizer",
+        "battery_indicator",
+        "job_queue_settings",
+        "inventory_import",
+        "user_profile_header"
       ]
     },
     {
@@ -277,6 +281,122 @@
         }
       ],
       "usedContexts": []
+    },
+    {
+      "archetypeKey": "prg-c02-function-parameters-basics",
+      "level": 1,
+      "archetype": "problem-solving",
+      "name": "Function Parameters: Defaults, Rest Arguments & Numeric Rounding",
+      "competencies": [
+        "function-signatures",
+        "default-parameters",
+        "rest-parameters"
+      ],
+      "coreConcept": "A function signature controls how missing and variable-length arguments arrive: default parameters apply only when an argument is undefined, rest parameters collect any number of trailing arguments into an array, and money values must be rounded explicitly.",
+      "mentalModel": [
+        "1. Decide which parameters are required, which have defaults, and which are variadic.",
+        "2. Use a default parameter (rate = 0.1) instead of `rate || 0.1`, so an explicit 0 is respected.",
+        "3. Collect variadic inputs with a rest parameter (...items) and reduce them with an explicit initial value.",
+        "4. Round the final number once, at the end, to the required decimal places and return a number, not a string."
+      ],
+      "governingInvariant": "f(a) === f(a, defaultValue) && f(a, 0) applies 0; restArgs.reduce(sum, 0) === 0 when no arguments are passed",
+      "cognitiveTraps": [
+        {
+          "trapTag": "falsy-default-overwrite",
+          "name": "Falsy Argument Replaced by Default",
+          "description": "Using `arg || default` replaces a deliberate 0 with the default value.",
+          "reproducer": "applyDiscount(50, 0) returns 45 instead of 50."
+        },
+        {
+          "trapTag": "reduce-without-initial-value",
+          "name": "Reduce Without Initial Value",
+          "description": "Calling reduce on an empty rest array without an initial value throws a TypeError.",
+          "reproducer": "sumInvoiceTotal(0.07) throws instead of returning 0."
+        },
+        {
+          "trapTag": "tofixed-returns-string",
+          "name": "toFixed Returns a String",
+          "description": "Returning `value.toFixed(2)` yields a string, so strict equality with a number fails.",
+          "reproducer": "applyDiscount(19.99) === 17.99 is false because the result is '17.99'."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "checkout_discount",
+          "description": "Applying optional promotional rates at checkout."
+        },
+        {
+          "domain": "invoice_totals",
+          "description": "Summing a variable number of invoice lines with tax."
+        }
+      ],
+      "usedContexts": [
+        "checkout_discount",
+        "invoice_totals"
+      ]
+    },
+    {
+      "archetypeKey": "prg-c02-array-object-basics",
+      "level": 1,
+      "archetype": "problem-solving",
+      "name": "Array & Object Basics: Aggregation, Filtering, Nested Access & Immutable Updates",
+      "competencies": [
+        "array-methods",
+        "object-access",
+        "immutability"
+      ],
+      "coreConcept": "Arrays and objects are reference values: read nested fields deliberately, derive new collections with map/filter/reduce, and return new objects or arrays instead of mutating the caller's data.",
+      "mentalModel": [
+        "1. Identify the input shape (array of numbers, array of objects, nested object, or key-value map).",
+        "2. Derive results with non-mutating operations (filter, map, reduce, spread) rather than sort/splice/assignment on the input.",
+        "3. For key-value maps, read missing keys with a fallback (?? 0) and write into a copy ({ ...obj, [key]: value }).",
+        "4. Format output exactly as specified, including singular/plural wording and rounding."
+      ],
+      "governingInvariant": "deepEqual(inputBefore, inputAfter) && output satisfies the specified shape",
+      "cognitiveTraps": [
+        {
+          "trapTag": "in-place-mutation",
+          "name": "Mutating the Caller's Data",
+          "description": "Sorting the input array or assigning into the input object changes data the caller still uses.",
+          "reproducer": "adjustStock(stock, 'SKU-1', 2) also changes stock['SKU-1'] in the caller."
+        },
+        {
+          "trapTag": "missing-key-nan",
+          "name": "Missing Key Produces NaN",
+          "description": "Adding a delta to an undefined map entry yields NaN instead of starting from 0.",
+          "reproducer": "adjustStock({}, 'SKU-9', 3) returns { 'SKU-9': NaN }."
+        },
+        {
+          "trapTag": "unrounded-or-unnormalized-output",
+          "name": "Output Not Normalized",
+          "description": "Forgetting to round, trim or lowercase derived values, or to switch to the singular form.",
+          "reproducer": "buildShippingLabel with one item returns '(1 items)'."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "weather_station",
+          "description": "Summarizing sensor readings without altering the raw series."
+        },
+        {
+          "domain": "newsletter_export",
+          "description": "Exporting normalized emails of active subscribers."
+        },
+        {
+          "domain": "shipping_labels",
+          "description": "Formatting labels from nested order data."
+        },
+        {
+          "domain": "stock_ledger",
+          "description": "Applying stock adjustments immutably."
+        }
+      ],
+      "usedContexts": [
+        "weather_station",
+        "newsletter_export",
+        "shipping_labels",
+        "stock_ledger"
+      ]
     }
   ]
 }

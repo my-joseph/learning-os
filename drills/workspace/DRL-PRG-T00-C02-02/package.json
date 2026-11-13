@@ -1,0 +1,23 @@
+{
+  "name": "drl-prg-t00-c02-02-workspace",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Local IDE Workspace for DRL-PRG-T00-C02-02 (PRG-T00-C02 - JavaScript & TypeScript Baseline) [node-vanilla]",
+  "scripts": {
+    "test": "node --test *.test.js",
+    "test:watch": "node --test --watch *.test.js",
+    "review": "python3 ../../../code_engine/review.py",
+    "submit": "python3 ../../../code_engine/submit.py",
+    "test:q01": "node --test Q01_clampBatteryPercent.test.js",
+    "test:q02": "node --test Q02_resolveRetryLimit.test.js",
+    "test:q03": "node --test Q03_countValidQuantities.test.js",
+    "test:q04": "node --test Q04_formatDisplayName.test.js",
+    "test:q05": "node --test Q05_applyDiscount.test.js",
+    "test:q06": "node --test Q06_sumInvoiceTotal.test.js",
+    "test:q07": "node --test Q07_summarizeTemperatures.test.js",
+    "test:q08": "node --test Q08_listActiveEmails.test.js",
+    "test:q09": "node --test Q09_buildShippingLabel.test.js",
+    "test:q10": "node --test Q10_adjustStock.test.js"
+  },
+  "devDependencies": {}
+}
