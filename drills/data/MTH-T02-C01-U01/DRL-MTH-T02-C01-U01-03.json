@@ -1,0 +1,502 @@
+{
+  "unitCode": "MTH-T02-C01-U01",
+  "topicTitle": "Complex Numbers",
+  "unitTitle": "Complex Numbers",
+  "subject": "MATH",
+  "problems": [
+    {
+      "id": "Q01",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-imaginary-unit-definition",
+      "context": "quantum_phase_factor",
+      "verificationLevel": "partial",
+      "prompt": "A quantum phase factor is written as $4i^2 - 9$, where $i$ is the imaginary unit. Evaluate the factor as a real number.",
+      "display": "i^2 = -1",
+      "plainText": "i^2 = -1",
+      "givens": {
+        "coeff": 4,
+        "offset": 9
+      },
+      "constants": {
+        "exp": 2
+      },
+      "answerSpec": {
+        "type": "number",
+        "value": "-13",
+        "tolerance": 0.001
+      },
+      "answerPlain": "-13",
+      "answerDisplay": "-13",
+      "commonTrapTag": "t02-c01-u01-i-squared-positive-one-trap",
+      "trapDerivation": "4 - 9",
+      "trapValue": "-5",
+      "verify": {
+        "source": "-13",
+        "trapValue": "-5"
+      },
+      "checkpointHint": "Replace the squared imaginary unit with its defined real value before combining terms",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "steps": [
+        {
+          "latex": "4i^2 - 9 = 4(-1) - 9",
+          "explain": "Replace i^2 with -1."
+        },
+        {
+          "latex": "4(-1) - 9 = -4 - 9",
+          "explain": "Multiply 4 by -1 to get -4."
+        },
+        {
+          "latex": "-4 - 9 = -13",
+          "explain": "Subtract 9 from -4 to get -13.",
+          "val": "-13"
+        }
+      ],
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C01-U01",
+          "title": "Complex Numbers",
+          "notionUrl": "https://www.notion.so/4013818f8ba080d7896bef2080bbc74a"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "t02-c01-u01-i-squared-positive-one-trap|direct|i^# = -#",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c01-u01-i-squared-positive-one-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 12
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      }
+    },
+    {
+      "id": "Q02",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-square-root-negative-numbers",
+      "context": "control_system_poles",
+      "verificationLevel": "partial",
+      "prompt": "A control system has a pole at $s = \\sqrt{-49}$. Rewrite the pole in the form $s = bi$ with $b$ positive and find $b$.",
+      "display": "\\sqrt{-n} = i\\sqrt{n}",
+      "plainText": "sqrt(-n) = i*sqrt(n)",
+      "givens": {
+        "radicand": 49
+      },
+      "constants": {
+        "index": 2
+      },
+      "answerSpec": {
+        "type": "number",
+        "value": "7",
+        "tolerance": 0.001
+      },
+      "answerPlain": "7",
+      "answerDisplay": "7",
+      "commonTrapTag": "t02-c01-u01-divide-by-two-instead-of-root-trap",
+      "trapDerivation": "49 / 2",
+      "trapValue": "24.5",
+      "verify": {
+        "source": "7",
+        "trapValue": "24.5"
+      },
+      "checkpointHint": "Pull the negative sign out as the imaginary unit, then take the principal root of what remains",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "steps": [
+        {
+          "latex": "\\sqrt{-49} = \\sqrt{-1} \\cdot \\sqrt{49}",
+          "explain": "Split the radicand into -1 and 49."
+        },
+        {
+          "latex": "\\sqrt{-1} \\cdot \\sqrt{49} = i\\sqrt{49}",
+          "explain": "Replace the square root of -1 with i."
+        },
+        {
+          "latex": "i\\sqrt{49} = 7i",
+          "explain": "Evaluate the square root of 49 to 7.",
+          "val": "7"
+        }
+      ],
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C01-U01",
+          "title": "Complex Numbers",
+          "notionUrl": "https://www.notion.so/4013818f8ba080d7896bef2080bbc74a"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "t02-c01-u01-divide-by-two-instead-of-root-trap|direct|sqrt(-n) = i*sqrt(n)",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c01-u01-divide-by-two-instead-of-root-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 12
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      }
+    },
+    {
+      "id": "Q03",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-adding-complex-numbers",
+      "context": "rf_superposition",
+      "verificationLevel": "partial",
+      "prompt": "Two RF signals arrive at an antenna with complex amplitudes $7 + 3i$ and $2 + 8i$ (in volts). Find the real part of the combined amplitude when the signals superpose.",
+      "display": "\\text{Re}(z_1 + z_2) = \\text{Re}(z_1) + \\text{Re}(z_2)",
+      "plainText": "Re(z1 + z2) = Re(z1) + Re(z2)",
+      "givens": {
+        "re1": 7,
+        "im1": 3,
+        "re2": 2,
+        "im2": 8
+      },
+      "answerSpec": {
+        "type": "number",
+        "value": "9",
+        "tolerance": 0.001
+      },
+      "answerPlain": "9",
+      "answerDisplay": "9",
+      "commonTrapTag": "t02-c01-u01-add-real-and-imaginary-parts-trap",
+      "trapDerivation": "7 + 3 + 2 + 8",
+      "trapValue": "20",
+      "verify": {
+        "source": "9",
+        "trapValue": "20"
+      },
+      "checkpointHint": "Real components combine only with real components; imaginary components stay separate",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "steps": [
+        {
+          "latex": "z_1 + z_2 = (7 + 3i) + (2 + 8i)",
+          "explain": "Write the sum of the two amplitudes."
+        },
+        {
+          "latex": "\\text{Re} = 7 + 2",
+          "explain": "Select the real parts 7 and 2 and add them."
+        },
+        {
+          "latex": "\\text{Re} = 9",
+          "explain": "Add 7 and 2 to get 9.",
+          "val": "9"
+        }
+      ],
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C01-U01",
+          "title": "Complex Numbers",
+          "notionUrl": "https://www.notion.so/4013818f8ba080d7896bef2080bbc74a"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "t02-c01-u01-add-real-and-imaginary-parts-trap|direct|Re(z# + z#) = Re(z#) + Re(z#)",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c01-u01-add-real-and-imaginary-parts-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 12
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      }
+    },
+    {
+      "id": "Q04",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-subtracting-complex-numbers",
+      "context": "radar_doppler_delta",
+      "verificationLevel": "partial",
+      "prompt": "A radar processor records the complex echo $4 + 13i$ from the current pulse and $9 + 5i$ from the previous pulse. The change is the current echo minus the previous echo. Find the real part of the change.",
+      "display": "\\text{Re}(z_1 - z_2) = \\text{Re}(z_1) - \\text{Re}(z_2)",
+      "plainText": "Re(z1 - z2) = Re(z1) - Re(z2)",
+      "givens": {
+        "re_now": 4,
+        "im_now": 13,
+        "re_prev": 9,
+        "im_prev": 5
+      },
+      "answerSpec": {
+        "type": "number",
+        "value": "-5",
+        "tolerance": 0.001
+      },
+      "answerPlain": "-5",
+      "answerDisplay": "-5",
+      "commonTrapTag": "t02-c01-u01-subtraction-order-swap-trap",
+      "trapDerivation": "9 - 4",
+      "trapValue": "5",
+      "verify": {
+        "source": "-5",
+        "trapValue": "5"
+      },
+      "checkpointHint": "Subtraction is not commutative, so check which quantity comes first in the stated change",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "steps": [
+        {
+          "latex": "z_1 - z_2 = (4 + 13i) - (9 + 5i)",
+          "explain": "Write the current echo minus the previous echo."
+        },
+        {
+          "latex": "\\text{Re} = 4 - 9",
+          "explain": "Select the real parts and subtract the previous from the current."
+        },
+        {
+          "latex": "\\text{Re} = -5",
+          "explain": "Subtract 9 from 4 to get -5.",
+          "val": "-5"
+        }
+      ],
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C01-U01",
+          "title": "Complex Numbers",
+          "notionUrl": "https://www.notion.so/4013818f8ba080d7896bef2080bbc74a"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "t02-c01-u01-subtraction-order-swap-trap|direct|Re(z# - z#) = Re(z#) - Re(z#)",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c01-u01-subtraction-order-swap-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 12
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      }
+    },
+    {
+      "id": "Q05",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-multiplying-pure-imaginary",
+      "context": "waveguide_impedance",
+      "verificationLevel": "partial",
+      "prompt": "In a waveguide model, two reactive terms $6i$ and $7i$ are multiplied to form a coupling coefficient. Evaluate the product $(6i)(7i)$ as a real number.",
+      "display": "(bi)(di) = bd \\cdot i^2",
+      "plainText": "(bi)(di) = b*d*i^2",
+      "givens": {
+        "b": 6,
+        "d": 7
+      },
+      "answerSpec": {
+        "type": "number",
+        "value": "-42",
+        "tolerance": 0.001
+      },
+      "answerPlain": "-42",
+      "answerDisplay": "-42",
+      "commonTrapTag": "t02-c01-u01-forgot-i-squared-negative-sign-trap",
+      "trapDerivation": "6 * 7",
+      "trapValue": "42",
+      "verify": {
+        "source": "-42",
+        "trapValue": "42"
+      },
+      "checkpointHint": "Multiply the real coefficients and the imaginary units separately, then simplify the unit product",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "steps": [
+        {
+          "latex": "(6i)(7i) = (6 \\cdot 7)(i \\cdot i)",
+          "explain": "Group the coefficients and the imaginary units."
+        },
+        {
+          "latex": "(6 \\cdot 7)(i \\cdot i) = 42i^2",
+          "explain": "Multiply 6 by 7 to get 42."
+        },
+        {
+          "latex": "42i^2 = 42(-1)",
+          "explain": "Replace i^2 with -1."
+        },
+        {
+          "latex": "42(-1) = -42",
+          "explain": "Multiply 42 by -1 to get -42.",
+          "val": "-42"
+        }
+      ],
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C01-U01",
+          "title": "Complex Numbers",
+          "notionUrl": "https://www.notion.so/4013818f8ba080d7896bef2080bbc74a"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "t02-c01-u01-forgot-i-squared-negative-sign-trap|direct|(bi)(di) = b*d*i^#",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 4,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c01-u01-forgot-i-squared-negative-sign-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 14
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      }
+    }
+  ],
+  "drillId": "DRL-MTH-T02-C01-U01-03",
+  "title": "Complex Numbers — Verified Math Drill (5 Qs)",
+  "schemaVersion": "2.0-math",
+  "createdAt": "2026-11-13 20:21:51",
+  "config": {
+    "questionCount": 5,
+    "difficulty": "ALL",
+    "difficultyMode": "AI Synthesized Reasoning Mode"
+  },
+  "sessionSummary": {
+    "practiceStatus": "Ready",
+    "score": 0,
+    "maxScore": 5,
+    "accuracyPct": 0,
+    "mistakeCategories": [],
+    "divergedStepsSummary": "",
+    "attemptDate": null,
+    "syncedToNotionAt": null,
+    "notionPageId": null
+  },
+  "localFilePath": "drills/data/MTH-T02-C01-U01/DRL-MTH-T02-C01-U01-03.json"
+}

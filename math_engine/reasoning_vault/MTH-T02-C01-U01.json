@@ -20,7 +20,8 @@
         "signal_quadrature_demodulation"
       ],
       "usedContexts": [
-        "ac_phasor_scaling"
+        "ac_phasor_scaling",
+        "quantum_phase_factor"
       ]
     },
     {
@@ -40,7 +41,8 @@
         "control_system_poles"
       ],
       "usedContexts": [
-        "undamped_circuit_resonance"
+        "undamped_circuit_resonance",
+        "control_system_poles"
       ]
     },
     {
@@ -60,7 +62,8 @@
         "vector_impedance_mesh"
       ],
       "usedContexts": [
-        "phasor_voltage_superposition"
+        "phasor_voltage_superposition",
+        "rf_superposition"
       ]
     },
     {
@@ -80,7 +83,8 @@
         "radar_doppler_delta"
       ],
       "usedContexts": [
-        "differential_voltage_drop"
+        "differential_voltage_drop",
+        "radar_doppler_delta"
       ]
     },
     {
@@ -100,7 +104,8 @@
         "waveguide_impedance"
       ],
       "usedContexts": [
-        "rf_reactive_power_coupling"
+        "rf_reactive_power_coupling",
+        "waveguide_impedance"
       ]
     },
     {
