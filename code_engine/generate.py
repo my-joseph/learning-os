@@ -153,6 +153,13 @@ def _pick_template_schedule(templates, count, difficulty, focus_tags, rng, templ
         if matched:
             return _round_robin_pick(matched, count, rng)
 
+        available_tags = sorted({p[k] for p in all_pairs for k in ("key", "trapTag", "skill", "form") if p.get(k)})
+        raise ValueError(
+            f"No templates match requested focus_tags: {focus_tags} in '{unit_code or 'Current Unit'}'. "
+            f"Available tags for this unit: {available_tags}. "
+            f"Cannot silently fallback to default schedule."
+        )
+
     if difficulty in ("1", "2", "3", "4", "5"):
         lv = int(difficulty)
         pool = [p for p in all_pairs if p["level"] == lv]
