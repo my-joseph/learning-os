@@ -7,6 +7,7 @@ Bridges dynamic AI-generated problems in chat into:
 """
 
 import argparse
+import copy
 import datetime
 import json
 import os
@@ -91,7 +92,6 @@ _METHOD_PHRASE_RE = re.compile(
 _CALC_PHRASE_RE = re.compile(r"\b(?:calculate|compute|evaluate|evaluating)\s+\$([^$]+)\$", re.IGNORECASE)
 _INLINE_MATH_RE = re.compile(r"\$([^$]+)\$")
 _SINGLE_UNKNOWN_RE = re.compile(r"\\?[A-Za-z](?:_\{?[^}=]*\}?)?")
-_LATEX_OPS = (r"\times", r"\cdot", r"\div", r"\frac", r"\left", r"\right", r"\,", r"\;", r"\quad")
 
 
 def _normalize_math(expr: str) -> str:
@@ -105,8 +105,9 @@ def _normalize_math(expr: str) -> str:
 
 def _is_numeric_computation(expr: str) -> bool:
     """True for things like `2(14) + 2(8)`, `\\frac{80}{16}`, `6 + 8`: digits plus an operator, no letters."""
-    s = expr.replace("?", "")
-    for macro in _LATEX_OPS:
+    # Operators become ASCII operators (not spaces), so `14 \times 9` still reads as a computation.
+    s = _normalize_math(expr.replace("?", ""))
+    for macro in (r"\frac",):
         s = s.replace(macro, " ")
     if re.search(r"[A-Za-z\\]", s) or not re.search(r"\d", s):
         return False
@@ -472,6 +473,46 @@ def mark_context_used(unit_code: str, archetype_key: str, context_tag: str, vaul
     save_reasoning_vault(unit_code, vault, vault_dir=vault_dir)
 
 
+def check_ai_drill(
+    drill_doc: Dict[str, Any],
+    rules: Optional[Dict[str, Any]] = None,
+    vault_dir: Optional[str] = None,
+) -> List[str]:
+    """Run every ingest gate on a draft WITHOUT saving it or touching the vault.
+
+    Returns all problems' errors at once (empty list = ready to ingest), so a draft
+    can be fixed in one pass instead of one error per run.
+    """
+    unit_code = drill_doc.get("unitCode")
+    if not unit_code:
+        return ["Drill document must specify 'unitCode'."]
+    problems = drill_doc.get("problems") or []
+    if not problems:
+        return ["Drill document has no 'problems'."]
+
+    vault_archs = load_reasoning_vault(unit_code, vault_dir=vault_dir).get("archetypes", [])
+    vault_keys = {a.get("archetypeKey") for a in vault_archs}
+    errors: List[str] = []
+    for idx, original in enumerate(problems, 1):
+        prob = copy.deepcopy(original)
+        prob.setdefault("id", f"Q{idx:02d}")
+        prob.setdefault("verificationLevel", "partial")
+        pid = prob["id"]
+        if prob.get("archetypeKey") not in vault_keys:
+            errors.append(
+                f"[{pid}] archetypeKey '{prob.get('archetypeKey')}' is not in the {unit_code} reasoning vault."
+            )
+        try:
+            autofill_problem_figure(prob, vault_archs)
+            require_figure_if_declared(prob, vault_archs)
+            validate_ai_problem_contract(prob)
+            verify_problem(prob, rules=rules or QUALITY_RULES)
+        except Exception as exc:  # noqa: BLE001 - every gate failure is reported, not raised
+            msg = str(exc)
+            errors.append(msg if pid in msg else f"[{pid}] {msg}")
+    return errors
+
+
 def ingest_ai_drill(
     drill_doc: Dict[str, Any],
     data_root: Optional[str] = None,
@@ -610,6 +651,11 @@ if __name__ == "__main__":
     parser.add_argument("--unit", default="MTH-T01-C06", help="Unit code (e.g. MTH-T01-C06)")
     parser.add_argument("--list-vault", action="store_true", help="List registered reasoning archetypes")
     parser.add_argument("--ingest-file", help="Path to JSON file containing AI-generated drill document")
+    parser.add_argument(
+        "--check",
+        action="store_true",
+        help="With --ingest-file: run all gates and list every error; save nothing, do not touch the vault.",
+    )
     args = parser.parse_args()
 
     if args.list_vault:
@@ -623,5 +669,16 @@ if __name__ == "__main__":
     if args.ingest_file:
         with open(args.ingest_file, "r", encoding="utf-8") as f:
             drill_data = json.load(f)
+        if args.check:
+            problems_found = check_ai_drill(drill_data)
+            for line in problems_found:
+                print(f"  FAIL {line}")
+            n = len(drill_data.get("problems") or [])
+            print(
+                f"\n{len(problems_found)} error(s) across {n} problem(s)."
+                if problems_found
+                else f"OK: all {n} problems pass every gate (nothing saved)."
+            )
+            raise SystemExit(1 if problems_found else 0)
         saved = ingest_ai_drill(drill_data)
         print(f"Successfully verified and ingested drill: {saved.get('drillId')}")
