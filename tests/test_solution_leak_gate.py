@@ -13,6 +13,7 @@ from math_engine.ai_drill_ingest import (
     AiContractError,
     check_ai_drill,
     find_solution_leaks,
+    ingest_ai_drill,
     validate_ai_problem_contract,
 )
 from math_engine.verify import verify_problem
@@ -224,6 +225,26 @@ class CheckAiDrill(unittest.TestCase):
             self._vault(tmp)
             doc = {"unitCode": "MTH-T01-C12", "problems": [perimeter_problem(archetypeKey="c12-perimeter")]}
             self.assertEqual(check_ai_drill(doc, vault_dir=tmp), [])
+
+
+class IngestFillsSyncFields(unittest.TestCase):
+    def test_hierarchy_and_level_label_filled_without_overriding(self):
+        import json
+        import os
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as tmp:
+            vault = os.path.join(tmp, "vault")
+            os.makedirs(vault)
+            with open(os.path.join(vault, "MTH-T01-C12.json"), "w", encoding="utf-8") as f:
+                json.dump({"unitCode": "MTH-T01-C12", "archetypes": [{"archetypeKey": "c12-perimeter"}]}, f)
+            custom = perimeter_problem(id="Q02", archetypeKey="c12-perimeter", levelLabel="Level 1 - Core Foundations")
+            doc = {"unitCode": "MTH-T01-C12", "problems": [perimeter_problem(archetypeKey="c12-perimeter"), custom]}
+            saved = ingest_ai_drill(doc, data_root=os.path.join(tmp, "data"), vault_dir=vault)
+
+        self.assertEqual((saved["topicCode"], saved["chapterCode"]), ("MTH-T01", "MTH-T01-C12"))
+        self.assertEqual(saved["problems"][0]["levelLabel"], "Level 1 - Foundation")
+        self.assertEqual(saved["problems"][1]["levelLabel"], "Level 1 - Core Foundations")
 
 
 if __name__ == "__main__":

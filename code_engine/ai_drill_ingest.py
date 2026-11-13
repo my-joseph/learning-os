@@ -15,6 +15,7 @@ import re
 from typing import Any, Dict, List, Optional
 
 from code_engine.answer_check import parse_tokens
+from code_engine.fmt import LEVEL_LABELS, unit_hierarchy
 from code_engine.generate import next_drill_id
 from code_engine.test_runner import run_tests
 from code_engine.verify import run_node, verify_problem
@@ -594,6 +595,16 @@ def ingest_ai_code_drill(
         drill_doc["drillId"] = drill_id
 
     # 3. Populate metadata
+    # Hierarchy + level labels that notion_sync.drill_sync needs (the template path sets them too).
+    topic_code, chapter_code = unit_hierarchy(unit_code)
+    if not drill_doc.get("topicCode"):
+        drill_doc["topicCode"] = topic_code
+    if not drill_doc.get("chapterCode"):
+        drill_doc["chapterCode"] = chapter_code
+    for prob in problems:
+        if not prob.get("levelLabel") and prob.get("level") in LEVEL_LABELS:
+            prob["levelLabel"] = LEVEL_LABELS[prob["level"]]
+
     drill_doc["schemaVersion"] = drill_doc.get("schemaVersion", "2.0-code")
     drill_doc["subject"] = drill_doc.get("subject", "PRG")
     drill_doc["environment"] = drill_doc.get("environment", "node-vanilla")

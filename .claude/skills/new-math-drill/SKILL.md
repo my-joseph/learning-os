@@ -78,4 +78,5 @@ Ingest assigns the drill ID, writes `drills/data/<UNIT>/<DRILL_ID>.json` and rec
 ## 8. After ingest
 
 - Commit the drill and the vault change on a branch (never on `main`); open a PR when the learner asks.
-- Sync to Notion only when the learner asks (Studio "Sync to Notion" or `drill_sync.sync_drill_to_notion`), from the repo root that holds `.env`.
+- Ingest fills `topicCode`, `chapterCode` and missing `levelLabel`s. Do not patch drill fields by hand to make a sync pass: if the sync reports missing fields, fix the cause (ingest or the draft) and say so.
+- Sync to Notion only when the learner asks, and **after the PR is merged**, so Notion matches `main`. Run it from the main checkout that holds `.env` (Studio "Sync to Notion" or `notion_sync.drill_sync.sync_drill_to_notion`). Never copy `.env` into a worktree. A result with `degraded: true` means Notion was **not** updated; report it as not synced.

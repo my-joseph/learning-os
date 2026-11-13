@@ -82,6 +82,27 @@ def save_drill_doc(drill_doc: dict) -> str:
     return path
 
 
+REQUIRED_DRILL_FIELDS = ("drillId", "unitCode", "chapterCode", "topicCode", "problems")
+REQUIRED_PROBLEM_FIELDS = ("id", "levelLabel", "category", "prompt")
+
+
+def missing_sync_fields(drill_doc: dict) -> list[str]:
+    """Fields the Notion page needs. Checked before any Notion call, so a gap never leaves a half-built page."""
+    missing = [f"drill.{k}" for k in REQUIRED_DRILL_FIELDS if k != "problems" and not drill_doc.get(k)]
+    if not isinstance(drill_doc.get("problems"), list):
+        missing.append("drill.problems")
+    for i, p in enumerate(drill_doc.get("problems") or [], 1):
+        pid = p.get("id") or f"#{i}"
+        missing += [f"{pid}.{k}" for k in REQUIRED_PROBLEM_FIELDS if not p.get(k)]
+        for s_i, st in enumerate(p.get("steps") or [], 1):
+            missing += [f"{pid}.steps[{s_i}].{k}" for k in ("latex", "explain") if k not in st]
+        spec = p.get("answerSpec") or {}
+        if spec.get("type") == "choice":
+            for o_i, opt in enumerate(spec.get("options") or [], 1):
+                missing += [f"{pid}.options[{o_i}].{k}" for k in ("id", "label") if k not in opt]
+    return missing
+
+
 def _mention_or_code(code: str, id_map: dict) -> str:
     return f"[[{code}]]" if code in id_map else f"`{code}`"
 
@@ -327,7 +348,23 @@ def _sync_drill_to_notion_inner(drill_doc: dict, path: str) -> dict:
 
 
 def sync_drill_to_notion(drill_doc: dict) -> dict:
+    """Save locally, then sync to Notion.
+
+    - Incomplete drill data -> ok False with the missing fields; nothing is sent to Notion.
+    - Notion/network unavailable (incl. missing token) -> ok True, degraded: the file is saved
+      locally and the sync can simply be retried.
+    - Any other error is a bug -> ok False (never reported as success).
+    """
     path = save_drill_doc(drill_doc)
+    missing = missing_sync_fields(drill_doc)
+    if missing:
+        return {
+            "ok": False,
+            "localFilePath": path,
+            "error": "Drill is missing fields needed for the Notion page: "
+            + ", ".join(missing[:12])
+            + (f" (+{len(missing) - 12} more)" if len(missing) > 12 else ""),
+        }
     is_dry_run = os.environ.get("NOTION_DRY_RUN", "").lower() in ("1", "true", "yes") or drill_doc.get("dryRun")
     if is_dry_run:
         return {
@@ -339,11 +376,14 @@ def sync_drill_to_notion(drill_doc: dict) -> dict:
         }
     try:
         return _sync_drill_to_notion_inner(drill_doc, path)
-    except Exception as err:
+    except (OSError, RuntimeError) as err:
+        # notion_request raises RuntimeError for HTTP errors / MissingNotionToken, OSError for network.
         return {
             "ok": True,
             "localFilePath": path,
             "drillPageId": None,
             "degraded": True,
-            "warning": f"Notion sync degraded gracefully: {err}",
+            "warning": f"Saved locally; Notion was not updated: {err}",
         }
+    except Exception as err:  # noqa: BLE001 - surfaced to the Studio as a failure, not swallowed
+        return {"ok": False, "localFilePath": path, "error": f"Notion sync failed: {type(err).__name__}: {err}"}
