@@ -97,7 +97,8 @@
         },
         "verificationLevel": "partial",
         "weakDistractors": 0
-      }
+      },
+      "levelLabel": "Level 1 - Core Foundations"
     },
     {
       "id": "Q02",
@@ -191,7 +192,8 @@
         },
         "verificationLevel": "partial",
         "weakDistractors": 0
-      }
+      },
+      "levelLabel": "Level 1 - Core Foundations"
     },
     {
       "id": "Q03",
@@ -285,7 +287,8 @@
         },
         "verificationLevel": "partial",
         "weakDistractors": 0
-      }
+      },
+      "levelLabel": "Level 2 - Applied Inversion"
     },
     {
       "id": "Q04",
@@ -379,7 +382,8 @@
         },
         "verificationLevel": "partial",
         "weakDistractors": 0
-      }
+      },
+      "levelLabel": "Level 2 - Applied Inversion"
     },
     {
       "id": "Q05",
@@ -475,7 +479,8 @@
         },
         "verificationLevel": "partial",
         "weakDistractors": 0
-      }
+      },
+      "levelLabel": "Level 2 - Applied Inversion"
     }
   ],
   "drillId": "DRL-MTH-T02-C01-U01-03",
@@ -498,5 +503,7 @@
     "syncedToNotionAt": null,
     "notionPageId": null
   },
-  "localFilePath": "drills/data/MTH-T02-C01-U01/DRL-MTH-T02-C01-U01-03.json"
+  "localFilePath": "drills/data/MTH-T02-C01-U01/DRL-MTH-T02-C01-U01-03.json",
+  "chapterCode": "MTH-T02-C01",
+  "topicCode": "MTH-T02"
 }
