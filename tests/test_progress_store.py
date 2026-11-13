@@ -49,6 +49,9 @@ def test_pristine_defaults_are_not_practice():
     assert not ps.has_practice(doc)
     doc["problems"][1]["state"] = {"skipped": True}
     assert ps.has_practice(doc)
+    peek = _doc()
+    peek["problems"][0]["state"] = {"userInput": "", "setupRevealedBeforeAnswer": True}
+    assert ps.has_practice(peek), "opening the set-up is learner activity too"
 
 
 def test_migration_moves_practice_and_strips_content(tmp_path):
