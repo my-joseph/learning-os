@@ -13,6 +13,7 @@ import sys
 from concurrent.futures import ThreadPoolExecutor
 
 import apply_rules_and_test_pages
+from notion_api import require_token
 from apply_rules_and_test_pages import (
     load_env,
     notion_request,
@@ -404,7 +405,11 @@ def plan_sync(master_pid, rules_map, id_map):
 
 def main(dry_run=False):
     env = load_env()
-    token = env.get("NOTION_TOKEN") or os.environ.get("NOTION_TOKEN", "dummy-dry-run-token")
+    token = env.get("NOTION_TOKEN") or os.environ.get("NOTION_TOKEN")
+    if dry_run:
+        token = token or "dummy-dry-run-token"
+    else:
+        require_token(token)  # clear error instead of a 401 from a placeholder token
 
     id_map = {}
     if os.path.exists("id_map.json"):

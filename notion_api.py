@@ -59,7 +59,24 @@ def make_ssl_context():
 SSL_CTX = make_ssl_context()
 
 
+class MissingNotionToken(RuntimeError):
+    """Raised before any network call when no Notion token was loaded."""
+
+
+def require_token(token):
+    if not token or str(token).strip() in ("", "None"):
+        env_path = os.path.join(os.getcwd(), ".env")
+        where = "exists but has no NOTION_TOKEN" if os.path.exists(env_path) else "does not exist"
+        raise MissingNotionToken(
+            f"NOTION_TOKEN not found: {env_path} {where}. "
+            "Run this script from the repo root that holds your .env "
+            "(git worktrees do not copy .env)."
+        )
+    return token
+
+
 def notion_request(method, endpoint, token, payload=None, max_retries=7):
+    require_token(token)
     url = f"https://api.notion.com/v1/{endpoint}"
     headers = {
         "Authorization": f"Bearer {token}",

@@ -94,6 +94,16 @@ class NotionRequestRetry(unittest.TestCase):
         sleep.assert_called_once_with(2.0)
 
 
+class MissingToken(unittest.TestCase):
+    @mock.patch("notion_api.urllib.request.urlopen")
+    def test_missing_token_fails_before_any_request(self, urlopen):
+        for token in (None, "", "None", "  "):
+            with self.subTest(token=token):
+                with self.assertRaisesRegex(notion_api.MissingNotionToken, "NOTION_TOKEN not found"):
+                    notion_api.notion_request("GET", "x", token)
+        urlopen.assert_not_called()
+
+
 class ReplacePageContent(unittest.TestCase):
     def test_appends_before_deleting(self):
         calls = []
