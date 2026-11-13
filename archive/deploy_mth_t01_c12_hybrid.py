@@ -45,9 +45,9 @@ def main():
     token = env["NOTION_TOKEN"]
     with open("id_map.json", "r", encoding="utf-8") as f:
         id_map = json.load(f)
-    with open("uploaded_image_ids.json", "r", encoding="utf-8") as f:
+    with open("archive/uploaded_image_ids.json", "r", encoding="utf-8") as f:
         img_map = json.load(f)
-    with open("uploaded_param_ids.json", "r", encoding="utf-8") as f:
+    with open("archive/uploaded_param_ids.json", "r", encoding="utf-8") as f:
         param_img_map = json.load(f)
 
     # 1. MTH-T01-C12

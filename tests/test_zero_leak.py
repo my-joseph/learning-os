@@ -2,7 +2,7 @@
 
 import copy
 
-from drill_sync import validate_and_sanitize_drill_doc
+from notion_sync.drill_sync import validate_and_sanitize_drill_doc
 
 
 def _doc(hint, accepted, subject="PRG", **extra):
@@ -44,7 +44,7 @@ def test_all_committed_drills_have_no_leaking_hints():
 def test_save_drill_doc_sanitizes_and_writes(tmp_path, monkeypatch):
     import json
 
-    from drill_sync import save_drill_doc
+    from notion_sync.drill_sync import save_drill_doc
 
     monkeypatch.chdir(tmp_path)
     doc = _doc("Type the 3-digit status code (e.g. 401).", ["401"], codeType="predict-output")

@@ -11,7 +11,7 @@ import json
 import os
 import sys
 from apply_rules_and_test_pages import auto_link_concepts, load_env
-from drill_sync import sync_drill_to_notion
+from notion_sync.drill_sync import sync_drill_to_notion
 
 DRILL_ID = "DRL-PRG-T00-C01-U01-01"
 UNIT_CODE = "PRG-T00-C01-U01"
