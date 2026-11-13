@@ -20,7 +20,7 @@ def load_env(path=".env"):
 SSL_CTX = (
     ssl.create_default_context(cafile="/etc/ssl/cert.pem")
     if os.path.exists("/etc/ssl/cert.pem")
-    else ssl._create_unverified_context()
+    else ssl.create_default_context()
 )
 
 def notion_request(method, endpoint, token, payload=None, max_retries=7):

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import path from "path";
 import fs from "fs";
-import { getPythonBin, getWorkspaceRoot } from "@/lib/paths";
+import { getPythonBin, getWorkspaceRoot, resolveInsideRoot } from "@/lib/paths";
 import { spawn } from "child_process";
 
 export async function GET(req: NextRequest) {
@@ -13,7 +13,10 @@ export async function GET(req: NextRequest) {
     }
 
     const rootDir = getWorkspaceRoot();
-    const fullPath = path.isAbsolute(relOrAbs) ? relOrAbs : path.join(rootDir, relOrAbs);
+    const fullPath = resolveInsideRoot(relOrAbs, rootDir);
+    if (!fullPath) {
+      return NextResponse.json({ error: "Path is outside the project" }, { status: 403 });
+    }
 
     if (!fs.existsSync(fullPath)) {
       return NextResponse.json({ error: "File not found" }, { status: 404 });
@@ -35,7 +38,10 @@ export async function PUT(req: NextRequest) {
     }
 
     const rootDir = getWorkspaceRoot();
-    const fullPath = path.isAbsolute(file) ? file : path.join(rootDir, file);
+    const fullPath = resolveInsideRoot(file, rootDir);
+    if (!fullPath) {
+      return NextResponse.json({ error: "Path is outside the project" }, { status: 403 });
+    }
 
     fs.writeFileSync(fullPath, content || "", "utf-8");
     return NextResponse.json({ ok: true, fullPath });
@@ -63,7 +69,7 @@ import json, sys
 from code_engine.workspace import materialize_drill_workspace
 
 drill_doc = json.loads(sys.stdin.read() or "{}")
-manifest = materialize_drill_workspace(drill_doc, root_dir="${rootDir}")
+manifest = materialize_drill_workspace(drill_doc, root_dir=${JSON.stringify(rootDir)})
 print(json.dumps(manifest))
 `;
 

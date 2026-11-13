@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { spawn } from "child_process";
 import path from "path";
 import fs from "fs";
-import { getPythonBin, getWorkspaceRoot } from "@/lib/paths";
+import { getPythonBin, getWorkspaceRoot, resolveInsideRoot } from "@/lib/paths";
 
 export async function POST(req: NextRequest) {
   try {
@@ -14,11 +14,9 @@ export async function POST(req: NextRequest) {
 
     // If workspaceFile path is supplied and userCode is empty, read directly from local disk!
     if (!userCode.trim() && body.workspaceFile) {
-      const fullPath = path.isAbsolute(body.workspaceFile)
-        ? body.workspaceFile
-        : path.join(rootDir, body.workspaceFile);
+      const fullPath = resolveInsideRoot(body.workspaceFile, rootDir);
 
-      if (fs.existsSync(fullPath)) {
+      if (fullPath && fs.existsSync(fullPath)) {
         userCode = fs.readFileSync(fullPath, "utf-8");
       }
     }

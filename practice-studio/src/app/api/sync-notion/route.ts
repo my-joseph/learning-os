@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { spawn } from "child_process";
 import path from "path";
 import fs from "fs";
-import { getDrillsDataDir, getPythonBin, getWorkspaceRoot } from "@/lib/paths";
+import { getDrillsDataDir, getPythonBin, getWorkspaceRoot, isSafeId } from "@/lib/paths";
 
 export async function POST(req: NextRequest) {
   try {
@@ -12,6 +12,9 @@ export async function POST(req: NextRequest) {
 
     if (!drillId) {
       return NextResponse.json({ ok: false, error: "Missing drillId" }, { status: 400 });
+    }
+    if (!isSafeId(drillId) || !isSafeId(unitCode)) {
+      return NextResponse.json({ ok: false, error: "Invalid drillId or unitCode" }, { status: 400 });
     }
 
     const dataDir = getDrillsDataDir();

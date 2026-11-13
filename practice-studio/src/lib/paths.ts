@@ -43,3 +43,23 @@ export function getPythonBin(rootDir: string): string {
   }
   return "python3";
 }
+
+/**
+ * Resolves a user-supplied file path and guarantees it stays inside the
+ * project root. Returns null for anything outside (e.g. `/etc/passwd`,
+ * `../../.ssh/id_rsa`, or the `.env` file that holds the Notion token).
+ */
+export function resolveInsideRoot(relOrAbs: string, rootDir: string = getWorkspaceRoot()): string | null {
+  if (typeof relOrAbs !== "string" || !relOrAbs.trim()) return null;
+  const root = path.resolve(rootDir);
+  const full = path.resolve(root, relOrAbs);
+  const rel = path.relative(root, full);
+  if (rel === "" || rel.startsWith("..") || path.isAbsolute(rel)) return null;
+  if (path.basename(full).startsWith(".env")) return null;
+  return full;
+}
+
+/** Validates an ID used as a path segment (drillId, unitCode). */
+export function isSafeId(value: unknown): value is string {
+  return typeof value === "string" && /^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/.test(value);
+}

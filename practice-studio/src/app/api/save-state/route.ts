@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
-import { getDrillsDataDir } from "@/lib/paths";
+import { getDrillsDataDir, isSafeId } from "@/lib/paths";
 
 export async function POST(req: NextRequest) {
   try {
@@ -11,6 +11,9 @@ export async function POST(req: NextRequest) {
 
     if (!drillId) {
       return NextResponse.json({ ok: false, error: "Missing drillId" }, { status: 400 });
+    }
+    if (!isSafeId(drillId) || !isSafeId(unitCode)) {
+      return NextResponse.json({ ok: false, error: "Invalid drillId or unitCode" }, { status: 400 });
     }
 
     const unitDir = path.join(getDrillsDataDir(), unitCode);
