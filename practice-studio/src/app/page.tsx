@@ -190,6 +190,8 @@ export default function PracticeStudioPage() {
         problems: (doc.problems || []).map((p) => ({
           ...p,
           state: {
+            // Keep every saved field (attempts, hintsRevealed, durationMs, setupRevealedBeforeAnswer, ...)
+            ...p.state,
             userInput: p.state?.userInput || "",
             userCode: p.state?.userCode || p.starterCode || p.codeSnippet || "",
             score: p.state?.score ?? null,

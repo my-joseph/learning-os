@@ -261,17 +261,6 @@
     "difficulty": "ALL",
     "difficultyMode": "AI Synthesized Engineering Mode"
   },
-  "sessionSummary": {
-    "practiceStatus": "Ready",
-    "score": 0,
-    "maxScore": 3,
-    "accuracyPct": 0,
-    "mistakeCategories": [],
-    "divergedStepsSummary": "",
-    "attemptDate": null,
-    "syncedToNotionAt": null,
-    "notionPageId": null
-  },
   "localFilePath": "drills/data/PRG-T01-C03/DRL-PRG-T01-C03-03.json",
   "unitTitle": "Problem Solving & Utility Toolkit"
 }

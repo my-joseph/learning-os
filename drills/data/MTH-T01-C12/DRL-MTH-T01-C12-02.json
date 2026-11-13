@@ -152,17 +152,6 @@
         },
         "verificationLevel": "partial",
         "weakDistractors": 0
-      },
-      "state": {
-        "userInput": "",
-        "userCode": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "mistakeNote": "",
-        "skipped": false,
-        "lastCheck": null,
-        "lastTestReport": null
       }
     },
     {
@@ -249,17 +238,6 @@
         },
         "verificationLevel": "partial",
         "weakDistractors": 0
-      },
-      "state": {
-        "userInput": "",
-        "userCode": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "mistakeNote": "",
-        "skipped": false,
-        "lastCheck": null,
-        "lastTestReport": null
       },
       "figure": {
         "kind": "geometry_2d",
@@ -412,17 +390,6 @@
         "verificationLevel": "partial",
         "weakDistractors": 0
       },
-      "state": {
-        "userInput": "",
-        "userCode": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "mistakeNote": "",
-        "skipped": false,
-        "lastCheck": null,
-        "lastTestReport": null
-      },
       "figure": {
         "kind": "geometry_2d",
         "theme": "blue",
@@ -556,17 +523,6 @@
         "verificationLevel": "partial",
         "weakDistractors": 0
       },
-      "state": {
-        "userInput": "",
-        "userCode": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "mistakeNote": "",
-        "skipped": false,
-        "lastCheck": null,
-        "lastTestReport": null
-      },
       "figure": {
         "kind": "geometry_2d",
         "theme": "blue",
@@ -696,17 +652,6 @@
         },
         "verificationLevel": "partial",
         "weakDistractors": 0
-      },
-      "state": {
-        "userInput": "",
-        "userCode": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "mistakeNote": "",
-        "skipped": false,
-        "lastCheck": null,
-        "lastTestReport": null
       },
       "figure": {
         "kind": "geometry_2d",
@@ -913,17 +858,6 @@
         "verificationLevel": "partial",
         "weakDistractors": 0
       },
-      "state": {
-        "userInput": "",
-        "userCode": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "mistakeNote": "",
-        "skipped": false,
-        "lastCheck": null,
-        "lastTestReport": null
-      },
       "figure": {
         "kind": "geometry_2d",
         "theme": "blue",
@@ -1092,17 +1026,6 @@
         "verificationLevel": "partial",
         "weakDistractors": 0
       },
-      "state": {
-        "userInput": "",
-        "userCode": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "mistakeNote": "",
-        "skipped": false,
-        "lastCheck": null,
-        "lastTestReport": null
-      },
       "figure": {
         "kind": "geometry_2d",
         "theme": "rose",
@@ -1246,17 +1169,6 @@
         },
         "verificationLevel": "partial",
         "weakDistractors": 0
-      },
-      "state": {
-        "userInput": "",
-        "userCode": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "mistakeNote": "",
-        "skipped": false,
-        "lastCheck": null,
-        "lastTestReport": null
       },
       "figure": {
         "kind": "geometry_2d",
@@ -1413,17 +1325,6 @@
         },
         "verificationLevel": "partial",
         "weakDistractors": 0
-      },
-      "state": {
-        "userInput": "",
-        "userCode": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "mistakeNote": "",
-        "skipped": false,
-        "lastCheck": null,
-        "lastTestReport": null
       },
       "figure": {
         "kind": "geometry_2d",
@@ -1599,17 +1500,6 @@
         "verificationLevel": "partial",
         "weakDistractors": 0
       },
-      "state": {
-        "userInput": "",
-        "userCode": "",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "mistakeNote": "",
-        "skipped": false,
-        "lastCheck": null,
-        "lastTestReport": null
-      },
       "figure": {
         "kind": "geometry_2d",
         "theme": "blue",
@@ -1699,17 +1589,6 @@
     "questionCount": 10,
     "difficulty": "ALL",
     "difficultyMode": "AI Synthesized Reasoning Mode"
-  },
-  "sessionSummary": {
-    "practiceStatus": "Ready",
-    "score": 0,
-    "maxScore": 10,
-    "accuracyPct": 0,
-    "mistakeCategories": [],
-    "divergedStepsSummary": "",
-    "attemptDate": null,
-    "syncedToNotionAt": null,
-    "notionPageId": null
   },
   "localFilePath": "/Users/Joseph/Documents/antigravity/brave-borg/drills/data/MTH-T01-C12/DRL-MTH-T01-C12-02.json"
 }

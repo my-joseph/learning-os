@@ -362,14 +362,6 @@ def generate_drill_set(
             for st in prob["steps"]:
                 st.pop("val", None)
                 st.pop("eq", None)
-
-            prob["state"] = {
-                "userInput": "",
-                "score": None,
-                "divergedStep": None,
-                "mistakes": [],
-                "lastCheck": None,
-            }
             attempt_problems.append(prob)
 
         return attempt_problems, available_forms_count
@@ -399,17 +391,6 @@ def generate_drill_set(
         },
         "mistakeTags": mod.MISTAKE_TAGS,
         "problems": problems,
-        "sessionSummary": {
-            "practiceStatus": "Ready",
-            "score": 0,
-            "maxScore": count,
-            "accuracyPct": 0,
-            "mistakeCategories": [],
-            "divergedStepsSummary": "",
-            "attemptDate": None,
-            "syncedToNotionAt": None,
-            "notionPageId": id_map.get(drill_id, {}).get("id") if isinstance(id_map.get(drill_id), dict) else None,
-        },
         "localFilePath": file_path,
     }
 

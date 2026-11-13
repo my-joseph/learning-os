@@ -229,6 +229,9 @@ def main():
 
     repo_root = find_repo_root(ws_dir)
     env = load_env(repo_root)
+    if str(repo_root) not in sys.path:
+        sys.path.insert(0, str(repo_root))
+    from progress_store import apply_progress, load_progress, save_progress
 
     # Locate drill JSON doc
     data_files = list(repo_root.glob(f"drills/data/**/{drill_id}.json"))
@@ -238,6 +241,7 @@ def main():
         data_path = data_files[0]
         with open(data_path, "r", encoding="utf-8") as f:
             drill_doc = json.load(f)
+        apply_progress(drill_doc, load_progress(drill_id, str(repo_root)))
     else:
         drill_doc = {
             "drillId": drill_id,
@@ -345,8 +349,8 @@ def main():
     }
 
     if data_path:
-        with open(data_path, "w", encoding="utf-8") as f:
-            json.dump(drill_doc, f, ensure_ascii=False, indent=2)
+        # Results are learner progress: never rewrite the drill content file.
+        save_progress(drill_doc, str(repo_root))
 
     print(f"{CYAN}▶ Synchronizing Telemetry with Notion Database 'Learning Practice & Drills'...{RESET}")
     try:

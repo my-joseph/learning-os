@@ -938,17 +938,6 @@
     "difficulty": "ALL",
     "difficultyMode": "AI Synthesized Reasoning Mode"
   },
-  "sessionSummary": {
-    "practiceStatus": "Ready",
-    "score": 0,
-    "maxScore": 10,
-    "accuracyPct": 0,
-    "mistakeCategories": [],
-    "divergedStepsSummary": "",
-    "attemptDate": null,
-    "syncedToNotionAt": null,
-    "notionPageId": null
-  },
   "localFilePath": "drills/data/MTH-T01-C02/DRL-MTH-T01-C02-02.json",
   "unitTitle": "The Language of Algebra",
   "title": "The Language of Algebra — Verified Math Drill (10 Qs · Mixed Exam Mode)"

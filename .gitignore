@@ -49,3 +49,6 @@ PR_REVIEW_REQUEST.md
 # Scratch and Sample Reports
 scratch/
 reports/samples/
+
+# Learner progress (Studio / submit results), kept out of curriculum content
+progress/

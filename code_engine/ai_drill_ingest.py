@@ -20,6 +20,7 @@ from code_engine.generate import next_drill_id
 from code_engine.test_runner import run_tests
 from code_engine.verify import run_node, verify_problem
 from code_engine.workspace import materialize_drill_workspace
+from progress_store import strip_progress
 from quality_rules import QUALITY_RULES
 
 CODE_VAULT_DIR = os.path.join(os.path.dirname(__file__), "reasoning_vault")
@@ -621,18 +622,8 @@ def ingest_ai_code_drill(
         },
     )
 
-    if "sessionSummary" not in drill_doc:
-        drill_doc["sessionSummary"] = {
-            "practiceStatus": "Ready",
-            "score": 0,
-            "maxScore": len(problems),
-            "accuracyPct": 0,
-            "mistakeCategories": [],
-            "divergedStepsSummary": "",
-            "attemptDate": None,
-            "syncedToNotionAt": None,
-            "notionPageId": None,
-        }
+    # Learner progress (state / sessionSummary) lives in progress/, not in the drill file.
+    strip_progress(drill_doc)
 
     # 4. Scaffold Local Workspace Directory (drills/workspace/<drillId>)
     ws_root = workspace_root or "."

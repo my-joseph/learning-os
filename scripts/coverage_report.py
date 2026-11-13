@@ -23,6 +23,8 @@ import re
 from collections import Counter, defaultdict
 from typing import Any
 
+from progress_store import apply_progress, load_progress
+
 
 def load_taxonomy(taxonomy_path: str = "skills_taxonomy.json") -> dict[str, Any]:
     with open(taxonomy_path, "r", encoding="utf-8") as f:
@@ -124,6 +126,7 @@ def scan_drills(
         try:
             with open(filepath, "r", encoding="utf-8") as f:
                 drill = json.load(f)
+            apply_progress(drill, load_progress(drill.get("drillId", "")))
         except Exception:
             continue
 
@@ -220,6 +223,7 @@ def scan_drills(
         try:
             with open(filepath, "r", encoding="utf-8") as f:
                 drill = json.load(f)
+            apply_progress(drill, load_progress(drill.get("drillId", "")))
         except Exception:
             continue
 

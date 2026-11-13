@@ -423,16 +423,5 @@
     "difficulty": "ALL",
     "difficultyMode": "AI Synthesized Engineering Mode"
   },
-  "sessionSummary": {
-    "practiceStatus": "Ready",
-    "score": 0,
-    "maxScore": 5,
-    "accuracyPct": 0,
-    "mistakeCategories": [],
-    "divergedStepsSummary": "",
-    "attemptDate": null,
-    "syncedToNotionAt": null,
-    "notionPageId": null
-  },
   "localFilePath": "drills/data/PRG-T01-C01/DRL-PRG-T01-C01-02.json"
 }

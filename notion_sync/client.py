@@ -28,8 +28,29 @@ RETRYABLE_STATUS = {409, 429, 500, 502, 503, 504}
 socket.setdefaulttimeout(15)
 
 
+def main_checkout_env(cwd: str = ".") -> str | None:
+    """In a git worktree `.git` is a file (`gitdir: <main>/.git/worktrees/<name>`).
+    Return `<main>/.env` if it exists, so worktrees use the main checkout's secrets without copying them."""
+    try:
+        with open(os.path.join(cwd, ".git"), "r", encoding="utf-8") as f:
+            text = f.read().strip()
+    except OSError:
+        return None
+    if not text.startswith("gitdir:"):
+        return None
+    gitdir = os.path.abspath(os.path.join(cwd, text.split(":", 1)[1].strip()))
+    worktrees_dir = os.path.dirname(gitdir)
+    if os.path.basename(worktrees_dir) != "worktrees":
+        return None
+    candidate = os.path.join(os.path.dirname(os.path.dirname(worktrees_dir)), ".env")
+    return candidate if os.path.exists(candidate) else None
+
+
 def load_env(path: str = ".env") -> dict[str, str]:
+    """Read KEY=VALUE pairs. With the default path, a git worktree falls back to the main checkout's .env."""
     env = {}
+    if path == ".env" and not os.path.exists(path):
+        path = main_checkout_env() or path
     if os.path.exists(path):
         with open(path, "r", encoding="utf-8") as f:
             for line in f:
@@ -70,8 +91,7 @@ def require_token(token: str | None) -> str:
         where = "exists but has no NOTION_TOKEN" if os.path.exists(env_path) else "does not exist"
         raise MissingNotionToken(
             f"NOTION_TOKEN not found: {env_path} {where}. "
-            "Run this script from the repo root that holds your .env "
-            "(git worktrees do not copy .env)."
+            "Run from the repo root (or a git worktree of it) whose main checkout holds .env."
         )
     return token
 

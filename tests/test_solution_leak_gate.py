@@ -245,6 +245,8 @@ class IngestFillsSyncFields(unittest.TestCase):
         self.assertEqual((saved["topicCode"], saved["chapterCode"]), ("MTH-T01", "MTH-T01-C12"))
         self.assertEqual(saved["problems"][0]["levelLabel"], "Level 1 - Foundation")
         self.assertEqual(saved["problems"][1]["levelLabel"], "Level 1 - Core Foundations")
+        self.assertNotIn("sessionSummary", saved, "learner progress is not written into drill content")
+        self.assertTrue(all("state" not in p for p in saved["problems"]))
 
 
 if __name__ == "__main__":

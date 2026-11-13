@@ -41,15 +41,19 @@ def test_all_committed_drills_have_no_leaking_hints():
         assert doc == before, f"leaking inputHint in {path}"
 
 
-def test_save_drill_doc_sanitizes_and_writes(tmp_path, monkeypatch):
+def test_save_drill_doc_writes_progress_not_content(tmp_path, monkeypatch):
     import json
 
     from notion_sync.drill_sync import save_drill_doc
 
     monkeypatch.chdir(tmp_path)
+    monkeypatch.delenv("PROGRESS_DIR", raising=False)
     doc = _doc("Type the 3-digit status code (e.g. 401).", ["401"], codeType="predict-output")
     doc.update({"drillId": "DRL-X-01", "unitCode": "PRG-X"})
+    doc["problems"][0].update({"id": "Q01", "state": {"userInput": "401", "score": 1}})
     path = save_drill_doc(doc)
-    saved = json.loads((tmp_path / path).read_text(encoding="utf-8"))
     assert path.endswith("PRG-X/DRL-X-01.json")
-    assert "401" not in saved["problems"][0]["inputHint"]
+    assert not (tmp_path / path).exists(), "drill content must not be written by a save"
+    saved = json.loads((tmp_path / "progress" / "DRL-X-01.json").read_text(encoding="utf-8"))
+    assert saved["problems"][doc["problems"][0]["id"]]["userInput"] == "401"
+    assert "401" not in doc["problems"][0]["inputHint"], "hint still sanitised in memory for Notion"
