@@ -80,7 +80,21 @@
       "cursorUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-01/Q01_sanitizeConfig.js",
       "vscodeUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-01/Q01_sanitizeConfig.js",
       "cursorFolderUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-01",
-      "vscodeFolderUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-01"
+      "vscodeFolderUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-01",
+      "state": {
+        "userInput": "",
+        "userCode": "function sanitizeConfig(rawConfig, schema) {\n  // TODO: implement defensive config sanitization\n  return {};\n}\n\nmodule.exports = { sanitizeConfig };\n",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "mistakeNote": "",
+        "skipped": false,
+        "lastCheck": null,
+        "lastTestReport": null,
+        "attempts": [],
+        "hintsRevealed": 0,
+        "durationMs": 0
+      }
     },
     {
       "id": "Q02",
@@ -160,7 +174,18 @@
       "cursorUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-01/Q02_createCounterRegistry.js",
       "vscodeUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-01/Q02_createCounterRegistry.js",
       "cursorFolderUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-01",
-      "vscodeFolderUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-01"
+      "vscodeFolderUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-01",
+      "state": {
+        "userInput": "",
+        "userCode": "function createCounterRegistry() {\n  // TODO: implement encapsulated metric counter registry\n  return {\n    increment(metric, amount = 1) {},\n    getCount(metric) { return 0; },\n    getSnapshot() { return {}; }\n  };\n}\n\nmodule.exports = { createCounterRegistry };\n",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "mistakeNote": "",
+        "skipped": false,
+        "lastCheck": null,
+        "lastTestReport": null
+      }
     },
     {
       "id": "Q03",
@@ -240,7 +265,18 @@
       "cursorUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-01/Q03_aggregateCategoryRevenue.js",
       "vscodeUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-01/Q03_aggregateCategoryRevenue.js",
       "cursorFolderUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-01",
-      "vscodeFolderUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-01"
+      "vscodeFolderUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-01",
+      "state": {
+        "userInput": "",
+        "userCode": "function aggregateCategoryRevenue(transactions) {\n  // Naive implementation with destructive in-place mutation and sorting\n  transactions.sort((a, b) => a.category.localeCompare(b.category));\n  const revenue = {};\n  for (const tx of transactions) {\n    if (tx.status === 'pending') continue;\n    revenue[tx.category] = (revenue[tx.category] || 0) + tx.amount;\n  }\n  return revenue;\n}\n\nmodule.exports = { aggregateCategoryRevenue };\n",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "mistakeNote": "",
+        "skipped": false,
+        "lastCheck": null,
+        "lastTestReport": null
+      }
     },
     {
       "id": "Q04",
@@ -321,7 +357,18 @@
       "cursorUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-01/Q04_settleAllSettled.js",
       "vscodeUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-01/Q04_settleAllSettled.js",
       "cursorFolderUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-01",
-      "vscodeFolderUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-01"
+      "vscodeFolderUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-01",
+      "state": {
+        "userInput": "",
+        "userCode": "function settleAllSettled(taskFns) {\n  // TODO: implement resilient concurrent promise settlement\n  return Promise.resolve([]);\n}\n\nmodule.exports = { settleAllSettled };\n",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "mistakeNote": "",
+        "skipped": false,
+        "lastCheck": null,
+        "lastTestReport": null
+      }
     },
     {
       "id": "Q05",
@@ -412,7 +459,18 @@
       "cursorUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-01/Q05_createPaymentStateMachine.js",
       "vscodeUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-01/Q05_createPaymentStateMachine.js",
       "cursorFolderUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-01",
-      "vscodeFolderUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-01"
+      "vscodeFolderUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-01",
+      "state": {
+        "userInput": "",
+        "userCode": "function createPaymentStateMachine(options = {}) {\n  // TODO: implement payment transaction state machine\n  return {\n    dispatch(action) {},\n    getState() { return { status: 'INITIAL' }; }\n  };\n}\n\nmodule.exports = { createPaymentStateMachine };\n",
+        "score": null,
+        "divergedStep": null,
+        "mistakes": [],
+        "mistakeNote": "",
+        "skipped": false,
+        "lastCheck": null,
+        "lastTestReport": null
+      }
     }
   ],
   "schemaVersion": "2.0-code",
@@ -434,5 +492,5 @@
     "syncedToNotionAt": null,
     "notionPageId": null
   },
-  "localFilePath": "drills/data/PRG-T00-C02/DRL-PRG-T00-C02-01.json"
+  "localFilePath": "/Users/Joseph/Documents/antigravity/brave-borg/drills/data/PRG-T00-C02/DRL-PRG-T00-C02-01.json"
 }
