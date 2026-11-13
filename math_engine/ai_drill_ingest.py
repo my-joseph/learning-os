@@ -13,10 +13,10 @@ import os
 import re
 from typing import Any, Dict, List, Optional
 
-from math_engine.figure_autofill import autofill_problem_figure, archetype_requires_figure
+from math_engine.answer_check import CHECKERS, check_answer, is_equal, to_expr
+from math_engine.figure_autofill import archetype_requires_figure, autofill_problem_figure
 from math_engine.generate import next_drill_id
 from math_engine.verify import verify_problem
-from math_engine.answer_check import check_answer, CHECKERS, to_expr, is_equal
 from quality_rules import QUALITY_RULES
 
 VAULT_DIR = os.path.join(os.path.dirname(__file__), "reasoning_vault")
@@ -24,6 +24,7 @@ VAULT_DIR = os.path.join(os.path.dirname(__file__), "reasoning_vault")
 
 class AiContractError(Exception):
     """Raised when an AI-generated problem violates Contract 07 §4 or 00_core §6."""
+
     pass
 
 
@@ -112,9 +113,9 @@ def _is_numeric_computation(expr: str) -> bool:
     s = s.strip()
     # an operator between operands, or implicit multiplication like 2(14) / (a)(b)
     has_frac = r"\frac" in expr
-    return (has_frac or bool(re.search(r"\d\s*[-+*/^]|[)}]\s*[-+*/^(]|\d\s*\(|[-+*/^]\s*[\d({]", s))) and not re.fullmatch(
-        r"[-+]?\s*\d+(?:\.\d+)?", s
-    )
+    return (
+        has_frac or bool(re.search(r"\d\s*[-+*/^]|[)}]\s*[-+*/^(]|\d\s*\(|[-+*/^]\s*[\d({]", s))
+    ) and not re.fullmatch(r"[-+]?\s*\d+(?:\.\d+)?", s)
 
 
 def _numeric_sides(expr: str) -> List[str]:
@@ -233,18 +234,14 @@ def validate_ai_problem_contract(prob: Dict[str, Any], enforce_leak_gate: bool =
     known_vals = list(givens_floats.values()) + list(constant_floats.values())
     for p_num in prompt_numbers:
         if not any(abs(p_num - g_val) < 1e-6 for g_val in known_vals):
-            raise AiContractError(
-                f"[{pid}] Number '{p_num}' in prompt is not defined in givens ({givens})"
-            )
+            raise AiContractError(f"[{pid}] Number '{p_num}' in prompt is not defined in givens ({givens})")
 
     # Backward: every given must appear in prompt. Exponents count here ($2^3$ states the 3),
     # otherwise the AI is pushed to re-list them ("with first exponent 3 ...").
     prompt_numbers_all = normalize_prompt_numbers(prompt, keep_exponents=True)
     for g_key, g_val in givens_floats.items():
         if not any(abs(g_val - p_num) < 1e-6 for p_num in prompt_numbers_all):
-            raise AiContractError(
-                f"[{pid}] Given '{g_key}={g_val}' does not appear in prompt: '{prompt}'"
-            )
+            raise AiContractError(f"[{pid}] Given '{g_key}={g_val}' does not appear in prompt: '{prompt}'")
 
     # 4. Trap derivation integrity via Safe Parser (to_expr + is_equal)
     td = prob.get("trapDerivation")
@@ -259,9 +256,7 @@ def validate_ai_problem_contract(prob: Dict[str, Any], enforce_leak_gate: bool =
     td_expr = to_expr(str(td), variables=vars_list, trusted=True)
     tv_expr = to_expr(str(tv), variables=vars_list, trusted=True)
     if not is_equal(td_expr, tv_expr, variables=vars_list):
-        raise AiContractError(
-            f"[{pid}] trapDerivation '{td}' evaluates to {td_expr} != trapValue '{tv}' ({tv_expr})"
-        )
+        raise AiContractError(f"[{pid}] trapDerivation '{td}' evaluates to {td_expr} != trapValue '{tv}' ({tv_expr})")
 
     # Check that at least 2 distinct givens appear in trapDerivation
     td_tokens = re.findall(r"\b\d+(?:\.\d+)?\b", str(td))
@@ -302,11 +297,7 @@ def validate_ai_problem_contract(prob: Dict[str, Any], enforce_leak_gate: bool =
             if isinstance(tv, (list, tuple)):
                 trap_spec["values"] = list(tv)
             elif isinstance(tv, str):
-                parts = [
-                    p.strip()
-                    for p in re.sub(r"^\s*[\(\[\{<]|[\)\]\}>]\s*$", "", tv).split(",")
-                    if p.strip()
-                ]
+                parts = [p.strip() for p in re.sub(r"^\s*[\(\[\{<]|[\)\]\}>]\s*$", "", tv).split(",") if p.strip()]
                 trap_spec["values"] = parts
             else:
                 trap_spec["values"] = [tv]
@@ -336,17 +327,29 @@ def validate_ai_problem_contract(prob: Dict[str, Any], enforce_leak_gate: bool =
         if field in prob and isinstance(prob[field], str):
             prob[field] = heal_latex_string(prob[field])
             if re.search(r"[\x0c\r\x08\x0b]", prob[field]):
-                raise AiContractError(f"[{pid}] LaTeX field '{field}' contains invalid control characters: {repr(prob[field])}")
-            if re.search(r"(?:^|(?<=[\s({\[]))rac\{", prob[field]) or re.search(r"(?:^|(?<=[\s({\[]))ight[)\]}]", prob[field]):
-                raise AiContractError(f"[{pid}] LaTeX field '{field}' contains corrupted LaTeX macros: {repr(prob[field])}")
+                raise AiContractError(
+                    f"[{pid}] LaTeX field '{field}' contains invalid control characters: {repr(prob[field])}"
+                )
+            if re.search(r"(?:^|(?<=[\s({\[]))rac\{", prob[field]) or re.search(
+                r"(?:^|(?<=[\s({\[]))ight[)\]}]", prob[field]
+            ):
+                raise AiContractError(
+                    f"[{pid}] LaTeX field '{field}' contains corrupted LaTeX macros: {repr(prob[field])}"
+                )
 
     for s_idx, st in enumerate(prob.get("steps", [])):
         if "latex" in st and isinstance(st["latex"], str):
             st["latex"] = heal_latex_string(st["latex"])
             if re.search(r"[\x0c\r\x08\x0b]", st["latex"]):
-                raise AiContractError(f"[{pid}] Step {s_idx + 1} 'latex' contains invalid control characters: {repr(st['latex'])}")
-            if re.search(r"(?:^|(?<=[\s({\[]))rac\{", st["latex"]) or re.search(r"(?:^|(?<=[\s({\[]))ight[)\]}]", st["latex"]):
-                raise AiContractError(f"[{pid}] Step {s_idx + 1} 'latex' contains corrupted LaTeX macros: {repr(st['latex'])}")
+                raise AiContractError(
+                    f"[{pid}] Step {s_idx + 1} 'latex' contains invalid control characters: {repr(st['latex'])}"
+                )
+            if re.search(r"(?:^|(?<=[\s({\[]))rac\{", st["latex"]) or re.search(
+                r"(?:^|(?<=[\s({\[]))ight[)\]}]", st["latex"]
+            ):
+                raise AiContractError(
+                    f"[{pid}] Step {s_idx + 1} 'latex' contains corrupted LaTeX macros: {repr(st['latex'])}"
+                )
 
     # 9. Granular Step-by-Step Derivation Standard (00_core §7, 03_stem §1, 06 §2.1)
     steps = prob.get("steps", [])
@@ -424,18 +427,14 @@ def load_reasoning_vault(unit_code: str, vault_dir: Optional[str] = None) -> Dic
     return {"unitCode": unit_code, "archetypes": []}
 
 
-def save_reasoning_vault(
-    unit_code: str, vault_data: Dict[str, Any], vault_dir: Optional[str] = None
-) -> str:
+def save_reasoning_vault(unit_code: str, vault_data: Dict[str, Any], vault_dir: Optional[str] = None) -> str:
     path = get_vault_path(unit_code, vault_dir=vault_dir)
     with open(path, "w", encoding="utf-8") as f:
         json.dump(vault_data, f, indent=2, ensure_ascii=False)
     return path
 
 
-def register_archetype(
-    unit_code: str, archetype: Dict[str, Any], vault_dir: Optional[str] = None
-) -> Dict[str, Any]:
+def register_archetype(unit_code: str, archetype: Dict[str, Any], vault_dir: Optional[str] = None) -> Dict[str, Any]:
     """Adds or updates a reasoning archetype in the unit's Reasoning Vault."""
     vault = load_reasoning_vault(unit_code, vault_dir=vault_dir)
     archetypes = vault.get("archetypes", [])
@@ -460,9 +459,7 @@ def register_archetype(
     return archetype
 
 
-def mark_context_used(
-    unit_code: str, archetype_key: str, context_tag: str, vault_dir: Optional[str] = None
-) -> None:
+def mark_context_used(unit_code: str, archetype_key: str, context_tag: str, vault_dir: Optional[str] = None) -> None:
     """Marks a context domain as used so future AI generations rotate to fresh domains."""
     vault = load_reasoning_vault(unit_code, vault_dir=vault_dir)
     for a in vault.get("archetypes", []):
@@ -522,11 +519,13 @@ def ingest_ai_drill(
                 title = entry.get("title", ref) if isinstance(entry, dict) else ref
                 raw_id = (entry.get("id", "") if isinstance(entry, dict) else str(entry)).replace("-", "")
                 notion_url = f"https://www.notion.so/{raw_id}" if raw_id else None
-                badges.append({
-                    "code": ref,
-                    "title": title,
-                    "notionUrl": notion_url,
-                })
+                badges.append(
+                    {
+                        "code": ref,
+                        "title": title,
+                        "notionUrl": notion_url,
+                    }
+                )
             prob["referenceBadges"] = badges
 
         # Rule 11: auto-attach parametric figure from vault archetype `figureBuilders` (03_stem §3)
@@ -562,9 +561,7 @@ def ingest_ai_drill(
 
     drill_doc["schemaVersion"] = drill_doc.get("schemaVersion", "2.0-math")
     drill_doc["subject"] = drill_doc.get("subject", "MATH")
-    drill_doc["createdAt"] = drill_doc.get(
-        "createdAt", datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    )
+    drill_doc["createdAt"] = drill_doc.get("createdAt", datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
     if "sourceAttribution" in drill_doc:
         drill_doc["sourceAttribution"] = drill_doc["sourceAttribution"]
     drill_doc["config"] = drill_doc.get(

@@ -5,7 +5,9 @@ Chapter: PRG-T01-C01 (Scope, Closures, this, Prototypes, Modules, Promises, Even
 
 All templates are executed and verified against a live Node.js subprocess before being accepted.
 """
+
 import random
+
 from code_engine.verify import run_node
 
 TITLE = "JavaScript Deep Dive"
@@ -101,20 +103,15 @@ def build_scope_hoisting_loop(rng: random.Random, form: str | None = None) -> di
     lines = stdout.splitlines()
     answer_plain = ", ".join(lines)
 
-    step1_explain = (
-        f"The loop declares the iterator variable using '{var_keyword}'. "
-        + (
-            f"Because 'var' is function-scoped (or global), only a single binding of 'i' exists. "
-            f"When the loop finishes, 'i' holds the terminal value {n}."
-            if use_var
-            else f"Because 'let' is block-scoped, a new lexical environment binding for 'i' is created for every loop iteration, "
-            f"capturing the specific value (0 through {n - 1}) in each closure."
-        )
+    step1_explain = f"The loop declares the iterator variable using '{var_keyword}'. " + (
+        f"Because 'var' is function-scoped (or global), only a single binding of 'i' exists. "
+        f"When the loop finishes, 'i' holds the terminal value {n}."
+        if use_var
+        else f"Because 'let' is block-scoped, a new lexical environment binding for 'i' is created for every loop iteration, "
+        f"capturing the specific value (0 through {n - 1}) in each closure."
     )
 
-    step2_explain = (
-        f"Executing funcs[{idx_a}]() yields {lines[0]}, and funcs[{idx_b}]() yields {lines[1]}."
-    )
+    step2_explain = f"Executing funcs[{idx_a}]() yields {lines[0]}, and funcs[{idx_b}]() yields {lines[1]}."
 
     trap_val = f"{idx_a}, {idx_b}" if use_var else f"{n}, {n}"
     trap_tag = "var-vs-let-scope" if var_keyword == "var" else "let-closure-shadowing"
@@ -124,8 +121,8 @@ def build_scope_hoisting_loop(rng: random.Random, form: str | None = None) -> di
         "category": "Scope and Closures",
         "context": f"Variable Scope ({var_keyword})",
         "prompt": (
-            f"Predict the exact terminal output when the following JavaScript snippet executes. "
-            f"Note the variable declaration used in the loop header."
+            "Predict the exact terminal output when the following JavaScript snippet executes. "
+            "Note the variable declaration used in the loop header."
         ),
         "codeSnippet": code,
         "language": "javascript",
@@ -298,8 +295,7 @@ def build_promise_async_flow(rng: random.Random, form: str | None = None) -> dic
         "category": "Promises and Error Handling",
         "context": "Promise Rejection Recovery",
         "prompt": (
-            "Analyze the asynchronous execution flow below. "
-            "Predict the single integer printed to the terminal."
+            "Analyze the asynchronous execution flow below. Predict the single integer printed to the terminal."
         ),
         "codeSnippet": code,
         "language": "javascript",
@@ -313,9 +309,7 @@ def build_promise_async_flow(rng: random.Random, form: str | None = None) -> dic
         "answerPlain": answer_plain,
         "answerDisplay": answer_plain,
         "inputHint": "e.g. 42 (enter the resulting output)",
-        "checkpointHint": (
-            "Check whether the async function throws or returns, and whether .catch handles it."
-        ),
+        "checkpointHint": ("Check whether the async function throws or returns, and whether .catch handles it."),
         "commonTrapTag": trap_tag,
         "steps": [
             {
@@ -501,9 +495,7 @@ def build_prototype_chain_mutation(rng: random.Random, form: str | None = None) 
             },
             {
                 "latex": f"\\text{{Own Property Read: }} \\text{{child.config}} = {lines[2]}",
-                "explain": (
-                    f"Reading child.config retrieves its own shadowed property, evaluating to {lines[2]}."
-                ),
+                "explain": (f"Reading child.config retrieves its own shadowed property, evaluating to {lines[2]}."),
             },
         ],
         "references": ["PRG-T01-C01-U04", "PRG-T01-C01-U01"],

@@ -1,22 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Math Practice Player Server & Notion Auto-Sync Bridge (http://localhost:8765)
-- Serves the single-instance Math Practice Player at http://localhost:8765/
-- GET  /api/drills          -> Lists all .json drill sets under drills/data/<UNIT>/<DRILL_ID>.json
-- GET  /api/drill?id=...    -> Returns the full .json drill document
-- POST /api/generate-drill  -> Runs Pre-Generation Config -> verified .json via math_engine.generate
-- POST /api/check-answer    -> Runs flexible SymPy answer checker via math_engine.answer_check
-- POST /api/save-state      -> Persists in-progress user state into the drill's .json file
-- POST /api/sync-notion     -> Saves .json AND syncs score, mistake tags, diverged steps, and verified
-                               problem toggles to Notion ('Learning Practice & Drills' + Unit Mistake Log)
+Drill persistence + Notion sync (used by practice-studio's /api/sync-notion route).
+
+- validate_and_sanitize_drill_doc: zero-leak guard for inputHint (rules/00_core.md section 6)
+- save_drill_doc: validate, then write drills/data/<UNIT>/<DRILL_ID>.json
+- sync_drill_to_notion: save, then sync score/mistakes/steps to Notion ('Learning Practice & Drills')
+
+Extracted from the retired practice_hub.py (P4). Run from the repo root (relative paths).
 """
-import glob
+
 import json
 import os
 import re
-import urllib.parse
-from http.server import HTTPServer, SimpleHTTPRequestHandler
 
 from apply_rules_and_test_pages import (
     bullet,
@@ -25,55 +21,15 @@ from apply_rules_and_test_pages import (
     divider_block,
     eq_block,
     h2,
-    load_env,
-    notion_request,
     p_block,
     replace_page_blocks,
     toggle_block,
 )
-try:
-    from math_engine.answer_check import check_answer
-except ImportError:
-    check_answer = None
-
-try:
-    from math_engine.generate import generate_drill_set
-except ImportError:
-    generate_drill_set = None
-
-PORT = 8765
+from notion_client import load_env, notion_request
 
 
 def get_data_root() -> str:
     return os.environ.get("DRILLS_DATA_DIR", "drills/data")
-
-
-def find_drill_file(drill_id: str):
-    pattern = os.path.join(get_data_root(), "*", f"{drill_id}.json")
-    matches = glob.glob(pattern)
-    return matches[0] if matches else None
-
-
-def list_all_drills():
-    files = glob.glob(os.path.join(get_data_root(), "*", "DRL-*.json"))
-    items = []
-    for path in files:
-        try:
-            with open(path, "r", encoding="utf-8") as f:
-                doc = json.load(f)
-            items.append({
-                "drillId": doc.get("drillId"),
-                "unitCode": doc.get("unitCode"),
-                "unitTitle": doc.get("unitTitle"),
-                "createdAt": doc.get("createdAt", ""),
-                "questionCount": doc.get("config", {}).get("questionCount", len(doc.get("problems", []))),
-                "difficultyMode": doc.get("config", {}).get("difficultyMode", "Mixed Exam Mode"),
-                "localFilePath": path,
-            })
-        except Exception:
-            continue
-    items.sort(key=lambda x: (x["createdAt"], x["drillId"]), reverse=True)
-    return items
 
 
 def validate_and_sanitize_drill_doc(drill_doc: dict) -> None:
@@ -110,7 +66,7 @@ def validate_and_sanitize_drill_doc(drill_doc: dict) -> None:
                         p["inputHint"] = "Type final answer..."
 
 
-def save_drill_doc(drill_doc: dict):
+def save_drill_doc(drill_doc: dict) -> str:
     drill_id = drill_doc.get("drillId")
     if not drill_id:
         raise ValueError("Missing drillId")
@@ -182,7 +138,9 @@ def _sync_drill_to_notion_inner(drill_doc: dict, path: str) -> dict:
         "Practice Status": {"select": {"name": status}},
         "Score": {"number": score},
         "Max Score": {"number": max_score},
-        "Mistake Categories": {"multi_select": [{"name": tag.replace(",", " /")[:100].strip()} for tag in mistake_cats]},
+        "Mistake Categories": {
+            "multi_select": [{"name": tag.replace(",", " /")[:100].strip()} for tag in mistake_cats]
+        },
         "Diverged Steps Summary": {"rich_text": [{"type": "text", "text": {"content": diverged_summary[:1900]}}]},
         "Local File Path": {"rich_text": [{"type": "text", "text": {"content": path}}]},
     }
@@ -219,17 +177,24 @@ def _sync_drill_to_notion_inner(drill_doc: dict, path: str) -> dict:
 
     # Extract Focus & Trap badges
     mistake_tags = drill_doc.get("mistakeTags", [])
-    trap_bullets = [
-        bullet(f"**Trap:** `{tag.get('name', tag.get('id'))}` — {tag.get('label', '')}", id_map)
-        for tag in mistake_tags[:4]
-    ] if mistake_tags else [bullet("Enforce fundamental invariants and verify step-by-step logic.", id_map)]
+    trap_bullets = (
+        [
+            bullet(f"**Trap:** `{tag.get('name', tag.get('id'))}` — {tag.get('label', '')}", id_map)
+            for tag in mistake_tags[:4]
+        ]
+        if mistake_tags
+        else [bullet("Enforce fundamental invariants and verify step-by-step logic.", id_map)]
+    )
 
     skipped_count = int(summary.get("skippedCount", sum(1 for p in problems if p.get("state", {}).get("skipped"))))
-    skipped_problems = summary.get("skippedProblems", [f"{p['id']} ({p.get('context') or p.get('category')})" for p in problems if p.get("state", {}).get("skipped")])
+    skipped_problems = summary.get(
+        "skippedProblems",
+        [f"{p['id']} ({p.get('context') or p.get('category')})" for p in problems if p.get("state", {}).get("skipped")],
+    )
 
     skipped_str = f" | **Concept Gaps (Skipped):** `{skipped_count}`" if skipped_count > 0 else ""
     status_badge = (
-        f"**Session Score:** `{score}/{max_score}` ({round((score/max_score)*100, 1)}%) — Status: **{status}**{skipped_str}"
+        f"**Session Score:** `{score}/{max_score}` ({round((score / max_score) * 100, 1)}%) — Status: **{status}**{skipped_str}"
         if attempt_date or status != "Ready"
         else "**Session Status:** `Ready for Practice` — Awaiting learner attempt in Practice Studio / Terminal."
     )
@@ -249,29 +214,40 @@ def _sync_drill_to_notion_inner(drill_doc: dict, path: str) -> dict:
             f"Solve each problem independently before consulting the step-by-step verification toggles below.",
             id_map,
         ),
-        bullet("**Core Objectives:**", id_map, children=[
-            bullet(f"Verify and solidify understanding of `{unit_title}`.", id_map),
-            bullet(f"Solve all {q_count} questions adhering to exact formula and invariant boundaries.", id_map),
-        ]),
+        bullet(
+            "**Core Objectives:**",
+            id_map,
+            children=[
+                bullet(f"Verify and solidify understanding of `{unit_title}`.", id_map),
+                bullet(f"Solve all {q_count} questions adhering to exact formula and invariant boundaries.", id_map),
+            ],
+        ),
         bullet("**Common Traps & Invariant Guardrails:**", id_map, children=trap_bullets),
     ]
 
     if skipped_count > 0:
-        blocks.append(callout_block(
-            f"**Review Priority (Concept Gaps):** The learner skipped {skipped_count} questions without guessing: "
-            + ", ".join(skipped_problems) + ". Prioritize these topics during the next Spaced Review.",
-            id_map,
-            color="orange_background",
-        ))
+        blocks.append(
+            callout_block(
+                f"**Review Priority (Concept Gaps):** The learner skipped {skipped_count} questions without guessing: "
+                + ", ".join(skipped_problems)
+                + ". Prioritize these topics during the next Spaced Review.",
+                id_map,
+                color="orange_background",
+            )
+        )
 
-    blocks.extend([
-        divider_block(),
-        h2("2. Question Inventory & Step-by-Step Solutions", id_map),
-    ])
+    blocks.extend(
+        [
+            divider_block(),
+            h2("2. Question Inventory & Step-by-Step Solutions", id_map),
+        ]
+    )
 
     for p in problems:
         ref_str = " ".join(f"([[{r}]])" for r in p.get("references", []) if r in id_map)
-        header_line = f"**{p['id']} ({p['levelLabel']} — {p['category']}):** {p['prompt']}" + (f" {ref_str}" if ref_str else "")
+        header_line = f"**{p['id']} ({p['levelLabel']} — {p['category']}):** {p['prompt']}" + (
+            f" {ref_str}" if ref_str else ""
+        )
         children = []
 
         if p.get("codeSnippet"):
@@ -281,8 +257,7 @@ def _sync_drill_to_notion_inner(drill_doc: dict, path: str) -> dict:
 
         if p.get("answerSpec", {}).get("type") == "choice" and p.get("answerSpec", {}).get("options"):
             opt_bullets = [
-                bullet(f"**Option {opt['id']}:** {opt['label']}", id_map)
-                for opt in p["answerSpec"]["options"]
+                bullet(f"**Option {opt['id']}:** {opt['label']}", id_map) for opt in p["answerSpec"]["options"]
             ]
             children.append(bullet("**Multiple Choice Options:**", id_map, children=opt_bullets))
 
@@ -371,75 +346,3 @@ def sync_drill_to_notion(drill_doc: dict) -> dict:
             "degraded": True,
             "warning": f"Notion sync degraded gracefully: {err}",
         }
-
-
-class MathPlayerHandler(SimpleHTTPRequestHandler):
-    def end_headers(self):
-        self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type")
-        super().end_headers()
-
-    def do_OPTIONS(self):
-        self.send_response(200)
-        self.end_headers()
-
-    def _send_json(self, code: int, obj: dict):
-        body = json.dumps(obj, ensure_ascii=False).encode("utf-8")
-        self.send_response(code)
-        self.send_header("Content-Type", "application/json; charset=utf-8")
-        self.end_headers()
-        self.wfile.write(body)
-
-    def do_GET(self):
-        parsed = urllib.parse.urlparse(self.path)
-        if parsed.path in ("/", "/index.html"):
-            self.path = "/web/index.html"
-            return super().do_GET()
-        if parsed.path == "/api/drills":
-            return self._send_json(200, {"drills": list_all_drills()})
-        if parsed.path == "/api/drill":
-            qs = urllib.parse.parse_qs(parsed.query)
-            drill_id = (qs.get("id") or [""])[0]
-            fpath = find_drill_file(drill_id)
-            if not fpath:
-                return self._send_json(404, {"error": f"Drill {drill_id} not found"})
-            with open(fpath, "r", encoding="utf-8") as f:
-                return self._send_json(200, json.load(f))
-        return super().do_GET()
-
-    def do_POST(self):
-        length = int(self.headers.get("Content-Length", "0"))
-        raw = self.rfile.read(length).decode("utf-8") if length > 0 else "{}"
-        try:
-            payload = json.loads(raw)
-        except Exception:
-            return self._send_json(400, {"ok": False, "error": "Invalid JSON"})
-
-        try:
-            if self.path == "/api/check-answer":
-                res = check_answer(payload.get("answerSpec", {}), payload.get("input", ""))
-                return self._send_json(200, res)
-            if self.path == "/api/generate-drill":
-                doc = generate_drill_set(
-                    unit_code=payload.get("unitCode", "MTH-T02-C01-U01"),
-                    count=int(payload.get("count", 5)),
-                    difficulty=payload.get("difficulty", "ALL"),
-                )
-                return self._send_json(200, {"ok": True, "drillId": doc["drillId"], "localFilePath": doc["localFilePath"]})
-            if self.path == "/api/save-state":
-                path = save_drill_doc(payload)
-                return self._send_json(200, {"ok": True, "localFilePath": path})
-            if self.path == "/api/sync-notion":
-                res = sync_drill_to_notion(payload)
-                return self._send_json(200, res)
-            return self._send_json(404, {"ok": False, "error": "Unknown endpoint"})
-        except Exception as e:
-            return self._send_json(500, {"ok": False, "error": str(e)})
-
-
-if __name__ == "__main__":
-    os.chdir(os.path.dirname(os.path.abspath(__file__)))
-    server = HTTPServer(("127.0.0.1", PORT), MathPlayerHandler)
-    print(f"Math Practice Player running at http://localhost:{PORT}")
-    server.serve_forever()

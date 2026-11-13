@@ -222,32 +222,38 @@ def build_isosceles_triangle_visual(
     ]
 
     if apex_angle is not None:
-        elements.append({
-            "type": "angle-arc",
-            "center": p_top,
-            "radius": 24,
-            "startAngle": 245,
-            "endAngle": 295,
-            "label": f"{apex_angle:g}°",
-        })
+        elements.append(
+            {
+                "type": "angle-arc",
+                "center": p_top,
+                "radius": 24,
+                "startAngle": 245,
+                "endAngle": 295,
+                "label": f"{apex_angle:g}°",
+            }
+        )
 
     if base_angle is not None:
-        elements.append({
-            "type": "angle-arc",
-            "center": p_bl,
-            "radius": 26,
-            "startAngle": 0,
-            "endAngle": 50,
-            "label": f"{base_angle:g}°",
-        })
-        elements.append({
-            "type": "angle-arc",
-            "center": p_br,
-            "radius": 26,
-            "startAngle": 130,
-            "endAngle": 180,
-            "label": f"{base_angle:g}°",
-        })
+        elements.append(
+            {
+                "type": "angle-arc",
+                "center": p_bl,
+                "radius": 26,
+                "startAngle": 0,
+                "endAngle": 50,
+                "label": f"{base_angle:g}°",
+            }
+        )
+        elements.append(
+            {
+                "type": "angle-arc",
+                "center": p_br,
+                "radius": 26,
+                "startAngle": 130,
+                "endAngle": 180,
+                "label": f"{base_angle:g}°",
+            }
+        )
 
     return {
         "type": "geometry-2d",
@@ -354,7 +360,7 @@ def build_circle_visual(
     r_px = 65
 
     lbl_r = label_r or f"r = {radius:g}"
-    lbl_d = label_d or (f"d = {diameter:g}" if diameter else f"d = {2*radius:g}")
+    lbl_d = label_d or (f"d = {diameter:g}" if diameter else f"d = {2 * radius:g}")
 
     elements = [
         {
@@ -375,61 +381,75 @@ def build_circle_visual(
 
     if is_annulus and inner_radius:
         inner_r_px = max(20, int(r_px * (inner_radius / radius)))
-        elements.append({
-            "type": "circle",
-            "center": [cx, cy],
-            "radius": inner_r_px,
-            "stroke": "#f59e0b",
-            "fill": "#ffffff",
-            "strokeWidth": 2,
-        })
-        elements.append({
-            "type": "dimension-label",
-            "start": [cx, cy],
-            "end": [cx + inner_r_px, cy],
-            "label": f"r_in = {inner_radius:g}",
-            "position": "top",
-            "offset": 8,
-        })
-        elements.append({
-            "type": "dimension-label",
-            "start": [cx, cy],
-            "end": [cx, cy - r_px],
-            "label": f"R = {radius:g}",
-            "position": "left",
-            "offset": 8,
-        })
+        elements.append(
+            {
+                "type": "circle",
+                "center": [cx, cy],
+                "radius": inner_r_px,
+                "stroke": "#f59e0b",
+                "fill": "#ffffff",
+                "strokeWidth": 2,
+            }
+        )
+        elements.append(
+            {
+                "type": "dimension-label",
+                "start": [cx, cy],
+                "end": [cx + inner_r_px, cy],
+                "label": f"r_in = {inner_radius:g}",
+                "position": "top",
+                "offset": 8,
+            }
+        )
+        elements.append(
+            {
+                "type": "dimension-label",
+                "start": [cx, cy],
+                "end": [cx, cy - r_px],
+                "label": f"R = {radius:g}",
+                "position": "left",
+                "offset": 8,
+            }
+        )
     elif show_diameter:
-        elements.append({
-            "type": "line",
-            "points": [[cx - r_px, cy], [cx + r_px, cy]],
-            "stroke": th["primary"],
-            "strokeWidth": 2,
-            "strokeDasharray": "3 3",
-        })
-        elements.append({
-            "type": "dimension-label",
-            "start": [cx - r_px, cy],
-            "end": [cx + r_px, cy],
-            "label": lbl_d,
-            "position": "bottom",
-            "offset": 12,
-        })
+        elements.append(
+            {
+                "type": "line",
+                "points": [[cx - r_px, cy], [cx + r_px, cy]],
+                "stroke": th["primary"],
+                "strokeWidth": 2,
+                "strokeDasharray": "3 3",
+            }
+        )
+        elements.append(
+            {
+                "type": "dimension-label",
+                "start": [cx - r_px, cy],
+                "end": [cx + r_px, cy],
+                "label": lbl_d,
+                "position": "bottom",
+                "offset": 12,
+            }
+        )
     else:
-        elements.append({
-            "type": "line",
-            "points": [[cx, cy], [cx + r_px, cy]],
-            "stroke": th["primary"],
-            "strokeWidth": 2.5,
-        })
-        elements.append({
-            "type": "dimension-label",
-            "start": [cx, cy],
-            "end": [cx + r_px, cy],
-            "label": lbl_r,
-            "position": "top",
-            "offset": 10,
-        })
+        elements.append(
+            {
+                "type": "line",
+                "points": [[cx, cy], [cx + r_px, cy]],
+                "stroke": th["primary"],
+                "strokeWidth": 2.5,
+            }
+        )
+        elements.append(
+            {
+                "type": "dimension-label",
+                "start": [cx, cy],
+                "end": [cx + r_px, cy],
+                "label": lbl_r,
+                "position": "top",
+                "offset": 10,
+            }
+        )
 
     return {
         "type": "geometry-2d",
@@ -525,7 +545,7 @@ def build_box3d_visual(
     vw, vh = 320, 200
     ox, oy = 70, 160
     fw, fh = 140, 80  # front face
-    dx, dy = 50, -35   # depth offset
+    dx, dy = 50, -35  # depth offset
 
     # Front face
     p0 = [ox, oy]
@@ -552,11 +572,29 @@ def build_box3d_visual(
             {"type": "line", "points": [p4, p5], "stroke": "#94a3b8", "strokeWidth": 1.5, "strokeDasharray": "3 3"},
             {"type": "line", "points": [p4, p7], "stroke": "#94a3b8", "strokeWidth": 1.5, "strokeDasharray": "3 3"},
             # Top face
-            {"type": "polygon", "points": [p3, p2, p6, p7], "stroke": th["stroke"], "fill": "rgba(59, 130, 246, 0.12)", "strokeWidth": 2},
+            {
+                "type": "polygon",
+                "points": [p3, p2, p6, p7],
+                "stroke": th["stroke"],
+                "fill": "rgba(59, 130, 246, 0.12)",
+                "strokeWidth": 2,
+            },
             # Side face
-            {"type": "polygon", "points": [p1, p5, p6, p2], "stroke": th["stroke"], "fill": "rgba(59, 130, 246, 0.06)", "strokeWidth": 2},
+            {
+                "type": "polygon",
+                "points": [p1, p5, p6, p2],
+                "stroke": th["stroke"],
+                "fill": "rgba(59, 130, 246, 0.06)",
+                "strokeWidth": 2,
+            },
             # Front face
-            {"type": "polygon", "points": [p0, p1, p2, p3], "stroke": th["stroke"], "fill": th["fill"], "strokeWidth": 2.5},
+            {
+                "type": "polygon",
+                "points": [p0, p1, p2, p3],
+                "stroke": th["stroke"],
+                "fill": th["fill"],
+                "strokeWidth": 2.5,
+            },
             # Dimension labels
             {"type": "dimension-label", "start": p0, "end": p1, "label": lbl_l, "position": "bottom", "offset": 14},
             {"type": "dimension-label", "start": p3, "end": p0, "label": lbl_h, "position": "left", "offset": 12},
@@ -582,15 +620,31 @@ def build_angles_visual(
     if relation == "transversal":
         # Two horizontal parallel lines cut by diagonal transversal
         y1, y2 = 70, 140
-        elements.extend([
-            {"type": "line", "points": [[30, y1], [290, y1]], "stroke": "#475569", "strokeWidth": 2.5},
-            {"type": "line", "points": [[30, y2], [290, y2]], "stroke": "#475569", "strokeWidth": 2.5},
-            {"type": "line", "points": [[70, 180], [250, 30]], "stroke": th["primary"], "strokeWidth": 3},
-            {"type": "angle-arc", "center": [130, y2], "radius": 24, "startAngle": 0, "endAngle": 40, "label": f"{angle1:g}°"},
-            {"type": "angle-arc", "center": [190, y1], "radius": 24, "startAngle": 180, "endAngle": 220, "label": f"{angle2:g}°"},
-            {"type": "text", "x": 280, "y": y1 - 8, "label": "L₁", "color": "#64748b"},
-            {"type": "text", "x": 280, "y": y2 - 8, "label": "L₂", "color": "#64748b"},
-        ])
+        elements.extend(
+            [
+                {"type": "line", "points": [[30, y1], [290, y1]], "stroke": "#475569", "strokeWidth": 2.5},
+                {"type": "line", "points": [[30, y2], [290, y2]], "stroke": "#475569", "strokeWidth": 2.5},
+                {"type": "line", "points": [[70, 180], [250, 30]], "stroke": th["primary"], "strokeWidth": 3},
+                {
+                    "type": "angle-arc",
+                    "center": [130, y2],
+                    "radius": 24,
+                    "startAngle": 0,
+                    "endAngle": 40,
+                    "label": f"{angle1:g}°",
+                },
+                {
+                    "type": "angle-arc",
+                    "center": [190, y1],
+                    "radius": 24,
+                    "startAngle": 180,
+                    "endAngle": 220,
+                    "label": f"{angle2:g}°",
+                },
+                {"type": "text", "x": 280, "y": y1 - 8, "label": "L₁", "color": "#64748b"},
+                {"type": "text", "x": 280, "y": y2 - 8, "label": "L₂", "color": "#64748b"},
+            ]
+        )
     elif relation == "supplementary":
         # Straight line with dividing ray
         ox, oy = 160, 150
@@ -598,27 +652,75 @@ def build_angles_visual(
         ray_x = ox + r_ray * math.cos(rad1)
         ray_y = oy - r_ray * math.sin(rad1)
 
-        elements.extend([
-            {"type": "line", "points": [[40, oy], [280, oy]], "stroke": "#475569", "strokeWidth": 2.5},
-            {"type": "line", "points": [[ox, oy], [round(ray_x, 1), round(ray_y, 1)]], "stroke": th["primary"], "strokeWidth": 3},
-            {"type": "point", "coord": [ox, oy], "label": "O", "color": "#1e293b"},
-            {"type": "angle-arc", "center": [ox, oy], "radius": 32, "startAngle": 0, "endAngle": angle1, "label": f"{angle1:g}°"},
-            {"type": "angle-arc", "center": [ox, oy], "radius": 46, "startAngle": angle1, "endAngle": 180, "label": f"{angle2:g}°"},
-        ])
+        elements.extend(
+            [
+                {"type": "line", "points": [[40, oy], [280, oy]], "stroke": "#475569", "strokeWidth": 2.5},
+                {
+                    "type": "line",
+                    "points": [[ox, oy], [round(ray_x, 1), round(ray_y, 1)]],
+                    "stroke": th["primary"],
+                    "strokeWidth": 3,
+                },
+                {"type": "point", "coord": [ox, oy], "label": "O", "color": "#1e293b"},
+                {
+                    "type": "angle-arc",
+                    "center": [ox, oy],
+                    "radius": 32,
+                    "startAngle": 0,
+                    "endAngle": angle1,
+                    "label": f"{angle1:g}°",
+                },
+                {
+                    "type": "angle-arc",
+                    "center": [ox, oy],
+                    "radius": 46,
+                    "startAngle": angle1,
+                    "endAngle": 180,
+                    "label": f"{angle2:g}°",
+                },
+            ]
+        )
     else:
         # Complementary (90 deg corner)
         rad1 = math.radians(angle1)
         ray_x = ox + r_ray * math.cos(rad1)
         ray_y = oy - r_ray * math.sin(rad1)
 
-        elements.extend([
-            {"type": "line", "points": [[ox, oy], [ox + r_ray, oy]], "stroke": "#475569", "strokeWidth": 2.5},
-            {"type": "line", "points": [[ox, oy], [ox, oy - r_ray]], "stroke": "#475569", "strokeWidth": 2.5},
-            {"type": "line", "points": [[ox, oy], [round(ray_x, 1), round(ray_y, 1)]], "stroke": th["primary"], "strokeWidth": 3},
-            {"type": "polygon", "points": [[ox, oy], [ox + 18, oy], [ox + 18, oy - 18], [ox, oy - 18]], "stroke": "#94a3b8", "fill": "none", "strokeWidth": 1.5},
-            {"type": "angle-arc", "center": [ox, oy], "radius": 35, "startAngle": 0, "endAngle": angle1, "label": f"{angle1:g}°"},
-            {"type": "angle-arc", "center": [ox, oy], "radius": 52, "startAngle": angle1, "endAngle": 90, "label": f"{angle2:g}°"},
-        ])
+        elements.extend(
+            [
+                {"type": "line", "points": [[ox, oy], [ox + r_ray, oy]], "stroke": "#475569", "strokeWidth": 2.5},
+                {"type": "line", "points": [[ox, oy], [ox, oy - r_ray]], "stroke": "#475569", "strokeWidth": 2.5},
+                {
+                    "type": "line",
+                    "points": [[ox, oy], [round(ray_x, 1), round(ray_y, 1)]],
+                    "stroke": th["primary"],
+                    "strokeWidth": 3,
+                },
+                {
+                    "type": "polygon",
+                    "points": [[ox, oy], [ox + 18, oy], [ox + 18, oy - 18], [ox, oy - 18]],
+                    "stroke": "#94a3b8",
+                    "fill": "none",
+                    "strokeWidth": 1.5,
+                },
+                {
+                    "type": "angle-arc",
+                    "center": [ox, oy],
+                    "radius": 35,
+                    "startAngle": 0,
+                    "endAngle": angle1,
+                    "label": f"{angle1:g}°",
+                },
+                {
+                    "type": "angle-arc",
+                    "center": [ox, oy],
+                    "radius": 52,
+                    "startAngle": angle1,
+                    "endAngle": 90,
+                    "label": f"{angle2:g}°",
+                },
+            ]
+        )
 
     return {
         "type": "geometry-2d",
@@ -664,24 +766,28 @@ def build_coordinate_plane_visual(
     while cur_x <= x_max:
         p_bot = to_svg(cur_x, y_min)
         p_top = to_svg(cur_x, y_max)
-        elements.append({
-            "type": "line",
-            "points": [list(p_bot), list(p_top)],
-            "stroke": "#f1f5f9",
-            "strokeWidth": 1,
-        })
+        elements.append(
+            {
+                "type": "line",
+                "points": [list(p_bot), list(p_top)],
+                "stroke": "#f1f5f9",
+                "strokeWidth": 1,
+            }
+        )
         cur_x += step_x
 
     cur_y = math.ceil(y_min / step_y) * step_y
     while cur_y <= y_max:
         p_left = to_svg(x_min, cur_y)
         p_right = to_svg(x_max, cur_y)
-        elements.append({
-            "type": "line",
-            "points": [list(p_left), list(p_right)],
-            "stroke": "#f1f5f9",
-            "strokeWidth": 1,
-        })
+        elements.append(
+            {
+                "type": "line",
+                "points": [list(p_left), list(p_right)],
+                "stroke": "#f1f5f9",
+                "strokeWidth": 1,
+            }
+        )
         cur_y += step_y
 
     # Axes
@@ -695,23 +801,33 @@ def build_coordinate_plane_visual(
     ax_y_start = to_svg(x_axis_pos, y_min)
     ax_y_end = to_svg(x_axis_pos, y_max)
 
-    elements.append({
-        "type": "line",
-        "points": [list(ax_x_start), list(ax_x_end)],
-        "stroke": "#64748b",
-        "strokeWidth": 2,
-    })
-    elements.append({
-        "type": "line",
-        "points": [list(ax_y_start), list(ax_y_end)],
-        "stroke": "#64748b",
-        "strokeWidth": 2,
-    })
+    elements.append(
+        {
+            "type": "line",
+            "points": [list(ax_x_start), list(ax_x_end)],
+            "stroke": "#64748b",
+            "strokeWidth": 2,
+        }
+    )
+    elements.append(
+        {
+            "type": "line",
+            "points": [list(ax_y_start), list(ax_y_end)],
+            "stroke": "#64748b",
+            "strokeWidth": 2,
+        }
+    )
 
     # Axis Labels
-    elements.append({"type": "text", "x": ax_x_end[0] + 12, "y": ax_x_end[1] + 4, "label": "x", "color": "#334155", "fontSize": 13})
-    elements.append({"type": "text", "x": ax_y_end[0] - 4, "y": ax_y_end[1] - 10, "label": "y", "color": "#334155", "fontSize": 13})
-    elements.append({"type": "text", "x": ox_pt[0] - 10, "y": ox_pt[1] + 14, "label": "O", "color": "#94a3b8", "fontSize": 11})
+    elements.append(
+        {"type": "text", "x": ax_x_end[0] + 12, "y": ax_x_end[1] + 4, "label": "x", "color": "#334155", "fontSize": 13}
+    )
+    elements.append(
+        {"type": "text", "x": ax_y_end[0] - 4, "y": ax_y_end[1] - 10, "label": "y", "color": "#334155", "fontSize": 13}
+    )
+    elements.append(
+        {"type": "text", "x": ox_pt[0] - 10, "y": ox_pt[1] + 14, "label": "O", "color": "#94a3b8", "fontSize": 11}
+    )
 
     # Rectangles (e.g. for coordinate regions)
     if rectangles:
@@ -720,13 +836,15 @@ def build_coordinate_plane_visual(
             br = to_svg(r["x2"], r["y1"])
             tr = to_svg(r["x2"], r["y2"])
             tl = to_svg(r["x1"], r["y2"])
-            elements.append({
-                "type": "polygon",
-                "points": [list(bl), list(br), list(tr), list(tl)],
-                "stroke": r.get("stroke", th["stroke"]),
-                "fill": r.get("fill", th["fill"]),
-                "strokeWidth": 2,
-            })
+            elements.append(
+                {
+                    "type": "polygon",
+                    "points": [list(bl), list(br), list(tr), list(tl)],
+                    "stroke": r.get("stroke", th["stroke"]),
+                    "fill": r.get("fill", th["fill"]),
+                    "strokeWidth": 2,
+                }
+            )
 
     # Slope Triangles
     if slope_triangles:
@@ -736,53 +854,63 @@ def build_coordinate_plane_visual(
             sp1 = to_svg(x1, y1)
             sp_corner = to_svg(x2, y1)
             sp2 = to_svg(x2, y2)
-            elements.append({
-                "type": "polygon",
-                "points": [list(sp1), list(sp_corner), list(sp2)],
-                "stroke": "#f59e0b",
-                "fill": "rgba(245, 158, 11, 0.12)",
-                "strokeWidth": 1.5,
-                "strokeDasharray": "3 3",
-            })
-            elements.append({
-                "type": "dimension-label",
-                "start": list(sp1),
-                "end": list(sp_corner),
-                "label": f"Δx = {x2 - x1:g}",
-                "position": "bottom",
-                "offset": 10,
-            })
-            elements.append({
-                "type": "dimension-label",
-                "start": list(sp_corner),
-                "end": list(sp2),
-                "label": f"Δy = {y2 - y1:g}",
-                "position": "right",
-                "offset": 10,
-            })
+            elements.append(
+                {
+                    "type": "polygon",
+                    "points": [list(sp1), list(sp_corner), list(sp2)],
+                    "stroke": "#f59e0b",
+                    "fill": "rgba(245, 158, 11, 0.12)",
+                    "strokeWidth": 1.5,
+                    "strokeDasharray": "3 3",
+                }
+            )
+            elements.append(
+                {
+                    "type": "dimension-label",
+                    "start": list(sp1),
+                    "end": list(sp_corner),
+                    "label": f"Δx = {x2 - x1:g}",
+                    "position": "bottom",
+                    "offset": 10,
+                }
+            )
+            elements.append(
+                {
+                    "type": "dimension-label",
+                    "start": list(sp_corner),
+                    "end": list(sp2),
+                    "label": f"Δy = {y2 - y1:g}",
+                    "position": "right",
+                    "offset": 10,
+                }
+            )
 
     # Lines
     if lines:
         for ln in lines:
             p_start = to_svg(ln["x1"], ln["y1"])
             p_end = to_svg(ln["x2"], ln["y2"])
-            elements.append({
-                "type": "line",
-                "points": [list(p_start), list(p_end)],
-                "stroke": ln.get("stroke", th["primary"]),
-                "strokeWidth": ln.get("strokeWidth", 2.5),
-                "strokeDasharray": ln.get("strokeDasharray"),
-            })
+            elements.append(
+                {
+                    "type": "line",
+                    "points": [list(p_start), list(p_end)],
+                    "stroke": ln.get("stroke", th["primary"]),
+                    "strokeWidth": ln.get("strokeWidth", 2.5),
+                    "strokeDasharray": ln.get("strokeDasharray"),
+                }
+            )
             if ln.get("label"):
                 mid_pt = to_svg((ln["x1"] + ln["x2"]) / 2, (ln["y1"] + ln["y2"]) / 2)
-                elements.append({
-                    "type": "text",
-                    "x": mid_pt[0] + 8,
-                    "y": mid_pt[1] - 8,
-                    "label": ln["label"],
-                    "color": ln.get("stroke", th["primary"]),
-                    "fontSize": 12,
-                })
+                elements.append(
+                    {
+                        "type": "text",
+                        "x": mid_pt[0] + 8,
+                        "y": mid_pt[1] - 8,
+                        "label": ln["label"],
+                        "color": ln.get("stroke", th["primary"]),
+                        "fontSize": 12,
+                    }
+                )
 
     # Points
     if points:
@@ -792,36 +920,44 @@ def build_coordinate_plane_visual(
             # Dashed guide lines to axes
             s_proj_x = to_svg(x_val, y_axis_pos)
             s_proj_y = to_svg(x_axis_pos, y_val)
-            elements.append({
-                "type": "line",
-                "points": [list(s_pt), list(s_proj_x)],
-                "stroke": "#cbd5e1",
-                "strokeWidth": 1.2,
-                "strokeDasharray": "2 2",
-            })
-            elements.append({
-                "type": "line",
-                "points": [list(s_pt), list(s_proj_y)],
-                "stroke": "#cbd5e1",
-                "strokeWidth": 1.2,
-                "strokeDasharray": "2 2",
-            })
-            elements.append({
-                "type": "point",
-                "coord": list(s_pt),
-                "label": lbl or f"({x_val:g}, {y_val:g})",
-                "color": th["primary"],
-            })
+            elements.append(
+                {
+                    "type": "line",
+                    "points": [list(s_pt), list(s_proj_x)],
+                    "stroke": "#cbd5e1",
+                    "strokeWidth": 1.2,
+                    "strokeDasharray": "2 2",
+                }
+            )
+            elements.append(
+                {
+                    "type": "line",
+                    "points": [list(s_pt), list(s_proj_y)],
+                    "stroke": "#cbd5e1",
+                    "strokeWidth": 1.2,
+                    "strokeDasharray": "2 2",
+                }
+            )
+            elements.append(
+                {
+                    "type": "point",
+                    "coord": list(s_pt),
+                    "label": lbl or f"({x_val:g}, {y_val:g})",
+                    "color": th["primary"],
+                }
+            )
 
     if title:
-        elements.append({
-            "type": "text",
-            "x": vw / 2,
-            "y": 16,
-            "label": title,
-            "color": "#1e293b",
-            "fontSize": 13,
-        })
+        elements.append(
+            {
+                "type": "text",
+                "x": vw / 2,
+                "y": 16,
+                "label": title,
+                "color": "#1e293b",
+                "fontSize": 13,
+            }
+        )
 
     return {
         "type": "coordinate-plane",
@@ -841,14 +977,14 @@ def visual_to_svg(visual_spec: Dict[str, Any]) -> str:
 
     svg_parts = [
         f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {w} {h}" width="100%" height="100%">',
-        '  <defs>',
-        '    <style>',
+        "  <defs>",
+        "    <style>",
         '      .txt { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }',
         '      .dim-lbl { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace; font-size: 12px; font-weight: bold; fill: #1e293b; }',
         '      .pt-lbl { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 12px; font-weight: 600; fill: #1e293b; }',
-        '    </style>',
-        '  </defs>',
-        f'  <rect width="100%" height="100%" fill="#f8fafc" rx="10" stroke="#e2e8f0" stroke-width="1"/>',
+        "    </style>",
+        "  </defs>",
+        '  <rect width="100%" height="100%" fill="#f8fafc" rx="10" stroke="#e2e8f0" stroke-width="1"/>',
     ]
 
     elements = visual_spec.get("elements", [])
@@ -860,11 +996,15 @@ def visual_to_svg(visual_spec: Dict[str, Any]) -> str:
             fill = el.get("fill", "rgba(99, 102, 241, 0.08)")
             sw = el.get("strokeWidth", 2.5)
             s_dash = f' stroke-dasharray="{el["strokeDasharray"]}"' if el.get("strokeDasharray") else ""
-            svg_parts.append(f'  <polygon points="{pts}" stroke="{stroke}" fill="{fill}" stroke-width="{sw}" stroke-linejoin="round"{s_dash}/>')
+            svg_parts.append(
+                f'  <polygon points="{pts}" stroke="{stroke}" fill="{fill}" stroke-width="{sw}" stroke-linejoin="round"{s_dash}/>'
+            )
             if el.get("rightAngleAt"):
                 rx, ry = el["rightAngleAt"]
                 s = 14
-                svg_parts.append(f'  <rect x="{rx}" y="{ry - s}" width="{s}" height="{s}" fill="none" stroke="#64748b" stroke-width="1.5"/>')
+                svg_parts.append(
+                    f'  <rect x="{rx}" y="{ry - s}" width="{s}" height="{s}" fill="none" stroke="#64748b" stroke-width="1.5"/>'
+                )
 
         elif t == "line":
             pts = el.get("points", [])
@@ -874,7 +1014,9 @@ def visual_to_svg(visual_spec: Dict[str, Any]) -> str:
                 stroke = el.get("stroke", "#64748b")
                 sw = el.get("strokeWidth", 2)
                 s_dash = f' stroke-dasharray="{el["strokeDasharray"]}"' if el.get("strokeDasharray") else ""
-                svg_parts.append(f'  <line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" stroke="{stroke}" stroke-width="{sw}"{s_dash}/>')
+                svg_parts.append(
+                    f'  <line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" stroke="{stroke}" stroke-width="{sw}"{s_dash}/>'
+                )
 
         elif t == "circle":
             cx, cy = el.get("center", [w / 2, h / 2])
@@ -882,7 +1024,9 @@ def visual_to_svg(visual_spec: Dict[str, Any]) -> str:
             stroke = el.get("stroke", "#0284c7")
             fill = el.get("fill", "rgba(56, 189, 248, 0.08)")
             sw = el.get("strokeWidth", 2.5)
-            svg_parts.append(f'  <circle cx="{cx}" cy="{cy}" r="{r}" stroke="{stroke}" fill="{fill}" stroke-width="{sw}"/>')
+            svg_parts.append(
+                f'  <circle cx="{cx}" cy="{cy}" r="{r}" stroke="{stroke}" fill="{fill}" stroke-width="{sw}"/>'
+            )
 
         elif t == "cylinder":
             cx, cy = el.get("center", [w / 2, h / 2])
@@ -895,17 +1039,25 @@ def visual_to_svg(visual_spec: Dict[str, Any]) -> str:
             fill = el.get("fill", "rgba(139, 92, 246, 0.08)")
             sw = el.get("strokeWidth", 2.5)
             # Body path
-            svg_parts.append(f'  <path d="M {cx - rx} {top_y} L {cx - rx} {bot_y} A {rx} {ry} 0 0 0 {cx + rx} {bot_y} L {cx + rx} {top_y} Z" fill="{fill}" stroke="{stroke}" stroke-width="{sw}"/>')
+            svg_parts.append(
+                f'  <path d="M {cx - rx} {top_y} L {cx - rx} {bot_y} A {rx} {ry} 0 0 0 {cx + rx} {bot_y} L {cx + rx} {top_y} Z" fill="{fill}" stroke="{stroke}" stroke-width="{sw}"/>'
+            )
             # Dashed back curve of bottom ellipse
-            svg_parts.append(f'  <path d="M {cx - rx} {bot_y} A {rx} {ry} 0 0 1 {cx + rx} {bot_y}" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="3 3"/>')
+            svg_parts.append(
+                f'  <path d="M {cx - rx} {bot_y} A {rx} {ry} 0 0 1 {cx + rx} {bot_y}" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="3 3"/>'
+            )
             # Top ellipse
-            svg_parts.append(f'  <ellipse cx="{cx}" cy="{top_y}" rx="{rx}" ry="{ry}" fill="{fill}" stroke="{stroke}" stroke-width="{sw}"/>')
+            svg_parts.append(
+                f'  <ellipse cx="{cx}" cy="{top_y}" rx="{rx}" ry="{ry}" fill="{fill}" stroke="{stroke}" stroke-width="{sw}"/>'
+            )
 
         elif t == "point":
             coord = el.get("coord", [0, 0])
             cx, cy = coord[0], coord[1]
             color = el.get("color", "#2563eb")
-            svg_parts.append(f'  <circle cx="{cx}" cy="{cy}" r="4.5" fill="{color}" stroke="#ffffff" stroke-width="1.5"/>')
+            svg_parts.append(
+                f'  <circle cx="{cx}" cy="{cy}" r="4.5" fill="{color}" stroke="#ffffff" stroke-width="1.5"/>'
+            )
             if el.get("label"):
                 svg_parts.append(f'  <text x="{cx + 8}" y="{cy - 8}" class="pt-lbl">{el["label"]}</text>')
 
@@ -922,12 +1074,16 @@ def visual_to_svg(visual_spec: Dict[str, Any]) -> str:
             y2 = cy - r * math.sin(r2)
             diff = (end_deg - start_deg) % 360
             large_arc = 1 if diff > 180 else 0
-            svg_parts.append(f'  <path d="M {x1:.1f} {y1:.1f} A {r} {r} 0 {large_arc} 0 {x2:.1f} {y2:.1f}" fill="none" stroke="#d97706" stroke-width="2"/>')
+            svg_parts.append(
+                f'  <path d="M {x1:.1f} {y1:.1f} A {r} {r} 0 {large_arc} 0 {x2:.1f} {y2:.1f}" fill="none" stroke="#d97706" stroke-width="2"/>'
+            )
             if el.get("label"):
                 mid_rad = math.radians((start_deg + end_deg) / 2)
                 lbl_x = cx + (r + 14) * math.cos(mid_rad)
                 lbl_y = cy - (r + 14) * math.sin(mid_rad)
-                svg_parts.append(f'  <text x="{lbl_x:.1f}" y="{lbl_y:.1f}" text-anchor="middle" dominant-baseline="central" class="dim-lbl" fill="#d97706">{el["label"]}</text>')
+                svg_parts.append(
+                    f'  <text x="{lbl_x:.1f}" y="{lbl_y:.1f}" text-anchor="middle" dominant-baseline="central" class="dim-lbl" fill="#d97706">{el["label"]}</text>'
+                )
 
         elif t == "dimension-label":
             start = el.get("start", [0, 0])
@@ -956,15 +1112,19 @@ def visual_to_svg(visual_spec: Dict[str, Any]) -> str:
                 tx += (-dy / length) * offset
                 ty += (dx / length) * offset
 
-            hl_color = '#d97706' if el.get("highlight") else '#1e293b'
-            svg_parts.append(f'  <text x="{tx:.1f}" y="{ty:.1f}" text-anchor="{anchor}" dominant-baseline="central" class="dim-lbl" fill="{hl_color}">{el.get("label", "")}</text>')
+            hl_color = "#d97706" if el.get("highlight") else "#1e293b"
+            svg_parts.append(
+                f'  <text x="{tx:.1f}" y="{ty:.1f}" text-anchor="{anchor}" dominant-baseline="central" class="dim-lbl" fill="{hl_color}">{el.get("label", "")}</text>'
+            )
 
         elif t == "text":
             tx = el.get("x", 0)
             ty = el.get("y", 0)
             color = el.get("color", "#1e293b")
             fs = el.get("fontSize", 12)
-            svg_parts.append(f'  <text x="{tx}" y="{ty}" class="txt" font-size="{fs}" font-weight="600" fill="{color}">{el.get("label", "")}</text>')
+            svg_parts.append(
+                f'  <text x="{tx}" y="{ty}" class="txt" font-size="{fs}" font-weight="600" fill="{color}">{el.get("label", "")}</text>'
+            )
 
     svg_parts.append("</svg>")
     return "\n".join(svg_parts)

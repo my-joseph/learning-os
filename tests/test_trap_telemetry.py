@@ -116,8 +116,9 @@ class TestTrapValueTelemetry(unittest.TestCase):
         self.assertIn("rounding", diags_dec)
 
     def test_floor_division_evaluator(self):
-        from math_engine.answer_check import to_expr, safe_parse, SafeParseError
         import sympy as sp
+
+        from math_engine.answer_check import SafeParseError, safe_parse, to_expr
 
         # Trusted evaluator (used by trapDerivation) supports // and floor(a/b)
         val_floor_op = to_expr("17 // 5", trusted=True)
@@ -135,8 +136,9 @@ class TestTrapValueTelemetry(unittest.TestCase):
 
     def test_verify_problem_trap_derivation_rules(self):
         import logging
-        from quality_rules import QualityError
+
         from math_engine.verify import verify_problem
+        from quality_rules import QualityError
 
         base_problem = {
             "id": "test-p1",
@@ -171,7 +173,6 @@ class TestTrapValueTelemetry(unittest.TestCase):
         with self.assertLogs("math_engine.verify", level=logging.WARNING) as log_ctx:
             self.assertTrue(verify_problem(prob_missing))
         self.assertTrue(any("Template form has no trapDerivation field" in msg for msg in log_ctx.output))
-
 
         # 4. trapGiven not appearing in prompt raises QualityError("G4")
         prob_bad_given = dict(

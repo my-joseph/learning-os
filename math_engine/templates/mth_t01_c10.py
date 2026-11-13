@@ -1,17 +1,37 @@
 # -*- coding: utf-8 -*-
 """Parameterized problem templates for MTH-T01-C10: The Properties of Real Numbers."""
+
 from math_engine.templates._prealg_helpers import S
 
 UNIT = "MTH-T01-C10"
 TITLE = "The Properties of Real Numbers"
 
 MISTAKE_TAGS = [
-    {"id": "c10-partial-distribution-slip", "label": "Multiplied only the first term inside parentheses when distributing", "name": "Partial Distributive Property Slip", "autoFrom": []},
-    {"id": "c10-inverse-property-sign-slip", "label": "Confused additive inverse (-a) with multiplicative reciprocal (1/a)", "name": "Additive vs Multiplicative Inverse Confusion", "autoFrom": ["reciprocal"]},
-    {"id": "c10-negative-distribution-sign-trap", "label": "Failed to flip inner sign when distributing a negative factor: a - b(c - d)", "name": "Negative Distribution Sign Trap", "autoFrom": ["whole_sign_flip"]},
-    {"id": "c10-dimensional-unit-conversion-trap", "label": "Divided instead of multiplied by unit conversion factor in multi-step conversion", "name": "Dimensional Analysis Conversion Trap", "autoFrom": ["off_by_factor"]},
+    {
+        "id": "c10-partial-distribution-slip",
+        "label": "Multiplied only the first term inside parentheses when distributing",
+        "name": "Partial Distributive Property Slip",
+        "autoFrom": [],
+    },
+    {
+        "id": "c10-inverse-property-sign-slip",
+        "label": "Confused additive inverse (-a) with multiplicative reciprocal (1/a)",
+        "name": "Additive vs Multiplicative Inverse Confusion",
+        "autoFrom": ["reciprocal"],
+    },
+    {
+        "id": "c10-negative-distribution-sign-trap",
+        "label": "Failed to flip inner sign when distributing a negative factor: a - b(c - d)",
+        "name": "Negative Distribution Sign Trap",
+        "autoFrom": ["whole_sign_flip"],
+    },
+    {
+        "id": "c10-dimensional-unit-conversion-trap",
+        "label": "Divided instead of multiplied by unit conversion factor in multi-step conversion",
+        "name": "Dimensional Analysis Conversion Trap",
+        "autoFrom": ["off_by_factor"],
+    },
 ]
-
 
 
 def t_c10_foundation(rng, form=None):
@@ -23,10 +43,16 @@ def t_c10_foundation(rng, form=None):
     if form == "mental-split":
         ans = a * (b - c)
         trap = a * b - c
-        prompt = f"Use the distributive property to evaluate ${a} \\times {b - c}$ by rewriting ${b - c}$ as $({b} - {c})$."
+        prompt = (
+            f"Use the distributive property to evaluate ${a} \\times {b - c}$ by rewriting ${b - c}$ as $({b} - {c})$."
+        )
         disp = f"{a}({b} - {c}) = {a}({b}) - {a}({c})"
         steps = [
-            S(f"{a}({b} - {c}) = {a} \\times {b} - {a} \\times {c}", "Distribute the outer factor across both terms in the difference.", eq=[f"{a} * ({b} - {c})", f"{a}*{b} - {a}*{c}"]),
+            S(
+                f"{a}({b} - {c}) = {a} \\times {b} - {a} \\times {c}",
+                "Distribute the outer factor across both terms in the difference.",
+                eq=[f"{a} * ({b} - {c})", f"{a}*{b} - {a}*{c}"],
+            ),
             S(f"= {a * b} - {a * c}", "Evaluate each product separately.", eq=[f"{a * b} - {a * c}", str(ans)]),
             S(f"= {ans}", "Subtract the second product from the first.", val=str(ans), eq=[str(ans), str(ans)]),
         ]
@@ -36,7 +62,11 @@ def t_c10_foundation(rng, form=None):
         prompt = f"Use the distributive property to evaluate ${a}({b} + {c})$."
         disp = f"{a}({b} + {c})"
         steps = [
-            S(f"{a}({b} + {c}) = {a} \\times {b} + {a} \\times {c}", "Distribute the factor across both terms inside the parentheses.", eq=[f"{a} * ({b} + {c})", f"{a}*{b} + {a}*{c}"]),
+            S(
+                f"{a}({b} + {c}) = {a} \\times {b} + {a} \\times {c}",
+                "Distribute the factor across both terms inside the parentheses.",
+                eq=[f"{a} * ({b} + {c})", f"{a}*{b} + {a}*{c}"],
+            ),
             S(f"= {a * b} + {a * c}", "Compute each individual product.", eq=[f"{a * b} + {a * c}", str(ans)]),
             S(f"= {ans}", "Add the two products.", val=str(ans), eq=[str(ans), str(ans)]),
         ]
@@ -93,9 +123,22 @@ def t_c10_reverse(rng, form=None):
         "commonTrapTag": "c10-partial-distribution-slip",
         "verify": {"source": str(ans), "trapValue": str(trap)},
         "steps": [
-            S(f"{a}x + {a * b} + {c}x = {rhs}", "Apply the distributive property to expand the parenthesized term.", eq=[f"{a}*({ans} + {b}) + {c}*{ans}", str(rhs)]),
-            S(f"{a + c}x + {a * b} = {rhs} \\implies {a + c}x = {rhs - a * b}", "Combine like variable terms and subtract the constant term.", eq=[f"{rhs} - {a * b}", str((a + c) * ans)]),
-            S(f"x = \\frac{{{rhs - a * b}}}{{{a + c}}} = {ans}", "Multiply by the multiplicative inverse of the coefficient.", val=str(ans), eq=[f"({rhs - a * b}) / ({a + c})", str(ans)]),
+            S(
+                f"{a}x + {a * b} + {c}x = {rhs}",
+                "Apply the distributive property to expand the parenthesized term.",
+                eq=[f"{a}*({ans} + {b}) + {c}*{ans}", str(rhs)],
+            ),
+            S(
+                f"{a + c}x + {a * b} = {rhs} \\implies {a + c}x = {rhs - a * b}",
+                "Combine like variable terms and subtract the constant term.",
+                eq=[f"{rhs} - {a * b}", str((a + c) * ans)],
+            ),
+            S(
+                f"x = \\frac{{{rhs - a * b}}}{{{a + c}}} = {ans}",
+                "Multiply by the multiplicative inverse of the coefficient.",
+                val=str(ans),
+                eq=[f"({rhs - a * b}) / ({a + c})", str(ans)],
+            ),
         ],
     }
 
@@ -114,8 +157,16 @@ def t_c10_trap(rng, form=None):
         prompt = f"Evaluate the expression ${a} - {b}({c} - {d}) - {e}$ by applying the distributive property."
         disp = f"{a} - {b}({c} - {d}) - {e}"
         steps = [
-            S(f"-{b}({c} - {d}) = -{b}({c}) + (-{b})(-{d}) = -{b * c} + {b * d}", "Distribute the negative factor across the inner difference, flipping the sign of the subtracted term.", eq=[f"-{b} * ({c} - {d})", f"-{b * c} + {b * d}"]),
-            S(f"{a} - {b * c} + {b * d} - {e}", "Substitute the distributed terms into the main expression.", eq=[f"{a} - {b * c} + {b * d} - {e}", str(ans)]),
+            S(
+                f"-{b}({c} - {d}) = -{b}({c}) + (-{b})(-{d}) = -{b * c} + {b * d}",
+                "Distribute the negative factor across the inner difference, flipping the sign of the subtracted term.",
+                eq=[f"-{b} * ({c} - {d})", f"-{b * c} + {b * d}"],
+            ),
+            S(
+                f"{a} - {b * c} + {b * d} - {e}",
+                "Substitute the distributed terms into the main expression.",
+                eq=[f"{a} - {b * c} + {b * d} - {e}", str(ans)],
+            ),
             S(f"= {ans}", "Combine the integer terms from left to right.", val=str(ans), eq=[str(ans), str(ans)]),
         ]
     else:
@@ -124,8 +175,16 @@ def t_c10_trap(rng, form=None):
         prompt = f"Evaluate ${a} - {b}({c} - {d})$ carefully tracking the sign when distributing $-{b}$."
         disp = f"{a} - {b}({c} - {d})"
         steps = [
-            S(f"-{b}({c} - {d}) = -{b * c} + {b * d}", "Multiplying $-b$ by $-d$ produces a positive product $+bd$.", eq=[f"-{b} * ({c} - {d})", f"-{b * c} + {b * d}"]),
-            S(f"{a} - {b * c} + {b * d}", "Combine the initial integer with the distributed terms.", eq=[f"{a} - {b * c} + {b * d}", str(ans)]),
+            S(
+                f"-{b}({c} - {d}) = -{b * c} + {b * d}",
+                "Multiplying $-b$ by $-d$ produces a positive product $+bd$.",
+                eq=[f"-{b} * ({c} - {d})", f"-{b * c} + {b * d}"],
+            ),
+            S(
+                f"{a} - {b * c} + {b * d}",
+                "Combine the initial integer with the distributed terms.",
+                eq=[f"{a} - {b * c} + {b * d}", str(ans)],
+            ),
             S(f"= {ans}", "Simplify to obtain the exact result.", val=str(ans), eq=[str(ans), str(ans)]),
         ]
     return {
@@ -159,8 +218,16 @@ def t_c10_synthesis(rng, form=None):
         prompt = f"An autonomous drone flies at a constant speed of ${mps}$ meters per second. Using unit conversion properties ($1\\text{{ km}} = 1000\\text{{ m}}$ and $1\\text{{ hour}} = 3600\\text{{ seconds}}$), how many kilometers does the drone travel in ${hours}$ hours?"
         disp = f"D = {mps}\\frac{{\\text{{m}}}}{{\\text{{s}}}} \\times \\frac{{3600\\text{{ s}}}}{{1\\text{{ hr}}}} \\times \\frac{{1\\text{{ km}}}}{{1000\\text{{ m}}}} \\times {hours}\\text{{ hr}}"
         steps = [
-            S(f"v_{{\\text{{km/h}}}} = {mps} \\times \\frac{{3600}}{{1000}} = {km_per_hr}\\text{{ km/h}}", "Convert meters per second to kilometers per hour by multiplying by $3600/1000$.", eq=[f"({mps} * 3600) / 1000", str(km_per_hr)]),
-            S(f"D = {km_per_hr} \\times {hours}", "Multiply the speed in km/h by the duration in hours.", eq=[f"{km_per_hr} * {hours}", str(ans)]),
+            S(
+                f"v_{{\\text{{km/h}}}} = {mps} \\times \\frac{{3600}}{{1000}} = {km_per_hr}\\text{{ km/h}}",
+                "Convert meters per second to kilometers per hour by multiplying by $3600/1000$.",
+                eq=[f"({mps} * 3600) / 1000", str(km_per_hr)],
+            ),
+            S(
+                f"D = {km_per_hr} \\times {hours}",
+                "Multiply the speed in km/h by the duration in hours.",
+                eq=[f"{km_per_hr} * {hours}", str(ans)],
+            ),
             S(f"D = {ans}", "Obtain the total distance in kilometers.", val=str(ans), eq=[str(ans), str(ans)]),
         ]
     else:
@@ -173,9 +240,22 @@ def t_c10_synthesis(rng, form=None):
         prompt = f"Use the distributive, commutative, and associative properties of real numbers to evaluate ${k} \\times {p1} - {offset} + {k} \\times {p2}$."
         disp = f"{k} \\times {p1} - {offset} + {k} \\times {p2}"
         steps = [
-            S(f"= ({k} \\times {p1} + {k} \\times {p2}) - {offset}", "Use the commutative and associative properties to group the products sharing factor $k$.", eq=[f"{k}*{p1} + {k}*{p2} - {offset}", str(ans)]),
-            S(f"= {k}({p1} + {p2}) - {offset} = {k}(100) - {offset}", "Factor out the common multiplier using the distributive property.", eq=[f"{k} * ({p1} + {p2}) - {offset}", str(ans)]),
-            S(f"= {k * 100} - {offset} = {ans}", "Subtract the offset from the product.", val=str(ans), eq=[str(ans), str(ans)]),
+            S(
+                f"= ({k} \\times {p1} + {k} \\times {p2}) - {offset}",
+                "Use the commutative and associative properties to group the products sharing factor $k$.",
+                eq=[f"{k}*{p1} + {k}*{p2} - {offset}", str(ans)],
+            ),
+            S(
+                f"= {k}({p1} + {p2}) - {offset} = {k}(100) - {offset}",
+                "Factor out the common multiplier using the distributive property.",
+                eq=[f"{k} * ({p1} + {p2}) - {offset}", str(ans)],
+            ),
+            S(
+                f"= {k * 100} - {offset} = {ans}",
+                "Subtract the offset from the product.",
+                val=str(ans),
+                eq=[str(ans), str(ans)],
+            ),
         ]
     return {
         "form": form,

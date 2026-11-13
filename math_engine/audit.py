@@ -8,11 +8,11 @@ Usage:
 from __future__ import annotations
 
 import argparse
-from collections import Counter
 import copy
 import glob
 import json
 import os
+from collections import Counter
 from typing import Any
 
 from quality_rules import (
@@ -42,10 +42,7 @@ def audit_drill_file(
 
     drill = copy.deepcopy(data)
     rel_file = os.path.basename(filepath)
-    is_code = (
-        str(drill.get("subject", "")).upper() == "PRG"
-        or "prg" in str(drill.get("schemaVersion", "")).lower()
-    )
+    is_code = str(drill.get("subject", "")).upper() == "PRG" or "prg" in str(drill.get("schemaVersion", "")).lower()
     problems = drill.get("problems") or []
     actual_violations: list[dict[str, str]] = []
     legacy_missing: list[dict[str, str]] = []
@@ -64,24 +61,28 @@ def audit_drill_file(
             check_gate_g1(prob, is_code=is_code, rules=active_rules)
         except QualityError as e:
             # G1 data (archetype, codeSnippet, language) is complete in schema, so this is an actual violation
-            actual_violations.append({
-                "file": rel_file,
-                "problem_id": pid,
-                "gate": "G1",
-                "reason": e.reason,
-            })
+            actual_violations.append(
+                {
+                    "file": rel_file,
+                    "problem_id": pid,
+                    "gate": "G1",
+                    "reason": e.reason,
+                }
+            )
 
         # 2. Check G2 (Level-Structure Alignment)
         try:
             check_gate_g2(prob, rules=active_rules)
         except QualityError as e:
             # G2 data (level, steps, category) is complete in schema, so this is an actual violation
-            actual_violations.append({
-                "file": rel_file,
-                "problem_id": pid,
-                "gate": "G2",
-                "reason": e.reason,
-            })
+            actual_violations.append(
+                {
+                    "file": rel_file,
+                    "problem_id": pid,
+                    "gate": "G2",
+                    "reason": e.reason,
+                }
+            )
 
         # 3. Check G3 (Anti-Skeleton Duplication)
         fp = prob.get("fingerprint") or compute_fingerprint(prob, default_form=default_form)
@@ -90,38 +91,46 @@ def audit_drill_file(
             first_pid = seen_fps[fp][0]
             reason = f"โครงสร้างโจทย์ซ้ำกับ {first_pid} (fingerprint='{fp}')"
             if not raw_has_form:
-                legacy_missing.append({
-                    "file": rel_file,
-                    "problem_id": pid,
-                    "gate": "G3",
-                    "reason": f"{reason} [ไฟล์เก่าไม่มีฟิลด์ form ทำให้ถูกจัดเป็น form เดียวกัน]",
-                })
+                legacy_missing.append(
+                    {
+                        "file": rel_file,
+                        "problem_id": pid,
+                        "gate": "G3",
+                        "reason": f"{reason} [ไฟล์เก่าไม่มีฟิลด์ form ทำให้ถูกจัดเป็น form เดียวกัน]",
+                    }
+                )
             else:
-                actual_violations.append({
-                    "file": rel_file,
-                    "problem_id": pid,
-                    "gate": "G3",
-                    "reason": reason,
-                })
+                actual_violations.append(
+                    {
+                        "file": rel_file,
+                        "problem_id": pid,
+                        "gate": "G3",
+                        "reason": reason,
+                    }
+                )
 
         # 4. Check G4 (Trap & Distractor Provenance)
         try:
             check_gate_g4(prob, is_code=is_code, rules=active_rules)
         except QualityError as e:
             if not raw_has_trap:
-                legacy_missing.append({
-                    "file": rel_file,
-                    "problem_id": pid,
-                    "gate": "G4",
-                    "reason": e.reason,
-                })
+                legacy_missing.append(
+                    {
+                        "file": rel_file,
+                        "problem_id": pid,
+                        "gate": "G4",
+                        "reason": e.reason,
+                    }
+                )
             else:
-                actual_violations.append({
-                    "file": rel_file,
-                    "problem_id": pid,
-                    "gate": "G4",
-                    "reason": e.reason,
-                })
+                actual_violations.append(
+                    {
+                        "file": rel_file,
+                        "problem_id": pid,
+                        "gate": "G4",
+                        "reason": e.reason,
+                    }
+                )
 
     return actual_violations, legacy_missing
 
@@ -168,7 +177,7 @@ def format_audit_markdown(
 ) -> str:
     """Format audit results as a Markdown table for actual violations, plus legacy summary."""
     lines = [
-        f"### 1. ผล Audit: กลุ่ม \"ละเมิดจริง\" (ตกด่านทั้งที่ข้อมูลครบ — สแกน {total_files} ไฟล์, {total_problems} ข้อ)",
+        f'### 1. ผล Audit: กลุ่ม "ละเมิดจริง" (ตกด่านทั้งที่ข้อมูลครบ — สแกน {total_files} ไฟล์, {total_problems} ข้อ)',
         "",
         "| ไฟล์ | ข้อ | ด่านที่ตก | เหตุผลสั้นๆ |",
         "| :--- | :--- | :--- | :--- |",
@@ -179,22 +188,24 @@ def format_audit_markdown(
         for f in actual_violations:
             lines.append(f"| `{f['file']}` | `{f['problem_id']}` | **{f['gate']}** | {f['reason']} |")
 
-    lines.extend([
-        "",
-        "#### สรุปจำนวน \"ละเมิดจริง\" แยกตามด่าน",
-        f"- **G1 (ชนิดโจทย์ตรงกับเนื้อหา)**: {counts_actual.get('G1', 0)} รายการ",
-        f"- **G2 (ระดับตรงกับโครงสร้าง)**: {counts_actual.get('G2', 0)} รายการ",
-        f"- **G3 (ห้ามซ้ำโครงในชุดเดียวกัน)**: {counts_actual.get('G3', 0)} รายการ",
-        f"- **G4 (ตัวหลอกและ Trap มีที่มาจริง)**: {counts_actual.get('G4', 0)} รายการ",
-        f"- **รวมละเมิดจริงทั้งหมด**: {sum(counts_actual.values())} รายการ",
-        "",
-        "---",
-        "",
-        f"### 2. ผล Audit: กลุ่ม \"ขาดฟิลด์ (legacy)\" (ไฟล์เก่าไม่มี form/trapValue — ไม่นับเป็น violation)",
-        f"- **G4 (ขาดฟิลด์ trapValue / provenance)**: {counts_legacy.get('G4', 0)} รายการ (ทุกข้อที่มี commonTrapTag ในไฟล์เก่า)",
-        f"- **G3 (โครงซ้ำเพราะขาดฟิลด์ form)**: {counts_legacy.get('G3', 0)} รายการ (เนื่องจากไฟล์เก่าไม่ได้ระบุ form จึงถูกจัดเป็น form direct เหมือนกัน)",
-        f"- **รวมรายการขาดฟิลด์เก่าทั้งหมด**: {sum(counts_legacy.values())} รายการ",
-    ])
+    lines.extend(
+        [
+            "",
+            '#### สรุปจำนวน "ละเมิดจริง" แยกตามด่าน',
+            f"- **G1 (ชนิดโจทย์ตรงกับเนื้อหา)**: {counts_actual.get('G1', 0)} รายการ",
+            f"- **G2 (ระดับตรงกับโครงสร้าง)**: {counts_actual.get('G2', 0)} รายการ",
+            f"- **G3 (ห้ามซ้ำโครงในชุดเดียวกัน)**: {counts_actual.get('G3', 0)} รายการ",
+            f"- **G4 (ตัวหลอกและ Trap มีที่มาจริง)**: {counts_actual.get('G4', 0)} รายการ",
+            f"- **รวมละเมิดจริงทั้งหมด**: {sum(counts_actual.values())} รายการ",
+            "",
+            "---",
+            "",
+            '### 2. ผล Audit: กลุ่ม "ขาดฟิลด์ (legacy)" (ไฟล์เก่าไม่มี form/trapValue — ไม่นับเป็น violation)',
+            f"- **G4 (ขาดฟิลด์ trapValue / provenance)**: {counts_legacy.get('G4', 0)} รายการ (ทุกข้อที่มี commonTrapTag ในไฟล์เก่า)",
+            f"- **G3 (โครงซ้ำเพราะขาดฟิลด์ form)**: {counts_legacy.get('G3', 0)} รายการ (เนื่องจากไฟล์เก่าไม่ได้ระบุ form จึงถูกจัดเป็น form direct เหมือนกัน)",
+            f"- **รวมรายการขาดฟิลด์เก่าทั้งหมด**: {sum(counts_legacy.values())} รายการ",
+        ]
+    )
     return "\n".join(lines)
 
 

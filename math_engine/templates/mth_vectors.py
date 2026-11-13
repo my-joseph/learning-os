@@ -19,6 +19,7 @@ from math_engine.templates.flaw_utils import build_flaw_choice_problem
 
 try:
     import numpy as np
+
     HAS_NUMPY = True
 except ImportError:
     HAS_NUMPY = False
@@ -26,30 +27,36 @@ except ImportError:
 
 import sympy as sp
 
+
 def _np_vec_add(u: list[float | int], v: list[float | int]) -> list[float]:
     if HAS_NUMPY:
         return (np.array(u, dtype=float) + np.array(v, dtype=float)).tolist()
     return [float(a + b) for a, b in zip(u, v)]
+
 
 def _np_vec_sub(u: list[float | int], v: list[float | int]) -> list[float]:
     if HAS_NUMPY:
         return (np.array(u, dtype=float) - np.array(v, dtype=float)).tolist()
     return [float(a - b) for a, b in zip(u, v)]
 
+
 def _np_vec_scale(c: float | int, u: list[float | int]) -> list[float]:
     if HAS_NUMPY:
         return (float(c) * np.array(u, dtype=float)).tolist()
     return [float(c * x) for x in u]
+
 
 def _np_vec_dot(u: list[float | int], v: list[float | int]) -> float:
     if HAS_NUMPY:
         return float(np.dot(np.array(u, dtype=float), np.array(v, dtype=float)))
     return sum(float(a * b) for a, b in zip(u, v))
 
+
 def _np_vec_norm(u: list[float | int]) -> float:
     if HAS_NUMPY:
         return float(np.linalg.norm(np.array(u, dtype=float)))
-    return math.sqrt(sum(float(x)**2 for x in u))
+    return math.sqrt(sum(float(x) ** 2 for x in u))
+
 
 UNIT = "MTH-VECTORS"
 TITLE = "Vectors: Operations, Scaling, and Dot Product"
@@ -269,7 +276,9 @@ def t_vector_add_scale(rng: random.Random, form: str | None = None, level: int =
         trap_plain = _fmt_vec_plain(trap_comps)
 
         u_latex = _fmt_vec_latex(u)
-        prompt = f"Given vector $\\vec{{u}} = {u_latex}$ and scalar $c = {c}$, compute the scaled vector ${c}\\vec{{u}}$."
+        prompt = (
+            f"Given vector $\\vec{{u}} = {u_latex}$ and scalar $c = {c}$, compute the scaled vector ${c}\\vec{{u}}$."
+        )
         display = f"{c}\\vec{{u}}"
 
         step1_rhs = f"\\langle {c}({u[0]}), {c}({u[1]}), {c}({u[2]}) \\rangle"
@@ -585,7 +594,6 @@ def t_vector_dot_product(rng: random.Random, form: str | None = None, level: int
         y = rem // b if rem != 0 else 0
 
         u = [a, b, c]
-        v_known = [x, y]
 
         # Dual verify that u . [x, y, k] == 0
         np_dot = _np_vec_dot([a, b, c], [x, y, k])
@@ -679,11 +687,11 @@ def t_vector_magnitude(rng: random.Random, form: str | None = None, level: int =
         rng.shuffle(perm)
         u = [signs[i] * base_quad[perm[i]] for i in range(3)]
 
-        sp_mag = sp.sqrt(sp.Integer(u[0]**2 + u[1]**2 + u[2]**2))
+        sp_mag = sp.sqrt(sp.Integer(u[0] ** 2 + u[1] ** 2 + u[2] ** 2))
         np_mag = _np_vec_norm(u)
         _dual_verify_scalar(sp_mag, np_mag)
 
-        sum_sq = u[0]**2 + u[1]**2 + u[2]**2
+        sum_sq = u[0] ** 2 + u[1] ** 2 + u[2] ** 2
         u_latex = _fmt_vec_latex(u)
 
         # Trap: took square root of each component before summing (|u0| + |u1| + |u2|)
@@ -693,7 +701,7 @@ def t_vector_magnitude(rng: random.Random, form: str | None = None, level: int =
         display = "\\|\\vec{u}\\|"
 
         step1_rhs = f"\\sqrt{{({u[0]})^2 + ({u[1]})^2 + ({u[2]})^2}}"
-        step2_rhs = f"\\sqrt{{{u[0]**2} + {u[1]**2} + {u[2]**2}}} = \\sqrt{{{sum_sq}}}"
+        step2_rhs = f"\\sqrt{{{u[0] ** 2} + {u[1] ** 2} + {u[2] ** 2}}} = \\sqrt{{{sum_sq}}}"
 
         steps = [
             {
@@ -829,7 +837,9 @@ def t_vector_magnitude(rng: random.Random, form: str | None = None, level: int =
             u = [signs[i] * base[i] for i in range(3)]
 
             ans_comps = [f"{u[0]}/{mag}", f"{u[1]}/{mag}", f"{u[2]}/{mag}"]
-            ans_parts = [f"\\frac{{{u[i]}}}{{{mag}}}" if u[i] > 0 else f"-\\frac{{{abs(u[i])}}}{{{mag}}}" for i in range(3)]
+            ans_parts = [
+                f"\\frac{{{u[i]}}}{{{mag}}}" if u[i] > 0 else f"-\\frac{{{abs(u[i])}}}{{{mag}}}" for i in range(3)
+            ]
             ans_latex = f"\\langle {', '.join(ans_parts)} \\rangle"
             ans_plain = f"<{u[0]}/{mag}, {u[1]}/{mag}, {u[2]}/{mag}>"
 
@@ -844,10 +854,10 @@ def t_vector_magnitude(rng: random.Random, form: str | None = None, level: int =
             prompt = f"Find the unit vector $\\hat{{u}}$ in the direction of $\\vec{{u}} = {u_latex}$."
             display = "\\hat{u}"
 
-            sum_sq = u[0]**2 + u[1]**2 + u[2]**2
+            sum_sq = u[0] ** 2 + u[1] ** 2 + u[2] ** 2
             steps = [
                 {
-                    "latex": f"\\|\\vec{{u}}\\| = \\sqrt{{{u[0]**2} + {u[1]**2} + {u[2]**2}}} = \\sqrt{{{sum_sq}}} = {mag}",
+                    "latex": f"\\|\\vec{{u}}\\| = \\sqrt{{{u[0] ** 2} + {u[1] ** 2} + {u[2] ** 2}}} = \\sqrt{{{sum_sq}}} = {mag}",
                     "explain": "Calculate the magnitude of the given vector.",
                     "eq": (ans_plain, ans_plain),
                 },
@@ -905,7 +915,7 @@ def t_vector_magnitude(rng: random.Random, form: str | None = None, level: int =
         perm = list(range(3))
         rng.shuffle(perm)
         u = [signs[i] * base_quad[perm[i]] for i in range(3)]
-        sum_sq = u[0]**2 + u[1]**2 + u[2]**2
+        sum_sq = u[0] ** 2 + u[1] ** 2 + u[2] ** 2
         u_latex = _fmt_vec_latex(u)
 
         # Flawed derivation: distributes sqrt across addition in Line 2

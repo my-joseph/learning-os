@@ -5,8 +5,9 @@ Pre-Generation Config -> Verified Programming Drill JSON Generator.
 Generates ONLY the exact number of questions requested in the Pre-Generation Config
 (e.g., 5, 10, 15, or 20), verifies every problem via real Node.js subprocess execution,
 attaches resolved Notion deep links for cross-subject references, and writes the
-clean JSON file to drills/data/<UNIT_CODE>/<DRILL_ID>.json (and mirrors to practice-studio/).
+clean JSON file to drills/data/<UNIT_CODE>/<DRILL_ID>.json.
 """
+
 import argparse
 import datetime
 import glob
@@ -14,14 +15,12 @@ import json
 import logging
 import os
 import random
-import shutil
 
 from code_engine.fmt import DIFFICULTY_MODES, LEVEL_LABELS
 from code_engine.templates import load_unit
 from code_engine.verify import verify_problem, verify_tags
 from quality_rules import (
     QUALITY_RULES,
-    QualityError,
     compute_fingerprint,
     generate_with_quality_retries,
 )
@@ -66,36 +65,42 @@ def _expand_template_pairs(templates):
         forms = t.get("forms")
         if isinstance(forms, dict):
             for fname, finfo in forms.items():
-                pairs.append({
-                    "template": t,
-                    "key": t["key"],
-                    "form": fname,
-                    "level": finfo.get("level", t.get("level", 1)),
-                    "skill": finfo.get("skill"),
-                    "trapTag": finfo.get("trapTag", t.get("trapTag")),
-                    "verificationLevel": t.get("verificationLevel", "machine-verified"),
-                })
+                pairs.append(
+                    {
+                        "template": t,
+                        "key": t["key"],
+                        "form": fname,
+                        "level": finfo.get("level", t.get("level", 1)),
+                        "skill": finfo.get("skill"),
+                        "trapTag": finfo.get("trapTag", t.get("trapTag")),
+                        "verificationLevel": t.get("verificationLevel", "machine-verified"),
+                    }
+                )
         elif isinstance(forms, (list, tuple)):
             for fname in forms:
-                pairs.append({
+                pairs.append(
+                    {
+                        "template": t,
+                        "key": t["key"],
+                        "form": fname,
+                        "level": t.get("level", 1),
+                        "skill": t.get("skill"),
+                        "trapTag": t.get("trapTag"),
+                        "verificationLevel": t.get("verificationLevel", "machine-verified"),
+                    }
+                )
+        else:
+            pairs.append(
+                {
                     "template": t,
                     "key": t["key"],
-                    "form": fname,
+                    "form": "direct",
                     "level": t.get("level", 1),
                     "skill": t.get("skill"),
                     "trapTag": t.get("trapTag"),
                     "verificationLevel": t.get("verificationLevel", "machine-verified"),
-                })
-        else:
-            pairs.append({
-                "template": t,
-                "key": t["key"],
-                "form": "direct",
-                "level": t.get("level", 1),
-                "skill": t.get("skill"),
-                "trapTag": t.get("trapTag"),
-                "verificationLevel": t.get("verificationLevel", "machine-verified"),
-            })
+                }
+            )
     return pairs
 
 
@@ -119,19 +124,25 @@ def _pick_template_schedule(templates, count, difficulty, focus_tags, rng, templ
     all_pairs = _expand_template_pairs(templates)
 
     if template_filter:
-        tpl_set = {t.strip() for t in template_filter} if isinstance(template_filter, (list, tuple, set)) else {t.strip() for t in str(template_filter).split(",")}
+        tpl_set = (
+            {t.strip() for t in template_filter}
+            if isinstance(template_filter, (list, tuple, set))
+            else {t.strip() for t in str(template_filter).split(",")}
+        )
         filtered = [p for p in all_pairs if p["key"] in tpl_set]
         if filtered:
             all_pairs = filtered
 
     if focus_tags:
-        tags_set = set(focus_tags) if isinstance(focus_tags, (list, tuple, set)) else {t.strip() for t in str(focus_tags).split(",")}
+        tags_set = (
+            set(focus_tags)
+            if isinstance(focus_tags, (list, tuple, set))
+            else {t.strip() for t in str(focus_tags).split(",")}
+        )
         matched = [
-            p for p in all_pairs
-            if p["key"] in tags_set
-            or p["trapTag"] in tags_set
-            or p.get("skill") in tags_set
-            or p["form"] in tags_set
+            p
+            for p in all_pairs
+            if p["key"] in tags_set or p["trapTag"] in tags_set or p.get("skill") in tags_set or p["form"] in tags_set
         ]
         if matched:
             return _round_robin_pick(matched, count, rng)
@@ -195,7 +206,9 @@ def generate_drill_set(
 
     def _build_attempt(attempt_seed: int):
         rng = random.Random(attempt_seed)
-        schedule = _pick_template_schedule(mod.TEMPLATES, count, difficulty, focus_tags, rng, template_filter=templates, unit_code=unit_code)
+        schedule = _pick_template_schedule(
+            mod.TEMPLATES, count, difficulty, focus_tags, rng, template_filter=templates, unit_code=unit_code
+        )
         unique_tpls = {s["key"]: s["template"] for s in schedule}.values()
         available_forms_count = sum(len(t.get("forms") or ["direct"]) for t in unique_tpls)
 
@@ -252,11 +265,13 @@ def generate_drill_set(
             for ref_code in prob.get("references", []):
                 entry = id_map.get(ref_code, {})
                 ref_title = entry.get("title", ref_code) if isinstance(entry, dict) else ref_code
-                ref_badges.append({
-                    "code": ref_code,
-                    "title": ref_title,
-                    "notionUrl": notion_url_for(ref_code, id_map),
-                })
+                ref_badges.append(
+                    {
+                        "code": ref_code,
+                        "title": ref_title,
+                        "notionUrl": notion_url_for(ref_code, id_map),
+                    }
+                )
             prob["referenceBadges"] = ref_badges
 
             # Remove internal verification fields while keeping form, fingerprint, qualityGates, trapValue, flaw, trapCode
@@ -321,18 +336,11 @@ def generate_drill_set(
 
     if data_root == "drills/data":
         from code_engine.workspace import materialize_drill_workspace
+
         materialize_drill_workspace(drill_doc)
 
     with open(file_path, "w", encoding="utf-8") as f:
         json.dump(drill_doc, f, ensure_ascii=False, indent=2)
-
-    # Mirror to practice-studio if directory exists and using relative drills/data
-    if data_root == "drills/data" and os.path.exists("practice-studio"):
-        studio_dir = os.path.join("practice-studio", data_root, unit_code)
-        os.makedirs(studio_dir, exist_ok=True)
-        studio_path = os.path.join(studio_dir, f"{drill_id}.json")
-        if os.path.realpath(file_path) != os.path.realpath(studio_path):
-            shutil.copyfile(file_path, studio_path)
 
     print(f"[Verified & Saved] {file_path}")
     return drill_doc

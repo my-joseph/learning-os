@@ -5,15 +5,16 @@ Executes test suites (node:test, vitest, pytest, etc.) via JUnit XML reporter,
 evaluates milestone scores, formats failure diagnostics, and syncs directly
 to the Notion database 'Learning Practice & Drills' (Format: "Code Test Suite").
 """
-import os
-import sys
-import json
-import ssl
-import time
-import urllib.request
-import urllib.error
-import subprocess
+
 import datetime
+import json
+import os
+import ssl
+import subprocess
+import sys
+import time
+import urllib.error
+import urllib.request
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
@@ -32,6 +33,7 @@ SSL_CTX = (
     else ssl.create_default_context()
 )
 
+
 def find_repo_root(start_dir: str = ".") -> Path:
     """Walk up from start_dir to locate workspace root containing id_map.json."""
     curr = Path(start_dir).resolve()
@@ -42,6 +44,7 @@ def find_repo_root(start_dir: str = ".") -> Path:
             break
         curr = curr.parent
     return Path(start_dir).resolve()
+
 
 def load_env(repo_root: Path) -> dict:
     env = {}
@@ -54,6 +57,7 @@ def load_env(repo_root: Path) -> dict:
                     k, v = line.split("=", 1)
                     env[k.strip()] = v.strip().strip('"').strip("'")
     return env
+
 
 def notion_request(method: str, endpoint: str, token: str, payload: dict = None, max_retries: int = 5):
     url = f"https://api.notion.com/v1/{endpoint}"
@@ -70,11 +74,12 @@ def notion_request(method: str, endpoint: str, token: str, payload: dict = None,
                 return json.loads(resp.read().decode("utf-8"))
         except urllib.error.HTTPError as e:
             if e.code in (409, 429, 500, 502, 503, 504) and attempt < max_retries - 1:
-                wait = 1.5 * (2 ** attempt)
+                wait = 1.5 * (2**attempt)
                 time.sleep(wait)
                 continue
             body = e.read().decode("utf-8", errors="ignore")
             raise RuntimeError(f"HTTP {e.code} on {method} {endpoint}: {body}") from e
+
 
 def rt(text: str, bold: bool = False, code: bool = False):
     return {
@@ -83,16 +88,24 @@ def rt(text: str, bold: bool = False, code: bool = False):
         "annotations": {"bold": bold, "code": code},
     }
 
+
 def callout_block(content: str, color: str = "blue_background", icon: str = "code"):
     return {
         "object": "block",
         "type": "callout",
         "callout": {
-            "icon": {"type": "icon", "icon": {"name": icon, "color": "blue" if "blue" in color else "green" if "green" in color else "orange"}},
+            "icon": {
+                "type": "icon",
+                "icon": {
+                    "name": icon,
+                    "color": "blue" if "blue" in color else "green" if "green" in color else "orange",
+                },
+            },
             "color": color,
             "rich_text": [rt(content[:1990])],
         },
     }
+
 
 def heading2(text: str):
     return {
@@ -101,8 +114,10 @@ def heading2(text: str):
         "heading_2": {"rich_text": [rt(text)]},
     }
 
+
 def divider_block():
     return {"object": "block", "type": "divider", "divider": {}}
+
 
 def toggle_block(title: str, children: list):
     return {
@@ -114,12 +129,14 @@ def toggle_block(title: str, children: list):
         },
     }
 
+
 def bullet_block(text: str):
     return {
         "object": "block",
         "type": "bulleted_list_item",
         "bulleted_list_item": {"rich_text": [rt(text[:1990])]},
     }
+
 
 def code_block(code: str, lang: str = "plain text"):
     return {
@@ -131,10 +148,11 @@ def code_block(code: str, lang: str = "plain text"):
         },
     }
 
+
 def run_tests_and_parse(lab_dir: Path, config: dict):
     """Executes the test command and parses JUnit XML test results."""
     test_cmd = config.get("testCommand", "node --experimental-strip-types --test --test-reporter=junit tests/*.test.ts")
-    
+
     print(f"{CYAN}▶ Executing Test Suite:{RESET} {test_cmd}")
     proc = subprocess.run(
         test_cmd,
@@ -149,7 +167,7 @@ def run_tests_and_parse(lab_dir: Path, config: dict):
     xml_start = raw_output.find("<?xml")
     if xml_start == -1:
         xml_start = raw_output.find("<testsuites")
-    
+
     if xml_start == -1:
         # Fallback if no XML found
         return {
@@ -164,7 +182,7 @@ def run_tests_and_parse(lab_dir: Path, config: dict):
     end_tag = "</testsuites>"
     end_idx = xml_text.rfind(end_tag)
     if end_idx != -1:
-        xml_text = xml_text[:end_idx + len(end_tag)]
+        xml_text = xml_text[: end_idx + len(end_tag)]
 
     try:
         root = ET.fromstring(xml_text)
@@ -183,7 +201,7 @@ def run_tests_and_parse(lab_dir: Path, config: dict):
         tc_time = float(tc.attrib.get("time", 0.0))
         failure_elem = tc.find("failure")
         error_elem = tc.find("error")
-        
+
         is_fail = failure_elem is not None or error_elem is not None
         fail_msg = ""
         fail_trace = ""
@@ -194,20 +212,23 @@ def run_tests_and_parse(lab_dir: Path, config: dict):
             fail_msg = error_elem.attrib.get("message", error_elem.text or "Runtime error")
             fail_trace = error_elem.text or ""
 
-        testcases.append({
-            "name": tc_name,
-            "file": tc_file,
-            "time": tc_time,
-            "passed": not is_fail,
-            "failure_msg": fail_msg.strip(),
-            "failure_trace": fail_trace.strip(),
-        })
+        testcases.append(
+            {
+                "name": tc_name,
+                "file": tc_file,
+                "time": tc_time,
+                "passed": not is_fail,
+                "failure_msg": fail_msg.strip(),
+                "failure_trace": fail_trace.strip(),
+            }
+        )
 
     return {
         "success": True,
         "testcases": testcases,
         "raw_output": raw_output,
     }
+
 
 def evaluate_milestones(milestones: list, testcases: list):
     """Maps test cases to configured milestones and computes scores."""
@@ -227,8 +248,7 @@ def evaluate_milestones(milestones: list, testcases: list):
 
         # Filter test cases matching this milestone
         matched = [
-            tc for tc in testcases
-            if m_pattern.lower() in tc["file"].lower() or m_pattern.lower() in tc["name"].lower()
+            tc for tc in testcases if m_pattern.lower() in tc["file"].lower() or m_pattern.lower() in tc["name"].lower()
         ]
 
         if not matched:
@@ -244,7 +264,7 @@ def evaluate_milestones(milestones: list, testcases: list):
         else:
             tc_total = len(matched)
             tc_pass_count = sum(1 for tc in matched if tc["passed"])
-            matched_passed = (tc_pass_count == tc_total and tc_total > 0)
+            matched_passed = tc_pass_count == tc_total and tc_total > 0
             failures = [tc for tc in matched if not tc["passed"]]
 
         pts_earned = m_pts if matched_passed else 0
@@ -255,23 +275,25 @@ def evaluate_milestones(milestones: list, testcases: list):
             clean_cat = m_cat.replace(",", " /").strip()
             if clean_cat not in failing_categories:
                 failing_categories.append(clean_cat)
-            
+
             first_fail = failures[0] if failures else {"failure_msg": "Unknown failure"}
             short_msg = first_fail.get("failure_msg", "").split("\n")[0][:120]
             diverged_summaries.append(f"[{m_id}] {short_msg}")
 
-        evaluated.append({
-            "id": m_id,
-            "title": m_title,
-            "points": m_pts,
-            "earned": pts_earned,
-            "passed": matched_passed,
-            "test_count": len(matched),
-            "pass_count": sum(1 for tc in matched if tc["passed"]),
-            "testcases": matched,
-            "failures": failures,
-            "category": m_cat,
-        })
+        evaluated.append(
+            {
+                "id": m_id,
+                "title": m_title,
+                "points": m_pts,
+                "earned": pts_earned,
+                "passed": matched_passed,
+                "test_count": len(matched),
+                "pass_count": sum(1 for tc in matched if tc["passed"]),
+                "testcases": matched,
+                "failures": failures,
+                "category": m_cat,
+            }
+        )
 
     accuracy_pct = round((total_score / max_score * 100), 1) if max_score > 0 else 0.0
     divergence_str = " | ".join(diverged_summaries) if diverged_summaries else "All milestones passed 100% verified."
@@ -285,6 +307,7 @@ def evaluate_milestones(milestones: list, testcases: list):
         "divergence_summary": divergence_str,
         "all_passed": (total_score == max_score and max_score > 0),
     }
+
 
 def sync_to_notion(repo_root: Path, lab_dir: Path, config: dict, eval_result: dict, env: dict):
     """Syncs lab grading results into Notion 'Learning Practice & Drills' database."""
@@ -347,7 +370,9 @@ def sync_to_notion(repo_root: Path, lab_dir: Path, config: dict, eval_result: di
         "Score": {"number": eval_result["total_score"]},
         "Max Score": {"number": eval_result["max_score"]},
         "Mistake Categories": {"multi_select": cleaned_tags},
-        "Diverged Steps Summary": {"rich_text": [{"type": "text", "text": {"content": eval_result["divergence_summary"][:1900]}}]},
+        "Diverged Steps Summary": {
+            "rich_text": [{"type": "text", "text": {"content": eval_result["divergence_summary"][:1900]}}]
+        },
         "Local File Path": {"rich_text": [{"type": "text", "text": {"content": rel_path}}]},
         "Attempt Date": {"date": {"start": now_iso}},
     }
@@ -402,7 +427,7 @@ def sync_to_notion(repo_root: Path, lab_dir: Path, config: dict, eval_result: di
     for ms in eval_result["milestones"]:
         status_icon = "✔" if ms["passed"] else "✗"
         m_title = f"{status_icon} [{ms['id']}] {ms['title']} — {ms['earned']}/{ms['points']} pts ({ms['pass_count']}/{ms['test_count']} tests passed)"
-        
+
         children = []
         for tc in ms["testcases"]:
             tc_icon = "✔" if tc["passed"] else "✗"
@@ -426,6 +451,7 @@ def sync_to_notion(repo_root: Path, lab_dir: Path, config: dict, eval_result: di
 
     page_url = f"https://notion.so/{page_id.replace('-', '')}"
     return page_url
+
 
 def main():
     lab_dir = Path.cwd()
@@ -473,7 +499,9 @@ def main():
 
     print(f"\n{BOLD}-------------------------------------------------------------------------{RESET}")
     score_color = GREEN if eval_res["all_passed"] else YELLOW if eval_res["total_score"] > 0 else RED
-    print(f"  {BOLD}TOTAL SCORE:{RESET} {score_color}{eval_res['total_score']} / {eval_res['max_score']} pts ({eval_res['accuracy_pct']}%){RESET}")
+    print(
+        f"  {BOLD}TOTAL SCORE:{RESET} {score_color}{eval_res['total_score']} / {eval_res['max_score']} pts ({eval_res['accuracy_pct']}%){RESET}"
+    )
     status_label = f"{GREEN}GRADED (PASSED){RESET}" if eval_res["all_passed"] else f"{RED}NEEDS RETRY{RESET}"
     print(f"  {BOLD}STATUS:{RESET}      {status_label}")
     if eval_res["failing_categories"]:
@@ -495,6 +523,7 @@ def main():
     else:
         print(f"{GREEN}{BOLD}🎉 ALL MILESTONES COMPLETED AND VERIFIED!{RESET}\n")
         sys.exit(0)
+
 
 if __name__ == "__main__":
     main()

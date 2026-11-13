@@ -10,10 +10,10 @@ Contract Guard and Quality Gates G1-G6.
 This module is retained strictly for legacy fixture testing and regression benchmarks.
 Do not author new drill generators in this directory.
 """
+
 import importlib
 import os
 import pkgutil
-import warnings
 from types import ModuleType
 from typing import Any
 
@@ -120,10 +120,7 @@ def load_unit(unit_code: str) -> ModuleType:
     if unit_code not in units:
         units = discover_units(force_refresh=True)
     if unit_code not in units:
-        raise KeyError(
-            f"No Math templates registered for {unit_code}. "
-            f"Registered: {', '.join(sorted(units.keys()))}"
-        )
+        raise KeyError(f"No Math templates registered for {unit_code}. Registered: {', '.join(sorted(units.keys()))}")
     return units[unit_code]
 
 

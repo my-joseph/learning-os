@@ -20,10 +20,12 @@ Checks per problem:
  5. Mistake taxonomy validation:
     - All commonTrapTag values must exist in the Unit's declared MISTAKE_TAGS.
 """
+
 import re
 import subprocess
+
 from code_engine.answer_check import check_answer, parse_tokens
-from quality_rules import QUALITY_RULES, QualityError, check_gate_g3_set, verify_quality_gates
+from quality_rules import QUALITY_RULES, check_gate_g3_set, verify_quality_gates
 
 BANNED = [
     (re.compile(r"__"), "Markdown underscore emphasis (__)"),
@@ -62,7 +64,7 @@ def check_prompt_readability(pid, prompt: str):
             _fail(
                 pid,
                 "prompt violates Zero Wall-of-Text Standard (> 250 chars without newlines, bullet points, or bold sections). "
-                "Structure with markdown sections and bullet points."
+                "Structure with markdown sections and bullet points.",
             )
 
 
@@ -202,6 +204,7 @@ def verify_problem(p, id_map=None, rules=None):
             _fail(pid, "Programming suite problem must provide solutionCode for pre-execution verification")
 
         from code_engine.test_runner import run_tests
+
         report = run_tests(sol, p.get("visibleTests", []), p.get("hiddenTests", []))
         if not report.get("allPassed"):
             _fail(pid, f"Canonical solution failed test suite: {report}")

@@ -3,6 +3,7 @@
 Examples are taken from real drills that passed the old contract while giving
 away their own solution.
 """
+
 from __future__ import annotations
 
 import copy
@@ -91,9 +92,7 @@ class FindSolutionLeaks(unittest.TestCase):
         self.assertTrue(find_solution_leaks("Find $x$ in $4x = 24$.", "4x = 24 \\implies x = \\frac{24}{4}"))
         self.assertEqual(find_solution_leaks(word, "P = 2L + 2W"), [])
         # the expression to evaluate IS the problem
-        self.assertEqual(
-            find_solution_leaks("Evaluate $18 - 3 \\times (4 + 2)$.", "18 - 3 \\times (4 + 2) = ?"), []
-        )
+        self.assertEqual(find_solution_leaks("Evaluate $18 - 3 \\times (4 + 2)$.", "18 - 3 \\times (4 + 2) = ?"), [])
 
 
 class ContractWithConstants(unittest.TestCase):

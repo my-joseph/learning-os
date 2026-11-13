@@ -30,8 +30,8 @@ def load_all_templates() -> dict[str, tuple[str, dict[str, Any]]]:
 
     Returns dict mapping template_key -> (module_name, template_dict).
     """
-    from math_engine.templates import get_all_unit_modules as get_math_modules
     from code_engine.templates import get_all_unit_modules as get_code_modules
+    from math_engine.templates import get_all_unit_modules as get_math_modules
 
     registry: dict[str, tuple[str, dict[str, Any]]] = {}
 
@@ -54,8 +54,8 @@ def load_all_templates() -> dict[str, tuple[str, dict[str, Any]]]:
 
 def load_all_mistake_tag_descriptions() -> dict[str, str]:
     """Loads all mistake tag descriptions from registered modules."""
-    from math_engine.templates import get_all_unit_modules as get_math_modules
     from code_engine.templates import get_all_unit_modules as get_code_modules
+    from math_engine.templates import get_all_unit_modules as get_math_modules
 
     tag_descriptions: dict[str, str] = {}
     for _, mod in list(get_math_modules()) + list(get_code_modules()):
@@ -72,9 +72,7 @@ def build_sample_sheet(template_key: str, seed: int = 42) -> str:
     tag_descriptions = load_all_mistake_tag_descriptions()
     if template_key not in registry:
         keys_list = "\n  - ".join(sorted(registry.keys()))
-        raise KeyError(
-            f"Template '{template_key}' not found in registry.\nAvailable templates:\n  - {keys_list}"
-        )
+        raise KeyError(f"Template '{template_key}' not found in registry.\nAvailable templates:\n  - {keys_list}")
 
     mod_name, tpl = registry[template_key]
     forms_dict = tpl.get("forms") or {"direct": {}}
@@ -119,13 +117,14 @@ def build_sample_sheet(template_key: str, seed: int = 42) -> str:
         lines.append("")
         lines.extend(warnings)
 
-    lines.extend([
-        "",
-        "---",
-    ])
+    lines.extend(
+        [
+            "",
+            "---",
+        ]
+    )
 
     for idx, (form_name, form_cfg, prob) in enumerate(form_problems, start=1):
-
         level = form_cfg.get("level") or prob.get("level") or tpl.get("level", 1)
         skill = form_cfg.get("skill") or prob.get("skill") or tpl.get("skill", "UNSPECIFIED")
         vlevel = prob.get("verificationLevel") or tpl.get("verificationLevel", "machine-verified")
@@ -145,7 +144,8 @@ def build_sample_sheet(template_key: str, seed: int = 42) -> str:
         checkpoint_hint = prob.get("checkpointHint") or "(None)"
 
         # Anti-leak validation on learner hints
-        from quality_rules import check_gate_anti_leak, QualityError
+        from quality_rules import QualityError, check_gate_anti_leak
+
         is_code = prob.get("archetype") in ("code-tracing", "debugging", "refactoring") or bool(prob.get("codeSnippet"))
         try:
             check_gate_anti_leak(prob, is_code=is_code)
@@ -173,7 +173,13 @@ def build_sample_sheet(template_key: str, seed: int = 42) -> str:
         if trap_derivation:
             try:
                 from math_engine.answer_check import to_expr
-                td_eval = str(to_expr(trap_derivation, variables=prob.get("variables") or prob.get("answerSpec", {}).get("variables") or ["x"]))
+
+                td_eval = str(
+                    to_expr(
+                        trap_derivation,
+                        variables=prob.get("variables") or prob.get("answerSpec", {}).get("variables") or ["x"],
+                    )
+                )
             except Exception:
                 td_eval = "err"
             meta_rows.append(f"| **Trap Derivation** | `{trap_derivation}` $\\implies$ `{td_eval}` |")
@@ -182,34 +188,40 @@ def build_sample_sheet(template_key: str, seed: int = 42) -> str:
             flaw_display = f"`{flaw_tag}`" + (f" — *{flaw_desc}*" if flaw_desc else "")
             meta_rows.append(f"| **Flaw Tag (To Diagnose)** | {flaw_display} |")
 
-        lines.extend([
-            "",
-            f"## Form {idx}/{len(forms_dict)}: `{form_name}`",
-            "",
-            "| Property | Value |",
-            "| :--- | :--- |",
-            *meta_rows,
-            "",
-            "### Problem Prompt",
-            "",
-            prompt,
-        ])
+        lines.extend(
+            [
+                "",
+                f"## Form {idx}/{len(forms_dict)}: `{form_name}`",
+                "",
+                "| Property | Value |",
+                "| :--- | :--- |",
+                *meta_rows,
+                "",
+                "### Problem Prompt",
+                "",
+                prompt,
+            ]
+        )
 
         if display:
             disp_clean = str(display).strip()
             disp_str = disp_clean if disp_clean.startswith("$$") else f"$${disp_clean}$$"
-            lines.extend([
-                "",
-                "### Display & Student Work",
-                "",
-                disp_str,
-            ])
+            lines.extend(
+                [
+                    "",
+                    "### Display & Student Work",
+                    "",
+                    disp_str,
+                ]
+            )
 
         if options:
-            lines.extend([
-                "",
-                "### Options",
-            ])
+            lines.extend(
+                [
+                    "",
+                    "### Options",
+                ]
+            )
             for opt in options:
                 opt_id = opt.get("id", "")
                 opt_label = opt.get("label") or opt.get("text") or opt.get("value") or ""
@@ -217,35 +229,43 @@ def build_sample_sheet(template_key: str, seed: int = 42) -> str:
                 trap_suffix = f" (Trap: `{opt_trap}`)" if opt_trap else ""
                 lines.append(f"- `[{opt_id}]` {opt_label}{trap_suffix}")
 
-        lines.extend([
-            "",
-            "### Learner Hints & Anti-Leak Validation",
-            f"- **Input Hint (`inputHint`)**: `{input_hint}`",
-            f"- **Checkpoint Hint (`checkpointHint`)**: `{checkpoint_hint}`",
-            f"- **Anti-Leak Verification**: `{anti_leak_status}`",
-        ])
+        lines.extend(
+            [
+                "",
+                "### Learner Hints & Anti-Leak Validation",
+                f"- **Input Hint (`inputHint`)**: `{input_hint}`",
+                f"- **Checkpoint Hint (`checkpointHint`)**: `{checkpoint_hint}`",
+                f"- **Anti-Leak Verification**: `{anti_leak_status}`",
+            ]
+        )
 
         if code_snippet:
-            lines.extend([
-                "",
-                f"```{code_language}",
-                code_snippet.strip(),
-                "```",
-            ])
+            lines.extend(
+                [
+                    "",
+                    f"```{code_language}",
+                    code_snippet.strip(),
+                    "```",
+                ]
+            )
 
-        lines.extend([
-            "",
-            "### Expected Answer & Provenance",
-            f"- **Display Form**: `{ans_display}`",
-            f"- **Plain/Eval Form**: `{ans_plain}`",
-            f"- **Trap & Distractor Value**: `{trap_value}` (Tag: `{trap_tag}`{f' — {trap_desc}' if trap_desc else ''})",
-        ])
+        lines.extend(
+            [
+                "",
+                "### Expected Answer & Provenance",
+                f"- **Display Form**: `{ans_display}`",
+                f"- **Plain/Eval Form**: `{ans_plain}`",
+                f"- **Trap & Distractor Value**: `{trap_value}` (Tag: `{trap_tag}`{f' — {trap_desc}' if trap_desc else ''})",
+            ]
+        )
         if trap_derivation:
             lines.append(f"- **Trap Derivation**: `{trap_derivation}` = `{td_eval}`")
-        lines.extend([
-            "",
-            "### Step-by-Step Derivation",
-        ])
+        lines.extend(
+            [
+                "",
+                "### Step-by-Step Derivation",
+            ]
+        )
 
         if not steps:
             lines.append("- *(No discrete steps provided)*")
@@ -264,10 +284,12 @@ def build_sample_sheet(template_key: str, seed: int = 42) -> str:
                 else:
                     lines.append(f"{s_idx}. {explain}{rule_str}")
 
-        lines.extend([
-            "",
-            "---",
-        ])
+        lines.extend(
+            [
+                "",
+                "---",
+            ]
+        )
 
     return "\n".join(lines)
 

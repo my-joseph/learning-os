@@ -15,13 +15,12 @@ Usage:
 from __future__ import annotations
 
 import argparse
-from collections import Counter, defaultdict
-import datetime
 import glob
 import json
 import os
 import random
 import re
+from collections import Counter, defaultdict
 from typing import Any
 
 
@@ -32,8 +31,8 @@ def load_taxonomy(taxonomy_path: str = "skills_taxonomy.json") -> dict[str, Any]
 
 def load_all_templates() -> dict[str, dict[str, Any]]:
     """Loads all registered templates from math_engine and code_engine via auto-discovery."""
-    from math_engine.templates import get_all_unit_templates as get_math_units
     from code_engine.templates import get_all_unit_templates as get_code_units
+    from math_engine.templates import get_all_unit_templates as get_math_units
 
     templates: dict[str, dict[str, Any]] = {}
     for unit, tpls in get_math_units():
@@ -180,35 +179,41 @@ def scan_drills(
 
             if mistakes:
                 for m in mistakes:
-                    all_mistake_records.append({
+                    all_mistake_records.append(
+                        {
+                            "file": rel_path,
+                            "problem_id": pid,
+                            "skill": skill or "UNASSIGNED",
+                            "trap_tag": m,
+                            "score": score,
+                            "skipped": skipped,
+                            "is_inferred": is_inferred,
+                        }
+                    )
+            elif score is not None and score < 1.0:
+                all_mistake_records.append(
+                    {
                         "file": rel_path,
                         "problem_id": pid,
                         "skill": skill or "UNASSIGNED",
-                        "trap_tag": m,
+                        "trap_tag": trap_tag or "unspecified_slip",
                         "score": score,
                         "skipped": skipped,
                         "is_inferred": is_inferred,
-                    })
-            elif score is not None and score < 1.0:
-                all_mistake_records.append({
-                    "file": rel_path,
-                    "problem_id": pid,
-                    "skill": skill or "UNASSIGNED",
-                    "trap_tag": trap_tag or "unspecified_slip",
-                    "score": score,
-                    "skipped": skipped,
-                    "is_inferred": is_inferred,
-                })
+                    }
+                )
             elif skipped:
-                all_mistake_records.append({
-                    "file": rel_path,
-                    "problem_id": pid,
-                    "skill": skill or "UNASSIGNED",
-                    "trap_tag": "skipped_concept_gap",
-                    "score": 0,
-                    "skipped": True,
-                    "is_inferred": is_inferred,
-                })
+                all_mistake_records.append(
+                    {
+                        "file": rel_path,
+                        "problem_id": pid,
+                        "skill": skill or "UNASSIGNED",
+                        "trap_tag": "skipped_concept_gap",
+                        "score": 0,
+                        "skipped": True,
+                        "is_inferred": is_inferred,
+                    }
+                )
 
     # Second pass: studio files with deduplication
     for filepath in studio_files:
@@ -279,35 +284,41 @@ def scan_drills(
 
             if mistakes:
                 for m in mistakes:
-                    all_mistake_records.append({
+                    all_mistake_records.append(
+                        {
+                            "file": rel_path,
+                            "problem_id": pid,
+                            "skill": skill or "UNASSIGNED",
+                            "trap_tag": m,
+                            "score": score,
+                            "skipped": skipped,
+                            "is_inferred": is_inferred,
+                        }
+                    )
+            elif score is not None and score < 1.0:
+                all_mistake_records.append(
+                    {
                         "file": rel_path,
                         "problem_id": pid,
                         "skill": skill or "UNASSIGNED",
-                        "trap_tag": m,
+                        "trap_tag": trap_tag or "unspecified_slip",
                         "score": score,
                         "skipped": skipped,
                         "is_inferred": is_inferred,
-                    })
-            elif score is not None and score < 1.0:
-                all_mistake_records.append({
-                    "file": rel_path,
-                    "problem_id": pid,
-                    "skill": skill or "UNASSIGNED",
-                    "trap_tag": trap_tag or "unspecified_slip",
-                    "score": score,
-                    "skipped": skipped,
-                    "is_inferred": is_inferred,
-                })
+                    }
+                )
             elif skipped:
-                all_mistake_records.append({
-                    "file": rel_path,
-                    "problem_id": pid,
-                    "skill": skill or "UNASSIGNED",
-                    "trap_tag": "skipped_concept_gap",
-                    "score": 0,
-                    "skipped": True,
-                    "is_inferred": is_inferred,
-                })
+                all_mistake_records.append(
+                    {
+                        "file": rel_path,
+                        "problem_id": pid,
+                        "skill": skill or "UNASSIGNED",
+                        "trap_tag": "skipped_concept_gap",
+                        "score": 0,
+                        "skipped": True,
+                        "is_inferred": is_inferred,
+                    }
+                )
 
         studio_audit[rel_path] = audit_entry
 
@@ -390,9 +401,7 @@ PREREQUISITE_RATIONALES: dict[tuple[str, str], str] = {
     ("PRG-KATA-DEBOUNCE", "PRG-ARCH-PROJECT-RATE-LIMITER"): (
         "Pedagogical ordering: timer debouncing concepts ease sliding-window rate limiting design."
     ),
-    ("CAL-DIFF-POWER", "CAL-DIFF-CHAIN"): (
-        "Chain rule strictly requires mastery of basic power rule derivatives."
-    ),
+    ("CAL-DIFF-POWER", "CAL-DIFF-CHAIN"): ("Chain rule strictly requires mastery of basic power rule derivatives."),
 }
 
 
@@ -416,7 +425,7 @@ def generate_coverage_report(data_dir: str | None = None, output_path: str = "re
                 tag_templates_map.setdefault(tt, set()).add(tkey)
                 if sk:
                     tag_skills_map.setdefault(tt, set()).add(sk)
-            
+
             build_fn = tpl.get("build")
             if callable(build_fn):
                 try:
@@ -455,11 +464,13 @@ def generate_coverage_report(data_dir: str | None = None, output_path: str = "re
             sk = form_cfg.get("skill") or tpl.get("skill")
             lvl = form_cfg.get("level") or tpl.get("level")
             if sk:
-                skill_to_template_info[sk].append({
-                    "templateKey": tpl_key,
-                    "form": form_name,
-                    "level": lvl,
-                })
+                skill_to_template_info[sk].append(
+                    {
+                        "templateKey": tpl_key,
+                        "form": form_name,
+                        "level": lvl,
+                    }
+                )
                 if sk in skills_meta:
                     domain = skills_meta[sk].get("domain")
                     if domain and lvl:
@@ -505,7 +516,7 @@ def generate_coverage_report(data_dir: str | None = None, output_path: str = "re
             levels_list = sorted(list(set(b["level"] for b in tpl_bindings if b["level"] is not None)))
             tpl_str = ", ".join(f"`{k}`" for k in tpl_keys)
             forms_str = ", ".join(f"`{f}`" for f in forms_list)
-            lvl_str = ", ".join(f"L{l}" for l in levels_list) if levels_list else "-"
+            lvl_str = ", ".join(f"L{lv}" for lv in levels_list) if levels_list else "-"
         else:
             tpl_str = "*None*"
             forms_str = "*None*"
@@ -522,15 +533,17 @@ def generate_coverage_report(data_dir: str | None = None, output_path: str = "re
         )
 
     # Studio deduplication audit subsection
-    lines.extend([
-        "",
-        "### 1.1 การตรวจสอบความซ้ำซ้อนในไฟล์ `-studio` (Studio File Deduplication Audit)",
-        "",
-        "จากการตรวจสอบโจทย์ในไฟล์ที่ลงท้ายด้วย `-studio` โดยเทียบ Skeleton ของโจทย์แบบ normalized ตัวเลขกับชุดโจทย์หลัก:",
-        "",
-        "| ไฟล์ที่ตรวจสอบ | จำนวนโจทย์ทั้งหมด | โจทย์ที่ซ้ำโครงชุดหลัก | โจทย์ใหม่ที่ไม่ซ้ำ | สถานะการนับใน Coverage Matrix |",
-        "| :--- | :---: | :---: | :---: | :--- |",
-    ])
+    lines.extend(
+        [
+            "",
+            "### 1.1 การตรวจสอบความซ้ำซ้อนในไฟล์ `-studio` (Studio File Deduplication Audit)",
+            "",
+            "จากการตรวจสอบโจทย์ในไฟล์ที่ลงท้ายด้วย `-studio` โดยเทียบ Skeleton ของโจทย์แบบ normalized ตัวเลขกับชุดโจทย์หลัก:",
+            "",
+            "| ไฟล์ที่ตรวจสอบ | จำนวนโจทย์ทั้งหมด | โจทย์ที่ซ้ำโครงชุดหลัก | โจทย์ใหม่ที่ไม่ซ้ำ | สถานะการนับใน Coverage Matrix |",
+            "| :--- | :---: | :---: | :---: | :--- |",
+        ]
+    )
 
     for sf, audit in sorted(studio_audit.items()):
         tot = audit["total"]
@@ -539,22 +552,24 @@ def generate_coverage_report(data_dir: str | None = None, output_path: str = "re
         status = "ตัดออกจากยอดรวม (ไม่นับซ้ำ)" if non_dups == 0 else f"นับเฉพาะ {non_dups} ข้อที่ไม่ซ้ำ"
         lines.append(f"| `{os.path.basename(sf)}` | {tot} | **{dups}** | {non_dups} | {status} |")
 
-    lines.extend([
-        "",
-        "> [!NOTE]",
-        "> ทุกโจทย์ในไฟล์ `-studio` ได้รับการคงไว้ในดิสก์โดยไม่มีการลบหรือย้าย และถูกกรองไม่ให้นับซ้ำในตาราง Coverage Matrix ตามข้อกำหนดอย่างเคร่งครัด",
-        "",
-        "---",
-        "",
-        "## 2. ช่องว่างของระบบ (Coverage Gaps)",
-        "",
-        "### 2.1 Skill ที่มี Template แล้ว แต่ยังไม่มีโจทย์จริงใน `drills/data`",
-        "",
-        f"มีทั้งหมด **{len(zero_problem_skills)}** Skills ที่มี Template ใน code engine / math engine พร้อมสร้างโจทย์ แต่ยังไม่เคยรัน generate บันทึกไฟล์ลงใน `drills/data/`:",
-        "",
-        "| Skill ID | Domain | Registered Template | สาเหตุ / สถานะ |",
-        "| :--- | :--- | :--- | :--- |",
-    ])
+    lines.extend(
+        [
+            "",
+            "> [!NOTE]",
+            "> ทุกโจทย์ในไฟล์ `-studio` ได้รับการคงไว้ในดิสก์โดยไม่มีการลบหรือย้าย และถูกกรองไม่ให้นับซ้ำในตาราง Coverage Matrix ตามข้อกำหนดอย่างเคร่งครัด",
+            "",
+            "---",
+            "",
+            "## 2. ช่องว่างของระบบ (Coverage Gaps)",
+            "",
+            "### 2.1 Skill ที่มี Template แล้ว แต่ยังไม่มีโจทย์จริงใน `drills/data`",
+            "",
+            f"มีทั้งหมด **{len(zero_problem_skills)}** Skills ที่มี Template ใน code engine / math engine พร้อมสร้างโจทย์ แต่ยังไม่เคยรัน generate บันทึกไฟล์ลงใน `drills/data/`:",
+            "",
+            "| Skill ID | Domain | Registered Template | สาเหตุ / สถานะ |",
+            "| :--- | :--- | :--- | :--- |",
+        ]
+    )
 
     for sk_id, dom, tpls in zero_problem_skills:
         reason = ""
@@ -568,22 +583,24 @@ def generate_coverage_report(data_dir: str | None = None, output_path: str = "re
             reason = "ยังไม่มีการสร้างชุดฝึกที่ครอบคลุม skill นี้"
         lines.append(f"| `{sk_id}` | `{dom}` | {tpls} | {reason} |")
 
-    lines.extend([
-        "",
-        "### 2.2 ระดับความยากที่แต่ละ Domain ขาด (Missing Levels per Domain)",
-        "",
-        "จากการตรวจสอบการรองรับระดับ Level 1 - Level 4 ของทุก Domain พบสถานะดังนี้:",
-        "",
-        "| Domain | ระดับที่ครอบคลุมแล้ว | ระดับที่ยังขาด (Gaps) | ข้อสังเกต |",
-        "| :--- | :---: | :---: | :--- |",
-    ])
+    lines.extend(
+        [
+            "",
+            "### 2.2 ระดับความยากที่แต่ละ Domain ขาด (Missing Levels per Domain)",
+            "",
+            "จากการตรวจสอบการรองรับระดับ Level 1 - Level 4 ของทุก Domain พบสถานะดังนี้:",
+            "",
+            "| Domain | ระดับที่ครอบคลุมแล้ว | ระดับที่ยังขาด (Gaps) | ข้อสังเกต |",
+            "| :--- | :---: | :---: | :--- |",
+        ]
+    )
 
     all_expected_levels = {1, 2, 3, 4}
     for dom in domain_order:
         covered = domain_levels_covered.get(dom, set())
         missing = sorted(list(all_expected_levels - covered))
-        covered_str = ", ".join(f"L{l}" for l in sorted(covered)) if covered else "*ไม่มี*"
-        missing_str = ", ".join(f"**L{l}**" for l in missing) if missing else "ครบถ้วน (None)"
+        covered_str = ", ".join(f"L{lv}" for lv in sorted(covered)) if covered else "*ไม่มี*"
+        missing_str = ", ".join(f"**L{lv}**" for lv in missing) if missing else "ครบถ้วน (None)"
         notes = ""
         if dom == "geometry":
             notes = "หลังปรับลด `cylinder-volume` เหลือ L2 ทำให้หมวดเรขาคณิตยังขาด L3 (Trap/Diagnostic) และ L4 (Applied Synthesis)"
@@ -596,17 +613,19 @@ def generate_coverage_report(data_dir: str | None = None, output_path: str = "re
         lines.append(f"| `{dom}` | {covered_str} | {missing_str} | {notes} |")
 
     # SECTION 3: พร้อมเรียนต่อ (Ready to Learn)
-    lines.extend([
-        "",
-        "---",
-        "",
-        "## 3. พร้อมเรียนต่อ (Ready to Learn)",
-        "",
-        "> [!IMPORTANT]",
-        "> **เกณฑ์ประเมินการบรรลุ (Mastery Criteria)**: เคยฝึกทำโจทย์ $\\ge 5$ ข้อ และได้คะแนนเฉลี่ย $\\ge 80\\%$ (0.80)  ",
-        "> จัดกลุ่มออกเป็น 3 ส่วน: 1) แนะนำถัดไป (Top 3) อิงตามกับดักที่พลาดบ่อย, 2) ถูกล็อก (รอผ่าน Hard Prereqs), 3) รากที่พร้อมเริ่มทันที",
-        "",
-    ])
+    lines.extend(
+        [
+            "",
+            "---",
+            "",
+            "## 3. พร้อมเรียนต่อ (Ready to Learn)",
+            "",
+            "> [!IMPORTANT]",
+            "> **เกณฑ์ประเมินการบรรลุ (Mastery Criteria)**: เคยฝึกทำโจทย์ $\\ge 5$ ข้อ และได้คะแนนเฉลี่ย $\\ge 80\\%$ (0.80)  ",
+            "> จัดกลุ่มออกเป็น 3 ส่วน: 1) แนะนำถัดไป (Top 3) อิงตามกับดักที่พลาดบ่อย, 2) ถูกล็อก (รอผ่าน Hard Prereqs), 3) รากที่พร้อมเริ่มทันที",
+            "",
+        ]
+    )
 
     # Evaluate mastery per skill
     min_drills_count = 5
@@ -616,7 +635,7 @@ def generate_coverage_report(data_dir: str | None = None, output_path: str = "re
         scores = skill_scores.get(sk_id, [])
         count = len(scores)
         avg = (sum(scores) / count) if count > 0 else 0.0
-        skill_mastery[sk_id] = (count >= min_drills_count and avg >= min_avg_score)
+        skill_mastery[sk_id] = count >= min_drills_count and avg >= min_avg_score
 
     # 1. แนะนำถัดไป (Top 3): เชื่อม trapTag ที่พลาดบ่อยกับ skill เจ้าของ trap
     trap_to_skill: dict[str, str] = {}
@@ -648,7 +667,9 @@ def generate_coverage_report(data_dir: str | None = None, output_path: str = "re
         chain = [curr]
         visited = {curr}
         while True:
-            hard_prereqs = [p["skill"] for p in skills_meta[curr].get("prerequisites", []) if p.get("strength") == "hard"]
+            hard_prereqs = [
+                p["skill"] for p in skills_meta[curr].get("prerequisites", []) if p.get("strength") == "hard"
+            ]
             unmastered_hard = [p for p in hard_prereqs if not skill_mastery.get(p, False)]
             if not unmastered_hard:
                 break
@@ -664,54 +685,72 @@ def generate_coverage_report(data_dir: str | None = None, output_path: str = "re
             seen_target_skills.add(target_skill)
 
             is_ambiguous = len(tag_skills_map.get(tt, set())) > 1
-            ambig_note = f"<br>*(ข้อสังเกต: trapTag นี้ใช้ซ้ำในหลาย Skill ({', '.join(sorted(tag_skills_map[tt]))}) เจ้าของ trap จึงอาจกำกวม)*" if is_ambiguous else ""
+            ambig_note = (
+                f"<br>*(ข้อสังเกต: trapTag นี้ใช้ซ้ำในหลาย Skill ({', '.join(sorted(tag_skills_map[tt]))}) เจ้าของ trap จึงอาจกำกวม)*"
+                if is_ambiguous
+                else ""
+            )
 
             if target_skill == owner_skill:
-                reason = f"`{tt}` (พลาด {cnt} ครั้ง) $\\to$ เจ้าของกับดักคือ `{owner_skill}` $\\to$ พร้อมฝึกได้ทันที (Hard Prereqs ครบ)" + ambig_note
+                reason = (
+                    f"`{tt}` (พลาด {cnt} ครั้ง) $\\to$ เจ้าของกับดักคือ `{owner_skill}` $\\to$ พร้อมฝึกได้ทันที (Hard Prereqs ครบ)"
+                    + ambig_note
+                )
             else:
                 steps_str = " $\\to$ ติด ".join(f"`{s}`" for s in chain)
-                reason = f"`{tt}` (พลาด {cnt} ครั้ง) $\\to$ {steps_str} $\\to$ **ต้องฝึก `{target_skill}` ให้ชำนาญก่อน**" + ambig_note
+                reason = (
+                    f"`{tt}` (พลาด {cnt} ครั้ง) $\\to$ {steps_str} $\\to$ **ต้องฝึก `{target_skill}` ให้ชำนาญก่อน**"
+                    + ambig_note
+                )
 
-            top_3_recs.append({
-                "trap_tag": tt,
-                "mistake_count": cnt,
-                "owner_skill": owner_skill,
-                "target_skill": target_skill,
-                "target_name": skills_meta[target_skill].get("name", target_skill),
-                "reason": reason,
-            })
+            top_3_recs.append(
+                {
+                    "trap_tag": tt,
+                    "mistake_count": cnt,
+                    "owner_skill": owner_skill,
+                    "target_skill": target_skill,
+                    "target_name": skills_meta[target_skill].get("name", target_skill),
+                    "reason": reason,
+                }
+            )
 
         if len(top_3_recs) == 3:
             break
 
-    lines.extend([
-        "### 3.1 แนะนำถัดไป (Top 3 Recommendations)",
-        "",
-        "> [!NOTE]",
-        "> **ข้อสังเกตความกำกวมของ Trap Tag**: เมื่อ `trapTag` เดียวกันถูกใช้งานซ้ำในหลาย Template หรือหลาย Skill การระบุ Skill เจ้าของกับดักจะยึดตาม Template ที่มีประวัติผิดจริง แต่ต้นตอของข้อผิดพลาดอาจกำกวมได้หากผู้เรียนพลาดกับดักเดียวกันในบริบทอื่น",
-        "",
-        "วิเคราะห์จากกับดัก (`trapTag`) ที่มีประวัติทำผิดบ่อยที่สุด เชื่อมโยงหา Skill เจ้าของกับดัก แล้วไล่สาย Hard Prerequisites ไปยังทักษะต้นทางที่พร้อมฝึกได้ทันที:",
-        "",
-    ])
+    lines.extend(
+        [
+            "### 3.1 แนะนำถัดไป (Top 3 Recommendations)",
+            "",
+            "> [!NOTE]",
+            "> **ข้อสังเกตความกำกวมของ Trap Tag**: เมื่อ `trapTag` เดียวกันถูกใช้งานซ้ำในหลาย Template หรือหลาย Skill การระบุ Skill เจ้าของกับดักจะยึดตาม Template ที่มีประวัติผิดจริง แต่ต้นตอของข้อผิดพลาดอาจกำกวมได้หากผู้เรียนพลาดกับดักเดียวกันในบริบทอื่น",
+            "",
+            "วิเคราะห์จากกับดัก (`trapTag`) ที่มีประวัติทำผิดบ่อยที่สุด เชื่อมโยงหา Skill เจ้าของกับดัก แล้วไล่สาย Hard Prerequisites ไปยังทักษะต้นทางที่พร้อมฝึกได้ทันที:",
+            "",
+        ]
+    )
 
     if not top_3_recs:
         lines.append("*ไม่มีข้อมูลประวัติการทำผิดเพียงพอสำหรับการวิเคราะห์แนะนำ*")
     else:
-        lines.extend([
-            "| อันดับ | Trap Tag ที่พลาดบ่อย | จำนวนครั้ง | ปลายทางที่มีปัญหา | ทักษะแนะนำให้ฝึกทันที (Target) | เส้นทางเหตุผลและการเชื่อมโยง (Reasoning Path) |",
-            "| :---: | :--- | :---: | :--- | :--- | :--- |",
-        ])
+        lines.extend(
+            [
+                "| อันดับ | Trap Tag ที่พลาดบ่อย | จำนวนครั้ง | ปลายทางที่มีปัญหา | ทักษะแนะนำให้ฝึกทันที (Target) | เส้นทางเหตุผลและการเชื่อมโยง (Reasoning Path) |",
+                "| :---: | :--- | :---: | :--- | :--- | :--- |",
+            ]
+        )
         for idx, rec in enumerate(top_3_recs, start=1):
             lines.append(
                 f"| **{idx}** | `{rec['trap_tag']}` | **{rec['mistake_count']}** | `{rec['owner_skill']}` | `{rec['target_skill']}` ({rec['target_name']}) | {rec['reason']} |"
             )
 
         if len(top_3_recs) < 3:
-            lines.extend([
-                "",
-                f"> [!NOTE]",
-                f"> **ข้อสังเกตข้อมูลจริง**: ระบบมีประวัติข้อผิดพลาดที่แมปกับ Taxonomy ได้เพียง {len(top_3_recs)} สาย (รายงานตามข้อมูลจริง ไม่คาดเดาเพิ่มเติม)",
-            ])
+            lines.extend(
+                [
+                    "",
+                    "> [!NOTE]",
+                    f"> **ข้อสังเกตข้อมูลจริง**: ระบบมีประวัติข้อผิดพลาดที่แมปกับ Taxonomy ได้เพียง {len(top_3_recs)} สาย (รายงานตามข้อมูลจริง ไม่คาดเดาเพิ่มเติม)",
+                ]
+            )
 
     # 2. ถูกล็อก (Locked Skills)
     locked_skills: list[dict[str, Any]] = []
@@ -731,23 +770,27 @@ def generate_coverage_report(data_dir: str | None = None, output_path: str = "re
         avg = (sum(scores) / cnt) if cnt > 0 else 0.0
 
         if unmastered_hard:
-            locked_skills.append({
-                "skill_id": sk_id,
-                "domain": meta.get("domain", "-"),
-                "name": meta.get("name", "-"),
-                "tier": meta.get("tier", "-"),
-                "blocked_by": unmastered_hard,
-                "practiced_count": cnt,
-            })
+            locked_skills.append(
+                {
+                    "skill_id": sk_id,
+                    "domain": meta.get("domain", "-"),
+                    "name": meta.get("name", "-"),
+                    "tier": meta.get("tier", "-"),
+                    "blocked_by": unmastered_hard,
+                    "practiced_count": cnt,
+                }
+            )
         elif len(hard_prereqs) == 0:
-            root_skills.append({
-                "skill_id": sk_id,
-                "domain": meta.get("domain", "-"),
-                "name": meta.get("name", "-"),
-                "tier": meta.get("tier", "-"),
-                "practiced_count": cnt,
-                "avg_score": avg,
-            })
+            root_skills.append(
+                {
+                    "skill_id": sk_id,
+                    "domain": meta.get("domain", "-"),
+                    "name": meta.get("name", "-"),
+                    "tier": meta.get("tier", "-"),
+                    "practiced_count": cnt,
+                    "avg_score": avg,
+                }
+            )
 
     # Sort locked by domain, tier, skill_id
     locked_skills.sort(
@@ -768,49 +811,63 @@ def generate_coverage_report(data_dir: str | None = None, output_path: str = "re
         )
     )
 
-    lines.extend([
-        "",
-        "### 3.2 ทักษะที่ถูกล็อก (Locked Skills)",
-        "",
-        f"มีทั้งหมด **{len(locked_skills)}** ทักษะที่ยังไม่สามารถเริ่มฝึกได้อย่างมีประสิทธิภาพ เนื่องจากยังมี Hard Prerequisites ที่ยังไม่ผ่านเกณฑ์ Mastery ($\\ge 5$ ข้อ, $\\ge 80\\%$):",
-        "",
-        "| ลำดับ | Domain | Skill ID | Skill Name | Tier | ติด Hard Prerequisite ตัวใด (Blocking Prereqs) |",
-        "| :---: | :--- | :--- | :--- | :---: | :--- |",
-    ])
+    lines.extend(
+        [
+            "",
+            "### 3.2 ทักษะที่ถูกล็อก (Locked Skills)",
+            "",
+            f"มีทั้งหมด **{len(locked_skills)}** ทักษะที่ยังไม่สามารถเริ่มฝึกได้อย่างมีประสิทธิภาพ เนื่องจากยังมี Hard Prerequisites ที่ยังไม่ผ่านเกณฑ์ Mastery ($\\ge 5$ ข้อ, $\\ge 80\\%$):",
+            "",
+            "| ลำดับ | Domain | Skill ID | Skill Name | Tier | ติด Hard Prerequisite ตัวใด (Blocking Prereqs) |",
+            "| :---: | :--- | :--- | :--- | :---: | :--- |",
+        ]
+    )
 
     for idx, lk in enumerate(locked_skills, start=1):
         blocked_str = ", ".join(f"`{b}`" for b in lk["blocked_by"])
-        lines.append(f"| {idx} | `{lk['domain']}` | `{lk['skill_id']}` | {lk['name']} | `{lk['tier']}` | {blocked_str} |")
+        lines.append(
+            f"| {idx} | `{lk['domain']}` | `{lk['skill_id']}` | {lk['name']} | `{lk['tier']}` | {blocked_str} |"
+        )
 
-    lines.extend([
-        "",
-        "### 3.3 รากที่ยังไม่เคยฝึก (Unpracticed Root Skills)",
-        "",
-        f"มีทั้งหมด **{len(root_skills)}** ทักษะรากฐานที่ไม่มี Hard Prerequisite ผูกมัด (0 Hard Prerequisites) พร้อมให้ผู้เรียนเริ่มฝึกเป็นจุดเริ่มต้นได้ทันที:",
-        "",
-        "| ลำดับ | Domain | Skill ID | Skill Name | Tier | ประวัติการฝึก | สถานะความพร้อม |",
-        "| :---: | :--- | :--- | :--- | :---: | :---: | :--- |",
-    ])
+    lines.extend(
+        [
+            "",
+            "### 3.3 รากที่ยังไม่เคยฝึก (Unpracticed Root Skills)",
+            "",
+            f"มีทั้งหมด **{len(root_skills)}** ทักษะรากฐานที่ไม่มี Hard Prerequisite ผูกมัด (0 Hard Prerequisites) พร้อมให้ผู้เรียนเริ่มฝึกเป็นจุดเริ่มต้นได้ทันที:",
+            "",
+            "| ลำดับ | Domain | Skill ID | Skill Name | Tier | ประวัติการฝึก | สถานะความพร้อม |",
+            "| :---: | :--- | :--- | :--- | :---: | :---: | :--- |",
+        ]
+    )
 
     for idx, rk in enumerate(root_skills, start=1):
-        hist_str = f"{rk['practiced_count']} ข้อ ({rk['avg_score']*100:.0f}%)" if rk["practiced_count"] > 0 else "ยังไม่เคยฝึก (0 ข้อ)"
+        hist_str = (
+            f"{rk['practiced_count']} ข้อ ({rk['avg_score'] * 100:.0f}%)"
+            if rk["practiced_count"] > 0
+            else "ยังไม่เคยฝึก (0 ข้อ)"
+        )
         status = "พร้อมเริ่มทันที (0 Prereqs)"
-        lines.append(f"| {idx} | `{rk['domain']}` | `{rk['skill_id']}` | {rk['name']} | `{rk['tier']}` | {hist_str} | {status} |")
+        lines.append(
+            f"| {idx} | `{rk['domain']}` | `{rk['skill_id']}` | {rk['name']} | `{rk['tier']}` | {hist_str} | {status} |"
+        )
 
     # SECTION 4: Weaknesses & Mistake History
-    lines.extend([
-        "",
-        "---",
-        "",
-        "## 4. สรุปประวัติข้อผิดพลาดและจุดอ่อน (Weaknesses & Trap Distribution)",
-        "",
-        "สรุปจากประวัติการทำโจทย์ใน `state.mistakes` และข้อที่ `score < 1.0` โดยจัดกลุ่มตาม `trapTag` เป็นแกนหลัก:",
-        "",
-        "### 4.1 สถิติแยกตาม Trap Tag (Trap Tag Overview)",
-        "",
-        "| ลำดับ | Trap Tag / รหัสกับดัก | จำนวนครั้งที่ผิด | เกิดใน Skill ใดบ้าง | เกิดในไฟล์ใดบ้าง |",
-        "| :---: | :--- | :---: | :--- | :--- |",
-    ])
+    lines.extend(
+        [
+            "",
+            "---",
+            "",
+            "## 4. สรุปประวัติข้อผิดพลาดและจุดอ่อน (Weaknesses & Trap Distribution)",
+            "",
+            "สรุปจากประวัติการทำโจทย์ใน `state.mistakes` และข้อที่ `score < 1.0` โดยจัดกลุ่มตาม `trapTag` เป็นแกนหลัก:",
+            "",
+            "### 4.1 สถิติแยกตาม Trap Tag (Trap Tag Overview)",
+            "",
+            "| ลำดับ | Trap Tag / รหัสกับดัก | จำนวนครั้งที่ผิด | เกิดใน Skill ใดบ้าง | เกิดในไฟล์ใดบ้าง |",
+            "| :---: | :--- | :---: | :--- | :--- |",
+        ]
+    )
 
     if not mistake_records:
         lines.append("*ไม่มีประวัติการตอบผิดใน drills/data/*")
@@ -838,13 +895,15 @@ def generate_coverage_report(data_dir: str | None = None, output_path: str = "re
             lines.append(f"| {idx} | `{tt}` | **{cnt}** | {skills_str} | {files_str} |")
 
         # Table 4.2: Breakdown by Skill
-        lines.extend([
-            "",
-            "### 4.2 จำแนกข้อผิดพลาดตาม Skill (Breakdown by Skill)",
-            "",
-            "| ลำดับ | Skill ID | การระบุ Skill | Trap Tag ที่พบ | จำนวนครั้งที่ผิด | ไฟล์ที่เกิดปัญหา |",
-            "| :---: | :--- | :---: | :--- | :---: | :--- |",
-        ])
+        lines.extend(
+            [
+                "",
+                "### 4.2 จำแนกข้อผิดพลาดตาม Skill (Breakdown by Skill)",
+                "",
+                "| ลำดับ | Skill ID | การระบุ Skill | Trap Tag ที่พบ | จำนวนครั้งที่ผิด | ไฟล์ที่เกิดปัญหา |",
+                "| :---: | :--- | :---: | :--- | :---: | :--- |",
+            ]
+        )
 
         skill_trap_counts: Counter[tuple[str, bool, str]] = Counter()
         skill_trap_files: dict[tuple[str, bool, str], set[str]] = defaultdict(set)
@@ -867,15 +926,17 @@ def generate_coverage_report(data_dir: str | None = None, output_path: str = "re
     ]
     shared_tags.sort(key=lambda x: (-x[1], x[0]))
 
-    lines.extend([
-        "",
-        "### 4.3 ตรวจสอบชื่อ Trap Tag ที่ใช้ซ้ำข้าม Template (Shared Trap Tags Audit)",
-        "",
-        "รายงานรายชื่อ `trapTag` ที่มีการประกาศใช้งานในมากกว่า 1 Template เพื่อติดตามความกำกวมในการวิเคราะห์จุดอ่อน:",
-        "",
-        "| ลำดับ | Trap Tag ที่ใช้ซ้ำ | จำนวน Template ที่ใช้ | รายชื่อ Templates ที่ใช้ | รายชื่อ Skills ที่เกี่ยวข้อง |",
-        "| :---: | :--- | :---: | :--- | :--- |",
-    ])
+    lines.extend(
+        [
+            "",
+            "### 4.3 ตรวจสอบชื่อ Trap Tag ที่ใช้ซ้ำข้าม Template (Shared Trap Tags Audit)",
+            "",
+            "รายงานรายชื่อ `trapTag` ที่มีการประกาศใช้งานในมากกว่า 1 Template เพื่อติดตามความกำกวมในการวิเคราะห์จุดอ่อน:",
+            "",
+            "| ลำดับ | Trap Tag ที่ใช้ซ้ำ | จำนวน Template ที่ใช้ | รายชื่อ Templates ที่ใช้ | รายชื่อ Skills ที่เกี่ยวข้อง |",
+            "| :---: | :--- | :---: | :--- | :--- |",
+        ]
+    )
     for s_idx, (stag, scnt, stpls, sskills) in enumerate(shared_tags, start=1):
         tpls_str = ", ".join(f"`{t}`" for t in stpls)
         skills_str = ", ".join(f"`{s}`" for s in sskills) if sskills else "*None*"
@@ -898,22 +959,24 @@ def generate_coverage_report(data_dir: str | None = None, output_path: str = "re
         )
     )
 
-    lines.extend([
-        "",
-        "---",
-        "",
-        "## 5. แผนผังและตาราง Prerequisite ของทักษะ (Skill Prerequisites DAG)",
-        "",
-        "> [!NOTE]",
-        "> **นิยาม Strength**:",
-        "> - `hard`: ไม่สามารถทำหรือทำความเข้าใจปลายทางได้เลยหากขาดทักษะต้นทาง (Strict Technical Prerequisite)",
-        "> - `soft`: ช่วยให้เรียนรู้ปลายทางได้ง่ายขึ้นตามลำดับการสอน แต่ทางเทคนิคสามารถศึกษาขนานกันได้ (Pedagogical Flow)",
-        "",
-        f"### 5.1 ตารางความสัมพันธ์ {len(edge_list)} เส้น Prerequisite ใน `skills_taxonomy.json`",
-        "",
-        "| ลำดับ | Source Skill (ต้นทาง) | Target Skill (ปลายทาง) | Strength | เหตุผลทางเทคนิคและการสอน (Rationale) |",
-        "| :---: | :--- | :--- | :---: | :--- |",
-    ])
+    lines.extend(
+        [
+            "",
+            "---",
+            "",
+            "## 5. แผนผังและตาราง Prerequisite ของทักษะ (Skill Prerequisites DAG)",
+            "",
+            "> [!NOTE]",
+            "> **นิยาม Strength**:",
+            "> - `hard`: ไม่สามารถทำหรือทำความเข้าใจปลายทางได้เลยหากขาดทักษะต้นทาง (Strict Technical Prerequisite)",
+            "> - `soft`: ช่วยให้เรียนรู้ปลายทางได้ง่ายขึ้นตามลำดับการสอน แต่ทางเทคนิคสามารถศึกษาขนานกันได้ (Pedagogical Flow)",
+            "",
+            f"### 5.1 ตารางความสัมพันธ์ {len(edge_list)} เส้น Prerequisite ใน `skills_taxonomy.json`",
+            "",
+            "| ลำดับ | Source Skill (ต้นทาง) | Target Skill (ปลายทาง) | Strength | เหตุผลทางเทคนิคและการสอน (Rationale) |",
+            "| :---: | :--- | :--- | :---: | :--- |",
+        ]
+    )
 
     for idx, (src, dst, strength) in enumerate(edge_list, start=1):
         st_badge = f"**`{strength}`**" if strength == "hard" else f"`{strength}`"
@@ -921,15 +984,17 @@ def generate_coverage_report(data_dir: str | None = None, output_path: str = "re
         lines.append(f"| {idx} | `{src}` | `{dst}` | {st_badge} | {rat} |")
 
     # Dynamic Mermaid Generation from skills_meta, domain_order, and edge_list
-    lines.extend([
-        "",
-        "### 5.2 แผนภาพความสัมพันธ์แบบ DAG (Direct Acyclic Graph)",
-        "",
-        "```mermaid",
-        "flowchart TD",
-        "    classDef hard stroke:#dc2626,stroke-width:2px;",
-        "    classDef soft stroke:#3b82f6,stroke-width:2px,stroke-dasharray: 4 4;",
-    ])
+    lines.extend(
+        [
+            "",
+            "### 5.2 แผนภาพความสัมพันธ์แบบ DAG (Direct Acyclic Graph)",
+            "",
+            "```mermaid",
+            "flowchart TD",
+            "    classDef hard stroke:#dc2626,stroke-width:2px;",
+            "    classDef soft stroke:#3b82f6,stroke-width:2px,stroke-dasharray: 4 4;",
+        ]
+    )
 
     def _safe_nid(sid: str) -> str:
         return sid.replace("-", "_")
@@ -978,10 +1043,12 @@ def generate_coverage_report(data_dir: str | None = None, output_path: str = "re
             arrow = "==>|hard|" if st == "hard" else "-.->|soft|"
             lines.append(f'    {_safe_nid(src)}["{src}"] {arrow} {_safe_nid(dst)}["{dst}"]')
 
-    lines.extend([
-        "```",
-        "",
-    ])
+    lines.extend(
+        [
+            "```",
+            "",
+        ]
+    )
 
     report_content = "\n".join(lines)
     if output_path:
@@ -995,7 +1062,9 @@ def generate_coverage_report(data_dir: str | None = None, output_path: str = "re
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Generate skills coverage report from taxonomy, templates, and drills.")
+    parser = argparse.ArgumentParser(
+        description="Generate skills coverage report from taxonomy, templates, and drills."
+    )
     parser.add_argument("--data-dir", default="drills/data", help="Directory of drill JSON files to analyze.")
     parser.add_argument("--output", default="reports/coverage.md", help="Destination markdown file path.")
     args = parser.parse_args()

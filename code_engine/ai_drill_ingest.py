@@ -14,10 +14,10 @@ import os
 import re
 from typing import Any, Dict, List, Optional
 
-from code_engine.generate import next_drill_id
-from code_engine.verify import verify_problem, run_node
 from code_engine.answer_check import parse_tokens
+from code_engine.generate import next_drill_id
 from code_engine.test_runner import run_tests
+from code_engine.verify import run_node, verify_problem
 from code_engine.workspace import materialize_drill_workspace
 from quality_rules import QUALITY_RULES
 
@@ -26,6 +26,7 @@ CODE_VAULT_DIR = os.path.join(os.path.dirname(__file__), "reasoning_vault")
 
 class AiContractError(Exception):
     """Raised when an AI-generated programming problem violates Contract 04_CODE or 07 §4."""
+
     pass
 
 
@@ -132,7 +133,9 @@ def check_zero_leak_hint(pid: str, prob: Dict[str, Any]) -> None:
         correct_line = spec.get("correctLine") or prob.get("correctLine")
         if correct_line is not None:
             cline_str = str(correct_line)
-            if re.search(rf"\bline\s*{cline_str}\b", hint_text, re.IGNORECASE) or re.search(rf"\bL{cline_str}\b", hint_text):
+            if re.search(rf"\bline\s*{cline_str}\b", hint_text, re.IGNORECASE) or re.search(
+                rf"\bL{cline_str}\b", hint_text
+            ):
                 raise AiContractError(
                     f"[{pid}] Zero-Leak Hint Guard violated: {hint_name} leaks defective line number {cline_str} (04_CODE §7)."
                 )
@@ -495,9 +498,7 @@ def load_code_reasoning_vault(unit_code: str, vault_dir: Optional[str] = None) -
     return {"unitCode": unit_code, "archetypes": []}
 
 
-def save_code_reasoning_vault(
-    unit_code: str, vault_data: Dict[str, Any], vault_dir: Optional[str] = None
-) -> str:
+def save_code_reasoning_vault(unit_code: str, vault_data: Dict[str, Any], vault_dir: Optional[str] = None) -> str:
     path = get_code_vault_path(unit_code, vault_dir=vault_dir)
     with open(path, "w", encoding="utf-8") as f:
         json.dump(vault_data, f, indent=2, ensure_ascii=False)
@@ -596,9 +597,7 @@ def ingest_ai_code_drill(
     drill_doc["schemaVersion"] = drill_doc.get("schemaVersion", "2.0-code")
     drill_doc["subject"] = drill_doc.get("subject", "PRG")
     drill_doc["environment"] = drill_doc.get("environment", "node-vanilla")
-    drill_doc["createdAt"] = drill_doc.get(
-        "createdAt", datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    )
+    drill_doc["createdAt"] = drill_doc.get("createdAt", datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
     if "sourceAttribution" in drill_doc:
         drill_doc["sourceAttribution"] = drill_doc["sourceAttribution"]
 

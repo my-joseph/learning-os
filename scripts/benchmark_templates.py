@@ -1,9 +1,8 @@
 """Benchmark script: Measures template diversity across 200 seeds for all templates."""
 
-from collections import Counter, defaultdict
-import copy
 import json
 import random
+from collections import Counter
 from typing import Any
 
 from code_engine.templates.prg_t01_c01 import TEMPLATES as PRG_C01
@@ -11,7 +10,6 @@ from code_engine.templates.prg_t01_c03 import TEMPLATES as PRG_C03
 from math_engine.templates.mth_t01_c12 import TEMPLATES as MTH_C12
 from math_engine.templates.mth_t02_c01_u01 import TEMPLATES as MTH_C01
 from quality_rules import (
-    QUALITY_RULES,
     QualityError,
     check_gate_g1,
     check_gate_g2,
@@ -35,7 +33,9 @@ def run_benchmark(n_seeds: int = 200) -> dict[str, Any]:
         for tpl in tpls:
             tpl_key = tpl["key"]
             level = tpl["level"]
-            declared_forms = list(tpl["forms"].keys()) if isinstance(tpl.get("forms"), dict) else (tpl.get("forms") or ["direct"])
+            declared_forms = (
+                list(tpl["forms"].keys()) if isinstance(tpl.get("forms"), dict) else (tpl.get("forms") or ["direct"])
+            )
 
             form_counter = Counter()
             fps_set = set()
@@ -60,7 +60,7 @@ def run_benchmark(n_seeds: int = 200) -> dict[str, Any]:
                     rng = random.Random(s * 10000 + attempt)
                     try:
                         cand = tpl["build"](rng)
-                    except Exception as ex:
+                    except Exception:
                         continue
 
                     cand["id"] = "Q01"
@@ -124,10 +124,7 @@ def run_benchmark(n_seeds: int = 200) -> dict[str, Any]:
                                 "plainText": cand.get("plainText", ""),
                                 "answer": cand.get("answerDisplay") or cand.get("answerPlain"),
                                 "steps_count": len(cand.get("steps") or []),
-                                "steps": [
-                                    st.get("latex") or st.get("explain")
-                                    for st in (cand.get("steps") or [])
-                                ],
+                                "steps": [st.get("latex") or st.get("explain") for st in (cand.get("steps") or [])],
                             }
                         break
 
@@ -146,30 +143,33 @@ def run_benchmark(n_seeds: int = 200) -> dict[str, Any]:
 
             # Form proportions
             total_produced = sum(form_counter.values())
-            form_proportions = {
-                f: round(cnt / total_produced * 100, 1)
-                for f, cnt in form_counter.items()
-            } if total_produced > 0 else {}
+            form_proportions = (
+                {f: round(cnt / total_produced * 100, 1) for f, cnt in form_counter.items()}
+                if total_produced > 0
+                else {}
+            )
 
-            results.append({
-                "unit": unit_code,
-                "key": tpl_key,
-                "level": level,
-                "is_code": is_code,
-                "declared_forms_count": len(declared_forms),
-                "declared_forms": declared_forms,
-                "actual_forms_count": len(form_counter),
-                "form_proportions": form_proportions,
-                "g1_pass_rate": round(g1_passes / n_seeds * 100, 1),
-                "g2_pass_rate": round(g2_passes / n_seeds * 100, 1),
-                "g4_pass_rate": round(g4_passes / n_seeds * 100, 1),
-                "avg_retries": round(total_retries / n_seeds, 2),
-                "exhausted_12": exhausted_12,
-                "distinct_fingerprints": len(fps_set),
-                "fingerprint_examples": list(fps_set)[:3],
-                "distinct_skill_cells": len(skill_cells_set),
-                "skill_cells": [list(c) for c in sorted(skill_cells_set)],
-            })
+            results.append(
+                {
+                    "unit": unit_code,
+                    "key": tpl_key,
+                    "level": level,
+                    "is_code": is_code,
+                    "declared_forms_count": len(declared_forms),
+                    "declared_forms": declared_forms,
+                    "actual_forms_count": len(form_counter),
+                    "form_proportions": form_proportions,
+                    "g1_pass_rate": round(g1_passes / n_seeds * 100, 1),
+                    "g2_pass_rate": round(g2_passes / n_seeds * 100, 1),
+                    "g4_pass_rate": round(g4_passes / n_seeds * 100, 1),
+                    "avg_retries": round(total_retries / n_seeds, 2),
+                    "exhausted_12": exhausted_12,
+                    "distinct_fingerprints": len(fps_set),
+                    "fingerprint_examples": list(fps_set)[:3],
+                    "distinct_skill_cells": len(skill_cells_set),
+                    "skill_cells": [list(c) for c in sorted(skill_cells_set)],
+                }
+            )
 
     return {
         "templates": results,

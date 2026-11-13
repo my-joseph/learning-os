@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """Auto-discovering Registry of Programming Unit/Chapter template modules."""
+
 import importlib
 import os
 import pkgutil
@@ -112,8 +113,7 @@ def load_unit(unit_code: str) -> ModuleType:
         units = discover_units(force_refresh=True)
     if unit_code not in units:
         raise KeyError(
-            f"No programming templates registered for {unit_code}. "
-            f"Registered: {', '.join(sorted(units.keys()))}"
+            f"No programming templates registered for {unit_code}. Registered: {', '.join(sorted(units.keys()))}"
         )
     return units[unit_code]
 

@@ -37,8 +37,12 @@ class TestQualityGates(unittest.TestCase):
         cls._orig_notion_dry_run = os.environ.get("NOTION_DRY_RUN")
         os.environ["NOTION_DRY_RUN"] = "1"
         cls._tmp_dir = tempfile.TemporaryDirectory()
-        fixture_root = "tests/fixtures/legacy_drills" if os.path.exists("tests/fixtures/legacy_drills") else "drills/data"
-        base_files = sorted([f for f in glob.glob(f"{fixture_root}/**/*.json", recursive=True) if "MTH-CALC-DIFF" not in f])
+        fixture_root = (
+            "tests/fixtures/legacy_drills" if os.path.exists("tests/fixtures/legacy_drills") else "drills/data"
+        )
+        base_files = sorted(
+            [f for f in glob.glob(f"{fixture_root}/**/*.json", recursive=True) if "MTH-CALC-DIFF" not in f]
+        )
         for src_path in base_files:
             rel = os.path.relpath(src_path, fixture_root)
             dst_path = os.path.join(cls._tmp_dir.name, rel)
@@ -268,6 +272,7 @@ class TestQualityGates(unittest.TestCase):
     def test_8_skills_taxonomy_minimal_schema_and_registration(self) -> None:
         """Test 8: skills_taxonomy.json contains valid minimal schema with all 36 skills."""
         from quality_rules import load_skills_taxonomy
+
         taxonomy = load_skills_taxonomy("skills_taxonomy.json")
         self.assertGreaterEqual(len(taxonomy), 36)
 
@@ -295,6 +300,7 @@ class TestQualityGates(unittest.TestCase):
     def test_9_per_form_level_and_skill(self) -> None:
         """Test 9: Template declares level and skill per form; scheduler sets active form level/skill."""
         from math_engine.templates.mth_t01_c12 import TEMPLATES
+
         pyth_tpl = next(t for t in TEMPLATES if t["key"] == "pythagoras-hypotenuse")
         self.assertIsInstance(pyth_tpl["forms"], dict)
         self.assertEqual(pyth_tpl["forms"]["direct"]["level"], 1)
@@ -351,6 +357,7 @@ class TestQualityGates(unittest.TestCase):
             self.assertEqual(len(problems), 20)
 
             from math_engine.templates.mth_t01_c12 import TEMPLATES as C12_TEMPLATES
+
             expected_cells = min(20, sum(len(t["forms"]) for t in C12_TEMPLATES))
             skill_cells = set((p["templateKey"], p["form"], p.get("commonTrapTag")) for p in problems)
             # All available (template, form, trapTag) combinations in MTH-T01-C12 must be present
@@ -365,9 +372,9 @@ class TestQualityGates(unittest.TestCase):
 
     def test_12_accept_template_standard_and_kata_exemption(self) -> None:
         """Test 12: accept_template evaluates standard templates and respects kata exemptions."""
-        from scripts.accept_template import evaluate_template
-        from math_engine.templates.mth_t01_c12 import TEMPLATES as MTH_TPLS
         from code_engine.templates.prg_t01_c03 import TEMPLATES as PRG_TPLS
+        from math_engine.templates.mth_t01_c12 import TEMPLATES as MTH_TPLS
+        from scripts.accept_template import evaluate_template
 
         pyth_tpl = next(t for t in MTH_TPLS if t["key"] == "pythagoras-hypotenuse")
         res_pyth = evaluate_template("MTH-T01-C12", pyth_tpl, is_code=False, n_seeds=50)
@@ -382,8 +389,8 @@ class TestQualityGates(unittest.TestCase):
 
     def test_13_safe_parse_security_payloads_blocked(self) -> None:
         """Test 13: All malicious / dangerous payloads are blocked with verdict 'invalid input'."""
+
         from math_engine.answer_check import check_answer
-        import time
 
         spec_expr = {"type": "expression", "value": "x**2 - 1", "variables": ["x"]}
         spec_comp = {"type": "complex", "value": "3 - 4*I"}
@@ -402,7 +409,7 @@ class TestQualityGates(unittest.TestCase):
             ("exec('x=1')", "Direct exec call"),
             ("2**1001", "Exponent magnitude exceeding limit (1000)"),
             ("my_secret_var", "Identifier with disallowed underscore"),
-            ("\"hello_string\"", "Disallowed string literal"),
+            ('"hello_string"', "Disallowed string literal"),
             ("[x for x in (1, 2)]", "Disallowed comprehension syntax"),
         ]
 
@@ -412,7 +419,7 @@ class TestQualityGates(unittest.TestCase):
                 self.assertEqual(
                     res["verdict"],
                     "invalid input",
-                    f"Payload '{payload}' ({description}) was not blocked for spec {spec['type']}: {res}"
+                    f"Payload '{payload}' ({description}) was not blocked for spec {spec['type']}: {res}",
                 )
                 self.assertIn("message", res)
                 self.assertNotIn("Traceback", res["message"])
@@ -420,8 +427,8 @@ class TestQualityGates(unittest.TestCase):
     def test_14_check_answer_regression_existing_drills(self) -> None:
         """Test 14: All existing math drill canonical answers pass check_answer round-trip."""
         import glob
+
         from math_engine.answer_check import check_answer
-        import time
 
         data_dir = os.environ.get("DRILLS_DATA_DIR", "drills/data")
         files = sorted(glob.glob(os.path.join(data_dir, "*", "*.json")))
@@ -443,7 +450,7 @@ class TestQualityGates(unittest.TestCase):
                 self.assertEqual(
                     res["verdict"],
                     "correct",
-                    f"File {fpath} problem {prob.get('id')} failed check_answer: ans={ans!r}, res={res}"
+                    f"File {fpath} problem {prob.get('id')} failed check_answer: ans={ans!r}, res={res}",
                 )
                 passed += 1
 
@@ -482,8 +489,8 @@ class TestQualityGates(unittest.TestCase):
     def test_15_heavy_input_does_not_hang(self) -> None:
         """Test 15: Heavy inputs like (x+1)**1000 complete rapidly and do not hang."""
         import time
+
         from math_engine.answer_check import check_answer
-        import time
 
         spec = {"type": "expression", "value": "x**2 - 1", "variables": ["x"]}
         t0 = time.time()
@@ -516,9 +523,10 @@ class TestQualityGates(unittest.TestCase):
 
     def test_16_coverage_report_and_sample_sheet(self) -> None:
         """Test 16: scripts.coverage_report and scripts.sample_sheet produce valid Markdown."""
+        import tempfile
+
         from scripts.coverage_report import generate_coverage_report
         from scripts.sample_sheet import build_sample_sheet
-        import tempfile
 
         # 1. Coverage report written to isolated tempdir
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -550,8 +558,8 @@ class TestQualityGates(unittest.TestCase):
     def test_17_symbolic_expression_large_exponent(self) -> None:
         """Test 17: Symbolic expressions with exponent > 20 like (x+1)**30 evaluate correctly and do not hang."""
         import time
+
         from math_engine.answer_check import check_answer
-        import time
 
         spec = {"type": "expression", "value": "(x+1)^30", "variables": ["x"]}
 
@@ -575,7 +583,7 @@ class TestQualityGates(unittest.TestCase):
 
     def test_18_skills_taxonomy_dag_and_prerequisites(self) -> None:
         """Test 18: skills_taxonomy.json contains exactly 23 DAG edges with valid strengths and no cycles."""
-        from collections import defaultdict, deque, Counter
+        from collections import Counter, defaultdict, deque
 
         with open("skills_taxonomy.json", "r", encoding="utf-8") as f:
             tax = json.load(f)
@@ -692,8 +700,8 @@ class TestQualityGates(unittest.TestCase):
 
     def test_20_tolerance_and_decimal_approximation(self) -> None:
         """Test 20: Decimal approximation handling with and without optional tolerance field."""
+
         from math_engine.answer_check import check_answer
-        import time
 
         # 1. Without tolerance (default strict behavior)
         r1 = check_answer({"type": "number", "value": "2/3"}, "0.667")
@@ -718,9 +726,9 @@ class TestQualityGates(unittest.TestCase):
     def test_21_calculus_pilot_templates_and_dual_verification(self) -> None:
         """Test 21: Calculus templates (power rule and chain rule) pass G1-G4, dual verification, and trap check."""
         import random
-        from math_engine.templates.mth_calc_diff import t_diff_power, t_diff_chain
+
         from math_engine.answer_check import check_answer
-        import time
+        from math_engine.templates.mth_calc_diff import t_diff_chain, t_diff_power
         from quality_rules import check_gate_g1, check_gate_g2, check_gate_g4
 
         for seed in range(50):
@@ -744,7 +752,8 @@ class TestQualityGates(unittest.TestCase):
     def test_22_auto_discovery_of_new_templates(self) -> None:
         """Test 22: Auto-discovery dynamically finds newly added template modules without code modifications."""
         import os
-        from math_engine.templates import load_unit, discover_units
+
+        from math_engine.templates import discover_units, load_unit
         from scripts.accept_template import get_all_registered_templates
         from scripts.sample_sheet import load_all_templates
 
@@ -784,9 +793,9 @@ TEMPLATES = [
 
     def test_23_diff_whitelist_and_notion_dry_run(self) -> None:
         """Test 23: User input diff(...) blocked as invalid input; Notion dry-run works without network."""
+
+        from drill_sync import sync_drill_to_notion
         from math_engine.answer_check import check_answer
-        import time
-        from practice_hub import sync_drill_to_notion
 
         # 1. User typing diff(...) returns 'invalid input'
         spec = {"type": "expression", "value": "2*x", "variables": ["x"]}
@@ -826,10 +835,11 @@ TEMPLATES = [
 
     def test_24_gate_g6_formatting_rejects_sloppy_math(self) -> None:
         """Test 24: G6 rejects '+ -', '- -', '+-', '--', '^1', 'x^0', '*1', '1x' and passes clean forms."""
-        from quality_rules import check_gate_g6, QualityError
         import random
-        from math_engine.templates import get_all_unit_templates as get_math_units
+
         from code_engine.templates import get_all_unit_templates as get_code_units
+        from math_engine.templates import get_all_unit_templates as get_math_units
+        from quality_rules import QualityError, check_gate_g6
 
         # 1. Verify that feeding text with sloppy patterns is rejected with QualityError (gate 'G6')
         bad_cases = [
@@ -891,7 +901,11 @@ TEMPLATES = [
                         for s in range(1, 51):
                             rng = random.Random(s * 1000 + 7)
                             try:
-                                cand = t["build"](rng, form=f) if "form" in t["build"].__code__.co_varnames else t["build"](rng)
+                                cand = (
+                                    t["build"](rng, form=f)
+                                    if "form" in t["build"].__code__.co_varnames
+                                    else t["build"](rng)
+                                )
                             except Exception:
                                 continue
                             cand["id"] = "Q01"
@@ -904,8 +918,9 @@ TEMPLATES = [
     def test_25_vector_comparator_and_security(self):
         """Test vector comparator, notation flags, diagnostics, and security parser constraints."""
         import random
-        from math_engine.answer_check import check_answer
         import time
+
+        from math_engine.answer_check import check_answer
 
         spec3d = {"type": "vector", "components": [1, -2, 3]}
 
@@ -950,7 +965,11 @@ TEMPLATES = [
         # Invert entire vector: reported as scalar_multiple (-1), component_sign_error skipped
         res_invert_all = check_answer(spec3d, "<-1, 2, -3>")
         self.assertEqual(res_invert_all["verdict"], "incorrect")
-        self.assertTrue(any(d["code"] == "scalar_multiple" and "factor of -1" in d["message"] for d in res_invert_all["diagnostics"]))
+        self.assertTrue(
+            any(
+                d["code"] == "scalar_multiple" and "factor of -1" in d["message"] for d in res_invert_all["diagnostics"]
+            )
+        )
         self.assertFalse(any(d["code"] == "component_sign_error" for d in res_invert_all["diagnostics"]))
 
         # Scalar multiple formatting via nsimplify (e.g. \sqrt{2} rather than 1.414)
@@ -1003,7 +1022,8 @@ TEMPLATES = [
             self.assertIn("Invalid input", res_sec["message"])
 
         # Heavy exponent with variable allowed: (k+1)**101 rejected by limit 100, (k+1)**100 evaluates to incorrect without hanging
-        from math_engine.answer_check import safe_parse, is_equal, EqualTimeoutError, SafeParseError
+        from math_engine.answer_check import EqualTimeoutError, SafeParseError, is_equal, safe_parse
+
         with self.assertRaises(SafeParseError):
             safe_parse("(k+1)**101", variables=["k"])
 
@@ -1012,8 +1032,9 @@ TEMPLATES = [
 
         # is_equal timeout test with heavy symbolic expression
         import sympy as sp
+
         sym_k = sp.Symbol("k")
-        heavy_pow = (sym_k + 1)**1000
+        heavy_pow = (sym_k + 1) ** 1000
         t_start = time.time()
         res_eq = is_equal(heavy_pow, sym_k, timeout=0.5, raise_on_timeout=False)
         self.assertFalse(res_eq)
@@ -1024,6 +1045,7 @@ TEMPLATES = [
 
         # 7. Quality gate evaluation of vector templates across seeds
         from math_engine.templates.mth_vectors import TEMPLATES as VEC_TEMPLATES
+
         for tpl in VEC_TEMPLATES:
             for form_name, finfo in tpl["forms"].items():
                 for seed in range(1, 51):
@@ -1048,7 +1070,9 @@ TEMPLATES = [
     def test_20_numpy_fallback_vector_generation(self) -> None:
         """Test 20: Vector template generation succeeds 100% when HAS_NUMPY is False."""
         import random
+
         import math_engine.templates.mth_vectors as mv
+
         orig_has_np = mv.HAS_NUMPY
         try:
             mv.HAS_NUMPY = False
@@ -1093,12 +1117,13 @@ TEMPLATES = [
 
         # 5. Heavy input: <(t+1)**100, 2> vs <(t+2)**100, 2> returns 'incorrect' in < 200 ms
         import time
+
         heavy_spec = {"type": "vector", "components": ["(t+2)**100", "2"], "variables": ["t"]}
         t_start = time.perf_counter()
         res_heavy_mismatch = check_answer(heavy_spec, "<(t+1)**100, 2>")
         t_elapsed = time.perf_counter() - t_start
         self.assertEqual(res_heavy_mismatch["verdict"], "incorrect")
-        self.assertLess(t_elapsed, 0.200, f"Heavy mismatch took {t_elapsed*1000:.2f} ms, expected < 200 ms")
+        self.assertLess(t_elapsed, 0.200, f"Heavy mismatch took {t_elapsed * 1000:.2f} ms, expected < 200 ms")
 
         # Also when compared against scalar (t+2)**100
         num_heavy_spec = {"type": "number", "value": "(t+2)**100", "variables": ["t"]}
@@ -1110,7 +1135,7 @@ TEMPLATES = [
 
     def test_22_anti_leak_gate(self) -> None:
         """Test 22: Anti-leak gate rejects prompts or hints containing answers or spoiler examples."""
-        from quality_rules import check_gate_anti_leak, QualityError
+        from quality_rules import QualityError, check_gate_anti_leak
 
         # A leaking hint with answerPlain
         p_leak = {
@@ -1190,8 +1215,9 @@ TEMPLATES = [
     def test_26_all_templates_and_forms_ci_pass(self) -> None:
         """Test 26: All registered templates across math and code units pass G1, G2, G4, G6 with 0 exhausted retries."""
         import random
+
+        from quality_rules import check_gate_g1, check_gate_g2, check_gate_g4, check_gate_g6
         from scripts.accept_template import get_all_registered_templates
-        from quality_rules import check_gate_g1, check_gate_g2, check_gate_g4, check_gate_g6, QualityError
 
         all_tpls = get_all_registered_templates()
         self.assertGreaterEqual(len(all_tpls), 33)
@@ -1212,7 +1238,9 @@ TEMPLATES = [
                                 cand = tpl["build"](rng)
                             cand["id"] = f"{key}_{form_name}_s{seed}"
                             cand["templateKey"] = key
-                            finfo = tpl.get("forms", {}).get(form_name, {}) if isinstance(tpl.get("forms"), dict) else {}
+                            finfo = (
+                                tpl.get("forms", {}).get(form_name, {}) if isinstance(tpl.get("forms"), dict) else {}
+                            )
                             cand["level"] = finfo.get("level", tpl.get("level", 1))
                             cand["skill"] = finfo.get("skill", tpl.get("skill", ""))
                             cand["verificationLevel"] = tpl.get("verificationLevel", "machine-verified")
@@ -1275,6 +1303,7 @@ TEMPLATES = [
     def test_28_contract_references_and_touchpoints_exist(self) -> None:
         """Test 28: All files, env vars, and CLI modules referenced in 06_template_contract.md exist."""
         import importlib
+
         touchpoints = [
             "rules/06_template_contract.md",
             "rules/02_pedagogy.md",
@@ -1305,10 +1334,11 @@ TEMPLATES = [
     def test_29_flaw_hint_rejects_spoilers(self) -> None:
         """Test 29: Level 3 Find-the-Flaw hints reject spoiler keywords and line positions."""
         import copy
-        from math_engine.templates.mth_vectors import t_vector_magnitude
-        from math_engine.templates.mth_calc_diff import t_diff_chain
-        from quality_rules import check_gate_anti_leak, QualityError
         import random
+
+        from math_engine.templates.mth_calc_diff import t_diff_chain
+        from math_engine.templates.mth_vectors import t_vector_magnitude
+        from quality_rules import QualityError, check_gate_anti_leak
 
         rng = random.Random(42)
         p_vec = t_vector_magnitude(rng, form="flaw-distribute-sqrt")
@@ -1336,9 +1366,10 @@ TEMPLATES = [
     def test_30_flaw_step_explains_student_error_with_latex(self) -> None:
         """Test 30: Step at flaw_line in Find-the-Flaw displays the student's flawed LaTeX line."""
         import random
-        from math_engine.templates.mth_vectors import t_vector_magnitude
+
         from math_engine.templates.mth_calc_diff import t_diff_chain
         from math_engine.templates.mth_t02_c01_u01 import t_find_flaw
+        from math_engine.templates.mth_vectors import t_vector_magnitude
 
         # 1. vector-magnitude flaw-distribute-sqrt
         p_vec = t_vector_magnitude(random.Random(42), form="flaw-distribute-sqrt")
@@ -1363,6 +1394,7 @@ TEMPLATES = [
     def test_31_cli_templates_and_focus_tag_filtering(self) -> None:
         """Test 31: generate_drill_set correctly filters by --templates and --focus-tag."""
         import tempfile
+
         from math_engine.generate import generate_drill_set
 
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -1393,6 +1425,7 @@ TEMPLATES = [
     def test_32_no_silent_fallback_on_unsupported_difficulty(self) -> None:
         """Test 32: Generator strictly rejects unsupported difficulty levels rather than silently falling back."""
         import tempfile
+
         from math_engine.generate import generate_drill_set
 
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -1424,6 +1457,7 @@ TEMPLATES = [
     def test_33_mth_t01_c12_l3_and_l4_generation(self) -> None:
         """Test 33: MTH-T01-C12 reliably generates genuine L3 and L4 problems meeting quality gates."""
         import tempfile
+
         from math_engine.generate import generate_drill_set
 
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -1462,8 +1496,9 @@ TEMPLATES = [
     def test_34_unknown_difficulty_values_raise_value_error(self) -> None:
         """Test 34: Unknown difficulty values raise ValueError; valid ALL and 3 work; unsupported level raises ValueError."""
         import tempfile
-        from math_engine.generate import generate_drill_set as generate_math_drill_set
+
         from code_engine.generate import generate_drill_set as generate_code_drill_set
+        from math_engine.generate import generate_drill_set as generate_math_drill_set
 
         with tempfile.TemporaryDirectory() as tmp_dir:
             old_dry = os.environ.get("NOTION_DRY_RUN")
@@ -1540,6 +1575,7 @@ TEMPLATES = [
     def test_17_active_drills_system_certification(self) -> None:
         """Test 17: Certify 100% of active production drills in drills/data meet modern reasoning vault invariants."""
         import re
+
         from math_engine.ai_drill_ingest import validate_ai_problem_contract
 
         active_root = "drills/data"
@@ -1575,16 +1611,12 @@ TEMPLATES = [
                 self.assertIn(
                     akey,
                     vault_keys,
-                    f"Problem {pid} in {fpath} references archetypeKey '{akey}' not in vault {vault_path}"
+                    f"Problem {pid} in {fpath} references archetypeKey '{akey}' not in vault {vault_path}",
                 )
 
                 hint = p.get("checkpointHint", "")
                 digits = re.findall(r"\b\d+\b", hint)
-                self.assertEqual(
-                    digits,
-                    [],
-                    f"Problem {pid} in {fpath} has digits in checkpointHint: {digits}"
-                )
+                self.assertEqual(digits, [], f"Problem {pid} in {fpath} has digits in checkpointHint: {digits}")
 
                 if subject == "MATH":
                     self.assertTrue(p.get("display"), f"{fpath} {pid} missing display")
@@ -1595,7 +1627,6 @@ TEMPLATES = [
                     validate_ai_problem_contract(p, enforce_leak_gate=False)
 
         self.assertGreaterEqual(total_checked, 170)
-
 
 
 if __name__ == "__main__":

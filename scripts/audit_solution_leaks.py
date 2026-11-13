@@ -7,6 +7,7 @@ Read-only. Usage:
     python scripts/audit_solution_leaks.py MTH-T01-C12     # one unit
     python scripts/audit_solution_leaks.py --display       # also check the display box
 """
+
 import argparse
 import glob
 import json

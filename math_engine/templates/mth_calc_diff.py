@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import random
 from typing import Any
+
 import sympy as sp
 
 from math_engine.templates.flaw_utils import build_flaw_choice_problem
@@ -138,8 +139,16 @@ def t_diff_power(rng: random.Random, form: str | None = None) -> dict[str, Any]:
 
         step2_val = f"{n}x" if n - 1 == 1 else f"{n}x^{{{n - 1}}}"
         steps = [
-            _step("Apply the power rule $\\frac{d}{dx}[x^n] = n x^{n-1}$.", f"\\frac{{d}}{{dx}}[{display_f}] = {a} \\cdot \\frac{{d}}{{dx}}[x^{{{n}}}]", f"{a}*{n}*x**({n}-1)"),
-            _step(f"Bring down the exponent ${n}$ and multiply by coefficient ${a}$.", f"= {a} \\cdot ({step2_val})", ans_str),
+            _step(
+                "Apply the power rule $\\frac{d}{dx}[x^n] = n x^{n-1}$.",
+                f"\\frac{{d}}{{dx}}[{display_f}] = {a} \\cdot \\frac{{d}}{{dx}}[x^{{{n}}}]",
+                f"{a}*{n}*x**({n}-1)",
+            ),
+            _step(
+                f"Bring down the exponent ${n}$ and multiply by coefficient ${a}$.",
+                f"= {a} \\cdot ({step2_val})",
+                ans_str,
+            ),
             _step("Simplify to obtain the final derivative.", f"= {ans_latex}", ans_str),
         ]
 
@@ -177,7 +186,7 @@ def t_diff_power(rng: random.Random, form: str | None = None) -> dict[str, Any]:
         plain_f = f"{a}/x^{n}" if n > 1 else f"{a}/x"
         ans_latex = f"-\\frac{{{a * n}}}{{x^{{{n + 1}}}}}"
         ans_str = f"{-a * n}*x**{-n - 1}"
-        
+
         # Increment negative exponent trap: e.g. -n + 1 instead of -n - 1
         # For n=1, -1 + 1 = 0 -> -a
         # For n > 1, -n + 1 -> -a*n * x**(-n + 1)
@@ -188,8 +197,16 @@ def t_diff_power(rng: random.Random, form: str | None = None) -> dict[str, Any]:
 
         inner_p = "-x" if -n == -1 else f"{-n}x"
         steps = [
-            _step(f"Rewrite the reciprocal expression using negative exponents: ${display_f} = {a}x^{{-{n}}}$.", f"f(x) = {a}x^{{-{n}}}", None),
-            _step(f"Apply power rule: multiply by ${-n}$ and subtract 1 from exponent: ${-n} - 1 = {-n - 1}$.", f"f'(x) = {a} \\cdot ({inner_p}^{{{-n - 1}}})", ans_str),
+            _step(
+                f"Rewrite the reciprocal expression using negative exponents: ${display_f} = {a}x^{{-{n}}}$.",
+                f"f(x) = {a}x^{{-{n}}}",
+                None,
+            ),
+            _step(
+                f"Apply power rule: multiply by ${-n}$ and subtract 1 from exponent: ${-n} - 1 = {-n - 1}$.",
+                f"f'(x) = {a} \\cdot ({inner_p}^{{{-n - 1}}})",
+                ans_str,
+            ),
             _step("Express with positive exponents.", f"f'(x) = {ans_latex}", ans_str),
         ]
 
@@ -237,7 +254,7 @@ def t_diff_chain(rng: random.Random, form: str | None = None) -> dict[str, Any]:
 
         inner_tex, inner_plain = _format_linear(a, b)
         display_f = f"({inner_tex})^{{{n}}}"
-        
+
         pow_p = n - 1
         if pow_p == 1:
             ans_latex = f"{n * a}({inner_tex})"
@@ -251,10 +268,26 @@ def t_diff_chain(rng: random.Random, form: str | None = None) -> dict[str, Any]:
             outer_step_tex = f"{n}({inner_tex})^{{{pow_p}}}"
 
         steps = [
-            _step(f"Identify inner function $u = {inner_tex}$ and outer function $f(u) = u^{{{n}}}$.", f"u = {inner_tex},\\quad f(u) = u^{{{n}}}", None),
-            _step(f"Compute derivative of outer function with respect to $u$: $\\frac{{df}}{{du}} = n u^{{n-1}}$.", f"\\frac{{df}}{{du}} = {outer_step_tex}", None),
-            _step(f"Compute derivative of inner function: $\\frac{{du}}{{dx}} = \\frac{{d}}{{dx}}[{inner_tex}] = {a}$.", f"\\frac{{du}}{{dx}} = {a}", None),
-            _step("Apply chain rule: $\\frac{df}{dx} = \\frac{df}{du} \\cdot \\frac{du}{dx}$.", f"\\frac{{df}}{{dx}} = {outer_step_tex} \\cdot {a}", ans_str),
+            _step(
+                f"Identify inner function $u = {inner_tex}$ and outer function $f(u) = u^{{{n}}}$.",
+                f"u = {inner_tex},\\quad f(u) = u^{{{n}}}",
+                None,
+            ),
+            _step(
+                "Compute derivative of outer function with respect to $u$: $\\frac{df}{du} = n u^{n-1}$.",
+                f"\\frac{{df}}{{du}} = {outer_step_tex}",
+                None,
+            ),
+            _step(
+                f"Compute derivative of inner function: $\\frac{{du}}{{dx}} = \\frac{{d}}{{dx}}[{inner_tex}] = {a}$.",
+                f"\\frac{{du}}{{dx}} = {a}",
+                None,
+            ),
+            _step(
+                "Apply chain rule: $\\frac{df}{dx} = \\frac{df}{du} \\cdot \\frac{du}{dx}$.",
+                f"\\frac{{df}}{{dx}} = {outer_step_tex} \\cdot {a}",
+                ans_str,
+            ),
             _step("Multiply constants to obtain final derivative.", f"f'(x) = {ans_latex}", ans_str),
         ]
 
@@ -296,10 +329,26 @@ def t_diff_chain(rng: random.Random, form: str | None = None) -> dict[str, Any]:
             trap_str = f"cos({inner_plain})"  # forgot inner derivative factor of a
 
             steps = [
-                _step(f"Identify outer function $\\sin(u)$ with inner function $u = {inner_tex}$.", f"u = {inner_tex}", None),
-                _step(f"Differentiate outer function: $\\frac{{d}}{{du}}[\\sin(u)] = \\cos(u)$.", f"\\frac{{df}}{{du}} = \\cos({inner_tex})", None),
-                _step(f"Differentiate inner function: $\\frac{{du}}{{dx}} = \\frac{{d}}{{dx}}[{inner_tex}] = {a}$.", f"\\frac{{du}}{{dx}} = {a}", None),
-                _step("Multiply by chain rule: $\\frac{df}{dx} = \\frac{df}{du} \\cdot \\frac{du}{dx}$.", f"f'(x) = \\cos({inner_tex}) \\cdot {a} = {ans_latex}", ans_str),
+                _step(
+                    f"Identify outer function $\\sin(u)$ with inner function $u = {inner_tex}$.",
+                    f"u = {inner_tex}",
+                    None,
+                ),
+                _step(
+                    "Differentiate outer function: $\\frac{d}{du}[\\sin(u)] = \\cos(u)$.",
+                    f"\\frac{{df}}{{du}} = \\cos({inner_tex})",
+                    None,
+                ),
+                _step(
+                    f"Differentiate inner function: $\\frac{{du}}{{dx}} = \\frac{{d}}{{dx}}[{inner_tex}] = {a}$.",
+                    f"\\frac{{du}}{{dx}} = {a}",
+                    None,
+                ),
+                _step(
+                    "Multiply by chain rule: $\\frac{df}{dx} = \\frac{df}{du} \\cdot \\frac{du}{dx}$.",
+                    f"f'(x) = \\cos({inner_tex}) \\cdot {a} = {ans_latex}",
+                    ans_str,
+                ),
             ]
         else:
             f_expr = sp.exp(a * x + b)
@@ -311,10 +360,24 @@ def t_diff_chain(rng: random.Random, form: str | None = None) -> dict[str, Any]:
             trap_str = f"exp({inner_plain})"  # forgot inner derivative factor of a
 
             steps = [
-                _step(f"Identify outer function $e^u$ with inner function $u = {inner_tex}$.", f"u = {inner_tex}", None),
-                _step(f"Differentiate outer function: $\\frac{{d}}{{du}}[e^u] = e^u$.", f"\\frac{{df}}{{du}} = e^{{{inner_tex}}}", None),
-                _step(f"Differentiate inner function: $\\frac{{du}}{{dx}} = \\frac{{d}}{{dx}}[{inner_tex}] = {a}$.", f"\\frac{{du}}{{dx}} = {a}", None),
-                _step("Multiply by chain rule: $\\frac{df}{dx} = \\frac{df}{du} \\cdot \\frac{du}{dx}$.", f"f'(x) = e^{{{inner_tex}}} \\cdot {a} = {ans_latex}", ans_str),
+                _step(
+                    f"Identify outer function $e^u$ with inner function $u = {inner_tex}$.", f"u = {inner_tex}", None
+                ),
+                _step(
+                    "Differentiate outer function: $\\frac{d}{du}[e^u] = e^u$.",
+                    f"\\frac{{df}}{{du}} = e^{{{inner_tex}}}",
+                    None,
+                ),
+                _step(
+                    f"Differentiate inner function: $\\frac{{du}}{{dx}} = \\frac{{d}}{{dx}}[{inner_tex}] = {a}$.",
+                    f"\\frac{{du}}{{dx}} = {a}",
+                    None,
+                ),
+                _step(
+                    "Multiply by chain rule: $\\frac{df}{dx} = \\frac{df}{du} \\cdot \\frac{du}{dx}$.",
+                    f"f'(x) = e^{{{inner_tex}}} \\cdot {a} = {ans_latex}",
+                    ans_str,
+                ),
             ]
 
         return {
@@ -364,7 +427,7 @@ def t_diff_chain(rng: random.Random, form: str | None = None) -> dict[str, Any]:
             why = f"Line 1 is wrong: The student wrote ${shown_lines[0]}$, omitting the inner derivative factor $\\frac{{d}}{{dx}}[{inner_tex}]$. True formulation: ${correct_l1}$."
         elif flaw_line == 2:
             shown_lines = [correct_l1, f"= {n}({inner_tex})^{{{n - 1}}} \\cdot 1", f"= {n}({inner_tex})^{{{n - 1}}}"]
-            vals = [None, f"{n}*({a}*x + 1)**{n-1} * 1", None]
+            vals = [None, f"{n}*({a}*x + 1)**{n - 1} * 1", None]
             why = f"Line 2 is wrong: The student wrote ${shown_lines[1]}$, but $\\frac{{d}}{{dx}}[{inner_tex}] = {a}$ (differentiated as $1$). True evaluation: ${correct_l2}$."
         else:
             wrong_mult = n + a
@@ -374,14 +437,26 @@ def t_diff_chain(rng: random.Random, form: str | None = None) -> dict[str, Any]:
 
         steps = [
             _step(why if flaw_line == 1 else f"Step 1 (True formulation): ${correct_l1}$.", correct_l1),
-            _step(why if flaw_line == 2 else f"Step 2 (True evaluation): ${correct_l2}$.", correct_l2, f"{n}*({a}*x + 1)**{n - 1} * {a}"),
-            _step(why if flaw_line == 3 else f"Step 3 (True derivative): ${correct_l3}$.", correct_l3, f"{n * a}*({a}*x + 1)**{n - 1}"),
+            _step(
+                why if flaw_line == 2 else f"Step 2 (True evaluation): ${correct_l2}$.",
+                correct_l2,
+                f"{n}*({a}*x + 1)**{n - 1} * {a}",
+            ),
+            _step(
+                why if flaw_line == 3 else f"Step 3 (True derivative): ${correct_l3}$.",
+                correct_l3,
+                f"{n * a}*({a}*x + 1)**{n - 1}",
+            ),
         ]
 
         line_trap_map = {1: "chain-rule-omission", 2: "diff-inner-derivative-error", 3: "arithmetic-slip"}
 
         prob = build_flaw_choice_problem(
-            prompt="A student differentiated $f(x) = (" + inner_tex + ")^" + str(n) + "$ as shown below. Which line contains the FIRST error?",
+            prompt="A student differentiated $f(x) = ("
+            + inner_tex
+            + ")^"
+            + str(n)
+            + "$ as shown below. Which line contains the FIRST error?",
             shown_lines=shown_lines,
             steps=steps,
             flaw_line=flaw_line,
@@ -409,7 +484,11 @@ TEMPLATES = [
         "verificationLevel": "machine-verified",
         "forms": {
             "direct-polynomial": {"level": 1, "skill": "CAL-DIFF-POWER", "trapTag": "diff-forgot-decrement-power"},
-            "rewrite-negative-or-radical": {"level": 1, "skill": "CAL-DIFF-POWER", "trapTag": "diff-negative-power-increment"},
+            "rewrite-negative-or-radical": {
+                "level": 1,
+                "skill": "CAL-DIFF-POWER",
+                "trapTag": "diff-negative-power-increment",
+            },
         },
         "build": t_diff_power,
     },
@@ -420,7 +499,11 @@ TEMPLATES = [
         "verificationLevel": "machine-verified",
         "forms": {
             "direct-power": {"level": 2, "skill": "CAL-DIFF-CHAIN", "trapTag": "diff-forgot-inner-derivative"},
-            "composite-transcendental": {"level": 2, "skill": "CAL-DIFF-CHAIN", "trapTag": "diff-forgot-inner-derivative"},
+            "composite-transcendental": {
+                "level": 2,
+                "skill": "CAL-DIFF-CHAIN",
+                "trapTag": "diff-forgot-inner-derivative",
+            },
             "flaw-line-1": {"level": 3, "skill": "CAL-DIFF-CHAIN", "trapTag": "diff-forgot-inner-derivative"},
             "flaw-line-2": {"level": 3, "skill": "CAL-DIFF-CHAIN", "trapTag": "diff-forgot-inner-derivative"},
             "flaw-line-3": {"level": 3, "skill": "CAL-DIFF-CHAIN", "trapTag": "diff-forgot-inner-derivative"},

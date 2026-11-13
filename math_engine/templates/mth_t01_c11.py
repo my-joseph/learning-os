@@ -1,17 +1,37 @@
 # -*- coding: utf-8 -*-
 """Parameterized problem templates for MTH-T01-C11: Solving Linear Equations."""
+
 from math_engine.templates._prealg_helpers import S
 
 UNIT = "MTH-T01-C11"
 TITLE = "Solving Linear Equations"
 
 MISTAKE_TAGS = [
-    {"id": "c11-constant-transposition-sign", "label": "Added instead of subtracted constant when transposing across equals sign", "name": "Constant Transposition Sign Slip", "autoFrom": ["whole_sign_flip"]},
-    {"id": "c11-variable-grouping-sign-slip", "label": "Combined variable terms across equals sign with wrong sign", "name": "Variable Transposition Sign Slip", "autoFrom": ["whole_sign_flip"]},
-    {"id": "c11-fraction-numerator-sign-trap", "label": "Failed to distribute subtraction sign across entire second numerator when clearing fractions", "name": "Fractional Numerator Subtraction Trap", "autoFrom": ["whole_sign_flip"]},
-    {"id": "c11-consecutive-parity-step-trap", "label": "Used x+1, x+2 instead of x+2, x+4 for consecutive even/odd integers", "name": "Consecutive Parity Step Trap", "autoFrom": []},
+    {
+        "id": "c11-constant-transposition-sign",
+        "label": "Added instead of subtracted constant when transposing across equals sign",
+        "name": "Constant Transposition Sign Slip",
+        "autoFrom": ["whole_sign_flip"],
+    },
+    {
+        "id": "c11-variable-grouping-sign-slip",
+        "label": "Combined variable terms across equals sign with wrong sign",
+        "name": "Variable Transposition Sign Slip",
+        "autoFrom": ["whole_sign_flip"],
+    },
+    {
+        "id": "c11-fraction-numerator-sign-trap",
+        "label": "Failed to distribute subtraction sign across entire second numerator when clearing fractions",
+        "name": "Fractional Numerator Subtraction Trap",
+        "autoFrom": ["whole_sign_flip"],
+    },
+    {
+        "id": "c11-consecutive-parity-step-trap",
+        "label": "Used x+1, x+2 instead of x+2, x+4 for consecutive even/odd integers",
+        "name": "Consecutive Parity Step Trap",
+        "autoFrom": [],
+    },
 ]
-
 
 
 def t_c11_foundation(rng, form=None):
@@ -27,8 +47,16 @@ def t_c11_foundation(rng, form=None):
         prompt = f"Solve the linear equation for $x$: ${b} - {a}x = {rhs}$."
         disp = f"{b} - {a}x = {rhs}"
         steps = [
-            S(f"-{a}x = {rhs} - {b} = {rhs - b}", "Subtract the constant term from both sides.", eq=[f"{rhs} - {b}", str(-a * x)]),
-            S(f"x = \\frac{{{rhs - b}}}{{-{a}}}", "Divide both sides by the negative coefficient.", eq=[f"({rhs - b}) / (-{a})", str(ans)]),
+            S(
+                f"-{a}x = {rhs} - {b} = {rhs - b}",
+                "Subtract the constant term from both sides.",
+                eq=[f"{rhs} - {b}", str(-a * x)],
+            ),
+            S(
+                f"x = \\frac{{{rhs - b}}}{{-{a}}}",
+                "Divide both sides by the negative coefficient.",
+                eq=[f"({rhs - b}) / (-{a})", str(ans)],
+            ),
             S(f"x = {ans}", "Simplify the quotient of two negative integers.", val=str(ans), eq=[str(ans), str(ans)]),
         ]
     else:
@@ -38,8 +66,16 @@ def t_c11_foundation(rng, form=None):
         prompt = f"Solve the two-step linear equation for $x$: ${a}x + {b} = {rhs}$."
         disp = f"{a}x + {b} = {rhs}"
         steps = [
-            S(f"{a}x = {rhs} - {b} = {rhs - b}", "Subtract the constant from both sides.", eq=[f"{rhs} - {b}", str(a * x)]),
-            S(f"x = \\frac{{{rhs - b}}}{{{a}}}", "Divide both sides by the coefficient of $x$.", eq=[f"({rhs - b}) / {a}", str(ans)]),
+            S(
+                f"{a}x = {rhs} - {b} = {rhs - b}",
+                "Subtract the constant from both sides.",
+                eq=[f"{rhs} - {b}", str(a * x)],
+            ),
+            S(
+                f"x = \\frac{{{rhs - b}}}{{{a}}}",
+                "Divide both sides by the coefficient of $x$.",
+                eq=[f"({rhs - b}) / {a}", str(ans)],
+            ),
             S(f"x = {ans}", "State the exact integer solution.", val=str(ans), eq=[str(ans), str(ans)]),
         ]
     return {
@@ -76,9 +112,22 @@ def t_c11_reverse(rng, form=None):
         prompt = f"Solve for $x$: ${a}(x + {k}) = {c}x + {d}$."
         disp = f"{a}(x + {k}) = {c}x + {d}"
         steps = [
-            S(f"{a}x + {a * k} = {c}x + {d}", "Expand the left-hand side using the distributive property.", eq=[f"{a}*({ans} + {k})", f"{c}*{ans} + {d}"]),
-            S(f"{a - c}x = {d} - {a * k} = {d - a * k}", "Collect variable terms on the left and constant terms on the right.", eq=[f"{d} - {a * k}", str((a - c) * ans)]),
-            S(f"x = \\frac{{{d - a * k}}}{{{a - c}}} = {ans}", "Divide by the net coefficient of $x$.", val=str(ans), eq=[f"({d - a * k}) / ({a - c})", str(ans)]),
+            S(
+                f"{a}x + {a * k} = {c}x + {d}",
+                "Expand the left-hand side using the distributive property.",
+                eq=[f"{a}*({ans} + {k})", f"{c}*{ans} + {d}"],
+            ),
+            S(
+                f"{a - c}x = {d} - {a * k} = {d - a * k}",
+                "Collect variable terms on the left and constant terms on the right.",
+                eq=[f"{d} - {a * k}", str((a - c) * ans)],
+            ),
+            S(
+                f"x = \\frac{{{d - a * k}}}{{{a - c}}} = {ans}",
+                "Divide by the net coefficient of $x$.",
+                val=str(ans),
+                eq=[f"({d - a * k}) / ({a - c})", str(ans)],
+            ),
         ]
     else:
         d = (a - c) * x + b
@@ -87,9 +136,22 @@ def t_c11_reverse(rng, form=None):
         prompt = f"Solve the equation with variables on both sides: ${a}x + {b} = {c}x + {d}$."
         disp = f"{a}x + {b} = {c}x + {d}"
         steps = [
-            S(f"{a}x - {c}x + {b} = {d} \\implies {a - c}x + {b} = {d}", "Subtract the right-hand variable term from both sides.", eq=[f"{a} - {c}", str(a - c)]),
-            S(f"{a - c}x = {d} - {b} = {d - b}", "Subtract the left-hand constant from both sides.", eq=[f"{d} - {b}", str((a - c) * ans)]),
-            S(f"x = \\frac{{{d - b}}}{{{a - c}}} = {ans}", "Divide by the combined coefficient.", val=str(ans), eq=[f"({d - b}) / ({a - c})", str(ans)]),
+            S(
+                f"{a}x - {c}x + {b} = {d} \\implies {a - c}x + {b} = {d}",
+                "Subtract the right-hand variable term from both sides.",
+                eq=[f"{a} - {c}", str(a - c)],
+            ),
+            S(
+                f"{a - c}x = {d} - {b} = {d - b}",
+                "Subtract the left-hand constant from both sides.",
+                eq=[f"{d} - {b}", str((a - c) * ans)],
+            ),
+            S(
+                f"x = \\frac{{{d - b}}}{{{a - c}}} = {ans}",
+                "Divide by the combined coefficient.",
+                val=str(ans),
+                eq=[f"({d - b}) / ({a - c})", str(ans)],
+            ),
         ]
     return {
         "form": form,
@@ -145,9 +207,22 @@ def t_c11_trap(rng, form=None):
         "commonTrapTag": "c11-fraction-numerator-sign-trap",
         "verify": {"source": str(ans), "trapValue": str(trap)},
         "steps": [
-            S(f"6\\left(\\frac{{x + {a}}}{{2}}\\right) - 6\\left(\\frac{{x - {c}}}{{3}}\\right) = 6({k}) \\implies 3(x + {a}) - 2(x - {c}) = {6 * k}", "Multiply both sides by the least common denominator 6.", eq=[f"3*({ans} + {a}) - 2*({ans} - {c})", str(6 * k)]),
-            S(f"3x + {3 * a} - 2x + {2 * c} = {6 * k}", "Distribute both factors carefully, noting that $-2(-c) = +2c$.", eq=[f"{ans} + {3 * a} + {2 * c}", str(6 * k)]),
-            S(f"x = {6 * k} - {3 * a + 2 * c} = {ans}", "Combine like terms and isolate $x$.", val=str(ans), eq=[f"{6 * k} - ({3 * a + 2 * c})", str(ans)]),
+            S(
+                f"6\\left(\\frac{{x + {a}}}{{2}}\\right) - 6\\left(\\frac{{x - {c}}}{{3}}\\right) = 6({k}) \\implies 3(x + {a}) - 2(x - {c}) = {6 * k}",
+                "Multiply both sides by the least common denominator 6.",
+                eq=[f"3*({ans} + {a}) - 2*({ans} - {c})", str(6 * k)],
+            ),
+            S(
+                f"3x + {3 * a} - 2x + {2 * c} = {6 * k}",
+                "Distribute both factors carefully, noting that $-2(-c) = +2c$.",
+                eq=[f"{ans} + {3 * a} + {2 * c}", str(6 * k)],
+            ),
+            S(
+                f"x = {6 * k} - {3 * a + 2 * c} = {ans}",
+                "Combine like terms and isolate $x$.",
+                val=str(ans),
+                eq=[f"{6 * k} - ({3 * a + 2 * c})", str(ans)],
+            ),
         ],
     }
 
@@ -173,9 +248,22 @@ def t_c11_synthesis(rng, form=None):
         prompt = f"If $x = {x_root}$ is the solution to the parametric linear equation $k x - {b * x_root} = {rhs_val}$, find the exact value of the parameter $k$."
         disp = f"k({x_root}) - {b * x_root} = {rhs_val} \\implies k = ?"
         steps = [
-            S(f"{x_root}k - {b * x_root} = {rhs_val}", f"Substitute the known solution $x = {x_root}$ into the equation.", eq=[f"{x_root}*{ans} - {b * x_root}", str(rhs_val)]),
-            S(f"{x_root}k = {rhs_val} + {b * x_root} = {tot_rhs}", "Add the constant term to both sides.", eq=[f"{rhs_val} + {b * x_root}", str(tot_rhs)]),
-            S(f"k = \\frac{{{tot_rhs}}}{{{x_root}}} = {ans}", "Divide by the coefficient of $k$.", val=str(ans), eq=[f"{tot_rhs} / {x_root}", str(ans)]),
+            S(
+                f"{x_root}k - {b * x_root} = {rhs_val}",
+                f"Substitute the known solution $x = {x_root}$ into the equation.",
+                eq=[f"{x_root}*{ans} - {b * x_root}", str(rhs_val)],
+            ),
+            S(
+                f"{x_root}k = {rhs_val} + {b * x_root} = {tot_rhs}",
+                "Add the constant term to both sides.",
+                eq=[f"{rhs_val} + {b * x_root}", str(tot_rhs)],
+            ),
+            S(
+                f"k = \\frac{{{tot_rhs}}}{{{x_root}}} = {ans}",
+                "Divide by the coefficient of $k$.",
+                val=str(ans),
+                eq=[f"{tot_rhs} / {x_root}", str(ans)],
+            ),
         ]
     else:
         first_even = 2 * rng.randint(8, 22)
@@ -190,9 +278,22 @@ def t_c11_synthesis(rng, form=None):
         prompt = f"Three consecutive even integers $n,\\ n+2,\\ n+4$ satisfy the weighted linear equation ${w1}n + {w2}(n + 2) + (n + 4) = {rhs}$. Find the LARGEST of the three consecutive even integers."
         disp = f"{w1}n + {w2}(n + 2) + (n + 4) = {rhs} \\implies n + 4 = ?"
         steps = [
-            S(f"{w1}n + {w2}n + {2 * w2} + n + 4 = {rhs} \\implies {w_sum}n + {const_sum} = {rhs}", "Expand and combine the variable terms and constants.", eq=[f"{w_sum}*{first_even} + {const_sum}", str(rhs)]),
-            S(f"{w_sum}n = {rhs - const_sum} \\implies n = {first_even}", "Solve for the smallest even integer $n$.", eq=[f"({rhs} - {const_sum}) / {w_sum}", str(first_even)]),
-            S(f"n + 4 = {first_even} + 4 = {ans}", "Add 4 to obtain the largest of the three consecutive even integers.", val=str(ans), eq=[f"{first_even} + 4", str(ans)]),
+            S(
+                f"{w1}n + {w2}n + {2 * w2} + n + 4 = {rhs} \\implies {w_sum}n + {const_sum} = {rhs}",
+                "Expand and combine the variable terms and constants.",
+                eq=[f"{w_sum}*{first_even} + {const_sum}", str(rhs)],
+            ),
+            S(
+                f"{w_sum}n = {rhs - const_sum} \\implies n = {first_even}",
+                "Solve for the smallest even integer $n$.",
+                eq=[f"({rhs} - {const_sum}) / {w_sum}", str(first_even)],
+            ),
+            S(
+                f"n + 4 = {first_even} + 4 = {ans}",
+                "Add 4 to obtain the largest of the three consecutive even integers.",
+                val=str(ans),
+                eq=[f"{first_even} + 4", str(ans)],
+            ),
         ]
     return {
         "form": form,

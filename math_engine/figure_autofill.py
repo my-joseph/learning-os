@@ -11,6 +11,7 @@ Vault spec (per archetype):
   ]
 The first builder whose referenced given keys all exist is used.
 """
+
 import re
 from typing import Any, Dict, List, Optional
 
@@ -49,8 +50,7 @@ def build_figure(archetype: Dict[str, Any], givens: Dict[str, Any]) -> Optional[
             continue
         try:
             for param, fmt in spec.get("labels", {}).items():
-                kwargs[param] = fmt.format(**{k: float(v) for k, v in givens.items()
-                                              if isinstance(v, (int, float))})
+                kwargs[param] = fmt.format(**{k: float(v) for k, v in givens.items() if isinstance(v, (int, float))})
             if spec.get("title"):
                 kwargs["title"] = spec["title"]
             return fn(**kwargs)

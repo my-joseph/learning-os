@@ -3,7 +3,6 @@
 """Audit traps for MTH-T01-C01 and MTH-T01-C12."""
 
 import importlib
-import os
 import random
 import sys
 from pathlib import Path

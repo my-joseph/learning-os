@@ -4,7 +4,6 @@
 
 import csv
 import importlib
-import os
 import random
 import sys
 import time
@@ -53,12 +52,14 @@ def measure_capacity(num_seeds=2000):
                     distinct_pairs.add((prompt, ans))
 
                 cap = len(distinct_pairs)
-                rows.append({
-                    "unit": unit_code,
-                    "template": tpl_key,
-                    "form": form_name,
-                    "capacity": cap,
-                })
+                rows.append(
+                    {
+                        "unit": unit_code,
+                        "template": tpl_key,
+                        "form": form_name,
+                        "capacity": cap,
+                    }
+                )
 
                 if cap <= 5:
                     unit_stats[unit_code]["le_5"] += 1

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """Centralized AnswerSpec Registry defining schemas, engines, and validators for all problem types."""
+
 from typing import Any, Dict, Optional
 
 ANSWER_SPEC_TYPES: Dict[str, Dict[str, Any]] = {

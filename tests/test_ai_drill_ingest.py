@@ -48,7 +48,6 @@ class TestAiDrillIngest(unittest.TestCase):
                 "problems": [
                     {
                         "id": "Q01",
-                        "level": 1,
                         "verificationLevel": "partial",
                         "templateKey": "c06-invariant-component-under-variable-total",
                         "level": 4,
@@ -115,7 +114,6 @@ class TestAiDrillIngest(unittest.TestCase):
                 "problems": [
                     {
                         "id": "Q01",
-                        "level": 1,
                         "verificationLevel": "partial",
                         "templateKey": "c06-rate-base-part-triad",
                         "level": 1,
@@ -159,9 +157,7 @@ class TestAiDrillIngest(unittest.TestCase):
 
             mark_context_used(unit, "test-conservation-schema", "battery charge", vault_dir=tmp_vault_dir)
             updated = load_reasoning_vault(unit, vault_dir=tmp_vault_dir)
-            self.assertEqual(
-                updated["archetypes"][0]["usedContexts"], ["fruit punch", "battery charge"]
-            )
+            self.assertEqual(updated["archetypes"][0]["usedContexts"], ["fruit punch", "battery charge"])
 
     def test_contract_guard_rejects_numeric_hint_and_unregistered_givens(self):
         """validate_ai_problem_contract and ingest_ai_drill reject hints with numbers or givens mismatch."""

@@ -7,13 +7,13 @@ Adjusting thresholds in `QUALITY_RULES` requires no changes to gate logic.
 
 from __future__ import annotations
 
-from collections import Counter
 import json
 import math
 import os
 import re
 import subprocess
 import tempfile
+from collections import Counter
 from typing import Any, Callable
 
 from code_engine.answer_check import check_answer as code_check_answer
@@ -286,6 +286,7 @@ QUALITY_RULES: dict[str, Any] = {
 # Gate G1: Type-Content Alignment
 # ---------------------------------------------------------------------------
 
+
 def _has_executable_js_code(snippet: str) -> bool:
     """Return True if snippet has non-comment, non-empty executable JS code."""
     if not snippet or not snippet.strip():
@@ -380,7 +381,7 @@ def check_gate_anti_leak(
 
     ans_comps: list[str] = []
     if spec.get("type") in ("vector", "tuple") and (spec.get("components") or spec.get("values")):
-        for c in (spec.get("components") or spec.get("values")):
+        for c in spec.get("components") or spec.get("values"):
             c_str = str(c).strip().lower()
             if len(c_str) >= 2 and c_str not in ("x", "y", "z", "i", "j", "k"):
                 ans_comps.append(c_str)
@@ -443,14 +444,23 @@ def check_gate_anti_leak(
         )
         if is_flaw and fname == "checkpointHint":
             # Check for position spoilers: e.g. "line 2", "second step"
-            if re.search(r"\bline\s*\d+\b", hint_lower) or re.search(r"\b(?:first|second|third|fourth)\s+step\b", hint_lower):
+            if re.search(r"\bline\s*\d+\b", hint_lower) or re.search(
+                r"\b(?:first|second|third|fourth)\s+step\b", hint_lower
+            ):
                 raise QualityError(
                     "G1",
                     pid,
                     f"คำใบ้รั่ว (Flaw Anti-Leak): ห้ามระบุตำแหน่งบรรทัดหรือลำดับขั้นใน '{fname}' ({hint[:80]})",
                 )
             # Check for specific flaw mechanism keywords
-            forbidden_flaw_kws = ["distribute", "distributing", "inner derivative", "sign error", "sign slip", "sign-slip"]
+            forbidden_flaw_kws = [
+                "distribute",
+                "distributing",
+                "inner derivative",
+                "sign error",
+                "sign slip",
+                "sign-slip",
+            ]
             for kw in forbidden_flaw_kws:
                 if kw in hint_lower:
                     raise QualityError(
@@ -463,7 +473,11 @@ def check_gate_anti_leak(
         for c in ans_comps:
             # Allow single digits like 0, 1, 2 or variables; check non-trivial components
             is_trivial_num = c.isdigit() and int(c) < 10
-            if len(c) >= 2 and not is_trivial_num and c not in ("-1", "1", "0", "2", "-2", "x", "y", "z", "i", "j", "k"):
+            if (
+                len(c) >= 2
+                and not is_trivial_num
+                and c not in ("-1", "1", "0", "2", "-2", "x", "y", "z", "i", "j", "k")
+            ):
                 if re.search(r"(?<![0-9a-zA-Z_.^{])" + re.escape(c) + r"(?![0-9a-zA-Z_}])", hint_lower):
                     raise QualityError(
                         "G1",
@@ -522,10 +536,7 @@ def check_gate_g1(prob: dict[str, Any], is_code: bool = False, rules: dict[str, 
             f"archetype '{archetype}' ไม่อยู่ในรายการที่อนุญาต ({sorted(allowed_archetypes.keys())})",
         )
 
-    is_tracing = (
-        archetype == "code-tracing"
-        or code_type in cfg["tracing_code_types"]
-    )
+    is_tracing = archetype == "code-tracing" or code_type in cfg["tracing_code_types"]
 
     if is_tracing:
         snippet = prob.get("codeSnippet", "")
@@ -607,6 +618,7 @@ def check_gate_g1(prob: dict[str, Any], is_code: bool = False, rules: dict[str, 
 # ---------------------------------------------------------------------------
 # Gate G2: Level-Structure Alignment
 # ---------------------------------------------------------------------------
+
 
 def _has_verifiable_trap_or_flaw(prob: dict[str, Any]) -> bool:
     """Return True if problem has a verifiable flaw, debugging defect, or trap structure."""
@@ -714,7 +726,9 @@ def check_gate_g2(prob: dict[str, Any], rules: dict[str, Any] | None = None) -> 
             f"ติดป้าย L{level} แต่โครงสร้างจริงไม่มี trap/flaw/debug หรือจุดผิดที่ตรวจได้ (steps={step_count}, has_trap=False)",
         )
 
-    effective_max_s = max(max_s, 25) if prob.get("archetype") in ("problem-solving", None) or not prob.get("starterCode") else max_s
+    effective_max_s = (
+        max(max_s, 25) if prob.get("archetype") in ("problem-solving", None) or not prob.get("starterCode") else max_s
+    )
     if not (min_s <= step_count <= effective_max_s):
         source_note = f" (skill '{skill_id}')" if (skill_entry and "g2_profile" in skill_entry) else ""
         raise QualityError(
@@ -748,6 +762,7 @@ def check_gate_g2(prob: dict[str, Any], rules: dict[str, Any] | None = None) -> 
 # Gate G3: Anti-Skeleton Duplication (Set-Level)
 # ---------------------------------------------------------------------------
 
+
 def normalize_skeleton_text(text: str) -> str:
     """Replace all numbers (integers, decimals) with '#' and normalize whitespace."""
     if not text:
@@ -767,11 +782,7 @@ def compute_fingerprint(prob: dict[str, Any], template_key: str | None = None, d
     same fingerprint.
     """
     tpl_key = (
-        template_key
-        or prob.get("templateKey")
-        or prob.get("commonTrapTag")
-        or prob.get("category")
-        or "unknown_tpl"
+        template_key or prob.get("templateKey") or prob.get("commonTrapTag") or prob.get("category") or "unknown_tpl"
     )
     form = str(prob.get("form") or default_form).strip()
 
@@ -779,11 +790,7 @@ def compute_fingerprint(prob: dict[str, Any], template_key: str | None = None, d
     # (e.g. "90 - 37" -> "# - #", "180 - 124" -> "# - #").
     # If `plainText` is missing, fall back to `codeSnippet` or `prompt`.
     raw_skeleton_source = (
-        prob.get("plainText")
-        or prob.get("codeSnippet")
-        or prob.get("entryPoint")
-        or prob.get("prompt")
-        or ""
+        prob.get("plainText") or prob.get("codeSnippet") or prob.get("entryPoint") or prob.get("prompt") or ""
     )
     norm_skeleton = normalize_skeleton_text(str(raw_skeleton_source))
     return f"{tpl_key}|{form}|{norm_skeleton}"
@@ -841,6 +848,7 @@ def check_gate_g3_set(
 # ---------------------------------------------------------------------------
 # Gate G4: Distractor / Trap Provenance
 # ---------------------------------------------------------------------------
+
 
 def _extract_correct_display_or_value(spec: dict[str, Any], prob: dict[str, Any]) -> str:
     t = spec.get("type")
@@ -984,6 +992,7 @@ def check_gate_g4(prob: dict[str, Any], is_code: bool = False, rules: dict[str, 
 # Gate G6: Presentation Formatting Quality (No Sloppy Signs or Unsimplified Exponents)
 # ---------------------------------------------------------------------------
 
+
 def check_gate_g6(
     prob: dict[str, Any],
     is_code: bool = False,
@@ -1107,6 +1116,7 @@ def check_gate_g6(
 # ---------------------------------------------------------------------------
 # Unified Problem & Set Quality Gate Runner
 # ---------------------------------------------------------------------------
+
 
 def verify_quality_gates(
     prob: dict[str, Any],

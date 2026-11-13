@@ -20,7 +20,7 @@ Supports:
 """
 
 import math
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple
 
 FIGURE_THEMES = {
     "indigo": {
@@ -65,6 +65,7 @@ FIGURE_THEMES = {
 # ==============================================================================
 # 2D GEOMETRY BUILDERS
 # ==============================================================================
+
 
 def build_rectangle_figure(
     width: float,
@@ -242,6 +243,7 @@ def build_circle_figure(
 # CARTESIAN GRAPH BUILDERS
 # ==============================================================================
 
+
 def build_cartesian_point_figure(
     coord: Tuple[float, float],
     label: Optional[str] = None,
@@ -271,29 +273,35 @@ def build_cartesian_point_figure(
 
     if show_projections:
         # Projection to X axis
-        plots.append({
-            "type": "segment",
-            "from": [px, 0],
-            "to": [px, py],
-            "strokeDasharray": "3 3",
-            "color": "#94a3b8",
-        })
+        plots.append(
+            {
+                "type": "segment",
+                "from": [px, 0],
+                "to": [px, py],
+                "strokeDasharray": "3 3",
+                "color": "#94a3b8",
+            }
+        )
         # Projection to Y axis
-        plots.append({
-            "type": "segment",
-            "from": [0, py],
-            "to": [px, py],
-            "strokeDasharray": "3 3",
-            "color": "#94a3b8",
-        })
+        plots.append(
+            {
+                "type": "segment",
+                "from": [0, py],
+                "to": [px, py],
+                "strokeDasharray": "3 3",
+                "color": "#94a3b8",
+            }
+        )
 
     # Plotted point
-    plots.append({
-        "type": "point",
-        "coord": [px, py],
-        "label": lbl,
-        "position": "top-right" if py >= 0 else "bottom-right",
-    })
+    plots.append(
+        {
+            "type": "point",
+            "coord": [px, py],
+            "label": lbl,
+            "position": "top-right" if py >= 0 else "bottom-right",
+        }
+    )
 
     return {
         "kind": "cartesian_graph",
@@ -334,22 +342,26 @@ def build_cartesian_line_figure(
     if show_intercepts:
         # Y-intercept: (0, c)
         if y_range[0] <= c <= y_range[1]:
-            plots.append({
-                "type": "point",
-                "coord": [0, c],
-                "label": f"(0, {c:g})",
-                "position": "right",
-            })
+            plots.append(
+                {
+                    "type": "point",
+                    "coord": [0, c],
+                    "label": f"(0, {c:g})",
+                    "position": "right",
+                }
+            )
         # X-intercept: (-c / m, 0) if m != 0
         if abs(m) > 1e-6:
             x_int = -c / m
             if x_range[0] <= x_int <= x_range[1] and abs(x_int) > 1e-4:
-                plots.append({
-                    "type": "point",
-                    "coord": [round(x_int, 2), 0],
-                    "label": f"({round(x_int, 2):g}, 0)",
-                    "position": "top",
-                })
+                plots.append(
+                    {
+                        "type": "point",
+                        "coord": [round(x_int, 2), 0],
+                        "label": f"({round(x_int, 2):g}, 0)",
+                        "position": "top",
+                    }
+                )
 
     return {
         "kind": "cartesian_graph",
@@ -468,13 +480,23 @@ def build_trapezoid_figure(
         {"type": "polygon", "vertices": ["B1", "B2", "T2", "T1"], "fill": True},
         {"type": "segment", "from": "T1", "to": "H_BOT", "strokeDasharray": "3 3", "strokeWidth": 1.5},
     ]
-    markers = [
-        {"type": "right_angle", "vertex": "H_BOT", "arm1": "B1", "arm2": "T1"}
-    ]
+    markers = [{"type": "right_angle", "vertex": "H_BOT", "arm1": "B1", "arm2": "T1"}]
     labels = [
         {"type": "segment", "p1": "T1", "p2": "T2", "text": label_top or f"{top_base:g}\\text{{ m}}", "side": "top"},
-        {"type": "segment", "p1": "B1", "p2": "B2", "text": label_bottom or f"{bottom_base:g}\\text{{ m}}", "side": "bottom"},
-        {"type": "segment", "p1": "B2", "p2": "T2", "text": label_side or f"{sloped_side:g}\\text{{ m}}", "side": "right"},
+        {
+            "type": "segment",
+            "p1": "B1",
+            "p2": "B2",
+            "text": label_bottom or f"{bottom_base:g}\\text{{ m}}",
+            "side": "bottom",
+        },
+        {
+            "type": "segment",
+            "p1": "B2",
+            "p2": "T2",
+            "text": label_side or f"{sloped_side:g}\\text{{ m}}",
+            "side": "right",
+        },
     ]
     if label_height:
         labels.append({"type": "segment", "p1": "T1", "p2": "H_BOT", "text": label_height, "side": "left"})
@@ -517,8 +539,21 @@ def build_annulus_figure(
         ],
         "labels": [
             {"type": "point", "point": "O", "text": "O", "position": "bottom-left"},
-            {"type": "segment", "p1": "O", "p2": "P_IN", "text": label_inner or f"r = {r_inner:g}\\text{{ dm}}", "side": "bottom"},
-            {"type": "segment", "p1": "P_IN", "p2": "P_OUT", "text": label_gap or f"{r_outer - r_inner:g}\\text{{ dm}}", "side": "top", "highlight": True},
+            {
+                "type": "segment",
+                "p1": "O",
+                "p2": "P_IN",
+                "text": label_inner or f"r = {r_inner:g}\\text{{ dm}}",
+                "side": "bottom",
+            },
+            {
+                "type": "segment",
+                "p1": "P_IN",
+                "p2": "P_OUT",
+                "text": label_gap or f"{r_outer - r_inner:g}\\text{{ dm}}",
+                "side": "top",
+                "highlight": True,
+            },
         ],
     }
 
@@ -555,7 +590,14 @@ def build_box3d_figure(
         {"type": "segment", "from": "F1", "to": "B1", "strokeDasharray": "3 3"},
         {"type": "segment", "from": "B1", "to": "B2", "strokeDasharray": "3 3"},
         {"type": "segment", "from": "B1", "to": "B4", "strokeDasharray": "3 3"},
-        {"type": "segment", "from": "F1", "to": "B3", "strokeDasharray": "4 2", "strokeWidth": 2.5, "stroke": "#ea580c"},
+        {
+            "type": "segment",
+            "from": "F1",
+            "to": "B3",
+            "strokeDasharray": "4 2",
+            "strokeWidth": 2.5,
+            "stroke": "#ea580c",
+        },
     ]
     labels = [
         {"type": "segment", "p1": "F1", "p2": "F2", "text": label_w or f"w = {w:g}\\text{{ m}}", "side": "bottom"},
@@ -856,6 +898,7 @@ def build_cartesian_rectangle_figure(
 # STANDALONE SVG EXPORTER (HEADLESS / NOTION READY)
 # ==============================================================================
 
+
 def figure_to_svg(figure: Dict[str, Any], width: int = 420, height: int = 280) -> str:
     """
     Renders any MathFigureSpec into a self-contained, standalone SVG string.
@@ -1023,37 +1066,53 @@ def _render_cartesian_to_svg(fig: Dict[str, Any], th: Dict[str, str], svg_w: int
     while cur_x <= x_max:
         if abs(cur_x) > 1e-6:
             sx = to_svg_x(cur_x)
-            svg_body.append(f'<line x1="{sx:.1f}" y1="{padding}" x2="{sx:.1f}" y2="{svg_h - padding}" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="2 2" />')
+            svg_body.append(
+                f'<line x1="{sx:.1f}" y1="{padding}" x2="{sx:.1f}" y2="{svg_h - padding}" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="2 2" />'
+            )
         cur_x += x_step
 
     cur_y = math.ceil(y_min / y_step) * y_step
     while cur_y <= y_max:
         if abs(cur_y) > 1e-6:
             sy = to_svg_y(cur_y)
-            svg_body.append(f'<line x1="{padding}" y1="{sy:.1f}" x2="{svg_w - padding}" y2="{sy:.1f}" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="2 2" />')
+            svg_body.append(
+                f'<line x1="{padding}" y1="{sy:.1f}" x2="{svg_w - padding}" y2="{sy:.1f}" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="2 2" />'
+            )
         cur_y += y_step
 
     # Axes
     clamp_oy = max(padding, min(svg_h - padding, oy))
     clamp_ox = max(padding, min(svg_w - padding, ox))
-    svg_body.append(f'<line x1="{padding - 10}" y1="{clamp_oy:.1f}" x2="{svg_w - padding + 12}" y2="{clamp_oy:.1f}" stroke="#64748b" stroke-width="2" />')
-    svg_body.append(f'<line x1="{clamp_ox:.1f}" y1="{svg_h - padding + 10}" x2="{clamp_ox:.1f}" y2="{padding - 12}" stroke="#64748b" stroke-width="2" />')
+    svg_body.append(
+        f'<line x1="{padding - 10}" y1="{clamp_oy:.1f}" x2="{svg_w - padding + 12}" y2="{clamp_oy:.1f}" stroke="#64748b" stroke-width="2" />'
+    )
+    svg_body.append(
+        f'<line x1="{clamp_ox:.1f}" y1="{svg_h - padding + 10}" x2="{clamp_ox:.1f}" y2="{padding - 12}" stroke="#64748b" stroke-width="2" />'
+    )
 
     # Ticks on axes
     cur_x = math.ceil(x_min / x_step) * x_step
     while cur_x <= x_max:
         if abs(cur_x) > 1e-6:
             sx = to_svg_x(cur_x)
-            svg_body.append(f'<line x1="{sx:.1f}" y1="{clamp_oy - 3}" x2="{sx:.1f}" y2="{clamp_oy + 3}" stroke="#64748b" stroke-width="1.2" />')
-            svg_body.append(f'<text x="{sx:.1f}" y="{clamp_oy + 13}" font-family="monospace" font-size="9" text-anchor="middle" fill="#64748b">{cur_x:g}</text>')
+            svg_body.append(
+                f'<line x1="{sx:.1f}" y1="{clamp_oy - 3}" x2="{sx:.1f}" y2="{clamp_oy + 3}" stroke="#64748b" stroke-width="1.2" />'
+            )
+            svg_body.append(
+                f'<text x="{sx:.1f}" y="{clamp_oy + 13}" font-family="monospace" font-size="9" text-anchor="middle" fill="#64748b">{cur_x:g}</text>'
+            )
         cur_x += x_step
 
     cur_y = math.ceil(y_min / y_step) * y_step
     while cur_y <= y_max:
         if abs(cur_y) > 1e-6:
             sy = to_svg_y(cur_y)
-            svg_body.append(f'<line x1="{clamp_ox - 3}" y1="{sy:.1f}" x2="{clamp_ox + 3}" y2="{sy:.1f}" stroke="#64748b" stroke-width="1.2" />')
-            svg_body.append(f'<text x="{clamp_ox - 5}" y="{sy + 3:.1f}" font-family="monospace" font-size="9" text-anchor="end" fill="#64748b">{cur_y:g}</text>')
+            svg_body.append(
+                f'<line x1="{clamp_ox - 3}" y1="{sy:.1f}" x2="{clamp_ox + 3}" y2="{sy:.1f}" stroke="#64748b" stroke-width="1.2" />'
+            )
+            svg_body.append(
+                f'<text x="{clamp_ox - 5}" y="{sy + 3:.1f}" font-family="monospace" font-size="9" text-anchor="end" fill="#64748b">{cur_y:g}</text>'
+            )
         cur_y += y_step
 
     # Plots
@@ -1064,16 +1123,22 @@ def _render_cartesian_to_svg(fig: Dict[str, Any], th: Dict[str, str], svg_w: int
             sx = to_svg_x(px)
             sy = to_svg_y(py)
             col = plot.get("color") or th["stroke"]
-            svg_body.append(f'<circle cx="{sx:.1f}" cy="{sy:.1f}" r="4.5" fill="{col}" stroke="#ffffff" stroke-width="1.5" />')
+            svg_body.append(
+                f'<circle cx="{sx:.1f}" cy="{sy:.1f}" r="4.5" fill="{col}" stroke="#ffffff" stroke-width="1.5" />'
+            )
             if plot.get("label"):
                 lbl = plot["label"]
-                svg_body.append(f'<text x="{sx + 8:.1f}" y="{sy - 8:.1f}" font-family="monospace" font-size="11" font-weight="bold" fill="#1e293b">{lbl}</text>')
+                svg_body.append(
+                    f'<text x="{sx + 8:.1f}" y="{sy - 8:.1f}" font-family="monospace" font-size="11" font-weight="bold" fill="#1e293b">{lbl}</text>'
+                )
         elif p_type == "segment":
             x1, y1 = plot.get("from", [0, 0])
             x2, y2 = plot.get("to", [0, 0])
             col = plot.get("color") or "#94a3b8"
             dash = f'stroke-dasharray="{plot["strokeDasharray"]}"' if plot.get("strokeDasharray") else ""
-            svg_body.append(f'<line x1="{to_svg_x(x1):.1f}" y1="{to_svg_y(y1):.1f}" x2="{to_svg_x(x2):.1f}" y2="{to_svg_y(y2):.1f}" stroke="{col}" stroke-width="1.8" {dash} />')
+            svg_body.append(
+                f'<line x1="{to_svg_x(x1):.1f}" y1="{to_svg_y(y1):.1f}" x2="{to_svg_x(x2):.1f}" y2="{to_svg_y(y2):.1f}" stroke="{col}" stroke-width="1.8" {dash} />'
+            )
         elif p_type == "function":
             coeffs = plot.get("coefficients", [])
             if coeffs:
@@ -1144,8 +1209,10 @@ def build_angle_pair_figure(
 ) -> Dict[str, Any]:
     """Two adjacent angles sharing a vertex whose sum is `total` (90 = complementary, 180 = supplementary)."""
     r = 4.0
+
     def pt(deg: float) -> List[float]:
         return [round(r * math.cos(math.radians(deg)), 3), round(r * math.sin(math.radians(deg)), 3)]
+
     pts = {"O": [0, 0], "R": pt(0), "U": pt(known), "S": pt(total)}
     return {
         "kind": "geometry_2d",
@@ -1158,7 +1225,14 @@ def build_angle_pair_figure(
             {"type": "segment", "from": "O", "to": "S"},
         ],
         "markers": [
-            {"type": "angle_arc", "vertex": "O", "arm1": "R", "arm2": "U", "label": label_known or f"{known:g}^\\circ", "radius": 30},
+            {
+                "type": "angle_arc",
+                "vertex": "O",
+                "arm1": "R",
+                "arm2": "U",
+                "label": label_known or f"{known:g}^\\circ",
+                "radius": 30,
+            },
             {"type": "angle_arc", "vertex": "O", "arm1": "U", "arm2": "S", "label": label_unknown, "radius": 44},
         ],
     }
@@ -1186,8 +1260,22 @@ def build_triangle_angles_figure(
         "points": pts,
         "shapes": [{"type": "polygon", "vertices": ["A", "B", "C"], "fill": True}],
         "markers": [
-            {"type": "angle_arc", "vertex": "A", "arm1": "B", "arm2": "C", "label": f"{angle_a:g}^\\circ", "radius": 26},
-            {"type": "angle_arc", "vertex": "B", "arm1": "C", "arm2": "A", "label": f"{angle_b:g}^\\circ", "radius": 26},
+            {
+                "type": "angle_arc",
+                "vertex": "A",
+                "arm1": "B",
+                "arm2": "C",
+                "label": f"{angle_a:g}^\\circ",
+                "radius": 26,
+            },
+            {
+                "type": "angle_arc",
+                "vertex": "B",
+                "arm1": "C",
+                "arm2": "A",
+                "label": f"{angle_b:g}^\\circ",
+                "radius": 26,
+            },
             {"type": "angle_arc", "vertex": "C", "arm1": "A", "arm2": "B", "label": "?", "radius": 24},
         ],
     }

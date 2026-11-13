@@ -11,9 +11,8 @@ Checks per problem:
  3. Render safety (Zero Unrendered Syntax): no Markdown (**, __, backticks), no [[ID]] tokens,
     no \\displaystyle, no Thai text, balanced $ delimiters, all references resolvable.
 """
-import re
 
-import sympy as sp
+import re
 
 from math_engine.answer_check import check_answer, is_equal, to_expr
 from quality_rules import QualityError, check_gate_g3_set, verify_quality_gates
@@ -73,9 +72,9 @@ def verify_problem(p, id_map=None, rules=None):
                 _fail(pid, f"step {i} value {st['val']} != source {v['source']}")
             checked += 1
         if "eq" in st:
-            l, r = st["eq"]
-            if not is_equal(to_expr(l, variables=vars_list), to_expr(r, variables=vars_list), variables=vars_list):
-                _fail(pid, f"step {i} equality fails: {l} != {r}")
+            lhs, rhs = st["eq"]
+            if not is_equal(to_expr(lhs, variables=vars_list), to_expr(rhs, variables=vars_list), variables=vars_list):
+                _fail(pid, f"step {i} equality fails: {lhs} != {rhs}")
             checked += 1
         check_text_safety(pid, f"step {i} explain", st["explain"])
         check_text_safety(pid, f"step {i} latex", st["latex"], is_latex=True)
@@ -86,7 +85,9 @@ def verify_problem(p, id_map=None, rules=None):
     spec = p["answerSpec"]
     t = spec["type"]
     if t in ("complex", "number", "expression") and src is not None:
-        if not is_equal(to_expr(spec["value"], spec.get("variables")), src, spec.get("variables") if t == "expression" else None):
+        if not is_equal(
+            to_expr(spec["value"], spec.get("variables")), src, spec.get("variables") if t == "expression" else None
+        ):
             _fail(pid, f"answer {spec['value']} != source {v['source']}")
     elif t == "tuple":
         exprs = [to_expr(e, variables=vars_list) for e in v["tuple"]]
@@ -140,7 +141,7 @@ def verify_problem(p, id_map=None, rules=None):
     if hint and (ans_val or ans_plain):
         for leaked in set([ans_val, ans_plain]):
             if leaked and leaked not in ["1", "i", "-1", "-i", "choice"]:
-                if re.search(r'(?<![0-9a-zA-Z])' + re.escape(leaked) + r'(?![0-9a-zA-Z])', hint):
+                if re.search(r"(?<![0-9a-zA-Z])" + re.escape(leaked) + r"(?![0-9a-zA-Z])", hint):
                     _fail(pid, f"inputHint leaks exact answer {leaked!r}: {hint!r}")
 
     # 6. Trap derivation verification
@@ -152,14 +153,20 @@ def verify_problem(p, id_map=None, rules=None):
         td = str(p["trapDerivation"]).strip()
         # Trap derivation must express an operational misconception, not a raw numeric literal
         if re.match(r"^-?\d+(\.\d+)?$", td):
-            raise QualityError("G4", pid, f"trapDerivation '{td}' is purely numeric. It must express an operational derivation of student error, or set trapKind='selection'.")
+            raise QualityError(
+                "G4",
+                pid,
+                f"trapDerivation '{td}' is purely numeric. It must express an operational derivation of student error, or set trapKind='selection'.",
+            )
         tv = v.get("trapValue")
         if tv is None:
             raise QualityError("G4", pid, f"trapDerivation '{td}' present but verify.trapValue is missing")
         td_expr = to_expr(td, variables=vars_list, trusted=True)
         tv_expr = to_expr(tv, variables=vars_list, trusted=True)
         if not is_equal(td_expr, tv_expr, variables=vars_list):
-            raise QualityError("G4", pid, f"trapDerivation '{td}' evaluates to {td_expr} != trapValue '{tv}' ({tv_expr})")
+            raise QualityError(
+                "G4", pid, f"trapDerivation '{td}' evaluates to {td_expr} != trapValue '{tv}' ({tv_expr})"
+            )
 
         # Gate: trapDerivation must not consist purely of numbers absent from prompt.
         # Template sends trapGivens (numbers in prompt used in derivation), and gate verifies
@@ -179,7 +186,7 @@ def verify_problem(p, id_map=None, rules=None):
                     raise QualityError(
                         "G4",
                         pid,
-                        f"trapDerivation '{td}' must contain at least 2 distinct givens from trapGivens ({givens}), found {len(matched_givens)}: {matched_givens}"
+                        f"trapDerivation '{td}' must contain at least 2 distinct givens from trapGivens ({givens}), found {len(matched_givens)}: {matched_givens}",
                     )
             else:
                 is_c01_or_c12 = any(
@@ -187,9 +194,10 @@ def verify_problem(p, id_map=None, rules=None):
                     for ref in p.get("references", [])
                 )
                 if is_c01_or_c12:
-                    raise QualityError("G4", pid, f"Templates in C01 and C12 must provide 'trapGivens'")
+                    raise QualityError("G4", pid, "Templates in C01 and C12 must provide 'trapGivens'")
     else:
         import logging
+
         logging.getLogger("math_engine.verify").warning(f"[{pid}] Template form has no trapDerivation field")
 
     # 7. Quality Gates (G1, G2, G4)

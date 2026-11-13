@@ -10,16 +10,13 @@ import json
 import os
 import tempfile
 import unittest
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
-import sync_rules_to_notion
 from sync_rules_to_notion import (
-    MASTER_RULES_PID,
     RULES_MAP_FILE,
     SUB_MODULES,
     get_or_create_sub_pages,
     main,
-    plan_sync,
 )
 
 
@@ -92,8 +89,10 @@ class TestSyncRulesDryRun(unittest.TestCase):
             def mock_notion_post(method, endpoint, token, payload=None):
                 return {"id": created_ids.pop(0)}
 
-            with patch("sync_rules_to_notion.get_all_blocks", return_value=mock_blocks), \
-                 patch("sync_rules_to_notion.notion_request", side_effect=mock_notion_post):
+            with (
+                patch("sync_rules_to_notion.get_all_blocks", return_value=mock_blocks),
+                patch("sync_rules_to_notion.notion_request", side_effect=mock_notion_post),
+            ):
                 merged = get_or_create_sub_pages(
                     master_pid="dummy-master",
                     token="dummy-token",

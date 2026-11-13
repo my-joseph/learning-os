@@ -10,7 +10,7 @@ Validates:
 4. Auto-resolution of reference badges from id_map.json.
 5. Ingestion of Level 5 Synthesis Drills and compatibility with Practice Studio data models.
 """
-import copy
+
 import json
 import os
 import shutil
@@ -25,11 +25,10 @@ from math_engine.ai_drill_ingest import (
     validate_ai_problem_contract,
 )
 from math_engine.verify import verify_problem
-from quality_rules import QualityError, check_gate_g2
+from quality_rules import check_gate_g2
 
 
 class TestLevel5Synthesis(unittest.TestCase):
-
     def setUp(self):
         self.test_dir = tempfile.mkdtemp()
         self.vault_dir = os.path.join(self.test_dir, "vaults")
@@ -48,14 +47,14 @@ class TestLevel5Synthesis(unittest.TestCase):
             "cognitiveTraps": [
                 "c12-3d-dimension-omission-trap",
                 "c09-premature-radical-sum-trap",
-                "c05-intermediate-rounding-error-trap"
+                "c05-intermediate-rounding-error-trap",
             ],
             "versatileDomains": [
                 "structural_space_truss_diagonal",
                 "subsea_anchor_cable_triangulation",
-                "aerospace_sensor_mast_clearance"
+                "aerospace_sensor_mast_clearance",
             ],
-            "usedContexts": []
+            "usedContexts": [],
         }
         register_archetype("MTH-SYNTHESIS", self.sample_archetype, vault_dir=self.vault_dir)
 
@@ -75,72 +74,40 @@ class TestLevel5Synthesis(unittest.TestCase):
             "prompt": "An aerospace structural truss frame has dimensions of width 6 m, length 8 m, and height 24 m. First, determine the exact space diagonal distance $d$ across the opposite corners. Next, calculate the clearance aspect ratio $\\frac{d}{7}$ and express it rounded to two decimal places.",
             "display": "d = \\sqrt{6^2 + 8^2 + 24^2}, \\quad \\text{Ratio} = \\frac{d}{7}",
             "plainText": "d = sqrt(6^2 + 8^2 + 24^2), Ratio = d / 7",
-            "givens": {
-                "w": 6,
-                "l": 8,
-                "h": 24,
-                "divisor": 7
-            },
+            "givens": {"w": 6, "l": 8, "h": 24, "divisor": 7},
             "steps": [
                 {
                     "latex": "d^2 = w^2 + l^2 + h^2",
-                    "explain": "Set up the 3D space diagonal formula using the Pythagorean theorem."
+                    "explain": "Set up the 3D space diagonal formula using the Pythagorean theorem.",
                 },
                 {
                     "latex": "d^2 = 6^2 + 8^2 + 24^2",
-                    "explain": "Substitute given dimensions into the space diagonal equation."
+                    "explain": "Substitute given dimensions into the space diagonal equation.",
                 },
-                {
-                    "latex": "d^2 = 36 + 8^2 + 24^2",
-                    "explain": "Evaluate 6^2 to 36."
-                },
-                {
-                    "latex": "d^2 = 36 + 64 + 24^2",
-                    "explain": "Evaluate 8^2 to 64."
-                },
-                {
-                    "latex": "d^2 = 36 + 64 + 576",
-                    "explain": "Evaluate 24^2 to 576."
-                },
-                {
-                    "latex": "d^2 = 100 + 576",
-                    "explain": "Simplify 36 + 64 to 100."
-                },
-                {
-                    "latex": "d^2 = 676",
-                    "explain": "Simplify 100 + 576 to 676."
-                },
-                {
-                    "latex": "d = \\sqrt{676}",
-                    "explain": "Take the principal square root of both sides."
-                },
-                {
-                    "latex": "d = 26",
-                    "explain": "Simplify square root of 676 to 26 meters."
-                },
-                {
-                    "latex": "\\text{Ratio} = \\frac{26}{7}",
-                    "explain": "Form the clearance ratio with divisor 7."
-                },
+                {"latex": "d^2 = 36 + 8^2 + 24^2", "explain": "Evaluate 6^2 to 36."},
+                {"latex": "d^2 = 36 + 64 + 24^2", "explain": "Evaluate 8^2 to 64."},
+                {"latex": "d^2 = 36 + 64 + 576", "explain": "Evaluate 24^2 to 576."},
+                {"latex": "d^2 = 100 + 576", "explain": "Simplify 36 + 64 to 100."},
+                {"latex": "d^2 = 676", "explain": "Simplify 100 + 576 to 676."},
+                {"latex": "d = \\sqrt{676}", "explain": "Take the principal square root of both sides."},
+                {"latex": "d = 26", "explain": "Simplify square root of 676 to 26 meters."},
+                {"latex": "\\text{Ratio} = \\frac{26}{7}", "explain": "Form the clearance ratio with divisor 7."},
                 {
                     "latex": "\\text{Ratio} \\approx 3.7142857",
-                    "explain": "Evaluate fraction division to higher decimal precision."
+                    "explain": "Evaluate fraction division to higher decimal precision.",
                 },
                 {
                     "latex": "\\text{Ratio} = 3.71",
                     "explain": "Round the final clearance ratio to two decimal places.",
-                    "val": "3.71"
-                }
+                    "val": "3.71",
+                },
             ],
-            "verify": {
-                "source": "3.71",
-                "trapValue": "24/7"
-            },
+            "verify": {"source": "3.71", "trapValue": "24/7"},
             "answerSpec": {
                 "type": "number",
                 "value": "3.71",
                 "commonTrapTag": "c12-height-divisor-only-trap",
-                "trapValue": "24/7"
+                "trapValue": "24/7",
             },
             "answerDisplay": "3.71",
             "answerPlain": "3.71",
@@ -150,12 +117,7 @@ class TestLevel5Synthesis(unittest.TestCase):
             "trapDerivation": "24 / 7",
             "references": ["MTH-T01-C12", "MTH-T01-C09", "MTH-T01-C05"],
             "verificationLevel": "partial",
-            "state": {
-                "userInput": "",
-                "score": None,
-                "divergedStep": None,
-                "mistakes": []
-            }
+            "state": {"userInput": "", "score": None, "divergedStep": None, "mistakes": []},
         }
 
     def test_gate_g2_accepts_level5_with_granular_steps(self):
@@ -187,11 +149,7 @@ class TestLevel5Synthesis(unittest.TestCase):
     def test_auto_resolution_of_reference_badges(self):
         """Verify that ingest_ai_drill automatically populates referenceBadges from id_map.json."""
         prob = self._build_valid_l5_problem()
-        drill_doc = {
-            "unitCode": "MTH-SYNTHESIS",
-            "unitTitle": "Multi-Topic Mathematical Synthesis",
-            "problems": [prob]
-        }
+        drill_doc = {"unitCode": "MTH-SYNTHESIS", "unitTitle": "Multi-Topic Mathematical Synthesis", "problems": [prob]}
         res = ingest_ai_drill(drill_doc, data_root=self.data_dir, vault_dir=self.vault_dir)
         ingested_prob = res["problems"][0]
 
@@ -213,10 +171,7 @@ class TestLevel5Synthesis(unittest.TestCase):
     def test_ingest_and_save_level5_synthesis_drill(self):
         """Verify that an L5 synthesis drill is materialized to disk and passes all invariants."""
         prob = self._build_valid_l5_problem()
-        drill_doc = {
-            "unitCode": "MTH-SYNTHESIS",
-            "problems": [prob]
-        }
+        drill_doc = {"unitCode": "MTH-SYNTHESIS", "problems": [prob]}
         res = ingest_ai_drill(drill_doc, data_root=self.data_dir, vault_dir=self.vault_dir)
         self.assertTrue(os.path.exists(res["localFilePath"]))
 

@@ -2,10 +2,12 @@
 """Test float division precision in to_expr and verify_problem."""
 
 import unittest
+
 import sympy as sp
-from math_engine.answer_check import to_expr, is_equal, safe_parse
-from math_engine.verify import verify_problem
+
+from math_engine.answer_check import is_equal, to_expr
 from math_engine.templates._prealg_helpers import S
+from math_engine.verify import verify_problem
 
 
 class TestC05FloatPrecision(unittest.TestCase):

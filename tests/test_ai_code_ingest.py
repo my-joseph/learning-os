@@ -3,7 +3,6 @@
 Unit tests for AI Code Drill Ingest, Contract Guard & Reasoning Vault.
 """
 
-import json
 import os
 import tempfile
 import unittest
@@ -19,7 +18,6 @@ from code_engine.ai_drill_ingest import (
 
 
 class TestAiCodeIngest(unittest.TestCase):
-
     def _create_valid_problem(self) -> dict:
         """Returns a valid, production-grade problem adhering to all contracts."""
         return {
@@ -81,7 +79,7 @@ class TestAiCodeIngest(unittest.TestCase):
                         "assert.strictEqual(limiter.consume(1), true);\n"
                         "assert.strictEqual(limiter.consume(1), true);\n"
                         "assert.strictEqual(limiter.consume(1), false);\n"
-                    )
+                    ),
                 }
             ],
             "hiddenTests": [
@@ -91,17 +89,13 @@ class TestAiCodeIngest(unittest.TestCase):
                         "const limiter = createTokenBucketRateLimiter({ capacity: 5, refillRatePerSecond: 100 });\n"
                         "assert.strictEqual(limiter.consume(5), true);\n"
                         "assert.strictEqual(limiter.consume(1), false);\n"
-                    )
+                    ),
                 }
             ],
             "steps": [
-                {
-                    "explain": "Track token count and timestamp in closure; refill proportionally to elapsed seconds."
-                },
-                {
-                    "explain": "Deduct cost atomically when available; otherwise reject without modifying balance."
-                }
-            ]
+                {"explain": "Track token count and timestamp in closure; refill proportionally to elapsed seconds."},
+                {"explain": "Deduct cost atomically when available; otherwise reject without modifying balance."},
+            ],
         }
 
     def test_vault_crud(self):
@@ -117,7 +111,7 @@ class TestAiCodeIngest(unittest.TestCase):
                 "archetypeKey": "test-rate-limiter",
                 "name": "Rate Limiter",
                 "level": 3,
-                "usedContexts": ["tenant_api"]
+                "usedContexts": ["tenant_api"],
             }
             register_code_archetype(unit_code, archetype, vault_dir=tmp_dir)
 
@@ -128,10 +122,7 @@ class TestAiCodeIngest(unittest.TestCase):
             # Mark context used
             mark_code_context_used(unit_code, "test-rate-limiter", "webhook_delivery", vault_dir=tmp_dir)
             v_updated = load_code_reasoning_vault(unit_code, vault_dir=tmp_dir)
-            self.assertEqual(
-                v_updated["archetypes"][0]["usedContexts"],
-                ["tenant_api", "webhook_delivery"]
-            )
+            self.assertEqual(v_updated["archetypes"][0]["usedContexts"], ["tenant_api", "webhook_delivery"])
 
     def test_validate_rejects_toy_code(self):
         """Verifies that Zero Toy Code Guard rejects foo/bar/test1/funcA."""
@@ -269,7 +260,7 @@ class TestAiCodeIngest(unittest.TestCase):
         prob["visibleTests"] = [
             {
                 "name": "flaky real time test",
-                "testCode": "await new Promise(r => setTimeout(r, 200));\nassert.strictEqual(true, true);\n"
+                "testCode": "await new Promise(r => setTimeout(r, 200));\nassert.strictEqual(true, true);\n",
             }
         ]
         with self.assertRaises(AiContractError) as ctx:
@@ -286,7 +277,7 @@ class TestAiCodeIngest(unittest.TestCase):
                 "testCode": (
                     "const limiter = createTokenBucketRateLimiter({ capacity: 5, refillRatePerSecond: 1 });\n"
                     "assert.strictEqual(limiter.consume(1), true);\n"
-                )
+                ),
             }
         ]
         prob["hiddenTests"] = []
@@ -306,16 +297,13 @@ class TestAiCodeIngest(unittest.TestCase):
                 "environment": "node-vanilla",
                 "sourceAttribution": {
                     "curriculum": "Antigravity Autonomous Engineering Synthesis",
-                    "license": "CC BY 4.0"
+                    "license": "CC BY 4.0",
                 },
-                "problems": [prob]
+                "problems": [prob],
             }
 
             saved = ingest_ai_code_drill(
-                drill_doc,
-                data_root=tmp_data_dir,
-                workspace_root=tmp_ws_dir,
-                vault_dir=tmp_data_dir
+                drill_doc, data_root=tmp_data_dir, workspace_root=tmp_ws_dir, vault_dir=tmp_data_dir
             )
 
             # 1. Check Drill JSON persistence

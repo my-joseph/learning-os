@@ -9,33 +9,28 @@ import argparse
 import json
 import os
 import re
-import sys
 from concurrent.futures import ThreadPoolExecutor
 
 import apply_rules_and_test_pages
-from notion_api import require_token
 from apply_rules_and_test_pages import (
-    load_env,
-    notion_request,
-    get_all_blocks,
-    replace_page_blocks,
-    validate_blocks_clean,
-    parse_rt,
-    mention_page,
-    rt,
     callout_block,
     divider_block,
+    get_all_blocks,
     h2,
+    load_env,
+    mention_page,
+    notion_request,
     p_block,
-    bullet,
+    replace_page_blocks,
+    rt,
+    validate_blocks_clean,
 )
+from notion_client import require_token
 from test_md_parser import md_to_notion_blocks
 from upgrade_mth_t01_batch2 import audit_page
 
 # Support double-backtick code spans in markdown (e.g. in 00_core.md)
-apply_rules_and_test_pages.INNER_TOKEN_RE = re.compile(
-    r"(\[\[[A-Z0-9\-]+\]\]|\$[^\$]+\$|``(?:.+?)``|`[^`]+`)"
-)
+apply_rules_and_test_pages.INNER_TOKEN_RE = re.compile(r"(\[\[[A-Z0-9\-]+\]\]|\$[^\$]+\$|``(?:.+?)``|`[^`]+`)")
 orig_parse_rt = apply_rules_and_test_pages.parse_rt
 
 
@@ -192,9 +187,7 @@ def get_or_create_sub_pages(master_pid, token, dry_run=False, rules_map_path=RUL
             print(f"  Creating new Notion Child Page for: {target_title}...")
             payload = {
                 "parent": {"page_id": master_pid},
-                "properties": {
-                    "title": [{"type": "text", "text": {"content": target_title}}]
-                },
+                "properties": {"title": [{"type": "text", "text": {"content": target_title}}]},
             }
             res = notion_request("POST", "pages", token, payload)
             pid = res["id"]
@@ -231,7 +224,9 @@ def validate_blocks_clean_rule(blocks, label=""):
     if label != "06_TEMPLATE_CONTRACT":
         thai_match = re.search(r"[\u0E00-\u0E7F]+", dumped)
         if thai_match:
-            raise AssertionError(f"[{label}] Found non-English (Thai) text '{thai_match.group(0)}' in generated blocks!")
+            raise AssertionError(
+                f"[{label}] Found non-English (Thai) text '{thai_match.group(0)}' in generated blocks!"
+            )
 
 
 def update_child_page(pid, file_path, label, id_map, token):
@@ -280,11 +275,13 @@ def update_master_page(master_pid, rules_map, id_map, token):
             mention_page(sub_id, bold=True),
             rt(f" (`{mod['file']}`): {mod['desc']}"),
         ]
-        nav_blocks.append({
-            "object": "block",
-            "type": "bulleted_list_item",
-            "bulleted_list_item": {"rich_text": rt_parts},
-        })
+        nav_blocks.append(
+            {
+                "object": "block",
+                "type": "bulleted_list_item",
+                "bulleted_list_item": {"rich_text": rt_parts},
+            }
+        )
 
     nav_blocks.append(divider_block())
     nav_blocks.append(h2("Universal Core Governance & Safety Invariants", id_map))
@@ -320,7 +317,7 @@ def update_master_page(master_pid, rules_map, id_map, token):
 
     # Append new blocks in chunks of 50
     for i in range(0, len(combined_blocks), 50):
-        chunk = combined_blocks[i:i + 50]
+        chunk = combined_blocks[i : i + 50]
         notion_request("PATCH", f"blocks/{master_pid}/children", token, {"children": chunk})
 
     print(f"  Master Rule Hub synced successfully ({len(combined_blocks)} blocks)!")
@@ -358,15 +355,17 @@ def plan_sync(master_pid, rules_map, id_map):
             action = "CREATE (สร้างใหม่)"
             target = f"New Child Page under Master Hub ({master_pid})"
 
-        sub_plans.append({
-            "key": key,
-            "action": action,
-            "title": mod["title"],
-            "file": file_path,
-            "target": target,
-            "block_count": block_count,
-            "id": sub_id,
-        })
+        sub_plans.append(
+            {
+                "key": key,
+                "action": action,
+                "title": mod["title"],
+                "file": file_path,
+                "target": target,
+                "block_count": block_count,
+                "id": sub_id,
+            }
+        )
         print(f"  [{action}] {key}: {mod['title']}")
         print(f"      Target: {target}")
         print(f"      File:   {file_path} ({block_count} Notion blocks)")
@@ -385,14 +384,18 @@ def plan_sync(master_pid, rules_map, id_map):
     print(f"      Navigation Hub: {nav_block_count} blocks (Header + {len(SUB_MODULES)} Sub-Page mentions)")
     print(f"      Core Governance (00_core.md): {len(core_content_blocks)} blocks")
     print(f"      Total Blocks to Append: {master_total_blocks} blocks")
-    print(f"      Child Pages: Preserved (only non-child_page blocks replaced)")
+    print("      Child Pages: Preserved (only non-child_page blocks replaced)")
 
     # 3. Summary
     print("\n--- Summary ---")
     to_create = sum(1 for p in sub_plans if "CREATE" in p["action"])
     to_replace = sum(1 for p in sub_plans if "REPLACE" in p["action"]) + 1  # +1 for master hub
-    print(f"Pages to Create:  {to_create} ({', '.join(p['key'] for p in sub_plans if 'CREATE' in p['action']) or 'None'})")
-    print(f"Pages to Replace: {to_replace} (Master Hub + {sum(1 for p in sub_plans if 'REPLACE' in p['action'])} Sub-Pages)")
+    print(
+        f"Pages to Create:  {to_create} ({', '.join(p['key'] for p in sub_plans if 'CREATE' in p['action']) or 'None'})"
+    )
+    print(
+        f"Pages to Replace: {to_replace} (Master Hub + {sum(1 for p in sub_plans if 'REPLACE' in p['action'])} Sub-Pages)"
+    )
     print("rules_map.json:   Unchanged (Dry-run mode, 0 API calls made)")
     print("========================================================\n")
     return {
@@ -468,7 +471,9 @@ def main(dry_run=False):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Local-First Auto-Sync of modular rules to Notion.")
-    parser.add_argument("--dry-run", action="store_true", help="Print sync plan without calling Notion API or writing rules_map.json")
+    parser.add_argument(
+        "--dry-run", action="store_true", help="Print sync plan without calling Notion API or writing rules_map.json"
+    )
     parsed_args = parser.parse_args()
     is_dry = parsed_args.dry_run or (os.environ.get("NOTION_DRY_RUN", "").lower() in ("1", "true", "yes"))
     main(dry_run=is_dry)

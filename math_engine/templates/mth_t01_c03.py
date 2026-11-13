@@ -1,17 +1,37 @@
 # -*- coding: utf-8 -*-
 """Parameterized problem templates for MTH-T01-C03: Integers."""
+
 from math_engine.templates._prealg_helpers import S
 
 UNIT = "MTH-T01-C03"
 TITLE = "Integers"
 
 MISTAKE_TAGS = [
-    {"id": "c03-double-negative-slip", "label": "Failed to convert subtracting a negative into addition", "name": "Double Negative Subtraction Slip", "autoFrom": ["whole_sign_flip"]},
-    {"id": "c03-signed-division-sign-error", "label": "Lost negative sign when dividing integers of opposite signs", "name": "Signed Division Sign Error", "autoFrom": ["whole_sign_flip"]},
-    {"id": "c03-negated-square-precedence-trap", "label": "Evaluated -a^2 as (-a)^2 instead of -(a^2)", "name": "Negated Power Precedence Trap", "autoFrom": ["whole_sign_flip"]},
-    {"id": "c03-net-integer-change-trap", "label": "Reversed directional signs in multi-stage integer change", "name": "Directional Integer Sign Trap", "autoFrom": []},
+    {
+        "id": "c03-double-negative-slip",
+        "label": "Failed to convert subtracting a negative into addition",
+        "name": "Double Negative Subtraction Slip",
+        "autoFrom": ["whole_sign_flip"],
+    },
+    {
+        "id": "c03-signed-division-sign-error",
+        "label": "Lost negative sign when dividing integers of opposite signs",
+        "name": "Signed Division Sign Error",
+        "autoFrom": ["whole_sign_flip"],
+    },
+    {
+        "id": "c03-negated-square-precedence-trap",
+        "label": "Evaluated -a^2 as (-a)^2 instead of -(a^2)",
+        "name": "Negated Power Precedence Trap",
+        "autoFrom": ["whole_sign_flip"],
+    },
+    {
+        "id": "c03-net-integer-change-trap",
+        "label": "Reversed directional signs in multi-stage integer change",
+        "name": "Directional Integer Sign Trap",
+        "autoFrom": [],
+    },
 ]
-
 
 
 def t_c03_foundation(rng, form=None):
@@ -45,7 +65,11 @@ def t_c03_foundation(rng, form=None):
         "verify": {"source": str(ans), "trapValue": str(trap)},
         "steps": [
             S(f"-{a} + {b} = {-a + b}", "Combine the first two signed integers.", eq=[f"-{a} + {b}", str(-a + b)]),
-            S(f"{-a + b} + {c}", "Add the positive increment to the intermediate result.", eq=[f"{-a + b} + {c}", str(ans)]),
+            S(
+                f"{-a + b} + {c}",
+                "Add the positive increment to the intermediate result.",
+                eq=[f"{-a + b} + {c}", str(ans)],
+            ),
             S(f"= {ans}", "Simplify to obtain the final signed integer.", val=str(ans), eq=[str(ans), str(ans)]),
         ],
     }
@@ -82,9 +106,22 @@ def t_c03_reverse(rng, form=None):
         "commonTrapTag": "c03-signed-division-sign-error",
         "verify": {"source": str(ans), "trapValue": str(trap)},
         "steps": [
-            S(f"-{a}x = {rhs} - {b} = {rhs - b}", "Subtract the constant term from both sides.", eq=[f"{rhs} - {b}", str(rhs - b)]),
-            S(f"x = \\frac{{{rhs - b}}}{{-{a}}}", "Divide both sides by the negative coefficient.", eq=[f"({rhs - b}) / (-{a})", str(ans)]),
-            S(f"x = {ans}", "A positive integer divided by a negative integer yields a negative quotient.", val=str(ans), eq=[str(ans), str(ans)]),
+            S(
+                f"-{a}x = {rhs} - {b} = {rhs - b}",
+                "Subtract the constant term from both sides.",
+                eq=[f"{rhs} - {b}", str(rhs - b)],
+            ),
+            S(
+                f"x = \\frac{{{rhs - b}}}{{-{a}}}",
+                "Divide both sides by the negative coefficient.",
+                eq=[f"({rhs - b}) / (-{a})", str(ans)],
+            ),
+            S(
+                f"x = {ans}",
+                "A positive integer divided by a negative integer yields a negative quotient.",
+                val=str(ans),
+                eq=[str(ans), str(ans)],
+            ),
         ],
     }
 
@@ -101,9 +138,22 @@ def t_c03_trap(rng, form=None):
         prompt = f"Evaluate the integer expression $-{a}^2 + |(-{b})({c})|$."
         disp = f"-{a}^2 + |(-{b})({c})|"
         steps = [
-            S(f"-{a}^2 = -({a}^2) = -{a * a}", "Exponentiation binds tighter than unary negation, so square first and then negate.", eq=[f"-({a}**2)", str(-(a * a))]),
-            S(f"|(-{b})({c})| = |-{b * c}| = {b * c}", "Evaluate the product inside the absolute value bars and take its non-negative magnitude.", eq=[f"abs((-{b})*{c})", str(b * c)]),
-            S(f"-{a * a} + {b * c} = {ans}", "Add the two results to find the exact value.", val=str(ans), eq=[f"-({a * a}) + {b * c}", str(ans)]),
+            S(
+                f"-{a}^2 = -({a}^2) = -{a * a}",
+                "Exponentiation binds tighter than unary negation, so square first and then negate.",
+                eq=[f"-({a}**2)", str(-(a * a))],
+            ),
+            S(
+                f"|(-{b})({c})| = |-{b * c}| = {b * c}",
+                "Evaluate the product inside the absolute value bars and take its non-negative magnitude.",
+                eq=[f"abs((-{b})*{c})", str(b * c)],
+            ),
+            S(
+                f"-{a * a} + {b * c} = {ans}",
+                "Add the two results to find the exact value.",
+                val=str(ans),
+                eq=[f"-({a * a}) + {b * c}", str(ans)],
+            ),
         ]
     else:
         ans = -(a * a) - (-b) * (-b)
@@ -111,9 +161,22 @@ def t_c03_trap(rng, form=None):
         prompt = f"Evaluate the integer expression $-{a}^2 - (-{b})^2$."
         disp = f"-{a}^2 - (-{b})^2"
         steps = [
-            S(f"-{a}^2 = -({a * a}) = -{a * a}", "Without parentheses around the negative sign, the exponent applies only to the base integer.", eq=[f"-({a}**2)", str(-(a * a))]),
-            S(f"(-{b})^2 = (-{b})(-{b}) = {b * b}", "With parentheses, the negative base is squared to produce a positive integer.", eq=[f"(-{b})**2", str(b * b)]),
-            S(f"-{a * a} - {b * b} = {ans}", "Subtract the second square from the negated first square.", val=str(ans), eq=[f"-({a * a}) - ({b * b})", str(ans)]),
+            S(
+                f"-{a}^2 = -({a * a}) = -{a * a}",
+                "Without parentheses around the negative sign, the exponent applies only to the base integer.",
+                eq=[f"-({a}**2)", str(-(a * a))],
+            ),
+            S(
+                f"(-{b})^2 = (-{b})(-{b}) = {b * b}",
+                "With parentheses, the negative base is squared to produce a positive integer.",
+                eq=[f"(-{b})**2", str(b * b)],
+            ),
+            S(
+                f"-{a * a} - {b * b} = {ans}",
+                "Subtract the second square from the negated first square.",
+                val=str(ans),
+                eq=[f"-({a * a}) - ({b * b})", str(ans)],
+            ),
         ]
     return {
         "form": form,
@@ -166,9 +229,22 @@ def t_c03_synthesis(rng, form=None):
         "commonTrapTag": "c03-net-integer-change-trap",
         "verify": {"source": str(ans), "trapValue": str(trap)},
         "steps": [
-            S(f"\\Delta_1 = ({hrs_drop})(-{drop_rate}) = -{drop_rate * hrs_drop}", "Compute the signed change during the first phase.", eq=[f"({hrs_drop}) * (-{drop_rate})", str(-(drop_rate * hrs_drop))]),
-            S(f"\\Delta_2 = ({hrs_rise})({rise_rate}) = {rise_rate * hrs_rise}", "Compute the signed change during the second phase.", eq=[f"({hrs_rise}) * ({rise_rate})", str(rise_rate * hrs_rise)]),
-            S(f"\\text{{Final}} = {t0} - {drop_rate * hrs_drop} + {rise_rate * hrs_rise} = {ans}", "Combine the initial value with both net changes.", val=str(ans), eq=[f"{t0} - {drop_rate * hrs_drop} + {rise_rate * hrs_rise}", str(ans)]),
+            S(
+                f"\\Delta_1 = ({hrs_drop})(-{drop_rate}) = -{drop_rate * hrs_drop}",
+                "Compute the signed change during the first phase.",
+                eq=[f"({hrs_drop}) * (-{drop_rate})", str(-(drop_rate * hrs_drop))],
+            ),
+            S(
+                f"\\Delta_2 = ({hrs_rise})({rise_rate}) = {rise_rate * hrs_rise}",
+                "Compute the signed change during the second phase.",
+                eq=[f"({hrs_rise}) * ({rise_rate})", str(rise_rate * hrs_rise)],
+            ),
+            S(
+                f"\\text{{Final}} = {t0} - {drop_rate * hrs_drop} + {rise_rate * hrs_rise} = {ans}",
+                "Combine the initial value with both net changes.",
+                val=str(ans),
+                eq=[f"{t0} - {drop_rate * hrs_drop} + {rise_rate * hrs_rise}", str(ans)],
+            ),
         ],
     }
 

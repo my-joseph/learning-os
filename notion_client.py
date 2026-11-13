@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-"""Shared Notion REST client used by every builder / sync script.
+"""Shared Notion REST client (stdlib only): .env loader, IPv4 patch, SSL context, retrying request.
 
-Kept dependency-free (urllib only) so it runs from any venv.
+Importing this module applies the process-wide IPv4-only and 15s default socket timeout settings.
 
 Behaviour notes:
 - TLS is always verified. If the macOS system bundle exists it is used,
@@ -12,6 +12,7 @@ Behaviour notes:
 - `replace_page_blocks` appends the new content BEFORE deleting the old,
   so a network failure midway never leaves a page empty.
 """
+
 import json
 import os
 import socket
@@ -27,7 +28,7 @@ RETRYABLE_STATUS = {409, 429, 500, 502, 503, 504}
 socket.setdefaulttimeout(15)
 
 
-def load_env(path=".env"):
+def load_env(path: str = ".env") -> dict[str, str]:
     env = {}
     if os.path.exists(path):
         with open(path, "r", encoding="utf-8") as f:
@@ -40,14 +41,14 @@ def load_env(path=".env"):
 
 
 # Force IPv4 to avoid macOS / Cloudflare IPv6 socket hang.
-_orig_getaddrinfo = socket.getaddrinfo
+orig_getaddrinfo = socket.getaddrinfo
 
 
-def _getaddrinfo_ipv4(host, port, family=0, type=0, proto=0, flags=0):
-    return _orig_getaddrinfo(host, port, socket.AF_INET, type, proto, flags)
+def getaddrinfo_ipv4(host, port, family=0, type=0, proto=0, flags=0):
+    return orig_getaddrinfo(host, port, socket.AF_INET, type, proto, flags)
 
 
-socket.getaddrinfo = _getaddrinfo_ipv4
+socket.getaddrinfo = getaddrinfo_ipv4
 
 
 def make_ssl_context():
@@ -63,7 +64,7 @@ class MissingNotionToken(RuntimeError):
     """Raised before any network call when no Notion token was loaded."""
 
 
-def require_token(token):
+def require_token(token: str | None) -> str:
     if not token or str(token).strip() in ("", "None"):
         env_path = os.path.join(os.getcwd(), ".env")
         where = "exists but has no NOTION_TOKEN" if os.path.exists(env_path) else "does not exist"
@@ -75,7 +76,7 @@ def require_token(token):
     return token
 
 
-def notion_request(method, endpoint, token, payload=None, max_retries=7):
+def notion_request(method: str, endpoint: str, token: str, payload: dict | None = None, max_retries: int = 7) -> dict:
     require_token(token)
     url = f"https://api.notion.com/v1/{endpoint}"
     headers = {
@@ -97,17 +98,17 @@ def notion_request(method, endpoint, token, payload=None, max_retries=7):
                 raise RuntimeError(f"HTTP {e.code} on {method} {endpoint}: {body}") from e
             retry_after = e.headers.get("Retry-After") if e.headers else None
             try:
-                wait = float(retry_after) if retry_after else 1.5 * (2 ** attempt)
+                wait = float(retry_after) if retry_after else 1.5 * (2**attempt)
             except ValueError:
-                wait = 1.5 * (2 ** attempt)
+                wait = 1.5 * (2**attempt)
             time.sleep(min(wait, 60))
         except (urllib.error.URLError, ConnectionResetError, ssl.SSLError, TimeoutError, OSError):
             if last:
                 raise
-            time.sleep(1.5 * (2 ** attempt))
+            time.sleep(1.5 * (2**attempt))
 
 
-def get_all_blocks(block_id, token):
+def get_all_blocks(block_id: str, token: str) -> list[dict]:
     blocks = []
     cursor = None
     while True:
@@ -122,12 +123,12 @@ def get_all_blocks(block_id, token):
     return blocks
 
 
-def append_blocks(page_id, blocks, token, chunk_size=50):
+def append_blocks(page_id: str, blocks: list[dict], token: str, chunk_size: int = 50) -> None:
     for i in range(0, len(blocks), chunk_size):
-        notion_request("PATCH", f"blocks/{page_id}/children", token, {"children": blocks[i:i + chunk_size]})
+        notion_request("PATCH", f"blocks/{page_id}/children", token, {"children": blocks[i : i + chunk_size]})
 
 
-def replace_page_content(page_id, new_blocks, token, label=""):
+def replace_page_content(page_id: str, new_blocks: list[dict], token: str, label: str = "") -> list[tuple[str, str]]:
     """Append new blocks first, then delete the old ones.
 
     If appending fails, the old content is still there (plus a partial

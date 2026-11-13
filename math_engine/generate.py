@@ -7,6 +7,7 @@ Generates ONLY the exact number of questions requested in the Pre-Generation Con
 attaches resolved Notion deep links for any cross-subject references, and writes the
 clean JSON file to drills/data/<UNIT_CODE>/<DRILL_ID>.json.
 """
+
 import argparse
 import datetime
 import glob
@@ -20,7 +21,6 @@ from math_engine.templates import load_unit
 from math_engine.verify import verify_problem, verify_tags
 from quality_rules import (
     QUALITY_RULES,
-    QualityError,
     compute_fingerprint,
     generate_with_quality_retries,
 )
@@ -74,36 +74,42 @@ def _expand_template_pairs(templates):
         forms = t.get("forms")
         if isinstance(forms, dict):
             for fname, finfo in forms.items():
-                pairs.append({
-                    "template": t,
-                    "key": t["key"],
-                    "form": fname,
-                    "level": finfo.get("level", t.get("level", 1)),
-                    "skill": finfo.get("skill"),
-                    "trapTag": finfo.get("trapTag", t.get("trapTag")),
-                    "verificationLevel": t.get("verificationLevel", "machine-verified"),
-                })
+                pairs.append(
+                    {
+                        "template": t,
+                        "key": t["key"],
+                        "form": fname,
+                        "level": finfo.get("level", t.get("level", 1)),
+                        "skill": finfo.get("skill"),
+                        "trapTag": finfo.get("trapTag", t.get("trapTag")),
+                        "verificationLevel": t.get("verificationLevel", "machine-verified"),
+                    }
+                )
         elif isinstance(forms, (list, tuple)):
             for fname in forms:
-                pairs.append({
+                pairs.append(
+                    {
+                        "template": t,
+                        "key": t["key"],
+                        "form": fname,
+                        "level": t.get("level", 1),
+                        "skill": t.get("skill"),
+                        "trapTag": t.get("trapTag"),
+                        "verificationLevel": t.get("verificationLevel", "machine-verified"),
+                    }
+                )
+        else:
+            pairs.append(
+                {
                     "template": t,
                     "key": t["key"],
-                    "form": fname,
+                    "form": "direct",
                     "level": t.get("level", 1),
                     "skill": t.get("skill"),
                     "trapTag": t.get("trapTag"),
                     "verificationLevel": t.get("verificationLevel", "machine-verified"),
-                })
-        else:
-            pairs.append({
-                "template": t,
-                "key": t["key"],
-                "form": "direct",
-                "level": t.get("level", 1),
-                "skill": t.get("skill"),
-                "trapTag": t.get("trapTag"),
-                "verificationLevel": t.get("verificationLevel", "machine-verified"),
-            })
+                }
+            )
     return pairs
 
 
@@ -127,29 +133,37 @@ def _pick_template_schedule(templates, count, difficulty, focus_tags, rng, templ
     all_pairs = _expand_template_pairs(templates)
 
     if template_filter:
-        tpl_set = {t.strip() for t in template_filter} if isinstance(template_filter, (list, tuple, set)) else {t.strip() for t in str(template_filter).split(",")}
+        tpl_set = (
+            {t.strip() for t in template_filter}
+            if isinstance(template_filter, (list, tuple, set))
+            else {t.strip() for t in str(template_filter).split(",")}
+        )
         filtered = [p for p in all_pairs if p["key"] in tpl_set]
         if filtered:
             all_pairs = filtered
 
     if focus_tags:
-        tags_set = set(focus_tags) if isinstance(focus_tags, (list, tuple, set)) else {t.strip() for t in str(focus_tags).split(",")}
+        tags_set = (
+            set(focus_tags)
+            if isinstance(focus_tags, (list, tuple, set))
+            else {t.strip() for t in str(focus_tags).split(",")}
+        )
         matched = [
-            p for p in all_pairs
-            if p["key"] in tags_set
-            or p["trapTag"] in tags_set
-            or p.get("skill") in tags_set
-            or p["form"] in tags_set
+            p
+            for p in all_pairs
+            if p["key"] in tags_set or p["trapTag"] in tags_set or p.get("skill") in tags_set or p["form"] in tags_set
         ]
         if matched:
             return _round_robin_pick(matched, count, rng)
 
-        available_tags = sorted(set(
-            [p["key"] for p in all_pairs if p.get("key")] +
-            [p["trapTag"] for p in all_pairs if p.get("trapTag")] +
-            [p["skill"] for p in all_pairs if p.get("skill")] +
-            [p["form"] for p in all_pairs if p.get("form")]
-        ))
+        available_tags = sorted(
+            set(
+                [p["key"] for p in all_pairs if p.get("key")]
+                + [p["trapTag"] for p in all_pairs if p.get("trapTag")]
+                + [p["skill"] for p in all_pairs if p.get("skill")]
+                + [p["form"] for p in all_pairs if p.get("form")]
+            )
+        )
         unit_name = unit_code or "Current Unit"
         raise ValueError(
             f"No templates match requested focus_tags: {focus_tags} in '{unit_name}'. "
@@ -216,8 +230,11 @@ def generate_drill_set(
 
     def _build_attempt(attempt_seed: int):
         from collections import Counter
+
         rng = random.Random(attempt_seed)
-        schedule = _pick_template_schedule(mod.TEMPLATES, count, difficulty, focus_tags, rng, template_filter=templates, unit_code=unit_code)
+        schedule = _pick_template_schedule(
+            mod.TEMPLATES, count, difficulty, focus_tags, rng, template_filter=templates, unit_code=unit_code
+        )
         unique_tpls = {s["key"]: s["template"] for s in schedule}.values()
         available_forms_count = sum(len(t.get("forms") or ["direct"]) for t in unique_tpls)
 
@@ -236,7 +253,7 @@ def generate_drill_set(
                 p_text = c.get("prompt", "")
                 a_text = c.get("answerPlain", c.get("answerDisplay", ""))
                 distinct_samples.add((p_text, a_text))
-            
+
             capacity = len(distinct_samples)
             if req_num > capacity:
                 raise ValueError(
@@ -268,7 +285,7 @@ def generate_drill_set(
                 if target_skill:
                     candidate["skill"] = target_skill
                 candidate["verificationLevel"] = sched_item.get("verificationLevel", "machine-verified")
-                
+
                 disp = candidate.get("display", "").strip()
                 cand_fp = compute_fingerprint(candidate, template_key=tpl["key"])
                 p_key = (
@@ -294,7 +311,7 @@ def generate_drill_set(
                     if target_skill:
                         candidate["skill"] = target_skill
                     candidate["verificationLevel"] = sched_item.get("verificationLevel", "machine-verified")
-                    
+
                     disp = candidate.get("display", "").strip()
                     cand_fp = compute_fingerprint(candidate, template_key=tpl["key"])
                     p_key = (
@@ -327,11 +344,13 @@ def generate_drill_set(
             for ref_code in prob.get("references", []):
                 entry = id_map.get(ref_code, {})
                 ref_title = entry.get("title", ref_code) if isinstance(entry, dict) else ref_code
-                ref_badges.append({
-                    "code": ref_code,
-                    "title": ref_title,
-                    "notionUrl": notion_url_for(ref_code, id_map),
-                })
+                ref_badges.append(
+                    {
+                        "code": ref_code,
+                        "title": ref_title,
+                        "notionUrl": notion_url_for(ref_code, id_map),
+                    }
+                )
             prob["referenceBadges"] = ref_badges
 
             # Remove internal verification expressions while retaining form, fingerprint, qualityGates, trapValue, flaw
@@ -410,8 +429,16 @@ if __name__ == "__main__":
     parser.add_argument("--difficulty", default="ALL")
     parser.add_argument("--drill-id", default=None)
     parser.add_argument("--seed", type=int, default=None)
-    parser.add_argument("--templates", default=None, help="Comma-separated template keys (e.g. multiply,divide-conjugate)")
-    parser.add_argument("--focus-tag", "--focus-tags", dest="focus_tag", default=None, help="Prioritize mistake tag, form, or skill (e.g. conjugate-denominator)")
+    parser.add_argument(
+        "--templates", default=None, help="Comma-separated template keys (e.g. multiply,divide-conjugate)"
+    )
+    parser.add_argument(
+        "--focus-tag",
+        "--focus-tags",
+        dest="focus_tag",
+        default=None,
+        help="Prioritize mistake tag, form, or skill (e.g. conjugate-denominator)",
+    )
     args = parser.parse_args()
     generate_drill_set(
         unit_code=args.unit,

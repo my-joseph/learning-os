@@ -8,12 +8,15 @@ Ensures every generated problem across MTH-T01-C01..C14 strictly satisfies:
 - Gate G4 (Distractor & Trap Provenance: verified trapValue != correct answer)
 - Gate G6 (Presentation Formatting Quality: clean LaTeX/text without sloppy signs or exponents)
 """
+
 from __future__ import annotations
 
 from typing import Any, Callable
 
 
-def S(latex: str, explain: str, val: str | None = None, eq: list[str] | tuple[str, str] | None = None) -> dict[str, Any]:
+def S(
+    latex: str, explain: str, val: str | None = None, eq: list[str] | tuple[str, str] | None = None
+) -> dict[str, Any]:
     step: dict[str, Any] = {"latex": latex, "explain": explain}
     if val is not None:
         step["val"] = val

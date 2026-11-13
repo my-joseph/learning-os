@@ -25,9 +25,11 @@ def build_flaw_choice_problem(
     variables: list[str] | None = None,
 ) -> dict[str, Any]:
     """Constructs a standard machine-verified find-the-flaw problem."""
-    aligned = "\\begin{aligned}" + " \\\\ ".join(
-        f"&\\text{{Line {i + 1}: }}\\; {ln}" for i, ln in enumerate(shown_lines)
-    ) + "\\end{aligned}"
+    aligned = (
+        "\\begin{aligned}"
+        + " \\\\ ".join(f"&\\text{{Line {i + 1}: }}\\; {ln}" for i, ln in enumerate(shown_lines))
+        + "\\end{aligned}"
+    )
 
     num_lines = len(shown_lines)
     options = [
@@ -42,7 +44,9 @@ def build_flaw_choice_problem(
         erroneous_line = shown_lines[flaw_idx]
         exp = steps[flaw_idx].get("explain", "")
         if erroneous_line not in exp:
-            steps[flaw_idx]["explain"] = f"Line {flaw_line} is wrong: The student wrote ${erroneous_line}$, but this is incorrect. {exp}"
+            steps[flaw_idx]["explain"] = (
+                f"Line {flaw_line} is wrong: The student wrote ${erroneous_line}$, but this is incorrect. {exp}"
+            )
 
     actual_flaw_tag = flaw_tag or line_trap_map.get(flaw_line) or common_trap_tag
 

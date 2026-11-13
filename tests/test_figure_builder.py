@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
 import unittest
+
+from math_engine.ai_drill_ingest import AiContractError, validate_ai_problem_contract
 from math_engine.figure_builder import (
+    build_cartesian_line_figure,
+    build_cartesian_point_figure,
+    build_circle_figure,
     build_rectangle_figure,
     build_right_triangle_figure,
-    build_circle_figure,
-    build_cartesian_point_figure,
-    build_cartesian_line_figure,
     figure_to_svg,
 )
-from math_engine.ai_drill_ingest import validate_ai_problem_contract, AiContractError
 
 
 class TestFigureBuilder(unittest.TestCase):

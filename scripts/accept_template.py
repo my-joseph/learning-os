@@ -19,15 +19,14 @@ Criteria:
 from __future__ import annotations
 
 import argparse
-from collections import Counter
 import random
 import sys
+from collections import Counter
 from typing import Any
 
 from code_engine.templates import get_all_unit_templates as get_code_units
 from math_engine.templates import get_all_unit_templates as get_math_units
 from quality_rules import (
-    QUALITY_RULES,
     QualityError,
     check_gate_g1,
     check_gate_g2,
@@ -53,10 +52,7 @@ def is_template_exempt(tpl: dict[str, Any]) -> bool:
     """Return True if template is exempt from multi-form diversity requirements (kata / fixed)."""
     key = tpl.get("key", "")
     return bool(
-        tpl.get("is_kata")
-        or tpl.get("is_fixed")
-        or key.startswith("kata_")
-        or tpl.get("archetype") == "project-based"
+        tpl.get("is_kata") or tpl.get("is_fixed") or key.startswith("kata_") or tpl.get("archetype") == "project-based"
     )
 
 
@@ -168,10 +164,9 @@ def evaluate_template(
             exhausted_12 += 1
 
     total_produced = sum(form_counter.values())
-    form_proportions = {
-        f: round(cnt / total_produced * 100, 1)
-        for f, cnt in form_counter.items()
-    } if total_produced > 0 else {}
+    form_proportions = (
+        {f: round(cnt / total_produced * 100, 1) for f, cnt in form_counter.items()} if total_produced > 0 else {}
+    )
 
     g1_rate = round(g1_passes / n_seeds * 100, 1)
     g2_rate = round(g2_passes / n_seeds * 100, 1)
@@ -210,18 +205,8 @@ def evaluate_template(
 
     passed = len(failures) == 0
 
-    is_regression = (
-        g1_rate < 98.0
-        or g2_rate < 98.0
-        or g4_rate < 98.0
-        or g6_rate < 98.0
-        or exhausted_12 > 0
-    )
-    is_diversity_backlog = (
-        not is_regression
-        and not exempt
-        and len(form_counter) < 2
-    )
+    is_regression = g1_rate < 98.0 or g2_rate < 98.0 or g4_rate < 98.0 or g6_rate < 98.0 or exhausted_12 > 0
+    is_diversity_backlog = not is_regression and not exempt and len(form_counter) < 2
 
     return {
         "unit": unit_code,
@@ -253,7 +238,9 @@ def print_report(res: dict[str, Any]) -> None:
     print(f"{status_tag} Template CI Acceptance: {res['key']} ({res['unit']})")
     print("=" * 70)
     print(f"  Category:               {category}")
-    print(f"  Pass Rates:             G1: {res['g1_rate']}%, G2: {res['g2_rate']}%, G4: {res['g4_rate']}%, G6: {res.get('g6_rate', 100.0)}%")
+    print(
+        f"  Pass Rates:             G1: {res['g1_rate']}%, G2: {res['g2_rate']}%, G4: {res['g4_rate']}%, G6: {res.get('g6_rate', 100.0)}%"
+    )
     print(f"  Retries:                Avg {res['avg_retries']} retries/seed, Exhausted 12: {res['exhausted_12']}")
     print(f"  Declared Forms:         {res['declared_forms']}")
     print(f"  Form Proportions:       {res['form_proportions']}")
@@ -278,6 +265,7 @@ def main() -> None:
     args = parser.parse_args()
 
     import subprocess
+
     try:
         commit_hash = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
     except Exception:
@@ -314,7 +302,9 @@ def main() -> None:
         else:
             print(f"  พบ {len(group1_regression)} เทมเพลตที่เกิด Regression:")
             for r in group1_regression:
-                print(f"  - [{r['unit']}] {r['key']}: G1={r['g1_rate']}%, G2={r['g2_rate']}%, G4={r['g4_rate']}%, G6={r['g6_rate']}%, retries={r['exhausted_12']}")
+                print(
+                    f"  - [{r['unit']}] {r['key']}: G1={r['g1_rate']}%, G2={r['g2_rate']}%, G4={r['g4_rate']}%, G6={r['g6_rate']}%, retries={r['exhausted_12']}"
+                )
                 for f in r["failures"]:
                     print(f"      * {f}")
 
@@ -324,7 +314,9 @@ def main() -> None:
         else:
             print(f"  พบ {len(group2_backlog)} เทมเพลตใน Backlog:")
             for r in group2_backlog:
-                print(f"  - [{r['unit']}] {r['key']}: {r['actual_forms_count']} form produced ({r['form_proportions']}) | G1-G6: 100%")
+                print(
+                    f"  - [{r['unit']}] {r['key']}: {r['actual_forms_count']} form produced ({r['form_proportions']}) | G1-G6: 100%"
+                )
 
         print("\n### กลุ่มที่ผ่านเกณฑ์สมบูรณ์ (CI Accepted: G1-G6 >= 98% และ Forms >= 2 หรือ Exempt)")
         print(f"  พบ {len(group0_accepted)} เทมเพลตที่ผ่านการรับรองสมบูรณ์:")

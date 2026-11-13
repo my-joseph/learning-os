@@ -1,20 +1,75 @@
 # -*- coding: utf-8 -*-
 """Parameterized problem templates for MTH-T01-C01: Whole Numbers."""
+
 from math_engine.templates._prealg_helpers import S
 
 UNIT = "MTH-T01-C01"
 TITLE = "Whole Numbers"
 
 MISTAKE_TAGS = [
-    {"id": "c01-place-value-shift", "label": "Shifted place value column when adding or subtracting", "name": "Place Value Alignment Error", "description": "Misaligns multi-digit columns across addition or subtraction operations.", "autoFrom": []},
-    {"id": "c01-subtraction-sign-flip", "label": "Added instead of subtracting the final quantity: a + b + c instead of a + b - c", "name": "Subtraction Sign Flip", "description": "Flips a subtraction into addition when chaining multiple arithmetic operations.", "autoFrom": ["whole_sign_flip"]},
-    {"id": "c01-division-remainder-drop", "label": "Omitted remainder in Euclidean division N = q*d + r", "name": "Euclidean Remainder Omission", "description": "Drops or forgets the non-zero remainder when reconstructing the dividend in Euclidean division.", "autoFrom": []},
-    {"id": "c01-remainder-addition-slip", "label": "Added remainder to dividend instead of subtracting: (N + r) // q instead of (N - r)/q", "name": "Remainder Addition Slip", "description": "Mistakenly adds remainder to dividend instead of subtracting before dividing to isolate divisor: (N + r) // q.", "autoFrom": []},
-    {"id": "c01-ceiling-rounding-trap", "label": "Rounded down instead of up when full containers are required", "name": "Container Ceiling Rounding Trap", "description": "Truncates or rounds down to integer quotient when practical packaging requires ceiling rounding.", "autoFrom": []},
-    {"id": "c01-remainder-shortfall-confusion", "label": "Reported leftover remainder instead of shortfall needed to fill container", "name": "Remainder Shortfall Confusion", "description": "Reports leftover remainder rather than the remaining shortfall required to complete the final container.", "autoFrom": []},
-    {"id": "c01-order-of-operations-trap", "label": "Added before multiplying in multi-unit budget calculation", "name": "Whole Number Precedence Trap", "description": "Performs addition before multiplication in multi-item budget and pricing calculations.", "autoFrom": []},
-    {"id": "c01-voucher-omission-trap", "label": "Omitted voucher or rebate discount before dividing installment costs", "name": "Voucher Discount Omission", "description": "Forgets to subtract voucher discount from total before dividing into installment shares.", "autoFrom": []},
-    {"id": "c01-fee-omission-trap", "label": "Omitted flat shipping fee before dividing net budget", "name": "Shipping Fee Omission", "description": "Forgets to add mandatory flat fee to total before allocating per-share costs.", "autoFrom": []},
+    {
+        "id": "c01-place-value-shift",
+        "label": "Shifted place value column when adding or subtracting",
+        "name": "Place Value Alignment Error",
+        "description": "Misaligns multi-digit columns across addition or subtraction operations.",
+        "autoFrom": [],
+    },
+    {
+        "id": "c01-subtraction-sign-flip",
+        "label": "Added instead of subtracting the final quantity: a + b + c instead of a + b - c",
+        "name": "Subtraction Sign Flip",
+        "description": "Flips a subtraction into addition when chaining multiple arithmetic operations.",
+        "autoFrom": ["whole_sign_flip"],
+    },
+    {
+        "id": "c01-division-remainder-drop",
+        "label": "Omitted remainder in Euclidean division N = q*d + r",
+        "name": "Euclidean Remainder Omission",
+        "description": "Drops or forgets the non-zero remainder when reconstructing the dividend in Euclidean division.",
+        "autoFrom": [],
+    },
+    {
+        "id": "c01-remainder-addition-slip",
+        "label": "Added remainder to dividend instead of subtracting: (N + r) // q instead of (N - r)/q",
+        "name": "Remainder Addition Slip",
+        "description": "Mistakenly adds remainder to dividend instead of subtracting before dividing to isolate divisor: (N + r) // q.",
+        "autoFrom": [],
+    },
+    {
+        "id": "c01-ceiling-rounding-trap",
+        "label": "Rounded down instead of up when full containers are required",
+        "name": "Container Ceiling Rounding Trap",
+        "description": "Truncates or rounds down to integer quotient when practical packaging requires ceiling rounding.",
+        "autoFrom": [],
+    },
+    {
+        "id": "c01-remainder-shortfall-confusion",
+        "label": "Reported leftover remainder instead of shortfall needed to fill container",
+        "name": "Remainder Shortfall Confusion",
+        "description": "Reports leftover remainder rather than the remaining shortfall required to complete the final container.",
+        "autoFrom": [],
+    },
+    {
+        "id": "c01-order-of-operations-trap",
+        "label": "Added before multiplying in multi-unit budget calculation",
+        "name": "Whole Number Precedence Trap",
+        "description": "Performs addition before multiplication in multi-item budget and pricing calculations.",
+        "autoFrom": [],
+    },
+    {
+        "id": "c01-voucher-omission-trap",
+        "label": "Omitted voucher or rebate discount before dividing installment costs",
+        "name": "Voucher Discount Omission",
+        "description": "Forgets to subtract voucher discount from total before dividing into installment shares.",
+        "autoFrom": [],
+    },
+    {
+        "id": "c01-fee-omission-trap",
+        "label": "Omitted flat shipping fee before dividing net budget",
+        "name": "Shipping Fee Omission",
+        "description": "Forgets to add mandatory flat fee to total before allocating per-share costs.",
+        "autoFrom": [],
+    },
 ]
 
 
@@ -54,7 +109,12 @@ def t_c01_foundation(rng, form=None):
         "steps": [
             S(f"S = {a} + {b} = {a + b}", "Add the first two whole numbers.", eq=[f"{a} + {b}", str(a + b)]),
             S(f"N = {a + b} - {c}", "Set up the subtraction of the third quantity.", eq=[f"{a + b} - {c}", str(ans)]),
-            S(f"N = {ans}", "Complete the subtraction to find the final whole number.", val=str(ans), eq=[str(ans), str(ans)]),
+            S(
+                f"N = {ans}",
+                "Complete the subtraction to find the final whole number.",
+                val=str(ans),
+                eq=[str(ans), str(ans)],
+            ),
         ],
     }
 
@@ -81,9 +141,22 @@ def t_c01_reverse(rng, form=None):
         prompt = f"When the whole number ${N}$ is divided by a positive divisor $d$, the quotient is ${q}$ and the remainder is ${r}$. Find the divisor $d$."
         disp = f"{N} = {q}d + {r} \\implies d = ?"
         steps = [
-            S(f"{q}d = {N} - {r} = {N - r}", "Subtract the remainder from the dividend.", eq=[f"{N} - {r}", str(N - r)]),
-            S(f"d = \\frac{{{N - r}}}{{{q}}}", "Divide by the quotient to isolate the divisor.", eq=[f"({N - r}) / {q}", str(d)]),
-            S(f"d = {d}", "Verify that the remainder is strictly less than the divisor.", val=str(d), eq=[str(d), str(d)]),
+            S(
+                f"{q}d = {N} - {r} = {N - r}",
+                "Subtract the remainder from the dividend.",
+                eq=[f"{N} - {r}", str(N - r)],
+            ),
+            S(
+                f"d = \\frac{{{N - r}}}{{{q}}}",
+                "Divide by the quotient to isolate the divisor.",
+                eq=[f"({N - r}) / {q}", str(d)],
+            ),
+            S(
+                f"d = {d}",
+                "Verify that the remainder is strictly less than the divisor.",
+                val=str(d),
+                eq=[str(d), str(d)],
+            ),
         ]
     else:
         ans = N
@@ -91,7 +164,9 @@ def t_c01_reverse(rng, form=None):
         trap_deriv = f"{d} * {q}"
         trap_givens = [d, q]
         trap_tag = "c01-division-remainder-drop"
-        prompt = f"When a whole number $N$ is divided by ${d}$, the quotient is ${q}$ and the remainder is ${r}$. Find $N$."
+        prompt = (
+            f"When a whole number $N$ is divided by ${d}$, the quotient is ${q}$ and the remainder is ${r}$. Find $N$."
+        )
         disp = f"N = {d} \\times {q} + {r}"
         steps = [
             S(f"P = {d} \\times {q} = {d * q}", "Multiply the divisor by the quotient.", eq=[f"{d} * {q}", str(d * q)]),
@@ -137,9 +212,22 @@ def t_c01_trap(rng, form=None):
         prompt = f"A factory produces ${total}$ sensors to be packed into crates that hold exactly ${cap}$ sensors each. How many additional sensors must be produced so that the last partially filled crate becomes completely full?"
         disp = f"\\text{{Total}} = {total},\\ \\text{{Capacity}} = {cap} \\implies \\text{{Additional Needed}} = ?"
         steps = [
-            S(f"{total} = {cap} \\times {full_boxes} + {leftover}", "Divide total items by crate capacity to find the remainder in the last crate.", eq=[f"{total} - {cap}*{full_boxes}", str(leftover)]),
-            S(f"\\text{{Shortfall}} = {cap} - {leftover}", "Subtract the remainder from the crate capacity.", eq=[f"{cap} - {leftover}", str(ans)]),
-            S(f"\\text{{Additional Needed}} = {ans}", "State the exact number of items needed to complete the final crate.", val=str(ans), eq=[str(ans), str(ans)]),
+            S(
+                f"{total} = {cap} \\times {full_boxes} + {leftover}",
+                "Divide total items by crate capacity to find the remainder in the last crate.",
+                eq=[f"{total} - {cap}*{full_boxes}", str(leftover)],
+            ),
+            S(
+                f"\\text{{Shortfall}} = {cap} - {leftover}",
+                "Subtract the remainder from the crate capacity.",
+                eq=[f"{cap} - {leftover}", str(ans)],
+            ),
+            S(
+                f"\\text{{Additional Needed}} = {ans}",
+                "State the exact number of items needed to complete the final crate.",
+                val=str(ans),
+                eq=[str(ans), str(ans)],
+            ),
         ]
     else:
         ans = full_boxes + 1
@@ -149,9 +237,22 @@ def t_c01_trap(rng, form=None):
         prompt = f"An expedition group of ${total}$ researchers needs transport vans that each hold at most ${cap}$ passengers. What is the minimum whole number of vans required to transport everyone at once?"
         disp = f"\\left\\lceil \\frac{{{total}}}{{{cap}}} \\right\\rceil = ?"
         steps = [
-            S(f"{total} \\div {cap} = {full_boxes}\\text{{ R }}{leftover}", "Perform whole-number division to find full vans and remaining passengers.", eq=[f"{cap} * {full_boxes} + {leftover}", str(total)]),
-            S(f"N_{{\\text{{vans}}}} = {full_boxes} + 1", "Because remaining passengers cannot be left behind, one additional van is required.", eq=[f"{full_boxes} + 1", str(ans)]),
-            S(f"N_{{\\text{{vans}}}} = {ans}", "Conclude the minimum whole number of vans.", val=str(ans), eq=[str(ans), str(ans)]),
+            S(
+                f"{total} \\div {cap} = {full_boxes}\\text{{ R }}{leftover}",
+                "Perform whole-number division to find full vans and remaining passengers.",
+                eq=[f"{cap} * {full_boxes} + {leftover}", str(total)],
+            ),
+            S(
+                f"N_{{\\text{{vans}}}} = {full_boxes} + 1",
+                "Because remaining passengers cannot be left behind, one additional van is required.",
+                eq=[f"{full_boxes} + 1", str(ans)],
+            ),
+            S(
+                f"N_{{\\text{{vans}}}} = {ans}",
+                "Conclude the minimum whole number of vans.",
+                val=str(ans),
+                eq=[str(ans), str(ans)],
+            ),
         ]
     return {
         "form": form,
@@ -200,9 +301,22 @@ def t_c01_synthesis(rng, form=None):
         prompt = f"A lab orders ${n_a}$ kits at ${p_a}$ dollars each and ${n_b}$ modules at ${p_b}$ dollars each. After receiving a bulk rebate of ${rebate}$ dollars and paying a flat shipping fee of ${bonus_fee}$ dollars, the total net cost is split equally among ${k_share}$ departments. How much does each department pay?"
         disp = f"\\frac{{({n_a} \\times {p_a} + {n_b} \\times {p_b} - {rebate} + {bonus_fee})}}{{{k_share}}}"
         steps = [
-            S(f"C_{{\\text{{items}}}} = {n_a} \\times {p_a} + {n_b} \\times {p_b} = {sub_total}", "Calculate the combined item cost before adjustments.", eq=[f"{n_a}*{p_a} + {n_b}*{p_b}", str(sub_total)]),
-            S(f"C_{{\\text{{net}}}} = {sub_total} - {rebate} + {bonus_fee} = {net_cost + bonus_fee}", "Subtract the rebate and add the shipping fee.", eq=[f"{sub_total} - {rebate} + {bonus_fee}", str(net_cost + bonus_fee)]),
-            S(f"\\text{{Share}} = \\frac{{{net_cost + bonus_fee}}}{{{k_share}}} = {ans}", "Divide equally among all participating departments.", val=str(ans), eq=[f"({net_cost + bonus_fee}) / {k_share}", str(ans)]),
+            S(
+                f"C_{{\\text{{items}}}} = {n_a} \\times {p_a} + {n_b} \\times {p_b} = {sub_total}",
+                "Calculate the combined item cost before adjustments.",
+                eq=[f"{n_a}*{p_a} + {n_b}*{p_b}", str(sub_total)],
+            ),
+            S(
+                f"C_{{\\text{{net}}}} = {sub_total} - {rebate} + {bonus_fee} = {net_cost + bonus_fee}",
+                "Subtract the rebate and add the shipping fee.",
+                eq=[f"{sub_total} - {rebate} + {bonus_fee}", str(net_cost + bonus_fee)],
+            ),
+            S(
+                f"\\text{{Share}} = \\frac{{{net_cost + bonus_fee}}}{{{k_share}}} = {ans}",
+                "Divide equally among all participating departments.",
+                val=str(ans),
+                eq=[f"({net_cost + bonus_fee}) / {k_share}", str(ans)],
+            ),
         ]
     else:
         trap_deriv = f"({n_a} * {p_a} + {n_b} * {p_b}) // {k_share}"
@@ -211,9 +325,22 @@ def t_c01_synthesis(rng, form=None):
         prompt = f"A school purchases ${n_a}$ workbooks at ${p_a}$ dollars each and ${n_b}$ lab packs at ${p_b}$ dollars each, then applies a voucher worth ${rebate}$ dollars. If the remaining balance is divided equally into ${k_share}$ monthly installments, what is the dollar amount of each installment?"
         disp = f"\\frac{{({n_a} \\times {p_a} + {n_b} \\times {p_b} - {rebate})}}{{{k_share}}}"
         steps = [
-            S(f"C_{{\\text{{gross}}}} = {n_a} \\times {p_a} + {n_b} \\times {p_b} = {sub_total}", "Multiply quantity by unit price for each item and sum.", eq=[f"{n_a}*{p_a} + {n_b}*{p_b}", str(sub_total)]),
-            S(f"C_{{\\text{{net}}}} = {sub_total} - {rebate} = {net_cost}", "Subtract the voucher amount from the gross total.", eq=[f"{sub_total} - {rebate}", str(net_cost)]),
-            S(f"\\text{{Installment}} = \\frac{{{net_cost}}}{{{k_share}}} = {ans}", "Divide the net balance equally across the installments.", val=str(ans), eq=[f"{net_cost} / {k_share}", str(ans)]),
+            S(
+                f"C_{{\\text{{gross}}}} = {n_a} \\times {p_a} + {n_b} \\times {p_b} = {sub_total}",
+                "Multiply quantity by unit price for each item and sum.",
+                eq=[f"{n_a}*{p_a} + {n_b}*{p_b}", str(sub_total)],
+            ),
+            S(
+                f"C_{{\\text{{net}}}} = {sub_total} - {rebate} = {net_cost}",
+                "Subtract the voucher amount from the gross total.",
+                eq=[f"{sub_total} - {rebate}", str(net_cost)],
+            ),
+            S(
+                f"\\text{{Installment}} = \\frac{{{net_cost}}}{{{k_share}}} = {ans}",
+                "Divide the net balance equally across the installments.",
+                val=str(ans),
+                eq=[f"{net_cost} / {k_share}", str(ans)],
+            ),
         ]
     return {
         "form": form,
@@ -266,7 +393,11 @@ TEMPLATES = [
         "verificationLevel": "machine-verified",
         "forms": {
             "direct": {"level": 3, "skill": "MTH-PREALG-C01-REMAINDER-TRAP", "trapTag": "c01-ceiling-rounding-trap"},
-            "edge-case": {"level": 3, "skill": "MTH-PREALG-C01-REMAINDER-TRAP", "trapTag": "c01-remainder-shortfall-confusion"},
+            "edge-case": {
+                "level": 3,
+                "skill": "MTH-PREALG-C01-REMAINDER-TRAP",
+                "trapTag": "c01-remainder-shortfall-confusion",
+            },
         },
         "build": t_c01_trap,
     },

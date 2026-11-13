@@ -26,6 +26,7 @@ off_by_factor, constant_offset, rounding, missing_solution, extra_solution, unse
 unexpanded_power, uncombined_terms, unreduced_fraction, radical_denominator, decimal_not_exact, not_expanded,
 not_factored). Each drill maps codes to its own mistake tags via mistakeTags[].autoFrom.
 """
+
 import ast
 import io
 import json
@@ -79,11 +80,13 @@ WHITELIST_CONSTANTS = {
 
 class SafeParseError(ValueError):
     """Raised when an expression violates security constraints or cannot be parsed safely."""
+
     pass
 
 
 class EqualTimeoutError(BaseException):
     """Raised when expression equality evaluation exceeds time budget."""
+
     pass
 
 
@@ -92,9 +95,10 @@ def _run_with_timeout(func, args=(), kwargs=None, timeout_sec=1.5):
     timer_active = False
     if hasattr(signal, "SIGALRM") and threading.current_thread() is threading.main_thread():
         rem, _ = signal.getitimer(signal.ITIMER_REAL)
-        timer_active = (rem > 0)
+        timer_active = rem > 0
 
     if hasattr(signal, "SIGALRM") and threading.current_thread() is threading.main_thread() and not timer_active:
+
         def _handler(signum, frame):
             raise EqualTimeoutError("is_equal computation timed out")
 
@@ -127,6 +131,7 @@ def _run_with_timeout(func, args=(), kwargs=None, timeout_sec=1.5):
             raise err[0]
         return res[0]
 
+
 FORM_MESSAGES = {
     "unseparated": "The value is correct, but it is not separated into standard form $a + bi$ (distribute or split the fraction).",
     "complex_denominator": "The value is correct, but $i$ still appears in a denominator. Multiply by the conjugate.",
@@ -147,16 +152,26 @@ FORM_MESSAGES = {
 def _normalize(raw: str) -> str:
     s = (raw or "").strip()
     repl = {
-        "\u2212": "-", "\u2013": "-", "\u00d7": "*", "\u00b7": "*", "\u22c5": "*", "\u00f7": "/",
-        "\u03c0": "pi", "\u221e": "oo", "**": "^",
-        "\u27e8": "<", "\u27e9": ">", "\u3008": "<", "\u3009": ">",
+        "\u2212": "-",
+        "\u2013": "-",
+        "\u00d7": "*",
+        "\u00b7": "*",
+        "\u22c5": "*",
+        "\u00f7": "/",
+        "\u03c0": "pi",
+        "\u221e": "oo",
+        "**": "^",
+        "\u27e8": "<",
+        "\u27e9": ">",
+        "\u3008": "<",
+        "\u3009": ">",
     }
     for k, v in repl.items():
         s = s.replace(k, v)
     s = s.replace("^", "**")
-    s = re.sub(r"\u221a\s*\(", "sqrt(", s)              # √(…)
+    s = re.sub(r"\u221a\s*\(", "sqrt(", s)  # √(…)
     s = re.sub(r"\u221a\s*([0-9.]+|[a-zA-Z])", r"sqrt(\1)", s)  # √12, √x
-    s = re.sub(r"sqrt\s*([0-9]+)", r"sqrt(\1)", s)       # sqrt12
+    s = re.sub(r"sqrt\s*([0-9]+)", r"sqrt(\1)", s)  # sqrt12
     s = s.replace("{", "(").replace("}", ")").replace("[", "(").replace("]", ")")
     return s
 
@@ -173,13 +188,13 @@ def _insert_implicit_mul(expr_str: str) -> str:
         new_tokens.append(filtered[i].string)
         if i + 1 < len(filtered):
             t1, t2 = filtered[i], filtered[i + 1]
-            t1_is_num = (t1.type == tokenize.NUMBER)
-            t1_is_name = (t1.type == tokenize.NAME)
-            t1_is_rparen = (t1.type == tokenize.OP and t1.string in (")", "]"))
+            t1_is_num = t1.type == tokenize.NUMBER
+            t1_is_name = t1.type == tokenize.NAME
+            t1_is_rparen = t1.type == tokenize.OP and t1.string in (")", "]")
 
-            t2_is_num = (t2.type == tokenize.NUMBER)
-            t2_is_name = (t2.type == tokenize.NAME)
-            t2_is_lparen = (t2.type == tokenize.OP and t2.string in ("(", "["))
+            t2_is_num = t2.type == tokenize.NUMBER
+            t2_is_name = t2.type == tokenize.NAME
+            t2_is_lparen = t2.type == tokenize.OP and t2.string in ("(", "[")
 
             insert = False
             if t1_is_num and t2_is_name:
@@ -275,8 +290,13 @@ class SecurityVisitor(ast.NodeVisitor):
             # - If base is imaginary unit i/I: reduces mod 4 cheaply, limit is 1000
             # - If base is purely numeric constant: limit is 1000 (blocks 2**1001, allows 2**30)
             # - If base is symbolic / contains variables: limit is 100 (blocks (k+1)**101, allows (x+1)**30)
-            is_imag_unit = isinstance(node.left, ast.Name) and node.left.id in ("i", "I", "j", "k") and not self.variables
-            is_pure_num = all(not (isinstance(n, ast.Name) and (self.variables is None or n.id in self.variables)) for n in ast.walk(node.left))
+            is_imag_unit = (
+                isinstance(node.left, ast.Name) and node.left.id in ("i", "I", "j", "k") and not self.variables
+            )
+            is_pure_num = all(
+                not (isinstance(n, ast.Name) and (self.variables is None or n.id in self.variables))
+                for n in ast.walk(node.left)
+            )
 
             if self.trusted or is_imag_unit or is_pure_num:
                 exp_limit = 1000
@@ -291,7 +311,9 @@ class SecurityVisitor(ast.NodeVisitor):
                     inner_exp = node.left.right.value
                 if exp_val is not None and inner_exp is not None:
                     if abs(inner_exp * exp_val) > exp_limit:
-                        raise SafeParseError(f"Compound exponent magnitude {inner_exp * exp_val} exceeds limit {exp_limit}")
+                        raise SafeParseError(
+                            f"Compound exponent magnitude {inner_exp * exp_val} exceeds limit {exp_limit}"
+                        )
                 else:
                     raise SafeParseError("Nested exponentiation with non-constant exponents is not allowed")
         self.generic_visit(node)
@@ -353,22 +375,12 @@ class ASTTransformer(ast.NodeTransformer):
 
     def visit_Constant(self, node):
         if isinstance(node.value, int) and not isinstance(node.value, bool):
-            return ast.Call(
-                func=ast.Name(id="_Integer", ctx=ast.Load()),
-                args=[node],
-                keywords=[]
-            )
+            return ast.Call(func=ast.Name(id="_Integer", ctx=ast.Load()), args=[node], keywords=[])
         elif isinstance(node.value, float):
             if not self.evaluate:
-                return ast.Call(
-                    func=ast.Name(id="_Float", ctx=ast.Load()),
-                    args=[node],
-                    keywords=[]
-                )
+                return ast.Call(func=ast.Name(id="_Float", ctx=ast.Load()), args=[node], keywords=[])
             return ast.Call(
-                func=ast.Name(id="_Rational", ctx=ast.Load()),
-                args=[ast.Constant(value=str(node.value))],
-                keywords=[]
+                func=ast.Name(id="_Rational", ctx=ast.Load()), args=[ast.Constant(value=str(node.value))], keywords=[]
             )
         return node
 
@@ -449,7 +461,7 @@ def safe_parse(raw, variables=None, evaluate=True, allow_i=True, allowed_funcs=N
         else:
             if k not in ("i", "I"):
                 safe_globals[k] = v
-    for v in (variables or []):
+    for v in variables or []:
         safe_globals[v] = sp.Symbol(v)
 
     try:
@@ -534,7 +546,7 @@ def _parse_vector_unit_notation(raw: str, dim: int) -> list[sp.Expr]:
     s = re.sub(r"\\hat\{\\jmath\}|\\hat\{j\}|\\mathbf\{j\}|\\vec\{j\}|j_hat", " j ", s)
     s = re.sub(r"\\hat\{k\}|\\mathbf\{k\}|\\vec\{k\}|k_hat", " k ", s)
     s = re.sub(r"([0-9])\s*([ijk])", r"\1 * \2", s)
-    basis_names = ["i", "j", "k"][:max(dim, 3)]
+    basis_names = ["i", "j", "k"][: max(dim, 3)]
     parsed_expr = safe_parse(s, variables=basis_names, allow_i=False)
 
     comps = []
@@ -583,7 +595,17 @@ def is_equal(a, b, variables=None, tolerance=None, timeout=1.5, raise_on_timeout
         if isinstance(a, sp.Matrix) and isinstance(b, sp.Matrix):
             if a.shape != b.shape:
                 return False
-            return all(is_equal(a[i], b[i], variables=variables, tolerance=tolerance, timeout=timeout, raise_on_timeout=raise_on_timeout) for i in range(len(a)))
+            return all(
+                is_equal(
+                    a[i],
+                    b[i],
+                    variables=variables,
+                    tolerance=tolerance,
+                    timeout=timeout,
+                    raise_on_timeout=raise_on_timeout,
+                )
+                for i in range(len(a))
+            )
         if isinstance(a, sp.Matrix) != isinstance(b, sp.Matrix):
             return False
 
@@ -693,7 +715,7 @@ def _is_allowed_diagnostic_factor(ratio):
         if ratio == -1:
             return True
         # Check pi and 1/pi
-        if sp.simplify(ratio - sp.pi) == 0 or sp.simplify(ratio - 1/sp.pi) == 0:
+        if sp.simplify(ratio - sp.pi) == 0 or sp.simplify(ratio - 1 / sp.pi) == 0:
             return True
         if not ratio.is_number:
             return False
@@ -725,13 +747,28 @@ def generic_value_diagnostics(u, e, variables=None):
     diags = []
     try:
         if e != 0 and is_equal(u, -e, variables):
-            diags.append({"code": "whole_sign_flip", "message": "Your answer is the exact negative of the correct value. Check a sign (for example $i^2 = -1$ or a subtraction)."})
+            diags.append(
+                {
+                    "code": "whole_sign_flip",
+                    "message": "Your answer is the exact negative of the correct value. Check a sign (for example $i^2 = -1$ or a subtraction).",
+                }
+            )
             return diags
         if e != 0 and u != 0 and is_equal(u, 1 / e, variables):
-            diags.append({"code": "reciprocal", "message": "Your answer is the reciprocal of the correct value. Check which quantity is in the numerator."})
+            diags.append(
+                {
+                    "code": "reciprocal",
+                    "message": "Your answer is the reciprocal of the correct value. Check which quantity is in the numerator.",
+                }
+            )
             return diags
         if not variables and numeric_close(u, e):
-            diags.append({"code": "rounding", "message": "Your answer is numerically close but not exact. Check rounding or keep exact fractions / radicals."})
+            diags.append(
+                {
+                    "code": "rounding",
+                    "message": "Your answer is numerically close but not exact. Check rounding or keep exact fractions / radicals.",
+                }
+            )
             return diags
         if e != 0 and u != 0:
             # Fast check: only simplify if ratio could be constant
@@ -750,7 +787,12 @@ def generic_value_diagnostics(u, e, variables=None):
             if can_be_const:
                 ratio = sp.simplify(u / e)
                 if _is_allowed_diagnostic_factor(ratio):
-                    diags.append({"code": "off_by_factor", "message": f"Your answer differs from the correct value by a constant factor of ${sp.latex(ratio)}$."})
+                    diags.append(
+                        {
+                            "code": "off_by_factor",
+                            "message": f"Your answer differs from the correct value by a constant factor of ${sp.latex(ratio)}$.",
+                        }
+                    )
                     return diags
         if variables:
             # Fast check: only simplify if offset could be constant
@@ -768,7 +810,12 @@ def generic_value_diagnostics(u, e, variables=None):
             if can_be_const_offset:
                 offset = sp.simplify(u - e)
                 if offset.is_number and offset != 0:
-                    diags.append({"code": "constant_offset", "message": f"Your expression differs from the correct one by the constant ${sp.latex(offset)}$."})
+                    diags.append(
+                        {
+                            "code": "constant_offset",
+                            "message": f"Your expression differs from the correct one by the constant ${sp.latex(offset)}$.",
+                        }
+                    )
                     return diags
     except Exception:
         pass
@@ -780,8 +827,11 @@ def generic_value_diagnostics(u, e, variables=None):
 # ---------------------------------------------------------------------------
 def _is_rational_number(t):
     try:
-        return bool(t.is_number) and bool(sp.nsimplify(t).is_rational) and not t.has(sp.I) and not any(
-            isinstance(p, sp.Pow) and not p.exp.is_integer for p in sp.preorder_traversal(t)
+        return (
+            bool(t.is_number)
+            and bool(sp.nsimplify(t).is_rational)
+            and not t.has(sp.I)
+            and not any(isinstance(p, sp.Pow) and not p.exp.is_integer for p in sp.preorder_traversal(t))
         )
     except Exception:
         return False
@@ -818,9 +868,14 @@ def form_issues(tree, forms):
                 issues.append("radical_denominator")
         if "exact" in forms and isinstance(e, sp.Float):
             issues.append("decimal_not_exact")
-        if "simplified_radical" in forms and isinstance(e, sp.Pow) and e.exp == sp.Rational(1, 2) and isinstance(e.base, sp.Integer):
+        if (
+            "simplified_radical" in forms
+            and isinstance(e, sp.Pow)
+            and e.exp == sp.Rational(1, 2)
+            and isinstance(e.base, sp.Integer)
+        ):
             n = abs(int(e.base))
-            if n > 1 and any(n % (k * k) == 0 for k in range(2, int(n ** 0.5) + 1)):
+            if n > 1 and any(n % (k * k) == 0 for k in range(2, int(n**0.5) + 1)):
                 issues.append("unsimplified_radical")
         for a in e.args:
             walk(a)
@@ -888,7 +943,9 @@ def check_number(spec, raw):
                     "verdict": "incorrect",
                     "message": "Expected a scalar number, but received a vector. (If calculating a dot product, remember to sum the component products: $u_1 v_1 + u_2 v_2 + u_3 v_3$).",
                     "components": [{"label": "Value", "ok": False}],
-                    "diagnostics": [{"code": "vector_given_for_scalar", "message": "Expected a scalar, received a vector."}],
+                    "diagnostics": [
+                        {"code": "vector_given_for_scalar", "message": "Expected a scalar, received a vector."}
+                    ],
                 }
             except Exception:
                 pass
@@ -903,7 +960,12 @@ def check_number(spec, raw):
             return {**fr, "components": comps}
         return {"verdict": "correct", "message": "Correct.", "components": comps, "diagnostics": []}
     diags = generic_value_diagnostics(u, e)
-    return {"verdict": "incorrect", "message": "Not equal to the verified answer.", "components": comps, "diagnostics": diags}
+    return {
+        "verdict": "incorrect",
+        "message": "Not equal to the verified answer.",
+        "components": comps,
+        "diagnostics": diags,
+    }
 
 
 def check_complex(spec, raw):
@@ -922,9 +984,19 @@ def check_complex(spec, raw):
 
     diags = []
     if re_ok and eim != 0 and is_equal(uim, -eim, tolerance=tol):
-        diags.append({"code": "imag_sign_flip", "message": "Real part is correct, but the imaginary part has the opposite sign. Check $i^2 = -1$ or the conjugate sign."})
+        diags.append(
+            {
+                "code": "imag_sign_flip",
+                "message": "Real part is correct, but the imaginary part has the opposite sign. Check $i^2 = -1$ or the conjugate sign.",
+            }
+        )
     elif im_ok and ere != 0 and is_equal(ure, -ere, tolerance=tol):
-        diags.append({"code": "real_sign_flip", "message": "Imaginary part is correct, but the real part has the opposite sign. Check $i^2 = -1$ when combining real terms."})
+        diags.append(
+            {
+                "code": "real_sign_flip",
+                "message": "Imaginary part is correct, but the real part has the opposite sign. Check $i^2 = -1$ when combining real terms.",
+            }
+        )
     elif is_equal(ure, eim, tolerance=tol) and is_equal(uim, ere, tolerance=tol) and ere != eim:
         diags.append({"code": "swapped_parts", "message": "Your real and imaginary parts are swapped."})
     else:
@@ -953,7 +1025,12 @@ def check_expression(spec, raw):
         if fr:
             return {**fr, "components": comps}
         return {"verdict": "correct", "message": "Correct.", "components": comps, "diagnostics": []}
-    return {"verdict": "incorrect", "message": "Not equivalent to the verified answer.", "components": comps, "diagnostics": generic_value_diagnostics(u, e, variables)}
+    return {
+        "verdict": "incorrect",
+        "message": "Not equivalent to the verified answer.",
+        "components": comps,
+        "diagnostics": generic_value_diagnostics(u, e, variables),
+    }
 
 
 def _split_items(raw, variable):
@@ -994,14 +1071,31 @@ def check_solution_set(spec, raw):
     extras = [users[j] for j in range(len(users)) if j not in matched_u]
     for x in extras:
         if any(is_equal(x, -ev) for ev in expected):
-            diags.append({"code": "whole_sign_flip", "message": f"${sp.latex(x)}$ is the negative of a true solution. Check the sign in front of $b$ in the quadratic formula."})
+            diags.append(
+                {
+                    "code": "whole_sign_flip",
+                    "message": f"${sp.latex(x)}$ is the negative of a true solution. Check the sign in front of $b$ in the quadratic formula.",
+                }
+            )
         elif any(is_equal(sp.conjugate(x), ev) or is_equal(sp.re(x), sp.re(ev)) for ev in expected):
-            diags.append({"code": "imag_sign_flip", "message": f"${sp.latex(x)}$ has the right real part but the wrong imaginary part."})
+            diags.append(
+                {
+                    "code": "imag_sign_flip",
+                    "message": f"${sp.latex(x)}$ has the right real part but the wrong imaginary part.",
+                }
+            )
         else:
-            diags.append({"code": "extra_solution", "message": f"${sp.latex(x)}$ does not satisfy the equation (extraneous value)."})
+            diags.append(
+                {
+                    "code": "extra_solution",
+                    "message": f"${sp.latex(x)}$ does not satisfy the equation (extraneous value).",
+                }
+            )
     missing = sum(1 for c in comps if not c["ok"])
     if missing:
-        diags.append({"code": "missing_solution", "message": f"{missing} solution(s) missing. Remember both signs of $\\pm$."})
+        diags.append(
+            {"code": "missing_solution", "message": f"{missing} solution(s) missing. Remember both signs of $\\pm$."}
+        )
     if missing == 0 and not extras:
         forms = spec.get("forms", [])
         issues = []
@@ -1011,11 +1105,25 @@ def check_solution_set(spec, raw):
             except Exception:
                 pass
         if issues:
-            return {"verdict": "equivalent_not_in_form", "message": FORM_MESSAGES.get(issues[0], "Not in required form."), "components": comps,
-                    "diagnostics": [{"code": c, "message": FORM_MESSAGES.get(c, c)} for c in dict.fromkeys(issues)]}
-        return {"verdict": "correct", "message": "Correct. All solutions found.", "components": comps, "diagnostics": []}
+            return {
+                "verdict": "equivalent_not_in_form",
+                "message": FORM_MESSAGES.get(issues[0], "Not in required form."),
+                "components": comps,
+                "diagnostics": [{"code": c, "message": FORM_MESSAGES.get(c, c)} for c in dict.fromkeys(issues)],
+            }
+        return {
+            "verdict": "correct",
+            "message": "Correct. All solutions found.",
+            "components": comps,
+            "diagnostics": [],
+        }
     verdict = "partial" if missing < len(expected) else "incorrect"
-    return {"verdict": verdict, "message": "Some solutions match." if verdict == "partial" else "No solution matches.", "components": comps, "diagnostics": diags}
+    return {
+        "verdict": verdict,
+        "message": "Some solutions match." if verdict == "partial" else "No solution matches.",
+        "components": comps,
+        "diagnostics": diags,
+    }
 
 
 def check_tuple(spec, raw):
@@ -1028,12 +1136,16 @@ def check_tuple(spec, raw):
     else:
         s = re.sub(r"^\s*[\(\[\{<]|[\)\]\}>]\s*$", "", s)
         users = [parse_math(p) for p in s.split(",") if p.strip()]
-    comps = [{"label": labels[i], "ok": i < len(users) and is_equal(users[i], expected[i])} for i in range(len(expected))]
+    comps = [
+        {"label": labels[i], "ok": i < len(users) and is_equal(users[i], expected[i])} for i in range(len(expected))
+    ]
     if len(users) == len(expected) and all(c["ok"] for c in comps):
         return {"verdict": "correct", "message": "Correct.", "components": comps, "diagnostics": []}
     diags = []
     if len(users) != len(expected):
-        diags.append({"code": "wrong_component_count", "message": f"Expected {len(expected)} components, received {len(users)}."})
+        diags.append(
+            {"code": "wrong_component_count", "message": f"Expected {len(expected)} components, received {len(users)}."}
+        )
     else:
         for i, (uv, ev) in enumerate(zip(users, expected)):
             if not comps[i]["ok"] and ev != 0 and is_equal(uv, -ev):
@@ -1041,18 +1153,35 @@ def check_tuple(spec, raw):
         if len(expected) == 2 and is_equal(users[0], expected[1]) and is_equal(users[1], expected[0]):
             diags.append({"code": "swapped_parts", "message": "The components are swapped."})
     verdict = "partial" if any(c["ok"] for c in comps) else "incorrect"
-    return {"verdict": verdict, "message": "Some components match." if verdict == "partial" else "No component matches.", "components": comps, "diagnostics": diags}
+    return {
+        "verdict": verdict,
+        "message": "Some components match." if verdict == "partial" else "No component matches.",
+        "components": comps,
+        "diagnostics": diags,
+    }
 
 
 def check_choice(spec, raw):
     ok = raw.strip().upper() == str(spec["correct"]).strip().upper()
-    return {"verdict": "correct" if ok else "incorrect", "message": "Correct." if ok else "Incorrect choice.", "components": [{"label": "Choice", "ok": ok}], "diagnostics": []}
+    return {
+        "verdict": "correct" if ok else "incorrect",
+        "message": "Correct." if ok else "Incorrect choice.",
+        "components": [{"label": "Choice", "ok": ok}],
+        "diagnostics": [],
+    }
 
 
 def check_text(spec, raw):
-    norm = lambda t: re.sub(r"\s+", " ", t.strip().lower())
+    def norm(t):
+        return re.sub(r"\s+", " ", t.strip().lower())
+
     ok = norm(raw) in [norm(a) for a in spec["accepted"]]
-    return {"verdict": "correct" if ok else "incorrect", "message": "Correct." if ok else "Does not match the accepted answers.", "components": [{"label": "Answer", "ok": ok}], "diagnostics": []}
+    return {
+        "verdict": "correct" if ok else "incorrect",
+        "message": "Correct." if ok else "Does not match the accepted answers.",
+        "components": [{"label": "Answer", "ok": ok}],
+        "diagnostics": [],
+    }
 
 
 def _check_parallel_numeric(user_comps, expected_comps, vars_list=None):
@@ -1083,10 +1212,7 @@ def _check_parallel_numeric(user_comps, expected_comps, vars_list=None):
     else:
         syms = [sp.Symbol(v) for v in vars_list]
         try:
-            fixed_points = [
-                {s: sp.Rational(base + i * 2, 1) for i, s in enumerate(syms)}
-                for base in (2, 3, 5)
-            ]
+            fixed_points = [{s: sp.Rational(base + i * 2, 1) for i, s in enumerate(syms)} for base in (2, 3, 5)]
             sample_ks = []
             for pt in fixed_points:
                 pivot_idx = None
@@ -1127,6 +1253,7 @@ def _check_parallel_numeric(user_comps, expected_comps, vars_list=None):
 def _format_scalar_multiple_ratio(k_val):
     """Formats scalar multiple ratio cleanly to integer, simple fraction, or simple radical (sqrt(2), sqrt(3))."""
     import math
+
     # 1. Exact or simple rational fraction (e.g. 5, 3/2, -2/3)
     try:
         q = sp.nsimplify(k_val, rational=True)
@@ -1157,7 +1284,12 @@ def check_vector(spec, raw):
     def _eval_vector():
         raw_str = (raw or "").strip()
         if not raw_str:
-            return {"verdict": "invalid input", "message": "Type your final answer first.", "components": [], "diagnostics": []}
+            return {
+                "verdict": "invalid input",
+                "message": "Type your final answer first.",
+                "components": [],
+                "diagnostics": [],
+            }
 
         expected_raw = spec.get("components") or spec.get("values") or spec.get("value")
         if expected_raw is None:
@@ -1185,10 +1317,12 @@ def check_vector(spec, raw):
         # 1. Dimension mismatch check
         if len(user_comps) != len(expected_comps):
             comps = [{"label": f"Component {i + 1}", "ok": False} for i in range(len(expected_comps))]
-            diags = [{
-                "code": "dimension_mismatch",
-                "message": f"Dimension mismatch: expected {len(expected_comps)} components, received {len(user_comps)}."
-            }]
+            diags = [
+                {
+                    "code": "dimension_mismatch",
+                    "message": f"Dimension mismatch: expected {len(expected_comps)} components, received {len(user_comps)}.",
+                }
+            ]
             return {
                 "verdict": "incorrect",
                 "message": f"Expected a {len(expected_comps)}-dimensional vector.",
@@ -1215,6 +1349,7 @@ def check_vector(spec, raw):
         # Diagnostics (parallel/swapped/sign): isolated so timeouts or errors discard diagnostics and keep determined verdict
         diags = []
         try:
+
             def _gather_diagnostics():
                 d_list = []
                 # 2. Parallel / scalar multiple check (numeric substitution, no sp.simplify)
@@ -1223,49 +1358,69 @@ def check_vector(spec, raw):
                 if k_ratio is not None and abs(k_ratio) > 1e-6:
                     if abs(k_ratio - (-1.0)) < 1e-5:
                         is_opposite_dir = True
-                        d_list.append({
-                            "code": "scalar_multiple",
-                            "message": "Your vector points in the opposite direction (factor of -1). Check negative signs."
-                        })
+                        d_list.append(
+                            {
+                                "code": "scalar_multiple",
+                                "message": "Your vector points in the opposite direction (factor of -1). Check negative signs.",
+                            }
+                        )
                     else:
                         k_disp = _format_scalar_multiple_ratio(k_ratio)
-                        d_list.append({
-                            "code": "scalar_multiple",
-                            "message": f"Your vector is parallel to the correct answer but differs by a scalar factor of ${k_disp}$."
-                        })
+                        d_list.append(
+                            {
+                                "code": "scalar_multiple",
+                                "message": f"Your vector is parallel to the correct answer but differs by a scalar factor of ${k_disp}$.",
+                            }
+                        )
 
                 # 3. Swapped order / permutation check
                 if not d_list:
                     from itertools import permutations
+
                     is_swapped = False
                     for p in permutations(range(len(expected_comps))):
                         if list(p) == list(range(len(expected_comps))):
                             continue
-                        if all(is_equal(user_comps[p[i]], expected_comps[i], variables=vars_list, tolerance=tol, timeout=0.08) for i in range(len(expected_comps))):
+                        if all(
+                            is_equal(
+                                user_comps[p[i]], expected_comps[i], variables=vars_list, tolerance=tol, timeout=0.08
+                            )
+                            for i in range(len(expected_comps))
+                        ):
                             is_swapped = True
                             break
                     if is_swapped:
-                        d_list.append({
-                            "code": "swapped_order",
-                            "message": "The vector components are swapped or entered in the wrong order."
-                        })
+                        d_list.append(
+                            {
+                                "code": "swapped_order",
+                                "message": "The vector components are swapped or entered in the wrong order.",
+                            }
+                        )
 
                 # 4. Component sign error check (skipped if parallel(-1) already reported)
                 if not is_opposite_dir:
                     inverted_indices = []
                     for i, (u, e) in enumerate(zip(user_comps, expected_comps)):
-                        if not comp_matches[i] and e != 0 and is_equal(u, -e, variables=vars_list, tolerance=tol, timeout=0.08):
+                        if (
+                            not comp_matches[i]
+                            and e != 0
+                            and is_equal(u, -e, variables=vars_list, tolerance=tol, timeout=0.08)
+                        ):
                             inverted_indices.append(i + 1)
                     if inverted_indices:
                         if len(inverted_indices) == 1:
                             sign_msg = f"Component {inverted_indices[0]} has the opposite sign."
                         else:
-                            comps_str = ", ".join(str(x) for x in inverted_indices[:-1]) + f" and {inverted_indices[-1]}"
+                            comps_str = (
+                                ", ".join(str(x) for x in inverted_indices[:-1]) + f" and {inverted_indices[-1]}"
+                            )
                             sign_msg = f"Components {comps_str} have the opposite sign."
-                        d_list.append({
-                            "code": "component_sign_error",
-                            "message": sign_msg,
-                        })
+                        d_list.append(
+                            {
+                                "code": "component_sign_error",
+                                "message": sign_msg,
+                            }
+                        )
 
                 return d_list
 
@@ -1300,8 +1455,6 @@ def check_vector(spec, raw):
         }
 
 
-from math_engine.answer_spec_registry import ANSWER_SPEC_TYPES, validate_answer_spec
-
 CHECKERS = {
     "number": check_number,
     "complex": check_complex,
@@ -1316,20 +1469,40 @@ CHECKERS = {
 
 def check_answer(spec, raw):
     if not (raw or "").strip():
-        return {"verdict": "invalid input", "message": "Type your final answer first.", "components": [], "diagnostics": []}
+        return {
+            "verdict": "invalid input",
+            "message": "Type your final answer first.",
+            "components": [],
+            "diagnostics": [],
+        }
     fn = CHECKERS.get(spec.get("type"))
     if not fn:
-        return {"verdict": "invalid input", "message": f"Unsupported answer type: {spec.get('type')}", "components": [], "diagnostics": []}
+        return {
+            "verdict": "invalid input",
+            "message": f"Unsupported answer type: {spec.get('type')}",
+            "components": [],
+            "diagnostics": [],
+        }
     try:
         return fn(spec, raw)
     except SafeParseError as ex:
         return {"verdict": "invalid input", "message": f"Invalid input: {ex}", "components": [], "diagnostics": []}
-    except EqualTimeoutError as ex:
-        return {"verdict": "invalid input", "message": "Evaluation timed out. Input is too complex.", "components": [], "diagnostics": []}
+    except EqualTimeoutError:
+        return {
+            "verdict": "invalid input",
+            "message": "Evaluation timed out. Input is too complex.",
+            "components": [],
+            "diagnostics": [],
+        }
     except ValueError as ex:
         return {"verdict": "invalid input", "message": f"Invalid input: {ex}", "components": [], "diagnostics": []}
     except Exception:
-        return {"verdict": "invalid input", "message": "Could not read that input. Use forms like 3 - 4i, 3/4, sqrt(2)/2, x^2 + 1, or x = 2, x = -3.", "components": [], "diagnostics": []}
+        return {
+            "verdict": "invalid input",
+            "message": "Could not read that input. Use forms like 3 - 4i, 3/4, sqrt(2)/2, x^2 + 1, or x = 2, x = -3.",
+            "components": [],
+            "diagnostics": [],
+        }
 
 
 if __name__ == "__main__":
@@ -1354,7 +1527,9 @@ if __name__ == "__main__":
                 if isinstance(trap_val, (list, tuple)):
                     trap_spec["values"] = list(trap_val)
                 elif isinstance(trap_val, str):
-                    parts = [p.strip() for p in re.sub(r"^\s*[\(\[\{<]|[\)\]\}>]\s*$", "", trap_val).split(",") if p.strip()]
+                    parts = [
+                        p.strip() for p in re.sub(r"^\s*[\(\[\{<]|[\)\]\}>]\s*$", "", trap_val).split(",") if p.strip()
+                    ]
                     trap_spec["values"] = parts
                 else:
                     trap_spec["values"] = [trap_val]

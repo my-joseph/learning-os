@@ -1,18 +1,39 @@
 # -*- coding: utf-8 -*-
 """Parameterized problem templates for MTH-T01-C02: The Language of Algebra."""
+
 import math
+
 from math_engine.templates._prealg_helpers import S
 
 UNIT = "MTH-T01-C02"
 TITLE = "The Language of Algebra"
 
 MISTAKE_TAGS = [
-    {"id": "c02-substitution-precedence", "label": "Added before multiplying when evaluating algebraic expression", "name": "Algebraic Evaluation Precedence Slip", "autoFrom": []},
-    {"id": "c02-translation-subtraction-order", "label": "Reversed order of 'a less than b' during equation translation", "name": "Subtraction Translation Order Reversal", "autoFrom": []},
-    {"id": "c02-lcm-gcd-exponent-trap", "label": "Took minimum prime exponents (GCD) instead of maximum prime exponents (LCM)", "name": "LCM vs GCD Prime Exponent Trap", "autoFrom": []},
-    {"id": "c02-synodic-offset-trap", "label": "Forgot initial offset when computing next simultaneous cycle occurrence", "name": "Simultaneous Cycle Offset Omission", "autoFrom": []},
+    {
+        "id": "c02-substitution-precedence",
+        "label": "Added before multiplying when evaluating algebraic expression",
+        "name": "Algebraic Evaluation Precedence Slip",
+        "autoFrom": [],
+    },
+    {
+        "id": "c02-translation-subtraction-order",
+        "label": "Reversed order of 'a less than b' during equation translation",
+        "name": "Subtraction Translation Order Reversal",
+        "autoFrom": [],
+    },
+    {
+        "id": "c02-lcm-gcd-exponent-trap",
+        "label": "Took minimum prime exponents (GCD) instead of maximum prime exponents (LCM)",
+        "name": "LCM vs GCD Prime Exponent Trap",
+        "autoFrom": [],
+    },
+    {
+        "id": "c02-synodic-offset-trap",
+        "label": "Forgot initial offset when computing next simultaneous cycle occurrence",
+        "name": "Simultaneous Cycle Offset Omission",
+        "autoFrom": [],
+    },
 ]
-
 
 
 def t_c02_foundation(rng, form=None):
@@ -29,9 +50,22 @@ def t_c02_foundation(rng, form=None):
         prompt = f"Evaluate the algebraic expression ${a}(x + y) - {c}$ when $x = {x}$ and $y = {y}$."
         disp = f"{a}({x} + {y}) - {c}"
         steps = [
-            S(f"x + y = {x} + {y} = {x + y}", "Substitute the given values and evaluate the parentheses first.", eq=[f"{x} + {y}", str(x + y)]),
-            S(f"{a}({x + y}) = {a * (x + y)}", "Multiply the sum by the outer coefficient.", eq=[f"{a} * ({x + y})", str(a * (x + y))]),
-            S(f"{a * (x + y)} - {c} = {ans}", "Subtract the constant term.", val=str(ans), eq=[f"{a * (x + y)} - {c}", str(ans)]),
+            S(
+                f"x + y = {x} + {y} = {x + y}",
+                "Substitute the given values and evaluate the parentheses first.",
+                eq=[f"{x} + {y}", str(x + y)],
+            ),
+            S(
+                f"{a}({x + y}) = {a * (x + y)}",
+                "Multiply the sum by the outer coefficient.",
+                eq=[f"{a} * ({x + y})", str(a * (x + y))],
+            ),
+            S(
+                f"{a * (x + y)} - {c} = {ans}",
+                "Subtract the constant term.",
+                val=str(ans),
+                eq=[f"{a * (x + y)} - {c}", str(ans)],
+            ),
         ]
     else:
         ans = a * x + b * y
@@ -41,7 +75,12 @@ def t_c02_foundation(rng, form=None):
         steps = [
             S(f"{a}x = {a}({x}) = {a * x}", "Evaluate the first product term.", eq=[f"{a} * {x}", str(a * x)]),
             S(f"{b}y = {b}({y}) = {b * y}", "Evaluate the second product term.", eq=[f"{b} * {y}", str(b * y)]),
-            S(f"{a * x} + {b * y} = {ans}", "Add the two products together.", val=str(ans), eq=[f"{a * x} + {b * y}", str(ans)]),
+            S(
+                f"{a * x} + {b * y} = {ans}",
+                "Add the two products together.",
+                val=str(ans),
+                eq=[f"{a * x} + {b * y}", str(ans)],
+            ),
         ]
     return {
         "form": form,
@@ -76,7 +115,9 @@ def t_c02_reverse(rng, form=None):
         if trap != ans:
             break
     if form == "reverse":
-        prompt = f"When ${m}$ is subtracted from ${k}$ times a number $n$, the result is ${target}$. Find the number $n$."
+        prompt = (
+            f"When ${m}$ is subtracted from ${k}$ times a number $n$, the result is ${target}$. Find the number $n$."
+        )
         disp = f"{k}n - {m} = {target} \\implies n = ?"
     else:
         prompt = f"Translate and solve for $n$: '${m}$ less than the product of ${k}$ and $n$ equals ${target}$'."
@@ -97,9 +138,22 @@ def t_c02_reverse(rng, form=None):
         "commonTrapTag": "c02-translation-subtraction-order",
         "verify": {"source": str(ans), "trapValue": str(trap)},
         "steps": [
-            S(f"{k}n - {m} = {target}", "Write the algebraic equation from the verbal statement.", eq=[f"{k}*{ans} - {m}", str(target)]),
-            S(f"{k}n = {target} + {m} = {target + m}", "Add the subtracted constant to both sides of the equation.", eq=[f"{target} + {m}", str(target + m)]),
-            S(f"n = \\frac{{{target + m}}}{{{k}}} = {ans}", "Divide by the coefficient to isolate the unknown.", val=str(ans), eq=[f"({target + m}) / {k}", str(ans)]),
+            S(
+                f"{k}n - {m} = {target}",
+                "Write the algebraic equation from the verbal statement.",
+                eq=[f"{k}*{ans} - {m}", str(target)],
+            ),
+            S(
+                f"{k}n = {target} + {m} = {target + m}",
+                "Add the subtracted constant to both sides of the equation.",
+                eq=[f"{target} + {m}", str(target + m)],
+            ),
+            S(
+                f"n = \\frac{{{target + m}}}{{{k}}} = {ans}",
+                "Divide by the coefficient to isolate the unknown.",
+                val=str(ans),
+                eq=[f"({target + m}) / {k}", str(ans)],
+            ),
         ],
     }
 
@@ -125,9 +179,22 @@ def t_c02_trap(rng, form=None):
         prompt = f"Two automated beacons flash every ${a}$ minutes and ${b}$ minutes, respectively. Both beacons flashed together at $t = {offset}$ minutes past the hour. At what time $t$ (in minutes past the hour) will they next flash simultaneously?"
         disp = f"t = {offset} + \\text{{LCM}}({a}, {b})"
         steps = [
-            S(f"{a} = {pf_a}, \\quad {b} = {pf_b}", "Find the prime factorization of each period.", eq=[f"({a} * {b}) / {g}", str(lcm_val)]),
-            S(f"\\text{{LCM}}({a}, {b}) = {lcm_val}", "Take the highest power of each prime factor to obtain the least common multiple.", eq=[str(lcm_val), str(lcm_val)]),
-            S(f"t = {offset} + {lcm_val} = {ans}", "Add the period LCM to the initial synchronization time.", val=str(ans), eq=[f"{offset} + {lcm_val}", str(ans)]),
+            S(
+                f"{a} = {pf_a}, \\quad {b} = {pf_b}",
+                "Find the prime factorization of each period.",
+                eq=[f"({a} * {b}) / {g}", str(lcm_val)],
+            ),
+            S(
+                f"\\text{{LCM}}({a}, {b}) = {lcm_val}",
+                "Take the highest power of each prime factor to obtain the least common multiple.",
+                eq=[str(lcm_val), str(lcm_val)],
+            ),
+            S(
+                f"t = {offset} + {lcm_val} = {ans}",
+                "Add the period LCM to the initial synchronization time.",
+                val=str(ans),
+                eq=[f"{offset} + {lcm_val}", str(ans)],
+            ),
         ]
     else:
         ans = lcm_val
@@ -135,9 +202,22 @@ def t_c02_trap(rng, form=None):
         prompt = f"Using prime factorization, find the Least Common Multiple (LCM) of ${a}$ and ${b}$."
         disp = f"\\text{{LCM}}({a}, {b}) = ?"
         steps = [
-            S(f"{a} = {pf_a}, \\quad {b} = {pf_b}", "Express both integers in prime-factored form.", eq=[f"{a} * {b}", str(a * b)]),
-            S(f"\\text{{GCD}}({a}, {b}) = {g}", "Identify the greatest common divisor from shared prime factors.", eq=[str(g), str(g)]),
-            S(f"\\text{{LCM}}({a}, {b}) = \\frac{{{a} \\times {b}}}{{{g}}} = {ans}", "Take the highest exponent of each prime factor to compute the LCM.", val=str(ans), eq=[f"({a} * {b}) / {g}", str(ans)]),
+            S(
+                f"{a} = {pf_a}, \\quad {b} = {pf_b}",
+                "Express both integers in prime-factored form.",
+                eq=[f"{a} * {b}", str(a * b)],
+            ),
+            S(
+                f"\\text{{GCD}}({a}, {b}) = {g}",
+                "Identify the greatest common divisor from shared prime factors.",
+                eq=[str(g), str(g)],
+            ),
+            S(
+                f"\\text{{LCM}}({a}, {b}) = \\frac{{{a} \\times {b}}}{{{g}}} = {ans}",
+                "Take the highest exponent of each prime factor to compute the LCM.",
+                val=str(ans),
+                eq=[f"({a} * {b}) / {g}", str(ans)],
+            ),
         ]
     return {
         "form": form,
@@ -173,9 +253,22 @@ def t_c02_synthesis(rng, form=None):
         prompt = f"Let $L = \\text{{LCM}}({a}, {b})$ and $G = \\text{{GCD}}({a}, {b})$. Evaluate the algebraic expression ${k}L - {c}G$."
         disp = f"{k}\\,\\text{{LCM}}({a}, {b}) - {c}\\,\\text{{GCD}}({a}, {b})"
         steps = [
-            S(f"L = \\text{{LCM}}({a}, {b}) = {L}, \\quad G = \\text{{GCD}}({a}, {b}) = {g}", "Compute both the least common multiple and greatest common divisor.", eq=[f"({a}*{b})/{g}", str(L)]),
-            S(f"{k}L = {k * L}, \\quad {c}G = {c * g}", "Substitute $L$ and $G$ into their respective terms.", eq=[f"{k}*{L} - {c}*{g}", str(ans)]),
-            S(f"{k * L} - {c * g} = {ans}", "Subtract to obtain the final value.", val=str(ans), eq=[str(ans), str(ans)]),
+            S(
+                f"L = \\text{{LCM}}({a}, {b}) = {L}, \\quad G = \\text{{GCD}}({a}, {b}) = {g}",
+                "Compute both the least common multiple and greatest common divisor.",
+                eq=[f"({a}*{b})/{g}", str(L)],
+            ),
+            S(
+                f"{k}L = {k * L}, \\quad {c}G = {c * g}",
+                "Substitute $L$ and $G$ into their respective terms.",
+                eq=[f"{k}*{L} - {c}*{g}", str(ans)],
+            ),
+            S(
+                f"{k * L} - {c * g} = {ans}",
+                "Subtract to obtain the final value.",
+                val=str(ans),
+                eq=[str(ans), str(ans)],
+            ),
         ]
     else:
         ans = k * L + c * g
@@ -183,8 +276,16 @@ def t_c02_synthesis(rng, form=None):
         prompt = f"Let $L = \\text{{LCM}}({a}, {b})$ and $G = \\text{{GCD}}({a}, {b})$. Evaluate the algebraic expression ${k}L + {c}G$."
         disp = f"{k}\\,\\text{{LCM}}({a}, {b}) + {c}\\,\\text{{GCD}}({a}, {b})"
         steps = [
-            S(f"L = \\text{{LCM}}({a}, {b}) = {L}, \\quad G = \\text{{GCD}}({a}, {b}) = {g}", "Find the LCM and GCD of the two integers.", eq=[f"({a}*{b})/{g}", str(L)]),
-            S(f"{k}L = {k * L}, \\quad {c}G = {c * g}", "Multiply each quantity by its algebraic coefficient.", eq=[f"{k}*{L} + {c}*{g}", str(ans)]),
+            S(
+                f"L = \\text{{LCM}}({a}, {b}) = {L}, \\quad G = \\text{{GCD}}({a}, {b}) = {g}",
+                "Find the LCM and GCD of the two integers.",
+                eq=[f"({a}*{b})/{g}", str(L)],
+            ),
+            S(
+                f"{k}L = {k * L}, \\quad {c}G = {c * g}",
+                "Multiply each quantity by its algebraic coefficient.",
+                eq=[f"{k}*{L} + {c}*{g}", str(ans)],
+            ),
             S(f"{k * L} + {c * g} = {ans}", "Add the two products together.", val=str(ans), eq=[str(ans), str(ans)]),
         ]
     return {

@@ -1,17 +1,37 @@
 # -*- coding: utf-8 -*-
 """Parameterized problem templates for MTH-T01-C08: Exponents."""
+
 from math_engine.templates._prealg_helpers import S
 
 UNIT = "MTH-T01-C08"
 TITLE = "Exponents"
 
 MISTAKE_TAGS = [
-    {"id": "c08-exponent-product-multiply-trap", "label": "Multiplied exponents instead of adding when multiplying same base", "name": "Product Rule Exponent Multiplication Trap", "autoFrom": []},
-    {"id": "c08-power-of-product-unscaled-coeff", "label": "Forgot to raise numerical coefficient to outer exponent in (a*b)^n", "name": "Power of Product Coefficient Trap", "autoFrom": ["off_by_factor"]},
-    {"id": "c08-same-base-sum-exponent-trap", "label": "Added exponents across addition (2^a + 2^a != 2^(2a))", "name": "Same-Base Addition Exponent Trap", "autoFrom": []},
-    {"id": "c08-common-base-conversion-trap", "label": "Failed to convert composite bases to a common prime base before equating exponents", "name": "Common Prime Base Conversion Trap", "autoFrom": []},
+    {
+        "id": "c08-exponent-product-multiply-trap",
+        "label": "Multiplied exponents instead of adding when multiplying same base",
+        "name": "Product Rule Exponent Multiplication Trap",
+        "autoFrom": [],
+    },
+    {
+        "id": "c08-power-of-product-unscaled-coeff",
+        "label": "Forgot to raise numerical coefficient to outer exponent in (a*b)^n",
+        "name": "Power of Product Coefficient Trap",
+        "autoFrom": ["off_by_factor"],
+    },
+    {
+        "id": "c08-same-base-sum-exponent-trap",
+        "label": "Added exponents across addition (2^a + 2^a != 2^(2a))",
+        "name": "Same-Base Addition Exponent Trap",
+        "autoFrom": [],
+    },
+    {
+        "id": "c08-common-base-conversion-trap",
+        "label": "Failed to convert composite bases to a common prime base before equating exponents",
+        "name": "Common Prime Base Conversion Trap",
+        "autoFrom": [],
+    },
 ]
-
 
 
 def t_c08_foundation(rng, form=None):
@@ -22,7 +42,7 @@ def t_c08_foundation(rng, form=None):
     n = rng.randint(2, 4)
     p = m + n - rng.choice([2, 3])
     net_exp = m + n - p
-    ans = base ** net_exp
+    ans = base**net_exp
     trap = base ** (m * n - p)
     if trap == ans:
         trap = ans * base
@@ -48,9 +68,22 @@ def t_c08_foundation(rng, form=None):
         "commonTrapTag": "c08-exponent-product-multiply-trap",
         "verify": {"source": str(ans), "trapValue": str(trap)},
         "steps": [
-            S(f"{base}^{m} \\cdot {base}^{n} = {base}^{{{m} + {n}}} = {base}^{{{m + n}}}", "Apply the product property of exponents in the numerator.", eq=[f"({base}**{m}) * ({base}**{n})", f"{base}**({m + n})"]),
-            S(f"\\frac{{{base}^{{{m + n}}}}}{{{base}^{p}}} = {base}^{{{m + n} - {p}}} = {base}^{{{net_exp}}}", "Apply the quotient property by subtracting exponents.", eq=[f"({base}**({m + n})) / ({base}**{p})", str(ans)]),
-            S(f"{base}^{{{net_exp}}} = {ans}", "Evaluate the power to get the exact integer.", val=str(ans), eq=[str(ans), str(ans)]),
+            S(
+                f"{base}^{m} \\cdot {base}^{n} = {base}^{{{m} + {n}}} = {base}^{{{m + n}}}",
+                "Apply the product property of exponents in the numerator.",
+                eq=[f"({base}**{m}) * ({base}**{n})", f"{base}**({m + n})"],
+            ),
+            S(
+                f"\\frac{{{base}^{{{m + n}}}}}{{{base}^{p}}} = {base}^{{{m + n} - {p}}} = {base}^{{{net_exp}}}",
+                "Apply the quotient property by subtracting exponents.",
+                eq=[f"({base}**({m + n})) / ({base}**{p})", str(ans)],
+            ),
+            S(
+                f"{base}^{{{net_exp}}} = {ans}",
+                "Evaluate the power to get the exact integer.",
+                val=str(ans),
+                eq=[str(ans), str(ans)],
+            ),
         ],
     }
 
@@ -69,22 +102,43 @@ def t_c08_reverse(rng, form=None):
         prompt = f"Find the integer exponent $k$ that satisfies $\\left({base}^{a}\\right)^{b} \\cdot {base}^{c} = {base}^k$."
         disp = f"\\left({base}^{a}\\right)^{b} \\cdot {base}^{c} = {base}^k \\implies k = ?"
         steps = [
-            S(f"\\left({base}^{a}\\right)^{b} = {base}^{{{a} \\times {b}}} = {base}^{{{a * b}}}", "Use the power-of-a-power rule to multiply the exponents.", eq=[f"{a} * {b}", str(a * b)]),
-            S(f"{base}^{{{a * b}}} \\cdot {base}^{c} = {base}^{{{a * b} + {c}}} = {base}^{{{total_exp}}}", "Add the exponents of the common base.", eq=[f"{a * b} + {c}", str(ans)]),
+            S(
+                f"\\left({base}^{a}\\right)^{b} = {base}^{{{a} \\times {b}}} = {base}^{{{a * b}}}",
+                "Use the power-of-a-power rule to multiply the exponents.",
+                eq=[f"{a} * {b}", str(a * b)],
+            ),
+            S(
+                f"{base}^{{{a * b}}} \\cdot {base}^{c} = {base}^{{{a * b} + {c}}} = {base}^{{{total_exp}}}",
+                "Add the exponents of the common base.",
+                eq=[f"{a * b} + {c}", str(ans)],
+            ),
             S(f"k = {ans}", "Equate the exponents of the identical base.", val=str(ans), eq=[str(ans), str(ans)]),
         ]
     else:
         coeff = rng.choice([2, 3, 4])
         n_pow = rng.choice([2, 3])
         x_val = rng.choice([2, 3])
-        ans = (coeff ** n_pow) * (x_val ** (2 * n_pow))
+        ans = (coeff**n_pow) * (x_val ** (2 * n_pow))
         trap = coeff * (x_val ** (2 * n_pow))
         prompt = f"Evaluate the expression $({coeff}x^2)^{n_pow}$ when $x = {x_val}$."
         disp = f"({coeff}x^2)^{n_pow} \\quad \\text{{at }} x = {x_val}"
         steps = [
-            S(f"({coeff}x^2)^{n_pow} = {coeff}^{n_pow} \\cdot x^{{2 \\times {n_pow}}} = {coeff**n_pow} x^{{{2 * n_pow}}}", "Apply the outer exponent to both the numerical coefficient and the variable factor.", eq=[f"{coeff}**{n_pow}", str(coeff**n_pow)]),
-            S(f"x^{{{2 * n_pow}}} = {x_val}^{{{2 * n_pow}}} = {x_val**(2 * n_pow)}", "Substitute the given value of $x$ and evaluate its power.", eq=[f"{x_val}**({2 * n_pow})", str(x_val**(2 * n_pow))]),
-            S(f"{coeff**n_pow} \\times {x_val**(2 * n_pow)} = {ans}", "Multiply the powered coefficient by the variable power.", val=str(ans), eq=[f"({coeff**n_pow}) * ({x_val**(2 * n_pow)})", str(ans)]),
+            S(
+                f"({coeff}x^2)^{n_pow} = {coeff}^{n_pow} \\cdot x^{{2 \\times {n_pow}}} = {coeff**n_pow} x^{{{2 * n_pow}}}",
+                "Apply the outer exponent to both the numerical coefficient and the variable factor.",
+                eq=[f"{coeff}**{n_pow}", str(coeff**n_pow)],
+            ),
+            S(
+                f"x^{{{2 * n_pow}}} = {x_val}^{{{2 * n_pow}}} = {x_val ** (2 * n_pow)}",
+                "Substitute the given value of $x$ and evaluate its power.",
+                eq=[f"{x_val}**({2 * n_pow})", str(x_val ** (2 * n_pow))],
+            ),
+            S(
+                f"{coeff**n_pow} \\times {x_val ** (2 * n_pow)} = {ans}",
+                "Multiply the powered coefficient by the variable power.",
+                val=str(ans),
+                eq=[f"({coeff**n_pow}) * ({x_val ** (2 * n_pow)})", str(ans)],
+            ),
         ]
     return {
         "form": form,
@@ -116,21 +170,37 @@ def t_c08_trap(rng, form=None):
         prompt = f"The sum of ${base}$ identical exponential terms $\\underbrace{{{base}^{k} + {base}^{k} + \\dots + {base}^{k}}}_{{{base}\\text{{ terms}}}}$ can be written as a single power ${base}^n$. Find the exponent $n$."
         disp = f"{base} \\cdot {base}^{k} = {base}^n \\implies n = ?"
         steps = [
-            S(f"\\underbrace{{{base}^{k} + \\dots + {base}^{k}}}_{{{base}\\text{{ terms}}}} = {base} \\cdot {base}^{k}", "Factor out the common exponential term to rewrite repeated addition as multiplication.", eq=[f"{base} * ({base}**{k})", f"{base}**({k + 1})"]),
-            S(f"{base} \\cdot {base}^{k} = {base}^{{{k} + 1}} = {base}^{{{ans}}}", "Add the implicit exponent of 1 to the exponent $k$.", eq=[f"{k} + 1", str(ans)]),
+            S(
+                f"\\underbrace{{{base}^{k} + \\dots + {base}^{k}}}_{{{base}\\text{{ terms}}}} = {base} \\cdot {base}^{k}",
+                "Factor out the common exponential term to rewrite repeated addition as multiplication.",
+                eq=[f"{base} * ({base}**{k})", f"{base}**({k + 1})"],
+            ),
+            S(
+                f"{base} \\cdot {base}^{k} = {base}^{{{k} + 1}} = {base}^{{{ans}}}",
+                "Add the implicit exponent of 1 to the exponent $k$.",
+                eq=[f"{k} + 1", str(ans)],
+            ),
             S(f"n = {ans}", "Identify the resulting exponent.", val=str(ans), eq=[str(ans), str(ans)]),
         ]
     else:
         m = rng.randint(3, 6)
         ans = 2 ** (m + 1)
-        trap = 4 ** m
+        trap = 4**m
         if trap == ans:
             trap = 2 ** (2 * m) + 4
         prompt = f"Evaluate the exact value of $2^{m} + 2^{m}$."
         disp = f"2^{m} + 2^{m}"
         steps = [
-            S(f"2^{m} + 2^{m} = 2 \\cdot 2^{m}", "Combine the two identical terms by factoring out 2.", eq=[f"2**{m} + 2**{m}", f"2 * (2**{m})"]),
-            S(f"2 \\cdot 2^{m} = 2^{{{m} + 1}} = 2^{{{m + 1}}}", "Apply the product property of exponents.", eq=[f"2 * (2**{m})", str(ans)]),
+            S(
+                f"2^{m} + 2^{m} = 2 \\cdot 2^{m}",
+                "Combine the two identical terms by factoring out 2.",
+                eq=[f"2**{m} + 2**{m}", f"2 * (2**{m})"],
+            ),
+            S(
+                f"2 \\cdot 2^{m} = 2^{{{m} + 1}} = 2^{{{m + 1}}}",
+                "Apply the product property of exponents.",
+                eq=[f"2 * (2**{m})", str(ans)],
+            ),
             S(f"2^{{{m + 1}}} = {ans}", "Evaluate the power of 2.", val=str(ans), eq=[str(ans), str(ans)]),
         ]
     return {
@@ -188,9 +258,22 @@ def t_c08_synthesis(rng, form=None):
         "commonTrapTag": "c08-common-base-conversion-trap",
         "verify": {"source": str(ans), "trapValue": str(trap)},
         "steps": [
-            S(f"{b1}^{e1} = ({p}^{k1})^{e1} = {p}^{{{k1 * e1}}}", f"Rewrite ${b1}$ as ${p}^{k1}$ and multiply the exponents.", eq=[f"{k1} * {e1}", str(k1 * e1)]),
-            S(f"{b2}^{e2} = ({p}^{k2})^{e2} = {p}^{{{k2 * e2}}}", f"Rewrite ${b2}$ as ${p}^{k2}$ and multiply the exponents.", eq=[f"{k2} * {e2}", str(k2 * e2)]),
-            S(f"x = {k1 * e1} + {k2 * e2} = {ans}", "Add the exponents of the common prime base.", val=str(ans), eq=[f"{k1 * e1} + {k2 * e2}", str(ans)]),
+            S(
+                f"{b1}^{e1} = ({p}^{k1})^{e1} = {p}^{{{k1 * e1}}}",
+                f"Rewrite ${b1}$ as ${p}^{k1}$ and multiply the exponents.",
+                eq=[f"{k1} * {e1}", str(k1 * e1)],
+            ),
+            S(
+                f"{b2}^{e2} = ({p}^{k2})^{e2} = {p}^{{{k2 * e2}}}",
+                f"Rewrite ${b2}$ as ${p}^{k2}$ and multiply the exponents.",
+                eq=[f"{k2} * {e2}", str(k2 * e2)],
+            ),
+            S(
+                f"x = {k1 * e1} + {k2 * e2} = {ans}",
+                "Add the exponents of the common prime base.",
+                val=str(ans),
+                eq=[f"{k1 * e1} + {k2 * e2}", str(ans)],
+            ),
         ],
     }
 
