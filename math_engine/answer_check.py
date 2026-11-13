@@ -505,7 +505,9 @@ def check_choice(spec, raw):
 
 
 def check_text(spec, raw):
-    norm = lambda t: re.sub(r"\s+", " ", t.strip().lower())
+    def norm(t):
+        return re.sub(r"\s+", " ", t.strip().lower())
+
     ok = norm(raw) in [norm(a) for a in spec["accepted"]]
     return {
         "verdict": "correct" if ok else "incorrect",

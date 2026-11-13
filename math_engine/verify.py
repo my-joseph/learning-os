@@ -71,9 +71,9 @@ def verify_problem(p, id_map=None):
                 _fail(pid, f"step {i} value {st['val']} != source {v['source']}")
             checked += 1
         if "eq" in st:
-            l, r = st["eq"]
-            if not is_equal(to_expr(l), to_expr(r)):
-                _fail(pid, f"step {i} equality fails: {l} != {r}")
+            lhs, rhs = st["eq"]
+            if not is_equal(to_expr(lhs), to_expr(rhs)):
+                _fail(pid, f"step {i} equality fails: {lhs} != {rhs}")
             checked += 1
         check_text_safety(pid, f"step {i} explain", st["explain"])
         check_text_safety(pid, f"step {i} latex", st["latex"], is_latex=True)

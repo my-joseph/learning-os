@@ -143,7 +143,6 @@ def update_master_page(master_pid, rules_map, id_map, token):
         sub_info = rules_map[key]
         sub_id = sub_info["id"]
         # Use page mention
-        bullet_text = f"**[[{sub_id}]]** (`{mod['file']}`): {mod['desc']}"
         # We can construct rich_text with mention_page directly
         rt_parts = [mention_page(sub_id, bold=True), rt(f" (`{mod['file']}`): {mod['desc']}")]
         nav_blocks.append(

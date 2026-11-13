@@ -193,7 +193,9 @@ def check_choice(spec: dict, raw: str) -> dict:
 
 
 def check_text(spec: dict, raw: str) -> dict:
-    norm = lambda t: re.sub(r"\s+", " ", t.strip().lower())
+    def norm(t):
+        return re.sub(r"\s+", " ", t.strip().lower())
+
     accepted = [norm(a) for a in spec.get("accepted", [spec.get("value", "")])]
     ok = norm(raw) in accepted
     return {

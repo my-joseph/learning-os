@@ -63,7 +63,7 @@ def run_tests_summary(cwd: Path) -> dict:
 
         # Extract summary lines
         lines = [line.strip() for line in combined.splitlines() if line.strip()]
-        summary_lines = [l for l in lines if l.startswith("ℹ") or "pass" in l.lower() or "fail" in l.lower()]
+        summary_lines = [ln for ln in lines if ln.startswith("ℹ") or "pass" in ln.lower() or "fail" in ln.lower()]
 
         return {
             "passed": passed,
@@ -80,8 +80,6 @@ def run_tests_summary(cwd: Path) -> dict:
 def build_drill_review(ws_dir: Path, target_pid: str = None) -> tuple[str, str]:
     """Builds PR review prompt for a Drill Workspace (drills/workspace/<DRILL_ID>)."""
     drill_id = ws_dir.name
-    readme_file = ws_dir / "README.md"
-    readme_text = readme_file.read_text(encoding="utf-8") if readme_file.exists() else ""
 
     # Find JS problem files in workspace (ignoring .test.js)
     src_files = sorted([f for f in ws_dir.glob("*.js") if not f.name.endswith(".test.js")])

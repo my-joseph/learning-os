@@ -25,6 +25,7 @@
 - Python: ruff format + lint, type hints on public functions, one shared Notion client on stdlib `urllib` (no new deps), secrets only from env.
 - TypeScript: strict per `practice-studio/tsconfig.json`; must pass `next lint`.
 - Drill IDs: `DRL-<UNIT>-NN`; specs live in `drills/data/<UNIT>/`. Schema reference: @practice-studio/src/types/drill.ts.
+- Lint/format (repo root): `ruff check .` and `ruff format --check .` (config `ruff.toml`; `archive/` excluded; do not strip trailing whitespace inside string literals — it is generated output). CI enforces both.
 - Commits: conventional (`feat(scope):`, `fix:`, `refactor:`, `docs(rules):`).
 
 ## Workflow
@@ -44,7 +45,7 @@
 | P2 | Shared Notion client + env loader | done for root modules (`notion_client.py`); `code_engine/submit.py` and `labs/common/submit_lab.py` keep their own variants (different retry/env-quote behavior) |
 | P3 | Merge duplicated root/studio files | done (root is canonical; stale `practice-studio/` copies removed) |
 | P4 | Retire `practice_hub.py` + `web/` | done (hub server and legacy UI deleted; `drill_sync.py` keeps validator, save and Notion sync) |
-| P5 | ruff format/lint + type hints | not started |
+| P5 | ruff format/lint + type hints | done (ruff config, CI checks; hints on `notion_client`/`drill_sync` public funcs only; `archive/`, studio excluded) |
 
 ## Gotchas / Do-Not
 - Never commit or print `.env` (`NOTION_TOKEN`, `NOTION_DATABASE_ID`). `.env`, `.venv`, `node_modules` are gitignored and absent in fresh worktrees; scripts read `.env` relative to the CWD, so run from repo root.

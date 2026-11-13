@@ -16,7 +16,7 @@ import urllib.request
 socket.setdefaulttimeout(15)
 
 
-def load_env(path=".env"):
+def load_env(path: str = ".env") -> dict[str, str]:
     env = {}
     if os.path.exists(path):
         with open(path, "r", encoding="utf-8") as f:
@@ -45,7 +45,7 @@ SSL_CTX = (
 )
 
 
-def notion_request(method, endpoint, token, payload=None, max_retries=7):
+def notion_request(method: str, endpoint: str, token: str, payload: dict | None = None, max_retries: int = 7) -> dict:
     url = f"https://api.notion.com/v1/{endpoint}"
     headers = {
         "Authorization": f"Bearer {token}",
@@ -77,7 +77,7 @@ def notion_request(method, endpoint, token, payload=None, max_retries=7):
             raise e
 
 
-def get_all_blocks(block_id, token):
+def get_all_blocks(block_id: str, token: str) -> list[dict]:
     blocks = []
     cursor = None
     while True:

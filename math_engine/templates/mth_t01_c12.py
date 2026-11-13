@@ -164,7 +164,6 @@ def t_trapezoid_area(rng):
     area = R(b1 + b2) * h / 2
 
     # SVG coordinates
-    top_w = 90
     bot_w = 170
     h_px = 80
     ox, oy = 70, 140

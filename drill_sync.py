@@ -64,7 +64,7 @@ def validate_and_sanitize_drill_doc(drill_doc: dict) -> None:
                         p["inputHint"] = "Type final answer..."
 
 
-def save_drill_doc(drill_doc: dict):
+def save_drill_doc(drill_doc: dict) -> str:
     drill_id = drill_doc.get("drillId")
     if not drill_id:
         raise ValueError("Missing drillId")
