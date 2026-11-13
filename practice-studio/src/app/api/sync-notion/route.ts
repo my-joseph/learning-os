@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { spawn } from "child_process";
-import path from "path";
-import fs from "fs";
 import { getDrillsDataDir, getPythonBin, getWorkspaceRoot, isSafeId } from "@/lib/paths";
 
 export async function POST(req: NextRequest) {
@@ -17,15 +15,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, error: "Invalid drillId or unitCode" }, { status: 400 });
     }
 
+    // Progress is saved by notion_sync.drill_sync.save_drill_doc (progress/<DRILL_ID>.json);
+    // the drill content file is never rewritten from the Studio.
     const dataDir = getDrillsDataDir();
-    const unitDir = path.join(dataDir, unitCode);
-    if (!fs.existsSync(unitDir)) {
-      fs.mkdirSync(unitDir, { recursive: true });
-    }
-
-    const targetPath = path.join(unitDir, `${drillId}.json`);
-    drillDoc.localFilePath = targetPath;
-    fs.writeFileSync(targetPath, JSON.stringify(drillDoc, null, 2), "utf-8");
 
     // Call python notion sync helper
     const rootDir = getWorkspaceRoot();

@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start -H 127.0.0.1",
     "lint": "next lint",
-    "test:telemetry": "tsx tests/applyCheckResult.test.ts && tsx tests/telemetryTimer.test.ts"
+    "test:telemetry": "tsx tests/applyCheckResult.test.ts && tsx tests/telemetryTimer.test.ts && tsx tests/progress.test.ts"
   },
   "dependencies": {
     "@react-three/drei": "^9.122.0",

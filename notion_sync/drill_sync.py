@@ -4,7 +4,8 @@
 Drill persistence + Notion sync (used by practice-studio's /api/sync-notion route).
 
 - validate_and_sanitize_drill_doc: zero-leak guard for inputHint (rules/00_core.md section 6)
-- save_drill_doc: validate, then write drills/data/<UNIT>/<DRILL_ID>.json
+- save_drill_doc: sanitise in memory, then save learner progress to progress/<DRILL_ID>.json
+  (drill content in drills/data is never rewritten; see progress_store.py)
 - sync_drill_to_notion: save, then sync score/mistakes/steps to Notion ('Learning Practice & Drills')
 
 Extracted from the retired practice_hub.py (P4). Run from the repo root (relative paths).
@@ -27,6 +28,7 @@ from notion_sync.blocks import (
     toggle_block,
 )
 from notion_sync.client import load_env, notion_request
+from progress_store import save_progress
 
 
 def get_data_root() -> str:
@@ -68,18 +70,18 @@ def validate_and_sanitize_drill_doc(drill_doc: dict) -> None:
 
 
 def save_drill_doc(drill_doc: dict) -> str:
+    """Persist the learner's progress (progress/<DRILL_ID>.json) and return the drill's content path.
+
+    The drill content file in drills/data is never rewritten here: practice must not dirty
+    curriculum content. inputHint sanitisation is applied in memory so the Notion copy is clean.
+    """
     drill_id = drill_doc.get("drillId")
     if not drill_id:
         raise ValueError("Missing drillId")
     validate_and_sanitize_drill_doc(drill_doc)
+    save_progress(drill_doc)
     unit_code = drill_doc.get("unitCode", "MTH-T02-C01-U01")
-    unit_dir = os.path.join(get_data_root(), unit_code)
-    os.makedirs(unit_dir, exist_ok=True)
-    path = os.path.join(unit_dir, f"{drill_id}.json")
-    drill_doc["localFilePath"] = path
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(drill_doc, f, ensure_ascii=False, indent=2)
-    return path
+    return os.path.join(get_data_root(), unit_code, f"{drill_id}.json")
 
 
 REQUIRED_DRILL_FIELDS = ("drillId", "unitCode", "chapterCode", "topicCode", "problems")

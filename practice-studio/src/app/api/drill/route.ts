@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
 import { getDrillsDataDir, getWorkspaceRoot, isSafeId } from "@/lib/paths";
+import { applyProgress, readProgress } from "@/lib/progress";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -25,7 +26,7 @@ export async function GET(req: NextRequest) {
     const filePath = path.join(dataDir, unit, `${id}.json`);
     if (fs.existsSync(filePath)) {
       const content = fs.readFileSync(filePath, "utf-8");
-      const doc = JSON.parse(content);
+      const doc = applyProgress(JSON.parse(content), readProgress(id));
 
       if (!doc.unitTitle && doc.unitCode) {
         try {

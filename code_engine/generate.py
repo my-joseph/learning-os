@@ -282,15 +282,6 @@ def generate_drill_set(
                 prob["flaw"] = v_dict["flaw"]
             if "trapCode" in v_dict and "trapCode" not in prob:
                 prob["trapCode"] = v_dict["trapCode"]
-
-            # Per-problem attempt state
-            prob["state"] = {
-                "userInput": "",
-                "score": None,
-                "divergedStep": None,
-                "mistakes": [],
-                "lastCheck": None,
-            }
             attempt_problems.append(prob)
 
         return attempt_problems, available_forms_count
@@ -320,15 +311,6 @@ def generate_drill_set(
         },
         "mistakeTags": mod.MISTAKE_TAGS,
         "problems": problems,
-        "sessionSummary": {
-            "practiceStatus": "Ready",
-            "score": 0,
-            "maxScore": count,
-            "accuracyPct": 0,
-            "mistakeCategories": [],
-            "divergedStepsSummary": "No diverged steps logged.",
-            "attemptDate": None,
-        },
         "localFilePath": file_path,
     }
 

@@ -19,6 +19,7 @@ from math_engine.figure_autofill import archetype_requires_figure, autofill_prob
 from math_engine.fmt import LEVEL_LABELS, unit_hierarchy
 from math_engine.generate import next_drill_id
 from math_engine.verify import verify_problem
+from progress_store import strip_progress
 from quality_rules import QUALITY_RULES
 
 VAULT_DIR = os.path.join(os.path.dirname(__file__), "reasoning_vault")
@@ -625,18 +626,8 @@ def ingest_ai_drill(
         },
     )
 
-    if "sessionSummary" not in drill_doc:
-        drill_doc["sessionSummary"] = {
-            "practiceStatus": "Ready",
-            "score": 0,
-            "maxScore": len(problems),
-            "accuracyPct": 0,
-            "mistakeCategories": [],
-            "divergedStepsSummary": "",
-            "attemptDate": None,
-            "syncedToNotionAt": None,
-            "notionPageId": None,
-        }
+    # Learner progress (state / sessionSummary) lives in progress/, not in the drill file.
+    strip_progress(drill_doc)
 
     unit_dir = os.path.join(data_root, unit_code)
     os.makedirs(unit_dir, exist_ok=True)

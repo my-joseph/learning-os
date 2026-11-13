@@ -3,6 +3,7 @@ import fs from "fs";
 import path from "path";
 import { DrillListItem } from "@/types/drill";
 import { getDrillsDataDir } from "@/lib/paths";
+import { applyProgress, readProgress } from "@/lib/progress";
 
 export async function GET() {
   const dataDir = getDrillsDataDir();
@@ -23,7 +24,8 @@ export async function GET() {
       try {
         const filePath = path.join(fullUnitDir, file);
         const content = fs.readFileSync(filePath, "utf-8");
-        const doc = JSON.parse(content);
+        const raw = JSON.parse(content);
+        const doc = applyProgress(raw, readProgress(raw.drillId || file.replace(/\.json$/, "")));
 
         const problems = Array.isArray(doc.problems) ? doc.problems : [];
         const questionCount = doc.config?.questionCount || problems.length || 0;
