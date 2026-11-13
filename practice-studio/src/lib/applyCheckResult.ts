@@ -33,6 +33,7 @@ export function applyCheckResult(
       input: trimmed || "(Skipped)",
       ts,
       verdict: "skipped",
+      ...(prob.state?.setupRevealedBeforeAnswer ? { setupRevealed: true } : {}),
     };
     return {
       ...prob.state,
@@ -113,6 +114,7 @@ export function applyCheckResult(
     verdict: result.verdict,
     ...(diagCodes.length > 0 ? { diagnosticCodes: diagCodes } : {}),
     ...(matchedTrapTag ? { matchedTrap: matchedTrapTag } : {}),
+    ...(prob.state?.setupRevealedBeforeAnswer ? { setupRevealed: true } : {}),
   };
 
   return {

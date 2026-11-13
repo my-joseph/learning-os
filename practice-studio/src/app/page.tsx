@@ -395,6 +395,21 @@ export default function PracticeStudioPage() {
     triggerAutoSave(updated);
   };
 
+  // Equation set-up opened by the learner. Only counts as assistance before the first check.
+  const handleSetupRevealed = (probId: string) => {
+    if (!currentDrill) return;
+    const target = currentDrill.problems.find((p) => p.id === probId);
+    if (!target || target.state.lastCheck || target.state.setupRevealedBeforeAnswer) return;
+    const updated = {
+      ...currentDrill,
+      problems: currentDrill.problems.map((p) =>
+        p.id === probId ? { ...p, state: { ...p.state, setupRevealedBeforeAnswer: true } } : p
+      ),
+    };
+    setCurrentDrill(updated);
+    triggerAutoSave(updated);
+  };
+
   // Toggle Step Highlight
   const handleToggleStepHighlight = (probId: string, stepIdx: number) => {
     setActiveSteps((prev) => ({
@@ -503,6 +518,7 @@ export default function PracticeStudioPage() {
             lastTestReport: null,
             attempts: [],
             hintsRevealed: 0,
+            setupRevealedBeforeAnswer: false,
             durationMs: 0,
           },
         };
@@ -1152,6 +1168,7 @@ export default function PracticeStudioPage() {
                       onMistakeNoteChange={(note) => handleMistakeNoteChange(prob.id, note)}
                       onResetProblem={() => handleResetProblem(prob.id)}
                       onHintRevealed={() => handleHintRevealed(prob.id)}
+                      onSetupRevealed={() => handleSetupRevealed(prob.id)}
                     />
 
                     {/* Bottom Question Navigation Footer */}

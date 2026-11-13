@@ -174,6 +174,8 @@ export interface AttemptRecord {
   verdict: string;
   diagnosticCodes?: string[];
   matchedTrap?: string;
+  /** Learner opened the equation set-up before submitting this attempt (assisted, not independent). */
+  setupRevealed?: boolean;
 }
 
 export interface ProblemState {
@@ -188,6 +190,8 @@ export interface ProblemState {
   userCode?: string;
   attempts?: AttemptRecord[];
   hintsRevealed?: number;
+  /** Set when the learner opens the equation set-up before any answer has been checked. */
+  setupRevealedBeforeAnswer?: boolean;
   durationMs?: number;
 }
 

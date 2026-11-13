@@ -36,6 +36,7 @@ interface MathProblemCardProps {
   onMistakeNoteChange: (note: string) => void;
   onResetProblem: () => void;
   onHintRevealed?: () => void;
+  onSetupRevealed?: () => void;
 }
 
 const getSafeMathPlaceholder = (hint?: string, problem?: Problem): string => {
@@ -90,15 +91,29 @@ export const MathProblemCard: React.FC<MathProblemCardProps> = ({
   onMistakeNoteChange,
   onResetProblem,
   onHintRevealed,
+  onSetupRevealed,
 }) => {
   const [copied, setCopied] = useState(false);
   const [showHint, setShowHint] = useState(false);
   const [showSolution, setShowSolution] = useState(Boolean(problem.state.lastCheck));
   const [isChecking, setIsChecking] = useState(false);
+  // Equation set-up (display + plain-text) is hidden until the learner asks for it or has answered.
+  const [showSetup, setShowSetup] = useState(Boolean(problem.state.lastCheck));
+  const hasSetup = Boolean(problem.display || problem.plainText);
+  const answered = Boolean(problem.state.lastCheck);
+  const setupWasAssisted = Boolean(problem.state.setupRevealedBeforeAnswer);
 
   useEffect(() => {
     setShowSolution(Boolean(problem.state.lastCheck));
+    setShowSetup(Boolean(problem.state.lastCheck));
   }, [problem.id, problem.state.lastCheck]);
+
+  const toggleSetup = () => {
+    if (!showSetup && !answered && onSetupRevealed) {
+      onSetupRevealed();
+    }
+    setShowSetup(!showSetup);
+  };
 
   const handleCopyCas = () => {
     if (!problem.plainText) return;
@@ -113,6 +128,7 @@ export const MathProblemCard: React.FC<MathProblemCardProps> = ({
     try {
       await onCheckAnswer();
       setShowSolution(true);
+      setShowSetup(true);
     } finally {
       setIsChecking(false);
     }
@@ -169,45 +185,68 @@ export const MathProblemCard: React.FC<MathProblemCardProps> = ({
         <MathFigure figure={problem.figure || problem.visual!} />
       )}
 
-      {/* LaTeX Display Box + Compact Plain-Text Copy */}
-      {(problem.display || problem.plainText) && (
-        <div className="bg-slate-50 dark:bg-[#10141f] border border-slate-200 dark:border-[#2c354d] rounded-xl p-3.5 mb-4">
-          {problem.display && (
-            <div className="text-center overflow-x-auto text-slate-900 dark:text-slate-100">
-              <MathBlock latex={problem.display} />
-            </div>
-          )}
-          {problem.plainText && (
-            <div
-              className={`flex flex-wrap items-center justify-between gap-2 text-xs ${
-                problem.display
-                  ? "mt-2.5 pt-2.5 border-t border-slate-200/80 dark:border-[#232b3e]"
-                  : ""
-              }`}
-            >
-              <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 overflow-x-auto">
-                <span className="font-medium shrink-0">Plain-Text / CAS:</span>
-                <code className="font-mono text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-200/60 dark:border-indigo-800/40 px-2 py-0.5 rounded">
-                  {problem.plainText}
-                </code>
-              </div>
-              <button
-                type="button"
-                onClick={handleCopyCas}
-                className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-md bg-white dark:bg-[#1d2333] hover:bg-indigo-50 dark:hover:bg-indigo-600/20 text-slate-700 dark:text-slate-300 hover:text-indigo-700 dark:hover:text-white border border-slate-200 dark:border-[#2c354d] transition-colors font-medium shrink-0"
-              >
-                {copied ? (
-                  <>
-                    <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                    <span className="text-emerald-600 dark:text-emerald-400">Copied</span>
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-3.5 h-3.5" />
-                    <span>Copy Plain-Text</span>
-                  </>
-                )}
-              </button>
+      {/* Equation set-up (display + plain-text): hidden by default so the learner sets it up first */}
+      {hasSetup && (
+        <div className="mb-4">
+          <button
+            type="button"
+            onClick={toggleSetup}
+            aria-expanded={showSetup}
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors mb-2"
+          >
+            {showSetup ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            <span>{showSetup ? "Hide equation set-up" : "Show equation set-up"}</span>
+            {!answered && !showSetup && (
+              <span className="text-xs font-normal text-slate-400 dark:text-slate-500">
+                (try setting it up yourself first)
+              </span>
+            )}
+            {setupWasAssisted && (
+              <span className="ml-1 text-[11px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-500/15 text-amber-800 dark:text-amber-300">
+                Viewed before answering
+              </span>
+            )}
+          </button>
+          {showSetup && (
+            <div className="bg-slate-50 dark:bg-[#10141f] border border-slate-200 dark:border-[#2c354d] rounded-xl p-3.5">
+              {problem.display && (
+                <div className="text-center overflow-x-auto text-slate-900 dark:text-slate-100">
+                  <MathBlock latex={problem.display} />
+                </div>
+              )}
+              {problem.plainText && (
+                <div
+                  className={`flex flex-wrap items-center justify-between gap-2 text-xs ${
+                    problem.display
+                      ? "mt-2.5 pt-2.5 border-t border-slate-200/80 dark:border-[#232b3e]"
+                      : ""
+                  }`}
+                >
+                  <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 overflow-x-auto">
+                    <span className="font-medium shrink-0">Plain-Text / CAS:</span>
+                    <code className="font-mono text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-200/60 dark:border-indigo-800/40 px-2 py-0.5 rounded">
+                      {problem.plainText}
+                    </code>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleCopyCas}
+                    className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-md bg-white dark:bg-[#1d2333] hover:bg-indigo-50 dark:hover:bg-indigo-600/20 text-slate-700 dark:text-slate-300 hover:text-indigo-700 dark:hover:text-white border border-slate-200 dark:border-[#2c354d] transition-colors font-medium shrink-0"
+                  >
+                    {copied ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                        <span className="text-emerald-600 dark:text-emerald-400">Copied</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3.5 h-3.5" />
+                        <span>Copy Plain-Text</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>

@@ -21,6 +21,7 @@ interface ProblemCardProps {
   onMistakeNoteChange: (note: string) => void;
   onResetProblem: () => void;
   onHintRevealed?: () => void;
+  onSetupRevealed?: () => void;
 }
 
 export const ProblemCard: React.FC<ProblemCardProps> = (props) => {

@@ -327,6 +327,37 @@ runCase("trapMatched: false without diagnostics and no trap falls back to unclas
   assert(res.attempts![0].matchedTrap === undefined, "MatchedTrap should be undefined");
 });
 
+const correctResult = {
+  verdict: "correct" as const,
+  message: "Correct",
+  components: [],
+  diagnostics: [],
+  trapMatched: false,
+};
+
+runCase("Set-up viewed before answering marks the attempt as assisted", () => {
+  const prob = createBaseProblem();
+  prob.state = { ...prob.state, setupRevealedBeforeAnswer: true };
+  const res = applyCheckResult(prob, "360", correctResult, mockMistakeTags, { ts: "2026-11-13T10:00:00Z" });
+  assert(res.score === 1, "Correct answer still scores 1 (no penalty)");
+  assert(res.attempts![0].setupRevealed === true, "Attempt must record setupRevealed");
+  assert(res.setupRevealedBeforeAnswer === true, "Flag must persist on state");
+});
+
+runCase("Set-up not viewed leaves the attempt unmarked", () => {
+  const res = applyCheckResult(createBaseProblem(), "360", correctResult, mockMistakeTags, {
+    ts: "2026-11-13T10:00:00Z",
+  });
+  assert(res.attempts![0].setupRevealed === undefined, "Independent attempt must not carry setupRevealed");
+});
+
+runCase("Skip after viewing set-up is also marked as assisted", () => {
+  const prob = createBaseProblem();
+  prob.state = { ...prob.state, setupRevealedBeforeAnswer: true };
+  const res = applySkip(prob, { ts: "2026-11-13T10:00:00Z" });
+  assert(res.attempts![res.attempts!.length - 1].setupRevealed === true, "Skip attempt must record setupRevealed");
+});
+
 // Extra: Diverged step does not attach mistake tags
 const probDiverged = createBaseProblem();
 const stDiv = applyDivergedStep(probDiverged, 1);
