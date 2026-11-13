@@ -42,13 +42,13 @@
 | P0 | Safety net: requirements, pytest, CI, lint baseline fixed | done (uncommitted/unmerged until PR) |
 | P1 | Move one-shot scripts to `archive/` | done (34 moved; 7 root modules kept because live code imports them) |
 | P2 | Shared Notion client + env loader | done for root modules (`notion_client.py`); `code_engine/submit.py` and `labs/common/submit_lab.py` keep their own variants (different retry/env-quote behavior) |
-| P3 | Merge duplicated root/studio files | not started |
+| P3 | Merge duplicated root/studio files | done (root is canonical; stale `practice-studio/` copies removed) |
 | P4 | Retire `practice_hub.py` + `web/` (move `validate_and_sanitize_drill_doc` first — tests import it from there) | not started |
 | P5 | ruff format/lint + type hints | not started |
 
 ## Gotchas / Do-Not
 - Never commit or print `.env` (`NOTION_TOKEN`, `NOTION_DATABASE_ID`). `.env`, `.venv`, `node_modules` are gitignored and absent in fresh worktrees; scripts read `.env` relative to the CWD, so run from repo root.
-- Root vs `practice-studio/` copies of `practice_hub.py`, `apply_rules_and_test_pages.py`, `id_map.json`, `math_engine/`, `drills/` have diverged (`practice-studio/src/lib/paths.ts` prefers the repo root; `practice-studio/code_engine` is a symlink). Canonical copy: TODO: verify. Never edit one copy without asking.
+- Root is canonical for `math_engine/`, `code_engine/`, `drills/`, `id_map.json`, `practice_hub.py`. `practice-studio/` has no copies (only a `code_engine` symlink to `../code_engine`); the Studio API routes read root via `src/lib/paths.ts`. Never recreate copies; `code_engine.generate` no longer mirrors into `practice-studio/`.
 - 34 one-shot scripts (`*_builder.py`, `upgrade_*`, `create_*`, `fix_*`, `deploy_*`, `clean_*`, `patch_*`, ...) now live in `archive/` and mostly write to Notion. Never run them unasked; if required: `PYTHONPATH=. python3 archive/<script>.py` from repo root. Root keeps only live modules: `notion_client.py` (shared Notion REST client + `.env` loader; applies process-wide IPv4/timeout on import), `apply_rules_and_test_pages.py` (page-building helpers; re-exports the client names), `practice_hub.py` (imported by studio `sync-notion` route), `sync_rules_to_notion.py` + its imports `test_md_parser.py`, `upgrade_mth_t01_batch2.py`, `mth_t01_batch2_{data,units}.py` (untangle in P2).
 - `practice_hub.py` + `web/` (port 8765) are legacy.
 - Never hand-edit `id_map.json` (Notion page-ID registry, incl. `CON-*` concept keys).

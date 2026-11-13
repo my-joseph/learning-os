@@ -23,7 +23,7 @@ def test_math_generation_is_deterministic(tmp_path):
 
 @pytest.mark.skipif(shutil.which("node") is None, reason="code_engine verification needs node")
 def test_code_generation_is_deterministic(tmp_path, monkeypatch):
-    # code_engine writes CWD-relative side effects (drills/workspace/, practice-studio/ mirror),
+    # code_engine writes CWD-relative side effects (drills/workspace/),
     # so run it inside an empty temp dir to keep the repo clean.
     monkeypatch.chdir(tmp_path)
     a = code_generate("PRG-T01-C01", 3, "ALL", seed=7, drill_id="A")
@@ -31,3 +31,12 @@ def test_code_generation_is_deterministic(tmp_path, monkeypatch):
     assert REQUIRED_KEYS <= a.keys()
     assert len(a["problems"]) == 3
     assert _signature(a) == _signature(b)
+
+
+@pytest.mark.skipif(shutil.which("node") is None, reason="code_engine verification needs node")
+def test_code_generation_does_not_mirror_into_practice_studio(tmp_path, monkeypatch):
+    # Single source of truth: drills live only under <root>/drills/data (P3).
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "practice-studio").mkdir()
+    code_generate("PRG-T01-C01", 1, "ALL", seed=1, drill_id="M")
+    assert not (tmp_path / "practice-studio" / "drills").exists()

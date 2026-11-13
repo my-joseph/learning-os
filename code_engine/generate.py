@@ -5,7 +5,7 @@ Pre-Generation Config -> Verified Programming Drill JSON Generator.
 Generates ONLY the exact number of questions requested in the Pre-Generation Config
 (e.g., 5, 10, 15, or 20), verifies every problem via real Node.js subprocess execution,
 attaches resolved Notion deep links for cross-subject references, and writes the
-clean JSON file to drills/data/<UNIT_CODE>/<DRILL_ID>.json (and mirrors to practice-studio/).
+clean JSON file to drills/data/<UNIT_CODE>/<DRILL_ID>.json.
 """
 import argparse
 import datetime
@@ -13,7 +13,6 @@ import glob
 import json
 import os
 import random
-import shutil
 
 from code_engine.fmt import DIFFICULTY_MODES, LEVEL_LABELS
 from code_engine.templates import load_unit
@@ -209,13 +208,6 @@ def generate_drill_set(
 
     with open(file_path, "w", encoding="utf-8") as f:
         json.dump(drill_doc, f, ensure_ascii=False, indent=2)
-
-    # Mirror to practice-studio if directory exists
-    studio_dir = os.path.join("practice-studio", data_root, unit_code)
-    if os.path.exists("practice-studio"):
-        os.makedirs(studio_dir, exist_ok=True)
-        studio_path = os.path.join(studio_dir, f"{drill_id}.json")
-        shutil.copyfile(file_path, studio_path)
 
     print(f"[Verified & Saved] {file_path}")
     return drill_doc
