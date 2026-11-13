@@ -43,10 +43,13 @@ Per problem, the rules that fail most often:
 | `prompt` | States the situation, **never the method**. No substituted formula (`using $P = 2(14) + 2(8)$`), no numbers re-listed by role (`with coefficient $5$, constant $15$`), no hand-over arithmetic (`using $90 - 34$`). The expression itself is fine when evaluating it *is* the task (`Solve $5x + 15 = 60$.`). Numbers in `$...$`. |
 | `givens` | Every number in the prompt, and every given appears in the prompt. |
 | `constants` | Numbers that belong to the method, not the story: formula constants (2 in `2L + 2W`, 1/3 in cone volume, 90, 180) and derived values. Never put them in the prompt just to satisfy a rule. |
-| `trapDerivation` / `trapValue` | A real misconception; uses ≥ 2 values from `givens`/`constants`; evaluates exactly to `trapValue`; `trapValue` must be graded incorrect. `trapGivens` values appear in the prompt or `constants`. |
+| `trapDerivation` / `trapValue` | A real misconception; uses ≥ 2 values from `givens`/`constants`; evaluates exactly to `trapValue`; `trapValue` must be graded incorrect. **Derive it from the `commonTrapTag`**: write down, in words, the wrong step the tag names (e.g. `c12-square-diameter-instead-of-radius-trap` → "squares the diameter"), apply only that mistake to the givens, and use the result. If the number you get is not what a learner with that misconception would actually write, or the correct method also gives it, pick another tag. The gates check the arithmetic, not that the value matches the tag. |
+| `trapGivens` | **Required for `MTH-T01-C01` and `MTH-T01-C12`** (G4 fails without it); add it everywhere. List the numbers used in `trapDerivation`; at least 2 must appear in it. Each must appear in the prompt or in `constants`. Exponents and formula numbers (the `2` in `r^2`, the `1/3` in cone volume) are not prompt givens: put them in `constants` or leave them out of `trapGivens`. |
 | `checkpointHint` | Zero digits. A relationship or self-check, not a number. |
 | `steps` | One transformation per step, never `A = B = C`; each has `latex` and an action `explain`; at least one step has a machine check (`"val"` or `"eq"`). |
 | `display` / `plainText` | Hidden behind "Show equation set-up" until the learner opens it or answers. For word problems prefer the general relation (`A = L \cdot W`) over the substituted one. |
+| `level` | Must match what solving the problem actually demands, not just pass G2. L4 needs two concepts that interact (one result feeds the next); L5 needs a non-routine idea. Repeating an L2/L3 calculation ×N, or adding a `constraints` line only to satisfy G2, is not L4. If the honest level is lower, label it lower and tell the learner. |
+| `prompt` vs. trap | Do not state in the prompt what the trap tests (e.g. saying the roots have the form `p ± qi` when the trap is missing the negative discriminant). |
 | `verificationLevel` | `"partial"`. |
 | `figure` | If the archetype declares `figureBuilders`, the figure is auto-attached; otherwise supply one or a `figureWaiver`. |
 
@@ -64,7 +67,12 @@ It lists every failing problem at once. Fix them all and re-run until it prints 
 
 Show a compact table: id, level, archetype, prompt (short), answer, trap value. Point out anything that bends the brief. Wait for the learner's approval or edits; re-run step 5 after any edit.
 
-Optional (recommended for L3+ or new archetypes, when the learner agrees): blind-solve each prompt in a separate subagent that sees only the prompt, and compare its answer with `answerSpec`. Any mismatch or "ambiguous" means fix or drop the problem.
+Blind solve (`rules/07` §4 V2; do it for every L3+ problem and every new archetype unless the learner says to skip): in a separate subagent that sees only the prompt and the level table in `rules/06` §2, ask for (1) the final answer, (2) whether the prompt is ambiguous, (3) the level it would honestly assign, and (4) what a typical wrong answer would be. Then:
+- Answer differs from `answerSpec`, or "ambiguous" → fix or drop the problem.
+- The subagent changed its answer mid-reply → treat as ambiguous: tighten the wording and re-run.
+- Its level is lower than `level` → relabel or redesign; never keep an inflated label.
+- Its typical wrong answer differs from `trapValue` → re-check the trap against the tag (step 4).
+Report all four columns in the preview table.
 
 ## 7. Ingest
 
