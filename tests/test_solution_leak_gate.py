@@ -11,6 +11,7 @@ import unittest
 
 from math_engine.ai_drill_ingest import (
     AiContractError,
+    check_ai_drill,
     find_solution_leaks,
     validate_ai_problem_contract,
 )
@@ -30,6 +31,9 @@ LEAKY_PROMPTS = [
     "Find the midpoint of $x$-coordinates $4$ and $16$ by evaluating $(4 + 16) \\div 2$.",
     # second "calculate" spells out the substitution
     "Evaluate $7x + 15$ for $x = 4$. Calculate $7 \\times 4 + 15$.",
+    # LaTeX operators only (regression: \times/\cdot were read as spaces)
+    "A floor is $14$ m long and $9$ m wide. Find the area using $A = 14 \\times 9$.",
+    "A plaza has radius $15$ m. Find $c$ using $c = 2 \\cdot 15$.",
 ]
 
 CLEAN_PROMPTS = [
@@ -40,6 +44,8 @@ CLEAN_PROMPTS = [
     "Use $A = \\pi r^2$ to find the area of a circle with radius $3$ meters.",
     "A tank holds $V = 1200$ liters.",
     "Evaluate $7x + 15$ when $x = 4$.",
+    "Evaluate $3 \\times 4$.",
+    "The floor area is $A = L \\cdot W$.",
     "A rectangular garden plot is $14$ meters long and $8$ meters wide. How many meters of fencing "
     "are needed to enclose it?",
     "A circle has radius $15$ meters and circumference $C = c\\pi$. Find $c$ by using the radius.",
@@ -177,6 +183,47 @@ class ContractWithConstants(unittest.TestCase):
             ],
         )
         self.assertTrue(validate_ai_problem_contract(copy.deepcopy(prob)))
+
+
+class CheckAiDrill(unittest.TestCase):
+    def _vault(self, tmp):
+        import json
+        import os
+
+        with open(os.path.join(tmp, "MTH-T01-C12.json"), "w", encoding="utf-8") as f:
+            json.dump({"unitCode": "MTH-T01-C12", "archetypes": [{"archetypeKey": "c12-perimeter"}]}, f)
+
+    def test_reports_every_error_and_saves_nothing(self):
+        import os
+        import tempfile
+
+        good = perimeter_problem(archetypeKey="c12-perimeter")
+        leaky = perimeter_problem(
+            id="Q02",
+            archetypeKey="c12-perimeter",
+            prompt="A plot is $14$ m long and $8$ m wide. Find the fencing using $P = 2(14) + 2(8)$.",
+        )
+        unknown = perimeter_problem(id="Q03", archetypeKey="c12-missing")
+        doc = {"unitCode": "MTH-T01-C12", "problems": [good, leaky, unknown]}
+        before = copy.deepcopy(doc)
+        with tempfile.TemporaryDirectory() as tmp:
+            self._vault(tmp)
+            vault_before = open(os.path.join(tmp, "MTH-T01-C12.json")).read()
+            errors = check_ai_drill(doc, vault_dir=tmp)
+            self.assertEqual(open(os.path.join(tmp, "MTH-T01-C12.json")).read(), vault_before)
+            self.assertEqual(sorted(os.listdir(tmp)), ["MTH-T01-C12.json"])
+        self.assertEqual(doc, before, "draft must not be mutated")
+        self.assertEqual(len(errors), 2, errors)
+        self.assertTrue(any("[Q02]" in e and "gives away" in e for e in errors))
+        self.assertTrue(any("[Q03]" in e and "c12-missing" in e for e in errors))
+
+    def test_clean_draft_has_no_errors(self):
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as tmp:
+            self._vault(tmp)
+            doc = {"unitCode": "MTH-T01-C12", "problems": [perimeter_problem(archetypeKey="c12-perimeter")]}
+            self.assertEqual(check_ai_drill(doc, vault_dir=tmp), [])
 
 
 if __name__ == "__main__":
