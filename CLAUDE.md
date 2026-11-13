@@ -1,0 +1,63 @@
+# CLAUDE.md (v0 — short on purpose; project is being refactored)
+
+## Project Overview
+- LearningOS: a Notion-hosted curriculum (Topic → Chapter → Unit) plus local-first generators for practice drills (`MTH`/`PHY` math, `PRG` code) and project labs.
+- Python scripts generate/verify content and write to Notion; a Next.js "Practice Studio" shows drills; code is edited in the user's own VS Code/Cursor.
+- Chat with the user in polite Thai. All content written to Notion/drills must be English.
+
+## Rules (read first, do not copy here)
+- Before any task: read @rules/README.md (task→module routing) and @rules/00_core.md, then the domain module.
+- Rule edits: change `rules/*.md` locally first; sync with `python3 sync_rules_to_notion.py` only when asked.
+
+## Tech Stack
+- Python 3.14 (stdlib `urllib` for Notion REST; `sympy`, `numpy` for math engine). Deps: `requirements.txt` (runtime), `requirements-dev.txt` (+pytest).
+- Node 24 / npm 11. `practice-studio/`: Next.js 14.2.35, React 18, TypeScript (strict), Tailwind 3, KaTeX, three.js.
+- Labs: TypeScript run via `node --experimental-strip-types` (no build step).
+
+## Commands (verified 2026-11-13 unless marked)
+- Studio (run in `practice-studio/`): `npm ci`, `npm run dev` (http://localhost:3000, TODO: verify), `npm run lint`, `npm run build`.
+- Generate drills (run from repo root): `python3 -m math_engine.generate --unit <UNIT> --count <N> --difficulty <D>` and `python3 -m code_engine.generate --unit <UNIT> --count <N>` (`--help` verified; full run not verified).
+- Lab (run in `labs/LAB-PRG-T03-C01-01/`): `npm test` (21 tests pass). `npm run submit` writes to Notion — only on request.
+- Python tests (repo root): `pip install -r requirements-dev.txt && python -m pytest` (13 pass; hermetic, no Notion/network).
+- CI: `.github/workflows/ci.yml` runs pytest, studio lint+build, lab tests. No Makefile/Dockerfile. TODO: verify any other command before using it.
+
+## Conventions (target — apply to new/changed code)
+- Python: ruff format + lint, type hints on public functions, one shared Notion client on stdlib `urllib` (no new deps), secrets only from env.
+- TypeScript: strict per `practice-studio/tsconfig.json`; must pass `next lint`.
+- Drill IDs: `DRL-<UNIT>-NN`; specs live in `drills/data/<UNIT>/`. Schema reference: @practice-studio/src/types/drill.ts.
+- Commits: conventional (`feat(scope):`, `fix:`, `refactor:`, `docs(rules):`).
+
+## Workflow
+- Work on a branch and open a PR; never push to `main` directly (this overrides `rules/00_core.md` §10 "push origin main").
+- Before calling work done: run the commands above that apply (lint/build/tests) and report failures honestly, separating pre-existing ones from new ones.
+- New drill/lab: sync a pristine record to Notion per `rules/00_core.md` §8 — only with the user's go-ahead for Notion writes.
+
+## Refactor in Progress
+- Goals: (1) merge duplicated root vs `practice-studio/` files into one source; (2) Python as a package: `scripts/`, `archive/` for one-shot legacy, one Notion client + env loader, `requirements.txt`; (3) Next.js studio as the only UI (retire `practice_hub.py` + `web/`); (4) add tests + CI.
+- Rules: preserve existing behavior; refactor commits separate from feature/bugfix commits; all tests pass at the end of every phase; no Notion writes while verifying.
+- Status (update at the end of every phase):
+
+| Phase | Scope | Status |
+| :-- | :-- | :-- |
+| P0 | Safety net: requirements, pytest, CI, lint baseline fixed | done (uncommitted/unmerged until PR) |
+| P1 | Move one-shot scripts to `archive/` | not started |
+| P2 | Shared Notion client + env loader | not started |
+| P3 | Merge duplicated root/studio files | not started |
+| P4 | Retire `practice_hub.py` + `web/` (move `validate_and_sanitize_drill_doc` first — tests import it from there) | not started |
+| P5 | ruff format/lint + type hints | not started |
+
+## Gotchas / Do-Not
+- Never commit or print `.env` (`NOTION_TOKEN`, `NOTION_DATABASE_ID`). `.env`, `.venv`, `node_modules` are gitignored and absent in fresh worktrees; scripts read `.env` relative to the CWD, so run from repo root.
+- Root vs `practice-studio/` copies of `practice_hub.py`, `apply_rules_and_test_pages.py`, `id_map.json`, `math_engine/`, `drills/` have diverged (`practice-studio/src/lib/paths.ts` prefers the repo root; `practice-studio/code_engine` is a symlink). Canonical copy: TODO: verify. Never edit one copy without asking.
+- ~35 root scripts (`*_builder.py`, `upgrade_*`, `create_*`, `fix_*`, `deploy_*`, `clean_*`, `patch_*`) are one-shot and write to Notion. Never run them unasked.
+- `practice_hub.py` + `web/` (port 8765) are legacy.
+- Never hand-edit `id_map.json` (Notion page-ID registry, incl. `CON-*` concept keys).
+- Drill hints/placeholders must never leak the answer (zero-leak rule, `rules/00_core.md` §6).
+- Notion multi-select values cannot contain commas; use only whitelisted Notion icon names.
+- `code_engine.generate` writes CWD-relative side effects (`drills/workspace/<ID>/`, mirror into `practice-studio/drills/`). Tests must `monkeypatch.chdir(tmp_path)`.
+
+## Environment (names only)
+- `NOTION_TOKEN`, `NOTION_DATABASE_ID`
+
+## Keeping this file current
+- If anything here is outdated, or you hit a new trap, propose an update to CLAUDE.md.
