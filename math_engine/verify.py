@@ -168,8 +168,10 @@ def verify_problem(p, id_map=None, rules=None):
             if "trapGivens" in p and p["trapGivens"] is not None:
                 givens = p["trapGivens"]
                 prompt_text = str(p.get("prompt", ""))
+                # Formula constants (07 §4 `constants`) are part of the method and need not be stated.
+                constant_strs = {str(v) for v in (p.get("constants") or {}).values()}
                 for g in givens:
-                    if str(g) not in prompt_text:
+                    if str(g) not in prompt_text and str(g) not in constant_strs:
                         raise QualityError("G4", pid, f"trapGiven '{g}' does not appear in prompt: {prompt_text}")
                 td_tokens = set(re.findall(r"\b\d+\b", td))
                 matched_givens = {str(g) for g in givens if str(g) in td_tokens}

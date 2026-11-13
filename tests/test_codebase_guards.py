@@ -20,7 +20,11 @@ import notion_api
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CONTROL_CHARS = "\f\b\x0b\a"
 # Intentionally contains control chars: it repairs corrupted LaTeX.
-CONTROL_CHAR_ALLOWLIST = {"math_engine/ai_drill_ingest.py", "tests/test_ai_drill_ingest.py"}
+CONTROL_CHAR_ALLOWLIST = {
+    "math_engine/ai_drill_ingest.py",
+    "tests/test_ai_drill_ingest.py",
+    "tests/test_codebase_guards.py",  # defines CONTROL_CHARS itself
+}
 
 
 def tracked_python_files():

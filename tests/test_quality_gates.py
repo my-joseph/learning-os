@@ -1591,7 +1591,8 @@ TEMPLATES = [
                     self.assertTrue(p.get("plainText"), f"{fpath} {pid} missing plainText")
                     self.assertTrue(p.get("answerDisplay"), f"{fpath} {pid} missing answerDisplay")
                     # Contract validation: two-way matching, safe parser trap evaluation
-                    validate_ai_problem_contract(p)
+                    # Legacy drills predate the solution-leak gate (07 §4); it applies to new ingests.
+                    validate_ai_problem_contract(p, enforce_leak_gate=False)
 
         self.assertGreaterEqual(total_checked, 170)
 

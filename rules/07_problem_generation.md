@@ -35,12 +35,19 @@
   - **Code Vault (`code_engine/reasoning_vault/<unit_code>.json`)**: Software engineering patterns are recorded with `archetypeKey`, `level`, `coreConcept`, `mentalModel`, `cognitiveTraps` (Bug/Smell Patterns with reproducers), `realWorldDomains`, and `usedContexts`.
   - The AI rotates surface contexts across real-world domains and updates `usedContexts` to prevent context repetition.
 - `[code]` **Mandatory AI Contract Guard for Math (`validate_ai_problem_contract`)**:
-  1. **Typed Givens**: Every numeric literal appearing in `prompt` (excluding standard year tokens) must map directly to an entry in `givens`.
+  1. **Typed Givens**: Every numeric literal appearing in `prompt` (excluding standard year tokens) must map directly to an entry in `givens` or `constants`, and every entry in `givens` must appear in `prompt` (exponents such as the `3` in `$2^3$` count as appearing).
+     - **`constants`** holds numbers that belong to the method, not the story: formula constants (the `2` in $P = 2L + 2W$, the $\frac{1}{3}$ in a cone volume, $90$ for complementary angles, $180$ for a triangle) and values the learner must derive. They never have to appear in `prompt`. A key may not be in both `givens` and `constants`.
+     - Never mention a number in `prompt` only to satisfy this rule. If a number is part of the method, put it in `constants`.
   2. **Zero-Number Hint (00_core §6)**: `checkpointHint` must contain strictly ZERO numbers from the problem. It must express only abstract mathematical relationships, formulas, or self-monitoring process verification steps (06 §3.4).
-  3. **Trap Derivation (06 §3)**: `trapDerivation` must be an operational expression referencing at least 2 distinct givens, evaluate exactly to `trapValue`, and satisfy `check_answer(trapValue) == incorrect` with `trapMatched: True`.
+  3. **Trap Derivation (06 §3)**: `trapDerivation` must be an operational expression referencing at least 2 distinct values from `givens` or `constants` (misusing a formula constant, e.g. $2 + r$ instead of $2r$, is a valid trap), evaluate exactly to `trapValue`, and satisfy `check_answer(trapValue) == incorrect` with `trapMatched: True`.
   4. **Strict Verification Level**: All AI-written problems must carry `verificationLevel: "partial"` until verified by a blind solve.
   5. **Granular Step-by-Step Derivation Standard (00_core §7, 03_STEM §1, 06 §2.1)**: Every math problem must provide vertical, line-by-line derivation steps where each step represents a single mathematical transformation. Never chain multiple equalities horizontally ($A = B = C = D$). Every step must include an action-oriented `explain` string.
   6. **Zero-Corrupted-LaTeX Guard (00_core §5)**: Automatically heal and reject any LaTeX escape artifact collisions (`\x0c` / `\f` formfeed, `\r` carriage return, `\x08` backspace).
+  7. **No Solution in the Prompt (`check_prompt_does_not_leak_solution`)**: `prompt` states the situation, never the method. Rejected:
+     - an unknown set equal to a worked computation: `using $P = 2(14) + 2(8)$`;
+     - numbers re-listed by their algebraic role: `..., with coefficient $5$, constant $15$, and target value $60$`;
+     - arithmetic handed over: `using $90 - 34$`, `by evaluating $(4 + 16) \div 2$`, or a second `calculate $7 \times 4 + 15$` after the real question.
+     Allowed: the expression or equation that *is* the task (`Solve $5x + 15 = 60$.`, `Evaluate $2^3 \times 2^4$.`) and general formulas without substituted numbers (`$A = \pi r^2$`). Audit any unit with `python scripts/audit_solution_leaks.py [UNIT] [--display]`. Drills ingested before this gate are not re-checked.
 - `[code]` **Mandatory AI Contract Guard for Code (`validate_ai_code_contract`)**:
   1. **Zero Toy Code Guard (04_CODE §5.3)**: Reject `foo`, `bar`, `baz`, `test1`, `funcA`, or meaningless variables in prompt, code, and test suites. Must model realistic production domains.
   2. **Zero Wall-of-Text Guard (04_CODE §4)**: Prompt > 250 characters must be structured with Markdown sections (`**` or `###`), bullet points (`- `), and code identifiers in backticks (`` ` ``).

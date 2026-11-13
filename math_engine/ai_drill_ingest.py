@@ -27,12 +27,13 @@ class AiContractError(Exception):
     pass
 
 
-def normalize_prompt_numbers(prompt: str) -> List[float]:
+def normalize_prompt_numbers(prompt: str, keep_exponents: bool = False) -> List[float]:
     """Extracts numbers from prompt text, handling commas in numbers and removing unit exponents."""
     text = prompt
     while re.search(r"(\d+),(\d+)", text):
         text = re.sub(r"(\d+),(\d+)", r"\g<1>\g<2>", text)
-    text = re.sub(r"\^\{?[23]\}?", "", text)
+    if not keep_exponents:
+        text = re.sub(r"\^\{?[23]\}?", "", text)
     # Separate numeric coefficients from variables, units, and LaTeX macros (e.g. 3x -> 3 x, 4\theta -> 4 \theta, 15m -> 15 m)
     text = re.sub(r"(?<=\d)(?=[a-zA-Z\\])", " ", text)
     raw_nums = re.findall(r"\b\d+(?:\.\d+)?\b", text)
@@ -70,7 +71,102 @@ def heal_latex_string(s: str) -> str:
     return s
 
 
-def validate_ai_problem_contract(prob: Dict[str, Any]) -> bool:
+# ---------------------------------------------------------------------------
+# Solution-leak gate (07 §4). A learner sees `prompt` and `display` before
+# answering, so neither may contain the computation they are supposed to set up.
+# ---------------------------------------------------------------------------
+
+# Re-lists numbers by their algebraic role: "..., with coefficient $5$, constant $15$".
+_ROLE_RESTATEMENT_RE = re.compile(
+    r"\b(?:with|using)\b[^.?!]*?\b(?:numerical\s+coefficient|coefficient|grouped\s+constant|constant|"
+    r"factor|multiplier|target\s+value)s?\s*\$",
+    re.IGNORECASE,
+)
+# Hands over the arithmetic: "using $6 + 8$", "by evaluating $(4 + 16) \div 2$".
+_METHOD_PHRASE_RE = re.compile(
+    r"\b(?:using|by\s+evaluating|by\s+calculating|by\s+computing|via)\s+\$([^$]+)\$",
+    re.IGNORECASE,
+)
+_CALC_PHRASE_RE = re.compile(r"\b(?:calculate|compute|evaluate|evaluating)\s+\$([^$]+)\$", re.IGNORECASE)
+_INLINE_MATH_RE = re.compile(r"\$([^$]+)\$")
+_SINGLE_UNKNOWN_RE = re.compile(r"\\?[A-Za-z](?:_\{?[^}=]*\}?)?")
+_LATEX_OPS = (r"\times", r"\cdot", r"\div", r"\frac", r"\left", r"\right", r"\,", r"\;", r"\quad")
+
+
+def _normalize_math(expr: str) -> str:
+    s = expr
+    for macro, repl in ((r"\times", "*"), (r"\cdot", "*"), (r"\div", "/")):
+        s = s.replace(macro, repl)
+    for macro in (r"\left", r"\right", r"\,", r"\;", r"\quad"):
+        s = s.replace(macro, "")
+    return re.sub(r"\s+", "", s)
+
+
+def _is_numeric_computation(expr: str) -> bool:
+    """True for things like `2(14) + 2(8)`, `\\frac{80}{16}`, `6 + 8`: digits plus an operator, no letters."""
+    s = expr.replace("?", "")
+    for macro in _LATEX_OPS:
+        s = s.replace(macro, " ")
+    if re.search(r"[A-Za-z\\]", s) or not re.search(r"\d", s):
+        return False
+    s = s.strip()
+    # an operator between operands, or implicit multiplication like 2(14) / (a)(b)
+    has_frac = r"\frac" in expr
+    return (has_frac or bool(re.search(r"\d\s*[-+*/^]|[)}]\s*[-+*/^(]|\d\s*\(|[-+*/^]\s*[\d({]", s))) and not re.fullmatch(
+        r"[-+]?\s*\d+(?:\.\d+)?", s
+    )
+
+
+def _numeric_sides(expr: str) -> List[str]:
+    parts = re.split(r"=|\\implies|\\Rightarrow|\\approx", expr)
+    return [p.strip() for p in parts if _is_numeric_computation(p)]
+
+
+def find_solution_leaks(prompt: str, display: str = "") -> List[str]:
+    """Returns reasons the problem gives away how to solve it (empty list = clean)."""
+    prompt = prompt or ""
+    reasons = []
+    m = _ROLE_RESTATEMENT_RE.search(prompt)
+    if m:
+        reasons.append(f"prompt re-lists numbers by their algebraic role ('{m.group(0).strip()}...')")
+
+    maths = _INLINE_MATH_RE.findall(prompt)
+    first_math = maths[0] if maths else None
+    for expr in maths:
+        # "$P = 2(14) + 2(8)$": an unknown set equal to a worked numeric computation.
+        sides = [s.strip() for s in expr.split("=")]
+        if len(sides) == 2:
+            for unknown, other in ((sides[0], sides[1]), (sides[1], sides[0])):
+                if _SINGLE_UNKNOWN_RE.fullmatch(unknown) and _is_numeric_computation(other):
+                    reasons.append(f"prompt contains the substituted computation '${expr}$'")
+                    break
+    for expr in _METHOD_PHRASE_RE.findall(prompt):
+        if _is_numeric_computation(expr):
+            reasons.append(f"prompt hands over the arithmetic ('${expr}$')")
+    for m2 in _CALC_PHRASE_RE.finditer(prompt):
+        expr = m2.group(1)
+        if _is_numeric_computation(expr) and expr != first_math:
+            reasons.append(f"prompt spells out the computation to perform ('${expr}$')")
+
+    if display:
+        prompt_norm = _normalize_math(" ".join(maths))
+        for side in _numeric_sides(display):
+            if _normalize_math(side) not in prompt_norm:
+                reasons.append(f"display shows the set-up computation '{side}' that the prompt does not give")
+                break
+    # de-duplicate, keep order
+    return list(dict.fromkeys(reasons))
+
+
+def check_prompt_does_not_leak_solution(pid: str, prompt: str, display: str = "") -> None:
+    """Enforced on `prompt` at ingest. `display` is checked only when passed (audit use):
+    whether a set-up computation in `display` is acceptable is still a per-level decision."""
+    reasons = find_solution_leaks(prompt, display)
+    if reasons:
+        raise AiContractError(f"[{pid}] Problem gives away the solution: " + "; ".join(reasons))
+
+
+def validate_ai_problem_contract(prob: Dict[str, Any], enforce_leak_gate: bool = True) -> bool:
     """
     Enforces strict rules for AI-written problems (Contract 07 §4, 00_core §6):
     1. Zero-Number rule in checkpointHint
@@ -113,16 +209,39 @@ def validate_ai_problem_contract(prob: Dict[str, Any]) -> bool:
         except Exception:
             pass
 
-    # Forward: every number in prompt must be defined in givens
+    # Formula constants (e.g. the 2 in P = 2L + 2W, the 1/2 in A = bh/2) are part of the
+    # method, not the story. They live in `constants`, never have to appear in the prompt,
+    # and do not count as givens for the trap check. Forcing them into the prompt is what
+    # produced self-solving prompts like "using P = 2(14) + 2(8) ... and factor 2".
+    constants = prob.get("constants") or {}
+    if not isinstance(constants, dict):
+        raise AiContractError(f"[{pid}] 'constants' must be a dictionary when present.")
+    overlap = set(constants) & set(givens)
+    if overlap:
+        raise AiContractError(f"[{pid}] Keys {sorted(overlap)} appear in both 'givens' and 'constants'.")
+    constant_floats = {}
+    for k, v in constants.items():
+        try:
+            constant_floats[k] = float(v)
+        except Exception:
+            pass
+
+    if enforce_leak_gate:
+        check_prompt_does_not_leak_solution(pid, prompt)
+
+    # Forward: every number in prompt must be defined in givens (or be a declared constant)
+    known_vals = list(givens_floats.values()) + list(constant_floats.values())
     for p_num in prompt_numbers:
-        if not any(abs(p_num - g_val) < 1e-6 for g_val in givens_floats.values()):
+        if not any(abs(p_num - g_val) < 1e-6 for g_val in known_vals):
             raise AiContractError(
                 f"[{pid}] Number '{p_num}' in prompt is not defined in givens ({givens})"
             )
 
-    # Backward: every given must appear in prompt
+    # Backward: every given must appear in prompt. Exponents count here ($2^3$ states the 3),
+    # otherwise the AI is pushed to re-list them ("with first exponent 3 ...").
+    prompt_numbers_all = normalize_prompt_numbers(prompt, keep_exponents=True)
     for g_key, g_val in givens_floats.items():
-        if not any(abs(g_val - p_num) < 1e-6 for p_num in prompt_numbers):
+        if not any(abs(g_val - p_num) < 1e-6 for p_num in prompt_numbers_all):
             raise AiContractError(
                 f"[{pid}] Given '{g_key}={g_val}' does not appear in prompt: '{prompt}'"
             )
@@ -149,7 +268,8 @@ def validate_ai_problem_contract(prob: Dict[str, Any]) -> bool:
     td_token_vals = [float(t) for t in td_tokens]
 
     matched_given_keys = set()
-    for g_key, g_val in givens_floats.items():
+    # A trap may misuse a formula constant (e.g. 2 + r instead of 2r), so constants count too.
+    for g_key, g_val in {**givens_floats, **constant_floats}.items():
         for t_val in td_token_vals:
             if abs(t_val - g_val) < 1e-6:
                 matched_given_keys.add(g_key)
