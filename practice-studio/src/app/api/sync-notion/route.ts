@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
           "-c",
           `
 import json, sys
-from practice_hub import sync_drill_to_notion
+from drill_sync import sync_drill_to_notion
 doc = json.loads(sys.stdin.read())
 res = sync_drill_to_notion(doc)
 print(json.dumps(res))

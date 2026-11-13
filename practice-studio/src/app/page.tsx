@@ -305,7 +305,7 @@ export default function PracticeStudioPage() {
             skipped: true,
             mistakes: Array.from(new Set([...(p.state.mistakes || []), ...autoTags])),
             lastCheck: {
-              verdict: "skipped" as any,
+              verdict: "skipped" as const,
               message: "Skipped (Concept Gap / Unsure) — Review step-by-step solution below to solidify mental model.",
               components: [],
               diagnostics: [],

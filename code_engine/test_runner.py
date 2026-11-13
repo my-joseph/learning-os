@@ -4,12 +4,12 @@ Test runner for Coding Katas and Implementation Problems.
 Executes student code against Visible Tests and Hidden Tests in a sandboxed Node.js subprocess.
 Produces structured JSON reports with test statuses, durations, errors, and score calculation.
 """
+
 import json
 import os
 import subprocess
 import sys
 import tempfile
-import time
 
 
 def assemble_harness(user_code: str, visible_tests: list, hidden_tests: list) -> str:
@@ -136,12 +136,16 @@ def run_tests(user_code: str, visible_tests: list, hidden_tests: list, timeout_s
             return report
         else:
             return {
-                "allPassed": false,
+                "allPassed": False,
                 "score": 0,
                 "passedCount": 0,
                 "totalCount": len(visible_tests) + len(hidden_tests),
                 "visibleResults": [
-                    {"name": "Execution failure", "passed": False, "error": stderr or stdout or "Script exited unexpectedly"}
+                    {
+                        "name": "Execution failure",
+                        "passed": False,
+                        "error": stderr or stdout or "Script exited unexpectedly",
+                    }
                 ],
                 "hiddenPassed": 0,
                 "hiddenTotal": len(hidden_tests),
@@ -155,7 +159,11 @@ def run_tests(user_code: str, visible_tests: list, hidden_tests: list, timeout_s
             "passedCount": 0,
             "totalCount": len(visible_tests) + len(hidden_tests),
             "visibleResults": [
-                {"name": "Timeout", "passed": False, "error": f"Execution exceeded {timeout_sec}s limit (possible infinite loop)"}
+                {
+                    "name": "Timeout",
+                    "passed": False,
+                    "error": f"Execution exceeded {timeout_sec}s limit (possible infinite loop)",
+                }
             ],
             "hiddenPassed": 0,
             "hiddenTotal": len(hidden_tests),
@@ -168,9 +176,7 @@ def run_tests(user_code: str, visible_tests: list, hidden_tests: list, timeout_s
             "score": 0,
             "passedCount": 0,
             "totalCount": len(visible_tests) + len(hidden_tests),
-            "visibleResults": [
-                {"name": "System error", "passed": False, "error": str(ex)}
-            ],
+            "visibleResults": [{"name": "System error", "passed": False, "error": str(ex)}],
             "hiddenPassed": 0,
             "hiddenTotal": len(hidden_tests),
             "executionTimeMs": 0,

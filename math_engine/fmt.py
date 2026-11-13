@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """LaTeX / plain-text / SymPy formatting helpers shared by all Math templates."""
+
 import sympy as sp
 
 LEVEL_LABELS = {

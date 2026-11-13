@@ -8,6 +8,7 @@ Handles:
 - text (normalized accepted string match)
 Provides smart diagnostic feedback when known anti-patterns or misorderings are detected.
 """
+
 import json
 import re
 import sys
@@ -83,37 +84,45 @@ def check_code_output(spec: dict, raw: str) -> dict:
     # Diagnostics for common mistakes
     trap_tag = spec.get("commonTrapTag")
     if trap_tag == "microtask-order":
-        diags.append({
-            "code": "microtask-order",
-            "message": (
-                "Remember: The Call Stack runs first to completion. "
-                "Microtasks (Promises, queueMicrotask) run immediately after each stack frame empties, "
-                "BEFORE any Macrotask (setTimeout, setInterval) from the Task Queue."
-            ),
-        })
+        diags.append(
+            {
+                "code": "microtask-order",
+                "message": (
+                    "Remember: The Call Stack runs first to completion. "
+                    "Microtasks (Promises, queueMicrotask) run immediately after each stack frame empties, "
+                    "BEFORE any Macrotask (setTimeout, setInterval) from the Task Queue."
+                ),
+            }
+        )
     elif trap_tag == "var-vs-let-scope":
-        diags.append({
-            "code": "var-vs-let-scope",
-            "message": (
-                "Notice the loop variable declaration: 'var' is function-scoped (or global), "
-                "so closures share the exact same variable reference after the loop terminates. "
-                "'let' creates a new binding for each loop iteration."
-            ),
-        })
+        diags.append(
+            {
+                "code": "var-vs-let-scope",
+                "message": (
+                    "Notice the loop variable declaration: 'var' is function-scoped (or global), "
+                    "so closures share the exact same variable reference after the loop terminates. "
+                    "'let' creates a new binding for each loop iteration."
+                ),
+            }
+        )
     elif trap_tag == "stale-closure":
-        diags.append({
-            "code": "stale-closure",
-            "message": (
-                "Check which scope was captured when the function was created. "
-                "A closure retains the variable reference from its outer lexical environment at creation."
-            ),
-        })
+        diags.append(
+            {
+                "code": "stale-closure",
+                "message": (
+                    "Check which scope was captured when the function was created. "
+                    "A closure retains the variable reference from its outer lexical environment at creation."
+                ),
+            }
+        )
 
     if len(user_tokens) != len(expected):
-        diags.append({
-            "code": "token_count_mismatch",
-            "message": f"Expected {len(expected)} output values, but received {len(user_tokens)}.",
-        })
+        diags.append(
+            {
+                "code": "token_count_mismatch",
+                "message": f"Expected {len(expected)} output values, but received {len(user_tokens)}.",
+            }
+        )
 
     is_partial = any(c["ok"] for c in comps)
     verdict = "partial" if is_partial else "incorrect"
@@ -155,11 +164,15 @@ def check_line_number(spec: dict, raw: str) -> dict:
     if not ok:
         trap = spec.get("commonTrapTag")
         if trap:
-            diags.append({"code": trap, "message": spec.get("flawExplanation", f"The bug is located at line {expected_line}.")})
+            diags.append(
+                {"code": trap, "message": spec.get("flawExplanation", f"The bug is located at line {expected_line}.")}
+            )
 
     return {
         "verdict": "correct" if ok else "incorrect",
-        "message": f"Line {user_line} is correct!" if ok else f"Line {user_line} is not where the primary defect occurs.",
+        "message": f"Line {user_line} is correct!"
+        if ok
+        else f"Line {user_line} is not where the primary defect occurs.",
         "components": [{"label": "Flawed Line", "ok": ok}],
         "diagnostics": diags,
     }
@@ -173,12 +186,16 @@ def check_choice(spec: dict, raw: str) -> dict:
         "verdict": "correct" if ok else "incorrect",
         "message": "Correct option selected." if ok else "Incorrect option selected.",
         "components": [{"label": "Choice", "ok": ok}],
-        "diagnostics": [] if ok else [{"code": "wrong_choice", "message": "Selected option is not the intended resolution."}],
+        "diagnostics": []
+        if ok
+        else [{"code": "wrong_choice", "message": "Selected option is not the intended resolution."}],
     }
 
 
 def check_text(spec: dict, raw: str) -> dict:
-    norm = lambda t: re.sub(r"\s+", " ", t.strip().lower())
+    def norm(t):
+        return re.sub(r"\s+", " ", t.strip().lower())
+
     accepted = [norm(a) for a in spec.get("accepted", [spec.get("value", "")])]
     ok = norm(raw) in accepted
     return {

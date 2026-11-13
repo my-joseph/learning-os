@@ -11,6 +11,7 @@ Checks per problem:
  3. Render safety (Zero Unrendered Syntax): no Markdown (**, __, backticks), no [[ID]] tokens,
     no \\displaystyle, no Thai text, balanced $ delimiters, all references resolvable.
 """
+
 import re
 
 import sympy as sp
@@ -70,9 +71,9 @@ def verify_problem(p, id_map=None):
                 _fail(pid, f"step {i} value {st['val']} != source {v['source']}")
             checked += 1
         if "eq" in st:
-            l, r = st["eq"]
-            if not is_equal(to_expr(l), to_expr(r)):
-                _fail(pid, f"step {i} equality fails: {l} != {r}")
+            lhs, rhs = st["eq"]
+            if not is_equal(to_expr(lhs), to_expr(rhs)):
+                _fail(pid, f"step {i} equality fails: {lhs} != {rhs}")
             checked += 1
         check_text_safety(pid, f"step {i} explain", st["explain"])
         check_text_safety(pid, f"step {i} latex", st["latex"], is_latex=True)
@@ -83,7 +84,9 @@ def verify_problem(p, id_map=None):
     spec = p["answerSpec"]
     t = spec["type"]
     if t in ("complex", "number", "expression") and src is not None:
-        if not is_equal(to_expr(spec["value"], spec.get("variables")), src, spec.get("variables") if t == "expression" else None):
+        if not is_equal(
+            to_expr(spec["value"], spec.get("variables")), src, spec.get("variables") if t == "expression" else None
+        ):
             _fail(pid, f"answer {spec['value']} != source {v['source']}")
     elif t == "tuple":
         exprs = [sp.sympify(e) for e in v["tuple"]]
@@ -125,7 +128,7 @@ def verify_problem(p, id_map=None):
     if hint and (ans_val or ans_plain):
         for leaked in set([ans_val, ans_plain]):
             if leaked and leaked not in ["1", "i", "-1", "-i", "choice"]:
-                if re.search(r'(?<![0-9a-zA-Z])' + re.escape(leaked) + r'(?![0-9a-zA-Z])', hint):
+                if re.search(r"(?<![0-9a-zA-Z])" + re.escape(leaked) + r"(?![0-9a-zA-Z])", hint):
                     _fail(pid, f"inputHint leaks exact answer {leaked!r}: {hint!r}")
     return True
 
