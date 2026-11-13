@@ -18,7 +18,7 @@
 - Studio (run in `practice-studio/`): `npm ci`, `npm run dev` (http://127.0.0.1:3000, bound to localhost only), `npm run lint`, `npm run build`.
 - Generate drills (run from repo root): `python3 -m math_engine.generate --unit <UNIT> --count <N> --difficulty <D>` and `python3 -m code_engine.generate --unit <UNIT> --count <N>` (`--help` verified; full run not verified).
 - Lab (run in `labs/LAB-PRG-T03-C01-01/`): `npm test` (21 tests pass). `npm run submit` writes to Notion — only on request.
-- Python tests (repo root): `pip install -r requirements-dev.txt && python -m pytest` (152 pass; hermetic, no Notion/network). Studio unit tests: `npm run test:telemetry` in `practice-studio/`.
+- Python tests (repo root): `pip install -r requirements-dev.txt && python -m pytest` (166 pass; hermetic, no Notion/network). Studio unit tests: `npm run test:telemetry` in `practice-studio/`.
 - CI: `.github/workflows/ci.yml` runs pytest, studio lint+build, lab tests. No Makefile/Dockerfile. TODO: verify any other command before using it.
 
 ## Conventions (target — apply to new/changed code)
@@ -31,7 +31,7 @@
 ## Workflow
 - Work on a branch and open a PR; never push to `main` directly (this overrides `rules/00_core.md` §10 "push origin main").
 - Before calling work done: run the commands above that apply (lint/build/tests) and report failures honestly, separating pre-existing ones from new ones.
-- New drill/lab: sync a pristine record to Notion per `rules/00_core.md` §8 — only with the user's go-ahead for Notion writes.
+- New drill/lab: sync its pristine record to Notion right after creating it, per `rules/00_core.md` §8 — no need to wait for a merge or ask first (user decision 2026-11-13). From a worktree this works without copying `.env`: `notion_sync.client.load_env` reads the main checkout's `.env`.
 
 ## Refactor in Progress
 - Goals: (1) merge duplicated root vs `practice-studio/` files into one source; (2) Python cleanup: `archive/` for one-shot legacy (done), one Notion client + env loader (done for root modules), `requirements.txt` (done); a `scripts/` package layout is NOT done; (3) Next.js studio as the only UI (done); (4) add tests + CI (done: pytest, ruff, GitHub Actions; CI green on PRs #2–#4).
@@ -46,7 +46,7 @@
 | P3 | Merge duplicated root/studio files | done (root is canonical; stale `practice-studio/` copies removed) |
 | P4 | Retire `practice_hub.py` + `web/` | done (hub server and legacy UI deleted; `notion_sync/drill_sync.py` keeps validator, save and Notion sync) |
 | P5 | ruff format/lint + type hints | done (ruff config, CI checks; hints on `notion_sync.client`/`notion_sync.drill_sync` public funcs only; `archive/`, studio excluded) |
-| P6 | Notion layer as `notion_sync/` package; dead figure modules + one-shot page content to `archive/` | done (root keeps only `quality_rules.py`) |
+| P6 | Notion layer as `notion_sync/` package; dead figure modules + one-shot page content to `archive/` | done (root keeps only shared `quality_rules.py`; `progress_store.py` added later for learner progress) |
 | P7 | Retire Notion rules sync (rules local-only) | done (`rules_sync`, `md_blocks`, `page_audit`, `rules_map.json` moved to `archive/`) |
 
 ## Gotchas / Do-Not
@@ -54,6 +54,7 @@
 - Root is canonical for `math_engine/`, `code_engine/`, `drills/`, `id_map.json`, `notion_sync/`. `practice-studio/` has no copies (only a `code_engine` symlink to `../code_engine`); the Studio API routes read root via `src/lib/paths.ts`. Never recreate copies; `code_engine.generate` no longer mirrors into `practice-studio/`.
 - 34 one-shot scripts (`*_builder.py`, `upgrade_*`, `create_*`, `fix_*`, `deploy_*`, `clean_*`, `patch_*`, ...) live in `archive/` and mostly write to Notion. Never run them unasked; if required: `PYTHONPATH=. python3 archive/<script>.py` from repo root (`archive/apply_rules_and_test_pages.py` re-exports the live helpers for them). All Notion code is in the `notion_sync/` package: `client` (REST client + `.env` loader; process-wide IPv4/timeout on import; TLS always verified; retries only network errors/409/429/5xx; raises `MissingNotionToken` before any request; `replace_page_content` appends before deleting), `blocks` (rich text/block builders), `drill_sync` (zero-leak validator + save + Notion sync; spawned by the studio `sync-notion` route). Root `.py` files: only `quality_rules.py` (shared quality gates; reads `skills_taxonomy.json`).
 - Never hand-edit `id_map.json` (Notion page-ID registry, incl. `CON-*` concept keys).
+- Drill files in `drills/data/` are **content only**. Learner progress (problem `state`, `sessionSummary`) lives in `progress/<DRILL_ID>.json` (gitignored; `progress_store.py` / `practice-studio/src/lib/progress.ts`). Never write practice results into a drill file; `tests/test_progress_store.py` enforces it.
 - Drill hints/placeholders must never leak the answer (zero-leak rule, `rules/00_core.md` §6). AI-written math prompts must not give away the solution either (`rules/07` §4.7, enforced at ingest); audit with `python scripts/audit_solution_leaks.py [UNIT] [--display]`.
 - Notion multi-select values cannot contain commas; use only whitelisted Notion icon names.
 - `code_engine.generate` writes CWD-relative side effects (`drills/workspace/<ID>/`). Tests must `monkeypatch.chdir(tmp_path)`.

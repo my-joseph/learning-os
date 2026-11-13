@@ -82,3 +82,22 @@ def test_archived_scripts_keep_their_import_path(monkeypatch):
 
     assert a.notion_request is notion_request and a.load_env is load_env
     assert a.parse_rt is blocks.parse_rt and a.callout_block is blocks.callout_block
+
+
+def test_worktree_reads_main_checkout_env(tmp_path, monkeypatch):
+    main = tmp_path / "main"
+    (main / ".git" / "worktrees" / "wt").mkdir(parents=True)
+    (main / ".env").write_text("NOTION_TOKEN=from-main\n", encoding="utf-8")
+    wt = tmp_path / "wt"
+    wt.mkdir()
+    (wt / ".git").write_text(f"gitdir: {main / '.git' / 'worktrees' / 'wt'}\n", encoding="utf-8")
+    monkeypatch.chdir(wt)
+    assert load_env() == {"NOTION_TOKEN": "from-main"}
+    (wt / ".env").write_text("NOTION_TOKEN=local\n", encoding="utf-8")
+    assert load_env() == {"NOTION_TOKEN": "local"}, "a worktree's own .env still wins"
+
+
+def test_plain_checkout_without_env_is_empty(tmp_path, monkeypatch):
+    (tmp_path / ".git").mkdir()
+    monkeypatch.chdir(tmp_path)
+    assert load_env() == {}
