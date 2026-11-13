@@ -47,9 +47,11 @@ class TestSyncRulesDryRun(unittest.TestCase):
         self.assertEqual(original_content, current_content)
         self.assertEqual(mtime_before, os.path.getmtime(RULES_MAP_FILE))
 
-        # Verify plan details
-        self.assertEqual(res["to_create"], 2)  # 06 and 07 have no ID yet
-        self.assertEqual(res["to_replace"], 6)  # Master Hub + 5 sub-pages
+        # Verify plan details against the current map (modules gain an "id" once synced)
+        rules_map = json.loads(original_content)
+        without_id = sum(1 for m in SUB_MODULES if not rules_map.get(m["key"], {}).get("id"))
+        self.assertEqual(res["to_create"], without_id)
+        self.assertEqual(res["to_replace"], 1 + len(SUB_MODULES) - without_id)  # Master Hub + synced sub-pages
         sub_keys = [p["key"] for p in res["sub_plans"]]
         self.assertIn("06_TEMPLATE_CONTRACT", sub_keys)
         self.assertIn("07_PROBLEM_GENERATION", sub_keys)
