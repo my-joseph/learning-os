@@ -57,7 +57,7 @@
      - Starter code (`starterCode`) for debugging problems must fail at least one reproducer test (Red before Green).
   5. **100% Local IDE Scaffolding**: `ingest_ai_code_drill` automatically materializes `drills/workspace/<drillId>/` with `package.json`, `README.md`, and sets `vscodeFolderUrl` / `cursorFolderUrl` pointing to the workspace folder.
 - `[code]` V1 automatic: `verify_problem` (G1–G6 item gates) and `validate_ai_problem_contract` / `validate_ai_code_contract`.
-- `[manual]` V2 blind solve: a separate session receives only the prompt and returns an answer; compare through `check_answer`. Mismatch or "ambiguous" = reject. Without V1 and V2 the problem remains `verificationLevel: "partial"`, never `machine-verified`.
+- `[manual]` V2 blind solve: a separate session receives only the prompt (plus the level table in 06 §2) and returns an answer, whether the prompt is ambiguous, the level it would assign, and the most likely wrong answer; compare the answer through `check_answer`. Mismatch, "ambiguous", or an answer changed mid-reply = reject or reword. An assigned level below `level` = relabel or redesign (G2 counts steps, concepts and `constraints` but cannot judge cognitive demand, so a scaled-up L2 calculation with a `constraints` line still passes it). A likely wrong answer that differs from `trapValue` = re-check that the trap matches `commonTrapTag` (G4 checks the arithmetic, not the misconception). Without V1 and V2 the problem remains `verificationLevel: "partial"`, never `machine-verified`.
 - `[manual]` V3 human: the learner reads the first 3 items of every new AI-written type (06 §8 checklist).
 
 ## 5. Test drills and Notion
