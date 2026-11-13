@@ -38,7 +38,7 @@ When showing mathematical equation solving, algebraic simplification, worked exa
 
 ### 3. Mandatory Parametric Diagram Generation for Spatial & Physical Content
 Whenever illustrating geometric configurations (triangles, angles, circles, polygons, 3D solids), coordinate graphs, or physics diagrams (force vectors, free-body diagrams):
-- AI must generate visual assets **programmatically** using structured mathematical parameters (via `math_engine.diagram_generator`) rather than manually drawing static arbitrary coordinates.
+- AI must generate visual assets **programmatically** using structured mathematical parameters (via `math_engine.figure_builder`, attached automatically from the archetype's `figureBuilders` in the reasoning vault by `math_engine.figure_autofill`) rather than manually drawing static arbitrary coordinates.
 - **Unified Design System Invariants:**
   - **Typography:** Clean system font (`-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto`) for labels, KaTeX math font for variables.
   - **Background & Card:** Subtle pastel card background (`#f8fafc`, rounded corners `rx="12"`).
