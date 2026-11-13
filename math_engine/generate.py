@@ -16,7 +16,7 @@ import logging
 import os
 import random
 
-from math_engine.fmt import LEVEL_LABELS
+from math_engine.fmt import LEVEL_LABELS, unit_hierarchy
 from math_engine.templates import load_unit
 from math_engine.verify import verify_problem, verify_tags
 from quality_rules import (
@@ -376,9 +376,7 @@ def generate_drill_set(
 
     problems = generate_with_quality_retries(_build_attempt, base_seed=base_seed, rules=active_rules)
 
-    parts = unit_code.split("-")
-    topic_code = f"{parts[0]}-{parts[1]}" if len(parts) >= 2 else unit_code
-    chapter_code = f"{parts[0]}-{parts[1]}-{parts[2]}" if len(parts) >= 3 else unit_code
+    topic_code, chapter_code = unit_hierarchy(unit_code)
 
     unit_dir = os.path.join(data_root, unit_code)
     os.makedirs(unit_dir, exist_ok=True)

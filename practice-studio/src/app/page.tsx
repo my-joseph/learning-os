@@ -709,10 +709,18 @@ export default function PracticeStudioPage() {
       if (!res.ok || !data.ok) throw new Error(data.error || "Notion Sync failed");
 
       setCurrentDrill(fullDocToSync);
-      setStatus({
-        text: `Synced ${currentDrill.drillId} (${liveScore}/${maxScore} · ${accuracyPct}%) to Notion Database & ${currentDrill.unitCode} Mistake Log!`,
-        type: "pass",
-      });
+      if (data.degraded) {
+        // Saved locally, but Notion was unreachable (or no token): do not report it as synced.
+        setStatus({
+          text: `Saved ${currentDrill.drillId} locally, but Notion was not updated: ${data.warning || "Notion unavailable"}`,
+          type: "warn",
+        });
+      } else {
+        setStatus({
+          text: `Synced ${currentDrill.drillId} (${liveScore}/${maxScore} · ${accuracyPct}%) to Notion Database & ${currentDrill.unitCode} Mistake Log!`,
+          type: "pass",
+        });
+      }
       await loadDrillsList(currentDrill.drillId);
     } catch (err: unknown) {
       const errMsg = err instanceof Error ? err.message : String(err);

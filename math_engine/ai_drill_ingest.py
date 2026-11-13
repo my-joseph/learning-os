@@ -16,6 +16,7 @@ from typing import Any, Dict, List, Optional
 
 from math_engine.answer_check import CHECKERS, check_answer, is_equal, to_expr
 from math_engine.figure_autofill import archetype_requires_figure, autofill_problem_figure
+from math_engine.fmt import LEVEL_LABELS, unit_hierarchy
 from math_engine.generate import next_drill_id
 from math_engine.verify import verify_problem
 from quality_rules import QUALITY_RULES
@@ -599,6 +600,16 @@ def ingest_ai_drill(
 
     if not drill_doc.get("title"):
         drill_doc["title"] = f"{drill_doc['unitTitle']} — Verified Math Drill ({len(problems)} Qs)"
+
+    # Hierarchy + level labels that notion_sync.drill_sync needs (the template path sets them too).
+    topic_code, chapter_code = unit_hierarchy(unit_code)
+    if not drill_doc.get("topicCode"):
+        drill_doc["topicCode"] = topic_code
+    if not drill_doc.get("chapterCode"):
+        drill_doc["chapterCode"] = chapter_code
+    for prob in problems:
+        if not prob.get("levelLabel") and prob.get("level") in LEVEL_LABELS:
+            prob["levelLabel"] = LEVEL_LABELS[prob["level"]]
 
     drill_doc["schemaVersion"] = drill_doc.get("schemaVersion", "2.0-math")
     drill_doc["subject"] = drill_doc.get("subject", "MATH")
