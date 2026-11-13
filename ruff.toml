@@ -1,0 +1,9 @@
+# Legacy one-shot scripts are frozen; do not lint/format them.
+extend-exclude = ["archive", "practice-studio", "labs/*/.canonical"]
+target-version = "py312"
+line-length = 120
+
+[lint]
+select = ["E", "F", "W", "I"]
+# Long prose/data strings cannot be wrapped; the formatter handles code lines.
+ignore = ["E501"]

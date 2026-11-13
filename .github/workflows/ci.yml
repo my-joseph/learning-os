@@ -15,6 +15,8 @@ jobs:
         with:
           node-version: "24"
       - run: pip install -r requirements-dev.txt
+      - run: ruff check .
+      - run: ruff format --check .
       - run: python -m pytest
   studio:
     runs-on: ubuntu-latest
