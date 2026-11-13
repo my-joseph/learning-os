@@ -893,16 +893,5 @@
     "difficulty": "ALL",
     "difficultyMode": "AI Synthesized Reasoning Mode"
   },
-  "sessionSummary": {
-    "practiceStatus": "Ready",
-    "score": 0,
-    "maxScore": 10,
-    "accuracyPct": 0,
-    "mistakeCategories": [],
-    "divergedStepsSummary": "",
-    "attemptDate": null,
-    "syncedToNotionAt": null,
-    "notionPageId": null
-  },
   "localFilePath": "drills/data/MTH-T01-C08/DRL-MTH-T01-C08-02.json"
 }

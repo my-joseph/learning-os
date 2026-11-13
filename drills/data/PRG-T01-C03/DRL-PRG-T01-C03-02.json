@@ -291,16 +291,5 @@
     }
   ],
   "createdAt": "2026-11-09 14:31:37",
-  "sessionSummary": {
-    "practiceStatus": "Ready",
-    "score": 0,
-    "maxScore": 3,
-    "accuracyPct": 0,
-    "mistakeCategories": [],
-    "divergedStepsSummary": "",
-    "attemptDate": null,
-    "syncedToNotionAt": null,
-    "notionPageId": null
-  },
   "localFilePath": "drills/data/PRG-T01-C03/DRL-PRG-T01-C03-02.json"
 }

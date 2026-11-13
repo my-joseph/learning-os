@@ -2023,16 +2023,5 @@
   "schemaVersion": "2.0-math",
   "subject": "MATH",
   "createdAt": "2026-11-09 21:06:10",
-  "sessionSummary": {
-    "practiceStatus": "Ready",
-    "score": 0,
-    "maxScore": 10,
-    "accuracyPct": 0,
-    "mistakeCategories": [],
-    "divergedStepsSummary": "",
-    "attemptDate": null,
-    "syncedToNotionAt": null,
-    "notionPageId": null
-  },
   "localFilePath": "drills/data/MTH-T01-C12/DRL-MTH-T01-C12-03.json"
 }

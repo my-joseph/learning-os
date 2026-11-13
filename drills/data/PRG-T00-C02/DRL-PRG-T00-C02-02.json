@@ -89,18 +89,7 @@
       "cursorUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02/Q01_clampBatteryPercent.js",
       "vscodeUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02/Q01_clampBatteryPercent.js",
       "cursorFolderUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02",
-      "vscodeFolderUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02",
-      "state": {
-        "userInput": "",
-        "userCode": "function clampBatteryPercent(rawLevel) {\n  // TODO: validate type, then limit the range\n  return null;\n}\n\nmodule.exports = { clampBatteryPercent };\n",
-        "score": 0,
-        "divergedStep": null,
-        "mistakes": [],
-        "mistakeNote": "",
-        "skipped": false,
-        "lastCheck": null,
-        "lastTestReport": null
-      }
+      "vscodeFolderUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02"
     },
     {
       "level": 1,
@@ -186,18 +175,7 @@
       "cursorUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02/Q02_resolveRetryLimit.js",
       "vscodeUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02/Q02_resolveRetryLimit.js",
       "cursorFolderUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02",
-      "vscodeFolderUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02",
-      "state": {
-        "userInput": "",
-        "userCode": "function resolveRetryLimit(settings) {\n  // TODO: return configured limit or default\n  return null;\n}\n\nmodule.exports = { resolveRetryLimit };\n",
-        "score": 0,
-        "divergedStep": null,
-        "mistakes": [],
-        "mistakeNote": "",
-        "skipped": false,
-        "lastCheck": null,
-        "lastTestReport": null
-      }
+      "vscodeFolderUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02"
     },
     {
       "level": 1,
@@ -287,18 +265,7 @@
       "cursorUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02/Q03_countValidQuantities.js",
       "vscodeUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02/Q03_countValidQuantities.js",
       "cursorFolderUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02",
-      "vscodeFolderUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02",
-      "state": {
-        "userInput": "function countValidQuantities(rawQuantities) {\n  // TODO: count valid integer quantities\n  return null;\n}\n\nmodule.exports = { countValidQuantities };\n",
-        "userCode": "function countValidQuantities(rawQuantities) {\n  // TODO: count valid integer quantities\n  return null;\n}\n\nmodule.exports = { countValidQuantities };\n",
-        "score": 0,
-        "divergedStep": null,
-        "mistakes": [],
-        "mistakeNote": "I used filter() instead of for loop",
-        "skipped": false,
-        "lastCheck": null,
-        "lastTestReport": null
-      }
+      "vscodeFolderUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02"
     },
     {
       "level": 1,
@@ -380,18 +347,7 @@
       "cursorUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02/Q04_formatDisplayName.js",
       "vscodeUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02/Q04_formatDisplayName.js",
       "cursorFolderUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02",
-      "vscodeFolderUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02",
-      "state": {
-        "userInput": "",
-        "userCode": "function formatDisplayName(profile) {\n  // TODO: pick the first usable name\n  return null;\n}\n\nmodule.exports = { formatDisplayName };\n",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "mistakeNote": "",
-        "skipped": false,
-        "lastCheck": null,
-        "lastTestReport": null
-      }
+      "vscodeFolderUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02"
     },
     {
       "level": 1,
@@ -477,18 +433,7 @@
       "cursorUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02/Q05_applyDiscount.js",
       "vscodeUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02/Q05_applyDiscount.js",
       "cursorFolderUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02",
-      "vscodeFolderUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02",
-      "state": {
-        "userInput": "",
-        "userCode": "function applyDiscount(price, rate) {\n  // TODO: apply default rate and round to cents\n  return null;\n}\n\nmodule.exports = { applyDiscount };\n",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "mistakeNote": "",
-        "skipped": false,
-        "lastCheck": null,
-        "lastTestReport": null
-      }
+      "vscodeFolderUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02"
     },
     {
       "level": 1,
@@ -574,18 +519,7 @@
       "cursorUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02/Q06_sumInvoiceTotal.js",
       "vscodeUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02/Q06_sumInvoiceTotal.js",
       "cursorFolderUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02",
-      "vscodeFolderUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02",
-      "state": {
-        "userInput": "",
-        "userCode": "function sumInvoiceTotal(taxRate, ...lineAmounts) {\n  // TODO: sum amounts, add tax, round\n  return null;\n}\n\nmodule.exports = { sumInvoiceTotal };\n",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "mistakeNote": "",
-        "skipped": false,
-        "lastCheck": null,
-        "lastTestReport": null
-      }
+      "vscodeFolderUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02"
     },
     {
       "level": 1,
@@ -671,18 +605,7 @@
       "cursorUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02/Q07_summarizeTemperatures.js",
       "vscodeUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02/Q07_summarizeTemperatures.js",
       "cursorFolderUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02",
-      "vscodeFolderUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02",
-      "state": {
-        "userInput": "",
-        "userCode": "function summarizeTemperatures(readings) {\n  // TODO: compute min, max and rounded average\n  return null;\n}\n\nmodule.exports = { summarizeTemperatures };\n",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "mistakeNote": "",
-        "skipped": false,
-        "lastCheck": null,
-        "lastTestReport": null
-      }
+      "vscodeFolderUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02"
     },
     {
       "level": 1,
@@ -768,18 +691,7 @@
       "cursorUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02/Q08_listActiveEmails.js",
       "vscodeUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02/Q08_listActiveEmails.js",
       "cursorFolderUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02",
-      "vscodeFolderUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02",
-      "state": {
-        "userInput": "",
-        "userCode": "function listActiveEmails(subscribers) {\n  // TODO: select active and normalize emails\n  return null;\n}\n\nmodule.exports = { listActiveEmails };\n",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "mistakeNote": "",
-        "skipped": false,
-        "lastCheck": null,
-        "lastTestReport": null
-      }
+      "vscodeFolderUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02"
     },
     {
       "level": 1,
@@ -861,18 +773,7 @@
       "cursorUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02/Q09_buildShippingLabel.js",
       "vscodeUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02/Q09_buildShippingLabel.js",
       "cursorFolderUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02",
-      "vscodeFolderUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02",
-      "state": {
-        "userInput": "",
-        "userCode": "function buildShippingLabel(order) {\n  // TODO: destructure nested fields and format\n  return null;\n}\n\nmodule.exports = { buildShippingLabel };\n",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "mistakeNote": "",
-        "skipped": false,
-        "lastCheck": null,
-        "lastTestReport": null
-      }
+      "vscodeFolderUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02"
     },
     {
       "level": 1,
@@ -958,34 +859,12 @@
       "cursorUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02/Q10_adjustStock.js",
       "vscodeUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02/Q10_adjustStock.js",
       "cursorFolderUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02",
-      "vscodeFolderUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02",
-      "state": {
-        "userInput": "",
-        "userCode": "function adjustStock(stockBySku, sku, delta) {\n  // TODO: return updated copy\n  return null;\n}\n\nmodule.exports = { adjustStock };\n",
-        "score": null,
-        "divergedStep": null,
-        "mistakes": [],
-        "mistakeNote": "",
-        "skipped": false,
-        "lastCheck": null,
-        "lastTestReport": null
-      }
+      "vscodeFolderUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02"
     }
   ],
   "drillId": "DRL-PRG-T00-C02-02",
   "schemaVersion": "2.0-code",
   "subject": "PRG",
   "createdAt": "2026-11-11 15:19:27",
-  "sessionSummary": {
-    "practiceStatus": "Needs Retry",
-    "score": 0,
-    "maxScore": 10,
-    "accuracyPct": 0,
-    "skippedCount": 0,
-    "skippedProblems": [],
-    "mistakeCategories": [],
-    "divergedStepsSummary": "Q03 (Note: I used filter() instead of for loop)",
-    "attemptDate": "2026-11-11"
-  },
   "localFilePath": "/Users/Joseph/Documents/antigravity/brave-borg/drills/data/PRG-T00-C02/DRL-PRG-T00-C02-02.json"
 }

@@ -492,17 +492,6 @@
     "difficulty": "ALL",
     "difficultyMode": "AI Synthesized Reasoning Mode"
   },
-  "sessionSummary": {
-    "practiceStatus": "Ready",
-    "score": 0,
-    "maxScore": 5,
-    "accuracyPct": 0,
-    "mistakeCategories": [],
-    "divergedStepsSummary": "",
-    "attemptDate": null,
-    "syncedToNotionAt": null,
-    "notionPageId": null
-  },
   "localFilePath": "drills/data/MTH-T02-C01-U01/DRL-MTH-T02-C01-U01-03.json",
   "chapterCode": "MTH-T02-C01",
   "topicCode": "MTH-T02"

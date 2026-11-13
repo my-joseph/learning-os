@@ -484,16 +484,5 @@
     }
   ],
   "createdAt": "2026-11-09 14:08:40",
-  "sessionSummary": {
-    "practiceStatus": "Ready",
-    "score": 0,
-    "maxScore": 4,
-    "accuracyPct": 0,
-    "mistakeCategories": [],
-    "divergedStepsSummary": "",
-    "attemptDate": null,
-    "syncedToNotionAt": null,
-    "notionPageId": null
-  },
   "localFilePath": "drills/data/MTH-T01-C06/DRL-MTH-T01-C06-02.json"
 }
