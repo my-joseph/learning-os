@@ -1,20 +1,20 @@
 ---
 name: new-math-drill
-description: Create a new verified math drill (MTH-*) from a short brief — pick reasoning-vault archetypes, write the problems as a JSON draft, run every ingest gate with --check, show the learner a preview to approve, then ingest into drills/data. Use when asked to make, generate, write or add math problems, a math drill, or practice for a MTH unit or chapter.
+description: Create a new verified math drill (MTH-*) from a short brief — pick reasoning-vault archetypes, write the problems as a JSON draft, run every ingest gate with --check, have a reviewer subagent check the whole draft, then ingest into drills/data and sync to Notion with no learner approval step. Use when asked to make, generate, write or add math problems, a math drill, or practice for a MTH unit or chapter.
 ---
 
 # New math drill
 
-Goal: a drill that matches what the learner asked for and passes every gate on the first ingest, with no hand-fixing afterwards. Run everything from the repo root with `.venv/bin/python` (or `python3` if that is the active venv). Talk to the learner in Thai; everything written into the drill is English.
+Goal: a drill that matches what the learner asked for and passes every gate on the first ingest, with no hand-fixing afterwards. The learner studies these drills, so they never see answers before practising: do not show them drafts, answers or previews, and do not ask them to approve. Mistakes you or the reviewer catch go into the issue log (`rules/00_core.md` §11), not into questions to the learner. Run everything from the repo root with `.venv/bin/python` (or `python3` if that is the active venv). Talk to the learner in Thai; everything written into the drill is English.
 
-## 1. Brief (confirm before writing anything)
+## 1. Brief
 
-Collect, asking only for what is missing:
+Take the brief from the request; ask only if the unit is missing or no vault exists for it. Defaults:
 - **Unit** code, e.g. `MTH-T01-C12` (must have `math_engine/reasoning_vault/<UNIT>.json`).
-- **Levels** (L1–L5) and **count** (default 10).
+- **Levels** and **count**: every level the vault has (usually L1–L4), 2 problems each, unless the request says otherwise. Plain prompts unless word problems are asked for.
 - **Focus** (optional): specific archetypes, trap tags / weak spots, or contexts to use or avoid.
 
-Restate the brief in one line and wait for a yes. A wrong brief is the main reason drills miss what the learner wanted.
+State the brief in one line and continue without waiting. Stop and ask only when the brief cannot be met as asked (e.g. a level the vault lacks needs a new archetype).
 
 ## 2. Load only the rules this task needs
 
@@ -53,6 +53,7 @@ Per problem, the rules that fail most often:
 | `display` / `plainText` | Hidden behind "Show equation set-up" until the learner opens it or answers. For word problems prefer the general relation (`A = L \cdot W`) over the substituted one. |
 | `level` | What solving the problem demands of a student at this stage (`rules/06` §2.3), not just what passes G2. For L3+ the hard rule is the floor: no problem the learner could do as direct computation or mental math. L4 means building a model from ≥ 2 relations the prompt does not state, plus choosing a method or checking a case; L5 needs an idea no taught method provides. Repeating an L2 calculation ×N, adding a `constraints` line, switching `category` to `Interleaved Synthesis`, or bolting on "if it fits report X, otherwise report 0" does not raise the level (the gate rejects that last one). A single-unit L4 keeps an honest `category`: its `blindSolve` satisfies G2. |
 | L3 diagnose form | Ask *which line is wrong*, never *what the correct value is* (a value question is just recomputing → L1). Show the work in the prompt as `Line N: $...$` lines; `answerSpec` `choice` with options `"1"…"n"`; `verify.flaw` `{values, firstWrong}`; the last line equals `trapValue`; at least 4 lines; each `verify.flaw.values` entry is that line's value as one expression (no `=`). "Wrong" means the line's value is wrong, so a method error must change the value on that same line (write the wrong denominator there, not a value-preserving `(3+4i)/(3+4i)`). Use the archetype name `problem-solving`. Full spec: `rules/06` §2.3 "Diagnose form". |
+| `review` | Required by ingest: `{"verdict": "pass", "note": "..."}` from the reviewer in step 7. Leave it out of the draft until then. |
 | `contextCheck` | Required when `context` is non-empty: `{"verdict": "ok", "note": "..."}` from the context check in step 5. Leave `context` empty for plain problems. |
 | `blindSolve` | **Required for L3+** (the gate rejects the draft without it): `{"answer", "ambiguous", "setup", "strategy", "check", "task", "reverse", "steps"}` (plus `edgeRejected` when `check` is `edge`) copied from the blind solve in step 5. The gate maps the tags to a level, which must reach `level`. Record what the solver said; never edit it to pass. |
 | `tolerance` | A plain number is absolute (`0.005` accepts ±0.005). For a relative tolerance write `{"rel": 0.005}`. |
@@ -80,11 +81,20 @@ For L3+, copy the answer, ambiguity, the six tags and `edgeRejected` (when `chec
 .venv/bin/python -m math_engine.ai_drill_ingest --unit <UNIT> --ingest-file scratch/drafts/<file>.json --check
 ```
 
-It lists every failing problem at once. Fix them all and re-run until it prints `OK`. Do not show the learner a draft that has not passed.
+It lists every failing problem at once. Fix them all and re-run until it prints `OK`.
 
-## 7. Preview and get approval
+## 7. Automated review (replaces learner approval)
 
-Show a compact table: id, level, archetype, prompt (short), answer, trap value, and the blind-solve answer, ambiguity, tags and mapped level. Point out anything that bends the brief. Wait for the learner's approval or edits; re-run steps 5–6 after any edit.
+Spawn **one** fresh reviewer subagent for the whole draft. Give it the brief, the draft JSON and `rules/07` §4 V3, and ask it to re-solve every problem itself (L1–L2 included) and judge each one on:
+1. the answer, trap value and steps are correct;
+2. no second reading: units and conventions (e.g. MB = 1000 or 1024 kB, bits vs bytes), rounding, wording;
+3. the problem exercises its archetype and `commonTrapTag`;
+4. the drill fits the brief: levels, count, plain vs. word problems, at most 2 diagnose problems, no two problems with the same structure;
+5. hints and `display` help without giving the answer away.
+
+It returns per problem `{"verdict": "pass" | "fix", "note": "<one sentence>"}`. Copy each verdict into the problem's `review` as given; never edit it.
+- `fix` → fix the problem once, re-run steps 5–6 for it, and ask the reviewer to re-check just that problem. Still `fix` → drop it and write one replacement (same level), then review that. If the replacement also fails, ship the drill without it and say so in the report.
+- Log every `fix` and every drop with `python -m scripts.issues add ... --source reviewer --action auto-fixed|dropped` (`rules/00_core.md` §11). Log a stop-rule hit or a tool gap the same way with `--action open`.
 
 
 ## 8. Ingest
@@ -94,7 +104,9 @@ Show a compact table: id, level, archetype, prompt (short), answer, trap value, 
 .venv/bin/python -m pytest -q tests/test_quality_gates.py -k active_drills
 ```
 
-Ingest assigns the drill ID, writes `drills/data/<UNIT>/<DRILL_ID>.json` and records the used contexts in the vault. Report the drill ID and path.
+Ingest refuses any problem without `review.verdict: pass`. It assigns the drill ID, writes `drills/data/<UNIT>/<DRILL_ID>.json` and records the used contexts in the vault.
+
+Report to the learner in a few lines and **without answers or prompts**: drill ID, number of problems per level, and how many problems the reviewer fixed or dropped (with the issue-log IDs). If anything is `urgent` (`rules/00_core.md` §11), put a warning on the first line.
 
 ## 9. After ingest
 

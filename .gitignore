@@ -52,3 +52,6 @@ reports/samples/
 
 # Learner progress (Studio / submit results), kept out of curriculum content
 progress/
+
+# Local issue log (rules/00_core.md §11)
+issues/

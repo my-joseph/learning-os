@@ -49,6 +49,7 @@ class TestAiDrillIngest(unittest.TestCase):
                     {
                         "id": "Q01",
                         "verificationLevel": "partial",
+                        "review": {"verdict": "pass", "note": "Answer re-solved; prompt unambiguous; fits brief."},
                         "templateKey": "c06-invariant-component-under-variable-total",
                         "archetypeKey": "c06-invariant-component-under-variable-total",
                         "blindSolve": {
@@ -127,6 +128,7 @@ class TestAiDrillIngest(unittest.TestCase):
                     {
                         "id": "Q01",
                         "verificationLevel": "partial",
+                        "review": {"verdict": "pass", "note": "Answer re-solved; prompt unambiguous; fits brief."},
                         "templateKey": "c06-rate-base-part-triad",
                         "archetypeKey": "c06-rate-base-part-triad",
                         "level": 1,
@@ -178,6 +180,7 @@ class TestAiDrillIngest(unittest.TestCase):
         prob_with_num_hint = {
             "id": "Q01",
             "verificationLevel": "partial",
+            "review": {"verdict": "pass", "note": "Answer re-solved; prompt unambiguous; fits brief."},
             "checkpointHint": "Divide by 100",  # violates 00_core §6
         }
         with self.assertRaises(AiContractError):
@@ -187,6 +190,7 @@ class TestAiDrillIngest(unittest.TestCase):
         prob_with_unregistered_given = {
             "id": "Q02",
             "verificationLevel": "partial",
+            "review": {"verdict": "pass", "note": "Answer re-solved; prompt unambiguous; fits brief."},
             "checkpointHint": "Use fractional form.",
             "givens": {"base": 50},
             "prompt": "Find 20% of 50.",  # '20' is in prompt but missing from givens
@@ -198,6 +202,7 @@ class TestAiDrillIngest(unittest.TestCase):
         prob_with_ghost_given = {
             "id": "Q03",
             "verificationLevel": "partial",
+            "review": {"verdict": "pass", "note": "Answer re-solved; prompt unambiguous; fits brief."},
             "checkpointHint": "Use fractional form.",
             "givens": {"rate": 20, "base": 50, "ghost": 99},
             "prompt": "Find 20% of 50.",  # '99' never appears in prompt
@@ -209,6 +214,7 @@ class TestAiDrillIngest(unittest.TestCase):
         prob_with_single_given_trap = {
             "id": "Q04",
             "verificationLevel": "partial",
+            "review": {"verdict": "pass", "note": "Answer re-solved; prompt unambiguous; fits brief."},
             "checkpointHint": "Use fractional form.",
             "givens": {"rate": 20, "base": 50},
             "prompt": "Find 20% of 50.",
@@ -223,6 +229,7 @@ class TestAiDrillIngest(unittest.TestCase):
         prob_with_trap_mismatch = {
             "id": "Q05",
             "verificationLevel": "partial",
+            "review": {"verdict": "pass", "note": "Answer re-solved; prompt unambiguous; fits brief."},
             "checkpointHint": "Use fractional form.",
             "givens": {"rate": 20, "base": 50},
             "prompt": "Find 20% of 50.",
@@ -247,6 +254,7 @@ class TestAiDrillIngest(unittest.TestCase):
         base_prob = {
             "id": "Q01",
             "verificationLevel": "partial",
+            "review": {"verdict": "pass", "note": "Answer re-solved; prompt unambiguous; fits brief."},
             "checkpointHint": "Use fractional form.",
             "givens": {"rate": 20, "base": 50},
             "prompt": "Find $20\\%$ of $50$.",
@@ -287,6 +295,7 @@ class TestAiDrillIngest(unittest.TestCase):
                         "id": "Q01",
                         "level": 1,
                         "verificationLevel": "partial",
+                        "review": {"verdict": "pass", "note": "Answer re-solved; prompt unambiguous; fits brief."},
                         "checkpointHint": "Use expanded notation.",
                         "archetypeKey": "c01-place-value-partition",
                         "commonTrapTag": "c01-place-value-misalignment",
@@ -317,6 +326,7 @@ class TestAiDrillIngest(unittest.TestCase):
                         "id": "Q01",
                         "level": 1,
                         "verificationLevel": "partial",
+                        "review": {"verdict": "pass", "note": "Answer re-solved; prompt unambiguous; fits brief."},
                         "checkpointHint": "Use expanded notation.",
                         "archetypeKey": "c01-place-value-partition",
                         "commonTrapTag": "c01-place-value-misalignment",

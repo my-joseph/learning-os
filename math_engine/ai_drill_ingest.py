@@ -607,6 +607,24 @@ def validate_context_check(prob: Dict[str, Any]) -> None:
         )
 
 
+REVIEW_VERDICTS = ("pass", "fix")
+
+
+def validate_review(prob: Dict[str, Any]) -> None:
+    """Automated review gate (07 §4 V3): before ingest, a separate reviewer subagent that sees the whole
+    problem (prompt, answer, steps, hints) and the brief records `review: {verdict, note}`. Only `pass`
+    is ingested; `fix` means the author must fix or drop the problem. `--check` runs before the review,
+    so it only checks a review that is already present; ingest requires one."""
+    pid = prob.get("id", "?")
+    rv = prob.get("review")
+    if not isinstance(rv, dict) or rv.get("verdict") not in REVIEW_VERDICTS or not str(rv.get("note") or "").strip():
+        raise AiContractError(
+            f"[{pid}] Needs 'review' {{verdict: pass|fix, note}} from the reviewer subagent (07 §4 V3) before ingest."
+        )
+    if rv["verdict"] != "pass":
+        raise AiContractError(f"[{pid}] Reviewer asked for a fix: {rv['note']} (07 §4 V3). Fix or drop the problem.")
+
+
 def get_vault_path(unit_code: str, vault_dir: Optional[str] = None) -> str:
     dir_path = vault_dir or os.environ.get("REASONING_VAULT_DIR") or VAULT_DIR
     os.makedirs(dir_path, exist_ok=True)
@@ -694,6 +712,8 @@ def check_ai_drill(
         pid = prob["id"]
         try:
             validate_against_vault(prob, vault_archs, unit_code)
+            if "review" in prob:
+                validate_review(prob)
         except AiContractError as exc:
             errors.append(str(exc))
         try:
@@ -770,6 +790,7 @@ def ingest_ai_drill(
         # Rule 11: auto-attach parametric figure from vault archetype `figureBuilders` (03_stem §3)
         vault_archs = load_reasoning_vault(unit_code, vault_dir=vault_dir).get("archetypes", [])
         validate_against_vault(prob, vault_archs, unit_code)
+        validate_review(prob)
         autofill_problem_figure(prob, vault_archs)
         require_figure_if_declared(prob, vault_archs)
         validate_ai_problem_contract(prob)

@@ -59,6 +59,7 @@ def perimeter_problem(**overrides):
         "id": "Q01",
         "level": 1,
         "verificationLevel": "partial",
+        "review": {"verdict": "pass", "note": "Answer re-solved; prompt unambiguous; fits brief."},
         "prompt": "A rectangular garden plot is $14$ meters long and $8$ meters wide. "
         "How many meters of fencing are needed to enclose it?",
         "display": "P = 2L + 2W",
