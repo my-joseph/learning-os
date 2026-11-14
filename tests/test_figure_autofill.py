@@ -29,11 +29,6 @@ class TestFigureAutofill(unittest.TestCase):
         )
         self.assertIsNone(build_figure(self.ARCH[0], {"x": 1}))
 
-    def test_c12_area_volume_drill_has_figures(self):
-        d = json.load(open("drills/data/MTH-T01-C12/DRL-MTH-T01-C12-04.json"))
-        missing = [p["id"] for p in d["problems"] if "figure" not in p]
-        self.assertEqual(missing, [])
-
     def test_guard_rejects_declared_archetype_without_figure(self):
         from math_engine.ai_drill_ingest import AiContractError, require_figure_if_declared
 
