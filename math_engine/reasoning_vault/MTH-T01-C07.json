@@ -294,7 +294,8 @@
         }
       ],
       "usedContexts": [
-        "metallurgical_bronze_alloy_casting"
+        "metallurgical_bronze_alloy_casting",
+        "pharmaceutical_compound_ointment_base"
       ]
     },
     {
@@ -332,7 +333,8 @@
         }
       ],
       "usedContexts": [
-        "wind_turbine_generator_gearbox"
+        "wind_turbine_generator_gearbox",
+        "industrial_conveyor_motor_drive"
       ]
     }
   ]

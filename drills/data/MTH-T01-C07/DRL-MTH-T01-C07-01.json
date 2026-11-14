@@ -1,0 +1,1081 @@
+{
+  "unitCode": "MTH-T01-C07",
+  "topicTitle": "Proportional & Ratio",
+  "unitTitle": "Proportional & Ratio",
+  "subject": "MATH",
+  "problems": [
+    {
+      "id": "Q01",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c07-ratio-simplification-part-to-part",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Write the ratio $54 : 72$ as a fraction in simplest form.",
+      "display": "\\frac{54}{72}",
+      "plainText": "54 / 72",
+      "givens": {
+        "a": 54,
+        "b": 72
+      },
+      "constants": {},
+      "trapGivens": [
+        54,
+        72
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "3/4",
+        "tolerance": 0,
+        "forms": [
+          "reduced_fraction",
+          "exact"
+        ]
+      },
+      "answerPlain": "3/4",
+      "answerDisplay": "\\frac{3}{4}",
+      "inputHint": "Enter a simplified fraction (e.g. 2/5)",
+      "commonTrapTag": "c07-subtraction-ratio-error",
+      "trapDerivation": "(72 - 54) / 72",
+      "trapValue": "1/4",
+      "verify": {
+        "source": "54 / 72",
+        "trapValue": "1/4"
+      },
+      "checkpointHint": "Divide both terms of the ratio by their greatest common divisor.",
+      "references": [
+        "MTH-T01-C07"
+      ],
+      "steps": [
+        {
+          "latex": "\\frac{54}{72} = \\frac{3 \\cdot 18}{4 \\cdot 18}",
+          "explain": "Factor the greatest common divisor out of both the numerator and the denominator.",
+          "eq": [
+            "54 / 72",
+            "(3 * 18) / (4 * 18)"
+          ]
+        },
+        {
+          "latex": "\\frac{3 \\cdot 18}{4 \\cdot 18} = \\frac{3}{4}",
+          "explain": "Cancel the common factor to write the ratio in simplest form.",
+          "val": "3/4"
+        }
+      ],
+      "review": {
+        "verdict": "pass",
+        "note": "Answer (3/4), trapValue (1/4), granular steps, plain prompt, and zero-number hints are mathematically accurate, unambiguous, and aligned with c07-ratio-simplification-part-to-part and c07-subtraction-ratio-error."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C07",
+          "title": "Propotional & Radio",
+          "notionUrl": "https://www.notion.so/4003818f8ba080da9ecec25762c28b7d"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c07-subtraction-ratio-error|direct|# / #",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c07-subtraction-ratio-error",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 11
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 1 - Foundation"
+    },
+    {
+      "id": "Q02",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c07-unit-rate-comparison",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Find the unit rate for $315$ units across $9$ equal intervals, in units per interval.",
+      "display": "r = \\frac{\\text{quantity}}{\\text{count}}",
+      "plainText": "r = quantity / count",
+      "givens": {
+        "quantity": 315,
+        "count": 9
+      },
+      "constants": {},
+      "trapGivens": [
+        315,
+        9
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "35",
+        "tolerance": 0
+      },
+      "answerPlain": "35",
+      "answerDisplay": "35",
+      "inputHint": "Enter a whole number",
+      "commonTrapTag": "c07-inverted-unit-rate-slip",
+      "trapDerivation": "9 / 315",
+      "trapValue": "1/35",
+      "verify": {
+        "source": "315 / 9",
+        "trapValue": "1/35"
+      },
+      "checkpointHint": "Divide the total quantity by the number of intervals to normalize to a single interval.",
+      "references": [
+        "MTH-T01-C07"
+      ],
+      "steps": [
+        {
+          "latex": "r = \\frac{315}{9}",
+          "explain": "Form the unit rate by dividing the total quantity by the number of intervals.",
+          "eq": [
+            "315 / 9",
+            "35"
+          ]
+        },
+        {
+          "latex": "r = 35",
+          "explain": "Divide to obtain the unit rate.",
+          "val": "35"
+        }
+      ],
+      "review": {
+        "verdict": "pass",
+        "note": "Answer (35), trapValue (1/35), steps, plain prompt, and zero-number hints are unambiguous and correctly exercise c07-unit-rate-comparison and c07-inverted-unit-rate-slip."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C07",
+          "title": "Propotional & Radio",
+          "notionUrl": "https://www.notion.so/4003818f8ba080da9ecec25762c28b7d"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c07-inverted-unit-rate-slip|direct|r = quantity / count",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c07-inverted-unit-rate-slip",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 11
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 1 - Foundation"
+    },
+    {
+      "id": "Q03",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c07-proportion-cross-product-isolation",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Solve the proportion for $x$: $\\frac{7}{12} = \\frac{x}{18}$. Write the answer as a reduced fraction.",
+      "display": "\\frac{7}{12} = \\frac{x}{18}",
+      "plainText": "7 / 12 = x / 18",
+      "givens": {
+        "a": 7,
+        "b": 12,
+        "d": 18
+      },
+      "constants": {},
+      "trapGivens": [
+        7,
+        12,
+        18
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "21/2",
+        "tolerance": 0,
+        "forms": [
+          "reduced_fraction",
+          "exact"
+        ]
+      },
+      "answerPlain": "21/2",
+      "answerDisplay": "\\frac{21}{2}",
+      "inputHint": "Enter a simplified fraction (e.g. 5/3)",
+      "commonTrapTag": "c07-cross-product-operator-confusion",
+      "trapDerivation": "(7 * 12) / 18",
+      "trapValue": "14/3",
+      "verify": {
+        "source": "(7 * 18) / 12",
+        "trapValue": "14/3"
+      },
+      "checkpointHint": "Set the cross products of the proportion equal to each other, then isolate the unknown by division.",
+      "references": [
+        "MTH-T01-C07"
+      ],
+      "steps": [
+        {
+          "latex": "12x = 7 \\times 18",
+          "explain": "Cross-multiply across the proportion."
+        },
+        {
+          "latex": "12x = 126",
+          "explain": "Multiply the factors on the right side.",
+          "eq": [
+            "7 * 18",
+            "126"
+          ]
+        },
+        {
+          "latex": "x = \\frac{126}{12}",
+          "explain": "Divide both sides by the coefficient of the unknown.",
+          "eq": [
+            "126 / 12",
+            "21 / 2"
+          ]
+        },
+        {
+          "latex": "x = \\frac{21}{2}",
+          "explain": "Reduce the fraction to lowest terms.",
+          "val": "21/2"
+        }
+      ],
+      "review": {
+        "verdict": "pass",
+        "note": "Answer (21/2), trapValue (14/3), 4-step cross-multiplication derivation, plain prompt, and hints are clear, leak-free, and faithful to c07-proportion-cross-product-isolation and c07-cross-product-operator-confusion."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C07",
+          "title": "Propotional & Radio",
+          "notionUrl": "https://www.notion.so/4003818f8ba080da9ecec25762c28b7d"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c07-cross-product-operator-confusion|direct|# / # = x / #",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 4,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c07-cross-product-operator-confusion",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 15
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 2 - Standard Exam"
+    },
+    {
+      "id": "Q04",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c07-part-to-whole-ratio-partition",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Divide $260$ into two parts in the ratio $5 : 8$. What is the value of the smaller part?",
+      "display": "\\text{Part}_A = T \\times \\frac{a}{a + b}",
+      "plainText": "Part_A = T * (a / (a + b))",
+      "givens": {
+        "T": 260,
+        "a": 5,
+        "b": 8
+      },
+      "constants": {},
+      "trapGivens": [
+        260,
+        8
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "100",
+        "tolerance": 0
+      },
+      "answerPlain": "100",
+      "answerDisplay": "100",
+      "inputHint": "Enter a whole number",
+      "commonTrapTag": "c07-part-to-part-denominator-error",
+      "trapDerivation": "260 / 8",
+      "trapValue": "65/2",
+      "verify": {
+        "source": "260 * (5 / (5 + 8))",
+        "trapValue": "65/2"
+      },
+      "checkpointHint": "Sum the ratio parts first to find how many equal shares make up the whole total.",
+      "references": [
+        "MTH-T01-C07"
+      ],
+      "steps": [
+        {
+          "latex": "5 + 8 = 13",
+          "explain": "Add the ratio terms to find the total number of equal parts.",
+          "eq": [
+            "5 + 8",
+            "13"
+          ]
+        },
+        {
+          "latex": "\\frac{260}{13} = 20",
+          "explain": "Divide the total by the total number of parts to find the value of a single part.",
+          "eq": [
+            "260 / 13",
+            "20"
+          ]
+        },
+        {
+          "latex": "20 \\times 5 = 100",
+          "explain": "Multiply the single-part value by the smaller ratio term.",
+          "val": "100"
+        }
+      ],
+      "review": {
+        "verdict": "pass",
+        "note": "Answer (100), trapValue (65/2), 3-step partition derivation, plain prompt, and hints unambiguously test c07-part-to-whole-ratio-partition and c07-part-to-part-denominator-error."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C07",
+          "title": "Propotional & Radio",
+          "notionUrl": "https://www.notion.so/4003818f8ba080da9ecec25762c28b7d"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c07-part-to-part-denominator-error|direct|Part_A = T * (a / (a + b))",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c07-part-to-part-denominator-error",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 2 - Standard Exam"
+    },
+    {
+      "id": "Q05",
+      "level": 3,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c07-currency-exchange-rate-conversion",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Knowing there are $1000\\text{ m}$ in a kilometer and $3600\\text{ s}$ in an hour, a student converted $180\\text{ m/s}$ to $\\text{km/h}$ step by step:\nLine 1: $180\\text{ m/s} = 180 \\times \\frac{1000}{3600}\\text{ km/h}$\nLine 2: $= 180 \\times \\frac{5}{18}\\text{ km/h}$\nLine 3: $= 10 \\times 5\\text{ km/h}$\nLine 4: $= 50\\text{ km/h}$\nWhich line is the first one that is wrong?",
+      "display": "180\\text{ m/s} \\to \\text{km/h}",
+      "plainText": "Convert 180 m/s to km/h",
+      "givens": {
+        "v": 180
+      },
+      "constants": {
+        "m_per_km": 1000,
+        "s_per_h": 3600
+      },
+      "trapGivens": [
+        180,
+        3600,
+        1000
+      ],
+      "answerSpec": {
+        "type": "choice",
+        "options": [
+          {
+            "id": "1",
+            "label": "Line 1"
+          },
+          {
+            "id": "2",
+            "label": "Line 2",
+            "trapTag": "c07-exchange-rate-reciprocal-slip"
+          },
+          {
+            "id": "3",
+            "label": "Line 3",
+            "trapTag": "c07-exchange-rate-reciprocal-slip"
+          },
+          {
+            "id": "4",
+            "label": "Line 4",
+            "trapTag": "c07-exchange-rate-reciprocal-slip"
+          }
+        ],
+        "correct": "1"
+      },
+      "answerPlain": "1",
+      "answerDisplay": "\\text{Line 1}",
+      "inputHint": "Choose a line",
+      "commonTrapTag": "c07-exchange-rate-reciprocal-slip",
+      "trapDerivation": "180 / (3600 / 1000)",
+      "trapValue": "50",
+      "verify": {
+        "source": "180 * (3600 / 1000)",
+        "trapValue": "50",
+        "flaw": {
+          "values": [
+            "180 * 1000 / 3600",
+            "180 * 5 / 18",
+            "10 * 5",
+            "50"
+          ],
+          "firstWrong": 1
+        }
+      },
+      "checkpointHint": "Work through the derivation independently on scratch paper, then compare your steps one by one with the student's work to locate the first divergence.",
+      "references": [
+        "MTH-T01-C07"
+      ],
+      "steps": [
+        {
+          "latex": "180\\text{ m/s} = 180 \\times \\frac{3600}{1000}\\text{ km/h}",
+          "explain": "Line 1 is the first wrong line: converting meters to kilometers divides by the meters-per-kilometer factor while converting per-second to per-hour multiplies by the seconds-per-hour factor.",
+          "eq": [
+            "180 * (3600 / 1000)",
+            "648"
+          ]
+        },
+        {
+          "latex": "180 \\times \\frac{3600}{1000} = 180 \\times \\frac{18}{5}",
+          "explain": "Reduce the combined conversion fraction by dividing numerator and denominator by their greatest common divisor.",
+          "eq": [
+            "3600 / 1000",
+            "18 / 5"
+          ]
+        },
+        {
+          "latex": "180 \\times \\frac{18}{5} = 36 \\times 18",
+          "explain": "Divide the initial speed by the denominator.",
+          "eq": [
+            "180 / 5",
+            "36"
+          ]
+        },
+        {
+          "latex": "36 \\times 18 = 648",
+          "explain": "Multiply to obtain the true speed in kilometers per hour.",
+          "val": "648"
+        }
+      ],
+      "blindSolve": {
+        "answer": "1",
+        "ambiguous": false,
+        "setup": "given",
+        "strategy": "prescribed",
+        "check": "none",
+        "task": "diagnose",
+        "reverse": false,
+        "steps": 2
+      },
+      "review": {
+        "verdict": "pass",
+        "note": "Diagnose work (firstWrong 1, trapValue 50 vs. true 648 km/h), options, steps, blindSolve, and neutral process-only checkpointHint satisfy all five criteria and exercise c07-currency-exchange-rate-conversion and c07-exchange-rate-reciprocal-slip."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C07",
+          "title": "Propotional & Radio",
+          "notionUrl": "https://www.notion.so/4003818f8ba080da9ecec25762c28b7d"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c07-exchange-rate-reciprocal-slip|direct|Convert # m/s to km/h",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 4,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            20
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c07-exchange-rate-reciprocal-slip",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 3
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 19
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 3 - Trap & Diagnostic"
+    },
+    {
+      "id": "Q06",
+      "level": 3,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c07-inverse-proportion-rate-time",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Two positive quantities $w$ and $t$ are inversely proportional, while $w$ is directly proportional to $u$. When $u = 4$, we have $w = 12$ and $t = 20$. Find $t$ when $u = 10$.",
+      "display": "w_1 t_1 = w_2 t_2, \\quad \\frac{w_2}{w_1} = \\frac{u_2}{u_1}",
+      "plainText": "w1 * t1 = w2 * t2, w2 / w1 = u2 / u1",
+      "givens": {
+        "u1": 4,
+        "w1": 12,
+        "t1": 20,
+        "u2": 10
+      },
+      "constants": {},
+      "trapGivens": [
+        4,
+        12,
+        20,
+        10
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "8",
+        "tolerance": 0
+      },
+      "answerPlain": "8",
+      "answerDisplay": "8",
+      "inputHint": "Enter a whole number",
+      "commonTrapTag": "c07-direct-scaling-on-inverse-trap",
+      "trapDerivation": "((12 * 10 / 4) * 20) / 12",
+      "trapValue": "50",
+      "verify": {
+        "source": "(12 * 20) / (12 * 10 / 4)",
+        "trapValue": "50"
+      },
+      "checkpointHint": "Use the direct proportion to find the intermediate value first, then apply the constant-product invariant of the inverse pair.",
+      "references": [
+        "MTH-T01-C07"
+      ],
+      "steps": [
+        {
+          "latex": "w_2 = 12 \\times \\frac{10}{4}",
+          "explain": "Use the direct proportion between w and u to express the new value of w."
+        },
+        {
+          "latex": "w_2 = 30",
+          "explain": "Evaluate the new value of the intermediate quantity.",
+          "eq": [
+            "12 * (10 / 4)",
+            "30"
+          ]
+        },
+        {
+          "latex": "12 \\times 20 = 30 \\cdot t_2",
+          "explain": "Set the constant product of the inversely proportional pair equal before and after the change.",
+          "eq": [
+            "12 * 20",
+            "240"
+          ]
+        },
+        {
+          "latex": "t_2 = \\frac{240}{30}",
+          "explain": "Divide the constant product by the new value of w.",
+          "eq": [
+            "240 / 30",
+            "8"
+          ]
+        },
+        {
+          "latex": "t_2 = 8",
+          "explain": "Evaluate the resulting value of t.",
+          "val": "8"
+        }
+      ],
+      "blindSolve": {
+        "answer": "8",
+        "ambiguous": false,
+        "setup": "model",
+        "strategy": "prescribed",
+        "check": "none",
+        "task": "compute",
+        "reverse": false,
+        "steps": 4
+      },
+      "review": {
+        "verdict": "pass",
+        "note": "Answer (8), trapValue (50), 5-step derivation, blindSolve model tags, plain prompt, and zero-number hints are unambiguous and properly exercise c07-inverse-proportion-rate-time and c07-direct-scaling-on-inverse-trap."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C07",
+          "title": "Propotional & Radio",
+          "notionUrl": "https://www.notion.so/4003818f8ba080da9ecec25762c28b7d"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c07-direct-scaling-on-inverse-trap|direct|w# * t# = w# * t#, w# / w# = u# / u#",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 5,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            20
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c07-direct-scaling-on-inverse-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 17
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 3 - Trap & Diagnostic"
+    },
+    {
+      "id": "Q07",
+      "level": 4,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c07-constrained-three-way-mixture-proportion",
+      "context": "pharmaceutical_compound_ointment_base",
+      "verificationLevel": "partial",
+      "prompt": "A compounding pharmacy prepares an ointment base by blending emulsifying wax, mineral oil, and purified water in the mass ratio $2 : 5 : 8$. The dispensary has $90\\text{ g}$ of emulsifying wax, $175\\text{ g}$ of mineral oil, and $320\\text{ g}$ of purified water in stock. What is the maximum total mass of ointment base, in grams, that can be prepared from this stock?",
+      "display": "u = \\min_i \\frac{S_i}{p_i}, \\quad T_{\\max} = u(a + b + c)",
+      "plainText": "u = min(S_i / p_i), T_max = u * (a + b + c)",
+      "givens": {
+        "a": 2,
+        "b": 5,
+        "c": 8,
+        "s1": 90,
+        "s2": 175,
+        "s3": 320
+      },
+      "constants": {},
+      "trapGivens": [
+        90,
+        2,
+        5,
+        8
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "525",
+        "tolerance": 0
+      },
+      "answerPlain": "525",
+      "answerDisplay": "525",
+      "inputHint": "Enter a whole number in grams",
+      "commonTrapTag": "c07-largest-stock-limits-trap",
+      "trapDerivation": "(90 / 2) * (2 + 5 + 8)",
+      "trapValue": "675",
+      "verify": {
+        "source": "(175 / 5) * (2 + 5 + 8)",
+        "trapValue": "675"
+      },
+      "checkpointHint": "Find how many ratio units each ingredient stock allows, identify which component runs out first, and scale the full ratio sum by that limit.",
+      "references": [
+        "MTH-T01-C07"
+      ],
+      "steps": [
+        {
+          "latex": "u_{\\text{wax}} = \\frac{90}{2}",
+          "explain": "Compute the number of ratio units supported by the emulsifying wax stock.",
+          "eq": [
+            "90 / 2",
+            "45"
+          ]
+        },
+        {
+          "latex": "u_{\\text{oil}} = \\frac{175}{5}",
+          "explain": "Compute the number of ratio units supported by the mineral oil stock.",
+          "eq": [
+            "175 / 5",
+            "35"
+          ]
+        },
+        {
+          "latex": "u_{\\text{water}} = \\frac{320}{8}",
+          "explain": "Compute the number of ratio units supported by the purified water stock.",
+          "eq": [
+            "320 / 8",
+            "40"
+          ]
+        },
+        {
+          "latex": "u = \\min(45, 35, 40)",
+          "explain": "Select the smallest ratio-unit count, since mineral oil is the limiting component and larger counts exceed its stock."
+        },
+        {
+          "latex": "2 + 5 + 8 = 15",
+          "explain": "Sum the three ratio terms to find the total parts per ratio unit.",
+          "eq": [
+            "2 + 5 + 8",
+            "15"
+          ]
+        },
+        {
+          "latex": "T_{\\max} = 35 \\times 15",
+          "explain": "Multiply the limiting ratio-unit count by the total ratio parts.",
+          "eq": [
+            "35 * 15",
+            "525"
+          ]
+        },
+        {
+          "latex": "T_{\\max} = 525",
+          "explain": "State the maximum total mass of ointment base in grams.",
+          "val": "525"
+        }
+      ],
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "Mass-ratio blending with mass conservation and limiting-ingredient capacity is the real pharmacy compounding law; bench-scale gram quantities and units are consistent and physically valid."
+      },
+      "blindSolve": {
+        "answer": "525",
+        "ambiguous": false,
+        "setup": "model",
+        "strategy": "prescribed",
+        "check": "edge",
+        "edgeRejected": "x = 45 g/part (wax limit, 675 g base) and x = 40 g/part (water limit, 600 g base) exceed the 175 g mineral oil stock",
+        "task": "compute",
+        "reverse": false,
+        "steps": 5
+      },
+      "review": {
+        "verdict": "pass",
+        "note": "Answer (525), trapValue (675), 7-step limiting-stock derivation, unused pharmacy context, blindSolve L4 edge check, and hints are physically valid, unambiguous, and faithful to c07-constrained-three-way-mixture-proportion."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C07",
+          "title": "Propotional & Radio",
+          "notionUrl": "https://www.notion.so/4003818f8ba080da9ecec25762c28b7d"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c07-largest-stock-limits-trap|direct|u = min(S_i / p_i), T_max = u * (a + b + c)",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 7,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            25
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c07-largest-stock-limits-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 21
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 4 - Applied Synthesis"
+    },
+    {
+      "id": "Q08",
+      "level": 4,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "c07-gear-train-transmission-ratio-synthesis",
+      "context": "industrial_conveyor_motor_drive",
+      "verificationLevel": "partial",
+      "prompt": "In a compound gear drive for an industrial conveyor, the motor shaft rotates at $1200\\text{ RPM}$ and carries a $20$-tooth drive gear meshing with a $50$-tooth intermediate gear. An $18$-tooth pinion shares the same intermediate shaft and meshes with an interchangeable output gear on the conveyor pulley shaft. The conveyor pulley speed must not exceed $250\\text{ RPM}$. If the available output gears have $24$, $30$, $36$, or $45$ teeth, what is the highest conveyor pulley speed in $\\text{RPM}$ that satisfies this limit?",
+      "display": "\\omega_{\\text{out}} = \\omega_{\\text{in}} \\cdot \\frac{N_1}{N_2} \\cdot \\frac{N_3}{N_4}",
+      "plainText": "omega_out = omega_in * (N1 / N2) * (N3 / N4)",
+      "givens": {
+        "omega1": 1200,
+        "N1": 20,
+        "N2": 50,
+        "N3": 18,
+        "target": 250,
+        "c1": 24,
+        "c2": 30,
+        "c3": 36,
+        "c4": 45
+      },
+      "constants": {},
+      "trapGivens": [
+        1200,
+        20,
+        50,
+        18,
+        36
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "240",
+        "tolerance": 0
+      },
+      "answerPlain": "240",
+      "answerDisplay": "240",
+      "inputHint": "Enter a whole number in RPM",
+      "commonTrapTag": "c07-compound-ratio-added-trap",
+      "trapDerivation": "1200 * (20 / 50 + 18 / 36)",
+      "trapValue": "1080",
+      "verify": {
+        "source": "1200 * (20 / 50) * (18 / 36)",
+        "trapValue": "1080"
+      },
+      "checkpointHint": "Find the shared intermediate shaft speed first, then compute the output speed for each candidate gear and rule out any that exceed the limit.",
+      "references": [
+        "MTH-T01-C07"
+      ],
+      "steps": [
+        {
+          "latex": "\\omega_{\\text{int}} = 1200 \\times \\frac{20}{50}",
+          "explain": "Calculate the shared intermediate shaft speed from the first gear mesh ratio.",
+          "eq": [
+            "1200 * (20 / 50)",
+            "480"
+          ]
+        },
+        {
+          "latex": "\\omega_{24} = 480 \\times \\frac{18}{24}",
+          "explain": "Evaluate the output speed for the smallest candidate gear and reject it because it exceeds the limit.",
+          "eq": [
+            "480 * (18 / 24)",
+            "360"
+          ]
+        },
+        {
+          "latex": "\\omega_{30} = 480 \\times \\frac{18}{30}",
+          "explain": "Evaluate the output speed for the second candidate gear and reject it because it also exceeds the limit.",
+          "eq": [
+            "480 * (18 / 30)",
+            "288"
+          ]
+        },
+        {
+          "latex": "\\omega_{36} = 480 \\times \\frac{18}{36}",
+          "explain": "Evaluate the output speed for the thirty-six-tooth gear, which stays within the limit.",
+          "eq": [
+            "480 * (18 / 36)",
+            "240"
+          ]
+        },
+        {
+          "latex": "\\omega_{45} = 480 \\times \\frac{18}{45}",
+          "explain": "Evaluate the output speed for the largest candidate gear, which is valid but slower.",
+          "eq": [
+            "480 * (18 / 45)",
+            "192"
+          ]
+        },
+        {
+          "latex": "\\omega_{\\text{max}} = 240",
+          "explain": "Select the highest valid conveyor pulley speed that does not exceed the target.",
+          "val": "240"
+        }
+      ],
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "Compound gear ratio N1*Z1 = N2*Z2 with shared intermediate shaft speed is the real kinematic law; 1200 RPM motor, >=18-tooth gears, and <=250 RPM pulley speed are physically realistic with consistent units."
+      },
+      "blindSolve": {
+        "answer": "240",
+        "ambiguous": false,
+        "setup": "model",
+        "strategy": "prescribed",
+        "check": "edge",
+        "edgeRejected": "24-tooth output gear (360 RPM) and 30-tooth output gear (288 RPM) exceed the 250 RPM conveyor pulley limit",
+        "task": "compute",
+        "reverse": false,
+        "steps": 4
+      },
+      "review": {
+        "verdict": "pass",
+        "note": "Answer (240), trapValue (1080), 6-step candidate evaluation, unused conveyor-drive context, blindSolve L4 edge check, and hints are physically realistic, unambiguous, and faithful to c07-gear-train-transmission-ratio-synthesis."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C07",
+          "title": "Propotional & Radio",
+          "notionUrl": "https://www.notion.so/4003818f8ba080da9ecec25762c28b7d"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c07-compound-ratio-added-trap|direct|omega_out = omega_in * (N# / N#) * (N# / N#)",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 6,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            25
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c07-compound-ratio-added-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 19
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 4 - Applied Synthesis"
+    }
+  ],
+  "drillId": "DRL-MTH-T01-C07-01",
+  "title": "Proportional & Ratio — Verified Math Drill (8 Qs)",
+  "topicCode": "MTH-T01",
+  "chapterCode": "MTH-T01-C07",
+  "schemaVersion": "2.0-math",
+  "createdAt": "2026-11-15 00:57:18",
+  "config": {
+    "questionCount": 8,
+    "difficulty": "ALL",
+    "difficultyMode": "AI Synthesized Reasoning Mode"
+  },
+  "localFilePath": "drills/data/MTH-T01-C07/DRL-MTH-T01-C07-01.json"
+}
