@@ -33,6 +33,19 @@ class VerificationError(AssertionError):
     pass
 
 
+def _number_tokens(text: str) -> set[float]:
+    """Every integer or decimal literal in `text` (2, 2.5, .5), as floats."""
+    return {float(t) for t in re.findall(r"(?<![\w.])\d*\.?\d+(?![\w.])", text)}
+
+
+def _has_number(value, numbers: set[float]) -> bool:
+    try:
+        target = float(value)
+    except (TypeError, ValueError):
+        return False
+    return any(abs(target - n) < 1e-9 for n in numbers)
+
+
 def _fail(pid, msg):
     raise VerificationError(f"[{pid}] {msg}")
 
@@ -177,11 +190,16 @@ def verify_problem(p, id_map=None, rules=None):
                 prompt_text = str(p.get("prompt", ""))
                 # Formula constants (07 §4 `constants`) are part of the method and need not be stated.
                 constant_strs = {str(v) for v in (p.get("constants") or {}).values()}
+                # Compare by value so decimals count: `\b\d+\b` split 2.5 into 2 and 5, and "3.0" != "3".
+                prompt_nums = _number_tokens(re.sub(r"(?<=\d),(?=\d{3}\b)", "", prompt_text))
+                constant_nums = _number_tokens(" ".join(constant_strs))
                 for g in givens:
-                    if str(g) not in prompt_text and str(g) not in constant_strs:
+                    if str(g) in prompt_text or str(g) in constant_strs:
+                        continue
+                    if not _has_number(g, prompt_nums | constant_nums):
                         raise QualityError("G4", pid, f"trapGiven '{g}' does not appear in prompt: {prompt_text}")
-                td_tokens = set(re.findall(r"\b\d+\b", td))
-                matched_givens = {str(g) for g in givens if str(g) in td_tokens}
+                td_nums = _number_tokens(td)
+                matched_givens = {str(g) for g in givens if _has_number(g, td_nums)}
                 if len(matched_givens) < 2:
                     raise QualityError(
                         "G4",
