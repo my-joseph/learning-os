@@ -288,7 +288,9 @@
         }
       ],
       "usedContexts": [
-        "industrial_chemical_reactor_drainage"
+        "industrial_chemical_reactor_drainage",
+        "aquaculture_tank_filtration_cycle",
+        "municipal_water_tower_maintenance"
       ],
       "levelNote": "L4 only when the solver must choose: offer two or more drain/fill options where one gives a net rate <= 0 (the tank never fills) and must be ruled out (blindSolve check=edge, edgeRejected names it). A single fill-and-drain computation is L2 (blind solves 2026-11-15, issue 9e4aa2)."
     },
@@ -321,7 +323,8 @@
         }
       ],
       "usedContexts": [
-        "emergency_grain_silo_reserve_relief"
+        "emergency_grain_silo_reserve_relief",
+        "university_endowment_fund_disbursement"
       ],
       "levelNote": "Relabelled L4 -> L3 (2026-11-15, issue 3025a2): a chained remainder has one solution and no case to rule out; the best blind solve reached setup=model (L3). Do not bolt on a cutoff to reach L4."
     }
