@@ -88,6 +88,43 @@ TEMPLATES = [
 1. **ห้ามมี Silent Fallback เด็ดขาด**: หากยูนิตนั้นยังไม่มีเทมเพลตที่รองรับระดับความยากดังกล่าว ตัว Generator (`math_engine.generate` และ `code_engine.generate`) **ต้อง raise `ValueError` แสดงรายชื่อระดับความยากที่ยูนิตนั้นมีจริงทันที** ห้ามแอบ fallback ไปสุ่มหยิบโจทย์ระดับอื่นมาแทนโดยเด็ดขาด
 2. **ป้ายหัวไฟล์ต้องตรงกับโจทย์จริง**: ทุกข้อในชุดโจทย์ (`problems`) ต้องมี `prob["level"]` ตรงกับค่า `config.difficulty` ที่ระบุเสมอ ห้ามให้มีโจทย์เลเวลอื่นหลุดเข้าไปในชุดโจทย์ที่ระบุเลเวลเฉพาะ
 
+### 2.3 Demand floor for AI-written L3+ problems (blind-solve tags)
+
+Goal: when the learner asks for hard problems, no problem may be solvable as direct computation or mental math. An exact level is **not** required; one level of tolerance is allowed.
+
+**Level meaning** (aligned with published frameworks so it holds from middle school to university):
+
+| Level | Webb DOK | NAEP complexity | Stein & Smith task | TIMSS G8 anchor (intl. % correct) |
+| :---: | :--- | :--- | :--- | :--- |
+| L1 | 1 Recall / simple procedure | Low | Memorization / procedures without connections | ≥ 55% (e.g. 2019 Exh. 3.11.2) |
+| L2 | 2 Skill/concept: several steps, reverse use of a formula | Moderate (lower) | Procedures without connections, multi-step | 40–55% (Exh. 3.12.1) |
+| L3 | 2 upper: choose a method, check edge cases, diagnose an error | Moderate | Procedures with connections | 30–45% (Exh. 3.12.2, 3.12.5) |
+| L4 | 3 Strategic thinking: build a model from several relations and plan | High | Procedures with connections / doing mathematics | ≤ 30% (Exh. 3.13.2, 3.13.3) |
+| L5 | 3–4 Non-algorithmic: no taught method fits | High | Doing mathematics | beyond Advanced |
+
+The verb does not set the level ("explain" or "prove" alone does not raise it); the thinking the problem demands of a student at the target stage does. Material taught in earlier chapters of the same course counts as a tool.
+
+**Blind-solve tags.** The blind solver (07 §4 V2) does not pick a level. It reports facts about its own solution:
+
+| Tag | Values (low → high) | Meaning |
+| :--- | :--- | :--- |
+| `setup` | `given` / `translate` / `model` | expression or equation given / words → one standard model / combine ≥ 2 relations into an equation the prompt does not state |
+| `strategy` | `prescribed` / `choose` / `invent` | method obvious from the topic / pick among taught methods / no taught method fits (key idea needed) |
+| `check` | `none` / `edge` / `justify` | none / domain, extraneous root, endpoint or ± case must be checked / argument or proof required |
+| `task` | `compute` / `diagnose` | solve / find the error in given work |
+| `reverse` | true / false | the unknown is an input of the governing formula |
+| `steps` | integer | real solution steps (one transformation each) |
+
+**Mapping** (`math_engine.ai_drill_ingest.demand_level`): `invent` → L5; `model` with (`choose` or `check` ≠ none) → L4; `model`, `choose`, `check` ≠ none or `diagnose` → L3; `translate`, `reverse` or `steps` ≥ 4 → L2; otherwise L1.
+
+**Gate** (`validate_blind_solve`, every L3+ problem): `blindSolve` must hold `answer`, `ambiguous` and all six tags; the answer must match `answerSpec`; the prompt must not be ambiguous; and the mapped level must be **at least `level` − 1**. Tags that give L1 never pass as L3+.
+
+**Stop rule:** at most one redesign per failing problem. If it still fails, show the learner both explanations (author's intent, solver's tags) in plain language and let them choose relabel or drop. Never loop.
+
+Trap tags (`commonTrapTag`) stay as metadata for diagnosis and telemetry; they do not raise the level on their own.
+
+Sources: Webb's Depth of Knowledge (math descriptors); NAEP mathematical complexity (nces.ed.gov/nationsreportcard/mathematics/complexity2005.aspx); Stein & Smith Mathematical Tasks Framework; TIMSS 2019 grade 8 benchmark example items (timss2019.org/reports). University problems have no public % correct anchors; use the DOK descriptors only.
+
 ---
 
 ## 3. กฎของกับดักและการวินิจฉัยจุดผิด (Trap Provenance & Flaw Diagnosis)

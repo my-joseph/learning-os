@@ -416,13 +416,71 @@ def require_figure_if_declared(prob: Dict[str, Any], archetypes: List[Dict[str, 
         )
 
 
+# Demand tags a blind solver reports instead of a level (06 §2.3). Values are ordered low → high.
+BLIND_SOLVE_TAGS: Dict[str, tuple] = {
+    "setup": ("given", "translate", "model"),
+    "strategy": ("prescribed", "choose", "invent"),
+    "check": ("none", "edge", "justify"),
+    "task": ("compute", "diagnose"),
+}
+BLIND_SOLVE_FIELDS = ("answer", "ambiguous", *BLIND_SOLVE_TAGS, "reverse", "steps")
+
+
+def demand_level(tags: Dict[str, Any]) -> int:
+    """Map blind-solve demand tags to a level (06 §2.3). The solver never picks the level itself."""
+    if tags["strategy"] == "invent":
+        return 5
+    deeper = tags["strategy"] == "choose" or tags["check"] != "none"
+    if tags["setup"] == "model" and deeper:
+        return 4
+    if tags["setup"] == "model" or deeper or tags["task"] == "diagnose":
+        return 3
+    if tags["setup"] == "translate" or tags["reverse"] or tags["steps"] >= 4:
+        return 2
+    return 1
+
+
+def validate_blind_solve(prob: Dict[str, Any]) -> None:
+    """L3+ floor gate (06 §2.3, 07 §4 V2): a separate solver that saw only the prompt must agree
+    on the answer, find no ambiguity, and report demand tags whose level is at most one below
+    `level`. A problem whose tags give L1 (direct computation) never passes as L3+."""
+    pid = prob.get("id", "?")
+    level = prob["level"]
+    bs = prob.get("blindSolve")
+    missing = [f for f in BLIND_SOLVE_FIELDS if not isinstance(bs, dict) or f not in bs]
+    if missing:
+        raise AiContractError(
+            f"[{pid}] L{level} problem needs a 'blindSolve' record with {list(BLIND_SOLVE_FIELDS)} "
+            f"from a separate solver that saw only the prompt (07 §4 V2); missing {missing}."
+        )
+    for tag, allowed in BLIND_SOLVE_TAGS.items():
+        if bs[tag] not in allowed:
+            raise AiContractError(f"[{pid}] blindSolve.{tag} '{bs[tag]}' must be one of {list(allowed)}.")
+    if not isinstance(bs["reverse"], bool) or not isinstance(bs["steps"], int) or isinstance(bs["steps"], bool):
+        raise AiContractError(f"[{pid}] blindSolve.reverse must be true/false and blindSolve.steps an integer.")
+    if bs["ambiguous"]:
+        raise AiContractError(f"[{pid}] Blind solver found the prompt ambiguous.")
+    spec = prob.get("answerSpec") or {}
+    if check_answer(spec, str(bs["answer"])).get("verdict") != "correct":
+        raise AiContractError(
+            f"[{pid}] Blind-solve answer '{bs['answer']}' does not match answerSpec '{spec.get('value')}'."
+        )
+    got = demand_level(bs)
+    if got < level - 1:
+        shape = ", ".join(f"{t}={bs[t]}" for t in (*BLIND_SOLVE_TAGS, "reverse", "steps"))
+        floor = " It is a direct computation (mental-math level)." if got == 1 else ""
+        raise AiContractError(
+            f"[{pid}] Labelled L{level} but the blind solver's tags ({shape}) give L{got}.{floor} "
+            f"Redesign it once to add real demand, or relabel; if it still fails, ask the learner (06 §2.3)."
+        )
+
+
 def validate_against_vault(prob: Dict[str, Any], archetypes: List[Dict[str, Any]], unit_code: str) -> None:
     """Gates that need the vault or a blind solve (07 §4), shared by --check and ingest.
 
     - archetypeKey must be a vault archetype, and commonTrapTag one of its cognitiveTraps,
       so trapMatched telemetry only ever reports misconceptions the vault defines.
-    - L4/L5 problems must carry a `blindSolve` record from a separate solver that saw only
-      the prompt: matching answer, not ambiguous, and an assigned level no lower than `level`.
+    - L3+ problems must pass the blind-solve floor gate (`validate_blind_solve`).
       G2 counts structure (steps, concepts, constraints, category) and cannot judge demand.
     """
     pid = prob.get("id", "?")
@@ -441,25 +499,8 @@ def validate_against_vault(prob: Dict[str, Any], archetypes: List[Dict[str, Any]
         )
 
     level = prob.get("level")
-    if isinstance(level, int) and level >= 4:
-        bs = prob.get("blindSolve")
-        if not isinstance(bs, dict) or "answer" not in bs or "level" not in bs or "ambiguous" not in bs:
-            raise AiContractError(
-                f"[{pid}] L{level} problem needs a 'blindSolve' record "
-                f"{{'answer', 'level', 'ambiguous'}} from a separate solver that saw only the prompt (07 §4 V2)."
-            )
-        if bs["ambiguous"]:
-            raise AiContractError(f"[{pid}] Blind solver found the prompt ambiguous.")
-        spec = prob.get("answerSpec") or {}
-        if check_answer(spec, str(bs["answer"])).get("verdict") != "correct":
-            raise AiContractError(
-                f"[{pid}] Blind-solve answer '{bs['answer']}' does not match answerSpec '{spec.get('value')}'."
-            )
-        if not isinstance(bs["level"], int) or bs["level"] < level:
-            raise AiContractError(
-                f"[{pid}] Labelled L{level} but the blind solver rated it L{bs['level']}. "
-                f"Relabel it or redesign it; do not change category or add constraints to pass G2."
-            )
+    if isinstance(level, int) and level >= 3:
+        validate_blind_solve(prob)
 
 
 def get_vault_path(unit_code: str, vault_dir: Optional[str] = None) -> str:
