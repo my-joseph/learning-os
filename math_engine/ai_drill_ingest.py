@@ -14,13 +14,13 @@ import os
 import re
 from typing import Any, Dict, List, Optional
 
-from math_engine.answer_check import CHECKERS, check_answer, is_equal, to_expr
+from math_engine.answer_check import CHECKERS, _split_items, check_answer, is_equal, to_expr
 from math_engine.figure_autofill import archetype_requires_figure, autofill_problem_figure
 from math_engine.fmt import LEVEL_LABELS, unit_hierarchy
 from math_engine.generate import next_drill_id
 from math_engine.verify import verify_problem
 from progress_store import strip_progress
-from quality_rules import QUALITY_RULES
+from quality_rules import BLIND_SOLVE_TAGS, QUALITY_RULES, demand_level
 
 VAULT_DIR = os.path.join(os.path.dirname(__file__), "reasoning_vault")
 
@@ -170,6 +170,7 @@ def check_prompt_does_not_leak_solution(pid: str, prompt: str, display: str = ""
         raise AiContractError(f"[{pid}] Problem gives away the solution: " + "; ".join(reasons))
 
 
+MIN_FLAW_LINES = 4
 _SHOWN_WORK_LINE_RE = re.compile(r"^\s*Line \d+:.*$", re.MULTILINE)
 
 
@@ -200,6 +201,11 @@ def validate_flaw_trap(prob: Dict[str, Any], trap_value: Any) -> None:
             f"[{pid}] Find-the-flaw prompt must show one 'Line N: $...$' line per verify.flaw value "
             f"({len(shown)} lines, {len(values)} values)."
         )
+    if len(shown) < MIN_FLAW_LINES:
+        raise AiContractError(
+            f"[{pid}] Find-the-flaw work shows {len(shown)} lines; show at least {MIN_FLAW_LINES} so the "
+            f"wrong line cannot be guessed and is not the only step (06 §2.3)."
+        )
     if {str(o.get("id")) for o in spec.get("options") or []} != {str(i) for i in range(1, len(shown) + 1)}:
         raise AiContractError(f"[{pid}] Find-the-flaw options must be exactly the line numbers 1..{len(shown)}.")
     last = values[-1]
@@ -207,6 +213,37 @@ def validate_flaw_trap(prob: Dict[str, Any], trap_value: Any) -> None:
         raise AiContractError(
             f"[{pid}] The shown work must end at the trap value '{trap_value}' (last line value '{last}')."
         )
+
+
+def _trap_matches_spec(spec: Dict[str, Any], tv: Any) -> bool:
+    """True when `tv`, put in place of the expected answer, is a well-formed answer of the spec's type
+    (so the trap is something a learner could actually enter). Types without a checker pass."""
+    spec_type = spec.get("type")
+    trap_spec = dict(spec)
+    if spec_type in ("number", "expression", "complex"):
+        trap_spec["value"] = str(tv)
+    elif spec_type == "vector":
+        trap_spec["value"] = tv
+        trap_spec.pop("components", None)
+        trap_spec.pop("values", None)
+    elif spec_type == "solution_set":
+        # The trap is the set a learner with the misconception writes, e.g. only the positive root.
+        trap_spec["values"] = _split_items(str(tv), spec.get("variable", "x"))
+    elif spec_type == "tuple":
+        if isinstance(tv, (list, tuple)):
+            trap_spec["values"] = list(tv)
+        elif isinstance(tv, str):
+            parts = [p.strip() for p in re.sub(r"^\s*[\(\[\{<]|[\)\]\}>]\s*$", "", tv).split(",") if p.strip()]
+            trap_spec["values"] = parts
+        else:
+            trap_spec["values"] = [tv]
+    fn = CHECKERS.get(spec_type)
+    if not fn:
+        return True
+    try:
+        return fn(trap_spec, str(tv)).get("verdict") == "correct"
+    except Exception:
+        return False
 
 
 def validate_ai_problem_contract(prob: Dict[str, Any], enforce_leak_gate: bool = True) -> bool:
@@ -327,31 +364,10 @@ def validate_ai_problem_contract(prob: Dict[str, Any], enforce_leak_gate: bool =
         if chk.get("verdict") == "correct":
             raise AiContractError(f"[{pid}] trapValue '{tv}' evaluated as correct by check_answer!")
 
-        spec_type = spec.get("type")
         if is_find_the_flaw(prob):
-            validate_flaw_trap(prob, tv)
-            spec_type = None  # the trap is the shown work's result, not an option id
-        trap_spec = dict(spec)
-        if spec_type in ("number", "expression", "complex"):
-            trap_spec["value"] = str(tv)
-        elif spec_type == "vector":
-            trap_spec["value"] = tv
-            trap_spec.pop("components", None)
-            trap_spec.pop("values", None)
-        elif spec_type == "tuple":
-            if isinstance(tv, (list, tuple)):
-                trap_spec["values"] = list(tv)
-            elif isinstance(tv, str):
-                parts = [p.strip() for p in re.sub(r"^\s*[\(\[\{<]|[\)\]\}>]\s*$", "", tv).split(",") if p.strip()]
-                trap_spec["values"] = parts
-            else:
-                trap_spec["values"] = [tv]
-
-        fn = CHECKERS.get(spec_type)
-        if fn:
-            trap_chk = fn(trap_spec, str(tv))
-            if trap_chk.get("verdict") != "correct":
-                raise AiContractError(f"[{pid}] trapValue '{tv}' failed trap checker match.")
+            validate_flaw_trap(prob, tv)  # the trap is the shown work's result, not an option id
+        elif not _trap_matches_spec(spec, tv):
+            raise AiContractError(f"[{pid}] trapValue '{tv}' failed trap checker match.")
 
     # 6. Display LaTeX and plainText integrity for math problems (prevent undefined/unrendered equation bugs)
     display = prob.get("display")
@@ -458,34 +474,18 @@ def require_figure_if_declared(prob: Dict[str, Any], archetypes: List[Dict[str, 
         )
 
 
-# Demand tags a blind solver reports instead of a level (06 §2.3). Values are ordered low → high.
-BLIND_SOLVE_TAGS: Dict[str, tuple] = {
-    "setup": ("given", "translate", "model"),
-    "strategy": ("prescribed", "choose", "invent"),
-    "check": ("none", "edge", "justify"),
-    "task": ("compute", "diagnose"),
-}
 BLIND_SOLVE_FIELDS = ("answer", "ambiguous", *BLIND_SOLVE_TAGS, "reverse", "steps")
-
-
-def demand_level(tags: Dict[str, Any]) -> int:
-    """Map blind-solve demand tags to a level (06 §2.3). The solver never picks the level itself."""
-    if tags["strategy"] == "invent":
-        return 5
-    deeper = tags["strategy"] == "choose" or tags["check"] != "none"
-    if tags["setup"] == "model" and deeper:
-        return 4
-    if tags["setup"] == "model" or deeper or tags["task"] == "diagnose":
-        return 3
-    if tags["setup"] == "translate" or tags["reverse"] or tags["steps"] >= 4:
-        return 2
-    return 1
+# "If it fits, report X; otherwise report 0": a sentinel answer bolted on to earn check=edge.
+SENTINEL_ANSWER_RE = re.compile(
+    r"\b(?:otherwise|if\s+not|else)\b[^.?!]{0,40}?\b(?:report|answer|write|enter|give|respond\s+with)\b\s*\$?\s*0(?!\.?\d)",
+    re.IGNORECASE,
+)
 
 
 def validate_blind_solve(prob: Dict[str, Any]) -> None:
     """L3+ floor gate (06 §2.3, 07 §4 V2): a separate solver that saw only the prompt must agree
-    on the answer, find no ambiguity, and report demand tags whose level is at most one below
-    `level`. A problem whose tags give L1 (direct computation) never passes as L3+."""
+    on the answer, find no ambiguity, and report demand tags whose level reaches `level`
+    (L3 may be one below). A prompt with a sentinel fallback answer is rejected outright."""
     pid = prob.get("id", "?")
     level = prob["level"]
     bs = prob.get("blindSolve")
@@ -507,8 +507,16 @@ def validate_blind_solve(prob: Dict[str, Any]) -> None:
         raise AiContractError(
             f"[{pid}] Blind-solve answer '{bs['answer']}' does not match answerSpec '{spec.get('value')}'."
         )
+    if SENTINEL_ANSWER_RE.search(prob.get("prompt") or ""):
+        raise AiContractError(
+            f"[{pid}] Prompt asks for a fallback answer ('otherwise report 0'). A fits/doesn't-fit clause added "
+            f"to earn check=edge is not real demand (06 §2.3); make the constraint part of what is asked "
+            f"(e.g. the largest value that satisfies it) or drop it."
+        )
     got = demand_level(bs)
-    if got < level - 1:
+    # L3 may sit one level under its label; L4/L5 must earn their label exactly.
+    need = level - 1 if level == 3 else level
+    if got < need:
         shape = ", ".join(f"{t}={bs[t]}" for t in (*BLIND_SOLVE_TAGS, "reverse", "steps"))
         floor = " It is a direct computation (mental-math level)." if got == 1 else ""
         raise AiContractError(

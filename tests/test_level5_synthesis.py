@@ -120,7 +120,7 @@ class TestLevel5Synthesis(unittest.TestCase):
                 "answer": "3.71",
                 "ambiguous": False,
                 "setup": "model",
-                "strategy": "choose",
+                "strategy": "invent",  # L5 must map exactly to L5
                 "check": "none",
                 "task": "compute",
                 "reverse": False,

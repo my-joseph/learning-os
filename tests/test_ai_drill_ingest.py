@@ -56,7 +56,7 @@ class TestAiDrillIngest(unittest.TestCase):
                             "ambiguous": False,
                             "setup": "model",
                             "strategy": "prescribed",
-                            "check": "none",
+                            "check": "edge",  # L4 needs model + a check or a method choice
                             "task": "compute",
                             "reverse": True,
                             "steps": 6,

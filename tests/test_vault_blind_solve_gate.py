@@ -75,9 +75,38 @@ def test_demand_level_mapping(tags, expected):
     assert demand_level(tags) == expected
 
 
-@pytest.mark.parametrize("level", [3, 4, 5])
-def test_l3_to_l5_pass_within_one_level(level):
+@pytest.mark.parametrize("level", [3, 4])
+def test_tags_at_or_above_label_pass(level):
     check(problem(level=level, blindSolve=GOOD_BLIND))  # tags give L4
+
+
+def test_l3_may_sit_one_level_below():
+    check(problem(level=3, blindSolve={"answer": "20", "ambiguous": False, **DIRECT, "reverse": True}))  # L2
+
+
+@pytest.mark.parametrize(("level", "shallow"), [(4, {**MODEL, "check": "none"}), (5, MODEL)])
+def test_l4_l5_must_reach_label_exactly(level, shallow):
+    with pytest.raises(AiContractError, match=f"give L{level - 1}"):
+        check(problem(level=level, blindSolve={"answer": "20", "ambiguous": False, **shallow}))
+
+
+@pytest.mark.parametrize(
+    "tail",
+    [
+        "If it fits, report the diameter in cm; otherwise report $0$.",
+        "If the run fits within the bay, report the ramp length. Otherwise, answer 0.",
+        "Report the height if it fits the fairing; if not, write $0$.",
+    ],
+)
+def test_sentinel_fallback_answer_rejected(tail):
+    prob = problem(level=4, blindSolve=GOOD_BLIND, prompt=f"A tank holds $20$ L. {tail}")
+    with pytest.raises(AiContractError, match="fallback answer"):
+        check(prob)
+
+
+def test_real_limit_is_not_a_sentinel():
+    prompt = "The budget is capped at $2198$ dollars. What is the largest lane width that stays within budget?"
+    check(problem(level=4, blindSolve=GOOD_BLIND, prompt=prompt))
 
 
 @pytest.mark.parametrize(
@@ -92,6 +121,7 @@ def test_l3_to_l5_pass_within_one_level(level):
         (3, {"answer": "20", "ambiguous": False, **DIRECT}, "direct computation"),
         (4, {"answer": "20", "ambiguous": False, **DIRECT, "reverse": True}, "give L2"),
         (5, {"answer": "20", "ambiguous": False, **DIRECT, "check": "edge"}, "give L3"),
+        (4, {"answer": "20", "ambiguous": False, **DIRECT, "check": "edge"}, "give L3"),
     ],
 )
 def test_blind_solve_failures_rejected(level, blind, match):
