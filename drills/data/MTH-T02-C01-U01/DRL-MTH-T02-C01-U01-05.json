@@ -1,0 +1,1392 @@
+{
+  "unitCode": "MTH-T02-C01-U01",
+  "topicTitle": "Complex Numbers",
+  "unitTitle": "Complex Numbers",
+  "subject": "MATH",
+  "problems": [
+    {
+      "id": "Q01",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-imaginary-unit-definition",
+      "context": "signal_quadrature_demodulation",
+      "form": "direct",
+      "verificationLevel": "partial",
+      "prompt": "In a signal quadrature demodulator, a carrier rotation weight is given by $5i^{23} + 8i^{12}$. Express this weight in standard complex form $a + bi$.",
+      "display": "i^{4k + r} = i^r,\\quad i^2 = -1",
+      "plainText": "i^(4*k + r) = i^r, i^2 = -1",
+      "givens": {
+        "coeff_1": 5,
+        "exp_1": 23,
+        "coeff_2": 8,
+        "exp_2": 12
+      },
+      "constants": {
+        "cycle": 4
+      },
+      "answerSpec": {
+        "type": "complex",
+        "value": "8 - 5*I",
+        "forms": [
+          "a+bi"
+        ]
+      },
+      "answerPlain": "8 - 5i",
+      "answerDisplay": "8 - 5i",
+      "inputHint": "Standard form: a + bi",
+      "commonTrapTag": "t02-c01-u01-power-of-i-remainder-trap",
+      "trapDerivation": "5*I + 8",
+      "trapValue": "8 + 5*I",
+      "trapGivens": [
+        5,
+        8
+      ],
+      "verify": {
+        "source": "8 - 5*I",
+        "trapValue": "8 + 5*I"
+      },
+      "checkpointHint": "Divide each exponent by four and keep the remainder, then write the real part before the imaginary part",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "steps": [
+        {
+          "latex": "i^{23} = (i^4)^5 \\cdot i^3",
+          "explain": "Rewrite 23 as 4(5) + 3 to factor out complete cycles of 4.",
+          "eq": [
+            "I**23",
+            "(I**4)**5 * I**3"
+          ]
+        },
+        {
+          "latex": "(i^4)^5 \\cdot i^3 = -i",
+          "explain": "Since i^4 = 1 and i^3 = -i, simplify the first power to -i.",
+          "eq": [
+            "(I**4)**5 * I**3",
+            "-I"
+          ]
+        },
+        {
+          "latex": "i^{12} = (i^4)^3",
+          "explain": "Rewrite 12 as 4(3) with remainder 0.",
+          "eq": [
+            "I**12",
+            "(I**4)**3"
+          ]
+        },
+        {
+          "latex": "(i^4)^3 = 1",
+          "explain": "Replace i^4 with 1 to simplify the second power.",
+          "eq": [
+            "(I**4)**3",
+            "1"
+          ]
+        },
+        {
+          "latex": "5(-i) + 8(1) = 8 - 5i",
+          "explain": "Multiply by the coefficients and write in standard form a + bi.",
+          "val": "8 - 5*I"
+        }
+      ],
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C01-U01",
+          "title": "Complex Numbers",
+          "notionUrl": "https://www.notion.so/4013818f8ba080d7896bef2080bbc74a"
+        }
+      ],
+      "fingerprint": "t02-c01-u01-power-of-i-remainder-trap|direct|i^(#*k + r) = i^r, i^# = -#",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 5,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c01-u01-power-of-i-remainder-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 17
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 1 - Foundation"
+    },
+    {
+      "id": "Q02",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-adding-complex-numbers",
+      "context": "vector_impedance_mesh",
+      "form": "direct",
+      "verificationLevel": "partial",
+      "prompt": "In a vector impedance mesh, three series elements have impedances $Z_1 = 4 + 7i\\ \\Omega$, $Z_2 = 9 - 2i\\ \\Omega$, and $Z_3 = 3 + 5i\\ \\Omega$. Find the total impedance $Z_1 + Z_2 + Z_3$ in standard form $a + bi$.",
+      "display": "(a + bi) + (c + di) = (a + c) + (b + d)i",
+      "plainText": "Z_total = Z1 + Z2 + Z3",
+      "givens": {
+        "re1": 4,
+        "im1": 7,
+        "re2": 9,
+        "im2": 2,
+        "re3": 3,
+        "im3": 5
+      },
+      "answerSpec": {
+        "type": "complex",
+        "value": "16 + 10*I",
+        "forms": [
+          "a+bi"
+        ]
+      },
+      "answerPlain": "16 + 10i",
+      "answerDisplay": "16 + 10i",
+      "inputHint": "Standard form: a + bi",
+      "commonTrapTag": "t02-c01-u01-imaginary-unit-squared-in-sum-trap",
+      "trapDerivation": "(4 + 9 + 3) - (7 - 2 + 5)",
+      "trapValue": "6",
+      "trapGivens": [
+        4,
+        9,
+        3,
+        7,
+        2,
+        5
+      ],
+      "verify": {
+        "source": "16 + 10*I",
+        "trapValue": "6"
+      },
+      "checkpointHint": "Group real components together and imaginary components together; adding multiples of the imaginary unit keeps its first power",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "steps": [
+        {
+          "latex": "Z_{\\text{total}} = (4 + 9 + 3) + (7 - 2 + 5)i",
+          "explain": "Group the real parts and the imaginary parts separately."
+        },
+        {
+          "latex": "4 + 9 + 3 = 16",
+          "explain": "Add the real parts.",
+          "eq": [
+            "4 + 9 + 3",
+            "16"
+          ]
+        },
+        {
+          "latex": "7 - 2 + 5 = 10",
+          "explain": "Combine the imaginary coefficients.",
+          "eq": [
+            "7 - 2 + 5",
+            "10"
+          ]
+        },
+        {
+          "latex": "Z_{\\text{total}} = 16 + 10i",
+          "explain": "Write the combined impedance in standard form a + bi.",
+          "val": "16 + 10*I"
+        }
+      ],
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C01-U01",
+          "title": "Complex Numbers",
+          "notionUrl": "https://www.notion.so/4013818f8ba080d7896bef2080bbc74a"
+        }
+      ],
+      "fingerprint": "t02-c01-u01-imaginary-unit-squared-in-sum-trap|direct|Z_total = Z# + Z# + Z#",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 4,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c01-u01-imaginary-unit-squared-in-sum-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 15
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 2 - Standard Exam"
+    },
+    {
+      "id": "Q03",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-subtracting-complex-numbers",
+      "context": "phase_lag_subtraction",
+      "form": "direct",
+      "verificationLevel": "partial",
+      "prompt": "In a phase-lag analyzer, the output phasor is $V_{\\text{out}} = 11 + 4i\\text{ V}$ and the reference phasor is $V_{\\text{in}} = 5 - 9i\\text{ V}$. Find the difference $V_{\\text{out}} - V_{\\text{in}}$ in standard form $a + bi$.",
+      "display": "(a + bi) - (c + di) = (a - c) + (b - d)i",
+      "plainText": "(a + b*i) - (c + d*i) = (a - c) + (b - d)*i",
+      "givens": {
+        "a": 11,
+        "b": 4,
+        "c": 5,
+        "d": 9
+      },
+      "answerSpec": {
+        "type": "complex",
+        "value": "6 + 13*I",
+        "forms": [
+          "a+bi"
+        ]
+      },
+      "answerPlain": "6 + 13i",
+      "answerDisplay": "6 + 13i",
+      "inputHint": "Standard form: a + bi",
+      "commonTrapTag": "t02-c01-u01-forgot-to-distribute-negative-to-imaginary-trap",
+      "trapDerivation": "(11 - 5) + (4 - 9)*I",
+      "trapValue": "6 - 5*I",
+      "trapGivens": [
+        11,
+        5,
+        4,
+        9
+      ],
+      "verify": {
+        "source": "6 + 13*I",
+        "trapValue": "6 - 5*I"
+      },
+      "checkpointHint": "Distribute the subtraction sign across both parts of the second complex number before combining like terms",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "steps": [
+        {
+          "latex": "(11 + 4i) - (5 - 9i) = 11 + 4i - 5 + 9i",
+          "explain": "Distribute the negative sign to both 5 and -9i.",
+          "eq": [
+            "(11 + 4*I) - (5 - 9*I)",
+            "11 + 4*I - 5 + 9*I"
+          ]
+        },
+        {
+          "latex": "11 - 5 = 6",
+          "explain": "Subtract the real parts.",
+          "eq": [
+            "11 - 5",
+            "6"
+          ]
+        },
+        {
+          "latex": "4i + 9i = 13i",
+          "explain": "Combine the imaginary terms.",
+          "eq": [
+            "4*I + 9*I",
+            "13*I"
+          ]
+        },
+        {
+          "latex": "V_{\\text{out}} - V_{\\text{in}} = 6 + 13i",
+          "explain": "Write the result in standard form a + bi.",
+          "val": "6 + 13*I"
+        }
+      ],
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C01-U01",
+          "title": "Complex Numbers",
+          "notionUrl": "https://www.notion.so/4013818f8ba080d7896bef2080bbc74a"
+        }
+      ],
+      "fingerprint": "t02-c01-u01-forgot-to-distribute-negative-to-imaginary-trap|direct|(a + b*i) - (c + d*i) = (a - c) + (b - d)*i",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 4,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c01-u01-forgot-to-distribute-negative-to-imaginary-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 15
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 2 - Standard Exam"
+    },
+    {
+      "id": "Q04",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-multiplying-pure-imaginary",
+      "context": "capacitive_inductive_cancellation",
+      "form": "direct",
+      "verificationLevel": "partial",
+      "prompt": "In a capacitive-inductive cancellation stage, a combined reactive response is given by $(4i)(-9i) + 7i$. Express this response in standard form $a + bi$.",
+      "display": "(bi)(di) = bd \\cdot i^2",
+      "plainText": "(b*i)*(d*i) + c*i = -b*d + c*i",
+      "givens": {
+        "b": 4,
+        "d": 9,
+        "c": 7
+      },
+      "answerSpec": {
+        "type": "complex",
+        "value": "36 + 7*I",
+        "forms": [
+          "a+bi"
+        ]
+      },
+      "answerPlain": "36 + 7i",
+      "answerDisplay": "36 + 7i",
+      "inputHint": "Standard form: a + bi",
+      "commonTrapTag": "t02-c01-u01-retain-imaginary-unit-trap",
+      "trapDerivation": "-4*9*I + 7*I",
+      "trapValue": "-29*I",
+      "trapGivens": [
+        4,
+        9,
+        7
+      ],
+      "verify": {
+        "source": "36 + 7*I",
+        "trapValue": "-29*I"
+      },
+      "checkpointHint": "Multiplying two imaginary units yields the square of the unit, converting that product to a real term before ordering parts",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "steps": [
+        {
+          "latex": "(4i)(-9i) + 7i = -36i^2 + 7i",
+          "explain": "Multiply the coefficients 4 and -9 and multiply i by i to get -36i^2.",
+          "eq": [
+            "(4*I)*(-9*I) + 7*I",
+            "-36*I**2 + 7*I"
+          ]
+        },
+        {
+          "latex": "-36i^2 + 7i = -36(-1) + 7i",
+          "explain": "Replace i^2 with -1."
+        },
+        {
+          "latex": "-36(-1) + 7i = 36 + 7i",
+          "explain": "Simplify -36(-1) to 36 and write in standard form a + bi.",
+          "val": "36 + 7*I"
+        }
+      ],
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C01-U01",
+          "title": "Complex Numbers",
+          "notionUrl": "https://www.notion.so/4013818f8ba080d7896bef2080bbc74a"
+        }
+      ],
+      "fingerprint": "t02-c01-u01-retain-imaginary-unit-trap|direct|(b*i)*(d*i) + c*i = -b*d + c*i",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c01-u01-retain-imaginary-unit-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 2 - Standard Exam"
+    },
+    {
+      "id": "Q05",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-subtracting-complex-numbers",
+      "context": "bus_current_balance",
+      "form": "reverse",
+      "verificationLevel": "partial",
+      "prompt": "On a power bus, two feeder currents add to a total phasor current of $z_{\\text{total}} = 12 + 5i\\text{ A}$. If the first feeder carries $z_1 = 4 - 8i\\text{ A}$, find the second feeder current $z_2$ in standard form $a + bi$.",
+      "display": "z_2 = z_{\\text{total}} - z_1",
+      "plainText": "z2 = z_total - z1",
+      "givens": {
+        "re_tot": 12,
+        "im_tot": 5,
+        "re_1": 4,
+        "im_1": 8
+      },
+      "answerSpec": {
+        "type": "complex",
+        "value": "8 + 13*I",
+        "forms": [
+          "a+bi"
+        ]
+      },
+      "answerPlain": "8 + 13i",
+      "answerDisplay": "8 + 13i",
+      "inputHint": "Standard form: a + bi",
+      "commonTrapTag": "t02-c01-u01-subtraction-order-swap-trap",
+      "trapDerivation": "(4 - 8*I) - (12 + 5*I)",
+      "trapValue": "-8 - 13*I",
+      "trapGivens": [
+        4,
+        8,
+        12,
+        5
+      ],
+      "verify": {
+        "source": "8 + 13*I",
+        "trapValue": "-8 - 13*I"
+      },
+      "checkpointHint": "Isolate the unknown component by subtracting the known branch from the total, distributing the minus sign across both parts",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "steps": [
+        {
+          "latex": "z_2 = (12 + 5i) - (4 - 8i)",
+          "explain": "Subtract the first feeder current from the total current."
+        },
+        {
+          "latex": "(12 + 5i) - (4 - 8i) = 12 + 5i - 4 + 8i",
+          "explain": "Distribute the negative sign across both 4 and -8i.",
+          "eq": [
+            "(12 + 5*I) - (4 - 8*I)",
+            "12 + 5*I - 4 + 8*I"
+          ]
+        },
+        {
+          "latex": "12 - 4 = 8",
+          "explain": "Subtract the real parts.",
+          "eq": [
+            "12 - 4",
+            "8"
+          ]
+        },
+        {
+          "latex": "5i + 8i = 13i",
+          "explain": "Add the imaginary parts.",
+          "eq": [
+            "5*I + 8*I",
+            "13*I"
+          ]
+        },
+        {
+          "latex": "z_2 = 8 + 13i",
+          "explain": "Write the second feeder current in standard form a + bi.",
+          "val": "8 + 13*I"
+        }
+      ],
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C01-U01",
+          "title": "Complex Numbers",
+          "notionUrl": "https://www.notion.so/4013818f8ba080d7896bef2080bbc74a"
+        }
+      ],
+      "fingerprint": "t02-c01-u01-subtraction-order-swap-trap|reverse|z# = z_total - z#",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 5,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c01-u01-subtraction-order-swap-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 17
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 2 - Standard Exam"
+    },
+    {
+      "id": "Q06",
+      "level": 3,
+      "category": "Trap & Edge Case",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-multiplying-complex-binomials",
+      "context": "complex_power_s_vi",
+      "form": "direct",
+      "verificationLevel": "partial",
+      "prompt": "In an AC power check, a student multiplied $(5 + 3i)(7 - 4i)$ and wrote:\nLine 1: $(5 + 3i)(7 - 4i) = 5 \\cdot 7 + (3i)(-4i)$\nLine 2: $= 35 - 12i^2$\nLine 3: $= 35 + 12$\nLine 4: $= 47$\nWhich line is the first one that is wrong?",
+      "display": "(a + bi)(c + di) = (ac - bd) + (ad + bc)i",
+      "plainText": "(a + b*i)*(c + d*i) = (a*c - b*d) + (a*d + b*c)*i",
+      "givens": {
+        "a": 5,
+        "b": 3,
+        "c": 7,
+        "d": 4
+      },
+      "answerSpec": {
+        "type": "choice",
+        "options": [
+          {
+            "id": "1",
+            "label": "Line 1"
+          },
+          {
+            "id": "2",
+            "label": "Line 2",
+            "trapTag": "t02-c01-u01-cross-term-omission-trap"
+          },
+          {
+            "id": "3",
+            "label": "Line 3",
+            "trapTag": "t02-c01-u01-cross-term-omission-trap"
+          },
+          {
+            "id": "4",
+            "label": "Line 4",
+            "trapTag": "t02-c01-u01-cross-term-omission-trap"
+          }
+        ],
+        "correct": "1"
+      },
+      "answerPlain": "1",
+      "answerDisplay": "\\text{Line 1}",
+      "inputHint": "Choose a line",
+      "commonTrapTag": "t02-c01-u01-cross-term-omission-trap",
+      "trapDerivation": "5*7 + 3*4",
+      "trapValue": "47",
+      "trapGivens": [
+        5,
+        7,
+        3,
+        4
+      ],
+      "verify": {
+        "source": "47 + I",
+        "trapValue": "47",
+        "flaw": {
+          "values": [
+            "5*7 + (3*I)*(-4*I)",
+            "35 - 12*I^2",
+            "35 + 12",
+            "47"
+          ],
+          "firstWrong": 1
+        }
+      },
+      "checkpointHint": "Work through the multiplication step by step on scratch paper and compare each line against your own calculation to find where it first diverges",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "steps": [
+        {
+          "latex": "(5 + 3i)(7 - 4i) \\ne 5 \\cdot 7 + (3i)(-4i)",
+          "explain": "Line 1 is the first wrong line: multiplying two complex binomials requires all four pairwise products, omitting the outer and inner terms loses the imaginary part."
+        },
+        {
+          "latex": "(5 + 3i)(7 - 4i) = 35 - 20i + 21i - 12i^2",
+          "explain": "Expand all four pairwise products."
+        },
+        {
+          "latex": "-20i + 21i = i",
+          "explain": "Combine the imaginary terms.",
+          "eq": [
+            "-20*I + 21*I",
+            "I"
+          ]
+        },
+        {
+          "latex": "35 + i - 12(-1) = 35 + i + 12",
+          "explain": "Replace i^2 with -1 so -12i^2 becomes +12."
+        },
+        {
+          "latex": "35 + 12 + i = 47 + i",
+          "explain": "Add the real parts to find the correct product.",
+          "val": "47 + I"
+        }
+      ],
+      "blindSolve": {
+        "answer": "1",
+        "ambiguous": false,
+        "setup": "given",
+        "strategy": "prescribed",
+        "check": "none",
+        "task": "diagnose",
+        "reverse": false,
+        "steps": 3
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C01-U01",
+          "title": "Complex Numbers",
+          "notionUrl": "https://www.notion.so/4013818f8ba080d7896bef2080bbc74a"
+        }
+      ],
+      "fingerprint": "t02-c01-u01-cross-term-omission-trap|direct|(a + b*i)*(c + d*i) = (a*c - b*d) + (a*d + b*c)*i",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 5,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            20
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c01-u01-cross-term-omission-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 3
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 21
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 3 - Trap & Diagnostic"
+    },
+    {
+      "id": "Q07",
+      "level": 3,
+      "category": "Trap & Edge Case",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-complex-conjugates-modulus",
+      "context": "quantum_probability_density",
+      "form": "direct",
+      "verificationLevel": "partial",
+      "prompt": "For a quantum amplitude $\\psi = 8 + 3i$, a student computed $\\psi\\bar{\\psi}$ and wrote:\nLine 1: $\\psi\\bar{\\psi} = (8 + 3i)(8 - 3i) = 8^2 - (3i)^2$\nLine 2: $= 64 - 9i^2$\nLine 3: $= 64 - 9$\nLine 4: $= 55$\nWhich line is the first one that is wrong?",
+      "display": "(a + bi)(a - bi) = a^2 + b^2",
+      "plainText": "(a + b*i)*(a - b*i) = a^2 + b^2",
+      "givens": {
+        "a": 8,
+        "b": 3
+      },
+      "answerSpec": {
+        "type": "choice",
+        "options": [
+          {
+            "id": "1",
+            "label": "Line 1",
+            "provenance": "flags a correct step as the error"
+          },
+          {
+            "id": "2",
+            "label": "Line 2",
+            "provenance": "flags a correct step as the error"
+          },
+          {
+            "id": "3",
+            "label": "Line 3"
+          },
+          {
+            "id": "4",
+            "label": "Line 4",
+            "trapTag": "t02-c01-u01-difference-of-squares-minus-sign-trap"
+          }
+        ],
+        "correct": "3"
+      },
+      "answerPlain": "3",
+      "answerDisplay": "\\text{Line 3}",
+      "inputHint": "Choose a line",
+      "commonTrapTag": "t02-c01-u01-difference-of-squares-minus-sign-trap",
+      "trapDerivation": "8^2 - 3^2",
+      "trapValue": "55",
+      "trapGivens": [
+        8,
+        3
+      ],
+      "verify": {
+        "source": "73",
+        "trapValue": "55",
+        "flaw": {
+          "values": [
+            "8^2 - (3*I)^2",
+            "64 - 9*I^2",
+            "64 - 9",
+            "55"
+          ],
+          "firstWrong": 3
+        }
+      },
+      "checkpointHint": "Work through the calculation step by step on scratch paper and compare each line against your own result to locate the first divergence",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "steps": [
+        {
+          "latex": "(8 + 3i)(8 - 3i) = 8^2 - (3i)^2",
+          "explain": "Line 1 is correct: apply difference of squares."
+        },
+        {
+          "latex": "(3i)^2 = 9i^2",
+          "explain": "Line 2 is correct: square both factors inside the second term."
+        },
+        {
+          "latex": "-9i^2 = 9",
+          "explain": "Line 3 is the first wrong line: replacing i^2 with -1 turns -9i^2 into +9, not -9.",
+          "eq": [
+            "-9*I^2",
+            "9"
+          ]
+        },
+        {
+          "latex": "64 + 9 = 73",
+          "explain": "Add 64 and 9 to obtain the true value.",
+          "val": "73"
+        }
+      ],
+      "blindSolve": {
+        "answer": "3",
+        "ambiguous": false,
+        "setup": "given",
+        "strategy": "prescribed",
+        "check": "none",
+        "task": "diagnose",
+        "reverse": false,
+        "steps": 3
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C01-U01",
+          "title": "Complex Numbers",
+          "notionUrl": "https://www.notion.so/4013818f8ba080d7896bef2080bbc74a"
+        }
+      ],
+      "fingerprint": "t02-c01-u01-difference-of-squares-minus-sign-trap|direct|(a + b*i)*(a - b*i) = a^# + b^#",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 4,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            20
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c01-u01-difference-of-squares-minus-sign-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 3
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 19
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 3 - Trap & Diagnostic"
+    },
+    {
+      "id": "Q08",
+      "level": 3,
+      "category": "Trap & Edge Case",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-complex-conjugates-modulus",
+      "context": "power_factor_apparent_power",
+      "form": "direct",
+      "verificationLevel": "partial",
+      "prompt": "An apparent power phasor has $z = 5 - 7i$. A student computed $z\\bar{z}$ and wrote:\nLine 1: $z\\bar{z} = (5 - 7i)(-5 - 7i)$\nLine 2: $= (-7i)^2 - 5^2$\nLine 3: $= 49i^2 - 25$\nLine 4: $= -74$\nWhich line is the first one that is wrong?",
+      "display": "(a - bi)(a + bi) = a^2 + b^2",
+      "plainText": "(a - b*i)*(a + b*i) = a^2 + b^2",
+      "givens": {
+        "a": 5,
+        "b": 7
+      },
+      "answerSpec": {
+        "type": "choice",
+        "options": [
+          {
+            "id": "1",
+            "label": "Line 1"
+          },
+          {
+            "id": "2",
+            "label": "Line 2",
+            "trapTag": "t02-c01-u01-conjugate-real-sign-flip-trap"
+          },
+          {
+            "id": "3",
+            "label": "Line 3",
+            "trapTag": "t02-c01-u01-conjugate-real-sign-flip-trap"
+          },
+          {
+            "id": "4",
+            "label": "Line 4",
+            "trapTag": "t02-c01-u01-conjugate-real-sign-flip-trap"
+          }
+        ],
+        "correct": "1"
+      },
+      "answerPlain": "1",
+      "answerDisplay": "\\text{Line 1}",
+      "inputHint": "Choose a line",
+      "commonTrapTag": "t02-c01-u01-conjugate-real-sign-flip-trap",
+      "trapDerivation": "-5^2 - 7^2",
+      "trapValue": "-74",
+      "trapGivens": [
+        5,
+        7
+      ],
+      "verify": {
+        "source": "74",
+        "trapValue": "-74",
+        "flaw": {
+          "values": [
+            "(5 - 7*I)*(-5 - 7*I)",
+            "(-7*I)^2 - 5^2",
+            "49*I^2 - 25",
+            "-74"
+          ],
+          "firstWrong": 1
+        }
+      },
+      "checkpointHint": "Verify every line from the very beginning against the governing definitions on scratch paper to locate where the student's work first diverges",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "steps": [
+        {
+          "latex": "\\bar{z} = 5 + 7i",
+          "explain": "Line 1 is the first wrong line: the complex conjugate reverses only the imaginary part, not the real part."
+        },
+        {
+          "latex": "z\\bar{z} = (5 - 7i)(5 + 7i)",
+          "explain": "Multiply z by its true conjugate 5 + 7i."
+        },
+        {
+          "latex": "(5 - 7i)(5 + 7i) = 5^2 - (7i)^2",
+          "explain": "Apply difference of squares."
+        },
+        {
+          "latex": "25 - 49i^2 = 25 + 49",
+          "explain": "Replace i^2 with -1 so -49i^2 becomes +49.",
+          "eq": [
+            "25 - 49*I^2",
+            "25 + 49"
+          ]
+        },
+        {
+          "latex": "25 + 49 = 74",
+          "explain": "Add to get the correct modulus squared.",
+          "val": "74"
+        }
+      ],
+      "blindSolve": {
+        "answer": "1",
+        "ambiguous": false,
+        "setup": "given",
+        "strategy": "prescribed",
+        "check": "none",
+        "task": "diagnose",
+        "reverse": false,
+        "steps": 4
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C01-U01",
+          "title": "Complex Numbers",
+          "notionUrl": "https://www.notion.so/4013818f8ba080d7896bef2080bbc74a"
+        }
+      ],
+      "fingerprint": "t02-c01-u01-conjugate-real-sign-flip-trap|direct|(a - b*i)*(a + b*i) = a^# + b^#",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 5,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            20
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c01-u01-conjugate-real-sign-flip-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 3
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 21
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 3 - Trap & Diagnostic"
+    },
+    {
+      "id": "Q09",
+      "level": 3,
+      "category": "Trap & Edge Case",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-dividing-complex-numbers",
+      "context": "transmission_reflection_coefficient",
+      "form": "direct",
+      "verificationLevel": "partial",
+      "prompt": "A transmission reflection coefficient is given by $\\dfrac{17 + 6i}{4 - 3i}$. A student simplified it and wrote:\nLine 1: $\\dfrac{17 + 6i}{4 - 3i} = \\dfrac{(17 + 6i)(4 + 3i)}{(4 - 3i)(4 + 3i)}$\nLine 2: $= \\dfrac{68 + 51i + 24i + 18i^2}{4^2 - 3^2}$\nLine 3: $= \\dfrac{50 + 75i}{16 - 9}$\nLine 4: $= \\dfrac{50}{7} + \\dfrac{75}{7}i$\nWhich line is the first one that is wrong?",
+      "display": "\\frac{a + bi}{c - di} = \\frac{(a + bi)(c + di)}{c^2 + d^2}",
+      "plainText": "(a + b*i)/(c - d*i) = (a + b*i)*(c + d*i)/(c^2 + d^2)",
+      "givens": {
+        "a": 17,
+        "b": 6,
+        "c": 4,
+        "d": 3
+      },
+      "answerSpec": {
+        "type": "choice",
+        "options": [
+          {
+            "id": "1",
+            "label": "Line 1",
+            "provenance": "flags a correct step as the error"
+          },
+          {
+            "id": "2",
+            "label": "Line 2"
+          },
+          {
+            "id": "3",
+            "label": "Line 3",
+            "trapTag": "t02-c01-u01-denominator-conjugate-sign-error-trap"
+          },
+          {
+            "id": "4",
+            "label": "Line 4",
+            "trapTag": "t02-c01-u01-denominator-conjugate-sign-error-trap"
+          }
+        ],
+        "correct": "2"
+      },
+      "answerPlain": "2",
+      "answerDisplay": "\\text{Line 2}",
+      "inputHint": "Choose a line",
+      "commonTrapTag": "t02-c01-u01-denominator-conjugate-sign-error-trap",
+      "trapDerivation": "(17 + 6*I)*(4 + 3*I)/(4^2 - 3^2)",
+      "trapValue": "50/7 + 75*I/7",
+      "trapGivens": [
+        17,
+        6,
+        4,
+        3
+      ],
+      "verify": {
+        "source": "2 + 3*I",
+        "trapValue": "50/7 + 75*I/7",
+        "flaw": {
+          "values": [
+            "(17 + 6*I)*(4 + 3*I)/((4 - 3*I)*(4 + 3*I))",
+            "(68 + 51*I + 24*I + 18*I^2)/(4^2 - 3^2)",
+            "(50 + 75*I)/(16 - 9)",
+            "50/7 + 75*I/7"
+          ],
+          "firstWrong": 2
+        }
+      },
+      "checkpointHint": "Work through the simplification step by step on scratch paper and compare each line against your own calculation to locate the first divergence",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "steps": [
+        {
+          "latex": "\\frac{17 + 6i}{4 - 3i} = \\frac{(17 + 6i)(4 + 3i)}{(4 - 3i)(4 + 3i)}",
+          "explain": "Line 1 is correct: multiply top and bottom by the conjugate of the bottom."
+        },
+        {
+          "latex": "(4 - 3i)(4 + 3i) = 4^2 + 3^2",
+          "explain": "Line 2 is the first wrong line: multiplying a complex number by its conjugate produces the sum of squares, not the difference of squares.",
+          "eq": [
+            "(4 - 3*I)*(4 + 3*I)",
+            "4^2 + 3^2"
+          ]
+        },
+        {
+          "latex": "(17 + 6i)(4 + 3i) = 50 + 75i",
+          "explain": "Simplify the top using i^2 = -1.",
+          "eq": [
+            "(17 + 6*I)*(4 + 3*I)",
+            "50 + 75*I"
+          ]
+        },
+        {
+          "latex": "4^2 + 3^2 = 25",
+          "explain": "Evaluate the true bottom value.",
+          "eq": [
+            "4^2 + 3^2",
+            "25"
+          ]
+        },
+        {
+          "latex": "\\frac{50 + 75i}{25} = 2 + 3i",
+          "explain": "Divide both terms by 25 to get the correct quotient.",
+          "val": "2 + 3*I"
+        }
+      ],
+      "blindSolve": {
+        "answer": "2",
+        "ambiguous": false,
+        "setup": "given",
+        "strategy": "prescribed",
+        "check": "none",
+        "task": "diagnose",
+        "reverse": false,
+        "steps": 4
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C01-U01",
+          "title": "Complex Numbers",
+          "notionUrl": "https://www.notion.so/4013818f8ba080d7896bef2080bbc74a"
+        }
+      ],
+      "fingerprint": "t02-c01-u01-denominator-conjugate-sign-error-trap|direct|(a + b*i)/(c - d*i) = (a + b*i)*(c + d*i)/(c^# + d^#)",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 5,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            20
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c01-u01-denominator-conjugate-sign-error-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 3
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 21
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 3 - Trap & Diagnostic"
+    },
+    {
+      "id": "Q10",
+      "level": 4,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-rlc-impedance-synthesis",
+      "context": "radio_rf_tuning",
+      "form": "direct",
+      "verificationLevel": "partial",
+      "prompt": "In an RF tuning network, an inductor coil with impedance $Z_1 = 3 + i X_L\\ \\Omega$ (where $X_L > 0$) is connected in series with a capacitive load of impedance $Z_2 = 5 - 22i\\ \\Omega$. Find every value of $X_L$ (in $\\Omega$) for which the total series impedance has magnitude $17\\ \\Omega$.",
+      "display": "Z = Z_1 + Z_2,\\quad |Z| = \\sqrt{\\text{Re}(Z)^2 + \\text{Im}(Z)^2}",
+      "plainText": "Z = Z1 + Z2, |Z|^2 = Re(Z)^2 + Im(Z)^2",
+      "givens": {
+        "r_coil": 3,
+        "r_load": 5,
+        "x_cap": 22,
+        "z_mag": 17
+      },
+      "answerSpec": {
+        "type": "solution_set",
+        "values": [
+          "7",
+          "37"
+        ],
+        "variable": "X_L"
+      },
+      "answerPlain": "7, 37",
+      "answerDisplay": "7,\\ 37",
+      "inputHint": "Enter all valid values separated by a comma",
+      "commonTrapTag": "t02-c01-u01-positive-reactance-only-trap",
+      "trapDerivation": "22 + sqrt(17^2 - (3 + 5)^2)",
+      "trapValue": "37",
+      "trapGivens": [
+        22,
+        17,
+        3,
+        5
+      ],
+      "verify": {
+        "trapValue": "37"
+      },
+      "checkpointHint": "Add the series impedances component by component first, then relate the modulus to both parts and check both square-root branches against the positivity condition",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "steps": [
+        {
+          "latex": "Z = (3 + 5) + (X_L - 22)i",
+          "explain": "Add the two series impedances by combining real parts and imaginary parts."
+        },
+        {
+          "latex": "3 + 5 = 8",
+          "explain": "Sum the resistances to find the real part of Z.",
+          "eq": [
+            "3 + 5",
+            "8"
+          ]
+        },
+        {
+          "latex": "8^2 + (X_L - 22)^2 = 17^2",
+          "explain": "Equate the squared modulus of Z to the square of the target magnitude."
+        },
+        {
+          "latex": "64 + (X_L - 22)^2 = 289",
+          "explain": "Evaluate 8^2 and 17^2.",
+          "eq": [
+            "17^2 - 8^2",
+            "289 - 64"
+          ]
+        },
+        {
+          "latex": "(X_L - 22)^2 = 225",
+          "explain": "Subtract 64 from both sides.",
+          "eq": [
+            "289 - 64",
+            "225"
+          ]
+        },
+        {
+          "latex": "X_L - 22 = \\pm 15",
+          "explain": "Take both the positive and negative square roots of 225.",
+          "eq": [
+            "sqrt(225)",
+            "15"
+          ]
+        },
+        {
+          "latex": "X_L = 22 + 15",
+          "explain": "Solve the positive branch."
+        },
+        {
+          "latex": "X_L = 37",
+          "explain": "Verify 37 > 0, so 37 is a valid inductive reactance.",
+          "eq": [
+            "22 + 15",
+            "37"
+          ]
+        },
+        {
+          "latex": "X_L = 22 - 15",
+          "explain": "Solve the negative branch."
+        },
+        {
+          "latex": "X_L = 7",
+          "explain": "Verify 7 > 0, so 7 is also a valid inductive reactance.",
+          "eq": [
+            "22 - 15",
+            "7"
+          ]
+        }
+      ],
+      "blindSolve": {
+        "answer": "7, 37",
+        "ambiguous": false,
+        "setup": "model",
+        "strategy": "prescribed",
+        "check": "edge",
+        "task": "compute",
+        "reverse": true,
+        "steps": 7
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C01-U01",
+          "title": "Complex Numbers",
+          "notionUrl": "https://www.notion.so/4013818f8ba080d7896bef2080bbc74a"
+        }
+      ],
+      "fingerprint": "t02-c01-u01-positive-reactance-only-trap|direct|Z = Z# + Z#, |Z|^# = Re(Z)^# + Im(Z)^#",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 10,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            25
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c01-u01-positive-reactance-only-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 27
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 4 - Applied Synthesis"
+    }
+  ],
+  "drillId": "DRL-MTH-T02-C01-U01-05",
+  "title": "Complex Numbers — Verified Math Drill (10 Qs)",
+  "topicCode": "MTH-T02",
+  "chapterCode": "MTH-T02-C01",
+  "schemaVersion": "2.0-math",
+  "createdAt": "2026-11-14 20:21:12",
+  "config": {
+    "questionCount": 10,
+    "difficulty": "ALL",
+    "difficultyMode": "AI Synthesized Reasoning Mode"
+  },
+  "localFilePath": "drills/data/MTH-T02-C01-U01/DRL-MTH-T02-C01-U01-05.json"
+}
