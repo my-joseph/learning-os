@@ -209,7 +209,11 @@ def validate_flaw_trap(prob: Dict[str, Any], trap_value: Any) -> None:
     if {str(o.get("id")) for o in spec.get("options") or []} != {str(i) for i in range(1, len(shown) + 1)}:
         raise AiContractError(f"[{pid}] Find-the-flaw options must be exactly the line numbers 1..{len(shown)}.")
     last = values[-1]
-    if last is None or not is_equal(to_expr(str(last), trusted=True), to_expr(str(trap_value), trusted=True)):
+    # Same variable list as verify.py, so shown work with symbols (e.g. FOIL in x) can be checked.
+    vars_list = spec.get("variables") or prob.get("variables") or ["x"]
+    last_expr = None if last is None else to_expr(str(last), variables=vars_list, trusted=True)
+    trap_expr = to_expr(str(trap_value), variables=vars_list, trusted=True)
+    if last_expr is None or not is_equal(last_expr, trap_expr, variables=vars_list):
         raise AiContractError(
             f"[{pid}] The shown work must end at the trap value '{trap_value}' (last line value '{last}')."
         )

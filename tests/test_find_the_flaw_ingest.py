@@ -106,3 +106,31 @@ def test_flaw_needs_at_least_four_lines():
     prob["answerSpec"]["options"] = prob["answerSpec"]["options"][:3]
     with pytest.raises(AiContractError, match="at least 4"):
         validate_ai_problem_contract(prob)
+
+
+def test_symbolic_shown_work_in_x_passes():
+    """Polynomial find-the-flaw (e.g. C13 FOIL): every line still contains x."""
+    prob = flaw_problem()
+    prob["prompt"] = (
+        "A student expanded $(x + 3)(x - 5)$ and wrote:\n"
+        "Line 1: $(x + 3)(x - 5) = x^2 - 5x + 3x - 15$\n"
+        "Line 2: $= x^2 - 2x - 15$\n"
+        "Line 3: $= x^2 + 2x - 15$\n"
+        "Line 4: $= x^2 + 2x - 15$\n"
+        "Which line is the first one that is wrong?"
+    )
+    prob["display"] = "(x + a)(x + b) = x^2 + (a + b)x + ab"
+    prob["plainText"] = "(x + a)*(x + b)"
+    prob["givens"] = {"a": 3, "b": 5}
+    prob["trapDerivation"] = "x**2 + (5 - 3)*x - 3*5"
+    prob["trapValue"] = "x**2 + 2*x - 15"
+    prob["verify"] = {
+        "source": "(x + 3)*(x - 5)",
+        "trapValue": "x**2 + 2*x - 15",
+        "flaw": {
+            "values": ["x**2 - 5*x + 3*x - 15", "x**2 - 2*x - 15", "x**2 + 2*x - 15", "x**2 + 2*x - 15"],
+            "firstWrong": 3,
+        },
+    }
+    prob["checkpointHint"] = "Combine the two middle terms and check the sign of their sum"
+    assert validate_ai_problem_contract(prob)
