@@ -24,7 +24,10 @@ Read `rules/00_core.md` §5–§7, `rules/03_stem.md`, `rules/06_template_contra
 
 ```bash
 .venv/bin/python -m math_engine.ai_drill_ingest --unit <UNIT> --list-vault
+.venv/bin/python -m scripts.vault_report <UNIT> --log
 ```
+
+`vault_report` shows, from evidence only, how often each archetype has **earned** its level in ingested drills and how often it **failed** (issue-log `level` records), and flags `THIN` levels (fewer than 2 archetypes), `FAILING` and `UNPROVEN` archetypes. `--log` puts `THIN` and `FAILING` into the issue log for the next batch. Prefer archetypes that have earned their level; an `UNPROVEN` one is fine to try; use a `FAILING` one at its level only if its `levelNote` says how to earn it. If a level is `THIN`, give its two problems different forms (e.g. one direct, one reverse).
 
 - Read each archetype's `levelNote` if it has one: it says how that archetype can (or cannot) earn its level.
 - Use only archetypes at the requested levels. If the brief needs one that is not in the vault, skip that part and log it (`--kind level --action open`); new archetypes are added when the issue log is cleared.
@@ -70,7 +73,7 @@ Also set `id` (`Q01`…), `level`, `archetype`, `archetypeKey`, `context`, `cate
 Do it for every L3+ problem (L3+ cannot pass step 6 without it). Use **one** subagent for all of them at once; give it only the prompts (no answers, no `level`) and `rules/06` §2.3, tell it to write its results as JSON to `scratch/reviews/<draft-name>-blind.json` and reply only `done`. Wait for that reply; do not poll with short timers or spawn a second solver while it runs. For each prompt ask for (1) the final answer, (2) whether the prompt is ambiguous, (3) the six demand tags of its own solution (`setup`, `strategy`, `check`, `task`, `reverse`, `steps`, using the values in §2.3; do not ask it for a level); if it tags `check: edge`, it must name what the check ruled out (`edgeRejected`), or else tag `none`, and (4) what a typical wrong answer would be. Then:
 - Answer differs from `answerSpec`, or "ambiguous" → fix or drop the problem.
 - The subagent changed its answer mid-reply → treat as ambiguous: tighten the wording and re-run.
-- Its tags map below what the gate accepts (below `level`; check with `--check` in step 6) → redesign **once** to add real demand (a relation the solver must build, a method to choose, a case to check). If the redesign still falls short, do not ask the learner: drop the problem and log it (`--kind level --source gate --action dropped`, naming the archetype, so its vault level can be fixed later). Never change `category`, add `constraints` or add an "otherwise report 0" clause instead.
+- Its tags map below what the gate accepts (below `level`; check with `--check` in step 6) → redesign **once** to add real demand (a relation the solver must build, a method to choose, a case to check). If the redesign still falls short, do not ask the learner: drop the problem and log it with `--kind level --source gate --action dropped --where <UNIT>/<archetypeKey>` (this exact `--where` format is what `vault_report` counts as a failure of that archetype). Never change `category`, add `constraints` or add an "otherwise report 0" clause instead.
 - Its typical wrong answer differs from `trapValue` → re-check the trap against the tag (step 4). If `trapValue` is what that tag's mistake produces, keep it; the solver's guess may simply be a different mistake.
 For L3+, copy the answer, ambiguity, the six tags and `edgeRejected` (when `check` is `edge`) into the problem's `blindSolve`. Re-run the blind solve after any change to the prompt.
 
