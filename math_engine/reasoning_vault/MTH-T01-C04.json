@@ -327,6 +327,47 @@
         "university_endowment_fund_disbursement"
       ],
       "levelNote": "Relabelled L4 -> L3 (2026-11-15, issue 3025a2): a chained remainder has one solution and no case to rule out; the best blind solve reached setup=model (L3). Do not bolt on a cutoff to reach L4."
+    },
+    {
+      "archetypeKey": "c04-fractional-limiting-resource",
+      "level": 4,
+      "name": "Limiting Resource with Fractional Portions",
+      "coreConcept": "When each unit of output needs fixed fractional amounts of several inputs, the input that runs out first sets the number of whole units; the others are left over.",
+      "mentalModel": [
+        "1. For each input, divide the stock by the fractional amount one unit needs (multiply by the reciprocal).",
+        "2. Compare the quotients: the smallest one is the limiting input.",
+        "3. Only whole units count, so round that quotient down; then answer what the question asks (units made, or what is left of another input)."
+      ],
+      "governingRelation": "N = floor( min_i ( S_i / a_i ) )",
+      "cognitiveTraps": [
+        {
+          "trapTag": "c04-first-listed-input-limits-trap",
+          "description": "Uses the quotient of the first (or largest) input instead of comparing every input and taking the smallest.",
+          "trapFormula": "S_1 / a_1"
+        },
+        {
+          "trapTag": "c04-fraction-divide-not-invert-trap",
+          "description": "Multiplies the stock by the per-unit fraction instead of dividing by it.",
+          "trapFormula": "S_i * a_i"
+        }
+      ],
+      "versatileDomains": [
+        {
+          "domain": "bakery_batch_flour_sugar_butter",
+          "description": "Recipe needs fractional cups of each ingredient per batch; pantry stock limits whole batches."
+        },
+        {
+          "domain": "fabric_cutting_for_garments",
+          "description": "Each garment needs fractional yards of two fabrics; the bolt that runs out first limits garments."
+        },
+        {
+          "domain": "paint_mixing_two_base_colours",
+          "description": "Each can of a custom colour needs fractional litres of two bases in stock."
+        }
+      ],
+      "usedContexts": [],
+      "levelNote": "Earns L4 because the solver must build one quotient per input (model), compare them to find the limiting one, and round down to whole units (check=edge: the larger quotients are ruled out). With a single input it is only L2. Added 2026-11-15 (issue 3cb031) as the second C04 L4 archetype.",
+      "source": "Original archetype; scope aligned with OpenStax Prealgebra 2e §4.2 (Multiply and Divide Fractions)"
     }
   ]
 }
