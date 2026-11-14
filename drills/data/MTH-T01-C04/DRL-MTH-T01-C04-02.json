@@ -1,0 +1,1168 @@
+{
+  "unitCode": "MTH-T01-C04",
+  "topicTitle": "Fractions & Invariant Ratios",
+  "unitTitle": "Fractions",
+  "subject": "MATH",
+  "problems": [
+    {
+      "id": "Q01",
+      "level": 1,
+      "category": "Fraction Simplification",
+      "archetype": "problem-solving",
+      "archetypeKey": "c04-fraction-simplification-gcf",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Express $\\frac{48}{84}$ as a fraction in simplest form.",
+      "display": "\\frac{48}{84}",
+      "plainText": "Express 48/84 as a fraction in simplest form.",
+      "givens": {
+        "a": 48,
+        "b": 84
+      },
+      "constants": {},
+      "trapGivens": [
+        48,
+        84
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "4/7",
+        "tolerance": 0,
+        "forms": [
+          "reduced_fraction",
+          "exact"
+        ]
+      },
+      "answerPlain": "4/7",
+      "answerDisplay": "\\frac{4}{7}",
+      "inputHint": "Enter a reduced fraction",
+      "commonTrapTag": "c04-partial-common-factor-reduction",
+      "trapDerivation": "(84 - 48) / 84",
+      "trapValue": "3/7",
+      "verify": {
+        "source": "48 / 84",
+        "trapValue": "3/7"
+      },
+      "checkpointHint": "Divide both the numerator and the denominator by their greatest common factor until they are coprime.",
+      "references": [
+        "MTH-T01-C04"
+      ],
+      "steps": [
+        {
+          "latex": "\\frac{48}{84} = \\frac{4 \\cdot 12}{7 \\cdot 12}",
+          "explain": "Factor the greatest common divisor out of both the numerator and the denominator.",
+          "eq": [
+            "48 / 84",
+            "(4 * 12) / (7 * 12)"
+          ]
+        },
+        {
+          "latex": "\\frac{4 \\cdot 12}{7 \\cdot 12} = \\frac{4}{7}",
+          "explain": "Cancel the common factor to express the fraction in simplest form.",
+          "val": "4/7"
+        }
+      ],
+      "review": {
+        "verdict": "pass",
+        "note": "Re-solved 48/84 to lowest terms as 4/7 with trapValue 3/7 cleanly matching c04-partial-common-factor-reduction, granular 2-step derivation, unambiguous plain wording, fresh numbers vs batch 1, and non-leaking zero-number hints."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C04",
+          "title": "Fractions",
+          "notionUrl": "https://www.notion.so/4003818f8ba080548960c0514eb841aa"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c04-partial-common-factor-reduction|direct|Express #/# as a fraction in simplest form.",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c04-partial-common-factor-reduction",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 11
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 1 - Foundation"
+    },
+    {
+      "id": "Q02",
+      "level": 1,
+      "category": "Fraction Multiplication",
+      "archetype": "problem-solving",
+      "archetypeKey": "c04-fraction-multiplication-product",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Compute the product $\\frac{5}{12} \\times \\frac{9}{20}$ and write your answer as a reduced fraction.",
+      "display": "\\frac{5}{12} \\times \\frac{9}{20}",
+      "plainText": "Compute the product (5/12) * (9/20) and write your answer as a reduced fraction.",
+      "givens": {
+        "a": 5,
+        "b": 12,
+        "c": 9,
+        "d": 20
+      },
+      "constants": {},
+      "trapGivens": [
+        5,
+        12,
+        9,
+        20
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "3/16",
+        "tolerance": 0,
+        "forms": [
+          "reduced_fraction",
+          "exact"
+        ]
+      },
+      "answerPlain": "3/16",
+      "answerDisplay": "\\frac{3}{16}",
+      "inputHint": "Enter a reduced fraction",
+      "commonTrapTag": "c04-cross-multiplication-confusion",
+      "trapDerivation": "(5 * 20) / (12 * 9)",
+      "trapValue": "25/27",
+      "verify": {
+        "source": "(5 / 12) * (9 / 20)",
+        "trapValue": "25/27"
+      },
+      "checkpointHint": "Multiply the numerators straight across and the denominators straight across, then reduce to lowest terms.",
+      "references": [
+        "MTH-T01-C04"
+      ],
+      "steps": [
+        {
+          "latex": "\\frac{5}{12} \\times \\frac{9}{20} = \\frac{5 \\times 9}{12 \\times 20}",
+          "explain": "Multiply the numerators together and multiply the denominators together.",
+          "eq": [
+            "(5 / 12) * (9 / 20)",
+            "(5 * 9) / (12 * 20)"
+          ]
+        },
+        {
+          "latex": "\\frac{5 \\times 9}{12 \\times 20} = \\frac{45}{240}",
+          "explain": "Evaluate the numerator and denominator products.",
+          "eq": [
+            "(5 * 9) / (12 * 20)",
+            "45 / 240"
+          ]
+        },
+        {
+          "latex": "\\frac{45}{240} = \\frac{3}{16}",
+          "explain": "Divide numerator and denominator by their greatest common factor to reduce the fraction.",
+          "val": "3/16"
+        }
+      ],
+      "review": {
+        "verdict": "pass",
+        "note": "Re-solved (5/12) * (9/20) = 45/240 = 3/16 with trapValue 25/27 matching c04-cross-multiplication-confusion, granular 3-step derivation, unambiguous plain prompt, fresh numbers vs batch 1, and non-leaking zero-number hints."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C04",
+          "title": "Fractions",
+          "notionUrl": "https://www.notion.so/4003818f8ba080548960c0514eb841aa"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c04-cross-multiplication-confusion|direct|Compute the product (#/#) * (#/#) and write your answer as a reduced fraction.",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c04-cross-multiplication-confusion",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 1 - Foundation"
+    },
+    {
+      "id": "Q03",
+      "level": 2,
+      "category": "Fraction Addition",
+      "archetype": "problem-solving",
+      "archetypeKey": "c04-fraction-addition-like-denominators",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Solve for $x$: $x - \\frac{5}{16} = \\frac{7}{16}$. Write the answer as a reduced fraction.",
+      "display": "x - \\frac{5}{16} = \\frac{7}{16}",
+      "plainText": "x - 5/16 = 7/16",
+      "givens": {
+        "a": 5,
+        "b": 7,
+        "d": 16
+      },
+      "constants": {},
+      "trapGivens": [
+        5,
+        7,
+        16
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "3/4",
+        "tolerance": 0,
+        "forms": [
+          "reduced_fraction",
+          "exact"
+        ]
+      },
+      "answerPlain": "3/4",
+      "answerDisplay": "\\frac{3}{4}",
+      "inputHint": "Enter a reduced fraction",
+      "commonTrapTag": "c04-denominator-addition-fallacy",
+      "trapDerivation": "(5 + 7) / (16 + 16)",
+      "trapValue": "3/8",
+      "verify": {
+        "source": "7 / 16 + 5 / 16",
+        "trapValue": "3/8"
+      },
+      "checkpointHint": "Isolate the unknown using the inverse operation, then combine the numerators over the shared denominator.",
+      "references": [
+        "MTH-T01-C04"
+      ],
+      "steps": [
+        {
+          "latex": "x = \\frac{7}{16} + \\frac{5}{16}",
+          "explain": "Add the subtracted fraction to both sides to isolate the unknown.",
+          "eq": [
+            "7 / 16 + 5 / 16",
+            "(7 + 5) / 16"
+          ]
+        },
+        {
+          "latex": "x = \\frac{12}{16}",
+          "explain": "Sum the numerators while preserving the common denominator.",
+          "eq": [
+            "(7 + 5) / 16",
+            "12 / 16"
+          ]
+        },
+        {
+          "latex": "x = \\frac{3}{4}",
+          "explain": "Reduce the fraction to lowest terms by dividing numerator and denominator by their greatest common factor.",
+          "val": "3/4"
+        }
+      ],
+      "review": {
+        "verdict": "pass",
+        "note": "Re-solved x - 5/16 = 7/16 as x = 3/4 with trapValue 3/8 matching c04-denominator-addition-fallacy, granular 3-step derivation, plain prompt distinct from Q04 and batch 1, and non-leaking zero-number hints."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C04",
+          "title": "Fractions",
+          "notionUrl": "https://www.notion.so/4003818f8ba080548960c0514eb841aa"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c04-denominator-addition-fallacy|direct|x - #/# = #/#",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c04-denominator-addition-fallacy",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 2 - Standard Exam"
+    },
+    {
+      "id": "Q04",
+      "level": 2,
+      "category": "Fraction Division",
+      "archetype": "problem-solving",
+      "archetypeKey": "c04-fraction-division-reciprocal-inversion",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Find $x$ such that $\\frac{8}{9} \\div x = \\frac{4}{15}$. Write your answer as a reduced fraction.",
+      "display": "\\frac{8}{9} \\div x = \\frac{4}{15}",
+      "plainText": "(8/9) / x = 4/15",
+      "givens": {
+        "a": 8,
+        "b": 9,
+        "c": 4,
+        "d": 15
+      },
+      "constants": {},
+      "trapGivens": [
+        8,
+        9,
+        4,
+        15
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "10/3",
+        "tolerance": 0,
+        "forms": [
+          "reduced_fraction",
+          "exact"
+        ]
+      },
+      "answerPlain": "10/3",
+      "answerDisplay": "\\frac{10}{3}",
+      "inputHint": "Enter a reduced fraction",
+      "commonTrapTag": "c04-first-fraction-reciprocal-flip",
+      "trapDerivation": "(8 * 4) / (9 * 15)",
+      "trapValue": "32/135",
+      "verify": {
+        "source": "(8 / 9) / (4 / 15)",
+        "trapValue": "32/135"
+      },
+      "checkpointHint": "Rearrange the division relation to isolate the divisor, then multiply by the reciprocal of the fraction you are dividing by.",
+      "references": [
+        "MTH-T01-C04"
+      ],
+      "steps": [
+        {
+          "latex": "x = \\frac{8}{9} \\div \\frac{4}{15}",
+          "explain": "Rewrite the division equation to express the unknown divisor as the dividend divided by the quotient.",
+          "eq": [
+            "(8 / 9) / (4 / 15)",
+            "10 / 3"
+          ]
+        },
+        {
+          "latex": "x = \\frac{8}{9} \\times \\frac{15}{4}",
+          "explain": "Convert fraction division into multiplication by taking the reciprocal of the divisor.",
+          "eq": [
+            "(8 / 9) / (4 / 15)",
+            "(8 / 9) * (15 / 4)"
+          ]
+        },
+        {
+          "latex": "x = \\frac{120}{36}",
+          "explain": "Multiply numerators together and denominators together.",
+          "eq": [
+            "(8 / 9) * (15 / 4)",
+            "120 / 36"
+          ]
+        },
+        {
+          "latex": "x = \\frac{10}{3}",
+          "explain": "Divide numerator and denominator by their greatest common factor to simplify.",
+          "val": "10/3"
+        }
+      ],
+      "review": {
+        "verdict": "pass",
+        "note": "Re-solved (8/9) / x = 4/15 as x = 10/3 with trapValue 32/135 matching c04-first-fraction-reciprocal-flip, granular 4-step derivation, plain reverse-form prompt fresh vs batch 1, and non-leaking zero-number hints."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C04",
+          "title": "Fractions",
+          "notionUrl": "https://www.notion.so/4003818f8ba080548960c0514eb841aa"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c04-first-fraction-reciprocal-flip|direct|(#/#) / x = #/#",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 4,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c04-first-fraction-reciprocal-flip",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 15
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 2 - Standard Exam"
+    },
+    {
+      "id": "Q05",
+      "level": 3,
+      "category": "Complex Fraction Diagnosis",
+      "archetype": "problem-solving",
+      "archetypeKey": "c04-complex-fraction-simplification",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "A student simplified $\\frac{\\frac{5}{6}}{\\frac{3}{4} - \\frac{1}{8}}$ step by step:\nLine 1: $\\frac{\\frac{5}{6}}{\\frac{6}{8} - \\frac{1}{8}}$\nLine 2: $\\frac{\\frac{5}{6}}{\\frac{5}{8}}$\nLine 3: $\\frac{5 \\times 5}{6 \\times 8}$\nLine 4: $\\frac{25}{48}$\nWhich line is the first one that is wrong?",
+      "display": "\\frac{\\frac{5}{6}}{\\frac{3}{4} - \\frac{1}{8}}",
+      "plainText": "A student simplified (5/6) / (3/4 - 1/8) step by step: Line 1: (5/6) / (6/8 - 1/8); Line 2: (5/6) / (5/8); Line 3: (5 * 5) / (6 * 8); Line 4: 25/48. Which line is the first one that is wrong?",
+      "givens": {
+        "a": 5,
+        "b": 6,
+        "c": 3,
+        "d": 4,
+        "e": 1,
+        "f": 8
+      },
+      "constants": {},
+      "trapGivens": [
+        5,
+        6,
+        3,
+        4,
+        1,
+        8
+      ],
+      "answerSpec": {
+        "type": "choice",
+        "options": [
+          {
+            "id": "1",
+            "label": "Line 1",
+            "provenance": "Flags a valid equivalent-denominator rewrite inside the denominator."
+          },
+          {
+            "id": "2",
+            "label": "Line 2",
+            "provenance": "Flags the valid subtraction inside the denominator fraction."
+          },
+          {
+            "id": "3",
+            "label": "Line 3"
+          },
+          {
+            "id": "4",
+            "label": "Line 4",
+            "trapTag": "c04-nested-fraction-inversion-slip"
+          }
+        ],
+        "correct": "3"
+      },
+      "answerPlain": "3",
+      "answerDisplay": "\\text{Line 3}",
+      "inputHint": "Choose a line",
+      "commonTrapTag": "c04-nested-fraction-inversion-slip",
+      "trapDerivation": "(5 / 6) * (3 / 4 - 1 / 8)",
+      "trapValue": "25/48",
+      "verify": {
+        "source": "(5 / 6) / (3 / 4 - 1 / 8)",
+        "trapValue": "25/48",
+        "flaw": {
+          "values": [
+            "(5 / 6) / (6 / 8 - 1 / 8)",
+            "(5 / 6) / (5 / 8)",
+            "(5 * 5) / (6 * 8)",
+            "25 / 48"
+          ],
+          "firstWrong": 3
+        }
+      },
+      "checkpointHint": "Check whether each line keeps the exact same numerical value as the line immediately above it.",
+      "references": [
+        "MTH-T01-C04"
+      ],
+      "blindSolve": {
+        "answer": "3",
+        "ambiguous": false,
+        "setup": "given",
+        "strategy": "prescribed",
+        "check": "none",
+        "task": "diagnose",
+        "reverse": false,
+        "steps": 3
+      },
+      "steps": [
+        {
+          "latex": "\\frac{\\frac{5}{6}}{\\frac{3}{4} - \\frac{1}{8}} = \\frac{\\frac{5}{6}}{\\frac{6}{8} - \\frac{1}{8}}",
+          "explain": "Line 1 is valid: rewriting three-fourths with denominator eight creates a common denominator.",
+          "eq": [
+            "(5 / 6) / (3 / 4 - 1 / 8)",
+            "(5 / 6) / (6 / 8 - 1 / 8)"
+          ]
+        },
+        {
+          "latex": "\\frac{\\frac{5}{6}}{\\frac{6}{8} - \\frac{1}{8}} = \\frac{\\frac{5}{6}}{\\frac{5}{8}}",
+          "explain": "Line 2 is valid: subtracting the numerators in the denominator gives five-eighths.",
+          "eq": [
+            "(5 / 6) / (6 / 8 - 1 / 8)",
+            "(5 / 6) / (5 / 8)"
+          ]
+        },
+        {
+          "latex": "\\frac{\\frac{5}{6}}{\\frac{5}{8}} = \\frac{5}{6} \\times \\frac{8}{5}",
+          "explain": "Line 3 is the first wrong line: dividing by a fraction requires multiplying by its reciprocal rather than multiplying straight across.",
+          "eq": [
+            "(5 / 6) / (5 / 8)",
+            "(5 / 6) * (8 / 5)"
+          ]
+        },
+        {
+          "latex": "\\frac{5}{6} \\times \\frac{8}{5} = \\frac{40}{30}",
+          "explain": "Multiply the numerators and denominators after inverting the divisor fraction.",
+          "eq": [
+            "(5 * 8) / (6 * 5)",
+            "40 / 30"
+          ]
+        },
+        {
+          "latex": "\\frac{40}{30} = \\frac{4}{3}",
+          "explain": "Reduce the resulting fraction to lowest terms to find the true value.",
+          "val": "4/3"
+        }
+      ],
+      "review": {
+        "verdict": "pass",
+        "note": "Re-solved (5/6)/(3/4 - 1/8) = 4/3 and verified Line 3 as the first wrong line leading to trapValue 25/48 for c04-nested-fraction-inversion-slip, with matching verify.flaw, provenance/trapTag options, L3 diagnose blindSolve, and a strictly process-only zero-number checkpointHint."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C04",
+          "title": "Fractions",
+          "notionUrl": "https://www.notion.so/4003818f8ba080548960c0514eb841aa"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c04-nested-fraction-inversion-slip|direct|A student simplified (#/#) / (#/# - #/#) step by step: Line #: (#/#) / (#/# - #/#); Line #: (#/#) / (#/#); Line #: (# * #) / (# * #); Line #: #/#. Which line is the first one that is wrong?",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 5,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            20
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c04-nested-fraction-inversion-slip",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 3
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 21
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 3 - Trap & Diagnostic"
+    },
+    {
+      "id": "Q06",
+      "level": 3,
+      "category": "Fractional Remainder Modeling",
+      "archetype": "problem-solving",
+      "archetypeKey": "c04-multi-stage-fractional-remainder-synthesis",
+      "context": "university_endowment_fund_disbursement",
+      "verificationLevel": "partial",
+      "prompt": "During an annual audit, a university research endowment disbursed $\\frac{1}{5}$ of its initial endowment reserve in the first grant round and $\\frac{1}{4}$ of the remaining balance in the second grant round. A separate restricted reserve holds $\\frac{1}{2}$ of the initial endowment reserve. Together, the post-audit endowment balance and the restricted reserve total $2,310,000$ dollars. What was the initial endowment reserve in dollars?",
+      "display": "T \\left(1 - f_1\\right)\\left(1 - f_2\\right) + f_3 T = S",
+      "plainText": "T * (1 - 1/5) * (1 - 1/4) + (1/2) * T = 2310000",
+      "givens": {
+        "n1": 1,
+        "d1": 5,
+        "n2": 1,
+        "d2": 4,
+        "n3": 1,
+        "d3": 2,
+        "S": 2310000
+      },
+      "constants": {},
+      "trapGivens": [
+        1,
+        5,
+        4,
+        2,
+        2310000
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "2100000",
+        "tolerance": 0
+      },
+      "answerPlain": "2100000",
+      "answerDisplay": "2100000",
+      "inputHint": "Enter a whole number in dollars",
+      "commonTrapTag": "c04-naive-fraction-addition-on-remainder",
+      "trapDerivation": "2310000 / ((1 - (1 / 5 + 1 / 4)) + 1 / 2)",
+      "trapValue": "2200000",
+      "verify": {
+        "source": "2310000 / ((1 - 1 / 5) * (1 - 1 / 4) + 1 / 2)",
+        "trapValue": "2200000"
+      },
+      "checkpointHint": "Find the fraction of the initial reserve kept after both sequential rounds, add the restricted reserve's fraction of the initial amount, and solve for the starting reserve.",
+      "references": [
+        "MTH-T01-C04"
+      ],
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "(a) Sequential proportional disbursements reduce remaining endowment balance multiplicatively and separate reserve balances add linearly; (b) all monetary values are in dollars with dimensionless fractions in (0, 1) and positive reserve $2,100,000; (c) removal test holds since sequential fractional deductions plus a separate base-proportional reserve literally describe endowment accounting."
+      },
+      "blindSolve": {
+        "answer": "2100000",
+        "ambiguous": false,
+        "setup": "model",
+        "strategy": "prescribed",
+        "check": "none",
+        "task": "compute",
+        "reverse": true,
+        "steps": 4
+      },
+      "steps": [
+        {
+          "latex": "r_1 = 1 - \\frac{1}{5}",
+          "explain": "Express the fraction of the initial reserve remaining after the first grant round.",
+          "eq": [
+            "1 - 1 / 5",
+            "4 / 5"
+          ]
+        },
+        {
+          "latex": "r_2 = 1 - \\frac{1}{4}",
+          "explain": "Express the fraction of the post-round-one balance remaining after the second grant round.",
+          "eq": [
+            "1 - 1 / 4",
+            "3 / 4"
+          ]
+        },
+        {
+          "latex": "r_{\\text{rem}} = \\frac{4}{5} \\times \\frac{3}{4}",
+          "explain": "Multiply the two sequential retention fractions to find the post-audit balance as a fraction of the initial reserve.",
+          "eq": [
+            "(4 / 5) * (3 / 4)",
+            "3 / 5"
+          ]
+        },
+        {
+          "latex": "\\frac{3}{5} T + \\frac{1}{2} T = 2310000",
+          "explain": "Combine the post-audit endowment balance and the restricted reserve to equal the combined total."
+        },
+        {
+          "latex": "\\frac{11}{10} T = 2310000",
+          "explain": "Add the two fractional coefficients over a common denominator.",
+          "eq": [
+            "3 / 5 + 1 / 2",
+            "11 / 10"
+          ]
+        },
+        {
+          "latex": "T = 2310000 \\times \\frac{10}{11}",
+          "explain": "Multiply both sides by the reciprocal of the combined fractional coefficient.",
+          "eq": [
+            "2310000 * (10 / 11)",
+            "2100000"
+          ]
+        },
+        {
+          "latex": "T = 2100000",
+          "explain": "Evaluate the product to determine the initial endowment reserve in dollars.",
+          "val": "2100000"
+        }
+      ],
+      "review": {
+        "verdict": "pass",
+        "note": "Re-solved T*(1 - 1/5)*(1 - 1/4) + (1/2)*T = 2310000 to get T = 2100000 and trapValue 2200000 for c04-naive-fraction-addition-on-remainder, with unused context university_endowment_fund_disbursement (contextCheck ok), L3 model blindSolve, 7 granular steps, and non-leaking hints and symbolic display."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C04",
+          "title": "Fractions",
+          "notionUrl": "https://www.notion.so/4003818f8ba080548960c0514eb841aa"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c04-naive-fraction-addition-on-remainder|direct|T * (# - #/#) * (# - #/#) + (#/#) * T = #",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 7,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            20
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c04-naive-fraction-addition-on-remainder",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 21
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 3 - Trap & Diagnostic"
+    },
+    {
+      "id": "Q07",
+      "level": 4,
+      "category": "Fractional Rate Modeling",
+      "archetype": "problem-solving",
+      "archetypeKey": "c04-constrained-fractional-tank-drain-rate",
+      "context": "aquaculture_tank_filtration_cycle",
+      "verificationLevel": "partial",
+      "prompt": "An aquaculture hatchery fills a circular rearing tank that starts $\\frac{1}{3}$ full using two inflow pumps operating together: a primary pump that fills an empty tank alone in $10$ hours and an auxiliary pump that fills an empty tank alone in $15$ hours. During filling, one bottom filtration bypass line must remain open. Three bypass lines are available: Line A empties a full tank in $5$ hours, Line B empties a full tank in $9$ hours, and Line C empties a full tank in $18$ hours. What is the shortest time, in hours, needed to finish filling the tank completely using one of these bypass lines?",
+      "display": "r_{\\text{net}} = \\frac{1}{t_1} + \\frac{1}{t_2} - \\frac{1}{t_{\\text{drain}}}, \\quad T = \\frac{1 - f_0}{r_{\\text{net}}}",
+      "plainText": "r_net = 1/10 + 1/15 - 1/t_drain for t_drain in {5, 9, 18}; minimize (1 - 1/3) / r_net for r_net > 0",
+      "givens": {
+        "n_init": 1,
+        "d_init": 3,
+        "t1": 10,
+        "t2": 15,
+        "tA": 5,
+        "tB": 9,
+        "tC": 18
+      },
+      "constants": {},
+      "trapGivens": [
+        10,
+        18
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "6",
+        "tolerance": 0
+      },
+      "answerPlain": "6",
+      "answerDisplay": "6",
+      "inputHint": "Enter a whole number in hours",
+      "commonTrapTag": "c04-work-rate-arithmetic-mean-trap",
+      "trapDerivation": "18 - 10",
+      "trapValue": "8",
+      "verify": {
+        "source": "(1 - 1 / 3) / (1 / 10 + 1 / 15 - 1 / 18)",
+        "trapValue": "8"
+      },
+      "checkpointHint": "Find the combined hourly inflow rate and the remaining fraction of the tank to fill, eliminate any bypass option that prevents net accumulation, and divide the remaining fraction by the fastest valid net rate.",
+      "references": [
+        "MTH-T01-C04"
+      ],
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "(a) Parallel inflow pump rates add and an open bypass drain subtracts to give net volumetric fill rate, with fill time = remaining fraction / net rate; (b) rates are in tank-volumes per hour, remaining volume fraction 2/3 is in (0, 1], and 6 hours is physically valid; (c) removal test holds because filling a partially full tank with an open bypass line is literally an inflow-minus-outflow rate system."
+      },
+      "blindSolve": {
+        "answer": "6",
+        "ambiguous": false,
+        "setup": "model",
+        "strategy": "prescribed",
+        "check": "edge",
+        "edgeRejected": "Line A (net fill rate 1/6 - 1/5 = -1/30 tank/hr <= 0, yielding -20 hours, so it empties rather than fills the tank)",
+        "task": "compute",
+        "reverse": false,
+        "steps": 4
+      },
+      "steps": [
+        {
+          "latex": "r_{\\text{in}} = \\frac{1}{10} + \\frac{1}{15}",
+          "explain": "Add the two inflow pump rates to find the combined filling rate.",
+          "eq": [
+            "1 / 10 + 1 / 15",
+            "1 / 6"
+          ]
+        },
+        {
+          "latex": "f_{\\text{rem}} = 1 - \\frac{1}{3}",
+          "explain": "Compute the fraction of the tank capacity that still needs to be filled.",
+          "eq": [
+            "1 - 1 / 3",
+            "2 / 3"
+          ]
+        },
+        {
+          "latex": "r_A = \\frac{1}{6} - \\frac{1}{5}",
+          "explain": "Calculate the net rate when bypass Line A is open.",
+          "eq": [
+            "1 / 6 - 1 / 5",
+            "-1 / 30"
+          ]
+        },
+        {
+          "latex": "r_A = -\\frac{1}{30} < 0",
+          "explain": "Reject Line A because its draining rate exceeds the combined inflow rate, so the tank cannot fill."
+        },
+        {
+          "latex": "r_B = \\frac{1}{6} - \\frac{1}{9}",
+          "explain": "Calculate the net rate when bypass Line B is open.",
+          "eq": [
+            "1 / 6 - 1 / 9",
+            "1 / 18"
+          ]
+        },
+        {
+          "latex": "T_B = \\frac{2}{3} \\div \\frac{1}{18}",
+          "explain": "Divide the remaining tank fraction by the net rate for Line B to get its filling time.",
+          "eq": [
+            "(2 / 3) / (1 / 18)",
+            "12"
+          ]
+        },
+        {
+          "latex": "r_C = \\frac{1}{6} - \\frac{1}{18}",
+          "explain": "Calculate the net rate when bypass Line C is open.",
+          "eq": [
+            "1 / 6 - 1 / 18",
+            "1 / 9"
+          ]
+        },
+        {
+          "latex": "T_C = \\frac{2}{3} \\div \\frac{1}{9}",
+          "explain": "Divide the remaining tank fraction by the net rate for Line C to get its filling time.",
+          "eq": [
+            "(2 / 3) / (1 / 9)",
+            "6"
+          ]
+        },
+        {
+          "latex": "T_{\\min} = 6",
+          "explain": "Select the shorter filling time among the valid bypass options.",
+          "val": "6"
+        }
+      ],
+      "review": {
+        "verdict": "pass",
+        "note": "Re-solved remaining 2/3 tank with combined inflow 1/6 tank/hr against bypass options, rejecting Line A (-1/30 < 0) and selecting Line C for 6 hours with trapValue 8 for c04-work-rate-arithmetic-mean-trap, unused context aquaculture_tank_filtration_cycle (contextCheck ok), L4 edge blindSolve, and non-leaking hints and symbolic display."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C04",
+          "title": "Fractions",
+          "notionUrl": "https://www.notion.so/4003818f8ba080548960c0514eb841aa"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c04-work-rate-arithmetic-mean-trap|direct|r_net = #/# + #/# - #/t_drain for t_drain in {#, #, #}; minimize (# - #/#) / r_net for r_net > #",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 9,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            25
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c04-work-rate-arithmetic-mean-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 25
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 4 - Applied Synthesis"
+    },
+    {
+      "id": "Q08",
+      "level": 4,
+      "category": "Fractional Rate Modeling",
+      "archetype": "problem-solving",
+      "archetypeKey": "c04-constrained-fractional-tank-drain-rate",
+      "context": "municipal_water_tower_maintenance",
+      "verificationLevel": "partial",
+      "prompt": "During maintenance on a municipal water tower, a main drain valve that empties a full tower in $12$ hours and an auxiliary bleed line that empties a full tower in $36$ hours both remain open. Three backup inflow pumps are available to refill the empty tower while both drain lines stay open: Pump A fills an empty tower alone in $10$ hours, Pump B fills it alone in $8$ hours, and Pump C fills it alone in $6$ hours. Maintenance must finish within a $20$-hour window. Using the only pump that can fill the tower within this window while both drain lines remain open, how many hours does it take to fill the tower?",
+      "display": "r_{\\text{net}} = \\frac{1}{t_{\\text{pump}}} - \\left(\\frac{1}{d_1} + \\frac{1}{d_2}\\right), \\quad T = \\frac{1}{r_{\\text{net}}}",
+      "plainText": "r_drain = 1/12 + 1/36; T = 1 / (1/t_pump - r_drain) for t_pump in {10, 8, 6} with 0 < T <= 20",
+      "givens": {
+        "d1": 12,
+        "d2": 36,
+        "tA": 10,
+        "tB": 8,
+        "tC": 6,
+        "limit": 20
+      },
+      "constants": {
+        "one": 1
+      },
+      "trapGivens": [
+        12,
+        6
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "18",
+        "tolerance": 0
+      },
+      "answerPlain": "18",
+      "answerDisplay": "18",
+      "inputHint": "Enter a whole number in hours",
+      "commonTrapTag": "c04-work-rate-arithmetic-mean-trap",
+      "trapDerivation": "12 - 6",
+      "trapValue": "6",
+      "verify": {
+        "source": "1 / (1 / 6 - (1 / 12 + 1 / 36))",
+        "trapValue": "6"
+      },
+      "checkpointHint": "Combine the two open drain rates first, then test each pump's net rate against both positive accumulation and the maintenance time limit before inverting the surviving rate.",
+      "references": [
+        "MTH-T01-C04"
+      ],
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "(a) Parallel drain valve rates add and net fill rate equals pump inflow minus combined outflow, with time = 1 / net rate; (b) rates are in tower-volumes per hour, all durations (6 to 36 hours) and the 20-hour window are realistic, and 18 hours satisfies the constraint; (c) removal test holds since refilling a drained water tower with open valves literally obeys additive inflow/outflow rates."
+      },
+      "blindSolve": {
+        "answer": "18",
+        "ambiguous": false,
+        "setup": "model",
+        "strategy": "prescribed",
+        "check": "edge",
+        "edgeRejected": "Pump A (net fill rate 1/10 - 1/9 = -1/90 tower/hr <= 0, cannot fill) and Pump B (net fill rate 1/8 - 1/9 = 1/72 tower/hr gives 72 hours > 20-hour window)",
+        "task": "compute",
+        "reverse": false,
+        "steps": 4
+      },
+      "steps": [
+        {
+          "latex": "r_{\\text{drain}} = \\frac{1}{12} + \\frac{1}{36}",
+          "explain": "Add the draining rates of the main valve and the auxiliary bleed line.",
+          "eq": [
+            "1 / 12 + 1 / 36",
+            "1 / 9"
+          ]
+        },
+        {
+          "latex": "r_A = \\frac{1}{10} - \\frac{1}{9}",
+          "explain": "Calculate the net filling rate using Pump A.",
+          "eq": [
+            "1 / 10 - 1 / 9",
+            "-1 / 90"
+          ]
+        },
+        {
+          "latex": "r_A = -\\frac{1}{90} < 0",
+          "explain": "Reject Pump A because its net rate is negative, so the tower cannot fill."
+        },
+        {
+          "latex": "r_B = \\frac{1}{8} - \\frac{1}{9}",
+          "explain": "Calculate the net filling rate using Pump B.",
+          "eq": [
+            "1 / 8 - 1 / 9",
+            "1 / 72"
+          ]
+        },
+        {
+          "latex": "T_B = 72 > 20",
+          "explain": "Reject Pump B because its filling time exceeds the maintenance window.",
+          "eq": [
+            "1 / (1 / 72)",
+            "72"
+          ]
+        },
+        {
+          "latex": "r_C = \\frac{1}{6} - \\frac{1}{9}",
+          "explain": "Calculate the net filling rate using Pump C.",
+          "eq": [
+            "1 / 6 - 1 / 9",
+            "1 / 18"
+          ]
+        },
+        {
+          "latex": "T_C = \\frac{1}{\\frac{1}{18}}",
+          "explain": "Invert the positive net rate of Pump C to compute its filling time, which fits inside the maintenance window.",
+          "eq": [
+            "1 / (1 / 18)",
+            "18"
+          ]
+        },
+        {
+          "latex": "T_C = 18",
+          "explain": "State the number of hours required to fill the tower.",
+          "val": "18"
+        }
+      ],
+      "review": {
+        "verdict": "pass",
+        "note": "Re-solved combined drain 1/9 tower/hr against pump options, rejecting Pump A (-1/90 < 0) and Pump B (72 > 20 hr) to get 18 hours with trapValue 6 for c04-work-rate-arithmetic-mean-trap, unused context municipal_water_tower_maintenance (contextCheck ok), structure distinct from Q07, L4 edge blindSolve, and non-leaking hints and symbolic display."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C04",
+          "title": "Fractions",
+          "notionUrl": "https://www.notion.so/4003818f8ba080548960c0514eb841aa"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c04-work-rate-arithmetic-mean-trap|direct|r_drain = #/# + #/#; T = # / (#/t_pump - r_drain) for t_pump in {#, #, #} with # < T <= #",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 8,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            25
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c04-work-rate-arithmetic-mean-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 23
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 4 - Applied Synthesis"
+    }
+  ],
+  "drillId": "DRL-MTH-T01-C04-02",
+  "title": "Fractions — Verified Math Drill (8 Qs)",
+  "topicCode": "MTH-T01",
+  "chapterCode": "MTH-T01-C04",
+  "schemaVersion": "2.0-math",
+  "createdAt": "2026-11-15 01:23:49",
+  "config": {
+    "questionCount": 8,
+    "difficulty": "ALL",
+    "difficultyMode": "AI Synthesized Reasoning Mode"
+  },
+  "localFilePath": "drills/data/MTH-T01-C04/DRL-MTH-T01-C04-02.json"
+}
