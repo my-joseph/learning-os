@@ -33,7 +33,7 @@
 - `[code]` **Reasoning Vault & Gap Analysis**:
   - **Math Vault (`math_engine/reasoning_vault/<unit_code>.json`)**: Novel mathematical structures are extracted into mental models, governing relations, and cognitive traps.
   - **Code Vault (`code_engine/reasoning_vault/<unit_code>.json`)**: Software engineering patterns are recorded with `archetypeKey`, `level`, `coreConcept`, `mentalModel`, `cognitiveTraps` (Bug/Smell Patterns with reproducers), `realWorldDomains`, and `usedContexts`.
-  - The AI rotates surface contexts across real-world domains and updates `usedContexts` to prevent context repetition.
+  - When a problem does use a story (§4 item 8), the AI rotates contexts across domains and updates `usedContexts` to prevent repetition.
 - `[code]` **Mandatory AI Contract Guard for Math (`validate_ai_problem_contract`)**:
   1. **Typed Givens**: Every numeric literal appearing in `prompt` (excluding standard year tokens) must map directly to an entry in `givens` or `constants`, and every entry in `givens` must appear in `prompt` (exponents such as the `3` in `$2^3$` count as appearing).
      - **`constants`** holds numbers that belong to the method, not the story: formula constants (the `2` in $P = 2L + 2W$, the $\frac{1}{3}$ in a cone volume, $90$ for complementary angles, $180$ for a triangle) and values the learner must derive. They never have to appear in `prompt`. A key may not be in both `givens` and `constants`.
@@ -48,6 +48,11 @@
      - numbers re-listed by their algebraic role: `..., with coefficient $5$, constant $15$, and target value $60$`;
      - arithmetic handed over: `using $90 - 34$`, `by evaluating $(4 + 16) \div 2$`, or a second `calculate $7 \times 4 + 15$` after the real question.
      Allowed: the expression or equation that *is* the task (`Solve $5x + 15 = 60$.`, `Evaluate $2^3 \times 2^4$.`) and general formulas without substituted numbers (`$A = \pi r^2$`). Audit any unit with `python scripts/audit_solution_leaks.py [UNIT] [--display]`. Drills ingested before this gate are not re-checked.
+  8. **Real-world context must be real (`validate_context_check`)**: plain prompts are the default and leave `context` empty. A story is used only for word problems or when the level needs the solver to model a situation, and then a separate reviewer (the blind solver, or its own subagent for L1–L2) judges it on three criteria:
+     - **Domain law**: the operation in the problem is the law that domain really uses (series impedances add; complex power is $S = V\bar{I}$; a quantum phase factor has modulus 1). Wrong law = fail.
+     - **Units and bounds**: like terms share a unit, products and quotients give the right unit, and given values and the answer are physically possible (resistance ≥ 0, a passive reflection coefficient ≤ 1 in magnitude, a probability in $[0, 1]$).
+     - **Removal test**: strip the domain words. If the problem means exactly the same thing, the story is only a label. A label is ok when it is literally true (the area of a triangular gable panel is the triangle's area) and fails when it gives the number a meaning it does not have (calling $4i^2 - 9$ a phase factor, calling a product of two reactances a coupling coefficient).
+     The result is stored as `contextCheck: {"verdict": "ok" | "fail", "note"}`; a non-empty `context` without it, or with `fail`, is rejected. On `fail`, fix the story or make the problem plain; never edit the verdict.
 - `[code]` **Mandatory AI Contract Guard for Code (`validate_ai_code_contract`)**:
   1. **Zero Toy Code Guard (04_CODE §5.3)**: Reject `foo`, `bar`, `baz`, `test1`, `funcA`, or meaningless variables in prompt, code, and test suites. Must model realistic production domains.
   2. **Zero Wall-of-Text Guard (04_CODE §4)**: Prompt > 250 characters must be structured with Markdown sections (`**` or `###`), bullet points (`- `), and code identifiers in backticks (`` ` ``).

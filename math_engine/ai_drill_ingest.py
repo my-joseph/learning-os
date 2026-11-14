@@ -570,6 +570,36 @@ def validate_against_vault(prob: Dict[str, Any], archetypes: List[Dict[str, Any]
     level = prob.get("level")
     if isinstance(level, int) and level >= 3:
         validate_blind_solve(prob)
+    validate_context_check(prob)
+
+
+CONTEXT_CHECK_VERDICTS = ("ok", "fail")
+
+
+def validate_context_check(prob: Dict[str, Any]) -> None:
+    """Real-world context gate (07 §4.8): a problem with a non-empty `context` needs a
+    `contextCheck` {verdict, note} from a separate reviewer who judged the story against the
+    three criteria (real domain law, units and bounds, removal test). Plain problems leave
+    `context` empty and skip this gate."""
+    ctx = prob.get("context")
+    if not (isinstance(ctx, str) and ctx.strip()):
+        return
+    pid = prob.get("id", "?")
+    cc = prob.get("contextCheck")
+    if (
+        not isinstance(cc, dict)
+        or cc.get("verdict") not in CONTEXT_CHECK_VERDICTS
+        or not str(cc.get("note") or "").strip()
+    ):
+        raise AiContractError(
+            f"[{pid}] Problem has context '{ctx}' but no 'contextCheck' {{verdict: ok|fail, note}} from a separate "
+            f"reviewer (07 §4.8). Get the check, or drop the story and leave 'context' empty."
+        )
+    if cc["verdict"] == "fail":
+        raise AiContractError(
+            f"[{pid}] Context reviewer rejected the story: {cc['note']} (07 §4.8). "
+            f"Fix the story so the math is the real domain law, or make the problem plain."
+        )
 
 
 def get_vault_path(unit_code: str, vault_dir: Optional[str] = None) -> str:
