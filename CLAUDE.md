@@ -18,7 +18,7 @@
 - Studio (run in `practice-studio/`): `npm ci`, `npm run dev` (http://127.0.0.1:3000, bound to localhost only), `npm run lint`, `npm run build`.
 - Generate drills (run from repo root): `python3 -m math_engine.generate --unit <UNIT> --count <N> --difficulty <D>` and `python3 -m code_engine.generate --unit <UNIT> --count <N>` (`--help` verified; full run not verified).
 - Lab (run in `labs/LAB-PRG-T03-C01-01/`): `npm test` (21 tests pass). `npm run submit` writes to Notion — only on request.
-- Python tests (repo root): `.venv/bin/python -m pip install -r requirements-dev.txt && .venv/bin/python -m pytest` (dev deps installed in the main `.venv` 2026-11-15; its `bin/pip` launcher is broken, so use `-m`) (237 pass, ~50 s; hermetic, no Notion/network). Studio unit tests: `npm run test:telemetry` in `practice-studio/`.
+- Python tests (repo root): `.venv/bin/python -m pip install -r requirements-dev.txt && .venv/bin/python -m pytest` (dev deps installed in the main `.venv` 2026-11-15; its `bin/pip` launcher is broken, so use `-m`) (243 pass, ~50 s; hermetic, no Notion/network). Studio unit tests: `npm run test:telemetry` in `practice-studio/`.
 - CI: `.github/workflows/ci.yml` runs pytest, studio lint+build, lab tests. No Makefile/Dockerfile. TODO: verify any other command before using it.
 
 ## Conventions (target — apply to new/changed code)

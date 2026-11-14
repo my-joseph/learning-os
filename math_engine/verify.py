@@ -58,11 +58,12 @@ def check_text_safety(pid, label, text, is_latex=False):
             continue  # LaTeX subscripts may legitimately contain __ only in odd cases; skip
         if rx.search(text):
             _fail(pid, f"{label} contains {what}: {text[:120]}")
+    delimiters = text.replace("\\$", "")  # an escaped \$ is a currency sign, not a math delimiter
     if not is_latex:
-        if text.count("$") % 2 != 0:
+        if delimiters.count("$") % 2 != 0:
             _fail(pid, f"{label} has unbalanced $ delimiters: {text[:120]}")
     else:
-        if "$" in text:
+        if "$" in delimiters:
             _fail(pid, f"{label} is a LaTeX field and must not contain $ delimiters: {text[:120]}")
 
 

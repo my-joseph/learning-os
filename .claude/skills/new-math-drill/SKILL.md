@@ -109,6 +109,8 @@ Run the **full** test suite after ingest and before anything leaves the machine.
 
 Ingest refuses any problem without `review.verdict: pass`. It assigns the drill ID, writes `drills/data/<UNIT>/<DRILL_ID>.json` and records the used contexts in the vault.
 
+Before reporting, log every friction item from the run: anything you had to guess, a gate or tool that misbehaved (including a workaround you used), a rule that was unclear, a vault gap. Use `.venv/bin/python -m scripts.issues add` with the matching kind; listing it in the report is not enough.
+
 Report to the learner in a few lines and **without answers or prompts**: drill ID, number of problems per level, and how many problems the reviewer fixed or dropped (with the issue-log IDs). If anything is `urgent` (`rules/00_core.md` §11), put a warning on the first line.
 
 ## 9. Sync, then ship (in this order)
