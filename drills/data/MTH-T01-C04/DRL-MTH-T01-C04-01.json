@@ -1,0 +1,814 @@
+{
+  "unitCode": "MTH-T01-C04",
+  "topicTitle": "Fractions & Invariant Ratios",
+  "unitTitle": "Fractions",
+  "subject": "MATH",
+  "problems": [
+    {
+      "id": "Q01",
+      "level": 1,
+      "category": "Fraction Simplification",
+      "archetype": "problem-solving",
+      "archetypeKey": "c04-fraction-simplification-gcf",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Simplify $\\frac{27}{45}$ to lowest terms.",
+      "display": "\\frac{27}{45}",
+      "plainText": "Simplify 27/45 to lowest terms.",
+      "givens": {
+        "a": 27,
+        "b": 45
+      },
+      "constants": {},
+      "trapGivens": [
+        27,
+        45
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "3/5",
+        "tol": 0,
+        "forms": [
+          "reduced_fraction",
+          "exact"
+        ]
+      },
+      "answerPlain": "3/5",
+      "answerDisplay": "\\frac{3}{5}",
+      "commonTrapTag": "c04-partial-common-factor-reduction",
+      "trapDerivation": "(45 - 27) / 45",
+      "trapValue": "2/5",
+      "verify": {
+        "source": "27 / 45",
+        "trapValue": "2/5"
+      },
+      "checkpointHint": "Factor out the greatest common divisor shared by both the numerator and the denominator.",
+      "references": [
+        "MTH-T01-C04"
+      ],
+      "steps": [
+        {
+          "latex": "\\frac{27}{45} = \\frac{3 \\cdot 9}{5 \\cdot 9}",
+          "explain": "Factor the greatest common divisor out of both the numerator and the denominator.",
+          "eq": [
+            "27 / 45",
+            "(3 * 9) / (5 * 9)"
+          ]
+        },
+        {
+          "latex": "\\frac{3 \\cdot 9}{5 \\cdot 9} = \\frac{3}{5}",
+          "explain": "Cancel the common factor to obtain the fraction in lowest terms.",
+          "val": "3/5"
+        }
+      ],
+      "review": {
+        "verdict": "pass",
+        "note": "Solved 27/45 = 3/5 cleanly; steps and verify.source match. Exercises c04-fraction-simplification-gcf and trap c04-partial-common-factor-reduction (18/45 = 2/5), wording is unambiguous, and checkpointHint guides toward GCF without leaking values."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C04",
+          "title": "Fractions",
+          "notionUrl": "https://www.notion.so/4003818f8ba080548960c0514eb841aa"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c04-partial-common-factor-reduction|direct|Simplify #/# to lowest terms.",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c04-partial-common-factor-reduction",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 10
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 1 - Foundation"
+    },
+    {
+      "id": "Q02",
+      "level": 1,
+      "category": "Fraction Multiplication",
+      "archetype": "problem-solving",
+      "archetypeKey": "c04-fraction-multiplication-product",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Multiply $\\frac{7}{8} \\times \\frac{4}{15}$ and write the answer as a reduced fraction.",
+      "display": "\\frac{7}{8} \\times \\frac{4}{15}",
+      "plainText": "Multiply (7/8) * (4/15) and write the answer as a reduced fraction.",
+      "givens": {
+        "a": 7,
+        "b": 8,
+        "c": 4,
+        "d": 15
+      },
+      "constants": {},
+      "trapGivens": [
+        7,
+        8,
+        4,
+        15
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "7/30",
+        "tol": 0,
+        "forms": [
+          "reduced_fraction",
+          "exact"
+        ]
+      },
+      "answerPlain": "7/30",
+      "answerDisplay": "\\frac{7}{30}",
+      "commonTrapTag": "c04-cross-multiplication-confusion",
+      "trapDerivation": "(7 * 15) / (8 * 4)",
+      "trapValue": "105/32",
+      "verify": {
+        "source": "(7 / 8) * (4 / 15)",
+        "trapValue": "105/32"
+      },
+      "checkpointHint": "Multiply numerator by numerator and denominator by denominator, then divide out any common factor.",
+      "references": [
+        "MTH-T01-C04"
+      ],
+      "steps": [
+        {
+          "latex": "\\frac{7}{8} \\times \\frac{4}{15} = \\frac{7 \\cdot 4}{8 \\cdot 15}",
+          "explain": "Multiply the numerators together and multiply the denominators together.",
+          "eq": [
+            "(7 / 8) * (4 / 15)",
+            "(7 * 4) / (8 * 15)"
+          ]
+        },
+        {
+          "latex": "\\frac{7 \\cdot 4}{8 \\cdot 15} = \\frac{28}{120}",
+          "explain": "Evaluate the products in the numerator and the denominator.",
+          "eq": [
+            "(7 * 4) / (8 * 15)",
+            "28 / 120"
+          ]
+        },
+        {
+          "latex": "\\frac{28}{120} = \\frac{7}{30}",
+          "explain": "Divide both numerator and denominator by their greatest common divisor.",
+          "val": "7/30"
+        }
+      ],
+      "review": {
+        "verdict": "pass",
+        "note": "Solved (7/8)*(4/15) = 28/120 = 7/30 cleanly; steps and verify.source match. Exercises c04-fraction-multiplication-product and cross-multiplication trap 105/32, and checkpointHint is procedural and leak-free."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C04",
+          "title": "Fractions",
+          "notionUrl": "https://www.notion.so/4003818f8ba080548960c0514eb841aa"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c04-cross-multiplication-confusion|direct|Multiply (#/#) * (#/#) and write the answer as a reduced fraction.",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c04-cross-multiplication-confusion",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 12
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 1 - Foundation"
+    },
+    {
+      "id": "Q03",
+      "level": 2,
+      "category": "Fraction Division",
+      "archetype": "problem-solving",
+      "archetypeKey": "c04-fraction-division-reciprocal-inversion",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Evaluate $\\frac{9}{14} \\div \\frac{15}{28}$ and write the result as a reduced fraction.",
+      "display": "\\frac{9}{14} \\div \\frac{15}{28}",
+      "plainText": "Evaluate (9/14) / (15/28) and write the result as a reduced fraction.",
+      "givens": {
+        "a": 9,
+        "b": 14,
+        "c": 15,
+        "d": 28
+      },
+      "constants": {},
+      "trapGivens": [
+        9,
+        14,
+        15,
+        28
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "6/5",
+        "tol": 0,
+        "forms": [
+          "reduced_fraction",
+          "exact"
+        ]
+      },
+      "answerPlain": "6/5",
+      "answerDisplay": "\\frac{6}{5}",
+      "commonTrapTag": "c04-first-fraction-reciprocal-flip",
+      "trapDerivation": "(9 * 15) / (14 * 28)",
+      "trapValue": "135/392",
+      "verify": {
+        "source": "(9 / 14) / (15 / 28)",
+        "trapValue": "135/392"
+      },
+      "checkpointHint": "Keep the dividend unchanged and rewrite division by a fraction as multiplication by its reciprocal.",
+      "references": [
+        "MTH-T01-C04"
+      ],
+      "steps": [
+        {
+          "latex": "\\frac{9}{14} \\div \\frac{15}{28} = \\frac{9}{14} \\times \\frac{28}{15}",
+          "explain": "Invert the divisor fraction and change the operation to multiplication.",
+          "eq": [
+            "(9 / 14) / (15 / 28)",
+            "(9 / 14) * (28 / 15)"
+          ]
+        },
+        {
+          "latex": "\\frac{9}{14} \\times \\frac{28}{15} = \\frac{9 \\cdot 28}{14 \\cdot 15}",
+          "explain": "Multiply the numerators and multiply the denominators.",
+          "eq": [
+            "(9 / 14) * (28 / 15)",
+            "(9 * 28) / (14 * 15)"
+          ]
+        },
+        {
+          "latex": "\\frac{9 \\cdot 28}{14 \\cdot 15} = \\frac{252}{210}",
+          "explain": "Compute the numerator and denominator products.",
+          "eq": [
+            "(9 * 28) / (14 * 15)",
+            "252 / 210"
+          ]
+        },
+        {
+          "latex": "\\frac{252}{210} = \\frac{6}{5}",
+          "explain": "Divide out the greatest common divisor to express the result in lowest terms.",
+          "val": "6/5"
+        }
+      ],
+      "review": {
+        "verdict": "pass",
+        "note": "Solved (9/14)/(15/28) = (9/14)*(28/15) = 6/5 cleanly; steps and verify.source match. Exercises c04-fraction-division-reciprocal-inversion and direct-across trap 135/392 without ambiguity or leaks."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C04",
+          "title": "Fractions",
+          "notionUrl": "https://www.notion.so/4003818f8ba080548960c0514eb841aa"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c04-first-fraction-reciprocal-flip|direct|Evaluate (#/#) / (#/#) and write the result as a reduced fraction.",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 4,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c04-first-fraction-reciprocal-flip",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 14
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 2 - Standard Exam"
+    },
+    {
+      "id": "Q04",
+      "level": 2,
+      "category": "Fraction Addition Reverse",
+      "archetype": "problem-solving",
+      "archetypeKey": "c04-fraction-addition-unlike-denominators-lcd",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Solve for $x$: $x - \\frac{5}{12} = \\frac{7}{18}$. Write your answer as a reduced fraction.",
+      "display": "x - \\frac{5}{12} = \\frac{7}{18}",
+      "plainText": "Solve for x: x - 5/12 = 7/18. Write your answer as a reduced fraction.",
+      "givens": {
+        "a": 7,
+        "b": 18,
+        "c": 5,
+        "d": 12
+      },
+      "constants": {},
+      "trapGivens": [
+        5,
+        12,
+        7,
+        18
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "29/36",
+        "tol": 0,
+        "forms": [
+          "reduced_fraction",
+          "exact"
+        ]
+      },
+      "answerPlain": "29/36",
+      "answerDisplay": "\\frac{29}{36}",
+      "commonTrapTag": "c04-naive-numerator-denominator-sum",
+      "trapDerivation": "(7 + 5) / (18 + 12)",
+      "trapValue": "2/5",
+      "verify": {
+        "source": "7 / 18 + 5 / 12",
+        "trapValue": "2/5"
+      },
+      "checkpointHint": "Isolate the unknown first, then convert both fractions to their least common denominator before combining.",
+      "references": [
+        "MTH-T01-C04"
+      ],
+      "steps": [
+        {
+          "latex": "x = \\frac{7}{18} + \\frac{5}{12}",
+          "explain": "Add the subtracted fraction to both sides to isolate the variable.",
+          "eq": [
+            "29 / 36 - 5 / 12",
+            "7 / 18"
+          ]
+        },
+        {
+          "latex": "\\frac{7}{18} + \\frac{5}{12} = \\frac{14}{36} + \\frac{15}{36}",
+          "explain": "Rewrite each fraction using the least common denominator.",
+          "eq": [
+            "7 / 18 + 5 / 12",
+            "14 / 36 + 15 / 36"
+          ]
+        },
+        {
+          "latex": "\\frac{14}{36} + \\frac{15}{36} = \\frac{29}{36}",
+          "explain": "Add the numerators over the common denominator.",
+          "val": "29/36"
+        }
+      ],
+      "review": {
+        "verdict": "pass",
+        "note": "Solved x = 7/18 + 5/12 = 29/36 cleanly (good reverse-form variety at L2); steps and verify.source match. Exercises c04-fraction-addition-unlike-denominators-lcd and naive-sum trap 12/30 = 2/5, with a helpful zero-leak hint."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C04",
+          "title": "Fractions",
+          "notionUrl": "https://www.notion.so/4003818f8ba080548960c0514eb841aa"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c04-naive-numerator-denominator-sum|direct|Solve for x: x - #/# = #/#. Write your answer as a reduced fraction.",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c04-naive-numerator-denominator-sum",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 12
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 2 - Standard Exam"
+    },
+    {
+      "id": "Q05",
+      "level": 3,
+      "category": "Mixed Number Regrouping Diagnosis",
+      "archetype": "problem-solving",
+      "archetypeKey": "c04-mixed-number-regrouping-subtraction",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "A student simplified $6\\frac{1}{5} - 2\\frac{3}{5}$ step by step:\nLine 1: $6\\frac{1}{5} - 2\\frac{3}{5} = \\left(5 + \\frac{6}{5}\\right) - \\left(2 + \\frac{3}{5}\\right)$\nLine 2: $= (5 - 2) + \\left(\\frac{6}{5} + \\frac{3}{5}\\right)$\nLine 3: $= 3 + \\frac{9}{5}$\nLine 4: $= \\frac{24}{5}$\nWhich line is the first one that is wrong?",
+      "display": "6\\frac{1}{5} - 2\\frac{3}{5}",
+      "plainText": "A student simplified 6 + 1/5 - (2 + 3/5) step by step: Line 1: (5 + 6/5) - (2 + 3/5); Line 2: (5 - 2) + (6/5 + 3/5); Line 3: 3 + 9/5; Line 4: 24/5. Which line is the first one that is wrong?",
+      "givens": {
+        "w1": 6,
+        "a": 1,
+        "d": 5,
+        "w2": 2,
+        "b": 3
+      },
+      "constants": {},
+      "trapGivens": [
+        6,
+        1,
+        5,
+        2,
+        3
+      ],
+      "answerSpec": {
+        "type": "choice",
+        "options": [
+          {
+            "id": "1",
+            "label": "Line 1",
+            "provenance": "Prematurely flagging a valid mixed-number regrouping before comparing the fractional parts."
+          },
+          {
+            "id": "2",
+            "label": "Line 2"
+          },
+          {
+            "id": "3",
+            "label": "Line 3",
+            "trapTag": "c04-subtraction-inversion-on-regrouping"
+          },
+          {
+            "id": "4",
+            "label": "Line 4",
+            "trapTag": "c04-subtraction-inversion-on-regrouping"
+          }
+        ],
+        "correct": "2"
+      },
+      "answerPlain": "2",
+      "answerDisplay": "\\text{Line 2}",
+      "commonTrapTag": "c04-subtraction-inversion-on-regrouping",
+      "trapDerivation": "(6 - 2) + (1 + 3) / 5",
+      "trapValue": "24/5",
+      "verify": {
+        "source": "(6 + 1 / 5) - (2 + 3 / 5)",
+        "trapValue": "24/5",
+        "flaw": {
+          "values": [
+            "(5 + 6 / 5) - (2 + 3 / 5)",
+            "(5 - 2) + (6 / 5 + 3 / 5)",
+            "3 + 9 / 5",
+            "24 / 5"
+          ],
+          "firstWrong": 2
+        }
+      },
+      "checkpointHint": "Check each consecutive transformation independently to verify whether it stays numerically equivalent to the expression above it.",
+      "references": [
+        "MTH-T01-C04"
+      ],
+      "steps": [
+        {
+          "latex": "6\\frac{1}{5} - 2\\frac{3}{5} = \\left(5 + \\frac{6}{5}\\right) - \\left(2 + \\frac{3}{5}\\right)",
+          "explain": "Line 1 is valid: borrowing one whole unit converts the minuend into five plus six fifths without changing its value.",
+          "eq": [
+            "(6 + 1 / 5) - (2 + 3 / 5)",
+            "(5 + 6 / 5) - (2 + 3 / 5)"
+          ]
+        },
+        {
+          "latex": "\\left(5 + \\frac{6}{5}\\right) - \\left(2 + \\frac{3}{5}\\right) = (5 - 2) + \\left(\\frac{6}{5} - \\frac{3}{5}\\right)",
+          "explain": "Line 2 is the first wrong line: subtracting the second mixed number subtracts its fractional part as well, rather than adding three fifths.",
+          "eq": [
+            "(5 + 6 / 5) - (2 + 3 / 5)",
+            "(5 - 2) + (6 / 5 - 3 / 5)"
+          ]
+        },
+        {
+          "latex": "(5 - 2) + \\left(\\frac{6}{5} - \\frac{3}{5}\\right) = 3 + \\frac{3}{5}",
+          "explain": "Subtract the whole parts and the fractional parts separately.",
+          "eq": [
+            "(5 - 2) + (6 / 5 - 3 / 5)",
+            "3 + 3 / 5"
+          ]
+        },
+        {
+          "latex": "3 + \\frac{3}{5} = \\frac{18}{5}",
+          "explain": "The true difference is eighteen fifths.",
+          "val": "18/5"
+        }
+      ],
+      "blindSolve": {
+        "setup": "given",
+        "strategy": "prescribed",
+        "check": "none",
+        "task": "diagnose",
+        "reverse": false,
+        "steps": 2,
+        "ambiguous": false,
+        "answer": "2"
+      },
+      "review": {
+        "verdict": "pass",
+        "note": "Re-checked Q05: the new checkpointHint is strictly process-oriented, leaks neither Line 2 nor any whole/fractional operation details, and contains zero digits; math (18/5, Line 2 first wrong, flaw 24/5), choice options, and blindSolve (demand 3) all pass."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C04",
+          "title": "Fractions",
+          "notionUrl": "https://www.notion.so/4003818f8ba080548960c0514eb841aa"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c04-subtraction-inversion-on-regrouping|direct|A student simplified # + #/# - (# + #/#) step by step: Line #: (# + #/#) - (# + #/#); Line #: (# - #) + (#/# + #/#); Line #: # + #/#; Line #: #/#. Which line is the first one that is wrong?",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 4,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            20
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c04-subtraction-inversion-on-regrouping",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 3
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 18
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 3 - Trap & Diagnostic"
+    },
+    {
+      "id": "Q06",
+      "level": 3,
+      "category": "Fraction Modeling & Linear Equation",
+      "archetype": "problem-solving",
+      "archetypeKey": "c04-fraction-one-step-linear-equation",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "On a number line, $x > 0$, point $A$ is at $\\frac{1}{3}x$, point $B$ is at $\\frac{4}{5}x$, and point $C$ is at $x$. Point $M$ is the midpoint of segment $AB$. If the distance between $M$ and $C$ is $390$, find $x$.",
+      "display": "A = \\frac{1}{3}x,\\quad B = \\frac{4}{5}x,\\quad C = x",
+      "plainText": "On a number line with x > 0, A = (1/3)*x, B = (4/5)*x, C = x, M is the midpoint of AB, and the distance between M and C is 390. Find x.",
+      "givens": {
+        "a": 1,
+        "b": 3,
+        "c": 4,
+        "d": 5,
+        "dist": 390
+      },
+      "constants": {
+        "two": 2
+      },
+      "trapGivens": [
+        1,
+        3,
+        4,
+        5,
+        390
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "900",
+        "tol": 0,
+        "forms": [
+          "exact"
+        ]
+      },
+      "answerPlain": "900",
+      "answerDisplay": "900",
+      "commonTrapTag": "c04-direct-coefficient-multiplication",
+      "trapDerivation": "390 * (1 - (1 / 3 + 4 / 5) / 2)",
+      "trapValue": "169",
+      "verify": {
+        "source": "390 / (1 - (1 / 3 + 4 / 5) / 2)",
+        "trapValue": "169"
+      },
+      "checkpointHint": "Write every position on the line in terms of the unknown, simplify carefully, and check that your result fits the required spacing.",
+      "references": [
+        "MTH-T01-C04"
+      ],
+      "steps": [
+        {
+          "latex": "M = \\frac{\\frac{1}{3}x + \\frac{4}{5}x}{2}",
+          "explain": "Express the midpoint coordinate as the average of the coordinates of the two endpoints."
+        },
+        {
+          "latex": "\\frac{1}{3} + \\frac{4}{5} = \\frac{5}{15} + \\frac{12}{15}",
+          "explain": "Rewrite the two fractional coefficients with a common denominator.",
+          "eq": [
+            "1 / 3 + 4 / 5",
+            "5 / 15 + 12 / 15"
+          ]
+        },
+        {
+          "latex": "M = \\frac{\\frac{17}{15}x}{2}",
+          "explain": "Add the two fractional coefficients inside the numerator.",
+          "eq": [
+            "5 / 15 + 12 / 15",
+            "17 / 15"
+          ]
+        },
+        {
+          "latex": "M = \\frac{17}{30}x",
+          "explain": "Divide the summed coefficient by two to express the midpoint position.",
+          "eq": [
+            "(17 / 15) / 2",
+            "17 / 30"
+          ]
+        },
+        {
+          "latex": "x - \\frac{17}{30}x = 390",
+          "explain": "Since the unknown is positive, the rightmost point lies above the midpoint, so their difference equals the given distance."
+        },
+        {
+          "latex": "\\frac{13}{30}x = 390",
+          "explain": "Combine the fractional terms on the left side.",
+          "eq": [
+            "1 - 17 / 30",
+            "13 / 30"
+          ]
+        },
+        {
+          "latex": "x = 390 \\times \\frac{30}{13}",
+          "explain": "Multiply both sides by the reciprocal of the fractional coefficient.",
+          "eq": [
+            "390 * (30 / 13)",
+            "900"
+          ]
+        },
+        {
+          "latex": "x = 900",
+          "explain": "Evaluate the product to find the unknown.",
+          "val": "900"
+        }
+      ],
+      "blindSolve": {
+        "setup": "model",
+        "strategy": "prescribed",
+        "check": "none",
+        "task": "compute",
+        "reverse": true,
+        "steps": 5,
+        "ambiguous": false,
+        "answer": "900"
+      },
+      "review": {
+        "verdict": "pass",
+        "note": "Re-solved from scratch: A = (1/3)x, B = (4/5)x => midpoint M = (17/30)x; with x > 0, distance C - M = (13/30)x = 390 => x = 900, matching answerSpec, verify.source, and all 8 steps. Both x = 900 and trapValue 169 = 390*(13/30) cleanly exercise c04-fraction-one-step-linear-equation and c04-direct-coefficient-multiplication, givens/constants map every prompt number cleanly without overlap, blindSolve hits L3 (demand 3), and checkpointHint is helpful and non-leaking."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C04",
+          "title": "Fractions",
+          "notionUrl": "https://www.notion.so/4003818f8ba080548960c0514eb841aa"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c04-direct-coefficient-multiplication|direct|On a number line with x > #, A = (#/#)*x, B = (#/#)*x, C = x, M is the midpoint of AB, and the distance between M and C is #. Find x.",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 8,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            20
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c04-direct-coefficient-multiplication",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 22
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 3 - Trap & Diagnostic"
+    }
+  ],
+  "drillId": "DRL-MTH-T01-C04-01",
+  "title": "Fractions — Verified Math Drill (6 Qs)",
+  "topicCode": "MTH-T01",
+  "chapterCode": "MTH-T01-C04",
+  "schemaVersion": "2.0-math",
+  "createdAt": "2026-11-15 00:26:11",
+  "config": {
+    "questionCount": 6,
+    "difficulty": "ALL",
+    "difficultyMode": "AI Synthesized Reasoning Mode"
+  },
+  "localFilePath": "drills/data/MTH-T01-C04/DRL-MTH-T01-C04-01.json"
+}
