@@ -9,7 +9,15 @@ ARCHETYPES = [
     {"archetypeKey": "dict-traps", "cognitiveTraps": [{"trapTag": "dict-trap", "description": "..."}]},
 ]
 # Ramp-style problem: build a model from two relations and check it against a limit -> L4.
-MODEL = {"setup": "model", "strategy": "prescribed", "check": "edge", "task": "compute", "reverse": False, "steps": 6}
+MODEL = {
+    "setup": "model",
+    "strategy": "prescribed",
+    "check": "edge",
+    "task": "compute",
+    "reverse": False,
+    "steps": 6,
+    "edgeRejected": "w = -4 (negative width)",
+}
 # "35% of 240": given, prescribed, no check -> L1 (mental-math level).
 DIRECT = {"setup": "given", "strategy": "prescribed", "check": "none", "task": "compute", "reverse": False, "steps": 2}
 GOOD_BLIND = {"answer": "20", "ambiguous": False, **MODEL}
@@ -121,8 +129,8 @@ def test_real_limit_is_not_a_sentinel():
         (4, {**GOOD_BLIND, "steps": "6"}, "steps an integer"),
         (3, {"answer": "20", "ambiguous": False, **DIRECT}, "direct computation"),
         (4, {"answer": "20", "ambiguous": False, **DIRECT, "reverse": True}, "give L2"),
-        (5, {"answer": "20", "ambiguous": False, **DIRECT, "check": "edge"}, "give L3"),
-        (4, {"answer": "20", "ambiguous": False, **DIRECT, "check": "edge"}, "give L3"),
+        (5, {"answer": "20", "ambiguous": False, **DIRECT, "check": "edge", "edgeRejected": "x = -2"}, "give L3"),
+        (4, {"answer": "20", "ambiguous": False, **DIRECT, "check": "edge", "edgeRejected": "x = -2"}, "give L3"),
     ],
 )
 def test_blind_solve_failures_rejected(level, blind, match):
@@ -130,6 +138,19 @@ def test_blind_solve_failures_rejected(level, blind, match):
     if blind is not None:
         prob["blindSolve"] = blind
     with pytest.raises(AiContractError, match=match):
+        check(prob)
+
+
+@pytest.mark.parametrize("rejected", [None, "", "  "])
+def test_edge_check_must_name_what_it_ruled_out(rejected):
+    blind = {**GOOD_BLIND, "edgeRejected": rejected}
+    with pytest.raises(AiContractError, match="edgeRejected"):
+        check(problem(level=4, blindSolve=blind))
+
+
+def test_context_check_runs_before_blind_solve():
+    prob = problem(level=4, blindSolve={**GOOD_BLIND, "ambiguous": True}, context="ac_series_impedance")
+    with pytest.raises(AiContractError, match="contextCheck"):
         check(prob)
 
 
