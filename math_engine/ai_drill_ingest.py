@@ -219,6 +219,19 @@ def validate_flaw_trap(prob: Dict[str, Any], trap_value: Any) -> None:
         )
 
 
+def _is_omission_trap(spec: Dict[str, Any], tv: Any) -> bool:
+    """True when a solution_set trap is a strict, non-empty subset of the correct values."""
+    if spec.get("type") != "solution_set":
+        return False
+    variable = spec.get("variable", "x")
+    try:
+        expected = [to_expr(str(v), variables=[variable], trusted=True) for v in spec.get("values") or []]
+        items = [to_expr(it, variables=[variable], trusted=True) for it in _split_items(str(tv), variable)]
+    except Exception:
+        return False
+    return 0 < len(items) < len(expected) and all(any(is_equal(i, e) for e in expected) for i in items)
+
+
 def _trap_matches_spec(spec: Dict[str, Any], tv: Any) -> bool:
     """True when `tv`, put in place of the expected answer, is a well-formed answer of the spec's type
     (so the trap is something a learner could actually enter). Types without a checker pass."""
@@ -358,7 +371,9 @@ def validate_ai_problem_contract(prob: Dict[str, Any], enforce_leak_gate: bool =
                 matched_given_keys.add(g_key)
                 break
 
-    if len(matched_given_keys) < 2:
+    # An omission trap ("found only the principal angle", "kept only the positive root") is a strict
+    # subset of the answer set; it has no arithmetic of its own, so the 2-givens rule does not apply.
+    if len(matched_given_keys) < 2 and not _is_omission_trap(prob.get("answerSpec") or {}, tv):
         raise AiContractError(
             f"[{pid}] trapDerivation '{td}' must contain at least 2 distinct givens from {givens}, found {len(matched_given_keys)}: {matched_given_keys}"
         )

@@ -57,3 +57,15 @@ def test_solution_set_trap_matches_partial_set():
 
 def test_solution_set_trap_must_be_parseable_set():
     assert not _trap_matches_spec(SET_SPEC, "not a value")
+
+
+TRIG_SPEC = {"type": "solution_set", "values": ["pi/6", "5*pi/6"], "variable": "x"}
+
+
+def test_principal_angle_only_is_an_omission_trap():
+    from math_engine.ai_drill_ingest import _is_omission_trap
+
+    assert _is_omission_trap(TRIG_SPEC, "pi/6")
+    assert not _is_omission_trap(TRIG_SPEC, "pi/6, 5*pi/6")  # the full answer is not a trap
+    assert not _is_omission_trap(TRIG_SPEC, "13*pi/6")  # not a subset: needs its own derivation
+    assert not _is_omission_trap({"type": "number", "value": "3"}, "3")
