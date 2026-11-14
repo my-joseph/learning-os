@@ -523,6 +523,11 @@ def validate_blind_solve(prob: Dict[str, Any]) -> None:
         raise AiContractError(f"[{pid}] blindSolve.reverse must be true/false and blindSolve.steps an integer.")
     if bs["ambiguous"]:
         raise AiContractError(f"[{pid}] Blind solver found the prompt ambiguous.")
+    if bs["check"] == "edge" and not str(bs.get("edgeRejected") or "").strip():
+        raise AiContractError(
+            f"[{pid}] blindSolve.check is 'edge' but 'edgeRejected' is empty. Record the candidate, branch or case "
+            f"the check ruled out (06 §2.3). If every candidate passed, the check decided nothing: the tag is 'none'."
+        )
     spec = prob.get("answerSpec") or {}
     if check_answer(spec, str(bs["answer"])).get("verdict") != "correct":
         raise AiContractError(
@@ -567,10 +572,10 @@ def validate_against_vault(prob: Dict[str, Any], archetypes: List[Dict[str, Any]
             f"Use a listed tag, or propose adding the trap to the vault first."
         )
 
+    validate_context_check(prob)  # before the blind-solve gate, so a bad story is reported even if the level fails too
     level = prob.get("level")
     if isinstance(level, int) and level >= 3:
         validate_blind_solve(prob)
-    validate_context_check(prob)
 
 
 CONTEXT_CHECK_VERDICTS = ("ok", "fail")

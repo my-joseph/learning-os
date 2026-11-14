@@ -121,6 +121,8 @@ The verb does not set the level ("explain" or "prove" alone does not raise it); 
 
 **No bolted-on checks.** `check = edge` must come from the problem itself (a domain, a ± case, a limit the question asks you to respect). A fits/doesn't-fit clause added only to earn it ("If it fits, report $d$; otherwise report $0$") is computation plus one comparison, not a check; the gate rejects sentinel answers like this. Ask for what the limit decides instead, e.g. the largest width within the budget.
 
+**The check must decide something.** `check = edge` only counts when the check rules out at least one candidate (a root, a ± branch, a case, a value past a limit). The solver records it in `blindSolve.edgeRejected`, and the gate rejects `edge` without it. If every candidate passes (e.g. $X_L > 0$ when both roots are positive), the check decided nothing and the tag is `none`.
+
 **Diagnose form (find the flaw).** An L3 diagnose problem must ask *which line is wrong*, not *what the correct value is*: a value question lets the learner just recompute, and the solver then tags it `compute` (L1). Write it like this:
 - Show the work in the prompt as `Line N: $...$` lines, one per line. `display` stays hidden until the learner asks, so it cannot hold the work.
 - Use `answerSpec` `{"type": "choice", "options": [{"id": "1", "label": "Line 1"}, ...], "correct": "<first wrong line>"}`.

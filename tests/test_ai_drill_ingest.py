@@ -57,6 +57,7 @@ class TestAiDrillIngest(unittest.TestCase):
                             "setup": "model",
                             "strategy": "prescribed",
                             "check": "edge",  # L4 needs model + a check or a method choice
+                            "edgeRejected": "a share above 100% of the total",
                             "task": "compute",
                             "reverse": True,
                             "steps": 6,
