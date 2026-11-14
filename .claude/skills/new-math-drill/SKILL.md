@@ -5,7 +5,7 @@ description: Create a new verified math drill (MTH-*) from a short brief — pic
 
 # New math drill
 
-Goal: a drill that matches what the learner asked for and passes every gate on the first ingest, with no hand-fixing afterwards. The learner studies these drills, so they never see answers before practising: do not show them drafts, answers or previews, and do not ask them to approve. Mistakes you or the reviewer catch go into the issue log (`rules/00_core.md` §11), not into questions to the learner. Run everything from the repo root with `.venv/bin/python` (or `python3` if that is the active venv). Talk to the learner in Thai; everything written into the drill is English.
+Goal: a drill that matches what the learner asked for and passes every gate on the first ingest, with no hand-fixing afterwards. The learner studies these drills, so they never see answers before practising: do not show them drafts, answers or previews, and do not ask them to approve. Mistakes you or the reviewer catch go into the issue log (`rules/00_core.md` §11), not into questions to the learner. Run everything from the repo root with `.venv/bin/python` and call tools as modules (`.venv/bin/python -m pytest`, `-m ruff`, `-m pip`; the `.venv/bin/pip` launcher is broken). **Keep answers out of the terminal**: subagents write their results to files and reply only `done`, because their replies are shown to the learner. Talk to the learner in Thai; everything written into the drill is English.
 
 ## 1. Brief
 
@@ -14,7 +14,7 @@ Take the brief from the request; ask only if the unit is missing or no vault exi
 - **Levels** and **count**: every level the vault has (usually L1–L4), 2 problems each, unless the request says otherwise. Plain prompts unless word problems are asked for.
 - **Focus** (optional): specific archetypes, trap tags / weak spots, or contexts to use or avoid.
 
-State the brief in one line and continue without waiting. Stop and ask only when the brief cannot be met as asked (e.g. a level the vault lacks needs a new archetype).
+State the brief in one line and continue without waiting. Do not stop to ask during the run. If part of the brief cannot be met (a level the vault lacks, an archetype that never reaches its level), ship what can be made, log the gap (`--kind level --action open`) and say so in the final report.
 
 ## 2. Load only the rules this task needs
 
@@ -26,12 +26,12 @@ Read `rules/00_core.md` §5–§7, `rules/03_stem.md`, `rules/06_template_contra
 .venv/bin/python -m math_engine.ai_drill_ingest --unit <UNIT> --list-vault
 ```
 
-- Use only archetypes at the requested levels. If the brief needs one that is not in the vault, stop and propose the new archetype (key, level, coreConcept, governingRelation, cognitiveTraps) to the learner first.
+- Use only archetypes at the requested levels. If the brief needs one that is not in the vault, skip that part and log it (`--kind level --action open`); new archetypes are added when the issue log is cleared.
 - New unit (no vault yet): first check `docs/backlog.md` for engine gaps in that topic and fix or report them. Build the vault from the unit's OpenStax section per `rules/07` §4 "Curriculum Baseline": one L1–L2 archetype per learning objective first, then L3+ archetypes that go beyond the book. Cite the section in each archetype's `source`; never copy or paraphrase OpenStax exercises.
 - Default to plain prompts: state the math directly in one short sentence (e.g. "Simplify $(5 + 3i)(7 - 4i)$. Write the answer as $a + bi$.") with no story and an empty `context`. Do not wrap a computation in a made-up scenario ("in a signal demodulator, a weight is ...").
 - Use a real-world context only when the learner asks for word problems, or when the level needs the solver to build the relation from a situation (`setup: model`, usually L4–L5). The context must be physically correct (units, sign conventions, plausible magnitudes) and not in that archetype's `usedContexts`.
 - Mix forms: at most 2 diagnose-form ("which line is wrong") problems per drill, and never all L3 problems in that form.
-- Look at one recent drill in `drills/data/<UNIT>/` for the exact field shape (e.g. `DRL-MTH-T01-C12-05.json` Q01).
+- **Start from the template**: copy `.claude/skills/new-math-drill/template/draft.json` and change the content. It has one problem of each shape (L1 plain, L2 reverse, L3 diagnose, L4 word problem with `contextCheck`, `blindSolve` and `edgeRejected`) in the exact field format the gates accept (`givens` is a dict, `steps[].eq` is `[lhs, rhs]`, choice options use `id`, `display` has no `$`, `trapDerivation` uses literal numbers). `tests/test_skill_template.py` keeps it passing. Its levels and verdicts only illustrate the shape; every draft needs its own blind solve and review.
 
 ## 4. Write the draft as JSON
 
@@ -66,14 +66,14 @@ Also set `id` (`Q01`…), `level`, `archetype`, `archetypeKey`, `context`, `cate
 
 ## 5. Blind solve (`rules/07` §4 V2)
 
-Do it for every L3+ problem and every new archetype (L3+ cannot pass step 6 without it). In a separate subagent that sees only the prompt and `rules/06` §2.3, ask for (1) the final answer, (2) whether the prompt is ambiguous, (3) the six demand tags of its own solution (`setup`, `strategy`, `check`, `task`, `reverse`, `steps`, using the values in §2.3; do not ask it for a level); if it tags `check: edge`, it must name what the check ruled out (`edgeRejected`), or else tag `none`, and (4) what a typical wrong answer would be. Then:
+Do it for every L3+ problem (L3+ cannot pass step 6 without it). Use **one** subagent for all of them at once; give it only the prompts (no answers, no `level`) and `rules/06` §2.3, tell it to write its results as JSON to `scratch/reviews/<draft-name>-blind.json` and reply only `done`. Wait for that reply; do not poll with short timers or spawn a second solver while it runs. For each prompt ask for (1) the final answer, (2) whether the prompt is ambiguous, (3) the six demand tags of its own solution (`setup`, `strategy`, `check`, `task`, `reverse`, `steps`, using the values in §2.3; do not ask it for a level); if it tags `check: edge`, it must name what the check ruled out (`edgeRejected`), or else tag `none`, and (4) what a typical wrong answer would be. Then:
 - Answer differs from `answerSpec`, or "ambiguous" → fix or drop the problem.
 - The subagent changed its answer mid-reply → treat as ambiguous: tighten the wording and re-run.
-- Its tags map below what the gate accepts (below `level`; check with `--check` in step 6) → redesign **once** to add real demand (a relation the solver must build, a method to choose, a case to check), or relabel. If the redesign still fails, stop: show the learner the author's intent and the solver's tags in plain words and let them choose relabel or drop. Never change `category`, add `constraints` or add an "otherwise report 0" clause instead. If relabelling would leave the drill off the requested levels, ask the learner before relabelling.
+- Its tags map below what the gate accepts (below `level`; check with `--check` in step 6) → redesign **once** to add real demand (a relation the solver must build, a method to choose, a case to check). If the redesign still falls short, do not ask the learner: drop the problem and log it (`--kind level --source gate --action dropped`, naming the archetype, so its vault level can be fixed later). Never change `category`, add `constraints` or add an "otherwise report 0" clause instead.
 - Its typical wrong answer differs from `trapValue` → re-check the trap against the tag (step 4). If `trapValue` is what that tag's mistake produces, keep it; the solver's guess may simply be a different mistake.
 For L3+, copy the answer, ambiguity, the six tags and `edgeRejected` (when `check` is `edge`) into the problem's `blindSolve`. Re-run the blind solve after any change to the prompt.
 
-**Context check** (every problem with a non-empty `context`, any level): ask the same subagent (or, for L1–L2, a separate one that sees only the prompt) whether the story is real, using `rules/07` §4.8: (a) the operation is the law that domain really uses, (b) units and magnitudes are physically possible, (c) removal test: with the domain words stripped, does the problem mean exactly the same? If yes, the story is only a label: ok if literally true (a floor's area), fail if it gives the number a meaning it does not have. Copy its verdict and one-line reason into `contextCheck: {"verdict": "ok" | "fail", "note": "..."}`. On `fail`, fix the story or make the problem plain (empty `context`), then re-check.
+**Context check** (every problem with a non-empty `context`, any level): include those prompts in the same blind-solve subagent call (L1–L2 ones too) and ask whether the story is real, using `rules/07` §4.8: (a) the operation is the law that domain really uses, (b) units and magnitudes are physically possible, (c) removal test: with the domain words stripped, does the problem mean exactly the same? If yes, the story is only a label: ok if literally true (a floor's area), fail if it gives the number a meaning it does not have. Copy its verdict and one-line reason into `contextCheck: {"verdict": "ok" | "fail", "note": "..."}`. On `fail`, fix the story or make the problem plain (empty `context`), then re-check.
 
 ## 6. Check every gate (writes nothing)
 
@@ -85,7 +85,7 @@ It lists every failing problem at once. Fix them all and re-run until it prints 
 
 ## 7. Automated review (replaces learner approval)
 
-Spawn **one** fresh reviewer subagent for the whole draft. Give it the brief, the draft JSON and `rules/07` §4 V3, and ask it to re-solve every problem itself (L1–L2 included) and judge each one on:
+Spawn **one** fresh reviewer subagent for the whole draft. Give it the brief, the draft path and `rules/07` §4 V3. Tell it to write its verdicts as JSON to `scratch/reviews/<draft-name>-review.json` and reply only `done` (its reply is shown to the learner, so it must not contain answers). Ask it to re-solve every problem itself (L1–L2 included) and judge each one on:
 1. the answer, trap value and steps are correct;
 2. no second reading: units and conventions (e.g. MB = 1000 or 1024 kB, bits vs bytes), rounding, wording;
 3. the problem exercises its archetype and `commonTrapTag`;
@@ -93,8 +93,8 @@ Spawn **one** fresh reviewer subagent for the whole draft. Give it the brief, th
 5. hints and `display` help without giving the answer away.
 
 It returns per problem `{"verdict": "pass" | "fix", "note": "<one sentence>"}`. Copy each verdict into the problem's `review` as given; never edit it.
-- `fix` → fix the problem once, re-run steps 5–6 for it, and ask the reviewer to re-check just that problem. Still `fix` → drop it and write one replacement (same level), then review that. If the replacement also fails, ship the drill without it and say so in the report.
-- Log every `fix` and every drop with `python -m scripts.issues add ... --source reviewer --action auto-fixed|dropped` (`rules/00_core.md` §11). Log a stop-rule hit or a tool gap the same way with `--action open`.
+- `fix` → fix the problem once, re-run steps 5–6 for it, and ask the same reviewer to re-check just that problem (same file, same `done` reply). Still `fix` → drop it and write one replacement (same level), then review that. If the replacement also fails, ship the drill without it and say so in the report.
+- Log every `fix` and every drop with `.venv/bin/python -m scripts.issues add ... --source reviewer --action auto-fixed|dropped` (`rules/00_core.md` §11), using the drill's unit and problem id in `--where`. Log a tool gap the same way with `--action open`. Notes in the log must not contain answers.
 
 
 ## 8. Ingest
@@ -110,7 +110,7 @@ Report to the learner in a few lines and **without answers or prompts**: drill I
 
 ## 9. After ingest
 
-- Commit the drill and the vault change on a branch (never on `main`); open a PR when the learner asks.
+- Ship it without being asked (learner decision 2026-11-15): commit on a branch `drill/<drill-id>` (never on `main`), push, open a PR and merge it yourself (`gh pr merge --merge --delete-branch`), then return the checkout to `main` (`git checkout main && git pull --ff-only`). Self-merge is allowed **only** when the PR changes nothing but the new drill file under `drills/data/<UNIT>/`, that unit's vault file and `id_map.json`; check with `git diff --stat origin/main...HEAD` before merging. Anything else (rules, code, tests, other drills) needs the learner's go-ahead.
 - Ingest fills `topicCode`, `chapterCode` and missing `levelLabel`s. Do not patch drill fields by hand to make a sync pass: if the sync reports missing fields, fix the cause (ingest or the draft) and say so.
 - Sync the new drill's pristine record to Notion **right after ingest** (`rules/00_core.md` §8); no need to wait for the merge or ask. Use `notion_sync.drill_sync.sync_drill_to_notion` from the repo root; in a worktree it reads the main checkout's `.env` automatically, so never copy `.env`. A result with `degraded: true` means Notion was **not** updated; report it as not synced.
 - Drill files are content only: never add `state` or `sessionSummary` to them (learner progress lives in `progress/`).
