@@ -1,20 +1,24 @@
-"""validate_against_vault: trap tags must come from the vault; L4/L5 need a passing blind solve (07 §4)."""
+"""validate_against_vault: trap tags must come from the vault; L3+ must pass the blind-solve floor gate (06 §2.3, 07 §4)."""
 
 import pytest
 
-from math_engine.ai_drill_ingest import AiContractError, validate_against_vault
+from math_engine.ai_drill_ingest import AiContractError, demand_level, validate_against_vault
 
 ARCHETYPES = [
     {"archetypeKey": "string-traps", "cognitiveTraps": ["listed-trap"]},
     {"archetypeKey": "dict-traps", "cognitiveTraps": [{"trapTag": "dict-trap", "description": "..."}]},
 ]
-GOOD_BLIND = {"answer": "20", "level": 4, "ambiguous": False}
+# Ramp-style problem: build a model from two relations and check it against a limit -> L4.
+MODEL = {"setup": "model", "strategy": "prescribed", "check": "edge", "task": "compute", "reverse": False, "steps": 6}
+# "35% of 240": given, prescribed, no check -> L1 (mental-math level).
+DIRECT = {"setup": "given", "strategy": "prescribed", "check": "none", "task": "compute", "reverse": False, "steps": 2}
+GOOD_BLIND = {"answer": "20", "ambiguous": False, **MODEL}
 
 
 def problem(**overrides):
     prob = {
         "id": "Q01",
-        "level": 3,
+        "level": 2,
         "archetypeKey": "string-traps",
         "commonTrapTag": "listed-trap",
         "answerSpec": {"type": "number", "value": "20", "tolerance": 0.001},
@@ -46,27 +50,52 @@ def test_vault_mismatch_rejected(overrides, match):
         check(problem(**overrides))
 
 
-def test_l3_needs_no_blind_solve_record():
-    check(problem(level=3))
-
-
-@pytest.mark.parametrize("level", [4, 5])
-def test_l4_l5_pass_with_matching_blind_solve(level):
-    check(problem(level=level, blindSolve={**GOOD_BLIND, "level": level}))
+def test_l1_l2_need_no_blind_solve_record():
+    check(problem(level=1))
+    check(problem(level=2))
 
 
 @pytest.mark.parametrize(
-    ("blind", "match"),
+    ("tags", "expected"),
     [
-        (None, "needs a 'blindSolve' record"),
-        ({"answer": "20", "level": 4}, "needs a 'blindSolve' record"),
-        ({**GOOD_BLIND, "ambiguous": True}, "ambiguous"),
-        ({**GOOD_BLIND, "answer": "36"}, "does not match answerSpec"),
-        ({**GOOD_BLIND, "level": 3}, "rated it L3"),
+        (DIRECT, 1),
+        ({**DIRECT, "reverse": True}, 2),
+        ({**DIRECT, "setup": "translate"}, 2),
+        ({**DIRECT, "steps": 4}, 2),
+        ({**DIRECT, "task": "diagnose"}, 3),
+        ({**DIRECT, "check": "edge"}, 3),
+        ({**DIRECT, "strategy": "choose"}, 3),
+        ({**DIRECT, "setup": "model"}, 3),
+        (MODEL, 4),
+        ({**DIRECT, "setup": "model", "check": "justify"}, 4),
+        ({**DIRECT, "strategy": "invent"}, 5),
     ],
 )
-def test_l4_blind_solve_failures_rejected(blind, match):
-    prob = problem(level=4)
+def test_demand_level_mapping(tags, expected):
+    assert demand_level(tags) == expected
+
+
+@pytest.mark.parametrize("level", [3, 4, 5])
+def test_l3_to_l5_pass_within_one_level(level):
+    check(problem(level=level, blindSolve=GOOD_BLIND))  # tags give L4
+
+
+@pytest.mark.parametrize(
+    ("level", "blind", "match"),
+    [
+        (3, None, "needs a 'blindSolve' record"),
+        (4, {"answer": "20", "level": 4, "ambiguous": False}, "missing"),
+        (4, {**GOOD_BLIND, "ambiguous": True}, "ambiguous"),
+        (4, {**GOOD_BLIND, "answer": "36"}, "does not match answerSpec"),
+        (4, {**GOOD_BLIND, "setup": "hard"}, "blindSolve.setup"),
+        (4, {**GOOD_BLIND, "steps": "6"}, "steps an integer"),
+        (3, {"answer": "20", "ambiguous": False, **DIRECT}, "direct computation"),
+        (4, {"answer": "20", "ambiguous": False, **DIRECT, "reverse": True}, "give L2"),
+        (5, {"answer": "20", "ambiguous": False, **DIRECT, "check": "edge"}, "give L3"),
+    ],
+)
+def test_blind_solve_failures_rejected(level, blind, match):
+    prob = problem(level=level)
     if blind is not None:
         prob["blindSolve"] = blind
     with pytest.raises(AiContractError, match=match):
@@ -74,5 +103,6 @@ def test_l4_blind_solve_failures_rejected(blind, match):
 
 
 def test_interleaved_category_does_not_bypass_blind_solve():
-    with pytest.raises(AiContractError, match="rated it L2"):
-        check(problem(level=4, category="Interleaved Synthesis", blindSolve={**GOOD_BLIND, "level": 2}))
+    shallow = {"answer": "20", "ambiguous": False, **DIRECT}
+    with pytest.raises(AiContractError, match="direct computation"):
+        check(problem(level=4, category="Interleaved Synthesis", blindSolve=shallow))

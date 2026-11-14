@@ -48,8 +48,8 @@ Per problem, the rules that fail most often:
 | `checkpointHint` | Zero digits. A relationship or self-check, not a number. |
 | `steps` | One transformation per step, never `A = B = C`; each has `latex` and an action `explain`; at least one step has a machine check. `"val"` must equal the final answer, so put it only on the last step; check intermediate results with `"eq"`. |
 | `display` / `plainText` | Hidden behind "Show equation set-up" until the learner opens it or answers. For word problems prefer the general relation (`A = L \cdot W`) over the substituted one. |
-| `level` | Must match what solving the problem actually demands, not just pass G2. L4 needs two concepts that interact (one result feeds the next); L5 needs a non-routine idea. Repeating an L2/L3 calculation ×N, or adding a `constraints` line or switching `category` to `Interleaved Synthesis` only to satisfy G2, is not L4. If the honest level is lower, label it lower and tell the learner. |
-| `blindSolve` | **Required for L4/L5** (the gate rejects the draft without it): `{"answer": "...", "level": N, "ambiguous": false}` copied from the blind solve in step 5. The answer must match `answerSpec` and `level` must be ≥ the problem's `level`. Record what the solver said; never edit it to pass. |
+| `level` | What solving the problem demands of a student at this stage (`rules/06` §2.3), not just what passes G2. For L3+ the hard rule is the floor: no problem the learner could do as direct computation or mental math. L4 means building a model from ≥ 2 relations the prompt does not state, plus choosing a method or checking a case; L5 needs an idea no taught method provides. Repeating an L2 calculation ×N, adding a `constraints` line, or switching `category` to `Interleaved Synthesis` does not raise the level. |
+| `blindSolve` | **Required for L3+** (the gate rejects the draft without it): `{"answer", "ambiguous", "setup", "strategy", "check", "task", "reverse", "steps"}` copied from the blind solve in step 5. The gate maps the tags to a level and rejects anything more than one level below `level`. Record what the solver said; never edit it to pass. |
 | `prompt` vs. trap | Do not state in the prompt what the trap tests (e.g. saying the roots have the form `p ± qi` when the trap is missing the negative discriminant). |
 | `verificationLevel` | `"partial"`. |
 | `figure` | If the archetype declares `figureBuilders`, the figure is auto-attached; otherwise supply one or a `figureWaiver`. |
@@ -58,12 +58,12 @@ Also set `id` (`Q01`…), `level`, `archetype`, `archetypeKey`, `context`, `cate
 
 ## 5. Blind solve (`rules/07` §4 V2)
 
-Do it for every L3+ problem and every new archetype (L4/L5 cannot pass step 6 without it; for L3 the learner may say to skip). In a separate subagent that sees only the prompt and the level table in `rules/06` §2, ask for (1) the final answer, (2) whether the prompt is ambiguous, (3) the level it would honestly assign, and (4) what a typical wrong answer would be. Then:
+Do it for every L3+ problem and every new archetype (L3+ cannot pass step 6 without it). In a separate subagent that sees only the prompt and `rules/06` §2.3, ask for (1) the final answer, (2) whether the prompt is ambiguous, (3) the six demand tags of its own solution (`setup`, `strategy`, `check`, `task`, `reverse`, `steps`, using the values in §2.3; do not ask it for a level), and (4) what a typical wrong answer would be. Then:
 - Answer differs from `answerSpec`, or "ambiguous" → fix or drop the problem.
 - The subagent changed its answer mid-reply → treat as ambiguous: tighten the wording and re-run.
-- Its level is lower than `level` → propose a redesign that adds real demand, or relabel to its level; never keep an inflated label, and never change `category` or add `constraints` instead.
+- Its tags map to more than one level below `level` (check with `--check` in step 6) → redesign **once** to add real demand (a relation the solver must build, a method to choose, a case to check), or relabel. If the redesign still fails, stop: show the learner the author's intent and the solver's tags in plain words and let them choose relabel or drop. Never change `category` or add `constraints` instead.
 - Its typical wrong answer differs from `trapValue` → re-check the trap against the tag (step 4). If `trapValue` is what that tag's mistake produces, keep it; the solver's guess may simply be a different mistake.
-For L4/L5, copy the answer, level and ambiguity into the problem's `blindSolve`. Re-run the blind solve after any change to the prompt.
+For L3+, copy the answer, ambiguity and the six tags into the problem's `blindSolve`. Re-run the blind solve after any change to the prompt.
 
 ## 6. Check every gate (writes nothing)
 
@@ -75,7 +75,7 @@ It lists every failing problem at once. Fix them all and re-run until it prints 
 
 ## 7. Preview and get approval
 
-Show a compact table: id, level, archetype, prompt (short), answer, trap value, and the four blind-solve columns. Point out anything that bends the brief. Wait for the learner's approval or edits; re-run steps 5–6 after any edit.
+Show a compact table: id, level, archetype, prompt (short), answer, trap value, and the blind-solve answer, ambiguity, tags and mapped level. Point out anything that bends the brief. Wait for the learner's approval or edits; re-run steps 5–6 after any edit.
 
 
 ## 8. Ingest
