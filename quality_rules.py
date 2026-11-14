@@ -776,11 +776,10 @@ def check_gate_g2(prob: dict[str, Any], rules: dict[str, Any] | None = None) -> 
         concept_count, has_constraint = _count_concepts_or_constraints(prob)
         min_c = l_rule.get("min_concepts", 1)
         allow_alt = l_rule.get("allow_constraint_alternative", True)
-        # An AI-written problem proves its demand with a blind solve (06 §2.3), so a single-unit
-        # L4/L5 does not need a relabelled category or a padding `constraints` line to pass.
-        demand = _blind_solve_demand(prob)
-        proven = demand is not None and demand >= level
-        if not proven and concept_count < min_c and not (allow_alt and has_constraint):
+        # An AI-written problem proves its demand with a blind solve (06 §2.3), which the vault gate
+        # judges; counting concepts here would only invite padding with `constraints` or a category.
+        judged_by_blind_solve = _blind_solve_demand(prob) is not None
+        if not judged_by_blind_solve and concept_count < min_c and not (allow_alt and has_constraint):
             raise QualityError(
                 "G2",
                 pid,

@@ -462,7 +462,8 @@
         "c12-linear-distance-sum-trap",
         "c12-hypotenuse-square-omission-trap",
         "c12-ratio-as-length-trap",
-        "c12-leg-reported-as-hypotenuse-trap"
+        "c12-leg-reported-as-hypotenuse-trap",
+        "c12-available-space-used-as-min-run-trap"
       ],
       "versatileDomains": [
         "warehouse_mezzanine_ramp",

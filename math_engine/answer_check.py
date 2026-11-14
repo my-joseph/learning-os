@@ -616,7 +616,8 @@ def is_equal(a, b, variables=None, tolerance=None, timeout=1.5, raise_on_timeout
                     diff = abs(sp.N(a - b, 30))
                     val_b = abs(sp.N(b, 30))
                     if isinstance(tolerance, (int, float)):
-                        if diff <= tolerance or diff <= tolerance * max(1.0, float(val_b)):
+                        # A plain number is an absolute tolerance; use {"rel": ...} for a relative one.
+                        if diff <= tolerance:
                             return True
                     elif isinstance(tolerance, dict):
                         abs_tol = tolerance.get("abs", 0.0)
