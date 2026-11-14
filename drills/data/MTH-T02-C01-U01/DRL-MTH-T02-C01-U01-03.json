@@ -10,9 +10,9 @@
       "category": "Core Skill",
       "archetype": "problem-solving",
       "archetypeKey": "t02-c01-u01-imaginary-unit-definition",
-      "context": "quantum_phase_factor",
+      "context": "",
       "verificationLevel": "partial",
-      "prompt": "A quantum phase factor is written as $4i^2 - 9$, where $i$ is the imaginary unit. Evaluate the factor as a real number.",
+      "prompt": "Evaluate $4i^2 - 9$, where $i$ is the imaginary unit. Write the result as a real number.",
       "display": "i^2 = -1",
       "plainText": "i^2 = -1",
       "givens": {
@@ -391,9 +391,9 @@
       "category": "Core Skill",
       "archetype": "problem-solving",
       "archetypeKey": "t02-c01-u01-multiplying-pure-imaginary",
-      "context": "waveguide_impedance",
+      "context": "",
       "verificationLevel": "partial",
-      "prompt": "In a waveguide model, two reactive terms $6i$ and $7i$ are multiplied to form a coupling coefficient. Evaluate the product $(6i)(7i)$ as a real number.",
+      "prompt": "Evaluate $(6i)(7i)$. Write the result as a real number.",
       "display": "(bi)(di) = bd \\cdot i^2",
       "plainText": "(bi)(di) = b*d*i^2",
       "givens": {
