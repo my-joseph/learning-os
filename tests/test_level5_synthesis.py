@@ -130,6 +130,7 @@ class TestLevel5Synthesis(unittest.TestCase):
             "trapDerivation": "24 / 7",
             "references": ["MTH-T01-C12", "MTH-T01-C09", "MTH-T01-C05"],
             "verificationLevel": "partial",
+            "review": {"verdict": "pass", "note": "Answer re-solved; prompt unambiguous; fits brief."},
             "state": {"userInput": "", "score": None, "divergedStep": None, "mistakes": []},
         }
 

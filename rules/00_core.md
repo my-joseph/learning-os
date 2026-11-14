@@ -135,6 +135,13 @@ Do not skip analysis and immediately generate generic content.
 - **Isolated Branching for Experiments:** Whenever performing experimental UI overhauls, CSS styling changes, or architecture refactoring, AI must create an isolated branch (`experiment/<feature-name>`). Never perform high-risk UI/styling experiments directly on `main`.
 - **Remote Synchronization:** Push verified commits to GitHub (`origin main`) after completing confirmed milestones so the remote repository remains a mirror of the local-first source of truth.
 
+### 11. Issue Log (learner studies without interruptions)
+The learner builds this system to study, not to supervise it. Mistakes are recorded and fixed in batches instead of interrupting study.
+- **What to log:** any mistake an AI caught in its own work, or that a reviewer subagent, a gate or the learner caught, when it is one of these: a problem the reviewer sent back (`fix`) or dropped, even if already fixed; a stop-rule hit; a tool or engine gap; a rule or skill that was unclear or contradictory; a script or Studio bug; anything the learner reports ("log this: ..."). Do **not** log a gate rejection that was fixed on the next run of the same task; that is the normal workflow.
+- **How:** `python -m scripts.issues add --kind <kind> --severity urgent|batch --source author|reviewer|gate|learner --where <drill/problem, file or command> --what "<one sentence>" --action open|auto-fixed|dropped`. The log is `issues/log.jsonl` in the main checkout (gitignored, local-only, append-only); the script finds it from any worktree.
+- **Urgent** (also put a warning on the first line of the reply to the learner), only when: an ingested or synced drill has a wrong answer or an ambiguous prompt; a bad problem passed every gate; learner progress is lost or corrupted; Notion sync is broken; a secret leaked. Everything else is `batch`.
+- **Clearing:** when the learner says "clear the issue log", run `python -m scripts.issues summary`, fix root causes by group (a kind that recurs points at a rule, skill or gate to change), and mark each record with `python -m scripts.issues resolve <id> ... --note "<PR or reason>"`.
+
 ---
 
 ## PART 4 — Final Governing Principle

@@ -18,7 +18,7 @@
 - Studio (run in `practice-studio/`): `npm ci`, `npm run dev` (http://127.0.0.1:3000, bound to localhost only), `npm run lint`, `npm run build`.
 - Generate drills (run from repo root): `python3 -m math_engine.generate --unit <UNIT> --count <N> --difficulty <D>` and `python3 -m code_engine.generate --unit <UNIT> --count <N>` (`--help` verified; full run not verified).
 - Lab (run in `labs/LAB-PRG-T03-C01-01/`): `npm test` (21 tests pass). `npm run submit` writes to Notion — only on request.
-- Python tests (repo root): `pip install -r requirements-dev.txt && python -m pytest` (222 pass, ~50 s; hermetic, no Notion/network). Studio unit tests: `npm run test:telemetry` in `practice-studio/`.
+- Python tests (repo root): `pip install -r requirements-dev.txt && python -m pytest` (235 pass, ~50 s; hermetic, no Notion/network). Studio unit tests: `npm run test:telemetry` in `practice-studio/`.
 - CI: `.github/workflows/ci.yml` runs pytest, studio lint+build, lab tests. No Makefile/Dockerfile. TODO: verify any other command before using it.
 
 ## Conventions (target — apply to new/changed code)
@@ -59,6 +59,7 @@
 - Notion multi-select values cannot contain commas; use only whitelisted Notion icon names.
 - `code_engine.generate` writes CWD-relative side effects (`drills/workspace/<ID>/`). Tests must `monkeypatch.chdir(tmp_path)`.
 
+- Issue log: mistakes you or a reviewer/gate catch are logged with `python -m scripts.issues add ...` (rules/00_core.md §11) and cleared in batches; flag `urgent` ones on the first line of your reply. Learner never previews or approves drills (they study them); the `new-math-drill` skill uses a reviewer subagent instead.
 - Known gaps for topics not yet started (trigonometry functions, logarithms, calculus) are listed in `docs/backlog.md`; fix them when that topic starts.
 
 ## Environment (names only)
