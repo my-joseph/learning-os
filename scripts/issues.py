@@ -25,6 +25,7 @@ KINDS = (
     "wrong-answer",  # a problem's answer, trap or steps are wrong
     "ambiguity",  # a prompt can be read more than one way (units, rounding, wording)
     "context",  # a story that is physically or factually wrong
+    "leak",  # a hint, display or prompt that gives away the answer or the key step
     "level",  # level label not earned, or brief levels not met
     "brief",  # drill does not match what the learner asked for
     "gate-gap",  # a bad problem passed every gate

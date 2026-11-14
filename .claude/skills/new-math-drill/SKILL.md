@@ -26,6 +26,7 @@ Read `rules/00_core.md` §5–§7, `rules/03_stem.md`, `rules/06_template_contra
 .venv/bin/python -m math_engine.ai_drill_ingest --unit <UNIT> --list-vault
 ```
 
+- Read each archetype's `levelNote` if it has one: it says how that archetype can (or cannot) earn its level.
 - Use only archetypes at the requested levels. If the brief needs one that is not in the vault, skip that part and log it (`--kind level --action open`); new archetypes are added when the issue log is cleared.
 - New unit (no vault yet): first check `docs/backlog.md` for engine gaps in that topic and fix or report them. Build the vault from the unit's OpenStax section per `rules/07` §4 "Curriculum Baseline": one L1–L2 archetype per learning objective first, then L3+ archetypes that go beyond the book. Cite the section in each archetype's `source`; never copy or paraphrase OpenStax exercises.
 - Default to plain prompts: state the math directly in one short sentence (e.g. "Simplify $(5 + 3i)(7 - 4i)$. Write the answer as $a + bi$.") with no story and an empty `context`. Do not wrap a computation in a made-up scenario ("in a signal demodulator, a weight is ...").
@@ -48,7 +49,7 @@ Per problem, the rules that fail most often:
 | `constants` | Numbers that belong to the method, not the story: formula constants (2 in `2L + 2W`, 1/3 in cone volume, 90, 180), and derived values. A `0` in the prompt (`= 0`, `> 0`) needs no entry. Never put them in the prompt just to satisfy a rule. |
 | `trapDerivation` / `trapValue` | A real misconception; uses ≥ 2 values from `givens`/`constants`; evaluates exactly to `trapValue`; `trapValue` must be graded incorrect. **Derive it from the `commonTrapTag`**: write down, in words, the wrong step the tag names (e.g. `c12-square-diameter-instead-of-radius-trap` → "squares the diameter"), apply only that mistake to the givens, and use the result. The tag **must be one of the archetype's `cognitiveTraps`** (the gate rejects anything else, including tags borrowed from another archetype); if no listed trap fits, propose a new trap for the vault to the learner first. If the number you get is not what a learner with that misconception would actually write, or the correct method also gives it, pick another tag. The gates check the arithmetic, not that the value matches the tag. |
 | `trapGivens` | **Required for `MTH-T01-C01` and `MTH-T01-C12`** (G4 fails without it); add it everywhere. List the numbers used in `trapDerivation`; at least 2 must appear in it. Each must appear in the prompt or in `constants`. Exponents and formula numbers (the `2` in `r^2`, the `1/3` in cone volume, the `3` in `^(1/3)`) are not prompt givens: leave them out of `trapGivens`, or declare them in `constants` if you list them. |
-| `checkpointHint` | Zero digits. A relationship or self-check, not a number. |
+| `checkpointHint` | Zero digits. A relationship or self-check, not a number. It must not give away the key step: on a diagnose problem never name the kind or place of the error (no "check the sign", "watch the units", "look at the whole and fractional parts"); use a process-only hint such as "Check whether each line keeps the same value as the line above it." On a modelling problem do not state the relation to build. (The reviewer sent back three hints for this in the first runs.) |
 | `steps` | One transformation per step, never `A = B = C`; each has `latex` and an action `explain`; at least one step has a machine check. `"val"` must equal the final answer, so put it only on the last step; check intermediate results with `"eq"`. |
 | `display` / `plainText` | Hidden behind "Show equation set-up" until the learner opens it or answers. For word problems prefer the general relation (`A = L \cdot W`) over the substituted one. |
 | `level` | What solving the problem demands of a student at this stage (`rules/06` §2.3), not just what passes G2. For L3+ the hard rule is the floor: no problem the learner could do as direct computation or mental math. L4 means building a model from ≥ 2 relations the prompt does not state, plus choosing a method or checking a case; L5 needs an idea no taught method provides. Repeating an L2 calculation ×N, adding a `constraints` line, switching `category` to `Interleaved Synthesis`, or bolting on "if it fits report X, otherwise report 0" does not raise the level (the gate rejects that last one). A single-unit L4 keeps an honest `category`: its `blindSolve` satisfies G2. |
@@ -97,20 +98,24 @@ It returns per problem `{"verdict": "pass" | "fix", "note": "<one sentence>"}`. 
 - Log every `fix` and every drop with `.venv/bin/python -m scripts.issues add ... --source reviewer --action auto-fixed|dropped` (`rules/00_core.md` §11), using the drill's unit and problem id in `--where`. Log a tool gap the same way with `--action open`. Notes in the log must not contain answers.
 
 
-## 8. Ingest
+## 8. Ingest, then test everything
 
 ```bash
 .venv/bin/python -m math_engine.ai_drill_ingest --unit <UNIT> --ingest-file scratch/drafts/<file>.json
-.venv/bin/python -m pytest -q tests/test_quality_gates.py -k active_drills
+.venv/bin/python -m pytest -q
 ```
+
+Run the **full** test suite after ingest and before anything leaves the machine. If a test fails, fix the cause (or delete the new drill file) before step 9; never sync or push a drill with a failing test.
 
 Ingest refuses any problem without `review.verdict: pass`. It assigns the drill ID, writes `drills/data/<UNIT>/<DRILL_ID>.json` and records the used contexts in the vault.
 
 Report to the learner in a few lines and **without answers or prompts**: drill ID, number of problems per level, and how many problems the reviewer fixed or dropped (with the issue-log IDs). If anything is `urgent` (`rules/00_core.md` §11), put a warning on the first line.
 
-## 9. After ingest
+## 9. Sync, then ship (in this order)
+
+Only after every test in step 8 passed: (1) sync to Notion, which adds the drill's entry to `id_map.json`; (2) commit the drill, its vault and `id_map.json`; (3) push, open the PR and merge it.
 
 - Ship it without being asked (learner decision 2026-11-15): commit on a branch `drill/<drill-id>` (never on `main`), push, open a PR and merge it yourself (`gh pr merge --merge --delete-branch`), then return the checkout to `main` (`git checkout main && git pull --ff-only`). Self-merge is allowed **only** when the PR changes nothing but the new drill file under `drills/data/<UNIT>/`, that unit's vault file and `id_map.json`; check with `git diff --stat origin/main...HEAD` before merging. Anything else (rules, code, tests, other drills) needs the learner's go-ahead.
 - Ingest fills `topicCode`, `chapterCode` and missing `levelLabel`s. Do not patch drill fields by hand to make a sync pass: if the sync reports missing fields, fix the cause (ingest or the draft) and say so.
-- Sync the new drill's pristine record to Notion **right after ingest** (`rules/00_core.md` §8); no need to wait for the merge or ask. Use `notion_sync.drill_sync.sync_drill_to_notion` from the repo root; in a worktree it reads the main checkout's `.env` automatically, so never copy `.env`. A result with `degraded: true` means Notion was **not** updated; report it as not synced.
+- Sync the new drill's pristine record to Notion once the tests pass (`rules/00_core.md` §8); no need to wait for the merge or ask. Use `notion_sync.drill_sync.sync_drill_to_notion` from the repo root; in a worktree it reads the main checkout's `.env` automatically, so never copy `.env`. A result with `degraded: true` means Notion was **not** updated; report it as not synced.
 - Drill files are content only: never add `state` or `sessionSummary` to them (learner progress lives in `progress/`).
