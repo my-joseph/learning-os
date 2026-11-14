@@ -112,7 +112,7 @@
       "archetypeKey": "t02-c01-u01-multiplying-complex-binomials",
       "level": 3,
       "name": "Multiplying Complex Numbers via FOIL Expansion",
-      "coreConcept": "Expand four terms and simplify i^2 = -1 to separate into real and imaginary parts: (a+bi)(c+di) = (ac-bd) + (ad+bc)i. L3 problem form: show a worked solution that makes the mistake 'positive last term (tag `t02-c01-u01-positive-last-term-trap`)'; the learner finds the faulty step and gives the correct result.",
+      "coreConcept": "Expand four terms and simplify i^2 = -1 to separate into real and imaginary parts: (a+bi)(c+di) = (ac-bd) + (ad+bc)i. L3 problem form: show a worked solution that makes the mistake 'positive last term (tag `t02-c01-u01-positive-last-term-trap`)'; the prompt shows the work as 'Line N: $...$' lines and the learner picks the first wrong line (answerSpec `choice` with `verify.flaw`; asking for the corrected value lets the learner just recompute, 06 §2.3).",
       "mentalModel": "Combined rotational scaling of complex vectors.",
       "governingRelation": "(a + bi)(c + di) = (ac - bd) + (ad + bc)i",
       "cognitiveTraps": [
@@ -125,14 +125,15 @@
         "polar_cartesian_modulation"
       ],
       "usedContexts": [
-        "dsp_fourier_kernel_modulation"
+        "dsp_fourier_kernel_modulation",
+        "phasor_gain_stage_check"
       ]
     },
     {
       "archetypeKey": "t02-c01-u01-complex-conjugates-modulus",
       "level": 3,
       "name": "Complex Conjugates and Modulus Product",
-      "coreConcept": "Multiplying a complex number by its conjugate eliminates imaginary part: (a+bi)(a-bi) = a^2 + b^2 = |z|^2. L3 problem form: show a worked solution that makes the mistake 'difference of squares minus sign (tag `t02-c01-u01-difference-of-squares-minus-sign-trap`)'; the learner finds the faulty step and gives the correct result.",
+      "coreConcept": "Multiplying a complex number by its conjugate eliminates imaginary part: (a+bi)(a-bi) = a^2 + b^2 = |z|^2. L3 problem form: show a worked solution that makes the mistake 'difference of squares minus sign (tag `t02-c01-u01-difference-of-squares-minus-sign-trap`)'; the prompt shows the work as 'Line N: $...$' lines and the learner picks the first wrong line (answerSpec `choice` with `verify.flaw`; asking for the corrected value lets the learner just recompute, 06 §2.3).",
       "mentalModel": "Reflecting across real axis to create pure real magnitude squared.",
       "governingRelation": "(a + bi)(a - bi) = a^2 + b^2 \\land |z| = \\sqrt{a^2 + b^2}",
       "cognitiveTraps": [
@@ -145,14 +146,15 @@
         "signal_envelope_magnitude"
       ],
       "usedContexts": [
-        "signal_envelope_magnitude"
+        "signal_envelope_magnitude",
+        "radar_return_power_estimate"
       ]
     },
     {
       "archetypeKey": "t02-c01-u01-dividing-complex-numbers",
       "level": 3,
       "name": "Dividing Complex Numbers via Denominator Conjugate Rationalization",
-      "coreConcept": "Multiply numerator and denominator by denominator conjugate to make denominator real: (a+bi)/(c+di) = ((a+bi)(c-di))/(c^2+d^2). L3 problem form: show a worked solution that makes the mistake 'divide real and imag parts directly (tag `t02-c01-u01-divide-real-and-imag-parts-directly-trap`)'; the learner finds the faulty step and gives the correct result.",
+      "coreConcept": "Multiply numerator and denominator by denominator conjugate to make denominator real: (a+bi)/(c+di) = ((a+bi)(c-di))/(c^2+d^2). L3 problem form: show a worked solution that makes the mistake 'divide real and imag parts directly (tag `t02-c01-u01-divide-real-and-imag-parts-directly-trap`)'; the prompt shows the work as 'Line N: $...$' lines and the learner picks the first wrong line (answerSpec `choice` with `verify.flaw`; asking for the corrected value lets the learner just recompute, 06 §2.3).",
       "mentalModel": "Normalizing complex ratios to a common real denominator scale.",
       "governingRelation": "\\frac{a + bi}{c + di} = \\frac{(a + bi)(c - di)}{c^2 + d^2}",
       "cognitiveTraps": [
@@ -165,7 +167,9 @@
         "transmission_reflection_coefficient"
       ],
       "usedContexts": [
-        "ac_admittance_inversion"
+        "ac_admittance_inversion",
+        "filter_transfer_ratio_check",
+        "antenna_impedance_ratio_check"
       ]
     },
     {

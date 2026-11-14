@@ -1,0 +1,484 @@
+{
+  "unitCode": "MTH-T01-C12",
+  "topicTitle": "Math Models and Geometry",
+  "unitTitle": "Math Models and Geometry",
+  "subject": "MATH",
+  "problems": [
+    {
+      "id": "Q01",
+      "level": 4,
+      "category": "Interleaved Synthesis",
+      "archetype": "problem-solving",
+      "archetypeKey": "c12-composite-geometric-area-modeling",
+      "context": "chapel_front_wall_cladding",
+      "verificationLevel": "partial",
+      "prompt": "The front wall of a small chapel is a rectangle $12$ m wide and $4$ m tall, topped by an isosceles triangular gable on the same base. Each sloping edge of the gable is $10$ m long. A round window of radius $1$ m is cut into the wall. Using $\\pi = 3.14$, how many square meters of cladding cover the wall? Give the answer in square meters, rounded to two decimal places.",
+      "display": "A = LW + \\tfrac{1}{2} W h - \\pi \\rho^2,\\quad h = \\sqrt{s^2 - (W/2)^2}",
+      "plainText": "A = L*W + W*h/2 - pi*rho^2, h = sqrt(s^2 - (W/2)^2)",
+      "givens": {
+        "width": 12,
+        "wall_ht": 4,
+        "rafter": 10,
+        "window_r": 1,
+        "pi_approx": 3.14
+      },
+      "constants": {
+        "half": 2
+      },
+      "answerSpec": {
+        "type": "number",
+        "value": "92.86",
+        "tolerance": 0.005
+      },
+      "answerPlain": "92.86",
+      "answerDisplay": "92.86",
+      "commonTrapTag": "c12-rafter-as-height-trap",
+      "trapDerivation": "12*4 + 12*10/2 - 3.14*1^2",
+      "trapValue": "104.86",
+      "trapGivens": [
+        12,
+        4,
+        10,
+        1,
+        3.14
+      ],
+      "verify": {
+        "source": "92.86",
+        "trapValue": "104.86"
+      },
+      "checkpointHint": "The sloping edge is not the height of the gable: half the base, the gable height and the sloping edge form a right triangle",
+      "figureWaiver": "The gable height is derived from the sloping edge; a labeled figure would give it away.",
+      "references": [
+        "MTH-T01-C12"
+      ],
+      "steps": [
+        {
+          "latex": "\\tfrac{12}{2} = 6",
+          "explain": "Halve the base to get one leg of the right triangle inside the gable.",
+          "eq": [
+            "12/2",
+            "6"
+          ]
+        },
+        {
+          "latex": "h^2 = 10^2 - 6^2",
+          "explain": "Apply the Pythagorean theorem with the sloping edge as hypotenuse."
+        },
+        {
+          "latex": "h^2 = 100 - 36",
+          "explain": "Square the sloping edge and the half base."
+        },
+        {
+          "latex": "h^2 = 64",
+          "explain": "Subtract.",
+          "eq": [
+            "100 - 36",
+            "64"
+          ]
+        },
+        {
+          "latex": "h = 8",
+          "explain": "Take the positive square root to get the gable height."
+        },
+        {
+          "latex": "A_{\\text{rect}} = 12 \\cdot 4",
+          "explain": "Write the area of the rectangular wall."
+        },
+        {
+          "latex": "A_{\\text{rect}} = 48",
+          "explain": "Multiply.",
+          "eq": [
+            "12*4",
+            "48"
+          ]
+        },
+        {
+          "latex": "A_{\\text{gable}} = \\tfrac{1}{2} \\cdot 12 \\cdot 8",
+          "explain": "Write the area of the triangular gable with the derived height."
+        },
+        {
+          "latex": "A_{\\text{gable}} = 48",
+          "explain": "Multiply.",
+          "eq": [
+            "12*8/2",
+            "48"
+          ]
+        },
+        {
+          "latex": "A_{\\text{window}} = 3.14 \\cdot 1^2",
+          "explain": "Write the area of the round window."
+        },
+        {
+          "latex": "A_{\\text{window}} = 3.14",
+          "explain": "Square the radius and multiply."
+        },
+        {
+          "latex": "A = 48 + 48 - 3.14",
+          "explain": "Add the wall and gable, then subtract the window."
+        },
+        {
+          "latex": "A = 92.86",
+          "explain": "Compute the cladding area.",
+          "val": "92.86"
+        }
+      ],
+      "blindSolve": {
+        "answer": "92.86",
+        "ambiguous": false,
+        "setup": "model",
+        "strategy": "prescribed",
+        "check": "none",
+        "task": "compute",
+        "reverse": false,
+        "steps": 5
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C12",
+          "title": "Math Models and Geometry",
+          "notionUrl": "https://www.notion.so/4003818f8ba080cfbf95ef15001d8a52"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c12-rafter-as-height-trap|direct|A = L*W + W*h/# - pi*rho^#, h = sqrt(s^# - (W/#)^#)",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 13,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            25
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c12-rafter-as-height-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 32
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 4 - Applied Synthesis"
+    },
+    {
+      "id": "Q02",
+      "level": 4,
+      "category": "Interleaved Synthesis",
+      "archetype": "problem-solving",
+      "archetypeKey": "c12-applied-cylindrical-surface-coating-synthesis",
+      "context": "rooftop_rainwater_cistern_paint",
+      "verificationLevel": "partial",
+      "prompt": "A cylindrical rooftop rainwater cistern holds $452.16$ m$^3$ and is $9$ m tall. Only its curved side will be painted. One can of paint covers $15$ m$^2$, and only whole cans are sold. Using $\\pi = 3.14$, how many cans must be bought?",
+      "display": "r = \\sqrt{\\frac{V}{\\pi h}},\\quad A_{\\text{lat}} = 2\\pi r h",
+      "plainText": "r = sqrt(V/(pi*h)), A = 2*pi*r*h",
+      "givens": {
+        "capacity": 452.16,
+        "ht": 9,
+        "coverage": 15,
+        "pi_approx": 3.14
+      },
+      "constants": {
+        "two": 2
+      },
+      "answerSpec": {
+        "type": "number",
+        "value": "16",
+        "tolerance": 0.001
+      },
+      "answerPlain": "16",
+      "answerDisplay": "16",
+      "commonTrapTag": "c12-omitted-circumference-factor-trap",
+      "trapDerivation": "3.14*sqrt(452.16/(3.14*9))*9/15",
+      "trapValue": "7.536",
+      "trapGivens": [
+        452.16,
+        9,
+        15,
+        3.14
+      ],
+      "verify": {
+        "source": "16",
+        "trapValue": "7.536"
+      },
+      "checkpointHint": "Recover the radius from the capacity first; the curved side unrolls into a rectangle whose length is the full circumference; a part-can must be rounded up",
+      "figureWaiver": "The radius is derived from the capacity; a labeled figure would give it away.",
+      "references": [
+        "MTH-T01-C12"
+      ],
+      "steps": [
+        {
+          "latex": "452.16 = 3.14 \\cdot r^2 \\cdot 9",
+          "explain": "Write the cylinder volume with the radius unknown."
+        },
+        {
+          "latex": "452.16 = 28.26 \\, r^2",
+          "explain": "Multiply pi by the height.",
+          "eq": [
+            "3.14*9",
+            "28.26"
+          ]
+        },
+        {
+          "latex": "r^2 = 16",
+          "explain": "Divide both sides by 28.26.",
+          "eq": [
+            "452.16/28.26",
+            "16"
+          ]
+        },
+        {
+          "latex": "r = 4",
+          "explain": "Take the positive square root."
+        },
+        {
+          "latex": "A_{\\text{lat}} = 2 \\cdot 3.14 \\cdot 4 \\cdot 9",
+          "explain": "Write the curved-side area with the derived radius."
+        },
+        {
+          "latex": "A_{\\text{lat}} = 226.08",
+          "explain": "Multiply.",
+          "eq": [
+            "2*3.14*4*9",
+            "226.08"
+          ]
+        },
+        {
+          "latex": "\\frac{226.08}{15} = 15.072",
+          "explain": "Divide the area by the coverage of one can."
+        },
+        {
+          "latex": "n = 16",
+          "explain": "Round up, because a part-can must be bought as a whole can.",
+          "val": "16"
+        }
+      ],
+      "blindSolve": {
+        "answer": "16",
+        "ambiguous": false,
+        "setup": "translate",
+        "strategy": "prescribed",
+        "check": "edge",
+        "task": "compute",
+        "reverse": true,
+        "steps": 5
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C12",
+          "title": "Math Models and Geometry",
+          "notionUrl": "https://www.notion.so/4003818f8ba080cfbf95ef15001d8a52"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c12-omitted-circumference-factor-trap|direct|r = sqrt(V/(pi*h)), A = #*pi*r*h",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 8,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            25
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c12-omitted-circumference-factor-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 22
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 4 - Applied Synthesis"
+    },
+    {
+      "id": "Q03",
+      "level": 4,
+      "category": "Interleaved Synthesis",
+      "archetype": "problem-solving",
+      "archetypeKey": "c12-composite-silo-volume-synthesis",
+      "context": "brewery_grain_hopper_tower",
+      "verificationLevel": "partial",
+      "prompt": "A brewery grain tower is a cylinder of radius $4$ m with a conical roof of the same radius. The roof's sloping edge measures $5$ m from the rim to the peak. The tower must hold exactly $208\\pi$ m$^3$ in total. How tall must the cylindrical part be, in meters?",
+      "display": "h_2 = \\sqrt{s^2 - r^2},\\quad V = \\pi r^2 h_1 + \\tfrac{1}{3}\\pi r^2 h_2",
+      "plainText": "h2 = sqrt(s^2 - r^2), 208 = r^2*h1 + r^2*h2/3",
+      "givens": {
+        "radius": 4,
+        "slant": 5,
+        "total_k": 208
+      },
+      "constants": {
+        "third": "1/3"
+      },
+      "answerSpec": {
+        "type": "number",
+        "value": "12",
+        "tolerance": 0.001
+      },
+      "answerPlain": "12",
+      "answerDisplay": "12",
+      "commonTrapTag": "c12-slant-as-cone-height-trap",
+      "trapDerivation": "(208 - 4^2*5/3)/4^2",
+      "trapValue": "34/3",
+      "trapGivens": [
+        208,
+        4,
+        5
+      ],
+      "verify": {
+        "source": "12",
+        "trapValue": "34/3"
+      },
+      "checkpointHint": "The sloping edge, the radius and the cone height form a right triangle; only the vertical height belongs in the cone volume",
+      "references": [
+        "MTH-T01-C12"
+      ],
+      "steps": [
+        {
+          "latex": "h_2^2 = 5^2 - 4^2",
+          "explain": "Apply the Pythagorean theorem with the sloping edge as hypotenuse."
+        },
+        {
+          "latex": "h_2^2 = 9",
+          "explain": "Square and subtract.",
+          "eq": [
+            "25 - 16",
+            "9"
+          ]
+        },
+        {
+          "latex": "h_2 = 3",
+          "explain": "Take the positive square root to get the cone height."
+        },
+        {
+          "latex": "V_{\\text{cone}} = \\tfrac{1}{3}\\pi \\cdot 4^2 \\cdot 3",
+          "explain": "Write the cone volume with the derived height."
+        },
+        {
+          "latex": "V_{\\text{cone}} = 16\\pi",
+          "explain": "Multiply and take one third.",
+          "eq": [
+            "16*3/3",
+            "16"
+          ]
+        },
+        {
+          "latex": "16\\pi h_1 + 16\\pi = 208\\pi",
+          "explain": "Set cylinder volume plus cone volume equal to the required total."
+        },
+        {
+          "latex": "16 h_1 = 192",
+          "explain": "Divide by pi and subtract 16.",
+          "eq": [
+            "208 - 16",
+            "192"
+          ]
+        },
+        {
+          "latex": "h_1 = 12",
+          "explain": "Divide by 16.",
+          "val": "12"
+        }
+      ],
+      "blindSolve": {
+        "answer": "12",
+        "ambiguous": false,
+        "setup": "model",
+        "strategy": "prescribed",
+        "check": "none",
+        "task": "compute",
+        "reverse": true,
+        "steps": 4
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C12",
+          "title": "Math Models and Geometry",
+          "notionUrl": "https://www.notion.so/4003818f8ba080cfbf95ef15001d8a52"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "c12-slant-as-cone-height-trap|direct|h# = sqrt(s^# - r^#), # = r^#*h# + r^#*h#/#",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 8,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            25
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c12-slant-as-cone-height-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 22
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 4 - Applied Synthesis"
+    }
+  ],
+  "drillId": "DRL-MTH-T01-C12-05",
+  "title": "Math Models and Geometry — Verified Math Drill (3 Qs)",
+  "topicCode": "MTH-T01",
+  "chapterCode": "MTH-T01-C12",
+  "schemaVersion": "2.0-math",
+  "createdAt": "2026-11-14 14:24:26",
+  "config": {
+    "questionCount": 3,
+    "difficulty": "ALL",
+    "difficultyMode": "AI Synthesized Reasoning Mode"
+  },
+  "localFilePath": "drills/data/MTH-T01-C12/DRL-MTH-T01-C12-05.json"
+}

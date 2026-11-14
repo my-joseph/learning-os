@@ -107,7 +107,7 @@
       "archetypeKey": "c14-parallel-lines-equal-slope",
       "level": 3,
       "name": "Parallel Lines and Slope Equality Invariant",
-      "coreConcept": "Two non-vertical lines are parallel if and only if they have equal slopes: m1 = m2. L3 problem form: show a worked solution that makes the mistake 'parallel negative reciprocal (tag `c14-parallel-negative-reciprocal-trap`)'; the learner finds the faulty step and gives the correct result.",
+      "coreConcept": "Two non-vertical lines are parallel if and only if they have equal slopes: m1 = m2. L3 problem form: show a worked solution that makes the mistake 'parallel negative reciprocal (tag `c14-parallel-negative-reciprocal-trap`)'; the prompt shows the work as 'Line N: $...$' lines and the learner picks the first wrong line (answerSpec `choice` with `verify.flaw`; asking for the corrected value lets the learner just recompute, 06 §2.3).",
       "mentalModel": "Equidistant trajectories maintaining constant separation indefinitely.",
       "governingRelation": "L_1 \\parallel L_2 \\iff m_1 = m_2",
       "cognitiveTraps": [
@@ -127,7 +127,7 @@
       "archetypeKey": "c14-midpoint-coordinate-formula",
       "level": 3,
       "name": "Midpoint Coordinates of Line Segments",
-      "coreConcept": "The midpoint coordinate is the arithmetic mean of endpoint coordinates: ((x1 + x2)/2, (y1 + y2)/2). L3 problem form: show a worked solution that makes the mistake 'subtract coordinates for midpoint (tag `c14-subtract-coordinates-for-midpoint-trap`)'; the learner finds the faulty step and gives the correct result.",
+      "coreConcept": "The midpoint coordinate is the arithmetic mean of endpoint coordinates: ((x1 + x2)/2, (y1 + y2)/2). L3 problem form: show a worked solution that makes the mistake 'subtract coordinates for midpoint (tag `c14-subtract-coordinates-for-midpoint-trap`)'; the prompt shows the work as 'Line N: $...$' lines and the learner picks the first wrong line (answerSpec `choice` with `verify.flaw`; asking for the corrected value lets the learner just recompute, 06 §2.3).",
       "mentalModel": "Equilibrium center of mass of two coordinate endpoints.",
       "governingRelation": "M = \\left(\\frac{x_1 + x_2}{2}, \\frac{y_1 + y_2}{2}\\right)",
       "cognitiveTraps": [
@@ -147,7 +147,7 @@
       "archetypeKey": "c14-perpendicular-lines-negative-reciprocal",
       "level": 3,
       "name": "Perpendicular Lines and Orthogonal Slopes",
-      "coreConcept": "Two non-vertical lines are perpendicular if and only if their slopes multiply to -1: m1 * m2 = -1. L3 problem form: show a worked solution that makes the mistake 'forgot negative sign inversion (tag `c14-forgot-negative-sign-inversion-trap`)'; the learner finds the faulty step and gives the correct result.",
+      "coreConcept": "Two non-vertical lines are perpendicular if and only if their slopes multiply to -1: m1 * m2 = -1. L3 problem form: show a worked solution that makes the mistake 'forgot negative sign inversion (tag `c14-forgot-negative-sign-inversion-trap`)'; the prompt shows the work as 'Line N: $...$' lines and the learner picks the first wrong line (answerSpec `choice` with `verify.flaw`; asking for the corrected value lets the learner just recompute, 06 §2.3).",
       "mentalModel": "Quarter-turn rotation (90 degrees) flipping and inverting rise and run.",
       "governingRelation": "L_1 \\perp L_2 \\iff m_1 \\cdot m_2 = -1",
       "cognitiveTraps": [

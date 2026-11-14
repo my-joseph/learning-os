@@ -170,6 +170,45 @@ def check_prompt_does_not_leak_solution(pid: str, prompt: str, display: str = ""
         raise AiContractError(f"[{pid}] Problem gives away the solution: " + "; ".join(reasons))
 
 
+_SHOWN_WORK_LINE_RE = re.compile(r"^\s*Line \d+:.*$", re.MULTILINE)
+
+
+def is_find_the_flaw(prob: Dict[str, Any]) -> bool:
+    """Diagnose form (06 §2.3): the prompt shows a worked solution as `Line N: $...$` lines and the
+    answer is the first wrong line (`choice`), backed by `verify.flaw`."""
+    spec = prob.get("answerSpec") or {}
+    return spec.get("type") == "choice" and isinstance((prob.get("verify") or {}).get("flaw"), dict)
+
+
+def story_text(prob: Dict[str, Any]) -> str:
+    """The prompt without the shown-work lines of a find-the-flaw problem. Those lines are the
+    stimulus to diagnose, not story data, so they are exempt from the givens and leak gates."""
+    prompt = prob.get("prompt", "")
+    return _SHOWN_WORK_LINE_RE.sub("", prompt) if is_find_the_flaw(prob) else prompt
+
+
+def validate_flaw_trap(prob: Dict[str, Any], trap_value: Any) -> None:
+    """For find-the-flaw: the shown work must end at the trap value, so the wrong line really is
+    the tagged misconception; and the shown-work lines must match the options."""
+    pid = prob.get("id", "?")
+    spec = prob["answerSpec"]
+    flaw = prob["verify"]["flaw"]
+    values = flaw.get("values") or []
+    shown = _SHOWN_WORK_LINE_RE.findall(prob.get("prompt", ""))
+    if not shown or len(shown) != len(values):
+        raise AiContractError(
+            f"[{pid}] Find-the-flaw prompt must show one 'Line N: $...$' line per verify.flaw value "
+            f"({len(shown)} lines, {len(values)} values)."
+        )
+    if {str(o.get("id")) for o in spec.get("options") or []} != {str(i) for i in range(1, len(shown) + 1)}:
+        raise AiContractError(f"[{pid}] Find-the-flaw options must be exactly the line numbers 1..{len(shown)}.")
+    last = values[-1]
+    if last is None or not is_equal(to_expr(str(last), trusted=True), to_expr(str(trap_value), trusted=True)):
+        raise AiContractError(
+            f"[{pid}] The shown work must end at the trap value '{trap_value}' (last line value '{last}')."
+        )
+
+
 def validate_ai_problem_contract(prob: Dict[str, Any], enforce_leak_gate: bool = True) -> bool:
     """
     Enforces strict rules for AI-written problems (Contract 07 §4, 00_core §6):
@@ -203,7 +242,7 @@ def validate_ai_problem_contract(prob: Dict[str, Any], enforce_leak_gate: bool =
     if not givens or not isinstance(givens, dict):
         raise AiContractError(f"[{pid}] Problem must specify a 'givens' dictionary.")
 
-    prompt = prob.get("prompt", "")
+    prompt = story_text(prob)
     prompt_numbers = normalize_prompt_numbers(prompt)
 
     givens_floats = {}
@@ -289,6 +328,9 @@ def validate_ai_problem_contract(prob: Dict[str, Any], enforce_leak_gate: bool =
             raise AiContractError(f"[{pid}] trapValue '{tv}' evaluated as correct by check_answer!")
 
         spec_type = spec.get("type")
+        if is_find_the_flaw(prob):
+            validate_flaw_trap(prob, tv)
+            spec_type = None  # the trap is the shown work's result, not an option id
         trap_spec = dict(spec)
         if spec_type in ("number", "expression", "complex"):
             trap_spec["value"] = str(tv)

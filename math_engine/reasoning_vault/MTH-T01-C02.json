@@ -199,7 +199,7 @@
       "archetypeKey": "c02-two-variable-formula-evaluation",
       "level": 3,
       "name": "Bivariate Geometric/Physical Formula Evaluation (การคำนวณค่าสูตรสองตัวแปร)",
-      "coreConcept": "Evaluating multi-variable expressions where distinct parameters govern orthogonal dimensions: P = 2L + 2W. L3 problem form: show a worked solution that makes the mistake 'Summing length and width without doubling, yielding half the perimeter (tag `c02-semi-perimeter-underestimate`)'; the learner finds the faulty step and gives the correct result.",
+      "coreConcept": "Evaluating multi-variable expressions where distinct parameters govern orthogonal dimensions: P = 2L + 2W. L3 problem form: show a worked solution that makes the mistake 'Summing length and width without doubling, yielding half the perimeter (tag `c02-semi-perimeter-underestimate`)'; the prompt shows the work as 'Line N: $...$' lines and the learner picks the first wrong line (answerSpec `choice` with `verify.flaw`; asking for the corrected value lets the learner just recompute, 06 §2.3).",
       "mentalModel": [
         "1. Map each measured physical input to its assigned variable.",
         "2. Multiply each variable by its respective geometric formula coefficient.",
@@ -231,7 +231,7 @@
       "archetypeKey": "c02-nested-distributive-simplification",
       "level": 3,
       "name": "Nested Distributive and Like Terms Simplification (การกระจายและรวมพจน์หลายชั้น)",
-      "coreConcept": "Expanding multiple grouped linear binomials and collecting like terms systematically: a(x + b) + c(x + d). L3 problem form: show a worked solution that makes the mistake 'Adding group coefficients directly to variables without multiplying constants (tag `c02-distributive-coefficient-omission`)'; the learner finds the faulty step and gives the correct result.",
+      "coreConcept": "Expanding multiple grouped linear binomials and collecting like terms systematically: a(x + b) + c(x + d). L3 problem form: show a worked solution that makes the mistake 'Adding group coefficients directly to variables without multiplying constants (tag `c02-distributive-coefficient-omission`)'; the prompt shows the work as 'Line N: $...$' lines and the learner picks the first wrong line (answerSpec `choice` with `verify.flaw`; asking for the corrected value lets the learner just recompute, 06 §2.3).",
       "mentalModel": [
         "1. Distribute each external multiplier across its respective binomial group.",
         "2. Group variable terms together and constant terms together.",

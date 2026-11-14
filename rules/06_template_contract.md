@@ -119,6 +119,15 @@ The verb does not set the level ("explain" or "prove" alone does not raise it); 
 
 **Gate** (`validate_blind_solve`, every L3+ problem): `blindSolve` must hold `answer`, `ambiguous` and all six tags; the answer must match `answerSpec`; the prompt must not be ambiguous; and the mapped level must be **at least `level` − 1**. Tags that give L1 never pass as L3+.
 
+**Diagnose form (find the flaw).** An L3 diagnose problem must ask *which line is wrong*, not *what the correct value is*: a value question lets the learner just recompute, and the solver then tags it `compute` (L1). Write it like this:
+- Show the work in the prompt as `Line N: $...$` lines, one per line. `display` stays hidden until the learner asks, so it cannot hold the work.
+- Use `answerSpec` `{"type": "choice", "options": [{"id": "1", "label": "Line 1"}, ...], "correct": "<first wrong line>"}`.
+- Put `verify.flaw` = `{"values": [value of each line], "firstWrong": k}`.
+- `trapDerivation`/`trapValue` are the tagged mistake's result, and the last shown line must equal `trapValue`.
+- Options after the flaw carry `trapTag` = `commonTrapTag`. Options before it carry a `provenance` note.
+
+The shown-work lines are exempt from the givens and leak gates (`story_text` in `ai_drill_ingest`).
+
 **Stop rule:** at most one redesign per failing problem. If it still fails, show the learner both explanations (author's intent, solver's tags) in plain language and let them choose relabel or drop. Never loop.
 
 Trap tags (`commonTrapTag`) stay as metadata for diagnosis and telemetry; they do not raise the level on their own.

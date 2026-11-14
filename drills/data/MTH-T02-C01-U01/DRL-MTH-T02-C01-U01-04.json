@@ -1,0 +1,570 @@
+{
+  "unitCode": "MTH-T02-C01-U01",
+  "topicTitle": "Complex Numbers",
+  "unitTitle": "Complex Numbers",
+  "subject": "MATH",
+  "problems": [
+    {
+      "id": "Q01",
+      "level": 3,
+      "category": "Trap & Edge Case",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-multiplying-complex-binomials",
+      "context": "phasor_gain_stage_check",
+      "verificationLevel": "partial",
+      "prompt": "A student multiplied the phasors $(2 + 3i)(4 - 2i)$ and wrote:\nLine 1: $(2 + 3i)(4 - 2i) = 8 - 4i + 12i - 6i^2$\nLine 2: $= 8 + 8i - 6$\nLine 3: $= 2 + 8i$\nWhich line is the first one that is wrong?",
+      "display": "(a + bi)(c + di) = (ac - bd) + (ad + bc)i",
+      "plainText": "(a + b*i)*(c + d*i) = (a*c - b*d) + (a*d + b*c)*i",
+      "givens": {
+        "a": 2,
+        "b": 3,
+        "c": 4,
+        "d": 2
+      },
+      "answerSpec": {
+        "type": "choice",
+        "options": [
+          {
+            "id": "1",
+            "label": "Line 1",
+            "provenance": "flags a correct step as the error"
+          },
+          {
+            "id": "2",
+            "label": "Line 2"
+          },
+          {
+            "id": "3",
+            "label": "Line 3",
+            "trapTag": "t02-c01-u01-positive-last-term-trap"
+          }
+        ],
+        "correct": "2"
+      },
+      "answerPlain": "2",
+      "answerDisplay": "\\text{Line 2}",
+      "commonTrapTag": "t02-c01-u01-positive-last-term-trap",
+      "trapDerivation": "(2*4 - 3*2) + (3*4 - 2*2)*I",
+      "trapValue": "2 + 8*I",
+      "verify": {
+        "source": "14 + 8*I",
+        "trapValue": "2 + 8*I",
+        "flaw": {
+          "values": [
+            "8 - 4*I + 12*I - 6*I^2",
+            "8 + 8*I - 6",
+            "2 + 8*I"
+          ],
+          "firstWrong": 2
+        }
+      },
+      "checkpointHint": "Check what each term becomes once the square of the imaginary unit is replaced",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "steps": [
+        {
+          "latex": "(2 + 3i)(4 - 2i) = 8 - 4i + 12i - 6i^2",
+          "explain": "Line 1 is correct: all four products are expanded."
+        },
+        {
+          "latex": "-6i^2 = 6",
+          "explain": "Line 2 is the first wrong line: the square of the imaginary unit is -1, so the last term is +6, not -6."
+        },
+        {
+          "latex": "8 + 6 + 8i",
+          "explain": "Group the real parts and the imaginary parts."
+        },
+        {
+          "latex": "14 + 8i",
+          "explain": "The correct product.",
+          "val": "14 + 8*I"
+        }
+      ],
+      "inputHint": "Choose a line",
+      "blindSolve": {
+        "answer": "2",
+        "ambiguous": false,
+        "setup": "given",
+        "strategy": "prescribed",
+        "check": "none",
+        "task": "diagnose",
+        "reverse": false,
+        "steps": 3
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C01-U01",
+          "title": "Complex Numbers",
+          "notionUrl": "https://www.notion.so/4013818f8ba080d7896bef2080bbc74a"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "t02-c01-u01-positive-last-term-trap|direct|(a + b*i)*(c + d*i) = (a*c - b*d) + (a*d + b*c)*i",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 4,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            20
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c01-u01-positive-last-term-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 2
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 18
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 3 - Trap & Diagnostic"
+    },
+    {
+      "id": "Q02",
+      "level": 3,
+      "category": "Trap & Edge Case",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-complex-conjugates-modulus",
+      "context": "radar_return_power_estimate",
+      "verificationLevel": "partial",
+      "prompt": "A radar return is modelled by $z = 6 - 5i$. A student computed $z\\bar{z}$ and wrote:\nLine 1: $z\\bar{z} = (6 - 5i)(6 + 5i) = 6^2 - (5i)^2$\nLine 2: $= 36 - 25i^2$\nLine 3: $= 36 - 25$\nLine 4: $= 11$\nWhich line is the first one that is wrong?",
+      "display": "(a - bi)(a + bi) = a^2 + b^2",
+      "plainText": "(a - b*i)*(a + b*i) = a^2 + b^2",
+      "givens": {
+        "a": 6,
+        "b": 5
+      },
+      "answerSpec": {
+        "type": "choice",
+        "options": [
+          {
+            "id": "1",
+            "label": "Line 1",
+            "provenance": "flags a correct step as the error"
+          },
+          {
+            "id": "2",
+            "label": "Line 2",
+            "provenance": "flags a correct step as the error"
+          },
+          {
+            "id": "3",
+            "label": "Line 3"
+          },
+          {
+            "id": "4",
+            "label": "Line 4",
+            "trapTag": "t02-c01-u01-difference-of-squares-minus-sign-trap"
+          }
+        ],
+        "correct": "3"
+      },
+      "answerPlain": "3",
+      "answerDisplay": "\\text{Line 3}",
+      "commonTrapTag": "t02-c01-u01-difference-of-squares-minus-sign-trap",
+      "trapDerivation": "6^2 - 5^2",
+      "trapValue": "11",
+      "verify": {
+        "source": "61",
+        "trapValue": "11",
+        "flaw": {
+          "values": [
+            "6^2 - (5*I)^2",
+            "36 - 25*I^2",
+            "36 - 25",
+            "11"
+          ],
+          "firstWrong": 3
+        }
+      },
+      "checkpointHint": "Decide the sign of the subtracted term after the square of the imaginary unit is replaced",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "steps": [
+        {
+          "latex": "(6 - 5i)(6 + 5i) = 6^2 - (5i)^2",
+          "explain": "Line 1 is correct: difference of squares."
+        },
+        {
+          "latex": "(5i)^2 = 25i^2",
+          "explain": "Line 2 is correct: square the imaginary term."
+        },
+        {
+          "latex": "25i^2 = -25",
+          "explain": "Line 3 is the first wrong line: replacing the square of the imaginary unit gives -25, so the subtraction becomes an addition."
+        },
+        {
+          "latex": "36 - (-25) = 61",
+          "explain": "The correct value of z times its conjugate.",
+          "val": "61"
+        }
+      ],
+      "inputHint": "Choose a line",
+      "blindSolve": {
+        "answer": "3",
+        "ambiguous": false,
+        "setup": "given",
+        "strategy": "prescribed",
+        "check": "none",
+        "task": "diagnose",
+        "reverse": false,
+        "steps": 3
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C01-U01",
+          "title": "Complex Numbers",
+          "notionUrl": "https://www.notion.so/4013818f8ba080d7896bef2080bbc74a"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "t02-c01-u01-difference-of-squares-minus-sign-trap|direct|(a - b*i)*(a + b*i) = a^# + b^#",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 4,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            20
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c01-u01-difference-of-squares-minus-sign-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 3
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 19
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 3 - Trap & Diagnostic"
+    },
+    {
+      "id": "Q03",
+      "level": 3,
+      "category": "Trap & Edge Case",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-dividing-complex-numbers",
+      "context": "filter_transfer_ratio_check",
+      "verificationLevel": "partial",
+      "prompt": "A filter's transfer ratio is $\\dfrac{6 + 4i}{1 - 2i}$. A student simplified it and wrote:\nLine 1: $\\dfrac{6 + 4i}{1 - 2i} = \\dfrac{6}{1} + \\dfrac{4i}{-2i}$\nLine 2: $= 6 - 2$\nLine 3: $= 4$\nWhich line is the first one that is wrong?",
+      "display": "\\frac{a + bi}{c + di} = \\frac{(a + bi)(c - di)}{c^2 + d^2}",
+      "plainText": "(a + b*i)/(c + d*i) = (a + b*i)*(c - d*i)/(c^2 + d^2)",
+      "givens": {
+        "a": 6,
+        "b": 4,
+        "c": 1,
+        "d": 2
+      },
+      "answerSpec": {
+        "type": "choice",
+        "options": [
+          {
+            "id": "1",
+            "label": "Line 1"
+          },
+          {
+            "id": "2",
+            "label": "Line 2",
+            "trapTag": "t02-c01-u01-divide-real-and-imag-parts-directly-trap"
+          },
+          {
+            "id": "3",
+            "label": "Line 3",
+            "trapTag": "t02-c01-u01-divide-real-and-imag-parts-directly-trap"
+          }
+        ],
+        "correct": "1"
+      },
+      "answerPlain": "1",
+      "answerDisplay": "\\text{Line 1}",
+      "commonTrapTag": "t02-c01-u01-divide-real-and-imag-parts-directly-trap",
+      "trapDerivation": "6/1 + 4/(-2)",
+      "trapValue": "4",
+      "verify": {
+        "source": "-2/5 + 16*I/5",
+        "trapValue": "4",
+        "flaw": {
+          "values": [
+            "6/1 + 4*I/(-2*I)",
+            "6 - 2",
+            "4"
+          ],
+          "firstWrong": 1
+        }
+      },
+      "checkpointHint": "A quotient of complex numbers cannot be split part by part; the denominator must be made real first",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "steps": [
+        {
+          "latex": "\\frac{6 + 4i}{1 - 2i} \\ne \\frac{6}{1} + \\frac{4i}{-2i}",
+          "explain": "Line 1 is the first wrong line: a fraction cannot be split by dividing real part by real part and imaginary part by imaginary part."
+        },
+        {
+          "latex": "\\frac{6 + 4i}{1 - 2i} \\cdot \\frac{1 + 2i}{1 + 2i}",
+          "explain": "Multiply top and bottom by the conjugate of the denominator."
+        },
+        {
+          "latex": "(6 + 4i)(1 + 2i) = -2 + 16i",
+          "explain": "Expand the numerator and replace the square of the imaginary unit with -1."
+        },
+        {
+          "latex": "(1 - 2i)(1 + 2i) = 5",
+          "explain": "The denominator becomes the sum of the squares of its parts."
+        },
+        {
+          "latex": "\\frac{-2 + 16i}{5} = -\\frac{2}{5} + \\frac{16}{5}i",
+          "explain": "The correct ratio.",
+          "val": "-2/5 + 16*I/5"
+        }
+      ],
+      "inputHint": "Choose a line",
+      "blindSolve": {
+        "answer": "1",
+        "ambiguous": false,
+        "setup": "given",
+        "strategy": "prescribed",
+        "check": "none",
+        "task": "diagnose",
+        "reverse": false,
+        "steps": 2
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C01-U01",
+          "title": "Complex Numbers",
+          "notionUrl": "https://www.notion.so/4013818f8ba080d7896bef2080bbc74a"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "t02-c01-u01-divide-real-and-imag-parts-directly-trap|direct|(a + b*i)/(c + d*i) = (a + b*i)*(c - d*i)/(c^# + d^#)",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 5,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            20
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c01-u01-divide-real-and-imag-parts-directly-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 2
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 20
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 3 - Trap & Diagnostic"
+    },
+    {
+      "id": "Q04",
+      "level": 3,
+      "category": "Trap & Edge Case",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u01-dividing-complex-numbers",
+      "context": "antenna_impedance_ratio_check",
+      "verificationLevel": "partial",
+      "prompt": "An antenna engineer needs $\\dfrac{10 + 5i}{3 + 4i}$. A colleague wrote:\nLine 1: $\\dfrac{10 + 5i}{3 + 4i} = \\dfrac{(10 + 5i)(3 + 4i)}{(3 + 4i)(3 + 4i)}$\nLine 2: $= \\dfrac{30 + 40i + 15i + 20i^2}{9 + 16}$\nLine 3: $= \\dfrac{10 + 55i}{25}$\nLine 4: $= \\dfrac{2}{5} + \\dfrac{11}{5}i$\nWhich line is the first one that is wrong?",
+      "display": "\\frac{a + bi}{c + di} = \\frac{(a + bi)(c - di)}{c^2 + d^2}",
+      "plainText": "(a + b*i)/(c + d*i) = (a + b*i)*(c - d*i)/(c^2 + d^2)",
+      "givens": {
+        "a": 10,
+        "b": 5,
+        "c": 3,
+        "d": 4
+      },
+      "answerSpec": {
+        "type": "choice",
+        "options": [
+          {
+            "id": "1",
+            "label": "Line 1",
+            "provenance": "flags a correct step as the error"
+          },
+          {
+            "id": "2",
+            "label": "Line 2"
+          },
+          {
+            "id": "3",
+            "label": "Line 3",
+            "trapTag": "t02-c01-u01-denominator-conjugate-sign-error-trap"
+          },
+          {
+            "id": "4",
+            "label": "Line 4",
+            "trapTag": "t02-c01-u01-denominator-conjugate-sign-error-trap"
+          }
+        ],
+        "correct": "2"
+      },
+      "answerPlain": "2",
+      "answerDisplay": "\\text{Line 2}",
+      "commonTrapTag": "t02-c01-u01-denominator-conjugate-sign-error-trap",
+      "trapDerivation": "(10 + 5*I)*(3 + 4*I)/(3^2 + 4^2)",
+      "trapValue": "2/5 + 11*I/5",
+      "verify": {
+        "source": "2 - I",
+        "trapValue": "2/5 + 11*I/5",
+        "flaw": {
+          "values": [
+            "(10 + 5*I)*(3 + 4*I)/((3 + 4*I)*(3 + 4*I))",
+            "(30 + 40*I + 15*I + 20*I^2)/(9 + 16)",
+            "(10 + 55*I)/25",
+            "2/5 + 11*I/5"
+          ],
+          "firstWrong": 2
+        }
+      },
+      "checkpointHint": "Multiplying top and bottom by the same factor is always allowed; check whether each later line still equals the line before",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "steps": [
+        {
+          "latex": "\\frac{(10 + 5i)(3 + 4i)}{(3 + 4i)(3 + 4i)}",
+          "explain": "Line 1 is correct but unhelpful: multiplying top and bottom by the same factor keeps the value, it just does not make the denominator real."
+        },
+        {
+          "latex": "(3 + 4i)(3 + 4i) = -7 + 24i",
+          "explain": "Line 2 is the first wrong line: this product is not 9 + 16; only the conjugate pair gives the sum of squares."
+        },
+        {
+          "latex": "\\frac{10 + 5i}{3 + 4i} \\cdot \\frac{3 - 4i}{3 - 4i}",
+          "explain": "Use the conjugate of the denominator instead."
+        },
+        {
+          "latex": "(10 + 5i)(3 - 4i) = 50 - 25i",
+          "explain": "Expand the numerator and replace the square of the imaginary unit with -1."
+        },
+        {
+          "latex": "\\frac{50 - 25i}{25} = 2 - i",
+          "explain": "The denominator is 25; divide both parts.",
+          "val": "2 - I"
+        }
+      ],
+      "inputHint": "Choose a line",
+      "blindSolve": {
+        "answer": "2",
+        "ambiguous": false,
+        "setup": "given",
+        "strategy": "prescribed",
+        "check": "none",
+        "task": "diagnose",
+        "reverse": false,
+        "steps": 4
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C01-U01",
+          "title": "Complex Numbers",
+          "notionUrl": "https://www.notion.so/4013818f8ba080d7896bef2080bbc74a"
+        }
+      ],
+      "form": "direct",
+      "fingerprint": "t02-c01-u01-denominator-conjugate-sign-error-trap|direct|(a + b*i)/(c + d*i) = (a + b*i)*(c - d*i)/(c^# + d^#)",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 5,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            20
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c01-u01-denominator-conjugate-sign-error-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 3
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 21
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 3 - Trap & Diagnostic"
+    }
+  ],
+  "drillId": "DRL-MTH-T02-C01-U01-04",
+  "title": "Complex Numbers — Verified Math Drill (4 Qs)",
+  "topicCode": "MTH-T02",
+  "chapterCode": "MTH-T02-C01",
+  "schemaVersion": "2.0-math",
+  "createdAt": "2026-11-14 14:24:27",
+  "config": {
+    "questionCount": 4,
+    "difficulty": "ALL",
+    "difficultyMode": "AI Synthesized Reasoning Mode"
+  },
+  "localFilePath": "drills/data/MTH-T02-C01-U01/DRL-MTH-T02-C01-U01-04.json"
+}

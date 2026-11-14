@@ -127,7 +127,7 @@
       "archetypeKey": "c13-multiplying-binomials-foil",
       "level": 3,
       "name": "Multiplying Binomials using the FOIL Method",
-      "coreConcept": "Multiply four distinct pairs: First, Outer, Inner, Last, and combine middle like terms. L3 problem form: show a worked solution that makes the mistake 'omitted middle terms (tag `c13-omitted-middle-terms-trap`)'; the learner finds the faulty step and gives the correct result.",
+      "coreConcept": "Multiply four distinct pairs: First, Outer, Inner, Last, and combine middle like terms. L3 problem form: show a worked solution that makes the mistake 'omitted middle terms (tag `c13-omitted-middle-terms-trap`)'; the prompt shows the work as 'Line N: $...$' lines and the learner picks the first wrong line (answerSpec `choice` with `verify.flaw`; asking for the corrected value lets the learner just recompute, 06 §2.3).",
       "mentalModel": "Two-by-two area matrix expansion.",
       "governingRelation": "(x + a)(x + b) = x^2 + (a+b)x + ab",
       "cognitiveTraps": [
@@ -147,7 +147,7 @@
       "archetypeKey": "c13-special-products-difference-squares",
       "level": 3,
       "name": "Special Product: Difference of Squares Expansion",
-      "coreConcept": "Product of sum and difference of identical terms results in difference of squares: (ax + b)(ax - b) = a^2*x^2 - b^2. L3 problem form: show a worked solution that makes the mistake 'middle term included (tag `c13-middle-term-included-trap`)'; the learner finds the faulty step and gives the correct result.",
+      "coreConcept": "Product of sum and difference of identical terms results in difference of squares: (ax + b)(ax - b) = a^2*x^2 - b^2. L3 problem form: show a worked solution that makes the mistake 'middle term included (tag `c13-middle-term-included-trap`)'; the prompt shows the work as 'Line N: $...$' lines and the learner picks the first wrong line (answerSpec `choice` with `verify.flaw`; asking for the corrected value lets the learner just recompute, 06 §2.3).",
       "mentalModel": "Symmetric cancellation of cross-diagonal terms.",
       "governingRelation": "(ax + b)(ax - b) = a^2 x^2 - b^2",
       "cognitiveTraps": [
@@ -167,7 +167,7 @@
       "archetypeKey": "c13-factoring-greatest-common-factor",
       "level": 3,
       "name": "Factoring Out the Greatest Common Monomial Factor",
-      "coreConcept": "Identify the highest degree monomial dividing every term and extract via reverse distribution: abx + ac = a(bx + c). L3 problem form: show a worked solution that makes the mistake 'incomplete gcf extraction (tag `c13-incomplete-gcf-extraction-trap`)'; the learner finds the faulty step and gives the correct result.",
+      "coreConcept": "Identify the highest degree monomial dividing every term and extract via reverse distribution: abx + ac = a(bx + c). L3 problem form: show a worked solution that makes the mistake 'incomplete gcf extraction (tag `c13-incomplete-gcf-extraction-trap`)'; the prompt shows the work as 'Line N: $...$' lines and the learner picks the first wrong line (answerSpec `choice` with `verify.flaw`; asking for the corrected value lets the learner just recompute, 06 §2.3).",
       "mentalModel": "Factoring out common architectural modules.",
       "governingRelation": "abx + ac = a(bx + c)",
       "cognitiveTraps": [
