@@ -199,7 +199,7 @@
       "archetypeKey": "c02-two-variable-formula-evaluation",
       "level": 3,
       "name": "Bivariate Geometric/Physical Formula Evaluation (การคำนวณค่าสูตรสองตัวแปร)",
-      "coreConcept": "Evaluating multi-variable expressions where distinct parameters govern orthogonal dimensions: P = 2L + 2W.",
+      "coreConcept": "Evaluating multi-variable expressions where distinct parameters govern orthogonal dimensions: P = 2L + 2W. L3 problem form: show a worked solution that makes the mistake 'Summing length and width without doubling, yielding half the perimeter (tag `c02-semi-perimeter-underestimate`)'; the learner finds the faulty step and gives the correct result.",
       "mentalModel": [
         "1. Map each measured physical input to its assigned variable.",
         "2. Multiply each variable by its respective geometric formula coefficient.",
@@ -231,7 +231,7 @@
       "archetypeKey": "c02-nested-distributive-simplification",
       "level": 3,
       "name": "Nested Distributive and Like Terms Simplification (การกระจายและรวมพจน์หลายชั้น)",
-      "coreConcept": "Expanding multiple grouped linear binomials and collecting like terms systematically: a(x + b) + c(x + d).",
+      "coreConcept": "Expanding multiple grouped linear binomials and collecting like terms systematically: a(x + b) + c(x + d). L3 problem form: show a worked solution that makes the mistake 'Adding group coefficients directly to variables without multiplying constants (tag `c02-distributive-coefficient-omission`)'; the learner finds the faulty step and gives the correct result.",
       "mentalModel": [
         "1. Distribute each external multiplier across its respective binomial group.",
         "2. Group variable terms together and constant terms together.",
@@ -262,19 +262,25 @@
     {
       "archetypeKey": "c02-constrained-perimeter-unknown-model",
       "level": 4,
-      "name": "Constrained Geometric Perimeter Unknown Model (แบบจำลองความยาวรอบรูปตัวแปรเดี่ยวพร้อมเงื่อนไขบังคับ)",
-      "coreConcept": "Setting up and solving an algebraic equation where length is defined as a linear function of width under fixed perimeter constraints.",
+      "name": "Perimeter Budget and Minimum Area Feasibility Model (เงื่อนไขความยาวรอบรูปและพื้นที่ขั้นต่ำ)",
+      "coreConcept": "A rectangle's length is a linear function of its width, L = m * W + k. A fencing budget caps the perimeter and a use requirement sets a minimum area. Find every whole-number width that satisfies both: the linear perimeter inequality gives an upper bound on W, and the area condition W(mW + k) >= A_min gives a lower bound.",
       "mentalModel": [
-        "1. Express length algebraically in terms of width: L = m * W + k.",
-        "2. Substitute algebraic length expression into perimeter equation: 2(mW + k) + 2W = P.",
-        "3. Expand and solve linear equation to isolate width."
+        "1. Express length algebraically: L = m * W + k.",
+        "2. Perimeter budget: 2(mW + k) + 2W <= P, so W <= (P - 2k) / (2m + 2).",
+        "3. Area requirement: W(mW + k) >= A_min; test whole-number widths upward to find the smallest that works.",
+        "4. Intersect both bounds and list the feasible whole-number widths."
       ],
-      "governingRelation": "P = 2 * (m * W + k) + 2 * W <=> P = (2*m + 2)*W + 2*k",
+      "governingRelation": "(2m+2)W + 2k \\le P \\ \\land\\ W(mW+k) \\ge A_{\\min}",
       "cognitiveTraps": [
         {
           "trapTag": "c02-semi-perimeter-algebraic-confusion",
           "description": "Equating L + W to P rather than 2L + 2W, causing an erroneous isolated width.",
           "trapFormula": "(P - k) / (m + 1)"
+        },
+        {
+          "trapTag": "c02-single-constraint-only-trap",
+          "description": "Using only the perimeter bound and reporting its maximum width, without checking the area requirement.",
+          "trapFormula": "(P - 2*k) / (2*m + 2)"
         }
       ],
       "versatileDomains": [
@@ -293,7 +299,7 @@
     },
     {
       "archetypeKey": "c02-consecutive-integer-sum-inversion",
-      "level": 4,
+      "level": 2,
       "name": "Consecutive Integer Word Problem Synthesis (โจทย์ปัญหาผลรวมจำนวนเต็มเรียงกันเชิงพีชคณิต)",
       "coreConcept": "Translating verbal descriptions of consecutive sequence integers into a solvable linear algebraic equation.",
       "mentalModel": [

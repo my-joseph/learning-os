@@ -208,7 +208,7 @@
     },
     {
       "archetypeKey": "c06-invariant-component-under-variable-total",
-      "level": 4,
+      "level": 2,
       "name": "Invariant Component under Variable Total (การปรับสัดส่วนโดยเติมองค์ประกอบเดียวเมื่อฐานรวมเปลี่ยน)",
       "coreConcept": "Adding a pure single component changes both that component and the total base, but the UNTOUCHED component remains constant in absolute quantity. Equating the invariant quantity across initial and final states gives the closed-form solution.",
       "mentalModel": [
@@ -255,7 +255,7 @@
     },
     {
       "archetypeKey": "c06-weighted-split-conservation",
-      "level": 4,
+      "level": 2,
       "name": "Weighted Split Conservation (การแบ่งส่วนย่อยและสมดุลผลรวม)",
       "coreConcept": "A single pool of resources is divided into two segments with different percentage rates. Given total pool and total weighted return/yield, express one unknown as (Total - x) to solve a linear conservation equation.",
       "mentalModel": [

@@ -127,7 +127,7 @@
       "archetypeKey": "c13-multiplying-binomials-foil",
       "level": 3,
       "name": "Multiplying Binomials using the FOIL Method",
-      "coreConcept": "Multiply four distinct pairs: First, Outer, Inner, Last, and combine middle like terms.",
+      "coreConcept": "Multiply four distinct pairs: First, Outer, Inner, Last, and combine middle like terms. L3 problem form: show a worked solution that makes the mistake 'omitted middle terms (tag `c13-omitted-middle-terms-trap`)'; the learner finds the faulty step and gives the correct result.",
       "mentalModel": "Two-by-two area matrix expansion.",
       "governingRelation": "(x + a)(x + b) = x^2 + (a+b)x + ab",
       "cognitiveTraps": [
@@ -147,7 +147,7 @@
       "archetypeKey": "c13-special-products-difference-squares",
       "level": 3,
       "name": "Special Product: Difference of Squares Expansion",
-      "coreConcept": "Product of sum and difference of identical terms results in difference of squares: (ax + b)(ax - b) = a^2*x^2 - b^2.",
+      "coreConcept": "Product of sum and difference of identical terms results in difference of squares: (ax + b)(ax - b) = a^2*x^2 - b^2. L3 problem form: show a worked solution that makes the mistake 'middle term included (tag `c13-middle-term-included-trap`)'; the learner finds the faulty step and gives the correct result.",
       "mentalModel": "Symmetric cancellation of cross-diagonal terms.",
       "governingRelation": "(ax + b)(ax - b) = a^2 x^2 - b^2",
       "cognitiveTraps": [
@@ -167,7 +167,7 @@
       "archetypeKey": "c13-factoring-greatest-common-factor",
       "level": 3,
       "name": "Factoring Out the Greatest Common Monomial Factor",
-      "coreConcept": "Identify the highest degree monomial dividing every term and extract via reverse distribution: abx + ac = a(bx + c).",
+      "coreConcept": "Identify the highest degree monomial dividing every term and extract via reverse distribution: abx + ac = a(bx + c). L3 problem form: show a worked solution that makes the mistake 'incomplete gcf extraction (tag `c13-incomplete-gcf-extraction-trap`)'; the learner finds the faulty step and gives the correct result.",
       "mentalModel": "Factoring out common architectural modules.",
       "governingRelation": "abx + ac = a(bx + c)",
       "cognitiveTraps": [
@@ -185,14 +185,15 @@
     },
     {
       "archetypeKey": "c13-factoring-quadratic-trinomials-modeling",
-      "level": 4,
-      "name": "Factoring Quadratic Trinomials for Geometric Dimensions",
-      "coreConcept": "Factor monic quadratic trinomial x^2 + bx + c into (x + p)(x + q) where p + q = b and p*q = c to determine geometric dimensions.",
-      "mentalModel": "Reconstructing rectangle length and width from total area polynomial.",
-      "governingRelation": "x^2 + (p+q)x + pq = (x+p)(x+q)",
+      "level": 2,
+      "name": "Factored Area Dimensions under a Perimeter Constraint",
+      "coreConcept": "A rectangle's area is a monic trinomial in x and its perimeter is a given number. Factoring the trinomial gives the side expressions (x + p) and (x + q), which feed a linear perimeter equation for x; then evaluate the actual dimensions and area.",
+      "mentalModel": "Factoring produces the inputs of a second (linear) model.",
+      "governingRelation": "x^2 + (p+q)x + pq = (x+p)(x+q),\\quad 2\\left((x+p) + (x+q)\\right) = P",
       "cognitiveTraps": [
         "c13-factor-sum-product-swap-trap",
-        "c13-sign-factorization-mismatch-trap"
+        "c13-sign-factorization-mismatch-trap",
+        "c13-area-equals-perimeter-trap"
       ],
       "versatileDomains": [
         "architectural_room_layout",

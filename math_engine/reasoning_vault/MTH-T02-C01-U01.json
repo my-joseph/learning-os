@@ -112,7 +112,7 @@
       "archetypeKey": "t02-c01-u01-multiplying-complex-binomials",
       "level": 3,
       "name": "Multiplying Complex Numbers via FOIL Expansion",
-      "coreConcept": "Expand four terms and simplify i^2 = -1 to separate into real and imaginary parts: (a+bi)(c+di) = (ac-bd) + (ad+bc)i.",
+      "coreConcept": "Expand four terms and simplify i^2 = -1 to separate into real and imaginary parts: (a+bi)(c+di) = (ac-bd) + (ad+bc)i. L3 problem form: show a worked solution that makes the mistake 'positive last term (tag `t02-c01-u01-positive-last-term-trap`)'; the learner finds the faulty step and gives the correct result.",
       "mentalModel": "Combined rotational scaling of complex vectors.",
       "governingRelation": "(a + bi)(c + di) = (ac - bd) + (ad + bc)i",
       "cognitiveTraps": [
@@ -132,7 +132,7 @@
       "archetypeKey": "t02-c01-u01-complex-conjugates-modulus",
       "level": 3,
       "name": "Complex Conjugates and Modulus Product",
-      "coreConcept": "Multiplying a complex number by its conjugate eliminates imaginary part: (a+bi)(a-bi) = a^2 + b^2 = |z|^2.",
+      "coreConcept": "Multiplying a complex number by its conjugate eliminates imaginary part: (a+bi)(a-bi) = a^2 + b^2 = |z|^2. L3 problem form: show a worked solution that makes the mistake 'difference of squares minus sign (tag `t02-c01-u01-difference-of-squares-minus-sign-trap`)'; the learner finds the faulty step and gives the correct result.",
       "mentalModel": "Reflecting across real axis to create pure real magnitude squared.",
       "governingRelation": "(a + bi)(a - bi) = a^2 + b^2 \\land |z| = \\sqrt{a^2 + b^2}",
       "cognitiveTraps": [
@@ -152,7 +152,7 @@
       "archetypeKey": "t02-c01-u01-dividing-complex-numbers",
       "level": 3,
       "name": "Dividing Complex Numbers via Denominator Conjugate Rationalization",
-      "coreConcept": "Multiply numerator and denominator by denominator conjugate to make denominator real: (a+bi)/(c+di) = ((a+bi)(c-di))/(c^2+d^2).",
+      "coreConcept": "Multiply numerator and denominator by denominator conjugate to make denominator real: (a+bi)/(c+di) = ((a+bi)(c-di))/(c^2+d^2). L3 problem form: show a worked solution that makes the mistake 'divide real and imag parts directly (tag `t02-c01-u01-divide-real-and-imag-parts-directly-trap`)'; the learner finds the faulty step and gives the correct result.",
       "mentalModel": "Normalizing complex ratios to a common real denominator scale.",
       "governingRelation": "\\frac{a + bi}{c + di} = \\frac{(a + bi)(c - di)}{c^2 + d^2}",
       "cognitiveTraps": [
@@ -171,13 +171,14 @@
     {
       "archetypeKey": "t02-c01-u01-rlc-impedance-synthesis",
       "level": 4,
-      "name": "AC Circuit Series Impedance and Magnitude Modeling",
-      "coreConcept": "Model AC circuit impedance as complex vector Z = R + iX, where magnitude is |Z| = sqrt(R^2 + X^2).",
-      "mentalModel": "Phasor impedance triangle combining dissipative resistance with reactive energy storage.",
-      "governingRelation": "|Z| = \\sqrt{R^2 + X^2}",
+      "name": "AC Series Impedance: Reactance from a Target Magnitude",
+      "coreConcept": "In a series AC circuit Z = R + i(X_L - X_C). Given R, X_C and a target |Z|, find every inductive reactance X_L that achieves it: |Z|^2 = R^2 + X^2 gives X = ±sqrt(|Z|^2 - R^2), and each sign gives a different X_L, which must be checked to be positive.",
+      "mentalModel": "Phasor impedance triangle solved backwards, with both signs of the reactance considered.",
+      "governingRelation": "X = \\pm\\sqrt{|Z|^2 - R^2},\\quad X_L = X_C + X,\\ X_L > 0",
       "cognitiveTraps": [
         "t02-c01-u01-scalar-sum-of-impedance-trap",
-        "t02-c01-u01-reactance-sign-inversion-trap"
+        "t02-c01-u01-reactance-sign-inversion-trap",
+        "t02-c01-u01-positive-reactance-only-trap"
       ],
       "versatileDomains": [
         "ac_power_distribution_grid",
@@ -191,13 +192,14 @@
     {
       "archetypeKey": "t02-c01-u01-quadratic-formula-complex-roots",
       "level": 4,
-      "name": "Quadratic Formula with Complex Conjugate Solutions",
-      "coreConcept": "Solve quadratic equations with negative discriminant to extract complex conjugate roots: x = (-b +- i*sqrt(|D|)) / (2a).",
-      "mentalModel": "Oscillatory natural frequencies under underdamped dynamics.",
-      "governingRelation": "ax^2 + bx + c = 0 \\implies x = \\frac{-b \\pm i\\sqrt{4ac - b^2}}{2a}",
+      "name": "Quadratic Parameter from Complex-Root Conditions",
+      "coreConcept": "For x^2 + bx + k = 0 with real b given, find the real k for which the roots are non-real and have a given modulus. The discriminant condition b^2 - 4k < 0 bounds k, the conjugate pair has product |z|^2 = k, and the roots then follow from the quadratic formula.",
+      "mentalModel": "Discriminant condition plus conjugate-pair product fix the parameter.",
+      "governingRelation": "b^2 - 4k < 0,\\quad k = |z|^2,\\quad x = \\frac{-b \\pm i\\sqrt{4k - b^2}}{2}",
       "cognitiveTraps": [
         "t02-c01-u01-real-square-root-assumption-trap",
-        "t02-c01-u01-sign-under-radical-trap"
+        "t02-c01-u01-sign-under-radical-trap",
+        "t02-c01-u01-modulus-not-squared-trap"
       ],
       "versatileDomains": [
         "underdamped_harmonic_oscillator",

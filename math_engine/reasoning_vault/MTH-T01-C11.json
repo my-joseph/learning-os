@@ -107,7 +107,7 @@
       "archetypeKey": "c11-fraction-clearing-lcd",
       "level": 3,
       "name": "Clearing Fractions in Linear Equations via LCD Multiplication",
-      "coreConcept": "Multiply every term on both sides by the least common denominator to convert rational coefficients to integers.",
+      "coreConcept": "Multiply every term on both sides by the least common denominator to convert rational coefficients to integers. L3 problem form: show a worked solution that makes the mistake 'forget to multiply integer term (tag `c11-forget-to-multiply-integer-term-trap`)'; the learner finds the faulty step and gives the correct result.",
       "mentalModel": "Rescaling all measurements to a common denominator grid.",
       "governingRelation": "\\text{LCD} \\cdot \\left(\\frac{x}{a} + b\\right) = \\text{LCD} \\cdot c",
       "cognitiveTraps": [
@@ -127,7 +127,7 @@
       "archetypeKey": "c11-decimal-clearing-equations",
       "level": 3,
       "name": "Clearing Decimal Coefficients via Powers of Ten",
-      "coreConcept": "Multiply all terms by 10^k corresponding to the greatest number of decimal places to ensure exact integer arithmetic.",
+      "coreConcept": "Multiply all terms by 10^k corresponding to the greatest number of decimal places to ensure exact integer arithmetic. L3 problem form: show a worked solution that makes the mistake 'unequal decimal shift (tag `c11-unequal-decimal-shift-trap`)'; the learner finds the faulty step and gives the correct result.",
       "mentalModel": "Shifting currency units from dollars to exact cents.",
       "governingRelation": "10^k \\cdot (ax + b) = 10^k \\cdot c",
       "cognitiveTraps": [
@@ -165,7 +165,7 @@
     },
     {
       "archetypeKey": "c11-break-even-financial-synthesis",
-      "level": 4,
+      "level": 2,
       "name": "Applied Linear Break-Even and Cost-Revenue Synthesis",
       "coreConcept": "Model commercial viability by equating total revenue to total fixed plus variable costs: P*x = F + V*x, yielding break-even volume x = F / (P - V).",
       "mentalModel": "Intersecting linear trajectories of expenditure and income.",
@@ -185,7 +185,7 @@
     },
     {
       "archetypeKey": "c11-uniform-motion-head-to-head-modeling",
-      "level": 4,
+      "level": 2,
       "name": "Uniform Motion Systems: Converging and Opposing Velocities",
       "coreConcept": "Model collinear closing distance using combined rates: (r1 + r2)*t = D, yielding time to encounter t = D / (r1 + r2).",
       "mentalModel": "Collapsing interval between opposing velocity vectors.",

@@ -6,14 +6,15 @@
     {
       "archetypeKey": "syn-c12-c09-c05-spatial-radical-metric",
       "level": 5,
-      "name": "Spatial Incline & Radical Metric Synthesis",
-      "coreConcept": "Synthesize 3D spatial diagonal and incline distances, simplify to exact radical form, and compute precision decimal bounds.",
-      "mentalModel": "Space diagonal in 3D Euclidean solid coupled with radical extraction and metric rounding.",
-      "governingRelation": "d = \\sqrt{w^2 + l^2 + h^2}, \\quad \\text{Ratio} = \\frac{d}{k}",
+      "name": "Box Surface Geodesic vs Space Diagonal Synthesis",
+      "coreConcept": "A cable or crawler must travel along the faces of a rectangular box between opposite corners. No formula is given: the solver unfolds the box into each of the three possible flat nets, finds the straight-line length on each, picks the shortest, compares it with the (unreachable) space diagonal, and reports exact simplest radicals plus a decimal bound.",
+      "mentalModel": "1. Recognize that a path on the faces becomes a straight segment once two adjacent faces are unfolded flat. 2. Build the three nets; each gives a right triangle with legs (sum of two dimensions, third dimension). 3. Compute and simplify all three radicals, then choose the minimum. 4. Compare with the space diagonal sqrt(w^2 + l^2 + h^2) and round only at the end.",
+      "governingRelation": "d_{\\text{surf}} = \\min\\left\\{\\sqrt{(w+h)^2+l^2},\\ \\sqrt{(l+h)^2+w^2},\\ \\sqrt{(w+l)^2+h^2}\\right\\} \\ge d = \\sqrt{w^2+l^2+h^2}",
       "cognitiveTraps": [
         "c12-3d-dimension-omission-trap",
         "c09-premature-radical-sum-trap",
-        "c05-intermediate-rounding-error-trap"
+        "c05-intermediate-rounding-error-trap",
+        "syn-single-net-assumption-trap"
       ],
       "versatileDomains": [
         "structural_space_truss_diagonal",
@@ -48,14 +49,15 @@
     {
       "archetypeKey": "syn-c12-c09-c05-frustum-slant-metric",
       "level": 5,
-      "name": "Conical Frustum Slant & Radical Flow Metric",
-      "coreConcept": "Determine the slant height of a truncated conical reservoir using Pythagorean difference of radii, reduce exact radical, and estimate metric volume rate.",
-      "mentalModel": "Right trapezoid axial cross-section yielding hypotenuse slant height with radical and decimal scaling.",
-      "governingRelation": "s = \\sqrt{h^2 + (R - r)^2}",
+      "name": "Frustum Volume by Cone Completion & Radical Flow Metric",
+      "coreConcept": "A truncated conical reservoir is given by its two radii and vertical height, with no frustum volume formula. The solver completes the frustum to a full cone with similar triangles, subtracts the removed apex cone, finds the slant height as an exact radical, and converts the volume into a fill time under a decimal flow rate.",
+      "mentalModel": "1. Draw the axial cross-section and extend the slanted sides to the apex. 2. Use similar triangles H / R = (H - h) / r to find the full-cone height H. 3. Subtract the small cone from the full cone to get the reservoir volume. 4. Find the slant sqrt(h^2 + (R - r)^2) in simplest radical form, then divide the volume by the flow rate and round last.",
+      "governingRelation": "\\frac{H}{R} = \\frac{H-h}{r},\\quad V = \\tfrac13\\pi\\left(R^2 H - r^2 (H-h)\\right),\\quad s = \\sqrt{h^2 + (R-r)^2}",
       "cognitiveTraps": [
         "c12-slant-vertical-height-confusion-trap",
         "c09-sum-of-squares-root-trap",
-        "c05-subtraction-order-sign-trap"
+        "c05-subtraction-order-sign-trap",
+        "syn-frustum-as-cylinder-average-trap"
       ],
       "versatileDomains": [
         "water_treatment_clarifier_funnel",

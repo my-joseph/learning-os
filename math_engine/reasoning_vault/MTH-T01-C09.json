@@ -127,7 +127,7 @@
       "archetypeKey": "c09-binomial-radical-multiplication",
       "level": 3,
       "name": "Multiplying Binomial Expressions with Radicals",
-      "coreConcept": "Expand radical binomials using distributive FOIL property: (a + sqrt(b))^2 = a^2 + 2a*sqrt(b) + b.",
+      "coreConcept": "Expand radical binomials using distributive FOIL property: (a + sqrt(b))^2 = a^2 + 2a*sqrt(b) + b. L3 problem form: show a worked solution that makes the mistake 'freshman dream radical square (tag `c09-freshman-dream-radical-square-trap`)'; the learner finds the faulty step and gives the correct result.",
       "mentalModel": "Four-quadrant geometric area expansion with irrational components.",
       "governingRelation": "(a + \\sqrt{b})^2 = a^2 + 2a\\sqrt{b} + b",
       "cognitiveTraps": [
@@ -147,7 +147,7 @@
       "archetypeKey": "c09-higher-index-roots",
       "level": 3,
       "name": "Evaluating Cube Roots and Higher-Index Radicals",
-      "coreConcept": "The nth root of a is the real number r such that r^n = a: cubing a real number preserves sign.",
+      "coreConcept": "The nth root of a is the real number r such that r^n = a: cubing a real number preserves sign. L3 problem form: show a worked solution that makes the mistake 'cube root divided by three (tag `c09-cube-root-divided-by-three-trap`)'; the learner finds the faulty step and gives the correct result.",
       "mentalModel": "Three-dimensional cube edge length from cubic volume.",
       "governingRelation": "\\sqrt[3]{a} = r \\iff r^3 = a",
       "cognitiveTraps": [
@@ -165,14 +165,15 @@
     },
     {
       "archetypeKey": "c09-pythagorean-radical-modeling",
-      "level": 4,
-      "name": "Pythagorean Theorem and Radical Distance Modeling",
-      "coreConcept": "In a right triangle with legs a and b, the hypotenuse is c = sqrt(a^2 + b^2).",
-      "mentalModel": "Euclidean metric distance invariance in two dimensions.",
-      "governingRelation": "c = \\sqrt{a^2 + b^2}",
+      "level": 2,
+      "name": "Sliding Ladder Two-Triangle Radical Modeling",
+      "coreConcept": "A ladder of fixed length L leans on a wall with its foot a from the wall; the top then slides down by s. The height from the first right triangle feeds the second right triangle (same hypotenuse), and the foot's movement is reported in simplest radical form.",
+      "mentalModel": "Fixed hypotenuse shared by two right triangles: one result (height) becomes a leg of the next.",
+      "governingRelation": "h = \\sqrt{L^2 - a^2},\\quad a' = \\sqrt{L^2 - (h - s)^2},\\quad \\Delta a = a' - a",
       "cognitiveTraps": [
         "c09-linear-sum-instead-of-pythagorean-trap",
-        "c09-leg-hypotenuse-swap-trap"
+        "c09-leg-hypotenuse-swap-trap",
+        "c09-equal-slide-distance-trap"
       ],
       "versatileDomains": [
         "drone_flight_path",

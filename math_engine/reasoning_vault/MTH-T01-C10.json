@@ -107,7 +107,7 @@
       "archetypeKey": "c10-combining-like-terms-distributive",
       "level": 3,
       "name": "Factoring and Combining Like Terms via Reverse Distribution",
-      "coreConcept": "Use distributive property in reverse to consolidate algebraic terms: ax + bx = (a + b)x.",
+      "coreConcept": "Use distributive property in reverse to consolidate algebraic terms: ax + bx = (a + b)x. L3 problem form: show a worked solution that makes the mistake 'variable power addition (tag `c10-variable-power-addition-trap`)'; the learner finds the faulty step and gives the correct result.",
       "mentalModel": "Summing multiple measurements of a shared underlying unit.",
       "governingRelation": "ax + bx = (a + b)x",
       "cognitiveTraps": [
@@ -147,7 +147,7 @@
       "archetypeKey": "c10-multi-step-rational-arithmetic",
       "level": 3,
       "name": "Compound Operations with Rational Numbers and Fractions",
-      "coreConcept": "Combine fractions, division, and multiplication using commutative and associative restructuring.",
+      "coreConcept": "Combine fractions, division, and multiplication using commutative and associative restructuring. L3 problem form: show a worked solution that makes the mistake 'premature addition before division (tag `c10-premature-addition-before-division-trap`)'; the learner finds the faulty step and gives the correct result.",
       "mentalModel": "Parallel fraction arithmetic with precedence barriers.",
       "governingRelation": "\\frac{a}{b} + c \\cdot d",
       "cognitiveTraps": [
@@ -165,7 +165,7 @@
     },
     {
       "archetypeKey": "c10-applied-distributive-cost-modeling",
-      "level": 4,
+      "level": 2,
       "name": "Applied Distributive Pricing and Tiered Cost Modeling",
       "coreConcept": "Model composite real-world commercial costs using distributed unit discounts and fixed surcharges: T = N(P - D) + F.",
       "mentalModel": "Multi-tier commercial invoice expansion.",

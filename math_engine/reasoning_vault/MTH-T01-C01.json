@@ -167,7 +167,7 @@
       "archetypeKey": "c01-gcd-euclidean-reduction",
       "level": 3,
       "name": "Greatest Common Divisor via Euclidean Reduction (ห.ร.ม. และขั้นตอนวิธีแบบยุคลิด)",
-      "coreConcept": "The greatest common divisor of two integers is the largest integer dividing both, invariant under Euclidean subtraction: gcd(a, b) = gcd(b, a mod b).",
+      "coreConcept": "The greatest common divisor of two integers is the largest integer dividing both, invariant under Euclidean subtraction: gcd(a, b) = gcd(b, a mod b). L3 problem form: show a worked solution that makes the mistake 'Assuming the difference (a - b) is always the GCD without factoring (tag `c01-gcd-difference-underestimate`)'; the learner finds the faulty step and gives the correct result.",
       "mentalModel": [
         "1. Set larger number as dividend and smaller as divisor.",
         "2. Compute remainder.",
@@ -263,19 +263,25 @@
     {
       "archetypeKey": "c01-gcd-lcm-duality-inversion",
       "level": 4,
-      "name": "GCD-LCM Duality Invariant Inversion (ความสัมพันธ์สมมูล ห.ร.ม. และ ค.ร.น.)",
-      "coreConcept": "The fundamental invariant gcd(a, b) * lcm(a, b) = a * b enables solving for an unknown number given its counterpart and both extrema.",
+      "name": "GCD-LCM Pair Reconstruction (การหาคู่จำนวนจาก ห.ร.ม. และ ค.ร.น.)",
+      "coreConcept": "Given only gcd g and lcm L of two unknown numbers (plus one extra condition such as their sum, difference or a bound), reconstruct the pair: write a = g*m and b = g*n with gcd(m, n) = 1, split L / g into coprime factor pairs (m, n), then use the extra condition to select the pair.",
       "mentalModel": [
-        "1. State the duality conservation law: gcd(a, b) * lcm(a, b) = a * b.",
-        "2. Substitute known gcd, lcm, and one known term a.",
-        "3. Divide product (gcd * lcm) by a to isolate the unknown counterpart b."
+        "1. Write a = g * m and b = g * n where gcd(m, n) = 1.",
+        "2. Use gcd * lcm = a * b to get m * n = L / g.",
+        "3. Prime-factorize L / g and list every split into coprime factors m, n.",
+        "4. Apply the extra condition (sum, difference or bound) to select the pair (a, b)."
       ],
-      "governingRelation": "b = (gcd * lcm) / a",
+      "governingRelation": "a = g m,\\ b = g n,\\ \\gcd(m, n) = 1,\\ m n = \\frac{L}{g}",
       "cognitiveTraps": [
         {
           "trapTag": "c01-duality-additive-confusion",
           "description": "Adding gcd and lcm instead of multiplying them before dividing.",
           "trapFormula": "(gcd + lcm) * a"
+        },
+        {
+          "trapTag": "c01-non-coprime-split-trap",
+          "description": "Accepting a factor split of L / g whose parts share a common factor, which gives a pair whose gcd is larger than g.",
+          "trapFormula": "g * (L / g)"
         }
       ],
       "versatileDomains": [
