@@ -21,8 +21,7 @@
       ],
       "usedContexts": [
         "ac_phasor_scaling",
-        "quantum_phase_factor",
-        "signal_quadrature_demodulation"
+        "quantum_phase_factor"
       ]
     },
     {
@@ -64,8 +63,7 @@
       ],
       "usedContexts": [
         "phasor_voltage_superposition",
-        "rf_superposition",
-        "vector_impedance_mesh"
+        "rf_superposition"
       ]
     },
     {
@@ -86,9 +84,7 @@
       ],
       "usedContexts": [
         "differential_voltage_drop",
-        "radar_doppler_delta",
-        "phase_lag_subtraction",
-        "bus_current_balance"
+        "radar_doppler_delta"
       ]
     },
     {
@@ -109,8 +105,7 @@
       ],
       "usedContexts": [
         "rf_reactive_power_coupling",
-        "waveguide_impedance",
-        "capacitive_inductive_cancellation"
+        "waveguide_impedance"
       ]
     },
     {
@@ -131,8 +126,7 @@
       ],
       "usedContexts": [
         "dsp_fourier_kernel_modulation",
-        "phasor_gain_stage_check",
-        "complex_power_s_vi"
+        "phasor_gain_stage_check"
       ]
     },
     {
@@ -153,9 +147,7 @@
       ],
       "usedContexts": [
         "signal_envelope_magnitude",
-        "radar_return_power_estimate",
-        "quantum_probability_density",
-        "power_factor_apparent_power"
+        "radar_return_power_estimate"
       ]
     },
     {
@@ -177,8 +169,7 @@
       "usedContexts": [
         "ac_admittance_inversion",
         "filter_transfer_ratio_check",
-        "antenna_impedance_ratio_check",
-        "transmission_reflection_coefficient"
+        "antenna_impedance_ratio_check"
       ]
     },
     {
@@ -199,8 +190,7 @@
         "radio_rf_tuning"
       ],
       "usedContexts": [
-        "ac_audio_filter_impedance",
-        "radio_rf_tuning"
+        "ac_audio_filter_impedance"
       ]
     },
     {

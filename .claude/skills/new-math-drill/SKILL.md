@@ -27,7 +27,9 @@ Read `rules/00_core.md` §5–§7, `rules/03_stem.md`, `rules/06_template_contra
 ```
 
 - Use only archetypes at the requested levels. If the brief needs one that is not in the vault, stop and propose the new archetype (key, level, coreConcept, governingRelation, cognitiveTraps) to the learner first.
-- Choose a surface context per problem that is **not** in that archetype's `usedContexts`.
+- Default to plain prompts: state the math directly in one short sentence (e.g. "Simplify $(5 + 3i)(7 - 4i)$. Write the answer as $a + bi$.") with no story and an empty `context`. Do not wrap a computation in a made-up scenario ("in a signal demodulator, a weight is ...").
+- Use a real-world context only when the learner asks for word problems, or when the level needs the solver to build the relation from a situation (`setup: model`, usually L4–L5). The context must be physically correct (units, sign conventions, plausible magnitudes) and not in that archetype's `usedContexts`.
+- Mix forms: at most 2 diagnose-form ("which line is wrong") problems per drill, and never all L3 problems in that form.
 - Look at one recent drill in `drills/data/<UNIT>/` for the exact field shape (e.g. `DRL-MTH-T01-C12-04.json` Q01).
 
 ## 4. Write the draft as JSON
