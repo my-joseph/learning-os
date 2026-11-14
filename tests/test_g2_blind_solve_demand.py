@@ -32,10 +32,20 @@ def test_blind_solve_at_label_satisfies_g2():
     assert check_gate_g2(l4_problem(blindSolve={"answer": "20", "ambiguous": False, **MODEL}))["passed"]
 
 
-def test_blind_solve_below_label_does_not_satisfy_g2():
+def test_g2_leaves_a_shallow_blind_solve_to_the_vault_gate():
+    # G2 must not tell the author to pad `constraints`; validate_blind_solve rejects the level instead.
     shallow = {**MODEL, "setup": "translate"}  # L3
-    with pytest.raises(QualityError, match="concept"):
-        check_gate_g2(l4_problem(blindSolve={"answer": "20", "ambiguous": False, **shallow}))
+    assert check_gate_g2(l4_problem(blindSolve={"answer": "20", "ambiguous": False, **shallow}))["passed"]
+
+
+def test_numeric_tolerance_is_absolute():
+    from math_engine.answer_check import check_answer
+
+    spec = {"type": "number", "value": "18.06", "tolerance": 0.005}
+    assert check_answer(spec, "18")["verdict"] != "correct"
+    assert check_answer(spec, "18.064")["verdict"] == "correct"
+    rel = {"type": "number", "value": "18.06", "tolerance": {"rel": 0.005}}
+    assert check_answer(rel, "18")["verdict"] == "correct"
 
 
 SET_SPEC = {"type": "solution_set", "values": ["16", "4"], "variable": "X_L"}

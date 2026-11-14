@@ -20,7 +20,7 @@ from math_engine.fmt import LEVEL_LABELS, unit_hierarchy
 from math_engine.generate import next_drill_id
 from math_engine.verify import verify_problem
 from progress_store import strip_progress
-from quality_rules import BLIND_SOLVE_TAGS, QUALITY_RULES, demand_level
+from quality_rules import BLIND_SOLVE_TAGS, QUALITY_RULES, QualityError, check_gate_g3_set, demand_level
 
 VAULT_DIR = os.path.join(os.path.dirname(__file__), "reasoning_vault")
 
@@ -312,6 +312,8 @@ def validate_ai_problem_contract(prob: Dict[str, Any], enforce_leak_gate: bool =
     # Forward: every number in prompt must be defined in givens (or be a declared constant)
     known_vals = list(givens_floats.values()) + list(constant_floats.values())
     for p_num in prompt_numbers:
+        if p_num == 0:
+            continue  # the 0 in "= 0" or "X > 0" is notation, not story data
         if not any(abs(p_num - g_val) < 1e-6 for g_val in known_vals):
             raise AiContractError(f"[{pid}] Number '{p_num}' in prompt is not defined in givens ({givens})")
 
@@ -484,8 +486,8 @@ SENTINEL_ANSWER_RE = re.compile(
 
 def validate_blind_solve(prob: Dict[str, Any]) -> None:
     """L3+ floor gate (06 §2.3, 07 §4 V2): a separate solver that saw only the prompt must agree
-    on the answer, find no ambiguity, and report demand tags whose level reaches `level`
-    (L3 may be one below). A prompt with a sentinel fallback answer is rejected outright."""
+    on the answer, find no ambiguity, and report demand tags whose level reaches `level`.
+    A prompt with a sentinel fallback answer is rejected outright."""
     pid = prob.get("id", "?")
     level = prob["level"]
     bs = prob.get("blindSolve")
@@ -514,9 +516,7 @@ def validate_blind_solve(prob: Dict[str, Any]) -> None:
             f"(e.g. the largest value that satisfies it) or drop it."
         )
     got = demand_level(bs)
-    # L3 may sit one level under its label; L4/L5 must earn their label exactly.
-    need = level - 1 if level == 3 else level
-    if got < need:
+    if got < level:  # every L3+ label must be earned exactly (06 §2.3)
         shape = ", ".join(f"{t}={bs[t]}" for t in (*BLIND_SOLVE_TAGS, "reverse", "steps"))
         floor = " It is a direct computation (mental-math level)." if got == 1 else ""
         raise AiContractError(
@@ -631,8 +631,10 @@ def check_ai_drill(
 
     vault_archs = load_reasoning_vault(unit_code, vault_dir=vault_dir).get("archetypes", [])
     errors: List[str] = []
+    checked: List[Dict[str, Any]] = []
     for idx, original in enumerate(problems, 1):
         prob = copy.deepcopy(original)
+        checked.append(prob)
         prob.setdefault("id", f"Q{idx:02d}")
         prob.setdefault("verificationLevel", "partial")
         pid = prob["id"]
@@ -648,6 +650,10 @@ def check_ai_drill(
         except Exception as exc:  # noqa: BLE001 - every gate failure is reported, not raised
             msg = str(exc)
             errors.append(msg if pid in msg else f"[{pid}] {msg}")
+    try:
+        check_gate_g3_set(checked, rules=rules or QUALITY_RULES)
+    except QualityError as exc:
+        errors.append(str(exc))
     return errors
 
 
@@ -715,6 +721,9 @@ def ingest_ai_drill(
         validate_ai_problem_contract(prob)
         # Run gate checks (G1-G6)
         verify_problem(prob, rules=active_rules)
+
+    # G3: no two problems in the drill share a structural fingerprint.
+    check_gate_g3_set(problems, rules=active_rules)
 
     drill_id = drill_doc.get("drillId")
     if not drill_id:

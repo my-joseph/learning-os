@@ -80,8 +80,9 @@ def test_tags_at_or_above_label_pass(level):
     check(problem(level=level, blindSolve=GOOD_BLIND))  # tags give L4
 
 
-def test_l3_may_sit_one_level_below():
-    check(problem(level=3, blindSolve={"answer": "20", "ambiguous": False, **DIRECT, "reverse": True}))  # L2
+def test_l3_must_reach_label_too():
+    with pytest.raises(AiContractError, match="give L2"):
+        check(problem(level=3, blindSolve={"answer": "20", "ambiguous": False, **DIRECT, "reverse": True}))
 
 
 @pytest.mark.parametrize(("level", "shallow"), [(4, {**MODEL, "check": "none"}), (5, MODEL)])

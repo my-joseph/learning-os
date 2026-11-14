@@ -210,8 +210,9 @@ class CheckAiDrill(unittest.TestCase):
             id="Q02",
             archetypeKey="c12-perimeter",
             prompt="A plot is $14$ m long and $8$ m wide. Find the fencing using $P = 2(14) + 2(8)$.",
+            form="applied",  # distinct structure, so only the leak is reported (not G3)
         )
-        unknown = perimeter_problem(id="Q03", archetypeKey="c12-missing")
+        unknown = perimeter_problem(id="Q03", archetypeKey="c12-missing", form="reverse")
         doc = {"unitCode": "MTH-T01-C12", "problems": [good, leaky, unknown]}
         before = copy.deepcopy(doc)
         with tempfile.TemporaryDirectory() as tmp:
@@ -253,7 +254,9 @@ class IngestFillsSyncFields(unittest.TestCase):
                     },
                     f,
                 )
-            custom = perimeter_problem(id="Q02", archetypeKey="c12-perimeter", levelLabel="Level 1 - Core Foundations")
+            custom = perimeter_problem(
+                id="Q02", archetypeKey="c12-perimeter", levelLabel="Level 1 - Core Foundations", form="reverse"
+            )
             doc = {"unitCode": "MTH-T01-C12", "problems": [perimeter_problem(archetypeKey="c12-perimeter"), custom]}
             saved = ingest_ai_drill(doc, data_root=os.path.join(tmp, "data"), vault_dir=vault)
 

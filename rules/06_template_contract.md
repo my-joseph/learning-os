@@ -90,7 +90,7 @@ TEMPLATES = [
 
 ### 2.3 Demand floor for AI-written L3+ problems (blind-solve tags)
 
-Goal: when the learner asks for hard problems, no problem may be solvable as direct computation or mental math. L4/L5 must reach their label exactly; L3 may sit one level below.
+Goal: when the learner asks for hard problems, no problem may be solvable as direct computation or mental math. Every L3+ label must be reached exactly.
 
 **Level meaning** (aligned with published frameworks so it holds from middle school to university):
 
@@ -117,7 +117,7 @@ The verb does not set the level ("explain" or "prove" alone does not raise it); 
 
 **Mapping** (`math_engine.ai_drill_ingest.demand_level`): `invent` → L5; `model` with (`choose` or `check` ≠ none) → L4; `model`, `choose`, `check` ≠ none or `diagnose` → L3; `translate`, `reverse` or `steps` ≥ 4 → L2; otherwise L1.
 
-**Gate** (`validate_blind_solve`, every L3+ problem): `blindSolve` must hold `answer`, `ambiguous` and all six tags; the answer must match `answerSpec`; the prompt must not be ambiguous; and the mapped level must reach `level` (L3: at least L2). Tags that give L1 never pass as L3+.
+**Gate** (`validate_blind_solve`, every L3+ problem): `blindSolve` must hold `answer`, `ambiguous` and all six tags; the answer must match `answerSpec`; the prompt must not be ambiguous; and the mapped level must reach `level`. Tags that give L1 never pass as L3+.
 
 **No bolted-on checks.** `check = edge` must come from the problem itself (a domain, a ± case, a limit the question asks you to respect). A fits/doesn't-fit clause added only to earn it ("If it fits, report $d$; otherwise report $0$") is computation plus one comparison, not a check; the gate rejects sentinel answers like this. Ask for what the limit decides instead, e.g. the largest width within the budget.
 
@@ -141,6 +141,8 @@ Sources: Webb's Depth of Knowledge (math descriptors); NAEP mathematical complex
 ---
 
 ## 3. กฎของกับดักและการวินิจฉัยจุดผิด (Trap Provenance & Flaw Diagnosis)
+
+> Display/`flawTag` rules in this section apply to **template** problems. AI-written diagnose problems follow §2.3 (work shown in `prompt`, `trapTag` only).
 
 1. **ผูกกับขั้นตอนที่แตกต่าง**: `trapTag` และ `trapValue` ต้องสะท้อนจุดสะดุดทางความคิดที่เป็นธรรมชาติของมนุษย์ (Distractor Provenance) ไม่ใช่การสุ่มตัวเลขมั่ว
 2. **การแยกฟิลด์ในโจทย์หาจุดผิด (Choice/Flaw Questions)**:
@@ -200,6 +202,7 @@ Sources: Webb's Depth of Knowledge (math descriptors); NAEP mathematical complex
 1. **นโยบาย Whitelist ฟังก์ชันทางคณิตศาสตร์**:
    - `WHITELIST_FUNCS` ส่วนกลางใน `math_engine/answer_check.py` ถูกจำกัดไว้เฉพาะฟังก์ชันคณิตศาสตร์มาตรฐาน ได้แก่:
      `sqrt`, `sin`, `cos`, `tan`, `ln`, `log`, `exp`, `abs`, `Abs`, `re`, `im`, `conjugate`
+   - Trusted internal evaluation (`trapDerivation`, `verify.source`, step checks) also allows `TRUSTED_INTERNAL_FUNCS`, which adds `diff`, `floor` and `round` (e.g. a rounded-down trap value).
    - **ห้ามเพิ่มฟังก์ชันพีชคณิตเชิงสัญลักษณ์/แคลคูลัสขั้นสูง** เช่น `diff`, `integrate`, `solve`, `limit` ลงใน `WHITELIST_FUNCS` เด็ดขาด เพื่อป้องกันผู้เรียนพิมพ์คำสั่งให้โปรแกรมแคลคูลัสหาคำตอบแทน
    - หากโจทย์ต้องการตัวแปร ให้ส่งผ่าน `variables=["x"]` ประจำโจทย์
 2. **นโยบายจำกัดเลขชี้กำลัง (Bounded Exponent Policy)**:
