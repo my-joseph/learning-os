@@ -27,6 +27,7 @@ Read `rules/00_core.md` §5–§7, `rules/03_stem.md`, `rules/06_template_contra
 ```
 
 - Use only archetypes at the requested levels. If the brief needs one that is not in the vault, stop and propose the new archetype (key, level, coreConcept, governingRelation, cognitiveTraps) to the learner first.
+- New unit (no vault yet): first check `docs/backlog.md` for engine gaps in that topic and fix or report them. Build the vault from the unit's OpenStax section per `rules/07` §4 "Curriculum Baseline": one L1–L2 archetype per learning objective first, then L3+ archetypes that go beyond the book. Cite the section in each archetype's `source`; never copy or paraphrase OpenStax exercises.
 - Default to plain prompts: state the math directly in one short sentence (e.g. "Simplify $(5 + 3i)(7 - 4i)$. Write the answer as $a + bi$.") with no story and an empty `context`. Do not wrap a computation in a made-up scenario ("in a signal demodulator, a weight is ...").
 - Use a real-world context only when the learner asks for word problems, or when the level needs the solver to build the relation from a situation (`setup: model`, usually L4–L5). The context must be physically correct (units, sign conventions, plausible magnitudes) and not in that archetype's `usedContexts`.
 - Mix forms: at most 2 diagnose-form ("which line is wrong") problems per drill, and never all L3 problems in that form.
