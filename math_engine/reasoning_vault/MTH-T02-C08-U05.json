@@ -1,0 +1,87 @@
+{
+  "unitCode": "MTH-T02-C08-U05",
+  "topicTitle": "Solving Trigonometric Equations",
+  "description": "Reasoning vault for solving trigonometric equations, aligned with OpenStax Algebra and Trigonometry 2e Section 9.5 (fundamental identities, quadratic-in-form equations, multiple-angle equations, squaring with extraneous-root checking, and periodic applications).",
+  "archetypes": [
+    {
+      "archetypeKey": "t02-c08-u05-identity-quadratic-form-flaw",
+      "level": 3,
+      "name": "Rewriting Mixed-Function Trigonometric Equations via Identities (Find-the-Flaw)",
+      "source": "OpenStax Algebra and Trigonometry 2e §9.5 — Solving Trigonometric Equations Using Fundamental Identities & Quadratic in Form",
+      "coreConcept": "To solve an equation mixing trigonometric functions or double angles (such as cos(2x) with sin x, or sin^2 x with cos x), substitute a fundamental Pythagorean or double-angle identity so the expression depends on a single trigonometric function in quadratic form before factoring. L3 problem form: show a worked solution that makes a listed identity or sign mistake; the prompt shows the work as 'Line N: $...$' lines and the learner picks the first wrong line (answerSpec choice with verify.flaw; asking for the simplified expression lets the learner just recompute, 06 §2.3).",
+      "mentalModel": "Translating a multi-function trigonometric expression into a single-variable quadratic without breaking algebraic equivalence.",
+      "governingRelation": "\\sin^2\\theta + \\cos^2\\theta = 1,\\quad \\cos(2\\theta) = 1 - 2\\sin^2\\theta = 2\\cos^2\\theta - 1",
+      "cognitiveTraps": [
+        "t02-c08-u05-double-angle-sign-reversal-trap",
+        "t02-c08-u05-pythagorean-identity-addition-trap",
+        "t02-c08-u05-double-angle-linearity-trap"
+      ],
+      "versatileDomains": [
+        "ac_harmonic_waveform_simplification",
+        "mechanical_oscillation_phase_check",
+        "optical_polarization_intensity_analysis"
+      ],
+      "usedContexts": []
+    },
+    {
+      "archetypeKey": "t02-c08-u05-quadratic-identity-interval-solve",
+      "level": 3,
+      "name": "Solving Quadratic-Form & Identity Trigonometric Equations on [0, 2pi)",
+      "source": "OpenStax Algebra and Trigonometry 2e §9.5 — Solving Trigonometric Equations That Are Quadratic in Form, Using Fundamental Identities, and Multiple Angles",
+      "coreConcept": "Choose an appropriate Pythagorean or double-angle identity to convert a trigonometric equation into a single function, solve the resulting quadratic by factoring, discard any trigonometric ratio outside [-1, 1] (or outside the function's domain), and find every exact solution in [0, 2pi) using reference angles and quadrant signs.",
+      "mentalModel": "Projecting valid algebraic factor roots onto the unit circle to collect every quadrant solution within one full 2pi interval.",
+      "governingRelation": "a\\,f(\\theta)^2 + b\\,f(\\theta) + c = 0,\\quad \\theta \\in [0, 2\\pi),\\quad |\\sin\\theta|,|\\cos\\theta| \\le 1",
+      "cognitiveTraps": [
+        "t02-c08-u05-principal-angle-only-trap",
+        "t02-c08-u05-wrong-quadrant-reflection-trap",
+        "t02-c08-u05-out-of-range-trig-root-trap"
+      ],
+      "versatileDomains": [
+        "standing_wave_node_positions",
+        "phase_locked_loop_zero_crossings",
+        "orbital_inclination_resonance_angles"
+      ],
+      "usedContexts": []
+    },
+    {
+      "archetypeKey": "t02-c08-u05-squaring-extraneous-root-synthesis",
+      "level": 4,
+      "name": "Coupled Trigonometric Modeling via Squaring and Extraneous-Root Filtering",
+      "source": "OpenStax Algebra and Trigonometry 2e §9.5 — Solving Trigonometric Equations Using Fundamental Identities (with squaring and extraneous-solution checking)",
+      "coreConcept": "When combining two geometric, vector, or waveform relations produces an equation linking distinct trigonometric functions linearly (such as a*sin(theta) + b*cos(theta) = c), isolate or rearrange terms, square both sides, apply a Pythagorean identity to find candidate angles, and substitute every candidate back into the original unsquared equation to discard extraneous solutions introduced by squaring.",
+      "mentalModel": "Squaring expands the solution set by erasing relative signs; only candidates that survive substitution into the original signed equation are valid.",
+      "governingRelation": "A(\\theta) = B(\\theta) \\implies A(\\theta)^2 = B(\\theta)^2,\\quad \\text{verify } A(\\theta_k) = B(\\theta_k)",
+      "cognitiveTraps": [
+        "t02-c08-u05-keep-extraneous-squared-root-trap",
+        "t02-c08-u05-naive-termwise-squaring-trap",
+        "t02-c08-u05-wrong-pythagorean-conversion-trap"
+      ],
+      "versatileDomains": [
+        "phased_array_beam_nulling",
+        "robotic_arm_line_intersection",
+        "two_source_wave_superposition"
+      ],
+      "usedContexts": []
+    },
+    {
+      "archetypeKey": "t02-c08-u05-periodic-threshold-modeling",
+      "level": 4,
+      "name": "Periodic Sinusoidal Modeling and Threshold-Crossing Duration",
+      "source": "OpenStax Algebra and Trigonometry 2e §9.5 — Solving Trigonometric Equations with Multiple Angles & Real-World Applications",
+      "coreConcept": "Construct a sinusoidal model y(t) = A*trig(2*pi*t/T) + D from physical bounds (minimum, maximum, period T, and initial state at t = 0), combine it with a threshold or clearance target y(t) = y_target, solve the resulting multiple-angle trigonometric equation over one cycle, and verify which sub-interval satisfies the directional inequality (above vs below threshold) to find the crossing time or active duration.",
+      "mentalModel": "Translating cyclic bounds into a sinusoidal curve, intersecting it with a threshold level, and identifying the active phase interval within one period.",
+      "governingRelation": "y(t) = D \\pm A\\cos\\!\\left(\\frac{2\\pi}{T}t\\right),\\quad A = \\frac{y_{\\max} - y_{\\min}}{2},\\quad D = \\frac{y_{\\max} + y_{\\min}}{2}",
+      "cognitiveTraps": [
+        "t02-c08-u05-amplitude-as-max-value-trap",
+        "t02-c08-u05-angular-frequency-period-confusion-trap",
+        "t02-c08-u05-complement-interval-duration-trap"
+      ],
+      "versatileDomains": [
+        "harbor_tidal_channel_clearance",
+        "ferris_wheel_viewing_window",
+        "thermal_chamber_cycle_compliance"
+      ],
+      "usedContexts": []
+    }
+  ]
+}
