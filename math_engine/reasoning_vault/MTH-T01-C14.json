@@ -107,7 +107,7 @@
       "archetypeKey": "c14-parallel-lines-equal-slope",
       "level": 3,
       "name": "Parallel Lines and Slope Equality Invariant",
-      "coreConcept": "Two non-vertical lines are parallel if and only if they have equal slopes: m1 = m2.",
+      "coreConcept": "Two non-vertical lines are parallel if and only if they have equal slopes: m1 = m2. L3 problem form: show a worked solution that makes the mistake 'parallel negative reciprocal (tag `c14-parallel-negative-reciprocal-trap`)'; the learner finds the faulty step and gives the correct result.",
       "mentalModel": "Equidistant trajectories maintaining constant separation indefinitely.",
       "governingRelation": "L_1 \\parallel L_2 \\iff m_1 = m_2",
       "cognitiveTraps": [
@@ -127,7 +127,7 @@
       "archetypeKey": "c14-midpoint-coordinate-formula",
       "level": 3,
       "name": "Midpoint Coordinates of Line Segments",
-      "coreConcept": "The midpoint coordinate is the arithmetic mean of endpoint coordinates: ((x1 + x2)/2, (y1 + y2)/2).",
+      "coreConcept": "The midpoint coordinate is the arithmetic mean of endpoint coordinates: ((x1 + x2)/2, (y1 + y2)/2). L3 problem form: show a worked solution that makes the mistake 'subtract coordinates for midpoint (tag `c14-subtract-coordinates-for-midpoint-trap`)'; the learner finds the faulty step and gives the correct result.",
       "mentalModel": "Equilibrium center of mass of two coordinate endpoints.",
       "governingRelation": "M = \\left(\\frac{x_1 + x_2}{2}, \\frac{y_1 + y_2}{2}\\right)",
       "cognitiveTraps": [
@@ -147,7 +147,7 @@
       "archetypeKey": "c14-perpendicular-lines-negative-reciprocal",
       "level": 3,
       "name": "Perpendicular Lines and Orthogonal Slopes",
-      "coreConcept": "Two non-vertical lines are perpendicular if and only if their slopes multiply to -1: m1 * m2 = -1.",
+      "coreConcept": "Two non-vertical lines are perpendicular if and only if their slopes multiply to -1: m1 * m2 = -1. L3 problem form: show a worked solution that makes the mistake 'forgot negative sign inversion (tag `c14-forgot-negative-sign-inversion-trap`)'; the learner finds the faulty step and gives the correct result.",
       "mentalModel": "Quarter-turn rotation (90 degrees) flipping and inverting rise and run.",
       "governingRelation": "L_1 \\perp L_2 \\iff m_1 \\cdot m_2 = -1",
       "cognitiveTraps": [
@@ -166,13 +166,14 @@
     {
       "archetypeKey": "c14-linear-cost-graph-modeling",
       "level": 4,
-      "name": "Applied Linear Cost Modeling and Slope Interpretation",
-      "coreConcept": "Interpret the physical meaning of slope as marginal cost and y-intercept as fixed operational overhead in empirical cost models.",
-      "mentalModel": "Linear fiscal trajectory composed of fixed base plus variable activity cost.",
-      "governingRelation": "C(x) = mx + b \\implies m = \\frac{\\Delta C}{\\Delta x}",
+      "name": "Two-Vendor Linear Cost Break-Even Modeling",
+      "coreConcept": "Each of two vendors is described by two (quantity, cost) points. Build each line (slope = marginal cost, intercept = fixed cost), find their intersection (the break-even quantity), and use it to choose the cheaper vendor for a given order size.",
+      "mentalModel": "Two empirical lines; their intersection splits the decision space.",
+      "governingRelation": "m_i = \\frac{\\Delta C_i}{\\Delta x},\\ b_i = C_i - m_i x_i,\\quad m_1 x + b_1 = m_2 x + b_2",
       "cognitiveTraps": [
         "c14-marginal-cost-fixed-overhead-swap-trap",
-        "c14-average-cost-instead-of-marginal-trap"
+        "c14-average-cost-instead-of-marginal-trap",
+        "c14-compare-slopes-only-trap"
       ],
       "versatileDomains": [
         "commercial_fleet_mileage_cost",
@@ -186,13 +187,14 @@
     {
       "archetypeKey": "c14-coordinate-distance-area-synthesis",
       "level": 4,
-      "name": "Cartesian Coordinate Area and Dimension Synthesis",
-      "coreConcept": "Synthesize coordinate differences to determine dimensional lengths and calculate enclosed polygonal area on a coordinate grid.",
-      "mentalModel": "Mapping Cartesian boundary deltas into planar surface area.",
-      "governingRelation": "A = \\Delta x \\cdot \\Delta y = (x_2 - x_1)(y_2 - y_1)",
+      "name": "Unknown Vertex from a Target Triangle Area",
+      "coreConcept": "Two vertices of a triangle are fixed on the coordinate grid and the third lies on a given horizontal or vertical line. The area is given. The base length and the distance to the line give an absolute-value equation for the unknown coordinate, which has two solutions; both must be reported (or the one that satisfies an extra condition).",
+      "mentalModel": "Area target -> height -> absolute-value equation with two cases.",
+      "governingRelation": "\\tfrac12 \\cdot b \\cdot |y - y_0| = A \\implies y = y_0 \\pm \\frac{2A}{b}",
       "cognitiveTraps": [
         "c14-coordinate-delta-sum-instead-of-diff-trap",
-        "c14-semi-perimeter-instead-of-area-trap"
+        "c14-semi-perimeter-instead-of-area-trap",
+        "c14-single-case-absolute-value-trap"
       ],
       "versatileDomains": [
         "solar_farm_boundary_acreage",

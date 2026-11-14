@@ -292,13 +292,14 @@
     {
       "archetypeKey": "c12-composite-geometric-area-modeling",
       "level": 4,
-      "name": "Composite Geometric Area Partition and Synthesis",
-      "coreConcept": "Decompose complex geometric shapes into elementary non-overlapping regions and sum their areas.",
-      "mentalModel": "Modular sub-assembly of architectural blueprints.",
-      "governingRelation": "A_{\\text{total}} = L \\cdot W + \\frac{1}{2} b h",
+      "name": "Composite Facade Area with Pythagorean Gable and Cut-Out",
+      "coreConcept": "A facade is a rectangle topped by an isosceles triangular gable whose height is not given, only the rafter (slant) length. Pythagoras on half the base gives the gable height, which feeds the triangle area; the area of a circular window is then subtracted.",
+      "mentalModel": "Derived dimension (gable height) feeds a composite add-and-subtract area model.",
+      "governingRelation": "h = \\sqrt{s^2 - \\left(\\frac{W}{2}\\right)^2},\\quad A = L W + \\tfrac12 W h - \\pi \\rho^2",
       "cognitiveTraps": [
         "c12-omitted-subregion-area-trap",
-        "c12-shared-boundary-double-count-trap"
+        "c12-shared-boundary-double-count-trap",
+        "c12-rafter-as-height-trap"
       ],
       "versatileDomains": [
         "building_gable_facade",
@@ -324,13 +325,14 @@
     {
       "archetypeKey": "c12-applied-cylindrical-surface-coating-synthesis",
       "level": 4,
-      "name": "Cylindrical Lateral Surface Area Modeling",
-      "coreConcept": "The lateral surface area of a cylinder unrolls into a rectangle of length 2*pi*r and height h: A_lat = 2*pi*r*h.",
-      "mentalModel": "Unrolling a cylindrical soup can label onto a flat table.",
-      "governingRelation": "A_{\\text{lat}} = 2\\pi r h",
+      "name": "Capacity-to-Coating Cylindrical Surface Modeling",
+      "coreConcept": "A cylindrical tank is specified by its capacity and height, not its radius. Back-solving V = pi r^2 h gives the radius, which feeds the lateral area 2 pi r h; the area then sets the number of paint cans (rounded up).",
+      "mentalModel": "Reverse-solve one formula (volume) to obtain the input of a second (lateral area).",
+      "governingRelation": "r = \\sqrt{\\frac{V}{\\pi h}},\\quad A_{\\text{lat}} = 2\\pi r h,\\quad n = \\left\\lceil \\frac{A_{\\text{lat}}}{c} \\right\\rceil",
       "cognitiveTraps": [
         "c12-omitted-circumference-factor-trap",
-        "c12-area-square-radius-confusion-trap"
+        "c12-area-square-radius-confusion-trap",
+        "c12-volume-as-area-trap"
       ],
       "versatileDomains": [
         "water_tower_protective_coating",
@@ -446,13 +448,14 @@
     {
       "archetypeKey": "c12-pythagorean-geometric-distance-synthesis",
       "level": 4,
-      "name": "Pythagorean Theorem for Spatial Incline and Diagonal Synthesis",
-      "coreConcept": "Compute inclined spatial distance and hypotenuse lengths across orthogonal geometric structures: d = sqrt(run^2 + rise^2).",
-      "mentalModel": "Direct Euclidean diagonal spanning perpendicular coordinates.",
-      "governingRelation": "d = \\sqrt{a^2 + b^2}",
+      "name": "Slope-Limited Ramp Run and Length Synthesis",
+      "coreConcept": "An access ramp must not be steeper than 1:k. The slope ratio turns the required rise into a minimum horizontal run, which then feeds Pythagoras for the ramp surface length; the run is finally checked against the available space.",
+      "mentalModel": "A ratio constraint produces a leg that feeds a right-triangle hypotenuse.",
+      "governingRelation": "\\text{run} = k \\cdot \\text{rise},\\quad d = \\sqrt{\\text{run}^2 + \\text{rise}^2}",
       "cognitiveTraps": [
         "c12-linear-distance-sum-trap",
-        "c12-hypotenuse-square-omission-trap"
+        "c12-hypotenuse-square-omission-trap",
+        "c12-ratio-as-length-trap"
       ],
       "versatileDomains": [
         "warehouse_mezzanine_ramp",
@@ -467,13 +470,14 @@
     {
       "archetypeKey": "c12-annulus-shaded-region-synthesis",
       "level": 4,
-      "name": "Concentric Annular Region Area Modeling",
-      "coreConcept": "Calculate the surface area of a circular ring by subtracting inner concentric circle area from outer circle area: A = pi*(R^2 - r^2).",
-      "mentalModel": "Punching out a smaller circular core from a larger circular disk.",
-      "governingRelation": "A = \\pi (R^2 - r^2)",
+      "name": "Budget-Limited Annular Path Width",
+      "coreConcept": "A ring-shaped path of uniform width will surround a circle of radius r. The paving budget and the price per square meter fix the largest path area; back-solving the annulus area gives the outer radius, and the path width is R - r (rounded down to the stated precision so the budget is not exceeded).",
+      "mentalModel": "Budget -> area (rate) -> outer radius (inverse annulus formula) -> width.",
+      "governingRelation": "A = \\frac{\\text{budget}}{\\text{price}},\\quad R = \\sqrt{r^2 + \\frac{A}{\\pi}},\\quad w = R - r",
       "cognitiveTraps": [
         "c12-square-of-difference-annulus-trap",
-        "c12-linear-radius-difference-trap"
+        "c12-linear-radius-difference-trap",
+        "c12-width-from-area-difference-trap"
       ],
       "versatileDomains": [
         "turbofan_nacelle_duct",
@@ -487,13 +491,14 @@
     {
       "archetypeKey": "c12-composite-silo-volume-synthesis",
       "level": 4,
-      "name": "Composite Multi-Solid Storage Volume Synthesis",
-      "coreConcept": "Synthesize total 3D storage volume by summing distinct geometric solid sections with shared boundary dimensions: V = V_cyl + V_cone.",
-      "mentalModel": "Modular vertical stacking of standard Euclidean solid bodies.",
-      "governingRelation": "V_{\\text{total}} = \\pi r^2 h_1 + \\frac{1}{3}\\pi r^2 h_2",
+      "name": "Composite Silo Volume with Slant-Defined Cone Roof",
+      "coreConcept": "A silo is a cylinder with a conical roof; the roof is given by its slant length, not its height. Pythagoras gives the cone height, which feeds the composite volume V = V_cyl + V_cone (or, given the total capacity, back-solve the cylinder height).",
+      "mentalModel": "A derived height (from the slant) feeds the sum of two solid volumes.",
+      "governingRelation": "h_2 = \\sqrt{s^2 - r^2},\\quad V = \\pi r^2 h_1 + \\tfrac13 \\pi r^2 h_2",
       "cognitiveTraps": [
         "c12-cone-cap-volume-omission-trap",
-        "c12-double-count-junction-area-trap"
+        "c12-double-count-junction-area-trap",
+        "c12-slant-as-cone-height-trap"
       ],
       "versatileDomains": [
         "agricultural_feed_silo",

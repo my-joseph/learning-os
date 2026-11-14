@@ -167,7 +167,7 @@
       "archetypeKey": "c05-fraction-to-decimal-conversion",
       "level": 3,
       "name": "Rational Fraction to Terminating Decimal Conversion (การแปลงเศษส่วนเป็นทศนิยม)",
-      "coreConcept": "Dividing numerator by denominator via decimal long division converts rational fractions into terminating decimals.",
+      "coreConcept": "Dividing numerator by denominator via decimal long division converts rational fractions into terminating decimals. L3 problem form: show a worked solution that makes the mistake 'Misplacing decimal point scale by a power of 10 during division (tag `c05-fraction-decimal-inversion-trap`)'; the learner finds the faulty step and gives the correct result.",
       "mentalModel": [
         "1. Set numerator as dividend and denominator as divisor.",
         "2. Append decimal point and trailing zeros to dividend.",
@@ -262,19 +262,25 @@
     {
       "archetypeKey": "c05-constrained-multi-tier-decimal-utility-tariff",
       "level": 4,
-      "name": "Multi-Tier Stepped Decimal Utility Tariff Model (แบบจำลองอัตราก้าวหน้าค่าน้ำค่าไฟทศนิยม)",
-      "coreConcept": "Evaluating compound piecewise billing functions where consumption up to threshold is billed at base rate and excess at premium rate.",
+      "name": "Tiered Tariff Reverse Solve with Tier Check (การย้อนหาปริมาณการใช้จากบิลแบบอัตราก้าวหน้า)",
+      "coreConcept": "Given only the bill under a two-tier tariff (base rate up to a threshold, premium rate above it), find the consumption. First decide which tier the bill reaches by comparing it with the cost of the full base tier; then solve the matching piece of the piecewise cost function and confirm the result lies in that tier.",
       "mentalModel": [
-        "1. Compute cost for base tier: threshold * base_rate.",
-        "2. Compute excess volume: total_usage - threshold.",
-        "3. Multiply excess volume by premium rate and sum tier costs."
+        "1. Cost of the full base tier: threshold * base_rate.",
+        "2. If the bill is at most that cost, usage = bill / base_rate.",
+        "3. Otherwise excess = (bill - threshold * base_rate) / premium_rate and usage = threshold + excess.",
+        "4. Check the usage lies in the tier that was assumed."
       ],
-      "governingRelation": "Cost = base_rate * threshold + premium_rate * (total - threshold)",
+      "governingRelation": "\\text{usage} = \\begin{cases} \\dfrac{\\text{bill}}{b} & \\text{bill} \\le b T \\\\ T + \\dfrac{\\text{bill} - bT}{p} & \\text{bill} > bT \\end{cases}",
       "cognitiveTraps": [
         {
           "trapTag": "c05-flat-top-tier-overbilling-trap",
           "description": "Applying the top tier rate across the entire consumption volume.",
           "trapFormula": "total * premium_rate"
+        },
+        {
+          "trapTag": "c05-whole-bill-at-one-rate-trap",
+          "description": "Dividing the whole bill by a single rate instead of splitting it at the tier threshold.",
+          "trapFormula": "bill / premium_rate"
         }
       ],
       "versatileDomains": [
@@ -294,19 +300,25 @@
     {
       "archetypeKey": "c05-decimal-mean-weighted-sensor-fusion",
       "level": 4,
-      "name": "Weighted Decimal Arithmetic Mean Sensor Fusion (ค่าเฉลี่ยถ่วงน้ำหนักทศนิยมของการตรวจวัดเซนเซอร์)",
-      "coreConcept": "Back-calculating a target observation required to achieve a specified overall arithmetic mean: x_N = N * mean - sum(existing).",
+      "name": "Outlier-Filtered Decimal Mean Back-Solve (การกรองค่าผิดปกติแล้วย้อนหาค่าที่ต้องการของค่าเฉลี่ย)",
+      "coreConcept": "Sensor readings already logged are screened first: any reading farther than a tolerance from their median is rejected. The filter applies only to the logged readings, never to the reading being solved for. The count and sum of the kept readings then feed a back-solve for the next reading that makes the mean of the kept readings plus the new one equal the target.",
       "mentalModel": [
-        "1. Calculate total required sum: N * target_mean.",
-        "2. Sum existing observations: sum(x_1 ... x_{N-1}).",
-        "3. Subtract existing sum from required sum to find target observation."
+        "1. Sort the logged readings and find their median.",
+        "2. Reject logged readings with |x_i - median| > tolerance; count the kept readings n.",
+        "3. Required total = (n + 1) * target_mean.",
+        "4. Next reading = required total - sum of kept readings."
       ],
-      "governingRelation": "x_N = N * target_mean - sum(existing)",
+      "governingRelation": "x_{\\text{new}} = (n+1)\\,\\bar{x}^{*} - \\sum_{|x_i - \\tilde{x}| \\le \\tau} x_i",
       "cognitiveTraps": [
         {
           "trapTag": "c05-mean-sum-divisor-neglect",
           "description": "Subtracting an incomplete subset of observations from target sum.",
           "trapFormula": "N * target_mean - sum(partial_existing)"
+        },
+        {
+          "trapTag": "c05-outlier-kept-in-sum-trap",
+          "description": "Back-solving with every reading, including the rejected outlier, in the sum and count.",
+          "trapFormula": "(N + 1) * target_mean - sum(all_readings)"
         }
       ],
       "versatileDomains": [

@@ -262,19 +262,25 @@
     {
       "archetypeKey": "c07-constrained-three-way-mixture-proportion",
       "level": 4,
-      "name": "Three-Way Constrained Mixture Proportion (การจัดสัดส่วนผสมสามตัวแปรตามเงื่อนไข)",
-      "coreConcept": "Distributing a fixed total quantity among three components under a compound ratio a:b:c.",
+      "name": "Limiting-Component Three-Way Mixture Proportion (สัดส่วนผสมสามส่วนที่มีวัตถุดิบจำกัด)",
+      "coreConcept": "A mix needs components in the ratio a:b:c, but each component has a limited stock S_i. The limiting component (smallest S_i / p_i) sets the largest batch; that batch size then determines how much of each component is used and how much of the others is left over.",
       "mentalModel": [
-        "1. Sum total ratio parts: S = a + b + c.",
-        "2. Determine unit scale value: u = Total / S.",
-        "3. Calculate individual component masses and verify total sum matches."
+        "1. For each component, compute the number of ratio units its stock allows: S_i / p_i.",
+        "2. The smallest value is the limiting component and sets the unit size u.",
+        "3. Largest batch = u * (a + b + c).",
+        "4. Used amounts = u * p_i; leftovers = S_i - u * p_i."
       ],
-      "governingRelation": "X = Total * (a / (a + b + c))",
+      "governingRelation": "u = \\min_i \\frac{S_i}{p_i},\\quad T_{\\max} = u\\,(a+b+c),\\quad \\text{left}_i = S_i - u\\,p_i",
       "cognitiveTraps": [
         {
           "trapTag": "c07-two-way-sum-denominator-omission",
           "description": "Omitting the third ratio term when summing denominator parts.",
           "trapFormula": "Total * (a / (a + b))"
+        },
+        {
+          "trapTag": "c07-largest-stock-limits-trap",
+          "description": "Taking the component with the smallest stock (not the smallest stock-per-part) as the limit.",
+          "trapFormula": "min(S_i) * (a + b + c) / p_min"
         }
       ],
       "versatileDomains": [
@@ -294,19 +300,25 @@
     {
       "archetypeKey": "c07-gear-train-transmission-ratio-synthesis",
       "level": 4,
-      "name": "Compound Transmission Speed Ratio Synthesis (การคำนวณอัตราทดเกียร์และรอบหมุน)",
-      "coreConcept": "Meshed gear tooth counts and rotational speeds adhere to angular velocity invariance: N_1 * omega_1 = N_2 * omega_2.",
+      "name": "Compound Gear Train Design for a Target Output Speed (การเลือกเฟืองในชุดเกียร์ผสมให้ได้ความเร็วเป้าหมาย)",
+      "coreConcept": "In a compound gear train (gears 2 and 3 share a shaft), the first mesh is fixed. Choose the output gear from a given set of tooth counts so that the output speed is as close as possible to a target without exceeding it, then give the resulting speed. The shared-shaft speed from the first mesh feeds every candidate for the second mesh.",
       "mentalModel": [
-        "1. State conservation of linear tooth velocity: N_1 * omega_1 = N_2 * omega_2.",
-        "2. Substitute tooth counts and input rotational speed.",
-        "3. Divide product by output gear tooth count to isolate output speed."
+        "1. First mesh: omega_2 = omega_1 * N_1 / N_2; the shared shaft gives omega_3 = omega_2.",
+        "2. For each candidate N_4, compute omega_4 = omega_3 * N_3 / N_4.",
+        "3. Keep the candidates with omega_4 <= target and choose the one closest to it.",
+        "4. Report the chosen tooth count and its output speed."
       ],
-      "governingRelation": "omega_2 = (N_1 * omega_1) / N_2",
+      "governingRelation": "\\omega_4 = \\omega_1 \\frac{N_1}{N_2}\\cdot\\frac{N_3}{N_4},\\quad N_4^{*} = \\arg\\min_{\\omega_4 \\le \\omega_{\\text{target}}} (\\omega_{\\text{target}} - \\omega_4)",
       "cognitiveTraps": [
         {
           "trapTag": "c07-transmission-ratio-inversion-trap",
           "description": "Multiplying by output tooth count and dividing by input tooth count.",
           "trapFormula": "(N_2 * omega_1) / N_1"
+        },
+        {
+          "trapTag": "c07-compound-ratio-added-trap",
+          "description": "Adding the two mesh ratios instead of multiplying them.",
+          "trapFormula": "omega_1 * (N_1 / N_2 + N_3 / N_4)"
         }
       ],
       "versatileDomains": [

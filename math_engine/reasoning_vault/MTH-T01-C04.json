@@ -167,7 +167,7 @@
       "archetypeKey": "c04-mixed-number-regrouping-subtraction",
       "level": 3,
       "name": "Mixed Number Subtraction with Denominator Regrouping (การลบจำนวนคละแบบกระจายหน่วย)",
-      "coreConcept": "Subtracting fractional values requiring decomposition of whole integer units into equivalent fractional parts.",
+      "coreConcept": "Subtracting fractional values requiring decomposition of whole integer units into equivalent fractional parts. L3 problem form: show a worked solution that makes the mistake 'Adding instead of subtracting the fractional lengths (tag `c04-subtraction-inversion-on-regrouping`)'; the learner finds the faulty step and gives the correct result.",
       "mentalModel": [
         "1. Express measurements as improper fractions or regrouped mixed units.",
         "2. Subtract numerators over the common denominator.",
@@ -199,7 +199,7 @@
       "archetypeKey": "c04-complex-fraction-simplification",
       "level": 3,
       "name": "Complex Fraction Compound Reduction (การลดรูปเศษส่วนซ้อน)",
-      "coreConcept": "Simplifying rational expressions where both numerator and denominator contain fractions: (a/b) / (c/d) = (ad) / (bc).",
+      "coreConcept": "Simplifying rational expressions where both numerator and denominator contain fractions: (a/b) / (c/d) = (ad) / (bc). L3 problem form: show a worked solution that makes the mistake 'Multiplying directly without inverting the denominator fraction (tag `c04-nested-fraction-inversion-slip`)'; the learner finds the faulty step and gives the correct result.",
       "mentalModel": [
         "1. Identify the primary division bar separating numerator and denominator fractions.",
         "2. Multiply the numerator fraction by the reciprocal of the denominator fraction.",
