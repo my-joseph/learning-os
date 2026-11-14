@@ -6,8 +6,8 @@
   "problems": [
     {
       "id": "Q01",
-      "level": 4,
-      "category": "Interleaved Synthesis",
+      "level": 3,
+      "category": "Trap & Edge Case",
       "archetype": "problem-solving",
       "archetypeKey": "c12-composite-geometric-area-modeling",
       "context": "chapel_front_wall_cladding",
@@ -148,7 +148,7 @@
         },
         "G2": {
           "passed": true,
-          "level": 4,
+          "level": 3,
           "stepCount": 13,
           "hasTrapOrFlaw": true,
           "skill": null,
@@ -175,12 +175,12 @@
         "verificationLevel": "partial",
         "weakDistractors": 0
       },
-      "levelLabel": "Level 4 - Applied Synthesis"
+      "levelLabel": "Level 3 - Trap & Diagnostic"
     },
     {
       "id": "Q02",
-      "level": 4,
-      "category": "Interleaved Synthesis",
+      "level": 3,
+      "category": "Trap & Edge Case",
       "archetype": "problem-solving",
       "archetypeKey": "c12-applied-cylindrical-surface-coating-synthesis",
       "context": "rooftop_rainwater_cistern_paint",
@@ -295,7 +295,7 @@
         },
         "G2": {
           "passed": true,
-          "level": 4,
+          "level": 3,
           "stepCount": 8,
           "hasTrapOrFlaw": true,
           "skill": null,
@@ -322,12 +322,12 @@
         "verificationLevel": "partial",
         "weakDistractors": 0
       },
-      "levelLabel": "Level 4 - Applied Synthesis"
+      "levelLabel": "Level 3 - Trap & Diagnostic"
     },
     {
       "id": "Q03",
-      "level": 4,
-      "category": "Interleaved Synthesis",
+      "level": 3,
+      "category": "Trap & Edge Case",
       "archetype": "problem-solving",
       "archetypeKey": "c12-composite-silo-volume-synthesis",
       "context": "brewery_grain_hopper_tower",
@@ -439,7 +439,7 @@
         },
         "G2": {
           "passed": true,
-          "level": 4,
+          "level": 3,
           "stepCount": 8,
           "hasTrapOrFlaw": true,
           "skill": null,
@@ -466,7 +466,7 @@
         "verificationLevel": "partial",
         "weakDistractors": 0
       },
-      "levelLabel": "Level 4 - Applied Synthesis"
+      "levelLabel": "Level 3 - Trap & Diagnostic"
     }
   ],
   "drillId": "DRL-MTH-T01-C12-05",

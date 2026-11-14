@@ -90,7 +90,7 @@ TEMPLATES = [
 
 ### 2.3 Demand floor for AI-written L3+ problems (blind-solve tags)
 
-Goal: when the learner asks for hard problems, no problem may be solvable as direct computation or mental math. An exact level is **not** required; one level of tolerance is allowed.
+Goal: when the learner asks for hard problems, no problem may be solvable as direct computation or mental math. L4/L5 must reach their label exactly; L3 may sit one level below.
 
 **Level meaning** (aligned with published frameworks so it holds from middle school to university):
 
@@ -117,14 +117,18 @@ The verb does not set the level ("explain" or "prove" alone does not raise it); 
 
 **Mapping** (`math_engine.ai_drill_ingest.demand_level`): `invent` → L5; `model` with (`choose` or `check` ≠ none) → L4; `model`, `choose`, `check` ≠ none or `diagnose` → L3; `translate`, `reverse` or `steps` ≥ 4 → L2; otherwise L1.
 
-**Gate** (`validate_blind_solve`, every L3+ problem): `blindSolve` must hold `answer`, `ambiguous` and all six tags; the answer must match `answerSpec`; the prompt must not be ambiguous; and the mapped level must be **at least `level` − 1**. Tags that give L1 never pass as L3+.
+**Gate** (`validate_blind_solve`, every L3+ problem): `blindSolve` must hold `answer`, `ambiguous` and all six tags; the answer must match `answerSpec`; the prompt must not be ambiguous; and the mapped level must reach `level` (L3: at least L2). Tags that give L1 never pass as L3+.
+
+**No bolted-on checks.** `check = edge` must come from the problem itself (a domain, a ± case, a limit the question asks you to respect). A fits/doesn't-fit clause added only to earn it ("If it fits, report $d$; otherwise report $0$") is computation plus one comparison, not a check; the gate rejects sentinel answers like this. Ask for what the limit decides instead, e.g. the largest width within the budget.
 
 **Diagnose form (find the flaw).** An L3 diagnose problem must ask *which line is wrong*, not *what the correct value is*: a value question lets the learner just recompute, and the solver then tags it `compute` (L1). Write it like this:
 - Show the work in the prompt as `Line N: $...$` lines, one per line. `display` stays hidden until the learner asks, so it cannot hold the work.
 - Use `answerSpec` `{"type": "choice", "options": [{"id": "1", "label": "Line 1"}, ...], "correct": "<first wrong line>"}`.
 - Put `verify.flaw` = `{"values": [value of each line], "firstWrong": k}`.
 - `trapDerivation`/`trapValue` are the tagged mistake's result, and the last shown line must equal `trapValue`.
-- Options after the flaw carry `trapTag` = `commonTrapTag`. Options before it carry a `provenance` note.
+- Show at least 4 lines, and make the error something the learner has to find, not the only step.
+- "Wrong" means the line's **value** differs from the problem's value (`verify.flaw` checks values). A method error must change the value on the line where it happens: multiplying top and bottom by $(3+4i)$ instead of the conjugate leaves the value unchanged, so write the wrong denominator ($3^2 + 4^2$) on that same line.
+- Options after the flaw carry `trapTag` = `commonTrapTag`. Options before it carry a `provenance` note. (`flawTag` in §3 is for template problems; AI-written diagnose problems use `trapTag` only.)
 
 The shown-work lines are exempt from the givens and leak gates (`story_text` in `ai_drill_ingest`).
 
