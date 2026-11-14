@@ -72,6 +72,7 @@ class TestLevel5Synthesis(unittest.TestCase):
             "archetypeKey": "syn-c12-c09-c05-spatial-radical-metric",
             "skill": "GEO-RIGHT-TRIANGLE-LEG",
             "context": "structural_space_truss_diagonal",
+            "contextCheck": {"verdict": "ok", "note": "Space diagonal of a box frame is the real 3D Pythagorean law."},
             "prompt": "An aerospace structural truss frame has dimensions of width 6 m, length 8 m, and height 24 m. First, determine the exact space diagonal distance $d$ across the opposite corners. Next, calculate the clearance aspect ratio $\\frac{d}{7}$ and express it rounded to two decimal places.",
             "display": "d = \\sqrt{6^2 + 8^2 + 24^2}, \\quad \\text{Ratio} = \\frac{d}{7}",
             "plainText": "d = sqrt(6^2 + 8^2 + 24^2), Ratio = d / 7",
