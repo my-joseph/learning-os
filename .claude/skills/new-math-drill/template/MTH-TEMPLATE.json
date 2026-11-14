@@ -1,0 +1,46 @@
+{
+  "unitCode": "MTH-TEMPLATE",
+  "description": "Stand-in vault for the new-math-drill draft template (tests/test_skill_template.py). Not a real unit.",
+  "archetypes": [
+    {
+      "archetypeKey": "tpl-rectangle-area",
+      "level": 1,
+      "name": "Rectangle area",
+      "coreConcept": "Area of a rectangle is length times width.",
+      "governingRelation": "A = l w",
+      "cognitiveTraps": ["tpl-perimeter-instead-of-area-trap"],
+      "versatileDomains": [],
+      "usedContexts": []
+    },
+    {
+      "archetypeKey": "tpl-two-step-linear",
+      "level": 2,
+      "name": "Two-step linear equation",
+      "coreConcept": "Undo addition, then multiplication.",
+      "governingRelation": "a x + b = c",
+      "cognitiveTraps": ["tpl-wrong-inverse-operation-trap"],
+      "versatileDomains": [],
+      "usedContexts": []
+    },
+    {
+      "archetypeKey": "tpl-distribution-diagnose",
+      "level": 3,
+      "name": "Find the flaw: distribution",
+      "coreConcept": "A factor multiplies every term inside the bracket.",
+      "governingRelation": "k(a + b) = k a + k b",
+      "cognitiveTraps": ["tpl-partial-distribution-trap"],
+      "versatileDomains": [],
+      "usedContexts": []
+    },
+    {
+      "archetypeKey": "tpl-perimeter-area-system",
+      "level": 4,
+      "name": "Rectangle from perimeter and area",
+      "coreConcept": "Two relations give a quadratic; the question picks one root.",
+      "governingRelation": "2(l + w) = P, l w = A",
+      "cognitiveTraps": ["tpl-half-perimeter-as-side-trap"],
+      "versatileDomains": ["garden_plot_fencing"],
+      "usedContexts": []
+    }
+  ]
+}

@@ -134,7 +134,7 @@ The verb does not set the level ("explain" or "prove" alone does not raise it); 
 
 The shown-work lines are exempt from the givens and leak gates (`story_text` in `ai_drill_ingest`).
 
-**Stop rule:** at most one redesign per failing problem. If it still fails, show the learner both explanations (author's intent, solver's tags) in plain language and let them choose relabel or drop. Never loop.
+**Stop rule:** at most one redesign per failing problem. If it still fails, drop the problem and record it in the issue log (`rules/00_core.md` §11, kind `level`, naming the archetype) so its vault level is fixed in the next batch. Do not interrupt the learner mid-run (they study these drills and do not approve them). Never relabel, change `category`, add `constraints` or bolt on a check to make it pass.
 
 Trap tags (`commonTrapTag`) stay as metadata for diagnosis and telemetry; they do not raise the level on their own.
 
