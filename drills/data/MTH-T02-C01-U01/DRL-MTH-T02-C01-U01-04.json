@@ -12,7 +12,7 @@
       "archetypeKey": "t02-c01-u01-multiplying-complex-binomials",
       "context": "phasor_gain_stage_check",
       "verificationLevel": "partial",
-      "prompt": "A student multiplied the phasors $(2 + 3i)(4 - 2i)$ and wrote:\nLine 1: $(2 + 3i)(4 - 2i) = 8 - 4i + 12i - 6i^2$\nLine 2: $= 8 + 8i - 6$\nLine 3: $= 2 + 8i$\nWhich line is the first one that is wrong?",
+      "prompt": "A student multiplied the phasors $(2 + 3i)(4 - 2i)$ and wrote:\nLine 1: $(2 + 3i)(4 - 2i) = 8 - 4i + 12i - 6i^2$\nLine 2: $= 8 + 8i - 6i^2$\nLine 3: $= 8 + 8i - 6$\nLine 4: $= 2 + 8i$\nWhich line is the first one that is wrong?",
       "display": "(a + bi)(c + di) = (ac - bd) + (ad + bc)i",
       "plainText": "(a + b*i)*(c + d*i) = (a*c - b*d) + (a*d + b*c)*i",
       "givens": {
@@ -31,18 +31,23 @@
           },
           {
             "id": "2",
-            "label": "Line 2"
+            "label": "Line 2",
+            "provenance": "flags a correct step as the error"
           },
           {
             "id": "3",
-            "label": "Line 3",
+            "label": "Line 3"
+          },
+          {
+            "id": "4",
+            "label": "Line 4",
             "trapTag": "t02-c01-u01-positive-last-term-trap"
           }
         ],
-        "correct": "2"
+        "correct": "3"
       },
-      "answerPlain": "2",
-      "answerDisplay": "\\text{Line 2}",
+      "answerPlain": "3",
+      "answerDisplay": "\\text{Line 3}",
       "commonTrapTag": "t02-c01-u01-positive-last-term-trap",
       "trapDerivation": "(2*4 - 3*2) + (3*4 - 2*2)*I",
       "trapValue": "2 + 8*I",
@@ -52,10 +57,11 @@
         "flaw": {
           "values": [
             "8 - 4*I + 12*I - 6*I^2",
+            "8 + 8*I - 6*I^2",
             "8 + 8*I - 6",
             "2 + 8*I"
           ],
-          "firstWrong": 2
+          "firstWrong": 3
         }
       },
       "checkpointHint": "Check what each term becomes once the square of the imaginary unit is replaced",
@@ -82,16 +88,6 @@
         }
       ],
       "inputHint": "Choose a line",
-      "blindSolve": {
-        "answer": "2",
-        "ambiguous": false,
-        "setup": "given",
-        "strategy": "prescribed",
-        "check": "none",
-        "task": "diagnose",
-        "reverse": false,
-        "steps": 3
-      },
       "referenceBadges": [
         {
           "code": "MTH-T02-C01-U01",
@@ -135,7 +131,17 @@
         "verificationLevel": "partial",
         "weakDistractors": 0
       },
-      "levelLabel": "Level 3 - Trap & Diagnostic"
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "blindSolve": {
+        "answer": "3",
+        "ambiguous": false,
+        "setup": "given",
+        "strategy": "prescribed",
+        "check": "none",
+        "task": "diagnose",
+        "reverse": false,
+        "steps": 4
+      }
     },
     {
       "id": "Q02",
@@ -282,7 +288,7 @@
       "archetypeKey": "t02-c01-u01-dividing-complex-numbers",
       "context": "filter_transfer_ratio_check",
       "verificationLevel": "partial",
-      "prompt": "A filter's transfer ratio is $\\dfrac{6 + 4i}{1 - 2i}$. A student simplified it and wrote:\nLine 1: $\\dfrac{6 + 4i}{1 - 2i} = \\dfrac{6}{1} + \\dfrac{4i}{-2i}$\nLine 2: $= 6 - 2$\nLine 3: $= 4$\nWhich line is the first one that is wrong?",
+      "prompt": "A filter's transfer ratio is $\\dfrac{6 + 4i}{1 - 2i}$. A student simplified it and wrote:\nLine 1: $\\dfrac{6 + 4i}{1 - 2i} = \\dfrac{6}{1} + \\dfrac{4i}{-2i}$\nLine 2: $= 6 + \\dfrac{4}{-2}$\nLine 3: $= 6 - 2$\nLine 4: $= 4$\nWhich line is the first one that is wrong?",
       "display": "\\frac{a + bi}{c + di} = \\frac{(a + bi)(c - di)}{c^2 + d^2}",
       "plainText": "(a + b*i)/(c + d*i) = (a + b*i)*(c - d*i)/(c^2 + d^2)",
       "givens": {
@@ -307,6 +313,11 @@
             "id": "3",
             "label": "Line 3",
             "trapTag": "t02-c01-u01-divide-real-and-imag-parts-directly-trap"
+          },
+          {
+            "id": "4",
+            "label": "Line 4",
+            "trapTag": "t02-c01-u01-divide-real-and-imag-parts-directly-trap"
           }
         ],
         "correct": "1"
@@ -322,6 +333,7 @@
         "flaw": {
           "values": [
             "6/1 + 4*I/(-2*I)",
+            "6 + 4/(-2)",
             "6 - 2",
             "4"
           ],
@@ -356,16 +368,6 @@
         }
       ],
       "inputHint": "Choose a line",
-      "blindSolve": {
-        "answer": "1",
-        "ambiguous": false,
-        "setup": "given",
-        "strategy": "prescribed",
-        "check": "none",
-        "task": "diagnose",
-        "reverse": false,
-        "steps": 2
-      },
       "referenceBadges": [
         {
           "code": "MTH-T02-C01-U01",
@@ -409,7 +411,17 @@
         "verificationLevel": "partial",
         "weakDistractors": 0
       },
-      "levelLabel": "Level 3 - Trap & Diagnostic"
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "blindSolve": {
+        "answer": "1",
+        "ambiguous": false,
+        "setup": "given",
+        "strategy": "prescribed",
+        "check": "none",
+        "task": "diagnose",
+        "reverse": false,
+        "steps": 3
+      }
     },
     {
       "id": "Q04",
@@ -419,7 +431,7 @@
       "archetypeKey": "t02-c01-u01-dividing-complex-numbers",
       "context": "antenna_impedance_ratio_check",
       "verificationLevel": "partial",
-      "prompt": "An antenna engineer needs $\\dfrac{10 + 5i}{3 + 4i}$. A colleague wrote:\nLine 1: $\\dfrac{10 + 5i}{3 + 4i} = \\dfrac{(10 + 5i)(3 + 4i)}{(3 + 4i)(3 + 4i)}$\nLine 2: $= \\dfrac{30 + 40i + 15i + 20i^2}{9 + 16}$\nLine 3: $= \\dfrac{10 + 55i}{25}$\nLine 4: $= \\dfrac{2}{5} + \\dfrac{11}{5}i$\nWhich line is the first one that is wrong?",
+      "prompt": "An antenna engineer needs $\\dfrac{10 + 5i}{3 + 4i}$. A colleague wrote:\nLine 1: $\\dfrac{10 + 5i}{3 + 4i} = \\dfrac{(10 + 5i)(3 + 4i)}{3^2 + 4^2}$\nLine 2: $= \\dfrac{30 + 40i + 15i + 20i^2}{9 + 16}$\nLine 3: $= \\dfrac{10 + 55i}{25}$\nLine 4: $= \\dfrac{2}{5} + \\dfrac{11}{5}i$\nWhich line is the first one that is wrong?",
       "display": "\\frac{a + bi}{c + di} = \\frac{(a + bi)(c - di)}{c^2 + d^2}",
       "plainText": "(a + b*i)/(c + d*i) = (a + b*i)*(c - d*i)/(c^2 + d^2)",
       "givens": {
@@ -433,12 +445,12 @@
         "options": [
           {
             "id": "1",
-            "label": "Line 1",
-            "provenance": "flags a correct step as the error"
+            "label": "Line 1"
           },
           {
             "id": "2",
-            "label": "Line 2"
+            "label": "Line 2",
+            "trapTag": "t02-c01-u01-denominator-conjugate-sign-error-trap"
           },
           {
             "id": "3",
@@ -451,10 +463,10 @@
             "trapTag": "t02-c01-u01-denominator-conjugate-sign-error-trap"
           }
         ],
-        "correct": "2"
+        "correct": "1"
       },
-      "answerPlain": "2",
-      "answerDisplay": "\\text{Line 2}",
+      "answerPlain": "1",
+      "answerDisplay": "\\text{Line 1}",
       "commonTrapTag": "t02-c01-u01-denominator-conjugate-sign-error-trap",
       "trapDerivation": "(10 + 5*I)*(3 + 4*I)/(3^2 + 4^2)",
       "trapValue": "2/5 + 11*I/5",
@@ -463,26 +475,26 @@
         "trapValue": "2/5 + 11*I/5",
         "flaw": {
           "values": [
-            "(10 + 5*I)*(3 + 4*I)/((3 + 4*I)*(3 + 4*I))",
+            "(10 + 5*I)*(3 + 4*I)/(3^2 + 4^2)",
             "(30 + 40*I + 15*I + 20*I^2)/(9 + 16)",
             "(10 + 55*I)/25",
             "2/5 + 11*I/5"
           ],
-          "firstWrong": 2
+          "firstWrong": 1
         }
       },
-      "checkpointHint": "Multiplying top and bottom by the same factor is always allowed; check whether each later line still equals the line before",
+      "checkpointHint": "Check that the factor used on top is the same factor that produced the bottom; only the conjugate pair gives the sum of squares",
       "references": [
         "MTH-T02-C01-U01"
       ],
       "steps": [
         {
-          "latex": "\\frac{(10 + 5i)(3 + 4i)}{(3 + 4i)(3 + 4i)}",
-          "explain": "Line 1 is correct but unhelpful: multiplying top and bottom by the same factor keeps the value, it just does not make the denominator real."
+          "latex": "\\frac{(10 + 5i)(3 + 4i)}{3^2 + 4^2}",
+          "explain": "Line 1 is the first wrong line: the bottom is the conjugate-pair product, but the top was multiplied by the original denominator, not its conjugate."
         },
         {
-          "latex": "(3 + 4i)(3 + 4i) = -7 + 24i",
-          "explain": "Line 2 is the first wrong line: this product is not 9 + 16; only the conjugate pair gives the sum of squares."
+          "latex": "(3 + 4i)(3 - 4i) = 3^2 + 4^2",
+          "explain": "Only the conjugate pair gives the sum of squares, so the top must also be multiplied by the conjugate."
         },
         {
           "latex": "\\frac{10 + 5i}{3 + 4i} \\cdot \\frac{3 - 4i}{3 - 4i}",
@@ -499,16 +511,6 @@
         }
       ],
       "inputHint": "Choose a line",
-      "blindSolve": {
-        "answer": "2",
-        "ambiguous": false,
-        "setup": "given",
-        "strategy": "prescribed",
-        "check": "none",
-        "task": "diagnose",
-        "reverse": false,
-        "steps": 4
-      },
       "referenceBadges": [
         {
           "code": "MTH-T02-C01-U01",
@@ -552,7 +554,17 @@
         "verificationLevel": "partial",
         "weakDistractors": 0
       },
-      "levelLabel": "Level 3 - Trap & Diagnostic"
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "blindSolve": {
+        "answer": "1",
+        "ambiguous": false,
+        "setup": "given",
+        "strategy": "prescribed",
+        "check": "none",
+        "task": "diagnose",
+        "reverse": false,
+        "steps": 3
+      }
     }
   ],
   "drillId": "DRL-MTH-T02-C01-U01-04",
