@@ -125,7 +125,8 @@
         "polar_cartesian_modulation"
       ],
       "usedContexts": [
-        "dsp_fourier_kernel_modulation"
+        "dsp_fourier_kernel_modulation",
+        "phasor_gain_stage_check"
       ]
     },
     {
@@ -145,7 +146,8 @@
         "signal_envelope_magnitude"
       ],
       "usedContexts": [
-        "signal_envelope_magnitude"
+        "signal_envelope_magnitude",
+        "radar_return_power_estimate"
       ]
     },
     {
@@ -165,7 +167,9 @@
         "transmission_reflection_coefficient"
       ],
       "usedContexts": [
-        "ac_admittance_inversion"
+        "ac_admittance_inversion",
+        "filter_transfer_ratio_check",
+        "antenna_impedance_ratio_check"
       ]
     },
     {

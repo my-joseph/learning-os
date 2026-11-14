@@ -309,7 +309,8 @@
       "usedContexts": [
         "building_gable_facade_area",
         "community_swimming_pool_deck_layout",
-        "intermodal_freight_cargo_diagonal"
+        "intermodal_freight_cargo_diagonal",
+        "chapel_front_wall_cladding"
       ],
       "figureBuilders": [
         {
@@ -342,7 +343,8 @@
       "usedContexts": [
         "water_tower_protective_coating",
         "subsea_pipeline_protective_coating",
-        "deep_sea_titanium_submersible_hull"
+        "deep_sea_titanium_submersible_hull",
+        "rooftop_rainwater_cistern_paint"
       ],
       "figureBuilders": [
         {
@@ -506,7 +508,8 @@
         "water_treatment_clarifier"
       ],
       "usedContexts": [
-        "agricultural_feed_silo_geometry"
+        "agricultural_feed_silo_geometry",
+        "brewery_grain_hopper_tower"
       ]
     }
   ]
