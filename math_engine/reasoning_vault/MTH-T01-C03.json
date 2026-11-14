@@ -167,7 +167,7 @@
       "archetypeKey": "c03-signed-quotient-partition",
       "level": 3,
       "name": "Signed Integer Division Partitioning (การหารจำนวนเต็มลบและเครื่องหมายผลหาร)",
-      "coreConcept": "Dividing integers with unlike signs produces a negative quotient: (-A) / B = -(A / B). L3 problem form: show a worked solution that makes the mistake 'Dropping the negative sign, producing a positive quotient (tag `c03-division-sign-inversion-trap`)'; the learner finds the faulty step and gives the correct result.",
+      "coreConcept": "Dividing integers with unlike signs produces a negative quotient: (-A) / B = -(A / B). L3 problem form: show a worked solution that makes the mistake 'Dropping the negative sign, producing a positive quotient (tag `c03-division-sign-inversion-trap`)'; the prompt shows the work as 'Line N: $...$' lines and the learner picks the first wrong line (answerSpec `choice` with `verify.flaw`; asking for the corrected value lets the learner just recompute, 06 §2.3).",
       "mentalModel": [
         "1. Divide absolute magnitudes to find base numerical quotient.",
         "2. Determine quotient sign: opposite signs yield negative.",
@@ -199,7 +199,7 @@
       "archetypeKey": "c03-signed-pemdas-hierarchical-evaluation",
       "level": 3,
       "name": "Signed Order of Operations with Nested Negatives (ลำดับการคำนวณจำนวนเต็มพร้อมวงเล็บและเครื่องหมายลบ)",
-      "coreConcept": "Operator precedence strictly governs expressions with signed values: multiplication precedes subtraction. L3 problem form: show a worked solution that makes the mistake 'Subtracting before multiplying negative factor (tag `c03-pemdas-signed-left-to-right-bias`)'; the learner finds the faulty step and gives the correct result.",
+      "coreConcept": "Operator precedence strictly governs expressions with signed values: multiplication precedes subtraction. L3 problem form: show a worked solution that makes the mistake 'Subtracting before multiplying negative factor (tag `c03-pemdas-signed-left-to-right-bias`)'; the prompt shows the work as 'Line N: $...$' lines and the learner picks the first wrong line (answerSpec `choice` with `verify.flaw`; asking for the corrected value lets the learner just recompute, 06 §2.3).",
       "mentalModel": [
         "1. Perform multiplications involving signed factors first.",
         "2. Rewrite subtraction of negative product as addition.",
@@ -231,7 +231,7 @@
       "archetypeKey": "c03-signed-expression-evaluation",
       "level": 3,
       "name": "Bivariate Signed Algebraic Expression Evaluation (การประเมินค่านิพจน์พีชคณิตจำนวนเต็มสองตัวแปร)",
-      "coreConcept": "Substituting negative values into algebraic terms requires tracking coefficient signs and double negatives. L3 problem form: show a worked solution that makes the mistake 'Failing to turn subtracting a negative product into addition (tag `c03-double-negative-coefficient-leak`)'; the learner finds the faulty step and gives the correct result.",
+      "coreConcept": "Substituting negative values into algebraic terms requires tracking coefficient signs and double negatives. L3 problem form: show a worked solution that makes the mistake 'Failing to turn subtracting a negative product into addition (tag `c03-double-negative-coefficient-leak`)'; the prompt shows the work as 'Line N: $...$' lines and the learner picks the first wrong line (answerSpec `choice` with `verify.flaw`; asking for the corrected value lets the learner just recompute, 06 §2.3).",
       "mentalModel": [
         "1. Place negative integers into variable grouping parentheses.",
         "2. Multiply coefficients by signed inputs.",

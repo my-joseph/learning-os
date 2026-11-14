@@ -127,7 +127,7 @@
       "archetypeKey": "c09-binomial-radical-multiplication",
       "level": 3,
       "name": "Multiplying Binomial Expressions with Radicals",
-      "coreConcept": "Expand radical binomials using distributive FOIL property: (a + sqrt(b))^2 = a^2 + 2a*sqrt(b) + b. L3 problem form: show a worked solution that makes the mistake 'freshman dream radical square (tag `c09-freshman-dream-radical-square-trap`)'; the learner finds the faulty step and gives the correct result.",
+      "coreConcept": "Expand radical binomials using distributive FOIL property: (a + sqrt(b))^2 = a^2 + 2a*sqrt(b) + b. L3 problem form: show a worked solution that makes the mistake 'freshman dream radical square (tag `c09-freshman-dream-radical-square-trap`)'; the prompt shows the work as 'Line N: $...$' lines and the learner picks the first wrong line (answerSpec `choice` with `verify.flaw`; asking for the corrected value lets the learner just recompute, 06 §2.3).",
       "mentalModel": "Four-quadrant geometric area expansion with irrational components.",
       "governingRelation": "(a + \\sqrt{b})^2 = a^2 + 2a\\sqrt{b} + b",
       "cognitiveTraps": [
@@ -147,7 +147,7 @@
       "archetypeKey": "c09-higher-index-roots",
       "level": 3,
       "name": "Evaluating Cube Roots and Higher-Index Radicals",
-      "coreConcept": "The nth root of a is the real number r such that r^n = a: cubing a real number preserves sign. L3 problem form: show a worked solution that makes the mistake 'cube root divided by three (tag `c09-cube-root-divided-by-three-trap`)'; the learner finds the faulty step and gives the correct result.",
+      "coreConcept": "The nth root of a is the real number r such that r^n = a: cubing a real number preserves sign. L3 problem form: show a worked solution that makes the mistake 'cube root divided by three (tag `c09-cube-root-divided-by-three-trap`)'; the prompt shows the work as 'Line N: $...$' lines and the learner picks the first wrong line (answerSpec `choice` with `verify.flaw`; asking for the corrected value lets the learner just recompute, 06 §2.3).",
       "mentalModel": "Three-dimensional cube edge length from cubic volume.",
       "governingRelation": "\\sqrt[3]{a} = r \\iff r^3 = a",
       "cognitiveTraps": [
