@@ -51,7 +51,31 @@ _SYMBOLS = {
     "angle": "∠",
     "circ": "°",
     "degree": "°",
+    "cup": "∪",
+    "cap": "∩",
+    "in": "∈",
+    "notin": "∉",
+    "subset": "⊂",
+    "to": "→",
+    "rightarrow": "→",
+    "Rightarrow": "⇒",
+    "iff": "⇔",
+    "emptyset": "∅",
+    "varnothing": "∅",
+    "Sigma": "Σ",
+    "Pi": "Π",
+    "Omega": "Ω",
+    "Theta": "Θ",
+    "Lambda": "Λ",
+    "Phi": "Φ",
+    "lambda": "λ",
+    "mu": "μ",
+    "sigma": "σ",
+    "phi": "φ",
+    "rho": "ρ",
+    "epsilon": "ε",
 }
+_BLACKBOARD = {"R": "ℝ", "N": "ℕ", "Z": "ℤ", "Q": "ℚ", "C": "ℂ"}
 
 
 def to_unicode(text: Any) -> str:
@@ -59,6 +83,7 @@ def to_unicode(text: Any) -> str:
     s = str(text or "").replace("\\$", "\x00").replace("$", "").replace("\x00", "$")
     s = re.sub(r"\b(sqrt|cbrt)\(", lambda m: "√(" if m.group(1) == "sqrt" else "∛(", s)
     s = re.sub(r"\^\{?\\circ\}?", "°", s)
+    s = re.sub(r"\\mathbb\{(\w)\}", lambda m: _BLACKBOARD.get(m.group(1), m.group(1)), s)
     s = re.sub(r"\\(?:text|mathrm|mathbf|operatorname)\{([^{}]*)\}", r"\1", s)
     s = re.sub(r"\\(?:bar|overline)\{([^{}]*)\}", lambda m: "".join(c + "\u0304" for c in m.group(1)), s)
     s = re.sub(r"\\sqrt\[3\]\{([^{}]*)\}", r"∛(\1)", s)
@@ -96,7 +121,7 @@ def plain(text: Any) -> str:
 MATH_FONT = "KaTeX_Main, 'Latin Modern Roman', 'STIX Two Text', 'Times New Roman', serif"
 VAR_FONT = "KaTeX_Math, 'Latin Modern Math', 'STIX Two Math', 'Times New Roman', serif"
 MATH_WORDS = {"sin", "cos", "tan", "cot", "sec", "csc", "ln", "log", "exp", "lim", "max", "min", "Re", "Im", "mod"}
-_TOKEN = re.compile(r"([A-Za-z\u0370-\u03ff]+\u0304?)|([^A-Za-z\u0370-\u03ff]+)")
+_TOKEN = re.compile(r"([A-Za-z\u0370-\u03ff]+\u0304?)|([^A-Za-z\u0370-\u03ff]+)")  # ∪ ℝ → … are non-letters: upright
 
 
 def _font_face() -> str:
@@ -139,8 +164,10 @@ def _spans(text: Any, mode: str) -> str:
             out.append(f'<tspan font-family="{MATH_FONT}" font-weight="400">{chunk}</tspan>')
         elif word in MATH_WORDS:
             out.append(f'<tspan font-family="{MATH_FONT}" font-weight="400">{chunk}</tspan>')
-        elif len(word.rstrip("\u0304")) == 1:
+        elif len(word.rstrip("\u0304")) == 1 and not ("\u0391" <= word[0] <= "\u03a9"):  # Δ, Σ upright, as KaTeX
             out.append(f'<tspan font-family="{VAR_FONT}" font-style="italic" font-weight="400">{chunk}</tspan>')
+        elif len(word.rstrip("\u0304")) == 1:  # capital Greek: upright, as KaTeX
+            out.append(f'<tspan font-family="{MATH_FONT}" font-weight="400">{chunk}</tspan>')
         else:
             out.append(chunk)  # prose: inherits the sans-serif font of <text>
     return "".join(out)

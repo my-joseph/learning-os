@@ -331,3 +331,11 @@ def test_refigure_redraws_in_place_and_keeps_the_caption(monkeypatch):
     assert payload["image"]["caption"] == [{"type": "text", "plain_text": "old"}]
     with pytest.raises(ValueError):
         up.refigure("U", 1, {"fn": "build_circle_figure", "args": {}}, "t", {"U": {"id": "p"}})
+
+
+def test_set_symbols_and_upright_capital_greek():
+    from math_engine.figure_svg import _spans
+
+    assert plain("(-\\infty, -1) \\cup [3, \\infty)") == "(-∞, -1) ∪ [3, ∞)"
+    assert plain("x \\in \\mathbb{R}") == "x ∈ ℝ"
+    assert _spans("\\Delta", "mixed").startswith('<tspan font-family="KaTeX_Main')  # capital Greek upright
