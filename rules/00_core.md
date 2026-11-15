@@ -131,9 +131,9 @@ Do not skip analysis and immediately generate generic content.
 
 ### 10. Version Control & Git Hygiene Protocol
 - **Strict Secrets Invariant:** Never commit `.env`, private tokens, or credential files. Ensure `.gitignore` is always active and verified before staging.
-- **Milestone Checkpoint Commits:** Create clean, semantic Git commits (`feat:`, `fix:`, `refactor:`) immediately upon completing significant batches, tool upgrades, or modular updates.
-- **Isolated Branching for Experiments:** Whenever performing experimental UI overhauls, CSS styling changes, or architecture refactoring, AI must create an isolated branch (`experiment/<feature-name>`). Never perform high-risk UI/styling experiments directly on `main`.
-- **Remote Synchronization:** Push verified commits to GitHub (`origin main`) after completing confirmed milestones so the remote repository remains a mirror of the local-first source of truth.
+- **Never commit or push on `main` (every agent, every change, however small).** Start every change on a branch (`feat/…`, `fix/…`, `docs/…`, `drill/…`): `git switch -c <branch>` before the first edit, then commit, `git push -u origin <branch>` and `gh pr create`. The learner reads the PR and says "merge"; only then is it merged on GitHub. The one exception: a PR that changes only a new drill file, its unit's vault and `id_map.json` may be merged by the agent that made it. A one-line UI fix is not an exception.
+- **Guard:** `.githooks/pre-commit` and `.githooks/pre-push` refuse commits on `main` and pushes to `main` (enabled with `git config core.hooksPath .githooks`). If a hook blocks you, create a branch; never bypass it with `--no-verify`.
+- **Semantic commits:** `feat:`, `fix:`, `refactor:`, `docs(rules):`, one logical change per commit.
 
 ### 11. Issue Log (learner studies without interruptions)
 The learner builds this system to study, not to supervise it. Mistakes are recorded and fixed in batches instead of interrupting study.
