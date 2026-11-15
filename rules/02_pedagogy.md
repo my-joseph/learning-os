@@ -88,10 +88,10 @@ Every Unit page must include a dedicated personal workspace section titled `My I
 This is the default for new and upgraded math and physics pages (§1 still allows adapting it to the material). The `start-unit` skill builds pages from it.
 
 **Unit page**
-- **Callout:** Learning Objective, Expected Output, prerequisites (`@Page`), next Unit (`@Page`), Resource (OpenStax section).
-- **1. Core Concepts & Intuition:** definitions and the mental model; a diagram for geometry, graphs, number lines or the complex plane, as a `figure` block (`rules/03` §3.1, §5). A worked example about a shape or graph shows it too.
+- **Callout:** Learning Objective, Expected Output, prerequisites (`@Page`), next Unit (`@Page`), Resource (the book's `R0xx` page as `@Page`, plus the section number). The page's `Resources` relation links the same `R0xx`.
+- **1. Core Concepts & Intuition:** definitions and the mental model, with at least one `figure` block (`rules/03` §3.1, §5) unless the unit is pure symbol manipulation: geometry, graphs, number lines, the complex plane, and **equations whose number of solutions or extraneous roots a graph explains** (a V-shaped graph against a horizontal line, `y = √x` against a line). A worked example about a shape or graph shows it too. **Page figures are decided apart from the drills:** an archetype's `figureNone` ("a graph would show the roots") protects drill answers, but a page teaches and its worked examples show answers anyway.
 - **2. Key Formulas & Decision Rules:** each formula with a collapsed toggle **"Why this works"** (3–5 lines from first principles). Add a short **"Which method when"** rule only when the Unit has two or more methods.
-- **3. Worked Examples (graduated, vertical `\begin{aligned}`):**
+- **3. Worked Examples (graduated, vertical `\begin{aligned}`):** headings `Example 1 (L1 — Direct): …`, `Example 2 (L2 — Reverse): …` or `(L2 — Translation)`, `Example 3 (L3 — Trap Contrast): …`. A longer procedure ("Multi-Step") is not L2.
   - Example 1, L1: direct procedure.
   - Example 2, L2: reverse (find an input from the result) or a short translation of a situation.
   - Example 3, L3, trap contrast: the Unit vault's most important `cognitiveTraps` entry, shown as the wrong line (❌) next to the right line (✅) with one sentence on why. Use the vault's trap, so the page and the drills teach the same trap.
@@ -111,6 +111,10 @@ This is the default for new and upgraded math and physics pages (§1 still allow
 - **6. Summary & Spaced Review Guide.**
 
 **Upgrading an existing page:** never rewrite it. Add the missing v4 parts by inserting blocks after the right heading, delete nothing, and leave section 6 untouched (`rules/00_core.md` §4).
+
+**Checking pages:** `python -m scripts.page_audit <TOPIC|CHAPTER|UNIT>` (read-only) reports every page against this structure: FAIL for a missing part, WARN for a judgement call (e.g. no figure). "Is this page up to standard?" is answered by this script, not by counting blocks.
+
+**Writing pages:** agents write learning pages only with `python -m notion_sync.unit_page` (`--mode new`, `--mode add`, `--set`; it renders and uploads figures) and drill results only through drill sync. No direct Notion API calls that create, edit or delete blocks or properties on learning pages: they bypass the guards (no rewrite, section 6 untouched). If the tool cannot do what is needed (e.g. fix the text of an existing block), log a `tool-gap` (`rules/00_core.md` §11) and leave the page as it is.
 
 ---
 

@@ -28,10 +28,10 @@ If the unit has no archetypes (or too few to cover its learning objectives), add
 ## 4. Notion page (rules/02 §7a)
 
 Read `rules/02_pedagogy.md` §6–§8 and §7a, `rules/03_stem.md` §1 (vertical derivations). Write the page as a JSON spec in `scratch/pages/<UNIT>.json` (block types and text syntax: `python -m notion_sync.unit_page --help`). Content rules:
-- Callout with Learning Objective, Expected Output, prerequisites and next unit as `[[CODE]]` mentions, and the OpenStax section as the Resource.
+- Callout with Learning Objective, Expected Output, prerequisites and next unit as `[[CODE]]` mentions, and the Resource as the book's page `[[R0xx]]` plus the section number (find the code with `grep -n OpenStax id_map.json`; Algebra and Trigonometry 2e is `R036`).
 - Every formula gets a "Why this works" toggle (3–5 lines from first principles). Add "Which method when" only if the unit has two or more methods.
-- Worked examples: L1 direct, L2 reverse (find an input from a result) or translation of a situation, not just a longer procedure, L3 trap contrast built on the unit's most important vault trap (❌ wrong line, ✅ right line, one sentence why). Derivations as `eq` blocks with `\begin{aligned}`, one transformation per line.
-- Figures: for a unit about shapes, graphs, intervals or the complex plane, section 1 has at least one `figure` block and every worked example about a shape or graph shows it (`{"type": "figure", "fn": "build_function_graph_figure", "args": {...}, "caption": "..."}`; builders and their arguments: `python -m notion_sync.unit_page --help` and `math_engine/figure_builder.py`). The dry run builds and renders every figure; the real run uploads them to Notion.
+- Worked examples, headed `Example 1 (L1 — Direct): …`, `Example 2 (L2 — Reverse): …` (or `L2 — Translation`), `Example 3 (L3 — Trap Contrast): …`: L1 direct, L2 reverse (find an input from a result) or translation of a situation, not just a longer procedure, L3 trap contrast built on the unit's most important vault trap (❌ wrong line, ✅ right line, one sentence why). Derivations as `eq` blocks with `\begin{aligned}`, one transformation per line.
+- Figures: section 1 has at least one `figure` block unless the unit is pure symbol work; this includes equation units, where a graph shows how many solutions there are or where an extraneous root comes from. Decide this apart from the archetypes' `figureNone` (that protects drill answers; the page shows its answers anyway). For a unit about shapes, graphs, intervals or the complex plane, section 1 has at least one `figure` block and every worked example about a shape or graph shows it (`{"type": "figure", "fn": "build_function_graph_figure", "args": {...}, "caption": "..."}`; builders and their arguments: `python -m notion_sync.unit_page --help` and `math_engine/figure_builder.py`). The dry run builds and renders every figure; the real run uploads them to Notion.
 - Practice Guide with the 4 categories of §8 (no exercise list); 3–4 Active Recall toggles with vertical reference solutions.
 - Section 6 "My Implementation & Mistake Log" with the three empty prompts of §7 (Feynman one-liner, my working, mistake log), and section 7 "Completion Checklist & Mastery Review".
 
@@ -42,7 +42,9 @@ Then:
 .venv/bin/python -m notion_sync.unit_page --code <UNIT> --spec scratch/pages/<UNIT>.json --mode new
 ```
 
-`--mode new` refuses a page that already has blocks. For a page with content, never rewrite it: write a spec for each missing v4 part and insert it with `--mode add --after "<heading text>"`. The tool refuses to touch "My Implementation"; never edit, move or delete the learner's notes in any other way either. If the unit's `Learning Objective` or `Expected Output` property is empty, fill it, and if `Status` is `Not started`, set `In progress`, with `--set "Name=value"` (e.g. `python -m notion_sync.unit_page --code <UNIT> --set "Learning Objective=..."`); relations such as Resources are set in Notion directly. Text syntax: `**bold**` (no `*` inside), `$math$`, `` `code` ``, `[[CODE]]` mentions; no italic. Do not change `Mastery (0-4)` (drill sync sets it from evidence).
+`--mode new` refuses a page that already has blocks. For a page with content, never rewrite it: write a spec for each missing v4 part and insert it with `--mode add --after "<heading text>"`. The tool refuses to touch "My Implementation"; never edit, move or delete the learner's notes in any other way either. Fill every empty property with `--set "Name=value"`: `Learning Objective`, `Expected Output`, `Resources` (a relation: `--set "Resources=R036"`, added to existing links), and `Status=In progress` if it is `Not started`. Never write to Notion any other way (no direct API calls; `rules/02` §7a "Writing pages"); if the tool cannot do something, log a `tool-gap`. Text syntax: `**bold**` (no `*` inside), `$math$`, `` `code` ``, `[[CODE]]` mentions; no italic. Do not change `Mastery (0-4)` (drill sync sets it from evidence).
+
+Finally run `python -m scripts.page_audit <UNIT>`: it must show no FAIL. Fix a FAIL with `--mode add`/`--set`; a WARN is your call, say what you decided in the report.
 
 ## 5. First drill
 
@@ -52,4 +54,4 @@ Run the `new-math-drill` skill for the unit code (unit-only drill, default level
 
 - Commit the new vault file on the drill's branch (or its own `drill/` branch): a PR that changes only that unit's vault file, the new drill and `id_map.json` may be merged by the agent; anything else (code, rules, other vaults) waits for the learner.
 - Log every friction item (`.venv/bin/python -m scripts.issues add ...`).
-- Report in a few lines, with no problem prompts or answers: the page (new or extended, and which sections), archetypes added, the drill ID, PR number, and issue-log IDs.
+- Report in a few lines, with no problem prompts or answers: the page (new or extended, and which sections; the `page_audit` result), archetypes added, the drill ID, PR number, and issue-log IDs.
