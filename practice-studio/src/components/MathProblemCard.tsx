@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Copy,
   Check,
@@ -20,6 +20,7 @@ import { MathBlock } from "./MathRender";
 import { FormattedText } from "./FormattedText";
 import { StepRow } from "./StepRow";
 import { MathFigure } from "./MathFigure";
+import { LineChoicePrompt, parseLineChoicePrompt } from "./LineChoicePrompt";
 
 interface MathProblemCardProps {
   problem: Problem;
@@ -136,6 +137,13 @@ export const MathProblemCard: React.FC<MathProblemCardProps> = ({
 
   const score = problem.state.score;
   const lastCheck: CheckResult | null | undefined = problem.state.lastCheck;
+  const lineChoiceData = useMemo(
+    () =>
+      problem.answerSpec.type === "choice"
+        ? parseLineChoicePrompt(problem.prompt, problem.answerSpec.options)
+        : null,
+    [problem.answerSpec.type, problem.prompt, problem.answerSpec.options]
+  );
 
   return (
     <article className="bg-white dark:bg-[#151924] border border-slate-200 dark:border-[#2c354d] rounded-2xl p-5 md:p-6 shadow-sm">
@@ -177,7 +185,15 @@ export const MathProblemCard: React.FC<MathProblemCardProps> = ({
 
       {/* Prompt */}
       <div className="text-base text-slate-800 dark:text-slate-100 mb-4 leading-relaxed">
-        <FormattedText text={problem.prompt} />
+        {lineChoiceData ? (
+          <LineChoicePrompt
+            parsed={lineChoiceData}
+            selectedValue={problem.state.userInput}
+            onSelect={onInputChange}
+          />
+        ) : (
+          <FormattedText text={problem.prompt} />
+        )}
       </div>
 
       {/* Visual Engine: Render 2D/3D Diagram, Geometry, or Cartesian Graph */}
@@ -255,34 +271,36 @@ export const MathProblemCard: React.FC<MathProblemCardProps> = ({
       {/* Workspace / Input Row */}
       <div className="flex flex-wrap gap-2.5 items-center mb-4">
         {problem.answerSpec.type === "choice" ? (
-          <div className="flex flex-wrap gap-2 w-full mb-1">
-            {problem.answerSpec.options?.map((opt) => {
-              const isSelected = problem.state.userInput === opt.id;
-              return (
-                <button
-                  key={opt.id}
-                  type="button"
-                  onClick={() => onInputChange(opt.id)}
-                  className={`min-h-[38px] px-3.5 py-2 rounded-xl border text-sm font-semibold transition-all flex items-center gap-2 ${
-                    isSelected
-                      ? "bg-indigo-600 text-white border-indigo-600 shadow-sm"
-                      : "bg-slate-50 dark:bg-[#1d2333] text-slate-800 dark:text-slate-200 border-slate-200 dark:border-[#2c354d] hover:border-indigo-400 dark:hover:border-indigo-400"
-                  }`}
-                >
-                  <span
-                    className={`inline-flex items-center justify-center w-5 h-5 rounded text-xs font-mono font-bold ${
+          !lineChoiceData && (
+            <div className="flex flex-wrap gap-2 w-full mb-1">
+              {problem.answerSpec.options?.map((opt) => {
+                const isSelected = problem.state.userInput === opt.id;
+                return (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    onClick={() => onInputChange(opt.id)}
+                    className={`min-h-[38px] px-3.5 py-2 rounded-xl border text-sm font-semibold transition-all flex items-center gap-2 ${
                       isSelected
-                        ? "bg-white/20 text-white"
-                        : "bg-white dark:bg-[#141926] text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-[#2c354d]"
+                        ? "bg-indigo-600 text-white border-indigo-600 shadow-sm"
+                        : "bg-slate-50 dark:bg-[#1d2333] text-slate-800 dark:text-slate-200 border-slate-200 dark:border-[#2c354d] hover:border-indigo-400 dark:hover:border-indigo-400"
                     }`}
                   >
-                    {opt.id}
-                  </span>
-                  <FormattedText text={opt.label} />
-                </button>
-              );
-            })}
-          </div>
+                    <span
+                      className={`inline-flex items-center justify-center w-5 h-5 rounded text-xs font-mono font-bold ${
+                        isSelected
+                          ? "bg-white/20 text-white"
+                          : "bg-white dark:bg-[#141926] text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-[#2c354d]"
+                      }`}
+                    >
+                      {opt.id}
+                    </span>
+                    <FormattedText text={opt.label} />
+                  </button>
+                );
+              })}
+            </div>
+          )
         ) : (
           <input
             type="text"
