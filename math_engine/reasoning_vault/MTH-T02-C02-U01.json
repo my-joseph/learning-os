@@ -1,0 +1,434 @@
+{
+  "unitCode": "MTH-T02-C02-U01",
+  "topicTitle": "Functions and Function Notation",
+  "description": "Reasoning vault for functions and function notation aligned with OpenStax Algebra and Trigonometry 2e §3.1: identifying functions from relations and equations, vertical line test, evaluating and solving function notation, one-to-one functions and the horizontal line test, library of toolkit functions, derivation flaw diagnosis, and constrained function modeling.",
+  "archetypes": [
+    {
+      "unitCode": "MTH-T02-C02-U01",
+      "archetypeKey": "t02-c02-u01-relation-is-function",
+      "level": 1,
+      "name": "Determining Whether a Relation Represents a Function",
+      "source": "OpenStax Algebra and Trigonometry 2e §3.1 — Determining Whether a Relation Represents a Function",
+      "coreConcept": "A relation is a function if and only if each input value x in the domain corresponds to at most one output value y. Two distinct inputs may share the same output, whereas a single input paired with two distinct outputs fails the definition.",
+      "mentalModel": "A deterministic lookup machine: feeding the same input x twice must never produce two different outputs y.",
+      "governingRelation": "\\forall x \\in D,\\; (x, y_1) \\in R \\land (x, y_2) \\in R \\implies y_1 = y_2",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c02-u01-repeated-output-mistaken-as-nonfunction-trap",
+          "description": "Rejecting a relation as a non-function because two distinct x-values map to the same y-value (confusing 'function' with 'one-to-one').",
+          "trapFormula": "(x_1, y) \\land (x_2, y) \\text{ with } x_1 \\neq x_2 \\implies \\text{not a function}"
+        },
+        {
+          "trapTag": "t02-c02-u01-repeated-input-overlooked-trap",
+          "description": "Accepting a relation with an even-power y-term (such as y^2 = x + k) or repeated x-coordinate as a function without checking whether x yields ±y.",
+          "trapFormula": "y^2 = g(x) \\implies y = +\\sqrt{g(x)} \\text{ only}"
+        }
+      ],
+      "versatileDomains": [],
+      "usedContexts": [],
+      "figureNone": "Relation given as ordered pairs, a table, or an algebraic equation to solve for y; the graphical check is covered by the separate vertical line test archetype."
+    },
+    {
+      "unitCode": "MTH-T02-C02-U01",
+      "archetypeKey": "t02-c02-u01-evaluate-function-notation",
+      "level": 1,
+      "name": "Evaluating Functions and Algebraic Inputs via Function Notation",
+      "source": "OpenStax Algebra and Trigonometry 2e §3.1 — Using Function Notation",
+      "coreConcept": "To evaluate f(a) or f(a + h), replace every occurrence of the input variable x in the rule for f(x) with the entire input expression wrapped in parentheses, then simplify according to order of operations.",
+      "mentalModel": "f( ) is an input slot, not multiplication by f: whatever sits inside the parentheses drops bodily into every x-placeholder.",
+      "governingRelation": "f(u) = \\text{rule}(x \\leftarrow (u))",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c02-u01-distribute-function-name-trap",
+          "description": "Treating f(a + b) as linear distribution f(a) + f(b) or as multiplication f * (a + b).",
+          "trapFormula": "f(a + b) = f(a) + f(b)"
+        },
+        {
+          "trapTag": "t02-c02-u01-dropped-parentheses-negative-input-trap",
+          "description": "Substituting a negative number -k into x^2 without parentheses, turning (-k)^2 into -k^2.",
+          "trapFormula": "a(-k^2) \\text{ instead of } a((-k)^2)"
+        },
+        {
+          "trapTag": "t02-c02-u01-substituted-partial-expression-trap",
+          "description": "In f(x + h), appending + h outside the squaring or linear term instead of replacing x with (x + h) everywhere.",
+          "trapFormula": "f(x + h) = f(x) + h"
+        }
+      ],
+      "versatileDomains": [],
+      "usedContexts": [],
+      "figureNone": "Algebraic substitution into a function formula; plotting the curve on a Cartesian grid would allow reading f(a) off the vertical axis."
+    },
+    {
+      "unitCode": "MTH-T02-C02-U01",
+      "archetypeKey": "t02-c02-u01-vertical-line-test",
+      "level": 1,
+      "name": "Using the Vertical Line Test to Identify Functions",
+      "source": "OpenStax Algebra and Trigonometry 2e §3.1 — Using the Vertical Line Test",
+      "coreConcept": "A graph in the xy-plane represents y as a function of x if and only if no vertical line x = c intersects the graph at more than one point.",
+      "mentalModel": "A vertical line fixes one input x = c; each intersection on that line is a distinct output y for the same input.",
+      "governingRelation": "|\\{y : (c, y) \\in G\\}| \\le 1 \\; \\forall c \\in \\mathbb{R}",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c02-u01-confused-vertical-and-horizontal-line-test-trap",
+          "description": "Using a horizontal line instead of a vertical line to test whether a graph is a function, falsely rejecting y = x^2.",
+          "trapFormula": "\\text{horizontal intersection} > 1 \\implies \\text{not a function}"
+        },
+        {
+          "trapTag": "t02-c02-u01-counted-x-intercepts-instead-of-vertical-intersections-trap",
+          "description": "Confusing multiple x-intercepts (where y = 0) with failing the vertical line test, or checking only x = 0 instead of an arbitrary vertical line x = c.",
+          "trapFormula": "\\text{multiple roots of } f(x)=0 \\implies \\text{fails VLT}"
+        },
+        {
+          "trapTag": "t02-c02-u01-repeated-input-overlooked-trap",
+          "description": "Taking only the principal positive branch y = +sqrt(g(x)) at x = c and overlooking the symmetric negative branch y = -sqrt(g(x)).",
+          "trapFormula": "y^2 = g(x) \\implies y = +\\sqrt{g(x)} \\text{ only}"
+        }
+      ],
+      "versatileDomains": [],
+      "usedContexts": [],
+      "figureBuilders": [
+        {
+          "fn": "build_function_graph_figure",
+          "args": {
+            "x_min": "x0 - 1",
+            "x_max": "c + 2",
+            "y_min": "-sqrt(c - x0) - 1.5",
+            "y_max": "sqrt(c - x0) + 1.5"
+          },
+          "labels": {
+            "expr": "sqrt(x - {x0:g})",
+            "expr2": "-sqrt(x - {x0:g})",
+            "vlines": "{c:g}",
+            "label": "y = sqrt(x - {x0:g})",
+            "label2": "y = -sqrt(x - {x0:g})"
+          },
+          "title": "Vertical Line Test"
+        },
+        {
+          "fn": "build_function_graph_figure",
+          "args": {
+            "x_min": "-r - 1",
+            "x_max": "r + 1",
+            "y_min": "-r - 1",
+            "y_max": "r + 1"
+          },
+          "labels": {
+            "expr": "sqrt({r:g}^2 - x^2)",
+            "expr2": "-sqrt({r:g}^2 - x^2)",
+            "vlines": "{c:g}",
+            "label": "y = sqrt({r:g}^2 - x^2)",
+            "label2": "y = -sqrt({r:g}^2 - x^2)"
+          },
+          "title": "Vertical Line Test: Circle"
+        },
+        {
+          "fn": "build_function_graph_figure",
+          "args": {
+            "x_min": "-abs(c) - 2",
+            "x_max": "abs(c) + 2"
+          },
+          "labels": {
+            "expr": "{a:g}*x^2 + {b:g}",
+            "vlines": "{c:g}",
+            "mark_x": "{c:g}",
+            "mark_labels": "({c:g}, ?)",
+            "label": "y = {a:g}x^2 + {b:g}"
+          },
+          "title": "Vertical Line Test"
+        }
+      ]
+    },
+    {
+      "unitCode": "MTH-T02-C02-U01",
+      "archetypeKey": "t02-c02-u01-toolkit-functions-identification",
+      "level": 1,
+      "name": "Toolkit Functions: Graphs, Properties, and Values",
+      "source": "OpenStax Algebra and Trigonometry 2e §3.1 — Graphing the Functions Listed in the Library of Functions",
+      "coreConcept": "Recognize the characteristic shapes, symmetries, domains, and asymptotes of the library of toolkit functions (constant, identity, absolute value, quadratic, cubic, reciprocal, reciprocal squared, square root, cube root) and evaluate them cleanly.",
+      "mentalModel": "Each toolkit function has an unmistakable geometric signature (V-corner for |x|, U-parabola for x^2, S-inflection for x^3, twin hyperbola branches for 1/x).",
+      "governingRelation": "f \\in \\{c,\\; x,\\; |x|,\\; x^2,\\; x^3,\\; 1/x,\\; 1/x^2,\\; \\sqrt{x},\\; \\sqrt[3]{x}\\}",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c02-u01-reciprocal-vs-reciprocal-squared-sign-trap",
+          "description": "Assuming 1/x stays positive for negative x (confusing f(x) = k/x with f(x) = k/x^2) or ignoring the sign of x.",
+          "trapFormula": "\\frac{k}{x} = \\frac{k}{|x|}"
+        },
+        {
+          "trapTag": "t02-c02-u01-absolute-value-squared-confusion-trap",
+          "description": "Squaring the input instead of taking its magnitude when evaluating a scaled absolute value toolkit function.",
+          "trapFormula": "a|x| \\text{ computed as } ax^2"
+        },
+        {
+          "trapTag": "t02-c02-u01-cube-vs-square-sign-trap",
+          "description": "Evaluating (-a)^3 as +a^3 (confusing odd cubic symmetry with even quadratic symmetry).",
+          "trapFormula": "(-a)^3 = a^3"
+        }
+      ],
+      "versatileDomains": [],
+      "usedContexts": [],
+      "figureBuilders": [
+        {
+          "fn": "build_function_graph_figure",
+          "args": {
+            "x_min": "-neg_x0 - 2",
+            "x_max": "neg_x0 + 2",
+            "y_min": "-abs(k) - 2",
+            "y_max": "abs(k) + 2"
+          },
+          "labels": {
+            "expr": "{k:g}/x",
+            "vlines": "0",
+            "mark_x": "-{neg_x0:g}",
+            "mark_labels": "(-{neg_x0:g}, ?)",
+            "label": "f(x)"
+          },
+          "title": "Reciprocal Toolkit Function"
+        },
+        {
+          "fn": "build_function_graph_figure",
+          "args": {
+            "x_min": "-abs(x0) - 2",
+            "x_max": "abs(x0) + 2",
+            "y_min": "-abs(k) - 2",
+            "y_max": "abs(k) + 2"
+          },
+          "labels": {
+            "expr": "{k:g}/x",
+            "vlines": "0",
+            "mark_x": "{x0:g}",
+            "mark_labels": "({x0:g}, ?)",
+            "label": "f(x)"
+          },
+          "title": "Reciprocal Toolkit Function"
+        },
+        {
+          "fn": "build_function_graph_figure",
+          "args": {
+            "x_min": "-4",
+            "x_max": "4",
+            "y_min": "-4",
+            "y_max": "4"
+          },
+          "labels": {
+            "expr": "{k:g}/x",
+            "vlines": "0",
+            "label": "f(x)"
+          },
+          "title": "Reciprocal Toolkit Function"
+        },
+        {
+          "fn": "build_function_graph_figure",
+          "args": {
+            "x_min": "-4",
+            "x_max": "4"
+          },
+          "labels": {
+            "expr": "{a:g}*abs(x) + {b:g}",
+            "label": "f(x)"
+          },
+          "title": "Absolute Value Toolkit Function"
+        }
+      ]
+    },
+    {
+      "unitCode": "MTH-T02-C02-U01",
+      "archetypeKey": "t02-c02-u01-solve-input-from-function-value",
+      "level": 2,
+      "name": "Solving for Input Values Given a Function Output",
+      "source": "OpenStax Algebra and Trigonometry 2e §3.1 — Evaluating and Solving Functions",
+      "coreConcept": "To solve f(x) = k for x, set the algebraic expression for f(x) equal to the target output k and solve the resulting equation, checking any stated domain restriction and keeping all valid inputs.",
+      "mentalModel": "Evaluating f(k) runs the machine forward from input to output; solving f(x) = k runs the machine backward from output to every matching input.",
+      "governingRelation": "f(x) = k \\iff \\text{rule}(x) = k,\\; x \\in D_f",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c02-u01-evaluated-at-output-instead-of-solving-trap",
+          "description": "Plugging the target output k into x to compute f(k) instead of setting f(x) = k and solving for x.",
+          "trapFormula": "x = f(k)"
+        },
+        {
+          "trapTag": "t02-c02-u01-omitted-second-input-for-output-trap",
+          "description": "Keeping only the positive root when solving a non-one-to-one equation such as a*x^2 + c = k without a domain restriction.",
+          "trapFormula": "x = +\\sqrt{\\frac{k - c}{a}} \\text{ only}"
+        },
+        {
+          "trapTag": "t02-c02-u01-kept-branch-violating-domain-bound-trap",
+          "description": "Retaining an algebraic solution x that lies outside the explicitly restricted domain of f.",
+          "trapFormula": "x \\notin D_f \\text{ retained}"
+        }
+      ],
+      "versatileDomains": [],
+      "usedContexts": [],
+      "figureNone": "Symbolic equation f(x) = k solved algebraically for input x; plotting y = f(x) and y = k on a grid would reveal the solution coordinates directly."
+    },
+    {
+      "unitCode": "MTH-T02-C02-U01",
+      "archetypeKey": "t02-c02-u01-one-to-one-horizontal-line-test",
+      "level": 2,
+      "name": "Determining Whether a Function Is One-to-One (Horizontal Line Test)",
+      "source": "OpenStax Algebra and Trigonometry 2e §3.1 — Determining Whether a Function is One-to-One",
+      "coreConcept": "A function is one-to-one if each output y corresponds to at most one input x (f(x_1) = f(x_2) implies x_1 = x_2). Graphically, a function is one-to-one if and only if no horizontal line y = c intersects its graph more than once.",
+      "mentalModel": "The horizontal line fixes an output y = c; if two or more inputs hit that height, the function cannot be uniquely reversed.",
+      "governingRelation": "f(x_1) = f(x_2) \\implies x_1 = x_2 \\iff |\\{x : f(x) = c\\}| \\le 1 \\; \\forall c",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c02-u01-confused-vertical-and-horizontal-line-test-trap",
+          "description": "Applying the vertical line test instead of the horizontal line test and concluding that any valid function must be one-to-one.",
+          "trapFormula": "\\text{passes VLT} \\implies \\text{one-to-one}"
+        },
+        {
+          "trapTag": "t02-c02-u01-assumed-one-to-one-without-negative-domain-trap",
+          "description": "Testing only positive inputs on f(x) = a*x^2 + k or |x| and overlooking that opposite inputs yield the same output.",
+          "trapFormula": "\\text{monotonic on } x > 0 \\implies \\text{one-to-one on } \\mathbb{R}"
+        }
+      ],
+      "versatileDomains": [],
+      "usedContexts": [],
+      "figureBuilders": [
+        {
+          "fn": "build_function_graph_figure",
+          "args": {
+            "x_min": "-sqrt((y0 - k)/a) - 2",
+            "x_max": "sqrt((y0 - k)/a) + 2"
+          },
+          "labels": {
+            "expr": "{a:g}*x^2 + {k:g}",
+            "expr2": "{y0:g}",
+            "label": "f(x) = {a:g}x^2 + {k:g}",
+            "label2": "y = {y0:g}"
+          },
+          "title": "Horizontal Line Test"
+        },
+        {
+          "fn": "build_function_graph_figure",
+          "args": {
+            "x_min": "-3",
+            "x_max": "3"
+          },
+          "labels": {
+            "expr": "{a:g}*x^3 + {k:g}",
+            "expr2": "{y0:g}",
+            "label": "f(x) = {a:g}x^3 + {k:g}",
+            "label2": "y = {y0:g}"
+          },
+          "title": "Horizontal Line Test"
+        }
+      ]
+    },
+    {
+      "unitCode": "MTH-T02-C02-U01",
+      "archetypeKey": "t02-c02-u01-function-notation-flaw-diagnosis",
+      "level": 3,
+      "name": "Diagnosing Flaws in Function Evaluation and Solving",
+      "source": "OpenStax Algebra and Trigonometry 2e §3.1 (beyond-the-book diagnostic extension)",
+      "coreConcept": "Inspect a line-by-line function evaluation or solving derivation to identify the first line that breaks algebraic equivalence (such as dropping parentheses on negative inputs, distributing the function name, or substituting into the wrong side).",
+      "mentalModel": "Each line must preserve the exact numeric or algebraic value of the previous line; the first broken equality pinpoints the misconception.",
+      "governingRelation": "L_k = L_{k-1} \\text{ for all valid transformations}",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c02-u01-dropped-parentheses-negative-input-trap",
+          "description": "Evaluating (-k)^2 as -k^2 after substituting a negative input into a quadratic function.",
+          "trapFormula": "a(-k^2) \\text{ instead of } a((-k)^2)"
+        },
+        {
+          "trapTag": "t02-c02-u01-distribute-function-name-trap",
+          "description": "Splitting f(a + b) into f(a) + f(b) or f * (a + b) inside a derivation.",
+          "trapFormula": "f(a + b) = f(a) + f(b)"
+        },
+        {
+          "trapTag": "t02-c02-u01-evaluated-at-output-instead-of-solving-trap",
+          "description": "Evaluating f(k) in line 1 when asked to solve f(x) = k.",
+          "trapFormula": "x = f(k)"
+        }
+      ],
+      "versatileDomains": [],
+      "usedContexts": [],
+      "figureNone": "Symbolic step-by-step function notation derivation to audit; a graph adds nothing."
+    },
+    {
+      "unitCode": "MTH-T02-C02-U01",
+      "archetypeKey": "t02-c02-u01-constrained-function-modeling",
+      "level": 4,
+      "name": "Constrained Geometric Function Modeling and Domain Filtering",
+      "source": "OpenStax Algebra and Trigonometry 2e §3.1 (beyond-the-book synthesis extension)",
+      "coreConcept": "Combine a geometric perimeter or fencing relation with an area relation to express area A(w) as a function of a single input dimension w, solve A(w) = A_target, and reject any candidate dimension that violates physical or geometric boundary limits.",
+      "mentalModel": "A second constraint eliminates one variable so area becomes a single-input function A(w); every algebraic root of A(w) = A_target must still respect the physical domain.",
+      "governingRelation": "l + 2w = F \\land A(w) = l \\cdot w = w(F - 2w),\\; w \\in D_{\\text{valid}}",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c02-u01-kept-branch-violating-domain-bound-trap",
+          "description": "Selecting a root of A(w) = A_target whose corresponding length exceeds the wall or boundary limit.",
+          "trapFormula": "w_{\\text{invalid}} \\text{ retained}"
+        },
+        {
+          "trapTag": "t02-c02-u01-perimeter-half-confused-as-length-trap",
+          "description": "Treating the three-sided fence relation as l + w = F (forgetting the second width 2w) or substituting F directly as length.",
+          "trapFormula": "A(w) = w(F - w) \\text{ instead of } w(F - 2w)"
+        }
+      ],
+      "versatileDomains": [
+        "garden_enclosure_area_function",
+        "warehouse_partition_layout"
+      ],
+      "usedContexts": [
+        "garden_enclosure_area_function"
+      ],
+      "figureBuilders": [
+        {
+          "fn": "build_rectangle_figure",
+          "args": {
+            "width": "(F + sqrt(F^2 - 8*A))/4",
+            "height": "F - 2*((F + sqrt(F^2 - 8*A))/4)"
+          },
+          "labels": {
+            "label_w": "w = ?",
+            "label_h": "l = ?"
+          },
+          "title": "Three-Sided Enclosure"
+        },
+        {
+          "fn": "build_rectangle_figure",
+          "args": {
+            "width": "(P/2 - sqrt((P/2)^2 - 4*A))/2",
+            "height": "(P/2 + sqrt((P/2)^2 - 4*A))/2"
+          },
+          "labels": {
+            "label_w": "w = ?",
+            "label_h": "l = ?"
+          },
+          "title": "Rectangular Enclosure"
+        }
+      ]
+    },
+    {
+      "unitCode": "MTH-T02-C02-U01",
+      "archetypeKey": "t02-c02-u01-piecewise-threshold-modeling",
+      "level": 4,
+      "name": "Piecewise Function Modeling and Branch Selection",
+      "source": "OpenStax Algebra and Trigonometry 2e §3.1 — Evaluating Piecewise-Defined Functions (synthesis extension)",
+      "coreConcept": "Model a multi-tier relationship as a piecewise function f(x) over disjoint domain intervals, determine which interval matches a target output value by checking tier thresholds, solve on that branch, and reject candidates lying outside the branch domain.",
+      "mentalModel": "Each piecewise branch owns a gated input interval; an equation f(x) = target is valid only when its solution lands inside that branch's gate.",
+      "governingRelation": "f(x) = \\begin{cases} r_1(x), & x \\le x_0 \\\\ r_2(x), & x > x_0 \\end{cases}",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c02-u01-applied-marginal-rate-to-entire-input-trap",
+          "description": "Applying the second-tier marginal rate r_2 to all x units instead of only the excess (x - x_0) above the tier threshold.",
+          "trapFormula": "B(x) = F_0 + r_2 x \\text{ instead of } F_0 + r_1 x_0 + r_2(x - x_0)"
+        },
+        {
+          "trapTag": "t02-c02-u01-ignored-piecewise-domain-gate-trap",
+          "description": "Solving the first-tier formula equal to the target output without checking whether the resulting x violates x <= x_0.",
+          "trapFormula": "x = (T - F_0)/r_1 \\text{ even when } x > x_0"
+        }
+      ],
+      "versatileDomains": [
+        "water_utility_tiered_billing",
+        "parcel_postage_weight_schedule",
+        "overtime_payroll_bracket"
+      ],
+      "usedContexts": [
+        "water_utility_tiered_billing"
+      ],
+      "figureNone": "Piecewise rate model solved algebraically by threshold gating; plotting the graph would allow reading the solution coordinate off the grid."
+    }
+  ]
+}
