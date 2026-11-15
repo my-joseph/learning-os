@@ -27,7 +27,7 @@ from notion_sync.blocks import (
     replace_page_blocks,
     toggle_block,
 )
-from notion_sync.client import load_env, notion_request
+from notion_sync.client import get_all_blocks, load_env, notion_request
 from progress_store import save_progress
 
 
@@ -373,12 +373,12 @@ def _sync_drill_to_notion_inner(drill_doc: dict, path: str) -> dict:
             f"Mistake Tags: `{mistakes_str}` | Paper Divergence: {diverged_summary}"
         )
         try:
-            notion_request(
-                "PATCH",
-                f"blocks/{parent_page_id}/children",
-                token,
-                {"children": [bullet(log_line, id_map)]},
-            )
+            # Results go at the end of the learner's "My Implementation & Mistake Log" section (rules/02 §7a),
+            # or at the end of the page if it has no such section.
+            from notion_sync.unit_page import insert_after, section_end
+
+            anchor = section_end(get_all_blocks(parent_page_id, token), "Mistake Log")
+            insert_after(parent_page_id, anchor, [bullet(log_line, id_map)], token)
         except Exception:
             pass
 
