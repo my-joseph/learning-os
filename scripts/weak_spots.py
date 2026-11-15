@@ -77,6 +77,13 @@ def load_items(data_root: str = "drills/data", progress_dir: str | None = None) 
             doc = json.load(f)
         if doc.get("drillId"):
             drills[doc["drillId"]] = doc
+    # Problems ingested before archetypes carried `unitCode` get their unit from the archetype.
+    unit_of = {}
+    for vpath in glob.glob(os.path.join("math_engine", "reasoning_vault", "*.json")):
+        with open(vpath, encoding="utf-8") as f:
+            for a in json.load(f).get("archetypes", []):
+                if a.get("unitCode"):
+                    unit_of[a.get("archetypeKey")] = a["unitCode"]
     items: list[Item] = []
     for path in sorted(glob.glob(os.path.join(progress_dir, "*.json"))):
         with open(path, encoding="utf-8") as f:
@@ -93,7 +100,7 @@ def load_items(data_root: str = "drills/data", progress_dir: str | None = None) 
             items.append(
                 Item(
                     drill=doc["drillId"],
-                    unit=prob.get("unitCode") or doc.get("unitCode", ""),
+                    unit=prob.get("unitCode") or unit_of.get(prob.get("archetypeKey")) or doc.get("unitCode", ""),
                     pid=prob.get("id", ""),
                     level=prob.get("level"),
                     form=prob.get("form", ""),
