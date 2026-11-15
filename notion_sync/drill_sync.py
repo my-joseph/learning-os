@@ -105,6 +105,14 @@ def missing_sync_fields(drill_doc: dict) -> list[str]:
     return missing
 
 
+def unit_relation_ids(drill_doc: dict, unit_code: str, id_map: dict) -> list[str]:
+    """Notion page IDs of the units a drill covers: a unit drill links its unit; a chapter mixed drill links
+    every unit its problems come from (ingest stamps each problem's `unitCode` from its archetype)."""
+    codes = [unit_code] if "-U" in unit_code else []
+    codes += [p.get("unitCode") for p in drill_doc.get("problems", []) if p.get("unitCode")]
+    return [id_map[u]["id"] for u in dict.fromkeys(codes) if isinstance(id_map.get(u), dict)]
+
+
 def _mention_or_code(code: str, id_map: dict) -> str:
     return f"[[{code}]]" if code in id_map else f"`{code}`"
 
@@ -168,8 +176,9 @@ def _sync_drill_to_notion_inner(drill_doc: dict, path: str) -> dict:
         "Diverged Steps Summary": {"rich_text": [{"type": "text", "text": {"content": diverged_summary[:1900]}}]},
         "Local File Path": {"rich_text": [{"type": "text", "text": {"content": path}}]},
     }
-    if is_unit and unit_code in id_map:
-        props["Units"] = {"relation": [{"id": id_map[unit_code]["id"]}]}
+    unit_ids = unit_relation_ids(drill_doc, unit_code, id_map)
+    if unit_ids:
+        props["Units"] = {"relation": [{"id": i} for i in unit_ids]}
     if chapter_code in id_map:
         props["Chapters"] = {"relation": [{"id": id_map[chapter_code]["id"]}]}
     if topic_code in id_map:

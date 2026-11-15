@@ -6,7 +6,7 @@
     {
       "archetypeKey": "c01-place-value-partition",
       "level": 1,
-      "name": "Place Value Expanded Partition (การกระจายค่าประจำหลัก)",
+      "name": "Place Value Expanded Partition",
       "coreConcept": "Decomposing numbers into base-10 positional components where each digit value is weighted by its power of 10.",
       "mentalModel": [
         "1. Identify the positional column of each digit.",
@@ -33,12 +33,13 @@
       ],
       "usedContexts": [
         "bank_vault_cash_audit"
-      ]
+      ],
+      "unitCode": "MTH-T01-C01-U01"
     },
     {
       "archetypeKey": "c01-nearest-rounding-boundary",
       "level": 1,
-      "name": "Positional Rounding & Halfway Boundary (การปัดเศษตามค่าประจำหลัก)",
+      "name": "Positional Rounding & Halfway Boundary",
       "coreConcept": "Replacing a number with an approximate value to a given place value based on the test digit (>= 5 rounds up, < 5 rounds down).",
       "mentalModel": [
         "1. Locate the rounding target place value digit.",
@@ -65,12 +66,13 @@
       ],
       "usedContexts": [
         "marathon_registration_audit"
-      ]
+      ],
+      "unitCode": "MTH-T01-C01-U01"
     },
     {
       "archetypeKey": "c01-division-quotient-remainder",
       "level": 2,
-      "name": "Quotient & Remainder Division Partitioning (การหารจำนวนเต็มและเศษ)",
+      "name": "Quotient & Remainder Division Partitioning",
       "coreConcept": "The division algorithm partitions a dividend into a whole number quotient of equal divisor packets plus an integer remainder strictly less than the divisor.",
       "mentalModel": [
         "1. Determine maximum integer quotient q such that q * divisor <= dividend.",
@@ -97,12 +99,13 @@
       ],
       "usedContexts": [
         "hardware_tool_packaging"
-      ]
+      ],
+      "unitCode": "MTH-T01-C01-U05"
     },
     {
       "archetypeKey": "c01-prime-factor-canonical-tree",
       "level": 2,
-      "name": "Canonical Prime Factorization (การแยกตัวประกอบเฉพาะ)",
+      "name": "Canonical Prime Factorization",
       "coreConcept": "Every integer greater than 1 has a unique decomposition into a product of prime powers.",
       "mentalModel": [
         "1. Test divisibility by ascending primes (2, 3, 5, 7...).",
@@ -129,12 +132,13 @@
       ],
       "usedContexts": [
         "cryptographic_modulus_audit"
-      ]
+      ],
+      "unitCode": "MTH-T01-C02-U05"
     },
     {
       "archetypeKey": "c01-divisibility-conjoint-rules",
       "level": 2,
-      "name": "Conjoint Composite Divisibility Testing (เกณฑ์การหารลงตัวของจำนวนประกอบ)",
+      "name": "Conjoint Composite Divisibility Testing",
       "coreConcept": "A number is divisible by a composite modulus m = a * b (where gcd(a, b) = 1) if and only if it is divisible by both a and b.",
       "mentalModel": [
         "1. Factor composite divisor into coprime components (e.g. 15 = 3 * 5).",
@@ -161,12 +165,13 @@
       ],
       "usedContexts": [
         "logistics_pallet_divisibility"
-      ]
+      ],
+      "unitCode": "MTH-T01-C02-U04"
     },
     {
       "archetypeKey": "c01-gcd-euclidean-reduction",
       "level": 3,
-      "name": "Greatest Common Divisor via Euclidean Reduction (ห.ร.ม. และขั้นตอนวิธีแบบยุคลิด)",
+      "name": "Greatest Common Divisor via Euclidean Reduction",
       "coreConcept": "The greatest common divisor of two integers is the largest integer dividing both, invariant under Euclidean subtraction: gcd(a, b) = gcd(b, a mod b). L3 problem form: show a worked solution that makes the mistake 'Assuming the difference (a - b) is always the GCD without factoring (tag `c01-gcd-difference-underestimate`)'; the prompt shows the work as 'Line N: $...$' lines and the learner picks the first wrong line (answerSpec `choice` with `verify.flaw`; asking for the corrected value lets the learner just recompute, 06 §2.3).",
       "mentalModel": [
         "1. Set larger number as dividend and smaller as divisor.",
@@ -193,12 +198,13 @@
       ],
       "usedContexts": [
         "tile_flooring_tessellation"
-      ]
+      ],
+      "unitCode": "MTH-T01-C02-U04"
     },
     {
       "archetypeKey": "c01-lcm-cyclical-coincidence",
       "level": 3,
-      "name": "Least Common Multiple Periodic Coincidence (ค.ร.น. และจุดบรรจบของรอบเวลา)",
+      "name": "Least Common Multiple Periodic Coincidence",
       "coreConcept": "The least common multiple of two positive integers is the smallest positive integer divisible by both, governing periodic simultaneous occurrences.",
       "mentalModel": [
         "1. Find prime factorization of both cycle periods.",
@@ -225,12 +231,13 @@
       ],
       "usedContexts": [
         "transit_bus_schedule_coincidence"
-      ]
+      ],
+      "unitCode": "MTH-T01-C02-U05"
     },
     {
       "archetypeKey": "c01-pemdas-hierarchical-evaluation",
       "level": 3,
-      "name": "Hierarchical Order of Operations (ลำดับการคำนวณขั้นสูง)",
+      "name": "Hierarchical Order of Operations",
       "coreConcept": "Mathematical expressions evaluate deterministically according to precedence: Parentheses, Exponents, Multiplication & Division (left to right), Addition & Subtraction (left to right).",
       "mentalModel": [
         "1. Simplify expressions inside innermost grouping brackets.",
@@ -258,12 +265,13 @@
       ],
       "usedContexts": [
         "engineering_stress_formula"
-      ]
+      ],
+      "unitCode": "MTH-T01-C02-U01"
     },
     {
       "archetypeKey": "c01-gcd-lcm-duality-inversion",
       "level": 4,
-      "name": "GCD-LCM Pair Reconstruction (การหาคู่จำนวนจาก ห.ร.ม. และ ค.ร.น.)",
+      "name": "GCD-LCM Pair Reconstruction",
       "coreConcept": "Given only gcd g and lcm L of two unknown numbers (plus one extra condition such as their sum, difference or a bound), reconstruct the pair: write a = g*m and b = g*n with gcd(m, n) = 1, split L / g into coprime factor pairs (m, n), then use the extra condition to select the pair.",
       "mentalModel": [
         "1. Write a = g * m and b = g * n where gcd(m, n) = 1.",
@@ -296,12 +304,13 @@
       ],
       "usedContexts": [
         "distributed_clock_synchronization"
-      ]
+      ],
+      "unitCode": "MTH-T01-C02-U05"
     },
     {
       "archetypeKey": "c01-constrained-modular-batching",
       "level": 4,
-      "name": "Constrained Multi-Packet Remainder Optimization (การจัดชุดแบบมีเงื่อนไขเศษตกค้าง)",
+      "name": "Constrained Multi-Packet Remainder Optimization",
       "coreConcept": "Finding a quantity satisfying simultaneous modular packing constraints across multiple pack sizes with fixed non-zero remainders.",
       "mentalModel": [
         "1. Express target quantity as a system of congruences: N = q1 * m1 + r1 = q2 * m2 + r2.",
@@ -328,7 +337,8 @@
       ],
       "usedContexts": [
         "pharmaceutical_capsule_blister_pack"
-      ]
+      ],
+      "unitCode": "MTH-T01-C01-U05"
     }
   ]
 }

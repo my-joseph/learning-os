@@ -6,7 +6,7 @@
     {
       "archetypeKey": "c04-fraction-simplification-gcf",
       "level": 1,
-      "name": "Fraction Reduction via Greatest Common Factor (การทอนเศษส่วนอย่างต่ำด้วย ห.ร.ม.)",
+      "name": "Fraction Reduction via Greatest Common Factor",
       "coreConcept": "Dividing both numerator and denominator by their greatest common factor reduces a fraction to canonical simplest form.",
       "mentalModel": [
         "1. Find the greatest common factor of the numerator and denominator.",
@@ -33,12 +33,13 @@
       ],
       "usedContexts": [
         "laboratory_chemical_dilution_ratio"
-      ]
+      ],
+      "unitCode": "MTH-T01-C04-U04"
     },
     {
       "archetypeKey": "c04-fraction-multiplication-product",
       "level": 1,
-      "name": "Fraction Multiplication Across Numerators and Denominators (การคูณเศษส่วนตรงตามนิยาม)",
+      "name": "Fraction Multiplication Across Numerators and Denominators",
       "coreConcept": "The product of fractions is computed by multiplying numerators straight across and multiplying denominators straight across.",
       "mentalModel": [
         "1. Multiply numerators together: a * c.",
@@ -65,12 +66,13 @@
       ],
       "usedContexts": [
         "solar_photovoltaic_efficiency_scaling"
-      ]
+      ],
+      "unitCode": "MTH-T01-C04-U04"
     },
     {
       "archetypeKey": "c04-fraction-division-reciprocal-inversion",
       "level": 2,
-      "name": "Fraction Division via Reciprocal Multiplication (การหารเศษส่วนด้วยส่วนกลับ)",
+      "name": "Fraction Division via Reciprocal Multiplication",
       "coreConcept": "Dividing by a non-zero fraction is algebraically identical to multiplying by its reciprocal: Keep-Change-Flip.",
       "mentalModel": [
         "1. Retain the dividend fraction unchanged.",
@@ -97,12 +99,13 @@
       ],
       "usedContexts": [
         "textile_cutting_fabric_yield"
-      ]
+      ],
+      "unitCode": "MTH-T01-C04-U04"
     },
     {
       "archetypeKey": "c04-fraction-addition-like-denominators",
       "level": 2,
-      "name": "Fraction Addition with Common Denominators (การบวกเศษส่วนที่มีส่วนเท่ากัน)",
+      "name": "Fraction Addition with Common Denominators",
       "coreConcept": "Fractions with identical unit partitions are combined by summing numerators over the preserved common denominator.",
       "mentalModel": [
         "1. Verify that both denominators are identical.",
@@ -129,12 +132,13 @@
       ],
       "usedContexts": [
         "civil_road_paving_segment_progress"
-      ]
+      ],
+      "unitCode": "MTH-T01-C04-U02"
     },
     {
       "archetypeKey": "c04-fraction-addition-unlike-denominators-lcd",
       "level": 2,
-      "name": "Fraction Addition via Least Common Denominator (การบวกเศษส่วนส่วนไม่เท่ากันด้วย ค.ร.น.)",
+      "name": "Fraction Addition via Least Common Denominator",
       "coreConcept": "Adding fractions with unequal denominators requires finding the least common denominator to scale terms into equivalent fractions.",
       "mentalModel": [
         "1. Compute the least common multiple of both denominators (LCD).",
@@ -161,12 +165,13 @@
       ],
       "usedContexts": [
         "aerospace_composite_alloy_composition"
-      ]
+      ],
+      "unitCode": "MTH-T01-C04-U03"
     },
     {
       "archetypeKey": "c04-mixed-number-regrouping-subtraction",
       "level": 3,
-      "name": "Mixed Number Subtraction with Denominator Regrouping (การลบจำนวนคละแบบกระจายหน่วย)",
+      "name": "Mixed Number Subtraction with Denominator Regrouping",
       "coreConcept": "Subtracting fractional values requiring decomposition of whole integer units into equivalent fractional parts. L3 problem form: show a worked solution that makes the mistake 'Adding instead of subtracting the fractional lengths (tag `c04-subtraction-inversion-on-regrouping`)'; the prompt shows the work as 'Line N: $...$' lines and the learner picks the first wrong line (answerSpec `choice` with `verify.flaw`; asking for the corrected value lets the learner just recompute, 06 §2.3).",
       "mentalModel": [
         "1. Express measurements as improper fractions or regrouped mixed units.",
@@ -193,12 +198,13 @@
       ],
       "usedContexts": [
         "carpentry_timber_beam_trimming"
-      ]
+      ],
+      "unitCode": "MTH-T01-C04-U01"
     },
     {
       "archetypeKey": "c04-complex-fraction-simplification",
       "level": 3,
-      "name": "Complex Fraction Compound Reduction (การลดรูปเศษส่วนซ้อน)",
+      "name": "Complex Fraction Compound Reduction",
       "coreConcept": "Simplifying rational expressions where both numerator and denominator contain fractions: (a/b) / (c/d) = (ad) / (bc). L3 problem form: show a worked solution that makes the mistake 'Multiplying directly without inverting the denominator fraction (tag `c04-nested-fraction-inversion-slip`)'; the prompt shows the work as 'Line N: $...$' lines and the learner picks the first wrong line (answerSpec `choice` with `verify.flaw`; asking for the corrected value lets the learner just recompute, 06 §2.3).",
       "mentalModel": [
         "1. Identify the primary division bar separating numerator and denominator fractions.",
@@ -225,12 +231,13 @@
       ],
       "usedContexts": [
         "electrical_network_conductance_ratio"
-      ]
+      ],
+      "unitCode": "MTH-T01-C04-U05"
     },
     {
       "archetypeKey": "c04-fraction-one-step-linear-equation",
       "level": 3,
-      "name": "Fractional Coefficient Linear Equation Inversion (การแก้สมการเชิงเส้นสัมประสิทธิ์เศษส่วน)",
+      "name": "Fractional Coefficient Linear Equation Inversion",
       "coreConcept": "Isolating an unknown variable multiplied by a fraction by applying the reciprocal property of equality: (a/b)x = c <=> x = c * (b/a).",
       "mentalModel": [
         "1. Identify the fractional coefficient multiplying the unknown variable.",
@@ -257,12 +264,13 @@
       ],
       "usedContexts": [
         "water_treatment_chlorine_infusion"
-      ]
+      ],
+      "unitCode": "MTH-T01-C04-U06"
     },
     {
       "archetypeKey": "c04-constrained-fractional-tank-drain-rate",
       "level": 4,
-      "name": "Multi-Pipe Invariant Fractional Work Rate Model (แบบจำลองอัตราการทำงานเชิงเศษส่วนของท่อระบายน้ำ)",
+      "name": "Multi-Pipe Invariant Fractional Work Rate Model",
       "coreConcept": "Harmonic rate superposition where opposing filling and emptying rates yield net volumetric accumulation rate.",
       "mentalModel": [
         "1. Express filling rate as 1 / t_fill and emptying rate as 1 / t_drain.",
@@ -292,12 +300,13 @@
         "aquaculture_tank_filtration_cycle",
         "municipal_water_tower_maintenance"
       ],
-      "levelNote": "L4 only when the solver must choose: offer two or more drain/fill options where one gives a net rate <= 0 (the tank never fills) and must be ruled out (blindSolve check=edge, edgeRejected names it). A single fill-and-drain computation is L2 (blind solves 2026-11-15, issue 9e4aa2)."
+      "levelNote": "L4 only when the solver must choose: offer two or more drain/fill options where one gives a net rate <= 0 (the tank never fills) and must be ruled out (blindSolve check=edge, edgeRejected names it). A single fill-and-drain computation is L2 (blind solves 2026-11-15, issue 9e4aa2).",
+      "unitCode": "MTH-T01-C04-U03"
     },
     {
       "archetypeKey": "c04-multi-stage-fractional-remainder-synthesis",
       "level": 3,
-      "name": "Multi-Stage Successive Fraction Allocation (การจัดสรรทรัพยากรแบบหักส่วนที่เหลือหลายขั้นตอน)",
+      "name": "Multi-Stage Successive Fraction Allocation",
       "coreConcept": "Chained resource depletion models where fractions apply sequentially to remaining portions rather than initial totals.",
       "mentalModel": [
         "1. Calculate fraction remaining after first stage: 1 - f_1.",
@@ -326,7 +335,8 @@
         "emergency_grain_silo_reserve_relief",
         "university_endowment_fund_disbursement"
       ],
-      "levelNote": "Relabelled L4 -> L3 (2026-11-15, issue 3025a2): a chained remainder has one solution and no case to rule out; the best blind solve reached setup=model (L3). Do not bolt on a cutoff to reach L4."
+      "levelNote": "Relabelled L4 -> L3 (2026-11-15, issue 3025a2): a chained remainder has one solution and no case to rule out; the best blind solve reached setup=model (L3). Do not bolt on a cutoff to reach L4.",
+      "unitCode": "MTH-T01-C04-U04"
     },
     {
       "archetypeKey": "c04-fractional-limiting-resource",
@@ -367,7 +377,8 @@
       ],
       "usedContexts": [],
       "levelNote": "Earns L4 because the solver must build one quotient per input (model), compare them to find the limiting one, and round down to whole units (check=edge: the larger quotients are ruled out). With a single input it is only L2. Added 2026-11-15 (issue 3cb031) as the second C04 L4 archetype.",
-      "source": "Original archetype; scope aligned with OpenStax Prealgebra 2e §4.2 (Multiply and Divide Fractions)"
+      "source": "Original archetype; scope aligned with OpenStax Prealgebra 2e §4.2 (Multiply and Divide Fractions)",
+      "unitCode": "MTH-T01-C04-U04"
     }
   ]
 }

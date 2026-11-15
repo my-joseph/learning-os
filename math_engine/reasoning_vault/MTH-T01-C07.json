@@ -6,7 +6,7 @@
     {
       "archetypeKey": "c07-ratio-simplification-part-to-part",
       "level": 1,
-      "name": "Part-to-Part Ratio Simplification (การทอนอัตราส่วนส่วนต่อส่วนอย่างต่ำ)",
+      "name": "Part-to-Part Ratio Simplification",
       "coreConcept": "Dividing both terms of a ratio by their greatest common factor preserves proportional invariance.",
       "mentalModel": [
         "1. Express comparison as a fraction a / b.",
@@ -33,12 +33,13 @@
       ],
       "usedContexts": [
         "quality_inspection_batch_ratio"
-      ]
+      ],
+      "unitCode": "MTH-T01-C07-U01"
     },
     {
       "archetypeKey": "c07-unit-rate-comparison",
       "level": 1,
-      "name": "Unit Rate Evaluation (การคำนวณอัตราต่อหนึ่งหน่วย)",
+      "name": "Unit Rate Evaluation",
       "coreConcept": "A unit rate normalizes a rate comparison to a single unit denominator: r = quantity / units.",
       "mentalModel": [
         "1. Identify total quantity and associated measurement units.",
@@ -65,12 +66,13 @@
       ],
       "usedContexts": [
         "fuel_consumption_efficiency_rate"
-      ]
+      ],
+      "unitCode": "MTH-T01-C07-U02"
     },
     {
       "archetypeKey": "c07-proportional-scaling-direct",
       "level": 2,
-      "name": "Direct Proportional Scaling (การคูณขยายตามสัดส่วนโดยตรง)",
+      "name": "Direct Proportional Scaling",
       "coreConcept": "Under constant unit rate k, the dependent quantity scales linearly: y = k * x.",
       "mentalModel": [
         "1. Find constant unit rate k = y_0 / x_0.",
@@ -97,12 +99,13 @@
       ],
       "usedContexts": [
         "culinary_recipe_yield_scaling"
-      ]
+      ],
+      "unitCode": "MTH-T01-C07-U04"
     },
     {
       "archetypeKey": "c07-proportion-cross-product-isolation",
       "level": 2,
-      "name": "Proportion Cross-Product Inversion (การแก้สัดส่วนด้วยผลคูณไขว้)",
+      "name": "Proportion Cross-Product Inversion",
       "coreConcept": "In any proportion a / b = x / d, the cross products are invariant: a * d = b * x <=> x = (a * d) / b.",
       "mentalModel": [
         "1. Set up proportion equation matching corresponding units.",
@@ -129,12 +132,13 @@
       ],
       "usedContexts": [
         "medical_dosage_saline_infusion"
-      ]
+      ],
+      "unitCode": "MTH-T01-C07-U03"
     },
     {
       "archetypeKey": "c07-part-to-whole-ratio-partition",
       "level": 2,
-      "name": "Part-to-Whole Ratio Partitioning (การแบ่งส่วนตามอัตราส่วนจากยอดรวม)",
+      "name": "Part-to-Whole Ratio Partitioning",
       "coreConcept": "A ratio a:b distributes a total sum T into parts proportional to fractional shares a / (a + b) and b / (a + b).",
       "mentalModel": [
         "1. Sum ratio parts: total_parts = a + b.",
@@ -161,12 +165,13 @@
       ],
       "usedContexts": [
         "construction_concrete_aggregate_batch"
-      ]
+      ],
+      "unitCode": "MTH-T01-C07-U01"
     },
     {
       "archetypeKey": "c07-scale-drawing-map-conversion",
       "level": 3,
-      "name": "Scale Factor Architectural Conversion (การคำนวณอัตราส่วนมาตราส่วนแผนผัง)",
+      "name": "Scale Factor Architectural Conversion",
       "coreConcept": "A scale factor 1 : S translates miniature blueprint distances into full physical dimensions: Real = Map * S.",
       "mentalModel": [
         "1. Identify unit scale equivalence (e.g. 1 cm = S meters).",
@@ -193,12 +198,13 @@
       ],
       "usedContexts": [
         "architectural_blueprint_room_span"
-      ]
+      ],
+      "unitCode": "MTH-T01-C07-U06"
     },
     {
       "archetypeKey": "c07-inverse-proportion-rate-time",
       "level": 3,
-      "name": "Inverse Proportion Constant Product Invariance (การแปรผกผันและผลคูณคงที่)",
+      "name": "Inverse Proportion Constant Product Invariance",
       "coreConcept": "When two variables vary inversely, their product remains constant: w_1 * t_1 = w_2 * t_2 <=> t_2 = (w_1 * t_1) / w_2.",
       "mentalModel": [
         "1. Recognize inverse relationship: more workers means less time.",
@@ -225,12 +231,13 @@
       ],
       "usedContexts": [
         "warehouse_crew_container_unloading"
-      ]
+      ],
+      "unitCode": "MTH-T01-C07-U05"
     },
     {
       "archetypeKey": "c07-currency-exchange-rate-conversion",
       "level": 3,
-      "name": "Multi-Factor Dimensional Rate Conversion (การแปลงอัตราแลกเปลี่ยนและการแปลงหน่วย)",
+      "name": "Multi-Factor Dimensional Rate Conversion",
       "coreConcept": "Chained conversion factors cancel unwanted units through dimensional analysis multiplication.",
       "mentalModel": [
         "1. Write starting quantity with initial units.",
@@ -257,12 +264,13 @@
       ],
       "usedContexts": [
         "international_cargo_freight_pricing"
-      ]
+      ],
+      "unitCode": "MTH-T01-C07-U06"
     },
     {
       "archetypeKey": "c07-constrained-three-way-mixture-proportion",
       "level": 4,
-      "name": "Limiting-Component Three-Way Mixture Proportion (สัดส่วนผสมสามส่วนที่มีวัตถุดิบจำกัด)",
+      "name": "Limiting-Component Three-Way Mixture Proportion",
       "coreConcept": "A mix needs components in the ratio a:b:c, but each component has a limited stock S_i. The limiting component (smallest S_i / p_i) sets the largest batch; that batch size then determines how much of each component is used and how much of the others is left over.",
       "mentalModel": [
         "1. For each component, compute the number of ratio units its stock allows: S_i / p_i.",
@@ -296,12 +304,13 @@
       "usedContexts": [
         "metallurgical_bronze_alloy_casting",
         "pharmaceutical_compound_ointment_base"
-      ]
+      ],
+      "unitCode": "MTH-T01-C07-U06"
     },
     {
       "archetypeKey": "c07-gear-train-transmission-ratio-synthesis",
       "level": 4,
-      "name": "Compound Gear Train Design for a Target Output Speed (การเลือกเฟืองในชุดเกียร์ผสมให้ได้ความเร็วเป้าหมาย)",
+      "name": "Compound Gear Train Design for a Target Output Speed",
       "coreConcept": "In a compound gear train (gears 2 and 3 share a shaft), the first mesh is fixed. Choose the output gear from a given set of tooth counts so that the output speed is as close as possible to a target without exceeding it, then give the resulting speed. The shared-shaft speed from the first mesh feeds every candidate for the second mesh.",
       "mentalModel": [
         "1. First mesh: omega_2 = omega_1 * N_1 / N_2; the shared shaft gives omega_3 = omega_2.",
@@ -335,7 +344,8 @@
       "usedContexts": [
         "wind_turbine_generator_gearbox",
         "industrial_conveyor_motor_drive"
-      ]
+      ],
+      "unitCode": "MTH-T01-C07-U05"
     }
   ]
 }

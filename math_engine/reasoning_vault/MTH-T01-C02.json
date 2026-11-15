@@ -6,7 +6,7 @@
     {
       "archetypeKey": "c02-verbal-to-algebraic-translation",
       "level": 1,
-      "name": "Verbal Phrase to Algebraic Expression Translation (การแปลงข้อความภาษาเป็นนิพจน์พีชคณิต)",
+      "name": "Verbal Phrase to Algebraic Expression Translation",
       "coreConcept": "Translating operational keywords into algebraic operations while preserving proper operand order.",
       "mentalModel": [
         "1. Identify the base variable or quantity.",
@@ -33,12 +33,13 @@
       ],
       "usedContexts": [
         "sensor_temperature_threshold"
-      ]
+      ],
+      "unitCode": "MTH-T01-C02-U02"
     },
     {
       "archetypeKey": "c02-expression-variable-substitution",
       "level": 1,
-      "name": "Algebraic Expression Single-Variable Evaluation (การแทนค่าตัวแปรเดี่ยวในนิพจน์)",
+      "name": "Algebraic Expression Single-Variable Evaluation",
       "coreConcept": "Replacing a variable symbol with a numeric scalar and computing the arithmetic value following operator precedence.",
       "mentalModel": [
         "1. Substitute the numeric value into the variable placeholder.",
@@ -65,12 +66,13 @@
       ],
       "usedContexts": [
         "electric_scooter_fare_calculation"
-      ]
+      ],
+      "unitCode": "MTH-T01-C02-U02"
     },
     {
       "archetypeKey": "c02-combining-like-terms-univariate",
       "level": 2,
-      "name": "Univariate Like Terms Simplification (การรวมพจน์ที่คล้ายกันตัวแปรเดียว)",
+      "name": "Univariate Like Terms Simplification",
       "coreConcept": "Terms sharing identical variable factors are combined by adding their coefficients via the distributive law.",
       "mentalModel": [
         "1. Identify terms containing identical variable powers.",
@@ -97,12 +99,13 @@
       ],
       "usedContexts": [
         "retail_inventory_batch_merging"
-      ]
+      ],
+      "unitCode": "MTH-T01-C02-U02"
     },
     {
       "archetypeKey": "c02-distributive-property-expansion",
       "level": 2,
-      "name": "Distributive Property Monomial Expansion (การแจกแจงเอกนามคูณทวินาม)",
+      "name": "Distributive Property Monomial Expansion",
       "coreConcept": "Multiplying an outside factor across every individual term inside parentheses: a(bx + c) = abx + ac.",
       "mentalModel": [
         "1. Multiply outer factor by the first internal term.",
@@ -129,12 +132,13 @@
       ],
       "usedContexts": [
         "agricultural_greenhouse_fertilizer_dosing"
-      ]
+      ],
+      "unitCode": "MTH-T01-C10-U03"
     },
     {
       "archetypeKey": "c02-additive-equality-inversion",
       "level": 2,
-      "name": "Additive Equality One-Step Equation (การแก้สมการขั้นตอนเดียวด้วยสมบัติการบวก/ลบ)",
+      "name": "Additive Equality One-Step Equation",
       "coreConcept": "Maintaining equality balance by inverting an added or subtracted constant: x +/- a = b.",
       "mentalModel": [
         "1. Identify the operation linking the variable and constant.",
@@ -161,12 +165,13 @@
       ],
       "usedContexts": [
         "aviation_fuel_reserve_calculation"
-      ]
+      ],
+      "unitCode": "MTH-T01-C02-U03"
     },
     {
       "archetypeKey": "c02-multiplicative-equality-inversion",
       "level": 3,
-      "name": "Multiplicative Equality One-Step Equation (การแก้สมการขั้นตอนเดียวด้วยสมบัติการคูณ/หาร)",
+      "name": "Multiplicative Equality One-Step Equation",
       "coreConcept": "Isolating an unknown multiplier by applying the division property of equality: a * x = b <=> x = b / a.",
       "mentalModel": [
         "1. Identify the coefficient multiplying the variable.",
@@ -193,12 +198,13 @@
       ],
       "usedContexts": [
         "solar_array_power_generation"
-      ]
+      ],
+      "unitCode": "MTH-T01-C03-U05"
     },
     {
       "archetypeKey": "c02-two-variable-formula-evaluation",
       "level": 3,
-      "name": "Bivariate Geometric/Physical Formula Evaluation (การคำนวณค่าสูตรสองตัวแปร)",
+      "name": "Bivariate Geometric/Physical Formula Evaluation",
       "coreConcept": "Evaluating multi-variable expressions where distinct parameters govern orthogonal dimensions: P = 2L + 2W. L3 problem form: show a worked solution that makes the mistake 'Summing length and width without doubling, yielding half the perimeter (tag `c02-semi-perimeter-underestimate`)'; the prompt shows the work as 'Line N: $...$' lines and the learner picks the first wrong line (answerSpec `choice` with `verify.flaw`; asking for the corrected value lets the learner just recompute, 06 §2.3).",
       "mentalModel": [
         "1. Map each measured physical input to its assigned variable.",
@@ -225,12 +231,13 @@
       ],
       "usedContexts": [
         "perimeter_fence_construction"
-      ]
+      ],
+      "unitCode": "MTH-T01-C02-U02"
     },
     {
       "archetypeKey": "c02-nested-distributive-simplification",
       "level": 3,
-      "name": "Nested Distributive and Like Terms Simplification (การกระจายและรวมพจน์หลายชั้น)",
+      "name": "Nested Distributive and Like Terms Simplification",
       "coreConcept": "Expanding multiple grouped linear binomials and collecting like terms systematically: a(x + b) + c(x + d). L3 problem form: show a worked solution that makes the mistake 'Adding group coefficients directly to variables without multiplying constants (tag `c02-distributive-coefficient-omission`)'; the prompt shows the work as 'Line N: $...$' lines and the learner picks the first wrong line (answerSpec `choice` with `verify.flaw`; asking for the corrected value lets the learner just recompute, 06 §2.3).",
       "mentalModel": [
         "1. Distribute each external multiplier across its respective binomial group.",
@@ -257,12 +264,13 @@
       ],
       "usedContexts": [
         "telecom_bandwidth_tier_pricing"
-      ]
+      ],
+      "unitCode": "MTH-T01-C10-U03"
     },
     {
       "archetypeKey": "c02-constrained-perimeter-unknown-model",
       "level": 4,
-      "name": "Perimeter Budget and Minimum Area Feasibility Model (เงื่อนไขความยาวรอบรูปและพื้นที่ขั้นต่ำ)",
+      "name": "Perimeter Budget and Minimum Area Feasibility Model",
       "coreConcept": "A rectangle's length is a linear function of its width, L = m * W + k. A fencing budget caps the perimeter and a use requirement sets a minimum area. Find every whole-number width that satisfies both: the linear perimeter inequality gives an upper bound on W, and the area condition W(mW + k) >= A_min gives a lower bound.",
       "mentalModel": [
         "1. Express length algebraically: L = m * W + k.",
@@ -295,12 +303,13 @@
       ],
       "usedContexts": [
         "urban_park_boundary_fencing"
-      ]
+      ],
+      "unitCode": "MTH-T01-C12-U04"
     },
     {
       "archetypeKey": "c02-consecutive-integer-sum-inversion",
       "level": 2,
-      "name": "Consecutive Integer Word Problem Synthesis (โจทย์ปัญหาผลรวมจำนวนเต็มเรียงกันเชิงพีชคณิต)",
+      "name": "Consecutive Integer Word Problem Synthesis",
       "coreConcept": "Translating verbal descriptions of consecutive sequence integers into a solvable linear algebraic equation.",
       "mentalModel": [
         "1. Represent consecutive integers algebraically: n, n+1, n+2.",
@@ -327,7 +336,8 @@
       ],
       "usedContexts": [
         "production_shift_serial_numbering"
-      ]
+      ],
+      "unitCode": "MTH-T01-C12-U01"
     }
   ]
 }

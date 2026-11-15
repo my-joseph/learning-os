@@ -6,7 +6,7 @@
     {
       "archetypeKey": "c06-rate-base-part-triad",
       "level": 1,
-      "name": "Part-Base-Rate Triad (สัดส่วนพื้นฐานและย้อนกลับ)",
+      "name": "Part-Base-Rate Triad",
       "coreConcept": "Percents express a ratio relative to 100. Relates three quantities: Part = (Rate / 100) * Base, Rate = (Part / Base) * 100, Base = (Part * 100) / Rate.",
       "mentalModel": [
         "1. Identify which entity represents the complete whole (the 100% Base).",
@@ -43,12 +43,13 @@
         "arithmetic:abstract_numbers",
         "solar_battery_storage",
         "academic_textbook_reading_progress"
-      ]
+      ],
+      "unitCode": "MTH-T01-C06-U02"
     },
     {
       "archetypeKey": "c06-pre-change-base-recovery",
       "level": 2,
-      "name": "Pre-Change Base Recovery (การย้อนหาค่าตั้งต้นก่อนการเปลี่ยนแปลง)",
+      "name": "Pre-Change Base Recovery",
       "coreConcept": "When a value changes by r%, the final value represents (100 ± r)% of the original base. Recovering the original base requires dividing by the retention multiplier, NOT applying the percentage to the final price.",
       "mentalModel": [
         "1. Identify whether the change is an increase or decrease.",
@@ -86,12 +87,13 @@
         "retail_hardware:monitor_sale",
         "artisan_leather_backpack",
         "conservatory_orchestral_cello_clearance"
-      ]
+      ],
+      "unitCode": "MTH-T01-C06-U03"
     },
     {
       "archetypeKey": "c06-relative-change-base-shift",
       "level": 2,
-      "name": "Relative Change & Base-Shift Asymmetry (อัตราการเปลี่ยนแปลงและการสลับฐาน)",
+      "name": "Relative Change & Base-Shift Asymmetry",
       "coreConcept": "Percent change is always calculated with respect to the initial (old) state: Δ / Old. Because Old ≠ New, an increase of X% from A to B does NOT equal a decrease of X% from B to A.",
       "mentalModel": [
         "1. Calculate the absolute change: |New - Old|.",
@@ -126,12 +128,13 @@
       ],
       "usedContexts": [
         "cloud_server_subscription"
-      ]
+      ],
+      "unitCode": "MTH-T01-C06-U02"
     },
     {
       "archetypeKey": "c06-successive-multipliers-compounding",
       "level": 3,
-      "name": "Successive Multiplier Compounding (การเปลี่ยนแปลงต่อเนื่องแบบตัวคูณทบ)",
+      "name": "Successive Multiplier Compounding",
       "coreConcept": "Sequential percentage changes apply to intermediate updated bases, multiplying compounding factors (1 + r1)(1 - r2). They NEVER add linearly.",
       "mentalModel": [
         "1. Translate each percentage step into its respective decimal multiplier: (1 + r_up/100) or (1 - r_down/100).",
@@ -168,12 +171,13 @@
         "investment_portfolio:quarterly_shift",
         "commercial_merchandising:clearance",
         "boutique_designer_coat_seasonal"
-      ]
+      ],
+      "unitCode": "MTH-T01-C06-U03"
     },
     {
       "archetypeKey": "c06-parallel-vs-cascading-rates",
       "level": 3,
-      "name": "Parallel Subtotal Additions vs. Cascading (หลายอัตราส่วนบนฐานเดียวกัน)",
+      "name": "Parallel Subtotal Additions vs. Cascading",
       "coreConcept": "When multiple fees, taxes, or tips are assessed on a transaction, examine contract definitions: independent parallel rates add to the same base subtotal, whereas cascading fees apply sequentially.",
       "mentalModel": [
         "1. Identify the common baseline (subtotal before taxes and gratuity).",
@@ -204,12 +208,13 @@
       ],
       "usedContexts": [
         "restaurant_dining_meal_tax_tip"
-      ]
+      ],
+      "unitCode": "MTH-T01-C06-U03"
     },
     {
       "archetypeKey": "c06-invariant-component-under-variable-total",
       "level": 2,
-      "name": "Invariant Component under Variable Total (การปรับสัดส่วนโดยเติมองค์ประกอบเดียวเมื่อฐานรวมเปลี่ยน)",
+      "name": "Invariant Component under Variable Total",
       "coreConcept": "Adding a pure single component changes both that component and the total base, but the UNTOUCHED component remains constant in absolute quantity. Equating the invariant quantity across initial and final states gives the closed-form solution.",
       "mentalModel": [
         "1. Identify the Invariant: Which component is NOT being added or removed?",
@@ -251,12 +256,13 @@
       "usedContexts": [
         "chemistry_antiseptic_alcohol",
         "jewelry_metallurgy_gold_copper_smelting"
-      ]
+      ],
+      "unitCode": "MTH-T01-C06-U02"
     },
     {
       "archetypeKey": "c06-weighted-split-conservation",
       "level": 2,
-      "name": "Weighted Split Conservation (การแบ่งส่วนย่อยและสมดุลผลรวม)",
+      "name": "Weighted Split Conservation",
       "coreConcept": "A single pool of resources is divided into two segments with different percentage rates. Given total pool and total weighted return/yield, express one unknown as (Total - x) to solve a linear conservation equation.",
       "mentalModel": [
         "1. Define the variable x for one of the segments, and (Total - x) for the other.",
@@ -292,12 +298,13 @@
       "usedContexts": [
         "split_fixed_income:bonds",
         "municipal_vs_corporate_bonds"
-      ]
+      ],
+      "unitCode": "MTH-T01-C06-U02"
     },
     {
       "archetypeKey": "c06-simple-interest-time-scaling",
       "level": 3,
-      "name": "Simple Interest Time Scaling & Balance Accrual (ดอกเบี้ยคงต้นและการปรับสเกลหน่วยเวลา)",
+      "name": "Simple Interest Time Scaling & Balance Accrual",
       "source": "OpenStax Prealgebra 2e §6.4",
       "coreConcept": "Interest accrues linearly according to I = P * r * t where rate r is annual (per year). When time t is given in months, it must be converted to years (t = months / 12). Total maturity value is A = P + I.",
       "mentalModel": [
@@ -340,12 +347,13 @@
       "usedContexts": [
         "certificate_of_deposit",
         "bakery_equipment_financing_loan"
-      ]
+      ],
+      "unitCode": "MTH-T01-C06-U04"
     },
     {
       "archetypeKey": "c06-proportional-rate-scaling",
       "level": 2,
-      "name": "Proportional Rate Equivalence & Cross-Scaling (สัดส่วนอัตราคงที่และการเทียบข้ามมิติ)",
+      "name": "Proportional Rate Equivalence & Cross-Scaling",
       "source": "OpenStax Prealgebra 2e §6.5",
       "coreConcept": "Two equal ratios form a proportion a/b = c/d <=> a*d = b*c. Enables scaling between two distinct dimensions (e.g. weight to dosage, distance to fuel).",
       "mentalModel": [
@@ -382,7 +390,8 @@
       "usedContexts": [
         "pediatric_dosing",
         "cartography_scale"
-      ]
+      ],
+      "unitCode": "MTH-T01-C06-U05"
     }
   ]
 }

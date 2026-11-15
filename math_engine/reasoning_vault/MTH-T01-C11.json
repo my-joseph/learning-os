@@ -21,7 +21,8 @@
       ],
       "usedContexts": [
         "account_balance_reconciliation"
-      ]
+      ],
+      "unitCode": "MTH-T01-C11-U01"
     },
     {
       "archetypeKey": "c11-one-step-division-multiplication",
@@ -41,7 +42,8 @@
       ],
       "usedContexts": [
         "batch_production_sizing"
-      ]
+      ],
+      "unitCode": "MTH-T01-C11-U02"
     },
     {
       "archetypeKey": "c11-two-step-linear-equations",
@@ -61,7 +63,8 @@
       ],
       "usedContexts": [
         "utility_service_billing"
-      ]
+      ],
+      "unitCode": "MTH-T01-C11-U03"
     },
     {
       "archetypeKey": "c11-variables-both-sides",
@@ -81,7 +84,8 @@
       ],
       "usedContexts": [
         "phone_plan_crossover_pricing"
-      ]
+      ],
+      "unitCode": "MTH-T01-C11-U03"
     },
     {
       "archetypeKey": "c11-distributive-linear-equations",
@@ -101,7 +105,8 @@
       ],
       "usedContexts": [
         "shared_project_budgeting"
-      ]
+      ],
+      "unitCode": "MTH-T01-C11-U03"
     },
     {
       "archetypeKey": "c11-fraction-clearing-lcd",
@@ -121,7 +126,8 @@
       ],
       "usedContexts": [
         "pipe_inflow_reservoir_filling"
-      ]
+      ],
+      "unitCode": "MTH-T01-C11-U04"
     },
     {
       "archetypeKey": "c11-decimal-clearing-equations",
@@ -141,7 +147,8 @@
       ],
       "usedContexts": [
         "sales_tax_billing_calculation"
-      ]
+      ],
+      "unitCode": "MTH-T01-C11-U04"
     },
     {
       "archetypeKey": "c11-literal-equations-rearrangement",
@@ -161,7 +168,8 @@
       ],
       "usedContexts": [
         "perimeter_geometry_isolation"
-      ]
+      ],
+      "unitCode": "MTH-T01-C12-U07"
     },
     {
       "archetypeKey": "c11-break-even-financial-synthesis",
@@ -181,7 +189,8 @@
       ],
       "usedContexts": [
         "artisan_manufacturing_break_even"
-      ]
+      ],
+      "unitCode": "MTH-T01-C11-U03"
     },
     {
       "archetypeKey": "c11-uniform-motion-head-to-head-modeling",
@@ -201,7 +210,8 @@
       ],
       "usedContexts": [
         "high_speed_rail_encounter"
-      ]
+      ],
+      "unitCode": "MTH-T01-C11-U03"
     }
   ]
 }
