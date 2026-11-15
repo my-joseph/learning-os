@@ -8,7 +8,13 @@
       "name": "Rectangle area",
       "coreConcept": "Area of a rectangle is length times width.",
       "governingRelation": "A = l w",
-      "cognitiveTraps": ["tpl-perimeter-instead-of-area-trap"],
+      "cognitiveTraps": [
+        {
+          "trapTag": "tpl-perimeter-instead-of-area-trap",
+          "description": "Adds the sides (perimeter) instead of multiplying them.",
+          "trapFormula": "2 * (l + w)"
+        }
+      ],
       "versatileDomains": [],
       "usedContexts": []
     },
@@ -18,7 +24,13 @@
       "name": "Two-step linear equation",
       "coreConcept": "Undo addition, then multiplication.",
       "governingRelation": "a x + b = c",
-      "cognitiveTraps": ["tpl-wrong-inverse-operation-trap"],
+      "cognitiveTraps": [
+        {
+          "trapTag": "tpl-wrong-inverse-operation-trap",
+          "description": "Adds the constant to the other side instead of subtracting it.",
+          "trapFormula": "(c + b) / a"
+        }
+      ],
       "versatileDomains": [],
       "usedContexts": []
     },
@@ -28,7 +40,13 @@
       "name": "Find the flaw: distribution",
       "coreConcept": "A factor multiplies every term inside the bracket.",
       "governingRelation": "k(a + b) = k a + k b",
-      "cognitiveTraps": ["tpl-partial-distribution-trap"],
+      "cognitiveTraps": [
+        {
+          "trapTag": "tpl-partial-distribution-trap",
+          "description": "Multiplies only the first term inside the bracket by the factor.",
+          "trapFormula": "k * a + b * c - d"
+        }
+      ],
       "versatileDomains": [],
       "usedContexts": []
     },
@@ -38,8 +56,16 @@
       "name": "Rectangle from perimeter and area",
       "coreConcept": "Two relations give a quadratic; the question picks one root.",
       "governingRelation": "2(l + w) = P, l w = A",
-      "cognitiveTraps": ["tpl-half-perimeter-as-side-trap"],
-      "versatileDomains": ["garden_plot_fencing"],
+      "cognitiveTraps": [
+        {
+          "trapTag": "tpl-half-perimeter-as-side-trap",
+          "description": "Takes half the perimeter as a side length.",
+          "trapFormula": "P / 2"
+        }
+      ],
+      "versatileDomains": [
+        "garden_plot_fencing"
+      ],
       "usedContexts": []
     }
   ]

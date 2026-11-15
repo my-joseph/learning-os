@@ -15,7 +15,7 @@ import os
 import re
 from typing import Any, Dict, List, Optional
 
-from math_engine.answer_check import CHECKERS, _split_items, check_answer, is_equal, to_expr
+from math_engine.answer_check import CHECKERS, _split_items, check_answer, is_equal, is_omission_trap, to_expr
 from math_engine.figure_autofill import archetype_requires_figure, autofill_problem_figure
 from math_engine.fmt import LEVEL_LABELS, unit_hierarchy
 from math_engine.generate import next_drill_id
@@ -220,17 +220,7 @@ def validate_flaw_trap(prob: Dict[str, Any], trap_value: Any) -> None:
         )
 
 
-def _is_omission_trap(spec: Dict[str, Any], tv: Any) -> bool:
-    """True when a solution_set trap is a strict, non-empty subset of the correct values."""
-    if spec.get("type") != "solution_set":
-        return False
-    variable = spec.get("variable", "x")
-    try:
-        expected = [to_expr(str(v), variables=[variable], trusted=True) for v in spec.get("values") or []]
-        items = [to_expr(it, variables=[variable], trusted=True) for it in _split_items(str(tv), variable)]
-    except Exception:
-        return False
-    return 0 < len(items) < len(expected) and all(any(is_equal(i, e) for e in expected) for i in items)
+_is_omission_trap = is_omission_trap  # kept for callers/tests that use the old name
 
 
 def _trap_matches_spec(spec: Dict[str, Any], tv: Any) -> bool:

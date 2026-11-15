@@ -69,3 +69,13 @@ def test_principal_angle_only_is_an_omission_trap():
     assert not _is_omission_trap(TRIG_SPEC, "pi/6, 5*pi/6")  # the full answer is not a trap
     assert not _is_omission_trap(TRIG_SPEC, "13*pi/6")  # not a subset: needs its own derivation
     assert not _is_omission_trap({"type": "number", "value": "3"}, "3")
+
+
+def test_omission_exemption_is_shared_with_the_verify_g4_gate():
+    import inspect
+
+    from math_engine import verify
+    from math_engine.answer_check import is_omission_trap
+
+    assert is_omission_trap(TRIG_SPEC, "pi/6")
+    assert "is_omission_trap" in inspect.getsource(verify)  # G4's 2-givens rule skips omission traps too
