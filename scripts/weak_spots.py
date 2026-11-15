@@ -21,6 +21,7 @@ import json
 import os
 from collections import defaultdict
 from dataclasses import dataclass, field
+from datetime import date, timedelta
 
 from scripts.issues import main_checkout_root
 
@@ -159,6 +160,44 @@ def level_advice(items: list[Item]) -> dict[int, dict]:
             move = "stay"
         advice[lv] = {"pct": pct, "n": len(last), "move": move}
     return advice
+
+
+MASTERY_WINDOW = 10
+REVIEW_DAYS = {1: 2, 2: 5, 3: 17, 4: 45}  # rules/01 §8 intervals (mid-points)
+
+
+def suggest_mastery(unit_items: list[Item], open_weak_spot: bool) -> int | None:
+    """Evidence-based Mastery (0-4) for one unit from its last items (rules/01 §7).
+
+    1 under 50%; 3 when at least 3 recent L3+ items average >= 70% and no weak spot is open; otherwise 2.
+    Drills cannot show 4 (Feynman explanation, cross-subject synthesis), so the learner sets 4 by hand.
+    """
+    recent = unit_items[-MASTERY_WINDOW:]
+    if not recent:
+        return None
+    pct = sum(i.score for i in recent) / len(recent)
+    if pct < 0.5:
+        return 1
+    hard = [i for i in recent if isinstance(i.level, int) and i.level >= 3]
+    if len(hard) >= 3 and sum(i.score for i in hard) / len(hard) >= 0.7 and not open_weak_spot:
+        return 3
+    return 2
+
+
+def review_update(
+    unit: str, current_mastery: int | None, attempt_date: str, data_root: str = "drills/data", progress_dir=None
+) -> dict | None:
+    """Mastery, Last Reviewed and Next Review for a unit page after practice, or None without evidence.
+    A learner-set 4 is kept while the evidence still says 3 (drills cannot confirm or refute 4)."""
+    items = [i for i in load_items(data_root, progress_dir) if i.unit == unit]
+    open_weak = any(s["open"] and unit in s["units"] for s in trap_status(items).values())
+    mastery = suggest_mastery(items, open_weak)
+    if mastery is None:
+        return None
+    if current_mastery == 4 and mastery == 3:
+        mastery = 4
+    nxt = date.fromisoformat(attempt_date[:10]) + timedelta(days=REVIEW_DAYS[mastery])
+    return {"mastery": mastery, "lastReviewed": attempt_date[:10], "nextReview": nxt.isoformat()}
 
 
 def report(scope: str | None = None, data_root: str = "drills/data", progress_dir: str | None = None) -> str:

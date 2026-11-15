@@ -113,3 +113,27 @@ def test_unit_comes_from_the_archetype_when_the_problem_has_none(tmp_path, monke
     monkeypatch.chdir(tmp_path)
     (item,) = ws.load_items(str(tmp_path / "data"), str(prog))
     assert item.unit == "MTH-T09-C01-U04"
+
+
+def _items(scores_levels):
+    return [
+        ws.Item("D", "U", f"Q{n}", lv, "direct", None, None, f"2026-11-{n + 1:02d}", sc, False, False)
+        for n, (sc, lv) in enumerate(scores_levels)
+    ]
+
+
+def test_suggest_mastery_ladder():
+    assert ws.suggest_mastery([], False) is None
+    assert ws.suggest_mastery(_items([(0, 1), (0.5, 1), (0, 2)]), False) == 1
+    assert ws.suggest_mastery(_items([(1, 1), (1, 2), (0.5, 3)]), False) == 2
+    strong = _items([(1, 1), (1, 2), (1, 3), (1, 3), (0.5, 4)])
+    assert ws.suggest_mastery(strong, False) == 3
+    assert ws.suggest_mastery(strong, True) == 2  # an open weak spot caps it
+
+
+def test_review_update_keeps_learner_set_4_and_schedules(tmp_path):
+    roots = _write(tmp_path, {"D1": [(f"Q{i}", 3, "direct", None, _right(f"2026-11-0{i}")) for i in range(1, 5)]})
+    upd = ws.review_update("MTH-T09-C01-U01", None, "2026-11-10T09:00:00Z", *roots)
+    assert upd == {"mastery": 3, "lastReviewed": "2026-11-10", "nextReview": "2026-11-27"}
+    assert ws.review_update("MTH-T09-C01-U01", 4, "2026-11-10", *roots)["mastery"] == 4
+    assert ws.review_update("MTH-T09-C02-U01", None, "2026-11-10", *roots) is None

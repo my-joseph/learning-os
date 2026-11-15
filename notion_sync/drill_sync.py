@@ -105,12 +105,47 @@ def missing_sync_fields(drill_doc: dict) -> list[str]:
     return missing
 
 
-def unit_relation_ids(drill_doc: dict, unit_code: str, id_map: dict) -> list[str]:
-    """Notion page IDs of the units a drill covers: a unit drill links its unit; a chapter mixed drill links
-    every unit its problems come from (ingest stamps each problem's `unitCode` from its archetype)."""
+def covered_units(drill_doc: dict, unit_code: str, id_map: dict) -> list[str]:
+    """Unit codes a drill covers: a unit drill covers its unit; a chapter mixed drill covers every unit its
+    problems come from (ingest stamps each problem's `unitCode` from its archetype)."""
     codes = [unit_code] if "-U" in unit_code else []
     codes += [p.get("unitCode") for p in drill_doc.get("problems", []) if p.get("unitCode")]
-    return [id_map[u]["id"] for u in dict.fromkeys(codes) if isinstance(id_map.get(u), dict)]
+    return [u for u in dict.fromkeys(codes) if isinstance(id_map.get(u), dict)]
+
+
+def unit_relation_ids(drill_doc: dict, unit_code: str, id_map: dict) -> list[str]:
+    """Notion page IDs of the units a drill covers (see `covered_units`)."""
+    return [id_map[u]["id"] for u in covered_units(drill_doc, unit_code, id_map)]
+
+
+def update_unit_reviews(units: list[str], attempt_date: str, id_map: dict, token: str) -> dict:
+    """After practice, write evidence-based Mastery (0-4), Last Reviewed and Next Review to each unit page
+    that has those properties (rules/01 §7-8). Returns {unit: update} for what was written."""
+    from scripts.weak_spots import review_update
+
+    written = {}
+    for unit in units:
+        page_id = id_map[unit]["id"]
+        props = notion_request("GET", f"pages/{page_id}", token).get("properties", {})
+        if not all(k in props for k in ("Mastery (0-4)", "Last Reviewed", "Next Review")):
+            continue
+        upd = review_update(unit, props["Mastery (0-4)"].get("number"), attempt_date)
+        if not upd:
+            continue
+        notion_request(
+            "PATCH",
+            f"pages/{page_id}",
+            token,
+            {
+                "properties": {
+                    "Mastery (0-4)": {"number": upd["mastery"]},
+                    "Last Reviewed": {"date": {"start": upd["lastReviewed"]}},
+                    "Next Review": {"date": {"start": upd["nextReview"]}},
+                }
+            },
+        )
+        written[unit] = upd
+    return written
 
 
 def _mention_or_code(code: str, id_map: dict) -> str:
@@ -323,21 +358,13 @@ def _sync_drill_to_notion_inner(drill_doc: dict, path: str) -> dict:
     # Also append attempt log to parent Unit or Chapter page if an attempt was made
     parent_entry = id_map.get(unit_code) or id_map.get(chapter_code)
     parent_page_id = parent_entry["id"] if isinstance(parent_entry, dict) else parent_entry
-    if attempt_date and parent_page_id:
+    reviews = {}
+    if attempt_date:
         try:
-            # Check if parent page schema has 'Last Reviewed' property (Units DB has it, Chapter DB does not)
-            target_page = notion_request("GET", f"pages/{parent_page_id}", token)
-            if "Last Reviewed" in target_page.get("properties", {}):
-                notion_request(
-                    "PATCH",
-                    f"pages/{parent_page_id}",
-                    token,
-                    {"properties": {"Last Reviewed": {"date": {"start": attempt_date}}}},
-                )
-        except Exception:
-            # Non-fatal if page schema doesn't have Last Reviewed
-            pass
-
+            reviews = update_unit_reviews(covered_units(drill_doc, unit_code, id_map), attempt_date, id_map, token)
+        except Exception:  # noqa: BLE001 - review scheduling must never fail the drill sync
+            reviews = {}
+    if attempt_date and parent_page_id:
         pct = summary.get("accuracyPct", 0)
         mistakes_str = ", ".join(mistake_cats) if mistake_cats else "None"
         log_line = (
@@ -355,7 +382,7 @@ def _sync_drill_to_notion_inner(drill_doc: dict, path: str) -> dict:
         except Exception:
             pass
 
-    return {"ok": True, "drillPageId": page_id, "parentPageId": parent_page_id}
+    return {"ok": True, "drillPageId": page_id, "parentPageId": parent_page_id, "unitReviews": reviews}
 
 
 def sync_drill_to_notion(drill_doc: dict) -> dict:
