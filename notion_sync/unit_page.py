@@ -12,7 +12,8 @@ id_map.json). Write the spec as JSON, never as Python strings (LaTeX backslashes
 
     python -m notion_sync.unit_page --code MTH-T02-C01-U02 --spec scratch/pages/U02.json --mode new
     python -m notion_sync.unit_page --code MTH-T01-C04-U04 --spec ex3.json --mode add --after "Worked Example"
-    ... --dry-run   # build and validate the blocks, print a summary, send nothing
+    python -m notion_sync.unit_page --code MTH-T02-C01-U02 --set "Learning Objective=..." --set "Status=In progress"
+    ... --dry-run   # validate the blocks and the target (page empty / heading exists), send nothing
 """
 
 from __future__ import annotations
@@ -94,6 +95,9 @@ def section_end(blocks: list[dict], heading_contains: str) -> str | None:
         if t in HEADINGS and HEADINGS.index(t) <= level:
             break
         end = i
+    # A section that closes with a divider: insert above the divider, so new blocks stay inside the section.
+    while end > start and blocks[end].get("type") == "divider":
+        end -= 1
     return blocks[end]["id"]
 
 
@@ -109,18 +113,36 @@ def insert_after(parent_id: str, after_id: str | None, blocks: list[dict], token
             after_id = results[-1]["id"]
 
 
-def write_page(code: str, spec: list[dict], mode: str, after: str | None, token: str, id_map: dict) -> str:
-    entry = id_map.get(code)
-    if not isinstance(entry, dict):
-        raise ValueError(f"{code} is not in id_map.json")
-    blocks = spec_to_blocks(spec, id_map)
-    validate_blocks_clean(blocks, code)
-    existing = get_all_blocks(entry["id"], token)
+def set_properties(code: str, values: dict[str, str], token: str, id_map: dict) -> list[str]:
+    """Set page properties by name: text (rich_text/title), status, select or number. `Mastery (0-4)` is
+    refused (drill sync sets it from evidence). Returns the names that were set."""
+    if any(name.startswith("Mastery") for name in values):
+        raise ValueError("Mastery is set from drill evidence, never by hand (rules/01 §9)")
+    page_id = id_map[code]["id"]
+    props = notion_request("GET", f"pages/{page_id}", token).get("properties", {})
+    patch = {}
+    for name, value in values.items():
+        if name not in props:
+            raise ValueError(f"{code} has no property {name!r}; it has {sorted(props)}")
+        kind = props[name]["type"]
+        if kind in ("rich_text", "title"):
+            patch[name] = {kind: [{"type": "text", "text": {"content": value[:1900]}}]}
+        elif kind in ("status", "select"):
+            patch[name] = {kind: {"name": value}}
+        elif kind == "number":
+            patch[name] = {"number": float(value)}
+        else:
+            raise ValueError(f"property {name!r} is of type {kind}; set it in Notion")
+    notion_request("PATCH", f"pages/{page_id}", token, {"properties": patch})
+    return list(patch)
+
+
+def check_target(code: str, mode: str, after: str | None, existing: list[dict]) -> str | None:
+    """Validate the target before writing (also used by --dry-run). Returns the block to insert after."""
     if mode == "new":
         if existing:
             raise ValueError(f"{code} already has {len(existing)} blocks; use --mode add (never rewrite a page)")
-        insert_after(entry["id"], None, blocks, token)
-        return f"wrote {len(blocks)} blocks to empty page {code}"
+        return None
     if not after:
         raise ValueError("--mode add needs --after <heading text>")
     if LEARNER_SECTION.lower() in after.lower():
@@ -128,29 +150,63 @@ def write_page(code: str, spec: list[dict], mode: str, after: str | None, token:
     anchor = section_end(existing, after)
     if anchor is None:
         raise ValueError(f"no heading containing {after!r} on {code}")
+    return anchor
+
+
+def write_page(code: str, spec: list[dict], mode: str, after: str | None, token: str, id_map: dict) -> str:
+    entry = id_map.get(code)
+    if not isinstance(entry, dict):
+        raise ValueError(f"{code} is not in id_map.json")
+    blocks = spec_to_blocks(spec, id_map)
+    validate_blocks_clean(blocks, code)
+    existing = get_all_blocks(entry["id"], token)
+    anchor = check_target(code, mode, after, existing)
     insert_after(entry["id"], anchor, blocks, token)
+    if mode == "new":
+        return f"wrote {len(blocks)} blocks to empty page {code}"
     return f"inserted {len(blocks)} blocks into section {after!r} of {code}"
 
 
 def main(argv: list[str] | None = None) -> int:
-    ap = argparse.ArgumentParser(prog="python -m notion_sync.unit_page", description=__doc__.split("\n\n")[0])
+    ap = argparse.ArgumentParser(
+        prog="python -m notion_sync.unit_page",
+        description=__doc__.split("\n\n")[0],
+        epilog="Text syntax: **bold** (no * inside), $inline math$, `code`, [[CODE]] page mentions. "
+        "No italic or links. Block types: h2 h3 p bullet num todo callout quote eq toggle divider.",
+    )
     ap.add_argument("--code", required=True)
-    ap.add_argument("--spec", required=True)
-    ap.add_argument("--mode", choices=("new", "add"), required=True)
+    ap.add_argument("--spec", help="JSON spec of blocks (optional when only --set is used)")
+    ap.add_argument("--mode", choices=("new", "add"))
     ap.add_argument("--after", help="heading text of the section to extend (mode add)")
-    ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--set", action="append", default=[], metavar="NAME=VALUE", help="set a page property")
+    ap.add_argument("--dry-run", action="store_true", help="validate blocks and target; send nothing")
     args = ap.parse_args(argv)
     with open("id_map.json", encoding="utf-8") as f:
         id_map = json.load(f)
-    with open(args.spec, encoding="utf-8") as f:
-        spec = json.load(f)
-    if args.dry_run:
-        blocks = spec_to_blocks(spec, id_map)
-        validate_blocks_clean(blocks, args.code)
-        print(f"dry run: {len(blocks)} top-level blocks for {args.code} ({args.mode}); nothing sent")
-        return 0
+    if not isinstance(id_map.get(args.code), dict):
+        print(f"Error: {args.code} is not in id_map.json", file=sys.stderr)
+        return 2
+    values = dict(v.split("=", 1) for v in args.set)
     try:
-        print(write_page(args.code, spec, args.mode, args.after, require_token(load_env().get("NOTION_TOKEN")), id_map))
+        token = require_token(load_env().get("NOTION_TOKEN"))
+        if args.spec:
+            if not args.mode:
+                raise ValueError("--spec needs --mode new|add")
+            with open(args.spec, encoding="utf-8") as f:
+                spec = json.load(f)
+            if args.dry_run:
+                blocks = spec_to_blocks(spec, id_map)
+                validate_blocks_clean(blocks, args.code)
+                existing = get_all_blocks(id_map[args.code]["id"], token)
+                check_target(args.code, args.mode, args.after, existing)
+                print(f"dry run: {len(blocks)} top-level blocks for {args.code} ({args.mode}); target ok; nothing sent")
+            else:
+                print(write_page(args.code, spec, args.mode, args.after, token, id_map))
+        if values:
+            if args.dry_run:
+                print(f"dry run: would set {sorted(values)}")
+            else:
+                print(f"set {set_properties(args.code, values, token, id_map)}")
     except ValueError as exc:
         print(f"Error: {exc}", file=sys.stderr)
         return 2

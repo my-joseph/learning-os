@@ -17,6 +17,10 @@ Fix each one when the topic it belongs to is actually started, not before. Sourc
 - Step checks: `TRUSTED_INTERNAL_FUNCS` has `diff` but no `integrate`, so antiderivative steps cannot be machine-checked.
 - Figures: no builder for area under a curve or a tangent line.
 
+## Before diagrams on Notion pages
+
+- `notion_sync.unit_page` has no image block and nothing uploads a rendered figure to Notion, and `figure_builder` has no complex-plane (Argand) builder. `rules/02` §7a asks for a diagram in section 1 of geometry or graph units; until then describe it in text. (issue da7445)
+
 ## Cosmetic
 
 - The `whole_sign_flip` diagnostic mentions `i^2 = -1` in non-complex problems.

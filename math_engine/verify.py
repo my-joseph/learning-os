@@ -14,7 +14,7 @@ Checks per problem:
 
 import re
 
-from math_engine.answer_check import check_answer, is_equal, to_expr
+from math_engine.answer_check import check_answer, is_equal, is_omission_trap, to_expr
 from quality_rules import QualityError, check_gate_g3_set, verify_quality_gates
 
 BANNED = [
@@ -201,7 +201,9 @@ def verify_problem(p, id_map=None, rules=None):
                         raise QualityError("G4", pid, f"trapGiven '{g}' does not appear in prompt: {prompt_text}")
                 td_nums = _number_tokens(td)
                 matched_givens = {str(g) for g in givens if _has_number(g, td_nums)}
-                if len(matched_givens) < 2:
+                # An omission trap (only some of the solution_set values) is a strict subset of the answer, so it
+                # need not combine 2 givens (same exemption as validate_ai_problem_contract).
+                if len(matched_givens) < 2 and not is_omission_trap(p.get("answerSpec") or {}, tv):
                     raise QualityError(
                         "G4",
                         pid,

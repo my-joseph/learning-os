@@ -1547,3 +1547,16 @@ if __name__ == "__main__":
             res["trapMatched"] = True
 
     print(json.dumps(res))
+
+
+def is_omission_trap(spec: dict, tv: object) -> bool:
+    """True when a solution_set trap is a strict, non-empty subset of the correct values."""
+    if spec.get("type") != "solution_set":
+        return False
+    variable = spec.get("variable", "x")
+    try:
+        expected = [to_expr(str(v), variables=[variable], trusted=True) for v in spec.get("values") or []]
+        items = [to_expr(it, variables=[variable], trusted=True) for it in _split_items(str(tv), variable)]
+    except Exception:
+        return False
+    return 0 < len(items) < len(expected) and all(any(is_equal(i, e) for e in expected) for i in items)
