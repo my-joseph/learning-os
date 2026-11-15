@@ -93,3 +93,23 @@ def test_unattempted_problems_and_scope_filter(tmp_path):
     assert [i.pid for i in ws.load_items(*roots)] == ["Q2"]
     assert "No practice data yet for MTH-T09-C02" in ws.report("MTH-T09-C02", *roots)
     assert "MTH-T09-C01-U01" in ws.report("MTH-T09-C01", *roots)
+
+
+def test_unit_comes_from_the_archetype_when_the_problem_has_none(tmp_path, monkeypatch):
+    vault = tmp_path / "math_engine" / "reasoning_vault"
+    vault.mkdir(parents=True)
+    (vault / "MTH-T09-C01.json").write_text(
+        json.dumps({"archetypes": [{"archetypeKey": "arch", "unitCode": "MTH-T09-C01-U04"}]})
+    )
+    data, prog = tmp_path / "data" / "MTH-T09-C01", tmp_path / "progress"
+    data.mkdir(parents=True)
+    prog.mkdir()
+    (data / "D1.json").write_text(
+        json.dumps(
+            {"drillId": "D1", "unitCode": "MTH-T09-C01", "problems": [{"id": "Q1", "level": 1, "archetypeKey": "arch"}]}
+        )
+    )
+    (prog / "D1.json").write_text(json.dumps({"drillId": "D1", "problems": {"Q1": _right("2026-11-01")}}))
+    monkeypatch.chdir(tmp_path)
+    (item,) = ws.load_items(str(tmp_path / "data"), str(prog))
+    assert item.unit == "MTH-T09-C01-U04"
