@@ -89,7 +89,7 @@ This is the default for new and upgraded math and physics pages (§1 still allow
 
 **Unit page**
 - **Callout:** Learning Objective, Expected Output, prerequisites (`@Page`), next Unit (`@Page`), Resource (OpenStax section).
-- **1. Core Concepts & Intuition:** definitions and the mental model; a diagram for geometry or graphs.
+- **1. Core Concepts & Intuition:** definitions and the mental model; a diagram for geometry, graphs, number lines or the complex plane, as a `figure` block (`rules/03` §3.1, §5). A worked example about a shape or graph shows it too.
 - **2. Key Formulas & Decision Rules:** each formula with a collapsed toggle **"Why this works"** (3–5 lines from first principles). Add a short **"Which method when"** rule only when the Unit has two or more methods.
 - **3. Worked Examples (graduated, vertical `\begin{aligned}`):**
   - Example 1, L1: direct procedure.

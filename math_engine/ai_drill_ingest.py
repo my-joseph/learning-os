@@ -16,7 +16,7 @@ import re
 from typing import Any, Dict, List, Optional
 
 from math_engine.answer_check import CHECKERS, _split_items, check_answer, is_equal, is_omission_trap, to_expr
-from math_engine.figure_autofill import archetype_requires_figure, autofill_problem_figure
+from math_engine.figure_autofill import archetype_requires_figure, autofill_problem_figure, figure_decision_missing
 from math_engine.fmt import LEVEL_LABELS, unit_hierarchy
 from math_engine.generate import next_drill_id
 from math_engine.verify import verify_problem
@@ -474,6 +474,18 @@ def validate_ai_problem_contract(prob: Dict[str, Any], enforce_leak_gate: bool =
     return True
 
 
+def require_figure_decision(prob: Dict[str, Any], archetypes: List[Dict[str, Any]]) -> None:
+    """03_stem §3.1: every archetype a problem uses has decided about figures, `figureBuilders` or a
+    `figureNone` reason. Older archetypes get the field the first time a drill uses them."""
+    arch = next((a for a in archetypes if a.get("archetypeKey") == prob.get("archetypeKey")), None)
+    if arch and figure_decision_missing(arch):
+        raise AiContractError(
+            f"[{prob.get('id', '?')}] archetype '{arch['archetypeKey']}' has no figure decision. In its vault file "
+            f"add 'figureBuilders' (geometry, graphs, number lines, the complex plane, anything a learner would sketch) "
+            f"or 'figureNone': '<why a picture adds nothing>' (03_stem §3.1)."
+        )
+
+
 def require_figure_if_declared(prob: Dict[str, Any], archetypes: List[Dict[str, Any]]) -> None:
     """Rule 11 guard (03_stem §3.1): archetypes with `figureBuilders` demand a figure or a `figureWaiver`."""
     if "figure" in prob or prob.get("figureWaiver"):
@@ -751,6 +763,7 @@ def check_ai_drill(
         except AiContractError as exc:
             errors.append(str(exc))
         try:
+            require_figure_decision(prob, vault_archs)
             autofill_problem_figure(prob, vault_archs)
             require_figure_if_declared(prob, vault_archs)
             validate_ai_problem_contract(prob)
@@ -828,6 +841,7 @@ def ingest_ai_drill(
         if arch and "-U" in archetype_owner(arch):
             prob.setdefault("unitCode", archetype_owner(arch))  # lets a chapter drill link the units it covers
         validate_review(prob)
+        require_figure_decision(prob, vault_archs)
         autofill_problem_figure(prob, vault_archs)
         require_figure_if_declared(prob, vault_archs)
         validate_ai_problem_contract(prob)
@@ -925,6 +939,9 @@ if __name__ == "__main__":
             print(f"  [{a.get('level', 1)}] {a.get('archetypeKey')} ({archetype_owner(a)}): {a.get('name')}")
             print(f"      Governing: {a.get('governingRelation')}")
             print(f"      Used Contexts: {a.get('usedContexts', [])}")
+            figs = list(dict.fromkeys(b.get("fn") for b in a.get("figureBuilders") or []))
+            decision = ", ".join(figs) if figs else (f"none ({a['figureNone']})" if a.get("figureNone") else None)
+            print(f"      Figure: {decision or 'UNDECIDED - add figureBuilders or figureNone (rules/03 §3.1)'}")
 
     if args.ingest_file:
         with open(args.ingest_file, "r", encoding="utf-8") as f:

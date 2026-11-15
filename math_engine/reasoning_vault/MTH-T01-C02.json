@@ -34,7 +34,8 @@
       "usedContexts": [
         "sensor_temperature_threshold"
       ],
-      "unitCode": "MTH-T01-C02-U02"
+      "unitCode": "MTH-T01-C02-U02",
+      "figureNone": "Symbolic expressions and one-step equations; a picture adds nothing."
     },
     {
       "archetypeKey": "c02-expression-variable-substitution",
@@ -67,7 +68,8 @@
       "usedContexts": [
         "electric_scooter_fare_calculation"
       ],
-      "unitCode": "MTH-T01-C02-U02"
+      "unitCode": "MTH-T01-C02-U02",
+      "figureNone": "Symbolic expressions and one-step equations; a picture adds nothing."
     },
     {
       "archetypeKey": "c02-combining-like-terms-univariate",
@@ -100,7 +102,8 @@
       "usedContexts": [
         "retail_inventory_batch_merging"
       ],
-      "unitCode": "MTH-T01-C02-U02"
+      "unitCode": "MTH-T01-C02-U02",
+      "figureNone": "Symbolic expressions and one-step equations; a picture adds nothing."
     },
     {
       "archetypeKey": "c02-distributive-property-expansion",
@@ -133,7 +136,8 @@
       "usedContexts": [
         "agricultural_greenhouse_fertilizer_dosing"
       ],
-      "unitCode": "MTH-T01-C10-U03"
+      "unitCode": "MTH-T01-C10-U03",
+      "figureNone": "Symbolic expressions and one-step equations; a picture adds nothing."
     },
     {
       "archetypeKey": "c02-additive-equality-inversion",
@@ -166,7 +170,8 @@
       "usedContexts": [
         "aviation_fuel_reserve_calculation"
       ],
-      "unitCode": "MTH-T01-C02-U03"
+      "unitCode": "MTH-T01-C02-U03",
+      "figureNone": "Symbolic expressions and one-step equations; a picture adds nothing."
     },
     {
       "archetypeKey": "c02-multiplicative-equality-inversion",
@@ -199,7 +204,8 @@
       "usedContexts": [
         "solar_array_power_generation"
       ],
-      "unitCode": "MTH-T01-C03-U05"
+      "unitCode": "MTH-T01-C03-U05",
+      "figureNone": "Symbolic expressions and one-step equations; a picture adds nothing."
     },
     {
       "archetypeKey": "c02-two-variable-formula-evaluation",
@@ -232,7 +238,8 @@
       "usedContexts": [
         "perimeter_fence_construction"
       ],
-      "unitCode": "MTH-T01-C02-U02"
+      "unitCode": "MTH-T01-C02-U02",
+      "figureNone": "Symbolic expressions and one-step equations; a picture adds nothing."
     },
     {
       "archetypeKey": "c02-nested-distributive-simplification",
@@ -265,7 +272,8 @@
       "usedContexts": [
         "telecom_bandwidth_tier_pricing"
       ],
-      "unitCode": "MTH-T01-C10-U03"
+      "unitCode": "MTH-T01-C10-U03",
+      "figureNone": "Symbolic expressions and one-step equations; a picture adds nothing."
     },
     {
       "archetypeKey": "c02-constrained-perimeter-unknown-model",
@@ -337,7 +345,8 @@
       "usedContexts": [
         "production_shift_serial_numbering"
       ],
-      "unitCode": "MTH-T01-C12-U01"
+      "unitCode": "MTH-T01-C12-U01",
+      "figureNone": "Symbolic expressions and one-step equations; a picture adds nothing."
     }
   ]
 }

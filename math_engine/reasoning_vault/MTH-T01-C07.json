@@ -34,7 +34,8 @@
       "usedContexts": [
         "quality_inspection_batch_ratio"
       ],
-      "unitCode": "MTH-T01-C07-U01"
+      "unitCode": "MTH-T01-C07-U01",
+      "figureNone": "Ratio and rate relations between quantities; a picture adds nothing."
     },
     {
       "archetypeKey": "c07-unit-rate-comparison",
@@ -67,7 +68,8 @@
       "usedContexts": [
         "fuel_consumption_efficiency_rate"
       ],
-      "unitCode": "MTH-T01-C07-U02"
+      "unitCode": "MTH-T01-C07-U02",
+      "figureNone": "Ratio and rate relations between quantities; a picture adds nothing."
     },
     {
       "archetypeKey": "c07-proportional-scaling-direct",
@@ -100,7 +102,8 @@
       "usedContexts": [
         "culinary_recipe_yield_scaling"
       ],
-      "unitCode": "MTH-T01-C07-U04"
+      "unitCode": "MTH-T01-C07-U04",
+      "figureNone": "Ratio and rate relations between quantities; a picture adds nothing."
     },
     {
       "archetypeKey": "c07-proportion-cross-product-isolation",
@@ -133,7 +136,8 @@
       "usedContexts": [
         "medical_dosage_saline_infusion"
       ],
-      "unitCode": "MTH-T01-C07-U03"
+      "unitCode": "MTH-T01-C07-U03",
+      "figureNone": "Ratio and rate relations between quantities; a picture adds nothing."
     },
     {
       "archetypeKey": "c07-part-to-whole-ratio-partition",
@@ -166,7 +170,8 @@
       "usedContexts": [
         "construction_concrete_aggregate_batch"
       ],
-      "unitCode": "MTH-T01-C07-U01"
+      "unitCode": "MTH-T01-C07-U01",
+      "figureNone": "Ratio and rate relations between quantities; a picture adds nothing."
     },
     {
       "archetypeKey": "c07-scale-drawing-map-conversion",
@@ -199,7 +204,8 @@
       "usedContexts": [
         "architectural_blueprint_room_span"
       ],
-      "unitCode": "MTH-T01-C07-U06"
+      "unitCode": "MTH-T01-C07-U06",
+      "figureNone": "Ratio and rate relations between quantities; a picture adds nothing."
     },
     {
       "archetypeKey": "c07-inverse-proportion-rate-time",
@@ -232,7 +238,8 @@
       "usedContexts": [
         "warehouse_crew_container_unloading"
       ],
-      "unitCode": "MTH-T01-C07-U05"
+      "unitCode": "MTH-T01-C07-U05",
+      "figureNone": "Ratio and rate relations between quantities; a picture adds nothing."
     },
     {
       "archetypeKey": "c07-currency-exchange-rate-conversion",
@@ -265,7 +272,8 @@
       "usedContexts": [
         "international_cargo_freight_pricing"
       ],
-      "unitCode": "MTH-T01-C07-U06"
+      "unitCode": "MTH-T01-C07-U06",
+      "figureNone": "Ratio and rate relations between quantities; a picture adds nothing."
     },
     {
       "archetypeKey": "c07-constrained-three-way-mixture-proportion",
@@ -305,7 +313,8 @@
         "metallurgical_bronze_alloy_casting",
         "pharmaceutical_compound_ointment_base"
       ],
-      "unitCode": "MTH-T01-C07-U06"
+      "unitCode": "MTH-T01-C07-U06",
+      "figureNone": "Ratio and rate relations between quantities; a picture adds nothing."
     },
     {
       "archetypeKey": "c07-gear-train-transmission-ratio-synthesis",
@@ -345,7 +354,8 @@
         "wind_turbine_generator_gearbox",
         "industrial_conveyor_motor_drive"
       ],
-      "unitCode": "MTH-T01-C07-U05"
+      "unitCode": "MTH-T01-C07-U05",
+      "figureNone": "Ratio and rate relations between quantities; a picture adds nothing."
     }
   ]
 }

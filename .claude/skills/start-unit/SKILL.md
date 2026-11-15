@@ -23,7 +23,7 @@ Check `docs/backlog.md` for the topic (trig functions, logs, calculus). If the u
 .venv/bin/python -m scripts.vault_report <UNIT>
 ```
 
-If the unit has no archetypes (or too few to cover its learning objectives), add them to `math_engine/reasoning_vault/<UNIT>.json` (`{"unitCode": "<UNIT>", "archetypes": [...]}`), each with `unitCode`, `level` (base level), `name`, `coreConcept`, `mentalModel`, `governingRelation`, `cognitiveTraps` as objects (`trapTag`, `description`, `trapFormula`; older vaults use bare tag strings, which still work, but write objects in new archetypes), `versatileDomains` (only real ones), `usedContexts: []` and `source` (the OpenStax section). One L1–L2 archetype per learning objective first, then archetypes that go beyond the book. Follow the shape of `.claude/skills/new-math-drill/template/MTH-TEMPLATE.json` and existing vaults.
+If the unit has no archetypes (or too few to cover its learning objectives), add them to `math_engine/reasoning_vault/<UNIT>.json` (`{"unitCode": "<UNIT>", "archetypes": [...]}`), each with `unitCode`, `level` (base level), `name`, `coreConcept`, `mentalModel`, `governingRelation`, `cognitiveTraps` as objects (`trapTag`, `description`, `trapFormula`; older vaults use bare tag strings, which still work, but write objects in new archetypes), `versatileDomains` (only real ones), `usedContexts: []`, `source` (the OpenStax section) and a figure decision: `figureBuilders` for anything a learner would sketch (shapes, graphs, number lines, the complex plane), or `figureNone` with a reason (`rules/03` §3.1). Label the asked-for quantity `?`. One L1–L2 archetype per learning objective first, then archetypes that go beyond the book. Follow the shape of `.claude/skills/new-math-drill/template/MTH-TEMPLATE.json` and existing vaults.
 
 ## 4. Notion page (rules/02 §7a)
 
@@ -31,6 +31,7 @@ Read `rules/02_pedagogy.md` §6–§8 and §7a, `rules/03_stem.md` §1 (vertical
 - Callout with Learning Objective, Expected Output, prerequisites and next unit as `[[CODE]]` mentions, and the OpenStax section as the Resource.
 - Every formula gets a "Why this works" toggle (3–5 lines from first principles). Add "Which method when" only if the unit has two or more methods.
 - Worked examples: L1 direct, L2 reverse (find an input from a result) or translation of a situation, not just a longer procedure, L3 trap contrast built on the unit's most important vault trap (❌ wrong line, ✅ right line, one sentence why). Derivations as `eq` blocks with `\begin{aligned}`, one transformation per line.
+- Figures: for a unit about shapes, graphs, intervals or the complex plane, section 1 has at least one `figure` block and every worked example about a shape or graph shows it (`{"type": "figure", "fn": "build_function_graph_figure", "args": {...}, "caption": "..."}`; builders and their arguments: `python -m notion_sync.unit_page --help` and `math_engine/figure_builder.py`). The dry run builds and renders every figure; the real run uploads them to Notion.
 - Practice Guide with the 4 categories of §8 (no exercise list); 3–4 Active Recall toggles with vertical reference solutions.
 - Section 6 "My Implementation & Mistake Log" with the three empty prompts of §7 (Feynman one-liner, my working, mistake log), and section 7 "Completion Checklist & Mastery Review".
 

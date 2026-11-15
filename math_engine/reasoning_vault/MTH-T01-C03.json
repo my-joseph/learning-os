@@ -34,7 +34,8 @@
       "usedContexts": [
         "deep_sea_bathymetry_trench"
       ],
-      "unitCode": "MTH-T01-C03-U03"
+      "unitCode": "MTH-T01-C03-U03",
+      "figureNone": "Signed-number arithmetic; a number line would show the answer as a distance."
     },
     {
       "archetypeKey": "c03-bank-overdraft-ledger-balance",
@@ -67,7 +68,8 @@
       "usedContexts": [
         "commercial_bank_account_ledger"
       ],
-      "unitCode": "MTH-T01-C03-U02"
+      "unitCode": "MTH-T01-C03-U02",
+      "figureNone": "Signed-number arithmetic; a number line would show the answer as a distance."
     },
     {
       "archetypeKey": "c03-signed-addition-opposite-signs",
@@ -100,7 +102,8 @@
       "usedContexts": [
         "warehouse_stock_inventory_adjustment"
       ],
-      "unitCode": "MTH-T01-C03-U02"
+      "unitCode": "MTH-T01-C03-U02",
+      "figureNone": "Signed-number arithmetic; a number line would show the answer as a distance."
     },
     {
       "archetypeKey": "c03-signed-subtraction-adding-opposite",
@@ -133,7 +136,8 @@
       "usedContexts": [
         "subterranean_mining_elevator_depth"
       ],
-      "unitCode": "MTH-T01-C03-U03"
+      "unitCode": "MTH-T01-C03-U03",
+      "figureNone": "Signed-number arithmetic; a number line would show the answer as a distance."
     },
     {
       "archetypeKey": "c03-signed-multiplication-parity",
@@ -166,7 +170,8 @@
       "usedContexts": [
         "financial_short_position_valuation"
       ],
-      "unitCode": "MTH-T01-C03-U04"
+      "unitCode": "MTH-T01-C03-U04",
+      "figureNone": "Signed-number arithmetic; a number line would show the answer as a distance."
     },
     {
       "archetypeKey": "c03-signed-quotient-partition",
@@ -199,7 +204,8 @@
       "usedContexts": [
         "corporate_quarterly_debt_amortization"
       ],
-      "unitCode": "MTH-T01-C03-U04"
+      "unitCode": "MTH-T01-C03-U04",
+      "figureNone": "Signed-number arithmetic; a number line would show the answer as a distance."
     },
     {
       "archetypeKey": "c03-signed-pemdas-hierarchical-evaluation",
@@ -232,7 +238,8 @@
       "usedContexts": [
         "aerospace_trajectory_acceleration_vector"
       ],
-      "unitCode": "MTH-T01-C03-U04"
+      "unitCode": "MTH-T01-C03-U04",
+      "figureNone": "Signed-number arithmetic; a number line would show the answer as a distance."
     },
     {
       "archetypeKey": "c03-signed-expression-evaluation",
@@ -265,7 +272,8 @@
       "usedContexts": [
         "structural_truss_stress_analysis"
       ],
-      "unitCode": "MTH-T01-C03-U04"
+      "unitCode": "MTH-T01-C03-U04",
+      "figureNone": "Signed-number arithmetic; a number line would show the answer as a distance."
     },
     {
       "archetypeKey": "c03-signed-linear-equation-two-step",
@@ -298,7 +306,8 @@
       "usedContexts": [
         "autonomous_deep_submersible_ballast"
       ],
-      "unitCode": "MTH-T01-C03-U05"
+      "unitCode": "MTH-T01-C03-U05",
+      "figureNone": "Signed-number arithmetic; a number line would show the answer as a distance."
     },
     {
       "archetypeKey": "c03-conjoint-temperature-depth-synthesis",
@@ -331,7 +340,8 @@
       "usedContexts": [
         "geothermal_wellbore_drilling_telemetry"
       ],
-      "unitCode": "MTH-T01-C03-U04"
+      "unitCode": "MTH-T01-C03-U04",
+      "figureNone": "Signed-number arithmetic; a number line would show the answer as a distance."
     }
   ]
 }

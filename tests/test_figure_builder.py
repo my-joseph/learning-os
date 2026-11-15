@@ -23,7 +23,7 @@ class TestFigureBuilder(unittest.TestCase):
         svg = figure_to_svg(fig)
         self.assertIn("<svg", svg)
         self.assertIn("<polygon", svg)
-        self.assertIn("12\\text{ m}", svg)
+        self.assertIn("12 m", svg)  # LaTeX labels become plain text for Notion
 
     def test_right_triangle_figure_spec(self):
         fig = build_right_triangle_figure(6, 8, label_hypot="10")

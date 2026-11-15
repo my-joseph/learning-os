@@ -1,3 +1,4 @@
+import copy
 import json
 import unittest
 
@@ -44,11 +45,14 @@ class TestFigureAutofill(unittest.TestCase):
 
         from math_engine.ai_drill_ingest import require_figure_if_declared
 
+        # Re-checking a stored drill against today's vault: autofill runs first, as at ingest.
         for vf in glob.glob("math_engine/reasoning_vault/*.json"):
             archs = json.load(open(vf)).get("archetypes", [])
             unit = os.path.basename(vf)[:-5]
             for f in glob.glob(f"drills/data/{unit}/*.json"):
                 for p in json.load(open(f))["problems"]:
+                    p = copy.deepcopy(p)
+                    autofill_problem_figure(p, archs)
                     require_figure_if_declared(p, archs)
 
     def test_new_builders_render_svg(self):

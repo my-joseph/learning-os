@@ -20,6 +20,7 @@ Supports:
 """
 
 import math
+import re
 from typing import Any, Dict, List, Optional, Tuple
 
 FIGURE_THEMES = {
@@ -895,273 +896,15 @@ def build_cartesian_rectangle_figure(
 
 
 # ==============================================================================
-# STANDALONE SVG EXPORTER (HEADLESS / NOTION READY)
+# STANDALONE SVG EXPORTER (HEADLESS / NOTION READY) - lives in math_engine.figure_svg
 # ==============================================================================
 
 
 def figure_to_svg(figure: Dict[str, Any], width: int = 420, height: int = 280) -> str:
-    """
-    Renders any MathFigureSpec into a self-contained, standalone SVG string.
-    Suitable for direct Notion /v1/file_uploads, embedding in HTML, or writing to .svg files.
-    """
-    kind = figure.get("kind")
-    theme_key = figure.get("theme", "indigo")
-    th = FIGURE_THEMES.get(theme_key, FIGURE_THEMES["indigo"])
+    """Self-contained SVG for any MathFigure spec (Notion pages, files). See `math_engine.figure_svg`."""
+    from math_engine.figure_svg import figure_to_svg as _render
 
-    if kind == "geometry_2d":
-        return _render_geometry_to_svg(figure, th, width, height)
-    elif kind == "cartesian_graph":
-        return _render_cartesian_to_svg(figure, th, width, height)
-    else:
-        # Fallback empty SVG
-        return f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}"></svg>'
-
-
-def _render_geometry_to_svg(fig: Dict[str, Any], th: Dict[str, str], svg_w: int, svg_h: int) -> str:
-    padding = 45
-    points = fig.get("points", {})
-    raw_coords = list(points.values())
-
-    if not raw_coords:
-        raw_coords = [[0, 0], [10, 10]]
-
-    xs = [p[0] for p in raw_coords]
-    ys = [p[1] for p in raw_coords]
-    min_x, max_x = min(xs), max(xs)
-    min_y, max_y = min(ys), max(ys)
-
-    world_w = max(max_x - min_x, 1e-4)
-    world_h = max(max_y - min_y, 1e-4)
-    avail_w = svg_w - padding * 2
-    avail_h = svg_h - padding * 2
-
-    scale = min(avail_w / world_w, avail_h / world_h)
-    draw_w = world_w * scale
-    draw_h = world_h * scale
-    off_x = padding + (avail_w - draw_w) / 2
-    off_y = padding + (avail_h - draw_h) / 2
-
-    def to_svg(pt: List[float]) -> Tuple[float, float]:
-        sx = off_x + (pt[0] - min_x) * scale
-        sy = svg_h - (off_y + (pt[1] - min_y) * scale)
-        return (round(sx, 1), round(sy, 1))
-
-    svg_body: List[str] = []
-
-    # Polygons
-    for shape in fig.get("shapes", []):
-        if shape.get("type") == "polygon":
-            verts = [to_svg(points[v]) for v in shape.get("vertices", []) if v in points]
-            if len(verts) >= 2:
-                pts_str = " ".join(f"{x},{y}" for x, y in verts)
-                fill = th["fill"] if shape.get("fill") else "none"
-                svg_body.append(
-                    f'<polygon points="{pts_str}" fill="{fill}" stroke="{th["stroke"]}" stroke-width="2.5" stroke-linejoin="round" />'
-                )
-        elif shape.get("type") == "circle":
-            c_name = shape.get("center")
-            if c_name in points:
-                cx, cy = to_svg(points[c_name])
-                r_svg = shape.get("radius", 1) * scale
-                fill = th["fill"] if shape.get("fill") else "none"
-                svg_body.append(
-                    f'<circle cx="{cx}" cy="{cy}" r="{r_svg:.1f}" fill="{fill}" stroke="{th["stroke"]}" stroke-width="2" />'
-                )
-
-    # Markers (Right angle)
-    for marker in fig.get("markers", []):
-        if marker.get("type") == "right_angle":
-            v_name = marker.get("vertex")
-            a_name = marker.get("arm1")
-            b_name = marker.get("arm2")
-            if v_name in points and a_name in points and b_name in points:
-                vx, vy = to_svg(points[v_name])
-                ax, ay = to_svg(points[a_name])
-                bx, by = to_svg(points[b_name])
-                v1 = (ax - vx, ay - vy)
-                v2 = (bx - vx, by - vy)
-                l1 = math.hypot(v1[0], v1[1]) or 1
-                l2 = math.hypot(v2[0], v2[1]) or 1
-                u1 = (v1[0] / l1, v1[1] / l1)
-                u2 = (v2[0] / l2, v2[1] / l2)
-                s = 14.0
-                p1 = (vx + u1[0] * s, vy + u1[1] * s)
-                cor = (vx + (u1[0] + u2[0]) * s, vy + (u1[1] + u2[1]) * s)
-                p2 = (vx + u2[0] * s, vy + u2[1] * s)
-                svg_body.append(
-                    f'<polyline points="{p1[0]:.1f},{p1[1]:.1f} {cor[0]:.1f},{cor[1]:.1f} {p2[0]:.1f},{p2[1]:.1f}" fill="none" stroke="{th["stroke"]}" stroke-width="1.6" />'
-                )
-
-    # Point dots
-    for p_name, pt in points.items():
-        sx, sy = to_svg(pt)
-        svg_body.append(f'<circle cx="{sx}" cy="{sy}" r="3.5" fill="#1e293b" stroke="#ffffff" stroke-width="1.5" />')
-
-    # Dimension labels
-    for lbl in fig.get("labels", []):
-        if lbl.get("type") == "segment":
-            p1_name, p2_name = lbl.get("p1"), lbl.get("p2")
-            if p1_name in points and p2_name in points:
-                x1, y1 = to_svg(points[p1_name])
-                x2, y2 = to_svg(points[p2_name])
-                mx = (x1 + x2) / 2
-                my = (y1 + y2) / 2
-                dx = x2 - x1
-                dy = y2 - y1
-                dist = math.hypot(dx, dy) or 1
-                nx = -dy / dist
-                ny = dx / dist
-                off = lbl.get("offset", 16)
-                side = lbl.get("side", "auto")
-                if side == "bottom":
-                    my += off
-                elif side == "top":
-                    my -= off
-                elif side == "left":
-                    mx -= off
-                elif side == "right":
-                    mx += off
-                else:
-                    mx += nx * off
-                    my += ny * off
-
-                txt = lbl.get("text", "")
-                svg_body.append(
-                    f'<text x="{mx:.1f}" y="{my:.1f}" text-anchor="middle" dominant-baseline="central" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif" font-size="12" font-weight="600" fill="#1e293b">{txt}</text>'
-                )
-
-    inner = "\n  ".join(svg_body)
-    return f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {svg_w} {svg_h}" width="100%" height="100%">
-  <rect width="100%" height="100%" fill="#f8fafc" rx="16" />
-  {inner}
-</svg>"""
-
-
-def _render_cartesian_to_svg(fig: Dict[str, Any], th: Dict[str, str], svg_w: int, svg_h: int) -> str:
-    padding = 38
-    x_min, x_max = fig.get("xRange", [-5, 5])
-    y_min, y_max = fig.get("yRange", [-5, 5])
-
-    w_world = max(x_max - x_min, 1e-4)
-    h_world = max(y_max - y_min, 1e-4)
-    draw_w = svg_w - padding * 2
-    draw_h = svg_h - padding * 2
-
-    def to_svg_x(xw: float) -> float:
-        return padding + ((xw - x_min) / w_world) * draw_w
-
-    def to_svg_y(yw: float) -> float:
-        return svg_h - padding - ((yw - y_min) / h_world) * draw_h
-
-    ox = to_svg_x(0)
-    oy = to_svg_y(0)
-
-    x_step = fig.get("xStep") or calculate_smart_step(x_min, x_max, 6)
-    y_step = fig.get("yStep") or calculate_smart_step(y_min, y_max, 6)
-
-    svg_body: List[str] = []
-
-    # Grid
-    cur_x = math.ceil(x_min / x_step) * x_step
-    while cur_x <= x_max:
-        if abs(cur_x) > 1e-6:
-            sx = to_svg_x(cur_x)
-            svg_body.append(
-                f'<line x1="{sx:.1f}" y1="{padding}" x2="{sx:.1f}" y2="{svg_h - padding}" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="2 2" />'
-            )
-        cur_x += x_step
-
-    cur_y = math.ceil(y_min / y_step) * y_step
-    while cur_y <= y_max:
-        if abs(cur_y) > 1e-6:
-            sy = to_svg_y(cur_y)
-            svg_body.append(
-                f'<line x1="{padding}" y1="{sy:.1f}" x2="{svg_w - padding}" y2="{sy:.1f}" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="2 2" />'
-            )
-        cur_y += y_step
-
-    # Axes
-    clamp_oy = max(padding, min(svg_h - padding, oy))
-    clamp_ox = max(padding, min(svg_w - padding, ox))
-    svg_body.append(
-        f'<line x1="{padding - 10}" y1="{clamp_oy:.1f}" x2="{svg_w - padding + 12}" y2="{clamp_oy:.1f}" stroke="#64748b" stroke-width="2" />'
-    )
-    svg_body.append(
-        f'<line x1="{clamp_ox:.1f}" y1="{svg_h - padding + 10}" x2="{clamp_ox:.1f}" y2="{padding - 12}" stroke="#64748b" stroke-width="2" />'
-    )
-
-    # Ticks on axes
-    cur_x = math.ceil(x_min / x_step) * x_step
-    while cur_x <= x_max:
-        if abs(cur_x) > 1e-6:
-            sx = to_svg_x(cur_x)
-            svg_body.append(
-                f'<line x1="{sx:.1f}" y1="{clamp_oy - 3}" x2="{sx:.1f}" y2="{clamp_oy + 3}" stroke="#64748b" stroke-width="1.2" />'
-            )
-            svg_body.append(
-                f'<text x="{sx:.1f}" y="{clamp_oy + 13}" font-family="monospace" font-size="9" text-anchor="middle" fill="#64748b">{cur_x:g}</text>'
-            )
-        cur_x += x_step
-
-    cur_y = math.ceil(y_min / y_step) * y_step
-    while cur_y <= y_max:
-        if abs(cur_y) > 1e-6:
-            sy = to_svg_y(cur_y)
-            svg_body.append(
-                f'<line x1="{clamp_ox - 3}" y1="{sy:.1f}" x2="{clamp_ox + 3}" y2="{sy:.1f}" stroke="#64748b" stroke-width="1.2" />'
-            )
-            svg_body.append(
-                f'<text x="{clamp_ox - 5}" y="{sy + 3:.1f}" font-family="monospace" font-size="9" text-anchor="end" fill="#64748b">{cur_y:g}</text>'
-            )
-        cur_y += y_step
-
-    # Plots
-    for plot in fig.get("plots", []):
-        p_type = plot.get("type")
-        if p_type == "point":
-            px, py = plot.get("coord", [0, 0])
-            sx = to_svg_x(px)
-            sy = to_svg_y(py)
-            col = plot.get("color") or th["stroke"]
-            svg_body.append(
-                f'<circle cx="{sx:.1f}" cy="{sy:.1f}" r="4.5" fill="{col}" stroke="#ffffff" stroke-width="1.5" />'
-            )
-            if plot.get("label"):
-                lbl = plot["label"]
-                svg_body.append(
-                    f'<text x="{sx + 8:.1f}" y="{sy - 8:.1f}" font-family="monospace" font-size="11" font-weight="bold" fill="#1e293b">{lbl}</text>'
-                )
-        elif p_type == "segment":
-            x1, y1 = plot.get("from", [0, 0])
-            x2, y2 = plot.get("to", [0, 0])
-            col = plot.get("color") or "#94a3b8"
-            dash = f'stroke-dasharray="{plot["strokeDasharray"]}"' if plot.get("strokeDasharray") else ""
-            svg_body.append(
-                f'<line x1="{to_svg_x(x1):.1f}" y1="{to_svg_y(y1):.1f}" x2="{to_svg_x(x2):.1f}" y2="{to_svg_y(y2):.1f}" stroke="{col}" stroke-width="1.8" {dash} />'
-            )
-        elif p_type == "function":
-            coeffs = plot.get("coefficients", [])
-            if coeffs:
-                steps = 60
-                dx = (x_max - x_min) / steps
-                pts: List[str] = []
-                for i in range(steps + 1):
-                    cur_x = x_min + i * dx
-                    cur_y = 0.0
-                    for c in coeffs:
-                        cur_y = cur_y * cur_x + c
-                    sx = to_svg_x(cur_x)
-                    sy = to_svg_y(cur_y)
-                    pts.append(f"{sx:.1f},{sy:.1f}")
-                pts_str = " ".join(pts)
-                col = plot.get("color") or th["stroke"]
-                svg_body.append(f'<polyline points="{pts_str}" fill="none" stroke="{col}" stroke-width="2.5" />')
-
-    inner = "\n  ".join(svg_body)
-    return f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {svg_w} {svg_h}" width="100%" height="100%">
-  <rect width="100%" height="100%" fill="#f8fafc" rx="16" />
-  {inner}
-</svg>"""
+    return _render(figure, width, height)
 
 
 def build_cone_figure(
@@ -1312,4 +1055,267 @@ def build_gable_facade_figure(
             {"type": "segment", "p1": "BR", "p2": "TR", "text": f"{rect_height:g}", "side": "right"},
             {"type": "segment", "p1": "MID", "p2": "PK", "text": f"{tri_height:g}", "side": "right"},
         ],
+    }
+
+
+# ==============================================================================
+# FUNCTION GRAPHS, NUMBER LINES, COMPLEX PLANE (T02 onwards)
+# ==============================================================================
+
+
+def _split(text: str, sep: str = ",") -> List[str]:
+    return [t.strip() for t in str(text or "").split(sep) if t.strip()]
+
+
+def _nice_range(lo: float, hi: float, include_zero: bool = True) -> Tuple[float, float]:
+    if include_zero:
+        lo, hi = min(lo, 0.0), max(hi, 0.0)
+    span = max(hi - lo, 1.0)
+    lo, hi = lo - 0.12 * span, hi + 0.12 * span
+    step = calculate_smart_step(lo, hi, 6)
+    return math.floor(lo / step) * step, math.ceil(hi / step) * step
+
+
+def _pretty(expr: str) -> str:
+    """`2*(x-1)**2 - 3` -> `2(x-1)^2 - 3` for a legend."""
+    s = str(expr).replace("**", "^")
+    s = re.sub(r"(\d)\s*\*\s*(\d)", r"\1\\cdot \2", s)
+    return s.replace("*", "")
+
+
+def _sample(expr: str, x_min: float, x_max: float, n: int = 240) -> List[List[Tuple[float, float]]]:
+    """Runs of (x, y) samples; breaks where the function is undefined or jumps (vertical asymptotes)."""
+    from math_engine.safe_expr import compile_expr, evaluate
+
+    tree = compile_expr(expr)
+    runs: List[List[Tuple[float, float]]] = []
+    cur: List[Tuple[float, float]] = []
+    for i in range(n + 1):
+        x = x_min + (x_max - x_min) * i / n
+        try:
+            y: Optional[float] = evaluate(tree, {"x": x})
+        except (ArithmeticError, ValueError, KeyError, TypeError):
+            y = None
+        if y is not None and cur and abs(y - cur[-1][1]) > 50 * (x_max - x_min) / n * max(1.0, abs(cur[-1][1])):
+            runs.append(cur)
+            cur = []
+        if y is None:
+            if cur:
+                runs.append(cur)
+            cur = []
+        else:
+            cur.append((round(x, 4), round(y, 4)))
+    if cur:
+        runs.append(cur)
+    return [r for r in runs if len(r) > 1]
+
+
+def build_function_graph_figure(
+    expr: str,
+    x_min: float = -5,
+    x_max: float = 5,
+    y_min: Optional[float] = None,
+    y_max: Optional[float] = None,
+    label: Optional[str] = None,
+    expr2: Optional[str] = None,
+    label2: Optional[str] = None,
+    mark_x: str = "",
+    mark_labels: str = "",
+    vlines: str = "",
+    theme: str = "indigo",
+    title: Optional[str] = None,
+) -> Dict[str, Any]:
+    """Graph of y = expr(x) (and optionally a second curve) for any function `math_engine.safe_expr` reads:
+    polynomials, rational, radical, |x|, exp/ln/log, sin/cos/tan (`2*(x-1)^2 - 3`, `1/(x-2)`, `sqrt(x+4)`).
+
+    `mark_x` = comma-separated x values to mark on the first curve; `mark_labels` = their labels separated by
+    `|` (default `(x, y)`; write `?` for a coordinate the problem asks for). `vlines` = comma-separated x values
+    drawn as dashed vertical lines (asymptotes). y-range is fitted to the curve when not given.
+    """
+    exprs = [(expr, label or f"y = {_pretty(expr)}"), *([(expr2, label2 or f"y = {_pretty(expr2)}")] if expr2 else [])]
+    palette = [FIGURE_THEMES.get(theme, FIGURE_THEMES["indigo"])["stroke"], "#e11d48"]
+    curves = [(i, run) for i, (e, _) in enumerate(exprs) for run in _sample(e, x_min, x_max)]
+    if not curves:
+        raise ValueError(f"nothing to plot for {expr!r} on [{x_min}, {x_max}]")
+    if y_min is None or y_max is None:
+        ys = sorted(y for _, run in curves for _, y in run)
+        lo, hi = ys[int(0.03 * (len(ys) - 1))], ys[int(0.97 * (len(ys) - 1))]
+        fit = _nice_range(lo, hi)
+        y_min = fit[0] if y_min is None else y_min
+        y_max = fit[1] if y_max is None else y_max
+    plots: List[Dict[str, Any]] = []
+    for x in [float(v) for v in _split(vlines)]:
+        plots.append(
+            {"type": "segment", "from": [x, y_min], "to": [x, y_max], "color": "#94a3b8", "strokeDasharray": "5 4"}
+        )
+    for i, run in curves:
+        plots.append({"type": "curve", "points": [list(p) for p in run], "color": palette[i % 2], "strokeWidth": 2.5})
+    from math_engine.safe_expr import evaluate
+
+    labels = _split(mark_labels, "|")
+    for k, xs in enumerate(_split(mark_x)):
+        x = float(xs)
+        y = evaluate(expr, {"x": x})
+        plots.append(
+            {
+                "type": "point",
+                "coord": [round(x, 4), round(y, 4)],
+                "label": labels[k] if k < len(labels) else f"({x:g}, {y:g})",
+                "position": "top-right",
+            }
+        )
+    legend_y = y_max - 0.08 * (y_max - y_min)
+    for i, (_, text) in enumerate(exprs):
+        plots.append(
+            {
+                "type": "text",
+                "coord": [x_min + 0.22 * (x_max - x_min), legend_y - i * 0.1 * (y_max - y_min)],
+                "text": text,
+                "color": palette[i % 2],
+            }
+        )
+    return {
+        "kind": "cartesian_graph",
+        "theme": theme,
+        "title": title or "Graph",
+        "xRange": [x_min, x_max],
+        "yRange": [y_min, y_max],
+        "grid": True,
+        "axes": True,
+        "plots": plots,
+    }
+
+
+_INTERVAL = re.compile(r"^\s*([\[(])\s*([^,]+?)\s*,\s*([^\])]+?)\s*([\])])\s*$")
+
+
+def _bound(text: str) -> float:
+    t = text.replace("∞", "inf").replace(" ", "").lower()
+    if t in ("inf", "+inf", "infinity"):
+        return math.inf
+    if t in ("-inf", "-infinity"):
+        return -math.inf
+    from math_engine.safe_expr import evaluate
+
+    return evaluate(t)
+
+
+def build_number_line_figure(
+    intervals: str = "",
+    points: str = "",
+    x_min: Optional[float] = None,
+    x_max: Optional[float] = None,
+    theme: str = "indigo",
+    title: Optional[str] = None,
+) -> Dict[str, Any]:
+    """A number line with intervals in interval notation, joined by `U`: `"(-inf, -2] U (3, inf)"`.
+    A closed end is a filled dot, an open end a hollow dot, an infinite end runs off the line with an arrow.
+    `points` = comma-separated single values to mark (e.g. critical values)."""
+    parsed = []
+    for part in [p for p in re.split(r"\s*(?:U|∪)\s*", intervals or "") if p.strip()]:
+        m = _INTERVAL.match(part)
+        if not m:
+            raise ValueError(f"not an interval: {part!r} (write e.g. '[-2, 3)' or '(-inf, 1]')")
+        parsed.append((m.group(1) == "[", _bound(m.group(2)), _bound(m.group(3)), m.group(4) == "]"))
+    singles = [_bound(p) for p in _split(points)]
+    finite = [v for _, a, b, _ in parsed for v in (a, b) if math.isfinite(v)] + singles or [0.0]
+    lo, hi = min(finite), max(finite)
+    span = max(hi - lo, 4.0)
+    x_min = math.floor(lo - 0.3 * span) if x_min is None else x_min
+    x_max = math.ceil(hi + 0.3 * span) if x_max is None else x_max
+    color = FIGURE_THEMES.get(theme, FIGURE_THEMES["indigo"])["stroke"]
+    plots: List[Dict[str, Any]] = []
+    for closed_l, a, b, closed_r in parsed:
+        left, right = max(a, x_min), min(b, x_max)
+        plots.append(
+            {
+                "type": "segment",
+                "from": [left, 0],
+                "to": [right, 0],
+                "color": color,
+                "strokeWidth": 5,
+                "arrow": math.isinf(b),
+            }
+        )
+        if math.isinf(a):
+            plots.append(
+                {
+                    "type": "segment",
+                    "from": [right, 0],
+                    "to": [left, 0],
+                    "color": color,
+                    "strokeWidth": 5,
+                    "arrow": True,
+                }
+            )
+        for v, closed in ((a, closed_l), (b, closed_r)):
+            if math.isfinite(v):
+                plots.append({"type": "point", "coord": [v, 0], "hollow": not closed, "color": color})
+    for v in singles:
+        plots.append({"type": "point", "coord": [v, 0], "color": color})
+    step = 1 if x_max - x_min <= 14 else calculate_smart_step(x_min, x_max, 8)
+    return {
+        "kind": "cartesian_graph",
+        "theme": theme,
+        "title": title or "Number Line",
+        "xRange": [x_min, x_max],
+        "yRange": [-1, 1],
+        "xStep": step,
+        "grid": False,
+        "axes": True,
+        "yAxis": False,
+        "axisLabels": ["x", ""],
+        "plots": plots,
+    }
+
+
+def build_complex_plane_figure(
+    re1: float,
+    im1: float,
+    label1: str = "z",
+    re2: Optional[float] = None,
+    im2: Optional[float] = None,
+    label2: str = "w",
+    show_conjugate: bool = False,
+    show_modulus: bool = False,
+    label_modulus: Optional[str] = None,
+    theme: str = "purple",
+    title: Optional[str] = None,
+) -> Dict[str, Any]:
+    """Argand diagram: each number as a point and an arrow from 0. `show_conjugate` adds the reflection
+    in the real axis; `show_modulus` labels the arrow's length (`label_modulus`, e.g. `|z| = ?`)."""
+    pts = [(re1, im1, label1, FIGURE_THEMES.get(theme, FIGURE_THEMES["purple"])["stroke"])]
+    if re2 is not None and im2 is not None:
+        pts.append((re2, im2, label2, "#0284c7"))
+    if show_conjugate:
+        pts.append((re1, -im1, f"\\bar{{{label1}}}", "#94a3b8"))
+    m = max([abs(v) for x, y, _, _ in pts for v in (x, y)] + [1.0])
+    step = calculate_smart_step(-m, m, 6)
+    r = math.ceil(1.25 * m / step) * step
+    plots: List[Dict[str, Any]] = []
+    for x, y, lbl, col in pts:
+        dashed = {"strokeDasharray": "4 3"} if col == "#94a3b8" else {}
+        plots.append(
+            {"type": "segment", "from": [0, 0], "to": [x, y], "color": col, "strokeWidth": 2.2, "arrow": True, **dashed}
+        )
+        pos = ("top" if y >= 0 else "bottom") + ("-right" if x >= 0 else "-left")
+        plots.append({"type": "point", "coord": [x, y], "label": lbl, "position": pos, "color": col})
+    if show_modulus:
+        plots.append(
+            {
+                "type": "text",
+                "coord": [re1 / 2 - 0.08 * r * (1 if im1 >= 0 else -1), im1 / 2 + 0.1 * r],
+                "text": label_modulus or "|z|",
+            }
+        )
+    return {
+        "kind": "cartesian_graph",
+        "theme": theme,
+        "title": title or "Complex Plane",
+        "xRange": [-r, r],
+        "yRange": [-r, r],
+        "grid": True,
+        "axes": True,
+        "axisLabels": ["Re", "Im"],
+        "plots": plots,
     }

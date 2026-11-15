@@ -73,8 +73,10 @@ export const CartesianRenderer: React.FC<CartesianRendererProps> = ({ spec }) =>
   const theme = spec.theme || "blue";
   const colors = THEME_STYLES[theme] || THEME_STYLES.blue;
 
+  const showY = spec.yAxis !== false;
+  const [xLabel, yLabel] = spec.axisLabels || ["x", "y"];
   const svgWidth = 380;
-  const svgHeight = 260;
+  const svgHeight = showY ? 260 : 100;
   const padding = 36;
 
   const [xMin, xMax] = spec.xRange || [-5, 5];
@@ -118,7 +120,7 @@ export const CartesianRenderer: React.FC<CartesianRendererProps> = ({ spec }) =>
   // Generate Grid lines
   const gridLines = useMemo(() => {
     const lines: { x1: number; y1: number; x2: number; y2: number }[] = [];
-    if (!spec.grid && spec.grid !== undefined) return lines;
+    if ((!spec.grid && spec.grid !== undefined) || !showY) return lines;
 
     const startX = Math.ceil(xMin / effectiveXStep) * effectiveXStep;
     for (let x = startX; x <= xMax; x += effectiveXStep) {
@@ -135,17 +137,18 @@ export const CartesianRenderer: React.FC<CartesianRendererProps> = ({ spec }) =>
     }
 
     return lines;
-  }, [xMin, xMax, yMin, yMax, effectiveXStep, effectiveYStep, spec.grid, toSvgX, toSvgY, padding, svgWidth, svgHeight]);
+  }, [xMin, xMax, yMin, yMax, effectiveXStep, effectiveYStep, spec.grid, showY, toSvgX, toSvgY, padding, svgWidth, svgHeight]);
 
   // Tick marks on axes
   const ticks = useMemo(() => {
     const list: { val: number; x: number; y: number; isX: boolean }[] = [];
     const startX = Math.ceil(xMin / effectiveXStep) * effectiveXStep;
     for (let x = startX; x <= xMax; x += effectiveXStep) {
-      if (Math.abs(x) < 1e-6) continue;
+      if (Math.abs(x) < 1e-6 && showY) continue;
       const cleanVal = Math.round(x * 1000) / 1000;
       list.push({ val: cleanVal, x: toSvgX(x), y: originY, isX: true });
     }
+    if (!showY) return list;
 
     const startY = Math.ceil(yMin / effectiveYStep) * effectiveYStep;
     for (let y = startY; y <= yMax; y += effectiveYStep) {
@@ -154,7 +157,7 @@ export const CartesianRenderer: React.FC<CartesianRendererProps> = ({ spec }) =>
       list.push({ val: cleanVal, x: originX, y: toSvgY(y), isX: false });
     }
     return list;
-  }, [xMin, xMax, yMin, yMax, effectiveXStep, effectiveYStep, originX, originY, toSvgX, toSvgY]);
+  }, [xMin, xMax, yMin, yMax, effectiveXStep, effectiveYStep, showY, originX, originY, toSvgX, toSvgY]);
 
   return (
     <div className="relative w-full flex flex-col items-center select-none overflow-hidden">
@@ -175,6 +178,19 @@ export const CartesianRenderer: React.FC<CartesianRendererProps> = ({ spec }) =>
             orient="auto-start-reverse"
           >
             <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#64748b" />
+          </marker>
+
+          <marker
+            id="plot-arrow"
+            viewBox="0 0 10 10"
+            refX="8"
+            refY="5"
+            markerUnits="userSpaceOnUse"
+            markerWidth="11"
+            markerHeight="11"
+            orient="auto-start-reverse"
+          >
+            <path d="M 0 1 L 9 5 L 0 9 z" fill="context-stroke" />
           </marker>
 
           {/* Clip path for plotted functions to remain within grid bounds */}
@@ -213,6 +229,7 @@ export const CartesianRenderer: React.FC<CartesianRendererProps> = ({ spec }) =>
             markerEnd="url(#axis-arrow)"
           />
           {/* Y Axis */}
+          {showY && (
           <line
             x1={Math.max(padding, Math.min(svgWidth - padding, originX))}
             y1={svgHeight - padding + 10}
@@ -220,6 +237,7 @@ export const CartesianRenderer: React.FC<CartesianRendererProps> = ({ spec }) =>
             y2={padding - 12}
             markerEnd="url(#axis-arrow)"
           />
+          )}
         </g>
 
         {/* Axis Labels */}
@@ -228,16 +246,18 @@ export const CartesianRenderer: React.FC<CartesianRendererProps> = ({ spec }) =>
           y={Math.max(padding, Math.min(svgHeight - padding, originY)) + 4}
           className="text-[11px] font-mono font-bold fill-slate-500"
         >
-          x
+          {xLabel}
         </text>
+        {showY && (
         <text
           x={Math.max(padding, Math.min(svgWidth - padding, originX)) - 4}
           y={padding - 16}
           textAnchor="end"
           className="text-[11px] font-mono font-bold fill-slate-500"
         >
-          y
+          {yLabel}
         </text>
+        )}
 
         {/* 3. Ticks and Numbers */}
         <g className="fill-slate-400 dark:fill-slate-500 text-[9px] font-mono">
@@ -278,7 +298,7 @@ export const CartesianRenderer: React.FC<CartesianRendererProps> = ({ spec }) =>
           })}
 
           {/* Origin 0 label */}
-          {xMin < 0 && xMax > 0 && yMin < 0 && yMax > 0 && (
+          {showY && xMin < 0 && xMax > 0 && yMin < 0 && yMax > 0 && (
             <text
               x={originX - 5}
               y={originY + 12}
@@ -343,6 +363,27 @@ export const CartesianRenderer: React.FC<CartesianRendererProps> = ({ spec }) =>
               </g>
             );
           }
+          if (plot.type === "text") {
+            return (
+              <foreignObject
+                key={`txt-plot-${idx}`}
+                x={toSvgX(plot.coord[0]) - 60}
+                y={toSvgY(plot.coord[1]) - 13}
+                width={120}
+                height={26}
+                className="overflow-visible pointer-events-none"
+              >
+                <div className="w-full h-full flex items-center justify-center">
+                  <span
+                    className="text-[11px] font-bold text-slate-800 dark:text-slate-100"
+                    style={plot.color ? { color: plot.color } : undefined}
+                  >
+                    <FormattedText text={plot.text.startsWith("$") ? plot.text : `$${plot.text}$`} />
+                  </span>
+                </div>
+              </foreignObject>
+            );
+          }
           return null;
         })}
       </svg>
@@ -402,6 +443,23 @@ const PlotRenderer: React.FC<{
     );
   }
 
+  if (plot.type === "curve") {
+    if (plot.points.length < 2) return null;
+    const d = plot.points
+      .map(([x, y], i) => `${i === 0 ? "M" : "L"} ${toSvgX(x)} ${toSvgY(y)}`)
+      .join(" ");
+    return (
+      <path
+        d={d}
+        fill="none"
+        stroke={plot.color || defaultColor}
+        strokeWidth={plot.strokeWidth || 2.4}
+        strokeDasharray={plot.strokeDasharray}
+        strokeLinecap="round"
+      />
+    );
+  }
+
   if (plot.type === "segment") {
     const [x1, y1] = plot.from;
     const [x2, y2] = plot.to;
@@ -415,6 +473,7 @@ const PlotRenderer: React.FC<{
         stroke={plot.color || defaultColor}
         strokeWidth={plot.strokeWidth || 2}
         strokeDasharray={plot.strokeDasharray}
+        markerEnd={plot.arrow ? "url(#plot-arrow)" : undefined}
       />
     );
   }

@@ -197,7 +197,13 @@ class CheckAiDrill(unittest.TestCase):
             json.dump(
                 {
                     "unitCode": "MTH-T01-C12",
-                    "archetypes": [{"archetypeKey": "c12-perimeter", "cognitiveTraps": ["c12-perimeter-half-trap"]}],
+                    "archetypes": [
+                        {
+                            "archetypeKey": "c12-perimeter",
+                            "cognitiveTraps": ["c12-perimeter-half-trap"],
+                            "figureNone": "test",
+                        }
+                    ],
                 },
                 f,
             )
@@ -250,7 +256,11 @@ class IngestFillsSyncFields(unittest.TestCase):
                     {
                         "unitCode": "MTH-T01-C12",
                         "archetypes": [
-                            {"archetypeKey": "c12-perimeter", "cognitiveTraps": ["c12-perimeter-half-trap"]}
+                            {
+                                "archetypeKey": "c12-perimeter",
+                                "cognitiveTraps": ["c12-perimeter-half-trap"],
+                                "figureNone": "test",
+                            }
                         ],
                     },
                     f,

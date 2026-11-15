@@ -34,7 +34,8 @@
       "usedContexts": [
         "bank_vault_cash_audit"
       ],
-      "unitCode": "MTH-T01-C01-U01"
+      "unitCode": "MTH-T01-C01-U01",
+      "figureNone": "Whole-number arithmetic and divisibility; the work is symbolic and a picture adds nothing."
     },
     {
       "archetypeKey": "c01-nearest-rounding-boundary",
@@ -67,7 +68,8 @@
       "usedContexts": [
         "marathon_registration_audit"
       ],
-      "unitCode": "MTH-T01-C01-U01"
+      "unitCode": "MTH-T01-C01-U01",
+      "figureNone": "Whole-number arithmetic and divisibility; the work is symbolic and a picture adds nothing."
     },
     {
       "archetypeKey": "c01-division-quotient-remainder",
@@ -100,7 +102,8 @@
       "usedContexts": [
         "hardware_tool_packaging"
       ],
-      "unitCode": "MTH-T01-C01-U05"
+      "unitCode": "MTH-T01-C01-U05",
+      "figureNone": "Whole-number arithmetic and divisibility; the work is symbolic and a picture adds nothing."
     },
     {
       "archetypeKey": "c01-prime-factor-canonical-tree",
@@ -133,7 +136,8 @@
       "usedContexts": [
         "cryptographic_modulus_audit"
       ],
-      "unitCode": "MTH-T01-C02-U05"
+      "unitCode": "MTH-T01-C02-U05",
+      "figureNone": "Whole-number arithmetic and divisibility; the work is symbolic and a picture adds nothing."
     },
     {
       "archetypeKey": "c01-divisibility-conjoint-rules",
@@ -166,7 +170,8 @@
       "usedContexts": [
         "logistics_pallet_divisibility"
       ],
-      "unitCode": "MTH-T01-C02-U04"
+      "unitCode": "MTH-T01-C02-U04",
+      "figureNone": "Whole-number arithmetic and divisibility; the work is symbolic and a picture adds nothing."
     },
     {
       "archetypeKey": "c01-gcd-euclidean-reduction",
@@ -199,7 +204,8 @@
       "usedContexts": [
         "tile_flooring_tessellation"
       ],
-      "unitCode": "MTH-T01-C02-U04"
+      "unitCode": "MTH-T01-C02-U04",
+      "figureNone": "Whole-number arithmetic and divisibility; the work is symbolic and a picture adds nothing."
     },
     {
       "archetypeKey": "c01-lcm-cyclical-coincidence",
@@ -232,7 +238,8 @@
       "usedContexts": [
         "transit_bus_schedule_coincidence"
       ],
-      "unitCode": "MTH-T01-C02-U05"
+      "unitCode": "MTH-T01-C02-U05",
+      "figureNone": "Whole-number arithmetic and divisibility; the work is symbolic and a picture adds nothing."
     },
     {
       "archetypeKey": "c01-pemdas-hierarchical-evaluation",
@@ -266,7 +273,8 @@
       "usedContexts": [
         "engineering_stress_formula"
       ],
-      "unitCode": "MTH-T01-C02-U01"
+      "unitCode": "MTH-T01-C02-U01",
+      "figureNone": "Whole-number arithmetic and divisibility; the work is symbolic and a picture adds nothing."
     },
     {
       "archetypeKey": "c01-gcd-lcm-duality-inversion",
@@ -305,7 +313,8 @@
       "usedContexts": [
         "distributed_clock_synchronization"
       ],
-      "unitCode": "MTH-T01-C02-U05"
+      "unitCode": "MTH-T01-C02-U05",
+      "figureNone": "Whole-number arithmetic and divisibility; the work is symbolic and a picture adds nothing."
     },
     {
       "archetypeKey": "c01-constrained-modular-batching",
@@ -338,7 +347,8 @@
       "usedContexts": [
         "pharmaceutical_capsule_blister_pack"
       ],
-      "unitCode": "MTH-T01-C01-U05"
+      "unitCode": "MTH-T01-C01-U05",
+      "figureNone": "Whole-number arithmetic and divisibility; the work is symbolic and a picture adds nothing."
     }
   ]
 }

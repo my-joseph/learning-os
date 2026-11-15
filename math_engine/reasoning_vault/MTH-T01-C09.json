@@ -22,7 +22,8 @@
       "usedContexts": [
         "square_tiling_floor_plan"
       ],
-      "unitCode": "MTH-T01-C09-U01"
+      "unitCode": "MTH-T01-C09-U01",
+      "figureNone": "Radical simplification and equations; the work is symbolic and a picture adds nothing."
     },
     {
       "archetypeKey": "c09-square-root-fractions",
@@ -43,7 +44,8 @@
       "usedContexts": [
         "optical_lens_magnification"
       ],
-      "unitCode": "MTH-T01-C09-U02"
+      "unitCode": "MTH-T01-C09-U02",
+      "figureNone": "Radical simplification and equations; the work is symbolic and a picture adds nothing."
     },
     {
       "archetypeKey": "c09-simplify-radical-factoring",
@@ -64,7 +66,8 @@
       "usedContexts": [
         "pendulum_oscillation_period"
       ],
-      "unitCode": "MTH-T01-C09-U02"
+      "unitCode": "MTH-T01-C09-U02",
+      "figureNone": "Radical simplification and equations; the work is symbolic and a picture adds nothing."
     },
     {
       "archetypeKey": "c09-multiplying-radicals",
@@ -85,7 +88,8 @@
       "usedContexts": [
         "fluid_venturi_flow"
       ],
-      "unitCode": "MTH-T01-C09-U04"
+      "unitCode": "MTH-T01-C09-U04",
+      "figureNone": "Radical simplification and equations; the work is symbolic and a picture adds nothing."
     },
     {
       "archetypeKey": "c09-dividing-and-rationalizing",
@@ -106,7 +110,8 @@
       "usedContexts": [
         "rf_transmission_impedance"
       ],
-      "unitCode": "MTH-T01-C09-U04"
+      "unitCode": "MTH-T01-C09-U04",
+      "figureNone": "Radical simplification and equations; the work is symbolic and a picture adds nothing."
     },
     {
       "archetypeKey": "c09-adding-subtracting-like-radicals",
@@ -127,7 +132,8 @@
       "usedContexts": [
         "bridge_truss_strut_lengths"
       ],
-      "unitCode": "MTH-T01-C09-U04"
+      "unitCode": "MTH-T01-C09-U04",
+      "figureNone": "Radical simplification and equations; the work is symbolic and a picture adds nothing."
     },
     {
       "archetypeKey": "c09-binomial-radical-multiplication",
@@ -148,7 +154,8 @@
       "usedContexts": [
         "electrical_generator_load"
       ],
-      "unitCode": "MTH-T01-C09-U04"
+      "unitCode": "MTH-T01-C09-U04",
+      "figureNone": "Radical simplification and equations; the work is symbolic and a picture adds nothing."
     },
     {
       "archetypeKey": "c09-higher-index-roots",
@@ -169,7 +176,8 @@
       "usedContexts": [
         "cubic_storage_crate_volume"
       ],
-      "unitCode": "MTH-T01-C09-U03"
+      "unitCode": "MTH-T01-C09-U03",
+      "figureNone": "Radical simplification and equations; the work is symbolic and a picture adds nothing."
     },
     {
       "archetypeKey": "c09-pythagorean-radical-modeling",
@@ -212,7 +220,8 @@
       "usedContexts": [
         "traffic_accident_speed_estimation"
       ],
-      "unitCode": "MTH-T01-C09-U04"
+      "unitCode": "MTH-T01-C09-U04",
+      "figureNone": "Radical simplification and equations; the work is symbolic and a picture adds nothing."
     }
   ]
 }

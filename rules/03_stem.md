@@ -57,16 +57,11 @@ Whenever illustrating geometric configurations (triangles, angles, circles, poly
 All visual assets (SVGs, diagrams, charts) must be uploaded directly to Notion's official cloud storage:
 1. Initialize upload: `POST https://api.notion.com/v1/file_uploads` with payload `{"mode": "single_part"}`.
 2. Binary upload: Send `multipart/form-data` with form field strictly named `file` containing the binary payload to the provided `upload_url`.
-3. Block attachment: Attach to the Notion page as a native Notion-hosted file block:
+3. Block attachment: attach it as an image block:
    ```json
-   {
-     "object": "block",
-     "type": "file_upload",
-     "file_upload": {
-       "id": "<file_upload_id>"
-     }
-   }
+   {"object": "block", "type": "image", "image": {"type": "file_upload", "file_upload": {"id": "<file_upload_id>"}}}
    ```
+   This is implemented in `notion_sync/figures.py` (`upload_svg`, `figure_block`); unit and chapter pages get figures through `figure` blocks in the `notion_sync.unit_page` spec, rendered from the same builders as drills.
 *(Notion automatically converts this into a permanent native AWS S3 hosted file with type `file`, guaranteeing instant loading, zero rate-limiting, and 100% vector sharpness).*
 
 ### 6. Strict Zero-Leak Placeholder & Hint Invariant in Math & Physics Drills
@@ -76,6 +71,10 @@ All visual assets (SVGs, diagrams, charts) must be uploaded directly to Notion's
   - Intermediate hints (`checkpointHint`) must provide mathematical formulas or invariant identities (e.g., `Complementary angles sum to $90^\circ$`), never the numerical result of the current problem.
 
 ### 3.1 Automatic Figure Attachment (Rule 11)
-- Every Reasoning Vault archetype that depicts a spatial shape (rectangle, triangle, circle, trapezoid, 3D solid) **must** declare `figureBuilders` (`fn` from `math_engine/figure_builder.py`, `args` as arithmetic over `givens` keys, optional `labels`).
-- `ai_drill_ingest.ingest_ai_drill` calls `math_engine/figure_autofill.py` to attach `figure` automatically from `givens`, so the figure always matches the numbers in the prompt. AI never needs to be told to draw.
-- A problem that deliberately has no figure must set `figureWaiver` with a reason. **Guard:** if an archetype declares `figureBuilders` and no figure can be built from `givens` (and no `figureWaiver`), ingestion raises `AiContractError`. Archetypes without `figureBuilders` are exempt until a builder exists.
+- **Every archetype decides about figures.** It declares either `figureBuilders` or `"figureNone": "<why a picture adds nothing>"`. Geometry, graphs of functions, number lines (inequalities, intervals), the complex plane, vectors, and anything a learner would sketch to understand the problem get `figureBuilders`. **Guard:** ingest and `--check` reject a problem whose archetype has neither (`require_figure_decision`). Older archetypes get the field the first time a drill uses them. The learner never has to ask for a picture.
+- `figureBuilders`: `fn` from `math_engine/figure_builder.py`; `args` are numeric expressions over `givens` keys (`math_engine.safe_expr`: `+ - * / ^`, `sqrt`, `abs`, `exp`, `ln`, `log`, `sin`, `cos`, `tan`, `pi`); `labels` are string arguments as format strings over givens (`"{base:g} m"`), including the curve itself for `build_function_graph_figure` (`"expr": "{a:g}*(x-{h:g})^2+{k:g}"`). List several builders when drills name their givens differently; the first that builds is used.
+- `ai_drill_ingest.ingest_ai_drill` calls `math_engine/figure_autofill.py` to attach `figure` automatically from `givens`, so the figure always matches the numbers in the prompt.
+- **Unknowns are labelled `?`, not hidden.** For a reverse or multi-step problem, compute the unknown's size from the givens in `args` (e.g. `"radius": "sqrt(V/(pi*h))"`) and label it `"r = ?"`. A `?` label adds the note "Not to scale" automatically. Never plot the unknown on a grid where it could be read off (a point whose coordinates are the answer, the roots of the equation being solved); there, use `figureNone`/`figureWaiver` or show only the givens.
+- `figureWaiver` (a reason) on a single problem is only for a figure that would give the answer away even with `?` labels. **Guard:** if an archetype declares `figureBuilders` and no figure can be built from `givens` (and no `figureWaiver`), ingestion raises `AiContractError`.
+- Builders for T02: `build_function_graph_figure` (any `safe_expr` function, marked points, asymptotes, a second curve), `build_number_line_figure` (interval notation, open/closed ends, rays), `build_complex_plane_figure` (points as arrows from 0, conjugate, modulus). A shape no builder draws: add a builder (code change) before writing archetypes for it.
+- The Studio (`practice-studio/src/components/MathFigure`) and the SVG export (`math_engine/figure_svg.py`, used for Notion) draw the same spec; a new shape, marker or plot type goes into both.
