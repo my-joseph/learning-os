@@ -65,6 +65,13 @@ const THEME_STYLES: Record<
   },
 };
 
+// Numbers and axis letters in KaTeX's fonts, like the equations in labels and on Notion (math_engine/figure_svg.py).
+const TICK_FONT: React.CSSProperties = { fontFamily: "KaTeX_Main, 'Times New Roman', serif" };
+const AXIS_LABEL_FONT: React.CSSProperties = {
+  fontFamily: "KaTeX_Math, 'Times New Roman', serif",
+  fontStyle: "italic",
+};
+
 interface CartesianRendererProps {
   spec: CartesianGraphSpec;
 }
@@ -244,7 +251,8 @@ export const CartesianRenderer: React.FC<CartesianRendererProps> = ({ spec }) =>
         <text
           x={svgWidth - padding + 14}
           y={Math.max(padding, Math.min(svgHeight - padding, originY)) + 4}
-          className="text-[11px] font-mono font-bold fill-slate-500"
+          className="text-[13px] fill-slate-500"
+          style={AXIS_LABEL_FONT}
         >
           {xLabel}
         </text>
@@ -253,14 +261,15 @@ export const CartesianRenderer: React.FC<CartesianRendererProps> = ({ spec }) =>
           x={Math.max(padding, Math.min(svgWidth - padding, originX)) - 4}
           y={padding - 16}
           textAnchor="end"
-          className="text-[11px] font-mono font-bold fill-slate-500"
+          className="text-[13px] fill-slate-500"
+          style={AXIS_LABEL_FONT}
         >
           {yLabel}
         </text>
         )}
 
         {/* 3. Ticks and Numbers */}
-        <g className="fill-slate-400 dark:fill-slate-500 text-[9px] font-mono">
+        <g className="fill-slate-400 dark:fill-slate-500 text-[10px]" style={TICK_FONT}>
           {ticks.map((t, idx) => {
             if (t.isX) {
               return (
@@ -303,7 +312,8 @@ export const CartesianRenderer: React.FC<CartesianRendererProps> = ({ spec }) =>
               x={originX - 5}
               y={originY + 12}
               textAnchor="end"
-              className="fill-slate-400 dark:fill-slate-500 text-[9px] font-mono"
+              className="fill-slate-400 dark:fill-slate-500 text-[10px]"
+              style={TICK_FONT}
             >
               0
             </text>
@@ -367,13 +377,17 @@ export const CartesianRenderer: React.FC<CartesianRendererProps> = ({ spec }) =>
             return (
               <foreignObject
                 key={`txt-plot-${idx}`}
-                x={toSvgX(plot.coord[0]) - 60}
+                x={toSvgX(plot.coord[0]) - (plot.anchor === "start" ? 0 : 60)}
                 y={toSvgY(plot.coord[1]) - 13}
                 width={120}
                 height={26}
                 className="overflow-visible pointer-events-none"
               >
-                <div className="w-full h-full flex items-center justify-center">
+                <div
+                  className={`w-full h-full flex items-center ${
+                    plot.anchor === "start" ? "justify-start" : "justify-center"
+                  }`}
+                >
                   <span
                     className="text-[11px] font-bold text-slate-800 dark:text-slate-100"
                     style={plot.color ? { color: plot.color } : undefined}

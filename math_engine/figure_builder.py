@@ -1103,18 +1103,18 @@ def _sample(expr: str, x_min: float, x_max: float, n: int = 240) -> List[List[Tu
     typical = steps[len(steps) // 2] if steps else 0.0
     runs: List[List[Tuple[float, float]]] = []
     cur: List[Tuple[float, float]] = []
-    prev_step = 0.0
+    prev_step: Optional[float] = None  # None: no step yet in this run, so nothing to compare against
     for x, y in samples:
         if y is None:
             if cur:
                 runs.append(cur)
-            cur, prev_step = [], 0.0
+            cur, prev_step = [], None
             continue
         if cur:
             step = abs(y - cur[-1][1])
-            if step > 8 * max(prev_step, typical) and step > 1e-9:
+            if prev_step is not None and step > 8 * max(prev_step, typical) and step > 1e-9:
                 runs.append(cur)
-                cur, step = [], 0.0
+                cur, step = [], None
             prev_step = step
         cur.append((round(x, 4), round(y, 4)))
     if cur:
@@ -1221,13 +1221,23 @@ def build_function_graph_figure(
     for x, y in hollow:
         plots.append({"type": "point", "coord": [x, y], "hollow": True, "color": palette[0]})
     legend_y = y_max - 0.08 * (y_max - y_min)
+    # Legend in whichever top corner the curves leave emptiest (left-aligned, clear of the y-axis).
+    span_x, band = x_max - x_min, y_max - (0.12 + 0.1 * len(exprs)) * (y_max - y_min)
+    corners = [(0 if x_min < 0 < x_max else x_min) + 0.04 * span_x, x_min + 0.62 * span_x]
+    width = 0.34 * span_x
+
+    def crowd(x0: float) -> int:
+        return sum(1 for _, run in curves for x, y in run if x0 - 0.03 * span_x <= x <= x0 + width and y >= band)
+
+    legend_x = min(corners, key=crowd)
     for i, (_, text) in enumerate(exprs):
         plots.append(
             {
                 "type": "text",
-                "coord": [x_min + 0.22 * (x_max - x_min), legend_y - i * 0.1 * (y_max - y_min)],
+                "coord": [legend_x, legend_y - i * 0.1 * (y_max - y_min)],
                 "text": text,
                 "color": palette[i % 2],
+                "anchor": "start",
             }
         )
     return {

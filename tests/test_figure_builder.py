@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import re
 import unittest
 
 from math_engine.ai_drill_ingest import AiContractError, validate_ai_problem_contract
@@ -23,7 +24,7 @@ class TestFigureBuilder(unittest.TestCase):
         svg = figure_to_svg(fig)
         self.assertIn("<svg", svg)
         self.assertIn("<polygon", svg)
-        self.assertIn("12 m", svg)  # LaTeX labels become plain text for Notion
+        self.assertIn("12 m", re.sub(r"<[^>]+>", "", svg))  # LaTeX labels become plain text (tspans) for Notion
 
     def test_right_triangle_figure_spec(self):
         fig = build_right_triangle_figure(6, 8, label_hypot="10")
@@ -49,7 +50,7 @@ class TestFigureBuilder(unittest.TestCase):
         self.assertTrue(fig["grid"])
         self.assertEqual(len(fig["plots"]), 3)  # 2 dashed projections + 1 point
         svg = figure_to_svg(fig)
-        self.assertIn("P(3, 4)", svg)
+        self.assertIn("P(3, 4)", re.sub(r"<[^>]+>", "", svg))
 
     def test_cartesian_line_figure_spec(self):
         fig = build_cartesian_line_figure(2, -4, x_range=(-4, 6), y_range=(-6, 8))

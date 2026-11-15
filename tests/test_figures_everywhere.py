@@ -140,7 +140,9 @@ def test_svg_draws_every_plot_type_the_studio_draws():
 def test_plain_labels():
     assert plain("$z_1$") == "z₁"
     assert plain("90^\\circ") == "90°"
-    assert plain("\\sqrt{2}") == "√(2)"
+    assert plain("\\sqrt{2}") == "√2"
+    assert plain("\\sqrt{x+2}") == "√(x+2)"
+    assert plain("\\frac{1}{x} and \\frac{x+1}{2}") == "1/x and (x+1)/2"
     assert plain("x^2 < 4") == "x² &lt; 4"
     assert plain("\\bar{z}") == "z̄"
 
@@ -290,3 +292,42 @@ def test_recaption_edits_only_image_captions_outside_the_learner_section(monkeyp
         up.recaption("U", 3, "x", "t", ids)
     with pytest.raises(ValueError, match="wrap it in"):
         up.recaption("U", 1, "sqrt(x)", "t", ids)
+
+
+def test_svg_math_uses_katex_fonts_and_prose_stays_sans():
+    from math_engine.figure_svg import _spans
+
+    spans = _spans("true root (2, -2) of f(x)", "mixed")
+    assert spans.startswith("true root")  # prose: inherits the sans font
+    assert "KaTeX_Main" in spans and "\u22122" in spans  # numbers upright, real minus sign
+    assert 'italic" font-weight="400">x<' in spans and 'italic" font-weight="400">f<' in spans  # variables italic
+    assert "one-to-one" in _spans("is one-to-one", "mixed")  # a hyphen inside words stays a hyphen
+    assert _spans("sin", "mixed").count("KaTeX_Main") == 1  # function names upright
+    svg = figure_to_svg(fb.build_circle_figure(2))
+    assert "@font-face{font-family:KaTeX_Main" in svg and "@font-face{font-family:KaTeX_Math" in svg
+
+
+def test_reciprocal_branches_start_at_the_asymptote():
+    fig = fb.build_function_graph_figure("1/x", x_min=-4, x_max=4, y_min=-4, y_max=4)
+    runs = [p["points"] for p in fig["plots"] if p["type"] == "curve"]
+    assert len(runs) == 2 and runs[1][0][0] < 0.1 and runs[0][-1][0] > -0.1
+
+
+def test_refigure_redraws_in_place_and_keeps_the_caption(monkeypatch):
+    page = [
+        {"id": "h1", "type": "heading_2", "heading_2": {"rich_text": [{"plain_text": "1. Core Concepts"}]}},
+        {"id": "img1", "type": "image", "image": {"caption": [{"type": "text", "plain_text": "old"}]}},
+    ]
+    sent = []
+    monkeypatch.setattr(up, "get_all_blocks", lambda pid, token: page)
+    monkeypatch.setattr(up, "upload_svg", lambda svg, name, token: sent.append(("upload", name)) or "new-file")
+    monkeypatch.setattr(up, "notion_request", lambda m, e, t, p=None: sent.append((m, e, p)) or {})
+    item = {"fn": "build_circle_figure", "args": {"radius": 2}}
+    assert up.refigure("U", 1, item, "t", {"U": {"id": "p"}}) == "redrew image 1 of U"
+    assert sent[0] == ("upload", "U-fig1.svg")
+    method, endpoint, payload = sent[1]
+    assert (method, endpoint) == ("PATCH", "blocks/img1")
+    assert payload["image"]["file_upload"] == {"id": "new-file"} and "type" not in payload["image"]
+    assert payload["image"]["caption"] == [{"type": "text", "plain_text": "old"}]
+    with pytest.raises(ValueError):
+        up.refigure("U", 1, {"fn": "build_circle_figure", "args": {}}, "t", {"U": {"id": "p"}})
