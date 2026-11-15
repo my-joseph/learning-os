@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useMemo } from "react";
+import { isMathSegment, splitMath, unescapeDollar } from "@/lib/mathText";
 import katex from "katex";
 
 /**
@@ -34,14 +35,13 @@ interface MathTextProps {
 export const MathText: React.FC<MathTextProps> = ({ text, className = "" }) => {
   const parts = useMemo(() => {
     if (!text) return [];
-    // Split by $...$
-    return text.split(/(\$[^$]+\$)/g);
+    return splitMath(text); // $...$ math; \$ is a literal dollar sign
   }, [text]);
 
   return (
     <span className={className}>
       {parts.map((part, idx) => {
-        if (part.startsWith("$") && part.endsWith("$") && part.length > 2) {
+        if (isMathSegment(part)) {
           const tex = normalizeLatex(part.slice(1, -1));
           try {
             const html = katex.renderToString(tex, {
@@ -59,7 +59,7 @@ export const MathText: React.FC<MathTextProps> = ({ text, className = "" }) => {
             return <code key={idx}>{tex}</code>;
           }
         }
-        return <React.Fragment key={idx}>{part}</React.Fragment>;
+        return <React.Fragment key={idx}>{unescapeDollar(part)}</React.Fragment>;
       })}
     </span>
   );
