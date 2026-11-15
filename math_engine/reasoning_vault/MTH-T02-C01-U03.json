@@ -1,0 +1,161 @@
+{
+  "unitCode": "MTH-T02-C01-U03",
+  "topicTitle": "Other Types of Equations",
+  "description": "Reasoning vault for non-quadratic algebraic equations aligned with OpenStax Algebra and Trigonometry 2e §2.6: rational-exponent equations, higher-degree factoring and grouping, radical equations with extraneous-root checks, absolute value equations, quadratic-form substitution, and rational equations with domain exclusions.",
+  "archetypes": [
+    {
+      "unitCode": "MTH-T02-C01-U03",
+      "archetypeKey": "t02-c01-u03-rational-exponent-equations",
+      "level": 1,
+      "name": "Solving Equations Involving Rational Exponents",
+      "source": "OpenStax Algebra and Trigonometry 2e §2.6 — Solving Equations Involving Rational Exponents",
+      "coreConcept": "Isolate the base raised to a rational exponent u^(p/q) = k (in lowest terms), raise both sides to the reciprocal power q/p, and include ± when the numerator p is even.",
+      "mentalModel": "An even numerator p in u^(p/q) squares (or raises to an even power) the base first, erasing its sign—so undoing it must restore both + and - branches.",
+      "governingRelation": "u^{p/q} = k \\implies u = \\begin{cases} \\pm k^{q/p} & \\text{if } p \\text{ is even and } k \\ge 0 \\\\ k^{q/p} & \\text{if } p \\text{ is odd} \\end{cases}",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c01-u03-omitted-pm-even-numerator-trap",
+          "description": "Raising both sides of u^(p/q) = k to q/p when p is even and keeping only the positive branch +k^(q/p), omitting -k^(q/p).",
+          "trapFormula": "u^{p/q} = k \\implies u = k^{q/p} \\text{ only (omitted } -k^{q/p}\\text{)}"
+        },
+        {
+          "trapTag": "t02-c01-u03-reciprocal-exponent-inverted-trap",
+          "description": "Raising k to p/q instead of the reciprocal exponent q/p when solving u^(p/q) = k.",
+          "trapFormula": "u = k^{p/q} \\text{ instead of } k^{q/p}"
+        }
+      ],
+      "versatileDomains": [],
+      "usedContexts": [],
+      "figureNone": "Rational-exponent equations solved algebraically; a graph would display the roots."
+    },
+    {
+      "unitCode": "MTH-T02-C01-U03",
+      "archetypeKey": "t02-c01-u03-factoring-higher-degree-grouping",
+      "level": 1,
+      "name": "Solving Higher-Degree Polynomial Equations by Factoring and Grouping",
+      "source": "OpenStax Algebra and Trigonometry 2e §2.6 — Solving Equations Using Factoring",
+      "coreConcept": "Move all terms to one side so the right-hand side is 0, factor out the greatest common factor (including x^k), factor remaining polynomials by grouping or difference of squares, and apply the Zero Product Property.",
+      "mentalModel": "Factoring breaks a degree-3 or degree-4 equation into linear and quadratic factors; never divide by a variable expression that could equal 0.",
+      "governingRelation": "P(x) = 0 \\implies x^k \\cdot Q_1(x) \\cdot Q_2(x) = 0 \\implies x = 0 \\lor Q_1(x) = 0 \\lor Q_2(x) = 0",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c01-u03-divided-by-variable-lost-zero-trap",
+          "description": "Dividing both sides of an equation by x (or x^k) instead of factoring it out, silently discarding the root x = 0.",
+          "trapFormula": "x^3 = a x \\implies x^2 = a \\text{ (lost } x = 0\\text{)}"
+        },
+        {
+          "trapTag": "t02-c01-u03-dropped-negative-branch-even-power-trap",
+          "description": "Solving a quadratic factor x^2 = a and reporting only x = +sqrt(a), omitting x = -sqrt(a).",
+          "trapFormula": "x^2 - a = 0 \\implies x = \\sqrt{a} \\text{ only}"
+        }
+      ],
+      "versatileDomains": [],
+      "usedContexts": [],
+      "figureNone": "Higher-degree polynomial equations solved by factoring; a graph would reveal the roots."
+    },
+    {
+      "unitCode": "MTH-T02-C01-U03",
+      "archetypeKey": "t02-c01-u03-radical-equations-extraneous",
+      "level": 2,
+      "name": "Solving Radical Equations and Filtering Extraneous Roots",
+      "source": "OpenStax Algebra and Trigonometry 2e §2.6 — Solving Radical Equations",
+      "coreConcept": "Isolate one radical on a side, square both sides to eliminate it (repeating if a second radical remains), solve the resulting algebraic equation, and substitute every candidate back into the original equation to reject extraneous roots.",
+      "mentalModel": "Squaring is not reversible: (-3)^2 = 3^2, so squaring can invent false roots where the isolated radical would have to equal a negative number.",
+      "governingRelation": "\\sqrt{A(x)} = B(x) \\implies A(x) = [B(x)]^2 \\quad \\text{with check } B(x) \\ge 0 \\text{ and } A(x) \\ge 0",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c01-u03-kept-extraneous-radical-root-trap",
+          "description": "Accepting every solution of the squared polynomial equation without checking whether it satisfies the original radical equation.",
+          "trapFormula": "\\sqrt{A(x)} = B(x) \\text{ accepted even when } B(x) < 0"
+        },
+        {
+          "trapTag": "t02-c01-u03-squared-sum-termwise-trap",
+          "description": "Squaring a binomial or unisolated sum term-by-term as (A + B)^2 = A^2 + B^2, omitting the middle term 2AB.",
+          "trapFormula": "(A + B)^2 = A^2 + B^2 \\text{ (missing } 2AB\\text{)}"
+        }
+      ],
+      "versatileDomains": [],
+      "usedContexts": [
+        "well_splash_acoustic_depth"
+      ],
+      "figureNone": "Radical equations solved algebraically; graphing both sides would show the intersection."
+    },
+    {
+      "unitCode": "MTH-T02-C01-U03",
+      "archetypeKey": "t02-c01-u03-absolute-value-equations",
+      "level": 2,
+      "name": "Solving Absolute Value Equations",
+      "source": "OpenStax Algebra and Trigonometry 2e §2.6 — Solving an Absolute Value Equation",
+      "coreConcept": "Isolate the absolute value expression |A(x)| = k; if k < 0 there is no solution, and if k >= 0 split into the two linear equations A(x) = k and A(x) = -k.",
+      "mentalModel": "Absolute value measures distance from zero: |A| = k asks which inputs place A at distance k on either the positive or negative side of 0.",
+      "governingRelation": "|A(x)| = k \\;(k \\ge 0) \\iff A(x) = k \\lor A(x) = -k",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c01-u03-single-branch-absolute-value-trap",
+          "description": "Dropping the absolute value bars and solving only the positive equation A(x) = k, omitting A(x) = -k.",
+          "trapFormula": "|A(x)| = k \\implies A(x) = k \\text{ only}"
+        },
+        {
+          "trapTag": "t02-c01-u03-ignored-negative-rhs-abs-trap",
+          "description": "Splitting |A(x)| = k into A(x) = k and A(x) = -k even when the isolated right-hand side k is negative.",
+          "trapFormula": "|A(x)| = -c \\;(c > 0) \\implies A(x) = \\pm c \\text{ instead of } \\emptyset"
+        }
+      ],
+      "versatileDomains": [],
+      "usedContexts": [],
+      "figureNone": "Absolute value equations solved algebraically; a V-shaped graph would show the intersections."
+    },
+    {
+      "unitCode": "MTH-T02-C01-U03",
+      "archetypeKey": "t02-c01-u03-quadratic-form-substitution",
+      "level": 2,
+      "name": "Solving Equations in Quadratic Form via u-Substitution",
+      "source": "OpenStax Algebra and Trigonometry 2e §2.6 — Solving Other Types of Equations",
+      "coreConcept": "Recognize equations of the form a[f(x)]^2 + b[f(x)] + c = 0, substitute u = f(x) to solve the quadratic in u, and back-substitute each valid u-value into f(x) = u to find all solutions for x.",
+      "mentalModel": "Temporarily hiding the repeating expression f(x) inside u turns an unfamiliar higher-power or fractional-power equation into a standard quadratic.",
+      "governingRelation": "a[f(x)]^2 + b[f(x)] + c = 0 \\xrightarrow{u = f(x)} au^2 + bu + c = 0 \\implies f(x) = u_1 \\lor f(x) = u_2",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c01-u03-stopped-at-u-substitution-trap",
+          "description": "Solving au^2 + bu + c = 0 for u and reporting the u-values directly without back-substituting f(x) = u to solve for x.",
+          "trapFormula": "x = u_1, u_2 \\text{ instead of solving } f(x) = u_i"
+        },
+        {
+          "trapTag": "t02-c01-u03-negative-u-for-even-power-trap",
+          "description": "When back-substituting u = x^2 over R, either omitting the ± roots for u > 0 or treating a negative u as giving real roots ±sqrt(|u|).",
+          "trapFormula": "x^2 = -d \\implies x = \\pm\\sqrt{d} \\in \\mathbb{R}"
+        }
+      ],
+      "versatileDomains": [],
+      "usedContexts": [],
+      "figureNone": "Quadratic-form equations solved algebraically by substitution; a graph would display the roots."
+    },
+    {
+      "unitCode": "MTH-T02-C01-U03",
+      "archetypeKey": "t02-c01-u03-rational-equations-extraneous",
+      "level": 3,
+      "name": "Solving Rational Equations and Rejecting Domain-Excluded Roots",
+      "source": "OpenStax Algebra and Trigonometry 2e §2.6 — Rational Equations & Domain Checks",
+      "coreConcept": "Identify all values of x that make any denominator zero, multiply every term on both sides by the least common denominator (LCD) to obtain a polynomial equation, solve it, and reject any candidate root that lies outside the domain.",
+      "mentalModel": "Multiplying by an expression containing x is only valid where that expression is nonzero; any candidate root that zeroes an original denominator was created by multiplying by 0.",
+      "governingRelation": "\\frac{P(x)}{D_1(x)} + \\frac{Q(x)}{D_2(x)} = R(x) \\xrightarrow{\\times \\text{LCD}} \\text{polynomial}, \\quad D_i(x) \\neq 0",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c01-u03-kept-domain-excluded-root-trap",
+          "description": "Reporting a candidate root obtained after clearing denominators even though it makes an original denominator equal to zero.",
+          "trapFormula": "D(x_0) = 0 \\text{ ignored and } x_0 \\text{ included in solution set}"
+        },
+        {
+          "trapTag": "t02-c01-u03-partial-lcd-multiplication-trap",
+          "description": "Multiplying only the fractional terms by the LCD while leaving non-fractional constant or integer terms unmultiplied.",
+          "trapFormula": "\\frac{A}{D} + c = \\frac{B}{D} \\implies A + c = B \\text{ instead of } A + cD = B"
+        }
+      ],
+      "versatileDomains": [],
+      "usedContexts": [
+        "riverboat_round_trip"
+      ],
+      "figureNone": "Rational equations solved algebraically; a graph would show roots and vertical asymptotes."
+    }
+  ]
+}
