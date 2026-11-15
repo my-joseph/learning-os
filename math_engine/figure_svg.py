@@ -54,15 +54,21 @@ _SYMBOLS = {
 }
 
 
-def plain(text: Any) -> str:
-    """LaTeX-ish label to plain Unicode text, XML-escaped."""
-    s = str(text or "").replace("$", "")
+def to_unicode(text: Any) -> str:
+    """LaTeX-ish label to plain Unicode text (not escaped)."""
+    s = str(text or "").replace("\\$", "\x00").replace("$", "").replace("\x00", "$")
+    s = re.sub(r"\b(sqrt|cbrt)\(", lambda m: "√(" if m.group(1) == "sqrt" else "∛(", s)
     s = re.sub(r"\^\{?\\circ\}?", "°", s)
     s = re.sub(r"\\(?:text|mathrm|mathbf|operatorname)\{([^{}]*)\}", r"\1", s)
     s = re.sub(r"\\(?:bar|overline)\{([^{}]*)\}", lambda m: "".join(c + "\u0304" for c in m.group(1)), s)
     s = re.sub(r"\\sqrt\[3\]\{([^{}]*)\}", r"∛(\1)", s)
     s = re.sub(r"\\sqrt\{([^{}]*)\}", r"√(\1)", s)
-    s = re.sub(r"\\frac\{([^{}]*)\}\{([^{}]*)\}", r"(\1)/(\2)", s)
+    s = re.sub(r"([√∛])\((\w)\)", r"\1\2", s)  # √(x) -> √x for a single symbol
+    s = re.sub(
+        r"\\d?frac\{([^{}]*)\}\{([^{}]*)\}",
+        lambda m: "/".join(g if re.fullmatch(r"\w+", g) else f"({g})" for g in m.groups()),
+        s,
+    )
     s = re.sub(r"\\([A-Za-z]+)", lambda m: _SYMBOLS.get(m.group(1), m.group(1)), s)
     s = s.replace("\\,", " ").replace("\\ ", " ").replace("\\;", " ")
 
@@ -76,8 +82,68 @@ def plain(text: Any) -> str:
 
     s = re.sub(r"\^\{([^{}]*)\}|\^([0-9n])", sup, s)
     s = re.sub(r"_\{([^{}]*)\}|_([0-9])", sub, s)
-    s = s.replace("{", "").replace("}", "").replace("\\", "")
-    return escape(s, quote=False)
+    return s.replace("{", "").replace("}", "").replace("\\", "")
+
+
+def plain(text: Any) -> str:
+    """LaTeX-ish label to plain Unicode text, XML-escaped."""
+    return escape(to_unicode(text), quote=False)
+
+
+# Math in figures uses KaTeX's own fonts (embedded below), as Notion and the Studio do for equations:
+# numbers, operators and function names upright (KaTeX_Main), single-letter variables italic (KaTeX_Math).
+# Words of prose (titles, notes, "true root") stay in the sans-serif UI font.
+MATH_FONT = "KaTeX_Main, 'Latin Modern Roman', 'STIX Two Text', 'Times New Roman', serif"
+VAR_FONT = "KaTeX_Math, 'Latin Modern Math', 'STIX Two Math', 'Times New Roman', serif"
+MATH_WORDS = {"sin", "cos", "tan", "cot", "sec", "csc", "ln", "log", "exp", "lim", "max", "min", "Re", "Im", "mod"}
+_TOKEN = re.compile(r"([A-Za-z\u0370-\u03ff]+\u0304?)|([^A-Za-z\u0370-\u03ff]+)")
+
+
+def _font_face() -> str:
+    """@font-face rules with the two KaTeX fonts as data URIs (an SVG shown as an image cannot fetch fonts)."""
+    import base64
+    from pathlib import Path
+
+    fonts = Path(__file__).with_name("fonts")
+    rules = []
+    for family, name, style in (
+        ("KaTeX_Main", "KaTeX_Main-Regular.woff2", "normal"),
+        ("KaTeX_Math", "KaTeX_Math-Italic.woff2", "italic"),
+    ):
+        data = base64.b64encode((fonts / name).read_bytes()).decode()
+        rules.append(
+            f"@font-face{{font-family:{family};font-style:{style};font-weight:normal;"
+            f"src:url(data:font/woff2;base64,{data}) format('woff2');}}"
+        )
+    return "".join(rules)
+
+
+def _spans(text: Any, mode: str) -> str:
+    """Text as <tspan>s: math in KaTeX fonts, prose words in sans. mode: mixed | math | sans."""
+    s = to_unicode(text)
+    if mode == "sans":
+        return escape(s, quote=False)
+    tokens = _TOKEN.findall(s)
+
+    def prose(i: int) -> bool:
+        return 0 <= i < len(tokens) and bool(tokens[i][0]) and tokens[i][0] not in MATH_WORDS and len(tokens[i][0]) > 1
+
+    out = []
+    for i, (word, other) in enumerate(tokens):
+        if other and not (other == "-" and prose(i - 1) and prose(i + 1)):  # "one-to-one" keeps its hyphen
+            other = other.replace("-", "\u2212")
+        chunk = escape(word or other, quote=False)
+        if mode != "math" and other and not other.strip():
+            out.append(chunk)  # spaces between words need no font
+        elif mode == "math" or (other and not (other == "-" and prose(i - 1))):
+            out.append(f'<tspan font-family="{MATH_FONT}" font-weight="400">{chunk}</tspan>')
+        elif word in MATH_WORDS:
+            out.append(f'<tspan font-family="{MATH_FONT}" font-weight="400">{chunk}</tspan>')
+        elif len(word.rstrip("\u0304")) == 1:
+            out.append(f'<tspan font-family="{VAR_FONT}" font-style="italic" font-weight="400">{chunk}</tspan>')
+        else:
+            out.append(chunk)  # prose: inherits the sans-serif font of <text>
+    return "".join(out)
 
 
 def _text(
@@ -88,11 +154,13 @@ def _text(
     anchor: str = "middle",
     color: str = INK,
     extra: str = "",
-    font: str = FONT,
+    mode: str = "mixed",
 ) -> str:
+    """mode: `mixed` (math in KaTeX fonts, prose in sans), `math` (all KaTeX_Main, e.g. tick numbers), `sans`."""
+    # One alphabetic baseline for every tspan (dominant-baseline does not carry across fonts); +0.35em = centred.
     return (
-        f'<text x="{x:.1f}" y="{y:.1f}" text-anchor="{anchor}" dominant-baseline="central" font-family="{font}" '
-        f'font-size="{size}" font-weight="600" fill="{color}" {extra}>{plain(s)}</text>'
+        f'<text x="{x:.1f}" y="{y + 0.35 * size:.1f}" text-anchor="{anchor}" font-family="{FONT}" '
+        f'font-size="{size}" font-weight="600" fill="{color}" xml:space="preserve" {extra}>{_spans(s, mode)}</text>'
     )
 
 
@@ -149,11 +217,11 @@ def figure_to_svg(figure: dict, width: int = 420, height: int = 280) -> str:
     total = height + top + bottom
     parts = [
         f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {total}" width="{width}" height="{total}">',
-        f"<defs>{markers.defs()}</defs>",
+        f"<defs><style>{_font_face()}</style>{markers.defs()}</defs>",
         f'<rect width="{width}" height="{total}" fill="#f8fafc" rx="14"/>',
     ]
     if top:
-        parts.append(_text(16, 16, str(figure["title"]).upper(), size=11, anchor="start", color=MUTED))
+        parts.append(_text(16, 16, figure["title"], size=12, anchor="start", color=MUTED))
     parts.append(f'<g transform="translate(0,{top})">{body}</g>')
     if bottom:
         parts.append(
@@ -165,6 +233,7 @@ def figure_to_svg(figure: dict, width: int = 420, height: int = 280) -> str:
                 anchor="end",
                 color=MUTED,
                 extra='font-style="italic"',
+                mode="sans",
             )
         )
     parts.append("</svg>")
@@ -388,27 +457,27 @@ def _cartesian(fig: dict, stroke: str, fill: str, w: int, h: int, markers: _Mark
     out.append(
         f'<line x1="{pad - 10}" y1="{oy:.1f}" x2="{w - pad + 12}" y2="{oy:.1f}" stroke="{MUTED}" stroke-width="1.8"{axis_ref}/>'
     )
-    out.append(_text(w - pad + 18, oy - 12, labels[0], 11, "middle", MUTED))
+    out.append(_text(w - pad + 18, oy - 12, labels[0], 13, "middle", MUTED))
     if show_y:
         out.append(
             f'<line x1="{ox:.1f}" y1="{h - pad + 10}" x2="{ox:.1f}" y2="{pad - 12}" stroke="{MUTED}" stroke-width="1.8"{axis_ref}/>'
         )
-        out.append(_text(ox - 8, pad - 16, labels[1], 11, "end", MUTED))
+        out.append(_text(ox - 8, pad - 16, labels[1], 13, "end", MUTED))
     for v in _ticks(x0, x1, xs):
         if abs(v) > 1e-9 or not show_y:
             out.append(
                 f'<line x1="{sx(v):.1f}" y1="{oy - 3:.1f}" x2="{sx(v):.1f}" y2="{oy + 3:.1f}" stroke="{MUTED}" stroke-width="1.2"/>'
             )
-            out.append(_text(sx(v), oy + 13, f"{v:g}", 9, "middle", MUTED, font="monospace"))
+            out.append(_text(sx(v), oy + 13, f"{v:g}", 10, "middle", MUTED, mode="math"))
     if show_y:
         for v in _ticks(y0, y1, ys):
             if abs(v) > 1e-9:
                 out.append(
                     f'<line x1="{ox - 3:.1f}" y1="{sy(v):.1f}" x2="{ox + 3:.1f}" y2="{sy(v):.1f}" stroke="{MUTED}" stroke-width="1.2"/>'
                 )
-                out.append(_text(ox - 6, sy(v), f"{v:g}", 9, "end", MUTED, font="monospace"))
+                out.append(_text(ox - 6, sy(v), f"{v:g}", 10, "end", MUTED, mode="math"))
         if x0 < 0 < x1 and y0 < 0 < y1:
-            out.append(_text(ox - 6, oy + 12, "0", 9, "end", MUTED))
+            out.append(_text(ox - 6, oy + 12, "0", 10, "end", MUTED, mode="math"))
 
     lines: list[str] = []
     top: list[str] = []
@@ -456,7 +525,16 @@ def _cartesian(fig: dict, stroke: str, fill: str, w: int, h: int, markers: _Mark
                 dx, dy, anchor = _POS.get(p.get("position", "top-right"), _POS["top-right"])
                 top.append(_text(x + dx, y + dy, p["label"], 11, anchor))
         elif t == "text":
-            top.append(_text(sx(p["coord"][0]), sy(p["coord"][1]), p.get("text", ""), 11, color=p.get("color") or INK))
+            top.append(
+                _text(
+                    sx(p["coord"][0]),
+                    sy(p["coord"][1]),
+                    p.get("text", ""),
+                    12,
+                    p.get("anchor", "middle"),
+                    color=p.get("color") or INK,
+                )
+            )
     out.append(f'<g clip-path="url(#vp)">{"".join(lines)}</g>')
     out += top
     return "\n".join(out)

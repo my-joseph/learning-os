@@ -203,6 +203,7 @@ export interface CartesianTextPlot {
   coord: [number, number];
   text: string;
   color?: string;
+  anchor?: "start" | "middle"; // "start": the text begins at coord (legends)
 }
 
 export type CartesianPlot =

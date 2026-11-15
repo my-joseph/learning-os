@@ -23,6 +23,7 @@ import argparse
 import json
 import sys
 
+from math_engine.figure_svg import figure_to_svg
 from notion_sync.blocks import (
     bullet,
     callout_block,
@@ -44,6 +45,7 @@ from notion_sync.figures import (
     check_plain_math,
     dry_run_uploader,
     figure_block,
+    figure_from_spec,
     upload_svg,
 )
 
@@ -195,10 +197,8 @@ def check_target(code: str, mode: str, after: str | None, existing: list[dict]) 
     return anchor
 
 
-def recaption(code: str, number: int, caption: str, token: str, id_map: dict, dry_run: bool = False) -> str:
-    """Replace the caption of the page's `number`-th top-level image (1-based). Only image captions can be
-    edited this way, never an image in the learner's section; the image itself is kept."""
-    rich = caption_rich_text(caption, id_map)
+def _image_at(code: str, number: int, token: str, id_map: dict) -> dict:
+    """The page's `number`-th top-level image (1-based); refuses one in the learner's section."""
     blocks = get_all_blocks(id_map[code]["id"], token)
     learner = next((i for i, b in enumerate(blocks) if LEARNER_SECTION.lower() in heading_text(b).lower()), None)
     images = [(i, b) for i, b in enumerate(blocks) if b.get("type") == "image"]
@@ -211,10 +211,36 @@ def recaption(code: str, number: int, caption: str, token: str, id_map: dict, dr
         and not any(blocks[j].get("type") == "heading_2" for j in range(learner + 1, idx))
     ):
         raise ValueError("that image is in the learner's section; agents never edit it (rules/02 §7a)")
+    return block
+
+
+def recaption(code: str, number: int, caption: str, token: str, id_map: dict, dry_run: bool = False) -> str:
+    """Replace the caption of the page's `number`-th top-level image (1-based). Only image captions can be
+    edited this way, never an image in the learner's section; the image itself is kept."""
+    rich = caption_rich_text(caption, id_map)
+    block = _image_at(code, number, token, id_map)
     if dry_run:
         return f"dry run: would recaption image {number} of {code}"
     notion_request("PATCH", f"blocks/{block['id']}", token, {"image": {"caption": rich}})
     return f"recaptioned image {number} of {code}"
+
+
+def refigure(code: str, number: int, item: dict, token: str, id_map: dict, dry_run: bool = False) -> str:
+    """Redraw the page's `number`-th image from a figure spec item (`{"fn": ..., "args": ...}` or
+    `{"figure": {...}}`, optional `title`, `caption`): the new SVG replaces the file in the same block, so the
+    block keeps its place. The caption is kept unless the item gives one."""
+    check_plain_math(item.get("caption", ""), "figure caption")
+    svg = figure_to_svg(figure_from_spec(item))  # build before touching anything
+    block = _image_at(code, number, token, id_map)
+    if dry_run:
+        return f"dry run: would redraw image {number} of {code}"
+    # An update names the new file only; Notion refuses "type" on PATCH.
+    payload: dict = {"file_upload": {"id": upload_svg(svg, f"{code}-fig{number}.svg", token)}}
+    payload["caption"] = (
+        caption_rich_text(item["caption"], id_map) if item.get("caption") else block["image"].get("caption", [])
+    )
+    notion_request("PATCH", f"blocks/{block['id']}", token, {"image": payload})
+    return f"redrew image {number} of {code}"
 
 
 def write_page(code: str, spec: list[dict], mode: str, after: str | None, token: str, id_map: dict) -> str:
@@ -253,6 +279,13 @@ def main(argv: list[str] | None = None) -> int:
         metavar="N=CAPTION",
         help="replace the caption of the page's N-th image (1-based, top level); $math$ and [[CODE]] work",
     )
+    ap.add_argument(
+        "--refigure",
+        action="append",
+        default=[],
+        metavar="N=FILE.json",
+        help="redraw the page's N-th image from a JSON figure item (fn+args or figure, optional title/caption)",
+    )
     ap.add_argument("--dry-run", action="store_true", help="validate blocks and target; send nothing")
     args = ap.parse_args(argv)
     with open("id_map.json", encoding="utf-8") as f:
@@ -276,6 +309,10 @@ def main(argv: list[str] | None = None) -> int:
                 print(f"dry run: {len(blocks)} top-level blocks for {args.code} ({args.mode}); target ok; nothing sent")
             else:
                 print(write_page(args.code, spec, args.mode, args.after, token, id_map))
+        for item in args.refigure:
+            num, _, path = item.partition("=")
+            with open(path, encoding="utf-8") as f:
+                print(refigure(args.code, int(num), json.load(f), token, id_map, args.dry_run))
         for item in args.recaption:
             num, _, cap = item.partition("=")
             print(recaption(args.code, int(num), cap, token, id_map, args.dry_run))

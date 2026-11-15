@@ -40,7 +40,7 @@ When showing mathematical equation solving, algebraic simplification, worked exa
 Whenever illustrating geometric configurations (triangles, angles, circles, polygons, 3D solids), coordinate graphs, or physics diagrams (force vectors, free-body diagrams):
 - AI must generate visual assets **programmatically** using structured mathematical parameters (via `math_engine.figure_builder`, attached automatically from the archetype's `figureBuilders` in the reasoning vault by `math_engine.figure_autofill`) rather than manually drawing static arbitrary coordinates.
 - **Unified Design System Invariants:**
-  - **Typography:** Clean system font (`-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto`) for labels, KaTeX math font for variables.
+  - **Typography:** math in KaTeX's own fonts, as in Notion equations and the Studio: numbers, operators and function names upright (`KaTeX_Main`), single-letter variables italic (`KaTeX_Math`), a real minus sign (−). Prose words (titles, notes, "true root") in the sans-serif UI font. `math_engine/figure_svg.py` embeds the two KaTeX fonts (`math_engine/fonts/`, MIT) in every SVG, so Notion shows them on any machine. Write figure titles and labels in sentence case with math in `$...$`.
   - **Background & Card:** Subtle pastel card background (`#f8fafc`, rounded corners `rx="12"`).
   - **Color Palette:** Standardized 6-theme semantic palettes (`emerald`, `amber`, `indigo`, `purple`, `blue`, `rose`).
   - **Crisp Geometry:** Explicit right-angle markers, proportional side lengths, distinct color-coded vertices, and dedicated formula/trap alert badges.
