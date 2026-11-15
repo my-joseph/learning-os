@@ -84,6 +84,36 @@ Every Unit page must include a dedicated personal workspace section titled `My I
 
 ---
 
+### 7a. Default Page Structure for `MTH` / `PHY` Units and Chapters (v4)
+This is the default for new and upgraded math and physics pages (§1 still allows adapting it to the material). The `start-unit` skill builds pages from it.
+
+**Unit page**
+- **Callout:** Learning Objective, Expected Output, prerequisites (`@Page`), next Unit (`@Page`), Resource (OpenStax section).
+- **1. Core Concepts & Intuition:** definitions and the mental model; a diagram for geometry or graphs.
+- **2. Key Formulas & Decision Rules:** each formula with a collapsed toggle **"Why this works"** (3–5 lines from first principles). Add a short **"Which method when"** rule only when the Unit has two or more methods.
+- **3. Worked Examples (graduated, vertical `\begin{aligned}`):**
+  - Example 1, L1: direct procedure.
+  - Example 2, L2: reverse (find an input from the result) or a short translation of a situation.
+  - Example 3, L3, trap contrast: the Unit vault's most important `cognitiveTraps` entry, shown as the wrong line (❌) next to the right line (✅) with one sentence on why. Use the vault's trap, so the page and the drills teach the same trap.
+  Worked examples are explanations, not an exercise list; the Anti-Dump Rule (§8) still applies.
+- **4. Unit Practice Guide:** the 4 categories of §8.
+- **5. Active Recall Questions:** 3–4 toggles with vertical reference solutions (§6).
+- **6. My Implementation & Mistake Log:** the learner's workspace (§7). Drill results synced from the Studio are inserted at the end of this section. **Agents never edit, move or delete anything in this section.**
+- **7. Completion Checklist & Mastery Review.**
+
+**Chapter page**
+- **Callout:** Objective, completion criteria, parent Topic, prerequisites, Resource.
+- **1. Chapter Role:** what the chapter is for, and the unit sequence in one line (`U01 → U02 → …`).
+- **2. Core Invariants & Key Formulas** of the whole chapter.
+- **3. Look-Alike Problems Across Units:** a table of problems that look similar but belong to different Units (for example a fraction *expression* to simplify vs. a fraction *equation* to solve), with the cue that tells them apart. This is what chapter mixed drills test.
+- **4. Chapter Practice Guide:** the 4 categories of §8.
+- **5. Cross-Unit Active Recall:** 3–4 toggles that compare or combine Units (not repeats of Unit questions).
+- **6. Summary & Spaced Review Guide.**
+
+**Upgrading an existing page:** never rewrite it. Add the missing v4 parts by inserting blocks after the right heading, delete nothing, and leave section 6 untouched (`rules/00_core.md` §4).
+
+---
+
 ## PART 4 — Multi-Level Practice Guides (No Static Problem Dump)
 
 ### 8. The Anti-Dump Rule
