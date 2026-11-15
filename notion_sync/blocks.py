@@ -47,7 +47,8 @@ def eq_inline(expr, bold=False):
 
 
 BOLD_SPLIT_RE = re.compile(r"(\*\*[^\*]+\*\*)")
-INNER_TOKEN_RE = re.compile(r"(\[\[[A-Z0-9\-]+\]\]|\$[^\$]+\$|`[^`]+`)")
+# `$...$` is math; `\$` is a literal dollar sign (money), inside or outside math (same as the Studio's mathText.ts).
+INNER_TOKEN_RE = re.compile(r"(\[\[[A-Z0-9\-]+\]\]|(?<!\\)\$(?:\\\$|[^$])+?(?<!\\)\$|`[^`]+`)")
 
 
 def parse_rt(text, id_map):
@@ -84,7 +85,7 @@ def parse_rt(text, id_map):
             else:
                 if "[[" in p or "]]" in p:
                     raise ValueError(f"Unparsed bracket token in '{p}' within text: {text}")
-                out.append(rt(p, bold=is_bold))
+                out.append(rt(p.replace("\\$", "$"), bold=is_bold))
     return out if out else [rt("")]
 
 

@@ -115,3 +115,18 @@ def test_set_properties_types_and_mastery_guard(monkeypatch):
         up.set_properties("U", {"Mastery (0-4)": "3"}, "t", ids)
     with pytest.raises(ValueError, match="no property"):
         up.set_properties("U", {"Nope": "x"}, "t", ids)
+
+
+def test_escaped_dollar_is_money_not_a_math_delimiter():
+    """`$\\$15$` and `\\$83` in drill text (the ingest gate accepts them) must not split math wrongly."""
+    from notion_sync.blocks import parse_rt
+
+    runs = parse_rt("A fee of $\\$15$, plus \\$83 in total and $x$.", {})
+    got = [(r["type"], r.get("equation", {}).get("expression") or r.get("text", {}).get("content")) for r in runs]
+    assert got == [
+        ("text", "A fee of "),
+        ("equation", "\\$15"),
+        ("text", ", plus $83 in total and "),
+        ("equation", "x"),
+        ("text", "."),
+    ]

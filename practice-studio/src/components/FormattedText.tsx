@@ -3,6 +3,7 @@
 import React, { useMemo } from "react";
 import katex from "katex";
 import { BookOpen } from "lucide-react";
+import { MATH_TOKEN, isMathSegment, unescapeDollar } from "@/lib/mathText";
 
 interface FormattedTextProps {
   text: string;
@@ -16,7 +17,12 @@ export const FormattedText: React.FC<FormattedTextProps> = ({
   // Regex to split inline tokens: math ($...$), bold (**...**), backtick code (`...`), concept vault token ([[...]]), or quoted identifier ('...')
   const inlineRegex = useMemo(
     () =>
-      /(\$[^$]+\$|\*\*[^*]+\*\*|`[^`]+`|\[\[[\w-]+\]\]|(?<=^|[\s(,;])'[\w$][\w$.():\s,\-=><\[\]]*?'(?=[\s),;.:!?]|$))/g,
+      new RegExp(
+        String.raw`(${MATH_TOKEN}|\*\*[^*]+\*\*|` +
+          "`[^`]+`" +
+          String.raw`|\[\[[\w-]+\]\]|(?<=^|[\s(,;])'[\w$][\w$.():\s,\-=><\[\]]*?'(?=[\s),;.:!?]|$))`,
+        "g"
+      ),
     []
   );
 
@@ -31,7 +37,7 @@ export const FormattedText: React.FC<FormattedTextProps> = ({
 
     return segments.map((seg, idx) => {
       // 1. LaTeX Math: $...$
-      if (seg.startsWith("$") && seg.endsWith("$") && seg.length > 2) {
+      if (isMathSegment(seg)) {
         const tex = seg.slice(1, -1);
         try {
           const html = katex.renderToString(tex, {
@@ -109,8 +115,8 @@ export const FormattedText: React.FC<FormattedTextProps> = ({
         );
       }
 
-      // Plain text
-      return <React.Fragment key={idx}>{seg}</React.Fragment>;
+      // Plain text (`\$` is a literal dollar sign)
+      return <React.Fragment key={idx}>{unescapeDollar(seg)}</React.Fragment>;
     });
   };
 
