@@ -1,5 +1,7 @@
 # CLAUDE.md (v0 — short on purpose; project is being refactored)
 
+> **Every agent (Claude, Gemini, any other): never commit or push on `main`.** Create a branch before the first edit and open a PR; the learner says "merge". Only drill-only PRs (drill file, its unit's vault, `id_map.json`) may be self-merged. Git hooks in `.githooks/` enforce this; never use `--no-verify`.
+
 ## Project Overview
 - LearningOS: a Notion-hosted curriculum (Topic → Chapter → Unit) plus local-first generators for practice drills (`MTH`/`PHY` math, `PRG` code) and project labs.
 - Python scripts generate/verify content and write to Notion; a Next.js "Practice Studio" shows drills; code is edited in the user's own VS Code/Cursor.
@@ -29,7 +31,7 @@
 - Commits: conventional (`feat(scope):`, `fix:`, `refactor:`, `docs(rules):`).
 
 ## Workflow
-- Work on a branch and open a PR; never push to `main` directly (this overrides `rules/00_core.md` §10 "push origin main"). Exception: a PR that only adds a new drill (its file, its unit's vault, `id_map.json`) is merged by the agent itself (learner decision 2026-11-15; see the `new-math-drill` skill).
+- Work on a branch and open a PR; never commit or push on `main` (`rules/00_core.md` §10; enforced by `.githooks/`, enabled per clone with `git config core.hooksPath .githooks`). Exception: a PR that only adds a new drill (its file, its unit's vault, `id_map.json`) is merged by the agent itself (learner decision 2026-11-15; see the `new-math-drill` skill).
 - Before calling work done: run the commands above that apply (lint/build/tests) and report failures honestly, separating pre-existing ones from new ones.
 - New drill/lab: sync its pristine record to Notion right after creating it, per `rules/00_core.md` §8 — no need to wait for a merge or ask first (user decision 2026-11-13). From a worktree this works without copying `.env`: `notion_sync.client.load_env` reads the main checkout's `.env`.
 

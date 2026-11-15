@@ -1,0 +1,9 @@
+#!/bin/sh
+# LearningOS: never push to main; merges happen on GitHub through PRs (CLAUDE.md "Workflow").
+while read local_ref local_sha remote_ref remote_sha; do
+  if [ "$remote_ref" = "refs/heads/main" ]; then
+    echo "BLOCKED: pushing to 'main'. Push a branch and open a PR instead (gh pr create)." >&2
+    exit 1
+  fi
+done
+exit 0

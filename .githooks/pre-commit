@@ -1,0 +1,9 @@
+#!/bin/sh
+# LearningOS: no commits on main. Work on a branch and open a PR (CLAUDE.md "Workflow").
+branch=$(git symbolic-ref --short -q HEAD)
+if [ "$branch" = "main" ]; then
+  echo "BLOCKED: you are committing on 'main'. Every change goes through a branch and a PR:" >&2
+  echo "  git switch -c <type>/<short-name>   # then commit, push, gh pr create" >&2
+  echo "Drill-only PRs (drill file, its unit's vault, id_map.json) may be merged by the agent; anything else waits for the learner's \"merge\"." >&2
+  exit 1
+fi
