@@ -1080,38 +1080,62 @@ def _pretty(expr: str) -> str:
     """`2*(x-1)**2 - 3` -> `2(x-1)^2 - 3` for a legend."""
     s = str(expr).replace("**", "^")
     s = re.sub(r"(\d)\s*\*\s*(\d)", r"\1\\cdot \2", s)
+    s = re.sub(r"\bcbrt\(([^()]*)\)", r"\\sqrt[3]{\1}", s)
+    s = re.sub(r"\bsqrt\(([^()]*)\)", r"\\sqrt{\1}", s)
+    s = re.sub(r"\babs\(([^()]*)\)", r"|\1|", s)
     return s.replace("*", "")
 
 
 def _sample(expr: str, x_min: float, x_max: float, n: int = 240) -> List[List[Tuple[float, float]]]:
-    """Runs of (x, y) samples; breaks where the function is undefined or jumps (vertical asymptotes)."""
+    """Runs of (x, y) samples; a run breaks where the function is undefined, at a jump (piecewise) and across a
+    vertical asymptote, so no false vertical stroke is drawn."""
     from math_engine.safe_expr import compile_expr, evaluate
 
     tree = compile_expr(expr)
-    runs: List[List[Tuple[float, float]]] = []
-    cur: List[Tuple[float, float]] = []
+    samples: List[Tuple[float, Optional[float]]] = []
     for i in range(n + 1):
         x = x_min + (x_max - x_min) * i / n
         try:
-            y: Optional[float] = evaluate(tree, {"x": x})
+            samples.append((x, evaluate(tree, {"x": x})))
         except (ArithmeticError, ValueError, KeyError, TypeError):
-            y = None
-        if y is not None and cur and abs(y - cur[-1][1]) > 50 * (x_max - x_min) / n * max(1.0, abs(cur[-1][1])):
-            runs.append(cur)
-            cur = []
+            samples.append((x, None))
+    steps = sorted(abs(b[1] - a[1]) for a, b in zip(samples, samples[1:]) if a[1] is not None and b[1] is not None)
+    typical = steps[len(steps) // 2] if steps else 0.0
+    runs: List[List[Tuple[float, float]]] = []
+    cur: List[Tuple[float, float]] = []
+    prev_step = 0.0
+    for x, y in samples:
         if y is None:
             if cur:
                 runs.append(cur)
-            cur = []
-        else:
-            cur.append((round(x, 4), round(y, 4)))
+            cur, prev_step = [], 0.0
+            continue
+        if cur:
+            step = abs(y - cur[-1][1])
+            if step > 8 * max(prev_step, typical) and step > 1e-9:
+                runs.append(cur)
+                cur, step = [], 0.0
+            prev_step = step
+        cur.append((round(x, 4), round(y, 4)))
     if cur:
         runs.append(cur)
     return [r for r in runs if len(r) > 1]
 
 
+def _pairs(text: str) -> List[Tuple[float, float]]:
+    """`"(1, 2); (3, -1)"` -> [(1, 2), (3, -1)]."""
+    from math_engine.safe_expr import evaluate
+
+    out = []
+    for part in _split(text, ";"):
+        inner = part.strip().strip("()")
+        xs, ys = inner.split(",")
+        out.append((evaluate(xs.strip()), evaluate(ys.strip())))
+    return out
+
+
 def build_function_graph_figure(
-    expr: str,
+    expr: str = "",
     x_min: float = -5,
     x_max: float = 5,
     y_min: Optional[float] = None,
@@ -1121,26 +1145,42 @@ def build_function_graph_figure(
     label2: Optional[str] = None,
     mark_x: str = "",
     mark_labels: str = "",
+    mark_x2: str = "",
+    mark_labels2: str = "",
+    points: str = "",
+    point_labels: str = "",
+    open_points: str = "",
     vlines: str = "",
+    hlines: str = "",
     theme: str = "indigo",
     title: Optional[str] = None,
 ) -> Dict[str, Any]:
     """Graph of y = expr(x) (and optionally a second curve) for any function `math_engine.safe_expr` reads:
-    polynomials, rational, radical, |x|, exp/ln/log, sin/cos/tan (`2*(x-1)^2 - 3`, `1/(x-2)`, `sqrt(x+4)`).
+    polynomials, rational, radical, |x|, cbrt, exp/ln/log, sin/cos/tan, and piecewise rules
+    (`2*(x-1)^2 - 3`, `1/(x-2)`, `cbrt(x)`, `x^2 if x < 0 else 2*x + 1`).
 
-    `mark_x` = comma-separated x values to mark on the first curve; `mark_labels` = their labels separated by
-    `|` (default `(x, y)`; write `?` for a coordinate the problem asks for). `vlines` = comma-separated x values
-    drawn as dashed vertical lines (asymptotes). y-range is fitted to the curve when not given.
+    - `mark_x` / `mark_x2`: comma-separated x values to mark on the first / second curve; `mark_labels` /
+      `mark_labels2`: their labels separated by `|` (default `(x, y)`; write `?` for an asked-for coordinate).
+    - `points`: free points `"(1, 2); (3, -1)"` (a relation given as ordered pairs needs no `expr`), labelled by
+      `point_labels` (`|`-separated, default none); `open_points`: hollow dots, e.g. the open end of a piece.
+    - `vlines` / `hlines`: comma-separated x / y values drawn as dashed lines (asymptotes, line tests).
+    The y-range is fitted to the curves and points when not given.
     """
-    exprs = [(expr, label or f"y = {_pretty(expr)}"), *([(expr2, label2 or f"y = {_pretty(expr2)}")] if expr2 else [])]
+    from math_engine.safe_expr import evaluate
+
+    exprs = [(e, lbl or f"y = {_pretty(e)}") for e, lbl in ((expr, label), (expr2, label2)) if e]
     palette = [FIGURE_THEMES.get(theme, FIGURE_THEMES["indigo"])["stroke"], "#e11d48"]
     curves = [(i, run) for i, (e, _) in enumerate(exprs) for run in _sample(e, x_min, x_max)]
-    if not curves:
+    free, hollow = _pairs(points), _pairs(open_points)
+    if exprs and not curves:
         raise ValueError(f"nothing to plot for {expr!r} on [{x_min}, {x_max}]")
+    if not exprs and not free:
+        raise ValueError("give an expr or points to plot")
     if y_min is None or y_max is None:
-        ys = sorted(y for _, run in curves for _, y in run)
-        lo, hi = ys[int(0.03 * (len(ys) - 1))], ys[int(0.97 * (len(ys) - 1))]
-        fit = _nice_range(lo, hi)
+        ys = sorted([y for _, run in curves for _, y in run])
+        lo, hi = (ys[int(0.03 * (len(ys) - 1))], ys[int(0.97 * (len(ys) - 1))]) if ys else (0.0, 0.0)
+        extra = [y for _, y in free + hollow] + [float(v) for v in _split(hlines)]
+        fit = _nice_range(min([lo, *extra]), max([hi, *extra]))
         y_min = fit[0] if y_min is None else y_min
         y_max = fit[1] if y_max is None else y_max
     plots: List[Dict[str, Any]] = []
@@ -1148,22 +1188,38 @@ def build_function_graph_figure(
         plots.append(
             {"type": "segment", "from": [x, y_min], "to": [x, y_max], "color": "#94a3b8", "strokeDasharray": "5 4"}
         )
+    for y in [float(v) for v in _split(hlines)]:
+        plots.append(
+            {"type": "segment", "from": [x_min, y], "to": [x_max, y], "color": "#94a3b8", "strokeDasharray": "5 4"}
+        )
     for i, run in curves:
         plots.append({"type": "curve", "points": [list(p) for p in run], "color": palette[i % 2], "strokeWidth": 2.5})
-    from math_engine.safe_expr import evaluate
-
-    labels = _split(mark_labels, "|")
-    for k, xs in enumerate(_split(mark_x)):
-        x = float(xs)
-        y = evaluate(expr, {"x": x})
-        plots.append(
-            {
-                "type": "point",
-                "coord": [round(x, 4), round(y, 4)],
-                "label": labels[k] if k < len(labels) else f"({x:g}, {y:g})",
-                "position": "top-right",
-            }
-        )
+    for idx, (marks, mark_lbls) in enumerate(((mark_x, mark_labels), (mark_x2, mark_labels2))):
+        if not marks:
+            continue
+        if idx >= len(exprs):
+            raise ValueError("mark_x2 needs expr2")
+        lbls = _split(mark_lbls, "|")
+        for k, xs in enumerate(_split(marks)):
+            x = float(xs)
+            y = evaluate(exprs[idx][0], {"x": x})
+            plots.append(
+                {
+                    "type": "point",
+                    "coord": [round(x, 4), round(y, 4)],
+                    "label": lbls[k] if k < len(lbls) else f"({x:g}, {y:g})",
+                    "position": "top-right",
+                    "color": palette[idx],
+                }
+            )
+    plabels = _split(point_labels, "|")
+    for k, (x, y) in enumerate(free):
+        pt: Dict[str, Any] = {"type": "point", "coord": [x, y], "position": "top-right"}
+        if k < len(plabels):
+            pt["label"] = plabels[k]
+        plots.append(pt)
+    for x, y in hollow:
+        plots.append({"type": "point", "coord": [x, y], "hollow": True, "color": palette[0]})
     legend_y = y_max - 0.08 * (y_max - y_min)
     for i, (_, text) in enumerate(exprs):
         plots.append(
@@ -1183,6 +1239,69 @@ def build_function_graph_figure(
         "grid": True,
         "axes": True,
         "plots": plots,
+    }
+
+
+def build_mapping_diagram_figure(
+    domain: str,
+    range_values: str,
+    pairs: str,
+    domain_label: str = "Domain",
+    range_label: str = "Range",
+    theme: str = "indigo",
+    title: Optional[str] = None,
+) -> Dict[str, Any]:
+    """Arrow (mapping) diagram of a relation: two ovals of elements and an arrow per pair.
+
+    `domain` / `range_values`: comma-separated elements in display order (`"1, 2, 3"`, `"a, b"`);
+    `pairs`: `"1->a; 2->b; 3->b"`. Shows at a glance whether an input has two outputs (not a function) or two
+    inputs share an output (not one-to-one)."""
+    left, right = _split(domain), _split(range_values)
+    links = [tuple(t.strip() for t in p.split("->")) for p in _split(pairs, ";")]
+    for a, b in links:
+        if a not in left or b not in right:
+            raise ValueError(f"pair {a}->{b} uses an element not listed in domain/range")
+    rows = max(len(left), len(right), 1)
+    gap, xl, xr = 1.6, 0.0, 6.0
+
+    def ys(n: int) -> List[float]:
+        return [(n - 1) * gap / 2 - k * gap for k in range(n)]
+
+    pts: Dict[str, List[float]] = {}
+    labels: List[Dict[str, Any]] = []
+    for side, items, x, pos in (("L", left, xl, "left"), ("R", right, xr, "right")):
+        for k, (item, y) in enumerate(zip(items, ys(len(items)))):
+            pts[f"{side}{k}"] = [x, y]
+            labels.append({"type": "point", "point": f"{side}{k}", "text": item, "position": pos})
+    half = (rows - 1) * gap / 2 + 1.1
+    pts["CL"], pts["CR"] = [xl, 0.0], [xr, 0.0]
+    shapes: List[Dict[str, Any]] = [
+        {"type": "ellipse", "center": "CL", "radiusX": 1.3, "radiusY": half, "fill": True},
+        {"type": "ellipse", "center": "CR", "radiusX": 1.3, "radiusY": half, "fill": True},
+    ]
+    hidden = ["CL", "CR"]
+    for n, (a, b) in enumerate(links):
+        pa, pb = pts[f"L{left.index(a)}"], pts[f"R{right.index(b)}"]
+        dx, dy = pb[0] - pa[0], pb[1] - pa[1]
+        pts[f"A{n}"] = [pa[0] + 0.12 * dx, pa[1] + 0.12 * dy]
+        pts[f"B{n}"] = [pa[0] + 0.88 * dx, pa[1] + 0.88 * dy]
+        hidden += [f"A{n}", f"B{n}"]
+        shapes.append({"type": "segment", "from": f"A{n}", "to": f"B{n}", "arrow": True, "strokeWidth": 1.8})
+    top = half + 0.5
+    pts["TL"], pts["TR"] = [xl, top + 0.3], [xr, top + 0.3]  # keep the headings inside the drawing
+    hidden += ["TL", "TR"]
+    labels += [
+        {"type": "free", "coord": [xl, top], "text": domain_label},
+        {"type": "free", "coord": [xr, top], "text": range_label},
+    ]
+    return {
+        "kind": "geometry_2d",
+        "theme": theme,
+        "title": title or "Mapping Diagram",
+        "points": pts,
+        "hideDots": hidden,
+        "shapes": shapes,
+        "labels": labels,
     }
 
 

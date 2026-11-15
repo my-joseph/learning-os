@@ -60,6 +60,7 @@ def plain(text: Any) -> str:
     s = re.sub(r"\^\{?\\circ\}?", "°", s)
     s = re.sub(r"\\(?:text|mathrm|mathbf|operatorname)\{([^{}]*)\}", r"\1", s)
     s = re.sub(r"\\(?:bar|overline)\{([^{}]*)\}", lambda m: "".join(c + "\u0304" for c in m.group(1)), s)
+    s = re.sub(r"\\sqrt\[3\]\{([^{}]*)\}", r"∛(\1)", s)
     s = re.sub(r"\\sqrt\{([^{}]*)\}", r"√(\1)", s)
     s = re.sub(r"\\frac\{([^{}]*)\}\{([^{}]*)\}", r"(\1)/(\2)", s)
     s = re.sub(r"\\([A-Za-z]+)", lambda m: _SYMBOLS.get(m.group(1), m.group(1)), s)
@@ -212,8 +213,10 @@ def _geometry(fig: dict, stroke: str, fill: str, w: int, h: int, markers: _Marke
                 )
         elif t == "segment" and pt(sh.get("from")) and pt(sh.get("to")):
             (x1, y1), (x2, y2) = pt(sh["from"]), pt(sh["to"])
+            arrow = markers.ref(col) if sh.get("arrow") else ""
             out.append(
-                f'<line x1="{x1:.1f}" y1="{y1:.1f}" x2="{x2:.1f}" y2="{y2:.1f}" stroke="{col}" stroke-width="2"{_dash(sh)}/>'
+                f'<line x1="{x1:.1f}" y1="{y1:.1f}" x2="{x2:.1f}" y2="{y2:.1f}" stroke="{col}" '
+                f'stroke-width="{sh.get("strokeWidth", 2)}"{_dash(sh)}{arrow}/>'
             )
         elif t == "circle" and pt(sh.get("center")):
             cx, cy = pt(sh["center"])
@@ -290,7 +293,10 @@ def _geometry(fig: dict, stroke: str, fill: str, w: int, h: int, markers: _Marke
                     f'stroke="{stroke}" stroke-width="1.6"/>'
                 )
 
+    hidden = set(fig.get("hideDots") or [])
     for name in pts:
+        if name in hidden:
+            continue
         x, y = pt(name)
         out.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="3.5" fill="{INK}" stroke="#ffffff" stroke-width="1.5"/>')
 

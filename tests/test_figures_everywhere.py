@@ -110,6 +110,8 @@ ALL_BUILDS = [
     lambda: fb.build_function_graph_figure("sin(x)", x_min=-6, x_max=6),
     lambda: fb.build_number_line_figure("[-1, 4)"),
     lambda: fb.build_complex_plane_figure(3, -4, "z_1", -2, 1, "z_2"),
+    lambda: fb.build_mapping_diagram_figure("1, 2, 3", "a, b", "1->a; 2->b; 3->b"),
+    lambda: fb.build_function_graph_figure(points="(1, 2); (2, 3)", point_labels="A|B"),
 ]
 
 
@@ -202,3 +204,54 @@ def test_upload_svg_sends_multipart_to_the_upload_url(monkeypatch):
     assert seen["url"].endswith("/f1/send") and seen["ctype"].startswith("multipart/form-data; boundary=")
     assert b"<svg/>" in seen["body"] and b'filename="a.svg"' in seen["body"]
     assert seen["ctx"] is nf.SSL_CTX  # TLS verified
+
+
+def test_safe_expr_piecewise_cube_root_min_max():
+    pw = "x^2 if x < 0 else (2*x + 1 if x <= 3 else 7)"
+    assert [evaluate(pw, {"x": v}) for v in (-2, 1, 5)] == [4, 3, 7]
+    assert evaluate("cbrt(x)", {"x": -8}) == pytest.approx(-2)
+    assert evaluate("max(x, 1) - min(x, 1)", {"x": 4}) == 3
+    assert evaluate("1 if 0 <= x < 2 and not x == 1 else 0", {"x": 1.5}) == 1
+    assert try_evaluate("x < 1", {"x": 0}) is None  # a bare condition is not a value
+
+
+def test_function_graph_piecewise_jump_lines_and_free_points():
+    fig = fb.build_function_graph_figure(
+        "x + 1 if x < 2 else 6 - x", x_min=-2, x_max=6, open_points="(2, 3)", points="(2, 4)", hlines="3"
+    )
+    curves = [p for p in fig["plots"] if p["type"] == "curve"]
+    assert len(curves) == 2  # no vertical stroke across the jump at x = 2
+    assert {"type": "point", "coord": [2, 3], "hollow": True, "color": curves[0]["color"]} in fig["plots"]
+    assert any(p["type"] == "segment" and p["from"][1] == p["to"][1] == 3 for p in fig["plots"])
+    smooth = fb.build_function_graph_figure("x^2", x_min=-3, x_max=3)
+    assert len([p for p in smooth["plots"] if p["type"] == "curve"]) == 1  # the vertex is not a jump
+    two = fb.build_function_graph_figure(
+        "sqrt(x)", expr2="-sqrt(x)", x_min=0, x_max=5, mark_x2="4", mark_labels2="(4, ?)"
+    )
+    assert [p["coord"] for p in two["plots"] if p["type"] == "point"] == [[4, -2]]
+    with pytest.raises(ValueError, match="expr2"):
+        fb.build_function_graph_figure("x", mark_x2="1")
+    rel = fb.build_function_graph_figure(points="(1, 2); (1, -1)")
+    assert not [p for p in rel["plots"] if p["type"] in ("curve", "text")]
+    with pytest.raises(ValueError):
+        fb.build_function_graph_figure()
+
+
+def test_mapping_diagram():
+    fig = fb.build_mapping_diagram_figure("-2, 2, 5", "4, 25, 7", "-2->4; 2->4; 5->25; 5->7")
+    arrows = [s for s in fig["shapes"] if s["type"] == "segment"]
+    assert len(arrows) == 4 and all(a["arrow"] for a in arrows)
+    assert {lb["text"] for lb in fig["labels"] if lb["type"] == "point"} == {"-2", "2", "5", "4", "25", "7"}
+    svg = figure_to_svg(fig)
+    dots = svg.count('r="3.5"')
+    assert dots == 6  # helper points (arrow ends, oval centres) have no dot
+    with pytest.raises(ValueError, match="not listed"):
+        fb.build_mapping_diagram_figure("1", "a", "2->a")
+
+
+def test_new_page_with_only_an_empty_paragraph_counts_as_empty():
+    blank = {"id": "b1", "type": "paragraph", "paragraph": {"rich_text": []}}
+    assert up.check_target("U", "new", None, [blank]) is None
+    text = {"id": "b2", "type": "paragraph", "paragraph": {"rich_text": [{"plain_text": "notes"}]}}
+    with pytest.raises(ValueError, match="already has 1 blocks"):
+        up.check_target("U", "new", None, [blank, text])

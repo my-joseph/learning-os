@@ -150,12 +150,21 @@ def set_properties(code: str, values: dict[str, str], token: str, id_map: dict) 
     return list(patch)
 
 
+def is_blank(block: dict) -> bool:
+    """An empty paragraph (what Notion leaves on a page someone clicked into) is not content."""
+    if block.get("type") != "paragraph" or block.get("has_children"):
+        return False
+    rich = block.get("paragraph", {}).get("rich_text") or []
+    return not "".join(r.get("plain_text") or r.get("text", {}).get("content", "") for r in rich).strip()
+
+
 def check_target(code: str, mode: str, after: str | None, existing: list[dict]) -> str | None:
     """Validate the target before writing (also used by --dry-run). Returns the block to insert after."""
     if mode == "new":
-        if existing:
-            raise ValueError(f"{code} already has {len(existing)} blocks; use --mode add (never rewrite a page)")
-        return None
+        content = [b for b in existing if not is_blank(b)]
+        if content:
+            raise ValueError(f"{code} already has {len(content)} blocks; use --mode add (never rewrite a page)")
+        return None  # an empty paragraph Notion leaves on a fresh page counts as empty; it is kept, not deleted
     if not after:
         raise ValueError("--mode add needs --after <heading text>")
     if LEARNER_SECTION.lower() in after.lower():
@@ -188,7 +197,7 @@ def main(argv: list[str] | None = None) -> int:
         "No italic or links. Block types: h2 h3 p bullet num todo callout quote eq toggle divider figure. "
         'Figure: {"type": "figure", "fn": "build_function_graph_figure", "args": {"expr": "(x-1)^2-4"}, '
         '"caption": "..."}; builders: build_function_graph_figure, build_number_line_figure, '
-        "build_complex_plane_figure, build_cartesian_*, build_rectangle/right_triangle/circle/cone/... (figure_builder).",
+        "build_complex_plane_figure, build_mapping_diagram_figure, build_cartesian_*, build_rectangle/right_triangle/circle/cone/... (figure_builder).",
     )
     ap.add_argument("--code", required=True)
     ap.add_argument("--spec", help="JSON spec of blocks (optional when only --set is used)")
