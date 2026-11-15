@@ -15,12 +15,14 @@ Upload uses the Notion File Upload API (`POST /v1/file_uploads`, then multipart 
 from __future__ import annotations
 
 import json
+import re
 import urllib.request
 import uuid
 from collections.abc import Callable
 
 from math_engine import figure_builder
 from math_engine.figure_svg import figure_to_svg
+from notion_sync.blocks import parse_rt
 from notion_sync.client import NOTION_VERSION, SSL_CTX, notion_request
 
 Uploader = Callable[[str, str], str]  # (svg, filename) -> file_upload id
@@ -82,17 +84,41 @@ def upload_svg(svg: str, filename: str, token: str) -> str:
     return created["id"]
 
 
-def image_block(upload_id: str, caption: str = "") -> dict:
+def caption_rich_text(caption: str, id_map: dict) -> list[dict]:
+    """Caption as Notion rich text with the page-text syntax: `$math$` becomes an inline equation,
+    `[[CODE]]` a page mention, `**bold**` bold (a plain-text caption would show LaTeX or `sqrt(...)` raw)."""
+    check_plain_math(caption, "caption")
+    return parse_rt(caption[:1900], id_map)
+
+
+def image_block(upload_id: str, caption: str = "", id_map: dict | None = None) -> dict:
     block = {"object": "block", "type": "image", "image": {"type": "file_upload", "file_upload": {"id": upload_id}}}
     if caption:
-        block["image"]["caption"] = [{"type": "text", "text": {"content": caption[:1900]}}]
+        block["image"]["caption"] = caption_rich_text(caption, id_map or {})
     return block
 
 
-def figure_block(item: dict, uploader: Uploader, name: str = "figure") -> dict:
+# Math written as plain text outside `$...$`: `sqrt(x + 2)`, `x^2`, `\frac`, `\sqrt`.
+_PLAIN_MATH = re.compile(r"\bsqrt\(|\bcbrt\(|[A-Za-z0-9)\]]\^[A-Za-z0-9({]|\\(?:frac|sqrt|cdot|le|ge|infty|pi|Delta)\b")
+
+
+def check_plain_math(text: str, where: str = "text") -> None:
+    """Refuse math outside `$...$`, so it renders as an equation on Notion instead of `sqrt(x + 2)`."""
+    outside = re.sub(r"(?<!\\)\$(?:\\\$|[^$])+?(?<!\\)\$|`[^`]*`", " ", str(text or ""))
+    m = _PLAIN_MATH.search(outside)
+    if m:
+        raise ValueError(
+            f"{where}: math written as plain text near {outside[max(0, m.start() - 15) : m.end() + 15]!r}; "
+            "wrap it in $...$ (e.g. $\\sqrt{x+2}$, $x^2$) so Notion renders it"
+        )
+
+
+def figure_block(item: dict, uploader: Uploader, name: str = "figure", id_map: dict | None = None) -> dict:
     """Build, render and upload one figure; returns the Notion image block."""
+    caption = item.get("caption", "")
+    check_plain_math(caption, "figure caption")  # before uploading anything
     svg = figure_to_svg(figure_from_spec(item))
-    return image_block(uploader(svg, f"{name}.svg"), item.get("caption", ""))
+    return image_block(uploader(svg, f"{name}.svg"), caption, id_map)
 
 
 def dry_run_uploader(svg: str, filename: str) -> str:
