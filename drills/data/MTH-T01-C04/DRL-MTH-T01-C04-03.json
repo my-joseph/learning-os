@@ -1,0 +1,613 @@
+{
+  "unitCode": "MTH-T01-C04",
+  "topicTitle": "Fractions & Invariant Ratios",
+  "unitTitle": "Fractions",
+  "subject": "MATH",
+  "focusTags": [
+    "c04-first-fraction-reciprocal-flip"
+  ],
+  "problems": [
+    {
+      "id": "Q01",
+      "level": 2,
+      "category": "Fraction Division",
+      "archetype": "problem-solving",
+      "archetypeKey": "c04-fraction-division-reciprocal-inversion",
+      "form": "direct",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Evaluate $2\\frac{1}{4} \\div \\frac{5}{6}$ and write your answer as a reduced fraction.",
+      "display": "2\\frac{1}{4} \\div \\frac{5}{6}",
+      "plainText": "(2 + 1/4) / (5/6)",
+      "givens": {
+        "w": 2,
+        "a": 1,
+        "b": 4,
+        "c": 5,
+        "d": 6
+      },
+      "constants": {},
+      "trapGivens": [
+        2,
+        1,
+        4,
+        5,
+        6
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "27/10",
+        "tolerance": 0,
+        "forms": [
+          "reduced_fraction",
+          "exact"
+        ]
+      },
+      "answerPlain": "27/10",
+      "answerDisplay": "\\frac{27}{10}",
+      "inputHint": "Enter a reduced fraction",
+      "commonTrapTag": "c04-first-fraction-reciprocal-flip",
+      "trapDerivation": "(2 + 1 / 4) * (5 / 6)",
+      "trapValue": "15/8",
+      "verify": {
+        "source": "(2 + 1 / 4) / (5 / 6)",
+        "trapValue": "15/8"
+      },
+      "checkpointHint": "Convert the mixed number into an improper fraction first, then multiply by the reciprocal of the divisor.",
+      "references": [
+        "MTH-T01-C04"
+      ],
+      "steps": [
+        {
+          "latex": "2\\frac{1}{4} \\div \\frac{5}{6} = \\frac{9}{4} \\div \\frac{5}{6}",
+          "explain": "Convert the mixed number to an improper fraction.",
+          "eq": [
+            "(2 + 1 / 4) / (5 / 6)",
+            "(9 / 4) / (5 / 6)"
+          ]
+        },
+        {
+          "latex": "\\frac{9}{4} \\div \\frac{5}{6} = \\frac{9}{4} \\times \\frac{6}{5}",
+          "explain": "Rewrite division by a fraction as multiplication by its reciprocal.",
+          "eq": [
+            "(9 / 4) / (5 / 6)",
+            "(9 / 4) * (6 / 5)"
+          ]
+        },
+        {
+          "latex": "\\frac{9}{4} \\times \\frac{6}{5} = \\frac{54}{20}",
+          "explain": "Multiply the numerators together and the denominators together.",
+          "eq": [
+            "(9 / 4) * (6 / 5)",
+            "54 / 20"
+          ]
+        },
+        {
+          "latex": "\\frac{54}{20} = \\frac{27}{10}",
+          "explain": "Divide the numerator and denominator by their greatest common factor to simplify.",
+          "val": "27/10"
+        }
+      ],
+      "review": {
+        "verdict": "pass",
+        "note": "Answer 27/10, trapValue 15/8 (multiplying without inverting the divisor), four single-transformation steps, plain unambiguous prompt, and zero-digit non-leaking hints all satisfy V3 and the brief."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C04",
+          "title": "Fractions",
+          "notionUrl": "https://www.notion.so/4003818f8ba080548960c0514eb841aa"
+        }
+      ],
+      "unitCode": "MTH-T01-C04-U04",
+      "fingerprint": "c04-first-fraction-reciprocal-flip|direct|(# + #/#) / (#/#)",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 4,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c04-first-fraction-reciprocal-flip",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 15
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 2 - Standard Exam"
+    },
+    {
+      "id": "Q02",
+      "level": 2,
+      "category": "Fraction Division",
+      "archetype": "problem-solving",
+      "archetypeKey": "c04-fraction-division-reciprocal-inversion",
+      "form": "reverse",
+      "context": "",
+      "verificationLevel": "partial",
+      "variables": [
+        "k"
+      ],
+      "prompt": "Find $k$ such that $\\frac{4}{9} \\div \\frac{k}{12} = \\frac{2}{3}$.",
+      "display": "\\frac{4}{9} \\div \\frac{k}{12} = \\frac{2}{3}",
+      "plainText": "(4/9) / (k/12) = 2/3",
+      "givens": {
+        "a": 4,
+        "b": 9,
+        "d": 12,
+        "p": 2,
+        "q": 3
+      },
+      "constants": {},
+      "trapGivens": [
+        4,
+        9,
+        12,
+        2,
+        3
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "8",
+        "tolerance": 0,
+        "variables": [
+          "k"
+        ]
+      },
+      "answerPlain": "8",
+      "answerDisplay": "8",
+      "inputHint": "Enter a whole number",
+      "commonTrapTag": "c04-first-fraction-reciprocal-flip",
+      "trapDerivation": "((2 / 3) * 9 * 12) / 4",
+      "trapValue": "18",
+      "verify": {
+        "source": "((4 / 9) * 12) / (2 / 3)",
+        "trapValue": "18"
+      },
+      "checkpointHint": "Keep the first fraction unchanged, multiply by the reciprocal of the divisor fraction, and then solve for the unknown.",
+      "references": [
+        "MTH-T01-C04"
+      ],
+      "steps": [
+        {
+          "latex": "\\frac{4}{9} \\times \\frac{12}{k} = \\frac{2}{3}",
+          "explain": "Rewrite division by the unknown fraction as multiplication by its reciprocal.",
+          "eq": [
+            "(4 / 9) / (k / 12)",
+            "(4 / 9) * (12 / k)"
+          ]
+        },
+        {
+          "latex": "\\frac{48}{9k} = \\frac{2}{3}",
+          "explain": "Multiply the numerators together and the denominators together.",
+          "eq": [
+            "(4 / 9) * (12 / k)",
+            "48 / (9 * k)"
+          ]
+        },
+        {
+          "latex": "\\frac{16}{3k} = \\frac{2}{3}",
+          "explain": "Reduce the numerical factor in the numerator and denominator by their greatest common factor.",
+          "eq": [
+            "48 / (9 * k)",
+            "16 / (3 * k)"
+          ]
+        },
+        {
+          "latex": "6k = 48",
+          "explain": "Cross-multiply to clear the denominators."
+        },
+        {
+          "latex": "k = 8",
+          "explain": "Divide both sides by the coefficient of the unknown.",
+          "val": "8"
+        }
+      ],
+      "review": {
+        "verdict": "pass",
+        "note": "Reverse solve k = 8, trapValue 18 (not inverting k/12 before solving), five clear steps, unambiguous prompt, and zero-digit hints all satisfy V3 and the brief."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C04",
+          "title": "Fractions",
+          "notionUrl": "https://www.notion.so/4003818f8ba080548960c0514eb841aa"
+        }
+      ],
+      "unitCode": "MTH-T01-C04-U04",
+      "fingerprint": "c04-first-fraction-reciprocal-flip|reverse|(#/#) / (k/#) = #/#",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 5,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c04-first-fraction-reciprocal-flip",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 17
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 2 - Standard Exam"
+    },
+    {
+      "id": "Q03",
+      "level": 3,
+      "category": "Fraction Division Diagnosis",
+      "archetype": "problem-solving",
+      "archetypeKey": "c04-fraction-division-reciprocal-inversion",
+      "form": "diagnose",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "A student evaluated $2\\frac{1}{3} \\div \\frac{9}{14}$ step by step:\nLine 1: $2\\frac{1}{3} \\div \\frac{9}{14} = \\frac{7}{3} \\div \\frac{9}{14}$\nLine 2: $= \\frac{7 \\times 9}{3 \\times 14}$\nLine 3: $= \\frac{63}{42}$\nLine 4: $= \\frac{3}{2}$\nWhich line is the first one that is wrong?",
+      "display": "2\\frac{1}{3} \\div \\frac{9}{14}",
+      "plainText": "Diagnose work for (2 + 1/3) / (9/14)",
+      "givens": {
+        "w": 2,
+        "a": 1,
+        "b": 3,
+        "c": 9,
+        "d": 14
+      },
+      "constants": {},
+      "trapGivens": [
+        2,
+        1,
+        3,
+        9,
+        14
+      ],
+      "answerSpec": {
+        "type": "choice",
+        "options": [
+          {
+            "id": "1",
+            "label": "Line 1",
+            "provenance": "flags a correct step as the error"
+          },
+          {
+            "id": "2",
+            "label": "Line 2"
+          },
+          {
+            "id": "3",
+            "label": "Line 3",
+            "trapTag": "c04-first-fraction-reciprocal-flip"
+          },
+          {
+            "id": "4",
+            "label": "Line 4",
+            "trapTag": "c04-first-fraction-reciprocal-flip"
+          }
+        ],
+        "correct": "2"
+      },
+      "answerPlain": "2",
+      "answerDisplay": "\\text{Line 2}",
+      "inputHint": "Choose a line",
+      "commonTrapTag": "c04-first-fraction-reciprocal-flip",
+      "trapDerivation": "(2 + 1 / 3) * (9 / 14)",
+      "trapValue": "3/2",
+      "verify": {
+        "source": "(2 + 1 / 3) / (9 / 14)",
+        "trapValue": "3/2",
+        "flaw": {
+          "values": [
+            "(7 / 3) / (9 / 14)",
+            "(7 * 9) / (3 * 14)",
+            "63 / 42",
+            "3 / 2"
+          ],
+          "firstWrong": 2
+        }
+      },
+      "checkpointHint": "Check whether each line keeps exactly the same value as the line above it.",
+      "references": [
+        "MTH-T01-C04"
+      ],
+      "steps": [
+        {
+          "latex": "2\\frac{1}{3} \\div \\frac{9}{14} = \\frac{7}{3} \\div \\frac{9}{14}",
+          "explain": "Line 1 correctly converts the mixed number to an improper fraction.",
+          "eq": [
+            "2 + 1 / 3",
+            "7 / 3"
+          ]
+        },
+        {
+          "latex": "\\frac{7}{3} \\div \\frac{9}{14} = \\frac{7}{3} \\times \\frac{14}{9}",
+          "explain": "Line 2 is the first wrong line: dividing by a fraction requires multiplying by its reciprocal rather than multiplying straight across.",
+          "eq": [
+            "(7 / 3) / (9 / 14)",
+            "(7 / 3) * (14 / 9)"
+          ]
+        },
+        {
+          "latex": "\\frac{7}{3} \\times \\frac{14}{9} = \\frac{98}{27}",
+          "explain": "Multiply the numerators and denominators to find the true value.",
+          "val": "98/27"
+        }
+      ],
+      "blindSolve": {
+        "answer": "2",
+        "ambiguous": false,
+        "setup": "given",
+        "strategy": "prescribed",
+        "check": "none",
+        "task": "diagnose",
+        "reverse": false,
+        "steps": 2
+      },
+      "review": {
+        "verdict": "pass",
+        "note": "Diagnose prompt, Line 2 flaw identification, trapValue 3/2 matching Line 4, verify.flaw values, option provenance/trapTag metadata, steps, and process-only zero-digit checkpointHint all satisfy V3 and 06 §2.3."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C04",
+          "title": "Fractions",
+          "notionUrl": "https://www.notion.so/4003818f8ba080548960c0514eb841aa"
+        }
+      ],
+      "unitCode": "MTH-T01-C04-U04",
+      "fingerprint": "c04-first-fraction-reciprocal-flip|diagnose|Diagnose work for (# + #/#) / (#/#)",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            20
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c04-first-fraction-reciprocal-flip",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 3
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 17
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 3 - Trap & Diagnostic"
+    },
+    {
+      "id": "Q04",
+      "level": 3,
+      "category": "Fraction Division",
+      "archetype": "problem-solving",
+      "archetypeKey": "c04-fraction-division-reciprocal-inversion",
+      "form": "choose",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Using two distinct fractions from $\\frac{3}{5}$, $\\frac{4}{7}$, and $\\frac{9}{10}$, form a division expression $x \\div y$ whose value is greater than $1$ and as small as possible. Write your answer as a reduced fraction.",
+      "display": "x \\div y > 1, \\quad x, y \\in \\left\\{\\frac{3}{5}, \\frac{4}{7}, \\frac{9}{10}\\right\\}",
+      "plainText": "min_{x > y} (x / y) for x, y in {3/5, 4/7, 9/10}",
+      "givens": {
+        "a": 3,
+        "b": 5,
+        "c": 4,
+        "d": 7,
+        "e": 9,
+        "f": 10
+      },
+      "constants": {
+        "one": 1
+      },
+      "trapGivens": [
+        3,
+        5,
+        4,
+        7
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "21/20",
+        "tolerance": 0,
+        "forms": [
+          "reduced_fraction",
+          "exact"
+        ]
+      },
+      "answerPlain": "21/20",
+      "answerDisplay": "\\frac{21}{20}",
+      "inputHint": "Enter a reduced fraction",
+      "commonTrapTag": "c04-first-fraction-reciprocal-flip",
+      "trapDerivation": "(3 / 5) * (4 / 7)",
+      "trapValue": "12/35",
+      "verify": {
+        "source": "(3 / 5) / (4 / 7)",
+        "trapValue": "12/35"
+      },
+      "checkpointHint": "Order the fractions first, discard pairs whose quotient is below one, and compare the adjacent quotients to find the smallest one.",
+      "references": [
+        "MTH-T01-C04"
+      ],
+      "steps": [
+        {
+          "latex": "\\frac{4}{7} < \\frac{3}{5}",
+          "explain": "Compare the two smaller fractions using a common denominator.",
+          "eq": [
+            "4 / 7",
+            "20 / 35"
+          ]
+        },
+        {
+          "latex": "\\frac{3}{5} < \\frac{9}{10}",
+          "explain": "Compare the middle fraction with the largest fraction to order all three.",
+          "eq": [
+            "3 / 5",
+            "6 / 10"
+          ]
+        },
+        {
+          "latex": "\\frac{3}{5} \\div \\frac{4}{7} = \\frac{3}{5} \\times \\frac{7}{4}",
+          "explain": "For quotients greater than one, only adjacent pairs in the sorted order need to be tested because the span across all three is larger; rewrite the first adjacent quotient using its divisor's reciprocal.",
+          "eq": [
+            "(3 / 5) / (4 / 7)",
+            "(3 / 5) * (7 / 4)"
+          ]
+        },
+        {
+          "latex": "\\frac{3}{5} \\times \\frac{7}{4} = \\frac{21}{20}",
+          "explain": "Multiply the numerators and denominators to evaluate the first adjacent quotient.",
+          "eq": [
+            "(3 / 5) * (7 / 4)",
+            "21 / 20"
+          ]
+        },
+        {
+          "latex": "\\frac{9}{10} \\div \\frac{3}{5} = \\frac{9}{10} \\times \\frac{5}{3}",
+          "explain": "Rewrite the second adjacent quotient using the reciprocal of its divisor.",
+          "eq": [
+            "(9 / 10) / (3 / 5)",
+            "(9 / 10) * (5 / 3)"
+          ]
+        },
+        {
+          "latex": "\\frac{9}{10} \\times \\frac{5}{3} = \\frac{3}{2}",
+          "explain": "Multiply and reduce to evaluate the second adjacent quotient.",
+          "eq": [
+            "(9 / 10) * (5 / 3)",
+            "3 / 2"
+          ]
+        },
+        {
+          "latex": "\\frac{21}{20} < \\frac{3}{2}",
+          "explain": "Compare the two adjacent quotients using a common denominator to identify the smaller one.",
+          "val": "21/20"
+        }
+      ],
+      "blindSolve": {
+        "answer": "21/20",
+        "ambiguous": false,
+        "setup": "given",
+        "strategy": "choose",
+        "check": "edge",
+        "edgeRejected": "Quotients with x < y (4/7 ÷ 3/5 = 20/21, 3/5 ÷ 9/10 = 2/3, 4/7 ÷ 9/10 = 40/63) ruled out by the > 1 constraint",
+        "task": "compute",
+        "reverse": false,
+        "steps": 5
+      },
+      "review": {
+        "verdict": "pass",
+        "note": "Answer 21/20, trapValue 12/35, sorted-order and adjacent-quotient comparison steps (21/20 vs 3/2), zero-digit checkpointHint, and L3 choose-form structure all satisfy V3 and the brief."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T01-C04",
+          "title": "Fractions",
+          "notionUrl": "https://www.notion.so/4003818f8ba080548960c0514eb841aa"
+        }
+      ],
+      "unitCode": "MTH-T01-C04-U04",
+      "fingerprint": "c04-first-fraction-reciprocal-flip|choose|min_{x > y} (x / y) for x, y in {#/#, #/#, #/#}",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 7,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            20
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "c04-first-fraction-reciprocal-flip",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 21
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 3 - Trap & Diagnostic"
+    }
+  ],
+  "drillId": "DRL-MTH-T01-C04-03",
+  "title": "Fractions — Verified Math Drill (4 Qs)",
+  "topicCode": "MTH-T01",
+  "chapterCode": "MTH-T01-C04",
+  "schemaVersion": "2.0-math",
+  "createdAt": "2026-11-15 10:56:41",
+  "config": {
+    "questionCount": 4,
+    "difficulty": "ALL",
+    "difficultyMode": "AI Synthesized Reasoning Mode"
+  },
+  "localFilePath": "drills/data/MTH-T01-C04/DRL-MTH-T01-C04-03.json"
+}
