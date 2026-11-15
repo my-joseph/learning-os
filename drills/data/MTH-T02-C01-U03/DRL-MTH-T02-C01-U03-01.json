@@ -1,0 +1,1148 @@
+{
+  "unitCode": "MTH-T02-C01-U03",
+  "topicTitle": "Algebra and Trigonometry",
+  "unitTitle": "Other Types of Equations",
+  "subject": "MATH",
+  "problems": [
+    {
+      "id": "Q01",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u03-rational-exponent-equations",
+      "context": "",
+      "prompt": "Solve $(x - 3)^{2/3} = 4$ over $\\mathbb{R}$.",
+      "display": "(x - 3)^{2/3} = 4",
+      "plainText": "(x - 3)^(2/3) = 4",
+      "givens": {
+        "h": 3,
+        "p": 2,
+        "q": 3,
+        "k": 4
+      },
+      "constants": {},
+      "trapGivens": [
+        3,
+        4
+      ],
+      "answerSpec": {
+        "type": "solution_set",
+        "values": [
+          "-5",
+          "11"
+        ],
+        "tolerance": 0
+      },
+      "answerPlain": "-5, 11",
+      "answerDisplay": "\\{-5, 11\\}",
+      "inputHint": "Enter all real solutions separated by a comma",
+      "commonTrapTag": "t02-c01-u03-omitted-pm-even-numerator-trap",
+      "trapDerivation": "3 + 4^(3/2)",
+      "trapValue": "11",
+      "verify": {
+        "source": "3 + 4^(3/2)",
+        "trapValue": "11"
+      },
+      "checkpointHint": "Check the parity of the numerator in the rational exponent before raising both sides to the reciprocal power.",
+      "references": [
+        "MTH-T02-C01-U03"
+      ],
+      "steps": [
+        {
+          "latex": "x - 3 = \\pm 4^{3/2}",
+          "explain": "Raise both sides to the reciprocal exponent 3/2, including both signs because the numerator 2 is even.",
+          "eq": [
+            "2^3",
+            "8"
+          ]
+        },
+        {
+          "latex": "x - 3 = \\pm 8",
+          "explain": "Evaluate 4^(3/2) as (sqrt(4))^3 = 8.",
+          "eq": [
+            "4^(3/2)",
+            "8"
+          ]
+        },
+        {
+          "latex": "x = 3 \\pm 8",
+          "explain": "Add 3 to both sides for each branch.",
+          "eq": [
+            "3 - 8",
+            "-5"
+          ]
+        },
+        {
+          "latex": "x \\in \\{-5, 11\\}",
+          "explain": "Simplify both branches to get the solution set.",
+          "eq": [
+            "3 + 8",
+            "11"
+          ]
+        }
+      ],
+      "verificationLevel": "partial",
+      "review": {
+        "verdict": "pass",
+        "note": "Solution set {-5, 11}, omitted-sign trap 11, steps, zero-number hint, and display all check out for the rational-exponent archetype."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C01-U03",
+          "title": "Other Types of Equations",
+          "notionUrl": "https://www.notion.so/4013818f8ba0809bb25ae9644f41da6e"
+        }
+      ],
+      "unitCode": "MTH-T02-C01-U03",
+      "fingerprint": "t02-c01-u03-omitted-pm-even-numerator-trap|direct|(x - #)^(#/#) = #",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 4,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c01-u03-omitted-pm-even-numerator-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 15
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 1 - Foundation"
+    },
+    {
+      "id": "Q02",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u03-factoring-higher-degree-grouping",
+      "context": "",
+      "prompt": "Solve $x^3 - 9x^2 = 0$ over $\\mathbb{R}$.",
+      "display": "x^3 - 9x^2 = 0",
+      "plainText": "x^3 - 9x^2 = 0",
+      "givens": {
+        "a": 9
+      },
+      "constants": {
+        "one": 1
+      },
+      "trapGivens": [
+        9
+      ],
+      "answerSpec": {
+        "type": "solution_set",
+        "values": [
+          "0",
+          "9"
+        ],
+        "tolerance": 0
+      },
+      "answerPlain": "0, 9",
+      "answerDisplay": "\\{0, 9\\}",
+      "inputHint": "Enter all real solutions separated by a comma",
+      "commonTrapTag": "t02-c01-u03-divided-by-variable-lost-zero-trap",
+      "trapDerivation": "9 * 1",
+      "trapValue": "9",
+      "verify": {
+        "source": "9",
+        "trapValue": "9"
+      },
+      "checkpointHint": "Factor out the greatest common variable power rather than dividing both sides by a variable expression.",
+      "references": [
+        "MTH-T02-C01-U03"
+      ],
+      "steps": [
+        {
+          "latex": "x^2(x - 9) = 0",
+          "explain": "Factor out the greatest common factor x^2.",
+          "eq": [
+            "9^2 * (9 - 9)",
+            "0"
+          ]
+        },
+        {
+          "latex": "x - 9 = 0",
+          "explain": "Apply the Zero Product Property to the linear factor (while x^2 = 0 gives x = 0).",
+          "eq": [
+            "0^2 * (0 - 9)",
+            "0"
+          ]
+        },
+        {
+          "latex": "x \\in \\{0, 9\\}",
+          "explain": "Solve each factor for x.",
+          "eq": [
+            "9 - 9",
+            "0"
+          ]
+        }
+      ],
+      "verificationLevel": "partial",
+      "review": {
+        "verdict": "pass",
+        "note": "Solution set {0, 9}, lost-zero trap 9, factoring steps, zero-number hint, and display all check out cleanly."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C01-U03",
+          "title": "Other Types of Equations",
+          "notionUrl": "https://www.notion.so/4013818f8ba0809bb25ae9644f41da6e"
+        }
+      ],
+      "unitCode": "MTH-T02-C01-U03",
+      "fingerprint": "t02-c01-u03-divided-by-variable-lost-zero-trap|direct|x^# - #x^# = #",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c01-u03-divided-by-variable-lost-zero-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 1 - Foundation"
+    },
+    {
+      "id": "Q03",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u03-absolute-value-equations",
+      "context": "",
+      "prompt": "Solve $|3x - 6| + 4 = 19$ over $\\mathbb{R}$.",
+      "display": "|3x - 6| + 4 = 19",
+      "plainText": "|3x - 6| + 4 = 19",
+      "givens": {
+        "a": 3,
+        "b": 6,
+        "c": 4,
+        "d": 19
+      },
+      "constants": {},
+      "trapGivens": [
+        3,
+        6,
+        4,
+        19
+      ],
+      "answerSpec": {
+        "type": "solution_set",
+        "values": [
+          "-3",
+          "7"
+        ],
+        "tolerance": 0
+      },
+      "answerPlain": "-3, 7",
+      "answerDisplay": "\\{-3, 7\\}",
+      "inputHint": "Enter all real solutions separated by a comma",
+      "commonTrapTag": "t02-c01-u03-single-branch-absolute-value-trap",
+      "trapDerivation": "(19 - 4 + 6) / 3",
+      "trapValue": "7",
+      "verify": {
+        "source": "(19 - 4 + 6) / 3",
+        "trapValue": "7"
+      },
+      "checkpointHint": "Isolate the absolute value expression first, then account for both directions from zero.",
+      "references": [
+        "MTH-T02-C01-U03"
+      ],
+      "steps": [
+        {
+          "latex": "|3x - 6| = 15",
+          "explain": "Subtract 4 from both sides to isolate the absolute value.",
+          "eq": [
+            "19 - 4",
+            "15"
+          ]
+        },
+        {
+          "latex": "3x - 6 = \\pm 15",
+          "explain": "Split into positive and negative branches since the right-hand side is positive.",
+          "eq": [
+            "abs(3 * 7 - 6)",
+            "15"
+          ]
+        },
+        {
+          "latex": "3x = 6 \\pm 15",
+          "explain": "Add 6 to both sides.",
+          "eq": [
+            "6 - 15",
+            "-9"
+          ]
+        },
+        {
+          "latex": "x \\in \\{-3, 7\\}",
+          "explain": "Divide both sides by 3 to obtain both solutions.",
+          "eq": [
+            "abs(3 * (-3) - 6)",
+            "15"
+          ]
+        }
+      ],
+      "verificationLevel": "partial",
+      "review": {
+        "verdict": "pass",
+        "note": "Solution set {-3, 7}, single-branch trap 7, steps, zero-number hint, and display all check out for absolute value equations."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C01-U03",
+          "title": "Other Types of Equations",
+          "notionUrl": "https://www.notion.so/4013818f8ba0809bb25ae9644f41da6e"
+        }
+      ],
+      "unitCode": "MTH-T02-C01-U03",
+      "fingerprint": "t02-c01-u03-single-branch-absolute-value-trap|direct||#x - #| + # = #",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 4,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c01-u03-single-branch-absolute-value-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 15
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 2 - Standard Exam"
+    },
+    {
+      "id": "Q04",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u03-quadratic-form-substitution",
+      "context": "",
+      "prompt": "Find all real values of $k$ for which the equation $(x^2 - k)^2 - 5(x^2 - k) + 6 = 0$ has $x = 1$ as a solution.",
+      "display": "(x^2 - k)^2 - 5(x^2 - k) + 6 = 0",
+      "plainText": "(x^2 - k)^2 - 5(x^2 - k) + 6 = 0",
+      "givens": {
+        "b": 5,
+        "c": 6,
+        "x0": 1
+      },
+      "constants": {},
+      "trapGivens": [
+        5,
+        6,
+        1
+      ],
+      "answerSpec": {
+        "type": "solution_set",
+        "values": [
+          "-2",
+          "-1"
+        ],
+        "tolerance": 0
+      },
+      "answerPlain": "-2, -1",
+      "answerDisplay": "\\{-2, -1\\}",
+      "inputHint": "Enter all real values separated by a comma",
+      "commonTrapTag": "t02-c01-u03-stopped-at-u-substitution-trap",
+      "trapDerivation": "(5 - sqrt(5^2 - 4 * 6)) / 2",
+      "trapValue": "2",
+      "verify": {
+        "source": "1 - 3",
+        "trapValue": "2"
+      },
+      "checkpointHint": "Substitute the given x-value first, solve the quadratic for the inner block, and then back-substitute to isolate k.",
+      "references": [
+        "MTH-T02-C01-U03"
+      ],
+      "steps": [
+        {
+          "latex": "(1 - k)^2 - 5(1 - k) + 6 = 0",
+          "explain": "Substitute x = 1 into the equation.",
+          "eq": [
+            "1^2",
+            "1"
+          ]
+        },
+        {
+          "latex": "u^2 - 5u + 6 = 0",
+          "explain": "Let u represent 1 - k to rewrite in standard quadratic form.",
+          "eq": [
+            "2^2 - 5 * 2 + 6",
+            "0"
+          ]
+        },
+        {
+          "latex": "(u - 2)(u - 3) = 0",
+          "explain": "Factor the quadratic in u.",
+          "eq": [
+            "3^2 - 5 * 3 + 6",
+            "0"
+          ]
+        },
+        {
+          "latex": "1 - k \\in \\{2, 3\\}",
+          "explain": "Back-substitute u = 1 - k for each root.",
+          "eq": [
+            "1 - (-1)",
+            "2"
+          ]
+        },
+        {
+          "latex": "k \\in \\{-2, -1\\}",
+          "explain": "Solve each linear equation for k.",
+          "eq": [
+            "1 - (-2)",
+            "3"
+          ]
+        }
+      ],
+      "verificationLevel": "partial",
+      "review": {
+        "verdict": "pass",
+        "note": "Reverse quadratic-form problem correctly yields k in {-2, -1} with u-substitution trap 2, clear back-substitution steps, and non-leaking hint."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C01-U03",
+          "title": "Other Types of Equations",
+          "notionUrl": "https://www.notion.so/4013818f8ba0809bb25ae9644f41da6e"
+        }
+      ],
+      "unitCode": "MTH-T02-C01-U03",
+      "fingerprint": "t02-c01-u03-stopped-at-u-substitution-trap|reverse|(x^# - k)^# - #(x^# - k) + # = #",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 5,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c01-u03-stopped-at-u-substitution-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 17
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 2 - Standard Exam"
+    },
+    {
+      "id": "Q05",
+      "level": 3,
+      "category": "Exponent Diagnosis",
+      "form": "diagnose",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u03-rational-exponent-equations",
+      "context": "",
+      "prompt": "A student solved $(2x - 1)^{3/2} = 64$ over $\\mathbb{R}$ step by step:\nLine 1: $(2x - 1)^{3/2} = 64$\nLine 2: $2x - 1 = 64^{3/2}$\nLine 3: $2x - 1 = 512$\nLine 4: $2x = 513$\nLine 5: $x = \\frac{513}{2}$\nWhich line is the first one that is wrong?",
+      "display": "(2x - 1)^{3/2} = 64",
+      "plainText": "A student solved (2x - 1)^(3/2) = 64 step by step: Line 1: (2x - 1)^(3/2) = 64; Line 2: 2x - 1 = 64^(3/2); Line 3: 2x - 1 = 512; Line 4: 2x = 513; Line 5: x = 513/2. Which line is the first one that is wrong?",
+      "givens": {
+        "a": 2,
+        "b": 1,
+        "k": 64
+      },
+      "constants": {},
+      "trapGivens": [
+        2,
+        1,
+        64
+      ],
+      "answerSpec": {
+        "type": "choice",
+        "options": [
+          {
+            "id": "1",
+            "label": "Line 1",
+            "provenance": "flags the given equation as wrong"
+          },
+          {
+            "id": "2",
+            "label": "Line 2"
+          },
+          {
+            "id": "3",
+            "label": "Line 3",
+            "trapTag": "t02-c01-u03-reciprocal-exponent-inverted-trap"
+          },
+          {
+            "id": "4",
+            "label": "Line 4",
+            "trapTag": "t02-c01-u03-reciprocal-exponent-inverted-trap"
+          },
+          {
+            "id": "5",
+            "label": "Line 5",
+            "trapTag": "t02-c01-u03-reciprocal-exponent-inverted-trap"
+          }
+        ],
+        "correct": "2"
+      },
+      "answerPlain": "2",
+      "answerDisplay": "\\text{Line 2}",
+      "inputHint": "Choose a line",
+      "commonTrapTag": "t02-c01-u03-reciprocal-exponent-inverted-trap",
+      "trapDerivation": "(64^(3/2) + 1) / 2",
+      "trapValue": "513/2",
+      "verify": {
+        "source": "(64^(2/3) + 1) / 2",
+        "trapValue": "513/2",
+        "flaw": {
+          "values": [
+            "(64^(2/3) + 1) / 2",
+            "(64^(3/2) + 1) / 2",
+            "(512 + 1) / 2",
+            "513 / 2",
+            "513 / 2"
+          ],
+          "firstWrong": 2
+        }
+      },
+      "checkpointHint": "Check whether each line preserves the solution set of the line above it.",
+      "references": [
+        "MTH-T02-C01-U03"
+      ],
+      "steps": [
+        {
+          "latex": "2x - 1 = 64^{2/3}",
+          "explain": "Line 2 is the first wrong line: to undo the 3/2 power, raise both sides to the reciprocal exponent 2/3 rather than 3/2.",
+          "eq": [
+            "64^(2/3)",
+            "16"
+          ]
+        },
+        {
+          "latex": "2x = 17",
+          "explain": "Add 1 to both sides.",
+          "eq": [
+            "16 + 1",
+            "17"
+          ]
+        },
+        {
+          "latex": "x = \\frac{17}{2}",
+          "explain": "Divide both sides by 2 to find the true solution.",
+          "val": "17/2"
+        }
+      ],
+      "verificationLevel": "partial",
+      "blindSolve": {
+        "answer": "2",
+        "ambiguous": false,
+        "setup": "given",
+        "strategy": "prescribed",
+        "check": "none",
+        "task": "diagnose",
+        "reverse": false,
+        "steps": 2
+      },
+      "review": {
+        "verdict": "pass",
+        "note": "Diagnose item unambiguously identifies Line 2 as the first error (inverted reciprocal exponent 3/2 vs 2/3) with matching trap options and clear steps."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C01-U03",
+          "title": "Other Types of Equations",
+          "notionUrl": "https://www.notion.so/4013818f8ba0809bb25ae9644f41da6e"
+        }
+      ],
+      "unitCode": "MTH-T02-C01-U03",
+      "fingerprint": "t02-c01-u03-reciprocal-exponent-inverted-trap|diagnose|A student solved (#x - #)^(#/#) = # step by step: Line #: (#x - #)^(#/#) = #; Line #: #x - # = #^(#/#); Line #: #x - # = #; Line #: #x = #; Line #: x = #/#. Which line is the first one that is wrong?",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            20
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c01-u03-reciprocal-exponent-inverted-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 4
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 18
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 3 - Trap & Diagnostic"
+    },
+    {
+      "id": "Q06",
+      "level": 3,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u03-rational-equations-extraneous",
+      "context": "",
+      "prompt": "Solve $\\frac{x}{x - 3} + \\frac{2}{x + 3} = \\frac{18}{x^2 - 9}$ over $\\mathbb{R}$.",
+      "display": "\\frac{x}{x - 3} + \\frac{2}{x + 3} = \\frac{18}{x^2 - 9}",
+      "plainText": "x/(x - 3) + 2/(x + 3) = 18/(x^2 - 9)",
+      "givens": {
+        "a": 3,
+        "b": 2,
+        "c": 18,
+        "d": 9
+      },
+      "constants": {},
+      "trapGivens": [
+        3,
+        2,
+        18
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "-8",
+        "tolerance": 0
+      },
+      "answerPlain": "-8",
+      "answerDisplay": "-8",
+      "inputHint": "Enter a whole number",
+      "commonTrapTag": "t02-c01-u03-kept-domain-excluded-root-trap",
+      "trapDerivation": "18 / (2 * 3)",
+      "trapValue": "3",
+      "verify": {
+        "source": "-8",
+        "trapValue": "3"
+      },
+      "checkpointHint": "Identify all domain restrictions before clearing denominators, then verify every candidate root against them.",
+      "references": [
+        "MTH-T02-C01-U03"
+      ],
+      "steps": [
+        {
+          "latex": "x(x + 3) + 2(x - 3) = 18 \\quad (x \\neq \\pm 3)",
+          "explain": "Multiply every term by the LCD (x - 3)(x + 3) while noting x cannot equal 3 or -3.",
+          "eq": [
+            "(-8) / (-8 - 3) + 2 / (-8 + 3)",
+            "18 / ((-8)^2 - 9)"
+          ]
+        },
+        {
+          "latex": "x^2 + 3x + 2x - 6 = 18",
+          "explain": "Distribute on the left-hand side.",
+          "eq": [
+            "(-8)^2 + 5 * (-8) - 6",
+            "18"
+          ]
+        },
+        {
+          "latex": "x^2 + 5x - 24 = 0",
+          "explain": "Combine like terms and subtract 18 from both sides.",
+          "eq": [
+            "(-8)^2 + 5 * (-8) - 24",
+            "0"
+          ]
+        },
+        {
+          "latex": "(x + 8)(x - 3) = 0",
+          "explain": "Factor the quadratic equation.",
+          "eq": [
+            "(-8 + 8) * (-8 - 3)",
+            "0"
+          ]
+        },
+        {
+          "latex": "x = -8",
+          "explain": "Reject x = 3 because it makes x - 3 = 0 in the original equation, leaving x = -8.",
+          "val": "-8"
+        }
+      ],
+      "verificationLevel": "partial",
+      "blindSolve": {
+        "answer": "-8",
+        "ambiguous": false,
+        "setup": "given",
+        "strategy": "prescribed",
+        "check": "edge",
+        "task": "compute",
+        "reverse": false,
+        "steps": 5,
+        "edgeRejected": "x = 3 (makes denominators x - 3 and x^2 - 9 equal to zero)"
+      },
+      "review": {
+        "verdict": "pass",
+        "note": "Rational equation yields x = -8 after rejecting domain-excluded root x = 3 (matching trapValue), with clear steps and non-leaking hint."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C01-U03",
+          "title": "Other Types of Equations",
+          "notionUrl": "https://www.notion.so/4013818f8ba0809bb25ae9644f41da6e"
+        }
+      ],
+      "unitCode": "MTH-T02-C01-U03",
+      "fingerprint": "t02-c01-u03-kept-domain-excluded-root-trap|direct|x/(x - #) + #/(x + #) = #/(x^# - #)",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 5,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            20
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c01-u03-kept-domain-excluded-root-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 17
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 3 - Trap & Diagnostic"
+    },
+    {
+      "id": "Q07",
+      "level": 4,
+      "category": "Applied Modeling",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u03-rational-equations-extraneous",
+      "context": "riverboat_round_trip",
+      "prompt": "A riverboat travels $24\\text{ km}$ upstream and then $24\\text{ km}$ back downstream to its dock in a total time of $5\\text{ hours}$. If the river current flows at $2\\text{ km/h}$, find the boat's speed in still water, in $\\text{km/h}$.",
+      "display": "\\frac{d}{v - c} + \\frac{d}{v + c} = T",
+      "plainText": "d/(v - c) + d/(v + c) = T",
+      "givens": {
+        "d": 24,
+        "c": 2,
+        "T": 5
+      },
+      "constants": {},
+      "trapGivens": [
+        24,
+        5
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "10",
+        "tolerance": 0
+      },
+      "answerPlain": "10",
+      "answerDisplay": "10",
+      "inputHint": "Enter a positive number in km/h",
+      "commonTrapTag": "t02-c01-u03-partial-lcd-multiplication-trap",
+      "trapDerivation": "5 / (24 + 24)",
+      "trapValue": "5/48",
+      "verify": {
+        "source": "10",
+        "trapValue": "5/48"
+      },
+      "checkpointHint": "Express the time for each leg using distance and effective speed, then check physical bounds on the boat's speed.",
+      "references": [
+        "MTH-T02-C01-U03"
+      ],
+      "steps": [
+        {
+          "latex": "\\frac{24}{v - 2} + \\frac{24}{v + 2} = 5 \\quad (v > 2)",
+          "explain": "Sum the upstream and downstream travel times to equal the total trip time.",
+          "eq": [
+            "24 / (10 - 2) + 24 / (10 + 2)",
+            "5"
+          ]
+        },
+        {
+          "latex": "24(v + 2) + 24(v - 2) = 5(v^2 - 4)",
+          "explain": "Multiply every term on both sides by the LCD (v - 2)(v + 2).",
+          "eq": [
+            "24 * 12 + 24 * 8",
+            "5 * (10^2 - 4)"
+          ]
+        },
+        {
+          "latex": "48v = 5v^2 - 20",
+          "explain": "Simplify both sides.",
+          "eq": [
+            "48 * 10",
+            "5 * 10^2 - 20"
+          ]
+        },
+        {
+          "latex": "5v^2 - 48v - 20 = 0",
+          "explain": "Move all terms to one side.",
+          "eq": [
+            "5 * 10^2 - 48 * 10 - 20",
+            "0"
+          ]
+        },
+        {
+          "latex": "(5v + 2)(v - 10) = 0",
+          "explain": "Factor the quadratic equation.",
+          "eq": [
+            "(5 * 10 + 2) * (10 - 10)",
+            "0"
+          ]
+        },
+        {
+          "latex": "v = 10",
+          "explain": "Reject v = -2/5 because boat speed must exceed the 2 km/h current.",
+          "val": "10"
+        }
+      ],
+      "verificationLevel": "partial",
+      "blindSolve": {
+        "answer": "10",
+        "ambiguous": false,
+        "setup": "model",
+        "strategy": "prescribed",
+        "check": "edge",
+        "task": "compute",
+        "reverse": true,
+        "steps": 5,
+        "edgeRejected": "v = -2/5 (boat speed in still water must be > 2 km/h)"
+      },
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "Uses real kinematics (v +/- c for upstream/downstream speed, t = d/speed, additive leg times), consistent km and km/h units with realistic speeds, and the story genuinely defines the rational model rather than serving as a bare label."
+      },
+      "review": {
+        "verdict": "pass",
+        "note": "L4 riverboat modeling problem has physically valid units and answer v = 10 km/h, exact partial-LCD trap 5/48, and non-leaking symbolic display."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C01-U03",
+          "title": "Other Types of Equations",
+          "notionUrl": "https://www.notion.so/4013818f8ba0809bb25ae9644f41da6e"
+        }
+      ],
+      "unitCode": "MTH-T02-C01-U03",
+      "fingerprint": "t02-c01-u03-partial-lcd-multiplication-trap|direct|d/(v - c) + d/(v + c) = T",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 6,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            25
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c01-u03-partial-lcd-multiplication-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 19
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 4 - Applied Synthesis"
+    },
+    {
+      "id": "Q08",
+      "level": 4,
+      "category": "Applied Modeling",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c01-u03-radical-equations-extraneous",
+      "context": "well_splash_acoustic_depth",
+      "prompt": "A stone is dropped from rest into a vertical well of depth $d$ meters. It falls freely under gravity ($d = \\frac{1}{2} g t_1^2$ with $g = 10\\text{ m/s}^2$), and the sound of the splash travels straight back up at $320\\text{ m/s}$. If the total time from release until the splash is heard is $4.25\\text{ s}$, find the depth $d$ in meters.",
+      "display": "\\sqrt{\\frac{2d}{g}} + \\frac{d}{v_s} = T",
+      "plainText": "sqrt(2*d/g) + d/v_s = T",
+      "givens": {
+        "g": 10,
+        "vs": 320,
+        "T": 4.25
+      },
+      "constants": {
+        "one": 1,
+        "two": 2
+      },
+      "trapGivens": [
+        10,
+        320
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "80",
+        "tolerance": 0
+      },
+      "answerPlain": "80",
+      "answerDisplay": "80",
+      "inputHint": "Enter a positive number in meters",
+      "commonTrapTag": "t02-c01-u03-kept-extraneous-radical-root-trap",
+      "trapDerivation": "(10 / 2) * (320 / 10 + sqrt((320 / 10)^2 + (320 / (10 / 2)) * 4.25))^2",
+      "trapValue": "23120",
+      "verify": {
+        "source": "80",
+        "trapValue": "23120"
+      },
+      "checkpointHint": "Write both the fall time and sound travel time in terms of the depth, then check the sign of any substituted variable.",
+      "references": [
+        "MTH-T02-C01-U03"
+      ],
+      "steps": [
+        {
+          "latex": "\\sqrt{\\frac{d}{5}} + \\frac{d}{320} = 4.25",
+          "explain": "Express fall time as sqrt(2d/10) = sqrt(d/5) and add the sound travel time d/320.",
+          "eq": [
+            "sqrt(80 / 5) + 80 / 320",
+            "4.25"
+          ]
+        },
+        {
+          "latex": "u + \\frac{5u^2}{320} = 4.25",
+          "explain": "Substitute u = sqrt(d/5) >= 0 so that d = 5u^2.",
+          "eq": [
+            "4 + (5 * 4^2) / 320",
+            "4.25"
+          ]
+        },
+        {
+          "latex": "u^2 + 64u - 272 = 0",
+          "explain": "Multiply every term by 64 and move all terms to one side.",
+          "eq": [
+            "4^2 + 64 * 4 - 272",
+            "0"
+          ]
+        },
+        {
+          "latex": "(u - 4)(u + 68) = 0",
+          "explain": "Factor the quadratic in u.",
+          "eq": [
+            "(4 - 4) * (4 + 68)",
+            "0"
+          ]
+        },
+        {
+          "latex": "u = 4",
+          "explain": "Reject u = -68 because u = sqrt(d/5) must be non-negative.",
+          "eq": [
+            "sqrt(80 / 5)",
+            "4"
+          ]
+        },
+        {
+          "latex": "d = 5(4^2)",
+          "explain": "Back-substitute u = 4 into d = 5u^2.",
+          "eq": [
+            "5 * 4^2",
+            "80"
+          ]
+        },
+        {
+          "latex": "d = 80",
+          "explain": "Multiply to find the depth in meters.",
+          "val": "80"
+        }
+      ],
+      "verificationLevel": "partial",
+      "blindSolve": {
+        "answer": "80",
+        "ambiguous": false,
+        "setup": "model",
+        "strategy": "choose",
+        "check": "edge",
+        "task": "compute",
+        "reverse": true,
+        "steps": 5,
+        "edgeRejected": "t_1 = -68 (fall time must satisfy 0 < t_1 < 4.25 s; equivalently d > 1360 m if solving in d)"
+      },
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "Uses real physics (free fall d = 0.5*g*t1^2 with g=10 m/s^2 and constant-speed acoustic return t2 = d/320), consistent m and s units with realistic 80 m depth, and the two-stage physical process genuinely creates the radical/quadratic model."
+      },
+      "review": {
+        "verdict": "pass",
+        "note": "L4 acoustic-well modeling problem correctly yields d = 80 m while rejecting extraneous root 23120 m, with valid physics, steps, and hints."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C01-U03",
+          "title": "Other Types of Equations",
+          "notionUrl": "https://www.notion.so/4013818f8ba0809bb25ae9644f41da6e"
+        }
+      ],
+      "unitCode": "MTH-T02-C01-U03",
+      "fingerprint": "t02-c01-u03-kept-extraneous-radical-root-trap|direct|sqrt(#*d/g) + d/v_s = T",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 7,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            25
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c01-u03-kept-extraneous-radical-root-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 21
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 4 - Applied Synthesis"
+    }
+  ],
+  "drillId": "DRL-MTH-T02-C01-U03-01",
+  "title": "Other Types of Equations — Verified Math Drill (8 Qs)",
+  "topicCode": "MTH-T02",
+  "chapterCode": "MTH-T02-C01",
+  "schemaVersion": "2.0-math",
+  "createdAt": "2026-11-15 21:43:05",
+  "config": {
+    "questionCount": 8,
+    "difficulty": "ALL",
+    "difficultyMode": "AI Synthesized Reasoning Mode"
+  },
+  "localFilePath": "drills/data/MTH-T02-C01-U03/DRL-MTH-T02-C01-U03-01.json"
+}
