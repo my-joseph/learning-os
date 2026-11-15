@@ -127,8 +127,9 @@ def insert_after(parent_id: str, after_id: str | None, blocks: list[dict], token
 
 
 def set_properties(code: str, values: dict[str, str], token: str, id_map: dict) -> list[str]:
-    """Set page properties by name: text (rich_text/title), status, select or number. `Mastery (0-4)` is
-    refused (drill sync sets it from evidence). Returns the names that were set."""
+    """Set page properties by name: text (rich_text/title), status, select, number, or relation (comma-separated
+    id_map codes such as `Resources=R036`; added to the existing links, never replacing them). `Mastery (0-4)`
+    is refused (drill sync sets it from evidence). Returns the names that were set."""
     if any(name.startswith("Mastery") for name in values):
         raise ValueError("Mastery is set from drill evidence, never by hand (rules/01 §9)")
     page_id = id_map[code]["id"]
@@ -144,8 +145,19 @@ def set_properties(code: str, values: dict[str, str], token: str, id_map: dict) 
             patch[name] = {kind: {"name": value}}
         elif kind == "number":
             patch[name] = {"number": float(value)}
+        elif kind == "relation":
+            codes = [c.strip() for c in value.split(",") if c.strip()]
+            unknown = [c for c in codes if not isinstance(id_map.get(c), dict)]
+            if unknown:
+                raise ValueError(
+                    f"{name}: {unknown} not in id_map.json (look up the code, e.g. the OpenStax book's R0xx)"
+                )
+            current = [r["id"] for r in props[name].get("relation", [])]
+            norm = {i.replace("-", "") for i in current}
+            added = [id_map[c]["id"] for c in codes if id_map[c]["id"].replace("-", "") not in norm]
+            patch[name] = {"relation": [{"id": i} for i in current + added]}
         else:
-            raise ValueError(f"property {name!r} is of type {kind}; set it in Notion")
+            raise ValueError(f"property {name!r} is of type {kind}; this tool cannot set it (log a tool-gap)")
     notion_request("PATCH", f"pages/{page_id}", token, {"properties": patch})
     return list(patch)
 

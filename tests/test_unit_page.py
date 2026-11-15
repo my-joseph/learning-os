@@ -130,3 +130,18 @@ def test_escaped_dollar_is_money_not_a_math_delimiter():
         ("equation", "x"),
         ("text", "."),
     ]
+
+
+def test_set_relation_adds_codes_without_dropping_links(monkeypatch):
+    calls = []
+
+    def fake(method, endpoint, token, payload=None):
+        calls.append((method, payload))
+        return {"properties": {"Resources": {"type": "relation", "relation": [{"id": "old-1"}]}}}
+
+    monkeypatch.setattr(up, "notion_request", fake)
+    ids = {"U": {"id": "page"}, "R036": {"id": "r-36"}}
+    assert up.set_properties("U", {"Resources": "R036"}, "t", ids) == ["Resources"]
+    assert calls[-1][1] == {"properties": {"Resources": {"relation": [{"id": "old-1"}, {"id": "r-36"}]}}}
+    with pytest.raises(ValueError, match="not in id_map"):
+        up.set_properties("U", {"Resources": "R999"}, "t", ids)

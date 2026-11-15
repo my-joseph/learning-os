@@ -20,7 +20,7 @@
 - Studio (run in `practice-studio/`): `npm ci`, `npm run dev` (http://127.0.0.1:3000, bound to localhost only), `npm run lint`, `npm run build`.
 - Generate drills (run from repo root): `python3 -m math_engine.generate --unit <UNIT> --count <N> --difficulty <D>` and `python3 -m code_engine.generate --unit <UNIT> --count <N>` (`--help` verified; full run not verified).
 - Lab (run in `labs/LAB-PRG-T03-C01-01/`): `npm test` (21 tests pass). `npm run submit` writes to Notion — only on request.
-- Python tests (repo root): `.venv/bin/python -m pip install -r requirements-dev.txt && .venv/bin/python -m pytest` (dev deps installed in the main `.venv` 2026-11-15; its `bin/pip` launcher is broken, so use `-m`) (300 pass, ~50 s; hermetic, no Notion/network). Studio unit tests: `npm run test:telemetry` in `practice-studio/`.
+- Python tests (repo root): `.venv/bin/python -m pip install -r requirements-dev.txt && .venv/bin/python -m pytest` (dev deps installed in the main `.venv` 2026-11-15; its `bin/pip` launcher is broken, so use `-m`) (308 pass, ~50 s; hermetic, no Notion/network). Studio unit tests: `npm run test:telemetry` in `practice-studio/`.
 - CI: `.github/workflows/ci.yml` runs pytest, studio lint+build, lab tests. No Makefile/Dockerfile. TODO: verify any other command before using it.
 
 ## Conventions (target — apply to new/changed code)
@@ -63,6 +63,7 @@
 
 - Drill scope: a unit code (`MTH-T01-C04-U03`) gives a unit-only drill; a chapter code gives a mixed drill over its units. Archetypes carry `unitCode`; an archetype's `level` is a base level, not a cap. Vault health: `python -m scripts.vault_report [UNIT|CHAPTER] [--log]` shows which levels each archetype has earned (ingested drills) or failed (issue log); computed, never hand-edited.
 - Starting a unit: the `start-unit` skill builds the unit's archetypes, writes its Notion page to the v4 structure (rules/02 §7a) with `python -m notion_sync.unit_page` (new pages only; existing pages are extended, never rewritten; the learner's "My Implementation & Mistake Log" is never touched), then makes the first drill. Synced drill results are inserted at the end of that section.
+- Page standard: `python -m scripts.page_audit <TOPIC|CHAPTER|UNIT>` checks Notion pages against rules/02 §7a (read-only; FAIL/WARN). Pages are written only with `notion_sync.unit_page` (`--set "Resources=R036"` sets relations); no direct Notion API writes to learning pages.
 - Spaced review: syncing a practised drill writes evidence-based `Mastery (0-4)` (max 3; learner sets 4), `Last Reviewed` and `Next Review` to each unit it covers (rules/01 §9).
 - Figures: every archetype has `figureBuilders` or a `figureNone` reason (gate; rules/03 §3.1), so drills on shapes, graphs, number lines or the complex plane get figures without being asked. Unknowns are labelled `?`. Studio (`practice-studio/src/components/MathFigure`) and `math_engine/figure_svg.py` (Notion) draw the same spec; `notion_sync.unit_page` takes `figure` blocks and uploads them (`notion_sync/figures.py`).
 - Weak spots: `python -m scripts.weak_spots [UNIT|CHAPTER]` reads learner progress and says which traps the learner keeps falling into and what to drill next (read-only).
