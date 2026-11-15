@@ -19,8 +19,8 @@
 
 ## 2. Weak-spot targeting
 - Sources, most to least reliable: (1) mistake tags with `trapMatched` in >= 2 attempts, (2) `concept-gap` skips, (3) the learner's Mistake & Pitfall Log (02 §7), (4) learner statement. `unclassified` wrong answers are data to inspect, not a weakness label. `durationMs` and `hintsRevealed` are supporting signals only.
-- `[manual]` Counting tags: on request, the agent counts `mistakes[]` and `attempts[].matchedTrap` across `drills/data`. No script exists yet.
-- [code] A weak-spot drill is a separate drill using --focus-tag <tag[,tag]>; the whole drill is drawn from templates and forms matching the tags, and a tag that matches no template raises an error. [manual] Prefer 1–2 tags per drill, and check in the sample sheet that at least one reverse form is included; if not, generate another drill.
+- `[code]` Counting tags: `python -m scripts.weak_spots [SCOPE]` joins learner progress (`progress/`) with drill content and reports, per unit, open weak spots (`matchedTrap` >= 2), closed ones (the last 2 drills that tested the trap were clean and unassisted), level advice from the last 5 items, assisted and skipped items, and the next weak-spot drill to make. A weak-spot drill sets `focusTags`.
+- [code] A weak-spot drill is a separate drill on 1–2 trap tags. AI path (default): the `new-math-drill` skill builds it from archetypes whose `cognitiveTraps` include the tag and sets `focusTags`. Template path: `math_engine.generate --focus-tag <tag[,tag]>` draws from matching templates and forms, and a tag that matches no template raises an error. [manual] Prefer 1–2 tags per drill, and check in the sample sheet that at least one reverse form is included; if not, generate another drill.
 - `[manual]` A weak spot closes after 2 consecutive weak-spot drills with all items correct; any `trapMatched` for that tag reopens it. With no data, run the core and trap drills and collect data first.
 
 ## 3. Progression
