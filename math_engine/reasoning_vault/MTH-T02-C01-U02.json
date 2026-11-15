@@ -1,0 +1,267 @@
+{
+  "unitCode": "MTH-T02-C01-U02",
+  "topicTitle": "Quadratic Equations",
+  "description": "Reasoning vault for quadratic equations aligned with OpenStax Algebra and Trigonometry 2e §2.5: factoring and the zero product property, square root property (over R and C), completing the square, quadratic formula, discriminant classification, derivation flaw diagnosis, and constrained quadratic modeling.",
+  "archetypes": [
+    {
+      "unitCode": "MTH-T02-C01-U02",
+      "archetypeKey": "t02-c01-u02-factoring-monic-zero-product",
+      "level": 1,
+      "name": "Solving Monic Quadratic Equations by Factoring and Zero Product Property",
+      "source": "OpenStax Algebra and Trigonometry 2e §2.5 — Solving Quadratic Equations by Factoring",
+      "coreConcept": "Rewrite a monic quadratic equation as x^2 + bx + c = 0, factor into (x - r_1)(x - r_2) = 0 (or factor out x when c = 0), and apply the Zero Product Property so each linear factor equals zero.",
+      "mentalModel": "A product equals zero if and only if at least one factor equals zero; factoring breaks a degree-2 equation into degree-1 equations.",
+      "governingRelation": "x^2 + bx + c = (x - r_1)(x - r_2) = 0 \\implies x = r_1 \\lor x = r_2",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c01-u02-factor-sign-not-flipped-trap",
+          "description": "Reading the constant signs inside the factored binomials (x + p)(x + q) = 0 directly as the roots x = p, q instead of solving x + p = 0 to get x = -p.",
+          "trapFormula": "x = p, q \\text{ instead of } -p, -q"
+        },
+        {
+          "trapTag": "t02-c01-u02-omitted-zero-factor-trap",
+          "description": "Dividing both sides of x^2 + bx = 0 by x and losing the root x = 0.",
+          "trapFormula": "x^2 + bx = 0 \\implies x = -b \\text{ (dropped } x = 0\\text{)}"
+        }
+      ],
+      "versatileDomains": [],
+      "usedContexts": []
+    },
+    {
+      "unitCode": "MTH-T02-C01-U02",
+      "archetypeKey": "t02-c01-u02-square-root-property",
+      "level": 1,
+      "name": "Solving Quadratic Equations via the Square Root Property",
+      "source": "OpenStax Algebra and Trigonometry 2e §2.5 — Solving Quadratics by the Square Root Property",
+      "coreConcept": "Isolate the squared expression u^2 = k (where u = x - h) before taking square roots of both sides to get u = ±sqrt(k), yielding two real roots when k > 0 or complex conjugate roots when k < 0.",
+      "mentalModel": "Squaring erases sign, so undoing a square must restore both positive and negative branches around the shift h.",
+      "governingRelation": "a(x - h)^2 = c \\implies (x - h)^2 = \\frac{c}{a} \\implies x = h \\pm \\sqrt{\\frac{c}{a}}",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c01-u02-omitted-negative-square-root-trap",
+          "description": "Taking only the principal positive square root and discarding the negative branch.",
+          "trapFormula": "x = h + \\sqrt{k} \\text{ only}"
+        },
+        {
+          "trapTag": "t02-c01-u02-sqrt-before-isolating-coeff-trap",
+          "description": "Taking the square root of a*x^2 = c as a*x = ±sqrt(c) instead of dividing by a before taking the root.",
+          "trapFormula": "x = \\pm\\frac{\\sqrt{c}}{a}"
+        },
+        {
+          "trapTag": "t02-c01-u02-dropped-imaginary-unit-negative-radicand-trap",
+          "description": "Treating sqrt(-n) as sqrt(n) or declaring no algebraic root when asked for complex solutions.",
+          "trapFormula": "x = h \\pm \\sqrt{|k|} \\text{ instead of } h \\pm i\\sqrt{|k|}"
+        }
+      ],
+      "versatileDomains": [],
+      "usedContexts": []
+    },
+    {
+      "unitCode": "MTH-T02-C01-U02",
+      "archetypeKey": "t02-c01-u02-factoring-nonmonic-rearrange",
+      "level": 2,
+      "name": "Rearranging and Factoring Non-Monic Quadratic Equations",
+      "source": "OpenStax Algebra and Trigonometry 2e §2.5 — Solving Quadratic Equations by Factoring",
+      "coreConcept": "Move all terms to one side so the right-hand side is strictly 0, remove any common numerical factor, and factor ax^2 + bx + c = 0 by AC-splitting/grouping before applying the Zero Product Property.",
+      "mentalModel": "The Zero Product Property holds exclusively for 0; setting a product equal to any non-zero constant k gives infinitely many factor pairs.",
+      "governingRelation": "ax^2 + bx + c = d \\implies ax^2 + bx + (c - d) = 0",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c01-u02-zero-product-nonzero-rhs-trap",
+          "description": "Factoring the left-hand side equal to a nonzero constant k and setting each linear factor equal to k.",
+          "trapFormula": "(x - p)(x - q) = k \\implies x - p = k \\lor x - q = k"
+        },
+        {
+          "trapTag": "t02-c01-u02-dropped-leading-coeff-in-factoring-trap",
+          "description": "Finding two integers m, n with m*n = a*c and m + n = b and writing (x + m)(x + n) = 0 without dividing back by a or grouping.",
+          "trapFormula": "x = -m, -n \\text{ instead of } -m/a, -n/a"
+        }
+      ],
+      "versatileDomains": [],
+      "usedContexts": []
+    },
+    {
+      "unitCode": "MTH-T02-C01-U02",
+      "archetypeKey": "t02-c01-u02-completing-the-square",
+      "level": 2,
+      "name": "Solving Quadratic Equations by Completing the Square",
+      "source": "OpenStax Algebra and Trigonometry 2e §2.5 — Completing the Square",
+      "coreConcept": "Move the constant term to the right, divide every term by the leading coefficient a when a != 1, add (b/(2a))^2 to both sides to form a perfect-square trinomial (x + b/(2a))^2, and apply the square root property.",
+      "mentalModel": "Reshaping x^2 + px into a geometric square of side (x + p/2) requires adding the corner piece (p/2)^2 to both sides of the balance.",
+      "governingRelation": "x^2 + px = q \\implies \\left(x + \\frac{p}{2}\\right)^2 = q + \\left(\\frac{p}{2}\\right)^2",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c01-u02-added-square-to-one-side-only-trap",
+          "description": "Adding (p/2)^2 to the left side to complete the square while leaving the right side unchanged.",
+          "trapFormula": "\\left(x + \\frac{p}{2}\\right)^2 = q"
+        },
+        {
+          "trapTag": "t02-c01-u02-forgot-half-before-squaring-trap",
+          "description": "Adding p^2 instead of (p/2)^2 when completing the square on x^2 + px.",
+          "trapFormula": "q + p^2 \\text{ instead of } q + (p/2)^2"
+        },
+        {
+          "trapTag": "t02-c01-u02-forgot-divide-by-a-before-completing-trap",
+          "description": "Adding (b/2)^2 to ax^2 + bx = -c without dividing the equation by a first.",
+          "trapFormula": "ax^2 + bx + (b/2)^2 = -c + (b/2)^2"
+        }
+      ],
+      "versatileDomains": [],
+      "usedContexts": []
+    },
+    {
+      "unitCode": "MTH-T02-C01-U02",
+      "archetypeKey": "t02-c01-u02-quadratic-formula",
+      "level": 2,
+      "name": "Solving Quadratic Equations Using the Quadratic Formula",
+      "source": "OpenStax Algebra and Trigonometry 2e §2.5 — Using the Quadratic Formula",
+      "coreConcept": "Put the equation into standard form ax^2 + bx + c = 0, read signed coefficients a, b, c carefully, and compute x = (-b ± sqrt(b^2 - 4ac)) / (2a), simplifying radicals and extracting i when the discriminant is negative.",
+      "mentalModel": "The quadratic formula packages completing the square once and for all, separating the axis of symmetry (-b/(2a)) from the symmetric offset (±sqrt(Δ)/(2a)).",
+      "governingRelation": "x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c01-u02-quadratic-formula-sign-of-b-trap",
+          "description": "Writing +b instead of -b in the numerator of the quadratic formula.",
+          "trapFormula": "x = \\frac{b \\pm \\sqrt{b^2 - 4ac}}{2a}"
+        },
+        {
+          "trapTag": "t02-c01-u02-quadratic-formula-denominator-2-trap",
+          "description": "Dividing the numerator by 2 instead of 2a when the leading coefficient a != 1.",
+          "trapFormula": "x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2}"
+        },
+        {
+          "trapTag": "t02-c01-u02-discriminant-plus-4ac-trap",
+          "description": "Computing b^2 + 4ac instead of b^2 - 4ac inside the radical.",
+          "trapFormula": "\\Delta_{\\text{err}} = b^2 + 4ac"
+        }
+      ],
+      "versatileDomains": [],
+      "usedContexts": []
+    },
+    {
+      "unitCode": "MTH-T02-C01-U02",
+      "archetypeKey": "t02-c01-u02-discriminant-classification",
+      "level": 2,
+      "name": "Root Classification and Threshold Analysis via the Discriminant",
+      "source": "OpenStax Algebra and Trigonometry 2e §2.5 — The Discriminant",
+      "coreConcept": "Evaluate Δ = b^2 - 4ac on standard form ax^2 + bx + c = 0 to determine whether the equation has two distinct real solutions (Δ > 0), one repeated real solution (Δ = 0), or two non-real complex conjugate solutions (Δ < 0), and solve for unknown coefficient thresholds.",
+      "mentalModel": "The discriminant sits inside the square root and determines whether the symmetric offset from the vertex -b/(2a) is real positive, zero, or purely imaginary.",
+      "governingRelation": "\\Delta = b^2 - 4ac \\;\\begin{cases} > 0 & \\text{two distinct real roots} \\\\ = 0 & \\text{one repeated real root} \\\\ < 0 & \\text{two complex conjugate roots} \\end{cases}",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c01-u02-forgot-square-negative-b-trap",
+          "description": "Evaluating (-|b|)^2 as -|b|^2 instead of +|b|^2 when b is negative.",
+          "trapFormula": "-b^2 - 4ac"
+        },
+        {
+          "trapTag": "t02-c01-u02-discriminant-sign-error-when-c-negative-trap",
+          "description": "Dropping the double negative in -4ac when a > 0 and c < 0, subtracting 4a|c| instead of adding it.",
+          "trapFormula": "b^2 - 4a|c| \\text{ when } c < 0"
+        }
+      ],
+      "versatileDomains": [],
+      "usedContexts": []
+    },
+    {
+      "unitCode": "MTH-T02-C01-U02",
+      "archetypeKey": "t02-c01-u02-quadratic-flaw-diagnosis",
+      "level": 3,
+      "name": "Diagnosing Algebraic Flaws in Quadratic Equation Derivations",
+      "source": "OpenStax Algebra and Trigonometry 2e §2.5 (beyond-the-book diagnostic extension)",
+      "coreConcept": "Inspect a line-by-line solution of a quadratic equation and locate the exact line where algebraic equivalence breaks (Zero Product Property on nonzero RHS, unbalanced completing the square, dropped ± branch, or wrong formula denominator). L3 diagnose form: prompt shows 'Line N: $...$' lines and asks which line is the first wrong line (answerSpec choice with verify.flaw).",
+      "mentalModel": "Every valid transformation preserves the solution set; the first flawed line alters either the algebraic value or the solution set.",
+      "governingRelation": "\\text{Equivalence preserved iff } \\{x : L_k(x)\\} = \\{x : L_{k-1}(x)\\}",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c01-u02-zero-product-nonzero-rhs-trap",
+          "description": "Applying factor-equals-RHS when the right-hand side is nonzero.",
+          "trapFormula": "(x - p)(x - q) = k \\implies x - p = k"
+        },
+        {
+          "trapTag": "t02-c01-u02-added-square-to-one-side-only-trap",
+          "description": "Failing to notice that completing the square added a constant to only the left side.",
+          "trapFormula": "(x + p/2)^2 = q"
+        },
+        {
+          "trapTag": "t02-c01-u02-quadratic-formula-denominator-2-trap",
+          "description": "Overlooking denominator 2 instead of 2a in the quadratic formula step.",
+          "trapFormula": "(-b \\pm \\sqrt{\\Delta}) / 2"
+        },
+        {
+          "trapTag": "t02-c01-u02-omitted-negative-square-root-trap",
+          "description": "Missing the dropped ± sign when taking the square root of both sides.",
+          "trapFormula": "x - h = \\sqrt{k}"
+        }
+      ],
+      "versatileDomains": [],
+      "usedContexts": []
+    },
+    {
+      "unitCode": "MTH-T02-C01-U02",
+      "archetypeKey": "t02-c01-u02-quadratic-modeling-constraints",
+      "level": 4,
+      "name": "Constrained Quadratic Modeling and Domain Filtering",
+      "source": "OpenStax Algebra and Trigonometry 2e §2.5 — Applications of Quadratic Equations",
+      "coreConcept": "Combine two geometric, kinematic, or financial/rate relationships from a situation into a single quadratic equation, select an appropriate solving method, and filter out roots that violate physical bounds (negative lengths, times before release, or frame widths exceeding container dimensions).",
+      "mentalModel": "Algebraic equations know nothing about physical positivity or geometric bounds; solving yields candidate roots that must be vetted against the domain.",
+      "governingRelation": "f(x) = g(x) \\implies ax^2 + bx + c = 0,\\quad x \\in D_{\\text{valid}}",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c01-u02-kept-extraneous-negative-root-trap",
+          "description": "Reporting a mathematically valid root that violates geometric or physical constraints (such as negative length or width larger than half the outer span).",
+          "trapFormula": "x_{\\text{invalid}} \\text{ retained}"
+        },
+        {
+          "trapTag": "t02-c01-u02-double-border-width-missed-trap",
+          "description": "Adding uniform border width w once (L + w)(W + w) instead of twice (L + 2w)(W + 2w) around all four sides.",
+          "trapFormula": "(L + w)(W + w) = A_{\\text{total}}"
+        },
+        {
+          "trapTag": "t02-c01-u02-omitted-negative-square-root-trap",
+          "description": "Dropping one root before checking which root satisfies the physical question (e.g., earlier vs. later height crossing).",
+          "trapFormula": "t = t_0 + \\sqrt{\\Delta}/(2a) \\text{ only}"
+        }
+      ],
+      "versatileDomains": [
+        "uniform_border_frame_design",
+        "vertical_projectile_height_window",
+        "right_triangle_cable_clearance"
+      ],
+      "usedContexts": [
+        "uniform_border_frame_design"
+      ]
+    },
+    {
+      "unitCode": "MTH-T02-C01-U02",
+      "archetypeKey": "t02-c01-u02-discriminant-vieta-parameter-synthesis",
+      "level": 4,
+      "name": "Parameter Synthesis from Discriminant Feasibility and Root Relations",
+      "source": "OpenStax Algebra and Trigonometry 2e §2.5 (beyond-the-book synthesis extension)",
+      "coreConcept": "Determine an unknown coefficient parameter in a quadratic equation by coupling a root-structure relation (such as repeated root Δ = 0, difference/sum/product of roots via Vieta's formulas, or a given ratio of roots) with the discriminant feasibility condition and rejecting parameter branches that violate realness or positivity.",
+      "mentalModel": "Root conditions produce a quadratic (or algebraic) constraint on the parameter itself; every candidate parameter must be checked back against Δ and any side conditions.",
+      "governingRelation": "r_1 + r_2 = -\\frac{b}{a},\\quad r_1 r_2 = \\frac{c}{a},\\quad \\Delta = b^2 - 4ac",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c01-u02-ignored-discriminant-feasibility-trap",
+          "description": "Accepting a parameter candidate that satisfies the algebraic root relation without checking the sign or discriminant bound required by the problem.",
+          "trapFormula": "\\text{keep } k \\text{ violating } \\Delta \\text{ or bound}"
+        },
+        {
+          "trapTag": "t02-c01-u02-vieta-sum-sign-flip-trap",
+          "description": "Using r_1 + r_2 = +b/a instead of -b/a when relating coefficients to roots.",
+          "trapFormula": "r_1 + r_2 = b/a"
+        },
+        {
+          "trapTag": "t02-c01-u02-forgot-square-negative-b-trap",
+          "description": "Writing -b^2 instead of +b^2 in the discriminant constraint for the parameter.",
+          "trapFormula": "-b^2 - 4ac"
+        }
+      ],
+      "versatileDomains": [
+        "critically_damped_spring_tuning",
+        "impedance_matching_parameter_bound"
+      ],
+      "usedContexts": []
+    }
+  ]
+}
