@@ -47,13 +47,13 @@ export const LineChoicePrompt: React.FC<LineChoicePromptProps> = ({
             >
               <div className="flex items-center gap-3 min-w-0 flex-1">
                 <span
-                  className={`shrink-0 inline-flex items-center justify-center px-2.5 py-1 rounded-lg text-xs font-mono font-bold transition-colors ${
+                  className={`shrink-0 inline-flex items-center justify-center min-w-[28px] h-7 px-2 rounded-lg text-xs font-mono font-bold transition-colors ${
                     isSelected
                       ? "bg-indigo-600 text-white"
                       : "bg-white dark:bg-[#1d2333] text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-[#2c354d] group-hover:border-indigo-300 dark:group-hover:border-indigo-500/50"
                   }`}
                 >
-                  {item.label}
+                  {item.lineNumber}
                 </span>
 
                 <div className="min-w-0 flex-1 overflow-x-auto text-slate-900 dark:text-slate-100 py-0.5">
@@ -88,7 +88,7 @@ export const LineChoicePrompt: React.FC<LineChoicePromptProps> = ({
               : "text-slate-500 dark:text-slate-400"
           }`}
         >
-          {selectedItem ? `Selected: ${selectedItem.label}` : "Click a line above to select"}
+          {selectedItem ? `Selected: ${selectedItem.lineNumber}` : "Click a line above to select"}
         </span>
       </div>
     </div>
