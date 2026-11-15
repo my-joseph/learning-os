@@ -128,6 +128,7 @@ export interface Geometry2DSpec {
   kind: "geometry_2d";
   theme?: FigureTheme;
   title?: string;
+  note?: string; // e.g. "Not to scale" when a label is "?"
   points: Record<string, [number, number]>;
   shapes: GeometryShape[];
   markers?: GeometryMarker[];
@@ -154,6 +155,7 @@ export interface CartesianSegmentPlot {
   from: [number, number];
   to: [number, number];
   label?: string;
+  arrow?: boolean; // arrowhead at `to` (vectors, rays on a number line)
   color?: string;
   strokeWidth?: number;
   strokeDasharray?: string;
@@ -184,8 +186,27 @@ export interface CartesianSlopeTrianglePlot {
   showDeltas?: boolean;
 }
 
+/** A curve sampled by the builder (math_engine.figure_builder.build_function_graph_figure). */
+export interface CartesianCurvePlot {
+  type: "curve";
+  points: [number, number][];
+  color?: string;
+  strokeWidth?: number;
+  strokeDasharray?: string;
+}
+
+/** Free text at a world coordinate (legends, |z| = ?). */
+export interface CartesianTextPlot {
+  type: "text";
+  coord: [number, number];
+  text: string;
+  color?: string;
+}
+
 export type CartesianPlot =
   | CartesianFunctionPlot
+  | CartesianCurvePlot
+  | CartesianTextPlot
   | CartesianSegmentPlot
   | CartesianPointPlot
   | CartesianAreaPlot
@@ -201,6 +222,9 @@ export interface CartesianGraphSpec {
   yStep?: number;
   grid?: boolean;
   axes?: boolean;
+  yAxis?: boolean; // false: a number line (x axis only, a tick at 0)
+  axisLabels?: [string, string]; // default ["x", "y"]; ["Re", "Im"] for the complex plane
+  note?: string;
   plots: CartesianPlot[];
 }
 

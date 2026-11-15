@@ -21,7 +21,8 @@
         "mechanical_oscillation_phase_check",
         "optical_polarization_intensity_analysis"
       ],
-      "usedContexts": []
+      "usedContexts": [],
+      "figureNone": "Trigonometric equations solved algebraically; a graph would show the solutions."
     },
     {
       "archetypeKey": "t02-c08-u05-quadratic-identity-interval-solve",
@@ -41,7 +42,8 @@
         "phase_locked_loop_zero_crossings",
         "orbital_inclination_resonance_angles"
       ],
-      "usedContexts": []
+      "usedContexts": [],
+      "figureNone": "Trigonometric equations solved algebraically; a graph would show the solutions."
     },
     {
       "archetypeKey": "t02-c08-u05-squaring-extraneous-root-synthesis",
@@ -61,7 +63,8 @@
         "robotic_arm_line_intersection",
         "two_source_wave_superposition"
       ],
-      "usedContexts": []
+      "usedContexts": [],
+      "figureNone": "Trigonometric equations solved algebraically; a graph would show the solutions."
     },
     {
       "archetypeKey": "t02-c08-u05-periodic-threshold-modeling",

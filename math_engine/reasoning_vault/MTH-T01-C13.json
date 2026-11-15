@@ -22,7 +22,8 @@
       "usedContexts": [
         "filter_polynomial_order"
       ],
-      "unitCode": "MTH-T01-C13-U01"
+      "unitCode": "MTH-T01-C13-U01",
+      "figureNone": "Polynomial algebra; the work is symbolic and a picture adds nothing."
     },
     {
       "archetypeKey": "c13-evaluating-polynomials",
@@ -43,7 +44,8 @@
       "usedContexts": [
         "braking_distance_speed_curve"
       ],
-      "unitCode": "MTH-T01-C13-U01"
+      "unitCode": "MTH-T01-C13-U01",
+      "figureNone": "Polynomial algebra; the work is symbolic and a picture adds nothing."
     },
     {
       "archetypeKey": "c13-monomial-multiplication",
@@ -64,7 +66,8 @@
       "usedContexts": [
         "display_pixel_buffer_scaling"
       ],
-      "unitCode": "MTH-T01-C13-U02"
+      "unitCode": "MTH-T01-C13-U02",
+      "figureNone": "Polynomial algebra; the work is symbolic and a picture adds nothing."
     },
     {
       "archetypeKey": "c13-adding-polynomials",
@@ -85,7 +88,8 @@
       "usedContexts": [
         "superposition_signal_harmonics"
       ],
-      "unitCode": "MTH-T01-C13-U01"
+      "unitCode": "MTH-T01-C13-U01",
+      "figureNone": "Polynomial algebra; the work is symbolic and a picture adds nothing."
     },
     {
       "archetypeKey": "c13-subtracting-polynomials",
@@ -106,7 +110,8 @@
       "usedContexts": [
         "financial_profit_margin_curve"
       ],
-      "unitCode": "MTH-T01-C13-U01"
+      "unitCode": "MTH-T01-C13-U01",
+      "figureNone": "Polynomial algebra; the work is symbolic and a picture adds nothing."
     },
     {
       "archetypeKey": "c13-monomial-times-polynomial",
@@ -127,7 +132,8 @@
       "usedContexts": [
         "rectangular_warehouse_extension"
       ],
-      "unitCode": "MTH-T01-C13-U03"
+      "unitCode": "MTH-T01-C13-U03",
+      "figureNone": "Polynomial algebra; the work is symbolic and a picture adds nothing."
     },
     {
       "archetypeKey": "c13-multiplying-binomials-foil",
@@ -148,7 +154,8 @@
       "usedContexts": [
         "land_parcel_boundary_expansion"
       ],
-      "unitCode": "MTH-T01-C13-U03"
+      "unitCode": "MTH-T01-C13-U03",
+      "figureNone": "Polynomial algebra; the work is symbolic and a picture adds nothing."
     },
     {
       "archetypeKey": "c13-special-products-difference-squares",
@@ -169,7 +176,8 @@
       "usedContexts": [
         "optical_conjugate_filter_transmission"
       ],
-      "unitCode": "MTH-T01-C13-U03"
+      "unitCode": "MTH-T01-C13-U03",
+      "figureNone": "Polynomial algebra; the work is symbolic and a picture adds nothing."
     },
     {
       "archetypeKey": "c13-factoring-greatest-common-factor",
@@ -190,7 +198,8 @@
       "usedContexts": [
         "code_expression_refactoring"
       ],
-      "unitCode": "MTH-T01-C13-U06"
+      "unitCode": "MTH-T01-C13-U06",
+      "figureNone": "Polynomial algebra; the work is symbolic and a picture adds nothing."
     },
     {
       "archetypeKey": "c13-factoring-quadratic-trinomials-modeling",

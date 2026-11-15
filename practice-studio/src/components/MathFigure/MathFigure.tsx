@@ -34,6 +34,11 @@ export const MathFigure: React.FC<MathFigureProps> = ({
 
         {figure.kind === "geometry_2d" && <GeometryRenderer spec={figure} />}
         {figure.kind === "cartesian_graph" && <CartesianRenderer spec={figure} />}
+        {figure.note && (
+          <div className="w-full text-right px-1 mt-1 text-[11px] italic text-slate-500 dark:text-slate-400">
+            {figure.note}
+          </div>
+        )}
       </div>
     );
   }

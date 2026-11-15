@@ -34,7 +34,8 @@
       "usedContexts": [
         "computer_memory_byte_scaling"
       ],
-      "unitCode": "MTH-T01-C08-U02"
+      "unitCode": "MTH-T01-C08-U02",
+      "figureNone": "Exponent rules; the work is symbolic and a picture adds nothing."
     },
     {
       "archetypeKey": "c08-quotient-rule-like-bases",
@@ -67,7 +68,8 @@
       "usedContexts": [
         "astronomical_distance_ratio"
       ],
-      "unitCode": "MTH-T01-C08-U03"
+      "unitCode": "MTH-T01-C08-U03",
+      "figureNone": "Exponent rules; the work is symbolic and a picture adds nothing."
     },
     {
       "archetypeKey": "c08-power-of-a-power",
@@ -100,7 +102,8 @@
       "usedContexts": [
         "cryptographic_key_permutation"
       ],
-      "unitCode": "MTH-T01-C08-U04"
+      "unitCode": "MTH-T01-C08-U04",
+      "figureNone": "Exponent rules; the work is symbolic and a picture adds nothing."
     },
     {
       "archetypeKey": "c08-power-of-a-product",
@@ -133,7 +136,8 @@
       "usedContexts": [
         "physics_kinetic_energy_scaling"
       ],
-      "unitCode": "MTH-T01-C08-U04"
+      "unitCode": "MTH-T01-C08-U04",
+      "figureNone": "Exponent rules; the work is symbolic and a picture adds nothing."
     },
     {
       "archetypeKey": "c08-zero-exponent-property",
@@ -166,7 +170,8 @@
       "usedContexts": [
         "control_systems_steady_state_gain"
       ],
-      "unitCode": "MTH-T01-C08-U05"
+      "unitCode": "MTH-T01-C08-U05",
+      "figureNone": "Exponent rules; the work is symbolic and a picture adds nothing."
     },
     {
       "archetypeKey": "c08-negative-exponent-reciprocal",
@@ -199,7 +204,8 @@
       "usedContexts": [
         "nanotechnology_particle_diameter"
       ],
-      "unitCode": "MTH-T01-C08-U05"
+      "unitCode": "MTH-T01-C08-U05",
+      "figureNone": "Exponent rules; the work is symbolic and a picture adds nothing."
     },
     {
       "archetypeKey": "c08-power-of-a-quotient",
@@ -232,7 +238,8 @@
       "usedContexts": [
         "probability_repeated_independent_trials"
       ],
-      "unitCode": "MTH-T01-C08-U04"
+      "unitCode": "MTH-T01-C08-U04",
+      "figureNone": "Exponent rules; the work is symbolic and a picture adds nothing."
     },
     {
       "archetypeKey": "c08-scientific-notation-multiplication",
@@ -265,7 +272,8 @@
       "usedContexts": [
         "microbiology_bacterial_culture_census"
       ],
-      "unitCode": "MTH-T01-C08-U06"
+      "unitCode": "MTH-T01-C08-U06",
+      "figureNone": "Exponent rules; the work is symbolic and a picture adds nothing."
     },
     {
       "archetypeKey": "c08-nested-monomial-exponent-simplification",
@@ -298,7 +306,8 @@
       "usedContexts": [
         "quantum_mechanics_wavefunction_normalization"
       ],
-      "unitCode": "MTH-T01-C08-U05"
+      "unitCode": "MTH-T01-C08-U05",
+      "figureNone": "Exponent rules; the work is symbolic and a picture adds nothing."
     },
     {
       "archetypeKey": "c08-exponential-growth-doubling-time",
@@ -337,7 +346,8 @@
       "usedContexts": [
         "epidemiology_pathogen_spread_tracking"
       ],
-      "unitCode": "MTH-T01-C08-U01"
+      "unitCode": "MTH-T01-C08-U01",
+      "figureNone": "Exponent rules; the work is symbolic and a picture adds nothing."
     }
   ]
 }

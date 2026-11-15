@@ -7,7 +7,8 @@ Pages follow `rules/02_pedagogy.md` §7a (v4). Two modes:
 
 Spec: a JSON list of blocks, each `{"type": ..., "text": ..., "children": [...]}` with types
 h2, h3, p, bullet, num, todo, callout, quote, eq (`"expr"` instead of `text`), toggle (`children` = answer
-blocks) and divider. Text supports `**bold**`, inline `$math$` and `[[CODE]]` page mentions (resolved via
+blocks), divider and figure (`"fn"` + `"args"` of a `math_engine.figure_builder` builder, or a ready `"figure"`
+spec, plus an optional `"caption"`; rendered to SVG and uploaded to Notion, see `notion_sync.figures`). Text supports `**bold**`, inline `$math$` and `[[CODE]]` page mentions (resolved via
 id_map.json). Write the spec as JSON, never as Python strings (LaTeX backslashes).
 
     python -m notion_sync.unit_page --code MTH-T02-C01-U02 --spec scratch/pages/U02.json --mode new
@@ -37,16 +38,26 @@ from notion_sync.blocks import (
     validate_blocks_clean,
 )
 from notion_sync.client import get_all_blocks, load_env, notion_request, require_token
+from notion_sync.figures import Uploader, dry_run_uploader, figure_block, upload_svg
 
 LEARNER_SECTION = "My Implementation"
 HEADINGS = ("heading_1", "heading_2", "heading_3")
 
 
-def spec_to_blocks(spec: list[dict], id_map: dict) -> list[dict]:
+def spec_to_blocks(
+    spec: list[dict], id_map: dict, uploader: Uploader = dry_run_uploader, prefix: str = "fig"
+) -> list[dict]:
+    """Notion blocks for a page spec. Figures are rendered and handed to `uploader` (default: nothing sent)."""
     out = []
+    count = [0]
+
+    def upload(svg: str, filename: str) -> str:
+        count[0] += 1
+        return uploader(svg, f"{prefix}-{count[0]}.svg")
+
     for item in spec:
         kind, text = item.get("type"), item.get("text", "")
-        kids = spec_to_blocks(item.get("children", []), id_map) if item.get("children") else None
+        kids = spec_to_blocks(item.get("children", []), id_map, upload, prefix) if item.get("children") else None
         if kind == "h2":
             out.append(h2(text, id_map))
         elif kind == "h3":
@@ -69,6 +80,8 @@ def spec_to_blocks(spec: list[dict], id_map: dict) -> list[dict]:
             out.append(toggle_block(text, kids or [], id_map))
         elif kind == "divider":
             out.append(divider_block())
+        elif kind == "figure":
+            out.append(figure_block(item, upload))
         else:
             raise ValueError(f"unknown block type {kind!r}")
     return out
@@ -157,10 +170,10 @@ def write_page(code: str, spec: list[dict], mode: str, after: str | None, token:
     entry = id_map.get(code)
     if not isinstance(entry, dict):
         raise ValueError(f"{code} is not in id_map.json")
-    blocks = spec_to_blocks(spec, id_map)
-    validate_blocks_clean(blocks, code)
+    validate_blocks_clean(spec_to_blocks(spec, id_map), code)  # every figure builds before anything is uploaded
     existing = get_all_blocks(entry["id"], token)
     anchor = check_target(code, mode, after, existing)
+    blocks = spec_to_blocks(spec, id_map, lambda svg, name: upload_svg(svg, name, token), code)
     insert_after(entry["id"], anchor, blocks, token)
     if mode == "new":
         return f"wrote {len(blocks)} blocks to empty page {code}"
@@ -172,7 +185,10 @@ def main(argv: list[str] | None = None) -> int:
         prog="python -m notion_sync.unit_page",
         description=__doc__.split("\n\n")[0],
         epilog="Text syntax: **bold** (no * inside), $inline math$, `code`, [[CODE]] page mentions. "
-        "No italic or links. Block types: h2 h3 p bullet num todo callout quote eq toggle divider.",
+        "No italic or links. Block types: h2 h3 p bullet num todo callout quote eq toggle divider figure. "
+        'Figure: {"type": "figure", "fn": "build_function_graph_figure", "args": {"expr": "(x-1)^2-4"}, '
+        '"caption": "..."}; builders: build_function_graph_figure, build_number_line_figure, '
+        "build_complex_plane_figure, build_cartesian_*, build_rectangle/right_triangle/circle/cone/... (figure_builder).",
     )
     ap.add_argument("--code", required=True)
     ap.add_argument("--spec", help="JSON spec of blocks (optional when only --set is used)")

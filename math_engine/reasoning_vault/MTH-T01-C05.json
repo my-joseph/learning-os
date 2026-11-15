@@ -34,7 +34,8 @@
       "usedContexts": [
         "biochemical_assay_spectrometry"
       ],
-      "unitCode": "MTH-T01-C05-U01"
+      "unitCode": "MTH-T01-C05-U01",
+      "figureNone": "Decimal arithmetic; the work is symbolic and a picture adds nothing."
     },
     {
       "archetypeKey": "c05-decimal-addition-alignment",
@@ -67,7 +68,8 @@
       "usedContexts": [
         "retail_pos_sales_receipt_tally"
       ],
-      "unitCode": "MTH-T01-C05-U02"
+      "unitCode": "MTH-T01-C05-U02",
+      "figureNone": "Decimal arithmetic; the work is symbolic and a picture adds nothing."
     },
     {
       "archetypeKey": "c05-decimal-subtraction-borrowing",
@@ -100,7 +102,8 @@
       "usedContexts": [
         "chemical_analytical_balance_tare_weight"
       ],
-      "unitCode": "MTH-T01-C05-U02"
+      "unitCode": "MTH-T01-C05-U02",
+      "figureNone": "Decimal arithmetic; the work is symbolic and a picture adds nothing."
     },
     {
       "archetypeKey": "c05-decimal-multiplication-digit-counting",
@@ -133,7 +136,8 @@
       "usedContexts": [
         "industrial_wire_electrical_resistance"
       ],
-      "unitCode": "MTH-T01-C05-U02"
+      "unitCode": "MTH-T01-C05-U02",
+      "figureNone": "Decimal arithmetic; the work is symbolic and a picture adds nothing."
     },
     {
       "archetypeKey": "c05-decimal-division-divisor-shifting",
@@ -166,7 +170,8 @@
       "usedContexts": [
         "semiconductor_wafer_yield_density"
       ],
-      "unitCode": "MTH-T01-C05-U02"
+      "unitCode": "MTH-T01-C05-U02",
+      "figureNone": "Decimal arithmetic; the work is symbolic and a picture adds nothing."
     },
     {
       "archetypeKey": "c05-fraction-to-decimal-conversion",
@@ -199,7 +204,8 @@
       "usedContexts": [
         "precision_sheet_metal_thickness_gauge"
       ],
-      "unitCode": "MTH-T01-C05-U03"
+      "unitCode": "MTH-T01-C05-U03",
+      "figureNone": "Decimal arithmetic; the work is symbolic and a picture adds nothing."
     },
     {
       "archetypeKey": "c05-decimal-unit-price-comparison",
@@ -232,7 +238,8 @@
       "usedContexts": [
         "supermarket_bulk_packaging_audit"
       ],
-      "unitCode": "MTH-T01-C05-U06"
+      "unitCode": "MTH-T01-C05-U06",
+      "figureNone": "Decimal arithmetic; the work is symbolic and a picture adds nothing."
     },
     {
       "archetypeKey": "c05-decimal-one-step-linear-equation",
@@ -265,7 +272,8 @@
       "usedContexts": [
         "telecom_roaming_data_rate_metering"
       ],
-      "unitCode": "MTH-T01-C05-U04"
+      "unitCode": "MTH-T01-C05-U04",
+      "figureNone": "Decimal arithmetic; the work is symbolic and a picture adds nothing."
     },
     {
       "archetypeKey": "c05-constrained-multi-tier-decimal-utility-tariff",
@@ -304,7 +312,8 @@
       "usedContexts": [
         "municipal_water_metering_tariff"
       ],
-      "unitCode": "MTH-T01-C05-U04"
+      "unitCode": "MTH-T01-C05-U04",
+      "figureNone": "Decimal arithmetic; the work is symbolic and a picture adds nothing."
     },
     {
       "archetypeKey": "c05-decimal-mean-weighted-sensor-fusion",
@@ -343,7 +352,8 @@
       "usedContexts": [
         "environmental_air_quality_pm25_monitoring"
       ],
-      "unitCode": "MTH-T01-C05-U05"
+      "unitCode": "MTH-T01-C05-U05",
+      "figureNone": "Decimal arithmetic; the work is symbolic and a picture adds nothing."
     }
   ]
 }

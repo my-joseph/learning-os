@@ -44,7 +44,8 @@
         "solar_battery_storage",
         "academic_textbook_reading_progress"
       ],
-      "unitCode": "MTH-T01-C06-U02"
+      "unitCode": "MTH-T01-C06-U02",
+      "figureNone": "Percent relations between quantities; a picture adds nothing."
     },
     {
       "archetypeKey": "c06-pre-change-base-recovery",
@@ -88,7 +89,8 @@
         "artisan_leather_backpack",
         "conservatory_orchestral_cello_clearance"
       ],
-      "unitCode": "MTH-T01-C06-U03"
+      "unitCode": "MTH-T01-C06-U03",
+      "figureNone": "Percent relations between quantities; a picture adds nothing."
     },
     {
       "archetypeKey": "c06-relative-change-base-shift",
@@ -129,7 +131,8 @@
       "usedContexts": [
         "cloud_server_subscription"
       ],
-      "unitCode": "MTH-T01-C06-U02"
+      "unitCode": "MTH-T01-C06-U02",
+      "figureNone": "Percent relations between quantities; a picture adds nothing."
     },
     {
       "archetypeKey": "c06-successive-multipliers-compounding",
@@ -172,7 +175,8 @@
         "commercial_merchandising:clearance",
         "boutique_designer_coat_seasonal"
       ],
-      "unitCode": "MTH-T01-C06-U03"
+      "unitCode": "MTH-T01-C06-U03",
+      "figureNone": "Percent relations between quantities; a picture adds nothing."
     },
     {
       "archetypeKey": "c06-parallel-vs-cascading-rates",
@@ -209,7 +213,8 @@
       "usedContexts": [
         "restaurant_dining_meal_tax_tip"
       ],
-      "unitCode": "MTH-T01-C06-U03"
+      "unitCode": "MTH-T01-C06-U03",
+      "figureNone": "Percent relations between quantities; a picture adds nothing."
     },
     {
       "archetypeKey": "c06-invariant-component-under-variable-total",
@@ -257,7 +262,8 @@
         "chemistry_antiseptic_alcohol",
         "jewelry_metallurgy_gold_copper_smelting"
       ],
-      "unitCode": "MTH-T01-C06-U02"
+      "unitCode": "MTH-T01-C06-U02",
+      "figureNone": "Percent relations between quantities; a picture adds nothing."
     },
     {
       "archetypeKey": "c06-weighted-split-conservation",
@@ -299,7 +305,8 @@
         "split_fixed_income:bonds",
         "municipal_vs_corporate_bonds"
       ],
-      "unitCode": "MTH-T01-C06-U02"
+      "unitCode": "MTH-T01-C06-U02",
+      "figureNone": "Percent relations between quantities; a picture adds nothing."
     },
     {
       "archetypeKey": "c06-simple-interest-time-scaling",
@@ -348,7 +355,8 @@
         "certificate_of_deposit",
         "bakery_equipment_financing_loan"
       ],
-      "unitCode": "MTH-T01-C06-U04"
+      "unitCode": "MTH-T01-C06-U04",
+      "figureNone": "Percent relations between quantities; a picture adds nothing."
     },
     {
       "archetypeKey": "c06-proportional-rate-scaling",
@@ -391,7 +399,8 @@
         "pediatric_dosing",
         "cartography_scale"
       ],
-      "unitCode": "MTH-T01-C06-U05"
+      "unitCode": "MTH-T01-C06-U05",
+      "figureNone": "Percent relations between quantities; a picture adds nothing."
     }
   ]
 }

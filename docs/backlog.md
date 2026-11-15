@@ -16,10 +16,7 @@ Fix each one when the topic it belongs to is actually started, not before. Sourc
 - Antiderivatives: `+C` is treated as an ordinary variable. Another letter (`K`, `c`) is invalid input, and a correct answer whose constant differs (e.g. from u-substitution vs. expanding) is graded incorrect.
 - Step checks: `TRUSTED_INTERNAL_FUNCS` has `diff` but no `integrate`, so antiderivative steps cannot be machine-checked.
 - Figures: no builder for area under a curve or a tangent line.
-
-## Before diagrams on Notion pages
-
-- `notion_sync.unit_page` has no image block and nothing uploads a rendered figure to Notion, and `figure_builder` has no complex-plane (Argand) builder. `rules/02` §7a asks for a diagram in section 1 of geometry or graph units; until then describe it in text. (issue da7445)
+- Trigonometry figures: no unit-circle builder and no right triangle labelled with an angle θ and opposite/adjacent/hypotenuse (`build_function_graph_figure` already draws `sin`/`cos` graphs).
 
 ## Cosmetic
 

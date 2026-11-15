@@ -6,31 +6,28 @@ archetype (`figureBuilders`) and the problem's `givens` (rules/03_stem.md §3).
 Vault spec (per archetype):
   "figureBuilders": [
     {"fn": "build_circle_figure",
-     "args": {"radius": "diameter/2"},          # arithmetic over given keys
-     "labels": {"label_radius": "d = {diameter:g}"}}   # optional format strings over givens
+     "args": {"radius": "sqrt(area/pi)"},       # numeric args: math over given keys (math_engine.safe_expr)
+     "labels": {"label_radius": "r = ?"},        # string args: format strings over givens ("{area:g}")
+     "note": "Not to scale"}                     # optional; added automatically when a label contains "?"
   ]
-The first builder whose referenced given keys all exist is used.
+The first builder whose referenced given keys all exist is used. Draw the asked-for quantity to scale but
+label it `?` (rules/03_stem.md §3.1), so reverse and multi-step problems keep their figure.
+
+An archetype with no figure says why: `"figureNone": "<reason>"` (gate: `require_figure_decision`).
 """
 
-import re
 from typing import Any, Dict, List, Optional
 
 from math_engine import figure_builder
+from math_engine.safe_expr import try_evaluate
 
-_SAFE = re.compile(r"^[0-9a-zA-Z_+\-*/(). ]+$")
+
+def _numeric(givens: Dict[str, Any]) -> Dict[str, float]:
+    return {k: float(v) for k, v in givens.items() if isinstance(v, (int, float)) and not isinstance(v, bool)}
 
 
 def _eval(expr: str, givens: Dict[str, Any]) -> Optional[float]:
-    if not _SAFE.match(expr):
-        return None
-    names = re.findall(r"[A-Za-z_]\w*", expr)
-    if any(n not in givens for n in names):
-        return None
-    local = {n: float(givens[n]) for n in names}
-    try:
-        return float(eval(expr, {"__builtins__": {}}, local))
-    except Exception:
-        return None
+    return try_evaluate(str(expr), _numeric(givens))
 
 
 def build_figure(archetype: Dict[str, Any], givens: Dict[str, Any]) -> Optional[Dict[str, Any]]:
@@ -49,13 +46,17 @@ def build_figure(archetype: Dict[str, Any], givens: Dict[str, Any]) -> Optional[
         if not ok:
             continue
         try:
-            for param, fmt in spec.get("labels", {}).items():
-                kwargs[param] = fmt.format(**{k: float(v) for k, v in givens.items() if isinstance(v, (int, float))})
+            labels = {param: fmt.format(**_numeric(givens)) for param, fmt in spec.get("labels", {}).items()}
+            kwargs.update(labels)
             if spec.get("title"):
                 kwargs["title"] = spec["title"]
-            return fn(**kwargs)
+            fig = fn(**kwargs)
         except Exception:
             continue
+        note = spec.get("note") or ("Not to scale" if any("?" in v for v in labels.values()) else None)
+        if note:
+            fig["note"] = note
+        return fig
     return None
 
 
@@ -76,3 +77,8 @@ def autofill_problem_figure(prob: Dict[str, Any], archetypes: List[Dict[str, Any
 def archetype_requires_figure(prob: Dict[str, Any], archetypes: List[Dict[str, Any]]) -> bool:
     arch = next((x for x in archetypes if x.get("archetypeKey") == prob.get("archetypeKey")), None)
     return bool(arch and arch.get("figureBuilders"))
+
+
+def figure_decision_missing(archetype: Dict[str, Any]) -> bool:
+    """True when an archetype has neither `figureBuilders` nor a `figureNone` reason."""
+    return not archetype.get("figureBuilders") and not str(archetype.get("figureNone") or "").strip()

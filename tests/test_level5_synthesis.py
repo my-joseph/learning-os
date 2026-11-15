@@ -56,6 +56,7 @@ class TestLevel5Synthesis(unittest.TestCase):
                 "aerospace_sensor_mast_clearance",
             ],
             "usedContexts": [],
+            "figureNone": "test fixture",
         }
         register_archetype("MTH-SYNTHESIS", self.sample_archetype, vault_dir=self.vault_dir)
 

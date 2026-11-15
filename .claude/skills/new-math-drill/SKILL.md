@@ -67,7 +67,7 @@ Per problem, the rules that fail most often:
 | `prompt` vs. trap | Do not state in the prompt what the trap tests (e.g. saying the roots have the form `p ± qi` when the trap is missing the negative discriminant). |
 | `form` | Set it on every problem: `direct` (compute forward), `reverse` (given the result, find an input), `diagnose` (which line is wrong) or `choose` (pick or rule out among options). Ingest defaults a missing `form` to `direct`, and `weak_spots` only counts a problem as reverse when `form` is `reverse`, so a reverse problem left unlabelled can never move the learner up a level. |
 | `verificationLevel` | `"partial"`. |
-| `figure` | If the archetype declares `figureBuilders`, the figure is auto-attached **only when your `givens` keys match the builder's `args` names** in the vault JSON (e.g. `base_1`, `base_2`, `height`); check them before writing `givens`. Otherwise supply a figure or a `figureWaiver` with a reason. |
+| `figure` | Every archetype you use needs a figure decision (`rules/03` §3.1): `figureBuilders` or `figureNone`; the gate rejects the draft otherwise. If it has neither, add one to its vault file now (anything a learner would sketch gets `figureBuilders`). The figure is auto-attached **only when the names in the builder's `args` expressions are keys of your `givens`**; check them before writing `givens`, or add a builder entry with your names. For a reverse problem, size the unknown from the givens and label it `?` (e.g. `"label_h": "h = ?"`) instead of dropping the figure; `figureWaiver` only when even that would give the answer away. |
 
 Also set `id` (`Q01`…), `level`, `archetype`, `archetypeKey`, `context`, `category`, `answerSpec`, `answerPlain`, `answerDisplay`, `commonTrapTag`, `references: ["<UNIT>"]`.
 

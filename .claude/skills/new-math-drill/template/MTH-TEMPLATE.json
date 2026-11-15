@@ -16,7 +16,17 @@
         }
       ],
       "versatileDomains": [],
-      "usedContexts": []
+      "usedContexts": [],
+      "figureBuilders": [
+        {
+          "fn": "build_rectangle_figure",
+          "args": {
+            "width": "l",
+            "height": "w"
+          },
+          "title": "Rectangle"
+        }
+      ]
     },
     {
       "archetypeKey": "tpl-two-step-linear",
@@ -32,7 +42,8 @@
         }
       ],
       "versatileDomains": [],
-      "usedContexts": []
+      "usedContexts": [],
+      "figureNone": "Symbolic equation work; a picture adds nothing."
     },
     {
       "archetypeKey": "tpl-distribution-diagnose",
@@ -48,7 +59,8 @@
         }
       ],
       "versatileDomains": [],
-      "usedContexts": []
+      "usedContexts": [],
+      "figureNone": "Symbolic equation work; a picture adds nothing."
     },
     {
       "archetypeKey": "tpl-perimeter-area-system",
@@ -66,7 +78,21 @@
       "versatileDomains": [
         "garden_plot_fencing"
       ],
-      "usedContexts": []
+      "usedContexts": [],
+      "figureBuilders": [
+        {
+          "fn": "build_rectangle_figure",
+          "args": {
+            "width": "(P/2 + sqrt((P/2)^2 - 4*A))/2",
+            "height": "(P/2 - sqrt((P/2)^2 - 4*A))/2"
+          },
+          "labels": {
+            "label_w": "l = ?",
+            "label_h": "w = ?"
+          },
+          "title": "Rectangle"
+        }
+      ]
     }
   ]
 }
