@@ -154,11 +154,8 @@ def test_page_spec_figure_block_uploads_once_per_figure():
     ]
     blocks = up.spec_to_blocks(spec, {}, lambda svg, name: sent.append((svg, name)) or f"id{len(sent)}", "U9")
     assert [n for _, n in sent] == ["U9-1.svg", "U9-2.svg"]
-    assert blocks[1]["image"] == {
-        "type": "file_upload",
-        "file_upload": {"id": "id1"},
-        "caption": [{"type": "text", "text": {"content": "Closed"}}],
-    }
+    assert blocks[1]["image"]["file_upload"] == {"id": "id1"}
+    assert [r["text"]["content"] for r in blocks[1]["image"]["caption"]] == ["Closed"]
     assert blocks[2]["toggle"]["children"][0]["image"]["file_upload"]["id"] == "id2"
     with pytest.raises(ValueError, match="build_"):
         up.spec_to_blocks([{"type": "figure", "fn": "os.system"}], {})
@@ -255,3 +252,41 @@ def test_new_page_with_only_an_empty_paragraph_counts_as_empty():
     text = {"id": "b2", "type": "paragraph", "paragraph": {"rich_text": [{"plain_text": "notes"}]}}
     with pytest.raises(ValueError, match="already has 1 blocks"):
         up.check_target("U", "new", None, [blank, text])
+
+
+def test_captions_render_math_and_plain_math_is_refused():
+    fig = {"type": "figure", "fn": "build_circle_figure", "args": {"radius": 1}, "caption": "Area $A = \\pi r^2$."}
+    (block,) = up.spec_to_blocks([fig], {})
+    assert [r["type"] for r in block["image"]["caption"]] == ["text", "equation", "text"]
+    with pytest.raises(ValueError, match="wrap it in"):
+        up.spec_to_blocks([{**fig, "caption": "Squaring sqrt(x + 2) = x gives x + 2 = x^2"}], {})
+    with pytest.raises(ValueError, match="wrap it in"):
+        up.spec_to_blocks([{"type": "p", "text": "so x^2 = 4"}], {})
+    up.spec_to_blocks([{"type": "p", "text": "costs \\$5, and $x^2 = 4$; see `x^2` in code"}], {})
+
+
+def test_recaption_edits_only_image_captions_outside_the_learner_section(monkeypatch):
+    page = [
+        {"id": "h1", "type": "heading_2", "heading_2": {"rich_text": [{"plain_text": "1. Core Concepts"}]}},
+        {"id": "img1", "type": "image", "image": {}},
+        {
+            "id": "h6",
+            "type": "heading_2",
+            "heading_2": {"rich_text": [{"plain_text": "6. My Implementation & Mistake Log"}]},
+        },
+        {"id": "img2", "type": "image", "image": {}},
+    ]
+    sent = []
+    monkeypatch.setattr(up, "get_all_blocks", lambda pid, token: page)
+    monkeypatch.setattr(up, "notion_request", lambda m, e, t, p=None: sent.append((m, e, p)) or {})
+    ids = {"U": {"id": "p"}}
+    assert up.recaption("U", 1, "Root at $x = 2$.", "t", ids) == "recaptioned image 1 of U"
+    method, endpoint, payload = sent[0]
+    assert (method, endpoint) == ("PATCH", "blocks/img1")
+    assert [r["type"] for r in payload["image"]["caption"]] == ["text", "equation", "text"]
+    with pytest.raises(ValueError, match="learner's section"):
+        up.recaption("U", 2, "x", "t", ids)
+    with pytest.raises(ValueError, match="1..2"):
+        up.recaption("U", 3, "x", "t", ids)
+    with pytest.raises(ValueError, match="wrap it in"):
+        up.recaption("U", 1, "sqrt(x)", "t", ids)

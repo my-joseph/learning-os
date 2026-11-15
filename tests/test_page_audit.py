@@ -95,3 +95,13 @@ def test_chapter_sections_and_scope():
     assert [m for _, m in found] == ["unresolved [[...]] text in 1 block(s): 'see [[MTH-X]]'"]
     ids = {"MTH-T09": {"id": "a"}, "MTH-T09-C01": {"id": "b"}, "MTH-T09-C01-U01": {"id": "c"}, "MTH-T10": {"id": "d"}}
     assert pa.codes_in_scope("MTH-T09", ids) == ["MTH-T09", "MTH-T09-C01", "MTH-T09-C01-U01"]
+
+
+def test_caption_with_plain_text_math_fails():
+    page = unit_page()
+    img = next(b for b in page if b["type"] == "image")
+    img["image"] = {"caption": [{"type": "text", "plain_text": "Squaring sqrt(x + 2) = x gives x^2"}]}
+    _, found = pa.audit_page("MTH-T09-C01-U01", page, PROPS)
+    assert any("image 1 caption has math as plain text" in m and "--recaption 1=" in m for _, m in found)
+    img["image"] = {"caption": [{"type": "text", "plain_text": "Squaring "}, {"type": "equation", "plain_text": "x^2"}]}
+    assert pa.audit_page("MTH-T09-C01-U01", page, PROPS)[1] == []

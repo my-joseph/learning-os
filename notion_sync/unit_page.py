@@ -38,7 +38,14 @@ from notion_sync.blocks import (
     validate_blocks_clean,
 )
 from notion_sync.client import get_all_blocks, load_env, notion_request, require_token
-from notion_sync.figures import Uploader, dry_run_uploader, figure_block, upload_svg
+from notion_sync.figures import (
+    Uploader,
+    caption_rich_text,
+    check_plain_math,
+    dry_run_uploader,
+    figure_block,
+    upload_svg,
+)
 
 LEARNER_SECTION = "My Implementation"
 HEADINGS = ("heading_1", "heading_2", "heading_3")
@@ -57,6 +64,7 @@ def spec_to_blocks(
 
     for item in spec:
         kind, text = item.get("type"), item.get("text", "")
+        check_plain_math(text, f"{kind} block")
         kids = spec_to_blocks(item.get("children", []), id_map, upload, prefix) if item.get("children") else None
         if kind == "h2":
             out.append(h2(text, id_map))
@@ -81,7 +89,7 @@ def spec_to_blocks(
         elif kind == "divider":
             out.append(divider_block())
         elif kind == "figure":
-            out.append(figure_block(item, upload))
+            out.append(figure_block(item, upload, id_map=id_map))
         else:
             raise ValueError(f"unknown block type {kind!r}")
     return out
@@ -187,6 +195,28 @@ def check_target(code: str, mode: str, after: str | None, existing: list[dict]) 
     return anchor
 
 
+def recaption(code: str, number: int, caption: str, token: str, id_map: dict, dry_run: bool = False) -> str:
+    """Replace the caption of the page's `number`-th top-level image (1-based). Only image captions can be
+    edited this way, never an image in the learner's section; the image itself is kept."""
+    rich = caption_rich_text(caption, id_map)
+    blocks = get_all_blocks(id_map[code]["id"], token)
+    learner = next((i for i, b in enumerate(blocks) if LEARNER_SECTION.lower() in heading_text(b).lower()), None)
+    images = [(i, b) for i, b in enumerate(blocks) if b.get("type") == "image"]
+    if not 1 <= number <= len(images):
+        raise ValueError(f"{code} has {len(images)} image(s); --recaption number must be 1..{len(images)}")
+    idx, block = images[number - 1]
+    if (
+        learner is not None
+        and idx > learner
+        and not any(blocks[j].get("type") == "heading_2" for j in range(learner + 1, idx))
+    ):
+        raise ValueError("that image is in the learner's section; agents never edit it (rules/02 §7a)")
+    if dry_run:
+        return f"dry run: would recaption image {number} of {code}"
+    notion_request("PATCH", f"blocks/{block['id']}", token, {"image": {"caption": rich}})
+    return f"recaptioned image {number} of {code}"
+
+
 def write_page(code: str, spec: list[dict], mode: str, after: str | None, token: str, id_map: dict) -> str:
     entry = id_map.get(code)
     if not isinstance(entry, dict):
@@ -205,7 +235,7 @@ def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(
         prog="python -m notion_sync.unit_page",
         description=__doc__.split("\n\n")[0],
-        epilog="Text syntax: **bold** (no * inside), $inline math$, `code`, [[CODE]] page mentions. "
+        epilog="Text syntax (also figure captions): **bold** (no * inside), $inline math$ (math outside $...$ such as sqrt(x) or x^2 is refused), `code`, [[CODE]] page mentions. "
         "No italic or links. Block types: h2 h3 p bullet num todo callout quote eq toggle divider figure. "
         'Figure: {"type": "figure", "fn": "build_function_graph_figure", "args": {"expr": "(x-1)^2-4"}, '
         '"caption": "..."}; builders: build_function_graph_figure, build_number_line_figure, '
@@ -216,6 +246,13 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--mode", choices=("new", "add"))
     ap.add_argument("--after", help="heading text of the section to extend (mode add)")
     ap.add_argument("--set", action="append", default=[], metavar="NAME=VALUE", help="set a page property")
+    ap.add_argument(
+        "--recaption",
+        action="append",
+        default=[],
+        metavar="N=CAPTION",
+        help="replace the caption of the page's N-th image (1-based, top level); $math$ and [[CODE]] work",
+    )
     ap.add_argument("--dry-run", action="store_true", help="validate blocks and target; send nothing")
     args = ap.parse_args(argv)
     with open("id_map.json", encoding="utf-8") as f:
@@ -239,6 +276,9 @@ def main(argv: list[str] | None = None) -> int:
                 print(f"dry run: {len(blocks)} top-level blocks for {args.code} ({args.mode}); target ok; nothing sent")
             else:
                 print(write_page(args.code, spec, args.mode, args.after, token, id_map))
+        for item in args.recaption:
+            num, _, cap = item.partition("=")
+            print(recaption(args.code, int(num), cap, token, id_map, args.dry_run))
         if values:
             if args.dry_run:
                 print(f"dry run: would set {sorted(values)}")

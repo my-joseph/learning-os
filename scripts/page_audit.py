@@ -108,6 +108,17 @@ def _common(blocks: list[dict], props: dict, required_props: tuple[str, ...], wa
         found.append(("FAIL", "no callout at the top (objective, prerequisites, resource)"))
     elif not any(r.get("type") == "mention" for r in _rich(callouts[0])):
         found.append(("WARN", "top callout has no page mentions; write prerequisites and the Resource as [[CODE]]"))
+    from notion_sync.figures import check_plain_math
+
+    for n, img in enumerate([b for b in blocks if b.get("type") == "image"], 1):
+        cap = img.get("image", {}).get("caption", [])
+        plain = "".join(r.get("plain_text", "") for r in cap if r.get("type") == "text")
+        try:
+            check_plain_math(plain)
+        except ValueError:
+            found.append(
+                ("FAIL", f"image {n} caption has math as plain text: {plain[:50]!r}; fix with --recaption {n}=...")
+            )
     raw = [text_of(b) for b in blocks if "[[" in text_of(b)]
     if raw:
         found.append(("FAIL", f"unresolved [[...]] text in {len(raw)} block(s): {raw[0][:60]!r}"))
