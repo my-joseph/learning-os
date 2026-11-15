@@ -1,20 +1,21 @@
-"""Vault health from evidence: which archetypes have actually earned their level, and where a vault is thin.
+"""Vault health from evidence: which levels each archetype has actually reached, and where it keeps failing.
 
-Nothing here is stored by hand. Evidence is recomputed on every run from what passed the gates and what failed:
-- earned: problems in `drills/data/<UNIT>/` built on the archetype. For an L3+ problem the level is the
-  blind solve's mapped level (`demand_level`); an L1-L2 problem counts at its own level (it passed
-  review and every gate on ingest).
-- failed: issue-log records of kind `level` whose `where` names the archetype
-  (`<UNIT>/<archetypeKey>`), resolved or not, i.e. times a problem built on it was dropped for missing its level.
+An archetype is a skill; its `level` is only the base level where the skill is used directly. A problem may
+build on it at any level from the base upward, and the gates (blind solve for L3+) decide whether that level
+was earned. Nothing here is stored by hand; every run recomputes:
+- earned: ingested problems built on the archetype, in any drill folder, counted by level (L3+: the blind
+  solve's `demand_level`; L1-L2: the problem's level, since it passed review and every gate on ingest);
+- failed: issue-log records of kind `level` whose `where` is `<SCOPE>/<archetypeKey>@L<n>` (a problem at Ln
+  was dropped for missing its level). Without `@L<n>` the archetype's base level is assumed.
 
 Flags:
-- THIN      a vault level with fewer than 2 archetypes (two problems at that level repeat one structure)
-- FAILING   an L3+ archetype that has failed its level and never earned it
-- UNPROVEN  an L3+ archetype that has never earned its level yet (not tried, or not yet passed)
+- FAILING@Ln  failed at Ln and never earned Ln
+- UNPROVEN    an L3+ base level that no drill has earned yet
 
-    python -m scripts.vault_report MTH-T01-C04        # one unit
-    python -m scripts.vault_report                    # every MTH vault
-    python -m scripts.vault_report MTH-T01-C04 --log  # also log THIN and FAILING to the issue log
+    python -m scripts.vault_report MTH-T01-C04-U04    # one unit
+    python -m scripts.vault_report MTH-T01-C04        # a chapter (all its units)
+    python -m scripts.vault_report                    # every MTH chapter or unit vault file
+    python -m scripts.vault_report MTH-T01-C04 --log  # also log FAILING archetypes to the issue log
 """
 
 from __future__ import annotations
@@ -23,12 +24,15 @@ import argparse
 import glob
 import json
 import os
+import re
 from collections import Counter, defaultdict
 
+from math_engine.ai_drill_ingest import archetype_owner, load_scope_archetypes
 from quality_rules import BLIND_SOLVE_TAGS, demand_level
 from scripts import issues
 
 VAULT_DIR = os.path.join("math_engine", "reasoning_vault")
+_AT_LEVEL = re.compile(r"@L(\d)")
 
 
 def _earned_level(prob: dict) -> int | None:
@@ -45,87 +49,78 @@ def _earned_level(prob: dict) -> int | None:
     return demand_level(bs)
 
 
-def unit_report(unit: str, vault_dir: str = VAULT_DIR, data_root: str = "drills/data", log: str | None = None) -> dict:
-    with open(os.path.join(vault_dir, f"{unit}.json"), encoding="utf-8") as f:
-        archetypes = json.load(f).get("archetypes", [])
-
+def _evidence(data_root: str) -> dict[str, Counter]:
     earned: dict[str, Counter] = defaultdict(Counter)
-    drills: dict[str, set] = defaultdict(set)
-    for path in glob.glob(os.path.join(data_root, unit, "*.json")):
+    for path in glob.glob(os.path.join(data_root, "MTH-*", "*.json")):
         with open(path, encoding="utf-8") as f:
             drill = json.load(f)
         for prob in drill.get("problems", []):
             key, lvl = prob.get("archetypeKey"), _earned_level(prob)
             if key and lvl:
                 earned[key][lvl] += 1
-                drills[key].add(drill.get("drillId") or os.path.basename(path))
+    return earned
 
-    failed: Counter = Counter()
+
+def unit_report(scope: str, vault_dir: str = VAULT_DIR, data_root: str = "drills/data", log: str | None = None) -> dict:
+    archetypes = load_scope_archetypes(scope, vault_dir)
+    earned = _evidence(data_root)
+    failed: dict[str, Counter] = defaultdict(Counter)
     for rec in issues.issues(log):
         if rec.get("kind") != "level":
             continue
+        where = rec.get("where", "")
         for a in archetypes:
-            if a["archetypeKey"] in rec.get("where", ""):
-                failed[a["archetypeKey"]] += 1
+            key = a["archetypeKey"]
+            if re.search(rf"/{re.escape(key)}(@L\d)?$", where):
+                m = _AT_LEVEL.search(where)
+                failed[key][int(m.group(1)) if m else a.get("level")] += 1
 
     rows = []
     for a in archetypes:
-        key, level = a["archetypeKey"], a.get("level")
-        ok = earned[key].get(level, 0) if isinstance(level, int) else 0
-        flag = ""
-        if isinstance(level, int) and level >= 3 and not ok:
-            flag = "FAILING" if failed[key] else "UNPROVEN"
+        key, base = a["archetypeKey"], a.get("level")
+        flags = [f"FAILING@L{lv}" for lv in sorted(failed[key]) if not earned[key].get(lv)]
+        if isinstance(base, int) and base >= 3 and not earned[key].get(base) and not flags:
+            flags.append("UNPROVEN")
         rows.append(
             {
                 "key": key,
-                "level": level,
-                "earned": ok,
-                "earnedOther": {lv: n for lv, n in earned[key].items() if lv != level},
-                "failed": failed[key],
-                "drills": len(drills[key]),
+                "unit": archetype_owner(a),
+                "level": base,
+                "earned": dict(sorted(earned[key].items())),
+                "failed": dict(sorted(failed[key].items())),
                 "levelNote": bool(a.get("levelNote")),
-                "flag": flag,
+                "flags": flags,
             }
         )
-    per_level = Counter(r["level"] for r in rows)
-    thin = sorted(lv for lv, n in per_level.items() if isinstance(lv, int) and n < 2)
-    return {"unit": unit, "rows": rows, "perLevel": dict(sorted(per_level.items())), "thin": thin}
+    return {"unit": scope, "rows": rows}
 
 
 def format_report(rep: dict) -> str:
-    lines = [
-        f"{rep['unit']}: archetypes per level {rep['perLevel']}" + (f"  THIN at L{rep['thin']}" if rep["thin"] else "")
-    ]
-    for r in sorted(rep["rows"], key=lambda r: (r["level"] or 0, r["key"])):
-        other = f" (also earned {r['earnedOther']})" if r["earnedOther"] else ""
-        note = " note" if r["levelNote"] else ""
-        flag = f"  {r['flag']}" if r["flag"] else ""
-        lines.append(f"  L{r['level']} {r['key']}: earned {r['earned']}, failed {r['failed']}{other}{note}{flag}")
+    lines = [f"{rep['unit']}: {len(rep['rows'])} archetypes (earned/failed counts by level)"]
+    for r in sorted(rep["rows"], key=lambda r: (r["unit"], r["level"] or 0, r["key"])):
+        earned = ", ".join(f"L{lv}x{n}" for lv, n in r["earned"].items()) or "none"
+        failed = ", ".join(f"L{lv}x{n}" for lv, n in r["failed"].items())
+        tail = (f"  failed {failed}" if failed else "") + (" note" if r["levelNote"] else "")
+        flags = f"  {' '.join(r['flags'])}" if r["flags"] else ""
+        lines.append(f"  [{r['unit']}] base L{r['level']} {r['key']}: earned {earned}{tail}{flags}")
     return "\n".join(lines)
 
 
 def log_gaps(rep: dict, log: str | None = None) -> list[str]:
-    """Log THIN levels and FAILING archetypes (identical pending records are not duplicated)."""
+    """Log FAILING archetypes (identical pending records are not duplicated)."""
     ids = []
-    for lv in rep["thin"]:
-        iid, _ = issues.add_issue(
-            "brief",
-            "batch",
-            "gate",
-            f"{rep['unit']}/vault L{lv}",
-            f"Vault has fewer than 2 archetypes at L{lv}, so problems at that level repeat one structure; add one",
-            path=log,
-        )
-        ids.append(iid)
     for r in rep["rows"]:
-        if r["flag"] == "FAILING":
+        for flag in r["flags"]:
+            if not flag.startswith("FAILING"):
+                continue
+            lv = flag.split("@L")[1]
             iid, _ = issues.add_issue(
                 "level",
                 "batch",
                 "gate",
-                f"{rep['unit']}/{r['key']}",
-                f"Archetype labelled L{r['level']} has failed its level {r['failed']} time(s) and never earned it; "
-                "redesign it (levelNote) or relabel it",
+                f"{r['unit']}/{r['key']} (vault)",
+                f"Archetype keeps failing at L{lv} and has never earned it; add a levelNote on how to earn L{lv} "
+                "or stop using it at that level",
                 path=log,
             )
             ids.append(iid)
@@ -134,19 +129,19 @@ def log_gaps(rep: dict, log: str | None = None) -> list[str]:
 
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(prog="python -m scripts.vault_report", description=__doc__.split("\n\n")[0])
-    ap.add_argument("unit", nargs="?", help="unit code, e.g. MTH-T01-C04 (default: every MTH vault)")
-    ap.add_argument("--log", action="store_true", help="log THIN levels and FAILING archetypes to the issue log")
+    ap.add_argument("unit", nargs="?", help="unit or chapter code (default: every MTH vault file)")
+    ap.add_argument("--log", action="store_true", help="log FAILING archetypes to the issue log")
     ap.add_argument("--vault-dir", default=VAULT_DIR)
     ap.add_argument("--data-root", default=os.environ.get("DRILLS_DATA_DIR", "drills/data"))
     args = ap.parse_args(argv)
 
-    units = (
+    scopes = (
         [args.unit]
         if args.unit
         else sorted(os.path.basename(p)[:-5] for p in glob.glob(os.path.join(args.vault_dir, "MTH-*.json")))
     )
-    for unit in units:
-        rep = unit_report(unit, args.vault_dir, args.data_root)
+    for scope in scopes:
+        rep = unit_report(scope, args.vault_dir, args.data_root)
         print(format_report(rep))
         if args.log:
             ids = log_gaps(rep)

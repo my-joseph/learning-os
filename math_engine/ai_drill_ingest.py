@@ -9,6 +9,7 @@ Bridges dynamic AI-generated problems in chat into:
 import argparse
 import copy
 import datetime
+import glob
 import json
 import os
 import re
@@ -631,6 +632,39 @@ def get_vault_path(unit_code: str, vault_dir: Optional[str] = None) -> str:
     return os.path.join(dir_path, f"{unit_code}.json")
 
 
+def _vault_dir(vault_dir: Optional[str] = None) -> str:
+    return vault_dir or os.environ.get("REASONING_VAULT_DIR") or VAULT_DIR
+
+
+def archetype_owner(archetype: Dict[str, Any]) -> str:
+    """The unit (or chapter) an archetype belongs to: its `unitCode`, else the vault file it lives in."""
+    return archetype.get("unitCode") or archetype.get("_vaultFile", "")
+
+
+def load_scope_archetypes(code: str, vault_dir: Optional[str] = None) -> List[Dict[str, Any]]:
+    """Archetypes in scope for a drill on `code`, read across every vault file.
+
+    - A unit code (`MTH-T01-C04-U03`) gets only that unit's archetypes, so a unit drill never mixes in another unit.
+    - A chapter code (`MTH-T01-C04`) gets the archetypes of every unit in the chapter (chapter mixed drill).
+    An archetype belongs to its `unitCode`, or, without one, to the vault file it is stored in. Each returned
+    dict carries `_vaultFile` (not saved anywhere) so callers can tell where it lives.
+    """
+    found: List[Dict[str, Any]] = []
+    for path in sorted(glob.glob(os.path.join(_vault_dir(vault_dir), "*.json"))):
+        stem = os.path.basename(path)[:-5]
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                archetypes = json.load(f).get("archetypes", [])
+        except (OSError, ValueError):
+            continue
+        for a in archetypes:
+            a = {**a, "_vaultFile": stem}
+            owner = archetype_owner(a)
+            if owner == code or owner.startswith(code + "-U"):
+                found.append(a)
+    return found
+
+
 def load_reasoning_vault(unit_code: str, vault_dir: Optional[str] = None) -> Dict[str, Any]:
     path = get_vault_path(unit_code, vault_dir=vault_dir)
     if os.path.exists(path):
@@ -672,7 +706,17 @@ def register_archetype(unit_code: str, archetype: Dict[str, Any], vault_dir: Opt
 
 
 def mark_context_used(unit_code: str, archetype_key: str, context_tag: str, vault_dir: Optional[str] = None) -> None:
-    """Marks a context domain as used so future AI generations rotate to fresh domains."""
+    """Marks a context domain as used so future AI generations rotate to fresh domains.
+    Writes to the vault file that holds the archetype (a unit drill may use a chapter vault's archetype)."""
+    holder = next(
+        (
+            a["_vaultFile"]
+            for a in load_scope_archetypes(unit_code, vault_dir)
+            if a.get("archetypeKey") == archetype_key
+        ),
+        unit_code,
+    )
+    unit_code = holder
     vault = load_reasoning_vault(unit_code, vault_dir=vault_dir)
     for a in vault.get("archetypes", []):
         if a.get("archetypeKey") == archetype_key:
@@ -701,7 +745,7 @@ def check_ai_drill(
     if not problems:
         return ["Drill document has no 'problems'."]
 
-    vault_archs = load_reasoning_vault(unit_code, vault_dir=vault_dir).get("archetypes", [])
+    vault_archs = load_scope_archetypes(unit_code, vault_dir=vault_dir)
     errors: List[str] = []
     checked: List[Dict[str, Any]] = []
     for idx, original in enumerate(problems, 1):
@@ -788,8 +832,11 @@ def ingest_ai_drill(
             prob["referenceBadges"] = badges
 
         # Rule 11: auto-attach parametric figure from vault archetype `figureBuilders` (03_stem §3)
-        vault_archs = load_reasoning_vault(unit_code, vault_dir=vault_dir).get("archetypes", [])
+        vault_archs = load_scope_archetypes(unit_code, vault_dir=vault_dir)
         validate_against_vault(prob, vault_archs, unit_code)
+        arch = next((a for a in vault_archs if a.get("archetypeKey") == prob.get("archetypeKey")), None)
+        if arch and "-U" in archetype_owner(arch):
+            prob.setdefault("unitCode", archetype_owner(arch))  # lets a chapter drill link the units it covers
         validate_review(prob)
         autofill_problem_figure(prob, vault_archs)
         require_figure_if_declared(prob, vault_archs)
@@ -882,10 +929,10 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.list_vault:
-        v = load_reasoning_vault(args.unit)
-        print(f"\nReasoning Vault for {args.unit}: {len(v.get('archetypes', []))} archetypes")
-        for a in v.get("archetypes", []):
-            print(f"  [{a.get('level', 1)}] {a.get('archetypeKey')}: {a.get('name')}")
+        archs = load_scope_archetypes(args.unit)
+        print(f"\nReasoning Vault for {args.unit}: {len(archs)} archetypes")
+        for a in archs:
+            print(f"  [{a.get('level', 1)}] {a.get('archetypeKey')} ({archetype_owner(a)}): {a.get('name')}")
             print(f"      Governing: {a.get('governingRelation')}")
             print(f"      Used Contexts: {a.get('usedContexts', [])}")
 

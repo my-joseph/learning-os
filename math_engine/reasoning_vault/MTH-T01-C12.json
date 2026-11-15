@@ -22,7 +22,8 @@
       "usedContexts": [
         "garden_fencing_perimeter",
         "solar_farm_inverter_substation_lot"
-      ]
+      ],
+      "unitCode": "MTH-T01-C12-U04"
     },
     {
       "archetypeKey": "c12-area-rectangles-triangles",
@@ -63,7 +64,8 @@
           },
           "title": "Triangle"
         }
-      ]
+      ],
+      "unitCode": "MTH-T01-C12-U04"
     },
     {
       "archetypeKey": "c12-circle-circumference-diameter",
@@ -92,7 +94,8 @@
           },
           "title": "Circle"
         }
-      ]
+      ],
+      "unitCode": "MTH-T01-C12-U05"
     },
     {
       "archetypeKey": "c12-circle-area",
@@ -133,7 +136,8 @@
           },
           "title": "Circle"
         }
-      ]
+      ],
+      "unitCode": "MTH-T01-C12-U05"
     },
     {
       "archetypeKey": "c12-volume-rectangular-solid",
@@ -184,7 +188,8 @@
           },
           "title": "Rectangular Solid"
         }
-      ]
+      ],
+      "unitCode": "MTH-T01-C12-U06"
     },
     {
       "archetypeKey": "c12-volume-cylinder",
@@ -225,7 +230,8 @@
           },
           "title": "Cylinder"
         }
-      ]
+      ],
+      "unitCode": "MTH-T01-C12-U06"
     },
     {
       "archetypeKey": "c12-complementary-supplementary-angles",
@@ -259,7 +265,8 @@
             "label_known": "{angle:g}^\\circ"
           }
         }
-      ]
+      ],
+      "unitCode": "MTH-T01-C12-U03"
     },
     {
       "archetypeKey": "c12-triangle-angle-sum-invariance",
@@ -289,7 +296,8 @@
             "angle_b": "a2"
           }
         }
-      ]
+      ],
+      "unitCode": "MTH-T01-C12-U03"
     },
     {
       "archetypeKey": "c12-composite-geometric-area-modeling",
@@ -323,7 +331,8 @@
             "tri_height": "tri_ht"
           }
         }
-      ]
+      ],
+      "unitCode": "MTH-T01-C12-U05"
     },
     {
       "archetypeKey": "c12-applied-cylindrical-surface-coating-synthesis",
@@ -357,7 +366,8 @@
           },
           "title": "Cylinder"
         }
-      ]
+      ],
+      "unitCode": "MTH-T01-C12-U06"
     },
     {
       "archetypeKey": "c12-trapezoid-area-modeling",
@@ -395,7 +405,8 @@
           },
           "title": "Trapezoid"
         }
-      ]
+      ],
+      "unitCode": "MTH-T01-C12-U04"
     },
     {
       "archetypeKey": "c12-cone-volume-modeling",
@@ -427,7 +438,8 @@
           },
           "title": "Cone"
         }
-      ]
+      ],
+      "unitCode": "MTH-T01-C12-U06"
     },
     {
       "archetypeKey": "c12-transversal-parallel-angles",
@@ -449,7 +461,8 @@
       "usedContexts": [
         "railroad_switch_transversal_alignment",
         "high_speed_rail_cant_deflection"
-      ]
+      ],
+      "unitCode": "MTH-T01-C12-U03"
     },
     {
       "archetypeKey": "c12-pythagorean-geometric-distance-synthesis",
@@ -473,7 +486,8 @@
       "usedContexts": [
         "warehouse_mezzanine_access_ramp",
         "coastal_breakwater_riprap_triangulation"
-      ]
+      ],
+      "unitCode": "MTH-T01-C12-U03"
     },
     {
       "archetypeKey": "c12-annulus-shaded-region-synthesis",
@@ -495,7 +509,8 @@
       ],
       "usedContexts": [
         "aircraft_turbofan_casing_annulus"
-      ]
+      ],
+      "unitCode": "MTH-T01-C12-U05"
     },
     {
       "archetypeKey": "c12-composite-silo-volume-synthesis",
@@ -517,7 +532,8 @@
       "usedContexts": [
         "agricultural_feed_silo_geometry",
         "brewery_grain_hopper_tower"
-      ]
+      ],
+      "unitCode": "MTH-T01-C12-U06"
     }
   ]
 }

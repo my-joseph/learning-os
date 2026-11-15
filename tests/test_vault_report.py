@@ -1,4 +1,4 @@
-"""scripts/vault_report.py: archetype levels are proven by evidence (ingested drills, issue log), not by hand."""
+"""scripts/vault_report.py: the levels an archetype reaches are proven by evidence (drills, issue log), not by labels."""
 
 import json
 
@@ -13,37 +13,41 @@ L2_TAGS = {**L4_TAGS, "setup": "translate", "check": "none"}
 
 @pytest.fixture
 def env(tmp_path, monkeypatch):
-    log = tmp_path / "log.jsonl"
-    monkeypatch.setenv("LEARNINGOS_ISSUE_LOG", str(log))
+    monkeypatch.setenv("LEARNINGOS_ISSUE_LOG", str(tmp_path / "log.jsonl"))
     vault = tmp_path / "vault"
     vault.mkdir()
     (vault / "MTH-X.json").write_text(
         json.dumps(
             {
                 "archetypes": [
-                    {"archetypeKey": "x-basic", "level": 1},
-                    {"archetypeKey": "x-model", "level": 4, "levelNote": "how it earns L4"},
-                    {"archetypeKey": "x-weak", "level": 4},
-                    {"archetypeKey": "x-untried", "level": 3},
+                    {"archetypeKey": "x-basic", "unitCode": "MTH-X-U01", "level": 1},
+                    {"archetypeKey": "x-model", "unitCode": "MTH-X-U01", "level": 2, "levelNote": "how to reach L4"},
+                    {"archetypeKey": "x-weak", "unitCode": "MTH-X-U02", "level": 4},
+                    {"archetypeKey": "x-untried", "unitCode": "MTH-X-U02", "level": 3},
                 ]
             }
         )
     )
-    data = tmp_path / "data" / "MTH-X"
-    data.mkdir(parents=True)
-    (data / "DRL-MTH-X-01.json").write_text(
+    unit_dir = tmp_path / "data" / "MTH-X-U01"
+    unit_dir.mkdir(parents=True)
+    (unit_dir / "DRL-MTH-X-U01-01.json").write_text(
         json.dumps(
             {
-                "drillId": "DRL-MTH-X-01",
                 "problems": [
                     {"archetypeKey": "x-basic", "level": 1},
-                    {"archetypeKey": "x-model", "level": 4, "blindSolve": L4_TAGS},
-                    {"archetypeKey": "x-weak", "level": 2, "blindSolve": L2_TAGS},
-                ],
+                    {"archetypeKey": "x-model", "level": 2},
+                    {"archetypeKey": "x-model", "level": 4, "blindSolve": L4_TAGS},  # base L2 pushed to L4
+                ]
             }
         )
     )
-    issues.add_issue("level", "batch", "gate", "MTH-X/x-weak", "blind solve reached L2", action="dropped")
+    chapter_dir = tmp_path / "data" / "MTH-X"
+    chapter_dir.mkdir()
+    (chapter_dir / "DRL-MTH-X-01.json").write_text(
+        json.dumps({"problems": [{"archetypeKey": "x-weak", "level": 2, "blindSolve": L2_TAGS}]})
+    )
+    issues.add_issue("level", "batch", "gate", "MTH-X-U02/x-weak@L4", "blind solve reached L2", action="dropped")
+    issues.add_issue("level", "batch", "gate", "MTH-X-U01/x-model@L3", "reached L2", action="dropped")
     return str(vault), str(tmp_path / "data")
 
 
@@ -51,22 +55,27 @@ def _rows(rep):
     return {r["key"]: r for r in rep["rows"]}
 
 
-def test_evidence_and_flags(env):
-    rep = vr.unit_report("MTH-X", *env)
-    rows = _rows(rep)
-    assert rows["x-basic"]["earned"] == 1 and rows["x-basic"]["flag"] == ""
-    assert rows["x-model"]["earned"] == 1 and rows["x-model"]["flag"] == ""
-    assert rows["x-weak"] == {**rows["x-weak"], "earned": 0, "earnedOther": {2: 1}, "failed": 1, "flag": "FAILING"}
-    assert rows["x-untried"]["flag"] == "UNPROVEN"
-    assert rep["thin"] == [1, 3]  # one archetype each at L1 and L3
+def test_evidence_by_level_across_drill_folders(env):
+    rows = _rows(vr.unit_report("MTH-X", *env))
+    assert rows["x-model"]["earned"] == {2: 1, 4: 1} and rows["x-model"]["failed"] == {3: 1}
+    assert rows["x-model"]["flags"] == [
+        "FAILING@L3"
+    ]  # failed L3 and never earned L3 (earning L4 elsewhere is separate)
+    assert rows["x-weak"]["earned"] == {2: 1} and rows["x-weak"]["flags"] == ["FAILING@L4"]
+    assert rows["x-untried"]["flags"] == ["UNPROVEN"]
+    assert rows["x-basic"]["flags"] == []
 
 
-def test_log_gaps_logs_thin_and_failing_once(env):
+def test_unit_scope_reports_only_that_unit(env):
+    assert sorted(_rows(vr.unit_report("MTH-X-U02", *env))) == ["x-untried", "x-weak"]
+
+
+def test_log_gaps_logs_failing_once(env):
     rep = vr.unit_report("MTH-X", *env)
     first = vr.log_gaps(rep)
-    assert len(first) == 3  # THIN L1, THIN L3, FAILING x-weak
-    assert vr.log_gaps(rep) == first  # identical pending records are not duplicated
-    assert "x-weak" in vr.format_report(rep) and "FAILING" in vr.format_report(rep)
+    assert len(first) == 2
+    assert vr.log_gaps(rep) == first
+    assert "FAILING@L4" in vr.format_report(rep)
 
 
 def test_report_runs_on_every_real_vault():

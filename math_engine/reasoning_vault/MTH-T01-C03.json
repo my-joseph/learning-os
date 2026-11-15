@@ -6,7 +6,7 @@
     {
       "archetypeKey": "c03-signed-temperature-elevation-difference",
       "level": 1,
-      "name": "Signed Elevation/Temperature Absolute Range (ความแตกต่างของค่าติดลบและบวกในโลกจริง)",
+      "name": "Signed Elevation/Temperature Absolute Range",
       "coreConcept": "Computing net distance or range between positive and negative values across zero: Delta = y - x.",
       "mentalModel": [
         "1. Identify the reference initial value and terminal value.",
@@ -33,12 +33,13 @@
       ],
       "usedContexts": [
         "deep_sea_bathymetry_trench"
-      ]
+      ],
+      "unitCode": "MTH-T01-C03-U03"
     },
     {
       "archetypeKey": "c03-bank-overdraft-ledger-balance",
       "level": 1,
-      "name": "Bank Overdraft Ledger Cumulative Balance (การบันทึกยอดเงินติดลบและการฝากถอน)",
+      "name": "Bank Overdraft Ledger Cumulative Balance",
       "coreConcept": "Successive deposits (positive) and debits (negative) update an integer balance.",
       "mentalModel": [
         "1. Represent overdrawn balance as a negative integer.",
@@ -65,12 +66,13 @@
       ],
       "usedContexts": [
         "commercial_bank_account_ledger"
-      ]
+      ],
+      "unitCode": "MTH-T01-C03-U02"
     },
     {
       "archetypeKey": "c03-signed-addition-opposite-signs",
       "level": 2,
-      "name": "Signed Addition with Opposite Signs (การบวกจำนวนเต็มต่างเครื่องหมาย)",
+      "name": "Signed Addition with Opposite Signs",
       "coreConcept": "Adding integers of opposite signs requires taking the difference of their absolute values and preserving the sign of the larger magnitude.",
       "mentalModel": [
         "1. Compare absolute values of the two addends.",
@@ -97,12 +99,13 @@
       ],
       "usedContexts": [
         "warehouse_stock_inventory_adjustment"
-      ]
+      ],
+      "unitCode": "MTH-T01-C03-U02"
     },
     {
       "archetypeKey": "c03-signed-subtraction-adding-opposite",
       "level": 2,
-      "name": "Signed Subtraction as Adding the Opposite (การลบจำนวนเต็มด้วยการบวกจำนวนตรงข้าม)",
+      "name": "Signed Subtraction as Adding the Opposite",
       "coreConcept": "Subtracting an integer is algebraically equivalent to adding its additive inverse: a - b = a + (-b).",
       "mentalModel": [
         "1. Identify the minuend and subtrahend.",
@@ -129,12 +132,13 @@
       ],
       "usedContexts": [
         "subterranean_mining_elevator_depth"
-      ]
+      ],
+      "unitCode": "MTH-T01-C03-U03"
     },
     {
       "archetypeKey": "c03-signed-multiplication-parity",
       "level": 2,
-      "name": "Signed Multiplication Parity & Scaling (การคูณจำนวนเต็มและสมบัติเครื่องหมาย)",
+      "name": "Signed Multiplication Parity & Scaling",
       "coreConcept": "The product of two negative integers is strictly positive: (-a) * (-b) = ab.",
       "mentalModel": [
         "1. Count the number of negative signs among the factors.",
@@ -161,12 +165,13 @@
       ],
       "usedContexts": [
         "financial_short_position_valuation"
-      ]
+      ],
+      "unitCode": "MTH-T01-C03-U04"
     },
     {
       "archetypeKey": "c03-signed-quotient-partition",
       "level": 3,
-      "name": "Signed Integer Division Partitioning (การหารจำนวนเต็มลบและเครื่องหมายผลหาร)",
+      "name": "Signed Integer Division Partitioning",
       "coreConcept": "Dividing integers with unlike signs produces a negative quotient: (-A) / B = -(A / B). L3 problem form: show a worked solution that makes the mistake 'Dropping the negative sign, producing a positive quotient (tag `c03-division-sign-inversion-trap`)'; the prompt shows the work as 'Line N: $...$' lines and the learner picks the first wrong line (answerSpec `choice` with `verify.flaw`; asking for the corrected value lets the learner just recompute, 06 §2.3).",
       "mentalModel": [
         "1. Divide absolute magnitudes to find base numerical quotient.",
@@ -193,12 +198,13 @@
       ],
       "usedContexts": [
         "corporate_quarterly_debt_amortization"
-      ]
+      ],
+      "unitCode": "MTH-T01-C03-U04"
     },
     {
       "archetypeKey": "c03-signed-pemdas-hierarchical-evaluation",
       "level": 3,
-      "name": "Signed Order of Operations with Nested Negatives (ลำดับการคำนวณจำนวนเต็มพร้อมวงเล็บและเครื่องหมายลบ)",
+      "name": "Signed Order of Operations with Nested Negatives",
       "coreConcept": "Operator precedence strictly governs expressions with signed values: multiplication precedes subtraction. L3 problem form: show a worked solution that makes the mistake 'Subtracting before multiplying negative factor (tag `c03-pemdas-signed-left-to-right-bias`)'; the prompt shows the work as 'Line N: $...$' lines and the learner picks the first wrong line (answerSpec `choice` with `verify.flaw`; asking for the corrected value lets the learner just recompute, 06 §2.3).",
       "mentalModel": [
         "1. Perform multiplications involving signed factors first.",
@@ -225,12 +231,13 @@
       ],
       "usedContexts": [
         "aerospace_trajectory_acceleration_vector"
-      ]
+      ],
+      "unitCode": "MTH-T01-C03-U04"
     },
     {
       "archetypeKey": "c03-signed-expression-evaluation",
       "level": 3,
-      "name": "Bivariate Signed Algebraic Expression Evaluation (การประเมินค่านิพจน์พีชคณิตจำนวนเต็มสองตัวแปร)",
+      "name": "Bivariate Signed Algebraic Expression Evaluation",
       "coreConcept": "Substituting negative values into algebraic terms requires tracking coefficient signs and double negatives. L3 problem form: show a worked solution that makes the mistake 'Failing to turn subtracting a negative product into addition (tag `c03-double-negative-coefficient-leak`)'; the prompt shows the work as 'Line N: $...$' lines and the learner picks the first wrong line (answerSpec `choice` with `verify.flaw`; asking for the corrected value lets the learner just recompute, 06 §2.3).",
       "mentalModel": [
         "1. Place negative integers into variable grouping parentheses.",
@@ -257,12 +264,13 @@
       ],
       "usedContexts": [
         "structural_truss_stress_analysis"
-      ]
+      ],
+      "unitCode": "MTH-T01-C03-U04"
     },
     {
       "archetypeKey": "c03-signed-linear-equation-two-step",
       "level": 2,
-      "name": "Two-Step Linear Equation with Signed Integers (การแก้สมการเชิงเส้นสองขั้นตอนที่เกี่ยวข้องกับจำนวนเต็มลบ)",
+      "name": "Two-Step Linear Equation with Signed Integers",
       "coreConcept": "Isolating unknown variables in linear equations involving negative coefficients and negative targets.",
       "mentalModel": [
         "1. Subtract constant from both sides to isolate variable term.",
@@ -289,12 +297,13 @@
       ],
       "usedContexts": [
         "autonomous_deep_submersible_ballast"
-      ]
+      ],
+      "unitCode": "MTH-T01-C03-U05"
     },
     {
       "archetypeKey": "c03-conjoint-temperature-depth-synthesis",
       "level": 2,
-      "name": "Multi-Tier Signed Rate Optimization & Net Threshold (แบบจำลองการเปลี่ยนแปลงเชิงอัตราสองมิติของจำนวนเต็ม)",
+      "name": "Multi-Tier Signed Rate Optimization & Net Threshold",
       "coreConcept": "Modeling compound real-world systems starting at sub-zero states undergoing uniform positive rate accumulation.",
       "mentalModel": [
         "1. Set initial condition as negative base integer.",
@@ -321,7 +330,8 @@
       ],
       "usedContexts": [
         "geothermal_wellbore_drilling_telemetry"
-      ]
+      ],
+      "unitCode": "MTH-T01-C03-U04"
     }
   ]
 }

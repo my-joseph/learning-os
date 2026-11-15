@@ -21,7 +21,8 @@
       ],
       "usedContexts": [
         "grocery_price_tally"
-      ]
+      ],
+      "unitCode": "MTH-T01-C10-U02"
     },
     {
       "archetypeKey": "c10-associative-property",
@@ -41,7 +42,8 @@
       ],
       "usedContexts": [
         "network_packet_batching"
-      ]
+      ],
+      "unitCode": "MTH-T01-C10-U02"
     },
     {
       "archetypeKey": "c10-identity-and-inverse-properties",
@@ -61,7 +63,8 @@
       ],
       "usedContexts": [
         "sensor_offset_calibration"
-      ]
+      ],
+      "unitCode": "MTH-T01-C10-U04"
     },
     {
       "archetypeKey": "c10-distributive-property-expansion",
@@ -81,7 +84,8 @@
       ],
       "usedContexts": [
         "wholesale_parts_order"
-      ]
+      ],
+      "unitCode": "MTH-T01-C10-U03"
     },
     {
       "archetypeKey": "c10-properties-of-zero",
@@ -101,7 +105,8 @@
       ],
       "usedContexts": [
         "control_loop_null_signal"
-      ]
+      ],
+      "unitCode": "MTH-T01-C10-U04"
     },
     {
       "archetypeKey": "c10-combining-like-terms-distributive",
@@ -121,7 +126,8 @@
       ],
       "usedContexts": [
         "circuit_mesh_currents"
-      ]
+      ],
+      "unitCode": "MTH-T01-C10-U03"
     },
     {
       "archetypeKey": "c10-order-of-operations-grouping",
@@ -141,7 +147,8 @@
       ],
       "usedContexts": [
         "aerospace_telemetry_scaling"
-      ]
+      ],
+      "unitCode": "MTH-T01-C10-U02"
     },
     {
       "archetypeKey": "c10-multi-step-rational-arithmetic",
@@ -161,7 +168,8 @@
       ],
       "usedContexts": [
         "chemical_mixture_dilution"
-      ]
+      ],
+      "unitCode": "MTH-T01-C10-U01"
     },
     {
       "archetypeKey": "c10-applied-distributive-cost-modeling",
@@ -181,7 +189,8 @@
       ],
       "usedContexts": [
         "cloud_storage_invoice_calculation"
-      ]
+      ],
+      "unitCode": "MTH-T01-C10-U03"
     },
     {
       "archetypeKey": "c10-invariant-property-equivalence-synthesis",
@@ -201,7 +210,8 @@
       ],
       "usedContexts": [
         "cryptographic_checksum_invariance"
-      ]
+      ],
+      "unitCode": "MTH-T01-C10-U04"
     }
   ]
 }
