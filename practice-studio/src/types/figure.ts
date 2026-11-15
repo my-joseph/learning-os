@@ -23,6 +23,7 @@ export interface GeometrySegmentShape {
   type: "segment";
   from: string;
   to: string;
+  arrow?: boolean; // arrowhead at `to` (mapping diagrams)
   stroke?: string;
   strokeWidth?: number;
   strokeDasharray?: string;
@@ -130,6 +131,7 @@ export interface Geometry2DSpec {
   title?: string;
   note?: string; // e.g. "Not to scale" when a label is "?"
   points: Record<string, [number, number]>;
+  hideDots?: string[]; // helper points drawn without a dot (arrow ends, oval centres)
   shapes: GeometryShape[];
   markers?: GeometryMarker[];
   labels?: GeometryLabel[];

@@ -1,4 +1,7 @@
-"""Safe numeric expressions for figures: arithmetic, `^`/`**`, and a few functions, no `eval`.
+"""Safe numeric expressions for figures: arithmetic, `^`/`**`, a few functions and piecewise rules, no `eval`.
+
+Piecewise: `x^2 if x < 0 else 2*x + 1`, chained `-x if x < -1 else (1 if x <= 2 else x - 1)`; comparisons
+may chain (`0 <= x < 2`) and combine with `and`/`or`.
 
 Used by `figure_autofill` (vault `args` such as `sqrt(V/(pi*h))`) and by `figure_builder` (curves such as
 `2*(x-1)^2 - 3`). Names other than the functions below must be supplied as variables.
@@ -22,6 +25,9 @@ FUNCS = {
     "tan": math.tan,
     "floor": math.floor,
     "ceil": math.ceil,
+    "cbrt": lambda v: math.copysign(abs(v) ** (1 / 3), v),  # real cube root, also for negative x
+    "min": min,
+    "max": max,
 }
 CONSTS = {"pi": math.pi, "e": math.e}
 _BIN = {
@@ -32,7 +38,15 @@ _BIN = {
     ast.Pow: operator.pow,
     ast.Mod: operator.mod,
 }
-_UNARY = {ast.USub: operator.neg, ast.UAdd: operator.pos}
+_UNARY = {ast.USub: operator.neg, ast.UAdd: operator.pos, ast.Not: operator.not_}
+_CMP = {
+    ast.Lt: operator.lt,
+    ast.LtE: operator.le,
+    ast.Gt: operator.gt,
+    ast.GtE: operator.ge,
+    ast.Eq: operator.eq,
+    ast.NotEq: operator.ne,
+}
 
 
 def names(expr: str) -> set[str]:
@@ -49,7 +63,22 @@ def compile_expr(expr: str) -> ast.Expression:
                 raise ValueError(f"function not allowed in {expr!r}")
         elif not isinstance(
             node,
-            (ast.Expression, ast.BinOp, ast.UnaryOp, ast.Constant, ast.Name, ast.Load, *_BIN, *_UNARY),
+            (
+                ast.Expression,
+                ast.BinOp,
+                ast.UnaryOp,
+                ast.Constant,
+                ast.Name,
+                ast.Load,
+                ast.IfExp,
+                ast.Compare,
+                ast.BoolOp,
+                ast.And,
+                ast.Or,
+                *_BIN,
+                *_UNARY,
+                *_CMP,
+            ),
         ):
             raise ValueError(f"{type(node).__name__} not allowed in {expr!r}")
         if isinstance(node, ast.Constant) and not isinstance(node.value, (int, float)):
@@ -74,6 +103,19 @@ def _ev(node: ast.AST, env: dict[str, float]) -> float:
         return _UNARY[type(node.op)](_ev(node.operand, env))
     if isinstance(node, ast.Call):
         return float(FUNCS[node.func.id](*(_ev(a, env) for a in node.args)))
+    if isinstance(node, ast.IfExp):
+        return _ev(node.body, env) if _ev(node.test, env) else _ev(node.orelse, env)
+    if isinstance(node, ast.Compare):
+        left = _ev(node.left, env)
+        for op, comp in zip(node.ops, node.comparators):
+            right = _ev(comp, env)
+            if not _CMP[type(op)](left, right):
+                return False
+            left = right
+        return True
+    if isinstance(node, ast.BoolOp):
+        vals = (_ev(v, env) for v in node.values)
+        return all(vals) if isinstance(node.op, ast.And) else any(vals)
     raise ValueError(f"unsupported node {type(node).__name__}")
 
 
@@ -81,6 +123,8 @@ def evaluate(expr: str | ast.Expression, env: dict[str, float] | None = None) ->
     """Value of the expression; raises ValueError/KeyError/ArithmeticError on bad input."""
     tree = expr if isinstance(expr, ast.Expression) else compile_expr(expr)
     val = _ev(tree, env or {})
+    if isinstance(val, bool):
+        raise ValueError("a condition is not a value; write `a if condition else b`")
     if isinstance(val, complex) or not math.isfinite(val):
         raise ArithmeticError("non-finite value")
     return val

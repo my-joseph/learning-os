@@ -149,6 +149,18 @@ export const GeometryRenderer: React.FC<GeometryRendererProps> = ({ spec }) => {
         style={{ maxHeight: "280px" }}
       >
         <defs>
+          <marker
+            id="geo-arrow"
+            viewBox="0 0 10 10"
+            refX="8"
+            refY="5"
+            markerUnits="userSpaceOnUse"
+            markerWidth="11"
+            markerHeight="11"
+            orient="auto-start-reverse"
+          >
+            <path d="M 0 1 L 9 5 L 0 9 z" fill="context-stroke" />
+          </marker>
           <filter id="badge-glow" x="-20%" y="-20%" width="140%" height="140%">
             <feDropShadow dx="0" dy="1" stdDeviation="1.5" floodOpacity="0.1" />
           </filter>
@@ -192,6 +204,7 @@ export const GeometryRenderer: React.FC<GeometryRendererProps> = ({ spec }) => {
                 stroke={shape.stroke || colors.stroke}
                 strokeWidth={shape.strokeWidth || 2}
                 strokeDasharray={shape.strokeDasharray}
+                markerEnd={shape.arrow ? "url(#geo-arrow)" : undefined}
               />
             );
           }
@@ -269,7 +282,7 @@ export const GeometryRenderer: React.FC<GeometryRendererProps> = ({ spec }) => {
         {/* 3. Point Vertices Dots */}
         {Object.entries(spec.points || {}).map(([key]) => {
           const pt = getPt(key);
-          if (!pt) return null;
+          if (!pt || spec.hideDots?.includes(key)) return null;
 
           return (
             <circle
@@ -365,6 +378,26 @@ export const GeometryRenderer: React.FC<GeometryRendererProps> = ({ spec }) => {
                   >
                     <FormattedText text={formatted} />
                   </div>
+                </div>
+              </foreignObject>
+            );
+          }
+
+          if (label.type === "free") {
+            const [fx, fy] = toSvg(label.coord);
+            return (
+              <foreignObject
+                key={`lbl-free-${idx}`}
+                x={fx - 55}
+                y={fy - 14}
+                width={110}
+                height={28}
+                className="overflow-visible pointer-events-none"
+              >
+                <div className="w-full h-full flex items-center justify-center">
+                  <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">
+                    <FormattedText text={label.text.startsWith("$") ? label.text : `$${label.text}$`} />
+                  </span>
                 </div>
               </foreignObject>
             );
