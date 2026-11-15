@@ -43,6 +43,7 @@ import {
 import { ProblemCard } from "@/components/ProblemCard";
 import { QuizPaginationBar } from "@/components/QuizPaginationBar";
 import { FormattedText } from "@/components/FormattedText";
+import { ExpandablePrompt } from "@/components/ExpandablePrompt";
 
 export default function PracticeStudioPage() {
   const [drills, setDrills] = useState<DrillListItem[]>([]);
@@ -737,7 +738,11 @@ export default function PracticeStudioPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#0d1017] text-slate-900 dark:text-slate-100 p-3 md:p-5 lg:p-6 transition-colors">
-      <div className="max-w-5xl mx-auto">
+      <div
+        className={`mx-auto transition-[max-width] duration-200 ${
+          viewMode === "review" ? "max-w-7xl" : "max-w-5xl"
+        }`}
+      >
         {/* ===================================================================== */}
         {/* SINGLE UNIFIED STICKY WORKSPACE BAR (Strictly 2 Rows, Auto-hides)     */}
         {/* ===================================================================== */}
@@ -1347,150 +1352,167 @@ export default function PracticeStudioPage() {
                   Question-by-Question Breakdown (Click to adjust scores, Mistake Tags, or custom notes)
                 </div>
 
-                {currentDrill.problems.map((prob, idx) => {
-                  const pScore = prob.state.score;
-                  const isSkipped = Boolean(prob.state.skipped);
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 items-stretch">
+                  {currentDrill.problems.map((prob, idx) => {
+                    const pScore = prob.state.score;
+                    const isSkipped = Boolean(prob.state.skipped);
+                    const mistakeTags = currentDrill.mistakeTags || [];
 
-                  // Status-based soft background & border tint for rapid visual scanning
-                  let statusCardCls =
-                    "bg-slate-50/80 dark:bg-[#10141f] border-slate-200 dark:border-[#2c354d]";
-                  if (!isSkipped && pScore === 1) {
-                    statusCardCls =
-                      "bg-emerald-50/75 dark:bg-emerald-950/25 border-emerald-200 dark:border-emerald-500/35";
-                  } else if (!isSkipped && pScore === 0.5) {
-                    statusCardCls =
-                      "bg-amber-50/75 dark:bg-amber-950/25 border-amber-200 dark:border-amber-500/35";
-                  } else if (!isSkipped && pScore === 0) {
-                    statusCardCls =
-                      "bg-rose-50/75 dark:bg-rose-950/25 border-rose-200 dark:border-rose-500/35";
-                  }
+                    // Status-based soft background & border tint for rapid visual scanning
+                    let statusCardCls =
+                      "bg-slate-50/80 dark:bg-[#10141f] border-slate-200 dark:border-[#2c354d]";
+                    if (!isSkipped && pScore === 1) {
+                      statusCardCls =
+                        "bg-emerald-50/75 dark:bg-emerald-950/25 border-emerald-200 dark:border-emerald-500/35";
+                    } else if (!isSkipped && pScore === 0.5) {
+                      statusCardCls =
+                        "bg-amber-50/75 dark:bg-amber-950/25 border-amber-200 dark:border-amber-500/35";
+                    } else if (!isSkipped && pScore === 0) {
+                      statusCardCls =
+                        "bg-rose-50/75 dark:bg-rose-950/25 border-rose-200 dark:border-rose-500/35";
+                    }
 
-                  return (
-                    <div
-                      key={prob.id}
-                      className={`p-4 border rounded-xl space-y-3 transition-colors ${statusCardCls}`}
-                    >
-                      <div className="flex flex-wrap items-start justify-between gap-2">
-                        <div className="flex-1 min-w-[240px]">
-                          <div className="flex flex-wrap items-center gap-2 mb-1">
+                    return (
+                      <div
+                        key={prob.id}
+                        className={`min-w-0 p-3.5 border rounded-xl flex flex-col justify-between gap-2.5 transition-colors ${statusCardCls}`}
+                      >
+                        <div className="min-w-0 space-y-2">
+                          {/* Card Header: Question Link + Inline Score Selector */}
+                          <div className="flex items-center justify-between gap-2">
                             <button
                               type="button"
                               onClick={() => {
                                 setCurrentProblemIndex(idx);
                                 setViewMode("quiz");
                               }}
-                              className="inline-flex items-center gap-1 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline font-mono"
+                              className="inline-flex items-center gap-1 min-w-0 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline font-mono"
                             >
-                              <span>
-                                Question {idx + 1} ({prob.id})
+                              <span className="truncate">
+                                Q{idx + 1} ({prob.id})
                               </span>
-                              <ArrowUpRight className="w-3.5 h-3.5" />
+                              <ArrowUpRight className="w-3.5 h-3.5 shrink-0" />
                             </button>
-                            {isSkipped && (
-                              <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300 font-medium">
-                                Skipped
-                              </span>
-                            )}
-                            {typeof prob.state.divergedStep === "number" && (
-                              <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-rose-100 dark:bg-rose-500/20 text-rose-800 dark:text-rose-300 font-medium">
-                                <Flag className="w-3 h-3" />
-                                Diverged at Step {prob.state.divergedStep + 1}
-                              </span>
-                            )}
+
+                            <div className="flex items-center gap-1 shrink-0">
+                              {[
+                                {
+                                  val: 1,
+                                  label: "1.0",
+                                  cls: "bg-emerald-600 text-white border-emerald-600",
+                                },
+                                {
+                                  val: 0.5,
+                                  label: "0.5",
+                                  cls: "bg-amber-600 text-white border-amber-600",
+                                },
+                                {
+                                  val: 0,
+                                  label: "0",
+                                  cls: "bg-rose-600 text-white border-rose-600",
+                                },
+                              ].map((btn) => (
+                                <button
+                                  key={btn.val}
+                                  type="button"
+                                  onClick={() => handleSetScore(prob.id, btn.val)}
+                                  className={`h-7 px-2 rounded-lg text-[11px] font-semibold border transition-colors ${
+                                    pScore === btn.val
+                                      ? btn.cls
+                                      : "bg-white/90 dark:bg-[#1d2333] text-slate-600 dark:text-slate-300 border-slate-200 dark:border-[#2c354d]"
+                                  }`}
+                                >
+                                  {btn.label}
+                                </button>
+                              ))}
+                            </div>
                           </div>
-                          <div className="text-xs md:text-sm text-slate-700 dark:text-slate-300 line-clamp-2">
-                            <FormattedText text={prob.prompt} />
-                          </div>
-                          <div className="mt-1.5 text-xs font-mono text-slate-500 dark:text-slate-400">
-                            Your Answer:{" "}
-                            <strong className="text-slate-800 dark:text-slate-200">
-                              {prob.state.userInput ||
-                                (prob.state.lastTestReport
-                                  ? `${prob.state.lastTestReport.passedCount}/${prob.state.lastTestReport.totalCount} Tests Passed`
-                                  : "(Unanswered)")}
-                            </strong>{" "}
-                            · Verified Answer:{" "}
-                            <strong className="text-emerald-700 dark:text-emerald-400">
-                              {prob.answerPlain || prob.answerDisplay}
-                            </strong>
+
+                          {/* Status Badges */}
+                          {(isSkipped || typeof prob.state.divergedStep === "number") && (
+                            <div className="flex flex-wrap items-center gap-1.5">
+                              {isSkipped && (
+                                <span className="text-[11px] px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300 font-medium">
+                                  Skipped
+                                </span>
+                              )}
+                              {typeof prob.state.divergedStep === "number" && (
+                                <span className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-rose-100 dark:bg-rose-500/20 text-rose-800 dark:text-rose-300 font-medium">
+                                  <Flag className="w-3 h-3" />
+                                  Diverged at Step {prob.state.divergedStep + 1}
+                                </span>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Prompt Preview */}
+                          <ExpandablePrompt
+                            key={`${currentDrill.drillId}-${prob.id}`}
+                            text={prob.prompt}
+                          />
+
+                          {/* Stacked Answer Comparison */}
+                          <div className="space-y-1 pt-0.5 text-[11px] font-mono text-slate-500 dark:text-slate-400">
+                            <div className="break-words">
+                              <span>Your Answer: </span>
+                              <strong className="text-slate-800 dark:text-slate-200">
+                                {prob.state.userInput ||
+                                  (prob.state.lastTestReport
+                                    ? `${prob.state.lastTestReport.passedCount}/${prob.state.lastTestReport.totalCount} Tests Passed`
+                                    : "(Unanswered)")}
+                              </strong>
+                            </div>
+                            <div className="break-words">
+                              <span>Verified: </span>
+                              <strong className="text-emerald-700 dark:text-emerald-400">
+                                {prob.answerPlain || prob.answerDisplay}
+                              </strong>
+                            </div>
                           </div>
                         </div>
 
-                        {/* Inline Score Selector */}
-                        <div className="flex items-center gap-1.5 shrink-0">
-                          <span className="text-xs text-slate-500 dark:text-slate-400 mr-1">
-                            Score:
-                          </span>
-                          {[
-                            {
-                              val: 1,
-                              label: "1.0",
-                              cls: "bg-emerald-600 text-white border-emerald-600",
-                            },
-                            {
-                              val: 0.5,
-                              label: "0.5",
-                              cls: "bg-amber-600 text-white border-amber-600",
-                            },
-                            {
-                              val: 0,
-                              label: "0",
-                              cls: "bg-rose-600 text-white border-rose-600",
-                            },
-                          ].map((btn) => (
-                            <button
-                              key={btn.val}
-                              type="button"
-                              onClick={() => handleSetScore(prob.id, btn.val)}
-                              className={`h-8 px-2.5 rounded-lg text-xs font-semibold border transition-colors ${
-                                pScore === btn.val
-                                  ? btn.cls
-                                  : "bg-white/90 dark:bg-[#1d2333] text-slate-600 dark:text-slate-300 border-slate-200 dark:border-[#2c354d]"
-                              }`}
-                            >
-                              {btn.label}
-                            </button>
-                          ))}
+                        {/* Inline Mistake Tags & Custom Mistake Note */}
+                        <div className="mt-auto pt-2.5 border-t border-slate-200/70 dark:border-[#1f283d] space-y-2">
+                          {mistakeTags.length > 0 && (
+                            <div className="flex flex-wrap items-center gap-1">
+                              <span className="text-[11px] text-slate-500 dark:text-slate-400 mr-0.5">
+                                Tags:
+                              </span>
+                              {mistakeTags.map((t) => {
+                                const hasTag = prob.state.mistakes.includes(t.id);
+                                return (
+                                  <button
+                                    key={t.id}
+                                    type="button"
+                                    onClick={() => handleToggleMistakeTag(prob.id, t.id)}
+                                    className={`min-h-[24px] py-0.5 px-2.5 rounded-full text-[11px] font-medium border transition-colors inline-flex items-center ${
+                                      hasTag
+                                        ? "bg-rose-100 dark:bg-rose-500/20 text-rose-800 dark:text-rose-300 border-rose-300 dark:border-rose-500/50 font-semibold"
+                                        : "bg-white/90 dark:bg-[#1d2333] text-slate-600 dark:text-slate-400 border-slate-200 dark:border-[#2c354d]"
+                                    }`}
+                                  >
+                                    <FormattedText text={t.label} />
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          )}
+
+                          <div className="flex items-center gap-2 bg-white/90 dark:bg-[#151924] border border-slate-200 dark:border-[#2c354d] rounded-lg px-2.5 py-1.5">
+                            <PenLine className="w-3.5 h-3.5 text-rose-500 dark:text-rose-400 shrink-0" />
+                            <input
+                              type="text"
+                              value={prob.state.mistakeNote || ""}
+                              onChange={(e) => handleMistakeNoteChange(prob.id, e.target.value)}
+                              placeholder={`Mistake note for Q${idx + 1}...`}
+                              className="w-full min-w-0 bg-transparent text-xs text-slate-800 dark:text-slate-200 placeholder:text-slate-400 focus:outline-none"
+                            />
+                          </div>
                         </div>
                       </div>
-
-                      {/* Inline Mistake Tags & Custom Mistake Note */}
-                      <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-slate-200/70 dark:border-[#1f283d]">
-                        <span className="text-xs text-slate-500 dark:text-slate-400 mr-1">
-                          Mistake Tags:
-                        </span>
-                        {(currentDrill.mistakeTags || []).map((t) => {
-                          const hasTag = prob.state.mistakes.includes(t.id);
-                          return (
-                            <button
-                              key={t.id}
-                              type="button"
-                              onClick={() => handleToggleMistakeTag(prob.id, t.id)}
-                              className={`min-h-[28px] py-1 px-3 rounded-full text-xs font-medium border transition-colors inline-flex items-center ${
-                                hasTag
-                                  ? "bg-rose-100 dark:bg-rose-500/20 text-rose-800 dark:text-rose-300 border-rose-300 dark:border-rose-500/50 font-semibold"
-                                  : "bg-white/90 dark:bg-[#1d2333] text-slate-600 dark:text-slate-400 border-slate-200 dark:border-[#2c354d]"
-                              }`}
-                            >
-                              <FormattedText text={t.label} />
-                            </button>
-                          );
-                        })}
-                      </div>
-
-                      <div className="flex items-center gap-2 bg-white/90 dark:bg-[#151924] border border-slate-200 dark:border-[#2c354d] rounded-lg px-3 py-1.5">
-                        <PenLine className="w-3.5 h-3.5 text-rose-500 dark:text-rose-400 shrink-0" />
-                        <input
-                          type="text"
-                          value={prob.state.mistakeNote || ""}
-                          onChange={(e) => handleMistakeNoteChange(prob.id, e.target.value)}
-                          placeholder={`Add custom mistake note for Question ${idx + 1} (editable before sync)...`}
-                          className="w-full bg-transparent text-xs text-slate-800 dark:text-slate-200 placeholder:text-slate-400 focus:outline-none"
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
 
               {/* Bottom Confirm Bar */}
