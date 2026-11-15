@@ -925,8 +925,9 @@ export default function PracticeStudioPage() {
                 </a>
               )}
 
-              {/* Tucked Pre-Generation Config Popover (+ Generate) */}
-              <div className="relative shrink-0" ref={genPopoverRef}>
+              {/* Tucked Pre-Generation Config Popover (+ Generate). Hidden: it runs the deprecated template
+                  generator (math_engine.generate); drills are made with the new-math-drill skill instead. */}
+              <div className="relative shrink-0 hidden" ref={genPopoverRef}>
                 <button
                   type="button"
                   onClick={() => setShowGenPopover(!showGenPopover)}

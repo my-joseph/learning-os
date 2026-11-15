@@ -54,3 +54,30 @@ def test_sync_links_every_unit_a_drill_covers():
     chapter_drill = {"problems": [{"unitCode": "MTH-T09-C01-U02"}, {"unitCode": "MTH-T09-C01-U01"}, {}]}
     assert unit_relation_ids(chapter_drill, "MTH-T09-C01", id_map) == ["p2", "p1"]
     assert unit_relation_ids({"problems": [{}]}, "MTH-T09-C01-U01", id_map) == ["p1"]
+
+
+def test_update_unit_reviews_writes_only_pages_with_review_fields(monkeypatch):
+    from notion_sync import drill_sync
+
+    calls = []
+
+    def fake_request(method, endpoint, token, payload=None):
+        calls.append((method, endpoint, payload))
+        if method == "GET":
+            has = endpoint.endswith("p1")
+            return {
+                "properties": {"Mastery (0-4)": {"number": None}, "Last Reviewed": {}, "Next Review": {}} if has else {}
+            }
+        return {}
+
+    monkeypatch.setattr(drill_sync, "notion_request", fake_request)
+    import scripts.weak_spots as ws
+
+    monkeypatch.setattr(
+        ws, "review_update", lambda unit, cur, d: {"mastery": 2, "lastReviewed": d, "nextReview": "2026-11-15"}
+    )
+    id_map = {"U1": {"id": "p1"}, "U2": {"id": "p2"}}
+    out = drill_sync.update_unit_reviews(["U1", "U2"], "2026-11-10", id_map, "tok")
+    assert out == {"U1": {"mastery": 2, "lastReviewed": "2026-11-10", "nextReview": "2026-11-15"}}
+    patch = [c for c in calls if c[0] == "PATCH"]
+    assert len(patch) == 1 and patch[0][2]["properties"]["Mastery (0-4)"] == {"number": 2}
