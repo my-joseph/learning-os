@@ -1,12 +1,4 @@
 {
-  "DRILLS_DB": {
-    "id": "40d3818f-8ba0-8125-8cae-ea0de6183186",
-    "title": "Learning Practice & Drills"
-  },
-  "CONCEPT_VAULT_DB": {
-    "id": "4103818f-8ba0-8164-aa0d-eeb2d6cb65b0",
-    "title": "Concept Vault"
-  },
   "PRG-T09": {
     "id": "40c3818f-8ba0-8170-8e0e-c74a4451b116",
     "title": "Deployment, Docker & Cloud"
@@ -2316,25 +2308,17 @@
     "title": "MDN – HTML",
     "url": "https://developer.mozilla.org/en-US/docs/Web/HTML"
   },
-  "CON-WEBSOCKET": {
-    "id": "4103818f-8ba0-8158-8e79-f89d21a435a6",
-    "title": "WebSocket Protocol"
+  "DRL-MTH-T02-C02-U07-01": {
+    "id": "41a3818f-8ba0-819b-86c4-e28fed346d35",
+    "title": "Inverse Functions — Verified Math Drill (3 Qs · AI Synthesized Reasoning Mode)"
   },
-  "CON-HTTP": {
-    "id": "4103818f-8ba0-81cc-97b0-d1c9e6f29250",
-    "title": "HTTP Protocol Anatomy"
+  "DRL-PRG-T02-C01-U06-01": {
+    "id": "41a3818f-8ba0-8124-9d16-dfa210834cc6",
+    "title": "Refs and DOM Access — Verified Programming Drill (4 Qs · AI Synthesized Engineering Mode)"
   },
-  "CON-TLS": {
-    "id": "4103818f-8ba0-815a-bb7d-ec9b6065d062",
-    "title": "TLS & Modern Encryption"
-  },
-  "CON-TCP-HANDSHAKE": {
-    "id": "4103818f-8ba0-817c-812d-f5f53fa78b71",
-    "title": "TCP 3-Way Handshake"
-  },
-  "CON-DNS": {
-    "id": "4103818f-8ba0-81a9-80f2-dd2f28af9a2c",
-    "title": "DNS (Domain Name System)"
+  "DRL-PRG-T01-C02-U04-01": {
+    "id": "41a3818f-8ba0-817b-8ab3-c61b0690eb22",
+    "title": "Unknown Boundaries and Complete Type Predicates — Verified Programming Drill (5 Qs · AI Synthesized Engineering Mode)"
   },
   "DRL-MTH-T02-C02-U07-01": {
     "id": "41a3818f-8ba0-819b-86c4-e28fed346d35",
@@ -2487,9 +2471,5 @@
   "DRL-PRG-T00-C03-02": {
     "id": "4153818f-8ba0-81e9-bac2-f9f97bbbe5c5",
     "title": "JavaScript & TypeScript Baseline — Verified Programming Drill (10 Qs · AI Synthesized Engineering Mode)"
-  },
-  "DRL-PRG-T01-C02-U03-01": {
-    "id": "41a3818f-8ba0-81f8-b386-d15b82d6ed1b",
-    "title": "Discriminated Unions and Type Narrowing — Verified Programming Drill (5 Qs · AI Synthesized Engineering Mode)"
   }
 }
