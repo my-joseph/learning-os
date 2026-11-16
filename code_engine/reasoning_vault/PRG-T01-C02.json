@@ -430,6 +430,216 @@
           }
         }
       ]
+    },
+    {
+      "archetypeKey": "prg-t01-c02-u03-discriminated-domain-unions",
+      "unitCode": "PRG-T01-C02-U03",
+      "level": 1,
+      "archetype": "problem-solving",
+      "name": "Discriminated Domain Unions",
+      "competencies": [
+        "union-types",
+        "literal-discriminants",
+        "domain-state-modeling"
+      ],
+      "coreConcept": "Represent mutually exclusive domain states as separate object types connected by a literal discriminant, then narrow before reading member-specific fields.",
+      "mentalModel": [
+        "1. Each union member is one valid domain state.",
+        "2. A shared literal discriminant identifies which member is present at runtime.",
+        "3. Narrow on that discriminant before accessing state-specific data."
+      ],
+      "governingInvariant": "Every state-specific field access is dominated by a check that narrows the value to the member declaring that field.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "optional-property-bag-state",
+          "name": "Optional Property Bag for Exclusive States",
+          "description": "Modeling mutually exclusive states as one type with many optional fields permits contradictory or incomplete combinations.",
+          "reproducer": "type Payment = { kind: string; authCode?: string; receiptId?: string; reason?: string };"
+        },
+        {
+          "trapTag": "un-narrowed-union-member-access",
+          "name": "Member Field Access Before Narrowing",
+          "description": "Reading a property that exists on only some members before checking the discriminant violates the union guarantee.",
+          "reproducer": "function idOf(state: PaymentState) { return state.receiptId; }"
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "payment_state_record",
+          "description": "Represent authorized, captured, and declined payment outcomes with distinct data."
+        },
+        {
+          "domain": "media_processing_job",
+          "description": "Represent queued, processing, completed, and failed media jobs as explicit states."
+        }
+      ],
+      "usedContexts": [
+        "payment_state_record",
+        "media_processing_job"
+      ],
+      "source": "TypeScript Handbook: Narrowing — Discriminated Unions",
+      "qualityChecks": [
+        {
+          "id": "QC-prg-t01-c02-u03-discriminant-narrowing",
+          "check": "Read a member-specific field only after a valid discriminant or equivalent guard narrows the union to the declaring member.",
+          "why": "A union promises that one of its members is present, not that every member-specific property exists.",
+          "severity": "must",
+          "knownBad": {
+            "code": "type PaymentState = { kind: 'captured'; receiptId: string } | { kind: 'declined'; reason: string };\nfunction receipt(state: PaymentState): string { return state.receiptId; }",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-prg-t01-c02-u03-no-optional-state-bag",
+          "check": "Represent mutually exclusive domain states as separate object members instead of a loose object with unrelated optional state fields.",
+          "why": "Separate members make impossible combinations harder to construct and give each narrowed branch an accurate contract.",
+          "severity": "should",
+          "knownBad": {
+            "code": "type PaymentState = { kind: string; receiptId?: string; reason?: string };",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "prg-t01-c02-u03-exhaustive-state-handlers",
+      "unitCode": "PRG-T01-C02-U03",
+      "level": 2,
+      "archetype": "refactoring",
+      "name": "Exhaustive State Handlers",
+      "competencies": [
+        "union-narrowing",
+        "exhaustive-switch",
+        "state-transition-review"
+      ],
+      "coreConcept": "Handle every member of a discriminated union and make additions to the domain state visible at the handler boundary.",
+      "mentalModel": [
+        "1. Narrow using the shared discriminant.",
+        "2. Give each state an explicit branch with its state-specific behavior.",
+        "3. Use a `never` check when the handler must fail compilation after a new member is added."
+      ],
+      "governingInvariant": "A handler accounts for every member in the declared union; exhaustive handlers use a never-typed remainder rather than silently treating it as a generic fallback.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "silent-nonexhaustive-default",
+          "name": "Silent Non-Exhaustive Default",
+          "description": "A broad default branch can accept a newly added state without implementing the required behavior.",
+          "reproducer": "default: return 'unknown';"
+        },
+        {
+          "trapTag": "missing-union-member-branch",
+          "name": "Missing State Branch",
+          "description": "Omitting one current union member leaves it unhandled or routed through unrelated behavior.",
+          "reproducer": "switch (job.kind) { case 'queued': return 'waiting'; case 'done': return 'ready'; }"
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "media_processing_job",
+          "description": "Update status labels and actions for each processing lifecycle state."
+        },
+        {
+          "domain": "warehouse_dispatch_state",
+          "description": "Handle staged, loaded, dispatched, and cancelled orders exhaustively."
+        }
+      ],
+      "usedContexts": [
+        "media_processing_job",
+        "warehouse_dispatch_state"
+      ],
+      "source": "TypeScript Handbook: Narrowing — Exhaustiveness Checking",
+      "qualityChecks": [
+        {
+          "id": "QC-prg-t01-c02-u03-exhaustive-switch",
+          "check": "Handle every declared discriminant member in a state handler, with a compile-time remainder check when future members must not fall through silently.",
+          "why": "A new state should cause the relevant handler to be revisited rather than inherit unrelated fallback behavior.",
+          "severity": "must",
+          "knownBad": {
+            "code": "type JobState = { kind: 'queued' } | { kind: 'done' } | { kind: 'failed' };\nfunction label(job: JobState): string { switch (job.kind) { case 'queued': return 'waiting'; case 'done': return 'ready'; default: return 'other'; } }",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-prg-t01-c02-u03-never-remainder",
+          "check": "Use a `never`-typed remainder or equivalent compile-time check when the handler's contract requires exhaustive coverage.",
+          "why": "The remainder becomes non-never when an unhandled member is added, producing a local compiler signal.",
+          "severity": "should",
+          "knownBad": {
+            "code": "function assertNever(value: never): never { throw new Error(String(value)); }\nfunction label(job: JobState): string { switch (job.kind) { case 'queued': return 'waiting'; default: return assertNever(job); } }",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "prg-t01-c02-u03-union-collection-shapes",
+      "unitCode": "PRG-T01-C02-U03",
+      "level": 2,
+      "archetype": "problem-solving",
+      "name": "Union Collection Shapes and Shared Members",
+      "competencies": [
+        "union-collection-semantics",
+        "shared-member-access",
+        "safe-narrowing"
+      ],
+      "coreConcept": "Distinguish an array containing a union of values from a union of homogeneous arrays, and use only members guaranteed across a union until narrowing.",
+      "mentalModel": [
+        "1. Parentheses determine whether the union is inside each array element or outside the whole array.",
+        "2. A union value exposes only members common to every alternative before narrowing.",
+        "3. Narrow the container or element according to the operation the domain needs."
+      ],
+      "governingInvariant": "The type groups values at the same level as the actual data contract: mixed elements use `(A | B)[]`; alternatives of homogeneous collections use `A[] | B[]`.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "mixed-vs-homogeneous-array-union",
+          "name": "Mixed Array vs. Union of Homogeneous Arrays",
+          "description": "Confusing `(A | B)[]` with `A[] | B[]` changes whether different element kinds can coexist.",
+          "reproducer": "type Batch = string[] | number[]; const batch: Batch = ['ready', 3];"
+        },
+        {
+          "trapTag": "un-narrowed-union-common-member",
+          "name": "Using a Non-Shared Member",
+          "description": "Calling a member available only on one union alternative without first narrowing is unsafe.",
+          "reproducer": "function size(value: string | number) { return value.length; }"
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "telemetry_payload_batch",
+          "description": "Represent a batch of mixed typed telemetry values versus a batch whose entire payload uses one encoding."
+        },
+        {
+          "domain": "search_result_projection",
+          "description": "Read shared ranking metadata before narrowing result variants to document or person records."
+        }
+      ],
+      "usedContexts": [
+        "telemetry_payload_batch",
+        "search_result_projection"
+      ],
+      "source": "TypeScript Handbook: Everyday Types — Union Types",
+      "qualityChecks": [
+        {
+          "id": "QC-prg-t01-c02-u03-array-union-grouping",
+          "check": "Choose `(A | B)[]` for mixed element arrays and `A[] | B[]` for a collection that is wholly one element type, matching the stated data contract.",
+          "why": "The placement of the union changes which element sequences are representable and which array operations are safe.",
+          "severity": "must",
+          "knownBad": {
+            "code": "type Batch = string[] | number[];\nconst mixed: Batch = ['sensor-7', 12];",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-prg-t01-c02-u03-shared-union-members",
+          "check": "Before narrowing a union value, access only members present on every alternative.",
+          "why": "A value may be any member of the union, so a non-shared property is not guaranteed until a runtime check selects a member.",
+          "severity": "should",
+          "knownBad": {
+            "code": "function label(value: string | number): string { return value.toUpperCase(); }",
+            "caughtBy": "review"
+          }
+        }
+      ]
     }
   ]
 }
