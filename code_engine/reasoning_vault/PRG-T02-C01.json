@@ -276,7 +276,12 @@
           }
         }
       ],
-      "usedContexts": []
+      "usedContexts": [
+        "claims_portal_validation_focus",
+        "warehouse_bin_scan_capture",
+        "support_ticket_activity_feed",
+        "analytics_dashboard_filter_panel"
+      ]
     },
     {
       "archetypeKey": "prg-t02-c01-u07-custom-hooks",
