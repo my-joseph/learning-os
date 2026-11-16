@@ -1080,6 +1080,146 @@
           }
         }
       ]
+    },
+    {
+      "archetypeKey": "prg-t01-c02-u07-explicit-result-variants",
+      "unitCode": "PRG-T01-C02-U07",
+      "level": 1,
+      "archetype": "problem-solving",
+      "name": "Explicit Result Variants and Safe Narrowing",
+      "competencies": [
+        "discriminated-unions",
+        "literal-discriminants",
+        "safe-member-access"
+      ],
+      "coreConcept": "Represent mutually exclusive API outcomes as separate object variants with one shared literal field, then narrow by that field before using variant-specific data.",
+      "mentalModel": [
+        "1. Each object variant describes one valid outcome and the data that outcome owns.",
+        "2. The common literal field identifies which outcome arrived.",
+        "3. A branch on that field narrows the whole object before reading its payload."
+      ],
+      "governingInvariant": "A member-specific field is read only after the shared literal discriminant has narrowed the value to the variant that declares it.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "optional-property-bag-state",
+          "name": "Optional Property Bag for Exclusive Outcomes",
+          "description": "One object with a broad string state and optional success/error payloads permits contradictory combinations that do not correspond to any valid outcome.",
+          "reproducer": "type Result = { state: string; value?: Invoice; message?: string };"
+        },
+        {
+          "trapTag": "un-narrowed-union-member-access",
+          "name": "Reading Payload Before Narrowing",
+          "description": "Reading a field that exists on only one result variant before checking the discriminant assumes that every result carries that field.",
+          "reproducer": "function valueOf(result: Result) { return result.value; }"
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "shipment_tracking_result",
+          "description": "Represent a shipment lookup that may be loading, found, or not found, with state-specific data."
+        },
+        {
+          "domain": "catalog_import_outcome",
+          "description": "Represent accepted and rejected rows from a catalog import with distinct payloads."
+        }
+      ],
+      "usedContexts": [
+        "catalog_import_outcome",
+        "media_playback_status"
+      ],
+      "source": "TypeScript Handbook: Narrowing — Discriminated Unions",
+      "qualityChecks": [
+        {
+          "id": "QC-prg-t01-c02-u07-discriminant-narrowing",
+          "check": "Read a member-specific field only after a valid literal discriminant or equivalent guard narrows the union to the member that declares the field.",
+          "why": "A union guarantees one declared member is present, not that every variant-specific payload exists.",
+          "severity": "must",
+          "knownBad": {
+            "code": "type ShipmentResult = { kind: 'found'; trackingCode: string } | { kind: 'missing'; reason: string };\nfunction label(result: ShipmentResult): string { return result.trackingCode; }",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-prg-t01-c02-u07-no-optional-outcome-bag",
+          "check": "Represent mutually exclusive outcomes as separate union members instead of unrelated optional payload fields on a broad object.",
+          "why": "Separate variants prevent impossible combinations and let the compiler describe the payload available in each state.",
+          "severity": "should",
+          "knownBad": {
+            "code": "type ImportResult = { state: string; acceptedRows?: number; rejectionReason?: string };",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "prg-t01-c02-u07-exhaustive-result-handlers",
+      "unitCode": "PRG-T01-C02-U07",
+      "level": 2,
+      "archetype": "refactoring",
+      "name": "Exhaustive Result Handlers with Never",
+      "competencies": [
+        "discriminated-unions",
+        "switch-narrowing",
+        "never-exhaustiveness"
+      ],
+      "coreConcept": "Handle every declared result variant explicitly and make a newly added variant visible at the handler boundary through a never-typed remainder.",
+      "mentalModel": [
+        "1. Branch on the shared literal discriminant.",
+        "2. Give each current variant behavior that matches its contract.",
+        "3. Pass the remaining value to an assertNever helper so a future variant fails compilation until handled."
+      ],
+      "governingInvariant": "A handler covers every declared discriminant value; when exhaustive handling is required, its default remainder has type never.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "silent-nonexhaustive-default",
+          "name": "Silent Unknown-State Fallback",
+          "description": "A broad default branch silently routes a newly added outcome to generic behavior instead of forcing an explicit decision.",
+          "reproducer": "default: return 'Unknown';"
+        },
+        {
+          "trapTag": "missing-union-member-branch",
+          "name": "Omitted Current Variant",
+          "description": "Leaving a currently declared variant out of a handler causes it to fall through or receive unrelated behavior.",
+          "reproducer": "switch (result.kind) { case 'queued': return 'Waiting'; default: return assertNever(result); }"
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "inventory_lifecycle_reducer",
+          "description": "Update inventory review, approval, and release states through a reducer that must handle every action."
+        },
+        {
+          "domain": "document_review_handler",
+          "description": "Render queued, approved, rejected, and withdrawn document review events."
+        }
+      ],
+      "usedContexts": [
+        "permit_approval_workflow",
+        "support_case_lifecycle"
+      ],
+      "source": "TypeScript Handbook: Narrowing — Exhaustiveness Checking",
+      "qualityChecks": [
+        {
+          "id": "QC-prg-t01-c02-u07-exhaustive-result-handler",
+          "check": "Provide behavior for every current discriminant member and avoid routing a new domain member through a generic fallback.",
+          "why": "Each new state may need distinct business behavior; a generic default can make the type model and behavior diverge.",
+          "severity": "must",
+          "knownBad": {
+            "code": "type Review = { kind: 'queued' } | { kind: 'approved' } | { kind: 'rejected' };\nfunction label(review: Review): string { switch (review.kind) { case 'queued': return 'Waiting'; case 'approved': return 'Done'; default: return 'Other'; } }",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-prg-t01-c02-u07-never-remainder",
+          "check": "Use a never-typed remainder or equivalent compile-time check when the handler contract requires exhaustive coverage.",
+          "why": "When a new union member is added, the remainder ceases to be never and points to the exact handler that needs an update.",
+          "severity": "should",
+          "knownBad": {
+            "code": "function assertNever(value: never): never { throw new Error(String(value)); }\nfunction label(review: Review): string { switch (review.kind) { case 'queued': return 'Waiting'; default: return assertNever(review); } }",
+            "caughtBy": "review"
+          }
+        }
+      ]
     }
   ]
 }

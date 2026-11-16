@@ -2487,5 +2487,9 @@
   "DRL-PRG-T01-C02-U06-01": {
     "id": "41a3818f-8ba0-8111-a558-fd3c8184ca2b",
     "title": "Utility Types — Verified Programming Drill (4 Qs · AI Synthesized Engineering Mode)"
+  },
+  "DRL-PRG-T01-C02-U07-01": {
+    "id": "41a3818f-8ba0-81ec-83f4-f9ec3b3a4786",
+    "title": "Discriminated Unions — Verified Programming Drill (4 Qs · AI Synthesized Engineering Mode)"
   }
 }
