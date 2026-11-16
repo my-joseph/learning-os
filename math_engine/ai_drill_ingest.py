@@ -43,19 +43,33 @@ class AiContractError(Exception):
 
 
 def normalize_prompt_numbers(prompt: str, keep_exponents: bool = False) -> List[float]:
-    """Extracts numbers from prompt text, handling commas in numbers and removing unit exponents."""
+    """Extract numbers from a prompt, preserving unary negatives and ignoring LaTeX commands."""
     text = prompt
     while re.search(r"(\d+),(\d+)", text):
         text = re.sub(r"(\d+),(\d+)", r"\g<1>\g<2>", text)
     if not keep_exponents:
         text = re.sub(r"\^\{?[23]\}?", "", text)
+    # A macro may be immediately followed by its numeric argument (for example, `\le4`).
+    # Remove the command while leaving a boundary so the argument is still discovered.
+    text = re.sub(r"\\[A-Za-z]+", " ", text)
     # Separate numeric coefficients from variables, units, and LaTeX macros (e.g. 3x -> 3 x, 4\theta -> 4 \theta, 15m -> 15 m)
     text = re.sub(r"(?<=\d)(?=[a-zA-Z\\])", " ", text)
-    raw_nums = re.findall(r"\b\d+(?:\.\d+)?\b", text)
     nums = []
-    for r in raw_nums:
+    for match in re.finditer(r"(?<![\w.])(?:\d+\.\d+|\d+|\.\d+)(?!\w|\.\d)", text):
+        raw = match.group(0)
+        prefix = text[: match.start()]
+        sign = re.search(r"[-−]\s*$", prefix)
+        if sign:
+            before_sign = prefix[: sign.start()].rstrip()
+            unary = not before_sign or before_sign[-1] in "=([{,:;+*/^<>!$"
+            if re.search(r"\b(?:is|was|were|equals?|equal\s+to|value|given|temperature|debt)\s*$", before_sign):
+                # Natural-language context such as "the given is -2" is unary.
+                # A variable (`x -2`) and numeric predecessor (`3 -2`) remain subtraction.
+                unary = True
+            if unary:
+                raw = "-" + raw
         try:
-            nums.append(float(r))
+            nums.append(float(raw))
         except ValueError:
             pass
     return nums
