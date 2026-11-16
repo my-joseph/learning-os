@@ -77,6 +77,8 @@ In `labs/_reference/<LAB_ID>/` (excluded from learner's VS Code via `.vscode/set
 .venv/bin/python -m code_engine.lab_ingest --check labs/<LAB_ID>
 ```
 
+Never pass `--offline` here or at finalise: it skips the check that an extra project only uses units the learner has studied, and exists for hermetic tests only.
+
 Run this before spawning subagents to catch schema, unit-status, rubric, reference, stub, `trapMutant`, or leak issues early. At this stage, only `blindSolve` and `review` should be reported missing. Fix everything else first.
 
 ## 6. Blind solve (independent subagent)
