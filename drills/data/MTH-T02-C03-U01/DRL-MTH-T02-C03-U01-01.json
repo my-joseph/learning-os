@@ -1,0 +1,1488 @@
+{
+  "unitCode": "MTH-T02-C03-U01",
+  "topicTitle": "Linear Functions",
+  "unitTitle": "Linear Functions",
+  "subject": "MATH",
+  "problems": [
+    {
+      "id": "Q01",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c03-u01-read-linear-function",
+      "context": "",
+      "prompt": "Find the slope of the line through the point with input $-2$ and output $3$ and the point with input $4$ and output $15$.",
+      "display": "m = (y2 - y1) / (x2 - x1)",
+      "plainText": "m = (y2 - y1) / (x2 - x1)",
+      "givens": {
+        "x1": -2,
+        "y1": 3,
+        "x2": 4,
+        "y2": 15
+      },
+      "constants": {},
+      "trapGivens": [
+        -2,
+        3,
+        4,
+        15
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "2",
+        "tolerance": 0
+      },
+      "answerPlain": "2",
+      "answerDisplay": "2",
+      "inputHint": "Enter a number.",
+      "commonTrapTag": "t02-c03-u01-reverse-slope-differences-trap",
+      "trapDerivation": "(15-3)/(-2-4)",
+      "trapValue": "-2",
+      "verify": {
+        "source": "(15-3)/(4-(-2))",
+        "trapValue": "-2"
+      },
+      "checkpointHint": "Track the same point order in the output and input differences.",
+      "references": [
+        "MTH-T02-C03-U01"
+      ],
+      "steps": [
+        {
+          "latex": "m=\\frac{15-3}{4-(-2)}",
+          "explain": "Substitute the two points in a consistent order into the slope formula.",
+          "eq": [
+            "(15-3)/(4-(-2))",
+            "12/6"
+          ]
+        },
+        {
+          "latex": "m=\\frac{12}{6}",
+          "explain": "Simplify the output change and input change.",
+          "eq": [
+            "12/6",
+            "2"
+          ]
+        },
+        {
+          "latex": "m=2",
+          "explain": "Divide to obtain the constant rate of change.",
+          "val": "2"
+        }
+      ],
+      "verificationLevel": "partial",
+      "review": {
+        "verdict": "pass",
+        "note": "The two-point slope is 2, the steps and reverse-difference trap are correct, and the plain L1 item is clear with a non-leaking formula display and hint."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C03-U01",
+          "title": "Linear Functions",
+          "notionUrl": "https://www.notion.so/4013818f8ba080e891fbd70dc76b09eb"
+        }
+      ],
+      "unitCode": "MTH-T02-C03-U01",
+      "figure": {
+        "kind": "cartesian_graph",
+        "theme": "indigo",
+        "title": "A linear function has a constant slope and a y-intercept",
+        "xRange": [
+          -4.0,
+          4.0
+        ],
+        "yRange": [
+          -5.0,
+          7.0
+        ],
+        "grid": true,
+        "axes": true,
+        "plots": [
+          {
+            "type": "curve",
+            "points": [
+              [
+                -4.0,
+                -7.0
+              ],
+              [
+                -3.9667,
+                -6.9333
+              ],
+              [
+                -3.9333,
+                -6.8667
+              ],
+              [
+                -3.9,
+                -6.8
+              ],
+              [
+                -3.8667,
+                -6.7333
+              ],
+              [
+                -3.8333,
+                -6.6667
+              ],
+              [
+                -3.8,
+                -6.6
+              ],
+              [
+                -3.7667,
+                -6.5333
+              ],
+              [
+                -3.7333,
+                -6.4667
+              ],
+              [
+                -3.7,
+                -6.4
+              ],
+              [
+                -3.6667,
+                -6.3333
+              ],
+              [
+                -3.6333,
+                -6.2667
+              ],
+              [
+                -3.6,
+                -6.2
+              ],
+              [
+                -3.5667,
+                -6.1333
+              ],
+              [
+                -3.5333,
+                -6.0667
+              ],
+              [
+                -3.5,
+                -6.0
+              ],
+              [
+                -3.4667,
+                -5.9333
+              ],
+              [
+                -3.4333,
+                -5.8667
+              ],
+              [
+                -3.4,
+                -5.8
+              ],
+              [
+                -3.3667,
+                -5.7333
+              ],
+              [
+                -3.3333,
+                -5.6667
+              ],
+              [
+                -3.3,
+                -5.6
+              ],
+              [
+                -3.2667,
+                -5.5333
+              ],
+              [
+                -3.2333,
+                -5.4667
+              ],
+              [
+                -3.2,
+                -5.4
+              ],
+              [
+                -3.1667,
+                -5.3333
+              ],
+              [
+                -3.1333,
+                -5.2667
+              ],
+              [
+                -3.1,
+                -5.2
+              ],
+              [
+                -3.0667,
+                -5.1333
+              ],
+              [
+                -3.0333,
+                -5.0667
+              ],
+              [
+                -3.0,
+                -5.0
+              ],
+              [
+                -2.9667,
+                -4.9333
+              ],
+              [
+                -2.9333,
+                -4.8667
+              ],
+              [
+                -2.9,
+                -4.8
+              ],
+              [
+                -2.8667,
+                -4.7333
+              ],
+              [
+                -2.8333,
+                -4.6667
+              ],
+              [
+                -2.8,
+                -4.6
+              ],
+              [
+                -2.7667,
+                -4.5333
+              ],
+              [
+                -2.7333,
+                -4.4667
+              ],
+              [
+                -2.7,
+                -4.4
+              ],
+              [
+                -2.6667,
+                -4.3333
+              ],
+              [
+                -2.6333,
+                -4.2667
+              ],
+              [
+                -2.6,
+                -4.2
+              ],
+              [
+                -2.5667,
+                -4.1333
+              ],
+              [
+                -2.5333,
+                -4.0667
+              ],
+              [
+                -2.5,
+                -4.0
+              ],
+              [
+                -2.4667,
+                -3.9333
+              ],
+              [
+                -2.4333,
+                -3.8667
+              ],
+              [
+                -2.4,
+                -3.8
+              ],
+              [
+                -2.3667,
+                -3.7333
+              ],
+              [
+                -2.3333,
+                -3.6667
+              ],
+              [
+                -2.3,
+                -3.6
+              ],
+              [
+                -2.2667,
+                -3.5333
+              ],
+              [
+                -2.2333,
+                -3.4667
+              ],
+              [
+                -2.2,
+                -3.4
+              ],
+              [
+                -2.1667,
+                -3.3333
+              ],
+              [
+                -2.1333,
+                -3.2667
+              ],
+              [
+                -2.1,
+                -3.2
+              ],
+              [
+                -2.0667,
+                -3.1333
+              ],
+              [
+                -2.0333,
+                -3.0667
+              ],
+              [
+                -2.0,
+                -3.0
+              ],
+              [
+                -1.9667,
+                -2.9333
+              ],
+              [
+                -1.9333,
+                -2.8667
+              ],
+              [
+                -1.9,
+                -2.8
+              ],
+              [
+                -1.8667,
+                -2.7333
+              ],
+              [
+                -1.8333,
+                -2.6667
+              ],
+              [
+                -1.8,
+                -2.6
+              ],
+              [
+                -1.7667,
+                -2.5333
+              ],
+              [
+                -1.7333,
+                -2.4667
+              ],
+              [
+                -1.7,
+                -2.4
+              ],
+              [
+                -1.6667,
+                -2.3333
+              ],
+              [
+                -1.6333,
+                -2.2667
+              ],
+              [
+                -1.6,
+                -2.2
+              ],
+              [
+                -1.5667,
+                -2.1333
+              ],
+              [
+                -1.5333,
+                -2.0667
+              ],
+              [
+                -1.5,
+                -2.0
+              ],
+              [
+                -1.4667,
+                -1.9333
+              ],
+              [
+                -1.4333,
+                -1.8667
+              ],
+              [
+                -1.4,
+                -1.8
+              ],
+              [
+                -1.3667,
+                -1.7333
+              ],
+              [
+                -1.3333,
+                -1.6667
+              ],
+              [
+                -1.3,
+                -1.6
+              ],
+              [
+                -1.2667,
+                -1.5333
+              ],
+              [
+                -1.2333,
+                -1.4667
+              ],
+              [
+                -1.2,
+                -1.4
+              ],
+              [
+                -1.1667,
+                -1.3333
+              ],
+              [
+                -1.1333,
+                -1.2667
+              ],
+              [
+                -1.1,
+                -1.2
+              ],
+              [
+                -1.0667,
+                -1.1333
+              ],
+              [
+                -1.0333,
+                -1.0667
+              ],
+              [
+                -1.0,
+                -1.0
+              ],
+              [
+                -0.9667,
+                -0.9333
+              ],
+              [
+                -0.9333,
+                -0.8667
+              ],
+              [
+                -0.9,
+                -0.8
+              ],
+              [
+                -0.8667,
+                -0.7333
+              ],
+              [
+                -0.8333,
+                -0.6667
+              ],
+              [
+                -0.8,
+                -0.6
+              ],
+              [
+                -0.7667,
+                -0.5333
+              ],
+              [
+                -0.7333,
+                -0.4667
+              ],
+              [
+                -0.7,
+                -0.4
+              ],
+              [
+                -0.6667,
+                -0.3333
+              ],
+              [
+                -0.6333,
+                -0.2667
+              ],
+              [
+                -0.6,
+                -0.2
+              ],
+              [
+                -0.5667,
+                -0.1333
+              ],
+              [
+                -0.5333,
+                -0.0667
+              ],
+              [
+                -0.5,
+                0.0
+              ],
+              [
+                -0.4667,
+                0.0667
+              ],
+              [
+                -0.4333,
+                0.1333
+              ],
+              [
+                -0.4,
+                0.2
+              ],
+              [
+                -0.3667,
+                0.2667
+              ],
+              [
+                -0.3333,
+                0.3333
+              ],
+              [
+                -0.3,
+                0.4
+              ],
+              [
+                -0.2667,
+                0.4667
+              ],
+              [
+                -0.2333,
+                0.5333
+              ],
+              [
+                -0.2,
+                0.6
+              ],
+              [
+                -0.1667,
+                0.6667
+              ],
+              [
+                -0.1333,
+                0.7333
+              ],
+              [
+                -0.1,
+                0.8
+              ],
+              [
+                -0.0667,
+                0.8667
+              ],
+              [
+                -0.0333,
+                0.9333
+              ],
+              [
+                0.0,
+                1.0
+              ],
+              [
+                0.0333,
+                1.0667
+              ],
+              [
+                0.0667,
+                1.1333
+              ],
+              [
+                0.1,
+                1.2
+              ],
+              [
+                0.1333,
+                1.2667
+              ],
+              [
+                0.1667,
+                1.3333
+              ],
+              [
+                0.2,
+                1.4
+              ],
+              [
+                0.2333,
+                1.4667
+              ],
+              [
+                0.2667,
+                1.5333
+              ],
+              [
+                0.3,
+                1.6
+              ],
+              [
+                0.3333,
+                1.6667
+              ],
+              [
+                0.3667,
+                1.7333
+              ],
+              [
+                0.4,
+                1.8
+              ],
+              [
+                0.4333,
+                1.8667
+              ],
+              [
+                0.4667,
+                1.9333
+              ],
+              [
+                0.5,
+                2.0
+              ],
+              [
+                0.5333,
+                2.0667
+              ],
+              [
+                0.5667,
+                2.1333
+              ],
+              [
+                0.6,
+                2.2
+              ],
+              [
+                0.6333,
+                2.2667
+              ],
+              [
+                0.6667,
+                2.3333
+              ],
+              [
+                0.7,
+                2.4
+              ],
+              [
+                0.7333,
+                2.4667
+              ],
+              [
+                0.7667,
+                2.5333
+              ],
+              [
+                0.8,
+                2.6
+              ],
+              [
+                0.8333,
+                2.6667
+              ],
+              [
+                0.8667,
+                2.7333
+              ],
+              [
+                0.9,
+                2.8
+              ],
+              [
+                0.9333,
+                2.8667
+              ],
+              [
+                0.9667,
+                2.9333
+              ],
+              [
+                1.0,
+                3.0
+              ],
+              [
+                1.0333,
+                3.0667
+              ],
+              [
+                1.0667,
+                3.1333
+              ],
+              [
+                1.1,
+                3.2
+              ],
+              [
+                1.1333,
+                3.2667
+              ],
+              [
+                1.1667,
+                3.3333
+              ],
+              [
+                1.2,
+                3.4
+              ],
+              [
+                1.2333,
+                3.4667
+              ],
+              [
+                1.2667,
+                3.5333
+              ],
+              [
+                1.3,
+                3.6
+              ],
+              [
+                1.3333,
+                3.6667
+              ],
+              [
+                1.3667,
+                3.7333
+              ],
+              [
+                1.4,
+                3.8
+              ],
+              [
+                1.4333,
+                3.8667
+              ],
+              [
+                1.4667,
+                3.9333
+              ],
+              [
+                1.5,
+                4.0
+              ],
+              [
+                1.5333,
+                4.0667
+              ],
+              [
+                1.5667,
+                4.1333
+              ],
+              [
+                1.6,
+                4.2
+              ],
+              [
+                1.6333,
+                4.2667
+              ],
+              [
+                1.6667,
+                4.3333
+              ],
+              [
+                1.7,
+                4.4
+              ],
+              [
+                1.7333,
+                4.4667
+              ],
+              [
+                1.7667,
+                4.5333
+              ],
+              [
+                1.8,
+                4.6
+              ],
+              [
+                1.8333,
+                4.6667
+              ],
+              [
+                1.8667,
+                4.7333
+              ],
+              [
+                1.9,
+                4.8
+              ],
+              [
+                1.9333,
+                4.8667
+              ],
+              [
+                1.9667,
+                4.9333
+              ],
+              [
+                2.0,
+                5.0
+              ],
+              [
+                2.0333,
+                5.0667
+              ],
+              [
+                2.0667,
+                5.1333
+              ],
+              [
+                2.1,
+                5.2
+              ],
+              [
+                2.1333,
+                5.2667
+              ],
+              [
+                2.1667,
+                5.3333
+              ],
+              [
+                2.2,
+                5.4
+              ],
+              [
+                2.2333,
+                5.4667
+              ],
+              [
+                2.2667,
+                5.5333
+              ],
+              [
+                2.3,
+                5.6
+              ],
+              [
+                2.3333,
+                5.6667
+              ],
+              [
+                2.3667,
+                5.7333
+              ],
+              [
+                2.4,
+                5.8
+              ],
+              [
+                2.4333,
+                5.8667
+              ],
+              [
+                2.4667,
+                5.9333
+              ],
+              [
+                2.5,
+                6.0
+              ],
+              [
+                2.5333,
+                6.0667
+              ],
+              [
+                2.5667,
+                6.1333
+              ],
+              [
+                2.6,
+                6.2
+              ],
+              [
+                2.6333,
+                6.2667
+              ],
+              [
+                2.6667,
+                6.3333
+              ],
+              [
+                2.7,
+                6.4
+              ],
+              [
+                2.7333,
+                6.4667
+              ],
+              [
+                2.7667,
+                6.5333
+              ],
+              [
+                2.8,
+                6.6
+              ],
+              [
+                2.8333,
+                6.6667
+              ],
+              [
+                2.8667,
+                6.7333
+              ],
+              [
+                2.9,
+                6.8
+              ],
+              [
+                2.9333,
+                6.8667
+              ],
+              [
+                2.9667,
+                6.9333
+              ],
+              [
+                3.0,
+                7.0
+              ],
+              [
+                3.0333,
+                7.0667
+              ],
+              [
+                3.0667,
+                7.1333
+              ],
+              [
+                3.1,
+                7.2
+              ],
+              [
+                3.1333,
+                7.2667
+              ],
+              [
+                3.1667,
+                7.3333
+              ],
+              [
+                3.2,
+                7.4
+              ],
+              [
+                3.2333,
+                7.4667
+              ],
+              [
+                3.2667,
+                7.5333
+              ],
+              [
+                3.3,
+                7.6
+              ],
+              [
+                3.3333,
+                7.6667
+              ],
+              [
+                3.3667,
+                7.7333
+              ],
+              [
+                3.4,
+                7.8
+              ],
+              [
+                3.4333,
+                7.8667
+              ],
+              [
+                3.4667,
+                7.9333
+              ],
+              [
+                3.5,
+                8.0
+              ],
+              [
+                3.5333,
+                8.0667
+              ],
+              [
+                3.5667,
+                8.1333
+              ],
+              [
+                3.6,
+                8.2
+              ],
+              [
+                3.6333,
+                8.2667
+              ],
+              [
+                3.6667,
+                8.3333
+              ],
+              [
+                3.7,
+                8.4
+              ],
+              [
+                3.7333,
+                8.4667
+              ],
+              [
+                3.7667,
+                8.5333
+              ],
+              [
+                3.8,
+                8.6
+              ],
+              [
+                3.8333,
+                8.6667
+              ],
+              [
+                3.8667,
+                8.7333
+              ],
+              [
+                3.9,
+                8.8
+              ],
+              [
+                3.9333,
+                8.8667
+              ],
+              [
+                3.9667,
+                8.9333
+              ],
+              [
+                4.0,
+                9.0
+              ]
+            ],
+            "color": "#6366f1",
+            "strokeWidth": 2.5
+          },
+          {
+            "type": "text",
+            "coord": [
+              0.32,
+              6.04
+            ],
+            "text": "f(x)=2x+1",
+            "color": "#6366f1",
+            "anchor": "start"
+          }
+        ]
+      },
+      "fingerprint": "t02-c03-u01-reverse-slope-differences-trap|direct|m = (y# - y#) / (x# - x#)",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c03-u01-reverse-slope-differences-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 1 - Foundation"
+    },
+    {
+      "id": "Q02",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c03-u01-write-line-from-point-slope",
+      "context": "",
+      "prompt": "A line has slope $2$ and passes through a point with input $3$ and output $11$. Find its y-intercept.",
+      "display": "b = y_1 - m*x_1",
+      "plainText": "b = y1 - m*x1",
+      "givens": {
+        "m": 2,
+        "x": 3,
+        "y": 11
+      },
+      "constants": {},
+      "trapGivens": [
+        2,
+        3,
+        11
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "5",
+        "tolerance": 0
+      },
+      "answerPlain": "5",
+      "answerDisplay": "5",
+      "inputHint": "Enter a number.",
+      "commonTrapTag": "t02-c03-u01-slope-sign-transposition-trap",
+      "trapDerivation": "11+2*3",
+      "trapValue": "17",
+      "verify": {
+        "source": "11-2*3",
+        "trapValue": "17"
+      },
+      "checkpointHint": "Substitute the known point into the line rule and isolate the unknown constant.",
+      "references": [
+        "MTH-T02-C03-U01"
+      ],
+      "steps": [
+        {
+          "latex": "2\\times 3=6",
+          "explain": "Multiply the slope by the input coordinate.",
+          "eq": [
+            "2*3",
+            "6"
+          ]
+        },
+        {
+          "latex": "11-6=5",
+          "explain": "Subtract the product from the output to obtain the y-intercept.",
+          "eq": [
+            "11-6",
+            "5"
+          ]
+        },
+        {
+          "latex": "b=5",
+          "explain": "State the y-intercept.",
+          "val": "5"
+        }
+      ],
+      "verificationLevel": "partial",
+      "review": {
+        "verdict": "pass",
+        "note": "The intercept is 5, the sign-transposition trap correctly yields 17, wording and the number-only input are clear, the hint is non-leaking, and the revised formula display no longer exposes the evaluated answer."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C03-U01",
+          "title": "Linear Functions",
+          "notionUrl": "https://www.notion.so/4013818f8ba080e891fbd70dc76b09eb"
+        }
+      ],
+      "unitCode": "MTH-T02-C03-U01",
+      "fingerprint": "t02-c03-u01-slope-sign-transposition-trap|direct|b = y# - m*x#",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c03-u01-slope-sign-transposition-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 1 - Foundation"
+    },
+    {
+      "id": "Q03",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c03-u01-write-line-from-point-slope",
+      "context": "",
+      "prompt": "A line has slope $3$ and passes through a point with input $-2$ and output $6$. Find the x-coordinate where it crosses the x-axis. Enter only a number.",
+      "display": "Find the line from the slope and point, then set the output to zero.",
+      "plainText": "Find the line from the slope and point, then set the output to zero.",
+      "givens": {
+        "m": 3,
+        "x1": -2,
+        "y1": 6
+      },
+      "constants": {},
+      "trapGivens": [
+        3,
+        -2,
+        6
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "-4",
+        "tolerance": 0
+      },
+      "answerPlain": "-4",
+      "answerDisplay": "-4",
+      "inputHint": "Enter a number.",
+      "commonTrapTag": "t02-c03-u01-point-coordinate-sign-trap",
+      "trapDerivation": "-(6-3*2)/3",
+      "trapValue": "0",
+      "verify": {
+        "source": "-(6-3*(-2))/3",
+        "trapValue": "0"
+      },
+      "checkpointHint": "Keep the signed input coordinate intact when substituting into the point-slope relation.",
+      "references": [
+        "MTH-T02-C03-U01"
+      ],
+      "steps": [
+        {
+          "latex": "y-6=3(x-(-2))",
+          "explain": "Substitute the slope and point into point-slope form."
+        },
+        {
+          "latex": "y-6=3(x+2)",
+          "explain": "Simplify subtracting the negative input coordinate."
+        },
+        {
+          "latex": "y-6=3x+6",
+          "explain": "Distribute the slope across the grouped input expression."
+        },
+        {
+          "latex": "y=3x+12",
+          "explain": "Add six to both sides to isolate y."
+        },
+        {
+          "latex": "0=3x+12",
+          "explain": "Set y to zero to locate the x-axis crossing."
+        },
+        {
+          "latex": "-12=3x",
+          "explain": "Subtract twelve from both sides.",
+          "eq": [
+            "0-12",
+            "-12"
+          ]
+        },
+        {
+          "latex": "x=-4",
+          "explain": "Divide both sides by three to isolate the x-coordinate.",
+          "eq": [
+            "-12/3",
+            "-4"
+          ],
+          "val": "-4"
+        }
+      ],
+      "verificationLevel": "partial",
+      "review": {
+        "verdict": "pass",
+        "note": "The x-intercept is -4, the negative-coordinate trap correctly yields 0, wording and numeric answer format agree, and the revised number hint and procedural display do not leak the answer."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C03-U01",
+          "title": "Linear Functions",
+          "notionUrl": "https://www.notion.so/4013818f8ba080e891fbd70dc76b09eb"
+        }
+      ],
+      "unitCode": "MTH-T02-C03-U01",
+      "fingerprint": "t02-c03-u01-point-coordinate-sign-trap|reverse|Find the line from the slope and point, then set the output to zero.",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 7,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c03-u01-point-coordinate-sign-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 21
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 2 - Standard Exam"
+    },
+    {
+      "id": "Q04",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c03-u01-classify-line-relations",
+      "context": "",
+      "prompt": "A line with slope $2$ is parallel to another line through a point with input $3$ and output $1$. Find only the y-intercept of the second line. Enter only a number.",
+      "display": "Use the shared slope and point to find the second line’s y-intercept.",
+      "plainText": "Use the shared slope and point to find the second line y-intercept.",
+      "givens": {
+        "m": 2,
+        "x": 3,
+        "y": 1
+      },
+      "constants": {},
+      "trapGivens": [
+        2,
+        3,
+        1
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "-5",
+        "tolerance": 0
+      },
+      "answerPlain": "-5",
+      "answerDisplay": "-5",
+      "inputHint": "Enter a number.",
+      "commonTrapTag": "t02-c03-u01-parallel-negative-reciprocal-trap",
+      "trapDerivation": "1-(-1/2*3)",
+      "trapValue": "5/2",
+      "verify": {
+        "source": "1-2*3",
+        "trapValue": "5/2"
+      },
+      "checkpointHint": "Use the line relationship to determine the rate, then substitute the anchor point.",
+      "references": [
+        "MTH-T02-C03-U01"
+      ],
+      "steps": [
+        {
+          "latex": "m_{\\parallel}=2",
+          "explain": "A parallel line keeps the original slope."
+        },
+        {
+          "latex": "b=1-(2\\times 3)",
+          "explain": "Subtract the slope times the input from the output to find the intercept.",
+          "eq": [
+            "1-2*3",
+            "-5"
+          ]
+        },
+        {
+          "latex": "b=-5",
+          "explain": "State the y-intercept of the second line.",
+          "val": "-5"
+        }
+      ],
+      "verificationLevel": "partial",
+      "review": {
+        "verdict": "pass",
+        "note": "Parallelism preserves slope 2 and gives intercept -5, with correct steps and negative-reciprocal trap in a clear plain L2 item."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C03-U01",
+          "title": "Linear Functions",
+          "notionUrl": "https://www.notion.so/4013818f8ba080e891fbd70dc76b09eb"
+        }
+      ],
+      "unitCode": "MTH-T02-C03-U01",
+      "fingerprint": "t02-c03-u01-parallel-negative-reciprocal-trap|reverse|Use the shared slope and point to find the second line y-intercept.",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c03-u01-parallel-negative-reciprocal-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 2 - Standard Exam"
+    }
+  ],
+  "drillId": "DRL-MTH-T02-C03-U01-01",
+  "title": "Linear Functions — Verified Math Drill (4 Qs)",
+  "topicCode": "MTH-T02",
+  "chapterCode": "MTH-T02-C03",
+  "schemaVersion": "2.0-math",
+  "createdAt": "2026-11-17 04:27:19",
+  "config": {
+    "questionCount": 4,
+    "difficulty": "ALL",
+    "difficultyMode": "AI Synthesized Reasoning Mode"
+  },
+  "localFilePath": "drills/data/MTH-T02-C03-U01/DRL-MTH-T02-C03-U01-01.json"
+}
