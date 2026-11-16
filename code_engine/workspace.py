@@ -76,22 +76,15 @@ ENVIRONMENT_PRESETS = {
         "description": "React Component & Custom Hook Environment (Vitest / React Testing Library)",
         "defaultExt": "tsx",
         "scripts": {
-            "test": "vitest run",
-            "test:watch": "vitest",
+            "test": "../../../tools/lint/node_modules/.bin/vitest run --environment jsdom",
+            "test:watch": "../../../tools/lint/node_modules/.bin/vitest --environment jsdom",
             "lint": "../../../tools/lint/node_modules/.bin/eslint --format ../../../tools/lint/format.js .",
             "typecheck": "../../../tools/lint/node_modules/.bin/tsc --noEmit",
             "check": "npm test; test_status=$?; npm run lint; lint_status=$?; npm run typecheck; type_status=$?; test $test_status -eq 0 -a $lint_status -eq 0 -a $type_status -eq 0",
             "review": "../../../.venv/bin/python -m code_engine.review",
             "submit": "../../../.venv/bin/python -m code_engine.submit",
         },
-        "devDependencies": {
-            "vitest": "^1.3.0",
-            "@testing-library/react": "^14.2.0",
-            "@testing-library/react-hooks": "^8.0.1",
-            "jsdom": "^24.0.0",
-            "react": "^18.2.0",
-            "react-dom": "^18.2.0",
-        },
+        "devDependencies": {},
     },
     "backend-sqlite": {
         "description": "Backend Database & Transaction Environment with In-Memory SQLite",
@@ -254,6 +247,27 @@ def resolve_test_imports(prob: dict, test_code: str, src_path: Path | None = Non
     return [get_entry_name(prob)]
 
 
+def build_react_test_header(import_list: str, test_code: str, source_import: str) -> str:
+    """Build the minimal shared imports needed by a Vitest/Testing Library suite."""
+    lines = ["import { afterEach, test } from 'vitest';"]
+    if re.search(r"\bassert\s*\.", test_code):
+        lines.append("import assert from 'node:assert';")
+    helpers = [
+        name for name in ("render", "screen", "fireEvent", "waitFor", "act") if re.search(rf"\b{name}\b", test_code)
+    ]
+    if "cleanup" not in helpers:
+        helpers.append("cleanup")
+    lines.append(f"import {{ {', '.join(helpers)} }} from '@testing-library/react';")
+    if re.search(r"\buserEvent\b", test_code):
+        lines.append("import userEvent from '@testing-library/user-event';")
+    if re.search(r"\bReact\.", test_code):
+        lines.append("import React from 'react';")
+    if import_list:
+        lines.append(f"import {{ {import_list} }} from {json.dumps(source_import)};")
+    lines.append("afterEach(() => cleanup());")
+    return "\n".join(lines) + "\n\n"
+
+
 def get_entry_name(prob: dict) -> str:
     entry = prob.get("entryPoint")
     if entry:
@@ -320,6 +334,14 @@ def materialize_drill_workspace(drill_doc: dict, root_dir: str = ".") -> dict:
     ws_base = os.path.join("pilot", "workspace") if pilot_mode() else os.path.join("drills", "workspace")
     ws_dir = os.path.join(workspace_root(root_dir), drill_id)
     os.makedirs(ws_dir, exist_ok=True)
+    if preset_key == "react-dom":
+        shared_node_modules = Path(__file__).resolve().parents[1] / "tools" / "lint" / "node_modules"
+        if shared_node_modules.is_dir():
+            modules_link = Path(ws_dir) / "node_modules"
+            if modules_link.is_symlink() and modules_link.resolve() != shared_node_modules.resolve():
+                modules_link.unlink()
+            if not modules_link.exists() and not modules_link.is_symlink():
+                modules_link.symlink_to(shared_node_modules, target_is_directory=True)
     package_link = os.path.join(ws_dir, "code_engine")
     if not os.path.lexists(package_link):
         os.symlink(str(Path(__file__).resolve().parent), package_link, target_is_directory=True)
@@ -400,8 +422,7 @@ test({t_name}, {fn_prefix} {{
             test_header += "import test from 'node:test';\nimport assert from 'node:assert';\n"
             test_header += f"import {{ {import_list} }} from './{src_filename}';\n\n"
         elif preset_key == "react-dom":
-            test_header += "import { test } from 'vitest';\nimport assert from 'node:assert';\n"
-            test_header += f"import {{ {import_list} }} from './{src_filename}';\n\n"
+            test_header += build_react_test_header(import_list, visible_code, f"./{src_filename}")
         else:
             test_header += (
                 "const test = require('node:test');\n"
@@ -418,7 +439,9 @@ test({t_name}, {fn_prefix} {{
 
         # Register npm test script per problem
         if preset_key == "react-dom":
-            test_scripts[f"test:{pid.lower()}"] = f"vitest run {test_filename}"
+            test_scripts[f"test:{pid.lower()}"] = (
+                f"../../../tools/lint/node_modules/.bin/vitest run {test_filename} --environment jsdom"
+            )
         elif preset_key in ("typescript-strict", "backend-sqlite"):
             test_scripts[f"test:{pid.lower()}"] = (
                 f"node --experimental-strip-types --test --test-reporter=spec {test_filename}"
@@ -511,6 +534,12 @@ test({t_name}, {fn_prefix} {{
         with open(tsconfig_path, "w", encoding="utf-8") as f:
             json.dump(tsconfig_data, f, indent=2)
             f.write("\n")
+    if preset_key == "react-dom":
+        (Path(ws_dir) / "vitest.config.ts").write_text(
+            "import { defineConfig } from 'vitest/config';\n"
+            "export default defineConfig({ esbuild: { jsx: 'automatic' }, test: { environment: 'jsdom' } });\n",
+            encoding="utf-8",
+        )
 
     # 5. Write README.md in workspace
     readme_path = os.path.join(ws_dir, "README.md")

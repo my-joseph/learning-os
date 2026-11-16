@@ -1,5 +1,6 @@
 """Tests for PRG workspace safety, hidden test temp execution, and drill_sync preflight."""
 
+import json
 import subprocess
 import sys
 from pathlib import Path
@@ -9,6 +10,7 @@ import pytest
 
 from code_engine.ai_drill_ingest import (
     AiContractError,
+    check_dual_pre_execution,
     check_starter_contract,
     run_problem_in_workspace,
     visible_edge_case_warnings,
@@ -328,3 +330,133 @@ def test_materialized_gate_rejects_unexported_symbol_used_in_tests():
     prob["starterCode"] = "function createServiceClient() { return {}; }\nmodule.exports = { createServiceClient };\n"
     report = run_problem_in_workspace(prob, prob["solutionCode"], environment="node-vanilla")
     assert report["allPassed"] is False
+
+
+def test_react_dom_runner_renders_component_and_handles_user_event():
+    from code_engine.test_runner import run_tests
+
+    component = """import React, { useState } from 'react';
+export function ClickCounter() {
+  const [count, setCount] = useState(0);
+  return <button onClick={() => setCount((value) => value + 1)}>Count: {count}</button>;
+}
+"""
+    visible = [
+        {
+            "name": "increments the visible count after a click",
+            "testCode": """const user = userEvent.setup();
+render(<ClickCounter />);
+await user.click(screen.getByRole('button', { name: 'Count: 0' }));
+assert.equal(screen.getByRole('button').textContent, 'Count: 1');""",
+        }
+    ]
+
+    report = run_tests(component, visible, [], environment="react-dom", entry_point="ClickCounter")
+
+    assert report["allPassed"], report["rawOutput"]
+    assert report["passedCount"] == report["totalCount"] == 1
+
+    prob = {
+        "id": "Q01",
+        "entryPoint": "ClickCounter",
+        "codeType": "problem-solving",
+        "prompt": "Build a click counter component.",
+        "starterCode": "import React from 'react';\nexport function ClickCounter() { return <button>Count: 0</button>; }\n",
+        "solutionCode": component,
+        "visibleTests": visible,
+        "hiddenTests": [
+            {
+                "name": "starts at zero",
+                "testCode": "render(<ClickCounter />);\nassert.equal(screen.getByRole('button').textContent, 'Count: 0');",
+            }
+        ],
+    }
+    check_starter_contract("Q01", prob, environment="react-dom")
+    check_dual_pre_execution("Q01", prob, environment="react-dom")
+
+
+def test_react_dom_workspace_uses_shared_tools_without_local_dependencies(tmp_path):
+    shared_tools = Path(__file__).resolve().parents[1] / "tools" / "lint"
+    (tmp_path / "tools").mkdir()
+    (tmp_path / "tools" / "lint").symlink_to(shared_tools, target_is_directory=True)
+    doc = {
+        "drillId": "DRL-PRG-REACT-WORKSPACE-01",
+        "unitCode": "PRG-T00-C00-U01",
+        "environment": "react-dom",
+        "problems": [
+            {
+                "id": "Q01",
+                "entryPoint": "Panel",
+                "codeType": "problem-solving",
+                "prompt": "Build a small panel.",
+                "starterCode": "export function Panel() { return <main />; }",
+                "solutionCode": "export function Panel() { return <main />; }",
+                "visibleTests": [
+                    {"name": "renders a panel", "testCode": "render(<Panel />); assert.ok(screen.getByRole('main'));"}
+                ],
+            }
+        ],
+    }
+    manifest = materialize_drill_workspace(doc, root_dir=str(tmp_path))
+    ws_dir = Path(manifest["workspaceDir"])
+    package = json.loads((ws_dir / "package.json").read_text(encoding="utf-8"))
+    assert package["devDependencies"] == {}
+    assert "tools/lint/node_modules/.bin/vitest" in package["scripts"]["test"]
+    assert (ws_dir / "node_modules").is_symlink()
+    result = subprocess.run(["npm", "test"], cwd=ws_dir, capture_output=True, text=True, check=False)
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_react_dom_review_runs_visible_hidden_lint_and_typecheck(tmp_path):
+    from code_engine.review_run import run_review
+
+    (tmp_path / "tools").mkdir()
+    (tmp_path / "tools" / "lint").symlink_to(
+        Path(__file__).resolve().parents[1] / "tools" / "lint", target_is_directory=True
+    )
+    component = """import { useState } from 'react';
+export function ClickCounter() {
+  const [count, setCount] = useState(0);
+  return <button onClick={() => setCount((value) => value + 1)}>Count: {count}</button>;
+}
+"""
+    doc = {
+        "drillId": "DRL-PRG-REACT-REVIEW-01",
+        "environment": "react-dom",
+        "unitCode": "PRG-T00-C00-U01",
+        "problems": [
+            {
+                "id": "Q01",
+                "entryPoint": "ClickCounter",
+                "codeType": "problem-solving",
+                "prompt": "Build a click counter.",
+                "starterCode": component,
+                "solutionCode": component,
+                "visibleTests": [
+                    {
+                        "name": "increments after a click",
+                        "testCode": "const user = userEvent.setup(); render(<ClickCounter />); await user.click(screen.getByRole('button', { name: 'Count: 0' })); assert.equal(screen.getByRole('button').textContent, 'Count: 1');",
+                    }
+                ],
+                "hiddenTests": [
+                    {
+                        "name": "starts at zero",
+                        "testCode": "render(<ClickCounter />); assert.equal(screen.getByRole('button').textContent, 'Count: 0');",
+                    }
+                ],
+            }
+        ],
+    }
+    data_root = tmp_path / "data"
+    drill_dir = data_root / "PRG-T00-C00-U01"
+    drill_dir.mkdir(parents=True)
+    doc_path = drill_dir / f"{doc['drillId']}.json"
+    doc_path.write_text(json.dumps(doc), encoding="utf-8")
+    materialize_drill_workspace(doc, root_dir=str(tmp_path))
+    doc_path.write_text(json.dumps(doc), encoding="utf-8")
+
+    report = run_review(doc["drillId"], "Q01", data_root=data_root, workspace_root=tmp_path / "drills" / "workspace")
+
+    assert report["tests"] == {"passed": 2, "total": 2, "failed": []}
+    assert report["lint"] == []
+    assert report["typecheck"] == []

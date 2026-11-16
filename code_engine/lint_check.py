@@ -163,6 +163,9 @@ def typecheck_code_snippet(
         }
         if ext == "tsx":
             tsconfig_data["compilerOptions"]["jsx"] = "react-jsx"
+            modules = TOOLS_LINT_DIR / "node_modules"
+            if modules.is_dir():
+                (tmp_path / "node_modules").symlink_to(modules, target_is_directory=True)
         (tmp_path / "tsconfig.json").write_text(json.dumps(tsconfig_data, indent=2) + "\n", encoding="utf-8")
 
         target_name = f"{filename}.{ext}"
