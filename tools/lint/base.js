@@ -117,6 +117,8 @@ export function prgConfig({ overrides = [] } = {}) {
       rules: {
         "max-lines-per-function": "off",
         "max-params": "off",
+        // Generated test wrappers are `async () => {}` so async and sync test bodies share one template.
+        "require-await": "off",
       },
     },
   ];
