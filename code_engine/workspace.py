@@ -84,7 +84,7 @@ ENVIRONMENT_PRESETS = {
             "review": "../../../.venv/bin/python -m code_engine.review",
             "submit": "../../../.venv/bin/python -m code_engine.submit",
         },
-        "devDependencies": {},
+        "devDependencies": {"@types/node": "^20.0.0"},
     },
     "backend-sqlite": {
         "description": "Backend Database & Transaction Environment with In-Memory SQLite",

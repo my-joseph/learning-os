@@ -70,8 +70,19 @@ def check_text_safety(pid, label, text, is_latex=False):
 def verify_problem(p, id_map=None, rules=None):
     pid = p.get("id", p.get("templateKey", "?"))
     v = p.get("verify", {})
-    vars_list = p.get("answerSpec", {}).get("variables") or p.get("variables") or ["x"]
-    src = to_expr(v["source"], variables=vars_list) if "source" in v else None
+    spec = p["answerSpec"]
+    t = spec["type"]
+    vars_list = spec.get("variables") or p.get("variables") or ["x"]
+    interval_src = None
+    src = None
+    if "source" in v:
+        if t == "interval":
+            try:
+                interval_src = parse_interval(str(v["source"]), variables=spec.get("variables"))
+            except (TypeError, ValueError) as exc:
+                _fail(pid, f"invalid interval verify.source: {exc}")
+        else:
+            src = to_expr(v["source"], variables=vars_list)
 
     # 1. Steps
     if not p.get("steps"):
@@ -80,11 +91,20 @@ def verify_problem(p, id_map=None, rules=None):
     has_machine_tags = any(("val" in st or "eq" in st) for st in p["steps"])
     for i, st in enumerate(p["steps"], 1):
         if "val" in st:
-            if src is None:
-                _fail(pid, f"step {i} has val but problem has no verify.source")
-            if not is_equal(to_expr(st["val"], variables=vars_list), src, variables=vars_list):
-                _fail(pid, f"step {i} value {st['val']} != source {v['source']}")
-            checked += 1
+            if interval_src is not None:
+                try:
+                    step_set = parse_interval(str(st["val"]), variables=spec.get("variables"))
+                except (TypeError, ValueError) as exc:
+                    _fail(pid, f"step {i} has invalid interval value {st['val']!r}: {exc}")
+                if not _intervals_equal(step_set, interval_src):
+                    _fail(pid, f"step {i} interval {st['val']} != source {v['source']}")
+                checked += 1
+            else:
+                if src is None:
+                    _fail(pid, f"step {i} has val but problem has no verify.source")
+                if not is_equal(to_expr(st["val"], variables=vars_list), src, variables=vars_list):
+                    _fail(pid, f"step {i} value {st['val']} != source {v['source']}")
+                checked += 1
         if "eq" in st:
             lhs, rhs = st["eq"]
             if not is_equal(to_expr(lhs, variables=vars_list), to_expr(rhs, variables=vars_list), variables=vars_list):
@@ -92,17 +112,22 @@ def verify_problem(p, id_map=None, rules=None):
             checked += 1
         check_text_safety(pid, f"step {i} explain", st["explain"])
         check_text_safety(pid, f"step {i} latex", st["latex"], is_latex=True)
-    if ("verify" in p or has_machine_tags) and checked == 0:
+    if ("source" in v or has_machine_tags) and checked == 0:
         _fail(pid, "no step carries a machine check (val / eq)")
 
     # 2. Answer vs source
-    spec = p["answerSpec"]
-    t = spec["type"]
     if t in ("complex", "number", "expression") and src is not None:
         if not is_equal(
             to_expr(spec["value"], spec.get("variables")), src, spec.get("variables") if t == "expression" else None
         ):
             _fail(pid, f"answer {spec['value']} != source {v['source']}")
+    elif t == "interval" and interval_src is not None:
+        try:
+            answer_set = parse_interval(str(spec["value"]), variables=spec.get("variables"))
+        except (TypeError, ValueError) as exc:
+            _fail(pid, f"invalid interval answer: {exc}")
+        if not _intervals_equal(answer_set, interval_src):
+            _fail(pid, f"interval answer {spec['value']} != source {v['source']}")
     elif t == "tuple":
         exprs = [to_expr(e, variables=vars_list) for e in v["tuple"]]
         for got, want in zip(spec["values"], exprs):

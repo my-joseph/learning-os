@@ -207,6 +207,8 @@ def run(argv: list[str] | None = None) -> int:
             cmd.add_argument("input", help="Learner answer (quote inputs containing spaces)")
     summary = sub.add_parser("summary", help="Summarize saved practice progress")
     summary.add_argument("drill_id")
+    submit = sub.add_parser("submit", help="Save and print the completed practice session summary")
+    submit.add_argument("drill_id")
     args = parser.parse_args(argv)
     try:
         doc = _load_drill(args.drill_id)
@@ -237,6 +239,10 @@ def run(argv: list[str] | None = None) -> int:
                 print(f"{i}. {step.get('latex', '')}\n   {step.get('explain', '')}")
         elif args.command == "summary":
             print(json.dumps(_summary(doc), ensure_ascii=False, indent=2))
+        elif args.command == "submit":
+            doc["sessionSummary"] = _summary(doc)
+            _save(doc)
+            print(json.dumps(doc["sessionSummary"], ensure_ascii=False, indent=2))
         return 0
     except (FileNotFoundError, ValueError, json.JSONDecodeError) as exc:
         print(f"practice: {exc}", file=sys.stderr)

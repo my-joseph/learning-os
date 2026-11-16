@@ -45,10 +45,41 @@ class AiContractError(Exception):
 def normalize_prompt_numbers(prompt: str, keep_exponents: bool = False) -> List[float]:
     """Extract numbers from a prompt, preserving unary negatives and ignoring LaTeX commands."""
     text = prompt
-    while re.search(r"(\d+),(\d+)", text):
-        text = re.sub(r"(\d+),(\d+)", r"\g<1>\g<2>", text)
+    # Treat commas as thousands separators only outside coordinate/grouping
+    # parentheses. A pair such as (2,3) contains two prompt numbers, not 23.
+    grouped: list[str] = []
+    depth = 0
+    index = 0
+    while index < len(text):
+        char = text[index]
+        if char in "([{":
+            depth += 1
+            grouped.append(char)
+            index += 1
+            continue
+        if char in ")]}":
+            depth = max(0, depth - 1)
+            grouped.append(char)
+            index += 1
+            continue
+        if depth == 0 and char.isdigit():
+            match = re.match(r"\d{1,3}(?:,\d{3})+(?!\d)", text[index:])
+            if match:
+                grouped.append(match.group(0).replace(",", ""))
+                index += len(match.group(0))
+                continue
+        grouped.append(char)
+        index += 1
+    text = "".join(grouped)
     if not keep_exponents:
         text = re.sub(r"\^\{?[23]\}?", "", text)
+    # Keep comparison operators as unary-sign context for values such as \le-4.
+    relation_commands = {"le": "<=", "leq": "<=", "ge": ">=", "geq": ">=", "lt": "<", "gt": ">", "neq": "!="}
+    text = re.sub(
+        r"\\(leq?|geq?|lt|gt|neq)(?![A-Za-z])",
+        lambda match: f" {relation_commands[match.group(1)]} ",
+        text,
+    )
     # A macro may be immediately followed by its numeric argument (for example, `\le4`).
     # Remove the command while leaving a boundary so the argument is still discovered.
     text = re.sub(r"\\[A-Za-z]+", " ", text)
