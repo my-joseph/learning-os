@@ -55,6 +55,8 @@ def _resolve_ref_dir(lab_dir: Path, ref_dir: Path | None = None) -> Path:
 def _run_node_tests(test_files: list[Path], cwd: Path, src_dir: Path) -> list[dict[str, Any]]:
     if not test_files:
         return []
+    if any(f.suffix == ".tsx" for f in test_files):
+        return _run_react_tests(test_files, cwd, src_dir)
     is_ts = any(f.suffix in (".ts", ".tsx") for f in test_files)
     cmd = ["node"]
     if is_ts:
@@ -64,6 +66,64 @@ def _run_node_tests(test_files: list[Path], cwd: Path, src_dir: Path) -> list[di
     env["LAB_SRC_DIR"] = str(src_dir.resolve())
     proc = subprocess.run(cmd, cwd=str(cwd), env=env, capture_output=True, text=True)
     return _parse_junit_xml(proc.stdout + "\n" + proc.stderr, force_hidden=False)
+
+
+def _run_react_tests(test_files: list[Path], cwd: Path, src_dir: Path) -> list[dict[str, Any]]:
+    """Run lab TSX acceptance tests against React DOM with the shared test installation."""
+    vitest = TOOLS_LINT_DIR / "node_modules" / ".bin" / "vitest"
+    if not vitest.is_file():
+        return [
+            {
+                "name": "React test runner unavailable",
+                "passed": False,
+                "failure_msg": f"Vitest is missing at {vitest}; run npm ci in tools/lint.",
+            }
+        ]
+    cwd = cwd.resolve()
+    src_dir = src_dir.resolve()
+    shared_modules = TOOLS_LINT_DIR / "node_modules"
+    linked: list[Path] = []
+    for project_dir in dict.fromkeys((cwd, src_dir.parent)):
+        link = project_dir / "node_modules"
+        if link.is_symlink() and link.resolve() == shared_modules.resolve():
+            continue
+        if link.exists() or link.is_symlink():
+            continue
+        link.symlink_to(shared_modules, target_is_directory=True)
+        linked.append(link)
+    try:
+        with tempfile.TemporaryDirectory(prefix="lab_vitest_", dir=TOOLS_LINT_DIR) as tmp:
+            tmp_dir = Path(tmp)
+            config = tmp_dir / "vitest.config.ts"
+            report = tmp_dir / "junit.xml"
+            config.write_text(
+                "import { defineConfig } from 'vitest/config';\n"
+                "export default defineConfig({ esbuild: { jsx: 'automatic' }, test: { environment: 'jsdom' } });\n",
+                encoding="utf-8",
+            )
+            env = dict(os.environ)
+            env["LAB_SRC_DIR"] = str(src_dir)
+            cmd = [
+                str(vitest),
+                "run",
+                *[str(f.resolve()) for f in test_files],
+                "--config",
+                str(config),
+                "--environment",
+                "jsdom",
+                "--reporter=junit",
+                f"--outputFile={report}",
+            ]
+            proc = subprocess.run(cmd, cwd=str(cwd), env=env, capture_output=True, text=True)
+            if report.is_file():
+                cases = _parse_junit_xml(report.read_text(encoding="utf-8"), force_hidden=False)
+                if cases:
+                    return cases
+            output = (proc.stderr or proc.stdout or f"Vitest exited with code {proc.returncode}").strip()
+            return [{"name": "React test execution failure", "passed": False, "failure_msg": output}]
+    finally:
+        for link in linked:
+            link.unlink(missing_ok=True)
 
 
 def _run_eslint_dir(src_dir: Path, config_path: Path) -> list[dict[str, Any]]:
@@ -96,12 +156,21 @@ def _run_tsc(tsconfig_path: Path) -> list[str]:
     tsc_bin = TOOLS_LINT_DIR / "node_modules" / ".bin" / "tsc"
     if not tsc_bin.exists():
         raise FileNotFoundError(f"TypeScript compiler not installed at {tsc_bin}. Run `npm ci` in tools/lint.")
-    proc = subprocess.run(
-        [str(tsc_bin), "--noEmit", "--pretty", "false", "-p", str(tsconfig_path.resolve())],
-        cwd=str(tsconfig_path.parent),
-        capture_output=True,
-        text=True,
-    )
+    project_modules = tsconfig_path.parent / "node_modules"
+    created_link = False
+    if not project_modules.exists() and not project_modules.is_symlink():
+        project_modules.symlink_to(TOOLS_LINT_DIR / "node_modules", target_is_directory=True)
+        created_link = True
+    try:
+        proc = subprocess.run(
+            [str(tsc_bin), "--noEmit", "--pretty", "false", "-p", str(tsconfig_path.resolve())],
+            cwd=str(tsconfig_path.parent),
+            capture_output=True,
+            text=True,
+        )
+    finally:
+        if created_link:
+            project_modules.unlink(missing_ok=True)
     if proc.returncode == 0:
         return []
     combined = (proc.stdout or "") + "\n" + (proc.stderr or "")
@@ -110,7 +179,9 @@ def _run_tsc(tsconfig_path: Path) -> list[str]:
 
 
 def _milestone_hidden_tests(hidden_dir: Path, milestone_id: str) -> list[Path]:
-    all_hidden = sorted(list(hidden_dir.glob("*.test.ts")) + list(hidden_dir.glob("*.test.js")))
+    all_hidden = sorted(
+        list(hidden_dir.glob("*.test.tsx")) + list(hidden_dir.glob("*.test.ts")) + list(hidden_dir.glob("*.test.js"))
+    )
     prefix = f"{milestone_id.lower()}_"
     matched = [f for f in all_hidden if f.name.lower().startswith(prefix)]
     return matched if matched else all_hidden

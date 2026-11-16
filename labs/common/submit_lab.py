@@ -56,13 +56,28 @@ def run_tests_and_parse(lab_dir: Path, config: dict):
     test_cmd = config.get("testCommand", "node --experimental-strip-types --test --test-reporter=junit tests/*.test.ts")
 
     print(f"{CYAN}▶ Executing Test Suite:{RESET} {test_cmd}")
-    proc = subprocess.run(
-        test_cmd,
-        shell=True,
-        cwd=lab_dir,
-        capture_output=True,
-        text=True,
-    )
+    shared_modules = _REPO_ROOT / "tools" / "lint" / "node_modules"
+    uses_react = "vitest" in test_cmd or any(lab_dir.glob("tests/**/*.test.tsx"))
+    modules_link = lab_dir / "node_modules"
+    created_link = False
+    env = dict(os.environ)
+    if uses_react and shared_modules.is_dir():
+        env["PATH"] = str(shared_modules / ".bin") + os.pathsep + env.get("PATH", "")
+        if not modules_link.exists() and not modules_link.is_symlink():
+            modules_link.symlink_to(shared_modules, target_is_directory=True)
+            created_link = True
+    try:
+        proc = subprocess.run(
+            test_cmd,
+            shell=True,
+            cwd=lab_dir,
+            env=env,
+            capture_output=True,
+            text=True,
+        )
+    finally:
+        if created_link:
+            modules_link.unlink(missing_ok=True)
     raw_output = proc.stdout + "\n" + proc.stderr
 
     # Locate XML content
