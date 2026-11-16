@@ -28,10 +28,12 @@ from code_engine.answer_check import check_answer, parse_tokens
 from quality_rules import QUALITY_RULES, check_gate_g3_set, verify_quality_gates
 
 BANNED = [
-    (re.compile(r"__"), "Markdown underscore emphasis (__)"),
     (re.compile(r"\[\[[^\]]*\]\]"), "raw [[ID]] token"),
     (re.compile(r"[\u0E00-\u0E7F]"), "non-English (Thai) text"),
 ]
+
+_MARKDOWN_CODE_SPAN_RE = re.compile(r"```[\s\S]*?```|`[^`\n]*`")
+_UNDERSCORE_EMPHASIS_RE = re.compile(r"__")
 
 TEXT_FIELDS = ["prompt", "checkpointHint", "context", "inputHint", "category"]
 
@@ -44,9 +46,16 @@ def _fail(pid, msg):
     raise VerificationError(f"[{pid}] {msg}")
 
 
+def _strip_markdown_code(text: str) -> str:
+    """Remove fenced code blocks and inline backtick spans for prose-only checks."""
+    return _MARKDOWN_CODE_SPAN_RE.sub("", text)
+
+
 def check_text_safety(pid, label, text):
     if not isinstance(text, str):
         return
+    if _UNDERSCORE_EMPHASIS_RE.search(_strip_markdown_code(text)):
+        _fail(pid, f"{label} contains Markdown underscore emphasis (__): {text[:120]}")
     for rx, what in BANNED:
         if rx.search(text):
             _fail(pid, f"{label} contains {what}: {text[:120]}")

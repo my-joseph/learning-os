@@ -12,7 +12,7 @@ Goal: a PRG drill that matches what the learner asked for and passes every gate 
 Take the brief from the request; ask only if the unit is missing or no vault exists for it.
 - **Scope**: a unit (`PRG-T01-C01-U01`) or a chapter (`PRG-T01-C01`). A **unit drill** uses only that unit's archetypes, never another unit's. A **chapter drill** mixes the archetypes of all its units. Use the scope code as the draft's `unitCode`.
 - **Context to inspect first**:
-  1. Read the unit's Notion page (`notion_sync.client.get_all_blocks` via `id_map.json`) and its curriculum row in `docs/prg_curriculum_v2.md` (`Learning Objective`, `Expected Output`, `Practice Type`, `Prereqs`).
+  1. Read the unit's Notion page via `id_map.json` (`from notion_sync.client import load_env, require_token, get_all_blocks; token = require_token(load_env().get("NOTION_TOKEN")); blocks = get_all_blocks(page_id, token)`) and its curriculum row in `docs/prg_curriculum_v2.md` (`Learning Objective`, `Expected Output`, `Practice Type`, `Prereqs`).
   2. Run `.venv/bin/python -m scripts.vault_report <UNIT> --log` to see proven vs. failing levels.
   3. Run `.venv/bin/python -m scripts.weak_spots <UNIT>` to see open weak spots (`matchedTrap >= 2`, ESLint rules, `QC-*` findings, and the `NEXT` line). Target open weak spots when present.
 - **Count, levels & mix**: default 4–6 problems across the levels the vault supports (e.g. L1–L3/L4), or matching the requested `difficulty`. Per `rules/07_problem_generation.md`, any drill of `>= 4` problems must include level spread (when `difficulty` is `ALL`) and at least one non-implement item (`fix-bug`, `refactor`, `predict-output`, or `trace-explain`).
@@ -49,7 +49,7 @@ Per problem:
 - `archetypeKey`, `commonTrapTag` (must exist in that archetype's `cognitiveTraps`), `context` (realistic production domain), `entryPoint`.
 - `prompt`: structured Markdown (> 250 chars requires sections `**...**`/`###`, bullets `- `, and backticks `` ` ``; zero wall-of-text; no `Defect Analysis:`/`Root Cause:` spoon-feeding).
 - `inputHint` / `checkpointHint`: zero-leak (`rules/00_core.md` §6, `rules/04_code.md` §7) — never reveal the answer, bug line, or internal data structures (`secondary Map`, `use closure`).
-- `starterCode`: compiles/parses cleanly, has stub bodies (or realistic buggy code for `fix-bug`) that **fail at least one visible test**, and does not contain `solutionCode` or `// BUG:` / `// FIX HERE:` comments.
+- `starterCode`: compiles/parses cleanly, passes Layer 2 ESLint with the drill's config (stubs must not import unused modules), has stub bodies (or realistic buggy code for `fix-bug`) that **fail at least one visible test**, and does not contain `solutionCode` or `// BUG:` / `// FIX HERE:` comments. Fix-bug/refactor starters with intentional lint issues must declare per-problem `starterLintExpected: [{rule, reason}]` and state in `prompt` that the structure must be improved too (`refactor`, `simplify`, `split`, `complexity`).
 - `solutionCode`: passes all `visibleTests` + `hiddenTests`, and passes Layer 2 ESLint (`tools/lint/base.js`) + `tsc --noEmit` (for TS presets).
 - `trapMutant`: a plausible wrong solution embodying `commonTrapTag` that compiles/parses cleanly and **FAILS `hiddenTests`**.
 - `visibleTests`, `hiddenTests`: realistic edge cases; any test with `setTimeout > 50ms` must use an injectable clock (`options.now`). Visible test names must not leak the solution.

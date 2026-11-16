@@ -41,12 +41,12 @@ class TestAiCodeIngest(unittest.TestCase):
             ),
             "inputHint": "Implement a stateful closure tracking accumulated tokens and elapsed milliseconds",
             "starterCode": (
-                "function createTokenBucketRateLimiter({ capacity, refillRatePerSecond }) {\n"
+                "function createTokenBucketRateLimiter(_options) {\n"
                 "  // TODO: implement token bucket rate limiter\n"
                 "  return {\n"
-                "    consume(cost = 1) {\n"
+                "    consume(_cost = 1) {\n"
                 "      return false;\n"
-                "    }\n"
+                "    },\n"
                 "  };\n"
                 "}\n\n"
                 "module.exports = { createTokenBucketRateLimiter };\n"

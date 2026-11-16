@@ -566,3 +566,96 @@ def test_gate_refuses_bad_mix_and_duplicate_context(tmp_path):
             workspace_root=str(tmp_path / "ws"),
             vault_dir=str(vault_dir),
         )
+
+
+def test_gate_refuses_unused_import_in_stub_starter(tmp_path):
+    _require_lint_tools()
+    vault_dir = tmp_path / "vault"
+    _seed_vault(vault_dir)
+    draft = _good_four_problem_draft()
+    draft["problems"][0]["starterCode"] = (
+        "const path = require('path');\n"
+        "function resolveRetryDelay(_options) {\n"
+        "  return null;\n"
+        "}\n"
+        "module.exports = { resolveRetryDelay };\n"
+    )
+
+    errors = check_code_drill(draft, vault_dir=str(vault_dir))
+    assert any("starterCode failed Layer 2 lint" in e and "no-unused-vars" in e for e in errors)
+
+
+def test_gate_allows_starter_lint_via_drill_override(tmp_path):
+    _require_lint_tools()
+    vault_dir = tmp_path / "vault"
+    _seed_vault(vault_dir)
+    draft = _good_four_problem_draft()
+    draft["lintOverrides"] = [{"rule": "no-var", "reason": "Legacy starter intentionally uses var"}]
+    draft["problems"][2]["starterCode"] = (
+        "function appendLineItem(items, nextItem) {\n"
+        "  var copy = items;\n"
+        "  copy.push(nextItem);\n"
+        "  return copy;\n"
+        "}\n"
+        "module.exports = { appendLineItem };\n"
+    )
+
+    assert check_code_drill(draft, vault_dir=str(vault_dir)) == []
+
+
+def test_gate_starter_lint_expected_requires_fix_or_refactor_and_prompt_mention(tmp_path):
+    _require_lint_tools()
+    vault_dir = tmp_path / "vault"
+    _seed_vault(vault_dir)
+
+    # 1. Rejected on implement stub
+    draft_stub = _good_four_problem_draft()
+    draft_stub["problems"][0]["starterLintExpected"] = [{"rule": "no-unused-vars", "reason": "Stub import"}]
+    errors_stub = check_code_drill(draft_stub, vault_dir=str(vault_dir))
+    assert any("only allowed on fix-bug or refactor" in e for e in errors_stub)
+
+    # 2. Rejected on fix-bug when prompt does not mention structural improvement
+    draft_no_prompt = _good_four_problem_draft()
+    draft_no_prompt["problems"][2]["starterCode"] = (
+        "function appendLineItem(items, nextItem) {\n"
+        "  var copy = items;\n"
+        "  copy.push(nextItem);\n"
+        "  return copy;\n"
+        "}\n"
+        "module.exports = { appendLineItem };\n"
+    )
+    draft_no_prompt["problems"][2]["starterLintExpected"] = [
+        {"rule": "no-var", "reason": "Legacy starter uses var before refactor"}
+    ]
+    errors_no_prompt = check_code_drill(draft_no_prompt, vault_dir=str(vault_dir))
+    assert any("structure must be improved too" in e for e in errors_no_prompt)
+
+    # 3. Accepted when prompt mentions refactor/simplify/split/complexity
+    draft_ok = deepcopy(draft_no_prompt)
+    draft_ok["problems"][2]["prompt"] = (
+        "Fix and refactor `appendLineItem(items, nextItem)` so it returns a new array without mutating `items`."
+    )
+    assert check_code_drill(draft_ok, vault_dir=str(vault_dir)) == []
+
+
+def test_underscore_emphasis_check_ignores_backticks_and_code_blocks(tmp_path):
+    _require_lint_tools()
+    vault_dir = tmp_path / "vault"
+    _seed_vault(vault_dir)
+
+    # 1. __ inside inline backticks and fenced code block is allowed
+    draft = _good_four_problem_draft()
+    draft["problems"][0]["prompt"] = (
+        "Implement `resolveRetryDelay(options)` using `__dirname` fallback or:\n"
+        "```js\n"
+        "const root = __dirname;\n"
+        "```\n"
+        "- Return `options.delayMs` or `250` when nullish."
+    )
+    assert check_code_drill(draft, vault_dir=str(vault_dir)) == []
+
+    # 2. __ outside backticks (Markdown emphasis) is still rejected
+    draft_bad = _good_four_problem_draft()
+    draft_bad["problems"][0]["prompt"] = "Implement `resolveRetryDelay(options)` with __strict__ fallback to `250`."
+    errors = check_code_drill(draft_bad, vault_dir=str(vault_dir))
+    assert any("Markdown underscore emphasis (__)" in e for e in errors)

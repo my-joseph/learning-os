@@ -12,9 +12,13 @@ Extracted from the retired practice_hub.py (P4). Run from the repo root (relativ
 Imported by practice-studio's sync-notion route as `notion_sync.drill_sync`.
 """
 
+import argparse
 import json
 import os
 import re
+import sys
+from pathlib import Path
+from typing import Optional
 
 from notion_sync.blocks import (
     bullet,
@@ -427,3 +431,47 @@ def sync_drill_to_notion(drill_doc: dict) -> dict:
         }
     except Exception as err:  # noqa: BLE001 - surfaced to the Studio as a failure, not swallowed
         return {"ok": False, "localFilePath": path, "error": f"Notion sync failed: {type(err).__name__}: {err}"}
+
+
+def _resolve_drill_path(target: str) -> Path:
+    """Resolve a drill JSON path from a file path or a DRILL_ID under get_data_root()."""
+    candidate = Path(target)
+    if candidate.is_file():
+        return candidate
+
+    data_root = Path(get_data_root())
+    matches = sorted(data_root.rglob(f"{target}.json")) if not target.endswith(".json") else []
+    if len(matches) == 1:
+        return matches[0]
+    if len(matches) > 1:
+        raise FileNotFoundError(f"Multiple drill files matched '{target}': {', '.join(str(m) for m in matches)}")
+    raise FileNotFoundError(f"Drill not found: '{target}' (checked path and {data_root}/**/{target}.json)")
+
+
+def main(argv: Optional[list[str]] = None) -> int:
+    """CLI entrypoint: sync a pristine or attempted drill JSON to Notion."""
+    parser = argparse.ArgumentParser(
+        prog="python -m notion_sync.drill_sync",
+        description="Save drill progress locally and sync the drill record to Notion.",
+    )
+    parser.add_argument("target", help="Drill ID (e.g. DRL-PRG-T00-C02-U01-01) or path to drill JSON")
+    parser.add_argument("--dry-run", action="store_true", help="Run preflight and local save without calling Notion")
+    args = parser.parse_args(argv)
+
+    try:
+        drill_path = _resolve_drill_path(args.target)
+        drill_doc = json.loads(drill_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        return 1
+
+    if args.dry_run:
+        drill_doc["dryRun"] = True
+
+    result = sync_drill_to_notion(drill_doc)
+    print(json.dumps(result, ensure_ascii=False, indent=2))
+    return 0 if result.get("ok") else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
