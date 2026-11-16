@@ -112,12 +112,18 @@ problem as correct only on a pass.
 
 ## Build order (each one PR)
 
-| PR | Content | By |
-| :-- | :-- | :-- |
-| R1 | Root ESLint + tsc config, `npm run check` in generated workspaces and the lab, tests | Gemini |
-| R2 | `qualityChecks` schema, universal list, backfill for the 3 PRG vaults, ingest gates (reference clean, known-bad caught) | Gemini, rubric content reviewed by Claude |
-| R3 | `state.reviews[]` record + `scripts/review_record.py` CLI + weak_spots/mastery reading it, tests | Gemini |
-| R4 | `review-code` skill (this document's rules), retire `code_engine/review.py` | Claude |
+| PR | Content | By | Status |
+| :-- | :-- | :-- | :-- |
+| R1 | ESLint + tsc toolkit (`tools/lint/`), `npm run check` in generated workspaces and the lab, tests | Gemini | done |
+| R2 | `qualityChecks` schema, universal list, backfill for the 3 PRG vaults, ingest gates (reference clean, known-bad caught) | Gemini, rubric content reviewed by Claude | pending |
+| R3 | `state.reviews[]` record + `scripts/review_record.py` CLI + weak_spots/mastery reading it, tests | Gemini | pending |
+| R4 | `review-code` skill (this document's rules), retire `code_engine/review.py` | Claude | pending |
+
+### R1 deviations from v1 draft
+- **Isolated `tools/lint/` instead of repo-root `package.json`:** `practice-studio/` uses ESLint 8 + `.eslintrc` via `next lint`, so ESLint 9 + `typescript-eslint` + `typescript` + `globals` live in `tools/lint/` and each generated workspace / lab imports `prgConfig` from `tools/lint/base.js`.
+- **Test-file allowances:** `*.test.*` relaxes `max-lines-per-function` and `max-params`, and `@typescript-eslint/no-floating-promises` allowlists `node:test` lifecycle calls (`test`, `describe`, `it`, `before`, `after`, `beforeEach`, `afterEach`) via `allowForKnownSafeCalls`.
+- **Unused stub parameters:** `no-unused-vars` / `@typescript-eslint/no-unused-vars` ignores `^_`-prefixed names (`argsIgnorePattern: "^_"`), and starter code stubs prefix unused parameters with `_` rather than relaxing `no-unused-vars`.
+- **Per-workspace `tsconfig.json`:** TypeScript workspaces and `LAB-PRG-T03-C01-01` include a `tsconfig.json` (`strict: true`, `noEmit: true`) so `projectService` and `tsc --noEmit` run deterministically without `allowDefaultProject` file-count limits.
 
 ## Out of scope for v1
 

@@ -15,6 +15,7 @@ so developers can write and debug in their real IDE with full LSP, keybindings, 
 
 import json
 import os
+import re
 import shutil
 
 ARCHETYPE_LABELS = {
@@ -42,6 +43,8 @@ ENVIRONMENT_PRESETS = {
         "scripts": {
             "test": "node --test *.test.js",
             "test:watch": "node --test --watch *.test.js",
+            "lint": "../../../tools/lint/node_modules/.bin/eslint --format ../../../tools/lint/format.js .",
+            "check": "npm test && npm run lint",
             "review": "python3 ../../../code_engine/review.py",
             "submit": "python3 ../../../code_engine/submit.py",
         },
@@ -53,7 +56,9 @@ ENVIRONMENT_PRESETS = {
         "scripts": {
             "test": "node --experimental-strip-types --test *.test.ts",
             "test:watch": "node --experimental-strip-types --test --watch *.test.ts",
-            "typecheck": "tsc --noEmit",
+            "lint": "../../../tools/lint/node_modules/.bin/eslint --format ../../../tools/lint/format.js .",
+            "typecheck": "../../../tools/lint/node_modules/.bin/tsc --noEmit",
+            "check": "npm test && npm run lint && npm run typecheck",
             "review": "python3 ../../../code_engine/review.py",
             "submit": "python3 ../../../code_engine/submit.py",
         },
@@ -68,6 +73,9 @@ ENVIRONMENT_PRESETS = {
         "scripts": {
             "test": "vitest run",
             "test:watch": "vitest",
+            "lint": "../../../tools/lint/node_modules/.bin/eslint --format ../../../tools/lint/format.js .",
+            "typecheck": "../../../tools/lint/node_modules/.bin/tsc --noEmit",
+            "check": "npm test && npm run lint && npm run typecheck",
             "review": "python3 ../../../code_engine/review.py",
             "submit": "python3 ../../../code_engine/submit.py",
         },
@@ -86,6 +94,9 @@ ENVIRONMENT_PRESETS = {
         "scripts": {
             "test": "node --experimental-strip-types --test *.test.ts",
             "test:watch": "node --experimental-strip-types --test --watch *.test.ts",
+            "lint": "../../../tools/lint/node_modules/.bin/eslint --format ../../../tools/lint/format.js .",
+            "typecheck": "../../../tools/lint/node_modules/.bin/tsc --noEmit",
+            "check": "npm test && npm run lint && npm run typecheck",
             "review": "python3 ../../../code_engine/review.py",
             "submit": "python3 ../../../code_engine/submit.py",
         },
@@ -224,8 +235,9 @@ def materialize_drill_workspace(drill_doc: dict, root_dir: str = ".") -> dict:
         for idx, t in enumerate(prob.get("visibleTests", []), 1):
             t_name = json.dumps(f"[{pid}-T{idx:02d}] " + t.get("name", f"scenario {idx}"))
             t_code = t.get("testCode", "").strip()
+            fn_prefix = "async () =>" if re.search(r"\bawait\b", t_code) else "() =>"
             test_blocks.append(f"""
-test({t_name}, async () => {{
+test({t_name}, {fn_prefix} {{
   {t_code}
 }});
 """)
@@ -296,6 +308,37 @@ test({t_name}, async () => {{
         json.dump(pkg_data, f, indent=2)
         f.write("\n")
 
+    # 4b. Write eslint.config.js (and tsconfig.json for TS presets) in workspace
+    lint_overrides = drill_doc.get("lintOverrides") or []
+    eslint_cfg_path = os.path.join(ws_dir, "eslint.config.js")
+    eslint_cfg_content = (
+        'import { prgConfig } from "../../../tools/lint/base.js";\n\n'
+        f"export default prgConfig({{ overrides: {json.dumps(lint_overrides)} }});\n"
+    )
+    with open(eslint_cfg_path, "w", encoding="utf-8") as f:
+        f.write(eslint_cfg_content)
+
+    if preset_key in ("typescript-strict", "backend-sqlite", "react-dom"):
+        tsconfig_path = os.path.join(ws_dir, "tsconfig.json")
+        tsconfig_data = {
+            "compilerOptions": {
+                "target": "ES2024",
+                "module": "NodeNext",
+                "moduleResolution": "NodeNext",
+                "strict": True,
+                "noEmit": True,
+                "allowImportingTsExtensions": True,
+                "skipLibCheck": True,
+            },
+            "include": ["*.ts", "*.tsx"],
+            "exclude": ["*.test.ts", "*.test.tsx"],
+        }
+        if preset_key == "react-dom":
+            tsconfig_data["compilerOptions"]["jsx"] = "react-jsx"
+        with open(tsconfig_path, "w", encoding="utf-8") as f:
+            json.dump(tsconfig_data, f, indent=2)
+            f.write("\n")
+
     # 5. Write README.md in workspace
     readme_path = os.path.join(ws_dir, "README.md")
     readme_lines = [
@@ -322,6 +365,9 @@ test({t_name}, async () => {{
         "",
         "# Run tests for a specific question",
         "npm run test:q01",
+        "",
+        "# Run tests + lint (+ typecheck for TypeScript)",
+        "npm run check",
         "",
         "# Request Senior Tech Lead AI PR Review (packages code & copies prompt to clipboard)",
         "npm run review",
