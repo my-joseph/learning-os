@@ -1,0 +1,372 @@
+{
+  "unitCode": "PRG-T02-C01",
+  "unitTitle": "React Mental Model & Component Architecture",
+  "description": "React reasoning vault for React Mental Model & Component Architecture.",
+  "archetypes": [
+    {
+      "archetypeKey": "prg-t02-c01-u01-jsx-and-component-basics",
+      "unitCode": "PRG-T02-C01-U01",
+      "level": 1,
+      "archetype": "problem-solving",
+      "name": "JSX and Component Basics Component Contract",
+      "coreConcept": "JSX is a description of UI, not a template string. A component call creates an element description; React later reconciles it with the current tree.",
+      "mentalModel": [
+        "Identify the changing value and its single owner.",
+        "Trace one user event through the next render.",
+        "Verify the visible contract at empty and boundary inputs."
+      ],
+      "governingInvariant": "Each rendered result follows the current props/state snapshot; updates preserve the unit's lifecycle and accessibility contract.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "react-stale-or-duplicated-state",
+          "name": "Stale or Duplicated UI State",
+          "description": "Treating JSX as HTML parsed by the browser or calling a component as an ordinary function bypasses React’s element and reconciliation model.",
+          "reproducer": "Exercise repeated updates and a boundary transition; check whether the rendered UI remains synchronized with its source."
+        }
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-prg-t02-c01-u01-state-owner",
+          "check": "Every changing UI value has one clear owner, and derived values are computed from current inputs rather than stored as competing copies.",
+          "why": "Competing sources of truth drift after updates and produce stale screens.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function Summary({ total }) { const [displayTotal] = React.useState(total); return <output>{displayTotal}</output>; }",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-prg-t02-c01-u01-lifecycle-boundary",
+          "check": "The component preserves the framework lifecycle boundary required by the unit and cleans up any external synchronization it starts.",
+          "why": "Ignoring lifecycle boundaries creates stale output, duplicate work, or leaked resources.",
+          "severity": "should",
+          "knownBad": {
+            "code": "function BadPanel({ value }) { React.useEffect(() => { window.addEventListener('resize', () => console.log(value)); }, []); return null; }",
+            "caughtBy": "review"
+          }
+        }
+      ],
+      "usedContexts": []
+    },
+    {
+      "archetypeKey": "prg-t02-c01-u02-props-and-component-composition",
+      "unitCode": "PRG-T02-C01-U02",
+      "level": 1,
+      "archetype": "problem-solving",
+      "name": "Props and Component Composition Component Contract",
+      "coreConcept": "Props are inputs owned by the parent. Composition passes element slots such as children, allowing a parent to control layout while child components own focused behavior.",
+      "mentalModel": [
+        "Identify the changing value and its single owner.",
+        "Trace one user event through the next render.",
+        "Verify the visible contract at empty and boundary inputs."
+      ],
+      "governingInvariant": "Each rendered result follows the current props/state snapshot; updates preserve the unit's lifecycle and accessibility contract.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "react-stale-or-duplicated-state",
+          "name": "Stale or Duplicated UI State",
+          "description": "Growing boolean flags create invalid combinations and make one component responsible for unrelated layouts.",
+          "reproducer": "Exercise repeated updates and a boundary transition; check whether the rendered UI remains synchronized with its source."
+        }
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-prg-t02-c01-u02-state-owner",
+          "check": "Every changing UI value has one clear owner, and derived values are computed from current inputs rather than stored as competing copies.",
+          "why": "Competing sources of truth drift after updates and produce stale screens.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function Summary({ total }) { const [displayTotal] = React.useState(total); return <output>{displayTotal}</output>; }",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-prg-t02-c01-u02-lifecycle-boundary",
+          "check": "The component preserves the framework lifecycle boundary required by the unit and cleans up any external synchronization it starts.",
+          "why": "Ignoring lifecycle boundaries creates stale output, duplicate work, or leaked resources.",
+          "severity": "should",
+          "knownBad": {
+            "code": "function BadPanel({ value }) { React.useEffect(() => { window.addEventListener('resize', () => console.log(value)); }, []); return null; }",
+            "caughtBy": "review"
+          }
+        }
+      ],
+      "usedContexts": []
+    },
+    {
+      "archetypeKey": "prg-t02-c01-u03-state-and-event-handling",
+      "unitCode": "PRG-T02-C01-U03",
+      "level": 1,
+      "archetype": "problem-solving",
+      "name": "State and Event Handling Component Contract",
+      "coreConcept": "A render is a snapshot: handlers close over the props and state from that render. A setter queues a future render; it does not mutate the current snapshot.",
+      "mentalModel": [
+        "Identify the changing value and its single owner.",
+        "Trace one user event through the next render.",
+        "Verify the visible contract at empty and boundary inputs."
+      ],
+      "governingInvariant": "Each rendered result follows the current props/state snapshot; updates preserve the unit's lifecycle and accessibility contract.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "react-stale-or-duplicated-state",
+          "name": "Stale or Duplicated UI State",
+          "description": "Duplicating derived values in state allows the copies to drift; reading a captured value in repeated queued updates can lose increments.",
+          "reproducer": "Exercise repeated updates and a boundary transition; check whether the rendered UI remains synchronized with its source."
+        }
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-prg-t02-c01-u03-state-owner",
+          "check": "Every changing UI value has one clear owner, and derived values are computed from current inputs rather than stored as competing copies.",
+          "why": "Competing sources of truth drift after updates and produce stale screens.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function Summary({ total }) { const [displayTotal] = React.useState(total); return <output>{displayTotal}</output>; }",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-prg-t02-c01-u03-lifecycle-boundary",
+          "check": "The component preserves the framework lifecycle boundary required by the unit and cleans up any external synchronization it starts.",
+          "why": "Ignoring lifecycle boundaries creates stale output, duplicate work, or leaked resources.",
+          "severity": "should",
+          "knownBad": {
+            "code": "function BadPanel({ value }) { React.useEffect(() => { window.addEventListener('resize', () => console.log(value)); }, []); return null; }",
+            "caughtBy": "review"
+          }
+        }
+      ],
+      "usedContexts": [
+        "warehouse_inventory_save_toggle",
+        "subscription_seat_quantity_stepper",
+        "checkout_cart_summary",
+        "catalog_search_field"
+      ]
+    },
+    {
+      "archetypeKey": "prg-t02-c01-u04-state-updates-and-immutability",
+      "unitCode": "PRG-T02-C01-U04",
+      "level": 1,
+      "archetype": "problem-solving",
+      "name": "State Updates and Immutability Component Contract",
+      "coreConcept": "React compares state identity to decide whether work changed. Immutable updates create a new path from the root to the changed nested value while preserving untouched branches.",
+      "mentalModel": [
+        "Identify the changing value and its single owner.",
+        "Trace one user event through the next render.",
+        "Verify the visible contract at empty and boundary inputs."
+      ],
+      "governingInvariant": "Each rendered result follows the current props/state snapshot; updates preserve the unit's lifecycle and accessibility contract.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "react-stale-or-duplicated-state",
+          "name": "Stale or Duplicated UI State",
+          "description": "Mutating an existing object then passing the same reference can suppress an update and can corrupt previous render snapshots.",
+          "reproducer": "Exercise repeated updates and a boundary transition; check whether the rendered UI remains synchronized with its source."
+        }
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-prg-t02-c01-u04-state-owner",
+          "check": "Every changing UI value has one clear owner, and derived values are computed from current inputs rather than stored as competing copies.",
+          "why": "Competing sources of truth drift after updates and produce stale screens.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function Summary({ total }) { const [displayTotal] = React.useState(total); return <output>{displayTotal}</output>; }",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-prg-t02-c01-u04-lifecycle-boundary",
+          "check": "The component preserves the framework lifecycle boundary required by the unit and cleans up any external synchronization it starts.",
+          "why": "Ignoring lifecycle boundaries creates stale output, duplicate work, or leaked resources.",
+          "severity": "should",
+          "knownBad": {
+            "code": "function BadPanel({ value }) { React.useEffect(() => { window.addEventListener('resize', () => console.log(value)); }, []); return null; }",
+            "caughtBy": "review"
+          }
+        }
+      ],
+      "usedContexts": []
+    },
+    {
+      "archetypeKey": "prg-t02-c01-u05-effects-and-synchronization",
+      "unitCode": "PRG-T02-C01-U05",
+      "level": 1,
+      "archetype": "problem-solving",
+      "name": "Effects and Synchronization Component Contract",
+      "coreConcept": "Effects synchronize a committed React tree with an external system. Setup runs after commit; cleanup runs before replacement setup and on unmount.",
+      "mentalModel": [
+        "Identify the changing value and its single owner.",
+        "Trace one user event through the next render.",
+        "Verify the visible contract at empty and boundary inputs."
+      ],
+      "governingInvariant": "Each rendered result follows the current props/state snapshot; updates preserve the unit's lifecycle and accessibility contract.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "react-stale-or-duplicated-state",
+          "name": "Stale or Duplicated UI State",
+          "description": "An effect that mirrors props into state creates a stale extra source of truth; missing cleanup leaves duplicate subscriptions or timers.",
+          "reproducer": "Exercise repeated updates and a boundary transition; check whether the rendered UI remains synchronized with its source."
+        }
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-prg-t02-c01-u05-state-owner",
+          "check": "Every changing UI value has one clear owner, and derived values are computed from current inputs rather than stored as competing copies.",
+          "why": "Competing sources of truth drift after updates and produce stale screens.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function Summary({ total }) { const [displayTotal] = React.useState(total); return <output>{displayTotal}</output>; }",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-prg-t02-c01-u05-lifecycle-boundary",
+          "check": "The component preserves the framework lifecycle boundary required by the unit and cleans up any external synchronization it starts.",
+          "why": "Ignoring lifecycle boundaries creates stale output, duplicate work, or leaked resources.",
+          "severity": "should",
+          "knownBad": {
+            "code": "function BadPanel({ value }) { React.useEffect(() => { window.addEventListener('resize', () => console.log(value)); }, []); return null; }",
+            "caughtBy": "review"
+          }
+        }
+      ],
+      "usedContexts": []
+    },
+    {
+      "archetypeKey": "prg-t02-c01-u06-refs-and-dom-access",
+      "unitCode": "PRG-T02-C01-U06",
+      "level": 1,
+      "archetype": "problem-solving",
+      "name": "Refs and DOM Access Component Contract",
+      "coreConcept": "A ref is a stable container whose current value can change without triggering a render. DOM refs are assigned after commit and cleared when a node leaves the tree.",
+      "mentalModel": [
+        "Identify the changing value and its single owner.",
+        "Trace one user event through the next render.",
+        "Verify the visible contract at empty and boundary inputs."
+      ],
+      "governingInvariant": "Each rendered result follows the current props/state snapshot; updates preserve the unit's lifecycle and accessibility contract.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "react-stale-or-duplicated-state",
+          "name": "Stale or Duplicated UI State",
+          "description": "Writing a changing display value only to a ref will not refresh the UI, while reading or writing refs during render breaks render purity.",
+          "reproducer": "Exercise repeated updates and a boundary transition; check whether the rendered UI remains synchronized with its source."
+        }
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-prg-t02-c01-u06-state-owner",
+          "check": "Every changing UI value has one clear owner, and derived values are computed from current inputs rather than stored as competing copies.",
+          "why": "Competing sources of truth drift after updates and produce stale screens.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function Summary({ total }) { const [displayTotal] = React.useState(total); return <output>{displayTotal}</output>; }",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-prg-t02-c01-u06-lifecycle-boundary",
+          "check": "The component preserves the framework lifecycle boundary required by the unit and cleans up any external synchronization it starts.",
+          "why": "Ignoring lifecycle boundaries creates stale output, duplicate work, or leaked resources.",
+          "severity": "should",
+          "knownBad": {
+            "code": "function BadPanel({ value }) { React.useEffect(() => { window.addEventListener('resize', () => console.log(value)); }, []); return null; }",
+            "caughtBy": "review"
+          }
+        }
+      ],
+      "usedContexts": []
+    },
+    {
+      "archetypeKey": "prg-t02-c01-u07-custom-hooks",
+      "unitCode": "PRG-T02-C01-U07",
+      "level": 1,
+      "archetype": "problem-solving",
+      "name": "Custom Hooks Component Contract",
+      "coreConcept": "A custom Hook shares stateful logic, not state itself. Each caller gets an independent Hook state unless both callers intentionally subscribe to a shared external store.",
+      "mentalModel": [
+        "Identify the changing value and its single owner.",
+        "Trace one user event through the next render.",
+        "Verify the visible contract at empty and boundary inputs."
+      ],
+      "governingInvariant": "Each rendered result follows the current props/state snapshot; updates preserve the unit's lifecycle and accessibility contract.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "react-stale-or-duplicated-state",
+          "name": "Stale or Duplicated UI State",
+          "description": "Calling a Hook conditionally changes Hook call order; assuming two hook calls share local state leads to duplicated, unsynchronized behavior.",
+          "reproducer": "Exercise repeated updates and a boundary transition; check whether the rendered UI remains synchronized with its source."
+        }
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-prg-t02-c01-u07-state-owner",
+          "check": "Every changing UI value has one clear owner, and derived values are computed from current inputs rather than stored as competing copies.",
+          "why": "Competing sources of truth drift after updates and produce stale screens.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function Summary({ total }) { const [displayTotal] = React.useState(total); return <output>{displayTotal}</output>; }",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-prg-t02-c01-u07-lifecycle-boundary",
+          "check": "The component preserves the framework lifecycle boundary required by the unit and cleans up any external synchronization it starts.",
+          "why": "Ignoring lifecycle boundaries creates stale output, duplicate work, or leaked resources.",
+          "severity": "should",
+          "knownBad": {
+            "code": "function BadPanel({ value }) { React.useEffect(() => { window.addEventListener('resize', () => console.log(value)); }, []); return null; }",
+            "caughtBy": "review"
+          }
+        }
+      ],
+      "usedContexts": []
+    },
+    {
+      "archetypeKey": "prg-t02-c01-u08-rendering-re-renders-component-boundaries",
+      "unitCode": "PRG-T02-C01-U08",
+      "level": 1,
+      "archetype": "problem-solving",
+      "name": "Rendering, Re-renders & Component Boundaries Component Contract",
+      "coreConcept": "A state update schedules work for the component that owns that state and its descendants. Re-rendering computes elements; reconciliation decides which DOM work is needed.",
+      "mentalModel": [
+        "Identify the changing value and its single owner.",
+        "Trace one user event through the next render.",
+        "Verify the visible contract at empty and boundary inputs."
+      ],
+      "governingInvariant": "Each rendered result follows the current props/state snapshot; updates preserve the unit's lifecycle and accessibility contract.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "react-stale-or-duplicated-state",
+          "name": "Stale or Duplicated UI State",
+          "description": "Moving state too high broadens render work; memoizing everything can add comparison and identity complexity without reducing measured work.",
+          "reproducer": "Exercise repeated updates and a boundary transition; check whether the rendered UI remains synchronized with its source."
+        }
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-prg-t02-c01-u08-state-owner",
+          "check": "Every changing UI value has one clear owner, and derived values are computed from current inputs rather than stored as competing copies.",
+          "why": "Competing sources of truth drift after updates and produce stale screens.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function Summary({ total }) { const [displayTotal] = React.useState(total); return <output>{displayTotal}</output>; }",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-prg-t02-c01-u08-lifecycle-boundary",
+          "check": "The component preserves the framework lifecycle boundary required by the unit and cleans up any external synchronization it starts.",
+          "why": "Ignoring lifecycle boundaries creates stale output, duplicate work, or leaked resources.",
+          "severity": "should",
+          "knownBad": {
+            "code": "function BadPanel({ value }) { React.useEffect(() => { window.addEventListener('resize', () => console.log(value)); }, []); return null; }",
+            "caughtBy": "review"
+          }
+        }
+      ],
+      "usedContexts": []
+    }
+  ]
+}
