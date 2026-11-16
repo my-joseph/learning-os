@@ -84,6 +84,7 @@ def test_universal_checks_load_and_validate():
         "U-no-special-case-patch",
         "U-no-shared-mutable-state",
         "U-no-floating-promise",
+        "U-resource-lifecycle",
     }
     one_job = next(c for c in universal if c["id"] == "U-one-job")
     assert one_job["severity"] == "should"
@@ -247,7 +248,7 @@ def test_all_prg_vaults_validate():
     assert errors == []
     assert stats["vaults"] >= 3
     assert stats["archetypes"] >= 19
-    assert stats["universal"] == 10
+    assert stats["universal"] == 11
 
     for vf in sorted(VAULT_DIR.glob("*.json")):
         data = json.loads(vf.read_text(encoding="utf-8"))

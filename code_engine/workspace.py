@@ -331,6 +331,18 @@ def materialize_drill_workspace(drill_doc: dict, root_dir: str = ".") -> dict:
     preset = ENVIRONMENT_PRESETS.get(preset_key, ENVIRONMENT_PRESETS["node-vanilla"])
     ext = preset.get("defaultExt", "js")
 
+    # Workspace scripts/configs use stable relative paths from the repo root.
+    # When callers materialize into an external root (for tests or a custom
+    # workspace), expose the shared lint toolkit at that same relative path.
+    external_root = Path(root_dir).resolve()
+    shared_lint = Path(__file__).resolve().parents[1] / "tools" / "lint"
+    local_lint = external_root / "tools" / "lint"
+    if local_lint.is_symlink() and not local_lint.exists():
+        local_lint.unlink()
+    if not local_lint.exists() and not local_lint.is_symlink():
+        local_lint.parent.mkdir(parents=True, exist_ok=True)
+        local_lint.symlink_to(shared_lint, target_is_directory=True)
+
     ws_base = os.path.join("pilot", "workspace") if pilot_mode() else os.path.join("drills", "workspace")
     ws_dir = os.path.join(workspace_root(root_dir), drill_id)
     os.makedirs(ws_dir, exist_ok=True)

@@ -63,6 +63,7 @@ def spec_to_blocks(
     spec: list[dict], id_map: dict, uploader: Uploader = dry_run_uploader, prefix: str = "fig"
 ) -> list[dict]:
     """Notion blocks for a page spec. Figures are rendered and handed to `uploader` (default: nothing sent)."""
+    validate_spec(spec)
     out = []
     count = [0]
 
@@ -103,6 +104,22 @@ def spec_to_blocks(
         else:
             raise ValueError(f"unknown block type {kind!r}")
     return out
+
+
+def validate_spec(spec: list[dict]) -> None:
+    """Reject malformed content before rendering or uploading any blocks."""
+    for index, item in enumerate(spec):
+        if not isinstance(item, dict):
+            raise ValueError(f"block {index + 1} must be an object")
+        if item.get("type") == "toggle":
+            text = item.get("text")
+            if not isinstance(text, str) or not text.strip():
+                raise ValueError(f"toggle block {index + 1} requires non-empty text")
+        children = item.get("children", [])
+        if children:
+            if not isinstance(children, list):
+                raise ValueError(f"block {index + 1} children must be a list")
+            validate_spec(children)
 
 
 def heading_text(block: dict) -> str:

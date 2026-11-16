@@ -12,6 +12,11 @@ Talk to the learner in polite Thai; finding notes stored in the record are Engli
 Run every command from the **main checkout** (`/Users/Joseph/Documents/antigravity/LearningOS`, the folder that holds
 `progress/` and `drills/workspace/`), with its `.venv/bin/python`. Never edit the learner's files.
 
+Before every `review_record add`, inspect `review_record show` for that item. Stop the review loop once three
+attempts have been recorded; do not add another record, including an empty pass record, after the cap. Count the
+existing history first whenever resuming an interrupted review. A dispute is limited to one per finding and does not
+authorize an extra review attempt.
+
 ## 1. Run layers 1–2
 
 ```bash
