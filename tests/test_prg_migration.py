@@ -165,9 +165,10 @@ def test_dry_run_makes_zero_writes(tmp_path, monkeypatch):
         m_write.assert_not_called()
 
 
-def test_apply_requires_topic_and_review_flag():
+def test_apply_requires_all_and_review_flag():
     assert prg_migrate.main(["--apply", "--i-have-reviewed-the-dry-run"]) == 2
-    assert prg_migrate.main(["--topic", "PRG-T00", "--apply"]) == 2
+    assert prg_migrate.main(["--topic", "PRG-T00", "--apply", "--i-have-reviewed-the-dry-run"]) == 2
+    assert prg_migrate.main(["--all", "--apply"]) == 2
 
 
 def test_local_rename_moves_workspace_and_progress_together_and_rollback_restores(tmp_path, monkeypatch):
@@ -399,6 +400,7 @@ def test_retire_clears_relations_prefixes_title_writes_property_pointer_no_block
     assert update_rec["merged_from"] == ["PRG-T00-C02-U03"]
 
     # Rollback restores relations, title, code, and objective text
+    monkeypatch.setattr(prg_migrate, "THROTTLE_SECONDS", 0.0)
     prg_migrate.rollback_from_log(log_path, "tok", dry_run=False)
     assert p_retire_unit["properties"]["Full ID"]["rich_text"][0]["plain_text"] == "PRG-T00-C02-U03"
     assert p_retire_unit["properties"]["Unit"]["title"][0]["plain_text"] == "Legacy Functions"
@@ -406,3 +408,250 @@ def test_retire_clears_relations_prefixes_title_writes_property_pointer_no_block
     assert p_retire_unit["properties"]["Learning Topics"]["relation"] == [{"id": "pidt00"}]
     assert p_retire_unit["properties"]["Learning Chapters"]["relation"] == [{"id": "pidc02"}]
     assert p_topic["properties"]["Goal"]["rich_text"][0]["plain_text"] == "Old topic goal."
+
+
+def test_cross_topic_cycle_checkpoint_resume_and_id_map_order(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(prg_migrate, "THROTTLE_SECONDS", 0.0)
+    entries = [
+        {
+            "level": "topic",
+            "order": 3,
+            "newCode": "PRG-T03",
+            "oldCodes": ["PRG-T04"],
+            "action": "renumber",
+            "title": "Backend",
+            "objective": "Obj3",
+            "expectedOutput": None,
+            "practiceType": None,
+            "prereqs": [],
+            "parent": None,
+            "extended": False,
+        },
+        {
+            "level": "topic",
+            "order": 4,
+            "newCode": "PRG-T04",
+            "oldCodes": ["PRG-T05"],
+            "action": "renumber",
+            "title": "Frontend",
+            "objective": "Obj4",
+            "expectedOutput": None,
+            "practiceType": None,
+            "prereqs": [],
+            "parent": None,
+            "extended": False,
+        },
+        {
+            "level": "topic",
+            "order": 5,
+            "newCode": "PRG-T05",
+            "oldCodes": ["PRG-T06"],
+            "action": "renumber",
+            "title": "Databases",
+            "objective": "Obj5",
+            "expectedOutput": None,
+            "practiceType": None,
+            "prereqs": [],
+            "parent": None,
+            "extended": False,
+        },
+        {
+            "level": "topic",
+            "order": 6,
+            "newCode": "PRG-T06",
+            "oldCodes": ["PRG-T03"],
+            "action": "renumber",
+            "title": "Async",
+            "objective": "Obj6",
+            "expectedOutput": None,
+            "practiceType": None,
+            "prereqs": [],
+            "parent": None,
+            "extended": False,
+        },
+    ]
+    pages = {
+        "pidt03": _notion_page("pidt03", "PRG-T03", "Old T03", level="topic"),
+        "pidt04": _notion_page("pidt04", "PRG-T04", "Old T04", level="topic"),
+        "pidt05": _notion_page("pidt05", "PRG-T05", "Old T05", level="topic"),
+        "pidt06": _notion_page("pidt06", "PRG-T06", "Old T06", level="topic"),
+    }
+    id_map = {
+        "PRG-T03": {"id": "pidt03", "title": "Old T03"},
+        "PRG-T04": {"id": "pidt04", "title": "Old T04"},
+        "PRG-T05": {"id": "pidt05", "title": "Old T05"},
+        "PRG-T06": {"id": "pidt06", "title": "Old T06"},
+    }
+    (tmp_path / "id_map.json").write_text(json.dumps(id_map), encoding="utf-8")
+
+    events: list[str] = []
+    patch_count = 0
+    fail_on_patch = 3
+
+    def fake_req(method, endpoint, token, payload=None):
+        nonlocal patch_count
+        if method == "GET" and endpoint.startswith("pages/"):
+            return pages[endpoint.split("/", 1)[1]]
+        if method == "PATCH" and endpoint.startswith("pages/"):
+            patch_count += 1
+            if fail_on_patch and patch_count == fail_on_patch:
+                raise RuntimeError("Simulated mid-run interruption")
+            pid = endpoint.split("/", 1)[1]
+            for k, v in (payload.get("properties") or {}).items():
+                if "rich_text" in v:
+                    pages[pid]["properties"][k] = {
+                        "type": "rich_text",
+                        "rich_text": [{"plain_text": v["rich_text"][0]["text"]["content"]}],
+                    }
+                elif "title" in v:
+                    pages[pid]["properties"][k] = {
+                        "type": "title",
+                        "title": [{"plain_text": v["title"][0]["text"]["content"]}],
+                    }
+                elif "number" in v:
+                    pages[pid]["properties"][k] = {"type": "number", "number": v["number"]}
+            events.append(f"patch:{pid}:{pages[pid]['properties']['Full ID']['rich_text'][0]['plain_text']}")
+            return pages[pid]
+        raise AssertionError(f"Unexpected request: {method} {endpoint}")
+
+    def fake_rebuild(tok, old):
+        events.append("rebuild_id_map")
+        return {
+            "PRG-T03": {"id": "pidt04", "title": "Backend"},
+            "PRG-T04": {"id": "pidt05", "title": "Frontend"},
+            "PRG-T05": {"id": "pidt06", "title": "Databases"},
+            "PRG-T06": {"id": "pidt03", "title": "Async"},
+        }
+
+    def fake_save_id_map(data, path=prg_migrate.ID_MAP_PATH):
+        events.append("save_id_map")
+        path.write_text(json.dumps(data), encoding="utf-8")
+
+    monkeypatch.setattr(prg_migrate, "notion_request", fake_req)
+    monkeypatch.setattr(prg_migrate, "get_all_blocks", lambda pid, tok: [])
+    monkeypatch.setattr(prg_migrate, "rebuild_id_map", fake_rebuild)
+    monkeypatch.setattr(prg_migrate, "save_id_map", fake_save_id_map)
+
+    preflight = prg_migrate.run_preflight(entries, id_map, pages)
+    assert not preflight.errors
+    ops, refusals = prg_migrate.build_migration_plan(entries, id_map, pages, [], "tok", preflight=preflight)
+    assert not refusals
+    assert any(op.kind == "temp_rename" for op in ops)
+
+    # First run: fails on 3rd PATCH; checkpoint log already has first 2 ops, and id_map was NOT written
+    try:
+        prg_migrate.apply_plan(ops, [], "tok", entries, id_map)
+        raise AssertionError("Expected RuntimeError")
+    except RuntimeError:
+        pass
+
+    assert "rebuild_id_map" not in events
+    assert "save_id_map" not in events
+    log_files = list((tmp_path / "migrations").glob("prg_v2_*.json"))
+    assert len(log_files) == 1
+    log_path = log_files[0]
+    partial_records = json.loads(log_path.read_text(encoding="utf-8"))
+    assert len(partial_records) == 2
+
+    # Resume run: rebuilds plan from live Notion state and resumes from log_path
+    fail_on_patch = 0
+    preflight2 = prg_migrate.run_preflight(entries, id_map, pages)
+    assert not preflight2.errors
+    ops2, _ = prg_migrate.build_migration_plan(entries, id_map, pages, [], "tok", preflight=preflight2)
+    records2, _ = prg_migrate.apply_plan(ops2, [], "tok", entries, id_map, resume_log=log_path)
+
+    # All 4 topics reached their final codes
+    assert pages["pidt04"]["properties"]["Full ID"]["rich_text"][0]["plain_text"] == "PRG-T03"
+    assert pages["pidt05"]["properties"]["Full ID"]["rich_text"][0]["plain_text"] == "PRG-T04"
+    assert pages["pidt06"]["properties"]["Full ID"]["rich_text"][0]["plain_text"] == "PRG-T05"
+    assert pages["pidt03"]["properties"]["Full ID"]["rich_text"][0]["plain_text"] == "PRG-T06"
+
+    # id_map written only once, strictly after the last Notion PATCH
+    assert events.count("save_id_map") == 1
+    last_patch_idx = max(i for i, ev in enumerate(events) if ev.startswith("patch:"))
+    assert events.index("save_id_map") > last_patch_idx
+
+    # Rollback from the resumed log restores all 4 topics to original codes
+    prg_migrate.rollback_from_log(log_path, "tok", dry_run=False)
+    assert pages["pidt03"]["properties"]["Full ID"]["rich_text"][0]["plain_text"] == "PRG-T03"
+    assert pages["pidt04"]["properties"]["Full ID"]["rich_text"][0]["plain_text"] == "PRG-T04"
+    assert pages["pidt05"]["properties"]["Full ID"]["rich_text"][0]["plain_text"] == "PRG-T05"
+    assert pages["pidt06"]["properties"]["Full ID"]["rich_text"][0]["plain_text"] == "PRG-T06"
+    assert len(records2) >= 5
+
+
+def test_preflight_duplicate_unmapped_and_stray_relations(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "docs").mkdir()
+    entries = [
+        {
+            "level": "topic",
+            "order": 4,
+            "newCode": "PRG-T03",
+            "oldCodes": ["PRG-T04"],
+            "action": "renumber",
+            "title": "Backend",
+            "objective": "Obj",
+            "expectedOutput": None,
+            "practiceType": None,
+            "prereqs": [],
+            "parent": None,
+            "extended": False,
+        },
+        {
+            "level": "topic",
+            "order": 5,
+            "newCode": "PRG-T03",
+            "oldCodes": ["PRG-T05"],
+            "action": "renumber",
+            "title": "Duplicate",
+            "objective": "Obj2",
+            "expectedOutput": None,
+            "practiceType": None,
+            "prereqs": [],
+            "parent": None,
+            "extended": False,
+        },
+    ]
+    pages = {
+        "pidt04": _notion_page("pidt04", "PRG-T04", "Backend", level="topic"),
+        "pidt05": _notion_page("pidt05", "PRG-T05", "Other", level="topic"),
+        "pidstray": _notion_page("pidstray", "PRG-T99", "Stray PRG", level="topic"),
+    }
+    id_map = {
+        "PRG-T04": {"id": "pidt04", "title": "Backend"},
+        "PRG-T05": {"id": "pidt05", "title": "Other"},
+    }
+    pf = prg_migrate.run_preflight(entries, id_map, pages)
+    assert any("Duplicate final code 'PRG-T03'" in e for e in pf.errors)
+    assert any("Unmapped Notion page pidstray holds PRG code 'PRG-T99'" in e for e in pf.errors)
+
+    # main --all --apply aborts before any Notion write when preflight has errors
+    (tmp_path / "docs" / "prg_migration_map.json").write_text(json.dumps(entries), encoding="utf-8")
+    (tmp_path / "id_map.json").write_text(json.dumps(id_map), encoding="utf-8")
+    monkeypatch.setattr(prg_migrate, "load_env", lambda: {"NOTION_TOKEN": "tok"})
+    monkeypatch.setattr(prg_migrate, "fetch_notion_prg_state", lambda tok: (pages, []))
+    with mock.patch.object(prg_migrate, "apply_plan") as m_apply:
+        rc = prg_migrate.main(["--all", "--apply", "--i-have-reviewed-the-dry-run"])
+        assert rc == 1
+        m_apply.assert_not_called()
+
+    # Stray relation not in id_map is reported & removed from PRG-T04.Chapters, while in-id_map relation stays
+    entries_clean = [entries[0]]
+    p_t04 = _notion_page("pidt04", "PRG-T04", "Backend", level="topic")
+    p_t04["properties"]["Chapters"] = {
+        "type": "relation",
+        "relation": [{"id": "pidc01"}, {"id": "stray-chap-id"}],
+    }
+    pages_clean = {"pidt04": p_t04}
+    id_map_clean = {
+        "PRG-T04": {"id": "pidt04", "title": "Backend"},
+        "PRG-T04-C01": {"id": "pidc01", "title": "Real Chap"},
+    }
+    pf2 = prg_migrate.run_preflight(entries_clean, id_map_clean, pages_clean)
+    assert not pf2.errors
+    assert any("stray-chap-id" in w for w in pf2.warnings)
+    ops2, _ = prg_migrate.build_migration_plan(entries_clean, id_map_clean, pages_clean, [], "tok", preflight=pf2)
+    assert len(ops2) == 1
+    assert ops2[0].details["desired_props"]["Chapters"] == {"relation": [{"id": "pidc01"}]}

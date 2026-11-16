@@ -6,7 +6,8 @@ and makes zero writes.
 Usage:
     python -m scripts.prg_migrate
     python -m scripts.prg_migrate --topic PRG-T00
-    python -m scripts.prg_migrate --topic PRG-T00 --apply --i-have-reviewed-the-dry-run
+    python -m scripts.prg_migrate --all --apply --i-have-reviewed-the-dry-run
+    python -m scripts.prg_migrate --all --apply --i-have-reviewed-the-dry-run --resume migrations/prg_v2_<timestamp>.json
     python -m scripts.prg_migrate --rollback migrations/prg_v2_<timestamp>.json
 """
 
@@ -18,6 +19,7 @@ import json
 import re
 import shutil
 import sys
+import time
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
@@ -72,6 +74,22 @@ PARENT_RELATIONS_BY_LEVEL: dict[str, tuple[str, ...]] = {
 }
 
 RETIRE_DATE = "2026-11-16"
+THROTTLE_SECONDS = 0.35  # ~2.85 req/s to stay under Notion's ~3 req/s rate limit
+_last_notion_call_ts: float = 0.0
+
+RELATION_PROPS_CHECK = ("Chapters", "Units", "Topics", "Learning Topics", "Learning Chapters")
+
+
+def _throttle() -> None:
+    """Sleep if needed to respect Notion's ~3 req/s rate limit."""
+    global _last_notion_call_ts
+    if THROTTLE_SECONDS <= 0:
+        return
+    now = time.monotonic()
+    elapsed = now - _last_notion_call_ts
+    if _last_notion_call_ts > 0 and elapsed < THROTTLE_SECONDS:
+        time.sleep(THROTTLE_SECONDS - elapsed)
+    _last_notion_call_ts = time.monotonic()
 
 
 def _retire_title(old_title: str) -> str:
@@ -105,6 +123,10 @@ class PlannedOp:
     page_id: str | None = None
     details: dict[str, Any] = field(default_factory=dict)
 
+    @property
+    def op_key(self) -> str:
+        return f"{self.kind}:{self.level}:{self.code}:{self.page_id or ''}"
+
 
 @dataclass
 class Refusal:
@@ -113,6 +135,17 @@ class Refusal:
     code: str
     page_id: str
     reason: str
+
+
+@dataclass
+class PreFlightResult:
+    """Results of pre-flight validation before any Notion or local write."""
+
+    resolved_page_ids: dict[str, str]
+    final_code_to_page: dict[str, str]
+    errors: list[str] = field(default_factory=list)
+    warnings: list[str] = field(default_factory=list)
+    stray_relations: dict[str, dict[str, list[str]]] = field(default_factory=dict)
 
 
 def _rt(text: str) -> list[dict]:
@@ -291,14 +324,127 @@ def fetch_notion_prg_state(token: str) -> tuple[dict[str, dict], list[dict]]:
     """Read-only fetch of all PRG pages (Topics/Chapters/Units) and Drills from Notion."""
     pages_by_id: dict[str, dict] = {}
     for db_id in (TOPICS_DB, CHAPTERS_DB, UNITS_DB):
-        for page in query_all(db_id, token, {"property": "Full ID", "rich_text": {"starts_with": "PRG-"}}):
-            if not page.get("archived"):
-                pages_by_id[page["id"].replace("-", "")] = page
-        for page in query_all(db_id, token, {"property": "Full ID", "rich_text": {"starts_with": "RETIRED-PRG-"}}):
-            if not page.get("archived"):
-                pages_by_id[page["id"].replace("-", "")] = page
+        for prefix in ("PRG-", "RETIRED-PRG-", "TMP-PRG-"):
+            for page in query_all(db_id, token, {"property": "Full ID", "rich_text": {"starts_with": prefix}}):
+                if not page.get("archived"):
+                    pages_by_id[page["id"].replace("-", "")] = page
     drills = [p for p in query_all(DRILLS_DB, token) if not p.get("archived")]
     return pages_by_id, drills
+
+
+def _resolve_page_ids(
+    entries: list[dict],
+    id_map: dict[str, dict],
+    pages_by_id: dict[str, dict],
+) -> tuple[dict[str, str], dict[str, dict]]:
+    """Resolve active newCode -> Notion page_id and index live pages by Full ID."""
+    old_code_pids = {id_map[oc]["id"] for e in entries for oc in e["oldCodes"] if oc in id_map}
+    resolved_page_ids: dict[str, str] = {}
+    for e in entries:
+        nc = e["newCode"]
+        if e["oldCodes"]:
+            oc = e["oldCodes"][0]
+            if oc in id_map and id_map[oc]["id"].replace("-", "") in pages_by_id:
+                resolved_page_ids[nc or oc] = id_map[oc]["id"]
+            elif nc and nc in id_map and id_map[nc]["id"].replace("-", "") in pages_by_id:
+                resolved_page_ids[nc] = id_map[nc]["id"]
+        elif nc and nc in id_map and id_map[nc]["id"].replace("-", "") in pages_by_id:
+            if id_map[nc]["id"] not in old_code_pids:
+                resolved_page_ids[nc] = id_map[nc]["id"]
+
+    by_full_id: dict[str, dict] = {}
+    for page in pages_by_id.values():
+        fid = prop_text(page.get("properties", {}).get("Full ID")).strip()
+        if fid:
+            by_full_id[fid] = page
+
+    for e in entries:
+        nc = e["newCode"]
+        if nc and nc not in resolved_page_ids and nc in by_full_id:
+            if by_full_id[nc]["id"] not in old_code_pids:
+                resolved_page_ids[nc] = by_full_id[nc]["id"]
+
+    return resolved_page_ids, by_full_id
+
+
+def run_preflight(
+    entries: list[dict],
+    id_map: dict[str, dict],
+    pages_by_id: dict[str, dict],
+) -> PreFlightResult:
+    """Validate final code->page uniqueness, unmapped PRG pages, and stray relations."""
+    resolved_page_ids, by_full_id = _resolve_page_ids(entries, id_map, pages_by_id)
+    final_code_to_page: dict[str, str] = {}
+    page_to_final_code: dict[str, str] = {}
+    errors: list[str] = []
+    warnings: list[str] = []
+    stray_relations: dict[str, dict[str, list[str]]] = {}
+
+    for e in entries:
+        nc = e["newCode"]
+        if nc is None:
+            continue
+        if e["oldCodes"]:
+            oc = e["oldCodes"][0]
+            pid = (
+                (id_map.get(oc) or {}).get("id")
+                or (by_full_id.get(oc) or {}).get("id")
+                or resolved_page_ids.get(nc)
+                or f"<new:{nc}>"
+            )
+        else:
+            pid = resolved_page_ids.get(nc) or f"<new:{nc}>"
+        if nc in final_code_to_page and final_code_to_page[nc] != pid:
+            errors.append(f"Duplicate final code {nc!r}: held by both {final_code_to_page[nc]} and {pid}")
+        else:
+            final_code_to_page[nc] = pid
+        if not pid.startswith("<new:"):
+            pid_norm = pid.replace("-", "")
+            if pid_norm in page_to_final_code and page_to_final_code[pid_norm] != nc:
+                errors.append(f"Page {pid} mapped to multiple final codes: {page_to_final_code[pid_norm]!r} and {nc!r}")
+            else:
+                page_to_final_code[pid_norm] = nc
+
+    # Collect every page_id known to the migration map (primary, merged, retired, or already at newCode)
+    mapped_pids_norm: set[str] = {pid.replace("-", "") for pid in resolved_page_ids.values()}
+    for e in entries:
+        for oc in e["oldCodes"]:
+            if oc in id_map:
+                mapped_pids_norm.add(id_map[oc]["id"].replace("-", ""))
+            if oc in by_full_id:
+                mapped_pids_norm.add(by_full_id[oc]["id"].replace("-", ""))
+
+    id_map_pids_norm: set[str] = {
+        v["id"].replace("-", "") for v in id_map.values() if isinstance(v, dict) and "id" in v
+    }
+
+    for pid_norm, page in sorted(pages_by_id.items()):
+        props = page.get("properties", {})
+        fid = prop_text(props.get("Full ID")).strip()
+        if fid.startswith("RETIRED-"):
+            continue
+        if pid_norm not in mapped_pids_norm and (fid.startswith("PRG-") or fid.startswith("TMP-PRG-")):
+            errors.append(f"Unmapped Notion page {page['id']} holds PRG code {fid!r} (title={get_title_text(props)!r})")
+            continue
+        if pid_norm in mapped_pids_norm:
+            for rel_prop in RELATION_PROPS_CHECK:
+                rel_ids = prop_val(props.get(rel_prop)) or []
+                for rid in rel_ids:
+                    rid_norm = rid.replace("-", "")
+                    if rid_norm not in id_map_pids_norm and rid_norm not in mapped_pids_norm:
+                        stray_relations.setdefault(pid_norm, {}).setdefault(rel_prop, []).append(rid)
+                        warnings.append(
+                            f"Stray relation on {fid or page['id']} ({page['id']}).{rel_prop} -> {rid} "
+                            f"(not in id_map; will leave {rid} untouched and remove from {rel_prop})"
+                        )
+
+    return PreFlightResult(
+        resolved_page_ids=resolved_page_ids,
+        final_code_to_page=final_code_to_page,
+        errors=errors,
+        warnings=warnings,
+        stray_relations=stray_relations,
+    )
 
 
 def plan_local_operations(
@@ -465,6 +611,25 @@ def plan_local_operations(
     return ops
 
 
+def _clean_stray_relations(
+    desired: dict[str, Any],
+    page: dict | None,
+    stray_for_page: dict[str, list[str]],
+) -> dict[str, Any]:
+    """Remove non-id_map stray relation IDs from a mapped page's relations without touching the stray pages."""
+    if not page or not stray_for_page:
+        return desired
+    props = page.get("properties", {})
+    for rel_prop, stray_ids in stray_for_page.items():
+        if rel_prop in desired:
+            continue
+        cur_ids = prop_val(props.get(rel_prop)) or []
+        stray_set = {s.replace("-", "") for s in stray_ids}
+        cleaned = [rid for rid in cur_ids if rid.replace("-", "") not in stray_set]
+        desired[rel_prop] = {"relation": [{"id": rid} for rid in cleaned]}
+    return desired
+
+
 def build_migration_plan(
     entries: list[dict],
     id_map: dict[str, dict],
@@ -472,37 +637,14 @@ def build_migration_plan(
     drills: list[dict],
     token: str,
     topic: str | None = None,
+    preflight: PreFlightResult | None = None,
 ) -> tuple[list[PlannedOp], list[Refusal]]:
     """Build an ordered, collision-free migration plan and collect any retire refusals."""
     scoped = [e for e in entries if _entry_in_topic(e, topic)]
-
-    # Map every code -> page_id (preferring id_map[newCode] if already migrated, else id_map[oldCode])
-    old_code_pids = {id_map[oc]["id"] for e in entries for oc in e["oldCodes"] if oc in id_map}
-    resolved_page_ids: dict[str, str] = {}
-    for e in entries:
-        nc = e["newCode"]
-        if e["oldCodes"]:
-            oc = e["oldCodes"][0]
-            if oc in id_map and id_map[oc]["id"].replace("-", "") in pages_by_id:
-                resolved_page_ids[nc or oc] = id_map[oc]["id"]
-            elif nc and nc in id_map and id_map[nc]["id"].replace("-", "") in pages_by_id:
-                resolved_page_ids[nc] = id_map[nc]["id"]
-        elif nc and nc in id_map and id_map[nc]["id"].replace("-", "") in pages_by_id:
-            if id_map[nc]["id"] not in old_code_pids:
-                resolved_page_ids[nc] = id_map[nc]["id"]
-
-    # Also match by Full ID in live Notion pages (handles resumed runs after partial Notion updates)
-    by_full_id = {}
-    for pid_norm, page in pages_by_id.items():
-        fid = prop_text(page.get("properties", {}).get("Full ID")).strip()
-        if fid:
-            by_full_id[fid] = page
-
-    for e in entries:
-        nc = e["newCode"]
-        if nc and nc not in resolved_page_ids and nc in by_full_id:
-            if by_full_id[nc]["id"] not in old_code_pids:
-                resolved_page_ids[nc] = by_full_id[nc]["id"]
+    if preflight is None:
+        preflight = run_preflight(entries, id_map, pages_by_id)
+    resolved_page_ids = preflight.resolved_page_ids
+    _, by_full_id = _resolve_page_ids(entries, id_map, pages_by_id)
 
     ops: list[PlannedOp] = []
     refusals: list[Refusal] = []
@@ -590,6 +732,7 @@ def build_migration_plan(
             e = entry_by_pid[pid]
             page = pages_by_id.get(pid.replace("-", ""))
             desired = _target_properties(e, resolved_page_ids)
+            desired = _clean_stray_relations(desired, page, preflight.stray_relations.get(pid.replace("-", ""), {}))
             if page and not _props_differ(page.get("properties", {}), desired):
                 continue  # already up-to-date (idempotent)
             ops.append(
@@ -675,24 +818,54 @@ def build_migration_plan(
     return ops, refusals
 
 
+def _throttled_request(method: str, endpoint: str, token: str, payload: dict | None = None) -> dict:
+    _throttle()
+    return notion_request(method, endpoint, token, payload)
+
+
+def _write_log(log_path: Path, log_records: list[dict]) -> None:
+    log_path.write_text(json.dumps(log_records, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+
 def apply_plan(
     ops: list[PlannedOp],
     local_ops: list[PlannedOp],
     token: str,
     entries: list[dict],
     id_map: dict[str, dict],
+    resume_log: Path | None = None,
 ) -> tuple[list[dict], Path]:
-    """Execute planned Notion + local operations and write a rollback log."""
+    """Execute planned Notion + local operations with per-op checkpointing and write a rollback log."""
     MIGRATIONS_DIR.mkdir(parents=True, exist_ok=True)
-    ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-    log_path = MIGRATIONS_DIR / f"prg_v2_{ts}.json"
-    log_records: list[dict] = []
-    created_ids: dict[str, str] = {}
+    if resume_log is not None:
+        log_path = resume_log
+        log_records: list[dict] = json.loads(log_path.read_text(encoding="utf-8")) if log_path.exists() else []
+    else:
+        ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+        log_path = MIGRATIONS_DIR / f"prg_v2_{ts}.json"
+        log_records = []
 
-    for op in ops:
+    completed_keys: set[str] = {r["op_key"] for r in log_records if "op_key" in r}
+    created_ids: dict[str, str] = {
+        r["code"]: r["page_id"] for r in log_records if r.get("kind") == "create" and "code" in r and "page_id" in r
+    }
+
+    def _checkpoint(rec: dict[str, Any]) -> None:
+        log_records.append(rec)
+        _write_log(log_path, log_records)
+
+    total_notion = len(ops)
+    for idx, op in enumerate(ops, 1):
+        okey = op.op_key
+        if okey in completed_keys:
+            print(f"[{idx}/{total_notion}] SKIP (resumed) {op.kind} {op.code}", flush=True)
+            continue
+        label = f"{op.old_code} -> {op.code}" if op.old_code else op.code
+        print(f"[{idx}/{total_notion}] {op.kind.upper()} {label}", flush=True)
+
         if op.kind == "retire":
             assert op.page_id is not None
-            page = notion_request("GET", f"pages/{op.page_id}", token)
+            page = _throttled_request("GET", f"pages/{op.page_id}", token)
             old_props = page.get("properties", {})
             title_prop = TITLE_PROP_BY_LEVEL[op.level]
             obj_prop = OBJECTIVE_PROP_BY_LEVEL[op.level]
@@ -711,9 +884,10 @@ def apply_plan(
             for rel_prop in PARENT_RELATIONS_BY_LEVEL[op.level]:
                 old_relations[rel_prop] = list(prop_val(old_props.get(rel_prop)) or [])
                 patch[rel_prop] = {"relation": []}
-            notion_request("PATCH", f"pages/{op.page_id}", token, {"properties": patch})
-            log_records.append(
+            _throttled_request("PATCH", f"pages/{op.page_id}", token, {"properties": patch})
+            _checkpoint(
                 {
+                    "op_key": okey,
                     "kind": "retire",
                     "page_id": op.page_id,
                     "level": op.level,
@@ -728,23 +902,24 @@ def apply_plan(
             )
         elif op.kind == "temp_rename":
             assert op.page_id is not None
-            page = notion_request("GET", f"pages/{op.page_id}", token)
+            page = _throttled_request("GET", f"pages/{op.page_id}", token)
             old_fid = prop_text(page.get("properties", {}).get("Full ID"))
-            notion_request(
+            _throttled_request(
                 "PATCH", f"pages/{op.page_id}", token, {"properties": {"Full ID": {"rich_text": _rt(op.code)}}}
             )
-            log_records.append({"kind": "temp_rename", "page_id": op.page_id, "old_full_id": old_fid})
+            _checkpoint({"op_key": okey, "kind": "temp_rename", "page_id": op.page_id, "old_full_id": old_fid})
         elif op.kind == "update":
             assert op.page_id is not None
-            page = notion_request("GET", f"pages/{op.page_id}", token)
+            page = _throttled_request("GET", f"pages/{op.page_id}", token)
             old_props = copy.deepcopy(page.get("properties", {}))
             desired = dict(op.details["desired_props"])
             # Resolve any newly created parent IDs
             e = op.details["entry"]
             if e["level"] == "unit" and e["parent"] in created_ids:
                 desired["Learning Chapters"] = {"relation": [{"id": created_ids[e["parent"]]}]}
-            notion_request("PATCH", f"pages/{op.page_id}", token, {"properties": desired})
+            _throttled_request("PATCH", f"pages/{op.page_id}", token, {"properties": desired})
             update_rec: dict[str, Any] = {
+                "op_key": okey,
                 "kind": "update",
                 "page_id": op.page_id,
                 "level": op.level,
@@ -753,23 +928,23 @@ def apply_plan(
             }
             if len(e["oldCodes"]) > 1:
                 update_rec["merged_from"] = e["oldCodes"][1:]
-            log_records.append(update_rec)
+            _checkpoint(update_rec)
         elif op.kind == "create":
             e = op.details["entry"]
             desired = dict(op.details["desired_props"])
             if e["level"] == "unit" and e["parent"] in created_ids:
                 desired["Learning Chapters"] = {"relation": [{"id": created_ids[e["parent"]]}]}
-            res = notion_request(
+            res = _throttled_request(
                 "POST",
                 "pages",
                 token,
                 {"parent": {"database_id": DB_BY_LEVEL[op.level]}, "properties": desired},
             )
             created_ids[op.code] = res["id"]
-            log_records.append({"kind": "create", "page_id": res["id"], "code": op.code})
+            _checkpoint({"op_key": okey, "kind": "create", "page_id": res["id"], "code": op.code})
         elif op.kind == "drill_update":
             assert op.page_id is not None
-            page = notion_request("GET", f"pages/{op.page_id}", token)
+            page = _throttled_request("GET", f"pages/{op.page_id}", token)
             old_props = copy.deepcopy(page.get("properties", {}))
             patch = {
                 "Drill ID": {"rich_text": _rt(op.code)},
@@ -779,15 +954,22 @@ def apply_plan(
                 patch["Topics"] = {"relation": [{"id": op.details["topic_id"]}]}
             if op.details.get("chap_id"):
                 patch["Chapters"] = {"relation": [{"id": op.details["chap_id"]}]}
-            notion_request("PATCH", f"pages/{op.page_id}", token, {"properties": patch})
-            log_records.append({"kind": "drill_update", "page_id": op.page_id, "old_properties": old_props})
+            _throttled_request("PATCH", f"pages/{op.page_id}", token, {"properties": patch})
+            _checkpoint({"op_key": okey, "kind": "drill_update", "page_id": op.page_id, "old_properties": old_props})
 
-    # Regenerate id_map.json from Notion
+    # Regenerate id_map.json once, only after all Notion ops succeeded
+    print("Rebuilding id_map.json from Notion...", flush=True)
     new_id_map = rebuild_id_map(token, id_map)
     save_id_map(new_id_map, ID_MAP_PATH)
 
-    # Apply local file operations
-    for lop in local_ops:
+    # Apply local file operations after id_map regeneration
+    total_local = len(local_ops)
+    for idx, lop in enumerate(local_ops, 1):
+        okey = lop.op_key
+        if okey in completed_keys:
+            print(f"[local {idx}/{total_local}] SKIP (resumed) {lop.kind} {lop.code}", flush=True)
+            continue
+        print(f"[local {idx}/{total_local}] {lop.kind.upper()} {lop.code}", flush=True)
         if lop.kind == "local_move":
             src = Path(lop.details["src"])
             dst = Path(lop.details["dst"])
@@ -798,15 +980,22 @@ def apply_plan(
                 shutil.move(str(src), str(dst))
                 if lop.details.get("lab_rename"):
                     _update_lab_files(dst)
-                log_records.append({"kind": "local_move", "src": str(src), "dst": str(dst), "is_dir": True})
+                _checkpoint({"op_key": okey, "kind": "local_move", "src": str(src), "dst": str(dst), "is_dir": True})
             else:
                 old_text = src.read_text(encoding="utf-8")
                 new_text = _transform_local_file(old_text, lop)
                 dst.write_text(new_text, encoding="utf-8")
                 if dst != src:
                     src.unlink()
-                log_records.append(
-                    {"kind": "local_move", "src": str(src), "dst": str(dst), "old_text": old_text, "is_dir": False}
+                _checkpoint(
+                    {
+                        "op_key": okey,
+                        "kind": "local_move",
+                        "src": str(src),
+                        "dst": str(dst),
+                        "old_text": old_text,
+                        "is_dir": False,
+                    }
                 )
         elif lop.kind == "local_edit":
             p = Path(lop.details["path"])
@@ -817,9 +1006,9 @@ def apply_plan(
             for a, b in lop.details["replace"]:
                 new_text = new_text.replace(a, b)
             p.write_text(new_text, encoding="utf-8")
-            log_records.append({"kind": "local_edit", "path": str(p), "old_text": old_text})
+            _checkpoint({"op_key": okey, "kind": "local_edit", "path": str(p), "old_text": old_text})
 
-    log_path.write_text(json.dumps(log_records, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    _write_log(log_path, log_records)
     return log_records, log_path
 
 
@@ -893,11 +1082,11 @@ def rollback_from_log(log_path: Path, token: str, dry_run: bool = False) -> list
         if kind == "create":
             actions.append(f"rollback create (archive): {rec['code']} ({rec['page_id']})")
             if not dry_run:
-                notion_request("PATCH", f"pages/{rec['page_id']}", token, {"archived": True})
+                _throttled_request("PATCH", f"pages/{rec['page_id']}", token, {"archived": True})
         elif kind in ("update", "drill_update"):
             actions.append(f"rollback {kind}: {rec['page_id']}")
             if not dry_run:
-                notion_request(
+                _throttled_request(
                     "PATCH",
                     f"pages/{rec['page_id']}",
                     token,
@@ -906,7 +1095,7 @@ def rollback_from_log(log_path: Path, token: str, dry_run: bool = False) -> list
         elif kind == "temp_rename":
             actions.append(f"rollback temp_rename: {rec['page_id']} -> {rec['old_full_id']}")
             if not dry_run:
-                notion_request(
+                _throttled_request(
                     "PATCH",
                     f"pages/{rec['page_id']}",
                     token,
@@ -924,7 +1113,7 @@ def rollback_from_log(log_path: Path, token: str, dry_run: bool = False) -> list
                 }
                 for rel_prop, rel_ids in rec.get("old_relations", {}).items():
                     patch[rel_prop] = {"relation": [{"id": rid} for rid in rel_ids]}
-                notion_request("PATCH", f"pages/{rec['page_id']}", token, {"properties": patch})
+                _throttled_request("PATCH", f"pages/{rec['page_id']}", token, {"properties": patch})
         elif kind == "local_move":
             actions.append(f"rollback local_move: {rec['dst']} -> {rec['src']}")
             if not dry_run:
@@ -943,12 +1132,30 @@ def rollback_from_log(log_path: Path, token: str, dry_run: bool = False) -> list
     return actions
 
 
+def format_preflight_report(preflight: PreFlightResult) -> str:
+    """Format pre-flight check summary, errors, and warnings."""
+    status = "ABORT" if preflight.errors else "PASS"
+    lines = [
+        "--- Pre-Flight Check ---",
+        f"Status: {status}",
+        f"Final code->page entries: {len(preflight.final_code_to_page)}",
+        f"Errors: {len(preflight.errors)}",
+        f"Warnings (stray relations): {len(preflight.warnings)}",
+    ]
+    for err in preflight.errors:
+        lines.append(f"  [ERROR] {err}")
+    for warn in preflight.warnings:
+        lines.append(f"  [WARN]  {warn}")
+    return "\n".join(lines) + "\n"
+
+
 def format_dry_run_report(
     entries: list[dict],
     ops: list[PlannedOp],
     local_ops: list[PlannedOp],
     refusals: list[Refusal],
     topic: str | None = None,
+    preflight: PreFlightResult | None = None,
 ) -> str:
     """Format a readable dry-run summary + detailed operation list."""
     scoped = [e for e in entries if _entry_in_topic(e, topic)]
@@ -979,6 +1186,10 @@ def format_dry_run_report(
     ]
     for t_key in sorted(by_topic):
         lines.append(f"  {t_key}: {json.dumps(by_topic[t_key], sort_keys=True)}")
+
+    if preflight is not None:
+        lines.append("")
+        lines.append(format_preflight_report(preflight).rstrip("\n"))
 
     if refusals:
         lines.append("")
@@ -1022,19 +1233,27 @@ def format_dry_run_report(
 
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(prog="python -m scripts.prg_migrate", description=__doc__.split("\n\n")[0])
-    ap.add_argument("--topic", help="Scope to a single topic (e.g. PRG-T00). Required with --apply.")
+    ap.add_argument("--topic", help="Scope to a single topic (dry-run/reading only).")
+    ap.add_argument(
+        "--all", action="store_true", help="Run the whole migration across all topics (required with --apply)."
+    )
     ap.add_argument("--apply", action="store_true", help="Apply changes to Notion and local files.")
     ap.add_argument(
         "--i-have-reviewed-the-dry-run",
         action="store_true",
         help="Explicit confirmation required to run with --apply.",
     )
+    ap.add_argument("--resume", metavar="LOG", help="Resume an interrupted --apply run from a migration log JSON file.")
     ap.add_argument("--rollback", metavar="LOG", help="Rollback changes using a migration log JSON file.")
     args = ap.parse_args(argv)
 
-    if args.apply and not args.topic:
-        print("Error: --apply requires --topic PRG-Txx (one topic per run).", file=sys.stderr)
-        return 2
+    if args.apply and not args.rollback:
+        if args.topic:
+            print("Error: --topic is for dry-run/reading only; use --all with --apply.", file=sys.stderr)
+            return 2
+        if not args.all:
+            print("Error: --apply requires --all (whole migration in one run).", file=sys.stderr)
+            return 2
     if args.apply and not args.i_have_reviewed_the_dry_run:
         print("Error: --apply requires --i-have-reviewed-the-dry-run.", file=sys.stderr)
         return 2
@@ -1050,14 +1269,23 @@ def main(argv: list[str] | None = None) -> int:
     entries = json.loads(MAP_PATH.read_text(encoding="utf-8"))
     id_map = json.loads(ID_MAP_PATH.read_text(encoding="utf-8"))
     pages_by_id, drills = fetch_notion_prg_state(token)
-    ops, refusals = build_migration_plan(entries, id_map, pages_by_id, drills, token, topic=args.topic)
+    preflight = run_preflight(entries, id_map, pages_by_id)
+    ops, refusals = build_migration_plan(
+        entries, id_map, pages_by_id, drills, token, topic=args.topic, preflight=preflight
+    )
     local_ops = plan_local_operations(entries, Path("."), topic=args.topic)
 
     if not args.apply:
-        print(format_dry_run_report(entries, ops, local_ops, refusals, topic=args.topic), end="")
+        print(format_dry_run_report(entries, ops, local_ops, refusals, topic=args.topic, preflight=preflight), end="")
         return 0
 
-    records, log_path = apply_plan(ops, local_ops, token, entries, id_map)
+    print(format_preflight_report(preflight), end="", flush=True)
+    if preflight.errors:
+        print("Aborting --apply due to pre-flight errors. Zero writes performed.", file=sys.stderr)
+        return 1
+
+    resume_log = Path(args.resume) if args.resume else None
+    records, log_path = apply_plan(ops, local_ops, token, entries, id_map, resume_log=resume_log)
     print(f"Applied {len(records)} operations. Rollback log: {log_path}")
     return 0
 

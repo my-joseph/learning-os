@@ -18,6 +18,13 @@ Refusals: 0
   PRG-T08: {"merge": 2, "renumber": 15, "retire": 1}
   PRG-T09: {"renumber": 25}
 
+--- Pre-Flight Check ---
+Status: PASS
+Final code->page entries: 251
+Errors: 0
+Warnings (stray relations): 1
+  [WARN]  Stray relation on PRG-T04 (40c3818f-8ba0-81b5-aafc-ff3d6992fdc1).Chapters -> 40c3818f-8ba0-8093-94fa-c0a0cf2d5d52 (not in id_map; will leave 40c3818f-8ba0-8093-94fa-c0a0cf2d5d52 untouched and remove from Chapters)
+
 --- Planned Notion Operations ---
   [RETIRE] PRG-T08 -> RETIRED-PRG-T08 (topic, page=40c3818f-8ba0-8132-9a78-e5c22364add6) | title='[Retired] Testing & Software Quality' | clear(none) | Goal+='Retired 2026-11-16: merged into PRG-T01-C04, PRG-T02-C06, PRG-T07-C01' | Status=unchanged
   [RETIRE] PRG-T00-C02-U03 -> RETIRED-PRG-T00-C02-U03 (unit, page=40c3818f-8ba0-8174-9fc6-d536ef06d992) | title='[Retired] Arrays and Objects' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T00-C03-U02' | Status=unchanged
