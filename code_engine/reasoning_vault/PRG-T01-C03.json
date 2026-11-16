@@ -69,6 +69,206 @@
           }
         }
       ]
+    },
+    {
+      "archetypeKey": "prg-c03-u02-recursive-base-case",
+      "unitCode": "PRG-T01-C03-U02",
+      "level": 1,
+      "archetype": "code-tracing",
+      "name": "Recursive Base-Case and Progress Trace",
+      "competencies": [
+        "recursion",
+        "base-cases",
+        "termination"
+      ],
+      "coreConcept": "A recursive function terminates when every reachable path reaches a base case, and each recursive step moves its input toward that case.",
+      "mentalModel": [
+        "Write down the input for the current call before following its recursive call.",
+        "A base case returns without creating another frame.",
+        "A recursive case must make measurable progress toward a base case."
+      ],
+      "governingInvariant": "Every reachable recursive path decreases the remaining problem measure until a base case returns.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "base-case-off-by-one",
+          "name": "Base Case Boundary Shift",
+          "description": "Stopping one call too early or too late changes the result or causes an extra recursive call.",
+          "reproducer": "A countdown intended to include zero returns at one, or recurses from zero to a negative value."
+        },
+        {
+          "trapTag": "non-progressing-recursion",
+          "name": "No Progress Toward the Base Case",
+          "description": "A recursive call preserves or increases the measure needed to reach termination.",
+          "reproducer": "A recursive countdown calls itself with the same count when count is positive."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "retry_policy_evaluation",
+          "description": "Tracing a bounded retry policy whose remaining-attempt count moves toward a stopping case."
+        }
+      ],
+      "usedContexts": [
+        "bounded_retry_schedule"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-recursion-measure-progress",
+          "check": "Each recursive path changes the relevant input measure toward a reachable base case.",
+          "why": "A call that does not make progress can recurse indefinitely or exceed the runtime stack.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function remainingAttempts(count) {\n  if (count === 0) return 0;\n  return remainingAttempts(count);\n}",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-base-case-contract",
+          "check": "Base cases match the function's stated boundary contract and return without another recursive call.",
+          "why": "An off-by-one base case changes boundary behavior and may add an unnecessary frame.",
+          "severity": "should",
+          "knownBad": {
+            "code": "function countDown(count) {\n  if (count === 1) return [1];\n  return [count, ...countDown(count - 1)];\n}",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "prg-c03-u02-call-stack-unwind",
+      "unitCode": "PRG-T01-C03-U02",
+      "level": 2,
+      "archetype": "code-tracing",
+      "name": "Call-Stack Frames and Return Unwinding",
+      "competencies": [
+        "call-stack",
+        "return-values",
+        "execution-tracing"
+      ],
+      "coreConcept": "Each recursive invocation has its own parameters and suspended return point; values combine or pass back as calls unwind.",
+      "mentalModel": [
+        "Record each invocation as a distinct frame with its own argument values.",
+        "The deepest frame that reaches a base case returns first.",
+        "Resume suspended expressions from the deepest caller outward."
+      ],
+      "governingInvariant": "A caller resumes exactly once after its child returns, using that child's returned value in the suspended expression.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "unwind-order-reversed",
+          "name": "Unwind Order Reversed",
+          "description": "Applying caller operations before the deepest call has returned.",
+          "reproducer": "For total(n) = n + total(n - 1), add from the outermost frame downward instead of returning from the base case upward."
+        },
+        {
+          "trapTag": "frame-state-shared",
+          "name": "Recursive Frames Treated as Shared State",
+          "description": "Assuming each invocation overwrites the prior invocation's parameter or local value.",
+          "reproducer": "Treating local index values from nested calls as one mutable index rather than separate frame bindings."
+        },
+        {
+          "trapTag": "sibling-frame-state-carryover",
+          "name": "Sibling Calls Reuse a Prior Frame's State",
+          "description": "Assuming a later independent recursive call begins with a local value left by an earlier sibling call.",
+          "reproducer": "A route-depth audit starts both region walks at depth zero, but a trace carries the first region's final depth into the second region."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "nested_invoice_rollup",
+          "description": "Tracing recursive subtotal aggregation across nested invoice groups."
+        }
+      ],
+      "usedContexts": [
+        "retry_attempt_call_trace",
+        "organization_export_trace",
+        "regional_route_depth_audit"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-recursion-frame-locality",
+          "check": "Values belonging to separate recursive invocations remain distinguishable while tracing the call stack.",
+          "why": "Each invocation owns its own parameter and local bindings until its frame returns.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function sumDown(count) {\n  let current = count;\n  if (current === 0) return 0;\n  current = sumDown(current - 1);\n  return current;\n}",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-recursion-unwind-order",
+          "check": "Post-call work is evaluated only after the child invocation returns, in last-in-first-out order.",
+          "why": "The call stack suspends each caller until the nested call supplies its return value.",
+          "severity": "should",
+          "knownBad": {
+            "code": "function sumDown(count) {\n  if (count === 0) return 0;\n  const partial = count + sumDown(count - 1);\n  return partial - count;\n}",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "prg-c03-u02-nested-structure-recursion",
+      "unitCode": "PRG-T01-C03-U02",
+      "level": 3,
+      "archetype": "code-tracing",
+      "name": "Nested Structure Recursion Trace",
+      "competencies": [
+        "recursive-structures",
+        "branching-recursion",
+        "termination"
+      ],
+      "coreConcept": "Recursive rules can decompose a nested structure into smaller child problems, with each leaf or empty structure providing a stopping condition.",
+      "mentalModel": [
+        "At each frame, identify the current node and the children that create new calls.",
+        "Trace sibling calls in source order while keeping each branch's return separate.",
+        "Combine a node's local contribution with the results returned by its children."
+      ],
+      "governingInvariant": "Every recursive child is a strict substructure, and each node contributes exactly once to the final result.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "empty-structure-missing-base",
+          "name": "Empty Structure Lacks a Base Case",
+          "description": "The recursive rule attempts to inspect children when the current structure is empty.",
+          "reproducer": "A nested list traversal reads the first element without handling an empty list."
+        },
+        {
+          "trapTag": "branch-result-omitted",
+          "name": "A Branch Result Is Omitted",
+          "description": "One child result is not included when a recursive rule combines sibling branches.",
+          "reproducer": "A folder-size calculation visits subfolders but returns only the current folder's direct files."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "folder_quota_rollup",
+          "description": "Following recursive directory-size or quota calculations over nested folders."
+        }
+      ],
+      "usedContexts": [
+        "folder_quota_rollup"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-recursive-substructure",
+          "check": "Each recursive child call receives a strictly smaller part of the current structure.",
+          "why": "Strictly smaller subproblems make structural progress toward an empty or leaf base case.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function countFiles(folder) {\n  if (!folder) return 0;\n  return folder.files.length + countFiles(folder);\n}",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-branch-results-accounted",
+          "check": "The trace accounts for the local contribution and every required child result exactly once.",
+          "why": "Missing or duplicated branch results produce incorrect aggregates on nested data.",
+          "severity": "should",
+          "knownBad": {
+            "code": "function countItems(node) {\n  if (node.children.length === 0) return 1;\n  return countItems(node.children[0]);\n}",
+            "caughtBy": "review"
+          }
+        }
+      ]
     }
   ]
 }
