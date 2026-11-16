@@ -45,6 +45,23 @@ def test_spec_to_blocks_types_and_mentions():
         up.spec_to_blocks([{"type": "table"}], {})
 
 
+@pytest.mark.parametrize("text", ["", "   ", None])
+def test_toggle_requires_nonempty_label_before_rendering(text):
+    with pytest.raises(ValueError, match="toggle block 1 requires non-empty text"):
+        up.spec_to_blocks([{"type": "toggle", "text": text, "children": []}], {})
+
+
+def test_toggle_labels_are_validated_before_figure_upload():
+    uploads = []
+    spec = [
+        {"type": "figure", "figure": {"type": "unknown"}},
+        {"type": "toggle", "text": "", "children": []},
+    ]
+    with pytest.raises(ValueError, match="toggle block 2 requires non-empty text"):
+        up.spec_to_blocks(spec, {}, uploader=lambda svg, name: uploads.append(name) or "file-id")
+    assert uploads == []
+
+
 @pytest.fixture
 def fake_notion(monkeypatch):
     calls = []

@@ -302,6 +302,7 @@ def test_lab_review_run_record_and_weak_spots(tmp_path: Path, monkeypatch: pytes
     assert res["lint"] == []
     assert res["typecheck"] == []
     assert any(c["id"] == "U-names" for c in res["checks"])
+    assert any(c["id"] == "U-resource-lifecycle" for c in res["checks"])
 
     # Record a revise attempt with a must finding, then a pass attempt
     rec1 = review_record.add_record(

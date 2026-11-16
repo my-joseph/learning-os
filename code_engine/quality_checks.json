@@ -1,11 +1,11 @@
 [
   {
     "id": "U-names",
-    "check": "Names say what a value is or what a function does; no `data`, `temp`, or `x` for domain values.",
-    "why": "Vague names force readers to trace every line to understand what a value represents.",
+    "check": "Names identify their domain role and behavior; vague placeholders such as `data`, `temp`, `item`, `fn`, `cb`, `handler`, or `x` are not used where a domain-specific name is available. For subscriptions, name the event, listener, and subscription/removal handle by their distinct roles.",
+    "why": "Generic names hide what a value represents and make it harder to distinguish active subscriptions from callbacks or removal handles.",
     "severity": "must",
     "knownBad": {
-      "code": "function calc(data) {\n  const temp = data.a + data.b;\n  return temp;\n}",
+      "code": "function calc(data) {\n  const temp = data.a + data.b;\n  return temp;\n}\n\nfunction notify(listeners, event, fn) {\n  const item = listeners.get(event);\n  item.push(fn);\n}",
       "caughtBy": "review"
     }
   },
@@ -77,6 +77,16 @@
     "severity": "must",
     "knownBad": {
       "code": "async function withLease(lease, work) {\n  try {\n    return await work();\n  } finally {\n    lease.release();\n  }\n}",
+      "caughtBy": "review"
+    }
+  },
+  {
+    "id": "U-resource-lifecycle",
+    "check": "Subscriptions and other owned callbacks are released when their owner is disposed or unsubscribed; removing a listener prevents the emitter from retaining or invoking that inactive callback.",
+    "why": "Inactive callbacks retained by long-lived emitters cause memory leaks and can keep disposed consumers reachable.",
+    "severity": "must",
+    "knownBad": {
+      "code": "function subscribe(emitter, listener) {\n  emitter.on('updated', listener);\n  return () => { /* listener remains registered */ };\n}",
       "caughtBy": "review"
     }
   },

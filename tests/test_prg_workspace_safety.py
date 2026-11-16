@@ -72,6 +72,26 @@ def test_materialize_writes_no_canonical_removes_stale_and_preserves_learner_fil
             assert "SECRET_CANONICAL_MARKER" not in text, f"solution text leaked into {p}"
 
 
+def test_external_workspace_root_exposes_shared_lint_toolkit(tmp_path):
+    from code_engine.lint_check import TOOLS_LINT_DIR
+
+    external_root = tmp_path / "external-checkout"
+    manifest = materialize_drill_workspace(_sample_prg_drill(), root_dir=str(external_root))
+    local_lint = external_root / "tools" / "lint"
+    assert local_lint.is_symlink()
+    assert local_lint.resolve() == TOOLS_LINT_DIR.resolve()
+    assert (Path(manifest["workspaceDir"]) / "../../../tools/lint/base.js").resolve() == (
+        TOOLS_LINT_DIR / "base.js"
+    ).resolve()
+    (Path(manifest["workspaceDir"]) / "Q01_addNums.js").write_text(
+        "function addNums(left, right) { return left + right; }\nmodule.exports = { addNums };\n", encoding="utf-8"
+    )
+    lint = subprocess.run(
+        ["npm", "run", "lint"], cwd=manifest["workspaceDir"], capture_output=True, text=True, check=False
+    )
+    assert lint.returncode == 0, lint.stderr or lint.stdout
+
+
 def test_hidden_tests_run_from_temp_dir_and_cleanup(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     drill_doc = _sample_prg_drill()
