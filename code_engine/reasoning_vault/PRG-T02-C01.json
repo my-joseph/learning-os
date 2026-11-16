@@ -137,10 +137,10 @@
         }
       ],
       "usedContexts": [
-        "warehouse_inventory_save_toggle",
-        "subscription_seat_quantity_stepper",
+        "catalog_search_field",
         "checkout_cart_summary",
-        "catalog_search_field"
+        "subscription_seat_quantity_stepper",
+        "warehouse_inventory_save_toggle"
       ]
     },
     {
@@ -277,10 +277,10 @@
         }
       ],
       "usedContexts": [
+        "analytics_dashboard_filter_panel",
         "claims_portal_validation_focus",
-        "warehouse_bin_scan_capture",
         "support_ticket_activity_feed",
-        "analytics_dashboard_filter_panel"
+        "warehouse_bin_scan_capture"
       ]
     },
     {
