@@ -1,0 +1,105 @@
+{
+  "labId": "LAB-PRG-T01-C01-01",
+  "title": "TinyEventEmitter & PromisePool",
+  "chapterCode": "PRG-T01-C01",
+  "unitsUsed": [
+    "PRG-T01-C01-U02",
+    "PRG-T01-C01-U06",
+    "PRG-T01-C01-U08",
+    "PRG-T01-C01-U09"
+  ],
+  "kind": "chapter-lab",
+  "level": 3,
+  "domain": "notification-delivery-coordinator",
+  "targetsWeakSpots": [
+    "listener-lifecycle",
+    "async-cancellation-boundaries"
+  ],
+  "scenario": "Build a typed event bus and a bounded asynchronous task coordinator for backend notification delivery.",
+  "milestones": [
+    {
+      "id": "M1",
+      "title": "Event Map & Listener Contracts",
+      "goal": "Define generic event payloads and listener signatures so each event key remains associated with its payload type.",
+      "units": [
+        "PRG-T01-C01-U02"
+      ],
+      "qualityChecks": [
+        "U-names",
+        "U-one-job"
+      ],
+      "visibleTests": "tests/m1_*.test.ts"
+    },
+    {
+      "id": "M2",
+      "title": "on, off & emit",
+      "goal": "Implement instance-owned event subscriptions, safe removal, registration-order delivery, and snapshot behavior for listeners added during delivery.",
+      "units": [
+        "PRG-T01-C01-U02"
+      ],
+      "qualityChecks": [
+        "U-names",
+        "U-one-job",
+        "U-no-input-mutation",
+        "U-no-shared-mutable-state"
+      ],
+      "visibleTests": "tests/m2_*.test.ts"
+    },
+    {
+      "id": "M3",
+      "title": "Bounded PromisePool",
+      "goal": "Execute task functions up to a validated concurrency limit, preserve input order, and capture each task outcome without stopping later tasks after one failure.",
+      "units": [
+        "PRG-T01-C01-U06",
+        "PRG-T01-C01-U08"
+      ],
+      "qualityChecks": [
+        "U-names",
+        "U-one-job",
+        "U-errors",
+        "U-no-magic",
+        "U-no-floating-promise"
+      ],
+      "visibleTests": "tests/m3_*.test.ts"
+    },
+    {
+      "id": "M4",
+      "title": "AbortSignal Cancellation & Cleanup",
+      "goal": "Observe an optional AbortSignal, prevent queued tasks from starting after cancellation, preserve started outcomes, and release signal listeners when the pool settles.",
+      "units": [
+        "PRG-T01-C01-U06",
+        "PRG-T01-C01-U08",
+        "PRG-T01-C01-U09"
+      ],
+      "qualityChecks": [
+        "U-names",
+        "U-errors",
+        "U-no-floating-promise",
+        "U-no-shared-mutable-state"
+      ],
+      "visibleTests": "tests/m4_*.test.ts"
+    }
+  ],
+  "blindSolve": [
+    {
+      "milestone": "M1",
+      "passed": true
+    },
+    {
+      "milestone": "M2",
+      "passed": true
+    },
+    {
+      "milestone": "M3",
+      "passed": true
+    },
+    {
+      "milestone": "M4",
+      "passed": true
+    }
+  ],
+  "review": {
+    "verdict": "pass",
+    "note": "The clarified milestones, scoped checks, reference implementation, and complete targeted mutants align with the chapter lab brief and have no public implementation leaks."
+  }
+}

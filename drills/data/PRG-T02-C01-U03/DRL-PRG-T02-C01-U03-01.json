@@ -1,0 +1,378 @@
+{
+  "unitCode": "PRG-T02-C01-U03",
+  "unitTitle": "State and Event Handling",
+  "environment": "react-dom",
+  "sourceAttribution": "PRG-T02 curriculum and React documentation on state and responding to events",
+  "config": {
+    "questionCount": 4,
+    "difficulty": "ALL",
+    "difficultyMode": "AI Synthesized Engineering Mode"
+  },
+  "problems": [
+    {
+      "id": "Q01",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "codeType": "implement",
+      "archetypeKey": "prg-t02-c01-u03-state-and-event-handling",
+      "commonTrapTag": "react-stale-or-duplicated-state",
+      "context": "warehouse_inventory_save_toggle",
+      "entryPoint": "SaveToggle",
+      "prompt": "**Task**\nBuild `SaveToggle` for inventory. Start unpressed; clicking toggles `aria-pressed` true/false on the `Save item` button.\n\n**Requirements**\n- Keep state in React; repeated clicks must alternate.",
+      "inputHint": "Implement the component contract and verify its visible state after user actions.",
+      "starterCode": "export function SaveToggle() {\n  return <button aria-pressed=\"false\">Save item</button>;\n}\n",
+      "solutionCode": "import { useState } from 'react';\nexport function SaveToggle() {\n  const [saved, setSaved] = useState(false);\n  return <button aria-pressed={saved} onClick={() => setSaved((value) => !value)}>Save item</button>;\n}\n",
+      "trapMutant": "import { useState } from 'react';\nexport function SaveToggle() {\n  const [saved, setSaved] = useState(false);\n  return <button aria-pressed={saved} onClick={() => setSaved(saved)}>Save item</button>;\n}\n",
+      "visibleTests": [
+        {
+          "name": "starts unpressed and toggles on each click",
+          "testCode": "const user = userEvent.setup(); render(<SaveToggle />); const button = screen.getByRole('button', { name: 'Save item' }); assert.equal(button.getAttribute('aria-pressed'), 'false'); await user.click(button); assert.equal(button.getAttribute('aria-pressed'), 'true'); await user.click(button); assert.equal(button.getAttribute('aria-pressed'), 'false');"
+        },
+        {
+          "name": "returns to original state after repeated interaction",
+          "testCode": "const user = userEvent.setup(); render(<SaveToggle />); const button = screen.getByRole('button', { name: 'Save item' }); await user.click(button); await user.click(button); assert.equal(button.getAttribute('aria-pressed'), 'false');"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "exposes initial false state",
+          "testCode": "const user = userEvent.setup(); render(<SaveToggle />); const button = screen.getByRole('button', { name: 'Save item' }); await user.click(button); assert.equal(button.getAttribute('aria-pressed'), 'true');"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Identify the state owner and map the user event to the next rendered snapshot."
+        },
+        {
+          "explain": "Use the component contract to preserve the displayed state through boundary and repeated interactions."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "react-stale-or-duplicated-state|direct|SaveToggle",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 2,
+          "hasTrapOrFlaw": false,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "react-stale-or-duplicated-state",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 4
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Foundation",
+      "unitCode": "PRG-T02-C01-U03",
+      "workspaceFile": "drills/workspace/DRL-PRG-T02-C01-U03-01/Q01_SaveToggle.tsx"
+    },
+    {
+      "id": "Q02",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "codeType": "implement",
+      "archetypeKey": "prg-t02-c01-u03-state-and-event-handling",
+      "commonTrapTag": "react-stale-or-duplicated-state",
+      "context": "subscription_seat_quantity_stepper",
+      "entryPoint": "SeatStepper",
+      "prompt": "**Task**\nBuild `SeatStepper` for subscriptions. Start at 0; provide `Decrease seats`, `Increase seats`, and `Seat quantity` output.\n\n**Requirements**\n- Update by one; quantity never falls below zero.",
+      "inputHint": "Implement the component contract and verify its visible state after user actions.",
+      "starterCode": "export function SeatStepper() {\n  return <section><button>Decrease seats</button><output aria-label=\"Seat quantity\">0</output><button>Increase seats</button></section>;\n}\n",
+      "solutionCode": "import { useState } from 'react';\nexport function SeatStepper() {\n  const [quantity, setQuantity] = useState(0);\n  return <section><button onClick={() => setQuantity((value) => Math.max(0, value - 1))}>Decrease seats</button><output aria-label=\"Seat quantity\">{quantity}</output><button onClick={() => setQuantity((value) => value + 1)}>Increase seats</button></section>;\n}\n",
+      "trapMutant": "import { useState } from 'react';\nexport function SeatStepper() {\n  const [quantity, setQuantity] = useState(0);\n  const [displayQuantity] = useState(quantity);\n  return <section><button onClick={() => setQuantity((value) => Math.max(0, value - 1))}>Decrease seats</button><output aria-label=\"Seat quantity\">{displayQuantity}</output><button onClick={() => setQuantity((value) => value + 1)}>Increase seats</button></section>;\n}\n",
+      "visibleTests": [
+        {
+          "name": "supports repeated increments and clamps at zero",
+          "testCode": "const user = userEvent.setup(); render(<SeatStepper />); const value = screen.getByLabelText('Seat quantity'); const down = screen.getByRole('button', { name: 'Decrease seats' }); await user.click(down); assert.equal(value.textContent, '0'); const up = screen.getByRole('button', { name: 'Increase seats' }); await user.click(up); await user.click(up); assert.equal(value.textContent, '2'); await user.click(down); assert.equal(value.textContent, '1');"
+        },
+        {
+          "name": "increments more than once without losing updates",
+          "testCode": "const user = userEvent.setup(); render(<SeatStepper />); const up = screen.getByRole('button', { name: 'Increase seats' }); await user.click(up); await user.click(up); await user.click(up); assert.equal(screen.getByLabelText('Seat quantity').textContent, '3');"
+        },
+        {
+          "name": "decreases to the lower bound",
+          "testCode": "const user = userEvent.setup(); render(<SeatStepper />); const up = screen.getByRole('button', { name: 'Increase seats' }); const down = screen.getByRole('button', { name: 'Decrease seats' }); await user.click(up); await user.click(down); await user.click(down); assert.equal(screen.getByLabelText('Seat quantity').textContent, '0');"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "never displays a negative quantity",
+          "testCode": "const user = userEvent.setup(); render(<SeatStepper />); await user.click(screen.getByRole('button', { name: 'Increase seats' })); assert.equal(screen.getByLabelText('Seat quantity').textContent, '1'); await user.click(screen.getByRole('button', { name: 'Decrease seats' })); assert.equal(screen.getByLabelText('Seat quantity').textContent, '0');"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Identify the state owner and map the user event to the next rendered snapshot."
+        },
+        {
+          "explain": "Use the component contract to preserve the displayed state through boundary and repeated interactions."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "react-stale-or-duplicated-state|direct|SeatStepper",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 2,
+          "hasTrapOrFlaw": false,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "react-stale-or-duplicated-state",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 4
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Foundation",
+      "unitCode": "PRG-T02-C01-U03",
+      "workspaceFile": "drills/workspace/DRL-PRG-T02-C01-U03-01/Q02_SeatStepper.tsx"
+    },
+    {
+      "id": "Q03",
+      "level": 2,
+      "category": "Trap & Edge Case",
+      "archetype": "problem-solving",
+      "codeType": "implement",
+      "archetypeKey": "prg-t02-c01-u03-state-and-event-handling",
+      "commonTrapTag": "react-stale-or-duplicated-state",
+      "context": "checkout_cart_summary",
+      "entryPoint": "CartSummary",
+      "prompt": "**Task**\nBuild `CartSummary` from `items` (`id`, `label`, `price`). Render item labels and a `Cart total` output.\n\n**Requirements**\n- Derive total from current props; an empty list totals 0.",
+      "inputHint": "Compute the current summary from the supplied items, then render that snapshot.",
+      "starterCode": "export function CartSummary({ items: _items }: { items: { id: string; label: string; price: number }[] }) {\n  return <section><ul></ul><output aria-label=\"Cart total\">0</output></section>;\n}\n",
+      "solutionCode": "type CartItem = { id: string; label: string; price: number };\nexport function CartSummary({ items }: { items: CartItem[] }) {\n  const total = items.reduce((sum, item) => sum + item.price, 0);\n  return <section><ul>{items.map((item) => <li key={item.id}>{item.label}</li>)}</ul><output aria-label=\"Cart total\">{total}</output></section>;\n}\n",
+      "trapMutant": "import { useState } from 'react';\ntype CartItem = { id: string; label: string; price: number };\nexport function CartSummary({ items }: { items: CartItem[] }) {\n  const [total] = useState(items.reduce((sum, item) => sum + item.price, 0));\n  return <section><ul>{items.map((item) => <li key={item.id}>{item.label}</li>)}</ul><output aria-label=\"Cart total\">{total}</output></section>;\n}\n",
+      "visibleTests": [
+        {
+          "name": "renders items and their total including zero-price items",
+          "testCode": "const items = [{ id: 'sku-a', label: 'Adapter', price: 0 }, { id: 'sku-b', label: 'Dock', price: 18 }]; render(<CartSummary items={items} />); assert.ok(screen.getByText('Adapter')); assert.equal(screen.getByLabelText('Cart total').textContent, '18');"
+        },
+        {
+          "name": "renders an empty summary",
+          "testCode": "render(<CartSummary items={[]} />); assert.equal(screen.getByLabelText('Cart total').textContent, '0'); assert.equal(screen.queryAllByRole('listitem').length, 0);"
+        },
+        {
+          "name": "updates output after replacement props",
+          "testCode": "const { rerender } = render(<CartSummary items={[{ id: 'sku-e', label: 'Stand', price: 24 }]} />); rerender(<CartSummary items={[{ id: 'sku-f', label: 'Mouse', price: 9 }, { id: 'sku-g', label: 'Pad', price: 5 }]} />); assert.equal(screen.getByLabelText('Cart total').textContent, '14'); assert.ok(screen.getByText('Mouse'));"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "reflects a new prop snapshot and empty list",
+          "testCode": "const { rerender } = render(<CartSummary items={[{ id: 'sku-c', label: 'Cable', price: 7 }]} />); rerender(<CartSummary items={[{ id: 'sku-d', label: 'Hub', price: 12 }]} />); assert.ok(screen.getByText('Hub')); assert.equal(screen.getByLabelText('Cart total').textContent, '12'); rerender(<CartSummary items={[]} />); assert.equal(screen.getByLabelText('Cart total').textContent, '0');"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Render each current item label and compute the total from the same prop snapshot."
+        },
+        {
+          "explain": "Check the empty list and a replacement prop array to confirm the output does not become stale."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "react-stale-or-duplicated-state|direct|CartSummary",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "react-stale-or-duplicated-state",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 4
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Standard Exam",
+      "unitCode": "PRG-T02-C01-U03",
+      "workspaceFile": "drills/workspace/DRL-PRG-T02-C01-U03-01/Q03_CartSummary.tsx"
+    },
+    {
+      "id": "Q04",
+      "level": 2,
+      "category": "Refactor & Design",
+      "archetype": "debugging",
+      "codeType": "fix-bug",
+      "archetypeKey": "prg-t02-c01-u03-state-and-event-handling",
+      "commonTrapTag": "react-stale-or-duplicated-state",
+      "context": "catalog_search_field",
+      "entryPoint": "CatalogSearch",
+      "prompt": "**Task**\nRepair `CatalogSearch`. It receives `onSearch`, starts with an empty `Search products` field, and submits on Enter.\n\n**Requirements**\n- Keep controlled state, prevent native navigation, submit trimmed text, ignore empty input.",
+      "inputHint": "Implement the component contract and verify its visible state after user actions.",
+      "starterCode": "import { useState } from 'react';\nexport function CatalogSearch({ onSearch }: { onSearch: (query: string) => void }) {\n  const [query, setQuery] = useState('');\n  return <form onSubmit={() => onSearch(query)}><label>Search products<input aria-label=\"Search products\" value={query} onChange={(event) => setQuery(event.target.value)} /></label><button type=\"submit\">Search</button></form>;\n}\n",
+      "solutionCode": "import { useState, type FormEvent } from 'react';\nexport function CatalogSearch({ onSearch }: { onSearch: (query: string) => void }) {\n  const [query, setQuery] = useState('');\n  function submit(event: FormEvent<HTMLFormElement>) {\n    event.preventDefault();\n    const normalized = query.trim();\n    if (normalized) onSearch(normalized);\n  }\n  return <form onSubmit={submit}><label>Search products<input aria-label=\"Search products\" value={query} onChange={(event) => setQuery(event.target.value)} /></label><button type=\"submit\">Search</button></form>;\n}\n",
+      "trapMutant": "import { useState, type FormEvent } from 'react';\nexport function CatalogSearch({ onSearch }: { onSearch: (query: string) => void }) {\n  const [query, setQuery] = useState('');\n  const [submittedQuery, setSubmittedQuery] = useState('');\n  function submit(event: FormEvent<HTMLFormElement>) {\n    event.preventDefault();\n    const normalized = submittedQuery.trim();\n    if (normalized) onSearch(normalized);\n  }\n  return <form onSubmit={submit}><label>Search products<input aria-label=\"Search products\" value={query} onChange={(event) => { setQuery(event.target.value); setSubmittedQuery(query); }} /></label><button type=\"submit\">Search</button></form>;\n}\n",
+      "visibleTests": [
+        {
+          "name": "submits a normalized query through the form",
+          "testCode": "const calls = []; const user = userEvent.setup(); render(<CatalogSearch onSearch={(value) => calls.push(value)} />); const input = screen.getByRole('textbox', { name: 'Search products' }); await user.type(input, '  keyboards  '); await user.keyboard('{Enter}'); assert.deepEqual(calls, ['keyboards']);"
+        },
+        {
+          "name": "does not submit a whitespace-only value",
+          "testCode": "const calls = []; const user = userEvent.setup(); render(<CatalogSearch onSearch={(value) => calls.push(value)} />); const input = screen.getByRole('textbox', { name: 'Search products' }); await user.type(input, '   '); await user.keyboard('{Enter}'); assert.deepEqual(calls, []);"
+        },
+        {
+          "name": "does not submit an empty value",
+          "testCode": "const calls = []; const user = userEvent.setup(); render(<CatalogSearch onSearch={(value) => calls.push(value)} />); await user.keyboard('{Enter}'); assert.deepEqual(calls, []);"
+        },
+        {
+          "name": "prevents browser navigation on form submit",
+          "testCode": "const { container } = render(<CatalogSearch onSearch={() => {}} />); const event = new Event('submit', { bubbles: true, cancelable: true }); container.querySelector('form').dispatchEvent(event); assert.equal(event.defaultPrevented, true);"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "uses the current input snapshot after repeated edits",
+          "testCode": "const calls = []; const user = userEvent.setup(); render(<CatalogSearch onSearch={(value) => calls.push(value)} />); const input = screen.getByRole('textbox', { name: 'Search products' }); await user.type(input, 'router'); await user.clear(input); await user.type(input, 'switch'); await user.keyboard('{Enter}'); assert.deepEqual(calls, ['switch']);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Identify the state owner and map the user event to the next rendered snapshot."
+        },
+        {
+          "explain": "Use the component contract to preserve the displayed state through boundary and repeated interactions."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "react-stale-or-duplicated-state|direct|CatalogSearch",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "debugging"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "react-stale-or-duplicated-state",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 4
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Standard Exam",
+      "unitCode": "PRG-T02-C01-U03",
+      "workspaceFile": "drills/workspace/DRL-PRG-T02-C01-U03-01/Q04_CatalogSearch.tsx"
+    }
+  ],
+  "blindSolve": [
+    {
+      "problemId": "Q01",
+      "passed": true
+    },
+    {
+      "problemId": "Q02",
+      "passed": true
+    },
+    {
+      "problemId": "Q03",
+      "passed": true
+    },
+    {
+      "problemId": "Q04",
+      "passed": true
+    }
+  ],
+  "review": {
+    "verdict": "pass",
+    "note": "All four React state and event problems fit the unit and level mix, use distinct realistic domains, include sound solutions and rubrics, and their trap mutants fail the supplied tests; the fix-bug starter has reproducing and regression scenarios."
+  },
+  "drillId": "DRL-PRG-T02-C01-U03-01",
+  "topicCode": "PRG-T02",
+  "chapterCode": "PRG-T02-C01",
+  "schemaVersion": "2.0-code",
+  "subject": "PRG",
+  "createdAt": "2026-11-17 02:43:18",
+  "localFilePath": "drills/data/PRG-T02-C01-U03/DRL-PRG-T02-C01-U03-01.json"
+}

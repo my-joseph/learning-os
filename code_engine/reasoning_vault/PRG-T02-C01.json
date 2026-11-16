@@ -20,7 +20,7 @@
         {
           "trapTag": "react-stale-or-duplicated-state",
           "name": "Stale or Duplicated UI State",
-          "description": "Treating JSX as HTML parsed by the browser or calling a component as an ordinary function bypasses React\u2019s element and reconciliation model.",
+          "description": "Treating JSX as HTML parsed by the browser or calling a component as an ordinary function bypasses React’s element and reconciliation model.",
           "reproducer": "Exercise repeated updates and a boundary transition; check whether the rendered UI remains synchronized with its source."
         }
       ],
@@ -136,7 +136,12 @@
           }
         }
       ],
-      "usedContexts": []
+      "usedContexts": [
+        "catalog_search_field",
+        "checkout_cart_summary",
+        "subscription_seat_quantity_stepper",
+        "warehouse_inventory_save_toggle"
+      ]
     },
     {
       "archetypeKey": "prg-t02-c01-u04-state-updates-and-immutability",
@@ -271,7 +276,12 @@
           }
         }
       ],
-      "usedContexts": []
+      "usedContexts": [
+        "analytics_dashboard_filter_panel",
+        "claims_portal_validation_focus",
+        "support_ticket_activity_feed",
+        "warehouse_bin_scan_capture"
+      ]
     },
     {
       "archetypeKey": "prg-t02-c01-u07-custom-hooks",

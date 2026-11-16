@@ -1,0 +1,491 @@
+{
+  "unitCode": "MTH-T02-C02-U04",
+  "topicTitle": "Functions",
+  "unitTitle": "Composition of Functions",
+  "subject": "MATH",
+  "problems": [
+    {
+      "id": "Q01",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c02-u04-evaluate-composition",
+      "context": "",
+      "prompt": "Let $f(x)=2x+1$ and $g(x)=x^2$. Find $(f\\circ g)(3)$.",
+      "display": "f(g(3))",
+      "plainText": "Let f(x)=2x+1 and g(x)=x^2. Find (f o g)(3).",
+      "givens": {
+        "a": 2,
+        "b": 1,
+        "x": 3
+      },
+      "constants": {},
+      "trapGivens": [
+        2,
+        1,
+        3
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "19",
+        "tolerance": 0
+      },
+      "answerPlain": "19",
+      "answerDisplay": "19",
+      "inputHint": "Enter a number",
+      "commonTrapTag": "t02-c02-u04-reverse-composition-order-trap",
+      "trapDerivation": "(2 * 3 + 1)^2",
+      "trapValue": "49",
+      "verify": {
+        "source": "2 * (3^2) + 1",
+        "trapValue": "49"
+      },
+      "checkpointHint": "Apply the inside function first, then use its output as the next input.",
+      "references": [
+        "MTH-T02-C02-U04"
+      ],
+      "steps": [
+        {
+          "latex": "g(3)=3^2",
+          "explain": "Evaluate the inner function at the given input.",
+          "eq": [
+            "3^2",
+            "9"
+          ]
+        },
+        {
+          "latex": "f(g(3))=f(9)",
+          "explain": "Pass the inner output to the outer function."
+        },
+        {
+          "latex": "f(9)=2(9)+1",
+          "explain": "Substitute the inner output into the outer rule."
+        },
+        {
+          "latex": "f(9)=19",
+          "explain": "Simplify to get the composite value.",
+          "val": "19"
+        }
+      ],
+      "verificationLevel": "partial",
+      "review": {
+        "verdict": "pass",
+        "note": "The evaluation, reverse-order trap, steps, and non-leaking hint are consistent; no figure is needed for this substitution task."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C02-U04",
+          "title": "Composition of Functions",
+          "notionUrl": "https://www.notion.so/4013818f8ba0801ab140f195b9cedd20"
+        }
+      ],
+      "unitCode": "MTH-T02-C02-U04",
+      "fingerprint": "t02-c02-u04-reverse-composition-order-trap|direct|Let f(x)=#x+# and g(x)=x^#. Find (f o g)(#).",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 4,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c02-u04-reverse-composition-order-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 15
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 1 - Foundation"
+    },
+    {
+      "id": "Q02",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c02-u04-evaluate-composition",
+      "context": "",
+      "prompt": "Let $f(x)=3x+2$ and $g(x)=x+4$. Find $x$ if $(f\\circ g)(x)=20$.",
+      "display": "3(x+4)+2=20",
+      "plainText": "Let f(x)=3x+2 and g(x)=x+4. Find x if (f o g)(x)=20.",
+      "givens": {
+        "a": 3,
+        "b": 2,
+        "c": 4,
+        "target": 20
+      },
+      "constants": {},
+      "trapGivens": [
+        3,
+        2,
+        4,
+        20
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "2",
+        "tolerance": 0
+      },
+      "answerPlain": "2",
+      "answerDisplay": "2",
+      "inputHint": "Enter a number",
+      "commonTrapTag": "t02-c02-u04-stop-at-inner-output-trap",
+      "trapDerivation": "(20 - 2) / 3",
+      "trapValue": "6",
+      "verify": {
+        "source": "(20 - 14) / 3",
+        "trapValue": "6"
+      },
+      "checkpointHint": "Translate the composition into one equation and undo the operations in reverse order.",
+      "references": [
+        "MTH-T02-C02-U04"
+      ],
+      "steps": [
+        {
+          "latex": "3(x+4)+2=20",
+          "explain": "Substitute the inner rule into the outer rule."
+        },
+        {
+          "latex": "3x+12+2=20",
+          "explain": "Distribute the outer coefficient across the inner expression."
+        },
+        {
+          "latex": "3x+14=20",
+          "explain": "Combine the constant terms.",
+          "eq": [
+            "12+2",
+            "14"
+          ]
+        },
+        {
+          "latex": "3x=6",
+          "explain": "Subtract the combined constant from both sides.",
+          "eq": [
+            "20-14",
+            "6"
+          ]
+        },
+        {
+          "latex": "x=2",
+          "explain": "Divide both sides by the coefficient of x.",
+          "val": "2"
+        }
+      ],
+      "verificationLevel": "partial",
+      "review": {
+        "verdict": "pass",
+        "note": "The revised trap correctly stops after solving for the inner output, and the answer, verification, derivation steps, and hint are consistent."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C02-U04",
+          "title": "Composition of Functions",
+          "notionUrl": "https://www.notion.so/4013818f8ba0801ab140f195b9cedd20"
+        }
+      ],
+      "unitCode": "MTH-T02-C02-U04",
+      "fingerprint": "t02-c02-u04-stop-at-inner-output-trap|reverse|Let f(x)=#x+# and g(x)=x+#. Find x if (f o g)(x)=#.",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 5,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c02-u04-stop-at-inner-output-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 17
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 2 - Standard Exam"
+    },
+    {
+      "id": "Q03",
+      "level": 3,
+      "category": "Problem Solving",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c02-u04-domain-of-composite",
+      "context": "",
+      "prompt": "Let $f(u)=\\frac{1}{\\sqrt{u}}$ and $g(x)=\\sqrt{2x-2}$. Give the domain of $(f\\circ g)(x)$ in interval notation.",
+      "display": "(f o g)(x)=1/sqrt(sqrt(2x-2))",
+      "plainText": "Let f(u)=1/sqrt(u) and g(x)=sqrt(2x-2). Give the domain of (f o g)(x) in interval notation.",
+      "givens": {
+        "scale": 2,
+        "offset": 2,
+        "unit": 1
+      },
+      "constants": {},
+      "trapGivens": [
+        2,
+        1
+      ],
+      "answerSpec": {
+        "type": "interval",
+        "value": "(1, oo)"
+      },
+      "answerPlain": "(1, oo)",
+      "answerDisplay": "(1, oo)",
+      "inputHint": "Enter an interval using parentheses or brackets as appropriate",
+      "commonTrapTag": "t02-c02-u04-include-composite-zero-endpoint-trap",
+      "trapDerivation": "[2 - 1, oo)",
+      "trapValue": "[1, oo)",
+      "verify": {
+        "trapValue": "[1, oo)"
+      },
+      "checkpointHint": "Check both whether the inner radical is defined and whether its output is allowed in the outer denominator.",
+      "references": [
+        "MTH-T02-C02-U04"
+      ],
+      "steps": [
+        {
+          "latex": "2x-2\\ge0",
+          "explain": "Require the inner square root to have a nonnegative radicand."
+        },
+        {
+          "latex": "x\\ge1",
+          "explain": "Solve the inner domain condition."
+        },
+        {
+          "latex": "2(1)-2=0",
+          "explain": "Check the boundary input in the inner rule; its output is zero, which is not allowed in the outer denominator.",
+          "eq": [
+            "2 * 1 - 2",
+            "0"
+          ]
+        },
+        {
+          "latex": "x>1",
+          "explain": "Keep inputs strictly above the excluded endpoint so both function steps are defined."
+        }
+      ],
+      "verificationLevel": "partial",
+      "blindSolve": {
+        "answer": "(1, ∞)",
+        "ambiguous": false,
+        "setup": "given",
+        "strategy": "choose",
+        "check": "edge",
+        "edgeRejected": "x = 1, where g(x) = 0 and f(0) is undefined",
+        "task": "compute",
+        "reverse": false,
+        "steps": 2
+      },
+      "review": {
+        "verdict": "pass",
+        "note": "Both domain restrictions and the excluded endpoint are handled correctly with clear steps, a relevant trap, and a non-leaking hint; no figure is needed."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C02-U04",
+          "title": "Composition of Functions",
+          "notionUrl": "https://www.notion.so/4013818f8ba0801ab140f195b9cedd20"
+        }
+      ],
+      "unitCode": "MTH-T02-C02-U04",
+      "fingerprint": "t02-c02-u04-include-composite-zero-endpoint-trap|direct|Let f(u)=#/sqrt(u) and g(x)=sqrt(#x-#). Give the domain of (f o g)(x) in interval notation.",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 4,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            20
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c02-u04-include-composite-zero-endpoint-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 15
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 3 - Trap & Diagnostic"
+    },
+    {
+      "id": "Q04",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c02-u04-build-composite-rule",
+      "context": "",
+      "prompt": "Let $f(x)=x^2+1$ and $g(x)=2x-3$. Find and simplify $(f\\circ g)(x)$.",
+      "display": "(2x-3)^2+1",
+      "plainText": "Let f(x)=x^2+1 and g(x)=2x-3. Find and simplify (f o g)(x).",
+      "givens": {
+        "a": 1,
+        "b": 2,
+        "c": 3
+      },
+      "constants": {},
+      "trapGivens": [
+        1,
+        2,
+        3
+      ],
+      "answerSpec": {
+        "type": "expression",
+        "value": "4*x^2 - 12*x + 10",
+        "variables": [
+          "x"
+        ]
+      },
+      "answerPlain": "4x^2 - 12x + 10",
+      "answerDisplay": "4x^2 - 12x + 10",
+      "inputHint": "Enter a polynomial in x",
+      "commonTrapTag": "t02-c02-u04-partial-substitution-trap",
+      "trapDerivation": "(2*x)^2 - 3 + 1",
+      "trapValue": "4*x^2 - 2",
+      "verify": {
+        "source": "(2*x - 3)^2 + 1",
+        "trapValue": "4*x^2 - 2"
+      },
+      "checkpointHint": "Replace the entire outer input with the inner expression before expanding.",
+      "references": [
+        "MTH-T02-C02-U04"
+      ],
+      "steps": [
+        {
+          "latex": "(f\\circ g)(x)=(2x-3)^2+1",
+          "explain": "Replace the outer input with the complete inner expression."
+        },
+        {
+          "latex": "(2x-3)^2+1=(2x-3)(2x-3)+1",
+          "explain": "Rewrite the square as a product."
+        },
+        {
+          "latex": "(2x-3)(2x-3)+1=4x^2-12x+9+1",
+          "explain": "Expand the product using distribution and keep the constant terms separate."
+        },
+        {
+          "latex": "4x^2-12x+9+1=4x^2-12x+10",
+          "explain": "Combine the constant terms.",
+          "val": "4*x^2 - 12*x + 10"
+        }
+      ],
+      "verificationLevel": "partial",
+      "review": {
+        "verdict": "pass",
+        "note": "The answer and partial-substitution trap are correct, and the revised expansion explanation now matches the transformation shown."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C02-U04",
+          "title": "Composition of Functions",
+          "notionUrl": "https://www.notion.so/4013818f8ba0801ab140f195b9cedd20"
+        }
+      ],
+      "unitCode": "MTH-T02-C02-U04",
+      "fingerprint": "t02-c02-u04-partial-substitution-trap|direct|Let f(x)=x^#+# and g(x)=#x-#. Find and simplify (f o g)(x).",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 4,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c02-u04-partial-substitution-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 15
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 2 - Standard Exam"
+    }
+  ],
+  "drillId": "DRL-MTH-T02-C02-U04-02",
+  "title": "Composition of Functions — Verified Math Drill (4 Qs)",
+  "topicCode": "MTH-T02",
+  "chapterCode": "MTH-T02-C02",
+  "schemaVersion": "2.0-math",
+  "createdAt": "2026-11-17 01:48:56",
+  "config": {
+    "questionCount": 4,
+    "difficulty": "ALL",
+    "difficultyMode": "AI Synthesized Reasoning Mode"
+  },
+  "localFilePath": "drills/data/MTH-T02-C02-U04/DRL-MTH-T02-C02-U04-02.json"
+}

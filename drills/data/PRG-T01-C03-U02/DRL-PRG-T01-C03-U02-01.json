@@ -1,0 +1,501 @@
+{
+  "unitCode": "PRG-T01-C03-U02",
+  "unitTitle": "Recursion & Call-Stack Tracing",
+  "environment": "node-vanilla",
+  "sourceAttribution": "Original recursive tracing scenarios informed by the MDN JavaScript Guide (Functions and recursion); no source examples copied.",
+  "config": {
+    "questionCount": 5,
+    "difficulty": "ALL",
+    "difficultyMode": "AI Synthesized Engineering Mode"
+  },
+  "problems": [
+    {
+      "id": "Q01",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "code-tracing",
+      "codeType": "trace-explain",
+      "archetypeKey": "prg-c03-u02-call-stack-unwind",
+      "commonTrapTag": "frame-state-shared",
+      "context": "retry_attempt_call_trace",
+      "entryPoint": "traceAttemptCount",
+      "prompt": "Trace the retry counter below and implement `traceAttemptCount()` to return the exact stdout. The routine records each frame when it begins, marks the base case, and records each frame again after its child returns. Explain the order in which the calls and returns appear.\n\n```js\nfunction visit(remaining, events) {\n  events.push('enter:' + remaining);\n  if (remaining === 0) {\n    events.push('base');\n    return;\n  }\n  visit(remaining - 1, events);\n  events.push('leave:' + remaining);\n}\nconst events = [];\nvisit(2, events);\nconsole.log(events.join('|'));\n```\n\n**Requirements:**\n- Return one fresh string array containing the exact stdout line.\n- Recreate the recursive event order rather than hardcoding the observed output.\n- Simulate the calls with an explicit stack of frame records; do not call the recursive snippet directly. Each frame needs an entry or return phase.\n- Explain which frame returns first and when its caller resumes.\n\n**Return Contract:**\n- Return `string[]` with exact event order and separators.",
+      "inputHint": "Return one string for each stdout line, preserving the snippet's output format.",
+      "starterCode": "function traceAttemptCount() {\n  // Simulate entry and return phases with an explicit frame stack.\n  return [];\n}\n\nmodule.exports = { traceAttemptCount };\n",
+      "solutionCode": "function traceAttemptCount() {\n  const events = [];\n  const frames = [{ remaining: 2, returning: false }];\n  while (frames.length > 0) {\n    const frame = frames.pop();\n    if (frame.returning) {\n      events.push('leave:' + frame.remaining);\n      continue;\n    }\n    events.push('enter:' + frame.remaining);\n    if (frame.remaining === 0) {\n      events.push('base');\n      continue;\n    }\n    frames.push({ remaining: frame.remaining, returning: true });\n    frames.push({ remaining: frame.remaining - 1, returning: false });\n  }\n  return [events.join('|')];\n}\n\nmodule.exports = { traceAttemptCount };\n",
+      "trapMutant": "function traceAttemptCount() {\n  return ['enter:2|enter:1|enter:0|base|leave:1|leave:1'];\n}\n\nmodule.exports = { traceAttemptCount };\n",
+      "visibleTests": [
+        {
+          "name": "matches the configured execution trace",
+          "testCode": "assert.deepStrictEqual(traceAttemptCount(), ['enter:2|enter:1|enter:0|base|leave:1|leave:2']);"
+        },
+        {
+          "name": "matches the configured execution trace",
+          "testCode": "assert.strictEqual(traceAttemptCount().length, 1);"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "matches the complete recursive execution trace",
+          "testCode": "assert.deepStrictEqual(traceAttemptCount(), ['enter:2|enter:1|enter:0|base|leave:1|leave:2']);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "The calls enter with remaining values 2, 1 and 0."
+        },
+        {
+          "explain": "The frame at 0 records the base event and returns first."
+        },
+        {
+          "explain": "The frame at 1 resumes and records its leave event before the outer frame at 2 does the same."
+        }
+      ],
+      "verificationLevel": "partial",
+      "codeSnippet": "function visit(remaining, events) {\n  events.push('enter:' + remaining);\n  if (remaining === 0) {\n    events.push('base');\n    return;\n  }\n  visit(remaining - 1, events);\n  events.push('leave:' + remaining);\n}\nconst events = [];\nvisit(2, events);\nconsole.log(events.join('|'));",
+      "answerSpec": {
+        "tokens": [
+          "enter:2|enter:1|enter:0|base|leave:1|leave:2"
+        ]
+      },
+      "blindSolve": null,
+      "form": "direct",
+      "fingerprint": "frame-state-shared|direct|function visit(remaining, events) { events.push('enter:' + remaining); if (remaining === #) { events.push('base'); return; } visit(remaining - #, events); events.push('leave:' + remaining); } const events = []; visit(#, events); console.log(events.join('|'));",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "code-tracing",
+          "verifiedByExecution": true
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 3,
+          "hasTrapOrFlaw": false,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "frame-state-shared",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 5
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Foundation",
+      "unitCode": "PRG-T01-C03-U02",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-U02-01/Q01_traceAttemptCount.js"
+    },
+    {
+      "id": "Q02",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "code-tracing",
+      "codeType": "trace-explain",
+      "archetypeKey": "prg-c03-u02-call-stack-unwind",
+      "commonTrapTag": "unwind-order-reversed",
+      "context": "organization_export_trace",
+      "entryPoint": "traceOrganizationExport",
+      "prompt": "Trace the organization export visitor below and implement `traceOrganizationExport()` to return the exact stdout. Each node is entered before its children and left after the children return. Explain why the leave events appear in their observed order.\n\n```js\nfunction visit(node, events) {\n  events.push('enter:' + node.id);\n  for (const child of node.children) visit(child, events);\n  events.push('leave:' + node.id);\n}\nconst org = { id: 'root', children: [\n  { id: 'east', children: [] },\n  { id: 'west', children: [{ id: 'desk', children: [] }] }\n] };\nconst events = [];\nvisit(org, events);\nconsole.log(events.join('|'));\n```\n\n**Requirements:**\n- Return one fresh string array containing the exact stdout line.\n- Recreate the traversal behavior instead of hardcoding the observed line.\n- Explain which calls are suspended while descendants are visited.\n\n**Return Contract:**\n- Return `string[]` with exact event order and separators.",
+      "inputHint": "Return one string for each stdout line, preserving the snippet's output format.",
+      "starterCode": "function traceOrganizationExport() {\n  // Simulate the recursive trace; do not hardcode the observed output.\n  return [];\n}\n\nmodule.exports = { traceOrganizationExport };\n",
+      "solutionCode": "function traceOrganizationExport() {\n  const events = [];\n  const stack = [{ node: { id: 'root', children: [{ id: 'east', children: [] }, { id: 'west', children: [{ id: 'desk', children: [] }] }] }, leaving: false }];\n  while (stack.length > 0) {\n    const frame = stack.pop();\n    if (frame.leaving) {\n      events.push('leave:' + frame.node.id);\n      continue;\n    }\n    events.push('enter:' + frame.node.id);\n    stack.push({ node: frame.node, leaving: true });\n    for (let index = frame.node.children.length - 1; index >= 0; index -= 1) {\n      stack.push({ node: frame.node.children[index], leaving: false });\n    }\n  }\n  return [events.join('|')];\n}\n\nmodule.exports = { traceOrganizationExport };\n",
+      "trapMutant": "function traceOrganizationExport() {\n  return ['enter:root|enter:east|leave:east|enter:west|enter:desk|leave:desk|leave:root|leave:west'];\n}\n\nmodule.exports = { traceOrganizationExport };\n",
+      "visibleTests": [
+        {
+          "name": "matches the configured execution trace",
+          "testCode": "// Empty leaf boundary.\nassert.deepStrictEqual(traceOrganizationExport(), ['enter:root|enter:east|leave:east|enter:west|enter:desk|leave:desk|leave:west|leave:root']);"
+        },
+        {
+          "name": "matches the configured execution trace",
+          "testCode": "assert.strictEqual(traceOrganizationExport().length, 1);"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "matches the complete execution trace",
+          "testCode": "assert.deepStrictEqual(traceOrganizationExport(), [\"enter:root|enter:east|leave:east|enter:west|enter:desk|leave:desk|leave:west|leave:root\"]);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "The root is entered first and pauses while its children are visited in source order."
+        },
+        {
+          "explain": "The east leaf enters and leaves before the west branch begins."
+        },
+        {
+          "explain": "The desk leaf leaves, then west resumes and leaves, and finally the root resumes and leaves."
+        }
+      ],
+      "verificationLevel": "partial",
+      "codeSnippet": "function visit(node, events) {\n  events.push('enter:' + node.id);\n  for (const child of node.children) visit(child, events);\n  events.push('leave:' + node.id);\n}\nconst org = { id: 'root', children: [\n  { id: 'east', children: [] },\n  { id: 'west', children: [{ id: 'desk', children: [] }] }\n] };\nconst events = [];\nvisit(org, events);\nconsole.log(events.join('|'));",
+      "answerSpec": {
+        "tokens": [
+          "enter:root|enter:east|leave:east|enter:west|enter:desk|leave:desk|leave:west|leave:root"
+        ]
+      },
+      "blindSolve": null,
+      "form": "direct",
+      "fingerprint": "unwind-order-reversed|direct|function visit(node, events) { events.push('enter:' + node.id); for (const child of node.children) visit(child, events); events.push('leave:' + node.id); } const org = { id: 'root', children: [ { id: 'east', children: [] }, { id: 'west', children: [{ id: 'desk', children: [] }] } ] }; const events = []; visit(org, events); console.log(events.join('|'));",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "code-tracing",
+          "verifiedByExecution": true
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": false,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "unwind-order-reversed",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 5
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Standard Exam",
+      "unitCode": "PRG-T01-C03-U02",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-U02-01/Q02_traceOrganizationExport.js"
+    },
+    {
+      "id": "Q03",
+      "level": 3,
+      "category": "Trap & Edge Case",
+      "archetype": "code-tracing",
+      "codeType": "trace-explain",
+      "archetypeKey": "prg-c03-u02-recursive-base-case",
+      "commonTrapTag": "base-case-off-by-one",
+      "context": "bounded_retry_schedule",
+      "entryPoint": "traceRetrySchedule",
+      "prompt": "Trace the bounded retry scheduler below and implement `traceRetrySchedule()` to return the exact stdout. The policy allows three attempts. Explain whether the stopping boundary preserves that contract.\n\n```js\nfunction retrySchedule(remaining) {\n  if (remaining <= 1) return ['stop'];\n  return ['try-' + remaining, ...retrySchedule(remaining - 1)];\n}\nconsole.log(retrySchedule(3).join('>'));\n```\n\n**Requirements:**\n- Return a fresh array containing the exact stdout line produced by this code.\n- Recreate the recursive logic; do not hardcode the observed line.\n- Explain which call reaches the base case and whether all allowed attempts are represented.\n\n**Return Contract:**\n- Return `string[]` with exact output formatting.",
+      "inputHint": "Return one string for each stdout line, preserving the snippet's output format.",
+      "starterCode": "function traceRetrySchedule() {\n  // Simulate the recursive trace; do not hardcode the observed output.\n  return [];\n}\n\nmodule.exports = { traceRetrySchedule };\n",
+      "solutionCode": "function traceRetrySchedule() {\n  const attempts = [];\n  let remaining = 3;\n  while (remaining > 1) {\n    attempts.push('try-' + remaining);\n    remaining -= 1;\n  }\n  attempts.push('stop');\n  return [attempts.join('>')];\n}\n\nmodule.exports = { traceRetrySchedule };\n",
+      "trapMutant": "function traceRetrySchedule() {\n  return ['try-3>try-2>try-1>stop'];\n}\n\nmodule.exports = { traceRetrySchedule };\n",
+      "visibleTests": [
+        {
+          "name": "matches the configured execution trace",
+          "testCode": "// The zero boundary is the next value below this stopping point.\nassert.deepStrictEqual(traceRetrySchedule(), ['try-3>try-2>stop']);"
+        },
+        {
+          "name": "matches the configured execution trace",
+          "testCode": "assert.strictEqual(traceRetrySchedule().length, 1);"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "matches the complete execution trace",
+          "testCode": "assert.deepStrictEqual(traceRetrySchedule(), [\"try-3>try-2>stop\"]);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "The first call begins with three remaining attempts and emits try-3."
+        },
+        {
+          "explain": "The next call begins with two and emits try-2; the call at one immediately satisfies the stopping condition."
+        },
+        {
+          "explain": "The stop marker returns without emitting try-1, so the displayed trace contains only two attempts."
+        }
+      ],
+      "verificationLevel": "partial",
+      "codeSnippet": "function retrySchedule(remaining) {\n  if (remaining <= 1) return ['stop'];\n  return ['try-' + remaining, ...retrySchedule(remaining - 1)];\n}\nconsole.log(retrySchedule(3).join('>'));",
+      "answerSpec": {
+        "tokens": [
+          "try-3>try-2>stop"
+        ]
+      },
+      "blindSolve": null,
+      "form": "direct",
+      "fingerprint": "base-case-off-by-one|direct|function retrySchedule(remaining) { if (remaining <= #) return ['stop']; return ['try-' + remaining, ...retrySchedule(remaining - #)]; } console.log(retrySchedule(#).join('>'));",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "code-tracing",
+          "verifiedByExecution": true
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            20
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "base-case-off-by-one",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 5
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Trap & Diagnostic",
+      "unitCode": "PRG-T01-C03-U02",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-U02-01/Q03_traceRetrySchedule.js"
+    },
+    {
+      "id": "Q04",
+      "level": 2,
+      "category": "Trap & Edge Case",
+      "archetype": "code-tracing",
+      "codeType": "trace-explain",
+      "archetypeKey": "prg-c03-u02-call-stack-unwind",
+      "commonTrapTag": "sibling-frame-state-carryover",
+      "context": "regional_route_depth_audit",
+      "entryPoint": "traceRegionalDepth",
+      "prompt": "Trace the regional route audit below and implement `traceRegionalDepth()` to return the exact stdout. The callback starts a separate recursive walk for each region. Explain how the second walk begins and why its depth value is independent of the first walk.\n\n```js\nfunction routeDepth(region, depth) {\n  if (depth === 1) return [region + ':' + depth];\n  return [region + ':' + depth, ...routeDepth(region + '-child', depth + 1)];\n}\nconst routes = ['north', 'south'].flatMap((region) => routeDepth(region, 0));\nconsole.log(routes.join('|'));\n```\n\n**Requirements:**\n- Return one fresh string array containing the exact stdout line.\n- Recreate the recursive calculation for both regions rather than hardcoding the result.\n- Explain how each invocation retains its own parameters.\n\n**Return Contract:**\n- Return `string[]` with exact output formatting.",
+      "inputHint": "Return one string for each stdout line, preserving the snippet's output format.",
+      "starterCode": "function traceRegionalDepth() {\n  // Simulate the recursive trace; do not hardcode the observed output.\n  return [];\n}\n\nmodule.exports = { traceRegionalDepth };\n",
+      "solutionCode": "function traceRegionalDepth() {\n  const routes = [];\n  for (const region of ['north', 'south']) {\n    let currentRegion = region;\n    let depth = 0;\n    while (depth <= 1) {\n      routes.push(currentRegion + ':' + depth);\n      currentRegion += '-child';\n      depth += 1;\n    }\n  }\n  return [routes.join('|')];\n}\n\nmodule.exports = { traceRegionalDepth };\n",
+      "trapMutant": "function traceRegionalDepth() {\n  return ['north:0|north-child:1|south:1|south-child:2'];\n}\n\nmodule.exports = { traceRegionalDepth };\n",
+      "visibleTests": [
+        {
+          "name": "matches the configured execution trace",
+          "testCode": "assert.deepStrictEqual(traceRegionalDepth(), ['north:0|north-child:1|south:0|south-child:1']);"
+        },
+        {
+          "name": "matches the configured execution trace",
+          "testCode": "assert.strictEqual(traceRegionalDepth().length, 1);"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "matches the complete execution trace",
+          "testCode": "assert.deepStrictEqual(traceRegionalDepth(), [\"north:0|north-child:1|south:0|south-child:1\"]);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "The north invocation starts at depth zero and its child frame records depth one."
+        },
+        {
+          "explain": "That recursive walk returns before flatMap invokes routeDepth for south."
+        },
+        {
+          "explain": "The south invocation receives its own zero depth argument and produces a separate child frame at depth one."
+        }
+      ],
+      "verificationLevel": "partial",
+      "codeSnippet": "function routeDepth(region, depth) {\n  if (depth === 1) return [region + ':' + depth];\n  return [region + ':' + depth, ...routeDepth(region + '-child', depth + 1)];\n}\nconst routes = ['north', 'south'].flatMap((region) => routeDepth(region, 0));\nconsole.log(routes.join('|'));",
+      "answerSpec": {
+        "tokens": [
+          "north:0|north-child:1|south:0|south-child:1"
+        ]
+      },
+      "blindSolve": null,
+      "form": "direct",
+      "fingerprint": "sibling-frame-state-carryover|direct|function routeDepth(region, depth) { if (depth === #) return [region + ':' + depth]; return [region + ':' + depth, ...routeDepth(region + '-child', depth + #)]; } const routes = ['north', 'south'].flatMap((region) => routeDepth(region, #)); console.log(routes.join('|'));",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "code-tracing",
+          "verifiedByExecution": true
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "sibling-frame-state-carryover",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 5
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Standard Exam",
+      "unitCode": "PRG-T01-C03-U02",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-U02-01/Q04_traceRegionalDepth.js"
+    },
+    {
+      "id": "Q05",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "code-tracing",
+      "codeType": "trace-explain",
+      "archetypeKey": "prg-c03-u02-nested-structure-recursion",
+      "commonTrapTag": "branch-result-omitted",
+      "context": "folder_quota_rollup",
+      "entryPoint": "traceFolderQuota",
+      "prompt": "Trace the folder quota rollup below and implement `traceFolderQuota()` to return the exact stdout. Each folder has a direct amount and zero or more children. Explain how an empty child list affects the return value.\n\n```js\nfunction quota(folder) {\n  if (folder === null) return 0;\n  let total = folder.own;\n  for (const child of folder.children) {\n    total += quota(child);\n  }\n  return total;\n}\nconst tree = { own: 2, children: [\n  { own: 1, children: [] },\n  { own: 3, children: [{ own: 4, children: [] }] }\n] };\nconsole.log(quota(tree));\n```\n\n**Requirements:**\n- Return a fresh array containing the exact stdout line.\n- Recreate the snippet's recursive logic to produce the trace; do not hardcode the observed output as a constant.\n- Account for each visited folder once and preserve the recursive return order in your explanation.\n\n**Return Contract:**\n- Return `string[]`.",
+      "inputHint": "Return one string for each stdout line, preserving the snippet's output format.",
+      "starterCode": "function traceFolderQuota() {\n  // Simulate the recursive trace; do not hardcode the observed output.\n  return [];\n}\n\nmodule.exports = { traceFolderQuota };\n",
+      "solutionCode": "function traceFolderQuota() {\n  const tree = { own: 2, children: [\n    { own: 1, children: [] },\n    { own: 3, children: [{ own: 4, children: [] }] }\n  ] };\n  function quota(folder) {\n    if (folder === null) return 0;\n    let total = folder.own;\n    for (const child of folder.children) total += quota(child);\n    return total;\n  }\n  return [String(quota(tree))];\n}\n\nmodule.exports = { traceFolderQuota };\n",
+      "trapMutant": "function traceFolderQuota() {\n  return ['6'];\n}\n\nmodule.exports = { traceFolderQuota };\n",
+      "visibleTests": [
+        {
+          "name": "matches the configured execution trace",
+          "testCode": "// Empty child lists contribute no additional calls.\nassert.deepStrictEqual(traceFolderQuota(), ['10']);"
+        },
+        {
+          "name": "matches the configured execution trace",
+          "testCode": "assert.strictEqual(traceFolderQuota().length, 1);"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "includes every direct and nested folder amount",
+          "testCode": "assert.deepStrictEqual(traceFolderQuota(), ['10']);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "The root begins with 2 and visits its two child folders in array order."
+        },
+        {
+          "explain": "The first child returns 1; the second child adds its own 3 to the nested child value 4 and returns 7."
+        },
+        {
+          "explain": "The root adds both child results to 2 and prints 10; empty child lists add no further calls."
+        }
+      ],
+      "verificationLevel": "partial",
+      "codeSnippet": "function quota(folder) {\n  if (folder === null) return 0;\n  let total = folder.own;\n  for (const child of folder.children) {\n    total += quota(child);\n  }\n  return total;\n}\nconst tree = { own: 2, children: [\n  { own: 1, children: [] },\n  { own: 3, children: [{ own: 4, children: [] }] }\n] };\nconsole.log(quota(tree));",
+      "answerSpec": {
+        "tokens": [
+          "10"
+        ]
+      },
+      "blindSolve": null,
+      "form": "direct",
+      "fingerprint": "branch-result-omitted|direct|function quota(folder) { if (folder === null) return #; let total = folder.own; for (const child of folder.children) { total += quota(child); } return total; } const tree = { own: #, children: [ { own: #, children: [] }, { own: #, children: [{ own: #, children: [] }] } ] }; console.log(quota(tree));",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "code-tracing",
+          "verifiedByExecution": true
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": false,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "branch-result-omitted",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 5
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Standard Exam",
+      "unitCode": "PRG-T01-C03-U02",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-U02-01/Q05_traceFolderQuota.js"
+    }
+  ],
+  "blindSolve": [
+    {
+      "problemId": "Q01",
+      "passed": true
+    },
+    {
+      "problemId": "Q02",
+      "passed": true
+    },
+    {
+      "problemId": "Q03",
+      "passed": true
+    },
+    {
+      "problemId": "Q04",
+      "passed": true
+    },
+    {
+      "problemId": "Q05",
+      "passed": true
+    }
+  ],
+  "review": {
+    "verdict": "pass",
+    "note": "All five U02 trace-explain items meet the brief and review checks; each solution passes its tests, and each trapMutant fails the output assertions for its tagged trace misconception."
+  },
+  "drillId": "DRL-PRG-T01-C03-U02-01",
+  "topicCode": "PRG-T01",
+  "chapterCode": "PRG-T01-C03",
+  "schemaVersion": "2.0-code",
+  "subject": "PRG",
+  "createdAt": "2026-11-17 02:10:21",
+  "localFilePath": "drills/data/PRG-T01-C03-U02/DRL-PRG-T01-C03-U02-01.json"
+}

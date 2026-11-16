@@ -224,6 +224,572 @@
           }
         }
       ]
+    },
+    {
+      "archetypeKey": "prg-t01-c02-u02-immutable-domain-entities",
+      "unitCode": "PRG-T01-C02-U02",
+      "level": 1,
+      "archetype": "problem-solving",
+      "name": "Immutable Domain Entity Contracts",
+      "competencies": [
+        "type-systems",
+        "domain-modeling",
+        "immutability"
+      ],
+      "coreConcept": "Use object types and readonly members to describe stable entity identity and the fields callers may update.",
+      "mentalModel": [
+        "1. Identify which values define identity and should not change after construction.",
+        "2. Mark stable properties readonly at the type boundary.",
+        "3. Keep runtime immutability separate from TypeScript's compile-time readonly check."
+      ],
+      "governingInvariant": "A caller cannot reassign an entity's stable identifiers through its declared type.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "mutable-identity-field",
+          "name": "Mutable Entity Identity",
+          "description": "An entity identifier remains assignable, allowing different code paths to silently change which record an object represents.",
+          "reproducer": "Assign a replacement id through a shared entity reference and observe that downstream lookups now target a different record."
+        },
+        {
+          "trapTag": "readonly-is-not-deep",
+          "name": "Shallow Readonly Assumption",
+          "description": "A readonly outer property is mistaken for recursive immutability, even though its nested object or array remains mutable.",
+          "reproducer": "Keep a nested preferences object mutable beneath a readonly profile property and update its theme through the nested reference."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "inventory_catalog_entities",
+          "description": "Model stable SKU identity with mutable display fields in an inventory catalog."
+        },
+        {
+          "domain": "customer_profile_preferences",
+          "description": "Separate stable customer identity from editable profile preferences."
+        }
+      ],
+      "usedContexts": [
+        "library_loan_receipt"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-object-readonly-identity",
+          "check": "Stable domain identifiers are readonly at public object boundaries, and caller-owned input objects are not reassigned to change identity.",
+          "why": "Mutable identity makes caches, indexes, and references point at a different entity without an explicit transition.",
+          "severity": "must",
+          "knownBad": {
+            "code": "type CatalogItem = { sku: string; label: string };\nfunction renameItem(item: CatalogItem, nextSku: string) { item.sku = nextSku; }",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-object-readonly-depth-honest",
+          "check": "The type model makes the intended mutability of nested objects explicit instead of implying that a top-level readonly property freezes its contents.",
+          "why": "TypeScript readonly is shallow; callers can still mutate nested state unless nested members are also readonly.",
+          "severity": "should",
+          "knownBad": {
+            "code": "type Customer = { readonly preferences: { theme: string } };\nfunction setTheme(customer: Customer, theme: string) { customer.preferences.theme = theme; }",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "prg-t01-c02-u02-literal-domain-values",
+      "unitCode": "PRG-T01-C02-U02",
+      "level": 2,
+      "archetype": "problem-solving",
+      "name": "Literal Domain Values & Const Inference",
+      "competencies": [
+        "type-systems",
+        "domain-modeling",
+        "literal-types"
+      ],
+      "coreConcept": "Preserve specific string, numeric, and tuple values as literal types when they define a finite domain contract.",
+      "mentalModel": [
+        "1. Separate a domain's allowed values from arbitrary strings or numbers.",
+        "2. Use literal unions for named alternatives and `as const` for readonly literal data.",
+        "3. Widen a value only when the contract genuinely accepts the wider type."
+      ],
+      "governingInvariant": "A value used as a domain variant remains assignable only to the declared literal alternatives.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "literal-type-widening",
+          "name": "Literal Value Widens to Primitive",
+          "description": "A value that should represent one of a finite set widens to string or number and loses its domain constraint.",
+          "reproducer": "Infer a mutable variable as string, then pass it to a function that accepts only named payment states."
+        },
+        {
+          "trapTag": "mutable-configuration-tuple",
+          "name": "Configuration Tuple Widens and Mutates",
+          "description": "A fixed pair of configuration values is inferred as a general mutable array, losing both positional meaning and literal values.",
+          "reproducer": "Pass a mutable numeric array into a function that expects a readonly two-element bounds tuple."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "payment_policy_configuration",
+          "description": "Constrain currency, payment status, and settlement mode values in payment services."
+        },
+        {
+          "domain": "warehouse_reorder_bounds",
+          "description": "Represent fixed minimum and maximum reorder thresholds as a readonly tuple."
+        }
+      ],
+      "usedContexts": [
+        "cold_chain_alert_thresholds",
+        "subscription_billing_states"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-literal-domain-width",
+          "check": "Finite domain alternatives retain their literal union type at the public boundary rather than widening to an unrestricted primitive.",
+          "why": "Widening admits values the business contract does not define and postpones errors until runtime.",
+          "severity": "must",
+          "knownBad": {
+            "code": "type PaymentState = 'authorized' | 'settled' | 'voided';\nfunction transition(next: string): PaymentState { return next as PaymentState; }",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-literal-const-data",
+          "check": "Fixed domain constants and tuple positions preserve their literal values and readonly shape when used as configuration.",
+          "why": "Mutable widened arrays lose positional meaning and can be changed by unrelated callers.",
+          "severity": "should",
+          "knownBad": {
+            "code": "const retryDelays = [250, 1000, 4000];\nfunction schedule(delays: readonly [250, 1000, 4000]) { return delays; }\nschedule(retryDelays);",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "prg-t01-c02-u02-object-shape-boundaries",
+      "unitCode": "PRG-T01-C02-U02",
+      "level": 2,
+      "archetype": "debugging",
+      "name": "Object Shape & Construction Boundaries",
+      "competencies": [
+        "type-systems",
+        "object-contracts",
+        "api-boundaries"
+      ],
+      "coreConcept": "Model required and optional object properties deliberately, and understand when fresh object literals receive excess-property checks.",
+      "mentalModel": [
+        "1. Treat a type as a structural contract for the properties a consumer may rely on.",
+        "2. Mark a field optional only when its absence is a supported domain state.",
+        "3. Use typed construction boundaries to catch misspelled or unsupported fields early."
+      ],
+      "governingInvariant": "Every accepted object shape represents a valid domain state, and unknown fields are not silently asserted into the contract.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "fresh-object-check-mismatch",
+          "name": "Fresh Literal Check Misunderstanding",
+          "description": "A learner assumes excess-property checking applies identically to a fresh object literal and a previously inferred variable.",
+          "reproducer": "Pass a variable with an extra misspelled optional field and compare it with the same shape passed inline."
+        },
+        {
+          "trapTag": "optional-property-overuse",
+          "name": "Optional Properties Hide Invalid Shapes",
+          "description": "Many unrelated optional properties allow incomplete or contradictory objects that are not meaningful domain states.",
+          "reproducer": "Construct a configuration object with none of its identifying fields and observe that the broad interface still accepts it."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "order_line_import_contract",
+          "description": "Validate typed order-line objects imported from an internal catalog adapter."
+        },
+        {
+          "domain": "feature_flag_options",
+          "description": "Define valid option shapes for feature flag evaluation without typo-prone optional bags."
+        }
+      ],
+      "usedContexts": [
+        "podcast_episode_queue_card",
+        "feature_flag_evaluation_options"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-object-shape-no-unsafe-assertion",
+          "check": "Object shape mismatches are corrected at the construction boundary instead of hidden with unchecked type assertions.",
+          "why": "An assertion suppresses the exact structural error the contract is meant to catch.",
+          "severity": "must",
+          "knownBad": {
+            "code": "type ImportRow = { sku: string; quantity: number };\nconst row = { sku: 'SKU-8', quntity: 2 } as ImportRow;",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-object-optionality-domain",
+          "check": "Optional members correspond to genuinely absent domain data; required identity and discriminator fields remain required.",
+          "why": "Overly permissive shapes admit incomplete values and force callers to handle states that should not exist.",
+          "severity": "should",
+          "knownBad": {
+            "code": "type DeliveryWindow = { start?: string; end?: string; timezone?: string };\nconst window: DeliveryWindow = {};",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "prg-t01-c02-u03-discriminated-domain-unions",
+      "unitCode": "PRG-T01-C02-U03",
+      "level": 1,
+      "archetype": "problem-solving",
+      "name": "Discriminated Domain Unions",
+      "competencies": [
+        "union-types",
+        "literal-discriminants",
+        "domain-state-modeling"
+      ],
+      "coreConcept": "Represent mutually exclusive domain states as separate object types connected by a literal discriminant, then narrow before reading member-specific fields.",
+      "mentalModel": [
+        "1. Each union member is one valid domain state.",
+        "2. A shared literal discriminant identifies which member is present at runtime.",
+        "3. Narrow on that discriminant before accessing state-specific data."
+      ],
+      "governingInvariant": "Every state-specific field access is dominated by a check that narrows the value to the member declaring that field.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "optional-property-bag-state",
+          "name": "Optional Property Bag for Exclusive States",
+          "description": "Modeling mutually exclusive states as one type with many optional fields permits contradictory or incomplete combinations.",
+          "reproducer": "type Payment = { kind: string; authCode?: string; receiptId?: string; reason?: string };"
+        },
+        {
+          "trapTag": "un-narrowed-union-member-access",
+          "name": "Member Field Access Before Narrowing",
+          "description": "Reading a property that exists on only some members before checking the discriminant violates the union guarantee.",
+          "reproducer": "function idOf(state: PaymentState) { return state.receiptId; }"
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "payment_state_record",
+          "description": "Represent authorized, captured, and declined payment outcomes with distinct data."
+        },
+        {
+          "domain": "media_processing_job",
+          "description": "Represent queued, processing, completed, and failed media jobs as explicit states."
+        }
+      ],
+      "usedContexts": [
+        "payment_state_record",
+        "media_processing_job",
+        "parcel_delivery_status",
+        "subscription_billing_adjustments"
+      ],
+      "source": "TypeScript Handbook: Narrowing — Discriminated Unions",
+      "qualityChecks": [
+        {
+          "id": "QC-prg-t01-c02-u03-discriminant-narrowing",
+          "check": "Read a member-specific field only after a valid discriminant or equivalent guard narrows the union to the declaring member.",
+          "why": "A union promises that one of its members is present, not that every member-specific property exists.",
+          "severity": "must",
+          "knownBad": {
+            "code": "type PaymentState = { kind: 'captured'; receiptId: string } | { kind: 'declined'; reason: string };\nfunction receipt(state: PaymentState): string { return state.receiptId; }",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-prg-t01-c02-u03-no-optional-state-bag",
+          "check": "Represent mutually exclusive domain states as separate object members instead of a loose object with unrelated optional state fields.",
+          "why": "Separate members make impossible combinations harder to construct and give each narrowed branch an accurate contract.",
+          "severity": "should",
+          "knownBad": {
+            "code": "type PaymentState = { kind: string; receiptId?: string; reason?: string };",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "prg-t01-c02-u03-exhaustive-state-handlers",
+      "unitCode": "PRG-T01-C02-U03",
+      "level": 2,
+      "archetype": "refactoring",
+      "name": "Exhaustive State Handlers",
+      "competencies": [
+        "union-narrowing",
+        "exhaustive-switch",
+        "state-transition-review"
+      ],
+      "coreConcept": "Handle every member of a discriminated union and make additions to the domain state visible at the handler boundary.",
+      "mentalModel": [
+        "1. Narrow using the shared discriminant.",
+        "2. Give each state an explicit branch with its state-specific behavior.",
+        "3. Use a `never` check when the handler must fail compilation after a new member is added."
+      ],
+      "governingInvariant": "A handler accounts for every member in the declared union; exhaustive handlers use a never-typed remainder rather than silently treating it as a generic fallback.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "silent-nonexhaustive-default",
+          "name": "Silent Non-Exhaustive Default",
+          "description": "A broad default branch can accept a newly added state without implementing the required behavior.",
+          "reproducer": "default: return 'unknown';"
+        },
+        {
+          "trapTag": "missing-union-member-branch",
+          "name": "Missing State Branch",
+          "description": "Omitting one current union member leaves it unhandled or routed through unrelated behavior.",
+          "reproducer": "switch (job.kind) { case 'queued': return 'waiting'; case 'done': return 'ready'; }"
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "media_processing_job",
+          "description": "Update status labels and actions for each processing lifecycle state."
+        },
+        {
+          "domain": "warehouse_dispatch_state",
+          "description": "Handle staged, loaded, dispatched, and cancelled orders exhaustively."
+        }
+      ],
+      "usedContexts": [
+        "media_processing_job",
+        "warehouse_dispatch_state",
+        "hospital_lab_sample_lifecycle"
+      ],
+      "source": "TypeScript Handbook: Narrowing — Exhaustiveness Checking",
+      "qualityChecks": [
+        {
+          "id": "QC-prg-t01-c02-u03-exhaustive-switch",
+          "check": "Handle every declared discriminant member in a state handler, with a compile-time remainder check when future members must not fall through silently.",
+          "why": "A new state should cause the relevant handler to be revisited rather than inherit unrelated fallback behavior.",
+          "severity": "must",
+          "knownBad": {
+            "code": "type JobState = { kind: 'queued' } | { kind: 'done' } | { kind: 'failed' };\nfunction label(job: JobState): string { switch (job.kind) { case 'queued': return 'waiting'; case 'done': return 'ready'; default: return 'other'; } }",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-prg-t01-c02-u03-never-remainder",
+          "check": "Use a `never`-typed remainder or equivalent compile-time check when the handler's contract requires exhaustive coverage.",
+          "why": "The remainder becomes non-never when an unhandled member is added, producing a local compiler signal.",
+          "severity": "should",
+          "knownBad": {
+            "code": "function assertNever(value: never): never { throw new Error(String(value)); }\nfunction label(job: JobState): string { switch (job.kind) { case 'queued': return 'waiting'; default: return assertNever(job); } }",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "prg-t01-c02-u03-union-collection-shapes",
+      "unitCode": "PRG-T01-C02-U03",
+      "level": 2,
+      "archetype": "problem-solving",
+      "name": "Union Collection Shapes and Shared Members",
+      "competencies": [
+        "union-collection-semantics",
+        "shared-member-access",
+        "safe-narrowing"
+      ],
+      "coreConcept": "Distinguish an array containing a union of values from a union of homogeneous arrays, and use only members guaranteed across a union until narrowing.",
+      "mentalModel": [
+        "1. Parentheses determine whether the union is inside each array element or outside the whole array.",
+        "2. A union value exposes only members common to every alternative before narrowing.",
+        "3. Narrow the container or element according to the operation the domain needs."
+      ],
+      "governingInvariant": "The type groups values at the same level as the actual data contract: mixed elements use `(A | B)[]`; alternatives of homogeneous collections use `A[] | B[]`.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "mixed-vs-homogeneous-array-union",
+          "name": "Mixed Array vs. Union of Homogeneous Arrays",
+          "description": "Confusing `(A | B)[]` with `A[] | B[]` changes whether different element kinds can coexist.",
+          "reproducer": "type Batch = string[] | number[]; const batch: Batch = ['ready', 3];"
+        },
+        {
+          "trapTag": "un-narrowed-union-common-member",
+          "name": "Using a Non-Shared Member",
+          "description": "Calling a member available only on one union alternative without first narrowing is unsafe.",
+          "reproducer": "function size(value: string | number) { return value.length; }"
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "telemetry_payload_batch",
+          "description": "Represent a batch of mixed typed telemetry values versus a batch whose entire payload uses one encoding."
+        },
+        {
+          "domain": "search_result_projection",
+          "description": "Read shared ranking metadata before narrowing result variants to document or person records."
+        }
+      ],
+      "usedContexts": [
+        "telemetry_payload_batch",
+        "search_result_projection",
+        "museum_artwork_intake_manifest",
+        "support_ticket_activity_feed"
+      ],
+      "source": "TypeScript Handbook: Everyday Types — Union Types",
+      "qualityChecks": [
+        {
+          "id": "QC-prg-t01-c02-u03-array-union-grouping",
+          "check": "Choose `(A | B)[]` for mixed element arrays and `A[] | B[]` for a collection that is wholly one element type, matching the stated data contract.",
+          "why": "The placement of the union changes which element sequences are representable and which array operations are safe.",
+          "severity": "must",
+          "knownBad": {
+            "code": "type Batch = string[] | number[];\nconst mixed: Batch = ['sensor-7', 12];",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-prg-t01-c02-u03-shared-union-members",
+          "check": "Before narrowing a union value, access only members present on every alternative.",
+          "why": "A value may be any member of the union, so a non-shared property is not guaranteed until a runtime check selects a member.",
+          "severity": "should",
+          "knownBad": {
+            "code": "function label(value: string | number): string { return value.toUpperCase(); }",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "prg-t01-c02-u04-safe-unknown-boundaries",
+      "unitCode": "PRG-T01-C02-U04",
+      "level": 1,
+      "archetype": "problem-solving",
+      "name": "Safe Unknown Boundaries",
+      "competencies": [
+        "unknown-inputs",
+        "typeof-narrowing",
+        "null-safe-object-checks"
+      ],
+      "coreConcept": "Keep external values as unknown and narrow them with runtime checks before property access or domain use.",
+      "mentalModel": [
+        "1. Treat external data as unknown at the boundary.",
+        "2. Check nullish and primitive cases before inspecting object members.",
+        "3. Return a domain value only after every required condition is established."
+      ],
+      "governingInvariant": "No property access or domain assertion occurs on unknown input until runtime checks establish the relevant shape.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "typeof-null-object",
+          "name": "typeof Null Mistaken for a Non-Null Record",
+          "description": "`typeof value === 'object'` also accepts null, so a subsequent property operation may throw.",
+          "reproducer": "function hasId(value: unknown) { return typeof value === 'object' && 'id' in value; }"
+        },
+        {
+          "trapTag": "truthiness-narrowing-zero",
+          "name": "Truthiness Confuses Zero with Missing",
+          "description": "A truthiness check rejects valid numeric zero even when the domain permits it.",
+          "reproducer": "if (typeof payload.amount === 'number' && payload.amount) return payload.amount;"
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "shipment_webhook_payload",
+          "description": "Narrow JSON event data before reading shipment identifiers or status details."
+        },
+        {
+          "domain": "billing_adjustment_payload",
+          "description": "Validate untrusted numeric adjustment data while preserving a valid zero amount."
+        }
+      ],
+      "usedContexts": [
+        "shipment_webhook_payload",
+        "billing_adjustment_payload",
+        "carrier_webhook_reference_reader",
+        "billing_credit_adjustment_reader",
+        "tenant_branding_fallback_selector"
+      ],
+      "source": "TypeScript Handbook: Narrowing — typeof Type Guards and Truthiness Narrowing",
+      "qualityChecks": [
+        {
+          "id": "QC-prg-t01-c02-u04-nullish-object-guard",
+          "check": "Exclude `null` (and arrays when the domain requires a plain record) before using the `in` operator or reading object properties from unknown input.",
+          "why": "The `typeof` result for null is `object`, and property inspection before a non-null check can throw at runtime.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function isRecord(value: unknown): value is Record<string, unknown> { return typeof value === 'object' && 'id' in value; }",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-prg-t01-c02-u04-falsy-value-preserved",
+          "check": "Use an explicit type or nullish check when zero or an empty string is valid data; do not let truthiness collapse it into the missing case.",
+          "why": "A valid falsy value must retain its domain meaning instead of being treated as absent.",
+          "severity": "should",
+          "knownBad": {
+            "code": "function readAmount(amount: number | undefined): number { return amount ? amount : 100; }",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "prg-t01-c02-u04-complete-type-predicates",
+      "unitCode": "PRG-T01-C02-U04",
+      "level": 2,
+      "archetype": "refactoring",
+      "name": "Complete Type Predicates for Domain Records",
+      "competencies": [
+        "type-predicates",
+        "shape-validation",
+        "runtime-type-safety"
+      ],
+      "coreConcept": "A predicate returning `value is T` must establish every required field and value property promised by T.",
+      "mentalModel": [
+        "1. Validate the outer container and each required key.",
+        "2. Check each property's runtime type and any domain bounds.",
+        "3. Return true only when the whole predicate is supported by checks."
+      ],
+      "governingInvariant": "A true type-predicate result implies that all required fields of the target type have been checked at runtime.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "incomplete-type-predicate",
+          "name": "Marker-Only Type Predicate",
+          "description": "Checking one marker field and returning true can falsely certify an object that lacks other required fields.",
+          "reproducer": "function isAccount(value: unknown): value is Account { return typeof value === 'object' && value !== null && 'kind' in value; }"
+        },
+        {
+          "trapTag": "inherited-property-as-own",
+          "name": "Inherited Property Accepted as Own Data",
+          "description": "Using `in` alone accepts properties inherited from the prototype when the payload contract requires own fields.",
+          "reproducer": "if ('accountId' in value) return true;"
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "account_import_parser",
+          "description": "Check required fields and value types before accepting partner-provided account records."
+        },
+        {
+          "domain": "shipment_notice_decoder",
+          "description": "Convert untrusted notices into a typed shipment event only after full validation."
+        }
+      ],
+      "usedContexts": [
+        "account_import_parser",
+        "shipment_notice_decoder",
+        "partner_account_import_validation",
+        "edge_gateway_notice_decoder"
+      ],
+      "source": "TypeScript Handbook: Narrowing — User-Defined Type Predicates",
+      "qualityChecks": [
+        {
+          "id": "QC-prg-t01-c02-u04-predicate-completeness",
+          "check": "A type predicate checks each required property and its runtime type before returning true.",
+          "why": "TypeScript trusts a predicate's return annotation; an incomplete predicate can make unsafe property access appear valid everywhere downstream.",
+          "severity": "must",
+          "knownBad": {
+            "code": "type Account = { accountId: string; active: boolean };\nfunction isAccount(value: unknown): value is Account { return typeof value === 'object' && value !== null && 'accountId' in value; }",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-prg-t01-c02-u04-own-property-boundary",
+          "check": "Use an own-property check when the input contract requires data fields supplied directly on the payload rather than inherited from its prototype.",
+          "why": "The `in` operator searches the prototype chain and may accept an object that does not carry the field as its own payload data.",
+          "severity": "should",
+          "knownBad": {
+            "code": "function hasOwnId(value: object): boolean { return 'id' in value; }",
+            "caughtBy": "review"
+          }
+        }
+      ]
     }
   ]
 }

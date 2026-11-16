@@ -1,0 +1,412 @@
+{
+  "unitCode": "PRG-T02-C01-U06",
+  "unitTitle": "Refs and DOM Access",
+  "environment": "react-dom",
+  "sourceAttribution": "PRG-T02 curriculum v2, PRG-T02-C01-U06 Notion learning page, and React API reference for refs and DOM access",
+  "config": {
+    "questionCount": 4,
+    "difficulty": "ALL",
+    "difficultyMode": "AI Synthesized Engineering Mode"
+  },
+  "problems": [
+    {
+      "id": "Q01",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "codeType": "implement",
+      "archetypeKey": "prg-t02-c01-u06-refs-and-dom-access",
+      "commonTrapTag": "react-stale-or-duplicated-state",
+      "context": "claims_portal_validation_focus",
+      "entryPoint": "ClaimReferenceField",
+      "prompt": "**Task**\nImplement `ClaimReferenceField`. The `Check claim` button reveals a reference input and moves keyboard focus to it after the new field is committed.\n\n**Requirements**\n- Keep the field absent before activation; every activation focuses the current field, including repeated checks while it is already visible.\n- Render the current `errorMessage` only when it is nonempty, including when the parent updates it.",
+      "inputHint": "Check the rendered interface before activation, after activation, and when optional content is absent.",
+      "checkpointHint": "Consider which information changes the rendered tree and when a DOM node becomes available.",
+      "starterCode": "export function ClaimReferenceField({ errorMessage = '' }: { errorMessage?: string }) {\n  return <section><button type=\"button\">Check claim</button>{errorMessage ? <p role=\"alert\">{errorMessage}</p> : null}</section>;\n}\n",
+      "solutionCode": "import { useEffect, useRef, useState } from 'react';\nexport function ClaimReferenceField({ errorMessage = '' }: { errorMessage?: string }) {\n  const [visible, setVisible] = useState(false);\n  const inputRef = useRef<HTMLInputElement>(null);\n  useEffect(() => {\n    if (visible) inputRef.current?.focus();\n  }, [visible]);\n  function checkClaim() {\n    if (visible) {\n      inputRef.current?.focus();\n      return;\n    }\n    setVisible(true);\n  }\n  return <section><button type=\"button\" onClick={checkClaim}>Check claim</button>{visible ? <label>Claim reference<input ref={inputRef} aria-label=\"Claim reference\" /></label> : null}{errorMessage ? <p role=\"alert\">{errorMessage}</p> : null}</section>;\n}\n",
+      "trapMutant": "import { useEffect, useRef, useState } from 'react';\nexport function ClaimReferenceField({ errorMessage = '' }: { errorMessage?: string }) {\n  const [visible, setVisible] = useState(false);\n  const inputRef = useRef<HTMLInputElement>(null);\n  const messageRef = useRef(errorMessage);\n  useEffect(() => {\n    if (visible) inputRef.current?.focus();\n  }, [visible]);\n  function checkClaim() {\n    if (visible) {\n      inputRef.current?.focus();\n      return;\n    }\n    setVisible(true);\n  }\n  return <section><button type=\"button\" onClick={checkClaim}>Check claim</button>{visible ? <label>Claim reference<input ref={inputRef} aria-label=\"Claim reference\" /></label> : null}{messageRef.current ? <p role=\"alert\">{messageRef.current}</p> : null}</section>;\n}\n",
+      "visibleTests": [
+        {
+          "name": "starts without the optional field",
+          "testCode": "render(<ClaimReferenceField />); assert.equal(screen.queryByRole('textbox', { name: 'Claim reference' }), null);"
+        },
+        {
+          "name": "reveals the field and transfers focus",
+          "testCode": "const user = userEvent.setup(); render(<ClaimReferenceField />); await user.click(screen.getByRole('button', { name: 'Check claim' })); const input = screen.getByRole('textbox', { name: 'Claim reference' }); assert.equal(document.activeElement, input);"
+        },
+        {
+          "name": "omits empty validation feedback",
+          "testCode": "render(<ClaimReferenceField errorMessage=\"\" />); assert.equal(screen.queryByRole('alert'), null);"
+        },
+        {
+          "name": "refocuses the current field on repeated activation",
+          "testCode": "const user = userEvent.setup(); render(<ClaimReferenceField />); const button = screen.getByRole('button', { name: 'Check claim' }); await user.click(button); const input = screen.getByRole('textbox', { name: 'Claim reference' }); await user.click(button); assert.equal(document.activeElement, input); assert.equal(screen.getAllByRole('textbox').length, 1);"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "keeps the field and focus contract across repeated activation",
+          "testCode": "const user = userEvent.setup(); render(<ClaimReferenceField errorMessage=\"Reference required\" />); const button = screen.getByRole('button', { name: 'Check claim' }); await user.click(button); await user.click(button); assert.equal(screen.getAllByRole('textbox', { name: 'Claim reference' }).length, 1); assert.equal(document.activeElement, screen.getByRole('textbox', { name: 'Claim reference' })); assert.equal(screen.getByRole('alert').textContent, 'Reference required');"
+        },
+        {
+          "name": "updates validation feedback from a new prop snapshot",
+          "testCode": "const { rerender } = render(<ClaimReferenceField errorMessage='' />); rerender(<ClaimReferenceField errorMessage='Reference required' />); assert.equal(screen.getByRole('alert').textContent, 'Reference required'); rerender(<ClaimReferenceField errorMessage='' />); assert.equal(screen.queryByRole('alert'), null);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Separate the rendered visibility state from the DOM handle used for an imperative browser action."
+        },
+        {
+          "explain": "Trace the commit boundary and verify the resulting field and focus behavior, including optional feedback."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "react-stale-or-duplicated-state|direct|ClaimReferenceField",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 2,
+          "hasTrapOrFlaw": false,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "react-stale-or-duplicated-state",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 5
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Foundation",
+      "unitCode": "PRG-T02-C01-U06",
+      "workspaceFile": "drills/workspace/DRL-PRG-T02-C01-U06-01/Q01_ClaimReferenceField.tsx"
+    },
+    {
+      "id": "Q02",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "codeType": "implement",
+      "archetypeKey": "prg-t02-c01-u06-refs-and-dom-access",
+      "commonTrapTag": "react-stale-or-duplicated-state",
+      "context": "warehouse_bin_scan_capture",
+      "entryPoint": "BinScanCapture",
+      "prompt": "**Task**\nImplement `BinScanCapture` for warehouse bin verification. `Start scan` reveals and focuses the scanner input.\n\n**Requirements**\n- `onCapture` receives the trimmed current input value on submit.\n- Ignore whitespace-only values and preserve the entered value after a valid capture.",
+      "inputHint": "Exercise the control with both empty and meaningful user-entered values.",
+      "checkpointHint": "Keep browser interaction tied to the current committed input and preserve the displayed value contract.",
+      "starterCode": "export function BinScanCapture({ onCapture: _onCapture }: { onCapture: (code: string) => void }) {\n  return <form><button type=\"button\">Start scan</button><button type=\"submit\">Capture bin</button></form>;\n}\n",
+      "solutionCode": "import { useEffect, useRef, useState } from 'react';\nexport function BinScanCapture({ onCapture }: { onCapture: (code: string) => void }) {\n  const [visible, setVisible] = useState(false);\n  const [code, setCode] = useState('');\n  const inputRef = useRef<HTMLInputElement>(null);\n  useEffect(() => {\n    if (visible) inputRef.current?.focus();\n  }, [visible]);\n  function startScan() {\n    setVisible(true);\n  }\n  function capture(event: React.FormEvent<HTMLFormElement>) {\n    event.preventDefault();\n    const normalized = code.trim();\n    if (normalized) onCapture(normalized);\n  }\n  return <form onSubmit={capture}><button type=\"button\" onClick={startScan}>Start scan</button>{visible ? <label>Bin code<input ref={inputRef} aria-label=\"Bin code\" value={code} onChange={(event) => setCode(event.target.value)} /></label> : null}<button type=\"submit\">Capture bin</button></form>;\n}\n",
+      "trapMutant": "import { useRef, useState } from 'react';\nexport function BinScanCapture({ onCapture }: { onCapture: (code: string) => void }) {\n  const visibleRef = useRef(false);\n  const [code, setCode] = useState('');\n  const inputRef = useRef<HTMLInputElement>(null);\n  function startScan() { visibleRef.current = true; requestAnimationFrame(() => inputRef.current?.focus()); }\n  function capture(event: React.FormEvent<HTMLFormElement>) { event.preventDefault(); const normalized = code.trim(); if (normalized) onCapture(normalized); }\n  return <form onSubmit={capture}><button type=\"button\" onClick={startScan}>Start scan</button>{visibleRef.current ? <label>Bin code<input ref={inputRef} aria-label=\"Bin code\" value={code} onChange={(event) => setCode(event.target.value)} /></label> : null}<button type=\"submit\">Capture bin</button></form>;\n}\n",
+      "visibleTests": [
+        {
+          "name": "does not submit an empty scan code",
+          "testCode": "const captures: string[] = []; const user = userEvent.setup(); render(<BinScanCapture onCapture={(code) => captures.push(code)} />); await user.click(screen.getByRole('button', { name: 'Capture bin' })); assert.deepEqual(captures, []);"
+        },
+        {
+          "name": "opens the scanner field and focuses it",
+          "testCode": "const user = userEvent.setup(); render(<BinScanCapture onCapture={() => {}} />); await user.click(screen.getByRole('button', { name: 'Start scan' })); assert.equal(document.activeElement, screen.getByRole('textbox', { name: 'Bin code' }));"
+        },
+        {
+          "name": "submits the entered bin code",
+          "testCode": "const captures: string[] = []; const user = userEvent.setup(); render(<BinScanCapture onCapture={(code) => captures.push(code)} />); await user.click(screen.getByRole('button', { name: 'Start scan' })); await user.type(screen.getByRole('textbox', { name: 'Bin code' }), 'BIN-7C'); await user.click(screen.getByRole('button', { name: 'Capture bin' })); assert.deepEqual(captures, ['BIN-7C']);"
+        },
+        {
+          "name": "trims a padded bin code and preserves the typed field",
+          "testCode": "const captures: string[] = []; const user = userEvent.setup(); render(<BinScanCapture onCapture={(code) => captures.push(code)} />); await user.click(screen.getByRole('button', { name: 'Start scan' })); const input = screen.getByRole('textbox', { name: 'Bin code' }); await user.type(input, '  SHELF-8  '); await user.click(screen.getByRole('button', { name: 'Capture bin' })); assert.deepEqual(captures, ['SHELF-8']); assert.equal(input.value, '  SHELF-8  ');"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "trims padded scanner input without clearing the field",
+          "testCode": "const captures: string[] = []; const user = userEvent.setup(); render(<BinScanCapture onCapture={(code) => captures.push(code)} />); await user.click(screen.getByRole('button', { name: 'Start scan' })); const input = screen.getByRole('textbox', { name: 'Bin code' }); await user.type(input, '  PALLET-42  '); await user.click(screen.getByRole('button', { name: 'Capture bin' })); assert.deepEqual(captures, ['PALLET-42']); assert.equal(input.value, '  PALLET-42  ');"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Use a ref to perform a DOM operation while React state owns values that affect rendered output."
+        },
+        {
+          "explain": "Check that submit behavior uses the current input snapshot and respects the empty-value boundary."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "react-stale-or-duplicated-state|direct|BinScanCapture",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 2,
+          "hasTrapOrFlaw": false,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "react-stale-or-duplicated-state",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 5
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Foundation",
+      "unitCode": "PRG-T02-C01-U06",
+      "workspaceFile": "drills/workspace/DRL-PRG-T02-C01-U06-01/Q02_BinScanCapture.tsx"
+    },
+    {
+      "id": "Q03",
+      "level": 2,
+      "category": "Trap & Edge Case",
+      "archetype": "problem-solving",
+      "codeType": "implement",
+      "archetypeKey": "prg-t02-c01-u06-refs-and-dom-access",
+      "commonTrapTag": "react-stale-or-duplicated-state",
+      "context": "support_ticket_activity_feed",
+      "entryPoint": "ActivityFeed",
+      "prompt": "**Task**\nImplement `ActivityFeed` with a `Load older activity` control that asks the parent to prepend an older item.\n\n**Requirements**\n- Render current `items` in order; empty input shows `No activity`.\n- Keep the announced count current. After the parent commits the added item, scroll the new first entry when present.",
+      "inputHint": "Check empty and populated inputs, then observe the list after a user action.",
+      "checkpointHint": "A DOM node is available only while its corresponding rendered entry is present.",
+      "starterCode": "export function ActivityFeed({ items, onLoadOlder: _onLoadOlder }: { items: string[]; onLoadOlder: () => void }) {\n  return <section><button type=\"button\">Load older activity</button><ul>{items.map((item, index) => <li key={`${item}-${index}`}>{item}</li>)}</ul></section>;\n}\n",
+      "solutionCode": "import { useEffect, useRef, useState } from 'react';\nexport function ActivityFeed({ items, onLoadOlder }: { items: string[]; onLoadOlder: () => void }) {\n  const [loaded, setLoaded] = useState(false);\n  const firstEntryRef = useRef<HTMLLIElement>(null);\n  const pendingScrollRef = useRef(false);\n  useEffect(() => {\n    if (pendingScrollRef.current && items.length > 0) {\n      firstEntryRef.current?.scrollIntoView?.();\n      pendingScrollRef.current = false;\n    }\n  }, [items]);\n  function loadOlder() {\n    pendingScrollRef.current = true;\n    onLoadOlder();\n    setLoaded(true);\n  }\n  return <section><button type=\"button\" onClick={loadOlder}>Load older activity</button><output aria-label=\"Activity count\">{items.length}</output>{items.length === 0 ? <p>No activity</p> : <ul>{items.map((item, index) => <li ref={index === 0 ? firstEntryRef : null} key={`${item}-${index}`}>{item}</li>)}</ul>}{loaded ? <p role=\"status\">Older activity requested</p> : null}</section>;\n}\n",
+      "trapMutant": "import { useEffect, useRef, useState } from 'react';\nexport function ActivityFeed({ items, onLoadOlder }: { items: string[]; onLoadOlder: () => void }) {\n  const [loaded, setLoaded] = useState(false);\n  const firstEntryRef = useRef<HTMLLIElement>(null);\n  const countRef = useRef(items.length);\n  const pendingScrollRef = useRef(false);\n  useEffect(() => {\n    if (pendingScrollRef.current && items.length > 0) {\n      firstEntryRef.current?.scrollIntoView?.();\n      pendingScrollRef.current = false;\n    }\n  }, [items]);\n  function loadOlder() {\n    pendingScrollRef.current = true;\n    onLoadOlder();\n    setLoaded(true);\n  }\n  return <section><button type=\"button\" onClick={loadOlder}>Load older activity</button><output aria-label=\"Activity count\">{countRef.current}</output>{items.length === 0 ? <p>No activity</p> : <ul>{items.map((item, index) => <li ref={index === 0 ? firstEntryRef : null} key={`${item}-${index}`}>{item}</li>)}</ul>}{loaded ? <p role=\"status\">Older activity requested</p> : null}</section>;\n}\n",
+      "visibleTests": [
+        {
+          "name": "shows the empty feed boundary",
+          "testCode": "render(<ActivityFeed items={[]} onLoadOlder={() => {}} />); assert.equal(screen.getByText('No activity').textContent, 'No activity'); assert.equal(screen.getByLabelText('Activity count').textContent, '0');"
+        },
+        {
+          "name": "requests older activity and announces completion",
+          "testCode": "let calls = 0; const onLoadOlder = () => { calls += 1; }; const user = userEvent.setup(); render(<ActivityFeed items={['Ticket opened']} onLoadOlder={onLoadOlder} />); await user.click(screen.getByRole('button', { name: 'Load older activity' })); assert.equal(calls, 1); assert.equal(screen.getByText('Older activity requested').textContent, 'Older activity requested');"
+        },
+        {
+          "name": "renders current entries and count",
+          "testCode": "render(<ActivityFeed items={['Ticket opened', 'Agent replied']} onLoadOlder={() => {}} />); assert.equal(screen.getByLabelText('Activity count').textContent, '2'); assert.deepEqual(screen.getAllByRole('listitem').map((entry) => entry.textContent), ['Ticket opened', 'Agent replied']);"
+        },
+        {
+          "name": "scrolls a prepended entry after parent props commit",
+          "testCode": "const original = HTMLElement.prototype.scrollIntoView; let scrollCalls = 0; HTMLElement.prototype.scrollIntoView = () => { scrollCalls += 1; }; try { const user = userEvent.setup(); const { rerender } = render(<ActivityFeed items={['Newest event']} onLoadOlder={() => {}} />); await user.click(screen.getByRole('button', { name: 'Load older activity' })); rerender(<ActivityFeed items={['Older event', 'Newest event']} onLoadOlder={() => {}} />); assert.equal(screen.getByLabelText('Activity count').textContent, '2'); assert.equal(scrollCalls, 1); } finally { HTMLElement.prototype.scrollIntoView = original; }"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "scrolls a prepended first entry after the parent update",
+          "testCode": "const original = HTMLElement.prototype.scrollIntoView; let scrollCalls = 0; HTMLElement.prototype.scrollIntoView = () => { scrollCalls += 1; }; try { const user = userEvent.setup(); const { rerender } = render(<ActivityFeed items={['Newest event']} onLoadOlder={() => {}} />); await user.click(screen.getByRole('button', { name: 'Load older activity' })); rerender(<ActivityFeed items={['Older event', 'Newest event']} onLoadOlder={() => {}} />); assert.equal(screen.getByLabelText('Activity count').textContent, '2'); assert.equal(scrollCalls, 1); } finally { HTMLElement.prototype.scrollIntoView = original; }"
+        },
+        {
+          "name": "refreshes the announced count for replacement items",
+          "testCode": "const { rerender } = render(<ActivityFeed items={['Opened']} onLoadOlder={() => {}} />); assert.equal(screen.getByLabelText('Activity count').textContent, '1'); rerender(<ActivityFeed items={[]} onLoadOlder={() => {}} />); assert.equal(screen.getByLabelText('Activity count').textContent, '0');"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Render the list and count from the current props rather than maintaining competing copies."
+        },
+        {
+          "explain": "Associate the DOM handle with the current first entry and guard the case where no entry exists."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "react-stale-or-duplicated-state|direct|ActivityFeed",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "react-stale-or-duplicated-state",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 5
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Standard Exam",
+      "unitCode": "PRG-T02-C01-U06",
+      "workspaceFile": "drills/workspace/DRL-PRG-T02-C01-U06-01/Q03_ActivityFeed.tsx"
+    },
+    {
+      "id": "Q04",
+      "level": 2,
+      "category": "Trap & Edge Case",
+      "archetype": "debugging",
+      "codeType": "fix-bug",
+      "archetypeKey": "prg-t02-c01-u06-refs-and-dom-access",
+      "commonTrapTag": "react-stale-or-duplicated-state",
+      "context": "analytics_dashboard_filter_panel",
+      "entryPoint": "FilterPanel",
+      "prompt": "**Task**\nFix `FilterPanel` so `Show filters` reveals the panel and focuses its first field after commit. Improve the structure too.\n\n**Requirements**\n- Closing hides the panel and clears the DOM node lifecycle.\n- Reopening focuses the current field; empty `filters` shows an explanatory message.",
+      "inputHint": "Compare behavior before opening, while open, and after closing and reopening.",
+      "checkpointHint": "Trace how the rendered panel and its DOM handle change over the component lifecycle.",
+      "starterCode": "import { useRef, useState } from 'react';\nexport function FilterPanel({ filters }: { filters: string[] }) {\n  const [open, setOpen] = useState(false);\n  const [panelVisible, setPanelVisible] = useState(false);\n  const fieldRef = useRef<HTMLInputElement>(null);\n  function togglePanel() {\n    const nextOpen = !open;\n    setOpen(nextOpen);\n    setPanelVisible(nextOpen);\n    if (nextOpen) fieldRef.current?.focus();\n  }\n  return <section><button type=\"button\" onClick={togglePanel}>Show filters</button>{panelVisible ? <div><button type=\"button\" onClick={togglePanel}>Close filters</button>{filters.length ? filters.map((filter) => <label key={filter}>{filter}<input ref={fieldRef} aria-label={filter} /></label>) : <p>No filters available</p>}</div> : null}</section>;\n}\n",
+      "solutionCode": "import { useEffect, useRef, useState } from 'react';\nexport function FilterPanel({ filters }: { filters: string[] }) {\n  const [open, setOpen] = useState(false);\n  const fieldRef = useRef<HTMLInputElement>(null);\n  useEffect(() => {\n    if (open && filters.length > 0) fieldRef.current?.focus();\n  }, [open, filters.length]);\n  function openPanel() {\n    setOpen(true);\n  }\n  return <section><button type=\"button\" onClick={openPanel}>Show filters</button>{open ? <div><button type=\"button\" onClick={() => setOpen(false)}>Close filters</button>{filters.length ? filters.map((filter, index) => <label key={filter}>{filter}<input ref={index === 0 ? fieldRef : null} aria-label={filter} /></label>) : <p>No filters available</p>}</div> : null}</section>;\n}\n",
+      "trapMutant": "import { useRef, useState } from 'react';\nexport function FilterPanel({ filters }: { filters: string[] }) {\n  const [open, setOpen] = useState(false);\n  const [panelVisible, setPanelVisible] = useState(false);\n  const fieldRef = useRef<HTMLInputElement>(null);\n  function togglePanel() { const nextOpen = !open; setOpen(nextOpen); setPanelVisible(nextOpen); fieldRef.current?.focus(); }\n  return <section><button type=\"button\" onClick={togglePanel}>Show filters</button>{panelVisible ? <div><button type=\"button\" onClick={togglePanel}>Close filters</button>{filters.length ? filters.map((filter) => <label key={filter}>{filter}<input ref={fieldRef} aria-label={filter} /></label>) : <p>No filters available</p>}</div> : null}</section>;\n}\n",
+      "visibleTests": [
+        {
+          "name": "keeps the panel absent until requested",
+          "testCode": "render(<FilterPanel filters={['Region']} />); assert.equal(screen.queryByRole('textbox', { name: 'Region' }), null);"
+        },
+        {
+          "name": "opens and focuses the first field",
+          "testCode": "const user = userEvent.setup(); render(<FilterPanel filters={['Region', 'Owner']} />); await user.click(screen.getByRole('button', { name: 'Show filters' })); assert.equal(document.activeElement, screen.getByRole('textbox', { name: 'Region' }));"
+        },
+        {
+          "name": "handles an empty filter configuration",
+          "testCode": "const user = userEvent.setup(); render(<FilterPanel filters={[]} />); await user.click(screen.getByRole('button', { name: 'Show filters' })); assert.equal(screen.getByText('No filters available').textContent, 'No filters available');"
+        },
+        {
+          "name": "focuses a newly mounted field after reopening",
+          "testCode": "const user = userEvent.setup(); render(<FilterPanel filters={['Region']} />); await user.click(screen.getByRole('button', { name: 'Show filters' })); const oldField = screen.getByRole('textbox', { name: 'Region' }); await user.click(screen.getByRole('button', { name: 'Close filters' })); await user.click(screen.getByRole('button', { name: 'Show filters' })); const currentField = screen.getByRole('textbox', { name: 'Region' }); assert.notEqual(currentField, oldField); assert.equal(document.activeElement, currentField);"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "reopening creates and focuses a fresh current node",
+          "testCode": "const user = userEvent.setup(); render(<FilterPanel filters={['Region']} />); await user.click(screen.getByRole('button', { name: 'Show filters' })); const firstField = screen.getByRole('textbox', { name: 'Region' }); await user.click(screen.getByRole('button', { name: 'Close filters' })); assert.equal(screen.queryByRole('textbox', { name: 'Region' }), null); await user.click(screen.getByRole('button', { name: 'Show filters' })); const currentField = screen.getByRole('textbox', { name: 'Region' }); assert.notEqual(currentField, firstField); assert.equal(document.activeElement, currentField); assert.equal(screen.getAllByRole('textbox').length, 1);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Use one state value to own panel visibility so the rendered tree has no competing copy."
+        },
+        {
+          "explain": "Respect conditional node creation and cleanup when the panel closes, then verify a later opening targets its current field."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "react-stale-or-duplicated-state|direct|FilterPanel",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "debugging"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "react-stale-or-duplicated-state",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 5
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Standard Exam",
+      "unitCode": "PRG-T02-C01-U06",
+      "workspaceFile": "drills/workspace/DRL-PRG-T02-C01-U06-01/Q04_FilterPanel.tsx"
+    }
+  ],
+  "blindSolve": [
+    {
+      "problemId": "Q01",
+      "passed": true
+    },
+    {
+      "problemId": "Q02",
+      "passed": true
+    },
+    {
+      "problemId": "Q03",
+      "passed": true
+    },
+    {
+      "problemId": "Q04",
+      "passed": true
+    }
+  ],
+  "review": {
+    "verdict": "pass",
+    "note": "All four problems fit U06 and levels 1–2, use distinct credible production contexts, avoid answer leaks, and pair aligned solutions with trap mutants rejected by hidden tests; Q04 is a realistic non-implement fix-bug with reproducer and regression coverage.",
+    "problems": {
+      "Q01": "The stale errorMessage ref mutant fails the prop-update regression; focus is correctly performed after the field commits and on repeated activation.",
+      "Q02": "The visibility ref mutant cannot trigger rendering of the scanner field, so its behavioral contract fails; trim and preserve-value requirements align with the solution and tests.",
+      "Q03": "The count ref mutant keeps the prior count after item props change; current-item rendering, announcement, and post-commit scrolling are aligned.",
+      "Q04": "The duplicated visibility state and pre-commit focus reproduce the bug; tests cover initial absence, empty filters, first-field focus, and a fresh focused node after reopening."
+    }
+  },
+  "drillId": "DRL-PRG-T02-C01-U06-01",
+  "topicCode": "PRG-T02",
+  "chapterCode": "PRG-T02-C01",
+  "schemaVersion": "2.0-code",
+  "subject": "PRG",
+  "createdAt": "2026-11-17 03:32:35",
+  "localFilePath": "drills/data/PRG-T02-C01-U06/DRL-PRG-T02-C01-U06-01.json"
+}

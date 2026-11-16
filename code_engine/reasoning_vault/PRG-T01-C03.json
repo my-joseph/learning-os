@@ -1,0 +1,522 @@
+{
+  "unitCode": "PRG-T01-C03",
+  "unitTitle": "Recursion, Complexity & Core Data Structures",
+  "description": "Reason about time and space growth and use that model to improve data-intensive application code.",
+  "archetypes": [
+    {
+      "archetypeKey": "prg-c03-complexity-indexed-join",
+      "unitCode": "PRG-T01-C03-U01",
+      "level": 1,
+      "archetype": "refactoring",
+      "name": "Complexity-Aware Record Matching",
+      "competencies": [
+        "data-handling",
+        "performance-optimization",
+        "architecture-separation"
+      ],
+      "coreConcept": "Estimate how work grows with input size, then trade additional memory for fewer repeated searches when matching records by a stable key.",
+      "mentalModel": [
+        "Count how many times each input element is visited as the input grows.",
+        "A nested scan can compare each record against many records, producing quadratic growth.",
+        "Building a keyed index costs additional linear memory and setup work, then supports repeated constant-time average lookups."
+      ],
+      "governingInvariant": "Each record is indexed once and each matching record is emitted once in source order, with unmatched records excluded.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "repeated-nested-search",
+          "name": "Repeated Nested Search",
+          "description": "Keeping a full scan inside another full scan makes matching work grow roughly with the product of both collection sizes.",
+          "reproducer": "For two collections with n records each, compare each left record against every right record; the number of comparisons grows near n squared."
+        },
+        {
+          "trapTag": "time-space-tradeoff-ignored",
+          "name": "Ignoring the Index Memory Cost",
+          "description": "Claiming a faster lookup is free while omitting the auxiliary storage required to build the index.",
+          "reproducer": "Describe a keyed lookup as constant extra space even though a map retains one entry for each indexed record."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "shipment_manifest_reconciliation",
+          "description": "Matching shipment events to manifest entries using a shipment identifier while preserving event order."
+        }
+      ],
+      "usedContexts": [
+        "shipment_manifest_reconciliation",
+        "warehouse_pick_wave_reconciliation",
+        "billing_invoice_event_join",
+        "carrier_scan_route_summary"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-index-built-once",
+          "check": "Repeated record matching reuses an index built from the lookup collection instead of rescanning that full collection for every input record.",
+          "why": "Reusing the index changes repeated matching work from quadratic growth to linear expected work while making the memory tradeoff explicit.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function matchEvents(events, manifest) {\n  return events.filter((event) => manifest.some((entry) => entry.shipmentId === event.shipmentId));\n}",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-complexity-claims-account-for-inputs",
+          "check": "Complexity explanations identify which input sizes drive the work and include auxiliary storage when an index is retained.",
+          "why": "A complexity label without its input dimensions or memory cost can hide the real scaling limit and tradeoff.",
+          "severity": "should",
+          "knownBad": {
+            "code": "function findMatches(events, manifest) {\n  const index = new Map();\n  for (const entry of manifest) index.set(entry.shipmentId, entry);\n  return events.filter((event) => index.has(event.shipmentId));\n}\n// Claim: O(n) time and O(1) extra space for all input sizes.",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "prg-c03-u02-recursive-base-case",
+      "unitCode": "PRG-T01-C03-U02",
+      "level": 1,
+      "archetype": "code-tracing",
+      "name": "Recursive Base-Case and Progress Trace",
+      "competencies": [
+        "recursion",
+        "base-cases",
+        "termination"
+      ],
+      "coreConcept": "A recursive function terminates when every reachable path reaches a base case, and each recursive step moves its input toward that case.",
+      "mentalModel": [
+        "Write down the input for the current call before following its recursive call.",
+        "A base case returns without creating another frame.",
+        "A recursive case must make measurable progress toward a base case."
+      ],
+      "governingInvariant": "Every reachable recursive path decreases the remaining problem measure until a base case returns.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "base-case-off-by-one",
+          "name": "Base Case Boundary Shift",
+          "description": "Stopping one call too early or too late changes the result or causes an extra recursive call.",
+          "reproducer": "A countdown intended to include zero returns at one, or recurses from zero to a negative value."
+        },
+        {
+          "trapTag": "non-progressing-recursion",
+          "name": "No Progress Toward the Base Case",
+          "description": "A recursive call preserves or increases the measure needed to reach termination.",
+          "reproducer": "A recursive countdown calls itself with the same count when count is positive."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "retry_policy_evaluation",
+          "description": "Tracing a bounded retry policy whose remaining-attempt count moves toward a stopping case."
+        }
+      ],
+      "usedContexts": [
+        "bounded_retry_schedule"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-recursion-measure-progress",
+          "check": "Each recursive path changes the relevant input measure toward a reachable base case.",
+          "why": "A call that does not make progress can recurse indefinitely or exceed the runtime stack.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function remainingAttempts(count) {\n  if (count === 0) return 0;\n  return remainingAttempts(count);\n}",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-base-case-contract",
+          "check": "Base cases match the function's stated boundary contract and return without another recursive call.",
+          "why": "An off-by-one base case changes boundary behavior and may add an unnecessary frame.",
+          "severity": "should",
+          "knownBad": {
+            "code": "function countDown(count) {\n  if (count === 1) return [1];\n  return [count, ...countDown(count - 1)];\n}",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "prg-c03-u02-call-stack-unwind",
+      "unitCode": "PRG-T01-C03-U02",
+      "level": 2,
+      "archetype": "code-tracing",
+      "name": "Call-Stack Frames and Return Unwinding",
+      "competencies": [
+        "call-stack",
+        "return-values",
+        "execution-tracing"
+      ],
+      "coreConcept": "Each recursive invocation has its own parameters and suspended return point; values combine or pass back as calls unwind.",
+      "mentalModel": [
+        "Record each invocation as a distinct frame with its own argument values.",
+        "The deepest frame that reaches a base case returns first.",
+        "Resume suspended expressions from the deepest caller outward."
+      ],
+      "governingInvariant": "A caller resumes exactly once after its child returns, using that child's returned value in the suspended expression.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "unwind-order-reversed",
+          "name": "Unwind Order Reversed",
+          "description": "Applying caller operations before the deepest call has returned.",
+          "reproducer": "For total(n) = n + total(n - 1), add from the outermost frame downward instead of returning from the base case upward."
+        },
+        {
+          "trapTag": "frame-state-shared",
+          "name": "Recursive Frames Treated as Shared State",
+          "description": "Assuming each invocation overwrites the prior invocation's parameter or local value.",
+          "reproducer": "Treating local index values from nested calls as one mutable index rather than separate frame bindings."
+        },
+        {
+          "trapTag": "sibling-frame-state-carryover",
+          "name": "Sibling Calls Reuse a Prior Frame's State",
+          "description": "Assuming a later independent recursive call begins with a local value left by an earlier sibling call.",
+          "reproducer": "A route-depth audit starts both region walks at depth zero, but a trace carries the first region's final depth into the second region."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "nested_invoice_rollup",
+          "description": "Tracing recursive subtotal aggregation across nested invoice groups."
+        }
+      ],
+      "usedContexts": [
+        "retry_attempt_call_trace",
+        "organization_export_trace",
+        "regional_route_depth_audit"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-recursion-frame-locality",
+          "check": "Values belonging to separate recursive invocations remain distinguishable while tracing the call stack.",
+          "why": "Each invocation owns its own parameter and local bindings until its frame returns.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function sumDown(count) {\n  let current = count;\n  if (current === 0) return 0;\n  current = sumDown(current - 1);\n  return current;\n}",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-recursion-unwind-order",
+          "check": "Post-call work is evaluated only after the child invocation returns, in last-in-first-out order.",
+          "why": "The call stack suspends each caller until the nested call supplies its return value.",
+          "severity": "should",
+          "knownBad": {
+            "code": "function sumDown(count) {\n  if (count === 0) return 0;\n  const partial = count + sumDown(count - 1);\n  return partial - count;\n}",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "prg-c03-u02-nested-structure-recursion",
+      "unitCode": "PRG-T01-C03-U02",
+      "level": 3,
+      "archetype": "code-tracing",
+      "name": "Nested Structure Recursion Trace",
+      "competencies": [
+        "recursive-structures",
+        "branching-recursion",
+        "termination"
+      ],
+      "coreConcept": "Recursive rules can decompose a nested structure into smaller child problems, with each leaf or empty structure providing a stopping condition.",
+      "mentalModel": [
+        "At each frame, identify the current node and the children that create new calls.",
+        "Trace sibling calls in source order while keeping each branch's return separate.",
+        "Combine a node's local contribution with the results returned by its children."
+      ],
+      "governingInvariant": "Every recursive child is a strict substructure, and each node contributes exactly once to the final result.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "empty-structure-missing-base",
+          "name": "Empty Structure Lacks a Base Case",
+          "description": "The recursive rule attempts to inspect children when the current structure is empty.",
+          "reproducer": "A nested list traversal reads the first element without handling an empty list."
+        },
+        {
+          "trapTag": "branch-result-omitted",
+          "name": "A Branch Result Is Omitted",
+          "description": "One child result is not included when a recursive rule combines sibling branches.",
+          "reproducer": "A folder-size calculation visits subfolders but returns only the current folder's direct files."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "folder_quota_rollup",
+          "description": "Following recursive directory-size or quota calculations over nested folders."
+        }
+      ],
+      "usedContexts": [
+        "folder_quota_rollup"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-recursive-substructure",
+          "check": "Each recursive child call receives a strictly smaller part of the current structure.",
+          "why": "Strictly smaller subproblems make structural progress toward an empty or leaf base case.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function countFiles(folder) {\n  if (!folder) return 0;\n  return folder.files.length + countFiles(folder);\n}",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-branch-results-accounted",
+          "check": "The trace accounts for the local contribution and every required child result exactly once.",
+          "why": "Missing or duplicated branch results produce incorrect aggregates on nested data.",
+          "severity": "should",
+          "knownBad": {
+            "code": "function countItems(node) {\n  if (node.children.length === 0) return 1;\n  return countItems(node.children[0]);\n}",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "prg-c03-u03-bracket-stack",
+      "unitCode": "PRG-T01-C03-U03",
+      "level": 1,
+      "archetype": "problem-solving",
+      "name": "Streaming Delimiter Validation",
+      "competencies": [
+        "arrays",
+        "stack",
+        "invariants",
+        "input-validation"
+      ],
+      "coreConcept": "A stack retains unmatched opening delimiters; each closer matches only the most recent opener, and valid input ends with no unmatched openers.",
+      "mentalModel": [
+        "Scan left to right once.",
+        "Push opening delimiters because their closers are still expected.",
+        "Compare each closer with the most recent opener before removing it.",
+        "A mismatch fails immediately; an empty stack at the end completes the contract."
+      ],
+      "governingInvariant": "After each scanned character, the stack contains exactly the unmatched opening delimiters in original order.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "delimiter-type-ignored",
+          "name": "Delimiter Type Ignored",
+          "description": "Treating any closer as a match for any opener instead of checking the matching pair.",
+          "reproducer": "Input `([)]` has balanced counts but crossed delimiter types."
+        },
+        {
+          "trapTag": "empty-stack-pop",
+          "name": "Pop Before Checking the Stack",
+          "description": "Removing a stack item before proving one exists.",
+          "reproducer": "An input beginning with `]` attempts to remove from an empty stack."
+        },
+        {
+          "trapTag": "unclosed-opener-accepted",
+          "name": "Unclosed Opener Accepted",
+          "description": "Returning valid without checking for pending openers after the scan.",
+          "reproducer": "Input `((` ends with two unmatched openers."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "template_markup_validation",
+          "description": "Checking nested delimiters in a template before compilation."
+        }
+      ],
+      "usedContexts": [
+        "template_delimiter_validation"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-stack-top-models-nesting",
+          "check": "The retained state represents unmatched openers in order, and matching decisions use the most recent opener.",
+          "why": "Nested delimiters obey last-in-first-out order; counts cannot detect crossed pairs.",
+          "severity": "must",
+          "knownBad": {
+            "code": "return opens === closes;",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-stack-boundary-guard",
+          "check": "An unmatched closer is handled before removing an item, and remaining openers are checked after the scan.",
+          "why": "Empty-stack removal and accepting leftover openers both violate the contract.",
+          "severity": "must",
+          "knownBad": {
+            "code": "stack.pop(); return true;",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-stack-state-is-local",
+          "check": "Each validation call owns its pending-delimiter state and does not retain it across calls.",
+          "why": "Shared state makes independent inputs depend on call order.",
+          "severity": "should",
+          "knownBad": {
+            "code": "const pending = [];\nfunction validate(source) { /* reuse pending */ }",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "prg-c03-u03-fifo-job-scheduling",
+      "unitCode": "PRG-T01-C03-U03",
+      "level": 1,
+      "archetype": "problem-solving",
+      "name": "FIFO Job Buffer",
+      "competencies": [
+        "arrays",
+        "queue",
+        "fifo",
+        "encapsulation"
+      ],
+      "coreConcept": "A queue admits work at the back and releases the oldest pending item from the front, preserving arrival order.",
+      "mentalModel": [
+        "Enqueue adds after all items already waiting.",
+        "Dequeue removes the oldest waiting item.",
+        "An empty queue has no oldest item, so dequeue needs an explicit contract.",
+        "A head index can avoid shifting every remaining entry after removal."
+      ],
+      "governingInvariant": "The logical queue is exactly the not-yet-removed items in arrival order, independent of physical storage.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "queue-lifo-order",
+          "name": "Queue Uses Stack Order",
+          "description": "Removing the newest item rather than the oldest.",
+          "reproducer": "After two different jobs are enqueued, the second is returned first."
+        },
+        {
+          "trapTag": "shift-cost-hidden",
+          "name": "Front Removal Hides Repeated Work",
+          "description": "Repeated array shifting moves all remaining entries on every dequeue.",
+          "reproducer": "Draining n jobs with front shifts performs quadratic total element movement."
+        },
+        {
+          "trapTag": "empty-dequeue-ambiguous",
+          "name": "Empty Dequeue Is Ambiguous",
+          "description": "Returning a valid payload value when no item exists.",
+          "reproducer": "If `undefined` is a permitted payload, returning it for empty cannot signal absence."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "email_delivery_work_queue",
+          "description": "Dispatching queued email jobs in accepted order."
+        }
+      ],
+      "usedContexts": [
+        "email_delivery_work_queue",
+        "media_transcode_dispatch_queue"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-queue-preserves-arrival-order",
+          "check": "Removing pending work returns the oldest still-pending item and adding work keeps earlier items ahead.",
+          "why": "FIFO order prevents newer jobs from overtaking older jobs.",
+          "severity": "must",
+          "knownBad": {
+            "code": "return jobs.pop();",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-queue-empty-state-explicit",
+          "check": "The empty-queue outcome is distinguishable from every permitted queued payload.",
+          "why": "Callers must know whether an item was removed without confusing absence with valid data.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function dequeue() { return undefined; }",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-queue-storage-private",
+          "check": "Queue storage is private, and removing the oldest item does not move every remaining item on each dequeue.",
+          "why": "Private state protects ordering invariants, while avoiding repeated suffix movement prevents quadratic work when draining a growing backlog.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function dequeue() { return jobs.shift(); }",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "prg-c03-u03-collection-contracts",
+      "unitCode": "PRG-T01-C03-U03",
+      "level": 2,
+      "archetype": "refactoring",
+      "name": "Reusable Stack and Queue Contracts",
+      "competencies": [
+        "arrays",
+        "stack",
+        "queue",
+        "api-design",
+        "edge-cases"
+      ],
+      "coreConcept": "Collection modules are reliable when operations define empty behavior, preserve ordering, isolate state per instance, and hide storage details.",
+      "mentalModel": [
+        "Define observable behavior before choosing a backing representation.",
+        "Use independent instances to check state isolation.",
+        "Exercise empty, singleton, repeated removal, and reuse after empty.",
+        "Keep callers on operations so representation changes cannot break their assumptions."
+      ],
+      "governingInvariant": "Each instance depends only on its own operation history and preserves its structure-specific ordering.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "shared-module-state",
+          "name": "Collection Instances Share State",
+          "description": "Backing storage is allocated at module scope and reused across instances.",
+          "reproducer": "Push into one stack and observe the item when popping from a new stack."
+        },
+        {
+          "trapTag": "single-input-patch",
+          "name": "Patch Only the Demonstrated Sequence",
+          "description": "Special-casing one observed operation sequence rather than preserving the general contract.",
+          "reproducer": "A queue passes two enqueues but fails after dequeue followed by enqueue."
+        },
+        {
+          "trapTag": "magic-capacity",
+          "name": "Arbitrary Capacity Boundary",
+          "description": "A fixed small capacity silently rejects or overwrites entries without contract support.",
+          "reproducer": "A collection loses data after an unexplained internal limit."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "in_memory_job_scheduler",
+          "description": "Independent queue instances for separate worker pools."
+        }
+      ],
+      "usedContexts": [
+        "independent_worker_retry_stacks"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-collection-instance-isolation",
+          "check": "Each instance owns independent mutable state, and callers cannot mutate its representation directly.",
+          "why": "Isolation prevents cross-request contamination while encapsulation keeps invariants enforceable.",
+          "severity": "must",
+          "knownBad": {
+            "code": "let items = [];\nfunction createStack() { return { push: (item) => items.push(item) }; }",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-collection-contract-complete",
+          "check": "Public operations consistently implement empty and reuse boundary behavior.",
+          "why": "Boundary and lifecycle behavior is part of the API contract, not an incidental detail.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function dequeue() { return items.shift() || null; }",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-collection-representation-hidden",
+          "check": "Callers use collection operations instead of depending on backing-array indexes or cleanup strategy.",
+          "why": "Hiding representation lets implementation changes preserve invariants.",
+          "severity": "should",
+          "knownBad": {
+            "code": "return { items, dequeue: () => items.shift() };",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    }
+  ]
+}

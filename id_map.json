@@ -1,12 +1,4 @@
 {
-  "DRILLS_DB": {
-    "id": "40d3818f-8ba0-8125-8cae-ea0de6183186",
-    "title": "Learning Practice & Drills"
-  },
-  "CONCEPT_VAULT_DB": {
-    "id": "4103818f-8ba0-8164-aa0d-eeb2d6cb65b0",
-    "title": "Concept Vault"
-  },
   "PRG-T09": {
     "id": "40c3818f-8ba0-8170-8e0e-c74a4451b116",
     "title": "Deployment, Docker & Cloud"
@@ -2316,25 +2308,133 @@
     "title": "MDN – HTML",
     "url": "https://developer.mozilla.org/en-US/docs/Web/HTML"
   },
-  "CON-WEBSOCKET": {
-    "id": "4103818f-8ba0-8158-8e79-f89d21a435a6",
-    "title": "WebSocket Protocol"
+  "DRL-MTH-T02-C02-U07-01": {
+    "id": "41a3818f-8ba0-819b-86c4-e28fed346d35",
+    "title": "Inverse Functions — Verified Math Drill (3 Qs · AI Synthesized Reasoning Mode)"
   },
-  "CON-HTTP": {
-    "id": "4103818f-8ba0-81cc-97b0-d1c9e6f29250",
-    "title": "HTTP Protocol Anatomy"
+  "DRL-PRG-T02-C01-U06-01": {
+    "id": "41a3818f-8ba0-8124-9d16-dfa210834cc6",
+    "title": "Refs and DOM Access — Verified Programming Drill (4 Qs · AI Synthesized Engineering Mode)"
   },
-  "CON-TLS": {
-    "id": "4103818f-8ba0-815a-bb7d-ec9b6065d062",
-    "title": "TLS & Modern Encryption"
+  "DRL-PRG-T01-C02-U04-01": {
+    "id": "41a3818f-8ba0-817b-8ab3-c61b0690eb22",
+    "title": "Unknown Boundaries and Complete Type Predicates — Verified Programming Drill (5 Qs · AI Synthesized Engineering Mode)"
   },
-  "CON-TCP-HANDSHAKE": {
-    "id": "4103818f-8ba0-817c-812d-f5f53fa78b71",
-    "title": "TCP 3-Way Handshake"
+  "DRL-MTH-T02-C02-U07-01": {
+    "id": "41a3818f-8ba0-819b-86c4-e28fed346d35",
+    "title": "Inverse Functions — Verified Math Drill (3 Qs · AI Synthesized Reasoning Mode)"
   },
-  "CON-DNS": {
-    "id": "4103818f-8ba0-81a9-80f2-dd2f28af9a2c",
-    "title": "DNS (Domain Name System)"
+  "DRL-PRG-T02-C01-U06-01": {
+    "id": "41a3818f-8ba0-8124-9d16-dfa210834cc6",
+    "title": "Refs and DOM Access — Verified Programming Drill (4 Qs · AI Synthesized Engineering Mode)"
+  },
+  "DRL-PRG-T01-C02-U04-01": {
+    "id": "41a3818f-8ba0-817b-8ab3-c61b0690eb22",
+    "title": "Unknown Boundaries and Complete Type Predicates — Verified Programming Drill (5 Qs · AI Synthesized Engineering Mode)"
+  },
+  "DRL-PRG-T02-C01-U06-01": {
+    "id": "41a3818f-8ba0-8124-9d16-dfa210834cc6",
+    "title": "Refs and DOM Access — Verified Programming Drill (4 Qs · AI Synthesized Engineering Mode)"
+  },
+  "DRL-PRG-T01-C02-U04-01": {
+    "id": "41a3818f-8ba0-817b-8ab3-c61b0690eb22",
+    "title": "Unknown Boundaries and Complete Type Predicates — Verified Programming Drill (5 Qs · AI Synthesized Engineering Mode)"
+  },
+  "DRL-PRG-T01-C02-U03-01": {
+    "id": "41a3818f-8ba0-81f8-b386-d15b82d6ed1b",
+    "title": "Discriminated Unions and Type Narrowing — Verified Programming Drill (5 Qs · AI Synthesized Engineering Mode)"
+  },
+  "DRL-MTH-T02-C02-U06-01": {
+    "id": "41a3818f-8ba0-8142-afef-f5ddbab22c97",
+    "title": "Absolute Value Functions — Verified Math Drill (4 Qs · AI Synthesized Reasoning Mode)"
+  },
+  "DRL-PRG-T01-C03-U03-01": {
+    "id": "41a3818f-8ba0-81bf-995a-c0fc531bf719",
+    "title": "Arrays, Stacks & Queues — Verified Programming Drill (4 Qs · AI Synthesized Engineering Mode)"
+  },
+  "DRL-PRG-T02-C01-U03-01": {
+    "id": "41a3818f-8ba0-81ee-bb5c-cbca61399f37",
+    "title": "State and Event Handling — Verified Programming Drill (4 Qs · AI Synthesized Engineering Mode)"
+  },
+  "DRL-MTH-T02-C02-U05-01": {
+    "id": "41a3818f-8ba0-8189-9f1d-d959ea793885",
+    "title": "Transformations of Functions — Verified Math Drill (4 Qs · AI Synthesized Reasoning Mode)"
+  },
+  "DRL-PRG-T01-C02-U02-01": {
+    "id": "41a3818f-8ba0-81b1-9272-ea8c21285dd4",
+    "title": "Primitive, Literal and Object Types — Verified Programming Drill (5 Qs · AI Synthesized Engineering Mode)"
+  },
+  "DRL-PRG-T01-C03-U02-01": {
+    "id": "41a3818f-8ba0-81c7-961e-f067f10b19f9",
+    "title": "Recursion & Call-Stack Tracing — Verified Programming Drill (5 Qs · AI Synthesized Engineering Mode)"
+  },
+  "LAB-PRG-T02-C01-01": {
+    "id": "41a3818f-8ba0-81dc-b368-ef9e05cdc004",
+    "title": "MiniStore and useStore"
+  },
+  "DRL-MTH-T02-C02-U04-02": {
+    "id": "41a3818f-8ba0-8149-b080-d6f1c462a89b",
+    "title": "Composition of Functions — Verified Math Drill (4 Qs · AI Synthesized Reasoning Mode)"
+  },
+  "DRL-MTH-T02-C02-U04-01": {
+    "id": "41a3818f-8ba0-812d-809b-da684e8f0c70",
+    "title": "Composition of Functions — Verified Math Drill (4 Qs · AI Synthesized Reasoning Mode)"
+  },
+  "DRL-PRG-T01-C03-U01-01": {
+    "id": "41a3818f-8ba0-81a1-a05c-cffd4fbdfa52",
+    "title": "Big-O Intuition & Time/Space Tradeoffs — Verified Programming Drill (4 Qs · AI Synthesized Engineering Mode)"
+  },
+  "DRL-MTH-T02-C02-U03-01": {
+    "id": "41a3818f-8ba0-818d-aec5-d1243f0443c0",
+    "title": "Rates of Change and Behavior of Graphs — Verified Math Drill (3 Qs · AI Synthesized Reasoning Mode)"
+  },
+  "LAB-PRG-T01-C01-01": {
+    "id": "41a3818f-8ba0-8197-9b4a-e542825399f0",
+    "title": "TinyEventEmitter & PromisePool"
+  },
+  "DRL-PRG-T01-C02-U01-01": {
+    "id": "41a3818f-8ba0-8131-a088-cc44122bd8a6",
+    "title": "Type Annotations and Inference — Verified Programming Drill (5 Qs · AI Synthesized Engineering Mode)"
+  },
+  "DRL-PRG-T01-C01-U08-01": {
+    "id": "41a3818f-8ba0-815d-88ab-c29346b5edbb",
+    "title": "Error Handling Patterns — Verified Programming Drill (5 Qs · AI Synthesized Engineering Mode)"
+  },
+  "DRL-PRG-T01-C01-U07-01": {
+    "id": "41a3818f-8ba0-818f-a3b6-c767b3f72e4c",
+    "title": "Event Loop and Microtasks — Verified Programming Drill (5 Qs · AI Synthesized Engineering Mode)"
+  },
+  "DRL-PRG-T01-C01-U06-01": {
+    "id": "41a3818f-8ba0-81f7-a695-d338fe7e1423",
+    "title": "Promises and Async/Await — Verified Programming Drill (5 Qs · AI Synthesized Engineering Mode)"
+  },
+  "DRL-PRG-T01-C01-U05-01": {
+    "id": "41a3818f-8ba0-81df-a818-f606e8f85a91",
+    "title": "Modules and Module Systems — Verified Programming Drill (5 Qs · AI Synthesized Engineering Mode)"
+  },
+  "DRL-PRG-T01-C01-U04-01": {
+    "id": "41a3818f-8ba0-81d9-bdb1-c7190ac20056",
+    "title": "Prototypes and Inheritance — Verified Programming Drill (5 Qs · AI Synthesized Engineering Mode)"
+  },
+  "DRL-PRG-T01-C01-U03-01": {
+    "id": "41a3818f-8ba0-8186-b9a5-d2ae82e25c7c",
+    "title": "`this` and Binding — Verified Programming Drill (5 Qs · AI Synthesized Engineering Mode)"
+  },
+  "DRL-PRG-T01-C01-U02-01": {
+    "id": "41a3818f-8ba0-817f-be97-cff84f627907",
+    "title": "Closures — Verified Programming Drill (5 Qs · AI Synthesized Engineering Mode)"
+  },
+  "DRL-MTH-T02-C02-U02-01": {
+    "id": "41a3818f-8ba0-8188-b3c9-e91f0791678c",
+    "title": "Domain and Range — Verified Math Drill (8 Qs · AI Synthesized Reasoning Mode)"
+  },
+  "DRL-PRG-T01-C01-U01-01": {
+    "id": "41a3818f-8ba0-815c-9ed2-c92d3ce55845",
+    "title": "Execution Context and Scope — Verified Programming Drill (5 Qs · AI Synthesized Engineering Mode)"
+  },
+  "DRL-PRG-T00-C02-U01-01": {
+    "id": "41a3818f-8ba0-8143-95d7-fe0464770f22",
+    "title": "Terminal and Project Structure — Verified Programming Drill (5 Qs · AI Synthesized Engineering Mode)"
   },
   "DRL-MTH-T02-C01-U03-01": {
     "id": "4193818f-8ba0-8147-ba25-ee65f6269231",
@@ -2379,53 +2479,5 @@
   "DRL-PRG-T00-C03-02": {
     "id": "4153818f-8ba0-81e9-bac2-f9f97bbbe5c5",
     "title": "JavaScript & TypeScript Baseline — Verified Programming Drill (10 Qs · AI Synthesized Engineering Mode)"
-  },
-  "DRL-PRG-T00-C02-U01-01": {
-    "id": "41a3818f-8ba0-8143-95d7-fe0464770f22",
-    "title": "Terminal and Project Structure — Verified Programming Drill (5 Qs · AI Synthesized Engineering Mode)"
-  },
-  "DRL-MTH-T02-C02-U02-01": {
-    "id": "41a3818f-8ba0-8188-b3c9-e91f0791678c",
-    "title": "Domain and Range — Verified Math Drill (8 Qs · AI Synthesized Reasoning Mode)"
-  },
-  "DRL-PRG-T01-C01-U01-01": {
-    "id": "41a3818f-8ba0-815c-9ed2-c92d3ce55845",
-    "title": "Execution Context and Scope — Verified Programming Drill (5 Qs · AI Synthesized Engineering Mode)"
-  },
-  "DRL-PRG-T01-C01-U02-01": {
-    "id": "41a3818f-8ba0-817f-be97-cff84f627907",
-    "title": "Closures — Verified Programming Drill (5 Qs · AI Synthesized Engineering Mode)"
-  },
-  "DRL-PRG-T01-C01-U03-01": {
-    "id": "41a3818f-8ba0-8186-b9a5-d2ae82e25c7c",
-    "title": "`this` and Binding — Verified Programming Drill (5 Qs · AI Synthesized Engineering Mode)"
-  },
-  "DRL-PRG-T01-C01-U04-01": {
-    "id": "41a3818f-8ba0-81d9-bdb1-c7190ac20056",
-    "title": "Prototypes and Inheritance — Verified Programming Drill (5 Qs · AI Synthesized Engineering Mode)"
-  },
-  "DRL-PRG-T01-C01-U05-01": {
-    "id": "41a3818f-8ba0-81df-a818-f606e8f85a91",
-    "title": "Modules and Module Systems — Verified Programming Drill (5 Qs · AI Synthesized Engineering Mode)"
-  },
-  "DRL-PRG-T01-C01-U06-01": {
-    "id": "41a3818f-8ba0-81f7-a695-d338fe7e1423",
-    "title": "Promises and Async/Await — Verified Programming Drill (5 Qs · AI Synthesized Engineering Mode)"
-  },
-  "DRL-PRG-T01-C01-U07-01": {
-    "id": "41a3818f-8ba0-818f-a3b6-c767b3f72e4c",
-    "title": "Event Loop and Microtasks — Verified Programming Drill (5 Qs · AI Synthesized Engineering Mode)"
-  },
-  "DRL-PRG-T01-C01-U08-01": {
-    "id": "41a3818f-8ba0-815d-88ab-c29346b5edbb",
-    "title": "Error Handling Patterns — Verified Programming Drill (5 Qs · AI Synthesized Engineering Mode)"
-  },
-  "DRL-PRG-T01-C02-U01-01": {
-    "id": "41a3818f-8ba0-8131-a088-cc44122bd8a6",
-    "title": "Type Annotations and Inference — Verified Programming Drill (5 Qs · AI Synthesized Engineering Mode)"
-  },
-  "DRL-MTH-T02-C02-U03-01": {
-    "id": "41a3818f-8ba0-818d-aec5-d1243f0443c0",
-    "title": "Rates of Change and Behavior of Graphs — Verified Math Drill (3 Qs · AI Synthesized Reasoning Mode)"
   }
 }

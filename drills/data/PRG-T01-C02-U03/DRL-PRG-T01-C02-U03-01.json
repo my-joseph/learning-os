@@ -1,0 +1,490 @@
+{
+  "unitCode": "PRG-T01-C02-U03",
+  "unitTitle": "Discriminated Unions and Type Narrowing",
+  "environment": "typescript-strict",
+  "sourceAttribution": "PRG-T01-C02-U03 unit page and PRG curriculum v2 brief; original practice scenarios authored for this draft.",
+  "config": {
+    "questionCount": 5,
+    "difficulty": "ALL",
+    "difficultyMode": "AI Synthesized Engineering Mode"
+  },
+  "problems": [
+    {
+      "id": "Q01",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "codeType": "implement",
+      "archetypeKey": "prg-t01-c02-u03-discriminated-domain-unions",
+      "commonTrapTag": "optional-property-bag-state",
+      "context": "parcel_delivery_status",
+      "entryPoint": "summarizeDelivery",
+      "prompt": "A parcel tracking service receives three status records from fulfillment stages. Implement `summarizeDelivery` using a discriminated union and return the exact customer message for each stage.\n\n**Variants and message contract**\n- `in_transit`: `{ status: \"in_transit\"; trackingId: string; estimatedDays: number }` → `<trackingId> arrives in <estimatedDays> days`.\n- `delivered`: `{ status: \"delivered\"; trackingId: string; deliveredAt: string }` → `<trackingId> delivered at <deliveredAt>`.\n- `exception`: `{ status: \"exception\"; trackingId: string; reason: string }` → `<trackingId> needs attention: <reason>`.\n\n**Requirements**\n- Keep the exported function name and return type; replace the broad record parameter with the discriminated union.\n- Keep stage-specific fields required only by their own variant; do not make one optional-property bag.\n- Return the specified message for every declared variant.",
+      "inputHint": "Return a string for each input record; keep variant-specific data type-safe.",
+      "checkpointHint": "Check whether the tag and the fields needed by each branch describe the same valid record shape.",
+      "starterCode": "type Delivery = { status: string; trackingId: string; estimatedDays?: number; deliveredAt?: string };\n\nexport function summarizeDelivery(delivery: Delivery): string {\n  return delivery.status;\n}\n",
+      "solutionCode": "type Delivery =\n  | { status: 'in_transit'; trackingId: string; estimatedDays: number }\n  | { status: 'delivered'; trackingId: string; deliveredAt: string }\n  | { status: 'exception'; trackingId: string; reason: string };\n\nfunction assertNever(value: never): never {\n  throw new Error(`Unhandled delivery status: ${JSON.stringify(value)}`);\n}\n\nexport function summarizeDelivery(delivery: Delivery): string {\n  switch (delivery.status) {\n    case 'in_transit':\n      return `${delivery.trackingId} arrives in ${delivery.estimatedDays} days`;\n    case 'delivered':\n      return `${delivery.trackingId} delivered at ${delivery.deliveredAt}`;\n    case 'exception':\n      return `${delivery.trackingId} needs attention: ${delivery.reason}`;\n    default:\n      return assertNever(delivery);\n  }\n}\n",
+      "trapMutant": "type Delivery = { status: string; trackingId: string; estimatedDays?: number; deliveredAt?: string; reason?: string };\n\nexport function summarizeDelivery(delivery: Delivery): string {\n  if (delivery.estimatedDays !== undefined) return `${delivery.trackingId} arrives in ${delivery.estimatedDays} days`;\n  if (delivery.deliveredAt !== undefined) return `${delivery.trackingId} delivered at ${delivery.deliveredAt}`;\n  return `${delivery.trackingId}: needs attention`;\n}",
+      "visibleTests": [
+        {
+          "name": "formats an in-transit parcel with a nonzero estimate",
+          "testCode": "assert.deepStrictEqual(summarizeDelivery({ status: \"in_transit\", trackingId: \"PK-207\", estimatedDays: 3 }), \"PK-207 arrives in 3 days\");"
+        },
+        {
+          "name": "formats a delivered parcel",
+          "testCode": "assert.deepStrictEqual(summarizeDelivery({ status: \"delivered\", trackingId: \"PK-205\", deliveredAt: \"2026-11-16T09:30Z\" }), \"PK-205 delivered at 2026-11-16T09:30Z\");"
+        },
+        {
+          "name": "formats zero estimated days without losing the in-transit state",
+          "testCode": "assert.deepStrictEqual(summarizeDelivery({ status: \"in_transit\", trackingId: \"PK-200\", estimatedDays: 0 }), \"PK-200 arrives in 0 days\");"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "formats an exception at the delivery boundary",
+          "testCode": "assert.deepStrictEqual(summarizeDelivery({ status: \"exception\", trackingId: \"PK-206\", reason: \"Address unavailable\" }), \"PK-206 needs attention: Address unavailable\");"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Define one record shape per valid delivery stage and use the status literal as the discriminant."
+        },
+        {
+          "explain": "Branch on the discriminant so TypeScript exposes only fields belonging to that stage."
+        },
+        {
+          "explain": "Build the customer summary from the narrowed record."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "optional-property-bag-state|direct|summarizeDelivery",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 3,
+          "hasTrapOrFlaw": false,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "optional-property-bag-state",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 6
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Foundation",
+      "unitCode": "PRG-T01-C02-U03",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U03-01/Q01_summarizeDelivery.ts"
+    },
+    {
+      "id": "Q02",
+      "level": 2,
+      "category": "Trap & Edge Case",
+      "archetype": "problem-solving",
+      "codeType": "implement",
+      "archetypeKey": "prg-t01-c02-u03-discriminated-domain-unions",
+      "commonTrapTag": "optional-property-bag-state",
+      "context": "subscription_billing_adjustments",
+      "entryPoint": "adjustmentAmount",
+      "prompt": "A billing export stores credits and percentage adjustments in one optional-property record, allowing invalid combinations. Refactor the model and `adjustmentAmount` to use distinct variants. Zero-value credits are valid and must remain distinguishable from percentage adjustments.\n\n**Requirements**\n- Replace the optional-property bag with a discriminated union using `kind: 'credit'` for fixed credits and `kind: 'rate'` for percentages; the percentage member stores its numeric value in `percent`.\n- A fixed credit returns its exact amount, including zero.\n- `percent` is expressed in percentage points; calculate the adjustment as `subtotal * percent / 100`.\n- Keep the exported function name and avoid type assertions.",
+      "inputHint": "Return a numeric amount using the adjustment record and invoice subtotal.",
+      "checkpointHint": "Model mutually exclusive adjustment data as separate valid record shapes, then narrow by the variant identity.",
+      "starterCode": "type Adjustment = { kind: string; amount?: number; percent?: number };\n\nexport function adjustmentAmount(adjustment: Adjustment, subtotal: number): number {\n  if (adjustment.amount) {\n    return adjustment.amount;\n  }\n  return subtotal * (adjustment.percent ?? 1);\n}\n",
+      "solutionCode": "type Adjustment = { kind: 'credit'; amount: number } | { kind: 'rate'; percent: number };\n\nexport function adjustmentAmount(adjustment: Adjustment, subtotal: number): number {\n  switch (adjustment.kind) {\n    case 'credit':\n      return adjustment.amount;\n    case 'rate':\n      return subtotal * adjustment.percent / 100;\n    default:\n      return assertNever(adjustment);\n  }\n}\n\nfunction assertNever(value: never): never {\n  throw new Error(`Unhandled adjustment: ${JSON.stringify(value)}`);\n}\n",
+      "trapMutant": "type Adjustment = { kind: string; amount?: number; percent?: number };\n\nexport function adjustmentAmount(adjustment: Adjustment, subtotal: number): number {\n  if (adjustment.amount) {\n    return adjustment.amount;\n  }\n  return subtotal * (adjustment.percent ?? 1) / 100;\n}\n",
+      "visibleTests": [
+        {
+          "name": "returns the fixed credit",
+          "testCode": "assert.deepStrictEqual(adjustmentAmount({ kind: \"credit\", amount: 18 }, 120), 18);"
+        },
+        {
+          "name": "calculates a percentage adjustment",
+          "testCode": "assert.deepStrictEqual(adjustmentAmount({ kind: \"rate\", percent: 12.5 }, 80), 10);"
+        },
+        {
+          "name": "handles a full percentage adjustment at the boundary",
+          "testCode": "assert.strictEqual(adjustmentAmount({ kind: \"rate\", percent: 100 }, 80), 80);"
+        },
+        {
+          "name": "handles a zero-percent adjustment",
+          "testCode": "assert.strictEqual(adjustmentAmount({ kind: \"rate\", percent: 0 }, 80), 0);"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "preserves a zero credit",
+          "testCode": "assert.deepStrictEqual(adjustmentAmount({ kind: \"credit\", amount: 0 }, 120), 0);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Replace the broad optional-property record with one member for each mutually exclusive adjustment kind."
+        },
+        {
+          "explain": "Use the kind tag to select the variant before reading its amount or percent."
+        },
+        {
+          "explain": "Return zero credits unchanged and calculate percentage adjustments from the subtotal."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "optional-property-bag-state|direct|adjustmentAmount",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "optional-property-bag-state",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 6
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Standard Exam",
+      "unitCode": "PRG-T01-C02-U03",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U03-01/Q02_adjustmentAmount.ts"
+    },
+    {
+      "id": "Q03",
+      "level": 3,
+      "category": "Trap & Edge Case",
+      "archetype": "problem-solving",
+      "codeType": "implement",
+      "archetypeKey": "prg-t01-c02-u03-exhaustive-state-handlers",
+      "commonTrapTag": "silent-nonexhaustive-default",
+      "context": "hospital_lab_sample_lifecycle",
+      "entryPoint": "describeSampleState",
+      "prompt": "A hospital laboratory dashboard shows the current state of each patient sample as it moves from collection through analysis. Implement `describeSampleState` so every declared state gets a useful status line, and adding a future state forces the handler to be updated at compile time.\n\n**Requirements**\n- Preserve the `SampleState` union and exported function signature.\n- Include the state-specific data in each status line.\n- Handle every declared state and use a `never` check for the remaining case.\n- Do not silently return a generic status for an unhandled state.",
+      "inputHint": "Return a status line for each sample record in the declared state union.",
+      "checkpointHint": "After narrowing on the state tag, make the remaining value prove that every declared member has a branch.",
+      "starterCode": "type SampleState =\n  | { state: 'received'; sampleId: string; receivedAt: string }\n  | { state: 'analyzing'; sampleId: string; assay: string; percent: number }\n  | { state: 'ready'; sampleId: string; resultCode: string }\n  | { state: 'rejected'; sampleId: string; reason: string };\n\nexport function describeSampleState(sample: SampleState): string {\n  switch (sample.state) {\n    case 'received':\n      return `Received ${sample.sampleId} at ${sample.receivedAt}`;\n    case 'analyzing':\n      return `${sample.assay} for ${sample.sampleId}: ${sample.percent}%`;\n    default:\n      return 'Sample status updated';\n  }\n}\n",
+      "solutionCode": "type SampleState =\n  | { state: 'received'; sampleId: string; receivedAt: string }\n  | { state: 'analyzing'; sampleId: string; assay: string; percent: number }\n  | { state: 'ready'; sampleId: string; resultCode: string }\n  | { state: 'rejected'; sampleId: string; reason: string };\n\nfunction assertNever(value: never): never {\n  throw new Error(`Unhandled sample state: ${JSON.stringify(value)}`);\n}\n\nexport function describeSampleState(sample: SampleState): string {\n  switch (sample.state) {\n    case 'received':\n      return `Received ${sample.sampleId} at ${sample.receivedAt}`;\n    case 'analyzing':\n      return `${sample.assay} for ${sample.sampleId}: ${sample.percent}%`;\n    case 'ready':\n      return `Ready ${sample.sampleId}: ${sample.resultCode}`;\n    case 'rejected':\n      return `Rejected ${sample.sampleId}: ${sample.reason}`;\n    default:\n      return assertNever(sample);\n  }\n}\n",
+      "trapMutant": "type SampleState =\n  | { state: 'received'; sampleId: string; receivedAt: string }\n  | { state: 'analyzing'; sampleId: string; assay: string; percent: number }\n  | { state: 'ready'; sampleId: string; resultCode: string }\n  | { state: 'rejected'; sampleId: string; reason: string };\n\nexport function describeSampleState(sample: SampleState): string {\n  switch (sample.state) {\n    case 'received': return `Received ${sample.sampleId} at ${sample.receivedAt}`;\n    case 'analyzing': return `${sample.assay} for ${sample.sampleId}: ${sample.percent}%`;\n    case 'ready': return `Ready ${sample.sampleId}: ${sample.resultCode}`;\n    default: return 'Sample status updated';\n  }\n}\n",
+      "visibleTests": [
+        {
+          "name": "describes a received sample",
+          "testCode": "assert.deepStrictEqual(describeSampleState({ state: 'received', sampleId: 'LAB-310', receivedAt: '08:15' }), 'Received LAB-310 at 08:15');"
+        },
+        {
+          "name": "describes an assay in progress",
+          "testCode": "assert.deepStrictEqual(describeSampleState({ state: 'analyzing', sampleId: 'LAB-311', assay: 'CBC', percent: 60 }), 'CBC for LAB-311: 60%');"
+        },
+        {
+          "name": "describes a ready sample",
+          "testCode": "assert.deepStrictEqual(describeSampleState({ state: 'ready', sampleId: 'LAB-312', resultCode: 'R-NEG' }), 'Ready LAB-312: R-NEG');"
+        },
+        {
+          "name": "describes an analysis at zero percent",
+          "testCode": "assert.deepStrictEqual(describeSampleState({ state: 'analyzing', sampleId: 'LAB-314', assay: 'CBC', percent: 0 }), 'CBC for LAB-314: 0%');"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "reports a rejected sample with its failure reason",
+          "testCode": "assert.deepStrictEqual(describeSampleState({ state: 'rejected', sampleId: 'LAB-313', reason: 'Insufficient volume' }), 'Rejected LAB-313: Insufficient volume');"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Keep each valid sample lifecycle state as a distinct member with its own required fields."
+        },
+        {
+          "explain": "Narrow the sample by its state tag and produce a status line from that state's data."
+        },
+        {
+          "explain": "Pass the remaining value to a never-typed assertion so a new state cannot be silently accepted."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "silent-nonexhaustive-default|direct|describeSampleState",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            20
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "silent-nonexhaustive-default",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 6
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Trap & Diagnostic",
+      "unitCode": "PRG-T01-C02-U03",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U03-01/Q03_describeSampleState.ts"
+    },
+    {
+      "id": "Q04",
+      "level": 3,
+      "category": "Refactor & Design",
+      "archetype": "refactoring",
+      "codeType": "refactor",
+      "archetypeKey": "prg-t01-c02-u03-union-collection-shapes",
+      "commonTrapTag": "mixed-vs-homogeneous-array-union",
+      "context": "museum_artwork_intake_manifest",
+      "entryPoint": "collectArtworkIds",
+      "prompt": "Context: A museum intake manifest currently permits accession-only or loan-only arrays. Staff need to record both kinds together.\n\nYour task:\n- Update `collectArtworkIds` to collect both kinds in input order.\n\n**Requirements**\n- Keep the `ArtworkEntry` variants and exported function name.\n- Change the manifest type so a single array can contain either variant at each position.\n- Include IDs from accessioned and loaned artworks in encounter order.\n- Narrow each element using its `kind`; do not use type assertions or optional shared fields.",
+      "inputHint": "Return one artwork ID for each manifest entry, preserving encounter order.",
+      "checkpointHint": "Model the allowed type at each array position, then handle the element's tag before reading its data.",
+      "starterCode": "type ArtworkEntry =\n  | { kind: 'accession'; artworkId: string; collection: string }\n  | { kind: 'loan'; artworkId: string; lender: string };\ntype Manifest = Extract<ArtworkEntry, { kind: 'accession' }>[] | Extract<ArtworkEntry, { kind: 'loan' }>[];\n\nexport function collectArtworkIds(manifest: Manifest): string[] {\n  return manifest.filter((entry) => entry.kind === 'accession').map((entry) => entry.collection);\n}\n",
+      "solutionCode": "type ArtworkEntry =\n  | { kind: 'accession'; artworkId: string; collection: string }\n  | { kind: 'loan'; artworkId: string; lender: string };\ntype Manifest = ArtworkEntry[];\n\nfunction assertNever(value: never): never {\n  throw new Error(`Unhandled artwork entry: ${JSON.stringify(value)}`);\n}\n\nexport function collectArtworkIds(manifest: Manifest): string[] {\n  return manifest.map((entry) => {\n    switch (entry.kind) {\n      case 'accession':\n        return entry.artworkId;\n      case 'loan':\n        return entry.artworkId;\n      default:\n        return assertNever(entry);\n    }\n  });\n}\n\nconst mixedManifestTypeWitness: Manifest = [\n  { kind: 'loan', artworkId: 'ART-WITNESS-1', lender: 'Regional Museum' },\n  { kind: 'accession', artworkId: 'ART-WITNESS-2', collection: 'Prints' },\n];\nvoid mixedManifestTypeWitness;\n",
+      "trapMutant": "type ArtworkEntry =\n  | { kind: 'accession'; artworkId: string; collection: string }\n  | { kind: 'loan'; artworkId: string; lender: string };\ntype Manifest = { kind: 'accession'; artworkId: string; collection: string }[] | { kind: 'loan'; artworkId: string; lender: string }[];\n\nexport function collectArtworkIds(manifest: Manifest): string[] {\n  return manifest.filter((entry) => entry.kind === 'accession').map((entry) => entry.artworkId);\n}\n",
+      "visibleTests": [
+        {
+          "name": "collects accession IDs in order",
+          "testCode": "assert.deepStrictEqual(collectArtworkIds([{ kind: \"accession\", artworkId: \"ART-51\", collection: \"Modern\" }, { kind: \"accession\", artworkId: \"ART-53\", collection: \"Design\" }]), [\"ART-51\", \"ART-53\"]);"
+        },
+        {
+          "name": "accepts an empty manifest",
+          "testCode": "assert.deepStrictEqual(collectArtworkIds([]), []);"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "collects a mixed loan-first manifest in input order",
+          "testCode": "assert.deepStrictEqual(collectArtworkIds([{ kind: 'loan', artworkId: 'ART-87', lender: 'North Museum' }, { kind: 'accession', artworkId: 'ART-88', collection: 'Photography' }]), ['ART-87', 'ART-88']);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Change the manifest to an array of the entry union so each position may contain either artwork kind."
+        },
+        {
+          "explain": "Visit every entry and narrow on its kind before reading its artwork ID."
+        },
+        {
+          "explain": "Return each ID in the order the artwork appears in the manifest."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "mixed-vs-homogeneous-array-union|direct|collectArtworkIds",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "refactoring"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            20
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "mixed-vs-homogeneous-array-union",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 6
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Trap & Diagnostic",
+      "unitCode": "PRG-T01-C02-U03",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U03-01/Q04_collectArtworkIds.ts"
+    },
+    {
+      "id": "Q05",
+      "level": 4,
+      "category": "Refactor & Design",
+      "archetype": "debugging",
+      "codeType": "fix-bug",
+      "archetypeKey": "prg-t01-c02-u03-union-collection-shapes",
+      "commonTrapTag": "mixed-vs-homogeneous-array-union",
+      "context": "support_ticket_activity_feed",
+      "entryPoint": "renderActivityFeed",
+      "prompt": "A support console renders customer replies and internal notes. Its current contract accepts homogeneous arrays, so a valid feed with both kinds fails the intended contract. Fix the type and implementation so mixed records work and each record uses its own fields. Preserve an empty internal-note author as supplied.\n\n**Requirements**\n- Refactor the function structure while fixing the type contract.\n- Keep the record variants and exported function name.\n- Narrow each record using its `kind` discriminant.\n- Avoid assertions, optional shared fields, and truthiness checks on valid string data.",
+      "inputHint": "Return one display string per activity record, preserving input order.",
+      "checkpointHint": "An array type should express which single element types may occur at each position; use the tag before accessing variant-only data.",
+      "starterCode": "type Activity =\n  | { kind: 'reply'; author: string; body: string }\n  | { kind: 'internal_note'; author: string; note: string };\ntype ActivityFeed = Activity[] | { kind: 'reply'; author: string; body: string }[] | { kind: 'internal_note'; author: string; note: string }[];\n\nexport function renderActivityFeed(feed: ActivityFeed): string[] {\n  return feed.filter((activity) => activity.kind === 'reply').map((activity) => {\n    if (activity.kind === 'reply') {\n      return `${activity.author}: ${activity.body}`;\n    }\n    return `${activity.author || 'Staff'}: ${activity.note}`;\n  });\n}\n",
+      "solutionCode": "type Activity =\n  | { kind: 'reply'; author: string; body: string }\n  | { kind: 'internal_note'; author: string; note: string };\ntype ActivityFeed = Activity[];\n\nfunction assertNever(value: never): never {\n  throw new Error(`Unhandled activity: ${JSON.stringify(value)}`);\n}\n\nexport function renderActivityFeed(feed: ActivityFeed): string[] {\n  return feed.map((activity) => {\n    switch (activity.kind) {\n      case 'reply':\n        return `${activity.author}: ${activity.body}`;\n      case 'internal_note':\n        return `${activity.author}: ${activity.note}`;\n      default:\n        return assertNever(activity);\n    }\n  });\n}\n",
+      "trapMutant": "type Activity =\n  | { kind: 'reply'; author: string; body: string }\n  | { kind: 'internal_note'; author: string; note: string };\ntype ActivityFeed = { kind: 'reply'; author: string; body: string }[] | { kind: 'internal_note'; author: string; note: string }[];\n\nexport function renderActivityFeed(feed: ActivityFeed): string[] {\n  return feed.map((activity) => activity.kind === 'reply' ? `${activity.author}: ${activity.body}` : `${activity.author || 'Staff'}: ${activity.note}`);\n}\n",
+      "visibleTests": [
+        {
+          "name": "renders a reply and an internal note with a nonempty author",
+          "testCode": "assert.deepStrictEqual(renderActivityFeed([{ kind: \"reply\", author: \"Mina\", body: \"Order arrived\" }, { kind: \"internal_note\", author: \"Kai\", note: \"Escalated for review\" }]), [\"Mina: Order arrived\", \"Kai: Escalated for review\"]);"
+        },
+        {
+          "name": "renders an empty feed",
+          "testCode": "assert.deepStrictEqual(renderActivityFeed([]), []);"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "renders multiple notes and replies in order",
+          "testCode": "assert.deepStrictEqual(renderActivityFeed([{\"kind\": \"internal_note\", \"author\": \"Kai\", \"note\": \"Refund approved\"}, {\"kind\": \"reply\", \"author\": \"Nora\", \"body\": \"Thank you\"}]), [\"Kai: Refund approved\", \"Nora: Thank you\"]);"
+        },
+        {
+          "name": "preserves an empty internal-note author",
+          "testCode": "assert.deepStrictEqual(renderActivityFeed([{ kind: 'internal_note', author: '', note: 'Private follow-up' }]), [': Private follow-up']);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Change the feed to an array of the activity union so a single array can contain both variants."
+        },
+        {
+          "explain": "Branch on each activity's discriminant to access only fields valid on that variant."
+        },
+        {
+          "explain": "Format each record without replacing valid empty author data."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "mixed-vs-homogeneous-array-union|direct|renderActivityFeed",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "debugging"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            25
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "mixed-vs-homogeneous-array-union",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 6
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Applied Synthesis",
+      "unitCode": "PRG-T01-C02-U03",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U03-01/Q05_renderActivityFeed.ts"
+    }
+  ],
+  "blindSolve": [
+    {
+      "problemId": "Q01",
+      "passed": true
+    },
+    {
+      "problemId": "Q02",
+      "passed": true
+    },
+    {
+      "problemId": "Q03",
+      "passed": true
+    },
+    {
+      "problemId": "Q04",
+      "passed": true
+    },
+    {
+      "problemId": "Q05",
+      "passed": true
+    }
+  ],
+  "review": {
+    "verdict": "pass",
+    "note": "The five problems cover the stated union-type objectives: discriminated domain models, exhaustive state handling, and the distinction between an array of unions and a union of arrays. Canonical solutions are consistent with the contracts and strict TypeScript; Q04’s mixed-manifest witness supports its type change. Visible and hidden tests distinguish the supplied trap mutants as described. The blind solves use valid approaches, with Q01 and Q05 relying on switch coverage without explicit never checks; that still satisfies their functional contracts, though it does not demonstrate compile-time exhaustiveness as directly as the canonical solutions."
+  },
+  "drillId": "DRL-PRG-T01-C02-U03-01",
+  "topicCode": "PRG-T01",
+  "chapterCode": "PRG-T01-C02",
+  "schemaVersion": "2.0-code",
+  "subject": "PRG",
+  "createdAt": "2026-11-17",
+  "localFilePath": "drills/data/PRG-T01-C02-U03/DRL-PRG-T01-C02-U03-01.json"
+}
