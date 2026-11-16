@@ -1,0 +1,87 @@
+{
+  "unitCode": "MTH-T02-C02-U04",
+  "topicTitle": "Composition of Functions",
+  "description": "Reasoning vault aligned with OpenStax Algebra and Trigonometry 2e §3.4: evaluate and build compositions, compose in either order, simplify formulas, and determine the domain of a composite.",
+  "archetypes": [
+    {
+      "unitCode": "MTH-T02-C02-U04",
+      "archetypeKey": "t02-c02-u04-evaluate-composition",
+      "level": 1,
+      "name": "Evaluate a Composite Function",
+      "source": "OpenStax Algebra and Trigonometry 2e §3.4 — Composition of Functions",
+      "coreConcept": "In (f∘g)(x), the output of g becomes the input of f; the inner function acts first.",
+      "mentalModel": "Pass the original input through g, then feed that output into f.",
+      "governingRelation": "(f∘g)(x)=f(g(x))",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c02-u04-reverse-composition-order-trap",
+          "description": "Applying the outer function first and evaluating g(f(x)) instead of f(g(x)).",
+          "trapFormula": "(f∘g)(x) \\mapsto g(f(x))"
+        },
+        {
+          "trapTag": "t02-c02-u04-stop-at-inner-output-trap",
+          "description": "Reporting g(x) without applying the outer function.",
+          "trapFormula": "(f∘g)(x) \\mapsto g(x)"
+        }
+      ],
+      "versatileDomains": [],
+      "usedContexts": [],
+      "figureNone": "This archetype is exact symbolic substitution; a diagram would not add information needed to find the value."
+    },
+    {
+      "unitCode": "MTH-T02-C02-U04",
+      "archetypeKey": "t02-c02-u04-build-composite-rule",
+      "level": 2,
+      "name": "Build and Simplify a Composite Rule",
+      "source": "OpenStax Algebra and Trigonometry 2e §3.4 — Create a New Function by Composition of Functions",
+      "coreConcept": "A composite rule is formed by substituting the entire inner expression wherever the outer rule's input appears, then simplifying while preserving grouping.",
+      "mentalModel": "Replace the outer input with one grouped copy of the inner output; simplify only after the replacement is complete.",
+      "governingRelation": "(f∘g)(x)=f(g(x))",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c02-u04-partial-substitution-trap",
+          "description": "Substituting the inner expression into only part of the outer rule or dropping its parentheses.",
+          "trapFormula": "f(u+v) \\mapsto f(u)+v"
+        },
+        {
+          "trapTag": "t02-c02-u04-reverse-composition-order-trap",
+          "description": "Using the reverse order when composing two functions.",
+          "trapFormula": "f(g(x)) \\mapsto g(f(x))"
+        }
+      ],
+      "versatileDomains": [],
+      "usedContexts": [],
+      "figureNone": "The target is algebraic substitution and simplification rather than a graph-reading task."
+    },
+    {
+      "unitCode": "MTH-T02-C02-U04",
+      "archetypeKey": "t02-c02-u04-domain-of-composite",
+      "level": 2,
+      "name": "Determine the Domain of a Composite",
+      "source": "OpenStax Algebra and Trigonometry 2e §3.4 — Domain of a Composite Function",
+      "coreConcept": "An input is allowed only when it belongs to the inner function's domain and its inner output belongs to the outer function's domain.",
+      "mentalModel": "Check both gates in order: x must be legal for g, then g(x) must be legal as an input to f.",
+      "governingRelation": "x∈Dom(g) and g(x)∈Dom(f)",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c02-u04-check-outer-domain-only-trap",
+          "description": "Checking only the outer rule's restriction and forgetting the inner function's own domain.",
+          "trapFormula": "Dom(f∘g)=Dom(f)"
+        },
+        {
+          "trapTag": "t02-c02-u04-check-inner-domain-only-trap",
+          "description": "Checking x in Dom(g) but not checking whether g(x) is allowed by f.",
+          "trapFormula": "Dom(f∘g)=Dom(g)"
+        },
+        {
+          "trapTag": "t02-c02-u04-include-composite-zero-endpoint-trap",
+          "description": "Including an endpoint allowed by the inner radical even though it makes the outer reciprocal undefined.",
+          "trapFormula": "x=1 \\text{ included although } g(x)=0 \\text{ enters a denominator}"
+        }
+      ],
+      "versatileDomains": [],
+      "usedContexts": [],
+      "figureNone": "The domain is found by intersecting algebraic restrictions; plotting it would disclose the excluded values."
+    }
+  ]
+}
