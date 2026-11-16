@@ -1,0 +1,568 @@
+{
+  "unitCode": "MTH-T02-C03-U03",
+  "topicTitle": "Linear Functions",
+  "unitTitle": "Fitting Linear Models to Data",
+  "subject": "MATH",
+  "problems": [
+    {
+      "id": "Q01",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c03-u03-interpret-scatter-pattern",
+      "context": "",
+      "prompt": "The observations are: $x=0$ gives $y=15$; $x=2$ gives $y=12$; $x=4$ gives $y=9$; $x=6$ gives $y=6$. Which description best fits the scatter pattern as the input increases? Choose one: A, roughly linear downward; B, roughly linear upward; C, curved; D, no clear trend.",
+      "display": "Choose the overall direction and shape of the point cloud.",
+      "plainText": "Choose the overall direction and shape of the point cloud.",
+      "givens": {
+        "x1": 0,
+        "y1": 15,
+        "x2": 2,
+        "y2": 12,
+        "x3": 4,
+        "y3": 9,
+        "x4": 6,
+        "y4": 6
+      },
+      "constants": {},
+      "trapGivens": [
+        15,
+        6,
+        6,
+        0
+      ],
+      "answerSpec": {
+        "type": "choice",
+        "options": [
+          {
+            "id": "A",
+            "label": "A roughly linear downward trend"
+          },
+          {
+            "id": "B",
+            "label": "A roughly linear upward trend",
+            "provenance": "Reverses the overall direction of the association."
+          },
+          {
+            "id": "C",
+            "label": "A curved trend",
+            "provenance": "Treats steady change as a curved pattern."
+          },
+          {
+            "id": "D",
+            "label": "No clear trend",
+            "provenance": "Overlooks the consistent direction across the observations."
+          }
+        ],
+        "correct": "A"
+      },
+      "answerPlain": "A",
+      "answerDisplay": "A",
+      "inputHint": "Choose the description that matches the overall point pattern.",
+      "commonTrapTag": "t02-c03-u03-reverse-trend-direction-trap",
+      "trapDerivation": "(15-6)/(6-0)",
+      "trapValue": "3/2",
+      "verify": {
+        "source": "(6-15)/(6-0)",
+        "trapValue": "3/2"
+      },
+      "checkpointHint": "Track whether the outputs tend to rise or fall as the inputs increase; judge the broad pattern rather than joining the points.",
+      "references": [
+        "MTH-T02-C03-U03"
+      ],
+      "steps": [
+        {
+          "latex": "15>12",
+          "explain": "The first outputs decrease as the inputs increase.",
+          "eq": [
+            "15-12",
+            "3"
+          ]
+        },
+        {
+          "latex": "12>9",
+          "explain": "The downward direction continues.",
+          "eq": [
+            "12-9",
+            "3"
+          ]
+        },
+        {
+          "latex": "9>6",
+          "explain": "The same direction continues through the final observation.",
+          "eq": [
+            "9-6",
+            "3"
+          ]
+        },
+        {
+          "latex": "\\text{roughly linear downward trend}",
+          "explain": "The pattern decreases at a steady rate."
+        }
+      ],
+      "verificationLevel": "partial",
+      "figureWaiver": "The scatter plot is the requested object of interpretation; a separate figure would duplicate the data.",
+      "review": {
+        "verdict": "pass",
+        "note": "The listed paired observations clearly form a steady downward scatter pattern, exercising the assigned interpretation skill and reverse-direction trap without ambiguity or hint/display leakage, and the L1 item fits the brief."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C03-U03",
+          "title": "Fitting Linear Models to Data",
+          "notionUrl": "https://www.notion.so/4013818f8ba080bf8405d5c44774cd63"
+        }
+      ],
+      "unitCode": "MTH-T02-C03-U03",
+      "fingerprint": "t02-c03-u03-reverse-trend-direction-trap|direct|Choose the overall direction and shape of the point cloud.",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 4,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c03-u03-reverse-trend-direction-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 3
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 19
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 1 - Foundation"
+    },
+    {
+      "id": "Q02",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c03-u03-read-regression-model",
+      "context": "",
+      "prompt": "A fitted regression line is $r(x)=3x+7$. What output does the model predict at input $4$?",
+      "display": "r(x)=3x+7",
+      "plainText": "r(x)=3*x+7",
+      "givens": {
+        "m": 3,
+        "b": 7,
+        "x": 4
+      },
+      "constants": {},
+      "trapGivens": [
+        3,
+        7,
+        4
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "19",
+        "tolerance": 0
+      },
+      "answerPlain": "19",
+      "answerDisplay": "19",
+      "inputHint": "Enter a number.",
+      "commonTrapTag": "t02-c03-u03-swap-regression-slope-intercept-trap",
+      "trapDerivation": "7*4+3",
+      "trapValue": "31",
+      "verify": {
+        "source": "3*4+7",
+        "trapValue": "31"
+      },
+      "checkpointHint": "Substitute the requested input into the fitted rule and keep the slope and intercept in their roles.",
+      "references": [
+        "MTH-T02-C03-U03"
+      ],
+      "steps": [
+        {
+          "latex": "r(4)=3(4)+7",
+          "explain": "Substitute the requested input into the regression line."
+        },
+        {
+          "latex": "3(4)=12",
+          "explain": "Multiply the slope by the input.",
+          "eq": [
+            "3*4",
+            "12"
+          ]
+        },
+        {
+          "latex": "r(4)=12+7",
+          "explain": "Add the intercept to the fitted change.",
+          "eq": [
+            "12+7",
+            "19"
+          ]
+        },
+        {
+          "latex": "r(4)=19",
+          "explain": "State the model's predicted output.",
+          "val": "19"
+        }
+      ],
+      "verificationLevel": "partial",
+      "figureWaiver": "A graph marking the requested input would display the predicted output directly.",
+      "review": {
+        "verdict": "pass",
+        "note": "The model prediction, coefficient-swap trap, and steps are correct and unambiguous, and the prompt, display, and hint do not reveal the requested output."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C03-U03",
+          "title": "Fitting Linear Models to Data",
+          "notionUrl": "https://www.notion.so/4013818f8ba080bf8405d5c44774cd63"
+        }
+      ],
+      "unitCode": "MTH-T02-C03-U03",
+      "fingerprint": "t02-c03-u03-swap-regression-slope-intercept-trap|direct|r(x)=#*x+#",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 4,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c03-u03-swap-regression-slope-intercept-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 15
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 1 - Foundation"
+    },
+    {
+      "id": "Q03",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c03-u03-classify-prediction-range",
+      "context": "",
+      "prompt": "A fitted line is $f(x)=x-5$, based on observed inputs from $1$ through $8$. The model predicts at input $9$. Choose the prediction type: A, interpolation; B, extrapolation; C, the model cannot classify it.",
+      "display": "Compare the prediction input with the observed input interval.",
+      "plainText": "Compare the prediction input with the observed input interval.",
+      "givens": {
+        "m": 1,
+        "b": -5,
+        "xmin": 1,
+        "xmax": 8,
+        "xstar": 9
+      },
+      "constants": {},
+      "trapGivens": [
+        1,
+        8,
+        9,
+        5
+      ],
+      "answerSpec": {
+        "type": "choice",
+        "options": [
+          {
+            "id": "A",
+            "label": "Interpolation",
+            "provenance": "Uses the model output as if it were the requested input range."
+          },
+          {
+            "id": "B",
+            "label": "Extrapolation",
+            "trapTag": "t02-c03-u03-confuse-output-with-input-range-trap"
+          },
+          {
+            "id": "C",
+            "label": "The model cannot be used to classify this prediction",
+            "provenance": "Confuses a fitted prediction with a classification of its input."
+          }
+        ],
+        "correct": "B"
+      },
+      "answerPlain": "B",
+      "answerDisplay": "B",
+      "inputHint": "Select the prediction type by locating the requested input relative to the observed interval.",
+      "commonTrapTag": "t02-c03-u03-confuse-output-with-input-range-trap",
+      "trapDerivation": "9-5",
+      "trapValue": "4",
+      "verify": {
+        "source": "9-5",
+        "trapValue": "4"
+      },
+      "checkpointHint": "Compare the requested input with the observed input endpoints; do not use the model output for this classification.",
+      "references": [
+        "MTH-T02-C03-U03"
+      ],
+      "figureWaiver": "The prompt tests comparing an input with the observed input interval; a graph would give away the classification.",
+      "steps": [
+        {
+          "latex": "x^*=9",
+          "explain": "Identify the input where the model prediction is made."
+        },
+        {
+          "latex": "x_{max}=8",
+          "explain": "The largest observed input is 8."
+        },
+        {
+          "latex": "9-8=1",
+          "explain": "The prediction input exceeds the observed maximum by 1.",
+          "eq": [
+            "9-8",
+            "1"
+          ]
+        },
+        {
+          "latex": "9>8",
+          "explain": "The prediction input lies beyond the observed input interval."
+        },
+        {
+          "latex": "\\text{Extrapolation}",
+          "explain": "A prediction outside the observed input interval is extrapolation."
+        }
+      ],
+      "verificationLevel": "partial",
+      "review": {
+        "verdict": "pass",
+        "note": "The prediction input is clearly outside the observed input interval, the output-versus-input trap and steps support the assigned classification skill, and the L2 item fits the brief without ambiguity or hint/display leakage."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C03-U03",
+          "title": "Fitting Linear Models to Data",
+          "notionUrl": "https://www.notion.so/4013818f8ba080bf8405d5c44774cd63"
+        }
+      ],
+      "unitCode": "MTH-T02-C03-U03",
+      "fingerprint": "t02-c03-u03-confuse-output-with-input-range-trap|direct|Compare the prediction input with the observed input interval.",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 5,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c03-u03-confuse-output-with-input-range-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 2
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 20
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 2 - Standard Exam"
+    },
+    {
+      "id": "Q04",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c03-u03-check-model-breakdown",
+      "context": "A subscription service fitted a line to weekly account data from weeks 1 through 8. At the start of week 9, it changed its pricing and onboarding process, which may change account growth.",
+      "prompt": "The service recorded data for weeks 1 through 8. Its fitted line is $g(x)=3x+7$. Should it rely on this line for a week 12 forecast after the pricing and onboarding process changed at week 9? Choose one: A, yes, use the same line; B, no, the process and input range changed; C, there is not enough information.",
+      "display": "Check the observed interval and the process change before trusting a forecast.",
+      "plainText": "Check the observed interval and the process change before trusting a forecast.",
+      "givens": {
+        "m": 3,
+        "b": 7,
+        "xmin": 1,
+        "xmax": 8,
+        "xstar": 12,
+        "changeWeek": 9
+      },
+      "constants": {},
+      "trapGivens": [
+        1,
+        8,
+        9,
+        12,
+        3,
+        7
+      ],
+      "answerSpec": {
+        "type": "choice",
+        "options": [
+          {
+            "id": "A",
+            "label": "Yes; use the same line because it is fitted to the earlier data",
+            "trapTag": "t02-c03-u03-ignore-model-breakdown-trap"
+          },
+          {
+            "id": "B",
+            "label": "No; the forecast is beyond the observed interval and the process changed"
+          },
+          {
+            "id": "C",
+            "label": "There is not enough information to decide",
+            "provenance": "Ignores the stated observed range and the process change."
+          }
+        ],
+        "correct": "B"
+      },
+      "answerPlain": "B",
+      "answerDisplay": "B",
+      "inputHint": "Choose whether the earlier fitted model remains reliable for this forecast.",
+      "commonTrapTag": "t02-c03-u03-ignore-model-breakdown-trap",
+      "trapDerivation": "3*12+7",
+      "trapValue": "43",
+      "verify": {
+        "source": "3*12+7",
+        "trapValue": "43"
+      },
+      "checkpointHint": "Check both how far the forecast extends beyond the data and whether the process stayed the same.",
+      "references": [
+        "MTH-T02-C03-U03"
+      ],
+      "figureWaiver": "A plot marking the observation and fitted value at the same input could show the requested residual directly.",
+      "steps": [
+        {
+          "latex": "x^*=12",
+          "explain": "The forecast is requested for week 12."
+        },
+        {
+          "latex": "x_{max}=8",
+          "explain": "The last observation was in week 8."
+        },
+        {
+          "latex": "12>8",
+          "explain": "The forecast lies beyond the observed interval."
+        },
+        {
+          "latex": "3(12)+7=43",
+          "explain": "The earlier line produces a number, but the process changed before the forecast.",
+          "eq": [
+            "3*12+7",
+            "43"
+          ],
+          "val": "43"
+        },
+        {
+          "latex": "\\text{do not rely on the earlier fit}",
+          "explain": "The earlier relationship may not hold after the change."
+        }
+      ],
+      "verificationLevel": "partial",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "Weekly account forecasts are realistic, the time units are coherent, and the stated process change directly affects whether the old model remains valid."
+      },
+      "review": {
+        "verdict": "pass",
+        "note": "The realistic account-growth context makes both the out-of-range forecast and process change relevant model limits, with a fitting trap, coherent steps, and no ambiguity or hint/display leakage in this L2 item."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C03-U03",
+          "title": "Fitting Linear Models to Data",
+          "notionUrl": "https://www.notion.so/4013818f8ba080bf8405d5c44774cd63"
+        }
+      ],
+      "unitCode": "MTH-T02-C03-U03",
+      "fingerprint": "t02-c03-u03-ignore-model-breakdown-trap|direct|Check the observed interval and the process change before trusting a forecast.",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 5,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c03-u03-ignore-model-breakdown-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 2
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 20
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 2 - Standard Exam"
+    }
+  ],
+  "drillId": "DRL-MTH-T02-C03-U03-01",
+  "title": "Fitting Linear Models to Data — Verified Math Drill (4 Qs)",
+  "topicCode": "MTH-T02",
+  "chapterCode": "MTH-T02-C03",
+  "schemaVersion": "2.0-math",
+  "createdAt": "2026-11-17 05:24:49",
+  "config": {
+    "questionCount": 4,
+    "difficulty": "ALL",
+    "difficultyMode": "AI Synthesized Reasoning Mode"
+  },
+  "localFilePath": "drills/data/MTH-T02-C03-U03/DRL-MTH-T02-C03-U03-01.json"
+}

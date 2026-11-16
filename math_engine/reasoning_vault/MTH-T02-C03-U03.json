@@ -1,0 +1,177 @@
+{
+  "unitCode": "MTH-T02-C03-U03",
+  "topicTitle": "Fitting Linear Models to Data",
+  "description": "Reasoning vault aligned with OpenStax Algebra and Trigonometry 2e §4.3: draw and interpret scatter diagrams, distinguish linear from nonlinear patterns, use a regression line, and assess predictions inside and outside the observed data range.",
+  "archetypes": [
+    {
+      "unitCode": "MTH-T02-C03-U03",
+      "archetypeKey": "t02-c03-u03-interpret-scatter-pattern",
+      "level": 1,
+      "name": "Interpret a Scatter Pattern",
+      "source": "OpenStax Algebra and Trigonometry 2e §4.3 — Drawing and Interpreting Scatter Plots",
+      "coreConcept": "A scatter plot displays paired observations; its overall shape and direction indicate whether a linear model is plausible and whether the association rises, falls, or lacks a clear trend.",
+      "mentalModel": "Look across the cloud of points for a broad direction and shape; do not join observations as if they were consecutive values of a function.",
+      "governingRelation": "paired data: (x_i,y_i); linear pattern: y\\approx mx+b",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c03-u03-join-scatter-points-trap",
+          "description": "Connecting separate observations with segments and treating the resulting zigzag as the relationship.",
+          "trapFormula": "scatter points ↦ ordered path"
+        },
+        {
+          "trapTag": "t02-c03-u03-reverse-trend-direction-trap",
+          "description": "Calling a downward pattern positive or an upward pattern negative.",
+          "trapFormula": "x increases, y decreases ↦ positive trend"
+        },
+        {
+          "trapTag": "t02-c03-u03-force-linear-on-curved-data-trap",
+          "description": "Fitting a straight-line model to a clearly curved pattern without checking the shape.",
+          "trapFormula": "curved cloud ↦ linear model"
+        }
+      ],
+      "versatileDomains": [
+        "quality monitoring",
+        "environmental measurements",
+        "equipment performance"
+      ],
+      "usedContexts": [],
+      "figureBuilders": [
+        {
+          "fn": "build_function_graph_figure",
+          "args": {
+            "x_min": "x1-1",
+            "x_max": "x4+1",
+            "y_min": "y1-2",
+            "y_max": "y4+2"
+          },
+          "labels": {
+            "points": "({x1:g},{y1:g}); ({x2:g},{y2:g}); ({x3:g},{y3:g}); ({x4:g},{y4:g})",
+            "point_labels": "A|B|C|D"
+          },
+          "title": "A scatter plot shows a broad downward trend"
+        }
+      ]
+    },
+    {
+      "unitCode": "MTH-T02-C03-U03",
+      "archetypeKey": "t02-c03-u03-read-regression-model",
+      "level": 1,
+      "name": "Read a Regression Model",
+      "source": "OpenStax Algebra and Trigonometry 2e §4.3 — Finding the Line of Best Fit Using a Graphing Utility",
+      "coreConcept": "A regression line summarizes a near-linear data trend; its slope and intercept describe the fitted relationship and can be used for predictions.",
+      "mentalModel": "Treat the regression equation as a compact summary of the data cloud, not as a guarantee that every observation lies on the line.",
+      "governingRelation": "\\hat y=mx+b",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c03-u03-swap-regression-slope-intercept-trap",
+          "description": "Reading the vertical intercept as the rate of change or the slope as the output at zero input.",
+          "trapFormula": "\\hat y=mx+b \\mapsto slope=b, intercept=m"
+        },
+        {
+          "trapTag": "t02-c03-u03-treat-fit-as-exact-data-trap",
+          "description": "Assuming each observed data point must lie exactly on a best-fit line.",
+          "trapFormula": "residuals ↦ 0 for every point"
+        }
+      ],
+      "versatileDomains": [
+        "forecasting",
+        "measurement calibration",
+        "trend analysis"
+      ],
+      "usedContexts": [],
+      "figureBuilders": [
+        {
+          "fn": "build_function_graph_figure",
+          "args": {
+            "x_min": "xmin",
+            "x_max": "xmax",
+            "y_min": "0",
+            "y_max": "m*xmax+b"
+          },
+          "labels": {
+            "expr": "{m:g}*x+{b:g}",
+            "label": "fitted line"
+          },
+          "title": "A regression line summarizes a data trend"
+        }
+      ]
+    },
+    {
+      "unitCode": "MTH-T02-C03-U03",
+      "archetypeKey": "t02-c03-u03-classify-prediction-range",
+      "level": 2,
+      "name": "Classify Interpolation and Extrapolation",
+      "source": "OpenStax Algebra and Trigonometry 2e §4.3 — Interpolation and Extrapolation",
+      "coreConcept": "Interpolation predicts within the observed input range; extrapolation predicts outside it and needs stronger caution about whether the pattern continues.",
+      "mentalModel": "Locate the requested input relative to the smallest and largest observed inputs before judging how strongly the data support the prediction.",
+      "governingRelation": "x_{min}\\le x^*\\le x_{max}: interpolation; otherwise: extrapolation",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c03-u03-confuse-output-with-input-range-trap",
+          "description": "Comparing the prediction input with observed outputs instead of observed inputs.",
+          "trapFormula": "x^* compare to y_{min},y_{max}"
+        },
+        {
+          "trapTag": "t02-c03-u03-swap-interpolation-extrapolation-trap",
+          "description": "Calling a prediction outside the observed input range interpolation, or the reverse.",
+          "trapFormula": "outside domain ↦ interpolation"
+        }
+      ],
+      "versatileDomains": [
+        "planning",
+        "sensor calibration",
+        "demand forecasting"
+      ],
+      "usedContexts": [],
+      "figureBuilders": [
+        {
+          "fn": "build_function_graph_figure",
+          "args": {
+            "x_min": "xmin",
+            "x_max": "xmax+3",
+            "y_min": "0",
+            "y_max": "m*(xmax+3)+b"
+          },
+          "labels": {
+            "expr": "{m:g}*x+{b:g}",
+            "label": "fitted line",
+            "mark_x": "{xstar:g}",
+            "mark_labels": "prediction"
+          },
+          "title": "A prediction can fall beyond the observed input range"
+        }
+      ]
+    },
+    {
+      "unitCode": "MTH-T02-C03-U03",
+      "archetypeKey": "t02-c03-u03-check-model-breakdown",
+      "level": 2,
+      "name": "Check for Model Breakdown",
+      "source": "OpenStax Algebra and Trigonometry 2e §4.3 — Model Breakdown and Reasonable Predictions",
+      "coreConcept": "A regression line is a local model supported by data in a finite range; physical limits or changing behavior can make distant predictions unreasonable.",
+      "mentalModel": "Calculate what the line predicts, then compare that result with the domain, bounds, and mechanism of the measured quantity.",
+      "governingRelation": "prediction=\\hat y(x^*);\\quad plausibility requires x^* and \\hat y within domain bounds",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c03-u03-extrapolate-without-domain-check-trap",
+          "description": "Treating a fitted line as valid indefinitely without checking data limits or physical bounds.",
+          "trapFormula": "outside observed range ↦ assume same trend forever"
+        },
+        {
+          "trapTag": "t02-c03-u03-ignore-model-breakdown-trap",
+          "description": "Accepting a prediction after the real process has saturated, stopped, or changed regimes.",
+          "trapFormula": "linear fit ↦ no breakdown possible"
+        }
+      ],
+      "versatileDomains": [
+        "resource limits",
+        "capacity planning",
+        "growth trends"
+      ],
+      "usedContexts": [
+        "A subscription service fitted a line to weekly account data from weeks 1 through 8. At the start of week 9, it changed its pricing and onboarding process, which may change account growth."
+      ],
+      "figureNone": "The archetype asks the learner to assess the model's domain and physical plausibility; a numeric plot may imply unsupported behavior beyond the observed range."
+    }
+  ]
+}
