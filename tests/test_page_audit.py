@@ -105,3 +105,110 @@ def test_caption_with_plain_text_math_fails():
     assert any("image 1 caption has math as plain text" in m and "--recaption 1=" in m for _, m in found)
     img["image"] = {"caption": [{"type": "text", "plain_text": "Squaring "}, {"type": "equation", "plain_text": "x^2"}]}
     assert pa.audit_page("MTH-T09-C01-U01", page, PROPS)[1] == []
+
+
+def _code(text="const x = 1;"):
+    return {"type": "code", "code": {"language": "typescript", "rich_text": [_rt(text)]}}
+
+
+def prg_unit_page(
+    example2="Example 2 (L2 — Edge Case): empty input",
+    example3="Example 3 (L3 — Bug Contrast): off-by-one",
+    code_s1=True,
+    code_s3=True,
+    recall=3,
+    why=True,
+):
+    callout = {"type": "callout", "callout": {"rich_text": [_rt("Resource: "), _rt("MDN", mention=True)]}}
+    blocks = [callout, blk("heading_2", "1. Core Concepts & Mental Model"), blk("paragraph", "idea")]
+    if code_s1:
+        blocks.append(_code())
+    blocks += [blk("heading_2", "2. Core Patterns"), blk("paragraph", "pattern")]
+    if why:
+        blocks.append(blk("toggle", "Why this works"))
+    blocks += [
+        blk("heading_2", "3. Worked Code Examples"),
+        blk("heading_3", "Example 1 (L1 — Direct): basic"),
+        blk("heading_3", example2),
+        blk("heading_3", example3),
+    ]
+    if code_s3:
+        blocks.append(_code())
+    blocks += [
+        blk("heading_2", "4. Practice Guide"),
+        blk("heading_2", "5. Active Recall"),
+        *[blk("toggle", f"Q{i}") for i in range(recall)],
+        blk("heading_2", "6. My Implementation & Mistake Log"),
+        blk("heading_2", "7. Completion Checklist"),
+    ]
+    return blocks
+
+
+def test_prg_unit_page_passes_without_figure_warning():
+    assert pa.audit_page("PRG-T01-C03-U01", prg_unit_page(), PROPS) == ("content", [])
+    assert pa.audit_page("PRG-T01-C03-U01", prg_unit_page(example2="Example 2 (L2 — Refactor): extract"), PROPS) == (
+        "content",
+        [],
+    )
+
+
+def test_prg_unit_page_warns_on_missing_code_and_fails_bad_examples():
+    page = prg_unit_page(
+        example2="Example 2 (L2 — Reverse): wrong",
+        example3="Example 3 (L3 — Trap Contrast): wrong",
+        code_s1=False,
+        code_s3=False,
+        recall=2,
+        why=False,
+    )
+    _, found = pa.audit_page("PRG-T01-C03-U01", page, PROPS)
+    msgs = " | ".join(m for _, m in found)
+    assert "no figure" not in msgs
+    assert any(lvl == "WARN" and "no code block in section 1" in m for lvl, m in found)
+    assert any(lvl == "WARN" and "no code block in section 3" in m for lvl, m in found)
+    assert "an L2 example must be Edge Case or Refactor" in msgs
+    assert "an L3 example must be Bug Contrast" in msgs
+    assert "no 'Why this works' toggle" in msgs
+    assert "2 Active Recall toggles" in msgs
+
+
+def test_prg_unresolved_mention_ignores_code_and_nested_array_literals():
+    page = prg_unit_page()
+    page.append(blk("paragraph", "A nested array like [[1, 2]] is valid."))
+    page.append(_code("const ref = '[[PRG-T01-C01]]';"))
+    assert pa.audit_page("PRG-T01-C03-U01", page, PROPS) == ("content", [])
+
+    page.append(blk("paragraph", "Broken link [[PRG-T01-C01]] in prose."))
+    _, found = pa.audit_page("PRG-T01-C03-U01", page, PROPS)
+    assert len(found) == 1 and "unresolved [[...]] text" in found[0][1]
+
+
+def test_prg_older_t00_t01_headings_accepted():
+    page = prg_unit_page()
+    for i, b in enumerate(page):
+        t = pa.text_of(b)
+        if t.startswith("1. Core Concepts"):
+            page[i] = blk("heading_2", "Runtime Mechanics & Mental Model")
+        elif t.startswith("2. Core Patterns"):
+            page[i] = blk("heading_2", "Code Examples & Engineering Patterns")
+        elif t.startswith("4. Practice Guide"):
+            page[i] = blk("heading_2", "Practical Exercise & Debugging Task")
+    assert pa.audit_page("PRG-T01-C01-U01", page, PROPS) == ("content", [])
+
+
+def test_prg_chapter_lab_warning_only_when_chapter_has_lab():
+    chapter_blocks = [
+        {"type": "callout", "callout": {"rich_text": [_rt("T", mention=True)]}},
+        blk("heading_2", "1. Chapter Role"),
+        blk("heading_2", "2. Core Invariants"),
+        blk("heading_2", "3. Look-Alike Problems"),
+        blk("heading_2", "4. Chapter Practice Guide"),
+        blk("heading_2", "5. Cross-Unit Active Recall"),
+        *[blk("toggle", "q") for _ in range(3)],
+        blk("heading_2", "6. Summary"),
+    ]
+    assert pa.audit_page("PRG-T00-C01", chapter_blocks, {}) == ("content", [])
+    _, found = pa.audit_page("PRG-T01-C01", chapter_blocks, {})
+    assert found == [("WARN", "missing 'Chapter Lab' section (curriculum v2 §4)")]
+    chapter_blocks.append(blk("heading_2", "Chapter Lab"))
+    assert pa.audit_page("PRG-T01-C01", chapter_blocks, {}) == ("content", [])

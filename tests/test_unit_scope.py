@@ -81,3 +81,88 @@ def test_update_unit_reviews_writes_only_pages_with_review_fields(monkeypatch):
     assert out == {"U1": {"mastery": 2, "lastReviewed": "2026-11-10", "nextReview": "2026-11-15"}}
     patch = [c for c in calls if c[0] == "PATCH"]
     assert len(patch) == 1 and patch[0][2]["properties"]["Mastery (0-4)"] == {"number": 2}
+
+
+def test_prg_vaults_all_have_valid_unit_codes():
+    import glob
+    import re
+
+    vaults = sorted(glob.glob("code_engine/reasoning_vault/PRG-*.json"))
+    assert len(vaults) >= 3
+    for path in vaults:
+        data = json.loads(open(path, encoding="utf-8").read())
+        for arch in data["archetypes"]:
+            uc = arch.get("unitCode", "")
+            assert re.match(r"^PRG-T\d{2}-C\d{2}-U\d{2}$", uc), (
+                f"{path}: {arch.get('archetypeKey')} bad unitCode {uc!r}"
+            )
+
+
+def test_prg_load_scope_archetypes_and_ingest_unit_stamp(tmp_path):
+    from code_engine import ai_drill_ingest as cai
+
+    vault_dir = tmp_path / "vault"
+    vault_dir.mkdir()
+    (vault_dir / "PRG-T09-C01.json").write_text(
+        json.dumps(
+            {
+                "unitCode": "PRG-T09-C01",
+                "archetypes": [
+                    {
+                        "archetypeKey": "a-u1",
+                        "unitCode": "PRG-T09-C01-U01",
+                        "level": 1,
+                        "qualityChecks": [
+                            {
+                                "id": "QC-test-u1",
+                                "check": "Returns a fresh value",
+                                "why": "Avoids shared state",
+                                "severity": "must",
+                                "knownBad": {"code": "const x = 1;", "caughtBy": "review"},
+                            }
+                        ],
+                    },
+                    {"archetypeKey": "a-u2", "unitCode": "PRG-T09-C01-U02", "level": 2},
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    assert [a["archetypeKey"] for a in cai.load_scope_archetypes("PRG-T09-C01-U01", str(vault_dir))] == ["a-u1"]
+    assert sorted(a["archetypeKey"] for a in cai.load_scope_archetypes("PRG-T09-C01", str(vault_dir))) == [
+        "a-u1",
+        "a-u2",
+    ]
+
+    drill_doc = {
+        "unitCode": "PRG-T09-C01",
+        "drillId": "DRL-PRG-T09-C01-99",
+        "problems": [
+            {
+                "id": "Q01",
+                "archetype": "problem-solving",
+                "archetypeKey": "a-u1",
+                "context": "order_totals",
+                "level": 1,
+                "entryPoint": "sumPrices",
+                "prompt": "Implement `sumPrices(items)`.",
+                "starterCode": "function sumPrices(items) {\n  return 0;\n}\nmodule.exports = { sumPrices };\n",
+                "solutionCode": "function sumPrices(items) {\n  return items.reduce((acc, n) => acc + n, 0);\n}\nmodule.exports = { sumPrices };\n",
+                "visibleTests": [
+                    {"name": "sums positive prices", "testCode": "assert.strictEqual(sumPrices([2, 3]), 5);"}
+                ],
+                "hiddenTests": [{"name": "handles empty list", "testCode": "assert.strictEqual(sumPrices([]), 0);"}],
+                "steps": [{"explain": "Accumulate item prices starting from zero."}],
+            }
+        ],
+    }
+    saved = cai.ingest_ai_code_drill(
+        drill_doc,
+        data_root=str(tmp_path / "data"),
+        workspace_root=str(tmp_path / "ws"),
+        vault_dir=str(vault_dir),
+    )
+    assert saved["problems"][0]["unitCode"] == "PRG-T09-C01-U01"
+    chapter_vault = json.loads((vault_dir / "PRG-T09-C01.json").read_text(encoding="utf-8"))
+    assert chapter_vault["archetypes"][0]["usedContexts"] == ["order_totals"]
+    assert not (vault_dir / "PRG-T09-C01-U01.json").exists()

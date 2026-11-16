@@ -151,11 +151,29 @@ def auto_link_concepts(text, id_map, max_per_concept=1):
     return result
 
 
+def _strip_code_blocks(blocks):
+    """Return a copy of blocks without code blocks so [[...]] inside code is never flagged as an unresolved mention."""
+    out = []
+    for b in blocks:
+        if not isinstance(b, dict):
+            out.append(b)
+            continue
+        btype = b.get("type")
+        if btype == "code":
+            continue
+        copy_b = dict(b)
+        if btype and isinstance(b.get(btype), dict) and "children" in b[btype]:
+            copy_b[btype] = {**b[btype], "children": _strip_code_blocks(b[btype]["children"])}
+        out.append(copy_b)
+    return out
+
+
 def validate_blocks_clean(blocks, label=""):
-    dumped = json.dumps(blocks, ensure_ascii=False)
-    unresolved_match = re.search(r"\[\[[A-Z0-9\-]+\]\]", dumped)
+    dumped_non_code = json.dumps(_strip_code_blocks(blocks), ensure_ascii=False)
+    unresolved_match = re.search(r"\[\[[A-Z0-9\-]+\]\]", dumped_non_code)
     if unresolved_match:
         raise AssertionError(f"[{label}] Found unresolved ID token {unresolved_match.group(0)} in generated blocks!")
+    dumped = json.dumps(blocks, ensure_ascii=False)
     thai_match = re.search(r"[\u0E00-\u0E7F]+", dumped)
     if thai_match:
         raise AssertionError(f"[{label}] Found non-English (Thai) text '{thai_match.group(0)}' in generated blocks!")
