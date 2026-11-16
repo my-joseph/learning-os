@@ -1,0 +1,70 @@
+{
+  "Q01": {
+    "answer": 300,
+    "ambiguous": false,
+    "demand_tags": [
+      "setup",
+      "strategy",
+      "check",
+      "task",
+      "reverse",
+      "steps"
+    ],
+    "likely_wrong_answer": 120,
+    "context_check": {
+      "verdict": "ok",
+      "sentence": "The domain is elapsed time t ≥ 0 with liters as the output; 300 liters is a plausible positive amount after five minutes, and removing the tank-and-pump context leaves the same calculation 180 + 24×5."
+    }
+  },
+  "Q02": {
+    "answer": 34,
+    "ambiguous": false,
+    "demand_tags": [
+      "setup",
+      "strategy",
+      "check",
+      "task",
+      "reverse",
+      "steps"
+    ],
+    "likely_wrong_answer": 24,
+    "context_check": {
+      "verdict": "ok",
+      "sentence": "The domain is t ≥ 0 minutes and q(t) counts boxes; 34 is a nonnegative whole-number count, and removing the station context leaves direct substitution into q(6)=4×6+10."
+    }
+  },
+  "Q03": {
+    "answer": 50,
+    "ambiguous": false,
+    "demand_tags": [
+      "setup",
+      "strategy",
+      "check",
+      "task",
+      "reverse",
+      "steps"
+    ],
+    "likely_wrong_answer": 40,
+    "context_check": {
+      "verdict": "ok",
+      "sentence": "The model applies for elapsed hours t ≥ 0 and counts orders; the inferred slope is 5 orders per hour and gives a plausible total of 50 at hour 8, while removing the dashboard context leaves linear extrapolation from (2,20) and (6,40)."
+    }
+  },
+  "Q04": {
+    "answer": 8,
+    "ambiguous": false,
+    "demand_tags": [
+      "setup",
+      "strategy",
+      "check",
+      "task",
+      "reverse",
+      "steps"
+    ],
+    "likely_wrong_answer": 4,
+    "context_check": {
+      "verdict": "ok",
+      "sentence": "The domain is elapsed time 0 ≤ t ≤ 12 hours and volume in liters; 36 liters remains after 8 hours within that bound, and removing the reservoir context leaves solving 100−8t=36."
+    }
+  }
+}
