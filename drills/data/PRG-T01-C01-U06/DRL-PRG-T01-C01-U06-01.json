@@ -1,0 +1,478 @@
+{
+  "unitCode": "PRG-T01-C01-U06",
+  "unitTitle": "Promises and Async/Await",
+  "environment": "node-vanilla",
+  "sourceAttribution": "MDN JavaScript Guide (Using Promises & async/await) & ECMAScript Promise Specification",
+  "config": {
+    "questionCount": 5,
+    "difficulty": "ALL",
+    "difficultyMode": "AI Synthesized Engineering Mode"
+  },
+  "problems": [
+    {
+      "id": "Q01",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "codeType": "implement",
+      "archetypeKey": "prg-c01-async-sequential-to-parallel",
+      "commonTrapTag": "sequential-await-in-loop",
+      "context": "gateway_user_hydration_aggregator",
+      "entryPoint": "hydrateUserRecords",
+      "prompt": "Implement `hydrateUserRecords(userIds, fetchUser)` for an API gateway that loads multiple user profiles concurrently.\n\n**Input Validation:**\n- `userIds`: must be an array of strings/numbers; throw `TypeError` if not an array.\n- `fetchUser`: must be a function `(id) => Promise<object>`; throw `TypeError` if not a function.\n\n**Concurrency & Ordering Rules:**\n- Start all `fetchUser(id)` calls concurrently using `Promise.all` rather than awaiting them one-by-one in a loop.\n- Preserve the exact input order of `userIds` in the returned `users` array.\n- If `userIds` is empty, resolve immediately to `{ users: [], count: 0 }` without calling `fetchUser`.\n- Do not mutate the input `userIds` array.\n\n**Return Contract:**\n- Return a Promise resolving to `{ users: object[], count: number }`.",
+      "inputHint": "Return a Promise resolving to { users, count } with concurrent Promise.all execution",
+      "starterCode": "function hydrateUserRecords(_userIds, _fetchUser) {\n  return Promise.resolve({ users: [], count: 0 });\n}\n\nmodule.exports = { hydrateUserRecords };\n",
+      "solutionCode": "function validateHydrateInputs(userIds, fetchUser) {\n  if (!Array.isArray(userIds)) {\n    throw new TypeError('userIds must be an array');\n  }\n  if (typeof fetchUser !== 'function') {\n    throw new TypeError('fetchUser must be a function');\n  }\n}\n\nasync function hydrateUserRecords(userIds, fetchUser) {\n  validateHydrateInputs(userIds, fetchUser);\n  if (userIds.length === 0) {\n    return { users: [], count: 0 };\n  }\n  const users = await Promise.all(userIds.map((id) => fetchUser(id)));\n  return { users, count: users.length };\n}\n\nmodule.exports = { hydrateUserRecords };\n",
+      "trapMutant": "async function hydrateUserRecords(userIds, fetchUser) {\n  if (!Array.isArray(userIds)) {\n    throw new TypeError('userIds must be an array');\n  }\n  if (typeof fetchUser !== 'function') {\n    throw new TypeError('fetchUser must be a function');\n  }\n  const users = [];\n  for (const id of userIds) {\n    users.push(await fetchUser(id));\n  }\n  return { users, count: users.length };\n}\n\nmodule.exports = { hydrateUserRecords };\n",
+      "visibleTests": [
+        {
+          "name": "hydrates users and preserves input order even when slower tasks finish later",
+          "testCode": "const delays = { u1: 15, u2: 2, u3: 8 };\nconst fetchUser = (id) => new Promise((resolve) => setTimeout(() => resolve({ id, active: true }), delays[id]));\nconst result = await hydrateUserRecords(['u1', 'u2', 'u3'], fetchUser);\nassert.deepStrictEqual(result, {\n  users: [\n    { id: 'u1', active: true },\n    { id: 'u2', active: true },\n    { id: 'u3', active: true },\n  ],\n  count: 3,\n});"
+        },
+        {
+          "name": "returns empty result for empty userIds",
+          "testCode": "let called = 0;\nconst result = await hydrateUserRecords([], async () => {\n  called += 1;\n  return {};\n});\nassert.deepStrictEqual(result, { users: [], count: 0 });\nassert.strictEqual(called, 0);"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "dispatches all fetchUser calls concurrently rather than sequentially",
+          "testCode": "let active = 0;\nlet maxActive = 0;\nconst fetchUser = (id) => {\n  active += 1;\n  maxActive = Math.max(maxActive, active);\n  return new Promise((resolve) => {\n    setTimeout(() => {\n      active -= 1;\n      resolve({ id });\n    }, 10);\n  });\n};\nconst res = await hydrateUserRecords(['a', 'b', 'c'], fetchUser);\nassert.strictEqual(res.count, 3);\nassert.strictEqual(maxActive, 3);"
+        },
+        {
+          "name": "rejects with TypeError on invalid arguments and does not mutate input",
+          "testCode": "await assert.rejects(() => hydrateUserRecords('not-an-array', async () => ({})), TypeError);\nawait assert.rejects(() => hydrateUserRecords(['u1'], null), TypeError);\nconst ids = ['x', 'y'];\nawait hydrateUserRecords(ids, async (id) => ({ id }));\nassert.deepStrictEqual(ids, ['x', 'y']);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Validate that `userIds` is an array and `fetchUser` is a function, throwing `TypeError` otherwise."
+        },
+        {
+          "explain": "Return `{ users: [], count: 0 }` early when `userIds` is empty."
+        },
+        {
+          "explain": "Map each ID to a promise and await `Promise.all` so all requests run concurrently and resolve in input order."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "sequential-await-in-loop|direct|hydrateUserRecords",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 3,
+          "hasTrapOrFlaw": false,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "sequential-await-in-loop",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 5
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Foundation",
+      "unitCode": "PRG-T01-C01-U06",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U06-01/Q01_hydrateUserRecords.js"
+    },
+    {
+      "id": "Q02",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "debugging",
+      "codeType": "fix-bug",
+      "archetypeKey": "prg-c01-async-sequential-to-parallel",
+      "commonTrapTag": "unawaited-async-foreach",
+      "context": "webhook_batch_dispatcher",
+      "entryPoint": "dispatchWebhookBatch",
+      "prompt": "Fix `dispatchWebhookBatch(events, deliver)` so that all webhook events are awaited to completion before returning the delivery summary.\n\n**Observable Symptom:**\n- Currently `dispatchWebhookBatch` resolves immediately with `{ delivered: 0, receiptIds: [] }` before any `deliver(event)` call finishes.\n\n**Requirements:**\n- `events`: array of webhook payload objects.\n- `deliver`: async function `(event) => Promise<{ receiptId: string }>`.\n- Validate that `Array.isArray(events)` and `typeof deliver === 'function'` (throw `TypeError` otherwise).\n- Dispatch all deliveries concurrently and preserve the input order of `receiptIds`.\n\n**Return Contract:**\n- Return a Promise resolving to `{ delivered: number, receiptIds: string[] }`.",
+      "inputHint": "Fix async iteration so all deliver promises settle before returning",
+      "starterCode": "function dispatchWebhookBatch(events, deliver) {\n  if (!Array.isArray(events) || typeof deliver !== 'function') {\n    return Promise.reject(new TypeError('Invalid events or deliver handler'));\n  }\n  const receiptIds = [];\n  events.forEach(async (event) => {\n    const res = await deliver(event);\n    receiptIds.push(res.receiptId);\n  });\n  return Promise.resolve({ delivered: receiptIds.length, receiptIds });\n}\n\nmodule.exports = { dispatchWebhookBatch };\n",
+      "solutionCode": "function assertWebhookInputs(events, deliver) {\n  if (!Array.isArray(events) || typeof deliver !== 'function') {\n    throw new TypeError('Invalid events or deliver handler');\n  }\n}\n\nasync function dispatchWebhookBatch(events, deliver) {\n  assertWebhookInputs(events, deliver);\n  const deliveries = await Promise.all(events.map((event) => deliver(event)));\n  const receiptIds = deliveries.map((entry) => entry.receiptId);\n  return { delivered: receiptIds.length, receiptIds };\n}\n\nmodule.exports = { dispatchWebhookBatch };\n",
+      "trapMutant": "async function dispatchWebhookBatch(events, deliver) {\n  if (!Array.isArray(events) || typeof deliver !== 'function') {\n    throw new TypeError('Invalid events or deliver handler');\n  }\n  const receiptIds = [];\n  events.forEach(async (event) => {\n    const res = await deliver(event);\n    receiptIds.push(res.receiptId);\n  });\n  return { delivered: receiptIds.length, receiptIds };\n}\n\nmodule.exports = { dispatchWebhookBatch };\n",
+      "visibleTests": [
+        {
+          "name": "waits for all deliveries and returns receiptIds in order",
+          "testCode": "const deliver = (ev) => new Promise((resolve) => setTimeout(() => resolve({ receiptId: `rcpt_${ev.id}` }), ev.delay));\nconst summary = await dispatchWebhookBatch(\n  [\n    { id: '1', delay: 12 },\n    { id: '2', delay: 2 },\n  ],\n  deliver,\n);\nassert.deepStrictEqual(summary, { delivered: 2, receiptIds: ['rcpt_1', 'rcpt_2'] });"
+        },
+        {
+          "name": "handles empty events array",
+          "testCode": "const summary = await dispatchWebhookBatch([], async () => ({ receiptId: 'x' }));\nassert.deepStrictEqual(summary, { delivered: 0, receiptIds: [] });"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "propagates rejection from deliver instead of resolving early",
+          "testCode": "const deliver = async (ev) => {\n  if (ev.fail) throw new Error('Webhook 502');\n  return { receiptId: ev.id };\n};\nawait assert.rejects(() => dispatchWebhookBatch([{ id: '1' }, { id: '2', fail: true }], deliver), /Webhook 502/);"
+        },
+        {
+          "name": "validates input types",
+          "testCode": "await assert.rejects(() => dispatchWebhookBatch(null, async () => ({})), TypeError);\nawait assert.rejects(() => dispatchWebhookBatch([], 'not-fn'), TypeError);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Replace `events.forEach(async ...)` with `Promise.all(events.map(...))` because `forEach` ignores returned promises."
+        },
+        {
+          "explain": "Extract `receiptId` from each resolved result in input order and return `{ delivered, receiptIds }`."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "unawaited-async-foreach|direct|dispatchWebhookBatch",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "debugging"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "unawaited-async-foreach",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 4
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Foundation",
+      "unitCode": "PRG-T01-C01-U06",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U06-01/Q02_dispatchWebhookBatch.js"
+    },
+    {
+      "id": "Q03",
+      "level": 2,
+      "category": "Trap & Edge Case",
+      "archetype": "problem-solving",
+      "codeType": "implement",
+      "archetypeKey": "prg-c01-promise-settled-partial-failure",
+      "commonTrapTag": "all-fail-fast-on-partial-batch",
+      "context": "multi_region_health_probe",
+      "entryPoint": "probeClusterNodes",
+      "prompt": "Implement `probeClusterNodes(nodes, pingNode)` to probe multiple regional nodes concurrently without aborting when individual nodes fail.\n\n**Input Validation:**\n- `nodes`: array of `{ region: string, url: string }`; throw `TypeError` if not an array.\n- `pingNode`: function `(node) => Promise<{ latencyMs: number }>`; throw `TypeError` if not a function.\n\n**Aggregation Rules:**\n- Probe all nodes concurrently using `Promise.allSettled`.\n- Partition outcomes in input order:\n  - Fulfilled: push `{ region: node.region, latencyMs: outcome.value.latencyMs }` into `healthy`.\n  - Rejected: push `{ region: node.region, error: reason instanceof Error ? reason.message : String(reason) }` into `failed`.\n- Do not mutate `nodes`.\n\n**Return Contract:**\n- Return a Promise resolving to `{ healthy: Array<{ region: string, latencyMs: number }>, failed: Array<{ region: string, error: string }> }`.",
+      "inputHint": "Return { healthy, failed } using Promise.allSettled so one failure does not abort the batch",
+      "starterCode": "function probeClusterNodes(_nodes, _pingNode) {\n  return Promise.resolve({ healthy: [], failed: [] });\n}\n\nmodule.exports = { probeClusterNodes };\n",
+      "solutionCode": "async function probeClusterNodes(nodes, pingNode) {\n  if (!Array.isArray(nodes) || typeof pingNode !== 'function') {\n    throw new TypeError('nodes must be an array and pingNode must be a function');\n  }\n  if (nodes.length === 0) {\n    return { healthy: [], failed: [] };\n  }\n  const settled = await Promise.allSettled(nodes.map((node) => pingNode(node)));\n  const healthy = [];\n  const failed = [];\n  for (let i = 0; i < settled.length; i += 1) {\n    const outcome = settled[i];\n    const node = nodes[i];\n    if (outcome.status === 'fulfilled') {\n      healthy.push({ region: node.region, latencyMs: outcome.value.latencyMs });\n    } else {\n      const reason = outcome.reason;\n      failed.push({\n        region: node.region,\n        error: reason instanceof Error ? reason.message : String(reason),\n      });\n    }\n  }\n  return { healthy, failed };\n}\n\nmodule.exports = { probeClusterNodes };\n",
+      "trapMutant": "async function probeClusterNodes(nodes, pingNode) {\n  if (!Array.isArray(nodes) || typeof pingNode !== 'function') {\n    throw new TypeError('nodes must be an array and pingNode must be a function');\n  }\n  const results = await Promise.all(nodes.map((node) => pingNode(node)));\n  return {\n    healthy: results.map((res, idx) => ({ region: nodes[idx].region, latencyMs: res.latencyMs })),\n    failed: [],\n  };\n}\n\nmodule.exports = { probeClusterNodes };\n",
+      "visibleTests": [
+        {
+          "name": "partitions healthy and failed nodes in input order",
+          "testCode": "const nodes = [\n  { region: 'us-east', url: 'https://us.example' },\n  { region: 'eu-west', url: 'https://eu.example' },\n  { region: 'ap-south', url: 'https://ap.example' },\n];\nconst pingNode = async (n) => {\n  if (n.region === 'eu-west') throw new Error('ECONNREFUSED');\n  return { latencyMs: n.region === 'us-east' ? 12 : 45 };\n};\nconst res = await probeClusterNodes(nodes, pingNode);\nassert.deepStrictEqual(res, {\n  healthy: [\n    { region: 'us-east', latencyMs: 12 },\n    { region: 'ap-south', latencyMs: 45 },\n  ],\n  failed: [{ region: 'eu-west', error: 'ECONNREFUSED' }],\n});"
+        },
+        {
+          "name": "returns empty arrays when nodes is empty",
+          "testCode": "const res = await probeClusterNodes([], async () => ({ latencyMs: 1 }));\nassert.deepStrictEqual(res, { healthy: [], failed: [] });"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "handles non-Error rejection reasons and all-failing batches",
+          "testCode": "const nodes = [\n  { region: 'r1', url: 'u1' },\n  { region: 'r2', url: 'u2' },\n];\nconst pingNode = async (n) => {\n  throw n.region === 'r1' ? 'string-timeout' : new Error('DNS fail');\n};\nconst res = await probeClusterNodes(nodes, pingNode);\nassert.deepStrictEqual(res, {\n  healthy: [],\n  failed: [\n    { region: 'r1', error: 'string-timeout' },\n    { region: 'r2', error: 'DNS fail' },\n  ],\n});"
+        },
+        {
+          "name": "validates arguments",
+          "testCode": "await assert.rejects(() => probeClusterNodes(null, async () => ({})), TypeError);\nawait assert.rejects(() => probeClusterNodes([], null), TypeError);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Validate `nodes` and `pingNode` inputs and return early on an empty list."
+        },
+        {
+          "explain": "Await `Promise.allSettled` across all `pingNode(node)` calls so every probe completes."
+        },
+        {
+          "explain": "Branch on `outcome.status === 'fulfilled'` to populate `healthy` and `failed` with normalized error strings."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "all-fail-fast-on-partial-batch|direct|probeClusterNodes",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "all-fail-fast-on-partial-batch",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 5
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Standard Exam",
+      "unitCode": "PRG-T01-C01-U06",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U06-01/Q03_probeClusterNodes.js"
+    },
+    {
+      "id": "Q04",
+      "level": 2,
+      "category": "Trap & Edge Case",
+      "archetype": "problem-solving",
+      "codeType": "implement",
+      "archetypeKey": "prg-c01-promise-settled-partial-failure",
+      "commonTrapTag": "unhandled-rejection-before-await",
+      "context": "checkout_inventory_payment_coordinator",
+      "entryPoint": "authorizeCheckoutStep",
+      "prompt": "Implement `authorizeCheckoutStep(reserveInventory, chargeCard)` to run inventory reservation and payment authorization concurrently while capturing all failures cleanly.\n\n**Concurrency & Rejection Safety Rules:**\n- Validate that both `reserveInventory` and `chargeCard` are functions; throw `TypeError` otherwise.\n- Start both `reserveInventory()` and `chargeCard()` concurrently and await both with `Promise.allSettled` so neither promise can become an unhandled rejection if the other fails first.\n- If both fulfill, return `{ ok: true, reservation, payment }`.\n- If either or both reject, return `{ ok: false, errors }` where `errors` is an array of error message strings in `[inventory, payment]` order (using `err instanceof Error ? err.message : String(err)`).\n\n**Return Contract:**\n- Return a Promise resolving to `{ ok: true, reservation, payment }` or `{ ok: false, errors: string[] }`.",
+      "inputHint": "Await both promises together via Promise.allSettled and return { ok, ... }",
+      "starterCode": "function authorizeCheckoutStep(_reserveInventory, _chargeCard) {\n  return Promise.resolve({ ok: false, errors: [] });\n}\n\nmodule.exports = { authorizeCheckoutStep };\n",
+      "solutionCode": "function formatReason(reason) {\n  return reason instanceof Error ? reason.message : String(reason);\n}\n\nasync function authorizeCheckoutStep(reserveInventory, chargeCard) {\n  if (typeof reserveInventory !== 'function' || typeof chargeCard !== 'function') {\n    throw new TypeError('reserveInventory and chargeCard must be functions');\n  }\n  const [invOutcome, payOutcome] = await Promise.allSettled([\n    Promise.resolve().then(() => reserveInventory()),\n    Promise.resolve().then(() => chargeCard()),\n  ]);\n  if (invOutcome.status === 'fulfilled' && payOutcome.status === 'fulfilled') {\n    return {\n      ok: true,\n      reservation: invOutcome.value,\n      payment: payOutcome.value,\n    };\n  }\n  const errors = [];\n  if (invOutcome.status === 'rejected') {\n    errors.push(formatReason(invOutcome.reason));\n  }\n  if (payOutcome.status === 'rejected') {\n    errors.push(formatReason(payOutcome.reason));\n  }\n  return { ok: false, errors };\n}\n\nmodule.exports = { authorizeCheckoutStep };\n",
+      "trapMutant": "async function authorizeCheckoutStep(reserveInventory, chargeCard) {\n  if (typeof reserveInventory !== 'function' || typeof chargeCard !== 'function') {\n    throw new TypeError('reserveInventory and chargeCard must be functions');\n  }\n  try {\n    const payPromise = chargeCard();\n    const reservation = await reserveInventory();\n    const payment = await payPromise;\n    return { ok: true, reservation, payment };\n  } catch (err) {\n    return { ok: false, errors: [err instanceof Error ? err.message : String(err)] };\n  }\n}\n\nmodule.exports = { authorizeCheckoutStep };\n",
+      "visibleTests": [
+        {
+          "name": "returns ok: true when both steps succeed",
+          "testCode": "const res = await authorizeCheckoutStep(\n  async () => ({ sku: 'KB-1', qty: 1 }),\n  async () => ({ txId: 'tx_99' }),\n);\nassert.deepStrictEqual(res, {\n  ok: true,\n  reservation: { sku: 'KB-1', qty: 1 },\n  payment: { txId: 'tx_99' },\n});"
+        },
+        {
+          "name": "collects single failure cleanly",
+          "testCode": "const res = await authorizeCheckoutStep(\n  async () => ({ sku: 'KB-1', qty: 1 }),\n  async () => { throw new Error('Card declined'); },\n);\nassert.deepStrictEqual(res, { ok: false, errors: ['Card declined'] });"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "collects both errors in order when both reject even if second rejects before first",
+          "testCode": "const reserve = () => new Promise((_, rej) => setTimeout(() => rej(new Error('Out of stock')), 15));\nconst charge = () => Promise.reject(new Error('Gateway down'));\nconst res = await authorizeCheckoutStep(reserve, charge);\nassert.deepStrictEqual(res, { ok: false, errors: ['Out of stock', 'Gateway down'] });"
+        },
+        {
+          "name": "validates function arguments",
+          "testCode": "await assert.rejects(() => authorizeCheckoutStep(null, async () => ({})), TypeError);\nawait assert.rejects(() => authorizeCheckoutStep(async () => ({}), 123), TypeError);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Validate both arguments are functions before invoking either step."
+        },
+        {
+          "explain": "Wrap both calls in `Promise.allSettled` so both promises are attached immediately and neither leaks an unhandled rejection."
+        },
+        {
+          "explain": "Return `{ ok: true, reservation, payment }` when both fulfill, or `{ ok: false, errors }` in `[inventory, payment]` order."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "unhandled-rejection-before-await|direct|authorizeCheckoutStep",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "unhandled-rejection-before-await",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 5
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Standard Exam",
+      "unitCode": "PRG-T01-C01-U06",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U06-01/Q04_authorizeCheckoutStep.js"
+    },
+    {
+      "id": "Q05",
+      "level": 3,
+      "category": "Refactor & Design",
+      "archetype": "debugging",
+      "codeType": "fix-bug",
+      "archetypeKey": "prg-c01-promise-race-timeout-cleanup",
+      "commonTrapTag": "dangling-timeout-handle",
+      "context": "rpc_deadline_wrapper",
+      "entryPoint": "callWithDeadline",
+      "prompt": "Fix `callWithDeadline(invokeRpc, deadlineMs, options)` so that RPC rejections are caught locally and deadline timers are always cleaned up.\n\n**Observable Symptoms:**\n- When `invokeRpc()` rejects asynchronously, `callWithDeadline` rejects instead of returning `{ ok: false, timedOut: false, error }`.\n- When `invokeRpc()` settles before `deadlineMs`, the timeout timer is never cleared, leaving a dangling timer handle.\n\n**Requirements:**\n- Validate `typeof invokeRpc === 'function'` (throw `TypeError`) and `Number.isFinite(deadlineMs) && deadlineMs > 0` (throw `RangeError`).\n- Accept optional timer functions `options?.setTimeout` and `options?.clearTimeout` (defaulting to global `setTimeout` and `clearTimeout`).\n- Race `invokeRpc()` against the deadline timer using `Promise.race`.\n- On fulfillment, return `{ ok: true, value }`.\n- On deadline expiration, return `{ ok: false, timedOut: true, error: 'Deadline exceeded' }`.\n- On RPC rejection, return `{ ok: false, timedOut: false, error: err instanceof Error ? err.message : String(err) }`.\n- Always clear the timer handle in `finally`.\n\n**Return Contract:**\n- Return a Promise resolving to `{ ok: true, value }` or `{ ok: false, timedOut: boolean, error: string }`.",
+      "inputHint": "Return { ok, value } or { ok: false, timedOut, error } with all timer handles cleaned up",
+      "starterCode": "function validateDeadlineArgs(invokeRpc, deadlineMs) {\n  if (typeof invokeRpc !== 'function') {\n    throw new TypeError('invokeRpc must be a function');\n  }\n  if (!Number.isFinite(deadlineMs) || deadlineMs <= 0) {\n    throw new RangeError('deadlineMs must be a positive finite number');\n  }\n}\n\nfunction callWithDeadline(invokeRpc, deadlineMs, options = {}) {\n  validateDeadlineArgs(invokeRpc, deadlineMs);\n  const schedule = options.setTimeout ?? setTimeout;\n  try {\n    const timeoutPromise = new Promise((_, reject) => {\n      schedule(() => reject(new Error('Deadline exceeded')), deadlineMs);\n    });\n    return Promise.race([invokeRpc().then((value) => ({ ok: true, value })), timeoutPromise]);\n  } catch (err) {\n    return Promise.resolve({\n      ok: false,\n      timedOut: err instanceof Error && err.message === 'Deadline exceeded',\n      error: err instanceof Error ? err.message : String(err),\n    });\n  }\n}\n\nmodule.exports = { callWithDeadline };\n",
+      "solutionCode": "function validateDeadlineArgs(invokeRpc, deadlineMs) {\n  if (typeof invokeRpc !== 'function') {\n    throw new TypeError('invokeRpc must be a function');\n  }\n  if (!Number.isFinite(deadlineMs) || deadlineMs <= 0) {\n    throw new RangeError('deadlineMs must be a positive finite number');\n  }\n}\n\nfunction formatDeadlineError(err, timeoutError) {\n  return {\n    ok: false,\n    timedOut: err === timeoutError,\n    error: err instanceof Error ? err.message : String(err),\n  };\n}\n\nasync function callWithDeadline(invokeRpc, deadlineMs, options = {}) {\n  validateDeadlineArgs(invokeRpc, deadlineMs);\n  const schedule = options.setTimeout ?? setTimeout;\n  const cancel = options.clearTimeout ?? clearTimeout;\n  let timerId;\n  const timeoutError = new Error('Deadline exceeded');\n  const timeoutPromise = new Promise((_, reject) => {\n    timerId = schedule(() => reject(timeoutError), deadlineMs);\n  });\n  try {\n    const value = await Promise.race([Promise.resolve().then(() => invokeRpc()), timeoutPromise]);\n    return { ok: true, value };\n  } catch (err) {\n    return formatDeadlineError(err, timeoutError);\n  } finally {\n    cancel(timerId);\n  }\n}\n\nmodule.exports = { callWithDeadline };\n",
+      "trapMutant": "async function callWithDeadline(invokeRpc, deadlineMs, options = {}) {\n  if (typeof invokeRpc !== 'function') {\n    throw new TypeError('invokeRpc must be a function');\n  }\n  if (!Number.isFinite(deadlineMs) || deadlineMs <= 0) {\n    throw new RangeError('deadlineMs must be a positive finite number');\n  }\n  const schedule = options.setTimeout ?? setTimeout;\n  const timeoutError = new Error('Deadline exceeded');\n  const timeoutPromise = new Promise((_, reject) => {\n    schedule(() => reject(timeoutError), deadlineMs);\n  });\n  try {\n    const value = await Promise.race([Promise.resolve().then(() => invokeRpc()), timeoutPromise]);\n    return { ok: true, value };\n  } catch (err) {\n    return {\n      ok: false,\n      timedOut: err === timeoutError,\n      error: err instanceof Error ? err.message : String(err),\n    };\n  }\n}\n\nmodule.exports = { callWithDeadline };\n",
+      "visibleTests": [
+        {
+          "name": "returns ok: true when RPC resolves before deadline",
+          "testCode": "const res = await callWithDeadline(async () => ({ status: 200 }), 40);\nassert.deepStrictEqual(res, { ok: true, value: { status: 200 } });"
+        },
+        {
+          "name": "catches async RPC rejection and returns timedOut: false",
+          "testCode": "const res = await callWithDeadline(async () => {\n  throw new Error('Upstream 503');\n}, 40);\nassert.deepStrictEqual(res, { ok: false, timedOut: false, error: 'Upstream 503' });"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "clears timer handle on fast resolution and fast rejection",
+          "testCode": "let nextId = 100;\nconst cleared = [];\nconst fakeSet = (_fn, _ms) => {\n  nextId += 1;\n  return nextId;\n};\nconst fakeClear = (id) => cleared.push(id);\nconst okRes = await callWithDeadline(async () => 'done', 500, { setTimeout: fakeSet, clearTimeout: fakeClear });\nassert.deepStrictEqual(okRes, { ok: true, value: 'done' });\nconst errRes = await callWithDeadline(async () => { throw new Error('boom'); }, 500, { setTimeout: fakeSet, clearTimeout: fakeClear });\nassert.deepStrictEqual(errRes, { ok: false, timedOut: false, error: 'boom' });\nassert.deepStrictEqual(cleared, [101, 102]);"
+        },
+        {
+          "name": "returns timedOut: true when deadline expires first",
+          "testCode": "const slowRpc = () => new Promise((resolve) => setTimeout(() => resolve('late'), 40));\nconst res = await callWithDeadline(slowRpc, 5);\nassert.deepStrictEqual(res, { ok: false, timedOut: true, error: 'Deadline exceeded' });"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Store `timerId` from `schedule(...)` and clear it in a `finally` block so fast settlements never leak timers."
+        },
+        {
+          "explain": "Await `Promise.race(...)` inside `try` instead of returning an unawaited promise so rejections enter `catch`."
+        },
+        {
+          "explain": "Use a sentinel `timeoutError` reference to distinguish deadline expiration (`timedOut: true`) from RPC errors (`timedOut: false`)."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "dangling-timeout-handle|direct|callWithDeadline",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "debugging"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            20
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "dangling-timeout-handle",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 5
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Trap & Diagnostic",
+      "unitCode": "PRG-T01-C01-U06",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U06-01/Q05_callWithDeadline.js"
+    }
+  ],
+  "blindSolve": [
+    {
+      "problemId": "Q01",
+      "passed": true
+    },
+    {
+      "problemId": "Q02",
+      "passed": true
+    },
+    {
+      "problemId": "Q03",
+      "passed": true
+    },
+    {
+      "problemId": "Q04",
+      "passed": true
+    },
+    {
+      "problemId": "Q05",
+      "passed": true
+    }
+  ],
+  "review": {
+    "verdict": "pass",
+    "note": "All 5 problems (L1-L3, including two fix-bug items) pass all leak, domain, rubric, scope, and trap checks."
+  },
+  "drillId": "DRL-PRG-T01-C01-U06-01",
+  "topicCode": "PRG-T01",
+  "chapterCode": "PRG-T01-C01",
+  "schemaVersion": "2.0-code",
+  "subject": "PRG",
+  "createdAt": "2026-11-16 22:00:10",
+  "localFilePath": "drills/data/PRG-T01-C01-U06/DRL-PRG-T01-C01-U06-01.json"
+}
