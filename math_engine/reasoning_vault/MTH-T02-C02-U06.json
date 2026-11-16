@@ -1,0 +1,160 @@
+{
+  "unitCode": "MTH-T02-C02-U06",
+  "topicTitle": "Absolute Value Functions",
+  "description": "Reasoning vault aligned with OpenStax Algebra and Trigonometry 2e §3.6: graph absolute value functions and solve absolute value equations, including branch and solution-count checks.",
+  "archetypes": [
+    {
+      "unitCode": "MTH-T02-C02-U06",
+      "archetypeKey": "t02-c02-u06-graph-absolute-value-transform",
+      "level": 1,
+      "name": "Graph and Read Absolute Value Transformations",
+      "source": "OpenStax Algebra and Trigonometry 2e §3.6 — Graphing an Absolute Value Function",
+      "coreConcept": "In g(x)=a|x-h|+k, the corner is (h,k), the sign of a selects the opening direction, and |a| sets the arm slope.",
+      "mentalModel": "Track the corner first, then use one point to set the arm steepness and the sign to choose the opening direction.",
+      "governingRelation": "g(x)=a|x-h|+k",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c02-u06-vertex-shift-sign-trap",
+          "description": "Reading |x-h| as a shift left by h instead of right by h.",
+          "trapFormula": "|x-h| ↦ vertex (-h,k)"
+        },
+        {
+          "trapTag": "t02-c02-u06-reflection-opening-trap",
+          "description": "Ignoring a negative outside factor and drawing an upward-opening graph.",
+          "trapFormula": "a|x-h| with a<0 ↦ upward V"
+        }
+      ],
+      "versatileDomains": [],
+      "usedContexts": [],
+      "figureBuilders": [
+        {
+          "fn": "build_function_graph_figure",
+          "args": {
+            "x_min": "h-4",
+            "x_max": "h+4"
+          },
+          "labels": {
+            "expr": "{a:g}*abs(x-{h:g})+{k:g}",
+            "label": "g(x)"
+          },
+          "title": "Absolute value transformation"
+        }
+      ]
+    },
+    {
+      "unitCode": "MTH-T02-C02-U06",
+      "archetypeKey": "t02-c02-u06-solve-absolute-value-equation",
+      "level": 1,
+      "name": "Solve Absolute Value Equations",
+      "source": "OpenStax Algebra and Trigonometry 2e §3.6 — Solving an Absolute Value Equation",
+      "coreConcept": "For |A(x)|=B, a negative B gives no real solutions; for nonnegative B, solve A(x)=B and A(x)=-B and report every valid input.",
+      "mentalModel": "An absolute value is a distance: a positive distance can come from two directions, zero from one point, and a negative distance from none.",
+      "governingRelation": "|A(x)|=B; B<0 ⇒ ∅; B≥0 ⇒ A(x)=B or A(x)=-B",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c02-u06-single-branch-trap",
+          "description": "Solving only A(x)=B and omitting the negative branch.",
+          "trapFormula": "|A(x)|=B ↦ A(x)=B"
+        },
+        {
+          "trapTag": "t02-c02-u06-negative-distance-solutions-trap",
+          "description": "Creating two branches even when the isolated absolute value equals a negative number.",
+          "trapFormula": "|A(x)|=-B ↦ A(x)=±B"
+        }
+      ],
+      "versatileDomains": [],
+      "usedContexts": [],
+      "figureNone": "This archetype solves a symbolic equation by splitting into cases; the equation and branch algebra provide all needed information without a graph."
+    },
+    {
+      "unitCode": "MTH-T02-C02-U06",
+      "archetypeKey": "t02-c02-u06-read-intercepts-from-vertex",
+      "level": 2,
+      "name": "Infer an Absolute Value Rule from a Vertex and Point",
+      "source": "OpenStax Algebra and Trigonometry 2e §3.6 — Writing an Equation for an Absolute Value Function Given a Graph",
+      "coreConcept": "The vertex determines h and k in a|x-h|+k; a second point determines the scale and whether the graph opens up or down.",
+      "mentalModel": "Place the corner first, then substitute a known point to solve for the signed arm slope.",
+      "governingRelation": "y=a|x-h|+k",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c02-u06-use-vertex-output-as-scale-trap",
+          "description": "Using the vertex output k as the arm scale instead of solving from the second point.",
+          "trapFormula": "a=(y-k)/|x-h| ↦ k"
+        },
+        {
+          "trapTag": "t02-c02-u06-ignore-point-side-trap",
+          "description": "Using a point's signed horizontal distance instead of its absolute distance from the vertex.",
+          "trapFormula": "|x-h| ↦ x-h"
+        }
+      ],
+      "versatileDomains": [],
+      "usedContexts": [],
+      "figureBuilders": [
+        {
+          "fn": "build_function_graph_figure",
+          "args": {
+            "x_min": "h-4",
+            "x_max": "h+4"
+          },
+          "labels": {
+            "expr": "{a:g}*abs(x-{h:g})+{k:g}",
+            "mark_x": "{point_x:g}",
+            "mark_labels": "({point_x:g}, {point_y:g})",
+            "label": "g(x)"
+          },
+          "title": "Absolute value rule from a point"
+        }
+      ]
+    },
+    {
+      "unitCode": "MTH-T02-C02-U06",
+      "archetypeKey": "t02-c02-u06-check-variable-right-side-branch",
+      "level": 2,
+      "name": "Check Branches in Absolute Value Equations",
+      "source": "OpenStax Algebra and Trigonometry 2e §3.6 — Solutions to Absolute Value Equations",
+      "coreConcept": "When the right side depends on x, each candidate from the two algebraic branches must still satisfy the original equation and its nonnegative-distance condition.",
+      "mentalModel": "Split the cases, solve each candidate, then substitute candidates back into the original equation to rule out invalid branches.",
+      "governingRelation": "|A(x)|=B(x) ⇒ A(x)=B(x) or A(x)=-B(x), with B(x)≥0",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c02-u06-accept-negative-right-side-branch-trap",
+          "description": "Keeping an algebraic branch candidate even though the equation's right side is negative there.",
+          "trapFormula": "x \text{ solves a branch but } B(x)<0 ↦ \text{keep }x"
+        },
+        {
+          "trapTag": "t02-c02-u06-check-only-one-branch-trap",
+          "description": "Checking one branch candidate but leaving the other untested in the original equation.",
+          "trapFormula": "A(x)=±B(x) ↦ \text{test only } A(x)=B(x)"
+        }
+      ],
+      "versatileDomains": [],
+      "usedContexts": [],
+      "figureNone": "This archetype focuses on checking algebraic candidates against the original equation; direct substitution and the sign condition are sufficient."
+    },
+    {
+      "unitCode": "MTH-T02-C02-U06",
+      "archetypeKey": "t02-c02-u06-solve-absolute-value-inequality",
+      "level": 2,
+      "name": "Solve Absolute Value Inequalities as Intervals",
+      "source": "OpenStax Algebra and Trigonometry 2e §3.6 — Absolute Value Functions (distance inequality extension)",
+      "coreConcept": "For a nonnegative bound c, |A(x)|≤c describes inputs whose signed expression lies between -c and c; the solution set is an interval or union of intervals.",
+      "mentalModel": "Translate the absolute distance into matching lower and upper bounds, solve the compound inequality, and preserve inclusive or exclusive endpoints.",
+      "governingRelation": "|A(x)|≤c ⇔ -c≤A(x)≤c, c≥0",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c02-u06-keep-one-inequality-branch-trap",
+          "description": "Keeping only the upper half of the compound inequality and omitting the lower-side solutions.",
+          "trapFormula": "|A(x)|≤c ↦ A(x)≤c"
+        },
+        {
+          "trapTag": "t02-c02-u06-open-closed-endpoint-trap",
+          "description": "Using open endpoints for a non-strict inequality or closed endpoints for a strict inequality.",
+          "trapFormula": "|A(x)|≤c ↦ (a,b)"
+        }
+      ],
+      "versatileDomains": [],
+      "usedContexts": [],
+      "figureNone": "A number-line figure showing the interval would directly reveal the requested interval answer; the algebraic compound inequality contains the needed structure."
+    }
+  ]
+}
