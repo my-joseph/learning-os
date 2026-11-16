@@ -1,0 +1,338 @@
+{
+  "unitCode": "MTH-T02-C04-U02",
+  "topicTitle": "Polynomial and Rational Functions",
+  "unitTitle": "Power Functions and Polynomial Functions",
+  "subject": "MATH",
+  "problems": [
+    {
+      "id": "Q01",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c04-u02-classify-power-function",
+      "context": "",
+      "prompt": "For the power function $f(x)=6x^{3/2}$, enter only the fixed exponent value as a fraction, without writing a variable name.",
+      "display": "f(x)=kx^p",
+      "plainText": "f(x)=k*x^p",
+      "givens": {
+        "k": 6,
+        "numerator": 3,
+        "denominator": 2
+      },
+      "constants": {},
+      "trapGivens": [
+        6,
+        2
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "3/2",
+        "tolerance": 0
+      },
+      "answerPlain": "3/2",
+      "answerDisplay": "\\\\frac{3}{2}",
+      "inputHint": "Enter the exponent as an exact fraction.",
+      "commonTrapTag": "t02-c04-u02-confuse-coefficient-and-exponent-trap",
+      "trapDerivation": "6*2/2",
+      "trapValue": "6",
+      "verify": {
+        "source": "3/2",
+        "trapValue": "6"
+      },
+      "checkpointHint": "Separate the fixed coefficient from the exponent on the variable base.",
+      "references": [
+        "MTH-T02-C04-U02"
+      ],
+      "steps": [
+        {
+          "latex": "f(x)=6x^{3/2}",
+          "explain": "Match the function to the single-term power form."
+        },
+        {
+          "latex": "p=\\\\frac{3}{2}",
+          "explain": "Read the fixed exponent attached to the variable base.",
+          "val": "3/2"
+        }
+      ],
+      "verificationLevel": "partial",
+      "review": {
+        "verdict": "pass",
+        "note": "The exact exponent is unambiguous and correct; the coefficient-confusion trap fits the archetype and L1 brief, and the steps and hints do not leak the answer."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C04-U02",
+          "title": "Power Functions and Polynomial Functions",
+          "notionUrl": "https://www.notion.so/4013818f8ba08112ae07efae177e6abf"
+        }
+      ],
+      "unitCode": "MTH-T02-C04-U02",
+      "fingerprint": "t02-c04-u02-confuse-coefficient-and-exponent-trap|direct|f(x)=k*x^p",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c04-u02-confuse-coefficient-and-exponent-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 11
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 1 - Foundation"
+    },
+    {
+      "id": "Q03",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c04-u02-power-end-behavior",
+      "context": "",
+      "prompt": "For $f(x)=-2x^4$, what does $f(x)$ approach as $x$ approaches positive infinity?",
+      "display": "f(x)=-2x^4;\\\\quad x\\\\to\\\\infty",
+      "plainText": "f(x)=-2*x^4 as x->oo",
+      "givens": {
+        "k": -2,
+        "n": 4
+      },
+      "constants": {},
+      "trapGivens": [
+        2,
+        4
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "-oo",
+        "tolerance": 0
+      },
+      "answerPlain": "-oo",
+      "answerDisplay": "-\\\\infty",
+      "inputHint": "Use oo to represent infinity.",
+      "commonTrapTag": "t02-c04-u02-ignore-leading-sign-trap",
+      "trapDerivation": "2*oo^4",
+      "trapValue": "oo",
+      "verify": {
+        "source": "-oo",
+        "trapValue": "oo"
+      },
+      "checkpointHint": "Use the coefficient sign after deciding whether the exponent preserves or reverses direction.",
+      "references": [
+        "MTH-T02-C04-U02"
+      ],
+      "figureWaiver": "The graph would show the requested limiting direction directly.",
+      "steps": [
+        {
+          "latex": "4\\\\text{ is even}",
+          "explain": "An even power is positive at large positive inputs."
+        },
+        {
+          "latex": "-2<0",
+          "explain": "The negative coefficient makes the output negative."
+        },
+        {
+          "latex": "f(x)\\\\to-\\\\infty",
+          "explain": "The magnitude grows while the sign stays negative.",
+          "val": "-oo"
+        }
+      ],
+      "verificationLevel": "partial",
+      "review": {
+        "verdict": "pass",
+        "note": "The requested right-end limit is unambiguous and correct; the leading-sign trap fits the archetype and L2 brief, and the steps and hints do not leak the answer."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C04-U02",
+          "title": "Power Functions and Polynomial Functions",
+          "notionUrl": "https://www.notion.so/4013818f8ba08112ae07efae177e6abf"
+        }
+      ],
+      "unitCode": "MTH-T02-C04-U02",
+      "fingerprint": "t02-c04-u02-ignore-leading-sign-trap|direct|f(x)=-#*x^# as x->oo",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c04-u02-ignore-leading-sign-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 2 - Standard Exam"
+    },
+    {
+      "id": "Q04",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c04-u02-read-degree-leading-term",
+      "context": "",
+      "prompt": "What is the degree of $h(x)=2x^3(3x^4)-5x^2+1$ after simplifying?",
+      "display": "x^m x^n=x^{m+n}",
+      "plainText": "x^m*x^n=x^(m+n)",
+      "givens": {
+        "a": 2,
+        "m": 3,
+        "b": 3,
+        "n": 4,
+        "c": -5,
+        "r": 2,
+        "constant": 1
+      },
+      "constants": {
+        "one": 1
+      },
+      "trapGivens": [
+        4,
+        1
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "7",
+        "tolerance": 0
+      },
+      "answerPlain": "7",
+      "answerDisplay": "7",
+      "inputHint": "Enter the greatest exponent after simplifying the product.",
+      "commonTrapTag": "t02-c04-u02-unsimplified-degree-trap",
+      "trapDerivation": "4*1",
+      "trapValue": "4",
+      "verify": {
+        "source": "3+4",
+        "trapValue": "4"
+      },
+      "checkpointHint": "When multiplying powers with the same base, combine the exponents before comparing terms.",
+      "references": [
+        "MTH-T02-C04-U02"
+      ],
+      "figureWaiver": "A graph would reveal the general degree behavior; the task is to simplify a leading algebraic term.",
+      "steps": [
+        {
+          "latex": "2x^3(3x^4)=6x^{3+4}",
+          "explain": "Multiply the coefficients and add exponents for the same base."
+        },
+        {
+          "latex": "6x^7-5x^2+1",
+          "explain": "Write the polynomial after simplifying the product."
+        },
+        {
+          "latex": "degree(h)=7",
+          "explain": "The highest exponent determines the degree.",
+          "val": "7"
+        }
+      ],
+      "verificationLevel": "partial",
+      "review": {
+        "verdict": "pass",
+        "note": "The simplified degree is unambiguous and correct; the unsimplified-degree trap fits the archetype and reverse L2 brief, and the steps and hints do not leak the answer."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C04-U02",
+          "title": "Power Functions and Polynomial Functions",
+          "notionUrl": "https://www.notion.so/4013818f8ba08112ae07efae177e6abf"
+        }
+      ],
+      "unitCode": "MTH-T02-C04-U02",
+      "fingerprint": "t02-c04-u02-unsimplified-degree-trap|reverse|x^m*x^n=x^(m+n)",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c04-u02-unsimplified-degree-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 2 - Standard Exam"
+    }
+  ],
+  "drillId": "DRL-MTH-T02-C04-U02-01",
+  "title": "Power Functions and Polynomial Functions — Verified Math Drill (3 Qs)",
+  "topicCode": "MTH-T02",
+  "chapterCode": "MTH-T02-C04",
+  "schemaVersion": "2.0-math",
+  "createdAt": "2026-11-17 06:13:03",
+  "config": {
+    "questionCount": 3,
+    "difficulty": "ALL",
+    "difficultyMode": "AI Synthesized Reasoning Mode"
+  },
+  "localFilePath": "drills/data/MTH-T02-C04-U02/DRL-MTH-T02-C04-U02-01.json"
+}
