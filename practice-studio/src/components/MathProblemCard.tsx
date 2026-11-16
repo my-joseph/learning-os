@@ -21,6 +21,7 @@ import { FormattedText } from "./FormattedText";
 import { StepRow } from "./StepRow";
 import { MathFigure } from "./MathFigure";
 import { LineChoicePrompt, parseLineChoicePrompt } from "./LineChoicePrompt";
+import { hasCheckpointHint, isContextSlug } from "@/lib/studioRules";
 
 interface MathProblemCardProps {
   problem: Problem;
@@ -32,7 +33,7 @@ interface MathProblemCardProps {
   onSkip?: () => void;
   onToggleStepHighlight: (stepIdx: number) => void;
   onMarkDivergedStep: (stepIdx: number) => void;
-  onSetScore: (score: number) => void;
+  onSetScore: (score: number | null) => void;
   onToggleMistakeTag: (tagId: string) => void;
   onMistakeNoteChange: (note: string) => void;
   onResetProblem: () => void;
@@ -168,11 +169,11 @@ export const MathProblemCard: React.FC<MathProblemCardProps> = ({
         <div className="flex flex-wrap items-center gap-2">
           <span className="font-bold text-base text-slate-900 dark:text-white">
             Problem {index + 1}{" "}
-            <span className="text-slate-500 dark:text-slate-400 font-normal text-sm">
+            <span className="text-slate-600 dark:text-slate-400 font-normal text-sm">
               ({problem.id})
             </span>
           </span>
-          {problem.context && (
+          {problem.context && !isContextSlug(problem.context) && (
             <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-amber-50 dark:bg-amber-500/10 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-500/30">
               <FormattedText text={problem.context} />
             </span>
@@ -192,7 +193,7 @@ export const MathProblemCard: React.FC<MathProblemCardProps> = ({
             type="button"
             title="Reset this question"
             onClick={onResetProblem}
-            className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-slate-500 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 border border-transparent hover:border-rose-200 dark:hover:border-rose-500/30 transition-colors"
+            className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-slate-600 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 border border-transparent hover:border-rose-200 dark:hover:border-rose-500/30 transition-colors"
           >
             <RotateCcw className="w-4 h-4" />
           </button>
@@ -254,7 +255,7 @@ export const MathProblemCard: React.FC<MathProblemCardProps> = ({
                       : ""
                   }`}
                 >
-                  <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 overflow-x-auto">
+                  <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400 overflow-x-auto">
                     <span className="font-medium shrink-0">Plain-Text / CAS:</span>
                     <code className="font-mono text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-200/60 dark:border-indigo-800/40 px-2 py-0.5 rounded">
                       {problem.plainText}
@@ -329,6 +330,7 @@ export const MathProblemCard: React.FC<MathProblemCardProps> = ({
               }
             }}
             placeholder={getSafeMathPlaceholder(problem.inputHint, problem)}
+            aria-label={`Answer for question ${problem.id}`}
             className="flex-1 min-w-[240px] h-10 font-mono text-sm bg-white dark:bg-[#1d2333] text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-[#2c354d] rounded-xl px-3.5 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 placeholder:text-slate-400 dark:placeholder:text-slate-500"
           />
         )}
@@ -352,7 +354,7 @@ export const MathProblemCard: React.FC<MathProblemCardProps> = ({
           )}
         </button>
 
-        <button
+        {hasCheckpointHint(problem.checkpointHint) && <button
           type="button"
           onClick={() => {
             if (!showHint && onHintRevealed) {
@@ -364,7 +366,7 @@ export const MathProblemCard: React.FC<MathProblemCardProps> = ({
         >
           <Lightbulb className="w-4 h-4 text-amber-500 dark:text-amber-400" />
           <span>Hint</span>
-        </button>
+        </button>}
 
         <button
           type="button"
@@ -406,7 +408,7 @@ export const MathProblemCard: React.FC<MathProblemCardProps> = ({
       </div>
 
       {/* Checkpoint Hint */}
-      {showHint && (
+      {showHint && hasCheckpointHint(problem.checkpointHint) && (
         <div className="bg-amber-50 dark:bg-[#121826] border border-amber-200 dark:border-amber-500/30 rounded-xl p-3.5 mb-4 text-sm text-amber-900 dark:text-amber-200">
           <strong className="text-amber-700 dark:text-amber-400 font-semibold">
             Intermediate Checkpoint:
@@ -447,7 +449,7 @@ export const MathProblemCard: React.FC<MathProblemCardProps> = ({
                       : "bg-rose-100 dark:bg-rose-900/60 text-rose-800 dark:text-rose-300"
                   }`}
                 >
-                  {c.label}: {c.ok ? "PASS" : "FAIL"}
+                  <FormattedText text={c.label} />: {c.ok ? "PASS" : "FAIL"}
                 </span>
               ))}
             </div>
@@ -501,7 +503,7 @@ export const MathProblemCard: React.FC<MathProblemCardProps> = ({
           <div className="flex items-center gap-1.5">
             <span className="text-slate-600 dark:text-slate-400 font-medium mr-1">Score:</span>
             {[
-              { val: 1, label: "1.0", activeCls: "bg-emerald-600 text-white border-emerald-600" },
+              { val: 1, label: "1.0", activeCls: "bg-emerald-700 text-white border-emerald-700" },
               { val: 0.5, label: "0.5", activeCls: "bg-amber-600 text-white border-amber-600" },
               { val: 0, label: "0", activeCls: "bg-rose-600 text-white border-rose-600" },
             ].map((btn) => (

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
+import { THEME_INIT_SCRIPT } from "@/lib/studioRules";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -28,21 +29,7 @@ export default function RootLayout({
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                try {
-                  var saved = localStorage.getItem('practice_studio_theme');
-                  var theme = saved ? saved : 'light';
-                  if (theme === 'light') {
-                    document.documentElement.classList.add('light');
-                    document.documentElement.classList.remove('dark');
-                  } else {
-                    document.documentElement.classList.add('dark');
-                    document.documentElement.classList.remove('light');
-                  }
-                } catch (e) {}
-              })();
-            `,
+            __html: THEME_INIT_SCRIPT,
           }}
         />
       </head>

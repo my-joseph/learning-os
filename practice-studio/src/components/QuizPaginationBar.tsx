@@ -61,7 +61,7 @@ export const QuizPaginationBar: React.FC<QuizPaginationBarProps> = ({
 
             if (isIndependentFull) {
               colorCls =
-                "bg-emerald-600 hover:bg-emerald-500 text-white font-bold border-emerald-500 shadow-sm";
+                "bg-emerald-700 hover:bg-emerald-800 text-white font-bold border-emerald-700 shadow-sm";
               statusLabel = `Score: ${scoreVal}`;
             } else if (isPartialOrAssisted) {
               colorCls =
@@ -129,7 +129,7 @@ export const QuizPaginationBar: React.FC<QuizPaginationBarProps> = ({
           aria-label="Pre-Sync Review & Summary"
           className={`inline-flex items-center justify-center w-8 h-8 rounded-lg transition-all ${
             viewMode === "review"
-              ? "bg-emerald-600 text-white shadow-sm"
+              ? "bg-emerald-700 text-white shadow-sm"
               : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
           }`}
         >

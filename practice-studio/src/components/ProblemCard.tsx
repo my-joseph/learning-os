@@ -7,6 +7,7 @@ import { MathProblemCard } from "./MathProblemCard";
 
 interface ProblemCardProps {
   problem: Problem;
+  drillId?: string;
   index: number;
   subject?: "MATH" | "PRG";
   mistakeTags: MistakeTag[];
@@ -16,7 +17,7 @@ interface ProblemCardProps {
   onSkip?: () => void;
   onToggleStepHighlight: (stepIdx: number) => void;
   onMarkDivergedStep: (stepIdx: number) => void;
-  onSetScore: (score: number) => void;
+  onSetScore: (score: number | null) => void;
   onToggleMistakeTag: (tagId: string) => void;
   onMistakeNoteChange: (note: string) => void;
   onResetProblem: () => void;

@@ -27,6 +27,7 @@ import {
   PenLine,
   Flag,
   Loader2,
+  Copy,
 } from "lucide-react";
 import {
   Problem,
@@ -38,6 +39,7 @@ import {
 import { VSCodeBlock } from "./VSCodeBlock";
 import { FormattedText } from "./FormattedText";
 import { canShowReferenceSolution } from "@/lib/reviewGuard";
+import { getPrgScore, getReviewRequest, hasCheckpointHint, isContextSlug } from "@/lib/studioRules";
 
 const ARCHETYPE_CONFIG: Record<
   EngineeringArchetype,
@@ -82,6 +84,7 @@ const ARCHETYPE_CONFIG: Record<
 
 interface CodeProblemCardProps {
   problem: Problem;
+  drillId?: string;
   index: number;
   mistakeTags: MistakeTag[];
   activeStep: number | null;
@@ -90,7 +93,7 @@ interface CodeProblemCardProps {
   onSkip?: () => void;
   onToggleStepHighlight: (stepIdx: number) => void;
   onMarkDivergedStep: (stepIdx: number) => void;
-  onSetScore: (score: number) => void;
+  onSetScore: (score: number | null) => void;
   onToggleMistakeTag: (tagId: string) => void;
   onMistakeNoteChange: (note: string) => void;
   onResetProblem: () => void;
@@ -129,6 +132,7 @@ const getSafePlaceholder = (hint?: string, problem?: Problem): string => {
 
 export const CodeProblemCard: React.FC<CodeProblemCardProps> = ({
   problem,
+  drillId = "",
   index,
   mistakeTags,
   activeStep,
@@ -279,19 +283,22 @@ export const CodeProblemCard: React.FC<CodeProblemCardProps> = ({
     try {
       let latestCode = userCode;
       if (problem.workspaceFile) {
-        try {
-          const diskRes = await fetch(
-            `/api/workspace?file=${encodeURIComponent(problem.workspaceFile)}`
-          );
-          if (diskRes.ok) {
-            const diskData = await diskRes.json();
-            if (typeof diskData.content === "string" && diskData.content.trim()) {
-              latestCode = diskData.content;
-              setUserCode(latestCode);
-            }
-          }
-        } catch {
-          // fallback to current userCode
+        const materializeRes = await fetch("/api/workspace", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ drillId }),
+        });
+        if (!materializeRes.ok) throw new Error("Could not create the local workspace.");
+        const diskRes = await fetch(
+          `/api/workspace?file=${encodeURIComponent(problem.workspaceFile)}&drillId=${encodeURIComponent(drillId)}`
+        );
+        if (!diskRes.ok) throw new Error("Could not read the workspace file from disk.");
+        const diskData = await diskRes.json();
+        if (typeof diskData.content !== "string") throw new Error("Workspace file is unavailable.");
+        latestCode = diskData.content;
+        setUserCode(latestCode);
+        if (!latestCode.trim()) {
+          throw new Error("The workspace file is empty. Implement your solution in VS Code or Cursor first.");
         }
       }
 
@@ -299,7 +306,7 @@ export const CodeProblemCard: React.FC<CodeProblemCardProps> = ({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          userCode: latestCode,
+          userCode: problem.workspaceFile ? undefined : latestCode,
           workspaceFile: problem.workspaceFile,
           visibleTests: problem.visibleTests || [],
           hiddenTests: problem.hiddenTests || [],
@@ -309,9 +316,7 @@ export const CodeProblemCard: React.FC<CodeProblemCardProps> = ({
       const report: TestRunReport = await res.json();
       setTestReport(report);
 
-      if (typeof report.score === "number") {
-        onSetScore(report.score);
-      }
+      onSetScore(getPrgScore(report, problem.state.reviews));
     } catch (err: unknown) {
       const errMsg = err instanceof Error ? err.message : String(err);
       setTestReport({
@@ -355,12 +360,12 @@ export const CodeProblemCard: React.FC<CodeProblemCardProps> = ({
 
           <span className="font-bold text-base text-slate-900 dark:text-white">
             Problem {index + 1}{" "}
-            <span className="text-slate-500 dark:text-slate-400 font-normal text-sm">
+            <span className="text-slate-600 dark:text-slate-400 font-normal text-sm">
               ({problem.id})
             </span>
           </span>
 
-          {problem.context && (
+          {problem.context && !isContextSlug(problem.context) && (
             <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-cyan-50 dark:bg-cyan-500/10 text-cyan-800 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-500/30">
               <FormattedText text={problem.context} />
             </span>
@@ -380,7 +385,7 @@ export const CodeProblemCard: React.FC<CodeProblemCardProps> = ({
             type="button"
             title="Reset this question"
             onClick={handleResetEntireProblem}
-            className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-slate-500 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 border border-transparent hover:border-rose-200 dark:hover:border-rose-500/30 transition-colors"
+            className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-slate-600 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 border border-transparent hover:border-rose-200 dark:hover:border-rose-500/30 transition-colors"
           >
             <RotateCcw className="w-4 h-4" />
           </button>
@@ -406,7 +411,7 @@ export const CodeProblemCard: React.FC<CodeProblemCardProps> = ({
                   Acceptance Criteria &amp; Test Cases ({problem.visibleTests.length})
                 </span>
                 {workspacePath && (
-                  <span className="text-xs font-mono text-slate-500 dark:text-slate-400 truncate max-w-xs">
+                  <span className="text-xs font-mono text-slate-600 dark:text-slate-400 truncate max-w-xs">
                     {workspacePath}
                   </span>
                 )}
@@ -463,7 +468,7 @@ export const CodeProblemCard: React.FC<CodeProblemCardProps> = ({
                 type="button"
                 onClick={handleSyncAndRunTests}
                 disabled={isRunningTests}
-                className="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold transition-all shadow-sm disabled:opacity-50"
+                className="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white text-sm font-semibold transition-all shadow-sm disabled:opacity-50"
               >
                 {isRunningTests ? (
                   <>
@@ -473,7 +478,7 @@ export const CodeProblemCard: React.FC<CodeProblemCardProps> = ({
                 ) : (
                   <>
                     <Play className="w-4 h-4 fill-white" />
-                    <span>Sync &amp; Run Tests (Submit)</span>
+                    <span>Run Tests</span>
                   </>
                 )}
               </button>
@@ -499,14 +504,14 @@ export const CodeProblemCard: React.FC<CodeProblemCardProps> = ({
                 <span>{showDiskPreview ? "Hide Disk File" : `View ${filename}`}</span>
               </button>
 
-              <button
+              {hasCheckpointHint(problem.checkpointHint) && <button
                 type="button"
                 onClick={() => setShowHint(!showHint)}
                 className="inline-flex items-center gap-1.5 h-9 px-3 rounded-xl bg-white dark:bg-[#1d2333] hover:bg-amber-50 dark:hover:bg-amber-500/10 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-[#2c354d] text-xs font-medium transition-colors"
               >
                 <Lightbulb className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />
                 <span>Hint</span>
-              </button>
+              </button>}
 
               <button
                 type="button"
@@ -538,7 +543,7 @@ export const CodeProblemCard: React.FC<CodeProblemCardProps> = ({
                 onClick={handleResetCode}
                 disabled={isResettingCode}
                 title="Reset local file on disk back to starter code"
-                className="inline-flex items-center gap-1 h-9 px-2.5 rounded-xl bg-white dark:bg-[#1d2333] hover:bg-rose-50 dark:hover:bg-rose-500/10 text-slate-500 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-300 border border-slate-200 dark:border-[#2c354d] text-xs font-medium transition-colors disabled:opacity-50"
+                className="inline-flex items-center gap-1 h-9 px-2.5 rounded-xl bg-white dark:bg-[#1d2333] hover:bg-rose-50 dark:hover:bg-rose-500/10 text-slate-600 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-300 border border-slate-200 dark:border-[#2c354d] text-xs font-medium transition-colors disabled:opacity-50"
               >
                 <RotateCcw className={`w-3.5 h-3.5 ${isResettingCode ? "animate-spin" : ""}`} />
                 <span>Reset Starter</span>
@@ -573,7 +578,7 @@ export const CodeProblemCard: React.FC<CodeProblemCardProps> = ({
                   )}
                   <span>
                     {testReport.allPassed
-                      ? "All Test Cases Passed! (Score Updated to 1.0)"
+                      ? "All Test Cases Passed"
                       : `Tests Failed: ${testReport.passedCount} / ${testReport.totalCount} Passed`}
                   </span>
                 </div>
@@ -618,6 +623,24 @@ export const CodeProblemCard: React.FC<CodeProblemCardProps> = ({
                   </div>
                 ))}
               </div>
+            </div>
+          )}
+          {testReport?.allPassed && problem.state.reviews?.at(-1)?.verdict !== "pass" && (
+            <div className="flex flex-wrap items-center gap-3 rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950 dark:border-amber-500/40 dark:bg-amber-950/30 dark:text-amber-100">
+              <span>Tests passed — ask for review:</span>
+              <code className="font-mono">{getReviewRequest(drillId, problem.id)}</code>
+              <button
+                type="button"
+                onClick={() => {
+                  void navigator.clipboard.writeText(getReviewRequest(drillId, problem.id));
+                  setCopiedCmd(true);
+                  setTimeout(() => setCopiedCmd(false), 1500);
+                }}
+                className="inline-flex items-center gap-1.5 rounded-lg bg-amber-800 px-3 py-1.5 font-semibold text-white hover:bg-amber-900"
+              >
+                {copiedCmd ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                {copiedCmd ? "Copied" : "Copy review command"}
+              </button>
             </div>
           )}
         </div>
@@ -697,6 +720,7 @@ export const CodeProblemCard: React.FC<CodeProblemCardProps> = ({
                     }
                   }}
                   placeholder={getSafePlaceholder(problem.inputHint, problem)}
+                  aria-label={`Answer for question ${problem.id}`}
                   className="flex-1 bg-transparent font-mono text-sm text-slate-900 dark:text-slate-100 focus:outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500"
                 />
               </div>
@@ -728,14 +752,14 @@ export const CodeProblemCard: React.FC<CodeProblemCardProps> = ({
               )}
             </button>
 
-            <button
+            {hasCheckpointHint(problem.checkpointHint) && <button
               type="button"
               onClick={() => setShowHint(!showHint)}
               className="inline-flex items-center gap-1.5 h-10 px-3.5 rounded-xl bg-slate-100 dark:bg-[#1a2133] hover:bg-amber-50 dark:hover:bg-amber-500/10 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-[#2b3752] text-sm font-medium transition-colors"
             >
               <Lightbulb className="w-4 h-4 text-amber-500 dark:text-amber-400" />
               <span>Hint</span>
-            </button>
+            </button>}
 
             <button
               type="button"
@@ -795,7 +819,7 @@ export const CodeProblemCard: React.FC<CodeProblemCardProps> = ({
                           : "bg-rose-100 dark:bg-rose-900/60 text-rose-800 dark:text-rose-300"
                       }`}
                     >
-                      {c.label}: {c.ok ? "PASS" : "FAIL"}
+                      <FormattedText text={c.label} />: {c.ok ? "PASS" : "FAIL"}
                     </span>
                   ))}
                 </div>
@@ -819,7 +843,7 @@ export const CodeProblemCard: React.FC<CodeProblemCardProps> = ({
       )}
 
       {/* Checkpoint Hint Accordion */}
-      {showHint && (
+      {showHint && hasCheckpointHint(problem.checkpointHint) && (
         <div className="bg-amber-50 dark:bg-[#141b2b] border border-amber-200 dark:border-amber-500/30 rounded-xl p-3.5 mb-4 text-sm text-amber-900 dark:text-amber-200">
           <strong className="text-amber-700 dark:text-amber-400 font-semibold block mb-1">
             Mental Model Checkpoint:
@@ -901,10 +925,10 @@ export const CodeProblemCard: React.FC<CodeProblemCardProps> = ({
       {/* Unified Scoring, Mistake Tags & Custom Mistake Note Footer */}
       <div className="pt-3.5 border-t border-slate-200 dark:border-[#263147] space-y-3 text-xs">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-1.5">
+          {!isKata && <div className="flex items-center gap-1.5">
             <span className="text-slate-600 dark:text-slate-400 font-medium mr-1">Score:</span>
             {[
-              { val: 1, label: "1.0", activeCls: "bg-emerald-600 text-white border-emerald-600" },
+              { val: 1, label: "1.0", activeCls: "bg-emerald-700 text-white border-emerald-700" },
               { val: 0.5, label: "0.5", activeCls: "bg-amber-600 text-white border-amber-600" },
               { val: 0, label: "0", activeCls: "bg-rose-600 text-white border-rose-600" },
             ].map((btn) => (
@@ -921,7 +945,7 @@ export const CodeProblemCard: React.FC<CodeProblemCardProps> = ({
                 {btn.label}
               </button>
             ))}
-          </div>
+          </div>}
 
           <div className="flex flex-wrap items-center gap-1.5">
             <span className="text-slate-600 dark:text-slate-400 font-medium mr-1">Mistake Tags:</span>

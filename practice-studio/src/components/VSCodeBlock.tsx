@@ -249,7 +249,7 @@ export const VSCodeBlock: React.FC<VSCodeBlockProps> = ({
       </div>
 
       {/* Breadcrumbs Bar */}
-      <div className="px-4 py-1 bg-slate-50/70 dark:bg-[#1e1e1e] border-b border-slate-200 dark:border-[#2d2d2d] text-xs font-sans text-slate-500 flex items-center gap-1.5 select-none">
+      <div className="px-4 py-1 bg-slate-50/70 dark:bg-[#1e1e1e] border-b border-slate-200 dark:border-[#2d2d2d] text-xs font-sans text-slate-600 flex items-center gap-1.5 select-none">
         <FileCode2 className="w-3.5 h-3.5 text-slate-400" />
         <span>src</span>
         <span>&rsaquo;</span>

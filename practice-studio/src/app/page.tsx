@@ -123,16 +123,8 @@ export default function PracticeStudioPage() {
 
   useEffect(() => {
     try {
-      const saved = localStorage.getItem("practice_studio_theme") as "light" | "dark" | null;
-      const initial = saved || "dark";
+      const initial = document.documentElement.classList.contains("light") ? "light" : "dark";
       setTheme(initial);
-      if (initial === "light") {
-        document.documentElement.classList.add("light");
-        document.documentElement.classList.remove("dark");
-      } else {
-        document.documentElement.classList.add("dark");
-        document.documentElement.classList.remove("light");
-      }
     } catch {}
   }, []);
 
@@ -461,7 +453,7 @@ export default function PracticeStudioPage() {
   };
 
   // Set Manual Score
-  const handleSetScore = (probId: string, score: number) => {
+  const handleSetScore = (probId: string, score: number | null) => {
     if (!currentDrill) return;
     const updated = {
       ...currentDrill,
@@ -769,6 +761,11 @@ export default function PracticeStudioPage() {
         {/* ===================================================================== */}
         {/* SINGLE UNIFIED STICKY WORKSPACE BAR (Strictly 2 Rows, Auto-hides)     */}
         {/* ===================================================================== */}
+        {viewMode === "quiz" && (
+          <h1 className="sr-only">
+            {currentDrill ? `${currentDrill.unitTitle || currentDrill.unitCode} Practice` : "Practice Studio"}
+          </h1>
+        )}
         <header
           className={`sticky top-2 z-50 bg-white/95 dark:bg-[#151924]/95 backdrop-blur-md border border-slate-200 dark:border-[#2c354d] rounded-2xl p-3.5 mb-5 shadow-md transition-all duration-300 ease-in-out ${
             showHeader
@@ -777,7 +774,7 @@ export default function PracticeStudioPage() {
           }`}
         >
           {/* Row 1: Smart Drill Switcher + Notion Unit + [+ Generate] | Score + Reset + Theme */}
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3">
             {/* Left Zone: Smart Drill Switcher & Generate Popover */}
             <div className="flex items-center gap-2.5 min-w-0">
               {/* Smart Drill Switcher */}
@@ -799,14 +796,14 @@ export default function PracticeStudioPage() {
                         : "Select Practice Drill"}
                     </div>
                     {currentDrill && (
-                      <div className="text-[11px] font-mono leading-tight text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                      <div className="text-[11px] font-mono leading-tight text-slate-600 dark:text-slate-400 flex items-center gap-1.5">
                         <span>{currentDrill.drillId}</span>
                         <span>·</span>
                         <span>{currentDrill.problems.length} Qs</span>
                       </div>
                     )}
                   </div>
-                  <ChevronDown className="w-4 h-4 text-slate-500 dark:text-slate-400 shrink-0 ml-0.5" />
+                  <ChevronDown className="w-4 h-4 text-slate-600 dark:text-slate-400 shrink-0 ml-0.5" />
                 </button>
 
                 {/* Searchable & Filterable Drill Popover */}
@@ -865,7 +862,7 @@ export default function PracticeStudioPage() {
                     {/* Drills List */}
                     <div className="max-h-80 overflow-y-auto space-y-2 pr-1">
                       {filteredDrills.length === 0 ? (
-                        <div className="py-6 text-center text-xs text-slate-500 dark:text-slate-400">
+                        <div className="py-6 text-center text-xs text-slate-600 dark:text-slate-400">
                           No drills match the selected filter.
                         </div>
                       ) : (
@@ -904,7 +901,7 @@ export default function PracticeStudioPage() {
                                     {d.unitTitle || d.unitCode}
                                   </span>
                                 </div>
-                                <div className="text-[11px] font-mono text-slate-500 dark:text-slate-400">
+                                <div className="text-[11px] font-mono text-slate-600 dark:text-slate-400">
                                   {d.drillId} · {d.unitCode} · {d.questionCount} Qs
                                 </div>
                               </div>
@@ -926,7 +923,7 @@ export default function PracticeStudioPage() {
                                   )}
                                   <span>{d.practiceStatus || "Ready"}</span>
                                 </span>
-                                <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400">
+                                <span className="text-[11px] font-mono text-slate-600 dark:text-slate-400">
                                   Score: {d.score ?? 0}/{d.maxScore ?? d.questionCount}
                                 </span>
                               </div>
@@ -1079,7 +1076,7 @@ export default function PracticeStudioPage() {
             </div>
 
             {/* Right Zone: Live Score + Reset + Theme (Strictly single line, no redundant Review & Sync button) */}
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="flex items-center justify-end gap-2 shrink-0">
               <span className="inline-flex items-center h-9 text-xs font-bold px-3 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30 whitespace-nowrap">
                 Score: {liveScore} / {maxScore} ({accuracyPct}%)
               </span>
@@ -1147,7 +1144,7 @@ export default function PracticeStudioPage() {
             <button
               type="button"
               onClick={() => setStatus(null)}
-              className="inline-flex items-center justify-center w-7 h-7 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+              className="inline-flex items-center justify-center w-7 h-7 rounded-lg text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
             >
               <X className="w-4 h-4" />
             </button>
@@ -1202,6 +1199,7 @@ export default function PracticeStudioPage() {
                         handleToggleStepHighlight(prob.id, stepIdx)
                       }
                       onMarkDivergedStep={(stepIdx) => handleMarkDivergedStep(prob.id, stepIdx)}
+                      drillId={currentDrill.drillId}
                       onSetScore={(score) => handleSetScore(prob.id, score)}
                       onToggleMistakeTag={(tagId) => handleToggleMistakeTag(prob.id, tagId)}
                       onMistakeNoteChange={(note) => handleMistakeNoteChange(prob.id, note)}
@@ -1223,7 +1221,7 @@ export default function PracticeStudioPage() {
                         <span>Previous Question</span>
                       </button>
 
-                      <div className="text-xs font-mono text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                      <div className="text-xs font-mono text-slate-600 dark:text-slate-400 flex items-center gap-1.5">
                         <span>Question</span>
                         <strong className="text-slate-900 dark:text-white bg-slate-100 dark:bg-[#1c2438] px-2.5 py-1 rounded-lg border border-slate-200 dark:border-[#2c3852]">
                           {currentProblemIndex + 1}
@@ -1238,7 +1236,7 @@ export default function PracticeStudioPage() {
                         <button
                           type="button"
                           onClick={() => setViewMode("review")}
-                          className="inline-flex items-center gap-2 h-10 px-5 rounded-xl text-sm font-semibold bg-emerald-600 hover:bg-emerald-500 text-white transition-colors shadow-sm"
+                          className="inline-flex items-center gap-2 h-10 px-5 rounded-xl text-sm font-semibold bg-emerald-700 hover:bg-emerald-800 text-white transition-colors shadow-sm"
                         >
                           <ClipboardCheck className="w-4 h-4" />
                           <span>Review &amp; Sync to Notion</span>
@@ -1290,7 +1288,7 @@ export default function PracticeStudioPage() {
                     type="button"
                     onClick={handleConfirmSyncToNotion}
                     disabled={isSyncing}
-                    className="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-xs md:text-sm font-bold transition-colors shadow-sm"
+                    className="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-emerald-700 hover:bg-emerald-800 disabled:opacity-50 text-white text-xs md:text-sm font-bold transition-colors shadow-sm"
                   >
                     {isSyncing ? (
                       <>
@@ -1310,31 +1308,31 @@ export default function PracticeStudioPage() {
               {/* Session Summary Overview Box */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-3 p-4 bg-slate-50 dark:bg-[#10141f] border border-slate-200 dark:border-[#2c354d] rounded-xl text-xs">
                 <div>
-                  <span className="text-slate-500 dark:text-slate-400 block mb-1">
+                  <span className="text-slate-600 dark:text-slate-400 block mb-1">
                     Unit &amp; Drill ID
                   </span>
                   <strong className="text-sm text-slate-900 dark:text-white block">
                     {currentDrill.unitTitle || currentDrill.unitCode}
                   </strong>
-                  <span className="font-mono text-slate-500 dark:text-slate-400">
+                  <span className="font-mono text-slate-600 dark:text-slate-400">
                     {currentDrill.drillId} · {currentDrill.unitCode}
                   </span>
                 </div>
 
                 <div>
-                  <span className="text-slate-500 dark:text-slate-400 block mb-1">
+                  <span className="text-slate-600 dark:text-slate-400 block mb-1">
                     Total Score &amp; Accuracy
                   </span>
                   <strong className="text-base text-emerald-600 dark:text-emerald-400 font-mono">
                     {liveScore} / {maxScore} ({accuracyPct}%)
                   </strong>
-                  <span className="block text-slate-500 dark:text-slate-400">
+                  <span className="block text-slate-600 dark:text-slate-400">
                     Skipped: {skippedCount} questions
                   </span>
                 </div>
 
                 <div>
-                  <span className="text-slate-500 dark:text-slate-400 block mb-1">
+                  <span className="text-slate-600 dark:text-slate-400 block mb-1">
                     Practice Status (Editable)
                   </span>
                   <div className="flex items-center gap-1.5 mt-1">
@@ -1346,7 +1344,7 @@ export default function PracticeStudioPage() {
                         className={`h-8 px-2.5 rounded-lg text-xs font-semibold border transition-colors ${
                           computedPracticeStatus === st
                             ? st === "Graded"
-                              ? "bg-emerald-600 text-white border-emerald-600"
+                              ? "bg-emerald-700 text-white border-emerald-700"
                               : "bg-amber-600 text-white border-amber-600"
                             : "bg-white dark:bg-[#1d2333] text-slate-600 dark:text-slate-300 border-slate-200 dark:border-[#2c354d]"
                         }`}
@@ -1358,7 +1356,7 @@ export default function PracticeStudioPage() {
                 </div>
 
                 <div>
-                  <span className="text-slate-500 dark:text-slate-400 block mb-1">
+                  <span className="text-slate-600 dark:text-slate-400 block mb-1">
                     Target Notion Destination
                   </span>
                   <span className="text-slate-800 dark:text-slate-200 font-medium block">
@@ -1418,7 +1416,7 @@ export default function PracticeStudioPage() {
                               <ArrowUpRight className="w-3.5 h-3.5 shrink-0" />
                             </button>
 
-                            <div className="flex items-center gap-1 shrink-0">
+                            {currentDrill.subject !== "PRG" && <div className="flex items-center gap-1 shrink-0">
                               {[
                                 {
                                   val: 1,
@@ -1449,7 +1447,7 @@ export default function PracticeStudioPage() {
                                   {btn.label}
                                 </button>
                               ))}
-                            </div>
+                            </div>}
                           </div>
 
                           {/* Status Badges */}
@@ -1476,7 +1474,7 @@ export default function PracticeStudioPage() {
                           />
 
                           {/* Stacked Answer Comparison */}
-                          <div className="space-y-1 pt-0.5 text-[11px] font-mono text-slate-500 dark:text-slate-400">
+                          <div className="space-y-1 pt-0.5 text-[11px] font-mono text-slate-600 dark:text-slate-400">
                             <div className="break-words">
                               <span>Your Answer: </span>
                               <strong className="text-slate-800 dark:text-slate-200">
@@ -1505,7 +1503,7 @@ export default function PracticeStudioPage() {
                         <div className="mt-auto pt-2.5 border-t border-slate-200/70 dark:border-[#1f283d] space-y-2">
                           {mistakeTags.length > 0 && (
                             <div className="flex flex-wrap items-center gap-1">
-                              <span className="text-[11px] text-slate-500 dark:text-slate-400 mr-0.5">
+                              <span className="text-[11px] text-slate-600 dark:text-slate-400 mr-0.5">
                                 Tags:
                               </span>
                               {mistakeTags.map((t) => {
@@ -1560,7 +1558,7 @@ export default function PracticeStudioPage() {
                   type="button"
                   onClick={handleConfirmSyncToNotion}
                   disabled={isSyncing}
-                  className="inline-flex items-center gap-2 h-10 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-sm font-bold transition-colors shadow-sm"
+                  className="inline-flex items-center gap-2 h-10 px-6 rounded-xl bg-emerald-700 hover:bg-emerald-800 disabled:opacity-50 text-white text-sm font-bold transition-colors shadow-sm"
                 >
                   {isSyncing ? (
                     <>
