@@ -1,0 +1,231 @@
+{
+  "unitCode": "PRG-T00-C02",
+  "unitTitle": "Developer Workflow & Git",
+  "description": "Empirical reasoning schemas and archetypes for terminal navigation, shell execution, project structure, npm, and Git workflows.",
+  "archetypes": [
+    {
+      "archetypeKey": "prg-t00-c02-cli-path-resolver",
+      "unitCode": "PRG-T00-C02-U01",
+      "level": 1,
+      "archetype": "problem-solving",
+      "name": "Working-Directory-Safe CLI Path Resolver",
+      "competencies": [
+        "terminal-navigation",
+        "path-resolution",
+        "defensive-programming"
+      ],
+      "coreConcept": "Resolving user-supplied relative paths against an explicit current working directory (cwd) using path normalization rather than string concatenation or script-directory assumptions, and enforcing workspace root containment when required.",
+      "mentalModel": [
+        "1. Distinguish the caller's current working directory (cwd) from the script's own install directory (__dirname / import.meta.dirname).",
+        "2. Resolve relative targets against the explicit cwd using path.resolve(cwd, target) instead of manual string concatenation.",
+        "3. Verify root containment via path.relative(root, resolved) when a CLI must not escape the project directory."
+      ],
+      "governingInvariant": "resolvedTarget = path.resolve(explicitCwd, relativeArg) with explicit root-containment check when scoped",
+      "cognitiveTraps": [
+        {
+          "trapTag": "string-concat-path-join",
+          "name": "Manual String Concatenation for Paths",
+          "description": "Joining paths with `cwd + '/' + target` fails on trailing slashes, `.` or `..` segments, and non-POSIX separators.",
+          "reproducer": "Pass cwd='/app/' and target='../secret.txt'; string concatenation yields '/app//../secret.txt' without normalizing."
+        },
+        {
+          "trapTag": "script-dir-vs-cwd-confusion",
+          "name": "Confusing Script Directory with Working Directory",
+          "description": "Resolving user-provided relative paths against `__dirname` / `import.meta.dirname` instead of `cwd` looks inside the CLI's install folder rather than the user's project.",
+          "reproducer": "Invoke `node /opt/cli/scan.js ./src` from `/workspace/app`; resolving against `__dirname` looks in `/opt/cli/src` instead of `/workspace/app/src`."
+        },
+        {
+          "trapTag": "unbounded-parent-traversal",
+          "name": "Unbounded Parent Directory Traversal",
+          "description": "Accepting `../` segments without checking `path.relative(root, resolved)` allows a CLI to read or write outside the intended workspace root.",
+          "reproducer": "Pass target='../../outside.txt' to a workspace-scoped resolver without checking whether the resolved path starts outside root."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "cli_file_scanner",
+          "description": "Resolving target directories and config files passed to a Node CLI from any working directory."
+        },
+        {
+          "domain": "dev_build_tool",
+          "description": "Mapping relative source and output paths inside a project workspace."
+        }
+      ],
+      "usedContexts": [],
+      "qualityChecks": [
+        {
+          "id": "QC-cli-explicit-cwd-injection",
+          "check": "Path-resolution helpers accept an explicit `cwd` or `rootDir` parameter rather than reading `process.cwd()` inside core logic.",
+          "why": "Reading `process.cwd()` deep inside helpers couples pure path logic to global process state and makes unit tests brittle.",
+          "severity": "must",
+          "accepted": [
+            "function resolveTarget(cwd, target)",
+            "function resolveTarget(target, { cwd = process.cwd() } = {})"
+          ],
+          "knownBad": {
+            "code": "const path = require('path');\nfunction resolveTarget(target) {\n  return path.resolve(process.cwd(), target);\n}",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-cli-normalized-path-api",
+          "check": "Path manipulation uses normalized path primitives (`path.resolve`, `path.join`, `path.relative`) rather than manual `/` or `\\\\` string concatenation or splitting.",
+          "why": "Manual separator string math breaks on trailing slashes, dot segments, and cross-platform separators.",
+          "severity": "should",
+          "knownBad": {
+            "code": "function joinUnder(cwd, target) {\n  return cwd + '/' + target;\n}",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "prg-t00-c02-env-argv-exit-code",
+      "unitCode": "PRG-T00-C02-U01",
+      "level": 2,
+      "archetype": "problem-solving",
+      "name": "CLI Argument, Environment & Exit Code Contract",
+      "competencies": [
+        "shell-execution",
+        "env-config",
+        "exit-codes"
+      ],
+      "coreConcept": "Parsing CLI arguments (argv) and environment variables (env) with explicit precedence (CLI flag > env var > default), separating stdout data from stderr diagnostics, and returning deterministic exit codes without terminating the process inside testable modules.",
+      "mentalModel": [
+        "1. Design the core CLI runner as a function taking `(argv, env)` and returning `{ exitCode, stdout, stderr }`.",
+        "2. Apply precedence: CLI flag overrides environment variable, which overrides default; check `!== undefined` rather than truthiness.",
+        "3. Reserve `exitCode = 0` for success and non-zero (e.g. `1` or `2`) for errors, keeping `process.exit()` only in the thin bin wrapper."
+      ],
+      "governingInvariant": "exitCode === 0 iff execution succeeded; stdout contains output data, stderr contains diagnostics; core runner never calls process.exit()",
+      "cognitiveTraps": [
+        {
+          "trapTag": "inline-process-exit",
+          "name": "Calling process.exit() Inside Testable Logic",
+          "description": "Calling `process.exit(1)` inside a helper or runner function kills the test runner process instead of returning a testable exit status.",
+          "reproducer": "Call `runCli(['--invalid'], {})` inside `node --test`; `process.exit(1)` aborts the entire test suite."
+        },
+        {
+          "trapTag": "stdout-error-pollution",
+          "name": "Writing Error Diagnostics to stdout",
+          "description": "Printing error messages to `stdout` instead of `stderr` breaks downstream shell pipelines and JSON consumers.",
+          "reproducer": "Run `node cli.js --missing > out.json`; `out.json` receives the error string instead of remaining empty."
+        },
+        {
+          "trapTag": "zero-exit-on-failure",
+          "name": "Returning Exit Code 0 After Handling an Error",
+          "description": "Catching an error, logging a message, and exiting with `0` causes `cmd1 && cmd2` in the shell to proceed after failure.",
+          "reproducer": "Run `node validate.js missing.json && echo OK`; if exitCode is 0, the shell prints OK despite validation failure."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "cli_config_runner",
+          "description": "Building a configurable CLI command that reads flags, env vars, and reports status via exit codes."
+        },
+        {
+          "domain": "ci_preflight_check",
+          "description": "Running a preflight check script that gates shell pipelines with exit codes 0 vs 1."
+        }
+      ],
+      "usedContexts": [],
+      "qualityChecks": [
+        {
+          "id": "QC-cli-no-core-process-exit",
+          "check": "Core CLI runner and argument-parsing functions return an exit code or throw rather than calling `process.exit()` directly; `process.exit()` is restricted to the top-level bin wrapper.",
+          "why": "Calling `process.exit()` inside core modules terminates test runners and prevents callers from composing the CLI logic.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function runCli(argv) {\n  if (!argv.length) {\n    console.error('Missing args');\n    process.exit(1);\n  }\n}",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-cli-injected-env-argv",
+          "check": "CLI runner and config helpers read arguments and environment variables from injected parameters (`argv`, `env`) rather than hardcoding global `process.argv` and `process.env` inside core logic.",
+          "why": "Hardcoding global `process.argv` and `process.env` inside helpers prevents deterministic, parallel-safe unit testing.",
+          "severity": "must",
+          "accepted": [
+            "function runCli(argv, env = {})",
+            "function parseOptions(argv, env)"
+          ],
+          "knownBad": {
+            "code": "function getPort() {\n  return Number(process.env.PORT || 3000);\n}",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "prg-t00-c02-project-layout-scaffold",
+      "unitCode": "PRG-T00-C02-U01",
+      "level": 2,
+      "archetype": "debugging",
+      "name": "JS Project Layout, Manifest & Ignore Rules",
+      "competencies": [
+        "project-structure",
+        "package-manifest",
+        "filesystem-safety"
+      ],
+      "coreConcept": "Organizing and validating standard JavaScript project layouts (`package.json`, `src/`, `tests/`, `node_modules/`, `.gitignore`) so entrypoints resolve relative to the package root and generated or secret files stay untracked.",
+      "mentalModel": [
+        "1. Anchor all project paths (`main`, `bin`, `src/`, `tests/`, `.gitignore`) to the directory containing `package.json`.",
+        "2. Verify that `node_modules/` and `.env` are excluded in `.gitignore` while `package.json`, `src/`, and `tests/` remain tracked.",
+        "3. Inspect filesystem state non-destructively before creating or repairing missing layout entries."
+      ],
+      "governingInvariant": "All package.json entrypoints resolve inside projectRoot, and node_modules/ + .env are covered by .gitignore without touching authored src/ or tests/",
+      "cognitiveTraps": [
+        {
+          "trapTag": "missing-gitignore-entries",
+          "name": "Omitting node_modules or .env from .gitignore",
+          "description": "Leaving `node_modules/` or `.env` out of `.gitignore` exposes secrets and bloats commits with installed dependencies.",
+          "reproducer": "Inspect `.gitignore` in a scaffolded project; `node_modules/` is absent, causing `git status` to track installed packages."
+        },
+        {
+          "trapTag": "hardcoded-os-path-in-manifest",
+          "name": "Absolute or OS-Specific Paths in package.json",
+          "description": "Writing machine-specific absolute paths (e.g. `/home/dev/app/src/index.js`) in `package.json` breaks the project on every other machine.",
+          "reproducer": "Set `main` to `/home/alice/project/src/index.js`; `require('.')` fails on CI with MODULE_NOT_FOUND."
+        },
+        {
+          "trapTag": "assuming-root-is-cwd",
+          "name": "Assuming CWD Is Always the Project Root",
+          "description": "Checking for `package.json` or `src/` using bare relative paths fails whenever a script is invoked from a subdirectory.",
+          "reproducer": "Run a layout check from `project/src/`; bare `fs.existsSync('package.json')` returns false."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "project_layout_auditor",
+          "description": "Auditing a Node project directory for valid package.json, src/, tests/, and .gitignore rules."
+        },
+        {
+          "domain": "workspace_scaffolder",
+          "description": "Safely creating missing project folders and baseline files without clobbering existing code."
+        }
+      ],
+      "usedContexts": [],
+      "qualityChecks": [
+        {
+          "id": "QC-layout-non-destructive-fs",
+          "check": "Filesystem scaffolding or repair helpers check for existing files/directories first and never overwrite or delete existing authored files (`src/`, `tests/`, `package.json`).",
+          "why": "Unconditional writes or recursive deletes can silently destroy existing learner or production source code.",
+          "severity": "must",
+          "knownBad": {
+            "code": "const fs = require('fs');\nfunction initProject(root) {\n  fs.rmSync(root, { recursive: true, force: true });\n  fs.mkdirSync(root, { recursive: true });\n}",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-layout-explicit-root-anchor",
+          "check": "Project layout validators anchor all file lookups to an explicit `projectRoot` parameter rather than assuming the caller's `cwd` is the project root.",
+          "why": "Invoking a tool from a nested subdirectory causes bare relative lookups like `'package.json'` to miss the real project root.",
+          "severity": "should",
+          "knownBad": {
+            "code": "const fs = require('fs');\nfunction hasManifest() {\n  return fs.existsSync('package.json');\n}",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    }
+  ]
+}

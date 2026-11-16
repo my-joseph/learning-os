@@ -232,11 +232,12 @@ def test_ingest_refuses_solution_failing_lint(tmp_path):
     assert "no-var" in str(exc_info.value)
 
 
-def test_all_three_prg_vaults_validate():
+def test_all_prg_vaults_validate():
+    """Every PRG vault validates; counts grow as units start, so only lower bounds are pinned."""
     errors, _skips, stats = check_all_vaults()
     assert errors == []
-    assert stats["vaults"] == 3
-    assert stats["archetypes"] == 19
+    assert stats["vaults"] >= 3
+    assert stats["archetypes"] >= 19
     assert stats["universal"] == 7
 
     for vf in sorted(VAULT_DIR.glob("*.json")):
