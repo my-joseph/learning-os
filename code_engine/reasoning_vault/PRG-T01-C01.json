@@ -1418,6 +1418,202 @@
           }
         }
       ]
+    },
+    {
+      "archetypeKey": "prg-c01-event-loop-microtask-order",
+      "unitCode": "PRG-T01-C01-U07",
+      "level": 1,
+      "archetype": "code-tracing",
+      "name": "Sync vs. Microtask vs. Macrotask Execution Order",
+      "competencies": [
+        "event-loop",
+        "microtasks",
+        "code-tracing"
+      ],
+      "coreConcept": "Predicting exact execution order across synchronous call-stack frames, synchronous `Promise` executor bodies, FIFO microtasks (`Promise.then`, `queueMicrotask`), and macrotasks (`setTimeout`).",
+      "mentalModel": [
+        "1. Synchronous top-level code and `new Promise(executor)` bodies run immediately on the Call Stack.",
+        "2. Once the Call Stack empties, the Event Loop drains the entire Microtask Queue in FIFO order (including microtasks enqueued by microtasks).",
+        "3. Only when the Microtask Queue is empty does the Event Loop dequeue one Macrotask (e.g. `setTimeout(..., 0)`), run it to completion, and drain microtasks again."
+      ],
+      "governingInvariant": "call stack empties -> all queued microtasks drain FIFO -> one macrotask runs -> repeat",
+      "cognitiveTraps": [
+        {
+          "trapTag": "macrotask-before-microtask",
+          "name": "Macrotask Ordered Before Microtask",
+          "description": "Assuming `setTimeout(fn, 0)` runs immediately after synchronous code before queued `.then` or `queueMicrotask` callbacks.",
+          "reproducer": "setTimeout(() => log('T'), 0); Promise.resolve().then(() => log('M')); // outputs M then T, not T then M."
+        },
+        {
+          "trapTag": "promise-executor-deferred",
+          "name": "Assuming Promise Executor Runs Asynchronously",
+          "description": "Treating the callback passed to `new Promise((resolve) => { ... })` as a microtask instead of synchronous execution.",
+          "reproducer": "new Promise((r) => { log('A'); r(); }); log('B'); // outputs A then B, not B then A."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "telemetry_flush_scheduler",
+          "description": "Ordering synchronous event capture, microtask batching, and macrotask transport timers in a client telemetry SDK."
+        }
+      ],
+      "usedContexts": [
+        "telemetry_flush_scheduler",
+        "payment_gateway_handshake"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-eventloop-drain-microtasks",
+          "check": "Microtask callbacks (`Promise.then`, `queueMicrotask`) are drained completely in FIFO order after the synchronous call stack empties and before the next macrotask (`setTimeout`) begins.",
+          "why": "Misordering microtasks after `setTimeout(..., 0)` causes race conditions and wrong execution-order traces.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function wrongOrder() {\n  return ['sync', 'timeout-0', 'microtask'];\n}",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-eventloop-no-nested-timer-magic",
+          "check": "Scheduling helpers avoid arbitrary positive timer delays when `0`-delay macrotasks or microtasks express the intended queue boundary.",
+          "why": "Magic delays like `setTimeout(fn, 25)` hide queue semantics and introduce flakiness under load.",
+          "severity": "should",
+          "knownBad": {
+            "code": "function deferAfterMicrotasks(fn) {\n  setTimeout(fn, 25);\n}",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "prg-c01-async-await-microtask-split",
+      "unitCode": "PRG-T01-C01-U07",
+      "level": 2,
+      "archetype": "code-tracing",
+      "name": "Async/Await Suspension & Microtask Continuation",
+      "competencies": [
+        "event-loop",
+        "async-await",
+        "microtasks",
+        "code-tracing"
+      ],
+      "coreConcept": "Tracing how `async` functions execute synchronously up to the first `await`, suspend and return a pending promise, and resume their post-`await` continuation as a microtask once the awaited value settles.",
+      "mentalModel": [
+        "1. Calling an `async` function runs its body synchronously until the first `await` expression is evaluated.",
+        "2. The `await` expression itself is evaluated synchronously; the remainder of the `async` function is scheduled as a microtask continuation.",
+        "3. Interleaved `.then()` chains and `await` continuations advance one microtask hop per turn in FIFO order."
+      ],
+      "governingInvariant": "pre-await runs synchronously; post-await resumes in the microtask queue after the awaited promise settles",
+      "cognitiveTraps": [
+        {
+          "trapTag": "async-body-fully-deferred",
+          "name": "Assuming Entire Async Function Body Is Deferred",
+          "description": "Believing that calling `runTask()` where `runTask` is `async` defers statements written before the first `await`.",
+          "reproducer": "async function f() { log('1'); await 0; log('2'); } f(); log('3'); // outputs 1, 3, 2."
+        },
+        {
+          "trapTag": "microtask-chained-hop-order",
+          "name": "Misordering Chained Microtask Hops",
+          "description": "Evaluating an entire `.then().then()` chain or `await` sequence atomically instead of interleaving hop-by-hop with sibling microtasks.",
+          "reproducer": "Promise.resolve().then(() => log('a1')).then(() => log('a2')); Promise.resolve().then(() => log('b1')); // a1, b1, a2."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "auth_token_refresh_pipeline",
+          "description": "Tracing interleaved cache checks, async token refreshes, and queued request continuations."
+        }
+      ],
+      "usedContexts": [
+        "auth_token_refresh_pipeline",
+        "cache_revalidation_queue"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-eventloop-sync-before-await",
+          "check": "Code paths before the first `await` in an `async` function are treated as synchronous execution on the caller's stack, not deferred work.",
+          "why": "Assuming `async` defers the whole function body leads to wrong ordering of initialization side effects.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function traceAsyncStart() {\n  return ['after-call-sync', 'inside-async-before-await', 'after-await'];\n}",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-eventloop-explicit-continuation-order",
+          "check": "Multi-step async traces preserve exact FIFO microtask-hop ordering across interleaved `await` resumptions and `.then()` callbacks.",
+          "why": "Each `.then` or `await` resumption enqueues only the next step after the previous step settles.",
+          "severity": "should",
+          "knownBad": {
+            "code": "function traceChainedHops() {\n  return ['chainA-step1', 'chainA-step2', 'chainB-step1'];\n}",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "prg-c01-microtask-starvation-yield",
+      "unitCode": "PRG-T01-C01-U07",
+      "level": 3,
+      "archetype": "debugging",
+      "name": "Microtask Starvation & Cooperative Macrotask Yielding",
+      "competencies": [
+        "event-loop",
+        "microtasks",
+        "debugging",
+        "scheduling"
+      ],
+      "coreConcept": "Diagnosing and fixing event-loop starvation where recursive `queueMicrotask` or `Promise.then` loops exhaustively drain the microtask queue and block pending macrotasks (`setTimeout`), by yielding between batches via macrotask scheduling.",
+      "mentalModel": [
+        "1. Because the Event Loop drains the entire Microtask Queue before taking the next Macrotask, self-enqueuing microtasks starve `setTimeout` and I/O.",
+        "2. `await Promise.resolve()` inside a loop yields only to sibling microtasks, NOT to macrotasks.",
+        "3. Yielding between chunks via a macrotask (`setTimeout(..., 0)`) lets already-queued timers and I/O run before the next batch."
+      ],
+      "governingInvariant": "yielding via a macrotask boundary allows queued timers and I/O to execute between work chunks",
+      "cognitiveTraps": [
+        {
+          "trapTag": "recursive-microtask-starvation",
+          "name": "Recursive Microtask Starving Macrotasks",
+          "description": "Scheduling the next work chunk with `queueMicrotask` or `Promise.resolve().then(...)` prevents any `setTimeout` macrotask from running until all chunks finish.",
+          "reproducer": "function step() { if (n-- > 0) queueMicrotask(step); } // blocks setTimeout(..., 0) until n reaches 0."
+        },
+        {
+          "trapTag": "await-resolved-no-yield",
+          "name": "Yielding With await Promise.resolve() Expecting Timer Progress",
+          "description": "Using `await Promise.resolve()` inside a batch loop still stays inside the microtask checkpoint and starves macrotasks.",
+          "reproducer": "for (const c of chunks) { work(c); await Promise.resolve(); } // timer callback still runs only after loop completes."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "cooperative_log_indexer",
+          "description": "Processing large in-memory log batches cooperatively so health-check timers and heartbeat callbacks still fire on time."
+        }
+      ],
+      "usedContexts": [
+        "cooperative_log_indexer"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-eventloop-macrotask-yield",
+          "check": "Cooperative batch processors yield via a macrotask boundary (`setTimeout(..., 0)`) rather than `queueMicrotask` or `Promise.resolve().then(...)` so pending timers and I/O are not starved.",
+          "why": "Microtask checkpoints drain completely before the next macrotask, starving timers when work self-schedules as microtasks.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function scheduleNextChunk(fn) {\n  queueMicrotask(fn);\n}",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-eventloop-bounded-chunk-progress",
+          "check": "Chunked schedulers advance work in bounded slices and avoid mutating caller-owned input arrays.",
+          "why": "Unbounded synchronous loops block the call stack and mutating caller arrays introduces hidden side effects.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function drainInPlace(items, fn) {\n  while (items.length > 0) {\n    fn(items.shift());\n  }\n}",
+            "caughtBy": "review"
+          }
+        }
+      ]
     }
   ]
 }
