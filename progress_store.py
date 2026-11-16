@@ -129,3 +129,37 @@ def strip_progress(drill_doc: dict[str, Any]) -> dict[str, Any]:
         for key in PROGRESS_FIELDS_PROBLEM:
             p.pop(key, None)
     return drill_doc
+
+
+_NON_SUBSTANTIVE_VERDICTS = ("invalid input", "parse_error")
+
+
+def item_score(state: dict[str, Any]) -> tuple[float, bool]:
+    """Return (score, assisted) for a math problem state, matching Studio's applyCheckResult.
+
+    - Skipped -> (0.0, assisted)
+    - First substantive attempt is 'correct' and unassisted -> (1.0, False)
+    - Correct after a wrong/partial attempt or assisted -> (0.5, assisted)
+    - Otherwise -> (0.0, assisted), or (-1.0, assisted) if unattempted.
+    """
+    attempts = state.get("attempts") or []
+    assisted = bool(
+        state.get("setupRevealedBeforeAnswer")
+        or state.get("solutionRevealedBeforeAnswer")
+        or (state.get("hintsRevealed") or 0) > 0
+    )
+    assisted = assisted or any(a.get("setupRevealed") or a.get("solutionRevealed") for a in attempts)
+    if state.get("skipped"):
+        return 0.0, assisted
+    substantive = [a for a in attempts if a.get("verdict") not in _NON_SUBSTANTIVE_VERDICTS]
+    if substantive:
+        first = substantive[0].get("verdict")
+        if first == "correct" and not assisted:
+            return 1.0, assisted
+        if any(a.get("verdict") in ("correct", "equivalent_not_in_form", "partial") for a in substantive):
+            return 0.5, assisted
+        return 0.0, assisted
+    score = state.get("score")
+    if score is None:
+        return -1.0, assisted  # not attempted
+    return (min(float(score), 0.5) if assisted else float(score)), assisted

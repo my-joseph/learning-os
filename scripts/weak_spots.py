@@ -24,7 +24,7 @@ from dataclasses import dataclass, field
 from datetime import date, timedelta
 
 from code_engine.quality_checks import load_universal
-from progress_store import progress_root
+from progress_store import item_score, progress_root
 from scripts.issues import main_checkout_root
 
 MIN_MATCHES = 2
@@ -84,27 +84,7 @@ def _prg_item_score(state: dict) -> float:
     return -1.0
 
 
-def _item_score(state: dict) -> tuple[float, bool]:
-    attempts = state.get("attempts") or []
-    assisted = bool(
-        state.get("setupRevealedBeforeAnswer")
-        or state.get("solutionRevealedBeforeAnswer")
-        or (state.get("hintsRevealed") or 0) > 0
-    )
-    assisted = assisted or any(a.get("setupRevealed") or a.get("solutionRevealed") for a in attempts)
-    if state.get("skipped"):
-        return 0.0, assisted
-    if attempts:
-        first = attempts[0].get("verdict")
-        if first == "correct" and not assisted:
-            return 1.0, assisted
-        if any(a.get("verdict") in ("correct", "equivalent_not_in_form", "partial") for a in attempts):
-            return 0.5, assisted
-        return 0.0, assisted
-    score = state.get("score")
-    if score is None:
-        return -1.0, assisted  # not attempted
-    return (min(float(score), 0.5) if assisted else float(score)), assisted
+_item_score = item_score
 
 
 def _load_prg_vault_meta() -> tuple[dict[str, str], dict[str, int], dict[str, set[str]], dict[str, str]]:

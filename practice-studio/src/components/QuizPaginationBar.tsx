@@ -43,18 +43,30 @@ export const QuizPaginationBar: React.FC<QuizPaginationBarProps> = ({
           {problems.map((prob, idx) => {
             const isSkipped = prob.state?.skipped === true;
             const hasScore = prob.state?.score !== null && prob.state?.score !== undefined;
-            const isCorrect = hasScore && (prob.state?.score ?? 0) > 0 && !isSkipped;
-            const isIncorrect = hasScore && (prob.state?.score ?? 0) === 0 && !isSkipped;
+            const scoreVal = prob.state?.score ?? 0;
+            const isAssisted = Boolean(
+              prob.state?.setupRevealedBeforeAnswer ||
+                prob.state?.solutionRevealedBeforeAnswer ||
+                (prob.state?.hintsRevealed ?? 0) > 0 ||
+                prob.state?.attempts?.some((a) => a.setupRevealed || a.solutionRevealed)
+            );
+            const isIndependentFull = hasScore && scoreVal >= 1 && !isAssisted && !isSkipped;
+            const isPartialOrAssisted = hasScore && scoreVal > 0 && !isIndependentFull && !isSkipped;
+            const isIncorrect = hasScore && scoreVal === 0 && !isSkipped;
             const isActive = viewMode === "quiz" && currentIndex === idx;
 
             let colorCls =
               "bg-white dark:bg-[#182032] text-slate-700 dark:text-slate-300 border-slate-300 dark:border-[#2b3752] hover:border-indigo-400";
             let statusLabel = "Unanswered";
 
-            if (isCorrect) {
+            if (isIndependentFull) {
               colorCls =
                 "bg-emerald-600 hover:bg-emerald-500 text-white font-bold border-emerald-500 shadow-sm";
-              statusLabel = `Score: ${prob.state?.score}`;
+              statusLabel = `Score: ${scoreVal}`;
+            } else if (isPartialOrAssisted) {
+              colorCls =
+                "bg-amber-500 hover:bg-amber-400 text-white font-bold border-amber-400 shadow-sm";
+              statusLabel = `Assisted / Partial (${scoreVal})`;
             } else if (isIncorrect) {
               colorCls =
                 "bg-rose-600 hover:bg-rose-500 text-white font-bold border-rose-500 shadow-sm";

@@ -15,7 +15,17 @@ import os
 import re
 from typing import Any, Dict, List, Optional
 
-from math_engine.answer_check import CHECKERS, _split_items, check_answer, is_equal, is_omission_trap, to_expr
+from math_engine.answer_check import (
+    CHECKERS,
+    _intervals_equal,
+    _split_items,
+    check_answer,
+    is_equal,
+    is_omission_trap,
+    parse_interval,
+    to_expr,
+)
+from math_engine.answer_spec_registry import validate_answer_spec
 from math_engine.figure_autofill import archetype_requires_figure, autofill_problem_figure, figure_decision_missing
 from math_engine.fmt import LEVEL_LABELS, unit_hierarchy
 from math_engine.generate import next_drill_id
@@ -228,7 +238,7 @@ def _trap_matches_spec(spec: Dict[str, Any], tv: Any) -> bool:
     (so the trap is something a learner could actually enter). Types without a checker pass."""
     spec_type = spec.get("type")
     trap_spec = dict(spec)
-    if spec_type in ("number", "expression", "complex"):
+    if spec_type in ("number", "expression", "complex", "interval"):
         trap_spec["value"] = str(tv)
     elif spec_type == "vector":
         trap_spec["value"] = tv
@@ -341,11 +351,27 @@ def validate_ai_problem_contract(prob: Dict[str, Any], enforce_leak_gate: bool =
     if re.fullmatch(r"^\s*[-+]?\d*\.?\d+\s*$", str(td)):
         raise AiContractError(f"[{pid}] trapDerivation '{td}' cannot be a bare number.")
 
-    vars_list = prob.get("answerSpec", {}).get("variables") or prob.get("variables") or ["x"]
-    td_expr = to_expr(str(td), variables=vars_list, trusted=True)
-    tv_expr = to_expr(str(tv), variables=vars_list, trusted=True)
-    if not is_equal(td_expr, tv_expr, variables=vars_list):
-        raise AiContractError(f"[{pid}] trapDerivation '{td}' evaluates to {td_expr} != trapValue '{tv}' ({tv_expr})")
+    spec = prob.get("answerSpec") or {}
+    if spec and "type" in spec:
+        ok_spec, spec_err = validate_answer_spec(spec)
+        if not ok_spec:
+            raise AiContractError(f"[{pid}] Invalid answerSpec: {spec_err}")
+    vars_list = spec.get("variables") or prob.get("variables") or ["x"]
+    if spec.get("type") == "interval":
+        try:
+            td_set = parse_interval(str(td), variables=spec.get("variables"))
+            tv_set = parse_interval(str(tv), variables=spec.get("variables"))
+        except Exception as ex:
+            raise AiContractError(f"[{pid}] Invalid interval in trapDerivation/trapValue: {ex}") from ex
+        if not _intervals_equal(td_set, tv_set):
+            raise AiContractError(f"[{pid}] trapDerivation '{td}' evaluates to {td_set} != trapValue '{tv}' ({tv_set})")
+    else:
+        td_expr = to_expr(str(td), variables=vars_list, trusted=True)
+        tv_expr = to_expr(str(tv), variables=vars_list, trusted=True)
+        if not is_equal(td_expr, tv_expr, variables=vars_list):
+            raise AiContractError(
+                f"[{pid}] trapDerivation '{td}' evaluates to {td_expr} != trapValue '{tv}' ({tv_expr})"
+            )
 
     # Check that at least 2 distinct givens appear in trapDerivation
     td_tokens = re.findall(r"\b\d+(?:\.\d+)?\b", str(td))
@@ -362,11 +388,13 @@ def validate_ai_problem_contract(prob: Dict[str, Any], enforce_leak_gate: bool =
                 matched_given_keys.add(g_key)
                 break
 
-    # An omission trap ("found only the principal angle", "kept only the positive root") is a strict
-    # subset of the answer set; it has no arithmetic of its own, so the 2-givens rule does not apply.
-    if len(matched_given_keys) < 2 and not _is_omission_trap(prob.get("answerSpec") or {}, tv):
+    # An omission trap ("found only the principal angle", "kept only the positive root", "missing union part") is a
+    # strict subset of the answer set; it has no arithmetic of its own, so the 2-givens rule does not apply.
+    # For single-given interval problems (e.g. sqrt(x - a)), 1 given in trapDerivation is the maximum available.
+    min_givens = 1 if (spec.get("type") == "interval" and len(givens_floats) + len(constant_floats) < 2) else 2
+    if len(matched_given_keys) < min_givens and not _is_omission_trap(prob.get("answerSpec") or {}, tv):
         raise AiContractError(
-            f"[{pid}] trapDerivation '{td}' must contain at least 2 distinct givens from {givens}, found {len(matched_given_keys)}: {matched_given_keys}"
+            f"[{pid}] trapDerivation '{td}' must contain at least {min_givens} distinct givens from {givens}, found {len(matched_given_keys)}: {matched_given_keys}"
         )
 
     # 5. Check answer simulation and trap matching across answer types

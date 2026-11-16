@@ -14,7 +14,7 @@ Checks per problem:
 
 import re
 
-from math_engine.answer_check import check_answer, is_equal, is_omission_trap, to_expr
+from math_engine.answer_check import _intervals_equal, check_answer, is_equal, is_omission_trap, parse_interval, to_expr
 from quality_rules import QualityError, check_gate_g3_set, verify_quality_gates
 
 BANNED = [
@@ -175,12 +175,20 @@ def verify_problem(p, id_map=None, rules=None):
         tv = v.get("trapValue")
         if tv is None:
             raise QualityError("G4", pid, f"trapDerivation '{td}' present but verify.trapValue is missing")
-        td_expr = to_expr(td, variables=vars_list, trusted=True)
-        tv_expr = to_expr(tv, variables=vars_list, trusted=True)
-        if not is_equal(td_expr, tv_expr, variables=vars_list):
-            raise QualityError(
-                "G4", pid, f"trapDerivation '{td}' evaluates to {td_expr} != trapValue '{tv}' ({tv_expr})"
-            )
+        if spec.get("type") == "interval":
+            td_set = parse_interval(td, variables=spec.get("variables"))
+            tv_set = parse_interval(str(tv), variables=spec.get("variables"))
+            if not _intervals_equal(td_set, tv_set):
+                raise QualityError(
+                    "G4", pid, f"trapDerivation '{td}' evaluates to {td_set} != trapValue '{tv}' ({tv_set})"
+                )
+        else:
+            td_expr = to_expr(td, variables=vars_list, trusted=True)
+            tv_expr = to_expr(tv, variables=vars_list, trusted=True)
+            if not is_equal(td_expr, tv_expr, variables=vars_list):
+                raise QualityError(
+                    "G4", pid, f"trapDerivation '{td}' evaluates to {td_expr} != trapValue '{tv}' ({tv_expr})"
+                )
 
         # Gate: trapDerivation must not consist purely of numbers absent from prompt.
         # Template sends trapGivens (numbers in prompt used in derivation), and gate verifies

@@ -86,3 +86,38 @@ def test_committed_drills_hold_content_only():
         if "sessionSummary" in doc or any("state" in p for p in doc.get("problems", [])):
             offenders.append(path)
     assert offenders == [], "practice state belongs in progress/, run scripts/migrate_progress.py"
+
+
+def test_item_score_matches_studio_rules():
+    assert ps.item_score({"attempts": [{"verdict": "correct", "ts": "2026-11-16"}], "score": 1}) == (1.0, False)
+    # Wrong -> open solution -> correct => 0.5, assisted
+    assert ps.item_score(
+        {
+            "attempts": [
+                {"verdict": "incorrect", "ts": "2026-11-16"},
+                {"verdict": "correct", "ts": "2026-11-16", "solutionRevealed": True},
+            ],
+            "solutionRevealedBeforeAnswer": True,
+            "score": 0.5,
+        }
+    ) == (0.5, True)
+    # Wrong -> retry correct (unassisted) => 0.5, unassisted
+    assert ps.item_score(
+        {
+            "attempts": [
+                {"verdict": "incorrect", "ts": "2026-11-16"},
+                {"verdict": "correct", "ts": "2026-11-16"},
+            ],
+            "score": 1,
+        }
+    ) == (0.5, False)
+    # Format typo before first-try correct does not penalize
+    assert ps.item_score(
+        {
+            "attempts": [
+                {"verdict": "invalid input", "ts": "2026-11-16"},
+                {"verdict": "correct", "ts": "2026-11-16"},
+            ],
+            "score": 1,
+        }
+    ) == (1.0, False)

@@ -88,6 +88,7 @@ export interface AnswerSpec {
     | "complex"
     | "expression"
     | "solution_set"
+    | "interval"
     | "tuple"
     | "vector"
     | "choice"
