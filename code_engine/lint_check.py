@@ -97,8 +97,8 @@ def lint_code_snippet(
         return findings
 
 
-def lint_drill_doc(drill_doc: dict[str, Any]) -> list[dict[str, Any]]:
-    """Lint all `solutionCode` entries in a drill document."""
+def lint_drill_doc(drill_doc: dict[str, Any], *, field: str = "solutionCode") -> list[dict[str, Any]]:
+    """Lint all `field` (default `solutionCode`) entries in a drill document."""
     preset_key = drill_doc.get("environment", "node-vanilla")
     preset = ENVIRONMENT_PRESETS.get(preset_key, ENVIRONMENT_PRESETS["node-vanilla"])
     ext = preset.get("defaultExt", "js")
@@ -107,12 +107,12 @@ def lint_drill_doc(drill_doc: dict[str, Any]) -> list[dict[str, Any]]:
 
     all_findings: list[dict[str, Any]] = []
     for prob in drill_doc.get("problems", []):
-        sol = prob.get("solutionCode")
-        if not sol:
+        code = prob.get(field)
+        if not code:
             continue
         pid = prob.get("id", "Q01")
         entry = get_entry_name(prob)
-        findings = lint_code_snippet(sol, ext=ext, overrides=overrides, filename=f"{pid}_{entry}")
+        findings = lint_code_snippet(code, ext=ext, overrides=overrides, filename=f"{pid}_{entry}")
         for f in findings:
             f["drillId"] = drill_id
             f["problemId"] = pid

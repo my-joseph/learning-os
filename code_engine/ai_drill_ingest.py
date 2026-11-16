@@ -563,21 +563,67 @@ def check_mutation_testing(
             )
 
 
-def validate_lint_overrides(lint_overrides: Any) -> None:
-    """Validates optional drill-level lintOverrides: list of {rule, reason} with non-empty reason."""
-    if lint_overrides is None:
+def _validate_rule_override_list(entries: Any, label: str) -> None:
+    """Validate a list of {rule, reason} objects with non-empty rule and reason strings."""
+    if entries is None:
         return
-    if not isinstance(lint_overrides, list):
-        raise AiContractError("Drill 'lintOverrides' must be a list of {rule, reason} objects.")
-    for idx, entry in enumerate(lint_overrides):
+    if not isinstance(entries, list):
+        raise AiContractError(f"{label} must be a list of {{rule, reason}} objects.")
+    for idx, entry in enumerate(entries):
         if not isinstance(entry, dict):
-            raise AiContractError(f"Drill 'lintOverrides[{idx}]' must be an object with 'rule' and 'reason'.")
+            raise AiContractError(f"{label}[{idx}] must be an object with 'rule' and 'reason'.")
         rule = entry.get("rule")
         reason = entry.get("reason")
         if not isinstance(rule, str) or not rule.strip():
-            raise AiContractError(f"Drill 'lintOverrides[{idx}]' is missing a non-empty 'rule'.")
+            raise AiContractError(f"{label}[{idx}] is missing a non-empty 'rule'.")
         if not isinstance(reason, str) or not reason.strip():
-            raise AiContractError(f"Drill 'lintOverrides[{idx}]' for rule '{rule}' must have a non-empty 'reason'.")
+            raise AiContractError(f"{label}[{idx}] for rule '{rule}' must have a non-empty 'reason'.")
+
+
+def validate_lint_overrides(lint_overrides: Any) -> None:
+    """Validates optional drill-level lintOverrides: list of {rule, reason} with non-empty reason."""
+    _validate_rule_override_list(lint_overrides, "Drill 'lintOverrides'")
+
+
+STARTER_LINT_EXPECTED_ALLOWED_TYPES = {"fix-bug", "debugging", "find-bug", "refactor", "refactoring"}
+REFACTOR_PROMPT_PATTERN = re.compile(
+    r"\b(refactor(?:ing|ed)?|simplify|simplifying|split|complexity|restructure|decompose)\b",
+    re.IGNORECASE,
+)
+
+
+def validate_starter_lint_expected(prob: Dict[str, Any]) -> set[str]:
+    """Validate per-problem `starterLintExpected: [{rule, reason}]` and return allowed rule names.
+
+    Only fix-bug/refactor problems may declare `starterLintExpected`, and their prompt must
+    explicitly state that the code structure must be improved too.
+    """
+    pid = prob.get("id", "?")
+    expected = prob.get("starterLintExpected")
+    if expected is None:
+        return set()
+    _validate_rule_override_list(expected, f"[{pid}] 'starterLintExpected'")
+    if not expected:
+        return set()
+
+    is_fix_or_refactor = (
+        prob.get("codeType") in STARTER_LINT_EXPECTED_ALLOWED_TYPES
+        or prob.get("archetype") in STARTER_LINT_EXPECTED_ALLOWED_TYPES
+    )
+    if not is_fix_or_refactor:
+        raise AiContractError(
+            f"[{pid}] 'starterLintExpected' is only allowed on fix-bug or refactor problems "
+            "(stubs must be lint-clean and must not import unused modules)."
+        )
+
+    prompt = prob.get("prompt", "")
+    if not isinstance(prompt, str) or not REFACTOR_PROMPT_PATTERN.search(prompt):
+        raise AiContractError(
+            f"[{pid}] 'starterLintExpected' requires the prompt to state that the structure must be "
+            "improved too (mention 'refactor', 'simplify', 'split', or 'complexity')."
+        )
+
+    return {entry["rule"].strip() for entry in expected}
 
 
 def validate_ai_code_contract(
@@ -872,6 +918,33 @@ def validate_drill_solution_lint(drill_doc: Dict[str, Any]) -> None:
         raise AiContractError(f"solutionCode failed TypeScript typecheck: {details}")
 
 
+def validate_drill_starter_lint(drill_doc: Dict[str, Any]) -> None:
+    """Run Layer 2 ESLint on every problem's starterCode with the drill's config.
+
+    Errors are allowed only when covered by drill-level `lintOverrides` (disabled in ESLint)
+    or declared in per-problem `starterLintExpected` on fix-bug/refactor problems whose prompt
+    asks for structural improvement.
+    """
+    expected_by_pid: Dict[str, set[str]] = {}
+    for idx, prob in enumerate(drill_doc.get("problems", []), 1):
+        pid = prob.get("id", f"Q{idx:02d}")
+        expected_by_pid[pid] = validate_starter_lint_expected(prob)
+
+    if shutil.which("node") is None:
+        print("  [SKIP] starterCode lint gate: node binary not found on PATH.")
+        return
+    try:
+        findings = lint_drill_doc(drill_doc, field="starterCode")
+    except LintToolsMissingError as exc:
+        print(f"  [SKIP] starterCode lint gate: {exc}")
+        return
+
+    unexpected = [f for f in findings if f["rule"] not in expected_by_pid.get(f["problemId"], set())]
+    if unexpected:
+        details = "; ".join(f"[{f['problemId']}] line {f['line']} {f['rule']} {f['message']}" for f in unexpected)
+        raise AiContractError(f"starterCode failed Layer 2 lint: {details}")
+
+
 NON_IMPLEMENT_TYPES = {
     "fix-bug",
     "debugging",
@@ -1081,9 +1154,13 @@ def check_code_drill(
             msg = str(exc)
             errors.append(msg if f"[{pid}]" in msg else f"[{pid}] {msg}")
 
-    # 3. Layer 2 lint + tsc on solutionCode
+    # 3. Layer 2 lint + tsc on solutionCode, and Layer 2 lint on starterCode
     try:
         validate_drill_solution_lint(drill_doc)
+    except AiContractError as exc:
+        errors.append(str(exc))
+    try:
+        validate_drill_starter_lint(drill_doc)
     except AiContractError as exc:
         errors.append(str(exc))
 
