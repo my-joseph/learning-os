@@ -815,6 +815,216 @@
           }
         }
       ]
+    },
+    {
+      "archetypeKey": "prg-c01-prototype-chain-lookup",
+      "unitCode": "PRG-T01-C01-U04",
+      "level": 1,
+      "archetype": "code-tracing",
+      "name": "Prototype Chain Property Lookup & Shadowing Trace",
+      "competencies": [
+        "prototypes",
+        "object-model",
+        "code-tracing"
+      ],
+      "coreConcept": "Tracing property lookup along the [[Prototype]] chain, distinguishing own properties from inherited properties, and predicting how property assignment shadows rather than mutates prototype properties.",
+      "mentalModel": [
+        "1. Reading obj.prop walks obj -> Object.getPrototypeOf(obj) -> ... -> null until the first matching key is found.",
+        "2. Assigning obj.prop = val creates or updates an own property on obj, shadowing any prototype property without mutating the prototype.",
+        "3. Object.hasOwn(obj, key) checks only own properties, whereas `key in obj` traverses the entire [[Prototype]] chain."
+      ],
+      "governingInvariant": "Property reads walk the [[Prototype]] chain; direct assignment writes an own property on the receiver",
+      "cognitiveTraps": [
+        {
+          "trapTag": "prototype-vs-getprototypeof-confusion",
+          "name": "Confusing Constructor.prototype with Object.getPrototypeOf(Constructor)",
+          "description": "Assuming Fn.prototype is Fn's own [[Prototype]], when Fn.prototype is the prototype assigned to instances created with `new Fn()` while Object.getPrototypeOf(Fn) is Function.prototype.",
+          "reproducer": "Object.getPrototypeOf(Widget) === Widget.prototype // false; Object.getPrototypeOf(new Widget()) === Widget.prototype // true."
+        },
+        {
+          "trapTag": "in-operator-inherited-lookup",
+          "name": "Using `in` Operator for Own-Property Checks",
+          "description": "Using `key in obj` to test membership on a plain object returns true for inherited Object.prototype keys like `toString` or `constructor`.",
+          "reproducer": "'toString' in {} // true, causing dictionary lookups to collide with Object.prototype methods."
+        },
+        {
+          "trapTag": "shadowing-vs-mutating-prototype",
+          "name": "Confusing Property Shadowing with Prototype Mutation",
+          "description": "Assuming `instance.limit = 5` mutates `proto.limit` for all sibling instances when `limit` is a primitive on the prototype.",
+          "reproducer": "const a = Object.create(proto); a.limit = 5; // proto.limit and sibling b.limit remain unchanged."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "config_fallback_chain",
+          "description": "Tracing environment-to-default configuration lookup and per-tenant overrides via prototype delegation."
+        }
+      ],
+      "usedContexts": [
+        "tenant_policy_fallback",
+        "route_metadata_registry"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-proto-own-property-check",
+          "check": "Own-property existence checks on plain objects use `Object.hasOwn(obj, key)` (or `Object.create(null)` dictionaries) rather than `key in obj`.",
+          "why": "`key in obj` walks the prototype chain and matches inherited `Object.prototype` keys such as `toString` or `constructor`.",
+          "severity": "must",
+          "accepted": [
+            "Object.hasOwn(obj, key)",
+            "Object.create(null)"
+          ],
+          "knownBad": {
+            "code": "function hasEntry(dict, key) {\n  return key in dict;\n}",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-proto-no-proto-dunder",
+          "check": "Prototype inspection and delegation use `Object.getPrototypeOf` / `Object.create` rather than deprecated `__proto__` accessors.",
+          "why": "`__proto__` is a legacy Annex B accessor absent on `Object.create(null)` objects and slower than standard `Object` helpers.",
+          "severity": "should",
+          "knownBad": {
+            "code": "function getParent(obj) {\n  return obj.__proto__;\n}",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "prg-c01-shared-prototype-mutation-fix",
+      "unitCode": "PRG-T01-C01-U04",
+      "level": 2,
+      "archetype": "debugging",
+      "name": "Shared Mutable Prototype State Repair",
+      "competencies": [
+        "prototypes",
+        "state-isolation",
+        "debugging"
+      ],
+      "coreConcept": "Diagnosing and fixing cross-instance state pollution caused by storing mutable arrays, objects, Maps, or Sets on a prototype or mutating nested inherited objects in place.",
+      "mentalModel": [
+        "1. Primitive properties on a prototype are shadowed on write, but mutating methods like `.push()` or `.set()` on an inherited object read the prototype reference and mutate it in place.",
+        "2. All mutable per-instance containers must be allocated inside the constructor or factory for each instance.",
+        "3. Overriding a nested inherited config object requires creating a fresh copy on the instance instead of mutating the prototype's nested property."
+      ],
+      "governingInvariant": "Mutating one instance's state never mutates prototype-shared containers or sibling instances",
+      "cognitiveTraps": [
+        {
+          "trapTag": "shared-mutable-prototype-state",
+          "name": "Mutable Container Placed on Prototype",
+          "description": "Defining `Base.prototype.items = []` or sharing a mutable object in `Object.create(template)` causes `.push()` on one instance to appear in all instances.",
+          "reproducer": "function Bag() {} Bag.prototype.items = []; const a = new Bag(); const b = new Bag(); a.items.push('x'); b.items // ['x']."
+        },
+        {
+          "trapTag": "nested-prototype-object-mutation",
+          "name": "In-Place Mutation of Nested Inherited Object",
+          "description": "Modifying a property inside an inherited object (`instance.settings.retries = 5`) mutates the shared prototype's `settings` object instead of shadowing `settings` on `instance`.",
+          "reproducer": "const a = Object.create({ settings: { retries: 1 } }); a.settings.retries = 5; // affects prototype and all siblings."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "session_audit_trail",
+          "description": "Isolating per-session event logs and tag lists across prototype-linked session objects."
+        }
+      ],
+      "usedContexts": [
+        "session_audit_trail",
+        "service_client_defaults"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-proto-instance-owned-mutable-state",
+          "check": "Mutable per-instance state (arrays, objects, maps, sets) is initialized on each instance in the constructor or factory rather than shared on a prototype.",
+          "why": "Mutating an array or object inherited from a prototype leaks changes across every instance sharing that prototype.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function AuditSession(userId) {\n  this.userId = userId;\n}\nAuditSession.prototype.events = [];\nAuditSession.prototype.record = function (ev) {\n  this.events.push(ev);\n};",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-proto-defensive-nested-copy",
+          "check": "When an instance customizes an inherited nested configuration object, it clones or replaces the nested object on the instance before mutating.",
+          "why": "Writing `this.config.key = val` when `this.config` lives on the prototype mutates the prototype's nested object for all siblings.",
+          "severity": "should",
+          "knownBad": {
+            "code": "const baseProto = { options: { retries: 2 } };\nfunction makeClient() {\n  const client = Object.create(baseProto);\n  client.options.retries = 5;\n  return client;\n}",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "prg-c01-prototype-delegation-hierarchy",
+      "unitCode": "PRG-T01-C01-U04",
+      "level": 2,
+      "archetype": "problem-solving",
+      "name": "Prototype Delegation Hierarchy & Null-Prototype Dictionary",
+      "competencies": [
+        "prototypes",
+        "inheritance",
+        "object-model"
+      ],
+      "coreConcept": "Implementing clean prototype delegation chains via ES6 `class extends` or `Object.create`, placing shared methods on the prototype, walking chains safely with `Object.getPrototypeOf`, and using `Object.create(null)` for collision-free dictionaries.",
+      "mentalModel": [
+        "1. `class Sub extends Base` links `Sub.prototype.[[Prototype]] === Base.prototype` and requires `super(...)` before accessing `this`.",
+        "2. Walking a prototype chain terminates when `Object.getPrototypeOf(cursor) === null`.",
+        "3. `Object.create(null)` creates a dictionary with no `Object.prototype`, so `Object.hasOwn(dict, key)` must be used instead of `dict.hasOwnProperty(key)`."
+      ],
+      "governingInvariant": "Shared methods live on the prototype, per-instance state lives on the instance, and chain traversal stops at null",
+      "cognitiveTraps": [
+        {
+          "trapTag": "missing-super-call-or-order",
+          "name": "Accessing `this` Before `super()` or Omitting `super()`",
+          "description": "In a subclass constructor, `this` is uninitialized until `super()` executes; accessing `this` first throws ReferenceError.",
+          "reproducer": "class Sub extends Base { constructor(x) { this.x = x; super(); } } throws ReferenceError."
+        },
+        {
+          "trapTag": "object-create-null-missing-methods",
+          "name": "Calling Object.prototype Methods on Null-Prototype Object",
+          "description": "Calling `dict.hasOwnProperty(k)` or `dict.toString()` on `Object.create(null)` throws TypeError because it has no Object.prototype.",
+          "reproducer": "const d = Object.create(null); d.hasOwnProperty('a') throws TypeError: d.hasOwnProperty is not a function."
+        },
+        {
+          "trapTag": "overwriting-prototype-breaks-constructor",
+          "name": "Overwriting Fn.prototype Without Preserving Chain",
+          "description": "Replacing `Fn.prototype = { ... }` discards the default `constructor` link and any prior inheritance link.",
+          "reproducer": "Sub.prototype = { run() {} }; new Sub() instanceof Base // false."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "plugin_registry_hierarchy",
+          "description": "Building a two-level adapter hierarchy and prototype-safe key-value registry."
+        }
+      ],
+      "usedContexts": [
+        "plugin_registry_hierarchy"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-proto-methods-on-prototype",
+          "check": "Shared instance methods are defined on the class or prototype rather than recreated as per-instance closures in the constructor.",
+          "why": "Recreating identical methods per instance wastes memory and bypasses prototype delegation.",
+          "severity": "must",
+          "knownBad": {
+            "code": "class Adapter {\n  constructor(name) {\n    this.name = name;\n    this.describe = () => `adapter:${this.name}`;\n  }\n}",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-proto-null-dict-safe-lookup",
+          "check": "Null-prototype dictionaries (`Object.create(null)`) are queried with `Object.hasOwn(dict, key)` rather than instance methods like `dict.hasOwnProperty(key)`.",
+          "why": "Objects created with `Object.create(null)` have no `Object.prototype` and throw `TypeError` when `hasOwnProperty` is called as a method.",
+          "severity": "should",
+          "knownBad": {
+            "code": "function createDict() {\n  return Object.create(null);\n}\nfunction hasKey(dict, key) {\n  return dict.hasOwnProperty(key);\n}",
+            "caughtBy": "review"
+          }
+        }
+      ]
     }
   ]
 }

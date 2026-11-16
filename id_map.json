@@ -2399,5 +2399,9 @@
   "DRL-PRG-T01-C01-U03-01": {
     "id": "41a3818f-8ba0-8186-b9a5-d2ae82e25c7c",
     "title": "`this` and Binding — Verified Programming Drill (5 Qs · AI Synthesized Engineering Mode)"
+  },
+  "DRL-PRG-T01-C01-U04-01": {
+    "id": "41a3818f-8ba0-81d9-bdb1-c7190ac20056",
+    "title": "Prototypes and Inheritance — Verified Programming Drill (5 Qs · AI Synthesized Engineering Mode)"
   }
 }

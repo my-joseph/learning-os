@@ -1,0 +1,477 @@
+{
+  "unitCode": "PRG-T01-C01-U04",
+  "unitTitle": "Prototypes and Inheritance",
+  "environment": "node-vanilla",
+  "sourceAttribution": "MDN JavaScript Guide (Inheritance and the prototype chain) & ECMAScript Object [[Prototype]] Spec",
+  "config": {
+    "questionCount": 5,
+    "difficulty": "ALL",
+    "difficultyMode": "AI Synthesized Engineering Mode"
+  },
+  "problems": [
+    {
+      "id": "Q01",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "code-tracing",
+      "codeType": "trace-explain",
+      "archetypeKey": "prg-c01-prototype-chain-lookup",
+      "commonTrapTag": "shadowing-vs-mutating-prototype",
+      "context": "tenant_policy_fallback",
+      "entryPoint": "tracePolicyChain",
+      "answerSpec": {
+        "tokens": [
+          "region-retries:2",
+          "tenant-retries:5",
+          "base-retries:2",
+          "own-retries:true",
+          "own-mode:false"
+        ]
+      },
+      "codeSnippet": "const basePolicy = { maxRetries: 2, mode: 'strict' };\nconst regionPolicy = Object.create(basePolicy);\nconst tenantPolicy = Object.create(regionPolicy);\nconst out = [];\nout.push('region-retries:' + regionPolicy.maxRetries);\ntenantPolicy.maxRetries = 5;\nout.push('tenant-retries:' + tenantPolicy.maxRetries);\nout.push('base-retries:' + basePolicy.maxRetries);\nout.push('own-retries:' + Object.hasOwn(tenantPolicy, 'maxRetries'));\nout.push('own-mode:' + Object.hasOwn(tenantPolicy, 'mode'));\nconsole.log(out.join('\\n'));\n",
+      "prompt": "Trace the prototype-chain property lookup and shadowing behavior in the tenant policy snippet below, and implement `tracePolicyChain()` to return the exact array of lines printed to stdout.\n\n```js\nconst basePolicy = { maxRetries: 2, mode: 'strict' };\nconst regionPolicy = Object.create(basePolicy);\nconst tenantPolicy = Object.create(regionPolicy);\nconst out = [];\nout.push('region-retries:' + regionPolicy.maxRetries);\ntenantPolicy.maxRetries = 5;\nout.push('tenant-retries:' + tenantPolicy.maxRetries);\nout.push('base-retries:' + basePolicy.maxRetries);\nout.push('own-retries:' + Object.hasOwn(tenantPolicy, 'maxRetries'));\nout.push('own-mode:' + Object.hasOwn(tenantPolicy, 'mode'));\nconsole.log(out.join('\\n'));\n```\n\n**Requirements:**\n- Return a fresh `string[]` containing each printed line in exact execution order.\n\n**Return Contract:**\n- Return `string[]` (5 elements).",
+      "inputHint": "Trace prototype-chain reads vs. own-property writes on receiver objects",
+      "starterCode": "function tracePolicyChain() {\n  // TODO: return the exact array of lines printed by the snippet\n  return [];\n}\n\nmodule.exports = { tracePolicyChain };\n",
+      "solutionCode": "function tracePolicyChain() {\n  const traceLines = [\n    'region-retries:2',\n    'tenant-retries:5',\n    'base-retries:2',\n    'own-retries:true',\n    'own-mode:false',\n  ];\n  return traceLines;\n}\n\nmodule.exports = { tracePolicyChain };\n",
+      "trapMutant": "function tracePolicyChain() {\n  return [\n    'region-retries:2',\n    'tenant-retries:5',\n    'base-retries:5',\n    'own-retries:false',\n    'own-mode:false',\n  ];\n}\n\nmodule.exports = { tracePolicyChain };\n",
+      "visibleTests": [
+        {
+          "name": "starts with region-retries read from prototype chain",
+          "testCode": "const lines = tracePolicyChain();\nassert.strictEqual(lines[0], 'region-retries:2');\nassert.strictEqual(lines[1], 'tenant-retries:5');"
+        },
+        {
+          "name": "returns a fresh 5-element array",
+          "testCode": "const first = tracePolicyChain();\nassert.strictEqual(first.length, 5);\nfirst.push('extra');\nassert.strictEqual(tracePolicyChain().length, 5);"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "verifies shadowing leaves basePolicy unchanged and Object.hasOwn distinguishes own vs inherited",
+          "testCode": "assert.deepStrictEqual(tracePolicyChain(), [\n  'region-retries:2',\n  'tenant-retries:5',\n  'base-retries:2',\n  'own-retries:true',\n  'own-mode:false',\n]);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Reading regionPolicy.maxRetries walks the prototype chain to basePolicy and finds 2."
+        },
+        {
+          "explain": "Assigning tenantPolicy.maxRetries = 5 creates an own property on tenantPolicy, shadowing basePolicy.maxRetries without mutating basePolicy."
+        },
+        {
+          "explain": "Object.hasOwn(tenantPolicy, 'maxRetries') is true, while Object.hasOwn(tenantPolicy, 'mode') is false because mode remains inherited."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "shadowing-vs-mutating-prototype|direct|const basePolicy = { maxRetries: #, mode: 'strict' }; const regionPolicy = Object.create(basePolicy); const tenantPolicy = Object.create(regionPolicy); const out = []; out.push('region-retries:' + regionPolicy.maxRetries); tenantPolicy.maxRetries = #; out.push('tenant-retries:' + tenantPolicy.maxRetries); out.push('base-retries:' + basePolicy.maxRetries); out.push('own-retries:' + Object.hasOwn(tenantPolicy, 'maxRetries')); out.push('own-mode:' + Object.hasOwn(tenantPolicy, 'mode')); console.log(out.join('\\n'));",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "code-tracing",
+          "verifiedByExecution": true
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 3,
+          "hasTrapOrFlaw": false,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "shadowing-vs-mutating-prototype",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 5
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Foundation",
+      "unitCode": "PRG-T01-C01-U04",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U04-01/Q01_tracePolicyChain.js"
+    },
+    {
+      "id": "Q02",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "code-tracing",
+      "codeType": "predict-output",
+      "archetypeKey": "prg-c01-prototype-chain-lookup",
+      "commonTrapTag": "in-operator-inherited-lookup",
+      "context": "route_metadata_registry",
+      "entryPoint": "predictRegistryLookup",
+      "answerSpec": {
+        "tokens": [
+          "in-toString:true",
+          "own-toString:false",
+          "null-in:false",
+          "ctor-proto:false",
+          "inst-proto:true"
+        ]
+      },
+      "codeSnippet": "function RouteEntry(path) {\n  this.path = path;\n}\nconst plainMeta = { path: '/health' };\nconst nullMeta = Object.create(null);\nconst route = new RouteEntry('/v1/users');\nconst results = [\n  'in-toString:' + ('toString' in plainMeta),\n  'own-toString:' + Object.hasOwn(plainMeta, 'toString'),\n  'null-in:' + ('toString' in nullMeta),\n  'ctor-proto:' + (Object.getPrototypeOf(RouteEntry) === RouteEntry.prototype),\n  'inst-proto:' + (Object.getPrototypeOf(route) === RouteEntry.prototype),\n];\nconsole.log(results.join('\\n'));\n",
+      "prompt": "Predict the exact output lines of the route metadata registry snippet below and implement `predictRegistryLookup()` to return them as a fresh array.\n\n```js\nfunction RouteEntry(path) {\n  this.path = path;\n}\nconst plainMeta = { path: '/health' };\nconst nullMeta = Object.create(null);\nconst route = new RouteEntry('/v1/users');\nconst results = [\n  'in-toString:' + ('toString' in plainMeta),\n  'own-toString:' + Object.hasOwn(plainMeta, 'toString'),\n  'null-in:' + ('toString' in nullMeta),\n  'ctor-proto:' + (Object.getPrototypeOf(RouteEntry) === RouteEntry.prototype),\n  'inst-proto:' + (Object.getPrototypeOf(route) === RouteEntry.prototype),\n];\nconsole.log(results.join('\\n'));\n```\n\n**Requirements:**\n- Return a fresh `string[]` matching every line printed to stdout.\n\n**Return Contract:**\n- Return `string[]` (5 elements).",
+      "inputHint": "Distinguish `in` vs `Object.hasOwn` and `Fn.prototype` vs `Object.getPrototypeOf(Fn)`",
+      "starterCode": "function predictRegistryLookup() {\n  // TODO: return the 5 predicted output strings\n  return [];\n}\n\nmodule.exports = { predictRegistryLookup };\n",
+      "solutionCode": "function predictRegistryLookup() {\n  const expectedOutput = [\n    'in-toString:true',\n    'own-toString:false',\n    'null-in:false',\n    'ctor-proto:false',\n    'inst-proto:true',\n  ];\n  return expectedOutput;\n}\n\nmodule.exports = { predictRegistryLookup };\n",
+      "trapMutant": "function predictRegistryLookup() {\n  return [\n    'in-toString:false',\n    'own-toString:false',\n    'null-in:false',\n    'ctor-proto:true',\n    'inst-proto:true',\n  ];\n}\n\nmodule.exports = { predictRegistryLookup };\n",
+      "visibleTests": [
+        {
+          "name": "returns 5 formatted boolean check strings",
+          "testCode": "const out = predictRegistryLookup();\nassert.strictEqual(out.length, 5);\nassert.strictEqual(out[1], 'own-toString:false');\nassert.strictEqual(out[2], 'null-in:false');"
+        },
+        {
+          "name": "returns a fresh array on each call",
+          "testCode": "const a = predictRegistryLookup();\na.pop();\nassert.strictEqual(predictRegistryLookup().length, 5);"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "predicts in-operator Object.prototype collision and constructor vs instance prototype links",
+          "testCode": "assert.deepStrictEqual(predictRegistryLookup(), [\n  'in-toString:true',\n  'own-toString:false',\n  'null-in:false',\n  'ctor-proto:false',\n  'inst-proto:true',\n]);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "'toString' in plainMeta is true because `in` walks up to Object.prototype, whereas Object.hasOwn checks only own properties (false)."
+        },
+        {
+          "explain": "Object.create(null) has no prototype, so 'toString' in nullMeta is false."
+        },
+        {
+          "explain": "Object.getPrototypeOf(RouteEntry) is Function.prototype (not RouteEntry.prototype), while Object.getPrototypeOf(route) is RouteEntry.prototype."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "in-operator-inherited-lookup|direct|function RouteEntry(path) { this.path = path; } const plainMeta = { path: '/health' }; const nullMeta = Object.create(null); const route = new RouteEntry('/v#/users'); const results = [ 'in-toString:' + ('toString' in plainMeta), 'own-toString:' + Object.hasOwn(plainMeta, 'toString'), 'null-in:' + ('toString' in nullMeta), 'ctor-proto:' + (Object.getPrototypeOf(RouteEntry) === RouteEntry.prototype), 'inst-proto:' + (Object.getPrototypeOf(route) === RouteEntry.prototype), ]; console.log(results.join('\\n'));",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "code-tracing",
+          "verifiedByExecution": true
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 3,
+          "hasTrapOrFlaw": false,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "in-operator-inherited-lookup",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 5
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Foundation",
+      "unitCode": "PRG-T01-C01-U04",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U04-01/Q02_predictRegistryLookup.js"
+    },
+    {
+      "id": "Q03",
+      "level": 2,
+      "category": "Trap & Edge Case",
+      "archetype": "debugging",
+      "codeType": "fix-bug",
+      "archetypeKey": "prg-c01-shared-prototype-mutation-fix",
+      "commonTrapTag": "shared-mutable-prototype-state",
+      "context": "session_audit_trail",
+      "entryPoint": "AuditSession",
+      "prompt": "Fix the cross-session state pollution bug in `AuditSession`.\n\n**Observed Symptoms:**\n- Recording an event on one `AuditSession` instance causes unrelated `AuditSession` instances to report that event in `getEvents()`.\n- Mutating the array returned by `getEvents()` externally also alters internal session state.\n\n**Requirements:**\n- Keep `record(eventName)` and `getEvents()` on `AuditSession.prototype` so methods are shared across instances.\n- Validate that `sessionId` and `eventName` are non-empty strings; throw `TypeError` otherwise.\n- Ensure each `AuditSession` instance maintains an isolated event list and `getEvents()` returns a defensive copy.\n\n**Return Contract:**\n- `new AuditSession(sessionId)` with `.record(eventName)` returning the new event count (`number`) and `.getEvents()` returning `string[]`.",
+      "inputHint": "Keep shared methods on the prototype while isolating mutable containers per instance",
+      "starterCode": "function AuditSession(sessionId) {\n  if (typeof sessionId !== 'string' || sessionId.trim() === '') {\n    throw new TypeError('sessionId must be a non-empty string');\n  }\n  this.sessionId = sessionId;\n}\n\nAuditSession.prototype.events = [];\n\nAuditSession.prototype.record = function record(eventName) {\n  if (typeof eventName !== 'string' || eventName.trim() === '') {\n    throw new TypeError('eventName must be a non-empty string');\n  }\n  this.events.push(eventName);\n  return this.events.length;\n};\n\nAuditSession.prototype.getEvents = function getEvents() {\n  return this.events;\n};\n\nmodule.exports = { AuditSession };\n",
+      "solutionCode": "function AuditSession(sessionId) {\n  if (typeof sessionId !== 'string' || sessionId.trim() === '') {\n    throw new TypeError('sessionId must be a non-empty string');\n  }\n  this.sessionId = sessionId;\n  this.events = [];\n}\n\nAuditSession.prototype.record = function record(eventName) {\n  if (typeof eventName !== 'string' || eventName.trim() === '') {\n    throw new TypeError('eventName must be a non-empty string');\n  }\n  this.events.push(eventName);\n  return this.events.length;\n};\n\nAuditSession.prototype.getEvents = function getEvents() {\n  return [...this.events];\n};\n\nmodule.exports = { AuditSession };\n",
+      "trapMutant": "function AuditSession(sessionId) {\n  if (typeof sessionId !== 'string' || sessionId.trim() === '') {\n    throw new TypeError('sessionId must be a non-empty string');\n  }\n  this.sessionId = sessionId;\n}\n\nAuditSession.prototype.events = [];\n\nAuditSession.prototype.record = function record(eventName) {\n  if (typeof eventName !== 'string' || eventName.trim() === '') {\n    throw new TypeError('eventName must be a non-empty string');\n  }\n  this.events.push(eventName);\n  return this.events.length;\n};\n\nAuditSession.prototype.getEvents = function getEvents() {\n  return [...this.events];\n};\n\nmodule.exports = { AuditSession };\n",
+      "visibleTests": [
+        {
+          "name": "isolates recorded events between separate AuditSession instances",
+          "testCode": "const sessionA = new AuditSession('sess-a');\nconst sessionB = new AuditSession('sess-b');\nsessionA.record('login');\nassert.deepStrictEqual(sessionA.getEvents(), ['login']);\nassert.deepStrictEqual(sessionB.getEvents(), []);"
+        },
+        {
+          "name": "validates sessionId and eventName",
+          "testCode": "assert.throws(() => new AuditSession(''), TypeError);\nconst session = new AuditSession('sess-1');\nassert.throws(() => session.record('  '), TypeError);"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "keeps methods on prototype and returns defensive copies from getEvents",
+          "testCode": "const s1 = new AuditSession('s1');\nconst s2 = new AuditSession('s2');\nassert.strictEqual(s1.record, s2.record);\nassert.strictEqual(s1.getEvents, s2.getEvents);\nassert.strictEqual(s1.record('created'), 1);\nconst snapshot = s1.getEvents();\nsnapshot.push('tampered');\nassert.deepStrictEqual(s1.getEvents(), ['created']);\nassert.deepStrictEqual(AuditSession.prototype.events, undefined);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Remove the shared `AuditSession.prototype.events = []` array and initialize `this.events = []` inside the `AuditSession` constructor so each instance owns its own array."
+        },
+        {
+          "explain": "Return `[...this.events]` from `getEvents()` so callers cannot mutate internal instance state."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "shared-mutable-prototype-state|direct|AuditSession",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "debugging"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "shared-mutable-prototype-state",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 4
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Standard Exam",
+      "unitCode": "PRG-T01-C01-U04",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U04-01/Q03_AuditSession.js"
+    },
+    {
+      "id": "Q04",
+      "level": 2,
+      "category": "Trap & Edge Case",
+      "archetype": "debugging",
+      "codeType": "fix-bug",
+      "archetypeKey": "prg-c01-shared-prototype-mutation-fix",
+      "commonTrapTag": "nested-prototype-object-mutation",
+      "context": "service_client_defaults",
+      "entryPoint": "createServiceClient",
+      "prompt": "Fix the nested prototype mutation bug in `createServiceClient(name, overrides)`.\n\n**Observed Symptoms:**\n- Creating a client with custom `timeoutMs` or `header` overrides silently alters the `defaults` observed by previously created and subsequently created clients.\n\n**Requirements:**\n- Preserve prototype delegation from each client to `baseClientProto` (so `Object.getPrototypeOf(client) === baseClientProto` and `client.describe()` works).\n- Support optional `overrides` (`{ timeoutMs?: number, header?: [string, string] }`); validate `name` is a non-empty string (`TypeError`).\n- Ensure customizing `timeoutMs` or adding a header on one client never mutates `baseClientProto.defaults` or `overrides`.\n\n**Return Contract:**\n- Return a prototype-linked client object with own `name`, isolated `defaults: { timeoutMs, headers }`, and inherited `describe()`.",
+      "inputHint": "Replace nested inherited objects on the instance before mutating properties",
+      "starterCode": "const baseClientProto = {\n  defaults: {\n    timeoutMs: 1000,\n    headers: { 'x-sdk': 'v1' },\n  },\n  describe() {\n    return `${this.name}:${this.defaults.timeoutMs}ms`;\n  },\n};\n\nfunction createServiceClient(name, overrides = {}) {\n  if (typeof name !== 'string' || name.trim() === '') {\n    throw new TypeError('name must be a non-empty string');\n  }\n  const client = Object.create(baseClientProto);\n  client.name = name;\n  if (overrides.timeoutMs !== undefined) {\n    client.defaults.timeoutMs = overrides.timeoutMs;\n  }\n  if (overrides.header) {\n    const [key, value] = overrides.header;\n    client.defaults.headers[key] = value;\n  }\n  return client;\n}\n\nmodule.exports = { baseClientProto, createServiceClient };\n",
+      "solutionCode": "const baseClientProto = {\n  defaults: {\n    timeoutMs: 1000,\n    headers: { 'x-sdk': 'v1' },\n  },\n  describe() {\n    return `${this.name}:${this.defaults.timeoutMs}ms`;\n  },\n};\n\nfunction createServiceClient(name, overrides = {}) {\n  if (typeof name !== 'string' || name.trim() === '') {\n    throw new TypeError('name must be a non-empty string');\n  }\n  const client = Object.create(baseClientProto);\n  client.name = name;\n  const nextHeaders = { ...baseClientProto.defaults.headers };\n  if (overrides.header) {\n    const [key, value] = overrides.header;\n    nextHeaders[key] = value;\n  }\n  client.defaults = {\n    timeoutMs: overrides.timeoutMs ?? baseClientProto.defaults.timeoutMs,\n    headers: nextHeaders,\n  };\n  return client;\n}\n\nmodule.exports = { baseClientProto, createServiceClient };\n",
+      "trapMutant": "const baseClientProto = {\n  defaults: {\n    timeoutMs: 1000,\n    headers: { 'x-sdk': 'v1' },\n  },\n  describe() {\n    return `${this.name}:${this.defaults.timeoutMs}ms`;\n  },\n};\n\nfunction createServiceClient(name, overrides = {}) {\n  if (typeof name !== 'string' || name.trim() === '') {\n    throw new TypeError('name must be a non-empty string');\n  }\n  const client = Object.create(baseClientProto);\n  client.name = name;\n  client.defaults = {\n    timeoutMs: overrides.timeoutMs ?? baseClientProto.defaults.timeoutMs,\n    headers: baseClientProto.defaults.headers,\n  };\n  if (overrides.header) {\n    const [key, value] = overrides.header;\n    client.defaults.headers[key] = value;\n  }\n  return client;\n}\n\nmodule.exports = { baseClientProto, createServiceClient };\n",
+      "visibleTests": [
+        {
+          "name": "keeps custom timeoutMs isolated from sibling clients",
+          "testCode": "const billing = createServiceClient('billing', { timeoutMs: 3000 });\nconst auth = createServiceClient('auth');\nassert.strictEqual(billing.describe(), 'billing:3000ms');\nassert.strictEqual(auth.describe(), 'auth:1000ms');"
+        },
+        {
+          "name": "preserves prototype delegation to baseClientProto",
+          "testCode": "const client = createServiceClient('orders');\nassert.strictEqual(Object.getPrototypeOf(client), baseClientProto);"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "isolates nested headers object and leaves baseClientProto.defaults untouched",
+          "testCode": "const c1 = createServiceClient('c1', { timeoutMs: 0, header: ['x-trace', '1'] });\nconst c2 = createServiceClient('c2');\nassert.strictEqual(c1.defaults.timeoutMs, 0);\nassert.strictEqual(c1.defaults.headers['x-trace'], '1');\nassert.strictEqual(c2.defaults.headers['x-trace'], undefined);\nassert.strictEqual(baseClientProto.defaults.timeoutMs, 1000);\nassert.strictEqual(baseClientProto.defaults.headers['x-trace'], undefined);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Writing to `client.defaults.timeoutMs` when `defaults` is inherited mutates `baseClientProto.defaults` directly."
+        },
+        {
+          "explain": "Assign a fresh `client.defaults` object with a cloned `headers` object and `??` for `timeoutMs` (preserving `0`) so `baseClientProto.defaults` is never mutated."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "nested-prototype-object-mutation|direct|createServiceClient",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "debugging"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "nested-prototype-object-mutation",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 4
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Standard Exam",
+      "unitCode": "PRG-T01-C01-U04",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U04-01/Q04_createServiceClient.js"
+    },
+    {
+      "id": "Q05",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "codeType": "implement",
+      "archetypeKey": "prg-c01-prototype-delegation-hierarchy",
+      "commonTrapTag": "object-create-null-missing-methods",
+      "context": "plugin_registry_hierarchy",
+      "entryPoint": "ScopedRegistry",
+      "prompt": "Implement a two-level `BaseRegistry` / `ScopedRegistry` hierarchy and `inspectPrototypeDepth(target)` for a plugin registry.\n\n**Requirements:**\n- `BaseRegistry(namespace)`: validate `namespace` is a non-empty string (`TypeError`), store `this.namespace`, and initialize an internal `Object.create(null)` dictionary for entries.\n- Methods on `BaseRegistry.prototype`: `set(key, value)` (validate `key` is a non-empty string, `TypeError`), `has(key)` (using `Object.hasOwn`, never `in` or `.hasOwnProperty`), and `get(key)` (returning `undefined` if absent).\n- `ScopedRegistry(namespace, scope)` extends `BaseRegistry`: call `super(namespace)` before accessing `this`, store `this.scope`, and override `get(key)` to return `undefined` when `!this.has(key)` or `{ scope: this.scope, value }` when present.\n- `inspectPrototypeDepth(target)`: return `0` for `null`/`undefined`/primitives, or count the number of non-null `Object.getPrototypeOf` hops from `target` to `null`.\n\n**Return Contract:**\n- Export `{ BaseRegistry, ScopedRegistry, inspectPrototypeDepth }`.",
+      "inputHint": "Use Object.create(null) with Object.hasOwn and walk Object.getPrototypeOf until null",
+      "starterCode": "class BaseRegistry {\n  constructor(_namespace) {}\n}\n\nclass ScopedRegistry extends BaseRegistry {\n  constructor(_namespace, _scope) {\n    super();\n  }\n}\n\nfunction inspectPrototypeDepth(_target) {\n  return -1;\n}\n\nmodule.exports = { BaseRegistry, ScopedRegistry, inspectPrototypeDepth };\n",
+      "solutionCode": "class BaseRegistry {\n  constructor(namespace) {\n    if (typeof namespace !== 'string' || namespace.trim() === '') {\n      throw new TypeError('namespace must be a non-empty string');\n    }\n    this.namespace = namespace;\n    this.entries = Object.create(null);\n  }\n\n  set(key, value) {\n    if (typeof key !== 'string' || key.trim() === '') {\n      throw new TypeError('key must be a non-empty string');\n    }\n    this.entries[key] = value;\n  }\n\n  has(key) {\n    return Object.hasOwn(this.entries, key);\n  }\n\n  get(key) {\n    return this.has(key) ? this.entries[key] : undefined;\n  }\n}\n\nclass ScopedRegistry extends BaseRegistry {\n  constructor(namespace, scope) {\n    if (typeof scope !== 'string' || scope.trim() === '') {\n      throw new TypeError('scope must be a non-empty string');\n    }\n    super(namespace);\n    this.scope = scope;\n  }\n\n  get(key) {\n    if (!this.has(key)) {\n      return undefined;\n    }\n    return { scope: this.scope, value: super.get(key) };\n  }\n}\n\nfunction inspectPrototypeDepth(target) {\n  if (target === null || (typeof target !== 'object' && typeof target !== 'function')) {\n    return 0;\n  }\n  let depth = 0;\n  let cursor = Object.getPrototypeOf(target);\n  while (cursor !== null) {\n    depth += 1;\n    cursor = Object.getPrototypeOf(cursor);\n  }\n  return depth;\n}\n\nmodule.exports = { BaseRegistry, ScopedRegistry, inspectPrototypeDepth };\n",
+      "trapMutant": "class BaseRegistry {\n  constructor(namespace) {\n    if (typeof namespace !== 'string' || namespace.trim() === '') {\n      throw new TypeError('namespace must be a non-empty string');\n    }\n    this.namespace = namespace;\n    this.entries = Object.create(null);\n  }\n\n  set(key, value) {\n    if (typeof key !== 'string' || key.trim() === '') {\n      throw new TypeError('key must be a non-empty string');\n    }\n    this.entries[key] = value;\n  }\n\n  has(key) {\n    return this.entries.hasOwnProperty(key);\n  }\n\n  get(key) {\n    return this.has(key) ? this.entries[key] : undefined;\n  }\n}\n\nclass ScopedRegistry extends BaseRegistry {\n  constructor(namespace, scope) {\n    if (typeof scope !== 'string' || scope.trim() === '') {\n      throw new TypeError('scope must be a non-empty string');\n    }\n    super(namespace);\n    this.scope = scope;\n  }\n\n  get(key) {\n    if (!this.has(key)) {\n      return undefined;\n    }\n    return { scope: this.scope, value: super.get(key) };\n  }\n}\n\nfunction inspectPrototypeDepth(target) {\n  if (target === null || (typeof target !== 'object' && typeof target !== 'function')) {\n    return 0;\n  }\n  let depth = 0;\n  let cursor = Object.getPrototypeOf(target);\n  while (cursor !== null) {\n    depth += 1;\n    cursor = Object.getPrototypeOf(cursor);\n  }\n  return depth;\n}\n\nmodule.exports = { BaseRegistry, ScopedRegistry, inspectPrototypeDepth };\n",
+      "visibleTests": [
+        {
+          "name": "stores and retrieves scoped entries with inheritance",
+          "testCode": "const reg = new ScopedRegistry('plugins', 'prod');\nassert.ok(reg instanceof BaseRegistry);\nreg.set('auth', 42);\nassert.deepStrictEqual(reg.get('auth'), { scope: 'prod', value: 42 });\nassert.strictEqual(reg.get('missing'), undefined);"
+        },
+        {
+          "name": "inspectPrototypeDepth counts prototype chain hops",
+          "testCode": "assert.strictEqual(inspectPrototypeDepth(Object.create(null)), 0);\nassert.strictEqual(inspectPrototypeDepth({}), 1);\nassert.strictEqual(inspectPrototypeDepth(new ScopedRegistry('p', 's')), 3);"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "avoids Object.prototype collisions and isolates instances",
+          "testCode": "const r1 = new ScopedRegistry('core', 'eu');\nconst r2 = new ScopedRegistry('core', 'us');\nassert.strictEqual(r1.has('toString'), false);\nassert.strictEqual(r1.has('constructor'), false);\nassert.strictEqual(r1.get('toString'), undefined);\nr1.set('toString', 'custom');\nassert.deepStrictEqual(r1.get('toString'), { scope: 'eu', value: 'custom' });\nassert.strictEqual(r2.has('toString'), false);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Use `Object.create(null)` for `this.entries` and `Object.hasOwn(this.entries, key)` in `has(key)` so `Object.prototype` keys like `toString` never collide."
+        },
+        {
+          "explain": "In `ScopedRegistry`, call `super(namespace)` before assigning `this.scope`, and delegate `super.get(key)` in `get(key)`."
+        },
+        {
+          "explain": "In `inspectPrototypeDepth`, walk `Object.getPrototypeOf(cursor)` until `null` and count the hops."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "object-create-null-missing-methods|direct|ScopedRegistry",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": false,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "object-create-null-missing-methods",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 5
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Standard Exam",
+      "unitCode": "PRG-T01-C01-U04",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U04-01/Q05_ScopedRegistry.js"
+    }
+  ],
+  "blindSolve": [
+    {
+      "problemId": "Q01",
+      "passed": true
+    },
+    {
+      "problemId": "Q02",
+      "passed": true
+    },
+    {
+      "problemId": "Q03",
+      "passed": true
+    },
+    {
+      "problemId": "Q04",
+      "passed": true
+    },
+    {
+      "problemId": "Q05",
+      "passed": true
+    }
+  ],
+  "review": {
+    "verdict": "pass",
+    "note": "All 5 problems pass no-leak, realistic domain, Layer 3 rubric, mix/level, unit scope, and trap-mutant checks."
+  },
+  "drillId": "DRL-PRG-T01-C01-U04-01",
+  "topicCode": "PRG-T01",
+  "chapterCode": "PRG-T01-C01",
+  "schemaVersion": "2.0-code",
+  "subject": "PRG",
+  "createdAt": "2026-11-16 20:58:04",
+  "localFilePath": "drills/data/PRG-T01-C01-U04/DRL-PRG-T01-C01-U04-01.json"
+}
