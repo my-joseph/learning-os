@@ -1,0 +1,186 @@
+{
+  "unitCode": "MTH-T02-C03-U02",
+  "topicTitle": "Modeling with Linear Functions",
+  "description": "Reasoning vault aligned with OpenStax Algebra and Trigonometry 2e §4.2: build original linear models from verbal descriptions and pairs of input-output data, then interpret and use their predictions within a meaningful domain.",
+  "archetypes": [
+    {
+      "unitCode": "MTH-T02-C03-U02",
+      "archetypeKey": "t02-c03-u02-build-model-from-rate-and-start",
+      "level": 1,
+      "name": "Build a Model from a Starting Value and Rate",
+      "source": "OpenStax Algebra and Trigonometry 2e §4.2 — Building Linear Models from Verbal Descriptions",
+      "coreConcept": "A constant rate and an initial amount determine a linear rule for a changing quantity.",
+      "mentalModel": "Start at the initial amount, then add the same rate-sized change for every input unit elapsed.",
+      "governingRelation": "Q(t)=Q_0+rt",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c03-u02-swap-start-and-rate-trap",
+          "description": "Interchanging the starting amount and per-unit rate when building a model.",
+          "trapFormula": "Q_0+rt ↦ r+Q_0t"
+        },
+        {
+          "trapTag": "t02-c03-u02-rate-direction-sign-trap",
+          "description": "Using a positive rate for a quantity that consistently decreases, or a negative rate for one that increases.",
+          "trapFormula": "decrease at r ↦ Q_0+rt"
+        },
+        {
+          "trapTag": "t02-c03-u02-rate-unit-trap",
+          "description": "Using a rate whose units do not match the chosen input unit.",
+          "trapFormula": "per hour ↦ multiply by minutes without conversion"
+        }
+      ],
+      "versatileDomains": [
+        "inventory tracking",
+        "reservoir operations",
+        "account balances"
+      ],
+      "usedContexts": [
+        "A reserve tank contains a starting amount of water, and a pump adds water at a steady rate."
+      ],
+      "figureBuilders": [
+        {
+          "fn": "build_function_graph_figure",
+          "args": {
+            "x_min": "0",
+            "x_max": "t*2",
+            "y_min": "0",
+            "y_max": "V0+r*t*2"
+          },
+          "labels": {
+            "expr": "{V0:g}+{r:g}*x",
+            "label": "Q(t)={V0:g}+{r:g}t"
+          },
+          "title": "A starting quantity changes at a constant rate"
+        }
+      ]
+    },
+    {
+      "unitCode": "MTH-T02-C03-U02",
+      "archetypeKey": "t02-c03-u02-model-from-two-observations",
+      "level": 2,
+      "name": "Build a Model from Two Observations",
+      "source": "OpenStax Algebra and Trigonometry 2e §4.2 — Using Given Input and Output Values to Build a Model",
+      "coreConcept": "Two observations with distinct inputs determine the constant rate and the line that models the relationship.",
+      "mentalModel": "Compare paired changes to find the rate, anchor the line at one observation, and check it against the other.",
+      "governingRelation": "m=(y_2-y_1)/(x_2-x_1);\\quad y=mx+b",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c03-u02-unpaired-observation-trap",
+          "description": "Pairing an input value with the output from a different observation.",
+          "trapFormula": "(x_1,y_2),(x_2,y_1)"
+        },
+        {
+          "trapTag": "t02-c03-u02-forget-anchor-value-trap",
+          "description": "Using only the rate and omitting the nonzero initial amount or intercept.",
+          "trapFormula": "y=mx+b ↦ y=mx"
+        }
+      ],
+      "versatileDomains": [
+        "production logs",
+        "sensor records",
+        "service usage"
+      ],
+      "usedContexts": [
+        "A workshop production dashboard tracks a running total that includes orders completed before the monitoring window; additional orders are completed at a constant pace."
+      ],
+      "figureBuilders": [
+        {
+          "fn": "build_function_graph_figure",
+          "args": {
+            "x_min": "t1",
+            "x_max": "t*2",
+            "y_min": "q1",
+            "y_max": "q2*1.5"
+          },
+          "labels": {
+            "expr": "{q1:g}+({q2:g}-{q1:g})/({t2:g}-{t1:g})*(x-{t1:g})",
+            "label": "A linear model from paired observations"
+          },
+          "title": "Two observations determine a constant-rate model"
+        }
+      ]
+    },
+    {
+      "unitCode": "MTH-T02-C03-U02",
+      "archetypeKey": "t02-c03-u02-predict-from-model",
+      "level": 1,
+      "name": "Predict a Quantity from a Linear Model",
+      "source": "OpenStax Algebra and Trigonometry 2e §4.2 — Using a Linear Model to Make a Prediction",
+      "coreConcept": "Evaluating a contextual linear function gives the modeled output for a stated input.",
+      "mentalModel": "Translate the question's input into the model, evaluate, and preserve the quantity's units and meaning.",
+      "governingRelation": "Q(t)=Q_0+rt",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c03-u02-swap-start-and-rate-trap",
+          "description": "Multiplying the starting quantity by elapsed time while adding the rate once.",
+          "trapFormula": "Q_0+rt ↦ r+Q_0t"
+        },
+        {
+          "trapTag": "t02-c03-u02-ignore-input-unit-trap",
+          "description": "Substituting an input measured in a different time unit without converting it.",
+          "trapFormula": "minutes used as hours"
+        }
+      ],
+      "versatileDomains": [
+        "cost estimates",
+        "inventory",
+        "distance tracking"
+      ],
+      "usedContexts": [
+        "A packing station's queue monitor tracks the number of boxes waiting as a function of minutes after a shift begins."
+      ],
+      "figureNone": "The task evaluates a stated rule at one input; a figure adds no information needed for the calculation."
+    },
+    {
+      "unitCode": "MTH-T02-C03-U02",
+      "archetypeKey": "t02-c03-u02-interpret-intercepts-and-target-input",
+      "level": 2,
+      "name": "Interpret Intercepts and Find a Target Input",
+      "source": "OpenStax Algebra and Trigonometry 2e §4.2 — Interpreting Linear Model Intercepts",
+      "coreConcept": "The vertical intercept represents the modeled starting output, while a horizontal intercept identifies when the modeled output reaches zero; solving for a target output reverses the model.",
+      "mentalModel": "Translate a target quantity into an equation, solve for the input, then test whether that input fits the situation's time or quantity domain.",
+      "governingRelation": "Q(t)=Q_0+rt;\\quad Q(t)=Q^*\\Rightarrow t=(Q^*-Q_0)/r",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c03-u02-solve-for-output-instead-of-input-trap",
+          "description": "Evaluating the model at the target output instead of solving for the input that produces it.",
+          "trapFormula": "Q(t)=Q^* ↦ Q(Q^*)"
+        },
+        {
+          "trapTag": "t02-c03-u02-ignore-domain-limit-trap",
+          "description": "Reporting a predicted input outside the stated period or beyond a physical stopping condition.",
+          "trapFormula": "t>t_{max} ↦ accept without checking"
+        },
+        {
+          "trapTag": "t02-c03-u02-decrease-rate-sign-trap",
+          "description": "Treating a consumption rate as positive when solving for elapsed time to a lower target quantity.",
+          "trapFormula": "(Q^*-Q_0)/(-r) ↦ (Q^*-Q_0)/r"
+        }
+      ],
+      "versatileDomains": [
+        "budget planning",
+        "resource depletion",
+        "capacity planning"
+      ],
+      "usedContexts": [
+        "A small reservoir supplies a steady-use system; its water level is tracked by volume over time."
+      ],
+      "figureBuilders": [
+        {
+          "fn": "build_function_graph_figure",
+          "args": {
+            "x_min": "0",
+            "x_max": "V0/rate",
+            "y_min": "0",
+            "y_max": "V0"
+          },
+          "labels": {
+            "expr": "{V0:g}-{rate:g}*x",
+            "label": "V(t)={V0:g}-{rate:g}t"
+          },
+          "title": "A decreasing balance reaches a target value"
+        }
+      ]
+    }
+  ]
+}
