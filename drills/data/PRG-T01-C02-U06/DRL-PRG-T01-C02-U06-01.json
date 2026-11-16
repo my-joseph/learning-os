@@ -1,0 +1,430 @@
+{
+  "unitCode": "PRG-T01-C02-U06",
+  "unitTitle": "Utility Types",
+  "environment": "typescript-strict",
+  "sourceAttribution": "PRG-T01-C02-U06 unit page, TypeScript Handbook — Utility Types (https://www.typescriptlang.org/docs/handbook/utility-types.html), and its current reasoning-vault archetypes; scenarios authored for this draft.",
+  "config": {
+    "questionCount": 4,
+    "difficulty": "ALL",
+    "difficultyMode": "AI Synthesized Engineering Mode"
+  },
+  "problems": [
+    {
+      "id": "Q01",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "codeType": "implement",
+      "archetypeKey": "prg-t01-c02-u06-derive-safe-dtos",
+      "commonTrapTag": "partial-keeps-managed-fields",
+      "context": "catalog_product_patch_payload",
+      "entryPoint": "projectProductPatch",
+      "prompt": "A catalog API accepts a product patch from an older client, so the runtime input may include fields that should not be editable. Implement `projectProductPatch` to return a patch derived from the `Product` type while preserving only editable fields.\n\n**Requirements**\n- Derive the patch by omitting managed fields from `Product`, then make the remaining fields optional.\n- Keep `name` and `priceCents` when those fields are supplied.\n- Omit `id` and `createdAt` from the result even if they appear in the input.\n- Preserve zero and empty-string values; omit fields whose value is `undefined`.\n- Consider only own input properties; do not copy inherited values.\n- Return a fresh object without mutating the input.",
+      "inputHint": "Return a new object containing only fields accepted by the product editing contract.",
+      "checkpointHint": "Separate the source model's editable fields from its server-managed fields before projecting values.",
+      "starterCode": "type Product = { id: string; createdAt: string; name: string; priceCents: number };\ntype ProductPatch = Partial<Omit<Product, 'id' | 'createdAt'>>;\n\nexport function projectProductPatch(_input: Partial<Product>): ProductPatch {\n  return {};\n}\n",
+      "solutionCode": "type Product = { id: string; createdAt: string; name: string; priceCents: number };\ntype ProductPatch = Partial<Omit<Product, 'id' | 'createdAt'>>;\n\nexport function projectProductPatch(input: Partial<Product>): ProductPatch {\n  const result: ProductPatch = {};\n  for (const key of ['name', 'priceCents'] as const) {\n    if (!Object.hasOwn(input, key)) continue;\n    if (key === 'name') {\n      if (input.name !== undefined) result.name = input.name;\n    } else if (input.priceCents !== undefined) {\n      result.priceCents = input.priceCents;\n    }\n  }\n  return result;\n}",
+      "trapMutant": "type Product = { id: string; createdAt: string; name: string; priceCents: number };\ntype ProductPatch = Partial<Product>;\n\nexport function projectProductPatch(input: Partial<Product>): ProductPatch {\n  return { ...input };\n}\n",
+      "visibleTests": [
+        {
+          "name": "keeps editable catalog fields",
+          "testCode": "assert.deepStrictEqual(projectProductPatch({ id: 'PRD-481', createdAt: '2026-11-17', name: 'Transit Case', priceCents: 4200 }), { name: 'Transit Case', priceCents: 4200 });"
+        },
+        {
+          "name": "preserves zero price and empty name values",
+          "testCode": "assert.deepStrictEqual(projectProductPatch({ id: 'PRD-482', createdAt: '2026-11-17', name: '', priceCents: 0 }), { name: '', priceCents: 0 });"
+        },
+        {
+          "name": "returns an empty patch when no editable field is present",
+          "testCode": "assert.deepStrictEqual(projectProductPatch({ id: 'PRD-483', createdAt: '2026-11-17' }), {});"
+        },
+        {
+          "name": "ignores inherited editable properties",
+          "testCode": "const inherited = Object.assign(Object.create({ name: 'Legacy name' }), { id: 'PRD-485', createdAt: '2026-11-17' }) as Partial<Product>; assert.deepStrictEqual(projectProductPatch(inherited), {});"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "does not leak a server-managed field from an older client",
+          "testCode": "const input = { id: 'PRD-484', createdAt: '2026-11-17', name: 'Cover', priceCents: 0 }; const output = projectProductPatch(input); assert.strictEqual(Object.hasOwn(output, 'id'), false); assert.strictEqual(Object.hasOwn(output, 'createdAt'), false); assert.deepStrictEqual(input, { id: 'PRD-484', createdAt: '2026-11-17', name: 'Cover', priceCents: 0 });"
+        }
+      ],
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "Catalog APIs commonly filter legacy or over-posted update payloads so client-controlled fields cannot replace persistence-owned identifiers or timestamps."
+      },
+      "steps": [
+        {
+          "explain": "Use the canonical product type as the source for the editable field types."
+        },
+        {
+          "explain": "Select only editable keys before making their presence optional."
+        },
+        {
+          "explain": "Project supplied values into a fresh object and leave server-managed keys out."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "partial-keeps-managed-fields|direct|projectProductPatch",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 3,
+          "hasTrapOrFlaw": false,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "partial-keeps-managed-fields",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 6
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Foundation",
+      "unitCode": "PRG-T01-C02-U06",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U06-01/Q01_projectProductPatch.ts"
+    },
+    {
+      "id": "Q02",
+      "level": 1,
+      "category": "Trap & Edge Case",
+      "archetype": "problem-solving",
+      "codeType": "implement",
+      "archetypeKey": "prg-t01-c02-u06-derive-safe-dtos",
+      "commonTrapTag": "partial-is-shallow",
+      "context": "member_profile_patch_boundary",
+      "entryPoint": "applyMemberProfilePatch",
+      "prompt": "A membership service receives profile patches that may come from data written by older API clients. Implement `applyMemberProfilePatch` using a top-level patch contract. When `preferences` is present, it must be a complete preferences object; the service rejects an incomplete nested replacement instead of treating `Partial` as recursive.\n\n**Requirements**\n- Derive the patch from the `MemberProfile` source type and make only `displayName` and `preferences` optional.\n- Apply a valid patch to a fresh profile object without mutating the current profile.\n- Preserve the existing preferences object when the patch omits that property.\n- Throw `TypeError` if an untrusted runtime payload supplies an incomplete `preferences` object.",
+      "inputHint": "The patch may omit top-level properties, but a supplied nested value follows its own declared shape.",
+      "checkpointHint": "Check which layer of the profile becomes optional and validate any nested replacement at the API boundary.",
+      "starterCode": "type MemberProfile = { displayName: string; preferences: { email: boolean; sms: boolean } };\ntype MemberProfilePatch = Partial<Pick<MemberProfile, 'displayName' | 'preferences'>>;\n\nexport function applyMemberProfilePatch(profile: MemberProfile, _patch: MemberProfilePatch): MemberProfile {\n  return profile;\n}\n",
+      "solutionCode": "type MemberProfile = { displayName: string; preferences: { email: boolean; sms: boolean } };\ntype MemberProfilePatch = Partial<Pick<MemberProfile, 'displayName' | 'preferences'>>;\n\nexport function applyMemberProfilePatch(profile: MemberProfile, patch: MemberProfilePatch): MemberProfile {\n  if (patch.preferences !== undefined && (typeof patch.preferences.email !== 'boolean' || typeof patch.preferences.sms !== 'boolean')) {\n    throw new TypeError('A preferences replacement must include both settings');\n  }\n  return { ...profile, ...patch };\n}\n",
+      "trapMutant": "type MemberProfile = { displayName: string; preferences: { email: boolean; sms: boolean } };\ntype MemberProfilePatch = Partial<Pick<MemberProfile, 'displayName' | 'preferences'>>;\n\nexport function applyMemberProfilePatch(profile: MemberProfile, patch: MemberProfilePatch): MemberProfile {\n  return { ...profile, ...patch, preferences: { ...profile.preferences, ...patch.preferences } };\n}\n",
+      "visibleTests": [
+        {
+          "name": "updates one top-level profile field",
+          "testCode": "const profile = { displayName: 'Rina', preferences: { email: true, sms: false } }; const updated = applyMemberProfilePatch(profile, { displayName: 'Rina S.' }); assert.deepStrictEqual(updated, { displayName: 'Rina S.', preferences: { email: true, sms: false } }); assert.deepStrictEqual(profile, { displayName: 'Rina', preferences: { email: true, sms: false } });"
+        },
+        {
+          "name": "replaces preferences with a complete nested value",
+          "testCode": "const profile = { displayName: 'Rina', preferences: { email: true, sms: false } }; assert.deepStrictEqual(applyMemberProfilePatch(profile, { preferences: { email: false, sms: true } }).preferences, { email: false, sms: true });"
+        },
+        {
+          "name": "keeps the existing profile for an empty patch",
+          "testCode": "const profile = { displayName: 'Rina', preferences: { email: true, sms: false } }; assert.deepStrictEqual(applyMemberProfilePatch(profile, {}), profile);"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "rejects an incomplete nested replacement from an old client",
+          "testCode": "const profile = { displayName: 'Rina', preferences: { email: true, sms: false } }; const stalePatch = { preferences: { email: false } } as MemberProfilePatch; assert.throws(() => applyMemberProfilePatch(profile, stalePatch), TypeError);"
+        }
+      ],
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "Profile APIs often receive persisted payloads from multiple client versions; validating a nested replacement prevents an old partial object from silently changing merge semantics."
+      },
+      "steps": [
+        {
+          "explain": "Derive a patch from the canonical profile type and select only the editable top-level fields."
+        },
+        {
+          "explain": "Recognize that Partial makes the selected outer fields optional, not their nested members."
+        },
+        {
+          "explain": "Validate an untrusted nested replacement before returning a new profile."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "partial-is-shallow|direct|applyMemberProfilePatch",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "partial-is-shallow",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 6
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Foundation",
+      "unitCode": "PRG-T01-C02-U06",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U06-01/Q02_applyMemberProfilePatch.ts"
+    },
+    {
+      "id": "Q03",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "codeType": "implement",
+      "archetypeKey": "prg-t01-c02-u06-exhaustive-record-maps",
+      "commonTrapTag": "string-record-widens-domain",
+      "context": "order_status_badge_registry",
+      "entryPoint": "getOrderStatusLabel",
+      "prompt": "An order operations dashboard maps finite order statuses to labels. Implement `getOrderStatusLabel` and its label registry with a key contract derived from the supported status union. A stale persisted value may still arrive at runtime, so the lookup returns `undefined` for an unsupported value without widening the exported key type.\n\n**Requirements**\n- Define the supported order status union and a label map that covers every member.\n- Keep the function parameter restricted to the supported union.\n- Return the matching label for each supported value and `undefined` for an unrecognized runtime value.\n- Keep the exported registry and function names.",
+      "inputHint": "The lookup should distinguish supported domain states from stale values that may arrive at runtime.",
+      "checkpointHint": "Use the finite status set to define the registry, then handle values that are not own keys at runtime.",
+      "starterCode": "type OrderStatus = 'pending' | 'paid' | 'shipped' | 'cancelled';\nexport const ORDER_STATUS_LABELS: Partial<Record<OrderStatus, string>> = { pending: 'Awaiting payment' };\n\nexport function getOrderStatusLabel(_status: OrderStatus): string | undefined {\n  return undefined;\n}\n",
+      "solutionCode": "type OrderStatus = 'pending' | 'paid' | 'shipped' | 'cancelled';\nexport const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {\n  pending: 'Awaiting payment',\n  paid: 'Payment confirmed',\n  shipped: 'In transit',\n  cancelled: 'Cancelled',\n};\n\nexport function getOrderStatusLabel(status: OrderStatus): string | undefined {\n  if (!Object.hasOwn(ORDER_STATUS_LABELS, status)) return undefined;\n  return ORDER_STATUS_LABELS[status];\n}\n",
+      "trapMutant": "type OrderStatus = 'pending' | 'paid' | 'shipped' | 'cancelled';\nexport const ORDER_STATUS_LABELS: Record<string, string> = { pending: 'Awaiting payment', paid: 'Payment confirmed', shipped: 'In transit' };\n\nexport function getOrderStatusLabel(status: OrderStatus): string | undefined {\n  if (!Object.hasOwn(ORDER_STATUS_LABELS, status)) return undefined;\n  return ORDER_STATUS_LABELS[status];\n}",
+      "visibleTests": [
+        {
+          "name": "labels a pending order",
+          "testCode": "assert.strictEqual(getOrderStatusLabel('pending'), 'Awaiting payment');"
+        },
+        {
+          "name": "labels a shipped order",
+          "testCode": "assert.strictEqual(getOrderStatusLabel('shipped'), 'In transit');"
+        },
+        {
+          "name": "labels a cancelled order",
+          "testCode": "assert.strictEqual(getOrderStatusLabel('cancelled'), 'Cancelled');"
+        },
+        {
+          "name": "returns undefined for a stale persisted status",
+          "testCode": "const staleStatus = 'paused' as OrderStatus; assert.strictEqual(getOrderStatusLabel(staleStatus), undefined);"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "returns no label for a stale persisted status",
+          "testCode": "const staleStatus = 'paused' as OrderStatus; assert.strictEqual(getOrderStatusLabel(staleStatus), undefined);"
+        },
+        {
+          "name": "keeps the exported label keys finite",
+          "testCode": "// @ts-expect-error unsupported persisted values are not declared map keys\nconst invalidOrderStatusKey: keyof typeof ORDER_STATUS_LABELS = 'paused';\nvoid invalidOrderStatusKey;"
+        },
+        {
+          "name": "labels every declared status",
+          "testCode": "assert.strictEqual(getOrderStatusLabel('cancelled'), 'Cancelled');"
+        }
+      ],
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "Order status badges use a finite business state set, while old persisted values can outlive a status migration and need a safe missing-key result."
+      },
+      "steps": [
+        {
+          "explain": "Define the supported order states as one finite union."
+        },
+        {
+          "explain": "Use that union as the Record key set so each status needs a label."
+        },
+        {
+          "explain": "Check runtime ownership for stale stored values before returning the label."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "string-record-widens-domain|direct|getOrderStatusLabel",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": false,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "string-record-widens-domain",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 6
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Standard Exam",
+      "unitCode": "PRG-T01-C02-U06",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U06-01/Q03_getOrderStatusLabel.ts"
+    },
+    {
+      "id": "Q04",
+      "level": 2,
+      "category": "Refactor & Design",
+      "archetype": "refactoring",
+      "codeType": "refactor",
+      "archetypeKey": "prg-t01-c02-u06-exhaustive-record-maps",
+      "commonTrapTag": "partial-record-hides-missing-key",
+      "context": "shipment_status_label_refactor",
+      "entryPoint": "getShipmentStatusLabel",
+      "prompt": "A shipment dashboard has a legacy status-label lookup for `queued` and `inTransit`. Refactor it to use a finite `ShipmentStatus` union and an exhaustive label map, adding support for `delivered` as a new domain state. Keep the existing labels and public lookup function.\n\n**Requirements**\n- Derive the label map key set from `ShipmentStatus` using a utility type.\n- Provide a label for each supported status, including the newly supported state.\n- Preserve the legacy labels and return `undefined` for an unsupported runtime string.\n- Improve the type contract as part of the refactor; keep `getShipmentStatusLabel` exported.",
+      "inputHint": "The refactored lookup should cover the declared shipment lifecycle and preserve the existing labels.",
+      "checkpointHint": "Compare the finite status contract with every entry the dashboard can display.",
+      "starterCode": "type LegacyShipmentStatus = 'queued' | 'inTransit';\ntype ShipmentStatus = LegacyShipmentStatus | 'delivered';\nconst SHIPMENT_STATUS_LABELS: Record<string, string> = { queued: 'Queued', inTransit: 'In transit' };\n\nexport function getShipmentStatusLabel(status: ShipmentStatus): string | undefined {\n  return SHIPMENT_STATUS_LABELS[status];\n}",
+      "solutionCode": "export type ShipmentStatus = 'queued' | 'inTransit' | 'delivered';\nexport const SHIPMENT_STATUS_LABELS: Record<ShipmentStatus, string> = {\n  queued: 'Queued',\n  inTransit: 'In transit',\n  delivered: 'Delivered',\n};\n\nexport function getShipmentStatusLabel(status: string): string | undefined {\n  if (!Object.hasOwn(SHIPMENT_STATUS_LABELS, status)) return undefined;\n  return SHIPMENT_STATUS_LABELS[status as ShipmentStatus];\n}",
+      "trapMutant": "type ShipmentStatus = 'queued' | 'inTransit' | 'delivered';\nconst SHIPMENT_STATUS_LABELS: Partial<Record<ShipmentStatus, string>> = { queued: 'Queued', inTransit: 'In transit' };\n\nexport function getShipmentStatusLabel(status: ShipmentStatus): string | undefined {\n  return SHIPMENT_STATUS_LABELS[status];\n}\n",
+      "visibleTests": [
+        {
+          "name": "preserves the queued shipment label",
+          "testCode": "assert.strictEqual(getShipmentStatusLabel('queued'), 'Queued');"
+        },
+        {
+          "name": "preserves the in-transit shipment label",
+          "testCode": "assert.strictEqual(getShipmentStatusLabel('inTransit'), 'In transit');"
+        },
+        {
+          "name": "returns no label for an unsupported runtime string",
+          "testCode": "const staleStatus = 'returned' as ShipmentStatus; assert.strictEqual(getShipmentStatusLabel(staleStatus), undefined);"
+        },
+        {
+          "name": "labels newly supported delivered shipments",
+          "testCode": "assert.strictEqual(getShipmentStatusLabel('delivered'), 'Delivered');"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "labels the newly supported shipment state",
+          "testCode": "assert.strictEqual(getShipmentStatusLabel('delivered'), 'Delivered');"
+        }
+      ],
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "Shipment dashboards maintain a finite lifecycle map that must evolve with new states while retaining labels already used by warehouse and carrier operations."
+      },
+      "steps": [
+        {
+          "explain": "Expand the domain union to include the newly supported shipment state."
+        },
+        {
+          "explain": "Use Record over the union so an entry is required for each state."
+        },
+        {
+          "explain": "Keep the lookup parameter narrow and preserve the legacy labels while adding the new one."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "partial-record-hides-missing-key|direct|getShipmentStatusLabel",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "refactoring"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "partial-record-hides-missing-key",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 6
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Standard Exam",
+      "unitCode": "PRG-T01-C02-U06",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U06-01/Q04_getShipmentStatusLabel.ts"
+    }
+  ],
+  "blindSolve": [
+    {
+      "problemId": "Q01",
+      "passed": true
+    },
+    {
+      "problemId": "Q02",
+      "passed": true
+    },
+    {
+      "problemId": "Q03",
+      "passed": true
+    },
+    {
+      "problemId": "Q04",
+      "passed": true
+    }
+  ],
+  "review": {
+    "verdict": "pass",
+    "note": "All four L1–L2 problems meet the brief, cover Omit/Pick/Partial and exhaustive Record maps with distinct practical contexts, include a refactor item, and have coherent prompts, traps, tests, and independently re-solved contracts."
+  },
+  "drillId": "DRL-PRG-T01-C02-U06-01",
+  "topicCode": "PRG-T01",
+  "chapterCode": "PRG-T01-C02",
+  "schemaVersion": "2.0-code",
+  "subject": "PRG",
+  "createdAt": "2026-11-17 06:05:19",
+  "localFilePath": "drills/data/PRG-T01-C02-U06/DRL-PRG-T01-C02-U06-01.json"
+}

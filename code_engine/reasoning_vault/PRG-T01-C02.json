@@ -930,6 +930,156 @@
           }
         }
       ]
+    },
+    {
+      "archetypeKey": "prg-t01-c02-u06-derive-safe-dtos",
+      "unitCode": "PRG-T01-C02-U06",
+      "level": 1,
+      "archetype": "problem-solving",
+      "name": "Derive Create and Update DTOs Safely",
+      "competencies": [
+        "typescript",
+        "type-safety",
+        "architecture"
+      ],
+      "coreConcept": "Utility types derive request and response shapes from a canonical domain type so field names and value types stay synchronized while operation-specific rules exclude or relax only the intended fields.",
+      "mentalModel": [
+        "1. Start from the canonical domain entity rather than duplicating its fields.",
+        "2. Remove server-managed fields from create and update contracts.",
+        "3. Make only the editable update fields optional; Partial is shallow unless a nested patch is designed separately."
+      ],
+      "governingInvariant": "Create and update DTOs remain derived from the source entity, and an update patch never admits server-managed identity or creation fields.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "partial-keeps-managed-fields",
+          "name": "Making Managed Fields Optional Instead of Excluding Them",
+          "description": "Partial<T> makes every source property optional, including identifiers and server-owned timestamps, so those fields remain assignable in an update payload.",
+          "reproducer": "Build an update patch for a record with id, createdAt, title, and price; verify that id and createdAt are not accepted as editable patch properties."
+        },
+        {
+          "trapTag": "partial-is-shallow",
+          "name": "Treating Partial as Deep",
+          "description": "Partial<T> makes only top-level properties optional; a nested object that is included must still satisfy its declared shape.",
+          "reproducer": "Use a nested address object with required fields and confirm that an update contract does not accidentally accept a partial address unless a nested patch type is explicitly defined."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "catalog_product_requests",
+          "description": "Derive create and update request DTOs from product records while preventing changes to generated identifiers and creation timestamps."
+        },
+        {
+          "domain": "account_profile_patch",
+          "description": "Model a profile patch that permits editable top-level fields and makes nested update policy explicit."
+        }
+      ],
+      "source": "TypeScript Handbook — Utility Types: https://www.typescriptlang.org/docs/handbook/utility-types.html",
+      "usedContexts": [
+        "catalog_product_patch_payload",
+        "member_profile_patch_boundary"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-dto-derived-source",
+          "check": "Create and update DTO properties derive from the canonical domain type so source fields and value types do not drift across duplicated interfaces.",
+          "why": "Duplicated field lists can silently fall out of sync when the domain model changes.",
+          "severity": "must",
+          "knownBad": {
+            "code": "type Product = { id: string; createdAt: string; name: string; price: number }; type CreateProduct = { name: string; price: number };",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-patch-excludes-managed-fields",
+          "check": "Update payloads exclude server-managed identity and creation fields instead of merely making every source property optional.",
+          "why": "A partial update must not let callers overwrite values owned by persistence or server-side creation.",
+          "severity": "must",
+          "knownBad": {
+            "code": "type Product = { id: string; createdAt: string; name: string; price: number }; type ProductPatch = Partial<Product>;",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-partial-nesting-policy",
+          "check": "Nested update behavior is explicit; Partial is treated as a top-level transformation unless a separate nested patch contract is defined.",
+          "why": "Assuming recursive optionality can make nested replacements incomplete or ambiguous.",
+          "severity": "should",
+          "knownBad": {
+            "code": "type Profile = { name: string; preferences: { email: boolean; sms: boolean } }; type ProfilePatch = Partial<Profile>;",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "prg-t01-c02-u06-exhaustive-record-maps",
+      "unitCode": "PRG-T01-C02-U06",
+      "level": 2,
+      "archetype": "problem-solving",
+      "name": "Build Exhaustive Maps from Finite Key Unions",
+      "competencies": [
+        "typescript",
+        "type-safety",
+        "data-handling"
+      ],
+      "coreConcept": "Record<KeyUnion, Value> constructs a map whose key space is the declared finite union and whose values share the specified type.",
+      "mentalModel": [
+        "1. Define the finite set of domain keys as a literal union.",
+        "2. Use the union as Record keys so every member must be represented.",
+        "3. Keep the value type tied to the map contract and update the map when the union grows."
+      ],
+      "governingInvariant": "A map for a finite domain union contains every declared key with a value that satisfies the domain value contract.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "partial-record-hides-missing-key",
+          "name": "Making an Exhaustive Map Partial",
+          "description": "Partial<Record<K, V>> allows a key from the finite union to be absent, hiding missing labels or handlers.",
+          "reproducer": "Extend a status union with one member and verify that the label map is forced to provide its entry."
+        },
+        {
+          "trapTag": "string-record-widens-domain",
+          "name": "Replacing a Finite Key Set with Arbitrary Strings",
+          "description": "Record<string, V> accepts keys outside the domain union and loses compile-time protection when domain values change.",
+          "reproducer": "Pass a map with a misspelled status key and verify the declared finite key contract rejects it."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "order_status_labels",
+          "description": "Map each supported order status to a user-facing label used by an operations dashboard."
+        },
+        {
+          "domain": "shipment_event_handlers",
+          "description": "Associate every event kind in a finite transport event union with a typed handler."
+        }
+      ],
+      "source": "TypeScript Handbook — Utility Types: https://www.typescriptlang.org/docs/handbook/utility-types.html",
+      "usedContexts": [
+        "order_status_badge_registry",
+        "shipment_status_label_refactor"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-record-union-exhaustive",
+          "check": "A Record keyed by a finite domain union represents every union member and does not make required entries optional.",
+          "why": "Missing map entries otherwise surface later as undefined labels or unhandled cases.",
+          "severity": "must",
+          "knownBad": {
+            "code": "type OrderStatus = \"pending\" | \"paid\" | \"shipped\"; type StatusLabels = Partial<Record<OrderStatus, string>>;",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-record-key-domain",
+          "check": "The map key type stays tied to the declared domain union instead of widening to arbitrary strings.",
+          "why": "A finite key contract rejects misspelled or unsupported values and keeps call sites aligned with the domain.",
+          "severity": "must",
+          "knownBad": {
+            "code": "type OrderStatus = \"pending\" | \"paid\" | \"shipped\"; type StatusLabels = Record<string, string>;",
+            "caughtBy": "review"
+          }
+        }
+      ]
     }
   ]
 }
