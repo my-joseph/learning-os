@@ -11,7 +11,10 @@ shared_modules = lab_dir.parents[1] / "tools" / "lint" / "node_modules"
 vitest = shared_modules / ".bin" / "vitest"
 source = Path(os.environ.get("LAB_SRC_DIR", "../src"))
 if not source.is_absolute():
-    first_test = next((Path(arg) for arg in sys.argv[1:] if arg.endswith((".test.tsx", ".test.ts", ".test.js"))), Path("tests/test.tsx"))
+    first_test = next(
+        (Path(arg) for arg in sys.argv[1:] if arg.endswith((".test.tsx", ".test.ts", ".test.js"))),
+        Path("tests/test.tsx"),
+    )
     if not first_test.is_absolute():
         first_test = (lab_dir / first_test).resolve()
     source = (first_test.parent / source).resolve()
