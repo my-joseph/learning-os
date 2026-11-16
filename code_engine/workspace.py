@@ -505,7 +505,6 @@ test({t_name}, {fn_prefix} {{
                 "skipLibCheck": True,
             },
             "include": ["*.ts", "*.tsx"],
-            "exclude": ["*.test.ts", "*.test.tsx"],
         }
         if preset_key == "react-dom":
             tsconfig_data["compilerOptions"]["jsx"] = "react-jsx"

@@ -1,4 +1,6 @@
 import globals from "globals";
+import { existsSync } from "node:fs";
+import { resolve } from "node:path";
 import tseslint from "typescript-eslint";
 
 /**
@@ -27,6 +29,16 @@ export function prgConfig({ overrides = [] } = {}) {
     }
     overrideRules[rule] = "off";
   }
+
+  const hasTsconfig = existsSync(resolve(process.cwd(), "tsconfig.json"));
+  const tsParserOptions = hasTsconfig
+    ? { projectService: true }
+    : {
+        projectService: {
+          allowDefaultProject: ["*.ts", "*.tsx"],
+          maximumDefaultProjectFileMatchCount_THIS_WILL_SLOW_DOWN_LINTING: 32,
+        },
+      };
 
   const config = [
     {
@@ -73,12 +85,7 @@ export function prgConfig({ overrides = [] } = {}) {
       files: ["**/*.{ts,tsx}"],
       languageOptions: {
         parser: tseslint.parser,
-        parserOptions: {
-          projectService: {
-            allowDefaultProject: ["*.ts", "*.tsx"],
-            maximumDefaultProjectFileMatchCount_THIS_WILL_SLOW_DOWN_LINTING: 32,
-          },
-        },
+        parserOptions: tsParserOptions,
       },
       plugins: {
         "@typescript-eslint": tseslint.plugin,

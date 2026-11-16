@@ -152,6 +152,7 @@ FORM_MESSAGES = {
 # ---------------------------------------------------------------------------
 def _normalize(raw: str) -> str:
     s = (raw or "").strip()
+    s = s.replace("²", "^2").replace("³", "^3")
     repl = {
         "\u2212": "-",
         "\u2013": "-",
@@ -925,9 +926,25 @@ def _form_result(raw, u, spec, variables=None):
 # Type checkers
 # ---------------------------------------------------------------------------
 def check_number(spec, raw):
+    raw_text = (raw or "").strip()
+    variable = spec.get("variable") or next(iter(spec.get("variables") or []), None)
+    assignment = re.match(r"^\s*([A-Za-z])\s*=\s*(.+)$", raw_text)
+    function_assignment = re.match(r"^\s*[A-Za-z]\s*\([^)]*\)\s*=\s*(.+)$", raw_text)
+    if assignment:
+        if not variable or assignment.group(1) != variable:
+            return {
+                "verdict": "invalid input",
+                "message": "Enter only the requested number, optionally as the answer variable followed by =.",
+                "components": [],
+                "diagnostics": [],
+            }
+        raw = assignment.group(2)
+    elif function_assignment:
+        raw = function_assignment.group(1)
     try:
         u = parse_math(raw)
-    except SafeParseError:
+    except SafeParseError as ex:
+        u = None
         s_raw = (raw or "").strip()
         s_raw = s_raw.replace("\u27e8", "<").replace("\u27e9", ">").replace("\u3008", "<").replace("\u3009", ">")
         is_vec = (
@@ -951,7 +968,15 @@ def check_number(spec, raw):
                 }
             except Exception:
                 pass
-        raise
+        if u is None:
+            if "Syntax error" not in str(ex) and "invalid syntax" not in str(ex):
+                raise
+            return {
+                "verdict": "invalid input",
+                "message": "Enter a number or exact mathematical expression.",
+                "components": [],
+                "diagnostics": [],
+            }
     tol = spec.get("tolerance")
     e = to_expr(spec["value"])
     comps = [{"label": "Value", "ok": False}]
@@ -1089,12 +1114,21 @@ def check_solution_set(spec, raw):
                 }
             )
         else:
-            diags.append(
-                {
-                    "code": "extra_solution",
-                    "message": f"${sp.latex(x)}$ does not satisfy the equation (extraneous value).",
-                }
+            is_decimal_approx = any(
+                not ev.is_Rational and x.is_number and abs(float(x.evalf()) - float(ev.evalf())) <= 0.0005
+                for ev in expected
             )
+            if is_decimal_approx:
+                diags.append(
+                    {"code": "decimal_not_exact", "message": "Give the exact form rather than a rounded decimal."}
+                )
+            else:
+                diags.append(
+                    {
+                        "code": "extra_solution",
+                        "message": "This value does not satisfy the equation (extraneous value).",
+                    }
+                )
     missing = len(expected) - len(matched_e)
     if missing:
         diags.append(
@@ -1122,14 +1156,8 @@ def check_solution_set(spec, raw):
             "diagnostics": [],
         }
     verdict = "partial" if matched_e else "incorrect"
-    if missing > 0 and extras:
-        counts_note = f"({missing} missing, {len(extras)} extra)"
-        msg = f"Some solutions match {counts_note}." if matched_e else f"No solution matches {counts_note}."
-    elif missing > 0:
-        counts_note = f"({missing} missing)"
-        msg = f"Some solutions match {counts_note}." if matched_e else f"No solution matches {counts_note}."
-    else:
-        msg = f"All expected solutions found, but {len(extras)} extra value(s) included."
+    matched_count = len(matched_e)
+    msg = f"{matched_count} of {len(expected)} expected values match; {missing} missing, {len(extras)} extra."
     return {
         "verdict": verdict,
         "message": msg,

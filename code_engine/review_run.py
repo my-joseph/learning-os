@@ -228,8 +228,8 @@ def _lint_lab_src(lab_dir: Path, src_dir: Path) -> list[dict[str, Any]]:
     cmd = [str(eslint_bin), "--format", "json"]
     if cfg_path.exists():
         cmd.extend(["--config", str(cfg_path.resolve())])
-    cmd.append(".")
-    proc = subprocess.run(cmd, cwd=str(src_dir), capture_output=True, text=True)
+    cmd.append(src_dir.name)
+    proc = subprocess.run(cmd, cwd=str(src_dir.parent), capture_output=True, text=True)
     if proc.returncode not in (0, 1):
         raise RuntimeError(f"ESLint failed (exit {proc.returncode}): {proc.stderr.strip() or proc.stdout.strip()}")
     results = json.loads(proc.stdout or "[]")

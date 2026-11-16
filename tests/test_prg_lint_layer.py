@@ -2,6 +2,8 @@
 
 import json
 import shutil
+import subprocess
+from pathlib import Path
 
 import pytest
 
@@ -115,6 +117,26 @@ def test_review_run_summary_has_verdict_and_file_line_format():
     summary = format_summary(result)
     assert "Q01_example.js:3 no-var Use let or const." in summary
     assert summary.endswith("Verdict: REVISE — fix the reported failures, then run review again.")
+
+
+def test_reference_typescript_drill_workspace_lints_cleanly(tmp_path, monkeypatch):
+    """Typed linting must use the workspace tsconfig without default-project conflicts."""
+    _require_lint_tools()
+    monkeypatch.chdir(tmp_path)
+    repo_root = Path(__file__).resolve().parents[1]
+    drill_path = repo_root / "drills/data/PRG-T01-C02-U01/DRL-PRG-T01-C02-U01-01.json"
+    drill_doc = json.loads(drill_path.read_text(encoding="utf-8"))
+    (tmp_path / "tools").mkdir()
+    (tmp_path / "tools/lint").symlink_to(repo_root / "tools/lint", target_is_directory=True)
+
+    manifest = materialize_drill_workspace(drill_doc, root_dir=str(tmp_path))
+    workspace = Path(manifest["workspaceDir"])
+    for problem in drill_doc["problems"]:
+        source = Path(manifest["files"][problem["id"]]["sourcePath"])
+        source.write_text(problem["solutionCode"], encoding="utf-8")
+    result = subprocess.run(["npm", "run", "lint"], cwd=workspace, capture_output=True, text=True)
+
+    assert result.returncode == 0, result.stdout + result.stderr
 
 
 @pytest.mark.parametrize(
