@@ -1,0 +1,370 @@
+{
+  "unitCode": "MTH-T02-C04-U01",
+  "topicTitle": "Functions and Their Graphs",
+  "unitTitle": "Quadratic Functions",
+  "subject": "MATH",
+  "problems": [
+    {
+      "id": "Q01",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c04-u01-read-quadratic-form",
+      "context": "",
+      "prompt": "For $q(x)=2(x+3)^2+5$, find the $x$-coordinate of the vertex.",
+      "display": "q(x)=a(x-h)^2+k",
+      "plainText": "q(x)=a*(x-h)^2+k",
+      "givens": {
+        "a": 2,
+        "inside": 3,
+        "k": 5
+      },
+      "constants": {},
+      "trapGivens": [
+        2,
+        3
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "-3",
+        "tolerance": 0
+      },
+      "answerPlain": "-3",
+      "answerDisplay": "-3",
+      "inputHint": "Enter a signed number.",
+      "commonTrapTag": "t02-c04-u01-vertex-inside-sign-trap",
+      "trapDerivation": "2*3/2",
+      "trapValue": "3",
+      "verify": {
+        "source": "-3",
+        "trapValue": "3"
+      },
+      "checkpointHint": "Set the squared expression's input equal to zero to locate the vertex.",
+      "references": [
+        "MTH-T02-C04-U01"
+      ],
+      "steps": [
+        {
+          "latex": "x+3=0",
+          "explain": "The squared term vanishes at the vertex."
+        },
+        {
+          "latex": "x=-3",
+          "explain": "Solve for the input that makes the squared term zero.",
+          "val": "-3"
+        }
+      ],
+      "verificationLevel": "partial",
+      "figureWaiver": "A graph would mark the vertex and reveal the requested input directly.",
+      "review": {
+        "verdict": "pass",
+        "note": "The vertex-form prompt has a unique signed-coordinate response, and its steps and nonnumeric hint target the assigned inside-sign trap while contributing appropriate L1 variety."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C04-U01",
+          "title": "Quadratic Functions",
+          "notionUrl": "https://www.notion.so/4013818f8ba08117bb04f63d268151f8"
+        }
+      ],
+      "unitCode": "MTH-T02-C04-U01",
+      "fingerprint": "t02-c04-u01-vertex-inside-sign-trap|direct|q(x)=a*(x-h)^#+k",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c04-u01-vertex-inside-sign-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 11
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 1 - Foundation"
+    },
+    {
+      "id": "Q03",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c04-u01-find-quadratic-vertex",
+      "context": "",
+      "prompt": "For $p(x)=-x^2+4x+1$, what is the maximum output value?",
+      "display": "p(x)=ax^2+bx+c;\\\\quad x_v=-\\\\frac{b}{2a}",
+      "plainText": "p(x)=-x^2+4*x+1; vertex input=-b/(2*a)",
+      "givens": {
+        "a": -1,
+        "b": 4,
+        "c": 1
+      },
+      "constants": {
+        "two": 2
+      },
+      "trapGivens": [
+        1,
+        4,
+        2
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "5",
+        "tolerance": 0
+      },
+      "answerPlain": "5",
+      "answerDisplay": "5",
+      "inputHint": "Enter the extreme output, not the input where it occurs.",
+      "commonTrapTag": "t02-c04-u01-stop-at-axis-trap",
+      "trapDerivation": "-4/(2*(-1))",
+      "trapValue": "2",
+      "verify": {
+        "source": "-(2)^2+4*2+1",
+        "trapValue": "2"
+      },
+      "checkpointHint": "After finding the axis input, substitute that value into the entire function.",
+      "references": [
+        "MTH-T02-C04-U01"
+      ],
+      "steps": [
+        {
+          "latex": "x_v=-\\frac{4}{2(-1)}",
+          "explain": "Use the coefficient values to locate the axis input.",
+          "eq": [
+            "-4/(2*(-1))",
+            "2"
+          ]
+        },
+        {
+          "latex": "x_v=2",
+          "explain": "The vertex input is 2."
+        },
+        {
+          "latex": "p(2)=-(2)^2+4(2)+1",
+          "explain": "Substitute the vertex input into the full function."
+        },
+        {
+          "latex": "p(2)=5",
+          "explain": "The vertex output is the maximum value.",
+          "val": "5"
+        }
+      ],
+      "verificationLevel": "partial",
+      "figureWaiver": "A graph would mark the maximum output that the learner is asked to calculate.",
+      "review": {
+        "verdict": "pass",
+        "note": "The general-form maximum is uniquely determined, the derivation reaches the requested output and the trap captures stopping at the axis, with a useful reverse-form L2 item and no hint or display leak."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C04-U01",
+          "title": "Quadratic Functions",
+          "notionUrl": "https://www.notion.so/4013818f8ba08117bb04f63d268151f8"
+        }
+      ],
+      "unitCode": "MTH-T02-C04-U01",
+      "fingerprint": "t02-c04-u01-stop-at-axis-trap|reverse|p(x)=-x^#+#*x+#; vertex input=-b/(#*a)",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 4,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c04-u01-stop-at-axis-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 15
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 2 - Standard Exam"
+    },
+    {
+      "id": "Q04",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "translation",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c04-u01-optimize-quadratic-model",
+      "context": "A rectangular garden abuts an existing wall, so only three sides need fencing. The two sides perpendicular to the wall have equal width.",
+      "prompt": "The two perpendicular fenced sides each have width $w$, and the third fenced side has length $l$. A total of $20$ meters of fencing is used, so the area model is $A(w)=w(20-2w)$ for $0\\le w\\le10$. What is the numerical maximum area? Enter only the number; the unit is square meters.",
+      "display": "A(w)=w(20-2w)",
+      "plainText": "A(w)=w*(20-2*w), 0<=w<=10",
+      "givens": {
+        "fence": 20,
+        "widthCoefficient": 2,
+        "a": -2,
+        "b": 20,
+        "c": 0,
+        "wmin": 0,
+        "wmax": 10
+      },
+      "constants": {},
+      "trapGivens": [
+        20,
+        2,
+        10
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "50",
+        "tolerance": 0
+      },
+      "answerPlain": "50",
+      "answerDisplay": "50",
+      "inputHint": "Enter a number; the prompt specifies the area unit.",
+      "commonTrapTag": "t02-c04-u01-maximize-input-not-output-trap",
+      "trapDerivation": "-20/(2*(-2))",
+      "trapValue": "5",
+      "verify": {
+        "source": "5*(20-2*5)",
+        "trapValue": "5"
+      },
+      "checkpointHint": "Find the width at the vertex, then evaluate the area model at that width.",
+      "references": [
+        "MTH-T02-C04-U01"
+      ],
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "A rectangular garden against an existing wall is a plausible area optimization, and the clarified side labels align the perimeter relation with the area model and meter units."
+      },
+      "steps": [
+        {
+          "latex": "A(w)=-2w^2+20w",
+          "explain": "Expand the area formula to identify the quadratic coefficients."
+        },
+        {
+          "latex": "w_v=-\\frac{20}{2(-2)}",
+          "explain": "Use the vertex formula to find the width where the maximum occurs.",
+          "eq": [
+            "-20/(2*(-2))",
+            "5"
+          ]
+        },
+        {
+          "latex": "w_v=5",
+          "explain": "The vertex width is within the allowed interval."
+        },
+        {
+          "latex": "A(5)=5(20-2(5))",
+          "explain": "Substitute the vertex width into the area model."
+        },
+        {
+          "latex": "A(5)=50",
+          "explain": "The greatest area is 50 square meters.",
+          "eq": [
+            "5*(20-2*5)",
+            "50"
+          ],
+          "val": "50"
+        }
+      ],
+      "verificationLevel": "partial",
+      "figureWaiver": "The model figure would mark the vertex and reveal the maximum area directly.",
+      "review": {
+        "verdict": "pass",
+        "note": "The wall-side garden model, feasible width interval, meter and square-meter units, numerical maximum task, and input-versus-output trap are mutually consistent, and the hints do not disclose the result."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C04-U01",
+          "title": "Quadratic Functions",
+          "notionUrl": "https://www.notion.so/4013818f8ba08117bb04f63d268151f8"
+        }
+      ],
+      "unitCode": "MTH-T02-C04-U01",
+      "fingerprint": "t02-c04-u01-maximize-input-not-output-trap|translation|A(w)=w*(#-#*w), #<=w<=#",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 5,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c04-u01-maximize-input-not-output-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 17
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 2 - Standard Exam"
+    }
+  ],
+  "drillId": "DRL-MTH-T02-C04-U01-01",
+  "title": "Quadratic Functions — Verified Math Drill (3 Qs)",
+  "topicCode": "MTH-T02",
+  "chapterCode": "MTH-T02-C04",
+  "schemaVersion": "2.0-math",
+  "createdAt": "2026-11-17 05:53:13",
+  "config": {
+    "questionCount": 3,
+    "difficulty": "ALL",
+    "difficultyMode": "AI Synthesized Reasoning Mode"
+  },
+  "localFilePath": "drills/data/MTH-T02-C04-U01/DRL-MTH-T02-C04-U01-01.json"
+}

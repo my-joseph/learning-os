@@ -1,0 +1,175 @@
+{
+  "unitCode": "MTH-T02-C04-U02",
+  "archetypes": [
+    {
+      "unitCode": "MTH-T02-C04-U02",
+      "archetypeKey": "t02-c04-u02-classify-power-function",
+      "level": 1,
+      "name": "Classify a Power Function",
+      "source": "OpenStax Algebra and Trigonometry 2e §5.2 — Power Functions and Polynomial Functions",
+      "coreConcept": "A power function has one term of the form kx^p with a real coefficient and fixed real exponent; a constant base with variable exponent describes a different family.",
+      "mentalModel": "Check which object varies: in a power function the variable is the base and the exponent stays fixed.",
+      "governingRelation": "f(x)=k x^p, where k and p are real constants",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c04-u02-confuse-power-and-exponential-trap",
+          "description": "Calling a constant base with variable exponent a power function.",
+          "trapFormula": "3^x -> power function"
+        },
+        {
+          "trapTag": "t02-c04-u02-multiple-terms-as-power-trap",
+          "description": "Treating a sum of terms as a single power function.",
+          "trapFormula": "x^2+x^3 -> one power term"
+        },
+        {
+          "trapTag": "t02-c04-u02-variable-exponent-as-fixed-trap",
+          "description": "Ignoring that the exponent itself changes with the input.",
+          "trapFormula": "x^{x+1} -> fixed p"
+        },
+        {
+          "trapTag": "t02-c04-u02-confuse-coefficient-and-exponent-trap",
+          "description": "Reporting the coefficient as the fixed exponent in a single-term power function.",
+          "trapFormula": "kx^p -> p=k"
+        }
+      ],
+      "versatileDomains": [
+        "scaling laws",
+        "geometry",
+        "growth models"
+      ],
+      "usedContexts": [],
+      "figureNone": "This is a symbolic family classification; a graph is not needed to distinguish variable base from constant base."
+    },
+    {
+      "unitCode": "MTH-T02-C04-U02",
+      "archetypeKey": "t02-c04-u02-power-end-behavior",
+      "level": 2,
+      "name": "Determine Power-Function End Behavior",
+      "source": "OpenStax Algebra and Trigonometry 2e §5.2 — Identifying End Behavior of Power Functions",
+      "coreConcept": "For integer powers, parity determines whether both ends share a direction or oppose one another, and the coefficient sign determines whether the leading direction is reflected.",
+      "mentalModel": "Read the exponent parity first, then the coefficient sign; apply both to the left and right ends separately.",
+      "governingRelation": "k>0,p even: (+∞,+∞); k<0,p even: (-∞,-∞); k>0,p odd: (-∞,+∞); k<0,p odd: (+∞,-∞)",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c04-u02-ignore-exponent-parity-trap",
+          "description": "Using the same left-end behavior for even and odd exponents.",
+          "trapFormula": "odd power has matching end directions"
+        },
+        {
+          "trapTag": "t02-c04-u02-ignore-leading-sign-trap",
+          "description": "Forgetting that a negative coefficient reflects the power graph across the x-axis.",
+          "trapFormula": "-x^5 has the end behavior of x^5"
+        },
+        {
+          "trapTag": "t02-c04-u02-swap-left-right-end-trap",
+          "description": "Reversing the behavior as x approaches negative infinity and positive infinity.",
+          "trapFormula": "left end <- right end"
+        }
+      ],
+      "versatileDomains": [
+        "graph analysis",
+        "scaling laws",
+        "asymptotic modeling"
+      ],
+      "usedContexts": [],
+      "figureBuilders": [
+        {
+          "fn": "build_function_graph_figure",
+          "args": {
+            "expr": "k*x^p",
+            "x_min": -4,
+            "x_max": 4,
+            "y_min": -10,
+            "y_max": 10,
+            "title": "Parity and sign determine the distant ends of a power graph"
+          },
+          "title": "Power graphs reveal their end behavior"
+        }
+      ]
+    },
+    {
+      "unitCode": "MTH-T02-C04-U02",
+      "archetypeKey": "t02-c04-u02-identify-polynomial-function",
+      "level": 1,
+      "name": "Identify a Polynomial Function",
+      "source": "OpenStax Algebra and Trigonometry 2e §5.2 — Identifying Polynomial Functions",
+      "coreConcept": "A polynomial is a finite sum of terms whose variable exponents are nonnegative integers and whose coefficients are real constants.",
+      "mentalModel": "Inspect every term after simplification: each power must be a whole-number exponent at least zero, and the expression must be a finite sum.",
+      "governingRelation": "f(x)=a_nx^n+...+a_1x+a_0, n a nonnegative integer, a_n ≠ 0",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c04-u02-negative-exponent-polynomial-trap",
+          "description": "Allowing a negative variable exponent in a polynomial term.",
+          "trapFormula": "x^-2 -> polynomial term"
+        },
+        {
+          "trapTag": "t02-c04-u02-fractional-exponent-polynomial-trap",
+          "description": "Allowing a fractional variable exponent in a polynomial term.",
+          "trapFormula": "x^(1/2) -> polynomial term"
+        },
+        {
+          "trapTag": "t02-c04-u02-variable-exponent-polynomial-trap",
+          "description": "Allowing the variable to appear in the exponent.",
+          "trapFormula": "2^x -> polynomial term"
+        }
+      ],
+      "versatileDomains": [
+        "function classification",
+        "model selection",
+        "algebraic structure"
+      ],
+      "usedContexts": [],
+      "figureNone": "Polynomial status is determined by the finite algebraic form and exponent restrictions, not by a sketch."
+    },
+    {
+      "unitCode": "MTH-T02-C04-U02",
+      "archetypeKey": "t02-c04-u02-read-degree-leading-term",
+      "level": 2,
+      "name": "Read Degree and Leading Term",
+      "source": "OpenStax Algebra and Trigonometry 2e §5.2 — Identifying the Degree and Leading Coefficient",
+      "coreConcept": "After combining like terms, the greatest variable exponent determines polynomial degree; its term and coefficient are the leading term and leading coefficient.",
+      "mentalModel": "Simplify first, then search for the greatest exponent rather than the first written term; preserve the sign attached to its coefficient.",
+      "governingRelation": "degree(f)=max exponent with nonzero coefficient; leading term=a_n x^n",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c04-u02-first-term-as-leading-trap",
+          "description": "Choosing the first written term instead of the term with greatest exponent.",
+          "trapFormula": "first term -> leading term"
+        },
+        {
+          "trapTag": "t02-c04-u02-drop-leading-coefficient-sign-trap",
+          "description": "Reporting the magnitude but losing a negative sign on the highest-degree coefficient.",
+          "trapFormula": "-5x^7 -> coefficient 5"
+        },
+        {
+          "trapTag": "t02-c04-u02-unsimplified-degree-trap",
+          "description": "Reading the degree before multiplying or combining terms changes the powers.",
+          "trapFormula": "x^2*x^4 -> degree 4"
+        },
+        {
+          "trapTag": "t02-c04-u02-multiply-exponents-degree-trap",
+          "description": "Multiplying exponents when combining powers of the same variable in a product.",
+          "trapFormula": "x^m*x^n -> x^(mn)"
+        }
+      ],
+      "versatileDomains": [
+        "polynomial analysis",
+        "model comparison",
+        "graph behavior"
+      ],
+      "usedContexts": [],
+      "figureBuilders": [
+        {
+          "fn": "build_function_graph_figure",
+          "args": {
+            "expr": "a*x^n",
+            "x_min": -3,
+            "x_max": 3,
+            "title": "The leading power controls the distant graph behavior"
+          },
+          "title": "The degree and leading sign shape the graph ends"
+        }
+      ]
+    }
+  ]
+}
