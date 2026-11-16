@@ -98,7 +98,7 @@ def _run_react_tests(test_files: list[Path], cwd: Path, src_dir: Path) -> list[d
             report = tmp_dir / "junit.xml"
             config.write_text(
                 "import { defineConfig } from 'vitest/config';\n"
-                "export default defineConfig({ esbuild: { jsx: 'automatic' }, test: { environment: 'jsdom' } });\n",
+                f"export default defineConfig({{ esbuild: {{ jsx: 'automatic' }}, test: {{ environment: 'jsdom' }}, server: {{ fs: {{ allow: [{json.dumps(str(Path(cwd).resolve()))}, {json.dumps(str(src_dir.resolve()))}, {json.dumps(str(Path(__file__).resolve().parents[1]))}] }} }} }});\n",
                 encoding="utf-8",
             )
             env = dict(os.environ)
