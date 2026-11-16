@@ -1,0 +1,229 @@
+{
+  "unitCode": "PRG-T01-C02",
+  "unitTitle": "TypeScript for Application Code",
+  "description": "TypeScript type system, inference, narrowing, generics, utility types, discriminated unions, and strict configuration archetypes.",
+  "archetypes": [
+    {
+      "archetypeKey": "prg-t01-c02-u01-boundary-annotation",
+      "unitCode": "PRG-T01-C02-U01",
+      "level": 1,
+      "archetype": "problem-solving",
+      "name": "Public Boundary Annotation & Local Inference Balance",
+      "competencies": [
+        "type-annotations",
+        "type-inference",
+        "no-implicit-any"
+      ],
+      "coreConcept": "Annotating exported function parameters and return types to lock public module contracts while letting TypeScript infer local variables and intermediate expressions cleanly.",
+      "mentalModel": [
+        "1. Annotate every function parameter (TypeScript cannot infer parameter types without call-site context).",
+        "2. Annotate public/exported function return types so accidental implementation changes fail at the boundary.",
+        "3. Let local variables and intermediate expressions be inferred from their initializers unless a wider union or empty collection needs an explicit type."
+      ],
+      "governingInvariant": "publicBoundary(params: ExplicitTypes): ExplicitReturnType with zero 'any' types",
+      "cognitiveTraps": [
+        {
+          "trapTag": "implicit-any-parameter",
+          "name": "Implicit or Explicit Any Parameter",
+          "description": "Omitting parameter types under strict mode or falling back to ': any' disables type checking at the function boundary.",
+          "reproducer": "function formatTotal(amount) { ... } fails TS7006; changing to (amount: any) silently accepts strings."
+        },
+        {
+          "trapTag": "missing-return-annotation",
+          "name": "Missing Exported Return Annotation",
+          "description": "Omitting the return type on an exported function allows a refactored return statement to silently change the public contract.",
+          "reproducer": "Returning null on an early exit widens inferred return from number to number | null without warning callers at the definition."
+        },
+        {
+          "trapTag": "empty-array-never-inference",
+          "name": "Unannotated Empty Array Inference",
+          "description": "Initializing 'const items = []' without an annotation infers 'never[]' (or 'any[]' under noImplicitAny: false), failing when pushing typed elements.",
+          "reproducer": "const tags = []; tags.push('ok'); fails in strict mode or leaks any[]."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "invoice_tax_calculator",
+          "description": "Calculating line-item subtotals and tax rates in a strictly typed billing module."
+        },
+        {
+          "domain": "feature_flag_evaluator",
+          "description": "Evaluating typed user attributes against rollout percentages."
+        }
+      ],
+      "usedContexts": [
+        "invoice_tax_calculator",
+        "feature_flag_evaluator"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-ts-no-explicit-any",
+          "check": "Module parameters, local bindings, and return types never use `any` (explicit or implicit); unknown inputs use `unknown` or concrete types.",
+          "why": "Using `any` disables TypeScript's type checker and propagates unsoundness to every caller.",
+          "severity": "must",
+          "knownBad": {
+            "code": "export function formatPrice(amount: any): string {\n  return `$${amount.toFixed(2)}`;\n}",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-ts-explicit-boundary-types",
+          "check": "Exported functions declare explicit parameter and return type annotations while keeping trivial local initializers inferred.",
+          "why": "Explicit boundary signatures catch accidental contract drift at the function definition rather than in distant callers.",
+          "severity": "should",
+          "knownBad": {
+            "code": "export function computeDiscount(price: number, pct: number) {\n  if (pct <= 0) return null;\n  return price * (1 - pct);\n}",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "prg-t01-c02-u01-literal-widening-guard",
+      "unitCode": "PRG-T01-C02-U01",
+      "level": 2,
+      "archetype": "problem-solving",
+      "name": "Literal Widening, Const Narrowing & Contextual Typing",
+      "competencies": [
+        "literal-widening",
+        "as-const",
+        "contextual-typing"
+      ],
+      "coreConcept": "Controlling how TypeScript widens mutable bindings and object properties versus preserving narrow literal types with 'const', 'as const', and contextual parameter typing.",
+      "mentalModel": [
+        "1. 'const x = \"GET\"' infers the literal type '\"GET\"', whereas 'let x = \"GET\"' widens to 'string' because 'let' can be reassigned.",
+        "2. 'const obj = { method: \"GET\" }' widens 'obj.method' to 'string' because object properties remain mutable unless frozen with 'as const' or typed explicitly.",
+        "3. Callback parameters inside typed array methods (e.g. items.map(item => ...)) are contextually typed and do not need redundant annotations."
+      ],
+      "governingInvariant": "literalBinding preserves exact literal/union type without widening to string/number",
+      "cognitiveTraps": [
+        {
+          "trapTag": "object-property-widening",
+          "name": "Object Property Literal Widening",
+          "description": "Passing a property of an unannotated 'const obj = { mode: \"fast\" }' to a function expecting '\"fast\" | \"safe\"' fails because 'obj.mode' widened to 'string'.",
+          "reproducer": "const req = { method: 'GET' }; send(req.method); // Error: string not assignable to 'GET' | 'POST'"
+        },
+        {
+          "trapTag": "let-widening-mismatch",
+          "name": "Mutable Let Literal Widening",
+          "description": "Initializing a variable with 'let' instead of 'const' (or without a union annotation) widens its type to 'string' or 'number', breaking literal parameter calls.",
+          "reproducer": "let role = 'viewer'; assignRole(role); // Error: string is not assignable to 'viewer' | 'editor'"
+        },
+        {
+          "trapTag": "contextual-callback-over-annotation",
+          "name": "Redundant or Mismatched Callback Annotation",
+          "description": "Annotating callback parameters with ': any' or an imprecise type overrides TypeScript's contextual typing from the source array.",
+          "reproducer": "users.map((u: any) => u.name.toUpperCase()) loses property checking."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "http_retry_policy_config",
+          "description": "Building typed HTTP request descriptors and retry policies with literal method and backoff modes."
+        },
+        {
+          "domain": "telemetry_event_router",
+          "description": "Routing typed log severity levels ('info' | 'warn' | 'error') without literal widening."
+        }
+      ],
+      "usedContexts": [
+        "http_retry_policy_config"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-ts-preserve-literal-contract",
+          "check": "Configuration literals and constants passed to literal-typed boundaries preserve narrow types via `const`, `as const`, or explicit type annotations rather than type assertions.",
+          "why": "Widening a literal property to `string` or `number` forces unsafe `as` casts or compiler errors at call sites.",
+          "severity": "must",
+          "accepted": [
+            "const cfg = { method: 'GET' } as const",
+            "const cfg: RequestConfig = { method: 'GET' }"
+          ],
+          "knownBad": {
+            "code": "const req = { method: 'GET' };\nfunction dispatch(method: 'GET' | 'POST'): string {\n  return method;\n}\ndispatch(req.method as 'GET');",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-ts-contextual-callback-inference",
+          "check": "Callback parameters in typed higher-order methods rely on contextual typing rather than `any` annotations.",
+          "why": "Contextual typing automatically propagates element types through `.map`/`.filter`/`.reduce` with zero boilerplate.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function getNames(users: { name: string }[]): string[] {\n  return users.map((u: any) => u.name);\n}",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "prg-t01-c02-u01-inference-refactor-debug",
+      "unitCode": "PRG-T01-C02-U01",
+      "level": 2,
+      "archetype": "debugging",
+      "name": "Type Annotation & Inference Bug Diagnosis",
+      "competencies": [
+        "type-debugging",
+        "type-inference",
+        "unsafe-cast-removal"
+      ],
+      "coreConcept": "Diagnosing why TypeScript infers an unexpected type (widened primitive, never[], or any leak from JSON.parse) and fixing it with clean annotations rather than unsafe 'as' assertions.",
+      "mentalModel": [
+        "1. Trace what TypeScript infers at each binding: const literal vs let widened vs object property widened.",
+        "2. Replace 'any' leaks (especially from unannotated parameters or JSON.parse) with explicit boundary types or 'unknown'.",
+        "3. Fix the root declaration or boundary signature instead of masking errors with 'as' casts."
+      ],
+      "governingInvariant": "zero 'any' leaks and zero unsafe 'as' casts across refactored or debugged modules",
+      "cognitiveTraps": [
+        {
+          "trapTag": "unsafe-type-assertion-masking",
+          "name": "Masking Type Errors with Unsafe Assertions",
+          "description": "Using 'value as TargetType' silences the compiler without verifying or fixing the widened or mismatched type.",
+          "reproducer": "const raw = getInput(); return raw as UserConfig; hides missing fields at runtime."
+        },
+        {
+          "trapTag": "json-parse-any-leak",
+          "name": "JSON.parse Any Propagation",
+          "description": "Returning 'JSON.parse(raw)' directly from a function without a boundary check leaks 'any' to every caller.",
+          "reproducer": "function loadConfig(raw: string) { return JSON.parse(raw); } infers return type 'any'."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "env_config_loader",
+          "description": "Parsing and validating application environment settings without 'any' leaks."
+        },
+        {
+          "domain": "audit_log_formatter",
+          "description": "Refactoring loosely typed log formatters into strict TypeScript modules."
+        }
+      ],
+      "usedContexts": [
+        "env_config_loader",
+        "audit_log_formatter"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-ts-no-unsafe-assertion",
+          "check": "Type errors are resolved through accurate parameter/return annotations, `as const`, or `unknown` checks rather than `as any` or unchecked `as` casts.",
+          "why": "Unchecked assertions bypass TypeScript's static guarantees and hide runtime mismatches.",
+          "severity": "must",
+          "knownBad": {
+            "code": "export function parsePort(raw: unknown): number {\n  return raw as number;\n}",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-ts-json-unknown-boundary",
+          "check": "External unparsed data (`JSON.parse` or raw inputs) is typed as `unknown` at the boundary and checked before returning a typed value.",
+          "why": "`JSON.parse` returns `any` by default, silently disabling type safety if returned directly.",
+          "severity": "must",
+          "knownBad": {
+            "code": "export function readSettings(json: string) {\n  return JSON.parse(json);\n}",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    }
+  ]
+}

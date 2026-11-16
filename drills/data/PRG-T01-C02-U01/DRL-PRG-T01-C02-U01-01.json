@@ -1,0 +1,502 @@
+{
+  "unitCode": "PRG-T01-C02-U01",
+  "unitTitle": "Type Annotations and Inference",
+  "environment": "typescript-strict",
+  "sourceAttribution": "TypeScript Handbook (R004) — Everyday Types & Type Inference",
+  "config": {
+    "questionCount": 5,
+    "difficulty": "ALL",
+    "difficultyMode": "AI Synthesized Engineering Mode"
+  },
+  "problems": [
+    {
+      "id": "Q01",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "codeType": "implement",
+      "archetypeKey": "prg-t01-c02-u01-boundary-annotation",
+      "commonTrapTag": "implicit-any-parameter",
+      "context": "invoice_tax_calculator",
+      "entryPoint": "calculateLineTotal",
+      "prompt": "**Objective:** Implement `calculateLineTotal(unitPrice, quantity, taxRate)` for a billing module using explicit parameter and return type annotations with zero `any`.\n\n**Validation Rules:**\n- `unitPrice`: finite number `>= 0` (throw `RangeError` otherwise).\n- `quantity`: finite integer `>= 0` (throw `RangeError` otherwise).\n- `taxRate`: finite number in `[0, 1]` inclusive (throw `RangeError` otherwise).\n\n**Calculation & Return Contract:**\n- Round `subtotal` (`unitPrice * quantity`), `tax` (`subtotal * taxRate`), and `total` (`subtotal + tax`) to 2 decimal places (`Math.round(value * 100) / 100`).\n- Return `{ subtotal: number, tax: number, total: number }`.",
+      "inputHint": "Export calculateLineTotal(unitPrice: number, quantity: number, taxRate: number) returning { subtotal: number; tax: number; total: number }.",
+      "checkpointHint": "Validate finiteness, integer quantity, and non-negative bounds before computing rounded totals.",
+      "starterCode": "export interface LineTotal {\n  subtotal: number;\n  tax: number;\n  total: number;\n}\n\nexport function calculateLineTotal(\n  unitPrice: number,\n  quantity: number,\n  taxRate: number,\n): LineTotal {\n  void unitPrice;\n  void quantity;\n  void taxRate;\n  return { subtotal: 0, tax: 0, total: 0 };\n}\n",
+      "solutionCode": "export interface LineTotal {\n  subtotal: number;\n  tax: number;\n  total: number;\n}\n\nfunction roundCents(value: number): number {\n  return Math.round(value * 100) / 100;\n}\n\nexport function calculateLineTotal(\n  unitPrice: number,\n  quantity: number,\n  taxRate: number,\n): LineTotal {\n  if (!Number.isFinite(unitPrice) || unitPrice < 0) {\n    throw new RangeError(\"unitPrice must be a finite non-negative number\");\n  }\n  if (!Number.isInteger(quantity) || quantity < 0) {\n    throw new RangeError(\"quantity must be a non-negative integer\");\n  }\n  if (!Number.isFinite(taxRate) || taxRate < 0 || taxRate > 1) {\n    throw new RangeError(\"taxRate must be between 0 and 1\");\n  }\n\n  const subtotal = roundCents(unitPrice * quantity);\n  const tax = roundCents(subtotal * taxRate);\n  const total = roundCents(subtotal + tax);\n  return { subtotal, tax, total };\n}\n",
+      "trapMutant": "export interface LineTotal {\n  subtotal: number;\n  tax: number;\n  total: number;\n}\n\nexport function calculateLineTotal(\n  unitPrice: any,\n  quantity: any,\n  taxRate: any,\n): LineTotal {\n  const subtotal = Math.round(unitPrice * quantity * 100) / 100;\n  const tax = Math.round(subtotal * taxRate * 100) / 100;\n  return { subtotal, tax, total: Math.round((subtotal + tax) * 100) / 100 };\n}\n",
+      "visibleTests": [
+        {
+          "name": "computes rounded subtotal, tax, and total for standard item",
+          "testCode": "const res = calculateLineTotal(19.99, 2, 0.07);\nassert.deepStrictEqual(res, { subtotal: 39.98, tax: 2.8, total: 42.78 });"
+        },
+        {
+          "name": "handles zero quantity and zero tax rate",
+          "testCode": "const res = calculateLineTotal(25, 0, 0);\nassert.deepStrictEqual(res, { subtotal: 0, tax: 0, total: 0 });"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "rejects negative unitPrice with RangeError",
+          "testCode": "assert.throws(() => calculateLineTotal(-1, 2, 0.1), RangeError);"
+        },
+        {
+          "name": "rejects fractional quantity with RangeError",
+          "testCode": "assert.throws(() => calculateLineTotal(10, 1.5, 0.1), RangeError);"
+        },
+        {
+          "name": "rejects taxRate above 1 or NaN with RangeError",
+          "testCode": "assert.throws(() => calculateLineTotal(10, 1, 1.2), RangeError);\nassert.throws(() => calculateLineTotal(Number.NaN, 1, 0.1), RangeError);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Annotate all three numeric parameters and the LineTotal return interface explicitly at the public boundary."
+        },
+        {
+          "explain": "Validate finite bounds and integer quantity with RangeError guards."
+        },
+        {
+          "explain": "Let local intermediates (subtotal, tax, total) be inferred as number."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "implicit-any-parameter|direct|calculateLineTotal",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 3,
+          "hasTrapOrFlaw": false,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "implicit-any-parameter",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 6
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Foundation",
+      "unitCode": "PRG-T01-C02-U01",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U01-01/Q01_calculateLineTotal.ts"
+    },
+    {
+      "id": "Q02",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "codeType": "implement",
+      "archetypeKey": "prg-t01-c02-u01-boundary-annotation",
+      "commonTrapTag": "empty-array-never-inference",
+      "context": "feature_flag_evaluator",
+      "entryPoint": "filterEnabledFlags",
+      "prompt": "**Objective:** Implement `filterEnabledFlags(flags, userBucket)` to return the keys of active feature flags without mutating the input array.\n\n**Input & Validation:**\n- `flags`: `readonly { key: string; enabled: boolean; rolloutPct: number }[]`.\n- `userBucket`: finite number in `[0, 100)` (`0 <= userBucket < 100`). Throw `RangeError` if out of range or not finite.\n- If any flag has `rolloutPct` outside `[0, 100]` or not finite, throw `RangeError`.\n\n**Selection Rules & Return Contract:**\n- Include `flag.key` in order when `flag.enabled === true` and `userBucket < flag.rolloutPct`.\n- Return `string[]` (collect into an explicitly typed `const activeKeys: string[] = []` or typed filter/map chain, never an unannotated `[]`).",
+      "inputHint": "Export filterEnabledFlags(flags: readonly FlagRule[], userBucket: number): string[].",
+      "checkpointHint": "Check boundary conditions at zero rollout percentage and equal bucket/rollout values, and annotate any empty accumulator array.",
+      "starterCode": "export interface FlagRule {\n  key: string;\n  enabled: boolean;\n  rolloutPct: number;\n}\n\nexport function filterEnabledFlags(\n  flags: readonly FlagRule[],\n  userBucket: number,\n): string[] {\n  void flags;\n  void userBucket;\n  return [];\n}\n",
+      "solutionCode": "export interface FlagRule {\n  key: string;\n  enabled: boolean;\n  rolloutPct: number;\n}\n\nfunction assertValidPct(value: number, label: string, upperExclusive: boolean): void {\n  const outOfUpper = upperExclusive ? value >= 100 : value > 100;\n  if (!Number.isFinite(value) || value < 0 || outOfUpper) {\n    throw new RangeError(`${label} out of range`);\n  }\n}\n\nexport function filterEnabledFlags(\n  flags: readonly FlagRule[],\n  userBucket: number,\n): string[] {\n  assertValidPct(userBucket, \"userBucket\", true);\n\n  const activeKeys: string[] = [];\n  for (const flag of flags) {\n    assertValidPct(flag.rolloutPct, \"rolloutPct\", false);\n    if (flag.enabled && userBucket < flag.rolloutPct) {\n      activeKeys.push(flag.key);\n    }\n  }\n  return activeKeys;\n}\n",
+      "trapMutant": "export interface FlagRule {\n  key: string;\n  enabled: boolean;\n  rolloutPct: number;\n}\n\nexport function filterEnabledFlags(\n  flags: readonly FlagRule[],\n  userBucket: number,\n): string[] {\n  const activeKeys = [];\n  for (const flag of flags) {\n    if (flag.enabled && userBucket <= flag.rolloutPct) {\n      activeKeys.push(flag.key);\n    }\n  }\n  return activeKeys;\n}\n",
+      "visibleTests": [
+        {
+          "name": "returns keys for enabled flags whose rolloutPct exceeds userBucket",
+          "testCode": "const flags = [\n  { key: \"dark-mode\", enabled: true, rolloutPct: 50 },\n  { key: \"new-checkout\", enabled: false, rolloutPct: 100 },\n  { key: \"search-v2\", enabled: true, rolloutPct: 20 },\n];\nassert.deepStrictEqual(filterEnabledFlags(flags, 25), [\"dark-mode\"]);"
+        },
+        {
+          "name": "returns empty array when no flags match",
+          "testCode": "assert.deepStrictEqual(filterEnabledFlags([], 0), []);"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "excludes flag when userBucket equals rolloutPct (strictly less-than)",
+          "testCode": "const flags = [{ key: \"beta-ui\", enabled: true, rolloutPct: 0 }];\nassert.deepStrictEqual(filterEnabledFlags(flags, 0), []);"
+        },
+        {
+          "name": "throws RangeError on invalid userBucket or rolloutPct",
+          "testCode": "assert.throws(() => filterEnabledFlags([], 100), RangeError);\nassert.throws(() => filterEnabledFlags([], -1), RangeError);\nassert.throws(() => filterEnabledFlags([{ key: \"x\", enabled: true, rolloutPct: 120 }], 10), RangeError);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Define FlagRule and annotate flags as readonly FlagRule[] and return type as string[]."
+        },
+        {
+          "explain": "Validate userBucket in [0, 100) and each rolloutPct in [0, 100]."
+        },
+        {
+          "explain": "Annotate the empty accumulator activeKeys: string[] so TypeScript does not infer never[]."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "empty-array-never-inference|direct|filterEnabledFlags",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 3,
+          "hasTrapOrFlaw": false,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "empty-array-never-inference",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 6
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Foundation",
+      "unitCode": "PRG-T01-C02-U01",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U01-01/Q02_filterEnabledFlags.ts"
+    },
+    {
+      "id": "Q03",
+      "level": 2,
+      "category": "Trap & Edge Case",
+      "archetype": "problem-solving",
+      "codeType": "implement",
+      "archetypeKey": "prg-t01-c02-u01-literal-widening-guard",
+      "commonTrapTag": "object-property-widening",
+      "context": "http_retry_policy_config",
+      "entryPoint": "createRetryPlan",
+      "prompt": "**Objective:** Implement `createRetryPlan(method, baseDelayMs, strategy)` for an HTTP client using literal union types and `as const` / inferred tuple/array builders.\n\n**Type & Input Rules:**\n- `method`: `\"GET\" | \"POST\" | \"PUT\"`.\n- `baseDelayMs`: finite integer `> 0` (throw `RangeError` otherwise).\n- `strategy`: `\"fixed\" | \"exponential\"`.\n\n**Return Contract:**\n- Return `{ method: HttpMethod; strategy: BackoffStrategy; delaysMs: number[] }` with 3 delay entries:\n  - For `\"fixed\"`: `[baseDelayMs, baseDelayMs, baseDelayMs]`.\n  - For `\"exponential\"`: `[baseDelayMs, baseDelayMs * 2, baseDelayMs * 4]`.\n- Keep internal multiplier constants narrowed with `as const` rather than widened.",
+      "inputHint": "Export createRetryPlan(method: HttpMethod, baseDelayMs: number, strategy: BackoffStrategy).",
+      "checkpointHint": "Use literal union types for method and strategy, and validate baseDelayMs as a positive integer.",
+      "starterCode": "export type HttpMethod = \"GET\" | \"POST\" | \"PUT\";\nexport type BackoffStrategy = \"fixed\" | \"exponential\";\n\nexport interface RetryPlan {\n  method: HttpMethod;\n  strategy: BackoffStrategy;\n  delaysMs: number[];\n}\n\nexport function createRetryPlan(\n  method: HttpMethod,\n  baseDelayMs: number,\n  strategy: BackoffStrategy,\n): RetryPlan {\n  void method;\n  void baseDelayMs;\n  void strategy;\n  return { method: \"GET\", strategy: \"fixed\", delaysMs: [] };\n}\n",
+      "solutionCode": "export type HttpMethod = \"GET\" | \"POST\" | \"PUT\";\nexport type BackoffStrategy = \"fixed\" | \"exponential\";\n\nexport interface RetryPlan {\n  method: HttpMethod;\n  strategy: BackoffStrategy;\n  delaysMs: number[];\n}\n\nconst FIXED_MULTIPLIERS = [1, 1, 1] as const;\nconst EXPONENTIAL_MULTIPLIERS = [1, 2, 4] as const;\n\nexport function createRetryPlan(\n  method: HttpMethod,\n  baseDelayMs: number,\n  strategy: BackoffStrategy,\n): RetryPlan {\n  if (!Number.isInteger(baseDelayMs) || baseDelayMs <= 0) {\n    throw new RangeError(\"baseDelayMs must be a positive integer\");\n  }\n\n  const multipliers = strategy === \"fixed\" ? FIXED_MULTIPLIERS : EXPONENTIAL_MULTIPLIERS;\n  const delaysMs = multipliers.map((factor) => baseDelayMs * factor);\n  return { method, strategy, delaysMs };\n}\n",
+      "trapMutant": "export type HttpMethod = \"GET\" | \"POST\" | \"PUT\";\nexport type BackoffStrategy = \"fixed\" | \"exponential\";\n\nexport interface RetryPlan {\n  method: HttpMethod;\n  strategy: BackoffStrategy;\n  delaysMs: number[];\n}\n\nexport function createRetryPlan(\n  method: HttpMethod,\n  baseDelayMs: number,\n  strategy: BackoffStrategy,\n): RetryPlan {\n  const multipliers = {\n    fixed: [1, 1, 1],\n    exponential: [1, 2, 3],\n  };\n  const chosen = multipliers[strategy];\n  const delaysMs = chosen.map((factor) => baseDelayMs * factor);\n  return { method, strategy, delaysMs };\n}\n",
+      "visibleTests": [
+        {
+          "name": "builds fixed retry delays",
+          "testCode": "const plan = createRetryPlan(\"GET\", 100, \"fixed\");\nassert.deepStrictEqual(plan, { method: \"GET\", strategy: \"fixed\", delaysMs: [100, 100, 100] });"
+        },
+        {
+          "name": "builds exponential retry delays",
+          "testCode": "const plan = createRetryPlan(\"POST\", 50, \"exponential\");\nassert.deepStrictEqual(plan, { method: \"POST\", strategy: \"exponential\", delaysMs: [50, 100, 200] });"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "rejects zero, negative, or non-integer baseDelayMs",
+          "testCode": "assert.throws(() => createRetryPlan(\"PUT\", 0, \"fixed\"), RangeError);\nassert.throws(() => createRetryPlan(\"GET\", -10, \"exponential\"), RangeError);\nassert.throws(() => createRetryPlan(\"GET\", 12.5, \"fixed\"), RangeError);"
+        },
+        {
+          "name": "computes 4x on third attempt for exponential backoff",
+          "testCode": "const plan = createRetryPlan(\"PUT\", 250, \"exponential\");\nassert.deepStrictEqual(plan.delaysMs, [250, 500, 1000]);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Use literal unions HttpMethod and BackoffStrategy on the function boundary."
+        },
+        {
+          "explain": "Freeze multiplier tuples with 'as const' and let .map((factor) => ...) infer factor as 1 | 2 | 4."
+        },
+        {
+          "explain": "Validate baseDelayMs as a positive integer before computing delaysMs."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "object-property-widening|direct|createRetryPlan",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "object-property-widening",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 6
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Standard Exam",
+      "unitCode": "PRG-T01-C02-U01",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U01-01/Q03_createRetryPlan.ts"
+    },
+    {
+      "id": "Q04",
+      "level": 2,
+      "category": "Refactor & Design",
+      "archetype": "refactoring",
+      "codeType": "refactor",
+      "archetypeKey": "prg-t01-c02-u01-inference-refactor-debug",
+      "commonTrapTag": "json-parse-any-leak",
+      "context": "env_config_loader",
+      "entryPoint": "parseServiceConfig",
+      "prompt": "**Objective:** Refactor `parseServiceConfig(rawJson)` to eliminate `any` leaks from `JSON.parse` and unsafe type assertions, validating the parsed `unknown` payload cleanly.\n\n**Refactoring & Validation Rules:**\n- Parse `rawJson` into an `unknown` binding (let invalid JSON throw `SyntaxError`).\n- Verify the parsed value is a non-null plain object (not an array); throw `TypeError` otherwise.\n- `host`: must be a non-empty string after `.trim()` (return trimmed string; throw `TypeError` otherwise).\n- `port`: must be an integer in `1..65535` (throw `TypeError` if not a number, `RangeError` if not an integer in range).\n- `tls`: optional boolean; if `undefined`, default to `false`. If present and not a boolean, throw `TypeError`.\n- Return `{ host: string; port: number; tls: boolean }` with zero `any` types.",
+      "inputHint": "Refactor parseServiceConfig(rawJson: string): ServiceConfig using unknown instead of any.",
+      "checkpointHint": "Type JSON.parse(rawJson) as unknown and validate each property explicitly before constructing the return object.",
+      "starterLintExpected": [
+        {
+          "rule": "@typescript-eslint/no-explicit-any",
+          "reason": "Starter intentionally uses explicit any on JSON.parse result to be refactored away."
+        }
+      ],
+      "starterCode": "export interface ServiceConfig {\n  host: string;\n  port: number;\n  tls: boolean;\n}\n\nexport function parseServiceConfig(rawJson: string): ServiceConfig {\n  const parsed: any = JSON.parse(rawJson);\n  return {\n    host: parsed.host,\n    port: parsed.port,\n    tls: Boolean(parsed.tls),\n  };\n}\n",
+      "solutionCode": "export interface ServiceConfig {\n  host: string;\n  port: number;\n  tls: boolean;\n}\n\nfunction parseHost(value: unknown): string {\n  if (typeof value !== \"string\" || value.trim().length === 0) {\n    throw new TypeError(\"host must be a non-empty string\");\n  }\n  return value.trim();\n}\n\nfunction parsePort(value: unknown): number {\n  if (typeof value !== \"number\") {\n    throw new TypeError(\"port must be a number\");\n  }\n  if (!Number.isInteger(value) || value < 1 || value > 65535) {\n    throw new RangeError(\"port must be an integer between 1 and 65535\");\n  }\n  return value;\n}\n\nfunction parseTls(value: unknown): boolean {\n  if (value === undefined) {\n    return false;\n  }\n  if (typeof value !== \"boolean\") {\n    throw new TypeError(\"tls must be a boolean when provided\");\n  }\n  return value;\n}\n\nexport function parseServiceConfig(rawJson: string): ServiceConfig {\n  const parsed: unknown = JSON.parse(rawJson);\n  if (typeof parsed !== \"object\" || parsed === null || Array.isArray(parsed)) {\n    throw new TypeError(\"Config payload must be a JSON object\");\n  }\n\n  const record = parsed as Record<string, unknown>;\n  return {\n    host: parseHost(record.host),\n    port: parsePort(record.port),\n    tls: parseTls(record.tls),\n  };\n}\n",
+      "trapMutant": "export interface ServiceConfig {\n  host: string;\n  port: number;\n  tls: boolean;\n}\n\nexport function parseServiceConfig(rawJson: string): ServiceConfig {\n  const parsed: any = JSON.parse(rawJson);\n  return {\n    host: parsed.host,\n    port: parsed.port,\n    tls: Boolean(parsed.tls),\n  };\n}\n",
+      "visibleTests": [
+        {
+          "name": "parses valid config and defaults tls to false",
+          "testCode": "const cfg = parseServiceConfig('{\"host\":\" api.internal \",\"port\":8443}');\nassert.deepStrictEqual(cfg, { host: \"api.internal\", port: 8443, tls: false });"
+        },
+        {
+          "name": "throws TypeError when payload is an array or null",
+          "testCode": "assert.throws(() => parseServiceConfig(\"[]\"), TypeError);\nassert.throws(() => parseServiceConfig(\"null\"), TypeError);"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "rejects out-of-range port with RangeError and non-boolean tls with TypeError",
+          "testCode": "assert.throws(() => parseServiceConfig('{\"host\":\"db\",\"port\":70000}'), RangeError);\nassert.throws(() => parseServiceConfig('{\"host\":\"db\",\"port\":5432,\"tls\":\"yes\"}'), TypeError);"
+        },
+        {
+          "name": "rejects empty host and invalid JSON",
+          "testCode": "assert.throws(() => parseServiceConfig('{\"host\":\"   \",\"port\":80}'), TypeError);\nassert.throws(() => parseServiceConfig(\"{bad json\"), SyntaxError);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Assign JSON.parse(rawJson) to an unknown variable instead of any."
+        },
+        {
+          "explain": "Guard against null and arrays before reading host, port, and tls."
+        },
+        {
+          "explain": "Split field validation into small single-job helpers for host, port, and tls."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "json-parse-any-leak|direct|parseServiceConfig",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "refactoring"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "json-parse-any-leak",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 6
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Standard Exam",
+      "unitCode": "PRG-T01-C02-U01",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U01-01/Q04_parseServiceConfig.ts"
+    },
+    {
+      "id": "Q05",
+      "level": 2,
+      "category": "Trap & Edge Case",
+      "archetype": "debugging",
+      "codeType": "fix-bug",
+      "archetypeKey": "prg-t01-c02-u01-inference-refactor-debug",
+      "commonTrapTag": "unsafe-type-assertion-masking",
+      "context": "audit_log_formatter",
+      "entryPoint": "formatAuditEntries",
+      "prompt": "**Objective:** Fix and refactor `formatAuditEntries(entries)` so it formats audit records cleanly with zero `any` annotations and proper runtime validation.\n\n**Input & Formatting Rules:**\n- `entries`: `readonly { actor: string; action: string; level?: \"info\" | \"warn\" | \"error\" }[]`.\n- Trim `actor` and `action`; if either is empty after trimming, throw `TypeError`.\n- Default omitted `level` to `\"info\"` and format each entry as `\"[LEVEL] actor: action\"` with `LEVEL` uppercased (`INFO`, `WARN`, `ERROR`).\n- Do not mutate the input array or its entry objects.",
+      "inputHint": "Fix formatAuditEntries(entries: readonly AuditEntry[]): string[] without using any.",
+      "checkpointHint": "Replace the untyped callback parameter with contextual typing, trim actor/action, and guard against empty strings.",
+      "starterLintExpected": [
+        {
+          "rule": "@typescript-eslint/no-explicit-any",
+          "reason": "Starter intentionally uses an any-typed callback parameter that must be removed."
+        }
+      ],
+      "starterCode": "export type AuditLevel = \"info\" | \"warn\" | \"error\";\n\nexport interface AuditEntry {\n  actor: string;\n  action: string;\n  level?: AuditLevel;\n}\n\nexport function formatAuditEntries(entries: readonly AuditEntry[]): string[] {\n  return entries.map((entry: any) => {\n    const tag = (entry.level || \"info\").toLowerCase();\n    return `[${tag}] ${entry.actor}: ${entry.action}`;\n  });\n}\n",
+      "solutionCode": "export type AuditLevel = \"info\" | \"warn\" | \"error\";\n\nexport interface AuditEntry {\n  actor: string;\n  action: string;\n  level?: AuditLevel;\n}\n\nexport function formatAuditEntries(entries: readonly AuditEntry[]): string[] {\n  return entries.map((entry) => {\n    const actor = entry.actor.trim();\n    const action = entry.action.trim();\n    if (actor.length === 0 || action.length === 0) {\n      throw new TypeError(\"actor and action must be non-empty strings\");\n    }\n    const level = entry.level ?? \"info\";\n    return `[${level.toUpperCase()}] ${actor}: ${action}`;\n  });\n}\n",
+      "trapMutant": "export type AuditLevel = \"info\" | \"warn\" | \"error\";\n\nexport interface AuditEntry {\n  actor: string;\n  action: string;\n  level?: AuditLevel;\n}\n\nexport function formatAuditEntries(entries: readonly AuditEntry[]): string[] {\n  return entries.map((entry) => {\n    const raw = entry as { actor: string; action: string; level?: string };\n    const level = raw.level ?? \"info\";\n    return `[${level.toUpperCase()}] ${raw.actor}: ${raw.action}`;\n  });\n}\n",
+      "visibleTests": [
+        {
+          "name": "formats entries with uppercased level and default info",
+          "testCode": "const out = formatAuditEntries([\n  { actor: \"alice\", action: \"login\" },\n  { actor: \"bob\", action: \"delete-key\", level: \"warn\" },\n]);\nassert.deepStrictEqual(out, [\"[INFO] alice: login\", \"[WARN] bob: delete-key\"]);"
+        },
+        {
+          "name": "handles empty entry list",
+          "testCode": "assert.deepStrictEqual(formatAuditEntries([]), []);"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "trims whitespace around actor and action",
+          "testCode": "const out = formatAuditEntries([{ actor: \"  svc-bot  \", action: \" rotate-secret \", level: \"error\" }]);\nassert.deepStrictEqual(out, [\"[ERROR] svc-bot: rotate-secret\"]);"
+        },
+        {
+          "name": "throws TypeError when actor or action is blank",
+          "testCode": "assert.throws(() => formatAuditEntries([{ actor: \"   \", action: \"login\" }]), TypeError);\nassert.throws(() => formatAuditEntries([{ actor: \"alice\", action: \"\" }]), TypeError);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Remove ': any' from the .map callback so TypeScript infers entry as AuditEntry contextually."
+        },
+        {
+          "explain": "Trim actor and action and throw TypeError if either is empty."
+        },
+        {
+          "explain": "Default entry.level with ?? 'info' and uppercase the level tag."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "unsafe-type-assertion-masking|direct|formatAuditEntries",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "debugging"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "unsafe-type-assertion-masking",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 6
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Standard Exam",
+      "unitCode": "PRG-T01-C02-U01",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U01-01/Q05_formatAuditEntries.ts"
+    }
+  ],
+  "blindSolve": [
+    {
+      "problemId": "Q01",
+      "passed": true
+    },
+    {
+      "problemId": "Q02",
+      "passed": true
+    },
+    {
+      "problemId": "Q03",
+      "passed": true
+    },
+    {
+      "problemId": "Q04",
+      "passed": true
+    },
+    {
+      "problemId": "Q05",
+      "passed": true
+    }
+  ],
+  "review": {
+    "verdict": "pass",
+    "note": "All 5 problems satisfy no-leak, realistic-domain, Layer 3 rubric, brief mix/level (L1-L2, typescript-strict, 2 non-implement), and unit-scope/trapMutant alignment checks."
+  },
+  "drillId": "DRL-PRG-T01-C02-U01-01",
+  "topicCode": "PRG-T01",
+  "chapterCode": "PRG-T01-C02",
+  "schemaVersion": "2.0-code",
+  "subject": "PRG",
+  "createdAt": "2026-11-16 22:58:08",
+  "localFilePath": "drills/data/PRG-T01-C02-U01/DRL-PRG-T01-C02-U01-01.json"
+}
