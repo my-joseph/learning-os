@@ -45,7 +45,7 @@
 | :-- | :-- | :-- |
 | P0 | Safety net: requirements, pytest, CI, lint baseline fixed | done (PR #1) |
 | P1 | Move one-shot scripts to `archive/` | done (34 moved; 7 root modules kept because live code imports them) |
-| P2 | Shared Notion client + env loader | done (`notion_sync/client.py`); `code_engine/submit.py` and `labs/common/submit_lab.py` keep their own variants (different retry/env-quote behavior) |
+| P2 | Shared Notion client + env loader | done (`notion_sync/client.py`, including `code_engine/submit.py` and `labs/common/submit_lab.py`) |
 | P3 | Merge duplicated root/studio files | done (root is canonical; stale `practice-studio/` copies removed) |
 | P4 | Retire `practice_hub.py` + `web/` | done (hub server and legacy UI deleted; `notion_sync/drill_sync.py` keeps validator, save and Notion sync) |
 | P5 | ruff format/lint + type hints | done (ruff config, CI checks; hints on `notion_sync.client`/`notion_sync.drill_sync` public funcs only; `archive/`, studio excluded) |
