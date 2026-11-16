@@ -19,54 +19,54 @@ Refusals: 0
   PRG-T09: {"renumber": 25}
 
 --- Planned Notion Operations ---
-  [RETIRE] PRG-T08 -> RETIRED-PRG-T08 (target=PRG-T01-C04, PRG-T02-C06, PRG-T07-C01, page=40c3818f-8ba0-8132-9a78-e5c22364add6)
-  [RETIRE] PRG-T00-C02-U03 -> RETIRED-PRG-T00-C02-U03 (target=PRG-T00-C03-U02, page=40c3818f-8ba0-8174-9fc6-d536ef06d992)
-  [RETIRE] PRG-T00-C02-U05 -> RETIRED-PRG-T00-C02-U05 (target=PRG-T00-C03-U03, page=40c3818f-8ba0-8112-aacd-dd21e9c75200)
-  [RETIRE] PRG-T00-C02-U07 -> RETIRED-PRG-T00-C02-U07 (target=PRG-T00-C03-U04, page=40c3818f-8ba0-8105-b83e-dc71c3f8d012)
-  [RETIRE] PRG-T08-C01 -> RETIRED-PRG-T08-C01 (target=PRG-T01-C04, page=40c3818f-8ba0-813f-ac06-e61348c651fc)
-  [RETIRE] PRG-T01-C03-U02 -> RETIRED-PRG-T01-C03-U02 (target=PRG-T01-C04-U01, page=40c3818f-8ba0-8148-b79a-d4602d502163)
-  [RETIRE] PRG-T01-C03-U03 -> RETIRED-PRG-T01-C03-U03 (target=PRG-T01-C04-U01, page=40c3818f-8ba0-817f-ad7a-d1ac6725f3b0)
-  [RETIRE] PRG-T01-C03-U06 -> RETIRED-PRG-T01-C03-U06 (target=PRG-T01-C04-U02, page=40c3818f-8ba0-81a9-979d-cd302bea370c)
-  [RETIRE] PRG-T08-C01-U01 -> RETIRED-PRG-T08-C01-U01 (target=PRG-T01-C04-U03, page=40c3818f-8ba0-8153-a423-c4c2e79e74dd)
-  [RETIRE] PRG-T08-C01-U02 -> RETIRED-PRG-T08-C01-U02 (target=PRG-T01-C04-U03, page=40c3818f-8ba0-81d1-934c-ebb3b1422ab2)
-  [RETIRE] PRG-T08-C01-U06 -> RETIRED-PRG-T08-C01-U06 (target=PRG-T01-C04-U05, page=40c3818f-8ba0-81e0-a024-f62866937c6f)
-  [RETIRE] PRG-T08-C01-U07 -> RETIRED-PRG-T08-C01-U07 (target=PRG-T01-C04-U05, page=40c3818f-8ba0-81c1-bd74-f841afeb1019)
-  [RETIRE] PRG-T02-C01-U09 -> RETIRED-PRG-T02-C01-U09 (target=PRG-T02-C01-U08, page=40c3818f-8ba0-8178-9edb-e952ca9a9ffb)
-  [RETIRE] PRG-T02-C05-U01 -> RETIRED-PRG-T02-C05-U01 (target=PRG-T02-C01-U08, page=40c3818f-8ba0-81fe-b593-ecf8e1e14dd5)
-  [RETIRE] PRG-T02-C05-U02 -> RETIRED-PRG-T02-C05-U02 (target=PRG-T02-C01-U08, page=40c3818f-8ba0-811b-ab49-c6d53bc94400)
-  [RETIRE] PRG-T02-C05-U07 -> RETIRED-PRG-T02-C05-U07 (target=PRG-T02-C05-U04, page=40c3818f-8ba0-8193-93a5-dea0ac749af5)
-  [RETIRE] PRG-T08-C02-U02 -> RETIRED-PRG-T08-C02-U02 (target=PRG-T02-C06-U01, page=40c3818f-8ba0-81be-bd55-e8ab9e5a0e7a)
-  [RETIRE] PRG-T04-C03-U06 -> RETIRED-PRG-T04-C03-U06 (target=PRG-T03-C03-U04, page=40c3818f-8ba0-8114-ac6b-cf09690341d2)
-  [RETIRE] PRG-T06-C02-U07 -> RETIRED-PRG-T06-C02-U07 (target=PRG-T03-C03-U05, page=40c3818f-8ba0-81e2-92bf-d5f23b2ccc35)
-  [RETIRE] PRG-T05-C02-U01 -> RETIRED-PRG-T05-C02-U01 (target=PRG-T04-C02-U01, page=40c3818f-8ba0-813d-9c75-f443163c0de4)
-  [RETIRE] PRG-T05-C02-U02 -> RETIRED-PRG-T05-C02-U02 (target=PRG-T04-C02-U02, page=40c3818f-8ba0-81ca-a644-f66d33d5707c)
-  [RETIRE] PRG-T05-C02-U07 -> RETIRED-PRG-T05-C02-U07 (target=PRG-T04-C02-U07, page=40c3818f-8ba0-81ed-9cc1-d2b57ec8b7fc)
-  [RETIRE] PRG-T03-C03-U06 -> RETIRED-PRG-T03-C03-U06 (target=PRG-T06-C03-U05, page=40c3818f-8ba0-8108-93d3-dfb02440bf3d)
-  [RETIRE] PRG-T07-C01 -> RETIRED-PRG-T07-C01 (target=PRG-T07-C02, page=40c3818f-8ba0-8161-968e-c70ac5454df7)
-  [RETIRE] PRG-T07-C03 -> RETIRED-PRG-T07-C03 (target=PRG-T07-C02, page=40c3818f-8ba0-818b-8e25-d4f2662216f7)
-  [RETIRE] PRG-T07-C04 -> RETIRED-PRG-T07-C04 (target=PRG-T07-C02, page=40c3818f-8ba0-81da-a08d-f5405a11b1ee)
-  [RETIRE] PRG-T07-C01-U02 -> RETIRED-PRG-T07-C01-U02 (target=PRG-T07-C02-U01, page=40c3818f-8ba0-8100-a0b5-ebcda3768d2e)
-  [RETIRE] PRG-T07-C01-U03 -> RETIRED-PRG-T07-C01-U03 (target=PRG-T07-C02-U01, page=40c3818f-8ba0-81b1-b36c-f68a94420f8e)
-  [RETIRE] PRG-T07-C01-U04 -> RETIRED-PRG-T07-C01-U04 (target=PRG-T07-C02-U01, page=40c3818f-8ba0-81a9-8b4e-cf242c7b0a69)
-  [RETIRE] PRG-T07-C01-U05 -> RETIRED-PRG-T07-C01-U05 (target=PRG-T07-C02-U01, page=40c3818f-8ba0-81ae-a11a-c0a706f191f8)
-  [RETIRE] PRG-T07-C01-U06 -> RETIRED-PRG-T07-C01-U06 (target=PRG-T07-C02-U01, page=40c3818f-8ba0-81f7-9eb6-e3f6b4a15900)
-  [RETIRE] PRG-T07-C02-U02 -> RETIRED-PRG-T07-C02-U02 (target=PRG-T07-C02-U02, page=40c3818f-8ba0-814a-a8dd-cc5a34ad8c97)
-  [RETIRE] PRG-T07-C02-U03 -> RETIRED-PRG-T07-C02-U03 (target=PRG-T07-C02-U02, page=40c3818f-8ba0-81b4-9a2f-cca20de243ac)
-  [RETIRE] PRG-T07-C02-U04 -> RETIRED-PRG-T07-C02-U04 (target=PRG-T07-C02-U02, page=40c3818f-8ba0-814b-b7b8-dcdca82b392f)
-  [RETIRE] PRG-T07-C02-U05 -> RETIRED-PRG-T07-C02-U05 (target=PRG-T07-C02-U02, page=40c3818f-8ba0-8137-a8ee-dace77386f19)
-  [RETIRE] PRG-T07-C02-U06 -> RETIRED-PRG-T07-C02-U06 (target=PRG-T07-C02-U02, page=40c3818f-8ba0-8187-943f-de1ad84f78af)
-  [RETIRE] PRG-T07-C02-U07 -> RETIRED-PRG-T07-C02-U07 (target=PRG-T07-C02-U02, page=40c3818f-8ba0-81f8-8fad-c2ec5cc2e14d)
-  [RETIRE] PRG-T07-C03-U02 -> RETIRED-PRG-T07-C03-U02 (target=PRG-T07-C02-U03, page=40c3818f-8ba0-8141-b07a-c7ac09eb4581)
-  [RETIRE] PRG-T07-C03-U03 -> RETIRED-PRG-T07-C03-U03 (target=PRG-T07-C02-U03, page=40c3818f-8ba0-8136-9620-e443bd79e290)
-  [RETIRE] PRG-T07-C03-U04 -> RETIRED-PRG-T07-C03-U04 (target=PRG-T07-C02-U03, page=40c3818f-8ba0-8190-820e-e5fa91ac2e6f)
-  [RETIRE] PRG-T07-C03-U05 -> RETIRED-PRG-T07-C03-U05 (target=PRG-T07-C02-U03, page=40c3818f-8ba0-8140-a82b-d1dff8967412)
-  [RETIRE] PRG-T07-C04-U02 -> RETIRED-PRG-T07-C04-U02 (target=PRG-T07-C02-U04, page=40c3818f-8ba0-81da-a190-de087fff3d7b)
-  [RETIRE] PRG-T07-C04-U03 -> RETIRED-PRG-T07-C04-U03 (target=PRG-T07-C02-U04, page=40c3818f-8ba0-8131-bb23-ebaf12db206d)
-  [RETIRE] PRG-T07-C04-U04 -> RETIRED-PRG-T07-C04-U04 (target=PRG-T07-C02-U04, page=40c3818f-8ba0-8145-bf26-d993108e9985)
-  [RETIRE] PRG-T07-C04-U05 -> RETIRED-PRG-T07-C04-U05 (target=PRG-T07-C02-U04, page=40c3818f-8ba0-81a6-b1b5-dbcafe34b568)
-  [RETIRE] PRG-T07-C04-U07 -> RETIRED-PRG-T07-C04-U07 (target=PRG-T07-C02-U05, page=40c3818f-8ba0-8109-8cce-d6293fb93b9e)
-  [RETIRE] PRG-T07-C03-U06 -> RETIRED-PRG-T07-C03-U06 (target=PRG-T08-C02-U05, page=40c3818f-8ba0-81c3-b922-d4fad1874350)
-  [RETIRE] PRG-T07-C03-U07 -> RETIRED-PRG-T07-C03-U07 (target=PRG-T08-C02-U06, page=40c3818f-8ba0-81da-926a-cfe8076b4150)
+  [RETIRE] PRG-T08 -> RETIRED-PRG-T08 (topic, page=40c3818f-8ba0-8132-9a78-e5c22364add6) | title='[Retired] Testing & Software Quality' | clear(none) | Goal+='Retired 2026-11-16: merged into PRG-T01-C04, PRG-T02-C06, PRG-T07-C01' | Status=unchanged
+  [RETIRE] PRG-T00-C02-U03 -> RETIRED-PRG-T00-C02-U03 (unit, page=40c3818f-8ba0-8174-9fc6-d536ef06d992) | title='[Retired] Arrays and Objects' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T00-C03-U02' | Status=unchanged
+  [RETIRE] PRG-T00-C02-U05 -> RETIRED-PRG-T00-C02-U05 (unit, page=40c3818f-8ba0-8112-aacd-dd21e9c75200) | title='[Retired] Promises and Async/Await' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T00-C03-U03' | Status=unchanged
+  [RETIRE] PRG-T00-C02-U07 -> RETIRED-PRG-T00-C02-U07 (unit, page=40c3818f-8ba0-8105-b83e-dc71c3f8d012) | title='[Retired] Reading and Debugging Existing Code' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T00-C03-U04' | Status=unchanged
+  [RETIRE] PRG-T08-C01 -> RETIRED-PRG-T08-C01 (chapter, page=40c3818f-8ba0-813f-ac06-e61348c651fc) | title='[Retired] Unit & Integration Testing' | clear(Topics=[]) | Objective+='Retired 2026-11-16: merged into PRG-T01-C04' | Status=unchanged
+  [RETIRE] PRG-T01-C03-U02 -> RETIRED-PRG-T01-C03-U02 (unit, page=40c3818f-8ba0-8148-b79a-d4602d502163) | title='[Retired] Array Transformations' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T01-C04-U01' | Status=unchanged
+  [RETIRE] PRG-T01-C03-U03 -> RETIRED-PRG-T01-C03-U03 (unit, page=40c3818f-8ba0-817f-ad7a-d1ac6725f3b0) | title='[Retired] Object Transformations' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T01-C04-U01' | Status=unchanged
+  [RETIRE] PRG-T01-C03-U06 -> RETIRED-PRG-T01-C03-U06 (unit, page=40c3818f-8ba0-81a9-979d-cd302bea370c) | title='[Retired] Error Handling and Edge Cases' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T01-C04-U02' | Status=unchanged
+  [RETIRE] PRG-T08-C01-U01 -> RETIRED-PRG-T08-C01-U01 (unit, page=40c3818f-8ba0-8153-a423-c4c2e79e74dd) | title='[Retired] Testing Pyramid and Test Strategy' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T01-C04-U03' | Status=unchanged
+  [RETIRE] PRG-T08-C01-U02 -> RETIRED-PRG-T08-C01-U02 (unit, page=40c3818f-8ba0-81d1-934c-ebb3b1422ab2) | title='[Retired] Unit Testing Pure Functions' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T01-C04-U03' | Status=unchanged
+  [RETIRE] PRG-T08-C01-U06 -> RETIRED-PRG-T08-C01-U06 (unit, page=40c3818f-8ba0-81e0-a024-f62866937c6f) | title='[Retired] Test Data and Fixtures' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T01-C04-U05' | Status=unchanged
+  [RETIRE] PRG-T08-C01-U07 -> RETIRED-PRG-T08-C01-U07 (unit, page=40c3818f-8ba0-81c1-bd74-f841afeb1019) | title='[Retired] Coverage and Test Quality' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T01-C04-U05' | Status=unchanged
+  [RETIRE] PRG-T02-C01-U09 -> RETIRED-PRG-T02-C01-U09 (unit, page=40c3818f-8ba0-8178-9edb-e952ca9a9ffb) | title='[Retired] Component Architecture' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T02-C01-U08' | Status=unchanged
+  [RETIRE] PRG-T02-C05-U01 -> RETIRED-PRG-T02-C05-U01 (unit, page=40c3818f-8ba0-81fe-b593-ecf8e1e14dd5) | title='[Retired] Component Boundaries and Composition' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T02-C01-U08' | Status=unchanged
+  [RETIRE] PRG-T02-C05-U02 -> RETIRED-PRG-T02-C05-U02 (unit, page=40c3818f-8ba0-811b-ab49-c6d53bc94400) | title='[Retired] Rendering Cost and Re-render Analysis' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T02-C01-U08' | Status=unchanged
+  [RETIRE] PRG-T02-C05-U07 -> RETIRED-PRG-T02-C05-U07 (unit, page=40c3818f-8ba0-8193-93a5-dea0ac749af5) | title='[Retired] Frontend Architecture Decisions' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T02-C05-U04' | Status=unchanged
+  [RETIRE] PRG-T08-C02-U02 -> RETIRED-PRG-T08-C02-U02 (unit, page=40c3818f-8ba0-81be-bd55-e8ab9e5a0e7a) | title='[Retired] Queries by Role and Label' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T02-C06-U01' | Status=unchanged
+  [RETIRE] PRG-T04-C03-U06 -> RETIRED-PRG-T04-C03-U06 (unit, page=40c3818f-8ba0-8114-ac6b-cf09690341d2) | title='[Retired] API Documentation' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T03-C03-U04' | Status=unchanged
+  [RETIRE] PRG-T06-C02-U07 -> RETIRED-PRG-T06-C02-U07 (unit, page=40c3818f-8ba0-81e2-92bf-d5f23b2ccc35) | title='[Retired] Secrets and Environment Safety' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T03-C03-U05' | Status=unchanged
+  [RETIRE] PRG-T05-C02-U01 -> RETIRED-PRG-T05-C02-U01 (unit, page=40c3818f-8ba0-813d-9c75-f443163c0de4) | title='[Retired] Filtering, Sorting and Aggregation' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T04-C02-U01' | Status=unchanged
+  [RETIRE] PRG-T05-C02-U02 -> RETIRED-PRG-T05-C02-U02 (unit, page=40c3818f-8ba0-81ca-a644-f66d33d5707c) | title='[Retired] INNER and OUTER JOINs' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T04-C02-U02' | Status=unchanged
+  [RETIRE] PRG-T05-C02-U07 -> RETIRED-PRG-T05-C02-U07 (unit, page=40c3818f-8ba0-81ed-9cc1-d2b57ec8b7fc) | title='[Retired] Query Optimization' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T04-C02-U07' | Status=unchanged
+  [RETIRE] PRG-T03-C03-U06 -> RETIRED-PRG-T03-C03-U06 (unit, page=40c3818f-8ba0-8108-93d3-dfb02440bf3d) | title='[Retired] Error and Pending States' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T06-C03-U05' | Status=unchanged
+  [RETIRE] PRG-T07-C01 -> RETIRED-PRG-T07-C01 (chapter, page=40c3818f-8ba0-8161-968e-c70ac5454df7) | title='[Retired] Product Scope & Domain Architecture' | clear(Topics=[]) | Objective+='Retired 2026-11-16: merged into PRG-T07-C02' | Status=unchanged
+  [RETIRE] PRG-T07-C03 -> RETIRED-PRG-T07-C03 (chapter, page=40c3818f-8ba0-818b-8e25-d4f2662216f7) | title='[Retired] Files, Notifications & Search' | clear(Topics=[]) | Objective+='Retired 2026-11-16: merged into PRG-T07-C02' | Status=unchanged
+  [RETIRE] PRG-T07-C04 -> RETIRED-PRG-T07-C04 (chapter, page=40c3818f-8ba0-81da-a08d-f5405a11b1ee) | title='[Retired] Product Polish & Release Candidate' | clear(Topics=[]) | Objective+='Retired 2026-11-16: merged into PRG-T07-C02' | Status=unchanged
+  [RETIRE] PRG-T07-C01-U02 -> RETIRED-PRG-T07-C01-U02 (unit, page=40c3818f-8ba0-8100-a0b5-ebcda3768d2e) | title='[Retired] User Stories and Acceptance Criteria' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T07-C02-U01' | Status=unchanged
+  [RETIRE] PRG-T07-C01-U03 -> RETIRED-PRG-T07-C01-U03 (unit, page=40c3818f-8ba0-81b1-b36c-f68a94420f8e) | title='[Retired] Domain Entities and Relationships' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T07-C02-U01' | Status=unchanged
+  [RETIRE] PRG-T07-C01-U04 -> RETIRED-PRG-T07-C01-U04 (unit, page=40c3818f-8ba0-81a9-8b4e-cf242c7b0a69) | title='[Retired] Feature Prioritization and MVP Scope' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T07-C02-U01' | Status=unchanged
+  [RETIRE] PRG-T07-C01-U05 -> RETIRED-PRG-T07-C01-U05 (unit, page=40c3818f-8ba0-81ae-a11a-c0a706f191f8) | title='[Retired] Application Architecture' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T07-C02-U01' | Status=unchanged
+  [RETIRE] PRG-T07-C01-U06 -> RETIRED-PRG-T07-C01-U06 (unit, page=40c3818f-8ba0-81f7-9eb6-e3f6b4a15900) | title='[Retired] Milestones and Technical Plan' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T07-C02-U01' | Status=unchanged
+  [RETIRE] PRG-T07-C02-U02 -> RETIRED-PRG-T07-C02-U02 (unit, page=40c3818f-8ba0-814a-a8dd-cc5a34ad8c97) | title='[Retired] Invitations and Onboarding Flow' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T07-C02-U02' | Status=unchanged
+  [RETIRE] PRG-T07-C02-U03 -> RETIRED-PRG-T07-C02-U03 (unit, page=40c3818f-8ba0-81b4-9a2f-cca20de243ac) | title='[Retired] Projects and Task Model' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T07-C02-U02' | Status=unchanged
+  [RETIRE] PRG-T07-C02-U04 -> RETIRED-PRG-T07-C02-U04 (unit, page=40c3818f-8ba0-814b-b7b8-dcdca82b392f) | title='[Retired] Kanban Workflow' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T07-C02-U02' | Status=unchanged
+  [RETIRE] PRG-T07-C02-U05 -> RETIRED-PRG-T07-C02-U05 (unit, page=40c3818f-8ba0-8137-a8ee-dace77386f19) | title='[Retired] Task Assignment and Status Changes' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T07-C02-U02' | Status=unchanged
+  [RETIRE] PRG-T07-C02-U06 -> RETIRED-PRG-T07-C02-U06 (unit, page=40c3818f-8ba0-8187-943f-de1ad84f78af) | title='[Retired] Comments and Collaboration' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T07-C02-U02' | Status=unchanged
+  [RETIRE] PRG-T07-C02-U07 -> RETIRED-PRG-T07-C02-U07 (unit, page=40c3818f-8ba0-81f8-8fad-c2ec5cc2e14d) | title='[Retired] Role and Ownership Enforcement' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T07-C02-U02' | Status=unchanged
+  [RETIRE] PRG-T07-C03-U02 -> RETIRED-PRG-T07-C03-U02 (unit, page=40c3818f-8ba0-8141-b07a-c7ac09eb4581) | title='[Retired] Object Storage Integration Concepts' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T07-C02-U03' | Status=unchanged
+  [RETIRE] PRG-T07-C03-U03 -> RETIRED-PRG-T07-C03-U03 (unit, page=40c3818f-8ba0-8136-9620-e443bd79e290) | title='[Retired] Notification Model and Delivery' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T07-C02-U03' | Status=unchanged
+  [RETIRE] PRG-T07-C03-U04 -> RETIRED-PRG-T07-C03-U04 (unit, page=40c3818f-8ba0-8190-820e-e5fa91ac2e6f) | title='[Retired] Search and Filtering' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T07-C02-U03' | Status=unchanged
+  [RETIRE] PRG-T07-C03-U05 -> RETIRED-PRG-T07-C03-U05 (unit, page=40c3818f-8ba0-8140-a82b-d1dff8967412) | title='[Retired] Activity Feed and Audit Events' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T07-C02-U03' | Status=unchanged
+  [RETIRE] PRG-T07-C04-U02 -> RETIRED-PRG-T07-C04-U02 (unit, page=40c3818f-8ba0-81da-a190-de087fff3d7b) | title='[Retired] Responsive Product UX' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T07-C02-U04' | Status=unchanged
+  [RETIRE] PRG-T07-C04-U03 -> RETIRED-PRG-T07-C04-U03 (unit, page=40c3818f-8ba0-8131-bb23-ebaf12db206d) | title='[Retired] Onboarding and First-use Experience' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T07-C02-U04' | Status=unchanged
+  [RETIRE] PRG-T07-C04-U04 -> RETIRED-PRG-T07-C04-U04 (unit, page=40c3818f-8ba0-8145-bf26-d993108e9985) | title='[Retired] Activity and Notification Polish' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T07-C02-U04' | Status=unchanged
+  [RETIRE] PRG-T07-C04-U05 -> RETIRED-PRG-T07-C04-U05 (unit, page=40c3818f-8ba0-81a6-b1b5-dbcafe34b568) | title='[Retired] Accessibility Review' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T07-C02-U04' | Status=unchanged
+  [RETIRE] PRG-T07-C04-U07 -> RETIRED-PRG-T07-C04-U07 (unit, page=40c3818f-8ba0-8109-8cce-d6293fb93b9e) | title='[Retired] Release Candidate Checklist' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T07-C02-U05' | Status=unchanged
+  [RETIRE] PRG-T07-C03-U06 -> RETIRED-PRG-T07-C03-U06 (unit, page=40c3818f-8ba0-81c3-b922-d4fad1874350) | title='[Retired] Background Work Concepts' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T08-C02-U05' | Status=unchanged
+  [RETIRE] PRG-T07-C03-U07 -> RETIRED-PRG-T07-C03-U07 (unit, page=40c3818f-8ba0-81da-926a-cfe8076b4150) | title='[Retired] Failure and Retry Handling' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T08-C02-U06' | Status=unchanged
   [UPDATE] PRG-T00-C03-U03 -> PRG-T00-C02-U03 (unit) | Git Repository Basics (page=40c3818f-8ba0-8166-9421-fe59c818fd5a)
   [UPDATE] PRG-T00-C03-U05 -> PRG-T00-C02-U05 (unit) | GitHub Workflow and Pull Requests (page=40c3818f-8ba0-81f4-a326-da98368dc4ff)
   [UPDATE] PRG-T01-C03 -> PRG-T01-C04 (chapter) | Problem Solving, Clean Utilities & Unit Testing (page=40c3818f-8ba0-815f-8356-d8e9627e7c24)

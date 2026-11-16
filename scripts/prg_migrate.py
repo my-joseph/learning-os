@@ -23,7 +23,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from notion_sync.blocks import callout_block
 from notion_sync.client import get_all_blocks, load_env, notion_request, require_token
 from notion_sync.id_map import (
     CHAPTERS_DB,
@@ -59,6 +58,40 @@ TITLE_PROP_BY_LEVEL = {
     "chapter": "Title",
     "unit": "Unit",
 }
+
+OBJECTIVE_PROP_BY_LEVEL = {
+    "topic": "Goal",
+    "chapter": "Objective",
+    "unit": "Learning Objective",
+}
+
+PARENT_RELATIONS_BY_LEVEL: dict[str, tuple[str, ...]] = {
+    "topic": (),
+    "chapter": ("Topics",),
+    "unit": ("Learning Topics", "Learning Chapters"),
+}
+
+RETIRE_DATE = "2026-11-16"
+
+
+def _retire_title(old_title: str) -> str:
+    if old_title.startswith("[Retired] "):
+        return old_title
+    if old_title.startswith("[RETIRED] "):
+        return f"[Retired] {old_title[len('[RETIRED] ') :]}"
+    return f"[Retired] {old_title}"
+
+
+def _retire_pointer(target: str) -> str:
+    return f"Retired {RETIRE_DATE}: merged into {target}" if target else f"Retired {RETIRE_DATE}."
+
+
+def _prepend_retire_pointer(old_text: str, pointer: str) -> str:
+    if old_text.startswith(pointer):
+        return old_text
+    if old_text.strip():
+        return f"{pointer}\n\n{old_text}"
+    return pointer
 
 
 @dataclass
@@ -516,6 +549,10 @@ def build_migration_plan(
             refusals.append(Refusal(code=oc, page_id=pid, reason=reason))
             continue
         level = "topic" if oc.count("-") == 1 else ("chapter" if oc.count("-") == 2 else "unit")
+        props = page.get("properties", {})
+        old_title = get_title_text(props)
+        obj_prop = OBJECTIVE_PROP_BY_LEVEL[level]
+        pointer = _retire_pointer(target or "")
         ops.append(
             PlannedOp(
                 kind="retire",
@@ -525,8 +562,11 @@ def build_migration_plan(
                 page_id=pid,
                 details={
                     "target": target or "",
-                    "old_title": get_title_text(page.get("properties", {})),
-                    "old_status": prop_val(page.get("properties", {}).get("Status")),
+                    "old_title": old_title,
+                    "new_title": _retire_title(old_title),
+                    "objective_prop": obj_prop,
+                    "pointer": pointer,
+                    "cleared_relations": list(PARENT_RELATIONS_BY_LEVEL[level]),
                 },
             )
         )
@@ -655,33 +695,35 @@ def apply_plan(
             page = notion_request("GET", f"pages/{op.page_id}", token)
             old_props = page.get("properties", {})
             title_prop = TITLE_PROP_BY_LEVEL[op.level]
+            obj_prop = OBJECTIVE_PROP_BY_LEVEL[op.level]
             old_title = get_title_text(old_props)
-            new_title = old_title if old_title.startswith("[RETIRED]") else f"[RETIRED] {old_title}"
+            new_title = _retire_title(old_title)
+            old_obj = prop_text(old_props.get(obj_prop))
+            target = op.details.get("target", "")
+            pointer = _retire_pointer(target)
+            new_obj = _prepend_retire_pointer(old_obj, pointer)
+            old_relations: dict[str, list[str]] = {}
             patch: dict[str, Any] = {
                 "Full ID": {"rich_text": _rt(op.code)},
                 title_prop: {"title": _rt(new_title)},
+                obj_prop: {"rich_text": _rt(new_obj)},
             }
-            if op.level == "unit":
-                patch["Status"] = {"status": {"name": "Skip"}}
+            for rel_prop in PARENT_RELATIONS_BY_LEVEL[op.level]:
+                old_relations[rel_prop] = list(prop_val(old_props.get(rel_prop)) or [])
+                patch[rel_prop] = {"relation": []}
             notion_request("PATCH", f"pages/{op.page_id}", token, {"properties": patch})
-            target = op.details.get("target", "")
-            msg = f"Retired in PRG v2 migration. Replaced by {target}." if target else "Retired in PRG v2 migration."
-            c_res = notion_request(
-                "PATCH",
-                f"blocks/{op.page_id}/children",
-                token,
-                {"children": [callout_block(msg, id_map, "yellow_background")]},
-            )
-            added_block_id = (c_res.get("results") or [{}])[0].get("id")
             log_records.append(
                 {
                     "kind": "retire",
                     "page_id": op.page_id,
                     "level": op.level,
                     "old_full_id": op.old_code,
+                    "new_full_id": op.code,
+                    "target": target,
                     "old_title": old_title,
-                    "old_status": op.details.get("old_status"),
-                    "added_block_id": added_block_id,
+                    "objective_prop": obj_prop,
+                    "old_objective": old_obj,
+                    "old_relations": old_relations,
                 }
             )
         elif op.kind == "temp_rename":
@@ -702,9 +744,16 @@ def apply_plan(
             if e["level"] == "unit" and e["parent"] in created_ids:
                 desired["Learning Chapters"] = {"relation": [{"id": created_ids[e["parent"]]}]}
             notion_request("PATCH", f"pages/{op.page_id}", token, {"properties": desired})
-            log_records.append(
-                {"kind": "update", "page_id": op.page_id, "level": op.level, "old_properties": old_props}
-            )
+            update_rec: dict[str, Any] = {
+                "kind": "update",
+                "page_id": op.page_id,
+                "level": op.level,
+                "code": op.code,
+                "old_properties": old_props,
+            }
+            if len(e["oldCodes"]) > 1:
+                update_rec["merged_from"] = e["oldCodes"][1:]
+            log_records.append(update_rec)
         elif op.kind == "create":
             e = op.details["entry"]
             desired = dict(op.details["desired_props"])
@@ -867,15 +916,15 @@ def rollback_from_log(log_path: Path, token: str, dry_run: bool = False) -> list
             actions.append(f"rollback retire: {rec['page_id']} -> {rec['old_full_id']}")
             if not dry_run:
                 title_prop = TITLE_PROP_BY_LEVEL[rec["level"]]
+                obj_prop = rec.get("objective_prop") or OBJECTIVE_PROP_BY_LEVEL[rec["level"]]
                 patch: dict[str, Any] = {
                     "Full ID": {"rich_text": _rt(rec["old_full_id"])},
                     title_prop: {"title": _rt(rec["old_title"])},
+                    obj_prop: {"rich_text": _rt(rec.get("old_objective", ""))},
                 }
-                if rec.get("old_status") and rec["level"] == "unit":
-                    patch["Status"] = {"status": {"name": rec["old_status"]}}
+                for rel_prop, rel_ids in rec.get("old_relations", {}).items():
+                    patch[rel_prop] = {"relation": [{"id": rid} for rid in rel_ids]}
                 notion_request("PATCH", f"pages/{rec['page_id']}", token, {"properties": patch})
-                if rec.get("added_block_id"):
-                    notion_request("DELETE", f"blocks/{rec['added_block_id']}", token)
         elif kind == "local_move":
             actions.append(f"rollback local_move: {rec['dst']} -> {rec['src']}")
             if not dry_run:
@@ -941,8 +990,13 @@ def format_dry_run_report(
     lines.append("--- Planned Notion Operations ---")
     for op in ops:
         if op.kind == "retire":
+            rels = ", ".join(f"{r}=[]" for r in op.details.get("cleared_relations", [])) or "none"
+            obj_prop = op.details.get("objective_prop", "")
+            pointer = op.details.get("pointer", "")
             lines.append(
-                f"  [RETIRE] {op.old_code} -> {op.code} (target={op.details.get('target')}, page={op.page_id})"
+                f"  [RETIRE] {op.old_code} -> {op.code} ({op.level}, page={op.page_id}) | "
+                f"title={op.details.get('new_title')!r} | clear({rels}) | "
+                f"{obj_prop}+={pointer!r} | Status=unchanged"
             )
         elif op.kind == "temp_rename":
             lines.append(f"  [TMP]    {op.old_code} -> {op.code} (page={op.page_id})")

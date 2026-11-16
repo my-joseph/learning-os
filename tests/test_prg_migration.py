@@ -276,3 +276,133 @@ def test_local_rename_moves_workspace_and_progress_together_and_rollback_restore
     assert pages["pidchap"]["properties"]["Full ID"]["rich_text"][0]["plain_text"] == "PRG-T00-C02"
     assert (tmp_path / "progress" / "DRL-PRG-T00-C02-02.json").exists()
     assert (tmp_path / "drills" / "workspace" / "DRL-PRG-T00-C02-02" / "Q01_test.js").exists()
+
+
+def test_retire_clears_relations_prefixes_title_writes_property_pointer_no_blocks_and_rollback(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    entries = [
+        {
+            "level": "topic",
+            "order": 10,
+            "newCode": None,
+            "oldCodes": ["PRG-T08"],
+            "action": "retire",
+            "title": "Testing",
+            "objective": "Old topic goal",
+            "expectedOutput": None,
+            "practiceType": None,
+            "prereqs": [],
+            "parent": None,
+            "extended": False,
+            "retireTarget": "PRG-T01-C04",
+        },
+        {
+            "level": "unit",
+            "order": 2,
+            "newCode": "PRG-T00-C03-U02",
+            "oldCodes": ["PRG-T00-C02-U02", "PRG-T00-C02-U03"],
+            "action": "merge",
+            "title": "Functions Check",
+            "objective": "Clean target objective.",
+            "expectedOutput": "Passing diagnostic drill",
+            "practiceType": "drill: implement-with-tests",
+            "prereqs": [],
+            "parent": "PRG-T00-C03",
+            "extended": False,
+        },
+    ]
+
+    p_topic = _notion_page("pidt08", "PRG-T08", "Testing & Quality", level="topic")
+    p_topic["properties"]["Goal"] = {"type": "rich_text", "rich_text": [{"plain_text": "Old topic goal."}]}
+
+    p_retire_unit = _notion_page("pidu03", "PRG-T00-C02-U03", "Legacy Functions", level="unit", status="Not started")
+    p_retire_unit["properties"]["Learning Objective"] = {
+        "type": "rich_text",
+        "rich_text": [{"plain_text": "Old unit objective."}],
+    }
+    p_retire_unit["properties"]["Learning Topics"] = {"type": "relation", "relation": [{"id": "pidt00"}]}
+    p_retire_unit["properties"]["Learning Chapters"] = {"type": "relation", "relation": [{"id": "pidc02"}]}
+
+    p_target_unit = _notion_page("pidu02", "PRG-T00-C02-U02", "Old Target", level="unit", status="Not started")
+
+    pages = {"pidt08": p_topic, "pidu03": p_retire_unit, "pidu02": p_target_unit}
+    id_map = {
+        "PRG-T08": {"id": "pidt08", "title": "Testing & Quality"},
+        "PRG-T00-C02-U03": {"id": "pidu03", "title": "Legacy Functions"},
+        "PRG-T00-C02-U02": {"id": "pidu02", "title": "Old Target"},
+        "PRG-T00-C03": {"id": "pidc03", "title": "Diagnostic"},
+    }
+
+    def fake_req(method, endpoint, token, payload=None):
+        assert not endpoint.startswith("blocks/"), f"Unexpected block write on retired page: {method} {endpoint}"
+        if method == "GET" and endpoint.startswith("pages/"):
+            return pages[endpoint.split("/", 1)[1]]
+        if method == "PATCH" and endpoint.startswith("pages/"):
+            pid = endpoint.split("/", 1)[1]
+            for k, v in (payload.get("properties") or {}).items():
+                if "rich_text" in v:
+                    pages[pid]["properties"][k] = {
+                        "type": "rich_text",
+                        "rich_text": [{"plain_text": v["rich_text"][0]["text"]["content"]}],
+                    }
+                elif "title" in v:
+                    pages[pid]["properties"][k] = {
+                        "type": "title",
+                        "title": [{"plain_text": v["title"][0]["text"]["content"]}],
+                    }
+                elif "relation" in v:
+                    pages[pid]["properties"][k] = {
+                        "type": "relation",
+                        "relation": [{"id": r["id"]} for r in v["relation"]],
+                    }
+                elif "number" in v:
+                    pages[pid]["properties"][k] = {"type": "number", "number": v["number"]}
+                elif "select" in v:
+                    pages[pid]["properties"][k] = {"type": "select", "select": v["select"]}
+            return pages[pid]
+        raise AssertionError(f"Unexpected request: {method} {endpoint}")
+
+    monkeypatch.setattr(prg_migrate, "notion_request", fake_req)
+    monkeypatch.setattr(prg_migrate, "get_all_blocks", lambda pid, tok: [])
+    monkeypatch.setattr(prg_migrate, "rebuild_id_map", lambda tok, old: id_map)
+
+    ops, refusals = prg_migrate.build_migration_plan(entries, id_map, pages, [], "tok")
+    assert not refusals
+    _, log_path = prg_migrate.apply_plan(ops, [], "tok", entries, id_map)
+
+    # Retired unit checks
+    assert p_retire_unit["properties"]["Full ID"]["rich_text"][0]["plain_text"] == "RETIRED-PRG-T00-C02-U03"
+    assert p_retire_unit["properties"]["Unit"]["title"][0]["plain_text"] == "[Retired] Legacy Functions"
+    assert p_retire_unit["properties"]["Status"]["status"]["name"] == "Not started"
+    assert p_retire_unit["properties"]["Learning Topics"]["relation"] == []
+    assert p_retire_unit["properties"]["Learning Chapters"]["relation"] == []
+    retire_obj = p_retire_unit["properties"]["Learning Objective"]["rich_text"][0]["plain_text"]
+    assert retire_obj.startswith("Retired 2026-11-16: merged into PRG-T00-C03-U02")
+    assert retire_obj.endswith("Old unit objective.")
+
+    # Retired topic checks
+    assert p_topic["properties"]["Full ID"]["rich_text"][0]["plain_text"] == "RETIRED-PRG-T08"
+    assert p_topic["properties"]["Topic"]["title"][0]["plain_text"] == "[Retired] Testing & Quality"
+    topic_goal = p_topic["properties"]["Goal"]["rich_text"][0]["plain_text"]
+    assert topic_goal.startswith("Retired 2026-11-16: merged into PRG-T01-C04")
+    assert topic_goal.endswith("Old topic goal.")
+
+    # New-home page keeps clean Learning Objective (no "Merged from:")
+    target_obj = p_target_unit["properties"]["Learning Objective"]["rich_text"][0]["plain_text"]
+    assert target_obj == "Clean target objective."
+
+    # Operations log records old_relations + merged_from
+    log_records = json.loads(log_path.read_text(encoding="utf-8"))
+    retire_unit_rec = next(r for r in log_records if r["kind"] == "retire" and r["old_full_id"] == "PRG-T00-C02-U03")
+    assert retire_unit_rec["old_relations"] == {"Learning Topics": ["pidt00"], "Learning Chapters": ["pidc02"]}
+    update_rec = next(r for r in log_records if r["kind"] == "update")
+    assert update_rec["merged_from"] == ["PRG-T00-C02-U03"]
+
+    # Rollback restores relations, title, code, and objective text
+    prg_migrate.rollback_from_log(log_path, "tok", dry_run=False)
+    assert p_retire_unit["properties"]["Full ID"]["rich_text"][0]["plain_text"] == "PRG-T00-C02-U03"
+    assert p_retire_unit["properties"]["Unit"]["title"][0]["plain_text"] == "Legacy Functions"
+    assert p_retire_unit["properties"]["Learning Objective"]["rich_text"][0]["plain_text"] == "Old unit objective."
+    assert p_retire_unit["properties"]["Learning Topics"]["relation"] == [{"id": "pidt00"}]
+    assert p_retire_unit["properties"]["Learning Chapters"]["relation"] == [{"id": "pidc02"}]
+    assert p_topic["properties"]["Goal"]["rich_text"][0]["plain_text"] == "Old topic goal."
