@@ -59,3 +59,6 @@ progress/
 
 # Local issue log (rules/00_core.md §11)
 issues/
+
+# Pilot mode (AI stand-in learner state, never tracked)
+pilot/

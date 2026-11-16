@@ -13,10 +13,15 @@ Generates one-click IDE deep links (cursor://file/... and vscode://file/...)
 so developers can write and debug in their real IDE with full LSP, keybindings, and tools.
 """
 
+import argparse
 import json
 import os
 import re
 import shutil
+import sys
+from pathlib import Path
+
+from progress_store import pilot_mode, workspace_root
 
 ARCHETYPE_LABELS = {
     "problem-solving": "Problem Solving (Logic & Algorithm)",
@@ -172,7 +177,8 @@ def materialize_drill_workspace(drill_doc: dict, root_dir: str = ".") -> dict:
     preset = ENVIRONMENT_PRESETS.get(preset_key, ENVIRONMENT_PRESETS["node-vanilla"])
     ext = preset.get("defaultExt", "js")
 
-    ws_dir = os.path.join(root_dir, "drills", "workspace", drill_id)
+    ws_base = os.path.join("pilot", "workspace") if pilot_mode() else os.path.join("drills", "workspace")
+    ws_dir = os.path.join(workspace_root(root_dir), drill_id)
     os.makedirs(ws_dir, exist_ok=True)
     stale_canonical = os.path.join(ws_dir, ".canonical")
     if os.path.exists(stale_canonical):
@@ -273,10 +279,10 @@ test({t_name}, {fn_prefix} {{
             "vscodeUrl": f"vscode://file/{abs_src}",
             "cursorFolderUrl": f"cursor://file/{abs_ws}",
             "vscodeFolderUrl": f"vscode://file/{abs_ws}",
-            "relativeSrc": os.path.join("drills", "workspace", drill_id, src_filename),
+            "relativeSrc": os.path.join(ws_base, drill_id, src_filename),
         }
 
-        prob["workspaceFile"] = os.path.join("drills", "workspace", drill_id, src_filename)
+        prob["workspaceFile"] = os.path.join(ws_base, drill_id, src_filename)
         for abs_key in ("workspaceDir", "cursorUrl", "vscodeUrl", "cursorFolderUrl", "vscodeFolderUrl"):
             prob.pop(abs_key, None)
         prob["archetype"] = archetype
@@ -425,3 +431,95 @@ def read_workspace_code(abs_or_rel_path: str) -> str:
         with open(abs_or_rel_path, "r", encoding="utf-8") as f:
             return f.read()
     return ""
+
+
+def _rewrite_pilot_lab_relpaths(text: str) -> str:
+    """Adjust relative paths from `labs/<LAB_ID>/` (depth 2) to `pilot/labs/<LAB_ID>/` (depth 3)."""
+    text = text.replace("../../tools/lint/", "../../../tools/lint/")
+    text = text.replace("../../_reference/", "../../../labs/_reference/")
+    text = text.replace("../_reference/", "../../../labs/_reference/")
+    text = text.replace("../common/", "../../../labs/common/")
+    return text
+
+
+def materialize_pilot_lab(lab_id: str, root_dir: str = ".", *, force: bool = False) -> Path:
+    """Create a pilot copy of `labs/<lab_id>` under `pilot/labs/<lab_id>` without touching the real lab."""
+    root = Path(root_dir)
+    src_lab = root / "labs" / lab_id
+    if not (src_lab / "lab.config.json").is_file():
+        raise FileNotFoundError(f"Lab '{lab_id}' not found at {src_lab}")
+
+    dst_lab = root / "pilot" / "labs" / lab_id
+    dst_lab.mkdir(parents=True, exist_ok=True)
+
+    for fname in ("lab.config.json", "tsconfig.json", "README.md"):
+        src_file = src_lab / fname
+        if src_file.is_file():
+            shutil.copy2(src_file, dst_lab / fname)
+
+    for fname in ("eslint.config.js", "package.json"):
+        src_file = src_lab / fname
+        if src_file.is_file():
+            (dst_lab / fname).write_text(
+                _rewrite_pilot_lab_relpaths(src_file.read_text(encoding="utf-8")), encoding="utf-8"
+            )
+
+    tests_src = src_lab / "tests"
+    if tests_src.is_dir():
+        shutil.copytree(tests_src, dst_lab / "tests", dirs_exist_ok=True)
+
+    src_dir = src_lab / "src"
+    if src_dir.is_dir():
+        dst_src = dst_lab / "src"
+        for item in src_dir.rglob("*"):
+            if item.is_dir():
+                continue
+            rel = item.relative_to(src_dir)
+            target = dst_src / rel
+            target.parent.mkdir(parents=True, exist_ok=True)
+            if force or not target.exists():
+                shutil.copy2(item, target)
+
+    return dst_lab
+
+
+def _find_drill_json(drill_id: str, data_root: Path) -> Path:
+    matches = sorted(data_root.glob(f"*/{drill_id}.json"))
+    if not matches:
+        matches = sorted(data_root.glob(f"**/{drill_id}.json"))
+    if not matches:
+        raise FileNotFoundError(f"Drill '{drill_id}' not found under {data_root}")
+    return matches[0]
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(
+        prog="python -m code_engine.workspace",
+        description="Materialise a drill workspace or pilot lab copy.",
+    )
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument("--drill", help="Drill ID to materialise (uses pilot/workspace when LEARNINGOS_PILOT=1)")
+    group.add_argument("--pilot-lab", help="Lab ID to copy into pilot/labs/<LAB_ID>/")
+    parser.add_argument("--force", action="store_true", help="Overwrite existing pilot lab src stubs")
+    args = parser.parse_args(argv)
+
+    try:
+        if args.drill:
+            data_root = Path(os.environ.get("DRILLS_DATA_DIR", "drills/data"))
+            drill_path = _find_drill_json(args.drill, data_root)
+            doc = json.loads(drill_path.read_text(encoding="utf-8"))
+            if not doc.get("drillId"):
+                doc["drillId"] = drill_path.stem
+            manifest = materialize_drill_workspace(doc)
+            print(manifest["workspaceDir"])
+        else:
+            dst = materialize_pilot_lab(args.pilot_lab, force=args.force)
+            print(dst.resolve())
+    except FileNotFoundError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        return 1
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

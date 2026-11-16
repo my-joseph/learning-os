@@ -24,6 +24,7 @@ from dataclasses import dataclass, field
 from datetime import date, timedelta
 
 from code_engine.quality_checks import load_universal
+from progress_store import progress_root
 from scripts.issues import main_checkout_root
 
 MIN_MATCHES = 2
@@ -143,7 +144,7 @@ def load_items(
     labs_root: str | None = None,
 ) -> list[Item]:
     data_root = data_root or os.environ.get("DRILLS_DATA_DIR", "drills/data")
-    progress_dir = progress_dir or os.environ.get("PROGRESS_DIR") or os.path.join(main_checkout_root(), "progress")
+    progress_dir = progress_dir or progress_root(main_checkout_root())
     labs_root = labs_root or os.environ.get("LABS_DIR", "labs")
     drills = {}
     for pattern in ("MTH-*", "PRG-*"):
