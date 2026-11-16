@@ -264,7 +264,7 @@
     },
     {
       "archetypeKey": "prg-c01-async-middleware-pipe",
-      "unitCode": "PRG-T01-C01-U06",
+      "unitCode": "PRG-T03-C02-U03",
       "level": 4,
       "archetype": "problem-solving",
       "name": "Asynchronous Function Composition & Middleware Pipeline",

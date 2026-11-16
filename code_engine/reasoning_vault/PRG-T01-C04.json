@@ -5,7 +5,7 @@
   "archetypes": [
     {
       "archetypeKey": "prg-c03-token-bucket-rate-limiter",
-      "unitCode": "PRG-T01-C04-U02",
+      "unitCode": "PRG-T05-C02-U08",
       "level": 3,
       "archetype": "problem-solving",
       "name": "Token Bucket Burst Rate Limiter",
@@ -84,7 +84,7 @@
     },
     {
       "archetypeKey": "prg-c03-webhook-hmac-verifier",
-      "unitCode": "PRG-T01-C04-U02",
+      "unitCode": "PRG-T05-C01-U04",
       "level": 2,
       "archetype": "debugging",
       "name": "Timing-Safe Webhook HMAC Signature Verifier",
@@ -367,7 +367,7 @@
     },
     {
       "archetypeKey": "prg-c03-circuit-breaker-state-machine",
-      "unitCode": "PRG-T01-C04-U01",
+      "unitCode": "PRG-T08-C02-U06",
       "level": 4,
       "archetype": "problem-solving",
       "name": "Stateful Circuit Breaker with Half-Open Probe",
