@@ -1,0 +1,4516 @@
+[
+  {
+    "level": "topic",
+    "order": 0,
+    "newCode": "PRG-T00",
+    "oldCodes": [
+      "PRG-T00"
+    ],
+    "action": "keep",
+    "title": "Foundation Audit & Developer Workflow",
+    "objective": "Audit web fundamentals, developer workflow/Git, and baseline JS/TS readiness.",
+    "expectedOutput": null,
+    "practiceType": null,
+    "prereqs": [],
+    "parent": null,
+    "extended": false
+  },
+  {
+    "level": "topic",
+    "order": 1,
+    "newCode": "PRG-T01",
+    "oldCodes": [
+      "PRG-T01"
+    ],
+    "action": "keep",
+    "title": "JavaScript, TypeScript, Data Structures & Unit Testing",
+    "objective": "Master JS execution internals, TypeScript, Big-O/data structures, and unit testing.",
+    "expectedOutput": null,
+    "practiceType": null,
+    "prereqs": [],
+    "parent": null,
+    "extended": false
+  },
+  {
+    "level": "topic",
+    "order": 2,
+    "newCode": "PRG-T02",
+    "oldCodes": [
+      "PRG-T02"
+    ],
+    "action": "keep",
+    "title": "Frontend Engineering with React & Component Testing",
+    "objective": "Build accessible, performant React applications with server-state management and component tests.",
+    "expectedOutput": null,
+    "practiceType": null,
+    "prereqs": [],
+    "parent": null,
+    "extended": false
+  },
+  {
+    "level": "topic",
+    "order": 3,
+    "newCode": "PRG-T03",
+    "oldCodes": [
+      "PRG-T04"
+    ],
+    "action": "renumber",
+    "title": "Backend Engineering: Node.js, HTTP & Express 5",
+    "objective": "Design and test layered Node.js and Express 5 REST APIs with validation and structured logging.",
+    "expectedOutput": null,
+    "practiceType": null,
+    "prereqs": [],
+    "parent": null,
+    "extended": false
+  },
+  {
+    "level": "topic",
+    "order": 4,
+    "newCode": "PRG-T04",
+    "oldCodes": [
+      "PRG-T05"
+    ],
+    "action": "renumber",
+    "title": "Database Engineering: PostgreSQL, pg & Prisma",
+    "objective": "Model relational schemas, write raw pg queries and transactions, and manage Prisma migrations.",
+    "expectedOutput": null,
+    "practiceType": null,
+    "prereqs": [],
+    "parent": null,
+    "extended": false
+  },
+  {
+    "level": "topic",
+    "order": 5,
+    "newCode": "PRG-T05",
+    "oldCodes": [
+      "PRG-T06"
+    ],
+    "action": "renumber",
+    "title": "Authentication, Authorization & Web Security",
+    "objective": "Implement Argon2id auth, opaque sessions, RBAC/ownership checks, CSRF/XSS defenses, and rate limiting.",
+    "expectedOutput": null,
+    "practiceType": null,
+    "prereqs": [],
+    "parent": null,
+    "extended": false
+  },
+  {
+    "level": "topic",
+    "order": 6,
+    "newCode": "PRG-T06",
+    "oldCodes": [
+      "PRG-T03"
+    ],
+    "action": "renumber",
+    "title": "Next.js & Full-Stack React",
+    "objective": "Build full-stack Next.js App Router apps with Server/Client boundaries, caching, and Server Actions.",
+    "expectedOutput": null,
+    "practiceType": null,
+    "prereqs": [],
+    "parent": null,
+    "extended": false
+  },
+  {
+    "level": "topic",
+    "order": 7,
+    "newCode": "PRG-T07",
+    "oldCodes": [
+      "PRG-T07"
+    ],
+    "action": "keep",
+    "title": "E2E Testing & DevVault Capstone Track",
+    "objective": "Verify end-to-end user journeys with Playwright and ship the DevVault v1.0 release candidate.",
+    "expectedOutput": null,
+    "practiceType": null,
+    "prereqs": [],
+    "parent": null,
+    "extended": false
+  },
+  {
+    "level": "topic",
+    "order": 8,
+    "newCode": "PRG-T08",
+    "oldCodes": [
+      "PRG-T09"
+    ],
+    "action": "renumber",
+    "title": "System Design, Redis & Realtime",
+    "objective": "Identify bottlenecks, apply Redis caching, and build WebSocket/SSE realtime and background job pipelines.",
+    "expectedOutput": null,
+    "practiceType": null,
+    "prereqs": [],
+    "parent": null,
+    "extended": true
+  },
+  {
+    "level": "topic",
+    "order": 9,
+    "newCode": "PRG-T09",
+    "oldCodes": [
+      "PRG-T10"
+    ],
+    "action": "renumber",
+    "title": "Deployment, Docker & Cloud",
+    "objective": "Containerize multi-service stacks with Docker Compose v2, automate CI/CD, and deploy to production.",
+    "expectedOutput": null,
+    "practiceType": null,
+    "prereqs": [],
+    "parent": null,
+    "extended": true
+  },
+  {
+    "level": "topic",
+    "order": 10,
+    "newCode": null,
+    "oldCodes": [
+      "PRG-T08"
+    ],
+    "action": "retire",
+    "title": "Testing & Software Quality (Distributed into T01-C04, T02-C06, T07-C01)",
+    "objective": "Testing units moved into PRG-T01-C04, PRG-T02-C06, and PRG-T07-C01.",
+    "expectedOutput": null,
+    "practiceType": null,
+    "prereqs": [],
+    "parent": null,
+    "extended": false,
+    "retireTarget": "PRG-T01-C04, PRG-T02-C06, PRG-T07-C01"
+  },
+  {
+    "level": "chapter",
+    "order": 1,
+    "newCode": "PRG-T00-C01",
+    "oldCodes": [
+      "PRG-T00-C01"
+    ],
+    "action": "keep",
+    "title": "Web Platform Fundamentals",
+    "objective": "",
+    "expectedOutput": null,
+    "practiceType": null,
+    "prereqs": [],
+    "parent": "PRG-T00",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 1,
+    "newCode": "PRG-T00-C01-U01",
+    "oldCodes": [
+      "PRG-T00-C01-U01"
+    ],
+    "action": "keep",
+    "title": "How the Web Works",
+    "objective": "Given a URL entry, trace DNS, TCP/TLS, and HTTP request/response flow.",
+    "expectedOutput": "Annotated request lifecycle note",
+    "practiceType": "reading-only",
+    "prereqs": [],
+    "parent": "PRG-T00-C01",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 2,
+    "newCode": "PRG-T00-C01-U02",
+    "oldCodes": [
+      "PRG-T00-C01-U02"
+    ],
+    "action": "keep",
+    "title": "Semantic HTML",
+    "objective": "Given a page wireframe, choose semantic landmark and control elements.",
+    "expectedOutput": "Semantic HTML outline",
+    "practiceType": "reading-only",
+    "prereqs": [
+      "PRG-T00-C01-U01"
+    ],
+    "parent": "PRG-T00-C01",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 3,
+    "newCode": "PRG-T00-C01-U03",
+    "oldCodes": [
+      "PRG-T00-C01-U03"
+    ],
+    "action": "keep",
+    "title": "CSS Fundamentals",
+    "objective": "Given conflicting CSS rules, predict specificity and cascade winners.",
+    "expectedOutput": "Specificity resolution note",
+    "practiceType": "reading-only",
+    "prereqs": [
+      "PRG-T00-C01-U02"
+    ],
+    "parent": "PRG-T00-C01",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 4,
+    "newCode": "PRG-T00-C01-U04",
+    "oldCodes": [
+      "PRG-T00-C01-U04"
+    ],
+    "action": "keep",
+    "title": "Box Model and Layout",
+    "objective": "Given box dimensions and `box-sizing`, calculate rendered width and spacing.",
+    "expectedOutput": "Box-sizing calculation note",
+    "practiceType": "reading-only",
+    "prereqs": [
+      "PRG-T00-C01-U03"
+    ],
+    "parent": "PRG-T00-C01",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 5,
+    "newCode": "PRG-T00-C01-U05",
+    "oldCodes": [
+      "PRG-T00-C01-U05"
+    ],
+    "action": "keep",
+    "title": "Flexbox and Grid",
+    "objective": "Given a 1D or 2D layout target, select Flexbox or Grid properties.",
+    "expectedOutput": "Layout mapping note",
+    "practiceType": "reading-only",
+    "prereqs": [
+      "PRG-T00-C01-U04"
+    ],
+    "parent": "PRG-T00-C01",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 6,
+    "newCode": "PRG-T00-C01-U06",
+    "oldCodes": [
+      "PRG-T00-C01-U06"
+    ],
+    "action": "keep",
+    "title": "Responsive Design",
+    "objective": "Given viewport breakpoints, adapt layout rules using fluid units and media queries.",
+    "expectedOutput": "Responsive breakpoint spec",
+    "practiceType": "reading-only",
+    "prereqs": [
+      "PRG-T00-C01-U05"
+    ],
+    "parent": "PRG-T00-C01",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 7,
+    "newCode": "PRG-T00-C01-U07",
+    "oldCodes": [
+      "PRG-T00-C01-U07"
+    ],
+    "action": "keep",
+    "title": "Accessibility and Keyboard Navigation",
+    "objective": "Given an interactive widget, identify keyboard focus order and label requirements.",
+    "expectedOutput": "Keyboard audit checklist",
+    "practiceType": "reading-only",
+    "prereqs": [
+      "PRG-T00-C01-U02"
+    ],
+    "parent": "PRG-T00-C01",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 8,
+    "newCode": "PRG-T00-C01-U08",
+    "oldCodes": [
+      "PRG-T00-C01-U08"
+    ],
+    "action": "keep",
+    "title": "Browser DevTools",
+    "objective": "Given a broken layout or failed request, inspect DOM, Styles, and Network panels.",
+    "expectedOutput": "DevTools triage note",
+    "practiceType": "reading-only",
+    "prereqs": [
+      "PRG-T00-C01-U01"
+    ],
+    "parent": "PRG-T00-C01",
+    "extended": false
+  },
+  {
+    "level": "chapter",
+    "order": 2,
+    "newCode": "PRG-T00-C02",
+    "oldCodes": [
+      "PRG-T00-C03"
+    ],
+    "action": "renumber",
+    "title": "Developer Workflow & Git",
+    "objective": "",
+    "expectedOutput": null,
+    "practiceType": null,
+    "prereqs": [],
+    "parent": "PRG-T00",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 1,
+    "newCode": "PRG-T00-C02-U01",
+    "oldCodes": [
+      "PRG-T00-C03-U01"
+    ],
+    "action": "renumber",
+    "title": "Terminal and Project Structure",
+    "objective": "Given a fresh project directory, navigate, inspect, and organize files via shell commands.",
+    "expectedOutput": "Clean workspace directory tree",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [],
+    "parent": "PRG-T00-C02",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 2,
+    "newCode": "PRG-T00-C02-U02",
+    "oldCodes": [
+      "PRG-T00-C03-U02"
+    ],
+    "action": "renumber",
+    "title": "npm and Package Scripts",
+    "objective": "Given a `package.json`, install dependencies, run scripts, and explain lockfiles.",
+    "expectedOutput": "Working `package.json` + scripts",
+    "practiceType": "drill: fix-bug",
+    "prereqs": [
+      "PRG-T00-C02-U01"
+    ],
+    "parent": "PRG-T00-C02",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 3,
+    "newCode": "PRG-T00-C02-U03",
+    "oldCodes": [
+      "PRG-T00-C03-U03"
+    ],
+    "action": "renumber",
+    "title": "Git Repository Basics",
+    "objective": "Given local file changes, stage, commit, and inspect history/diff cleanly.",
+    "expectedOutput": "Clean commit history on repo",
+    "practiceType": "drill: trace-explain",
+    "prereqs": [
+      "PRG-T00-C02-U01"
+    ],
+    "parent": "PRG-T00-C02",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 4,
+    "newCode": "PRG-T00-C02-U04",
+    "oldCodes": [
+      "PRG-T00-C03-U04"
+    ],
+    "action": "renumber",
+    "title": "Branches, Commits and Merge",
+    "objective": "Given a feature task and a branch conflict, branch, commit, and resolve merge conflicts.",
+    "expectedOutput": "Resolved merge on feature branch",
+    "practiceType": "drill: fix-bug",
+    "prereqs": [
+      "PRG-T00-C02-U03"
+    ],
+    "parent": "PRG-T00-C02",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 5,
+    "newCode": "PRG-T00-C02-U05",
+    "oldCodes": [
+      "PRG-T00-C03-U05"
+    ],
+    "action": "renumber",
+    "title": "GitHub Workflow and Pull Requests",
+    "objective": "Given a completed branch, push, open a PR, and respond to review feedback.",
+    "expectedOutput": "Open PR with clean diff",
+    "practiceType": "project milestone",
+    "prereqs": [
+      "PRG-T00-C02-U04"
+    ],
+    "parent": "PRG-T00-C02",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 6,
+    "newCode": "PRG-T00-C02-U06",
+    "oldCodes": [
+      "PRG-T00-C03-U06"
+    ],
+    "action": "renumber",
+    "title": "README and Issue Tracking",
+    "objective": "Given a starter project, write setup docs and actionable issue/PR descriptions.",
+    "expectedOutput": "`README.md` for DevVault",
+    "practiceType": "project milestone",
+    "prereqs": [
+      "PRG-T00-C02-U05"
+    ],
+    "parent": "PRG-T00-C02",
+    "extended": false
+  },
+  {
+    "level": "chapter",
+    "order": 3,
+    "newCode": "PRG-T00-C03",
+    "oldCodes": [
+      "PRG-T00-C02"
+    ],
+    "action": "renumber",
+    "title": "JavaScript & TypeScript Baseline Check",
+    "objective": "",
+    "expectedOutput": null,
+    "practiceType": null,
+    "prereqs": [],
+    "parent": "PRG-T00",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 1,
+    "newCode": "PRG-T00-C03-U01",
+    "oldCodes": [
+      "PRG-T00-C02-U01"
+    ],
+    "action": "renumber",
+    "title": "Variables, Types & Control Flow Check",
+    "objective": "Given JS expressions with coercion and nullish values, predict outputs and fix edge bugs.",
+    "expectedOutput": "Passing diagnostic drill",
+    "practiceType": "drill: predict-output",
+    "prereqs": [
+      "PRG-T00-C02-U02"
+    ],
+    "parent": "PRG-T00-C03",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 2,
+    "newCode": "PRG-T00-C03-U02",
+    "oldCodes": [
+      "PRG-T00-C02-U02",
+      "PRG-T00-C02-U03"
+    ],
+    "action": "merge",
+    "title": "Functions, Arrays & Objects Check",
+    "objective": "Given domain records, write pure transformations without mutating inputs.",
+    "expectedOutput": "Passing diagnostic drill",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T00-C03-U01"
+    ],
+    "parent": "PRG-T00-C03",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 3,
+    "newCode": "PRG-T00-C03-U03",
+    "oldCodes": [
+      "PRG-T00-C02-U04",
+      "PRG-T00-C02-U05"
+    ],
+    "action": "merge",
+    "title": "Async & DOM Events Check",
+    "objective": "Given an async fetch/event snippet, predict execution order and fix unhandled rejections.",
+    "expectedOutput": "Passing diagnostic drill",
+    "practiceType": "drill: fix-bug",
+    "prereqs": [
+      "PRG-T00-C03-U02"
+    ],
+    "parent": "PRG-T00-C03",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 4,
+    "newCode": "PRG-T00-C03-U04",
+    "oldCodes": [
+      "PRG-T00-C02-U06",
+      "PRG-T00-C02-U07"
+    ],
+    "action": "merge",
+    "title": "TypeScript & Debugging Baseline",
+    "objective": "Given untyped buggy JS code and a failing test, add TS types and fix the root cause.",
+    "expectedOutput": "Passing strict `tsc` + test",
+    "practiceType": "drill: fix-bug",
+    "prereqs": [
+      "PRG-T00-C03-U03"
+    ],
+    "parent": "PRG-T00-C03",
+    "extended": false
+  },
+  {
+    "level": "chapter",
+    "order": 1,
+    "newCode": "PRG-T01-C01",
+    "oldCodes": [
+      "PRG-T01-C01"
+    ],
+    "action": "keep",
+    "title": "JavaScript Execution & Async Internals",
+    "objective": "",
+    "expectedOutput": null,
+    "practiceType": null,
+    "prereqs": [],
+    "parent": "PRG-T01",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 1,
+    "newCode": "PRG-T01-C01-U01",
+    "oldCodes": [
+      "PRG-T01-C01-U01"
+    ],
+    "action": "keep",
+    "title": "Execution Context and Scope",
+    "objective": "Given nested blocks and declarations, trace lexical scope and TDZ errors.",
+    "expectedOutput": "Exact stdout/error trace",
+    "practiceType": "drill: trace-explain",
+    "prereqs": [
+      "PRG-T00-C03-U02"
+    ],
+    "parent": "PRG-T01-C01",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 2,
+    "newCode": "PRG-T01-C01-U02",
+    "oldCodes": [
+      "PRG-T01-C01-U02"
+    ],
+    "action": "keep",
+    "title": "Closures",
+    "objective": "Given a stateful factory or loop callback, trace captured bindings and prevent stale state.",
+    "expectedOutput": "Passing closure module",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T01-C01-U01"
+    ],
+    "parent": "PRG-T01-C01",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 3,
+    "newCode": "PRG-T01-C01-U03",
+    "oldCodes": [
+      "PRG-T01-C01-U03"
+    ],
+    "action": "keep",
+    "title": "`this` and Binding",
+    "objective": "Given method/callback calls, predict `this` binding and fix lost context bugs.",
+    "expectedOutput": "Fixed binding tests",
+    "practiceType": "drill: fix-bug",
+    "prereqs": [
+      "PRG-T01-C01-U02"
+    ],
+    "parent": "PRG-T01-C01",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 4,
+    "newCode": "PRG-T01-C01-U04",
+    "oldCodes": [
+      "PRG-T01-C01-U04"
+    ],
+    "action": "keep",
+    "title": "Prototypes and Inheritance",
+    "objective": "Given a prototype chain, trace property lookup and avoid shared mutable prototype state.",
+    "expectedOutput": "Passing class/prototype tests",
+    "practiceType": "drill: trace-explain",
+    "prereqs": [
+      "PRG-T01-C01-U03"
+    ],
+    "parent": "PRG-T01-C01",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 5,
+    "newCode": "PRG-T01-C01-U05",
+    "oldCodes": [
+      "PRG-T01-C01-U05"
+    ],
+    "action": "keep",
+    "title": "Modules and Module Systems",
+    "objective": "Given ESM/CJS files, structure exports cleanly and resolve circular import bugs.",
+    "expectedOutput": "Clean ESM module graph",
+    "practiceType": "drill: fix-bug",
+    "prereqs": [
+      "PRG-T01-C01-U01"
+    ],
+    "parent": "PRG-T01-C01",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 6,
+    "newCode": "PRG-T01-C01-U06",
+    "oldCodes": [
+      "PRG-T01-C01-U06"
+    ],
+    "action": "keep",
+    "title": "Promises and Async/Await",
+    "objective": "Given concurrent async tasks, compose `Promise.all`/`allSettled`/`race` without sequential bottlenecks.",
+    "expectedOutput": "Passing async coordinator",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T01-C01-U02"
+    ],
+    "parent": "PRG-T01-C01",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 7,
+    "newCode": "PRG-T01-C01-U07",
+    "oldCodes": [
+      "PRG-T01-C01-U07"
+    ],
+    "action": "keep",
+    "title": "Event Loop and Microtasks",
+    "objective": "Given timers, promises, and sync logs, predict exact microtask/macrotask execution order.",
+    "expectedOutput": "Exact execution order trace",
+    "practiceType": "drill: predict-output",
+    "prereqs": [
+      "PRG-T01-C01-U06"
+    ],
+    "parent": "PRG-T01-C01",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 8,
+    "newCode": "PRG-T01-C01-U08",
+    "oldCodes": [
+      "PRG-T01-C01-U08"
+    ],
+    "action": "keep",
+    "title": "Error Handling Patterns",
+    "objective": "Given failing sync/async boundaries, propagate typed errors without swallowing causes.",
+    "expectedOutput": "Passing error-path suite",
+    "practiceType": "drill: refactor",
+    "prereqs": [
+      "PRG-T01-C01-U06"
+    ],
+    "parent": "PRG-T01-C01",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 9,
+    "newCode": "PRG-T01-C01-U09",
+    "oldCodes": [],
+    "action": "new",
+    "title": "AbortController & Cancellation",
+    "objective": "Given a long-running async operation, cancel in-flight work cleanly via `AbortSignal`.",
+    "expectedOutput": "Abortable async task module + tests",
+    "practiceType": "lab milestone",
+    "prereqs": [
+      "PRG-T01-C01-U06",
+      "PRG-T01-C01-U08"
+    ],
+    "parent": "PRG-T01-C01",
+    "extended": false
+  },
+  {
+    "level": "chapter",
+    "order": 2,
+    "newCode": "PRG-T01-C02",
+    "oldCodes": [
+      "PRG-T01-C02"
+    ],
+    "action": "keep",
+    "title": "TypeScript for Application Code",
+    "objective": "",
+    "expectedOutput": null,
+    "practiceType": null,
+    "prereqs": [],
+    "parent": "PRG-T01",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 1,
+    "newCode": "PRG-T01-C02-U01",
+    "oldCodes": [
+      "PRG-T01-C02-U01"
+    ],
+    "action": "keep",
+    "title": "Type Annotations and Inference",
+    "objective": "Given functions and literals, let inference work and annotate public boundaries.",
+    "expectedOutput": "Zero-`any` typed module",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T00-C03-U04"
+    ],
+    "parent": "PRG-T01-C02",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 2,
+    "newCode": "PRG-T01-C02-U02",
+    "oldCodes": [
+      "PRG-T01-C02-U02"
+    ],
+    "action": "keep",
+    "title": "Primitive, Literal and Object Types",
+    "objective": "Given domain entities, model `readonly` properties, `as const`, and exact object shapes.",
+    "expectedOutput": "Domain type definitions",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T01-C02-U01"
+    ],
+    "parent": "PRG-T01-C02",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 3,
+    "newCode": "PRG-T01-C02-U03",
+    "oldCodes": [
+      "PRG-T01-C02-U03"
+    ],
+    "action": "keep",
+    "title": "Union Types",
+    "objective": "Given multi-shape inputs, model unions instead of optional-property bags.",
+    "expectedOutput": "Typed union model",
+    "practiceType": "drill: refactor",
+    "prereqs": [
+      "PRG-T01-C02-U02"
+    ],
+    "parent": "PRG-T01-C02",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 4,
+    "newCode": "PRG-T01-C02-U04",
+    "oldCodes": [
+      "PRG-T01-C02-U04"
+    ],
+    "action": "keep",
+    "title": "Type Narrowing and Guards",
+    "objective": "Given `unknown` or union inputs, narrow safely with type predicates and `in`/`typeof`.",
+    "expectedOutput": "Type-safe parser functions",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T01-C02-U03"
+    ],
+    "parent": "PRG-T01-C02",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 5,
+    "newCode": "PRG-T01-C02-U05",
+    "oldCodes": [
+      "PRG-T01-C02-U05"
+    ],
+    "action": "keep",
+    "title": "Generics",
+    "objective": "Given reusable data structures/functions, constrain generic type parameters accurately.",
+    "expectedOutput": "Generic utility module",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T01-C02-U04"
+    ],
+    "parent": "PRG-T01-C02",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 6,
+    "newCode": "PRG-T01-C02-U06",
+    "oldCodes": [
+      "PRG-T01-C02-U06"
+    ],
+    "action": "keep",
+    "title": "Utility Types",
+    "objective": "Given existing domain types, derive DTOs using `Pick`, `Omit`, `Partial`, and `Record`.",
+    "expectedOutput": "Derived DTO types",
+    "practiceType": "drill: refactor",
+    "prereqs": [
+      "PRG-T01-C02-U05"
+    ],
+    "parent": "PRG-T01-C02",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 7,
+    "newCode": "PRG-T01-C02-U07",
+    "oldCodes": [
+      "PRG-T01-C02-U07"
+    ],
+    "action": "keep",
+    "title": "Discriminated Unions",
+    "objective": "Given state machines or API results, enforce exhaustive handling with `never` checks.",
+    "expectedOutput": "Exhaustive reducer/handler",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T01-C02-U03"
+    ],
+    "parent": "PRG-T01-C02",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 8,
+    "newCode": "PRG-T01-C02-U08",
+    "oldCodes": [
+      "PRG-T01-C02-U08"
+    ],
+    "action": "keep",
+    "title": "Strict Mode and `tsconfig`",
+    "objective": "Given a loose `tsconfig`, enable `strict` flags and fix `strictNullChecks`/`noUncheckedIndexedAccess` errors.",
+    "expectedOutput": "Passing `tsc --strict` build",
+    "practiceType": "drill: fix-bug",
+    "prereqs": [
+      "PRG-T01-C02-U04"
+    ],
+    "parent": "PRG-T01-C02",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 9,
+    "newCode": "PRG-T01-C02-U09",
+    "oldCodes": [
+      "PRG-T01-C02-U09"
+    ],
+    "action": "keep",
+    "title": "Typing Functions and API Responses",
+    "objective": "Given external JSON payloads, separate `unknown` wire input from validated domain types.",
+    "expectedOutput": "Typed API response parser + tests",
+    "practiceType": "lab milestone",
+    "prereqs": [
+      "PRG-T01-C02-U07",
+      "PRG-T01-C02-U08"
+    ],
+    "parent": "PRG-T01-C02",
+    "extended": false
+  },
+  {
+    "level": "chapter",
+    "order": 3,
+    "newCode": "PRG-T01-C03",
+    "oldCodes": [],
+    "action": "new",
+    "title": "Recursion, Complexity & Core Data Structures",
+    "objective": "",
+    "expectedOutput": null,
+    "practiceType": null,
+    "prereqs": [],
+    "parent": "PRG-T01",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 1,
+    "newCode": "PRG-T01-C03-U01",
+    "oldCodes": [],
+    "action": "new",
+    "title": "Big-O Intuition & Time/Space Tradeoffs",
+    "objective": "Given two implementations (e.g., nested loop vs. index lookup), classify time/space complexity and fix $O(N^2)$ bottlenecks.",
+    "expectedOutput": "Optimized $O(N)$ function",
+    "practiceType": "drill: refactor",
+    "prereqs": [
+      "PRG-T01-C02-U01"
+    ],
+    "parent": "PRG-T01-C03",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 2,
+    "newCode": "PRG-T01-C03-U02",
+    "oldCodes": [],
+    "action": "new",
+    "title": "Recursion & Call-Stack Tracing",
+    "objective": "Given nested structures or recursive rules, trace base cases, stack frames, and termination.",
+    "expectedOutput": "Passing recursive solver",
+    "practiceType": "drill: trace-explain",
+    "prereqs": [
+      "PRG-T01-C01-U01",
+      "PRG-T01-C03-U01"
+    ],
+    "parent": "PRG-T01-C03",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 3,
+    "newCode": "PRG-T01-C03-U03",
+    "oldCodes": [],
+    "action": "new",
+    "title": "Arrays, Stacks & Queues",
+    "objective": "Given bracket matching or task scheduling, implement LIFO stacks and FIFO queues cleanly.",
+    "expectedOutput": "Stack/queue module + tests",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T01-C03-U01"
+    ],
+    "parent": "PRG-T01-C03",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 4,
+    "newCode": "PRG-T01-C03-U04",
+    "oldCodes": [
+      "PRG-T01-C03-U04"
+    ],
+    "action": "keep",
+    "title": "`Map`, `Set` & Hashing Patterns",
+    "objective": "Given frequency counting, grouping, or dedupe tasks, choose `Map`/`Set` over plain objects.",
+    "expectedOutput": "Indexed lookup utilities",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T01-C03-U01"
+    ],
+    "parent": "PRG-T01-C03",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 5,
+    "newCode": "PRG-T01-C03-U05",
+    "oldCodes": [],
+    "action": "new",
+    "title": "Linked Lists & Pointer Manipulation",
+    "objective": "Given insertion/deletion requirements, implement a singly/doubly linked list without losing head/tail invariants.",
+    "expectedOutput": "Linked list + pointer tests",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T01-C03-U03"
+    ],
+    "parent": "PRG-T01-C03",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 6,
+    "newCode": "PRG-T01-C03-U06",
+    "oldCodes": [],
+    "action": "new",
+    "title": "Trees & Tree Traversals (DFS / BFS)",
+    "objective": "Given a hierarchical tree (DOM/folders/categories), traverse via DFS and BFS and compute aggregates.",
+    "expectedOutput": "Tree traversal utilities",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T01-C03-U02",
+      "PRG-T01-C03-U03"
+    ],
+    "parent": "PRG-T01-C03",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 7,
+    "newCode": "PRG-T01-C03-U07",
+    "oldCodes": [],
+    "action": "new",
+    "title": "Graphs & Shortest-Path Basics",
+    "objective": "Given dependency or route edges, detect cycles and find shortest unweighted paths via BFS.",
+    "expectedOutput": "Graph cycle & BFS shortest-path module",
+    "practiceType": "lab milestone",
+    "prereqs": [
+      "PRG-T01-C03-U04",
+      "PRG-T01-C03-U05",
+      "PRG-T01-C03-U06"
+    ],
+    "parent": "PRG-T01-C03",
+    "extended": false
+  },
+  {
+    "level": "chapter",
+    "order": 4,
+    "newCode": "PRG-T01-C04",
+    "oldCodes": [
+      "PRG-T01-C03",
+      "PRG-T08-C01"
+    ],
+    "action": "merge",
+    "title": "Problem Solving, Clean Utilities & Unit Testing",
+    "objective": "",
+    "expectedOutput": null,
+    "practiceType": null,
+    "prereqs": [],
+    "parent": "PRG-T01",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 1,
+    "newCode": "PRG-T01-C04-U01",
+    "oldCodes": [
+      "PRG-T01-C03-U01",
+      "PRG-T01-C03-U02",
+      "PRG-T01-C03-U03"
+    ],
+    "action": "merge",
+    "title": "Problem Decomposition & Data Pipelines",
+    "objective": "Given multi-rule business specs, decompose into pure, single-job array/object pipeline steps.",
+    "expectedOutput": "Clean multi-step pipeline",
+    "practiceType": "drill: refactor",
+    "prereqs": [
+      "PRG-T01-C02-U05",
+      "PRG-T01-C03-U04"
+    ],
+    "parent": "PRG-T01-C04",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 2,
+    "newCode": "PRG-T01-C04-U02",
+    "oldCodes": [
+      "PRG-T01-C03-U05",
+      "PRG-T01-C03-U06"
+    ],
+    "action": "merge",
+    "title": "Reusable Generic Utilities & Edge Cases",
+    "objective": "Given boundary inputs (empty, `0`, `NaN`, cycles), build safe generic helpers.",
+    "expectedOutput": "Edge-hardened utility module",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T01-C04-U01"
+    ],
+    "parent": "PRG-T01-C04",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 3,
+    "newCode": "PRG-T01-C04-U03",
+    "oldCodes": [
+      "PRG-T01-C03-U07",
+      "PRG-T08-C01-U01",
+      "PRG-T08-C01-U02"
+    ],
+    "action": "merge",
+    "title": "Testing Pyramid & Pure Unit Tests",
+    "objective": "Given pure functions, write deterministic `node:test` suites covering happy, boundary, and invariant cases.",
+    "expectedOutput": "Passing `node:test` suite",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T01-C04-U01"
+    ],
+    "parent": "PRG-T01-C04",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 4,
+    "newCode": "PRG-T01-C04-U04",
+    "oldCodes": [
+      "PRG-T08-C01-U03"
+    ],
+    "action": "renumber",
+    "title": "Test Doubles: Stubs, Mocks & Fakes",
+    "objective": "Given time- or I/O-dependent code, inject fake clocks and stubs without brittle over-mocking.",
+    "expectedOutput": "Deterministic clock/stub tests",
+    "practiceType": "drill: refactor",
+    "prereqs": [
+      "PRG-T01-C04-U03"
+    ],
+    "parent": "PRG-T01-C04",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 5,
+    "newCode": "PRG-T01-C04-U05",
+    "oldCodes": [
+      "PRG-T08-C01-U05",
+      "PRG-T08-C01-U06",
+      "PRG-T08-C01-U07"
+    ],
+    "action": "merge",
+    "title": "Error Paths, Fixtures & Test Quality",
+    "objective": "Given legacy code, write regression fixtures, test error branches, and kill weak assertions.",
+    "expectedOutput": "Regression fixtures & error-path test suite",
+    "practiceType": "lab milestone",
+    "prereqs": [
+      "PRG-T01-C04-U04"
+    ],
+    "parent": "PRG-T01-C04",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 6,
+    "newCode": "PRG-T01-C04-U06",
+    "oldCodes": [
+      "PRG-T01-C03-U08"
+    ],
+    "action": "renumber",
+    "title": "Packaging, Exports & DevVault Core",
+    "objective": "Given a tested TS library, configure exports/docs and ship `devvault-core` v1.",
+    "expectedOutput": "`devvault-core` + unit tests",
+    "practiceType": "project milestone",
+    "prereqs": [
+      "PRG-T01-C04-U05"
+    ],
+    "parent": "PRG-T01-C04",
+    "extended": false
+  },
+  {
+    "level": "chapter",
+    "order": 1,
+    "newCode": "PRG-T02-C01",
+    "oldCodes": [
+      "PRG-T02-C01"
+    ],
+    "action": "keep",
+    "title": "React Mental Model & Component Architecture",
+    "objective": "",
+    "expectedOutput": null,
+    "practiceType": null,
+    "prereqs": [],
+    "parent": "PRG-T02",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 1,
+    "newCode": "PRG-T02-C01-U01",
+    "oldCodes": [
+      "PRG-T02-C01-U01"
+    ],
+    "action": "keep",
+    "title": "JSX and Component Basics",
+    "objective": "Given UI data, render pure functional components with typed props.",
+    "expectedOutput": "Typed React component",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T01-C02-U02"
+    ],
+    "parent": "PRG-T02-C01",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 2,
+    "newCode": "PRG-T02-C01-U02",
+    "oldCodes": [
+      "PRG-T02-C01-U02"
+    ],
+    "action": "keep",
+    "title": "Props and Component Composition",
+    "objective": "Given nested UI variants, compose with `children` and slots instead of prop-drilling flags.",
+    "expectedOutput": "Composable UI layout",
+    "practiceType": "drill: refactor",
+    "prereqs": [
+      "PRG-T02-C01-U01"
+    ],
+    "parent": "PRG-T02-C01",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 3,
+    "newCode": "PRG-T02-C01-U03",
+    "oldCodes": [
+      "PRG-T02-C01-U03"
+    ],
+    "action": "keep",
+    "title": "State and Event Handling",
+    "objective": "Given user interactions, manage `useState` and avoid derived-state duplication.",
+    "expectedOutput": "Interactive stateful widget",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T02-C01-U01"
+    ],
+    "parent": "PRG-T02-C01",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 4,
+    "newCode": "PRG-T02-C01-U04",
+    "oldCodes": [
+      "PRG-T02-C01-U05"
+    ],
+    "action": "renumber",
+    "title": "State Updates and Immutability",
+    "objective": "Given nested state updates or stale closures, apply functional updaters and immutable patterns.",
+    "expectedOutput": "Fixed state update bugs",
+    "practiceType": "drill: fix-bug",
+    "prereqs": [
+      "PRG-T02-C01-U03"
+    ],
+    "parent": "PRG-T02-C01",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 5,
+    "newCode": "PRG-T02-C01-U05",
+    "oldCodes": [
+      "PRG-T02-C01-U06"
+    ],
+    "action": "renumber",
+    "title": "Effects and Synchronization",
+    "objective": "Given external subscriptions or timers, synchronize via `useEffect` with cleanup and avoid effect abuse.",
+    "expectedOutput": "Clean effect + cleanup test",
+    "practiceType": "drill: fix-bug",
+    "prereqs": [
+      "PRG-T02-C01-U04"
+    ],
+    "parent": "PRG-T02-C01",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 6,
+    "newCode": "PRG-T02-C01-U06",
+    "oldCodes": [
+      "PRG-T02-C01-U07"
+    ],
+    "action": "renumber",
+    "title": "Refs and DOM Access",
+    "objective": "Given focus/scroll/imperative needs, use `useRef` without breaking React's render model.",
+    "expectedOutput": "Focus-managed component",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T02-C01-U05"
+    ],
+    "parent": "PRG-T02-C01",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 7,
+    "newCode": "PRG-T02-C01-U07",
+    "oldCodes": [
+      "PRG-T02-C01-U08"
+    ],
+    "action": "renumber",
+    "title": "Custom Hooks",
+    "objective": "Given repeated stateful logic, extract a typed custom hook with clear contracts.",
+    "expectedOutput": "Typed custom hook + unit tests",
+    "practiceType": "lab milestone",
+    "prereqs": [
+      "PRG-T02-C01-U05",
+      "PRG-T02-C01-U06"
+    ],
+    "parent": "PRG-T02-C01",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 8,
+    "newCode": "PRG-T02-C01-U08",
+    "oldCodes": [
+      "PRG-T02-C01-U04",
+      "PRG-T02-C01-U09",
+      "PRG-T02-C05-U01",
+      "PRG-T02-C05-U02"
+    ],
+    "action": "merge",
+    "title": "Rendering, Re-renders & Component Boundaries",
+    "objective": "Given a slow component tree, trace render triggers and isolate state at the right boundary.",
+    "expectedOutput": "Refactored render boundary",
+    "practiceType": "drill: refactor",
+    "prereqs": [
+      "PRG-T02-C01-U07"
+    ],
+    "parent": "PRG-T02-C01",
+    "extended": false
+  },
+  {
+    "level": "chapter",
+    "order": 2,
+    "newCode": "PRG-T02-C02",
+    "oldCodes": [
+      "PRG-T02-C02"
+    ],
+    "action": "keep",
+    "title": "Client State & Server State",
+    "objective": "",
+    "expectedOutput": null,
+    "practiceType": null,
+    "prereqs": [],
+    "parent": "PRG-T02",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 1,
+    "newCode": "PRG-T02-C02-U01",
+    "oldCodes": [
+      "PRG-T02-C02-U01"
+    ],
+    "action": "keep",
+    "title": "Local State vs Server State",
+    "objective": "Given app state requirements, separate ephemeral UI state from cached remote data.",
+    "expectedOutput": "State ownership table",
+    "practiceType": "drill: trace-explain",
+    "prereqs": [
+      "PRG-T02-C01-U08"
+    ],
+    "parent": "PRG-T02-C02",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 2,
+    "newCode": "PRG-T02-C02-U02",
+    "oldCodes": [
+      "PRG-T02-C02-U02"
+    ],
+    "action": "keep",
+    "title": "Fetching Data and Async UI States",
+    "objective": "Given an async endpoint, handle loading, error, empty, and `AbortController` race conditions.",
+    "expectedOutput": "Race-free async loader",
+    "practiceType": "drill: fix-bug",
+    "prereqs": [
+      "PRG-T01-C01-U09",
+      "PRG-T02-C02-U01"
+    ],
+    "parent": "PRG-T02-C02",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 3,
+    "newCode": "PRG-T02-C02-U03",
+    "oldCodes": [
+      "PRG-T02-C02-U03"
+    ],
+    "action": "keep",
+    "title": "Caching and Query Keys",
+    "objective": "Given parameterized queries, design deterministic query keys and stale-time policies.",
+    "expectedOutput": "Query key & cache config",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T02-C02-U02"
+    ],
+    "parent": "PRG-T02-C02",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 4,
+    "newCode": "PRG-T02-C02-U04",
+    "oldCodes": [
+      "PRG-T02-C02-U04"
+    ],
+    "action": "keep",
+    "title": "Refetching and Cache Invalidation",
+    "objective": "Given a mutation, invalidate affected query keys without over-fetching.",
+    "expectedOutput": "Invalidation handler",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T02-C02-U03"
+    ],
+    "parent": "PRG-T02-C02",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 5,
+    "newCode": "PRG-T02-C02-U05",
+    "oldCodes": [
+      "PRG-T02-C02-U05"
+    ],
+    "action": "keep",
+    "title": "Mutations and Optimistic Updates",
+    "objective": "Given a toggle/create action, apply optimistic UI with deterministic rollback on error.",
+    "expectedOutput": "Optimistic update + rollback",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T02-C02-U04"
+    ],
+    "parent": "PRG-T02-C02",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 6,
+    "newCode": "PRG-T02-C02-U06",
+    "oldCodes": [
+      "PRG-T02-C02-U06"
+    ],
+    "action": "keep",
+    "title": "Pagination and Filtering",
+    "objective": "Given large lists, sync filter/cursor params with URL and query cache keys.",
+    "expectedOutput": "Paginated filter view",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T02-C02-U03"
+    ],
+    "parent": "PRG-T02-C02",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 7,
+    "newCode": "PRG-T02-C02-U07",
+    "oldCodes": [
+      "PRG-T02-C02-U07"
+    ],
+    "action": "keep",
+    "title": "Error and Retry Strategies",
+    "objective": "Given transient vs 4xx failures, configure bounded retries and fallback UI.",
+    "expectedOutput": "Bounded retry & fallback UI handler",
+    "practiceType": "lab milestone",
+    "prereqs": [
+      "PRG-T02-C02-U05",
+      "PRG-T02-C02-U06"
+    ],
+    "parent": "PRG-T02-C02",
+    "extended": false
+  },
+  {
+    "level": "chapter",
+    "order": 3,
+    "newCode": "PRG-T02-C03",
+    "oldCodes": [
+      "PRG-T02-C03"
+    ],
+    "action": "keep",
+    "title": "Forms, Validation & Data UX",
+    "objective": "",
+    "expectedOutput": null,
+    "practiceType": null,
+    "prereqs": [],
+    "parent": "PRG-T02",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 1,
+    "newCode": "PRG-T02-C03-U01",
+    "oldCodes": [
+      "PRG-T02-C03-U01"
+    ],
+    "action": "keep",
+    "title": "Controlled and Uncontrolled Inputs",
+    "objective": "Given form fields, choose controlled vs uncontrolled inputs and avoid mixed-mode warnings.",
+    "expectedOutput": "Clean input components",
+    "practiceType": "drill: fix-bug",
+    "prereqs": [
+      "PRG-T02-C01-U03"
+    ],
+    "parent": "PRG-T02-C03",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 2,
+    "newCode": "PRG-T02-C03-U02",
+    "oldCodes": [
+      "PRG-T02-C03-U02"
+    ],
+    "action": "keep",
+    "title": "Form State and Submission",
+    "objective": "Given a multi-field form, track dirty/touched/submitting states and prevent double submits.",
+    "expectedOutput": "Submission state guard",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T02-C03-U01"
+    ],
+    "parent": "PRG-T02-C03",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 3,
+    "newCode": "PRG-T02-C03-U03",
+    "oldCodes": [
+      "PRG-T02-C03-U03"
+    ],
+    "action": "keep",
+    "title": "Schema Validation with Zod",
+    "objective": "Given form/API rules, author Zod schemas and infer TypeScript types cleanly.",
+    "expectedOutput": "Zod schema + inferred types",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T01-C02-U09",
+      "PRG-T02-C03-U02"
+    ],
+    "parent": "PRG-T02-C03",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 4,
+    "newCode": "PRG-T02-C03-U04",
+    "oldCodes": [
+      "PRG-T02-C03-U04"
+    ],
+    "action": "keep",
+    "title": "Field-level and Form-level Errors",
+    "objective": "Given validation failures, map Zod issues to specific fields and form banners.",
+    "expectedOutput": "Error mapper utility",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T02-C03-U03"
+    ],
+    "parent": "PRG-T02-C03",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 5,
+    "newCode": "PRG-T02-C03-U05",
+    "oldCodes": [
+      "PRG-T02-C03-U05"
+    ],
+    "action": "keep",
+    "title": "React Hook Form Fundamentals",
+    "objective": "Given a complex form, wire React Hook Form with a Zod resolver.",
+    "expectedOutput": "Typed RHF form",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T02-C03-U04"
+    ],
+    "parent": "PRG-T02-C03",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 6,
+    "newCode": "PRG-T02-C03-U06",
+    "oldCodes": [
+      "PRG-T02-C03-U06"
+    ],
+    "action": "keep",
+    "title": "Async Validation",
+    "objective": "Given uniqueness checks, validate asynchronously with debounce and `AbortSignal`.",
+    "expectedOutput": "Debounced async validator",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T02-C03-U05"
+    ],
+    "parent": "PRG-T02-C03",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 7,
+    "newCode": "PRG-T02-C03-U07",
+    "oldCodes": [
+      "PRG-T02-C03-U07"
+    ],
+    "action": "keep",
+    "title": "Accessible Form UX",
+    "objective": "Given form errors, bind `aria-invalid`, `aria-describedby`, and focus-on-first-error.",
+    "expectedOutput": "Accessible error-summary & focus-on-error form",
+    "practiceType": "lab milestone",
+    "prereqs": [
+      "PRG-T02-C03-U04",
+      "PRG-T02-C03-U06"
+    ],
+    "parent": "PRG-T02-C03",
+    "extended": false
+  },
+  {
+    "level": "chapter",
+    "order": 4,
+    "newCode": "PRG-T02-C04",
+    "oldCodes": [
+      "PRG-T02-C04"
+    ],
+    "action": "keep",
+    "title": "UI Engineering, Responsive Design & Accessibility",
+    "objective": "",
+    "expectedOutput": null,
+    "practiceType": null,
+    "prereqs": [],
+    "parent": "PRG-T02",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 1,
+    "newCode": "PRG-T02-C04-U01",
+    "oldCodes": [
+      "PRG-T02-C04-U01"
+    ],
+    "action": "keep",
+    "title": "Design Tokens and Visual Consistency",
+    "objective": "Given UI specs, define spacing, typography, and semantic color tokens.",
+    "expectedOutput": "Token CSS/TS config",
+    "practiceType": "drill: refactor",
+    "prereqs": [
+      "PRG-T02-C01-U02"
+    ],
+    "parent": "PRG-T02-C04",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 2,
+    "newCode": "PRG-T02-C04-U02",
+    "oldCodes": [
+      "PRG-T02-C04-U02"
+    ],
+    "action": "keep",
+    "title": "Tailwind Fundamentals",
+    "objective": "Given a component mockup, compose utility classes cleanly without unreadable class soup.",
+    "expectedOutput": "Styled UI primitives",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T02-C04-U01"
+    ],
+    "parent": "PRG-T02-C04",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 3,
+    "newCode": "PRG-T02-C04-U03",
+    "oldCodes": [
+      "PRG-T02-C04-U03"
+    ],
+    "action": "keep",
+    "title": "Responsive Layout Patterns",
+    "objective": "Given mobile and desktop viewports, build fluid grid/sidebar layouts.",
+    "expectedOutput": "Responsive shell layout",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T02-C04-U02"
+    ],
+    "parent": "PRG-T02-C04",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 4,
+    "newCode": "PRG-T02-C04-U04",
+    "oldCodes": [
+      "PRG-T02-C04-U04"
+    ],
+    "action": "keep",
+    "title": "Component Variants and States",
+    "objective": "Given button/badge states, model typed variants (`disabled`, `loading`, `error`).",
+    "expectedOutput": "Typed variant component",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T02-C04-U02"
+    ],
+    "parent": "PRG-T02-C04",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 5,
+    "newCode": "PRG-T02-C04-U05",
+    "oldCodes": [
+      "PRG-T02-C04-U05"
+    ],
+    "action": "keep",
+    "title": "Keyboard and Focus Management",
+    "objective": "Given dialogs/menus, implement focus trapping, `Escape` close, and focus restoration.",
+    "expectedOutput": "Keyboard-navigable dialog",
+    "practiceType": "drill: fix-bug",
+    "prereqs": [
+      "PRG-T02-C01-U06"
+    ],
+    "parent": "PRG-T02-C04",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 6,
+    "newCode": "PRG-T02-C04-U06",
+    "oldCodes": [
+      "PRG-T02-C04-U06"
+    ],
+    "action": "keep",
+    "title": "Semantic HTML & ARIA",
+    "objective": "Given custom interactive widgets, prefer native HTML elements and apply valid WAI-ARIA roles/states ([MDN ARIA](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA)).",
+    "expectedOutput": "ARIA-compliant interactive widget + tests",
+    "practiceType": "lab milestone",
+    "prereqs": [
+      "PRG-T02-C04-U05"
+    ],
+    "parent": "PRG-T02-C04",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 7,
+    "newCode": "PRG-T02-C04-U07",
+    "oldCodes": [
+      "PRG-T02-C04-U07"
+    ],
+    "action": "keep",
+    "title": "Dark Mode and Theming",
+    "objective": "Given theme preferences, switch semantic CSS variables without FOUC or contrast regressions.",
+    "expectedOutput": "Theme-aware token sheet",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T02-C04-U01"
+    ],
+    "parent": "PRG-T02-C04",
+    "extended": false
+  },
+  {
+    "level": "chapter",
+    "order": 5,
+    "newCode": "PRG-T02-C05",
+    "oldCodes": [
+      "PRG-T02-C05"
+    ],
+    "action": "keep",
+    "title": "Frontend Performance",
+    "objective": "",
+    "expectedOutput": null,
+    "practiceType": null,
+    "prereqs": [],
+    "parent": "PRG-T02",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 1,
+    "newCode": "PRG-T02-C05-U01",
+    "oldCodes": [
+      "PRG-T02-C05-U03"
+    ],
+    "action": "renumber",
+    "title": "Memoization: When and Why",
+    "objective": "Given a profiler trace, apply `React.memo`, `useMemo`, and `useCallback` only where measured.",
+    "expectedOutput": "Targeted memoization fix",
+    "practiceType": "drill: refactor",
+    "prereqs": [
+      "PRG-T02-C01-U08"
+    ],
+    "parent": "PRG-T02-C05",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 2,
+    "newCode": "PRG-T02-C05-U02",
+    "oldCodes": [
+      "PRG-T02-C05-U04"
+    ],
+    "action": "renumber",
+    "title": "Code Splitting and Lazy Loading",
+    "objective": "Given heavy routes/panels, split bundles with `React.lazy` and `Suspense` fallbacks.",
+    "expectedOutput": "Lazy-loaded route module",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T02-C05-U01"
+    ],
+    "parent": "PRG-T02-C05",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 3,
+    "newCode": "PRG-T02-C05-U03",
+    "oldCodes": [
+      "PRG-T02-C05-U05"
+    ],
+    "action": "renumber",
+    "title": "Image and Asset Optimization",
+    "objective": "Given media-heavy pages, prevent CLS and optimize loading priority/formats.",
+    "expectedOutput": "CLS-safe media component",
+    "practiceType": "drill: fix-bug",
+    "prereqs": [
+      "PRG-T02-C05-U02"
+    ],
+    "parent": "PRG-T02-C05",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 4,
+    "newCode": "PRG-T02-C05-U04",
+    "oldCodes": [
+      "PRG-T02-C05-U06",
+      "PRG-T02-C05-U07"
+    ],
+    "action": "merge",
+    "title": "Performance Measurement & Architecture",
+    "objective": "Given a sluggish list/tree, profile render commits and apply virtualization/splitting.",
+    "expectedOutput": "Profiler trace + virtualized list optimization",
+    "practiceType": "lab milestone",
+    "prereqs": [
+      "PRG-T02-C05-U01",
+      "PRG-T02-C05-U02",
+      "PRG-T02-C05-U03"
+    ],
+    "parent": "PRG-T02-C05",
+    "extended": false
+  },
+  {
+    "level": "chapter",
+    "order": 6,
+    "newCode": "PRG-T02-C06",
+    "oldCodes": [
+      "PRG-T08-C02"
+    ],
+    "action": "renumber",
+    "title": "React Component Testing",
+    "objective": "",
+    "expectedOutput": null,
+    "practiceType": null,
+    "prereqs": [],
+    "parent": "PRG-T02",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 1,
+    "newCode": "PRG-T02-C06-U01",
+    "oldCodes": [
+      "PRG-T08-C02-U01",
+      "PRG-T08-C02-U02"
+    ],
+    "action": "merge",
+    "title": "Testing Library Philosophy & Role Queries",
+    "objective": "Given a React component, query by accessible role/label instead of internal selectors.",
+    "expectedOutput": "Role-based query test suite",
+    "practiceType": "drill: refactor",
+    "prereqs": [
+      "PRG-T01-C04-U03",
+      "PRG-T02-C04-U06"
+    ],
+    "parent": "PRG-T02-C06",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 2,
+    "newCode": "PRG-T02-C06-U02",
+    "oldCodes": [
+      "PRG-T08-C02-U03"
+    ],
+    "action": "renumber",
+    "title": "Testing User Interactions",
+    "objective": "Given interactive controls, simulate realistic `userEvent` clicks, typing, and keyboard nav.",
+    "expectedOutput": "Interaction test suite",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T02-C06-U01"
+    ],
+    "parent": "PRG-T02-C06",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 3,
+    "newCode": "PRG-T02-C06-U03",
+    "oldCodes": [
+      "PRG-T08-C02-U04"
+    ],
+    "action": "renumber",
+    "title": "Testing Forms and Validation",
+    "objective": "Given a Zod-validated form, assert field errors, disabled submit states, and valid submits.",
+    "expectedOutput": "Form test suite",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T02-C03-U05",
+      "PRG-T02-C06-U02"
+    ],
+    "parent": "PRG-T02-C06",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 4,
+    "newCode": "PRG-T02-C06-U04",
+    "oldCodes": [
+      "PRG-T08-C02-U05"
+    ],
+    "action": "renumber",
+    "title": "Async UI Testing",
+    "objective": "Given async data fetching, test loading, success, and error states with mocked network boundaries.",
+    "expectedOutput": "Async UI test suite",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T02-C02-U02",
+      "PRG-T02-C06-U02"
+    ],
+    "parent": "PRG-T02-C06",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 5,
+    "newCode": "PRG-T02-C06-U05",
+    "oldCodes": [
+      "PRG-T08-C02-U06"
+    ],
+    "action": "renumber",
+    "title": "Accessibility Assertions & DevVault Web",
+    "objective": "Given `devvault-web`, assert accessible states and ship the React SPA milestone.",
+    "expectedOutput": "`devvault-web` SPA + tests",
+    "practiceType": "project milestone",
+    "prereqs": [
+      "PRG-T02-C06-U03",
+      "PRG-T02-C06-U04"
+    ],
+    "parent": "PRG-T02-C06",
+    "extended": false
+  },
+  {
+    "level": "chapter",
+    "order": 1,
+    "newCode": "PRG-T03-C01",
+    "oldCodes": [
+      "PRG-T04-C01"
+    ],
+    "action": "renumber",
+    "title": "Node Runtime, Raw HTTP & API Design",
+    "objective": "",
+    "expectedOutput": null,
+    "practiceType": null,
+    "prereqs": [],
+    "parent": "PRG-T03",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 1,
+    "newCode": "PRG-T03-C01-U01",
+    "oldCodes": [
+      "PRG-T04-C01-U01"
+    ],
+    "action": "renumber",
+    "title": "Node.js Runtime and Event Loop",
+    "objective": "Given CPU vs I/O tasks in Node, predict libuv/event-loop blocking and non-blocking behavior.",
+    "expectedOutput": "Event loop trace note",
+    "practiceType": "drill: trace-explain",
+    "prereqs": [
+      "PRG-T01-C01-U07"
+    ],
+    "parent": "PRG-T03-C01",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 2,
+    "newCode": "PRG-T03-C01-U02",
+    "oldCodes": [
+      "PRG-T04-C01-U02"
+    ],
+    "action": "renumber",
+    "title": "Node Modules and Process Env",
+    "objective": "Given a Node CLI/server, read `process.env`, handle signals, and structure ESM entrypoints.",
+    "expectedOutput": "Bootstrapped Node entrypoint",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T03-C01-U01"
+    ],
+    "parent": "PRG-T03-C01",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 3,
+    "newCode": "PRG-T03-C01-U03",
+    "oldCodes": [
+      "PRG-T04-C01-U03"
+    ],
+    "action": "renumber",
+    "title": "Raw HTTP Server with `node:http`",
+    "objective": "Given `IncomingMessage` and `ServerResponse`, parse URLs/JSON bodies and write responses on `node:http`.",
+    "expectedOutput": "Raw node:http JSON/URL handler",
+    "practiceType": "lab milestone",
+    "prereqs": [
+      "PRG-T03-C01-U02"
+    ],
+    "parent": "PRG-T03-C01",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 4,
+    "newCode": "PRG-T03-C01-U04",
+    "oldCodes": [
+      "PRG-T04-C01-U04"
+    ],
+    "action": "renumber",
+    "title": "Methods, Status Codes and Headers",
+    "objective": "Given HTTP scenarios, choose idempotent methods, exact status codes, and content headers.",
+    "expectedOutput": "HTTP status/method triage",
+    "practiceType": "drill: predict-output",
+    "prereqs": [
+      "PRG-T03-C01-U03"
+    ],
+    "parent": "PRG-T03-C01",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 5,
+    "newCode": "PRG-T03-C01-U05",
+    "oldCodes": [
+      "PRG-T04-C01-U05"
+    ],
+    "action": "renumber",
+    "title": "REST Resource Design",
+    "objective": "Given domain entities, design noun-based endpoints, sub-resources, and query conventions.",
+    "expectedOutput": "REST endpoint spec",
+    "practiceType": "drill: refactor",
+    "prereqs": [
+      "PRG-T03-C01-U04"
+    ],
+    "parent": "PRG-T03-C01",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 6,
+    "newCode": "PRG-T03-C01-U06",
+    "oldCodes": [
+      "PRG-T04-C01-U06"
+    ],
+    "action": "renumber",
+    "title": "API Response and Error Conventions",
+    "objective": "Given success/failure cases, standardize JSON envelopes and problem-details error shapes.",
+    "expectedOutput": "Error envelope module",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T03-C01-U05"
+    ],
+    "parent": "PRG-T03-C01",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 7,
+    "newCode": "PRG-T03-C01-U07",
+    "oldCodes": [
+      "PRG-T04-C01-U07"
+    ],
+    "action": "renumber",
+    "title": "Async I/O and Stream Error Handling",
+    "objective": "Given file/network streams, handle backpressure and `error` events without crashing the process.",
+    "expectedOutput": "Safe stream pipe utility",
+    "practiceType": "drill: fix-bug",
+    "prereqs": [
+      "PRG-T03-C01-U03"
+    ],
+    "parent": "PRG-T03-C01",
+    "extended": false
+  },
+  {
+    "level": "chapter",
+    "order": 2,
+    "newCode": "PRG-T03-C02",
+    "oldCodes": [
+      "PRG-T04-C02"
+    ],
+    "action": "renumber",
+    "title": "Express 5, Middleware & Validation",
+    "objective": "",
+    "expectedOutput": null,
+    "practiceType": null,
+    "prereqs": [],
+    "parent": "PRG-T03",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 1,
+    "newCode": "PRG-T03-C02-U01",
+    "oldCodes": [
+      "PRG-T04-C02-U01"
+    ],
+    "action": "renumber",
+    "title": "Express 5 Application Setup",
+    "objective": "Given an Express 5 app, configure JSON parsing, health routes, and graceful shutdown.",
+    "expectedOutput": "Express 5 app skeleton",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T03-C01-U03"
+    ],
+    "parent": "PRG-T03-C02",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 2,
+    "newCode": "PRG-T03-C02-U02",
+    "oldCodes": [
+      "PRG-T04-C02-U02"
+    ],
+    "action": "renumber",
+    "title": "Routing and Route Parameters",
+    "objective": "Given nested resources, mount `express.Router` modules and validate params.",
+    "expectedOutput": "Modular router tree",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T03-C02-U01"
+    ],
+    "parent": "PRG-T03-C02",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 3,
+    "newCode": "PRG-T03-C02-U03",
+    "oldCodes": [
+      "PRG-T04-C02-U03"
+    ],
+    "action": "renumber",
+    "title": "Middleware and Request Lifecycle",
+    "objective": "Given cross-cutting concerns, order middleware (`next()`) and trace short-circuiting.",
+    "expectedOutput": "Ordered middleware chain + short-circuit tests",
+    "practiceType": "lab milestone",
+    "prereqs": [
+      "PRG-T03-C02-U02"
+    ],
+    "parent": "PRG-T03-C02",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 4,
+    "newCode": "PRG-T03-C02-U04",
+    "oldCodes": [
+      "PRG-T04-C02-U04"
+    ],
+    "action": "renumber",
+    "title": "Request Validation",
+    "objective": "Given `body`/`query`/`params`, reject invalid payloads at the boundary with Zod middleware.",
+    "expectedOutput": "Validation middleware + tests",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T02-C03-U03",
+      "PRG-T03-C02-U03"
+    ],
+    "parent": "PRG-T03-C02",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 5,
+    "newCode": "PRG-T03-C02-U05",
+    "oldCodes": [
+      "PRG-T04-C02-U05"
+    ],
+    "action": "renumber",
+    "title": "Centralized & Async Error Handling (Express 5)",
+    "objective": "Given rejected async handlers, rely on Express 5 native promise-rejection forwarding to centralized error middleware ([Express 5 Error Handling](https://expressjs.com/en/5x/guide/error-handling/)).",
+    "expectedOutput": "Centralized error handler",
+    "practiceType": "drill: fix-bug",
+    "prereqs": [
+      "PRG-T03-C02-U03"
+    ],
+    "parent": "PRG-T03-C02",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 6,
+    "newCode": "PRG-T03-C02-U06",
+    "oldCodes": [
+      "PRG-T04-C02-U06"
+    ],
+    "action": "split",
+    "title": "Structured Logging",
+    "objective": "Given HTTP requests, emit structured JSON logs with request IDs and latency without leaking secrets.",
+    "expectedOutput": "Request logger middleware",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T03-C02-U03"
+    ],
+    "parent": "PRG-T03-C02",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 7,
+    "newCode": "PRG-T03-C02-U07",
+    "oldCodes": [
+      "PRG-T04-C02-U07"
+    ],
+    "action": "renumber",
+    "title": "Typed CRUD Endpoints",
+    "objective": "Given a resource spec, implement typed Create/Read/Update/Delete endpoints with proper status codes.",
+    "expectedOutput": "Typed CRUD router",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T03-C02-U04",
+      "PRG-T03-C02-U05"
+    ],
+    "parent": "PRG-T03-C02",
+    "extended": false
+  },
+  {
+    "level": "chapter",
+    "order": 3,
+    "newCode": "PRG-T03-C03",
+    "oldCodes": [
+      "PRG-T04-C03"
+    ],
+    "action": "renumber",
+    "title": "Backend Architecture & API Integration Testing",
+    "objective": "",
+    "expectedOutput": null,
+    "practiceType": null,
+    "prereqs": [],
+    "parent": "PRG-T03",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 1,
+    "newCode": "PRG-T03-C03-U01",
+    "oldCodes": [
+      "PRG-T04-C03-U01"
+    ],
+    "action": "renumber",
+    "title": "Routes, Controllers and Services",
+    "objective": "Given fat route handlers, extract HTTP concerns from pure domain services.",
+    "expectedOutput": "Refactored service layer",
+    "practiceType": "drill: refactor",
+    "prereqs": [
+      "PRG-T03-C02-U07"
+    ],
+    "parent": "PRG-T03-C03",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 2,
+    "newCode": "PRG-T03-C03-U02",
+    "oldCodes": [
+      "PRG-T04-C03-U02"
+    ],
+    "action": "renumber",
+    "title": "Data Access Layer",
+    "objective": "Given service logic, isolate storage behind a repository interface for testability.",
+    "expectedOutput": "Repository interface + fake",
+    "practiceType": "drill: refactor",
+    "prereqs": [
+      "PRG-T03-C03-U01"
+    ],
+    "parent": "PRG-T03-C03",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 3,
+    "newCode": "PRG-T03-C03-U03",
+    "oldCodes": [
+      "PRG-T04-C03-U03"
+    ],
+    "action": "renumber",
+    "title": "Pagination, Sorting and Filtering",
+    "objective": "Given collection endpoints, implement cursor/offset pagination and allowlisted sort fields.",
+    "expectedOutput": "Paginated query service",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T03-C03-U02"
+    ],
+    "parent": "PRG-T03-C03",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 4,
+    "newCode": "PRG-T03-C03-U04",
+    "oldCodes": [
+      "PRG-T04-C03-U04",
+      "PRG-T04-C03-U06"
+    ],
+    "action": "merge",
+    "title": "Consistent API Contracts & Documentation",
+    "objective": "Given endpoints and DTOs, document request/response schemas consistently (OpenAPI/TS).",
+    "expectedOutput": "OpenAPI/contract spec",
+    "practiceType": "drill: refactor",
+    "prereqs": [
+      "PRG-T03-C03-U01"
+    ],
+    "parent": "PRG-T03-C03",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 5,
+    "newCode": "PRG-T03-C03-U05",
+    "oldCodes": [
+      "PRG-T04-C03-U05",
+      "PRG-T06-C02-U07"
+    ],
+    "action": "merge",
+    "title": "Environment Configuration & Secrets Hygiene",
+    "objective": "Given env vars, validate startup config with Zod, fail fast on missing secrets, and never log/commit `.env`.",
+    "expectedOutput": "Typed `env.ts` loader",
+    "practiceType": "drill: fix-bug",
+    "prereqs": [
+      "PRG-T03-C01-U02"
+    ],
+    "parent": "PRG-T03-C03",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 6,
+    "newCode": "PRG-T03-C03-U06",
+    "oldCodes": [
+      "PRG-T04-C03-U07"
+    ],
+    "action": "renumber",
+    "title": "Backend Module Boundaries",
+    "objective": "Given growing backend modules, enforce dependency direction via constructor injection.",
+    "expectedOutput": "Constructor-injected service module",
+    "practiceType": "lab milestone",
+    "prereqs": [
+      "PRG-T03-C03-U02",
+      "PRG-T03-C03-U05"
+    ],
+    "parent": "PRG-T03-C03",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 7,
+    "newCode": "PRG-T03-C03-U07",
+    "oldCodes": [
+      "PRG-T08-C01-U04"
+    ],
+    "action": "renumber",
+    "title": "Service & API Integration Tests + DevVault API",
+    "objective": "Given `devvault-api`, write HTTP integration tests against an isolated test app and ship the API milestone.",
+    "expectedOutput": "`devvault-api` + integration tests",
+    "practiceType": "project milestone",
+    "prereqs": [
+      "PRG-T03-C03-U06"
+    ],
+    "parent": "PRG-T03-C03",
+    "extended": false
+  },
+  {
+    "level": "chapter",
+    "order": 1,
+    "newCode": "PRG-T04-C01",
+    "oldCodes": [
+      "PRG-T05-C01"
+    ],
+    "action": "renumber",
+    "title": "Relational Modeling & SQL Foundations",
+    "objective": "",
+    "expectedOutput": null,
+    "practiceType": null,
+    "prereqs": [],
+    "parent": "PRG-T04",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 1,
+    "newCode": "PRG-T04-C01-U01",
+    "oldCodes": [
+      "PRG-T05-C01-U01"
+    ],
+    "action": "renumber",
+    "title": "Relational Database Concepts",
+    "objective": "Given flat JSON vs relational tables, explain tables, rows, ACID purpose, and relational integrity.",
+    "expectedOutput": "Schema comparison note",
+    "practiceType": "drill: trace-explain",
+    "prereqs": [
+      "PRG-T03-C03-U02"
+    ],
+    "parent": "PRG-T04-C01",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 2,
+    "newCode": "PRG-T04-C01-U02",
+    "oldCodes": [
+      "PRG-T05-C01-U02"
+    ],
+    "action": "renumber",
+    "title": "Entities, Attributes and Relationships",
+    "objective": "Given product requirements, classify 1:1, 1:N, and M:N relationships with join tables.",
+    "expectedOutput": "Entity relationship table",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T04-C01-U01"
+    ],
+    "parent": "PRG-T04-C01",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 3,
+    "newCode": "PRG-T04-C01-U03",
+    "oldCodes": [
+      "PRG-T05-C01-U03"
+    ],
+    "action": "renumber",
+    "title": "Primary and Foreign Keys",
+    "objective": "Given parent/child tables, define PKs, FKs, and `ON DELETE` behaviors safely.",
+    "expectedOutput": "DDL key constraints",
+    "practiceType": "drill: fix-bug",
+    "prereqs": [
+      "PRG-T04-C01-U02"
+    ],
+    "parent": "PRG-T04-C01",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 4,
+    "newCode": "PRG-T04-C01-U04",
+    "oldCodes": [
+      "PRG-T05-C01-U04"
+    ],
+    "action": "renumber",
+    "title": "Normalization and Constraints",
+    "objective": "Given denormalized tables, normalize to 3NF and add `NOT NULL`, `UNIQUE`, and `CHECK` constraints.",
+    "expectedOutput": "Normalized SQL schema",
+    "practiceType": "drill: refactor",
+    "prereqs": [
+      "PRG-T04-C01-U03"
+    ],
+    "parent": "PRG-T04-C01",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 5,
+    "newCode": "PRG-T04-C01-U05",
+    "oldCodes": [
+      "PRG-T05-C01-U07"
+    ],
+    "action": "renumber",
+    "title": "ERD Design and Schema Creation",
+    "objective": "Given DevVault's domain, design and execute the initial PostgreSQL DDL schema.",
+    "expectedOutput": "DevVault ERD + `schema.sql`",
+    "practiceType": "project milestone",
+    "prereqs": [
+      "PRG-T04-C01-U04"
+    ],
+    "parent": "PRG-T04-C01",
+    "extended": false
+  },
+  {
+    "level": "chapter",
+    "order": 2,
+    "newCode": "PRG-T04-C02",
+    "oldCodes": [
+      "PRG-T05-C02"
+    ],
+    "action": "renumber",
+    "title": "PostgreSQL Queries, `pg` Driver & Transactions",
+    "objective": "",
+    "expectedOutput": null,
+    "practiceType": null,
+    "prereqs": [],
+    "parent": "PRG-T04",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 1,
+    "newCode": "PRG-T04-C02-U01",
+    "oldCodes": [
+      "PRG-T05-C01-U05",
+      "PRG-T05-C02-U01"
+    ],
+    "action": "merge",
+    "title": "Filtering, Sorting and Aggregation",
+    "objective": "Given relational data, write `SELECT`, `WHERE`, `ORDER BY`, `GROUP BY`, and `HAVING` queries.",
+    "expectedOutput": "Passing SQL query suite",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T04-C01-U04"
+    ],
+    "parent": "PRG-T04-C02",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 2,
+    "newCode": "PRG-T04-C02-U02",
+    "oldCodes": [
+      "PRG-T05-C01-U06",
+      "PRG-T05-C02-U02"
+    ],
+    "action": "merge",
+    "title": "`INNER` and `OUTER JOIN`s",
+    "objective": "Given multi-table queries, choose `INNER` vs `LEFT JOIN` and avoid row multiplication bugs.",
+    "expectedOutput": "Fixed JOIN queries",
+    "practiceType": "drill: fix-bug",
+    "prereqs": [
+      "PRG-T04-C02-U01"
+    ],
+    "parent": "PRG-T04-C02",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 3,
+    "newCode": "PRG-T04-C02-U03",
+    "oldCodes": [
+      "PRG-T05-C02-U03"
+    ],
+    "action": "renumber",
+    "title": "Subqueries and CTEs",
+    "objective": "Given multi-step aggregations, write readable `WITH` CTEs and correlated subqueries.",
+    "expectedOutput": "CTE query refactor",
+    "practiceType": "drill: refactor",
+    "prereqs": [
+      "PRG-T04-C02-U02"
+    ],
+    "parent": "PRG-T04-C02",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 4,
+    "newCode": "PRG-T04-C02-U04",
+    "oldCodes": [
+      "PRG-T05-C02-U04"
+    ],
+    "action": "renumber",
+    "title": "Indexes and Query Plans",
+    "objective": "Given a slow query, read `EXPLAIN ANALYZE` and add B-tree/composite indexes.",
+    "expectedOutput": "Query plan optimization",
+    "practiceType": "drill: fix-bug",
+    "prereqs": [
+      "PRG-T04-C02-U03"
+    ],
+    "parent": "PRG-T04-C02",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 5,
+    "newCode": "PRG-T04-C02-U05",
+    "oldCodes": [],
+    "action": "new",
+    "title": "Raw `pg`, Pooling & Parameterized Queries",
+    "objective": "Given `node-postgres` (`pg`), configure `Pool`, use `$1` parameterized queries, and prevent pool exhaustion.",
+    "expectedOutput": "Parameterized pg Pool query module",
+    "practiceType": "lab milestone",
+    "prereqs": [
+      "PRG-T04-C02-U02"
+    ],
+    "parent": "PRG-T04-C02",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 6,
+    "newCode": "PRG-T04-C02-U06",
+    "oldCodes": [
+      "PRG-T05-C02-U05"
+    ],
+    "action": "renumber",
+    "title": "Transactions and ACID",
+    "objective": "Given multi-step writes, wrap queries in `BEGIN`/`COMMIT`/`ROLLBACK` using a single `pg` client.",
+    "expectedOutput": "Atomic transfer function",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T04-C02-U05"
+    ],
+    "parent": "PRG-T04-C02",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 7,
+    "newCode": "PRG-T04-C02-U07",
+    "oldCodes": [
+      "PRG-T05-C02-U06",
+      "PRG-T05-C02-U07"
+    ],
+    "action": "merge",
+    "title": "Isolation, Concurrency & Optimization",
+    "objective": "Given concurrent updates, prevent lost updates with isolation levels or `SELECT ... FOR UPDATE`.",
+    "expectedOutput": "Concurrency-safe update test",
+    "practiceType": "drill: fix-bug",
+    "prereqs": [
+      "PRG-T04-C02-U06"
+    ],
+    "parent": "PRG-T04-C02",
+    "extended": false
+  },
+  {
+    "level": "chapter",
+    "order": 3,
+    "newCode": "PRG-T04-C03",
+    "oldCodes": [
+      "PRG-T05-C03"
+    ],
+    "action": "renumber",
+    "title": "Prisma, Migrations & Data Access",
+    "objective": "",
+    "expectedOutput": null,
+    "practiceType": null,
+    "prereqs": [],
+    "parent": "PRG-T04",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 1,
+    "newCode": "PRG-T04-C03-U01",
+    "oldCodes": [
+      "PRG-T05-C03-U01"
+    ],
+    "action": "renumber",
+    "title": "Prisma Schema and Models",
+    "objective": "Given a SQL schema, define Prisma models, enums, and indexes accurately.",
+    "expectedOutput": "Valid `schema.prisma`",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T04-C01-U05"
+    ],
+    "parent": "PRG-T04-C03",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 2,
+    "newCode": "PRG-T04-C03-U02",
+    "oldCodes": [
+      "PRG-T05-C03-U02"
+    ],
+    "action": "renumber",
+    "title": "Prisma Relations",
+    "objective": "Given 1:N and M:N tables, configure Prisma relation fields and referential actions.",
+    "expectedOutput": "Typed relational models",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T04-C03-U01"
+    ],
+    "parent": "PRG-T04-C03",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 3,
+    "newCode": "PRG-T04-C03-U03",
+    "oldCodes": [
+      "PRG-T05-C03-U03"
+    ],
+    "action": "renumber",
+    "title": "Migrations and Schema Changes",
+    "objective": "Given schema evolutions, create safe non-destructive migrations and track applied versions.",
+    "expectedOutput": "Non-destructive schema migration scripts",
+    "practiceType": "lab milestone",
+    "prereqs": [
+      "PRG-T04-C03-U02"
+    ],
+    "parent": "PRG-T04-C03",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 4,
+    "newCode": "PRG-T04-C03-U04",
+    "oldCodes": [
+      "PRG-T05-C03-U04"
+    ],
+    "action": "renumber",
+    "title": "CRUD Queries",
+    "objective": "Given repository methods, implement typed Prisma queries without N+1 loops.",
+    "expectedOutput": "Optimized repository",
+    "practiceType": "drill: refactor",
+    "prereqs": [
+      "PRG-T04-C03-U02"
+    ],
+    "parent": "PRG-T04-C03",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 5,
+    "newCode": "PRG-T04-C03-U05",
+    "oldCodes": [
+      "PRG-T05-C03-U05"
+    ],
+    "action": "renumber",
+    "title": "Nested Reads and Writes",
+    "objective": "Given parent-child operations, use `select`/`include` and nested writes safely.",
+    "expectedOutput": "Scoped query module",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T04-C03-U04"
+    ],
+    "parent": "PRG-T04-C03",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 6,
+    "newCode": "PRG-T04-C03-U06",
+    "oldCodes": [
+      "PRG-T05-C03-U06"
+    ],
+    "action": "renumber",
+    "title": "Transactions with Prisma",
+    "objective": "Given atomic workflows, use `prisma.$transaction` and handle retryable conflicts.",
+    "expectedOutput": "Transactional service",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T04-C02-U06",
+      "PRG-T04-C03-U05"
+    ],
+    "parent": "PRG-T04-C03",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 7,
+    "newCode": "PRG-T04-C03-U07",
+    "oldCodes": [
+      "PRG-T05-C03-U07"
+    ],
+    "action": "renumber",
+    "title": "Seeding, Data Access & DevVault DB",
+    "objective": "Given `devvault-api`, replace in-memory storage with PostgreSQL (`pg` FTS + Prisma) and seed data.",
+    "expectedOutput": "DevVault Postgres persistence",
+    "practiceType": "project milestone",
+    "prereqs": [
+      "PRG-T04-C03-U06"
+    ],
+    "parent": "PRG-T04-C03",
+    "extended": false
+  },
+  {
+    "level": "chapter",
+    "order": 1,
+    "newCode": "PRG-T05-C01",
+    "oldCodes": [
+      "PRG-T06-C01"
+    ],
+    "action": "renumber",
+    "title": "Authentication & Session Management",
+    "objective": "",
+    "expectedOutput": null,
+    "practiceType": null,
+    "prereqs": [],
+    "parent": "PRG-T05",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 1,
+    "newCode": "PRG-T05-C01-U01",
+    "oldCodes": [
+      "PRG-T06-C01-U01"
+    ],
+    "action": "renumber",
+    "title": "Authentication vs Authorization",
+    "objective": "Given access-control failures, distinguish `401 Unauthorized` (AuthN) from `403 Forbidden` (AuthZ).",
+    "expectedOutput": "Auth triage drill",
+    "practiceType": "drill: predict-output",
+    "prereqs": [
+      "PRG-T03-C01-U04"
+    ],
+    "parent": "PRG-T05-C01",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 2,
+    "newCode": "PRG-T05-C01-U02",
+    "oldCodes": [
+      "PRG-T06-C01-U02"
+    ],
+    "action": "renumber",
+    "title": "Password Storage and Hashing (OWASP)",
+    "objective": "Given user credentials, hash with Argon2id (min 19 MiB, 2 iterations, 1 parallelism) and verify in constant time ([OWASP Password Storage](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html)).",
+    "expectedOutput": "Argon2id auth helper",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T05-C01-U01"
+    ],
+    "parent": "PRG-T05-C01",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 3,
+    "newCode": "PRG-T05-C01-U03",
+    "oldCodes": [
+      "PRG-T06-C01-U03"
+    ],
+    "action": "renumber",
+    "title": "Sessions and Cookies",
+    "objective": "Given stateful login, issue opaque session IDs stored server-side with expiration and rotation.",
+    "expectedOutput": "Server-side session & rotation handler",
+    "practiceType": "lab milestone",
+    "prereqs": [
+      "PRG-T04-C02-U05",
+      "PRG-T05-C01-U02"
+    ],
+    "parent": "PRG-T05-C01",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 4,
+    "newCode": "PRG-T05-C01-U04",
+    "oldCodes": [
+      "PRG-T06-C01-U04"
+    ],
+    "action": "renumber",
+    "title": "Secure Cookie Attributes",
+    "objective": "Given cookie flags, configure `HttpOnly`, `Secure`, `SameSite`, and `Path` to block theft.",
+    "expectedOutput": "Hardened cookie config",
+    "practiceType": "drill: fix-bug",
+    "prereqs": [
+      "PRG-T05-C01-U03"
+    ],
+    "parent": "PRG-T05-C01",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 5,
+    "newCode": "PRG-T05-C01-U05",
+    "oldCodes": [
+      "PRG-T06-C01-U05"
+    ],
+    "action": "renumber",
+    "title": "JWT and Token Concepts",
+    "objective": "Given stateless tokens, verify signatures/`exp`/`aud`, reject `alg: none`, and explain revocation tradeoffs.",
+    "expectedOutput": "Token verifier + tests",
+    "practiceType": "drill: fix-bug",
+    "prereqs": [
+      "PRG-T05-C01-U01"
+    ],
+    "parent": "PRG-T05-C01",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 6,
+    "newCode": "PRG-T05-C01-U06",
+    "oldCodes": [
+      "PRG-T06-C01-U06"
+    ],
+    "action": "renumber",
+    "title": "OAuth 2.0 / OIDC Flow Concepts",
+    "objective": "Given third-party login, trace Authorization Code + PKCE flow and validate `state`.",
+    "expectedOutput": "PKCE/state flow trace",
+    "practiceType": "drill: trace-explain",
+    "prereqs": [
+      "PRG-T05-C01-U03",
+      "PRG-T05-C01-U05"
+    ],
+    "parent": "PRG-T05-C01",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 7,
+    "newCode": "PRG-T05-C01-U07",
+    "oldCodes": [
+      "PRG-T06-C01-U07"
+    ],
+    "action": "renumber",
+    "title": "Implementing Auth with a Trusted Library",
+    "objective": "Given DevVault auth needs, integrate a vetted auth/session library rather than rolling custom crypto.",
+    "expectedOutput": "Auth integration module",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T05-C01-U04",
+      "PRG-T05-C01-U06"
+    ],
+    "parent": "PRG-T05-C01",
+    "extended": false
+  },
+  {
+    "level": "chapter",
+    "order": 2,
+    "newCode": "PRG-T05-C02",
+    "oldCodes": [
+      "PRG-T06-C02"
+    ],
+    "action": "renumber",
+    "title": "Authorization, Rate Limiting & Web Security",
+    "objective": "",
+    "expectedOutput": null,
+    "practiceType": null,
+    "prereqs": [],
+    "parent": "PRG-T05",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 1,
+    "newCode": "PRG-T05-C02-U01",
+    "oldCodes": [
+      "PRG-T06-C02-U01"
+    ],
+    "action": "renumber",
+    "title": "Role-based Access Control",
+    "objective": "Given role hierarchies, enforce centralized RBAC policy guards on routes/services.",
+    "expectedOutput": "RBAC policy guard + tests",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T05-C01-U01"
+    ],
+    "parent": "PRG-T05-C02",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 2,
+    "newCode": "PRG-T05-C02-U02",
+    "oldCodes": [
+      "PRG-T06-C02-U02"
+    ],
+    "action": "renumber",
+    "title": "Resource Ownership Checks",
+    "objective": "Given IDOR-vulnerable endpoints, scope queries and mutations by `ownerId === session.userId`.",
+    "expectedOutput": "IDOR regression fix",
+    "practiceType": "drill: fix-bug",
+    "prereqs": [
+      "PRG-T05-C02-U01"
+    ],
+    "parent": "PRG-T05-C02",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 3,
+    "newCode": "PRG-T05-C02-U03",
+    "oldCodes": [
+      "PRG-T06-C02-U03"
+    ],
+    "action": "renumber",
+    "title": "XSS and Output Safety",
+    "objective": "Given untrusted user input, escape/sanitize HTML and block `javascript:` URLs.",
+    "expectedOutput": "XSS-safe renderer/sanitizer",
+    "practiceType": "drill: fix-bug",
+    "prereqs": [
+      "PRG-T02-C01-U01"
+    ],
+    "parent": "PRG-T05-C02",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 4,
+    "newCode": "PRG-T05-C02-U04",
+    "oldCodes": [
+      "PRG-T06-C02-U04"
+    ],
+    "action": "renumber",
+    "title": "CSRF, `SameSite` & Origin Checks",
+    "objective": "Given cookie-authenticated mutations, combine `SameSite=Lax/Strict`, `Origin`/Fetch-Metadata checks, and CSRF tokens, and keep `GET` side-effect-free ([OWASP CSRF](https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html)).",
+    "expectedOutput": "CSRF guard middleware",
+    "practiceType": "drill: fix-bug",
+    "prereqs": [
+      "PRG-T05-C01-U04"
+    ],
+    "parent": "PRG-T05-C02",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 5,
+    "newCode": "PRG-T05-C02-U05",
+    "oldCodes": [
+      "PRG-T06-C02-U05"
+    ],
+    "action": "renumber",
+    "title": "SQL Injection and Parameterization",
+    "objective": "Given concatenated SQL strings, refactor to parameterized queries and allowlisted identifiers.",
+    "expectedOutput": "SQLi-safe query refactor",
+    "practiceType": "drill: fix-bug",
+    "prereqs": [
+      "PRG-T04-C02-U05"
+    ],
+    "parent": "PRG-T05-C02",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 6,
+    "newCode": "PRG-T05-C02-U06",
+    "oldCodes": [
+      "PRG-T06-C02-U06"
+    ],
+    "action": "split",
+    "title": "CORS Configuration",
+    "objective": "Given cross-origin browser requests, configure explicit `Access-Control-Allow-Origin` and `credentials` rules.",
+    "expectedOutput": "Tested CORS policy",
+    "practiceType": "drill: fix-bug",
+    "prereqs": [
+      "PRG-T03-C02-U03"
+    ],
+    "parent": "PRG-T05-C02",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 7,
+    "newCode": "PRG-T05-C02-U07",
+    "oldCodes": [],
+    "action": "split",
+    "title": "Security Headers (CSP, HSTS, Nosniff)",
+    "objective": "Given HTTP responses, set `Content-Security-Policy`, `X-Content-Type-Options: nosniff`, and HSTS headers.",
+    "expectedOutput": "Security headers middleware",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T05-C02-U03"
+    ],
+    "parent": "PRG-T05-C02",
+    "extended": false,
+    "splitFrom": "PRG-T06-C02-U06"
+  },
+  {
+    "level": "unit",
+    "order": 8,
+    "newCode": "PRG-T05-C02-U08",
+    "oldCodes": [],
+    "action": "new",
+    "title": "Rate Limiting & Brute-Force Protection",
+    "objective": "Given login/API abuse, implement a deterministic-clock token-bucket/sliding-window limiter.",
+    "expectedOutput": "Deterministic token-bucket limiter + tests",
+    "practiceType": "lab milestone",
+    "prereqs": [
+      "PRG-T05-C02-U04"
+    ],
+    "parent": "PRG-T05-C02",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 9,
+    "newCode": "PRG-T05-C02-U09",
+    "oldCodes": [
+      "PRG-T06-C02-U08"
+    ],
+    "action": "renumber",
+    "title": "OWASP Risk Review & DevVault Auth",
+    "objective": "Given `devvault-api`, audit OWASP risks and ship multi-user auth, ownership, and rate limiting.",
+    "expectedOutput": "DevVault Auth & Security",
+    "practiceType": "project milestone",
+    "prereqs": [
+      "PRG-T05-C02-U02",
+      "PRG-T05-C02-U03",
+      "PRG-T05-C02-U04",
+      "PRG-T05-C02-U05",
+      "PRG-T05-C02-U06",
+      "PRG-T05-C02-U07",
+      "PRG-T05-C02-U08"
+    ],
+    "parent": "PRG-T05-C02",
+    "extended": false
+  },
+  {
+    "level": "chapter",
+    "order": 1,
+    "newCode": "PRG-T06-C01",
+    "oldCodes": [
+      "PRG-T03-C01"
+    ],
+    "action": "renumber",
+    "title": "Next.js App Router Foundations",
+    "objective": "",
+    "expectedOutput": null,
+    "practiceType": null,
+    "prereqs": [],
+    "parent": "PRG-T06",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 1,
+    "newCode": "PRG-T06-C01-U01",
+    "oldCodes": [
+      "PRG-T03-C01-U01"
+    ],
+    "action": "renumber",
+    "title": "Next.js Project Structure",
+    "objective": "Given a Next.js App Router repo, map `app/`, `next.config.*`, and server/client entrypoints.",
+    "expectedOutput": "Annotated App Router map",
+    "practiceType": "drill: trace-explain",
+    "prereqs": [
+      "PRG-T02-C01-U08",
+      "PRG-T03-C03-U01"
+    ],
+    "parent": "PRG-T06-C01",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 2,
+    "newCode": "PRG-T06-C01-U02",
+    "oldCodes": [
+      "PRG-T03-C01-U02"
+    ],
+    "action": "renumber",
+    "title": "App Router and File-system Routing",
+    "objective": "Given URL requirements, map route segments, route groups, and `page.tsx` conventions.",
+    "expectedOutput": "Route tree implementation",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T06-C01-U01"
+    ],
+    "parent": "PRG-T06-C01",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 3,
+    "newCode": "PRG-T06-C01-U03",
+    "oldCodes": [
+      "PRG-T03-C01-U03"
+    ],
+    "action": "renumber",
+    "title": "Layouts and Nested Routes",
+    "objective": "Given shared chrome, build nested `layout.tsx` preserving state across child navigations.",
+    "expectedOutput": "Nested layout shell",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T06-C01-U02"
+    ],
+    "parent": "PRG-T06-C01",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 4,
+    "newCode": "PRG-T06-C01-U04",
+    "oldCodes": [
+      "PRG-T03-C01-U04"
+    ],
+    "action": "renumber",
+    "title": "Loading and Error UI",
+    "objective": "Given slow or failing routes, add `loading.tsx`, `error.tsx`, and `not-found.tsx` boundaries.",
+    "expectedOutput": "Resilient route boundaries",
+    "practiceType": "drill: fix-bug",
+    "prereqs": [
+      "PRG-T06-C01-U03"
+    ],
+    "parent": "PRG-T06-C01",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 5,
+    "newCode": "PRG-T06-C01-U05",
+    "oldCodes": [
+      "PRG-T03-C01-U05"
+    ],
+    "action": "renumber",
+    "title": "Dynamic Routes and Route Parameters",
+    "objective": "Given `[slug]`/`[...rest]` segments, await async `params`/`searchParams` and handle invalid IDs.",
+    "expectedOutput": "Dynamic [slug]/[...rest] route handler",
+    "practiceType": "lab milestone",
+    "prereqs": [
+      "PRG-T06-C01-U02"
+    ],
+    "parent": "PRG-T06-C01",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 6,
+    "newCode": "PRG-T06-C01-U06",
+    "oldCodes": [
+      "PRG-T03-C01-U06"
+    ],
+    "action": "renumber",
+    "title": "Metadata and Navigation",
+    "objective": "Given dynamic pages, generate typed `Metadata` and navigate with `<Link>` / `useRouter`.",
+    "expectedOutput": "SEO & nav integration",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T06-C01-U05"
+    ],
+    "parent": "PRG-T06-C01",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 7,
+    "newCode": "PRG-T06-C01-U07",
+    "oldCodes": [
+      "PRG-T03-C01-U07"
+    ],
+    "action": "renumber",
+    "title": "Static and Dynamic Rendering",
+    "objective": "Given build/request signals (`cookies()`, `headers()`, `dynamic`), predict static vs dynamic rendering.",
+    "expectedOutput": "Rendering mode triage",
+    "practiceType": "drill: predict-output",
+    "prereqs": [
+      "PRG-T06-C01-U05"
+    ],
+    "parent": "PRG-T06-C01",
+    "extended": false
+  },
+  {
+    "level": "chapter",
+    "order": 2,
+    "newCode": "PRG-T06-C02",
+    "oldCodes": [
+      "PRG-T03-C02"
+    ],
+    "action": "renumber",
+    "title": "Server/Client Components & Data Flow",
+    "objective": "",
+    "expectedOutput": null,
+    "practiceType": null,
+    "prereqs": [],
+    "parent": "PRG-T06",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 1,
+    "newCode": "PRG-T06-C02-U01",
+    "oldCodes": [
+      "PRG-T03-C02-U01"
+    ],
+    "action": "renumber",
+    "title": "Server Components",
+    "objective": "Given data-fetching UI, render async Server Components with direct DB/service access.",
+    "expectedOutput": "Server Component view",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T06-C01-U07"
+    ],
+    "parent": "PRG-T06-C02",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 2,
+    "newCode": "PRG-T06-C02-U02",
+    "oldCodes": [
+      "PRG-T03-C02-U02"
+    ],
+    "action": "renumber",
+    "title": "Client Components",
+    "objective": "Given browser hooks/events, isolate `'use client'` leaves without bloating bundles.",
+    "expectedOutput": "Minimal client leaf",
+    "practiceType": "drill: refactor",
+    "prereqs": [
+      "PRG-T06-C02-U01"
+    ],
+    "parent": "PRG-T06-C02",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 3,
+    "newCode": "PRG-T06-C02-U03",
+    "oldCodes": [
+      "PRG-T03-C02-U03"
+    ],
+    "action": "renumber",
+    "title": "Server/Client Boundary Design",
+    "objective": "Given mixed server/client trees, compose Server Components as `children` inside Client wrappers.",
+    "expectedOutput": "Clean boundary refactor",
+    "practiceType": "drill: refactor",
+    "prereqs": [
+      "PRG-T06-C02-U02"
+    ],
+    "parent": "PRG-T06-C02",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 4,
+    "newCode": "PRG-T06-C02-U04",
+    "oldCodes": [
+      "PRG-T03-C02-U04"
+    ],
+    "action": "renumber",
+    "title": "Data Fetching on the Server",
+    "objective": "Given parallel data needs, fetch concurrently in Server Components and avoid waterfalls.",
+    "expectedOutput": "Waterfall-free data loader",
+    "practiceType": "drill: fix-bug",
+    "prereqs": [
+      "PRG-T06-C02-U01"
+    ],
+    "parent": "PRG-T06-C02",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 5,
+    "newCode": "PRG-T06-C02-U05",
+    "oldCodes": [
+      "PRG-T03-C02-U05"
+    ],
+    "action": "renumber",
+    "title": "Passing Data Across Component Boundaries",
+    "objective": "Given non-serializable values (`Date`, functions, secrets), serialize DTOs safely across the boundary.",
+    "expectedOutput": "Fixed serialization bug",
+    "practiceType": "drill: fix-bug",
+    "prereqs": [
+      "PRG-T06-C02-U03"
+    ],
+    "parent": "PRG-T06-C02",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 6,
+    "newCode": "PRG-T06-C02-U06",
+    "oldCodes": [
+      "PRG-T03-C02-U06"
+    ],
+    "action": "renumber",
+    "title": "Caching and Revalidation (Next.js 15+)",
+    "objective": "Given Next.js 15+ uncached defaults (`fetch` `no-store`, uncached `GET` Route Handlers, uncached Client Router Cache), opt into caching/revalidation explicitly ([Next.js 15](https://nextjs.org/blog/next-15)).",
+    "expectedOutput": "Explicit cache/revalidate config",
+    "practiceType": "drill: predict-output",
+    "prereqs": [
+      "PRG-T06-C02-U04"
+    ],
+    "parent": "PRG-T06-C02",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 7,
+    "newCode": "PRG-T06-C02-U07",
+    "oldCodes": [
+      "PRG-T03-C02-U07"
+    ],
+    "action": "renumber",
+    "title": "Streaming and Suspense Basics",
+    "objective": "Given slow secondary panels, stream UI progressively using `<Suspense>` boundaries.",
+    "expectedOutput": "Streamed page with Suspense",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T06-C02-U04"
+    ],
+    "parent": "PRG-T06-C02",
+    "extended": false
+  },
+  {
+    "level": "chapter",
+    "order": 3,
+    "newCode": "PRG-T06-C03",
+    "oldCodes": [
+      "PRG-T03-C03"
+    ],
+    "action": "renumber",
+    "title": "Mutations, Route Handlers & Data Flow",
+    "objective": "",
+    "expectedOutput": null,
+    "practiceType": null,
+    "prereqs": [],
+    "parent": "PRG-T06",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 1,
+    "newCode": "PRG-T06-C03-U01",
+    "oldCodes": [
+      "PRG-T03-C03-U01"
+    ],
+    "action": "renumber",
+    "title": "Route Handlers",
+    "objective": "Given API/webhook needs in Next.js, write typed `GET`/`POST` Route Handlers (uncached by default in Next.js 15+).",
+    "expectedOutput": "Typed Route Handlers",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T06-C02-U06"
+    ],
+    "parent": "PRG-T06-C03",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 2,
+    "newCode": "PRG-T06-C03-U02",
+    "oldCodes": [
+      "PRG-T03-C03-U02"
+    ],
+    "action": "renumber",
+    "title": "Server Actions and Form Mutations",
+    "objective": "Given form mutations, implement Server Actions with authZ checks (never trusting client state).",
+    "expectedOutput": "Auth-guarded Server Action",
+    "practiceType": "drill: fix-bug",
+    "prereqs": [
+      "PRG-T05-C02-U02",
+      "PRG-T06-C03-U01"
+    ],
+    "parent": "PRG-T06-C03",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 3,
+    "newCode": "PRG-T06-C03-U03",
+    "oldCodes": [
+      "PRG-T03-C03-U03"
+    ],
+    "action": "renumber",
+    "title": "Input Validation with Zod",
+    "objective": "Given `FormData` or JSON payloads in Actions/Handlers, parse and return typed field errors.",
+    "expectedOutput": "Validated mutation handler",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T02-C03-U03",
+      "PRG-T06-C03-U02"
+    ],
+    "parent": "PRG-T06-C03",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 4,
+    "newCode": "PRG-T06-C03-U04",
+    "oldCodes": [
+      "PRG-T03-C03-U04"
+    ],
+    "action": "renumber",
+    "title": "Revalidation and Redirects",
+    "objective": "Given mutated data, call `revalidatePath`/`revalidateTag` and `redirect` outside `try/catch` traps.",
+    "expectedOutput": "Fixed redirect/revalidate bug",
+    "practiceType": "drill: fix-bug",
+    "prereqs": [
+      "PRG-T06-C03-U02"
+    ],
+    "parent": "PRG-T06-C03",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 5,
+    "newCode": "PRG-T06-C03-U05",
+    "oldCodes": [
+      "PRG-T03-C03-U05",
+      "PRG-T03-C03-U06"
+    ],
+    "action": "merge",
+    "title": "Error and Pending States",
+    "objective": "Given async Server Actions, surface `useActionState` errors and `useFormStatus` pending states.",
+    "expectedOutput": "Resilient form mutation UX",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T06-C03-U03",
+      "PRG-T06-C03-U04"
+    ],
+    "parent": "PRG-T06-C03",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 6,
+    "newCode": "PRG-T06-C03-U06",
+    "oldCodes": [
+      "PRG-T03-C03-U07"
+    ],
+    "action": "renumber",
+    "title": "DevVault Next.js Full-Stack Migration",
+    "objective": "Given `devvault`, migrate UI + CRUD mutations to Next.js App Router with Server Components & Actions.",
+    "expectedOutput": "DevVault Next.js app",
+    "practiceType": "project milestone",
+    "prereqs": [
+      "PRG-T06-C03-U05"
+    ],
+    "parent": "PRG-T06-C03",
+    "extended": false
+  },
+  {
+    "level": "chapter",
+    "order": 1,
+    "newCode": "PRG-T07-C01",
+    "oldCodes": [
+      "PRG-T08-C03"
+    ],
+    "action": "renumber",
+    "title": "End-to-End Testing & Quality Gates",
+    "objective": "",
+    "expectedOutput": null,
+    "practiceType": null,
+    "prereqs": [],
+    "parent": "PRG-T07",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 1,
+    "newCode": "PRG-T07-C01-U01",
+    "oldCodes": [
+      "PRG-T08-C03-U01"
+    ],
+    "action": "renumber",
+    "title": "End-to-end Testing Concepts",
+    "objective": "Given unit/integration/E2E suites, decide which user journeys belong in E2E.",
+    "expectedOutput": "E2E scope plan",
+    "practiceType": "drill: trace-explain",
+    "prereqs": [
+      "PRG-T02-C06-U05",
+      "PRG-T03-C03-U07"
+    ],
+    "parent": "PRG-T07-C01",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 2,
+    "newCode": "PRG-T07-C01-U02",
+    "oldCodes": [
+      "PRG-T08-C03-U02"
+    ],
+    "action": "renumber",
+    "title": "Playwright Setup and Browser Contexts",
+    "objective": "Given a Next.js app, configure Playwright with isolated browser contexts and webServer startup.",
+    "expectedOutput": "Working `playwright.config.ts`",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T07-C01-U01"
+    ],
+    "parent": "PRG-T07-C01",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 3,
+    "newCode": "PRG-T07-C01-U03",
+    "oldCodes": [
+      "PRG-T08-C03-U03"
+    ],
+    "action": "renumber",
+    "title": "Locators and User Actions",
+    "objective": "Given fragile CSS selectors, replace with `getByRole`/`getByLabel` locators.",
+    "expectedOutput": "Resilient locator refactor",
+    "practiceType": "drill: refactor",
+    "prereqs": [
+      "PRG-T07-C01-U02"
+    ],
+    "parent": "PRG-T07-C01",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 4,
+    "newCode": "PRG-T07-C01-U04",
+    "oldCodes": [
+      "PRG-T08-C03-U04"
+    ],
+    "action": "renumber",
+    "title": "Assertions and Waiting",
+    "objective": "Given flaky tests with `waitForTimeout`, replace with Playwright auto-retrying web-first assertions.",
+    "expectedOutput": "Flake-free E2E spec",
+    "practiceType": "drill: fix-bug",
+    "prereqs": [
+      "PRG-T07-C01-U03"
+    ],
+    "parent": "PRG-T07-C01",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 5,
+    "newCode": "PRG-T07-C01-U05",
+    "oldCodes": [
+      "PRG-T08-C03-U05"
+    ],
+    "action": "renumber",
+    "title": "Authentication State and Test Data",
+    "objective": "Given authenticated E2E flows, seed isolated test data and reuse storageState safely.",
+    "expectedOutput": "Isolated auth fixture",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T07-C01-U04"
+    ],
+    "parent": "PRG-T07-C01",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 6,
+    "newCode": "PRG-T07-C01-U06",
+    "oldCodes": [
+      "PRG-T08-C03-U06"
+    ],
+    "action": "renumber",
+    "title": "Critical User Journey Tests",
+    "objective": "Given DevVault's core flows, write E2E tests for signup/login, create/search/edit/delete.",
+    "expectedOutput": "DevVault E2E suite",
+    "practiceType": "project milestone",
+    "prereqs": [
+      "PRG-T07-C01-U05"
+    ],
+    "parent": "PRG-T07-C01",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 7,
+    "newCode": "PRG-T07-C01-U07",
+    "oldCodes": [
+      "PRG-T08-C03-U07"
+    ],
+    "action": "renumber",
+    "title": "CI Quality Gates",
+    "objective": "Given lint, typecheck, unit, integration, and E2E suites, wire a fast failing CI gate.",
+    "expectedOutput": "Passing CI workflow",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T07-C01-U06"
+    ],
+    "parent": "PRG-T07-C01",
+    "extended": false
+  },
+  {
+    "level": "chapter",
+    "order": 2,
+    "newCode": "PRG-T07-C02",
+    "oldCodes": [
+      "PRG-T07-C02",
+      "PRG-T07-C01",
+      "PRG-T07-C03",
+      "PRG-T07-C04"
+    ],
+    "action": "merge",
+    "title": "DevVault Capstone Integration & Polish",
+    "objective": "",
+    "expectedOutput": null,
+    "practiceType": null,
+    "prereqs": [],
+    "parent": "PRG-T07",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 1,
+    "newCode": "PRG-T07-C02-U01",
+    "oldCodes": [
+      "PRG-T07-C01-U01",
+      "PRG-T07-C01-U02",
+      "PRG-T07-C01-U03",
+      "PRG-T07-C01-U04",
+      "PRG-T07-C01-U05",
+      "PRG-T07-C01-U06"
+    ],
+    "action": "merge",
+    "title": "Domain Spec & Architecture Freeze",
+    "objective": "Given DevVault's final scope, lock entities (Snippets, Bookmarks, Notes, Tags) and acceptance criteria.",
+    "expectedOutput": "DevVault PRD & ADR",
+    "practiceType": "project milestone",
+    "prereqs": [
+      "PRG-T06-C03-U06"
+    ],
+    "parent": "PRG-T07-C02",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 2,
+    "newCode": "PRG-T07-C02-U02",
+    "oldCodes": [
+      "PRG-T07-C02-U01",
+      "PRG-T07-C02-U02",
+      "PRG-T07-C02-U03",
+      "PRG-T07-C02-U04",
+      "PRG-T07-C02-U05",
+      "PRG-T07-C02-U06",
+      "PRG-T07-C02-U07"
+    ],
+    "action": "merge",
+    "title": "Multi-Resource Workflows & Sharing",
+    "objective": "Given snippets, bookmarks, and notes, add collections, share links, and role/ownership guards.",
+    "expectedOutput": "Collections + sharing feature",
+    "practiceType": "project milestone",
+    "prereqs": [
+      "PRG-T07-C02-U01"
+    ],
+    "parent": "PRG-T07-C02",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 3,
+    "newCode": "PRG-T07-C02-U03",
+    "oldCodes": [
+      "PRG-T07-C03-U01",
+      "PRG-T07-C03-U02",
+      "PRG-T07-C03-U03",
+      "PRG-T07-C03-U04",
+      "PRG-T07-C03-U05"
+    ],
+    "action": "merge",
+    "title": "Search, Tagging & File Attachments",
+    "objective": "Given growing user vaults, add PostgreSQL full-text search, tag filters, and attachment metadata.",
+    "expectedOutput": "Search + attachments feature",
+    "practiceType": "project milestone",
+    "prereqs": [
+      "PRG-T07-C02-U02"
+    ],
+    "parent": "PRG-T07-C02",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 4,
+    "newCode": "PRG-T07-C02-U04",
+    "oldCodes": [
+      "PRG-T07-C04-U01",
+      "PRG-T07-C04-U02",
+      "PRG-T07-C04-U03",
+      "PRG-T07-C04-U04",
+      "PRG-T07-C04-U05"
+    ],
+    "action": "merge",
+    "title": "UX Polish & Accessibility Audit",
+    "objective": "Given DevVault UI, polish empty/loading/error states, responsive layout, and keyboard/ARIA audit.",
+    "expectedOutput": "Accessible polished UI",
+    "practiceType": "project milestone",
+    "prereqs": [
+      "PRG-T07-C02-U03"
+    ],
+    "parent": "PRG-T07-C02",
+    "extended": false
+  },
+  {
+    "level": "unit",
+    "order": 5,
+    "newCode": "PRG-T07-C02-U05",
+    "oldCodes": [
+      "PRG-T07-C04-U06",
+      "PRG-T07-C04-U07"
+    ],
+    "action": "merge",
+    "title": "Release Candidate & Walkthrough",
+    "objective": "Given all features + Playwright E2E, run full RC verification and record walkthrough notes.",
+    "expectedOutput": "DevVault v1.0 RC",
+    "practiceType": "project milestone",
+    "prereqs": [
+      "PRG-T07-C01-U07",
+      "PRG-T07-C02-U04"
+    ],
+    "parent": "PRG-T07-C02",
+    "extended": false
+  },
+  {
+    "level": "chapter",
+    "order": 1,
+    "newCode": "PRG-T08-C01",
+    "oldCodes": [
+      "PRG-T09-C01"
+    ],
+    "action": "renumber",
+    "title": "System Design & Redis Caching",
+    "objective": "",
+    "expectedOutput": null,
+    "practiceType": null,
+    "prereqs": [],
+    "parent": "PRG-T08",
+    "extended": true
+  },
+  {
+    "level": "unit",
+    "order": 1,
+    "newCode": "PRG-T08-C01-U01",
+    "oldCodes": [
+      "PRG-T09-C01-U01"
+    ],
+    "action": "renumber",
+    "title": "System Design Fundamentals",
+    "objective": "Given traffic/latency goals, estimate throughput, storage, and failure domains.",
+    "expectedOutput": "Capacity & bottleneck brief",
+    "practiceType": "drill: trace-explain",
+    "prereqs": [
+      "PRG-T07-C02-U05"
+    ],
+    "parent": "PRG-T08-C01",
+    "extended": true
+  },
+  {
+    "level": "unit",
+    "order": 2,
+    "newCode": "PRG-T08-C01-U02",
+    "oldCodes": [
+      "PRG-T09-C01-U02"
+    ],
+    "action": "renumber",
+    "title": "Identifying Bottlenecks",
+    "objective": "Given slow endpoints, distinguish CPU, DB I/O, N+1, and lock contention bottlenecks.",
+    "expectedOutput": "Bottleneck triage report",
+    "practiceType": "drill: fix-bug",
+    "prereqs": [
+      "PRG-T08-C01-U01"
+    ],
+    "parent": "PRG-T08-C01",
+    "extended": true
+  },
+  {
+    "level": "unit",
+    "order": 3,
+    "newCode": "PRG-T08-C01-U03",
+    "oldCodes": [
+      "PRG-T09-C01-U03"
+    ],
+    "action": "renumber",
+    "title": "Caching Concepts and Tradeoffs",
+    "objective": "Given read/write ratios, choose cache-aside vs write-through and quantify stale-read risk.",
+    "expectedOutput": "Cache strategy matrix",
+    "practiceType": "drill: trace-explain",
+    "prereqs": [
+      "PRG-T08-C01-U02"
+    ],
+    "parent": "PRG-T08-C01",
+    "extended": true
+  },
+  {
+    "level": "unit",
+    "order": 4,
+    "newCode": "PRG-T08-C01-U04",
+    "oldCodes": [
+      "PRG-T09-C01-U04"
+    ],
+    "action": "renumber",
+    "title": "Redis Data Structures",
+    "objective": "Given caching/rate-limit/leaderboard tasks, pick Strings, Hashes, Sets, or Sorted Sets.",
+    "expectedOutput": "Redis DS mapping + code",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T08-C01-U03"
+    ],
+    "parent": "PRG-T08-C01",
+    "extended": true
+  },
+  {
+    "level": "unit",
+    "order": 5,
+    "newCode": "PRG-T08-C01-U05",
+    "oldCodes": [
+      "PRG-T09-C01-U05"
+    ],
+    "action": "renumber",
+    "title": "Cache Keys and Expiration",
+    "objective": "Given multi-tenant keys, design versioned key namespaces, TTL jitter, and stampede protection.",
+    "expectedOutput": "Namespaced cache key & TTL helper",
+    "practiceType": "lab milestone",
+    "prereqs": [
+      "PRG-T08-C01-U04"
+    ],
+    "parent": "PRG-T08-C01",
+    "extended": true
+  },
+  {
+    "level": "unit",
+    "order": 6,
+    "newCode": "PRG-T08-C01-U06",
+    "oldCodes": [
+      "PRG-T09-C01-U06"
+    ],
+    "action": "renumber",
+    "title": "Cache Invalidation Strategies",
+    "objective": "Given mutations, invalidate keys reliably on writes without leaving orphan stale entries.",
+    "expectedOutput": "Invalidation hook + tests",
+    "practiceType": "drill: fix-bug",
+    "prereqs": [
+      "PRG-T08-C01-U05"
+    ],
+    "parent": "PRG-T08-C01",
+    "extended": true
+  },
+  {
+    "level": "unit",
+    "order": 7,
+    "newCode": "PRG-T08-C01-U07",
+    "oldCodes": [
+      "PRG-T09-C01-U07"
+    ],
+    "action": "renumber",
+    "title": "Measuring Cache Effectiveness",
+    "objective": "Given hit/miss counters, compute hit ratio and verify latency improvement on DevVault tags.",
+    "expectedOutput": "DevVault Redis cache",
+    "practiceType": "project milestone",
+    "prereqs": [
+      "PRG-T08-C01-U06"
+    ],
+    "parent": "PRG-T08-C01",
+    "extended": true
+  },
+  {
+    "level": "chapter",
+    "order": 2,
+    "newCode": "PRG-T08-C02",
+    "oldCodes": [
+      "PRG-T09-C02"
+    ],
+    "action": "renumber",
+    "title": "Realtime & Background Work",
+    "objective": "",
+    "expectedOutput": null,
+    "practiceType": null,
+    "prereqs": [],
+    "parent": "PRG-T08",
+    "extended": true
+  },
+  {
+    "level": "unit",
+    "order": 1,
+    "newCode": "PRG-T08-C02-U01",
+    "oldCodes": [
+      "PRG-T09-C02-U01"
+    ],
+    "action": "renumber",
+    "title": "Realtime Communication Concepts",
+    "objective": "Given update requirements, compare short polling, SSE, and WebSockets.",
+    "expectedOutput": "Protocol selection matrix",
+    "practiceType": "drill: trace-explain",
+    "prereqs": [
+      "PRG-T03-C01-U03"
+    ],
+    "parent": "PRG-T08-C02",
+    "extended": true
+  },
+  {
+    "level": "unit",
+    "order": 2,
+    "newCode": "PRG-T08-C02-U02",
+    "oldCodes": [
+      "PRG-T09-C02-U02"
+    ],
+    "action": "renumber",
+    "title": "WebSocket Lifecycle",
+    "objective": "Given a WebSocket connection, handle upgrade, heartbeats, reconnects, and cleanup.",
+    "expectedOutput": "Reconnecting WS client/server",
+    "practiceType": "drill: fix-bug",
+    "prereqs": [
+      "PRG-T08-C02-U01"
+    ],
+    "parent": "PRG-T08-C02",
+    "extended": true
+  },
+  {
+    "level": "unit",
+    "order": 3,
+    "newCode": "PRG-T08-C02-U03",
+    "oldCodes": [
+      "PRG-T09-C02-U03"
+    ],
+    "action": "renumber",
+    "title": "Events and Message Design",
+    "objective": "Given realtime events, design versioned, Zod-validated event envelopes.",
+    "expectedOutput": "Typed event schema",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T08-C02-U02"
+    ],
+    "parent": "PRG-T08-C02",
+    "extended": true
+  },
+  {
+    "level": "unit",
+    "order": 4,
+    "newCode": "PRG-T08-C02-U04",
+    "oldCodes": [
+      "PRG-T09-C02-U04"
+    ],
+    "action": "renumber",
+    "title": "Realtime UI Synchronization",
+    "objective": "Given incoming WS/SSE events, reconcile client cache without duplicate items or race conditions.",
+    "expectedOutput": "Synced UI state handler",
+    "practiceType": "drill: fix-bug",
+    "prereqs": [
+      "PRG-T08-C02-U03"
+    ],
+    "parent": "PRG-T08-C02",
+    "extended": true
+  },
+  {
+    "level": "unit",
+    "order": 5,
+    "newCode": "PRG-T08-C02-U05",
+    "oldCodes": [
+      "PRG-T09-C02-U05",
+      "PRG-T07-C03-U06"
+    ],
+    "action": "merge",
+    "title": "Background Job Concepts",
+    "objective": "Given slow I/O (link metadata scraping, exports), offload to a background worker queue.",
+    "expectedOutput": "Enqueue/worker pipeline",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T08-C01-U04"
+    ],
+    "parent": "PRG-T08-C02",
+    "extended": true
+  },
+  {
+    "level": "unit",
+    "order": 6,
+    "newCode": "PRG-T08-C02-U06",
+    "oldCodes": [
+      "PRG-T09-C02-U06",
+      "PRG-T07-C03-U07"
+    ],
+    "action": "merge",
+    "title": "Retries and Idempotency",
+    "objective": "Given transient worker crashes, implement idempotency keys, exponential backoff, and DLQs.",
+    "expectedOutput": "Idempotent retry & backoff worker",
+    "practiceType": "lab milestone",
+    "prereqs": [
+      "PRG-T08-C02-U05"
+    ],
+    "parent": "PRG-T08-C02",
+    "extended": true
+  },
+  {
+    "level": "unit",
+    "order": 7,
+    "newCode": "PRG-T08-C02-U07",
+    "oldCodes": [
+      "PRG-T09-C02-U07"
+    ],
+    "action": "renumber",
+    "title": "Choosing Realtime vs Polling",
+    "objective": "Given DevVault's link-metadata jobs, wire async worker + SSE/polling status updates.",
+    "expectedOutput": "DevVault background jobs",
+    "practiceType": "project milestone",
+    "prereqs": [
+      "PRG-T08-C02-U04",
+      "PRG-T08-C02-U06"
+    ],
+    "parent": "PRG-T08-C02",
+    "extended": true
+  },
+  {
+    "level": "chapter",
+    "order": 1,
+    "newCode": "PRG-T09-C01",
+    "oldCodes": [
+      "PRG-T10-C01"
+    ],
+    "action": "renumber",
+    "title": "Production Readiness & Docker",
+    "objective": "",
+    "expectedOutput": null,
+    "practiceType": null,
+    "prereqs": [],
+    "parent": "PRG-T09",
+    "extended": true
+  },
+  {
+    "level": "unit",
+    "order": 1,
+    "newCode": "PRG-T09-C01-U01",
+    "oldCodes": [
+      "PRG-T10-C01-U01"
+    ],
+    "action": "renumber",
+    "title": "Production Environment Configuration",
+    "objective": "Given dev vs prod builds, separate build-time vs runtime config and `NODE_ENV=production`.",
+    "expectedOutput": "Production config checklist",
+    "practiceType": "drill: fix-bug",
+    "prereqs": [
+      "PRG-T03-C03-U05"
+    ],
+    "parent": "PRG-T09-C01",
+    "extended": true
+  },
+  {
+    "level": "unit",
+    "order": 2,
+    "newCode": "PRG-T09-C01-U02",
+    "oldCodes": [
+      "PRG-T10-C01-U02"
+    ],
+    "action": "renumber",
+    "title": "Docker Images and Containers",
+    "objective": "Given containers vs VMs, inspect layers, processes, and ephemeral filesystems.",
+    "expectedOutput": "Container inspection note",
+    "practiceType": "drill: trace-explain",
+    "prereqs": [
+      "PRG-T09-C01-U01"
+    ],
+    "parent": "PRG-T09-C01",
+    "extended": true
+  },
+  {
+    "level": "unit",
+    "order": 3,
+    "newCode": "PRG-T09-C01-U03",
+    "oldCodes": [
+      "PRG-T10-C01-U03"
+    ],
+    "action": "renumber",
+    "title": "Dockerfile Fundamentals",
+    "objective": "Given a Node/Next.js app, write a multi-stage `Dockerfile` running as non-root with `.dockerignore`.",
+    "expectedOutput": "Multi-stage `Dockerfile`",
+    "practiceType": "drill: fix-bug",
+    "prereqs": [
+      "PRG-T09-C01-U02"
+    ],
+    "parent": "PRG-T09-C01",
+    "extended": true
+  },
+  {
+    "level": "unit",
+    "order": 4,
+    "newCode": "PRG-T09-C01-U04",
+    "oldCodes": [
+      "PRG-T10-C01-U04"
+    ],
+    "action": "renumber",
+    "title": "Volumes and Networking",
+    "objective": "Given app + DB containers, configure named volumes and bridge DNS networking.",
+    "expectedOutput": "Network/volume config",
+    "practiceType": "drill: fix-bug",
+    "prereqs": [
+      "PRG-T09-C01-U03"
+    ],
+    "parent": "PRG-T09-C01",
+    "extended": true
+  },
+  {
+    "level": "unit",
+    "order": 5,
+    "newCode": "PRG-T09-C01-U05",
+    "oldCodes": [
+      "PRG-T10-C01-U05"
+    ],
+    "action": "renumber",
+    "title": "Docker Compose v2 for App and Database",
+    "objective": "Given multi-service local stacks, write `compose.yaml` (no `version` key) and run `docker compose` v2 ([Docker Compose v2](https://docs.docker.com/compose/intro/history/)).",
+    "expectedOutput": "`compose.yaml` (`app`+`pg`+`redis`)",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T09-C01-U04"
+    ],
+    "parent": "PRG-T09-C01",
+    "extended": true
+  },
+  {
+    "level": "unit",
+    "order": 6,
+    "newCode": "PRG-T09-C01-U06",
+    "oldCodes": [
+      "PRG-T10-C01-U06"
+    ],
+    "action": "renumber",
+    "title": "Container Logs and Debugging",
+    "objective": "Given a failing container, diagnose via `docker compose logs`, `exec`, and healthchecks.",
+    "expectedOutput": "Healthcheck + triage note",
+    "practiceType": "drill: fix-bug",
+    "prereqs": [
+      "PRG-T09-C01-U05"
+    ],
+    "parent": "PRG-T09-C01",
+    "extended": true
+  },
+  {
+    "level": "unit",
+    "order": 7,
+    "newCode": "PRG-T09-C01-U07",
+    "oldCodes": [
+      "PRG-T10-C01-U07"
+    ],
+    "action": "renumber",
+    "title": "Local Production-like Workflow",
+    "objective": "Given DevVault, boot the entire stack locally in production mode with `docker compose up`.",
+    "expectedOutput": "Containerized DevVault",
+    "practiceType": "project milestone",
+    "prereqs": [
+      "PRG-T09-C01-U06"
+    ],
+    "parent": "PRG-T09-C01",
+    "extended": true
+  },
+  {
+    "level": "chapter",
+    "order": 2,
+    "newCode": "PRG-T09-C02",
+    "oldCodes": [
+      "PRG-T10-C02"
+    ],
+    "action": "renumber",
+    "title": "CI/CD, Monitoring & Operations",
+    "objective": "",
+    "expectedOutput": null,
+    "practiceType": null,
+    "prereqs": [],
+    "parent": "PRG-T09",
+    "extended": true
+  },
+  {
+    "level": "unit",
+    "order": 1,
+    "newCode": "PRG-T09-C02-U01",
+    "oldCodes": [
+      "PRG-T10-C02-U01"
+    ],
+    "action": "renumber",
+    "title": "CI Pipeline Fundamentals",
+    "objective": "Given team PRs, design fast deterministic CI stages (lint, typecheck, test, build).",
+    "expectedOutput": "CI stage diagram",
+    "practiceType": "drill: trace-explain",
+    "prereqs": [
+      "PRG-T07-C01-U07"
+    ],
+    "parent": "PRG-T09-C02",
+    "extended": true
+  },
+  {
+    "level": "unit",
+    "order": 2,
+    "newCode": "PRG-T09-C02-U02",
+    "oldCodes": [
+      "PRG-T10-C02-U02"
+    ],
+    "action": "renumber",
+    "title": "GitHub Actions Workflow Syntax",
+    "objective": "Given `.github/workflows/*.yml`, configure triggers, caching, and matrix/service jobs.",
+    "expectedOutput": "Valid workflow YAML",
+    "practiceType": "drill: fix-bug",
+    "prereqs": [
+      "PRG-T09-C02-U01"
+    ],
+    "parent": "PRG-T09-C02",
+    "extended": true
+  },
+  {
+    "level": "unit",
+    "order": 3,
+    "newCode": "PRG-T09-C02-U03",
+    "oldCodes": [
+      "PRG-T10-C02-U03"
+    ],
+    "action": "renumber",
+    "title": "Automated Tests and Build Checks",
+    "objective": "Given Postgres/Docker in CI, run migrations, tests, and production builds automatically.",
+    "expectedOutput": "Passing CI build",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T09-C02-U02"
+    ],
+    "parent": "PRG-T09-C02",
+    "extended": true
+  },
+  {
+    "level": "unit",
+    "order": 4,
+    "newCode": "PRG-T09-C02-U04",
+    "oldCodes": [
+      "PRG-T10-C02-U04"
+    ],
+    "action": "renumber",
+    "title": "Deployment Workflow",
+    "objective": "Given main-branch merges, trigger gated CD deploys using repository secrets.",
+    "expectedOutput": "CD workflow YAML",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T09-C02-U03"
+    ],
+    "parent": "PRG-T09-C02",
+    "extended": true
+  },
+  {
+    "level": "unit",
+    "order": 5,
+    "newCode": "PRG-T09-C02-U05",
+    "oldCodes": [
+      "PRG-T10-C02-U05"
+    ],
+    "action": "renumber",
+    "title": "Application Logs and Monitoring",
+    "objective": "Given production errors, emit structured logs, health probes, and latency/error alerts.",
+    "expectedOutput": "`/healthz` + structured logs",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T09-C01-U06"
+    ],
+    "parent": "PRG-T09-C02",
+    "extended": true
+  },
+  {
+    "level": "unit",
+    "order": 6,
+    "newCode": "PRG-T09-C02-U06",
+    "oldCodes": [
+      "PRG-T10-C02-U06"
+    ],
+    "action": "renumber",
+    "title": "Database Backup Basics",
+    "objective": "Given a PostgreSQL database, script `pg_dump` backups and verify `pg_restore` recovery.",
+    "expectedOutput": "Verified backup/restore script",
+    "practiceType": "drill: implement-with-tests",
+    "prereqs": [
+      "PRG-T09-C01-U05"
+    ],
+    "parent": "PRG-T09-C02",
+    "extended": true
+  },
+  {
+    "level": "unit",
+    "order": 7,
+    "newCode": "PRG-T09-C02-U07",
+    "oldCodes": [
+      "PRG-T10-C02-U07"
+    ],
+    "action": "renumber",
+    "title": "Rollback and Release Checklist",
+    "objective": "Given a bad deploy, execute rollback steps and database backward-compatibility checks.",
+    "expectedOutput": "Release/rollback runbook",
+    "practiceType": "reading-only",
+    "prereqs": [
+      "PRG-T09-C02-U04",
+      "PRG-T09-C02-U06"
+    ],
+    "parent": "PRG-T09-C02",
+    "extended": true
+  },
+  {
+    "level": "chapter",
+    "order": 3,
+    "newCode": "PRG-T09-C03",
+    "oldCodes": [
+      "PRG-T10-C03"
+    ],
+    "action": "renumber",
+    "title": "Deploy & Final Showcase",
+    "objective": "",
+    "expectedOutput": null,
+    "practiceType": null,
+    "prereqs": [],
+    "parent": "PRG-T09",
+    "extended": true
+  },
+  {
+    "level": "unit",
+    "order": 1,
+    "newCode": "PRG-T09-C03-U01",
+    "oldCodes": [
+      "PRG-T10-C03-U01"
+    ],
+    "action": "renumber",
+    "title": "Choosing a Deployment Target",
+    "objective": "Given app requirements, compare PaaS, managed containers, and VPS tradeoffs.",
+    "expectedOutput": "Hosting decision note",
+    "practiceType": "reading-only",
+    "prereqs": [
+      "PRG-T09-C01-U07"
+    ],
+    "parent": "PRG-T09-C03",
+    "extended": true
+  },
+  {
+    "level": "unit",
+    "order": 2,
+    "newCode": "PRG-T09-C03-U02",
+    "oldCodes": [
+      "PRG-T10-C03-U02"
+    ],
+    "action": "renumber",
+    "title": "Production Environment Variables",
+    "objective": "Given hosting secrets, configure production env vars and rotate keys safely.",
+    "expectedOutput": "Prod env checklist",
+    "practiceType": "drill: fix-bug",
+    "prereqs": [
+      "PRG-T09-C03-U01"
+    ],
+    "parent": "PRG-T09-C03",
+    "extended": true
+  },
+  {
+    "level": "unit",
+    "order": 3,
+    "newCode": "PRG-T09-C03-U03",
+    "oldCodes": [
+      "PRG-T10-C03-U03"
+    ],
+    "action": "renumber",
+    "title": "Database Provisioning and Migrations",
+    "objective": "Given a managed Postgres instance, run production migrations safely before traffic cutover.",
+    "expectedOutput": "Live migrated DB",
+    "practiceType": "project milestone",
+    "prereqs": [
+      "PRG-T09-C03-U02"
+    ],
+    "parent": "PRG-T09-C03",
+    "extended": true
+  },
+  {
+    "level": "unit",
+    "order": 4,
+    "newCode": "PRG-T09-C03-U04",
+    "oldCodes": [
+      "PRG-T10-C03-U04"
+    ],
+    "action": "renumber",
+    "title": "Deploying the Application",
+    "objective": "Given CI/CD and DB, deploy DevVault to production and verify startup.",
+    "expectedOutput": "Live DevVault URL",
+    "practiceType": "project milestone",
+    "prereqs": [
+      "PRG-T09-C03-U03"
+    ],
+    "parent": "PRG-T09-C03",
+    "extended": true
+  },
+  {
+    "level": "unit",
+    "order": 5,
+    "newCode": "PRG-T09-C03-U05",
+    "oldCodes": [
+      "PRG-T10-C03-U05"
+    ],
+    "action": "renumber",
+    "title": "Domain and HTTPS Basics",
+    "objective": "Given a custom domain, configure DNS records and TLS termination.",
+    "expectedOutput": "HTTPS-enabled domain",
+    "practiceType": "reading-only",
+    "prereqs": [
+      "PRG-T09-C03-U04"
+    ],
+    "parent": "PRG-T09-C03",
+    "extended": true
+  },
+  {
+    "level": "unit",
+    "order": 6,
+    "newCode": "PRG-T09-C03-U06",
+    "oldCodes": [
+      "PRG-T10-C03-U06"
+    ],
+    "action": "renumber",
+    "title": "Production Smoke Testing",
+    "objective": "Given a live deploy, run post-deploy smoke checks across auth, DB, and health endpoints.",
+    "expectedOutput": "Passing smoke test run",
+    "practiceType": "project milestone",
+    "prereqs": [
+      "PRG-T09-C03-U05"
+    ],
+    "parent": "PRG-T09-C03",
+    "extended": true
+  },
+  {
+    "level": "unit",
+    "order": 7,
+    "newCode": "PRG-T09-C03-U07",
+    "oldCodes": [
+      "PRG-T10-C03-U07"
+    ],
+    "action": "renumber",
+    "title": "README, Demo and Retrospective",
+    "objective": "Given the finished product, write architecture docs, record a demo, and log retrospective lessons.",
+    "expectedOutput": "Final DevVault showcase",
+    "practiceType": "project milestone",
+    "prereqs": [
+      "PRG-T09-C03-U06"
+    ],
+    "parent": "PRG-T09-C03",
+    "extended": true
+  }
+]

@@ -1,0 +1,346 @@
+=== PRG Curriculum v2 Migration — DRY-RUN ===
+Scope: ALL (PRG-T00..PRG-T10)
+Map entries in scope: 252
+Counts by map action: {"keep": 62, "merge": 25, "new": 10, "renumber": 151, "retire": 1, "split": 3}
+Planned Notion ops: {"create": 11, "drill_update": 1, "retire": 48, "temp_rename": 13, "update": 234}
+Planned Local ops: 9
+Refusals: 0
+
+--- Counts per Topic ---
+  PRG-T00: {"keep": 10, "merge": 3, "renumber": 9}
+  PRG-T01: {"keep": 21, "merge": 5, "new": 8, "renumber": 2}
+  PRG-T02: {"keep": 30, "merge": 3, "renumber": 12}
+  PRG-T03: {"merge": 2, "renumber": 22, "split": 1}
+  PRG-T04: {"merge": 3, "new": 1, "renumber": 19}
+  PRG-T05: {"new": 1, "renumber": 16, "split": 2}
+  PRG-T06: {"merge": 1, "renumber": 23}
+  PRG-T07: {"keep": 1, "merge": 6, "renumber": 8}
+  PRG-T08: {"merge": 2, "renumber": 15, "retire": 1}
+  PRG-T09: {"renumber": 25}
+
+--- Pre-Flight Check ---
+Status: PASS
+Final code->page entries: 251
+Errors: 0
+Warnings (stray relations): 1
+  [WARN]  Stray relation on PRG-T04 (40c3818f-8ba0-81b5-aafc-ff3d6992fdc1).Chapters -> 40c3818f-8ba0-8093-94fa-c0a0cf2d5d52 (not in id_map; will leave 40c3818f-8ba0-8093-94fa-c0a0cf2d5d52 untouched and remove from Chapters)
+
+--- Planned Notion Operations ---
+  [RETIRE] PRG-T08 -> RETIRED-PRG-T08 (topic, page=40c3818f-8ba0-8132-9a78-e5c22364add6) | title='[Retired] Testing & Software Quality' | clear(none) | Goal+='Retired 2026-11-16: merged into PRG-T01-C04, PRG-T02-C06, PRG-T07-C01' | Status=unchanged
+  [RETIRE] PRG-T00-C02-U03 -> RETIRED-PRG-T00-C02-U03 (unit, page=40c3818f-8ba0-8174-9fc6-d536ef06d992) | title='[Retired] Arrays and Objects' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T00-C03-U02' | Status=unchanged
+  [RETIRE] PRG-T00-C02-U05 -> RETIRED-PRG-T00-C02-U05 (unit, page=40c3818f-8ba0-8112-aacd-dd21e9c75200) | title='[Retired] Promises and Async/Await' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T00-C03-U03' | Status=unchanged
+  [RETIRE] PRG-T00-C02-U07 -> RETIRED-PRG-T00-C02-U07 (unit, page=40c3818f-8ba0-8105-b83e-dc71c3f8d012) | title='[Retired] Reading and Debugging Existing Code' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T00-C03-U04' | Status=unchanged
+  [RETIRE] PRG-T08-C01 -> RETIRED-PRG-T08-C01 (chapter, page=40c3818f-8ba0-813f-ac06-e61348c651fc) | title='[Retired] Unit & Integration Testing' | clear(Topics=[]) | Objective+='Retired 2026-11-16: merged into PRG-T01-C04' | Status=unchanged
+  [RETIRE] PRG-T01-C03-U02 -> RETIRED-PRG-T01-C03-U02 (unit, page=40c3818f-8ba0-8148-b79a-d4602d502163) | title='[Retired] Array Transformations' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T01-C04-U01' | Status=unchanged
+  [RETIRE] PRG-T01-C03-U03 -> RETIRED-PRG-T01-C03-U03 (unit, page=40c3818f-8ba0-817f-ad7a-d1ac6725f3b0) | title='[Retired] Object Transformations' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T01-C04-U01' | Status=unchanged
+  [RETIRE] PRG-T01-C03-U06 -> RETIRED-PRG-T01-C03-U06 (unit, page=40c3818f-8ba0-81a9-979d-cd302bea370c) | title='[Retired] Error Handling and Edge Cases' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T01-C04-U02' | Status=unchanged
+  [RETIRE] PRG-T08-C01-U01 -> RETIRED-PRG-T08-C01-U01 (unit, page=40c3818f-8ba0-8153-a423-c4c2e79e74dd) | title='[Retired] Testing Pyramid and Test Strategy' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T01-C04-U03' | Status=unchanged
+  [RETIRE] PRG-T08-C01-U02 -> RETIRED-PRG-T08-C01-U02 (unit, page=40c3818f-8ba0-81d1-934c-ebb3b1422ab2) | title='[Retired] Unit Testing Pure Functions' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T01-C04-U03' | Status=unchanged
+  [RETIRE] PRG-T08-C01-U06 -> RETIRED-PRG-T08-C01-U06 (unit, page=40c3818f-8ba0-81e0-a024-f62866937c6f) | title='[Retired] Test Data and Fixtures' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T01-C04-U05' | Status=unchanged
+  [RETIRE] PRG-T08-C01-U07 -> RETIRED-PRG-T08-C01-U07 (unit, page=40c3818f-8ba0-81c1-bd74-f841afeb1019) | title='[Retired] Coverage and Test Quality' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T01-C04-U05' | Status=unchanged
+  [RETIRE] PRG-T02-C01-U09 -> RETIRED-PRG-T02-C01-U09 (unit, page=40c3818f-8ba0-8178-9edb-e952ca9a9ffb) | title='[Retired] Component Architecture' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T02-C01-U08' | Status=unchanged
+  [RETIRE] PRG-T02-C05-U01 -> RETIRED-PRG-T02-C05-U01 (unit, page=40c3818f-8ba0-81fe-b593-ecf8e1e14dd5) | title='[Retired] Component Boundaries and Composition' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T02-C01-U08' | Status=unchanged
+  [RETIRE] PRG-T02-C05-U02 -> RETIRED-PRG-T02-C05-U02 (unit, page=40c3818f-8ba0-811b-ab49-c6d53bc94400) | title='[Retired] Rendering Cost and Re-render Analysis' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T02-C01-U08' | Status=unchanged
+  [RETIRE] PRG-T02-C05-U07 -> RETIRED-PRG-T02-C05-U07 (unit, page=40c3818f-8ba0-8193-93a5-dea0ac749af5) | title='[Retired] Frontend Architecture Decisions' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T02-C05-U04' | Status=unchanged
+  [RETIRE] PRG-T08-C02-U02 -> RETIRED-PRG-T08-C02-U02 (unit, page=40c3818f-8ba0-81be-bd55-e8ab9e5a0e7a) | title='[Retired] Queries by Role and Label' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T02-C06-U01' | Status=unchanged
+  [RETIRE] PRG-T04-C03-U06 -> RETIRED-PRG-T04-C03-U06 (unit, page=40c3818f-8ba0-8114-ac6b-cf09690341d2) | title='[Retired] API Documentation' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T03-C03-U04' | Status=unchanged
+  [RETIRE] PRG-T06-C02-U07 -> RETIRED-PRG-T06-C02-U07 (unit, page=40c3818f-8ba0-81e2-92bf-d5f23b2ccc35) | title='[Retired] Secrets and Environment Safety' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T03-C03-U05' | Status=unchanged
+  [RETIRE] PRG-T05-C02-U01 -> RETIRED-PRG-T05-C02-U01 (unit, page=40c3818f-8ba0-813d-9c75-f443163c0de4) | title='[Retired] Filtering, Sorting and Aggregation' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T04-C02-U01' | Status=unchanged
+  [RETIRE] PRG-T05-C02-U02 -> RETIRED-PRG-T05-C02-U02 (unit, page=40c3818f-8ba0-81ca-a644-f66d33d5707c) | title='[Retired] INNER and OUTER JOINs' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T04-C02-U02' | Status=unchanged
+  [RETIRE] PRG-T05-C02-U07 -> RETIRED-PRG-T05-C02-U07 (unit, page=40c3818f-8ba0-81ed-9cc1-d2b57ec8b7fc) | title='[Retired] Query Optimization' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T04-C02-U07' | Status=unchanged
+  [RETIRE] PRG-T03-C03-U06 -> RETIRED-PRG-T03-C03-U06 (unit, page=40c3818f-8ba0-8108-93d3-dfb02440bf3d) | title='[Retired] Error and Pending States' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T06-C03-U05' | Status=unchanged
+  [RETIRE] PRG-T07-C01 -> RETIRED-PRG-T07-C01 (chapter, page=40c3818f-8ba0-8161-968e-c70ac5454df7) | title='[Retired] Product Scope & Domain Architecture' | clear(Topics=[]) | Objective+='Retired 2026-11-16: merged into PRG-T07-C02' | Status=unchanged
+  [RETIRE] PRG-T07-C03 -> RETIRED-PRG-T07-C03 (chapter, page=40c3818f-8ba0-818b-8e25-d4f2662216f7) | title='[Retired] Files, Notifications & Search' | clear(Topics=[]) | Objective+='Retired 2026-11-16: merged into PRG-T07-C02' | Status=unchanged
+  [RETIRE] PRG-T07-C04 -> RETIRED-PRG-T07-C04 (chapter, page=40c3818f-8ba0-81da-a08d-f5405a11b1ee) | title='[Retired] Product Polish & Release Candidate' | clear(Topics=[]) | Objective+='Retired 2026-11-16: merged into PRG-T07-C02' | Status=unchanged
+  [RETIRE] PRG-T07-C01-U02 -> RETIRED-PRG-T07-C01-U02 (unit, page=40c3818f-8ba0-8100-a0b5-ebcda3768d2e) | title='[Retired] User Stories and Acceptance Criteria' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T07-C02-U01' | Status=unchanged
+  [RETIRE] PRG-T07-C01-U03 -> RETIRED-PRG-T07-C01-U03 (unit, page=40c3818f-8ba0-81b1-b36c-f68a94420f8e) | title='[Retired] Domain Entities and Relationships' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T07-C02-U01' | Status=unchanged
+  [RETIRE] PRG-T07-C01-U04 -> RETIRED-PRG-T07-C01-U04 (unit, page=40c3818f-8ba0-81a9-8b4e-cf242c7b0a69) | title='[Retired] Feature Prioritization and MVP Scope' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T07-C02-U01' | Status=unchanged
+  [RETIRE] PRG-T07-C01-U05 -> RETIRED-PRG-T07-C01-U05 (unit, page=40c3818f-8ba0-81ae-a11a-c0a706f191f8) | title='[Retired] Application Architecture' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T07-C02-U01' | Status=unchanged
+  [RETIRE] PRG-T07-C01-U06 -> RETIRED-PRG-T07-C01-U06 (unit, page=40c3818f-8ba0-81f7-9eb6-e3f6b4a15900) | title='[Retired] Milestones and Technical Plan' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T07-C02-U01' | Status=unchanged
+  [RETIRE] PRG-T07-C02-U02 -> RETIRED-PRG-T07-C02-U02 (unit, page=40c3818f-8ba0-814a-a8dd-cc5a34ad8c97) | title='[Retired] Invitations and Onboarding Flow' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T07-C02-U02' | Status=unchanged
+  [RETIRE] PRG-T07-C02-U03 -> RETIRED-PRG-T07-C02-U03 (unit, page=40c3818f-8ba0-81b4-9a2f-cca20de243ac) | title='[Retired] Projects and Task Model' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T07-C02-U02' | Status=unchanged
+  [RETIRE] PRG-T07-C02-U04 -> RETIRED-PRG-T07-C02-U04 (unit, page=40c3818f-8ba0-814b-b7b8-dcdca82b392f) | title='[Retired] Kanban Workflow' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T07-C02-U02' | Status=unchanged
+  [RETIRE] PRG-T07-C02-U05 -> RETIRED-PRG-T07-C02-U05 (unit, page=40c3818f-8ba0-8137-a8ee-dace77386f19) | title='[Retired] Task Assignment and Status Changes' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T07-C02-U02' | Status=unchanged
+  [RETIRE] PRG-T07-C02-U06 -> RETIRED-PRG-T07-C02-U06 (unit, page=40c3818f-8ba0-8187-943f-de1ad84f78af) | title='[Retired] Comments and Collaboration' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T07-C02-U02' | Status=unchanged
+  [RETIRE] PRG-T07-C02-U07 -> RETIRED-PRG-T07-C02-U07 (unit, page=40c3818f-8ba0-81f8-8fad-c2ec5cc2e14d) | title='[Retired] Role and Ownership Enforcement' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T07-C02-U02' | Status=unchanged
+  [RETIRE] PRG-T07-C03-U02 -> RETIRED-PRG-T07-C03-U02 (unit, page=40c3818f-8ba0-8141-b07a-c7ac09eb4581) | title='[Retired] Object Storage Integration Concepts' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T07-C02-U03' | Status=unchanged
+  [RETIRE] PRG-T07-C03-U03 -> RETIRED-PRG-T07-C03-U03 (unit, page=40c3818f-8ba0-8136-9620-e443bd79e290) | title='[Retired] Notification Model and Delivery' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T07-C02-U03' | Status=unchanged
+  [RETIRE] PRG-T07-C03-U04 -> RETIRED-PRG-T07-C03-U04 (unit, page=40c3818f-8ba0-8190-820e-e5fa91ac2e6f) | title='[Retired] Search and Filtering' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T07-C02-U03' | Status=unchanged
+  [RETIRE] PRG-T07-C03-U05 -> RETIRED-PRG-T07-C03-U05 (unit, page=40c3818f-8ba0-8140-a82b-d1dff8967412) | title='[Retired] Activity Feed and Audit Events' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T07-C02-U03' | Status=unchanged
+  [RETIRE] PRG-T07-C04-U02 -> RETIRED-PRG-T07-C04-U02 (unit, page=40c3818f-8ba0-81da-a190-de087fff3d7b) | title='[Retired] Responsive Product UX' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T07-C02-U04' | Status=unchanged
+  [RETIRE] PRG-T07-C04-U03 -> RETIRED-PRG-T07-C04-U03 (unit, page=40c3818f-8ba0-8131-bb23-ebaf12db206d) | title='[Retired] Onboarding and First-use Experience' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T07-C02-U04' | Status=unchanged
+  [RETIRE] PRG-T07-C04-U04 -> RETIRED-PRG-T07-C04-U04 (unit, page=40c3818f-8ba0-8145-bf26-d993108e9985) | title='[Retired] Activity and Notification Polish' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T07-C02-U04' | Status=unchanged
+  [RETIRE] PRG-T07-C04-U05 -> RETIRED-PRG-T07-C04-U05 (unit, page=40c3818f-8ba0-81a6-b1b5-dbcafe34b568) | title='[Retired] Accessibility Review' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T07-C02-U04' | Status=unchanged
+  [RETIRE] PRG-T07-C04-U07 -> RETIRED-PRG-T07-C04-U07 (unit, page=40c3818f-8ba0-8109-8cce-d6293fb93b9e) | title='[Retired] Release Candidate Checklist' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T07-C02-U05' | Status=unchanged
+  [RETIRE] PRG-T07-C03-U06 -> RETIRED-PRG-T07-C03-U06 (unit, page=40c3818f-8ba0-81c3-b922-d4fad1874350) | title='[Retired] Background Work Concepts' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T08-C02-U05' | Status=unchanged
+  [RETIRE] PRG-T07-C03-U07 -> RETIRED-PRG-T07-C03-U07 (unit, page=40c3818f-8ba0-81da-926a-cfe8076b4150) | title='[Retired] Failure and Retry Handling' | clear(Learning Topics=[], Learning Chapters=[]) | Learning Objective+='Retired 2026-11-16: merged into PRG-T08-C02-U06' | Status=unchanged
+  [UPDATE] PRG-T00-C03-U03 -> PRG-T00-C02-U03 (unit) | Git Repository Basics (page=40c3818f-8ba0-8166-9421-fe59c818fd5a)
+  [UPDATE] PRG-T00-C03-U05 -> PRG-T00-C02-U05 (unit) | GitHub Workflow and Pull Requests (page=40c3818f-8ba0-81f4-a326-da98368dc4ff)
+  [UPDATE] PRG-T01-C03 -> PRG-T01-C04 (chapter) | Problem Solving, Clean Utilities & Unit Testing (page=40c3818f-8ba0-815f-8356-d8e9627e7c24)
+  [UPDATE] PRG-T01-C03-U01 -> PRG-T01-C04-U01 (unit) | Problem Decomposition & Data Pipelines (page=40c3818f-8ba0-81a8-8524-c6fce354e90f)
+  [UPDATE] PRG-T01-C03-U05 -> PRG-T01-C04-U02 (unit) | Reusable Generic Utilities & Edge Cases (page=40c3818f-8ba0-81b6-b255-f5cce14152f4)
+  [UPDATE] PRG-T01-C03-U07 -> PRG-T01-C04-U03 (unit) | Testing Pyramid & Pure Unit Tests (page=40c3818f-8ba0-81cf-870d-edcde8e542c8)
+  [UPDATE] PRG-T01-C03-U08 -> PRG-T01-C04-U06 (unit) | Packaging, Exports & DevVault Core (page=40c3818f-8ba0-812b-860b-dd3322c6c59f)
+  [UPDATE] PRG-T02-C05-U03 -> PRG-T02-C05-U01 (unit) | Memoization: When and Why (page=40c3818f-8ba0-819f-9669-d5bd264f8656)
+  [UPDATE] PRG-T02-C05-U04 -> PRG-T02-C05-U02 (unit) | Code Splitting and Lazy Loading (page=40c3818f-8ba0-813c-8a64-d9957002bce9)
+  [UPDATE] PRG-T03-C02-U07 -> PRG-T06-C02-U07 (unit) | Streaming and Suspense Basics (page=40c3818f-8ba0-8177-831d-fd4adb8e3319)
+  [UPDATE] PRG-T03-C03 -> PRG-T06-C03 (chapter) | Mutations, Route Handlers & Data Flow (page=40c3818f-8ba0-8106-8f52-f4d2e5188798)
+  [UPDATE] PRG-T03-C03-U01 -> PRG-T06-C03-U01 (unit) | Route Handlers (page=40c3818f-8ba0-8182-ba85-f0d777bbaf45)
+  [UPDATE] PRG-T03-C03-U02 -> PRG-T06-C03-U02 (unit) | Server Actions and Form Mutations (page=40c3818f-8ba0-81ff-a618-c3b35a14af39)
+  [UPDATE] PRG-T03-C03-U03 -> PRG-T06-C03-U03 (unit) | Input Validation with Zod (page=40c3818f-8ba0-811a-b96e-c0489eb99989)
+  [UPDATE] PRG-T03-C03-U04 -> PRG-T06-C03-U04 (unit) | Revalidation and Redirects (page=40c3818f-8ba0-81d1-ac64-fd6292268964)
+  [UPDATE] PRG-T03-C03-U05 -> PRG-T06-C03-U05 (unit) | Error and Pending States (page=40c3818f-8ba0-81ef-acd4-eefde93d0550)
+  [UPDATE] PRG-T03-C03-U07 -> PRG-T06-C03-U06 (unit) | DevVault Next.js Full-Stack Migration (page=40c3818f-8ba0-81cd-9b17-d2ec4b9020ee)
+  [UPDATE] PRG-T04-C03-U07 -> PRG-T03-C03-U06 (unit) | Backend Module Boundaries (page=40c3818f-8ba0-81db-ac47-ca8bbb03ed33)
+  [UPDATE] PRG-T05-C03-U06 -> PRG-T04-C03-U06 (unit) | Transactions with Prisma (page=40c3818f-8ba0-81c7-9e15-d830fc051492)
+  [UPDATE] PRG-T06-C02-U01 -> PRG-T05-C02-U01 (unit) | Role-based Access Control (page=40c3818f-8ba0-81b2-a74b-cb51e73b4d48)
+  [UPDATE] PRG-T06-C02-U02 -> PRG-T05-C02-U02 (unit) | Resource Ownership Checks (page=40c3818f-8ba0-815b-8028-eec49cc42b05)
+  [UPDATE] PRG-T06-C02-U08 -> PRG-T05-C02-U09 (unit) | OWASP Risk Review & DevVault Auth (page=40c3818f-8ba0-816a-a862-debc437e0447)
+  [UPDATE] PRG-T07-C02-U01 -> PRG-T07-C02-U02 (unit) | Multi-Resource Workflows & Sharing (page=40c3818f-8ba0-813b-b1b7-dbef61e205db)
+  [UPDATE] PRG-T07-C03-U01 -> PRG-T07-C02-U03 (unit) | Search, Tagging & File Attachments (page=40c3818f-8ba0-8111-ba50-cc5500880ea6)
+  [UPDATE] PRG-T07-C04-U01 -> PRG-T07-C02-U04 (unit) | UX Polish & Accessibility Audit (page=40c3818f-8ba0-815a-95fa-e9854549f87b)
+  [UPDATE] PRG-T07-C04-U06 -> PRG-T07-C02-U05 (unit) | Release Candidate & Walkthrough (page=40c3818f-8ba0-81af-8019-c8fb8128bc19)
+  [UPDATE] PRG-T08-C01-U03 -> PRG-T01-C04-U04 (unit) | Test Doubles: Stubs, Mocks & Fakes (page=40c3818f-8ba0-81af-849c-ce5c1e254ab9)
+  [UPDATE] PRG-T08-C01-U05 -> PRG-T01-C04-U05 (unit) | Error Paths, Fixtures & Test Quality (page=40c3818f-8ba0-814a-a3ff-cfe2e6b0e649)
+  [UPDATE] PRG-T08-C02 -> PRG-T02-C06 (chapter) | React Component Testing (page=40c3818f-8ba0-81bb-8644-e5f0f57c94c4)
+  [UPDATE] PRG-T08-C02-U01 -> PRG-T02-C06-U01 (unit) | Testing Library Philosophy & Role Queries (page=40c3818f-8ba0-81d7-9f65-ccc816ee4dc8)
+  [UPDATE] PRG-T08-C02-U03 -> PRG-T02-C06-U02 (unit) | Testing User Interactions (page=40c3818f-8ba0-811b-9b75-fd62d06f40cd)
+  [UPDATE] PRG-T08-C02-U04 -> PRG-T02-C06-U03 (unit) | Testing Forms and Validation (page=40c3818f-8ba0-81e2-b594-cd5071e00940)
+  [UPDATE] PRG-T08-C02-U05 -> PRG-T02-C06-U04 (unit) | Async UI Testing (page=40c3818f-8ba0-81e9-93c7-fdea35cdb740)
+  [UPDATE] PRG-T08-C02-U06 -> PRG-T02-C06-U05 (unit) | Accessibility Assertions & DevVault Web (page=40c3818f-8ba0-81b0-9d66-cc0c7cb93822)
+  [UPDATE] PRG-T08-C03 -> PRG-T07-C01 (chapter) | End-to-End Testing & Quality Gates (page=40c3818f-8ba0-8190-ac32-f9660037444a)
+  [UPDATE] PRG-T08-C03-U02 -> PRG-T07-C01-U02 (unit) | Playwright Setup and Browser Contexts (page=40c3818f-8ba0-814d-96ac-f128125b0ba3)
+  [UPDATE] PRG-T08-C03-U03 -> PRG-T07-C01-U03 (unit) | Locators and User Actions (page=40c3818f-8ba0-81fc-accc-f47d46e7fb31)
+  [UPDATE] PRG-T08-C03-U04 -> PRG-T07-C01-U04 (unit) | Assertions and Waiting (page=40c3818f-8ba0-8123-a311-c18072a3268e)
+  [UPDATE] PRG-T08-C03-U05 -> PRG-T07-C01-U05 (unit) | Authentication State and Test Data (page=40c3818f-8ba0-8172-b67b-fd065b8c6883)
+  [UPDATE] PRG-T08-C03-U06 -> PRG-T07-C01-U06 (unit) | Critical User Journey Tests (page=40c3818f-8ba0-81bb-a844-d6e9556ade5d)
+  [UPDATE] PRG-T08-C03-U07 -> PRG-T07-C01-U07 (unit) | CI Quality Gates (page=40c3818f-8ba0-814e-82a8-d15e2f47cd89)
+  [UPDATE] PRG-T09-C01 -> PRG-T08-C01 (chapter) | System Design & Redis Caching (page=40c3818f-8ba0-81b4-9865-eeeae8cf8d37)
+  [UPDATE] PRG-T09-C01-U01 -> PRG-T08-C01-U01 (unit) | System Design Fundamentals (page=40c3818f-8ba0-8145-8bdc-f5338bed37d1)
+  [UPDATE] PRG-T09-C01-U02 -> PRG-T08-C01-U02 (unit) | Identifying Bottlenecks (page=40c3818f-8ba0-81e7-ba4c-ce419b168a93)
+  [UPDATE] PRG-T09-C01-U06 -> PRG-T08-C01-U06 (unit) | Cache Invalidation Strategies (page=40c3818f-8ba0-81cf-8224-d10b7a0f0b5f)
+  [UPDATE] PRG-T09-C01-U07 -> PRG-T08-C01-U07 (unit) | Measuring Cache Effectiveness (page=40c3818f-8ba0-81b0-8c32-c2e5a59181c5)
+  [UPDATE] PRG-T09-C02-U02 -> PRG-T08-C02-U02 (unit) | WebSocket Lifecycle (page=40c3818f-8ba0-81b5-99f3-f585e576b5d7)
+  [UPDATE] PRG-T09-C02-U07 -> PRG-T08-C02-U07 (unit) | Choosing Realtime vs Polling (page=40c3818f-8ba0-8161-a6f5-fe45b8f0fd6d)
+  [UPDATE] PRG-T10 -> PRG-T09 (topic) | Deployment, Docker & Cloud (page=40c3818f-8ba0-8170-8e0e-c74a4451b116)
+  [UPDATE] PRG-T10-C03 -> PRG-T09-C03 (chapter) | Deploy & Final Showcase (page=40c3818f-8ba0-8176-989d-eb3f7b0cfc19)
+  [UPDATE] PRG-T10-C03-U01 -> PRG-T09-C03-U01 (unit) | Choosing a Deployment Target (page=40c3818f-8ba0-81e3-9ee7-c4dad7f02f06)
+  [UPDATE] PRG-T10-C03-U02 -> PRG-T09-C03-U02 (unit) | Production Environment Variables (page=40c3818f-8ba0-81b9-b978-e897959f603a)
+  [UPDATE] PRG-T10-C03-U03 -> PRG-T09-C03-U03 (unit) | Database Provisioning and Migrations (page=40c3818f-8ba0-81bd-8c9a-d9ae9d3bb92f)
+  [UPDATE] PRG-T10-C03-U04 -> PRG-T09-C03-U04 (unit) | Deploying the Application (page=40c3818f-8ba0-816a-97b4-e92ac12f23e6)
+  [UPDATE] PRG-T10-C03-U05 -> PRG-T09-C03-U05 (unit) | Domain and HTTPS Basics (page=40c3818f-8ba0-8182-81bd-c1cc58a5409b)
+  [UPDATE] PRG-T10-C03-U06 -> PRG-T09-C03-U06 (unit) | Production Smoke Testing (page=40c3818f-8ba0-8158-86d9-cf2feeaf7b81)
+  [UPDATE] PRG-T10-C03-U07 -> PRG-T09-C03-U07 (unit) | README, Demo and Retrospective (page=40c3818f-8ba0-8142-a21b-d9104b825949)
+  [UPDATE] PRG-T00-C02-U04 -> PRG-T00-C03-U03 (unit) | Async & DOM Events Check (page=40c3818f-8ba0-81be-b149-da2c35834436)
+  [UPDATE] PRG-T02-C05-U05 -> PRG-T02-C05-U03 (unit) | Image and Asset Optimization (page=40c3818f-8ba0-8179-a816-fc8329da614c)
+  [UPDATE] PRG-T02-C05-U06 -> PRG-T02-C05-U04 (unit) | Performance Measurement & Architecture (page=40c3818f-8ba0-8192-95a1-df61b52b8e48)
+  [UPDATE] PRG-T03-C02-U01 -> PRG-T06-C02-U01 (unit) | Server Components (page=40c3818f-8ba0-813c-859f-c18c218d7dce)
+  [UPDATE] PRG-T03-C02-U02 -> PRG-T06-C02-U02 (unit) | Client Components (page=40c3818f-8ba0-81c4-a21e-e2daa19ba838)
+  [UPDATE] PRG-T04-C02-U07 -> PRG-T03-C02-U07 (unit) | Typed CRUD Endpoints (page=40c3818f-8ba0-817f-bab7-fd336c014999)
+  [UPDATE] PRG-T04-C03 -> PRG-T03-C03 (chapter) | Backend Architecture & API Integration Testing (page=40c3818f-8ba0-813a-94aa-ff0d937472c5)
+  [UPDATE] PRG-T04-C03-U01 -> PRG-T03-C03-U01 (unit) | Routes, Controllers and Services (page=40c3818f-8ba0-812b-b12a-cf5d76b95c3c)
+  [UPDATE] PRG-T04-C03-U02 -> PRG-T03-C03-U02 (unit) | Data Access Layer (page=40c3818f-8ba0-8174-ae4a-df6ad4dfc818)
+  [UPDATE] PRG-T04-C03-U03 -> PRG-T03-C03-U03 (unit) | Pagination, Sorting and Filtering (page=40c3818f-8ba0-8188-a15c-dc8e86909911)
+  [UPDATE] PRG-T04-C03-U04 -> PRG-T03-C03-U04 (unit) | Consistent API Contracts & Documentation (page=40c3818f-8ba0-81b2-b273-f7d4111bc21f)
+  [UPDATE] PRG-T04-C03-U05 -> PRG-T03-C03-U05 (unit) | Environment Configuration & Secrets Hygiene (page=40c3818f-8ba0-8197-885d-d3c91e0382d6)
+  [UPDATE] PRG-T05-C03-U07 -> PRG-T04-C03-U07 (unit) | Seeding, Data Access & DevVault DB (page=40c3818f-8ba0-811b-95f9-ca554a70757a)
+  [UPDATE] PRG-T07-C01-U01 -> PRG-T07-C02-U01 (unit) | Domain Spec & Architecture Freeze (page=40c3818f-8ba0-814b-9818-c02477717047)
+  [UPDATE] PRG-T08-C01-U04 -> PRG-T03-C03-U07 (unit) | Service & API Integration Tests + DevVault API (page=40c3818f-8ba0-812a-b73d-e8ca6afb1f56)
+  [UPDATE] PRG-T09-C01-U03 -> PRG-T08-C01-U03 (unit) | Caching Concepts and Tradeoffs (page=40c3818f-8ba0-81d3-a152-ce5963a5a0db)
+  [UPDATE] PRG-T09-C01-U05 -> PRG-T08-C01-U05 (unit) | Cache Keys and Expiration (page=40c3818f-8ba0-818d-a8a0-da033edc68ee)
+  [UPDATE] PRG-T09-C02 -> PRG-T08-C02 (chapter) | Realtime & Background Work (page=40c3818f-8ba0-81d0-ad3b-e528200b205f)
+  [UPDATE] PRG-T09-C02-U01 -> PRG-T08-C02-U01 (unit) | Realtime Communication Concepts (page=40c3818f-8ba0-8175-a680-c4c8844291e6)
+  [UPDATE] PRG-T09-C02-U03 -> PRG-T08-C02-U03 (unit) | Events and Message Design (page=40c3818f-8ba0-8113-b541-d56af080b26d)
+  [UPDATE] PRG-T09-C02-U04 -> PRG-T08-C02-U04 (unit) | Realtime UI Synchronization (page=40c3818f-8ba0-8171-b67d-f95905ada87e)
+  [UPDATE] PRG-T09-C02-U05 -> PRG-T08-C02-U05 (unit) | Background Job Concepts (page=40c3818f-8ba0-81d1-a156-fdae173e5d7e)
+  [UPDATE] PRG-T09-C02-U06 -> PRG-T08-C02-U06 (unit) | Retries and Idempotency (page=40c3818f-8ba0-8144-9550-ee96501eb399)
+  [UPDATE] PRG-T10-C01 -> PRG-T09-C01 (chapter) | Production Readiness & Docker (page=40c3818f-8ba0-811d-a34a-df1f9a4c2bb2)
+  [UPDATE] PRG-T10-C01-U01 -> PRG-T09-C01-U01 (unit) | Production Environment Configuration (page=40c3818f-8ba0-816e-ab06-cf9bf3db8c4e)
+  [UPDATE] PRG-T10-C01-U02 -> PRG-T09-C01-U02 (unit) | Docker Images and Containers (page=40c3818f-8ba0-81b1-8051-d5b0051ae67f)
+  [UPDATE] PRG-T10-C01-U06 -> PRG-T09-C01-U06 (unit) | Container Logs and Debugging (page=40c3818f-8ba0-81fe-a957-e4c771293618)
+  [UPDATE] PRG-T10-C01-U07 -> PRG-T09-C01-U07 (unit) | Local Production-like Workflow (page=40c3818f-8ba0-81c8-8246-c2906d84115d)
+  [UPDATE] PRG-T10-C02-U02 -> PRG-T09-C02-U02 (unit) | GitHub Actions Workflow Syntax (page=40c3818f-8ba0-8199-b743-f7532fcebc88)
+  [UPDATE] PRG-T10-C02-U07 -> PRG-T09-C02-U07 (unit) | Rollback and Release Checklist (page=40c3818f-8ba0-8174-badb-e213120fb4ef)
+  [UPDATE] PRG-T00-C03-U04 -> PRG-T00-C02-U04 (unit) | Branches, Commits and Merge (page=40c3818f-8ba0-81b6-a57f-c35d0814b47b)
+  [UPDATE] PRG-T04-C02-U01 -> PRG-T03-C02-U01 (unit) | Express 5 Application Setup (page=40c3818f-8ba0-81f6-8132-d15026617104)
+  [UPDATE] PRG-T04-C02-U02 -> PRG-T03-C02-U02 (unit) | Routing and Route Parameters (page=40c3818f-8ba0-81c8-9ae4-e89231283962)
+  [UPDATE] PRG-T05-C02-U06 -> PRG-T04-C02-U07 (unit) | Isolation, Concurrency & Optimization (page=40c3818f-8ba0-81f5-92a7-c341b41b64f9)
+  [UPDATE] PRG-T05-C03 -> PRG-T04-C03 (chapter) | Prisma, Migrations & Data Access (page=40c3818f-8ba0-8174-b7b7-dff57f8bcfcc)
+  [UPDATE] PRG-T05-C03-U01 -> PRG-T04-C03-U01 (unit) | Prisma Schema and Models (page=40c3818f-8ba0-81a0-8c17-f214476c2223)
+  [UPDATE] PRG-T05-C03-U02 -> PRG-T04-C03-U02 (unit) | Prisma Relations (page=40c3818f-8ba0-81f7-aa3f-d6670b0b521d)
+  [UPDATE] PRG-T05-C03-U03 -> PRG-T04-C03-U03 (unit) | Migrations and Schema Changes (page=40c3818f-8ba0-8147-879b-d31a1a8b9705)
+  [UPDATE] PRG-T05-C03-U04 -> PRG-T04-C03-U04 (unit) | CRUD Queries (page=40c3818f-8ba0-81e3-bb60-d9016b1a208e)
+  [UPDATE] PRG-T05-C03-U05 -> PRG-T04-C03-U05 (unit) | Nested Reads and Writes (page=40c3818f-8ba0-8163-a8ee-c899e63e3d8c)
+  [UPDATE] PRG-T08-C03-U01 -> PRG-T07-C01-U01 (unit) | End-to-end Testing Concepts (page=40c3818f-8ba0-81ba-ab9d-d961861911b5)
+  [UPDATE] PRG-T09-C01-U04 -> PRG-T08-C01-U04 (unit) | Redis Data Structures (page=40c3818f-8ba0-8162-ab8e-e6709fd59477)
+  [UPDATE] PRG-T10-C01-U03 -> PRG-T09-C01-U03 (unit) | Dockerfile Fundamentals (page=40c3818f-8ba0-81b5-a646-c5fe33f72760)
+  [UPDATE] PRG-T10-C01-U05 -> PRG-T09-C01-U05 (unit) | Docker Compose v2 for App and Database (page=40c3818f-8ba0-8132-a858-d72134400400)
+  [UPDATE] PRG-T10-C02 -> PRG-T09-C02 (chapter) | CI/CD, Monitoring & Operations (page=40c3818f-8ba0-815a-80a6-da886b00ec02)
+  [UPDATE] PRG-T10-C02-U01 -> PRG-T09-C02-U01 (unit) | CI Pipeline Fundamentals (page=40c3818f-8ba0-811d-9284-e991cf11f85f)
+  [UPDATE] PRG-T10-C02-U03 -> PRG-T09-C02-U03 (unit) | Automated Tests and Build Checks (page=40c3818f-8ba0-81c8-8340-e212b969a382)
+  [UPDATE] PRG-T10-C02-U04 -> PRG-T09-C02-U04 (unit) | Deployment Workflow (page=40c3818f-8ba0-81fd-a177-f5152d464edb)
+  [UPDATE] PRG-T10-C02-U05 -> PRG-T09-C02-U05 (unit) | Application Logs and Monitoring (page=40c3818f-8ba0-815c-a944-e08b18cd3699)
+  [UPDATE] PRG-T10-C02-U06 -> PRG-T09-C02-U06 (unit) | Database Backup Basics (page=40c3818f-8ba0-81d3-ae6f-c4752e84b653)
+  [UPDATE] PRG-T00-C02-U06 -> PRG-T00-C03-U04 (unit) | TypeScript & Debugging Baseline (page=40c3818f-8ba0-81f1-acb1-d49d8cb69e43)
+  [UPDATE] PRG-T05-C01-U05 -> PRG-T04-C02-U01 (unit) | Filtering, Sorting and Aggregation (page=40c3818f-8ba0-81ea-89a1-dfbbc407b9ee)
+  [UPDATE] PRG-T05-C01-U06 -> PRG-T04-C02-U02 (unit) | `INNER` and `OUTER JOIN`s (page=40c3818f-8ba0-81b9-8804-e5b2d37e18e2)
+  [UPDATE] PRG-T06-C02-U06 -> PRG-T05-C02-U06 (unit) | CORS Configuration (page=40c3818f-8ba0-81f3-8dbb-e2ff1d7e5b76)
+  [UPDATE] PRG-T10-C01-U04 -> PRG-T09-C01-U04 (unit) | Volumes and Networking (page=40c3818f-8ba0-8102-8fa7-c7259f207662)
+  [UPDATE] PRG-T00-C03-U06 -> PRG-T00-C02-U06 (unit) | README and Issue Tracking (page=40c3818f-8ba0-8195-941a-ce11e6ddfe98)
+  [UPDATE] PRG-T03-C02-U06 -> PRG-T06-C02-U06 (unit) | Caching and Revalidation (Next.js 15+) (page=40c3818f-8ba0-819f-87ee-c43c1a8e1ea0)
+  [UPDATE] PRG-T06-C01-U05 -> PRG-T05-C01-U05 (unit) | JWT and Token Concepts (page=40c3818f-8ba0-8183-8d22-e94f8bf16b28)
+  [UPDATE] PRG-T06-C01-U06 -> PRG-T05-C01-U06 (unit) | OAuth 2.0 / OIDC Flow Concepts (page=40c3818f-8ba0-810c-ab35-e3bed6aa0358)
+  [UPDATE] PRG-T03-C01-U05 -> PRG-T06-C01-U05 (unit) | Dynamic Routes and Route Parameters (page=40c3818f-8ba0-81d3-aa9a-ff4ded4f7523)
+  [UPDATE] PRG-T03-C01-U06 -> PRG-T06-C01-U06 (unit) | Metadata and Navigation (page=40c3818f-8ba0-81a1-9214-d7bae0047705)
+  [UPDATE] PRG-T04-C02-U06 -> PRG-T03-C02-U06 (unit) | Structured Logging (page=40c3818f-8ba0-814d-955f-daccd60e081c)
+  [UPDATE] PRG-T04-C01-U05 -> PRG-T03-C01-U05 (unit) | REST Resource Design (page=40c3818f-8ba0-8194-bc82-ec834dae401f)
+  [UPDATE] PRG-T04-C01-U06 -> PRG-T03-C01-U06 (unit) | API Response and Error Conventions (page=40c3818f-8ba0-8160-83c2-fa8d7a9ac412)
+  [UPDATE] PRG-T05-C02-U05 -> PRG-T04-C02-U06 (unit) | Transactions and ACID (page=40c3818f-8ba0-818a-b5f7-fda673f35e59)
+  [UPDATE] PRG-T05-C01-U07 -> PRG-T04-C01-U05 (unit) | ERD Design and Schema Creation (page=40c3818f-8ba0-81b1-80f6-d9c521bf9b1d)
+  [UPDATE] PRG-T06-C02-U05 -> PRG-T05-C02-U05 (unit) | SQL Injection and Parameterization (page=40c3818f-8ba0-81f4-afa8-d6789bbbb6c1)
+  [UPDATE] PRG-T03-C02-U05 -> PRG-T06-C02-U05 (unit) | Passing Data Across Component Boundaries (page=40c3818f-8ba0-8121-9400-d410adc9ca4d)
+  [UPDATE] PRG-T06-C01-U07 -> PRG-T05-C01-U07 (unit) | Implementing Auth with a Trusted Library (page=40c3818f-8ba0-810e-a590-d418f0a0d636)
+  [UPDATE] PRG-T03-C01-U07 -> PRG-T06-C01-U07 (unit) | Static and Dynamic Rendering (page=40c3818f-8ba0-81ed-a27e-efd15712825e)
+  [UPDATE] PRG-T04-C02-U05 -> PRG-T03-C02-U05 (unit) | Centralized & Async Error Handling (Express 5) (page=40c3818f-8ba0-815f-9143-e471a8f79c9c)
+  [UPDATE] PRG-T04-C01-U07 -> PRG-T03-C01-U07 (unit) | Async I/O and Stream Error Handling (page=40c3818f-8ba0-81da-b476-f557c39a6faf)
+  [TMP]    PRG-T00-C02 -> TMP-PRG-T00-C02 (page=40c3818f-8ba0-81da-86c7-e93a0f2a0be5)
+  [UPDATE] PRG-T00-C03 -> PRG-T00-C02 (chapter) | Developer Workflow & Git (page=40c3818f-8ba0-81c0-9000-c0cd4e84dfa0)
+  [UPDATE] PRG-T00-C02 -> PRG-T00-C03 (chapter) | JavaScript & TypeScript Baseline Check (page=40c3818f-8ba0-81da-86c7-e93a0f2a0be5)
+  [TMP]    PRG-T00-C02-U01 -> TMP-PRG-T00-C02-U01 (page=40c3818f-8ba0-8152-bdf0-d6ad997e2fc9)
+  [UPDATE] PRG-T00-C03-U01 -> PRG-T00-C02-U01 (unit) | Terminal and Project Structure (page=40c3818f-8ba0-816e-922f-ff8d75d0ef98)
+  [UPDATE] PRG-T00-C02-U01 -> PRG-T00-C03-U01 (unit) | Variables, Types & Control Flow Check (page=40c3818f-8ba0-8152-bdf0-d6ad997e2fc9)
+  [TMP]    PRG-T00-C02-U02 -> TMP-PRG-T00-C02-U02 (page=40c3818f-8ba0-81c0-b879-ed366c2549c9)
+  [UPDATE] PRG-T00-C03-U02 -> PRG-T00-C02-U02 (unit) | npm and Package Scripts (page=40c3818f-8ba0-818f-b5ee-d4dd4060d68d)
+  [UPDATE] PRG-T00-C02-U02 -> PRG-T00-C03-U02 (unit) | Functions, Arrays & Objects Check (page=40c3818f-8ba0-81c0-b879-ed366c2549c9)
+  [TMP]    PRG-T02-C01-U04 -> TMP-PRG-T02-C01-U04 (page=40c3818f-8ba0-8133-a51c-e3b1adbac3a2)
+  [UPDATE] PRG-T02-C01-U05 -> PRG-T02-C01-U04 (unit) | State Updates and Immutability (page=40c3818f-8ba0-816b-ab00-f3f475c10629)
+  [UPDATE] PRG-T02-C01-U06 -> PRG-T02-C01-U05 (unit) | Effects and Synchronization (page=40c3818f-8ba0-81e5-b941-fd3c224037eb)
+  [UPDATE] PRG-T02-C01-U07 -> PRG-T02-C01-U06 (unit) | Refs and DOM Access (page=40c3818f-8ba0-8152-b238-d0f22e7f0b96)
+  [UPDATE] PRG-T02-C01-U08 -> PRG-T02-C01-U07 (unit) | Custom Hooks (page=40c3818f-8ba0-8136-9de1-f2b663671711)
+  [UPDATE] PRG-T02-C01-U04 -> PRG-T02-C01-U08 (unit) | Rendering, Re-renders & Component Boundaries (page=40c3818f-8ba0-8133-a51c-e3b1adbac3a2)
+  [TMP]    PRG-T03 -> TMP-PRG-T03 (page=40c3818f-8ba0-81b8-ae61-f1b25d49b2a9)
+  [UPDATE] PRG-T04 -> PRG-T03 (topic) | Backend Engineering: Node.js, HTTP & Express 5 (page=40c3818f-8ba0-81b5-aafc-ff3d6992fdc1)
+  [UPDATE] PRG-T05 -> PRG-T04 (topic) | Database Engineering: PostgreSQL, pg & Prisma (page=40c3818f-8ba0-812d-b6f5-d8bb573f5d06)
+  [UPDATE] PRG-T06 -> PRG-T05 (topic) | Authentication, Authorization & Web Security (page=40c3818f-8ba0-8140-be72-d8df15534069)
+  [UPDATE] PRG-T03 -> PRG-T06 (topic) | Next.js & Full-Stack React (page=40c3818f-8ba0-81b8-ae61-f1b25d49b2a9)
+  [TMP]    PRG-T03-C01 -> TMP-PRG-T03-C01 (page=40c3818f-8ba0-81c8-aa08-c35bef86ce68)
+  [UPDATE] PRG-T04-C01 -> PRG-T03-C01 (chapter) | Node Runtime, Raw HTTP & API Design (page=40c3818f-8ba0-8117-9696-d45f43a58b54)
+  [UPDATE] PRG-T05-C01 -> PRG-T04-C01 (chapter) | Relational Modeling & SQL Foundations (page=40c3818f-8ba0-8108-9bb5-dedf9939113d)
+  [UPDATE] PRG-T06-C01 -> PRG-T05-C01 (chapter) | Authentication & Session Management (page=40c3818f-8ba0-818f-b7ca-dafda362a611)
+  [UPDATE] PRG-T03-C01 -> PRG-T06-C01 (chapter) | Next.js App Router Foundations (page=40c3818f-8ba0-81c8-aa08-c35bef86ce68)
+  [TMP]    PRG-T03-C01-U01 -> TMP-PRG-T03-C01-U01 (page=40c3818f-8ba0-819b-b1e6-e9c330c0b73f)
+  [UPDATE] PRG-T04-C01-U01 -> PRG-T03-C01-U01 (unit) | Node.js Runtime and Event Loop (page=40c3818f-8ba0-8199-9e11-d613240a07d1)
+  [UPDATE] PRG-T05-C01-U01 -> PRG-T04-C01-U01 (unit) | Relational Database Concepts (page=40c3818f-8ba0-814f-b643-f7e8af1bb6d0)
+  [UPDATE] PRG-T06-C01-U01 -> PRG-T05-C01-U01 (unit) | Authentication vs Authorization (page=40c3818f-8ba0-8148-9da9-ffdf65011351)
+  [UPDATE] PRG-T03-C01-U01 -> PRG-T06-C01-U01 (unit) | Next.js Project Structure (page=40c3818f-8ba0-819b-b1e6-e9c330c0b73f)
+  [TMP]    PRG-T03-C01-U02 -> TMP-PRG-T03-C01-U02 (page=40c3818f-8ba0-8184-b671-da4a8de22b78)
+  [UPDATE] PRG-T04-C01-U02 -> PRG-T03-C01-U02 (unit) | Node Modules and Process Env (page=40c3818f-8ba0-8140-9516-ff2983e143d3)
+  [UPDATE] PRG-T05-C01-U02 -> PRG-T04-C01-U02 (unit) | Entities, Attributes and Relationships (page=40c3818f-8ba0-8118-a1c6-d5f676d2e6a1)
+  [UPDATE] PRG-T06-C01-U02 -> PRG-T05-C01-U02 (unit) | Password Storage and Hashing (OWASP) (page=40c3818f-8ba0-8183-9807-d4756d92b3df)
+  [UPDATE] PRG-T03-C01-U02 -> PRG-T06-C01-U02 (unit) | App Router and File-system Routing (page=40c3818f-8ba0-8184-b671-da4a8de22b78)
+  [TMP]    PRG-T03-C01-U03 -> TMP-PRG-T03-C01-U03 (page=40c3818f-8ba0-81f8-a922-ef71fab2c820)
+  [UPDATE] PRG-T04-C01-U03 -> PRG-T03-C01-U03 (unit) | Raw HTTP Server with `node:http` (page=40c3818f-8ba0-814c-b6b3-d76ac21bba70)
+  [UPDATE] PRG-T05-C01-U03 -> PRG-T04-C01-U03 (unit) | Primary and Foreign Keys (page=40c3818f-8ba0-816e-89ac-c0e0d2fb8271)
+  [UPDATE] PRG-T06-C01-U03 -> PRG-T05-C01-U03 (unit) | Sessions and Cookies (page=40c3818f-8ba0-811f-a83d-ced91a34b538)
+  [UPDATE] PRG-T03-C01-U03 -> PRG-T06-C01-U03 (unit) | Layouts and Nested Routes (page=40c3818f-8ba0-81f8-a922-ef71fab2c820)
+  [TMP]    PRG-T03-C01-U04 -> TMP-PRG-T03-C01-U04 (page=40c3818f-8ba0-81ad-8ca8-deb82aa8f640)
+  [UPDATE] PRG-T04-C01-U04 -> PRG-T03-C01-U04 (unit) | Methods, Status Codes and Headers (page=40c3818f-8ba0-8161-8f2d-e3af92f7285a)
+  [UPDATE] PRG-T05-C01-U04 -> PRG-T04-C01-U04 (unit) | Normalization and Constraints (page=40c3818f-8ba0-815d-ba1c-d8addb459ceb)
+  [UPDATE] PRG-T06-C01-U04 -> PRG-T05-C01-U04 (unit) | Secure Cookie Attributes (page=40c3818f-8ba0-8180-baec-f54a4e3cc246)
+  [UPDATE] PRG-T03-C01-U04 -> PRG-T06-C01-U04 (unit) | Loading and Error UI (page=40c3818f-8ba0-81ad-8ca8-deb82aa8f640)
+  [TMP]    PRG-T03-C02 -> TMP-PRG-T03-C02 (page=40c3818f-8ba0-819a-a5bb-df68c2506c2c)
+  [UPDATE] PRG-T04-C02 -> PRG-T03-C02 (chapter) | Express 5, Middleware & Validation (page=40c3818f-8ba0-813f-8cfb-d082d67f8faa)
+  [UPDATE] PRG-T05-C02 -> PRG-T04-C02 (chapter) | PostgreSQL Queries, `pg` Driver & Transactions (page=40c3818f-8ba0-8196-bd4d-c429079f5a65)
+  [UPDATE] PRG-T06-C02 -> PRG-T05-C02 (chapter) | Authorization, Rate Limiting & Web Security (page=40c3818f-8ba0-814c-828a-e24e76a0f106)
+  [UPDATE] PRG-T03-C02 -> PRG-T06-C02 (chapter) | Server/Client Components & Data Flow (page=40c3818f-8ba0-819a-a5bb-df68c2506c2c)
+  [TMP]    PRG-T03-C02-U03 -> TMP-PRG-T03-C02-U03 (page=40c3818f-8ba0-819a-bf43-d7cbf2f9c208)
+  [UPDATE] PRG-T04-C02-U03 -> PRG-T03-C02-U03 (unit) | Middleware and Request Lifecycle (page=40c3818f-8ba0-8157-848a-d4209f0bfe73)
+  [UPDATE] PRG-T05-C02-U03 -> PRG-T04-C02-U03 (unit) | Subqueries and CTEs (page=40c3818f-8ba0-81c7-8916-ee98f7254711)
+  [UPDATE] PRG-T06-C02-U03 -> PRG-T05-C02-U03 (unit) | XSS and Output Safety (page=40c3818f-8ba0-81c4-98d4-f41a17bb296e)
+  [UPDATE] PRG-T03-C02-U03 -> PRG-T06-C02-U03 (unit) | Server/Client Boundary Design (page=40c3818f-8ba0-819a-bf43-d7cbf2f9c208)
+  [TMP]    PRG-T03-C02-U04 -> TMP-PRG-T03-C02-U04 (page=40c3818f-8ba0-81a8-9abf-f39836e9c206)
+  [UPDATE] PRG-T04-C02-U04 -> PRG-T03-C02-U04 (unit) | Request Validation (page=40c3818f-8ba0-8172-b04a-d5b7e5298375)
+  [UPDATE] PRG-T05-C02-U04 -> PRG-T04-C02-U04 (unit) | Indexes and Query Plans (page=40c3818f-8ba0-816c-b1b4-d4690010bb90)
+  [UPDATE] PRG-T06-C02-U04 -> PRG-T05-C02-U04 (unit) | CSRF, `SameSite` & Origin Checks (page=40c3818f-8ba0-8188-8ce8-ccf903734382)
+  [UPDATE] PRG-T03-C02-U04 -> PRG-T06-C02-U04 (unit) | Data Fetching on the Server (page=40c3818f-8ba0-81a8-9abf-f39836e9c206)
+  [UPDATE] PRG-T00 -> PRG-T00 (topic) | Foundation Audit & Developer Workflow (page=40c3818f-8ba0-8127-ab0d-e2c2df1f9e43)
+  [UPDATE] PRG-T01 -> PRG-T01 (topic) | JavaScript, TypeScript, Data Structures & Unit Testing (page=40c3818f-8ba0-8188-b07f-ddf7342b6108)
+  [UPDATE] PRG-T02 -> PRG-T02 (topic) | Frontend Engineering with React & Component Testing (page=40c3818f-8ba0-81e5-870b-dd99ca3d7318)
+  [UPDATE] PRG-T07 -> PRG-T07 (topic) | E2E Testing & DevVault Capstone Track (page=40c3818f-8ba0-8153-acf4-d92fc4218963)
+  [UPDATE] PRG-T09 -> PRG-T08 (topic) | System Design, Redis & Realtime (page=40c3818f-8ba0-8132-9a78-e5c22364add6)
+  [UPDATE] PRG-T00-C01-U01 -> PRG-T00-C01-U01 (unit) | How the Web Works (page=40c3818f-8ba0-813a-b89c-eb7e63ceda61)
+  [UPDATE] PRG-T00-C01-U02 -> PRG-T00-C01-U02 (unit) | Semantic HTML (page=40c3818f-8ba0-8160-9434-f64db443ba46)
+  [UPDATE] PRG-T00-C01-U03 -> PRG-T00-C01-U03 (unit) | CSS Fundamentals (page=40c3818f-8ba0-814a-9e74-ee202369f10f)
+  [UPDATE] PRG-T00-C01-U04 -> PRG-T00-C01-U04 (unit) | Box Model and Layout (page=40c3818f-8ba0-818c-abaa-cd52ecdb0e7d)
+  [UPDATE] PRG-T00-C01-U05 -> PRG-T00-C01-U05 (unit) | Flexbox and Grid (page=40c3818f-8ba0-8117-8823-d48dc44e1ccd)
+  [UPDATE] PRG-T00-C01-U06 -> PRG-T00-C01-U06 (unit) | Responsive Design (page=40c3818f-8ba0-81f4-a18b-e6e2002f54dd)
+  [UPDATE] PRG-T00-C01-U07 -> PRG-T00-C01-U07 (unit) | Accessibility and Keyboard Navigation (page=40c3818f-8ba0-8107-9f71-fe97ee7cea80)
+  [UPDATE] PRG-T00-C01-U08 -> PRG-T00-C01-U08 (unit) | Browser DevTools (page=40c3818f-8ba0-811a-b96e-f8b97df1ee7f)
+  [UPDATE] PRG-T01-C01 -> PRG-T01-C01 (chapter) | JavaScript Execution & Async Internals (page=40c3818f-8ba0-8122-af62-ef0327e2a3c7)
+  [UPDATE] PRG-T01-C01-U01 -> PRG-T01-C01-U01 (unit) | Execution Context and Scope (page=40c3818f-8ba0-812a-9682-fe371831ae8d)
+  [UPDATE] PRG-T01-C01-U02 -> PRG-T01-C01-U02 (unit) | Closures (page=40c3818f-8ba0-81c0-a5cd-d4a29317c857)
+  [UPDATE] PRG-T01-C01-U03 -> PRG-T01-C01-U03 (unit) | `this` and Binding (page=40c3818f-8ba0-814e-ade8-cbbd741d35fc)
+  [UPDATE] PRG-T01-C01-U04 -> PRG-T01-C01-U04 (unit) | Prototypes and Inheritance (page=40c3818f-8ba0-811e-9382-f58d2f22e051)
+  [UPDATE] PRG-T01-C01-U05 -> PRG-T01-C01-U05 (unit) | Modules and Module Systems (page=40c3818f-8ba0-81fb-ac4c-e1c82d55af47)
+  [UPDATE] PRG-T01-C01-U06 -> PRG-T01-C01-U06 (unit) | Promises and Async/Await (page=40c3818f-8ba0-81d5-a9d4-c5543a215167)
+  [UPDATE] PRG-T01-C01-U07 -> PRG-T01-C01-U07 (unit) | Event Loop and Microtasks (page=40c3818f-8ba0-8138-b450-e408257b9e0e)
+  [UPDATE] PRG-T01-C01-U08 -> PRG-T01-C01-U08 (unit) | Error Handling Patterns (page=40c3818f-8ba0-8112-a3f7-c75044721219)
+  [UPDATE] PRG-T01-C02-U01 -> PRG-T01-C02-U01 (unit) | Type Annotations and Inference (page=40c3818f-8ba0-815f-9d44-df21f67cdf3e)
+  [UPDATE] PRG-T01-C02-U02 -> PRG-T01-C02-U02 (unit) | Primitive, Literal and Object Types (page=40c3818f-8ba0-8126-8265-cc4b0a9a3017)
+  [UPDATE] PRG-T01-C02-U03 -> PRG-T01-C02-U03 (unit) | Union Types (page=40c3818f-8ba0-81ad-9b14-f29f8543aaac)
+  [UPDATE] PRG-T01-C02-U04 -> PRG-T01-C02-U04 (unit) | Type Narrowing and Guards (page=40c3818f-8ba0-81fa-8d5c-de102b5aafed)
+  [UPDATE] PRG-T01-C02-U05 -> PRG-T01-C02-U05 (unit) | Generics (page=40c3818f-8ba0-812f-a580-c3094409e004)
+  [UPDATE] PRG-T01-C02-U06 -> PRG-T01-C02-U06 (unit) | Utility Types (page=40c3818f-8ba0-81a7-bdc0-fee9d24595a5)
+  [UPDATE] PRG-T01-C02-U07 -> PRG-T01-C02-U07 (unit) | Discriminated Unions (page=40c3818f-8ba0-812d-b809-ca2f025a3f58)
+  [UPDATE] PRG-T01-C02-U08 -> PRG-T01-C02-U08 (unit) | Strict Mode and `tsconfig` (page=40c3818f-8ba0-8129-abe5-f217d632f6ee)
+  [UPDATE] PRG-T01-C02-U09 -> PRG-T01-C02-U09 (unit) | Typing Functions and API Responses (page=40c3818f-8ba0-81b1-ae76-f49460b5c7ea)
+  [UPDATE] PRG-T01-C03-U04 -> PRG-T01-C03-U04 (unit) | `Map`, `Set` & Hashing Patterns (page=40c3818f-8ba0-8193-bdee-e1c3641027f0)
+  [UPDATE] PRG-T02-C01-U01 -> PRG-T02-C01-U01 (unit) | JSX and Component Basics (page=40c3818f-8ba0-81c4-9aa8-e69a51418f73)
+  [UPDATE] PRG-T02-C01-U02 -> PRG-T02-C01-U02 (unit) | Props and Component Composition (page=40c3818f-8ba0-8170-a28d-ccc3c9f30b90)
+  [UPDATE] PRG-T02-C01-U03 -> PRG-T02-C01-U03 (unit) | State and Event Handling (page=40c3818f-8ba0-81dc-ae1f-d8fff86d48db)
+  [UPDATE] PRG-T02-C02-U01 -> PRG-T02-C02-U01 (unit) | Local State vs Server State (page=40c3818f-8ba0-8117-9e22-cdab0e89c53e)
+  [UPDATE] PRG-T02-C02-U02 -> PRG-T02-C02-U02 (unit) | Fetching Data and Async UI States (page=40c3818f-8ba0-812a-8e46-d00f096e8d51)
+  [UPDATE] PRG-T02-C02-U03 -> PRG-T02-C02-U03 (unit) | Caching and Query Keys (page=40c3818f-8ba0-8108-bc52-c8c21fe1e6b3)
+  [UPDATE] PRG-T02-C02-U04 -> PRG-T02-C02-U04 (unit) | Refetching and Cache Invalidation (page=40c3818f-8ba0-8142-b40e-e272d3fe783d)
+  [UPDATE] PRG-T02-C02-U05 -> PRG-T02-C02-U05 (unit) | Mutations and Optimistic Updates (page=40c3818f-8ba0-8188-893f-ebe6fdd7248e)
+  [UPDATE] PRG-T02-C02-U06 -> PRG-T02-C02-U06 (unit) | Pagination and Filtering (page=40c3818f-8ba0-8140-8089-c0d1b62eb947)
+  [UPDATE] PRG-T02-C02-U07 -> PRG-T02-C02-U07 (unit) | Error and Retry Strategies (page=40c3818f-8ba0-810b-8b62-df312b3fc077)
+  [UPDATE] PRG-T02-C03-U01 -> PRG-T02-C03-U01 (unit) | Controlled and Uncontrolled Inputs (page=40c3818f-8ba0-8178-88c6-f72c4388fc18)
+  [UPDATE] PRG-T02-C03-U02 -> PRG-T02-C03-U02 (unit) | Form State and Submission (page=40c3818f-8ba0-8189-8bd8-fea6c214e818)
+  [UPDATE] PRG-T02-C03-U03 -> PRG-T02-C03-U03 (unit) | Schema Validation with Zod (page=40c3818f-8ba0-81e1-b587-f9d685811ab9)
+  [UPDATE] PRG-T02-C03-U04 -> PRG-T02-C03-U04 (unit) | Field-level and Form-level Errors (page=40c3818f-8ba0-81e6-afd0-f5fc185d539c)
+  [UPDATE] PRG-T02-C03-U05 -> PRG-T02-C03-U05 (unit) | React Hook Form Fundamentals (page=40c3818f-8ba0-812a-8c77-cd095707b203)
+  [UPDATE] PRG-T02-C03-U06 -> PRG-T02-C03-U06 (unit) | Async Validation (page=40c3818f-8ba0-8175-9f84-c0c92e3753ef)
+  [UPDATE] PRG-T02-C03-U07 -> PRG-T02-C03-U07 (unit) | Accessible Form UX (page=40c3818f-8ba0-8178-89b0-d80288fdc0f4)
+  [UPDATE] PRG-T02-C04-U01 -> PRG-T02-C04-U01 (unit) | Design Tokens and Visual Consistency (page=40c3818f-8ba0-81d8-9ab5-ca08a56b8649)
+  [UPDATE] PRG-T02-C04-U02 -> PRG-T02-C04-U02 (unit) | Tailwind Fundamentals (page=40c3818f-8ba0-814c-bc48-f99588257f97)
+  [UPDATE] PRG-T02-C04-U03 -> PRG-T02-C04-U03 (unit) | Responsive Layout Patterns (page=40c3818f-8ba0-815b-8c18-f95218e86750)
+  [UPDATE] PRG-T02-C04-U04 -> PRG-T02-C04-U04 (unit) | Component Variants and States (page=40c3818f-8ba0-8132-9dd7-c85ed293ecd8)
+  [UPDATE] PRG-T02-C04-U05 -> PRG-T02-C04-U05 (unit) | Keyboard and Focus Management (page=40c3818f-8ba0-8174-806d-c1b772f52504)
+  [UPDATE] PRG-T02-C04-U06 -> PRG-T02-C04-U06 (unit) | Semantic HTML & ARIA (page=40c3818f-8ba0-817f-8ddc-cc91ec7792d2)
+  [UPDATE] PRG-T02-C04-U07 -> PRG-T02-C04-U07 (unit) | Dark Mode and Theming (page=40c3818f-8ba0-817e-b23c-f32c6de64bb4)
+  [UPDATE] PRG-T02-C05 -> PRG-T02-C05 (chapter) | Frontend Performance (page=40c3818f-8ba0-810b-9837-d38c587078cc)
+  [UPDATE] PRG-T07-C02 -> PRG-T07-C02 (chapter) | DevVault Capstone Integration & Polish (page=40c3818f-8ba0-811f-9f4f-c72f2b64b8ee)
+  [CREATE] PRG-T01-C01-U09 (unit) | AbortController & Cancellation
+  [CREATE] PRG-T01-C03 (chapter) | Recursion, Complexity & Core Data Structures
+  [CREATE] PRG-T01-C03-U01 (unit) | Big-O Intuition & Time/Space Tradeoffs
+  [CREATE] PRG-T01-C03-U02 (unit) | Recursion & Call-Stack Tracing
+  [CREATE] PRG-T01-C03-U03 (unit) | Arrays, Stacks & Queues
+  [CREATE] PRG-T01-C03-U05 (unit) | Linked Lists & Pointer Manipulation
+  [CREATE] PRG-T01-C03-U06 (unit) | Trees & Tree Traversals (DFS / BFS)
+  [CREATE] PRG-T01-C03-U07 (unit) | Graphs & Shortest-Path Basics
+  [CREATE] PRG-T04-C02-U05 (unit) | Raw `pg`, Pooling & Parameterized Queries
+  [CREATE] PRG-T05-C02-U07 (unit) | Security Headers (CSP, HSTS, Nosniff)
+  [CREATE] PRG-T05-C02-U08 (unit) | Rate Limiting & Brute-Force Protection
+  [DRILL]  DRL-PRG-T00-C02-02 -> DRL-PRG-T00-C03-02 (drills/data/PRG-T00-C03/DRL-PRG-T00-C03-02.json)
+
+--- Planned Local Operations ---
+  [MOVE]   code_engine/reasoning_vault/PRG-T00-C02.json -> code_engine/reasoning_vault/PRG-T00-C03.json
+  [MOVE]   code_engine/reasoning_vault/PRG-T01-C03.json -> code_engine/reasoning_vault/PRG-T01-C04.json
+  [MOVE]   drills/data/PRG-T00-C02/DRL-PRG-T00-C02-02.json -> drills/data/PRG-T00-C03/DRL-PRG-T00-C03-02.json
+  [MOVE]   progress/DRL-PRG-T00-C02-02.json -> progress/DRL-PRG-T00-C03-02.json
+  [MOVE]   drills/workspace/DRL-PRG-T00-C02-02 -> drills/workspace/DRL-PRG-T00-C03-02
+  [MOVE]   labs/LAB-PRG-T03-C01-01 -> labs/LAB-PRG-T01-C04-02
+  [MOVE]   labs/_reference/LAB-PRG-T03-C01-01 -> labs/_reference/LAB-PRG-T01-C04-02
+  [MOVE]   code_engine/templates/prg_t01_c03.py -> code_engine/templates/prg_t01_c04.py
+  [EDIT]   .github/workflows/ci.yml (LAB-PRG-T03-C01-01 -> LAB-PRG-T01-C04-02)
