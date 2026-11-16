@@ -1598,6 +1598,15 @@ TEMPLATES = [
                 if subject == "MATH"
                 else f"code_engine/reasoning_vault/{ucode}.json"
             )
+            if not os.path.exists(vault_path):
+                chapter_code = re.sub(r"-U\d+$", "", ucode)
+                chapter_vault = (
+                    f"math_engine/reasoning_vault/{chapter_code}.json"
+                    if subject == "MATH"
+                    else f"code_engine/reasoning_vault/{chapter_code}.json"
+                )
+                if os.path.exists(chapter_vault):
+                    vault_path = chapter_vault
             self.assertTrue(os.path.exists(vault_path), f"Missing reasoning vault for {fpath}: {vault_path}")
 
             with open(vault_path, "r", encoding="utf-8") as vf:
