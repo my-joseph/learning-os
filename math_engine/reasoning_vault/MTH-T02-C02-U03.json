@@ -1,0 +1,100 @@
+{
+  "unitCode": "MTH-T02-C02-U03",
+  "topicTitle": "Rates of Change and Behavior of Graphs",
+  "description": "Reasoning vault aligned with OpenStax Algebra and Trigonometry 2e §3.3: average rate of change from formulas, tables, and graphs; interpreting its sign and units; describing intervals of increase, decrease, and constancy; and locating local extrema.",
+  "archetypes": [
+    {
+      "unitCode": "MTH-T02-C02-U03",
+      "archetypeKey": "t02-c02-u03-average-rate-change",
+      "level": 1,
+      "name": "Compute Average Rate of Change",
+      "source": "OpenStax Algebra and Trigonometry 2e §3.3 — Finding the Average Rate of Change of a Function",
+      "coreConcept": "Average rate of change compares the net change in output to the net change in input over an interval. It is a secant slope, with units of output per input.",
+      "mentalModel": "Compare the two endpoint outputs and divide their change by the matching endpoint input change; preserve the same endpoint order in numerator and denominator.",
+      "governingRelation": "\\frac{f(b)-f(a)}{b-a}",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c02-u03-reversed-input-difference-trap",
+          "description": "Reversing the order of the input difference while keeping the output difference order, changing the sign.",
+          "trapFormula": "\\frac{f(b)-f(a)}{a-b}"
+        },
+        {
+          "trapTag": "t02-c02-u03-output-difference-only-trap",
+          "description": "Reporting the total output change without dividing by the input change.",
+          "trapFormula": "f(b)-f(a)"
+        }
+      ],
+      "versatileDomains": [],
+      "usedContexts": [],
+      "figureNone": "For a numeric average rate calculation, the endpoint values and interval fully determine the secant slope; a graph is not needed to compute it."
+    },
+    {
+      "unitCode": "MTH-T02-C02-U03",
+      "archetypeKey": "t02-c02-u03-graph-interval-behavior",
+      "level": 1,
+      "name": "Read Increasing, Decreasing, and Constant Intervals",
+      "source": "OpenStax Algebra and Trigonometry 2e §3.3 — Using a Graph to Determine Where a Function is Increasing, Decreasing, or Constant",
+      "coreConcept": "A function is increasing, decreasing, or constant on intervals according to how its output changes as the input moves from left to right.",
+      "mentalModel": "Scan the graph from left to right: rising means increasing, falling means decreasing, and a horizontal segment means constant.",
+      "governingRelation": "\\Delta x>0; \\operatorname{sign}(\\Delta f) \\text{ determines the average trend}",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c02-u03-read-graph-right-to-left-trap",
+          "description": "Describing graph behavior while scanning from right to left instead of as input increases.",
+          "trapFormula": "x \\text{ decreases while reading the curve}"
+        },
+        {
+          "trapTag": "t02-c02-u03-extremum-coordinate-swap-trap",
+          "description": "Confusing the input location of a local extremum with its output value.",
+          "trapFormula": "(x_{ext}, f(x_{ext})) \\mapsto f(x_{ext}) \\text{ as the location}"
+        },
+        {
+          "trapTag": "t02-c02-u03-whole-window-as-monotone-trap",
+          "description": "Treating the entire displayed graph window as monotone without checking whether the curve turns inside it.",
+          "trapFormula": "\\text{display interval} \\subseteq \\text{one monotonic interval}"
+        }
+      ],
+      "versatileDomains": [],
+      "usedContexts": [],
+      "figureBuilders": [
+        {
+          "fn": "build_function_graph_figure",
+          "args": {
+            "x_min": "-4",
+            "x_max": "3"
+          },
+          "labels": {
+            "expr": "x^3 - 3*x",
+            "label": "f(x)"
+          },
+          "title": "Graph behavior"
+        }
+      ]
+    },
+    {
+      "unitCode": "MTH-T02-C02-U03",
+      "archetypeKey": "t02-c02-u03-average-rate-expression",
+      "level": 2,
+      "name": "Derive Average Rate of Change as an Expression",
+      "source": "OpenStax Algebra and Trigonometry 2e §3.3 — Computing Average Rate of Change for a Function Expressed as a Formula",
+      "coreConcept": "Substituting symbolic interval endpoints into the average-rate quotient can reveal a simplified expression that describes the change across a family of intervals.",
+      "mentalModel": "Evaluate the function at both endpoints first, then simplify the difference quotient while tracking restrictions on any cancelled factor.",
+      "governingRelation": "\\frac{f(b)-f(a)}{b-a}",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c02-u03-cancel-before-factoring-trap",
+          "description": "Cancelling terms across addition or subtraction instead of cancelling common factors.",
+          "trapFormula": "\\frac{a^2+ka}{a} \\not= a+k \\text{ without factoring}"
+        },
+        {
+          "trapTag": "t02-c02-u03-reversed-input-difference-trap",
+          "description": "Reversing the order of the input difference while keeping the output difference order, changing the sign.",
+          "trapFormula": "\\frac{f(b)-f(a)}{a-b}"
+        }
+      ],
+      "versatileDomains": [],
+      "usedContexts": [],
+      "figureNone": "This archetype targets symbolic simplification of a difference quotient; a graph would not add information to the algebraic task."
+    }
+  ]
+}

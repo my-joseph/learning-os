@@ -2423,5 +2423,9 @@
   "DRL-PRG-T01-C02-U01-01": {
     "id": "41a3818f-8ba0-8131-a088-cc44122bd8a6",
     "title": "Type Annotations and Inference — Verified Programming Drill (5 Qs · AI Synthesized Engineering Mode)"
+  },
+  "DRL-MTH-T02-C02-U03-01": {
+    "id": "41a3818f-8ba0-818d-aec5-d1243f0443c0",
+    "title": "Rates of Change and Behavior of Graphs — Verified Math Drill (3 Qs · AI Synthesized Reasoning Mode)"
   }
 }
