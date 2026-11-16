@@ -1,0 +1,52 @@
+{
+  "unitCode": "PRG-T02-C05",
+  "unitTitle": "Frontend Performance",
+  "description": "React reasoning vault for Frontend Performance.",
+  "archetypes": [
+    {
+      "archetypeKey": "prg-t02-c05-u01-memoization-when-and-why",
+      "unitCode": "PRG-T02-C05-U01",
+      "level": 1,
+      "archetype": "problem-solving",
+      "name": "Memoization: When and Why Component Contract",
+      "coreConcept": "Memoization can skip repeated work only when inputs compare equal and the skipped work matters. Referential identity is observable to memoized children and dependency arrays.",
+      "mentalModel": [
+        "Identify the changing value and its single owner.",
+        "Trace one user event through the next render.",
+        "Verify the visible contract at empty and boundary inputs."
+      ],
+      "governingInvariant": "Each rendered result follows the current props/state snapshot; updates preserve the unit's lifecycle and accessibility contract.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "react-stale-or-duplicated-state",
+          "name": "Stale or Duplicated UI State",
+          "description": "Adding useMemo or useCallback everywhere adds dependency maintenance and can preserve stale values without improving a measured interaction.",
+          "reproducer": "Exercise repeated updates and a boundary transition; check whether the rendered UI remains synchronized with its source."
+        }
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-prg-t02-c05-u01-state-owner",
+          "check": "Every changing UI value has one clear owner, and derived values are computed from current inputs rather than stored as competing copies.",
+          "why": "Competing sources of truth drift after updates and produce stale screens.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function Summary({ total }) { const [displayTotal] = React.useState(total); return <output>{displayTotal}</output>; }",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-prg-t02-c05-u01-lifecycle-boundary",
+          "check": "The component preserves the framework lifecycle boundary required by the unit and cleans up any external synchronization it starts.",
+          "why": "Ignoring lifecycle boundaries creates stale output, duplicate work, or leaked resources.",
+          "severity": "should",
+          "knownBad": {
+            "code": "function BadPanel({ value }) { React.useEffect(() => { window.addEventListener('resize', () => console.log(value)); }, []); return null; }",
+            "caughtBy": "review"
+          }
+        }
+      ],
+      "usedContexts": []
+    }
+  ]
+}

@@ -1,0 +1,52 @@
+{
+  "unitCode": "PRG-T02-C03",
+  "unitTitle": "Forms, Validation & Data UX",
+  "description": "React reasoning vault for Forms, Validation & Data UX.",
+  "archetypes": [
+    {
+      "archetypeKey": "prg-t02-c03-u05-react-hook-form-fundamentals",
+      "unitCode": "PRG-T02-C03-U05",
+      "level": 1,
+      "archetype": "problem-solving",
+      "name": "React Hook Form Fundamentals Component Contract",
+      "coreConcept": "React Hook Form keeps field values in a form control and subscribes components to the state they need, limiting broad rerenders. A resolver connects schema validation to submission.",
+      "mentalModel": [
+        "Identify the changing value and its single owner.",
+        "Trace one user event through the next render.",
+        "Verify the visible contract at empty and boundary inputs."
+      ],
+      "governingInvariant": "Each rendered result follows the current props/state snapshot; updates preserve the unit's lifecycle and accessibility contract.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "react-stale-or-duplicated-state",
+          "name": "Stale or Duplicated UI State",
+          "description": "Mixing uncontrolled registration with a competing controlled value can desynchronize the field; submitting before resolver results settle can bypass the intended UX.",
+          "reproducer": "Exercise repeated updates and a boundary transition; check whether the rendered UI remains synchronized with its source."
+        }
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-prg-t02-c03-u05-state-owner",
+          "check": "Every changing UI value has one clear owner, and derived values are computed from current inputs rather than stored as competing copies.",
+          "why": "Competing sources of truth drift after updates and produce stale screens.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function Summary({ total }) { const [displayTotal] = React.useState(total); return <output>{displayTotal}</output>; }",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-prg-t02-c03-u05-lifecycle-boundary",
+          "check": "The component preserves the framework lifecycle boundary required by the unit and cleans up any external synchronization it starts.",
+          "why": "Ignoring lifecycle boundaries creates stale output, duplicate work, or leaked resources.",
+          "severity": "should",
+          "knownBad": {
+            "code": "function BadPanel({ value }) { React.useEffect(() => { window.addEventListener('resize', () => console.log(value)); }, []); return null; }",
+            "caughtBy": "review"
+          }
+        }
+      ],
+      "usedContexts": []
+    }
+  ]
+}
