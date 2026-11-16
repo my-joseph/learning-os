@@ -22,6 +22,7 @@ _REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
+from code_engine.workspace import resolve_test_imports  # noqa: E402
 from notion_sync.drill_sync import sync_drill_to_notion  # noqa: E402
 
 # ANSI Terminal Styling
@@ -98,8 +99,13 @@ def _write_hidden_test_file(tmp_dir: Path, ws_dir: Path, prob: dict, is_ts: bool
     ext = "ts" if is_ts else "js"
     src_abs = (ws_dir / f"{pid}_{entry_name}.{ext}").resolve()
 
+    hidden_tests = prob.get("hiddenTests", [])
+    hidden_code = "\n".join(ht.get("testCode", "") for ht in hidden_tests)
+    import_names = resolve_test_imports(prob, hidden_code, src_path=src_abs)
+    import_list = ", ".join(import_names)
+
     blocks = []
-    for idx, ht in enumerate(prob.get("hiddenTests", []), 1):
+    for idx, ht in enumerate(hidden_tests, 1):
         ht_name = json.dumps(f"[{pid}-HIDDEN-T{idx:02d}] " + ht.get("name", f"hidden trap scenario {idx}"))
         ht_code = ht.get("testCode", "").strip()
         blocks.append(f"\ntest({ht_name}, async () => {{\n  {ht_code}\n}});\n")
@@ -107,16 +113,67 @@ def _write_hidden_test_file(tmp_dir: Path, ws_dir: Path, prob: dict, is_ts: bool
     header = f"// Hidden Trap Test Suite for {pid}\n"
     if is_ts:
         header += "import test from 'node:test';\nimport assert from 'node:assert';\n"
-        header += f"import {{ {entry_name} }} from {json.dumps(src_abs.as_uri())};\n\n"
+        header += f"import {{ {import_list} }} from {json.dumps(src_abs.as_uri())};\n\n"
     else:
-        header += f"const test = require('node:test');\nconst assert = require('node:assert');\nconst {{ {entry_name} }} = require({json.dumps(str(src_abs))});\n\n"
+        header += (
+            "const test = require('node:test');\n"
+            "const assert = require('node:assert');\n"
+            f"const {{ {import_list} }} = require({json.dumps(str(src_abs))});\n\n"
+        )
 
     out_path = tmp_dir / f"{pid}_{entry_name}.hidden.test.{ext}"
     out_path.write_text((header + "".join(blocks)).strip() + "\n", encoding="utf-8")
     return out_path
 
 
-def run_tests_junit(ws_dir: Path, drill_doc: dict | None = None, problem_id: str | None = None) -> list:
+def _run_node_junit_cmd(
+    cmd: list[str],
+    *,
+    cwd: Path,
+    force_hidden: bool,
+    timeout_sec: float | None = None,
+    file_hint: str = "",
+    qid_hint: str = "Q01",
+) -> list[dict]:
+    run_kwargs: dict = {"cwd": cwd, "capture_output": True, "text": True}
+    if timeout_sec is not None:
+        run_kwargs["timeout"] = timeout_sec
+    try:
+        proc = subprocess.run(cmd, **run_kwargs)
+    except subprocess.TimeoutExpired:
+        return [
+            {
+                "name": f"[{qid_hint}] Timeout",
+                "file": file_hint,
+                "classname": "",
+                "passed": False,
+                "failure_msg": f"Execution exceeded {timeout_sec}s limit",
+                "is_hidden": force_hidden,
+            }
+        ]
+    parsed = _parse_junit_xml(proc.stdout + "\n" + proc.stderr, force_hidden=force_hidden)
+    if not parsed and proc.returncode != 0:
+        err_msg = (proc.stderr or proc.stdout or f"Exited with code {proc.returncode}").strip()
+        return [
+            {
+                "name": f"[{qid_hint}] Execution failure",
+                "file": file_hint,
+                "classname": "",
+                "passed": False,
+                "failure_msg": err_msg,
+                "is_hidden": force_hidden,
+            }
+        ]
+    return parsed
+
+
+def run_tests_junit(
+    ws_dir: Path,
+    drill_doc: dict | None = None,
+    problem_id: str | None = None,
+    *,
+    timeout_sec: float | None = None,
+) -> list:
     """Executes visible tests in ws_dir and hidden tests from a temporary dir outside ws_dir.
 
     When `problem_id` is given (e.g. 'Q01'), only that problem's visible test file and
@@ -137,9 +194,16 @@ def run_tests_junit(ws_dir: Path, drill_doc: dict | None = None, problem_id: str
         if is_ts:
             cmd.append("--experimental-strip-types")
         cmd.extend(["--test", "--test-reporter=junit", str(vf)])
-        proc = subprocess.run(cmd, cwd=ws_dir, capture_output=True, text=True)
-        parsed = _parse_junit_xml(proc.stdout + "\n" + proc.stderr, force_hidden=False)
         stem_prefix = vf.name.split("_", 1)[0].upper()
+        qid_hint = stem_prefix if re.match(r"^Q\d+$", stem_prefix) else (problem_id or "Q01").upper()
+        parsed = _run_node_junit_cmd(
+            cmd,
+            cwd=ws_dir,
+            force_hidden=False,
+            timeout_sec=timeout_sec,
+            file_hint=vf.name,
+            qid_hint=qid_hint,
+        )
         if re.match(r"^Q\d+$", stem_prefix):
             for tc in parsed:
                 if not tc.get("file"):
@@ -159,8 +223,16 @@ def run_tests_junit(ws_dir: Path, drill_doc: dict | None = None, problem_id: str
             if is_ts:
                 cmd.append("--experimental-strip-types")
             cmd.extend(["--test", "--test-reporter=junit", *[str(f) for f in hidden_files]])
-            proc = subprocess.run(cmd, cwd=tmp_dir, capture_output=True, text=True)
-            cases.extend(_parse_junit_xml(proc.stdout + "\n" + proc.stderr, force_hidden=True))
+            qid_hint = str(hidden_probs[0].get("id") or problem_id or "Q01").upper()
+            cases.extend(
+                _run_node_junit_cmd(
+                    cmd,
+                    cwd=tmp_dir,
+                    force_hidden=True,
+                    timeout_sec=timeout_sec,
+                    qid_hint=qid_hint,
+                )
+            )
 
     return cases
 
