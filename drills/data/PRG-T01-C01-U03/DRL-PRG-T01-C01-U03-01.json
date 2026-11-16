@@ -1,0 +1,510 @@
+{
+  "unitCode": "PRG-T01-C01-U03",
+  "unitTitle": "`this` and Binding",
+  "environment": "node-vanilla",
+  "sourceAttribution": "PRG-T01-C01-U03 Reasoning Vault & MDN JavaScript Guide (R003)",
+  "config": {
+    "questionCount": 5,
+    "difficulty": "ALL",
+    "difficultyMode": "AI Synthesized Engineering Mode"
+  },
+  "problems": [
+    {
+      "id": "Q01",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "code-tracing",
+      "codeType": "trace-explain",
+      "archetypeKey": "prg-c01-this-callsite-trace",
+      "commonTrapTag": "default-binding-strict-undefined",
+      "context": "metrics_collector_dispatch",
+      "entryPoint": "traceMetricsDispatch",
+      "answerSpec": {
+        "tokens": [
+          "auth-api",
+          "billing-api",
+          "TypeError",
+          "auth-api"
+        ]
+      },
+      "codeSnippet": "\"use strict\";\nconst collector = {\n  service: \"auth-api\",\n  readService() {\n    return this.service;\n  },\n};\nconst override = { service: \"billing-api\" };\nconst detached = collector.readService;\nconst locked = collector.readService.bind(collector);\nconst out = [];\nout.push(collector.readService());\nout.push(collector.readService.call(override));\ntry {\n  out.push(detached());\n} catch (err) {\n  out.push(err.name);\n}\nout.push(locked.call(override));\nconsole.log(out.join(\"\\n\"));\n",
+      "prompt": "### Task\nTrace the exact sequence of values produced by the strict-mode metrics collector snippet below and return them as an array of strings from `traceMetricsDispatch()`.\n\n```js\n\"use strict\";\n\nconst collector = {\n  service: \"auth-api\",\n  readService() {\n    return this.service;\n  },\n};\n\nconst override = { service: \"billing-api\" };\nconst detached = collector.readService;\nconst locked = collector.readService.bind(collector);\n\n// Record the result (or error name, e.g. \"TypeError\") for each call:\n// 1. collector.readService()\n// 2. collector.readService.call(override)\n// 3. detached()\n// 4. locked.call(override)\n```\n\n### Requirements\n- Return a 4-element array of strings corresponding to calls 1 through 4 in order.\n- When a call throws an error, record its error class name (for example, `\"TypeError\"`).\n- Do not modify the rules of strict-mode `this` precedence: `new` > `bind` > `call`/`apply` > implicit > default.",
+      "inputHint": "Return a 4-element string array representing the four call outcomes in order.",
+      "checkpointHint": "Check whether a receiver precedes the dot at the call site, and whether `.bind()` has already locked the receiver.",
+      "starterCode": "\"use strict\";\n\nfunction traceMetricsDispatch() {\n  return [];\n}\n\nmodule.exports = { traceMetricsDispatch };\n",
+      "solutionCode": "\"use strict\";\n\nfunction traceMetricsDispatch() {\n  const outcomes = [\"auth-api\", \"billing-api\", \"TypeError\", \"auth-api\"];\n  return outcomes;\n}\n\nmodule.exports = { traceMetricsDispatch };\n",
+      "trapMutant": "\"use strict\";\n\nfunction traceMetricsDispatch() {\n  return [\"auth-api\", \"billing-api\", \"auth-api\", \"billing-api\"];\n}\n\nmodule.exports = { traceMetricsDispatch };\n",
+      "visibleTests": [
+        {
+          "name": "returns a 4-element array of strings",
+          "testCode": "const out = traceMetricsDispatch();\nassert.strictEqual(Array.isArray(out), true);\nassert.strictEqual(out.length, 4);\nassert.strictEqual(out.every((item) => typeof item === 'string'), true);"
+        },
+        {
+          "name": "first element reflects implicit method call",
+          "testCode": "const out = traceMetricsDispatch();\nassert.strictEqual(out[0], 'auth-api');"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "explicit call overrides implicit receiver",
+          "testCode": "const out = traceMetricsDispatch();\nassert.strictEqual(out[1], 'billing-api');"
+        },
+        {
+          "name": "detached strict-mode call throws TypeError",
+          "testCode": "const out = traceMetricsDispatch();\nassert.strictEqual(out[2], 'TypeError');"
+        },
+        {
+          "name": "bound function ignores subsequent .call override",
+          "testCode": "const out = traceMetricsDispatch();\nassert.strictEqual(out[3], 'auth-api');"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Call 1 (`collector.readService()`) uses implicit binding, so `this` is `collector` and returns `\"auth-api\"`."
+        },
+        {
+          "explain": "Call 2 (`.call(override)`) uses explicit binding, overriding `collector` with `override` to return `\"billing-api\"`."
+        },
+        {
+          "explain": "Call 3 (`detached()`) has no receiver at the call site; in strict mode `this` is `undefined`, throwing `TypeError`."
+        },
+        {
+          "explain": "Call 4 (`locked.call(override)`) cannot override `.bind(collector)`, so `this` remains `collector` and returns `\"auth-api\"`."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "default-binding-strict-undefined|direct|\"use strict\"; const collector = { service: \"auth-api\", readService() { return this.service; }, }; const override = { service: \"billing-api\" }; const detached = collector.readService; const locked = collector.readService.bind(collector); const out = []; out.push(collector.readService()); out.push(collector.readService.call(override)); try { out.push(detached()); } catch (err) { out.push(err.name); } out.push(locked.call(override)); console.log(out.join(\"\\n\"));",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "code-tracing",
+          "verifiedByExecution": true
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 4,
+          "hasTrapOrFlaw": false,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "default-binding-strict-undefined",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 7
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Foundation",
+      "unitCode": "PRG-T01-C01-U03",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U03-01/Q01_traceMetricsDispatch.js"
+    },
+    {
+      "id": "Q02",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "code-tracing",
+      "codeType": "predict-output",
+      "archetypeKey": "prg-c01-this-callsite-trace",
+      "commonTrapTag": "arrow-object-literal-this",
+      "context": "feature_flag_formatter",
+      "entryPoint": "predictFormatterOutputs",
+      "answerSpec": {
+        "tokens": [
+          "regular:prod",
+          "arrow:none",
+          "nested:prod"
+        ]
+      },
+      "codeSnippet": "\"use strict\";\nconst flagConfig = {\n  env: \"prod\",\n  formatRegular() {\n    return \"regular:\" + this.env;\n  },\n  formatArrow: () => \"arrow:\" + (this?.env ?? \"none\"),\n  makeNestedFormatter() {\n    return () => \"nested:\" + this.env;\n  },\n};\nconst nested = flagConfig.makeNestedFormatter();\nconsole.log([flagConfig.formatRegular(), flagConfig.formatArrow(), nested()].join(\"\\n\"));\n",
+      "prompt": "### Task\nPredict the exact output array produced by the strict-mode feature-flag formatter below and return it from `predictFormatterOutputs()`.\n\n```js\n\"use strict\";\n\nconst flagConfig = {\n  env: \"prod\",\n  formatRegular() {\n    return \"regular:\" + this.env;\n  },\n  formatArrow: () => \"arrow:\" + (this?.env ?? \"none\"),\n  makeNestedFormatter() {\n    return () => \"nested:\" + this.env;\n  },\n};\n\nconst nested = flagConfig.makeNestedFormatter();\n// Record the 3 string results in order:\n// 1. flagConfig.formatRegular()\n// 2. flagConfig.formatArrow()\n// 3. nested()\n```\n\n### Requirements\n- Return a 3-element array of strings matching calls 1, 2, and 3.\n- Remember that object literals do not create a lexical `this` scope, whereas calling a regular method creates an enclosing scope whose `this` an inner arrow function captures.",
+      "inputHint": "Return a 3-element string array matching the three formatter calls.",
+      "checkpointHint": "Check the enclosing function (if any) where each arrow function is defined, not the object literal.",
+      "starterCode": "\"use strict\";\n\nfunction predictFormatterOutputs() {\n  return [];\n}\n\nmodule.exports = { predictFormatterOutputs };\n",
+      "solutionCode": "\"use strict\";\n\nfunction predictFormatterOutputs() {\n  const outputs = [\"regular:prod\", \"arrow:none\", \"nested:prod\"];\n  return outputs;\n}\n\nmodule.exports = { predictFormatterOutputs };\n",
+      "trapMutant": "\"use strict\";\n\nfunction predictFormatterOutputs() {\n  return [\"regular:prod\", \"arrow:prod\", \"nested:none\"];\n}\n\nmodule.exports = { predictFormatterOutputs };\n",
+      "visibleTests": [
+        {
+          "name": "returns 3 formatted strings",
+          "testCode": "const out = predictFormatterOutputs();\nassert.strictEqual(Array.isArray(out), true);\nassert.strictEqual(out.length, 3);"
+        },
+        {
+          "name": "regular method call binds implicit receiver",
+          "testCode": "const out = predictFormatterOutputs();\nassert.strictEqual(out[0], 'regular:prod');"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "object-literal arrow property does not bind object as this",
+          "testCode": "const out = predictFormatterOutputs();\nassert.strictEqual(out[1], 'arrow:none');"
+        },
+        {
+          "name": "arrow returned from regular method captures method this",
+          "testCode": "const out = predictFormatterOutputs();\nassert.strictEqual(out[2], 'nested:prod');"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Call 1 (`flagConfig.formatRegular()`) is an implicit regular method call, so `this` is `flagConfig` -> `\"regular:prod\"`."
+        },
+        {
+          "explain": "Call 2 (`flagConfig.formatArrow()`) is an arrow property on an object literal; its lexical `this` is the module scope (`undefined` / `{}` without `.env`), yielding `\"arrow:none\"`."
+        },
+        {
+          "explain": "Call 3 (`nested()`) was created inside `flagConfig.makeNestedFormatter()`, so it lexically captured `flagConfig` as `this` -> `\"nested:prod\"`."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "arrow-object-literal-this|direct|\"use strict\"; const flagConfig = { env: \"prod\", formatRegular() { return \"regular:\" + this.env; }, formatArrow: () => \"arrow:\" + (this?.env ?? \"none\"), makeNestedFormatter() { return () => \"nested:\" + this.env; }, }; const nested = flagConfig.makeNestedFormatter(); console.log([flagConfig.formatRegular(), flagConfig.formatArrow(), nested()].join(\"\\n\"));",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "code-tracing",
+          "verifiedByExecution": true
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 3,
+          "hasTrapOrFlaw": false,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "arrow-object-literal-this",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 6
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Foundation",
+      "unitCode": "PRG-T01-C01-U03",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U03-01/Q02_predictFormatterOutputs.js"
+    },
+    {
+      "id": "Q03",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "codeType": "implement",
+      "archetypeKey": "prg-c01-prototype-this-binding",
+      "commonTrapTag": "detached-method-context-loss",
+      "context": "telemetry_buffer_scheduler",
+      "entryPoint": "bindServiceHandlers",
+      "prompt": "### Task\nImplement `bindServiceHandlers(service, methodNames)` so a scheduler can invoke service methods as detached callbacks without losing `service` as `this`.\n\n### Requirements\n- `service` is an object (or class instance) whose prototype or own properties hold methods.\n- `methodNames` is an array of method name strings.\n- Return a plain object mapping each name in `methodNames` to a bound function that invokes `service[name]` with `service` as `this` and forwards all arguments and return values.\n- Throw a `TypeError` if `service` is null/not an object, `methodNames` is not an array, or any `name` is not a function on `service`.\n- Do not mutate `service` or `methodNames`.",
+      "inputHint": "Return a new plain object mapping each method name to a bound callable.",
+      "checkpointHint": "Verify each property is a function on the receiver before binding, and preserve all forwarded arguments.",
+      "starterCode": "\"use strict\";\n\nfunction bindServiceHandlers(_service, _methodNames) {\n  return {};\n}\n\nmodule.exports = { bindServiceHandlers };\n",
+      "solutionCode": "\"use strict\";\n\nfunction bindServiceHandlers(service, methodNames) {\n  if (service === null || typeof service !== \"object\") {\n    throw new TypeError(\"service must be a non-null object\");\n  }\n  if (!Array.isArray(methodNames)) {\n    throw new TypeError(\"methodNames must be an array\");\n  }\n  const boundHandlers = {};\n  for (const name of methodNames) {\n    const candidate = service[name];\n    if (typeof candidate !== \"function\") {\n      throw new TypeError(`Missing method: ${String(name)}`);\n    }\n    boundHandlers[name] = candidate.bind(service);\n  }\n  return boundHandlers;\n}\n\nmodule.exports = { bindServiceHandlers };\n",
+      "trapMutant": "\"use strict\";\n\nfunction bindServiceHandlers(service, methodNames) {\n  const handlers = {};\n  for (const name of methodNames) {\n    handlers[name] = service[name];\n  }\n  return handlers;\n}\n\nmodule.exports = { bindServiceHandlers };\n",
+      "visibleTests": [
+        {
+          "name": "detached bound handler preserves prototype method receiver",
+          "testCode": "class BufferService {\n  constructor(prefix) { this.prefix = prefix; this.items = []; }\n  pushItem(item) { this.items.push(`${this.prefix}:${item}`); return this.items.length; }\n}\nconst svc = new BufferService('evt');\nconst { pushItem } = bindServiceHandlers(svc, ['pushItem']);\nassert.strictEqual(pushItem('login'), 1);\nassert.deepStrictEqual(svc.items, ['evt:login']);"
+        },
+        {
+          "name": "throws TypeError when a requested method is missing",
+          "testCode": "assert.throws(() => bindServiceHandlers({ count: 1 }, ['count']), TypeError);"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "forwards multiple arguments and preserves return value",
+          "testCode": "const svc = { factor: 3, compute(a, b) { return (a + b) * this.factor; } };\nconst { compute } = bindServiceHandlers(svc, ['compute']);\nassert.strictEqual(compute(2, 4), 18);"
+        },
+        {
+          "name": "rejects null service or non-array methodNames",
+          "testCode": "assert.throws(() => bindServiceHandlers(null, ['a']), TypeError);\nassert.throws(() => bindServiceHandlers({}, 'a'), TypeError);"
+        },
+        {
+          "name": "two instances bound separately remain isolated",
+          "testCode": "class Counter { constructor(n) { this.n = n; } inc(step) { this.n += step; return this.n; } }\nconst a = new Counter(10);\nconst b = new Counter(100);\nconst ha = bindServiceHandlers(a, ['inc']);\nconst hb = bindServiceHandlers(b, ['inc']);\nassert.strictEqual(ha.inc(2), 12);\nassert.strictEqual(hb.inc(5), 105);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Validate that `service` is a non-null object and `methodNames` is an array."
+        },
+        {
+          "explain": "For each name, check that `typeof service[name] === 'function'`; otherwise throw `TypeError`."
+        },
+        {
+          "explain": "Store `service[name].bind(service)` on a fresh result object so detached calls keep `service` as `this`."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "detached-method-context-loss|direct|bindServiceHandlers",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": false,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "detached-method-context-loss",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 6
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Standard Exam",
+      "unitCode": "PRG-T01-C01-U03",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U03-01/Q03_bindServiceHandlers.js"
+    },
+    {
+      "id": "Q04",
+      "level": 2,
+      "category": "Trap & Edge Case",
+      "archetype": "debugging",
+      "codeType": "fix-bug",
+      "archetypeKey": "prg-c01-this-callback-binding-fix",
+      "commonTrapTag": "nested-regular-fn-this-shadow",
+      "context": "batch_invoice_formatter",
+      "entryPoint": "InvoiceFormatter",
+      "prompt": "### Task\n`InvoiceFormatter.formatBatch(items)` currently throws a `TypeError` in strict mode when formatting a batch of line items.\n\n### Requirements\n- Diagnose why `this` is lost inside the `map` callback.\n- Fix `InvoiceFormatter` so `formatBatch(items)` formats every `{ sku, cents }` item using `this.currency` and `this.taxRate`, returning strings like `\"USD 10.50\"` (rounded to 2 decimal places after applying `1 + this.taxRate`).\n- Return `[]` when `items` is empty, and do not mutate `items`.",
+      "inputHint": "Fix the receiver binding inside `formatBatch` without mutating the input array.",
+      "checkpointHint": "Inspect what `this` resolves to inside a regular `function` callback passed to `Array.prototype.map`.",
+      "starterCode": "\"use strict\";\n\nclass InvoiceFormatter {\n  constructor(currency, taxRate) {\n    this.currency = currency;\n    this.taxRate = taxRate;\n  }\n\n  formatBatch(items) {\n    return items.map(function (item) {\n      const totalCents = item.cents * (1 + this.taxRate);\n      return `${this.currency} ${(totalCents / 100).toFixed(2)}`;\n    });\n  }\n}\n\nmodule.exports = { InvoiceFormatter };\n",
+      "solutionCode": "\"use strict\";\n\nclass InvoiceFormatter {\n  constructor(currency, taxRate) {\n    this.currency = currency;\n    this.taxRate = taxRate;\n  }\n\n  formatBatch(items) {\n    const formatLine = (item) => {\n      const totalCents = item.cents * (1 + this.taxRate);\n      return `${this.currency} ${(totalCents / 100).toFixed(2)}`;\n    };\n    return items.map(formatLine);\n  }\n}\n\nmodule.exports = { InvoiceFormatter };\n",
+      "trapMutant": "\"use strict\";\n\nclass InvoiceFormatter {\n  constructor(currency, taxRate) {\n    this.currency = currency;\n    this.taxRate = taxRate;\n  }\n\n  formatBatch(items) {\n    return items.map(function (item) {\n      const rate = this ? this.taxRate : 0;\n      const cur = this ? this.currency : \"USD\";\n      const totalCents = item.cents * (1 + rate);\n      return `${cur} ${(totalCents / 100).toFixed(2)}`;\n    });\n  }\n}\n\nmodule.exports = { InvoiceFormatter };\n",
+      "visibleTests": [
+        {
+          "name": "formats batch items with instance currency and taxRate",
+          "testCode": "const fmt = new InvoiceFormatter('USD', 0.1);\nassert.deepStrictEqual(fmt.formatBatch([{ sku: 'A1', cents: 1000 }]), ['USD 11.00']);"
+        },
+        {
+          "name": "returns empty array for empty batch",
+          "testCode": "const fmt = new InvoiceFormatter('EUR', 0.2);\nassert.deepStrictEqual(fmt.formatBatch([]), []);"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "works with zero taxRate and multiple items",
+          "testCode": "const fmt = new InvoiceFormatter('THB', 0);\nassert.deepStrictEqual(\n  fmt.formatBatch([{ sku: 'X', cents: 500 }, { sku: 'Y', cents: 255 }]),\n  ['THB 5.00', 'THB 2.55']\n);"
+        },
+        {
+          "name": "two formatter instances do not interfere",
+          "testCode": "const us = new InvoiceFormatter('USD', 0.05);\nconst eu = new InvoiceFormatter('EUR', 0.2);\nassert.deepStrictEqual(us.formatBatch([{ sku: '1', cents: 2000 }]), ['USD 21.00']);\nassert.deepStrictEqual(eu.formatBatch([{ sku: '1', cents: 2000 }]), ['EUR 24.00']);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "The nested `function (item)` inside `items.map(...)` creates its own dynamic `this`, which is `undefined` in strict mode."
+        },
+        {
+          "explain": "Replace it with an arrow callback `(item) => ...` (or pass `this` as `map`'s `thisArg`) so `this` is lexically inherited from `formatBatch`."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "nested-regular-fn-this-shadow|direct|InvoiceFormatter",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "debugging"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "nested-regular-fn-this-shadow",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 5
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Standard Exam",
+      "unitCode": "PRG-T01-C01-U03",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U03-01/Q04_InvoiceFormatter.js"
+    },
+    {
+      "id": "Q05",
+      "level": 2,
+      "category": "Trap & Edge Case",
+      "archetype": "debugging",
+      "codeType": "fix-bug",
+      "archetypeKey": "prg-c01-this-callback-binding-fix",
+      "commonTrapTag": "rebound-arrow-ignored",
+      "context": "webhook_retry_dispatcher",
+      "entryPoint": "dispatchWebhook",
+      "prompt": "### Task\n`dispatchWebhook(targetContext, event)` is supposed to invoke `signEvent` with `targetContext` as `this` so it reads `this.signingKey` and `this.endpoint`, but it currently throws a `TypeError` because `.call(targetContext, event)` has no effect.\n\n### Requirements\n- Diagnose why `signEvent.call(targetContext, event)` fails to bind `this` to `targetContext`.\n- Fix `signEvent` / `dispatchWebhook` so `dispatchWebhook(targetContext, event)` returns `\"<endpoint>:<signingKey>:<event.id>\"`.\n- Throw a `TypeError` if `targetContext` is missing `signingKey` or `endpoint`, or if `event` has no `id`.",
+      "inputHint": "Fix the function definition so explicit `.call(targetContext, event)` binds `this` as intended.",
+      "checkpointHint": "Check whether `signEvent` is a regular function or an arrow function, and recall how `.call()` behaves on each.",
+      "starterCode": "\"use strict\";\n\nconst signEvent = (event) => `${this.endpoint}:${this.signingKey}:${event.id}`;\n\nfunction dispatchWebhook(targetContext, event) {\n  if (!targetContext || !targetContext.endpoint || !targetContext.signingKey) {\n    throw new TypeError(\"Invalid targetContext\");\n  }\n  if (!event || !event.id) {\n    throw new TypeError(\"Invalid event\");\n  }\n  return signEvent.call(targetContext, event);\n}\n\nmodule.exports = { dispatchWebhook };\n",
+      "solutionCode": "\"use strict\";\n\nconst signEvent = function (event) {\n  return `${this.endpoint}:${this.signingKey}:${event.id}`;\n};\n\nfunction dispatchWebhook(targetContext, event) {\n  if (!targetContext || !targetContext.endpoint || !targetContext.signingKey) {\n    throw new TypeError(\"Invalid targetContext\");\n  }\n  if (!event || !event.id) {\n    throw new TypeError(\"Invalid event\");\n  }\n  return signEvent.call(targetContext, event);\n}\n\nmodule.exports = { dispatchWebhook };\n",
+      "trapMutant": "\"use strict\";\n\nconst signEvent = (event) => `${this.endpoint}:${this.signingKey}:${event.id}`;\n\nfunction dispatchWebhook(targetContext, event) {\n  if (!targetContext || !targetContext.endpoint || !targetContext.signingKey) {\n    throw new TypeError(\"Invalid targetContext\");\n  }\n  if (!event || !event.id) {\n    throw new TypeError(\"Invalid event\");\n  }\n  const bound = signEvent.bind(targetContext);\n  return bound(event);\n}\n\nmodule.exports = { dispatchWebhook };\n",
+      "visibleTests": [
+        {
+          "name": "signs event using targetContext endpoint and signingKey",
+          "testCode": "const res = dispatchWebhook({ endpoint: 'https://hooks.local', signingKey: 'k1' }, { id: 'ev-9' });\nassert.strictEqual(res, 'https://hooks.local:k1:ev-9');"
+        },
+        {
+          "name": "throws TypeError on invalid targetContext or event",
+          "testCode": "assert.throws(() => dispatchWebhook(null, { id: 'ev-1' }), TypeError);\nassert.throws(() => dispatchWebhook({ endpoint: 'x' }, { id: 'ev-1' }), TypeError);"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "switches receiver dynamically across different contexts",
+          "testCode": "assert.strictEqual(\n  dispatchWebhook({ endpoint: 'https://a.io', signingKey: 'sa' }, { id: '1' }),\n  'https://a.io:sa:1'\n);\nassert.strictEqual(\n  dispatchWebhook({ endpoint: 'https://b.io', signingKey: 'sb' }, { id: '2' }),\n  'https://b.io:sb:2'\n);"
+        },
+        {
+          "name": "rejects missing event id",
+          "testCode": "assert.throws(() => dispatchWebhook({ endpoint: 'https://a.io', signingKey: 'sa' }, {}), TypeError);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "An arrow function (`const signEvent = (event) => ...`) captures `this` lexically from module scope (`undefined` in strict mode) and ignores `.call(targetContext, event)`."
+        },
+        {
+          "explain": "Convert `signEvent` to a regular `function signEvent(event)` so `.call(targetContext, event)` dynamically binds `this` to `targetContext`."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "rebound-arrow-ignored|direct|dispatchWebhook",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "debugging"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "rebound-arrow-ignored",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 5
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Standard Exam",
+      "unitCode": "PRG-T01-C01-U03",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U03-01/Q05_dispatchWebhook.js"
+    }
+  ],
+  "blindSolve": [
+    {
+      "problemId": "Q01",
+      "passed": true
+    },
+    {
+      "problemId": "Q02",
+      "passed": true
+    },
+    {
+      "problemId": "Q03",
+      "passed": true
+    },
+    {
+      "problemId": "Q04",
+      "passed": true
+    },
+    {
+      "problemId": "Q05",
+      "passed": true
+    }
+  ],
+  "review": {
+    "verdict": "pass",
+    "note": "All 5 PRG-T01-C01-U03 problems satisfy the brief (L1-L2 spread, 4 non-implement items, node-vanilla JS), have realistic non-duplicate domains without solution leaks, align with vault archetypes/traps and trapMutants, and pass Layer 3 qualityChecks with zero must findings."
+  },
+  "drillId": "DRL-PRG-T01-C01-U03-01",
+  "topicCode": "PRG-T01",
+  "chapterCode": "PRG-T01-C01",
+  "schemaVersion": "2.0-code",
+  "subject": "PRG",
+  "createdAt": "2026-11-16 20:30:09",
+  "localFilePath": "drills/data/PRG-T01-C01-U03/DRL-PRG-T01-C01-U03-01.json"
+}

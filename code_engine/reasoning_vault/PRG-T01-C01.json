@@ -95,7 +95,8 @@
         }
       ],
       "usedContexts": [
-        "event_emitter_subscriber_delegate"
+        "event_emitter_subscriber_delegate",
+        "telemetry_buffer_scheduler"
       ],
       "qualityChecks": [
         {
@@ -671,6 +672,145 @@
           "severity": "should",
           "knownBad": {
             "code": "let sharedFlag = false;\nfunction makeEvaluator() {\n  return {\n    isEnabled: () => sharedFlag,\n    setEnabled: (next) => { sharedFlag = next; }\n  };\n}",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "prg-c01-this-callsite-trace",
+      "unitCode": "PRG-T01-C01-U03",
+      "level": 1,
+      "archetype": "code-tracing",
+      "name": "Call-Site This Binding & Arrow Lexical This Trace",
+      "competencies": [
+        "this-binding",
+        "code-tracing",
+        "arrow-functions"
+      ],
+      "coreConcept": "Predicting the runtime value of this across implicit method calls, detached strict-mode calls, explicit call/apply/bind overrides, new construction, and arrow functions that inherit lexical this from their enclosing scope.",
+      "mentalModel": [
+        "1. Regular functions determine this dynamically at the call site: new > explicit (call/apply/bind) > implicit (obj.fn) > default (undefined in strict mode).",
+        "2. Arrow functions have no own this; they capture this lexically from the enclosing scope at definition time.",
+        "3. Object literals do not create a lexical this scope, so an arrow property on an object literal captures the surrounding scope's this."
+      ],
+      "governingInvariant": "Regular function this follows call-site precedence (new > explicit > implicit > default); arrow this follows enclosing lexical scope",
+      "cognitiveTraps": [
+        {
+          "trapTag": "arrow-object-literal-this",
+          "name": "Arrow Method on Object Literal Capturing Outer This",
+          "description": "Assuming an arrow function defined directly on an object literal binds this to that object instead of the enclosing scope.",
+          "reproducer": "const svc = { rate: 2, calc: () => this.rate }; svc.calc() reads outer this.rate (undefined), not 2."
+        },
+        {
+          "trapTag": "default-binding-strict-undefined",
+          "name": "Detached Method Falling Back to Strict Undefined",
+          "description": "Assuming a method reference extracted into a local variable remembers its original object when invoked bare.",
+          "reproducer": "'use strict'; const fn = obj.read; fn(); throws TypeError because this is undefined."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "metrics_collector_dispatch",
+          "description": "Tracing this resolution across service method calls, detached callbacks, and arrow handlers."
+        }
+      ],
+      "usedContexts": [
+        "metrics_collector_dispatch",
+        "feature_flag_formatter"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-this-explicit-receiver",
+          "check": "Trace helpers and adapters pass explicit receiver objects or bound functions rather than relying on ambient global this.",
+          "why": "Implicit default binding resolves to undefined in strict mode and globalThis in sloppy mode, causing environment-dependent bugs.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function readLabel() {\n  return this.label;\n}\nfunction run() {\n  return readLabel();\n}",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-this-lexical-arrow-intent",
+          "check": "Arrow functions are used only where lexical this is intended, never as object-literal or prototype methods that expect a dynamic receiver.",
+          "why": "An arrow function on an object literal or prototype cannot receive the instance as this.",
+          "severity": "should",
+          "knownBad": {
+            "code": "const formatter = {\n  prefix: 'LOG',\n  format: (msg) => `${this.prefix}: ${msg}`\n};",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "prg-c01-this-callback-binding-fix",
+      "unitCode": "PRG-T01-C01-U03",
+      "level": 2,
+      "archetype": "debugging",
+      "name": "Callback & Event Handler This Binding Repair",
+      "competencies": [
+        "this-binding",
+        "callbacks",
+        "debugging"
+      ],
+      "coreConcept": "Diagnosing and repairing lost-receiver bugs where methods are passed as callbacks to higher-order array methods, timers, or event dispatchers, or where nested regular functions shadow outer this.",
+      "mentalModel": [
+        "1. Passing obj.method as a bare argument detaches the call site from obj.",
+        "2. A nested regular function inside a method gets its own dynamic this (undefined in strict mode), shadowing the outer method's this.",
+        "3. Preserve the intended receiver with an arrow callback, Function.prototype.bind, or explicit thisArg."
+      ],
+      "governingInvariant": "Callbacks invoked by external dispatchers or array iterators execute with the service instance as this",
+      "cognitiveTraps": [
+        {
+          "trapTag": "nested-regular-fn-this-shadow",
+          "name": "Nested Regular Function Shadowing Outer This",
+          "description": "Using a regular function expression inside Array.prototype.map/filter/forEach shadows the enclosing method's this with undefined.",
+          "reproducer": "items.map(function (x) { return this.prefix + x; }) throws TypeError reading prefix of undefined."
+        },
+        {
+          "trapTag": "rebound-arrow-ignored",
+          "name": "Attempting to Rebind an Arrow Function with Call or Bind",
+          "description": "Calling .call(ctx) or .bind(ctx) on an arrow function silently ignores ctx because arrow functions have lexical this.",
+          "reproducer": "const fn = () => this.id; fn.call({ id: 42 }) still reads the outer lexical this, not 42."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "batch_invoice_formatter",
+          "description": "Fixing lost this inside array map callbacks on an invoice formatting service."
+        },
+        {
+          "domain": "webhook_retry_dispatcher",
+          "description": "Fixing arrow-vs-regular callback binding when invoking handler plugins with explicit receiver context."
+        }
+      ],
+      "usedContexts": [
+        "batch_invoice_formatter",
+        "webhook_retry_dispatcher"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-this-callback-bound-receiver",
+          "check": "Callbacks passed to iterators, timers, or dispatchers preserve the intended receiver via .bind(), arrow wrappers, or explicit thisArg.",
+          "why": "Detached method references or nested regular functions lose their receiver and throw TypeError or read undefined.",
+          "severity": "must",
+          "accepted": [
+            "items.map((item) => this.format(item))",
+            "items.map(this.format, this)",
+            "this.format.bind(this)"
+          ],
+          "knownBad": {
+            "code": "class Formatter {\n  constructor(prefix) { this.prefix = prefix; }\n  formatAll(items) {\n    return items.map(function (item) {\n      return `${this.prefix}:${item}`;\n    });\n  }\n}",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-this-no-that-aliasing",
+          "check": "Methods avoid legacy `const self = this` / `const that = this` aliasing when arrow callbacks or `.bind()` express the lexical receiver directly.",
+          "why": "Manual `self`/`that` aliasing adds boilerplate and obscures lexical binding intent.",
+          "severity": "should",
+          "knownBad": {
+            "code": "class Logger {\n  constructor(tag) { this.tag = tag; }\n  formatAll(msgs) {\n    const self = this;\n    return msgs.map(function (m) { return `${self.tag}:${m}`; });\n  }\n}",
             "caughtBy": "review"
           }
         }

@@ -2395,5 +2395,9 @@
   "DRL-PRG-T01-C01-U02-01": {
     "id": "41a3818f-8ba0-817f-be97-cff84f627907",
     "title": "Closures — Verified Programming Drill (5 Qs · AI Synthesized Engineering Mode)"
+  },
+  "DRL-PRG-T01-C01-U03-01": {
+    "id": "41a3818f-8ba0-8186-b9a5-d2ae82e25c7c",
+    "title": "`this` and Binding — Verified Programming Drill (5 Qs · AI Synthesized Engineering Mode)"
   }
 }
