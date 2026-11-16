@@ -1,0 +1,475 @@
+{
+  "unitCode": "PRG-T01-C01-U05",
+  "unitTitle": "Modules and Module Systems",
+  "environment": "node-vanilla",
+  "sourceAttribution": "MDN JavaScript Guide (JavaScript modules) & ECMAScript Module Record Specification",
+  "config": {
+    "questionCount": 5,
+    "difficulty": "ALL",
+    "difficultyMode": "AI Synthesized Engineering Mode"
+  },
+  "problems": [
+    {
+      "id": "Q01",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "codeType": "implement",
+      "archetypeKey": "prg-c01-esm-named-default-exports",
+      "commonTrapTag": "barrel-reexport-name-collision",
+      "context": "plugin_manifest_barrel_resolver",
+      "entryPoint": "buildBarrelExportMap",
+      "prompt": "Implement `buildBarrelExportMap(modules)` to resolve a barrel `index.mjs` re-export table and detect symbol name collisions across submodules.\n\n**Input Shape:**\n- `modules`: an array of `{ moduleName: string, exports: Array<{ name: string, kind: 'named' | 'default', alias?: string }> }`.\n\n**Resolution Rules:**\n- Each export's public symbol name is `entry.alias ?? entry.name`.\n- Do not include `default` exports unless an explicit `alias` is provided (unaliased `default` exports are skipped by `export *` barrels).\n- If two or more exports resolve to the same public symbol name, record that symbol name in `collisions` (deduplicated, sorted lexicographically) and omit it from `exports`.\n- Non-colliding exports are stored in `exports[publicName] = { sourceModule, originalName }`.\n- Do not mutate the input `modules` array or its nested objects.\n\n**Return Contract:**\n- Return `{ exports: Record<string, { sourceModule: string, originalName: string }>, collisions: string[] }`.",
+      "inputHint": "Return { exports, collisions } without mutating the input modules array",
+      "starterCode": "function buildBarrelExportMap(_modules) {\n  return { exports: {}, collisions: [] };\n}\n\nmodule.exports = { buildBarrelExportMap };\n",
+      "solutionCode": "function collectCandidates(modules) {\n  const candidates = new Map();\n  const collisionSet = new Set();\n  for (const mod of modules) {\n    for (const entry of mod.exports) {\n      if (entry.kind === 'default' && !entry.alias) {\n        continue;\n      }\n      const publicName = entry.alias ?? entry.name;\n      if (candidates.has(publicName)) {\n        collisionSet.add(publicName);\n      } else {\n        candidates.set(publicName, {\n          sourceModule: mod.moduleName,\n          originalName: entry.name,\n        });\n      }\n    }\n  }\n  return { candidates, collisionSet };\n}\n\nfunction buildBarrelExportMap(modules) {\n  if (!Array.isArray(modules)) {\n    throw new TypeError('modules must be an array');\n  }\n  const { candidates, collisionSet } = collectCandidates(modules);\n  const exports = {};\n  for (const [publicName, target] of candidates.entries()) {\n    if (!collisionSet.has(publicName)) {\n      exports[publicName] = target;\n    }\n  }\n  return {\n    exports,\n    collisions: Array.from(collisionSet).sort(),\n  };\n}\n\nmodule.exports = { buildBarrelExportMap };\n",
+      "trapMutant": "function buildBarrelExportMap(modules) {\n  const exports = {};\n  for (const mod of modules) {\n    for (const entry of mod.exports) {\n      const publicName = entry.alias ?? entry.name;\n      exports[publicName] = {\n        sourceModule: mod.moduleName,\n        originalName: entry.name,\n      };\n    }\n  }\n  return { exports, collisions: [] };\n}\n\nmodule.exports = { buildBarrelExportMap };\n",
+      "visibleTests": [
+        {
+          "name": "maps distinct named exports and aliased collisions cleanly",
+          "testCode": "const result = buildBarrelExportMap([\n  { moduleName: './csv.mjs', exports: [{ name: 'parse', kind: 'named', alias: 'parseCsv' }] },\n  { moduleName: './ini.mjs', exports: [{ name: 'parse', kind: 'named', alias: 'parseIni' }] },\n]);\nassert.deepStrictEqual(result, {\n  exports: {\n    parseCsv: { sourceModule: './csv.mjs', originalName: 'parse' },\n    parseIni: { sourceModule: './ini.mjs', originalName: 'parse' },\n  },\n  collisions: [],\n});"
+        },
+        {
+          "name": "skips unaliased default exports in barrel",
+          "testCode": "const result = buildBarrelExportMap([\n  { moduleName: './client.mjs', exports: [{ name: 'default', kind: 'default' }, { name: 'VERSION', kind: 'named' }] },\n]);\nassert.deepStrictEqual(result, {\n  exports: { VERSION: { sourceModule: './client.mjs', originalName: 'VERSION' } },\n  collisions: [],\n});"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "detects unaliased name collisions, sorts them, and omits them from exports",
+          "testCode": "const input = [\n  { moduleName: './v1.mjs', exports: [{ name: 'normalize', kind: 'named' }, { name: 'alpha', kind: 'named' }] },\n  { moduleName: './v2.mjs', exports: [{ name: 'normalize', kind: 'named' }, { name: 'beta', kind: 'named' }] },\n  { moduleName: './v3.mjs', exports: [{ name: 'alpha', kind: 'named' }] },\n];\nconst snapshot = JSON.stringify(input);\nconst result = buildBarrelExportMap(input);\nassert.strictEqual(JSON.stringify(input), snapshot);\nassert.deepStrictEqual(result, {\n  exports: { beta: { sourceModule: './v2.mjs', originalName: 'beta' } },\n  collisions: ['alpha', 'normalize'],\n});"
+        },
+        {
+          "name": "throws TypeError on non-array input",
+          "testCode": "assert.throws(() => buildBarrelExportMap(null), TypeError);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Skip unaliased default exports because `export *` barrels only re-export named bindings unless explicitly aliased."
+        },
+        {
+          "explain": "Track seen public export names in a Map and record duplicates in a Set so colliding symbols are excluded from the final exports map."
+        },
+        {
+          "explain": "Return sorted collision names without mutating the input array."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "barrel-reexport-name-collision|direct|buildBarrelExportMap",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 3,
+          "hasTrapOrFlaw": false,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "barrel-reexport-name-collision",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 5
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Foundation",
+      "unitCode": "PRG-T01-C01-U05",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U05-01/Q01_buildBarrelExportMap.js"
+    },
+    {
+      "id": "Q02",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "debugging",
+      "codeType": "fix-bug",
+      "archetypeKey": "prg-c01-esm-named-default-exports",
+      "commonTrapTag": "default-named-export-mismatch",
+      "context": "sdk_module_import_linker",
+      "entryPoint": "resolveModuleImports",
+      "prompt": "Fix `resolveModuleImports(moduleTable, importSpecs)` so that ESM import statements resolve strictly according to their import kind (`named` vs. `default`).\n\n**Symptom:**\n- Default imports (`kind: 'default'`) and named imports (`kind: 'named'`) are currently misresolved when a module exports both a default symbol and named symbols, or when a requested binding does not exist.\n\n**Requirements:**\n- `moduleTable`: `Record<string, { defaultExport: string | null, namedExports: string[] }>`.\n- `importSpecs`: `Array<{ from: string, kind: 'named' | 'default', symbol: string, localName: string }>`.\n- If `spec.from` is missing from `moduleTable`, throw an `Error`.\n- For `kind === 'default'`, verify `mod.defaultExport` is non-null; map `localName` to `{ source: spec.from, resolvedExport: mod.defaultExport }`.\n- For `kind === 'named'`, verify `mod.namedExports` includes `spec.symbol`; map `localName` to `{ source: spec.from, resolvedExport: spec.symbol }`.\n- If a requested binding is missing, throw an `Error`.\n\n**Return Contract:**\n- Return `Record<string, { source: string, resolvedExport: string }>` keyed by `localName`.",
+      "inputHint": "Fix default vs. named export lookup and missing-binding errors",
+      "starterCode": "function resolveModuleImports(moduleTable, importSpecs) {\n  const bindings = {};\n  for (const spec of importSpecs) {\n    const mod = moduleTable[spec.from];\n    if (!mod) {\n      throw new Error(`Missing module: ${spec.from}`);\n    }\n    if (spec.kind === 'default') {\n      const matched = mod.namedExports.find((name) => name === spec.symbol);\n      bindings[spec.localName] = {\n        source: spec.from,\n        resolvedExport: matched,\n      };\n    } else {\n      const resolved = mod.namedExports.includes(spec.symbol)\n        ? spec.symbol\n        : mod.defaultExport;\n      bindings[spec.localName] = {\n        source: spec.from,\n        resolvedExport: resolved,\n      };\n    }\n  }\n  return bindings;\n}\n\nmodule.exports = { resolveModuleImports };\n",
+      "solutionCode": "function resolveSingleImport(moduleTable, spec) {\n  const mod = moduleTable[spec.from];\n  if (!mod) {\n    throw new Error(`Missing module: ${spec.from}`);\n  }\n  if (spec.kind === 'default') {\n    if (!mod.defaultExport) {\n      throw new Error(`Module ${spec.from} has no default export`);\n    }\n    return { source: spec.from, resolvedExport: mod.defaultExport };\n  }\n  if (spec.kind === 'named') {\n    if (!mod.namedExports.includes(spec.symbol)) {\n      throw new Error(`Module ${spec.from} has no named export ${spec.symbol}`);\n    }\n    return { source: spec.from, resolvedExport: spec.symbol };\n  }\n  throw new Error(`Unsupported import kind: ${spec.kind}`);\n}\n\nfunction resolveModuleImports(moduleTable, importSpecs) {\n  if (!moduleTable || !Array.isArray(importSpecs)) {\n    throw new TypeError('Invalid moduleTable or importSpecs');\n  }\n  const bindings = {};\n  for (const spec of importSpecs) {\n    bindings[spec.localName] = resolveSingleImport(moduleTable, spec);\n  }\n  return bindings;\n}\n\nmodule.exports = { resolveModuleImports };\n",
+      "trapMutant": "function resolveModuleImports(moduleTable, importSpecs) {\n  const bindings = {};\n  for (const spec of importSpecs) {\n    const mod = moduleTable[spec.from];\n    if (!mod) {\n      throw new Error(`Missing module: ${spec.from}`);\n    }\n    const resolved = mod.namedExports.includes(spec.symbol)\n      ? spec.symbol\n      : mod.defaultExport;\n    bindings[spec.localName] = { source: spec.from, resolvedExport: resolved };\n  }\n  return bindings;\n}\n\nmodule.exports = { resolveModuleImports };\n",
+      "visibleTests": [
+        {
+          "name": "resolves default export without checking namedExports",
+          "testCode": "const table = { './http.mjs': { defaultExport: 'createClient', namedExports: ['get', 'post'] } };\nconst result = resolveModuleImports(table, [\n  { from: './http.mjs', kind: 'default', symbol: 'default', localName: 'httpClient' },\n  { from: './http.mjs', kind: 'named', symbol: 'get', localName: 'httpGet' },\n]);\nassert.deepStrictEqual(result, {\n  httpClient: { source: './http.mjs', resolvedExport: 'createClient' },\n  httpGet: { source: './http.mjs', resolvedExport: 'get' },\n});"
+        },
+        {
+          "name": "throws when named import targets a module with only a default export",
+          "testCode": "const table = { './parser.mjs': { defaultExport: 'parse', namedExports: [] } };\nassert.throws(() => {\n  resolveModuleImports(table, [\n    { from: './parser.mjs', kind: 'named', symbol: 'parse', localName: 'parse' },\n  ]);\n}, Error);"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "throws when default import targets a module with null defaultExport even if namedExport matches symbol",
+          "testCode": "const table = { './auth.mjs': { defaultExport: null, namedExports: ['verifyToken'] } };\nassert.throws(() => {\n  resolveModuleImports(table, [\n    { from: './auth.mjs', kind: 'default', symbol: 'verifyToken', localName: 'verifyToken' },\n  ]);\n}, Error);"
+        },
+        {
+          "name": "throws when named export is absent even when defaultExport is present",
+          "testCode": "const table = { './logger.mjs': { defaultExport: 'Logger', namedExports: ['createLogger'] } };\nassert.throws(() => {\n  resolveModuleImports(table, [\n    { from: './logger.mjs', kind: 'named', symbol: 'Logger', localName: 'Logger' },\n  ]);\n}, Error);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Resolve `kind: 'default'` exclusively from `mod.defaultExport` and throw if it is null."
+        },
+        {
+          "explain": "Resolve `kind: 'named'` exclusively from `mod.namedExports` without falling back to `mod.defaultExport`."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "default-named-export-mismatch|direct|resolveModuleImports",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "debugging"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "default-named-export-mismatch",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 4
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Foundation",
+      "unitCode": "PRG-T01-C01-U05",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U05-01/Q02_resolveModuleImports.js"
+    },
+    {
+      "id": "Q03",
+      "level": 2,
+      "category": "Trap & Edge Case",
+      "archetype": "debugging",
+      "codeType": "fix-bug",
+      "archetypeKey": "prg-c01-circular-dependency-resolution",
+      "commonTrapTag": "circular-top-level-tdz-read",
+      "context": "auth_token_session_bootstrap",
+      "entryPoint": "evaluateModuleGraph",
+      "prompt": "Fix `evaluateModuleGraph(modules, entryName)` to accurately detect Temporal Dead Zone (TDZ) errors during circular ESM evaluation while allowing deferred reads inside functions.\n\n**Symptom:**\n- The current evaluator immediately aborts whenever it sees a cycle, even if the cycle only reads imported bindings lazily inside exported functions (`lazyReads`). Conversely, if it skips cycle checks, top-level reads (`topLevelReads`) of uninitialized cyclic bindings silently pass.\n\n**Evaluation Model:**\n- `modules`: `Record<string, { deps: string[], exports: Record<string, string>, topLevelReads: Array<{ from: string, symbol: string }> }>`.\n  - `exports` maps exported symbol name to `'ready'` (or initialized after the module finishes evaluating its body).\n  - `deps` are evaluated depth-first before the current module's body runs (skipping deps already `visiting` or `evaluated`).\n- While a module's body is running, all of its `topLevelReads` execute. If a `topLevelReads` entry references a dependency module that is still `visiting` (not yet `evaluated`), return `{ status: 'tdz-error', module: currentModule, from: read.from, symbol: read.symbol }`.\n- Once all `topLevelReads` succeed, mark the module `evaluated` and append it to `order`.\n\n**Return Contract:**\n- Return `{ status: 'ok', order: string[] }` or `{ status: 'tdz-error', module: string, from: string, symbol: string }`.",
+      "inputHint": "Track visiting vs. evaluated states and check topLevelReads against visiting modules",
+      "starterCode": "function evaluateModuleGraph(modules, entryName) {\n  const visited = new Set();\n  const order = [];\n\n  function visit(name) {\n    if (visited.has(name)) {\n      return { status: 'tdz-error', module: name, from: name, symbol: 'cycle' };\n    }\n    visited.add(name);\n    const mod = modules[name];\n    for (const dep of mod.deps) {\n      const res = visit(dep);\n      if (res.status !== 'ok') {\n        return res;\n      }\n    }\n    order.push(name);\n    return { status: 'ok', order };\n  }\n\n  return visit(entryName);\n}\n\nmodule.exports = { evaluateModuleGraph };\n",
+      "solutionCode": "function findTdzRead(modName, topLevelReads, state) {\n  for (const read of topLevelReads) {\n    if (state.get(read.from) === 'visiting') {\n      return {\n        status: 'tdz-error',\n        module: modName,\n        from: read.from,\n        symbol: read.symbol,\n      };\n    }\n  }\n  return null;\n}\n\nfunction evaluateModuleGraph(modules, entryName) {\n  if (!modules || !modules[entryName]) {\n    throw new Error(`Unknown entry module: ${entryName}`);\n  }\n  const state = new Map();\n  const order = [];\n\n  function visit(name) {\n    const currentState = state.get(name);\n    if (currentState === 'evaluated' || currentState === 'visiting') {\n      return null;\n    }\n    state.set(name, 'visiting');\n    const mod = modules[name];\n    if (!mod) {\n      throw new Error(`Unknown dependency module: ${name}`);\n    }\n    for (const dep of mod.deps) {\n      const err = visit(dep);\n      if (err) {\n        return err;\n      }\n    }\n    const tdzErr = findTdzRead(name, mod.topLevelReads, state);\n    if (tdzErr) {\n      return tdzErr;\n    }\n    state.set(name, 'evaluated');\n    order.push(name);\n    return null;\n  }\n\n  return visit(entryName) ?? { status: 'ok', order };\n}\n\nmodule.exports = { evaluateModuleGraph };\n",
+      "trapMutant": "function evaluateModuleGraph(modules, entryName) {\n  const visited = new Set();\n  const order = [];\n  function visit(name) {\n    if (visited.has(name)) {\n      return;\n    }\n    visited.add(name);\n    for (const dep of modules[name].deps) {\n      visit(dep);\n    }\n    order.push(name);\n  }\n  visit(entryName);\n  return { status: 'ok', order };\n}\n\nmodule.exports = { evaluateModuleGraph };\n",
+      "visibleTests": [
+        {
+          "name": "allows circular dependency when no topLevelReads touch a visiting module",
+          "testCode": "const graph = {\n  'main.mjs': { deps: ['auth.mjs'], topLevelReads: [] },\n  'auth.mjs': { deps: ['session.mjs'], topLevelReads: [] },\n  'session.mjs': { deps: ['auth.mjs'], topLevelReads: [] },\n};\nconst res = evaluateModuleGraph(graph, 'main.mjs');\nassert.deepStrictEqual(res, {\n  status: 'ok',\n  order: ['session.mjs', 'auth.mjs', 'main.mjs'],\n});"
+        },
+        {
+          "name": "reports tdz-error when a cyclic module reads an uninitialized binding at top level",
+          "testCode": "const graph = {\n  'auth.mjs': { deps: ['session.mjs'], topLevelReads: [] },\n  'session.mjs': { deps: ['auth.mjs'], topLevelReads: [{ from: 'auth.mjs', symbol: 'TOKEN_TTL' }] },\n};\nconst res = evaluateModuleGraph(graph, 'auth.mjs');\nassert.deepStrictEqual(res, {\n  status: 'tdz-error',\n  module: 'session.mjs',\n  from: 'auth.mjs',\n  symbol: 'TOKEN_TTL',\n});"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "succeeds on diamond DAG where shared leaf is already evaluated before second importer reads it",
+          "testCode": "const graph = {\n  'app.mjs': { deps: ['a.mjs', 'b.mjs'], topLevelReads: [] },\n  'a.mjs': { deps: ['leaf.mjs'], topLevelReads: [{ from: 'leaf.mjs', symbol: 'CONFIG' }] },\n  'b.mjs': { deps: ['leaf.mjs'], topLevelReads: [{ from: 'leaf.mjs', symbol: 'CONFIG' }] },\n  'leaf.mjs': { deps: [], topLevelReads: [] },\n};\nconst res = evaluateModuleGraph(graph, 'app.mjs');\nassert.deepStrictEqual(res, {\n  status: 'ok',\n  order: ['leaf.mjs', 'a.mjs', 'b.mjs', 'app.mjs'],\n});"
+        },
+        {
+          "name": "detects tdz-error across a 3-module cycle on top-level read",
+          "testCode": "const graph = {\n  'gateway.mjs': { deps: ['router.mjs'], topLevelReads: [] },\n  'router.mjs': { deps: ['middleware.mjs'], topLevelReads: [] },\n  'middleware.mjs': { deps: ['gateway.mjs'], topLevelReads: [{ from: 'gateway.mjs', symbol: 'RATE_LIMIT' }] },\n};\nconst res = evaluateModuleGraph(graph, 'gateway.mjs');\nassert.deepStrictEqual(res, {\n  status: 'tdz-error',\n  module: 'middleware.mjs',\n  from: 'gateway.mjs',\n  symbol: 'RATE_LIMIT',\n});"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Track three states per module (`unvisited`, `visiting`, `evaluated`) instead of a single `visited` set."
+        },
+        {
+          "explain": "Skip revisiting modules that are already `visiting` or `evaluated` without immediately failing."
+        },
+        {
+          "explain": "Fail with `tdz-error` only when a `topLevelReads` entry accesses a module whose state is still `visiting`."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "circular-top-level-tdz-read|direct|evaluateModuleGraph",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "debugging"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "circular-top-level-tdz-read",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 5
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Standard Exam",
+      "unitCode": "PRG-T01-C01-U05",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U05-01/Q03_evaluateModuleGraph.js"
+    },
+    {
+      "id": "Q04",
+      "level": 2,
+      "category": "Trap & Edge Case",
+      "archetype": "debugging",
+      "codeType": "fix-bug",
+      "archetypeKey": "prg-c01-circular-dependency-resolution",
+      "commonTrapTag": "cjs-exports-reassignment-break",
+      "context": "cjs_plugin_loader_cache",
+      "entryPoint": "simulateCjsCycle",
+      "prompt": "Fix `simulateCjsCycle(spec)` to accurately model what a CommonJS module sees when it performs a cyclic `require()` of its caller.\n\n**Symptom:**\n- In CommonJS, `moduleA` starts executing, populates `beforeRequireProps` on `exports`, calls `require('./moduleB')`, and then executes `afterRequire`. If `moduleA` mutates `exports` in `afterRequire`, `moduleB`'s reference to `moduleA`'s `exports` sees those properties later; if `moduleA` reassigns `module.exports = ...` in `afterRequire`, `moduleB` still holds the original `exports` object.\n- The buggy starter returns `moduleA`'s final `module.exports` to `moduleB` in all cases.\n\n**Input Shape:**\n- `spec`: `{ beforeRequireProps: Record<string, unknown>, afterRequire: { mode: 'mutate' | 'reassign', props: Record<string, unknown> } }`.\n\n**Return Contract:**\n- Return `{ seenAtRequireTime: Record<string, unknown>, seenAfterLoadByB: Record<string, unknown>, finalModuleAExports: Record<string, unknown> }` where:\n  - `seenAtRequireTime` is a shallow copy of `exports` at the exact moment `moduleB` requires `moduleA`.\n  - `seenAfterLoadByB` is what `moduleB`'s cached reference holds after `moduleA` finishes loading.\n  - `finalModuleAExports` is `moduleA`'s final `module.exports`.",
+      "inputHint": "Preserve separate object identity when module.exports is reassigned vs. mutated",
+      "starterCode": "function simulateCjsCycle(spec) {\n  const finalExports = { ...spec.beforeRequireProps, ...spec.afterRequire.props };\n  return {\n    seenAtRequireTime: { ...spec.beforeRequireProps },\n    seenAfterLoadByB: { ...finalExports },\n    finalModuleAExports: { ...finalExports },\n  };\n}\n\nmodule.exports = { simulateCjsCycle };\n",
+      "solutionCode": "function simulateCjsCycle(spec) {\n  if (!spec || !spec.beforeRequireProps || !spec.afterRequire) {\n    throw new TypeError('Invalid CJS cycle spec');\n  }\n  const initialExportsObj = { ...spec.beforeRequireProps };\n  const seenAtRequireTime = { ...initialExportsObj };\n  const bReference = initialExportsObj;\n  let moduleExportsRef = initialExportsObj;\n\n  if (spec.afterRequire.mode === 'mutate') {\n    Object.assign(moduleExportsRef, spec.afterRequire.props);\n  } else if (spec.afterRequire.mode === 'reassign') {\n    moduleExportsRef = { ...spec.afterRequire.props };\n  } else {\n    throw new Error(`Unsupported afterRequire mode: ${spec.afterRequire.mode}`);\n  }\n\n  return {\n    seenAtRequireTime,\n    seenAfterLoadByB: { ...bReference },\n    finalModuleAExports: { ...moduleExportsRef },\n  };\n}\n\nmodule.exports = { simulateCjsCycle };\n",
+      "trapMutant": "function simulateCjsCycle(spec) {\n  const initial = { ...spec.beforeRequireProps };\n  const combined = { ...initial, ...spec.afterRequire.props };\n  return {\n    seenAtRequireTime: initial,\n    seenAfterLoadByB: combined,\n    finalModuleAExports: combined,\n  };\n}\n\nmodule.exports = { simulateCjsCycle };\n",
+      "visibleTests": [
+        {
+          "name": "reflects later mutations in seenAfterLoadByB when mode is mutate",
+          "testCode": "const res = simulateCjsCycle({\n  beforeRequireProps: { initialized: true },\n  afterRequire: { mode: 'mutate', props: { run: 'ok' } },\n});\nassert.deepStrictEqual(res, {\n  seenAtRequireTime: { initialized: true },\n  seenAfterLoadByB: { initialized: true, run: 'ok' },\n  finalModuleAExports: { initialized: true, run: 'ok' },\n});"
+        },
+        {
+          "name": "leaves seenAfterLoadByB stale when module.exports is reassigned",
+          "testCode": "const res = simulateCjsCycle({\n  beforeRequireProps: {},\n  afterRequire: { mode: 'reassign', props: { run: 'ok' } },\n});\nassert.deepStrictEqual(res, {\n  seenAtRequireTime: {},\n  seenAfterLoadByB: {},\n  finalModuleAExports: { run: 'ok' },\n});"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "keeps beforeRequireProps in seenAfterLoadByB when reassigned after partial population",
+          "testCode": "const res = simulateCjsCycle({\n  beforeRequireProps: { version: 1 },\n  afterRequire: { mode: 'reassign', props: { version: 2, run: 'v2' } },\n});\nassert.deepStrictEqual(res, {\n  seenAtRequireTime: { version: 1 },\n  seenAfterLoadByB: { version: 1 },\n  finalModuleAExports: { version: 2, run: 'v2' },\n});"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Give `bReference` the original `initialExportsObj` reference captured at cyclic `require()` time."
+        },
+        {
+          "explain": "For `mode === 'mutate'`, mutate `moduleExportsRef` in place with `Object.assign` so `bReference` observes the updates."
+        },
+        {
+          "explain": "For `mode === 'reassign'`, point `moduleExportsRef` to a new object so `bReference` remains bound to the stale `initialExportsObj`."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "cjs-exports-reassignment-break|direct|simulateCjsCycle",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "debugging"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "cjs-exports-reassignment-break",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 5
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Standard Exam",
+      "unitCode": "PRG-T01-C01-U05",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U05-01/Q04_simulateCjsCycle.js"
+    },
+    {
+      "id": "Q05",
+      "level": 2,
+      "category": "Trap & Edge Case",
+      "archetype": "code-tracing",
+      "codeType": "predict-output",
+      "archetypeKey": "prg-c01-live-binding-singleton-cache",
+      "commonTrapTag": "cjs-destructured-primitive-stale-copy",
+      "context": "telemetry_counter_module_trace",
+      "entryPoint": "traceModuleBindings",
+      "answerSpec": {
+        "tokens": [
+          "esm-hits:2",
+          "cjs-destructured:0",
+          "cjs-getter:1"
+        ]
+      },
+      "codeSnippet": "function createEsmModule() {\n  let hits = 0;\n  const namespace = {};\n  Object.defineProperty(namespace, 'hits', { get: () => hits });\n  namespace.recordHit = () => { hits += 1; };\n  return namespace;\n}\nfunction createCjsModule() {\n  let hits = 0;\n  const recordHit = () => { hits += 1; };\n  const getHits = () => hits;\n  return { hits, recordHit, getHits };\n}\nconst esmNs = createEsmModule();\nconst cjsExports = createCjsModule();\nconst { hits: cjsHits, recordHit: cjsRecord, getHits: cjsGet } = cjsExports;\nesmNs.recordHit();\nesmNs.recordHit();\ncjsRecord();\nconsole.log('esm-hits:' + esmNs.hits);\nconsole.log('cjs-destructured:' + cjsHits);\nconsole.log('cjs-getter:' + cjsGet());",
+      "prompt": "Trace the ESM live-binding getter vs. CommonJS destructured primitive copy in the telemetry snippet below, and implement `traceModuleBindings()` to return the exact array of lines printed to stdout.\n\n```js\nfunction createEsmModule() {\n  let hits = 0;\n  const namespace = {};\n  Object.defineProperty(namespace, 'hits', { get: () => hits });\n  namespace.recordHit = () => { hits += 1; };\n  return namespace;\n}\nfunction createCjsModule() {\n  let hits = 0;\n  const recordHit = () => { hits += 1; };\n  const getHits = () => hits;\n  return { hits, recordHit, getHits };\n}\nconst esmNs = createEsmModule();\nconst cjsExports = createCjsModule();\nconst { hits: cjsHits, recordHit: cjsRecord, getHits: cjsGet } = cjsExports;\nesmNs.recordHit();\nesmNs.recordHit();\ncjsRecord();\nconsole.log('esm-hits:' + esmNs.hits);\nconsole.log('cjs-destructured:' + cjsHits);\nconsole.log('cjs-getter:' + cjsGet());\n```\n\n**Requirements:**\n- Return a fresh `string[]` containing each printed line in exact execution order.\n\n**Return Contract:**\n- Return `string[]` (3 elements).",
+      "inputHint": "Trace live ESM binding updates vs. CJS value-copy destructuring",
+      "starterCode": "function traceModuleBindings() {\n  return [];\n}\n\nmodule.exports = { traceModuleBindings };\n",
+      "solutionCode": "function traceModuleBindings() {\n  const outputLines = [\n    'esm-hits:2',\n    'cjs-destructured:0',\n    'cjs-getter:1',\n  ];\n  return outputLines;\n}\n\nmodule.exports = { traceModuleBindings };\n",
+      "trapMutant": "function traceModuleBindings() {\n  return [\n    'esm-hits:2',\n    'cjs-destructured:1',\n    'cjs-getter:1',\n  ];\n}\n\nmodule.exports = { traceModuleBindings };\n",
+      "visibleTests": [
+        {
+          "name": "returns 3 formatted trace lines starting with esm-hits",
+          "testCode": "const lines = traceModuleBindings();\nassert.strictEqual(lines.length, 3);\nassert.strictEqual(lines[0], 'esm-hits:2');"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "distinguishes stale CJS destructured primitive from live ESM binding and CJS getter",
+          "testCode": "assert.deepStrictEqual(traceModuleBindings(), [\n  'esm-hits:2',\n  'cjs-destructured:0',\n  'cjs-getter:1',\n]);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Calling `esmNs.recordHit()` twice increments `hits` inside `createEsmModule()`, and `esmNs.hits` uses a getter (live-binding semantics) so it reads `2`."
+        },
+        {
+          "explain": "Destructuring `const { hits: cjsHits } = cjsExports` copied the primitive `0` at destructuring time, so `cjsHits` remains `0` after `cjsRecord()`."
+        },
+        {
+          "explain": "Calling `cjsGet()` reads the closure variable inside `createCjsModule()`, returning `1`."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "cjs-destructured-primitive-stale-copy|direct|function createEsmModule() { let hits = #; const namespace = {}; Object.defineProperty(namespace, 'hits', { get: () => hits }); namespace.recordHit = () => { hits += #; }; return namespace; } function createCjsModule() { let hits = #; const recordHit = () => { hits += #; }; const getHits = () => hits; return { hits, recordHit, getHits }; } const esmNs = createEsmModule(); const cjsExports = createCjsModule(); const { hits: cjsHits, recordHit: cjsRecord, getHits: cjsGet } = cjsExports; esmNs.recordHit(); esmNs.recordHit(); cjsRecord(); console.log('esm-hits:' + esmNs.hits); console.log('cjs-destructured:' + cjsHits); console.log('cjs-getter:' + cjsGet());",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "code-tracing",
+          "verifiedByExecution": true
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "cjs-destructured-primitive-stale-copy",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 5
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Standard Exam",
+      "unitCode": "PRG-T01-C01-U05",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U05-01/Q05_traceModuleBindings.js"
+    }
+  ],
+  "blindSolve": [
+    {
+      "problemId": "Q01",
+      "passed": true
+    },
+    {
+      "problemId": "Q02",
+      "passed": true
+    },
+    {
+      "problemId": "Q03",
+      "passed": true
+    },
+    {
+      "problemId": "Q04",
+      "passed": true
+    },
+    {
+      "problemId": "Q05",
+      "passed": true
+    }
+  ],
+  "review": {
+    "verdict": "pass",
+    "note": "All 5 problems satisfy no-leak, realistic domain, Layer 3 rubric, mix/level (L1-L2 with 3 fix-bug and 1 predict-output), unit scope, and trap-mutant checks."
+  },
+  "drillId": "DRL-PRG-T01-C01-U05-01",
+  "topicCode": "PRG-T01",
+  "chapterCode": "PRG-T01-C01",
+  "schemaVersion": "2.0-code",
+  "subject": "PRG",
+  "createdAt": "2026-11-16 21:29:19",
+  "localFilePath": "drills/data/PRG-T01-C01-U05/DRL-PRG-T01-C01-U05-01.json"
+}

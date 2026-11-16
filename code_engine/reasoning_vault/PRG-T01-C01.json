@@ -1025,6 +1025,200 @@
           }
         }
       ]
+    },
+    {
+      "archetypeKey": "prg-c01-esm-named-default-exports",
+      "unitCode": "PRG-T01-C01-U05",
+      "level": 1,
+      "archetype": "problem-solving",
+      "name": "ESM & CJS Export Structure and Import Resolution",
+      "competencies": [
+        "es-modules",
+        "commonjs",
+        "module-boundaries"
+      ],
+      "coreConcept": "Structuring ES Module and CommonJS exports cleanly with explicit named exports, avoiding default-vs-named import mismatches and barrel re-export collisions.",
+      "mentalModel": [
+        "1. Named exports (`export { fn }`) bind exact identifiers and require matching `{ fn }` destructured imports in ESM.",
+        "2. Default exports (`export default ...`) bind a single unnamed value per module and are imported without braces.",
+        "3. Barrel `index` files must alias colliding names (`export { parse as parseCsv } from './csv.js'`) to keep the public API unambiguous."
+      ],
+      "governingInvariant": "every imported symbol resolves to its intended exported binding without name collisions or undefined destructuring",
+      "cognitiveTraps": [
+        {
+          "trapTag": "default-named-export-mismatch",
+          "name": "Default vs. Named Export Mismatch",
+          "description": "Importing a default export using `{ name }` or importing a named export without braces produces `undefined` or a `SyntaxError`.",
+          "reproducer": "Module exports `export default function parse() {}`; consumer writes `import { parse } from './parser.js'` -> SyntaxError."
+        },
+        {
+          "trapTag": "barrel-reexport-name-collision",
+          "name": "Barrel Re-Export Name Collision",
+          "description": "Using `export *` from two submodules that export the same identifier causes an ambiguous export error or silent shadowing.",
+          "reproducer": "index.js does `export * from './v1.js'; export * from './v2.js';` where both export `normalize` -> SyntaxError / ambiguity."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "feature_flag_sdk_barrel",
+          "description": "Structuring a modular feature-flag SDK with clean named exports and conflict-free barrel re-exports."
+        }
+      ],
+      "usedContexts": [
+        "plugin_manifest_barrel_resolver",
+        "sdk_module_import_linker"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-mod-explicit-exports",
+          "check": "Module boundaries expose explicit named exports rather than mutating globals or mixing ambiguous default and named exports for the same symbol.",
+          "why": "Explicit named exports enable static analysis, reliable refactoring, and prevent default-vs-named import mismatches.",
+          "severity": "must",
+          "knownBad": {
+            "code": "export default function createClient(url) {\n  return { url };\n}\nexport const defaultClient = createClient('http://localhost');",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-mod-no-side-effect-import",
+          "check": "Importing a module does not trigger hidden global mutations or side-effectful initialization at top-level evaluation time.",
+          "why": "Import-time side effects make module load order fragile and break deterministic testing.",
+          "severity": "should",
+          "knownBad": {
+            "code": "globalThis.metricsEnabled = true;\nexport function recordMetric(name) {\n  return name;\n}",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "prg-c01-circular-dependency-resolution",
+      "unitCode": "PRG-T01-C01-U05",
+      "level": 2,
+      "archetype": "debugging",
+      "name": "Circular Import & Evaluation Order Resolution",
+      "competencies": [
+        "circular-dependencies",
+        "module-evaluation",
+        "debugging"
+      ],
+      "coreConcept": "Diagnosing and resolving circular import bugs where top-level module evaluation reads an uninitialized ESM binding (TDZ) or an incomplete CommonJS `exports` object.",
+      "mentalModel": [
+        "1. In ESM, modules are linked before evaluation; reading an uninitialized `const`/`let` binding from a cyclic dependency at top level throws `ReferenceError`.",
+        "2. In CJS, a cyclic `require()` returns the partially populated `exports` object as it exists at that moment; reassigning `module.exports` later leaves the cycle with stale `{}`.",
+        "3. Break cycles by extracting shared constants/helpers into a third leaf module, or deferring cross-module reads into function bodies."
+      ],
+      "governingInvariant": "module graph evaluation completes without reading uninitialized cyclic bindings or stale partial exports",
+      "cognitiveTraps": [
+        {
+          "trapTag": "circular-top-level-tdz-read",
+          "name": "Top-Level Read of Uninitialized Cyclic Binding",
+          "description": "Calling or reading a cyclic import during top-level module execution hits the Temporal Dead Zone in ESM or `undefined` in CJS.",
+          "reproducer": "a.js imports `config` from b.js and reads `config.port` at top level while b.js imports `init` from a.js -> ReferenceError."
+        },
+        {
+          "trapTag": "cjs-exports-reassignment-break",
+          "name": "CommonJS module.exports Reassignment in Cycle",
+          "description": "Reassigning `module.exports = ...` after a cyclic `require()` leaves the requiring module holding the original empty `exports` object.",
+          "reproducer": "a.js requires b.js which requires a.js; a.js later sets `module.exports = { run }` -> b.js sees `{}`."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "auth_session_cycle_repair",
+          "description": "Resolving a circular import between token verifier and session store modules in an auth service."
+        }
+      ],
+      "usedContexts": [
+        "auth_token_session_bootstrap",
+        "cjs_plugin_loader_cache"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-mod-acyclic-leaf-extraction",
+          "check": "Shared constants, types, or helpers needed by mutually referencing modules are extracted into an acyclic leaf module or accessed lazily inside functions rather than at top level.",
+          "why": "Top-level reads across a cycle depend on fragile import order and fail with TDZ ReferenceError or partial exports.",
+          "severity": "must",
+          "knownBad": {
+            "code": "import { registerPlugin } from './registry.js';\nexport const pluginName = 'audit';\nregisterPlugin(pluginName);",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-mod-no-unused-import-bindings",
+          "check": "All imported module bindings are actively used without dead imports or shadowed local declarations.",
+          "why": "Unused imports create false dependency edges in the module graph and can trigger unnecessary cycles.",
+          "severity": "must",
+          "knownBad": {
+            "code": "import { formatInvoice } from './formatter.js';\nexport function computeTotal(amount) {\n  return amount * 1.07;\n}",
+            "caughtBy": "lint:no-unused-vars"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "prg-c01-live-binding-singleton-cache",
+      "unitCode": "PRG-T01-C01-U05",
+      "level": 2,
+      "archetype": "code-tracing",
+      "name": "ESM Live Bindings vs. CJS Value Copies & Singleton Cache",
+      "competencies": [
+        "live-bindings",
+        "module-cache",
+        "code-tracing"
+      ],
+      "coreConcept": "Tracing how ESM exports expose live read-only views into the exporting module's scope while CJS `require()` copies primitive values at import time, and how both cache module singletons per specifier.",
+      "mentalModel": [
+        "1. Every module specifier is evaluated once and cached in the module map; subsequent imports return the same cached instance.",
+        "2. ESM `import { count }` is a live read-only binding: updates inside the exporting module are visible to all importers, but importers cannot reassign `count`.",
+        "3. CJS `const { count } = require('./mod')` copies the primitive value at require time, so later mutations inside `./mod` do not update the local `count` variable."
+      ],
+      "governingInvariant": "module state updates propagate via live bindings or accessor functions while singleton initialization runs once",
+      "cognitiveTraps": [
+        {
+          "trapTag": "cjs-destructured-primitive-stale-copy",
+          "name": "Destructured CJS Primitive Stale Copy",
+          "description": "Destructuring a primitive property from `require()` captures a snapshot value that does not reflect subsequent updates in the source module.",
+          "reproducer": "const { count, inc } = require('./counter'); inc(); console.log(count); // still 0."
+        },
+        {
+          "trapTag": "esm-live-binding-reassignment-error",
+          "name": "Reassigning Imported ESM Live Binding",
+          "description": "Attempting to mutate or reassign an imported ESM binding in the consumer module throws `TypeError: Assignment to constant variable`.",
+          "reproducer": "import { count } from './counter.js'; count += 1; // TypeError."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "telemetry_counter_module_trace",
+          "description": "Tracing cross-module counter updates and singleton cache behavior in a telemetry pipeline."
+        }
+      ],
+      "usedContexts": [
+        "telemetry_counter_module_trace"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-mod-accessor-over-mutable-export",
+          "check": "Shared module state is exposed through explicit getter/setter or factory functions rather than raw mutable `let` exports.",
+          "why": "Mutable `let` exports create hidden coupling and behave inconsistently between ESM live bindings and CJS value copies.",
+          "severity": "must",
+          "knownBad": {
+            "code": "export let activeConnections = 0;\nexport function openConnection() {\n  activeConnections += 1;\n}",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-mod-single-init-guard",
+          "check": "Module-level registries or caches initialize idempotently so repeated calls do not duplicate entries.",
+          "why": "Non-idempotent initialization corrupts singleton state when multiple modules depend on the same service.",
+          "severity": "should",
+          "knownBad": {
+            "code": "const handlers = [];\nexport function initModule(fn) {\n  handlers.push(fn);\n  return handlers;\n}",
+            "caughtBy": "review"
+          }
+        }
+      ]
     }
   ]
 }
