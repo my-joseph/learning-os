@@ -1506,6 +1506,45 @@ def check_answer(spec, raw):
         }
 
 
+TRAP_VERDICTS = ("incorrect", "partial")
+
+
+def match_trap(spec: dict, user_input: str, trap_val: object) -> bool:
+    """True when `user_input` equals the problem's trap answer (`trapValue`), checked with the same checker as
+    the real answer. Applies to wrong (`incorrect`) and incomplete (`partial`) answers, so an omission trap on a
+    solution set (a strict subset of the roots) is matched too."""
+    spec_type = spec.get("type")
+    try:
+        trap_spec = dict(spec)
+        if spec_type in ("number", "expression", "complex"):
+            trap_spec["value"] = str(trap_val)
+        elif spec_type == "vector":
+            trap_spec["value"] = trap_val
+            trap_spec.pop("components", None)
+            trap_spec.pop("values", None)
+        elif spec_type == "tuple":
+            if isinstance(trap_val, (list, tuple)):
+                trap_spec["values"] = list(trap_val)
+            elif isinstance(trap_val, str):
+                parts = [
+                    p.strip() for p in re.sub(r"^\s*[\(\[\{<]|[\)\]\}>]\s*$", "", trap_val).split(",") if p.strip()
+                ]
+                trap_spec["values"] = parts
+            else:
+                trap_spec["values"] = [trap_val]
+        elif spec_type == "solution_set":
+            if isinstance(trap_val, (list, tuple)):
+                trap_spec["values"] = [str(v) for v in trap_val]
+            else:
+                trap_spec["values"] = _split_items(str(trap_val), spec.get("variable", "x"))
+        else:
+            return False
+        fn = CHECKERS.get(spec_type)
+        return bool(fn) and fn(trap_spec, user_input).get("verdict") == "correct"
+    except Exception:
+        return False
+
+
 if __name__ == "__main__":
     payload = json.loads(sys.stdin.read() or "{}")
     spec = payload.get("answerSpec", {})
@@ -1513,38 +1552,8 @@ if __name__ == "__main__":
     res = check_answer(spec, user_input)
 
     trap_val = payload.get("trapValue")
-    if res.get("verdict") == "incorrect" and trap_val is not None:
-        spec_type = spec.get("type")
-        trap_matched = False
-        try:
-            trap_spec = dict(spec)
-            if spec_type in ("number", "expression", "complex"):
-                trap_spec["value"] = str(trap_val)
-            elif spec_type == "vector":
-                trap_spec["value"] = trap_val
-                trap_spec.pop("components", None)
-                trap_spec.pop("values", None)
-            elif spec_type == "tuple":
-                if isinstance(trap_val, (list, tuple)):
-                    trap_spec["values"] = list(trap_val)
-                elif isinstance(trap_val, str):
-                    parts = [
-                        p.strip() for p in re.sub(r"^\s*[\(\[\{<]|[\)\]\}>]\s*$", "", trap_val).split(",") if p.strip()
-                    ]
-                    trap_spec["values"] = parts
-                else:
-                    trap_spec["values"] = [trap_val]
-
-            fn = CHECKERS.get(spec_type)
-            if fn:
-                trap_res = fn(trap_spec, user_input)
-                if trap_res.get("verdict") == "correct":
-                    trap_matched = True
-        except Exception:
-            trap_matched = False
-
-        if trap_matched:
-            res["trapMatched"] = True
+    if res.get("verdict") in TRAP_VERDICTS and trap_val is not None and match_trap(spec, user_input, trap_val):
+        res["trapMatched"] = True
 
     print(json.dumps(res))
 

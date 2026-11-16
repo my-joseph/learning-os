@@ -100,6 +100,10 @@ export function applyCheckResult(
     if (newMistakes.size === 0) {
       newMistakes.add("unclassified");
     }
+  } else if (result.verdict === "partial" && result.trapMatched && prob.commonTrapTag) {
+    // Incomplete answer equal to the trap (e.g. one root of a solution set omitted): tag the trap.
+    newMistakes.add(prob.commonTrapTag);
+    matchedTrapTag = prob.commonTrapTag;
   } else if (result.verdict !== "correct") {
     mistakeTags.forEach((tag) => {
       if (tag.autoFrom?.some((c) => diagCodeSet.has(c))) {
