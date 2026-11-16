@@ -972,8 +972,8 @@ export default function PracticeStudioPage() {
                             <option value="PRG-T01-C01">
                               PRG-T01-C01 · JS Deep Dive (Mental Model)
                             </option>
-                            <option value="PRG-T01-C03">
-                              PRG-T01-C03 · Utility Toolkit (VS Code Katas)
+                            <option value="PRG-T01-C04">
+                              PRG-T01-C04 · Utility Toolkit (VS Code Katas)
                             </option>
                           </optgroup>
                           <optgroup label="Prealgebra (MTH-T01)">

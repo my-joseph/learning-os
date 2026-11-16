@@ -1,7 +1,7 @@
 {
   "unitCode": "PRG-T01-C04",
   "unitTitle": "Problem Solving & Utility Toolkit",
-  "description": "Autonomous Reasoning Schemas & Engineering Archetypes for PRG-T01-C03 (Async Architectures, Resilient Systems, Caching, and High-Throughput Utilities).",
+  "description": "Autonomous Reasoning Schemas & Engineering Archetypes for PRG-T01-C04 (Async Architectures, Resilient Systems, Caching, and High-Throughput Utilities).",
   "archetypes": [
     {
       "archetypeKey": "prg-c03-token-bucket-rate-limiter",

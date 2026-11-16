@@ -84,7 +84,7 @@
         "verificationLevel": "partial",
         "weakDistractors": 0
       },
-      "workspaceFile": "drills/workspace/DRL-PRG-T00-C02-02/Q01_clampBatteryPercent.js"
+      "workspaceFile": "drills/workspace/DRL-PRG-T00-C03-02/Q01_clampBatteryPercent.js"
     },
     {
       "level": 1,
@@ -165,7 +165,7 @@
         "verificationLevel": "partial",
         "weakDistractors": 0
       },
-      "workspaceFile": "drills/workspace/DRL-PRG-T00-C02-02/Q02_resolveRetryLimit.js"
+      "workspaceFile": "drills/workspace/DRL-PRG-T00-C03-02/Q02_resolveRetryLimit.js"
     },
     {
       "level": 1,
@@ -250,7 +250,7 @@
         "verificationLevel": "partial",
         "weakDistractors": 0
       },
-      "workspaceFile": "drills/workspace/DRL-PRG-T00-C02-02/Q03_countValidQuantities.js"
+      "workspaceFile": "drills/workspace/DRL-PRG-T00-C03-02/Q03_countValidQuantities.js"
     },
     {
       "level": 1,
@@ -327,7 +327,7 @@
         "verificationLevel": "partial",
         "weakDistractors": 0
       },
-      "workspaceFile": "drills/workspace/DRL-PRG-T00-C02-02/Q04_formatDisplayName.js"
+      "workspaceFile": "drills/workspace/DRL-PRG-T00-C03-02/Q04_formatDisplayName.js"
     },
     {
       "level": 1,
@@ -408,7 +408,7 @@
         "verificationLevel": "partial",
         "weakDistractors": 0
       },
-      "workspaceFile": "drills/workspace/DRL-PRG-T00-C02-02/Q05_applyDiscount.js"
+      "workspaceFile": "drills/workspace/DRL-PRG-T00-C03-02/Q05_applyDiscount.js"
     },
     {
       "level": 1,
@@ -489,7 +489,7 @@
         "verificationLevel": "partial",
         "weakDistractors": 0
       },
-      "workspaceFile": "drills/workspace/DRL-PRG-T00-C02-02/Q06_sumInvoiceTotal.js"
+      "workspaceFile": "drills/workspace/DRL-PRG-T00-C03-02/Q06_sumInvoiceTotal.js"
     },
     {
       "level": 1,
@@ -570,7 +570,7 @@
         "verificationLevel": "partial",
         "weakDistractors": 0
       },
-      "workspaceFile": "drills/workspace/DRL-PRG-T00-C02-02/Q07_summarizeTemperatures.js"
+      "workspaceFile": "drills/workspace/DRL-PRG-T00-C03-02/Q07_summarizeTemperatures.js"
     },
     {
       "level": 1,
@@ -651,7 +651,7 @@
         "verificationLevel": "partial",
         "weakDistractors": 0
       },
-      "workspaceFile": "drills/workspace/DRL-PRG-T00-C02-02/Q08_listActiveEmails.js"
+      "workspaceFile": "drills/workspace/DRL-PRG-T00-C03-02/Q08_listActiveEmails.js"
     },
     {
       "level": 1,
@@ -728,7 +728,7 @@
         "verificationLevel": "partial",
         "weakDistractors": 0
       },
-      "workspaceFile": "drills/workspace/DRL-PRG-T00-C02-02/Q09_buildShippingLabel.js"
+      "workspaceFile": "drills/workspace/DRL-PRG-T00-C03-02/Q09_buildShippingLabel.js"
     },
     {
       "level": 1,
@@ -809,12 +809,12 @@
         "verificationLevel": "partial",
         "weakDistractors": 0
       },
-      "workspaceFile": "drills/workspace/DRL-PRG-T00-C02-02/Q10_adjustStock.js"
+      "workspaceFile": "drills/workspace/DRL-PRG-T00-C03-02/Q10_adjustStock.js"
     }
   ],
-  "drillId": "DRL-PRG-T00-C02-02",
+  "drillId": "DRL-PRG-T00-C03-02",
   "schemaVersion": "2.0-code",
   "subject": "PRG",
   "createdAt": "2026-11-11 15:19:27",
-  "localFilePath": "drills/data/PRG-T00-C02/DRL-PRG-T00-C02-02.json"
+  "localFilePath": "drills/data/PRG-T00-C02/DRL-PRG-T00-C03-02.json"
 }

@@ -245,7 +245,7 @@ def main(argv: list[str] | None = None) -> int:
         prog="python -m code_engine.review_run",
         description="Run Layer 1 (tests) and Layer 2 (lint/tsc) for one PRG problem (read-only).",
     )
-    parser.add_argument("drill_id", help="Drill ID, e.g. DRL-PRG-T00-C02-02")
+    parser.add_argument("drill_id", help="Drill ID, e.g. DRL-PRG-T00-C03-02")
     parser.add_argument("qid", help="Problem ID, e.g. Q01")
     parser.add_argument("--json", action="store_true", dest="as_json", help="Print JSON output")
     args = parser.parse_args(argv)
