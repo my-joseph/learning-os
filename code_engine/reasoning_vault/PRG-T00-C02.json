@@ -183,8 +183,8 @@
         {
           "trapTag": "hardcoded-os-path-in-manifest",
           "name": "Absolute or OS-Specific Paths in package.json",
-          "description": "Writing machine-specific absolute paths (e.g. `/Users/dev/app/src/index.js`) in `package.json` breaks the project on every other machine.",
-          "reproducer": "Set `main` to `/Users/alice/project/src/index.js`; `require('.')` fails on CI with MODULE_NOT_FOUND."
+          "description": "Writing machine-specific absolute paths (e.g. `/home/dev/app/src/index.js`) in `package.json` breaks the project on every other machine.",
+          "reproducer": "Set `main` to `/home/alice/project/src/index.js`; `require('.')` fails on CI with MODULE_NOT_FOUND."
         },
         {
           "trapTag": "assuming-root-is-cwd",
