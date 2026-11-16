@@ -372,7 +372,7 @@ class TestQualityGates(unittest.TestCase):
 
     def test_12_accept_template_standard_and_kata_exemption(self) -> None:
         """Test 12: accept_template evaluates standard templates and respects kata exemptions."""
-        from code_engine.templates.prg_t01_c03 import TEMPLATES as PRG_TPLS
+        from code_engine.templates.prg_t01_c04 import TEMPLATES as PRG_TPLS
         from math_engine.templates.mth_t01_c12 import TEMPLATES as MTH_TPLS
         from scripts.accept_template import evaluate_template
 
@@ -383,7 +383,7 @@ class TestQualityGates(unittest.TestCase):
         self.assertGreaterEqual(res_pyth["distinct_skill_cells"], 3)
 
         kata_tpl = next(t for t in PRG_TPLS if t["key"] == "kata_debounce")
-        res_kata = evaluate_template("PRG-T01-C03", kata_tpl, is_code=True, n_seeds=30)
+        res_kata = evaluate_template("PRG-T01-C04", kata_tpl, is_code=True, n_seeds=30)
         self.assertTrue(res_kata["passed"])
         self.assertTrue(res_kata["is_exempt"])
 

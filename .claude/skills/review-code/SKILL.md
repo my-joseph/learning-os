@@ -1,6 +1,6 @@
 ---
 name: review-code
-description: Review the learner's code for one PRG drill problem like a senior engineer's pull-request review - run tests, lint and types, judge design against the archetype's rubric (qualityChecks), give hints not rewrites, record the attempt, and show the reference only after a pass. Use when the learner asks to review or check their code ("ตรวจโค้ด DRL-PRG-T00-C02-02 Q01", "review code ...", "รีวิว Q03"), disputes a finding, or answers the explain question.
+description: Review the learner's code for one PRG drill problem like a senior engineer's pull-request review - run tests, lint and types, judge design against the archetype's rubric (qualityChecks), give hints not rewrites, record the attempt, and show the reference only after a pass. Use when the learner asks to review or check their code ("ตรวจโค้ด DRL-PRG-T00-C03-02 Q01", "review code ...", "รีวิว Q03"), disputes a finding, or answers the explain question.
 ---
 
 # Review code

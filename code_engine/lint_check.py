@@ -8,7 +8,7 @@ then runs ESLint and reports any rule violations as `file:line rule message`.
 
 Usage:
     python -m code_engine.lint_check --all
-    python -m code_engine.lint_check DRL-PRG-T00-C02-02
+    python -m code_engine.lint_check DRL-PRG-T00-C03-02
 """
 
 from __future__ import annotations
@@ -124,7 +124,7 @@ def find_prg_drill_files(data_root: Path) -> list[Path]:
 
 def main(argv: Optional[list[str]] = None) -> int:
     parser = argparse.ArgumentParser(description="Lint PRG drill reference solutions.")
-    parser.add_argument("drill_id", nargs="?", help="Drill ID to check (e.g. DRL-PRG-T00-C02-02)")
+    parser.add_argument("drill_id", nargs="?", help="Drill ID to check (e.g. DRL-PRG-T00-C03-02)")
     parser.add_argument("--all", action="store_true", help="Check all PRG drills under drills/data/PRG-*")
     parser.add_argument("--data-root", default="drills/data", help="Root directory for drill JSON files")
     args = parser.parse_args(argv)

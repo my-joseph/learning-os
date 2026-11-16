@@ -746,7 +746,7 @@ def ingest_ai_code_drill(
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Ingest AI-generated code drill or inspect Reasoning Vault.")
-    parser.add_argument("--unit", default="PRG-T01-C03", help="Unit code (e.g. PRG-T01-C03)")
+    parser.add_argument("--unit", default="PRG-T01-C04", help="Unit code (e.g. PRG-T01-C04)")
     parser.add_argument("--list-vault", action="store_true", help="List registered engineering archetypes")
     parser.add_argument("--ingest-file", help="Path to JSON file containing AI-generated code drill document")
     args = parser.parse_args()

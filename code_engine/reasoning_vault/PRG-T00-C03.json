@@ -1,5 +1,5 @@
 {
-  "unitCode": "PRG-T00-C02",
+  "unitCode": "PRG-T00-C03",
   "unitTitle": "JavaScript & TypeScript Baseline",
   "description": "Empirical reasoning schemas and archetypes for baseline JavaScript runtime mechanics and TypeScript type safety (U01 to U07).",
   "archetypes": [
@@ -63,7 +63,11 @@
           "check": "Missing-value guards and defaults distinguish `null`/`undefined` from legitimate falsy values (`0`, `false`, `''`) by structure rather than truthy/falsy coercion.",
           "why": "Truthy/falsy coercion silently drops valid `0`, `false`, or `''` values on untested branches.",
           "severity": "must",
-          "accepted": ["val ?? fallback", "val !== null && val !== undefined", "typeof val === 'number' && Number.isFinite(val)"],
+          "accepted": [
+            "val ?? fallback",
+            "val !== null && val !== undefined",
+            "typeof val === 'number' && Number.isFinite(val)"
+          ],
           "knownBad": {
             "code": "function getTimeout(cfg) {\n  return cfg.timeoutSec || 30;\n}",
             "caughtBy": "review"
@@ -125,7 +129,12 @@
           "check": "No reference to internal mutable state escapes the factory through any accessor or return value.",
           "why": "Returning a live internal reference lets callers mutate private closure state outside the factory API.",
           "severity": "must",
-          "accepted": ["[...items]", "items.slice()", "structuredClone(items)", "Object.freeze({ ...state })"],
+          "accepted": [
+            "[...items]",
+            "items.slice()",
+            "structuredClone(items)",
+            "Object.freeze({ ...state })"
+          ],
           "knownBad": {
             "code": "function createRegistry() {\n  const items = [];\n  return {\n    add(item) { items.push(item); },\n    getAll() { return items; }\n  };\n}",
             "caughtBy": "review"
@@ -203,7 +212,11 @@
           "check": "Transformation stages derive new collections without mutating caller-owned arrays or intermediate elements.",
           "why": "In-place array methods such as `.sort()` or `.reverse()` corrupt the caller's ordering.",
           "severity": "must",
-          "accepted": ["[...arr].sort(...)", "arr.toSorted(...)", "arr.slice().sort(...)"],
+          "accepted": [
+            "[...arr].sort(...)",
+            "arr.toSorted(...)",
+            "arr.slice().sort(...)"
+          ],
           "knownBad": {
             "code": "function sortOrders(orders) {\n  return orders.sort((a, b) => a.total - b.total);\n}",
             "caughtBy": "review"
@@ -269,7 +282,10 @@
           "check": "Delegated event handlers resolve the interactive boundary upward from `event.target` and guard against non-matching clicks before reading attributes.",
           "why": "Reading `event.target` directly misses nested children (`<span>`, icons), and unguarded lookups crash on container clicks.",
           "severity": "must",
-          "accepted": ["event.target.closest(selector)", "parent-walking loop with element.matches(selector)"],
+          "accepted": [
+            "event.target.closest(selector)",
+            "parent-walking loop with element.matches(selector)"
+          ],
           "knownBad": {
             "code": "function handleClick(event, onAction) {\n  const action = event.target.dataset.action;\n  if (action) onAction(action);\n}",
             "caughtBy": "review"
@@ -337,7 +353,10 @@
           "check": "When partial failure tolerance is required, each concurrent task's rejection is isolated so one failure does not abort or drop sibling results.",
           "why": "Unisolated rejections discard valid results from concurrent sibling tasks.",
           "severity": "must",
-          "accepted": ["Promise.allSettled(...)", "per-task async wrapper with try/catch returning { status, value | reason }"],
+          "accepted": [
+            "Promise.allSettled(...)",
+            "per-task async wrapper with try/catch returning { status, value | reason }"
+          ],
           "knownBad": {
             "code": "async function runAll(tasks) {\n  return Promise.all(tasks.map((task) => task()));\n}",
             "caughtBy": "review"
@@ -549,7 +568,10 @@
           "check": "Optional defaults and variadic inputs are expressed cleanly in the function signature or explicit nullish guards rather than mutating `arguments` or using falsy `||` fallbacks.",
           "why": "Falsy `||` fallbacks drop explicit `0` or `false` arguments, and `arguments` obscures the function's contract.",
           "severity": "must",
-          "accepted": ["function f(a, rate = 0.1, ...items)", "const r = rate ?? 0.1"],
+          "accepted": [
+            "function f(a, rate = 0.1, ...items)",
+            "const r = rate ?? 0.1"
+          ],
           "knownBad": {
             "code": "function applyDiscount(price, rate) {\n  const r = rate || 0.1;\n  return price * (1 - r);\n}",
             "caughtBy": "review"
@@ -560,7 +582,10 @@
           "check": "Numeric rounding is applied once at the output boundary as a numeric value, keeping intermediate calculations unrounded.",
           "why": "Rounding intermediate steps accumulates drift, and returning a string from `toFixed` breaks numeric callers.",
           "severity": "should",
-          "accepted": ["Math.round(total * 100) / 100", "Number(total.toFixed(2))"],
+          "accepted": [
+            "Math.round(total * 100) / 100",
+            "Number(total.toFixed(2))"
+          ],
           "knownBad": {
             "code": "function roundPrice(amount) {\n  return amount.toFixed(2);\n}",
             "caughtBy": "review"
@@ -636,7 +661,10 @@
           "check": "Updating a key-value map returns a new object rather than mutating the caller's object in place.",
           "why": "Mutating the caller's object causes silent side effects for any other code holding a reference to it.",
           "severity": "must",
-          "accepted": ["{ ...map, [key]: next }", "Object.assign({}, map, { [key]: next })"],
+          "accepted": [
+            "{ ...map, [key]: next }",
+            "Object.assign({}, map, { [key]: next })"
+          ],
           "knownBad": {
             "code": "function adjustStock(stock, sku, delta) {\n  stock[sku] = (stock[sku] ?? 0) + delta;\n  return stock;\n}",
             "caughtBy": "lint:no-param-reassign"

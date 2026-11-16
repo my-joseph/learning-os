@@ -45,11 +45,11 @@ Whenever an AI Agent is tasked with creating a new Lab, it MUST follow this exac
 Define the lab metadata, learning unit linkage, milestone breakdown, point distribution, and mistake taxonomy:
 ```json
 {
-  "labId": "LAB-PRG-T03-C01-01",
+  "labId": "LAB-PRG-T01-C04-02",
   "title": "E-Commerce Core Domain & Checkout Engine",
   "subject": "PRG",
-  "unitCode": "PRG-T03-C01",
-  "chapterCode": "PRG-T03",
+  "unitCode": "PRG-T01-C04",
+  "chapterCode": "PRG-T01",
   "difficulty": "Level 4 - Applied Synthesis",
   "milestones": [
     {

@@ -342,13 +342,15 @@ def _resolve_page_ids(
     resolved_page_ids: dict[str, str] = {}
     for e in entries:
         nc = e["newCode"]
+        if nc is None:
+            continue
         if e["oldCodes"]:
             oc = e["oldCodes"][0]
             if oc in id_map and id_map[oc]["id"].replace("-", "") in pages_by_id:
-                resolved_page_ids[nc or oc] = id_map[oc]["id"]
-            elif nc and nc in id_map and id_map[nc]["id"].replace("-", "") in pages_by_id:
+                resolved_page_ids[nc] = id_map[oc]["id"]
+            elif nc in id_map and id_map[nc]["id"].replace("-", "") in pages_by_id:
                 resolved_page_ids[nc] = id_map[nc]["id"]
-        elif nc and nc in id_map and id_map[nc]["id"].replace("-", "") in pages_by_id:
+        elif nc in id_map and id_map[nc]["id"].replace("-", "") in pages_by_id:
             if id_map[nc]["id"] not in old_code_pids:
                 resolved_page_ids[nc] = id_map[nc]["id"]
 
@@ -666,7 +668,7 @@ def build_migration_plan(
         assert nc is not None
         if e["oldCodes"]:
             oc = e["oldCodes"][0]
-            pid = resolved_page_ids.get(nc) or (id_map.get(oc) or {}).get("id")
+            pid = (id_map.get(oc) or {}).get("id") or (by_full_id.get(oc) or {}).get("id") or resolved_page_ids.get(nc)
             if pid:
                 page = pages_by_id.get(pid.replace("-", ""))
                 cur_fid = prop_text(page.get("properties", {}).get("Full ID")).strip() if page else oc

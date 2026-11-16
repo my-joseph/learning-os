@@ -6,7 +6,7 @@ from collections import Counter
 from typing import Any
 
 from code_engine.templates.prg_t01_c01 import TEMPLATES as PRG_C01
-from code_engine.templates.prg_t01_c03 import TEMPLATES as PRG_C03
+from code_engine.templates.prg_t01_c04 import TEMPLATES as PRG_C04
 from math_engine.templates.mth_t01_c12 import TEMPLATES as MTH_C12
 from math_engine.templates.mth_t02_c01_u01 import TEMPLATES as MTH_C01
 from quality_rules import (
@@ -23,7 +23,7 @@ def run_benchmark(n_seeds: int = 200) -> dict[str, Any]:
         ("MTH-T01-C12", MTH_C12, False),
         ("MTH-T02-C01-U01", MTH_C01, False),
         ("PRG-T01-C01", PRG_C01, True),
-        ("PRG-T01-C03", PRG_C03, True),
+        ("PRG-T01-C03", PRG_C04, True),
     ]
 
     results = []

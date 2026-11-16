@@ -297,9 +297,9 @@ def main():
         drill_doc = {
             "drillId": drill_id,
             "subject": "PRG",
-            "unitCode": "PRG-T01-C03",
+            "unitCode": "PRG-T01-C04",
             "unitTitle": "Problem Solving & Utility Toolkit",
-            "chapterCode": "PRG-T01-C03",
+            "chapterCode": "PRG-T01-C04",
             "topicCode": "PRG-T01",
             "problems": [],
         }
