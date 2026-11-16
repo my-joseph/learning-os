@@ -5,6 +5,7 @@
   "archetypes": [
     {
       "archetypeKey": "prg-c02-primitive-coercion-guard",
+      "unitCode": "PRG-T00-C03-U01",
       "level": 1,
       "archetype": "problem-solving",
       "name": "Defensive Primitive Sanitization & Coercion Guard",
@@ -87,6 +88,7 @@
     },
     {
       "archetypeKey": "prg-c02-lexical-closure-factory",
+      "unitCode": "PRG-T00-C03-U02",
       "level": 2,
       "archetype": "problem-solving",
       "name": "Encapsulated Lexical Scope & Closure State Factory",
@@ -164,6 +166,7 @@
     },
     {
       "archetypeKey": "prg-c02-immutable-array-pipeline",
+      "unitCode": "PRG-T00-C03-U02",
       "level": 2,
       "archetype": "problem-solving",
       "name": "Immutable Collection Transformation Pipeline",
@@ -236,6 +239,7 @@
     },
     {
       "archetypeKey": "prg-c02-event-delegation-dispatcher",
+      "unitCode": "PRG-T00-C03-U03",
       "level": 3,
       "archetype": "debugging",
       "name": "DOM Event Delegation & Propagation Controller",
@@ -305,6 +309,7 @@
     },
     {
       "archetypeKey": "prg-c02-async-promise-combinator",
+      "unitCode": "PRG-T00-C03-U03",
       "level": 3,
       "archetype": "problem-solving",
       "name": "Resilient Async Microtask & Promise Combinator",
@@ -376,6 +381,7 @@
     },
     {
       "archetypeKey": "prg-c02-discriminated-union-narrowing",
+      "unitCode": "PRG-T00-C03-U04",
       "level": 4,
       "archetype": "problem-solving",
       "name": "Discriminated Union & State Machine Reducer",
@@ -447,6 +453,7 @@
     },
     {
       "archetypeKey": "prg-c02-reproducible-defect-isolation",
+      "unitCode": "PRG-T00-C03-U04",
       "level": 2,
       "archetype": "debugging",
       "name": "Diagnostic Debugging & Minimal Reproducer Isolation",
@@ -512,6 +519,7 @@
     },
     {
       "archetypeKey": "prg-c02-function-parameters-basics",
+      "unitCode": "PRG-T00-C03-U02",
       "level": 1,
       "archetype": "problem-solving",
       "name": "Function Parameters: Defaults, Rest Arguments & Numeric Rounding",
@@ -595,6 +603,7 @@
     },
     {
       "archetypeKey": "prg-c02-array-object-basics",
+      "unitCode": "PRG-T00-C03-U02",
       "level": 1,
       "archetype": "problem-solving",
       "name": "Array & Object Basics: Aggregation, Filtering, Nested Access & Immutable Updates",

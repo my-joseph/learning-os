@@ -145,3 +145,39 @@ def test_set_relation_adds_codes_without_dropping_links(monkeypatch):
     assert calls[-1][1] == {"properties": {"Resources": {"relation": [{"id": "old-1"}, {"id": "r-36"}]}}}
     with pytest.raises(ValueError, match="not in id_map"):
         up.set_properties("U", {"Resources": "R999"}, "t", ids)
+
+
+def test_code_blocks_top_level_and_in_toggles_with_language_whitelist():
+    from notion_sync.blocks import validate_blocks_clean
+
+    spec = [
+        {"type": "code", "code": "const x: number = sqrt(4); // [[PRG-T01]]", "lang": "typescript"},
+        {
+            "type": "toggle",
+            "text": "Why this works",
+            "children": [
+                {"type": "code", "code": "SELECT * FROM users WHERE id = $1;", "lang": "SQL"},
+                {"type": "code", "code": "unknown_lang()", "lang": "not-a-notion-lang"},
+            ],
+        },
+    ]
+    blocks = up.spec_to_blocks(spec, {})
+    assert blocks[0]["type"] == "code"
+    assert blocks[0]["code"]["language"] == "typescript"
+    assert blocks[0]["code"]["rich_text"] == [
+        {
+            "type": "text",
+            "text": {"content": "const x: number = sqrt(4); // [[PRG-T01]]"},
+            "annotations": {
+                "bold": False,
+                "italic": False,
+                "strikethrough": False,
+                "underline": False,
+                "code": False,
+                "color": "default",
+            },
+        }
+    ]
+    assert blocks[1]["toggle"]["children"][0]["code"]["language"] == "sql"
+    assert blocks[1]["toggle"]["children"][1]["code"]["language"] == "plain text"
+    validate_blocks_clean(blocks, "PRG-TEST")

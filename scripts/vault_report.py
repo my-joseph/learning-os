@@ -27,19 +27,24 @@ import os
 import re
 from collections import Counter, defaultdict
 
-from math_engine.ai_drill_ingest import archetype_owner, load_scope_archetypes
+from code_engine.ai_drill_ingest import archetype_owner as prg_archetype_owner
+from code_engine.ai_drill_ingest import load_scope_archetypes as prg_load_scope_archetypes
+from math_engine.ai_drill_ingest import archetype_owner as mth_archetype_owner
+from math_engine.ai_drill_ingest import load_scope_archetypes as mth_load_scope_archetypes
 from quality_rules import BLIND_SOLVE_TAGS, demand_level
 from scripts import issues
 
-VAULT_DIR = os.path.join("math_engine", "reasoning_vault")
+MATH_VAULT_DIR = os.path.join("math_engine", "reasoning_vault")
+CODE_VAULT_DIR = os.path.join("code_engine", "reasoning_vault")
+VAULT_DIR = MATH_VAULT_DIR
 _AT_LEVEL = re.compile(r"@L(\d)")
 
 
-def _earned_level(prob: dict) -> int | None:
+def _earned_level(prob: dict, is_prg: bool = False) -> int | None:
     level = prob.get("level")
     if not isinstance(level, int):
         return None
-    if level < 3:
+    if is_prg or level < 3:
         return level
     bs = prob.get("blindSolve")
     if not isinstance(bs, dict) or any(bs.get(t) not in ok for t, ok in BLIND_SOLVE_TAGS.items()):
@@ -51,18 +56,25 @@ def _earned_level(prob: dict) -> int | None:
 
 def _evidence(data_root: str) -> dict[str, Counter]:
     earned: dict[str, Counter] = defaultdict(Counter)
-    for path in glob.glob(os.path.join(data_root, "MTH-*", "*.json")):
-        with open(path, encoding="utf-8") as f:
-            drill = json.load(f)
-        for prob in drill.get("problems", []):
-            key, lvl = prob.get("archetypeKey"), _earned_level(prob)
-            if key and lvl:
-                earned[key][lvl] += 1
+    for prefix, is_prg in (("MTH-*", False), ("PRG-*", True)):
+        for path in glob.glob(os.path.join(data_root, prefix, "*.json")):
+            with open(path, encoding="utf-8") as f:
+                drill = json.load(f)
+            for prob in drill.get("problems", []):
+                key, lvl = prob.get("archetypeKey"), _earned_level(prob, is_prg=is_prg)
+                if key and lvl:
+                    earned[key][lvl] += 1
     return earned
 
 
-def unit_report(scope: str, vault_dir: str = VAULT_DIR, data_root: str = "drills/data", log: str | None = None) -> dict:
-    archetypes = load_scope_archetypes(scope, vault_dir)
+def unit_report(
+    scope: str, vault_dir: str | None = None, data_root: str = "drills/data", log: str | None = None
+) -> dict:
+    is_prg = scope.startswith("PRG-")
+    resolved_vault = vault_dir if vault_dir is not None else (CODE_VAULT_DIR if is_prg else MATH_VAULT_DIR)
+    loader = prg_load_scope_archetypes if is_prg else mth_load_scope_archetypes
+    owner_fn = prg_archetype_owner if is_prg else mth_archetype_owner
+    archetypes = loader(scope, resolved_vault)
     earned = _evidence(data_root)
     failed: dict[str, Counter] = defaultdict(Counter)
     for rec in issues.issues(log):
@@ -84,7 +96,7 @@ def unit_report(scope: str, vault_dir: str = VAULT_DIR, data_root: str = "drills
         rows.append(
             {
                 "key": key,
-                "unit": archetype_owner(a),
+                "unit": owner_fn(a),
                 "level": base,
                 "earned": dict(sorted(earned[key].items())),
                 "failed": dict(sorted(failed[key].items())),
@@ -129,17 +141,21 @@ def log_gaps(rep: dict, log: str | None = None) -> list[str]:
 
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(prog="python -m scripts.vault_report", description=__doc__.split("\n\n")[0])
-    ap.add_argument("unit", nargs="?", help="unit or chapter code (default: every MTH vault file)")
+    ap.add_argument("unit", nargs="?", help="unit or chapter code (default: every MTH and PRG vault file)")
     ap.add_argument("--log", action="store_true", help="log FAILING archetypes to the issue log")
-    ap.add_argument("--vault-dir", default=VAULT_DIR)
+    ap.add_argument("--vault-dir", default=None)
     ap.add_argument("--data-root", default=os.environ.get("DRILLS_DATA_DIR", "drills/data"))
     args = ap.parse_args(argv)
 
-    scopes = (
-        [args.unit]
-        if args.unit
-        else sorted(os.path.basename(p)[:-5] for p in glob.glob(os.path.join(args.vault_dir, "MTH-*.json")))
-    )
+    if args.unit:
+        scopes = [args.unit]
+    elif args.vault_dir:
+        scopes = sorted(os.path.basename(p)[:-5] for p in glob.glob(os.path.join(args.vault_dir, "*.json")))
+    else:
+        scopes = sorted(
+            [os.path.basename(p)[:-5] for p in glob.glob(os.path.join(MATH_VAULT_DIR, "MTH-*.json"))]
+            + [os.path.basename(p)[:-5] for p in glob.glob(os.path.join(CODE_VAULT_DIR, "PRG-*.json"))]
+        )
     for scope in scopes:
         rep = unit_report(scope, args.vault_dir, args.data_root)
         print(format_report(rep))

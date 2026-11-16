@@ -1,15 +1,17 @@
 """Write or extend a Unit/Chapter page from a JSON spec, without ever touching the learner's workspace.
 
-Pages follow `rules/02_pedagogy.md` §7a (v4). Two modes:
+Pages follow `rules/02_pedagogy.md` §7a (MTH/PHY) and §7b (PRG). Two modes:
 - `new`: the page must be empty (0 blocks); the whole spec is appended.
 - `add`: blocks are inserted at the end of the section whose heading contains `--after`. Nothing is deleted.
   The learner's section ("My Implementation & Mistake Log") can never be the target.
 
 Spec: a JSON list of blocks, each `{"type": ..., "text": ..., "children": [...]}` with types
-h2, h3, p, bullet, num, todo, callout, quote, eq (`"expr"` instead of `text`), toggle (`children` = answer
-blocks), divider and figure (`"fn"` + `"args"` of a `math_engine.figure_builder` builder, or a ready `"figure"`
-spec, plus an optional `"caption"`; rendered to SVG and uploaded to Notion, see `notion_sync.figures`). Text supports `**bold**`, inline `$math$` and `[[CODE]]` page mentions (resolved via
-id_map.json). Write the spec as JSON, never as Python strings (LaTeX backslashes).
+h2, h3, p, bullet, num, todo, callout, quote, eq (`"expr"` instead of `text`), code (`"code"` and `"lang"`),
+toggle (`children` = answer blocks), divider and figure (`"fn"` + `"args"` of a `math_engine.figure_builder`
+builder, or a ready `"figure"` spec, plus an optional `"caption"`; rendered to SVG and uploaded to Notion, see
+`notion_sync.figures`). Text supports `**bold**`, inline `$math$`, `` `code` `` and `[[CODE]]` page mentions
+(resolved via id_map.json; `[[...]]` inside `code` blocks is never resolved). Write the spec as JSON, never as
+Python strings (LaTeX backslashes).
 
     python -m notion_sync.unit_page --code MTH-T02-C01-U02 --spec scratch/pages/U02.json --mode new
     python -m notion_sync.unit_page --code MTH-T01-C04-U04 --spec ex3.json --mode add --after "Worked Example"
@@ -27,6 +29,7 @@ from math_engine.figure_svg import figure_to_svg
 from notion_sync.blocks import (
     bullet,
     callout_block,
+    code_block,
     divider_block,
     eq_block,
     h2,
@@ -86,6 +89,8 @@ def spec_to_blocks(
             out.append(quote_block(text, id_map))
         elif kind == "eq":
             out.append(eq_block(item["expr"]))
+        elif kind == "code":
+            out.append(code_block(item["code"], item.get("lang", "plain text")))
         elif kind == "toggle":
             out.append(toggle_block(text, kids or [], id_map))
         elif kind == "divider":
@@ -262,7 +267,7 @@ def main(argv: list[str] | None = None) -> int:
         prog="python -m notion_sync.unit_page",
         description=__doc__.split("\n\n")[0],
         epilog="Text syntax (also figure captions): **bold** (no * inside), $inline math$ (math outside $...$ such as sqrt(x) or x^2 is refused), `code`, [[CODE]] page mentions. "
-        "No italic or links. Block types: h2 h3 p bullet num todo callout quote eq toggle divider figure. "
+        "No italic or links. Block types: h2 h3 p bullet num todo callout quote eq code toggle divider figure. "
         'Figure: {"type": "figure", "fn": "build_function_graph_figure", "args": {"expr": "(x-1)^2-4"}, '
         '"caption": "..."}; builders: build_function_graph_figure, build_number_line_figure, '
         "build_complex_plane_figure, build_mapping_diagram_figure, build_cartesian_*, build_rectangle/right_triangle/circle/cone/... (figure_builder).",

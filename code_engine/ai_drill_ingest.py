@@ -9,6 +9,7 @@ Bridges dynamic AI-generated programming problems into:
 
 import argparse
 import datetime
+import glob
 import json
 import os
 import re
@@ -506,8 +507,41 @@ def validate_ai_code_contract(prob: Dict[str, Any]) -> bool:
 # ---------------------------------------------------------------------------
 # Code Reasoning Vault Management
 # ---------------------------------------------------------------------------
+def _code_vault_dir(vault_dir: Optional[str] = None) -> str:
+    return vault_dir or os.environ.get("CODE_REASONING_VAULT_DIR") or CODE_VAULT_DIR
+
+
+def archetype_owner(archetype: Dict[str, Any]) -> str:
+    """The unit (or chapter) an archetype belongs to: its `unitCode`, else the vault file it lives in."""
+    return archetype.get("unitCode") or archetype.get("_vaultFile", "")
+
+
+def load_scope_archetypes(code: str, vault_dir: Optional[str] = None) -> List[Dict[str, Any]]:
+    """Archetypes in scope for a drill on `code`, read across every PRG vault file.
+
+    - A unit code (`PRG-T01-C01-U01`) gets only that unit's archetypes, so a unit drill never mixes in another unit.
+    - A chapter code (`PRG-T01-C01`) gets the archetypes of every unit in the chapter (chapter mixed drill).
+    An archetype belongs to its `unitCode`, or, without one, to the vault file it is stored in. Each returned
+    dict carries `_vaultFile` (not saved anywhere) so callers can tell where it lives.
+    """
+    found: List[Dict[str, Any]] = []
+    for path in sorted(glob.glob(os.path.join(_code_vault_dir(vault_dir), "*.json"))):
+        stem = os.path.basename(path)[:-5]
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                archetypes = json.load(f).get("archetypes", [])
+        except (OSError, ValueError):
+            continue
+        for a in archetypes:
+            a = {**a, "_vaultFile": stem}
+            owner = archetype_owner(a)
+            if owner == code or owner.startswith(code + "-U"):
+                found.append(a)
+    return found
+
+
 def get_code_vault_path(unit_code: str, vault_dir: Optional[str] = None) -> str:
-    dir_path = vault_dir or os.environ.get("CODE_REASONING_VAULT_DIR") or CODE_VAULT_DIR
+    dir_path = _code_vault_dir(vault_dir)
     os.makedirs(dir_path, exist_ok=True)
     return os.path.join(dir_path, f"{unit_code}.json")
 
@@ -556,8 +590,17 @@ def register_code_archetype(
 def mark_code_context_used(
     unit_code: str, archetype_key: str, context_tag: str, vault_dir: Optional[str] = None
 ) -> None:
-    """Marks a domain context as used so future AI generations rotate to fresh domains."""
-    vault = load_code_reasoning_vault(unit_code, vault_dir=vault_dir)
+    """Marks a domain context as used so future AI generations rotate to fresh domains.
+    Writes to the vault file that holds the archetype (a unit drill may use a chapter vault's archetype)."""
+    holder = next(
+        (
+            a["_vaultFile"]
+            for a in load_scope_archetypes(unit_code, vault_dir=vault_dir)
+            if a.get("archetypeKey") == archetype_key
+        ),
+        unit_code,
+    )
+    vault = load_code_reasoning_vault(holder, vault_dir=vault_dir)
     for a in vault.get("archetypes", []):
         if a.get("archetypeKey") == archetype_key:
             used = a.get("usedContexts", [])
@@ -565,7 +608,7 @@ def mark_code_context_used(
                 used.append(context_tag)
                 a["usedContexts"] = used
             break
-    save_code_reasoning_vault(unit_code, vault, vault_dir=vault_dir)
+    save_code_reasoning_vault(holder, vault, vault_dir=vault_dir)
 
 
 # ---------------------------------------------------------------------------
@@ -574,14 +617,10 @@ def mark_code_context_used(
 def _find_archetype_in_vaults(
     unit_code: str, archetype_key: str, vault_dir: Optional[str] = None
 ) -> Optional[Dict[str, Any]]:
-    """Look up an archetype by key in the unit's vault or its parent chapter vault."""
-    _, chapter_code = unit_hierarchy(unit_code)
-    candidates = [unit_code] if chapter_code == unit_code else [unit_code, chapter_code]
-    for scope in candidates:
-        vault = load_code_reasoning_vault(scope, vault_dir=vault_dir)
-        for arch in vault.get("archetypes", []):
-            if arch.get("archetypeKey") == archetype_key:
-                return arch
+    """Look up an archetype by key within the unit or chapter scope."""
+    for arch in load_scope_archetypes(unit_code, vault_dir=vault_dir):
+        if arch.get("archetypeKey") == archetype_key:
+            return arch
     return None
 
 
@@ -697,9 +736,13 @@ def ingest_ai_code_drill(
         drill_doc["topicCode"] = topic_code
     if not drill_doc.get("chapterCode"):
         drill_doc["chapterCode"] = chapter_code
+    scope_archs = {a["archetypeKey"]: a for a in load_scope_archetypes(unit_code, vault_dir=vault_dir)}
     for prob in problems:
         if not prob.get("levelLabel") and prob.get("level") in LEVEL_LABELS:
             prob["levelLabel"] = LEVEL_LABELS[prob["level"]]
+        arch = scope_archs.get(prob.get("archetypeKey", ""))
+        if arch and "-U" in archetype_owner(arch):
+            prob.setdefault("unitCode", archetype_owner(arch))
 
     drill_doc["schemaVersion"] = drill_doc.get("schemaVersion", "2.0-code")
     drill_doc["subject"] = drill_doc.get("subject", "PRG")
@@ -752,10 +795,10 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.list_vault:
-        v = load_code_reasoning_vault(args.unit)
-        print(f"\nCode Reasoning Vault for {args.unit}: {len(v.get('archetypes', []))} archetypes")
-        for a in v.get("archetypes", []):
-            print(f"  [{a.get('level', 1)}] {a.get('archetypeKey')}: {a.get('name')}")
+        archs = load_scope_archetypes(args.unit)
+        print(f"\nCode Reasoning Vault for {args.unit}: {len(archs)} archetypes")
+        for a in archs:
+            print(f"  [{a.get('level', 1)}] {a.get('archetypeKey')} ({archetype_owner(a)}): {a.get('name')}")
             print(f"      Invariant: {a.get('governingInvariant')}")
             print(f"      Used Contexts: {a.get('usedContexts', [])}")
             checks = a.get("qualityChecks") or []

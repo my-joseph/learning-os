@@ -5,6 +5,7 @@
   "archetypes": [
     {
       "archetypeKey": "prg-c03-token-bucket-rate-limiter",
+      "unitCode": "PRG-T01-C04-U02",
       "level": 3,
       "archetype": "problem-solving",
       "name": "Token Bucket Burst Rate Limiter",
@@ -83,6 +84,7 @@
     },
     {
       "archetypeKey": "prg-c03-webhook-hmac-verifier",
+      "unitCode": "PRG-T01-C04-U02",
       "level": 2,
       "archetype": "debugging",
       "name": "Timing-Safe Webhook HMAC Signature Verifier",
@@ -175,6 +177,7 @@
     },
     {
       "archetypeKey": "prg-c03-exponential-backoff-retry",
+      "unitCode": "PRG-T01-C01-U08",
       "level": 3,
       "archetype": "problem-solving",
       "name": "Exponential Backoff & Jittered Retry Orchestrator",
@@ -269,6 +272,7 @@
     },
     {
       "archetypeKey": "prg-c03-concurrent-promise-pool",
+      "unitCode": "PRG-T01-C01-U06",
       "level": 4,
       "archetype": "problem-solving",
       "name": "Bounded Concurrency Async Promise Pool",
@@ -363,6 +367,7 @@
     },
     {
       "archetypeKey": "prg-c03-circuit-breaker-state-machine",
+      "unitCode": "PRG-T01-C04-U01",
       "level": 4,
       "archetype": "problem-solving",
       "name": "Stateful Circuit Breaker with Half-Open Probe",

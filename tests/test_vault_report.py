@@ -80,3 +80,28 @@ def test_log_gaps_logs_failing_once(env):
 
 def test_report_runs_on_every_real_vault():
     assert vr.main([]) == 0
+
+
+def test_prg_scope_vault_report(tmp_path, monkeypatch):
+    monkeypatch.setenv("LEARNINGOS_ISSUE_LOG", str(tmp_path / "log.jsonl"))
+    vault = tmp_path / "vault"
+    vault.mkdir()
+    (vault / "PRG-X-C01.json").write_text(
+        json.dumps(
+            {
+                "archetypes": [
+                    {"archetypeKey": "prg-u1", "unitCode": "PRG-X-C01-U01", "level": 3},
+                    {"archetypeKey": "prg-u2", "unitCode": "PRG-X-C01-U02", "level": 4},
+                ]
+            }
+        )
+    )
+    data = tmp_path / "data" / "PRG-X-C01-U01"
+    data.mkdir(parents=True)
+    (data / "DRL-PRG-X-C01-U01-01.json").write_text(
+        json.dumps({"subject": "PRG", "problems": [{"archetypeKey": "prg-u1", "level": 3}]})
+    )
+    rows = _rows(vr.unit_report("PRG-X-C01", str(vault), str(tmp_path / "data")))
+    assert rows["prg-u1"]["earned"] == {3: 1} and rows["prg-u1"]["flags"] == []
+    assert rows["prg-u2"]["flags"] == ["UNPROVEN"]
+    assert sorted(_rows(vr.unit_report("PRG-X-C01-U01", str(vault), str(tmp_path / "data")))) == ["prg-u1"]

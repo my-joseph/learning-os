@@ -5,6 +5,7 @@
   "archetypes": [
     {
       "archetypeKey": "prg-c01-scope-shadowing-guard",
+      "unitCode": "PRG-T01-C01-U01",
       "level": 1,
       "archetype": "problem-solving",
       "name": "Lexical Scope Boundary & Variable Shadowing Guard",
@@ -62,6 +63,7 @@
     },
     {
       "archetypeKey": "prg-c01-prototype-this-binding",
+      "unitCode": "PRG-T01-C01-U03",
       "level": 2,
       "archetype": "problem-solving",
       "name": "Prototype Inheritance & Explicit This Binding Invoker",
@@ -100,7 +102,11 @@
           "check": "Callbacks or detached methods preserve their intended receiver context rather than relying on ambient or unbound `this`.",
           "why": "Passing a bare method reference detaches its `this` receiver and fails or reads `undefined` at call time.",
           "severity": "must",
-          "accepted": ["service.handle.bind(service)", "(...args) => service.handle(...args)", "class arrow field when per-instance binding is needed"],
+          "accepted": [
+            "service.handle.bind(service)",
+            "(...args) => service.handle(...args)",
+            "class arrow field when per-instance binding is needed"
+          ],
           "knownBad": {
             "code": "function registerHandler(emitter, service) {\n  emitter.on('event', service.handle);\n}",
             "caughtBy": "review"
@@ -120,6 +126,7 @@
     },
     {
       "archetypeKey": "prg-c01-coercion-type-converter",
+      "unitCode": "PRG-T01-C01-U04",
       "level": 2,
       "archetype": "debugging",
       "name": "Object-to-Primitive Coercion & ValueOf Protocol",
@@ -183,6 +190,7 @@
     },
     {
       "archetypeKey": "prg-c01-deep-clone-circular",
+      "unitCode": "PRG-T01-C04-U02",
       "level": 3,
       "archetype": "problem-solving",
       "name": "Deep Object Cloner with Circular Reference Handling",
@@ -233,7 +241,10 @@
           "check": "Object graph traversal records visited references before descending into child properties so cyclic graphs terminate and preserve shared or self-referential identity.",
           "why": "Traversing without pre-registered reference tracking crashes on cycles or duplicates shared subgraphs.",
           "severity": "must",
-          "accepted": ["WeakMap", "Map"],
+          "accepted": [
+            "WeakMap",
+            "Map"
+          ],
           "knownBad": {
             "code": "function deepClone(value) {\n  return JSON.parse(JSON.stringify(value));\n}",
             "caughtBy": "review"
@@ -253,6 +264,7 @@
     },
     {
       "archetypeKey": "prg-c01-async-middleware-pipe",
+      "unitCode": "PRG-T01-C01-U06",
       "level": 4,
       "archetype": "problem-solving",
       "name": "Asynchronous Function Composition & Middleware Pipeline",

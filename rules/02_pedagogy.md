@@ -116,6 +116,26 @@ This is the default for new and upgraded math and physics pages (§1 still allow
 
 **Writing pages:** agents write learning pages only with `python -m notion_sync.unit_page` (`--mode new`, `--mode add`, `--set`; it renders and uploads figures) and drill results only through drill sync. No direct Notion API calls that create, edit or delete blocks or properties on learning pages: they bypass the guards (no rewrite, section 6 untouched). Math in any page text, figure captions included, is written as `$...$` (it renders as a Notion equation); the tool refuses `sqrt(x)` or `x^2` outside `$`. A figure caption that needs fixing is replaced with `--recaption N="..."`, and a figure itself is redrawn in place with `--refigure N=figure.json` (the page's N-th image; never in section 6; the caption is kept). If the tool cannot do what is needed (e.g. fix the text of an existing block), log a `tool-gap` (`rules/00_core.md` §11) and leave the page as it is.
 
+### 7b. Default Page Structure for `PRG` Units and Chapters (learner decision 2026-11-16)
+This is the default for new and upgraded programming pages (§1 still allows adapting it to the material). The `start-unit` skill builds pages from it.
+
+**Unit page**
+- **Callout:** Learning Objective, Expected Output, prerequisites (`@Page`), next Unit (`@Page`), Resource (`[[R0xx]]` page plus section/doc reference). The page's `Resources` relation links the same `R0xx` (`--set "Resources=R0xx"`). Primary docs (MDN, ECMAScript spec, TypeScript handbook, Node.js docs, React/Next.js docs, PostgreSQL docs, OWASP) are used as reference only, never copied.
+- **1. Core Concepts & Mental Model:** how it works inside, not only syntax; include a diagram or trace table where it helps, and at least one `code` block.
+- **2. Core Patterns:** each pattern with a collapsed toggle **"Why this works"** (3–5 lines from first principles).
+- **3. Worked Code Examples:** headings `Example 1 (L1 — Direct): …`, `Example 2 (L2 — Edge Case): …` or `(L2 — Refactor): …`, `Example 3 (L3 — Bug Contrast): …` (a wrong version that runs, why it is wrong, and the fix). Include `code` blocks.
+- **4. Practice Guide:** the 4 categories of §8, specifying what the drills train and which rubric checks matter in this unit (cite `QC-` / `U-` ids).
+- **5. Active Recall:** 3–4 toggles with reference solutions (§6).
+- **6. My Implementation & Mistake Log:** the learner's workspace (§7). Drill results synced from the Studio are inserted at the end of this section. **Agents never edit, move or delete anything in this section.**
+- **7. Completion Checklist.**
+
+**Code & math formatting:** code goes in Notion `code` blocks with a language (`javascript`, `typescript`, `json`, `bash`, `shell`, `sql`, `html`, `css`, `plain text`); inline code goes in backticks (`` `...` ``). No math LaTeX (`$...$`) unless the unit is about complexity (Big-O may use `$O(n)$`).
+
+**Chapter page**
+- Same as the `MTH` chapter standard (§7a), plus a **"Chapter Lab"** section naming the lab and its milestones (from `docs/prg_curriculum_v2.md` §4) when the chapter has one.
+
+**Upgrading, checking & writing:** same guards as §7a (never rewrite existing pages, leave section 6 untouched, check with `python -m scripts.page_audit <CODE>`, write only with `python -m notion_sync.unit_page`).
+
 ---
 
 ## PART 4 — Multi-Level Practice Guides (No Static Problem Dump)
