@@ -51,8 +51,9 @@ Per problem:
 - `inputHint` / `checkpointHint`: zero-leak (`rules/00_core.md` §6, `rules/04_code.md` §7) — never reveal the answer, bug line, or internal data structures (`secondary Map`, `use closure`).
 - `starterCode`: compiles/parses cleanly, passes Layer 2 ESLint with the drill's config (stubs must not import unused modules), has stub bodies (or realistic buggy code for `fix-bug`) that **fail at least one visible test**, and does not contain `solutionCode` or `// BUG:` / `// FIX HERE:` comments. Fix-bug/refactor starters with intentional lint issues must declare per-problem `starterLintExpected: [{rule, reason}]` and state in `prompt` that the structure must be improved too (`refactor`, `simplify`, `split`, `complexity`).
 - `solutionCode`: passes all `visibleTests` + `hiddenTests`, and passes Layer 2 ESLint (`tools/lint/base.js`) + `tsc --noEmit` (for TS presets).
+- For multi-file `predict-output` ESM snippets, put imported local modules in an optional `files` map (`filename` → source text); the gate writes these beside the runnable `codeSnippet` in a temporary directory.
 - `trapMutant`: a plausible wrong solution embodying `commonTrapTag` that compiles/parses cleanly and **FAILS `hiddenTests`**.
-- `visibleTests`, `hiddenTests`: realistic edge cases; any test with `setTimeout > 50ms` must use an injectable clock (`options.now`). Visible test names must not leak the solution.
+- `visibleTests`, `hiddenTests`: every problem must have at least one visible edge case suited to its contract (empty, `0`, `null`, negative, or an equivalent boundary/remaining-input case); hidden tests add further coverage. `--check` prints a warning when public tests contain no recognizable edge input. Any test with `setTimeout > 50ms` must use an injectable clock (`options.now`). Visible test names must not leak the solution.
 - `steps`: concise explanation steps (`[{"explain": "..."}]`); `verificationLevel: "partial"`.
 
 ## 5. Pre-flight check (`--check`)

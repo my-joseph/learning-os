@@ -18,13 +18,22 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from code_engine.lint_check import TOOLS_LINT_DIR, get_lint_binaries
-from code_engine.quality_checks import applicable_rubric, effective_severity, load_archetype, load_universal
-from code_engine.submit import _parse_junit_xml, run_tests_junit
-from code_engine.workspace import ENVIRONMENT_PRESETS, get_entry_name
-from progress_store import labs_root as default_labs_root
-from progress_store import pilot_mode
-from progress_store import workspace_root as default_workspace_root
+_REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
+
+from code_engine.lint_check import TOOLS_LINT_DIR, get_lint_binaries  # noqa: E402
+from code_engine.quality_checks import (  # noqa: E402
+    applicable_rubric,
+    effective_severity,
+    load_archetype,
+    load_universal,
+)
+from code_engine.submit import _parse_junit_xml, run_tests_junit  # noqa: E402
+from code_engine.workspace import ENVIRONMENT_PRESETS, get_entry_name  # noqa: E402
+from progress_store import labs_root as default_labs_root  # noqa: E402
+from progress_store import pilot_mode  # noqa: E402
+from progress_store import workspace_root as default_workspace_root  # noqa: E402
 
 TS_PRESETS = ("typescript-strict", "backend-sqlite", "react-dom")
 _TSC_DIAG_RE = re.compile(r"^(.+?)\((\d+),(\d+)\):\s+(?:error|warning)\s+(TS\d+:\s*.*)$")
@@ -90,6 +99,7 @@ def lint_workspace_file(ws_dir: Path, src_file: Path) -> list[dict[str, Any]]:
         for msg in res.get("messages", []):
             findings.append(
                 {
+                    "file": src_file.name,
                     "rule": msg.get("ruleId") or "syntax",
                     "line": int(msg.get("line", 0) or 0),
                     "message": msg.get("message", ""),
@@ -440,7 +450,7 @@ def format_summary(res: dict[str, Any]) -> str:
     lint = res["lint"]
     lines.append(f"Layer 2 Lint: {len(lint)} error(s)")
     for item in lint:
-        lines.append(f"  L{item['line']} [{item['rule']}] {item['message']}")
+        lines.append(f"  {item.get('file', '')}:{item['line']} {item['rule']} {item['message']}")
 
     tc = res["typecheck"]
     if tc:
@@ -453,6 +463,12 @@ def format_summary(res: dict[str, Any]) -> str:
     lines.append(f"Layer 3 Rubric ({len(res['checks'])} checks):")
     for c in res["checks"]:
         lines.append(f"  [{c['severity']}] {c['id']}: {c['check']}")
+    passed = tests["total"] > 0 and tests["passed"] == tests["total"] and not lint and not tc
+    lines.append(
+        "Verdict: PASS — continue with the recorded explain step."
+        if passed
+        else "Verdict: REVISE — fix the reported failures, then run review again."
+    )
     return "\n".join(lines)
 
 
@@ -465,6 +481,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("qid", help="Problem ID, e.g. Q01")
     parser.add_argument("--json", action="store_true", dest="as_json", help="Print JSON output")
     args = parser.parse_args(argv)
+    os.chdir(_REPO_ROOT)
 
     try:
         res = run_review(args.drill_id, args.qid)

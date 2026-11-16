@@ -19,6 +19,26 @@ from scripts import review_record, weak_spots
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
 
+def test_c04_lab_has_generated_milestone_commands_and_scenario_readme(monkeypatch, capsys):
+    lab_dir = REPO_ROOT / "labs" / "LAB-PRG-T01-C04-02"
+    config = json.loads((lab_dir / "lab.config.json").read_text(encoding="utf-8"))
+    package = json.loads((lab_dir / "package.json").read_text(encoding="utf-8"))
+    readme = (lab_dir / "README.md").read_text(encoding="utf-8")
+    assert config["scenario"] in readme
+    for milestone in config["milestones"]:
+        key = milestone["id"].lower()
+        assert f"test:{key}" in package["scripts"]
+        assert f"check:{key}" in package["scripts"]
+        assert milestone["title"] in readme
+
+    from labs.common import review
+
+    monkeypatch.chdir(lab_dir)
+    monkeypatch.setattr("sys.argv", ["review", "m3"])
+    assert review.main() == 0
+    assert "ตรวจโค้ด LAB-PRG-T01-C04-02 M3" in capsys.readouterr().out
+
+
 def _require_node_and_lint() -> None:
     if shutil.which("node") is None:
         pytest.skip("node binary not installed on PATH")

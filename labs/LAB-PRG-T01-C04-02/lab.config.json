@@ -37,5 +37,6 @@
       "testPattern": "m4_inventory_lock",
       "mistakeCategory": "Concurrency Race Condition & Rollback Failure"
     }
-  ]
+  ],
+  "scenario": "Implement the core services behind an e-commerce checkout, including catalog validation, pricing, order transitions, and concurrent inventory reservation."
 }

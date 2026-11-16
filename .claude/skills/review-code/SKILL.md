@@ -42,6 +42,7 @@ Rules:
 - Severity comes from the rubric, not from you. Raise a `must` check only when you can point at the line and state the
   consequence; if you are unsure it applies, do not raise it — ask the learner a question about it instead.
 - Taste is never a finding (brace style, `for` vs `forEach`, `function` vs arrow when both are clear).
+- Review learner-authored changes. Helpers already present in `starterCode` are not findings unless the prompt asks for structural changes; do not turn a fix-bug task into an unrequested refactor. A static output array in a `predict-output` problem is judged by tests, not implementation-oriented async continuation checks. A one-use defensive bound is not automatically magic, and best-effort cleanup may preserve an already-settled result when it suppresses only the cleanup error.
 - Do not repeat what lint or tests already report; explain them instead (step 4).
 - Two equally good designs: accept the learner's. The reference solution is not the standard; the rubric is.
 - Tests failing is enough for revise; still review design, so the learner fixes both in one round.

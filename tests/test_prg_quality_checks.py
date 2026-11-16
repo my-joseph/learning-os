@@ -83,10 +83,17 @@ def test_universal_checks_load_and_validate():
         "U-simplest",
         "U-no-special-case-patch",
         "U-no-shared-mutable-state",
+        "U-no-floating-promise",
     }
     one_job = next(c for c in universal if c["id"] == "U-one-job")
     assert one_job["severity"] == "should"
     assert one_job["mustFromLevel"] == 3
+
+    by_id = {item["id"]: item for item in universal}
+    assert "learner-authored" in by_id["U-simplest"]["check"]
+    assert "defensive bound" in by_id["U-no-magic"]["check"]
+    assert "already-settled result" in by_id["U-errors"]["check"]
+    assert by_id["U-no-floating-promise"]["knownBad"]["caughtBy"] == "review"
 
 
 def test_validator_rejects_missing_or_empty_quality_checks():
@@ -240,7 +247,7 @@ def test_all_prg_vaults_validate():
     assert errors == []
     assert stats["vaults"] >= 3
     assert stats["archetypes"] >= 19
-    assert stats["universal"] == 9
+    assert stats["universal"] == 10
 
     for vf in sorted(VAULT_DIR.glob("*.json")):
         data = json.loads(vf.read_text(encoding="utf-8"))

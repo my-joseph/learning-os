@@ -24,8 +24,8 @@ from dataclasses import dataclass, field
 from datetime import date, timedelta
 
 from code_engine.quality_checks import load_universal
-from progress_store import item_score, progress_root
-from scripts.issues import main_checkout_root
+from progress_store import find_repo_root, item_score, progress_root
+from progress_store import labs_root as default_labs_root
 
 MIN_MATCHES = 2
 CLOSE_AFTER = 2
@@ -100,7 +100,7 @@ def _load_prg_vault_meta() -> tuple[dict[str, str], dict[str, int], dict[str, se
 
     cwd_vault = os.path.join("code_engine", "reasoning_vault")
     vault_dir = (
-        cwd_vault if os.path.isdir(cwd_vault) else os.path.join(main_checkout_root(), "code_engine", "reasoning_vault")
+        cwd_vault if os.path.isdir(cwd_vault) else os.path.join(find_repo_root(), "code_engine", "reasoning_vault")
     )
     for vpath in sorted(glob.glob(os.path.join(vault_dir, "*.json"))):
         with open(vpath, encoding="utf-8") as f:
@@ -127,9 +127,10 @@ def load_items(
     progress_dir: str | None = None,
     labs_root: str | None = None,
 ) -> list[Item]:
-    data_root = data_root or os.environ.get("DRILLS_DATA_DIR", "drills/data")
-    progress_dir = progress_dir or progress_root(main_checkout_root())
-    labs_root = labs_root or os.environ.get("LABS_DIR", "labs")
+    repo_root = find_repo_root()
+    data_root = data_root or os.environ.get("DRILLS_DATA_DIR", os.path.join(repo_root, "drills", "data"))
+    progress_dir = progress_dir or progress_root(repo_root)
+    labs_root = labs_root or default_labs_root(repo_root)
     drills = {}
     for pattern in ("MTH-*", "PRG-*"):
         for path in glob.glob(os.path.join(data_root, pattern, "*.json")):

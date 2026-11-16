@@ -46,12 +46,12 @@ ENVIRONMENT_PRESETS = {
         "description": "Standard Node.js Native Runner (CommonJS/ESM)",
         "defaultExt": "js",
         "scripts": {
-            "test": "node --test *.test.js",
+            "test": "node --test --test-reporter=spec *.test.js",
             "test:watch": "node --test --watch *.test.js",
             "lint": "../../../tools/lint/node_modules/.bin/eslint --format ../../../tools/lint/format.js .",
-            "check": "npm test && npm run lint",
-            "review": "python3 ../../../code_engine/review.py",
-            "submit": "python3 ../../../code_engine/submit.py",
+            "check": "npm test; test_status=$?; npm run lint; lint_status=$?; test $test_status -eq 0 -a $lint_status -eq 0",
+            "review": "../../../.venv/bin/python -m code_engine.review",
+            "submit": "../../../.venv/bin/python -m code_engine.submit",
         },
         "devDependencies": {},
     },
@@ -59,13 +59,13 @@ ENVIRONMENT_PRESETS = {
         "description": "Strict TypeScript Native Runner with Typecheck Check",
         "defaultExt": "ts",
         "scripts": {
-            "test": "node --experimental-strip-types --test *.test.ts",
+            "test": "node --experimental-strip-types --test --test-reporter=spec *.test.ts",
             "test:watch": "node --experimental-strip-types --test --watch *.test.ts",
             "lint": "../../../tools/lint/node_modules/.bin/eslint --format ../../../tools/lint/format.js .",
             "typecheck": "../../../tools/lint/node_modules/.bin/tsc --noEmit",
-            "check": "npm test && npm run lint && npm run typecheck",
-            "review": "python3 ../../../code_engine/review.py",
-            "submit": "python3 ../../../code_engine/submit.py",
+            "check": "npm test; test_status=$?; npm run lint; lint_status=$?; npm run typecheck; type_status=$?; test $test_status -eq 0 -a $lint_status -eq 0 -a $type_status -eq 0",
+            "review": "../../../.venv/bin/python -m code_engine.review",
+            "submit": "../../../.venv/bin/python -m code_engine.submit",
         },
         "devDependencies": {
             "typescript": "^5.0.0",
@@ -80,9 +80,9 @@ ENVIRONMENT_PRESETS = {
             "test:watch": "vitest",
             "lint": "../../../tools/lint/node_modules/.bin/eslint --format ../../../tools/lint/format.js .",
             "typecheck": "../../../tools/lint/node_modules/.bin/tsc --noEmit",
-            "check": "npm test && npm run lint && npm run typecheck",
-            "review": "python3 ../../../code_engine/review.py",
-            "submit": "python3 ../../../code_engine/submit.py",
+            "check": "npm test; test_status=$?; npm run lint; lint_status=$?; npm run typecheck; type_status=$?; test $test_status -eq 0 -a $lint_status -eq 0 -a $type_status -eq 0",
+            "review": "../../../.venv/bin/python -m code_engine.review",
+            "submit": "../../../.venv/bin/python -m code_engine.submit",
         },
         "devDependencies": {
             "vitest": "^1.3.0",
@@ -97,13 +97,13 @@ ENVIRONMENT_PRESETS = {
         "description": "Backend Database & Transaction Environment with In-Memory SQLite",
         "defaultExt": "ts",
         "scripts": {
-            "test": "node --experimental-strip-types --test *.test.ts",
+            "test": "node --experimental-strip-types --test --test-reporter=spec *.test.ts",
             "test:watch": "node --experimental-strip-types --test --watch *.test.ts",
             "lint": "../../../tools/lint/node_modules/.bin/eslint --format ../../../tools/lint/format.js .",
             "typecheck": "../../../tools/lint/node_modules/.bin/tsc --noEmit",
-            "check": "npm test && npm run lint && npm run typecheck",
-            "review": "python3 ../../../code_engine/review.py",
-            "submit": "python3 ../../../code_engine/submit.py",
+            "check": "npm test; test_status=$?; npm run lint; lint_status=$?; npm run typecheck; type_status=$?; test $test_status -eq 0 -a $lint_status -eq 0 -a $type_status -eq 0",
+            "review": "../../../.venv/bin/python -m code_engine.review",
+            "submit": "../../../.venv/bin/python -m code_engine.submit",
         },
         "devDependencies": {
             "better-sqlite3": "^9.4.0",
@@ -302,7 +302,7 @@ def build_starter_header(prob: dict, drill_id: str) -> str:
  * 6. Scale Difficulty    : Scale up test inputs and handle harsher stress scenarios.
  * 
  * SPECIFICATION:
- * {prompt}
+ * {prompt.replace(chr(10), chr(10) + " * ")}
  * ============================================================================
  */
 """
@@ -320,6 +320,9 @@ def materialize_drill_workspace(drill_doc: dict, root_dir: str = ".") -> dict:
     ws_base = os.path.join("pilot", "workspace") if pilot_mode() else os.path.join("drills", "workspace")
     ws_dir = os.path.join(workspace_root(root_dir), drill_id)
     os.makedirs(ws_dir, exist_ok=True)
+    package_link = os.path.join(ws_dir, "code_engine")
+    if not os.path.lexists(package_link):
+        os.symlink(str(Path(__file__).resolve().parent), package_link, target_is_directory=True)
     stale_canonical = os.path.join(ws_dir, ".canonical")
     if os.path.exists(stale_canonical):
         shutil.rmtree(stale_canonical)
@@ -417,9 +420,20 @@ test({t_name}, {fn_prefix} {{
         if preset_key == "react-dom":
             test_scripts[f"test:{pid.lower()}"] = f"vitest run {test_filename}"
         elif preset_key in ("typescript-strict", "backend-sqlite"):
-            test_scripts[f"test:{pid.lower()}"] = f"node --experimental-strip-types --test {test_filename}"
+            test_scripts[f"test:{pid.lower()}"] = (
+                f"node --experimental-strip-types --test --test-reporter=spec {test_filename}"
+            )
         else:
-            test_scripts[f"test:{pid.lower()}"] = f"node --test {test_filename}"
+            test_scripts[f"test:{pid.lower()}"] = f"node --test --test-reporter=spec {test_filename}"
+        lint_command = "npm run lint"
+        type_command = "npm run typecheck" if "typecheck" in test_scripts else None
+        checks = [f"npm run test:{pid.lower()}", lint_command, *([type_command] if type_command else [])]
+        test_scripts[f"check:{pid.lower()}"] = "; ".join(
+            [
+                *(f"{command}; status_$i=$?" for i, command in enumerate(checks)),
+                "test " + " -a ".join(f"$status_{i} -eq 0" for i in range(len(checks))),
+            ]
+        )
 
         abs_src = os.path.abspath(src_path)
         abs_ws = os.path.abspath(ws_dir)
@@ -510,8 +524,8 @@ test({t_name}, {fn_prefix} {{
         "## Universal 6-Step Pedagogical Practice Loop",
         "1. **Think Before Coding (Mental Model)**: Review the Acceptance Criteria and boundary traps before typing.",
         "2. **Hands-On Implementation (Local IDE)**: Open the source file in VS Code or Cursor and implement the logic.",
-        "3. **Automated Testing (Acceptance Testing)**: Run `npm test` or `npm run test:<qid>` in this directory.",
-        "4. **Code Review & Explanation (PR Review)**: Run `python -m code_engine.review_run <DRILL_ID> <QID>` or ask in Claude Code (`review code <DRILL_ID> <QID>`), then explain why your solution works.",
+        "3. **Automated Testing (Acceptance Testing)**: Run `npm test` or `npm run check:q01` in this directory.",
+        "4. **Code Review & Explanation (PR Review)**: Run `npm run review -- q01` or ask in Claude Code (`review code <DRILL_ID> Q01`), then explain why your solution works.",
         "5. **Refactor (Clean Architecture)**: Decouple helpers, clean code smells, and optimize hot paths while keeping tests green.",
         "6. **Scale Difficulty (Progression)**: Scale up test inputs and edge cases.",
         "",
@@ -524,14 +538,13 @@ test({t_name}, {fn_prefix} {{
         "npm run test:watch",
         "",
         "# Run tests for a specific question",
-        "npm run test:q01",
+        "npm run check:q01",
         "",
         "# Run tests + lint (+ typecheck for TypeScript)",
         "npm run check",
         "",
-        "# Show how to request a code review (or run `python -m code_engine.review_run <DRILL_ID> Q01` from repo root)",
-        "npm run review",
-        "npm run review q01",
+        "# Show how to request a code review",
+        "npm run review -- q01",
         "",
         "# Grade all exercises (runs visible + hidden trap tests) and sync to Notion",
         "npm run submit",
@@ -565,7 +578,7 @@ test({t_name}, {fn_prefix} {{
             "```",
             "To run Layer 1 (visible + hidden tests) and Layer 2 (ESLint + tsc) plus see the applicable rubric from repo root:",
             "```bash",
-            f"python -m code_engine.review_run {drill_id} Q01",
+            "npm run review -- q01",
             "```",
             "",
         ]

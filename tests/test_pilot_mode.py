@@ -68,6 +68,7 @@ def test_pilot_paths_and_default_unchanged(monkeypatch, tmp_path: Path) -> None:
 
 def test_materialize_drill_workspace_pilot_vs_normal(monkeypatch, tmp_path: Path) -> None:
     monkeypatch.chdir(tmp_path)
+    monkeypatch.delenv("PROGRESS_DIR", raising=False)
     monkeypatch.setenv("LEARNINGOS_PILOT", "1")
 
     doc = _sample_drill()
@@ -112,6 +113,7 @@ def test_weak_spots_reads_pilot_progress(monkeypatch, tmp_path: Path) -> None:
     monkeypatch.chdir(tmp_path)
     monkeypatch.delenv("PROGRESS_DIR", raising=False)
     monkeypatch.setenv("LEARNINGOS_PILOT", "1")
+    (tmp_path / "id_map.json").write_text("{}", encoding="utf-8")
 
     data_dir = tmp_path / "drills" / "data" / "PRG-T00-C02-U01"
     data_dir.mkdir(parents=True)
@@ -131,6 +133,7 @@ def test_pilot_skips_notion_learner_writes_but_allows_pristine(monkeypatch, tmp_
     monkeypatch.chdir(tmp_path)
     monkeypatch.delenv("PROGRESS_DIR", raising=False)
     monkeypatch.setenv("LEARNINGOS_PILOT", "1")
+    (tmp_path / "id_map.json").write_text("{}", encoding="utf-8")
 
     def fail_notion(*args, **kwargs):
         raise AssertionError("Notion learner-state call must not be made in pilot mode")
@@ -203,3 +206,28 @@ def test_issues_get_source_pilot_in_pilot_mode(monkeypatch, tmp_path: Path) -> N
 
     rows = issues(str(log_file))
     assert [r["source"] for r in rows] == ["pilot", "learner"]
+
+
+def test_weak_spots_uses_pilot_state_inside_worktree(monkeypatch, tmp_path: Path) -> None:
+    from progress_store import labs_root, progress_root
+    from scripts.weak_spots import load_items
+
+    (tmp_path / "id_map.json").write_text("{}", encoding="utf-8")
+    (tmp_path / "drills" / "data" / "PRG-T01-C01-U01").mkdir(parents=True)
+    (tmp_path / "drills" / "data" / "PRG-T01-C01-U01" / "DRL-PRG-WT-01.json").write_text(
+        json.dumps(
+            {"drillId": "DRL-PRG-WT-01", "unitCode": "PRG-T01-C01-U01", "problems": [{"id": "Q01", "level": 1}]}
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.delenv("PROGRESS_DIR", raising=False)
+    monkeypatch.setenv("LEARNINGOS_PILOT", "1")
+    assert progress_root() == str(tmp_path / "pilot" / "progress")
+    assert labs_root() == str(tmp_path / "pilot" / "labs")
+    (tmp_path / "pilot" / "progress").mkdir(parents=True)
+    (tmp_path / "pilot" / "progress" / "DRL-PRG-WT-01.json").write_text(
+        json.dumps({"drillId": "DRL-PRG-WT-01", "problems": {"Q01": {"score": 1, "attempts": [{"at": "2026-11-16"}]}}}),
+        encoding="utf-8",
+    )
+    assert len(load_items()) == 1
