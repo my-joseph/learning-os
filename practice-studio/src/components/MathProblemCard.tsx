@@ -38,6 +38,7 @@ interface MathProblemCardProps {
   onResetProblem: () => void;
   onHintRevealed?: () => void;
   onSetupRevealed?: () => void;
+  onSolutionRevealed?: () => void;
 }
 
 const getSafeMathPlaceholder = (hint?: string, problem?: Problem): string => {
@@ -93,6 +94,7 @@ export const MathProblemCard: React.FC<MathProblemCardProps> = ({
   onResetProblem,
   onHintRevealed,
   onSetupRevealed,
+  onSolutionRevealed,
 }) => {
   const [copied, setCopied] = useState(false);
   const [showHint, setShowHint] = useState(false);
@@ -102,7 +104,11 @@ export const MathProblemCard: React.FC<MathProblemCardProps> = ({
   const [showSetup, setShowSetup] = useState(Boolean(problem.state.lastCheck));
   const hasSetup = Boolean(problem.display || problem.plainText);
   const answered = Boolean(problem.state.lastCheck);
+  const hasCorrectAttempt =
+    problem.state.score === 1 ||
+    Boolean(problem.state.attempts?.some((a) => a.verdict === "correct"));
   const setupWasAssisted = Boolean(problem.state.setupRevealedBeforeAnswer);
+  const solutionWasAssisted = Boolean(problem.state.solutionRevealedBeforeAnswer);
 
   useEffect(() => {
     setShowSolution(Boolean(problem.state.lastCheck));
@@ -352,11 +358,21 @@ export const MathProblemCard: React.FC<MathProblemCardProps> = ({
 
         <button
           type="button"
-          onClick={() => setShowSolution(!showSolution)}
+          onClick={() => {
+            if (!showSolution && !hasCorrectAttempt && onSolutionRevealed) {
+              onSolutionRevealed();
+            }
+            setShowSolution(!showSolution);
+          }}
           className="inline-flex items-center gap-1.5 h-10 px-3.5 rounded-xl bg-slate-100 dark:bg-[#1d2333] hover:bg-slate-200/70 dark:hover:bg-indigo-600/20 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-[#2c354d] text-sm font-medium transition-colors"
         >
           {showSolution ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
           <span>{showSolution ? "Hide Steps" : "Step-by-Step Solution"}</span>
+          {solutionWasAssisted && (
+            <span className="ml-1 text-[11px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-500/15 text-amber-800 dark:text-amber-300">
+              Viewed before answering
+            </span>
+          )}
         </button>
 
         {onSkip && (

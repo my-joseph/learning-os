@@ -78,7 +78,12 @@ def has_practice(drill_doc: dict[str, Any]) -> bool:
             return True
         if st.get("mistakes") or st.get("mistakeNote") or st.get("userCode") or st.get("reviews"):
             return True
-        if st.get("setupRevealedBeforeAnswer") or st.get("hintsRevealed") or st.get("durationMs"):
+        if (
+            st.get("setupRevealedBeforeAnswer")
+            or st.get("solutionRevealedBeforeAnswer")
+            or st.get("hintsRevealed")
+            or st.get("durationMs")
+        ):
             return True
     return False
 

@@ -176,6 +176,8 @@ export interface AttemptRecord {
   matchedTrap?: string;
   /** Learner opened the equation set-up before submitting this attempt (assisted, not independent). */
   setupRevealed?: boolean;
+  /** Learner opened the step-by-step solution before submitting this attempt (assisted, not independent). */
+  solutionRevealed?: boolean;
 }
 
 export interface ReviewDispute {
@@ -237,6 +239,8 @@ export interface ProblemState {
   hintsRevealed?: number;
   /** Set when the learner opens the equation set-up before any answer has been checked. */
   setupRevealedBeforeAnswer?: boolean;
+  /** Set when the learner opens the step-by-step solution before the first correct answer. */
+  solutionRevealedBeforeAnswer?: boolean;
   durationMs?: number;
 }
 

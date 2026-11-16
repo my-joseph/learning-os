@@ -68,9 +68,19 @@ def test_weak_spot_closes_after_two_clean_drills_and_reopens(tmp_path):
 
 def test_assisted_answers_do_not_count_as_full_marks(tmp_path):
     assisted = _right("2026-11-01", setupRevealedBeforeAnswer=True)
-    roots = _write(tmp_path, {"D1": [("Q1", 1, "direct", None, assisted)]})
+    roots = _write(tmp_path / "setup", {"D1": [("Q1", 1, "direct", None, assisted)]})
     (item,) = ws.load_items(*roots)
     assert item.score == 0.5 and item.assisted
+
+    sol_state = _right("2026-11-01", solutionRevealedBeforeAnswer=True)
+    roots_sol = _write(tmp_path / "sol_state", {"D1": [("Q1", 1, "direct", None, sol_state)]})
+    (item_sol,) = ws.load_items(*roots_sol)
+    assert item_sol.score == 0.5 and item_sol.assisted
+
+    sol_attempt = {"attempts": [{"verdict": "correct", "ts": "2026-11-01", "solutionRevealed": True}], "score": 1}
+    roots_att = _write(tmp_path / "sol_attempt", {"D1": [("Q1", 1, "direct", None, sol_attempt)]})
+    (item_att,) = ws.load_items(*roots_att)
+    assert item_att.score == 0.5 and item_att.assisted
 
 
 def test_level_advice_needs_80_percent_with_a_reverse_item(tmp_path):
