@@ -296,6 +296,7 @@ class TestAiCodeIngest(unittest.TestCase):
                     "archetypeKey": "prg-c03-token-bucket-rate-limiter",
                     "name": "Token Bucket Burst Rate Limiter",
                     "level": 3,
+                    "cognitiveTraps": [{"trapTag": "rate-limit-window-leak", "description": "Never refills."}],
                     "qualityChecks": [
                         {
                             "id": "QC-bucket-encapsulated",
@@ -312,6 +313,13 @@ class TestAiCodeIngest(unittest.TestCase):
                 vault_dir=tmp_data_dir,
             )
             prob = self._create_valid_problem()
+            prob["trapMutant"] = (
+                "function createTokenBucketRateLimiter({ capacity }) {\n"
+                "  let tokens = capacity;\n"
+                "  return { consume(cost = 1) { if (tokens > cost) { tokens -= cost; return true; } return false; } };\n"
+                "}\n"
+                "module.exports = { createTokenBucketRateLimiter };\n"
+            )
             drill_doc = {
                 "unitCode": "PRG-T01-C03",
                 "drillId": "DRL-PRG-T01-C03-TEST01",
@@ -320,6 +328,8 @@ class TestAiCodeIngest(unittest.TestCase):
                     "curriculum": "Antigravity Autonomous Engineering Synthesis",
                     "license": "CC BY 4.0",
                 },
+                "blindSolve": [{"problemId": "Q01", "passed": True}],
+                "review": {"verdict": "pass", "note": "Verified rate limiter contract and hidden tests."},
                 "problems": [prob],
             }
 

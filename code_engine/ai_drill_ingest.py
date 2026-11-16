@@ -8,22 +8,31 @@ Bridges dynamic AI-generated programming problems into:
 """
 
 import argparse
+import copy
 import datetime
 import glob
 import json
 import os
 import re
 import shutil
+import subprocess
+import tempfile
 from typing import Any, Dict, List, Optional
 
 from code_engine.answer_check import parse_tokens
 from code_engine.fmt import LEVEL_LABELS, unit_hierarchy
 from code_engine.generate import next_drill_id
-from code_engine.lint_check import LintToolsMissingError, lint_drill_doc
+from code_engine.lint_check import (
+    TS_PRESETS,
+    LintToolsMissingError,
+    lint_drill_doc,
+    typecheck_code_snippet,
+    typecheck_drill_doc,
+)
 from code_engine.quality_checks import load_universal, validate_quality_checks, verify_known_bad_lint
 from code_engine.test_runner import run_tests
 from code_engine.verify import run_node, verify_problem
-from code_engine.workspace import materialize_drill_workspace
+from code_engine.workspace import ENVIRONMENT_PRESETS, materialize_drill_workspace
 from progress_store import strip_progress
 from quality_rules import QUALITY_RULES
 
@@ -91,9 +100,9 @@ def check_zero_wall_of_text(pid: str, prompt: str) -> None:
 
 
 def check_zero_leak_hint(pid: str, prob: Dict[str, Any]) -> None:
-    """Ensures inputHint and placeholder do not spoil the answer, tokens, or bug locations (04_CODE §7)."""
+    """Ensures hints, placeholders, and visible test names do not spoil the answer, tokens, or bug locations (04_CODE §7, 00_CORE §6)."""
     hints = []
-    for k in ("inputHint", "placeholder"):
+    for k in ("inputHint", "placeholder", "checkpointHint"):
         v = prob.get(k)
         if v and isinstance(v, str):
             hints.append((k, v))
@@ -102,6 +111,10 @@ def check_zero_leak_hint(pid: str, prob: Dict[str, Any]) -> None:
         v = spec.get(k)
         if v and isinstance(v, str):
             hints.append((f"answerSpec.{k}", v))
+    for idx, t in enumerate(prob.get("visibleTests") or [], 1):
+        t_name = t.get("name")
+        if t_name and isinstance(t_name, str):
+            hints.append((f"visibleTests[{idx}].name", t_name))
 
     answer_plain = str(prob.get("answerPlain", "")).strip()
 
@@ -147,17 +160,96 @@ def check_zero_leak_hint(pid: str, prob: Dict[str, Any]) -> None:
                 )
 
 
-def check_dual_pre_execution(pid: str, prob: Dict[str, Any]) -> None:
-    """Enforces dual pre-execution verification: Canonical is 100% Green, Starter fails reproducer (Red before Green)."""
+def _check_code_compiles(pid: str, label: str, code: str, environment: str = "node-vanilla") -> None:
+    """Verify starter/mutant code parses/compiles cleanly in Node or tsc."""
+    if not code or not code.strip():
+        return
+    if environment in TS_PRESETS:
+        ext = ENVIRONMENT_PRESETS.get(environment, {}).get("defaultExt", "ts")
+        try:
+            diags = typecheck_code_snippet(code, ext=ext, filename=f"{pid}_{label}")
+        except LintToolsMissingError:
+            return
+        if diags:
+            msg = "; ".join(f"line {d['line']} {d['message']}" for d in diags[:3])
+            raise AiContractError(f"[{pid}] {label} failed TypeScript compile check: {msg}")
+        return
+
+    if shutil.which("node") is None:
+        return
+    with tempfile.NamedTemporaryFile("w", suffix=".js", delete=False, encoding="utf-8") as f:
+        f.write(code)
+        tmp_path = f.name
+    try:
+        proc = subprocess.run(["node", "--check", tmp_path], capture_output=True, text=True, timeout=5.0)
+        if proc.returncode != 0:
+            err = (proc.stderr or proc.stdout or "syntax error").strip().splitlines()[0]
+            raise AiContractError(f"[{pid}] {label} failed syntax check: {err}")
+    finally:
+        try:
+            os.remove(tmp_path)
+        except OSError:
+            pass
+
+
+def _is_coding_problem(prob: Dict[str, Any]) -> bool:
+    archetype = prob.get("archetype") or prob.get("codeType", "problem-solving")
+    if (
+        archetype in ("code-tracing", "predict-output")
+        and not prob.get("solutionCode")
+        and not prob.get("visibleTests")
+    ):
+        return False
+    return True
+
+
+def check_starter_contract(
+    pid: str,
+    prob: Dict[str, Any],
+    environment: str = "node-vanilla",
+    *,
+    check_identical: bool = True,
+) -> None:
+    """Verify starterCode compiles/parses and does not leak the reference solution."""
+    if not _is_coding_problem(prob):
+        return
+    starter = prob.get("starterCode") or ""
+    sol = prob.get("solutionCode") or ""
+    if not starter.strip():
+        raise AiContractError(f"[{pid}] starterCode is required and cannot be empty.")
+
+    _check_code_compiles(pid, "starterCode", starter, environment=environment)
+
+    if sol.strip():
+        if check_identical:
+            norm_starter = re.sub(r"\s+", "", starter)
+            norm_sol = re.sub(r"\s+", "", sol)
+            if norm_starter == norm_sol:
+                raise AiContractError(f"[{pid}] No-Leak Guard violated: starterCode is identical to solutionCode.")
+        # Check if starter comments/body leak a multi-line solution body verbatim
+        sol_lines = [
+            ln.strip()
+            for ln in sol.splitlines()
+            if len(ln.strip()) >= 20 and not ln.strip().startswith("module.exports")
+        ]
+        if len(sol_lines) >= 2:
+            leaked = [ln for ln in sol_lines if ln in starter and ("//" in starter or "/*" in starter)]
+            if len(leaked) >= 2:
+                raise AiContractError(f"[{pid}] No-Leak Guard violated: starterCode leaks solution lines.")
+
+
+def check_dual_pre_execution(pid: str, prob: Dict[str, Any], environment: str = "node-vanilla") -> None:
+    """Enforces dual pre-execution verification: Canonical is 100% Green, Starter fails at least one visible test."""
     archetype = prob.get("archetype") or prob.get("codeType", "problem-solving")
     sol = prob.get("solutionCode") or prob.get("verify", {}).get("solutionCode")
     starter = prob.get("starterCode")
     visible = prob.get("visibleTests", [])
     hidden = prob.get("hiddenTests", [])
+    entry = prob.get("entryPoint", "")
 
     # 1. Canonical solution verification (100% Green)
     if sol and (visible or hidden):
-        report = run_tests(sol, visible, hidden)
+        report = run_tests(sol, visible, hidden, environment=environment, entry_point=entry)
         if not report.get("allPassed"):
             failed = [r["name"] for r in report.get("visibleResults", []) if not r.get("passed")]
             raise AiContractError(
@@ -165,15 +257,19 @@ def check_dual_pre_execution(pid: str, prob: Dict[str, Any]) -> None:
                 f"Details: {report.get('visibleResults')}"
             )
 
-    # 2. Starter code verification for Debugging (Red before Green)
-    if archetype in ("debugging", "find-bug"):
-        if starter and visible:
-            starter_report = run_tests(starter, visible, [])
-            if starter_report.get("allPassed"):
+    # 2. Starter code must fail at least one visible test (stub / buggy before Green)
+    if _is_coding_problem(prob) and starter and visible:
+        starter_report = run_tests(starter, visible, [], environment=environment, entry_point=entry)
+        if starter_report.get("allPassed"):
+            if archetype in ("debugging", "find-bug"):
                 raise AiContractError(
                     f"[{pid}] Dual Pre-Execution Verification: Debugging starterCode unexpectedly passed all visible tests. "
                     "Red-before-Green invariant violated: starterCode must fail at least one reproducer test (04_CODE §2.1)."
                 )
+            raise AiContractError(
+                f"[{pid}] Dual Pre-Execution Verification: starterCode unexpectedly passed all visible tests. "
+                "Starter must be a stub (or contain the bug/missing requirement) that fails at least one visible test."
+            )
 
     # 3. Code Tracing / Predict Output
     if archetype in ("code-tracing", "predict-output"):
@@ -400,17 +496,54 @@ module.exports = {{ {entry_point} }};
     return mutants
 
 
-def check_mutation_testing(pid: str, prob: Dict[str, Any]) -> None:
+def _extract_trap_mutant(prob: Dict[str, Any]) -> tuple[str, str]:
+    """Extract (name, code) from problem.trapMutant (str or {name, code})."""
+    raw = prob.get("trapMutant")
+    if isinstance(raw, str):
+        return (prob.get("commonTrapTag") or "trap_mutant", raw)
+    if isinstance(raw, dict):
+        return (str(raw.get("name") or prob.get("commonTrapTag") or "trap_mutant"), str(raw.get("code") or ""))
+    return ("", "")
+
+
+def check_mutation_testing(
+    pid: str,
+    prob: Dict[str, Any],
+    *,
+    environment: str = "node-vanilla",
+    require_trap_mutant: bool = False,
+) -> None:
     """Enforces Mutation Testing Guard (Anti-Green-Illusion Guard):
     Runs mutated / cheating implementations against the problem's test suites.
-    The test suite MUST fail on every mutant. If any mutant passes, tests are too weak.
+    - Generic/custom mutants must fail `visibleTests + hiddenTests`.
+    - When `require_trap_mutant` is True (coding problems), `hiddenTests` must be non-empty and
+      `trapMutant` (a plausible wrong solution embodying `commonTrapTag`) must compile and FAIL `hiddenTests`.
     """
     sol = prob.get("solutionCode")
     visible = prob.get("visibleTests", [])
     hidden = prob.get("hiddenTests", [])
+    entry = prob.get("entryPoint", "")
 
     if not sol or not (visible or hidden):
         return
+
+    if require_trap_mutant and _is_coding_problem(prob):
+        if not hidden:
+            raise AiContractError(
+                f"[{pid}] hiddenTests must be non-empty so trapMutant can be verified against hidden tests."
+            )
+        tm_name, tm_code = _extract_trap_mutant(prob)
+        if not tm_code.strip():
+            raise AiContractError(
+                f"[{pid}] Missing 'trapMutant': supply a plausible wrong solution embodying "
+                f"commonTrapTag '{prob.get('commonTrapTag', '?')}' that fails hiddenTests."
+            )
+        _check_code_compiles(pid, "trapMutant", tm_code, environment=environment)
+        tm_report = run_tests(tm_code, [], hidden, timeout_sec=2.0, environment=environment, entry_point=entry)
+        if tm_report.get("allPassed"):
+            raise AiContractError(
+                f"[{pid}] Trap mutant '{tm_name}' passed all hidden tests! Add hiddenTests that catch this trap."
+            )
 
     mutants = generate_mutants_for_problem(prob)
     custom_mutants = prob.get("verify", {}).get("mutants") or prob.get("mutants") or []
@@ -422,7 +555,7 @@ def check_mutation_testing(pid: str, prob: Dict[str, Any]) -> None:
         if not m_code:
             continue
 
-        report = run_tests(m_code, visible, hidden, timeout_sec=2.0)
+        report = run_tests(m_code, visible, hidden, timeout_sec=2.0, environment=environment, entry_point=entry)
         if report.get("allPassed"):
             raise AiContractError(
                 f"[{pid}] Anti-Green-Illusion Guard: Test suite failed Mutation Testing for mutant '{m_name}'. "
@@ -447,17 +580,23 @@ def validate_lint_overrides(lint_overrides: Any) -> None:
             raise AiContractError(f"Drill 'lintOverrides[{idx}]' for rule '{rule}' must have a non-empty 'reason'.")
 
 
-def validate_ai_code_contract(prob: Dict[str, Any]) -> bool:
+def validate_ai_code_contract(
+    prob: Dict[str, Any],
+    *,
+    environment: str = "node-vanilla",
+    require_trap_mutant: bool = False,
+) -> bool:
     """
     Enforces strict rules for AI-written programming problems (04_CODE, 07_PROBLEM_GEN §4):
     1. verificationLevel must be 'partial' until blind solve
     2. Zero Toy Code Guard: No foo/bar/baz/test1 in prompt, code, or tests
     3. Zero Wall-of-Text Guard: Prompt > 250 chars requires bullets, sections, and backticks
-    4. Zero-Leak Hint Guard: Hints do not spoil answers, methods, or bug lines
+    4. Zero-Leak Hint Guard: Hints and visible test names do not spoil answers, methods, or bug lines
     5. Anti-Spoonfeeding Guard: No defect analysis headers, // BUG: comments, or explicit data structure hints
-    6. Deterministic Clock Invariant: Time-based tests > 50ms must support injectable clock
-    7. Dual Pre-Execution Verification: Canonical is 100% Green; Debugging starterCode is Red
-    8. Mutation Testing Guard (Anti-Green-Illusion): Test suite must kill all synthetic mutants
+    6. Starter Contract: starterCode compiles/parses and does not leak solutionCode
+    7. Deterministic Clock Invariant: Time-based tests > 50ms must support injectable clock
+    8. Dual Pre-Execution Verification: Canonical is 100% Green; Starter fails at least one visible test
+    9. Mutation Testing Guard (Anti-Green-Illusion): Test suite must kill trapMutant and synthetic mutants
     """
     pid = prob.get("id", "?")
 
@@ -471,9 +610,13 @@ def validate_ai_code_contract(prob: Dict[str, Any]) -> bool:
 
     # 2. Zero Toy Code Guard
     scan_for_toy_identifiers(prob.get("prompt", ""), "prompt", pid)
+    scan_for_toy_identifiers(prob.get("context", ""), "context", pid)
     scan_for_toy_identifiers(prob.get("starterCode", ""), "starterCode", pid)
     scan_for_toy_identifiers(prob.get("solutionCode", ""), "solutionCode", pid)
     scan_for_toy_identifiers(prob.get("codeSnippet", ""), "codeSnippet", pid)
+    _, tm_code = _extract_trap_mutant(prob)
+    if tm_code:
+        scan_for_toy_identifiers(tm_code, "trapMutant", pid)
 
     for idx, t in enumerate(prob.get("visibleTests", []), 1):
         scan_for_toy_identifiers(t.get("name", ""), f"visibleTests[{idx}].name", pid)
@@ -492,14 +635,20 @@ def validate_ai_code_contract(prob: Dict[str, Any]) -> bool:
     # 5. Anti-Spoonfeeding Guard
     check_anti_spoonfeeding(pid, prob)
 
-    # 6. Deterministic Clock Invariant
+    # 6. Starter syntax/compile check
+    check_starter_contract(pid, prob, environment=environment, check_identical=False)
+
+    # 7. Deterministic Clock Invariant
     check_deterministic_clock(pid, prob)
 
-    # 7. Dual Pre-Execution Verification
-    check_dual_pre_execution(pid, prob)
+    # 8. Dual Pre-Execution Verification (canonical Green; starter fails >= 1 visible test)
+    check_dual_pre_execution(pid, prob, environment=environment)
 
-    # 8. Mutation Testing Guard (Anti-Green-Illusion)
-    check_mutation_testing(pid, prob)
+    # 9. Starter no-leak check (cannot be identical to solutionCode)
+    check_starter_contract(pid, prob, environment=environment, check_identical=True)
+
+    # 9. Mutation Testing Guard (Anti-Green-Illusion)
+    check_mutation_testing(pid, prob, environment=environment, require_trap_mutant=require_trap_mutant)
 
     return True
 
@@ -624,6 +773,56 @@ def _find_archetype_in_vaults(
     return None
 
 
+def _archetype_trap_tags(arch: Dict[str, Any]) -> List[str]:
+    """Extract cognitive trap tag strings from an archetype."""
+    traps = arch.get("cognitiveTraps") or []
+    return [t.get("trapTag") if isinstance(t, dict) else str(t) for t in traps if t]
+
+
+def validate_code_against_vault(
+    prob: Dict[str, Any],
+    archetypes: List[Dict[str, Any]],
+    unit_code: str,
+) -> Dict[str, Any]:
+    """Scope & trap gate: archetypeKey must be in scope, and commonTrapTag in its cognitiveTraps."""
+    pid = prob.get("id", "?")
+    key = prob.get("archetypeKey")
+    if not key:
+        raise AiContractError(f"[{pid}] Problem is missing 'archetypeKey'.")
+    arch = next((a for a in archetypes if a.get("archetypeKey") == key), None)
+    if arch is None:
+        raise AiContractError(f"[{pid}] archetypeKey '{key}' is out of scope for '{unit_code}' reasoning vault.")
+
+    tag = prob.get("commonTrapTag")
+    traps = _archetype_trap_tags(arch)
+    if not tag or tag not in traps:
+        raise AiContractError(
+            f"[{pid}] commonTrapTag '{tag}' is not one of archetype '{key}' cognitiveTraps {traps}. "
+            "Use a listed tag, or propose adding the trap to the vault first."
+        )
+    return arch
+
+
+def validate_problem_quality_checks(
+    pid: str,
+    arch: Dict[str, Any],
+    *,
+    universal_ids: set[str],
+) -> None:
+    """Validate that an archetype has valid `qualityChecks` (R2) and `knownBad` lint snippets fire."""
+    arch_key = arch.get("archetypeKey", "?")
+    errors = validate_quality_checks(arch, universal_ids=universal_ids)
+    if errors:
+        raise AiContractError(f"[{pid}] Archetype '{arch_key}' has invalid qualityChecks: {'; '.join(errors)}")
+
+    for check in arch.get("qualityChecks", []):
+        ok, msg = verify_known_bad_lint(check, label=arch_key)
+        if not ok:
+            raise AiContractError(f"[{pid}] {msg}")
+        if msg:
+            print(f"  [{pid}] {msg}")
+
+
 def validate_drill_quality_checks(
     unit_code: str, problems: List[Dict[str, Any]], vault_dir: Optional[str] = None
 ) -> None:
@@ -649,27 +848,18 @@ def validate_drill_quality_checks(
                 f"[{pid}] Archetype '{arch_key}' not found in vault for '{unit_code}' (required for qualityChecks gate)."
             )
 
-        errors = validate_quality_checks(arch, universal_ids=universal_ids)
-        if errors:
-            raise AiContractError(f"[{pid}] Archetype '{arch_key}' has invalid qualityChecks: {'; '.join(errors)}")
-
-        for check in arch.get("qualityChecks", []):
-            ok, msg = verify_known_bad_lint(check, label=arch_key)
-            if not ok:
-                raise AiContractError(f"[{pid}] {msg}")
-            if msg:
-                print(f"  [{pid}] {msg}")
-
+        validate_problem_quality_checks(pid, arch, universal_ids=universal_ids)
         checked_archetypes.add(arch_key)
 
 
 def validate_drill_solution_lint(drill_doc: Dict[str, Any]) -> None:
-    """Run Layer 2 ESLint checks on every problem's solutionCode at ingest."""
+    """Run Layer 2 ESLint (and tsc for TS presets) checks on every problem's solutionCode."""
     if shutil.which("node") is None:
         print("  [SKIP] solutionCode lint gate: node binary not found on PATH.")
         return
     try:
         findings = lint_drill_doc(drill_doc)
+        ts_diags = typecheck_drill_doc(drill_doc)
     except LintToolsMissingError as exc:
         print(f"  [SKIP] solutionCode lint gate: {exc}")
         return
@@ -677,6 +867,209 @@ def validate_drill_solution_lint(drill_doc: Dict[str, Any]) -> None:
     if findings:
         details = "; ".join(f"[{f['problemId']}] line {f['line']} {f['rule']} {f['message']}" for f in findings)
         raise AiContractError(f"solutionCode failed Layer 2 lint: {details}")
+    if ts_diags:
+        details = "; ".join(f"[{d['problemId']}] line {d['line']} {d['message']}" for d in ts_diags)
+        raise AiContractError(f"solutionCode failed TypeScript typecheck: {details}")
+
+
+NON_IMPLEMENT_TYPES = {
+    "fix-bug",
+    "debugging",
+    "refactor",
+    "refactoring",
+    "predict-output",
+    "code-tracing",
+    "trace-explain",
+}
+
+
+def validate_drill_mix(drill_doc: Dict[str, Any], problems: List[Dict[str, Any]]) -> List[str]:
+    """Enforce rules/07 mix invariants:
+    - Each problem has a realistic non-empty `context` domain.
+    - No two problems share the same (archetypeKey, context).
+    - For drills with >= 4 problems:
+      - Level spread (at least 2 distinct levels when difficulty is ALL/unset, or matching pinned difficulty).
+      - At least one non-implement item (fix-bug / refactor / predict-output / trace-explain).
+    """
+    errors: List[str] = []
+    seen_pairs: Dict[tuple[str, str], str] = {}
+
+    for idx, prob in enumerate(problems, 1):
+        pid = prob.get("id", f"Q{idx:02d}")
+        arch_key = str(prob.get("archetypeKey") or "")
+        ctx = str(prob.get("context") or "").strip()
+        if not ctx:
+            errors.append(f"[{pid}] Missing 'context': prompts must name a realistic scenario domain.")
+            continue
+        pair = (arch_key, ctx.lower())
+        if pair in seen_pairs:
+            errors.append(
+                f"[{pid}] Duplicate (archetypeKey='{arch_key}', context='{ctx}') already used in {seen_pairs[pair]}."
+            )
+        else:
+            seen_pairs[pair] = pid
+
+    if len(problems) >= 4:
+        cfg = drill_doc.get("config") or {}
+        diff = str(cfg.get("difficulty") or "ALL").upper()
+        levels = [p.get("level") for p in problems if p.get("level") is not None]
+        if diff in ("1", "2", "3", "4", "5"):
+            expected_lvl = int(diff)
+            for p in problems:
+                if p.get("level") != expected_lvl:
+                    errors.append(
+                        f"[{p.get('id', '?')}] Level {p.get('level')} does not match pinned difficulty L{expected_lvl}."
+                    )
+        elif len(set(levels)) < 2:
+            errors.append(
+                f"Drill of {len(problems)} problems needs level spread (found only level(s) {sorted(set(levels))})."
+            )
+
+        has_non_implement = any(
+            (p.get("codeType") in NON_IMPLEMENT_TYPES) or (p.get("archetype") in NON_IMPLEMENT_TYPES) for p in problems
+        )
+        if not has_non_implement:
+            errors.append(
+                f"Drill of {len(problems)} problems needs at least one non-implement item "
+                "(fix-bug / refactor / predict-output / trace-explain)."
+            )
+
+    return errors
+
+
+def validate_drill_review(drill_doc: Dict[str, Any], problems: List[Dict[str, Any]]) -> List[str]:
+    """Require reviewer record: `review: {verdict: 'pass', note}` on draft (or on every problem)."""
+    rv = drill_doc.get("review")
+    if isinstance(rv, dict):
+        verdict = rv.get("verdict")
+        note = str(rv.get("note") or "").strip()
+        if verdict != "pass" or not note:
+            return [f"Drill 'review' must have verdict='pass' and a non-empty 'note' (got {rv!r})."]
+        return []
+
+    # Fallback: per-problem review
+    if all(isinstance(p.get("review"), dict) for p in problems):
+        errors: List[str] = []
+        for p in problems:
+            prv = p["review"]
+            if prv.get("verdict") != "pass" or not str(prv.get("note") or "").strip():
+                errors.append(f"[{p.get('id', '?')}] Problem 'review' must have verdict='pass' and a non-empty 'note'.")
+        return errors
+
+    return ["Missing 'review' {verdict: 'pass', note} from the reviewer subagent."]
+
+
+def validate_drill_blind_solve(drill_doc: Dict[str, Any], problems: List[Dict[str, Any]]) -> List[str]:
+    """Require blindSolve: [{problemId, passed: true}] covering every problem in the draft."""
+    bs = drill_doc.get("blindSolve")
+    if not isinstance(bs, list) or not bs:
+        return ["Missing 'blindSolve' list [{problemId, passed: true}] from the blind-solve subagent."]
+
+    by_id: Dict[str, Dict[str, Any]] = {}
+    for entry in bs:
+        if isinstance(entry, dict) and entry.get("problemId"):
+            by_id[str(entry["problemId"])] = entry
+
+    errors: List[str] = []
+    for idx, p in enumerate(problems, 1):
+        pid = p.get("id", f"Q{idx:02d}")
+        rec = by_id.get(pid)
+        if rec is None:
+            errors.append(f"[{pid}] Missing blindSolve entry for '{pid}'.")
+        elif rec.get("passed") is not True:
+            errors.append(f"[{pid}] blindSolve entry for '{pid}' did not pass (passed={rec.get('passed')!r}).")
+        elif rec.get("ambiguous") is True:
+            errors.append(f"[{pid}] blindSolve flagged '{pid}' as ambiguous.")
+    return errors
+
+
+def check_code_drill(
+    drill_doc: Dict[str, Any],
+    rules: Optional[Dict[str, Any]] = None,
+    vault_dir: Optional[str] = None,
+) -> List[str]:
+    """Run every PRG ingest gate on a draft WITHOUT writing anything or touching the vault.
+
+    Returns a list of failure strings across all problems (empty list = ready to ingest).
+    """
+    unit_code = drill_doc.get("unitCode")
+    if not unit_code:
+        return ["Drill document must specify 'unitCode'."]
+    problems = drill_doc.get("problems") or []
+    if not problems:
+        return ["Drill document has no 'problems'."]
+
+    errors: List[str] = []
+    try:
+        validate_lint_overrides(drill_doc.get("lintOverrides"))
+    except AiContractError as exc:
+        errors.append(str(exc))
+
+    scope_archs = load_scope_archetypes(unit_code, vault_dir=vault_dir)
+    if not scope_archs:
+        errors.append(f"No archetypes found in reasoning vault for scope '{unit_code}'.")
+
+    active_rules = rules or QUALITY_RULES
+    env_key = drill_doc.get("environment", "node-vanilla")
+    universal = load_universal()
+    universal_ids = {c["id"] for c in universal if isinstance(c, dict) and isinstance(c.get("id"), str)}
+    checked_rubrics: set[str] = set()
+
+    working_problems: List[Dict[str, Any]] = []
+    for idx, original in enumerate(problems, 1):
+        prob = copy.deepcopy(original)
+        prob.setdefault("id", f"Q{idx:02d}")
+        prob.setdefault("verificationLevel", "partial")
+        working_problems.append(prob)
+        pid = prob["id"]
+
+        # 1. Scope & trap tag + Rubric (qualityChecks)
+        if scope_archs:
+            try:
+                arch = validate_code_against_vault(prob, scope_archs, unit_code)
+                arch_key = arch.get("archetypeKey", "")
+                if arch_key not in checked_rubrics:
+                    validate_problem_quality_checks(pid, arch, universal_ids=universal_ids)
+                    checked_rubrics.add(arch_key)
+            except AiContractError as exc:
+                errors.append(str(exc))
+
+        # 2. Contract, no-leak, starter compile, dual pre-exec, trapMutant + generic mutants, quality gates
+        try:
+            validate_ai_code_contract(prob, environment=env_key, require_trap_mutant=True)
+            verify_problem(prob, rules=active_rules)
+        except Exception as exc:  # noqa: BLE001 - collect all per-problem gate errors
+            msg = str(exc)
+            errors.append(msg if f"[{pid}]" in msg else f"[{pid}] {msg}")
+
+    # 3. Layer 2 lint + tsc on solutionCode
+    try:
+        validate_drill_solution_lint(drill_doc)
+    except AiContractError as exc:
+        errors.append(str(exc))
+
+    # 4. Mix invariants
+    errors.extend(validate_drill_mix(drill_doc, working_problems))
+
+    # 5. Blind solve & Reviewer record
+    errors.extend(validate_drill_blind_solve(drill_doc, working_problems))
+    errors.extend(validate_drill_review(drill_doc, working_problems))
+
+    return errors
+
+
+def _resolve_unit_title(unit_code: str) -> Optional[str]:
+    id_map_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "id_map.json")
+    if os.path.exists(id_map_path):
+        try:
+            with open(id_map_path, "r", encoding="utf-8") as f:
+                id_map = json.load(f)
+            entry = id_map.get(unit_code)
+            if isinstance(entry, dict) and entry.get("title"):
+                return str(entry["title"])
+        except (OSError, ValueError):
+            pass
+    return None
 
 
 def ingest_ai_code_drill(
@@ -702,26 +1095,19 @@ def ingest_ai_code_drill(
     if not problems:
         raise ValueError("Drill document has no 'problems'.")
 
-    validate_lint_overrides(drill_doc.get("lintOverrides"))
-
     active_rules = rules or QUALITY_RULES
 
-    # 1. Verification of all problems
+    # 1. Run all ingest gates
+    gate_errors = check_code_drill(drill_doc, rules=active_rules, vault_dir=vault_dir)
+    if gate_errors:
+        raise AiContractError("\n".join(gate_errors))
+
     for idx, prob in enumerate(problems, 1):
         if "id" not in prob:
             prob["id"] = f"Q{idx:02d}"
         if "verificationLevel" not in prob:
             prob["verificationLevel"] = "partial"
-
-        # Contract Guard validation
-        validate_ai_code_contract(prob)
-
-        # Quality Gates (G1, G2, G4, G6) + Node execution verification
         verify_problem(prob, rules=active_rules)
-
-    # 1b. Layer 2 lint on solutionCode and Layer 3 rubric (qualityChecks) gate
-    validate_drill_solution_lint(drill_doc)
-    validate_drill_quality_checks(unit_code, problems, vault_dir=vault_dir)
 
     # 2. Allocate or preserve official Drill ID
     drill_id = drill_doc.get("drillId")
@@ -736,6 +1122,9 @@ def ingest_ai_code_drill(
         drill_doc["topicCode"] = topic_code
     if not drill_doc.get("chapterCode"):
         drill_doc["chapterCode"] = chapter_code
+    if not drill_doc.get("unitTitle"):
+        drill_doc["unitTitle"] = _resolve_unit_title(unit_code) or drill_doc.get("topicTitle") or unit_code
+
     scope_archs = {a["archetypeKey"]: a for a in load_scope_archetypes(unit_code, vault_dir=vault_dir)}
     for prob in problems:
         if not prob.get("levelLabel") and prob.get("level") in LEVEL_LABELS:
@@ -784,6 +1173,12 @@ def ingest_ai_code_drill(
             mark_code_context_used(unit_code, arch_key, ctx, vault_dir=vault_dir)
 
     print(f"  [AI Code Verified & Materialized] {file_path} ({len(problems)} problems)")
+    print("  Next steps:")
+    print(f"    1. Sync pristine record to Notion (rules/00 §8): python -m notion_sync.drill_sync {file_path}")
+    print(
+        f"    2. Commit only {file_path}, its unit/chapter vault, and id_map.json on a branch "
+        f"(drill/{drill_id}), open PR, and self-merge after CI (CLAUDE.md)."
+    )
     return drill_doc
 
 
@@ -792,6 +1187,13 @@ if __name__ == "__main__":
     parser.add_argument("--unit", default="PRG-T01-C04", help="Unit code (e.g. PRG-T01-C04)")
     parser.add_argument("--list-vault", action="store_true", help="List registered engineering archetypes")
     parser.add_argument("--ingest-file", help="Path to JSON file containing AI-generated code drill document")
+    parser.add_argument(
+        "--check",
+        nargs="?",
+        const="__USE_INGEST_FILE__",
+        default=None,
+        help="Run all gates without writing or touching the vault. Pass a draft path or combine with --ingest-file.",
+    )
     args = parser.parse_args()
 
     if args.list_vault:
@@ -804,6 +1206,26 @@ if __name__ == "__main__":
             checks = a.get("qualityChecks") or []
             checks_str = ", ".join(f"{c.get('id')} ({c.get('severity')})" for c in checks) if checks else "none"
             print(f"      Quality Checks: {checks_str}")
+
+    check_target = None
+    if args.check is not None:
+        check_target = args.ingest_file if args.check == "__USE_INGEST_FILE__" else args.check
+        if not check_target:
+            parser.error("--check requires a draft JSON path (or --ingest-file <path>)")
+
+    if check_target:
+        with open(check_target, "r", encoding="utf-8") as f:
+            drill_data = json.load(f)
+        failures = check_code_drill(drill_data)
+        for line in failures:
+            print(f"  FAIL {line}")
+        n = len(drill_data.get("problems") or [])
+        print(
+            f"\n{len(failures)} error(s) across {n} problem(s)."
+            if failures
+            else f"OK: all {n} problems pass every gate (nothing saved)."
+        )
+        raise SystemExit(1 if failures else 0)
 
     if args.ingest_file:
         with open(args.ingest_file, "r", encoding="utf-8") as f:

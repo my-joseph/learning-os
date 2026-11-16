@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import subprocess
 import sys
 import tempfile
@@ -25,6 +26,8 @@ from code_engine.workspace import ENVIRONMENT_PRESETS, get_entry_name
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 TOOLS_LINT_DIR = REPO_ROOT / "tools" / "lint"
+TS_PRESETS = ("typescript-strict", "backend-sqlite", "react-dom")
+_TSC_DIAG_RE = re.compile(r"^(.+?)\((\d+),(\d+)\):\s+(?:error|warning)\s+(TS\d+:\s*.*)$")
 
 
 class LintToolsMissingError(RuntimeError):
@@ -115,6 +118,85 @@ def lint_drill_doc(drill_doc: dict[str, Any]) -> list[dict[str, Any]]:
             f["problemId"] = pid
             all_findings.append(f)
     return all_findings
+
+
+def typecheck_code_snippet(
+    code: str,
+    ext: str = "ts",
+    filename: str = "solution",
+) -> list[dict[str, Any]]:
+    """Run `tsc --noEmit` on a single TypeScript snippet in a temp directory."""
+    tsc_bin = TOOLS_LINT_DIR / "node_modules" / ".bin" / "tsc"
+    if not tsc_bin.exists():
+        raise LintToolsMissingError(
+            f"TypeScript compiler not installed. Expected {tsc_bin}. Run `npm ci` in tools/lint."
+        )
+
+    with tempfile.TemporaryDirectory(prefix="prg_tsc_") as tmp:
+        tmp_path = Path(tmp)
+        tsconfig_data: dict[str, Any] = {
+            "compilerOptions": {
+                "target": "ES2024",
+                "module": "NodeNext",
+                "moduleResolution": "NodeNext",
+                "strict": True,
+                "noEmit": True,
+                "allowImportingTsExtensions": True,
+                "skipLibCheck": True,
+            },
+            "include": ["*.ts", "*.tsx"],
+        }
+        if ext == "tsx":
+            tsconfig_data["compilerOptions"]["jsx"] = "react-jsx"
+        (tmp_path / "tsconfig.json").write_text(json.dumps(tsconfig_data, indent=2) + "\n", encoding="utf-8")
+
+        target_name = f"{filename}.{ext}"
+        (tmp_path / target_name).write_text(code.rstrip() + "\n", encoding="utf-8")
+
+        proc = subprocess.run(
+            [str(tsc_bin), "--noEmit", "--pretty", "false"],
+            cwd=str(tmp_path),
+            capture_output=True,
+            text=True,
+        )
+        if proc.returncode == 0:
+            return []
+
+        diagnostics: list[dict[str, Any]] = []
+        combined = (proc.stdout or "") + "\n" + (proc.stderr or "")
+        for line in combined.splitlines():
+            m = _TSC_DIAG_RE.match(line.strip())
+            if m:
+                file_part, line_no, _col, msg = m.groups()
+                diagnostics.append({"file": Path(file_part).name, "line": int(line_no), "message": msg.strip()})
+        if not diagnostics:
+            for line in combined.splitlines():
+                if "error TS" in line:
+                    diagnostics.append({"file": target_name, "line": 0, "message": line.strip()})
+        return diagnostics
+
+
+def typecheck_drill_doc(drill_doc: dict[str, Any]) -> list[dict[str, Any]]:
+    """Run `tsc --noEmit` on all `solutionCode` entries in a TypeScript drill document."""
+    preset_key = drill_doc.get("environment", "node-vanilla")
+    if preset_key not in TS_PRESETS:
+        return []
+    preset = ENVIRONMENT_PRESETS.get(preset_key, ENVIRONMENT_PRESETS["typescript-strict"])
+    ext = preset.get("defaultExt", "ts")
+    drill_id = drill_doc.get("drillId", "UNKNOWN")
+
+    all_diags: list[dict[str, Any]] = []
+    for prob in drill_doc.get("problems", []):
+        sol = prob.get("solutionCode")
+        if not sol:
+            continue
+        pid = prob.get("id", "Q01")
+        entry = get_entry_name(prob)
+        for d in typecheck_code_snippet(sol, ext=ext, filename=f"{pid}_{entry}"):
+            d["drillId"] = drill_id
+            d["problemId"] = pid
+            all_diags.append(d)
+    return all_diags
 
 
 def find_prg_drill_files(data_root: Path) -> list[Path]:
