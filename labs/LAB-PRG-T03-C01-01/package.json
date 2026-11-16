@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "test": "node --experimental-strip-types --test tests/*.test.ts",
+    "test:reference": "LAB_SRC_DIR=../../_reference/LAB-PRG-T03-C01-01/src node --experimental-strip-types --test tests/*.test.ts",
     "test:watch": "node --experimental-strip-types --test --watch tests/*.test.ts",
     "review": "python3 ../common/review.py",
     "submit": "python3 ../common/submit_lab.py"

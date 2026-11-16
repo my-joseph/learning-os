@@ -132,5 +132,39 @@ class ReplacePageContent(unittest.TestCase):
                 notion_client.replace_page_content("page", [{"type": "divider"}], "tok")
 
 
+class PrgSafetyGuards(unittest.TestCase):
+    @staticmethod
+    def _git_ls_files(*patterns: str) -> list[str]:
+        proc = subprocess.run(
+            ["git", "ls-files", *patterns],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        return [line for line in proc.stdout.splitlines() if line.strip()]
+
+    def test_no_hardcoded_users_path_in_tracked_drills_or_code_engine(self):
+        tracked = self._git_ls_files("drills/data", "code_engine")
+        offenders = []
+        for rel in tracked:
+            full = os.path.join(ROOT, rel)
+            if not os.path.isfile(full):
+                continue
+            with open(full, encoding="utf-8", errors="ignore") as f:
+                if "/Users/" in f.read():
+                    offenders.append(rel)
+        self.assertEqual(offenders, [], f"Tracked files contain hardcoded /Users/ paths: {offenders}")
+
+    def test_no_tracked_files_under_drills_workspace(self):
+        tracked = self._git_ls_files("drills/workspace")
+        self.assertEqual(tracked, [], f"drills/workspace/ must not be tracked: {tracked}")
+
+    def test_no_tracked_canonical_dir_under_labs(self):
+        tracked = self._git_ls_files("labs")
+        canonical_files = [f for f in tracked if "/.canonical/" in f or f.endswith("/.canonical")]
+        self.assertEqual(canonical_files, [], f"No .canonical directory may be tracked under labs/: {canonical_files}")
+
+
 if __name__ == "__main__":
     unittest.main()

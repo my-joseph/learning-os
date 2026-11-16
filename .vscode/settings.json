@@ -1,0 +1,6 @@
+{
+  "files.exclude": {
+    "labs/_reference": true,
+    "**/.canonical": true
+  }
+}

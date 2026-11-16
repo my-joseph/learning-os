@@ -7,8 +7,7 @@ Standardizes local workspace scaffolding for Real-World Engineering Drills:
   ├── package.json         (scripts: "test": "node --test *.test.js", "test:q01", etc.)
   ├── README.md            (Scenario description, 6-Step Loop, Acceptance Criteria, AI PR Review guide)
   ├── <PID>_<name>.js      (Starter code / legacy code / buggy code with rich JSDoc & invariant contracts)
-  ├── <PID>_<name>.test.js (Node native test runner suite verifying functional acceptance criteria)
-  └── .canonical/          (Hidden canonical reference solutions for verification and self-study)
+  └── <PID>_<name>.test.js (Node native test runner suite verifying functional acceptance criteria)
 
 Generates one-click IDE deep links (cursor://file/... and vscode://file/...)
 so developers can write and debug in their real IDE with full LSP, keybindings, and tools.
@@ -16,6 +15,7 @@ so developers can write and debug in their real IDE with full LSP, keybindings, 
 
 import json
 import os
+import shutil
 
 ARCHETYPE_LABELS = {
     "problem-solving": "Problem Solving (Logic & Algorithm)",
@@ -138,12 +138,12 @@ def build_starter_header(prob: dict, drill_id: str) -> str:
  * ============================================================================
  * 
  * 6-STEP PEDAGOGICAL PRACTICE LOOP:
- * 1. คิดเองก่อนเขียน : Sketch invariants, mental model, and boundary edge cases.
- * 2. ลงมือทำ         : Write your implementation in this file.
- * 3. ทดสอบ           : Run `npm test` or `npm run test:{pid.lower()}` in this folder.
- * 4. อธิบายโค้ด      : Explain the algorithm and request an AI Senior Tech Lead PR Review.
- * 5. Refactor        : Decouple helpers, improve readability, and optimize performance.
- * 6. เพิ่มความยาก     : Scale up test inputs and handle harsher stress scenarios.
+ * 1. Think Before Coding : Sketch invariants, mental model, and boundary edge cases.
+ * 2. Implement           : Write your implementation in this file.
+ * 3. Test                : Run `npm test` or `npm run test:{pid.lower()}` in this folder.
+ * 4. Explain Code        : Explain the algorithm and request an AI Senior Tech Lead PR Review.
+ * 5. Refactor            : Decouple helpers, improve readability, and optimize performance.
+ * 6. Scale Difficulty    : Scale up test inputs and handle harsher stress scenarios.
  * 
  * SPECIFICATION:
  * {prompt}
@@ -162,9 +162,10 @@ def materialize_drill_workspace(drill_doc: dict, root_dir: str = ".") -> dict:
     ext = preset.get("defaultExt", "js")
 
     ws_dir = os.path.join(root_dir, "drills", "workspace", drill_id)
-    canonical_dir = os.path.join(ws_dir, ".canonical")
     os.makedirs(ws_dir, exist_ok=True)
-    os.makedirs(canonical_dir, exist_ok=True)
+    stale_canonical = os.path.join(ws_dir, ".canonical")
+    if os.path.exists(stale_canonical):
+        shutil.rmtree(stale_canonical)
 
     manifest = {
         "drillId": drill_id,
@@ -201,11 +202,8 @@ def materialize_drill_workspace(drill_doc: dict, root_dir: str = ".") -> dict:
         entry_name = get_entry_name(prob)
         src_filename = f"{pid}_{entry_name}.{ext}"
         test_filename = f"{pid}_{entry_name}.test.{ext}"
-        canonical_filename = f"{pid}_{entry_name}.{ext}"
-
         src_path = os.path.join(ws_dir, src_filename)
         test_path = os.path.join(ws_dir, test_filename)
-        canonical_path = os.path.join(canonical_dir, canonical_filename)
 
         # 1. Author Starter Code
         starter_body = (
@@ -221,13 +219,7 @@ def materialize_drill_workspace(drill_doc: dict, root_dir: str = ".") -> dict:
             with open(src_path, "w", encoding="utf-8") as f:
                 f.write(starter_content)
 
-        # 2. Write Canonical Reference Solution if available
-        sol_code = prob.get("solutionCode")
-        if sol_code:
-            with open(canonical_path, "w", encoding="utf-8") as f:
-                f.write(sol_code.strip() + "\n")
-
-        # 3. Write Visible Test File
+        # 2. Write Visible Test File
         test_blocks = []
         for idx, t in enumerate(prob.get("visibleTests", []), 1):
             t_name = json.dumps(f"[{pid}-T{idx:02d}] " + t.get("name", f"scenario {idx}"))
@@ -249,28 +241,8 @@ test({t_name}, async () => {{
         with open(test_path, "w", encoding="utf-8") as f:
             f.write(test_content.strip() + "\n")
 
-        # 4. Write Hidden Trap Tests (Anti-Cheat / Advanced Boundary Invariants)
+        # Hidden tests live in drill JSON and are run at grading time from a temp dir.
         hidden_tests = prob.get("hiddenTests", [])
-        if hidden_tests:
-            hidden_blocks = []
-            for idx, ht in enumerate(hidden_tests, 1):
-                ht_name = json.dumps(f"[{pid}-HIDDEN-T{idx:02d}] " + ht.get("name", f"hidden trap scenario {idx}"))
-                ht_code = ht.get("testCode", "").strip()
-                hidden_blocks.append(f"""
-test({ht_name}, async () => {{
-  {ht_code}
-}});
-""")
-            hidden_header = f"// Hidden Trap Test Suite for {drill_id} {pid}\n"
-            if preset_key in ("typescript-strict", "backend-sqlite"):
-                hidden_header += "import test from 'node:test';\nimport assert from 'node:assert';\n"
-                hidden_header += f"import {{ {entry_name} }} from '../{src_filename}';\n\n"
-            else:
-                hidden_header += f"const test = require('node:test');\nconst assert = require('node:assert');\nconst {{ {entry_name} }} = require('../{src_filename}');\n\n"
-
-            hidden_test_path = os.path.join(canonical_dir, f"{pid}_{entry_name}.hidden.test.{ext}")
-            with open(hidden_test_path, "w", encoding="utf-8") as f:
-                f.write((hidden_header + "".join(hidden_blocks)).strip() + "\n")
 
         # Register npm test script per problem
         if preset_key == "react-dom":
@@ -293,11 +265,8 @@ test({ht_name}, async () => {{
         }
 
         prob["workspaceFile"] = os.path.join("drills", "workspace", drill_id, src_filename)
-        prob["workspaceDir"] = abs_ws
-        prob["cursorUrl"] = f"cursor://file/{abs_src}"
-        prob["vscodeUrl"] = f"vscode://file/{abs_src}"
-        prob["cursorFolderUrl"] = f"cursor://file/{abs_ws}"
-        prob["vscodeFolderUrl"] = f"vscode://file/{abs_ws}"
+        for abs_key in ("workspaceDir", "cursorUrl", "vscodeUrl", "cursorFolderUrl", "vscodeFolderUrl"):
+            prob.pop(abs_key, None)
         prob["archetype"] = archetype
 
         readme_problems.append(
@@ -336,12 +305,12 @@ test({ht_name}, async () => {{
         "> **100% Local IDE Mandate**: All problem solving, refactoring, and debugging must be performed natively in your IDE (VS Code / Cursor).",
         "",
         "## Universal 6-Step Pedagogical Practice Loop",
-        "1. **คิดเองก่อนเขียน (Mental Model)**: Review the Acceptance Criteria and boundary traps before typing.",
-        "2. **ลงมือทำ (Local IDE)**: Open the source file in VS Code or Cursor and implement the logic.",
-        "3. **ทดสอบ (Automated Acceptance Testing)**: Run `npm test` or `npm run test:<qid>` in this directory.",
-        "4. **อธิบายโค้ด (AI Senior Lead PR Review)**: Articulate your algorithm and request an AI Senior Tech Lead architectural review.",
+        "1. **Think Before Coding (Mental Model)**: Review the Acceptance Criteria and boundary traps before typing.",
+        "2. **Hands-On Implementation (Local IDE)**: Open the source file in VS Code or Cursor and implement the logic.",
+        "3. **Automated Testing (Acceptance Testing)**: Run `npm test` or `npm run test:<qid>` in this directory.",
+        "4. **Code Explanation (AI Senior Lead PR Review)**: Articulate your algorithm and request an AI Senior Tech Lead architectural review.",
         "5. **Refactor (Clean Architecture)**: Decouple helpers, clean code smells, and optimize hot paths while keeping tests green.",
-        "6. **เพิ่มความยาก (Progression)**: Scale up test inputs and edge cases.",
+        "6. **Scale Difficulty (Progression)**: Scale up test inputs and edge cases.",
         "",
         "## Quick Terminal Commands",
         "```bash",

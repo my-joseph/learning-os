@@ -45,6 +45,10 @@ yarn-error.log*
 *.tsbuildinfo
 coverage/
 PR_REVIEW_REQUEST.md
+labs/*/PR_REVIEW_REQUEST.md
+
+# Generated drill workspaces (materialized locally, never tracked)
+drills/workspace/
 
 # Scratch and Sample Reports
 scratch/

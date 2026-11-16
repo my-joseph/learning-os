@@ -1,7 +1,9 @@
 import test from "node:test";
 import assert from "node:assert";
-import { transitionOrderStatus, InvalidStateTransitionError } from "../src/order_state.ts";
 import type { OrderStatus } from "../src/types.ts";
+
+const srcDir = process.env.LAB_SRC_DIR || "../src";
+const { transitionOrderStatus, InvalidStateTransitionError } = await import(`${srcDir}/order_state.ts`);
 
 test("Milestone 3: Order State Machine & Transition Guards", async (t) => {
   await t.test("should follow valid end-to-end order fulfillment pipeline", () => {
