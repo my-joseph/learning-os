@@ -29,12 +29,12 @@ def _require_node_and_lint():
         pytest.skip(str(exc))
 
 
-def _make_prg_drill(drill_id: str = "DRL-PRG-T00-C02-99", level: int = 1) -> dict:
+def _make_prg_drill(drill_id: str = "DRL-PRG-T00-C03-99", level: int = 1) -> dict:
     return {
         "drillId": drill_id,
         "subject": "PRG",
-        "unitCode": "PRG-T00-C02-U01",
-        "chapterCode": "PRG-T00-C02",
+        "unitCode": "PRG-T00-C03-U01",
+        "chapterCode": "PRG-T00-C03",
         "topicCode": "PRG-T00",
         "unitTitle": "JS Baseline",
         "environment": "node-vanilla",
@@ -71,7 +71,7 @@ def _make_prg_drill(drill_id: str = "DRL-PRG-T00-C02-99", level: int = 1) -> dic
 
 def _setup_workspace(tmp_path: Path, drill_doc: dict, src_code: str) -> Path:
     drill_id = drill_doc["drillId"]
-    data_dir = tmp_path / "drills" / "data" / "PRG-T00-C02"
+    data_dir = tmp_path / "drills" / "data" / "PRG-T00-C03"
     data_dir.mkdir(parents=True, exist_ok=True)
     (data_dir / f"{drill_id}.json").write_text(json.dumps(drill_doc, indent=2), encoding="utf-8")
 
@@ -141,7 +141,7 @@ def test_review_record_unknown_check_refused_and_caller_severity_ignored(tmp_pat
     _require_node_and_lint()
     drill_doc = _make_prg_drill(level=1)
     _setup_workspace(tmp_path, drill_doc, drill_doc["problems"][0]["solutionCode"])
-    drill_file = tmp_path / "drills" / "data" / "PRG-T00-C02" / f"{drill_doc['drillId']}.json"
+    drill_file = tmp_path / "drills" / "data" / "PRG-T00-C03" / f"{drill_doc['drillId']}.json"
     before_content = drill_file.read_text(encoding="utf-8")
 
     with pytest.raises(ValueError, match="Unknown check id"):
@@ -361,14 +361,14 @@ def test_mastery_prg_only_from_pass_and_mocked_notion(tmp_path, monkeypatch):
 
 
 def test_retired_review_cli_prints_instructions_without_prompt_file(tmp_path, monkeypatch, capsys):
-    ws_dir = tmp_path / "DRL-PRG-T00-C02-02"
+    ws_dir = tmp_path / "DRL-PRG-T00-C03-02"
     ws_dir.mkdir()
     monkeypatch.chdir(ws_dir)
     rc = retired_review.main(["Q01"])
     assert rc == 0
     out = capsys.readouterr().out
-    assert "In Claude Code, say: review code DRL-PRG-T00-C02-02 Q01" in out
-    assert "python -m code_engine.review_run DRL-PRG-T00-C02-02 Q01" in out
+    assert "In Claude Code, say: review code DRL-PRG-T00-C03-02 Q01" in out
+    assert "python -m code_engine.review_run DRL-PRG-T00-C03-02 Q01" in out
     assert not (ws_dir / "PR_REVIEW_REQUEST.md").exists()
 
 

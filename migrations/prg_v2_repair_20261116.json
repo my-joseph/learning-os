@@ -1,0 +1,104 @@
+{
+  "at": "2026-11-16T08:43:20.690925Z",
+  "reason": "prg_migrate updated the retired PRG-T08 page (...add6) as the new PRG-T08 instead of the old PRG-T09 page (...8626); add6 kept as new T08 (relations correct, both bodies empty), 8626 retired.",
+  "page_id": "40c3818f-8ba0-810f-b911-d89fdeda8626",
+  "old_properties": {
+    "Topic": {
+      "id": "title",
+      "type": "title",
+      "title": [
+        {
+          "type": "text",
+          "text": {
+            "content": "System Design, Redis & Realtime",
+            "link": null
+          },
+          "annotations": {
+            "bold": false,
+            "italic": false,
+            "strikethrough": false,
+            "underline": false,
+            "code": false,
+            "color": "default"
+          },
+          "plain_text": "System Design, Redis & Realtime",
+          "href": null
+        }
+      ]
+    },
+    "Full ID": {
+      "id": "ZjGu",
+      "type": "rich_text",
+      "rich_text": [
+        {
+          "type": "text",
+          "text": {
+            "content": "PRG-T09",
+            "link": null
+          },
+          "annotations": {
+            "bold": false,
+            "italic": false,
+            "strikethrough": false,
+            "underline": false,
+            "code": false,
+            "color": "default"
+          },
+          "plain_text": "PRG-T09",
+          "href": null
+        }
+      ]
+    },
+    "Goal": {
+      "id": "Xlap",
+      "type": "rich_text",
+      "rich_text": [
+        {
+          "type": "text",
+          "text": {
+            "content": "Explore caching, realtime communication and pragmatic architecture decisions.",
+            "link": null
+          },
+          "annotations": {
+            "bold": false,
+            "italic": false,
+            "strikethrough": false,
+            "underline": false,
+            "code": false,
+            "color": "default"
+          },
+          "plain_text": "Explore caching, realtime communication and pragmatic architecture decisions.",
+          "href": null
+        }
+      ]
+    },
+    "Order": {
+      "id": "%3FaYn",
+      "type": "number",
+      "number": 9
+    },
+    "Topic ID": {
+      "id": "A%5D%3A%3A",
+      "type": "rich_text",
+      "rich_text": [
+        {
+          "type": "text",
+          "text": {
+            "content": "T09",
+            "link": null
+          },
+          "annotations": {
+            "bold": false,
+            "italic": false,
+            "strikethrough": false,
+            "underline": false,
+            "code": false,
+            "color": "default"
+          },
+          "plain_text": "T09",
+          "href": null
+        }
+      ]
+    }
+  }
+}

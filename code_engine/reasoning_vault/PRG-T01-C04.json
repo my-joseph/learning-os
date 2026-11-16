@@ -1,5 +1,5 @@
 {
-  "unitCode": "PRG-T01-C03",
+  "unitCode": "PRG-T01-C04",
   "unitTitle": "Problem Solving & Utility Toolkit",
   "description": "Autonomous Reasoning Schemas & Engineering Archetypes for PRG-T01-C03 (Async Architectures, Resilient Systems, Caching, and High-Throughput Utilities).",
   "archetypes": [
@@ -70,7 +70,10 @@
           "check": "Time is read through an injected clock (defaulting to `Date.now`) so refill logic is deterministic and testable without waiting.",
           "why": "Hardcoding `Date.now()` makes rate-limit refill tests flaky or slow.",
           "severity": "should",
-          "accepted": ["now = Date.now", "clock = () => Date.now()"],
+          "accepted": [
+            "now = Date.now",
+            "clock = () => Date.now()"
+          ],
           "knownBad": {
             "code": "function createBucket(capacity, rate) {\n  let last = Date.now();\n  return () => Date.now() - last;\n}",
             "caughtBy": "review"
@@ -159,7 +162,10 @@
           "check": "Current time for anti-replay checks is accepted via an injectable clock or parameter (defaulting to `Date.now`) rather than hardcoded inside verification.",
           "why": "Hardcoding `Date.now()` makes replay-window tests brittle across wall-clock time.",
           "severity": "should",
-          "accepted": ["now = () => Math.floor(Date.now() / 1000)", "nowSec parameter with default"],
+          "accepted": [
+            "now = () => Math.floor(Date.now() / 1000)",
+            "nowSec parameter with default"
+          ],
           "knownBad": {
             "code": "function isFresh(timestampSec, toleranceSec) {\n  return Math.abs(Math.floor(Date.now() / 1000) - timestampSec) <= toleranceSec;\n}",
             "caughtBy": "review"
@@ -230,7 +236,10 @@
           "check": "Sleep and randomness are injected (with sensible defaults) so retry backoff and jitter are deterministic and testable without real delays.",
           "why": "Hardcoding `setTimeout` and `Math.random()` makes retry tests slow and non-deterministic.",
           "severity": "must",
-          "accepted": ["{ sleep = defaultSleep, random = Math.random }", "options.delayFn / options.rng"],
+          "accepted": [
+            "{ sleep = defaultSleep, random = Math.random }",
+            "options.delayFn / options.rng"
+          ],
           "knownBad": {
             "code": "async function waitBackoff(ms) {\n  return new Promise((r) => setTimeout(r, ms * Math.random()));\n}",
             "caughtBy": "review"
@@ -321,7 +330,10 @@
           "check": "Active in-flight tasks are structurally bounded by `concurrency` without launching all items eagerly.",
           "why": "Eagerly launching all tasks floods downstream sockets and connection pools.",
           "severity": "must",
-          "accepted": ["Math.min(concurrency, items.length) worker loops", "semaphore/queue scheduler"],
+          "accepted": [
+            "Math.min(concurrency, items.length) worker loops",
+            "semaphore/queue scheduler"
+          ],
           "knownBad": {
             "code": "async function runPool(items, fn) {\n  return Promise.all(items.map((item) => fn(item)));\n}",
             "caughtBy": "review"
@@ -420,7 +432,10 @@
           "check": "Cooldown timestamps are read through an injected clock (defaulting to `Date.now`) so state transitions are testable without real-time waiting.",
           "why": "Hardcoding `Date.now()` forces tests to sleep for real cooldown durations or monkeypatch globals.",
           "severity": "must",
-          "accepted": ["now = Date.now", "clock = () => Date.now()"],
+          "accepted": [
+            "now = Date.now",
+            "clock = () => Date.now()"
+          ],
           "knownBad": {
             "code": "function isCooldownElapsed(openedAt, resetMs) {\n  return Date.now() - openedAt >= resetMs;\n}",
             "caughtBy": "review"

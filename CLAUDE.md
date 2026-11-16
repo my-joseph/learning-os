@@ -19,9 +19,9 @@
 ## Commands (verified 2026-11-13 unless marked)
 - Studio (run in `practice-studio/`): `npm ci`, `npm run dev` (http://127.0.0.1:3000, bound to localhost only), `npm run lint`, `npm run build`.
 - Generate drills (run from repo root): `python3 -m math_engine.generate --unit <UNIT> --count <N> --difficulty <D>` and `python3 -m code_engine.generate --unit <UNIT> --count <N>` (`--help` verified; full run not verified).
-- Lab (run in `labs/LAB-PRG-T03-C01-01/`): `npm test` fails until solved; `npm run test:reference` passes (21 tests); `npm run check:reference` runs reference tests + lint + `tsc`. `npm run submit` writes to Notion — only on request.
+- Lab (run in `labs/LAB-PRG-T01-C04-02/`): `npm test` fails until solved; `npm run test:reference` passes (21 tests); `npm run check:reference` runs reference tests + lint + `tsc`. `npm run submit` writes to Notion — only on request.
 - PRG lint toolkit (run in `tools/lint/`): `npm ci` installs ESLint 9 + `tsc` for PRG drill workspaces and labs. In any PRG drill workspace or lab, `npm run check` runs tests + lint (+ `tsc --noEmit` for TypeScript). Check all PRG drill reference solutions from repo root: `.venv/bin/python -m code_engine.lint_check --all`.
-- Python tests (repo root): `.venv/bin/python -m pip install -r requirements-dev.txt && .venv/bin/python -m pytest` (dev deps installed in the main `.venv` 2026-11-15; its `bin/pip` launcher is broken, so use `-m`) (315 pass, ~50 s; hermetic, no Notion/network). Studio unit tests: `npm run test:telemetry` in `practice-studio/`.
+- Python tests (repo root): `.venv/bin/python -m pip install -r requirements-dev.txt && .venv/bin/python -m pytest` (dev deps installed in the main `.venv` 2026-11-15; its `bin/pip` launcher is broken, so use `-m`) (362 pass, 92 subtests, ~57 s; hermetic, no Notion/network). Studio unit tests: `npm run test:telemetry` in `practice-studio/`.
 - CI: `.github/workflows/ci.yml` runs pytest, studio lint+build, lab tests. No Makefile/Dockerfile. TODO: verify any other command before using it.
 
 ## Conventions (target — apply to new/changed code)
@@ -69,6 +69,7 @@
 - Figures: every archetype has `figureBuilders` or a `figureNone` reason (gate; rules/03 §3.1), so drills on shapes, graphs, number lines or the complex plane get figures without being asked. Unknowns are labelled `?`. Studio (`practice-studio/src/components/MathFigure`) and `math_engine/figure_svg.py` (Notion) draw the same spec; `notion_sync.unit_page` takes `figure` blocks and uploads them (`notion_sync/figures.py`).
 - Weak spots: `python -m scripts.weak_spots [UNIT|CHAPTER]` reads learner progress and says which traps the learner keeps falling into and what to drill next (read-only).
 - PRG review runner & records: `python -m code_engine.review_run <DRILL_ID> <QID> [--json]` runs Layer 1+2 for one problem (read-only); `python -m scripts.review_record {add,explain,dispute,show}` records rubric-bound reviews in `progress/<DRILL_ID>.json` (`state.reviews[]`, never in `drills/data/`). The learner asks for a review with the `review-code` skill ("ตรวจโค้ด <DRILL_ID> <QID>").
+- PRG curriculum v2 (2026-11-16): codes follow `docs/prg_curriculum_v2.md`; old→new map in `docs/prg_migration_map.json`; retired pages have Full ID `RETIRED-<old>`.
 - Issue log: mistakes you or a reviewer/gate catch are logged with `python -m scripts.issues add ...` (rules/00_core.md §11) and cleared in batches; flag `urgent` ones on the first line of your reply. Learner never previews or approves drills (they study them); the `new-math-drill` skill uses a reviewer subagent instead.
 - Known gaps for topics not yet started (trigonometry functions, logarithms, calculus) are listed in `docs/backlog.md`; fix them when that topic starts.
 

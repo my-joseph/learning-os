@@ -1,16 +1,16 @@
 {
-  "name": "lab-prg-t03-c01-01",
+  "name": "lab-prg-t01-c04-02",
   "version": "1.0.0",
   "description": "Full-Stack E-Commerce Core & Checkout Engine — Phase 3 Project Lab",
   "type": "module",
   "scripts": {
     "test": "node --experimental-strip-types --test tests/*.test.ts",
-    "test:reference": "LAB_SRC_DIR=../../_reference/LAB-PRG-T03-C01-01/src node --experimental-strip-types --test tests/*.test.ts",
+    "test:reference": "LAB_SRC_DIR=../../_reference/LAB-PRG-T01-C04-02/src node --experimental-strip-types --test tests/*.test.ts",
     "test:watch": "node --experimental-strip-types --test --watch tests/*.test.ts",
     "lint": "../../tools/lint/node_modules/.bin/eslint --format ../../tools/lint/format.js src",
     "typecheck": "../../tools/lint/node_modules/.bin/tsc --noEmit",
     "check": "npm test && npm run lint && npm run typecheck",
-    "check:reference": "npm run test:reference && (cd ../_reference/LAB-PRG-T03-C01-01 && ../../../tools/lint/node_modules/.bin/eslint --config ../../LAB-PRG-T03-C01-01/eslint.config.js --format ../../../tools/lint/format.js src) && ../../tools/lint/node_modules/.bin/tsc --noEmit -p ../_reference/LAB-PRG-T03-C01-01/tsconfig.json",
+    "check:reference": "npm run test:reference && (cd ../_reference/LAB-PRG-T01-C04-02 && ../../../tools/lint/node_modules/.bin/eslint --config ../../LAB-PRG-T01-C04-02/eslint.config.js --format ../../../tools/lint/format.js src) && ../../tools/lint/node_modules/.bin/tsc --noEmit -p ../_reference/LAB-PRG-T01-C04-02/tsconfig.json",
     "review": "python3 ../common/review.py",
     "submit": "python3 ../common/submit_lab.py"
   },

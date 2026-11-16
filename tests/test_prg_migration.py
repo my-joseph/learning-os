@@ -9,6 +9,7 @@ from unittest import mock
 from scripts import prg_migrate
 
 MAP_PATH = Path("docs/prg_migration_map.json")
+V1_CODES_PATH = Path("docs/prg_v1_codes.json")
 ID_MAP_PATH = Path("id_map.json")
 
 
@@ -33,8 +34,8 @@ def _notion_page(
 
 def test_migration_map_covers_every_v1_code_once():
     entries = json.loads(MAP_PATH.read_text(encoding="utf-8"))
+    v1_prg = sorted(json.loads(V1_CODES_PATH.read_text(encoding="utf-8")))
     id_map = json.loads(ID_MAP_PATH.read_text(encoding="utf-8"))
-    v1_prg = sorted(k for k in id_map if k.startswith("PRG-"))
 
     seen_old: list[str] = []
     for e in entries:
@@ -42,6 +43,9 @@ def test_migration_map_covers_every_v1_code_once():
 
     assert len(seen_old) == len(v1_prg)
     assert sorted(seen_old) == v1_prg
+
+    missing_new = [e["newCode"] for e in entries if e["newCode"] is not None and e["newCode"] not in id_map]
+    assert not missing_new, f"newCode(s) missing from id_map.json: {missing_new}"
 
 
 def test_migration_map_no_duplicate_new_codes_and_no_lab_expected_output():
@@ -655,3 +659,64 @@ def test_preflight_duplicate_unmapped_and_stray_relations(tmp_path, monkeypatch)
     ops2, _ = prg_migrate.build_migration_plan(entries_clean, id_map_clean, pages_clean, [], "tok", preflight=pf2)
     assert len(ops2) == 1
     assert ops2[0].details["desired_props"]["Chapters"] == {"relation": [{"id": "pidc01"}]}
+
+
+def test_retired_old_code_does_not_hijack_new_code_update_target():
+    """Regression: retiring PRG-T08 must not overwrite PRG-T09 -> PRG-T08 update's page_id."""
+    entries = [
+        {
+            "level": "topic",
+            "order": 8,
+            "newCode": "PRG-T08",
+            "oldCodes": ["PRG-T09"],
+            "action": "renumber",
+            "title": "System Design, Redis & Realtime",
+            "objective": "Architecture",
+            "expectedOutput": None,
+            "practiceType": None,
+            "prereqs": [],
+            "parent": None,
+            "extended": False,
+        },
+        {
+            "level": "topic",
+            "order": None,
+            "newCode": None,
+            "oldCodes": ["PRG-T08"],
+            "action": "retire",
+            "title": "Old Capstone",
+            "objective": "",
+            "expectedOutput": None,
+            "practiceType": None,
+            "prereqs": [],
+            "parent": None,
+            "extended": False,
+            "retireTarget": "PRG-T07",
+        },
+    ]
+    pages = {
+        "pidt08": _notion_page("pidt08", "PRG-T08", "Old Capstone", level="topic"),
+        "pidt09": _notion_page("pidt09", "PRG-T09", "System Design, Redis & Realtime", level="topic"),
+    }
+    id_map = {
+        "PRG-T08": {"id": "pidt08", "title": "Old Capstone"},
+        "PRG-T09": {"id": "pidt09", "title": "System Design, Redis & Realtime"},
+    }
+
+    pf = prg_migrate.run_preflight(entries, id_map, pages)
+    assert not pf.errors
+    assert pf.resolved_page_ids["PRG-T08"] == "pidt09"
+
+    with mock.patch.object(prg_migrate, "get_all_blocks", return_value=[]):
+        ops, refusals = prg_migrate.build_migration_plan(entries, id_map, pages, [], "tok", preflight=pf)
+
+    assert not refusals
+    retire_ops = [op for op in ops if op.kind == "retire"]
+    update_ops = [op for op in ops if op.kind == "update"]
+    assert len(retire_ops) == 1
+    assert retire_ops[0].page_id == "pidt08"
+    assert retire_ops[0].code == "RETIRED-PRG-T08"
+    assert len(update_ops) == 1
+    assert update_ops[0].code == "PRG-T08"
+    assert update_ops[0].old_code == "PRG-T09"
+    assert update_ops[0].page_id == "pidt09"

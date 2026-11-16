@@ -1,7 +1,51 @@
 {
+  "DRILLS_DB": {
+    "id": "40d3818f-8ba0-8125-8cae-ea0de6183186",
+    "title": "Learning Practice & Drills"
+  },
+  "CONCEPT_VAULT_DB": {
+    "id": "4103818f-8ba0-8164-aa0d-eeb2d6cb65b0",
+    "title": "Concept Vault"
+  },
+  "PRG-T09": {
+    "id": "40c3818f-8ba0-8170-8e0e-c74a4451b116",
+    "title": "Deployment, Docker & Cloud"
+  },
+  "PRG-T08": {
+    "id": "40c3818f-8ba0-8132-9a78-e5c22364add6",
+    "title": "System Design, Redis & Realtime"
+  },
+  "PRG-T07": {
+    "id": "40c3818f-8ba0-8153-acf4-d92fc4218963",
+    "title": "E2E Testing & DevVault Capstone Track"
+  },
+  "PRG-T05": {
+    "id": "40c3818f-8ba0-8140-be72-d8df15534069",
+    "title": "Authentication, Authorization & Web Security"
+  },
+  "PRG-T04": {
+    "id": "40c3818f-8ba0-812d-b6f5-d8bb573f5d06",
+    "title": "Database Engineering: PostgreSQL, pg & Prisma"
+  },
+  "PRG-T03": {
+    "id": "40c3818f-8ba0-81b5-aafc-ff3d6992fdc1",
+    "title": "Backend Engineering: Node.js, HTTP & Express 5"
+  },
+  "PRG-T06": {
+    "id": "40c3818f-8ba0-81b8-ae61-f1b25d49b2a9",
+    "title": "Next.js & Full-Stack React"
+  },
+  "PRG-T02": {
+    "id": "40c3818f-8ba0-81e5-870b-dd99ca3d7318",
+    "title": "Frontend Engineering with React & Component Testing"
+  },
   "PRG-T01": {
     "id": "40c3818f-8ba0-8188-b07f-ddf7342b6108",
-    "title": "JavaScript & TypeScript Engineering"
+    "title": "JavaScript, TypeScript, Data Structures & Unit Testing"
+  },
+  "PRG-T00": {
+    "id": "40c3818f-8ba0-8127-ab0d-e2c2df1f9e43",
+    "title": "Foundation Audit & Developer Workflow"
   },
   "PHY-T01": {
     "id": "4003818f-8ba0-80ab-916d-d38edce5bacb",
@@ -11,145 +55,93 @@
     "id": "4003818f-8ba0-802b-ad3c-e664941df5db",
     "title": "Prealgebra"
   },
-  "PRG-T02": {
-    "id": "40c3818f-8ba0-81e5-870b-dd99ca3d7318",
-    "title": "Frontend Engineering"
-  },
   "MTH-T02": {
     "id": "4003818f-8ba0-8043-8ff1-dd5524247456",
     "title": "Algebra and Trigonometry"
   },
-  "PRG-T03": {
-    "id": "40c3818f-8ba0-81b8-ae61-f1b25d49b2a9",
-    "title": "Next.js & Full-Stack React"
+  "PRG-T01-C03": {
+    "id": "41a3818f-8ba0-8120-865a-fad377d41d51",
+    "title": "Recursion, Complexity & Core Data Structures"
   },
-  "PRG-T04": {
-    "id": "40c3818f-8ba0-81b5-aafc-ff3d6992fdc1",
-    "title": "Backend Engineering"
-  },
-  "PRG-T05": {
-    "id": "40c3818f-8ba0-812d-b6f5-d8bb573f5d06",
-    "title": "Database Engineering"
-  },
-  "PRG-T06": {
-    "id": "40c3818f-8ba0-8140-be72-d8df15534069",
-    "title": "Authentication, Authorization & Security"
-  },
-  "PRG-T07": {
-    "id": "40c3818f-8ba0-8153-acf4-d92fc4218963",
-    "title": "Full-Stack Product Engineering"
-  },
-  "PRG-T08": {
-    "id": "40c3818f-8ba0-8132-9a78-e5c22364add6",
-    "title": "Testing & Software Quality"
-  },
-  "PRG-T09": {
-    "id": "40c3818f-8ba0-810f-b911-d89fdeda8626",
-    "title": "System Design, Redis & Realtime"
-  },
-  "PRG-T10": {
-    "id": "40c3818f-8ba0-8170-8e0e-c74a4451b116",
-    "title": "Deployment, Docker & Cloud"
-  },
-  "PRG-T00": {
-    "id": "40c3818f-8ba0-8127-ab0d-e2c2df1f9e43",
-    "title": "Foundation Audit"
-  },
-  "PRG-T10-C03": {
+  "PRG-T09-C03": {
     "id": "40c3818f-8ba0-8176-989d-eb3f7b0cfc19",
     "title": "Deploy & Final Showcase"
   },
-  "PRG-T10-C02": {
+  "PRG-T09-C02": {
     "id": "40c3818f-8ba0-815a-80a6-da886b00ec02",
     "title": "CI/CD, Monitoring & Operations"
   },
-  "PRG-T10-C01": {
+  "PRG-T09-C01": {
     "id": "40c3818f-8ba0-811d-a34a-df1f9a4c2bb2",
     "title": "Production Readiness & Docker"
   },
-  "PRG-T09-C02": {
+  "PRG-T08-C02": {
     "id": "40c3818f-8ba0-81d0-ad3b-e528200b205f",
     "title": "Realtime & Background Work"
   },
-  "PRG-T09-C01": {
+  "PRG-T08-C01": {
     "id": "40c3818f-8ba0-81b4-9865-eeeae8cf8d37",
     "title": "System Design & Redis Caching"
   },
-  "PRG-T08-C03": {
+  "PRG-T07-C01": {
     "id": "40c3818f-8ba0-8190-ac32-f9660037444a",
     "title": "End-to-End Testing & Quality Gates"
   },
-  "PRG-T08-C02": {
+  "PRG-T02-C06": {
     "id": "40c3818f-8ba0-81bb-8644-e5f0f57c94c4",
     "title": "React Component Testing"
   },
-  "PRG-T08-C01": {
-    "id": "40c3818f-8ba0-813f-ac06-e61348c651fc",
-    "title": "Unit & Integration Testing"
-  },
-  "PRG-T07-C04": {
-    "id": "40c3818f-8ba0-81da-a08d-f5405a11b1ee",
-    "title": "Product Polish & Release Candidate"
-  },
-  "PRG-T07-C03": {
-    "id": "40c3818f-8ba0-818b-8e25-d4f2662216f7",
-    "title": "Files, Notifications & Search"
-  },
   "PRG-T07-C02": {
     "id": "40c3818f-8ba0-811f-9f4f-c72f2b64b8ee",
-    "title": "Core Collaboration Features"
+    "title": "DevVault Capstone Integration & Polish"
   },
-  "PRG-T07-C01": {
-    "id": "40c3818f-8ba0-8161-968e-c70ac5454df7",
-    "title": "Product Scope & Domain Architecture"
-  },
-  "PRG-T06-C02": {
+  "PRG-T05-C02": {
     "id": "40c3818f-8ba0-814c-828a-e24e76a0f106",
-    "title": "Authorization & Web Security"
+    "title": "Authorization, Rate Limiting & Web Security"
   },
-  "PRG-T06-C01": {
+  "PRG-T05-C01": {
     "id": "40c3818f-8ba0-818f-b7ca-dafda362a611",
     "title": "Authentication & Session Management"
   },
-  "PRG-T05-C03": {
+  "PRG-T04-C03": {
     "id": "40c3818f-8ba0-8174-b7b7-dff57f8bcfcc",
     "title": "Prisma, Migrations & Data Access"
   },
-  "PRG-T05-C02": {
-    "id": "40c3818f-8ba0-8196-bd4d-c429079f5a65",
-    "title": "PostgreSQL Queries, Indexes & Transactions"
-  },
-  "PRG-T05-C01": {
-    "id": "40c3818f-8ba0-8108-9bb5-dedf9939113d",
-    "title": "Relational Modeling & SQL"
-  },
-  "PRG-T04-C03": {
-    "id": "40c3818f-8ba0-813a-94aa-ff0d937472c5",
-    "title": "Backend Structure & API Quality"
-  },
   "PRG-T04-C02": {
-    "id": "40c3818f-8ba0-813f-8cfb-d082d67f8faa",
-    "title": "Express, Middleware & Validation"
+    "id": "40c3818f-8ba0-8196-bd4d-c429079f5a65",
+    "title": "PostgreSQL Queries, `pg` Driver & Transactions"
   },
   "PRG-T04-C01": {
-    "id": "40c3818f-8ba0-8117-9696-d45f43a58b54",
-    "title": "Node Runtime, HTTP & API Design"
+    "id": "40c3818f-8ba0-8108-9bb5-dedf9939113d",
+    "title": "Relational Modeling & SQL Foundations"
   },
   "PRG-T03-C03": {
-    "id": "40c3818f-8ba0-8106-8f52-f4d2e5188798",
-    "title": "Mutations, Route Handlers & CMS Mini App"
+    "id": "40c3818f-8ba0-813a-94aa-ff0d937472c5",
+    "title": "Backend Architecture & API Integration Testing"
   },
   "PRG-T03-C02": {
+    "id": "40c3818f-8ba0-813f-8cfb-d082d67f8faa",
+    "title": "Express 5, Middleware & Validation"
+  },
+  "PRG-T03-C01": {
+    "id": "40c3818f-8ba0-8117-9696-d45f43a58b54",
+    "title": "Node Runtime, Raw HTTP & API Design"
+  },
+  "PRG-T06-C03": {
+    "id": "40c3818f-8ba0-8106-8f52-f4d2e5188798",
+    "title": "Mutations, Route Handlers & Data Flow"
+  },
+  "PRG-T06-C02": {
     "id": "40c3818f-8ba0-819a-a5bb-df68c2506c2c",
     "title": "Server/Client Components & Data Flow"
   },
-  "PRG-T03-C01": {
+  "PRG-T06-C01": {
     "id": "40c3818f-8ba0-81c8-aa08-c35bef86ce68",
     "title": "Next.js App Router Foundations"
   },
   "PRG-T02-C05": {
     "id": "40c3818f-8ba0-810b-9837-d38c587078cc",
-    "title": "Frontend Performance & Architecture"
+    "title": "Frontend Performance"
   },
   "PRG-T02-C04": {
     "id": "40c3818f-8ba0-81a6-8752-fc4a9896de6a",
@@ -167,9 +159,9 @@
     "id": "40c3818f-8ba0-8174-8ef9-d0966cf63f6e",
     "title": "React Mental Model & Component Architecture"
   },
-  "PRG-T01-C03": {
+  "PRG-T01-C04": {
     "id": "40c3818f-8ba0-815f-8356-d8e9627e7c24",
-    "title": "Problem Solving & Utility Toolkit"
+    "title": "Problem Solving, Clean Utilities & Unit Testing"
   },
   "PRG-T01-C02": {
     "id": "40c3818f-8ba0-8126-b5ad-f03fec9bfbe4",
@@ -177,15 +169,15 @@
   },
   "PRG-T01-C01": {
     "id": "40c3818f-8ba0-8122-af62-ef0327e2a3c7",
-    "title": "JavaScript Deep Dive"
+    "title": "JavaScript Execution & Async Internals"
   },
-  "PRG-T00-C03": {
+  "PRG-T00-C02": {
     "id": "40c3818f-8ba0-81c0-9000-c0cd4e84dfa0",
     "title": "Developer Workflow & Git"
   },
-  "PRG-T00-C02": {
+  "PRG-T00-C03": {
     "id": "40c3818f-8ba0-81da-86c7-e93a0f2a0be5",
-    "title": "JavaScript & TypeScript Baseline"
+    "title": "JavaScript & TypeScript Baseline Check"
   },
   "PRG-T00-C01": {
     "id": "40c3818f-8ba0-81a7-818f-daa684a12710",
@@ -387,673 +379,569 @@
     "id": "4003818f-8ba0-8054-8960-c0514eb841aa",
     "title": "Fractions"
   },
-  "PRG-T10-C03-U07": {
+  "PRG-T05-C02-U08": {
+    "id": "41a3818f-8ba0-81ab-9ed1-c93685e8b10e",
+    "title": "Rate Limiting & Brute-Force Protection"
+  },
+  "PRG-T05-C02-U07": {
+    "id": "41a3818f-8ba0-81d3-9822-f57b36e6fb43",
+    "title": "Security Headers (CSP, HSTS, Nosniff)"
+  },
+  "PRG-T04-C02-U05": {
+    "id": "41a3818f-8ba0-8110-9350-f758bc84301f",
+    "title": "Raw `pg`, Pooling & Parameterized Queries"
+  },
+  "PRG-T01-C03-U07": {
+    "id": "41a3818f-8ba0-8109-97c6-f796f9203da4",
+    "title": "Graphs & Shortest-Path Basics"
+  },
+  "PRG-T01-C03-U06": {
+    "id": "41a3818f-8ba0-81b8-b457-ccaf19c800a8",
+    "title": "Trees & Tree Traversals (DFS / BFS)"
+  },
+  "PRG-T01-C03-U05": {
+    "id": "41a3818f-8ba0-8170-a015-df095bf0677a",
+    "title": "Linked Lists & Pointer Manipulation"
+  },
+  "PRG-T01-C03-U03": {
+    "id": "41a3818f-8ba0-81cd-9958-ecaf4295adb2",
+    "title": "Arrays, Stacks & Queues"
+  },
+  "PRG-T01-C03-U02": {
+    "id": "41a3818f-8ba0-8185-8416-da82c7df2e11",
+    "title": "Recursion & Call-Stack Tracing"
+  },
+  "PRG-T01-C03-U01": {
+    "id": "41a3818f-8ba0-81be-86d1-cee9e0a726f4",
+    "title": "Big-O Intuition & Time/Space Tradeoffs"
+  },
+  "PRG-T01-C01-U09": {
+    "id": "41a3818f-8ba0-8160-a7c4-e1deac53b303",
+    "title": "AbortController & Cancellation"
+  },
+  "PRG-T09-C03-U07": {
     "id": "40c3818f-8ba0-8142-a21b-d9104b825949",
     "title": "README, Demo and Retrospective"
   },
-  "PRG-T10-C03-U06": {
+  "PRG-T09-C03-U06": {
     "id": "40c3818f-8ba0-8158-86d9-cf2feeaf7b81",
     "title": "Production Smoke Testing"
   },
-  "PRG-T10-C03-U05": {
+  "PRG-T09-C03-U05": {
     "id": "40c3818f-8ba0-8182-81bd-c1cc58a5409b",
     "title": "Domain and HTTPS Basics"
   },
-  "PRG-T10-C03-U04": {
+  "PRG-T09-C03-U04": {
     "id": "40c3818f-8ba0-816a-97b4-e92ac12f23e6",
     "title": "Deploying the Application"
   },
-  "PRG-T10-C03-U03": {
+  "PRG-T09-C03-U03": {
     "id": "40c3818f-8ba0-81bd-8c9a-d9ae9d3bb92f",
     "title": "Database Provisioning and Migrations"
   },
-  "PRG-T10-C03-U02": {
+  "PRG-T09-C03-U02": {
     "id": "40c3818f-8ba0-81b9-b978-e897959f603a",
     "title": "Production Environment Variables"
   },
-  "PRG-T10-C03-U01": {
+  "PRG-T09-C03-U01": {
     "id": "40c3818f-8ba0-81e3-9ee7-c4dad7f02f06",
     "title": "Choosing a Deployment Target"
   },
-  "PRG-T10-C02-U07": {
+  "PRG-T09-C02-U07": {
     "id": "40c3818f-8ba0-8174-badb-e213120fb4ef",
     "title": "Rollback and Release Checklist"
   },
-  "PRG-T10-C02-U06": {
+  "PRG-T09-C02-U06": {
     "id": "40c3818f-8ba0-81d3-ae6f-c4752e84b653",
     "title": "Database Backup Basics"
   },
-  "PRG-T10-C02-U05": {
+  "PRG-T09-C02-U05": {
     "id": "40c3818f-8ba0-815c-a944-e08b18cd3699",
     "title": "Application Logs and Monitoring"
   },
-  "PRG-T10-C02-U04": {
+  "PRG-T09-C02-U04": {
     "id": "40c3818f-8ba0-81fd-a177-f5152d464edb",
     "title": "Deployment Workflow"
   },
-  "PRG-T10-C02-U03": {
+  "PRG-T09-C02-U03": {
     "id": "40c3818f-8ba0-81c8-8340-e212b969a382",
     "title": "Automated Tests and Build Checks"
   },
-  "PRG-T10-C02-U01": {
+  "PRG-T09-C02-U01": {
     "id": "40c3818f-8ba0-811d-9284-e991cf11f85f",
     "title": "CI Pipeline Fundamentals"
   },
-  "PRG-T10-C02-U02": {
+  "PRG-T09-C02-U02": {
     "id": "40c3818f-8ba0-8199-b743-f7532fcebc88",
     "title": "GitHub Actions Workflow Syntax"
   },
-  "PRG-T10-C01-U07": {
+  "PRG-T09-C01-U07": {
     "id": "40c3818f-8ba0-81c8-8246-c2906d84115d",
     "title": "Local Production-like Workflow"
   },
-  "PRG-T10-C01-U06": {
+  "PRG-T09-C01-U06": {
     "id": "40c3818f-8ba0-81fe-a957-e4c771293618",
     "title": "Container Logs and Debugging"
   },
-  "PRG-T10-C01-U05": {
+  "PRG-T09-C01-U05": {
     "id": "40c3818f-8ba0-8132-a858-d72134400400",
-    "title": "Docker Compose for App and Database"
+    "title": "Docker Compose v2 for App and Database"
   },
-  "PRG-T10-C01-U04": {
+  "PRG-T09-C01-U04": {
     "id": "40c3818f-8ba0-8102-8fa7-c7259f207662",
     "title": "Volumes and Networking"
   },
-  "PRG-T10-C01-U03": {
+  "PRG-T09-C01-U03": {
     "id": "40c3818f-8ba0-81b5-a646-c5fe33f72760",
     "title": "Dockerfile Fundamentals"
   },
-  "PRG-T10-C01-U01": {
+  "PRG-T09-C01-U01": {
     "id": "40c3818f-8ba0-816e-ab06-cf9bf3db8c4e",
     "title": "Production Environment Configuration"
   },
-  "PRG-T10-C01-U02": {
+  "PRG-T09-C01-U02": {
     "id": "40c3818f-8ba0-81b1-8051-d5b0051ae67f",
     "title": "Docker Images and Containers"
   },
-  "PRG-T09-C02-U07": {
+  "PRG-T08-C02-U07": {
     "id": "40c3818f-8ba0-8161-a6f5-fe45b8f0fd6d",
     "title": "Choosing Realtime vs Polling"
   },
-  "PRG-T09-C02-U06": {
+  "PRG-T08-C02-U06": {
     "id": "40c3818f-8ba0-8144-9550-ee96501eb399",
     "title": "Retries and Idempotency"
   },
-  "PRG-T09-C02-U05": {
+  "PRG-T08-C02-U05": {
     "id": "40c3818f-8ba0-81d1-a156-fdae173e5d7e",
     "title": "Background Job Concepts"
   },
-  "PRG-T09-C02-U04": {
+  "PRG-T08-C02-U04": {
     "id": "40c3818f-8ba0-8171-b67d-f95905ada87e",
     "title": "Realtime UI Synchronization"
   },
-  "PRG-T09-C02-U03": {
+  "PRG-T08-C02-U03": {
     "id": "40c3818f-8ba0-8113-b541-d56af080b26d",
     "title": "Events and Message Design"
   },
-  "PRG-T09-C02-U02": {
+  "PRG-T08-C02-U02": {
     "id": "40c3818f-8ba0-81b5-99f3-f585e576b5d7",
     "title": "WebSocket Lifecycle"
   },
-  "PRG-T09-C02-U01": {
+  "PRG-T08-C02-U01": {
     "id": "40c3818f-8ba0-8175-a680-c4c8844291e6",
     "title": "Realtime Communication Concepts"
   },
-  "PRG-T09-C01-U07": {
+  "PRG-T08-C01-U07": {
     "id": "40c3818f-8ba0-81b0-8c32-c2e5a59181c5",
     "title": "Measuring Cache Effectiveness"
   },
-  "PRG-T09-C01-U06": {
+  "PRG-T08-C01-U06": {
     "id": "40c3818f-8ba0-81cf-8224-d10b7a0f0b5f",
     "title": "Cache Invalidation Strategies"
   },
-  "PRG-T09-C01-U05": {
+  "PRG-T08-C01-U05": {
     "id": "40c3818f-8ba0-818d-a8a0-da033edc68ee",
     "title": "Cache Keys and Expiration"
   },
-  "PRG-T09-C01-U04": {
+  "PRG-T08-C01-U04": {
     "id": "40c3818f-8ba0-8162-ab8e-e6709fd59477",
     "title": "Redis Data Structures"
   },
-  "PRG-T09-C01-U03": {
+  "PRG-T08-C01-U03": {
     "id": "40c3818f-8ba0-81d3-a152-ce5963a5a0db",
     "title": "Caching Concepts and Tradeoffs"
   },
-  "PRG-T09-C01-U02": {
+  "PRG-T08-C01-U02": {
     "id": "40c3818f-8ba0-81e7-ba4c-ce419b168a93",
     "title": "Identifying Bottlenecks"
   },
-  "PRG-T09-C01-U01": {
+  "PRG-T08-C01-U01": {
     "id": "40c3818f-8ba0-8145-8bdc-f5338bed37d1",
     "title": "System Design Fundamentals"
   },
-  "PRG-T08-C03-U07": {
+  "PRG-T07-C01-U07": {
     "id": "40c3818f-8ba0-814e-82a8-d15e2f47cd89",
     "title": "CI Quality Gates"
   },
-  "PRG-T08-C03-U06": {
+  "PRG-T07-C01-U06": {
     "id": "40c3818f-8ba0-81bb-a844-d6e9556ade5d",
     "title": "Critical User Journey Tests"
   },
-  "PRG-T08-C03-U05": {
+  "PRG-T07-C01-U05": {
     "id": "40c3818f-8ba0-8172-b67b-fd065b8c6883",
     "title": "Authentication State and Test Data"
   },
-  "PRG-T08-C03-U04": {
+  "PRG-T07-C01-U04": {
     "id": "40c3818f-8ba0-8123-a311-c18072a3268e",
     "title": "Assertions and Waiting"
   },
-  "PRG-T08-C03-U03": {
+  "PRG-T07-C01-U03": {
     "id": "40c3818f-8ba0-81fc-accc-f47d46e7fb31",
     "title": "Locators and User Actions"
   },
-  "PRG-T08-C03-U02": {
+  "PRG-T07-C01-U02": {
     "id": "40c3818f-8ba0-814d-96ac-f128125b0ba3",
     "title": "Playwright Setup and Browser Contexts"
   },
-  "PRG-T08-C03-U01": {
+  "PRG-T07-C01-U01": {
     "id": "40c3818f-8ba0-81ba-ab9d-d961861911b5",
     "title": "End-to-end Testing Concepts"
   },
-  "PRG-T08-C02-U06": {
+  "PRG-T02-C06-U05": {
     "id": "40c3818f-8ba0-81b0-9d66-cc0c7cb93822",
-    "title": "Accessibility-oriented Assertions"
+    "title": "Accessibility Assertions & DevVault Web"
   },
-  "PRG-T08-C02-U05": {
+  "PRG-T02-C06-U04": {
     "id": "40c3818f-8ba0-81e9-93c7-fdea35cdb740",
     "title": "Async UI Testing"
   },
-  "PRG-T08-C02-U04": {
+  "PRG-T02-C06-U03": {
     "id": "40c3818f-8ba0-81e2-b594-cd5071e00940",
     "title": "Testing Forms and Validation"
   },
-  "PRG-T08-C02-U03": {
+  "PRG-T02-C06-U02": {
     "id": "40c3818f-8ba0-811b-9b75-fd62d06f40cd",
     "title": "Testing User Interactions"
   },
-  "PRG-T08-C02-U02": {
-    "id": "40c3818f-8ba0-81be-bd55-e8ab9e5a0e7a",
-    "title": "Queries by Role and Label"
-  },
-  "PRG-T08-C02-U01": {
+  "PRG-T02-C06-U01": {
     "id": "40c3818f-8ba0-81d7-9f65-ccc816ee4dc8",
-    "title": "Testing Library Philosophy"
+    "title": "Testing Library Philosophy & Role Queries"
   },
-  "PRG-T08-C01-U07": {
-    "id": "40c3818f-8ba0-81c1-bd74-f841afeb1019",
-    "title": "Coverage and Test Quality"
-  },
-  "PRG-T08-C01-U06": {
-    "id": "40c3818f-8ba0-81e0-a024-f62866937c6f",
-    "title": "Test Data and Fixtures"
-  },
-  "PRG-T08-C01-U05": {
+  "PRG-T01-C04-U05": {
     "id": "40c3818f-8ba0-814a-a3ff-cfe2e6b0e649",
-    "title": "Testing Error Paths"
+    "title": "Error Paths, Fixtures & Test Quality"
   },
-  "PRG-T08-C01-U04": {
+  "PRG-T03-C03-U07": {
     "id": "40c3818f-8ba0-812a-b73d-e8ca6afb1f56",
-    "title": "Service and API Integration Tests"
+    "title": "Service & API Integration Tests + DevVault API"
   },
-  "PRG-T08-C01-U03": {
+  "PRG-T01-C04-U04": {
     "id": "40c3818f-8ba0-81af-849c-ce5c1e254ab9",
-    "title": "Mocking Dependencies"
-  },
-  "PRG-T08-C01-U02": {
-    "id": "40c3818f-8ba0-81d1-934c-ebb3b1422ab2",
-    "title": "Unit Testing Pure Functions"
-  },
-  "PRG-T08-C01-U01": {
-    "id": "40c3818f-8ba0-8153-a423-c4c2e79e74dd",
-    "title": "Testing Pyramid and Test Strategy"
-  },
-  "PRG-T07-C04-U07": {
-    "id": "40c3818f-8ba0-8109-8cce-d6293fb93b9e",
-    "title": "Release Candidate Checklist"
-  },
-  "PRG-T07-C04-U06": {
-    "id": "40c3818f-8ba0-81af-8019-c8fb8128bc19",
-    "title": "User Walkthrough and Usability Fixes"
-  },
-  "PRG-T07-C04-U05": {
-    "id": "40c3818f-8ba0-81a6-b1b5-dbcafe34b568",
-    "title": "Accessibility Review"
-  },
-  "PRG-T07-C04-U04": {
-    "id": "40c3818f-8ba0-8145-bf26-d993108e9985",
-    "title": "Activity and Notification Polish"
-  },
-  "PRG-T07-C04-U03": {
-    "id": "40c3818f-8ba0-8131-bb23-ebaf12db206d",
-    "title": "Onboarding and First-use Experience"
-  },
-  "PRG-T07-C04-U02": {
-    "id": "40c3818f-8ba0-81da-a190-de087fff3d7b",
-    "title": "Responsive Product UX"
-  },
-  "PRG-T07-C04-U01": {
-    "id": "40c3818f-8ba0-815a-95fa-e9854549f87b",
-    "title": "Empty, Loading and Error States"
-  },
-  "PRG-T07-C03-U07": {
-    "id": "40c3818f-8ba0-81da-926a-cfe8076b4150",
-    "title": "Failure and Retry Handling"
-  },
-  "PRG-T07-C03-U06": {
-    "id": "40c3818f-8ba0-81c3-b922-d4fad1874350",
-    "title": "Background Work Concepts"
-  },
-  "PRG-T07-C03-U05": {
-    "id": "40c3818f-8ba0-8140-a82b-d1dff8967412",
-    "title": "Activity Feed and Audit Events"
-  },
-  "PRG-T07-C03-U04": {
-    "id": "40c3818f-8ba0-8190-820e-e5fa91ac2e6f",
-    "title": "Search and Filtering"
-  },
-  "PRG-T07-C03-U03": {
-    "id": "40c3818f-8ba0-8136-9620-e443bd79e290",
-    "title": "Notification Model and Delivery"
-  },
-  "PRG-T07-C03-U02": {
-    "id": "40c3818f-8ba0-8141-b07a-c7ac09eb4581",
-    "title": "Object Storage Integration Concepts"
-  },
-  "PRG-T07-C03-U01": {
-    "id": "40c3818f-8ba0-8111-ba50-cc5500880ea6",
-    "title": "File Metadata and Upload Flow"
-  },
-  "PRG-T07-C02-U07": {
-    "id": "40c3818f-8ba0-81f8-8fad-c2ec5cc2e14d",
-    "title": "Role and Ownership Enforcement"
-  },
-  "PRG-T07-C02-U06": {
-    "id": "40c3818f-8ba0-8187-943f-de1ad84f78af",
-    "title": "Comments and Collaboration"
+    "title": "Test Doubles: Stubs, Mocks & Fakes"
   },
   "PRG-T07-C02-U05": {
-    "id": "40c3818f-8ba0-8137-a8ee-dace77386f19",
-    "title": "Task Assignment and Status Changes"
+    "id": "40c3818f-8ba0-81af-8019-c8fb8128bc19",
+    "title": "Release Candidate & Walkthrough"
   },
   "PRG-T07-C02-U04": {
-    "id": "40c3818f-8ba0-814b-b7b8-dcdca82b392f",
-    "title": "Kanban Workflow"
+    "id": "40c3818f-8ba0-815a-95fa-e9854549f87b",
+    "title": "UX Polish & Accessibility Audit"
   },
   "PRG-T07-C02-U03": {
-    "id": "40c3818f-8ba0-81b4-9a2f-cca20de243ac",
-    "title": "Projects and Task Model"
+    "id": "40c3818f-8ba0-8111-ba50-cc5500880ea6",
+    "title": "Search, Tagging & File Attachments"
   },
   "PRG-T07-C02-U02": {
-    "id": "40c3818f-8ba0-814a-a8dd-cc5a34ad8c97",
-    "title": "Invitations and Onboarding Flow"
+    "id": "40c3818f-8ba0-813b-b1b7-dbef61e205db",
+    "title": "Multi-Resource Workflows & Sharing"
   },
   "PRG-T07-C02-U01": {
-    "id": "40c3818f-8ba0-813b-b1b7-dbef61e205db",
-    "title": "Workspace and Membership Model"
-  },
-  "PRG-T07-C01-U06": {
-    "id": "40c3818f-8ba0-81f7-9eb6-e3f6b4a15900",
-    "title": "Milestones and Technical Plan"
-  },
-  "PRG-T07-C01-U05": {
-    "id": "40c3818f-8ba0-81ae-a11a-c0a706f191f8",
-    "title": "Application Architecture"
-  },
-  "PRG-T07-C01-U04": {
-    "id": "40c3818f-8ba0-81a9-8b4e-cf242c7b0a69",
-    "title": "Feature Prioritization and MVP Scope"
-  },
-  "PRG-T07-C01-U03": {
-    "id": "40c3818f-8ba0-81b1-b36c-f68a94420f8e",
-    "title": "Domain Entities and Relationships"
-  },
-  "PRG-T07-C01-U02": {
-    "id": "40c3818f-8ba0-8100-a0b5-ebcda3768d2e",
-    "title": "User Stories and Acceptance Criteria"
-  },
-  "PRG-T07-C01-U01": {
     "id": "40c3818f-8ba0-814b-9818-c02477717047",
-    "title": "Product Brief and User Personas"
+    "title": "Domain Spec & Architecture Freeze"
   },
-  "PRG-T06-C02-U08": {
+  "PRG-T05-C02-U09": {
     "id": "40c3818f-8ba0-816a-a862-debc437e0447",
-    "title": "OWASP Risk Review"
+    "title": "OWASP Risk Review & DevVault Auth"
   },
-  "PRG-T06-C02-U07": {
-    "id": "40c3818f-8ba0-81e2-92bf-d5f23b2ccc35",
-    "title": "Secrets and Environment Safety"
-  },
-  "PRG-T06-C02-U06": {
+  "PRG-T05-C02-U06": {
     "id": "40c3818f-8ba0-81f3-8dbb-e2ff1d7e5b76",
-    "title": "CORS and Security Headers"
+    "title": "CORS Configuration"
   },
-  "PRG-T06-C02-U05": {
+  "PRG-T05-C02-U05": {
     "id": "40c3818f-8ba0-81f4-afa8-d6789bbbb6c1",
     "title": "SQL Injection and Parameterization"
   },
-  "PRG-T06-C02-U04": {
+  "PRG-T05-C02-U04": {
     "id": "40c3818f-8ba0-8188-8ce8-ccf903734382",
-    "title": "CSRF and Request Protection"
+    "title": "CSRF, `SameSite` & Origin Checks"
   },
-  "PRG-T06-C02-U03": {
+  "PRG-T05-C02-U03": {
     "id": "40c3818f-8ba0-81c4-98d4-f41a17bb296e",
     "title": "XSS and Output Safety"
   },
-  "PRG-T06-C02-U02": {
+  "PRG-T05-C02-U02": {
     "id": "40c3818f-8ba0-815b-8028-eec49cc42b05",
     "title": "Resource Ownership Checks"
   },
-  "PRG-T06-C02-U01": {
+  "PRG-T05-C02-U01": {
     "id": "40c3818f-8ba0-81b2-a74b-cb51e73b4d48",
     "title": "Role-based Access Control"
   },
-  "PRG-T06-C01-U07": {
+  "PRG-T05-C01-U07": {
     "id": "40c3818f-8ba0-810e-a590-d418f0a0d636",
     "title": "Implementing Auth with a Trusted Library"
   },
-  "PRG-T06-C01-U06": {
+  "PRG-T05-C01-U06": {
     "id": "40c3818f-8ba0-810c-ab35-e3bed6aa0358",
-    "title": "OAuth Flow Concepts"
+    "title": "OAuth 2.0 / OIDC Flow Concepts"
   },
-  "PRG-T06-C01-U05": {
+  "PRG-T05-C01-U05": {
     "id": "40c3818f-8ba0-8183-8d22-e94f8bf16b28",
     "title": "JWT and Token Concepts"
   },
-  "PRG-T06-C01-U04": {
+  "PRG-T05-C01-U04": {
     "id": "40c3818f-8ba0-8180-baec-f54a4e3cc246",
     "title": "Secure Cookie Attributes"
   },
-  "PRG-T06-C01-U03": {
+  "PRG-T05-C01-U03": {
     "id": "40c3818f-8ba0-811f-a83d-ced91a34b538",
     "title": "Sessions and Cookies"
   },
-  "PRG-T06-C01-U02": {
+  "PRG-T05-C01-U02": {
     "id": "40c3818f-8ba0-8183-9807-d4756d92b3df",
-    "title": "Password Storage and Hashing Concepts"
+    "title": "Password Storage and Hashing (OWASP)"
   },
-  "PRG-T06-C01-U01": {
+  "PRG-T05-C01-U01": {
     "id": "40c3818f-8ba0-8148-9da9-ffdf65011351",
     "title": "Authentication vs Authorization"
   },
-  "PRG-T05-C03-U07": {
+  "PRG-T04-C03-U07": {
     "id": "40c3818f-8ba0-811b-95f9-ca554a70757a",
-    "title": "Seeding and Data Access Patterns"
+    "title": "Seeding, Data Access & DevVault DB"
   },
-  "PRG-T05-C03-U06": {
+  "PRG-T04-C03-U06": {
     "id": "40c3818f-8ba0-81c7-9e15-d830fc051492",
     "title": "Transactions with Prisma"
   },
-  "PRG-T05-C03-U05": {
+  "PRG-T04-C03-U05": {
     "id": "40c3818f-8ba0-8163-a8ee-c899e63e3d8c",
     "title": "Nested Reads and Writes"
   },
-  "PRG-T05-C03-U04": {
+  "PRG-T04-C03-U04": {
     "id": "40c3818f-8ba0-81e3-bb60-d9016b1a208e",
     "title": "CRUD Queries"
   },
-  "PRG-T05-C03-U03": {
+  "PRG-T04-C03-U03": {
     "id": "40c3818f-8ba0-8147-879b-d31a1a8b9705",
     "title": "Migrations and Schema Changes"
   },
-  "PRG-T05-C03-U02": {
+  "PRG-T04-C03-U02": {
     "id": "40c3818f-8ba0-81f7-aa3f-d6670b0b521d",
     "title": "Prisma Relations"
   },
-  "PRG-T05-C03-U01": {
+  "PRG-T04-C03-U01": {
     "id": "40c3818f-8ba0-81a0-8c17-f214476c2223",
     "title": "Prisma Schema and Models"
   },
-  "PRG-T05-C02-U07": {
-    "id": "40c3818f-8ba0-81ed-9cc1-d2b57ec8b7fc",
-    "title": "Query Optimization"
-  },
-  "PRG-T05-C02-U06": {
+  "PRG-T04-C02-U07": {
     "id": "40c3818f-8ba0-81f5-92a7-c341b41b64f9",
-    "title": "Isolation and Concurrency Basics"
+    "title": "Isolation, Concurrency & Optimization"
   },
-  "PRG-T05-C02-U05": {
+  "PRG-T04-C02-U06": {
     "id": "40c3818f-8ba0-818a-b5f7-fda673f35e59",
     "title": "Transactions and ACID"
   },
-  "PRG-T05-C02-U04": {
+  "PRG-T04-C02-U04": {
     "id": "40c3818f-8ba0-816c-b1b4-d4690010bb90",
     "title": "Indexes and Query Plans"
   },
-  "PRG-T05-C02-U03": {
+  "PRG-T04-C02-U03": {
     "id": "40c3818f-8ba0-81c7-8916-ee98f7254711",
-    "title": "Subqueries and Common Table Expressions"
+    "title": "Subqueries and CTEs"
   },
-  "PRG-T05-C02-U02": {
-    "id": "40c3818f-8ba0-81ca-a644-f66d33d5707c",
-    "title": "INNER and OUTER JOINs"
-  },
-  "PRG-T05-C02-U01": {
-    "id": "40c3818f-8ba0-813d-9c75-f443163c0de4",
-    "title": "Filtering, Sorting and Aggregation"
-  },
-  "PRG-T05-C01-U07": {
+  "PRG-T04-C01-U05": {
     "id": "40c3818f-8ba0-81b1-80f6-d9c521bf9b1d",
     "title": "ERD Design and Schema Creation"
   },
-  "PRG-T05-C01-U06": {
+  "PRG-T04-C02-U02": {
     "id": "40c3818f-8ba0-81b9-8804-e5b2d37e18e2",
-    "title": "JOINs and Aggregations"
+    "title": "`INNER` and `OUTER JOIN`s"
   },
-  "PRG-T05-C01-U05": {
+  "PRG-T04-C02-U01": {
     "id": "40c3818f-8ba0-81ea-89a1-dfbbc407b9ee",
-    "title": "SELECT, WHERE and ORDER BY"
+    "title": "Filtering, Sorting and Aggregation"
   },
-  "PRG-T05-C01-U04": {
+  "PRG-T04-C01-U04": {
     "id": "40c3818f-8ba0-815d-ba1c-d8addb459ceb",
     "title": "Normalization and Constraints"
   },
-  "PRG-T05-C01-U03": {
+  "PRG-T04-C01-U03": {
     "id": "40c3818f-8ba0-816e-89ac-c0e0d2fb8271",
     "title": "Primary and Foreign Keys"
   },
-  "PRG-T05-C01-U02": {
+  "PRG-T04-C01-U02": {
     "id": "40c3818f-8ba0-8118-a1c6-d5f676d2e6a1",
     "title": "Entities, Attributes and Relationships"
   },
-  "PRG-T05-C01-U01": {
+  "PRG-T04-C01-U01": {
     "id": "40c3818f-8ba0-814f-b643-f7e8af1bb6d0",
     "title": "Relational Database Concepts"
   },
-  "PRG-T04-C03-U07": {
+  "PRG-T03-C03-U06": {
     "id": "40c3818f-8ba0-81db-ac47-ca8bbb03ed33",
     "title": "Backend Module Boundaries"
   },
-  "PRG-T04-C03-U06": {
-    "id": "40c3818f-8ba0-8114-ac6b-cf09690341d2",
-    "title": "API Documentation"
-  },
-  "PRG-T04-C03-U05": {
+  "PRG-T03-C03-U05": {
     "id": "40c3818f-8ba0-8197-885d-d3c91e0382d6",
-    "title": "Configuration and Secrets"
+    "title": "Environment Configuration & Secrets Hygiene"
   },
-  "PRG-T04-C03-U04": {
+  "PRG-T03-C03-U04": {
     "id": "40c3818f-8ba0-81b2-b273-f7d4111bc21f",
-    "title": "Consistent API Contracts"
+    "title": "Consistent API Contracts & Documentation"
   },
-  "PRG-T04-C03-U03": {
+  "PRG-T03-C03-U03": {
     "id": "40c3818f-8ba0-8188-a15c-dc8e86909911",
     "title": "Pagination, Sorting and Filtering"
   },
-  "PRG-T04-C03-U01": {
+  "PRG-T03-C03-U01": {
     "id": "40c3818f-8ba0-812b-b12a-cf5d76b95c3c",
     "title": "Routes, Controllers and Services"
   },
-  "PRG-T04-C03-U02": {
+  "PRG-T03-C03-U02": {
     "id": "40c3818f-8ba0-8174-ae4a-df6ad4dfc818",
     "title": "Data Access Layer"
   },
-  "PRG-T04-C02-U07": {
+  "PRG-T03-C02-U07": {
     "id": "40c3818f-8ba0-817f-bab7-fd336c014999",
     "title": "Typed CRUD Endpoints"
   },
-  "PRG-T04-C02-U06": {
+  "PRG-T03-C02-U06": {
     "id": "40c3818f-8ba0-814d-955f-daccd60e081c",
-    "title": "Logging and Configuration"
+    "title": "Structured Logging"
   },
-  "PRG-T04-C02-U05": {
+  "PRG-T03-C02-U05": {
     "id": "40c3818f-8ba0-815f-9143-e471a8f79c9c",
-    "title": "Centralized Error Handling"
+    "title": "Centralized & Async Error Handling (Express 5)"
   },
-  "PRG-T04-C02-U03": {
+  "PRG-T03-C02-U03": {
     "id": "40c3818f-8ba0-8157-848a-d4209f0bfe73",
     "title": "Middleware and Request Lifecycle"
   },
-  "PRG-T04-C02-U04": {
+  "PRG-T03-C02-U04": {
     "id": "40c3818f-8ba0-8172-b04a-d5b7e5298375",
     "title": "Request Validation"
   },
-  "PRG-T04-C02-U02": {
+  "PRG-T03-C02-U02": {
     "id": "40c3818f-8ba0-81c8-9ae4-e89231283962",
     "title": "Routing and Route Parameters"
   },
-  "PRG-T04-C02-U01": {
+  "PRG-T03-C02-U01": {
     "id": "40c3818f-8ba0-81f6-8132-d15026617104",
-    "title": "Express Application Setup"
+    "title": "Express 5 Application Setup"
   },
-  "PRG-T04-C01-U07": {
+  "PRG-T03-C01-U07": {
     "id": "40c3818f-8ba0-81da-b476-f557c39a6faf",
-    "title": "Async I/O and Error Handling"
+    "title": "Async I/O and Stream Error Handling"
   },
-  "PRG-T04-C01-U06": {
+  "PRG-T03-C01-U06": {
     "id": "40c3818f-8ba0-8160-83c2-fa8d7a9ac412",
     "title": "API Response and Error Conventions"
   },
-  "PRG-T04-C01-U05": {
+  "PRG-T03-C01-U05": {
     "id": "40c3818f-8ba0-8194-bc82-ec834dae401f",
     "title": "REST Resource Design"
   },
-  "PRG-T04-C01-U04": {
+  "PRG-T03-C01-U04": {
     "id": "40c3818f-8ba0-8161-8f2d-e3af92f7285a",
     "title": "Methods, Status Codes and Headers"
   },
-  "PRG-T04-C01-U03": {
+  "PRG-T03-C01-U03": {
     "id": "40c3818f-8ba0-814c-b6b3-d76ac21bba70",
-    "title": "HTTP Request and Response"
+    "title": "Raw HTTP Server with `node:http`"
   },
-  "PRG-T04-C01-U02": {
+  "PRG-T03-C01-U02": {
     "id": "40c3818f-8ba0-8140-9516-ff2983e143d3",
-    "title": "Modules and Environment Variables"
+    "title": "Node Modules and Process Env"
   },
-  "PRG-T04-C01-U01": {
+  "PRG-T03-C01-U01": {
     "id": "40c3818f-8ba0-8199-9e11-d613240a07d1",
     "title": "Node.js Runtime and Event Loop"
   },
-  "PRG-T03-C03-U07": {
+  "PRG-T06-C03-U06": {
     "id": "40c3818f-8ba0-81cd-9b17-d2ec4b9020ee",
-    "title": "Building a Small Content Manager"
+    "title": "DevVault Next.js Full-Stack Migration"
   },
-  "PRG-T03-C03-U06": {
-    "id": "40c3818f-8ba0-8108-93d3-dfb02440bf3d",
+  "PRG-T06-C03-U05": {
+    "id": "40c3818f-8ba0-81ef-acd4-eefde93d0550",
     "title": "Error and Pending States"
   },
-  "PRG-T03-C03-U05": {
-    "id": "40c3818f-8ba0-81ef-acd4-eefde93d0550",
-    "title": "CRUD Data Flow"
-  },
-  "PRG-T03-C03-U04": {
+  "PRG-T06-C03-U04": {
     "id": "40c3818f-8ba0-81d1-ac64-fd6292268964",
     "title": "Revalidation and Redirects"
   },
-  "PRG-T03-C03-U03": {
+  "PRG-T06-C03-U03": {
     "id": "40c3818f-8ba0-811a-b96e-c0489eb99989",
     "title": "Input Validation with Zod"
   },
-  "PRG-T03-C03-U01": {
+  "PRG-T06-C03-U01": {
     "id": "40c3818f-8ba0-8182-ba85-f0d777bbaf45",
     "title": "Route Handlers"
   },
-  "PRG-T03-C03-U02": {
+  "PRG-T06-C03-U02": {
     "id": "40c3818f-8ba0-81ff-a618-c3b35a14af39",
     "title": "Server Actions and Form Mutations"
   },
-  "PRG-T03-C02-U07": {
+  "PRG-T06-C02-U07": {
     "id": "40c3818f-8ba0-8177-831d-fd4adb8e3319",
     "title": "Streaming and Suspense Basics"
   },
-  "PRG-T03-C02-U06": {
+  "PRG-T06-C02-U06": {
     "id": "40c3818f-8ba0-819f-87ee-c43c1a8e1ea0",
-    "title": "Caching and Revalidation"
+    "title": "Caching and Revalidation (Next.js 15+)"
   },
-  "PRG-T03-C02-U05": {
+  "PRG-T06-C02-U05": {
     "id": "40c3818f-8ba0-8121-9400-d410adc9ca4d",
     "title": "Passing Data Across Component Boundaries"
   },
-  "PRG-T03-C02-U04": {
+  "PRG-T06-C02-U04": {
     "id": "40c3818f-8ba0-81a8-9abf-f39836e9c206",
     "title": "Data Fetching on the Server"
   },
-  "PRG-T03-C02-U03": {
+  "PRG-T06-C02-U03": {
     "id": "40c3818f-8ba0-819a-bf43-d7cbf2f9c208",
     "title": "Server/Client Boundary Design"
   },
-  "PRG-T03-C02-U02": {
+  "PRG-T06-C02-U02": {
     "id": "40c3818f-8ba0-81c4-a21e-e2daa19ba838",
     "title": "Client Components"
   },
-  "PRG-T03-C02-U01": {
+  "PRG-T06-C02-U01": {
     "id": "40c3818f-8ba0-813c-859f-c18c218d7dce",
     "title": "Server Components"
   },
-  "PRG-T03-C01-U07": {
+  "PRG-T06-C01-U07": {
     "id": "40c3818f-8ba0-81ed-a27e-efd15712825e",
     "title": "Static and Dynamic Rendering"
   },
-  "PRG-T03-C01-U06": {
+  "PRG-T06-C01-U06": {
     "id": "40c3818f-8ba0-81a1-9214-d7bae0047705",
     "title": "Metadata and Navigation"
   },
-  "PRG-T03-C01-U05": {
+  "PRG-T06-C01-U05": {
     "id": "40c3818f-8ba0-81d3-aa9a-ff4ded4f7523",
     "title": "Dynamic Routes and Route Parameters"
   },
-  "PRG-T03-C01-U04": {
+  "PRG-T06-C01-U04": {
     "id": "40c3818f-8ba0-81ad-8ca8-deb82aa8f640",
     "title": "Loading and Error UI"
   },
-  "PRG-T03-C01-U03": {
+  "PRG-T06-C01-U03": {
     "id": "40c3818f-8ba0-81f8-a922-ef71fab2c820",
     "title": "Layouts and Nested Routes"
   },
-  "PRG-T03-C01-U02": {
+  "PRG-T06-C01-U02": {
     "id": "40c3818f-8ba0-8184-b671-da4a8de22b78",
     "title": "App Router and File-system Routing"
   },
-  "PRG-T03-C01-U01": {
+  "PRG-T06-C01-U01": {
     "id": "40c3818f-8ba0-819b-b1e6-e9c330c0b73f",
     "title": "Next.js Project Structure"
   },
-  "PRG-T02-C05-U07": {
-    "id": "40c3818f-8ba0-8193-93a5-dea0ac749af5",
-    "title": "Frontend Architecture Decisions"
-  },
-  "PRG-T02-C05-U06": {
+  "PRG-T02-C05-U04": {
     "id": "40c3818f-8ba0-8192-95a1-df61b52b8e48",
-    "title": "Performance Measurement"
+    "title": "Performance Measurement & Architecture"
   },
-  "PRG-T02-C05-U05": {
+  "PRG-T02-C05-U03": {
     "id": "40c3818f-8ba0-8179-a816-fc8329da614c",
     "title": "Image and Asset Optimization"
   },
-  "PRG-T02-C05-U04": {
+  "PRG-T02-C05-U02": {
     "id": "40c3818f-8ba0-813c-8a64-d9957002bce9",
     "title": "Code Splitting and Lazy Loading"
   },
-  "PRG-T02-C05-U03": {
+  "PRG-T02-C05-U01": {
     "id": "40c3818f-8ba0-819f-9669-d5bd264f8656",
     "title": "Memoization: When and Why"
-  },
-  "PRG-T02-C05-U02": {
-    "id": "40c3818f-8ba0-811b-ab49-c6d53bc94400",
-    "title": "Rendering Cost and Re-render Analysis"
-  },
-  "PRG-T02-C05-U01": {
-    "id": "40c3818f-8ba0-81fe-b593-ecf8e1e14dd5",
-    "title": "Component Boundaries and Composition"
   },
   "PRG-T02-C04-U07": {
     "id": "40c3818f-8ba0-817e-b23c-f32c6de64bb4",
@@ -1061,7 +949,7 @@
   },
   "PRG-T02-C04-U06": {
     "id": "40c3818f-8ba0-817f-8ddc-cc91ec7792d2",
-    "title": "Semantic UI and Accessibility"
+    "title": "Semantic HTML & ARIA"
   },
   "PRG-T02-C04-U05": {
     "id": "40c3818f-8ba0-8174-806d-c1b772f52504",
@@ -1139,29 +1027,25 @@
     "id": "40c3818f-8ba0-8117-9e22-cdab0e89c53e",
     "title": "Local State vs Server State"
   },
-  "PRG-T02-C01-U09": {
-    "id": "40c3818f-8ba0-8178-9edb-e952ca9a9ffb",
-    "title": "Component Architecture"
-  },
-  "PRG-T02-C01-U08": {
+  "PRG-T02-C01-U07": {
     "id": "40c3818f-8ba0-8136-9de1-f2b663671711",
     "title": "Custom Hooks"
   },
-  "PRG-T02-C01-U07": {
+  "PRG-T02-C01-U06": {
     "id": "40c3818f-8ba0-8152-b238-d0f22e7f0b96",
     "title": "Refs and DOM Access"
   },
-  "PRG-T02-C01-U06": {
+  "PRG-T02-C01-U05": {
     "id": "40c3818f-8ba0-81e5-b941-fd3c224037eb",
     "title": "Effects and Synchronization"
   },
-  "PRG-T02-C01-U05": {
+  "PRG-T02-C01-U04": {
     "id": "40c3818f-8ba0-816b-ab00-f3f475c10629",
     "title": "State Updates and Immutability"
   },
-  "PRG-T02-C01-U04": {
+  "PRG-T02-C01-U08": {
     "id": "40c3818f-8ba0-8133-a51c-e3b1adbac3a2",
-    "title": "Rendering and Re-rendering"
+    "title": "Rendering, Re-renders & Component Boundaries"
   },
   "PRG-T02-C01-U03": {
     "id": "40c3818f-8ba0-81dc-ae1f-d8fff86d48db",
@@ -1175,37 +1059,25 @@
     "id": "40c3818f-8ba0-81c4-9aa8-e69a51418f73",
     "title": "JSX and Component Basics"
   },
-  "PRG-T01-C03-U08": {
+  "PRG-T01-C04-U06": {
     "id": "40c3818f-8ba0-812b-860b-dd3322c6c59f",
-    "title": "Packaging and Documentation"
+    "title": "Packaging, Exports & DevVault Core"
   },
-  "PRG-T01-C03-U07": {
+  "PRG-T01-C04-U03": {
     "id": "40c3818f-8ba0-81cf-870d-edcde8e542c8",
-    "title": "Testing Utility Functions"
+    "title": "Testing Pyramid & Pure Unit Tests"
   },
-  "PRG-T01-C03-U06": {
-    "id": "40c3818f-8ba0-81a9-979d-cd302bea370c",
-    "title": "Error Handling and Edge Cases"
-  },
-  "PRG-T01-C03-U05": {
+  "PRG-T01-C04-U02": {
     "id": "40c3818f-8ba0-81b6-b255-f5cce14152f4",
-    "title": "Reusable Generic Utilities"
+    "title": "Reusable Generic Utilities & Edge Cases"
   },
   "PRG-T01-C03-U04": {
     "id": "40c3818f-8ba0-8193-bdee-e1c3641027f0",
-    "title": "Map, Set and Common Data Structures"
+    "title": "`Map`, `Set` & Hashing Patterns"
   },
-  "PRG-T01-C03-U03": {
-    "id": "40c3818f-8ba0-817f-ad7a-d1ac6725f3b0",
-    "title": "Object Transformations"
-  },
-  "PRG-T01-C03-U02": {
-    "id": "40c3818f-8ba0-8148-b79a-d4602d502163",
-    "title": "Array Transformations"
-  },
-  "PRG-T01-C03-U01": {
+  "PRG-T01-C04-U01": {
     "id": "40c3818f-8ba0-81a8-8524-c6fce354e90f",
-    "title": "Problem Decomposition"
+    "title": "Problem Decomposition & Data Pipelines"
   },
   "PRG-T01-C02-U09": {
     "id": "40c3818f-8ba0-81b1-ae76-f49460b5c7ea",
@@ -1213,7 +1085,7 @@
   },
   "PRG-T01-C02-U08": {
     "id": "40c3818f-8ba0-8129-abe5-f217d632f6ee",
-    "title": "Strict Mode and tsconfig"
+    "title": "Strict Mode and `tsconfig`"
   },
   "PRG-T01-C02-U07": {
     "id": "40c3818f-8ba0-812d-b809-ca2f025a3f58",
@@ -1241,7 +1113,7 @@
   },
   "PRG-T01-C02-U01": {
     "id": "40c3818f-8ba0-815f-9d44-df21f67cdf3e",
-    "title": "Type Annotations and Type Inference"
+    "title": "Type Annotations and Inference"
   },
   "PRG-T01-C01-U08": {
     "id": "40c3818f-8ba0-8112-a3f7-c75044721219",
@@ -1249,7 +1121,7 @@
   },
   "PRG-T01-C01-U07": {
     "id": "40c3818f-8ba0-8138-b450-e408257b9e0e",
-    "title": "Event Loop and Concurrency"
+    "title": "Event Loop and Microtasks"
   },
   "PRG-T01-C01-U06": {
     "id": "40c3818f-8ba0-81d5-a9d4-c5543a215167",
@@ -1265,7 +1137,7 @@
   },
   "PRG-T01-C01-U03": {
     "id": "40c3818f-8ba0-814e-ade8-cbbd741d35fc",
-    "title": "this and Binding"
+    "title": "`this` and Binding"
   },
   "PRG-T01-C01-U02": {
     "id": "40c3818f-8ba0-81c0-a5cd-d4a29317c857",
@@ -1275,57 +1147,45 @@
     "id": "40c3818f-8ba0-812a-9682-fe371831ae8d",
     "title": "Execution Context and Scope"
   },
-  "PRG-T00-C03-U06": {
+  "PRG-T00-C02-U06": {
     "id": "40c3818f-8ba0-8195-941a-ce11e6ddfe98",
     "title": "README and Issue Tracking"
   },
-  "PRG-T00-C03-U05": {
+  "PRG-T00-C02-U05": {
     "id": "40c3818f-8ba0-81f4-a326-da98368dc4ff",
     "title": "GitHub Workflow and Pull Requests"
   },
-  "PRG-T00-C03-U04": {
+  "PRG-T00-C02-U04": {
     "id": "40c3818f-8ba0-81b6-a57f-c35d0814b47b",
     "title": "Branches, Commits and Merge"
   },
-  "PRG-T00-C03-U03": {
+  "PRG-T00-C02-U03": {
     "id": "40c3818f-8ba0-8166-9421-fe59c818fd5a",
     "title": "Git Repository Basics"
   },
-  "PRG-T00-C03-U02": {
+  "PRG-T00-C02-U02": {
     "id": "40c3818f-8ba0-818f-b5ee-d4dd4060d68d",
     "title": "npm and Package Scripts"
   },
-  "PRG-T00-C03-U01": {
+  "PRG-T00-C02-U01": {
     "id": "40c3818f-8ba0-816e-922f-ff8d75d0ef98",
     "title": "Terminal and Project Structure"
   },
-  "PRG-T00-C02-U07": {
-    "id": "40c3818f-8ba0-8105-b83e-dc71c3f8d012",
-    "title": "Reading and Debugging Existing Code"
-  },
-  "PRG-T00-C02-U06": {
+  "PRG-T00-C03-U04": {
     "id": "40c3818f-8ba0-81f1-acb1-d49d8cb69e43",
-    "title": "TypeScript Basics"
+    "title": "TypeScript & Debugging Baseline"
   },
-  "PRG-T00-C02-U05": {
-    "id": "40c3818f-8ba0-8112-aacd-dd21e9c75200",
-    "title": "Promises and Async/Await"
-  },
-  "PRG-T00-C02-U04": {
+  "PRG-T00-C03-U03": {
     "id": "40c3818f-8ba0-81be-b149-da2c35834436",
-    "title": "DOM and Browser Events"
+    "title": "Async & DOM Events Check"
   },
-  "PRG-T00-C02-U03": {
-    "id": "40c3818f-8ba0-8174-9fc6-d536ef06d992",
-    "title": "Arrays and Objects"
-  },
-  "PRG-T00-C02-U02": {
+  "PRG-T00-C03-U02": {
     "id": "40c3818f-8ba0-81c0-b879-ed366c2549c9",
-    "title": "Functions and Scope"
+    "title": "Functions, Arrays & Objects Check"
   },
-  "PRG-T00-C02-U01": {
+  "PRG-T00-C03-U01": {
     "id": "40c3818f-8ba0-8152-bdf0-d6ad997e2fc9",
-    "title": "Variables, Types and Operators"
+    "title": "Variables, Types & Control Flow Check"
   },
   "PRG-T00-C01-U08": {
     "id": "40c3818f-8ba0-811a-b96e-f8b97df1ee7f",
@@ -2271,165 +2131,20 @@
     "id": "4003818f-8ba0-8092-8c76-df300f273feb",
     "title": "Introduction to Integers"
   },
-  "R001": {
-    "id": "40c3818f-8ba0-8016-a3ad-ec7ecdeece29",
-    "title": "MDN – HTML",
-    "url": "https://developer.mozilla.org/en-US/docs/Web/HTML"
+  "R037": {
+    "id": "40f3818f-8ba0-81af-b58f-d8dfa226389b",
+    "title": "OpenStax – Physics",
+    "url": "https://openstax.org/books/physics/pages/preface"
   },
-  "R002": {
-    "id": "40c3818f-8ba0-808a-ad0b-ce226c9ef355",
-    "title": "MDN – CSS",
-    "url": "https://developer.mozilla.org/en-US/docs/Web/CSS"
+  "R036": {
+    "id": "40c3818f-8ba0-8186-9904-d450c62170aa",
+    "title": "OpenStax – Algebra and Trigonometry 2e",
+    "url": "https://openstax.org/books/algebra-and-trigonometry-2e/pages/preface"
   },
-  "R003": {
-    "id": "40c3818f-8ba0-8095-b57f-c3835853d700",
-    "title": "MDN – JavaScript Guide",
-    "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide"
-  },
-  "R004": {
-    "id": "40c3818f-8ba0-80de-b35b-f1e5a84c768f",
-    "title": "TypeScript Handbook",
-    "url": "https://www.typescriptlang.org/docs/handbook/intro.html"
-  },
-  "R005": {
-    "id": "40c3818f-8ba0-8018-92d3-c542a71e2e88",
-    "title": "React – Learn",
-    "url": "https://react.dev/learn"
-  },
-  "R006": {
-    "id": "40c3818f-8ba0-8074-8859-dc396300b4f5",
-    "title": "React – API Reference",
-    "url": "https://react.dev/reference/react"
-  },
-  "R007": {
-    "id": "40c3818f-8ba0-80e3-a6da-ded9939b1543",
-    "title": "TanStack Query Docs",
-    "url": "https://tanstack.com/query/latest/docs/framework/react/overview"
-  },
-  "R008": {
-    "id": "40c3818f-8ba0-8016-95ec-f0789a63a619",
-    "title": "React Hook Form Docs",
-    "url": "https://react-hook-form.com/get-started"
-  },
-  "R009": {
-    "id": "40c3818f-8ba0-8051-b409-eadd61d2d61f",
-    "title": "Zod Docs",
-    "url": "https://zod.dev/"
-  },
-  "R010": {
-    "id": "40c3818f-8ba0-80d9-b110-c21792942738",
-    "title": "Tailwind CSS Docs",
-    "url": "https://tailwindcss.com/docs"
-  },
-  "R011": {
-    "id": "40c3818f-8ba0-8022-9b15-fc5e8ac90a10",
-    "title": "Next.js Learn",
-    "url": "https://nextjs.org/learn"
-  },
-  "R012": {
-    "id": "40c3818f-8ba0-80f4-8a77-d033e339e96c",
-    "title": "Next.js App Router Docs",
-    "url": "https://nextjs.org/docs/app"
-  },
-  "R013": {
-    "id": "40c3818f-8ba0-8037-8138-faf367c98cfc",
-    "title": "Node.js Learn",
-    "url": "https://nodejs.org/en/learn"
-  },
-  "R014": {
-    "id": "40c3818f-8ba0-80ba-8669-d37e29f4afad",
-    "title": "Express Guide",
-    "url": "https://expressjs.com/en/guide/routing.html"
-  },
-  "R015": {
-    "id": "40c3818f-8ba0-8095-bc52-d732971e6df9",
-    "title": "PostgreSQL Tutorial",
-    "url": "https://www.postgresql.org/docs/current/tutorial.html"
-  },
-  "R016": {
-    "id": "40c3818f-8ba0-80c0-aa91-ceb0a2e21d01",
-    "title": "PostgreSQL Documentation",
-    "url": "https://www.postgresql.org/docs/current/"
-  },
-  "R017": {
-    "id": "40c3818f-8ba0-80d3-bb56-db80e4fad5bd",
-    "title": "Prisma ORM Docs",
-    "url": "https://www.prisma.io/docs"
-  },
-  "R018": {
-    "id": "40c3818f-8ba0-80ab-8aba-e72a22a14818",
-    "title": "OWASP Top 10",
-    "url": "https://owasp.org/www-project-top-ten/"
-  },
-  "R019": {
-    "id": "40c3818f-8ba0-80ba-9c1e-c6af37465b58",
-    "title": "MDN – HTTP Cookies",
-    "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies"
-  },
-  "R020": {
-    "id": "40c3818f-8ba0-809c-92da-e1702df898cb",
-    "title": "Auth.js Documentation",
-    "url": "https://authjs.dev/"
-  },
-  "R021": {
-    "id": "40c3818f-8ba0-8030-8a5d-fada9cd66bf2",
-    "title": "Vitest Guide",
-    "url": "https://vitest.dev/guide/"
-  },
-  "R022": {
-    "id": "40c3818f-8ba0-8050-b2a6-f0060c76d7a8",
-    "title": "Testing Library – React",
-    "url": "https://testing-library.com/docs/react-testing-library/intro/"
-  },
-  "R023": {
-    "id": "40c3818f-8ba0-80d9-a951-eeb89f10c922",
-    "title": "Playwright Docs",
-    "url": "https://playwright.dev/docs/intro"
-  },
-  "R024": {
-    "id": "40c3818f-8ba0-80bf-832e-f32d0f0e20b0",
-    "title": "Redis Documentation",
-    "url": "https://redis.io/docs/latest/"
-  },
-  "R025": {
-    "id": "40c3818f-8ba0-8044-bb7b-c72dcfabc607",
-    "title": "MDN – WebSocket",
-    "url": "https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API"
-  },
-  "R026": {
-    "id": "40c3818f-8ba0-80c4-a8d3-decb078c2e44",
-    "title": "Docker Get Started",
-    "url": "https://docs.docker.com/get-started/"
-  },
-  "R027": {
-    "id": "40c3818f-8ba0-8086-bd7d-c8e704542751",
-    "title": "GitHub Actions Docs",
-    "url": "https://docs.github.com/en/actions"
-  },
-  "R028": {
-    "id": "40c3818f-8ba0-8059-9dc0-d9fdeacf913b",
-    "title": "Vercel Documentation",
-    "url": "https://vercel.com/docs"
-  },
-  "R029": {
-    "id": "40c3818f-8ba0-800a-bc61-c36edbd5967c",
-    "title": "Git – Book",
-    "url": "https://git-scm.com/book/en/v2"
-  },
-  "R030": {
-    "id": "40c3818f-8ba0-80d4-8096-cb54d64b2379",
-    "title": "HTTP – MDN",
-    "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP"
-  },
-  "R031": {
-    "id": "40c3818f-8ba0-8048-b0f8-d41a2adaaf76",
-    "title": "Node.js Test Runner",
-    "url": "https://nodejs.org/api/test.html"
-  },
-  "R032": {
-    "id": "40c3818f-8ba0-80f7-9b26-da130e78f47b",
-    "title": "Web.dev – Learn Performance",
-    "url": "https://web.dev/learn/performance/"
+  "R035": {
+    "id": "40c3818f-8ba0-8093-bae8-d7291df6fd24",
+    "title": "OpenStax – Prealgebra 2e",
+    "url": "https://openstax.org/books/prealgebra-2e/pages/1-introduction"
   },
   "R033": {
     "id": "40c3818f-8ba0-809e-afd3-c8f1708c7e7b",
@@ -2441,111 +2156,228 @@
     "title": "Prisma – Relations",
     "url": "https://www.prisma.io/docs/orm/prisma-schema/data-model/relations"
   },
-  "R035": {
-    "id": "40c3818f-8ba0-8093-bae8-d7291df6fd24",
-    "title": "OpenStax – Prealgebra 2e",
-    "url": "https://openstax.org/books/prealgebra-2e/pages/1-introduction"
+  "R032": {
+    "id": "40c3818f-8ba0-80f7-9b26-da130e78f47b",
+    "title": "Web.dev – Learn Performance",
+    "url": "https://web.dev/learn/performance/"
   },
-  "R036": {
-    "id": "40c3818f-8ba0-8186-9904-d450c62170aa",
-    "title": "OpenStax – Algebra and Trigonometry 2e",
-    "url": "https://openstax.org/books/algebra-and-trigonometry-2e/pages/preface"
+  "R031": {
+    "id": "40c3818f-8ba0-8048-b0f8-d41a2adaaf76",
+    "title": "Node.js Test Runner",
+    "url": "https://nodejs.org/api/test.html"
   },
-  "DRILLS_DB": {
-    "id": "40d3818f-8ba0-8125-8cae-ea0de6183186",
-    "title": "Learning Practice & Drills"
+  "R030": {
+    "id": "40c3818f-8ba0-80d4-8096-cb54d64b2379",
+    "title": "HTTP – MDN",
+    "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP"
   },
-  "R037": {
-    "id": "40f3818f-8ba0-81af-b58f-d8dfa226389b",
-    "title": "OpenStax – Physics",
-    "url": "https://openstax.org/books/physics/pages/preface"
+  "R029": {
+    "id": "40c3818f-8ba0-800a-bc61-c36edbd5967c",
+    "title": "Git – Book",
+    "url": "https://git-scm.com/book/en/v2"
   },
-  "CONCEPT_VAULT_DB": {
-    "id": "4103818f-8ba0-8164-aa0d-eeb2d6cb65b0",
-    "title": "Concept Vault"
+  "R028": {
+    "id": "40c3818f-8ba0-8059-9dc0-d9fdeacf913b",
+    "title": "Vercel Documentation",
+    "url": "https://vercel.com/docs"
   },
-  "CON-DNS": {
-    "id": "4103818f-8ba0-81a9-80f2-dd2f28af9a2c",
-    "title": "DNS (Domain Name System)"
+  "R027": {
+    "id": "40c3818f-8ba0-8086-bd7d-c8e704542751",
+    "title": "GitHub Actions Docs",
+    "url": "https://docs.github.com/en/actions"
   },
-  "CON-TCP-HANDSHAKE": {
-    "id": "4103818f-8ba0-817c-812d-f5f53fa78b71",
-    "title": "TCP 3-Way Handshake"
+  "R025": {
+    "id": "40c3818f-8ba0-8044-bb7b-c72dcfabc607",
+    "title": "MDN – WebSocket",
+    "url": "https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API"
   },
-  "CON-TLS": {
-    "id": "4103818f-8ba0-815a-bb7d-ec9b6065d062",
-    "title": "TLS & Modern Encryption"
+  "R026": {
+    "id": "40c3818f-8ba0-80c4-a8d3-decb078c2e44",
+    "title": "Docker Get Started",
+    "url": "https://docs.docker.com/get-started/"
   },
-  "CON-HTTP": {
-    "id": "4103818f-8ba0-81cc-97b0-d1c9e6f29250",
-    "title": "HTTP Protocol Anatomy"
+  "R024": {
+    "id": "40c3818f-8ba0-80bf-832e-f32d0f0e20b0",
+    "title": "Redis Documentation",
+    "url": "https://redis.io/docs/latest/"
+  },
+  "R023": {
+    "id": "40c3818f-8ba0-80d9-a951-eeb89f10c922",
+    "title": "Playwright Docs",
+    "url": "https://playwright.dev/docs/intro"
+  },
+  "R022": {
+    "id": "40c3818f-8ba0-8050-b2a6-f0060c76d7a8",
+    "title": "Testing Library – React",
+    "url": "https://testing-library.com/docs/react-testing-library/intro/"
+  },
+  "R021": {
+    "id": "40c3818f-8ba0-8030-8a5d-fada9cd66bf2",
+    "title": "Vitest Guide",
+    "url": "https://vitest.dev/guide/"
+  },
+  "R020": {
+    "id": "40c3818f-8ba0-809c-92da-e1702df898cb",
+    "title": "Auth.js Documentation",
+    "url": "https://authjs.dev/"
+  },
+  "R019": {
+    "id": "40c3818f-8ba0-80ba-9c1e-c6af37465b58",
+    "title": "MDN – HTTP Cookies",
+    "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies"
+  },
+  "R018": {
+    "id": "40c3818f-8ba0-80ab-8aba-e72a22a14818",
+    "title": "OWASP Top 10",
+    "url": "https://owasp.org/www-project-top-ten/"
+  },
+  "R017": {
+    "id": "40c3818f-8ba0-80d3-bb56-db80e4fad5bd",
+    "title": "Prisma ORM Docs",
+    "url": "https://www.prisma.io/docs"
+  },
+  "R016": {
+    "id": "40c3818f-8ba0-80c0-aa91-ceb0a2e21d01",
+    "title": "PostgreSQL Documentation",
+    "url": "https://www.postgresql.org/docs/current/"
+  },
+  "R015": {
+    "id": "40c3818f-8ba0-8095-bc52-d732971e6df9",
+    "title": "PostgreSQL Tutorial",
+    "url": "https://www.postgresql.org/docs/current/tutorial.html"
+  },
+  "R014": {
+    "id": "40c3818f-8ba0-80ba-8669-d37e29f4afad",
+    "title": "Express Guide",
+    "url": "https://expressjs.com/en/guide/routing.html"
+  },
+  "R013": {
+    "id": "40c3818f-8ba0-8037-8138-faf367c98cfc",
+    "title": "Node.js Learn",
+    "url": "https://nodejs.org/en/learn"
+  },
+  "R012": {
+    "id": "40c3818f-8ba0-80f4-8a77-d033e339e96c",
+    "title": "Next.js App Router Docs",
+    "url": "https://nextjs.org/docs/app"
+  },
+  "R011": {
+    "id": "40c3818f-8ba0-8022-9b15-fc5e8ac90a10",
+    "title": "Next.js Learn",
+    "url": "https://nextjs.org/learn"
+  },
+  "R010": {
+    "id": "40c3818f-8ba0-80d9-b110-c21792942738",
+    "title": "Tailwind CSS Docs",
+    "url": "https://tailwindcss.com/docs"
+  },
+  "R009": {
+    "id": "40c3818f-8ba0-8051-b409-eadd61d2d61f",
+    "title": "Zod Docs",
+    "url": "https://zod.dev/"
+  },
+  "R008": {
+    "id": "40c3818f-8ba0-8016-95ec-f0789a63a619",
+    "title": "React Hook Form Docs",
+    "url": "https://react-hook-form.com/get-started"
+  },
+  "R007": {
+    "id": "40c3818f-8ba0-80e3-a6da-ded9939b1543",
+    "title": "TanStack Query Docs",
+    "url": "https://tanstack.com/query/latest/docs/framework/react/overview"
+  },
+  "R006": {
+    "id": "40c3818f-8ba0-8074-8859-dc396300b4f5",
+    "title": "React – API Reference",
+    "url": "https://react.dev/reference/react"
+  },
+  "R005": {
+    "id": "40c3818f-8ba0-8018-92d3-c542a71e2e88",
+    "title": "React – Learn",
+    "url": "https://react.dev/learn"
+  },
+  "R004": {
+    "id": "40c3818f-8ba0-80de-b35b-f1e5a84c768f",
+    "title": "TypeScript Handbook",
+    "url": "https://www.typescriptlang.org/docs/handbook/intro.html"
+  },
+  "R003": {
+    "id": "40c3818f-8ba0-8095-b57f-c3835853d700",
+    "title": "MDN – JavaScript Guide",
+    "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide"
+  },
+  "R002": {
+    "id": "40c3818f-8ba0-808a-ad0b-ce226c9ef355",
+    "title": "MDN – CSS",
+    "url": "https://developer.mozilla.org/en-US/docs/Web/CSS"
+  },
+  "R001": {
+    "id": "40c3818f-8ba0-8016-a3ad-ec7ecdeece29",
+    "title": "MDN – HTML",
+    "url": "https://developer.mozilla.org/en-US/docs/Web/HTML"
   },
   "CON-WEBSOCKET": {
     "id": "4103818f-8ba0-8158-8e79-f89d21a435a6",
     "title": "WebSocket Protocol"
   },
-  "DRL-PRG-T00-C01-U01-01": {
-    "id": "4103818f-8ba0-816e-8395-c66c72f8dcfd",
-    "title": "Network Lifecycle & HTTP Protocols — Verified Programming Drill (10 Qs · Level 1 - Foundation & Protocol Invariants)"
+  "CON-HTTP": {
+    "id": "4103818f-8ba0-81cc-97b0-d1c9e6f29250",
+    "title": "HTTP Protocol Anatomy"
   },
-  "DRL-MTH-T01-C12-01": {
-    "id": "4113818f-8ba0-8187-9717-f933406fd277",
-    "title": "Math Models and Geometry — Verified Math Drill (20 Qs · Mixed Exam Mode)"
+  "CON-TLS": {
+    "id": "4103818f-8ba0-815a-bb7d-ec9b6065d062",
+    "title": "TLS & Modern Encryption"
   },
-  "DRL-MTH-CALC-DIFF-99": {
-    "id": "4113818f-8ba0-8142-a0a2-eb4051550182",
-    "title": "Calculus: Differentiation Rules — Verified Math Drill (1 Qs · Mixed Exam Mode)"
+  "CON-TCP-HANDSHAKE": {
+    "id": "4103818f-8ba0-817c-812d-f5f53fa78b71",
+    "title": "TCP 3-Way Handshake"
   },
-  "DRL-MTH-CALC-DIFF-TEMP": {
-    "id": "4113818f-8ba0-8101-9b2b-d682d5bbb5de",
-    "title": "Calculus: Differentiation Rules — Verified Math Drill (1 Qs · Mixed Exam Mode)"
+  "CON-DNS": {
+    "id": "4103818f-8ba0-81a9-80f2-dd2f28af9a2c",
+    "title": "DNS (Domain Name System)"
   },
-  "DRL-MTH-CALC-DIFF-01": {
-    "id": "4113818f-8ba0-81c3-8372-e1e0208907a0",
-    "title": "Calculus: Differentiation Rules — Verified Math Drill (10 Qs · Mixed Exam Mode)"
-  },
-  "DRL-PRG-T00-C02-02": {
-    "id": "4153818f-8ba0-81e9-bac2-f9f97bbbe5c5",
-    "title": "JavaScript & TypeScript Baseline — Verified Programming Drill (10 Qs · AI Synthesized Engineering Mode)"
-  },
-  "DRL-MTH-T02-C01-U01-03": {
-    "id": "4173818f-8ba0-8111-a44d-eed9b8427717",
-    "title": "Complex Numbers — Verified Math Drill (5 Qs · AI Synthesized Reasoning Mode)"
-  },
-  "DRL-MTH-T01-C12-05": {
-    "id": "4183818f-8ba0-81dd-b8a8-e2000cb84199",
-    "title": "Math Models and Geometry — Verified Math Drill (3 Qs · AI Synthesized Reasoning Mode)"
-  },
-  "DRL-MTH-T02-C01-U01-04": {
-    "id": "4183818f-8ba0-81d4-b58d-cb98f761e4dd",
-    "title": "Complex Numbers — Verified Math Drill (4 Qs · AI Synthesized Reasoning Mode)"
-  },
-  "DRL-MTH-T01-C04-01": {
-    "id": "4183818f-8ba0-81eb-a376-f5c13e164cad",
-    "title": "Fractions — Verified Math Drill (6 Qs · AI Synthesized Reasoning Mode)"
-  },
-  "DRL-MTH-T01-C07-01": {
-    "id": "4183818f-8ba0-813a-b9dd-c3cbe2bc88c2",
-    "title": "Proportional & Ratio — Verified Math Drill (8 Qs · AI Synthesized Reasoning Mode)"
-  },
-  "DRL-MTH-T01-C04-02": {
-    "id": "4183818f-8ba0-812d-920e-dcda942fbc17",
-    "title": "Fractions — Verified Math Drill (8 Qs · AI Synthesized Reasoning Mode)"
-  },
-  "DRL-MTH-T01-C04-03": {
-    "id": "4193818f-8ba0-810a-a495-e7792f953986",
-    "title": "Fractions — Verified Math Drill (4 Qs · AI Synthesized Reasoning Mode)"
-  },
-  "DRL-MTH-T02-C01-U02-01": {
-    "id": "4193818f-8ba0-81fe-8d0a-d5d254b85f28",
-    "title": "Quadratic Equations — Verified Math Drill (8 Qs · AI Synthesized Reasoning Mode)"
+  "DRL-MTH-T02-C01-U03-01": {
+    "id": "4193818f-8ba0-8147-ba25-ee65f6269231",
+    "title": "Other Types of Equations — Verified Math Drill (8 Qs · AI Synthesized Reasoning Mode)"
   },
   "DRL-MTH-T02-C02-U01-01": {
     "id": "4193818f-8ba0-8148-aec9-ef47112fdb31",
     "title": "Functions and Function Notation — Verified Math Drill (8 Qs · AI Synthesized Reasoning Mode)"
   },
-  "DRL-MTH-T02-C01-U03-01": {
-    "id": "4193818f-8ba0-8147-ba25-ee65f6269231",
-    "title": "Other Types of Equations — Verified Math Drill (8 Qs · AI Synthesized Reasoning Mode)"
+  "DRL-MTH-T02-C01-U02-01": {
+    "id": "4193818f-8ba0-81fe-8d0a-d5d254b85f28",
+    "title": "Quadratic Equations — Verified Math Drill (8 Qs · AI Synthesized Reasoning Mode)"
+  },
+  "DRL-MTH-T01-C04-03": {
+    "id": "4193818f-8ba0-810a-a495-e7792f953986",
+    "title": "Fractions — Verified Math Drill (4 Qs · AI Synthesized Reasoning Mode)"
+  },
+  "DRL-MTH-T01-C04-02": {
+    "id": "4183818f-8ba0-812d-920e-dcda942fbc17",
+    "title": "Fractions — Verified Math Drill (8 Qs · AI Synthesized Reasoning Mode)"
+  },
+  "DRL-MTH-T01-C07-01": {
+    "id": "4183818f-8ba0-813a-b9dd-c3cbe2bc88c2",
+    "title": "Proportional & Ratio — Verified Math Drill (8 Qs · AI Synthesized Reasoning Mode)"
+  },
+  "DRL-MTH-T01-C04-01": {
+    "id": "4183818f-8ba0-81eb-a376-f5c13e164cad",
+    "title": "Fractions — Verified Math Drill (6 Qs · AI Synthesized Reasoning Mode)"
+  },
+  "DRL-MTH-T02-C01-U01-04": {
+    "id": "4183818f-8ba0-81d4-b58d-cb98f761e4dd",
+    "title": "Complex Numbers — Verified Math Drill (4 Qs · AI Synthesized Reasoning Mode)"
+  },
+  "DRL-MTH-T01-C12-05": {
+    "id": "4183818f-8ba0-81dd-b8a8-e2000cb84199",
+    "title": "Math Models and Geometry — Verified Math Drill (3 Qs · AI Synthesized Reasoning Mode)"
+  },
+  "DRL-MTH-T02-C01-U01-03": {
+    "id": "4173818f-8ba0-8111-a44d-eed9b8427717",
+    "title": "Complex Numbers — Verified Math Drill (5 Qs · AI Synthesized Reasoning Mode)"
+  },
+  "DRL-PRG-T00-C03-02": {
+    "id": "4153818f-8ba0-81e9-bac2-f9f97bbbe5c5",
+    "title": "JavaScript & TypeScript Baseline — Verified Programming Drill (10 Qs · AI Synthesized Engineering Mode)"
   }
 }

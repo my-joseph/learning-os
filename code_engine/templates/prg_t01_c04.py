@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Kata, Real-World Problem Solving & Architecture Templates for PRG-T01-C03:
+Kata, Real-World Problem Solving & Architecture Templates for PRG-T01-C04:
 Problem Solving & Utility Toolkit (Debounce, GroupBy, Memoize, AsyncCache, OrderPricing, LegacyRefactor, RateLimiter).
 
 Enforces the 5 Real-World Problem Archetypes:
@@ -26,7 +26,7 @@ Materializes starter files and test files in drills/workspace/ for real Cursor/V
 import random
 
 TITLE = "Problem Solving & Utility Toolkit"
-CHAPTER_CODE = "PRG-T01-C03"
+CHAPTER_CODE = "PRG-T01-C04"
 TOPIC_CODE = "PRG-T01"
 
 MISTAKE_TAGS = [
@@ -230,7 +230,7 @@ module.exports = { debounce };
                 ),
             },
         ],
-        "references": ["PRG-T01-C03-U04", "PRG-T01-C03-U01"],
+        "references": ["PRG-T01-C04-U04", "PRG-T01-C04-U01"],
         "form": "direct",
         "verify": {"solutionCode": solution, "trapValue": "missing clearTimeout(timer) before setTimeout"},
     }
@@ -371,7 +371,7 @@ module.exports = { groupBy };
                 ),
             },
         ],
-        "references": ["PRG-T01-C03-U02", "PRG-T01-C03-U01"],
+        "references": ["PRG-T01-C04-U02", "PRG-T01-C04-U01"],
         "form": "direct",
         "verify": {
             "solutionCode": solution,
@@ -601,7 +601,7 @@ module.exports = { calculateOrderTotal };
                 ),
             },
         ],
-        "references": ["PRG-T01-C03-U03", "PRG-T01-C03-U01"],
+        "references": ["PRG-T01-C04-U03", "PRG-T01-C04-U01"],
         "form": "direct",
         "verify": {
             "solutionCode": solution,
@@ -845,7 +845,7 @@ module.exports = { AsyncCache };
                 ),
             },
         ],
-        "references": ["PRG-T01-C03-U05", "PRG-T01-C03-U04"],
+        "references": ["PRG-T01-C04-U05", "PRG-T01-C04-U04"],
         "form": "direct",
         "verify": {
             "solutionCode": solution,
@@ -1069,7 +1069,7 @@ module.exports = { calculateMonthlyBill };
                 "explain": ("Apply the annual commitment discount to the subtotal before computing sales tax."),
             },
         ],
-        "references": ["PRG-T01-C03-U07", "PRG-T01-C03-U01"],
+        "references": ["PRG-T01-C04-U07", "PRG-T01-C04-U01"],
         "form": "direct",
         "verify": {"solutionCode": solution, "trapValue": "RangeError: Unknown subscription plan: family"},
     }
@@ -1276,7 +1276,7 @@ module.exports = { RateLimiter };
                 "explain": ("Trigger real-time telemetry events allowing consumers to log or trigger blacklists."),
             },
         ],
-        "references": ["PRG-T01-C03-U08", "PRG-T01-C03-U01"],
+        "references": ["PRG-T01-C04-U08", "PRG-T01-C04-U01"],
         "form": "direct",
         "verify": {"solutionCode": solution, "trapValue": "expired timestamps never evicted from window"},
     }
@@ -1415,7 +1415,7 @@ module.exports = { memoize };
                 ),
             },
         ],
-        "references": ["PRG-T01-C03-U05", "PRG-T01-C03-U04"],
+        "references": ["PRG-T01-C04-U05", "PRG-T01-C04-U04"],
         "form": "direct",
         "verify": {"solutionCode": solution, "trapValue": "if (cache.get(key)) treats falsy 0 as cache miss"},
     }
