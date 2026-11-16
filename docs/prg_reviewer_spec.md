@@ -117,7 +117,7 @@ problem as correct only on a pass.
 | R1 | ESLint + tsc toolkit (`tools/lint/`), `npm run check` in generated workspaces and the lab, tests | Gemini | done |
 | R2 | `qualityChecks` schema, universal list, backfill for the 3 PRG vaults, ingest gates (reference clean, known-bad caught) | Gemini, rubric content reviewed by Claude | done |
 | R3 | `state.reviews[]` record + `scripts/review_record.py` CLI + weak_spots/mastery reading it, tests | Gemini | done |
-| R4 | `review-code` skill (this document's rules), retire `code_engine/review.py` | Claude | pending |
+| R4 | `review-code` skill (this document's rules), retire `code_engine/review.py` | Claude | done (`.claude/skills/review-code/SKILL.md`; clipboard prompt retired in R3) |
 
 ### R1 deviations from v1 draft
 - **Isolated `tools/lint/` instead of repo-root `package.json`:** `practice-studio/` uses ESLint 8 + `.eslintrc` via `next lint`, so ESLint 9 + `typescript-eslint` + `typescript` + `globals` live in `tools/lint/` and each generated workspace / lab imports `prgConfig` from `tools/lint/base.js`.
