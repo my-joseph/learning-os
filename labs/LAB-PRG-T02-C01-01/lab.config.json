@@ -1,0 +1,100 @@
+{
+  "labId": "LAB-PRG-T02-C01-01",
+  "title": "MiniStore and useStore",
+  "chapterCode": "PRG-T02-C01",
+  "unitsUsed": [
+    "PRG-T02-C01-U03",
+    "PRG-T02-C01-U04",
+    "PRG-T02-C01-U05",
+    "PRG-T02-C01-U06",
+    "PRG-T02-C01-U07",
+    "PRG-T02-C01-U08"
+  ],
+  "kind": "chapter-lab",
+  "level": 3,
+  "domain": "shared-state-react-workspace",
+  "targetsWeakSpots": [
+    "U-no-input-mutation",
+    "U-no-shared-mutable-state"
+  ],
+  "scenario": "Build the shared state layer behind a React workspace for saved snippets, bookmarks, and notes. Independent panels need consistent updates, narrow subscriptions, and clean unmount behavior.",
+  "milestones": [
+    {
+      "id": "M1",
+      "title": "Store state and listener contracts",
+      "goal": "Create a readable store with isolated instances and releasable subscriptions.",
+      "units": [
+        "PRG-T02-C01-U07"
+      ],
+      "qualityChecks": [
+        "U-names",
+        "U-no-shared-mutable-state"
+      ],
+      "visibleTests": "tests/m1_*.test.ts"
+    },
+    {
+      "id": "M2",
+      "title": "Immutable updates and selectors",
+      "goal": "Apply partial and updater-based changes without mutating caller-owned values or discarding unrelated fields.",
+      "units": [
+        "PRG-T02-C01-U04"
+      ],
+      "qualityChecks": [
+        "U-no-input-mutation",
+        "U-one-job"
+      ],
+      "visibleTests": "tests/m2_*.test.ts"
+    },
+    {
+      "id": "M3",
+      "title": "React subscription hook",
+      "goal": "Expose a typed selected snapshot to React and keep it synchronized with store changes.",
+      "units": [
+        "PRG-T02-C01-U05",
+        "PRG-T02-C01-U06",
+        "PRG-T02-C01-U07"
+      ],
+      "qualityChecks": [
+        "U-names",
+        "U-simplest"
+      ],
+      "visibleTests": "tests/m3_*.test.tsx"
+    },
+    {
+      "id": "M4",
+      "title": "Render boundary verification",
+      "goal": "Ensure views selecting unchanged values do not render again when unrelated state changes.",
+      "units": [
+        "PRG-T02-C01-U08",
+        "PRG-T02-C01-U03"
+      ],
+      "qualityChecks": [
+        "U-simplest",
+        "U-no-shared-mutable-state"
+      ],
+      "visibleTests": "tests/m4_*.test.tsx"
+    }
+  ],
+  "blindSolve": [
+    {
+      "milestone": "M1",
+      "passed": true
+    },
+    {
+      "milestone": "M2",
+      "passed": true
+    },
+    {
+      "milestone": "M3",
+      "passed": true
+    },
+    {
+      "milestone": "M4",
+      "passed": true
+    }
+  ],
+  "review": {
+    "verdict": "pass",
+    "note": "The README stays spoiler-free, the DevVault React domain and unit coverage fit the chapter, rubric checks fit their milestones, the reference has no must-level findings, and each trap is caught by its corresponding hidden test."
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "name": "lab-prg-t02-c01-01",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --experimental-strip-types --test tests/*.test.ts && python3 scripts/run_vitest.py tests/*.test.tsx",
+    "test:reference": "LAB_SRC_DIR=../../_reference/LAB-PRG-T02-C01-01/src node --experimental-strip-types --test tests/*.test.ts && LAB_SRC_DIR=../../_reference/LAB-PRG-T02-C01-01/src python3 scripts/run_vitest.py tests/*.test.tsx",
+    "lint": "../../tools/lint/node_modules/.bin/eslint --format ../../tools/lint/format.js src",
+    "typecheck": "python3 scripts/run_tsc.py tsconfig.json",
+    "check": "npm test; test_status=$?; npm run lint; lint_status=$?; npm run typecheck; type_status=$?; test $test_status -eq 0 -a $lint_status -eq 0 -a $type_status -eq 0",
+    "check:reference": "npm run test:reference && (cd ../_reference/LAB-PRG-T02-C01-01 && ../../../tools/lint/node_modules/.bin/eslint --config ../../LAB-PRG-T02-C01-01/eslint.config.js --format ../../../tools/lint/format.js src) && python3 scripts/run_tsc.py ../_reference/LAB-PRG-T02-C01-01/tsconfig.json",
+    "check:hidden": "LAB_SRC_DIR=../src node --experimental-strip-types --test ../_reference/LAB-PRG-T02-C01-01/hidden/*.test.ts && LAB_SRC_DIR=../src python3 scripts/run_vitest.py ../_reference/LAB-PRG-T02-C01-01/hidden/*.test.tsx",
+    "review": "python3 ../common/review.py",
+    "submit": "python3 ../common/submit_lab.py",
+    "test:m1": "node --experimental-strip-types --test --test-reporter=spec tests/m1_store.test.ts",
+    "check:m1": "npm run test:m1; test_status=$?; npm run lint; lint_status=$?; npm run typecheck; type_status=$?; test $test_status -eq 0 -a $lint_status -eq 0 -a $type_status -eq 0",
+    "test:m2": "node --experimental-strip-types --test --test-reporter=spec tests/m2_updates.test.ts",
+    "check:m2": "npm run test:m2; test_status=$?; npm run lint; lint_status=$?; npm run typecheck; type_status=$?; test $test_status -eq 0 -a $lint_status -eq 0 -a $type_status -eq 0",
+    "test:m3": "python3 scripts/run_vitest.py tests/m3_hook.test.tsx",
+    "check:m3": "npm run test:m3; test_status=$?; npm run lint; lint_status=$?; npm run typecheck; type_status=$?; test $test_status -eq 0 -a $lint_status -eq 0 -a $type_status -eq 0",
+    "test:m4": "python3 scripts/run_vitest.py tests/m4_render_boundary.test.tsx",
+    "check:m4": "npm run test:m4; test_status=$?; npm run lint; lint_status=$?; npm run typecheck; type_status=$?; test $test_status -eq 0 -a $lint_status -eq 0 -a $type_status -eq 0"
+  }
+}
