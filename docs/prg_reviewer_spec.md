@@ -25,7 +25,7 @@ attempt.
 
 ## Layer 2 — lint rule set (one config, repo root)
 
-One `eslint.config.js` at the repo root covers `drills/workspace/**` and `labs/**`, so VS Code shows the same warnings
+Shared rules in `tools/lint/base.js`; each drill workspace gets `eslint.config.mjs` (`.mjs` because drill code may be CommonJS) and each lab an `eslint.config.js`, so VS Code shows the same warnings
 while the learner types (the ESLint extension picks it up). Tooling is installed once (root `package.json` dev deps), never
 per workspace.
 

@@ -3,7 +3,7 @@
 Lint checker for PRG drill reference solutions (Layer 2).
 
 Writes each problem's `solutionCode` into a temporary directory alongside an
-`eslint.config.js` using `tools/lint/base.js` and the drill's `lintOverrides`,
+`eslint.config.mjs` using `tools/lint/base.js` and the drill's `lintOverrides`,
 then runs ESLint and reports any rule violations as `file:line rule message`.
 
 Usage:
@@ -54,7 +54,7 @@ def lint_code_snippet(
 
     with tempfile.TemporaryDirectory(prefix="prg_lint_") as tmp:
         tmp_path = Path(tmp)
-        cfg_path = tmp_path / "eslint.config.js"
+        cfg_path = tmp_path / "eslint.config.mjs"
         cfg_content = (
             f"import {{ prgConfig }} from {json.dumps(base_js.as_uri())};\n\n"
             f"export default prgConfig({{ overrides: {json.dumps(active_overrides)} }});\n"
