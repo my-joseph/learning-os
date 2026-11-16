@@ -465,7 +465,7 @@ test({t_name}, {fn_prefix} {{
         checks = [f"npm run test:{pid.lower()}", lint_command, *([type_command] if type_command else [])]
         test_scripts[f"check:{pid.lower()}"] = "; ".join(
             [
-                *(f"{command}; status_$i=$?" for i, command in enumerate(checks)),
+                *(f"{command}; status_{i}=$?" for i, command in enumerate(checks)),
                 "test " + " -a ".join(f"$status_{i} -eq 0" for i in range(len(checks))),
             ]
         )
