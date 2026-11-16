@@ -2387,5 +2387,9 @@
   "DRL-PRG-T01-C01-U01-01": {
     "id": "41a3818f-8ba0-815c-9ed2-c92d3ce55845",
     "title": "Execution Context and Scope — Verified Programming Drill (5 Qs · AI Synthesized Engineering Mode)"
+  },
+  "DRL-PRG-T01-C01-U02-01": {
+    "id": "41a3818f-8ba0-817f-be97-cff84f627907",
+    "title": "Closures — Verified Programming Drill (5 Qs · AI Synthesized Engineering Mode)"
   }
 }
