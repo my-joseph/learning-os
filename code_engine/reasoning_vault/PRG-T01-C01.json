@@ -1614,6 +1614,204 @@
           }
         }
       ]
+    },
+    {
+      "archetypeKey": "prg-c01-typed-error-cause-chain",
+      "unitCode": "PRG-T01-C01-U08",
+      "level": 2,
+      "archetype": "refactoring",
+      "name": "Typed Error Subclasses & Cause Chain Propagation",
+      "competencies": [
+        "error-handling",
+        "error-cause",
+        "refactoring"
+      ],
+      "coreConcept": "Wrapping low-level failures in domain-specific `Error` subclasses using `super(message, { cause })` so callers can branch on error types (`instanceof` or `.code`) while preserving the original root cause.",
+      "mentalModel": [
+        "1. Always throw `Error` subclasses (setting `this.name` and structured metadata like `code` or `statusCode`), never raw strings or plain objects.",
+        "2. Pass `{ cause: err }` to `super(message, { cause })` whenever translating a lower-level error into a domain error.",
+        "3. Callers inspect `err instanceof DomainError` for recovery and walk `err.cause` for root-cause diagnostics."
+      ],
+      "governingInvariant": "translatedError instanceof Error && translatedError.cause === originalError",
+      "cognitiveTraps": [
+        {
+          "trapTag": "swallowed-error-cause",
+          "name": "Throwing New Domain Error Without Cause",
+          "description": "Constructing `new ServiceError(msg)` in a `catch` block without `{ cause: err }` discards the original error and stack trace.",
+          "reproducer": "catch (err) { throw new ServiceError('Failed'); } // err.cause is undefined"
+        },
+        {
+          "trapTag": "raw-string-throw",
+          "name": "Throwing Raw Strings or Plain Objects",
+          "description": "Using `throw 'bad input'` or `throw { code: 'ERR' }` produces non-Error values without stack traces or `instanceof Error`.",
+          "reproducer": "throw 'CONFIG_MISSING'; // err instanceof Error === false, err.stack === undefined"
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "billing_gateway_adapter",
+          "description": "Translating low-level transport/JSON errors into typed PaymentGatewayError instances with preserved cause chains."
+        }
+      ],
+      "usedContexts": [
+        "payment_webhook_verifier",
+        "env_config_bootstrap"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-err-preserve-cause",
+          "check": "When catching and re-throwing a lower-level error as a domain error, the original error is attached via `{ cause: err }`.",
+          "why": "Omitting `{ cause }` destroys the underlying stack trace and root-cause context needed for debugging.",
+          "severity": "must",
+          "accepted": [
+            "super(message, { cause })",
+            "new DomainError(message, { cause: err })"
+          ],
+          "knownBad": {
+            "code": "class ConfigError extends Error {}\nfunction loadConfig(parseFn, raw) {\n  try {\n    return parseFn(raw);\n  } catch (_err) {\n    throw new ConfigError('Invalid config');\n  }\n}",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-err-subclass-instanceof",
+          "check": "Custom errors extend `Error` (passing `message` and `{ cause }` to `super`) and are thrown as `Error` instances, never raw strings or plain objects.",
+          "why": "Raw strings and plain objects lack stack traces and break `instanceof Error` checks at catch boundaries.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function validatePort(port) {\n  if (port <= 0) throw 'INVALID_PORT';\n  return port;\n}",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "prg-c01-async-boundary-error-propagation",
+      "unitCode": "PRG-T01-C01-U08",
+      "level": 2,
+      "archetype": "debugging",
+      "name": "Async Boundary Error Propagation & Cleanup",
+      "competencies": [
+        "error-handling",
+        "async-await",
+        "debugging"
+      ],
+      "coreConcept": "Ensuring `async`/`await` boundaries propagate failures cleanly instead of swallowing exceptions in `catch`, while releasing resources in `finally` without overriding active return values or thrown errors.",
+      "mentalModel": [
+        "1. An empty `catch` or silent fallback (`return null` / `return {}`) turns a loud failure into silent data corruption.",
+        "2. `finally` runs on both normal completion and throw, so it is for cleanup only.",
+        "3. Never `return` or throw blindly inside `finally` because it suppresses the `try`/`catch` outcome."
+      ],
+      "governingInvariant": "cleanup runs in finally && unhandled operational errors propagate to caller",
+      "cognitiveTraps": [
+        {
+          "trapTag": "silent-catch-fallback",
+          "name": "Swallowing Errors With Silent Fallback",
+          "description": "Catching an exception and returning a default value (`null`, `[]`, `{}`) masks failures and corrupts downstream callers.",
+          "reproducer": "try { return await fetchUser(id); } catch (e) { return null; } // network outage looks like missing user"
+        },
+        {
+          "trapTag": "finally-return-override",
+          "name": "Returning Inside Finally Block",
+          "description": "A `return` statement inside `finally` silently discards any exception thrown in `try` or `catch`.",
+          "reproducer": "try { throw new Error('boom'); } finally { return 'ok'; } // returns 'ok', error vanishes"
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "file_lock_transaction_runner",
+          "description": "Acquiring and releasing a lock around async work while propagating operational errors intact."
+        }
+      ],
+      "usedContexts": [
+        "inventory_reservation_sync",
+        "distributed_job_lease"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-err-no-silent-swallow",
+          "check": "Error handlers never silently swallow unexpected errors by returning dummy fallbacks; they either recover a specific expected case or propagate the error.",
+          "why": "Silent fallbacks hide root causes and turn failed operations into misleading empty results.",
+          "severity": "must",
+          "knownBad": {
+            "code": "async function readManifest(reader, path) {\n  try {\n    return await reader(path);\n  } catch (_err) {\n    return {};\n  }\n}",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-err-finally-cleanup-only",
+          "check": "`finally` blocks perform cleanup only and never `return` a value that overrides `try` or `catch` outcomes.",
+          "why": "Returning from `finally` suppresses thrown errors and replaces the intended return value.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function withResource(resource, work) {\n  try {\n    return work(resource);\n  } finally {\n    resource.close();\n    return null;\n  }\n}",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "prg-c01-operational-vs-programmer-boundary",
+      "unitCode": "PRG-T01-C01-U08",
+      "level": 3,
+      "archetype": "refactoring",
+      "name": "Operational vs. Programmer Error Boundary Refactor",
+      "competencies": [
+        "error-handling",
+        "refactoring",
+        "architecture"
+      ],
+      "coreConcept": "Distinguishing expected operational errors (mapped to structured domain responses or typed errors) from programmer bugs (`TypeError`, `RangeError`, invariant violations that must re-throw), and flattening nested `try/catch` blocks into focused boundary helpers.",
+      "mentalModel": [
+        "1. Operational errors (invalid user input, missing record, upstream timeout) are expected and handled/mapped at the boundary.",
+        "2. Programmer bugs (`TypeError` from `null.prop`, `ReferenceError`) must never be caught and disguised as `404` or `{ ok: false, reason: 'not_found' }`.",
+        "3. Extract small boundary helpers so validation, execution, and error translation stay flat and single-purpose."
+      ],
+      "governingInvariant": "operational errors map to typed boundary outcomes; programmer errors re-throw",
+      "cognitiveTraps": [
+        {
+          "trapTag": "catch-all-masks-bug",
+          "name": "Blanket Catch Masking Programmer Bugs",
+          "description": "A blanket `catch (err)` maps all errors—including `TypeError` or `RangeError`—into a generic operational error response.",
+          "reproducer": "catch (err) { return { ok: false, code: 'NOT_FOUND' }; } // masks TypeError inside business logic"
+        },
+        {
+          "trapTag": "nested-try-catch-spaghetti",
+          "name": "Deeply Nested Try/Catch Control Flow",
+          "description": "Nesting `try/catch` blocks inside business logic mixes error translation with domain steps and drops context.",
+          "reproducer": "try { try { ... } catch (e1) { ... } } catch (e2) { ... }"
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "webhook_payload_processor",
+          "description": "Refactoring a tangled webhook handler into clean validation, signature verification, and typed error boundaries."
+        }
+      ],
+      "usedContexts": [
+        "tenant_quota_enforcer"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-err-rethrow-programmer-bugs",
+          "check": "Catch blocks check for specific expected operational errors and re-throw unexpected programmer errors (`TypeError`, `RangeError`, unknown errors).",
+          "why": "Converting programmer bugs into operational error responses hides defects and makes debugging impossible.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function handleLookup(repo, id) {\n  try {\n    return { ok: true, data: repo.find(id) };\n  } catch (_err) {\n    return { ok: false, code: 'NOT_FOUND' };\n  }\n}",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-err-explicit-result-or-throw",
+          "check": "Boundary functions use one consistent error contract (either structured Result `{ ok, value | error }` or throwing typed `Error` subclasses), never mixing `null` returns and throws ambiguously.",
+          "why": "Mixing `null` returns with exceptions forces callers to check both channels and causes missed error paths.",
+          "severity": "should",
+          "knownBad": {
+            "code": "function parseToken(raw) {\n  if (!raw) return null;\n  if (!raw.includes('.')) throw new Error('Malformed');\n  return raw.split('.');\n}",
+            "caughtBy": "review"
+          }
+        }
+      ]
     }
   ]
 }

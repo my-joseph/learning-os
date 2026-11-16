@@ -1,0 +1,487 @@
+{
+  "unitCode": "PRG-T01-C01-U08",
+  "unitTitle": "Error Handling Patterns",
+  "environment": "node-vanilla",
+  "sourceAttribution": "MDN JavaScript Guide (Control flow and error handling) & ECMAScript Error Cause Specification",
+  "config": {
+    "questionCount": 5,
+    "difficulty": "ALL",
+    "difficultyMode": "AI Synthesized Engineering Mode"
+  },
+  "problems": [
+    {
+      "id": "Q01",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "refactoring",
+      "codeType": "refactor",
+      "archetypeKey": "prg-c01-typed-error-cause-chain",
+      "commonTrapTag": "swallowed-error-cause",
+      "context": "payment_webhook_verifier",
+      "entryPoint": "verifyWebhookPayload",
+      "prompt": "Refactor `verifyWebhookPayload(rawBody, signature, verifyHmac)` for a payment gateway so it throws typed `Error` subclasses and preserves root causes.\n\n**Input & Verification Rules:**\n- `rawBody`: must be a non-empty string; throw `TypeError` otherwise.\n- `signature`: must be a non-empty string; throw `TypeError` otherwise.\n- `verifyHmac`: must be a function `(rawBody, signature) => boolean`; throw `TypeError` otherwise.\n- If `verifyHmac(rawBody, signature)` returns `false`, throw a `SignatureError` (`name: 'SignatureError'`, `code: 'INVALID_SIGNATURE'`).\n- Parse `rawBody` with `JSON.parse`; if parsing fails, throw a `WebhookParseError` (`name: 'WebhookParseError'`, `code: 'MALFORMED_JSON'`) with `{ cause: err }` referencing the original `SyntaxError`.\n- Split signature verification and JSON parsing into focused helpers.\n\n**Return Contract:**\n- Return the parsed webhook payload object.\n- Export `{ verifyWebhookPayload, SignatureError, WebhookParseError }`.",
+      "inputHint": "Refactor to typed Error subclasses with preserved cause chain",
+      "starterCode": "class SignatureError extends Error {\n  constructor(message) {\n    super(message);\n    this.name = 'SignatureError';\n  }\n}\n\nclass WebhookParseError extends Error {\n  constructor(message) {\n    super(message);\n    this.name = 'WebhookParseError';\n  }\n}\n\nfunction verifyWebhookPayload(rawBody, signature, verifyHmac) {\n  if (typeof rawBody !== 'string' || !rawBody) {\n    throw 'INVALID_BODY';\n  }\n  if (typeof signature !== 'string' || !signature) {\n    throw 'INVALID_SIG';\n  }\n  if (typeof verifyHmac !== 'function') {\n    throw new TypeError('verifyHmac must be a function');\n  }\n  if (!verifyHmac(rawBody, signature)) {\n    throw new Error('Signature mismatch');\n  }\n  try {\n    return JSON.parse(rawBody);\n  } catch (_err) {\n    throw new Error('Bad JSON');\n  }\n}\n\nmodule.exports = { verifyWebhookPayload, SignatureError, WebhookParseError };\n",
+      "solutionCode": "class SignatureError extends Error {\n  constructor(message, options) {\n    super(message, options);\n    this.name = 'SignatureError';\n    this.code = 'INVALID_SIGNATURE';\n  }\n}\n\nclass WebhookParseError extends Error {\n  constructor(message, options) {\n    super(message, options);\n    this.name = 'WebhookParseError';\n    this.code = 'MALFORMED_JSON';\n  }\n}\n\nfunction assertWebhookArgs(rawBody, signature, verifyHmac) {\n  if (typeof rawBody !== 'string' || rawBody.length === 0) {\n    throw new TypeError('rawBody must be a non-empty string');\n  }\n  if (typeof signature !== 'string' || signature.length === 0) {\n    throw new TypeError('signature must be a non-empty string');\n  }\n  if (typeof verifyHmac !== 'function') {\n    throw new TypeError('verifyHmac must be a function');\n  }\n}\n\nfunction parseWebhookJson(rawBody) {\n  try {\n    return JSON.parse(rawBody);\n  } catch (err) {\n    throw new WebhookParseError('Webhook body is not valid JSON', { cause: err });\n  }\n}\n\nfunction verifyWebhookPayload(rawBody, signature, verifyHmac) {\n  assertWebhookArgs(rawBody, signature, verifyHmac);\n  if (!verifyHmac(rawBody, signature)) {\n    throw new SignatureError('Webhook signature verification failed');\n  }\n  return parseWebhookJson(rawBody);\n}\n\nmodule.exports = { verifyWebhookPayload, SignatureError, WebhookParseError };\n",
+      "trapMutant": "class SignatureError extends Error {\n  constructor(message, options) {\n    super(message, options);\n    this.name = 'SignatureError';\n    this.code = 'INVALID_SIGNATURE';\n  }\n}\n\nclass WebhookParseError extends Error {\n  constructor(message, options) {\n    super(message, options);\n    this.name = 'WebhookParseError';\n    this.code = 'MALFORMED_JSON';\n  }\n}\n\nfunction verifyWebhookPayload(rawBody, signature, verifyHmac) {\n  if (typeof rawBody !== 'string' || !rawBody) {\n    throw new TypeError('rawBody must be a non-empty string');\n  }\n  if (typeof signature !== 'string' || !signature) {\n    throw new TypeError('signature must be a non-empty string');\n  }\n  if (typeof verifyHmac !== 'function') {\n    throw new TypeError('verifyHmac must be a function');\n  }\n  if (!verifyHmac(rawBody, signature)) {\n    throw new SignatureError('Webhook signature verification failed');\n  }\n  try {\n    return JSON.parse(rawBody);\n  } catch (_err) {\n    throw new WebhookParseError('Webhook body is not valid JSON');\n  }\n}\n\nmodule.exports = { verifyWebhookPayload, SignatureError, WebhookParseError };\n",
+      "visibleTests": [
+        {
+          "name": "parses valid signed webhook payload",
+          "testCode": "const payload = verifyWebhookPayload('{\"event\":\"paid\",\"amount\":1500}', 'sig_ok', () => true);\nassert.deepStrictEqual(payload, { event: 'paid', amount: 1500 });"
+        },
+        {
+          "name": "throws SignatureError when verifyHmac returns false",
+          "testCode": "assert.throws(\n  () => verifyWebhookPayload('{\"event\":\"paid\"}', 'bad_sig', () => false),\n  (err) => err instanceof SignatureError && err instanceof Error && err.code === 'INVALID_SIGNATURE',\n);"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "throws WebhookParseError with SyntaxError cause on malformed JSON",
+          "testCode": "assert.throws(\n  () => verifyWebhookPayload('{bad-json', 'sig_ok', () => true),\n  (err) => err instanceof WebhookParseError && err.code === 'MALFORMED_JSON' && err.cause instanceof SyntaxError,\n);"
+        },
+        {
+          "name": "throws TypeError on empty or non-string inputs and non-function verifier",
+          "testCode": "assert.throws(() => verifyWebhookPayload('', 'sig', () => true), TypeError);\nassert.throws(() => verifyWebhookPayload('{}', '', () => true), TypeError);\nassert.throws(() => verifyWebhookPayload('{}', 'sig', null), TypeError);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Extend `Error` in `SignatureError` and `WebhookParseError`, forwarding `options` to `super(message, options)` and setting `this.name` and `this.code`."
+        },
+        {
+          "explain": "Validate `rawBody`, `signature`, and `verifyHmac` at the top, throwing `TypeError` instead of raw strings."
+        },
+        {
+          "explain": "Wrap `JSON.parse` failures in `WebhookParseError` with `{ cause: err }` so the original `SyntaxError` is preserved."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "swallowed-error-cause|direct|verifyWebhookPayload",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "refactoring"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "swallowed-error-cause",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 5
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Standard Exam",
+      "unitCode": "PRG-T01-C01-U08",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U08-01/Q01_verifyWebhookPayload.js"
+    },
+    {
+      "id": "Q02",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "debugging",
+      "codeType": "fix-bug",
+      "archetypeKey": "prg-c01-async-boundary-error-propagation",
+      "commonTrapTag": "silent-catch-fallback",
+      "context": "inventory_reservation_sync",
+      "entryPoint": "syncInventoryBatch",
+      "prompt": "Fix `syncInventoryBatch(store, warehouseId)` so that storage failures propagate to the caller with context instead of silently returning an empty batch.\n\n**Observable Symptom:**\n- When `store.readPending(warehouseId)` rejects (e.g. database timeout), `syncInventoryBatch` resolves to `{ synced: 0, skus: [] }` and hides the outage.\n\n**Requirements:**\n- `store`: must be a non-null object with a `readPending` function; throw `TypeError` otherwise.\n- `warehouseId`: must be a non-empty string; throw `TypeError` otherwise.\n- Await `store.readPending(warehouseId)` and return `{ synced: items.length, skus: items.map((item) => item.sku) }`.\n- If `store.readPending` rejects, throw an `InventorySyncError` (`name: 'InventorySyncError'`) with `{ cause: err }` preserving the original rejection.\n- Do not mutate the array returned by `store.readPending`.\n\n**Return Contract:**\n- Resolve to `{ synced: number, skus: string[] }`.\n- Export `{ syncInventoryBatch, InventorySyncError }`.",
+      "inputHint": "Propagate async readPending errors wrapped with cause instead of returning empty fallback",
+      "starterCode": "class InventorySyncError extends Error {\n  constructor(message, options) {\n    super(message, options);\n    this.name = 'InventorySyncError';\n  }\n}\n\nasync function syncInventoryBatch(store, warehouseId) {\n  if (!store || typeof store.readPending !== 'function') {\n    throw new TypeError('store.readPending must be a function');\n  }\n  if (typeof warehouseId !== 'string' || warehouseId.length === 0) {\n    throw new TypeError('warehouseId must be a non-empty string');\n  }\n  try {\n    const items = await store.readPending(warehouseId);\n    const skus = items.map((item) => item.sku);\n    return { synced: skus.length, skus };\n  } catch (_err) {\n    return { synced: 0, skus: [] };\n  }\n}\n\nmodule.exports = { syncInventoryBatch, InventorySyncError };\n",
+      "solutionCode": "class InventorySyncError extends Error {\n  constructor(message, options) {\n    super(message, options);\n    this.name = 'InventorySyncError';\n  }\n}\n\nfunction assertSyncArgs(store, warehouseId) {\n  if (!store || typeof store.readPending !== 'function') {\n    throw new TypeError('store.readPending must be a function');\n  }\n  if (typeof warehouseId !== 'string' || warehouseId.length === 0) {\n    throw new TypeError('warehouseId must be a non-empty string');\n  }\n}\n\nasync function syncInventoryBatch(store, warehouseId) {\n  assertSyncArgs(store, warehouseId);\n  try {\n    const items = await store.readPending(warehouseId);\n    const skus = items.map((item) => item.sku);\n    return { synced: skus.length, skus };\n  } catch (err) {\n    throw new InventorySyncError(`Failed to sync warehouse ${warehouseId}`, { cause: err });\n  }\n}\n\nmodule.exports = { syncInventoryBatch, InventorySyncError };\n",
+      "trapMutant": "class InventorySyncError extends Error {\n  constructor(message, options) {\n    super(message, options);\n    this.name = 'InventorySyncError';\n  }\n}\n\nasync function syncInventoryBatch(store, warehouseId) {\n  if (!store || typeof store.readPending !== 'function') {\n    throw new TypeError('store.readPending must be a function');\n  }\n  if (typeof warehouseId !== 'string' || warehouseId.length === 0) {\n    throw new TypeError('warehouseId must be a non-empty string');\n  }\n  try {\n    const items = await store.readPending(warehouseId);\n    const skus = items.map((item) => item.sku);\n    return { synced: skus.length, skus };\n  } catch (_err) {\n    return { synced: 0, skus: [] };\n  }\n}\n\nmodule.exports = { syncInventoryBatch, InventorySyncError };\n",
+      "visibleTests": [
+        {
+          "name": "returns synced count and skus when store succeeds",
+          "testCode": "const store = { readPending: async () => [{ sku: 'SKU-10' }, { sku: 'SKU-20' }] };\nconst result = await syncInventoryBatch(store, 'wh-bkk-1');\nassert.deepStrictEqual(result, { synced: 2, skus: ['SKU-10', 'SKU-20'] });"
+        },
+        {
+          "name": "returns zero synced when warehouse has no pending items",
+          "testCode": "const store = { readPending: async () => [] };\nconst result = await syncInventoryBatch(store, 'wh-bkk-1');\nassert.deepStrictEqual(result, { synced: 0, skus: [] });"
+        },
+        {
+          "name": "reproducer: rejects with InventorySyncError when readPending fails",
+          "testCode": "const rootErr = new Error('ETIMEDOUT');\nconst store = { readPending: async () => { throw rootErr; } };\nawait assert.rejects(\n  () => syncInventoryBatch(store, 'wh-bkk-1'),\n  (err) => err instanceof InventorySyncError && err.cause === rootErr,\n);"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "rejects with InventorySyncError and cause when readPending fails",
+          "testCode": "const rootErr = new Error('ECONNRESET');\nconst store = { readPending: async () => { throw rootErr; } };\nawait assert.rejects(\n  () => syncInventoryBatch(store, 'wh-bkk-1'),\n  (err) => err instanceof InventorySyncError && err.cause === rootErr,\n);"
+        },
+        {
+          "name": "rejects with TypeError on invalid store or warehouseId",
+          "testCode": "await assert.rejects(() => syncInventoryBatch(null, 'wh-1'), TypeError);\nawait assert.rejects(() => syncInventoryBatch({ readPending: async () => [] }, ''), TypeError);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Validate `store.readPending` and `warehouseId` at the top so invalid calls fail fast with `TypeError`."
+        },
+        {
+          "explain": "Replace the silent `catch` fallback with `throw new InventorySyncError(..., { cause: err })` so failures propagate with root-cause context."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "silent-catch-fallback|direct|syncInventoryBatch",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "debugging"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "silent-catch-fallback",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 4
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Standard Exam",
+      "unitCode": "PRG-T01-C01-U08",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U08-01/Q02_syncInventoryBatch.js"
+    },
+    {
+      "id": "Q03",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "refactoring",
+      "codeType": "refactor",
+      "archetypeKey": "prg-c01-typed-error-cause-chain",
+      "commonTrapTag": "raw-string-throw",
+      "context": "env_config_bootstrap",
+      "entryPoint": "loadServiceConfig",
+      "prompt": "Refactor `loadServiceConfig(rawJson)` for a service bootstrapper so all configuration failures throw proper `Error` subclasses instead of raw strings or plain objects.\n\n**Requirements:**\n- `rawJson`: must be a non-empty string; if not, throw `ConfigValidationError` (`name: 'ConfigValidationError'`, `code: 'EMPTY_CONFIG'`).\n- Parse `rawJson` with `JSON.parse`; on syntax error, throw `ConfigParseError` (`name: 'ConfigParseError'`, `code: 'INVALID_JSON'`) with `{ cause: err }`.\n- Validate `parsed.port` is an integer between `1` and `65535` (inclusive); otherwise throw `ConfigValidationError` (`code: 'INVALID_PORT'`).\n- Validate `parsed.host` is a non-empty string; otherwise throw `ConfigValidationError` (`code: 'INVALID_HOST'`).\n- Extract parsing and field validation into clean helper functions.\n\n**Return Contract:**\n- Return `{ host: string, port: number }` (new object, do not return/mutate raw parsed object if extra keys exist).\n- Export `{ loadServiceConfig, ConfigParseError, ConfigValidationError }`.",
+      "inputHint": "Replace raw string and plain object throws with Error subclasses",
+      "starterCode": "class ConfigParseError extends Error {\n  constructor(message, options) {\n    super(message, options);\n    this.name = 'ConfigParseError';\n  }\n}\n\nclass ConfigValidationError extends Error {\n  constructor(message, options) {\n    super(message, options);\n    this.name = 'ConfigValidationError';\n  }\n}\n\nfunction loadServiceConfig(rawJson) {\n  if (typeof rawJson !== 'string' || rawJson.length === 0) {\n    throw 'EMPTY_CONFIG';\n  }\n  let parsed;\n  try {\n    parsed = JSON.parse(rawJson);\n  } catch (_err) {\n    throw { code: 'INVALID_JSON', message: 'Invalid JSON' };\n  }\n  if (!parsed || typeof parsed.host !== 'string' || !parsed.host) {\n    throw 'INVALID_HOST';\n  }\n  if (!Number.isInteger(parsed.port) || parsed.port < 1 || parsed.port > 65535) {\n    throw 'INVALID_PORT';\n  }\n  return { host: parsed.host, port: parsed.port };\n}\n\nmodule.exports = { loadServiceConfig, ConfigParseError, ConfigValidationError };\n",
+      "starterLintExpected": [
+        {
+          "rule": "complexity",
+          "reason": "Monolithic starter function has high complexity until learner refactors into helpers"
+        }
+      ],
+      "solutionCode": "const MIN_PORT = 1;\nconst MAX_PORT = 65535;\n\nclass ConfigParseError extends Error {\n  constructor(message, options = {}) {\n    super(message, { cause: options.cause });\n    this.name = 'ConfigParseError';\n    this.code = options.code || 'INVALID_JSON';\n  }\n}\n\nclass ConfigValidationError extends Error {\n  constructor(message, options = {}) {\n    super(message, { cause: options.cause });\n    this.name = 'ConfigValidationError';\n    this.code = options.code || 'VALIDATION_ERROR';\n  }\n}\n\nfunction parseRawConfig(rawJson) {\n  if (typeof rawJson !== 'string' || rawJson.length === 0) {\n    throw new ConfigValidationError('Configuration input must be a non-empty string', {\n      code: 'EMPTY_CONFIG',\n    });\n  }\n  try {\n    return JSON.parse(rawJson);\n  } catch (err) {\n    throw new ConfigParseError('Configuration JSON could not be parsed', {\n      code: 'INVALID_JSON',\n      cause: err,\n    });\n  }\n}\n\nfunction validateConfigFields(parsed) {\n  if (!parsed || typeof parsed.host !== 'string' || parsed.host.length === 0) {\n    throw new ConfigValidationError('Configuration host must be a non-empty string', {\n      code: 'INVALID_HOST',\n    });\n  }\n  if (!Number.isInteger(parsed.port) || parsed.port < MIN_PORT || parsed.port > MAX_PORT) {\n    throw new ConfigValidationError('Configuration port must be an integer between 1 and 65535', {\n      code: 'INVALID_PORT',\n    });\n  }\n  return { host: parsed.host, port: parsed.port };\n}\n\nfunction loadServiceConfig(rawJson) {\n  const parsed = parseRawConfig(rawJson);\n  return validateConfigFields(parsed);\n}\n\nmodule.exports = { loadServiceConfig, ConfigParseError, ConfigValidationError };\n",
+      "trapMutant": "class ConfigParseError extends Error {\n  constructor(message, options) {\n    super(message, options);\n    this.name = 'ConfigParseError';\n  }\n}\n\nclass ConfigValidationError extends Error {\n  constructor(message, options) {\n    super(message, options);\n    this.name = 'ConfigValidationError';\n  }\n}\n\nfunction loadServiceConfig(rawJson) {\n  if (typeof rawJson !== 'string' || rawJson.length === 0) {\n    throw new ConfigValidationError('Empty config');\n  }\n  let parsed;\n  try {\n    parsed = JSON.parse(rawJson);\n  } catch (_err) {\n    throw { name: 'ConfigParseError', code: 'INVALID_JSON', message: 'Invalid JSON' };\n  }\n  if (!parsed || typeof parsed.host !== 'string' || !parsed.host) {\n    throw new ConfigValidationError('Invalid host');\n  }\n  if (!Number.isInteger(parsed.port) || parsed.port < 1 || parsed.port > 65535) {\n    throw new ConfigValidationError('Invalid port');\n  }\n  return { host: parsed.host, port: parsed.port };\n}\n\nmodule.exports = { loadServiceConfig, ConfigParseError, ConfigValidationError };\n",
+      "visibleTests": [
+        {
+          "name": "loads valid host and port configuration",
+          "testCode": "const cfg = loadServiceConfig('{\"host\":\"127.0.0.1\",\"port\":8080,\"extra\":true}');\nassert.deepStrictEqual(cfg, { host: '127.0.0.1', port: 8080 });"
+        },
+        {
+          "name": "throws ConfigValidationError on invalid port",
+          "testCode": "assert.throws(\n  () => loadServiceConfig('{\"host\":\"localhost\",\"port\":70000}'),\n  (err) => err instanceof ConfigValidationError && err instanceof Error && err.code === 'INVALID_PORT',\n);"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "throws ConfigParseError with SyntaxError cause on malformed JSON",
+          "testCode": "assert.throws(\n  () => loadServiceConfig('{broken'),\n  (err) => err instanceof ConfigParseError && err instanceof Error && err.code === 'INVALID_JSON' && err.cause instanceof SyntaxError,\n);"
+        },
+        {
+          "name": "throws ConfigValidationError with specific codes for empty input and bad host",
+          "testCode": "assert.throws(\n  () => loadServiceConfig(''),\n  (err) => err instanceof ConfigValidationError && err.code === 'EMPTY_CONFIG',\n);\nassert.throws(\n  () => loadServiceConfig('{\"host\":\"\",\"port\":3000}'),\n  (err) => err instanceof ConfigValidationError && err.code === 'INVALID_HOST',\n);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Update `ConfigParseError` and `ConfigValidationError` to store `code` and forward `{ cause }` to `super`."
+        },
+        {
+          "explain": "Split `parseRawConfig` and `validateConfigFields` into focused helpers."
+        },
+        {
+          "explain": "Throw `ConfigValidationError` / `ConfigParseError` instances instead of raw strings or plain objects."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "raw-string-throw|direct|loadServiceConfig",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "refactoring"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "raw-string-throw",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 5
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Standard Exam",
+      "unitCode": "PRG-T01-C01-U08",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U08-01/Q03_loadServiceConfig.js"
+    },
+    {
+      "id": "Q04",
+      "level": 3,
+      "category": "Refactor & Design",
+      "archetype": "refactoring",
+      "codeType": "refactor",
+      "archetypeKey": "prg-c01-operational-vs-programmer-boundary",
+      "commonTrapTag": "catch-all-masks-bug",
+      "context": "tenant_quota_enforcer",
+      "entryPoint": "evaluateTenantQuota",
+      "prompt": "Refactor `evaluateTenantQuota(tenantId, repo, policy)` so it separates expected operational errors from programmer bugs and flattens nested `try/catch` blocks.\n\n**Error Boundary Rules:**\n- `tenantId`: must be a non-empty string; throw `TypeError` otherwise (outside `try/catch`).\n- `repo.findUsage(tenantId)` may throw `TenantNotFoundError` (expected operational error): return `{ allowed: false, code: 'TENANT_NOT_FOUND' }`.\n- `policy.isWithinLimit(usage)` returns a boolean: if `true`, return `{ allowed: true, code: 'OK' }`; if `false`, return `{ allowed: false, code: 'QUOTA_EXCEEDED' }`.\n- **Never swallow programmer bugs:** if `repo.findUsage` or `policy.isWithinLimit` throws a `TypeError`, `RangeError`, or any error other than `TenantNotFoundError`, re-throw it intact.\n- Split lookup, policy evaluation, and boundary mapping into focused single-responsibility functions.\n\n**Return Contract:**\n- Return `{ allowed: boolean, code: 'OK' | 'QUOTA_EXCEEDED' | 'TENANT_NOT_FOUND' }`.\n- Export `{ evaluateTenantQuota, TenantNotFoundError }`.",
+      "inputHint": "Handle TenantNotFoundError operationally and re-throw unexpected programmer errors",
+      "starterCode": "class TenantNotFoundError extends Error {\n  constructor(message) {\n    super(message);\n    this.name = 'TenantNotFoundError';\n  }\n}\n\nfunction evaluateTenantQuota(tenantId, repo, policy) {\n  if (typeof tenantId !== 'string' || !tenantId) {\n    throw new TypeError('tenantId must be a non-empty string');\n  }\n  try {\n    const usage = repo.findUsage(tenantId);\n    try {\n      const withinLimit = policy.isWithinLimit(usage);\n      return withinLimit\n        ? { allowed: true, code: 'OK' }\n        : { allowed: false, code: 'QUOTA_EXCEEDED' };\n    } catch (_policyErr) {\n      return { allowed: false, code: 'TENANT_NOT_FOUND' };\n    }\n  } catch (_repoErr) {\n    return { allowed: false, code: 'TENANT_NOT_FOUND' };\n  }\n}\n\nmodule.exports = { evaluateTenantQuota, TenantNotFoundError };\n",
+      "solutionCode": "class TenantNotFoundError extends Error {\n  constructor(message, options) {\n    super(message, options);\n    this.name = 'TenantNotFoundError';\n  }\n}\n\nfunction assertQuotaInputs(tenantId, repo, policy) {\n  if (typeof tenantId !== 'string' || tenantId.length === 0) {\n    throw new TypeError('tenantId must be a non-empty string');\n  }\n  if (!repo || typeof repo.findUsage !== 'function') {\n    throw new TypeError('repo.findUsage must be a function');\n  }\n  if (!policy || typeof policy.isWithinLimit !== 'function') {\n    throw new TypeError('policy.isWithinLimit must be a function');\n  }\n}\n\nfunction checkLimitOutcome(usage, policy) {\n  if (policy.isWithinLimit(usage)) {\n    return { allowed: true, code: 'OK' };\n  }\n  return { allowed: false, code: 'QUOTA_EXCEEDED' };\n}\n\nfunction evaluateTenantQuota(tenantId, repo, policy) {\n  assertQuotaInputs(tenantId, repo, policy);\n  try {\n    const usage = repo.findUsage(tenantId);\n    return checkLimitOutcome(usage, policy);\n  } catch (err) {\n    if (err instanceof TenantNotFoundError) {\n      return { allowed: false, code: 'TENANT_NOT_FOUND' };\n    }\n    throw err;\n  }\n}\n\nmodule.exports = { evaluateTenantQuota, TenantNotFoundError };\n",
+      "trapMutant": "class TenantNotFoundError extends Error {\n  constructor(message) {\n    super(message);\n    this.name = 'TenantNotFoundError';\n  }\n}\n\nfunction evaluateTenantQuota(tenantId, repo, policy) {\n  if (typeof tenantId !== 'string' || !tenantId) {\n    throw new TypeError('tenantId must be a non-empty string');\n  }\n  try {\n    const usage = repo.findUsage(tenantId);\n    return policy.isWithinLimit(usage)\n      ? { allowed: true, code: 'OK' }\n      : { allowed: false, code: 'QUOTA_EXCEEDED' };\n  } catch (_err) {\n    return { allowed: false, code: 'TENANT_NOT_FOUND' };\n  }\n}\n\nmodule.exports = { evaluateTenantQuota, TenantNotFoundError };\n",
+      "visibleTests": [
+        {
+          "name": "allows request within quota and rejects when exceeded",
+          "testCode": "const repo = { findUsage: () => 40 };\nconst policy = { isWithinLimit: (u) => u <= 100 };\nassert.deepStrictEqual(evaluateTenantQuota('t-1', repo, policy), { allowed: true, code: 'OK' });\nassert.deepStrictEqual(evaluateTenantQuota('t-1', { findUsage: () => 120 }, policy), { allowed: false, code: 'QUOTA_EXCEEDED' });"
+        },
+        {
+          "name": "maps TenantNotFoundError to TENANT_NOT_FOUND result",
+          "testCode": "const repo = { findUsage: () => { throw new TenantNotFoundError('missing'); } };\nconst policy = { isWithinLimit: () => true };\nassert.deepStrictEqual(evaluateTenantQuota('t-404', repo, policy), { allowed: false, code: 'TENANT_NOT_FOUND' });"
+        },
+        {
+          "name": "propagates TypeError from policy instead of masking it as TENANT_NOT_FOUND",
+          "testCode": "const repo = { findUsage: () => ({ used: null }) };\nconst policy = { isWithinLimit: (u) => u.used.toFixed(0) === '0' };\nassert.throws(() => evaluateTenantQuota('t-1', repo, policy), TypeError);"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "re-throws TypeError and unexpected programmer errors instead of masking them",
+          "testCode": "const repo = { findUsage: () => ({ count: null }) };\nconst policy = { isWithinLimit: (u) => u.count.valueOf() < 10 };\nassert.throws(() => evaluateTenantQuota('t-1', repo, policy), TypeError);\nconst brokenRepo = { findUsage: () => { throw new RangeError('corrupt index'); } };\nassert.throws(() => evaluateTenantQuota('t-1', brokenRepo, { isWithinLimit: () => true }), RangeError);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Validate `tenantId`, `repo.findUsage`, and `policy.isWithinLimit` in `assertQuotaInputs` before entering `try/catch`."
+        },
+        {
+          "explain": "Extract `checkLimitOutcome` so policy evaluation is separate from the error boundary."
+        },
+        {
+          "explain": "In `catch (err)`, handle only `err instanceof TenantNotFoundError` and re-throw all other errors."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "catch-all-masks-bug|direct|evaluateTenantQuota",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "refactoring"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            20
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "catch-all-masks-bug",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 5
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Trap & Diagnostic",
+      "unitCode": "PRG-T01-C01-U08",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U08-01/Q04_evaluateTenantQuota.js"
+    },
+    {
+      "id": "Q05",
+      "level": 3,
+      "category": "Trap & Edge Case",
+      "archetype": "debugging",
+      "codeType": "fix-bug",
+      "archetypeKey": "prg-c01-async-boundary-error-propagation",
+      "commonTrapTag": "finally-return-override",
+      "context": "distributed_job_lease",
+      "entryPoint": "executeWithLease",
+      "prompt": "Fix `executeWithLease(lease, runJob)` so that the job result or error propagates intact while `lease.release()` always runs once, and split input validation into a helper so the main function stays simple.\n\n**Observable Symptom:**\n- Currently `executeWithLease` always resolves to `null`, even when `runJob` returns a result or throws an error.\n\n**Requirements:**\n- `lease`: must be an object with `acquire` and `release` functions; throw `TypeError` otherwise.\n- `runJob`: must be a function; throw `TypeError` otherwise.\n- Call `await lease.acquire()` before running `await runJob(lease)`.\n- Always call `await lease.release()` in `finally` whether `runJob` succeeds or rejects.\n- Return `{ ok: true, result }` when `runJob` resolves, or let `runJob`'s error propagate intact when it rejects.\n\n**Return Contract:**\n- Promise resolving to `{ ok: true, result: unknown }` or rejecting with `runJob`'s error.\n- Export `{ executeWithLease }`.",
+      "inputHint": "Keep finally for cleanup only without returning or swallowing errors",
+      "starterCode": "async function executeWithLease(lease, runJob) {\n  if (!lease || typeof lease.acquire !== 'function' || typeof lease.release !== 'function') {\n    throw new TypeError('lease must provide acquire and release functions');\n  }\n  if (typeof runJob !== 'function') {\n    throw new TypeError('runJob must be a function');\n  }\n  await lease.acquire();\n  try {\n    const result = await runJob(lease);\n    return { ok: true, result };\n  } finally {\n    await lease.release();\n    return null;\n  }\n}\n\nmodule.exports = { executeWithLease };\n",
+      "starterLintExpected": [
+        {
+          "rule": "no-unsafe-finally",
+          "reason": "Intentional return inside finally block for learner to diagnose and remove"
+        }
+      ],
+      "solutionCode": "function assertLeaseInputs(lease, runJob) {\n  if (!lease || typeof lease.acquire !== 'function' || typeof lease.release !== 'function') {\n    throw new TypeError('lease must provide acquire and release functions');\n  }\n  if (typeof runJob !== 'function') {\n    throw new TypeError('runJob must be a function');\n  }\n}\n\nasync function executeWithLease(lease, runJob) {\n  assertLeaseInputs(lease, runJob);\n  await lease.acquire();\n  try {\n    const result = await runJob(lease);\n    return { ok: true, result };\n  } finally {\n    await lease.release();\n  }\n}\n\nmodule.exports = { executeWithLease };\n",
+      "trapMutant": "async function executeWithLease(lease, runJob) {\n  if (!lease || typeof lease.acquire !== 'function' || typeof lease.release !== 'function') {\n    throw new TypeError('lease must provide acquire and release functions');\n  }\n  if (typeof runJob !== 'function') {\n    throw new TypeError('runJob must be a function');\n  }\n  await lease.acquire();\n  try {\n    const result = await runJob(lease);\n    return { ok: true, result };\n  } finally {\n    await lease.release();\n    return { ok: false, result: null };\n  }\n}\n\nmodule.exports = { executeWithLease };\n",
+      "visibleTests": [
+        {
+          "name": "returns job result and releases lease on success",
+          "testCode": "const events = [];\nconst lease = {\n  acquire: async () => events.push('acquire'),\n  release: async () => events.push('release'),\n};\nconst out = await executeWithLease(lease, async () => {\n  events.push('run');\n  return 'job-done';\n});\nassert.deepStrictEqual(out, { ok: true, result: 'job-done' });\nassert.deepStrictEqual(events, ['acquire', 'run', 'release']);"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "releases lease and propagates original error when runJob rejects",
+          "testCode": "let released = 0;\nconst jobErr = new Error('JOB_TIMEOUT');\nconst lease = {\n  acquire: async () => {},\n  release: async () => { released += 1; },\n};\nawait assert.rejects(\n  () => executeWithLease(lease, async () => { throw jobErr; }),\n  (err) => err === jobErr,\n);\nassert.strictEqual(released, 1);"
+        },
+        {
+          "name": "rejects with TypeError on invalid lease or runJob",
+          "testCode": "await assert.rejects(() => executeWithLease(null, async () => 1), TypeError);\nawait assert.rejects(() => executeWithLease({ acquire: async () => {}, release: async () => {} }, null), TypeError);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Validate `lease` and `runJob` at the top with `assertLeaseInputs`."
+        },
+        {
+          "explain": "Remove `return null;` from the `finally` block so `finally` performs cleanup only without overriding `try` return values or thrown errors."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "finally-return-override|direct|executeWithLease",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "debugging"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            20
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "finally-return-override",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 4
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Trap & Diagnostic",
+      "unitCode": "PRG-T01-C01-U08",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U08-01/Q05_executeWithLease.js"
+    }
+  ],
+  "blindSolve": [
+    {
+      "problemId": "Q01",
+      "passed": true
+    },
+    {
+      "problemId": "Q02",
+      "passed": true
+    },
+    {
+      "problemId": "Q03",
+      "passed": true
+    },
+    {
+      "problemId": "Q04",
+      "passed": true
+    },
+    {
+      "problemId": "Q05",
+      "passed": true
+    }
+  ],
+  "review": {
+    "verdict": "pass",
+    "note": "All 5 problems pass leak, domain, rubric/Layer 3, brief mix/level (L2-L3, node-vanilla, refactor + fix-bug), and vault trap checks."
+  },
+  "drillId": "DRL-PRG-T01-C01-U08-01",
+  "topicCode": "PRG-T01",
+  "chapterCode": "PRG-T01-C01",
+  "schemaVersion": "2.0-code",
+  "subject": "PRG",
+  "createdAt": "2026-11-16 22:54:12",
+  "localFilePath": "drills/data/PRG-T01-C01-U08/DRL-PRG-T01-C01-U08-01.json"
+}

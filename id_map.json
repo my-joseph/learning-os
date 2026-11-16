@@ -2415,5 +2415,9 @@
   "DRL-PRG-T01-C01-U07-01": {
     "id": "41a3818f-8ba0-818f-a3b6-c767b3f72e4c",
     "title": "Event Loop and Microtasks — Verified Programming Drill (5 Qs · AI Synthesized Engineering Mode)"
+  },
+  "DRL-PRG-T01-C01-U08-01": {
+    "id": "41a3818f-8ba0-815d-88ab-c29346b5edbb",
+    "title": "Error Handling Patterns — Verified Programming Drill (5 Qs · AI Synthesized Engineering Mode)"
   }
 }
