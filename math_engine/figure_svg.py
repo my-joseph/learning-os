@@ -490,7 +490,23 @@ def _cartesian(fig: dict, stroke: str, fill: str, w: int, h: int, markers: _Mark
             f'<line x1="{ox:.1f}" y1="{h - pad + 10}" x2="{ox:.1f}" y2="{pad - 12}" stroke="{MUTED}" stroke-width="1.8"{axis_ref}/>'
         )
         out.append(_text(ox - 8, pad - 16, labels[1], 13, "end", MUTED))
+    vlines = [
+        p
+        for p in fig.get("plots", [])
+        if p.get("type") == "segment"
+        and p.get("strokeDasharray")
+        and p.get("from", [0, 0])[0] == p.get("to", [0, 0])[0]
+    ]
+    hlines = [
+        p
+        for p in fig.get("plots", [])
+        if p.get("type") == "segment"
+        and p.get("strokeDasharray")
+        and p.get("from", [0, 0])[1] == p.get("to", [0, 0])[1]
+    ]
     for v in _ticks(x0, x1, xs):
+        if show_y and abs(sx(v) - ox) < 18 or any(abs(v - p["from"][0]) < xs * 0.04 for p in vlines):
+            continue
         if abs(v) > 1e-9 or not show_y:
             out.append(
                 f'<line x1="{sx(v):.1f}" y1="{oy - 3:.1f}" x2="{sx(v):.1f}" y2="{oy + 3:.1f}" stroke="{MUTED}" stroke-width="1.2"/>'
@@ -498,6 +514,8 @@ def _cartesian(fig: dict, stroke: str, fill: str, w: int, h: int, markers: _Mark
             out.append(_text(sx(v), oy + 13, f"{v:g}", 10, "middle", MUTED, mode="math"))
     if show_y:
         for v in _ticks(y0, y1, ys):
+            if any(abs(v - p["from"][1]) < ys * 0.04 for p in hlines):
+                continue
             if abs(v) > 1e-9:
                 out.append(
                     f'<line x1="{ox - 3:.1f}" y1="{sy(v):.1f}" x2="{ox + 3:.1f}" y2="{sy(v):.1f}" stroke="{MUTED}" stroke-width="1.2"/>'

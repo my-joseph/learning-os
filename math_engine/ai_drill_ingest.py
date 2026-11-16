@@ -237,6 +237,8 @@ def _trap_matches_spec(spec: Dict[str, Any], tv: Any) -> bool:
     """True when `tv`, put in place of the expected answer, is a well-formed answer of the spec's type
     (so the trap is something a learner could actually enter). Types without a checker pass."""
     spec_type = spec.get("type")
+    if spec_type == "choice" and not spec.get("verify", {}).get("flaw"):
+        return True
     trap_spec = dict(spec)
     if spec_type in ("number", "expression", "complex", "interval"):
         trap_spec["value"] = str(tv)
@@ -245,7 +247,7 @@ def _trap_matches_spec(spec: Dict[str, Any], tv: Any) -> bool:
         trap_spec.pop("components", None)
         trap_spec.pop("values", None)
     elif spec_type == "solution_set":
-        # The trap is the set a learner with the misconception writes, e.g. only the positive root.
+        # A realistic trap may contain all true values plus one extra candidate.
         trap_spec["values"] = _split_items(str(tv), spec.get("variable", "x"))
     elif spec_type == "tuple":
         if isinstance(tv, (list, tuple)):
@@ -259,6 +261,10 @@ def _trap_matches_spec(spec: Dict[str, Any], tv: Any) -> bool:
     if not fn:
         return True
     try:
+        if spec_type == "solution_set":
+            # Running the answer against its own parsed set proves it is a valid learner response;
+            # the separate contract check ensures it differs from the verified set.
+            return fn(trap_spec, str(tv)).get("verdict") == "correct"
         return fn(trap_spec, str(tv)).get("verdict") == "correct"
     except Exception:
         return False
@@ -365,6 +371,18 @@ def validate_ai_problem_contract(prob: Dict[str, Any], enforce_leak_gate: bool =
             raise AiContractError(f"[{pid}] Invalid interval in trapDerivation/trapValue: {ex}") from ex
         if not _intervals_equal(td_set, tv_set):
             raise AiContractError(f"[{pid}] trapDerivation '{td}' evaluates to {td_set} != trapValue '{tv}' ({tv_set})")
+    elif spec.get("type") == "solution_set":
+        variable = spec.get("variable", "x")
+        try:
+            td_values = [to_expr(v, variables=vars_list, trusted=True) for v in _split_items(str(td), variable)]
+            tv_values = [to_expr(v, variables=vars_list, trusted=True) for v in _split_items(str(tv), variable)]
+        except Exception as ex:
+            raise AiContractError(f"[{pid}] Invalid solution_set trapDerivation/trapValue: {ex}") from ex
+        same_set = len(td_values) == len(tv_values) and all(
+            any(is_equal(v, candidate, variables=vars_list) for candidate in tv_values) for v in td_values
+        )
+        if not same_set:
+            raise AiContractError(f"[{pid}] trapDerivation '{td}' does not evaluate to solution set '{tv}'.")
     else:
         td_expr = to_expr(str(td), variables=vars_list, trusted=True)
         tv_expr = to_expr(str(tv), variables=vars_list, trusted=True)

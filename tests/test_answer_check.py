@@ -29,3 +29,20 @@ def test_code_wrong_choice_reports_diagnostic():
     res = code_check({"type": "choice", "correct": "C"}, "B")
     assert res["verdict"] == "incorrect"
     assert res["diagnostics"][0]["code"] == "wrong_choice"
+
+
+def test_number_answer_accepts_its_variable_assignment_and_superscripts():
+    assert math_check({"type": "number", "value": "6", "variable": "x"}, "x = 6")["verdict"] == "correct"
+    assert math_check({"type": "number", "value": "4", "variable": "x"}, "2²")["verdict"] == "correct"
+
+
+def test_number_answer_assignment_errors_are_friendly():
+    result = math_check({"type": "number", "value": "6", "variable": "x"}, "y = 6")
+    assert result["verdict"] == "invalid input"
+    assert "SyntaxError" not in result["message"] and "invalid syntax" not in result["message"]
+
+
+def test_solution_set_decimal_approximation_requests_exact_form():
+    result = math_check({"type": "solution_set", "values": ["sqrt(2)"]}, "1.4142")
+    assert result["verdict"] == "incorrect"
+    assert any(d["code"] == "decimal_not_exact" for d in result["diagnostics"])

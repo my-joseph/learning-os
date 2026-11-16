@@ -124,6 +124,46 @@ def build_rectangle_figure(
     }
 
 
+def build_open_top_box_sheet_figure(
+    width: float, height: float, cutout: float, theme: str = "indigo"
+) -> Dict[str, Any]:
+    """Flat rectangular sheet with equal square corner cut-outs and dashed fold lines."""
+    w, h, c = float(width), float(height), float(cutout)
+    if c <= 0 or 2 * c >= min(w, h):
+        raise ValueError("Corner cut-out must be positive and less than half of each sheet dimension.")
+    points = {
+        "A": [0, 0],
+        "B": [w, 0],
+        "C": [w, h],
+        "D": [0, h],
+        "E": [c, c],
+        "F": [w - c, c],
+        "G": [w - c, h - c],
+        "H": [c, h - c],
+    }
+    return {
+        "kind": "geometry_2d",
+        "theme": theme,
+        "title": "Rectangular Sheet for an Open-Top Box",
+        "points": points,
+        "shapes": [
+            {"type": "polygon", "vertices": ["A", "B", "C", "D"], "fill": True},
+            {
+                "type": "polygon",
+                "vertices": ["E", "F", "G", "H"],
+                "fill": False,
+                "stroke": "#94a3b8",
+                "strokeDasharray": "4 3",
+            },
+        ],
+        "labels": [
+            {"type": "segment", "p1": "A", "p2": "B", "text": "?", "side": "bottom"},
+            {"type": "segment", "p1": "A", "p2": "D", "text": "?", "side": "left"},
+            {"type": "segment", "p1": "A", "p2": "E", "text": "?", "side": "right"},
+        ],
+    }
+
+
 def build_right_triangle_figure(
     base: float,
     height: float,
@@ -1168,7 +1208,7 @@ def build_function_graph_figure(
     """
     from math_engine.safe_expr import evaluate
 
-    exprs = [(e, lbl or f"y = {_pretty(e)}") for e, lbl in ((expr, label), (expr2, label2)) if e]
+    exprs = [(e, _pretty(lbl) if lbl else f"y = {_pretty(e)}") for e, lbl in ((expr, label), (expr2, label2)) if e]
     palette = [FIGURE_THEMES.get(theme, FIGURE_THEMES["indigo"])["stroke"], "#e11d48"]
     curves = [(i, run) for i, (e, _) in enumerate(exprs) for run in _sample(e, x_min, x_max)]
     free, hollow = _pairs(points), _pairs(open_points)
