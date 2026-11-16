@@ -37,6 +37,7 @@ import {
 } from "@/types/drill";
 import { VSCodeBlock } from "./VSCodeBlock";
 import { FormattedText } from "./FormattedText";
+import { canShowReferenceSolution } from "@/lib/reviewGuard";
 
 const ARCHETYPE_CONFIG: Record<
   EngineeringArchetype,
@@ -174,6 +175,7 @@ export const CodeProblemCard: React.FC<CodeProblemCardProps> = ({
     effectiveArchetype === "project-based";
 
   const isKata = isIdeExecution;
+  const referenceAllowed = canShowReferenceSolution(problem.state);
 
   const [userCode, setUserCode] = useState<string>(
     problem.state?.userCode || problem.starterCode || problem.codeSnippet || ""
@@ -508,11 +510,27 @@ export const CodeProblemCard: React.FC<CodeProblemCardProps> = ({
 
               <button
                 type="button"
-                onClick={() => setShowSolution(!showSolution)}
-                className="inline-flex items-center gap-1.5 h-9 px-3 rounded-xl bg-white dark:bg-[#1d2333] hover:bg-slate-100 dark:hover:bg-[#25304a] text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-[#2c354d] text-xs font-medium transition-colors"
+                disabled={!referenceAllowed}
+                title={
+                  referenceAllowed
+                    ? undefined
+                    : "Available after your code review passes"
+                }
+                onClick={() => {
+                  if (referenceAllowed) setShowSolution(!showSolution);
+                }}
+                className="inline-flex items-center gap-1.5 h-9 px-3 rounded-xl bg-white dark:bg-[#1d2333] hover:bg-slate-100 dark:hover:bg-[#25304a] text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-[#2c354d] text-xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {showSolution ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                <span>{showSolution ? "Hide Reference" : "Reference Solution"}</span>
+                {showSolution && referenceAllowed ? (
+                  <ChevronUp className="w-3.5 h-3.5" />
+                ) : (
+                  <ChevronDown className="w-3.5 h-3.5" />
+                )}
+                <span>
+                  {showSolution && referenceAllowed
+                    ? "Hide Reference"
+                    : "Reference Solution"}
+                </span>
               </button>
 
               <button
@@ -811,7 +829,7 @@ export const CodeProblemCard: React.FC<CodeProblemCardProps> = ({
       )}
 
       {/* Step-by-Step Breakdown or Canonical Solution */}
-      {showSolution && (
+      {showSolution && (!isKata || referenceAllowed) && (
         <div className="bg-slate-50 dark:bg-[#0e121a] border border-slate-200 dark:border-[#263147] rounded-xl p-4 mb-4">
           <div className="flex flex-wrap justify-between items-center gap-2 mb-3 pb-2 border-b border-slate-200 dark:border-[#1f273b]">
             <span className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
@@ -825,7 +843,7 @@ export const CodeProblemCard: React.FC<CodeProblemCardProps> = ({
             </span>
           </div>
 
-          {isKata && problem.solutionCode ? (
+          {isKata && problem.solutionCode && referenceAllowed ? (
             <VSCodeBlock
               code={problem.solutionCode}
               language={problem.language || "javascript"}

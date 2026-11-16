@@ -1062,13 +1062,15 @@ def check_solution_set(spec, raw):
     except Exception as ex:
         raise ValueError(f"Could not parse the solution list: {ex}")
     matched_u = set()
+    matched_e = set()
     comps, diags = [], []
-    for i, ev in enumerate(expected):
-        hit = next((j for j, uv in enumerate(users) if j not in matched_u and is_equal(uv, ev)), None)
+    for j, uv in enumerate(users):
+        hit = next((i for i, ev in enumerate(expected) if i not in matched_e and is_equal(uv, ev)), None)
         ok = hit is not None
         if ok:
-            matched_u.add(hit)
-        comps.append({"label": f"Solution {i + 1}: ${sp.latex(ev)}$", "ok": ok})
+            matched_u.add(j)
+            matched_e.add(hit)
+        comps.append({"label": f"Your value ${sp.latex(uv)}$", "ok": ok})
     extras = [users[j] for j in range(len(users)) if j not in matched_u]
     for x in extras:
         if any(is_equal(x, -ev) for ev in expected):
@@ -1092,7 +1094,7 @@ def check_solution_set(spec, raw):
                     "message": f"${sp.latex(x)}$ does not satisfy the equation (extraneous value).",
                 }
             )
-    missing = sum(1 for c in comps if not c["ok"])
+    missing = len(expected) - len(matched_e)
     if missing:
         diags.append(
             {"code": "missing_solution", "message": f"{missing} solution(s) missing. Remember both signs of $\\pm$."}
@@ -1118,10 +1120,18 @@ def check_solution_set(spec, raw):
             "components": comps,
             "diagnostics": [],
         }
-    verdict = "partial" if missing < len(expected) else "incorrect"
+    verdict = "partial" if matched_e else "incorrect"
+    if missing > 0 and extras:
+        counts_note = f"({missing} missing, {len(extras)} extra)"
+        msg = f"Some solutions match {counts_note}." if matched_e else f"No solution matches {counts_note}."
+    elif missing > 0:
+        counts_note = f"({missing} missing)"
+        msg = f"Some solutions match {counts_note}." if matched_e else f"No solution matches {counts_note}."
+    else:
+        msg = f"All expected solutions found, but {len(extras)} extra value(s) included."
     return {
         "verdict": verdict,
-        "message": "Some solutions match." if verdict == "partial" else "No solution matches.",
+        "message": msg,
         "components": comps,
         "diagnostics": diags,
     }

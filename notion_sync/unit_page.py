@@ -454,6 +454,134 @@ def move_section_to_end(code: str, heading_needle: str, token: str, id_map: dict
     return f"moved {len(section_blocks)} top-level block(s) of {title!r} to end of {code}"
 
 
+def _rt_text(rt: dict) -> str:
+    if "plain_text" in rt:
+        return rt["plain_text"]
+    rtype = rt.get("type", "text")
+    if rtype == "equation":
+        return (rt.get("equation") or {}).get("expression", "")
+    if rtype == "text":
+        return (rt.get("text") or {}).get("content", "")
+    return ""
+
+
+def _clean_rt_for_patch(rt: dict) -> dict:
+    return {k: v for k, v in rt.items() if k not in ("plain_text", "href")}
+
+
+def _replace_in_rich_text(rich: list[dict], old: str, new: str) -> list[dict]:
+    """Replace the single occurrence of `old` with `new` in `rich_text`, keeping equations as equations."""
+    pieces = [_rt_text(rt) for rt in rich]
+    joined = "".join(pieces)
+    start = joined.find(old)
+    if start < 0:
+        raise ValueError(f"old text not found in block: {old!r}")
+    end = start + len(old)
+
+    out: list[dict] = []
+    pos = 0
+    replaced = False
+    for rt, txt in zip(rich, pieces):
+        item_start, item_end = pos, pos + len(txt)
+        pos = item_end
+        if item_end <= start or item_start >= end:
+            out.append(_clean_rt_for_patch(rt))
+            continue
+
+        rtype = rt.get("type", "text")
+        rel_start = max(0, start - item_start)
+        rel_end = min(len(txt), end - item_start)
+
+        if rtype == "equation":
+            if item_start <= start and end <= item_end:
+                item = copy.deepcopy(_clean_rt_for_patch(rt))
+                expr = (item.get("equation") or {}).get("expression", txt)
+                item["equation"] = {"expression": expr[:rel_start] + new + expr[rel_end:]}
+                out.append(item)
+                replaced = True
+                continue
+            raise ValueError("old text spans across an inline equation; narrow the substring")
+
+        if rtype != "text":
+            raise ValueError(f"old text spans across a {rtype} segment; narrow the substring")
+
+        item = copy.deepcopy(_clean_rt_for_patch(rt))
+        content = (item.get("text") or {}).get("content", txt)
+        insert = new if not replaced else ""
+        replaced = True
+        new_content = content[:rel_start] + insert + content[rel_end:]
+        if new_content:
+            text_obj = dict(item.get("text") or {})
+            text_obj["content"] = new_content
+            item["text"] = text_obj
+            out.append(item)
+    return out
+
+
+def fix_text(code: str, old: str, new: str, token: str, id_map: dict, dry_run: bool = False) -> str:
+    """Replace an exact substring in one non-learner block's rich_text, keeping equations as equations."""
+    if not old:
+        raise ValueError("old text must not be empty")
+    entry = id_map.get(code)
+    if not isinstance(entry, dict):
+        raise ValueError(f"{code} is not in id_map.json")
+
+    top_blocks = get_all_blocks(entry["id"], token)
+    children_map = _collect_children(top_blocks, token)
+
+    matches: list[tuple[dict, str, list[dict] | str, bool, int]] = []
+    current_section = ""
+
+    def _scan(block: dict, in_learner: bool) -> None:
+        btype = block.get("type", "")
+        body = block.get(btype) or {}
+        if btype == "equation":
+            expr = body.get("expression", "")
+            cnt = expr.count(old)
+            if cnt > 0:
+                matches.append((block, btype, expr, in_learner, cnt))
+        else:
+            rich = body.get("rich_text")
+            if isinstance(rich, list):
+                joined = "".join(_rt_text(rt) for rt in rich)
+                cnt = joined.count(old)
+                if cnt > 0:
+                    matches.append((block, btype, rich, in_learner, cnt))
+        for kid in children_map.get(block.get("id", ""), []):
+            _scan(kid, in_learner)
+
+    for b in top_blocks:
+        if b.get("type") == "heading_2":
+            current_section = heading_text(b)
+        in_learner = LEARNER_SECTION.lower() in current_section.lower()
+        _scan(b, in_learner)
+
+    total = sum(m[4] for m in matches)
+    if total == 0:
+        raise ValueError(f"old text not found on {code}: {old!r}")
+    if total != 1:
+        raise ValueError(f"old text found {total} times on {code} (expected exactly 1): {old!r}")
+
+    block, btype, content_or_rich, in_learner, _ = matches[0]
+    if in_learner:
+        raise ValueError("refused: target block is in the learner's section (My Implementation & Mistake Log)")
+
+    if btype == "equation":
+        assert isinstance(content_or_rich, str)
+        updated_expr = content_or_rich.replace(old, new, 1)
+        if dry_run:
+            return f"dry run: would fix text in {btype} block {block['id']} of {code}: {old!r} -> {new!r}"
+        notion_request("PATCH", f"blocks/{block['id']}", token, {"equation": {"expression": updated_expr}})
+        return f"fixed text in {btype} block {block['id']} of {code}"
+
+    assert isinstance(content_or_rich, list)
+    updated_rich = _replace_in_rich_text(content_or_rich, old, new)
+    if dry_run:
+        return f"dry run: would fix text in {btype} block {block['id']} of {code}: {old!r} -> {new!r}"
+    notion_request("PATCH", f"blocks/{block['id']}", token, {btype: {"rich_text": updated_rich}})
+    return f"fixed text in {btype} block {block['id']} of {code}"
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(
         prog="python -m notion_sync.unit_page",
@@ -493,6 +621,14 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="rewrite leading 'N. ' of every heading_2 to 1..n (refuses if section count != standard)",
     )
+    ap.add_argument(
+        "--fix-text",
+        nargs=2,
+        action="append",
+        default=[],
+        metavar=("OLD", "NEW"),
+        help="replace an exact substring in one non-learner block (keeps equations as equations)",
+    )
     ap.add_argument("--dry-run", action="store_true", help="validate blocks and target; send nothing")
     args = ap.parse_args(argv)
     with open("id_map.json", encoding="utf-8") as f:
@@ -520,6 +656,8 @@ def main(argv: list[str] | None = None) -> int:
             print(move_section_to_end(args.code, args.move_section_to_end, token, id_map, args.dry_run))
         if args.renumber:
             print(renumber_headings(args.code, token, id_map, args.dry_run))
+        for old_txt, new_txt in args.fix_text:
+            print(fix_text(args.code, old_txt, new_txt, token, id_map, args.dry_run))
         for item in args.refigure:
             num, _, path = item.partition("=")
             with open(path, encoding="utf-8") as f:

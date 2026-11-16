@@ -86,8 +86,12 @@ def _prg_item_score(state: dict) -> float:
 
 def _item_score(state: dict) -> tuple[float, bool]:
     attempts = state.get("attempts") or []
-    assisted = bool(state.get("setupRevealedBeforeAnswer") or (state.get("hintsRevealed") or 0) > 0)
-    assisted = assisted or any(a.get("setupRevealed") for a in attempts)
+    assisted = bool(
+        state.get("setupRevealedBeforeAnswer")
+        or state.get("solutionRevealedBeforeAnswer")
+        or (state.get("hintsRevealed") or 0) > 0
+    )
+    assisted = assisted or any(a.get("setupRevealed") or a.get("solutionRevealed") for a in attempts)
     if state.get("skipped"):
         return 0.0, assisted
     if attempts:
@@ -420,7 +424,9 @@ def report(scope: str | None = None, data_root: str = "drills/data", progress_di
             )
         assisted = sum(i.assisted for i in its)
         if assisted:
-            lines.append(f"  assisted {assisted} item(s) answered after opening the set-up box or a hint")
+            lines.append(
+                f"  assisted {assisted} item(s) answered after opening the set-up box, solution steps, or a hint"
+            )
         skipped = sorted({i.archetype or i.pid for i in its if i.skipped})
         if skipped:
             lines.append(f"  skipped  {', '.join(skipped)}")

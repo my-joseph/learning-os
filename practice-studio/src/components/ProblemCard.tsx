@@ -22,6 +22,7 @@ interface ProblemCardProps {
   onResetProblem: () => void;
   onHintRevealed?: () => void;
   onSetupRevealed?: () => void;
+  onSolutionRevealed?: () => void;
 }
 
 export const ProblemCard: React.FC<ProblemCardProps> = (props) => {

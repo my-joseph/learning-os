@@ -40,6 +40,7 @@ import {
   resetProblemTimer,
   TelemetryTimerState,
 } from "@/lib/telemetryTimer";
+import { canRevealVerifiedAnswer } from "@/lib/reviewGuard";
 import { ProblemCard } from "@/components/ProblemCard";
 import { QuizPaginationBar } from "@/components/QuizPaginationBar";
 import { FormattedText } from "@/components/FormattedText";
@@ -413,6 +414,27 @@ export default function PracticeStudioPage() {
     triggerAutoSave(updated);
   };
 
+  // Step-by-step solution opened by the learner before their first correct answer.
+  const handleSolutionRevealed = (probId: string) => {
+    if (!currentDrill) return;
+    const target = currentDrill.problems.find((p) => p.id === probId);
+    if (!target || target.state.solutionRevealedBeforeAnswer) return;
+    const hasCorrect =
+      target.state.score === 1 ||
+      Boolean(target.state.attempts?.some((a) => a.verdict === "correct"));
+    if (hasCorrect) return;
+    const updated = {
+      ...currentDrill,
+      problems: currentDrill.problems.map((p) =>
+        p.id === probId
+          ? { ...p, state: { ...p.state, solutionRevealedBeforeAnswer: true } }
+          : p
+      ),
+    };
+    setCurrentDrill(updated);
+    triggerAutoSave(updated);
+  };
+
   // Toggle Step Highlight
   const handleToggleStepHighlight = (probId: string, stepIdx: number) => {
     setActiveSteps((prev) => ({
@@ -522,6 +544,7 @@ export default function PracticeStudioPage() {
             attempts: [],
             hintsRevealed: 0,
             setupRevealedBeforeAnswer: false,
+            solutionRevealedBeforeAnswer: false,
             durationMs: 0,
           },
         };
@@ -1185,6 +1208,7 @@ export default function PracticeStudioPage() {
                       onResetProblem={() => handleResetProblem(prob.id)}
                       onHintRevealed={() => handleHintRevealed(prob.id)}
                       onSetupRevealed={() => handleSetupRevealed(prob.id)}
+                      onSolutionRevealed={() => handleSolutionRevealed(prob.id)}
                     />
 
                     {/* Bottom Question Navigation Footer */}
@@ -1464,9 +1488,15 @@ export default function PracticeStudioPage() {
                             </div>
                             <div className="break-words">
                               <span>Verified: </span>
-                              <strong className="text-emerald-700 dark:text-emerald-400">
-                                {prob.answerPlain || prob.answerDisplay}
-                              </strong>
+                              {canRevealVerifiedAnswer(prob.state) ? (
+                                <strong className="text-emerald-700 dark:text-emerald-400">
+                                  {prob.answerPlain || prob.answerDisplay}
+                                </strong>
+                              ) : (
+                                <span className="italic text-slate-400 dark:text-slate-500">
+                                  Not answered yet
+                                </span>
+                              )}
                             </div>
                           </div>
                         </div>

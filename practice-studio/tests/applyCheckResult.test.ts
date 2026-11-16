@@ -373,6 +373,28 @@ runCase("Partial answer with trapMatched attaches commonTrapTag and records matc
   assert(res.attempts![0].matchedTrap === "c01-place-value-shift", "Attempt must record matchedTrap");
 });
 
+runCase("Solution steps viewed before answering marks the attempt as assisted", () => {
+  const prob = createBaseProblem();
+  prob.state = { ...prob.state, solutionRevealedBeforeAnswer: true };
+  const res = applyCheckResult(prob, "360", correctResult, mockMistakeTags, { ts: "2026-11-16T10:00:00Z" });
+  assert(res.attempts![0].solutionRevealed === true, "Attempt must record solutionRevealed");
+  assert(res.solutionRevealedBeforeAnswer === true, "Flag must persist on state");
+});
+
+runCase("Solution steps not viewed leaves solutionRevealed unset", () => {
+  const res = applyCheckResult(createBaseProblem(), "360", correctResult, mockMistakeTags, {
+    ts: "2026-11-16T10:00:00Z",
+  });
+  assert(res.attempts![0].solutionRevealed === undefined, "Independent attempt must not carry solutionRevealed");
+});
+
+runCase("Skip after viewing solution steps is also marked as assisted", () => {
+  const prob = createBaseProblem();
+  prob.state = { ...prob.state, solutionRevealedBeforeAnswer: true };
+  const res = applySkip(prob, { ts: "2026-11-16T10:00:00Z" });
+  assert(res.attempts![res.attempts!.length - 1].solutionRevealed === true, "Skip attempt must record solutionRevealed");
+});
+
 // Extra: Diverged step does not attach mistake tags
 const probDiverged = createBaseProblem();
 const stDiv = applyDivergedStep(probDiverged, 1);

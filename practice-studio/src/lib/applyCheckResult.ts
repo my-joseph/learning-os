@@ -34,6 +34,7 @@ export function applyCheckResult(
       ts,
       verdict: "skipped",
       ...(prob.state?.setupRevealedBeforeAnswer ? { setupRevealed: true } : {}),
+      ...(prob.state?.solutionRevealedBeforeAnswer ? { solutionRevealed: true } : {}),
     };
     return {
       ...prob.state,
@@ -119,6 +120,7 @@ export function applyCheckResult(
     ...(diagCodes.length > 0 ? { diagnosticCodes: diagCodes } : {}),
     ...(matchedTrapTag ? { matchedTrap: matchedTrapTag } : {}),
     ...(prob.state?.setupRevealedBeforeAnswer ? { setupRevealed: true } : {}),
+    ...(prob.state?.solutionRevealedBeforeAnswer ? { solutionRevealed: true } : {}),
   };
 
   return {

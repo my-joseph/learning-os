@@ -429,3 +429,112 @@ def test_drill_sync_inserts_at_end_of_section_6_when_section_7_follows(monkeypat
     assert res["ok"] is True
     assert len(patch_calls) == 1
     assert patch_calls[0]["after"] == "note-last"
+
+
+def test_fix_text_guards_and_preserves_equations(monkeypatch):
+    blocks = {
+        "page-1": [
+            _h(2, "2. Key Formulas", "h2"),
+            {
+                "id": "b-formula",
+                "type": "paragraph",
+                "has_children": False,
+                "paragraph": {
+                    "rich_text": [
+                        {"type": "text", "text": {"content": "For odd p, "}, "plain_text": "For odd p, "},
+                        {"type": "equation", "equation": {"expression": "u^{p/q}=k"}, "plain_text": "u^{p/q}=k"},
+                        {
+                            "type": "text",
+                            "text": {"content": " gives one real solution."},
+                            "plain_text": " gives one real solution.",
+                        },
+                    ]
+                },
+            },
+            {
+                "id": "b-dup1",
+                "type": "paragraph",
+                "has_children": False,
+                "paragraph": {
+                    "rich_text": [{"type": "text", "text": {"content": "dup phrase"}, "plain_text": "dup phrase"}]
+                },
+            },
+            {
+                "id": "b-dup2",
+                "type": "paragraph",
+                "has_children": False,
+                "paragraph": {
+                    "rich_text": [{"type": "text", "text": {"content": "dup phrase"}, "plain_text": "dup phrase"}]
+                },
+            },
+            {
+                "id": "b-eq",
+                "type": "equation",
+                "has_children": False,
+                "equation": {"expression": r"\text{if } p \text{ is odd}"},
+            },
+            _h(2, "6. My Implementation & Mistake Log", "h6"),
+            {
+                "id": "b-learner",
+                "type": "paragraph",
+                "has_children": False,
+                "paragraph": {
+                    "rich_text": [
+                        {"type": "text", "text": {"content": "my personal note"}, "plain_text": "my personal note"}
+                    ]
+                },
+            },
+        ]
+    }
+    patches = []
+
+    def fake_get_blocks(pid, tok):
+        return list(blocks.get(pid, []))
+
+    def fake_req(method, endpoint, token, payload=None):
+        patches.append((method, endpoint, payload))
+        return {}
+
+    monkeypatch.setattr(up, "get_all_blocks", fake_get_blocks)
+    monkeypatch.setattr(up, "notion_request", fake_req)
+    ids = {"U3": {"id": "page-1"}}
+
+    # 1. Refuses missing text
+    with pytest.raises(ValueError, match="not found"):
+        up.fix_text("U3", "missing text", "new", "tok", ids)
+
+    # 2. Refuses duplicate matches
+    with pytest.raises(ValueError, match="found 2 times"):
+        up.fix_text("U3", "dup phrase", "new", "tok", ids)
+
+    # 3. Refuses section 6 (My Implementation & Mistake Log)
+    with pytest.raises(ValueError, match="learner's section"):
+        up.fix_text("U3", "my personal note", "edited", "tok", ids)
+
+    # 4. Dry-run sends nothing
+    dry = up.fix_text("U3", "gives one real solution", "requires k >= 0 when q is even", "tok", ids, dry_run=True)
+    assert "dry run" in dry and patches == []
+
+    # 5. Real apply edits only that block's rich_text and keeps equations as equations
+    res = up.fix_text("U3", "gives one real solution", "requires k >= 0 when q is even", "tok", ids, dry_run=False)
+    assert "fixed text" in res and len(patches) == 1
+    method, endpoint, payload = patches[0]
+    assert method == "PATCH" and endpoint == "blocks/b-formula"
+    rt = payload["paragraph"]["rich_text"]
+    assert rt[1] == {"type": "equation", "equation": {"expression": "u^{p/q}=k"}}
+    assert rt[2]["text"]["content"] == " requires k >= 0 when q is even."
+
+    # 6. Equation block fix
+    res_eq = up.fix_text(
+        "U3",
+        r"\text{if } p \text{ is odd}",
+        r"\text{if } p \text{ is odd (} k \ge 0 \text{ if } q \text{ is even)}",
+        "tok",
+        ids,
+    )
+    assert "fixed text in equation block b-eq" in res_eq
+    assert patches[-1] == (
+        "PATCH",
+        "blocks/b-eq",
+        {"equation": {"expression": r"\text{if } p \text{ is odd (} k \ge 0 \text{ if } q \text{ is even)}"}},
+    )

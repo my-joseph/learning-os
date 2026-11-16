@@ -52,6 +52,9 @@ def test_pristine_defaults_are_not_practice():
     peek = _doc()
     peek["problems"][0]["state"] = {"userInput": "", "setupRevealedBeforeAnswer": True}
     assert ps.has_practice(peek), "opening the set-up is learner activity too"
+    peek_sol = _doc()
+    peek_sol["problems"][0]["state"] = {"userInput": "", "solutionRevealedBeforeAnswer": True}
+    assert ps.has_practice(peek_sol), "opening the solution steps is learner activity too"
 
 
 def test_migration_moves_practice_and_strips_content(tmp_path):
