@@ -6,9 +6,10 @@ from code_engine.lab_ingest import _run_node_tests
 
 
 def test_lab_ingest_runs_tsx_component_test_in_jsdom(tmp_path: Path):
-    lab = tmp_path / "lab"
-    src = lab / "src"
+    lab = tmp_path / "labs" / "LAB-REACT-TEST"
+    src = tmp_path / "labs" / "_reference" / "LAB-REACT-TEST" / "src"
     tests = lab / "tests"
+    lab.mkdir(parents=True)
     src.mkdir(parents=True)
     tests.mkdir()
     (src / "ClickCounter.tsx").write_text(
@@ -27,7 +28,7 @@ import assert from 'node:assert';
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { ClickCounter } from '../src/ClickCounter';
+import { ClickCounter } from '../../_reference/LAB-REACT-TEST/src/ClickCounter';
 
 test('renders and increments after a user click', async () => {
   const user = userEvent.setup();

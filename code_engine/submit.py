@@ -291,9 +291,21 @@ def _run_vitest_junit(
     generated_config = not config_path.is_file()
     if generated_config:
         config_path = cwd / ".codex.vitest.config.ts"
+        allowed_dirs = {_REPO_ROOT, cwd.resolve(), *(f.resolve().parent for f in test_files)}
+        for test_file in test_files:
+            try:
+                imports = re.findall(r"\bfrom\s+['\"]([^'\"]+)['\"]", test_file.read_text(encoding="utf-8"))
+            except OSError:
+                imports = []
+            for module in imports:
+                candidate = Path(module)
+                if candidate.is_absolute():
+                    allowed_dirs.add(candidate.resolve().parent)
         config_path.write_text(
             "import { defineConfig } from 'vitest/config';\n"
-            "export default defineConfig({ esbuild: { jsx: 'automatic' }, test: { environment: 'jsdom' } });\n",
+            "export default defineConfig({ "
+            f"server: {{ fs: {{ allow: {json.dumps(sorted(str(p) for p in allowed_dirs))} }} }}, "
+            "esbuild: { jsx: 'automatic' }, test: { environment: 'jsdom' } });\n",
             encoding="utf-8",
         )
     with tempfile.NamedTemporaryFile(prefix="prg_vitest_", suffix=".xml", delete=False) as out:

@@ -96,9 +96,17 @@ def _run_react_tests(test_files: list[Path], cwd: Path, src_dir: Path) -> list[d
             tmp_dir = Path(tmp)
             config = tmp_dir / "vitest.config.ts"
             report = tmp_dir / "junit.xml"
+            allowed_dirs = sorted(
+                {
+                    Path(__file__).resolve().parents[1],
+                    cwd.resolve(),
+                    src_dir.resolve(),
+                }
+            )
             config.write_text(
                 "import { defineConfig } from 'vitest/config';\n"
-                "export default defineConfig({ esbuild: { jsx: 'automatic' }, test: { environment: 'jsdom' } });\n",
+                f"export default defineConfig({{ server: {{ fs: {{ allow: {json.dumps([str(p) for p in allowed_dirs])} }} }}, "
+                "esbuild: { jsx: 'automatic' }, test: { environment: 'jsdom' } });\n",
                 encoding="utf-8",
             )
             env = dict(os.environ)
