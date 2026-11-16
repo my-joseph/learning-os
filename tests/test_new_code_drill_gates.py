@@ -297,10 +297,56 @@ def _good_four_problem_draft() -> dict:
             },
         ],
         "blindSolve": [
-            {"problemId": "Q01", "passed": True},
-            {"problemId": "Q02", "passed": True},
-            {"problemId": "Q03", "passed": True},
-            {"problemId": "Q04", "passed": True},
+            {
+                "problemId": "Q01",
+                "solutionCode": (
+                    "function resolveRetryDelay(options) {\n"
+                    "  if (!options || options.delayMs === null || options.delayMs === undefined) {\n"
+                    "    return 250;\n"
+                    "  }\n"
+                    "  return options.delayMs;\n"
+                    "}\n"
+                    "module.exports = { resolveRetryDelay };\n"
+                ),
+                "ambiguous": False,
+                "note": "Solved from prompt and visible tests.",
+            },
+            {
+                "problemId": "Q02",
+                "solutionCode": (
+                    "function resolveQuotaCap(policy) {\n"
+                    "  if (!policy || policy.maxItems == null) {\n"
+                    "    return 100;\n"
+                    "  }\n"
+                    "  return policy.maxItems;\n"
+                    "}\n"
+                    "module.exports = { resolveQuotaCap };\n"
+                ),
+                "ambiguous": False,
+                "note": "Solved from prompt and visible tests.",
+            },
+            {
+                "problemId": "Q03",
+                "solutionCode": (
+                    "function appendLineItem(items, nextItem) {\n"
+                    "  return items.concat([nextItem]);\n"
+                    "}\n"
+                    "module.exports = { appendLineItem };\n"
+                ),
+                "ambiguous": False,
+                "note": "Solved from prompt and visible tests.",
+            },
+            {
+                "problemId": "Q04",
+                "solutionCode": (
+                    "function enqueueTrack(queue, track) {\n"
+                    "  return queue.concat([track]);\n"
+                    "}\n"
+                    "module.exports = { enqueueTrack };\n"
+                ),
+                "ambiguous": False,
+                "note": "Solved from prompt and visible tests.",
+            },
         ],
         "review": {"verdict": "pass", "note": "All 4 problems pass scope, mix, rubric, and zero-leak checks."},
     }
@@ -337,6 +383,15 @@ def test_ingest_writes_expected_files_in_tmp_dirs(tmp_path):
 
     drill_file = data_dir / "PRG-T09-C01-U01" / "DRL-PRG-T09-C01-U01-01.json"
     assert drill_file.exists()
+
+    ingested = json.loads(drill_file.read_text(encoding="utf-8"))
+    assert ingested["blindSolve"] == [
+        {"problemId": "Q01", "passed": True},
+        {"problemId": "Q02", "passed": True},
+        {"problemId": "Q03", "passed": True},
+        {"problemId": "Q04", "passed": True},
+    ]
+    assert all("solutionCode" not in entry for entry in ingested["blindSolve"])
 
     ws_path = ws_dir / "drills" / "workspace" / "DRL-PRG-T09-C01-U01-01"
     assert (ws_path / "package.json").exists()
@@ -415,6 +470,49 @@ def test_gate_refuses_missing_blind_solve(tmp_path):
 
     errors = check_code_drill(draft, vault_dir=str(vault_dir))
     assert any("blindSolve" in e for e in errors)
+
+
+def test_gate_refuses_blind_solve_failing_hidden_test(tmp_path):
+    _require_lint_tools()
+    vault_dir = tmp_path / "vault"
+    _seed_vault(vault_dir)
+    draft = _good_four_problem_draft()
+    # Passes visible tests, fails hidden zero-delay test
+    draft["blindSolve"][0]["solutionCode"] = (
+        "function resolveRetryDelay(options) {\n"
+        "  return (options && options.delayMs) || 250;\n"
+        "}\n"
+        "module.exports = { resolveRetryDelay };\n"
+    )
+
+    errors = check_code_drill(draft, vault_dir=str(vault_dir))
+    assert any("[Q01]" in e and "failed tests" in e for e in errors)
+
+
+def test_gate_refuses_blind_solve_identical_to_reference(tmp_path):
+    _require_lint_tools()
+    vault_dir = tmp_path / "vault"
+    _seed_vault(vault_dir)
+    draft = _good_four_problem_draft()
+    # Identical to reference solutionCode after whitespace normalisation
+    draft["blindSolve"][0]["solutionCode"] = (
+        "function   resolveRetryDelay(options) {   return options?.delayMs ?? 250; }\n"
+        "module.exports = { resolveRetryDelay };"
+    )
+
+    errors = check_code_drill(draft, vault_dir=str(vault_dir))
+    assert any("[Q01]" in e and "identical to reference solutionCode" in e for e in errors)
+
+
+def test_gate_refuses_self_reported_blind_solve_without_code(tmp_path):
+    _require_lint_tools()
+    vault_dir = tmp_path / "vault"
+    _seed_vault(vault_dir)
+    draft = _good_four_problem_draft()
+    draft["blindSolve"] = [{"problemId": p["id"], "passed": True} for p in draft["problems"]]
+
+    errors = check_code_drill(draft, vault_dir=str(vault_dir))
+    assert any("missing 'solutionCode'" in e for e in errors)
 
 
 def test_gate_refuses_out_of_scope_archetype(tmp_path):

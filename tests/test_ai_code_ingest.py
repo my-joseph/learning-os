@@ -328,7 +328,28 @@ class TestAiCodeIngest(unittest.TestCase):
                     "curriculum": "Antigravity Autonomous Engineering Synthesis",
                     "license": "CC BY 4.0",
                 },
-                "blindSolve": [{"problemId": "Q01", "passed": True}],
+                "blindSolve": [
+                    {
+                        "problemId": "Q01",
+                        "solutionCode": (
+                            "function createTokenBucketRateLimiter({ capacity }) {\n"
+                            "  let available = capacity;\n"
+                            "  return {\n"
+                            "    consume(cost = 1) {\n"
+                            "      if (available >= cost) {\n"
+                            "        available -= cost;\n"
+                            "        return true;\n"
+                            "      }\n"
+                            "      return false;\n"
+                            "    },\n"
+                            "  };\n"
+                            "}\n"
+                            "module.exports = { createTokenBucketRateLimiter };\n"
+                        ),
+                        "ambiguous": False,
+                        "note": "Independent blind solution.",
+                    }
+                ],
                 "review": {"verdict": "pass", "note": "Verified rate limiter contract and hidden tests."},
                 "problems": [prob],
             }

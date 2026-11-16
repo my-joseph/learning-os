@@ -67,8 +67,8 @@ Run this before spawning subagents to catch any scope, contract, no-leak, starte
 
 Spawn **one** fresh subagent. Give it **ONLY** each problem's `id`, `prompt`, `starterCode`, and `visibleTests` (never `solutionCode`, `hiddenTests`, `trapMutant`, `commonTrapTag`, or `level`). Tell it to write its solutions to `scratch/reviews/<draft-name>-blind.json` as a JSON list `[{"problemId": "Q01", "solutionCode": "...", "ambiguous": false, "note": "..."}]` and reply only `done`.
 
-Then run each blind-solve `solutionCode` against both `visibleTests` and `hiddenTests` using `code_engine.test_runner.run_tests(..., environment=..., entry_point=...)` (never show the code to the learner) and record `blindSolve: [{"problemId": "Q01", "passed": true}, ...]` at the top level of the draft JSON.
-- If a blind-solve solution fails hidden tests or flags `ambiguous: true`, tighten the prompt/starter/visible tests once and re-run blind solve.
+Copy that JSON list directly into `draft["blindSolve"]` (never show the code to the learner). The `--check` script runs each `solutionCode` against both `visibleTests` and `hiddenTests` with `code_engine.test_runner`, rejects `ambiguous: true` or any solution byte-identical (after whitespace normalisation) to the reference `solutionCode`, and decides pass/fail. On `--ingest-file`, the script strips all blind-solver `solutionCode` and keeps only `[{"problemId": "Q01", "passed": true}, ...]` as provenance.
+- If `--check` fails blind solve or flags `ambiguous: true`, tighten the prompt/starter/visible tests once and re-run blind solve.
 - If it still fails, drop the problem, log it with `.venv/bin/python -m scripts.issues add --kind level|prompt --source gate --action dropped --where <UNIT>/<id> --what "..."`, and replace it.
 
 ## 7. Automated review (reviewer subagent)

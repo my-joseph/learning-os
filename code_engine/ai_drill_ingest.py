@@ -959,27 +959,66 @@ def validate_drill_review(drill_doc: Dict[str, Any], problems: List[Dict[str, An
     return ["Missing 'review' {verdict: 'pass', note} from the reviewer subagent."]
 
 
+def _normalize_whitespace(code: str) -> str:
+    return " ".join(code.split())
+
+
 def validate_drill_blind_solve(drill_doc: Dict[str, Any], problems: List[Dict[str, Any]]) -> List[str]:
-    """Require blindSolve: [{problemId, passed: true}] covering every problem in the draft."""
+    """Verify blindSolve: [{problemId, solutionCode, ambiguous, note}] for every problem.
+
+    Runs each blind solver's solutionCode against visibleTests AND hiddenTests using
+    code_engine.test_runner, and rejects missing entries, ambiguous flags, test failures,
+    or blind solutions that are byte-identical (after whitespace normalisation) to the
+    reference solutionCode.
+    """
     bs = drill_doc.get("blindSolve")
     if not isinstance(bs, list) or not bs:
-        return ["Missing 'blindSolve' list [{problemId, passed: true}] from the blind-solve subagent."]
+        return ["Missing 'blindSolve' list [{problemId, solutionCode, ambiguous, note}] from the blind-solve subagent."]
 
     by_id: Dict[str, Dict[str, Any]] = {}
     for entry in bs:
         if isinstance(entry, dict) and entry.get("problemId"):
             by_id[str(entry["problemId"])] = entry
 
+    env_key = drill_doc.get("environment", "node-vanilla")
     errors: List[str] = []
     for idx, p in enumerate(problems, 1):
         pid = p.get("id", f"Q{idx:02d}")
         rec = by_id.get(pid)
         if rec is None:
             errors.append(f"[{pid}] Missing blindSolve entry for '{pid}'.")
-        elif rec.get("passed") is not True:
-            errors.append(f"[{pid}] blindSolve entry for '{pid}' did not pass (passed={rec.get('passed')!r}).")
-        elif rec.get("ambiguous") is True:
+            continue
+        if rec.get("ambiguous") is True:
             errors.append(f"[{pid}] blindSolve flagged '{pid}' as ambiguous.")
+            continue
+
+        blind_code = rec.get("solutionCode")
+        if not isinstance(blind_code, str) or not blind_code.strip():
+            errors.append(f"[{pid}] blindSolve entry for '{pid}' is missing 'solutionCode'.")
+            continue
+
+        ref_sol = p.get("solutionCode") or p.get("verify", {}).get("solutionCode") or ""
+        if ref_sol and _normalize_whitespace(blind_code) == _normalize_whitespace(ref_sol):
+            errors.append(
+                f"[{pid}] blindSolve solutionCode for '{pid}' is identical to reference solutionCode "
+                "(blind solver must not see the answer)."
+            )
+            continue
+
+        visible = p.get("visibleTests", [])
+        hidden = p.get("hiddenTests", [])
+        if _is_coding_problem(p) and (visible or hidden):
+            prob_env = p.get("environment", env_key)
+            entry = p.get("entryPoint", "")
+            report = run_tests(blind_code, visible, hidden, environment=prob_env, entry_point=entry)
+            if not report.get("allPassed"):
+                failed_vis = [r.get("name", "?") for r in report.get("visibleResults", []) if not r.get("passed")]
+                hid_passed = report.get("hiddenPassed", 0)
+                hid_total = report.get("hiddenTotal", len(hidden))
+                errors.append(
+                    f"[{pid}] blindSolve solutionCode failed tests "
+                    f"(visible failed: {failed_vis}, hidden: {hid_passed}/{hid_total})."
+                )
     return errors
 
 
@@ -1151,6 +1190,11 @@ def ingest_ai_code_drill(
 
     # Learner progress (state / sessionSummary) lives in progress/, not in the drill file.
     strip_progress(drill_doc)
+
+    # Do not store blind solutions in the ingested drill file; keep only provenance.
+    drill_doc["blindSolve"] = [
+        {"problemId": p.get("id", f"Q{idx:02d}"), "passed": True} for idx, p in enumerate(problems, 1)
+    ]
 
     # 4. Scaffold Local Workspace Directory (drills/workspace/<drillId>)
     ws_root = workspace_root or "."

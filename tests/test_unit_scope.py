@@ -138,7 +138,23 @@ def test_prg_load_scope_archetypes_and_ingest_unit_stamp(tmp_path):
     drill_doc = {
         "unitCode": "PRG-T09-C01",
         "drillId": "DRL-PRG-T09-C01-99",
-        "blindSolve": [{"problemId": "Q01", "passed": True}],
+        "blindSolve": [
+            {
+                "problemId": "Q01",
+                "solutionCode": (
+                    "function sumPrices(items) {\n"
+                    "  let total = 0;\n"
+                    "  for (const price of items) {\n"
+                    "    total += price;\n"
+                    "  }\n"
+                    "  return total;\n"
+                    "}\n"
+                    "module.exports = { sumPrices };\n"
+                ),
+                "ambiguous": False,
+                "note": "Solved independently with a loop.",
+            }
+        ],
         "review": {"verdict": "pass", "note": "Scope and trap verified."},
         "problems": [
             {
