@@ -1,0 +1,466 @@
+{
+  "unitCode": "PRG-T01-C01-U02",
+  "unitTitle": "Closures",
+  "environment": "node-vanilla",
+  "sourceAttribution": "MDN JavaScript Guide (Closures) & ECMAScript LexicalEnvironment Specification",
+  "config": {
+    "questionCount": 5,
+    "difficulty": "ALL",
+    "difficultyMode": "AI Synthesized Engineering Mode"
+  },
+  "problems": [
+    {
+      "id": "Q01",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "codeType": "implement",
+      "archetypeKey": "prg-c01-closure-stateful-factory",
+      "commonTrapTag": "falsy-initial-value-override",
+      "context": "token_bucket_rate_limiter",
+      "entryPoint": "createQuotaTracker",
+      "prompt": "Implement `createQuotaTracker(initialRemaining, maxQuota = 100)` to manage an isolated per-client API request quota using private closure state.\n\n**Requirements:**\n- Validate `maxQuota` as a non-negative integer; throw `RangeError` otherwise.\n- If `initialRemaining` is `null` or `undefined`, default the starting quota to `maxQuota`; preserve `0` as a valid starting quota.\n- Validate the resolved starting quota as an integer in `[0, maxQuota]`; throw `RangeError` otherwise.\n- `consume(cost = 1)` validates `cost` as a positive integer (`RangeError` otherwise), deducts `cost` and returns `true` when sufficient quota remains, or returns `false` without changing quota.\n- `refill(amount)` validates `amount` as a non-negative integer (`RangeError` otherwise), adds `amount` capped at `maxQuota`, and returns the updated remaining quota.\n- `getRemaining()` returns the current remaining quota.\n\n**Return Contract:**\n- Return `{ consume, refill, getRemaining }`.",
+      "inputHint": "Return an object with consume, refill, and getRemaining methods backed by private closure state",
+      "starterCode": "function createQuotaTracker(_initialRemaining, _maxQuota = 100) {\n  // TODO: encapsulate quota state per tracker instance\n  return {\n    consume() {\n      return false;\n    },\n    refill() {\n      return 0;\n    },\n    getRemaining() {\n      return 0;\n    },\n  };\n}\n\nmodule.exports = { createQuotaTracker };\n",
+      "solutionCode": "function createQuotaTracker(initialRemaining, maxQuota = 100) {\n  if (!Number.isInteger(maxQuota) || maxQuota < 0) {\n    throw new RangeError('maxQuota must be a non-negative integer');\n  }\n  let remaining = initialRemaining ?? maxQuota;\n  if (!Number.isInteger(remaining) || remaining < 0 || remaining > maxQuota) {\n    throw new RangeError('initialRemaining must be an integer between 0 and maxQuota');\n  }\n  return {\n    consume(cost = 1) {\n      if (!Number.isInteger(cost) || cost <= 0) {\n        throw new RangeError('cost must be a positive integer');\n      }\n      if (remaining < cost) {\n        return false;\n      }\n      remaining -= cost;\n      return true;\n    },\n    refill(amount) {\n      if (!Number.isInteger(amount) || amount < 0) {\n        throw new RangeError('amount must be a non-negative integer');\n      }\n      remaining = Math.min(maxQuota, remaining + amount);\n      return remaining;\n    },\n    getRemaining() {\n      return remaining;\n    },\n  };\n}\n\nmodule.exports = { createQuotaTracker };\n",
+      "trapMutant": "function createQuotaTracker(initialRemaining, maxQuota = 100) {\n  if (!Number.isInteger(maxQuota) || maxQuota < 0) {\n    throw new RangeError('maxQuota must be a non-negative integer');\n  }\n  let remaining = initialRemaining || maxQuota;\n  if (!Number.isInteger(remaining) || remaining < 0 || remaining > maxQuota) {\n    throw new RangeError('initialRemaining must be an integer between 0 and maxQuota');\n  }\n  return {\n    consume(cost = 1) {\n      if (!Number.isInteger(cost) || cost <= 0) {\n        throw new RangeError('cost must be a positive integer');\n      }\n      if (remaining < cost) {\n        return false;\n      }\n      remaining -= cost;\n      return true;\n    },\n    refill(amount) {\n      if (!Number.isInteger(amount) || amount < 0) {\n        throw new RangeError('amount must be a non-negative integer');\n      }\n      remaining = Math.min(maxQuota, remaining + amount);\n      return remaining;\n    },\n    getRemaining() {\n      return remaining;\n    },\n  };\n}\n\nmodule.exports = { createQuotaTracker };\n",
+      "visibleTests": [
+        {
+          "name": "tracks independent quotas across two tracker instances",
+          "testCode": "const tenantA = createQuotaTracker(5, 10);\nconst tenantB = createQuotaTracker(5, 10);\nassert.strictEqual(tenantA.consume(3), true);\nassert.strictEqual(tenantA.getRemaining(), 2);\nassert.strictEqual(tenantB.getRemaining(), 5);"
+        },
+        {
+          "name": "caps refill at maxQuota and rejects invalid consume cost",
+          "testCode": "const tracker = createQuotaTracker(4, 10);\nassert.strictEqual(tracker.refill(20), 10);\nassert.strictEqual(tracker.consume(11), false);\nassert.strictEqual(tracker.getRemaining(), 10);\nassert.throws(() => tracker.consume(0), RangeError);"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "preserves zero initialRemaining instead of falling back to maxQuota",
+          "testCode": "const emptyTracker = createQuotaTracker(0, 10);\nassert.strictEqual(emptyTracker.getRemaining(), 0);\nassert.strictEqual(emptyTracker.consume(1), false);\nassert.strictEqual(emptyTracker.refill(3), 3);"
+        },
+        {
+          "name": "defaults undefined initialRemaining to maxQuota and rejects out-of-range values",
+          "testCode": "const defaulted = createQuotaTracker(undefined, 8);\nassert.strictEqual(defaulted.getRemaining(), 8);\nassert.throws(() => createQuotaTracker(12, 8), RangeError);\nassert.throws(() => createQuotaTracker(-1, 8), RangeError);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Validate maxQuota as a non-negative integer before initializing closure state."
+        },
+        {
+          "explain": "Use nullish coalescing (??) so initialRemaining = 0 is preserved instead of falling back to maxQuota."
+        },
+        {
+          "explain": "Keep remaining inside createQuotaTracker's lexical scope and expose only consume, refill, and getRemaining."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "falsy-initial-value-override|direct|createQuotaTracker",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 3,
+          "hasTrapOrFlaw": false,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "falsy-initial-value-override",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 5
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Foundation",
+      "unitCode": "PRG-T01-C01-U02",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U02-01/Q01_createQuotaTracker.js"
+    },
+    {
+      "id": "Q02",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "code-tracing",
+      "codeType": "trace-explain",
+      "archetypeKey": "prg-c01-closure-binding-trace",
+      "commonTrapTag": "value-vs-binding-confusion",
+      "context": "feature_toggle_evaluator",
+      "entryPoint": "traceToggleEvaluation",
+      "answerSpec": {
+        "tokens": [
+          "dark-mode:false",
+          "dark-mode:true",
+          "beta-search:true"
+        ]
+      },
+      "codeSnippet": "function createFeatureEvaluator(flagName, initialEnabled) {\n  let enabled = initialEnabled;\n  return {\n    isEnabled: () => `${flagName}:${enabled}`,\n    setEnabled: (next) => { enabled = next; },\n  };\n}\nconst darkMode = createFeatureEvaluator('dark-mode', false);\nconst betaSearch = createFeatureEvaluator('beta-search', true);\nconst log = [];\nlog.push(darkMode.isEnabled());\ndarkMode.setEnabled(true);\nlog.push(darkMode.isEnabled());\nlog.push(betaSearch.isEnabled());\nconsole.log(log.join('\\n'));\n",
+      "prompt": "Trace the execution of the feature-toggle evaluator snippet below and implement `traceToggleEvaluation()` to return the exact array of log lines printed to stdout.\n\n```js\nfunction createFeatureEvaluator(flagName, initialEnabled) {\n  let enabled = initialEnabled;\n  return {\n    isEnabled: () => `${flagName}:${enabled}`,\n    setEnabled: (next) => { enabled = next; },\n  };\n}\nconst darkMode = createFeatureEvaluator('dark-mode', false);\nconst betaSearch = createFeatureEvaluator('beta-search', true);\nconst log = [];\nlog.push(darkMode.isEnabled());\ndarkMode.setEnabled(true);\nlog.push(darkMode.isEnabled());\nlog.push(betaSearch.isEnabled());\nconsole.log(log.join('\\n'));\n```\n\n**Requirements:**\n- Return a fresh array of strings matching each line printed by `console.log` in exact order.\n\n**Return Contract:**\n- Return `string[]` (e.g. `['flag:state', ...]`).",
+      "inputHint": "Trace live lexical bindings across shared sibling methods and separate factory calls",
+      "starterCode": "function traceToggleEvaluation() {\n  // TODO: return the exact array of lines printed by the snippet\n  return [];\n}\n\nmodule.exports = { traceToggleEvaluation };\n",
+      "solutionCode": "function traceToggleEvaluation() {\n  const lines = ['dark-mode:false', 'dark-mode:true', 'beta-search:true'];\n  return lines;\n}\n\nmodule.exports = { traceToggleEvaluation };\n",
+      "trapMutant": "function traceToggleEvaluation() {\n  return ['dark-mode:false', 'dark-mode:false', 'beta-search:true'];\n}\n\nmodule.exports = { traceToggleEvaluation };\n",
+      "visibleTests": [
+        {
+          "name": "starts with initial dark-mode state and returns a fresh array of 3 lines",
+          "testCode": "const lines = traceToggleEvaluation();\nassert.strictEqual(lines.length, 3);\nassert.strictEqual(lines[0], 'dark-mode:false');\nlines.push('extra');\nassert.strictEqual(traceToggleEvaluation().length, 3);"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "reflects live binding update on darkMode while keeping betaSearch isolated",
+          "testCode": "assert.deepStrictEqual(traceToggleEvaluation(), ['dark-mode:false', 'dark-mode:true', 'beta-search:true']);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "First call darkMode.isEnabled() reads the initial enabled binding (false), producing 'dark-mode:false'."
+        },
+        {
+          "explain": "darkMode.setEnabled(true) mutates the live enabled binding shared with darkMode.isEnabled(), so the second call produces 'dark-mode:true'."
+        },
+        {
+          "explain": "betaSearch was created in a separate factory call with its own Lexical Environment, so betaSearch.isEnabled() returns 'beta-search:true'."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "value-vs-binding-confusion|direct|function createFeatureEvaluator(flagName, initialEnabled) { let enabled = initialEnabled; return { isEnabled: () => `${flagName}:${enabled}`, setEnabled: (next) => { enabled = next; }, }; } const darkMode = createFeatureEvaluator('dark-mode', false); const betaSearch = createFeatureEvaluator('beta-search', true); const log = []; log.push(darkMode.isEnabled()); darkMode.setEnabled(true); log.push(darkMode.isEnabled()); log.push(betaSearch.isEnabled()); console.log(log.join('\\n'));",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "code-tracing",
+          "verifiedByExecution": true
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 3,
+          "hasTrapOrFlaw": false,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "value-vs-binding-confusion",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 5
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Foundation",
+      "unitCode": "PRG-T01-C01-U02",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U02-01/Q02_traceToggleEvaluation.js"
+    },
+    {
+      "id": "Q03",
+      "level": 2,
+      "category": "Trap & Edge Case",
+      "archetype": "problem-solving",
+      "codeType": "implement",
+      "archetypeKey": "prg-c01-closure-stateful-factory",
+      "commonTrapTag": "leaked-mutable-reference",
+      "context": "idempotency_key_cache",
+      "entryPoint": "createIdempotencyStore",
+      "prompt": "Implement `createIdempotencyStore(maxEntries = 50)` for a payment webhook processor so duplicate keys are ignored and internal state cannot be mutated externally.\n\n**Requirements:**\n- Validate `maxEntries` as a positive integer; throw `RangeError` otherwise.\n- `record(key, statusCode, body)` validates `key` as a non-empty string (`TypeError` otherwise). If `key` is already stored, leave the existing entry unchanged and return `false`.\n- When storing a new key at full capacity (`maxEntries`), evict the oldest recorded key first, store a defensive copy of `body` (when `body` is a non-null object), and return `true`.\n- `get(key)` returns a defensive copy of `{ key, statusCode, body }`, or `null` if not found.\n- `listKeys()` returns a fresh array of stored keys in insertion order.\n\n**Return Contract:**\n- Return `{ record, get, listKeys }`.",
+      "inputHint": "Return an object with record, get, and listKeys methods that protect internal state from external mutation",
+      "starterCode": "function createIdempotencyStore(_maxEntries = 50) {\n  // TODO: implement bounded idempotency store with defensive copies\n  return {\n    record() {\n      return false;\n    },\n    get() {\n      return null;\n    },\n    listKeys() {\n      return [];\n    },\n  };\n}\n\nmodule.exports = { createIdempotencyStore };\n",
+      "solutionCode": "function cloneBody(body) {\n  if (body !== null && typeof body === 'object') {\n    return Array.isArray(body) ? [...body] : { ...body };\n  }\n  return body;\n}\n\nfunction createIdempotencyStore(maxEntries = 50) {\n  if (!Number.isInteger(maxEntries) || maxEntries <= 0) {\n    throw new RangeError('maxEntries must be a positive integer');\n  }\n  const entries = new Map();\n  return {\n    record(key, statusCode, body) {\n      if (typeof key !== 'string' || key.length === 0) {\n        throw new TypeError('key must be a non-empty string');\n      }\n      if (entries.has(key)) {\n        return false;\n      }\n      if (entries.size >= maxEntries) {\n        const oldestKey = entries.keys().next().value;\n        entries.delete(oldestKey);\n      }\n      entries.set(key, { key, statusCode, body: cloneBody(body) });\n      return true;\n    },\n    get(key) {\n      const entry = entries.get(key);\n      if (!entry) {\n        return null;\n      }\n      return { key: entry.key, statusCode: entry.statusCode, body: cloneBody(entry.body) };\n    },\n    listKeys() {\n      return Array.from(entries.keys());\n    },\n  };\n}\n\nmodule.exports = { createIdempotencyStore };\n",
+      "trapMutant": "function createIdempotencyStore(maxEntries = 50) {\n  if (!Number.isInteger(maxEntries) || maxEntries <= 0) {\n    throw new RangeError('maxEntries must be a positive integer');\n  }\n  const entries = new Map();\n  const order = [];\n  return {\n    record(key, statusCode, body) {\n      if (typeof key !== 'string' || key.length === 0) {\n        throw new TypeError('key must be a non-empty string');\n      }\n      if (entries.has(key)) {\n        return false;\n      }\n      if (order.length >= maxEntries) {\n        const oldestKey = order.shift();\n        entries.delete(oldestKey);\n      }\n      const stored = { key, statusCode, body };\n      order.push(key);\n      entries.set(key, stored);\n      return true;\n    },\n    get(key) {\n      return entries.get(key) ?? null;\n    },\n    listKeys() {\n      return order;\n    },\n  };\n}\n\nmodule.exports = { createIdempotencyStore };\n",
+      "visibleTests": [
+        {
+          "name": "ignores duplicate keys and evicts oldest entry when at capacity",
+          "testCode": "const store = createIdempotencyStore(2);\nassert.strictEqual(store.record('evt_1', 200, { ok: true }), true);\nassert.strictEqual(store.record('evt_1', 500, { ok: false }), false);\nassert.strictEqual(store.record('evt_2', 201, { id: 2 }), true);\nassert.strictEqual(store.record('evt_3', 202, { id: 3 }), true);\nassert.strictEqual(store.get('evt_1'), null);\nassert.deepStrictEqual(store.listKeys(), ['evt_2', 'evt_3']);"
+        },
+        {
+          "name": "rejects invalid maxEntries and empty keys",
+          "testCode": "assert.throws(() => createIdempotencyStore(0), RangeError);\nconst store = createIdempotencyStore(5);\nassert.throws(() => store.record('', 200, {}), TypeError);"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "prevents external mutation of stored entries and key list",
+          "testCode": "const store = createIdempotencyStore(5);\nconst payload = { amount: 500 };\nstore.record('pay_1', 200, payload);\npayload.amount = 9999;\nconst fetched = store.get('pay_1');\nassert.strictEqual(fetched.body.amount, 500);\nfetched.body.amount = 1;\nassert.strictEqual(store.get('pay_1').body.amount, 500);\nconst keys = store.listKeys();\nkeys.push('tampered');\nassert.deepStrictEqual(store.listKeys(), ['pay_1']);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Keep entries in a private Map inside createIdempotencyStore and validate maxEntries and key inputs."
+        },
+        {
+          "explain": "Evict the oldest key via entries.keys().next().value when size reaches maxEntries."
+        },
+        {
+          "explain": "Return defensive copies in get() and Array.from(entries.keys()) in listKeys() so callers cannot mutate internal state."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "leaked-mutable-reference|direct|createIdempotencyStore",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "leaked-mutable-reference",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 5
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Standard Exam",
+      "unitCode": "PRG-T01-C01-U02",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U02-01/Q03_createIdempotencyStore.js"
+    },
+    {
+      "id": "Q04",
+      "level": 2,
+      "category": "Trap & Edge Case",
+      "archetype": "debugging",
+      "codeType": "fix-bug",
+      "archetypeKey": "prg-c01-closure-stale-binding-fix",
+      "commonTrapTag": "shared-loop-binding-capture",
+      "context": "webhook_route_dispatcher",
+      "entryPoint": "buildRouteDispatchers",
+      "prompt": "Fix the closure bug in `buildRouteDispatchers(routes)` so each route handler invokes with its own route metadata instead of failing or reading another route.\n\n**Observed Symptom:**\n- Calling any returned handler throws a `TypeError` because the loop index advances past the end of `routes` before the handler runs.\n\n**Requirements:**\n- Given an array of `{ name, target }` route objects, return a dictionary mapping each `route.name` to `(payload) => ({ route: route.name, target: route.target, payload })`.\n- Preserve empty array input by returning `{}`.\n\n**Return Contract:**\n- Return `Record<string, (payload: unknown) => { route: string, target: string, payload: unknown }>`.",
+      "inputHint": "Ensure each handler closes over its own per-iteration route binding",
+      "starterCode": "function buildRouteDispatchers(routes) {\n  const dispatchers = {};\n  let idx = 0;\n  for (; idx < routes.length; idx += 1) {\n    dispatchers[routes[idx].name] = (payload) => ({\n      route: routes[idx].name,\n      target: routes[idx].target,\n      payload,\n    });\n  }\n  return dispatchers;\n}\n\nmodule.exports = { buildRouteDispatchers };\n",
+      "solutionCode": "function buildRouteDispatchers(routes) {\n  const dispatchers = {};\n  for (let i = 0; i < routes.length; i += 1) {\n    const { name, target } = routes[i];\n    dispatchers[name] = (payload) => ({\n      route: name,\n      target,\n      payload,\n    });\n  }\n  return dispatchers;\n}\n\nmodule.exports = { buildRouteDispatchers };\n",
+      "trapMutant": "function buildRouteDispatchers(routes) {\n  const dispatchers = {};\n  let idx = 0;\n  for (; idx < routes.length; idx += 1) {\n    dispatchers[routes[idx].name] = (payload) => ({\n      route: routes[idx].name,\n      target: routes[idx].target,\n      payload,\n    });\n  }\n  return dispatchers;\n}\n\nmodule.exports = { buildRouteDispatchers };\n",
+      "visibleTests": [
+        {
+          "name": "dispatches each route to its own target",
+          "testCode": "const dispatchers = buildRouteDispatchers([\n  { name: 'orders', target: '/hooks/orders' },\n  { name: 'billing', target: '/hooks/billing' },\n]);\nassert.deepStrictEqual(dispatchers.orders({ id: 1 }), {\n  route: 'orders',\n  target: '/hooks/orders',\n  payload: { id: 1 },\n});\nassert.deepStrictEqual(dispatchers.billing({ id: 2 }), {\n  route: 'billing',\n  target: '/hooks/billing',\n  payload: { id: 2 },\n});"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "handles empty routes array and preserves per-route bindings after loop finishes",
+          "testCode": "assert.deepStrictEqual(buildRouteDispatchers([]), {});\nconst dispatchers = buildRouteDispatchers([\n  { name: 'alpha', target: '/a' },\n  { name: 'beta', target: '/b' },\n  { name: 'gamma', target: '/c' },\n]);\nassert.strictEqual(dispatchers.alpha(null).target, '/a');\nassert.strictEqual(dispatchers.gamma(null).target, '/c');"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Declaring idx outside the for loop creates a single shared binding that reaches routes.length when the loop ends."
+        },
+        {
+          "explain": "Iterating with for (const route of routes) creates a fresh block-scoped binding per iteration."
+        },
+        {
+          "explain": "Each returned handler captures its own route object and returns the matching route, target, and payload."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "shared-loop-binding-capture|direct|buildRouteDispatchers",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "debugging"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "shared-loop-binding-capture",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 5
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Standard Exam",
+      "unitCode": "PRG-T01-C01-U02",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U02-01/Q04_buildRouteDispatchers.js"
+    },
+    {
+      "id": "Q05",
+      "level": 2,
+      "category": "Trap & Edge Case",
+      "archetype": "debugging",
+      "codeType": "fix-bug",
+      "archetypeKey": "prg-c01-closure-stale-binding-fix",
+      "commonTrapTag": "stale-primitive-snapshot",
+      "context": "retry_policy_scheduler",
+      "entryPoint": "createRetryExecutor",
+      "prompt": "Fix the stale closure bug in `createRetryExecutor(policyConfig)` so runtime updates to `policyConfig` take effect on subsequent retry evaluations.\n\n**Observed Symptom:**\n- Updating `policyConfig.maxRetries` or `policyConfig.backoffMs` after calling `createRetryExecutor(policyConfig)` is ignored by the returned evaluator.\n\n**Requirements:**\n- Given `policyConfig` (`{ maxRetries, backoffMs }`), return `(attemptNumber) => { shouldRetry, delayMs }`.\n- When `attemptNumber > policyConfig.maxRetries`, return `{ shouldRetry: false, delayMs: 0 }`.\n- Otherwise return `{ shouldRetry: true, delayMs: policyConfig.backoffMs * attemptNumber }`.\n\n**Return Contract:**\n- Return `(attemptNumber: number) => { shouldRetry: boolean, delayMs: number }`.",
+      "inputHint": "Read live configuration properties inside the closure rather than caching primitives at setup",
+      "starterCode": "function createRetryExecutor(policyConfig) {\n  const maxRetries = policyConfig.maxRetries;\n  const backoffMs = policyConfig.backoffMs;\n  return (attemptNumber) => {\n    if (attemptNumber > maxRetries) {\n      return { shouldRetry: false, delayMs: 0 };\n    }\n    return {\n      shouldRetry: true,\n      delayMs: backoffMs * attemptNumber,\n    };\n  };\n}\n\nmodule.exports = { createRetryExecutor };\n",
+      "solutionCode": "function createRetryExecutor(policyConfig) {\n  return (attemptNumber) => {\n    const { maxRetries, backoffMs } = policyConfig;\n    if (attemptNumber > maxRetries) {\n      return { shouldRetry: false, delayMs: 0 };\n    }\n    return {\n      shouldRetry: true,\n      delayMs: backoffMs * attemptNumber,\n    };\n  };\n}\n\nmodule.exports = { createRetryExecutor };\n",
+      "trapMutant": "function createRetryExecutor(policyConfig) {\n  const maxRetries = policyConfig.maxRetries;\n  const backoffMs = policyConfig.backoffMs;\n  return (attemptNumber) => {\n    if (attemptNumber > maxRetries) {\n      return { shouldRetry: false, delayMs: 0 };\n    }\n    return {\n      shouldRetry: true,\n      delayMs: backoffMs * attemptNumber,\n    };\n  };\n}\n\nmodule.exports = { createRetryExecutor };\n",
+      "visibleTests": [
+        {
+          "name": "computes retry decision and delay from initial policyConfig",
+          "testCode": "const config = { maxRetries: 3, backoffMs: 100 };\nconst evaluate = createRetryExecutor(config);\nassert.deepStrictEqual(evaluate(2), { shouldRetry: true, delayMs: 200 });\nassert.deepStrictEqual(evaluate(4), { shouldRetry: false, delayMs: 0 });"
+        },
+        {
+          "name": "reflects updated policyConfig after executor creation",
+          "testCode": "const config = { maxRetries: 3, backoffMs: 100 };\nconst evaluate = createRetryExecutor(config);\nconfig.maxRetries = 1;\nconfig.backoffMs = 250;\nassert.deepStrictEqual(evaluate(1), { shouldRetry: true, delayMs: 250 });\nassert.deepStrictEqual(evaluate(2), { shouldRetry: false, delayMs: 0 });"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "tracks multiple sequential policyConfig changes including raising maxRetries",
+          "testCode": "const config = { maxRetries: 1, backoffMs: 50 };\nconst evaluate = createRetryExecutor(config);\nassert.deepStrictEqual(evaluate(2), { shouldRetry: false, delayMs: 0 });\nconfig.maxRetries = 4;\nconfig.backoffMs = 75;\nassert.deepStrictEqual(evaluate(3), { shouldRetry: true, delayMs: 225 });\nconfig.backoffMs = 0;\nassert.deepStrictEqual(evaluate(4), { shouldRetry: true, delayMs: 0 });"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Copying policyConfig.maxRetries and policyConfig.backoffMs into local primitives freezes their initial values."
+        },
+        {
+          "explain": "Read policyConfig.maxRetries and policyConfig.backoffMs directly inside the returned arrow function."
+        },
+        {
+          "explain": "Because the closure captures the live policyConfig object reference, subsequent config updates apply immediately."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "stale-primitive-snapshot|direct|createRetryExecutor",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "debugging"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "stale-primitive-snapshot",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 5
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Standard Exam",
+      "unitCode": "PRG-T01-C01-U02",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U02-01/Q05_createRetryExecutor.js"
+    }
+  ],
+  "blindSolve": [
+    {
+      "problemId": "Q01",
+      "passed": true
+    },
+    {
+      "problemId": "Q02",
+      "passed": true
+    },
+    {
+      "problemId": "Q03",
+      "passed": true
+    },
+    {
+      "problemId": "Q04",
+      "passed": true
+    },
+    {
+      "problemId": "Q05",
+      "passed": true
+    }
+  ],
+  "review": {
+    "verdict": "pass",
+    "note": "All 5 problems fit PRG-T01-C01-U02 scope (L1-L2, node-vanilla, 3 non-implement items), use distinct production domains with no leaks, align with archetype qualityChecks with zero must findings, and have trapMutants matching their cognitiveTraps."
+  },
+  "drillId": "DRL-PRG-T01-C01-U02-01",
+  "topicCode": "PRG-T01",
+  "chapterCode": "PRG-T01-C01",
+  "schemaVersion": "2.0-code",
+  "subject": "PRG",
+  "createdAt": "2026-11-16 19:58:34",
+  "localFilePath": "drills/data/PRG-T01-C01-U02/DRL-PRG-T01-C01-U02-01.json"
+}

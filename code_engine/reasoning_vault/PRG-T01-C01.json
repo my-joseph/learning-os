@@ -462,6 +462,219 @@
           }
         }
       ]
+    },
+    {
+      "archetypeKey": "prg-c01-closure-stateful-factory",
+      "unitCode": "PRG-T01-C01-U02",
+      "level": 1,
+      "archetype": "problem-solving",
+      "name": "Stateful Closure Factory & Private Encapsulation",
+      "competencies": [
+        "closures",
+        "encapsulation",
+        "lexical-environment"
+      ],
+      "coreConcept": "Creating stateful function or API factories where each invocation allocates a fresh Lexical Environment that encapsulates private state behind controlled methods.",
+      "mentalModel": [
+        "1. Each call to the outer factory creates a brand-new Lexical Environment for its parameters and local variables.",
+        "2. Returned inner functions retain a live [[Environment]] reference to that specific invocation's bindings.",
+        "3. Callers interact only through returned methods, preventing direct external mutation of internal state."
+      ],
+      "governingInvariant": "Each factory call allocates an isolated Lexical Environment; returned methods never expose raw internal mutable containers",
+      "cognitiveTraps": [
+        {
+          "trapTag": "shared-module-state",
+          "name": "Shared Outer State Across Factory Instances",
+          "description": "Declaring state outside the factory function causes all created instances to share and overwrite the same binding.",
+          "reproducer": "let count = 0; function makeCounter() { return () => ++count; } — two counters increment the same total."
+        },
+        {
+          "trapTag": "leaked-mutable-reference",
+          "name": "Leaking Internal Mutable Container Reference",
+          "description": "Returning an internal array or object directly from a closure getter lets callers mutate private state externally.",
+          "reproducer": "getItems() { return items; } allows caller.getItems().push('tampered') to bypass validation."
+        },
+        {
+          "trapTag": "falsy-initial-value-override",
+          "name": "Falsy Initial Value Overwritten by Logical OR",
+          "description": "Using `initial || fallback` inside a factory replaces valid `0`, `false`, or `''` initial values with the fallback.",
+          "reproducer": "const start = initial || 10; when initial is 0, start becomes 10 instead of 0."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "token_bucket_rate_limiter",
+          "description": "Encapsulating per-client request quota and refill state inside a closure."
+        },
+        {
+          "domain": "idempotency_key_cache",
+          "description": "Memoizing or deduplicating one-time payment/webhook executions per key."
+        }
+      ],
+      "usedContexts": [
+        "token_bucket_rate_limiter",
+        "idempotency_key_cache"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-closure-isolated-instance",
+          "check": "Mutable state for a stateful factory is declared inside the factory body so every factory invocation owns independent state.",
+          "why": "Module-level or outer-scope mutable state leaks across independent instances and breaks isolation.",
+          "severity": "must",
+          "knownBad": {
+            "code": "let sharedCount = 0;\nfunction createCounter() {\n  return () => {\n    sharedCount += 1;\n    return sharedCount;\n  };\n}",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-closure-no-state-leak",
+          "check": "Closure getters or snapshot methods return shallow/defensive copies of internal mutable arrays or objects rather than direct references.",
+          "why": "Returning a direct reference allows callers to mutate private closure state outside the factory's invariants.",
+          "severity": "must",
+          "accepted": [
+            "[...items]",
+            "items.slice()",
+            "{ ...state }"
+          ],
+          "knownBad": {
+            "code": "function createQueue() {\n  const items = [];\n  return {\n    enqueue(item) { items.push(item); },\n    getItems() { return items; }\n  };\n}",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "prg-c01-closure-stale-binding-fix",
+      "unitCode": "PRG-T01-C01-U02",
+      "level": 2,
+      "archetype": "debugging",
+      "name": "Stale Closure & Loop Callback Binding Repair",
+      "competencies": [
+        "closures",
+        "stale-state",
+        "debugging"
+      ],
+      "coreConcept": "Diagnosing and fixing stale closure bugs where callbacks either capture a shared mutable loop binding or freeze an outdated primitive value instead of reading current state.",
+      "mentalModel": [
+        "1. Distinguish capturing a live binding (reads latest value on call) from copying a primitive into a parameter or local variable at creation time.",
+        "2. In loops, `let` creates a fresh per-iteration binding for each callback, whereas `var` or an outer `let` shares one binding.",
+        "3. When a callback needs the latest config/state after updates, read from the live binding or a getter rather than a destructured stale snapshot."
+      ],
+      "governingInvariant": "Callbacks observe the intended per-iteration or live state binding without reading stale snapshots or shared loop counters",
+      "cognitiveTraps": [
+        {
+          "trapTag": "stale-primitive-snapshot",
+          "name": "Stale Primitive Snapshot Captured at Registration",
+          "description": "Copying a primitive property into a local variable before registering a callback causes the callback to see the old value after updates.",
+          "reproducer": "const limit = config.limit; register(() => limit); — updating config.limit later leaves the callback returning the old limit."
+        },
+        {
+          "trapTag": "shared-loop-binding-capture",
+          "name": "Shared Loop Binding Captured Across Callbacks",
+          "description": "Declaring the loop counter outside the loop or with `var` causes all created callbacks to read the terminal loop value.",
+          "reproducer": "for (var i = 0; i < 3; i++) handlers.push(() => i); — every handler returns 3."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "retry_policy_scheduler",
+          "description": "Scheduling per-route retry handlers that must read live circuit-breaker thresholds or per-route indices."
+        },
+        {
+          "domain": "webhook_route_dispatcher",
+          "description": "Registering per-topic event handlers in a loop without cross-topic index collisions."
+        }
+      ],
+      "usedContexts": [
+        "webhook_route_dispatcher",
+        "retry_policy_scheduler"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-closure-per-iteration-binding",
+          "check": "Callbacks created inside loops bind a fresh block-scoped `const`/`let` per iteration rather than sharing a `var` or outer loop variable.",
+          "why": "A shared loop binding mutates on every iteration so deferred callbacks all observe the final value.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function buildRouteHandlers(routes) {\n  const handlers = [];\n  for (var i = 0; i < routes.length; i += 1) {\n    handlers.push(() => routes[i]);\n  }\n  return handlers;\n}",
+            "caughtBy": "lint:no-var"
+          }
+        },
+        {
+          "id": "QC-closure-fresh-read",
+          "check": "Deferred callbacks that must reflect updated state read from a live object/binding rather than caching a stale primitive snapshot at creation time.",
+          "why": "Caching a primitive value before registration disconnects the callback from subsequent state updates.",
+          "severity": "should",
+          "knownBad": {
+            "code": "function createWatcher(state) {\n  const currentTimeout = state.timeoutMs;\n  return () => currentTimeout;\n}",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "prg-c01-closure-binding-trace",
+      "unitCode": "PRG-T01-C01-U02",
+      "level": 1,
+      "archetype": "code-tracing",
+      "name": "Live Closure Binding & Environment Tracing",
+      "competencies": [
+        "closures",
+        "code-tracing",
+        "lexical-environment"
+      ],
+      "coreConcept": "Tracing exact outputs of nested closures by tracking which Lexical Environment each function captures and whether sibling closures share one binding or own separate environments.",
+      "mentalModel": [
+        "1. Two closures returned from the same factory call share that call's Lexical Environment.",
+        "2. Two closures returned from different factory calls point to separate Lexical Environments.",
+        "3. Updating an outer `let` binding inside one sibling closure is immediately visible to the other sibling."
+      ],
+      "governingInvariant": "Closures created in the same outer call share live bindings; closures from separate outer calls have disjoint bindings",
+      "cognitiveTraps": [
+        {
+          "trapTag": "value-vs-binding-confusion",
+          "name": "Confusing Live Binding with Creation-Time Value",
+          "description": "Assuming a closure freezes the value of an outer variable when the function is defined rather than reading its current value when invoked.",
+          "reproducer": "let tax = 5; const fn = () => tax; tax = 8; fn() returns 8, not 5."
+        },
+        {
+          "trapTag": "cross-instance-confusion",
+          "name": "Confusing Shared Sibling Scope with Separate Factory Calls",
+          "description": "Misidentifying whether two closures share one outer environment (same call) or have independent environments (separate calls).",
+          "reproducer": "const a = makePair(); const b = makePair(); a.inc(); b.read() returns 0, not 1."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "feature_toggle_evaluator",
+          "description": "Tracing live toggle overrides across shared reader/writer closures in a config module."
+        }
+      ],
+      "usedContexts": [
+        "feature_toggle_evaluator"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-closure-clear-mutation-surface",
+          "check": "Closures that mutate shared outer state expose explicit, named operations rather than implicit side effects inside readers.",
+          "why": "Hidden mutations inside getter-like closures make execution traces unpredictable.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function makeMetric() {\n  let hits = 0;\n  return {\n    read() {\n      hits += 1;\n      return hits;\n    }\n  };\n}",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-closure-distinct-factory-env",
+          "check": "Separate logical instances are created through separate factory calls rather than sharing a single outer mutable binding.",
+          "why": "Sharing an outer binding across unrelated instances couples their state transitions unexpectedly.",
+          "severity": "should",
+          "knownBad": {
+            "code": "let sharedFlag = false;\nfunction makeEvaluator() {\n  return {\n    isEnabled: () => sharedFlag,\n    setEnabled: (next) => { sharedFlag = next; }\n  };\n}",
+            "caughtBy": "review"
+          }
+        }
+      ]
     }
   ]
 }
