@@ -22,6 +22,9 @@ from code_engine.lint_check import TOOLS_LINT_DIR, get_lint_binaries
 from code_engine.quality_checks import applicable_rubric, effective_severity, load_archetype, load_universal
 from code_engine.submit import _parse_junit_xml, run_tests_junit
 from code_engine.workspace import ENVIRONMENT_PRESETS, get_entry_name
+from progress_store import labs_root as default_labs_root
+from progress_store import pilot_mode
+from progress_store import workspace_root as default_workspace_root
 
 TS_PRESETS = ("typescript-strict", "backend-sqlite", "react-dom")
 _TSC_DIAG_RE = re.compile(r"^(.+?)\((\d+),(\d+)\):\s+(?:error|warning)\s+(TS\d+:\s*.*)$")
@@ -133,7 +136,7 @@ def typecheck_workspace_file(ws_dir: Path, src_file: Path, environment: str) -> 
 
 
 def _find_lab_config(lab_id: str, labs_root: Path | None = None) -> tuple[dict[str, Any], Path]:
-    lroot = Path(labs_root) if labs_root is not None else Path(os.environ.get("LABS_DIR", "labs"))
+    lroot = Path(labs_root) if labs_root is not None else Path(default_labs_root())
     lab_dir = lroot / lab_id
     cfg_path = lab_dir / "lab.config.json"
     if not cfg_path.exists():
@@ -294,6 +297,8 @@ def _run_lab_review_with_source(
 
     cases = _run_lab_tests(vis_files, lab_dir, src_dir, force_hidden=False)
     ref_hidden = lab_dir.parent / "_reference" / lab_id / "hidden"
+    if not ref_hidden.is_dir() and pilot_mode():
+        ref_hidden = Path(os.environ.get("LABS_DIR", "labs")) / "_reference" / lab_id / "hidden"
     if ref_hidden.is_dir():
         all_hidden = sorted(list(ref_hidden.glob("*.test.ts")) + list(ref_hidden.glob("*.test.js")))
         prefix = f"{mid.lower()}_"
@@ -355,7 +360,7 @@ def run_review_with_source(
     prob = find_problem(drill_doc, qid)
     pid = str(prob["id"])
 
-    ws_root = Path(workspace_root) if workspace_root is not None else Path("drills/workspace")
+    ws_root = Path(workspace_root) if workspace_root is not None else Path(default_workspace_root())
     ws_dir = ws_root / drill_id
     if not ws_dir.is_dir():
         raise FileNotFoundError(f"Workspace directory not found: {ws_dir}")

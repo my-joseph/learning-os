@@ -21,6 +21,8 @@ import sys
 from collections import Counter
 from datetime import datetime, timezone
 
+from progress_store import pilot_mode
+
 KINDS = (
     "wrong-answer",  # a problem's answer, trap or steps are wrong
     "ambiguity",  # a prompt can be read more than one way (units, rounding, wording)
@@ -36,7 +38,7 @@ KINDS = (
     "other",
 )
 SEVERITIES = ("urgent", "batch")
-SOURCES = ("author", "reviewer", "gate", "learner", "other")
+SOURCES = ("author", "reviewer", "gate", "learner", "pilot", "other")
 ACTIONS = ("open", "auto-fixed", "dropped")
 
 
@@ -103,6 +105,8 @@ def add_issue(
     ):
         if value not in allowed:
             raise ValueError(f"{field} must be one of {list(allowed)}, got {value!r}")
+    if pilot_mode():
+        source = "pilot"
     if not where.strip() or not what.strip():
         raise ValueError("where and what must not be empty")
     for r in issues(path):

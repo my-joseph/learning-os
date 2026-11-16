@@ -25,11 +25,31 @@ PROGRESS_FIELDS_DOC = ("sessionSummary",)
 PROGRESS_FIELDS_PROBLEM = ("state",)
 
 
+def pilot_mode() -> bool:
+    """True when LEARNINGOS_PILOT is enabled ('1', 'true', 'yes')."""
+    return os.environ.get("LEARNINGOS_PILOT", "").strip().lower() in ("1", "true", "yes")
+
+
 def progress_root(repo_root: str | None = None) -> str:
-    """PROGRESS_DIR, else `progress/` relative to `repo_root` (default: current directory)."""
+    """PROGRESS_DIR, else `pilot/progress/` in pilot mode, else `progress/` relative to `repo_root`."""
     if os.environ.get("PROGRESS_DIR"):
         return os.environ["PROGRESS_DIR"]
-    return os.path.join(repo_root, "progress") if repo_root else "progress"
+    sub = os.path.join("pilot", "progress") if pilot_mode() else "progress"
+    return os.path.join(repo_root, sub) if repo_root else sub
+
+
+def workspace_root(repo_root: str | None = None) -> str:
+    """`pilot/workspace/` in pilot mode, else `drills/workspace/` relative to `repo_root`."""
+    sub = os.path.join("pilot", "workspace") if pilot_mode() else os.path.join("drills", "workspace")
+    return os.path.join(repo_root, sub) if repo_root else sub
+
+
+def labs_root(repo_root: str | None = None) -> str:
+    """LABS_DIR, else `pilot/labs/` in pilot mode, else `labs/` relative to `repo_root`."""
+    if os.environ.get("LABS_DIR"):
+        return os.environ["LABS_DIR"]
+    sub = os.path.join("pilot", "labs") if pilot_mode() else "labs"
+    return os.path.join(repo_root, sub) if repo_root else sub
 
 
 def progress_path(drill_id: str, repo_root: str | None = None) -> str:

@@ -27,6 +27,7 @@ from notion_sync.client import (  # noqa: E402
     replace_page_content,
     require_token,
 )
+from progress_store import pilot_mode  # noqa: E402
 
 # ANSI Terminal Styling
 GREEN = "\033[92m"
@@ -212,6 +213,9 @@ def evaluate_milestones(milestones: list, testcases: list):
 
 def sync_to_notion(repo_root: Path, lab_dir: Path, config: dict, eval_result: dict, env: dict):
     """Syncs lab grading results into Notion 'Learning Practice & Drills' database."""
+    if pilot_mode():
+        print(f"[PILOT] skipped Notion write: lab result sync ({config.get('labId')})")
+        return None
     id_map_file = repo_root / "id_map.json"
     id_map = {}
     if id_map_file.exists():

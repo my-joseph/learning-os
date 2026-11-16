@@ -392,6 +392,8 @@ def main():
 
     if sync_res.get("dryRun"):
         print(f"{YELLOW}[DRY RUN] Saved locally; Notion write skipped (mock-{drill_id}).{RESET}\n")
+    elif sync_res.get("pilotSkipped"):
+        print(f"{YELLOW}[PILOT] Saved locally to pilot/progress; Notion write skipped.{RESET}\n")
     elif sync_res.get("degraded"):
         print(f"{YELLOW}⚠ {sync_res.get('warning', 'Saved locally; Notion was not updated.')}{RESET}\n")
     elif sync_res.get("ok") and sync_res.get("drillPageId"):

@@ -32,7 +32,7 @@ from notion_sync.blocks import (
     toggle_block,
 )
 from notion_sync.client import get_all_blocks, load_env, notion_request
-from progress_store import save_progress
+from progress_store import has_practice, pilot_mode, save_progress
 
 
 def get_data_root() -> str:
@@ -127,6 +127,9 @@ def unit_relation_ids(drill_doc: dict, unit_code: str, id_map: dict) -> list[str
 def update_unit_reviews(units: list[str], attempt_date: str, id_map: dict, token: str) -> dict:
     """After practice, write evidence-based Mastery (0-4), Last Reviewed and Next Review to each unit page
     that has those properties (rules/01 §7-8). Returns {unit: update} for what was written."""
+    if pilot_mode():
+        print(f"[PILOT] skipped Notion write: unit review update ({', '.join(units)})")
+        return {}
     from scripts.weak_spots import review_update
 
     written = {}
@@ -371,22 +374,25 @@ def _sync_drill_to_notion_inner(drill_doc: dict, path: str) -> dict:
         except Exception:  # noqa: BLE001 - review scheduling must never fail the drill sync
             reviews = {}
     if attempt_date and parent_page_id:
-        pct = summary.get("accuracyPct", 0)
-        mistakes_str = ", ".join(mistake_cats) if mistake_cats else "None"
-        log_line = (
-            f"**[{attempt_date}] [[{drill_id}]] ({diff_mode}, {q_count} Qs):** "
-            f"Score **{score}/{max_score} ({pct}%)** — Status: **{status}** | "
-            f"Mistake Tags: `{mistakes_str}` | Paper Divergence: {diverged_summary}"
-        )
-        try:
-            # Results go at the end of the learner's "My Implementation & Mistake Log" section (rules/02 §7a),
-            # or at the end of the page if it has no such section.
-            from notion_sync.unit_page import insert_after, section_end
+        if pilot_mode():
+            print(f"[PILOT] skipped Notion write: unit Mistake Log append ({unit_code})")
+        else:
+            pct = summary.get("accuracyPct", 0)
+            mistakes_str = ", ".join(mistake_cats) if mistake_cats else "None"
+            log_line = (
+                f"**[{attempt_date}] [[{drill_id}]] ({diff_mode}, {q_count} Qs):** "
+                f"Score **{score}/{max_score} ({pct}%)** — Status: **{status}** | "
+                f"Mistake Tags: `{mistakes_str}` | Paper Divergence: {diverged_summary}"
+            )
+            try:
+                # Results go at the end of the learner's "My Implementation & Mistake Log" section (rules/02 §7a),
+                # or at the end of the page if it has no such section.
+                from notion_sync.unit_page import insert_after, section_end
 
-            anchor = section_end(get_all_blocks(parent_page_id, token), "Mistake Log")
-            insert_after(parent_page_id, anchor, [bullet(log_line, id_map)], token)
-        except Exception:
-            pass
+                anchor = section_end(get_all_blocks(parent_page_id, token), "Mistake Log")
+                insert_after(parent_page_id, anchor, [bullet(log_line, id_map)], token)
+            except Exception:
+                pass
 
     return {"ok": True, "drillPageId": page_id, "parentPageId": parent_page_id, "unitReviews": reviews}
 
@@ -417,6 +423,15 @@ def sync_drill_to_notion(drill_doc: dict) -> dict:
             "drillPageId": f"mock-{drill_doc.get('drillId')}",
             "parentPageId": None,
             "dryRun": True,
+        }
+    if pilot_mode() and has_practice(drill_doc):
+        print(f"[PILOT] skipped Notion write: drill result sync ({drill_doc.get('drillId')})")
+        return {
+            "ok": True,
+            "localFilePath": path,
+            "drillPageId": None,
+            "parentPageId": None,
+            "pilotSkipped": True,
         }
     try:
         return _sync_drill_to_notion_inner(drill_doc, path)
