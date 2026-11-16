@@ -1,0 +1,426 @@
+{
+  "unitCode": "PRG-T01-C03-U03",
+  "unitTitle": "Arrays, Stacks & Queues",
+  "environment": "typescript-strict",
+  "sourceAttribution": "MDN JavaScript Guide (Indexed collections and Array reference, R003); original production scenarios authored for this drill.",
+  "config": {
+    "questionCount": 4,
+    "difficulty": "ALL",
+    "difficultyMode": "AI Synthesized Engineering Mode"
+  },
+  "problems": [
+    {
+      "id": "Q01",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "codeType": "implement",
+      "archetypeKey": "prg-c03-u03-bracket-stack",
+      "commonTrapTag": "delimiter-type-ignored",
+      "context": "template_delimiter_validation",
+      "entryPoint": "validateTemplateDelimiters",
+      "prompt": "**Objective:** Implement `validateTemplateDelimiters(source)` for a template compiler. The input contains only `()[]{}` delimiters.\n\n**Requirements:**\n- Return `true` only when every closer matches the most recent unmatched opener.\n- Reject a closer when no opener is pending, and reject any unmatched openers left at end of input.\n- Do not mutate the input string or retain state between calls.\n\n**Return Contract:** Return a boolean. Empty input is valid.",
+      "inputHint": "Export the named TypeScript function with explicit collection and result types.",
+      "checkpointHint": "Check ordering, empty behavior, and what remains after each operation.",
+      "starterCode": "export function validateTemplateDelimiters(_source: string): boolean {\n  return false;\n}\n",
+      "solutionCode": "export function validateTemplateDelimiters(source: string): boolean {\n  const expectedClosers: string[] = [];\n  const closerFor: Record<string, string> = { \"(\": \")\", \"[\": \"]\", \"{\": \"}\" };\n  const openers = new Set(Object.keys(closerFor));\n  for (const character of source) {\n    if (openers.has(character)) {\n      expectedClosers.push(closerFor[character]);\n    } else {\n      const expected = expectedClosers.pop();\n      if (expected !== character) return false;\n    }\n  }\n  return expectedClosers.length === 0;\n}\n",
+      "trapMutant": "export function validateTemplateDelimiters(source: string): boolean {\n  let opens = 0;\n  let closes = 0;\n  for (const character of source) {\n    if (character === \"(\" || character === \"[\" || character === \"{\") opens += 1;\n    if (character === \")\" || character === \"]\" || character === \"}\") closes += 1;\n  }\n  return opens === closes;\n}\n",
+      "visibleTests": [
+        {
+          "name": "accepts properly nested pairs",
+          "testCode": "assert.equal(validateTemplateDelimiters(\"{[()()]()}\"), true);"
+        },
+        {
+          "name": "accepts empty input",
+          "testCode": "assert.equal(validateTemplateDelimiters(\"\"), true);"
+        },
+        {
+          "name": "rejects crossed delimiter types",
+          "testCode": "assert.equal(validateTemplateDelimiters(\"([)]\"), false);"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "rejects a closer without an opener",
+          "testCode": "assert.equal(validateTemplateDelimiters(\"]\"), false);"
+        },
+        {
+          "name": "rejects unmatched openers at end",
+          "testCode": "assert.equal(validateTemplateDelimiters(\"{{(\"), false);"
+        },
+        {
+          "name": "does not retain state between calls",
+          "testCode": "assert.equal(validateTemplateDelimiters(\"[]\"), true); assert.equal(validateTemplateDelimiters(\"[\"), false); assert.equal(validateTemplateDelimiters(\"[]\"), true);"
+        },
+        {
+          "name": "rejects crossed pairs even when delimiter counts match",
+          "testCode": "assert.equal(validateTemplateDelimiters(\"([)]\"), false);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Record the expected closer for each opener as it is encountered."
+        },
+        {
+          "explain": "Compare each closer with the most recently expected closer and stop on a mismatch."
+        },
+        {
+          "explain": "After scanning, accept only when no unmatched opener remains."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "delimiter-type-ignored|direct|validateTemplateDelimiters",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 3,
+          "hasTrapOrFlaw": false,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "delimiter-type-ignored",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 6
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Foundation",
+      "unitCode": "PRG-T01-C03-U03",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-U03-01/Q01_validateTemplateDelimiters.ts"
+    },
+    {
+      "id": "Q02",
+      "level": 2,
+      "category": "Trap & Edge Case",
+      "archetype": "problem-solving",
+      "codeType": "implement",
+      "archetypeKey": "prg-c03-u03-fifo-job-scheduling",
+      "commonTrapTag": "queue-lifo-order",
+      "context": "email_delivery_work_queue",
+      "entryPoint": "createJobQueue",
+      "prompt": "**Objective:** Implement `createJobQueue<T>()` for an email delivery worker.\n\n**Requirements:**\n- `enqueue(job)` adds work after all jobs already waiting.\n- `dequeue()` returns the oldest pending job in a discriminated result, or `{ ok: false }` when empty.\n- A queued value may itself be `undefined`; empty must remain distinguishable from that payload.\n- Support enqueue after the queue has been drained. Keep storage private.\n\n**Return Contract:** Return an object with `enqueue(job: T): void` and `dequeue(): { ok: true; value: T } | { ok: false }`.",
+      "inputHint": "Export the named TypeScript function with explicit collection and result types.",
+      "checkpointHint": "Check ordering, empty behavior, and what remains after each operation.",
+      "starterCode": "export type DequeueResult<T> = { ok: true; value: T } | { ok: false };\nexport function createJobQueue<T>() {\n  return {\n    enqueue(_job: T): void {},\n    dequeue(): DequeueResult<T> { return { ok: false }; },\n  };\n}\n",
+      "solutionCode": "export type DequeueResult<T> = { ok: true; value: T } | { ok: false };\nexport function createJobQueue<T>() {\n  const jobs: T[] = [];\n  let head = 0;\n  return {\n    enqueue(job: T): void { jobs.push(job); },\n    dequeue(): DequeueResult<T> {\n      if (head >= jobs.length) return { ok: false };\n      const value = jobs[head];\n      head += 1;\n      if (head === jobs.length) { jobs.length = 0; head = 0; }\n      return { ok: true, value };\n    },\n  };\n}\n",
+      "trapMutant": "export type DequeueResult<T> = { ok: true; value: T } | { ok: false };\nexport function createJobQueue<T>() {\n  const jobs: T[] = [];\n  return {\n    enqueue(job: T): void { jobs.push(job); },\n    dequeue(): DequeueResult<T> {\n      const value = jobs.pop();\n      return value === undefined ? { ok: false } : { ok: true, value };\n    },\n  };\n}\n",
+      "visibleTests": [
+        {
+          "name": "returns oldest job before newer job",
+          "testCode": "const queue = createJobQueue<string>(); queue.enqueue(\"mail-1\"); queue.enqueue(\"mail-2\"); assert.deepEqual(queue.dequeue(), { ok: true, value: \"mail-1\" });"
+        },
+        {
+          "name": "signals empty queue",
+          "testCode": "assert.deepEqual(createJobQueue<number>().dequeue(), { ok: false });"
+        },
+        {
+          "name": "accepts enqueue after draining",
+          "testCode": "const queue = createJobQueue<string>(); queue.enqueue(\"mail-a\"); queue.dequeue(); queue.enqueue(\"mail-b\"); assert.deepEqual(queue.dequeue(), { ok: true, value: \"mail-b\" });"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "distinguishes undefined payload from empty",
+          "testCode": "const queue = createJobQueue<undefined>(); queue.enqueue(undefined); assert.deepEqual(queue.dequeue(), { ok: true, value: undefined }); assert.deepEqual(queue.dequeue(), { ok: false });"
+        },
+        {
+          "name": "preserves FIFO across alternating operations",
+          "testCode": "const queue = createJobQueue<number>(); queue.enqueue(4); queue.enqueue(8); assert.deepEqual(queue.dequeue(), { ok: true, value: 4 }); queue.enqueue(12); assert.deepEqual(queue.dequeue(), { ok: true, value: 8 }); assert.deepEqual(queue.dequeue(), { ok: true, value: 12 });"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Append every new job behind the existing pending sequence."
+        },
+        {
+          "explain": "Use an explicit result shape so absence does not collide with a legal payload."
+        },
+        {
+          "explain": "Advance the logical front to dequeue while preserving FIFO order and supporting reuse."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "queue-lifo-order|direct|createJobQueue",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "queue-lifo-order",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 6
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Standard Exam",
+      "unitCode": "PRG-T01-C03-U03",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-U03-01/Q02_createJobQueue.ts"
+    },
+    {
+      "id": "Q03",
+      "level": 2,
+      "category": "Refactor & Design",
+      "archetype": "refactoring",
+      "codeType": "implement",
+      "archetypeKey": "prg-c03-u03-collection-contracts",
+      "commonTrapTag": "shared-module-state",
+      "context": "independent_worker_retry_stacks",
+      "entryPoint": "createRetryStack",
+      "prompt": "**Objective:** Implement `createRetryStack<T>()` for independent worker retry histories.\n\n**Requirements:**\n- `push(value)` adds one item to this stack; `pop()` removes the newest item.\n- Return `{ ok: false }` when empty and `{ ok: true, value }` when an item exists, including when the value is `undefined`.\n- Each created stack must be independent and expose no backing array.\n\n**Return Contract:** Return an object with `push(value: T): void` and a typed `pop()` result.",
+      "inputHint": "Export the named TypeScript function with explicit collection and result types.",
+      "checkpointHint": "Check ordering, empty behavior, and what remains after each operation.",
+      "starterCode": "export type PopResult<T> = { ok: true; value: T } | { ok: false };\nexport function createRetryStack<T>() {\n  return {\n    push(_value: T): void {},\n    pop(): PopResult<T> { return { ok: false }; },\n  };\n}\n",
+      "solutionCode": "export type PopResult<T> = { ok: true; value: T } | { ok: false };\nexport function createRetryStack<T>() {\n  const values: T[] = [];\n  return {\n    push(value: T): void { values.push(value); },\n    pop(): PopResult<T> {\n      if (values.length === 0) return { ok: false };\n      return { ok: true, value: values.pop() as T };\n    },\n  };\n}\n",
+      "trapMutant": "export type PopResult<T> = { ok: true; value: T } | { ok: false };\nconst values: unknown[] = [];\nexport function createRetryStack<T>() {\n  return {\n    push(value: T): void { values.push(value); },\n    pop(): PopResult<T> {\n      if (values.length === 0) return { ok: false };\n      return { ok: true, value: values.pop() as T };\n    },\n  };\n}\n",
+      "visibleTests": [
+        {
+          "name": "pops newest pushed value",
+          "testCode": "const stack = createRetryStack<string>(); stack.push(\"retry-a\"); stack.push(\"retry-b\"); assert.deepEqual(stack.pop(), { ok: true, value: \"retry-b\" });"
+        },
+        {
+          "name": "reports empty distinctly",
+          "testCode": "assert.deepEqual(createRetryStack<string>().pop(), { ok: false });"
+        },
+        {
+          "name": "isolates independent stacks",
+          "testCode": "const first = createRetryStack<number>(); const second = createRetryStack<number>(); first.push(9); assert.deepEqual(second.pop(), { ok: false });"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "preserves undefined as a valid value",
+          "testCode": "const stack = createRetryStack<undefined>(); stack.push(undefined); assert.deepEqual(stack.pop(), { ok: true, value: undefined });"
+        },
+        {
+          "name": "does not share state between calls",
+          "testCode": "const first = createRetryStack<string>(); first.push(\"private\"); const second = createRetryStack<string>(); assert.deepEqual(second.pop(), { ok: false }); assert.deepEqual(first.pop(), { ok: true, value: \"private\" });"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Store mutable values inside each factory call so each stack has its own history."
+        },
+        {
+          "explain": "Use the same end for push and pop to preserve last-in, first-out order."
+        },
+        {
+          "explain": "Represent empty removal separately from a valid stored value."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "shared-module-state|direct|createRetryStack",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "refactoring"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "shared-module-state",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 6
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Standard Exam",
+      "unitCode": "PRG-T01-C03-U03",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-U03-01/Q03_createRetryStack.ts"
+    },
+    {
+      "id": "Q04",
+      "level": 3,
+      "category": "Trap & Edge Case",
+      "archetype": "debugging",
+      "codeType": "fix-bug",
+      "archetypeKey": "prg-c03-u03-fifo-job-scheduling",
+      "commonTrapTag": "empty-dequeue-ambiguous",
+      "context": "media_transcode_dispatch_queue",
+      "entryPoint": "createTranscodeQueue",
+      "prompt": "**Objective:** Review and repair `createTranscodeQueue<T>()` for a media processing worker.\n\n**Requirements:**\n- Preserve first-in, first-out order through mixed enqueue/dequeue operations.\n- Return an explicit empty result distinct from every permitted payload.\n- Support reuse after the queue drains and keep queue state private.\n- Keep removal efficient as the backlog grows; do not impose a fixed capacity.\n\n**Return Contract:** Keep the exported factory and its typed enqueue/dequeue operations.",
+      "inputHint": "Export the named TypeScript function with explicit collection and result types.",
+      "checkpointHint": "Check ordering, empty behavior, and what remains after each operation.",
+      "starterCode": "export type QueueResult<T> = { ok: true; value: T } | { ok: false };\nexport function createTranscodeQueue<T>() {\n  const jobs: T[] = [];\n  return {\n    enqueue(job: T): void { jobs.unshift(job); },\n    dequeue(): QueueResult<T> {\n      const value = jobs.pop();\n      return value === undefined ? { ok: false } : { ok: true, value };\n    },\n  };\n}\n",
+      "solutionCode": "export type QueueResult<T> = { ok: true; value: T } | { ok: false };\nexport function createTranscodeQueue<T>() {\n  const jobs: T[] = [];\n  let head = 0;\n  return {\n    enqueue(job: T): void { jobs.push(job); },\n    dequeue(): QueueResult<T> {\n      if (head >= jobs.length) return { ok: false };\n      const value = jobs[head];\n      head += 1;\n      if (head === jobs.length) { jobs.length = 0; head = 0; }\n      return { ok: true, value };\n    },\n  };\n}\n",
+      "trapMutant": "export type QueueResult<T> = { ok: true; value: T } | { ok: false };\nexport function createTranscodeQueue<T>() {\n  const jobs: T[] = [];\n  return {\n    enqueue(job: T): void { jobs.unshift(job); },\n    dequeue(): QueueResult<T> {\n      const value = jobs.pop();\n      return value === undefined ? { ok: false } : { ok: true, value };\n    },\n  };\n}\n",
+      "visibleTests": [
+        {
+          "name": "returns jobs in their arrival order",
+          "testCode": "const queue = createTranscodeQueue<string>(); queue.enqueue(\"clip-a\"); queue.enqueue(\"clip-b\"); assert.deepEqual(queue.dequeue(), { ok: true, value: \"clip-a\" });"
+        },
+        {
+          "name": "empty result differs from a stored undefined",
+          "testCode": "const queue = createTranscodeQueue<undefined>(); queue.enqueue(undefined); assert.deepEqual(queue.dequeue(), { ok: true, value: undefined }); assert.deepEqual(queue.dequeue(), { ok: false });"
+        },
+        {
+          "name": "supports reuse after becoming empty",
+          "testCode": "const queue = createTranscodeQueue<number>(); queue.enqueue(1); queue.dequeue(); queue.enqueue(2); assert.deepEqual(queue.dequeue(), { ok: true, value: 2 });"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "preserves order in alternating workload",
+          "testCode": "const queue = createTranscodeQueue<number>(); queue.enqueue(2); queue.enqueue(4); queue.dequeue(); queue.enqueue(6); assert.deepEqual(queue.dequeue(), { ok: true, value: 4 }); assert.deepEqual(queue.dequeue(), { ok: true, value: 6 });"
+        },
+        {
+          "name": "keeps pending jobs when enqueueing after a dequeue",
+          "testCode": "const queue = createTranscodeQueue<string>(); queue.enqueue(\"one\"); queue.enqueue(\"two\"); queue.dequeue(); queue.enqueue(\"three\"); assert.deepEqual(queue.dequeue(), { ok: true, value: \"two\" });"
+        },
+        {
+          "name": "drains a large backlog in arrival order",
+          "testCode": "const queue = createTranscodeQueue<number>(); for (let value = 0; value < 300; value += 1) queue.enqueue(value); for (let value = 0; value < 300; value += 1) assert.deepEqual(queue.dequeue(), { ok: true, value }); assert.deepEqual(queue.dequeue(), { ok: false });"
+        },
+        {
+          "name": "does not confuse undefined payload with an empty queue",
+          "testCode": "const queue = createTranscodeQueue<undefined>(); queue.enqueue(undefined); assert.deepEqual(queue.dequeue(), { ok: true, value: undefined }); assert.deepEqual(queue.dequeue(), { ok: false });"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Append new work after all jobs already waiting, rather than moving the pending sequence."
+        },
+        {
+          "explain": "Advance a logical front index to remove the oldest job without shifting the remaining items."
+        },
+        {
+          "explain": "Reset consumed storage only when the logical queue becomes empty, preserving subsequent reuse."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "empty-dequeue-ambiguous|direct|createTranscodeQueue",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "debugging"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            20
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "empty-dequeue-ambiguous",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 6
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Trap & Diagnostic",
+      "unitCode": "PRG-T01-C03-U03",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-U03-01/Q04_createTranscodeQueue.ts"
+    }
+  ],
+  "blindSolve": [
+    {
+      "problemId": "Q01",
+      "passed": true
+    },
+    {
+      "problemId": "Q02",
+      "passed": true
+    },
+    {
+      "problemId": "Q03",
+      "passed": true
+    },
+    {
+      "problemId": "Q04",
+      "passed": true
+    }
+  ],
+  "review": {
+    "verdict": "pass",
+    "note": "All four problems meet the brief; Q04’s empty-dequeue tag, mutant, hidden test, blind-solve misconception, and applicable vault rubric are aligned."
+  },
+  "drillId": "DRL-PRG-T01-C03-U03-01",
+  "topicCode": "PRG-T01",
+  "chapterCode": "PRG-T01-C03",
+  "schemaVersion": "2.0-code",
+  "subject": "PRG",
+  "createdAt": "2026-11-17 02:49:26",
+  "localFilePath": "drills/data/PRG-T01-C03-U03/DRL-PRG-T01-C03-U03-01.json"
+}
