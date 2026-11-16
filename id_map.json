@@ -2336,6 +2336,62 @@
     "id": "4103818f-8ba0-81a9-80f2-dd2f28af9a2c",
     "title": "DNS (Domain Name System)"
   },
+  "DRL-PRG-T01-C03-U01-01": {
+    "id": "41a3818f-8ba0-81a1-a05c-cffd4fbdfa52",
+    "title": "Big-O Intuition & Time/Space Tradeoffs — Verified Programming Drill (4 Qs · AI Synthesized Engineering Mode)"
+  },
+  "DRL-MTH-T02-C02-U03-01": {
+    "id": "41a3818f-8ba0-818d-aec5-d1243f0443c0",
+    "title": "Rates of Change and Behavior of Graphs — Verified Math Drill (3 Qs · AI Synthesized Reasoning Mode)"
+  },
+  "LAB-PRG-T01-C01-01": {
+    "id": "41a3818f-8ba0-8197-9b4a-e542825399f0",
+    "title": "TinyEventEmitter & PromisePool"
+  },
+  "DRL-PRG-T01-C02-U01-01": {
+    "id": "41a3818f-8ba0-8131-a088-cc44122bd8a6",
+    "title": "Type Annotations and Inference — Verified Programming Drill (5 Qs · AI Synthesized Engineering Mode)"
+  },
+  "DRL-PRG-T01-C01-U08-01": {
+    "id": "41a3818f-8ba0-815d-88ab-c29346b5edbb",
+    "title": "Error Handling Patterns — Verified Programming Drill (5 Qs · AI Synthesized Engineering Mode)"
+  },
+  "DRL-PRG-T01-C01-U07-01": {
+    "id": "41a3818f-8ba0-818f-a3b6-c767b3f72e4c",
+    "title": "Event Loop and Microtasks — Verified Programming Drill (5 Qs · AI Synthesized Engineering Mode)"
+  },
+  "DRL-PRG-T01-C01-U06-01": {
+    "id": "41a3818f-8ba0-81f7-a695-d338fe7e1423",
+    "title": "Promises and Async/Await — Verified Programming Drill (5 Qs · AI Synthesized Engineering Mode)"
+  },
+  "DRL-PRG-T01-C01-U05-01": {
+    "id": "41a3818f-8ba0-81df-a818-f606e8f85a91",
+    "title": "Modules and Module Systems — Verified Programming Drill (5 Qs · AI Synthesized Engineering Mode)"
+  },
+  "DRL-PRG-T01-C01-U04-01": {
+    "id": "41a3818f-8ba0-81d9-bdb1-c7190ac20056",
+    "title": "Prototypes and Inheritance — Verified Programming Drill (5 Qs · AI Synthesized Engineering Mode)"
+  },
+  "DRL-PRG-T01-C01-U03-01": {
+    "id": "41a3818f-8ba0-8186-b9a5-d2ae82e25c7c",
+    "title": "`this` and Binding — Verified Programming Drill (5 Qs · AI Synthesized Engineering Mode)"
+  },
+  "DRL-PRG-T01-C01-U02-01": {
+    "id": "41a3818f-8ba0-817f-be97-cff84f627907",
+    "title": "Closures — Verified Programming Drill (5 Qs · AI Synthesized Engineering Mode)"
+  },
+  "DRL-MTH-T02-C02-U02-01": {
+    "id": "41a3818f-8ba0-8188-b3c9-e91f0791678c",
+    "title": "Domain and Range — Verified Math Drill (8 Qs · AI Synthesized Reasoning Mode)"
+  },
+  "DRL-PRG-T01-C01-U01-01": {
+    "id": "41a3818f-8ba0-815c-9ed2-c92d3ce55845",
+    "title": "Execution Context and Scope — Verified Programming Drill (5 Qs · AI Synthesized Engineering Mode)"
+  },
+  "DRL-PRG-T00-C02-U01-01": {
+    "id": "41a3818f-8ba0-8143-95d7-fe0464770f22",
+    "title": "Terminal and Project Structure — Verified Programming Drill (5 Qs · AI Synthesized Engineering Mode)"
+  },
   "DRL-MTH-T02-C01-U03-01": {
     "id": "4193818f-8ba0-8147-ba25-ee65f6269231",
     "title": "Other Types of Equations — Verified Math Drill (8 Qs · AI Synthesized Reasoning Mode)"
@@ -2379,53 +2435,5 @@
   "DRL-PRG-T00-C03-02": {
     "id": "4153818f-8ba0-81e9-bac2-f9f97bbbe5c5",
     "title": "JavaScript & TypeScript Baseline — Verified Programming Drill (10 Qs · AI Synthesized Engineering Mode)"
-  },
-  "DRL-PRG-T00-C02-U01-01": {
-    "id": "41a3818f-8ba0-8143-95d7-fe0464770f22",
-    "title": "Terminal and Project Structure — Verified Programming Drill (5 Qs · AI Synthesized Engineering Mode)"
-  },
-  "DRL-MTH-T02-C02-U02-01": {
-    "id": "41a3818f-8ba0-8188-b3c9-e91f0791678c",
-    "title": "Domain and Range — Verified Math Drill (8 Qs · AI Synthesized Reasoning Mode)"
-  },
-  "DRL-PRG-T01-C01-U01-01": {
-    "id": "41a3818f-8ba0-815c-9ed2-c92d3ce55845",
-    "title": "Execution Context and Scope — Verified Programming Drill (5 Qs · AI Synthesized Engineering Mode)"
-  },
-  "DRL-PRG-T01-C01-U02-01": {
-    "id": "41a3818f-8ba0-817f-be97-cff84f627907",
-    "title": "Closures — Verified Programming Drill (5 Qs · AI Synthesized Engineering Mode)"
-  },
-  "DRL-PRG-T01-C01-U03-01": {
-    "id": "41a3818f-8ba0-8186-b9a5-d2ae82e25c7c",
-    "title": "`this` and Binding — Verified Programming Drill (5 Qs · AI Synthesized Engineering Mode)"
-  },
-  "DRL-PRG-T01-C01-U04-01": {
-    "id": "41a3818f-8ba0-81d9-bdb1-c7190ac20056",
-    "title": "Prototypes and Inheritance — Verified Programming Drill (5 Qs · AI Synthesized Engineering Mode)"
-  },
-  "DRL-PRG-T01-C01-U05-01": {
-    "id": "41a3818f-8ba0-81df-a818-f606e8f85a91",
-    "title": "Modules and Module Systems — Verified Programming Drill (5 Qs · AI Synthesized Engineering Mode)"
-  },
-  "DRL-PRG-T01-C01-U06-01": {
-    "id": "41a3818f-8ba0-81f7-a695-d338fe7e1423",
-    "title": "Promises and Async/Await — Verified Programming Drill (5 Qs · AI Synthesized Engineering Mode)"
-  },
-  "DRL-PRG-T01-C01-U07-01": {
-    "id": "41a3818f-8ba0-818f-a3b6-c767b3f72e4c",
-    "title": "Event Loop and Microtasks — Verified Programming Drill (5 Qs · AI Synthesized Engineering Mode)"
-  },
-  "DRL-PRG-T01-C01-U08-01": {
-    "id": "41a3818f-8ba0-815d-88ab-c29346b5edbb",
-    "title": "Error Handling Patterns — Verified Programming Drill (5 Qs · AI Synthesized Engineering Mode)"
-  },
-  "DRL-PRG-T01-C02-U01-01": {
-    "id": "41a3818f-8ba0-8131-a088-cc44122bd8a6",
-    "title": "Type Annotations and Inference — Verified Programming Drill (5 Qs · AI Synthesized Engineering Mode)"
-  },
-  "DRL-MTH-T02-C02-U03-01": {
-    "id": "41a3818f-8ba0-818d-aec5-d1243f0443c0",
-    "title": "Rates of Change and Behavior of Graphs — Verified Math Drill (3 Qs · AI Synthesized Reasoning Mode)"
   }
 }
