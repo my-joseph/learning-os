@@ -51,7 +51,10 @@
           "description": "Mapping relative source and output paths inside a project workspace."
         }
       ],
-      "usedContexts": [],
+      "usedContexts": [
+        "log_archive_cli",
+        "asset_bundler_workspace"
+      ],
       "qualityChecks": [
         {
           "id": "QC-cli-explicit-cwd-injection",
@@ -127,7 +130,10 @@
           "description": "Running a preflight check script that gates shell pipelines with exit codes 0 vs 1."
         }
       ],
-      "usedContexts": [],
+      "usedContexts": [
+        "deploy_preflight_cli",
+        "schema_lint_runner"
+      ],
       "qualityChecks": [
         {
           "id": "QC-cli-no-core-process-exit",
@@ -203,7 +209,9 @@
           "description": "Safely creating missing project folders and baseline files without clobbering existing code."
         }
       ],
-      "usedContexts": [],
+      "usedContexts": [
+        "node_package_auditor"
+      ],
       "qualityChecks": [
         {
           "id": "QC-layout-non-destructive-fs",

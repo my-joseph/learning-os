@@ -1,0 +1,526 @@
+{
+  "unitCode": "PRG-T00-C02-U01",
+  "unitTitle": "Terminal and Project Structure",
+  "environment": "node-vanilla",
+  "sourceAttribution": "Git – Book (Pro Git Book) & Node.js Documentation",
+  "config": {
+    "questionCount": 5,
+    "difficulty": "ALL",
+    "difficultyMode": "AI Synthesized Engineering Mode"
+  },
+  "problems": [
+    {
+      "id": "Q01",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "codeType": "implement",
+      "archetypeKey": "prg-t00-c02-cli-path-resolver",
+      "commonTrapTag": "string-concat-path-join",
+      "context": "log_archive_cli",
+      "entryPoint": "resolveArchiveInput",
+      "prompt": "Implement `resolveArchiveInput(cwd, targetArg)` for a CLI log archiver.\n\n**Requirements:**\n- Validate that both `cwd` and `targetArg` are non-empty strings (after trimming); throw a `TypeError` if either is missing or blank.\n- Resolve `targetArg` against the explicit `cwd` using Node's `path` module (do not read `process.cwd()` or the script's install directory).\n- Determine `isInsideCwd`: `true` if the resolved path equals `cwd` or is nested inside `cwd`, and `false` if it resolves outside `cwd`.\n\n**Return Contract:**\n- Return `{ resolvedPath, isInsideCwd }`.",
+      "inputHint": "Use Node's path utilities with the injected working directory rather than string concatenation",
+      "starterCode": "const path = require('node:path');\n\nfunction resolveArchiveInput(_cwd, _targetArg) {\n  // TODO: validate inputs, resolve targetArg against _cwd, and check containment\n  return { resolvedPath: '', isInsideCwd: false };\n}\n\nmodule.exports = { resolveArchiveInput };\n",
+      "solutionCode": "const path = require('node:path');\n\nfunction assertNonEmptyString(value, label) {\n  if (typeof value !== 'string' || value.trim() === '') {\n    throw new TypeError(`${label} must be a non-empty string`);\n  }\n}\n\nfunction resolveArchiveInput(cwd, targetArg) {\n  assertNonEmptyString(cwd, 'cwd');\n  assertNonEmptyString(targetArg, 'targetArg');\n  const normalizedCwd = path.resolve(cwd);\n  const resolvedPath = path.resolve(normalizedCwd, targetArg);\n  const rel = path.relative(normalizedCwd, resolvedPath);\n  const isInsideCwd = rel === '' || (!rel.startsWith('..') && !path.isAbsolute(rel));\n  return { resolvedPath, isInsideCwd };\n}\n\nmodule.exports = { resolveArchiveInput };\n",
+      "trapMutant": "const path = require('node:path');\n\nfunction resolveArchiveInput(cwd, targetArg) {\n  if (typeof cwd !== 'string' || cwd.trim() === '' || typeof targetArg !== 'string' || targetArg.trim() === '') {\n    throw new TypeError('Invalid path argument');\n  }\n  const resolvedPath = cwd + '/' + targetArg;\n  const isInsideCwd = resolvedPath.startsWith(cwd);\n  return { resolvedPath, isInsideCwd };\n}\n\nmodule.exports = { resolveArchiveInput };\n",
+      "visibleTests": [
+        {
+          "name": "resolves a relative path inside cwd",
+          "testCode": "const res = resolveArchiveInput('/var/app', 'logs/access.log');\nassert.deepStrictEqual(res, { resolvedPath: '/var/app/logs/access.log', isInsideCwd: true });"
+        },
+        {
+          "name": "normalizes trailing slashes and dot segments",
+          "testCode": "const res = resolveArchiveInput('/var/app/', './logs/../archive/2026.log');\nassert.deepStrictEqual(res, { resolvedPath: '/var/app/archive/2026.log', isInsideCwd: true });"
+        },
+        {
+          "name": "marks parent traversal outside cwd as not inside",
+          "testCode": "const res = resolveArchiveInput('/var/app/service', '../shared.log');\nassert.deepStrictEqual(res, { resolvedPath: '/var/app/shared.log', isInsideCwd: false });"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "handles current directory dot target",
+          "testCode": "const res = resolveArchiveInput('/var/app/', '.');\nassert.deepStrictEqual(res, { resolvedPath: '/var/app', isInsideCwd: true });"
+        },
+        {
+          "name": "handles absolute targetArg overriding cwd",
+          "testCode": "const res = resolveArchiveInput('/var/app', '/etc/hosts');\nassert.deepStrictEqual(res, { resolvedPath: '/etc/hosts', isInsideCwd: false });"
+        },
+        {
+          "name": "rejects sibling directory with shared prefix",
+          "testCode": "const res = resolveArchiveInput('/var/log', '../logs/out.log');\nassert.deepStrictEqual(res, { resolvedPath: '/var/logs/out.log', isInsideCwd: false });"
+        },
+        {
+          "name": "throws TypeError on empty or non-string arguments",
+          "testCode": "assert.throws(() => resolveArchiveInput('', 'a.log'), TypeError);\nassert.throws(() => resolveArchiveInput('/var/app', '   '), TypeError);\nassert.throws(() => resolveArchiveInput(null, 'a.log'), TypeError);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Validate that cwd and targetArg are non-empty strings."
+        },
+        {
+          "explain": "Normalize cwd and resolve targetArg against it with path.resolve."
+        },
+        {
+          "explain": "Compute path.relative(normalizedCwd, resolvedPath) to verify containment without prefix bugs."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "string-concat-path-join|direct|resolveArchiveInput",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 3,
+          "hasTrapOrFlaw": false,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "string-concat-path-join",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 5
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Foundation",
+      "unitCode": "PRG-T00-C02-U01",
+      "workspaceFile": "drills/workspace/DRL-PRG-T00-C02-U01-01/Q01_resolveArchiveInput.js"
+    },
+    {
+      "id": "Q02",
+      "level": 2,
+      "category": "Trap & Edge Case",
+      "archetype": "problem-solving",
+      "codeType": "implement",
+      "archetypeKey": "prg-t00-c02-cli-path-resolver",
+      "commonTrapTag": "unbounded-parent-traversal",
+      "context": "asset_bundler_workspace",
+      "entryPoint": "resolveWorkspaceOutput",
+      "prompt": "Implement `resolveWorkspaceOutput(workspaceRoot, outArg)` for a static asset bundler CLI.\n\n**Requirements:**\n- Validate that `workspaceRoot` and `outArg` are non-empty strings (after trimming); throw a `TypeError` otherwise.\n- Resolve `outArg` relative to `workspaceRoot` using `path.resolve`.\n- Enforce workspace containment: if the resolved path escapes `workspaceRoot` (including sibling directories with a shared prefix or absolute paths outside `workspaceRoot`), throw an `Error`.\n- Allow resolving to `workspaceRoot` itself (e.g. `'.'`).\n\n**Return Contract:**\n- Return the normalized absolute path string.",
+      "inputHint": "Check the relative path from the normalized workspace root to the resolved target",
+      "starterCode": "const path = require('node:path');\n\nfunction resolveWorkspaceOutput(_workspaceRoot, _outArg) {\n  // TODO: resolve output path and enforce workspaceRoot containment\n  return '';\n}\n\nmodule.exports = { resolveWorkspaceOutput };\n",
+      "solutionCode": "const path = require('node:path');\n\nfunction assertPathString(value, label) {\n  if (typeof value !== 'string' || value.trim() === '') {\n    throw new TypeError(`${label} must be a non-empty string`);\n  }\n}\n\nfunction resolveWorkspaceOutput(workspaceRoot, outArg) {\n  assertPathString(workspaceRoot, 'workspaceRoot');\n  assertPathString(outArg, 'outArg');\n  const root = path.resolve(workspaceRoot);\n  const resolved = path.resolve(root, outArg);\n  const rel = path.relative(root, resolved);\n  if (rel === '..' || rel.startsWith(`..${path.sep}`) || path.isAbsolute(rel)) {\n    throw new Error(`Output path escapes workspace root: ${outArg}`);\n  }\n  return resolved;\n}\n\nmodule.exports = { resolveWorkspaceOutput };\n",
+      "trapMutant": "const path = require('node:path');\n\nfunction resolveWorkspaceOutput(workspaceRoot, outArg) {\n  if (typeof workspaceRoot !== 'string' || workspaceRoot.trim() === '' || typeof outArg !== 'string' || outArg.trim() === '') {\n    throw new TypeError('Invalid path argument');\n  }\n  return path.resolve(workspaceRoot, outArg);\n}\n\nmodule.exports = { resolveWorkspaceOutput };\n",
+      "visibleTests": [
+        {
+          "name": "resolves nested output directory inside workspaceRoot",
+          "testCode": "assert.strictEqual(resolveWorkspaceOutput('/srv/web', 'dist/assets'), '/srv/web/dist/assets');"
+        },
+        {
+          "name": "normalizes internal parent segments that stay inside root",
+          "testCode": "assert.strictEqual(resolveWorkspaceOutput('/srv/web', 'src/../dist'), '/srv/web/dist');"
+        },
+        {
+          "name": "throws when output path escapes workspaceRoot",
+          "testCode": "assert.throws(() => resolveWorkspaceOutput('/srv/web', '../outside'), Error);"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "allows workspaceRoot itself via dot",
+          "testCode": "assert.strictEqual(resolveWorkspaceOutput('/srv/web/', '.'), '/srv/web');"
+        },
+        {
+          "name": "allows absolute outArg that is inside workspaceRoot",
+          "testCode": "assert.strictEqual(resolveWorkspaceOutput('/srv/web', '/srv/web/build/app.js'), '/srv/web/build/app.js');"
+        },
+        {
+          "name": "rejects sibling directory sharing root prefix",
+          "testCode": "assert.throws(() => resolveWorkspaceOutput('/srv/web', '../web-secrets/key.pem'), Error);"
+        },
+        {
+          "name": "rejects absolute path outside workspaceRoot",
+          "testCode": "assert.throws(() => resolveWorkspaceOutput('/srv/web', '/etc/passwd'), Error);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Validate workspaceRoot and outArg as non-empty strings."
+        },
+        {
+          "explain": "Resolve both root and target with path.resolve."
+        },
+        {
+          "explain": "Use path.relative(root, resolved) to reject any '..' escape or cross-root absolute path."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "unbounded-parent-traversal|direct|resolveWorkspaceOutput",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "unbounded-parent-traversal",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 5
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Standard Exam",
+      "unitCode": "PRG-T00-C02-U01",
+      "workspaceFile": "drills/workspace/DRL-PRG-T00-C02-U01-01/Q02_resolveWorkspaceOutput.js"
+    },
+    {
+      "id": "Q03",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "codeType": "implement",
+      "archetypeKey": "prg-t00-c02-env-argv-exit-code",
+      "commonTrapTag": "stdout-error-pollution",
+      "context": "deploy_preflight_cli",
+      "entryPoint": "runPreflight",
+      "prompt": "Implement `runPreflight(argv, env)` for a deployment preflight CLI runner.\n\n**Argument & Environment Precedence:**\n- `argv` defaults to `[]` and `env` defaults to `{}` (never read global `process.argv` or `process.env`, never call `process.exit()`, and never mutate inputs).\n- Support `--port=<value>` or `--port <value>` (overrides `env.PORT`, which overrides default `3000`).\n- Support `--env=<value>` or `--env <value>` (overrides `env.APP_ENV`, which overrides default `'development'`).\n- Treat an explicitly provided `0` or `'0'` as a provided value (do not fall back to defaults via truthiness).\n\n**Validation & Streams:**\n- Reject any unknown flag (starting with `-`) or missing flag value with `exitCode: 1` and a diagnostic on `stderr`.\n- Validate `port` is an integer in `1..65535`; invalid ports return `exitCode: 1`, empty `stdout`, and a diagnostic ending with `\\n` on `stderr`.\n- On success, return `{ exitCode: 0, stdout: JSON.stringify({ port, env: appEnv }) + '\\n', stderr: '' }`.",
+      "inputHint": "Separate data output (stdout) from error diagnostics (stderr) and check for undefined rather than falsy values",
+      "starterCode": "function runPreflight(_argv = [], _env = {}) {\n  // TODO: parse argv/env with precedence, validate port, and return { exitCode, stdout, stderr }\n  return { exitCode: 1, stdout: '', stderr: '' };\n}\n\nmodule.exports = { runPreflight };\n",
+      "solutionCode": "const DEFAULT_PORT = 3000;\nconst DEFAULT_ENV = 'development';\nconst MIN_PORT = 1;\nconst MAX_PORT = 65535;\n\nfunction readFlagValue(argv, index, name) {\n  const arg = argv[index];\n  const prefix = `${name}=`;\n  if (arg.startsWith(prefix)) return { value: arg.slice(prefix.length), nextIndex: index };\n  if (arg === name) {\n    if (index + 1 >= argv.length) return { error: `Missing value for ${name}` };\n    return { value: argv[index + 1], nextIndex: index + 1 };\n  }\n  return null;\n}\n\nfunction parseCliFlags(argv) {\n  const parsed = { port: undefined, appEnv: undefined, error: null };\n  for (let i = 0; i < argv.length; i += 1) {\n    const portHit = readFlagValue(argv, i, '--port');\n    if (portHit) {\n      if (portHit.error) return { ...parsed, error: portHit.error };\n      parsed.port = portHit.value;\n      i = portHit.nextIndex;\n      continue;\n    }\n    const envHit = readFlagValue(argv, i, '--env');\n    if (envHit) {\n      if (envHit.error) return { ...parsed, error: envHit.error };\n      parsed.appEnv = envHit.value;\n      i = envHit.nextIndex;\n      continue;\n    }\n    if (argv[i].startsWith('-')) return { ...parsed, error: `Unknown flag: ${argv[i]}` };\n  }\n  return parsed;\n}\n\nfunction pickSetting(flagVal, envVal, fallback) {\n  if (flagVal !== undefined) return flagVal;\n  if (envVal !== undefined && envVal !== '') return envVal;\n  return fallback;\n}\n\nfunction parseValidPort(rawPort) {\n  if (typeof rawPort === 'string' && rawPort.trim() === '') return null;\n  const num = Number(rawPort);\n  if (!Number.isInteger(num) || num < MIN_PORT || num > MAX_PORT) return null;\n  return num;\n}\n\nfunction runPreflight(argv = [], env = {}) {\n  const flags = parseCliFlags(argv);\n  if (flags.error) {\n    return { exitCode: 1, stdout: '', stderr: `Error: ${flags.error}\\n` };\n  }\n  const rawPort = pickSetting(flags.port, env.PORT, DEFAULT_PORT);\n  const port = parseValidPort(rawPort);\n  if (port === null) {\n    return { exitCode: 1, stdout: '', stderr: `Error: Invalid port ${String(rawPort)}\\n` };\n  }\n  const appEnv = pickSetting(flags.appEnv, env.APP_ENV, DEFAULT_ENV);\n  return { exitCode: 0, stdout: `${JSON.stringify({ port, env: appEnv })}\\n`, stderr: '' };\n}\n\nmodule.exports = { runPreflight };\n",
+      "trapMutant": "function runPreflight(argv = [], env = {}) {\n  const portArg = argv.find((a) => a.startsWith('--port='));\n  const rawPort = portArg ? portArg.slice(7) : (env.PORT || 3000);\n  const port = Number(rawPort);\n  if (!Number.isInteger(port) || port < 1 || port > 65535) {\n    return { exitCode: 1, stdout: `Error: Invalid port ${rawPort}\\n`, stderr: '' };\n  }\n  const appEnv = env.APP_ENV || 'development';\n  return { exitCode: 0, stdout: `${JSON.stringify({ port, env: appEnv })}\\n`, stderr: '' };\n}\n\nmodule.exports = { runPreflight };\n",
+      "visibleTests": [
+        {
+          "name": "uses default port and env when argv and env are empty",
+          "testCode": "const res = runPreflight([], {});\nassert.strictEqual(res.exitCode, 0);\nassert.strictEqual(res.stderr, '');\nassert.deepStrictEqual(JSON.parse(res.stdout), { port: 3000, env: 'development' });"
+        },
+        {
+          "name": "CLI flags override environment variables",
+          "testCode": "const res = runPreflight(['--port', '8080', '--env=staging'], { PORT: '4000', APP_ENV: 'production' });\nassert.strictEqual(res.exitCode, 0);\nassert.deepStrictEqual(JSON.parse(res.stdout), { port: 8080, env: 'staging' });"
+        },
+        {
+          "name": "writes error diagnostics to stderr and keeps stdout empty on invalid port",
+          "testCode": "const res = runPreflight(['--port=99999'], {});\nassert.strictEqual(res.exitCode, 1);\nassert.strictEqual(res.stdout, '');\nassert.ok(res.stderr.length > 0);"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "does not fall back to default when PORT is '0'",
+          "testCode": "const res = runPreflight([], { PORT: '0' });\nassert.strictEqual(res.exitCode, 1);\nassert.strictEqual(res.stdout, '');\nassert.ok(res.stderr.includes('0'));"
+        },
+        {
+          "name": "uses env.PORT and env.APP_ENV when flags are absent",
+          "testCode": "const res = runPreflight([], { PORT: '5050', APP_ENV: 'production' });\nassert.strictEqual(res.exitCode, 0);\nassert.deepStrictEqual(JSON.parse(res.stdout), { port: 5050, env: 'production' });"
+        },
+        {
+          "name": "rejects unknown flags on stderr with exitCode 1",
+          "testCode": "const res = runPreflight(['--verbose'], {});\nassert.strictEqual(res.exitCode, 1);\nassert.strictEqual(res.stdout, '');\nassert.ok(res.stderr.includes('Unknown'));"
+        },
+        {
+          "name": "rejects missing flag value for --port",
+          "testCode": "const res = runPreflight(['--port'], {});\nassert.strictEqual(res.exitCode, 1);\nassert.strictEqual(res.stdout, '');\nassert.ok(res.stderr.length > 0);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Parse --port and --env flags from argv without mutating the array."
+        },
+        {
+          "explain": "Resolve precedence (argv > env > default) using explicit undefined checks."
+        },
+        {
+          "explain": "Validate the port range and return stdout for JSON output or stderr with exitCode 1 on errors."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "stdout-error-pollution|direct|runPreflight",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": false,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "stdout-error-pollution",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 5
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Standard Exam",
+      "unitCode": "PRG-T00-C02-U01",
+      "workspaceFile": "drills/workspace/DRL-PRG-T00-C02-U01-01/Q03_runPreflight.js"
+    },
+    {
+      "id": "Q04",
+      "level": 2,
+      "category": "Trap & Edge Case",
+      "archetype": "problem-solving",
+      "codeType": "fix-bug",
+      "archetypeKey": "prg-t00-c02-env-argv-exit-code",
+      "commonTrapTag": "zero-exit-on-failure",
+      "context": "schema_lint_runner",
+      "entryPoint": "runSchemaCheck",
+      "prompt": "Fix the bug in `runSchemaCheck(argv, env, readFile)` for a schema validation CLI.\n\n**Observed Symptom:**\n- When the target schema file is missing, unreadable, contains invalid JSON, or lacks required `name`/`version` string fields, shell pipelines (`node check.js && echo OK`) continue running `echo OK` because the runner reports success.\n\n**Contract:**\n- Resolve target file path from `--file=<path>` (or `--file <path>`) > `env.SCHEMA_FILE` > `'./schema.json'`.\n- Read the file using the injected `readFile(filePath)` function (never call `process.exit()`).\n- On valid JSON with non-empty string `name` and `version` fields, return `{ exitCode: 0, stdout: 'OK: <name>@<version>\\n', stderr: '' }`.\n- On any failure (missing file, invalid JSON, or missing fields), return `{ exitCode: 1, stdout: '', stderr: 'Error: <reason>\\n' }`.",
+      "inputHint": "Inspect what exitCode and streams are returned inside error branches",
+      "starterCode": "function resolveTargetFile(argv, env) {\n  for (let i = 0; i < argv.length; i += 1) {\n    if (argv[i].startsWith('--file=')) return argv[i].slice('--file='.length);\n    if (argv[i] === '--file' && i + 1 < argv.length) return argv[i + 1];\n  }\n  return env.SCHEMA_FILE !== undefined && env.SCHEMA_FILE !== '' ? env.SCHEMA_FILE : './schema.json';\n}\n\nfunction runSchemaCheck(argv = [], env = {}, readFile = () => '') {\n  const targetFile = resolveTargetFile(argv, env);\n  try {\n    const raw = readFile(targetFile);\n    const schema = JSON.parse(raw);\n    if (typeof schema.name !== 'string' || !schema.name.trim() || typeof schema.version !== 'string' || !schema.version.trim()) {\n      return { exitCode: 0, stdout: '', stderr: 'Error: Schema requires name and version\\n' };\n    }\n    return { exitCode: 0, stdout: `OK: ${schema.name}@${schema.version}\\n`, stderr: '' };\n  } catch (err) {\n    return { exitCode: 0, stdout: '', stderr: `Error: ${err.message}\\n` };\n  }\n}\n\nmodule.exports = { runSchemaCheck };\n",
+      "solutionCode": "function resolveTargetFile(argv, env) {\n  for (let i = 0; i < argv.length; i += 1) {\n    if (argv[i].startsWith('--file=')) return argv[i].slice('--file='.length);\n    if (argv[i] === '--file' && i + 1 < argv.length) return argv[i + 1];\n  }\n  return env.SCHEMA_FILE !== undefined && env.SCHEMA_FILE !== '' ? env.SCHEMA_FILE : './schema.json';\n}\n\nfunction hasValidMeta(schema) {\n  return (\n    schema !== null &&\n    typeof schema === 'object' &&\n    typeof schema.name === 'string' &&\n    schema.name.trim() !== '' &&\n    typeof schema.version === 'string' &&\n    schema.version.trim() !== ''\n  );\n}\n\nfunction runSchemaCheck(argv = [], env = {}, readFile = () => '') {\n  const targetFile = resolveTargetFile(argv, env);\n  try {\n    const raw = readFile(targetFile);\n    const schema = JSON.parse(raw);\n    if (!hasValidMeta(schema)) {\n      return { exitCode: 1, stdout: '', stderr: 'Error: Schema requires non-empty name and version\\n' };\n    }\n    return { exitCode: 0, stdout: `OK: ${schema.name}@${schema.version}\\n`, stderr: '' };\n  } catch (err) {\n    return { exitCode: 1, stdout: '', stderr: `Error: ${err.message}\\n` };\n  }\n}\n\nmodule.exports = { runSchemaCheck };\n",
+      "trapMutant": "function resolveTargetFile(argv, env) {\n  for (let i = 0; i < argv.length; i += 1) {\n    if (argv[i].startsWith('--file=')) return argv[i].slice('--file='.length);\n    if (argv[i] === '--file' && i + 1 < argv.length) return argv[i + 1];\n  }\n  return env.SCHEMA_FILE !== undefined && env.SCHEMA_FILE !== '' ? env.SCHEMA_FILE : './schema.json';\n}\n\nfunction runSchemaCheck(argv = [], env = {}, readFile = () => '') {\n  const targetFile = resolveTargetFile(argv, env);\n  try {\n    const raw = readFile(targetFile);\n    const schema = JSON.parse(raw);\n    if (!schema || typeof schema.name !== 'string' || typeof schema.version !== 'string') {\n      return { exitCode: 0, stdout: '', stderr: 'Error: Schema requires name and version\\n' };\n    }\n    return { exitCode: 0, stdout: `OK: ${schema.name}@${schema.version}\\n`, stderr: '' };\n  } catch (err) {\n    return { exitCode: 0, stdout: '', stderr: `Error: ${err.message}\\n` };\n  }\n}\n\nmodule.exports = { runSchemaCheck };\n",
+      "visibleTests": [
+        {
+          "name": "returns exitCode 0 and summary on valid schema",
+          "testCode": "const res = runSchemaCheck([], {}, () => JSON.stringify({ name: 'users', version: '1.2.0' }));\nassert.deepStrictEqual(res, { exitCode: 0, stdout: 'OK: users@1.2.0\\n', stderr: '' });"
+        },
+        {
+          "name": "returns non-zero exitCode when file read fails",
+          "testCode": "const res = runSchemaCheck(['--file=missing.json'], {}, () => { throw new Error('ENOENT'); });\nassert.strictEqual(res.exitCode, 1);\nassert.strictEqual(res.stdout, '');\nassert.ok(res.stderr.includes('ENOENT'));"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "returns exitCode 1 on invalid JSON",
+          "testCode": "const res = runSchemaCheck([], {}, () => '{broken json');\nassert.strictEqual(res.exitCode, 1);\nassert.strictEqual(res.stdout, '');\nassert.ok(res.stderr.startsWith('Error:'));"
+        },
+        {
+          "name": "returns exitCode 1 when name or version is missing or blank",
+          "testCode": "const res = runSchemaCheck([], {}, () => JSON.stringify({ name: 'users', version: '   ' }));\nassert.strictEqual(res.exitCode, 1);\nassert.strictEqual(res.stdout, '');\nassert.ok(res.stderr.length > 0);"
+        },
+        {
+          "name": "CLI --file overrides env.SCHEMA_FILE",
+          "testCode": "let seenPath = null;\nconst res = runSchemaCheck(['--file', 'cli.json'], { SCHEMA_FILE: 'env.json' }, (p) => { seenPath = p; return JSON.stringify({ name: 'orders', version: '2.0.0' }); });\nassert.strictEqual(seenPath, 'cli.json');\nassert.strictEqual(res.exitCode, 0);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Return exitCode: 1 instead of 0 in the invalid-schema branch."
+        },
+        {
+          "explain": "Return exitCode: 1 instead of 0 in the catch block when readFile or JSON.parse fails."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "zero-exit-on-failure|direct|runSchemaCheck",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "zero-exit-on-failure",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 4
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Standard Exam",
+      "unitCode": "PRG-T00-C02-U01",
+      "workspaceFile": "drills/workspace/DRL-PRG-T00-C02-U01-01/Q04_runSchemaCheck.js"
+    },
+    {
+      "id": "Q05",
+      "level": 2,
+      "category": "Trap & Edge Case",
+      "archetype": "debugging",
+      "codeType": "fix-bug",
+      "archetypeKey": "prg-t00-c02-project-layout-scaffold",
+      "commonTrapTag": "missing-gitignore-entries",
+      "context": "node_package_auditor",
+      "entryPoint": "auditProjectLayout",
+      "prompt": "Fix the bug in `auditProjectLayout(projectRoot)` for a Node.js project layout auditor.\n\n**Observed Symptom:**\n- Projects that omit `.env` from `.gitignore`, or that only mention `node_modules` inside a `#` comment, are falsely reported as clean (`ok: true`).\n- Also ensure `package.json`'s `main` field (when present) is a relative path resolving inside `projectRoot`.\n\n**Contract:**\n- Anchor all filesystem reads to `projectRoot` (never `process.cwd()`, never modify or delete files).\n- Check that `src` and `tests` exist as directories under `projectRoot`; record missing ones in `missingDirs`.\n- Parse `package.json`: if missing or invalid JSON, add an error to `manifestErrors`; if `main` is present and is either absolute or escapes `projectRoot`, add an error to `manifestErrors`.\n- Parse `.gitignore` line-by-line (ignoring blank lines and `#` comments): require both `node_modules` (or `node_modules/`) and `.env`; record missing rules in `ignoreErrors`.\n- Return `{ ok, missingDirs, manifestErrors, ignoreErrors }` where `ok` is `true` only when all three error arrays are empty.",
+      "inputHint": "Parse .gitignore into active non-comment lines instead of using a raw substring check",
+      "starterCode": "const fs = require('node:fs');\nconst path = require('node:path');\n\nfunction checkDirs(root) {\n  const missing = [];\n  for (const dir of ['src', 'tests']) {\n    const full = path.join(root, dir);\n    if (!fs.existsSync(full) || !fs.statSync(full).isDirectory()) missing.push(dir);\n  }\n  return missing;\n}\n\nfunction checkManifest(root) {\n  const pkgPath = path.join(root, 'package.json');\n  if (!fs.existsSync(pkgPath)) return ['Missing package.json'];\n  try {\n    const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));\n    if (typeof pkg.main === 'string') {\n      const rel = path.relative(root, path.resolve(root, pkg.main));\n      if (path.isAbsolute(pkg.main) || rel.startsWith('..')) {\n        return ['package.json main escapes projectRoot'];\n      }\n    }\n    return [];\n  } catch (_err) {\n    return ['Invalid package.json'];\n  }\n}\n\nfunction auditProjectLayout(projectRoot) {\n  const root = path.resolve(projectRoot);\n  const missingDirs = checkDirs(root);\n  const manifestErrors = checkManifest(root);\n  const ignoreErrors = [];\n  const ignorePath = path.join(root, '.gitignore');\n  if (!fs.existsSync(ignorePath)) {\n    ignoreErrors.push('Missing .gitignore');\n  } else {\n    const raw = fs.readFileSync(ignorePath, 'utf8');\n    if (!raw.includes('node_modules')) ignoreErrors.push('Missing node_modules/ in .gitignore');\n  }\n  const ok = missingDirs.length === 0 && manifestErrors.length === 0 && ignoreErrors.length === 0;\n  return { ok, missingDirs, manifestErrors, ignoreErrors };\n}\n\nmodule.exports = { auditProjectLayout };\n",
+      "solutionCode": "const fs = require('node:fs');\nconst path = require('node:path');\n\nfunction checkDirs(root) {\n  const missing = [];\n  for (const dir of ['src', 'tests']) {\n    const full = path.join(root, dir);\n    if (!fs.existsSync(full) || !fs.statSync(full).isDirectory()) missing.push(dir);\n  }\n  return missing;\n}\n\nfunction checkManifest(root) {\n  const pkgPath = path.join(root, 'package.json');\n  if (!fs.existsSync(pkgPath)) return ['Missing package.json'];\n  try {\n    const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));\n    if (typeof pkg.main === 'string') {\n      const resolvedMain = path.resolve(root, pkg.main);\n      const rel = path.relative(root, resolvedMain);\n      if (path.isAbsolute(pkg.main) || rel === '..' || rel.startsWith(`..${path.sep}`) || path.isAbsolute(rel)) {\n        return ['package.json main must be relative and inside projectRoot'];\n      }\n    }\n    return [];\n  } catch (_err) {\n    return ['Invalid package.json'];\n  }\n}\n\nfunction checkGitignore(root) {\n  const ignorePath = path.join(root, '.gitignore');\n  if (!fs.existsSync(ignorePath)) return ['Missing .gitignore'];\n  const lines = fs\n    .readFileSync(ignorePath, 'utf8')\n    .split(/\\r?\\n/)\n    .map((line) => line.trim())\n    .filter((line) => line !== '' && !line.startsWith('#'));\n  const errors = [];\n  if (!lines.includes('node_modules') && !lines.includes('node_modules/')) {\n    errors.push('Missing node_modules/ in .gitignore');\n  }\n  if (!lines.includes('.env')) {\n    errors.push('Missing .env in .gitignore');\n  }\n  return errors;\n}\n\nfunction auditProjectLayout(projectRoot) {\n  const root = path.resolve(projectRoot);\n  const missingDirs = checkDirs(root);\n  const manifestErrors = checkManifest(root);\n  const ignoreErrors = checkGitignore(root);\n  const ok = missingDirs.length === 0 && manifestErrors.length === 0 && ignoreErrors.length === 0;\n  return { ok, missingDirs, manifestErrors, ignoreErrors };\n}\n\nmodule.exports = { auditProjectLayout };\n",
+      "trapMutant": "const fs = require('node:fs');\nconst path = require('node:path');\n\nfunction auditProjectLayout(projectRoot) {\n  const root = path.resolve(projectRoot);\n  const missingDirs = ['src', 'tests'].filter((d) => !fs.existsSync(path.join(root, d)));\n  const manifestErrors = fs.existsSync(path.join(root, 'package.json')) ? [] : ['Missing package.json'];\n  const ignoreErrors = [];\n  const ignorePath = path.join(root, '.gitignore');\n  if (!fs.existsSync(ignorePath)) {\n    ignoreErrors.push('Missing .gitignore');\n  } else if (!fs.readFileSync(ignorePath, 'utf8').includes('node_modules')) {\n    ignoreErrors.push('Missing node_modules/ in .gitignore');\n  }\n  return {\n    ok: missingDirs.length === 0 && manifestErrors.length === 0 && ignoreErrors.length === 0,\n    missingDirs,\n    manifestErrors,\n    ignoreErrors,\n  };\n}\n\nmodule.exports = { auditProjectLayout };\n",
+      "visibleTests": [
+        {
+          "name": "passes for a clean project layout",
+          "testCode": "const fs = require('node:fs');\nconst os = require('node:os');\nconst path = require('node:path');\nconst dir = fs.mkdtempSync(path.join(os.tmpdir(), 'layout-ok-'));\ntry {\n  fs.mkdirSync(path.join(dir, 'src'));\n  fs.mkdirSync(path.join(dir, 'tests'));\n  fs.writeFileSync(path.join(dir, 'package.json'), JSON.stringify({ name: 'demo', main: './src/index.js' }));\n  fs.writeFileSync(path.join(dir, '.gitignore'), 'node_modules/\\n.env\\n');\n  const res = auditProjectLayout(dir);\n  assert.deepStrictEqual(res, { ok: true, missingDirs: [], manifestErrors: [], ignoreErrors: [] });\n} finally {\n  fs.rmSync(dir, { recursive: true, force: true });\n}"
+        },
+        {
+          "name": "flags missing .env in .gitignore",
+          "testCode": "const fs = require('node:fs');\nconst os = require('node:os');\nconst path = require('node:path');\nconst dir = fs.mkdtempSync(path.join(os.tmpdir(), 'layout-env-'));\ntry {\n  fs.mkdirSync(path.join(dir, 'src'));\n  fs.mkdirSync(path.join(dir, 'tests'));\n  fs.writeFileSync(path.join(dir, 'package.json'), JSON.stringify({ name: 'demo', main: './src/index.js' }));\n  fs.writeFileSync(path.join(dir, '.gitignore'), 'node_modules/\\n');\n  const res = auditProjectLayout(dir);\n  assert.strictEqual(res.ok, false);\n  assert.strictEqual(res.ignoreErrors.length, 1);\n} finally {\n  fs.rmSync(dir, { recursive: true, force: true });\n}"
+        },
+        {
+          "name": "reports missing tests directory",
+          "testCode": "const fs = require('node:fs');\nconst os = require('node:os');\nconst path = require('node:path');\nconst dir = fs.mkdtempSync(path.join(os.tmpdir(), 'layout-dir-'));\ntry {\n  fs.mkdirSync(path.join(dir, 'src'));\n  fs.writeFileSync(path.join(dir, 'package.json'), JSON.stringify({ name: 'demo' }));\n  fs.writeFileSync(path.join(dir, '.gitignore'), 'node_modules/\\n.env\\n');\n  const res = auditProjectLayout(dir);\n  assert.strictEqual(res.ok, false);\n  assert.deepStrictEqual(res.missingDirs, ['tests']);\n} finally {\n  fs.rmSync(dir, { recursive: true, force: true });\n}"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "ignores commented-out rules in .gitignore",
+          "testCode": "const fs = require('node:fs');\nconst os = require('node:os');\nconst path = require('node:path');\nconst dir = fs.mkdtempSync(path.join(os.tmpdir(), 'layout-comment-'));\ntry {\n  fs.mkdirSync(path.join(dir, 'src'));\n  fs.mkdirSync(path.join(dir, 'tests'));\n  fs.writeFileSync(path.join(dir, 'package.json'), JSON.stringify({ name: 'demo' }));\n  fs.writeFileSync(path.join(dir, '.gitignore'), '# node_modules/\\n# .env\\n');\n  const res = auditProjectLayout(dir);\n  assert.strictEqual(res.ok, false);\n  assert.strictEqual(res.ignoreErrors.length, 2);\n} finally {\n  fs.rmSync(dir, { recursive: true, force: true });\n}"
+        },
+        {
+          "name": "rejects absolute main path in package.json",
+          "testCode": "const fs = require('node:fs');\nconst os = require('node:os');\nconst path = require('node:path');\nconst dir = fs.mkdtempSync(path.join(os.tmpdir(), 'layout-abs-'));\ntry {\n  fs.mkdirSync(path.join(dir, 'src'));\n  fs.mkdirSync(path.join(dir, 'tests'));\n  fs.writeFileSync(path.join(dir, 'package.json'), JSON.stringify({ name: 'demo', main: '/Users/dev/app/src/index.js' }));\n  fs.writeFileSync(path.join(dir, '.gitignore'), 'node_modules/\\n.env\\n');\n  const res = auditProjectLayout(dir);\n  assert.strictEqual(res.ok, false);\n  assert.strictEqual(res.manifestErrors.length, 1);\n} finally {\n  fs.rmSync(dir, { recursive: true, force: true });\n}"
+        },
+        {
+          "name": "rejects package.json main escaping projectRoot",
+          "testCode": "const fs = require('node:fs');\nconst os = require('node:os');\nconst path = require('node:path');\nconst dir = fs.mkdtempSync(path.join(os.tmpdir(), 'layout-esc-'));\ntry {\n  fs.mkdirSync(path.join(dir, 'src'));\n  fs.mkdirSync(path.join(dir, 'tests'));\n  fs.writeFileSync(path.join(dir, 'package.json'), JSON.stringify({ name: 'demo', main: '../../outside.js' }));\n  fs.writeFileSync(path.join(dir, '.gitignore'), 'node_modules/\\n.env\\n');\n  const res = auditProjectLayout(dir);\n  assert.strictEqual(res.ok, false);\n  assert.strictEqual(res.manifestErrors.length, 1);\n} finally {\n  fs.rmSync(dir, { recursive: true, force: true });\n}"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Split .gitignore into trimmed non-empty, non-comment lines."
+        },
+        {
+          "explain": "Verify both node_modules (or node_modules/) and .env are present in active ignore lines."
+        },
+        {
+          "explain": "Keep package.json main containment and src/tests directory checks anchored to projectRoot."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "missing-gitignore-entries|direct|auditProjectLayout",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "debugging"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "missing-gitignore-entries",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 5
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Standard Exam",
+      "unitCode": "PRG-T00-C02-U01",
+      "workspaceFile": "drills/workspace/DRL-PRG-T00-C02-U01-01/Q05_auditProjectLayout.js"
+    }
+  ],
+  "blindSolve": [
+    {
+      "problemId": "Q01",
+      "passed": true
+    },
+    {
+      "problemId": "Q02",
+      "passed": true
+    },
+    {
+      "problemId": "Q03",
+      "passed": true
+    },
+    {
+      "problemId": "Q04",
+      "passed": true
+    },
+    {
+      "problemId": "Q05",
+      "passed": true
+    }
+  ],
+  "review": {
+    "verdict": "pass",
+    "note": "All 5 problems match the PRG-T00-C02-U01 brief, have zero leaks or toy names, satisfy all Layer 3 qualityChecks, and use valid vault archetypes with matching trapMutants."
+  },
+  "drillId": "DRL-PRG-T00-C02-U01-01",
+  "topicCode": "PRG-T00",
+  "chapterCode": "PRG-T00-C02",
+  "schemaVersion": "2.0-code",
+  "subject": "PRG",
+  "createdAt": "2026-11-16 17:21:43",
+  "localFilePath": "drills/data/PRG-T00-C02-U01/DRL-PRG-T00-C02-U01-01.json"
+}
