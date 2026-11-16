@@ -105,7 +105,7 @@ $$\text{Think Before Coding} \longrightarrow \text{Hands-On Implementation} \lon
 1. **Think Before Coding (Mental Model & Invariant Planning):** Before writing a single line of code, review the business context, input/output contracts, and potential boundary traps. Sketch the mental model, data transformations, and state transitions.
 2. **Hands-On Implementation (Local IDE Execution):** Launch VS Code or Cursor directly via one-click deep links. Implement the logic using real IDE tools, linting, type systems, and autocomplete.
 3. **Automated Testing (Acceptance Testing):** Run local test suites in the terminal (`npm test`). Iterate until all visible scenarios and edge-case acceptance criteria pass with 100% green.
-4. **Code Explanation (AI Senior Lead PR Review):** Articulate why the solution works, explain algorithmic trade-offs, and request an AI Senior Tech Lead architectural review focusing on the 7 core engineering competencies.
+4. **Code Explanation (Rubric-Bound PR Review):** Run `python -m code_engine.review_run <DRILL_ID> <QID>` (or ask in Claude Code: `review code <DRILL_ID> <QID>`), address any `must` or lint/typecheck findings via `scripts.review_record`, and record a concise explanation of why the solution works.
 5. **Refactor (Clean Code & Decoupling):** Eliminate code smells, extract single-responsibility helpers, improve naming, optimize hot paths, and refine type annotations while keeping tests green.
 6. **Scale Difficulty (Edge Scaling & Extension):** Progress to higher difficulty tiers, stricter performance constraints, or additional real-world business constraints.
 

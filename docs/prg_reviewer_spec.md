@@ -116,7 +116,7 @@ problem as correct only on a pass.
 | :-- | :-- | :-- | :-- |
 | R1 | ESLint + tsc toolkit (`tools/lint/`), `npm run check` in generated workspaces and the lab, tests | Gemini | done |
 | R2 | `qualityChecks` schema, universal list, backfill for the 3 PRG vaults, ingest gates (reference clean, known-bad caught) | Gemini, rubric content reviewed by Claude | done |
-| R3 | `state.reviews[]` record + `scripts/review_record.py` CLI + weak_spots/mastery reading it, tests | Gemini | pending |
+| R3 | `state.reviews[]` record + `scripts/review_record.py` CLI + weak_spots/mastery reading it, tests | Gemini | done |
 | R4 | `review-code` skill (this document's rules), retire `code_engine/review.py` | Claude | pending |
 
 ### R1 deviations from v1 draft
@@ -128,6 +128,10 @@ problem as correct only on a pass.
 ### R2 deviations from v1 draft
 - **`knownBad` on every check (including `should`):** Rather than restricting `knownBad` to `must` checks only, every universal and archetype `qualityChecks` entry includes `knownBad: { code, caughtBy }` (`"lint:<rule-id>"` or `"review"` — `"test"` is rejected because behaviour belongs in `hiddenTests`, not `qualityChecks`), and `python -m code_engine.quality_checks --check-vaults` + ingest verify that every `"lint:<rule-id>"` snippet actually triggers that ESLint rule. Checks may also include an optional `accepted` list of acceptable implementations as reviewer hints, while the check itself states a property of the code rather than a mandated API.
 - **Ingest Layer 3 calibration scope:** At ingest, `code_engine/ai_drill_ingest.py` validates archetype `qualityChecks`, verifies `lint:<rule-id>` `knownBad` snippets, and runs Layer 2 ESLint (`lint_drill_doc`) on every problem's `solutionCode`; running an LLM review on `solutionCode` at ingest is left manual/out of scope per the no-paid-API-calls rule.
+
+### R3 deviations from v1 draft
+- **Per-finding `disputed` + stored `code` & `typecheck`:** Instead of a top-level `disputes: []` array on the review record, each disputed finding carries `disputed: {reason, issueId}` directly so `compute_verdict` and `weak_spots.py` can ignore disputed findings per-item; records also store `code` (full source text) and `typecheck: [{line, message}]` alongside `lint`.
+- **Clipboard prompt retired in R3:** `code_engine/review.py`, `labs/common/review.py`, and `code_engine/workspace.py`'s README text were updated in R3 (ahead of R4) to point learners to `review code <DRILL_ID> <QID>` and `python -m code_engine.review_run`.
 
 ## Out of scope for v1
 

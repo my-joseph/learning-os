@@ -1,20 +1,29 @@
 # -*- coding: utf-8 -*-
 """
-Proxy runner for AI Senior Tech Lead PR Review in Labs.
+Code review instructions helper for Project Labs (clipboard prompt retired).
 """
 
-import subprocess
-import sys
+from __future__ import annotations
+
+import json
 from pathlib import Path
 
-# Locate repo root and delegate to code_engine/review.py
-script_dir = Path(__file__).resolve().parent
-repo_root = script_dir.parent.parent
-engine_review = repo_root / "code_engine" / "review.py"
 
-if not engine_review.exists():
-    print(f"Error: Cannot locate {engine_review}")
-    sys.exit(1)
+def main() -> int:
+    ws_dir = Path.cwd()
+    lab_id = ws_dir.name
+    cfg_path = ws_dir / "lab.config.json"
+    if cfg_path.exists():
+        try:
+            lab_id = json.loads(cfg_path.read_text(encoding="utf-8")).get("labId", lab_id)
+        except Exception:
+            pass
+    print(f"\n=== PRG Code Review ({lab_id}) ===")
+    print(f"  In Claude Code, say: review code {lab_id}")
+    print("  Local deterministic checks: npm run check")
+    print("  (For drill problems: python -m code_engine.review_run <DRILL_ID> <QID>)\n")
+    return 0
 
-res = subprocess.run([sys.executable, str(engine_review)] + sys.argv[1:])
-sys.exit(res.returncode)
+
+if __name__ == "__main__":
+    raise SystemExit(main())
