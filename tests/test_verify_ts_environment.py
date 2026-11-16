@@ -17,9 +17,7 @@ def _ts_problem() -> dict:
         "steps": [{"explain": "Bound the value from both sides."}],
         "entryPoint": "clampPercent",
         "solutionCode": (
-            "export function clampPercent(value: number): number {\n"
-            "  return Math.min(100, Math.max(0, value));\n"
-            "}\n"
+            "export function clampPercent(value: number): number {\n  return Math.min(100, Math.max(0, value));\n}\n"
         ),
         "visibleTests": [{"name": "clamps high", "testCode": "assert.strictEqual(clampPercent(150), 100);"}],
         "hiddenTests": [{"name": "clamps low", "testCode": "assert.strictEqual(clampPercent(-5), 0);"}],
