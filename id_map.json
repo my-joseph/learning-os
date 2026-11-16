@@ -2475,5 +2475,9 @@
   "DRL-PRG-T00-C03-02": {
     "id": "4153818f-8ba0-81e9-bac2-f9f97bbbe5c5",
     "title": "JavaScript & TypeScript Baseline — Verified Programming Drill (10 Qs · AI Synthesized Engineering Mode)"
+  },
+  "DRL-PRG-T01-C02-U03-01": {
+    "id": "41a3818f-8ba0-81f8-b386-d15b82d6ed1b",
+    "title": "Discriminated Unions and Type Narrowing — Verified Programming Drill (5 Qs · AI Synthesized Engineering Mode)"
   }
 }
