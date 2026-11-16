@@ -64,6 +64,8 @@ Plus a short universal list that applies to every problem (`code_engine/quality_
 | U-no-magic | Unexplained literals become named constants | should |
 | U-no-dead-code | No commented-out code, unused branches or leftover `console.log` | should |
 | U-simplest | No cleverness the problem does not need (nested ternaries, needless `reduce`) | should |
+| U-no-special-case-patch | No branch keyed to one input just to pass a test (added after the PRG pilot, 2026-11-16) | must |
+| U-no-shared-mutable-state | No module-level mutable state shared by all callers (added after the PRG pilot, 2026-11-16) | must |
 
 `must` blocks a pass; `should` is advice and never blocks. Taste (brace style, `for` vs `forEach` when both are clear)
 is not a finding at all.

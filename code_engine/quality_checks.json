@@ -69,5 +69,25 @@
       "code": "function classifyScore(score) {\n  return score >= 90 ? 'A' : score >= 80 ? 'B' : score >= 70 ? 'C' : 'F';\n}",
       "caughtBy": "review"
     }
+  },
+  {
+    "id": "U-no-special-case-patch",
+    "check": "Logic handles the general rule; there is no branch keyed to one specific input value that only exists to make a test pass.",
+    "why": "A patch for one input hides the real defect, so every other input that hits the same condition is still wrong.",
+    "severity": "must",
+    "knownBad": {
+      "code": "function shippingDays(zone) {\n  if (zone === 'EU-7') return 4; // made the failing test pass\n  return zone.startsWith('EU') ? 3 : 7;\n}",
+      "caughtBy": "review"
+    }
+  },
+  {
+    "id": "U-no-shared-mutable-state",
+    "check": "Mutable state lives inside the function, closure or instance that owns it, not in module-level variables shared by every caller.",
+    "why": "Module-level mutable state makes separate callers interfere with each other and makes results depend on call order.",
+    "severity": "must",
+    "knownBad": {
+      "code": "let requestCount = 0;\nexport function createLimiter(max) {\n  return () => ++requestCount <= max;\n}",
+      "caughtBy": "review"
+    }
   }
 ]
