@@ -519,3 +519,23 @@ Python attaches as a **second-language track (`PRG-PY` or `T10+`) after Core `T0
 1. **Code strategy (Option A vs. Option B):** Approve **Option A** (renumber `PRG-T*`/`C*`/`U*` to match v2 order, run a one-time script for Notion + `id_map.json`, and rename `LAB-PRG-T03-C01-01` → `LAB-PRG-T06-C01-01`), or prefer **Option B** (keep old codes and add a Notion `Sequence` property)?
 2. **Existing `LAB-PRG-T03-C01-01` (E-Commerce Checkout Engine):** Keep it as an optional bonus lab in `T01-C04`/`T04-C02`, or retire/re-tag it once DevVault + Chapter Labs are built?
 3. **When to start Python:** Right after Core `T05` (before Next.js/Capstone), or after `T07` DevVault v1.0 RC?
+
+---
+
+## 8. Learner Decisions (2026-11-16)
+
+1. **Code strategy:** Option A — renumber to the v2 order with a script (Notion titles, `id_map.json` regenerated, vaults, drill, progress and lab renamed together). Never by hand.
+2. **`LAB-PRG-T03-C01-01` (checkout engine):** kept as an optional bonus lab at the end of `T01` (pure TS domain logic fits there); renamed with the migration.
+3. **Python:** starts after `T07` (one language to expert level first).
+4. **Units vs labs:** a unit always has its own drill; a chapter lab is separate work that uses the chapter's units (fixes rows where a unit's Expected Output was "Lab N").
+
+## 9. More Projects on Request
+
+The labs and DevVault milestones above are the minimum, not a cap. Whenever the learner finishes a lab or milestone and
+does not feel confident yet, they can ask for another project ("ขอโปรเจคเพิ่ม <CHAPTER>"):
+
+- **Scope:** built from the units the learner has already studied (status Done/In progress) in that chapter or topic, nothing ahead of them.
+- **Targeted:** weighted toward the learner's open weak spots (`python -m scripts.weak_spots <SCOPE>`: rubric checks, lint rules and traps they keep hitting), so the extra project trains what is actually weak.
+- **Same level or one step up,** chosen by the learner; a different domain from the previous project so it is not a repeat (e.g. after a `PromisePool`, a rate-limited crawler; after the `RawHttpRouter`, a static file server).
+- **Same standard:** milestones with acceptance tests, a reference solution kept outside the learner's folder, lint, and the rubric review (`review-code`) per milestone; results recorded like drills.
+- **Built by a skill** (`new-project`, to be written with the lab tooling), so every extra project meets the same gates as the planned ones.
