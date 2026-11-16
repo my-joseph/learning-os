@@ -224,6 +224,212 @@
           }
         }
       ]
+    },
+    {
+      "archetypeKey": "prg-t01-c02-u02-immutable-domain-entities",
+      "unitCode": "PRG-T01-C02-U02",
+      "level": 1,
+      "archetype": "problem-solving",
+      "name": "Immutable Domain Entity Contracts",
+      "competencies": [
+        "type-systems",
+        "domain-modeling",
+        "immutability"
+      ],
+      "coreConcept": "Use object types and readonly members to describe stable entity identity and the fields callers may update.",
+      "mentalModel": [
+        "1. Identify which values define identity and should not change after construction.",
+        "2. Mark stable properties readonly at the type boundary.",
+        "3. Keep runtime immutability separate from TypeScript's compile-time readonly check."
+      ],
+      "governingInvariant": "A caller cannot reassign an entity's stable identifiers through its declared type.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "mutable-identity-field",
+          "name": "Mutable Entity Identity",
+          "description": "An entity identifier remains assignable, allowing different code paths to silently change which record an object represents.",
+          "reproducer": "Assign a replacement id through a shared entity reference and observe that downstream lookups now target a different record."
+        },
+        {
+          "trapTag": "readonly-is-not-deep",
+          "name": "Shallow Readonly Assumption",
+          "description": "A readonly outer property is mistaken for recursive immutability, even though its nested object or array remains mutable.",
+          "reproducer": "Keep a nested preferences object mutable beneath a readonly profile property and update its theme through the nested reference."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "inventory_catalog_entities",
+          "description": "Model stable SKU identity with mutable display fields in an inventory catalog."
+        },
+        {
+          "domain": "customer_profile_preferences",
+          "description": "Separate stable customer identity from editable profile preferences."
+        }
+      ],
+      "usedContexts": [
+        "library_loan_receipt"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-object-readonly-identity",
+          "check": "Stable domain identifiers are readonly at public object boundaries, and caller-owned input objects are not reassigned to change identity.",
+          "why": "Mutable identity makes caches, indexes, and references point at a different entity without an explicit transition.",
+          "severity": "must",
+          "knownBad": {
+            "code": "type CatalogItem = { sku: string; label: string };\nfunction renameItem(item: CatalogItem, nextSku: string) { item.sku = nextSku; }",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-object-readonly-depth-honest",
+          "check": "The type model makes the intended mutability of nested objects explicit instead of implying that a top-level readonly property freezes its contents.",
+          "why": "TypeScript readonly is shallow; callers can still mutate nested state unless nested members are also readonly.",
+          "severity": "should",
+          "knownBad": {
+            "code": "type Customer = { readonly preferences: { theme: string } };\nfunction setTheme(customer: Customer, theme: string) { customer.preferences.theme = theme; }",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "prg-t01-c02-u02-literal-domain-values",
+      "unitCode": "PRG-T01-C02-U02",
+      "level": 2,
+      "archetype": "problem-solving",
+      "name": "Literal Domain Values & Const Inference",
+      "competencies": [
+        "type-systems",
+        "domain-modeling",
+        "literal-types"
+      ],
+      "coreConcept": "Preserve specific string, numeric, and tuple values as literal types when they define a finite domain contract.",
+      "mentalModel": [
+        "1. Separate a domain's allowed values from arbitrary strings or numbers.",
+        "2. Use literal unions for named alternatives and `as const` for readonly literal data.",
+        "3. Widen a value only when the contract genuinely accepts the wider type."
+      ],
+      "governingInvariant": "A value used as a domain variant remains assignable only to the declared literal alternatives.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "literal-type-widening",
+          "name": "Literal Value Widens to Primitive",
+          "description": "A value that should represent one of a finite set widens to string or number and loses its domain constraint.",
+          "reproducer": "Infer a mutable variable as string, then pass it to a function that accepts only named payment states."
+        },
+        {
+          "trapTag": "mutable-configuration-tuple",
+          "name": "Configuration Tuple Widens and Mutates",
+          "description": "A fixed pair of configuration values is inferred as a general mutable array, losing both positional meaning and literal values.",
+          "reproducer": "Pass a mutable numeric array into a function that expects a readonly two-element bounds tuple."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "payment_policy_configuration",
+          "description": "Constrain currency, payment status, and settlement mode values in payment services."
+        },
+        {
+          "domain": "warehouse_reorder_bounds",
+          "description": "Represent fixed minimum and maximum reorder thresholds as a readonly tuple."
+        }
+      ],
+      "usedContexts": [
+        "cold_chain_alert_thresholds",
+        "subscription_billing_states"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-literal-domain-width",
+          "check": "Finite domain alternatives retain their literal union type at the public boundary rather than widening to an unrestricted primitive.",
+          "why": "Widening admits values the business contract does not define and postpones errors until runtime.",
+          "severity": "must",
+          "knownBad": {
+            "code": "type PaymentState = 'authorized' | 'settled' | 'voided';\nfunction transition(next: string): PaymentState { return next as PaymentState; }",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-literal-const-data",
+          "check": "Fixed domain constants and tuple positions preserve their literal values and readonly shape when used as configuration.",
+          "why": "Mutable widened arrays lose positional meaning and can be changed by unrelated callers.",
+          "severity": "should",
+          "knownBad": {
+            "code": "const retryDelays = [250, 1000, 4000];\nfunction schedule(delays: readonly [250, 1000, 4000]) { return delays; }\nschedule(retryDelays);",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "prg-t01-c02-u02-object-shape-boundaries",
+      "unitCode": "PRG-T01-C02-U02",
+      "level": 2,
+      "archetype": "debugging",
+      "name": "Object Shape & Construction Boundaries",
+      "competencies": [
+        "type-systems",
+        "object-contracts",
+        "api-boundaries"
+      ],
+      "coreConcept": "Model required and optional object properties deliberately, and understand when fresh object literals receive excess-property checks.",
+      "mentalModel": [
+        "1. Treat a type as a structural contract for the properties a consumer may rely on.",
+        "2. Mark a field optional only when its absence is a supported domain state.",
+        "3. Use typed construction boundaries to catch misspelled or unsupported fields early."
+      ],
+      "governingInvariant": "Every accepted object shape represents a valid domain state, and unknown fields are not silently asserted into the contract.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "fresh-object-check-mismatch",
+          "name": "Fresh Literal Check Misunderstanding",
+          "description": "A learner assumes excess-property checking applies identically to a fresh object literal and a previously inferred variable.",
+          "reproducer": "Pass a variable with an extra misspelled optional field and compare it with the same shape passed inline."
+        },
+        {
+          "trapTag": "optional-property-overuse",
+          "name": "Optional Properties Hide Invalid Shapes",
+          "description": "Many unrelated optional properties allow incomplete or contradictory objects that are not meaningful domain states.",
+          "reproducer": "Construct a configuration object with none of its identifying fields and observe that the broad interface still accepts it."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "order_line_import_contract",
+          "description": "Validate typed order-line objects imported from an internal catalog adapter."
+        },
+        {
+          "domain": "feature_flag_options",
+          "description": "Define valid option shapes for feature flag evaluation without typo-prone optional bags."
+        }
+      ],
+      "usedContexts": [
+        "podcast_episode_queue_card",
+        "feature_flag_evaluation_options"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-object-shape-no-unsafe-assertion",
+          "check": "Object shape mismatches are corrected at the construction boundary instead of hidden with unchecked type assertions.",
+          "why": "An assertion suppresses the exact structural error the contract is meant to catch.",
+          "severity": "must",
+          "knownBad": {
+            "code": "type ImportRow = { sku: string; quantity: number };\nconst row = { sku: 'SKU-8', quntity: 2 } as ImportRow;",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-object-optionality-domain",
+          "check": "Optional members correspond to genuinely absent domain data; required identity and discriminator fields remain required.",
+          "why": "Overly permissive shapes admit incomplete values and force callers to handle states that should not exist.",
+          "severity": "should",
+          "knownBad": {
+            "code": "type DeliveryWindow = { start?: string; end?: string; timezone?: string };\nconst window: DeliveryWindow = {};",
+            "caughtBy": "review"
+          }
+        }
+      ]
     }
   ]
 }

@@ -1,0 +1,531 @@
+{
+  "unitCode": "PRG-T01-C02-U02",
+  "unitTitle": "Primitive, Literal and Object Types",
+  "environment": "typescript-strict",
+  "sourceAttribution": "Original problems authored for this unit from its learning objective and reasoning vault.",
+  "config": {
+    "questionCount": 5,
+    "difficulty": "ALL",
+    "difficultyMode": "AI Synthesized Engineering Mode"
+  },
+  "problems": [
+    {
+      "id": "Q01",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "codeType": "implement",
+      "archetypeKey": "prg-t01-c02-u02-immutable-domain-entities",
+      "commonTrapTag": "mutable-identity-field",
+      "context": "library_loan_receipt",
+      "entryPoint": "updateBorrowerNote",
+      "prompt": "Implement an exported loan receipt type and `updateBorrowerNote` for a library system.\n\n**Contract**\n- A receipt has exactly `receiptId: string` and `borrowerNote: string`.\n- `receiptId` is a stable identifier. Explicitly declare it `readonly` in the exported `LoanReceipt` type.\n- `updateBorrowerNote(receipt, nextNote)` returns a new receipt with the same `receiptId` and the new `borrowerNote`; it leaves the input unchanged.\n- Export both `LoanReceipt` and `updateBorrowerNote`.",
+      "inputHint": "Implement the exported TypeScript contract and run the test suite.",
+      "checkpointHint": "Distinguish the stable record identity from the editable note.",
+      "starterCode": "export type LoanReceipt = { receiptId: string; borrowerNote: string };\n\nexport function updateBorrowerNote(receipt: LoanReceipt, _nextNote: string): LoanReceipt {\n  return receipt;\n}\n",
+      "solutionCode": "export type LoanReceipt = { readonly receiptId: string; borrowerNote: string };\n\nexport function updateBorrowerNote(receipt: LoanReceipt, nextNote: string): LoanReceipt {\n  return { receiptId: receipt.receiptId, borrowerNote: nextNote };\n}\n\nconst receiptIdentityWitness: Pick<LoanReceipt, 'receiptId'> = { receiptId: 'LOAN-204' };\n// @ts-expect-error receiptId is readonly in the exported type.\nreceiptIdentityWitness.receiptId = 'LOAN-205';\n",
+      "trapMutant": "export type LoanReceipt = { receiptId: string; borrowerNote: string };\n\nexport function updateBorrowerNote(receipt: LoanReceipt, nextNote: string): LoanReceipt {\n  receipt.receiptId = nextNote;\n  receipt.borrowerNote = nextNote;\n  return receipt;\n}\n",
+      "visibleTests": [
+        {
+          "id": "v1",
+          "name": "updates the note while preserving receipt identity and input",
+          "testCode": "const original = { receiptId: 'LOAN-204', borrowerNote: 'Return at desk' }; const updated = updateBorrowerNote(original, 'Renewed online'); assert.deepStrictEqual(updated, { receiptId: 'LOAN-204', borrowerNote: 'Renewed online' }); assert.deepStrictEqual(original, { receiptId: 'LOAN-204', borrowerNote: 'Return at desk' }); assert.notStrictEqual(updated, original);"
+        },
+        {
+          "id": "v2",
+          "name": "preserves an empty borrower note",
+          "testCode": "const receipt = { receiptId: 'LOAN-0', borrowerNote: 'Call before return' }; assert.deepStrictEqual(updateBorrowerNote(receipt, ''), { receiptId: 'LOAN-0', borrowerNote: '' }); assert.strictEqual(receipt.borrowerNote, 'Call before return');"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "h1",
+          "name": "keeps the stable identifier when replacing a long note",
+          "testCode": "const receipt = { receiptId: 'LOAN-91X', borrowerNote: 'Standard pickup' }; const updated = updateBorrowerNote(receipt, 'Hold at the downtown branch until Friday'); assert.strictEqual(updated.receiptId, 'LOAN-91X'); assert.strictEqual(updated.borrowerNote, 'Hold at the downtown branch until Friday'); assert.notStrictEqual(updated, receipt);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Declare the stable receipt identifier as readonly in the exported type."
+        },
+        {
+          "explain": "Return a new receipt that preserves identity and replaces only the editable note."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "mutable-identity-field|direct|updateBorrowerNote",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 2,
+          "hasTrapOrFlaw": false,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "mutable-identity-field",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 5
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Foundation",
+      "unitCode": "PRG-T01-C02-U02",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U02-01/Q01_updateBorrowerNote.ts"
+    },
+    {
+      "id": "Q02",
+      "level": 2,
+      "category": "Trap & Edge Case",
+      "archetype": "problem-solving",
+      "codeType": "implement",
+      "archetypeKey": "prg-t01-c02-u02-literal-domain-values",
+      "commonTrapTag": "mutable-configuration-tuple",
+      "context": "cold_chain_alert_thresholds",
+      "entryPoint": "getAlertThresholds",
+      "prompt": "Define fixed alert thresholds used by a cold-chain monitoring service.\n\n**Contract**\n- Export a tuple whose first and second positions represent warning and critical limits in Celsius.\n- Their values are `4` and `8`, respectively, and callers must not be able to reorder or replace them through the declared type or at runtime.\n- `getAlertThresholds` returns that same fixed configuration.\n- Preserve both the tuple shape and numeric literal types.",
+      "inputHint": "Keep the exported configuration compatible with a readonly two-position tuple.",
+      "checkpointHint": "Check both tuple position and value precision at the declaration boundary.",
+      "starterCode": "export const alertThresholds = [4, 8] as const;\n\nexport function getAlertThresholds(): readonly number[] {\n  return [alertThresholds[1], alertThresholds[0]];\n}\n",
+      "solutionCode": "export const alertThresholds: readonly [4, 8] = Object.freeze([4, 8] as const);\n\nexport function getAlertThresholds(): readonly [4, 8] {\n  return alertThresholds;\n}\n\nconst thresholdTupleWitness: readonly [4, 8] = alertThresholds;\nvoid thresholdTupleWitness;\n",
+      "trapMutant": "export const alertThresholds: number[] = [4, 8];\n\nexport function getAlertThresholds(): readonly [4, 8] {\n  return alertThresholds as unknown as readonly [4, 8];\n}\n",
+      "visibleTests": [
+        {
+          "id": "v1",
+          "name": "returns the warning and critical limits in their fixed positions",
+          "testCode": "assert.deepStrictEqual(getAlertThresholds(), [4, 8]); assert.strictEqual(getAlertThresholds().length, 2);"
+        },
+        {
+          "id": "v2",
+          "name": "reads the shared fixed configuration",
+          "testCode": "const limits = getAlertThresholds(); assert.strictEqual(limits[0], 4); assert.strictEqual(limits[1], 8);"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "h1",
+          "name": "retains fixed threshold values across repeated reads",
+          "testCode": "const first = getAlertThresholds(); const second = getAlertThresholds(); assert.deepStrictEqual(first, [4, 8]); assert.deepStrictEqual(second, [4, 8]); assert.strictEqual(first[0], 4); assert.strictEqual(first[1], 8);"
+        },
+        {
+          "id": "h2",
+          "name": "rejects runtime mutation of the exported configuration",
+          "testCode": "const limits = getAlertThresholds(); assert.strictEqual(Object.isFrozen(limits), true); assert.strictEqual(Reflect.set(limits as unknown as number[], 0, 7), false); assert.strictEqual(limits[0], 4); assert.strictEqual(limits[1], 8);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Declare the two fixed threshold values with const assertion so TypeScript preserves their literal types and readonly tuple shape."
+        },
+        {
+          "explain": "Expose the configuration through a readonly tuple return type."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "mutable-configuration-tuple|direct|getAlertThresholds",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "mutable-configuration-tuple",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 5
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Standard Exam",
+      "unitCode": "PRG-T01-C02-U02",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U02-01/Q02_getAlertThresholds.ts"
+    },
+    {
+      "id": "Q03",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "codeType": "implement",
+      "archetypeKey": "prg-t01-c02-u02-literal-domain-values",
+      "commonTrapTag": "literal-type-widening",
+      "context": "subscription_billing_states",
+      "entryPoint": "describeBillingState",
+      "prompt": "Model the finite billing states used by a subscription service.\n\n**Contract**\n- Export `BillingState` as exactly `'pending' | 'active' | 'paused'`.\n- Implement `describeBillingState(state: BillingState): string` with these exact returned labels: `'pending'` → `Payment pending`; `'active'` → `Subscription active`; `'paused'` → `Subscription paused`.\n- Do not widen the input to arbitrary strings or use a type assertion to force a result.\n- If a runtime value is not one of those three strings, return exactly `Unknown billing state`.",
+      "inputHint": "Use an explicit finite domain type at the exported function boundary.",
+      "checkpointHint": "Keep the accepted domain values narrow while still handling unexpected runtime input safely.",
+      "starterCode": "export type BillingState = string;\n\nexport function describeBillingState(_state: BillingState): string {\n  return '';\n}\n",
+      "solutionCode": "export type BillingState = 'pending' | 'active' | 'paused';\n\nconst billingLabels: Record<BillingState, string> = {\n  pending: 'Payment pending',\n  active: 'Subscription active',\n  paused: 'Subscription paused',\n};\n\ntype Equal<Left, Right> = (<Value>() => Value extends Left ? 1 : 2) extends (<Value>() => Value extends Right ? 1 : 2) ? true : false;\ntype Assert<Condition extends true> = Condition;\nexport type BillingStateExactnessWitness = Assert<Equal<BillingState, 'pending' | 'active' | 'paused'>>;\n\nexport function describeBillingState(state: BillingState): string {\n  return Object.hasOwn(billingLabels, state)\n    ? billingLabels[state]\n    : 'Unknown billing state';\n}\n",
+      "trapMutant": "export type BillingState = string;\n\nexport function describeBillingState(state: BillingState): string {\n  if (state === 'pending') return 'Payment pending';\n  if (state === 'active') return 'Subscription active';\n  if (state === 'paused') return 'Subscription paused';\n  return state;\n}\n",
+      "visibleTests": [
+        {
+          "id": "v1",
+          "name": "describes an active subscription",
+          "testCode": "assert.strictEqual(describeBillingState('active'), 'Subscription active');"
+        },
+        {
+          "id": "v2",
+          "name": "handles an unexpected empty runtime value",
+          "testCode": "assert.strictEqual(describeBillingState('' as BillingState), 'Unknown billing state');"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "h1",
+          "name": "describes each supported billing state",
+          "testCode": "assert.strictEqual(describeBillingState('pending'), 'Payment pending'); assert.strictEqual(describeBillingState('paused'), 'Subscription paused');"
+        },
+        {
+          "id": "h2",
+          "name": "rejects an unrecognized runtime string",
+          "testCode": "assert.strictEqual(describeBillingState('archived' as BillingState), 'Unknown billing state');"
+        },
+        {
+          "id": "h3",
+          "name": "does not leak an arbitrary string through the widened domain",
+          "testCode": "assert.strictEqual(describeBillingState('trial' as BillingState), 'Unknown billing state');"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Declare the accepted state values as a string literal union."
+        },
+        {
+          "explain": "Handle each permitted value explicitly and retain a defensive runtime fallback."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "literal-type-widening|direct|describeBillingState",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 2,
+          "hasTrapOrFlaw": false,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "literal-type-widening",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 5
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Standard Exam",
+      "unitCode": "PRG-T01-C02-U02",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U02-01/Q03_describeBillingState.ts"
+    },
+    {
+      "id": "Q04",
+      "level": 2,
+      "category": "Refactoring & Clean Architecture",
+      "archetype": "refactoring",
+      "codeType": "refactoring",
+      "archetypeKey": "prg-t01-c02-u02-object-shape-boundaries",
+      "commonTrapTag": "fresh-object-check-mismatch",
+      "context": "podcast_episode_queue_card",
+      "entryPoint": "buildQueueCard",
+      "prompt": "Refactor the flawed queue-card builder for a podcast app. Its current implementation adds an unsupported diagnostic field and includes `position` as `undefined` when it is absent. Improve the builder's structure while preserving its behavior contract.\n\n**Contract**\n- Export `QueueCard` with exactly `episodeId: string`, `title: string`, and optional `position: number`.\n- Implement `buildQueueCard(episodeId, title, position?)` using those scalar parameter types.\n- Return only the declared card fields. Include `position` when supplied, including `0`; omit it when absent.\n- Keep the implementation type-safe and do not use a type assertion.",
+      "inputHint": "Use the exported object contract at the builder boundary.",
+      "checkpointHint": "Check the absent and zero-valued cases for the optional field.",
+      "starterCode": "export type QueueCard = { episodeId: string; title: string; position?: number };\n\nexport function buildQueueCard(episodeId: string, title: string, position?: number): QueueCard {\n  const card = { episodeId, title, position, diagnosticLabel: `${episodeId}: ${title}` };\n  return card;\n}\n",
+      "solutionCode": "export type QueueCard = { episodeId: string; title: string; position?: number };\n\nexport function buildQueueCard(episodeId: string, title: string, position?: number): QueueCard {\n  return position === undefined\n    ? { episodeId, title } satisfies QueueCard\n    : { episodeId, title, position } satisfies QueueCard;\n}\n",
+      "trapMutant": "export type QueueCard = { episodeId: string; title: string; position?: number };\n\nexport function buildQueueCard(episodeId: string, title: string, position?: number): QueueCard {\n  const card = position === undefined\n    ? { episodeId, title, diagnosticLabel: `${episodeId}: ${title}` }\n    : { episodeId, title, position, diagnosticLabel: `${episodeId}: ${title}` };\n  return card;\n}\n",
+      "visibleTests": [
+        {
+          "id": "v1",
+          "name": "includes a supplied queue position",
+          "testCode": "assert.deepStrictEqual(buildQueueCard('EP-52', 'Night Ferry', 3), { episodeId: 'EP-52', title: 'Night Ferry', position: 3 });"
+        },
+        {
+          "id": "v2",
+          "name": "omits an absent queue position",
+          "testCode": "assert.deepStrictEqual(buildQueueCard('EP-0', 'First Listen'), { episodeId: 'EP-0', title: 'First Listen' });"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "h1",
+          "name": "preserves zero as a supplied queue position",
+          "testCode": "assert.deepStrictEqual(buildQueueCard('EP-81', 'Quiet Harbor', 0), { episodeId: 'EP-81', title: 'Quiet Harbor', position: 0 });"
+        },
+        {
+          "id": "h2",
+          "name": "returns exactly the declared keys when position is supplied",
+          "testCode": "const card = buildQueueCard('EP-19', 'Signal in the Fog', 5); assert.deepStrictEqual(Object.keys(card).sort(), ['episodeId', 'position', 'title']);"
+        },
+        {
+          "id": "h3",
+          "name": "returns exactly the declared keys when position is absent",
+          "testCode": "const card = buildQueueCard('EP-20', 'Open Channel'); assert.deepStrictEqual(Object.keys(card).sort(), ['episodeId', 'title']);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Inspect the existing builder's output shape and identify the supported card contract before changing its construction."
+        },
+        {
+          "explain": "Refactor construction so the optional position is added only when supplied, preserving zero as a valid value."
+        },
+        {
+          "explain": "Return only fields in the QueueCard domain shape and remove diagnostic data from the public result."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "fresh-object-check-mismatch|direct|buildQueueCard",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "refactoring"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "fresh-object-check-mismatch",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 6
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Standard Exam",
+      "unitCode": "PRG-T01-C02-U02",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U02-01/Q04_buildQueueCard.ts"
+    },
+    {
+      "id": "Q05",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "codeType": "implement",
+      "archetypeKey": "prg-t01-c02-u02-object-shape-boundaries",
+      "commonTrapTag": "optional-property-overuse",
+      "context": "feature_flag_evaluation_options",
+      "entryPoint": "buildEvaluationOptions",
+      "prompt": "Create typed evaluation options for a feature-flag service.\n\n**Contract**\n- `flagKey` is required and `region` is optional.\n- A missing region stays absent; do not manufacture an empty-string default.\n- Return only the supported option fields and preserve the input key.\n- Export the option type and builder.",
+      "inputHint": "Implement the exported object contract and preserve the distinction between absent and supplied data.",
+      "checkpointHint": "Make optionality describe a valid absence state while keeping the identifying field required.",
+      "starterCode": "export type EvaluationOptions = { flagKey?: string; region?: string; tenant?: string };\n\nexport function buildEvaluationOptions(flagKey: string, region?: string): EvaluationOptions {\n  return { flagKey, region, tenant: undefined };\n}\n",
+      "solutionCode": "export type EvaluationOptions = { flagKey: string; region?: string };\n\nexport function buildEvaluationOptions(flagKey: string, region?: string): EvaluationOptions {\n  const options: EvaluationOptions = { flagKey };\n  if (region !== undefined) {\n    options.region = region;\n  }\n  return options;\n}\n",
+      "trapMutant": "export type EvaluationOptions = { flagKey?: string; region?: string; tenant?: string };\n\nexport function buildEvaluationOptions(flagKey: string, region?: string): EvaluationOptions {\n  return { flagKey, region, tenant: 'unsupported' };\n}\n",
+      "visibleTests": [
+        {
+          "id": "v1",
+          "name": "includes a supplied region",
+          "testCode": "assert.deepStrictEqual(buildEvaluationOptions('checkout-banner', 'eu-west'), { flagKey: 'checkout-banner', region: 'eu-west' });"
+        },
+        {
+          "id": "v2",
+          "name": "keeps the key when optional region is omitted",
+          "testCode": "assert.deepStrictEqual(buildEvaluationOptions('maintenance-mode'), { flagKey: 'maintenance-mode' });"
+        },
+        {
+          "id": "v3",
+          "name": "preserves an explicitly empty required key",
+          "testCode": "assert.deepStrictEqual(buildEvaluationOptions('', 'ap-south'), { flagKey: '', region: 'ap-south' });"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "id": "h1",
+          "name": "preserves an empty region as supplied data",
+          "testCode": "assert.deepStrictEqual(buildEvaluationOptions('empty-region-check', ''), { flagKey: 'empty-region-check', region: '' });"
+        },
+        {
+          "id": "h2",
+          "name": "does not return an unsupported tenant property",
+          "testCode": "const options = buildEvaluationOptions('catalog-search'); assert.deepStrictEqual(Object.keys(options), ['flagKey']); assert.strictEqual(options.flagKey, 'catalog-search'); assert.strictEqual(Object.hasOwn(options, 'tenant'), false);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Keep the identifier required and make only the genuinely optional region optional."
+        },
+        {
+          "explain": "Return a shape that omits region when it was not supplied and contains no unrelated fields."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "optional-property-overuse|direct|buildEvaluationOptions",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 2,
+          "hasTrapOrFlaw": false,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "optional-property-overuse",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 5
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Standard Exam",
+      "unitCode": "PRG-T01-C02-U02",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U02-01/Q05_buildEvaluationOptions.ts"
+    }
+  ],
+  "blindSolve": [
+    {
+      "problemId": "Q01",
+      "passed": true
+    },
+    {
+      "problemId": "Q02",
+      "passed": true
+    },
+    {
+      "problemId": "Q03",
+      "passed": true
+    },
+    {
+      "problemId": "Q04",
+      "passed": true
+    },
+    {
+      "problemId": "Q05",
+      "passed": true
+    }
+  ],
+  "review": {
+    "verdict": "pass",
+    "note": "The five problems are solvable and their prompts, canonical solutions, and blind solves agree. Runtime tests cover the behavioral contracts and the supplied trap mutants fail hidden tests. Q01 and Q03 include compile-time witnesses for their key type claims; Q02’s tuple annotation also supports its literal and readonly contract under strict typechecking. One portability detail: Q03 uses Object.hasOwn, which requires an ES2022-compatible library/runtime. The brief does not specify that target.",
+    "problems": [
+      {
+        "problemId": "Q01",
+        "verdict": "pass",
+        "note": "The readonly identity type, copy-on-update behavior, and exact declared fields are consistent. The compile-time witness checks readonly, and runtime tests catch the mutant’s identity change and input mutation. Level 1 fits the focused task."
+      },
+      {
+        "problemId": "Q02",
+        "verdict": "pass",
+        "note": "The frozen readonly tuple preserves order, length, and literal values; the blind solve matches. Hidden runtime mutation checks catch the mutable trap. The starter already demonstrates `as const`, so the challenge mainly adds runtime freezing and a precise return contract."
+      },
+      {
+        "problemId": "Q03",
+        "verdict": "pass",
+        "note": "The exact union witness supports the type contract, while the runtime fallback and hidden tests catch arbitrary-string leakage. The Object.hasOwn implementation assumes ES2022 support."
+      },
+      {
+        "problemId": "Q04",
+        "verdict": "pass",
+        "note": "The scalar builder and both solutions omit absent position, preserve zero, and return only declared fields. Hidden exact-key tests catch the diagnostic field mutant. `satisfies` checks the returned object literals at compile time; runtime tests cover output shape."
+      },
+      {
+        "problemId": "Q05",
+        "verdict": "pass",
+        "note": "Required flagKey, optional region, and omission semantics are consistent across prompt, solutions, and tests. Hidden tests catch the unsupported tenant property and preserve an explicitly empty region. It overlaps with Q04 on optional-field shape, but emphasizes required-versus-optional contract design."
+      }
+    ]
+  },
+  "drillId": "DRL-PRG-T01-C02-U02-01",
+  "topicCode": "PRG-T01",
+  "chapterCode": "PRG-T01-C02",
+  "schemaVersion": "2.0-code",
+  "subject": "PRG",
+  "createdAt": "2026-11-17 02:24:00",
+  "localFilePath": "drills/data/PRG-T01-C02-U02/DRL-PRG-T01-C02-U02-01.json"
+}
