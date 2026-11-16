@@ -430,7 +430,7 @@
         },
         {
           "name": "rejects absolute main path in package.json",
-          "testCode": "const fs = require('node:fs');\nconst os = require('node:os');\nconst path = require('node:path');\nconst dir = fs.mkdtempSync(path.join(os.tmpdir(), 'layout-abs-'));\ntry {\n  fs.mkdirSync(path.join(dir, 'src'));\n  fs.mkdirSync(path.join(dir, 'tests'));\n  fs.writeFileSync(path.join(dir, 'package.json'), JSON.stringify({ name: 'demo', main: '/Users/dev/app/src/index.js' }));\n  fs.writeFileSync(path.join(dir, '.gitignore'), 'node_modules/\\n.env\\n');\n  const res = auditProjectLayout(dir);\n  assert.strictEqual(res.ok, false);\n  assert.strictEqual(res.manifestErrors.length, 1);\n} finally {\n  fs.rmSync(dir, { recursive: true, force: true });\n}"
+          "testCode": "const fs = require('node:fs');\nconst os = require('node:os');\nconst path = require('node:path');\nconst dir = fs.mkdtempSync(path.join(os.tmpdir(), 'layout-abs-'));\ntry {\n  fs.mkdirSync(path.join(dir, 'src'));\n  fs.mkdirSync(path.join(dir, 'tests'));\n  fs.writeFileSync(path.join(dir, 'package.json'), JSON.stringify({ name: 'demo', main: '/opt/dev/app/src/index.js' }));\n  fs.writeFileSync(path.join(dir, '.gitignore'), 'node_modules/\\n.env\\n');\n  const res = auditProjectLayout(dir);\n  assert.strictEqual(res.ok, false);\n  assert.strictEqual(res.manifestErrors.length, 1);\n} finally {\n  fs.rmSync(dir, { recursive: true, force: true });\n}"
         },
         {
           "name": "rejects package.json main escaping projectRoot",
