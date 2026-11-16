@@ -69,8 +69,8 @@ def _run_node_tests(test_files: list[Path], cwd: Path, src_dir: Path) -> list[di
 def _run_eslint_dir(src_dir: Path, config_path: Path) -> list[dict[str, Any]]:
     _, eslint_bin = get_lint_binaries()
     proc = subprocess.run(
-        [str(eslint_bin), "--config", str(config_path.resolve()), "--format", "json", "."],
-        cwd=str(src_dir),
+        [str(eslint_bin), "--config", str(config_path.resolve()), "--format", "json", src_dir.name],
+        cwd=str(src_dir.parent),
         capture_output=True,
         text=True,
     )
@@ -323,7 +323,6 @@ def _check_reference(lab_dir: Path, ref_dir: Path, cfg: dict[str, Any]) -> list[
     ref_src = ref_dir / "src"
     hidden_dir = ref_dir / "hidden"
     eslint_cfg = lab_dir / "eslint.config.js"
-
     for ms in cfg.get("milestones") or []:
         mid = ms.get("id", "?")
         vis_files = _milestone_visible_tests(lab_dir, ms)
