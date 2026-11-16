@@ -1,0 +1,1710 @@
+{
+  "unitCode": "MTH-T02-C02-U02",
+  "topicTitle": "Functions",
+  "unitTitle": "Domain and Range",
+  "subject": "MATH",
+  "problems": [
+    {
+      "id": "Q01",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c02-u02-domain-algebraic-constraints",
+      "context": "",
+      "prompt": "Find all real values of $x$ that are excluded from the domain of $f(x) = \\frac{x + 5}{x^2 - 10x + 21}$.",
+      "display": "f(x) = \\frac{x + 5}{x^2 - 10x + 21}",
+      "plainText": "f(x) = (x + 5) / (x^2 - 10x + 21)",
+      "givens": {
+        "a": 5,
+        "b": 10,
+        "c": 21
+      },
+      "constants": {
+        "zero": 0
+      },
+      "trapGivens": [
+        0,
+        5
+      ],
+      "answerSpec": {
+        "type": "solution_set",
+        "values": [
+          "3",
+          "7"
+        ],
+        "variable": "x"
+      },
+      "answerPlain": "3, 7",
+      "answerDisplay": "\\{3,\\; 7\\}",
+      "inputHint": "Enter all excluded values separated by a comma",
+      "commonTrapTag": "t02-c02-u02-numerator-zero-excluded-trap",
+      "trapDerivation": "0 - 5",
+      "trapValue": "-5",
+      "verify": {
+        "source": "3 + 7",
+        "trapValue": "-5"
+      },
+      "checkpointHint": "Substitute each value you plan to exclude into the original expression and confirm the expression is really undefined there.",
+      "references": [
+        "MTH-T02-C02-U02"
+      ],
+      "verificationLevel": "partial",
+      "steps": [
+        {
+          "latex": "x^2 - 10x + 21 = 0",
+          "explain": "Set the denominator equal to zero to find the excluded inputs."
+        },
+        {
+          "latex": "(x - 3)(x - 7) = 0",
+          "explain": "Factor the quadratic denominator.",
+          "eq": [
+            "3 * 7",
+            "21"
+          ]
+        },
+        {
+          "latex": "x \\in \\{3, 7\\}",
+          "explain": "Set each factor equal to zero to list all excluded x-values."
+        }
+      ],
+      "review": {
+        "verdict": "pass",
+        "note": "Answer {3, 7}, trapValue -5 (numerator zero), granular steps, and zero-number hint are all accurate and exercise t02-c02-u02-numerator-zero-excluded-trap cleanly."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C02-U02",
+          "title": "Domain and Range",
+          "notionUrl": "https://www.notion.so/4013818f8ba08001941cf55f55ebd5ba"
+        }
+      ],
+      "unitCode": "MTH-T02-C02-U02",
+      "fingerprint": "t02-c02-u02-numerator-zero-excluded-trap|direct|f(x) = (x + #) / (x^# - #x + #)",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c02-u02-numerator-zero-excluded-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 1 - Foundation"
+    },
+    {
+      "id": "Q02",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c02-u02-domain-range-from-graph",
+      "context": "",
+      "prompt": "The graph shows $f(x) = 2(x - 2)^2 + 3$ on the domain $[0, 5)$, with a solid endpoint at $(0, 11)$ and a hollow endpoint at $(5, 21)$. What is the minimum value in the range of $f$?",
+      "display": "f(x) = 2(x - 2)^2 + 3, \\quad x \\in [0, 5)",
+      "plainText": "f(x) = 2(x - 2)^2 + 3 on [0, 5)",
+      "givens": {
+        "a": 2,
+        "h": 2,
+        "k": 3,
+        "x1": 0,
+        "x2": 5,
+        "y1": 11,
+        "y2": 21
+      },
+      "constants": {},
+      "trapGivens": [
+        2,
+        0,
+        3
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "3",
+        "tolerance": 0
+      },
+      "answerPlain": "3",
+      "answerDisplay": "3",
+      "inputHint": "Enter a number",
+      "commonTrapTag": "t02-c02-u02-endpoint-values-instead-of-extrema-trap",
+      "trapDerivation": "2 * (0 - 2)^2 + 3",
+      "trapValue": "11",
+      "verify": {
+        "source": "2 * (2 - 2)^2 + 3",
+        "trapValue": "11"
+      },
+      "checkpointHint": "Before answering, trace the whole graph and confirm that no point on it lies lower than your answer.",
+      "references": [
+        "MTH-T02-C02-U02"
+      ],
+      "verificationLevel": "partial",
+      "steps": [
+        {
+          "latex": "(h, k) = (2, 3)",
+          "explain": "Identify the vertex of the upward-opening parabola."
+        },
+        {
+          "latex": "2 \\in [0, 5)",
+          "explain": "Confirm the vertex x-coordinate lies inside the domain interval."
+        },
+        {
+          "latex": "f(2) = 2(2 - 2)^2 + 3",
+          "explain": "Evaluate at the vertex to find the minimum y-value in the range.",
+          "eq": [
+            "2 * (2 - 2)^2 + 3",
+            "3"
+          ]
+        },
+        {
+          "latex": "f(2) = 3",
+          "explain": "Simplify to obtain the minimum value in the range.",
+          "val": "3"
+        }
+      ],
+      "review": {
+        "verdict": "pass",
+        "note": "Answer 3 (vertex at x = 2 in [0, 5)), trapValue 11 (left endpoint f(0)), givens matching figureBuilders, granular steps, and hint are all accurate."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C02-U02",
+          "title": "Domain and Range",
+          "notionUrl": "https://www.notion.so/4013818f8ba08001941cf55f55ebd5ba"
+        }
+      ],
+      "unitCode": "MTH-T02-C02-U02",
+      "figure": {
+        "kind": "cartesian_graph",
+        "theme": "indigo",
+        "title": "Graph of y = f(x)",
+        "xRange": [
+          -2.0,
+          7.0
+        ],
+        "yRange": [
+          -5,
+          25
+        ],
+        "grid": true,
+        "axes": true,
+        "plots": [
+          {
+            "type": "curve",
+            "points": [
+              [
+                0.025,
+                10.8012
+              ],
+              [
+                0.0625,
+                10.5078
+              ],
+              [
+                0.1,
+                10.22
+              ],
+              [
+                0.1375,
+                9.9378
+              ],
+              [
+                0.175,
+                9.6613
+              ],
+              [
+                0.2125,
+                9.3903
+              ],
+              [
+                0.25,
+                9.125
+              ],
+              [
+                0.2875,
+                8.8653
+              ],
+              [
+                0.325,
+                8.6112
+              ],
+              [
+                0.3625,
+                8.3628
+              ],
+              [
+                0.4,
+                8.12
+              ],
+              [
+                0.4375,
+                7.8828
+              ],
+              [
+                0.475,
+                7.6512
+              ],
+              [
+                0.5125,
+                7.4253
+              ],
+              [
+                0.55,
+                7.205
+              ],
+              [
+                0.5875,
+                6.9903
+              ],
+              [
+                0.625,
+                6.7812
+              ],
+              [
+                0.6625,
+                6.5778
+              ],
+              [
+                0.7,
+                6.38
+              ],
+              [
+                0.7375,
+                6.1878
+              ],
+              [
+                0.775,
+                6.0013
+              ],
+              [
+                0.8125,
+                5.8203
+              ],
+              [
+                0.85,
+                5.645
+              ],
+              [
+                0.8875,
+                5.4753
+              ],
+              [
+                0.925,
+                5.3113
+              ],
+              [
+                0.9625,
+                5.1528
+              ],
+              [
+                1.0,
+                5.0
+              ],
+              [
+                1.0375,
+                4.8528
+              ],
+              [
+                1.075,
+                4.7112
+              ],
+              [
+                1.1125,
+                4.5753
+              ],
+              [
+                1.15,
+                4.445
+              ],
+              [
+                1.1875,
+                4.3203
+              ],
+              [
+                1.225,
+                4.2012
+              ],
+              [
+                1.2625,
+                4.0878
+              ],
+              [
+                1.3,
+                3.98
+              ],
+              [
+                1.3375,
+                3.8778
+              ],
+              [
+                1.375,
+                3.7812
+              ],
+              [
+                1.4125,
+                3.6903
+              ],
+              [
+                1.45,
+                3.605
+              ],
+              [
+                1.4875,
+                3.5253
+              ],
+              [
+                1.525,
+                3.4512
+              ],
+              [
+                1.5625,
+                3.3828
+              ],
+              [
+                1.6,
+                3.32
+              ],
+              [
+                1.6375,
+                3.2628
+              ],
+              [
+                1.675,
+                3.2113
+              ],
+              [
+                1.7125,
+                3.1653
+              ],
+              [
+                1.75,
+                3.125
+              ],
+              [
+                1.7875,
+                3.0903
+              ],
+              [
+                1.825,
+                3.0612
+              ],
+              [
+                1.8625,
+                3.0378
+              ],
+              [
+                1.9,
+                3.02
+              ],
+              [
+                1.9375,
+                3.0078
+              ],
+              [
+                1.975,
+                3.0013
+              ],
+              [
+                2.0125,
+                3.0003
+              ],
+              [
+                2.05,
+                3.005
+              ],
+              [
+                2.0875,
+                3.0153
+              ],
+              [
+                2.125,
+                3.0312
+              ],
+              [
+                2.1625,
+                3.0528
+              ],
+              [
+                2.2,
+                3.08
+              ],
+              [
+                2.2375,
+                3.1128
+              ],
+              [
+                2.275,
+                3.1513
+              ],
+              [
+                2.3125,
+                3.1953
+              ],
+              [
+                2.35,
+                3.245
+              ],
+              [
+                2.3875,
+                3.3003
+              ],
+              [
+                2.425,
+                3.3612
+              ],
+              [
+                2.4625,
+                3.4278
+              ],
+              [
+                2.5,
+                3.5
+              ],
+              [
+                2.5375,
+                3.5778
+              ],
+              [
+                2.575,
+                3.6613
+              ],
+              [
+                2.6125,
+                3.7503
+              ],
+              [
+                2.65,
+                3.845
+              ],
+              [
+                2.6875,
+                3.9453
+              ],
+              [
+                2.725,
+                4.0512
+              ],
+              [
+                2.7625,
+                4.1628
+              ],
+              [
+                2.8,
+                4.28
+              ],
+              [
+                2.8375,
+                4.4028
+              ],
+              [
+                2.875,
+                4.5312
+              ],
+              [
+                2.9125,
+                4.6653
+              ],
+              [
+                2.95,
+                4.805
+              ],
+              [
+                2.9875,
+                4.9503
+              ],
+              [
+                3.025,
+                5.1013
+              ],
+              [
+                3.0625,
+                5.2578
+              ],
+              [
+                3.1,
+                5.42
+              ],
+              [
+                3.1375,
+                5.5878
+              ],
+              [
+                3.175,
+                5.7612
+              ],
+              [
+                3.2125,
+                5.9403
+              ],
+              [
+                3.25,
+                6.125
+              ],
+              [
+                3.2875,
+                6.3153
+              ],
+              [
+                3.325,
+                6.5113
+              ],
+              [
+                3.3625,
+                6.7128
+              ],
+              [
+                3.4,
+                6.92
+              ],
+              [
+                3.4375,
+                7.1328
+              ],
+              [
+                3.475,
+                7.3512
+              ],
+              [
+                3.5125,
+                7.5753
+              ],
+              [
+                3.55,
+                7.805
+              ],
+              [
+                3.5875,
+                8.0403
+              ],
+              [
+                3.625,
+                8.2812
+              ],
+              [
+                3.6625,
+                8.5278
+              ],
+              [
+                3.7,
+                8.78
+              ],
+              [
+                3.7375,
+                9.0378
+              ],
+              [
+                3.775,
+                9.3013
+              ],
+              [
+                3.8125,
+                9.5703
+              ],
+              [
+                3.85,
+                9.845
+              ],
+              [
+                3.8875,
+                10.1253
+              ],
+              [
+                3.925,
+                10.4112
+              ],
+              [
+                3.9625,
+                10.7028
+              ],
+              [
+                4.0,
+                11.0
+              ],
+              [
+                4.0375,
+                11.3028
+              ],
+              [
+                4.075,
+                11.6113
+              ],
+              [
+                4.1125,
+                11.9253
+              ],
+              [
+                4.15,
+                12.245
+              ],
+              [
+                4.1875,
+                12.5703
+              ],
+              [
+                4.225,
+                12.9012
+              ],
+              [
+                4.2625,
+                13.2378
+              ],
+              [
+                4.3,
+                13.58
+              ],
+              [
+                4.3375,
+                13.9278
+              ],
+              [
+                4.375,
+                14.2812
+              ],
+              [
+                4.4125,
+                14.6403
+              ],
+              [
+                4.45,
+                15.005
+              ],
+              [
+                4.4875,
+                15.3753
+              ],
+              [
+                4.525,
+                15.7513
+              ],
+              [
+                4.5625,
+                16.1328
+              ],
+              [
+                4.6,
+                16.52
+              ],
+              [
+                4.6375,
+                16.9128
+              ],
+              [
+                4.675,
+                17.3112
+              ],
+              [
+                4.7125,
+                17.7153
+              ],
+              [
+                4.75,
+                18.125
+              ],
+              [
+                4.7875,
+                18.5403
+              ],
+              [
+                4.825,
+                18.9612
+              ],
+              [
+                4.8625,
+                19.3878
+              ],
+              [
+                4.9,
+                19.82
+              ],
+              [
+                4.9375,
+                20.2578
+              ],
+              [
+                4.975,
+                20.7012
+              ]
+            ],
+            "color": "#6366f1",
+            "strokeWidth": 2.5
+          },
+          {
+            "type": "point",
+            "coord": [
+              0.0,
+              11.0
+            ],
+            "position": "top-right"
+          },
+          {
+            "type": "point",
+            "coord": [
+              5.0,
+              21.0
+            ],
+            "hollow": true,
+            "color": "#6366f1"
+          },
+          {
+            "type": "text",
+            "coord": [
+              0.36,
+              22.6
+            ],
+            "text": "y = f(x)",
+            "color": "#6366f1",
+            "anchor": "start"
+          }
+        ]
+      },
+      "fingerprint": "t02-c02-u02-endpoint-values-instead-of-extrema-trap|direct|f(x) = #(x - #)^# + # on [#, #)",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 4,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c02-u02-endpoint-values-instead-of-extrema-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 15
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 1 - Foundation"
+    },
+    {
+      "id": "Q03",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c02-u02-domain-algebraic-constraints",
+      "context": "",
+      "prompt": "The function $f(x) = \\frac{1}{\\sqrt{c - 3x}}$ has domain $(-\\infty, 4)$. Find the value of the constant $c$.",
+      "display": "f(x) = \\frac{1}{\\sqrt{c - 3x}}, \\quad \\text{dom}(f) = (-\\infty, 4)",
+      "plainText": "f(x) = 1 / sqrt(c - 3x), dom(f) = (-inf, 4)",
+      "givens": {
+        "a": 3,
+        "b": 4
+      },
+      "constants": {
+        "one": 1
+      },
+      "trapGivens": [
+        3,
+        4
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "12",
+        "tolerance": 0
+      },
+      "answerPlain": "12",
+      "answerDisplay": "12",
+      "inputHint": "Enter a number",
+      "commonTrapTag": "t02-c02-u02-radical-negative-or-zero-endpoint-trap",
+      "trapDerivation": "-3 * 4",
+      "trapValue": "-12",
+      "verify": {
+        "source": "3 * 4",
+        "trapValue": "-12"
+      },
+      "checkpointHint": "With your constant in place, test an input on each side of the given endpoint and confirm the function is defined exactly where the stated domain says.",
+      "references": [
+        "MTH-T02-C02-U02"
+      ],
+      "verificationLevel": "partial",
+      "steps": [
+        {
+          "latex": "c - 3x > 0",
+          "explain": "Require the radicand in the denominator to be strictly positive."
+        },
+        {
+          "latex": "x < \\frac{c}{3}",
+          "explain": "Isolate x by adding 3x to both sides and dividing by 3."
+        },
+        {
+          "latex": "\\frac{c}{3} = 4",
+          "explain": "Equate the upper boundary to the given domain endpoint."
+        },
+        {
+          "latex": "c = 12",
+          "explain": "Multiply both sides by 3 to solve for c.",
+          "val": "12"
+        }
+      ],
+      "review": {
+        "verdict": "pass",
+        "note": "Answer 12, trapValue -12, display restating only f(x) and dom(f) without leaking the inequality, granular steps, and hint are all accurate."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C02-U02",
+          "title": "Domain and Range",
+          "notionUrl": "https://www.notion.so/4013818f8ba08001941cf55f55ebd5ba"
+        }
+      ],
+      "unitCode": "MTH-T02-C02-U02",
+      "fingerprint": "t02-c02-u02-radical-negative-or-zero-endpoint-trap|reverse|f(x) = # / sqrt(c - #x), dom(f) = (-inf, #)",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 4,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c02-u02-radical-negative-or-zero-endpoint-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 15
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 2 - Standard Exam"
+    },
+    {
+      "id": "Q04",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c02-u02-piecewise-function-domain-range",
+      "context": "",
+      "prompt": "For the piecewise function defined by $f(x) = 3x - 4$ when $x < 2$ and $f(x) = x^2 + 1$ when $x \\ge 2$, compute $f(2) - f(1)$.",
+      "display": "f(x) = \\begin{cases} 3x - 4, & x < 2 \\\\ x^2 + 1, & x \\ge 2 \\end{cases}",
+      "plainText": "f(x) = 3x - 4 (x < 2); x^2 + 1 (x >= 2)",
+      "givens": {
+        "m": 3,
+        "b": 4,
+        "c": 2,
+        "k": 1,
+        "x1": 1
+      },
+      "constants": {},
+      "trapGivens": [
+        3,
+        2,
+        4
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "6",
+        "tolerance": 0
+      },
+      "answerPlain": "6",
+      "answerDisplay": "6",
+      "inputHint": "Enter an integer",
+      "commonTrapTag": "t02-c02-u02-wrong-piecewise-branch-selected-trap",
+      "trapDerivation": "(3 * 2 - 4) - (3 * 1 - 4)",
+      "trapValue": "3",
+      "verify": {
+        "source": "(2^2 + 1) - (3 * 1 - 4)",
+        "trapValue": "3"
+      },
+      "checkpointHint": "Check which inequality condition each input satisfies before substituting into a branch formula.",
+      "references": [
+        "MTH-T02-C02-U02"
+      ],
+      "verificationLevel": "partial",
+      "steps": [
+        {
+          "latex": "f(2) = 2^2 + 1",
+          "explain": "Since 2 >= 2, use the second branch to evaluate f(2).",
+          "eq": [
+            "2^2 + 1",
+            "5"
+          ]
+        },
+        {
+          "latex": "f(1) = 3(1) - 4",
+          "explain": "Since 1 < 2, use the first branch to evaluate f(1).",
+          "eq": [
+            "3 * 1 - 4",
+            "-1"
+          ]
+        },
+        {
+          "latex": "f(2) - f(1) = 5 - (-1)",
+          "explain": "Subtract f(1) from f(2).",
+          "eq": [
+            "5 - (-1)",
+            "6"
+          ]
+        },
+        {
+          "latex": "f(2) - f(1) = 6",
+          "explain": "Simplify to obtain the final integer value.",
+          "val": "6"
+        }
+      ],
+      "review": {
+        "verdict": "pass",
+        "note": "Answer 6, trapValue 3 (evaluating f(2) on the strict x < 2 branch), steps, display, and hint are all accurate and unambiguous."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C02-U02",
+          "title": "Domain and Range",
+          "notionUrl": "https://www.notion.so/4013818f8ba08001941cf55f55ebd5ba"
+        }
+      ],
+      "unitCode": "MTH-T02-C02-U02",
+      "fingerprint": "t02-c02-u02-wrong-piecewise-branch-selected-trap|direct|f(x) = #x - # (x < #); x^# + # (x >= #)",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 4,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c02-u02-wrong-piecewise-branch-selected-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 15
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 2 - Standard Exam"
+    },
+    {
+      "id": "Q05",
+      "level": 3,
+      "category": "Domain Diagnosis",
+      "form": "diagnose",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c02-u02-combined-domain-restrictions-diagnose",
+      "context": "",
+      "prompt": "A student computed the sum of all integers in $[-2, 6]$ that belong to the domain of $f(x) = \\frac{x - 4}{(x - 4)(x - 1)}$:\nLine 1: $(-2) + (-1) + 0 + 2 + 3 + 4 + 5 + 6$\nLine 2: $(-3) + 0 + 2 + 3 + 4 + 5 + 6$\nLine 3: $(-3) + 20$\nLine 4: $17$\nWhich line is the first one that is wrong?",
+      "display": "f(x) = \\frac{x - 4}{(x - 4)(x - 1)}",
+      "plainText": "Sum of integers in [-2, 6] in the domain of f(x) = (x - 4) / ((x - 4)(x - 1))",
+      "givens": {
+        "a": 2,
+        "b": 6,
+        "c": 4,
+        "d": 1
+      },
+      "constants": {},
+      "trapGivens": [
+        2,
+        6,
+        4,
+        1
+      ],
+      "answerSpec": {
+        "type": "choice",
+        "options": [
+          {
+            "id": "1",
+            "label": "Line 1"
+          },
+          {
+            "id": "2",
+            "label": "Line 2",
+            "provenance": "flags a correct arithmetic simplification"
+          },
+          {
+            "id": "3",
+            "label": "Line 3",
+            "provenance": "flags a correct arithmetic simplification"
+          },
+          {
+            "id": "4",
+            "label": "Line 4",
+            "trapTag": "t02-c02-u02-canceled-factor-before-domain-trap"
+          }
+        ],
+        "correct": "1"
+      },
+      "answerPlain": "1",
+      "answerDisplay": "\\text{Line 1}",
+      "inputHint": "Choose a line",
+      "commonTrapTag": "t02-c02-u02-canceled-factor-before-domain-trap",
+      "trapDerivation": "(-2) + (-1) + 0 + 2 + 3 + 4 + 5 + 6",
+      "trapValue": "17",
+      "verify": {
+        "source": "(-2) + (-1) + 0 + 2 + 3 + 5 + 6",
+        "trapValue": "17",
+        "flaw": {
+          "values": [
+            "(-2) + (-1) + 0 + 2 + 3 + 4 + 5 + 6",
+            "(-3) + 0 + 2 + 3 + 4 + 5 + 6",
+            "(-3) + 20",
+            "17"
+          ],
+          "firstWrong": 1
+        }
+      },
+      "checkpointHint": "Check whether each line preserves the exact set of valid inputs from the original unsimplified function.",
+      "references": [
+        "MTH-T02-C02-U02"
+      ],
+      "verificationLevel": "partial",
+      "steps": [
+        {
+          "latex": "(x - 4)(x - 1) \\neq 0 \\implies x \\neq 4 \\text{ and } x \\neq 1",
+          "explain": "Line 1 is the first wrong line: both x = 1 and x = 4 make the original denominator zero, so 4 must also be excluded."
+        },
+        {
+          "latex": "(-2) + (-1) + 0 + 2 + 3 + 5 + 6 = 13",
+          "explain": "Sum the valid integers in [-2, 6] excluding 1 and 4.",
+          "val": "13"
+        }
+      ],
+      "blindSolve": {
+        "answer": "1",
+        "ambiguous": false,
+        "setup": "given",
+        "strategy": "prescribed",
+        "check": "edge",
+        "task": "diagnose",
+        "reverse": false,
+        "steps": 3,
+        "edgeRejected": "x = 4 (hole where x - 4 = 0 in denominator) and x = 1 ruled out from [-2, 6]"
+      },
+      "review": {
+        "verdict": "pass",
+        "note": "Line 1 is correctly identified as the first wrong line for failing to exclude x = 4 from the original denominator, and all supporting fields are consistent."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C02-U02",
+          "title": "Domain and Range",
+          "notionUrl": "https://www.notion.so/4013818f8ba08001941cf55f55ebd5ba"
+        }
+      ],
+      "unitCode": "MTH-T02-C02-U02",
+      "fingerprint": "t02-c02-u02-canceled-factor-before-domain-trap|diagnose|Sum of integers in [-#, #] in the domain of f(x) = (x - #) / ((x - #)(x - #))",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            20
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c02-u02-canceled-factor-before-domain-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 3
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 15
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 3 - Trap & Diagnostic"
+    },
+    {
+      "id": "Q06",
+      "level": 3,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c02-u02-combined-domain-restrictions-diagnose",
+      "context": "",
+      "prompt": "Find the sum of all integers in $[0, 8]$ that belong to the domain of $f(x) = \\frac{(x - 5)\\sqrt{x - 2}}{x^2 - 7x + 10}$.",
+      "display": "f(x) = \\frac{(x - 5)\\sqrt{x - 2}}{x^2 - 7x + 10}",
+      "plainText": "Sum of integers in [0, 8] in the domain of f(x) = (x - 5)sqrt(x - 2) / (x^2 - 7x + 10)",
+      "givens": {
+        "lo": 0,
+        "hi": 8,
+        "a": 5,
+        "b": 2,
+        "c": 7,
+        "d": 10
+      },
+      "constants": {},
+      "trapGivens": [
+        2,
+        7,
+        8
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "28",
+        "tolerance": 0
+      },
+      "answerPlain": "28",
+      "answerDisplay": "28",
+      "inputHint": "Enter an integer",
+      "commonTrapTag": "t02-c02-u02-radical-negative-or-zero-endpoint-trap",
+      "trapDerivation": "2 + 3 + 4 + 6 + 7 + 8",
+      "trapValue": "30",
+      "verify": {
+        "source": "3 + 4 + 6 + 7 + 8",
+        "trapValue": "30"
+      },
+      "checkpointHint": "Test each integer you keep in the original formula and confirm that every part of it is defined there.",
+      "references": [
+        "MTH-T02-C02-U02"
+      ],
+      "verificationLevel": "partial",
+      "steps": [
+        {
+          "latex": "x - 2 \\ge 0 \\implies x \\ge 2",
+          "explain": "Require the radicand in the numerator to be non-negative."
+        },
+        {
+          "latex": "x^2 - 7x + 10 = (x - 2)(x - 5) \\neq 0",
+          "explain": "Factor the quadratic denominator to find all zeros."
+        },
+        {
+          "latex": "x \\neq 2 \\quad \\text{and} \\quad x \\neq 5",
+          "explain": "Exclude both denominator roots, including the removable factor x = 5."
+        },
+        {
+          "latex": "\\text{Valid integers in } [0, 8]: \\{3, 4, 6, 7, 8\\}",
+          "explain": "List the integers in [0, 8] satisfying x > 2 and x != 5."
+        },
+        {
+          "latex": "3 + 4 + 6 + 7 + 8 = 28",
+          "explain": "Add the valid integers to get the sum.",
+          "val": "28"
+        }
+      ],
+      "blindSolve": {
+        "answer": "28",
+        "ambiguous": false,
+        "setup": "given",
+        "strategy": "prescribed",
+        "check": "edge",
+        "task": "compute",
+        "reverse": false,
+        "steps": 4,
+        "edgeRejected": "endpoint x = 2 and hole x = 5 ruled out by denominator (x - 2)(x - 5) != 0 (plus x = 0, 1 < 2)"
+      },
+      "review": {
+        "verdict": "pass",
+        "note": "Answer 28, trapValue 33 (including the removable discontinuity x = 5), steps, display, and hint are all accurate and exercise the combined-restrictions archetype."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C02-U02",
+          "title": "Domain and Range",
+          "notionUrl": "https://www.notion.so/4013818f8ba08001941cf55f55ebd5ba"
+        }
+      ],
+      "unitCode": "MTH-T02-C02-U02",
+      "fingerprint": "t02-c02-u02-radical-negative-or-zero-endpoint-trap|direct|Sum of integers in [#, #] in the domain of f(x) = (x - #)sqrt(x - #) / (x^# - #x + #)",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 5,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            20
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c02-u02-radical-negative-or-zero-endpoint-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 17
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 3 - Trap & Diagnostic"
+    },
+    {
+      "id": "Q07",
+      "level": 4,
+      "category": "Core Skill",
+      "form": "choose",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c02-u02-constrained-domain-range-model",
+      "context": "rectangular_enclosure_area",
+      "prompt": "A farmer has $80$ meters of fencing to enclose a rectangular pasture along a straight river, using the river as one side so only three sides require fencing. The pasture must have an area of $750$ square meters, and terrain limits the side parallel to the river to at most $35$ meters. What must be the length $x$, in meters, of each side perpendicular to the river?",
+      "display": "2x + y = P, \\quad x y = A, \\quad y \\le y_{\\max}",
+      "plainText": "2x + y = P, x * y = A, y <= y_max",
+      "givens": {
+        "P": 80,
+        "A": 750,
+        "y_max": 35
+      },
+      "constants": {
+        "two": 2
+      },
+      "trapGivens": [
+        80,
+        750,
+        2
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "25",
+        "tolerance": 0
+      },
+      "answerPlain": "25",
+      "answerDisplay": "25",
+      "inputHint": "Enter a number (no units)",
+      "commonTrapTag": "t02-c02-u02-unrestricted-algebraic-domain-trap",
+      "trapDerivation": "(80 - sqrt(80^2 - 8 * 750)) / 4",
+      "trapValue": "15",
+      "verify": {
+        "source": "(80 + sqrt(80^2 - 8 * 750)) / 4",
+        "trapValue": "15"
+      },
+      "checkpointHint": "Check every candidate against every condition in the story before you answer.",
+      "references": [
+        "MTH-T02-C02-U02"
+      ],
+      "verificationLevel": "partial",
+      "steps": [
+        {
+          "latex": "y = 80 - 2x",
+          "explain": "Express the side parallel to the river in terms of x using the fencing constraint."
+        },
+        {
+          "latex": "x(80 - 2x) = 750",
+          "explain": "Substitute y into the area equation."
+        },
+        {
+          "latex": "2x^2 - 80x + 750 = 0",
+          "explain": "Expand and move all terms to one side."
+        },
+        {
+          "latex": "x^2 - 40x + 375 = 0",
+          "explain": "Divide both sides by 2."
+        },
+        {
+          "latex": "(x - 15)(x - 25) = 0",
+          "explain": "Factor the quadratic equation.",
+          "eq": [
+            "15 * 25",
+            "375"
+          ]
+        },
+        {
+          "latex": "y(15) = 80 - 2(15)",
+          "explain": "Substitute x = 15 into the fencing relation.",
+          "eq": [
+            "80 - 2 * 15",
+            "50"
+          ]
+        },
+        {
+          "latex": "y(15) = 50 > 35",
+          "explain": "Since 50 exceeds the 35 m terrain limit, rule out x = 15."
+        },
+        {
+          "latex": "y(25) = 80 - 2(25)",
+          "explain": "Substitute x = 25 into the fencing relation.",
+          "eq": [
+            "80 - 2 * 25",
+            "30"
+          ]
+        },
+        {
+          "latex": "y(25) = 30 \\le 35",
+          "explain": "Confirm x = 25 satisfies the terrain limit, giving the unique valid length.",
+          "val": "25"
+        }
+      ],
+      "blindSolve": {
+        "answer": "25",
+        "ambiguous": false,
+        "setup": "model",
+        "strategy": "prescribed",
+        "check": "edge",
+        "task": "compute",
+        "reverse": true,
+        "steps": 4,
+        "edgeRejected": "x = 15 ruled out because parallel side y = 80 - 2(15) = 50 > 35"
+      },
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "Three-sided river enclosure and terrain limit y <= 35 naturally set 2x + y = 80, xy = 750, and select x = 25 m."
+      },
+      "review": {
+        "verdict": "pass",
+        "note": "Answer 25 m, trapValue 15 m (violating the 35 m parallel-side terrain limit), physical modeling context, and granular steps are all accurate and unambiguous."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C02-U02",
+          "title": "Domain and Range",
+          "notionUrl": "https://www.notion.so/4013818f8ba08001941cf55f55ebd5ba"
+        }
+      ],
+      "unitCode": "MTH-T02-C02-U02",
+      "figure": {
+        "kind": "geometry_2d",
+        "theme": "indigo",
+        "title": "Pasture along a river",
+        "points": {
+          "A": [
+            0,
+            0
+          ],
+          "B": [
+            35.0,
+            0
+          ],
+          "C": [
+            35.0,
+            20.0
+          ],
+          "D": [
+            0,
+            20.0
+          ]
+        },
+        "shapes": [
+          {
+            "type": "polygon",
+            "vertices": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ],
+            "fill": true
+          }
+        ],
+        "markers": [
+          {
+            "type": "right_angle",
+            "vertex": "A",
+            "arm1": "B",
+            "arm2": "D"
+          }
+        ],
+        "labels": [
+          {
+            "type": "segment",
+            "p1": "A",
+            "p2": "B",
+            "text": "y = ? (along river)",
+            "side": "bottom"
+          },
+          {
+            "type": "segment",
+            "p1": "B",
+            "p2": "C",
+            "text": "x = ?",
+            "side": "right"
+          }
+        ],
+        "note": "Not to scale"
+      },
+      "fingerprint": "t02-c02-u02-unrestricted-algebraic-domain-trap|choose|#x + y = P, x * y = A, y <= y_max",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 9,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            25
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c02-u02-unrestricted-algebraic-domain-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 25
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 4 - Applied Synthesis"
+    },
+    {
+      "id": "Q08",
+      "level": 4,
+      "category": "Core Skill",
+      "form": "choose",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c02-u02-constrained-domain-range-model",
+      "context": "open_top_box_volume",
+      "prompt": "A rectangular metal plate has perimeter $44$ inches and area $112$ square inches. An open-top tray is formed by cutting congruent squares of side length $x$ inches from all four corners and folding up the sides. What is the upper bound $M$ of the practical domain $(0, M)$ for $x$?",
+      "display": "2(L + W) = P, \\quad L W = A, \\quad L - 2x > 0, \\quad W - 2x > 0",
+      "plainText": "2(L + W) = P, L * W = A, L - 2x > 0, W - 2x > 0",
+      "givens": {
+        "P": 44,
+        "A": 112
+      },
+      "constants": {
+        "two": 2
+      },
+      "trapGivens": [
+        44,
+        112,
+        2
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "4",
+        "tolerance": 0
+      },
+      "answerPlain": "4",
+      "answerDisplay": "4",
+      "inputHint": "Enter a number (no units)",
+      "commonTrapTag": "t02-c02-u02-unrestricted-algebraic-domain-trap",
+      "trapDerivation": "(44 / 2 + sqrt((44 / 2)^2 - 4 * 112)) / 4",
+      "trapValue": "7",
+      "verify": {
+        "source": "(44 / 2 - sqrt((44 / 2)^2 - 4 * 112)) / 4",
+        "trapValue": "7"
+      },
+      "checkpointHint": "Check every condition in the story at a value just below and just above your bound.",
+      "references": [
+        "MTH-T02-C02-U02"
+      ],
+      "verificationLevel": "partial",
+      "steps": [
+        {
+          "latex": "L + W = 22",
+          "explain": "Halve the perimeter to get the sum of the plate's length and width.",
+          "eq": [
+            "44 / 2",
+            "22"
+          ]
+        },
+        {
+          "latex": "W(22 - W) = 112",
+          "explain": "Substitute L = 22 - W into the area relation."
+        },
+        {
+          "latex": "W^2 - 22W + 112 = 0",
+          "explain": "Expand and rearrange into standard quadratic form."
+        },
+        {
+          "latex": "(W - 8)(W - 14) = 0",
+          "explain": "Factor to find the two side lengths 8 in and 14 in.",
+          "eq": [
+            "8 * 14",
+            "112"
+          ]
+        },
+        {
+          "latex": "14 - 2x > 0 \\implies x < 7 \\quad \\text{and} \\quad 8 - 2x > 0 \\implies x < 4",
+          "explain": "Require both folded base dimensions to remain strictly positive.",
+          "eq": [
+            "8 / 2",
+            "4"
+          ]
+        },
+        {
+          "latex": "(0, 7) \\cap (0, 4) = (0, 4)",
+          "explain": "Intersect the inequalities, ruling out x in [4, 7) where the shorter side collapses."
+        },
+        {
+          "latex": "M = 4",
+          "explain": "Read the upper bound of the practical domain.",
+          "val": "4"
+        }
+      ],
+      "blindSolve": {
+        "answer": "4",
+        "ambiguous": false,
+        "setup": "model",
+        "strategy": "prescribed",
+        "check": "edge",
+        "task": "compute",
+        "reverse": false,
+        "steps": 4,
+        "edgeRejected": "x in [4, 7) from 14 - 2x > 0 ruled out because shorter side 8 - 2x <= 0"
+      },
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "Plate perimeter/area and corner-cut tray geometry directly determine L=14, W=8 in and practical domain (0, 4)."
+      },
+      "review": {
+        "verdict": "pass",
+        "note": "Answer 4 in, trapValue 7 in (using the longer 14 in side instead of intersecting with the 8 in side), physical modeling context, and steps are all accurate."
+      },
+      "figureWaiver": "No figure builder draws a plate with corner cut-outs; the rectangle builders would label a plate side as x, but x is the cut length.",
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C02-U02",
+          "title": "Domain and Range",
+          "notionUrl": "https://www.notion.so/4013818f8ba08001941cf55f55ebd5ba"
+        }
+      ],
+      "unitCode": "MTH-T02-C02-U02",
+      "fingerprint": "t02-c02-u02-unrestricted-algebraic-domain-trap|choose|#(L + W) = P, L * W = A, L - #x > #, W - #x > #",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 4,
+          "stepCount": 7,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            25
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c02-u02-unrestricted-algebraic-domain-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 21
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 4 - Applied Synthesis"
+    }
+  ],
+  "drillId": "DRL-MTH-T02-C02-U02-01",
+  "title": "Domain and Range — Verified Math Drill (8 Qs)",
+  "createdAt": "2026-11-16 19:41:26",
+  "topicCode": "MTH-T02",
+  "chapterCode": "MTH-T02-C02",
+  "schemaVersion": "2.0-math",
+  "config": {
+    "questionCount": 8,
+    "difficulty": "ALL",
+    "difficultyMode": "AI Synthesized Reasoning Mode"
+  },
+  "localFilePath": "drills/data/MTH-T02-C02-U02/DRL-MTH-T02-C02-U02-01.json"
+}
