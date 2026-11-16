@@ -1,6 +1,6 @@
 ---
 name: review-code
-description: Review the learner's code for one PRG drill problem like a senior engineer's pull-request review - run tests, lint and types, judge design against the archetype's rubric (qualityChecks), give hints not rewrites, record the attempt, and show the reference only after a pass. Use when the learner asks to review or check their code ("ตรวจโค้ด DRL-PRG-T00-C03-02 Q01", "review code ...", "รีวิว Q03"), disputes a finding, or answers the explain question.
+description: Review the learner's code for one PRG drill problem or lab milestone like a senior engineer's pull-request review - run tests, lint and types, judge design against the archetype's rubric (qualityChecks), give hints not rewrites, record the attempt, and show the reference only after a pass. Use when the learner asks to review or check their code ("ตรวจโค้ด DRL-PRG-T00-C03-02 Q01", "ตรวจโค้ด LAB-PRG-T01-C04-02 M2", "review code ...", "รีวิว Q03"), disputes a finding, or answers the explain question.
 ---
 
 # Review code
@@ -15,16 +15,15 @@ Run every command from the **main checkout** (`/Users/Joseph/Documents/antigravi
 ## 1. Run layers 1–2
 
 ```bash
-.venv/bin/python -m code_engine.review_run <DRILL_ID> <QID> --json
-.venv/bin/python -m scripts.review_record show <DRILL_ID> <QID>     # earlier attempts
+.venv/bin/python -m code_engine.review_run <DRILL_ID|LAB_ID> <QID|MILESTONE> --json
+.venv/bin/python -m scripts.review_record show <DRILL_ID|LAB_ID> <QID|MILESTONE>     # earlier attempts
 ```
 
-If the drill or problem is missing, say so and stop. If the workspace file is missing, the learner has not started:
-tell them to open the workspace from the Studio. Labs are not supported by `review_run` yet: say so.
+If the drill/lab or problem/milestone is missing, say so and stop. If the workspace file is missing, the learner has not started:
+tell them to open the workspace from the Studio (or `labs/<LAB_ID>/` in VS Code).
 
-Read: the learner's source file, the problem's `prompt` in `drills/data/<UNIT>/<DRILL_ID>.json`, the rubric printed by
-`review_run` (universal `U-*` + archetype `QC-*`, with effective severity), and the archetype's `cognitiveTraps` in
-`code_engine/reasoning_vault/`. Do not read or quote `hiddenTests` code or `solutionCode` to the learner before a pass.
+- **For a drill (`DRL-*`)**: read the learner's source file, the problem's `prompt` in `drills/data/<UNIT>/<DRILL_ID>.json`, the rubric printed by `review_run` (universal `U-*` + archetype `QC-*`, with effective severity), and the archetype's `cognitiveTraps` in `code_engine/reasoning_vault/`. Do not read or quote `hiddenTests` code or `solutionCode` to the learner before a pass.
+- **For a lab (`LAB-* <MILESTONE>`, e.g. `LAB-PRG-T01-C04-02 M2`)**: read `labs/<LAB_ID>/lab.config.json`, `labs/<LAB_ID>/README.md` (if present), the learner's files in `labs/<LAB_ID>/src/`, and the milestone's rubric printed by `review_run`. Do **not** read or quote `labs/_reference/<LAB_ID>/` (`src/` or `hidden/`) before a pass.
 
 ## 2. Judge design (layer 3)
 
@@ -70,11 +69,10 @@ lint itself and computes the verdict; report the verdict it prints, never your o
 
 ## 4. After a pass
 
-- Show the reference `solutionCode` next to the learner's code, with one paragraph on differences worth noticing
-  (trade-offs, not a ranking). If the learner's design is as good, say so.
+- Show the reference (`solutionCode` for drills, or the relevant files in `labs/_reference/<LAB_ID>/src/` for labs) next to the learner's code, with one paragraph on differences worth noticing (trade-offs, not a ranking). If the learner's design is as good, say so.
 - Ask one explain question about why the code works or what input would break a weaker version. When they answer, check
   it for correctness (correct gaps kindly), then:
-  `.venv/bin/python -m scripts.review_record explain <DRILL_ID> <QID> "<their answer>"`.
+  `.venv/bin/python -m scripts.review_record explain <DRILL_ID|LAB_ID> <QID|MILESTONE> "<their answer>"`.
 
 ## 5. Disputes
 
@@ -91,6 +89,6 @@ the consequence; do not dispute.
 ## 6. Never
 
 - Rewrite the learner's code, or give a fix longer than one line before a pass.
-- Show hidden tests or the reference before a pass.
+- Show hidden tests (`labs/_reference/<LAB_ID>/hidden/` for labs) or the reference (`labs/_reference/<LAB_ID>/src/`) before a pass.
 - Pass code by your own judgement: only the recorded verdict counts.
-- Edit `drills/workspace/` or `progress/` by hand.
+- Edit `drills/workspace/`, `labs/<LAB_ID>/src/`, or `progress/` by hand.

@@ -137,9 +137,14 @@ def _load_prg_vault_meta() -> tuple[dict[str, str], dict[str, int], dict[str, se
     return unit_of, level_of, arch_checks, sentences
 
 
-def load_items(data_root: str | None = None, progress_dir: str | None = None) -> list[Item]:
+def load_items(
+    data_root: str | None = None,
+    progress_dir: str | None = None,
+    labs_root: str | None = None,
+) -> list[Item]:
     data_root = data_root or os.environ.get("DRILLS_DATA_DIR", "drills/data")
     progress_dir = progress_dir or os.environ.get("PROGRESS_DIR") or os.path.join(main_checkout_root(), "progress")
+    labs_root = labs_root or os.environ.get("LABS_DIR", "labs")
     drills = {}
     for pattern in ("MTH-*", "PRG-*"):
         for path in glob.glob(os.path.join(data_root, pattern, "*.json")):
@@ -147,6 +152,28 @@ def load_items(data_root: str | None = None, progress_dir: str | None = None) ->
                 doc = json.load(f)
             if doc.get("drillId"):
                 drills[doc["drillId"]] = doc
+    for path in glob.glob(os.path.join(labs_root, "LAB-*", "lab.config.json")):
+        with open(path, encoding="utf-8") as f:
+            cfg = json.load(f)
+        lab_id = cfg.get("labId")
+        if not lab_id:
+            continue
+        drills[lab_id] = {
+            "drillId": lab_id,
+            "subject": "PRG",
+            "unitCode": cfg.get("chapterCode") or (cfg.get("unitsUsed") or [""])[0],
+            "problems": [
+                {
+                    "id": ms["id"],
+                    "level": cfg.get("level"),
+                    "unitCode": (ms.get("units") or [cfg.get("chapterCode", "")])[0],
+                    "archetype": "project-based",
+                    "qualityChecks": ms.get("qualityChecks") or [],
+                }
+                for ms in cfg.get("milestones") or []
+                if isinstance(ms, dict) and ms.get("id")
+            ],
+        }
     # Problems ingested before archetypes carried `unitCode` get their unit from the archetype.
     unit_of = {}
     for vpath in glob.glob(os.path.join("math_engine", "reasoning_vault", "*.json")):
@@ -205,7 +232,11 @@ def load_items(data_root: str | None = None, progress_dir: str | None = None) ->
                         subject="PRG",
                         passed=bool(reviews and reviews[-1].get("verdict") == "pass"),
                         signals=sigs,
-                        applicable_checks=universal_ids | prg_arch_checks.get(arch_key or "", set()),
+                        applicable_checks=(
+                            universal_ids | set(prob.get("qualityChecks") or [])
+                            if prob.get("qualityChecks")
+                            else universal_ids | prg_arch_checks.get(arch_key or "", set())
+                        ),
                         lint_overrides=lint_overrides,
                     )
                 )

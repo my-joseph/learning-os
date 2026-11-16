@@ -197,7 +197,7 @@ Every multi-milestone project lab adheres to a standardized milestone sequence:
 
 For **PRG drills**, follow the `new-code-drill` skill (`.claude/skills/new-code-drill/SKILL.md`) and enforce all gates via `python -m code_engine.ai_drill_ingest --check <draft.json>` (scope & trap tag, starter compile & no-leak, reference green & starter red, `trapMutant` + generic mutants killed by hidden/visible tests, Layer 2 ESLint + `tsc`, Layer 3 `qualityChecks` rubric, `rules/07` mix, `blindSolve`, and `review`) before ingesting and syncing to Notion.
 
-For **multi-milestone labs**, AI must execute the following pipeline in strict sequential order:
+For **multi-milestone labs**, follow the `new-project` skill (`.claude/skills/new-project/SKILL.md`) and enforce all gates via `python -m code_engine.lab_ingest --check <lab_dir>` (config schema, `id_map` + Notion `Done`/`In progress` check for `extra-project`, rubric `qualityChecks`, reference visible+hidden+lint+`tsc`, stubs lint-clean & failing visible tests, per-milestone `trapMutant` caught by hidden tests, zero-leak, `blindSolve`, and `review`) before finalising (`python -m code_engine.lab_ingest <lab_dir>`) and syncing to Notion (`python -m notion_sync.lab_sync <lab_dir>`):
 1. **Spec Definition:** Create `lab.config.json` defining metadata, dependencies, and milestone point allocations.
 2. **Canonical Solution:** Author complete, clean, production-grade reference implementation in `.canonical/`.
 3. **Milestone Test Suites:** Author robust test suites in `tests/` covering every milestone requirement and edge cases.
