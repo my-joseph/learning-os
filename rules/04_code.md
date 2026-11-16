@@ -36,6 +36,8 @@ Programming cannot be evaluated solely by mechanical test scripts like mathemati
 
 ### 2.1 Review rubric (`qualityChecks`)
 Layer 3 design review criteria live in `code_engine/quality_checks.json` (universal checks) and each archetype's `qualityChecks` in `code_engine/reasoning_vault/*.json` (see `docs/prg_reviewer_spec.md`):
+- **Behaviour goes to hidden tests, not the rubric:** `qualityChecks` only covers what automated tests cannot observe (structure, separation of concerns, encapsulation, testability/injection, error design, timing/security properties). Functional behaviour bugs belong in `hiddenTests` and `cognitiveTraps`.
+- **Properties, never a mandated API:** every check states a property of the code (e.g. "No reference to internal mutable state escapes the factory"), never a required API (e.g. never "must use `toSorted()`"); optional `accepted` lists give the reviewer acceptable examples as hints only.
 - **`must` blocks a pass:** any `must` finding produces a `revise` verdict (`U-one-job` becomes `must` from level 3).
 - **`should` never blocks:** `should` findings are advisory only.
 - **Taste is not a finding:** stylistic preferences (e.g. `for` vs `forEach` when both are clear) are never reported.

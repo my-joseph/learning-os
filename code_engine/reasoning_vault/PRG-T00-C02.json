@@ -32,6 +32,12 @@
           "name": "Loose Equality Implicit Coercion",
           "description": "Comparing with '==' causes unintended coercion between false, 0, and empty strings.",
           "reproducer": "Comparing '' == 0 returns true, bypassing empty string validation."
+        },
+        {
+          "trapTag": "truthiness-conflation",
+          "name": "Truthiness Conflating Valid Falsy Values",
+          "description": "Checking '!val' treats legitimate 0, false, or '' the same as null or undefined.",
+          "reproducer": "Pass port = 0 to hasValidPort; '!port' rejects 0 instead of distinguishing missing vs zero."
         }
       ],
       "realWorldDomains": [
@@ -53,23 +59,24 @@
       ],
       "qualityChecks": [
         {
-          "id": "QC-nullish-default",
-          "check": "Defaults use `??` or an explicit `null`/`undefined` check, never `||`.",
-          "why": "`||` overwrites legitimate falsy values such as `0`, `false`, and `''` with the default.",
+          "id": "QC-coercion-explicit-nullish-intent",
+          "check": "Missing-value guards and defaults distinguish `null`/`undefined` from legitimate falsy values (`0`, `false`, `''`) by structure rather than truthy/falsy coercion.",
+          "why": "Truthy/falsy coercion silently drops valid `0`, `false`, or `''` values on untested branches.",
           "severity": "must",
+          "accepted": ["val ?? fallback", "val !== null && val !== undefined", "typeof val === 'number' && Number.isFinite(val)"],
           "knownBad": {
             "code": "function getTimeout(cfg) {\n  return cfg.timeoutSec || 30;\n}",
-            "caughtBy": "test"
+            "caughtBy": "review"
           }
         },
         {
-          "id": "QC-explicit-empty-check",
-          "check": "Empty-string or missing-number checks test `=== ''` or `Number.isFinite(...)` explicitly rather than truthiness (`!val`).",
-          "why": "Truthiness checks conflate `0` and `''` with `null` or `undefined`.",
+          "id": "QC-coercion-pure-output",
+          "check": "Sanitization constructs an explicit output object with only the intended schema fields rather than forwarding unvalidated properties from the input.",
+          "why": "Spreading raw input objects leaks unexpected or unvalidated fields downstream.",
           "severity": "should",
           "knownBad": {
-            "code": "function hasValidPort(port) {\n  if (!port) return false;\n  return port > 0;\n}",
-            "caughtBy": "test"
+            "code": "function sanitizeConfig(raw) {\n  return { ...raw, timeoutSec: raw.timeoutSec ?? 30 };\n}",
+            "caughtBy": "review"
           }
         }
       ]
@@ -115,21 +122,32 @@
       "qualityChecks": [
         {
           "id": "QC-closure-no-ref-escape",
-          "check": "Accessors returning internal arrays or objects return a shallow copy or freeze, never the live internal reference.",
-          "why": "Returning the internal reference lets callers mutate private closure state outside the factory API.",
+          "check": "No reference to internal mutable state escapes the factory through any accessor or return value.",
+          "why": "Returning a live internal reference lets callers mutate private closure state outside the factory API.",
           "severity": "must",
+          "accepted": ["[...items]", "items.slice()", "structuredClone(items)", "Object.freeze({ ...state })"],
           "knownBad": {
             "code": "function createRegistry() {\n  const items = [];\n  return {\n    add(item) { items.push(item); },\n    getAll() { return items; }\n  };\n}",
-            "caughtBy": "test"
+            "caughtBy": "review"
           }
         },
         {
           "id": "QC-closure-private-state",
-          "check": "Mutable state lives in `let`/`const` bindings inside the factory closure rather than as properties on the returned object.",
+          "check": "Mutable state lives in lexical bindings inside the factory closure rather than as properties on the returned object.",
           "why": "Storing state on the returned object exposes it to direct external reassignment.",
           "severity": "must",
           "knownBad": {
             "code": "function createCounter() {\n  return {\n    count: 0,\n    inc() { this.count += 1; }\n  };\n}",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-closure-minimal-api",
+          "check": "The returned interface exposes only the intended domain operations, without leaking internal helpers or raw state setters.",
+          "why": "Exposing internal mutators breaks the factory's encapsulation boundary.",
+          "severity": "should",
+          "knownBad": {
+            "code": "function createCounter() {\n  let count = 0;\n  return {\n    inc() { count += 1; },\n    get() { return count; },\n    _setRaw(v) { count = v; }\n  };\n}",
             "caughtBy": "review"
           }
         }
@@ -158,6 +176,12 @@
           "name": "In-Place Array Sort Mutation",
           "description": "Calling Array.prototype.sort() directly on input array mutates the original order unexpectedly.",
           "reproducer": "Call sortOrders(orders); check original orders array order; order was permanently altered."
+        },
+        {
+          "trapTag": "reduce-missing-initial-value",
+          "name": "Reduce Without Initial Accumulator",
+          "description": "Calling reduce() without an explicit initial accumulator throws TypeError on empty arrays and reuses the first element.",
+          "reproducer": "Call sumTotals([]); without an initial value, reduce throws TypeError."
         }
       ],
       "realWorldDomains": [
@@ -175,23 +199,24 @@
       ],
       "qualityChecks": [
         {
-          "id": "QC-no-in-place-sort",
-          "check": "Sorting or reversing a caller-owned array uses `[...arr].sort(...)` or `toSorted()`, never `arr.sort()` directly.",
-          "why": "`Array.prototype.sort` and `reverse` mutate the array in place and corrupt the caller's ordering.",
+          "id": "QC-pipeline-pure-stages",
+          "check": "Transformation stages derive new collections without mutating caller-owned arrays or intermediate elements.",
+          "why": "In-place array methods such as `.sort()` or `.reverse()` corrupt the caller's ordering.",
           "severity": "must",
+          "accepted": ["[...arr].sort(...)", "arr.toSorted(...)", "arr.slice().sort(...)"],
           "knownBad": {
             "code": "function sortOrders(orders) {\n  return orders.sort((a, b) => a.total - b.total);\n}",
-            "caughtBy": "test"
+            "caughtBy": "review"
           }
         },
         {
-          "id": "QC-reduce-explicit-init",
-          "check": "Every `.reduce(...)` call passes an explicit initial accumulator value as its second argument.",
-          "why": "Omitting the initial value throws a `TypeError` on empty arrays and reuses the first element as the accumulator.",
+          "id": "QC-pipeline-composable-steps",
+          "check": "Filtering, projection, and aggregation are structured as distinct, readable stages rather than a single monolithic loop or reducer mixing all three.",
+          "why": "Separating pipeline stages keeps each transformation easy to reason about, test, and extend.",
           "severity": "should",
           "knownBad": {
-            "code": "function sumTotals(items) {\n  return items.reduce((acc, item) => acc + item.price);\n}",
-            "caughtBy": "test"
+            "code": "function summarize(orders) {\n  const out = {};\n  for (const o of orders) {\n    if (o.paid) out[o.cat] = (out[o.cat] ?? 0) + o.total * 1.07;\n  }\n  return out;\n}",
+            "caughtBy": "review"
           }
         }
       ]
@@ -219,6 +244,12 @@
           "name": "Direct Target Assumption on Nested Elements",
           "description": "Inspecting event.target.dataset directly instead of event.target.closest('[data-action]') fails when clicking inner <span> or <i>.",
           "reproducer": "Simulate click with event.target = <span> nested inside <button data-action='delete'>; target.dataset is empty."
+        },
+        {
+          "trapTag": "non-interactive-target-null-deref",
+          "name": "Null Dereference on Non-Matching Container Click",
+          "description": "Dereferencing the matched action element without guarding against null throws when clicking non-interactive background areas.",
+          "reproducer": "Click container padding outside any [data-action] element; handler throws TypeError."
         }
       ],
       "realWorldDomains": [
@@ -234,23 +265,24 @@
       "usedContexts": [],
       "qualityChecks": [
         {
-          "id": "QC-delegation-use-closest",
-          "check": "Delegated event handlers locate the interactive element via `event.target.closest(selector)` rather than reading `event.target` directly.",
-          "why": "Clicking a nested `<span>` or icon inside a button sets `event.target` to the child, missing the parent's `dataset`.",
+          "id": "QC-delegation-ancestor-resolution",
+          "check": "Delegated event handlers resolve the interactive boundary upward from `event.target` and guard against non-matching clicks before reading attributes.",
+          "why": "Reading `event.target` directly misses nested children (`<span>`, icons), and unguarded lookups crash on container clicks.",
           "severity": "must",
+          "accepted": ["event.target.closest(selector)", "parent-walking loop with element.matches(selector)"],
           "knownBad": {
             "code": "function handleClick(event, onAction) {\n  const action = event.target.dataset.action;\n  if (action) onAction(action);\n}",
-            "caughtBy": "test"
+            "caughtBy": "review"
           }
         },
         {
-          "id": "QC-delegation-null-guard",
-          "check": "The result of `event.target.closest(selector)` is checked for `null` before reading properties.",
-          "why": "Clicks on non-matching container areas return `null` from `closest()`, throwing a `TypeError` if dereferenced.",
-          "severity": "must",
+          "id": "QC-delegation-dispatch-separation",
+          "check": "DOM target lookup is separated from action execution so handlers do not couple DOM traversal to business state updates.",
+          "why": "Decoupling target resolution from action dispatch makes the business handler testable without DOM events.",
+          "severity": "should",
           "knownBad": {
-            "code": "function handleClick(event, onAction) {\n  const btn = event.target.closest('[data-action]');\n  onAction(btn.dataset.action);\n}",
-            "caughtBy": "test"
+            "code": "function handleClick(event, store) {\n  const btn = event.target.closest('[data-action]');\n  if (!btn) return;\n  if (btn.dataset.action === 'delete') store.items = store.items.filter((x) => x.id !== btn.dataset.id);\n}",
+            "caughtBy": "review"
           }
         }
       ]
@@ -278,6 +310,12 @@
           "name": "Premature Fast-Fail with Promise.all",
           "description": "Using Promise.all for independent tasks causes a single transient failure to abort all other valid results.",
           "reproducer": "3 tasks run; task 2 fails; results of task 1 and 3 are lost."
+        },
+        {
+          "trapTag": "completion-order-result-drift",
+          "name": "Completion-Order Result Array Drift",
+          "description": "Pushing resolved values into an array inside .then() reorders results by completion time instead of input order.",
+          "reproducer": "Task 0 takes 30ms, task 1 takes 5ms; output has task 1's result at index 0."
         }
       ],
       "realWorldDomains": [
@@ -295,23 +333,24 @@
       ],
       "qualityChecks": [
         {
-          "id": "QC-async-settle-all",
-          "check": "Independent concurrent tasks use `Promise.allSettled` (or per-task `try/catch`), never bare `Promise.all`.",
-          "why": "`Promise.all` rejects on the first failure and discards the results of all other surviving tasks.",
+          "id": "QC-async-isolated-settlement",
+          "check": "When partial failure tolerance is required, each concurrent task's rejection is isolated so one failure does not abort or drop sibling results.",
+          "why": "Unisolated rejections discard valid results from concurrent sibling tasks.",
           "severity": "must",
+          "accepted": ["Promise.allSettled(...)", "per-task async wrapper with try/catch returning { status, value | reason }"],
           "knownBad": {
             "code": "async function runAll(tasks) {\n  return Promise.all(tasks.map((task) => task()));\n}",
-            "caughtBy": "test"
+            "caughtBy": "review"
           }
         },
         {
-          "id": "QC-async-preserve-order",
-          "check": "Combinator results are returned in the same positional order as the input `tasks` array.",
-          "why": "Pushing into a result array inside `.then()` callbacks reorders results by completion time instead of input order.",
-          "severity": "should",
+          "id": "QC-async-no-fire-and-forget",
+          "check": "Every spawned promise is awaited or returned in the combinator's settlement chain, with no detached fire-and-forget async work.",
+          "why": "Unawaited async calls cause unhandled rejections and return before work completes.",
+          "severity": "must",
           "knownBad": {
-            "code": "async function runAll(tasks) {\n  const out = [];\n  await Promise.allSettled(tasks.map((t) => t().then((v) => out.push(v))));\n  return out;\n}",
-            "caughtBy": "test"
+            "code": "async function runAll(tasks) {\n  const out = [];\n  tasks.forEach((t) => { t().then((v) => out.push(v)); });\n  return out;\n}",
+            "caughtBy": "review"
           }
         }
       ]
@@ -356,13 +395,13 @@
       ],
       "qualityChecks": [
         {
-          "id": "QC-union-reject-invalid-transition",
-          "check": "Invalid state-to-action transitions throw an explicit domain error rather than silently returning the old state or mutating it.",
-          "why": "Silent fallthrough masks illegal transitions such as shipping a cancelled order.",
+          "id": "QC-union-pure-next-state",
+          "check": "State transitions return a new state object instead of mutating the current state in place.",
+          "why": "Mutating the current state object breaks reducer predictability and corrupts prior snapshots.",
           "severity": "must",
           "knownBad": {
-            "code": "function transition(state, action) {\n  if (state.status === 'IDLE' && action.type === 'START') {\n    return { status: 'RUNNING' };\n  }\n  return state;\n}",
-            "caughtBy": "test"
+            "code": "function transition(state, nextStatus) {\n  state.status = nextStatus;\n  return state;\n}",
+            "caughtBy": "lint:no-param-reassign"
           }
         },
         {
@@ -376,13 +415,13 @@
           }
         },
         {
-          "id": "QC-union-pure-next-state",
-          "check": "State transitions return a new state object instead of reassigning `state.status` or payload fields in place.",
-          "why": "Mutating the current state object breaks reducer predictability and corrupts prior snapshots.",
-          "severity": "must",
+          "id": "QC-union-centralized-transitions",
+          "check": "State transitions are defined in one place (a transition table or single reducer) rather than scattered across ad-hoc conditionals.",
+          "why": "Scattered transition logic makes illegal state edges easy to miss when adding new actions.",
+          "severity": "should",
           "knownBad": {
-            "code": "function transition(state, nextStatus) {\n  state.status = nextStatus;\n  return state;\n}",
-            "caughtBy": "lint:no-param-reassign"
+            "code": "function applyEvent(order, event) {\n  if (event.type === 'SHIP') {\n    if (order.status === 'PAID') return { status: 'SHIPPED' };\n  }\n  if (order.status === 'DRAFT' && event.type === 'PAY') return { status: 'PAID' };\n  return order;\n}",
+            "caughtBy": "review"
           }
         }
       ]
@@ -410,6 +449,12 @@
           "name": "Special-Case Patching Instead of Root-Cause Fix",
           "description": "Adding an ad-hoc if statement for the specific test case rather than fixing the underlying logical equation.",
           "reproducer": "Add 'if (x === 42) return true;' passing test 1 but failing boundary test with x = 43."
+        },
+        {
+          "trapTag": "signature-contract-break",
+          "name": "Breaking Exported Function Signature",
+          "description": "Changing the exported function name, parameter order, or return shape breaks existing baseline callers.",
+          "reproducer": "Add a required second parameter without a default; baseline single-arg callers throw or fail."
         }
       ],
       "realWorldDomains": [
@@ -435,13 +480,13 @@
           }
         },
         {
-          "id": "QC-debug-preserve-signature",
-          "check": "The exported function name, parameter order, and return shape match the original contract without breaking baseline callers.",
-          "why": "Changing the public signature or return type breaks existing callers and regression tests.",
-          "severity": "must",
+          "id": "QC-debug-minimal-diff",
+          "check": "The fix is localized to the defective logic without unrelated rewrites or leftover workaround branches.",
+          "why": "Broad unrequested rewrites in a bugfix introduce new regressions and obscure the root cause.",
+          "severity": "should",
           "knownBad": {
-            "code": "function parseQuery(qs, strictMode) {\n  if (!strictMode) throw new Error('strictMode required');\n  return {};\n}",
-            "caughtBy": "test"
+            "code": "function getPath(obj, path) {\n  if (!obj) return undefined;\n  if (path === '') return obj;\n  const parts = path.split('.');\n  let cur = obj;\n  for (const p of parts) {\n    if (cur == null) return undefined;\n    cur = cur[p];\n  }\n  return cur;\n}",
+            "caughtBy": "review"
           }
         }
       ]
@@ -500,33 +545,25 @@
       ],
       "qualityChecks": [
         {
-          "id": "QC-default-param-over-or",
-          "check": "Optional parameters use ES default parameters (`param = defaultVal`) or `??`, never `param || defaultVal`.",
-          "why": "`param || defaultVal` discards explicit `0` or `false` arguments passed by the caller.",
+          "id": "QC-params-explicit-signature",
+          "check": "Optional defaults and variadic inputs are expressed cleanly in the function signature or explicit nullish guards rather than mutating `arguments` or using falsy `||` fallbacks.",
+          "why": "Falsy `||` fallbacks drop explicit `0` or `false` arguments, and `arguments` obscures the function's contract.",
           "severity": "must",
+          "accepted": ["function f(a, rate = 0.1, ...items)", "const r = rate ?? 0.1"],
           "knownBad": {
             "code": "function applyDiscount(price, rate) {\n  const r = rate || 0.1;\n  return price * (1 - r);\n}",
-            "caughtBy": "test"
+            "caughtBy": "review"
           }
         },
         {
-          "id": "QC-rest-empty-safe",
-          "check": "Rest parameter reductions (`...items`) supply an explicit initial value (such as `0`) so zero trailing arguments do not throw.",
-          "why": "Calling `.reduce()` without an initial value on an empty rest array throws a `TypeError`.",
-          "severity": "must",
-          "knownBad": {
-            "code": "function sumWithTax(taxRate, ...amounts) {\n  const subtotal = amounts.reduce((a, b) => a + b);\n  return subtotal * (1 + taxRate);\n}",
-            "caughtBy": "test"
-          }
-        },
-        {
-          "id": "QC-numeric-rounding-not-string",
-          "check": "Monetary or decimal results are rounded numerically (`Math.round(x * 100) / 100` or `Number(x.toFixed(2))`) and returned as a `number`, never a `toFixed` string.",
-          "why": "`toFixed()` returns a string, which breaks numeric arithmetic and strict equality checks.",
-          "severity": "must",
+          "id": "QC-params-round-at-boundary",
+          "check": "Numeric rounding is applied once at the output boundary as a numeric value, keeping intermediate calculations unrounded.",
+          "why": "Rounding intermediate steps accumulates drift, and returning a string from `toFixed` breaks numeric callers.",
+          "severity": "should",
+          "accepted": ["Math.round(total * 100) / 100", "Number(total.toFixed(2))"],
           "knownBad": {
             "code": "function roundPrice(amount) {\n  return amount.toFixed(2);\n}",
-            "caughtBy": "test"
+            "caughtBy": "review"
           }
         }
       ]
@@ -596,32 +633,23 @@
       "qualityChecks": [
         {
           "id": "QC-object-copy-on-write",
-          "check": "Updating a key-value map creates a new object (`{ ...map, [key]: next }`) rather than assigning to `inputMap[key]`.",
-          "why": "Assigning to `inputMap[key]` mutates the caller's object in place.",
+          "check": "Updating a key-value map returns a new object rather than mutating the caller's object in place.",
+          "why": "Mutating the caller's object causes silent side effects for any other code holding a reference to it.",
           "severity": "must",
+          "accepted": ["{ ...map, [key]: next }", "Object.assign({}, map, { [key]: next })"],
           "knownBad": {
             "code": "function adjustStock(stock, sku, delta) {\n  stock[sku] = (stock[sku] ?? 0) + delta;\n  return stock;\n}",
             "caughtBy": "lint:no-param-reassign"
           }
         },
         {
-          "id": "QC-missing-key-fallback",
-          "check": "Reading an optional or missing object key for arithmetic uses `?? 0` before adding or incrementing.",
-          "why": "Adding a number to `undefined` produces `NaN` and corrupts the map entry.",
-          "severity": "must",
-          "knownBad": {
-            "code": "function adjustStock(stock, sku, delta) {\n  return { ...stock, [sku]: stock[sku] + delta };\n}",
-            "caughtBy": "test"
-          }
-        },
-        {
-          "id": "QC-normalize-before-format",
-          "check": "String normalization (`.trim()`, `.toLowerCase()`) and singular/plural branches are applied explicitly before returning formatted output.",
-          "why": "Unnormalized whitespace or hardcoded plural suffixes produce mismatched labels on edge inputs.",
+          "id": "QC-collection-separate-derive-format",
+          "check": "Data filtering and aggregation are separated from string formatting so derived values remain reusable and testable.",
+          "why": "Mixing aggregation with label formatting couples business math to presentation text.",
           "severity": "should",
           "knownBad": {
-            "code": "function formatCount(count) {\n  return `${count} items`;\n}",
-            "caughtBy": "test"
+            "code": "function summarizeOrder(items) {\n  let total = 0;\n  for (const it of items) if (it.active) total += it.price;\n  return `${items.length} items: $${total.toFixed(2)}`;\n}",
+            "caughtBy": "review"
           }
         }
       ]

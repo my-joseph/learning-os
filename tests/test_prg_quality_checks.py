@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import shutil
 from copy import deepcopy
 
@@ -14,6 +15,7 @@ from code_engine.ai_drill_ingest import (
 )
 from code_engine.lint_check import LintToolsMissingError, get_lint_binaries
 from code_engine.quality_checks import (
+    VAULT_DIR,
     check_all_vaults,
     load_universal,
     validate_quality_checks,
@@ -34,12 +36,12 @@ def _require_lint_tools() -> None:
 def _valid_check(cid: str = "QC-sample-check", severity: str = "must") -> dict:
     return {
         "id": cid,
-        "check": "Defaults use `??` instead of `||`.",
-        "why": "`||` overwrites valid `0` and `''` values.",
+        "check": "No reference to internal mutable state escapes the factory.",
+        "why": "Returning a live reference lets callers mutate private state outside the API.",
         "severity": severity,
         "knownBad": {
-            "code": "function f(x) { return x || 10; }",
-            "caughtBy": "test",
+            "code": "function makeBox() { const items = []; return { getAll: () => items }; }",
+            "caughtBy": "review",
         },
     }
 
@@ -109,6 +111,21 @@ def test_validator_rejects_missing_fields_and_bad_severity():
     bad_id = deepcopy(base)
     bad_id["qualityChecks"][0]["id"] = "bad-id"
     assert validate_quality_checks(bad_id)
+
+
+def test_validator_rejects_caught_by_test_and_invalid_accepted():
+    arch = {"archetypeKey": "prg-x", "qualityChecks": [_valid_check()]}
+    arch["qualityChecks"][0]["knownBad"]["caughtBy"] = "test"
+    errors = validate_quality_checks(arch)
+    assert any("hiddenTests" in e for e in errors)
+
+    good_accepted = {"archetypeKey": "prg-x", "qualityChecks": [_valid_check()]}
+    good_accepted["qualityChecks"][0]["accepted"] = ["[...arr].sort()", "arr.toSorted()"]
+    assert validate_quality_checks(good_accepted) == []
+
+    bad_accepted = {"archetypeKey": "prg-x", "qualityChecks": [_valid_check()]}
+    bad_accepted["qualityChecks"][0]["accepted"] = []
+    assert validate_quality_checks(bad_accepted)
 
 
 def test_validator_rejects_duplicate_and_universal_colliding_ids():
@@ -221,3 +238,12 @@ def test_all_three_prg_vaults_validate():
     assert stats["vaults"] == 3
     assert stats["archetypes"] == 19
     assert stats["universal"] == 7
+
+    for vf in sorted(VAULT_DIR.glob("*.json")):
+        data = json.loads(vf.read_text(encoding="utf-8"))
+        for arch in data.get("archetypes", []):
+            checks = arch.get("qualityChecks", [])
+            assert 2 <= len(checks) <= 3, f"{arch['archetypeKey']} has {len(checks)} checks (expected 2-3)"
+            assert any(c.get("severity") == "must" for c in checks), f"{arch['archetypeKey']} has no 'must' check"
+            for c in checks:
+                assert c["knownBad"]["caughtBy"] != "test"

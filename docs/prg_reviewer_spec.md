@@ -126,7 +126,7 @@ problem as correct only on a pass.
 - **Per-workspace `tsconfig.json`:** TypeScript workspaces and `LAB-PRG-T03-C01-01` include a `tsconfig.json` (`strict: true`, `noEmit: true`) so `projectService` and `tsc --noEmit` run deterministically without `allowDefaultProject` file-count limits.
 
 ### R2 deviations from v1 draft
-- **`knownBad` on every check (including `should`):** Rather than restricting `knownBad` to `must` checks only, every universal and archetype `qualityChecks` entry includes `knownBad: { code, caughtBy }` (`"lint:<rule-id>"`, `"test"`, or `"review"`), and `python -m code_engine.quality_checks --check-vaults` + ingest verify that every `"lint:<rule-id>"` snippet actually triggers that ESLint rule.
+- **`knownBad` on every check (including `should`):** Rather than restricting `knownBad` to `must` checks only, every universal and archetype `qualityChecks` entry includes `knownBad: { code, caughtBy }` (`"lint:<rule-id>"` or `"review"` — `"test"` is rejected because behaviour belongs in `hiddenTests`, not `qualityChecks`), and `python -m code_engine.quality_checks --check-vaults` + ingest verify that every `"lint:<rule-id>"` snippet actually triggers that ESLint rule. Checks may also include an optional `accepted` list of acceptable implementations as reviewer hints, while the check itself states a property of the code rather than a mandated API.
 - **Ingest Layer 3 calibration scope:** At ingest, `code_engine/ai_drill_ingest.py` validates archetype `qualityChecks`, verifies `lint:<rule-id>` `knownBad` snippets, and runs Layer 2 ESLint (`lint_drill_doc`) on every problem's `solutionCode`; running an LLM review on `solutionCode` at ingest is left manual/out of scope per the no-paid-API-calls rule.
 
 ## Out of scope for v1

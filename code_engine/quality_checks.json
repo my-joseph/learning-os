@@ -56,8 +56,8 @@
     "why": "Dead code clutters the module and misleads readers about which paths are actually executed.",
     "severity": "should",
     "knownBad": {
-      "code": "function normalizeCode(code) {\n  const unused = code.toLowerCase();\n  return code.trim().toUpperCase();\n}",
-      "caughtBy": "lint:no-unused-vars"
+      "code": "function normalizeCode(code) {\n  // const legacy = code.toLowerCase();\n  console.log('debug:', code);\n  return code.trim().toUpperCase();\n}",
+      "caughtBy": "review"
     }
   },
   {

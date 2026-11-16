@@ -56,33 +56,24 @@
       ],
       "qualityChecks": [
         {
-          "id": "QC-bucket-clamp-capacity",
-          "check": "Refilled tokens are clamped with `Math.min(capacity, ...)` so idle periods never exceed `capacity`.",
-          "why": "Unclamped tokens allow an unbounded burst after prolonged idle time.",
+          "id": "QC-bucket-encapsulated-state",
+          "check": "Bucket counters (`tokens`, `lastRefillTimestamp`) are encapsulated inside the limiter instance or closure and never exposed for direct external mutation.",
+          "why": "Exposing mutable bucket fields lets callers bypass rate-limit accounting.",
           "severity": "must",
           "knownBad": {
-            "code": "function refill(tokens, elapsedSec, rate) {\n  return tokens + elapsedSec * rate;\n}",
-            "caughtBy": "test"
-          }
-        },
-        {
-          "id": "QC-bucket-injectable-clock",
-          "check": "Time-dependent bucket state reads an injectable `now` function (defaulting to `Date.now`) rather than hardcoding `Date.now()`.",
-          "why": "Hardcoding `Date.now()` makes rate-limit refill tests flaky or slow.",
-          "severity": "should",
-          "knownBad": {
-            "code": "function createBucket(capacity, rate) {\n  let last = Date.now();\n  return () => Date.now() - last;\n}",
+            "code": "function createBucket(capacity, rate) {\n  return {\n    tokens: capacity,\n    lastRefill: Date.now(),\n    consume(cost) { this.tokens -= cost; return true; }\n  };\n}",
             "caughtBy": "review"
           }
         },
         {
-          "id": "QC-bucket-preserve-partial-refill",
-          "check": "When a request is rejected, `lastRefillTimestamp` is either updated only after adding accrued tokens or left unchanged so partial refill time is never lost.",
-          "why": "Resetting the timestamp to `now` without crediting accrued tokens starves future requests.",
-          "severity": "must",
+          "id": "QC-bucket-injectable-clock",
+          "check": "Time is read through an injected clock (defaulting to `Date.now`) so refill logic is deterministic and testable without waiting.",
+          "why": "Hardcoding `Date.now()` makes rate-limit refill tests flaky or slow.",
+          "severity": "should",
+          "accepted": ["now = Date.now", "clock = () => Date.now()"],
           "knownBad": {
-            "code": "function tryConsume(state, cost, nowMs) {\n  if (state.tokens < cost) {\n    state.lastRefill = nowMs;\n    return false;\n  }\n  state.tokens -= cost;\n  return true;\n}",
-            "caughtBy": "test"
+            "code": "function createBucket(capacity, rate) {\n  let last = Date.now();\n  return () => Date.now() - last;\n}",
+            "caughtBy": "review"
           }
         }
       ]
@@ -117,6 +108,12 @@
           "name": "Missing Timestamp Tolerance Validation",
           "description": "Verifying the HMAC signature without verifying that the payload timestamp falls within the allowed validity window.",
           "reproducer": "Send a valid payload from 2 days ago; without timestamp check, replayed payload is accepted."
+        },
+        {
+          "trapTag": "timing-safe-equal-length-throw",
+          "name": "RangeError on Mismatched Buffer Lengths in timingSafeEqual",
+          "description": "Calling crypto.timingSafeEqual on buffers of different lengths throws RangeError instead of returning false.",
+          "reproducer": "Pass a truncated or malformed hex signature; verifier throws RangeError instead of returning false."
         }
       ],
       "realWorldDomains": [
@@ -148,23 +145,24 @@
           }
         },
         {
-          "id": "QC-hmac-length-check-before-equal",
-          "check": "Buffer lengths are compared before calling `crypto.timingSafeEqual` so mismatched lengths return `false` instead of throwing.",
-          "why": "`crypto.timingSafeEqual` throws a `RangeError` when given buffers of different byte lengths.",
-          "severity": "must",
+          "id": "QC-hmac-header-parse-separation",
+          "check": "Header parsing and timestamp validation are separated from cryptographic digest computation, failing explicitly on malformed headers.",
+          "why": "Mixing header parsing with HMAC verification obscures malformed-input failures and couples format to crypto.",
+          "severity": "should",
           "knownBad": {
-            "code": "const crypto = require('crypto');\nfunction safeCompare(a, b) {\n  return crypto.timingSafeEqual(Buffer.from(a), Buffer.from(b));\n}",
-            "caughtBy": "test"
+            "code": "function verifyWebhook(header, payload, secret) {\n  const parts = header.split(',');\n  const ts = parts[0].split('=')[1];\n  return ts && payload && secret;\n}",
+            "caughtBy": "review"
           }
         },
         {
-          "id": "QC-hmac-timestamp-tolerance",
-          "check": "The header timestamp is checked against the tolerance window (`Math.abs(now - timestamp) <= tolerance`) before accepting the signature.",
-          "why": "Omitting the timestamp window allows old captured webhooks to be replayed indefinitely.",
-          "severity": "must",
+          "id": "QC-hmac-injectable-clock",
+          "check": "Current time for anti-replay checks is accepted via an injectable clock or parameter (defaulting to `Date.now`) rather than hardcoded inside verification.",
+          "why": "Hardcoding `Date.now()` makes replay-window tests brittle across wall-clock time.",
+          "severity": "should",
+          "accepted": ["now = () => Math.floor(Date.now() / 1000)", "nowSec parameter with default"],
           "knownBad": {
-            "code": "function isFresh(_timestamp, _now, _tolerance) {\n  return true;\n}",
-            "caughtBy": "test"
+            "code": "function isFresh(timestampSec, toleranceSec) {\n  return Math.abs(Math.floor(Date.now() / 1000) - timestampSec) <= toleranceSec;\n}",
+            "caughtBy": "review"
           }
         }
       ]
@@ -201,6 +199,12 @@
           "name": "Missing Random Jitter in Backoff Delay",
           "description": "Using deterministic backoff delay across concurrent clients, causing periodic waves of synchronized traffic spikes.",
           "reproducer": "Simulate 100 failed requests; without jitter, all 100 retry simultaneously at exact 1s, 2s, 4s marks."
+        },
+        {
+          "trapTag": "uncapped-exponential-delay",
+          "name": "Uncapped Exponential Backoff Delay",
+          "description": "Omitting the maxDelayMs cap allows exponential delays to grow unboundedly on high retry counts.",
+          "reproducer": "Set maxRetries = 20 with baseDelayMs = 1000; attempt 15 sleeps for hours instead of maxDelayMs."
         }
       ],
       "realWorldDomains": [
@@ -222,32 +226,33 @@
       ],
       "qualityChecks": [
         {
-          "id": "QC-retry-classify-error",
-          "check": "Caught errors are checked with `isRetryable(err)` (or status classification) before sleeping, rethrowing non-retryable errors immediately.",
-          "why": "Retrying permanent 4xx errors wastes attempts and delays failure reporting.",
+          "id": "QC-retry-injectable-timing",
+          "check": "Sleep and randomness are injected (with sensible defaults) so retry backoff and jitter are deterministic and testable without real delays.",
+          "why": "Hardcoding `setTimeout` and `Math.random()` makes retry tests slow and non-deterministic.",
           "severity": "must",
+          "accepted": ["{ sleep = defaultSleep, random = Math.random }", "options.delayFn / options.rng"],
           "knownBad": {
-            "code": "async function retry(fn, maxRetries) {\n  for (let i = 0; i <= maxRetries; i += 1) {\n    try { return await fn(); } catch (err) { if (i === maxRetries) throw err; }\n  }\n  return undefined;\n}",
-            "caughtBy": "test"
+            "code": "async function waitBackoff(ms) {\n  return new Promise((r) => setTimeout(r, ms * Math.random()));\n}",
+            "caughtBy": "review"
           }
         },
         {
-          "id": "QC-retry-cap-and-jitter",
-          "check": "Backoff delay is capped at `maxDelayMs` (`Math.min(maxDelayMs, ...)`) and multiplied by a random jitter factor.",
-          "why": "Uncapped or un-jittered delays grow unboundedly and cause synchronized thundering-herd retry spikes.",
+          "id": "QC-retry-preserve-root-error",
+          "check": "When retries are exhausted or an error is non-retryable, the original domain error is rethrown intact rather than replaced with a generic message.",
+          "why": "Swallowing or replacing the original error hides the upstream failure cause from callers and logs.",
           "severity": "must",
           "knownBad": {
-            "code": "function computeDelay(baseMs, attempt) {\n  return baseMs * (2 ** attempt);\n}",
-            "caughtBy": "test"
+            "code": "async function retry(fn, maxRetries) {\n  for (let i = 0; i <= maxRetries; i += 1) {\n    try { return await fn(); } catch (_err) {}\n  }\n  throw new Error('failed');\n}",
+            "caughtBy": "review"
           }
         },
         {
-          "id": "QC-retry-bounded-attempts",
-          "check": "The retry loop terminates after at most `maxRetries` retries and rethrows the final error.",
-          "why": "Off-by-one loop bounds either skip the final retry or retry infinitely.",
+          "id": "QC-retry-pure-delay-calc",
+          "check": "Backoff delay calculation is isolated from the retry loop so the exponential/jitter schedule is pure and independently verifiable.",
+          "why": "Inlining delay math inside the retry loop mixes scheduling policy with async control flow.",
           "severity": "should",
           "knownBad": {
-            "code": "async function retryForever(fn) {\n  while (true) {\n    try { return await fn(); } catch (_e) {}\n  }\n}",
+            "code": "async function retry(fn, maxRetries, baseMs, maxMs, sleep) {\n  for (let i = 0; i <= maxRetries; i += 1) {\n    try { return await fn(); } catch (e) {\n      if (i === maxRetries) throw e;\n      await sleep(Math.random() * Math.min(maxMs, baseMs * (2 ** i)));\n    }\n  }\n  return undefined;\n}",
             "caughtBy": "review"
           }
         }
@@ -285,6 +290,12 @@
           "name": "Out-of-Order Result Array Corruption",
           "description": "Pushing completed task results into a dynamic array as they finish instead of indexing by original position.",
           "reproducer": "Pass tasks with varying completion durations; verify result order matches input order, not completion order."
+        },
+        {
+          "trapTag": "invalid-concurrency-hang",
+          "name": "Zero or Negative Concurrency Hang",
+          "description": "Accepting concurrency <= 0 or non-integer limits causes the pool to hang or skip tasks silently.",
+          "reproducer": "Call runPool(items, fn, 0); returns empty array or hangs instead of rejecting invalid concurrency."
         }
       ],
       "realWorldDomains": [
@@ -306,33 +317,34 @@
       ],
       "qualityChecks": [
         {
-          "id": "QC-pool-bounded-workers",
-          "check": "Concurrency is bounded by spawning at most `Math.min(concurrency, items.length)` worker loops rather than `Promise.all(items.map(...))`.",
-          "why": "Launching all tasks with `Promise.all` floods downstream sockets and connection pools.",
+          "id": "QC-pool-invariant-concurrency-cap",
+          "check": "Active in-flight tasks are structurally bounded by `concurrency` without launching all items eagerly.",
+          "why": "Eagerly launching all tasks floods downstream sockets and connection pools.",
           "severity": "must",
+          "accepted": ["Math.min(concurrency, items.length) worker loops", "semaphore/queue scheduler"],
           "knownBad": {
             "code": "async function runPool(items, fn) {\n  return Promise.all(items.map((item) => fn(item)));\n}",
-            "caughtBy": "test"
+            "caughtBy": "review"
           }
         },
         {
-          "id": "QC-pool-indexed-results",
-          "check": "Completed results are written to `results[index]` by original task index, never appended with `results.push(...)`.",
-          "why": "Appending on completion scrambles result order when later tasks finish faster than earlier ones.",
+          "id": "QC-pool-validation-before-spawn",
+          "check": "Input and concurrency-limit validation runs at entry before any worker or task promise is spawned.",
+          "why": "Spawning tasks before validating arguments leaves background promises running when validation throws.",
           "severity": "must",
           "knownBad": {
-            "code": "function recordResult(results, value) {\n  results.push(value);\n}",
-            "caughtBy": "test"
+            "code": "async function runPool(items, fn, concurrency) {\n  const workers = Array.from({ length: Math.max(0, concurrency) }, () => Promise.resolve());\n  if (concurrency <= 0) throw new Error('Invalid concurrency');\n  await Promise.all(workers);\n  return items.map(fn);\n}",
+            "caughtBy": "review"
           }
         },
         {
-          "id": "QC-pool-validate-concurrency",
-          "check": "Invalid concurrency limits (`<= 0` or non-integer) are rejected at entry before spawning workers.",
-          "why": "A zero or negative concurrency limit returns empty results or hangs without executing tasks.",
+          "id": "QC-pool-no-dangling-workers",
+          "check": "All spawned workers settle cleanly and propagate task rejections rather than leaving unhandled or dangling promises.",
+          "why": "Dangling worker promises cause unhandled rejection crashes or silent resource leaks.",
           "severity": "should",
           "knownBad": {
-            "code": "async function runPool(items, fn, concurrency) {\n  const workers = Array.from({ length: concurrency }, () => Promise.resolve());\n  await Promise.all(workers);\n  return items.length ? [] : [];\n}",
-            "caughtBy": "test"
+            "code": "async function runPool(items, fn, concurrency) {\n  const results = [];\n  for (let i = 0; i < concurrency; i += 1) {\n    void fn(items[i]).then((v) => results.push(v));\n  }\n  return results;\n}",
+            "caughtBy": "review"
           }
         }
       ]
@@ -367,6 +379,12 @@
           "name": "Failure Counter Persistence Leak",
           "description": "Failing to reset consecutive failure count to zero upon successful probe recovery in CLOSED state.",
           "reproducer": "Trip circuit, wait for recovery, execute 1 success, execute 1 failure; without reset, 1 failure re-trips circuit immediately."
+        },
+        {
+          "trapTag": "open-circuit-downstream-leak",
+          "name": "Invoking Downstream Operation While Circuit Is Open",
+          "description": "Executing the wrapped async operation when state is OPEN within cooldown instead of fast-failing immediately.",
+          "reproducer": "Trip circuit to OPEN; call execute(op) before cooldown elapses; op is still invoked instead of throwing immediately."
         }
       ],
       "realWorldDomains": [
@@ -388,33 +406,34 @@
       ],
       "qualityChecks": [
         {
-          "id": "QC-breaker-single-half-open-probe",
-          "check": "While a `HALF_OPEN` probe is in flight, concurrent calls are rejected immediately until the probe settles.",
-          "why": "Letting multiple concurrent calls through in `HALF_OPEN` causes a stampede against a recovering service.",
+          "id": "QC-breaker-centralized-transitions",
+          "check": "State transitions (`CLOSED`, `OPEN`, `HALF_OPEN`) and failure-counter updates are managed in one place rather than scattered across execution branches.",
+          "why": "Scattered state mutations cause missed counter resets or inconsistent `openedAt` timestamps.",
           "severity": "must",
           "knownBad": {
-            "code": "function canProbe(state) {\n  return state === 'HALF_OPEN';\n}",
+            "code": "function onResult(state, ok, threshold) {\n  if (ok) state.mode = 'CLOSED';\n  else {\n    state.failures += 1;\n    if (state.failures >= threshold) state.mode = 'OPEN';\n  }\n}",
             "caughtBy": "review"
           }
         },
         {
-          "id": "QC-breaker-reset-failures-on-success",
-          "check": "Every successful execution in `CLOSED` or `HALF_OPEN` resets the consecutive `failureCount` to `0`.",
-          "why": "Leaving stale failures in the counter causes a single future error to trip the circuit prematurely.",
+          "id": "QC-breaker-injectable-clock",
+          "check": "Cooldown timestamps are read through an injected clock (defaulting to `Date.now`) so state transitions are testable without real-time waiting.",
+          "why": "Hardcoding `Date.now()` forces tests to sleep for real cooldown durations or monkeypatch globals.",
           "severity": "must",
+          "accepted": ["now = Date.now", "clock = () => Date.now()"],
           "knownBad": {
-            "code": "function onSuccess(state) {\n  if (state.mode === 'HALF_OPEN') state.mode = 'CLOSED';\n}",
-            "caughtBy": "test"
+            "code": "function isCooldownElapsed(openedAt, resetMs) {\n  return Date.now() - openedAt >= resetMs;\n}",
+            "caughtBy": "review"
           }
         },
         {
-          "id": "QC-breaker-open-fast-fail",
-          "check": "When `state === 'OPEN'` and cooldown has not elapsed, `execute` throws immediately without invoking `asyncOperation`.",
-          "why": "Calling the downstream operation while `OPEN` defeats the circuit breaker's fast-fail protection.",
-          "severity": "must",
+          "id": "QC-breaker-domain-open-error",
+          "check": "Fast-failing in `OPEN` state throws a domain-specific error carrying the circuit-open reason rather than a bare generic message.",
+          "why": "Generic `Error('error')` messages prevent callers from distinguishing circuit-open rejections from downstream failures.",
+          "severity": "should",
           "knownBad": {
-            "code": "async function executeOpen(op) {\n  return op();\n}",
-            "caughtBy": "test"
+            "code": "function rejectOpen() {\n  throw new Error('error');\n}",
+            "caughtBy": "review"
           }
         }
       ]

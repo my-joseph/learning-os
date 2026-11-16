@@ -49,10 +49,14 @@ def _validate_known_bad(known_bad: Any, prefix: str) -> list[str]:
 
     caught_by = known_bad.get("caughtBy")
     if not isinstance(caught_by, str) or not caught_by.strip():
-        errors.append(f"{prefix}.knownBad.caughtBy must be 'test', 'review', or 'lint:<rule-id>'.")
-    elif caught_by not in ("test", "review"):
+        errors.append(f"{prefix}.knownBad.caughtBy must be 'review' or 'lint:<rule-id>'.")
+    elif caught_by == "test":
+        errors.append(
+            f"{prefix}.knownBad.caughtBy='test' is not allowed; behaviour belongs in hiddenTests, not qualityChecks."
+        )
+    elif caught_by != "review":
         if not caught_by.startswith("lint:") or not caught_by[5:].strip():
-            errors.append(f"{prefix}.knownBad.caughtBy '{caught_by}' must be 'test', 'review', or 'lint:<rule-id>'.")
+            errors.append(f"{prefix}.knownBad.caughtBy '{caught_by}' must be 'review' or 'lint:<rule-id>'.")
     return errors
 
 
@@ -90,6 +94,15 @@ def _validate_check_entry(
     severity = entry.get("severity")
     if severity not in VALID_SEVERITIES:
         errors.append(f"{prefix}.severity must be one of {VALID_SEVERITIES}, got {severity!r}.")
+
+    if "accepted" in entry:
+        accepted = entry["accepted"]
+        if (
+            not isinstance(accepted, list)
+            or not accepted
+            or not all(isinstance(item, str) and item.strip() for item in accepted)
+        ):
+            errors.append(f"{prefix}.accepted must be a non-empty list of non-empty strings.")
 
     if "mustFromLevel" in entry:
         mfl = entry["mustFromLevel"]

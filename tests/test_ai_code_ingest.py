@@ -298,13 +298,13 @@ class TestAiCodeIngest(unittest.TestCase):
                     "level": 3,
                     "qualityChecks": [
                         {
-                            "id": "QC-bucket-clamp",
-                            "check": "Refilled tokens are clamped with Math.min(capacity, ...).",
-                            "why": "Unclamped tokens allow an unbounded burst after idle time.",
+                            "id": "QC-bucket-encapsulated",
+                            "check": "Bucket counters are encapsulated inside the limiter closure.",
+                            "why": "Exposing mutable fields lets callers bypass rate-limit accounting.",
                             "severity": "must",
                             "knownBad": {
-                                "code": "function refill(t, dt, r) { return t + dt * r; }",
-                                "caughtBy": "test",
+                                "code": "function createBucket(cap) { return { tokens: cap }; }",
+                                "caughtBy": "review",
                             },
                         }
                     ],
