@@ -147,12 +147,20 @@ def _write_hidden_test_file(tmp_dir: Path, ws_dir: Path, prob: dict, is_ts: bool
     return out_path
 
 
-def run_tests_junit(ws_dir: Path, drill_doc: dict | None = None) -> list:
-    """Executes visible tests in ws_dir and hidden tests from a temporary dir outside ws_dir."""
+def run_tests_junit(ws_dir: Path, drill_doc: dict | None = None, problem_id: str | None = None) -> list:
+    """Executes visible tests in ws_dir and hidden tests from a temporary dir outside ws_dir.
+
+    When `problem_id` is given (e.g. 'Q01'), only that problem's visible test file and
+    hiddenTests are executed.
+    """
+    ws_dir = Path(ws_dir).resolve()
     ts_files = sorted(ws_dir.glob("*.test.ts"))
     js_files = sorted(ws_dir.glob("*.test.js"))
     is_ts = bool(ts_files)
     visible_files = ts_files if is_ts else js_files
+    if problem_id is not None:
+        target = problem_id.upper()
+        visible_files = [f for f in visible_files if f.name.split("_", 1)[0].upper() == target]
 
     cases = []
     if visible_files:
@@ -163,7 +171,11 @@ def run_tests_junit(ws_dir: Path, drill_doc: dict | None = None) -> list:
         proc = subprocess.run(cmd, cwd=ws_dir, capture_output=True, text=True)
         cases.extend(_parse_junit_xml(proc.stdout + "\n" + proc.stderr, force_hidden=False))
 
-    hidden_probs = [p for p in (drill_doc or {}).get("problems", []) if p.get("hiddenTests")]
+    hidden_probs = [
+        p
+        for p in (drill_doc or {}).get("problems", [])
+        if p.get("hiddenTests") and (problem_id is None or str(p.get("id", "")).upper() == problem_id.upper())
+    ]
     if hidden_probs:
         with tempfile.TemporaryDirectory(prefix="prg_hidden_") as tmp_str:
             tmp_dir = Path(tmp_str)

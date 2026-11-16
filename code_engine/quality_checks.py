@@ -29,13 +29,76 @@ VALID_SEVERITIES = ("must", "should")
 
 def load_universal(path: Path | None = None) -> list[dict[str, Any]]:
     """Load the universal quality checks list from `code_engine/quality_checks.json`."""
-    target = Path(path) if path is not None else UNIVERSAL_CHECKS_PATH
+    if path is not None:
+        target = Path(path)
+    else:
+        cwd_target = Path("code_engine/quality_checks.json")
+        target = cwd_target if cwd_target.exists() else UNIVERSAL_CHECKS_PATH
     data = json.loads(target.read_text(encoding="utf-8"))
     if isinstance(data, list):
         return data
     if isinstance(data, dict) and isinstance(data.get("checks"), list):
         return data["checks"]
     raise ValueError(f"Universal quality checks at {target} must be a JSON list.")
+
+
+def _resolve_vault_dir(vault_dir: Path | None = None) -> Path:
+    if vault_dir is not None:
+        return Path(vault_dir)
+    cwd_vault = Path("code_engine/reasoning_vault")
+    return cwd_vault if cwd_vault.exists() else VAULT_DIR
+
+
+def load_archetype(archetype_key: str, vault_dir: Path | None = None) -> dict[str, Any] | None:
+    """Find and return the archetype dict for `archetype_key` from the PRG reasoning vaults."""
+    if not archetype_key:
+        return None
+    target_dir = _resolve_vault_dir(vault_dir)
+    if not target_dir.exists():
+        return None
+    for vf in sorted(target_dir.glob("*.json")):
+        data = json.loads(vf.read_text(encoding="utf-8"))
+        for arch in data.get("archetypes", []):
+            if arch.get("archetypeKey") == archetype_key:
+                return arch
+    return None
+
+
+def effective_severity(check: dict[str, Any], level: int | None) -> str:
+    """Compute effective severity for a rubric check at a given problem level."""
+    sev = check.get("severity", "should")
+    mfl = check.get("mustFromLevel")
+    if isinstance(level, int) and isinstance(mfl, int) and level >= mfl:
+        return "must"
+    return sev
+
+
+def applicable_rubric(
+    archetype_key: str | None,
+    level: int | None,
+    *,
+    vault_dir: Path | None = None,
+    universal_path: Path | None = None,
+) -> list[dict[str, Any]]:
+    """Return universal + archetype qualityChecks with effective severity for `level`."""
+    universal = load_universal(universal_path)
+    arch = load_archetype(archetype_key, vault_dir=vault_dir) if archetype_key else None
+    arch_checks = (arch or {}).get("qualityChecks") or []
+
+    out: list[dict[str, Any]] = []
+    for c in [*universal, *arch_checks]:
+        if not isinstance(c, dict) or not c.get("id"):
+            continue
+        item: dict[str, Any] = {
+            "id": c["id"],
+            "check": c.get("check", ""),
+            "why": c.get("why", ""),
+            "severity": effective_severity(c, level),
+        }
+        if "accepted" in c:
+            item["accepted"] = c["accepted"]
+        out.append(item)
+    return out
 
 
 def _validate_known_bad(known_bad: Any, prefix: str) -> list[str]:

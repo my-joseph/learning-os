@@ -178,6 +178,50 @@ export interface AttemptRecord {
   setupRevealed?: boolean;
 }
 
+export interface ReviewDispute {
+  reason: string;
+  issueId: string;
+}
+
+export interface ReviewFinding {
+  check: string;
+  severity: "must" | "should";
+  line: number;
+  note: string;
+  hint?: string;
+  disputed?: ReviewDispute;
+}
+
+export interface ReviewLintItem {
+  rule: string;
+  line: number;
+  message: string;
+}
+
+export interface ReviewTypecheckItem {
+  line: number;
+  message: string;
+}
+
+export interface ReviewTestsSummary {
+  passed: number;
+  total: number;
+  failed: string[];
+}
+
+export interface ReviewRecord {
+  at: string;
+  attempt: number;
+  codeHash: string;
+  code: string;
+  tests: ReviewTestsSummary;
+  lint: ReviewLintItem[];
+  typecheck: ReviewTypecheckItem[];
+  findings: ReviewFinding[];
+  verdict: "pass" | "revise";
+  explain: string | null;
+}
+
 export interface ProblemState {
   userInput: string;
   score: number | null;
@@ -189,6 +233,7 @@ export interface ProblemState {
   lastTestReport?: TestRunReport | null;
   userCode?: string;
   attempts?: AttemptRecord[];
+  reviews?: ReviewRecord[];
   hintsRevealed?: number;
   /** Set when the learner opens the equation set-up before any answer has been checked. */
   setupRevealedBeforeAnswer?: boolean;

@@ -41,5 +41,41 @@ try {
 }
 assert(threw, "writeProgress refuses unsafe ids");
 
+// Verify writeProgress preserves existing `reviews` when Studio saves state without it
+const prgDoc = () => ({
+  drillId: "DRL-PRG-X-01",
+  unitCode: "PRG-X",
+  problems: [{ id: "Q01", prompt: "p1" }] as Array<{ id: string; prompt: string; state?: unknown }>,
+});
+const withReviews = prgDoc();
+const sampleReview = [
+  {
+    at: "2026-11-16T10:00:00Z",
+    attempt: 1,
+    codeHash: "sha256:abc",
+    code: "function f() { return 1; }",
+    tests: { passed: 1, total: 1, failed: [] },
+    lint: [],
+    typecheck: [],
+    findings: [],
+    verdict: "pass",
+    explain: null,
+  },
+];
+withReviews.problems[0].state = { userInput: "", score: 1, reviews: sampleReview };
+writeProgress({ ...withReviews, sessionSummary: { score: 1 } });
+
+// Simulate Studio saving state without `reviews` in memory
+const studioSave = prgDoc();
+studioSave.problems[0].state = { userInput: "", score: 1, mistakeNote: "checked" };
+writeProgress({ ...studioSave, sessionSummary: { score: 1 } });
+const reloaded = applyProgress(prgDoc(), readProgress("DRL-PRG-X-01"));
+const reloadedState = reloaded.problems[0].state as { reviews?: unknown[]; mistakeNote?: string };
+assert(
+  Array.isArray(reloadedState.reviews) && reloadedState.reviews.length === 1,
+  "writeProgress preserves existing reviews when omitted from incoming state",
+);
+assert(reloadedState.mistakeNote === "checked", "writeProgress keeps new state fields alongside preserved reviews");
+
 fs.rmSync(tmp, { recursive: true, force: true });
-console.log("ALL 5 PROGRESS CHECKS PASSED");
+console.log("ALL 6 PROGRESS CHECKS PASSED");

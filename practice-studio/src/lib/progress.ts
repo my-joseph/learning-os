@@ -53,9 +53,21 @@ export function applyProgress<T extends DocLike>(doc: T, progress: ProgressFile 
 /** Save only the learner-owned part of a document; never touches drill content. */
 export function writeProgress(doc: DocLike): string {
   if (!doc.drillId || !isSafeId(doc.drillId)) throw new Error("Invalid drillId");
+  const existing = readProgress(doc.drillId);
+  const existingProblems = (existing?.problems || {}) as Record<string, Record<string, unknown>>;
   const problems: Record<string, unknown> = {};
   for (const p of doc.problems || []) {
-    if (p.id && p.state) problems[p.id] = p.state;
+    if (!p.id) continue;
+    const prev = existingProblems[p.id];
+    if (p.state) {
+      const st = { ...(p.state as Record<string, unknown>) };
+      if (st.reviews === undefined && prev && prev.reviews !== undefined) {
+        st.reviews = prev.reviews;
+      }
+      problems[p.id] = st;
+    } else if (prev && prev.reviews !== undefined) {
+      problems[p.id] = { reviews: prev.reviews };
+    }
   }
   const data: ProgressFile = {
     drillId: doc.drillId,

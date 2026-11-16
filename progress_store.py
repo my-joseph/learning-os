@@ -56,7 +56,7 @@ def has_practice(drill_doc: dict[str, Any]) -> bool:
         st = p.get("state") or {}
         if st.get("attempts") or st.get("userInput") or st.get("score") is not None or st.get("skipped"):
             return True
-        if st.get("mistakes") or st.get("mistakeNote") or st.get("userCode"):
+        if st.get("mistakes") or st.get("mistakeNote") or st.get("userCode") or st.get("reviews"):
             return True
         if st.get("setupRevealedBeforeAnswer") or st.get("hintsRevealed") or st.get("durationMs"):
             return True
