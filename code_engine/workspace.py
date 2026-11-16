@@ -308,15 +308,18 @@ test({t_name}, {fn_prefix} {{
         json.dump(pkg_data, f, indent=2)
         f.write("\n")
 
-    # 4b. Write eslint.config.js (and tsconfig.json for TS presets) in workspace
+    # 4b. Write eslint.config.mjs (and tsconfig.json for TS presets) in workspace
     lint_overrides = drill_doc.get("lintOverrides") or []
-    eslint_cfg_path = os.path.join(ws_dir, "eslint.config.js")
+    eslint_cfg_path = os.path.join(ws_dir, "eslint.config.mjs")
     eslint_cfg_content = (
         'import { prgConfig } from "../../../tools/lint/base.js";\n\n'
         f"export default prgConfig({{ overrides: {json.dumps(lint_overrides)} }});\n"
     )
     with open(eslint_cfg_path, "w", encoding="utf-8") as f:
         f.write(eslint_cfg_content)
+    stale_cfg = os.path.join(ws_dir, "eslint.config.js")  # older generator; ESLint would pick it before .mjs
+    if os.path.exists(stale_cfg):
+        os.remove(stale_cfg)
 
     if preset_key in ("typescript-strict", "backend-sqlite", "react-dom"):
         tsconfig_path = os.path.join(ws_dir, "tsconfig.json")

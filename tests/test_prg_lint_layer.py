@@ -45,7 +45,7 @@ def test_generated_workspace_has_eslint_config_and_check_script(tmp_path, monkey
     materialize_drill_workspace(drill_doc, root_dir=str(tmp_path))
 
     ws_dir = tmp_path / "drills" / "workspace" / "DRL-PRG-LINT-01"
-    eslint_cfg = ws_dir / "eslint.config.js"
+    eslint_cfg = ws_dir / "eslint.config.mjs"
     assert eslint_cfg.exists()
     cfg_text = eslint_cfg.read_text(encoding="utf-8")
     assert "../../../tools/lint/base.js" in cfg_text
@@ -57,13 +57,24 @@ def test_generated_workspace_has_eslint_config_and_check_script(tmp_path, monkey
     assert "tools/lint/node_modules/.bin/eslint" in pkg["scripts"]["lint"]
 
 
+def test_regeneration_removes_stale_eslint_config_js(tmp_path, monkeypatch):
+    """Drill code may be CommonJS, so the workspace config is .mjs; an older .js config would shadow it."""
+    monkeypatch.chdir(tmp_path)
+    ws_dir = tmp_path / "drills" / "workspace" / "DRL-PRG-LINT-01"
+    ws_dir.mkdir(parents=True)
+    (ws_dir / "eslint.config.js").write_text("export default [];\n", encoding="utf-8")
+    materialize_drill_workspace(_sample_drill(environment="node-vanilla"), root_dir=str(tmp_path))
+    assert not (ws_dir / "eslint.config.js").exists()
+    assert (ws_dir / "eslint.config.mjs").exists()
+
+
 def test_generated_ts_workspace_has_typecheck_and_tsconfig(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     drill_doc = _sample_drill(environment="typescript-strict")
     materialize_drill_workspace(drill_doc, root_dir=str(tmp_path))
 
     ws_dir = tmp_path / "drills" / "workspace" / "DRL-PRG-LINT-01"
-    assert (ws_dir / "eslint.config.js").exists()
+    assert (ws_dir / "eslint.config.mjs").exists()
     assert (ws_dir / "tsconfig.json").exists()
 
     pkg = json.loads((ws_dir / "package.json").read_text(encoding="utf-8"))
