@@ -296,6 +296,11 @@ export interface SessionSummary {
   notionPageId?: string | null;
 }
 
+export interface LintOverride {
+  rule: string;
+  reason: string;
+}
+
 export interface DrillDocument {
   schemaVersion: string;
   drillId: string;
@@ -307,6 +312,7 @@ export interface DrillDocument {
   unitNotionUrl: string | null;
   createdAt: string;
   config: DrillConfig;
+  lintOverrides?: LintOverride[];
   mistakeTags: MistakeTag[];
   problems: Problem[];
   sessionSummary: SessionSummary;

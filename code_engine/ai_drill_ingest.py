@@ -426,6 +426,23 @@ def check_mutation_testing(pid: str, prob: Dict[str, Any]) -> None:
             )
 
 
+def validate_lint_overrides(lint_overrides: Any) -> None:
+    """Validates optional drill-level lintOverrides: list of {rule, reason} with non-empty reason."""
+    if lint_overrides is None:
+        return
+    if not isinstance(lint_overrides, list):
+        raise AiContractError("Drill 'lintOverrides' must be a list of {rule, reason} objects.")
+    for idx, entry in enumerate(lint_overrides):
+        if not isinstance(entry, dict):
+            raise AiContractError(f"Drill 'lintOverrides[{idx}]' must be an object with 'rule' and 'reason'.")
+        rule = entry.get("rule")
+        reason = entry.get("reason")
+        if not isinstance(rule, str) or not rule.strip():
+            raise AiContractError(f"Drill 'lintOverrides[{idx}]' is missing a non-empty 'rule'.")
+        if not isinstance(reason, str) or not reason.strip():
+            raise AiContractError(f"Drill 'lintOverrides[{idx}]' for rule '{rule}' must have a non-empty 'reason'.")
+
+
 def validate_ai_code_contract(prob: Dict[str, Any]) -> bool:
     """
     Enforces strict rules for AI-written programming problems (04_CODE, 07_PROBLEM_GEN §4):
@@ -573,6 +590,8 @@ def ingest_ai_code_drill(
     problems = drill_doc.get("problems", [])
     if not problems:
         raise ValueError("Drill document has no 'problems'.")
+
+    validate_lint_overrides(drill_doc.get("lintOverrides"))
 
     active_rules = rules or QUALITY_RULES
 

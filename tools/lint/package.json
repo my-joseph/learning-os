@@ -1,0 +1,13 @@
+{
+  "name": "@learningos/lint",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Shared ESLint 9 + TypeScript lint toolkit for PRG drills and labs",
+  "dependencies": {
+    "eslint": "9.39.5",
+    "globals": "17.14.0",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.72.1"
+  }
+}

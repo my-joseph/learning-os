@@ -9,71 +9,81 @@ export class ValidationError extends Error {
   }
 }
 
+function asRecord(input: unknown, label: string): Record<string, unknown> {
+  if (!input || typeof input !== "object") {
+    throw new ValidationError(`${label} must be a non-null object`);
+  }
+  return input as Record<string, unknown>;
+}
+
+function requireNonEmptyString(value: unknown, message: string): string {
+  if (typeof value !== "string" || !value.trim()) {
+    throw new ValidationError(message);
+  }
+  return value;
+}
+
+function requirePositiveInt(value: unknown, message: string): number {
+  if (typeof value !== "number" || !Number.isInteger(value) || value <= 0) {
+    throw new ValidationError(message);
+  }
+  return value;
+}
+
+function requireNonNegativeInt(value: unknown, message: string): number {
+  if (typeof value !== "number" || !Number.isInteger(value) || value < 0) {
+    throw new ValidationError(message);
+  }
+  return value;
+}
+
 /**
  * Validates a Product payload against domain invariants.
  */
-export function validateProduct(input: any): Product {
-  if (!input || typeof input !== "object") {
-    throw new ValidationError("Product must be a non-null object");
-  }
-  if (typeof input.id !== "string" || !input.id.trim()) {
-    throw new ValidationError("Product id must be a non-empty string");
-  }
-  if (typeof input.sku !== "string" || !SKU_REGEX.test(input.sku)) {
-    throw new ValidationError(`Invalid SKU format: ${input.sku}. Expected format like 'PRD-1001'`);
-  }
-  if (typeof input.name !== "string" || !input.name.trim()) {
-    throw new ValidationError("Product name must be a non-empty string");
-  }
-  if (
-    typeof input.unitPriceInCents !== "number" ||
-    !Number.isInteger(input.unitPriceInCents) ||
-    input.unitPriceInCents <= 0
-  ) {
-    throw new ValidationError("unitPriceInCents must be a positive integer greater than 0");
-  }
-  if (
-    typeof input.stockQuantity !== "number" ||
-    !Number.isInteger(input.stockQuantity) ||
-    input.stockQuantity < 0
-  ) {
-    throw new ValidationError("stockQuantity must be a non-negative integer >= 0");
+export function validateProduct(input: unknown): Product {
+  const record = asRecord(input, "Product");
+  const id = requireNonEmptyString(record.id, "Product id must be a non-empty string");
+
+  if (typeof record.sku !== "string" || !SKU_REGEX.test(record.sku)) {
+    throw new ValidationError(`Invalid SKU format: ${String(record.sku)}. Expected format like 'PRD-1001'`);
   }
 
+  const name = requireNonEmptyString(record.name, "Product name must be a non-empty string");
+  const unitPriceInCents = requirePositiveInt(
+    record.unitPriceInCents,
+    "unitPriceInCents must be a positive integer greater than 0"
+  );
+  const stockQuantity = requireNonNegativeInt(
+    record.stockQuantity,
+    "stockQuantity must be a non-negative integer >= 0"
+  );
+
   return {
-    id: input.id,
-    sku: input.sku,
-    name: input.name,
-    unitPriceInCents: input.unitPriceInCents,
-    stockQuantity: input.stockQuantity,
+    id,
+    sku: record.sku,
+    name,
+    unitPriceInCents,
+    stockQuantity,
   };
 }
 
 /**
  * Validates a CartItem and cross-references with product inventory.
  */
-export function validateCartItem(input: any, products: Map<string, Product>): CartItem {
-  if (!input || typeof input !== "object") {
-    throw new ValidationError("CartItem must be a non-null object");
-  }
-  if (typeof input.productId !== "string" || !input.productId.trim()) {
-    throw new ValidationError("CartItem productId must be a non-empty string");
-  }
-  const product = products.get(input.productId);
+export function validateCartItem(input: unknown, products: Map<string, Product>): CartItem {
+  const record = asRecord(input, "CartItem");
+  const productId = requireNonEmptyString(record.productId, "CartItem productId must be a non-empty string");
+
+  const product = products.get(productId);
   if (!product) {
-    throw new ValidationError(`Referenced product not found: ${input.productId}`);
+    throw new ValidationError(`Referenced product not found: ${productId}`);
   }
-  if (
-    typeof input.quantity !== "number" ||
-    !Number.isInteger(input.quantity) ||
-    input.quantity <= 0
-  ) {
-    throw new ValidationError("CartItem quantity must be a positive integer >= 1");
-  }
+
+  const quantity = requirePositiveInt(record.quantity, "CartItem quantity must be a positive integer >= 1");
 
   return {
     productId: product.id,
-    quantity: input.quantity,
+    quantity,
     unitPriceInCents: product.unitPriceInCents,
   };
 }
