@@ -165,6 +165,21 @@ class PrgSafetyGuards(unittest.TestCase):
         canonical_files = [f for f in tracked if "/.canonical/" in f or f.endswith("/.canonical")]
         self.assertEqual(canonical_files, [], f"No .canonical directory may be tracked under labs/: {canonical_files}")
 
+    def test_submit_scripts_use_shared_notion_client_without_urllib_or_ssl(self):
+        for rel in ("code_engine/submit.py", "labs/common/submit_lab.py"):
+            with open(os.path.join(ROOT, rel), encoding="utf-8") as f:
+                tree = ast.parse(f.read(), filename=rel)
+            imported_roots = set()
+            for node in ast.walk(tree):
+                if isinstance(node, ast.Import):
+                    for alias in node.names:
+                        imported_roots.add(alias.name.split(".")[0])
+                elif isinstance(node, ast.ImportFrom) and node.module:
+                    imported_roots.add(node.module.split(".")[0])
+            self.assertNotIn("urllib", imported_roots, f"{rel} must not import urllib directly")
+            self.assertNotIn("ssl", imported_roots, f"{rel} must not import ssl directly")
+            self.assertIn("notion_sync", imported_roots, f"{rel} must use notion_sync")
+
 
 if __name__ == "__main__":
     unittest.main()

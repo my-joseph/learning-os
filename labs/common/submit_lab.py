@@ -9,14 +9,24 @@ to the Notion database 'Learning Practice & Drills' (Format: "Code Test Suite").
 import datetime
 import json
 import os
-import ssl
 import subprocess
 import sys
-import time
-import urllib.error
-import urllib.request
 import xml.etree.ElementTree as ET
 from pathlib import Path
+
+_REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
+
+from notion_sync.blocks import bullet, callout_block, code_block, divider_block, h2, toggle_block  # noqa: E402
+from notion_sync.client import (  # noqa: E402
+    MissingNotionToken,
+    load_env,
+    main_checkout_env,
+    notion_request,
+    replace_page_content,
+    require_token,
+)
 
 # ANSI Terminal Styling
 GREEN = "\033[92m"
@@ -27,126 +37,17 @@ BOLD = "\033[1m"
 DIM = "\033[2m"
 RESET = "\033[0m"
 
-SSL_CTX = (
-    ssl.create_default_context(cafile="/etc/ssl/cert.pem")
-    if os.path.exists("/etc/ssl/cert.pem")
-    else ssl.create_default_context()
-)
-
 
 def find_repo_root(start_dir: str = ".") -> Path:
     """Walk up from start_dir to locate workspace root containing id_map.json."""
     curr = Path(start_dir).resolve()
     for _ in range(8):
-        if (curr / "id_map.json").exists() and (curr / ".env").exists():
+        if (curr / "id_map.json").exists():
             return curr
         if curr.parent == curr:
             break
         curr = curr.parent
-    return Path(start_dir).resolve()
-
-
-def load_env(repo_root: Path) -> dict:
-    env = {}
-    env_file = repo_root / ".env"
-    if env_file.exists():
-        with open(env_file, "r", encoding="utf-8") as f:
-            for line in f:
-                line = line.strip()
-                if line and not line.startswith("#") and "=" in line:
-                    k, v = line.split("=", 1)
-                    env[k.strip()] = v.strip().strip('"').strip("'")
-    return env
-
-
-def notion_request(method: str, endpoint: str, token: str, payload: dict = None, max_retries: int = 5):
-    url = f"https://api.notion.com/v1/{endpoint}"
-    headers = {
-        "Authorization": f"Bearer {token}",
-        "Notion-Version": "2022-06-28",
-        "Content-Type": "application/json",
-    }
-    data = json.dumps(payload).encode("utf-8") if payload is not None else None
-    for attempt in range(max_retries):
-        try:
-            req = urllib.request.Request(url, data=data, headers=headers, method=method)
-            with urllib.request.urlopen(req, context=SSL_CTX, timeout=30) as resp:
-                return json.loads(resp.read().decode("utf-8"))
-        except urllib.error.HTTPError as e:
-            if e.code in (409, 429, 500, 502, 503, 504) and attempt < max_retries - 1:
-                wait = 1.5 * (2**attempt)
-                time.sleep(wait)
-                continue
-            body = e.read().decode("utf-8", errors="ignore")
-            raise RuntimeError(f"HTTP {e.code} on {method} {endpoint}: {body}") from e
-
-
-def rt(text: str, bold: bool = False, code: bool = False):
-    return {
-        "type": "text",
-        "text": {"content": text},
-        "annotations": {"bold": bold, "code": code},
-    }
-
-
-def callout_block(content: str, color: str = "blue_background", icon: str = "code"):
-    return {
-        "object": "block",
-        "type": "callout",
-        "callout": {
-            "icon": {
-                "type": "icon",
-                "icon": {
-                    "name": icon,
-                    "color": "blue" if "blue" in color else "green" if "green" in color else "orange",
-                },
-            },
-            "color": color,
-            "rich_text": [rt(content[:1990])],
-        },
-    }
-
-
-def heading2(text: str):
-    return {
-        "object": "block",
-        "type": "heading_2",
-        "heading_2": {"rich_text": [rt(text)]},
-    }
-
-
-def divider_block():
-    return {"object": "block", "type": "divider", "divider": {}}
-
-
-def toggle_block(title: str, children: list):
-    return {
-        "object": "block",
-        "type": "toggle",
-        "toggle": {
-            "rich_text": [rt(title[:1990])],
-            "children": children[:100],
-        },
-    }
-
-
-def bullet_block(text: str):
-    return {
-        "object": "block",
-        "type": "bulleted_list_item",
-        "bulleted_list_item": {"rich_text": [rt(text[:1990])]},
-    }
-
-
-def code_block(code: str, lang: str = "plain text"):
-    return {
-        "object": "block",
-        "type": "code",
-        "code": {
-            "language": lang,
-            "rich_text": [rt(code[:1990])],
-        },
-    }
+    return _REPO_ROOT
 
 
 def run_tests_and_parse(lab_dir: Path, config: dict):
@@ -311,22 +212,11 @@ def evaluate_milestones(milestones: list, testcases: list):
 
 def sync_to_notion(repo_root: Path, lab_dir: Path, config: dict, eval_result: dict, env: dict):
     """Syncs lab grading results into Notion 'Learning Practice & Drills' database."""
-    token = env.get("NOTION_TOKEN")
-    if not token:
-        print(f"{YELLOW}⚠ Warning: NOTION_TOKEN not set in .env. Skipping Notion synchronization.{RESET}")
-        return None
-
     id_map_file = repo_root / "id_map.json"
     id_map = {}
     if id_map_file.exists():
         with open(id_map_file, "r", encoding="utf-8") as f:
             id_map = json.load(f)
-
-    drills_db = id_map.get("DRILLS_DB", {})
-    drills_db_id = drills_db.get("id") if isinstance(drills_db, dict) else drills_db
-    if not drills_db_id:
-        print(f"{YELLOW}⚠ Warning: DRILLS_DB ID not found in id_map.json. Skipping Notion sync.{RESET}")
-        return None
 
     lab_id = config["labId"]
     lab_title = config.get("title", lab_id)
@@ -335,14 +225,6 @@ def sync_to_notion(repo_root: Path, lab_dir: Path, config: dict, eval_result: di
     topic_code = config.get("topicCode", "")
     diff_mode = config.get("difficulty", "Level 4 - Applied Synthesis")
     scope_level = config.get("scopeLevel", "Unit Drill")
-
-    q = notion_request(
-        "POST",
-        f"databases/{drills_db_id}/query",
-        token,
-        {"filter": {"property": "Drill ID", "rich_text": {"equals": lab_id}}},
-    )
-    results = q.get("results", [])
 
     is_all_pass = eval_result["all_passed"]
     practice_status = "Graded" if is_all_pass else "Needs Retry"
@@ -355,6 +237,65 @@ def sync_to_notion(repo_root: Path, lab_dir: Path, config: dict, eval_result: di
         rel_path = str(lab_dir)
 
     now_iso = datetime.datetime.now(datetime.timezone.utc).isoformat()
+
+    # Build Body Blocks using shared notion_sync.blocks builders
+    callout_color = "green_background" if is_all_pass else "orange_background"
+    summary_msg = (
+        f"Terminal Lab Suite ({lab_id}): Score {eval_result['total_score']}/{eval_result['max_score']} pts "
+        f"({eval_result['accuracy_pct']}%) — Status: {practice_status}.\n"
+        f"Scope: {unit_code} | Difficulty: {diff_mode} | Submitted: {now_iso[:19]} UTC\n"
+        f"Path: {rel_path}"
+    )
+
+    blocks = [
+        callout_block(summary_msg[:1990], id_map, color=callout_color),
+        divider_block(),
+        h2("Milestone Execution Telemetry", id_map),
+    ]
+
+    for ms in eval_result["milestones"]:
+        status_icon = "✔" if ms["passed"] else "✗"
+        m_title = f"{status_icon} [{ms['id']}] {ms['title']} — {ms['earned']}/{ms['points']} pts ({ms['pass_count']}/{ms['test_count']} tests passed)"
+
+        children = []
+        for tc in ms["testcases"]:
+            tc_icon = "✔" if tc["passed"] else "✗"
+            children.append(bullet(f"{tc_icon} {tc['name']} ({round(tc['time'] * 1000, 1)}ms)"[:1990], id_map))
+            if not tc["passed"] and tc.get("failure_msg"):
+                short_trace = tc["failure_msg"]
+                if tc.get("failure_trace") and len(tc["failure_trace"]) > len(short_trace):
+                    short_trace = tc["failure_trace"]
+                children.append(code_block(short_trace[:1800], lang="plain text"))
+
+        blocks.append(toggle_block(m_title[:1990], children[:100], id_map))
+
+    if os.environ.get("NOTION_DRY_RUN", "").lower() in ("1", "true", "yes"):
+        print(
+            f"{YELLOW}[DRY RUN]{RESET} Skipping Notion write for {lab_id} "
+            f"({len(blocks)} blocks prepared; uses replace_page_content append-before-delete)."
+        )
+        return f"https://notion.so/mock-{lab_id}"
+
+    raw_token = env.get("NOTION_TOKEN") or os.environ.get("NOTION_TOKEN")
+    try:
+        token = require_token(raw_token)
+    except MissingNotionToken:
+        print(f"{YELLOW}⚠ Warning: NOTION_TOKEN not set in .env. Skipping Notion synchronization.{RESET}")
+        return None
+
+    drills_db = id_map.get("DRILLS_DB", {})
+    drills_db_id = drills_db.get("id") if isinstance(drills_db, dict) else drills_db
+    if not drills_db_id:
+        print(f"{YELLOW}⚠ Warning: DRILLS_DB ID not found in id_map.json. Skipping Notion sync.{RESET}")
+        return None
+
+    q = notion_request(
+        "POST",
+        f"databases/{drills_db_id}/query",
+        token,
+        {"filter": {"property": "Drill ID", "rich_text": {"equals": lab_id}}},
+    )
+    results = q.get("results", [])
 
     # Clean mistake category tags (STRICT BAN ON COMMAS)
     cleaned_tags = [{"name": cat.replace(",", " /")[:100].strip()} for cat in eval_result["failing_categories"]]
@@ -409,45 +350,8 @@ def sync_to_notion(repo_root: Path, lab_dir: Path, config: dict, eval_result: di
     with open(id_map_file, "w", encoding="utf-8") as f:
         json.dump(id_map, f, ensure_ascii=False, indent=2)
 
-    # Build Body Blocks
-    callout_color = "green_background" if is_all_pass else "orange_background"
-    summary_msg = (
-        f"Terminal Lab Suite ({lab_id}): Score {eval_result['total_score']}/{eval_result['max_score']} pts "
-        f"({eval_result['accuracy_pct']}%) — Status: {practice_status}.\n"
-        f"Scope: {unit_code} | Difficulty: {diff_mode} | Submitted: {now_iso[:19]} UTC\n"
-        f"Path: {rel_path}"
-    )
-
-    blocks = [
-        callout_block(summary_msg, color=callout_color, icon="code"),
-        divider_block(),
-        heading2("Milestone Execution Telemetry"),
-    ]
-
-    for ms in eval_result["milestones"]:
-        status_icon = "✔" if ms["passed"] else "✗"
-        m_title = f"{status_icon} [{ms['id']}] {ms['title']} — {ms['earned']}/{ms['points']} pts ({ms['pass_count']}/{ms['test_count']} tests passed)"
-
-        children = []
-        for tc in ms["testcases"]:
-            tc_icon = "✔" if tc["passed"] else "✗"
-            children.append(bullet_block(f"{tc_icon} {tc['name']} ({round(tc['time'] * 1000, 1)}ms)"))
-            if not tc["passed"] and tc.get("failure_msg"):
-                short_trace = tc["failure_msg"]
-                if tc.get("failure_trace") and len(tc["failure_trace"]) > len(short_trace):
-                    short_trace = tc["failure_trace"]
-                children.append(code_block(short_trace[:1800], lang="plain text"))
-
-        blocks.append(toggle_block(m_title, children))
-
-    # Replace blocks
-    # Fetch existing blocks and delete
-    existing = notion_request("GET", f"blocks/{page_id}/children?page_size=100", token).get("results", [])
-    for eb in existing:
-        notion_request("DELETE", f"blocks/{eb['id']}", token)
-
-    # Append fresh blocks
-    notion_request("PATCH", f"blocks/{page_id}/children", token, {"children": blocks})
+    # Append-before-delete replacement so a failure mid-way never leaves an empty page.
+    replace_page_content(page_id, blocks, token, label=lab_id)
 
     page_url = f"https://notion.so/{page_id.replace('-', '')}"
     return page_url
@@ -469,7 +373,12 @@ def main():
         config = json.load(f)
 
     repo_root = find_repo_root(lab_dir)
-    env = load_env(repo_root)
+    env_file = repo_root / ".env"
+    env = load_env(str(env_file))
+    if not env:
+        main_env = main_checkout_env(str(repo_root))
+        if main_env:
+            env = load_env(main_env)
 
     print(f"\n{BOLD}{CYAN}========================================================================={RESET}")
     print(f"{BOLD}  PHASE 3 TERMINAL LAB SUBMISSION ENGINE: {config.get('labId')}{RESET}")
