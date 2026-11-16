@@ -15,6 +15,7 @@ from math_engine.ai_drill_ingest import (
     ingest_ai_drill,
     load_reasoning_vault,
     mark_context_used,
+    normalize_prompt_numbers,
     register_archetype,
     validate_ai_problem_contract,
 )
@@ -24,6 +25,12 @@ from quality_rules import QualityError
 
 
 class TestAiDrillIngest(unittest.TestCase):
+    def test_prompt_number_normalizer_preserves_negative_givens_and_latex_bounds(self):
+        self.assertEqual(normalize_prompt_numbers("A given is -2 units."), [-2.0])
+        self.assertEqual(normalize_prompt_numbers(r"Solve $|3x-2|\le4.0$."), [3.0, 2.0, 4.0])
+        self.assertEqual(normalize_prompt_numbers("Compute 3 - 2."), [3.0, 2.0])
+        self.assertEqual(normalize_prompt_numbers("Evaluate x -2."), [2.0])
+
     def test_c06_vault_archetypes_exist(self):
         """MTH-T01-C06 Reasoning Vault must load all 7 core archetypes."""
         vault = load_reasoning_vault("MTH-T01-C06")

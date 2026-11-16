@@ -43,19 +43,33 @@ class AiContractError(Exception):
 
 
 def normalize_prompt_numbers(prompt: str, keep_exponents: bool = False) -> List[float]:
-    """Extracts numbers from prompt text, handling commas in numbers and removing unit exponents."""
+    """Extract numbers from a prompt, preserving unary negatives and ignoring LaTeX commands."""
     text = prompt
     while re.search(r"(\d+),(\d+)", text):
         text = re.sub(r"(\d+),(\d+)", r"\g<1>\g<2>", text)
     if not keep_exponents:
         text = re.sub(r"\^\{?[23]\}?", "", text)
+    # A macro may be immediately followed by its numeric argument (for example, `\le4`).
+    # Remove the command while leaving a boundary so the argument is still discovered.
+    text = re.sub(r"\\[A-Za-z]+", " ", text)
     # Separate numeric coefficients from variables, units, and LaTeX macros (e.g. 3x -> 3 x, 4\theta -> 4 \theta, 15m -> 15 m)
     text = re.sub(r"(?<=\d)(?=[a-zA-Z\\])", " ", text)
-    raw_nums = re.findall(r"\b\d+(?:\.\d+)?\b", text)
     nums = []
-    for r in raw_nums:
+    for match in re.finditer(r"(?<![\w.])(?:\d+\.\d+|\d+|\.\d+)(?!\w|\.\d)", text):
+        raw = match.group(0)
+        prefix = text[: match.start()]
+        sign = re.search(r"[-−]\s*$", prefix)
+        if sign:
+            before_sign = prefix[: sign.start()].rstrip()
+            unary = not before_sign or before_sign[-1] in "=([{,:;+*/^<>!$"
+            if re.search(r"\b(?:is|was|were|equals?|equal\s+to|value|given|temperature|debt)\s*$", before_sign):
+                # Natural-language context such as "the given is -2" is unary.
+                # A variable (`x -2`) and numeric predecessor (`3 -2`) remain subtraction.
+                unary = True
+            if unary:
+                raw = "-" + raw
         try:
-            nums.append(float(r))
+            nums.append(float(raw))
         except ValueError:
             pass
     return nums
@@ -338,14 +352,15 @@ def validate_ai_problem_contract(prob: Dict[str, Any], enforce_leak_gate: bool =
     for p_num in prompt_numbers:
         if p_num == 0:
             continue  # the 0 in "= 0" or "X > 0" is notation, not story data
-        if not any(abs(p_num - g_val) < 1e-6 for g_val in known_vals):
+        # A sign in the prompt may belong to the notation (x = -4 with given 4), so magnitudes also match.
+        if not any(abs(p_num - g_val) < 1e-6 or abs(abs(p_num) - abs(g_val)) < 1e-6 for g_val in known_vals):
             raise AiContractError(f"[{pid}] Number '{p_num}' in prompt is not defined in givens ({givens})")
 
     # Backward: every given must appear in prompt. Exponents count here ($2^3$ states the 3),
     # otherwise the AI is pushed to re-list them ("with first exponent 3 ...").
     prompt_numbers_all = normalize_prompt_numbers(prompt, keep_exponents=True)
     for g_key, g_val in givens_floats.items():
-        if not any(abs(g_val - p_num) < 1e-6 for p_num in prompt_numbers_all):
+        if not any(abs(g_val - p_num) < 1e-6 or abs(abs(g_val) - abs(p_num)) < 1e-6 for p_num in prompt_numbers_all):
             raise AiContractError(f"[{pid}] Given '{g_key}={g_val}' does not appear in prompt: '{prompt}'")
 
     # 4. Trap derivation integrity via Safe Parser (to_expr + is_equal)
@@ -399,7 +414,8 @@ def validate_ai_problem_contract(prob: Dict[str, Any], enforce_leak_gate: bool =
     # A trap may misuse a formula constant (e.g. 2 + r instead of 2r), so constants count too.
     for g_key, g_val in {**givens_floats, **constant_floats}.items():
         for t_val in td_token_vals:
-            if abs(t_val - g_val) < 1e-6:
+            # Derivation tokens are unsigned, so a negative given matches its magnitude.
+            if abs(t_val - g_val) < 1e-6 or abs(t_val - abs(g_val)) < 1e-6:
                 matched_given_keys.add(g_key)
                 break
             if abs(t_val - (g_val / 100.0)) < 1e-6:
