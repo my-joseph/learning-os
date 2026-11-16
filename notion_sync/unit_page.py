@@ -38,6 +38,7 @@ from notion_sync.blocks import (
     h3,
     num_item,
     p_block,
+    parse_rt,
     quote_block,
     todo_item,
     toggle_block,
@@ -469,7 +470,7 @@ def _clean_rt_for_patch(rt: dict) -> dict:
     return {k: v for k, v in rt.items() if k not in ("plain_text", "href")}
 
 
-def _replace_in_rich_text(rich: list[dict], old: str, new: str) -> list[dict]:
+def _replace_in_rich_text(rich: list[dict], old: str, new: str, id_map: dict) -> list[dict]:
     """Replace the single occurrence of `old` with `new` in `rich_text`, keeping equations as equations."""
     pieces = [_rt_text(rt) for rt in rich]
     joined = "".join(pieces)
@@ -502,15 +503,28 @@ def _replace_in_rich_text(rich: list[dict], old: str, new: str) -> list[dict]:
                 continue
             raise ValueError("old text spans across an inline equation; narrow the substring")
 
-        if rtype != "text":
+        if rtype not in ("text", "mention"):
             raise ValueError(f"old text spans across a {rtype} segment; narrow the substring")
 
         item = copy.deepcopy(_clean_rt_for_patch(rt))
-        content = (item.get("text") or {}).get("content", txt)
+        content = (item.get("text") or {}).get("content", txt) if rtype == "text" else txt
         insert = new if not replaced else ""
         replaced = True
         new_content = content[:rel_start] + insert + content[rel_end:]
-        if new_content:
+        if insert and re.search(r"\[\[|\$|`", insert):
+            # Parse replacement tokens just like new/add specs do, including page mentions and math.
+            prefix = parse_rt(content[:rel_start], id_map) if content[:rel_start] else []
+            replacement = parse_rt(insert, id_map)
+            suffix = parse_rt(content[rel_end:], id_map) if content[rel_end:] else []
+            out.extend(prefix + replacement + suffix)
+        elif rtype == "mention":
+            if content[:rel_start]:
+                out.extend(parse_rt(content[:rel_start], id_map))
+            if insert:
+                out.extend(parse_rt(insert, id_map))
+            if content[rel_end:]:
+                out.extend(parse_rt(content[rel_end:], id_map))
+        elif new_content:
             text_obj = dict(item.get("text") or {})
             text_obj["content"] = new_content
             item["text"] = text_obj
@@ -575,7 +589,7 @@ def fix_text(code: str, old: str, new: str, token: str, id_map: dict, dry_run: b
         return f"fixed text in {btype} block {block['id']} of {code}"
 
     assert isinstance(content_or_rich, list)
-    updated_rich = _replace_in_rich_text(content_or_rich, old, new)
+    updated_rich = _replace_in_rich_text(content_or_rich, old, new, id_map)
     if dry_run:
         return f"dry run: would fix text in {btype} block {block['id']} of {code}: {old!r} -> {new!r}"
     notion_request("PATCH", f"blocks/{block['id']}", token, {btype: {"rich_text": updated_rich}})

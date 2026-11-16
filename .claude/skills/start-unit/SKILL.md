@@ -55,7 +55,7 @@ Write the page as a JSON spec in `scratch/pages/<UNIT>.json` (block types and te
   - 1. `Core Concepts & Mental Model`: how it works inside, not only syntax; include a diagram or trace table where it helps, and at least one `code` block (`{"type": "code", "code": "...", "lang": "typescript"}`).
   - 2. `Core Patterns`: each pattern with a `"Why this works"` toggle.
   - 3. `Worked Code Examples`: `Example 1 (L1 — Direct): …`, `Example 2 (L2 — Edge Case): …` (or `L2 — Refactor`), `Example 3 (L3 — Bug Contrast): …` (a wrong version that runs, why it is wrong, and the fix), with `code` blocks.
-  - 4. `Practice Guide`: the 4 categories of §8, specifying what the drills train and which rubric checks matter in this unit (cite `QC-`/`U-` ids).
+  - 4. `Practice Guide`: the 4 categories of §8, specifying what the drills train and which rubric checks matter in this unit (cite `QC-`/`U-` ids). Add a one-line learner-facing meaning for every cited `QC-`/`U-` id beside the citation or in a short glossary in the section; never leave internal IDs unexplained.
   - 5. `Active Recall`: 3–4 toggles with reference solutions.
   - Code goes in `code` blocks with a Notion language (`javascript`, `typescript`, `json`, `bash`, `shell`, `sql`, `html`, `css`, `plain text`); inline code in backticks; no math LaTeX unless the unit is about complexity (Big-O may use `$O(n)$`).
 

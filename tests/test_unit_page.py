@@ -538,3 +538,79 @@ def test_fix_text_guards_and_preserves_equations(monkeypatch):
         "blocks/b-eq",
         {"equation": {"expression": r"\text{if } p \text{ is odd (} k \ge 0 \text{ if } q \text{ is even)}"}},
     )
+
+
+def test_fix_text_resolves_page_tokens_to_native_mentions(monkeypatch):
+    block = {
+        "id": "callout-1",
+        "type": "callout",
+        "has_children": False,
+        "callout": {
+            "rich_text": [{"type": "text", "text": {"content": "Prerequisite: OLD"}, "plain_text": "Prerequisite: OLD"}]
+        },
+    }
+    patches = []
+    monkeypatch.setattr(up, "get_all_blocks", lambda *_: [block])
+    monkeypatch.setattr(up, "notion_request", lambda *args: patches.append(args) or {})
+    ids = {"U": {"id": "page-u"}, "PRG-T01-C01-U06": {"id": "page-prereq"}}
+
+    result = up.fix_text("U", "OLD", "[[PRG-T01-C01-U06]]", "tok", ids)
+
+    assert result.startswith("fixed text")
+    rich = patches[0][3]["callout"]["rich_text"]
+    assert rich[0]["text"]["content"] == "Prerequisite: "
+    assert rich[1]["type"] == "mention"
+    assert rich[1]["mention"] == {"type": "page", "page": {"id": "page-prereq"}}
+
+
+def test_fix_text_parses_inline_math_as_native_equation(monkeypatch):
+    block = {
+        "id": "toggle-1",
+        "type": "toggle",
+        "has_children": False,
+        "toggle": {"rich_text": [{"type": "text", "text": {"content": "Solve x <= 0"}, "plain_text": "Solve x <= 0"}]},
+    }
+    patches = []
+    monkeypatch.setattr(up, "get_all_blocks", lambda *_: [block])
+    monkeypatch.setattr(up, "notion_request", lambda *args: patches.append(args) or {})
+
+    up.fix_text("U", "x <= 0", "$x \\le 0$", "tok", {"U": {"id": "page-u"}})
+
+    rich = patches[0][3]["toggle"]["rich_text"]
+    assert rich[0]["text"]["content"] == "Solve "
+    assert rich[1]["type"] == "equation"
+    assert rich[1]["equation"]["expression"] == "x \\le 0"
+
+
+def test_fix_text_can_replace_retired_page_mention_by_visible_title(monkeypatch):
+    block = {
+        "id": "retired-link",
+        "type": "paragraph",
+        "has_children": False,
+        "paragraph": {
+            "rich_text": [
+                {"type": "text", "text": {"content": "Connection: "}, "plain_text": "Connection: "},
+                {
+                    "type": "mention",
+                    "mention": {"type": "page", "page": {"id": "retired-id"}},
+                    "plain_text": "[Retired] Error Handling",
+                },
+            ]
+        },
+    }
+    patches = []
+    monkeypatch.setattr(up, "get_all_blocks", lambda *_: [block])
+    monkeypatch.setattr(up, "notion_request", lambda *args: patches.append(args) or {})
+
+    up.fix_text(
+        "U",
+        "[Retired] Error Handling",
+        "[[PRG-T01-C01-U08]]",
+        "tok",
+        {"U": {"id": "page-u"}, "PRG-T01-C01-U08": {"id": "active-id"}},
+    )
+
+    rich = patches[0][3]["paragraph"]["rich_text"]
+    assert rich[0]["text"]["content"] == "Connection: "
+    assert rich[1]["type"] == "mention"
+    assert rich[1]["mention"]["page"]["id"] == "active-id"

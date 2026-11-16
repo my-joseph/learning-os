@@ -125,6 +125,7 @@ This is the default for new and upgraded programming pages (§1 still allows ada
 - **2. Core Patterns:** each pattern with a collapsed toggle **"Why this works"** (3–5 lines from first principles).
 - **3. Worked Code Examples:** headings `Example 1 (L1 — Direct): …`, `Example 2 (L2 — Edge Case): …` or `(L2 — Refactor): …`, `Example 3 (L3 — Bug Contrast): …` (a wrong version that runs, why it is wrong, and the fix). Include `code` blocks.
 - **4. Practice Guide:** the 4 categories of §8, specifying what the drills train and which rubric checks matter in this unit (cite `QC-` / `U-` ids).
+- **Rubric check meanings:** Every cited `QC-` or `U-` id must include a one-line learner-facing meaning beside the citation or in a short glossary in the Practice Guide. Never leave internal IDs unexplained.
 - **5. Active Recall:** 3–4 toggles with reference solutions (§6).
 - **6. My Implementation & Mistake Log:** the learner's workspace (§7). Drill results synced from the Studio are inserted at the end of this section. **Agents never edit, move or delete anything in this section.**
 - **7. Completion Checklist.**
