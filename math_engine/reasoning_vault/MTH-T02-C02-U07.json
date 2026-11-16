@@ -1,0 +1,82 @@
+{
+  "unitCode": "MTH-T02-C02-U07",
+  "topicTitle": "Inverse Functions",
+  "description": "Reasoning vault aligned with OpenStax Algebra and Trigonometry 2e §3.7: verify inverse pairs, find inverse formulas, swap domain and range, restrict domains to make functions one-to-one, and interpret inverse graphs.",
+  "archetypes": [
+    {
+      "unitCode": "MTH-T02-C02-U07",
+      "archetypeKey": "t02-c02-u07-verify-inverse-pair",
+      "level": 1,
+      "name": "Verify an Inverse Pair",
+      "source": "OpenStax Algebra and Trigonometry 2e §3.7 — Verifying Inverse Functions",
+      "coreConcept": "Two functions are inverses when each composition undoes the other on the appropriate domains.",
+      "mentalModel": "Run one function and then the other in both orders; a genuine reversible pair returns each admissible input unchanged.",
+      "governingRelation": "g(f(x))=x and f(g(x))=x",
+      "cognitiveTraps": [
+        {"trapTag": "t02-c02-u07-check-only-one-composition-trap", "description": "Checking only one composition and assuming the reverse composition also works.", "trapFormula": "g(f(x))=x \u21db assume f(g(x))=x"},
+        {"trapTag": "t02-c02-u07-inverse-means-reciprocal-trap", "description": "Treating the inverse function as the reciprocal of the output.", "trapFormula": "f^{-1}(x) \u21a6 1/f(x)"},
+        {"trapTag": "t02-c02-u07-transposition-sign-trap", "description": "Changing the sign incorrectly when moving a constant while solving for the inverse.", "trapFormula": "x=2y+5 \u21a6 y=(x+5)/2"}
+      ],
+      "versatileDomains": [],
+      "usedContexts": [],
+      "figureNone": "This archetype verifies symbolic compositions; algebraic cancellation directly establishes whether both functions undo each other."
+    },
+    {
+      "unitCode": "MTH-T02-C02-U07",
+      "archetypeKey": "t02-c02-u07-find-inverse-formula",
+      "level": 1,
+      "name": "Find an Inverse Formula",
+      "source": "OpenStax Algebra and Trigonometry 2e §3.7 — Finding the Inverse of a Function",
+      "coreConcept": "Solve y=f(x) for x in terms of y, then exchange the variable labels to express the inverse output as a function of its input.",
+      "mentalModel": "Reverse the input-output roles, solve for the old input, and rename the old output as the new input.",
+      "governingRelation": "y=f(x) \u2192 solve for x \u2192 f^{-1}(x)=y",
+      "cognitiveTraps": [
+        {"trapTag": "t02-c02-u07-swap-without-solving-trap", "description": "Exchanging x and y but failing to isolate the inverse output.", "trapFormula": "y=f(x) \u2192 x=f(y)"},
+        {"trapTag": "t02-c02-u07-reciprocal-notation-trap", "description": "Interpreting the superscript -1 as a reciprocal instead of an inverse function.", "trapFormula": "f^{-1}(x) \u21a6 1/f(x)"},
+        {"trapTag": "t02-c02-u07-transposition-sign-trap", "description": "Changing the sign incorrectly when moving a constant while solving for the inverse.", "trapFormula": "x=2y+5 \u21a6 y=(x+5)/2"},
+        {"trapTag": "t02-c02-u07-subtraction-sign-trap", "description": "Adding the constant instead of subtracting it when evaluating a linear inverse.", "trapFormula": "(x-b)/a \u21a6 (x+b)/a"}
+      ],
+      "versatileDomains": [],
+      "usedContexts": [],
+      "figureNone": "The requested result is an algebraic formula; symbolic isolation is the direct method."
+    },
+    {
+      "unitCode": "MTH-T02-C02-U07",
+      "archetypeKey": "t02-c02-u07-restrict-domain-and-swap-sets",
+      "level": 2,
+      "name": "Restrict a Domain and Swap Domain with Range",
+      "source": "OpenStax Algebra and Trigonometry 2e §3.7 — Domain and Range of an Inverse Function; Restricting the Domain",
+      "coreConcept": "A function must be one-to-one on its domain to have an inverse function; an appropriate restriction can remove repeated outputs, and inverse domain and range exchange roles.",
+      "mentalModel": "Choose one branch so every output identifies exactly one input, then reverse all input-output pairs and their sets.",
+      "governingRelation": "Domain(f^{-1})=Range(f); Range(f^{-1})=Domain(f)",
+      "cognitiveTraps": [
+        {"trapTag": "t02-c02-u07-restrict-wrong-branch-trap", "description": "Choosing a restriction that still leaves repeated outputs or conflicts with the requested branch.", "trapFormula": "x^2,\\ x\\in\\mathbb{R} \\mapsto \\text{still not one-to-one}"},
+        {"trapTag": "t02-c02-u07-domain-range-not-swapped-trap", "description": "Keeping the original domain and range in the same roles for the inverse.", "trapFormula": "D(f^{-1})\u21a6 D(f)"}
+      ],
+      "versatileDomains": [],
+      "usedContexts": [],
+      "figureBuilders": [
+        {"fn": "build_function_graph_figure", "args": {"x_min": "-4", "x_max": "4", "hlines": "4"}, "labels": {"expr": "x^2", "label": "f(x)=x^2"}, "title": "A horizontal line meets a non-one-to-one graph twice"}
+      ]
+    },
+    {
+      "unitCode": "MTH-T02-C02-U07",
+      "archetypeKey": "t02-c02-u07-graph-inverse-reflection",
+      "level": 2,
+      "name": "Interpret Inverse Graphs and Coordinates",
+      "source": "OpenStax Algebra and Trigonometry 2e §3.7 — Graphing an Inverse Function",
+      "coreConcept": "Inverse functions exchange ordered-pair coordinates, so their graphs reflect across y=x.",
+      "mentalModel": "Swap each point's horizontal and vertical coordinates; the mirror line is the diagonal y=x.",
+      "governingRelation": "(a,b)\u2208 f \u21d4 (b,a)\u2208 f^{-1}",
+      "cognitiveTraps": [
+        {"trapTag": "t02-c02-u07-reflect-across-axis-trap", "description": "Reflecting across a coordinate axis instead of the line y=x.", "trapFormula": "(a,b) \u21a6 (a,-b)"},
+        {"trapTag": "t02-c02-u07-do-not-swap-coordinate-trap", "description": "Changing a point without exchanging its input and output coordinates.", "trapFormula": "(a,b) \u21a6 (a,b)"}
+      ],
+      "versatileDomains": [],
+      "usedContexts": [],
+      "figureBuilders": [
+        {"fn": "build_function_graph_figure", "args": {"x_min": "-4", "x_max": "4", "y_min": "-4", "y_max": "4"}, "labels": {"expr": "2*x+1", "expr2": "(x-1)/2", "label": "f(x)=2x+1", "label2": "f^{-1}(x)=(x-1)/2"}, "title": "A function and its inverse have exchanged coordinates"}
+      ]
+    }
+  ]
+}
