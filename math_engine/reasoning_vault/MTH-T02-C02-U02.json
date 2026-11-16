@@ -1,0 +1,211 @@
+{
+  "unitCode": "MTH-T02-C02-U02",
+  "topicTitle": "Domain and Range",
+  "description": "Reasoning vault for domain and range aligned with OpenStax Algebra and Trigonometry 2e §3.2: algebraic domain restrictions (rational, even-root, combined), reading domain and range from graphs, piecewise-defined functions, domain error diagnosis, and physical-constraint modeling.",
+  "archetypes": [
+    {
+      "unitCode": "MTH-T02-C02-U02",
+      "archetypeKey": "t02-c02-u02-domain-algebraic-constraints",
+      "level": 1,
+      "name": "Finding the Domain of a Function Defined by an Equation",
+      "source": "OpenStax Algebra and Trigonometry 2e §3.2 — Finding the Domain of a Function Defined by an Equation",
+      "coreConcept": "The natural domain of a real-valued function is the set of all real inputs x for which the formula produces a real number: denominators must be nonzero, and radicands of even roots must be greater than or equal to zero (strictly greater than zero when the even root is in a denominator).",
+      "mentalModel": "Start with all real numbers (-inf, inf), then carve out every input that causes division by zero or an even root of a negative number.",
+      "governingRelation": "\\text{dom}(f) = \\{x \\in \\mathbb{R} : Q(x) \\neq 0 \\text{ and } R(x) \\ge 0\\}",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c02-u02-included-zero-denominator-trap",
+          "description": "Including a value that makes the denominator zero (or using a closed bracket '[' instead of '(' at a denominator exclusion).",
+          "trapFormula": "Q(x) = 0 \\text{ included in domain}"
+        },
+        {
+          "trapTag": "t02-c02-u02-radical-negative-or-zero-endpoint-trap",
+          "description": "Including the endpoint where an even-root denominator equals zero (using >= 0 instead of > 0), or failing to flip the inequality sign when dividing by a negative coefficient.",
+          "trapFormula": "\\frac{1}{\\sqrt{g(x)}} \\implies g(x) \\ge 0"
+        },
+        {
+          "trapTag": "t02-c02-u02-numerator-zero-excluded-trap",
+          "description": "Excluding values that make the numerator zero as if 0/k were undefined.",
+          "trapFormula": "P(x) = 0 \\implies x \\notin \\text{dom}(f)"
+        }
+      ],
+      "versatileDomains": [],
+      "usedContexts": [],
+      "figureNone": "Algebraic domain from an equation; plotting the domain on a number line or graphing the function would reveal the excluded values or endpoints."
+    },
+    {
+      "unitCode": "MTH-T02-C02-U02",
+      "archetypeKey": "t02-c02-u02-domain-range-from-graph",
+      "level": 1,
+      "name": "Finding Domain and Range from a Graph",
+      "source": "OpenStax Algebra and Trigonometry 2e §3.2 — Finding Domain and Range from Graphs",
+      "coreConcept": "The domain is the horizontal projection of the graph onto the x-axis (leftmost to rightmost x-values), and the range is the vertical projection onto the y-axis (lowest to highest y-values), using '[' or ']' for solid endpoints and '(' or ')' for hollow endpoints or unbounded arrows.",
+      "mentalModel": "Shine a vertical flashlight from above/below onto the x-axis to see the domain, and a horizontal flashlight from the left/right onto the y-axis to see the range.",
+      "governingRelation": "\\text{dom}(f) = \\pi_x(G_f), \\quad \\text{ran}(f) = \\pi_y(G_f)",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c02-u02-swapped-domain-and-range-axes-trap",
+          "description": "Reporting the vertical y-extent as the domain or the horizontal x-extent as the range.",
+          "trapFormula": "\\text{dom}(f) = [y_{\\min}, y_{\\max}]"
+        },
+        {
+          "trapTag": "t02-c02-u02-open-vs-closed-endpoint-bracket-trap",
+          "description": "Using a closed bracket '[' for a hollow endpoint or an open parenthesis '(' for a solid endpoint.",
+          "trapFormula": "\\text{hollow endpoint } \\mapsto [a, b]"
+        },
+        {
+          "trapTag": "t02-c02-u02-endpoint-values-instead-of-extrema-trap",
+          "description": "Taking the y-coordinates of the two endpoints as the range without checking whether the curve reaches a higher maximum or lower minimum inside the interval.",
+          "trapFormula": "\\text{ran}(f) = [f(a), f(b)]"
+        }
+      ],
+      "versatileDomains": [],
+      "usedContexts": [],
+      "figureBuilders": [
+        {
+          "fn": "build_function_graph_figure",
+          "args": {
+            "x_min": "x1 - 2",
+            "x_max": "x2 + 2"
+          },
+          "labels": {
+            "expr": "{a:g}*(x-{h:g})^2 + {k:g} if ({x1:g} <= x <= {x2:g}) else 0/0",
+            "points": "({x1:g}, {y1:g})",
+            "open_points": "({x2:g}, {y2:g})",
+            "label": "y = f(x)"
+          },
+          "title": "Graph of y = f(x)"
+        },
+        {
+          "fn": "build_function_graph_figure",
+          "args": {
+            "x_min": "x1 - 2",
+            "x_max": "x2 + 2"
+          },
+          "labels": {
+            "expr": "{m:g}*x + {b:g} if ({x1:g} <= x <= {x2:g}) else 0/0",
+            "points": "({x1:g}, {y1:g}), ({x2:g}, {y2:g})",
+            "label": "y = f(x)"
+          },
+          "title": "Graph of y = f(x)"
+        }
+      ]
+    },
+    {
+      "unitCode": "MTH-T02-C02-U02",
+      "archetypeKey": "t02-c02-u02-piecewise-function-domain-range",
+      "level": 2,
+      "name": "Piecewise-Defined Functions: Evaluation, Domain, and Range",
+      "source": "OpenStax Algebra and Trigonometry 2e §3.2 — Graphing Piecewise-Defined Functions",
+      "coreConcept": "A piecewise function applies different formulas on disjoint intervals of the domain. Its overall domain is the union of all branch intervals, and its range is the union of the output sets produced on each branch.",
+      "mentalModel": "Check the input's address first (which condition holds) before stepping into that branch's formula; collect every branch's output shadow onto the y-axis for the range.",
+      "governingRelation": "\\text{dom}(f) = \\bigcup_i I_i, \\quad \\text{ran}(f) = \\bigcup_i f_i(I_i)",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c02-u02-wrong-piecewise-branch-selected-trap",
+          "description": "Evaluating a boundary input x = c using a branch with strict inequality (< or >) instead of the branch with <= or >=.",
+          "trapFormula": "f(c) = f_{\\text{strict}}(c)"
+        },
+        {
+          "trapTag": "t02-c02-u02-assumed-domain-all-reals-piecewise-trap",
+          "description": "Assuming a piecewise function has domain (-inf, inf) when a boundary point or sub-interval is excluded from all branches.",
+          "trapFormula": "\\text{dom}(f) = (-\\infty, \\infty)"
+        },
+        {
+          "trapTag": "t02-c02-u02-ignored-constant-branch-range-trap",
+          "description": "Omitting the single output value of a constant branch or misreading a strict-inequality branch endpoint when forming the range.",
+          "trapFormula": "\\text{ran}(f) = \\text{ran}(f_1) \\text{ only}"
+        }
+      ],
+      "versatileDomains": [],
+      "usedContexts": [],
+      "figureNone": "Algebraic piecewise specification; plotting the piecewise graph would allow reading boundary values, excluded points, and range directly off the axes."
+    },
+    {
+      "unitCode": "MTH-T02-C02-U02",
+      "archetypeKey": "t02-c02-u02-combined-domain-restrictions-diagnose",
+      "level": 3,
+      "name": "Combined Domain Restrictions and Derivation Diagnosis",
+      "source": "OpenStax Algebra and Trigonometry 2e §3.2 — Finding the Domain of a Function Defined by an Equation",
+      "coreConcept": "When a function combines multiple restrictions (such as a radical in the numerator and a factored polynomial in the denominator, or a removable factor), every restriction must hold simultaneously (intersection), and algebraic simplification never enlarges the domain of the original formula.",
+      "mentalModel": "Domain is determined by the original unsimplified expression; every restriction acts as a filter that only allows inputs passing ALL filters at once.",
+      "governingRelation": "\\text{dom}(f) = D_{\\text{rad}} \\cap D_{\\text{denom}}",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c02-u02-canceled-factor-before-domain-trap",
+          "description": "Canceling a common factor (x - a) from numerator and denominator before finding the domain, thereby missing the hole at x = a.",
+          "trapFormula": "\\frac{(x-a)g(x)}{x-a} = g(x) \\implies a \\in \\text{dom}"
+        },
+        {
+          "trapTag": "t02-c02-u02-union-instead-of-intersection-trap",
+          "description": "Taking the union of individual domain conditions instead of their intersection.",
+          "trapFormula": "D_1 \\cup D_2 \\text{ instead of } D_1 \\cap D_2"
+        },
+        {
+          "trapTag": "t02-c02-u02-radical-negative-or-zero-endpoint-trap",
+          "description": "Failing to exclude a denominator zero that falls inside the radical's valid interval, or flipping the inequality incorrectly.",
+          "trapFormula": "x \\ge a \\text{ without excluding } x = b"
+        }
+      ],
+      "versatileDomains": [],
+      "usedContexts": [],
+      "figureNone": "Symbolic domain derivation and error diagnosis; a graph or number line would reveal the excluded points and valid interval."
+    },
+    {
+      "unitCode": "MTH-T02-C02-U02",
+      "archetypeKey": "t02-c02-u02-constrained-domain-range-model",
+      "level": 4,
+      "name": "Practical Domain and Range in Constrained Geometric Models",
+      "source": "OpenStax Algebra and Trigonometry 2e §3.2 — Domain and Range of Models",
+      "coreConcept": "In a physical or geometric model built from multiple constraints (such as fixed fencing perimeter and area, or cutting squares from a sheet), the practical domain is the intersection of all positive-dimension inequalities, and the practical range is the image of that bounded domain including any interior extremum.",
+      "mentalModel": "Every physical dimension must remain strictly positive, which boxes the independent variable into a finite open interval (0, M); the output range spans from the lower boundary to the interior vertex.",
+      "governingRelation": "x > 0 \\land L(x) > 0 \\land W(x) > 0 \\implies x \\in (0, x_{\\max})",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c02-u02-unrestricted-algebraic-domain-trap",
+          "description": "Using the unrestricted algebraic domain (-inf, inf) of a polynomial model instead of intersecting it with physical positivity constraints.",
+          "trapFormula": "\\text{dom}(A) = (-\\infty, \\infty)"
+        },
+        {
+          "trapTag": "t02-c02-u02-range-endpoint-instead-of-vertex-trap",
+          "description": "Computing the range of a quadratic model from its domain endpoints alone while ignoring the interior vertex maximum.",
+          "trapFormula": "\\text{ran}(A) = (A(0), A(x_{\\max}))"
+        }
+      ],
+      "versatileDomains": [
+        "rectangular_enclosure_area",
+        "open_top_box_volume"
+      ],
+      "usedContexts": [
+        "rectangular_enclosure_area",
+        "open_top_box_volume"
+      ],
+      "figureBuilders": [
+        {
+          "fn": "build_rectangle_figure",
+          "args": {
+            "width": "P / 4",
+            "height": "P / 4"
+          },
+          "labels": {
+            "label_w": "y = ?",
+            "label_h": "x = ?"
+          },
+          "title": "Rectangular Enclosure"
+        },
+        {
+          "fn": "build_rectangle_figure",
+          "args": {
+            "width": "L",
+            "height": "W"
+          },
+          "labels": {
+            "label_w": "{L:g} in",
+            "label_h": "{W:g} in"
+          },
+          "title": "Rectangular Sheet"
+        }
+      ]
+    }
+  ]
+}
