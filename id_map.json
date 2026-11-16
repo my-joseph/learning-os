@@ -2316,6 +2316,14 @@
     "title": "MDN – HTML",
     "url": "https://developer.mozilla.org/en-US/docs/Web/HTML"
   },
+  "DRL-PRG-T01-C02-U06-01": {
+    "id": "41a3818f-8ba0-8111-a558-fd3c8184ca2b",
+    "title": "Utility Types — Verified Programming Drill (4 Qs · AI Synthesized Engineering Mode)"
+  },
+  "DRL-MTH-T02-C04-U01-01": {
+    "id": "41a3818f-8ba0-81b1-b9f0-d3b71c2ce666",
+    "title": "Quadratic Functions — Verified Math Drill (3 Qs · AI Synthesized Reasoning Mode)"
+  },
   "DRL-MTH-T02-C03-U03-01": {
     "id": "41a3818f-8ba0-8165-a608-eb5dca68fc63",
     "title": "Fitting Linear Models to Data — Verified Math Drill (4 Qs · AI Synthesized Reasoning Mode)"
@@ -2483,9 +2491,5 @@
   "DRL-PRG-T00-C03-02": {
     "id": "4153818f-8ba0-81e9-bac2-f9f97bbbe5c5",
     "title": "JavaScript & TypeScript Baseline — Verified Programming Drill (10 Qs · AI Synthesized Engineering Mode)"
-  },
-  "DRL-PRG-T01-C02-U06-01": {
-    "id": "41a3818f-8ba0-8111-a558-fd3c8184ca2b",
-    "title": "Utility Types — Verified Programming Drill (4 Qs · AI Synthesized Engineering Mode)"
   }
 }
