@@ -98,7 +98,8 @@
         "verificationLevel": "partial",
         "weakDistractors": 0
       },
-      "levelLabel": "Level 1 - Core Foundations"
+      "levelLabel": "Level 1 - Core Foundations",
+      "inputHint": "Enter a real number."
     },
     {
       "id": "Q02",
@@ -193,7 +194,8 @@
         "verificationLevel": "partial",
         "weakDistractors": 0
       },
-      "levelLabel": "Level 1 - Core Foundations"
+      "levelLabel": "Level 1 - Core Foundations",
+      "inputHint": "Enter a positive real number."
     },
     {
       "id": "Q03",
@@ -288,7 +290,8 @@
         "verificationLevel": "partial",
         "weakDistractors": 0
       },
-      "levelLabel": "Level 2 - Applied Inversion"
+      "levelLabel": "Level 2 - Applied Inversion",
+      "inputHint": "Enter a real number."
     },
     {
       "id": "Q04",
@@ -383,7 +386,8 @@
         "verificationLevel": "partial",
         "weakDistractors": 0
       },
-      "levelLabel": "Level 2 - Applied Inversion"
+      "levelLabel": "Level 2 - Applied Inversion",
+      "inputHint": "Enter a real number."
     },
     {
       "id": "Q05",
@@ -480,7 +484,8 @@
         "verificationLevel": "partial",
         "weakDistractors": 0
       },
-      "levelLabel": "Level 2 - Applied Inversion"
+      "levelLabel": "Level 2 - Applied Inversion",
+      "inputHint": "Enter a real number."
     }
   ],
   "drillId": "DRL-MTH-T02-C01-U01-03",

@@ -705,7 +705,7 @@
       },
       "answerPlain": "-8",
       "answerDisplay": "-8",
-      "inputHint": "Enter a whole number",
+      "inputHint": "Enter an integer.",
       "commonTrapTag": "t02-c01-u03-kept-domain-excluded-root-trap",
       "trapDerivation": "18 / (2 * 3)",
       "trapValue": "3",
