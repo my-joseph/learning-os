@@ -360,7 +360,7 @@ def validate_ai_problem_contract(prob: Dict[str, Any], enforce_leak_gate: bool =
     # otherwise the AI is pushed to re-list them ("with first exponent 3 ...").
     prompt_numbers_all = normalize_prompt_numbers(prompt, keep_exponents=True)
     for g_key, g_val in givens_floats.items():
-        if not any(abs(g_val - p_num) < 1e-6 for p_num in prompt_numbers_all):
+        if not any(abs(g_val - p_num) < 1e-6 or abs(abs(g_val) - abs(p_num)) < 1e-6 for p_num in prompt_numbers_all):
             raise AiContractError(f"[{pid}] Given '{g_key}={g_val}' does not appear in prompt: '{prompt}'")
 
     # 4. Trap derivation integrity via Safe Parser (to_expr + is_equal)
