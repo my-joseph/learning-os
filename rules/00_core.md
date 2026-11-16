@@ -131,7 +131,7 @@ Do not skip analysis and immediately generate generic content.
 
 ### 10. Version Control & Git Hygiene Protocol
 - **Strict Secrets Invariant:** Never commit `.env`, private tokens, or credential files. Ensure `.gitignore` is always active and verified before staging.
-- **Never commit or push on `main` (every agent, every change, however small).** Start every change on a branch (`feat/…`, `fix/…`, `docs/…`, `drill/…`): `git switch -c <branch>` before the first edit, then commit, `git push -u origin <branch>` and `gh pr create`. The learner reads the PR and says "merge"; only then is it merged on GitHub. The one exception: a PR that changes only a new drill file, its unit's vault and `id_map.json` may be merged by the agent that made it. A one-line UI fix is not an exception.
+- **Never commit or push on `main` (every agent, every change, however small).** Start every change on a branch (`feat/…`, `fix/…`, `docs/…`, `drill/…`, `lab/…`): `git switch -c <branch>` before the first edit, then commit, `git push -u origin <branch>` and `gh pr create`. The learner reads the PR and says "merge"; only then is it merged on GitHub. The one exception: a PR that changes only a new drill file, its unit's vault and `id_map.json` — or only a new project lab (`labs/<LAB>/`, `labs/_reference/<LAB>/`, `id_map.json`) — may be merged by the agent that made it. A one-line UI fix is not an exception.
 - **Guard:** `.githooks/pre-commit` and `.githooks/pre-push` refuse commits on `main` and pushes to `main` (enabled with `git config core.hooksPath .githooks`). If a hook blocks you, create a branch; never bypass it with `--no-verify`.
 - **Semantic commits:** `feat:`, `fix:`, `refactor:`, `docs(rules):`, one logical change per commit.
 

@@ -19,8 +19,8 @@ from pathlib import Path
 from typing import Any
 
 from code_engine.lint_check import TOOLS_LINT_DIR, get_lint_binaries
-from code_engine.quality_checks import applicable_rubric, load_archetype
-from code_engine.submit import run_tests_junit
+from code_engine.quality_checks import applicable_rubric, effective_severity, load_archetype, load_universal
+from code_engine.submit import _parse_junit_xml, run_tests_junit
 from code_engine.workspace import ENVIRONMENT_PRESETS, get_entry_name
 
 TS_PRESETS = ("typescript-strict", "backend-sqlite", "react-dom")
@@ -132,6 +132,206 @@ def typecheck_workspace_file(ws_dir: Path, src_file: Path, environment: str) -> 
     return diagnostics
 
 
+def _find_lab_config(lab_id: str, labs_root: Path | None = None) -> tuple[dict[str, Any], Path]:
+    lroot = Path(labs_root) if labs_root is not None else Path(os.environ.get("LABS_DIR", "labs"))
+    lab_dir = lroot / lab_id
+    cfg_path = lab_dir / "lab.config.json"
+    if not cfg_path.exists():
+        raise FileNotFoundError(f"Lab '{lab_id}' not found at {cfg_path}")
+    return json.loads(cfg_path.read_text(encoding="utf-8")), lab_dir
+
+
+def _load_qc_by_id(vault_dir: Path | None = None) -> dict[str, dict[str, Any]]:
+    vdir = Path(vault_dir) if vault_dir is not None else Path("code_engine/reasoning_vault")
+    out: dict[str, dict[str, Any]] = {}
+    if not vdir.exists():
+        return out
+    for vf in sorted(vdir.glob("*.json")):
+        data = json.loads(vf.read_text(encoding="utf-8"))
+        for arch in data.get("archetypes", []):
+            for c in arch.get("qualityChecks") or []:
+                if isinstance(c, dict) and c.get("id"):
+                    out[c["id"]] = c
+    return out
+
+
+def _lab_rubric(
+    ms: dict[str, Any],
+    level: int | None,
+    *,
+    vault_dir: Path | None = None,
+    universal_path: Path | None = None,
+) -> list[dict[str, Any]]:
+    universal = load_universal(universal_path)
+    qc_by_id = _load_qc_by_id(vault_dir)
+    out: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for c in universal:
+        if isinstance(c, dict) and c.get("id") and c["id"] not in seen:
+            seen.add(c["id"])
+            item: dict[str, Any] = {
+                "id": c["id"],
+                "check": c.get("check", ""),
+                "why": c.get("why", ""),
+                "severity": effective_severity(c, level),
+            }
+            if "accepted" in c:
+                item["accepted"] = c["accepted"]
+            out.append(item)
+    for cid in ms.get("qualityChecks") or []:
+        if cid in seen or cid not in qc_by_id:
+            continue
+        c = qc_by_id[cid]
+        seen.add(cid)
+        item = {
+            "id": c["id"],
+            "check": c.get("check", ""),
+            "why": c.get("why", ""),
+            "severity": effective_severity(c, level),
+        }
+        if "accepted" in c:
+            item["accepted"] = c["accepted"]
+        out.append(item)
+    return out
+
+
+def _run_lab_tests(test_files: list[Path], cwd: Path, src_dir: Path, *, force_hidden: bool) -> list[dict[str, Any]]:
+    if not test_files:
+        return []
+    is_ts = any(f.suffix in (".ts", ".tsx") for f in test_files)
+    cmd = ["node"]
+    if is_ts:
+        cmd.append("--experimental-strip-types")
+    cmd.extend(["--test", "--test-reporter=junit", *[str(f.resolve()) for f in test_files]])
+    env = dict(os.environ)
+    env["LAB_SRC_DIR"] = str(src_dir.resolve())
+    proc = subprocess.run(cmd, cwd=str(cwd), env=env, capture_output=True, text=True)
+    return _parse_junit_xml(proc.stdout + "\n" + proc.stderr, force_hidden=force_hidden)
+
+
+def _lint_lab_src(lab_dir: Path, src_dir: Path) -> list[dict[str, Any]]:
+    _, eslint_bin = get_lint_binaries()
+    cfg_path = lab_dir / "eslint.config.js"
+    cmd = [str(eslint_bin), "--format", "json"]
+    if cfg_path.exists():
+        cmd.extend(["--config", str(cfg_path.resolve())])
+    cmd.append(".")
+    proc = subprocess.run(cmd, cwd=str(src_dir), capture_output=True, text=True)
+    if proc.returncode not in (0, 1):
+        raise RuntimeError(f"ESLint failed (exit {proc.returncode}): {proc.stderr.strip() or proc.stdout.strip()}")
+    results = json.loads(proc.stdout or "[]")
+    findings: list[dict[str, Any]] = []
+    for res in results:
+        file_name = Path(res.get("filePath", "")).name
+        for msg in res.get("messages", []):
+            findings.append(
+                {
+                    "file": file_name,
+                    "rule": msg.get("ruleId") or "syntax",
+                    "line": int(msg.get("line", 0) or 0),
+                    "message": msg.get("message", ""),
+                }
+            )
+    return findings
+
+
+def _typecheck_lab(lab_dir: Path, src_files: list[Path]) -> list[dict[str, Any]]:
+    if not (lab_dir / "tsconfig.json").exists() and not any(f.suffix in (".ts", ".tsx") for f in src_files):
+        return []
+    tsc_bin = TOOLS_LINT_DIR / "node_modules" / ".bin" / "tsc"
+    if not tsc_bin.exists():
+        raise FileNotFoundError(f"TypeScript compiler not installed at {tsc_bin}. Run `npm ci` in tools/lint.")
+    proc = subprocess.run(
+        [str(tsc_bin), "--noEmit", "--pretty", "false"], cwd=str(lab_dir), capture_output=True, text=True
+    )
+    if proc.returncode == 0:
+        return []
+    diagnostics: list[dict[str, Any]] = []
+    combined = (proc.stdout or "") + "\n" + (proc.stderr or "")
+    for line in combined.splitlines():
+        m = _TSC_DIAG_RE.match(line.strip())
+        if m:
+            file_part, line_no, _col, msg = m.groups()
+            diagnostics.append({"file": Path(file_part).name, "line": int(line_no), "message": msg.strip()})
+        elif "error TS" in line:
+            diagnostics.append({"line": 0, "message": line.strip()})
+    return diagnostics
+
+
+def _run_lab_review_with_source(
+    lab_id: str,
+    milestone: str,
+    *,
+    labs_root: Path | None = None,
+    vault_dir: Path | None = None,
+    universal_path: Path | None = None,
+) -> tuple[dict[str, Any], str, dict[str, Any]]:
+    lab_cfg, lab_dir = _find_lab_config(lab_id, labs_root=labs_root)
+    target = milestone.upper()
+    ms = next((m for m in lab_cfg.get("milestones", []) if str(m.get("id", "")).upper() == target), None)
+    if ms is None:
+        avail = [m.get("id", "?") for m in lab_cfg.get("milestones", [])]
+        raise KeyError(f"Milestone '{milestone}' not found in {lab_id}. Available: {avail}")
+    mid = str(ms["id"])
+
+    src_dir = lab_dir / "src"
+    if not src_dir.is_dir():
+        raise FileNotFoundError(f"Lab src directory not found: {src_dir}")
+    src_files = sorted(list(src_dir.rglob("*.ts")) + list(src_dir.rglob("*.js")))
+    if not src_files:
+        raise FileNotFoundError(f"No source files found in {src_dir}")
+
+    src_text = "\n".join(f"// === {f.relative_to(lab_dir)} ===\n{f.read_text(encoding='utf-8')}" for f in src_files)
+    code_hash = f"sha256:{hashlib.sha256(src_text.encode('utf-8')).hexdigest()}"
+
+    vis_pattern = ms.get("visibleTests")
+    if isinstance(vis_pattern, str) and vis_pattern.strip():
+        vis_files = sorted(lab_dir.glob(vis_pattern))
+    elif isinstance(ms.get("testPattern"), str) and ms["testPattern"].strip():
+        vis_files = sorted(lab_dir.glob(f"tests/*{ms['testPattern']}*.test.*"))
+    else:
+        vis_files = []
+
+    cases = _run_lab_tests(vis_files, lab_dir, src_dir, force_hidden=False)
+    ref_hidden = lab_dir.parent / "_reference" / lab_id / "hidden"
+    if ref_hidden.is_dir():
+        all_hidden = sorted(list(ref_hidden.glob("*.test.ts")) + list(ref_hidden.glob("*.test.js")))
+        prefix = f"{mid.lower()}_"
+        hid_files = [f for f in all_hidden if f.name.lower().startswith(prefix)] or all_hidden
+        cases.extend(_run_lab_tests(hid_files, ref_hidden, src_dir, force_hidden=True))
+
+    passed = sum(1 for c in cases if c.get("passed"))
+    total = len(cases)
+    failed = [c["name"] for c in cases if not c.get("passed")]
+    lint = _lint_lab_src(lab_dir, src_dir)
+    typecheck = _typecheck_lab(lab_dir, src_files)
+
+    level = lab_cfg.get("level") if isinstance(lab_cfg.get("level"), int) else None
+    checks = _lab_rubric(ms, level, vault_dir=vault_dir, universal_path=universal_path)
+
+    synthetic_doc = {
+        "drillId": lab_id,
+        "labId": lab_id,
+        "unitCode": lab_cfg.get("chapterCode") or (lab_cfg.get("unitsUsed") or [""])[0],
+        "chapterCode": lab_cfg.get("chapterCode", ""),
+        "problems": [{"id": m["id"]} for m in lab_cfg.get("milestones", []) if isinstance(m, dict) and m.get("id")],
+    }
+    result = {
+        "labId": lab_id,
+        "drillId": lab_id,
+        "problemId": mid,
+        "milestone": mid,
+        "archetypeKey": None,
+        "level": level,
+        "codeHash": code_hash,
+        "tests": {"passed": passed, "total": total, "failed": failed},
+        "lint": lint,
+        "typecheck": typecheck,
+        "checks": checks,
+    }
+    return result, src_text, synthetic_doc
+
+
 def run_review_with_source(
     drill_id: str,
     qid: str,
@@ -140,8 +340,17 @@ def run_review_with_source(
     workspace_root: Path | None = None,
     vault_dir: Path | None = None,
     universal_path: Path | None = None,
+    labs_root: Path | None = None,
 ) -> tuple[dict[str, Any], str, dict[str, Any]]:
-    """Run Layer 1 + Layer 2 checks for one problem and return (result_dict, source_text, drill_doc)."""
+    """Run Layer 1 + Layer 2 checks for one problem or lab milestone and return (result_dict, source_text, doc)."""
+    if drill_id.startswith("LAB-"):
+        return _run_lab_review_with_source(
+            drill_id,
+            qid,
+            labs_root=labs_root,
+            vault_dir=vault_dir,
+            universal_path=universal_path,
+        )
     drill_doc, _ = find_drill_doc(drill_id, data_root)
     prob = find_problem(drill_doc, qid)
     pid = str(prob["id"])
@@ -196,8 +405,9 @@ def run_review(
     workspace_root: Path | None = None,
     vault_dir: Path | None = None,
     universal_path: Path | None = None,
+    labs_root: Path | None = None,
 ) -> dict[str, Any]:
-    """Run Layer 1 + Layer 2 checks for one problem (read-only) and return the structured report."""
+    """Run Layer 1 + Layer 2 checks for one problem or lab milestone (read-only) and return the structured report."""
     result, _, _ = run_review_with_source(
         drill_id,
         qid,
@@ -205,6 +415,7 @@ def run_review(
         workspace_root=workspace_root,
         vault_dir=vault_dir,
         universal_path=universal_path,
+        labs_root=labs_root,
     )
     return result
 

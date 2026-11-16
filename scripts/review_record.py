@@ -18,7 +18,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from code_engine.review_run import find_drill_doc, find_problem, run_review_with_source
+from code_engine.review_run import _find_lab_config, find_drill_doc, find_problem, run_review_with_source
 from progress_store import apply_progress, load_progress, save_progress
 from scripts.issues import add_issue
 
@@ -69,9 +69,26 @@ def _normalize_findings(
     return normalized
 
 
-def _load_or_init_doc(drill_id: str, drill_doc: dict[str, Any] | None = None) -> dict[str, Any]:
+def _load_or_init_doc(
+    drill_id: str,
+    drill_doc: dict[str, Any] | None = None,
+    *,
+    labs_root: Path | None = None,
+) -> dict[str, Any]:
     if drill_doc is None:
-        drill_doc, _ = find_drill_doc(drill_id)
+        if drill_id.startswith("LAB-"):
+            lab_cfg, _ = _find_lab_config(drill_id, labs_root=labs_root)
+            drill_doc = {
+                "drillId": drill_id,
+                "labId": drill_id,
+                "unitCode": lab_cfg.get("chapterCode") or (lab_cfg.get("unitsUsed") or [""])[0],
+                "chapterCode": lab_cfg.get("chapterCode", ""),
+                "problems": [
+                    {"id": m["id"]} for m in lab_cfg.get("milestones", []) if isinstance(m, dict) and m.get("id")
+                ],
+            }
+        else:
+            drill_doc, _ = find_drill_doc(drill_id)
     prog = load_progress(drill_id)
     apply_progress(drill_doc, prog)
     return drill_doc
@@ -87,6 +104,7 @@ def add_record(
     workspace_root: Path | None = None,
     vault_dir: Path | None = None,
     universal_path: Path | None = None,
+    labs_root: Path | None = None,
 ) -> dict[str, Any]:
     """Re-run review_run, validate findings against rubric, append record to progress, and return it."""
     review_res, src_text, drill_doc = run_review_with_source(
@@ -96,6 +114,7 @@ def add_record(
         workspace_root=workspace_root,
         vault_dir=vault_dir,
         universal_path=universal_path,
+        labs_root=labs_root,
     )
     rubric_by_id = {c["id"]: c for c in review_res["checks"]}
     findings = _normalize_findings(raw_findings, rubric_by_id)
