@@ -29,7 +29,7 @@ from code_engine.quality_checks import (  # noqa: E402
     load_archetype,
     load_universal,
 )
-from code_engine.submit import _parse_junit_xml, run_tests_junit  # noqa: E402
+from code_engine.submit import _parse_junit_xml, _run_vitest_junit, run_tests_junit  # noqa: E402
 from code_engine.workspace import ENVIRONMENT_PRESETS, get_entry_name  # noqa: E402
 from progress_store import labs_root as default_labs_root  # noqa: E402
 from progress_store import pilot_mode  # noqa: E402
@@ -211,6 +211,20 @@ def _lab_rubric(
 def _run_lab_tests(test_files: list[Path], cwd: Path, src_dir: Path, *, force_hidden: bool) -> list[dict[str, Any]]:
     if not test_files:
         return []
+    if any(f.suffix == ".tsx" for f in test_files):
+        shared_modules = TOOLS_LINT_DIR / "node_modules"
+        linked: list[Path] = []
+        for project_dir in dict.fromkeys((cwd.resolve(), src_dir.resolve().parent)):
+            link = project_dir / "node_modules"
+            if not link.exists() and not link.is_symlink():
+                link.symlink_to(shared_modules, target_is_directory=True)
+                linked.append(link)
+        env = {**os.environ, "LAB_SRC_DIR": str(src_dir.resolve())}
+        try:
+            return _run_vitest_junit(test_files, cwd, force_hidden=force_hidden, env=env)
+        finally:
+            for link in linked:
+                link.unlink(missing_ok=True)
     is_ts = any(f.suffix in (".ts", ".tsx") for f in test_files)
     cmd = ["node"]
     if is_ts:
@@ -254,9 +268,18 @@ def _typecheck_lab(lab_dir: Path, src_files: list[Path]) -> list[dict[str, Any]]
     tsc_bin = TOOLS_LINT_DIR / "node_modules" / ".bin" / "tsc"
     if not tsc_bin.exists():
         raise FileNotFoundError(f"TypeScript compiler not installed at {tsc_bin}. Run `npm ci` in tools/lint.")
-    proc = subprocess.run(
-        [str(tsc_bin), "--noEmit", "--pretty", "false"], cwd=str(lab_dir), capture_output=True, text=True
-    )
+    modules_link = lab_dir / "node_modules"
+    created_link = False
+    if not modules_link.exists() and not modules_link.is_symlink():
+        modules_link.symlink_to(TOOLS_LINT_DIR / "node_modules", target_is_directory=True)
+        created_link = True
+    try:
+        proc = subprocess.run(
+            [str(tsc_bin), "--noEmit", "--pretty", "false"], cwd=str(lab_dir), capture_output=True, text=True
+        )
+    finally:
+        if created_link:
+            modules_link.unlink(missing_ok=True)
     if proc.returncode == 0:
         return []
     diagnostics: list[dict[str, Any]] = []
@@ -290,7 +313,7 @@ def _run_lab_review_with_source(
     src_dir = lab_dir / "src"
     if not src_dir.is_dir():
         raise FileNotFoundError(f"Lab src directory not found: {src_dir}")
-    src_files = sorted(list(src_dir.rglob("*.ts")) + list(src_dir.rglob("*.js")))
+    src_files = sorted(list(src_dir.rglob("*.tsx")) + list(src_dir.rglob("*.ts")) + list(src_dir.rglob("*.js")))
     if not src_files:
         raise FileNotFoundError(f"No source files found in {src_dir}")
 
@@ -310,7 +333,11 @@ def _run_lab_review_with_source(
     if not ref_hidden.is_dir() and pilot_mode():
         ref_hidden = Path(os.environ.get("LABS_DIR", "labs")) / "_reference" / lab_id / "hidden"
     if ref_hidden.is_dir():
-        all_hidden = sorted(list(ref_hidden.glob("*.test.ts")) + list(ref_hidden.glob("*.test.js")))
+        all_hidden = sorted(
+            list(ref_hidden.glob("*.test.tsx"))
+            + list(ref_hidden.glob("*.test.ts"))
+            + list(ref_hidden.glob("*.test.js"))
+        )
         prefix = f"{mid.lower()}_"
         hid_files = [f for f in all_hidden if f.name.lower().startswith(prefix)] or all_hidden
         cases.extend(_run_lab_tests(hid_files, ref_hidden, src_dir, force_hidden=True))

@@ -1,0 +1,74 @@
+{
+  "unitCode": "PRG-T01-C03",
+  "unitTitle": "Recursion, Complexity & Core Data Structures",
+  "description": "Reason about time and space growth and use that model to improve data-intensive application code.",
+  "archetypes": [
+    {
+      "archetypeKey": "prg-c03-complexity-indexed-join",
+      "unitCode": "PRG-T01-C03-U01",
+      "level": 1,
+      "archetype": "refactoring",
+      "name": "Complexity-Aware Record Matching",
+      "competencies": [
+        "data-handling",
+        "performance-optimization",
+        "architecture-separation"
+      ],
+      "coreConcept": "Estimate how work grows with input size, then trade additional memory for fewer repeated searches when matching records by a stable key.",
+      "mentalModel": [
+        "Count how many times each input element is visited as the input grows.",
+        "A nested scan can compare each record against many records, producing quadratic growth.",
+        "Building a keyed index costs additional linear memory and setup work, then supports repeated constant-time average lookups."
+      ],
+      "governingInvariant": "Each record is indexed once and each matching record is emitted once in source order, with unmatched records excluded.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "repeated-nested-search",
+          "name": "Repeated Nested Search",
+          "description": "Keeping a full scan inside another full scan makes matching work grow roughly with the product of both collection sizes.",
+          "reproducer": "For two collections with n records each, compare each left record against every right record; the number of comparisons grows near n squared."
+        },
+        {
+          "trapTag": "time-space-tradeoff-ignored",
+          "name": "Ignoring the Index Memory Cost",
+          "description": "Claiming a faster lookup is free while omitting the auxiliary storage required to build the index.",
+          "reproducer": "Describe a keyed lookup as constant extra space even though a map retains one entry for each indexed record."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "shipment_manifest_reconciliation",
+          "description": "Matching shipment events to manifest entries using a shipment identifier while preserving event order."
+        }
+      ],
+      "usedContexts": [
+        "shipment_manifest_reconciliation",
+        "warehouse_pick_wave_reconciliation",
+        "billing_invoice_event_join",
+        "carrier_scan_route_summary"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-index-built-once",
+          "check": "Repeated record matching reuses an index built from the lookup collection instead of rescanning that full collection for every input record.",
+          "why": "Reusing the index changes repeated matching work from quadratic growth to linear expected work while making the memory tradeoff explicit.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function matchEvents(events, manifest) {\n  return events.filter((event) => manifest.some((entry) => entry.shipmentId === event.shipmentId));\n}",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-complexity-claims-account-for-inputs",
+          "check": "Complexity explanations identify which input sizes drive the work and include auxiliary storage when an index is retained.",
+          "why": "A complexity label without its input dimensions or memory cost can hide the real scaling limit and tradeoff.",
+          "severity": "should",
+          "knownBad": {
+            "code": "function findMatches(events, manifest) {\n  const index = new Map();\n  for (const entry of manifest) index.set(entry.shipmentId, entry);\n  return events.filter((event) => index.has(event.shipmentId));\n}\n// Claim: O(n) time and O(1) extra space for all input sizes.",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    }
+  ]
+}

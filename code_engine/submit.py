@@ -23,7 +23,7 @@ _REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
-from code_engine.workspace import resolve_test_imports  # noqa: E402
+from code_engine.workspace import build_react_test_header, resolve_test_imports  # noqa: E402
 from notion_sync.drill_sync import sync_drill_to_notion  # noqa: E402
 
 # ANSI Terminal Styling
@@ -106,10 +106,10 @@ def _parse_junit_xml(raw: str, force_hidden: bool = False) -> list:
     return cases
 
 
-def _write_hidden_test_file(tmp_dir: Path, ws_dir: Path, prob: dict, is_ts: bool) -> Path:
+def _write_hidden_test_file(tmp_dir: Path, ws_dir: Path, prob: dict, is_ts: bool, react_dom: bool = False) -> Path:
     pid = prob.get("id", "Q01")
     entry_name = prob.get("entryPoint") or pid.lower()
-    ext = "ts" if is_ts else "js"
+    ext = "tsx" if react_dom else ("ts" if is_ts else "js")
     src_abs = (ws_dir / f"{pid}_{entry_name}.{ext}").resolve()
 
     hidden_tests = prob.get("hiddenTests", [])
@@ -121,10 +121,15 @@ def _write_hidden_test_file(tmp_dir: Path, ws_dir: Path, prob: dict, is_ts: bool
     for idx, ht in enumerate(hidden_tests, 1):
         ht_name = json.dumps(f"[{pid}-HIDDEN-T{idx:02d}] " + ht.get("name", f"hidden trap scenario {idx}"))
         ht_code = ht.get("testCode", "").strip()
-        blocks.append(f"\ntest({ht_name}, async () => {{\n  {ht_code}\n}});\n")
+        if react_dom:
+            blocks.append(f"\ntest({ht_name}, async () => {{\n  {ht_code}\n}});\n")
+        else:
+            blocks.append(f"\ntest({ht_name}, async () => {{\n  {ht_code}\n}});\n")
 
     header = f"// Hidden Trap Test Suite for {pid}\n"
-    if is_ts:
+    if react_dom:
+        header += build_react_test_header(import_list, hidden_code, str(src_abs))
+    elif is_ts:
         header += "import test from 'node:test';\nimport assert from 'node:assert';\n"
         header += f"import {{ {import_list} }} from {json.dumps(src_abs.as_uri())};\n\n"
     else:
@@ -193,35 +198,40 @@ def run_tests_junit(
     hiddenTests are executed.
     """
     ws_dir = Path(ws_dir).resolve()
+    react_dom = (drill_doc or {}).get("environment") == "react-dom"
+    tsx_files = sorted(ws_dir.glob("*.test.tsx"))
     ts_files = sorted(ws_dir.glob("*.test.ts"))
     js_files = sorted(ws_dir.glob("*.test.js"))
-    is_ts = bool(ts_files)
-    visible_files = ts_files if is_ts else js_files
+    is_ts = bool(ts_files or tsx_files)
+    visible_files = tsx_files if react_dom or tsx_files else (ts_files if is_ts else js_files)
     if problem_id is not None:
         target = problem_id.upper()
         visible_files = [f for f in visible_files if f.name.split("_", 1)[0].upper() == target]
 
     cases = []
-    for vf in visible_files:
-        cmd = ["node"]
-        if is_ts:
-            cmd.append("--experimental-strip-types")
-        cmd.extend(["--test", "--test-reporter=junit", str(vf)])
-        stem_prefix = vf.name.split("_", 1)[0].upper()
-        qid_hint = stem_prefix if re.match(r"^Q\d+$", stem_prefix) else (problem_id or "Q01").upper()
-        parsed = _run_node_junit_cmd(
-            cmd,
-            cwd=ws_dir,
-            force_hidden=False,
-            timeout_sec=timeout_sec,
-            file_hint=vf.name,
-            qid_hint=qid_hint,
-        )
-        if re.match(r"^Q\d+$", stem_prefix):
-            for tc in parsed:
-                if not tc.get("file"):
-                    tc["file"] = vf.name
-        cases.extend(parsed)
+    if react_dom or any(vf.suffix == ".tsx" for vf in visible_files):
+        cases.extend(_run_vitest_junit(visible_files, ws_dir, timeout_sec=timeout_sec))
+    else:
+        for vf in visible_files:
+            cmd = ["node"]
+            if is_ts:
+                cmd.append("--experimental-strip-types")
+            cmd.extend(["--test", "--test-reporter=junit", str(vf)])
+            stem_prefix = vf.name.split("_", 1)[0].upper()
+            qid_hint = stem_prefix if re.match(r"^Q\d+$", stem_prefix) else (problem_id or "Q01").upper()
+            parsed = _run_node_junit_cmd(
+                cmd,
+                cwd=ws_dir,
+                force_hidden=False,
+                timeout_sec=timeout_sec,
+                file_hint=vf.name,
+                qid_hint=qid_hint,
+            )
+            if re.match(r"^Q\d+$", stem_prefix):
+                for tc in parsed:
+                    if not tc.get("file"):
+                        tc["file"] = vf.name
+            cases.extend(parsed)
 
     hidden_probs = [
         p
@@ -229,25 +239,112 @@ def run_tests_junit(
         if p.get("hiddenTests") and (problem_id is None or str(p.get("id", "")).upper() == problem_id.upper())
     ]
     if hidden_probs:
-        with tempfile.TemporaryDirectory(prefix="prg_hidden_") as tmp_str:
+        shared_tools = _REPO_ROOT / "tools" / "lint"
+        with tempfile.TemporaryDirectory(prefix="prg_hidden_", dir=shared_tools if react_dom else None) as tmp_str:
             tmp_dir = Path(tmp_str)
-            hidden_files = [_write_hidden_test_file(tmp_dir, ws_dir, prob, is_ts) for prob in hidden_probs]
-            cmd = ["node"]
-            if is_ts:
-                cmd.append("--experimental-strip-types")
-            cmd.extend(["--test", "--test-reporter=junit", *[str(f) for f in hidden_files]])
+            hidden_files = [
+                _write_hidden_test_file(tmp_dir, ws_dir, prob, is_ts, react_dom=react_dom) for prob in hidden_probs
+            ]
             qid_hint = str(hidden_probs[0].get("id") or problem_id or "Q01").upper()
-            cases.extend(
-                _run_node_junit_cmd(
-                    cmd,
-                    cwd=tmp_dir,
-                    force_hidden=True,
-                    timeout_sec=timeout_sec,
-                    qid_hint=qid_hint,
+            if react_dom:
+                cases.extend(_run_vitest_junit(hidden_files, tmp_dir, timeout_sec=timeout_sec, force_hidden=True))
+            else:
+                cmd = ["node"]
+                if is_ts:
+                    cmd.append("--experimental-strip-types")
+                cmd.extend(["--test", "--test-reporter=junit", *[str(f) for f in hidden_files]])
+                cases.extend(
+                    _run_node_junit_cmd(
+                        cmd,
+                        cwd=tmp_dir,
+                        force_hidden=True,
+                        timeout_sec=timeout_sec,
+                        qid_hint=qid_hint,
+                    )
                 )
-            )
 
     return cases
+
+
+def _run_vitest_junit(
+    test_files: list[Path],
+    cwd: Path,
+    *,
+    timeout_sec: float | None = None,
+    force_hidden: bool = False,
+    env: dict[str, str] | None = None,
+) -> list[dict]:
+    """Run React component tests with shared Vitest and return the standard JUnit cases."""
+    vitest = _REPO_ROOT / "tools" / "lint" / "node_modules" / ".bin" / "vitest"
+    if not vitest.is_file():
+        return [
+            {
+                "name": "React runner unavailable",
+                "file": "",
+                "classname": "",
+                "passed": False,
+                "failure_msg": f"Vitest is missing at {vitest}; run npm ci in tools/lint.",
+                "is_hidden": force_hidden,
+            }
+        ]
+    config_path = cwd / "vitest.config.ts"
+    generated_config = not config_path.is_file()
+    if generated_config:
+        config_path = cwd / ".codex.vitest.config.ts"
+        config_path.write_text(
+            "import { defineConfig } from 'vitest/config';\n"
+            "export default defineConfig({ esbuild: { jsx: 'automatic' }, test: { environment: 'jsdom' } });\n",
+            encoding="utf-8",
+        )
+    with tempfile.NamedTemporaryFile(prefix="prg_vitest_", suffix=".xml", delete=False) as out:
+        report_path = Path(out.name)
+    try:
+        cmd = [
+            str(vitest),
+            "run",
+            *[str(f) for f in test_files],
+            "--config",
+            str(config_path),
+            "--environment",
+            "jsdom",
+            "--reporter=junit",
+            f"--outputFile={report_path}",
+        ]
+        run_kwargs: dict = {"cwd": cwd, "capture_output": True, "text": True}
+        if timeout_sec is not None:
+            run_kwargs["timeout"] = timeout_sec
+        try:
+            proc = subprocess.run(cmd, env=env, **run_kwargs)
+        except subprocess.TimeoutExpired:
+            return [
+                {
+                    "name": "React test timeout",
+                    "file": "",
+                    "classname": "",
+                    "passed": False,
+                    "failure_msg": f"Execution exceeded {timeout_sec}s limit",
+                    "is_hidden": force_hidden,
+                }
+            ]
+        raw = report_path.read_text(encoding="utf-8") if report_path.is_file() else ""
+        cases = _parse_junit_xml(raw, force_hidden=force_hidden)
+        if not cases:
+            message = (proc.stderr or proc.stdout or f"Vitest exited with code {proc.returncode}").strip()
+            return [
+                {
+                    "name": "React test execution failure",
+                    "file": "",
+                    "classname": "",
+                    "passed": False,
+                    "failure_msg": message,
+                    "is_hidden": force_hidden,
+                }
+            ]
+        return cases
+    finally:
+        report_path.unlink(missing_ok=True)
+        if generated_config:
+            config_path.unlink(missing_ok=True)
 
 
 def extract_qid(tc: dict, default: str = "Q01") -> str:

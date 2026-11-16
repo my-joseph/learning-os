@@ -1,0 +1,410 @@
+{
+  "unitCode": "PRG-T01-C03-U01",
+  "unitTitle": "Big-O Intuition & Time/Space Tradeoffs",
+  "environment": "node-vanilla",
+  "sourceAttribution": "MDN JavaScript Guide (Map and Set reference); original shipment reconciliation scenarios authored for this drill.",
+  "config": {
+    "questionCount": 4,
+    "difficulty": "ALL",
+    "difficultyMode": "AI Synthesized Engineering Mode"
+  },
+  "problems": [
+    {
+      "id": "Q01",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "refactoring",
+      "codeType": "trace-explain",
+      "archetypeKey": "prg-c03-complexity-indexed-join",
+      "commonTrapTag": "repeated-nested-search",
+      "context": "shipment_manifest_reconciliation",
+      "entryPoint": "countManifestReads",
+      "prompt": "Trace the shipment reconciliation snippet and predict the exact labeled output lines. Then explain how the number of manifest records inspected changes as the event and manifest collections grow.\n\n**Requirements:**\n- Record one `label:count` line for each event batch, in order.\n- A lookup stops after its first matching `shipmentId`; an unmatched event inspects every manifest record.\n- Include the zero-work boundary represented by the empty event batch.\n\n**Return Contract:**\n- Return the predicted lines as a `string[]` from the trace recorder.\n\n**Snippet:**\n```js\nconst manifest = [{ shipmentId: 'S-0' }, { shipmentId: 'S-1' }, { shipmentId: 'S-2' }];\nconst eventBatches = [{ label: 'small', events: [{ shipmentId: 'missing-a' }, { shipmentId: 'missing-b' }] }, { label: 'large', events: [{ shipmentId: 'missing-a' }, { shipmentId: 'missing-b' }, { shipmentId: 'missing-c' }, { shipmentId: 'missing-d' }] }, { label: 'empty', events: [] }];\nfunction countReads(events, manifest) {\n  let reads = 0;\n  for (const event of events) {\n    manifest.some((entry) => { reads += 1; return entry.shipmentId === event.shipmentId; });\n  }\n  return reads;\n}\nconsole.log(eventBatches.map((batch) => `${batch.label}:${countReads(batch.events, manifest)}`).join('\\n'));\n```",
+      "inputHint": "Consider how repeated membership checks scale across two input collections.",
+      "starterCode": "function countManifestReads(_eventBatches, _manifest) {\n  return [];\n}\nmodule.exports = { countManifestReads };\n",
+      "solutionCode": "function countManifestReads() {\n  const manifestSize = 3;\n  const eventBatchSizes = [2, 4, 0];\n  const labels = ['small', 'large', 'empty'];\n  return eventBatchSizes.map((eventCount, index) => `${labels[index]}:${eventCount * manifestSize}`);\n}\nmodule.exports = { countManifestReads };\n",
+      "trapMutant": "function countManifestReads(eventBatches, manifest) {\n  return eventBatches.map((batch) => `${batch.label}:${batch.events.length}`);\n}\nmodule.exports = { countManifestReads };\n",
+      "visibleTests": [
+        {
+          "name": "returns predicted lines in trace order",
+          "testCode": "assert.deepStrictEqual(countManifestReads(), ['small:6', 'large:12', 'empty:0']);"
+        },
+        {
+          "name": "returns a fresh result list",
+          "testCode": "const first = countManifestReads(); first.pop(); assert.strictEqual(countManifestReads().length, 3);"
+        },
+        {
+          "name": "includes the empty-input boundary from the snippet",
+          "testCode": "assert.strictEqual(countManifestReads()[2], 'empty:0');"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "trace shows work scales with both collection sizes",
+          "testCode": "const trace = countManifestReads(); assert.strictEqual(trace[0], 'small:6'); assert.strictEqual(trace[1], 'large:12');"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "The snippet visits manifest entries in order and stops at the first matching identifier; misses traverse the whole manifest."
+        },
+        {
+          "explain": "With M manifest entries and N unmatched events, the nested work is N × M. When both inputs grow together, this becomes quadratic; the trace makes the inspected comparisons countable."
+        }
+      ],
+      "verificationLevel": "partial",
+      "answerSpec": {
+        "tokens": [
+          "small:6",
+          "large:12",
+          "empty:0"
+        ]
+      },
+      "codeSnippet": "const manifest = [{ shipmentId: 'S-0' }, { shipmentId: 'S-1' }, { shipmentId: 'S-2' }];\nconst eventBatches = [{ label: 'small', events: [{ shipmentId: 'missing-a' }, { shipmentId: 'missing-b' }] }, { label: 'large', events: [{ shipmentId: 'missing-a' }, { shipmentId: 'missing-b' }, { shipmentId: 'missing-c' }, { shipmentId: 'missing-d' }] }, { label: 'empty', events: [] }];\nfunction countReads(events, manifest) {\n  let reads = 0;\n  for (const event of events) {\n    manifest.some((entry) => { reads += 1; return entry.shipmentId === event.shipmentId; });\n  }\n  return reads;\n}\nconsole.log(eventBatches.map((batch) => `${batch.label}:${countReads(batch.events, manifest)}`).join('\\n'));",
+      "form": "direct",
+      "fingerprint": "repeated-nested-search|direct|const manifest = [{ shipmentId: 'S-#' }, { shipmentId: 'S-#' }, { shipmentId: 'S-#' }]; const eventBatches = [{ label: 'small', events: [{ shipmentId: 'missing-a' }, { shipmentId: 'missing-b' }] }, { label: 'large', events: [{ shipmentId: 'missing-a' }, { shipmentId: 'missing-b' }, { shipmentId: 'missing-c' }, { shipmentId: 'missing-d' }] }, { label: 'empty', events: [] }]; function countReads(events, manifest) { let reads = #; for (const event of events) { manifest.some((entry) => { reads += #; return entry.shipmentId === event.shipmentId; }); } return reads; } console.log(eventBatches.map((batch) => `${batch.label}:${countReads(batch.events, manifest)}`).join('\\n'));",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "refactoring"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "repeated-nested-search",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 4
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Foundation",
+      "unitCode": "PRG-T01-C03-U01",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-U01-01/Q01_countManifestReads.js"
+    },
+    {
+      "id": "Q02",
+      "level": 2,
+      "category": "Trap & Edge Case",
+      "archetype": "refactoring",
+      "codeType": "refactor",
+      "archetypeKey": "prg-c03-complexity-indexed-join",
+      "commonTrapTag": "repeated-nested-search",
+      "context": "warehouse_pick_wave_reconciliation",
+      "entryPoint": "uniqueShipmentEvents",
+      "prompt": "Refactor `uniqueShipmentEvents(events)` for a shipment feed processor. It should retain only the first event for each shipment identifier while preserving the order in which identifiers first appear.\n\n**Requirements:**\n- Do not mutate the input or event objects.\n- Return an empty array for an empty feed.\n- Improve the repeated-search implementation for larger event batches.\n\n**Return Contract:**\n- Return a new array containing the first event for each `shipmentId`.",
+      "inputHint": "Consider how to remember identifiers already encountered during one pass.",
+      "starterCode": "function uniqueShipmentEvents(events) {\n  return events.filter((event, index) => events.findIndex((candidate) => candidate.shipmentId === event.shipmentId) === index);\n}\nmodule.exports = { uniqueShipmentEvents };\n",
+      "solutionCode": "function uniqueShipmentEvents(events) {\n  const seenShipmentIds = new Set();\n  const uniqueEvents = [];\n  for (const event of events) {\n    if (seenShipmentIds.has(event.shipmentId)) continue;\n    seenShipmentIds.add(event.shipmentId);\n    uniqueEvents.push(event);\n  }\n  return uniqueEvents;\n}\nmodule.exports = { uniqueShipmentEvents };\n",
+      "trapMutant": "function uniqueShipmentEvents(events) {\n  return events.filter((event, index) => events.findIndex((candidate) => candidate.shipmentId === event.shipmentId) === index);\n}\nmodule.exports = { uniqueShipmentEvents };\n",
+      "visibleTests": [
+        {
+          "name": "keeps the first event for each identifier in arrival order",
+          "testCode": "const events = [{ shipmentId: 'S-4', scan: 'arrived' }, { shipmentId: 'S-2' }, { shipmentId: 'S-4', scan: 'loaded' }];\nassert.deepStrictEqual(uniqueShipmentEvents(events), [events[0], events[1]]);"
+        },
+        {
+          "name": "returns an empty array for an empty feed",
+          "testCode": "assert.deepStrictEqual(uniqueShipmentEvents([]), []);"
+        },
+        {
+          "name": "does not repeat full prefix searches",
+          "testCode": "let reads = 0; const events = new Proxy(Array.from({ length: 30 }, (_, index) => ({ shipmentId: `S-${index}` })), { get(target, key, receiver) { if (/^\\d+$/.test(String(key))) reads += 1; return Reflect.get(target, key, receiver); } });\nuniqueShipmentEvents(events); assert.ok(reads < 150);"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "does not mutate input array or event objects",
+          "testCode": "const events = [{ shipmentId: 'S-1' }, { shipmentId: 'S-1', mark: 2 }]; const before = JSON.stringify(events);\nuniqueShipmentEvents(events); assert.strictEqual(JSON.stringify(events), before);"
+        },
+        {
+          "name": "handles all duplicate identifiers without reordering first occurrences",
+          "testCode": "const events = [{ shipmentId: 'S-8', n: 1 }, { shipmentId: 'S-8', n: 2 }, { shipmentId: 'S-3' }];\nassert.deepStrictEqual(uniqueShipmentEvents(events), [events[0], events[2]]);"
+        },
+        {
+          "name": "limits repeated input traversal",
+          "testCode": "let reads = 0; const events = new Proxy(Array.from({ length: 40 }, (_, index) => ({ shipmentId: `S-${index}` })), { get(target, key, receiver) { if (/^\\d+$/.test(String(key))) reads += 1; return Reflect.get(target, key, receiver); } });\nuniqueShipmentEvents(events); assert.ok(reads < 180);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Searching the already-seen prefix for every event can perform a triangular number of comparisons and therefore quadratic work."
+        },
+        {
+          "explain": "A Set records each identifier once during one pass. The expected time and auxiliary space are both O(N), while first-seen order remains in the output array."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "repeated-nested-search|direct|uniqueShipmentEvents",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "refactoring"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "repeated-nested-search",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 4
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Standard Exam",
+      "unitCode": "PRG-T01-C03-U01",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-U01-01/Q02_uniqueShipmentEvents.js"
+    },
+    {
+      "id": "Q03",
+      "level": 2,
+      "category": "Refactor & Design",
+      "archetype": "refactoring",
+      "codeType": "refactor",
+      "archetypeKey": "prg-c03-complexity-indexed-join",
+      "commonTrapTag": "repeated-nested-search",
+      "context": "billing_invoice_event_join",
+      "entryPoint": "joinInvoiceEvents",
+      "prompt": "A billing pipeline joins invoice events to an invoice catalog. The current implementation repeatedly searches the catalog and its runtime grows sharply when both inputs grow. Refactor `joinInvoiceEvents(events, invoices)` without changing the returned records.\n\n**Requirements:**\n- Match using `invoiceId`; return matching event objects in event order, preserving repeated events.\n- Handle empty inputs and unmatched IDs, and do not mutate inputs.\n- Keep the catalog-derived lookup local to the call so separate calls cannot affect one another.\n\n**Return Contract:**\n- Return a new array of original matching event objects.",
+      "inputHint": "Account for setup work, repeated lookups, retained memory, and call isolation.",
+      "starterCode": "function joinInvoiceEvents(events, invoices) {\n  return events.filter((event) => invoices.some((invoice) => invoice.invoiceId === event.invoiceId));\n}\nmodule.exports = { joinInvoiceEvents };\n",
+      "solutionCode": "function joinInvoiceEvents(events, invoices) {\n  const invoiceIds = new Set();\n  for (const invoice of invoices) invoiceIds.add(invoice.invoiceId);\n  return events.filter((event) => invoiceIds.has(event.invoiceId));\n}\nmodule.exports = { joinInvoiceEvents };\n",
+      "trapMutant": "function joinInvoiceEvents(events, invoices) {\n  return events.filter((event) => invoices.some((invoice) => invoice.invoiceId === event.invoiceId));\n}\nmodule.exports = { joinInvoiceEvents };\n",
+      "visibleTests": [
+        {
+          "name": "returns matching events while preserving their order",
+          "testCode": "const events = [{ invoiceId: 'I-4' }, { invoiceId: 'I-2' }, { invoiceId: 'I-4' }];\nassert.deepStrictEqual(joinInvoiceEvents(events, [{ invoiceId: 'I-4' }]), [events[0], events[2]]);"
+        },
+        {
+          "name": "handles missing catalog entries",
+          "testCode": "assert.deepStrictEqual(joinInvoiceEvents([{ invoiceId: 'I-8' }], []), []);"
+        },
+        {
+          "name": "keeps catalog reads linear",
+          "testCode": "let reads = 0; const invoices = Array.from({ length: 40 }, (_, index) => ({ get invoiceId() { reads += 1; return `I-${index}`; } }));\nconst events = Array.from({ length: 30 }, (_, index) => ({ invoiceId: `I-${index}` }));\njoinInvoiceEvents(events, invoices); assert.ok(reads < 250);"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "does not retain identifiers between calls",
+          "testCode": "assert.deepStrictEqual(joinInvoiceEvents([{ invoiceId: 'I-5' }], [{ invoiceId: 'I-5' }]).length, 1);\nassert.deepStrictEqual(joinInvoiceEvents([{ invoiceId: 'I-5' }], []).length, 0);"
+        },
+        {
+          "name": "does not mutate event or catalog records",
+          "testCode": "const events = [{ invoiceId: 'I-5' }]; const invoices = [{ invoiceId: 'I-5' }];\njoinInvoiceEvents(events, invoices);\nassert.deepStrictEqual(events, [{ invoiceId: 'I-5' }]); assert.deepStrictEqual(invoices, [{ invoiceId: 'I-5' }]);"
+        },
+        {
+          "name": "avoids repeated invoice catalog reads",
+          "testCode": "let reads = 0; const invoices = Array.from({ length: 40 }, (_, index) => ({ get invoiceId() { reads += 1; return `I-${index}`; } }));\nconst events = Array.from({ length: 30 }, (_, index) => ({ invoiceId: `I-${index}` }));\njoinInvoiceEvents(events, invoices); assert.ok(reads < 250);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Repeated catalog scans multiply the event count by the invoice count."
+        },
+        {
+          "explain": "A local index is built and queried once per event, using O(M) auxiliary space and O(N + M) expected time without cross-call state."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "repeated-nested-search|direct|joinInvoiceEvents",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "refactoring"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "repeated-nested-search",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 4
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Standard Exam",
+      "unitCode": "PRG-T01-C03-U01",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-U01-01/Q03_joinInvoiceEvents.js"
+    },
+    {
+      "id": "Q04",
+      "level": 2,
+      "category": "Performance & Optimization",
+      "archetype": "refactoring",
+      "codeType": "refactor",
+      "archetypeKey": "prg-c03-complexity-indexed-join",
+      "commonTrapTag": "repeated-nested-search",
+      "context": "carrier_scan_route_summary",
+      "entryPoint": "summarizeCarrierScans",
+      "prompt": "Refactor `summarizeCarrierScans(scans)` for a carrier operations dashboard. The current implementation searches its growing summary for every incoming scan. Improve the scaling while preserving first-seen route order.\n\n**Requirements:**\n- Count scans per `routeId` and return each route once in first-seen order.\n- Do not mutate the scan list or scan records. Return an empty array for no scans.\n- Explain the expected time and auxiliary space used by your design.\n\n**Return Contract:**\n- Return an array of `{ routeId, scanCount }` records.",
+      "inputHint": "Consider the cost of finding an existing group as the summary grows.",
+      "starterCode": "function summarizeCarrierScans(scans) {\n  const summaries = [];\n  for (const scan of scans) {\n    const existing = summaries.find((summary) => summary.routeId === scan.routeId);\n    if (existing) existing.scanCount += 1;\n    else summaries.push({ routeId: scan.routeId, scanCount: 1 });\n  }\n  return summaries;\n}\nmodule.exports = { summarizeCarrierScans };\n",
+      "solutionCode": "function summarizeCarrierScans(scans) {\n  const countsByRoute = new Map();\n  for (const scan of scans) {\n    countsByRoute.set(scan.routeId, (countsByRoute.get(scan.routeId) ?? 0) + 1);\n  }\n  return Array.from(countsByRoute, ([routeId, scanCount]) => ({ routeId, scanCount }));\n}\nmodule.exports = { summarizeCarrierScans };\n",
+      "trapMutant": "function summarizeCarrierScans(scans) {\n  const summaries = [];\n  for (const scan of scans) {\n    const existing = summaries.find((summary) => summary.routeId === scan.routeId);\n    if (existing) existing.scanCount += 1;\n    else summaries.push({ routeId: scan.routeId, scanCount: 1 });\n  }\n  return summaries;\n}\nmodule.exports = { summarizeCarrierScans };\n",
+      "visibleTests": [
+        {
+          "name": "counts each route in first-seen order",
+          "testCode": "assert.deepStrictEqual(summarizeCarrierScans([{ routeId: 'R-4' }, { routeId: 'R-2' }, { routeId: 'R-4' }]), [{ routeId: 'R-4', scanCount: 2 }, { routeId: 'R-2', scanCount: 1 }]);"
+        },
+        {
+          "name": "returns an empty summary for no scans",
+          "testCode": "assert.deepStrictEqual(summarizeCarrierScans([]), []);"
+        },
+        {
+          "name": "does not repeatedly search an expanding summary",
+          "testCode": "let reads = 0; const scans = Array.from({ length: 30 }, (_, index) => ({ get routeId() { reads += 1; return `R-${index}`; } }));\nassert.strictEqual(summarizeCarrierScans(scans).length, 30); assert.ok(reads < 200);"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "uses isolated state between independent batches",
+          "testCode": "summarizeCarrierScans([{ routeId: 'R-5' }]);\nassert.deepStrictEqual(summarizeCarrierScans([]), []);"
+        },
+        {
+          "name": "does not mutate source scans",
+          "testCode": "const scans = [{ routeId: 'R-5' }, { routeId: 'R-5' }]; const before = JSON.stringify(scans);\nsummarizeCarrierScans(scans); assert.strictEqual(JSON.stringify(scans), before);"
+        },
+        {
+          "name": "keeps route comparisons from growing quadratically",
+          "testCode": "let reads = 0; const scans = Array.from({ length: 30 }, (_, index) => ({ get routeId() { reads += 1; return `R-${index}`; } }));\nsummarizeCarrierScans(scans); assert.ok(reads < 200);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Searching the accumulated summary for each scan can compare each scan with many earlier groups, producing quadratic growth when most route IDs are distinct."
+        },
+        {
+          "explain": "A per-call Map tracks each route count and preserves insertion order. Expected time is O(N), with O(K) auxiliary space for K distinct routes."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "repeated-nested-search|direct|summarizeCarrierScans",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "refactoring"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "repeated-nested-search",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 4
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Standard Exam",
+      "unitCode": "PRG-T01-C03-U01",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-U01-01/Q04_summarizeCarrierScans.js"
+    }
+  ],
+  "blindSolve": [
+    {
+      "problemId": "Q01",
+      "passed": true
+    },
+    {
+      "problemId": "Q02",
+      "passed": true
+    },
+    {
+      "problemId": "Q03",
+      "passed": true
+    },
+    {
+      "problemId": "Q04",
+      "passed": true
+    }
+  ],
+  "review": {
+    "verdict": "pass",
+    "note": "All four problems are correct and unambiguous, fit the requested one trace-explain/three refactor mix with varied operational contexts, target the repeated-search trap with distinguishing tests, and include no answer leaks or material Layer 2/qualityChecks concerns."
+  },
+  "drillId": "DRL-PRG-T01-C03-U01-01",
+  "topicCode": "PRG-T01",
+  "chapterCode": "PRG-T01-C03",
+  "schemaVersion": "2.0-code",
+  "subject": "PRG",
+  "createdAt": "2026-11-17 01:25:03",
+  "localFilePath": "drills/data/PRG-T01-C03-U01/DRL-PRG-T01-C03-U01-01.json"
+}

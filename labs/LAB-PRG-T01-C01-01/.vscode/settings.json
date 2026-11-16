@@ -1,0 +1,5 @@
+{
+  "files.exclude": {
+    "../_reference/LAB-PRG-T01-C01-01/**": true
+  }
+}
