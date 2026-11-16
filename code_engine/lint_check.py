@@ -67,6 +67,21 @@ def lint_code_snippet(
         target_name = f"{filename}.{ext}"
         target_path = tmp_path / target_name
         target_path.write_text(code.rstrip() + "\n", encoding="utf-8")
+        if ext in ("ts", "tsx"):
+            tsconfig_data: dict[str, Any] = {
+                "compilerOptions": {
+                    "target": "ES2024",
+                    "module": "NodeNext",
+                    "moduleResolution": "NodeNext",
+                    "strict": True,
+                    "noEmit": True,
+                    "skipLibCheck": True,
+                },
+                "include": ["*.ts", "*.tsx"],
+            }
+            if ext == "tsx":
+                tsconfig_data["compilerOptions"]["jsx"] = "react-jsx"
+            (tmp_path / "tsconfig.json").write_text(json.dumps(tsconfig_data), encoding="utf-8")
 
         proc = subprocess.run(
             [str(eslint_bin), "--format", "json", target_name],
