@@ -184,14 +184,14 @@
         {
           "fn": "build_rectangle_figure",
           "args": {
-            "width": "P / 4",
+            "width": "y_max",
             "height": "P / 4"
           },
           "labels": {
-            "label_w": "y = ?",
+            "label_w": "y = ? (along river)",
             "label_h": "x = ?"
           },
-          "title": "Rectangular Enclosure"
+          "title": "Pasture along a river"
         },
         {
           "fn": "build_rectangle_figure",

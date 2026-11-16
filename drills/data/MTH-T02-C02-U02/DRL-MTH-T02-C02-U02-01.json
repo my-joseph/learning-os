@@ -20,10 +20,12 @@
         "b": 10,
         "c": 21
       },
-      "constants": {},
+      "constants": {
+        "zero": 0
+      },
       "trapGivens": [
-        5,
-        10
+        0,
+        5
       ],
       "answerSpec": {
         "type": "solution_set",
@@ -37,13 +39,13 @@
       "answerDisplay": "\\{3,\\; 7\\}",
       "inputHint": "Enter all excluded values separated by a comma",
       "commonTrapTag": "t02-c02-u02-numerator-zero-excluded-trap",
-      "trapDerivation": "5 - 10",
+      "trapDerivation": "0 - 5",
       "trapValue": "-5",
       "verify": {
         "source": "3 + 7",
         "trapValue": "-5"
       },
-      "checkpointHint": "Domain exclusions come from values that make the denominator zero, never from values that make the numerator zero.",
+      "checkpointHint": "Substitute each value you plan to exclude into the original expression and confirm the expression is really undefined there.",
       "references": [
         "MTH-T02-C02-U02"
       ],
@@ -156,7 +158,7 @@
         "source": "2 * (2 - 2)^2 + 3",
         "trapValue": "11"
       },
-      "checkpointHint": "Check whether the parabola's vertex lies inside the given domain interval before comparing endpoint heights.",
+      "checkpointHint": "Before answering, trace the whole graph and confirm that no point on it lies lower than your answer.",
       "references": [
         "MTH-T02-C02-U02"
       ],
@@ -853,7 +855,7 @@
         "source": "3 * 4",
         "trapValue": "-12"
       },
-      "checkpointHint": "Set the radicand strictly greater than zero, solve for x in terms of the unknown constant, and match the boundary to the given open endpoint.",
+      "checkpointHint": "With your constant in place, test an input on each side of the given endpoint and confirm the function is defined exactly where the stated domain says.",
       "references": [
         "MTH-T02-C02-U02"
       ],
@@ -1198,7 +1200,7 @@
       "id": "Q06",
       "level": 3,
       "category": "Core Skill",
-      "form": "choose",
+      "form": "direct",
       "archetype": "problem-solving",
       "archetypeKey": "t02-c02-u02-combined-domain-restrictions-diagnose",
       "context": "",
@@ -1215,9 +1217,9 @@
       },
       "constants": {},
       "trapGivens": [
+        2,
         7,
-        5,
-        2
+        8
       ],
       "answerSpec": {
         "type": "number",
@@ -1227,14 +1229,14 @@
       "answerPlain": "28",
       "answerDisplay": "28",
       "inputHint": "Enter an integer",
-      "commonTrapTag": "t02-c02-u02-canceled-factor-before-domain-trap",
-      "trapDerivation": "7 * 5 - 2",
-      "trapValue": "33",
+      "commonTrapTag": "t02-c02-u02-radical-negative-or-zero-endpoint-trap",
+      "trapDerivation": "2 + 3 + 4 + 6 + 7 + 8",
+      "trapValue": "30",
       "verify": {
         "source": "3 + 4 + 6 + 7 + 8",
-        "trapValue": "33"
+        "trapValue": "30"
       },
-      "checkpointHint": "Factor the denominator from the original expression before simplifying, then check each integer in the interval against every restriction.",
+      "checkpointHint": "Test each integer you keep in the original formula and confirm that every part of it is defined there.",
       "references": [
         "MTH-T02-C02-U02"
       ],
@@ -1285,7 +1287,7 @@
         }
       ],
       "unitCode": "MTH-T02-C02-U02",
-      "fingerprint": "t02-c02-u02-canceled-factor-before-domain-trap|choose|Sum of integers in [#, #] in the domain of f(x) = (x - #)sqrt(x - #) / (x^# - #x + #)",
+      "fingerprint": "t02-c02-u02-radical-negative-or-zero-endpoint-trap|direct|Sum of integers in [#, #] in the domain of f(x) = (x - #)sqrt(x - #) / (x^# - #x + #)",
       "qualityGates": {
         "G1": {
           "passed": true,
@@ -1304,7 +1306,7 @@
         },
         "G4": {
           "passed": true,
-          "trapTag": "t02-c02-u02-canceled-factor-before-domain-trap",
+          "trapTag": "t02-c02-u02-radical-negative-or-zero-endpoint-trap",
           "trapValueVerified": true,
           "weakDistractors": 0,
           "provenanceDistractors": 0
@@ -1353,7 +1355,7 @@
       },
       "answerPlain": "25",
       "answerDisplay": "25",
-      "inputHint": "Enter a number in meters",
+      "inputHint": "Enter a number (no units)",
       "commonTrapTag": "t02-c02-u02-unrestricted-algebraic-domain-trap",
       "trapDerivation": "(80 - sqrt(80^2 - 8 * 750)) / 4",
       "trapValue": "15",
@@ -1361,7 +1363,7 @@
         "source": "(80 + sqrt(80^2 - 8 * 750)) / 4",
         "trapValue": "15"
       },
-      "checkpointHint": "Combine the fencing and area relations into one equation in x, solve for both roots, and check each against the practical domain constraint on the parallel side.",
+      "checkpointHint": "Check every candidate against every condition in the story before you answer.",
       "references": [
         "MTH-T02-C02-U02"
       ],
@@ -1447,18 +1449,18 @@
       "figure": {
         "kind": "geometry_2d",
         "theme": "indigo",
-        "title": "Rectangular Enclosure",
+        "title": "Pasture along a river",
         "points": {
           "A": [
             0,
             0
           ],
           "B": [
-            20.0,
+            35.0,
             0
           ],
           "C": [
-            20.0,
+            35.0,
             20.0
           ],
           "D": [
@@ -1491,7 +1493,7 @@
             "type": "segment",
             "p1": "A",
             "p2": "B",
-            "text": "y = ?",
+            "text": "y = ? (along river)",
             "side": "bottom"
           },
           {
@@ -1571,7 +1573,7 @@
       },
       "answerPlain": "4",
       "answerDisplay": "4",
-      "inputHint": "Enter a number in inches",
+      "inputHint": "Enter a number (no units)",
       "commonTrapTag": "t02-c02-u02-unrestricted-algebraic-domain-trap",
       "trapDerivation": "(44 / 2 + sqrt((44 / 2)^2 - 4 * 112)) / 4",
       "trapValue": "7",
@@ -1579,7 +1581,7 @@
         "source": "(44 / 2 - sqrt((44 / 2)^2 - 4 * 112)) / 4",
         "trapValue": "7"
       },
-      "checkpointHint": "First combine the perimeter and area relations to find the plate dimensions, then intersect the positive-dimension inequalities for the folded tray.",
+      "checkpointHint": "Check every condition in the story at a value just below and just above your bound.",
       "references": [
         "MTH-T02-C02-U02"
       ],
@@ -1646,6 +1648,7 @@
         "verdict": "pass",
         "note": "Answer 4 in, trapValue 7 in (using the longer 14 in side instead of intersecting with the 8 in side), physical modeling context, and steps are all accurate."
       },
+      "figureWaiver": "No figure builder draws a plate with corner cut-outs; the rectangle builders would label a plate side as x, but x is the cut length.",
       "referenceBadges": [
         {
           "code": "MTH-T02-C02-U02",
@@ -1654,66 +1657,6 @@
         }
       ],
       "unitCode": "MTH-T02-C02-U02",
-      "figure": {
-        "kind": "geometry_2d",
-        "theme": "indigo",
-        "title": "Rectangular Enclosure",
-        "points": {
-          "A": [
-            0,
-            0
-          ],
-          "B": [
-            11.0,
-            0
-          ],
-          "C": [
-            11.0,
-            11.0
-          ],
-          "D": [
-            0,
-            11.0
-          ]
-        },
-        "shapes": [
-          {
-            "type": "polygon",
-            "vertices": [
-              "A",
-              "B",
-              "C",
-              "D"
-            ],
-            "fill": true
-          }
-        ],
-        "markers": [
-          {
-            "type": "right_angle",
-            "vertex": "A",
-            "arm1": "B",
-            "arm2": "D"
-          }
-        ],
-        "labels": [
-          {
-            "type": "segment",
-            "p1": "A",
-            "p2": "B",
-            "text": "y = ?",
-            "side": "bottom"
-          },
-          {
-            "type": "segment",
-            "p1": "B",
-            "p2": "C",
-            "text": "x = ?",
-            "side": "right"
-          }
-        ],
-        "note": "Not to scale"
-      },
       "fingerprint": "t02-c02-u02-unrestricted-algebraic-domain-trap|choose|#(L + W) = P, L * W = A, L - #x > #, W - #x > #",
       "qualityGates": {
         "G1": {
@@ -1754,10 +1697,10 @@
   ],
   "drillId": "DRL-MTH-T02-C02-U02-01",
   "title": "Domain and Range — Verified Math Drill (8 Qs)",
+  "createdAt": "2026-11-16 19:41:26",
   "topicCode": "MTH-T02",
   "chapterCode": "MTH-T02-C02",
   "schemaVersion": "2.0-math",
-  "createdAt": "2026-11-16 19:41:26",
   "config": {
     "questionCount": 8,
     "difficulty": "ALL",
