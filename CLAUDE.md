@@ -72,6 +72,7 @@
 - PRG review runner & records: `python -m code_engine.review_run <DRILL_ID> <QID> [--json]` runs Layer 1+2 for one problem (read-only); `python -m scripts.review_record {add,explain,dispute,show}` records rubric-bound reviews in `progress/<DRILL_ID>.json` (`state.reviews[]`, never in `drills/data/`). The learner asks for a review with the `review-code` skill ("ตรวจโค้ด <DRILL_ID> <QID>").
 - PRG curriculum v2 (2026-11-16): codes follow `docs/prg_curriculum_v2.md`; old→new map in `docs/prg_migration_map.json`; retired pages have Full ID `RETIRED-<old>`.
 - Issue log: mistakes you or a reviewer/gate catch are logged with `python -m scripts.issues add ...` (rules/00_core.md §11) and cleared in batches; flag `urgent` ones on the first line of your reply. Learner never previews or approves drills (they study them); the `new-math-drill` skill uses a reviewer subagent instead.
+- PRG drills: the `new-code-drill` skill (`.claude/skills/new-code-drill/SKILL.md`) mirrors `new-math-drill` — inspect unit page + `vault_report` + `weak_spots`, run `python -m code_engine.ai_drill_ingest --check <draft.json>`, blind-solve subagent, reviewer subagent, ingest, `pytest`, and `notion_sync.drill_sync` (drill-only PRs self-merge after CI).
 - Known gaps for topics not yet started (trigonometry functions, logarithms, calculus) are listed in `docs/backlog.md`; fix them when that topic starts.
 
 ## Environment (names only)

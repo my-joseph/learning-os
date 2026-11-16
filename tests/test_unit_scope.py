@@ -112,6 +112,7 @@ def test_prg_load_scope_archetypes_and_ingest_unit_stamp(tmp_path):
                         "archetypeKey": "a-u1",
                         "unitCode": "PRG-T09-C01-U01",
                         "level": 1,
+                        "cognitiveTraps": [{"trapTag": "empty-list-nan"}],
                         "qualityChecks": [
                             {
                                 "id": "QC-test-u1",
@@ -137,17 +138,37 @@ def test_prg_load_scope_archetypes_and_ingest_unit_stamp(tmp_path):
     drill_doc = {
         "unitCode": "PRG-T09-C01",
         "drillId": "DRL-PRG-T09-C01-99",
+        "blindSolve": [
+            {
+                "problemId": "Q01",
+                "solutionCode": (
+                    "function sumPrices(items) {\n"
+                    "  let total = 0;\n"
+                    "  for (const price of items) {\n"
+                    "    total += price;\n"
+                    "  }\n"
+                    "  return total;\n"
+                    "}\n"
+                    "module.exports = { sumPrices };\n"
+                ),
+                "ambiguous": False,
+                "note": "Solved independently with a loop.",
+            }
+        ],
+        "review": {"verdict": "pass", "note": "Scope and trap verified."},
         "problems": [
             {
                 "id": "Q01",
                 "archetype": "problem-solving",
                 "archetypeKey": "a-u1",
+                "commonTrapTag": "empty-list-nan",
                 "context": "order_totals",
                 "level": 1,
                 "entryPoint": "sumPrices",
                 "prompt": "Implement `sumPrices(items)`.",
-                "starterCode": "function sumPrices(items) {\n  return 0;\n}\nmodule.exports = { sumPrices };\n",
+                "starterCode": "function sumPrices(_items) {\n  return 0;\n}\nmodule.exports = { sumPrices };\n",
                 "solutionCode": "function sumPrices(items) {\n  return items.reduce((acc, n) => acc + n, 0);\n}\nmodule.exports = { sumPrices };\n",
+                "trapMutant": "function sumPrices(items) {\n  return items.length ? items.reduce((acc, n) => acc + n, 0) : NaN;\n}\nmodule.exports = { sumPrices };\n",
                 "visibleTests": [
                     {"name": "sums positive prices", "testCode": "assert.strictEqual(sumPrices([2, 3]), 5);"}
                 ],

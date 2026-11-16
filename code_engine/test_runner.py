@@ -12,18 +12,29 @@ import sys
 import tempfile
 
 
-def assemble_harness(user_code: str, visible_tests: list, hidden_tests: list) -> str:
+def assemble_harness(
+    user_code: str,
+    visible_tests: list,
+    hidden_tests: list,
+    *,
+    ts_import_line: str = "",
+) -> str:
     """
     Creates an executable Node.js script bundling user code, an asynchronous test harness,
     and assertions for both visible and hidden test suites.
     """
+    if ts_import_line:
+        preamble = (
+            f"import {{ performance }} from 'node:perf_hooks';\nimport assert from 'node:assert';\n{ts_import_line}\n"
+        )
+        user_section = ""
+    else:
+        preamble = "const { performance } = require('perf_hooks');\nconst assert = require('assert');\n"
+        user_section = f"\n// --- User Implementation ---\n{user_code}\n"
+
     harness = """
-const { performance } = require('perf_hooks');
-const assert = require('assert');
-
-// --- User Implementation ---
-{USER_CODE}
-
+{PREAMBLE}
+{USER_SECTION}
 // --- Test Runner Harness ---
 async function __executeTest(name, fn) {
   const start = performance.now();
@@ -102,26 +113,51 @@ __runHarness().catch(err => {
     if (res.passed) hiddenPassed++;
   }}""")
 
-    script = harness.replace("{USER_CODE}", user_code)
+    script = harness.replace("{PREAMBLE}", preamble)
+    script = script.replace("{USER_SECTION}", user_section)
     script = script.replace("{HIDDEN_TOTAL}", str(len(hidden_tests)))
     script = script.replace("{VISIBLE_BLOCKS}", "\n".join(visible_blocks))
     script = script.replace("{HIDDEN_BLOCKS}", "\n".join(hidden_blocks))
     return script
 
 
-def run_tests(user_code: str, visible_tests: list, hidden_tests: list, timeout_sec: float = 4.0) -> dict:
+def run_tests(
+    user_code: str,
+    visible_tests: list,
+    hidden_tests: list,
+    timeout_sec: float = 4.0,
+    *,
+    environment: str = "node-vanilla",
+    entry_point: str = "",
+) -> dict:
     """
     Runs the assembled test suite in Node.js subprocess and returns the parsed report dict.
     """
-    script = assemble_harness(user_code, visible_tests, hidden_tests)
+    is_ts = environment in ("typescript-strict", "backend-sqlite")
+    tmp_dir_obj = None
+    temp_path = ""
 
-    with tempfile.NamedTemporaryFile("w", suffix=".js", delete=False, encoding="utf-8") as f:
-        f.write(script)
-        temp_path = f.name
+    if is_ts:
+        tmp_dir_obj = tempfile.TemporaryDirectory(prefix="prg_ts_run_")
+        src_path = os.path.join(tmp_dir_obj.name, "solution.ts")
+        with open(src_path, "w", encoding="utf-8") as sf:
+            sf.write(user_code)
+        ts_import = f"import {{ {entry_point} }} from './solution.ts';" if entry_point else "import './solution.ts';"
+        script = assemble_harness(user_code, visible_tests, hidden_tests, ts_import_line=ts_import)
+        temp_path = os.path.join(tmp_dir_obj.name, "harness.ts")
+        with open(temp_path, "w", encoding="utf-8") as hf:
+            hf.write(script)
+        cmd = ["node", "--experimental-strip-types", temp_path]
+    else:
+        script = assemble_harness(user_code, visible_tests, hidden_tests)
+        with tempfile.NamedTemporaryFile("w", suffix=".js", delete=False, encoding="utf-8") as f:
+            f.write(script)
+            temp_path = f.name
+        cmd = ["node", temp_path]
 
     try:
         proc = subprocess.run(
-            ["node", temp_path],
+            cmd,
             capture_output=True,
             text=True,
             timeout=timeout_sec,
@@ -183,10 +219,13 @@ def run_tests(user_code: str, visible_tests: list, hidden_tests: list, timeout_s
             "rawOutput": str(ex),
         }
     finally:
-        try:
-            os.remove(temp_path)
-        except OSError:
-            pass
+        if tmp_dir_obj is not None:
+            tmp_dir_obj.cleanup()
+        elif temp_path:
+            try:
+                os.remove(temp_path)
+            except OSError:
+                pass
 
 
 if __name__ == "__main__":

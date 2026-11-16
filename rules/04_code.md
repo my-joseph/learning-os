@@ -195,7 +195,9 @@ Every multi-milestone project lab adheres to a standardized milestone sequence:
 
 ## PART 7 — Nine-Step AI Authoring Pipeline
 
-AI must execute the following pipeline in strict sequential order:
+For **PRG drills**, follow the `new-code-drill` skill (`.claude/skills/new-code-drill/SKILL.md`) and enforce all gates via `python -m code_engine.ai_drill_ingest --check <draft.json>` (scope & trap tag, starter compile & no-leak, reference green & starter red, `trapMutant` + generic mutants killed by hidden/visible tests, Layer 2 ESLint + `tsc`, Layer 3 `qualityChecks` rubric, `rules/07` mix, `blindSolve`, and `review`) before ingesting and syncing to Notion.
+
+For **multi-milestone labs**, AI must execute the following pipeline in strict sequential order:
 1. **Spec Definition:** Create `lab.config.json` defining metadata, dependencies, and milestone point allocations.
 2. **Canonical Solution:** Author complete, clean, production-grade reference implementation in `.canonical/`.
 3. **Milestone Test Suites:** Author robust test suites in `tests/` covering every milestone requirement and edge cases.

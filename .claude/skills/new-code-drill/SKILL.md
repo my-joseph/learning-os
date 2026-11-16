@@ -1,0 +1,113 @@
+---
+name: new-code-drill
+description: Create a new verified programming drill (PRG-*) from a short brief — inspect the unit page, vault_report and weak_spots, pick reasoning-vault archetypes, write the draft JSON, run --check, run a blind-solve subagent and a reviewer subagent, ingest into drills/data and workspace, run pytest, sync pristine record to Notion, and ship a drill-only PR with no learner approval step. Use when asked to make, generate, write or add code problems, a programming drill, or practice for a PRG unit or chapter.
+---
+
+# New code drill
+
+Goal: a PRG drill that matches what the learner asked for and passes every gate on the first ingest, with no hand-fixing afterwards. The learner studies these drills, so they never see drafts, prompts, hidden tests or solutions before practising: do not show them drafts, answers or previews, and do not ask them to approve. Mistakes you, the blind solver, or the reviewer catch go into the issue log (`rules/00_core.md` §11), not into questions to the learner. Run everything from the repo root with `.venv/bin/python` and call tools as modules (`.venv/bin/python -m pytest`, `-m ruff`; `.venv/bin/pip` is broken). **Keep answers and code out of the terminal**: subagents write their results to files and reply only `done`, because their replies are shown to the learner. Talk to the learner in polite Thai; everything written into drills and vaults is English. Never edit `drills/workspace/` or `progress/` by hand.
+
+## 1. Brief
+
+Take the brief from the request; ask only if the unit is missing or no vault exists for it.
+- **Scope**: a unit (`PRG-T01-C01-U01`) or a chapter (`PRG-T01-C01`). A **unit drill** uses only that unit's archetypes, never another unit's. A **chapter drill** mixes the archetypes of all its units. Use the scope code as the draft's `unitCode`.
+- **Context to inspect first**:
+  1. Read the unit's Notion page (`notion_sync.client.get_all_blocks` via `id_map.json`) and its curriculum row in `docs/prg_curriculum_v2.md` (`Learning Objective`, `Expected Output`, `Practice Type`, `Prereqs`).
+  2. Run `.venv/bin/python -m scripts.vault_report <UNIT> --log` to see proven vs. failing levels.
+  3. Run `.venv/bin/python -m scripts.weak_spots <UNIT>` to see open weak spots (`matchedTrap >= 2`, ESLint rules, `QC-*` findings, and the `NEXT` line). Target open weak spots when present.
+- **Count, levels & mix**: default 4–6 problems across the levels the vault supports (e.g. L1–L3/L4), or matching the requested `difficulty`. Per `rules/07_problem_generation.md`, any drill of `>= 4` problems must include level spread (when `difficulty` is `ALL`) and at least one non-implement item (`fix-bug`, `refactor`, `predict-output`, or `trace-explain`).
+- **Environment preset**: `node-vanilla` (JS) or `typescript-strict` / `backend-sqlite` / `react-dom` (TS) per the curriculum row.
+
+State the brief in one line and continue without waiting.
+
+## 2. Load only the rules this task needs
+
+Read `rules/00_core.md` §5–§6, §8, §11; `rules/04_code.md` (Part 1, Part 2, Part 5, Part 10); `rules/06_template_contract.md` §1.3, §2.2; `rules/07_problem_generation.md` §4; and `docs/prg_reviewer_spec.md`.
+
+## 3. Pick archetypes from the vault
+
+```bash
+.venv/bin/python -m code_engine.ai_drill_ingest --unit <UNIT> --list-vault
+.venv/bin/python -m scripts.vault_report <UNIT> --log
+```
+
+- Every archetype used must be in scope for `<UNIT>` and have valid `qualityChecks` (`R2` rubric). If you add or update an archetype in `code_engine/reasoning_vault/<CHAPTER>.json`, run `.venv/bin/python -m code_engine.quality_checks --check-vaults` before continuing.
+- Pick a `commonTrapTag` from each archetype's `cognitiveTraps`.
+- Rotate `context` domains: avoid anything in `usedContexts`, and never use two problems with the same `(archetypeKey, context)` in one drill. Never use toy identifiers (`foo`, `bar`, `baz`, `test1`, `funcA`).
+
+## 4. Write the draft as JSON
+
+Write to `scratch/drafts/<UNIT>-<short-slug>.json` (gitignored).
+
+Top level: `unitCode`, `unitTitle`, `environment`, `sourceAttribution`, `config` (`{"questionCount": N, "difficulty": "ALL" | "1".."5", "difficultyMode": "AI Synthesized Engineering Mode"}`), `problems: [...]`. No `drillId` (assigned on ingest).
+
+Per problem:
+- `id`: `"Q01"`, `"Q02"`, ...
+- `level`: integer (`1`–`5`), `category`: e.g. `"Core Skill"`, `"Trap & Edge Case"`, `"Refactor & Design"`.
+- `archetype`: `"problem-solving"` | `"debugging"` | `"refactoring"` | `"code-tracing"`.
+- `codeType`: `"implement"` | `"fix-bug"` | `"refactor"` | `"predict-output"` | `"trace-explain"` (match the curriculum row's `Practice Type`, and include `>= 1` non-implement item when `count >= 4`).
+- `archetypeKey`, `commonTrapTag` (must exist in that archetype's `cognitiveTraps`), `context` (realistic production domain), `entryPoint`.
+- `prompt`: structured Markdown (> 250 chars requires sections `**...**`/`###`, bullets `- `, and backticks `` ` ``; zero wall-of-text; no `Defect Analysis:`/`Root Cause:` spoon-feeding).
+- `inputHint` / `checkpointHint`: zero-leak (`rules/00_core.md` §6, `rules/04_code.md` §7) — never reveal the answer, bug line, or internal data structures (`secondary Map`, `use closure`).
+- `starterCode`: compiles/parses cleanly, has stub bodies (or realistic buggy code for `fix-bug`) that **fail at least one visible test**, and does not contain `solutionCode` or `// BUG:` / `// FIX HERE:` comments.
+- `solutionCode`: passes all `visibleTests` + `hiddenTests`, and passes Layer 2 ESLint (`tools/lint/base.js`) + `tsc --noEmit` (for TS presets).
+- `trapMutant`: a plausible wrong solution embodying `commonTrapTag` that compiles/parses cleanly and **FAILS `hiddenTests`**.
+- `visibleTests`, `hiddenTests`: realistic edge cases; any test with `setTimeout > 50ms` must use an injectable clock (`options.now`). Visible test names must not leak the solution.
+- `steps`: concise explanation steps (`[{"explain": "..."}]`); `verificationLevel: "partial"`.
+
+## 5. Pre-flight check (`--check`)
+
+```bash
+.venv/bin/python -m code_engine.ai_drill_ingest --check scratch/drafts/<file>.json
+```
+
+Run this before spawning subagents to catch any scope, contract, no-leak, starter, solution, `trapMutant`, lint/`tsc`, rubric, or mix errors early. At this stage, only `blindSolve` and `review` should be reported missing. Fix everything else first.
+
+## 6. Blind solve (independent subagent)
+
+Spawn **one** fresh subagent. Give it **ONLY** each problem's `id`, `prompt`, `starterCode`, and `visibleTests` (never `solutionCode`, `hiddenTests`, `trapMutant`, `commonTrapTag`, or `level`). Tell it to write its solutions to `scratch/reviews/<draft-name>-blind.json` as a JSON list `[{"problemId": "Q01", "solutionCode": "...", "ambiguous": false, "note": "..."}]` and reply only `done`.
+
+Copy that JSON list directly into `draft["blindSolve"]` (never show the code to the learner). The `--check` script runs each `solutionCode` against both `visibleTests` and `hiddenTests` with `code_engine.test_runner`, rejects `ambiguous: true` or any solution byte-identical (after whitespace normalisation) to the reference `solutionCode`, and decides pass/fail. On `--ingest-file`, the script strips all blind-solver `solutionCode` and keeps only `[{"problemId": "Q01", "passed": true}, ...]` as provenance.
+- If `--check` fails blind solve or flags `ambiguous: true`, tighten the prompt/starter/visible tests once and re-run blind solve.
+- If it still fails, drop the problem, log it with `.venv/bin/python -m scripts.issues add --kind level|prompt --source gate --action dropped --where <UNIT>/<id> --what "..."`, and replace it.
+
+## 7. Automated review (reviewer subagent)
+
+Spawn **one** fresh reviewer subagent for the whole draft. Give it the brief, the draft path, `rules/04_code.md`, `rules/07_problem_generation.md` §4, and `docs/prg_reviewer_spec.md`. Tell it to write its verdict to `scratch/reviews/<draft-name>-review.json` and reply only `done`.
+
+Ask it to check the whole draft for:
+1. **No leaks**: `prompt`, `starterCode`, `inputHint`, `checkpointHint`, and `visibleTests[].name` never reveal the solution or bug location.
+2. **Realistic domains**: production domains, no `foo`/`bar`/`test1`, no duplicate `(archetypeKey, context)`.
+3. **Rubric & Layer 3**: every archetype's `qualityChecks` fits the problem, and `solutionCode` has zero `must` findings.
+4. **Mix & levels**: matches the brief, level spread, and `>= 1` non-implement item when `count >= 4`.
+5. **Unit scope & traps**: `archetypeKey` in unit scope, `commonTrapTag` in `cognitiveTraps`, `trapMutant` genuinely embodies `commonTrapTag`.
+
+It writes `{"verdict": "pass" | "fix", "note": "<one sentence>"}` (plus optional per-problem notes). Copy `{"verdict": ..., "note": ...}` into `draft["review"]`.
+- On `fix`, fix once, re-run `--check` (and blind solve if any prompt changed), and ask the same reviewer to re-check.
+- Log every `fix` and drop with `.venv/bin/python -m scripts.issues add ... --source reviewer --action auto-fixed|dropped`.
+
+## 8. Final `--check`, ingest, and test
+
+```bash
+.venv/bin/python -m code_engine.ai_drill_ingest --check scratch/drafts/<file>.json
+.venv/bin/python -m code_engine.ai_drill_ingest --ingest-file scratch/drafts/<file>.json
+.venv/bin/python -m pytest -q
+```
+
+`--check` must print `OK` and exit `0`. Ingest assigns `DRL-<UNIT>-NN`, stamps `unitCode`/`chapterCode`/`topicCode`, updates `usedContexts` in the vault, materialises `drills/workspace/<DRILL_ID>/`, and writes `drills/data/<UNIT>/<DRILL_ID>.json`.
+
+Run the **full** `pytest` suite after ingest. Never sync or push a drill with a failing test.
+
+Log every friction item from the run with `.venv/bin/python -m scripts.issues add ...`.
+
+Report to the learner in polite Thai in a few lines, **without prompts, code, or answers**: drill ID, number of problems per level/type, and any issue-log IDs.
+
+## 9. Sync, then ship (in this order)
+
+1. Sync the pristine drill record to Notion (`rules/00_core.md` §8) from repo root:
+   ```bash
+   .venv/bin/python -m notion_sync.drill_sync drills/data/<UNIT>/<DRILL_ID>.json
+   ```
+   (If `degraded: true`, report that Notion was not updated.)
+2. Create a branch `drill/<DRILL_ID>` (never on `main`), commit **only** the new drill file under `drills/data/<UNIT>/`, its unit/chapter vault file, and `id_map.json`, push, and open a PR (`gh pr create`).
+3. Verify `git diff --stat origin/main...HEAD` touches only those three items, wait for CI, self-merge (`gh pr merge --merge --delete-branch`), and return the checkout to `main` (`git checkout main && git pull --ff-only`).
