@@ -133,7 +133,7 @@
         },
         {
           "name": "trims a padded bin code and preserves the typed field",
-          "testCode": "const captures: string[] = []; const user = userEvent.setup(); render(<BinScanCapture onCapture={(code) => captures.push(code)} />); await user.click(screen.getByRole('button', { name: 'Start scan' })); const input = screen.getByRole('textbox', { name: 'Bin code' }); await user.type(input, '  SHELF-8  '); await user.click(screen.getByRole('button', { name: 'Capture bin' })); assert.deepEqual(captures, ['SHELF-8']); assert.equal(input.value, '  SHELF-8  ');"
+          "testCode": "const captures: string[] = []; const user = userEvent.setup(); render(<BinScanCapture onCapture={(code) => captures.push(code)} />); await user.click(screen.getByRole('button', { name: 'Start scan' })); const input = screen.getByRole('textbox', { name: 'Bin code' }) as HTMLInputElement; await user.type(input, '  SHELF-8  '); await user.click(screen.getByRole('button', { name: 'Capture bin' })); assert.deepEqual(captures, ['SHELF-8']); assert.equal(input.value, '  SHELF-8  ');"
         }
       ],
       "hiddenTests": [
