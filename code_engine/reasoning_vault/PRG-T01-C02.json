@@ -790,6 +790,146 @@
           }
         }
       ]
+    },
+    {
+      "archetypeKey": "prg-t01-c02-u05-preserve-generic-relationships",
+      "unitCode": "PRG-T01-C02-U05",
+      "level": 1,
+      "archetype": "problem-solving",
+      "name": "Preserve Generic Input and Output Relationships",
+      "competencies": [
+        "typescript",
+        "component-design",
+        "type-safety"
+      ],
+      "coreConcept": "A useful generic type parameter captures a concrete caller type and carries it through a reusable function's inputs and outputs.",
+      "mentalModel": [
+        "1. Let the call site's values provide evidence for a type parameter.",
+        "2. Reuse that parameter in the public contract wherever the same type relationship must hold.",
+        "3. Keep the returned type specific enough for callers to use without assertions."
+      ],
+      "governingInvariant": "The public signature preserves the input/output relationship that callers rely on instead of widening useful results to unknown or a broad record type.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "widen-generic-result",
+          "name": "Widening a Useful Result",
+          "description": "A generic input is accepted, but the return type is widened so callers lose the concrete type captured at the call site.",
+          "reproducer": "Pass an array of a domain union to a reusable selector and verify the result still has that union type plus the empty-case value."
+        },
+        {
+          "trapTag": "generic-parameter-used-once",
+          "name": "Using a Type Parameter Without a Relationship",
+          "description": "A type parameter appears only once and adds no caller-visible relationship, making the signature look more precise than it is.",
+          "reproducer": "Replace a generic formatting helper's parameter with unknown and verify that its accepted inputs and return contract do not change."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "invoice_field_projection",
+          "description": "Project a typed field from invoice rows while preserving the selected field's value type."
+        },
+        {
+          "domain": "delivery_state_selector",
+          "description": "Select the first state from a typed notification queue while modeling the empty case."
+        }
+      ],
+      "source": "TypeScript Handbook — Generics: https://www.typescriptlang.org/docs/handbook/2/generics.html",
+      "usedContexts": [
+        "warehouse_restock_queue",
+        "shipment_status_projection"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-generic-relationship",
+          "check": "Public generic signatures preserve a caller-visible relationship between input and output types instead of widening the result unnecessarily.",
+          "why": "Callers lose compile-time guarantees when a reusable helper discards the specific type inferred from its arguments.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function first<T>(items: readonly T[]): unknown { return items[0]; }",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-generic-parameter-earned",
+          "check": "Each type parameter contributes a useful relationship among parameters, properties, callbacks, or the return type.",
+          "why": "An unused type parameter adds apparent complexity without improving what callers can safely do.",
+          "severity": "should",
+          "knownBad": {
+            "code": "function formatValue<T>(value: T): string { return String(value); }",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "prg-t01-c02-u05-constrained-key-access",
+      "unitCode": "PRG-T01-C02-U05",
+      "level": 2,
+      "archetype": "refactoring",
+      "name": "Constrain Reusable Property Access",
+      "competencies": [
+        "typescript",
+        "type-safety",
+        "component-design"
+      ],
+      "coreConcept": "Generic constraints state the minimum capabilities an implementation needs, and key constraints connect a selected property to its corresponding value type.",
+      "mentalModel": [
+        "1. Identify the property capability the implementation actually uses.",
+        "2. Express that capability as a constraint without imposing unrelated domain requirements.",
+        "3. When a caller supplies a key, restrict it to keys of the input and derive the result from that key."
+      ],
+      "governingInvariant": "A generic operation reads only properties guaranteed by its constraint and preserves the selected property's type for valid keys.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "arbitrary-string-key",
+          "name": "Accepting an Arbitrary String as a Key",
+          "description": "A generic field helper accepts keys that are not known to exist on the input and hides the lost relationship behind unknown or a broad lookup.",
+          "reproducer": "Call the helper with a valid numeric field and then a misspelled key; the valid call should retain its numeric result type and the misspelling should be rejected."
+        },
+        {
+          "trapTag": "overconstrained-domain",
+          "name": "Adding an Unneeded Domain Constraint",
+          "description": "A reusable helper requires a specific identifier shape even though its implementation uses no identifier and could support other valid domain values.",
+          "reproducer": "Pass both a string-keyed and number-keyed record to a helper that only returns the original record; both should satisfy the intended contract."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "catalog_field_reader",
+          "description": "Read a chosen typed field from catalog entries without accepting keys that are absent from the entry shape."
+        },
+        {
+          "domain": "generic_page_adapter",
+          "description": "Adapt pages with different item types while preserving the item and cursor types used by each caller."
+        }
+      ],
+      "source": "TypeScript Handbook — Generics and keyof types: https://www.typescriptlang.org/docs/handbook/2/generics.html",
+      "usedContexts": [
+        "carrier_manifest_snapshot",
+        "invoice_field_inspector"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-generic-constraint",
+          "check": "Constraints guarantee every member the implementation reads, while accepting all domain inputs covered by the stated contract.",
+          "why": "An insufficient constraint forces unsafe access; an unnecessarily narrow constraint rejects valid callers and makes a reusable helper brittle.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function keep<T extends { id: string }>(record: T): T { return record; }",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-generic-key-value-link",
+          "check": "A key parameter is restricted to properties of its input, and the result type remains tied to the selected property's value type.",
+          "why": "A broad string key or unknown result lets misspellings through and makes callers cast values the function could have typed precisely.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function readField<T extends object>(record: T, key: string): unknown { return Object.getOwnPropertyDescriptor(record, key)?.value; }",
+            "caughtBy": "review"
+          }
+        }
+      ]
     }
   ]
 }

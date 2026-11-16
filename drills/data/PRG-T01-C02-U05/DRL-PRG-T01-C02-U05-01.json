@@ -1,0 +1,414 @@
+{
+  "unitCode": "PRG-T01-C02-U05",
+  "unitTitle": "Generics",
+  "environment": "typescript-strict",
+  "sourceAttribution": "PRG-T01-C02-U05 unit page, TypeScript Handbook — Generics (https://www.typescriptlang.org/docs/handbook/2/generics.html), and its current reasoning-vault archetypes; scenarios authored for this drill.",
+  "config": {
+    "questionCount": 4,
+    "difficulty": "ALL",
+    "difficultyMode": "AI Synthesized Engineering Mode"
+  },
+  "problems": [
+    {
+      "id": "Q01",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "codeType": "implement",
+      "archetypeKey": "prg-t01-c02-u05-preserve-generic-relationships",
+      "commonTrapTag": "widen-generic-result",
+      "context": "warehouse_restock_queue",
+      "entryPoint": "firstRestockItem",
+      "prompt": "A warehouse restock screen receives a readonly queue of domain items and needs its first candidate without losing the concrete item type. Implement `firstRestockItem` for that reusable boundary.\n\n**Requirements**\n- Preserve the element type `T` from the input array in the return type.\n- Return `undefined` for an empty queue.\n- Do not mutate the queue or widen the result to `unknown`.\n- Keep the exported function name and readonly input contract.",
+      "inputHint": "The result should describe one queue element or the empty-queue case.",
+      "checkpointHint": "Compare the type of one array element with the type promised to the caller.",
+      "starterCode": "export function firstRestockItem<T>(_items: readonly T[]): T | undefined {\n  return undefined;\n}\n",
+      "solutionCode": "export function firstRestockItem<T>(items: readonly T[]): T | undefined {\n  if (items.length === 0) return undefined;\n  return items[0];\n}\n",
+      "trapMutant": "export function firstRestockItem<T>(items: readonly T[]): T | null {\n  return items[0] ?? null;\n}\n",
+      "visibleTests": [
+        {
+          "name": "returns the first queued item with its inferred type",
+          "testCode": "const item: { sku: string; units: number } | undefined = firstRestockItem([{ sku: 'SKU-71', units: 4 }]); assert.deepStrictEqual(item, { sku: 'SKU-71', units: 4 });"
+        },
+        {
+          "name": "keeps a string queue value intact",
+          "testCode": "assert.strictEqual(firstRestockItem(['LOT-8']), 'LOT-8');"
+        },
+        {
+          "name": "handles an empty restock queue",
+          "testCode": "assert.strictEqual(firstRestockItem([]), undefined);"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "preserves an explicit undefined queue value",
+          "testCode": "assert.strictEqual(firstRestockItem([undefined]), undefined);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Use a type parameter to capture the queue element type supplied by each caller."
+        },
+        {
+          "explain": "Use that same type in the result and add undefined for the empty-array case."
+        },
+        {
+          "explain": "Read the first element without changing the readonly queue."
+        }
+      ],
+      "verificationLevel": "partial",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "Warehouse restock queues contain typed item records, and reading the first candidate while representing an empty queue is a standard inventory workflow."
+      },
+      "form": "direct",
+      "fingerprint": "widen-generic-result|direct|firstRestockItem",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 3,
+          "hasTrapOrFlaw": false,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "widen-generic-result",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 6
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Foundation",
+      "unitCode": "PRG-T01-C02-U05",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U05-01/Q01_firstRestockItem.ts"
+    },
+    {
+      "id": "Q02",
+      "level": 1,
+      "category": "Trap & Edge Case",
+      "archetype": "problem-solving",
+      "codeType": "implement",
+      "archetypeKey": "prg-t01-c02-u05-constrained-key-access",
+      "commonTrapTag": "overconstrained-domain",
+      "context": "carrier_manifest_snapshot",
+      "entryPoint": "copyManifestSnapshot",
+      "prompt": "A carrier manifest snapshotter makes a shallow copy of several kinds of records before serialization. Implement `copyManifestSnapshot` as a generic copy that returns the caller's record type.\n\n**Requirements**\n- Accept any object record covered by the function contract, including records with no identifier field.\n- Return a shallow copy with the same inferred type as the input.\n- Do not add a domain-specific field requirement or mutate the input.\n- Keep the exported function name.",
+      "inputHint": "The output should be a separate object with the same top-level fields as its input.",
+      "checkpointHint": "Decide which type facts the copy operation actually needs in order to work.",
+      "starterCode": "export function copyManifestSnapshot<T extends object>(_record: T): T {\n  return {} as T;\n}\n",
+      "solutionCode": "export function copyManifestSnapshot<T extends object>(record: T): T {\n  return Object.assign({}, record);\n}\n",
+      "trapMutant": "export function copyManifestSnapshot<T extends object>(record: T): T {\n  if (!(\"id\" in record)) throw new Error('Manifest record requires an id');\n  return { ...record };\n}\n",
+      "visibleTests": [
+        {
+          "name": "copies a manifest record without changing its fields",
+          "testCode": "const record = { routeCode: 'R-18', stopCount: 6 }; const copy = copyManifestSnapshot(record); const routeCode: string = copy.routeCode; assert.strictEqual(routeCode, 'R-18'); assert.deepStrictEqual(copy, record); assert.notStrictEqual(copy, record);"
+        },
+        {
+          "name": "copies a zero-stop manifest",
+          "testCode": "const record = { routeCode: 'R-00', stopCount: 0 }; assert.deepStrictEqual(copyManifestSnapshot(record), record);"
+        },
+        {
+          "name": "copies a record with an empty label list",
+          "testCode": "const record = { routeCode: 'R-04', labels: [] as string[] }; assert.deepStrictEqual(copyManifestSnapshot(record), record);"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "copies a valid empty record",
+          "testCode": "assert.deepStrictEqual(copyManifestSnapshot({}), {});"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Constrain the generic parameter only enough to make the object spread operation valid."
+        },
+        {
+          "explain": "Use the input type as the return type so callers retain their specific fields."
+        },
+        {
+          "explain": "Create a new shallow object instead of mutating the source record."
+        }
+      ],
+      "verificationLevel": "partial",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "Carrier manifest snapshots may represent heterogeneous operational records, and a shallow copy preserves each record's fields without imposing an unrelated identifier schema."
+      },
+      "form": "direct",
+      "fingerprint": "overconstrained-domain|direct|copyManifestSnapshot",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "overconstrained-domain",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 6
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Foundation",
+      "unitCode": "PRG-T01-C02-U05",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U05-01/Q02_copyManifestSnapshot.ts"
+    },
+    {
+      "id": "Q03",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "codeType": "implement",
+      "archetypeKey": "prg-t01-c02-u05-constrained-key-access",
+      "commonTrapTag": "arbitrary-string-key",
+      "context": "invoice_field_inspector",
+      "entryPoint": "readInvoiceField",
+      "prompt": "An invoice review tool reads a selected field from a typed invoice record, while old saved selections may refer to a property inherited from a prototype. Implement `readInvoiceField` so it only returns an own field and preserves the selected property's value type.\n\n**Requirements**\n- Restrict the key parameter to keys of the supplied record.\n- Tie the result type to the selected key and include `undefined` for a key that is not an own property at runtime.\n- Do not return inherited values.\n- Keep the exported function name and avoid `any` or type assertions.",
+      "inputHint": "The function returns the selected value when that field belongs directly to the invoice record.",
+      "checkpointHint": "Consider both the relationship between the key and its value type and the runtime ownership check.",
+      "starterCode": "export function readInvoiceField<T extends object, K extends keyof T>(_record: T, _key: K): T[K] | undefined {\n  return undefined;\n}\n",
+      "solutionCode": "export function readInvoiceField<T extends object, K extends keyof T>(record: T, key: K): T[K] | undefined {\n  if (!Object.hasOwn(record, key)) return undefined;\n  return record[key];\n}\n",
+      "trapMutant": "export function readInvoiceField<T extends object>(record: T, key: string): unknown {\n  return key in record ? record[key as keyof T] : undefined;\n}\n",
+      "visibleTests": [
+        {
+          "name": "reads the selected numeric invoice field with its inferred type",
+          "testCode": "const totalCents: number | undefined = readInvoiceField({ invoiceNumber: 'INV-37', totalCents: 8250 }, 'totalCents'); assert.strictEqual(totalCents, 8250);"
+        },
+        {
+          "name": "rejects a key outside the invoice shape",
+          "testCode": "// @ts-expect-error The selected key must be a key of this invoice shape.\nassert.strictEqual(readInvoiceField({ totalCents: 8250 }, 'missingField'), undefined);"
+        },
+        {
+          "name": "reads a selected string field",
+          "testCode": "assert.strictEqual(readInvoiceField({ invoiceNumber: 'INV-37', totalCents: 8250 }, 'invoiceNumber'), 'INV-37');"
+        },
+        {
+          "name": "returns undefined when the record has no own selected field",
+          "testCode": "const record = Object.create({ invoiceNumber: 'INV-37' }) as { invoiceNumber?: string }; assert.strictEqual(readInvoiceField(record, 'invoiceNumber'), undefined);"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "does not return a prototype-provided field",
+          "testCode": "const record = Object.create({ approvalState: 'approved' }) as { approvalState?: string }; assert.strictEqual(readInvoiceField(record, 'approvalState'), undefined);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Capture the record type and constrain the key to properties of that type."
+        },
+        {
+          "explain": "Use the key parameter in the result type to preserve the selected property's value type."
+        },
+        {
+          "explain": "Check ownership before returning the indexed value so prototype properties are excluded."
+        }
+      ],
+      "verificationLevel": "partial",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "Invoice review screens select fields from structured invoice records, while inherited values should not be mistaken for persisted invoice data."
+      },
+      "form": "direct",
+      "fingerprint": "arbitrary-string-key|direct|readInvoiceField",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": false,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "arbitrary-string-key",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 6
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Standard Exam",
+      "unitCode": "PRG-T01-C02-U05",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U05-01/Q03_readInvoiceField.ts"
+    },
+    {
+      "id": "Q04",
+      "level": 2,
+      "category": "Refactor & Design",
+      "archetype": "refactoring",
+      "codeType": "refactor",
+      "archetypeKey": "prg-t01-c02-u05-preserve-generic-relationships",
+      "commonTrapTag": "widen-generic-result",
+      "context": "shipment_status_projection",
+      "entryPoint": "projectShipmentField",
+      "prompt": "A shipment dashboard has a legacy projection that only handles shipment codes, accepts a broad string key, and returns `unknown[]`. Refactor `projectShipmentField` to remove that hard-coded branch and add support for any declared shipment field. Preserve the existing shipment-code behavior and improve the public type relationship.\n\n**Requirements**\n- Restrict the selected key to a field on the shipment record.\n- Return selected field values with the corresponding value type.\n- Preserve explicit `undefined` field values and handle an empty list.\n- Keep the exported function name and do not mutate the source list.",
+      "inputHint": "The projected array should keep one output for every input shipment, in the original order.",
+      "checkpointHint": "Trace how the shipment type and selected key should flow through both the input and the output.",
+      "starterCode": "type ShipmentRecord = { shipmentCode: string; deliveredAt?: string };\n\nexport function projectShipmentField(shipments: readonly ShipmentRecord[], field: string): unknown[] {\n  if (field === 'shipmentCode') return shipments.map((shipment) => shipment.shipmentCode);\n  return [];\n}\n",
+      "solutionCode": "type ShipmentRecord = { shipmentCode: string; deliveredAt?: string };\n\nexport function projectShipmentField<K extends keyof ShipmentRecord>(shipments: readonly ShipmentRecord[], field: K): Array<ShipmentRecord[K]> {\n  return shipments.map((shipment) => shipment[field]);\n}\n",
+      "trapMutant": "type ShipmentRecord = { shipmentCode: string; deliveredAt?: string };\n\nexport function projectShipmentField<K extends keyof ShipmentRecord>(shipments: readonly ShipmentRecord[], field: K): Array<ShipmentRecord[K] | null> {\n  return shipments.map((shipment) => shipment[field] ?? null);\n}\n",
+      "visibleTests": [
+        {
+          "name": "projects shipment codes in input order with a concrete result type",
+          "testCode": "const codes: string[] = projectShipmentField([{ shipmentCode: 'SHP-13' }, { shipmentCode: 'SHP-08' }], 'shipmentCode'); assert.deepStrictEqual(codes, ['SHP-13', 'SHP-08']);"
+        },
+        {
+          "name": "projects optional field values without widening",
+          "testCode": "const dates: Array<string | undefined> = projectShipmentField([{ shipmentCode: 'SHP-13' }, { shipmentCode: 'SHP-08', deliveredAt: '2026-11-17' }], 'deliveredAt'); assert.deepStrictEqual(dates, [undefined, '2026-11-17']);"
+        },
+        {
+          "name": "returns an empty result for an empty shipment list",
+          "testCode": "assert.deepStrictEqual(projectShipmentField([], 'shipmentCode'), []);"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "keeps an explicit undefined value in its position",
+          "testCode": "assert.deepStrictEqual(projectShipmentField([{ shipmentCode: 'SHP-13', deliveredAt: undefined }], 'deliveredAt'), [undefined]);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Replace the unrestricted string key with a key from the shipment record type."
+        },
+        {
+          "explain": "Use the key to derive the projected value type rather than returning unknown values."
+        },
+        {
+          "explain": "Map over the readonly input to preserve order, cardinality, and source immutability."
+        }
+      ],
+      "verificationLevel": "partial",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "Shipment dashboards commonly project operational fields such as shipment identifiers and delivery dates from typed records; retaining order and optional values reflects the actual data feed."
+      },
+      "form": "direct",
+      "fingerprint": "widen-generic-result|direct|projectShipmentField",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "refactoring"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "widen-generic-result",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 6
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Standard Exam",
+      "unitCode": "PRG-T01-C02-U05",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U05-01/Q04_projectShipmentField.ts"
+    }
+  ],
+  "blindSolve": [
+    {
+      "problemId": "Q01",
+      "passed": true
+    },
+    {
+      "problemId": "Q02",
+      "passed": true
+    },
+    {
+      "problemId": "Q03",
+      "passed": true
+    },
+    {
+      "problemId": "Q04",
+      "passed": true
+    }
+  ],
+  "review": {
+    "verdict": "pass",
+    "note": "The updated draft validates generic type relationships, keeps the refactor baseline working for its legacy behavior, and meets the unit scope, context, mix, and edge-case requirements."
+  },
+  "drillId": "DRL-PRG-T01-C02-U05-01",
+  "topicCode": "PRG-T01",
+  "chapterCode": "PRG-T01-C02",
+  "schemaVersion": "2.0-code",
+  "subject": "PRG",
+  "createdAt": "2026-11-17 05:09:48",
+  "localFilePath": "drills/data/PRG-T01-C02-U05/DRL-PRG-T01-C02-U05-01.json"
+}
