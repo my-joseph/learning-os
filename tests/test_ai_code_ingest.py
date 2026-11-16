@@ -290,6 +290,27 @@ class TestAiCodeIngest(unittest.TestCase):
     def test_full_ingest_pipeline_in_temp_dir(self):
         """Tests full end-to-end ingest into temporary data and workspace directories."""
         with tempfile.TemporaryDirectory() as tmp_data_dir, tempfile.TemporaryDirectory() as tmp_ws_dir:
+            register_code_archetype(
+                "PRG-T01-C03",
+                {
+                    "archetypeKey": "prg-c03-token-bucket-rate-limiter",
+                    "name": "Token Bucket Burst Rate Limiter",
+                    "level": 3,
+                    "qualityChecks": [
+                        {
+                            "id": "QC-bucket-clamp",
+                            "check": "Refilled tokens are clamped with Math.min(capacity, ...).",
+                            "why": "Unclamped tokens allow an unbounded burst after idle time.",
+                            "severity": "must",
+                            "knownBad": {
+                                "code": "function refill(t, dt, r) { return t + dt * r; }",
+                                "caughtBy": "test",
+                            },
+                        }
+                    ],
+                },
+                vault_dir=tmp_data_dir,
+            )
             prob = self._create_valid_problem()
             drill_doc = {
                 "unitCode": "PRG-T01-C03",

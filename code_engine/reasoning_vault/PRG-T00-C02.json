@@ -50,6 +50,28 @@
         "job_queue_settings",
         "inventory_import",
         "user_profile_header"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-nullish-default",
+          "check": "Defaults use `??` or an explicit `null`/`undefined` check, never `||`.",
+          "why": "`||` overwrites legitimate falsy values such as `0`, `false`, and `''` with the default.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function getTimeout(cfg) {\n  return cfg.timeoutSec || 30;\n}",
+            "caughtBy": "test"
+          }
+        },
+        {
+          "id": "QC-explicit-empty-check",
+          "check": "Empty-string or missing-number checks test `=== ''` or `Number.isFinite(...)` explicitly rather than truthiness (`!val`).",
+          "why": "Truthiness checks conflate `0` and `''` with `null` or `undefined`.",
+          "severity": "should",
+          "knownBad": {
+            "code": "function hasValidPort(port) {\n  if (!port) return false;\n  return port > 0;\n}",
+            "caughtBy": "test"
+          }
+        }
       ]
     },
     {
@@ -89,6 +111,28 @@
       ],
       "usedContexts": [
         "metrics_counter_registry"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-closure-no-ref-escape",
+          "check": "Accessors returning internal arrays or objects return a shallow copy or freeze, never the live internal reference.",
+          "why": "Returning the internal reference lets callers mutate private closure state outside the factory API.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function createRegistry() {\n  const items = [];\n  return {\n    add(item) { items.push(item); },\n    getAll() { return items; }\n  };\n}",
+            "caughtBy": "test"
+          }
+        },
+        {
+          "id": "QC-closure-private-state",
+          "check": "Mutable state lives in `let`/`const` bindings inside the factory closure rather than as properties on the returned object.",
+          "why": "Storing state on the returned object exposes it to direct external reassignment.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function createCounter() {\n  return {\n    count: 0,\n    inc() { this.count += 1; }\n  };\n}",
+            "caughtBy": "review"
+          }
+        }
       ]
     },
     {
@@ -128,6 +172,28 @@
       ],
       "usedContexts": [
         "ecommerce_order_revenue_analyzer"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-no-in-place-sort",
+          "check": "Sorting or reversing a caller-owned array uses `[...arr].sort(...)` or `toSorted()`, never `arr.sort()` directly.",
+          "why": "`Array.prototype.sort` and `reverse` mutate the array in place and corrupt the caller's ordering.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function sortOrders(orders) {\n  return orders.sort((a, b) => a.total - b.total);\n}",
+            "caughtBy": "test"
+          }
+        },
+        {
+          "id": "QC-reduce-explicit-init",
+          "check": "Every `.reduce(...)` call passes an explicit initial accumulator value as its second argument.",
+          "why": "Omitting the initial value throws a `TypeError` on empty arrays and reuses the first element as the accumulator.",
+          "severity": "should",
+          "knownBad": {
+            "code": "function sumTotals(items) {\n  return items.reduce((acc, item) => acc + item.price);\n}",
+            "caughtBy": "test"
+          }
+        }
       ]
     },
     {
@@ -165,7 +231,29 @@
           "description": "Managing interactive task card interactions across dynamic columns."
         }
       ],
-      "usedContexts": []
+      "usedContexts": [],
+      "qualityChecks": [
+        {
+          "id": "QC-delegation-use-closest",
+          "check": "Delegated event handlers locate the interactive element via `event.target.closest(selector)` rather than reading `event.target` directly.",
+          "why": "Clicking a nested `<span>` or icon inside a button sets `event.target` to the child, missing the parent's `dataset`.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function handleClick(event, onAction) {\n  const action = event.target.dataset.action;\n  if (action) onAction(action);\n}",
+            "caughtBy": "test"
+          }
+        },
+        {
+          "id": "QC-delegation-null-guard",
+          "check": "The result of `event.target.closest(selector)` is checked for `null` before reading properties.",
+          "why": "Clicks on non-matching container areas return `null` from `closest()`, throwing a `TypeError` if dereferenced.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function handleClick(event, onAction) {\n  const btn = event.target.closest('[data-action]');\n  onAction(btn.dataset.action);\n}",
+            "caughtBy": "test"
+          }
+        }
+      ]
     },
     {
       "archetypeKey": "prg-c02-async-promise-combinator",
@@ -204,6 +292,28 @@
       ],
       "usedContexts": [
         "microservice_health_aggregator"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-async-settle-all",
+          "check": "Independent concurrent tasks use `Promise.allSettled` (or per-task `try/catch`), never bare `Promise.all`.",
+          "why": "`Promise.all` rejects on the first failure and discards the results of all other surviving tasks.",
+          "severity": "must",
+          "knownBad": {
+            "code": "async function runAll(tasks) {\n  return Promise.all(tasks.map((task) => task()));\n}",
+            "caughtBy": "test"
+          }
+        },
+        {
+          "id": "QC-async-preserve-order",
+          "check": "Combinator results are returned in the same positional order as the input `tasks` array.",
+          "why": "Pushing into a result array inside `.then()` callbacks reorders results by completion time instead of input order.",
+          "severity": "should",
+          "knownBad": {
+            "code": "async function runAll(tasks) {\n  const out = [];\n  await Promise.allSettled(tasks.map((t) => t().then((v) => out.push(v))));\n  return out;\n}",
+            "caughtBy": "test"
+          }
+        }
       ]
     },
     {
@@ -243,6 +353,38 @@
       ],
       "usedContexts": [
         "payment_checkout_state_machine"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-union-reject-invalid-transition",
+          "check": "Invalid state-to-action transitions throw an explicit domain error rather than silently returning the old state or mutating it.",
+          "why": "Silent fallthrough masks illegal transitions such as shipping a cancelled order.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function transition(state, action) {\n  if (state.status === 'IDLE' && action.type === 'START') {\n    return { status: 'RUNNING' };\n  }\n  return state;\n}",
+            "caughtBy": "test"
+          }
+        },
+        {
+          "id": "QC-union-exhaustive-switch",
+          "check": "Switch or branch chains over a discriminated union include a `default` branch that throws on unknown discriminants.",
+          "why": "A missing `default` branch lets newly added action types fall through silently.",
+          "severity": "should",
+          "knownBad": {
+            "code": "function handleAction(action) {\n  switch (action.type) {\n    case 'ADD': return 1;\n    case 'SUB': return -1;\n  }\n  return 0;\n}",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-union-pure-next-state",
+          "check": "State transitions return a new state object instead of reassigning `state.status` or payload fields in place.",
+          "why": "Mutating the current state object breaks reducer predictability and corrupts prior snapshots.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function transition(state, nextStatus) {\n  state.status = nextStatus;\n  return state;\n}",
+            "caughtBy": "lint:no-param-reassign"
+          }
+        }
       ]
     },
     {
@@ -280,7 +422,29 @@
           "description": "Fixing deep object path getter ('a.b.c') when encountering null or intermediate primitives."
         }
       ],
-      "usedContexts": []
+      "usedContexts": [],
+      "qualityChecks": [
+        {
+          "id": "QC-debug-no-special-case-patch",
+          "check": "The fix addresses the underlying condition or invariant rather than hardcoding an `if` branch for a specific test input.",
+          "why": "Special-casing a single reproducer input leaves the root bug intact for all other boundary values.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function getPath(obj, path) {\n  if (path === 'a.b.c') return undefined;\n  return path.split('.').reduce((acc, k) => acc[k], obj);\n}",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-debug-preserve-signature",
+          "check": "The exported function name, parameter order, and return shape match the original contract without breaking baseline callers.",
+          "why": "Changing the public signature or return type breaks existing callers and regression tests.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function parseQuery(qs, strictMode) {\n  if (!strictMode) throw new Error('strictMode required');\n  return {};\n}",
+            "caughtBy": "test"
+          }
+        }
+      ]
     },
     {
       "archetypeKey": "prg-c02-function-parameters-basics",
@@ -333,6 +497,38 @@
       "usedContexts": [
         "checkout_discount",
         "invoice_totals"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-default-param-over-or",
+          "check": "Optional parameters use ES default parameters (`param = defaultVal`) or `??`, never `param || defaultVal`.",
+          "why": "`param || defaultVal` discards explicit `0` or `false` arguments passed by the caller.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function applyDiscount(price, rate) {\n  const r = rate || 0.1;\n  return price * (1 - r);\n}",
+            "caughtBy": "test"
+          }
+        },
+        {
+          "id": "QC-rest-empty-safe",
+          "check": "Rest parameter reductions (`...items`) supply an explicit initial value (such as `0`) so zero trailing arguments do not throw.",
+          "why": "Calling `.reduce()` without an initial value on an empty rest array throws a `TypeError`.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function sumWithTax(taxRate, ...amounts) {\n  const subtotal = amounts.reduce((a, b) => a + b);\n  return subtotal * (1 + taxRate);\n}",
+            "caughtBy": "test"
+          }
+        },
+        {
+          "id": "QC-numeric-rounding-not-string",
+          "check": "Monetary or decimal results are rounded numerically (`Math.round(x * 100) / 100` or `Number(x.toFixed(2))`) and returned as a `number`, never a `toFixed` string.",
+          "why": "`toFixed()` returns a string, which breaks numeric arithmetic and strict equality checks.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function roundPrice(amount) {\n  return amount.toFixed(2);\n}",
+            "caughtBy": "test"
+          }
+        }
       ]
     },
     {
@@ -396,6 +592,38 @@
         "newsletter_export",
         "shipping_labels",
         "stock_ledger"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-object-copy-on-write",
+          "check": "Updating a key-value map creates a new object (`{ ...map, [key]: next }`) rather than assigning to `inputMap[key]`.",
+          "why": "Assigning to `inputMap[key]` mutates the caller's object in place.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function adjustStock(stock, sku, delta) {\n  stock[sku] = (stock[sku] ?? 0) + delta;\n  return stock;\n}",
+            "caughtBy": "lint:no-param-reassign"
+          }
+        },
+        {
+          "id": "QC-missing-key-fallback",
+          "check": "Reading an optional or missing object key for arithmetic uses `?? 0` before adding or incrementing.",
+          "why": "Adding a number to `undefined` produces `NaN` and corrupts the map entry.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function adjustStock(stock, sku, delta) {\n  return { ...stock, [sku]: stock[sku] + delta };\n}",
+            "caughtBy": "test"
+          }
+        },
+        {
+          "id": "QC-normalize-before-format",
+          "check": "String normalization (`.trim()`, `.toLowerCase()`) and singular/plural branches are applied explicitly before returning formatted output.",
+          "why": "Unnormalized whitespace or hardcoded plural suffixes produce mismatched labels on edge inputs.",
+          "severity": "should",
+          "knownBad": {
+            "code": "function formatCount(count) {\n  return `${count} items`;\n}",
+            "caughtBy": "test"
+          }
+        }
       ]
     }
   ]

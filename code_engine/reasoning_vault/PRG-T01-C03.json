@@ -53,6 +53,38 @@
       "usedContexts": [
         "cloud_api_gateway_burst_throttle",
         "iot_telemetry_beacon_uplink"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-bucket-clamp-capacity",
+          "check": "Refilled tokens are clamped with `Math.min(capacity, ...)` so idle periods never exceed `capacity`.",
+          "why": "Unclamped tokens allow an unbounded burst after prolonged idle time.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function refill(tokens, elapsedSec, rate) {\n  return tokens + elapsedSec * rate;\n}",
+            "caughtBy": "test"
+          }
+        },
+        {
+          "id": "QC-bucket-injectable-clock",
+          "check": "Time-dependent bucket state reads an injectable `now` function (defaulting to `Date.now`) rather than hardcoding `Date.now()`.",
+          "why": "Hardcoding `Date.now()` makes rate-limit refill tests flaky or slow.",
+          "severity": "should",
+          "knownBad": {
+            "code": "function createBucket(capacity, rate) {\n  let last = Date.now();\n  return () => Date.now() - last;\n}",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-bucket-preserve-partial-refill",
+          "check": "When a request is rejected, `lastRefillTimestamp` is either updated only after adding accrued tokens or left unchanged so partial refill time is never lost.",
+          "why": "Resetting the timestamp to `now` without crediting accrued tokens starves future requests.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function tryConsume(state, cost, nowMs) {\n  if (state.tokens < cost) {\n    state.lastRefill = nowMs;\n    return false;\n  }\n  state.tokens -= cost;\n  return true;\n}",
+            "caughtBy": "test"
+          }
+        }
       ]
     },
     {
@@ -103,6 +135,38 @@
       ],
       "usedContexts": [
         "stripe_billing_webhook_agent"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-hmac-timing-safe-equal",
+          "check": "Signature comparison uses `crypto.timingSafeEqual` on equal-length `Buffer` instances, never `===`.",
+          "why": "Standard string `===` short-circuits on the first mismatched byte and leaks timing side-channel information.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function verifySig(expectedHex, providedHex) {\n  return expectedHex === providedHex;\n}",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-hmac-length-check-before-equal",
+          "check": "Buffer lengths are compared before calling `crypto.timingSafeEqual` so mismatched lengths return `false` instead of throwing.",
+          "why": "`crypto.timingSafeEqual` throws a `RangeError` when given buffers of different byte lengths.",
+          "severity": "must",
+          "knownBad": {
+            "code": "const crypto = require('crypto');\nfunction safeCompare(a, b) {\n  return crypto.timingSafeEqual(Buffer.from(a), Buffer.from(b));\n}",
+            "caughtBy": "test"
+          }
+        },
+        {
+          "id": "QC-hmac-timestamp-tolerance",
+          "check": "The header timestamp is checked against the tolerance window (`Math.abs(now - timestamp) <= tolerance`) before accepting the signature.",
+          "why": "Omitting the timestamp window allows old captured webhooks to be replayed indefinitely.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function isFresh(_timestamp, _now, _tolerance) {\n  return true;\n}",
+            "caughtBy": "test"
+          }
+        }
       ]
     },
     {
@@ -155,6 +219,38 @@
       ],
       "usedContexts": [
         "resilient_payment_rpc_client"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-retry-classify-error",
+          "check": "Caught errors are checked with `isRetryable(err)` (or status classification) before sleeping, rethrowing non-retryable errors immediately.",
+          "why": "Retrying permanent 4xx errors wastes attempts and delays failure reporting.",
+          "severity": "must",
+          "knownBad": {
+            "code": "async function retry(fn, maxRetries) {\n  for (let i = 0; i <= maxRetries; i += 1) {\n    try { return await fn(); } catch (err) { if (i === maxRetries) throw err; }\n  }\n  return undefined;\n}",
+            "caughtBy": "test"
+          }
+        },
+        {
+          "id": "QC-retry-cap-and-jitter",
+          "check": "Backoff delay is capped at `maxDelayMs` (`Math.min(maxDelayMs, ...)`) and multiplied by a random jitter factor.",
+          "why": "Uncapped or un-jittered delays grow unboundedly and cause synchronized thundering-herd retry spikes.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function computeDelay(baseMs, attempt) {\n  return baseMs * (2 ** attempt);\n}",
+            "caughtBy": "test"
+          }
+        },
+        {
+          "id": "QC-retry-bounded-attempts",
+          "check": "The retry loop terminates after at most `maxRetries` retries and rethrows the final error.",
+          "why": "Off-by-one loop bounds either skip the final retry or retry infinitely.",
+          "severity": "should",
+          "knownBad": {
+            "code": "async function retryForever(fn) {\n  while (true) {\n    try { return await fn(); } catch (_e) {}\n  }\n}",
+            "caughtBy": "review"
+          }
+        }
       ]
     },
     {
@@ -207,6 +303,38 @@
       ],
       "usedContexts": [
         "crypto_exchange_orderbook_cache"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-pool-bounded-workers",
+          "check": "Concurrency is bounded by spawning at most `Math.min(concurrency, items.length)` worker loops rather than `Promise.all(items.map(...))`.",
+          "why": "Launching all tasks with `Promise.all` floods downstream sockets and connection pools.",
+          "severity": "must",
+          "knownBad": {
+            "code": "async function runPool(items, fn) {\n  return Promise.all(items.map((item) => fn(item)));\n}",
+            "caughtBy": "test"
+          }
+        },
+        {
+          "id": "QC-pool-indexed-results",
+          "check": "Completed results are written to `results[index]` by original task index, never appended with `results.push(...)`.",
+          "why": "Appending on completion scrambles result order when later tasks finish faster than earlier ones.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function recordResult(results, value) {\n  results.push(value);\n}",
+            "caughtBy": "test"
+          }
+        },
+        {
+          "id": "QC-pool-validate-concurrency",
+          "check": "Invalid concurrency limits (`<= 0` or non-integer) are rejected at entry before spawning workers.",
+          "why": "A zero or negative concurrency limit returns empty results or hangs without executing tasks.",
+          "severity": "should",
+          "knownBad": {
+            "code": "async function runPool(items, fn, concurrency) {\n  const workers = Array.from({ length: concurrency }, () => Promise.resolve());\n  await Promise.all(workers);\n  return items.length ? [] : [];\n}",
+            "caughtBy": "test"
+          }
+        }
       ]
     },
     {
@@ -257,6 +385,38 @@
       ],
       "usedContexts": [
         "fintech_core_banking_interbank_switch"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-breaker-single-half-open-probe",
+          "check": "While a `HALF_OPEN` probe is in flight, concurrent calls are rejected immediately until the probe settles.",
+          "why": "Letting multiple concurrent calls through in `HALF_OPEN` causes a stampede against a recovering service.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function canProbe(state) {\n  return state === 'HALF_OPEN';\n}",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-breaker-reset-failures-on-success",
+          "check": "Every successful execution in `CLOSED` or `HALF_OPEN` resets the consecutive `failureCount` to `0`.",
+          "why": "Leaving stale failures in the counter causes a single future error to trip the circuit prematurely.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function onSuccess(state) {\n  if (state.mode === 'HALF_OPEN') state.mode = 'CLOSED';\n}",
+            "caughtBy": "test"
+          }
+        },
+        {
+          "id": "QC-breaker-open-fast-fail",
+          "check": "When `state === 'OPEN'` and cooldown has not elapsed, `execute` throws immediately without invoking `asyncOperation`.",
+          "why": "Calling the downstream operation while `OPEN` defeats the circuit breaker's fast-fail protection.",
+          "severity": "must",
+          "knownBad": {
+            "code": "async function executeOpen(op) {\n  return op();\n}",
+            "caughtBy": "test"
+          }
+        }
       ]
     }
   ]

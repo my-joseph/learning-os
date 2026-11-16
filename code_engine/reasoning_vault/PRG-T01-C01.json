@@ -36,6 +36,28 @@
       ],
       "usedContexts": [
         "plugin_sandbox_context"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-scope-block-binding",
+          "check": "Loop and callback variables are declared with block-scoped `const`/`let` inside each iteration, never hoisted with `var` or shared outside the loop.",
+          "why": "Hoisted or shared loop bindings cause closures created inside the loop to read the final mutated value.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function makeHandlers(count) {\n  const out = [];\n  for (var i = 0; i < count; i += 1) {\n    out.push(() => i);\n  }\n  return out;\n}",
+            "caughtBy": "lint:no-var"
+          }
+        },
+        {
+          "id": "QC-scope-no-outer-mutation",
+          "check": "Inner helper functions or blocks do not reassign outer configuration bindings passed into the sandbox.",
+          "why": "Mutating outer lexical bindings leaks state across independent calls or plugins.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function runWithConfig(baseConfig, override) {\n  baseConfig.mode = override;\n  return baseConfig;\n}",
+            "caughtBy": "lint:no-param-reassign"
+          }
+        }
       ]
     },
     {
@@ -71,6 +93,28 @@
       ],
       "usedContexts": [
         "event_emitter_subscriber_delegate"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-this-explicit-bind",
+          "check": "Methods passed as detached callbacks or event handlers are bound via `.bind(target)` or an arrow wrapper, never passed as bare `obj.method`.",
+          "why": "A detached method loses its `this` receiver and throws `TypeError` or reads `undefined` at call time.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function registerHandler(emitter, service) {\n  emitter.on('event', service.handle);\n}",
+            "caughtBy": "test"
+          }
+        },
+        {
+          "id": "QC-proto-shared-methods",
+          "check": "Instance methods shared across objects are defined on the class or prototype rather than recreated per instance unless closure privacy requires it.",
+          "why": "Attaching identical method closures to every instance breaks prototype delegation and wastes memory.",
+          "severity": "should",
+          "knownBad": {
+            "code": "function User(name) {\n  this.name = name;\n  this.greet = function () { return `Hi ${this.name}`; };\n}",
+            "caughtBy": "review"
+          }
+        }
       ]
     },
     {
@@ -106,6 +150,28 @@
       ],
       "usedContexts": [
         "money_currency_value_object"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-toprimitive-numeric-return",
+          "check": "`valueOf()` and `Symbol.toPrimitive('number')` / `'default'` return a `number` primitive, never a formatted string.",
+          "why": "Returning a string from `valueOf` causes `+` to perform string concatenation instead of numeric addition.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function makeAmount(cents) {\n  return {\n    valueOf() { return String(cents); }\n  };\n}",
+            "caughtBy": "test"
+          }
+        },
+        {
+          "id": "QC-toprimitive-hint-dispatch",
+          "check": "`[Symbol.toPrimitive](hint)` handles `'string'` separately from `'number'` and `'default'` and returns a primitive in every branch.",
+          "why": "Returning an object or ignoring the `'string'` hint throws a `TypeError` or produces `[object Object]`.",
+          "severity": "should",
+          "knownBad": {
+            "code": "const obj = {\n  [Symbol.toPrimitive](hint) {\n    if (hint === 'number') return 10;\n    return {};\n  }\n};",
+            "caughtBy": "test"
+          }
+        }
       ]
     },
     {
@@ -141,6 +207,38 @@
       ],
       "usedContexts": [
         "redux_state_snapshot_cloner"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-clone-visited-weakmap",
+          "check": "Deep cloning tracks visited objects in a `WeakMap` or `Map` instead of using `JSON.parse(JSON.stringify(...))` or un-memoized recursion.",
+          "why": "`JSON.stringify` and un-memoized recursion crash with a stack overflow on circular object graphs.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function deepClone(value) {\n  return JSON.parse(JSON.stringify(value));\n}",
+            "caughtBy": "test"
+          }
+        },
+        {
+          "id": "QC-clone-register-before-recurse",
+          "check": "The newly created clone container is stored in the visited map before recursively cloning its child properties.",
+          "why": "Registering the clone after recursing still causes infinite recursion when a child references the parent.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function deepClone(obj, seen = new WeakMap()) {\n  if (seen.has(obj)) return seen.get(obj);\n  const copy = {};\n  for (const k of Object.keys(obj)) copy[k] = deepClone(obj[k], seen);\n  seen.set(obj, copy);\n  return copy;\n}",
+            "caughtBy": "test"
+          }
+        },
+        {
+          "id": "QC-clone-preserve-array-type",
+          "check": "Arrays are cloned into new `Array` instances (`Array.isArray`), not plain `{}` objects.",
+          "why": "Cloning an array into `{}` strips array methods and `length` semantics.",
+          "severity": "should",
+          "knownBad": {
+            "code": "function cloneContainer(val) {\n  const copy = {};\n  for (const k of Object.keys(val)) copy[k] = val[k];\n  return copy;\n}",
+            "caughtBy": "test"
+          }
+        }
       ]
     },
     {
@@ -176,6 +274,38 @@
       ],
       "usedContexts": [
         "http_api_gateway_middleware"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-middleware-single-next-guard",
+          "check": "The pipeline tracks the highest dispatched index and rejects if `next()` is called more than once in the same middleware.",
+          "why": "Allowing multiple `next()` calls in one middleware executes downstream handlers twice and corrupts pipeline order.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function compose(middlewares) {\n  return (ctx) => {\n    const dispatch = (i) => {\n      const fn = middlewares[i];\n      if (!fn) return Promise.resolve();\n      return Promise.resolve(fn(ctx, () => dispatch(i + 1)));\n    };\n    return dispatch(0);\n  };\n}",
+            "caughtBy": "test"
+          }
+        },
+        {
+          "id": "QC-middleware-return-promise",
+          "check": "Each `dispatch(i)` call returns a `Promise` (`Promise.resolve(...)`) so callers and middleware can `await next()`.",
+          "why": "Returning a non-promise value breaks upstream `await next()` ordering and exception propagation.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function dispatch(middlewares, i, ctx) {\n  const fn = middlewares[i];\n  if (!fn) return undefined;\n  return fn(ctx, () => dispatch(middlewares, i + 1, ctx));\n}",
+            "caughtBy": "test"
+          }
+        },
+        {
+          "id": "QC-middleware-base-case-stop",
+          "check": "When `i === middlewares.length`, `dispatch` resolves cleanly without indexing past the array.",
+          "why": "Missing the terminal base case causes `undefined` invocation or infinite recursion.",
+          "severity": "should",
+          "knownBad": {
+            "code": "function dispatch(middlewares, i, ctx) {\n  return Promise.resolve(middlewares[i](ctx, () => dispatch(middlewares, i + 1, ctx)));\n}",
+            "caughtBy": "test"
+          }
+        }
       ]
     }
   ]

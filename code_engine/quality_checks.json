@@ -1,0 +1,73 @@
+[
+  {
+    "id": "U-names",
+    "check": "Names say what a value is or what a function does; no `data`, `temp`, or `x` for domain values.",
+    "why": "Vague names force readers to trace every line to understand what a value represents.",
+    "severity": "must",
+    "knownBad": {
+      "code": "function calc(data) {\n  const temp = data.a + data.b;\n  return temp;\n}",
+      "caughtBy": "review"
+    }
+  },
+  {
+    "id": "U-one-job",
+    "check": "Each function does one job; a function that validates, transforms, and formats is split into focused helpers.",
+    "why": "Mixing validation, business logic, and formatting in one function makes each part harder to test and reuse.",
+    "severity": "should",
+    "mustFromLevel": 3,
+    "knownBad": {
+      "code": "function processOrder(order) {\n  if (!order || !order.items.length) throw new Error('Invalid');\n  const total = order.items.reduce((sum, item) => sum + item.price, 0);\n  return `Total: $${total.toFixed(2)}`;\n}",
+      "caughtBy": "review"
+    }
+  },
+  {
+    "id": "U-no-input-mutation",
+    "check": "Arguments and caller-owned objects or arrays are not mutated unless the spec explicitly requires in-place mutation.",
+    "why": "Mutating caller inputs causes silent side effects and stale-state bugs elsewhere in the program.",
+    "severity": "must",
+    "knownBad": {
+      "code": "function addDiscount(order, discount) {\n  order.discount = discount;\n  return order;\n}",
+      "caughtBy": "lint:no-param-reassign"
+    }
+  },
+  {
+    "id": "U-errors",
+    "check": "Errors are thrown or returned explicitly on invalid input or failure; nothing is swallowed by an empty `catch`.",
+    "why": "Swallowing errors or returning silent fallbacks hides root causes and corrupts downstream state.",
+    "severity": "must",
+    "knownBad": {
+      "code": "function parseConfig(raw) {\n  try {\n    return JSON.parse(raw);\n  } catch (_err) {\n    return {};\n  }\n}",
+      "caughtBy": "review"
+    }
+  },
+  {
+    "id": "U-no-magic",
+    "check": "Unexplained numeric or string literals that carry domain meaning are extracted into named constants.",
+    "why": "Magic literals obscure business rules and cause drift when the same value must be updated in multiple places.",
+    "severity": "should",
+    "knownBad": {
+      "code": "function computeShipping(subtotal) {\n  return subtotal >= 50 ? 0 : 7.99;\n}",
+      "caughtBy": "review"
+    }
+  },
+  {
+    "id": "U-no-dead-code",
+    "check": "No commented-out code, unreachable branches, unused variables, or leftover `console.log` calls.",
+    "why": "Dead code clutters the module and misleads readers about which paths are actually executed.",
+    "severity": "should",
+    "knownBad": {
+      "code": "function normalizeCode(code) {\n  const unused = code.toLowerCase();\n  return code.trim().toUpperCase();\n}",
+      "caughtBy": "lint:no-unused-vars"
+    }
+  },
+  {
+    "id": "U-simplest",
+    "check": "No needless cleverness such as nested ternaries or `reduce` where a direct loop or method is clearer.",
+    "why": "Over-compressed expressions slow down reading and hide off-by-one or precedence bugs.",
+    "severity": "should",
+    "knownBad": {
+      "code": "function classifyScore(score) {\n  return score >= 90 ? 'A' : score >= 80 ? 'B' : score >= 70 ? 'C' : 'F';\n}",
+      "caughtBy": "review"
+    }
+  }
+]

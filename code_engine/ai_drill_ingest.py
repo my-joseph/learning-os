@@ -12,11 +12,14 @@ import datetime
 import json
 import os
 import re
+import shutil
 from typing import Any, Dict, List, Optional
 
 from code_engine.answer_check import parse_tokens
 from code_engine.fmt import LEVEL_LABELS, unit_hierarchy
 from code_engine.generate import next_drill_id
+from code_engine.lint_check import LintToolsMissingError, lint_drill_doc
+from code_engine.quality_checks import load_universal, validate_quality_checks, verify_known_bad_lint
 from code_engine.test_runner import run_tests
 from code_engine.verify import run_node, verify_problem
 from code_engine.workspace import materialize_drill_workspace
@@ -568,6 +571,75 @@ def mark_code_context_used(
 # ---------------------------------------------------------------------------
 # Ingest Pipeline
 # ---------------------------------------------------------------------------
+def _find_archetype_in_vaults(
+    unit_code: str, archetype_key: str, vault_dir: Optional[str] = None
+) -> Optional[Dict[str, Any]]:
+    """Look up an archetype by key in the unit's vault or its parent chapter vault."""
+    _, chapter_code = unit_hierarchy(unit_code)
+    candidates = [unit_code] if chapter_code == unit_code else [unit_code, chapter_code]
+    for scope in candidates:
+        vault = load_code_reasoning_vault(scope, vault_dir=vault_dir)
+        for arch in vault.get("archetypes", []):
+            if arch.get("archetypeKey") == archetype_key:
+                return arch
+    return None
+
+
+def validate_drill_quality_checks(
+    unit_code: str, problems: List[Dict[str, Any]], vault_dir: Optional[str] = None
+) -> None:
+    """
+    Ensure every archetype used by the draft has valid `qualityChecks` in the vault,
+    and every `lint:<rule>` knownBad snippet triggers its declared ESLint rule.
+    """
+    universal = load_universal()
+    universal_ids = {c["id"] for c in universal if isinstance(c, dict) and isinstance(c.get("id"), str)}
+    checked_archetypes: set[str] = set()
+
+    for idx, prob in enumerate(problems, 1):
+        pid = prob.get("id", f"Q{idx:02d}")
+        arch_key = prob.get("archetypeKey")
+        if not arch_key:
+            raise AiContractError(f"[{pid}] Problem is missing 'archetypeKey' (required for qualityChecks gate).")
+        if arch_key in checked_archetypes:
+            continue
+
+        arch = _find_archetype_in_vaults(unit_code, arch_key, vault_dir=vault_dir)
+        if arch is None:
+            raise AiContractError(
+                f"[{pid}] Archetype '{arch_key}' not found in vault for '{unit_code}' (required for qualityChecks gate)."
+            )
+
+        errors = validate_quality_checks(arch, universal_ids=universal_ids)
+        if errors:
+            raise AiContractError(f"[{pid}] Archetype '{arch_key}' has invalid qualityChecks: {'; '.join(errors)}")
+
+        for check in arch.get("qualityChecks", []):
+            ok, msg = verify_known_bad_lint(check, label=arch_key)
+            if not ok:
+                raise AiContractError(f"[{pid}] {msg}")
+            if msg:
+                print(f"  [{pid}] {msg}")
+
+        checked_archetypes.add(arch_key)
+
+
+def validate_drill_solution_lint(drill_doc: Dict[str, Any]) -> None:
+    """Run Layer 2 ESLint checks on every problem's solutionCode at ingest."""
+    if shutil.which("node") is None:
+        print("  [SKIP] solutionCode lint gate: node binary not found on PATH.")
+        return
+    try:
+        findings = lint_drill_doc(drill_doc)
+    except LintToolsMissingError as exc:
+        print(f"  [SKIP] solutionCode lint gate: {exc}")
+        return
+
+    if findings:
+        details = "; ".join(f"[{f['problemId']}] line {f['line']} {f['rule']} {f['message']}" for f in findings)
+        raise AiContractError(f"solutionCode failed Layer 2 lint: {details}")
+
+
 def ingest_ai_code_drill(
     drill_doc: Dict[str, Any],
     data_root: Optional[str] = None,
@@ -607,6 +679,10 @@ def ingest_ai_code_drill(
 
         # Quality Gates (G1, G2, G4, G6) + Node execution verification
         verify_problem(prob, rules=active_rules)
+
+    # 1b. Layer 2 lint on solutionCode and Layer 3 rubric (qualityChecks) gate
+    validate_drill_solution_lint(drill_doc)
+    validate_drill_quality_checks(unit_code, problems, vault_dir=vault_dir)
 
     # 2. Allocate or preserve official Drill ID
     drill_id = drill_doc.get("drillId")
@@ -682,6 +758,9 @@ if __name__ == "__main__":
             print(f"  [{a.get('level', 1)}] {a.get('archetypeKey')}: {a.get('name')}")
             print(f"      Invariant: {a.get('governingInvariant')}")
             print(f"      Used Contexts: {a.get('usedContexts', [])}")
+            checks = a.get("qualityChecks") or []
+            checks_str = ", ".join(f"{c.get('id')} ({c.get('severity')})" for c in checks) if checks else "none"
+            print(f"      Quality Checks: {checks_str}")
 
     if args.ingest_file:
         with open(args.ingest_file, "r", encoding="utf-8") as f:

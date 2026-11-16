@@ -23,6 +23,7 @@ jobs:
       - run: ruff format --check .
       - run: python -m pytest
       - run: python -m code_engine.lint_check --all
+      - run: python -m code_engine.quality_checks --check-vaults
   studio:
     runs-on: ubuntu-latest
     defaults:
