@@ -131,6 +131,8 @@ export const CartesianRenderer: React.FC<CartesianRendererProps> = ({ spec }) =>
 
     const startX = Math.ceil(xMin / effectiveXStep) * effectiveXStep;
     for (let x = startX; x <= xMax; x += effectiveXStep) {
+      const dashedX = (spec.plots || []).some((p) => p.type === "segment" && p.strokeDasharray && p.from[0] === p.to[0] && Math.abs(x - p.from[0]) < effectiveXStep * 0.04);
+      if ((showY && Math.abs(toSvgX(x) - originX) < 18) || dashedX) continue;
       if (Math.abs(x) < 1e-6) continue; // Skip axis line here
       const sx = toSvgX(x);
       lines.push({ x1: sx, y1: padding, x2: sx, y2: svgHeight - padding });
@@ -138,19 +140,23 @@ export const CartesianRenderer: React.FC<CartesianRendererProps> = ({ spec }) =>
 
     const startY = Math.ceil(yMin / effectiveYStep) * effectiveYStep;
     for (let y = startY; y <= yMax; y += effectiveYStep) {
+      const dashedY = (spec.plots || []).some((p) => p.type === "segment" && p.strokeDasharray && p.from[1] === p.to[1] && Math.abs(y - p.from[1]) < effectiveYStep * 0.04);
+      if (dashedY) continue;
       if (Math.abs(y) < 1e-6) continue; // Skip axis line here
       const sy = toSvgY(y);
       lines.push({ x1: padding, y1: sy, x2: svgWidth - padding, y2: sy });
     }
 
     return lines;
-  }, [xMin, xMax, yMin, yMax, effectiveXStep, effectiveYStep, spec.grid, showY, toSvgX, toSvgY, padding, svgWidth, svgHeight]);
+  }, [xMin, xMax, yMin, yMax, effectiveXStep, effectiveYStep, spec.grid, spec.plots, showY, originX, toSvgX, toSvgY, padding, svgWidth, svgHeight]);
 
   // Tick marks on axes
   const ticks = useMemo(() => {
     const list: { val: number; x: number; y: number; isX: boolean }[] = [];
     const startX = Math.ceil(xMin / effectiveXStep) * effectiveXStep;
     for (let x = startX; x <= xMax; x += effectiveXStep) {
+      const dashedX = (spec.plots || []).some((p) => p.type === "segment" && p.strokeDasharray && p.from[0] === p.to[0] && Math.abs(x - p.from[0]) < effectiveXStep * 0.04);
+      if ((showY && Math.abs(toSvgX(x) - originX) < 18) || dashedX) continue;
       if (Math.abs(x) < 1e-6 && showY) continue;
       const cleanVal = Math.round(x * 1000) / 1000;
       list.push({ val: cleanVal, x: toSvgX(x), y: originY, isX: true });
@@ -159,12 +165,14 @@ export const CartesianRenderer: React.FC<CartesianRendererProps> = ({ spec }) =>
 
     const startY = Math.ceil(yMin / effectiveYStep) * effectiveYStep;
     for (let y = startY; y <= yMax; y += effectiveYStep) {
+      const dashedY = (spec.plots || []).some((p) => p.type === "segment" && p.strokeDasharray && p.from[1] === p.to[1] && Math.abs(y - p.from[1]) < effectiveYStep * 0.04);
+      if (dashedY) continue;
       if (Math.abs(y) < 1e-6) continue;
       const cleanVal = Math.round(y * 1000) / 1000;
       list.push({ val: cleanVal, x: originX, y: toSvgY(y), isX: false });
     }
     return list;
-  }, [xMin, xMax, yMin, yMax, effectiveXStep, effectiveYStep, showY, originX, originY, toSvgX, toSvgY]);
+  }, [xMin, xMax, yMin, yMax, effectiveXStep, effectiveYStep, showY, originX, originY, toSvgX, toSvgY, spec.plots]);
 
   return (
     <div className="relative w-full flex flex-col items-center select-none overflow-hidden">

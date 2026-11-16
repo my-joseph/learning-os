@@ -339,3 +339,28 @@ def test_set_symbols_and_upright_capital_greek():
     assert plain("(-\\infty, -1) \\cup [3, \\infty)") == "(-∞, -1) ∪ [3, ∞)"
     assert plain("x \\in \\mathbb{R}") == "x ∈ ℝ"
     assert _spans("\\Delta", "mixed").startswith('<tspan font-family="KaTeX_Main')  # capital Greek upright
+
+
+def test_curve_explicit_label_uses_pretty_math_path():
+    fig = fb.build_function_graph_figure("sqrt(x-3)", label="y = sqrt(x - 3)", x_min=3, x_max=6)
+    legend = next(p["text"] for p in fig["plots"] if p["type"] == "text")
+    assert r"\sqrt" in legend
+    assert "sqrt(" not in legend
+
+
+def test_open_box_sheet_builder_marks_unknown_dimensions():
+    fig = fb.build_open_top_box_sheet_figure(12, 8, 1)
+    svg = figure_to_svg(fig)
+    assert fig["kind"] == "geometry_2d"
+    assert sum(label["text"] == "?" for label in fig["labels"]) == 3
+    assert 'stroke-dasharray="4 3"' in svg
+
+
+def test_graph_tick_labels_skip_axis_and_dashed_lines():
+    fig = fb.build_function_graph_figure("x", x_min=-4, x_max=6, y_min=-4, y_max=6, vlines="2", hlines="4")
+    svg = figure_to_svg(fig)
+    # Both the y-axis x=0 label and labels at dashed x=2 / y=4 are omitted.
+    labels = [float(t) for t in __import__("re").findall(r">(-?\d+(?:\.\d+)?)</text>", svg)]
+    assert 0 not in labels
+    assert 2 not in labels
+    assert 4 not in labels

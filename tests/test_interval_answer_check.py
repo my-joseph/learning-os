@@ -119,3 +119,23 @@ def test_interval_ingest_contract():
     }
     assert validate_ai_problem_contract(prob) is True
     assert _trap_matches_spec(prob["answerSpec"], prob["trapValue"]) is True
+
+
+def test_solution_set_superset_trap_passes_ingest_contract():
+    prob = {
+        "id": "Q01",
+        "prompt": "Solve $x^2 - 8x + 15 = 0$.",
+        "givens": {"a": 8, "b": 15},
+        "display": "x^2 - 8x + 15 = 0",
+        "plainText": "x^2 - 8x + 15 = 0",
+        "answerSpec": {"type": "solution_set", "values": ["3", "5"], "variable": "x"},
+        "answerPlain": "3, 5",
+        "answerDisplay": "3, 5",
+        "checkpointHint": "Factor the quadratic and test every candidate.",
+        "commonTrapTag": "extra-candidate-trap",
+        "trapDerivation": "3, 5, 8, 15",
+        "trapValue": "3, 5, 8, 15",
+        "steps": [{"latex": "(x - 3)(x - 5) = 0", "explain": "Factor the quadratic."}],
+        "verificationLevel": "partial",
+    }
+    assert validate_ai_problem_contract(prob) is True

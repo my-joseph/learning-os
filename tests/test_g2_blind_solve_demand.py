@@ -79,3 +79,11 @@ def test_omission_exemption_is_shared_with_the_verify_g4_gate():
 
     assert is_omission_trap(TRIG_SPEC, "pi/6")
     assert "is_omission_trap" in inspect.getsource(verify)  # G4's 2-givens rule skips omission traps too
+
+
+def test_solution_set_trap_accepts_correct_set_plus_extra():
+    assert _trap_matches_spec(SET_SPEC, "16, 4, 9")
+
+
+def test_choice_without_flaw_is_supported_as_non_flaw_spec():
+    assert _trap_matches_spec({"type": "choice", "options": [{"id": "a"}]}, "b")
