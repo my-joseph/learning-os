@@ -423,8 +423,10 @@ def test_react_dom_workspace_uses_shared_tools_without_local_dependencies(tmp_pa
     assert package["devDependencies"] == {"@types/node": "^20.0.0"}
     assert "tools/lint/node_modules/.bin/vitest" in package["scripts"]["test"]
     assert (ws_dir / "node_modules").is_symlink()
-    result = subprocess.run(["npm", "test"], cwd=ws_dir, capture_output=True, text=True, check=False)
-    assert result.returncode == 0, result.stdout + result.stderr
+    check = subprocess.run(["npm", "run", "check:q01"], cwd=ws_dir, capture_output=True, text=True, check=False)
+    assert "status_0=$?" in package["scripts"]["check:q01"]
+    assert "status_$i" not in package["scripts"]["check:q01"]
+    assert check.returncode == 0, check.stdout + check.stderr
 
 
 def test_react_dom_workspace_types_node_assert_and_input_value(tmp_path):
