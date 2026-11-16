@@ -2443,5 +2443,9 @@
   "DRL-PRG-T00-C03-02": {
     "id": "4153818f-8ba0-81e9-bac2-f9f97bbbe5c5",
     "title": "JavaScript & TypeScript Baseline — Verified Programming Drill (10 Qs · AI Synthesized Engineering Mode)"
+  },
+  "DRL-MTH-T02-C02-U05-01": {
+    "id": "41a3818f-8ba0-8189-9f1d-d959ea793885",
+    "title": "Transformations of Functions — Verified Math Drill (4 Qs · AI Synthesized Reasoning Mode)"
   }
 }

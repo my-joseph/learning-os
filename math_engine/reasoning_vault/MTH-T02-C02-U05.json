@@ -1,0 +1,167 @@
+{
+  "unitCode": "MTH-T02-C02-U05",
+  "topicTitle": "Transformations of Functions",
+  "description": "Reasoning vault aligned with OpenStax Algebra and Trigonometry 2e §3.5: horizontal and vertical shifts, reflections, stretches and compressions, even/odd symmetry, and combinations of transformations.",
+  "archetypes": [
+    {
+      "unitCode": "MTH-T02-C02-U05",
+      "archetypeKey": "t02-c02-u05-read-and-apply-transformation",
+      "level": 1,
+      "name": "Apply Function Transformations",
+      "source": "OpenStax Algebra and Trigonometry 2e §3.5 — Transformation of Functions",
+      "coreConcept": "Changes outside f affect output values; changes to the input affect the graph horizontally, with the inside sign interpreted in the opposite direction for shifts.",
+      "mentalModel": "Treat the graph as points moving: a horizontal shift changes x-coordinates, a vertical shift changes y-coordinates, and scale/reflection factors act around the relevant axis.",
+      "governingRelation": "g(x)=a f(b(x-h))+k",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c02-u05-inside-shift-sign-trap",
+          "description": "Reading f(x-h) as a shift left by h instead of right by h.",
+          "trapFormula": "f(x-h) \\mapsto f(x+h) \\text{ shift direction}"
+        },
+        {
+          "trapTag": "t02-c02-u05-confuse-horizontal-vertical-scale-trap",
+          "description": "Applying an outside scale to input coordinates or an inside scale to output values.",
+          "trapFormula": "a f(bx) \\text{ scales x by }a \\text{ and y by }b"
+        }
+      ],
+      "versatileDomains": [],
+      "usedContexts": [],
+      "figureBuilders": [
+        {
+          "fn": "build_function_graph_figure",
+          "args": {
+            "x_min": "h-4",
+            "x_max": "h+4"
+          },
+          "labels": {
+            "expr": "{a:g}*((x-{h:g})/{stretch:g})^2+{k:g}",
+            "label": "g(x)"
+          },
+          "title": "Horizontally stretched and transformed graph"
+        },
+        {
+          "fn": "build_function_graph_figure",
+          "args": {
+            "x_min": "h-4",
+            "x_max": "h+4"
+          },
+          "labels": {
+            "expr": "{a:g}*(x-{h:g})^2+{k:g}",
+            "label": "g(x)"
+          },
+          "title": "Transformed quadratic graph"
+        }
+      ]
+    },
+    {
+      "unitCode": "MTH-T02-C02-U05",
+      "archetypeKey": "t02-c02-u05-reflections-and-symmetry",
+      "level": 1,
+      "name": "Distinguish Reflections and Symmetry",
+      "source": "OpenStax Algebra and Trigonometry 2e §3.5 — Reflections and Even/Odd Functions",
+      "coreConcept": "Replacing x by -x reflects a graph across the y-axis; multiplying function values by -1 reflects it across the x-axis. Even and odd symmetry describe invariance under these transformations.",
+      "mentalModel": "Track which coordinate changes sign: y changes for an x-axis reflection; x changes for a y-axis reflection.",
+      "governingRelation": "f(-x) \\text{ reflects across y-axis};\\quad -f(x) \\text{ reflects across x-axis}",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c02-u05-swap-reflection-axis-trap",
+          "description": "Swapping which coordinate changes sign for a reflection across an axis.",
+          "trapFormula": "f(-x) \\mapsto -f(x)"
+        },
+        {
+          "trapTag": "t02-c02-u05-odd-symmetry-origin-trap",
+          "description": "Calling a graph odd because it is symmetric about the y-axis rather than the origin.",
+          "trapFormula": "f(-x)=f(x) \\text{ confused with } f(-x)=-f(x)"
+        }
+      ],
+      "versatileDomains": [],
+      "usedContexts": [],
+      "figureBuilders": [
+        {
+          "fn": "build_function_graph_figure",
+          "args": {
+            "x_min": "h-4",
+            "x_max": "h+4"
+          },
+          "labels": {
+            "expr": "{a:g}*((x-{h:g})/{stretch:g})^2+{k:g}",
+            "label": "g(x)"
+          },
+          "title": "Horizontally stretched and transformed graph"
+        },
+        {
+          "fn": "build_function_graph_figure",
+          "args": {
+            "x_min": "h-4",
+            "x_max": "h+4"
+          },
+          "labels": {
+            "expr": "{a:g}*(x-{h:g})^2+{k:g}",
+            "label": "g(x)"
+          },
+          "title": "Transformed quadratic graph"
+        }
+      ]
+    },
+    {
+      "unitCode": "MTH-T02-C02-U05",
+      "archetypeKey": "t02-c02-u05-combine-transformations",
+      "level": 2,
+      "name": "Combine Transformations in a Function Rule",
+      "source": "OpenStax Algebra and Trigonometry 2e §3.5 — Combining Transformations",
+      "coreConcept": "A transformed rule can combine input scaling, horizontal translation, output scaling/reflection, and vertical translation; the order and location of each operation matter.",
+      "mentalModel": "Read the inside changes first to locate and scale the x-coordinate, then apply outside changes to the y-coordinate.",
+      "governingRelation": "g(x)=a f(b(x-h))+k",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c02-u05-apply-output-shift-before-scale-trap",
+          "description": "Scaling the vertical shift together with the function when the shift is outside the multiplier.",
+          "trapFormula": "a f(x)+k \\mapsto a(f(x)+k)"
+        },
+        {
+          "trapTag": "t02-c02-u05-inside-shift-sign-trap",
+          "description": "Interpreting the sign inside the input as the graph's shift direction.",
+          "trapFormula": "f(x-h) \\mapsto f(x+h) \\text{ shift direction}"
+        },
+        {
+          "trapTag": "t02-c02-u05-ignore-point-side-constraint-trap",
+          "description": "Keeping the algebraic inverse branch that violates a stated transformed-input restriction.",
+          "trapFormula": "(x-h)^2=c^2 \\mapsto x=h-c \\text{ without checking the requested side}"
+        },
+        {
+          "trapTag": "t02-c02-u05-binomial-square-missing-cross-term-trap",
+          "description": "Expanding (x-h)^2 as x^2-h^2 and omitting the cross term.",
+          "trapFormula": "(x-h)^2 \\mapsto x^2-h^2"
+        }
+      ],
+      "versatileDomains": [],
+      "usedContexts": [],
+      "figureBuilders": [
+        {
+          "fn": "build_function_graph_figure",
+          "args": {
+            "x_min": "h-4",
+            "x_max": "h+4"
+          },
+          "labels": {
+            "expr": "{a:g}*((x-{h:g})/{stretch:g})^2+{k:g}",
+            "label": "g(x)"
+          },
+          "title": "Horizontally stretched and transformed graph"
+        },
+        {
+          "fn": "build_function_graph_figure",
+          "args": {
+            "x_min": "h-4",
+            "x_max": "h+4"
+          },
+          "labels": {
+            "expr": "{a:g}*(x-{h:g})^2+{k:g}",
+            "label": "g(x)"
+          },
+          "title": "Transformed quadratic graph"
+        }
+      ]
+    }
+  ]
+}
