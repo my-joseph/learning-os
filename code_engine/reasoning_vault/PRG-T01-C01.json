@@ -36,7 +36,8 @@
         }
       ],
       "usedContexts": [
-        "plugin_sandbox_context"
+        "plugin_sandbox_context",
+        "webhook_dispatcher_queue"
       ],
       "qualityChecks": [
         {
@@ -327,6 +328,136 @@
           "severity": "must",
           "knownBad": {
             "code": "function compose(middlewares) {\n  let lastIndex = -1;\n  return (ctx) => {\n    const dispatch = (i) => {\n      if (i <= lastIndex) return Promise.reject(new Error('next() called multiple times'));\n      lastIndex = i;\n      const fn = middlewares[i];\n      return fn ? Promise.resolve(fn(ctx, () => dispatch(i + 1))) : Promise.resolve();\n    };\n    return dispatch(0);\n  };\n}",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "prg-c01-tdz-hoisting-trace",
+      "unitCode": "PRG-T01-C01-U01",
+      "level": 1,
+      "archetype": "code-tracing",
+      "name": "Creation Phase Hoisting & Temporal Dead Zone Trace",
+      "competencies": [
+        "hoisting",
+        "tdz",
+        "execution-context"
+      ],
+      "coreConcept": "Tracing how the JavaScript engine allocates bindings during the Creation Phase before executing statements, distinguishing initialized var/function declarations from uninitialized let/const bindings in the Temporal Dead Zone.",
+      "mentalModel": [
+        "1. Creation Phase registers all declarations in the current LexicalEnvironment before line 1 runs.",
+        "2. var bindings initialize to undefined; function declarations initialize to their function object; let/const remain uninitialized (TDZ).",
+        "3. Reading or writing a let/const binding before its initializer executes throws ReferenceError."
+      ],
+      "governingInvariant": "let/const bindings exist in scope from block entry but throw ReferenceError until their initializer line executes",
+      "cognitiveTraps": [
+        {
+          "trapTag": "tdz-reference-before-init",
+          "name": "Temporal Dead Zone ReferenceError",
+          "description": "Assuming an inner block let/const falls back to an outer variable of the same name before its declaration line, instead of throwing ReferenceError.",
+          "reproducer": "const rate = 1; { console.log(rate); const rate = 2; } throws ReferenceError instead of logging 1."
+        },
+        {
+          "trapTag": "function-hoisting-vs-expression",
+          "name": "Function Expression Hoisting Confusion",
+          "description": "Treating a const/var function expression like a hoisted function declaration and invoking it before assignment.",
+          "reproducer": "runTask(); const runTask = () => 1; throws ReferenceError (or TypeError with var)."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "feature_flag_bootstrap",
+          "description": "Tracing module startup order and configuration initialization guards."
+        }
+      ],
+      "usedContexts": [
+        "feature_flag_bootstrap",
+        "telemetry_pipeline_init"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-tdz-declare-before-use",
+          "check": "Bindings declared with `const` or `let` are initialized before any code path in the same scope can read them, avoiding TDZ `ReferenceError` traps.",
+          "why": "Inner `let`/`const` declarations shadow outer bindings for the entire block and throw `ReferenceError` if accessed before their initializer.",
+          "severity": "must",
+          "knownBad": {
+            "code": "const retryLimit = 3;\nfunction getLimit(override) {\n  if (override) {\n    const current = retryLimit;\n    const retryLimit = 5;\n    return current;\n  }\n  return retryLimit;\n}",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-hoist-explicit-init",
+          "check": "Helper functions and constants are declared above their first call site so execution order matches reading order without relying on hoisting.",
+          "why": "Relying on function hoisting or `var` initialization hides temporal dependencies and breaks when converted to `const` arrow functions.",
+          "severity": "should",
+          "knownBad": {
+            "code": "function bootService() {\n  return readPort();\n  function readPort() {\n    return 8080;\n  }\n}",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "prg-c01-lexical-scope-chain",
+      "unitCode": "PRG-T01-C01-U01",
+      "level": 2,
+      "archetype": "debugging",
+      "name": "Lexical Scope Chain & Shadowing Resolution",
+      "competencies": [
+        "lexical-environment",
+        "scope-chain",
+        "debugging"
+      ],
+      "coreConcept": "Diagnosing and fixing scope-chain bugs where nested functions or blocks resolve free variables from their static definition environment rather than their dynamic call site, or accidentally shadow outer parameters.",
+      "mentalModel": [
+        "1. A function's [[Environment]] is captured at definition time (lexical/static scope), never at call time.",
+        "2. Identifier lookup walks outward through lexical parent environments until the first matching binding is found.",
+        "3. Accidental shadowing in an inner block hides the outer binding without modifying it."
+      ],
+      "governingInvariant": "freeVariable lookup follows static definition-site [[Environment]] chain, independent of call stack",
+      "cognitiveTraps": [
+        {
+          "trapTag": "dynamic-vs-lexical-scope-confusion",
+          "name": "Dynamic vs. Lexical Scope Confusion",
+          "description": "Assuming a function called inside another function reads the caller's local variable instead of its own definition-site outer scope.",
+          "reproducer": "const mode = 'prod'; function readMode() { return mode; } function test() { const mode = 'dev'; return readMode(); } returns 'prod', not 'dev'."
+        },
+        {
+          "trapTag": "block-shadowing-outer-read",
+          "name": "Accidental Inner Shadowing Masking Outer State",
+          "description": "Redeclaring a parameter or outer variable inside an inner block shadows the outer binding so updates only affect the inner variable.",
+          "reproducer": "let total = 10; if (flag) { let total = 0; total += 5; } // outer total remains 10."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "tenant_config_resolver",
+          "description": "Resolving fallback tenant settings across nested scope boundaries without shadowing."
+        }
+      ],
+      "usedContexts": [
+        "tenant_config_resolver",
+        "audit_logger_context"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-scope-explicit-shadowing",
+          "check": "Inner scopes do not redeclare identifier names that already exist in an enclosing scope (`no-shadow`).",
+          "why": "Shadowing an outer parameter or variable makes it unclear which binding is read or updated and silently drops outer updates.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function applyDiscount(price, hasCoupon) {\n  if (hasCoupon) {\n    const price = 10;\n    return price;\n  }\n  return price;\n}",
+            "caughtBy": "lint:no-shadow"
+          }
+        },
+        {
+          "id": "QC-scope-pure-lookup",
+          "check": "Functions that depend on varying runtime context accept it as an explicit parameter rather than relying on ambiguous outer mutable bindings.",
+          "why": "Implicitly reading mutable outer variables makes behaviour depend on definition-site state that callers cannot easily see.",
+          "severity": "should",
+          "knownBad": {
+            "code": "let activeRegion = 'us-east';\nfunction buildEndpoint(path) {\n  return `https://${activeRegion}.api.local${path}`;\n}",
             "caughtBy": "review"
           }
         }

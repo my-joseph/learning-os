@@ -1,0 +1,484 @@
+{
+  "unitCode": "PRG-T01-C01-U01",
+  "unitTitle": "Execution Context and Scope",
+  "environment": "node-vanilla",
+  "sourceAttribution": "MDN JavaScript Guide (Grammar & Types, Functions) & ECMAScript LexicalEnvironment Spec",
+  "config": {
+    "questionCount": 5,
+    "difficulty": "ALL",
+    "difficultyMode": "AI Synthesized Engineering Mode"
+  },
+  "problems": [
+    {
+      "id": "Q01",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "code-tracing",
+      "codeType": "trace-explain",
+      "archetypeKey": "prg-c01-tdz-hoisting-trace",
+      "commonTrapTag": "tdz-reference-before-init",
+      "context": "feature_flag_bootstrap",
+      "entryPoint": "traceBootstrapOrder",
+      "answerSpec": {
+        "tokens": [
+          "phase:undefined",
+          "read:3",
+          "tdz:ReferenceError",
+          "final:3"
+        ]
+      },
+      "codeSnippet": "const log = [];\nlog.push(`phase:${typeof bootStage}`);\nvar bootStage = 'ready';\nconst retryBudget = 3;\ntry {\n  log.push(`read:${retryBudget}`);\n} catch (err) {\n  log.push(`tdz:${err.name}`);\n}\nconst innerCheck = (() => {\n  try {\n    return `inner:${retryBudget}`;\n  } catch (err) {\n    return `tdz:${err.name}`;\n  }\n  const retryBudget = 5;\n})();\nlog.push(innerCheck);\nlog.push(`final:${retryBudget}`);\nconsole.log(log.join('\\n'));\n",
+      "prompt": "Trace the execution of the feature-flag bootstrapper snippet below and implement `traceBootstrapOrder()` to return the exact array of log lines printed to stdout.\n\n```js\nconst log = [];\nlog.push(`phase:${typeof bootStage}`);\nvar bootStage = 'ready';\nconst retryBudget = 3;\ntry {\n  log.push(`read:${retryBudget}`);\n} catch (err) {\n  log.push(`tdz:${err.name}`);\n}\nconst innerCheck = (() => {\n  try {\n    return `inner:${retryBudget}`;\n  } catch (err) {\n    return `tdz:${err.name}`;\n  }\n  const retryBudget = 5;\n})();\nlog.push(innerCheck);\nlog.push(`final:${retryBudget}`);\nconsole.log(log.join('\\n'));\n```\n\n**Requirements:**\n- Return a fresh array of strings matching each line printed by the snippet in exact execution order.\n\n**Return Contract:**\n- Return `string[]` (e.g. `['line-1', ...]`).",
+      "inputHint": "Trace Creation Phase hoisting for var and inner IIFE block TDZ boundaries",
+      "starterCode": "function traceBootstrapOrder() {\n  // TODO: return the exact array of log lines printed by the snippet\n  return [];\n}\n\nmodule.exports = { traceBootstrapOrder };\n",
+      "solutionCode": "function traceBootstrapOrder() {\n  return ['phase:undefined', 'read:3', 'tdz:ReferenceError', 'final:3'];\n}\n\nmodule.exports = { traceBootstrapOrder };\n",
+      "trapMutant": "function traceBootstrapOrder() {\n  return ['phase:undefined', 'read:3', 'inner:3', 'final:3'];\n}\n\nmodule.exports = { traceBootstrapOrder };\n",
+      "visibleTests": [
+        {
+          "name": "starts with hoisted var typeof undefined and outer read",
+          "testCode": "const lines = traceBootstrapOrder();\nassert.strictEqual(lines[0], 'phase:undefined');\nassert.strictEqual(lines[1], 'read:3');"
+        },
+        {
+          "name": "returns a fresh array of 4 lines",
+          "testCode": "const first = traceBootstrapOrder();\nassert.strictEqual(first.length, 4);\nfirst.push('extra');\nassert.strictEqual(traceBootstrapOrder().length, 4);"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "captures TDZ ReferenceError inside inner scope and preserves outer final value",
+          "testCode": "assert.deepStrictEqual(traceBootstrapOrder(), ['phase:undefined', 'read:3', 'tdz:ReferenceError', 'final:3']);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "During the Creation Phase, var bootStage is initialized to undefined, so typeof bootStage evaluates to 'undefined'."
+        },
+        {
+          "explain": "Reading outer retryBudget at top level logs 'read:3', while inside the IIFE const retryBudget = 5 puts retryBudget in the TDZ from function entry, throwing ReferenceError."
+        },
+        {
+          "explain": "After the IIFE returns, the outer retryBudget remains 3, so the final line logs 'final:3'."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "tdz-reference-before-init|direct|const log = []; log.push(`phase:${typeof bootStage}`); var bootStage = 'ready'; const retryBudget = #; try { log.push(`read:${retryBudget}`); } catch (err) { log.push(`tdz:${err.name}`); } const innerCheck = (() => { try { return `inner:${retryBudget}`; } catch (err) { return `tdz:${err.name}`; } const retryBudget = #; })(); log.push(innerCheck); log.push(`final:${retryBudget}`); console.log(log.join('\\n'));",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "code-tracing",
+          "verifiedByExecution": true
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 3,
+          "hasTrapOrFlaw": false,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "tdz-reference-before-init",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 5
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Foundation",
+      "unitCode": "PRG-T01-C01-U01",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U01-01/Q01_traceBootstrapOrder.js"
+    },
+    {
+      "id": "Q02",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "codeType": "implement",
+      "archetypeKey": "prg-c01-scope-shadowing-guard",
+      "commonTrapTag": "var-hoisting-leak",
+      "context": "webhook_dispatcher_queue",
+      "entryPoint": "createWebhookDispatchers",
+      "prompt": "Implement `createWebhookDispatchers(endpoints)` for a webhook dispatcher queue.\n\n**Requirements:**\n- Validate that `endpoints` is an array of non-empty strings (after trimming); throw `TypeError` if `endpoints` is not an array or any element is not a non-empty string.\n- For each element at index `i`, create a zero-argument dispatcher function that returns `{ index: i, endpoint: endpoints[i] }`.\n- Do not mutate the input `endpoints` array, and ensure each dispatcher retains its own iteration binding.\n\n**Return Contract:**\n- Return an array of functions `Array<() => { index: number, endpoint: string }>`. Return `[]` when `endpoints` is empty.",
+      "inputHint": "Use block-scoped bindings per iteration so each dispatcher captures its own index",
+      "starterCode": "function createWebhookDispatchers(_endpoints) {\n  // TODO: validate endpoints and build per-index dispatcher functions\n  return [];\n}\n\nmodule.exports = { createWebhookDispatchers };\n",
+      "solutionCode": "function createWebhookDispatchers(endpoints) {\n  if (!Array.isArray(endpoints)) {\n    throw new TypeError('endpoints must be an array');\n  }\n  const dispatchers = [];\n  for (let i = 0; i < endpoints.length; i += 1) {\n    const endpoint = endpoints[i];\n    if (typeof endpoint !== 'string' || endpoint.trim() === '') {\n      throw new TypeError('each endpoint must be a non-empty string');\n    }\n    dispatchers.push(() => ({ index: i, endpoint }));\n  }\n  return dispatchers;\n}\n\nmodule.exports = { createWebhookDispatchers };\n",
+      "trapMutant": "function createWebhookDispatchers(endpoints) {\n  if (!Array.isArray(endpoints)) {\n    throw new TypeError('endpoints must be an array');\n  }\n  const dispatchers = [];\n  for (var i = 0; i < endpoints.length; i += 1) {\n    var endpoint = endpoints[i];\n    if (typeof endpoint !== 'string' || endpoint.trim() === '') {\n      throw new TypeError('each endpoint must be a non-empty string');\n    }\n    dispatchers.push(() => ({ index: i, endpoint }));\n  }\n  return dispatchers;\n}\n\nmodule.exports = { createWebhookDispatchers };\n",
+      "visibleTests": [
+        {
+          "name": "creates dispatchers bound to each endpoint index",
+          "testCode": "const fns = createWebhookDispatchers(['https://a.test/hook', 'https://b.test/hook']);\nassert.strictEqual(fns.length, 2);\nassert.deepStrictEqual(fns[0](), { index: 0, endpoint: 'https://a.test/hook' });\nassert.deepStrictEqual(fns[1](), { index: 1, endpoint: 'https://b.test/hook' });"
+        },
+        {
+          "name": "returns empty array for empty endpoints list",
+          "testCode": "assert.deepStrictEqual(createWebhookDispatchers([]), []);"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "throws TypeError for non-array or blank endpoint entries",
+          "testCode": "assert.throws(() => createWebhookDispatchers('https://a.test'), TypeError);\nassert.throws(() => createWebhookDispatchers(['https://a.test', '  ']), TypeError);\nassert.throws(() => createWebhookDispatchers([null]), TypeError);"
+        },
+        {
+          "name": "does not mutate input endpoints array",
+          "testCode": "const input = ['https://a.test', 'https://b.test', 'https://c.test'];\nconst fns = createWebhookDispatchers(input);\nassert.deepStrictEqual(input, ['https://a.test', 'https://b.test', 'https://c.test']);\nassert.deepStrictEqual(fns[2](), { index: 2, endpoint: 'https://c.test' });"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Validate that endpoints is an array and every entry is a non-empty string."
+        },
+        {
+          "explain": "Use block-scoped let i and const endpoint inside the loop so each closure captures its own iteration binding."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "var-hoisting-leak|direct|createWebhookDispatchers",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 2,
+          "hasTrapOrFlaw": false,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "var-hoisting-leak",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 4
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Foundation",
+      "unitCode": "PRG-T01-C01-U01",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U01-01/Q02_createWebhookDispatchers.js"
+    },
+    {
+      "id": "Q03",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "code-tracing",
+      "codeType": "predict-output",
+      "archetypeKey": "prg-c01-tdz-hoisting-trace",
+      "commonTrapTag": "function-hoisting-vs-expression",
+      "context": "telemetry_pipeline_init",
+      "entryPoint": "predictInitSequence",
+      "answerSpec": {
+        "tokens": [
+          "svc:ingest|ReferenceError|TypeError"
+        ]
+      },
+      "codeSnippet": "const tagResult = formatTag('ingest');\nlet constErr = 'none';\nlet varErr = 'none';\ntry {\n  buildMetric(4);\n  const buildMetric = (v) => v * 2;\n} catch (err) {\n  constErr = err.name;\n}\ntry {\n  parsePort('8080');\n  var parsePort = (raw) => Number(raw);\n} catch (err) {\n  varErr = err.name;\n}\nfunction formatTag(name) {\n  return `svc:${name}`;\n}\nconsole.log(`${tagResult}|${constErr}|${varErr}`);\n",
+      "prompt": "Predict the runtime outcome of the telemetry initialization snippet below and implement `predictInitSequence()`.\n\n```js\nconst tagResult = formatTag('ingest');\nlet constErr = 'none';\nlet varErr = 'none';\ntry {\n  buildMetric(4);\n  const buildMetric = (v) => v * 2;\n} catch (err) {\n  constErr = err.name;\n}\ntry {\n  parsePort('8080');\n  var parsePort = (raw) => Number(raw);\n} catch (err) {\n  varErr = err.name;\n}\nfunction formatTag(name) {\n  return `svc:${name}`;\n}\nconsole.log(`${tagResult}|${constErr}|${varErr}`);\n```\n\n**Requirements:**\n- Return `{ tagResult, constErr, varErr }` matching the exact values printed by the snippet.\n\n**Return Contract:**\n- Return `{ tagResult: string, constErr: string, varErr: string }`.",
+      "inputHint": "Distinguish hoisted function declarations from const TDZ and var undefined calls",
+      "starterCode": "function predictInitSequence() {\n  // TODO: return { tagResult, constErr, varErr } matching the snippet output\n  return { tagResult: '', constErr: '', varErr: '' };\n}\n\nmodule.exports = { predictInitSequence };\n",
+      "solutionCode": "function predictInitSequence() {\n  return { tagResult: 'svc:ingest', constErr: 'ReferenceError', varErr: 'TypeError' };\n}\n\nmodule.exports = { predictInitSequence };\n",
+      "trapMutant": "function predictInitSequence() {\n  return { tagResult: 'svc:ingest', constErr: 'TypeError', varErr: 'TypeError' };\n}\n\nmodule.exports = { predictInitSequence };\n",
+      "visibleTests": [
+        {
+          "name": "returns hoisted function declaration result and var error name",
+          "testCode": "const res = predictInitSequence();\nassert.strictEqual(res.tagResult, 'svc:ingest');\nassert.strictEqual(res.varErr, 'TypeError');"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "distinguishes const TDZ ReferenceError from var TypeError",
+          "testCode": "assert.deepStrictEqual(predictInitSequence(), { tagResult: 'svc:ingest', constErr: 'ReferenceError', varErr: 'TypeError' });"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Function declaration formatTag is hoisted with its body, so formatTag('ingest') returns 'svc:ingest'."
+        },
+        {
+          "explain": "Calling a const arrow expression before its initializer throws ReferenceError (TDZ), whereas calling a var function expression before assignment invokes undefined and throws TypeError."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "function-hoisting-vs-expression|direct|const tagResult = formatTag('ingest'); let constErr = 'none'; let varErr = 'none'; try { buildMetric(#); const buildMetric = (v) => v * #; } catch (err) { constErr = err.name; } try { parsePort('#'); var parsePort = (raw) => Number(raw); } catch (err) { varErr = err.name; } function formatTag(name) { return `svc:${name}`; } console.log(`${tagResult}|${constErr}|${varErr}`);",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "code-tracing",
+          "verifiedByExecution": true
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 2,
+          "hasTrapOrFlaw": false,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "function-hoisting-vs-expression",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 4
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Foundation",
+      "unitCode": "PRG-T01-C01-U01",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U01-01/Q03_predictInitSequence.js"
+    },
+    {
+      "id": "Q04",
+      "level": 2,
+      "category": "Trap & Edge Case",
+      "archetype": "debugging",
+      "codeType": "fix-bug",
+      "archetypeKey": "prg-c01-lexical-scope-chain",
+      "commonTrapTag": "block-shadowing-outer-read",
+      "context": "tenant_config_resolver",
+      "entryPoint": "resolveTenantQuotas",
+      "prompt": "Fix `resolveTenantQuotas(baseQuota, overrideQuota)` for a multi-tenant quota resolver, and refactor/simplify the duplicated quota validation into a clean helper. Currently, when a valid `overrideQuota` is passed, `effectiveQuota` unexpectedly stays equal to `baseQuota`.\n\n**Requirements:**\n- Validate that `baseQuota` is a finite non-negative number; throw `RangeError` otherwise.\n- If `overrideQuota` is provided (`overrideQuota !== undefined && overrideQuota !== null`), validate that it is a finite non-negative number (throw `RangeError` otherwise) and use it as the effective quota.\n- Return `{ baseQuota, effectiveQuota, overridden }` where `overridden` is `true` only when a valid `overrideQuota` was applied.\n\n**Return Contract:**\n- Return `{ baseQuota: number, effectiveQuota: number, overridden: boolean }`.",
+      "inputHint": "Check why updates inside the conditional block do not affect the returned binding",
+      "starterCode": "function resolveTenantQuotas(baseQuota, overrideQuota) {\n  if (!Number.isFinite(baseQuota) || baseQuota < 0) {\n    throw new RangeError('baseQuota must be a finite non-negative number');\n  }\n  let effectiveQuota = baseQuota;\n  let overridden = false;\n  if (overrideQuota !== undefined && overrideQuota !== null) {\n    if (!Number.isFinite(overrideQuota) || overrideQuota < 0) {\n      throw new RangeError('overrideQuota must be a finite non-negative number');\n    }\n    const effectiveQuota = overrideQuota;\n    overridden = effectiveQuota >= 0;\n  }\n  return { baseQuota, effectiveQuota, overridden };\n}\n\nmodule.exports = { resolveTenantQuotas };\n",
+      "starterLintExpected": [
+        {
+          "rule": "no-shadow",
+          "reason": "Starter intentionally demonstrates an accidental inner block shadowing bug for a fix-bug drill."
+        },
+        {
+          "rule": "prefer-const",
+          "reason": "Outer effectiveQuota appears un-reassigned because the inner block shadows it."
+        }
+      ],
+      "solutionCode": "function isValidQuota(value) {\n  return typeof value === 'number' && Number.isFinite(value) && value >= 0;\n}\n\nfunction resolveTenantQuotas(baseQuota, overrideQuota) {\n  if (!isValidQuota(baseQuota)) {\n    throw new RangeError('baseQuota must be a finite non-negative number');\n  }\n  if (overrideQuota !== undefined && overrideQuota !== null) {\n    if (!isValidQuota(overrideQuota)) {\n      throw new RangeError('overrideQuota must be a finite non-negative number');\n    }\n    return { baseQuota, effectiveQuota: overrideQuota, overridden: true };\n  }\n  return { baseQuota, effectiveQuota: baseQuota, overridden: false };\n}\n\nmodule.exports = { resolveTenantQuotas };\n",
+      "trapMutant": "function resolveTenantQuotas(baseQuota, overrideQuota) {\n  if (typeof baseQuota !== 'number' || !Number.isFinite(baseQuota) || baseQuota < 0) {\n    throw new RangeError('baseQuota must be a finite non-negative number');\n  }\n  const effectiveQuota = baseQuota;\n  let overridden = false;\n  if (overrideQuota !== undefined && overrideQuota !== null) {\n    if (typeof overrideQuota !== 'number' || !Number.isFinite(overrideQuota) || overrideQuota < 0) {\n      throw new RangeError('overrideQuota must be a finite non-negative number');\n    }\n    overridden = true;\n  }\n  return { baseQuota, effectiveQuota, overridden };\n}\n\nmodule.exports = { resolveTenantQuotas };\n",
+      "visibleTests": [
+        {
+          "name": "applies overrideQuota when provided",
+          "testCode": "assert.deepStrictEqual(resolveTenantQuotas(100, 250), { baseQuota: 100, effectiveQuota: 250, overridden: true });"
+        },
+        {
+          "name": "falls back to baseQuota when overrideQuota is undefined",
+          "testCode": "assert.deepStrictEqual(resolveTenantQuotas(100, undefined), { baseQuota: 100, effectiveQuota: 100, overridden: false });"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "accepts zero as a valid overrideQuota",
+          "testCode": "assert.deepStrictEqual(resolveTenantQuotas(100, 0), { baseQuota: 100, effectiveQuota: 0, overridden: true });"
+        },
+        {
+          "name": "rejects negative or non-finite quotas with RangeError",
+          "testCode": "assert.throws(() => resolveTenantQuotas(-1, 10), RangeError);\nassert.throws(() => resolveTenantQuotas(100, -5), RangeError);\nassert.throws(() => resolveTenantQuotas(100, Number.NaN), RangeError);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Remove the inner const effectiveQuota declaration that shadowed the outer binding."
+        },
+        {
+          "explain": "Return early when overrideQuota is present and valid, preserving zero as a valid override."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "block-shadowing-outer-read|direct|resolveTenantQuotas",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "debugging"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "block-shadowing-outer-read",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 4
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Standard Exam",
+      "unitCode": "PRG-T01-C01-U01",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U01-01/Q04_resolveTenantQuotas.js"
+    },
+    {
+      "id": "Q05",
+      "level": 2,
+      "category": "Trap & Edge Case",
+      "archetype": "debugging",
+      "codeType": "fix-bug",
+      "archetypeKey": "prg-c01-lexical-scope-chain",
+      "commonTrapTag": "dynamic-vs-lexical-scope-confusion",
+      "context": "audit_logger_context",
+      "entryPoint": "createScopedAuditEntry",
+      "prompt": "Fix `createScopedAuditEntry(defaultActor, overrideActor, action)` for an audit logger. Currently, when a valid `overrideActor` is provided, the returned `actor` still falls back to `defaultActor` instead of using `overrideActor`.\n\n**Requirements:**\n- Validate that `defaultActor` and `action` are non-empty strings (after trimming); throw `TypeError` otherwise.\n- If `overrideActor` is a non-empty string (after trimming), use `overrideActor.trim()` as `actor`; if `overrideActor` is `undefined` or `null`, fall back to `defaultActor.trim()`; if `overrideActor` is any other type or blank string, throw `TypeError`.\n- Ensure `usedOverride` is `true` when `overrideActor` is applied and `false` when falling back to `defaultActor`.\n\n**Return Contract:**\n- Return `{ actor: string, action: string, usedOverride: boolean }`.",
+      "inputHint": "Remember that inner helper functions resolve free variables from their definition site, not their call site",
+      "starterCode": "function createScopedAuditEntry(defaultActor, overrideActor, action) {\n  if (typeof defaultActor !== 'string' || defaultActor.trim() === '') {\n    throw new TypeError('defaultActor must be a non-empty string');\n  }\n  if (typeof action !== 'string' || action.trim() === '') {\n    throw new TypeError('action must be a non-empty string');\n  }\n  const fallbackActor = defaultActor.trim();\n  function readActor() {\n    return fallbackActor;\n  }\n  function runWithOverride() {\n    if (overrideActor !== undefined && overrideActor !== null) {\n      if (typeof overrideActor !== 'string' || overrideActor.trim() === '') {\n        throw new TypeError('overrideActor must be a non-empty string');\n      }\n      const activeActor = overrideActor.trim();\n      return { actor: readActor(), action: action.trim(), usedOverride: Boolean(activeActor) };\n    }\n    return { actor: readActor(), action: action.trim(), usedOverride: false };\n  }\n  return runWithOverride();\n}\n\nmodule.exports = { createScopedAuditEntry };\n",
+      "solutionCode": "function assertNonEmptyString(value, label) {\n  if (typeof value !== 'string' || value.trim() === '') {\n    throw new TypeError(`${label} must be a non-empty string`);\n  }\n  return value.trim();\n}\n\nfunction createScopedAuditEntry(defaultActor, overrideActor, action) {\n  const normalizedDefault = assertNonEmptyString(defaultActor, 'defaultActor');\n  const normalizedAction = assertNonEmptyString(action, 'action');\n  if (overrideActor !== undefined && overrideActor !== null) {\n    const normalizedOverride = assertNonEmptyString(overrideActor, 'overrideActor');\n    return { actor: normalizedOverride, action: normalizedAction, usedOverride: true };\n  }\n  return { actor: normalizedDefault, action: normalizedAction, usedOverride: false };\n}\n\nmodule.exports = { createScopedAuditEntry };\n",
+      "trapMutant": "function createScopedAuditEntry(defaultActor, overrideActor, action) {\n  if (typeof defaultActor !== 'string' || defaultActor.trim() === '') {\n    throw new TypeError('defaultActor must be a non-empty string');\n  }\n  if (typeof action !== 'string' || action.trim() === '') {\n    throw new TypeError('action must be a non-empty string');\n  }\n  const fallbackActor = defaultActor.trim();\n  function readActor() {\n    return fallbackActor;\n  }\n  if (overrideActor !== undefined && overrideActor !== null) {\n    if (typeof overrideActor !== 'string' || overrideActor.trim() === '') {\n      throw new TypeError('overrideActor must be a non-empty string');\n    }\n    return { actor: readActor(), action: action.trim(), usedOverride: true };\n  }\n  return { actor: readActor(), action: action.trim(), usedOverride: false };\n}\n\nmodule.exports = { createScopedAuditEntry };\n",
+      "visibleTests": [
+        {
+          "name": "uses overrideActor when provided",
+          "testCode": "assert.deepStrictEqual(createScopedAuditEntry('system', 'admin-01', 'rotate-key'), { actor: 'admin-01', action: 'rotate-key', usedOverride: true });"
+        },
+        {
+          "name": "falls back to defaultActor when overrideActor is undefined",
+          "testCode": "assert.deepStrictEqual(createScopedAuditEntry('system', undefined, 'sync-state'), { actor: 'system', action: 'sync-state', usedOverride: false });"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "trims whitespace on actors and action",
+          "testCode": "assert.deepStrictEqual(createScopedAuditEntry(' system ', ' alice ', ' deploy '), { actor: 'alice', action: 'deploy', usedOverride: true });"
+        },
+        {
+          "name": "rejects blank or non-string overrideActor with TypeError",
+          "testCode": "assert.throws(() => createScopedAuditEntry('system', '   ', 'deploy'), TypeError);\nassert.throws(() => createScopedAuditEntry('system', 42, 'deploy'), TypeError);\nassert.throws(() => createScopedAuditEntry('', undefined, 'deploy'), TypeError);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Pass and return the validated overrideActor explicitly instead of relying on readActor() reading an outer binding."
+        },
+        {
+          "explain": "Extract assertNonEmptyString to validate defaultActor, action, and non-nullish overrideActor uniformly."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "dynamic-vs-lexical-scope-confusion|direct|createScopedAuditEntry",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "debugging"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "dynamic-vs-lexical-scope-confusion",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 4
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 1
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Standard Exam",
+      "unitCode": "PRG-T01-C01-U01",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U01-01/Q05_createScopedAuditEntry.js"
+    }
+  ],
+  "blindSolve": [
+    {
+      "problemId": "Q01",
+      "passed": true
+    },
+    {
+      "problemId": "Q02",
+      "passed": true
+    },
+    {
+      "problemId": "Q03",
+      "passed": true
+    },
+    {
+      "problemId": "Q04",
+      "passed": true
+    },
+    {
+      "problemId": "Q05",
+      "passed": true
+    }
+  ],
+  "review": {
+    "verdict": "pass",
+    "note": "All five problems satisfy no-leak, realistic domain, Layer 3 rubric, mix/level (L1-L2, 4 non-implement), and unit-scope/trap requirements."
+  },
+  "drillId": "DRL-PRG-T01-C01-U01-01",
+  "topicCode": "PRG-T01",
+  "chapterCode": "PRG-T01-C01",
+  "schemaVersion": "2.0-code",
+  "subject": "PRG",
+  "createdAt": "2026-11-16 19:32:57",
+  "localFilePath": "drills/data/PRG-T01-C01-U01/DRL-PRG-T01-C01-U01-01.json"
+}
