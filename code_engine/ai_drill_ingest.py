@@ -1227,7 +1227,7 @@ def check_code_drill(
         # 2. Contract, no-leak, starter compile, dual pre-exec, trapMutant + generic mutants, quality gates
         try:
             validate_ai_code_contract(prob, environment=env_key, require_trap_mutant=True)
-            verify_problem(prob, rules=active_rules)
+            verify_problem(prob, rules=active_rules, environment=env_key)
         except Exception as exc:  # noqa: BLE001 - collect all per-problem gate errors
             msg = str(exc)
             errors.append(msg if f"[{pid}]" in msg else f"[{pid}] {msg}")
@@ -1301,7 +1301,7 @@ def ingest_ai_code_drill(
             prob["id"] = f"Q{idx:02d}"
         if "verificationLevel" not in prob:
             prob["verificationLevel"] = "partial"
-        verify_problem(prob, rules=active_rules)
+        verify_problem(prob, rules=active_rules, environment=drill_doc.get("environment", "node-vanilla"))
 
     # 2. Allocate or preserve official Drill ID
     drill_id = drill_doc.get("drillId")
