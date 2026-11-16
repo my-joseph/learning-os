@@ -28,9 +28,11 @@ export async function GET(req: NextRequest) {
       const content = fs.readFileSync(filePath, "utf-8");
       const doc = applyProgress(JSON.parse(content), readProgress(id));
 
+      const rootDir = getWorkspaceRoot();
+
       if (!doc.unitTitle && doc.unitCode) {
         try {
-          const idMapPath = path.join(getWorkspaceRoot(), "id_map.json");
+          const idMapPath = path.join(rootDir, "id_map.json");
           if (fs.existsSync(idMapPath)) {
             const idMap = JSON.parse(fs.readFileSync(idMapPath, "utf-8"));
             doc.unitTitle = idMap[doc.unitCode]?.title || doc.unitCode;
@@ -39,6 +41,21 @@ export async function GET(req: NextRequest) {
           }
         } catch {
           doc.unitTitle = doc.unitCode;
+        }
+      }
+
+      // Compute local IDE workspace paths at runtime from repo root (never baked into drill JSON)
+      if (Array.isArray(doc.problems) && doc.drillId) {
+        const wsDir = path.join(rootDir, "drills", "workspace", doc.drillId);
+        for (const prob of doc.problems) {
+          if (prob && typeof prob === "object" && prob.workspaceFile) {
+            const absFile = path.resolve(rootDir, prob.workspaceFile);
+            prob.workspaceDir = wsDir;
+            prob.vscodeFolderUrl = `vscode://file/${wsDir}`;
+            prob.cursorFolderUrl = `cursor://file/${wsDir}`;
+            prob.vscodeUrl = `vscode://file/${absFile}`;
+            prob.cursorUrl = `cursor://file/${absFile}`;
+          }
         }
       }
 

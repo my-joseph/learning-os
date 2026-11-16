@@ -1,7 +1,9 @@
 import test from "node:test";
 import assert from "node:assert";
-import { calculateCartTotals } from "../src/pricing.ts";
 import type { CartItem, Coupon } from "../src/types.ts";
+
+const srcDir = process.env.LAB_SRC_DIR || "../src";
+const { calculateCartTotals } = await import(`${srcDir}/pricing.ts`);
 
 test("Milestone 2: Pricing & Tiered Discount Engine", async (t) => {
   await t.test("should return zero totals for empty cart", () => {

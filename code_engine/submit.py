@@ -14,6 +14,7 @@ import os
 import ssl
 import subprocess
 import sys
+import tempfile
 import time
 import urllib.error
 import urllib.request
@@ -81,24 +82,7 @@ def notion_request(method: str, endpoint: str, token: str, payload: dict = None,
             raise RuntimeError(f"HTTP {e.code} on {method} {endpoint}: {body}") from e
 
 
-def run_tests_junit(ws_dir: Path) -> list:
-    """Executes test suite with JUnit reporter and parses visible + hidden testcases."""
-    has_ts = bool(list(ws_dir.glob("*.test.ts")))
-    canonical_dir = ws_dir / ".canonical"
-    has_hidden = bool(list(canonical_dir.glob("*.hidden.test.*"))) if canonical_dir.exists() else False
-
-    if has_ts:
-        cmd = "node --experimental-strip-types --test --test-reporter=junit *.test.ts"
-        if has_hidden:
-            cmd += " .canonical/*.hidden.test.ts"
-    else:
-        cmd = "node --test --test-reporter=junit *.test.js"
-        if has_hidden:
-            cmd += " .canonical/*.hidden.test.js"
-
-    proc = subprocess.run(cmd, shell=True, cwd=ws_dir, capture_output=True, text=True)
-    raw = proc.stdout + "\n" + proc.stderr
-
+def _parse_junit_xml(raw: str, force_hidden: bool = False) -> list:
     xml_start = raw.find("<?xml")
     if xml_start == -1:
         xml_start = raw.find("<testsuites")
@@ -127,7 +111,7 @@ def run_tests_junit(ws_dir: Path) -> list:
         if is_fail:
             fail_msg = f_elem.attrib.get("message", f_elem.text or "Assertion failed")
 
-        is_hidden = "HIDDEN" in name.upper() or ".canonical" in tc.attrib.get("file", "")
+        is_hidden = force_hidden or "HIDDEN" in name.upper()
         cases.append(
             {
                 "name": name,
@@ -136,6 +120,61 @@ def run_tests_junit(ws_dir: Path) -> list:
                 "is_hidden": is_hidden,
             }
         )
+    return cases
+
+
+def _write_hidden_test_file(tmp_dir: Path, ws_dir: Path, prob: dict, is_ts: bool) -> Path:
+    pid = prob.get("id", "Q01")
+    entry_name = prob.get("entryPoint") or pid.lower()
+    ext = "ts" if is_ts else "js"
+    src_abs = (ws_dir / f"{pid}_{entry_name}.{ext}").resolve()
+
+    blocks = []
+    for idx, ht in enumerate(prob.get("hiddenTests", []), 1):
+        ht_name = json.dumps(f"[{pid}-HIDDEN-T{idx:02d}] " + ht.get("name", f"hidden trap scenario {idx}"))
+        ht_code = ht.get("testCode", "").strip()
+        blocks.append(f"\ntest({ht_name}, async () => {{\n  {ht_code}\n}});\n")
+
+    header = f"// Hidden Trap Test Suite for {pid}\n"
+    if is_ts:
+        header += "import test from 'node:test';\nimport assert from 'node:assert';\n"
+        header += f"import {{ {entry_name} }} from {json.dumps(src_abs.as_uri())};\n\n"
+    else:
+        header += f"const test = require('node:test');\nconst assert = require('node:assert');\nconst {{ {entry_name} }} = require({json.dumps(str(src_abs))});\n\n"
+
+    out_path = tmp_dir / f"{pid}_{entry_name}.hidden.test.{ext}"
+    out_path.write_text((header + "".join(blocks)).strip() + "\n", encoding="utf-8")
+    return out_path
+
+
+def run_tests_junit(ws_dir: Path, drill_doc: dict | None = None) -> list:
+    """Executes visible tests in ws_dir and hidden tests from a temporary dir outside ws_dir."""
+    ts_files = sorted(ws_dir.glob("*.test.ts"))
+    js_files = sorted(ws_dir.glob("*.test.js"))
+    is_ts = bool(ts_files)
+    visible_files = ts_files if is_ts else js_files
+
+    cases = []
+    if visible_files:
+        cmd = ["node"]
+        if is_ts:
+            cmd.append("--experimental-strip-types")
+        cmd.extend(["--test", "--test-reporter=junit", *[str(f) for f in visible_files]])
+        proc = subprocess.run(cmd, cwd=ws_dir, capture_output=True, text=True)
+        cases.extend(_parse_junit_xml(proc.stdout + "\n" + proc.stderr, force_hidden=False))
+
+    hidden_probs = [p for p in (drill_doc or {}).get("problems", []) if p.get("hiddenTests")]
+    if hidden_probs:
+        with tempfile.TemporaryDirectory(prefix="prg_hidden_") as tmp_str:
+            tmp_dir = Path(tmp_str)
+            hidden_files = [_write_hidden_test_file(tmp_dir, ws_dir, prob, is_ts) for prob in hidden_probs]
+            cmd = ["node"]
+            if is_ts:
+                cmd.append("--experimental-strip-types")
+            cmd.extend(["--test", "--test-reporter=junit", *[str(f) for f in hidden_files]])
+            proc = subprocess.run(cmd, cwd=tmp_dir, capture_output=True, text=True)
+            cases.extend(_parse_junit_xml(proc.stdout + "\n" + proc.stderr, force_hidden=True))
+
     return cases
 
 
@@ -259,7 +298,7 @@ def main():
     print(f"{BOLD}{CYAN}========================================================================={RESET}\n")
 
     print(f"{CYAN}▶ Executing Acceptance Test Suites...{RESET}")
-    cases = run_tests_junit(ws_dir)
+    cases = run_tests_junit(ws_dir, drill_doc)
 
     if not cases:
         print(f"{RED}✗ No tests detected or test runner encountered an internal crash.{RESET}")

@@ -84,12 +84,7 @@
         "verificationLevel": "partial",
         "weakDistractors": 0
       },
-      "workspaceFile": "drills/workspace/DRL-PRG-T00-C02-02/Q01_clampBatteryPercent.js",
-      "workspaceDir": "/Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02",
-      "cursorUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02/Q01_clampBatteryPercent.js",
-      "vscodeUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02/Q01_clampBatteryPercent.js",
-      "cursorFolderUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02",
-      "vscodeFolderUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02"
+      "workspaceFile": "drills/workspace/DRL-PRG-T00-C02-02/Q01_clampBatteryPercent.js"
     },
     {
       "level": 1,
@@ -170,12 +165,7 @@
         "verificationLevel": "partial",
         "weakDistractors": 0
       },
-      "workspaceFile": "drills/workspace/DRL-PRG-T00-C02-02/Q02_resolveRetryLimit.js",
-      "workspaceDir": "/Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02",
-      "cursorUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02/Q02_resolveRetryLimit.js",
-      "vscodeUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02/Q02_resolveRetryLimit.js",
-      "cursorFolderUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02",
-      "vscodeFolderUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02"
+      "workspaceFile": "drills/workspace/DRL-PRG-T00-C02-02/Q02_resolveRetryLimit.js"
     },
     {
       "level": 1,
@@ -260,12 +250,7 @@
         "verificationLevel": "partial",
         "weakDistractors": 0
       },
-      "workspaceFile": "drills/workspace/DRL-PRG-T00-C02-02/Q03_countValidQuantities.js",
-      "workspaceDir": "/Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02",
-      "cursorUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02/Q03_countValidQuantities.js",
-      "vscodeUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02/Q03_countValidQuantities.js",
-      "cursorFolderUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02",
-      "vscodeFolderUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02"
+      "workspaceFile": "drills/workspace/DRL-PRG-T00-C02-02/Q03_countValidQuantities.js"
     },
     {
       "level": 1,
@@ -342,12 +327,7 @@
         "verificationLevel": "partial",
         "weakDistractors": 0
       },
-      "workspaceFile": "drills/workspace/DRL-PRG-T00-C02-02/Q04_formatDisplayName.js",
-      "workspaceDir": "/Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02",
-      "cursorUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02/Q04_formatDisplayName.js",
-      "vscodeUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02/Q04_formatDisplayName.js",
-      "cursorFolderUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02",
-      "vscodeFolderUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02"
+      "workspaceFile": "drills/workspace/DRL-PRG-T00-C02-02/Q04_formatDisplayName.js"
     },
     {
       "level": 1,
@@ -428,12 +408,7 @@
         "verificationLevel": "partial",
         "weakDistractors": 0
       },
-      "workspaceFile": "drills/workspace/DRL-PRG-T00-C02-02/Q05_applyDiscount.js",
-      "workspaceDir": "/Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02",
-      "cursorUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02/Q05_applyDiscount.js",
-      "vscodeUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02/Q05_applyDiscount.js",
-      "cursorFolderUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02",
-      "vscodeFolderUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02"
+      "workspaceFile": "drills/workspace/DRL-PRG-T00-C02-02/Q05_applyDiscount.js"
     },
     {
       "level": 1,
@@ -514,12 +489,7 @@
         "verificationLevel": "partial",
         "weakDistractors": 0
       },
-      "workspaceFile": "drills/workspace/DRL-PRG-T00-C02-02/Q06_sumInvoiceTotal.js",
-      "workspaceDir": "/Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02",
-      "cursorUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02/Q06_sumInvoiceTotal.js",
-      "vscodeUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02/Q06_sumInvoiceTotal.js",
-      "cursorFolderUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02",
-      "vscodeFolderUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02"
+      "workspaceFile": "drills/workspace/DRL-PRG-T00-C02-02/Q06_sumInvoiceTotal.js"
     },
     {
       "level": 1,
@@ -600,12 +570,7 @@
         "verificationLevel": "partial",
         "weakDistractors": 0
       },
-      "workspaceFile": "drills/workspace/DRL-PRG-T00-C02-02/Q07_summarizeTemperatures.js",
-      "workspaceDir": "/Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02",
-      "cursorUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02/Q07_summarizeTemperatures.js",
-      "vscodeUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02/Q07_summarizeTemperatures.js",
-      "cursorFolderUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02",
-      "vscodeFolderUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02"
+      "workspaceFile": "drills/workspace/DRL-PRG-T00-C02-02/Q07_summarizeTemperatures.js"
     },
     {
       "level": 1,
@@ -686,12 +651,7 @@
         "verificationLevel": "partial",
         "weakDistractors": 0
       },
-      "workspaceFile": "drills/workspace/DRL-PRG-T00-C02-02/Q08_listActiveEmails.js",
-      "workspaceDir": "/Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02",
-      "cursorUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02/Q08_listActiveEmails.js",
-      "vscodeUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02/Q08_listActiveEmails.js",
-      "cursorFolderUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02",
-      "vscodeFolderUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02"
+      "workspaceFile": "drills/workspace/DRL-PRG-T00-C02-02/Q08_listActiveEmails.js"
     },
     {
       "level": 1,
@@ -768,12 +728,7 @@
         "verificationLevel": "partial",
         "weakDistractors": 0
       },
-      "workspaceFile": "drills/workspace/DRL-PRG-T00-C02-02/Q09_buildShippingLabel.js",
-      "workspaceDir": "/Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02",
-      "cursorUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02/Q09_buildShippingLabel.js",
-      "vscodeUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02/Q09_buildShippingLabel.js",
-      "cursorFolderUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02",
-      "vscodeFolderUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02"
+      "workspaceFile": "drills/workspace/DRL-PRG-T00-C02-02/Q09_buildShippingLabel.js"
     },
     {
       "level": 1,
@@ -854,17 +809,12 @@
         "verificationLevel": "partial",
         "weakDistractors": 0
       },
-      "workspaceFile": "drills/workspace/DRL-PRG-T00-C02-02/Q10_adjustStock.js",
-      "workspaceDir": "/Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02",
-      "cursorUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02/Q10_adjustStock.js",
-      "vscodeUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02/Q10_adjustStock.js",
-      "cursorFolderUrl": "cursor://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02",
-      "vscodeFolderUrl": "vscode://file//Users/Joseph/Documents/antigravity/brave-borg/drills/workspace/DRL-PRG-T00-C02-02"
+      "workspaceFile": "drills/workspace/DRL-PRG-T00-C02-02/Q10_adjustStock.js"
     }
   ],
   "drillId": "DRL-PRG-T00-C02-02",
   "schemaVersion": "2.0-code",
   "subject": "PRG",
   "createdAt": "2026-11-11 15:19:27",
-  "localFilePath": "/Users/Joseph/Documents/antigravity/brave-borg/drills/data/PRG-T00-C02/DRL-PRG-T00-C02-02.json"
+  "localFilePath": "drills/data/PRG-T00-C02/DRL-PRG-T00-C02-02.json"
 }

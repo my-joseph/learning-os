@@ -317,15 +317,16 @@ class TestAiCodeIngest(unittest.TestCase):
             self.assertTrue(os.path.exists(os.path.join(ws_dir, "README.md")))
             self.assertTrue(os.path.exists(os.path.join(ws_dir, "Q01_createTokenBucketRateLimiter.js")))
             self.assertTrue(os.path.exists(os.path.join(ws_dir, "Q01_createTokenBucketRateLimiter.test.js")))
-            self.assertTrue(os.path.exists(os.path.join(ws_dir, ".canonical", "Q01_createTokenBucketRateLimiter.js")))
+            self.assertFalse(os.path.exists(os.path.join(ws_dir, ".canonical")))
 
-            # 3. Check Deep Links Contract
+            # 3. Check relative workspaceFile and no baked-in absolute paths
             p0 = saved["problems"][0]
-            self.assertIn("vscodeFolderUrl", p0)
-            self.assertIn("cursorFolderUrl", p0)
-            self.assertTrue(p0["vscodeFolderUrl"].startswith("vscode://file/"))
-            # Must target folder, not single file
-            self.assertEqual(p0["vscodeFolderUrl"], f"vscode://file/{os.path.abspath(ws_dir)}")
+            self.assertEqual(
+                p0["workspaceFile"],
+                os.path.join("drills", "workspace", "DRL-PRG-T01-C03-TEST01", "Q01_createTokenBucketRateLimiter.js"),
+            )
+            for abs_key in ("workspaceDir", "vscodeFolderUrl", "cursorFolderUrl", "vscodeUrl", "cursorUrl"):
+                self.assertNotIn(abs_key, p0)
 
 
 if __name__ == "__main__":

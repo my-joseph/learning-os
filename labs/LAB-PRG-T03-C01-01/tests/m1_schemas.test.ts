@@ -1,7 +1,9 @@
 import test from "node:test";
 import assert from "node:assert";
-import { validateProduct, validateCartItem, ValidationError } from "../src/schemas.ts";
 import type { Product } from "../src/types.ts";
+
+const srcDir = process.env.LAB_SRC_DIR || "../src";
+const { validateProduct, validateCartItem, ValidationError } = await import(`${srcDir}/schemas.ts`);
 
 test("Milestone 1: Domain Models & Schema Validation", async (t) => {
   await t.test("should validate compliant product definition", () => {

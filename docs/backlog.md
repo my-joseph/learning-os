@@ -22,3 +22,7 @@ Fix each one when the topic it belongs to is actually started, not before. Sourc
 
 - The `whole_sign_flip` diagnostic mentions `i^2 = -1` in non-complex problems.
 - `solution_set` diagnostics: `missing_solution` always says "Remember both signs of ±" (wrong hint for trig), and a value outside the requested interval (e.g. `13pi/6` for `[0, 2pi)`) is called "does not satisfy the equation" although it does.
+
+## Studio
+
+- Separate Math and Programming workspaces inside the same Studio, so neither constrains the other (learner, 2026-11-16). Deferred: system first, UI later.

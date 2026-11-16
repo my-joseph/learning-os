@@ -1,7 +1,9 @@
 import test from "node:test";
 import assert from "node:assert";
-import { InventoryService, InsufficientStockError } from "../src/inventory_service.ts";
 import type { Product } from "../src/types.ts";
+
+const srcDir = process.env.LAB_SRC_DIR || "../src";
+const { InventoryService, InsufficientStockError } = await import(`${srcDir}/inventory_service.ts`);
 
 test("Milestone 4: Async Concurrency & Inventory Lock", async (t) => {
   const initialProducts: Product[] = [

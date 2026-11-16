@@ -93,11 +93,13 @@ def missing_sync_fields(drill_doc: dict) -> list[str]:
     missing = [f"drill.{k}" for k in REQUIRED_DRILL_FIELDS if k != "problems" and not drill_doc.get(k)]
     if not isinstance(drill_doc.get("problems"), list):
         missing.append("drill.problems")
+    is_prg = drill_doc.get("subject") == "PRG" or str(drill_doc.get("unitCode", "")).startswith("PRG-")
+    step_keys = ("explain",) if is_prg else ("latex", "explain")
     for i, p in enumerate(drill_doc.get("problems") or [], 1):
         pid = p.get("id") or f"#{i}"
         missing += [f"{pid}.{k}" for k in REQUIRED_PROBLEM_FIELDS if not p.get(k)]
         for s_i, st in enumerate(p.get("steps") or [], 1):
-            missing += [f"{pid}.steps[{s_i}].{k}" for k in ("latex", "explain") if k not in st]
+            missing += [f"{pid}.steps[{s_i}].{k}" for k in step_keys if k not in st]
         spec = p.get("answerSpec") or {}
         if spec.get("type") == "choice":
             for o_i, opt in enumerate(spec.get("options") or [], 1):
