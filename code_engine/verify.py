@@ -23,6 +23,8 @@ Checks per problem:
 
 import re
 import subprocess
+import tempfile
+from pathlib import Path
 
 from code_engine.answer_check import check_answer, parse_tokens
 from quality_rules import QUALITY_RULES, check_gate_g3_set, verify_quality_gates
@@ -114,15 +116,23 @@ def check_archetype_contract(pid, prob: dict):
             _fail(pid, "Problem-solving problem must provide visibleTests and solutionCode")
 
 
-def run_node(code: str, timeout: float = 3.0):
+def run_node(code: str, timeout: float = 3.0, files: dict[str, str] | None = None):
     """Executes JS in Node.js and returns (stdout, stderr, exit_code)."""
     try:
-        proc = subprocess.run(
-            ["node", "-e", code],
-            capture_output=True,
-            text=True,
-            timeout=timeout,
-        )
+        if files:
+            with tempfile.TemporaryDirectory(prefix="learningos-predict-") as tmp:
+                root = Path(tmp).resolve()
+                for name, content in files.items():
+                    target = (root / name).resolve()
+                    if root not in target.parents:
+                        raise VerificationError(f"Invalid files map path: {name}")
+                    target.parent.mkdir(parents=True, exist_ok=True)
+                    target.write_text(content, encoding="utf-8")
+                entry = root / "entry.mjs"
+                entry.write_text(code, encoding="utf-8")
+                proc = subprocess.run(["node", str(entry)], capture_output=True, text=True, timeout=timeout)
+        else:
+            proc = subprocess.run(["node", "-e", code], capture_output=True, text=True, timeout=timeout)
         return proc.stdout.strip(), proc.stderr.strip(), proc.returncode
     except subprocess.TimeoutExpired:
         raise VerificationError(f"Node execution timed out ({timeout}s). Code snippet may contain an infinite loop.")
@@ -230,7 +240,7 @@ def verify_problem(p, id_map=None, rules=None, environment=None):
         if not snippet:
             _fail(pid, "predict-output problem must provide codeSnippet for execution verification")
 
-        stdout, stderr, code = run_node(snippet)
+        stdout, stderr, code = run_node(snippet, files=p.get("files"))
         if code != 0:
             _fail(pid, f"Execution failed with code {code}. Stderr: {stderr}")
 

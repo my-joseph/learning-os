@@ -26,7 +26,7 @@ def _sample_drill(environment: str = "node-vanilla", lint_overrides: list | None
                 "id": "Q01",
                 "levelLabel": "L1",
                 "category": "Problem Solving",
-                "prompt": "Implement `addNums(a, b)`.",
+                "prompt": "**Requirements:**\n- Implement `addNums(a, b)`.",
                 "entryPoint": "addNums",
                 "codeType": "problem-solving",
                 "starterCode": "function addNums(_a, _b) {\n  // TODO\n  return 0;\n}\nmodule.exports = { addNums };\n",
@@ -57,6 +57,20 @@ def test_generated_workspace_has_eslint_config_and_check_script(tmp_path, monkey
     assert "check" in pkg["scripts"]
     assert "lint" in pkg["scripts"]
     assert "tools/lint/node_modules/.bin/eslint" in pkg["scripts"]["lint"]
+    assert "test_status=$?" in pkg["scripts"]["check"]
+    assert "lint_status=$?" in pkg["scripts"]["check"]
+    assert "check:q01" in pkg["scripts"]
+    assert ".venv/bin/python" in pkg["scripts"]["review"]
+    assert ".venv/bin/python" in pkg["scripts"]["submit"]
+    assert "PYTHONPATH" not in pkg["scripts"]["submit"]
+    assert (ws_dir / "code_engine").is_symlink()
+    readme = (ws_dir / "README.md").read_text(encoding="utf-8")
+    assert "npm run check:q01" in readme
+    assert "npm run review -- q01" in readme
+    assert "python -m code_engine.review_run" not in readme
+    starter = (ws_dir / "Q01_addNums.js").read_text(encoding="utf-8")
+    assert " * **Requirements:**" in starter
+    assert " * -" in starter
 
 
 def test_regeneration_removes_stale_eslint_config_js(tmp_path, monkeypatch):
@@ -83,6 +97,26 @@ def test_generated_ts_workspace_has_typecheck_and_tsconfig(tmp_path, monkeypatch
     assert "typecheck" in pkg["scripts"]
     assert "tools/lint/node_modules/.bin/tsc" in pkg["scripts"]["typecheck"]
     assert "npm run typecheck" in pkg["scripts"]["check"]
+
+
+def test_review_run_summary_has_verdict_and_file_line_format():
+    from code_engine.review_run import format_summary
+
+    result = {
+        "drillId": "DRL-PRG-TEST-01",
+        "problemId": "Q01",
+        "archetypeKey": "example",
+        "level": 1,
+        "codeHash": "sha256:test",
+        "tests": {"passed": 1, "total": 1, "failed": []},
+        "lint": [{"file": "Q01_example.js", "line": 3, "rule": "no-var", "message": "Use let or const."}],
+        "typecheck": [],
+        "checks": [],
+        "passed": False,
+    }
+    summary = format_summary(result)
+    assert "Q01_example.js:3 no-var Use let or const." in summary
+    assert summary.endswith("Verdict: REVISE — fix the reported failures, then run review again.")
 
 
 def test_reference_typescript_drill_workspace_lints_cleanly(tmp_path, monkeypatch):

@@ -58,17 +58,20 @@ Plus a short universal list that applies to every problem (`code_engine/quality_
 | id | check | severity |
 | :-- | :-- | :-- |
 | U-names | Names say what a value is or what a function does; no `data`, `temp`, `x` for domain values | must |
-| U-one-job | Each function does one job; a function that validates, transforms and formats is split | should (must from L3) |
+| U-one-job | Each learner-authored function does one job; pre-existing starter scaffolding is not a refactoring requirement | should (must from L3) |
 | U-no-input-mutation | Arguments are not mutated unless the spec says so | must |
-| U-errors | Errors are thrown or returned on purpose; nothing is swallowed by an empty `catch` | must |
-| U-no-magic | Unexplained literals become named constants | should |
+| U-errors | Errors are thrown or returned on purpose; best-effort cleanup may preserve an already-settled result | must |
+| U-no-magic | Domain literals or values shared across uses become named constants; a one-use defensive bound is not automatically magic | should |
 | U-no-dead-code | No commented-out code, unused branches or leftover `console.log` | should |
-| U-simplest | No cleverness the problem does not need (nested ternaries, needless `reduce`) | should |
+| U-simplest | No needless cleverness (nested ternaries, needless `reduce`); starter helpers are not learner design absent a structural task | should |
+| U-no-floating-promise | Await or handle promises when the caller's contract depends on completion, including async cleanup in `finally` | must |
 | U-no-special-case-patch | No branch keyed to one input just to pass a test (added after the PRG pilot, 2026-11-16) | must |
 | U-no-shared-mutable-state | No module-level mutable state shared by all callers (added after the PRG pilot, 2026-11-16) | must |
 
 `must` blocks a pass; `should` is advice and never blocks. Taste (brace style, `for` vs `forEach` when both are clear)
 is not a finding at all.
+
+Review applies to learner-authored changes. A static prediction array in a `predict-output` problem is judged by its tests; implementation-oriented continuation-order checks apply only when the learner implements asynchronous control flow.
 
 ### Review rules (the skill enforces them)
 

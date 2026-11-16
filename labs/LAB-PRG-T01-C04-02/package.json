@@ -1,7 +1,7 @@
 {
   "name": "lab-prg-t01-c04-02",
   "version": "1.0.0",
-  "description": "Full-Stack E-Commerce Core & Checkout Engine — Phase 3 Project Lab",
+  "description": "Full-Stack E-Commerce Core & Checkout Engine \u2014 Phase 3 Project Lab",
   "type": "module",
   "scripts": {
     "test": "node --experimental-strip-types --test tests/*.test.ts",
@@ -9,12 +9,26 @@
     "test:watch": "node --experimental-strip-types --test --watch tests/*.test.ts",
     "lint": "../../tools/lint/node_modules/.bin/eslint --format ../../tools/lint/format.js src",
     "typecheck": "../../tools/lint/node_modules/.bin/tsc --noEmit",
-    "check": "npm test && npm run lint && npm run typecheck",
+    "check": "npm test; test_status=$?; npm run lint; lint_status=$?; npm run typecheck; type_status=$?; test $test_status -eq 0 -a $lint_status -eq 0 -a $type_status -eq 0",
     "check:reference": "npm run test:reference && (cd ../_reference/LAB-PRG-T01-C04-02 && ../../../tools/lint/node_modules/.bin/eslint --config ../../LAB-PRG-T01-C04-02/eslint.config.js --format ../../../tools/lint/format.js src) && ../../tools/lint/node_modules/.bin/tsc --noEmit -p ../_reference/LAB-PRG-T01-C04-02/tsconfig.json",
     "review": "python3 ../common/review.py",
-    "submit": "python3 ../common/submit_lab.py"
+    "submit": "python3 ../common/submit_lab.py",
+    "test:m1": "node --experimental-strip-types --test --test-reporter=spec tests/m1_schemas.test.ts",
+    "check:m1": "npm run test:m1; test_status=$?; npm run lint; lint_status=$?; npm run typecheck; type_status=$?; test $test_status -eq 0 -a $lint_status -eq 0 -a $type_status -eq 0",
+    "test:m2": "node --experimental-strip-types --test --test-reporter=spec tests/m2_pricing.test.ts",
+    "check:m2": "npm run test:m2; test_status=$?; npm run lint; lint_status=$?; npm run typecheck; type_status=$?; test $test_status -eq 0 -a $lint_status -eq 0 -a $type_status -eq 0",
+    "test:m3": "node --experimental-strip-types --test --test-reporter=spec tests/m3_state_machine.test.ts",
+    "check:m3": "npm run test:m3; test_status=$?; npm run lint; lint_status=$?; npm run typecheck; type_status=$?; test $test_status -eq 0 -a $lint_status -eq 0 -a $type_status -eq 0",
+    "test:m4": "node --experimental-strip-types --test --test-reporter=spec tests/m4_inventory_lock.test.ts",
+    "check:m4": "npm run test:m4; test_status=$?; npm run lint; lint_status=$?; npm run typecheck; type_status=$?; test $test_status -eq 0 -a $lint_status -eq 0 -a $type_status -eq 0"
   },
-  "keywords": ["typescript", "ecommerce", "domain-driven", "testing", "state-machine"],
+  "keywords": [
+    "typescript",
+    "ecommerce",
+    "domain-driven",
+    "testing",
+    "state-machine"
+  ],
   "author": "Antigravity Learning Engine",
   "license": "MIT"
 }

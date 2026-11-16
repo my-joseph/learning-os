@@ -354,7 +354,7 @@ def check_dual_pre_execution(pid: str, prob: Dict[str, Any], environment: str = 
         snippet = prob.get("codeSnippet")
         if not snippet:
             raise AiContractError(f"[{pid}] Code-tracing problem must provide codeSnippet.")
-        stdout, stderr, code = run_node(snippet)
+        stdout, stderr, code = run_node(snippet, files=prob.get("files"))
         if code != 0:
             raise AiContractError(f"[{pid}] Code-tracing snippet failed to run in Node (exit code {code}): {stderr}")
         node_tokens = parse_tokens(stdout)
@@ -1089,6 +1089,24 @@ def validate_drill_mix(drill_doc: Dict[str, Any], problems: List[Dict[str, Any]]
     return errors
 
 
+def visible_edge_case_warnings(drill_doc: Dict[str, Any]) -> List[str]:
+    """Warn when public tests lack a visibly recognizable boundary input."""
+    warnings = []
+    edge_pattern = re.compile(
+        r"(?:\bnull\b|\bundefined\b|\bempty\b|\bzero\b|\bnegative\b|(?:^|[^\w])0(?:[^\w]|$)|(?:^|[^\w])-\d)",
+        re.I,
+    )
+    for problem in drill_doc.get("problems") or []:
+        tests = problem.get("visibleTests") or []
+        text = " ".join(f"{test.get('name', '')} {test.get('testCode', '')}" for test in tests)
+        if not edge_pattern.search(text):
+            warnings.append(
+                f"[{problem.get('id', '?')}] Visible tests have no recognizable edge-case input; "
+                "add an appropriate empty/zero/null/negative/boundary case."
+            )
+    return warnings
+
+
 def validate_drill_review(drill_doc: Dict[str, Any], problems: List[Dict[str, Any]]) -> List[str]:
     """Require reviewer record: `review: {verdict: 'pass', note}` on draft (or on every problem)."""
     rv = drill_doc.get("review")
@@ -1416,6 +1434,8 @@ if __name__ == "__main__":
         with open(check_target, "r", encoding="utf-8") as f:
             drill_data = json.load(f)
         failures = check_code_drill(drill_data)
+        for warning in visible_edge_case_warnings(drill_data):
+            print(f"  WARN {warning}")
         for line in failures:
             print(f"  FAIL {line}")
         n = len(drill_data.get("problems") or [])

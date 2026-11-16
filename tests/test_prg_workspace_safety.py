@@ -1,13 +1,20 @@
 """Tests for PRG workspace safety, hidden test temp execution, and drill_sync preflight."""
 
 import subprocess
+import sys
 from pathlib import Path
 from unittest.mock import patch
 
 import pytest
 
-from code_engine.ai_drill_ingest import AiContractError, check_starter_contract, run_problem_in_workspace
+from code_engine.ai_drill_ingest import (
+    AiContractError,
+    check_starter_contract,
+    run_problem_in_workspace,
+    visible_edge_case_warnings,
+)
 from code_engine.submit import run_tests_junit
+from code_engine.verify import run_node
 from code_engine.workspace import materialize_drill_workspace
 from notion_sync.drill_sync import missing_sync_fields
 
@@ -102,6 +109,70 @@ def test_drill_sync_preflight_allows_prg_steps_without_latex():
     drill_doc = _sample_prg_drill()
     missing = missing_sync_fields(drill_doc)
     assert missing == [], f"PRG drill with explain-only steps should pass preflight, got: {missing}"
+
+
+def test_submit_cli_help_and_explicit_drill_workspace_resolution(tmp_path, monkeypatch):
+    from code_engine.submit import find_repo_root, resolve_workspace
+
+    root = tmp_path / "checkout"
+    root.mkdir()
+    (root / "id_map.json").write_text("{}", encoding="utf-8")
+    ws = root / "pilot" / "workspace" / "DRL-PRG-TEST-01"
+    ws.mkdir(parents=True)
+    (ws / "package.json").write_text("{}", encoding="utf-8")
+    assert find_repo_root(ws) == root
+    monkeypatch.setenv("LEARNINGOS_PILOT", "1")
+    resolved_root, resolved_ws = resolve_workspace("DRL-PRG-TEST-01", root)
+    assert resolved_root == root
+    assert resolved_ws == root / "pilot" / "workspace" / "DRL-PRG-TEST-01"
+    help_result = subprocess.run(
+        [sys.executable, "-m", "code_engine.submit", "--help"],
+        cwd=Path(__file__).resolve().parents[1],
+        capture_output=True,
+        text=True,
+    )
+    assert help_result.returncode == 0
+    assert "--drill" in help_result.stdout
+    assert "DRILL SUBMISSION ENGINE" not in help_result.stdout
+
+
+def test_submit_module_help_loads_from_generated_workspace(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    doc = _sample_prg_drill()
+    materialize_drill_workspace(doc, root_dir=str(tmp_path))
+    ws = tmp_path / "drills" / "workspace" / doc["drillId"]
+    result = subprocess.run(
+        [sys.executable, "-m", "code_engine.submit", "--help"],
+        cwd=ws,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stderr
+    assert "--drill" in result.stdout
+    review_help = subprocess.run(
+        [sys.executable, "-m", "code_engine.review_run", "--help"],
+        cwd=ws,
+        capture_output=True,
+        text=True,
+    )
+    assert review_help.returncode == 0, review_help.stderr
+    assert "drill_id" in review_help.stdout
+
+
+def test_predict_output_gate_supports_multi_file_esm():
+    stdout, stderr, code = run_node(
+        "import { statusLabel } from './status.mjs'; console.log(statusLabel(0));",
+        files={"status.mjs": "export function statusLabel(value) { return value === 0 ? 'empty' : 'nonempty'; }"},
+    )
+    assert code == 0, stderr
+    assert stdout == "empty"
+
+
+def test_visible_test_edge_case_warning():
+    doc = {"problems": [{"id": "Q01", "visibleTests": [{"name": "normal", "testCode": "assert.equal(total(2), 2);"}]}]}
+    assert "edge-case" in visible_edge_case_warnings(doc)[0]
+    doc["problems"][0]["visibleTests"].append({"name": "accepts zero", "testCode": "assert.equal(total(0), 0);"})
+    assert visible_edge_case_warnings(doc) == []
 
 
 def _secondary_export_problem() -> dict:

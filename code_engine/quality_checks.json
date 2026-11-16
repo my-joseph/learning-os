@@ -11,7 +11,7 @@
   },
   {
     "id": "U-one-job",
-    "check": "Each function does one job; a function that validates, transforms, and formats is split into focused helpers.",
+    "check": "Each learner-authored function does one job; do not treat pre-existing starter scaffolding as the learner's design unless the task asks them to change it. A function that validates, transforms, and formats authored behavior should be split into focused helpers.",
     "why": "Mixing validation, business logic, and formatting in one function makes each part harder to test and reuse.",
     "severity": "should",
     "mustFromLevel": 3,
@@ -32,8 +32,8 @@
   },
   {
     "id": "U-errors",
-    "check": "Errors are thrown or returned explicitly on invalid input or failure; nothing is swallowed by an empty `catch`.",
-    "why": "Swallowing errors or returning silent fallbacks hides root causes and corrupts downstream state.",
+    "check": "Errors are thrown or returned explicitly on invalid input or failure; nothing is swallowed by an empty `catch`. Best-effort cleanup may suppress its own cleanup error when preserving an already-settled result is part of the contract.",
+    "why": "Swallowing operational errors hides root causes and corrupts downstream state, while cleanup must not accidentally replace an already-settled result.",
     "severity": "must",
     "knownBad": {
       "code": "function parseConfig(raw) {\n  try {\n    return JSON.parse(raw);\n  } catch (_err) {\n    return {};\n  }\n}",
@@ -42,7 +42,7 @@
   },
   {
     "id": "U-no-magic",
-    "check": "Unexplained numeric or string literals that carry domain meaning are extracted into named constants.",
+    "check": "Unexplained numeric or string literals that carry domain meaning or must stay consistent across uses are extracted into named constants; a local defensive bound used once is not automatically a finding.",
     "why": "Magic literals obscure business rules and cause drift when the same value must be updated in multiple places.",
     "severity": "should",
     "knownBad": {
@@ -62,11 +62,21 @@
   },
   {
     "id": "U-simplest",
-    "check": "No needless cleverness such as nested ternaries or `reduce` where a direct loop or method is clearer.",
+    "check": "No needless cleverness such as nested ternaries or `reduce` where a direct loop or method is clearer. Judge learner-authored changes; pre-existing starter helpers are not a refactoring requirement unless the prompt asks for structural improvement.",
     "why": "Over-compressed expressions slow down reading and hide off-by-one or precedence bugs.",
     "severity": "should",
     "knownBad": {
       "code": "function classifyScore(score) {\n  return score >= 90 ? 'A' : score >= 80 ? 'B' : score >= 70 ? 'C' : 'F';\n}",
+      "caughtBy": "review"
+    }
+  },
+  {
+    "id": "U-no-floating-promise",
+    "check": "Promises returned by asynchronous work that the function contract depends on are awaited or otherwise handled, including cleanup in `finally`.",
+    "why": "Fire-and-forget cleanup can finish after the caller proceeds or leave a rejection unhandled.",
+    "severity": "must",
+    "knownBad": {
+      "code": "async function withLease(lease, work) {\n  try {\n    return await work();\n  } finally {\n    lease.release();\n  }\n}",
       "caughtBy": "review"
     }
   },

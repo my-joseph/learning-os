@@ -8,6 +8,7 @@ records execution telemetry, and syncs to Notion 'Learning Practice & Drills'.
 100% self-contained with Python standard library.
 """
 
+import argparse
 import datetime
 import json
 import os
@@ -48,6 +49,18 @@ def find_repo_root(start_dir: Path) -> Path:
             break
         curr = curr.parent
     return _REPO_ROOT
+
+
+def resolve_workspace(drill_id: str, cwd: Path | None = None) -> tuple[Path, Path]:
+    """Resolve checkout and workspace paths from the caller's directory."""
+    current = (cwd or Path.cwd()).resolve()
+    repo_root = find_repo_root(current)
+    if current.name == drill_id and (current / "package.json").exists():
+        return repo_root, current
+    pilot = os.environ.get("LEARNINGOS_PILOT", "").strip().lower() in ("1", "true", "yes")
+    base = "pilot/workspace" if pilot else "drills/workspace"
+    workspace = Path(os.environ.get("WORKSPACE_DIR", str(repo_root / base / drill_id))).resolve()
+    return repo_root, workspace
 
 
 def _parse_junit_xml(raw: str, force_hidden: bool = False) -> list:
@@ -378,11 +391,16 @@ def evaluate_and_record_submission(
     }
 
 
-def main():
-    ws_dir = Path.cwd().resolve()
-    drill_id = ws_dir.name
+def main(argv: list[str] | None = None):
+    parser = argparse.ArgumentParser(description="Evaluate and record a PRG drill submission.")
+    parser.add_argument("--drill", help="Drill ID (defaults to the current workspace folder)")
+    args = parser.parse_args(argv)
+    cwd = Path.cwd().resolve()
+    drill_id = args.drill or cwd.name
+    repo_root, ws_dir = resolve_workspace(drill_id, cwd)
 
-    repo_root = find_repo_root(ws_dir)
+    if not ws_dir.is_dir():
+        raise SystemExit(f"Workspace not found: {ws_dir}")
     if str(repo_root) not in sys.path:
         sys.path.insert(0, str(repo_root))
     from progress_store import apply_progress, load_progress
@@ -396,15 +414,7 @@ def main():
             drill_doc = json.load(f)
         apply_progress(drill_doc, load_progress(drill_id, str(repo_root)))
     else:
-        drill_doc = {
-            "drillId": drill_id,
-            "subject": "PRG",
-            "unitCode": "PRG-T01-C04",
-            "unitTitle": "Problem Solving & Utility Toolkit",
-            "chapterCode": "PRG-T01-C04",
-            "topicCode": "PRG-T01",
-            "problems": [],
-        }
+        raise SystemExit(f"Drill '{drill_id}' not found under {repo_root / 'drills' / 'data'}")
 
     print(f"\n{BOLD}{CYAN}========================================================================={RESET}")
     print(f"{BOLD}  DRILL SUBMISSION ENGINE: {drill_id}{RESET}")

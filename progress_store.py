@@ -19,6 +19,7 @@ from __future__ import annotations
 import datetime
 import json
 import os
+from pathlib import Path
 from typing import Any
 
 PROGRESS_FIELDS_DOC = ("sessionSummary",)
@@ -30,18 +31,29 @@ def pilot_mode() -> bool:
     return os.environ.get("LEARNINGOS_PILOT", "").strip().lower() in ("1", "true", "yes")
 
 
+def find_repo_root(start: str | os.PathLike[str] | None = None) -> str:
+    """Find this checkout from any working directory using the repository marker."""
+    current = Path(start or Path.cwd()).resolve()
+    if current.is_file():
+        current = current.parent
+    for candidate in (current, *current.parents):
+        if (candidate / "id_map.json").is_file():
+            return str(candidate)
+    return str(current)
+
+
 def progress_root(repo_root: str | None = None) -> str:
     """PROGRESS_DIR, else `pilot/progress/` in pilot mode, else `progress/` relative to `repo_root`."""
     if os.environ.get("PROGRESS_DIR"):
         return os.environ["PROGRESS_DIR"]
     sub = os.path.join("pilot", "progress") if pilot_mode() else "progress"
-    return os.path.join(repo_root, sub) if repo_root else sub
+    return os.path.join(repo_root or find_repo_root(), sub)
 
 
 def workspace_root(repo_root: str | None = None) -> str:
     """`pilot/workspace/` in pilot mode, else `drills/workspace/` relative to `repo_root`."""
     sub = os.path.join("pilot", "workspace") if pilot_mode() else os.path.join("drills", "workspace")
-    return os.path.join(repo_root, sub) if repo_root else sub
+    return os.path.join(repo_root or find_repo_root(), sub)
 
 
 def labs_root(repo_root: str | None = None) -> str:
@@ -49,7 +61,7 @@ def labs_root(repo_root: str | None = None) -> str:
     if os.environ.get("LABS_DIR"):
         return os.environ["LABS_DIR"]
     sub = os.path.join("pilot", "labs") if pilot_mode() else "labs"
-    return os.path.join(repo_root, sub) if repo_root else sub
+    return os.path.join(repo_root or find_repo_root(), sub)
 
 
 def progress_path(drill_id: str, repo_root: str | None = None) -> str:
