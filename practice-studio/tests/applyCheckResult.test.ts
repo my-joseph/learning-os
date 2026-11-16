@@ -358,6 +358,21 @@ runCase("Skip after viewing set-up is also marked as assisted", () => {
   assert(res.attempts![res.attempts!.length - 1].setupRevealed === true, "Skip attempt must record setupRevealed");
 });
 
+// Partial answer matching the trap (omission trap on a solution set) tags the trap
+runCase("Partial answer with trapMatched attaches commonTrapTag and records matchedTrap", () => {
+  const prob = createBaseProblem();
+  const res = applyCheckResult(
+    prob,
+    "7",
+    { verdict: "partial", message: "Partial", components: [], diagnostics: [], trapMatched: true },
+    mockMistakeTags,
+    { ts: "2026-11-16T12:00:00Z" }
+  );
+  assert(res.score === 0.5, "Partial keeps 0.5");
+  assert(res.mistakes.includes("c01-place-value-shift"), "Must attach prob.commonTrapTag");
+  assert(res.attempts![0].matchedTrap === "c01-place-value-shift", "Attempt must record matchedTrap");
+});
+
 // Extra: Diverged step does not attach mistake tags
 const probDiverged = createBaseProblem();
 const stDiv = applyDivergedStep(probDiverged, 1);

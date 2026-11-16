@@ -221,6 +221,37 @@ class TestTrapValueTelemetry(unittest.TestCase):
         )
         self.assertTrue(verify_problem(prob_valid))
 
+    def test_solution_set_omission_trap_matched(self):
+        # Learner gives only one root of {0, 7}: partial credit, and the omission trap is tagged.
+        payload = {
+            "answerSpec": {"type": "solution_set", "values": ["0", "7"], "variable": "x"},
+            "trapValue": "7",
+            "input": "7",
+        }
+        res = self._run_main(payload)
+        self.assertEqual(res["verdict"], "partial")
+        self.assertTrue(res.get("trapMatched"))
+
+    def test_solution_set_wrong_set_trap_matched(self):
+        payload = {
+            "answerSpec": {"type": "solution_set", "values": ["-2", "-1"], "variable": "k"},
+            "trapValue": "1, 2",
+            "input": "2, 1",
+        }
+        res = self._run_main(payload)
+        self.assertEqual(res["verdict"], "incorrect")
+        self.assertTrue(res.get("trapMatched"))
+
+    def test_solution_set_other_partial_not_matched(self):
+        payload = {
+            "answerSpec": {"type": "solution_set", "values": ["0", "7"], "variable": "x"},
+            "trapValue": "7",
+            "input": "0",
+        }
+        res = self._run_main(payload)
+        self.assertEqual(res["verdict"], "partial")
+        self.assertFalse(res.get("trapMatched", False))
+
 
 if __name__ == "__main__":
     unittest.main()
