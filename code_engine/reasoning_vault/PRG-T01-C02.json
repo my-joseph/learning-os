@@ -475,7 +475,9 @@
       ],
       "usedContexts": [
         "payment_state_record",
-        "media_processing_job"
+        "media_processing_job",
+        "parcel_delivery_status",
+        "subscription_billing_adjustments"
       ],
       "source": "TypeScript Handbook: Narrowing — Discriminated Unions",
       "qualityChecks": [
@@ -545,7 +547,8 @@
       ],
       "usedContexts": [
         "media_processing_job",
-        "warehouse_dispatch_state"
+        "warehouse_dispatch_state",
+        "hospital_lab_sample_lifecycle"
       ],
       "source": "TypeScript Handbook: Narrowing — Exhaustiveness Checking",
       "qualityChecks": [
@@ -615,7 +618,9 @@
       ],
       "usedContexts": [
         "telemetry_payload_batch",
-        "search_result_projection"
+        "search_result_projection",
+        "museum_artwork_intake_manifest",
+        "support_ticket_activity_feed"
       ],
       "source": "TypeScript Handbook: Everyday Types — Union Types",
       "qualityChecks": [
