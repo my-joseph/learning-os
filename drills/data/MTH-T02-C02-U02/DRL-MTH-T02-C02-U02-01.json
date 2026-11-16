@@ -158,7 +158,7 @@
         "source": "2 * (2 - 2)^2 + 3",
         "trapValue": "11"
       },
-      "checkpointHint": "Before answering, trace the whole graph and confirm that no point on it lies lower than your answer.",
+      "checkpointHint": "After entering your response, reread the question and confirm it gives the requested kind of value.",
       "references": [
         "MTH-T02-C02-U02"
       ],
@@ -855,7 +855,7 @@
         "source": "3 * 4",
         "trapValue": "-12"
       },
-      "checkpointHint": "With your constant in place, test an input on each side of the given endpoint and confirm the function is defined exactly where the stated domain says.",
+      "checkpointHint": "After entering your value, reread the stated condition and confirm your response addresses the requested quantity.",
       "references": [
         "MTH-T02-C02-U02"
       ],
@@ -1363,7 +1363,7 @@
         "source": "(80 + sqrt(80^2 - 8 * 750)) / 4",
         "trapValue": "15"
       },
-      "checkpointHint": "Check every candidate against every condition in the story before you answer.",
+      "checkpointHint": "Review your final response against each condition stated in the problem.",
       "references": [
         "MTH-T02-C02-U02"
       ],
@@ -1581,7 +1581,7 @@
         "source": "(44 / 2 - sqrt((44 / 2)^2 - 4 * 112)) / 4",
         "trapValue": "7"
       },
-      "checkpointHint": "Check every condition in the story at a value just below and just above your bound.",
+      "checkpointHint": "Review your final response against the requested interval format and the conditions stated in the problem.",
       "references": [
         "MTH-T02-C02-U02"
       ],
@@ -1648,7 +1648,6 @@
         "verdict": "pass",
         "note": "Answer 4 in, trapValue 7 in (using the longer 14 in side instead of intersecting with the 8 in side), physical modeling context, and steps are all accurate."
       },
-      "figureWaiver": "No figure builder draws a plate with corner cut-outs; the rectangle builders would label a plate side as x, but x is the cut length.",
       "referenceBadges": [
         {
           "code": "MTH-T02-C02-U02",
@@ -1692,7 +1691,94 @@
         "verificationLevel": "partial",
         "weakDistractors": 0
       },
-      "levelLabel": "Level 4 - Applied Synthesis"
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "figure": {
+        "kind": "geometry_2d",
+        "theme": "indigo",
+        "title": "Rectangular Sheet for an Open-Top Box",
+        "points": {
+          "A": [
+            0,
+            0
+          ],
+          "B": [
+            14.0,
+            0
+          ],
+          "C": [
+            14.0,
+            8.0
+          ],
+          "D": [
+            0,
+            8.0
+          ],
+          "E": [
+            1.0,
+            1.0
+          ],
+          "F": [
+            13.0,
+            1.0
+          ],
+          "G": [
+            13.0,
+            7.0
+          ],
+          "H": [
+            1.0,
+            7.0
+          ]
+        },
+        "shapes": [
+          {
+            "type": "polygon",
+            "vertices": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ],
+            "fill": true
+          },
+          {
+            "type": "polygon",
+            "vertices": [
+              "E",
+              "F",
+              "G",
+              "H"
+            ],
+            "fill": false,
+            "stroke": "#94a3b8",
+            "strokeDasharray": "4 3"
+          }
+        ],
+        "labels": [
+          {
+            "type": "segment",
+            "p1": "A",
+            "p2": "B",
+            "text": "14 in",
+            "side": "bottom"
+          },
+          {
+            "type": "segment",
+            "p1": "A",
+            "p2": "D",
+            "text": "8 in",
+            "side": "left"
+          },
+          {
+            "type": "segment",
+            "p1": "A",
+            "p2": "E",
+            "text": "x",
+            "side": "right"
+          }
+        ],
+        "note": "Schematic; cut size x is not to scale."
+      }
     }
   ],
   "drillId": "DRL-MTH-T02-C02-U02-01",
