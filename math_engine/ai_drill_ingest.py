@@ -352,7 +352,8 @@ def validate_ai_problem_contract(prob: Dict[str, Any], enforce_leak_gate: bool =
     for p_num in prompt_numbers:
         if p_num == 0:
             continue  # the 0 in "= 0" or "X > 0" is notation, not story data
-        if not any(abs(p_num - g_val) < 1e-6 for g_val in known_vals):
+        # A sign in the prompt may belong to the notation (x = -4 with given 4), so magnitudes also match.
+        if not any(abs(p_num - g_val) < 1e-6 or abs(abs(p_num) - abs(g_val)) < 1e-6 for g_val in known_vals):
             raise AiContractError(f"[{pid}] Number '{p_num}' in prompt is not defined in givens ({givens})")
 
     # Backward: every given must appear in prompt. Exponents count here ($2^3$ states the 3),
@@ -413,7 +414,8 @@ def validate_ai_problem_contract(prob: Dict[str, Any], enforce_leak_gate: bool =
     # A trap may misuse a formula constant (e.g. 2 + r instead of 2r), so constants count too.
     for g_key, g_val in {**givens_floats, **constant_floats}.items():
         for t_val in td_token_vals:
-            if abs(t_val - g_val) < 1e-6:
+            # Derivation tokens are unsigned, so a negative given matches its magnitude.
+            if abs(t_val - g_val) < 1e-6 or abs(t_val - abs(g_val)) < 1e-6:
                 matched_given_keys.add(g_key)
                 break
             if abs(t_val - (g_val / 100.0)) < 1e-6:

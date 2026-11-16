@@ -113,7 +113,7 @@
       "display": "\\sqrt{-n} = i\\sqrt{n}",
       "plainText": "sqrt(-n) = i*sqrt(n)",
       "givens": {
-        "radicand": 49
+        "radicand": -49
       },
       "constants": {
         "index": 2
