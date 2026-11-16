@@ -139,7 +139,7 @@
       "hiddenTests": [
         {
           "name": "trims padded scanner input without clearing the field",
-          "testCode": "const captures: string[] = []; const user = userEvent.setup(); render(<BinScanCapture onCapture={(code) => captures.push(code)} />); await user.click(screen.getByRole('button', { name: 'Start scan' })); const input = screen.getByRole('textbox', { name: 'Bin code' }); await user.type(input, '  PALLET-42  '); await user.click(screen.getByRole('button', { name: 'Capture bin' })); assert.deepEqual(captures, ['PALLET-42']); assert.equal(input.value, '  PALLET-42  ');"
+          "testCode": "const captures: string[] = []; const user = userEvent.setup(); render(<BinScanCapture onCapture={(code) => captures.push(code)} />); await user.click(screen.getByRole('button', { name: 'Start scan' })); const input = screen.getByRole('textbox', { name: 'Bin code' }) as HTMLInputElement; await user.type(input, '  PALLET-42  '); await user.click(screen.getByRole('button', { name: 'Capture bin' })); assert.deepEqual(captures, ['PALLET-42']); assert.equal(input.value, '  PALLET-42  ');"
         }
       ],
       "steps": [

@@ -48,3 +48,18 @@ def test_answer_persists_studio_attempt_shape_only_to_progress(tmp_path):
     assert state["attempts"][0]["matchedTrap"] == problem["commonTrapTag"]
     assert state["score"] == 0
     assert "state" not in json.loads(DRILL_PATH.read_text(encoding="utf-8"))["problems"][0]
+
+
+def test_submit_saves_and_prints_session_summary(tmp_path):
+    doc = json.loads(DRILL_PATH.read_text(encoding="utf-8"))
+    problem = doc["problems"][0]
+    progress_dir = tmp_path / "progress"
+    run_cli("answer", DRILL_ID, problem["id"], "15/8", progress_dir=progress_dir)
+
+    result = run_cli("submit", DRILL_ID, progress_dir=progress_dir)
+    assert result.returncode == 0, result.stderr
+    summary = json.loads(result.stdout)
+    progress = json.loads((progress_dir / f"{DRILL_ID}.json").read_text(encoding="utf-8"))
+    assert summary["practiceStatus"] == "In Progress"
+    assert progress["sessionSummary"] == summary
+    assert "sessionSummary" not in json.loads(DRILL_PATH.read_text(encoding="utf-8"))

@@ -28,6 +28,8 @@ class TestAiDrillIngest(unittest.TestCase):
     def test_prompt_number_normalizer_preserves_negative_givens_and_latex_bounds(self):
         self.assertEqual(normalize_prompt_numbers("A given is -2 units."), [-2.0])
         self.assertEqual(normalize_prompt_numbers(r"Solve $|3x-2|\le4.0$."), [3.0, 2.0, 4.0])
+        self.assertEqual(normalize_prompt_numbers(r"Solve $x\le-4$."), [-4.0])
+        self.assertEqual(normalize_prompt_numbers("Point (2,3) has 1,234 units."), [2.0, 3.0, 1234.0])
         self.assertEqual(normalize_prompt_numbers("Compute 3 - 2."), [3.0, 2.0])
         self.assertEqual(normalize_prompt_numbers("Evaluate x -2."), [2.0])
 
