@@ -20,6 +20,7 @@ export function applyCheckResult(
   const ts = options.ts || new Date().toISOString();
   const currentAttempts = prob.state?.attempts || [];
   const currentMistakes = new Set(prob.state?.mistakes || []);
+  const hintsCount = options.hintsRevealed ?? prob.state?.hintsRevealed ?? 0;
 
   // 1. Empty input (and not skipped) -> return unchanged state
   if (!trimmed && result.verdict !== "skipped") {
@@ -44,15 +45,28 @@ export function applyCheckResult(
       mistakes: Array.from(currentMistakes),
       lastCheck: result,
       attempts: [...currentAttempts, attempt],
-      hintsRevealed: options.hintsRevealed ?? prob.state?.hintsRevealed ?? 0,
+      hintsRevealed: hintsCount,
       durationMs: (prob.state?.durationMs || 0) + (options.durationMs || 0),
     };
   }
 
-  // Calculate score
+  const isAssisted = Boolean(
+    prob.state?.setupRevealedBeforeAnswer ||
+      prob.state?.solutionRevealedBeforeAnswer ||
+      hintsCount > 0 ||
+      currentAttempts.some((a) => a.setupRevealed || a.solutionRevealed)
+  );
+  const hadPriorWrongOrPartial = currentAttempts.some(
+    (a) =>
+      a.verdict !== "correct" &&
+      a.verdict !== "invalid input" &&
+      a.verdict !== "parse_error"
+  );
+
+  // Calculate score (matches progress_store.item_score / weak_spots)
   let autoScore = prob.state?.score ?? null;
   if (result.verdict === "correct") {
-    autoScore = 1;
+    autoScore = isAssisted || hadPriorWrongOrPartial ? 0.5 : 1;
   } else if (result.verdict === "equivalent_not_in_form" || result.verdict === "partial") {
     autoScore = 0.5;
   } else if (result.verdict === "incorrect") {
@@ -131,7 +145,7 @@ export function applyCheckResult(
     mistakes: Array.from(newMistakes),
     lastCheck: result,
     attempts: [...currentAttempts, attempt],
-    hintsRevealed: options.hintsRevealed ?? prob.state?.hintsRevealed ?? 0,
+    hintsRevealed: hintsCount,
     durationMs: (prob.state?.durationMs || 0) + (options.durationMs || 0),
   };
 }

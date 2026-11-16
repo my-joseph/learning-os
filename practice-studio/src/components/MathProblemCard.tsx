@@ -41,8 +41,15 @@ interface MathProblemCardProps {
   onSolutionRevealed?: () => void;
 }
 
+const DEFAULT_PLACEHOLDER_BY_TYPE: Record<string, string> = {
+  interval: "Enter interval, e.g. [a, b) or (-inf, a) U (a, inf)...",
+};
+
 const getSafeMathPlaceholder = (hint?: string, problem?: Problem): string => {
-  if (!hint) return "Enter final answer (press Enter to check)...";
+  const fallback =
+    (problem?.answerSpec?.type && DEFAULT_PLACEHOLDER_BY_TYPE[problem.answerSpec.type]) ||
+    "Enter final answer (press Enter to check)...";
+  if (!hint) return fallback;
 
   const acceptedList: string[] = [];
   if (problem?.answerSpec?.accepted) {
@@ -75,7 +82,7 @@ const getSafeMathPlaceholder = (hint?: string, problem?: Problem): string => {
     return stripped;
   }
 
-  return "Enter final answer (press Enter to check)...";
+  return fallback;
 };
 
 export const MathProblemCard: React.FC<MathProblemCardProps> = ({
@@ -96,12 +103,15 @@ export const MathProblemCard: React.FC<MathProblemCardProps> = ({
   onSetupRevealed,
   onSolutionRevealed,
 }) => {
+  const shouldAutoReveal = (p: Problem) =>
+    p.state.lastCheck?.verdict === "correct" || Boolean(p.state.skipped);
+
   const [copied, setCopied] = useState(false);
   const [showHint, setShowHint] = useState(false);
-  const [showSolution, setShowSolution] = useState(Boolean(problem.state.lastCheck));
+  const [showSolution, setShowSolution] = useState(() => shouldAutoReveal(problem));
   const [isChecking, setIsChecking] = useState(false);
-  // Equation set-up (display + plain-text) is hidden until the learner asks for it or has answered.
-  const [showSetup, setShowSetup] = useState(Boolean(problem.state.lastCheck));
+  // Equation set-up (display + plain-text) is hidden until the learner asks for it or finishes the problem.
+  const [showSetup, setShowSetup] = useState(() => shouldAutoReveal(problem));
   const hasSetup = Boolean(problem.display || problem.plainText);
   const answered = Boolean(problem.state.lastCheck);
   const hasCorrectAttempt =
@@ -111,9 +121,11 @@ export const MathProblemCard: React.FC<MathProblemCardProps> = ({
   const solutionWasAssisted = Boolean(problem.state.solutionRevealedBeforeAnswer);
 
   useEffect(() => {
-    setShowSolution(Boolean(problem.state.lastCheck));
-    setShowSetup(Boolean(problem.state.lastCheck));
-  }, [problem.id, problem.state.lastCheck]);
+    const reveal =
+      problem.state.lastCheck?.verdict === "correct" || Boolean(problem.state.skipped);
+    setShowSolution(reveal);
+    setShowSetup(reveal);
+  }, [problem.id, problem.state.lastCheck?.verdict, problem.state.skipped]);
 
   const toggleSetup = () => {
     if (!showSetup && !answered && onSetupRevealed) {
@@ -134,8 +146,6 @@ export const MathProblemCard: React.FC<MathProblemCardProps> = ({
     setIsChecking(true);
     try {
       await onCheckAnswer();
-      setShowSolution(true);
-      setShowSetup(true);
     } finally {
       setIsChecking(false);
     }

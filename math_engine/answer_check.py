@@ -10,6 +10,7 @@ Supported answerSpec types (extensible - add a new checker function + register i
     complex         {"type": "complex", "value": "-1 + 2*I", "forms": ["a+bi"]}
     expression      {"type": "expression", "value": "x**2 - 1", "variables": ["x"], "forms": ["factored"]}
     solution_set    {"type": "solution_set", "values": ["-2 + 3*I", "-2 - 3*I"], "variable": "x"}
+    interval        {"type": "interval", "value": "[3, 21)"}
     tuple           {"type": "tuple", "values": ["5", "3"], "labels": ["x", "y"], "acceptComplex": true}
     choice          {"type": "choice", "correct": "B"}
     text            {"type": "text", "accepted": ["server-only"]}
@@ -1137,6 +1138,194 @@ def check_solution_set(spec, raw):
     }
 
 
+_INTERVAL_FORMAT_MSG = "Write the domain/answer as an interval, e.g. [a, b) or (-inf, a) U (a, inf)."
+
+
+def _parse_interval_endpoint(raw_ep: str, variables=None):
+    s = (raw_ep or "").strip()
+    if not s:
+        raise ValueError("Interval endpoint cannot be empty.")
+    s = s.replace("\u2212", "-").replace("\u2013", "-")
+    s = s.replace("\\infty", "oo").replace("\u221e", "oo")
+    s = re.sub(r"\b(?:infinity|inf)\b", "oo", s, flags=re.IGNORECASE)
+    val = parse_math(s, variables=variables, allow_i=False)
+    if isinstance(val, sp.Basic):
+        val = val.replace(lambda x: isinstance(x, sp.Float), lambda x: sp.Rational(str(x)))
+        if val in (sp.nan, sp.zoo) or val.has(sp.I, sp.nan, sp.zoo):
+            raise ValueError("Interval endpoints must be real numbers or +/-inf.")
+        val = sp.simplify(val)
+    return val
+
+
+def _split_interval_pieces(raw: str) -> list[str]:
+    s = (raw or "").strip()
+    if not s:
+        raise ValueError(_INTERVAL_FORMAT_MSG)
+    pieces: list[str] = []
+    n = len(s)
+    i = 0
+    expect_piece = True
+    while i < n:
+        ch = s[i]
+        if ch.isspace():
+            i += 1
+            continue
+        if expect_piece:
+            if ch not in "([{":
+                raise ValueError(_INTERVAL_FORMAT_MSG)
+            start = i
+            depth = 0
+            while i < n:
+                c = s[i]
+                if c in "([{":
+                    depth += 1
+                elif c in ")]}":
+                    depth -= 1
+                    if depth < 0:
+                        raise ValueError("Unbalanced brackets in interval notation, e.g. [a, b).")
+                    if depth == 0:
+                        i += 1
+                        break
+                i += 1
+            if depth != 0:
+                raise ValueError("Unbalanced brackets in interval notation, e.g. [a, b).")
+            pieces.append(s[start:i])
+            expect_piece = False
+        else:
+            if s[i] == "\u222a":
+                i += 1
+                expect_piece = True
+            elif s.startswith("\\cup", i) and (i + 4 == n or not s[i + 4].isalpha()):
+                i += 4
+                expect_piece = True
+            elif s[i] in ("U", "u") and (i + 1 == n or not s[i + 1].isalpha()):
+                i += 1
+                expect_piece = True
+            else:
+                raise ValueError("Use U or \u222a to join intervals, e.g. (-inf, a) U (a, inf).")
+    if expect_piece or not pieces:
+        raise ValueError(_INTERVAL_FORMAT_MSG)
+    return pieces
+
+
+def _parse_interval_piece(piece: str, variables=None) -> sp.Set:
+    piece = piece.strip()
+    if piece.startswith("{") and piece.endswith("}"):
+        inner = piece[1:-1].strip()
+        if not inner:
+            return sp.EmptySet
+        items = _split_top_level_commas(inner)
+        return sp.FiniteSet(*[_parse_interval_endpoint(it, variables=variables) for it in items])
+
+    if piece[0] not in "([" or piece[-1] not in ")]":
+        raise ValueError(_INTERVAL_FORMAT_MSG)
+
+    left_open = piece[0] == "("
+    right_open = piece[-1] == ")"
+    inner = piece[1:-1]
+    parts = _split_top_level_commas(inner)
+    if len(parts) != 2:
+        raise ValueError("Each interval must have two endpoints separated by a comma, e.g. [a, b).")
+
+    left_val = _parse_interval_endpoint(parts[0], variables=variables)
+    right_val = _parse_interval_endpoint(parts[1], variables=variables)
+
+    if left_val in (sp.oo, -sp.oo) and not left_open:
+        raise ValueError("Use a parenthesis '(' next to -inf or inf, e.g. (-inf, b].")
+    if right_val in (sp.oo, -sp.oo) and not right_open:
+        raise ValueError("Use a parenthesis ')' next to -inf or inf, e.g. [a, inf).")
+    if left_val == sp.oo or right_val == -sp.oo:
+        raise ValueError("Lower endpoint cannot be greater than upper endpoint.")
+    try:
+        if bool(left_val > right_val):
+            raise ValueError("Lower endpoint cannot be greater than upper endpoint.")
+    except TypeError:
+        pass
+    return sp.Interval(left_val, right_val, left_open=left_open, right_open=right_open)
+
+
+def _split_top_level_commas(inner: str) -> list[str]:
+    parts: list[str] = []
+    depth = 0
+    start = 0
+    for idx, ch in enumerate(inner):
+        if ch in "([{":
+            depth += 1
+        elif ch in ")]}":
+            depth -= 1
+        elif ch == "," and depth == 0:
+            parts.append(inner[start:idx])
+            start = idx + 1
+    parts.append(inner[start:])
+    return parts
+
+
+def parse_interval(raw: str, variables=None) -> sp.Set:
+    """Parse interval notation (with (, [, ), ], inf/oo/∞, U/∪, {a}) into a SymPy Set."""
+    pieces = _split_interval_pieces(raw)
+    sets = [_parse_interval_piece(p, variables=variables) for p in pieces]
+    return sp.Union(*sets) if len(sets) > 1 else sets[0]
+
+
+def _intervals_equal(u_set: sp.Set, e_set: sp.Set) -> bool:
+    if u_set == e_set:
+        return True
+    try:
+        return u_set.symmetric_difference(e_set) == sp.EmptySet
+    except Exception:
+        return False
+
+
+def check_interval(spec, raw):
+    variables = spec.get("variables")
+    expected_set = parse_interval(str(spec["value"]), variables=variables)
+    user_set = parse_interval(raw, variables=variables)
+
+    def _cmp():
+        return _intervals_equal(user_set, expected_set)
+
+    if _run_with_timeout(_cmp):
+        return {
+            "verdict": "correct",
+            "message": "Correct.",
+            "components": [],
+            "diagnostics": [],
+        }
+
+    diags = []
+    try:
+        if _intervals_equal(user_set.closure, expected_set.closure):
+            diags.append(
+                {
+                    "code": "wrong_bracket",
+                    "message": "Check whether the endpoints are included ([ or ]) or excluded (( or )).",
+                }
+            )
+        elif user_set.is_subset(expected_set):
+            diags.append(
+                {
+                    "code": "missing_interval",
+                    "message": "Your interval is missing part of the set.",
+                }
+            )
+        elif expected_set.is_subset(user_set):
+            diags.append(
+                {
+                    "code": "extra_interval",
+                    "message": "Your interval includes values that should be excluded.",
+                }
+            )
+    except Exception:
+        pass
+
+    return {
+        "verdict": "incorrect",
+        "message": "Not equal to the verified interval.",
+        "components": [],
+        "diagnostics": diags,
+    }
+
+
 def check_tuple(spec, raw):
     expected = [to_expr(v) for v in spec["values"]]
     labels = spec.get("labels") or [f"Component {i + 1}" for i in range(len(expected))]
@@ -1471,6 +1660,7 @@ CHECKERS = {
     "complex": check_complex,
     "expression": check_expression,
     "solution_set": check_solution_set,
+    "interval": check_interval,
     "tuple": check_tuple,
     "choice": check_choice,
     "text": check_text,
@@ -1526,7 +1716,7 @@ def match_trap(spec: dict, user_input: str, trap_val: object) -> bool:
     spec_type = spec.get("type")
     try:
         trap_spec = dict(spec)
-        if spec_type in ("number", "expression", "complex"):
+        if spec_type in ("number", "expression", "complex", "interval"):
             trap_spec["value"] = str(trap_val)
         elif spec_type == "vector":
             trap_spec["value"] = trap_val
@@ -1569,8 +1759,16 @@ if __name__ == "__main__":
 
 
 def is_omission_trap(spec: dict, tv: object) -> bool:
-    """True when a solution_set trap is a strict, non-empty subset of the correct values."""
-    if spec.get("type") != "solution_set":
+    """True when a solution_set or interval trap is a strict, non-empty subset of the correct set."""
+    spec_type = spec.get("type")
+    if spec_type == "interval":
+        try:
+            expected_set = parse_interval(str(spec.get("value", "")), variables=spec.get("variables"))
+            trap_set = parse_interval(str(tv), variables=spec.get("variables"))
+            return trap_set != sp.EmptySet and trap_set.is_proper_subset(expected_set)
+        except Exception:
+            return False
+    if spec_type != "solution_set":
         return False
     variable = spec.get("variable", "x")
     try:

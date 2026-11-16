@@ -32,6 +32,16 @@ ANSWER_SPEC_TYPES: Dict[str, Dict[str, Any]] = {
         "optional_fields": ["variable", "tolerance"],
         "examples": [{"type": "solution_set", "values": ["-2 + 3*I", "-2 - 3*I"], "variable": "x"}],
     },
+    "interval": {
+        "engine": "math",
+        "description": "Real-number intervals and unions using (, [, ), ], inf/oo/∞, and U/∪",
+        "required_fields": ["value"],
+        "optional_fields": ["variables"],
+        "examples": [
+            {"type": "interval", "value": "[3, 21)"},
+            {"type": "interval", "value": "(-oo, 2) U (2, oo)"},
+        ],
+    },
     "tuple": {
         "engine": "math",
         "description": "Ordered coordinate tuples or multi-variable points",

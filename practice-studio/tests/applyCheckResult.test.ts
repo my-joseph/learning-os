@@ -214,8 +214,8 @@ runCase("Wrong answer with diagnostic matching autoFrom attaches mapped tag with
   assert(Boolean(res.attempts![0].diagnosticCodes?.includes("whole_sign_flip")), "Attempt must store diagnosticCodes");
 });
 
-// Case 8: ถูกหลังผิด (Correct after previously incorrect)
-runCase("Correct answer after incorrect preserves previous attempts and updates score to 1", () => {
+// Case 8: ถูกหลังผิด (Correct after previously incorrect -> 0.5, not 1.0)
+runCase("Correct answer after incorrect preserves previous attempts and caps score at 0.5", () => {
   const prob = createBaseProblem();
   // 1st attempt: wrong
   const st1 = applyCheckResult(
@@ -247,7 +247,7 @@ runCase("Correct answer after incorrect preserves previous attempts and updates 
     mockMistakeTags,
     { durationMs: 2000, ts: "2026-11-08T12:07:00Z" }
   );
-  assert(st2.score === 1, "Second attempt score must be 1");
+  assert(st2.score === 0.5, "Second attempt score after wrong attempt must be 0.5");
   assert(st2.attempts?.length === 2, "Must accumulate both attempts");
   assert(st2.attempts![0].verdict === "incorrect", "First attempt preserved");
   assert(st2.attempts![1].verdict === "correct", "Second attempt appended");
@@ -335,11 +335,11 @@ const correctResult = {
   trapMatched: false,
 };
 
-runCase("Set-up viewed before answering marks the attempt as assisted", () => {
+runCase("Set-up viewed before answering marks the attempt as assisted and caps score at 0.5", () => {
   const prob = createBaseProblem();
   prob.state = { ...prob.state, setupRevealedBeforeAnswer: true };
   const res = applyCheckResult(prob, "360", correctResult, mockMistakeTags, { ts: "2026-11-13T10:00:00Z" });
-  assert(res.score === 1, "Correct answer still scores 1 (no penalty)");
+  assert(res.score === 0.5, "Assisted correct answer must be capped at 0.5");
   assert(res.attempts![0].setupRevealed === true, "Attempt must record setupRevealed");
   assert(res.setupRevealedBeforeAnswer === true, "Flag must persist on state");
 });
@@ -393,6 +393,46 @@ runCase("Skip after viewing solution steps is also marked as assisted", () => {
   prob.state = { ...prob.state, solutionRevealedBeforeAnswer: true };
   const res = applySkip(prob, { ts: "2026-11-16T10:00:00Z" });
   assert(res.attempts![res.attempts!.length - 1].solutionRevealed === true, "Skip attempt must record solutionRevealed");
+});
+
+runCase("Wrong answer then opening solution then correct caps score at 0.5 (d10d2e)", () => {
+  const prob = createBaseProblem();
+  const st1 = applyCheckResult(
+    prob,
+    "999",
+    { verdict: "incorrect", message: "Incorrect", components: [], diagnostics: [] },
+    mockMistakeTags,
+    { ts: "2026-11-16T10:00:00Z" }
+  );
+  const probAssisted = { ...prob, state: { ...st1, solutionRevealedBeforeAnswer: true } };
+  const st2 = applyCheckResult(probAssisted, "360", correctResult, mockMistakeTags, {
+    ts: "2026-11-16T10:01:00Z",
+  });
+  assert(st2.score === 0.5, "Score must be capped at 0.5");
+  assert(st2.attempts![1].solutionRevealed === true, "Second attempt must record solutionRevealed");
+});
+
+runCase("Hint revealed before correct caps score at 0.5", () => {
+  const res = applyCheckResult(createBaseProblem(), "360", correctResult, mockMistakeTags, {
+    hintsRevealed: 1,
+    ts: "2026-11-16T10:02:00Z",
+  });
+  assert(res.score === 0.5, "Correct after hint must score 0.5");
+});
+
+runCase("Invalid input before correct does not penalize first-try score", () => {
+  const prob = createBaseProblem();
+  const st1 = applyCheckResult(
+    prob,
+    "[3, 21",
+    { verdict: "invalid input", message: "Unbalanced brackets", components: [], diagnostics: [] },
+    mockMistakeTags,
+    { ts: "2026-11-16T10:03:00Z" }
+  );
+  const st2 = applyCheckResult({ ...prob, state: st1 }, "360", correctResult, mockMistakeTags, {
+    ts: "2026-11-16T10:04:00Z",
+  });
+  assert(st2.score === 1, "Format error before first substantive attempt should still score 1");
 });
 
 // Extra: Diverged step does not attach mistake tags
