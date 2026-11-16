@@ -30,7 +30,9 @@ def compute_verdict(
     findings: list[dict[str, Any]],
 ) -> str:
     """Return 'pass' iff all tests pass, no lint/typecheck errors, and no non-disputed 'must' finding."""
-    all_tests_pass = tests.get("passed", 0) == tests.get("total", 0) and not tests.get("failed")
+    total = tests.get("total", 0)
+    # No tests found (runner crash, wrong file name) is never a pass.
+    all_tests_pass = total > 0 and tests.get("passed", 0) == total and not tests.get("failed")
     no_lint = len(lint) == 0
     no_typecheck = len(typecheck) == 0
     no_blocking_must = not any(f.get("severity") == "must" and not f.get("disputed") for f in findings)

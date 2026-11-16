@@ -370,3 +370,10 @@ def test_retired_review_cli_prints_instructions_without_prompt_file(tmp_path, mo
     assert "In Claude Code, say: review code DRL-PRG-T00-C02-02 Q01" in out
     assert "python -m code_engine.review_run DRL-PRG-T00-C02-02 Q01" in out
     assert not (ws_dir / "PR_REVIEW_REQUEST.md").exists()
+
+
+def test_verdict_never_passes_without_tests():
+    from scripts.review_record import compute_verdict
+
+    assert compute_verdict({"passed": 0, "total": 0, "failed": []}, [], [], []) == "revise"
+    assert compute_verdict({"passed": 3, "total": 3, "failed": []}, [], [], []) == "pass"
