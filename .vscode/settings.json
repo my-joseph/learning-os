@@ -1,12 +1,20 @@
 {
   "files.exclude": {
     "labs/_reference": true,
-    "**/.canonical": true
+    "**/.canonical": true,
+    "pilot": true
   },
   "eslint.nodePath": "tools/lint/node_modules",
   "eslint.workingDirectories": [
-    { "pattern": "drills/workspace/*" },
-    { "pattern": "labs/*" },
+    {
+      "pattern": "drills/workspace/*"
+    },
+    {
+      "pattern": "labs/*"
+    },
     "practice-studio"
-  ]
+  ],
+  "search.exclude": {
+    "pilot": true
+  }
 }
