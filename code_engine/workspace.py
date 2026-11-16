@@ -114,6 +114,146 @@ ENVIRONMENT_PRESETS = {
 }
 
 
+_COMMENT_OR_STRING_RE = re.compile(r'"(?:\\.|[^"\\])*"|\'(?:\\.|[^\'\\])*\'|`(?:\\.|[^`\\])*`|//[^\n]*|/\*[\s\S]*?\*/')
+_IDENT_RE = re.compile(r"^[A-Za-z_$][\w$]*$")
+
+
+def _strip_js_comments(code: str) -> str:
+    """Remove JS/TS line and block comments while preserving string/template literals."""
+    return _COMMENT_OR_STRING_RE.sub(lambda m: m.group(0) if m.group(0)[0] in ('"', "'", "`") else "", code)
+
+
+def _extract_object_keys(body: str) -> list[str]:
+    """Extract top-level property/shorthand identifier names from an object literal body."""
+    keys: list[str] = []
+    depth = 0
+    in_str: str | None = None
+    escaped = False
+    start = 0
+    parts: list[str] = []
+    for idx, ch in enumerate(body):
+        if in_str:
+            if escaped:
+                escaped = False
+            elif ch == "\\":
+                escaped = True
+            elif ch == in_str:
+                in_str = None
+            continue
+        if ch in ('"', "'", "`"):
+            in_str = ch
+        elif ch in ("{", "(", "["):
+            depth += 1
+        elif ch in ("}", ")", "]"):
+            depth = max(0, depth - 1)
+        elif ch == "," and depth == 0:
+            parts.append(body[start:idx])
+            start = idx + 1
+    parts.append(body[start:])
+
+    for part in parts:
+        token = part.strip()
+        if not token or token.startswith("..."):
+            continue
+        head = token.split(":", 1)[0].split("=", 1)[0].strip()
+        if _IDENT_RE.match(head):
+            keys.append(head)
+    return keys
+
+
+def extract_exports(code: str) -> list[str]:
+    """Extract exported symbol names from CommonJS (`module.exports`/`exports.x`) and ESM (`export ...`)."""
+    if not code:
+        return []
+    clean = _strip_js_comments(code)
+    found: list[str] = []
+    seen: set[str] = set()
+
+    def _add(name: str) -> None:
+        if name and _IDENT_RE.match(name) and name not in seen:
+            seen.add(name)
+            found.append(name)
+
+    # 1. CommonJS: module.exports = { ... }
+    for m in re.finditer(r"\bmodule\.exports\s*=\s*\{", clean):
+        brace_start = m.end() - 1
+        depth = 0
+        in_str: str | None = None
+        escaped = False
+        brace_end = -1
+        for idx in range(brace_start, len(clean)):
+            ch = clean[idx]
+            if in_str:
+                if escaped:
+                    escaped = False
+                elif ch == "\\":
+                    escaped = True
+                elif ch == in_str:
+                    in_str = None
+                continue
+            if ch in ('"', "'", "`"):
+                in_str = ch
+            elif ch == "{":
+                depth += 1
+            elif ch == "}":
+                depth -= 1
+                if depth == 0:
+                    brace_end = idx
+                    break
+        if brace_end != -1:
+            for key in _extract_object_keys(clean[brace_start + 1 : brace_end]):
+                _add(key)
+
+    # 2. CommonJS: module.exports.foo = ... / exports.foo = ...
+    for m in re.finditer(r"(?:^|[;\n])\s*(?:module\.)?exports\.([A-Za-z_$][\w$]*)\s*=", clean):
+        _add(m.group(1))
+
+    # 3. ESM: export [async] function[*] foo / export (const|let|var|class|enum) foo
+    for m in re.finditer(
+        r"(?:^|[;\n])\s*export\s+(?:(?:async\s+)?function\*?|const|let|var|class|enum)\s+([A-Za-z_$][\w$]*)",
+        clean,
+    ):
+        _add(m.group(1))
+
+    # 4. ESM: export { a, b as c } (skip `export type { ... }`)
+    for m in re.finditer(r"(?:^|[;\n])\s*export\s*\{([^}]*)\}", clean):
+        for item in m.group(1).split(","):
+            tok = item.strip()
+            if not tok or tok.startswith("type "):
+                continue
+            if " as " in tok:
+                _, alias = tok.rsplit(" as ", 1)
+                _add(alias.strip())
+            else:
+                _add(tok)
+
+    return found
+
+
+def resolve_test_imports(prob: dict, test_code: str, src_path: Path | None = None) -> list[str]:
+    """Return exported symbols from starter/solution/source that are referenced in `test_code`."""
+    candidates: list[str] = []
+    seen: set[str] = set()
+    sources: list[str] = [
+        prob.get("solutionCode") or "",
+        (prob.get("verify") or {}).get("solutionCode") or "",
+        prob.get("starterCode") or "",
+    ]
+    if src_path is not None and src_path.is_file():
+        sources.append(src_path.read_text(encoding="utf-8"))
+
+    for src in sources:
+        for name in extract_exports(src):
+            if name not in seen:
+                seen.add(name)
+                candidates.append(name)
+
+    referenced = [name for name in candidates if re.search(rf"\b{re.escape(name)}\b", test_code)]
+    if referenced:
+        return referenced
+    return [get_entry_name(prob)]
+
+
 def get_entry_name(prob: dict) -> str:
     entry = prob.get("entryPoint")
     if entry:
@@ -248,12 +388,23 @@ test({t_name}, {fn_prefix} {{
 }});
 """)
 
+        visible_code = "\n".join(t.get("testCode", "") for t in prob.get("visibleTests", []))
+        import_names = resolve_test_imports(prob, visible_code, src_path=Path(src_path))
+        import_list = ", ".join(import_names)
+
         test_header = f"// Auto-generated visible test suite for {drill_id} {pid}\n"
         if preset_key in ("typescript-strict", "backend-sqlite"):
             test_header += "import test from 'node:test';\nimport assert from 'node:assert';\n"
-            test_header += f"import {{ {entry_name} }} from './{src_filename}';\n\n"
+            test_header += f"import {{ {import_list} }} from './{src_filename}';\n\n"
+        elif preset_key == "react-dom":
+            test_header += "import { test } from 'vitest';\nimport assert from 'node:assert';\n"
+            test_header += f"import {{ {import_list} }} from './{src_filename}';\n\n"
         else:
-            test_header += f"const test = require('node:test');\nconst assert = require('node:assert');\nconst {{ {entry_name} }} = require('./{src_filename}');\n\n"
+            test_header += (
+                "const test = require('node:test');\n"
+                "const assert = require('node:assert');\n"
+                f"const {{ {import_list} }} = require('./{src_filename}');\n\n"
+            )
 
         test_content = test_header + "".join(test_blocks)
         with open(test_path, "w", encoding="utf-8") as f:

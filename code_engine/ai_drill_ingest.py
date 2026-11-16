@@ -17,6 +17,7 @@ import re
 import shutil
 import subprocess
 import tempfile
+from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from code_engine.answer_check import parse_tokens
@@ -30,9 +31,14 @@ from code_engine.lint_check import (
     typecheck_drill_doc,
 )
 from code_engine.quality_checks import load_universal, validate_quality_checks, verify_known_bad_lint
-from code_engine.test_runner import run_tests
+from code_engine.submit import run_tests_junit
 from code_engine.verify import run_node, verify_problem
-from code_engine.workspace import ENVIRONMENT_PRESETS, materialize_drill_workspace
+from code_engine.workspace import (
+    ENVIRONMENT_PRESETS,
+    extract_exports,
+    materialize_drill_workspace,
+    resolve_test_imports,
+)
 from progress_store import strip_progress
 from quality_rules import QUALITY_RULES
 
@@ -237,6 +243,79 @@ def check_starter_contract(
             if len(leaked) >= 2:
                 raise AiContractError(f"[{pid}] No-Leak Guard violated: starterCode leaks solution lines.")
 
+    all_tests = list(prob.get("visibleTests") or []) + list(prob.get("hiddenTests") or [])
+    if all_tests:
+        all_test_code = "\n".join(t.get("testCode", "") for t in all_tests)
+        required_exports = resolve_test_imports(prob, all_test_code)
+        starter_exports = set(extract_exports(starter))
+        missing_exports = [name for name in required_exports if name not in starter_exports]
+        if missing_exports:
+            raise AiContractError(f"[{pid}] starterCode is missing export(s) referenced by tests: {missing_exports}.")
+
+
+def run_problem_in_workspace(
+    prob: Dict[str, Any],
+    code: str,
+    *,
+    environment: str = "node-vanilla",
+    run_visible: bool = True,
+    run_hidden: bool = True,
+    timeout_sec: float = 4.0,
+) -> Dict[str, Any]:
+    """Materialise a temp workspace for `prob` with `code` and execute visible/hidden tests like the learner."""
+    pid = str(prob.get("id") or "Q01")
+    ws_prob = copy.deepcopy(prob)
+    ws_prob["id"] = pid
+    ws_prob["starterCode"] = code
+    if not run_visible:
+        ws_prob["visibleTests"] = []
+    if not run_hidden:
+        ws_prob["hiddenTests"] = []
+    expected_visible = len(ws_prob.get("visibleTests") or [])
+    expected_hidden = len(ws_prob.get("hiddenTests") or [])
+
+    drill_doc = {
+        "drillId": f"GATE-{pid}",
+        "environment": environment,
+        "problems": [ws_prob],
+    }
+    with tempfile.TemporaryDirectory(prefix="prg_ws_gate_") as tmp_dir:
+        manifest = materialize_drill_workspace(drill_doc, root_dir=tmp_dir)
+        ws_dir = Path(manifest["workspaceDir"])
+        cases = run_tests_junit(ws_dir, drill_doc, problem_id=pid, timeout_sec=timeout_sec)
+
+    vis_cases = [c for c in cases if not c.get("is_hidden")]
+    hid_cases = [c for c in cases if c.get("is_hidden")]
+    vis_ok = len(vis_cases) >= expected_visible and all(c.get("passed") for c in vis_cases)
+    hid_ok = len(hid_cases) >= expected_hidden and all(c.get("passed") for c in hid_cases)
+    all_passed = bool(cases) and vis_ok and hid_ok
+
+    visible_results = [
+        {
+            "name": c.get("name", ""),
+            "passed": bool(c.get("passed")),
+            "error": c.get("failure_msg", ""),
+        }
+        for c in vis_cases
+    ]
+    if not all_passed and not visible_results:
+        failed_hid = [c for c in hid_cases if not c.get("passed")]
+        visible_results = [
+            {
+                "name": c.get("name", "Hidden test failure"),
+                "passed": False,
+                "error": c.get("failure_msg", "Failed"),
+            }
+            for c in failed_hid
+        ] or [{"name": "Execution failure", "passed": False, "error": "0 tests executed"}]
+
+    return {
+        "allPassed": all_passed,
+        "visibleResults": visible_results,
+        "hiddenPassed": sum(1 for c in hid_cases if c.get("passed")),
+        "hiddenTotal": max(expected_hidden, len(hid_cases)),
+    }
+
 
 def check_dual_pre_execution(pid: str, prob: Dict[str, Any], environment: str = "node-vanilla") -> None:
     """Enforces dual pre-execution verification: Canonical is 100% Green, Starter fails at least one visible test."""
@@ -245,11 +324,10 @@ def check_dual_pre_execution(pid: str, prob: Dict[str, Any], environment: str = 
     starter = prob.get("starterCode")
     visible = prob.get("visibleTests", [])
     hidden = prob.get("hiddenTests", [])
-    entry = prob.get("entryPoint", "")
 
     # 1. Canonical solution verification (100% Green)
     if sol and (visible or hidden):
-        report = run_tests(sol, visible, hidden, environment=environment, entry_point=entry)
+        report = run_problem_in_workspace(prob, sol, environment=environment)
         if not report.get("allPassed"):
             failed = [r["name"] for r in report.get("visibleResults", []) if not r.get("passed")]
             raise AiContractError(
@@ -259,7 +337,7 @@ def check_dual_pre_execution(pid: str, prob: Dict[str, Any], environment: str = 
 
     # 2. Starter code must fail at least one visible test (stub / buggy before Green)
     if _is_coding_problem(prob) and starter and visible:
-        starter_report = run_tests(starter, visible, [], environment=environment, entry_point=entry)
+        starter_report = run_problem_in_workspace(prob, starter, environment=environment, run_hidden=False)
         if starter_report.get("allPassed"):
             if archetype in ("debugging", "find-bug"):
                 raise AiContractError(
@@ -522,7 +600,6 @@ def check_mutation_testing(
     sol = prob.get("solutionCode")
     visible = prob.get("visibleTests", [])
     hidden = prob.get("hiddenTests", [])
-    entry = prob.get("entryPoint", "")
 
     if not sol or not (visible or hidden):
         return
@@ -539,7 +616,9 @@ def check_mutation_testing(
                 f"commonTrapTag '{prob.get('commonTrapTag', '?')}' that fails hiddenTests."
             )
         _check_code_compiles(pid, "trapMutant", tm_code, environment=environment)
-        tm_report = run_tests(tm_code, [], hidden, timeout_sec=2.0, environment=environment, entry_point=entry)
+        tm_report = run_problem_in_workspace(
+            prob, tm_code, environment=environment, run_visible=False, run_hidden=True, timeout_sec=2.0
+        )
         if tm_report.get("allPassed"):
             raise AiContractError(
                 f"[{pid}] Trap mutant '{tm_name}' passed all hidden tests! Add hiddenTests that catch this trap."
@@ -555,7 +634,7 @@ def check_mutation_testing(
         if not m_code:
             continue
 
-        report = run_tests(m_code, visible, hidden, timeout_sec=2.0, environment=environment, entry_point=entry)
+        report = run_problem_in_workspace(prob, m_code, environment=environment, timeout_sec=2.0)
         if report.get("allPassed"):
             raise AiContractError(
                 f"[{pid}] Anti-Green-Illusion Guard: Test suite failed Mutation Testing for mutant '{m_name}'. "
@@ -1082,8 +1161,7 @@ def validate_drill_blind_solve(drill_doc: Dict[str, Any], problems: List[Dict[st
         hidden = p.get("hiddenTests", [])
         if _is_coding_problem(p) and (visible or hidden):
             prob_env = p.get("environment", env_key)
-            entry = p.get("entryPoint", "")
-            report = run_tests(blind_code, visible, hidden, environment=prob_env, entry_point=entry)
+            report = run_problem_in_workspace(p, blind_code, environment=prob_env)
             if not report.get("allPassed"):
                 failed_vis = [r.get("name", "?") for r in report.get("visibleResults", []) if not r.get("passed")]
                 hid_passed = report.get("hiddenPassed", 0)
