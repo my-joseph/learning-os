@@ -1,0 +1,515 @@
+{
+  "unitCode": "PRG-T01-C02-U04",
+  "unitTitle": "Unknown Boundaries and Complete Type Predicates",
+  "environment": "typescript-strict",
+  "sourceAttribution": "PRG-T01-C02-U04 unit page, its two current reasoning-vault archetypes, and PRG curriculum v2; original practice scenarios authored for this draft.",
+  "config": {
+    "questionCount": 5,
+    "difficulty": "ALL",
+    "difficultyMode": "AI Synthesized Engineering Mode"
+  },
+  "problems": [
+    {
+      "id": "Q01",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "codeType": "implement",
+      "archetypeKey": "prg-t01-c02-u04-safe-unknown-boundaries",
+      "commonTrapTag": "typeof-null-object",
+      "context": "carrier_webhook_reference_reader",
+      "entryPoint": "readCarrierReference",
+      "prompt": "A carrier webhook adapter receives a value decoded from an external JSON message. Implement `readCarrierReference` so downstream logging receives a tracking reference only when the payload is a non-null, non-array record with a string `trackingId`.\n\n**Requirements**\n- Keep the exported function name and its `unknown` input boundary.\n- Return the string field when the payload satisfies the contract; otherwise return `undefined`.\n- Treat `null`, arrays, primitives, and objects with a non-string field as invalid.\n- Do not use `any` or a type assertion.",
+      "inputHint": "Return a tracking reference when the incoming value matches the declared payload contract.",
+      "checkpointHint": "Establish that the value can safely be inspected before checking the field used by the adapter.",
+      "starterCode": "export function readCarrierReference(_payload: unknown): string | undefined {\n  return undefined;\n}\n",
+      "solutionCode": "export function readCarrierReference(payload: unknown): string | undefined {\n  if (typeof payload !== 'object' || payload === null || Array.isArray(payload)) return undefined;\n  if (!('trackingId' in payload)) return undefined;\n  return typeof payload.trackingId === 'string' ? payload.trackingId : undefined;\n}\n",
+      "trapMutant": "export function readCarrierReference(payload: unknown): string | undefined {\n  if (typeof payload === 'object' && Object.prototype.hasOwnProperty.call(payload, 'trackingId')) {\n    return typeof (payload as { trackingId?: unknown }).trackingId === 'string' ? (payload as { trackingId?: unknown }).trackingId as string : undefined;\n  }\n  return undefined;\n}",
+      "visibleTests": [
+        {
+          "name": "reads a valid carrier reference",
+          "testCode": "assert.strictEqual(readCarrierReference({ trackingId: 'TRK-4821' }), 'TRK-4821');"
+        },
+        {
+          "name": "ignores primitive webhook data",
+          "testCode": "assert.strictEqual(readCarrierReference('TRK-4821'), undefined);"
+        },
+        {
+          "name": "rejects an array payload",
+          "testCode": "assert.strictEqual(readCarrierReference([{ trackingId: 'TRK-4821' }]), undefined);"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "handles a null provider payload",
+          "testCode": "assert.strictEqual(readCarrierReference(null), undefined);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Keep the webhook value as unknown until runtime checks establish an inspectable record."
+        },
+        {
+          "explain": "Exclude null and arrays before checking whether the record carries the reference field."
+        },
+        {
+          "explain": "Return the field only when its runtime type matches the adapter contract."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "typeof-null-object|direct|readCarrierReference",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 3,
+          "hasTrapOrFlaw": false,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "typeof-null-object",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 6
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Foundation",
+      "unitCode": "PRG-T01-C02-U04",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U04-01/Q01_readCarrierReference.ts"
+    },
+    {
+      "id": "Q02",
+      "level": 2,
+      "category": "Trap & Edge Case",
+      "archetype": "problem-solving",
+      "codeType": "implement",
+      "archetypeKey": "prg-t01-c02-u04-safe-unknown-boundaries",
+      "commonTrapTag": "truthiness-narrowing-zero",
+      "context": "billing_credit_adjustment_reader",
+      "entryPoint": "readCreditAmount",
+      "prompt": "A billing import may include an adjustment amount from a partner feed. Implement `readCreditAmount` to accept only finite numeric amounts and use the supplied fallback when the value is absent or invalid. A zero credit is legitimate and must be retained.\n\n**Requirements**\n- Keep the input typed as `unknown` and preserve the exported signature.\n- Accept finite numbers, including zero and negative adjustments.\n- Return `fallback` for non-numbers, `NaN`, or either infinity.\n- Do not convert numeric strings into numbers.",
+      "inputHint": "Return either the valid imported amount or the caller-provided fallback.",
+      "checkpointHint": "Use a check that distinguishes numeric validity from whether a number is truthy.",
+      "starterCode": "export function readCreditAmount(value: unknown, fallback: number): number {\n  return fallback;\n}\n",
+      "solutionCode": "export function readCreditAmount(value: unknown, fallback: number): number {\n  if (typeof value !== 'number' || !Number.isFinite(value)) return fallback;\n  return value;\n}",
+      "trapMutant": "export function readCreditAmount(value: unknown, fallback: number): number {\n  return typeof value === 'number' && Number.isFinite(value) && value ? value : fallback;\n}\n",
+      "visibleTests": [
+        {
+          "name": "keeps an ordinary imported adjustment",
+          "testCode": "assert.strictEqual(readCreditAmount(18.5, 90), 18.5);"
+        },
+        {
+          "name": "uses fallback for missing partner data",
+          "testCode": "assert.strictEqual(readCreditAmount(undefined, 90), 90);"
+        },
+        {
+          "name": "uses fallback for a non-finite input",
+          "testCode": "assert.strictEqual(readCreditAmount(Number.POSITIVE_INFINITY, 90), 90);"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "preserves a zero-valued credit",
+          "testCode": "assert.strictEqual(readCreditAmount(0, 90), 0);"
+        },
+        {
+          "name": "does not coerce a numeric string",
+          "testCode": "assert.strictEqual(readCreditAmount('18.5', 90), 90);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Check the unknown value's runtime type before treating it as a numeric adjustment."
+        },
+        {
+          "explain": "Exclude non-finite numbers while allowing every finite numeric value, including zero."
+        },
+        {
+          "explain": "Use the fallback only when the imported value fails the numeric contract."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "truthiness-narrowing-zero|direct|readCreditAmount",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "truthiness-narrowing-zero",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 6
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Standard Exam",
+      "unitCode": "PRG-T01-C02-U04",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U04-01/Q02_readCreditAmount.ts"
+    },
+    {
+      "id": "Q03",
+      "level": 2,
+      "category": "Trap & Edge Case",
+      "archetype": "problem-solving",
+      "codeType": "implement",
+      "archetypeKey": "prg-t01-c02-u04-complete-type-predicates",
+      "commonTrapTag": "incomplete-type-predicate",
+      "context": "partner_account_import_validation",
+      "entryPoint": "isImportedAccount",
+      "prompt": "An account import pipeline receives untrusted records before activation. Implement `isImportedAccount` as a complete predicate for the declared domain type.\n\n**Requirements**\n- Preserve the `unknown` boundary and `value is ImportedAccount` return type.\n- Accept only non-null, non-array objects with a string `accountId` and boolean `active`.\n- Reject a record when either required field is missing or has the wrong type.\n- Do not use a cast to make an unchecked value satisfy the predicate.",
+      "inputHint": "Return whether an imported value can safely be used as the declared account record.",
+      "checkpointHint": "Compare every field promised by the predicate with the evidence available at runtime.",
+      "starterCode": "type ImportedAccount = { accountId: string; active: boolean };\n\nexport function isImportedAccount(value: unknown): value is ImportedAccount {\n  return typeof value === 'object' && value !== null && 'accountId' in value;\n}\n",
+      "solutionCode": "type ImportedAccount = { accountId: string; active: boolean };\n\nexport function isImportedAccount(value: unknown): value is ImportedAccount {\n  if (typeof value !== 'object' || value === null || Array.isArray(value)) return false;\n  if (!('accountId' in value) || !('active' in value)) return false;\n  return typeof value.accountId === 'string' && typeof value.active === 'boolean';\n}\n",
+      "trapMutant": "type ImportedAccount = { accountId: string; active: boolean };\n\nexport function isImportedAccount(value: unknown): value is ImportedAccount {\n  if (typeof value !== 'object' || value === null || Array.isArray(value)) return false;\n  return 'accountId' in value && 'active' in value && typeof value.accountId === 'string';\n}\n",
+      "visibleTests": [
+        {
+          "name": "accepts a complete partner account",
+          "testCode": "assert.strictEqual(isImportedAccount({ accountId: 'AC-742', active: true }), true);"
+        },
+        {
+          "name": "rejects an account missing a required field",
+          "testCode": "assert.strictEqual(isImportedAccount({ accountId: 'AC-742' }), false);"
+        },
+        {
+          "name": "rejects an array-shaped payload",
+          "testCode": "assert.strictEqual(isImportedAccount([{ accountId: 'AC-742', active: true }]), false);"
+        },
+        {
+          "name": "rejects a non-boolean activation field",
+          "testCode": "assert.strictEqual(isImportedAccount({ accountId: 'AC-742', active: 0 }), false);"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "rejects a field with the wrong runtime type",
+          "testCode": "assert.strictEqual(isImportedAccount({ accountId: 'AC-742', active: 'yes' }), false);"
+        },
+        {
+          "name": "rejects null account data",
+          "testCode": "assert.strictEqual(isImportedAccount(null), false);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Exclude values that cannot represent a non-array account record."
+        },
+        {
+          "explain": "Establish that both required properties are present before reading their values."
+        },
+        {
+          "explain": "Check each property type so a true predicate proves the full declared shape."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "incomplete-type-predicate|direct|isImportedAccount",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "incomplete-type-predicate",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 6
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Standard Exam",
+      "unitCode": "PRG-T01-C02-U04",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U04-01/Q03_isImportedAccount.ts"
+    },
+    {
+      "id": "Q04",
+      "level": 2,
+      "category": "Refactor & Design",
+      "archetype": "debugging",
+      "codeType": "fix-bug",
+      "archetypeKey": "prg-t01-c02-u04-safe-unknown-boundaries",
+      "commonTrapTag": "truthiness-narrowing-zero",
+      "context": "tenant_branding_fallback_selector",
+      "entryPoint": "selectTenantLabel",
+      "prompt": "A tenant branding selector falls back to a generic label when a tenant-specific label is present but empty. The product contract treats an empty configured string as intentional data. Fix `selectTenantLabel` and refactor its branching so it is easy to follow.\n\n**Requirements**\n- Keep the input as `unknown` and retain the exported function signature.\n- Return a string `label` from a non-null, non-array object, including the empty string.\n- Return the fallback for missing fields, non-string values, arrays, null, and primitives.\n- Improve and simplify the structure while fixing the behavior; do not use `any` or a cast.",
+      "inputHint": "Return the configured label when the input carries a valid string value.",
+      "checkpointHint": "Separate the presence and type contract from whether the string happens to be empty.",
+      "starterCode": "export function selectTenantLabel(value: unknown, fallback: string): string {\n  if (typeof value !== 'object' || value === null || Array.isArray(value)) return fallback;\n  if (!('label' in value) || typeof value.label !== 'string' || !value.label) return fallback;\n  return value.label;\n}",
+      "starterLintExpected": [],
+      "solutionCode": "function hasTenantLabel(value: unknown): value is { label: unknown } {\n  return typeof value === 'object' && value !== null && !Array.isArray(value) && 'label' in value;\n}\n\nexport function selectTenantLabel(value: unknown, fallback: string): string {\n  if (!hasTenantLabel(value)) return fallback;\n  const label = value.label;\n  return typeof label === 'string' ? label : fallback;\n}",
+      "trapMutant": "export function selectTenantLabel(value: unknown, fallback: string): string {\n  if (typeof value !== 'object' || value === null || Array.isArray(value)) return fallback;\n  if (!('label' in value) || typeof value.label !== 'string' || !value.label) return fallback;\n  return value.label;\n}\n",
+      "visibleTests": [
+        {
+          "name": "uses a tenant label when configured",
+          "testCode": "assert.strictEqual(selectTenantLabel({ label: 'North region' }, 'Default'), 'North region');"
+        },
+        {
+          "name": "uses fallback when the label is absent",
+          "testCode": "assert.strictEqual(selectTenantLabel({}, 'Default'), 'Default');"
+        },
+        {
+          "name": "uses fallback for a non-record value",
+          "testCode": "assert.strictEqual(selectTenantLabel(null, 'Default'), 'Default');"
+        },
+        {
+          "name": "preserves a configured empty label",
+          "testCode": "assert.strictEqual(selectTenantLabel({ label: '' }, 'Default'), '');"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "retains an intentionally empty tenant label",
+          "testCode": "assert.strictEqual(selectTenantLabel({ label: '' }, 'Default'), '');"
+        },
+        {
+          "name": "uses fallback for a non-string label",
+          "testCode": "assert.strictEqual(selectTenantLabel({ label: 0 }, 'Default'), 'Default');"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Reject inputs that are not inspectable non-array records."
+        },
+        {
+          "explain": "Check that the label exists and is a string without using its truthiness as a validity test."
+        },
+        {
+          "explain": "Return the configured string unchanged or use the fallback when the contract fails."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "truthiness-narrowing-zero|direct|selectTenantLabel",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "debugging"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "truthiness-narrowing-zero",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 6
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Standard Exam",
+      "unitCode": "PRG-T01-C02-U04",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U04-01/Q04_selectTenantLabel.ts"
+    },
+    {
+      "id": "Q05",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "codeType": "implement",
+      "archetypeKey": "prg-t01-c02-u04-complete-type-predicates",
+      "commonTrapTag": "inherited-property-as-own",
+      "context": "edge_gateway_notice_decoder",
+      "entryPoint": "isGatewayNotice",
+      "prompt": "An edge gateway turns loosely structured message data into a trusted notice before routing it. Implement `isGatewayNotice` as a clear, complete predicate that accepts only fields supplied directly by the payload.\n\n**Requirements**\n- Keep the exported function and the `unknown` input boundary.\n- A valid notice has its own `route` string and own `retryAfterSeconds` finite number; zero is valid.\n- Reject null, arrays, missing fields, inherited-only fields, and wrong runtime types.\n- Express the field checks as a readable predicate; avoid type assertions and `any`.",
+      "inputHint": "Return whether the message data satisfies the notice contract before routing.",
+      "checkpointHint": "Check both the values and whether the boundary record itself supplies the required data.",
+      "starterCode": "type GatewayNotice = { route: string; retryAfterSeconds: number };\n\nexport function isGatewayNotice(value: unknown): value is GatewayNotice {\n  return typeof value === 'object' && value !== null && 'route' in value;\n}\n",
+      "solutionCode": "type GatewayNotice = { route: string; retryAfterSeconds: number };\n\nfunction isGatewayRecord(value: object): value is GatewayNotice {\n  if (!('route' in value) || !('retryAfterSeconds' in value)) return false;\n  if (!Object.prototype.hasOwnProperty.call(value, 'route')) return false;\n  if (!Object.prototype.hasOwnProperty.call(value, 'retryAfterSeconds')) return false;\n  return typeof value.route === 'string'\n    && typeof value.retryAfterSeconds === 'number'\n    && Number.isFinite(value.retryAfterSeconds);\n}\n\nexport function isGatewayNotice(value: unknown): value is GatewayNotice {\n  if (typeof value !== 'object' || value === null || Array.isArray(value)) return false;\n  return isGatewayRecord(value);\n}",
+      "trapMutant": "type GatewayNotice = { route: string; retryAfterSeconds: number };\n\nexport function isGatewayNotice(value: unknown): value is GatewayNotice {\n  if (typeof value !== 'object' || value === null || Array.isArray(value)) return false;\n  if (!('route' in value) || !('retryAfterSeconds' in value)) return false;\n  return typeof value.route === 'string'\n    && typeof value.retryAfterSeconds === 'number'\n    && Number.isFinite(value.retryAfterSeconds);\n}\n",
+      "visibleTests": [
+        {
+          "name": "accepts a complete gateway notice",
+          "testCode": "assert.strictEqual(isGatewayNotice({ route: '/events/ready', retryAfterSeconds: 8 }), true);"
+        },
+        {
+          "name": "rejects a notice without retry metadata",
+          "testCode": "assert.strictEqual(isGatewayNotice({ route: '/events/ready' }), false);"
+        },
+        {
+          "name": "rejects array-shaped messages",
+          "testCode": "assert.strictEqual(isGatewayNotice([{ route: '/events/ready', retryAfterSeconds: 8 }]), false);"
+        },
+        {
+          "name": "accepts a zero retry delay",
+          "testCode": "assert.strictEqual(isGatewayNotice({ route: '/events/ready', retryAfterSeconds: 0 }), true);"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "preserves a zero retry interval",
+          "testCode": "assert.strictEqual(isGatewayNotice({ route: '', retryAfterSeconds: 0 }), true);"
+        },
+        {
+          "name": "does not accept fields inherited from a prototype",
+          "testCode": "const inheritedNotice = Object.create({ route: '/events/ready', retryAfterSeconds: 8 }); assert.strictEqual(isGatewayNotice(inheritedNotice), false);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Narrow the input to a non-null, non-array object before inspecting its fields."
+        },
+        {
+          "explain": "Confirm that each required data property belongs to the payload itself."
+        },
+        {
+          "explain": "Verify the runtime types and finiteness while preserving empty strings and zero."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "inherited-property-as-own|direct|isGatewayNotice",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": false,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "inherited-property-as-own",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 6
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Standard Exam",
+      "unitCode": "PRG-T01-C02-U04",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U04-01/Q05_isGatewayNotice.ts"
+    }
+  ],
+  "blindSolve": [
+    {
+      "problemId": "Q01",
+      "passed": true
+    },
+    {
+      "problemId": "Q02",
+      "passed": true
+    },
+    {
+      "problemId": "Q03",
+      "passed": true
+    },
+    {
+      "problemId": "Q04",
+      "passed": true
+    },
+    {
+      "problemId": "Q05",
+      "passed": true
+    }
+  ],
+  "review": {
+    "verdict": "pass",
+    "note": "Q04 is correctly labeled L2 and supplies the required non-implement item; Q05 is a scoped L2 implementation problem, and the set has distinct realistic contexts, no answer leaks, sound rubric/layer-3 boundaries, valid unit traps, and hidden tests that kill their tagged mutants (though Q03/Q04 include redundant hidden cases)."
+  },
+  "drillId": "DRL-PRG-T01-C02-U04-01",
+  "topicCode": "PRG-T01",
+  "chapterCode": "PRG-T01-C02",
+  "schemaVersion": "2.0-code",
+  "subject": "PRG",
+  "createdAt": "2026-11-17 03:26:47",
+  "localFilePath": "drills/data/PRG-T01-C02-U04/DRL-PRG-T01-C02-U04-01.json"
+}

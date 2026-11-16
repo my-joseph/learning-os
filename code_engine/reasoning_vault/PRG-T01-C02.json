@@ -645,6 +645,151 @@
           }
         }
       ]
+    },
+    {
+      "archetypeKey": "prg-t01-c02-u04-safe-unknown-boundaries",
+      "unitCode": "PRG-T01-C02-U04",
+      "level": 1,
+      "archetype": "problem-solving",
+      "name": "Safe Unknown Boundaries",
+      "competencies": [
+        "unknown-inputs",
+        "typeof-narrowing",
+        "null-safe-object-checks"
+      ],
+      "coreConcept": "Keep external values as unknown and narrow them with runtime checks before property access or domain use.",
+      "mentalModel": [
+        "1. Treat external data as unknown at the boundary.",
+        "2. Check nullish and primitive cases before inspecting object members.",
+        "3. Return a domain value only after every required condition is established."
+      ],
+      "governingInvariant": "No property access or domain assertion occurs on unknown input until runtime checks establish the relevant shape.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "typeof-null-object",
+          "name": "typeof Null Mistaken for a Non-Null Record",
+          "description": "`typeof value === 'object'` also accepts null, so a subsequent property operation may throw.",
+          "reproducer": "function hasId(value: unknown) { return typeof value === 'object' && 'id' in value; }"
+        },
+        {
+          "trapTag": "truthiness-narrowing-zero",
+          "name": "Truthiness Confuses Zero with Missing",
+          "description": "A truthiness check rejects valid numeric zero even when the domain permits it.",
+          "reproducer": "if (typeof payload.amount === 'number' && payload.amount) return payload.amount;"
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "shipment_webhook_payload",
+          "description": "Narrow JSON event data before reading shipment identifiers or status details."
+        },
+        {
+          "domain": "billing_adjustment_payload",
+          "description": "Validate untrusted numeric adjustment data while preserving a valid zero amount."
+        }
+      ],
+      "usedContexts": [
+        "shipment_webhook_payload",
+        "billing_adjustment_payload",
+        "carrier_webhook_reference_reader",
+        "billing_credit_adjustment_reader",
+        "tenant_branding_fallback_selector"
+      ],
+      "source": "TypeScript Handbook: Narrowing — typeof Type Guards and Truthiness Narrowing",
+      "qualityChecks": [
+        {
+          "id": "QC-prg-t01-c02-u04-nullish-object-guard",
+          "check": "Exclude `null` (and arrays when the domain requires a plain record) before using the `in` operator or reading object properties from unknown input.",
+          "why": "The `typeof` result for null is `object`, and property inspection before a non-null check can throw at runtime.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function isRecord(value: unknown): value is Record<string, unknown> { return typeof value === 'object' && 'id' in value; }",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-prg-t01-c02-u04-falsy-value-preserved",
+          "check": "Use an explicit type or nullish check when zero or an empty string is valid data; do not let truthiness collapse it into the missing case.",
+          "why": "A valid falsy value must retain its domain meaning instead of being treated as absent.",
+          "severity": "should",
+          "knownBad": {
+            "code": "function readAmount(amount: number | undefined): number { return amount ? amount : 100; }",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "prg-t01-c02-u04-complete-type-predicates",
+      "unitCode": "PRG-T01-C02-U04",
+      "level": 2,
+      "archetype": "refactoring",
+      "name": "Complete Type Predicates for Domain Records",
+      "competencies": [
+        "type-predicates",
+        "shape-validation",
+        "runtime-type-safety"
+      ],
+      "coreConcept": "A predicate returning `value is T` must establish every required field and value property promised by T.",
+      "mentalModel": [
+        "1. Validate the outer container and each required key.",
+        "2. Check each property's runtime type and any domain bounds.",
+        "3. Return true only when the whole predicate is supported by checks."
+      ],
+      "governingInvariant": "A true type-predicate result implies that all required fields of the target type have been checked at runtime.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "incomplete-type-predicate",
+          "name": "Marker-Only Type Predicate",
+          "description": "Checking one marker field and returning true can falsely certify an object that lacks other required fields.",
+          "reproducer": "function isAccount(value: unknown): value is Account { return typeof value === 'object' && value !== null && 'kind' in value; }"
+        },
+        {
+          "trapTag": "inherited-property-as-own",
+          "name": "Inherited Property Accepted as Own Data",
+          "description": "Using `in` alone accepts properties inherited from the prototype when the payload contract requires own fields.",
+          "reproducer": "if ('accountId' in value) return true;"
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "account_import_parser",
+          "description": "Check required fields and value types before accepting partner-provided account records."
+        },
+        {
+          "domain": "shipment_notice_decoder",
+          "description": "Convert untrusted notices into a typed shipment event only after full validation."
+        }
+      ],
+      "usedContexts": [
+        "account_import_parser",
+        "shipment_notice_decoder",
+        "partner_account_import_validation",
+        "edge_gateway_notice_decoder"
+      ],
+      "source": "TypeScript Handbook: Narrowing — User-Defined Type Predicates",
+      "qualityChecks": [
+        {
+          "id": "QC-prg-t01-c02-u04-predicate-completeness",
+          "check": "A type predicate checks each required property and its runtime type before returning true.",
+          "why": "TypeScript trusts a predicate's return annotation; an incomplete predicate can make unsafe property access appear valid everywhere downstream.",
+          "severity": "must",
+          "knownBad": {
+            "code": "type Account = { accountId: string; active: boolean };\nfunction isAccount(value: unknown): value is Account { return typeof value === 'object' && value !== null && 'accountId' in value; }",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-prg-t01-c02-u04-own-property-boundary",
+          "check": "Use an own-property check when the input contract requires data fields supplied directly on the payload rather than inherited from its prototype.",
+          "why": "The `in` operator searches the prototype chain and may accept an object that does not carry the field as its own payload data.",
+          "severity": "should",
+          "knownBad": {
+            "code": "function hasOwnId(value: object): boolean { return 'id' in value; }",
+            "caughtBy": "review"
+          }
+        }
+      ]
     }
   ]
 }
