@@ -85,7 +85,7 @@ export const LineChoicePrompt: React.FC<LineChoicePromptProps> = ({
           className={`text-xs font-medium ${
             selectedItem
               ? "text-indigo-600 dark:text-indigo-400"
-              : "text-slate-500 dark:text-slate-400"
+              : "text-slate-600 dark:text-slate-400"
           }`}
         >
           {selectedItem ? `Selected: ${selectedItem.lineNumber}` : "Click a line above to select"}

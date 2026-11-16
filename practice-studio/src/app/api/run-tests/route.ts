@@ -12,13 +12,14 @@ export async function POST(req: NextRequest) {
 
     let userCode = body.userCode || "";
 
-    // If workspaceFile path is supplied and userCode is empty, read directly from local disk!
-    if (!userCode.trim() && body.workspaceFile) {
+    // Workspace-backed PRG tests always execute the source currently saved on disk.
+    if (body.workspaceFile) {
       const fullPath = resolveInsideRoot(body.workspaceFile, rootDir);
-
-      if (fullPath && fs.existsSync(fullPath)) {
-        userCode = fs.readFileSync(fullPath, "utf-8");
+      if (!fullPath) return NextResponse.json({ error: "Workspace file path is invalid" }, { status: 403 });
+      if (!fs.existsSync(fullPath)) {
+        return NextResponse.json({ error: "Workspace file is missing; materialize the workspace first" }, { status: 404 });
       }
+      userCode = fs.readFileSync(fullPath, "utf-8");
     }
 
     if (!userCode.trim()) {
