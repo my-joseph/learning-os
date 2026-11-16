@@ -32,6 +32,12 @@
           "name": "Loose Equality Implicit Coercion",
           "description": "Comparing with '==' causes unintended coercion between false, 0, and empty strings.",
           "reproducer": "Comparing '' == 0 returns true, bypassing empty string validation."
+        },
+        {
+          "trapTag": "truthiness-conflation",
+          "name": "Truthiness Conflating Valid Falsy Values",
+          "description": "Checking '!val' treats legitimate 0, false, or '' the same as null or undefined.",
+          "reproducer": "Pass port = 0 to hasValidPort; '!port' rejects 0 instead of distinguishing missing vs zero."
         }
       ],
       "realWorldDomains": [
@@ -50,6 +56,29 @@
         "job_queue_settings",
         "inventory_import",
         "user_profile_header"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-coercion-explicit-nullish-intent",
+          "check": "Missing-value guards and defaults distinguish `null`/`undefined` from legitimate falsy values (`0`, `false`, `''`) by structure rather than truthy/falsy coercion.",
+          "why": "Truthy/falsy coercion silently drops valid `0`, `false`, or `''` values on untested branches.",
+          "severity": "must",
+          "accepted": ["val ?? fallback", "val !== null && val !== undefined", "typeof val === 'number' && Number.isFinite(val)"],
+          "knownBad": {
+            "code": "function getTimeout(cfg) {\n  return cfg.timeoutSec || 30;\n}",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-coercion-pure-output",
+          "check": "Sanitization constructs an explicit output object with only the intended schema fields rather than forwarding unvalidated properties from the input.",
+          "why": "Spreading raw input objects leaks unexpected or unvalidated fields downstream.",
+          "severity": "should",
+          "knownBad": {
+            "code": "function sanitizeConfig(raw) {\n  return { ...raw, timeoutSec: raw.timeoutSec ?? 30 };\n}",
+            "caughtBy": "review"
+          }
+        }
       ]
     },
     {
@@ -89,6 +118,39 @@
       ],
       "usedContexts": [
         "metrics_counter_registry"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-closure-no-ref-escape",
+          "check": "No reference to internal mutable state escapes the factory through any accessor or return value.",
+          "why": "Returning a live internal reference lets callers mutate private closure state outside the factory API.",
+          "severity": "must",
+          "accepted": ["[...items]", "items.slice()", "structuredClone(items)", "Object.freeze({ ...state })"],
+          "knownBad": {
+            "code": "function createRegistry() {\n  const items = [];\n  return {\n    add(item) { items.push(item); },\n    getAll() { return items; }\n  };\n}",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-closure-private-state",
+          "check": "Mutable state lives in lexical bindings inside the factory closure rather than as properties on the returned object.",
+          "why": "Storing state on the returned object exposes it to direct external reassignment.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function createCounter() {\n  return {\n    count: 0,\n    inc() { this.count += 1; }\n  };\n}",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-closure-minimal-api",
+          "check": "The returned interface exposes only the intended domain operations, without leaking internal helpers or raw state setters.",
+          "why": "Exposing internal mutators breaks the factory's encapsulation boundary.",
+          "severity": "should",
+          "knownBad": {
+            "code": "function createCounter() {\n  let count = 0;\n  return {\n    inc() { count += 1; },\n    get() { return count; },\n    _setRaw(v) { count = v; }\n  };\n}",
+            "caughtBy": "review"
+          }
+        }
       ]
     },
     {
@@ -114,6 +176,12 @@
           "name": "In-Place Array Sort Mutation",
           "description": "Calling Array.prototype.sort() directly on input array mutates the original order unexpectedly.",
           "reproducer": "Call sortOrders(orders); check original orders array order; order was permanently altered."
+        },
+        {
+          "trapTag": "reduce-missing-initial-value",
+          "name": "Reduce Without Initial Accumulator",
+          "description": "Calling reduce() without an explicit initial accumulator throws TypeError on empty arrays and reuses the first element.",
+          "reproducer": "Call sumTotals([]); without an initial value, reduce throws TypeError."
         }
       ],
       "realWorldDomains": [
@@ -128,6 +196,29 @@
       ],
       "usedContexts": [
         "ecommerce_order_revenue_analyzer"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-pipeline-pure-stages",
+          "check": "Transformation stages derive new collections without mutating caller-owned arrays or intermediate elements.",
+          "why": "In-place array methods such as `.sort()` or `.reverse()` corrupt the caller's ordering.",
+          "severity": "must",
+          "accepted": ["[...arr].sort(...)", "arr.toSorted(...)", "arr.slice().sort(...)"],
+          "knownBad": {
+            "code": "function sortOrders(orders) {\n  return orders.sort((a, b) => a.total - b.total);\n}",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-pipeline-composable-steps",
+          "check": "Filtering, projection, and aggregation are structured as distinct, readable stages rather than a single monolithic loop or reducer mixing all three.",
+          "why": "Separating pipeline stages keeps each transformation easy to reason about, test, and extend.",
+          "severity": "should",
+          "knownBad": {
+            "code": "function summarize(orders) {\n  const out = {};\n  for (const o of orders) {\n    if (o.paid) out[o.cat] = (out[o.cat] ?? 0) + o.total * 1.07;\n  }\n  return out;\n}",
+            "caughtBy": "review"
+          }
+        }
       ]
     },
     {
@@ -153,6 +244,12 @@
           "name": "Direct Target Assumption on Nested Elements",
           "description": "Inspecting event.target.dataset directly instead of event.target.closest('[data-action]') fails when clicking inner <span> or <i>.",
           "reproducer": "Simulate click with event.target = <span> nested inside <button data-action='delete'>; target.dataset is empty."
+        },
+        {
+          "trapTag": "non-interactive-target-null-deref",
+          "name": "Null Dereference on Non-Matching Container Click",
+          "description": "Dereferencing the matched action element without guarding against null throws when clicking non-interactive background areas.",
+          "reproducer": "Click container padding outside any [data-action] element; handler throws TypeError."
         }
       ],
       "realWorldDomains": [
@@ -165,7 +262,30 @@
           "description": "Managing interactive task card interactions across dynamic columns."
         }
       ],
-      "usedContexts": []
+      "usedContexts": [],
+      "qualityChecks": [
+        {
+          "id": "QC-delegation-ancestor-resolution",
+          "check": "Delegated event handlers resolve the interactive boundary upward from `event.target` and guard against non-matching clicks before reading attributes.",
+          "why": "Reading `event.target` directly misses nested children (`<span>`, icons), and unguarded lookups crash on container clicks.",
+          "severity": "must",
+          "accepted": ["event.target.closest(selector)", "parent-walking loop with element.matches(selector)"],
+          "knownBad": {
+            "code": "function handleClick(event, onAction) {\n  const action = event.target.dataset.action;\n  if (action) onAction(action);\n}",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-delegation-dispatch-separation",
+          "check": "DOM target lookup is separated from action execution so handlers do not couple DOM traversal to business state updates.",
+          "why": "Decoupling target resolution from action dispatch makes the business handler testable without DOM events.",
+          "severity": "should",
+          "knownBad": {
+            "code": "function handleClick(event, store) {\n  const btn = event.target.closest('[data-action]');\n  if (!btn) return;\n  if (btn.dataset.action === 'delete') store.items = store.items.filter((x) => x.id !== btn.dataset.id);\n}",
+            "caughtBy": "review"
+          }
+        }
+      ]
     },
     {
       "archetypeKey": "prg-c02-async-promise-combinator",
@@ -190,6 +310,12 @@
           "name": "Premature Fast-Fail with Promise.all",
           "description": "Using Promise.all for independent tasks causes a single transient failure to abort all other valid results.",
           "reproducer": "3 tasks run; task 2 fails; results of task 1 and 3 are lost."
+        },
+        {
+          "trapTag": "completion-order-result-drift",
+          "name": "Completion-Order Result Array Drift",
+          "description": "Pushing resolved values into an array inside .then() reorders results by completion time instead of input order.",
+          "reproducer": "Task 0 takes 30ms, task 1 takes 5ms; output has task 1's result at index 0."
         }
       ],
       "realWorldDomains": [
@@ -204,6 +330,29 @@
       ],
       "usedContexts": [
         "microservice_health_aggregator"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-async-isolated-settlement",
+          "check": "When partial failure tolerance is required, each concurrent task's rejection is isolated so one failure does not abort or drop sibling results.",
+          "why": "Unisolated rejections discard valid results from concurrent sibling tasks.",
+          "severity": "must",
+          "accepted": ["Promise.allSettled(...)", "per-task async wrapper with try/catch returning { status, value | reason }"],
+          "knownBad": {
+            "code": "async function runAll(tasks) {\n  return Promise.all(tasks.map((task) => task()));\n}",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-async-no-fire-and-forget",
+          "check": "Every spawned promise is awaited or returned in the combinator's settlement chain, with no detached fire-and-forget async work.",
+          "why": "Unawaited async calls cause unhandled rejections and return before work completes.",
+          "severity": "must",
+          "knownBad": {
+            "code": "async function runAll(tasks) {\n  const out = [];\n  tasks.forEach((t) => { t().then((v) => out.push(v)); });\n  return out;\n}",
+            "caughtBy": "review"
+          }
+        }
       ]
     },
     {
@@ -243,6 +392,38 @@
       ],
       "usedContexts": [
         "payment_checkout_state_machine"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-union-pure-next-state",
+          "check": "State transitions return a new state object instead of mutating the current state in place.",
+          "why": "Mutating the current state object breaks reducer predictability and corrupts prior snapshots.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function transition(state, nextStatus) {\n  state.status = nextStatus;\n  return state;\n}",
+            "caughtBy": "lint:no-param-reassign"
+          }
+        },
+        {
+          "id": "QC-union-exhaustive-switch",
+          "check": "Switch or branch chains over a discriminated union include a `default` branch that throws on unknown discriminants.",
+          "why": "A missing `default` branch lets newly added action types fall through silently.",
+          "severity": "should",
+          "knownBad": {
+            "code": "function handleAction(action) {\n  switch (action.type) {\n    case 'ADD': return 1;\n    case 'SUB': return -1;\n  }\n  return 0;\n}",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-union-centralized-transitions",
+          "check": "State transitions are defined in one place (a transition table or single reducer) rather than scattered across ad-hoc conditionals.",
+          "why": "Scattered transition logic makes illegal state edges easy to miss when adding new actions.",
+          "severity": "should",
+          "knownBad": {
+            "code": "function applyEvent(order, event) {\n  if (event.type === 'SHIP') {\n    if (order.status === 'PAID') return { status: 'SHIPPED' };\n  }\n  if (order.status === 'DRAFT' && event.type === 'PAY') return { status: 'PAID' };\n  return order;\n}",
+            "caughtBy": "review"
+          }
+        }
       ]
     },
     {
@@ -268,6 +449,12 @@
           "name": "Special-Case Patching Instead of Root-Cause Fix",
           "description": "Adding an ad-hoc if statement for the specific test case rather than fixing the underlying logical equation.",
           "reproducer": "Add 'if (x === 42) return true;' passing test 1 but failing boundary test with x = 43."
+        },
+        {
+          "trapTag": "signature-contract-break",
+          "name": "Breaking Exported Function Signature",
+          "description": "Changing the exported function name, parameter order, or return shape breaks existing baseline callers.",
+          "reproducer": "Add a required second parameter without a default; baseline single-arg callers throw or fail."
         }
       ],
       "realWorldDomains": [
@@ -280,7 +467,29 @@
           "description": "Fixing deep object path getter ('a.b.c') when encountering null or intermediate primitives."
         }
       ],
-      "usedContexts": []
+      "usedContexts": [],
+      "qualityChecks": [
+        {
+          "id": "QC-debug-no-special-case-patch",
+          "check": "The fix addresses the underlying condition or invariant rather than hardcoding an `if` branch for a specific test input.",
+          "why": "Special-casing a single reproducer input leaves the root bug intact for all other boundary values.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function getPath(obj, path) {\n  if (path === 'a.b.c') return undefined;\n  return path.split('.').reduce((acc, k) => acc[k], obj);\n}",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-debug-minimal-diff",
+          "check": "The fix is localized to the defective logic without unrelated rewrites or leftover workaround branches.",
+          "why": "Broad unrequested rewrites in a bugfix introduce new regressions and obscure the root cause.",
+          "severity": "should",
+          "knownBad": {
+            "code": "function getPath(obj, path) {\n  if (!obj) return undefined;\n  if (path === '') return obj;\n  const parts = path.split('.');\n  let cur = obj;\n  for (const p of parts) {\n    if (cur == null) return undefined;\n    cur = cur[p];\n  }\n  return cur;\n}",
+            "caughtBy": "review"
+          }
+        }
+      ]
     },
     {
       "archetypeKey": "prg-c02-function-parameters-basics",
@@ -333,6 +542,30 @@
       "usedContexts": [
         "checkout_discount",
         "invoice_totals"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-params-explicit-signature",
+          "check": "Optional defaults and variadic inputs are expressed cleanly in the function signature or explicit nullish guards rather than mutating `arguments` or using falsy `||` fallbacks.",
+          "why": "Falsy `||` fallbacks drop explicit `0` or `false` arguments, and `arguments` obscures the function's contract.",
+          "severity": "must",
+          "accepted": ["function f(a, rate = 0.1, ...items)", "const r = rate ?? 0.1"],
+          "knownBad": {
+            "code": "function applyDiscount(price, rate) {\n  const r = rate || 0.1;\n  return price * (1 - r);\n}",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-params-round-at-boundary",
+          "check": "Numeric rounding is applied once at the output boundary as a numeric value, keeping intermediate calculations unrounded.",
+          "why": "Rounding intermediate steps accumulates drift, and returning a string from `toFixed` breaks numeric callers.",
+          "severity": "should",
+          "accepted": ["Math.round(total * 100) / 100", "Number(total.toFixed(2))"],
+          "knownBad": {
+            "code": "function roundPrice(amount) {\n  return amount.toFixed(2);\n}",
+            "caughtBy": "review"
+          }
+        }
       ]
     },
     {
@@ -396,6 +629,29 @@
         "newsletter_export",
         "shipping_labels",
         "stock_ledger"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-object-copy-on-write",
+          "check": "Updating a key-value map returns a new object rather than mutating the caller's object in place.",
+          "why": "Mutating the caller's object causes silent side effects for any other code holding a reference to it.",
+          "severity": "must",
+          "accepted": ["{ ...map, [key]: next }", "Object.assign({}, map, { [key]: next })"],
+          "knownBad": {
+            "code": "function adjustStock(stock, sku, delta) {\n  stock[sku] = (stock[sku] ?? 0) + delta;\n  return stock;\n}",
+            "caughtBy": "lint:no-param-reassign"
+          }
+        },
+        {
+          "id": "QC-collection-separate-derive-format",
+          "check": "Data filtering and aggregation are separated from string formatting so derived values remain reusable and testable.",
+          "why": "Mixing aggregation with label formatting couples business math to presentation text.",
+          "severity": "should",
+          "knownBad": {
+            "code": "function summarizeOrder(items) {\n  let total = 0;\n  for (const it of items) if (it.active) total += it.price;\n  return `${items.length} items: $${total.toFixed(2)}`;\n}",
+            "caughtBy": "review"
+          }
+        }
       ]
     }
   ]

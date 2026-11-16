@@ -36,6 +36,28 @@
       ],
       "usedContexts": [
         "plugin_sandbox_context"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-scope-block-binding",
+          "check": "Loop and callback variables are declared with block-scoped `const`/`let` inside each iteration, never hoisted with `var` or shared outside the loop.",
+          "why": "Hoisted or shared loop bindings cause closures created inside the loop to read the final mutated value.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function makeHandlers(count) {\n  const out = [];\n  for (var i = 0; i < count; i += 1) {\n    out.push(() => i);\n  }\n  return out;\n}",
+            "caughtBy": "lint:no-var"
+          }
+        },
+        {
+          "id": "QC-scope-no-outer-mutation",
+          "check": "Inner helper functions or blocks do not reassign outer configuration bindings passed into the sandbox.",
+          "why": "Mutating outer lexical bindings leaks state across independent calls or plugins.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function runWithConfig(baseConfig, override) {\n  baseConfig.mode = override;\n  return baseConfig;\n}",
+            "caughtBy": "lint:no-param-reassign"
+          }
+        }
       ]
     },
     {
@@ -71,6 +93,29 @@
       ],
       "usedContexts": [
         "event_emitter_subscriber_delegate"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-proto-preserved-receiver",
+          "check": "Callbacks or detached methods preserve their intended receiver context rather than relying on ambient or unbound `this`.",
+          "why": "Passing a bare method reference detaches its `this` receiver and fails or reads `undefined` at call time.",
+          "severity": "must",
+          "accepted": ["service.handle.bind(service)", "(...args) => service.handle(...args)", "class arrow field when per-instance binding is needed"],
+          "knownBad": {
+            "code": "function registerHandler(emitter, service) {\n  emitter.on('event', service.handle);\n}",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-proto-shared-methods",
+          "check": "Instance methods shared across objects are defined on the class or prototype rather than recreated per instance unless closure privacy requires it.",
+          "why": "Attaching identical method closures to every instance breaks prototype delegation and wastes memory.",
+          "severity": "should",
+          "knownBad": {
+            "code": "function User(name) {\n  this.name = name;\n  this.greet = function () { return `Hi ${this.name}`; };\n}",
+            "caughtBy": "review"
+          }
+        }
       ]
     },
     {
@@ -96,6 +141,12 @@
           "name": "String Concatenation in Numeric Arithmetic",
           "description": "Returning string from valueOf causes '+' operator to perform string concatenation instead of addition.",
           "reproducer": "Passing object with valueOf() => '10'; obj + 5 yields '105' instead of 15."
+        },
+        {
+          "trapTag": "toprimitive-non-primitive-return",
+          "name": "Non-Primitive Return from Symbol.toPrimitive",
+          "description": "Returning an object or ignoring the 'string' hint in Symbol.toPrimitive throws TypeError or produces '[object Object]'.",
+          "reproducer": "Coerce object in template literal `${obj}`; Symbol.toPrimitive returns {} and throws TypeError."
         }
       ],
       "realWorldDomains": [
@@ -106,6 +157,28 @@
       ],
       "usedContexts": [
         "money_currency_value_object"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-coercion-protocol-completeness",
+          "check": "Custom coercion hooks (`Symbol.toPrimitive`, `valueOf`, `toString`) return true primitives matching the requested conversion hint and never return objects.",
+          "why": "Returning a non-primitive or wrong primitive type breaks both numeric arithmetic and string interpolation.",
+          "severity": "must",
+          "knownBad": {
+            "code": "const obj = {\n  [Symbol.toPrimitive](hint) {\n    if (hint === 'number') return 10;\n    return {};\n  }\n};",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-coercion-domain-error",
+          "check": "Invalid or non-representable inputs in value-object constructors or converters fail with a descriptive domain error rather than silently producing `NaN`.",
+          "why": "Silent `NaN` propagation corrupts downstream financial or unit calculations without a clear cause.",
+          "severity": "should",
+          "knownBad": {
+            "code": "function makeAmount(raw) {\n  return { cents: Number(raw) };\n}",
+            "caughtBy": "review"
+          }
+        }
       ]
     },
     {
@@ -131,6 +204,18 @@
           "name": "Call Stack Overflow on Self-Referential Graph",
           "description": "Naive JSON.parse(JSON.stringify(x)) or un-memoized recursion crashes with RangeError: Maximum call stack size exceeded.",
           "reproducer": "const a = {}; a.self = a; deepClone(a); crashes without reference tracking."
+        },
+        {
+          "trapTag": "post-recursion-cycle-registration",
+          "name": "Registering Clone After Recursing Into Children",
+          "description": "Storing the new clone in the visited map after cloning child properties still overflows on self-referential cycles.",
+          "reproducer": "const a = {}; a.self = a; deepClone(a) recurses infinitely before seen.set(a, copy) is reached."
+        },
+        {
+          "trapTag": "array-cloned-as-plain-object",
+          "name": "Cloning Arrays as Plain Objects",
+          "description": "Cloning an Array into '{}' strips Array.isArray identity, prototype methods, and length semantics.",
+          "reproducer": "deepClone([1, 2]) returns { '0': 1, '1': 2 } instead of [1, 2]."
         }
       ],
       "realWorldDomains": [
@@ -141,6 +226,29 @@
       ],
       "usedContexts": [
         "redux_state_snapshot_cloner"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-clone-cycle-safe-traversal",
+          "check": "Object graph traversal records visited references before descending into child properties so cyclic graphs terminate and preserve shared or self-referential identity.",
+          "why": "Traversing without pre-registered reference tracking crashes on cycles or duplicates shared subgraphs.",
+          "severity": "must",
+          "accepted": ["WeakMap", "Map"],
+          "knownBad": {
+            "code": "function deepClone(value) {\n  return JSON.parse(JSON.stringify(value));\n}",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-clone-type-fidelity",
+          "check": "Container allocation preserves runtime collection kind (arrays remain arrays, plain objects remain plain objects) rather than flattening via lossy serialization.",
+          "why": "Lossy serialization or `{}`-only cloning drops array semantics, `undefined` fields, and special values.",
+          "severity": "should",
+          "knownBad": {
+            "code": "function cloneContainer(val) {\n  const copy = {};\n  for (const k of Object.keys(val)) copy[k] = val[k];\n  return copy;\n}",
+            "caughtBy": "review"
+          }
+        }
       ]
     },
     {
@@ -166,6 +274,18 @@
           "name": "Multiple Next Invocation Defect",
           "description": "Calling next() twice in one middleware branches execution and corrupts pipeline flow.",
           "reproducer": "Middleware calls await next(); await next(); downstream executes duplicate operations."
+        },
+        {
+          "trapTag": "non-promise-middleware-return",
+          "name": "Non-Promise Return Breaking Upstream Await",
+          "description": "Returning undefined or a synchronous value from dispatch() breaks upstream await next() ordering and error propagation.",
+          "reproducer": "Synchronous middleware throws; upstream try { await next(); } catch misses or out-of-order post-next runs."
+        },
+        {
+          "trapTag": "missing-terminal-dispatch-base-case",
+          "name": "Missing Terminal Dispatch Base Case",
+          "description": "Failing to resolve cleanly when dispatch index reaches middlewares.length causes TypeError on undefined invocation.",
+          "reproducer": "Call composed pipeline with last middleware calling await next(); throws TypeError: fn is not a function."
         }
       ],
       "realWorldDomains": [
@@ -176,6 +296,28 @@
       ],
       "usedContexts": [
         "http_api_gateway_middleware"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-middleware-async-chain-propagation",
+          "check": "Every dispatch step returns or awaits a promise chain so upstream `try/catch` and post-`next()` hooks run in strict onion order.",
+          "why": "Fire-and-forget or non-promise dispatch steps break upstream error catching and post-`next()` ordering.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function dispatch(middlewares, i, ctx) {\n  const fn = middlewares[i];\n  if (!fn) return undefined;\n  return fn(ctx, () => dispatch(middlewares, i + 1, ctx));\n}",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-middleware-no-shared-cursor",
+          "check": "Dispatch cursor state is scoped per pipeline invocation rather than shared across requests at module or composer scope.",
+          "why": "Sharing the dispatch index across concurrent invocations corrupts middleware ordering under load.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function compose(middlewares) {\n  let lastIndex = -1;\n  return (ctx) => {\n    const dispatch = (i) => {\n      if (i <= lastIndex) return Promise.reject(new Error('next() called multiple times'));\n      lastIndex = i;\n      const fn = middlewares[i];\n      return fn ? Promise.resolve(fn(ctx, () => dispatch(i + 1))) : Promise.resolve();\n    };\n    return dispatch(0);\n  };\n}",
+            "caughtBy": "review"
+          }
+        }
       ]
     }
   ]

@@ -115,7 +115,7 @@ problem as correct only on a pass.
 | PR | Content | By | Status |
 | :-- | :-- | :-- | :-- |
 | R1 | ESLint + tsc toolkit (`tools/lint/`), `npm run check` in generated workspaces and the lab, tests | Gemini | done |
-| R2 | `qualityChecks` schema, universal list, backfill for the 3 PRG vaults, ingest gates (reference clean, known-bad caught) | Gemini, rubric content reviewed by Claude | pending |
+| R2 | `qualityChecks` schema, universal list, backfill for the 3 PRG vaults, ingest gates (reference clean, known-bad caught) | Gemini, rubric content reviewed by Claude | done |
 | R3 | `state.reviews[]` record + `scripts/review_record.py` CLI + weak_spots/mastery reading it, tests | Gemini | pending |
 | R4 | `review-code` skill (this document's rules), retire `code_engine/review.py` | Claude | pending |
 
@@ -124,6 +124,10 @@ problem as correct only on a pass.
 - **Test-file allowances:** `*.test.*` relaxes `max-lines-per-function` and `max-params`, and `@typescript-eslint/no-floating-promises` allowlists `node:test` lifecycle calls (`test`, `describe`, `it`, `before`, `after`, `beforeEach`, `afterEach`) via `allowForKnownSafeCalls`.
 - **Unused stub parameters:** `no-unused-vars` / `@typescript-eslint/no-unused-vars` ignores `^_`-prefixed names (`argsIgnorePattern: "^_"`), and starter code stubs prefix unused parameters with `_` rather than relaxing `no-unused-vars`.
 - **Per-workspace `tsconfig.json`:** TypeScript workspaces and `LAB-PRG-T03-C01-01` include a `tsconfig.json` (`strict: true`, `noEmit: true`) so `projectService` and `tsc --noEmit` run deterministically without `allowDefaultProject` file-count limits.
+
+### R2 deviations from v1 draft
+- **`knownBad` on every check (including `should`):** Rather than restricting `knownBad` to `must` checks only, every universal and archetype `qualityChecks` entry includes `knownBad: { code, caughtBy }` (`"lint:<rule-id>"` or `"review"` — `"test"` is rejected because behaviour belongs in `hiddenTests`, not `qualityChecks`), and `python -m code_engine.quality_checks --check-vaults` + ingest verify that every `"lint:<rule-id>"` snippet actually triggers that ESLint rule. Checks may also include an optional `accepted` list of acceptable implementations as reviewer hints, while the check itself states a property of the code rather than a mandated API.
+- **Ingest Layer 3 calibration scope:** At ingest, `code_engine/ai_drill_ingest.py` validates archetype `qualityChecks`, verifies `lint:<rule-id>` `knownBad` snippets, and runs Layer 2 ESLint (`lint_drill_doc`) on every problem's `solutionCode`; running an LLM review on `solutionCode` at ingest is left manual/out of scope per the no-paid-API-calls rule.
 
 ## Out of scope for v1
 
