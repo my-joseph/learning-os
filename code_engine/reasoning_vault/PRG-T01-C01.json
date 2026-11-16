@@ -4,6 +4,62 @@
   "description": "Advanced JavaScript runtime semantics, prototypes, lexical environments, deep cloning, and functional composition archetypes.",
   "archetypes": [
     {
+      "archetypeKey": "prg-c01-abortable-async-work",
+      "unitCode": "PRG-T01-C01-U09",
+      "level": 2,
+      "archetype": "problem-solving",
+      "name": "Abortable Async Work & Cancellation Cleanup",
+      "competencies": ["async-control-flow", "cancellation", "resource-lifecycle"],
+      "coreConcept": "Cancellation is a cooperative signal: an operation observes AbortSignal, stops at safe boundaries, releases resources, and settles according to one documented cancellation contract.",
+      "mentalModel": [
+        "1. The caller owns an AbortController and communicates cancellation through its signal.",
+        "2. The operation checks the signal before starting and at asynchronous boundaries.",
+        "3. The operation settles once and completes cleanup without hiding an earlier result."
+      ],
+      "governingInvariant": "A cancellation request prevents further work after the next defined cancellation boundary and never leaves listeners or resources attached.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "ignore-preaborted-signal",
+          "name": "Ignoring a Signal That Was Already Aborted",
+          "description": "Registering only a future abort listener misses cancellation that occurred before the operation began.",
+          "reproducer": "Abort the controller before calling the operation, then verify no work starts and the documented cancellation result is returned."
+        },
+        {
+          "trapTag": "abort-listener-leak",
+          "name": "Leaving Abort Listeners Attached",
+          "description": "An operation that finishes normally but never removes its abort listener retains callbacks and may react to a later cancellation.",
+          "reproducer": "Complete many operations with one long-lived signal and verify each operation releases its listener after settlement."
+        },
+        {
+          "trapTag": "late-abort-overwrites-settlement",
+          "name": "Late Cancellation Replaces a Settled Result",
+          "description": "A cancellation event arriving after completion can incorrectly reject or overwrite an already settled operation.",
+          "reproducer": "Resolve the operation, then abort its controller and verify the original result remains stable."
+        }
+      ],
+      "realWorldDomains": [
+        {"domain": "report_export_worker", "description": "Stopping a large report export when a user navigates away while preserving cleanup and a stable completion contract."},
+        {"domain": "asset_upload_coordinator", "description": "Cancelling queued and in-flight upload work without leaving request listeners or progress state behind."}
+      ],
+      "usedContexts": [],
+      "qualityChecks": [
+        {
+          "id": "QC-abort-settlement-stable",
+          "check": "The operation has one settlement path, and abort events after settlement cannot replace the settled value or error.",
+          "why": "Late cancellation must not make callers observe a different outcome from the operation that already completed.",
+          "severity": "must",
+          "knownBad": {"code": "function settle(resolve, reject, signal) {\n  resolve('complete');\n  signal.addEventListener('abort', () => reject(signal.reason));\n}", "caughtBy": "review"}
+        },
+        {
+          "id": "QC-abort-listener-lifecycle",
+          "check": "Abort listeners and other operation-owned resources are released on every settlement path.",
+          "why": "Unreleased listeners retain closures and allow completed work to react to unrelated later cancellation.",
+          "severity": "must",
+          "knownBad": {"code": "function waitForSignal(signal) {\n  return new Promise((resolve) => {\n    signal.addEventListener('abort', resolve);\n  });\n}", "caughtBy": "review"}
+        }
+      ]
+    },
+    {
       "archetypeKey": "prg-c01-scope-shadowing-guard",
       "unitCode": "PRG-T01-C01-U01",
       "level": 1,
