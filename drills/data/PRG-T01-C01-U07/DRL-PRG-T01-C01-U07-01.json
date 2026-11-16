@@ -1,0 +1,505 @@
+{
+  "unitCode": "PRG-T01-C01-U07",
+  "unitTitle": "Event Loop and Microtasks",
+  "environment": "node-vanilla",
+  "sourceAttribution": "MDN JavaScript Guide (Using Microtasks & Event Loop) & ECMAScript Jobs/Promises Specification",
+  "config": {
+    "questionCount": 5,
+    "difficulty": "ALL",
+    "difficultyMode": "AI Synthesized Engineering Mode"
+  },
+  "problems": [
+    {
+      "id": "Q01",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "code-tracing",
+      "codeType": "predict-output",
+      "archetypeKey": "prg-c01-event-loop-microtask-order",
+      "commonTrapTag": "macrotask-before-microtask",
+      "context": "telemetry_flush_scheduler",
+      "entryPoint": "predictTelemetryFlushOrder",
+      "answerSpec": {
+        "tokens": [
+          "sync:capture",
+          "sync:end",
+          "micro:batch",
+          "micro:commit",
+          "macro:transport"
+        ]
+      },
+      "codeSnippet": "const order = [];\norder.push('sync:capture');\n\nsetTimeout(() => {\n  order.push('macro:transport');\n  console.log(order.join('\\n'));\n}, 0);\nqueueMicrotask(() => order.push('micro:batch'));\nPromise.resolve().then(() => order.push('micro:commit'));\n\norder.push('sync:end');",
+      "prompt": "Implement `predictTelemetryFlushOrder()` to return the exact array of event strings recorded by the telemetry flush snippet below after one macrotask turn completes.\n\n```js\nconst order = [];\norder.push('sync:capture');\n\nsetTimeout(() => {\n  order.push('macro:transport');\n  console.log(order.join('\\n'));\n}, 0);\nqueueMicrotask(() => order.push('micro:batch'));\nPromise.resolve().then(() => order.push('micro:commit'));\n\norder.push('sync:end');\n```\n\n**Contract:**\n- Return a 5-element array of strings matching the exact execution order of `order`.\n- **Execution Rules:** Account for the synchronous Call Stack, the Microtask Queue (`queueMicrotask` and `Promise.prototype.then`), and the Macrotask Queue (`setTimeout(..., 0)`).",
+      "inputHint": "Return an array of 5 event strings in exact execution order.",
+      "checkpointHint": "Check which queue drains completely before any timer callback can run.",
+      "starterCode": "function predictTelemetryFlushOrder() {\n  // TODO: return the 5-element execution order array\n  return [];\n}\n\nmodule.exports = { predictTelemetryFlushOrder };\n",
+      "solutionCode": "function predictTelemetryFlushOrder() {\n  return [\n    'sync:capture',\n    'sync:end',\n    'micro:batch',\n    'micro:commit',\n    'macro:transport'\n  ];\n}\n\nmodule.exports = { predictTelemetryFlushOrder };\n",
+      "trapMutant": "function predictTelemetryFlushOrder() {\n  return [\n    'sync:capture',\n    'sync:end',\n    'macro:transport',\n    'micro:batch',\n    'micro:commit'\n  ];\n}\n\nmodule.exports = { predictTelemetryFlushOrder };\n",
+      "visibleTests": [
+        {
+          "name": "returns a 5-element array starting with the initial synchronous capture event",
+          "testCode": "const result = predictTelemetryFlushOrder();\nassert.ok(Array.isArray(result));\nassert.strictEqual(result.length, 5);\nassert.strictEqual(result[0], 'sync:capture');"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "orders sync events, then FIFO microtasks, then macrotask timer",
+          "testCode": "const result = predictTelemetryFlushOrder();\nassert.deepStrictEqual(result, [\n  'sync:capture',\n  'sync:end',\n  'micro:batch',\n  'micro:commit',\n  'macro:transport'\n]);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Execute synchronous statements first: `'sync:capture'` then `'sync:end'`."
+        },
+        {
+          "explain": "Drain the Microtask Queue in FIFO order before any macrotask: `'micro:batch'` then `'micro:commit'`."
+        },
+        {
+          "explain": "Run the queued `setTimeout(..., 0)` macrotask last: `'macro:transport'`."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "macrotask-before-microtask|direct|const order = []; order.push('sync:capture'); setTimeout(() => { order.push('macro:transport'); console.log(order.join('\\n')); }, #); queueMicrotask(() => order.push('micro:batch')); Promise.resolve().then(() => order.push('micro:commit')); order.push('sync:end');",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "code-tracing",
+          "verifiedByExecution": true
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 3,
+          "hasTrapOrFlaw": false,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "macrotask-before-microtask",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 6
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Foundation",
+      "unitCode": "PRG-T01-C01-U07",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U07-01/Q01_predictTelemetryFlushOrder.js"
+    },
+    {
+      "id": "Q02",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "code-tracing",
+      "codeType": "trace-explain",
+      "archetypeKey": "prg-c01-event-loop-microtask-order",
+      "commonTrapTag": "promise-executor-deferred",
+      "context": "payment_gateway_handshake",
+      "entryPoint": "traceGatewayHandshake",
+      "answerSpec": {
+        "tokens": [
+          "sync:init",
+          "exec:open",
+          "exec:after-resolve",
+          "sync:done",
+          "micro:settled",
+          "macro:timeout"
+        ]
+      },
+      "codeSnippet": "const trace = [];\ntrace.push('sync:init');\n\nsetTimeout(() => {\n  trace.push('macro:timeout');\n  console.log(trace.join('\\n'));\n}, 0);\n\nnew Promise((resolve) => {\n  trace.push('exec:open');\n  resolve('ready');\n  trace.push('exec:after-resolve');\n}).then(() => {\n  trace.push('micro:settled');\n});\n\ntrace.push('sync:done');",
+      "prompt": "Implement `traceGatewayHandshake()` to return the exact execution trace and executor timing flag for the payment gateway handshake snippet below.\n\n```js\nconst trace = [];\ntrace.push('sync:init');\n\nsetTimeout(() => {\n  trace.push('macro:timeout');\n  console.log(trace.join('\\n'));\n}, 0);\n\nnew Promise((resolve) => {\n  trace.push('exec:open');\n  resolve('ready');\n  trace.push('exec:after-resolve');\n}).then(() => {\n  trace.push('micro:settled');\n});\n\ntrace.push('sync:done');\n```\n\n**Return Contract:**\n- Return `{ order, executorSync }`.\n- `order`: 6-element array of strings showing the exact order pushed to `trace`.\n- `executorSync`: boolean indicating whether the `new Promise` executor body runs synchronously on creation.",
+      "inputHint": "Return { order: string[], executorSync: boolean }.",
+      "checkpointHint": "Trace when `new Promise(fn)` invokes `fn` versus when `.then(...)` runs.",
+      "starterCode": "function traceGatewayHandshake() {\n  // TODO: return { order, executorSync } matching the snippet execution\n  return { order: [], executorSync: false };\n}\n\nmodule.exports = { traceGatewayHandshake };\n",
+      "solutionCode": "function traceGatewayHandshake() {\n  return {\n    order: [\n      'sync:init',\n      'exec:open',\n      'exec:after-resolve',\n      'sync:done',\n      'micro:settled',\n      'macro:timeout'\n    ],\n    executorSync: true\n  };\n}\n\nmodule.exports = { traceGatewayHandshake };\n",
+      "trapMutant": "function traceGatewayHandshake() {\n  return {\n    order: [\n      'sync:init',\n      'sync:done',\n      'exec:open',\n      'exec:after-resolve',\n      'micro:settled',\n      'macro:timeout'\n    ],\n    executorSync: false\n  };\n}\n\nmodule.exports = { traceGatewayHandshake };\n",
+      "visibleTests": [
+        {
+          "name": "returns an object with a 6-element order array and boolean executorSync",
+          "testCode": "const res = traceGatewayHandshake();\nassert.strictEqual(typeof res, 'object');\nassert.ok(Array.isArray(res.order));\nassert.strictEqual(res.order.length, 6);\nassert.strictEqual(typeof res.executorSync, 'boolean');"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "records synchronous Promise executor before sync:done and microtasks before macrotask",
+          "testCode": "const res = traceGatewayHandshake();\nassert.strictEqual(res.executorSync, true);\nassert.deepStrictEqual(res.order, [\n  'sync:init',\n  'exec:open',\n  'exec:after-resolve',\n  'sync:done',\n  'micro:settled',\n  'macro:timeout'\n]);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Run `'sync:init'`, then enter `new Promise(executor)` synchronously (`'exec:open'`, `resolve`, `'exec:after-resolve'`)."
+        },
+        {
+          "explain": "Finish the synchronous script with `'sync:done'`, then drain `.then()` microtask `'micro:settled'`."
+        },
+        {
+          "explain": "Execute `'macro:timeout'` in the next macrotask turn; `executorSync` is `true`."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "promise-executor-deferred|direct|const trace = []; trace.push('sync:init'); setTimeout(() => { trace.push('macro:timeout'); console.log(trace.join('\\n')); }, #); new Promise((resolve) => { trace.push('exec:open'); resolve('ready'); trace.push('exec:after-resolve'); }).then(() => { trace.push('micro:settled'); }); trace.push('sync:done');",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "code-tracing",
+          "verifiedByExecution": true
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 3,
+          "hasTrapOrFlaw": false,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "promise-executor-deferred",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 6
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Foundation",
+      "unitCode": "PRG-T01-C01-U07",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U07-01/Q02_traceGatewayHandshake.js"
+    },
+    {
+      "id": "Q03",
+      "level": 2,
+      "category": "Trap & Edge Case",
+      "archetype": "code-tracing",
+      "codeType": "predict-output",
+      "archetypeKey": "prg-c01-async-await-microtask-split",
+      "commonTrapTag": "async-body-fully-deferred",
+      "context": "auth_token_refresh_pipeline",
+      "entryPoint": "predictTokenRefreshTrace",
+      "answerSpec": {
+        "tokens": [
+          "caller:start",
+          "refresh:pre-await",
+          "caller:end",
+          "refresh:post-await",
+          "sibling:microtask",
+          "timer:cleanup"
+        ]
+      },
+      "codeSnippet": "const log = [];\n\nasync function refreshSession() {\n  log.push('refresh:pre-await');\n  await Promise.resolve('token');\n  log.push('refresh:post-await');\n}\n\nlog.push('caller:start');\nsetTimeout(() => {\n  log.push('timer:cleanup');\n  console.log(log.join('\\n'));\n}, 0);\nrefreshSession();\nPromise.resolve().then(() => log.push('sibling:microtask'));\nlog.push('caller:end');",
+      "prompt": "Implement `predictTokenRefreshTrace()` to return the exact 6-element execution order produced by the `async/await` token-refresh snippet below.\n\n```js\nconst log = [];\n\nasync function refreshSession() {\n  log.push('refresh:pre-await');\n  await Promise.resolve('token');\n  log.push('refresh:post-await');\n}\n\nlog.push('caller:start');\nsetTimeout(() => {\n  log.push('timer:cleanup');\n  console.log(log.join('\\n'));\n}, 0);\nrefreshSession();\nPromise.resolve().then(() => log.push('sibling:microtask'));\nlog.push('caller:end');\n```\n\n**Contract:**\n- Return a 6-element array of strings matching the exact order in `log`.\n- **Focus:** Distinguish what executes synchronously inside an `async` function from what suspends at `await`.",
+      "inputHint": "Return an array of 6 log strings in exact execution order.",
+      "checkpointHint": "Trace when an `async` function suspends and which microtask is enqueued first.",
+      "starterCode": "function predictTokenRefreshTrace() {\n  // TODO: return the 6-element execution order array\n  return [];\n}\n\nmodule.exports = { predictTokenRefreshTrace };\n",
+      "solutionCode": "function predictTokenRefreshTrace() {\n  return [\n    'caller:start',\n    'refresh:pre-await',\n    'caller:end',\n    'refresh:post-await',\n    'sibling:microtask',\n    'timer:cleanup'\n  ];\n}\n\nmodule.exports = { predictTokenRefreshTrace };\n",
+      "trapMutant": "function predictTokenRefreshTrace() {\n  return [\n    'caller:start',\n    'caller:end',\n    'refresh:pre-await',\n    'refresh:post-await',\n    'sibling:microtask',\n    'timer:cleanup'\n  ];\n}\n\nmodule.exports = { predictTokenRefreshTrace };\n",
+      "visibleTests": [
+        {
+          "name": "returns a 6-element array beginning with caller:start",
+          "testCode": "const res = predictTokenRefreshTrace();\nassert.ok(Array.isArray(res));\nassert.strictEqual(res.length, 6);\nassert.strictEqual(res[0], 'caller:start');"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "runs pre-await synchronously, resumes post-await before sibling microtask, and timer last",
+          "testCode": "const res = predictTokenRefreshTrace();\nassert.deepStrictEqual(res, [\n  'caller:start',\n  'refresh:pre-await',\n  'caller:end',\n  'refresh:post-await',\n  'sibling:microtask',\n  'timer:cleanup'\n]);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "`'caller:start'` runs, then `refreshSession()` runs `'refresh:pre-await'` synchronously up to `await`."
+        },
+        {
+          "explain": "At `await Promise.resolve('token')`, `refreshSession` suspends and queues `'refresh:post-await'`; caller continues with `'caller:end'`."
+        },
+        {
+          "explain": "Microtasks drain FIFO (`'refresh:post-await'` then `'sibling:microtask'`), followed by `'timer:cleanup'`."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "async-body-fully-deferred|direct|const log = []; async function refreshSession() { log.push('refresh:pre-await'); await Promise.resolve('token'); log.push('refresh:post-await'); } log.push('caller:start'); setTimeout(() => { log.push('timer:cleanup'); console.log(log.join('\\n')); }, #); refreshSession(); Promise.resolve().then(() => log.push('sibling:microtask')); log.push('caller:end');",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "code-tracing",
+          "verifiedByExecution": true
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "async-body-fully-deferred",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 6
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Standard Exam",
+      "unitCode": "PRG-T01-C01-U07",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U07-01/Q03_predictTokenRefreshTrace.js"
+    },
+    {
+      "id": "Q04",
+      "level": 2,
+      "category": "Trap & Edge Case",
+      "archetype": "code-tracing",
+      "codeType": "predict-output",
+      "archetypeKey": "prg-c01-async-await-microtask-split",
+      "commonTrapTag": "microtask-chained-hop-order",
+      "context": "cache_revalidation_queue",
+      "entryPoint": "predictCacheHopOrder",
+      "answerSpec": {
+        "tokens": [
+          "chainA:hop1",
+          "chainB:hop1",
+          "chainA:nested",
+          "chainA:hop2",
+          "chainB:hop2",
+          "macro:sweep"
+        ]
+      },
+      "codeSnippet": "const events = [];\nsetTimeout(() => {\n  events.push('macro:sweep');\n  console.log(events.join('\\n'));\n}, 0);\n\nPromise.resolve()\n  .then(() => {\n    events.push('chainA:hop1');\n    queueMicrotask(() => events.push('chainA:nested'));\n  })\n  .then(() => events.push('chainA:hop2'));\n\nPromise.resolve()\n  .then(() => events.push('chainB:hop1'))\n  .then(() => events.push('chainB:hop2'));",
+      "prompt": "Implement `predictCacheHopOrder()` to return the exact 6-element execution order for the interleaved microtask chains below.\n\n```js\nconst events = [];\nsetTimeout(() => {\n  events.push('macro:sweep');\n  console.log(events.join('\\n'));\n}, 0);\n\nPromise.resolve()\n  .then(() => {\n    events.push('chainA:hop1');\n    queueMicrotask(() => events.push('chainA:nested'));\n  })\n  .then(() => events.push('chainA:hop2'));\n\nPromise.resolve()\n  .then(() => events.push('chainB:hop1'))\n  .then(() => events.push('chainB:hop2'));\n```\n\n**Contract:**\n- Return a 6-element array of strings matching the exact order in `events`.\n- **Focus:** Track FIFO microtask-hop scheduling when a `.then()` callback both calls `queueMicrotask` and resolves its own chained `.then()`.",
+      "inputHint": "Return an array of 6 event strings in exact execution order.",
+      "checkpointHint": "Advance the Microtask Queue one callback at a time and note when each downstream `.then` is enqueued.",
+      "starterCode": "function predictCacheHopOrder() {\n  // TODO: return the 6-element execution order array\n  return [];\n}\n\nmodule.exports = { predictCacheHopOrder };\n",
+      "solutionCode": "function predictCacheHopOrder() {\n  return [\n    'chainA:hop1',\n    'chainB:hop1',\n    'chainA:nested',\n    'chainA:hop2',\n    'chainB:hop2',\n    'macro:sweep'\n  ];\n}\n\nmodule.exports = { predictCacheHopOrder };\n",
+      "trapMutant": "function predictCacheHopOrder() {\n  return [\n    'chainA:hop1',\n    'chainA:nested',\n    'chainA:hop2',\n    'chainB:hop1',\n    'chainB:hop2',\n    'macro:sweep'\n  ];\n}\n\nmodule.exports = { predictCacheHopOrder };\n",
+      "visibleTests": [
+        {
+          "name": "returns a 6-element array starting with chainA:hop1",
+          "testCode": "const res = predictCacheHopOrder();\nassert.ok(Array.isArray(res));\nassert.strictEqual(res.length, 6);\nassert.strictEqual(res[0], 'chainA:hop1');"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "interleaves chainA and chainB microtask hops in exact FIFO order",
+          "testCode": "const res = predictCacheHopOrder();\nassert.deepStrictEqual(res, [\n  'chainA:hop1',\n  'chainB:hop1',\n  'chainA:nested',\n  'chainA:hop2',\n  'chainB:hop2',\n  'macro:sweep'\n]);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Initial Microtask Queue has `[chainA:hop1, chainB:hop1]`."
+        },
+        {
+          "explain": "Running `chainA:hop1` enqueues `chainA:nested` and then resolves its promise to enqueue `chainA:hop2` after `chainB:hop1`."
+        },
+        {
+          "explain": "Running `chainB:hop1` enqueues `chainB:hop2` after `chainA:hop2`, then `chainA:nested`, `chainA:hop2`, `chainB:hop2`, and finally `macro:sweep`."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "microtask-chained-hop-order|direct|const events = []; setTimeout(() => { events.push('macro:sweep'); console.log(events.join('\\n')); }, #); Promise.resolve() .then(() => { events.push('chainA:hop#'); queueMicrotask(() => events.push('chainA:nested')); }) .then(() => events.push('chainA:hop#')); Promise.resolve() .then(() => events.push('chainB:hop#')) .then(() => events.push('chainB:hop#'));",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "code-tracing",
+          "verifiedByExecution": true
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "microtask-chained-hop-order",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 6
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Standard Exam",
+      "unitCode": "PRG-T01-C01-U07",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U07-01/Q04_predictCacheHopOrder.js"
+    },
+    {
+      "id": "Q05",
+      "level": 3,
+      "category": "Refactor & Design",
+      "archetype": "debugging",
+      "codeType": "fix-bug",
+      "archetypeKey": "prg-c01-microtask-starvation-yield",
+      "commonTrapTag": "recursive-microtask-starvation",
+      "context": "cooperative_log_indexer",
+      "entryPoint": "indexLogBatches",
+      "prompt": "Fix `indexLogBatches(entries, chunkSize, onChunk)` in the cooperative log indexer so that it yields to the Event Loop between chunks instead of starving pending `setTimeout(..., 0)` heartbeats.\n\n**Observed Symptom:**\n- When `entries` requires multiple chunks, a `setTimeout(..., 0)` heartbeat scheduled alongside `indexLogBatches` never fires until all chunks have finished.\n\n**Requirements:**\n- **Validation:** Throw/reject with `RangeError` if `chunkSize` is not a positive integer (`!Number.isInteger(chunkSize) || chunkSize < 1`).\n- **Immutability:** Never mutate the caller's `entries` array.\n- **Cooperative Yielding:** Process slices of up to `chunkSize` via `onChunk(slice)`, and yield between chunks so queued macrotasks (`setTimeout(..., 0)`) can execute.\n- **Return Contract:** Return a `Promise<number>` resolving to `entries.length` (resolving to `0` immediately for an empty array without calling `onChunk`).",
+      "inputHint": "Fix chunk scheduling in indexLogBatches so pending timers run between chunks.",
+      "checkpointHint": "Check which Event Loop queue `queueMicrotask` uses compared to `setTimeout`.",
+      "starterCode": "async function indexLogBatches(entries, chunkSize, onChunk) {\n  if (!Number.isInteger(chunkSize) || chunkSize < 1) {\n    throw new RangeError('chunkSize must be a positive integer');\n  }\n  if (entries.length === 0) {\n    return 0;\n  }\n\n  let offset = 0;\n  await new Promise((resolve) => {\n    function step() {\n      const slice = entries.slice(offset, offset + chunkSize);\n      onChunk(slice);\n      offset += slice.length;\n      if (offset >= entries.length) {\n        resolve();\n        return;\n      }\n      queueMicrotask(step);\n    }\n    step();\n  });\n\n  return entries.length;\n}\n\nmodule.exports = { indexLogBatches };\n",
+      "solutionCode": "function yieldMacrotask() {\n  return new Promise((resolve) => {\n    setTimeout(resolve, 0);\n  });\n}\n\nasync function indexLogBatches(entries, chunkSize, onChunk) {\n  if (!Number.isInteger(chunkSize) || chunkSize < 1) {\n    throw new RangeError('chunkSize must be a positive integer');\n  }\n  if (entries.length === 0) {\n    return 0;\n  }\n\n  for (let offset = 0; offset < entries.length; offset += chunkSize) {\n    const slice = entries.slice(offset, offset + chunkSize);\n    onChunk(slice);\n    if (offset + chunkSize < entries.length) {\n      await yieldMacrotask();\n    }\n  }\n\n  return entries.length;\n}\n\nmodule.exports = { indexLogBatches };\n",
+      "trapMutant": "async function indexLogBatches(entries, chunkSize, onChunk) {\n  if (!Number.isInteger(chunkSize) || chunkSize < 1) {\n    throw new RangeError('chunkSize must be a positive integer');\n  }\n  if (entries.length === 0) {\n    return 0;\n  }\n\n  for (let offset = 0; offset < entries.length; offset += chunkSize) {\n    const slice = entries.slice(offset, offset + chunkSize);\n    onChunk(slice);\n    if (offset + chunkSize < entries.length) {\n      await Promise.resolve();\n    }\n  }\n\n  return entries.length;\n}\n\nmodule.exports = { indexLogBatches };\n",
+      "visibleTests": [
+        {
+          "name": "indexes all chunks in order without mutating entries",
+          "testCode": "const entries = ['l1', 'l2', 'l3', 'l4', 'l5'];\nconst seen = [];\nconst total = await indexLogBatches(entries, 2, (slice) => seen.push(slice));\nassert.strictEqual(total, 5);\nassert.deepStrictEqual(entries, ['l1', 'l2', 'l3', 'l4', 'l5']);\nassert.deepStrictEqual(seen, [['l1', 'l2'], ['l3', 'l4'], ['l5']]);"
+        },
+        {
+          "name": "allows a queued setTimeout(..., 0) heartbeat to run before the final chunk",
+          "testCode": "const timeline = [];\nsetTimeout(() => timeline.push('heartbeat'), 0);\nawait indexLogBatches(['a', 'b', 'c', 'd'], 2, (slice) => {\n  timeline.push('chunk:' + slice.join(','));\n});\nassert.strictEqual(timeline[0], 'chunk:a,b');\nassert.strictEqual(timeline[1], 'heartbeat');\nassert.strictEqual(timeline[2], 'chunk:c,d');"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "returns 0 and never invokes onChunk for empty entries",
+          "testCode": "let calls = 0;\nconst total = await indexLogBatches([], 3, () => { calls += 1; });\nassert.strictEqual(total, 0);\nassert.strictEqual(calls, 0);"
+        },
+        {
+          "name": "rejects with RangeError when chunkSize is zero or non-integer",
+          "testCode": "await assert.rejects(() => indexLogBatches(['a'], 0, () => {}), RangeError);\nawait assert.rejects(() => indexLogBatches(['a'], 1.5, () => {}), RangeError);"
+        },
+        {
+          "name": "interleaves multiple queued macrotask heartbeats between chunks",
+          "testCode": "const timeline = [];\nconst p = indexLogBatches(['1', '2', '3', '4', '5', '6'], 2, (slice) => {\n  timeline.push('chunk:' + slice.join(''));\n});\nsetTimeout(() => timeline.push('hb1'), 0);\nsetTimeout(() => timeline.push('hb2'), 0);\nawait p;\nassert.ok(timeline.includes('hb1'));\nassert.ok(timeline.includes('hb2'));\nassert.ok(timeline.indexOf('hb1') < timeline.indexOf('chunk:56'));\nassert.ok(timeline.indexOf('hb2') < timeline.indexOf('chunk:56'));"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Validate `chunkSize` as a positive integer and return `0` early for empty `entries`."
+        },
+        {
+          "explain": "Process each non-mutating `entries.slice(offset, offset + chunkSize)` with `onChunk`."
+        },
+        {
+          "explain": "Between chunks, `await` a `setTimeout(resolve, 0)` macrotask boundary instead of `queueMicrotask` or `Promise.resolve()` so queued timers are not starved."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "recursive-microtask-starvation|direct|indexLogBatches",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "debugging"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            20
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "recursive-microtask-starvation",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 6
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Trap & Diagnostic",
+      "unitCode": "PRG-T01-C01-U07",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U07-01/Q05_indexLogBatches.js"
+    }
+  ],
+  "blindSolve": [
+    {
+      "problemId": "Q01",
+      "passed": true
+    },
+    {
+      "problemId": "Q02",
+      "passed": true
+    },
+    {
+      "problemId": "Q03",
+      "passed": true
+    },
+    {
+      "problemId": "Q04",
+      "passed": true
+    },
+    {
+      "problemId": "Q05",
+      "passed": true
+    }
+  ],
+  "review": {
+    "verdict": "pass",
+    "note": "All 5 problems match the PRG-T01-C01-U07 scope, L1-L3 progression, non-implement mix, zero-leak standards, realistic domains, vault traps, and Layer 3 qualityChecks."
+  },
+  "drillId": "DRL-PRG-T01-C01-U07-01",
+  "topicCode": "PRG-T01",
+  "chapterCode": "PRG-T01-C01",
+  "schemaVersion": "2.0-code",
+  "subject": "PRG",
+  "createdAt": "2026-11-16 22:29:11",
+  "localFilePath": "drills/data/PRG-T01-C01-U07/DRL-PRG-T01-C01-U07-01.json"
+}

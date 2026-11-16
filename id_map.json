@@ -2411,5 +2411,9 @@
   "DRL-PRG-T01-C01-U06-01": {
     "id": "41a3818f-8ba0-81f7-a695-d338fe7e1423",
     "title": "Promises and Async/Await — Verified Programming Drill (5 Qs · AI Synthesized Engineering Mode)"
+  },
+  "DRL-PRG-T01-C01-U07-01": {
+    "id": "41a3818f-8ba0-818f-a3b6-c767b3f72e4c",
+    "title": "Event Loop and Microtasks — Verified Programming Drill (5 Qs · AI Synthesized Engineering Mode)"
   }
 }
