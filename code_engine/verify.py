@@ -170,7 +170,7 @@ def verify_tags(tags):
                 raise VerificationError(f"Mistake tag {t} missing {k}")
 
 
-def verify_problem(p, id_map=None, rules=None):
+def verify_problem(p, id_map=None, rules=None, environment=None):
     pid = p.get("id", p.get("templateKey", "?"))
     v = p.get("verify", {})
 
@@ -213,8 +213,15 @@ def verify_problem(p, id_map=None, rules=None):
             _fail(pid, "Programming suite problem must provide solutionCode for pre-execution verification")
 
         from code_engine.test_runner import run_tests
+        from code_engine.workspace import get_entry_name
 
-        report = run_tests(sol, p.get("visibleTests", []), p.get("hiddenTests", []))
+        report = run_tests(
+            sol,
+            p.get("visibleTests", []),
+            p.get("hiddenTests", []),
+            environment=environment or p.get("environment") or "node-vanilla",
+            entry_point=get_entry_name(p),
+        )
         if not report.get("allPassed"):
             _fail(pid, f"Canonical solution failed test suite: {report}")
         return True  # Suite verification complete
