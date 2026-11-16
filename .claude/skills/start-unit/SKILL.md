@@ -66,9 +66,12 @@ Write the page as a JSON spec in `scratch/pages/<UNIT>.json` (block types and te
     .venv/bin/python -m notion_sync.unit_page --code <UNIT> --spec scratch/pages/<UNIT>.json --mode new --dry-run
     .venv/bin/python -m notion_sync.unit_page --code <UNIT> --spec scratch/pages/<UNIT>.json --mode new
     ```
-  - `--mode new` refuses a page that already has blocks. For a page with content, never rewrite it: write a spec for each missing part and insert it with `--mode add --after "<heading text>"`. The tool refuses to touch `"My Implementation"`; never edit, move or delete the learner's notes in any other way either.
+  - `--mode new` refuses a page that already has blocks. For a page with content (both PRG and MTH), never rewrite it: write a spec for each missing part and insert it with `--mode add --after "<heading text>"`. The tool refuses to touch `"My Implementation"`; never edit, move or delete the learner's notes in any other way either.
+  - On older pages (e.g. legacy 5-section pages where `"My Implementation"` was at the end), inserting section 7 puts `"Completion Checklist"` before `"My Implementation"` and leaves heading numbers out of order. Fix both (dry-run first, then real):
+    - `--move-section-to-end "Completion Checklist"`: moves the section (and nested children) to the end of the page, refusing if any `to_do` is checked or any block was edited by a person.
+    - `--renumber`: rewrites only the leading `N. ` of every `heading_2` to `1..n` in page order (refuses if the section count does not match the standard).
   - Fill every empty property with `--set "Name=value"`: `Learning Objective`, `Expected Output`, `Resources` (`--set "Resources=R0xx"`, added to existing links), and `Status=In progress` if it is `Not started`. Never write to Notion any other way (no direct API calls); if the tool cannot do something, log a `tool-gap`. Do not change `Mastery (0-4)` (drill sync sets it from evidence).
-  - Run `.venv/bin/python -m scripts.page_audit <UNIT>`: it must show 0 FAIL. Fix a FAIL with `--mode add`/`--set`; a WARN is your call, say what you decided in the report.
+  - Run `.venv/bin/python -m scripts.page_audit <UNIT>` after `--mode add` / `--move-section-to-end` / `--renumber`: it must show 0 FAIL. Fix a FAIL with `--mode add`/`--set`; a WARN is your call, say what you decided in the report.
 
 ## 5. First drill
 
