@@ -1219,6 +1219,205 @@
           }
         }
       ]
+    },
+    {
+      "archetypeKey": "prg-c01-async-sequential-to-parallel",
+      "unitCode": "PRG-T01-C01-U06",
+      "level": 1,
+      "archetype": "problem-solving",
+      "name": "Concurrent Promise.all & Async Composition",
+      "competencies": [
+        "promises",
+        "async-await",
+        "concurrency"
+      ],
+      "coreConcept": "Composing independent asynchronous tasks concurrently via `Promise.all` so total latency equals the slowest task while preserving input order in the output array.",
+      "mentalModel": [
+        "1. `await` pauses only the enclosing `async` function, not the JavaScript event loop.",
+        "2. Awaiting inside a `for...of` loop serializes independent tasks; mapping tasks to promises first and passing them to `Promise.all` starts all of them concurrently.",
+        "3. `Promise.all` resolves with results in the same order as the input iterable, regardless of completion order, and rejects fast on the first failure."
+      ],
+      "governingInvariant": "independent async tasks start concurrently and resolve in input order via Promise.all",
+      "cognitiveTraps": [
+        {
+          "trapTag": "sequential-await-in-loop",
+          "name": "Sequential Await in Loop",
+          "description": "Awaiting each independent async call inside a loop forces serial execution, multiplying total latency by N.",
+          "reproducer": "for (const id of ids) { results.push(await fetchItem(id)); } // takes N * latency instead of max(latency)."
+        },
+        {
+          "trapTag": "unawaited-async-foreach",
+          "name": "Unawaited Async forEach Callback",
+          "description": "Using `items.forEach(async (item) => ...)` ignores the returned promises, so the enclosing function resolves before any async work finishes.",
+          "reproducer": "items.forEach(async (x) => out.push(await work(x))); return out; // returns []."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "microservice_fanout_aggregator",
+          "description": "Fetching independent user profile, permissions, and billing summaries concurrently for an API gateway."
+        }
+      ],
+      "usedContexts": [
+        "gateway_user_hydration_aggregator",
+        "webhook_batch_dispatcher"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-async-concurrent-dispatch",
+          "check": "Independent async operations are started concurrently and awaited together rather than serialized inside a loop.",
+          "why": "Sequential `await` in a loop turns O(1) parallel I/O latency into O(N) total wait time.",
+          "severity": "must",
+          "accepted": [
+            "Promise.all(items.map((item) => task(item)))",
+            "starting promises before awaiting each"
+          ],
+          "knownBad": {
+            "code": "async function loadAll(ids, fetchOne) {\n  const out = [];\n  for (const id of ids) {\n    out.push(await fetchOne(id));\n  }\n  return out;\n}",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-async-no-foreach-async",
+          "check": "Async collection processing uses `Promise.all(items.map(...))` or `for...of` when ordering is required, never `Array.prototype.forEach` with an `async` callback.",
+          "why": "`forEach` discards returned promises, causing callers to observe incomplete state and unhandled rejections.",
+          "severity": "must",
+          "knownBad": {
+            "code": "async function processItems(items, save) {\n  const saved = [];\n  items.forEach(async (item) => {\n    saved.push(await save(item));\n  });\n  return saved;\n}",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "prg-c01-promise-settled-partial-failure",
+      "unitCode": "PRG-T01-C01-U06",
+      "level": 2,
+      "archetype": "problem-solving",
+      "name": "Resilient Batch Aggregation with Promise.allSettled",
+      "competencies": [
+        "promises",
+        "partial-failure",
+        "async-await"
+      ],
+      "coreConcept": "Using `Promise.allSettled` to await all concurrent tasks to completion and partition fulfilled outcomes from rejection reasons without losing successful work.",
+      "mentalModel": [
+        "1. `Promise.all` short-circuits on the first rejection, discarding other fulfilled results.",
+        "2. `Promise.allSettled` always resolves once every input promise settles, yielding `{ status: 'fulfilled', value }` or `{ status: 'rejected', reason }` in input order.",
+        "3. Callers must discriminate on `result.status` before reading `value` or `reason`."
+      ],
+      "governingInvariant": "every input task settles and is partitioned into fulfilled values or rejected reasons in input order",
+      "cognitiveTraps": [
+        {
+          "trapTag": "all-fail-fast-on-partial-batch",
+          "name": "Fail-Fast Promise.all on Partial Batch",
+          "description": "Using `Promise.all` when partial failures must be collected causes a single rejected task to abort the entire batch.",
+          "reproducer": "await Promise.all(targets.map(ping)); // one timeout throws and hides all healthy targets."
+        },
+        {
+          "trapTag": "unhandled-rejection-before-await",
+          "name": "Detached Promise Rejection Before Await",
+          "description": "Creating a promise before awaiting an earlier throwing operation leaves the second promise unattached if it rejects first.",
+          "reproducer": "const p2 = stepTwo(); await stepOneThrows(); await p2; // p2 rejects unhandled."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "multi_region_health_probe",
+          "description": "Probing multiple service endpoints concurrently and reporting both healthy latencies and per-endpoint failures."
+        }
+      ],
+      "usedContexts": [
+        "multi_region_health_probe",
+        "checkout_inventory_payment_coordinator"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-async-settled-status-branch",
+          "check": "`Promise.allSettled` results explicitly branch on `outcome.status === 'fulfilled'` vs `'rejected'` before accessing `value` or `reason`.",
+          "why": "Reading `.value` on a rejected outcome returns `undefined` and silently corrupts aggregated results.",
+          "severity": "must",
+          "knownBad": {
+            "code": "async function collectValues(tasks) {\n  const settled = await Promise.allSettled(tasks.map((t) => t()));\n  return settled.map((entry) => entry.value);\n}",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-async-preserve-error-reason",
+          "check": "Rejected outcomes preserve the underlying error message or `Error` reason rather than swallowing it into a generic boolean or empty string.",
+          "why": "Discarding rejection reasons makes partial-batch failures impossible to diagnose in logs or API responses.",
+          "severity": "should",
+          "knownBad": {
+            "code": "async function runBatch(tasks) {\n  const settled = await Promise.allSettled(tasks.map((t) => t()));\n  return settled.map((s) => (s.status === 'fulfilled' ? s.value : null));\n}",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "prg-c01-promise-race-timeout-cleanup",
+      "unitCode": "PRG-T01-C01-U06",
+      "level": 3,
+      "archetype": "debugging",
+      "name": "Promise.race Timeout Guard & Timer Cleanup",
+      "competencies": [
+        "promises",
+        "promise-race",
+        "debugging",
+        "resource-cleanup"
+      ],
+      "coreConcept": "Racing an async operation against a bounded timeout with `Promise.race` while clearing the timer handle in `finally` and awaiting inside `try/catch` so rejections are caught and no timers leak.",
+      "mentalModel": [
+        "1. `Promise.race` settles with the first promise to fulfill or reject, but does NOT cancel the losing promises.",
+        "2. Any `setTimeout` created for a race deadline must be cleared in `finally` once the race settles.",
+        "3. Inside `async` functions, `try { return fn(); } catch` does NOT catch async rejections unless `return await fn()` is used."
+      ],
+      "governingInvariant": "race settles with the earliest outcome and always clears its deadline timer in finally",
+      "cognitiveTraps": [
+        {
+          "trapTag": "dangling-timeout-handle",
+          "name": "Dangling Timeout Handle After Race",
+          "description": "Omitting `clearTimeout` in a `finally` block leaves the timeout timer pending after the main operation resolves.",
+          "reproducer": "Promise.race([work(), new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), ms))]); // timer leaks."
+        },
+        {
+          "trapTag": "try-return-without-await",
+          "name": "Returning Unawaited Promise Inside try/catch",
+          "description": "Using `return asyncFn()` instead of `return await asyncFn()` inside `try` exits the `try` block before the promise settles, bypassing `catch`.",
+          "reproducer": "async function safe() { try { return failingAsync(); } catch (e) { return null; } } // rejects instead of returning null."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "rpc_deadline_wrapper",
+          "description": "Enforcing strict per-call SLA deadlines on RPC requests without leaking Node.js event-loop timers."
+        }
+      ],
+      "usedContexts": [
+        "rpc_deadline_wrapper"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-async-clear-timer-finally",
+          "check": "Timeout guards paired with `Promise.race` always clear their timer handle in a `finally` block (or both settle paths) so fast completions do not leak active timers.",
+          "why": "Uncleaned `setTimeout` handles keep Node.js event loops and test runners open until the full timeout expires.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function withTimeout(promise, ms) {\n  const timeout = new Promise((_, reject) => {\n    setTimeout(() => reject(new Error('Timed out')), ms);\n  });\n  return Promise.race([promise, timeout]);\n}",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-async-await-before-return-in-try",
+          "check": "Async calls whose rejections must be handled by a surrounding `try/catch` are `await`ed before returning.",
+          "why": "Returning a promise directly from `try` hands the unsettled promise to the caller and skips the `catch` block.",
+          "severity": "must",
+          "knownBad": {
+            "code": "async function safeFetch(fn) {\n  try {\n    return fn();\n  } catch (_err) {\n    return null;\n  }\n}",
+            "caughtBy": "review"
+          }
+        }
+      ]
     }
   ]
 }
