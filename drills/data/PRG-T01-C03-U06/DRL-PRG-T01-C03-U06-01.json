@@ -1,0 +1,406 @@
+{
+  "unitCode": "PRG-T01-C03-U06",
+  "unitTitle": "Trees & Tree Traversals (DFS / BFS)",
+  "environment": "typescript-strict",
+  "sourceAttribution": "TypeScript Handbook 5.9.3: recursive generic types and strict null checks. https://www.typescriptlang.org/docs/handbook/intro.html",
+  "config": {
+    "questionCount": 4,
+    "difficulty": "ALL",
+    "difficultyMode": "AI Synthesized Engineering Mode"
+  },
+  "problems": [
+    {
+      "id": "Q01",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "codeType": "implement",
+      "form": "direct",
+      "archetypeKey": "prg-c03-u06-dfs-preorder",
+      "commonTrapTag": "reverse-sibling-order",
+      "context": "folder_inventory",
+      "entryPoint": "collectPreorderLabels",
+      "prompt": "**Objective:** Implement `collectPreorderLabels` for a folder inventory tree.\n\n**Requirements:**\n- Visit the root before its descendants, then visit each child subtree in the order listed by its parent.\n- Return each reachable node label exactly once.\n- Return an empty array when the root is absent.\n- Do not modify node objects or child arrays.\n\n**Return contract:** `collectPreorderLabels(root)` returns a fresh `string[]` in preorder. A leaf contributes its own label.",
+      "inputHint": "Return the traversal result described by the contract.",
+      "checkpointHint": "Check which sibling a LIFO stack removes first.",
+      "starterCode": "export type TreeNode = { id: string; label: string; kind: string; enabled: boolean; children: readonly TreeNode[] };\nexport function collectPreorderLabels(_root: TreeNode | null): string[] {\n  throw new Error(\"Not implemented\");\n}",
+      "solutionCode": "export type TreeNode = { id: string; label: string; kind: string; enabled: boolean; children: readonly TreeNode[] };\nexport function collectPreorderLabels(root: TreeNode | null): string[] {\n  const labels: string[] = [];\n  function visit(node: TreeNode): void {\n    labels.push(node.label);\n    for (const child of node.children) visit(child);\n  }\n  if (root !== null) visit(root);\n  return labels;\n}",
+      "trapMutant": "export type TreeNode = { id: string; label: string; kind: string; enabled: boolean; children: readonly TreeNode[] };\nexport function collectPreorderLabels(root: TreeNode | null): string[] {\n  const labels: string[] = [];\n  if (root === null) return labels;\n  const stack: TreeNode[] = [root];\n  while (stack.length > 0) {\n    const node = stack.pop();\n    if (node === undefined) continue;\n    labels.push(node.label);\n    for (const child of node.children) stack.push(child);\n  }\n  return labels;\n}",
+      "visibleTests": [
+        {
+          "name": "absent root has no labels",
+          "testCode": "assert.deepEqual(collectPreorderLabels(null), []);"
+        },
+        {
+          "name": "single folder is included",
+          "testCode": "const root: TreeNode = { id: \"root-folder\", label: \"Archives\", kind: \"folder\", enabled: true, children: [] };\nassert.deepEqual(collectPreorderLabels(root), [\"Archives\"]);"
+        },
+        {
+          "name": "nested folders retain declared sibling order",
+          "testCode": "const root: TreeNode = { id: \"root-folder\", label: \"Library\", kind: \"folder\", enabled: true, children: [\n  { id: \"folder-a\", label: \"Audio\", kind: \"folder\", enabled: true, children: [{ id: \"leaf-a\", label: \"Interviews\", kind: \"folder\", enabled: true, children: [] }] },\n  { id: \"folder-b\", label: \"Images\", kind: \"folder\", enabled: true, children: [] }\n] };\nassert.deepEqual(collectPreorderLabels(root), [\"Library\", \"Audio\", \"Interviews\", \"Images\"]);"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "sibling order remains stable with multiple branches",
+          "testCode": "const root: TreeNode = { id: \"root-folder\", label: \"Media\", kind: \"folder\", enabled: true, children: [\n  { id: \"folder-a\", label: \"Audio\", kind: \"folder\", enabled: true, children: [] },\n  { id: \"folder-b\", label: \"Video\", kind: \"folder\", enabled: true, children: [] }\n] };\nassert.deepEqual(collectPreorderLabels(root), [\"Media\", \"Audio\", \"Video\"]);"
+        },
+        {
+          "name": "source tree remains unchanged after traversal",
+          "testCode": "const child: TreeNode = { id: \"folder-a\", label: \"Exports\", kind: \"folder\", enabled: true, children: [] };\nconst root: TreeNode = { id: \"root-folder\", label: \"Workspace\", kind: \"folder\", enabled: true, children: [child] };\nconst originalChildren = root.children;\ncollectPreorderLabels(root);\nassert.equal(root.children, originalChildren);\nassert.deepEqual(root.children.map((node) => node.label), [\"Exports\"]);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Start by naming the requested order or empty-tree result."
+        },
+        {
+          "explain": "Trace each node once and preserve its declared child order."
+        },
+        {
+          "explain": "Check the observable result against the traversal contract."
+        }
+      ],
+      "verificationLevel": "partial",
+      "fingerprint": "reverse-sibling-order|direct|collectPreorderLabels",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 3,
+          "hasTrapOrFlaw": false,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "reverse-sibling-order",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 6
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Foundation",
+      "unitCode": "PRG-T01-C03-U06",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-U06-01/Q01_collectPreorderLabels.ts"
+    },
+    {
+      "id": "Q02",
+      "level": 2,
+      "category": "Trap & Edge Case",
+      "archetype": "problem-solving",
+      "codeType": "implement",
+      "form": "direct",
+      "archetypeKey": "prg-c03-u06-bfs-level-order",
+      "commonTrapTag": "depth-boundary-drift",
+      "context": "product_category_levels",
+      "entryPoint": "groupNodeIdsByDepth",
+      "prompt": "**Objective:** Implement `groupNodeIdsByDepth` for a category taxonomy.\n\n**Requirements:**\n- Return one array per depth, starting with the root at depth zero.\n- Keep nodes at the same depth in the child order induced by the tree.\n- Process every reachable node once.\n- Return an empty list of levels for an absent root.\n\n**Return contract:** `groupNodeIdsByDepth(root)` returns `string[][]`; each inner array contains node IDs from one depth. The input tree remains unchanged.",
+      "inputHint": "Return the traversal result described by the contract.",
+      "checkpointHint": "Freeze the number of current-depth nodes before adding their children.",
+      "starterCode": "export type TreeNode = { id: string; label: string; kind: string; enabled: boolean; children: readonly TreeNode[] };\nexport function groupNodeIdsByDepth(_root: TreeNode | null): string[][] {\n  throw new Error(\"Not implemented\");\n}",
+      "solutionCode": "export type TreeNode = { id: string; label: string; kind: string; enabled: boolean; children: readonly TreeNode[] };\nexport function groupNodeIdsByDepth(root: TreeNode | null): string[][] {\n  if (root === null) return [];\n  const queue: TreeNode[] = [root];\n  let head = 0;\n  const levels: string[][] = [];\n  while (head < queue.length) {\n    const width = queue.length - head;\n    const ids: string[] = [];\n    for (let i = 0; i < width; i += 1) {\n      const node = queue[head];\n      head += 1;\n      if (node === undefined) continue;\n      ids.push(node.id);\n      for (const child of node.children) queue.push(child);\n    }\n    levels.push(ids);\n  }\n  return levels;\n}",
+      "trapMutant": "export type TreeNode = { id: string; label: string; kind: string; enabled: boolean; children: readonly TreeNode[] };\nexport function groupNodeIdsByDepth(root: TreeNode | null): string[][] {\n  if (root === null) return [];\n  const queue: TreeNode[] = [root];\n  let head = 0;\n  const ids: string[] = [];\n  while (head < queue.length) {\n    const node = queue[head];\n    head += 1;\n    if (node === undefined) continue;\n    ids.push(node.id);\n    for (const child of node.children) queue.push(child);\n  }\n  return [ids];\n}",
+      "visibleTests": [
+        {
+          "name": "empty taxonomy returns no levels",
+          "testCode": "assert.deepEqual(groupNodeIdsByDepth(null), []);"
+        },
+        {
+          "name": "root and immediate categories occupy separate levels",
+          "testCode": "const root: TreeNode = { id: \"catalog-root\", label: \"Catalog\", kind: \"category\", enabled: true, children: [\n  { id: \"category-a\", label: \"Garden\", kind: \"category\", enabled: true, children: [] },\n  { id: \"category-b\", label: \"Kitchen\", kind: \"category\", enabled: true, children: [] }\n] };\nassert.deepEqual(groupNodeIdsByDepth(root), [[\"catalog-root\"], [\"category-a\", \"category-b\"]]);"
+        },
+        {
+          "name": "uneven branches keep grandchildren at the next depth",
+          "testCode": "const root: TreeNode = { id: \"catalog-root\", label: \"Products\", kind: \"category\", enabled: true, children: [\n  { id: \"category-a\", label: \"Outdoors\", kind: \"category\", enabled: true, children: [{ id: \"category-c\", label: \"Lighting\", kind: \"category\", enabled: true, children: [] }] },\n  { id: \"category-b\", label: \"Office\", kind: \"category\", enabled: true, children: [] }\n] };\nassert.deepEqual(groupNodeIdsByDepth(root), [[\"catalog-root\"], [\"category-a\", \"category-b\"], [\"category-c\"]]);"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "breadth-first groups preserve sibling order",
+          "testCode": "const root: TreeNode = { id: \"org-root\", label: \"Company\", kind: \"org\", enabled: true, children: [\n  { id: \"team-a\", label: \"Support\", kind: \"team\", enabled: true, children: [] },\n  { id: \"team-b\", label: \"Delivery\", kind: \"team\", enabled: true, children: [] }\n] };\nassert.deepEqual(groupNodeIdsByDepth(root), [[\"org-root\"], [\"team-a\", \"team-b\"]]);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Start by naming the requested order or empty-tree result."
+        },
+        {
+          "explain": "Trace each node once and preserve its declared child order."
+        },
+        {
+          "explain": "Check the observable result against the traversal contract."
+        }
+      ],
+      "verificationLevel": "partial",
+      "fingerprint": "depth-boundary-drift|direct|groupNodeIdsByDepth",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "depth-boundary-drift",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 6
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Standard Exam",
+      "unitCode": "PRG-T01-C03-U06",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-U06-01/Q02_groupNodeIdsByDepth.ts"
+    },
+    {
+      "id": "Q03",
+      "level": 2,
+      "category": "Refactor & Design",
+      "archetype": "problem-solving",
+      "codeType": "implement",
+      "form": "direct",
+      "archetypeKey": "prg-c03-u06-tree-search-aggregate",
+      "commonTrapTag": "continue-after-first-match",
+      "context": "access_policy_tree",
+      "entryPoint": "findFirstByKind",
+      "prompt": "**Objective:** Implement `findFirstByKind` for an access-policy hierarchy.\n\n**Requirements:**\n- Search in preorder: inspect a node before its descendants and follow child order.\n- Return the ID of the earliest node whose `kind` matches the requested kind.\n- Return `null` when the root is absent or no node matches.\n- Do not continue past an already found first match.\n\n**Return contract:** `findFirstByKind(root, kind)` returns `string | null` and does not modify the tree.",
+      "inputHint": "Return the traversal result described by the contract.",
+      "checkpointHint": "Return at the first preorder match instead of replacing it later.",
+      "starterCode": "export type TreeNode = { id: string; label: string; kind: string; enabled: boolean; children: readonly TreeNode[] };\nexport function findFirstByKind(_root: TreeNode | null, _kind: string): string | null {\n  throw new Error(\"Not implemented\");\n}",
+      "solutionCode": "export type TreeNode = { id: string; label: string; kind: string; enabled: boolean; children: readonly TreeNode[] };\nexport function findFirstByKind(root: TreeNode | null, kind: string): string | null {\n  if (root === null) return null;\n  if (root.kind === kind) return root.id;\n  for (const child of root.children) {\n    const match = findFirstByKind(child, kind);\n    if (match !== null) return match;\n  }\n  return null;\n}",
+      "trapMutant": "export type TreeNode = { id: string; label: string; kind: string; enabled: boolean; children: readonly TreeNode[] };\nexport function findFirstByKind(root: TreeNode | null, kind: string): string | null {\n  if (root === null) return null;\n  let found: string | null = root.kind === kind ? root.id : null;\n  for (const child of root.children) {\n    const match = findFirstByKind(child, kind);\n    if (match !== null) found = match;\n  }\n  return found;\n}",
+      "visibleTests": [
+        {
+          "name": "absent root has no match",
+          "testCode": "assert.equal(findFirstByKind(null, \"policy\"), null);"
+        },
+        {
+          "name": "root takes precedence over descendants",
+          "testCode": "const root: TreeNode = { id: \"root-policy\", label: \"Default\", kind: \"policy\", enabled: true, children: [{ id: \"child-policy\", label: \"Regional\", kind: \"policy\", enabled: true, children: [] }] };\nassert.equal(findFirstByKind(root, \"policy\"), \"root-policy\");"
+        },
+        {
+          "name": "first matching branch wins in preorder",
+          "testCode": "const root: TreeNode = { id: \"root-group\", label: \"Global\", kind: \"group\", enabled: true, children: [\n  { id: \"policy-a\", label: \"Local\", kind: \"policy\", enabled: true, children: [{ id: \"policy-a-child\", label: \"Nested\", kind: \"policy\", enabled: true, children: [] }] },\n  { id: \"policy-b\", label: \"Fallback\", kind: \"policy\", enabled: true, children: [] }\n] };\nassert.equal(findFirstByKind(root, \"policy\"), \"policy-a\");"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "the earliest sibling match is retained",
+          "testCode": "const root: TreeNode = { id: \"root-group\", label: \"Global\", kind: \"group\", enabled: true, children: [\n  { id: \"policy-a\", label: \"Local\", kind: \"policy\", enabled: true, children: [] },\n  { id: \"policy-b\", label: \"Fallback\", kind: \"policy\", enabled: true, children: [] }\n] };\nassert.equal(findFirstByKind(root, \"policy\"), \"policy-a\");"
+        },
+        {
+          "name": "no matching kind returns null",
+          "testCode": "const root: TreeNode = { id: \"root-group\", label: \"Global\", kind: \"group\", enabled: true, children: [] };\nassert.equal(findFirstByKind(root, \"missing\"), null);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Start by naming the requested order or empty-tree result."
+        },
+        {
+          "explain": "Trace each node once and preserve its declared child order."
+        },
+        {
+          "explain": "Check the observable result against the traversal contract."
+        }
+      ],
+      "verificationLevel": "partial",
+      "fingerprint": "continue-after-first-match|direct|findFirstByKind",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": false,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "continue-after-first-match",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 6
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Standard Exam",
+      "unitCode": "PRG-T01-C03-U06",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-U06-01/Q03_findFirstByKind.ts"
+    },
+    {
+      "id": "Q04",
+      "level": 2,
+      "category": "Debugging & Analysis",
+      "archetype": "debugging",
+      "codeType": "fix-bug",
+      "form": "direct",
+      "archetypeKey": "prg-c03-u06-tree-search-aggregate",
+      "commonTrapTag": "empty-aggregate-default",
+      "context": "nested_catalog_totals",
+      "entryPoint": "countEnabledNodes",
+      "prompt": "**Objective:** Repair `countEnabledNodes` for a nested catalog used to summarize active inventory groups.\n\n**Observed contract:** Count each enabled node, including the root, once. Disabled nodes do not contribute to the total, but their descendants are still part of the tree and must be visited.\n\n**Requirements:**\n- Return zero when the root is absent.\n- Include enabled descendants under both enabled and disabled parents.\n- Leave the input tree unchanged.\n\n**Return contract:** `countEnabledNodes(root)` returns a non-negative integer.",
+      "inputHint": "Return the traversal result described by the contract.",
+      "checkpointHint": "Check the empty-tree result before counting any node.",
+      "starterCode": "export type TreeNode = { id: string; label: string; kind: string; enabled: boolean; children: readonly TreeNode[] };\nexport function countEnabledNodes(root: TreeNode | null): number {\n  if (root === null) return 1;\n  let total = root.enabled ? 1 : 0;\n  for (const child of root.children) total += countEnabledNodes(child);\n  return total;\n}",
+      "solutionCode": "export type TreeNode = { id: string; label: string; kind: string; enabled: boolean; children: readonly TreeNode[] };\nexport function countEnabledNodes(root: TreeNode | null): number {\n  if (root === null) return 0;\n  let total = root.enabled ? 1 : 0;\n  for (const child of root.children) total += countEnabledNodes(child);\n  return total;\n}",
+      "trapMutant": "export type TreeNode = { id: string; label: string; kind: string; enabled: boolean; children: readonly TreeNode[] };\nexport function countEnabledNodes(root: TreeNode | null): number {\n  if (root === null) return 1;\n  let total = root.enabled ? 1 : 0;\n  for (const child of root.children) total += countEnabledNodes(child);\n  return total;\n}",
+      "visibleTests": [
+        {
+          "name": "empty tree has neutral count",
+          "testCode": "assert.equal(countEnabledNodes(null), 0);"
+        },
+        {
+          "name": "root and enabled descendants contribute once",
+          "testCode": "const root: TreeNode = { id: \"catalog-root\", label: \"Home\", kind: \"category\", enabled: true, children: [{ id: \"item-a\", label: \"Lighting\", kind: \"category\", enabled: true, children: [] }] };\nassert.equal(countEnabledNodes(root), 2);"
+        },
+        {
+          "name": "disabled parent does not hide an enabled descendant",
+          "testCode": "const root: TreeNode = { id: \"catalog-root\", label: \"Seasonal\", kind: \"category\", enabled: false, children: [{ id: \"item-a\", label: \"Patio\", kind: \"category\", enabled: true, children: [] }] };\nassert.equal(countEnabledNodes(root), 1);"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "empty tree returns the neutral total",
+          "testCode": "assert.equal(countEnabledNodes(null), 0);"
+        },
+        {
+          "name": "disabled leaf is excluded from the total",
+          "testCode": "const root: TreeNode = { id: \"catalog-root\", label: \"Clearance\", kind: \"category\", enabled: true, children: [{ id: \"item-a\", label: \"Lamp\", kind: \"category\", enabled: false, children: [] }] };\nassert.equal(countEnabledNodes(root), 1);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Start by naming the requested order or empty-tree result."
+        },
+        {
+          "explain": "Trace each node once and preserve its declared child order."
+        },
+        {
+          "explain": "Check the observable result against the traversal contract."
+        }
+      ],
+      "verificationLevel": "partial",
+      "fingerprint": "empty-aggregate-default|direct|countEnabledNodes",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "debugging"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "empty-aggregate-default",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 6
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Standard Exam",
+      "unitCode": "PRG-T01-C03-U06",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-U06-01/Q04_countEnabledNodes.ts"
+    }
+  ],
+  "blindSolve": [
+    {
+      "problemId": "Q01",
+      "passed": true
+    },
+    {
+      "problemId": "Q02",
+      "passed": true
+    },
+    {
+      "problemId": "Q03",
+      "passed": true
+    },
+    {
+      "problemId": "Q04",
+      "passed": true
+    }
+  ],
+  "review": {
+    "verdict": "pass",
+    "note": "All four strict TypeScript tasks fit the brief and supported L1/L2 spread, include a non-implement fix-bug item, use distinct realistic contexts, avoid answer leaks, and their reference approaches satisfy the supplied Layer 3 qualityChecks with appropriate trap tags and mutants."
+  },
+  "drillId": "DRL-PRG-T01-C03-U06-01",
+  "topicCode": "PRG-T01",
+  "chapterCode": "PRG-T01-C03",
+  "schemaVersion": "2.0-code",
+  "subject": "PRG",
+  "createdAt": "2026-11-17 09:17:22",
+  "localFilePath": "drills/data/PRG-T01-C03-U06/DRL-PRG-T01-C03-U06-01.json"
+}

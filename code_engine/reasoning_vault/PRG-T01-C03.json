@@ -960,6 +960,244 @@
           }
         }
       ]
+    },
+    {
+      "archetypeKey": "prg-c03-u06-dfs-preorder",
+      "unitCode": "PRG-T01-C03-U06",
+      "level": 1,
+      "archetype": "problem-solving",
+      "name": "Depth-First Preorder Traversal",
+      "competencies": [
+        "tree-traversal",
+        "recursion",
+        "ordered-aggregation"
+      ],
+      "coreConcept": "Depth-first preorder visits a node before its descendants and follows the declared child order for each subtree.",
+      "mentalModel": [
+        "1. Start at the root and record its value.",
+        "2. Visit each child subtree completely before moving to the next sibling.",
+        "3. An absent root produces an empty result."
+      ],
+      "governingInvariant": "Each reachable tree node is included exactly once, before all of its descendants, with sibling order preserved.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "reverse-sibling-order",
+          "name": "Reverse Siblings with a LIFO Worklist",
+          "description": "Pushing children in their listed order onto a stack makes the last child leave first.",
+          "reproducer": "for (const child of node.children) stack.push(child); // later pop visits siblings in reverse order"
+        },
+        {
+          "trapTag": "omit-root-before-descent",
+          "name": "Record Only Descendants",
+          "description": "A preorder walk records the node after or instead of its children.",
+          "reproducer": "for (const child of node.children) visit(child); output.push(node.value);"
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "folder_inventory",
+          "description": "Collect nested folder labels in documented display order."
+        },
+        {
+          "domain": "category_taxonomy",
+          "description": "Enumerate a category tree for a stable navigation menu."
+        }
+      ],
+      "usedContexts": [
+        "folder_inventory"
+      ],
+      "source": "TypeScript Handbook 5.9.3: recursive generic types and strict null checks; traversal order follows the declared tree contract.",
+      "qualityChecks": [
+        {
+          "id": "QC-prg-c03-u06-dfs-preorder-order",
+          "check": "Traversal includes a node before its descendants and preserves each node’s declared child order.",
+          "why": "Changing hierarchy order changes display, processing, or reporting semantics.",
+          "severity": "must",
+          "knownBad": {
+            "code": "for (const child of node.children) stack.push(child); while (stack.length) visit(stack.pop()!);",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-prg-c03-u06-dfs-complete-once",
+          "check": "Every reachable node appears exactly once, including leaves and the root.",
+          "why": "Skipping a boundary node or visiting a shared child twice corrupts aggregates.",
+          "severity": "must",
+          "knownBad": {
+            "code": "output.push(node.value); for (const child of node.children.slice(1)) visit(child);",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-prg-c03-u06-tree-no-input-mutation",
+          "check": "Traversal leaves caller-owned child arrays and node values unchanged.",
+          "why": "Mutating input trees affects other consumers and later traversals.",
+          "severity": "must",
+          "knownBad": {
+            "code": "node.children.reverse();",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "prg-c03-u06-bfs-level-order",
+      "unitCode": "PRG-T01-C03-U06",
+      "level": 2,
+      "archetype": "problem-solving",
+      "name": "Breadth-First Level Grouping",
+      "competencies": [
+        "tree-traversal",
+        "queue-processing",
+        "level-aggregation"
+      ],
+      "coreConcept": "Breadth-first traversal processes all nodes at one depth before any node at the next depth.",
+      "mentalModel": [
+        "1. Put the root into a first-in, first-out worklist.",
+        "2. Capture the current worklist width as the number of nodes at this depth.",
+        "3. Process that many nodes, appending their children for the next depth."
+      ],
+      "governingInvariant": "Each level group contains exactly the nodes at that depth in left-to-right child order, and each node is enqueued and processed once.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "depth-boundary-drift",
+          "name": "Mix Nodes from Adjacent Levels",
+          "description": "Using a queue length that changes during the level loop can consume newly queued children too early.",
+          "reproducer": "for (let i = 0; i < queue.length; i += 1) { const node = queue.shift(); queue.push(...node.children); }"
+        },
+        {
+          "trapTag": "repeated-front-removal",
+          "name": "Lose Linear Traversal Work",
+          "description": "Removing the first item by shifting the remaining queue repeatedly adds avoidable work.",
+          "reproducer": "while (queue.length) { const node = queue.shift(); visit(node); }"
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "organization_reporting",
+          "description": "Group an organizational hierarchy by reporting depth."
+        },
+        {
+          "domain": "product_category_levels",
+          "description": "Build category navigation sections by hierarchy depth."
+        }
+      ],
+      "usedContexts": [
+        "product_category_levels"
+      ],
+      "source": "TypeScript Handbook 5.9.3: recursive generic types and strict null checks; breadth-first ordering follows the stated level contract.",
+      "qualityChecks": [
+        {
+          "id": "QC-prg-c03-u06-bfs-depth-groups",
+          "check": "Each output group contains only nodes at the same depth and groups appear from shallowest to deepest.",
+          "why": "Mixing queue generations produces misleading hierarchy summaries.",
+          "severity": "must",
+          "knownBad": {
+            "code": "while (queue.length) { const node = queue[head++]; current.push(node.value); for (const child of node.children) queue.push(child); }",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-prg-c03-u06-bfs-stable-sibling-order",
+          "check": "Nodes at the same depth retain the declared sibling order.",
+          "why": "Stable order keeps navigation and reports predictable.",
+          "severity": "must",
+          "knownBad": {
+            "code": "for (const child of node.children.slice().reverse()) queue.push(child);",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-prg-c03-u06-bfs-linear-work",
+          "check": "Each node is added to and removed from the worklist a bounded number of times.",
+          "why": "Repeatedly shifting the remaining queue can make a wide traversal quadratic.",
+          "severity": "should",
+          "knownBad": {
+            "code": "while (queue.length) { const item = queue.shift(); process(item); }",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "prg-c03-u06-tree-search-aggregate",
+      "unitCode": "PRG-T01-C03-U06",
+      "level": 2,
+      "archetype": "problem-solving",
+      "name": "Tree Search and Aggregate",
+      "competencies": [
+        "tree-traversal",
+        "search",
+        "recursive-aggregation"
+      ],
+      "coreConcept": "A tree query can stop at a matching node or combine child results while preserving traversal semantics and empty-tree behavior.",
+      "mentalModel": [
+        "1. Define the result for an absent root.",
+        "2. Visit each relevant node using the requested order.",
+        "3. Stop or aggregate only when the contract says to do so."
+      ],
+      "governingInvariant": "The result is derived from exactly the nodes permitted by the query contract, and a search returns the first matching node in traversal order.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "continue-after-first-match",
+          "name": "Return a Later Match",
+          "description": "A search contract for the first match requires stopping when the earliest traversal match is found.",
+          "reproducer": "if (node.id === target) found = node; // descendants can overwrite the first match"
+        },
+        {
+          "trapTag": "empty-aggregate-default",
+          "name": "Use a Non-Identity Empty Result",
+          "description": "An empty tree must produce the neutral value named by its contract.",
+          "reproducer": "return root === null ? 1 : count(root);"
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "access_policy_tree",
+          "description": "Find the first matching policy group along a documented traversal order."
+        },
+        {
+          "domain": "nested_catalog_totals",
+          "description": "Aggregate counts across nested catalog categories."
+        }
+      ],
+      "usedContexts": [
+        "access_policy_tree",
+        "nested_catalog_totals"
+      ],
+      "source": "TypeScript Handbook 5.9.3: recursive generic types and strict null checks; search and aggregate behavior follow the declared contract.",
+      "qualityChecks": [
+        {
+          "id": "QC-prg-c03-u06-search-first-match",
+          "check": "A first-match search returns the earliest matching node under the declared traversal order.",
+          "why": "Overwriting a match later in the walk silently changes which policy or record is selected.",
+          "severity": "must",
+          "knownBad": {
+            "code": "if (node.id === wanted) found = node;",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-prg-c03-u06-aggregate-empty-identity",
+          "check": "The empty-tree result is the neutral value specified by the operation contract.",
+          "why": "A wrong empty default contaminates aggregates and downstream decisions.",
+          "severity": "must",
+          "knownBad": {
+            "code": "if (root === null) return 1;",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-prg-c03-u06-tree-result-purity",
+          "check": "A query does not reorder or rewrite the source tree while searching or aggregating.",
+          "why": "Queries should not alter later traversals for other consumers.",
+          "severity": "should",
+          "knownBad": {
+            "code": "node.children.sort(compareLabels);",
+            "caughtBy": "review"
+          }
+        }
+      ]
     }
   ]
 }
