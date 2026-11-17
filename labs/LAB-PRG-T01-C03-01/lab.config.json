@@ -1,0 +1,112 @@
+{
+  "labId": "LAB-PRG-T01-C03-01",
+  "title": "LRUCache & TreeIndex",
+  "chapterCode": "PRG-T01-C03",
+  "unitsUsed": [
+    "PRG-T01-C03-U01",
+    "PRG-T01-C03-U02",
+    "PRG-T01-C03-U03",
+    "PRG-T01-C03-U04",
+    "PRG-T01-C03-U05",
+    "PRG-T01-C03-U06"
+  ],
+  "kind": "chapter-lab",
+  "level": 3,
+  "domain": "catalog-query-cache-and-tree-index",
+  "targetsWeakSpots": [],
+  "scenario": "Build two in-memory data structures for a catalog query engine: an O(1) least-recently-used cache backed by a doubly-linked list and a Map, and a DFS/BFS tree index for hierarchical category lookup without mutating caller trees.",
+  "milestones": [
+    {
+      "id": "M1",
+      "title": "Node & Cache Contracts",
+      "goal": "Define cache contracts, tree node types, CacheConfigError, and positive integer validateCapacity.",
+      "units": [
+        "PRG-T01-C03-U01",
+        "PRG-T01-C03-U03"
+      ],
+      "qualityChecks": [
+        "U-names",
+        "U-one-job",
+        "U-errors",
+        "QC-collection-contract-complete"
+      ],
+      "visibleTests": "tests/m1_*.test.ts"
+    },
+    {
+      "id": "M2",
+      "title": "Doubly-Linked List Ops",
+      "goal": "Implement encapsulated DoublyLinkedList keeping internal links private and maintaining head/tail/size invariants.",
+      "units": [
+        "PRG-T01-C03-U03",
+        "PRG-T01-C03-U05"
+      ],
+      "qualityChecks": [
+        "U-names",
+        "QC-collection-representation-hidden",
+        "QC-collection-instance-isolation",
+        "QC-prg-c03-u05-doubly-link-symmetry",
+        "QC-prg-c03-u05-doubly-endpoint-nullability",
+        "QC-prg-c03-u05-doubly-detach-node"
+      ],
+      "visibleTests": "tests/m2_*.test.ts"
+    },
+    {
+      "id": "M3",
+      "title": "O(1) get/put Eviction",
+      "goal": "Implement createLRUCache combining Map and DoublyLinkedList with isolated per-instance state.",
+      "units": [
+        "PRG-T01-C03-U01",
+        "PRG-T01-C03-U03",
+        "PRG-T01-C03-U04",
+        "PRG-T01-C03-U05"
+      ],
+      "qualityChecks": [
+        "U-names",
+        "U-no-shared-mutable-state",
+        "QC-index-built-once",
+        "QC-collection-instance-isolation"
+      ],
+      "visibleTests": "tests/m3_*.test.ts"
+    },
+    {
+      "id": "M4",
+      "title": "Recursive DFS/BFS Tree Search",
+      "goal": "Implement createTreeIndex supporting DFS lookup, BFS shallowest tag search, preorder IDs, and pathToId without mutating source trees.",
+      "units": [
+        "PRG-T01-C03-U02",
+        "PRG-T01-C03-U06"
+      ],
+      "qualityChecks": [
+        "U-names",
+        "U-no-input-mutation",
+        "QC-prg-c03-u06-dfs-preorder-order",
+        "QC-prg-c03-u06-bfs-linear-work",
+        "QC-prg-c03-u06-search-first-match",
+        "QC-prg-c03-u06-tree-result-purity"
+      ],
+      "visibleTests": "tests/m4_*.test.ts"
+    }
+  ],
+  "blindSolve": [
+    {
+      "milestone": "M1",
+      "passed": true
+    },
+    {
+      "milestone": "M2",
+      "passed": true
+    },
+    {
+      "milestone": "M3",
+      "passed": true
+    },
+    {
+      "milestone": "M4",
+      "passed": true
+    }
+  ],
+  "review": {
+    "verdict": "pass",
+    "note": "Independent review passed for LAB-PRG-T01-C03-01. (1) README clearly specifies all milestone contracts, including M2 detached-handle remove/moveToFront semantics (returns false if detached or from another list; moveToFront is a no-op) and M3 put-update hit-stat behavior (hits incremented only by get hits, not put updates). Visible (6) and hidden (4) tests pass against reference and blindSolve and fail on starter stubs; M2 hidden tests verify handle encapsulation, head/tail/middle removal, repeated detached remove, cross-list rejection, popBack detachment, and reuse after empty. All four trapMutants violate their stated qualityChecks (M1 capacity validation, M2 exposed prev/next & unchecked remove, M3 module-scoped sharedIndex Map, M4 DFS instead of BFS in findFirstByTag) and are caught by their milestone tests (verified via lab_ingest --check --offline). (2) All 4 reference modules (contracts.ts, linkedList.ts, lruCache.ts, treeIndex.ts) pass ESLint and strict tsc --noEmit cleanly with zero errors/warnings, avoid input mutation (frozen tree tests pass; fresh arrays/stats returned), and isolate all mutable state per instance. (3) package.json scripts check:m1..check:m4, check:reference, and check:hidden all work as designed."
+  }
+}
