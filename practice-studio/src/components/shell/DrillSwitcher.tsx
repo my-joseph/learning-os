@@ -6,8 +6,6 @@ import {
   ChevronDown,
   Clock,
   Search,
-  Sigma,
-  Terminal,
   X,
 } from "lucide-react";
 import { DrillDocument, DrillListItem } from "@/types/drill";
@@ -44,53 +42,42 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
   onSelectDrill,
 }) => {
   return (
-    <div className="relative" ref={switcherRef}>
+    <div className="relative min-w-0 flex-1 sm:flex-initial" ref={switcherRef}>
       <button
         type="button"
         onClick={onToggle}
-        className="inline-flex items-center gap-3 min-h-[48px] py-2 px-3.5 rounded-xl bg-slate-100 dark:bg-[#1d2333] hover:bg-slate-200/70 dark:hover:bg-[#252e42] border border-slate-200 dark:border-[#2c354d] text-left transition-colors"
+        aria-expanded={isOpen}
+        aria-label="Switch practice drill"
+        className="w-full sm:w-auto inline-flex items-center justify-between gap-2 h-9 px-3 rounded-lg bg-zinc-100/80 dark:bg-zinc-800/70 hover:bg-zinc-200/70 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 text-left transition-colors min-w-0"
       >
-        {currentDrill?.subject === "PRG" ? (
-          <Terminal className="w-4 h-4 text-sky-600 dark:text-sky-400 shrink-0" />
-        ) : (
-          <Sigma className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
-        )}
-        <div className="min-w-0 space-y-0.5">
-          <div className="text-xs md:text-sm font-bold leading-snug text-slate-900 dark:text-white truncate max-w-[240px] sm:max-w-[360px] md:max-w-[440px]">
-            {currentDrill
-              ? `${currentDrill.unitTitle || currentDrill.unitCode} (${currentDrill.unitCode})`
-              : "Select Practice Drill"}
-          </div>
-          {currentDrill && (
-            <div className="text-[11px] font-mono leading-tight text-slate-600 dark:text-slate-400 flex items-center gap-1.5">
-              <span>{currentDrill.drillId}</span>
-              <span>·</span>
-              <span>{currentDrill.problems.length} Qs</span>
-            </div>
-          )}
-        </div>
-        <ChevronDown className="w-4 h-4 text-slate-600 dark:text-slate-400 shrink-0 ml-0.5" />
+        <span className="text-xs sm:text-sm font-medium text-zinc-900 dark:text-zinc-100 truncate max-w-[220px] sm:max-w-[300px] md:max-w-[360px]">
+          {currentDrill
+            ? currentDrill.unitTitle || currentDrill.unitCode
+            : "Select practice drill"}
+        </span>
+        <ChevronDown className="w-4 h-4 text-zinc-500 dark:text-zinc-400 shrink-0" />
       </button>
 
-      {/* Searchable & Filterable Drill Popover */}
       {isOpen && (
-        <div className="absolute left-0 mt-2 w-[380px] sm:w-[480px] bg-white dark:bg-[#161c2a] border border-slate-200 dark:border-[#2c354d] rounded-2xl shadow-2xl p-3.5 z-50">
+        <div className="absolute left-0 mt-2 w-[min(calc(100vw-2rem),440px)] bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-lg p-3 z-50">
           {/* Search Input */}
-          <div className="flex items-center gap-2 bg-slate-100 dark:bg-[#10141f] border border-slate-200 dark:border-[#2c354d] rounded-xl px-3 py-2 mb-3">
-            <Search className="w-4 h-4 text-slate-400 shrink-0" />
+          <div className="flex items-center gap-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-3 py-2 mb-2.5">
+            <Search className="w-4 h-4 text-zinc-400 shrink-0" />
             <input
               type="text"
               value={drillSearch}
               onChange={(e) => onSearchChange(e.target.value)}
               placeholder="Search by unit title, unit code, or drill ID..."
-              className="w-full bg-transparent text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none"
+              aria-label="Search practice drills"
+              className="w-full bg-transparent text-xs text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 focus:outline-none"
               autoFocus
             />
             {drillSearch && (
               <button
                 type="button"
                 onClick={() => onSearchChange("")}
-                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                aria-label="Clear search"
+                className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -98,7 +85,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
           </div>
 
           {/* Filter Pills */}
-          <div className="flex flex-wrap items-center gap-1.5 mb-3 pb-2.5 border-b border-slate-200 dark:border-[#252f45] text-xs">
+          <div className="flex flex-wrap items-center gap-1.5 mb-2.5 pb-2.5 border-b border-zinc-200 dark:border-zinc-800 text-xs">
             {[
               { id: "ALL", label: "All" },
               { id: "UNFINISHED", label: "Unfinished" },
@@ -108,10 +95,10 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                 key={tab.id}
                 type="button"
                 onClick={() => onFilterChange(tab.id as DrillFilter)}
-                className={`px-2.5 py-1 rounded-lg font-medium transition-colors ${
+                className={`px-2.5 py-1 rounded-md font-medium transition-colors ${
                   drillFilter === tab.id
-                    ? "bg-indigo-600 text-white"
-                    : "bg-slate-100 dark:bg-[#1d2436] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#263047]"
+                    ? "bg-indigo-600 dark:bg-indigo-500 text-white"
+                    : "bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700"
                 }`}
               >
                 {tab.label}
@@ -120,9 +107,9 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
           </div>
 
           {/* Drills List */}
-          <div className="max-h-80 overflow-y-auto space-y-2 pr-1">
+          <div className="max-h-80 overflow-y-auto space-y-1.5 pr-1">
             {drills.length === 0 ? (
-              <div className="py-6 text-center text-xs text-slate-600 dark:text-slate-400">
+              <div className="py-6 text-center text-xs text-zinc-500 dark:text-zinc-400">
                 No drills match the selected filter.
               </div>
             ) : (
@@ -139,29 +126,29 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                       onSelectDrill(d.drillId);
                       onClose();
                     }}
-                    className={`w-full text-left p-3 rounded-xl border transition-all flex items-start justify-between gap-3 ${
+                    className={`w-full text-left p-2.5 rounded-lg border transition-colors flex items-start justify-between gap-3 ${
                       isSelected
-                        ? "bg-indigo-50 dark:bg-indigo-600/20 border-indigo-500"
-                        : "bg-slate-50/70 dark:bg-[#1b2233] hover:bg-slate-100 dark:hover:bg-[#232c42] border-slate-200/80 dark:border-[#2a344d]"
+                        ? "bg-zinc-100 dark:bg-zinc-800/90 border-indigo-600 dark:border-indigo-500"
+                        : "bg-zinc-50/60 dark:bg-zinc-950/50 hover:bg-zinc-100 dark:hover:bg-zinc-800/60 border-zinc-200 dark:border-zinc-800"
                     }`}
                   >
-                    <div className="min-w-0 flex-1 space-y-1">
-                      <div className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                    <div className="min-w-0 flex-1 space-y-0.5">
+                      <div className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 truncate">
                         {d.unitTitle || d.unitCode}
                       </div>
-                      <div className="text-[11px] font-mono text-slate-600 dark:text-slate-400">
+                      <div className="text-[11px] font-mono text-zinc-500 dark:text-zinc-400">
                         {d.drillId} · {d.unitCode} · {d.questionCount} Qs
                       </div>
                     </div>
 
-                    <div className="flex flex-col items-end shrink-0 gap-1">
+                    <div className="flex flex-col items-end shrink-0 gap-0.5">
                       <span
-                        className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full border ${
+                        className={`inline-flex items-center gap-1 text-[11px] font-medium ${
                           isGraded
-                            ? "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-500/30"
+                            ? "text-emerald-700 dark:text-emerald-400"
                             : isInProgress
-                            ? "bg-amber-50 dark:bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-500/30"
-                            : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700"
+                            ? "text-amber-600 dark:text-amber-400"
+                            : "text-zinc-500 dark:text-zinc-400"
                         }`}
                       >
                         {isGraded ? (
@@ -171,8 +158,8 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                         )}
                         <span>{d.practiceStatus || "Ready"}</span>
                       </span>
-                      <span className="text-[11px] font-mono text-slate-600 dark:text-slate-400">
-                        Score: {d.score ?? 0}/{d.maxScore ?? d.questionCount}
+                      <span className="text-[11px] font-mono text-zinc-500 dark:text-zinc-400">
+                        {d.score ?? 0}/{d.maxScore ?? d.questionCount}
                       </span>
                     </div>
                   </button>

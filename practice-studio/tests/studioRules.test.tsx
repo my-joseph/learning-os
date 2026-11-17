@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { FormattedText } from "../src/components/FormattedText";
+import { MathWorkspace } from "../src/components/math/MathWorkspace";
 import {
   getPrgScore,
   getReviewRequest,
@@ -11,7 +12,7 @@ import {
   resolveTheme,
   THEME_INIT_SCRIPT,
 } from "../src/lib/studioRules";
-import type { ReviewRecord, TestRunReport } from "../src/types/drill";
+import type { Problem, ReviewRecord, TestRunReport } from "../src/types/drill";
 
 const report: TestRunReport = {
   allPassed: true,
@@ -58,7 +59,7 @@ assert.equal(resolveTheme("light", true), "light", "saved preference must overri
 assert.match(THEME_INIT_SCRIPT, /matchMedia/);
 
 const card = readFileSync("src/components/CodeProblemCard.tsx", "utf8");
-const mathCard = readFileSync("src/components/MathProblemCard.tsx", "utf8");
+const mathWorkspace = readFileSync("src/components/math/MathWorkspace.tsx", "utf8");
 const pagination = readFileSync("src/components/QuizPaginationBar.tsx", "utf8");
 const studioShell = readFileSync("src/components/shell/StudioShell.tsx", "utf8");
 const studioHeader = readFileSync("src/components/shell/StudioHeader.tsx", "utf8");
@@ -70,14 +71,92 @@ assert.match(card, /aria-label=\{`Answer for question \$\{problem\.id\}`\}/);
 assert.match(card, /Tests passed — ask for review:/);
 assert.match(card, /method: "POST"[\s\S]*?JSON\.stringify\(\{ drillId \}\)/);
 assert.match(card, /workspace file from disk/);
-assert.match(mathCard, /FormattedText text=\{c\.label\}/);
-assert.match(mathCard, /aria-label=\{`Answer for question \$\{problem\.id\}`\}/);
-assert.match(mathCard, /hasCheckpointHint\(problem\.checkpointHint\)\s*&&\s*<button/);
+assert.match(mathWorkspace, /FormattedText text=\{c\.label\}/);
+assert.match(mathWorkspace, /aria-label=\{`Answer for question \$\{problem\.id\}`\}/);
+assert.match(mathWorkspace, /hasCheckpointHint\(problem\.checkpointHint\)\s*&&\s*<button/);
+assert.match(mathWorkspace, /max-w-\[720px\]/);
+assert.match(mathWorkspace, /border-rose-600/);
 assert.match(pagination, /bg-emerald-700/);
 assert.match(pagination, /overflow-x-auto/);
 assert.match(studioShell, /<h1 className="sr-only"/);
-assert.match(studioHeader, /flex-col sm:flex-row sm:items-center/);
+assert.match(studioHeader, /hidden sm:inline-flex/);
+assert.match(studioHeader, /MoreHorizontal/);
 assert.match(workspaceRoute, /materializeWorkspace\(drillId, rootDir\)/);
 assert.match(runTestsRoute, /userCode = fs\.readFileSync\(fullPath, "utf-8"\)/);
+
+// Verify MathWorkspace hides self-score before an attempt and shows it after an attempt
+const sampleMathProblem: Problem = {
+  id: "Q01",
+  templateKey: "tpl",
+  level: 1,
+  levelLabel: "Level 1",
+  category: "Algebra",
+  prompt: "Solve $2x = 10$.",
+  answerSpec: { type: "number" },
+  state: {
+    userInput: "",
+    score: null,
+    divergedStep: null,
+    mistakes: [],
+    lastCheck: null,
+    attempts: [],
+  },
+};
+
+const noop = () => {};
+const beforeAttemptHtml = renderToStaticMarkup(
+  <MathWorkspace
+    problem={sampleMathProblem}
+    index={0}
+    totalQuestions={5}
+    drillTitle="Linear Equations"
+    mistakeTags={[]}
+    activeStep={null}
+    onInputChange={noop}
+    onCheckAnswer={noop}
+    onToggleStepHighlight={noop}
+    onMarkDivergedStep={noop}
+    onSetScore={noop}
+    onToggleMistakeTag={noop}
+    onMistakeNoteChange={noop}
+    onResetProblem={noop}
+  />
+);
+assert.match(beforeAttemptHtml, /<h1[^>]*>Linear Equations<\/h1>/);
+assert.doesNotMatch(beforeAttemptHtml, /Self-score:/, "self-score must not appear before an attempt");
+
+const afterAttemptHtml = renderToStaticMarkup(
+  <MathWorkspace
+    problem={{
+      ...sampleMathProblem,
+      state: {
+        ...sampleMathProblem.state,
+        score: 0,
+        lastCheck: {
+          verdict: "incorrect",
+          message: "Not quite — check your division.",
+          components: [],
+          diagnostics: [],
+        },
+        attempts: [{ input: "4", ts: "2026-11-17T00:00:00Z", verdict: "incorrect" }],
+      },
+    }}
+    index={0}
+    totalQuestions={5}
+    drillTitle="Linear Equations"
+    mistakeTags={[]}
+    activeStep={null}
+    onInputChange={noop}
+    onCheckAnswer={noop}
+    onToggleStepHighlight={noop}
+    onMarkDivergedStep={noop}
+    onSetScore={noop}
+    onToggleMistakeTag={noop}
+    onMistakeNoteChange={noop}
+    onResetProblem={noop}
+  />
+);
+assert.match(afterAttemptHtml, /Self-score:/, "self-score must appear after an attempt");
+assert.match(afterAttemptHtml, /border-rose-600/, "wrong feedback uses rose left border");
 
 console.log("studio rules tests passed");

@@ -1,10 +1,18 @@
 "use client";
 
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { ArrowUpRight, Moon, RotateCcw, Sun } from "lucide-react";
+import {
+  ArrowUpRight,
+  ClipboardCheck,
+  Moon,
+  MoreHorizontal,
+  Plus,
+  RotateCcw,
+  Sun,
+} from "lucide-react";
 import { DrillDocument, DrillListItem } from "@/types/drill";
-import { DrillFilter, StatusMessage } from "@/hooks/types";
+import { DrillFilter, StatusMessage, ViewMode } from "@/hooks/types";
 import { Workspace } from "@/lib/routes";
 import { DrillSwitcher } from "./DrillSwitcher";
 import { GeneratePopover } from "./GeneratePopover";
@@ -14,6 +22,8 @@ interface StudioHeaderProps {
   workspace: Workspace;
   mathHref: string | null;
   codeHref: string | null;
+  viewMode: ViewMode;
+  onToggleViewMode: (mode: ViewMode) => void;
   currentDrill: DrillDocument | null;
   liveScore: number;
   maxScore: number;
@@ -44,12 +54,14 @@ interface StudioHeaderProps {
   tiles?: React.ReactNode;
 }
 
-/** Sticky two-row Studio header with drill switcher, score summary, theme toggle, and tiles slot. */
+/** Slim one-row Studio header with workspace switch, drill switcher, theme toggle, Notion link, and ⋯ menu. */
 export const StudioHeader: React.FC<StudioHeaderProps> = ({
   showHeader,
   workspace,
   mathHref,
   codeHref,
+  viewMode,
+  onToggleViewMode,
   currentDrill,
   liveScore,
   maxScore,
@@ -76,6 +88,25 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
   onStatusChange,
   tiles,
 }) => {
+  const [showMoreMenu, setShowMoreMenu] = useState(false);
+  const moreMenuRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (moreMenuRef.current && !moreMenuRef.current.contains(e.target as Node)) {
+        setShowMoreMenu(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    if (!showHeader) {
+      setShowMoreMenu(false);
+    }
+  }, [showHeader]);
+
   const workspaceOptions: { id: Workspace; label: string; href: string | null }[] = [
     { id: "math", label: "Math", href: mathHref },
     { id: "code", label: "Programming", href: codeHref },
@@ -83,25 +114,25 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
 
   return (
     <header
-      className={`sticky top-2 z-50 bg-white/95 dark:bg-[#151924]/95 backdrop-blur-md border border-slate-200 dark:border-[#2c354d] rounded-2xl p-3.5 mb-5 shadow-md transition-all duration-300 ease-in-out ${
+      className={`sticky top-2 z-50 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md border border-zinc-200 dark:border-zinc-800 rounded-2xl px-3.5 py-2.5 mb-6 shadow-sm transition-all duration-150 ${
         showHeader
           ? "translate-y-0 opacity-100"
           : "-translate-y-[130%] opacity-0 pointer-events-none"
       }`}
     >
-      {/* Row 1: Workspace Switch + Smart Drill Switcher + Notion Unit | Score + Reset + Theme */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3">
-        {/* Left Zone: Workspace Switch, Smart Drill Switcher & Generate Popover */}
-        <div className="flex flex-wrap items-center gap-2.5 min-w-0">
+      {/* Slim one-row header: below 640px collapses to switcher + ⋯ menu */}
+      <div className="flex items-center justify-between gap-2">
+        {/* Left: Workspace switch (>=640px) + Drill switcher */}
+        <div className="flex items-center gap-2 min-w-0 flex-1">
           <nav
             aria-label="Workspace"
-            className="inline-flex items-center rounded-xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-1 shrink-0"
+            className="hidden sm:inline-flex items-center rounded-lg bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-800 p-0.5 shrink-0"
           >
             {workspaceOptions.map((opt) => {
               const isActive = workspace === opt.id;
-              const cls = `px-3 py-1.5 rounded-lg text-xs font-medium transition-colors whitespace-nowrap ${
+              const cls = `px-2.5 py-1 rounded-md text-xs font-medium transition-colors whitespace-nowrap ${
                 isActive
-                  ? "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm"
+                  ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-sm"
                   : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200"
               }`;
               if (!opt.href) {
@@ -143,63 +174,180 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
             onFilterChange={onFilterChange}
             onSelectDrill={onSelectDrill}
           />
+        </div>
 
-          {/* Notion Unit Quick Link */}
+        {/* Right: Theme toggle (>=640px) + Notion link (>=640px) + ⋯ menu */}
+        <div className="flex items-center gap-1 shrink-0">
+          <button
+            type="button"
+            onClick={onToggleTheme}
+            title={theme === "light" ? "Switch to dark mode" : "Switch to light mode"}
+            aria-label={theme === "light" ? "Switch to dark mode" : "Switch to light mode"}
+            className="hidden sm:inline-flex items-center justify-center w-9 h-9 rounded-lg text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+          >
+            {theme === "light" ? (
+              <Moon className="w-4 h-4" />
+            ) : (
+              <Sun className="w-4 h-4" />
+            )}
+          </button>
+
           {currentDrill?.unitNotionUrl && (
             <a
               href={currentDrill.unitNotionUrl}
               target="_blank"
               rel="noopener noreferrer"
-              title="Open this unit page in Notion"
-              className="inline-flex items-center gap-1.5 h-10 px-3 rounded-xl bg-sky-50 dark:bg-sky-500/10 hover:bg-sky-100 dark:hover:bg-sky-500/20 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-500/30 text-xs font-semibold transition-colors shrink-0"
+              title="Open unit page in Notion"
+              className="hidden sm:inline-flex items-center gap-1 h-9 px-2.5 rounded-lg text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
             >
+              <span>Notion</span>
               <ArrowUpRight className="w-3.5 h-3.5" />
-              <span className="hidden md:inline">Notion Unit</span>
             </a>
           )}
 
-          <GeneratePopover
-            isOpen={showGenPopover}
-            onToggle={onToggleGenPopover}
-            onClose={onCloseGenPopover}
-            popoverRef={genPopoverRef}
-            currentDrill={currentDrill}
-            onGenerated={onGenerated}
-            onStatusChange={onStatusChange}
-          />
-        </div>
+          {/* Single ⋯ overflow menu for secondary controls & mobile items */}
+          <div className="relative" ref={moreMenuRef}>
+            <button
+              type="button"
+              onClick={() => setShowMoreMenu((prev) => !prev)}
+              aria-expanded={showMoreMenu}
+              aria-label="More actions"
+              title="More actions"
+              className="inline-flex items-center justify-center w-9 h-9 rounded-lg text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+            >
+              <MoreHorizontal className="w-4 h-4" />
+            </button>
 
-        {/* Right Zone: Live Score + Reset + Theme (Strictly single line, no redundant Review & Sync button) */}
-        <div className="flex items-center justify-end gap-2 shrink-0">
-          <span className="inline-flex items-center h-9 text-xs font-bold px-3 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30 whitespace-nowrap">
-            Score: {liveScore} / {maxScore} ({accuracyPct}%)
-          </span>
+            {showMoreMenu && (
+              <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-lg p-2.5 z-50 text-xs space-y-2">
+                {/* Status copy */}
+                {currentDrill && (
+                  <div className="px-2 py-1.5 rounded-lg bg-zinc-50 dark:bg-zinc-950 border border-zinc-200/80 dark:border-zinc-800 space-y-0.5">
+                    <div className="font-mono text-[11px] text-zinc-500 dark:text-zinc-400 truncate">
+                      {currentDrill.drillId} · {currentDrill.unitCode}
+                    </div>
+                    <div className="text-xs font-medium text-zinc-800 dark:text-zinc-200">
+                      Score: {liveScore} / {maxScore} ({accuracyPct}%)
+                    </div>
+                  </div>
+                )}
 
-          <button
-            type="button"
-            onClick={onResetAll}
-            title="Reset all questions in this drill"
-            className="inline-flex items-center justify-center w-9 h-9 bg-slate-100 dark:bg-[#1d2333] hover:bg-rose-50 dark:hover:bg-rose-500/20 text-slate-600 dark:text-slate-300 hover:text-rose-600 dark:hover:text-rose-300 rounded-xl border border-slate-200 dark:border-[#2c354d] transition-colors"
-          >
-            <RotateCcw className="w-4 h-4" />
-          </button>
+                {/* Below 640px items: workspace switch, theme toggle, Notion link */}
+                <div className="sm:hidden space-y-1 pb-2 border-b border-zinc-200 dark:border-zinc-800">
+                  <div className="grid grid-cols-2 gap-1 p-0.5 rounded-lg bg-zinc-100 dark:bg-zinc-800">
+                    {workspaceOptions.map((opt) => {
+                      const isActive = workspace === opt.id;
+                      const cls = `px-2 py-1.5 rounded-md text-center text-xs font-medium transition-colors ${
+                        isActive
+                          ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-sm"
+                          : "text-zinc-500 dark:text-zinc-400"
+                      }`;
+                      if (!opt.href) {
+                        return (
+                          <span key={opt.id} className={`${cls} opacity-50`}>
+                            {opt.label}
+                          </span>
+                        );
+                      }
+                      return (
+                        <Link
+                          key={opt.id}
+                          href={opt.href}
+                          onClick={() => setShowMoreMenu(false)}
+                          className={cls}
+                        >
+                          {opt.label}
+                        </Link>
+                      );
+                    })}
+                  </div>
 
-          <button
-            type="button"
-            onClick={onToggleTheme}
-            title={theme === "light" ? "Switch to Dark Mode" : "Switch to Light Mode"}
-            className="inline-flex items-center justify-center w-9 h-9 bg-slate-100 dark:bg-[#1d2333] hover:bg-slate-200 dark:hover:bg-[#252e42] text-slate-700 dark:text-slate-200 rounded-xl border border-slate-200 dark:border-[#2c354d] transition-colors"
-          >
-            {theme === "light" ? (
-              <Moon className="w-4 h-4 text-indigo-600" />
-            ) : (
-              <Sun className="w-4 h-4 text-amber-400" />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onToggleTheme();
+                    }}
+                    className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                  >
+                    {theme === "light" ? (
+                      <Moon className="w-3.5 h-3.5" />
+                    ) : (
+                      <Sun className="w-3.5 h-3.5" />
+                    )}
+                    <span>{theme === "light" ? "Dark mode" : "Light mode"}</span>
+                  </button>
+
+                  {currentDrill?.unitNotionUrl && (
+                    <a
+                      href={currentDrill.unitNotionUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => setShowMoreMenu(false)}
+                      className="w-full flex items-center justify-between px-2 py-1.5 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                    >
+                      <span>Open unit in Notion</span>
+                      <ArrowUpRight className="w-3.5 h-3.5" />
+                    </a>
+                  )}
+                </div>
+
+                {/* Actions */}
+                <div className="space-y-0.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onToggleViewMode(viewMode === "review" ? "quiz" : "review");
+                      setShowMoreMenu(false);
+                    }}
+                    className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                  >
+                    <ClipboardCheck className="w-3.5 h-3.5 text-zinc-500 dark:text-zinc-400" />
+                    <span>
+                      {viewMode === "review" ? "Back to questions" : "Review & Sync to Notion"}
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={onToggleGenPopover}
+                    className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                  >
+                    <Plus className="w-3.5 h-3.5 text-zinc-500 dark:text-zinc-400" />
+                    <span>Generate drill set</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowMoreMenu(false);
+                      onResetAll();
+                    }}
+                    className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-rose-600 dark:text-rose-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    <span>Reset all questions</span>
+                  </button>
+                </div>
+
+                <GeneratePopover
+                  isOpen={showGenPopover}
+                  onToggle={onToggleGenPopover}
+                  onClose={onCloseGenPopover}
+                  popoverRef={genPopoverRef}
+                  currentDrill={currentDrill}
+                  onGenerated={async (id) => {
+                    setShowMoreMenu(false);
+                    await onGenerated(id);
+                  }}
+                  onStatusChange={onStatusChange}
+                />
+              </div>
             )}
-          </button>
+          </div>
         </div>
       </div>
 
-      {/* Row 2: Integrated Question Stepper Row */}
+      {/* Row 2: Question tiles row */}
       {tiles}
     </header>
   );
