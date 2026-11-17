@@ -1,0 +1,114 @@
+{
+  "labId": "LAB-PRG-T01-C01-02",
+  "title": "Rate-Limited Web Page Fetcher",
+  "chapterCode": "PRG-T01-C01",
+  "unitsUsed": [
+    "PRG-T01-C01-U02",
+    "PRG-T01-C01-U06",
+    "PRG-T01-C01-U07",
+    "PRG-T01-C01-U08",
+    "PRG-T01-C01-U09"
+  ],
+  "kind": "extra-project",
+  "level": 3,
+  "domain": "rate-limited-crawler",
+  "targetsWeakSpots": [
+    "U-no-shared-mutable-state"
+  ],
+  "scenario": "Build an isolated, rate-limited web page fetcher for a documentation indexing service. Each rate limiter and crawler instance must own its own quota, deduplication, and cancellation state while bounding concurrency, preserving error causes, and cleaning up abort listeners.",
+  "milestones": [
+    {
+      "id": "M1",
+      "title": "Contracts, Errors & URL Normalization",
+      "goal": "Define typed crawler contracts, CrawlerError with preserved cause, and pure normalizeUrls deduplication without input mutation.",
+      "units": [
+        "PRG-T01-C01-U02",
+        "PRG-T01-C01-U08"
+      ],
+      "qualityChecks": [
+        "U-names",
+        "U-one-job",
+        "U-errors",
+        "U-no-input-mutation",
+        "QC-err-preserve-cause",
+        "QC-err-subclass-instanceof"
+      ],
+      "visibleTests": "tests/m1_*.test.ts"
+    },
+    {
+      "id": "M2",
+      "title": "Closure-Scoped Rate Limiter",
+      "goal": "Implement createRateLimiter with strictly instance-owned sliding-window state and injectable clock/sleep.",
+      "units": [
+        "PRG-T01-C01-U02",
+        "PRG-T01-C01-U07"
+      ],
+      "qualityChecks": [
+        "U-names",
+        "U-no-shared-mutable-state",
+        "U-no-input-mutation",
+        "QC-closure-isolated-instance",
+        "QC-closure-no-state-leak"
+      ],
+      "visibleTests": "tests/m2_*.test.ts"
+    },
+    {
+      "id": "M3",
+      "title": "Bounded Concurrent Page Crawler",
+      "goal": "Implement createPageCrawler with per-crawl deduplication, bounded concurrency, rate limiter integration, and error preservation.",
+      "units": [
+        "PRG-T01-C01-U06",
+        "PRG-T01-C01-U08"
+      ],
+      "qualityChecks": [
+        "U-names",
+        "U-one-job",
+        "U-no-shared-mutable-state",
+        "U-no-floating-promise",
+        "QC-async-concurrent-dispatch",
+        "QC-async-preserve-error-reason"
+      ],
+      "visibleTests": "tests/m3_*.test.ts"
+    },
+    {
+      "id": "M4",
+      "title": "AbortSignal Cancellation & Listener Cleanup",
+      "goal": "Cancel queued work cleanly on AbortSignal, preserve started fetch outcomes, and detach abort listeners after settlement.",
+      "units": [
+        "PRG-T01-C01-U06",
+        "PRG-T01-C01-U08",
+        "PRG-T01-C01-U09"
+      ],
+      "qualityChecks": [
+        "U-errors",
+        "U-no-floating-promise",
+        "U-no-shared-mutable-state",
+        "QC-abort-settlement-stable",
+        "QC-abort-listener-lifecycle"
+      ],
+      "visibleTests": "tests/m4_*.test.ts"
+    }
+  ],
+  "blindSolve": [
+    {
+      "milestone": "M1",
+      "passed": true
+    },
+    {
+      "milestone": "M2",
+      "passed": true
+    },
+    {
+      "milestone": "M3",
+      "passed": true
+    },
+    {
+      "milestone": "M4",
+      "passed": true
+    }
+  ],
+  "review": {
+    "verdict": "pass",
+    "note": "No leaks, distinct realistic domain, valid PRG-T01-C01 units/traps, clean _reference Layer 3, and package.json check:hidden now passes all 8 hidden tests with LAB_SRC_DIR=../src."
+  }
+}
