@@ -275,6 +275,29 @@ def _resolve_or_capture_ref(repo_root: Path, run_dir: Path, raw_ref: Any, captur
     return canon
 
 
+def _scaffold_symlink_target(root: Path, target_dir: Path, rel_root: str, link_path: Path) -> str | None:
+    """Return resolved target if `link_path` is an expected `materialize_drill_workspace` symlink."""
+    if rel_root != "drills/workspace":
+        return None
+    parts = link_path.relative_to(target_dir).parts
+    if len(parts) != 2:
+        return None
+    link_name = parts[1]
+    repo_base = Path(__file__).resolve().parents[1]
+    if link_name == "code_engine":
+        allowed = (root / "code_engine", repo_base / "code_engine")
+    elif link_name == "node_modules":
+        allowed = (root / "tools" / "lint" / "node_modules", repo_base / "tools" / "lint" / "node_modules")
+    else:
+        return None
+    try:
+        resolved = link_path.resolve(strict=True)
+    except OSError:
+        return None
+    allowed_resolved = {cand.resolve(strict=False) for cand in allowed}
+    return str(resolved) if resolved in allowed_resolved else None
+
+
 def snapshot_protected_paths(repo_root: Path) -> dict[str, Any]:
     """Capture read-only SHA-256 content hashes of protected learner directories."""
     root = repo_root.resolve(strict=True)
@@ -285,6 +308,7 @@ def snapshot_protected_paths(repo_root: Path) -> dict[str, Any]:
             "exists": False,
             "is_symlink": False,
             "symlinks_found": [],
+            "scaffold_symlinks": {},
             "file_count": 0,
             "tree_sha256": _sha256_bytes(b""),
             "files": {},
@@ -306,13 +330,19 @@ def snapshot_protected_paths(repo_root: Path) -> dict[str, Any]:
         entry["exists"] = True
         files: dict[str, str] = {}
         symlinks_found: list[str] = []
+        scaffold_symlinks: dict[str, str] = {}
         for dirpath, dirnames, filenames in os.walk(target, followlinks=False):
             dp = Path(dirpath)
             kept: list[str] = []
             for dname in sorted(dirnames):
                 dpath = dp / dname
                 if dpath.is_symlink():
-                    symlinks_found.append(dpath.relative_to(root).as_posix())
+                    rpath = dpath.relative_to(root).as_posix()
+                    scaffold_target = _scaffold_symlink_target(root, target, rel, dpath)
+                    if scaffold_target is not None:
+                        scaffold_symlinks[rpath] = scaffold_target
+                    else:
+                        symlinks_found.append(rpath)
                 else:
                     kept.append(dname)
             dirnames[:] = kept
@@ -320,7 +350,11 @@ def snapshot_protected_paths(repo_root: Path) -> dict[str, Any]:
                 fpath = dp / fname
                 rpath = fpath.relative_to(root).as_posix()
                 if fpath.is_symlink():
-                    symlinks_found.append(rpath)
+                    scaffold_target = _scaffold_symlink_target(root, target, rel, fpath)
+                    if scaffold_target is not None:
+                        scaffold_symlinks[rpath] = scaffold_target
+                    else:
+                        symlinks_found.append(rpath)
                 elif fpath.is_file():
                     files[rpath] = _sha256_file(fpath)
 
@@ -330,6 +364,7 @@ def snapshot_protected_paths(repo_root: Path) -> dict[str, Any]:
                 "files": files,
                 "file_count": len(files),
                 "symlinks_found": sorted(symlinks_found),
+                "scaffold_symlinks": dict(sorted(scaffold_symlinks.items())),
                 "tree_sha256": _sha256_bytes(lines.encode("utf-8")),
             }
         )
@@ -354,6 +389,15 @@ def compare_protected_snapshots(recorded: dict[str, Any], current: dict[str, Any
             mismatches.append(f"{rel}: symlinks found inside recorded snapshot: {rec['symlinks_found']}")
         if cur.get("symlinks_found"):
             mismatches.append(f"{rel}: symlinks found inside protected path: {cur['symlinks_found']}")
+        rec_scaf = rec.get("scaffold_symlinks") or {}
+        cur_scaf = cur.get("scaffold_symlinks") or {}
+        if rec_scaf != cur_scaf:
+            mismatches.append(
+                f"{rel}: workspace scaffold symlinks changed "
+                f"(added={sorted(set(cur_scaf) - set(rec_scaf))}, "
+                f"removed={sorted(set(rec_scaf) - set(cur_scaf))}, "
+                f"changed={sorted(k for k in set(rec_scaf) & set(cur_scaf) if rec_scaf[k] != cur_scaf[k])})"
+            )
         if rec.get("exists") != cur.get("exists"):
             mismatches.append(f"{rel}: existence changed ({rec.get('exists')} -> {cur.get('exists')})")
         if rec.get("tree_sha256") != cur.get("tree_sha256"):

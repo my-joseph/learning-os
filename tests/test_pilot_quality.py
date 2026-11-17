@@ -1188,3 +1188,48 @@ def test_invalid_source_or_submission_cannot_quarantine_past_integrity_errors(tm
     with pytest.raises(ValueError, match="integrity/schema"):
         pilot_quality.quarantine_run(repo, "run-bad-items", reason="try bypass corrupt items")
     assert json.loads((bad_dir / "run.json").read_text())["ended_at"] is None
+
+
+def test_unchanged_workspace_scaffold_symlinks_pass_finish_while_unexpected_fail(tmp_path: Path) -> None:
+    repo = _setup_repo(tmp_path)
+    (repo / "code_engine").mkdir()
+    (repo / "tools" / "lint" / "node_modules").mkdir(parents=True)
+
+    ws_drill = repo / "drills" / "workspace" / "DRL-PRG-T01-C01-U01-01"
+    ws_drill.mkdir(parents=True)
+    (ws_drill / "Q01_demo.js").write_text("module.exports = {};\n", encoding="utf-8")
+    (ws_drill / "code_engine").symlink_to(repo / "code_engine", target_is_directory=True)
+    (ws_drill / "node_modules").symlink_to(repo / "tools" / "lint" / "node_modules", target_is_directory=True)
+
+    _init_clean_run(repo, run_id="run-ws-ok")
+    run_dir = repo / "pilot" / "quality" / "run-ws-ok"
+    pilot_quality.record_item(repo, run_id="run-ws-ok", payload=_base_payload(run_dir, "rec-1", "Q01"))
+    closed = pilot_quality.end_run(repo, "run-ws-ok")
+    assert closed["closure_status"] == "closed"
+
+    # Unexpected symlink outside the allowed scaffold names/targets must still be rejected on finish/validate
+    outside = tmp_path.parent / f"{tmp_path.name}_escape"
+    outside.mkdir()
+    (ws_drill / "extra_link").symlink_to(outside, target_is_directory=True)
+    pilot_quality.init_run(
+        repo,
+        run_id="run-ws-bad-sym",
+        mode="natural_attempt",
+        drill_id="DRL-MTH-T01-C01-U01-01",
+        unit_id="MTH-T01-C01-U01",
+        model_id="gemini-4-hydrogen-high",
+        effort="high",
+        session_id="sess-test",
+        sample_reason="bad-symlink-check",
+        prior_exposure="none",
+        contamination="no",
+    )
+    with pytest.raises(ValueError, match="symlinks found"):
+        pilot_quality.end_run(repo, "run-ws-bad-sym")
+    (ws_drill / "extra_link").unlink()
+
+    # Mutating a scaffold symlink after init must fail finish
+    _init_clean_run(repo, run_id="run-ws-mut")
+    (ws_drill / "code_engine").unlink()
+    with pytest.raises(ValueError, match="scaffold symlinks changed"):
+        pilot_quality.end_run(repo, "run-ws-mut")
