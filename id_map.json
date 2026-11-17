@@ -2511,5 +2511,9 @@
   "DRL-PRG-T01-C02-U08-01": {
     "id": "41b3818f-8ba0-8131-a82c-d2db6e80856a",
     "title": "Strict Mode and tsconfig — Verified Programming Drill (4 Qs · AI Synthesized Engineering Mode)"
+  },
+  "DRL-PRG-T01-C03-U04-01": {
+    "id": "41b3818f-8ba0-8111-a4a1-e8b7d7e2ef6c",
+    "title": "Map, Set & Hashing Patterns — Verified Programming Drill (4 Qs · AI Synthesized Engineering Mode)"
   }
 }
