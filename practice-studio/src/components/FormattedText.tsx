@@ -26,9 +26,34 @@ export const FormattedText: React.FC<FormattedTextProps> = ({
     []
   );
 
-  const lines = useMemo(() => {
+  const blocks = useMemo(() => {
     if (!text) return [];
-    return text.split("\n");
+    const rawLines = text.split("\n");
+    const out: Array<
+      | { kind: "line"; line: string; lineIdx: number }
+      | { kind: "code"; code: string; lineIdx: number }
+    > = [];
+    let i = 0;
+    while (i < rawLines.length) {
+      const current = rawLines[i];
+      if (current.trim().startsWith("```")) {
+        const startIdx = i;
+        i++;
+        const codeLines: string[] = [];
+        while (i < rawLines.length && !rawLines[i].trim().startsWith("```")) {
+          codeLines.push(rawLines[i]);
+          i++;
+        }
+        if (i < rawLines.length && rawLines[i].trim().startsWith("```")) {
+          i++;
+        }
+        out.push({ kind: "code", code: codeLines.join("\n"), lineIdx: startIdx });
+      } else {
+        out.push({ kind: "line", line: current, lineIdx: i });
+        i++;
+      }
+    }
+    return out;
   }, [text]);
 
   const renderInline = (content: string) => {
@@ -122,13 +147,25 @@ export const FormattedText: React.FC<FormattedTextProps> = ({
     });
   };
 
-  if (lines.length <= 1) {
+  if (blocks.length <= 1 && blocks[0]?.kind !== "code") {
     return <span className={className}>{renderInline(text)}</span>;
   }
 
   return (
     <div className={`space-y-1.5 ${className}`}>
-      {lines.map((line, lineIdx) => {
+      {blocks.map((block) => {
+        if (block.kind === "code") {
+          return (
+            <pre
+              key={block.lineIdx}
+              className="p-3 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl font-mono text-xs text-zinc-800 dark:text-zinc-200 overflow-x-auto whitespace-pre my-2"
+            >
+              <code>{block.code}</code>
+            </pre>
+          );
+        }
+
+        const { line, lineIdx } = block;
         const trimmed = line.trim();
 
         if (!trimmed) {

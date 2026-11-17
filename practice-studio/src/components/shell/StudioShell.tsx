@@ -137,22 +137,14 @@ export const StudioShell: React.FC<StudioShellProps> = ({
     ) : null;
 
   const containerMaxWidth =
-    viewMode === "review"
-      ? "max-w-5xl"
-      : workspace === "math"
-      ? "max-w-[720px]"
-      : "max-w-5xl";
+    viewMode === "review" ? "max-w-5xl" : "max-w-[720px]";
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 px-4 py-4 sm:py-6 transition-colors">
       <div className={`mx-auto ${containerMaxWidth}`}>
-        {/* Provide sr-only h1 when not on Math quiz workspace (which renders its own visible h1) */}
-        {viewMode === "quiz" && (workspace !== "math" || !currentDrill) && (
-          <h1 className="sr-only">
-            {currentDrill
-              ? `${currentDrill.unitTitle || currentDrill.unitCode} Practice`
-              : "Practice Studio"}
-          </h1>
+        {/* Provide sr-only h1 when no active drill workspace renders a visible h1 */}
+        {viewMode === "quiz" && !currentDrill && (
+          <h1 className="sr-only">Practice Studio</h1>
         )}
 
         <StudioHeader

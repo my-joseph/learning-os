@@ -2,9 +2,9 @@
 
 import React, { useState, useCallback, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Plus, ChevronLeft, ChevronRight, ClipboardCheck } from "lucide-react";
+import { Plus } from "lucide-react";
 import { DrillDocument } from "@/types/drill";
-import { ProblemCard } from "@/components/ProblemCard";
+import { CodeDashboard } from "@/components/code/CodeDashboard";
 import { MathWorkspace } from "@/components/math/MathWorkspace";
 import { StudioShell } from "@/components/shell/StudioShell";
 import { ReviewPanel } from "@/components/shell/ReviewPanel";
@@ -203,9 +203,6 @@ export const StudioClient: React.FC<StudioClientProps> = ({
     ? drillHref(codeTargetId, workspace === "code" && currentDrill ? activeProblemId : undefined)
     : null;
 
-  const isLastQuestion =
-    currentDrill && currentProblemIndex === currentDrill.problems.length - 1;
-
   return (
     <StudioShell
       workspace={workspace}
@@ -298,75 +295,33 @@ export const StudioClient: React.FC<StudioClientProps> = ({
             }
 
             return (
-              <div key={prob.id}>
-                <ProblemCard
-                  problem={prob}
-                  index={idx}
-                  subject={currentDrill.subject}
-                  mistakeTags={currentDrill.mistakeTags || []}
-                  activeStep={activeSteps[prob.id] ?? null}
-                  onInputChange={(val) => handleInputChange(prob.id, val)}
-                  onCheckAnswer={() => handleCheckAnswer(prob.id)}
-                  onSkip={() => handleSkipProblem(prob.id)}
-                  onToggleStepHighlight={(stepIdx) =>
-                    handleToggleStepHighlight(prob.id, stepIdx)
-                  }
-                  onMarkDivergedStep={(stepIdx) => handleMarkDivergedStep(prob.id, stepIdx)}
-                  drillId={currentDrill.drillId}
-                  onSetScore={(score) => handleSetScore(prob.id, score)}
-                  onToggleMistakeTag={(tagId) => handleToggleMistakeTag(prob.id, tagId)}
-                  onMistakeNoteChange={(note) => handleMistakeNoteChange(prob.id, note)}
-                  onResetProblem={() => handleResetProblem(prob.id)}
-                  onHintRevealed={() => handleHintRevealed(prob.id)}
-                  onSetupRevealed={() => handleSetupRevealed(prob.id)}
-                  onSolutionRevealed={() => handleSolutionRevealed(prob.id)}
-                />
-
-                {/* Bottom Question Navigation Footer for Code workspace (until PR 5) */}
-                <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl mt-4">
-                  <button
-                    type="button"
-                    onClick={handlePrevQuestion}
-                    disabled={currentProblemIndex === 0}
-                    className="inline-flex items-center gap-1.5 h-10 px-4 rounded-xl text-sm font-medium bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 disabled:opacity-40 text-zinc-700 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-800 transition-colors"
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                    <span>Previous Question</span>
-                  </button>
-
-                  <div className="text-xs font-mono text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5">
-                    <span>Question</span>
-                    <strong className="text-zinc-900 dark:text-zinc-100">
-                      {currentProblemIndex + 1}
-                    </strong>
-                    <span>of</span>
-                    <strong className="text-zinc-700 dark:text-zinc-300">
-                      {currentDrill.problems.length}
-                    </strong>
-                  </div>
-
-                  {isLastQuestion ? (
-                    <button
-                      type="button"
-                      onClick={() => setViewMode("review")}
-                      className="inline-flex items-center gap-2 h-10 px-5 rounded-xl text-sm font-semibold bg-emerald-700 hover:bg-emerald-800 text-white transition-colors"
-                    >
-                      <ClipboardCheck className="w-4 h-4" />
-                      <span>Review &amp; Sync to Notion</span>
-                      <ChevronRight className="w-4 h-4" />
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={handleNextQuestion}
-                      className="inline-flex items-center gap-1.5 h-10 px-5 rounded-xl text-sm font-semibold bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400 text-white transition-colors"
-                    >
-                      <span>Next Question</span>
-                      <ChevronRight className="w-4 h-4" />
-                    </button>
-                  )}
-                </div>
-              </div>
+              <CodeDashboard
+                key={prob.id}
+                problem={prob}
+                drillId={currentDrill.drillId}
+                index={idx}
+                totalQuestions={currentDrill.problems.length}
+                drillTitle={currentDrill.unitTitle || currentDrill.unitCode}
+                mistakeTags={currentDrill.mistakeTags || []}
+                activeStep={activeSteps[prob.id] ?? null}
+                onInputChange={(val) => handleInputChange(prob.id, val)}
+                onCheckAnswer={() => handleCheckAnswer(prob.id)}
+                onSkip={() => handleSkipProblem(prob.id)}
+                onToggleStepHighlight={(stepIdx) =>
+                  handleToggleStepHighlight(prob.id, stepIdx)
+                }
+                onMarkDivergedStep={(stepIdx) => handleMarkDivergedStep(prob.id, stepIdx)}
+                onSetScore={(score) => handleSetScore(prob.id, score)}
+                onToggleMistakeTag={(tagId) => handleToggleMistakeTag(prob.id, tagId)}
+                onMistakeNoteChange={(note) => handleMistakeNoteChange(prob.id, note)}
+                onResetProblem={() => handleResetProblem(prob.id)}
+                onHintRevealed={() => handleHintRevealed(prob.id)}
+                onSetupRevealed={() => handleSetupRevealed(prob.id)}
+                onSolutionRevealed={() => handleSolutionRevealed(prob.id)}
+                onPrevQuestion={handlePrevQuestion}
+                onNextQuestion={handleNextQuestion}
+                onOpenReview={() => setViewMode("review")}
+              />
             );
           })()}
         </div>
