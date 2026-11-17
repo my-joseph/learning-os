@@ -162,7 +162,11 @@ def load_items(
         }
     # Problems ingested before archetypes carried `unitCode` get their unit from the archetype.
     unit_of = {}
-    for vpath in glob.glob(os.path.join("math_engine", "reasoning_vault", "*.json")):
+    cwd_mth_vault = os.path.join("math_engine", "reasoning_vault")
+    mth_vault_dir = (
+        cwd_mth_vault if os.path.isdir(cwd_mth_vault) else os.path.join(repo_root, "math_engine", "reasoning_vault")
+    )
+    for vpath in glob.glob(os.path.join(mth_vault_dir, "*.json")):
         with open(vpath, encoding="utf-8") as f:
             for a in json.load(f).get("archetypes", []):
                 if a.get("unitCode"):
@@ -369,50 +373,107 @@ def review_update(
     return {"mastery": mastery, "lastReviewed": attempt_date[:10], "nextReview": nxt.isoformat()}
 
 
-def report(scope: str | None = None, data_root: str = "drills/data", progress_dir: str | None = None) -> str:
+def _load_titles() -> dict[str, str]:
+    for path in ("id_map.json", os.path.join(find_repo_root(), "id_map.json")):
+        if os.path.exists(path):
+            with open(path, encoding="utf-8") as f:
+                return {k: v.get("title", "") for k, v in json.load(f).items() if isinstance(v, dict)}
+    return {}
+
+
+def _build_unit_reports(
+    scope: str | None = None,
+    data_root: str = "drills/data",
+    progress_dir: str | None = None,
+) -> list[dict]:
     items = load_items(data_root, progress_dir)
     if scope:
         items = [i for i in items if i.unit == scope or i.unit.startswith(scope + "-U")]
     if not items:
-        return "No practice data yet" + (f" for {scope}" if scope else "") + ". Practise a drill in the Studio first."
-    titles = {}
-    if os.path.exists("id_map.json"):
-        with open("id_map.json", encoding="utf-8") as f:
-            titles = {k: v.get("title", "") for k, v in json.load(f).items() if isinstance(v, dict)}
+        return []
+    titles = _load_titles()
     traps = trap_status(items)
     _, _, _, check_sentences = _load_prg_vault_meta()
-    lines = []
+    reports: list[dict] = []
     for unit in sorted({i.unit for i in items}):
         its = [i for i in items if i.unit == unit]
-        lines.append(f"{unit} · {titles.get(unit, '')}  ({len(its)} items in {len({i.drill for i in its})} drills)")
-        open_traps = [t for t, s in traps.items() if s["open"] and unit in s["units"]]
-        closed = [t for t, s in traps.items() if not s["open"] and unit in s["units"]]
-        for t in sorted(open_traps, key=lambda t: traps[t]["last"], reverse=True):
-            s = traps[t]
-            label = f"{t} ({check_sentences[t]})" if t in check_sentences else t
+        open_traps = sorted(
+            (t for t, s in traps.items() if s["open"] and unit in s["units"]),
+            key=lambda t: traps[t]["last"],
+            reverse=True,
+        )
+        closed_traps = [t for t, s in traps.items() if not s["open"] and unit in s["units"]]
+        subject = "PRG" if unit.startswith("PRG-") or any(i.subject == "PRG" for i in its) else "MTH"
+
+        def _entry(trap_id: str) -> dict:
+            s = traps[trap_id]
+            row = {
+                "id": trap_id,
+                "matches": s["matches"],
+                "drills": s["drills"],
+                "last": s["last"],
+                "subject": s["subject"],
+            }
+            if trap_id in check_sentences:
+                row["detail"] = check_sentences[trap_id]
+            return row
+
+        reports.append(
+            {
+                "unitCode": unit,
+                "unitTitle": titles.get(unit, ""),
+                "subject": subject,
+                "itemCount": len(its),
+                "drillCount": len({i.drill for i in its}),
+                "open": [_entry(t) for t in open_traps],
+                "closed": [_entry(t) for t in closed_traps],
+                "levels": level_advice(its),
+                "assistedCount": sum(i.assisted for i in its),
+                "skipped": sorted({i.archetype or i.pid for i in its if i.skipped}),
+            }
+        )
+    return reports
+
+
+def report_json(scope: str | None = None, data_root: str = "drills/data", progress_dir: str | None = None) -> dict:
+    """Return structured weak-spots data for JSON consumers."""
+    units = _build_unit_reports(scope, data_root, progress_dir)
+    return {
+        "scope": scope,
+        "units": [{**u, "levels": {str(lv): a for lv, a in u["levels"].items()}} for u in units],
+    }
+
+
+def report(scope: str | None = None, data_root: str = "drills/data", progress_dir: str | None = None) -> str:
+    units = _build_unit_reports(scope, data_root, progress_dir)
+    if not units:
+        return "No practice data yet" + (f" for {scope}" if scope else "") + ". Practise a drill in the Studio first."
+    lines = []
+    for u in units:
+        unit = u["unitCode"]
+        lines.append(f"{unit} · {u['unitTitle']}  ({u['itemCount']} items in {u['drillCount']} drills)")
+        for s in u["open"]:
+            label = f"{s['id']} ({s['detail']})" if "detail" in s else s["id"]
             lines.append(f"  WEAK     {label}: matched {s['matches']}x in {s['drills']} drill(s), last {s['last']}")
-        for t in closed:
-            s = traps[t]
-            label = f"{t} ({check_sentences[t]})" if t in check_sentences else t
+        for s in u["closed"]:
+            label = f"{s['id']} ({s['detail']})" if "detail" in s else s["id"]
             if s.get("subject") == "PRG":
                 lines.append(f"  closed   {label}: clean in the last {CLOSE_AFTER} problems that tested it")
             else:
                 lines.append(f"  closed   {label}: clean in the last {CLOSE_AFTER} drills that tested it")
-        adv = level_advice(its)
+        adv = u["levels"]
         if adv:
             lines.append(
                 "  levels   " + " · ".join(f"L{lv} {a['pct']}% ({a['n']}) {a['move']}" for lv, a in adv.items())
             )
-        assisted = sum(i.assisted for i in its)
-        if assisted:
+        if u["assistedCount"]:
             lines.append(
-                f"  assisted {assisted} item(s) answered after opening the set-up box, solution steps, or a hint"
+                f"  assisted {u['assistedCount']} item(s) answered after opening the set-up box, solution steps, or a hint"
             )
-        skipped = sorted({i.archetype or i.pid for i in its if i.skipped})
-        if skipped:
-            lines.append(f"  skipped  {', '.join(skipped)}")
-        if open_traps:
-            lines.append(f"  NEXT     new drill for {unit} focused on {', '.join(open_traps[:2])}")
+        if u["skipped"]:
+            lines.append(f"  skipped  {', '.join(u['skipped'])}")
+        if u["open"]:
+            lines.append(f"  NEXT     new drill for {unit} focused on {', '.join(s['id'] for s in u['open'][:2])}")
         lines.append("")
     return "\n".join(lines).rstrip()
 
@@ -422,8 +483,12 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("scope", nargs="?", help="unit or chapter code (default: all units with practice data)")
     ap.add_argument("--data-root", default=os.environ.get("DRILLS_DATA_DIR", "drills/data"))
     ap.add_argument("--progress-dir", default=None)
+    ap.add_argument("--json", action="store_true", dest="as_json", help="output JSON instead of text report")
     args = ap.parse_args(argv)
-    print(report(args.scope, args.data_root, args.progress_dir))
+    if args.as_json:
+        print(json.dumps(report_json(args.scope, args.data_root, args.progress_dir), ensure_ascii=False))
+    else:
+        print(report(args.scope, args.data_root, args.progress_dir))
     return 0
 
 

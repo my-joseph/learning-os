@@ -7,6 +7,7 @@ import {
   ClipboardCheck,
   Moon,
   MoreHorizontal,
+  PanelRight,
   Plus,
   RotateCcw,
   Sun,
@@ -52,6 +53,9 @@ interface StudioHeaderProps {
   genPopoverRef: React.RefObject<HTMLDivElement>;
   onGenerated: (drillId: string) => Promise<void>;
   onStatusChange: (status: StatusMessage | null) => void;
+  // Side drawer (mobile / <1024px)
+  onOpenSideDrawer?: () => void;
+  sidePanelCount?: number;
   // Row 2: Question tiles bar
   tiles?: React.ReactNode;
 }
@@ -89,6 +93,8 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
   genPopoverRef,
   onGenerated,
   onStatusChange,
+  onOpenSideDrawer,
+  sidePanelCount = 0,
   tiles,
 }) => {
   const [showMoreMenu, setShowMoreMenu] = useState(false);
@@ -297,6 +303,27 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
 
                 {/* Actions */}
                 <div className="space-y-0.5">
+                  {onOpenSideDrawer && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowMoreMenu(false);
+                        onOpenSideDrawer();
+                      }}
+                      className="lg:hidden w-full flex items-center justify-between gap-2 px-2 py-1.5 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                    >
+                      <span className="flex items-center gap-2">
+                        <PanelRight className="w-3.5 h-3.5 text-zinc-500 dark:text-zinc-400" />
+                        <span>Due today &amp; weak spots</span>
+                      </span>
+                      {sidePanelCount > 0 && (
+                        <span className="text-[11px] font-mono text-zinc-500 dark:text-zinc-400">
+                          {sidePanelCount}
+                        </span>
+                      )}
+                    </button>
+                  )}
+
                   <button
                     type="button"
                     onClick={() => {
