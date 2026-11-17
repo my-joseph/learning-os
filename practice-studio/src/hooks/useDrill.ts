@@ -122,6 +122,56 @@ export function useDrill({
     [currentDrill, triggerAutoSave]
   );
 
+  const saveAndReveal = useCallback(
+    async (
+      updatedDoc: DrillDocument,
+      probId: string,
+      parts: Array<"steps" | "display" | "solution">
+    ) => {
+      try {
+        await fetch("/api/save-state", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(updatedDoc),
+        });
+      } catch {
+        // ignore transient save error
+      }
+      const patch: Partial<Problem> = {};
+      for (const part of parts) {
+        try {
+          const res = await fetch(
+            `/api/reveal?drill=${encodeURIComponent(updatedDoc.drillId)}&q=${encodeURIComponent(probId)}&part=${part}`
+          );
+          if (!res.ok) continue;
+          const data = await res.json();
+          if (part === "steps") {
+            if (Array.isArray(data.steps)) patch.steps = data.steps;
+            if (typeof data.answerDisplay === "string") patch.answerDisplay = data.answerDisplay;
+            if (typeof data.answerPlain === "string") patch.answerPlain = data.answerPlain;
+          } else if (part === "display") {
+            if (typeof data.display === "string") patch.display = data.display;
+            if (typeof data.plainText === "string") patch.plainText = data.plainText;
+          } else if (part === "solution") {
+            if (typeof data.solutionCode === "string") patch.solutionCode = data.solutionCode;
+          }
+        } catch {
+          // ignore transient reveal error
+        }
+      }
+      if (Object.keys(patch).length > 0) {
+        setCurrentDrill((prev) => {
+          if (!prev || prev.drillId !== updatedDoc.drillId) return prev;
+          return {
+            ...prev,
+            problems: prev.problems.map((p) => (p.id === probId ? { ...p, ...patch } : p)),
+          };
+        });
+      }
+    },
+    []
+  );
+
   const handleCheckAnswer = async (probId: string) => {
     if (!currentDrill) return;
     const p = currentDrill.problems.find((item) => item.id === probId);
@@ -135,9 +185,9 @@ export function useDrill({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          drillId: currentDrill.drillId,
+          problemId: p.id,
           subject: currentDrill.subject,
-          answerSpec: p.answerSpec,
-          trapValue: p.trapValue,
           input: inputVal,
         }),
       });
@@ -170,6 +220,11 @@ export function useDrill({
 
       setCurrentDrill(updatedDoc);
       triggerAutoSave(updatedDoc);
+      const partsToReveal: Array<"steps" | "display"> = ["steps"];
+      if (p.hasSetup && !p.display && !p.plainText) {
+        partsToReveal.push("display");
+      }
+      await saveAndReveal(updatedDoc, probId, partsToReveal);
     } catch (err: unknown) {
       const errMsg = err instanceof Error ? err.message : String(err);
       setStatus({ text: `SymPy Check error: ${errMsg}`, type: "fail" });
@@ -188,26 +243,53 @@ export function useDrill({
   const handleSetupRevealed = (probId: string) => {
     if (!currentDrill) return;
     const target = currentDrill.problems.find((p) => p.id === probId);
-    if (!target || target.state.lastCheck || target.state.setupRevealedBeforeAnswer) return;
-    updateProblem(probId, (p) => ({
-      ...p,
-      state: { ...p.state, setupRevealedBeforeAnswer: true },
-    }));
+    if (!target) return;
+    const shouldMarkAssisted = !target.state.lastCheck && !target.state.setupRevealedBeforeAnswer;
+    const updatedDoc: DrillDocument = shouldMarkAssisted
+      ? {
+          ...currentDrill,
+          problems: currentDrill.problems.map((p) =>
+            p.id === probId
+              ? { ...p, state: { ...p.state, setupRevealedBeforeAnswer: true } }
+              : p
+          ),
+        }
+      : currentDrill;
+    if (shouldMarkAssisted) {
+      setCurrentDrill(updatedDoc);
+      triggerAutoSave(updatedDoc);
+    }
+    if (!target.display && !target.plainText) {
+      void saveAndReveal(updatedDoc, probId, ["display"]);
+    }
   };
 
   // Step-by-step solution opened by the learner before their first correct answer.
   const handleSolutionRevealed = (probId: string) => {
     if (!currentDrill) return;
     const target = currentDrill.problems.find((p) => p.id === probId);
-    if (!target || target.state.solutionRevealedBeforeAnswer) return;
+    if (!target) return;
     const hasCorrect =
       target.state.score === 1 ||
       Boolean(target.state.attempts?.some((a) => a.verdict === "correct"));
-    if (hasCorrect) return;
-    updateProblem(probId, (p) => ({
-      ...p,
-      state: { ...p.state, solutionRevealedBeforeAnswer: true },
-    }));
+    const shouldMarkAssisted = !hasCorrect && !target.state.solutionRevealedBeforeAnswer;
+    const updatedDoc: DrillDocument = shouldMarkAssisted
+      ? {
+          ...currentDrill,
+          problems: currentDrill.problems.map((p) =>
+            p.id === probId
+              ? { ...p, state: { ...p.state, solutionRevealedBeforeAnswer: true } }
+              : p
+          ),
+        }
+      : currentDrill;
+    if (shouldMarkAssisted) {
+      setCurrentDrill(updatedDoc);
+      triggerAutoSave(updatedDoc);
+    }
+    if (!target.steps || target.steps.length === 0) {
+      void saveAndReveal(updatedDoc, probId, ["steps"]);
+    }
   };
 
   const handleToggleStepHighlight = (probId: string, stepIdx: number) => {
@@ -249,48 +331,42 @@ export function useDrill({
     timerStateRef.current = nextState;
     const hintsCount = hintsRevealed + (p.state?.hintsRevealed || 0);
 
-    updateProblem(probId, (prob) => ({
-      ...prob,
-      state: applySkip(prob, {
-        durationMs,
-        hintsRevealed: hintsCount,
-      }),
-    }));
+    const updatedDoc: DrillDocument = {
+      ...currentDrill,
+      problems: currentDrill.problems.map((prob) =>
+        prob.id === probId
+          ? {
+              ...prob,
+              state: applySkip(prob, {
+                durationMs,
+                hintsRevealed: hintsCount,
+              }),
+            }
+          : prob
+      ),
+    };
+    setCurrentDrill(updatedDoc);
+    triggerAutoSave(updatedDoc);
+    const partsToReveal: Array<"steps" | "display"> = ["steps"];
+    if (p.hasSetup && !p.display && !p.plainText) {
+      partsToReveal.push("display");
+    }
+    void saveAndReveal(updatedDoc, probId, partsToReveal);
   };
 
   const handleResetProblem = (probId: string) => {
     if (!currentDrill) return;
     timerStateRef.current = resetProblemTimer(timerStateRef.current, probId);
-    updateProblem(probId, (p) => ({
-      ...p,
-      state: {
-        userInput: "",
-        userCode: p.starterCode || p.codeSnippet || "",
-        score: null,
-        divergedStep: null,
-        mistakes: [],
-        mistakeNote: "",
-        skipped: false,
-        lastCheck: null,
-        lastTestReport: null,
-        attempts: [],
-        hintsRevealed: 0,
-        setupRevealedBeforeAnswer: false,
-        solutionRevealedBeforeAnswer: false,
-        durationMs: 0,
-      },
-    }));
-  };
-
-  const handleResetAll = () => {
-    if (!currentDrill) return;
-    const ok = window.confirm(`Reset all questions in ${currentDrill.drillId} to start over?`);
-    if (!ok) return;
-
-    const updated: DrillDocument = {
-      ...currentDrill,
-      problems: currentDrill.problems.map((p) => ({
-        ...p,
+    updateProblem(probId, (p) => {
+      const rest = { ...p };
+      delete rest.display;
+      delete rest.plainText;
+      delete rest.steps;
+      delete rest.answerDisplay;
+      delete rest.answerPlain;
+      delete rest.solutionCode;
+      return {
+        ...rest,
         state: {
           userInput: "",
           userCode: p.starterCode || p.codeSnippet || "",
@@ -301,8 +377,46 @@ export function useDrill({
           skipped: false,
           lastCheck: null,
           lastTestReport: null,
+          attempts: [],
+          hintsRevealed: 0,
+          setupRevealedBeforeAnswer: false,
+          solutionRevealedBeforeAnswer: false,
+          durationMs: 0,
         },
-      })),
+      };
+    });
+  };
+
+  const handleResetAll = () => {
+    if (!currentDrill) return;
+    const ok = window.confirm(`Reset all questions in ${currentDrill.drillId} to start over?`);
+    if (!ok) return;
+
+    const updated: DrillDocument = {
+      ...currentDrill,
+      problems: currentDrill.problems.map((p) => {
+        const rest = { ...p };
+        delete rest.display;
+        delete rest.plainText;
+        delete rest.steps;
+        delete rest.answerDisplay;
+        delete rest.answerPlain;
+        delete rest.solutionCode;
+        return {
+          ...rest,
+          state: {
+            userInput: "",
+            userCode: p.starterCode || p.codeSnippet || "",
+            score: null,
+            divergedStep: null,
+            mistakes: [],
+            mistakeNote: "",
+            skipped: false,
+            lastCheck: null,
+            lastTestReport: null,
+          },
+        };
+      }),
       sessionSummary: {
         ...currentDrill.sessionSummary,
         score: 0,

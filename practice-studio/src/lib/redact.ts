@@ -1,0 +1,375 @@
+import {
+  AnswerSpec,
+  ChoiceOption,
+  DrillDocument,
+  Problem,
+  ProblemState,
+  Step,
+} from "../types/drill";
+import { canRevealVerifiedAnswer, canShowReferenceSolution } from "./reviewGuard";
+
+/**
+ * Secret fields stripped by `redactProblem` / `redactDrill` before sending a drill to the browser:
+ *
+ * 1. Problem-level fields ALWAYS stripped:
+ *    - `hiddenTests`: hidden test cases for PRG execution problems
+ *    - `trapValue`: expected trap answer value used by `math_engine.answer_check`
+ *    - `trapMutant`: buggy mutant code for PRG trap verification
+ *    - `mutants`: list of trap mutant objects (`{ name, code }`)
+ *    - `trapDerivation`: derivation/formula of how the trap answer was constructed
+ *    - `trapGivens`: intermediate parameters/givens used to construct the trap
+ *    - `trapKind`: internal trap classification
+ *    - `flawTag`: internal flaw classification tag
+ *    - `verify`: verification metadata (`{ source, flaw, trapValue }`)
+ *    - `blindSolve`: blind-solver output (`{ setup, strategy, steps, answer, check, reverse, ... }`)
+ *    - `review`: reviewer subagent verdict and notes (`{ id, verdict, note }`)
+ *    - `contextCheck`: context-check subagent verdict and notes (`{ verdict, note }`)
+ *    - `qualityGates`: quality gate audit results (`G1`, `G2`, `G4`, `G6`, `antiLeak`, ...)
+ *    - `givens`: template generator givens / intermediate values
+ *    - `constants`: template generator constants / intermediate values
+ *    - `starterLintExpected`: internal lint gate metadata
+ *
+ * 2. Problem-level fields stripped UNTIL unlocked by learner `state`:
+ *    - `display`, `plainText` (the hidden "Show equation set-up" box and CAS plain-text):
+ *      stripped until the problem is checked/answered (`canRevealVerifiedAnswer`) or
+ *      explicitly revealed (`setupRevealedBeforeAnswer` / `attempts[].setupRevealed`).
+ *    - `steps`, `answerDisplay`, `answerPlain` (step-by-step derivation and verified answer):
+ *      stripped until the problem is checked/answered (`canRevealVerifiedAnswer`) or
+ *      explicitly revealed (`solutionRevealedBeforeAnswer` / `attempts[].solutionRevealed`).
+ *    - `solutionCode` (PRG reference implementation):
+ *      stripped until the latest code review record has `verdict === "pass"` (`canShowReferenceSolution`).
+ *
+ * 3. `answerSpec` fields ALWAYS stripped:
+ *    - `value`: expected scalar / expression / interval answer
+ *    - `values`: expected tuple / solution_set answer values
+ *    - `components`: expected vector components
+ *    - `correct`: correct option ID for multiple-choice problems
+ *    - `accepted`: list of accepted answer strings
+ *    - `tokens`: expected output token sequence for `predict_output` / `code_output`
+ *    - `correctLine`: buggy line number for `line_number` / `find_bug`
+ *    - `flawExplanation`: explanation of the flaw on `correctLine`
+ *    - `trapValue`: trap answer value if present on `answerSpec`
+ *    - `flawTag`: flaw tag if present on `answerSpec`
+ *
+ * 4. `answerSpec.options[]` fields ALWAYS stripped:
+ *    - `provenance`: distractor derivation string on multiple-choice options
+ */
+
+export const ALWAYS_STRIPPED_PROBLEM_FIELDS = [
+  "hiddenTests",
+  "trapValue",
+  "trapMutant",
+  "mutants",
+  "trapDerivation",
+  "trapGivens",
+  "trapKind",
+  "flawTag",
+  "verify",
+  "blindSolve",
+  "review",
+  "contextCheck",
+  "qualityGates",
+  "givens",
+  "constants",
+  "starterLintExpected",
+] as const;
+
+export const CONDITIONAL_STRIPPED_PROBLEM_FIELDS = [
+  "display",
+  "plainText",
+  "steps",
+  "answerDisplay",
+  "answerPlain",
+  "solutionCode",
+] as const;
+
+export const STRIPPED_ANSWER_SPEC_FIELDS = [
+  "value",
+  "values",
+  "components",
+  "correct",
+  "accepted",
+  "tokens",
+  "correctLine",
+  "flawExplanation",
+  "trapValue",
+  "flawTag",
+] as const;
+
+export const STRIPPED_OPTION_FIELDS = ["provenance"] as const;
+
+export type RevealPart = "steps" | "display" | "solution";
+
+const DEFAULT_MATH_PLACEHOLDER_BY_TYPE: Record<string, string> = {
+  interval: "Enter interval, e.g. [a, b) or (-inf, a) U (a, inf)...",
+};
+
+const DEFAULT_MATH_PLACEHOLDER = "Enter final answer (press Enter to check)...";
+const DEFAULT_CODE_PLACEHOLDER = "Enter predicted terminal output (press Enter to check)...";
+
+/**
+ * Unlock rule for math/code step-by-step derivations (`steps`, `answerDisplay`, `answerPlain`):
+ * available once the problem has been checked/answered (`canRevealVerifiedAnswer`) or
+ * the learner explicitly revealed steps before answering (`solutionRevealedBeforeAnswer`).
+ */
+export function canRevealSteps(state?: ProblemState | null): boolean {
+  if (!state) return false;
+  if (canRevealVerifiedAnswer(state)) return true;
+  if (state.solutionRevealedBeforeAnswer) return true;
+  if (state.attempts?.some((a) => a.solutionRevealed)) return true;
+  return false;
+}
+
+/**
+ * Unlock rule for math equation set-up (`display`, `plainText`):
+ * available once the problem has been checked/answered (`canRevealVerifiedAnswer`) or
+ * the learner explicitly revealed set-up before answering (`setupRevealedBeforeAnswer`).
+ */
+export function canRevealDisplay(state?: ProblemState | null): boolean {
+  if (!state) return false;
+  if (canRevealVerifiedAnswer(state)) return true;
+  if (state.setupRevealedBeforeAnswer) return true;
+  if (state.attempts?.some((a) => a.setupRevealed)) return true;
+  return false;
+}
+
+/**
+ * Unlock rule for PRG reference `solutionCode`:
+ * available only when `canShowReferenceSolution(state)` is true (latest review verdict is "pass").
+ */
+export function canRevealSolution(state?: ProblemState | null): boolean {
+  return canShowReferenceSolution(state);
+}
+
+export function isPartUnlocked(part: RevealPart, state?: ProblemState | null): boolean {
+  if (part === "steps") return canRevealSteps(state);
+  if (part === "display") return canRevealDisplay(state);
+  if (part === "solution") return canRevealSolution(state);
+  return false;
+}
+
+export function extractRevealedPart(
+  problem: Partial<Problem>,
+  part: RevealPart
+):
+  | { part: "steps"; steps: Step[]; answerDisplay: string; answerPlain: string }
+  | { part: "display"; display: string; plainText: string }
+  | { part: "solution"; solutionCode: string } {
+  if (part === "steps") {
+    return {
+      part: "steps",
+      steps: Array.isArray(problem.steps) ? problem.steps : [],
+      answerDisplay: problem.answerDisplay ?? "",
+      answerPlain: problem.answerPlain ?? "",
+    };
+  }
+  if (part === "display") {
+    return {
+      part: "display",
+      display: problem.display ?? "",
+      plainText: problem.plainText ?? "",
+    };
+  }
+  return {
+    part: "solution",
+    solutionCode: problem.solutionCode ?? "",
+  };
+}
+
+function collectSecretAnswerTokens(problem: Partial<Problem>): string[] {
+  const acceptedList: string[] = [];
+  const pushToken = (val: unknown) => {
+    if (val === undefined || val === null) return;
+    const s = String(val).toLowerCase().trim();
+    if (s.length >= 2) {
+      acceptedList.push(s);
+    }
+  };
+
+  const spec = problem.answerSpec;
+  if (spec) {
+    if (Array.isArray(spec.accepted)) {
+      spec.accepted.forEach(pushToken);
+    }
+    if (spec.value !== undefined) {
+      pushToken(spec.value);
+    }
+    if (Array.isArray(spec.values)) {
+      spec.values.forEach(pushToken);
+    }
+    if (Array.isArray(spec.tokens)) {
+      spec.tokens.forEach(pushToken);
+    }
+  }
+  if (problem.answerPlain) {
+    pushToken(problem.answerPlain);
+  }
+  if (problem.answerDisplay) {
+    pushToken(problem.answerDisplay);
+    const raw = String(problem.answerDisplay)
+      .replace(/[\$\\]/g, "")
+      .replace(/\\[a-zA-Z]+/g, "")
+      .replace(/\^\{\\circ\}/g, "")
+      .trim()
+      .toLowerCase();
+    if (raw.length >= 2) {
+      acceptedList.push(raw);
+    }
+  }
+  return acceptedList;
+}
+
+/**
+ * Scrub `inputHint` on the server against secret answer fields so no answer leak reaches the client.
+ */
+export function sanitizeInputHint(problem: Partial<Problem>): string | undefined {
+  const hint = problem.inputHint;
+  if (!hint || typeof hint !== "string") return undefined;
+
+  const acceptedList = collectSecretAnswerTokens(problem);
+  const lowerHint = hint.toLowerCase();
+  const hasLeak = acceptedList.some((ans) => lowerHint.includes(ans));
+  if (!hasLeak) return hint;
+
+  const stripped = hint.replace(/\s*\([^)]*e\.g\.[^)]*\)/gi, "").trim();
+  if (stripped && !acceptedList.some((ans) => stripped.toLowerCase().includes(ans))) {
+    return stripped;
+  }
+  return undefined;
+}
+
+function isCodeProblem(problem: Partial<Problem>, subject?: "MATH" | "PRG"): boolean {
+  return (
+    subject === "PRG" ||
+    Boolean(problem.codeSnippet) ||
+    Boolean(problem.workspaceFile) ||
+    problem.codeType === "predict-output" ||
+    problem.codeType === "find-bug" ||
+    ["code_output", "predict_output", "line_number", "find_bug"].includes(
+      problem.answerSpec?.type || ""
+    )
+  );
+}
+
+/**
+ * Compute the safe input placeholder on the server so the client does not need
+ * `answerSpec.accepted`, `answerPlain`, or `answerDisplay`.
+ */
+export function computeSafePlaceholder(
+  problem: Partial<Problem>,
+  subject?: "MATH" | "PRG"
+): string {
+  const fallback = isCodeProblem(problem, subject)
+    ? DEFAULT_CODE_PLACEHOLDER
+    : (problem.answerSpec?.type && DEFAULT_MATH_PLACEHOLDER_BY_TYPE[problem.answerSpec.type]) ||
+      DEFAULT_MATH_PLACEHOLDER;
+
+  const safeHint = sanitizeInputHint(problem);
+  return safeHint || fallback;
+}
+
+/**
+ * Strip secret answer fields from `answerSpec`, keeping only `type`, choice `options`
+ * (without `provenance`), and non-secret format/unit/variable metadata.
+ */
+export function redactAnswerSpec(spec?: AnswerSpec | null): AnswerSpec {
+  if (!spec || typeof spec !== "object") {
+    return { type: "text" };
+  }
+  const copy: Record<string, unknown> = { ...spec };
+  for (const field of STRIPPED_ANSWER_SPEC_FIELDS) {
+    delete copy[field];
+  }
+  if (Array.isArray(spec.options)) {
+    copy.options = spec.options.map((opt) => {
+      if (!opt || typeof opt !== "object") return opt;
+      const optCopy: Record<string, unknown> = { ...(opt as ChoiceOption) };
+      for (const field of STRIPPED_OPTION_FIELDS) {
+        delete optCopy[field];
+      }
+      return optCopy as unknown as ChoiceOption;
+    });
+  }
+  return copy as unknown as AnswerSpec;
+}
+
+/**
+ * Pure function that removes secret answer material from a single problem according to `state`.
+ */
+export function redactProblem(
+  problem: Problem,
+  state?: ProblemState | null,
+  subject?: "MATH" | "PRG"
+): Problem {
+  const effectiveState = state !== undefined ? state : problem.state;
+  const safeHint = sanitizeInputHint(problem);
+  const placeholder = computeSafePlaceholder(problem, subject);
+  const hasSetup = Boolean(problem.hasSetup || problem.display || problem.plainText);
+  const hiddenTestCount =
+    typeof problem.hiddenTestCount === "number"
+      ? problem.hiddenTestCount
+      : Array.isArray(problem.hiddenTests)
+      ? problem.hiddenTests.length
+      : undefined;
+
+  const raw: Record<string, unknown> = { ...problem };
+
+  for (const field of ALWAYS_STRIPPED_PROBLEM_FIELDS) {
+    delete raw[field];
+  }
+
+  if (!canRevealDisplay(effectiveState)) {
+    delete raw.display;
+    delete raw.plainText;
+  }
+
+  if (!canRevealSteps(effectiveState)) {
+    delete raw.steps;
+    delete raw.answerDisplay;
+    delete raw.answerPlain;
+  }
+
+  if (!canRevealSolution(effectiveState)) {
+    delete raw.solutionCode;
+  }
+
+  if (problem.answerSpec) {
+    raw.answerSpec = redactAnswerSpec(problem.answerSpec);
+  }
+  raw.placeholder = placeholder;
+  raw.hasSetup = hasSetup;
+
+  if (safeHint !== undefined) {
+    raw.inputHint = safeHint;
+  } else {
+    delete raw.inputHint;
+  }
+
+  if (hiddenTestCount !== undefined) {
+    raw.hiddenTestCount = hiddenTestCount;
+  }
+
+  if (state !== undefined) {
+    if (state === null) {
+      delete raw.state;
+    } else {
+      raw.state = state;
+    }
+  }
+
+  return raw as unknown as Problem;
+}
+
+/**
+ * Pure function that redacts every problem in a drill document before sending it to the browser.
+ */
+export function redactDrill<T extends DrillDocument>(doc: T): T {
+  const subject: "MATH" | "PRG" =
+    doc.subject === "PRG" || String(doc.unitCode || "").startsWith("PRG-") ? "PRG" : "MATH";
+  return {
+    ...doc,
+    problems: Array.isArray(doc.problems)
+      ? doc.problems.map((p) => redactProblem(p, p.state, subject))
+      : [],
+  };
+}

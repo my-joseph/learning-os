@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { spawn } from "child_process";
-import { getDrillsDataDir, getPythonBin, getWorkspaceRoot, isSafeId } from "@/lib/paths";
+import {
+  getDrillsDataDir,
+  getPythonBin,
+  getWorkspaceRoot,
+  isSafeId,
+  loadDrillFromDisk,
+} from "@/lib/paths";
 
 export async function POST(req: NextRequest) {
   try {
@@ -14,6 +20,30 @@ export async function POST(req: NextRequest) {
     if (!isSafeId(drillId) || !isSafeId(unitCode)) {
       return NextResponse.json({ ok: false, error: "Invalid drillId or unitCode" }, { status: 400 });
     }
+
+    // Rehydrate canonical server drill content so redacted client docs keep full steps/answers when syncing.
+    const serverDoc = loadDrillFromDisk(drillId);
+    const clientStateById = new Map<string, unknown>();
+    for (const p of Array.isArray(drillDoc.problems) ? drillDoc.problems : []) {
+      if (p && typeof p === "object" && typeof p.id === "string" && p.state) {
+        clientStateById.set(p.id, p.state);
+      }
+    }
+    const mergedDoc = serverDoc
+      ? {
+          ...serverDoc,
+          ...(drillDoc.sessionSummary ? { sessionSummary: drillDoc.sessionSummary } : {}),
+          ...(drillDoc.dryRun !== undefined ? { dryRun: drillDoc.dryRun } : {}),
+          problems: Array.isArray(serverDoc.problems)
+            ? (serverDoc.problems as Array<Record<string, unknown>>).map((sp) => {
+                const pid = typeof sp.id === "string" ? sp.id : "";
+                return clientStateById.has(pid)
+                  ? { ...sp, state: clientStateById.get(pid) }
+                  : sp;
+              })
+            : drillDoc.problems,
+        }
+      : drillDoc;
 
     // Progress is saved by notion_sync.drill_sync.save_drill_doc (progress/<DRILL_ID>.json);
     // the drill content file is never rewritten from the Studio.
@@ -87,7 +117,7 @@ print(json.dumps(res))
         }
       });
 
-      proc.stdin.write(JSON.stringify(drillDoc));
+      proc.stdin.write(JSON.stringify(mergedDoc));
       proc.stdin.end();
     });
   } catch (err: unknown) {

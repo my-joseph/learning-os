@@ -271,6 +271,7 @@ export interface Problem {
   prompt: string;
   display?: string;
   plainText?: string;
+  hasSetup?: boolean;
   codeSnippet?: string;
   language?: string;
   codeType?:
@@ -292,6 +293,7 @@ export interface Problem {
   entryPoint?: string;
   visibleTests?: TestCase[];
   hiddenTests?: TestCase[];
+  hiddenTestCount?: number;
   workspaceFile?: string;
   workspaceDir?: string;
   cursorUrl?: string;
@@ -301,9 +303,10 @@ export interface Problem {
   figure?: MathFigureSpec;
   visual?: VisualSpec;
   answerSpec: AnswerSpec;
-  answerDisplay: string;
-  answerPlain: string;
+  answerDisplay?: string;
+  answerPlain?: string;
   inputHint?: string;
+  placeholder?: string;
   checkpointHint: string;
   commonTrapTag?: string;
   trapValue?: string;
@@ -313,7 +316,7 @@ export interface Problem {
   verificationLevel?: "machine-verified" | "partial" | "human-reviewed";
   fingerprint?: string;
   qualityGates?: Record<string, unknown>;
-  steps: Step[];
+  steps?: Step[];
   references?: string[];
   referenceBadges?: ReferenceBadge[];
   state: ProblemState;

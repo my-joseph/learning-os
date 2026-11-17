@@ -2,19 +2,52 @@ import { NextRequest, NextResponse } from "next/server";
 import { spawn } from "child_process";
 import path from "path";
 import fs from "fs";
-import { getPythonBin, getWorkspaceRoot, resolveInsideRoot } from "@/lib/paths";
+import {
+  getPythonBin,
+  getWorkspaceRoot,
+  isSafeId,
+  loadProblemFromDisk,
+  resolveInsideRoot,
+} from "@/lib/paths";
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
+    const drillId = body.drillId || body.drill;
+    const problemId = body.problemId || body.q;
+
+    if (!drillId || !problemId || !isSafeId(drillId) || !isSafeId(problemId)) {
+      return NextResponse.json(
+        { error: "Missing or invalid drillId or problemId" },
+        { status: 400 }
+      );
+    }
+
+    const loaded = loadProblemFromDisk(drillId, problemId);
+    if (!loaded) {
+      return NextResponse.json(
+        { error: "Drill or problem not found" },
+        { status: 404 }
+      );
+    }
+
+    const { problem } = loaded;
+    // Server copy wins: load visibleTests, hiddenTests, and workspaceFile from drills/data.
+    const visibleTests = Array.isArray(problem.visibleTests) ? problem.visibleTests : [];
+    const hiddenTests = Array.isArray(problem.hiddenTests) ? problem.hiddenTests : [];
+    const workspaceFile =
+      typeof problem.workspaceFile === "string" && problem.workspaceFile
+        ? problem.workspaceFile
+        : body.workspaceFile;
+
     const rootDir = getWorkspaceRoot();
     const pythonBin = getPythonBin(rootDir);
 
     let userCode = body.userCode || "";
 
     // Workspace-backed PRG tests always execute the source currently saved on disk.
-    if (body.workspaceFile) {
-      const fullPath = resolveInsideRoot(body.workspaceFile, rootDir);
+    if (workspaceFile) {
+      const fullPath = resolveInsideRoot(workspaceFile, rootDir);
       if (!fullPath) return NextResponse.json({ error: "Workspace file path is invalid" }, { status: 403 });
       if (!fs.existsSync(fullPath)) {
         return NextResponse.json({ error: "Workspace file is missing; materialize the workspace first" }, { status: 404 });
@@ -28,7 +61,7 @@ export async function POST(req: NextRequest) {
           allPassed: false,
           score: 0,
           passedCount: 0,
-          totalCount: (body.visibleTests?.length || 0) + (body.hiddenTests?.length || 0),
+          totalCount: visibleTests.length + hiddenTests.length,
           visibleResults: [
             {
               name: "Empty Code",
@@ -37,7 +70,7 @@ export async function POST(req: NextRequest) {
             },
           ],
           hiddenPassed: 0,
-          hiddenTotal: body.hiddenTests?.length || 0,
+          hiddenTotal: hiddenTests.length,
           executionTimeMs: 0,
         },
         { status: 200 }
@@ -53,8 +86,8 @@ export async function POST(req: NextRequest) {
 
     const payload = {
       userCode,
-      visibleTests: body.visibleTests || [],
-      hiddenTests: body.hiddenTests || [],
+      visibleTests,
+      hiddenTests,
     };
 
     return new Promise<NextResponse>((resolve) => {
@@ -82,7 +115,7 @@ export async function POST(req: NextRequest) {
                 allPassed: false,
                 score: 0,
                 passedCount: 0,
-                totalCount: (body.visibleTests?.length || 0) + (body.hiddenTests?.length || 0),
+                totalCount: visibleTests.length + hiddenTests.length,
                 visibleResults: [
                   {
                     name: "Test Runner Process Error",
@@ -91,7 +124,7 @@ export async function POST(req: NextRequest) {
                   },
                 ],
                 hiddenPassed: 0,
-                hiddenTotal: body.hiddenTests?.length || 0,
+                hiddenTotal: hiddenTests.length,
                 executionTimeMs: 0,
                 rawOutput: stdout + "\n" + stderr,
               },

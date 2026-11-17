@@ -3,6 +3,7 @@ import fs from "fs";
 import path from "path";
 import { getDrillsDataDir, getWorkspaceRoot, isSafeId } from "@/lib/paths";
 import { applyProgress, readProgress } from "@/lib/progress";
+import { redactDrill } from "@/lib/redact";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -59,7 +60,7 @@ export async function GET(req: NextRequest) {
         }
       }
 
-      return NextResponse.json(doc);
+      return NextResponse.json(redactDrill(doc));
     }
   }
 

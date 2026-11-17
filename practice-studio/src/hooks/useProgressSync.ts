@@ -101,7 +101,7 @@ export function useProgressSync({ setStatus }: UseProgressSyncOptions) {
           mistakeNames.add(rawName.replace(/,/g, " /").trim());
         });
         if (typeof p.state?.divergedStep === "number") {
-          const st = p.steps[p.state.divergedStep];
+          const st = p.steps?.[p.state.divergedStep];
           parts.push(`Step ${p.state.divergedStep + 1}: ${st ? st.explain : "Diverged"}`);
         } else if (
           p.state?.score !== null &&

@@ -47,43 +47,11 @@ const DEFAULT_PLACEHOLDER_BY_TYPE: Record<string, string> = {
 };
 
 const getSafeMathPlaceholder = (hint?: string, problem?: Problem): string => {
+  if (problem?.placeholder) return problem.placeholder;
   const fallback =
     (problem?.answerSpec?.type && DEFAULT_PLACEHOLDER_BY_TYPE[problem.answerSpec.type]) ||
     "Enter final answer (press Enter to check)...";
-  if (!hint) return fallback;
-
-  const acceptedList: string[] = [];
-  if (problem?.answerSpec?.accepted) {
-    for (const a of problem.answerSpec.accepted) {
-      if (a !== undefined && a !== null) {
-        acceptedList.push(String(a).toLowerCase().trim());
-      }
-    }
-  }
-  if (problem?.answerPlain) {
-    acceptedList.push(String(problem.answerPlain).toLowerCase().trim());
-  }
-  if (problem?.answerDisplay) {
-    const raw = String(problem.answerDisplay)
-      .replace(/[\$\\]/g, "")
-      .replace(/\\[a-zA-Z]+/g, "")
-      .replace(/\^\{\\circ\}/g, "")
-      .trim()
-      .toLowerCase();
-    if (raw) acceptedList.push(raw);
-  }
-
-  const lowerHint = hint.toLowerCase();
-  const hasLeak = acceptedList.some((ans) => ans.length >= 2 && lowerHint.includes(ans));
-
-  if (!hasLeak) return hint;
-
-  const stripped = hint.replace(/\s*\([^)]*e\.g\.[^)]*\)/gi, "").trim();
-  if (stripped && !acceptedList.some((ans) => ans.length >= 2 && stripped.toLowerCase().includes(ans))) {
-    return stripped;
-  }
-
-  return fallback;
+  return hint || fallback;
 };
 
 export const MathProblemCard: React.FC<MathProblemCardProps> = ({
@@ -113,7 +81,7 @@ export const MathProblemCard: React.FC<MathProblemCardProps> = ({
   const [isChecking, setIsChecking] = useState(false);
   // Equation set-up (display + plain-text) is hidden until the learner asks for it or finishes the problem.
   const [showSetup, setShowSetup] = useState(() => shouldAutoReveal(problem));
-  const hasSetup = Boolean(problem.display || problem.plainText);
+  const hasSetup = Boolean(problem.hasSetup || problem.display || problem.plainText);
   const answered = Boolean(problem.state.lastCheck);
   const hasCorrectAttempt =
     problem.state.score === 1 ||
@@ -129,7 +97,7 @@ export const MathProblemCard: React.FC<MathProblemCardProps> = ({
   }, [problem.id, problem.state.lastCheck?.verdict, problem.state.skipped]);
 
   const toggleSetup = () => {
-    if (!showSetup && !answered && onSetupRevealed) {
+    if (!showSetup && (!answered || (!problem.display && !problem.plainText)) && onSetupRevealed) {
       onSetupRevealed();
     }
     setShowSetup(!showSetup);
@@ -371,7 +339,7 @@ export const MathProblemCard: React.FC<MathProblemCardProps> = ({
         <button
           type="button"
           onClick={() => {
-            if (!showSolution && !hasCorrectAttempt && onSolutionRevealed) {
+            if (!showSolution && (!hasCorrectAttempt || !problem.steps?.length) && onSolutionRevealed) {
               onSolutionRevealed();
             }
             setShowSolution(!showSolution);
@@ -477,12 +445,14 @@ export const MathProblemCard: React.FC<MathProblemCardProps> = ({
             <span className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
               Step-by-Step Derivation (Click a step to compare with your scratchpad)
             </span>
-            <span className="text-xs text-slate-600 dark:text-slate-400">
-              Verified Final: <FormattedText text={`$${problem.answerDisplay}$`} />
-            </span>
+            {problem.answerDisplay && (
+              <span className="text-xs text-slate-600 dark:text-slate-400">
+                Verified Final: <FormattedText text={`$${problem.answerDisplay}$`} />
+              </span>
+            )}
           </div>
           <div>
-            {problem.steps.map((st, sIdx) => (
+            {(problem.steps || []).map((st, sIdx) => (
               <StepRow
                 key={sIdx}
                 step={st}
