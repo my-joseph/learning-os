@@ -1366,6 +1366,141 @@
           }
         }
       ]
+    },
+    {
+      "archetypeKey": "prg-t01-c02-u09-unknown-api-payload",
+      "unitCode": "PRG-T01-C02-U09",
+      "level": 1,
+      "archetype": "debugging",
+      "name": "Unknown API Payload Boundary",
+      "competencies": [
+        "unknown-boundaries",
+        "type-narrowing",
+        "api-integration"
+      ],
+      "coreConcept": "External JSON is data at runtime, not a trusted domain object; keep it as unknown until every required field has been checked.",
+      "mentalModel": [
+        "1. Treat decoded wire data as an untrusted value.",
+        "2. Narrow containers before reading properties.",
+        "3. Validate each field before constructing a domain value."
+      ],
+      "governingInvariant": "A domain value is returned only after runtime checks establish every invariant promised by its type.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "type-assertion-as-validation",
+          "name": "Assertion Mistaken for Validation",
+          "description": "A type assertion changes only the compiler view and does not verify the runtime payload.",
+          "reproducer": "function readProfile(payload: unknown): Profile { return payload as Profile; }"
+        },
+        {
+          "trapTag": "container-check-only",
+          "name": "Container Check Without Field Checks",
+          "description": "Confirming that a payload is an object does not prove that required properties have the expected runtime types.",
+          "reproducer": "function readProfile(payload: unknown): Profile { if (typeof payload === \"object\" && payload !== null) return payload as Profile; throw new TypeError(); }"
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "customer_profile_api",
+          "description": "Validate an external customer response before passing it to application code."
+        },
+        {
+          "domain": "shipment_status_webhook",
+          "description": "Reject malformed webhook fields before updating shipment state."
+        }
+      ],
+      "usedContexts": [],
+      "source": "TypeScript 5.9.3 Handbook: Narrowing — https://www.typescriptlang.org/docs/handbook/2/narrowing.html",
+      "qualityChecks": [
+        {
+          "id": "QC-prg-t01-c02-u09-narrow-unknown-before-access",
+          "check": "Values typed unknown are narrowed to a suitable non-null object before their properties are read.",
+          "why": "Untrusted data can be null or a primitive, and property access can otherwise fail at runtime.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function readProfile(payload: unknown): string { return (payload as { displayName: string }).displayName; }",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-prg-t01-c02-u09-check-required-field-types",
+          "check": "Every required field used to construct a domain value is checked against its runtime type before the value is returned.",
+          "why": "A valid object container may still carry absent or wrongly typed fields.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function isProfile(payload: Record<string, unknown>): boolean { return typeof payload.id === \"string\"; }",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "prg-t01-c02-u09-typed-api-result-boundary",
+      "unitCode": "PRG-T01-C02-U09",
+      "level": 2,
+      "archetype": "problem-solving",
+      "name": "Typed API Result Boundary",
+      "competencies": [
+        "typed-functions",
+        "result-types",
+        "error-design",
+        "api-integration"
+      ],
+      "coreConcept": "A typed API boundary separates transport failure, HTTP failure, and invalid payload from a validated success value, using return types that callers must handle.",
+      "mentalModel": [
+        "1. Keep transport data separate from domain data.",
+        "2. Return success only after status and payload validation both succeed.",
+        "3. Represent expected failure cases explicitly so callers can narrow them."
+      ],
+      "governingInvariant": "A successful result contains only validated domain data, and every expected failure has an explicit result variant.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "collapse-result-variants",
+          "name": "Collapse Success and Failure into One Optional Bag",
+          "description": "Independent optional success and error fields permit contradictory combinations and leave callers guessing which value exists.",
+          "reproducer": "type ApiResult<T> = { data?: T; error?: string };"
+        },
+        {
+          "trapTag": "trust-http-body-on-error",
+          "name": "Trust a Body Before Checking the Response Contract",
+          "description": "An error response may have a different body shape from a successful response and must not be cast to the success type.",
+          "reproducer": "async function loadProfile(response: Response): Promise<Profile> { return await response.json() as Profile; }"
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "order_history_client",
+          "description": "Return validated order data or an explicit HTTP, network, or payload error."
+        },
+        {
+          "domain": "inventory_webhook_handler",
+          "description": "Map malformed or rejected webhook requests into deliberate caller-visible results."
+        }
+      ],
+      "usedContexts": [],
+      "source": "TypeScript 5.9.3 Handbook: Narrowing — https://www.typescriptlang.org/docs/handbook/2/narrowing.html",
+      "qualityChecks": [
+        {
+          "id": "QC-prg-t01-c02-u09-success-requires-validation",
+          "check": "A success result is created only after all required response fields pass runtime validation.",
+          "why": "Static annotations cannot establish the shape of bytes received over the network.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function ok<T>(payload: unknown): { ok: true; data: T } { return { ok: true, data: payload as T }; }",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-prg-t01-c02-u09-explicit-api-failures",
+          "check": "Expected transport, status, or validation failures are returned as distinguishable outcomes rather than hidden in an ambiguous optional-property object.",
+          "why": "Callers need a reliable branch that identifies which result data is available.",
+          "severity": "must",
+          "knownBad": {
+            "code": "type ApiResult<T> = { data?: T; error?: string };",
+            "caughtBy": "review"
+          }
+        }
+      ]
     }
   ]
 }
