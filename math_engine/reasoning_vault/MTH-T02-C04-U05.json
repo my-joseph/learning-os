@@ -1,0 +1,206 @@
+{
+  "unitCode": "MTH-T02-C04-U05",
+  "archetypes": [
+    {
+      "unitCode": "MTH-T02-C04-U05",
+      "archetypeKey": "t02-c04-u05-evaluate-by-remainder-theorem",
+      "level": 1,
+      "name": "Evaluate a Polynomial with the Remainder Theorem",
+      "source": "OpenStax Algebra and Trigonometry 2e §5.5 — Zeros of Polynomial Functions",
+      "coreConcept": "The remainder after division by x-k equals the value f(k).",
+      "mentalModel": "Substituting the divisor's zero into the dividend exposes the leftover constant without carrying out long division.",
+      "governingRelation": "f(x)=(x-k)q(x)+r; substituting x=k gives f(k)=r",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c04-u05-evaluate-at-divisor-sign-trap",
+          "description": "Evaluating at the opposite of the zero of x-k.",
+          "trapFormula": "for x-k, evaluate f(-k)"
+        },
+        {
+          "trapTag": "t02-c04-u05-remainder-as-quotient-trap",
+          "description": "Reporting the quotient value instead of the remainder value.",
+          "trapFormula": "remainder=f(k)q(k)"
+        }
+      ],
+      "versatileDomains": [
+        "polynomial evaluation",
+        "division checks"
+      ],
+      "usedContexts": [],
+      "figureNone": "The item asks for a symbolic remainder; a graph would add no information to the substitution."
+    },
+    {
+      "unitCode": "MTH-T02-C04-U05",
+      "archetypeKey": "t02-c04-u05-factor-theorem-test",
+      "level": 1,
+      "name": "Test a Factor with the Factor Theorem",
+      "source": "OpenStax Algebra and Trigonometry 2e §5.5 — Zeros of Polynomial Functions",
+      "coreConcept": "The binomial x-k is a factor of f exactly when k is a zero of f.",
+      "mentalModel": "A proposed linear factor is a zero-test: substitute its root and check whether the output vanishes.",
+      "governingRelation": "x-k is a factor of f(x) iff f(k)=0",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c04-u05-factor-root-sign-trap",
+          "description": "Testing the opposite sign from the root named by x-k.",
+          "trapFormula": "x-k factor -> test f(-k)"
+        },
+        {
+          "trapTag": "t02-c04-u05-remainder-zero-factor-reversal-trap",
+          "description": "Reversing the implication and treating a nonzero remainder as evidence of a factor.",
+          "trapFormula": "f(k)≠0 -> x-k is a factor"
+        }
+      ],
+      "versatileDomains": [
+        "factorization",
+        "equation solving"
+      ],
+      "usedContexts": [],
+      "figureNone": "The test is an exact substitution and a graph would reveal whether the proposed factor works."
+    },
+    {
+      "unitCode": "MTH-T02-C04-U05",
+      "archetypeKey": "t02-c04-u05-rational-zero-candidates",
+      "level": 1,
+      "name": "List Rational Zero Candidates",
+      "source": "OpenStax Algebra and Trigonometry 2e §5.5 — Zeros of Polynomial Functions",
+      "coreConcept": "For integer coefficients, any rational zero p/q in lowest terms has p dividing the constant term and q dividing the leading coefficient.",
+      "mentalModel": "The theorem narrows the search to a finite candidate list; each candidate still needs to be tested.",
+      "governingRelation": "p/q candidate: p | constant term and q | leading coefficient, with gcd(p,q)=1",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c04-u05-candidate-as-zero-trap",
+          "description": "Treating every Rational Zero Theorem candidate as an actual zero before testing it.",
+          "trapFormula": "candidate p/q -> f(p/q)=0"
+        },
+        {
+          "trapTag": "t02-c04-u05-forget-negative-candidates-trap",
+          "description": "Listing only positive ratios and omitting their negative counterparts.",
+          "trapFormula": "candidate p/q but not -p/q"
+        }
+      ],
+      "versatileDomains": [
+        "root search",
+        "polynomial equation solving"
+      ],
+      "usedContexts": [],
+      "figureNone": "The problem asks for algebraic candidates; a graph could disclose actual zeros and distract from the theorem."
+    },
+    {
+      "unitCode": "MTH-T02-C04-U05",
+      "archetypeKey": "t02-c04-u05-find-polynomial-zeros",
+      "level": 2,
+      "name": "Find Polynomial Zeros",
+      "source": "OpenStax Algebra and Trigonometry 2e §5.5 — Zeros of Polynomial Functions",
+      "coreConcept": "Polynomial zeros can be found by using candidate tests and factorization, then solving the remaining factors.",
+      "mentalModel": "Each verified zero creates a linear factor; division lowers the degree until the remaining factors are solvable.",
+      "governingRelation": "f(k)=0 iff x-k divides f(x); factor the quotient to find remaining zeros",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c04-u05-untested-candidate-trap",
+          "description": "Accepting a rational candidate without substituting it into the polynomial.",
+          "trapFormula": "candidate -> root"
+        },
+        {
+          "trapTag": "t02-c04-u05-missing-zero-from-quotient-trap",
+          "description": "Stopping after one factor and failing to solve the quotient for its other zeros.",
+          "trapFormula": "f(x)=(x-k)q(x), zeros={k} only"
+        },
+        {
+          "trapTag": "t02-c04-u05-only-positive-quotient-root-trap",
+          "description": "When the quotient has both a positive and negative real zero, counting only the positive one as the number of remaining zeros.",
+          "trapFormula": "remaining real-zero count = positive quotient roots only"
+        }
+      ],
+      "versatileDomains": [
+        "equation solving",
+        "polynomial factorization"
+      ],
+      "usedContexts": [],
+      "figureNone": "A graph would display the target zeros rather than exercise finding them algebraically."
+    },
+    {
+      "unitCode": "MTH-T02-C04-U05",
+      "archetypeKey": "t02-c04-u05-reconstruct-from-zeros",
+      "level": 2,
+      "name": "Build a Polynomial from Given Zeros",
+      "source": "OpenStax Algebra and Trigonometry 2e §5.5 — Zeros of Polynomial Functions",
+      "coreConcept": "A polynomial with specified zeros contains corresponding linear factors; a point or coefficient condition can determine its scale.",
+      "mentalModel": "Turn each zero into a factor, multiply to the required degree, then use the additional condition to determine the remaining coefficient.",
+      "governingRelation": "f(x)=a∏(x-r_i)^{m_i}; a is fixed by a known nonzero value or point",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c04-u05-zero-factor-sign-trap",
+          "description": "Writing x+r for a zero r instead of x-r.",
+          "trapFormula": "zero r -> factor x+r"
+        },
+        {
+          "trapTag": "t02-c04-u05-missing-scale-factor-trap",
+          "description": "Assuming the leading scale is one without applying the supplied condition.",
+          "trapFormula": "a=1 without using condition"
+        }
+      ],
+      "versatileDomains": [
+        "model reconstruction",
+        "polynomial interpolation"
+      ],
+      "usedContexts": [],
+      "figureNone": "The target is an algebraic formula; a graph is unnecessary and could expose the factors."
+    },
+    {
+      "unitCode": "MTH-T02-C04-U05",
+      "archetypeKey": "t02-c04-u05-descartes-sign-rule",
+      "level": 1,
+      "name": "Bound Positive and Negative Zeros with Descartes' Rule",
+      "source": "OpenStax Algebra and Trigonometry 2e §5.5 — Zeros of Polynomial Functions",
+      "coreConcept": "Sign changes in f(x) bound the number of positive real zeros; sign changes in f(-x) bound negative real zeros.",
+      "mentalModel": "Count sign changes twice: once as written for positive inputs and once after substituting the negative input; each count is an upper bound reducible by an even number.",
+      "governingRelation": "positive zero count = sign changes in f(x) minus an even integer; negative zero count = sign changes in f(-x) minus an even integer",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c04-u05-descartes-exact-count-trap",
+          "description": "Treating the sign-change count as the exact number of real zeros.",
+          "trapFormula": "zeros = sign changes exactly"
+        },
+        {
+          "trapTag": "t02-c04-u05-descartes-fminusx-omission-trap",
+          "description": "Using f(x) sign changes to bound negative roots instead of examining f(-x).",
+          "trapFormula": "negative root bound from f(x)"
+        }
+      ],
+      "versatileDomains": [
+        "root-count analysis",
+        "polynomial graph analysis"
+      ],
+      "usedContexts": [],
+      "figureNone": "The question asks for an algebraic upper bound; plotting could reveal the actual count."
+    },
+    {
+      "unitCode": "MTH-T02-C04-U05",
+      "archetypeKey": "t02-c04-u05-model-polynomial-equation",
+      "level": 2,
+      "name": "Model and Solve a Polynomial Application",
+      "source": "OpenStax Algebra and Trigonometry 2e §5.5 — Zeros of Polynomial Functions",
+      "coreConcept": "A real-world constraint can be expressed as a polynomial equation whose meaningful solutions must satisfy the original quantities and conditions.",
+      "mentalModel": "Translate the relationships into one equation, find its polynomial zeros, then reject roots that violate the modeled domain or constraints.",
+      "governingRelation": "model relation -> polynomial equation f(x)=0 -> retain only roots in the feasible domain",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c04-u05-unfiltered-model-root-trap",
+          "description": "Reporting an algebraic root that violates a quantity constraint in the original model.",
+          "trapFormula": "root x<0 retained for a positive length"
+        },
+        {
+          "trapTag": "t02-c04-u05-solve-before-model-trap",
+          "description": "Solving a polynomial expression without first encoding the stated relationship as an equation.",
+          "trapFormula": "expression roots reported without model constraint"
+        }
+      ],
+      "versatileDomains": [
+        "geometric modeling",
+        "physical constraints"
+      ],
+      "usedContexts": [],
+      "figureNone": "The item can be expressed and checked with exact algebra; no spatial figure is needed for its chosen context."
+    }
+  ]
+}
