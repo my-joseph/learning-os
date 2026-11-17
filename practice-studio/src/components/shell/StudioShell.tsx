@@ -4,10 +4,14 @@ import React, { useState, useEffect, useRef } from "react";
 import { AlertCircle, CheckCircle2, X } from "lucide-react";
 import { DrillDocument, DrillListItem } from "@/types/drill";
 import { DrillFilter, StatusMessage, ViewMode } from "@/hooks/types";
+import { Workspace } from "@/lib/routes";
 import { QuizPaginationBar } from "@/components/QuizPaginationBar";
 import { StudioHeader } from "./StudioHeader";
 
 interface StudioShellProps {
+  workspace: Workspace;
+  mathHref: string | null;
+  codeHref: string | null;
   viewMode: ViewMode;
   currentDrill: DrillDocument | null;
   currentProblemIndex: number;
@@ -42,6 +46,9 @@ interface StudioShellProps {
 
 /** Page shell composing the sticky header, question tiles bar, status banner, and main workspace. */
 export const StudioShell: React.FC<StudioShellProps> = ({
+  workspace,
+  mathHref,
+  codeHref,
   viewMode,
   currentDrill,
   currentProblemIndex,
@@ -149,6 +156,9 @@ export const StudioShell: React.FC<StudioShellProps> = ({
 
         <StudioHeader
           showHeader={showHeader}
+          workspace={workspace}
+          mathHref={mathHref}
+          codeHref={codeHref}
           currentDrill={currentDrill}
           liveScore={liveScore}
           maxScore={maxScore}

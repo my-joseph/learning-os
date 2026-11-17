@@ -3,7 +3,7 @@ export interface StatusMessage {
   type: "pass" | "warn" | "fail";
 }
 
-export type DrillFilter = "ALL" | "UNFINISHED" | "GRADED" | "MATH" | "PRG";
+export type DrillFilter = "ALL" | "UNFINISHED" | "GRADED";
 
 export type ViewMode = "quiz" | "review";
 
