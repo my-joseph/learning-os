@@ -82,7 +82,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
               type="text"
               value={drillSearch}
               onChange={(e) => onSearchChange(e.target.value)}
-              placeholder="Search by unit title, subject code (MTH, PRG), or drill ID..."
+              placeholder="Search by unit title, unit code, or drill ID..."
               className="w-full bg-transparent text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none"
               autoFocus
             />
@@ -103,8 +103,6 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
               { id: "ALL", label: "All" },
               { id: "UNFINISHED", label: "Unfinished" },
               { id: "GRADED", label: "Synced" },
-              { id: "MATH", label: "MATH" },
-              { id: "PRG", label: "PRG" },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -148,19 +146,8 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                     }`}
                   >
                     <div className="min-w-0 flex-1 space-y-1">
-                      <div className="flex items-center gap-1.5">
-                        <span
-                          className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded ${
-                            d.subject === "PRG"
-                              ? "bg-sky-100 dark:bg-sky-500/20 text-sky-700 dark:text-sky-300"
-                              : "bg-indigo-100 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300"
-                          }`}
-                        >
-                          {d.subject || "MATH"}
-                        </span>
-                        <span className="text-xs font-bold text-slate-900 dark:text-white truncate">
-                          {d.unitTitle || d.unitCode}
-                        </span>
+                      <div className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                        {d.unitTitle || d.unitCode}
                       </div>
                       <div className="text-[11px] font-mono text-slate-600 dark:text-slate-400">
                         {d.drillId} · {d.unitCode} · {d.questionCount} Qs

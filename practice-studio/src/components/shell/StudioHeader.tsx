@@ -1,14 +1,19 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { ArrowUpRight, Moon, RotateCcw, Sun } from "lucide-react";
 import { DrillDocument, DrillListItem } from "@/types/drill";
 import { DrillFilter, StatusMessage } from "@/hooks/types";
+import { Workspace } from "@/lib/routes";
 import { DrillSwitcher } from "./DrillSwitcher";
 import { GeneratePopover } from "./GeneratePopover";
 
 interface StudioHeaderProps {
   showHeader: boolean;
+  workspace: Workspace;
+  mathHref: string | null;
+  codeHref: string | null;
   currentDrill: DrillDocument | null;
   liveScore: number;
   maxScore: number;
@@ -42,6 +47,9 @@ interface StudioHeaderProps {
 /** Sticky two-row Studio header with drill switcher, score summary, theme toggle, and tiles slot. */
 export const StudioHeader: React.FC<StudioHeaderProps> = ({
   showHeader,
+  workspace,
+  mathHref,
+  codeHref,
   currentDrill,
   liveScore,
   maxScore,
@@ -68,6 +76,11 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
   onStatusChange,
   tiles,
 }) => {
+  const workspaceOptions: { id: Workspace; label: string; href: string | null }[] = [
+    { id: "math", label: "Math", href: mathHref },
+    { id: "code", label: "Programming", href: codeHref },
+  ];
+
   return (
     <header
       className={`sticky top-2 z-50 bg-white/95 dark:bg-[#151924]/95 backdrop-blur-md border border-slate-200 dark:border-[#2c354d] rounded-2xl p-3.5 mb-5 shadow-md transition-all duration-300 ease-in-out ${
@@ -76,10 +89,46 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
           : "-translate-y-[130%] opacity-0 pointer-events-none"
       }`}
     >
-      {/* Row 1: Smart Drill Switcher + Notion Unit + [+ Generate] | Score + Reset + Theme */}
+      {/* Row 1: Workspace Switch + Smart Drill Switcher + Notion Unit | Score + Reset + Theme */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3">
-        {/* Left Zone: Smart Drill Switcher & Generate Popover */}
-        <div className="flex items-center gap-2.5 min-w-0">
+        {/* Left Zone: Workspace Switch, Smart Drill Switcher & Generate Popover */}
+        <div className="flex flex-wrap items-center gap-2.5 min-w-0">
+          <nav
+            aria-label="Workspace"
+            className="inline-flex items-center rounded-xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-1 shrink-0"
+          >
+            {workspaceOptions.map((opt) => {
+              const isActive = workspace === opt.id;
+              const cls = `px-3 py-1.5 rounded-lg text-xs font-medium transition-colors whitespace-nowrap ${
+                isActive
+                  ? "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm"
+                  : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200"
+              }`;
+              if (!opt.href) {
+                return (
+                  <span
+                    key={opt.id}
+                    aria-current={isActive ? "page" : undefined}
+                    aria-disabled={!isActive ? true : undefined}
+                    className={`${cls} ${!isActive ? "opacity-50 cursor-not-allowed" : ""}`}
+                  >
+                    {opt.label}
+                  </span>
+                );
+              }
+              return (
+                <Link
+                  key={opt.id}
+                  href={opt.href}
+                  aria-current={isActive ? "page" : undefined}
+                  className={cls}
+                >
+                  {opt.label}
+                </Link>
+              );
+            })}
+          </nav>
+
           <DrillSwitcher
             isOpen={showDrillSwitcher}
             onToggle={onToggleDrillSwitcher}

@@ -12,21 +12,29 @@ import {
   resetProblemTimer,
   TelemetryTimerState,
 } from "@/lib/telemetryTimer";
+import { findProblemIndex } from "@/lib/routes";
 import { StatusMessage, ViewMode } from "./types";
 
 interface UseDrillOptions {
   triggerAutoSave: (doc: DrillDocument) => void;
   setStatus: React.Dispatch<React.SetStateAction<StatusMessage | null>>;
-  onDrillLoaded?: () => void;
+  onDrillLoaded?: (doc: DrillDocument) => void;
+  onQuestionChange?: (drillId: string, problemId: string) => void;
 }
 
 /** Manage active drill loading, problem navigation, telemetry timer, and problem state updates. */
-export function useDrill({ triggerAutoSave, setStatus, onDrillLoaded }: UseDrillOptions) {
+export function useDrill({
+  triggerAutoSave,
+  setStatus,
+  onDrillLoaded,
+  onQuestionChange,
+}: UseDrillOptions) {
   const [currentDrill, setCurrentDrill] = useState<DrillDocument | null>(null);
   const [activeSteps, setActiveSteps] = useState<{ [probId: string]: number | null }>({});
   const [currentProblemIndex, setCurrentProblemIndex] = useState<number>(0);
   const [viewMode, setViewMode] = useState<ViewMode>("quiz");
   const [isLoadingDrill, setIsLoadingDrill] = useState<boolean>(true);
+  const [drillNotFound, setDrillNotFound] = useState<boolean>(false);
 
   // Minimal telemetry: robust timer measuring visible active problem time & hint telemetry
   const timerStateRef = useRef<TelemetryTimerState>(createTelemetryTimerState());
@@ -55,10 +63,16 @@ export function useDrill({ triggerAutoSave, setStatus, onDrillLoaded }: UseDrill
   }, []);
 
   const loadDrill = useCallback(
-    async (id: string) => {
+    async (id: string, initialQuestionId?: string | null) => {
       setIsLoadingDrill(true);
+      setDrillNotFound(false);
       try {
         const res = await fetch(`/api/drill?id=${encodeURIComponent(id)}`);
+        if (res.status === 404 || res.status === 400) {
+          setCurrentDrill(null);
+          setDrillNotFound(true);
+          return;
+        }
         if (!res.ok) throw new Error("Could not load drill");
         const doc: DrillDocument = await res.json();
         const normalizedDoc: DrillDocument = {
@@ -81,9 +95,9 @@ export function useDrill({ triggerAutoSave, setStatus, onDrillLoaded }: UseDrill
           })),
         };
         setCurrentDrill(normalizedDoc);
-        setCurrentProblemIndex(0);
+        setCurrentProblemIndex(findProblemIndex(normalizedDoc.problems, initialQuestionId));
         setViewMode("quiz");
-        onDrillLoaded?.();
+        onDrillLoaded?.(normalizedDoc);
         setActiveSteps({});
       } catch (err: unknown) {
         const errMsg = err instanceof Error ? err.message : String(err);
@@ -303,31 +317,49 @@ export function useDrill({ triggerAutoSave, setStatus, onDrillLoaded }: UseDrill
     setCurrentProblemIndex(0);
     setViewMode("quiz");
     triggerAutoSave(updated);
+    if (updated.problems[0]) {
+      onQuestionChange?.(updated.drillId, updated.problems[0].id);
+    }
     setStatus({
       text: `Reset ${currentDrill.drillId} to initial state.`,
       type: "pass",
     });
   };
 
+  const selectQuestionIndex = useCallback(
+    (nextIdx: number) => {
+      if (!currentDrill) return;
+      const clamped = Math.max(0, Math.min(nextIdx, currentDrill.problems.length - 1));
+      setCurrentProblemIndex(clamped);
+      const prob = currentDrill.problems[clamped];
+      if (prob) {
+        onQuestionChange?.(currentDrill.drillId, prob.id);
+      }
+    },
+    [currentDrill, onQuestionChange]
+  );
+
   const handlePrevQuestion = useCallback(() => {
-    setCurrentProblemIndex((prev) => (prev > 0 ? prev - 1 : prev));
-  }, []);
+    if (currentProblemIndex > 0) {
+      selectQuestionIndex(currentProblemIndex - 1);
+    }
+  }, [currentProblemIndex, selectQuestionIndex]);
 
   const handleNextQuestion = useCallback(() => {
-    setCurrentProblemIndex((prev) => {
-      const maxIdx = (currentDrill?.problems.length ?? 1) - 1;
-      return prev < maxIdx ? prev + 1 : prev;
-    });
-  }, [currentDrill]);
+    const maxIdx = (currentDrill?.problems.length ?? 1) - 1;
+    if (currentProblemIndex < maxIdx) {
+      selectQuestionIndex(currentProblemIndex + 1);
+    }
+  }, [currentDrill, currentProblemIndex, selectQuestionIndex]);
 
   const handleSelectQuestion = useCallback(
     (idx: number) => {
-      setCurrentProblemIndex(idx);
+      selectQuestionIndex(idx);
       if (viewMode !== "quiz") {
         setViewMode("quiz");
       }
     },
-    [viewMode]
+    [selectQuestionIndex, viewMode]
   );
 
   // Keyboard navigation
@@ -356,10 +388,12 @@ export function useDrill({ triggerAutoSave, setStatus, onDrillLoaded }: UseDrill
     setCurrentDrill,
     activeSteps,
     currentProblemIndex,
+    setCurrentProblemIndex,
     viewMode,
     setViewMode,
     isLoadingDrill,
     setIsLoadingDrill,
+    drillNotFound,
     loadDrill,
     handleHintRevealed,
     handleCheckAnswer,
