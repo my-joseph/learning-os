@@ -1,0 +1,713 @@
+{
+  "unitCode": "MTH-T02-C05-U01",
+  "topicTitle": "Functions & Algebra",
+  "unitTitle": "Exponential Functions",
+  "subject": "MATH",
+  "problems": [
+    {
+      "id": "Q01",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c05-u01-evaluate-exponential-functions",
+      "context": "",
+      "prompt": "Evaluate $f(x) = 3 \\cdot 4^{x - 2}$ at $x = 5$.",
+      "display": "f(x) = 3 \\cdot 4^{x - 2}",
+      "plainText": "f(x) = 3 * 4^(x - 2)",
+      "givens": {
+        "a": 3,
+        "b": 4,
+        "c": 2,
+        "x": 5
+      },
+      "constants": {},
+      "trapGivens": [
+        3,
+        4,
+        2,
+        5
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "192",
+        "tolerance": 0
+      },
+      "answerPlain": "192",
+      "answerDisplay": "192",
+      "inputHint": "Enter an integer",
+      "commonTrapTag": "t02-c05-u01-multiply-before-exponent-trap",
+      "trapDerivation": "(3 * 4)^(5 - 2)",
+      "trapValue": "1728",
+      "verify": {
+        "source": "3 * 4^(5 - 2)",
+        "trapValue": "1728"
+      },
+      "checkpointHint": "Substitute the input into the exponent first, evaluate the power of the base, and then multiply by the leading coefficient.",
+      "references": [
+        "MTH-T02-C05-U01"
+      ],
+      "verificationLevel": "partial",
+      "steps": [
+        {
+          "latex": "f(5) = 3 \\cdot 4^{5 - 2}",
+          "explain": "Substitute x = 5 into the exponent.",
+          "eq": [
+            "3 * 4^(5 - 2)",
+            "3 * 4^3"
+          ]
+        },
+        {
+          "latex": "f(5) = 3 \\cdot 4^3",
+          "explain": "Simplify the exponent.",
+          "eq": [
+            "5 - 2",
+            "3"
+          ]
+        },
+        {
+          "latex": "f(5) = 3 \\cdot 64",
+          "explain": "Evaluate the power before multiplying.",
+          "eq": [
+            "4^3",
+            "64"
+          ]
+        },
+        {
+          "latex": "f(5) = 192",
+          "explain": "Multiply by the leading coefficient.",
+          "val": "192"
+        }
+      ],
+      "review": {
+        "verdict": "pass",
+        "note": "Answer 192, trapValue 1728, single-transformation steps, non-leaking hint and display, and L1 direct evaluation structure all match the vault archetype, commonTrapTag, and brief."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C05-U01",
+          "title": "Exponential Functions",
+          "notionUrl": "https://www.notion.so/4013818f8ba08143b939e514f8fe7007"
+        }
+      ],
+      "unitCode": "MTH-T02-C05-U01",
+      "fingerprint": "t02-c05-u01-multiply-before-exponent-trap|direct|f(x) = # * #^(x - #)",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 4,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c05-u01-multiply-before-exponent-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 15
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 1 - Foundation"
+    },
+    {
+      "id": "Q02",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c05-u01-evaluate-natural-exponential",
+      "context": "",
+      "prompt": "Evaluate $f(x) = 200 e^{0.14 x}$ at $x = 3$. Round your answer to two decimal places.",
+      "display": "f(x) = 200 e^{0.14 x}",
+      "plainText": "f(x) = 200 * e^(0.14 * x)",
+      "givens": {
+        "a": 200,
+        "k": 0.14,
+        "x": 3
+      },
+      "constants": {},
+      "trapGivens": [
+        200,
+        0.14,
+        3
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "304.39",
+        "tolerance": 0.01
+      },
+      "answerPlain": "304.39",
+      "answerDisplay": "304.39",
+      "inputHint": "Enter a decimal rounded to two decimal places",
+      "commonTrapTag": "t02-c05-u01-round-exponent-first-trap",
+      "trapDerivation": "floor(200 * exp(floor(0.14 * 3 * 10) / 10) * 100 + 0.5) / 100",
+      "trapValue": "298.36",
+      "verify": {
+        "source": "floor(200 * exp(0.14 * 3) * 100 + 0.5) / 100",
+        "trapValue": "298.36"
+      },
+      "checkpointHint": "Keep the full exponent when evaluating the natural base, and round only at the final step.",
+      "references": [
+        "MTH-T02-C05-U01"
+      ],
+      "verificationLevel": "partial",
+      "steps": [
+        {
+          "latex": "f(3) = 200 e^{0.14 \\cdot 3}",
+          "explain": "Substitute x = 3 into the exponent.",
+          "eq": [
+            "0.14 * 3",
+            "0.42"
+          ]
+        },
+        {
+          "latex": "f(3) = 200 e^{0.42}",
+          "explain": "Compute the exact product in the exponent without rounding."
+        },
+        {
+          "latex": "f(3) \\approx 200 \\cdot 1.52196156",
+          "explain": "Evaluate the natural exponential."
+        },
+        {
+          "latex": "f(3) \\approx 304.39",
+          "explain": "Multiply by 200 and round to two decimal places.",
+          "val": "304.39"
+        }
+      ],
+      "review": {
+        "verdict": "pass",
+        "note": "Answer 304.39, trapValue 298.36, unambiguous two-decimal rounding, single-transformation steps, and zero-number hint accurately exercise the natural exponential archetype and premature-exponent-rounding trap."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C05-U01",
+          "title": "Exponential Functions",
+          "notionUrl": "https://www.notion.so/4013818f8ba08143b939e514f8fe7007"
+        }
+      ],
+      "unitCode": "MTH-T02-C05-U01",
+      "fingerprint": "t02-c05-u01-round-exponent-first-trap|direct|f(x) = # * e^(# * x)",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 4,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c05-u01-round-exponent-first-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 15
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 1 - Foundation"
+    },
+    {
+      "id": "Q03",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c05-u01-write-exponential-rule-from-data",
+      "context": "",
+      "prompt": "An exponential function $f(x) = a b^x$ with $b > 0$ satisfies $f(1) = 12$ and $f(3) = 108$. Find the initial value $a$.",
+      "display": "f(x) = a b^x",
+      "plainText": "f(x) = a * b^x",
+      "givens": {
+        "x1": 1,
+        "y1": 12,
+        "x2": 3,
+        "y2": 108
+      },
+      "constants": {},
+      "trapGivens": [
+        1,
+        12,
+        3,
+        108
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "4",
+        "tolerance": 0
+      },
+      "answerPlain": "4",
+      "answerDisplay": "4",
+      "inputHint": "Enter a number",
+      "commonTrapTag": "t02-c05-u01-additive-change-as-base-trap",
+      "trapDerivation": "12 - (108 - 12) / (3 - 1)",
+      "trapValue": "-36",
+      "verify": {
+        "source": "12 / sqrt(108 / 12)",
+        "trapValue": "-36"
+      },
+      "checkpointHint": "Divide the two function equations to eliminate the initial value and solve for the positive base first.",
+      "references": [
+        "MTH-T02-C05-U01"
+      ],
+      "verificationLevel": "partial",
+      "steps": [
+        {
+          "latex": "\\frac{f(3)}{f(1)} = \\frac{a b^3}{a b}",
+          "explain": "Form the ratio of the two function expressions."
+        },
+        {
+          "latex": "\\frac{108}{12} = \\frac{a b^3}{a b}",
+          "explain": "Substitute the given outputs f(3) = 108 and f(1) = 12."
+        },
+        {
+          "latex": "\\frac{108}{12} = \\frac{b^3}{b}",
+          "explain": "Cancel the common factor a in the numerator and denominator."
+        },
+        {
+          "latex": "\\frac{108}{12} = b^{3 - 1}",
+          "explain": "Apply the quotient rule by subtracting exponents."
+        },
+        {
+          "latex": "9 = b^{3 - 1}",
+          "explain": "Divide 108 by 12.",
+          "eq": [
+            "108 / 12",
+            "9"
+          ]
+        },
+        {
+          "latex": "b^2 = 9",
+          "explain": "Simplify the exponent 3 - 1.",
+          "eq": [
+            "3 - 1",
+            "2"
+          ]
+        },
+        {
+          "latex": "b = 3",
+          "explain": "Take the positive square root since the base b > 0.",
+          "eq": [
+            "sqrt(9)",
+            "3"
+          ]
+        },
+        {
+          "latex": "12 = a \\cdot 3",
+          "explain": "Substitute b = 3 into f(1) = 12."
+        },
+        {
+          "latex": "a = 4",
+          "explain": "Divide both sides by 3 to solve for the initial value.",
+          "val": "4"
+        }
+      ],
+      "review": {
+        "verdict": "pass",
+        "note": "Answer 4, trapValue -36, L2 reverse setup, non-leaking zero-number hint, and 9 single-transformation steps now satisfy the vault archetype, commonTrapTag, and V3 standards."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C05-U01",
+          "title": "Exponential Functions",
+          "notionUrl": "https://www.notion.so/4013818f8ba08143b939e514f8fe7007"
+        }
+      ],
+      "unitCode": "MTH-T02-C05-U01",
+      "fingerprint": "t02-c05-u01-additive-change-as-base-trap|reverse|f(x) = a * b^x",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 9,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c05-u01-additive-change-as-base-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 25
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 2 - Standard Exam"
+    },
+    {
+      "id": "Q04",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c05-u01-continuous-compound-interest",
+      "context": "compound_interest",
+      "prompt": "An account starts with $\\$4000$ and earns $6\\%$ annual interest compounded continuously for $5$ years. What is the balance, in dollars, rounded to the nearest cent?",
+      "display": "A = P e^{rt}",
+      "plainText": "A = P * e^(r * t)",
+      "givens": {
+        "P": 4000,
+        "r_pct": 6,
+        "t": 5
+      },
+      "constants": {
+        "hundred": 100
+      },
+      "trapGivens": [
+        4000,
+        6,
+        5,
+        100
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "5399.44",
+        "tolerance": 0.01
+      },
+      "answerPlain": "5399.44",
+      "answerDisplay": "5399.44",
+      "inputHint": "Enter a dollar amount rounded to two decimal places",
+      "commonTrapTag": "t02-c05-u01-linear-continuous-interest-trap",
+      "trapDerivation": "4000 * (1 + (6 / 100) * 5)",
+      "trapValue": "5200",
+      "verify": {
+        "source": "floor(4000 * exp((6 / 100) * 5) * 100 + 0.5) / 100",
+        "trapValue": "5200"
+      },
+      "checkpointHint": "Convert the percentage rate to a decimal and use the natural base model for continuous compounding.",
+      "references": [
+        "MTH-T02-C05-U01"
+      ],
+      "verificationLevel": "partial",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "Uses the standard continuous compound interest law A = P*e^(rt); dollar balance, annual interest rate, and years have consistent units and realistic positive bounds; passes the removal test because the compounding story specifies the mathematical model."
+      },
+      "steps": [
+        {
+          "latex": "r = \\frac{6}{100}",
+          "explain": "Express the percentage annual interest rate as a fraction.",
+          "eq": [
+            "6 / 100",
+            "0.06"
+          ]
+        },
+        {
+          "latex": "r = 0.06",
+          "explain": "Convert the fraction to a decimal rate."
+        },
+        {
+          "latex": "r t = 0.06 \\cdot 5",
+          "explain": "Set up the product of the decimal rate and elapsed years.",
+          "eq": [
+            "0.06 * 5",
+            "0.3"
+          ]
+        },
+        {
+          "latex": "r t = 0.3",
+          "explain": "Compute the exponent for continuous compounding."
+        },
+        {
+          "latex": "A = 4000 e^{0.3}",
+          "explain": "Substitute the principal and exponent into the continuous compounding formula."
+        },
+        {
+          "latex": "A \\approx 5399.44",
+          "explain": "Evaluate the exponential and round to the nearest cent.",
+          "val": "5399.44"
+        }
+      ],
+      "review": {
+        "verdict": "pass",
+        "note": "Answer 5399.44, trapValue 5200, dollar and cent rounding wording, non-leaking hint and display, and valid compound_interest context fit the brief and continuous compounding archetype."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C05-U01",
+          "title": "Exponential Functions",
+          "notionUrl": "https://www.notion.so/4013818f8ba08143b939e514f8fe7007"
+        }
+      ],
+      "unitCode": "MTH-T02-C05-U01",
+      "fingerprint": "t02-c05-u01-linear-continuous-interest-trap|direct|A = P * e^(r * t)",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 6,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c05-u01-linear-continuous-interest-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 19
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 2 - Standard Exam"
+    },
+    {
+      "id": "Q05",
+      "level": 3,
+      "category": "Compounding Diagnosis",
+      "form": "diagnose",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c05-u01-compound-interest-model",
+      "context": "",
+      "prompt": "A student calculated the balance of an account starting with $\\$1000$ earning $8\\%$ annual interest compounded quarterly for $3$ years:\nLine 1: $A = 1000\\left(1 + \\frac{0.08}{4}\\right)^3$\nLine 2: $= 1000(1 + 0.02)^3$\nLine 3: $= 1000(1.02)^3$\nLine 4: $= 1061.208$\nWhich line is the first one that is wrong?",
+      "display": "A = P\\left(1 + \\frac{r}{n}\\right)^{nt}",
+      "plainText": "A student calculated the balance of $1000 at 8% compounded quarterly for 3 years: Line 1: 1000*(1 + 0.08/4)^3; Line 2: 1000*(1 + 0.02)^3; Line 3: 1000*(1.02)^3; Line 4: 1061.208. Which line is the first one that is wrong?",
+      "givens": {
+        "P": 1000,
+        "r_pct": 8,
+        "t": 3
+      },
+      "constants": {
+        "n": 4,
+        "hundred": 100
+      },
+      "trapGivens": [
+        1000,
+        8,
+        4,
+        3,
+        100
+      ],
+      "answerSpec": {
+        "type": "choice",
+        "options": [
+          {
+            "id": "1",
+            "label": "Line 1"
+          },
+          {
+            "id": "2",
+            "label": "Line 2",
+            "trapTag": "t02-c05-u01-period-count-missing-trap"
+          },
+          {
+            "id": "3",
+            "label": "Line 3",
+            "trapTag": "t02-c05-u01-period-count-missing-trap"
+          },
+          {
+            "id": "4",
+            "label": "Line 4",
+            "trapTag": "t02-c05-u01-period-count-missing-trap"
+          }
+        ],
+        "correct": "1"
+      },
+      "answerPlain": "1",
+      "answerDisplay": "\\text{Line 1}",
+      "inputHint": "Choose a line",
+      "commonTrapTag": "t02-c05-u01-period-count-missing-trap",
+      "trapDerivation": "1000 * (1 + (8 / 100) / 4)^3",
+      "trapValue": "1061.208",
+      "verify": {
+        "source": "floor(1000 * (1 + (8 / 100) / 4)^(4 * 3) * 100 + 0.5) / 100",
+        "trapValue": "1061.208",
+        "flaw": {
+          "values": [
+            "1000 * (1 + 0.08 / 4)^3",
+            "1000 * (1 + 0.02)^3",
+            "1000 * 1.02^3",
+            "1061.208"
+          ],
+          "firstWrong": 1
+        }
+      },
+      "checkpointHint": "Check whether each line represents the same compounding setup and numerical value as the problem statement and the line above it.",
+      "references": [
+        "MTH-T02-C05-U01"
+      ],
+      "verificationLevel": "partial",
+      "blindSolve": {
+        "answer": "1",
+        "ambiguous": false,
+        "setup": "translate",
+        "strategy": "prescribed",
+        "check": "none",
+        "task": "diagnose",
+        "reverse": false,
+        "steps": 2
+      },
+      "steps": [
+        {
+          "latex": "A = 1000\\left(1 + \\frac{0.08}{4}\\right)^{4 \\cdot 3}",
+          "explain": "Line 1 is the first wrong line: quarterly compounding over 3 years requires n * t = 4 * 3 periods in the exponent.",
+          "eq": [
+            "1000 * (1 + 0.08 / 4)^(4 * 3)",
+            "1000 * (1 + 0.08 / 4)^12"
+          ]
+        },
+        {
+          "latex": "A = 1000\\left(1 + \\frac{0.08}{4}\\right)^{12}",
+          "explain": "Multiply the compounding frequency by the number of years.",
+          "eq": [
+            "4 * 3",
+            "12"
+          ]
+        },
+        {
+          "latex": "A = 1000(1 + 0.02)^{12}",
+          "explain": "Divide the annual rate by 4 to find the quarterly rate.",
+          "eq": [
+            "0.08 / 4",
+            "0.02"
+          ]
+        },
+        {
+          "latex": "A = 1000(1.02)^{12}",
+          "explain": "Add 1 and the quarterly rate inside the parentheses.",
+          "eq": [
+            "1 + 0.02",
+            "1.02"
+          ]
+        },
+        {
+          "latex": "A \\approx 1000 \\cdot 1.26824179",
+          "explain": "Evaluate 1.02 to the twelfth power."
+        },
+        {
+          "latex": "A \\approx 1268.24",
+          "explain": "Multiply by 1000 and round to the nearest cent.",
+          "val": "1268.24"
+        }
+      ],
+      "review": {
+        "verdict": "pass",
+        "note": "Line 1 diagnosis, trapValue 1061.208 matching Line 4, post-flaw distractor trapTags on Lines 2-4, non-leaking zero-number hint, and 6 single-transformation steps now satisfy the vault archetype and V3 standards."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C05-U01",
+          "title": "Exponential Functions",
+          "notionUrl": "https://www.notion.so/4013818f8ba08143b939e514f8fe7007"
+        }
+      ],
+      "unitCode": "MTH-T02-C05-U01",
+      "fingerprint": "t02-c05-u01-period-count-missing-trap|diagnose|A student calculated the balance of $# at #% compounded quarterly for # years: Line #: #*(# + #/#)^#; Line #: #*(# + #)^#; Line #: #*(#)^#; Line #: #. Which line is the first one that is wrong?",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 3,
+          "stepCount": 6,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            20
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c05-u01-period-count-missing-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 3
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 23
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 3 - Trap & Diagnostic"
+    }
+  ],
+  "drillId": "DRL-MTH-T02-C05-U01-01",
+  "title": "Exponential Functions — Verified Math Drill (5 Qs)",
+  "topicCode": "MTH-T02",
+  "chapterCode": "MTH-T02-C05",
+  "schemaVersion": "2.0-math",
+  "createdAt": "2026-11-17 21:20:22",
+  "config": {
+    "questionCount": 5,
+    "difficulty": "ALL",
+    "difficultyMode": "AI Synthesized Reasoning Mode"
+  },
+  "localFilePath": "drills/data/MTH-T02-C05-U01/DRL-MTH-T02-C05-U01-01.json"
+}

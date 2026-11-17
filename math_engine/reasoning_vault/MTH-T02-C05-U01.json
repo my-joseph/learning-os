@@ -1,0 +1,136 @@
+{
+  "unitCode": "MTH-T02-C05-U01",
+  "archetypes": [
+    {
+      "unitCode": "MTH-T02-C05-U01",
+      "archetypeKey": "t02-c05-u01-evaluate-exponential-functions",
+      "level": 1,
+      "name": "Evaluate an Exponential Function",
+      "source": "OpenStax Algebra and Trigonometry 2e §6.1 — Exponential Functions",
+      "coreConcept": "Evaluation substitutes the input into the exponent expression before applying exponent rules and multiplying by any initial value.",
+      "mentalModel": "Place the input into the function's exponent slot, simplify that exponent, evaluate the power, then apply the outside multiplier.",
+      "governingRelation": "f(x)=a b^{g(x)}; f(c)=a b^{g(c)}",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c05-u01-multiply-before-exponent-trap",
+          "description": "Combining the leading coefficient with the base before evaluating the exponent.",
+          "trapFormula": "(a*b)^x"
+        },
+        {
+          "trapTag": "t02-c05-u01-ignore-input-in-exponent-trap",
+          "description": "Evaluating the base power without substituting the requested input into the exponent.",
+          "trapFormula": "a*b^x"
+        }
+      ],
+      "versatileDomains": [],
+      "usedContexts": [],
+      "figureNone": "The task is exact symbolic evaluation; a figure adds no information needed to determine the output."
+    },
+    {
+      "unitCode": "MTH-T02-C05-U01",
+      "archetypeKey": "t02-c05-u01-write-exponential-rule-from-data",
+      "level": 1,
+      "name": "Write an Exponential Rule from Data",
+      "source": "OpenStax Algebra and Trigonometry 2e §6.1 — Exponential Functions",
+      "coreConcept": "An exponential rule has a fixed initial value and a constant multiplicative factor for each unit increase in the input.",
+      "mentalModel": "Use the value at input zero as the initial value; compare two outputs to recover the repeated multiplicative factor.",
+      "governingRelation": "f(x)=a b^x; b=f(x+1)/f(x)",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c05-u01-additive-change-as-base-trap",
+          "description": "Using an additive output change as the exponential base instead of a multiplicative ratio.",
+          "trapFormula": "b=f(x+1)-f(x)"
+        },
+        {
+          "trapTag": "t02-c05-u01-initial-value-as-base-trap",
+          "description": "Treating the initial output as the growth factor.",
+          "trapFormula": "f(x)=b*a^x"
+        }
+      ],
+      "versatileDomains": [],
+      "usedContexts": [],
+      "figureNone": "The item provides exact symbolic input-output data; a figure is not needed to recover the rule."
+    },
+    {
+      "unitCode": "MTH-T02-C05-U01",
+      "archetypeKey": "t02-c05-u01-compound-interest-model",
+      "level": 2,
+      "name": "Apply a Compound Interest Model",
+      "source": "OpenStax Algebra and Trigonometry 2e §6.1 — Exponential Functions",
+      "coreConcept": "Compound interest multiplies the current balance by a fixed factor each compounding period.",
+      "mentalModel": "Convert the annual rate into a per-period rate, count the total periods, and apply the repeated multiplier to the initial principal.",
+      "governingRelation": "A=P(1+r/n)^{nt}",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c05-u01-simple-interest-instead-of-compound-trap",
+          "description": "Adding a fixed interest amount each period instead of compounding the current balance.",
+          "trapFormula": "A=P(1+r*t)"
+        },
+        {
+          "trapTag": "t02-c05-u01-period-count-missing-trap",
+          "description": "Using elapsed years as the exponent when the account compounds multiple times per year.",
+          "trapFormula": "A=P*(1+r/n)^t"
+        }
+      ],
+      "versatileDomains": [
+        "compound_interest"
+      ],
+      "usedContexts": [],
+      "figureNone": "The task is an exact finance calculation with a standard compounding relation; a figure would not clarify the computation."
+    },
+    {
+      "unitCode": "MTH-T02-C05-U01",
+      "archetypeKey": "t02-c05-u01-evaluate-natural-exponential",
+      "level": 1,
+      "name": "Evaluate a Natural Exponential Function",
+      "source": "OpenStax Algebra and Trigonometry 2e §6.1 — Exponential Functions",
+      "coreConcept": "The natural exponential function uses the positive constant e as its base and follows the same substitution process as other exponential functions.",
+      "mentalModel": "Substitute the input into the exponent of e; if a numerical value is requested, evaluate e to that power with the stated precision.",
+      "governingRelation": "f(x)=a e^{g(x)}; f(c)=a e^{g(c)}",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c05-u01-treat-e-as-variable-trap",
+          "description": "Treating e as a variable factor rather than a fixed mathematical constant.",
+          "trapFormula": "e*x"
+        },
+        {
+          "trapTag": "t02-c05-u01-round-exponent-first-trap",
+          "description": "Rounding an exponent before evaluating the exponential, changing the final value.",
+          "trapFormula": "a*e^round(g(x),1)"
+        }
+      ],
+      "versatileDomains": [],
+      "usedContexts": [],
+      "figureNone": "The requested output is a numerical function value; a figure contributes no additional reasoning."
+    },
+    {
+      "unitCode": "MTH-T02-C05-U01",
+      "archetypeKey": "t02-c05-u01-continuous-compound-interest",
+      "level": 2,
+      "name": "Apply Continuous Compounding",
+      "source": "OpenStax Algebra and Trigonometry 2e §6.1 — Exponential Functions",
+      "coreConcept": "Continuous compounding models instantaneous growth with base e raised to the product of annual rate and time.",
+      "mentalModel": "Convert the percentage rate to a decimal, multiply by elapsed time for the exponent of e, then scale by the initial principal.",
+      "governingRelation": "A=P e^{rt}",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c05-u01-percent-not-decimal-rate-trap",
+          "description": "Using the percentage number directly as r in the exponent instead of dividing by 100.",
+          "trapFormula": "P*e^(r_pct*t)"
+        },
+        {
+          "trapTag": "t02-c05-u01-linear-continuous-interest-trap",
+          "description": "Using linear growth P*(1+r*t) instead of continuous exponential growth P*e^(r*t).",
+          "trapFormula": "P*(1+r*t)"
+        }
+      ],
+      "versatileDomains": [
+        "compound_interest"
+      ],
+      "usedContexts": [
+        "compound_interest"
+      ],
+      "figureNone": "The task evaluates a continuous growth formula numerically; a graph is not needed."
+    }
+  ]
+}
