@@ -1,0 +1,222 @@
+{
+  "unitCode": "MTH-T02-C04-U06",
+  "archetypes": [
+    {
+      "unitCode": "MTH-T02-C04-U06",
+      "archetypeKey": "t02-c04-u06-domain-rational-function",
+      "level": 1,
+      "name": "Find the Domain of a Rational Function",
+      "source": "OpenStax Algebra and Trigonometry 2e §5.6 — Rational Functions",
+      "coreConcept": "A rational function is undefined wherever its original denominator is zero, including at values whose factors later cancel.",
+      "mentalModel": "Find every denominator zero before simplifying, then express all real inputs except those values as intervals.",
+      "governingRelation": "Domain(f)=R\\{x: original denominator q(x)=0}",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c04-u06-cancelled-zero-domain-trap",
+          "description": "Restoring a cancelled denominator zero to the domain after simplifying the formula.",
+          "trapFormula": "cancel (x-a) -> a is allowed in domain"
+        },
+        {
+          "trapTag": "t02-c04-u06-miss-denominator-zero-trap",
+          "description": "Omitting one real zero of the original denominator from the restrictions.",
+          "trapFormula": "domain excludes only one of two denominator zeros"
+        },
+        {
+          "trapTag": "t02-c04-u06-only-middle-domain-interval-trap",
+          "description": "Reporting only the interval between two denominator zeros and omitting valid outer-domain intervals.",
+          "trapFormula": "domain=between denominator zeros only"
+        }
+      ],
+      "versatileDomains": [
+        "domain analysis",
+        "rational modeling"
+      ],
+      "usedContexts": [],
+      "figureNone": "A graph can reveal the excluded inputs directly; the item tests algebraic domain restrictions and uses interval notation."
+    },
+    {
+      "unitCode": "MTH-T02-C04-U06",
+      "archetypeKey": "t02-c04-u06-separate-hole-from-asymptote",
+      "level": 2,
+      "name": "Distinguish a Hole from a Vertical Asymptote",
+      "source": "OpenStax Algebra and Trigonometry 2e §5.6 — Rational Functions",
+      "coreConcept": "A shared factor creates a removable hole; a zero of the reduced denominator creates a vertical asymptote.",
+      "mentalModel": "Factor first, preserve the original domain restrictions, then inspect the reduced denominator and any cancelled factors separately.",
+      "governingRelation": "cancelled denominator zero -> hole; remaining denominator zero -> vertical asymptote",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c04-u06-hole-as-vertical-asymptote-trap",
+          "description": "Calling a cancelled common-factor zero a vertical asymptote.",
+          "trapFormula": "cancelled factor root -> vertical asymptote"
+        },
+        {
+          "trapTag": "t02-c04-u06-cancelled-zero-as-intercept-trap",
+          "description": "Treating a hole's input as a defined x-intercept after cancellation.",
+          "trapFormula": "cancelled factor root -> x-intercept"
+        }
+      ],
+      "versatileDomains": [
+        "graph analysis",
+        "domain restrictions"
+      ],
+      "usedContexts": [],
+      "figureNone": "Plotting the function would disclose the requested hole or asymptote coordinate."
+    },
+    {
+      "unitCode": "MTH-T02-C04-U06",
+      "archetypeKey": "t02-c04-u06-horizontal-asymptote",
+      "level": 1,
+      "name": "Find a Horizontal Asymptote",
+      "source": "OpenStax Algebra and Trigonometry 2e §5.6 — Rational Functions",
+      "coreConcept": "For a rational function, the numerator and denominator degrees determine whether its horizontal asymptote is zero or the ratio of leading coefficients.",
+      "mentalModel": "Compare the highest powers: the denominator dominates for a larger denominator degree, while equal degrees leave a constant ratio at large inputs.",
+      "governingRelation": "deg(P)<deg(Q): y=0; deg(P)=deg(Q): y=lead(P)/lead(Q)",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c04-u06-reciprocal-leading-ratio-trap",
+          "description": "Reversing numerator and denominator leading coefficients when degrees match.",
+          "trapFormula": "horizontal asymptote=lead(Q)/lead(P)"
+        },
+        {
+          "trapTag": "t02-c04-u06-equal-degree-zero-asymptote-trap",
+          "description": "Using y=0 as the horizontal asymptote when numerator and denominator degrees are equal.",
+          "trapFormula": "deg(P)=deg(Q) -> y=0"
+        }
+      ],
+      "versatileDomains": [
+        "end behavior",
+        "rational models"
+      ],
+      "usedContexts": [],
+      "figureNone": "A graph would show the requested asymptote value directly."
+    },
+    {
+      "unitCode": "MTH-T02-C04-U06",
+      "archetypeKey": "t02-c04-u06-arrow-notation",
+      "level": 1,
+      "name": "Describe Local and End Behavior with Arrow Notation",
+      "source": "OpenStax Algebra and Trigonometry 2e §5.6 — Rational Functions",
+      "coreConcept": "One-sided arrows distinguish behavior on each side of a vertical asymptote, while arrows at infinity describe end behavior.",
+      "mentalModel": "Check the sign of the reduced numerator and denominator on each side of a critical input; use distant leading terms for end behavior.",
+      "governingRelation": "x→a− and x→a+ describe distinct sides; x→±∞ describes end behavior",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c04-u06-one-sided-behavior-reversal-trap",
+          "description": "Reversing the sign of the function on one side of a vertical asymptote.",
+          "trapFormula": "1/(x-a) as x→a+ -> -∞"
+        },
+        {
+          "trapTag": "t02-c04-u06-side-of-approach-omission-trap",
+          "description": "Treating the left- and right-hand approaches to a vertical asymptote as the same behavior.",
+          "trapFormula": "lim x→a− f(x) = lim x→a+ f(x)"
+        }
+      ],
+      "versatileDomains": [
+        "limit intuition",
+        "graph sketching"
+      ],
+      "usedContexts": [],
+      "figureNone": "The item tests the direction of approach; a plotted graph could give away the sign."
+    },
+    {
+      "unitCode": "MTH-T02-C04-U06",
+      "archetypeKey": "t02-c04-u06-graph-rational-function",
+      "level": 2,
+      "name": "Graph a Rational Function from Its Features",
+      "source": "OpenStax Algebra and Trigonometry 2e §5.6 — Rational Functions",
+      "coreConcept": "A rational graph is assembled from domain restrictions, intercepts, holes, vertical asymptotes, horizontal behavior, and one-sided signs.",
+      "mentalModel": "Factor and simplify without forgetting holes, locate intercepts and asymptotes, then sketch separate branches that agree with the arrow behavior.",
+      "governingRelation": "factor → preserve domain → identify hole and asymptotes → intercepts → one-sided and end behavior",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c04-u06-graph-through-asymptote-trap",
+          "description": "Drawing a continuous branch through a vertical asymptote.",
+          "trapFormula": "graph crosses x=a where reduced denominator is zero"
+        },
+        {
+          "trapTag": "t02-c04-u06-fill-hole-trap",
+          "description": "Filling a removable hole because the simplified formula is defined at that input.",
+          "trapFormula": "cancelled input -> filled point"
+        }
+      ],
+      "versatileDomains": [
+        "function graphing",
+        "model interpretation"
+      ],
+      "usedContexts": [],
+      "figureBuilders": [
+        {
+          "fn": "build_function_graph_figure",
+          "args": {
+            "expr": "(x-2)/(x-3)",
+            "x_min": -4,
+            "x_max": 7,
+            "y_min": -5,
+            "y_max": 5,
+            "vlines": "3",
+            "hlines": "1",
+            "mark_x": "2",
+            "mark_labels": "x-intercept"
+          },
+          "title": "Asymptotes separate the rational graph's branches"
+        }
+      ]
+    },
+    {
+      "unitCode": "MTH-T02-C04-U06",
+      "archetypeKey": "t02-c04-u06-applied-rational-model",
+      "level": 2,
+      "name": "Solve an Applied Rational Function Problem",
+      "source": "OpenStax Algebra and Trigonometry 2e §5.6 — Rational Functions",
+      "coreConcept": "Applied rational functions model a quantity formed by dividing a changing total by a variable count, rate, or time; domain and units restrict valid inputs.",
+      "mentalModel": "Name the variable and its units, solve the rational relationship for the requested input, then reject values outside the real situation.",
+      "governingRelation": "average rate = total quantity / elapsed time; denominator must be nonzero",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c04-u06-invert-rate-equation-trap",
+          "description": "Multiplying or inverting the given rate incorrectly when solving for time.",
+          "trapFormula": "time = rate/distance"
+        },
+        {
+          "trapTag": "t02-c04-u06-nonpositive-time-trap",
+          "description": "Retaining a nonpositive solution for elapsed time.",
+          "trapFormula": "time≤0 is feasible"
+        }
+      ],
+      "versatileDomains": [
+        "rate problems",
+        "average cost and output"
+      ],
+      "usedContexts": [],
+      "figureNone": "A graph is unnecessary for the chosen exact rate calculation and could reveal the target."
+    },
+    {
+      "unitCode": "MTH-T02-C04-U06",
+      "archetypeKey": "t02-c04-u06-applied-average-cost-model",
+      "level": 4,
+      "name": "Build a Discounted Average-Cost Rational Model",
+      "source": "OpenStax Algebra and Trigonometry 2e §5.6 — Rational Functions",
+      "coreConcept": "A batch-size-dependent per-unit charge determines total cost, and dividing that total by production count creates a rational average-cost model with a feasible domain.",
+      "mentalModel": "Translate the price schedule into a per-unit rate, combine it with fixed and variable batch costs, divide by the count, solve the target equation, and reject roots outside capacity.",
+      "governingRelation": "r(n)=base_rate-discount·n; C(n)=F+n·r(n); A(n)=C(n)/n; solve A(n)=target for feasible n",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c04-u06-ignore-fixed-setup-cost-trap",
+          "description": "Ignoring the fixed setup fee and matching only the per-unit rate to the target average.",
+          "trapFormula": "12-0.05*(n-1)=target_average"
+        },
+        {
+          "trapTag": "t02-c04-u06-retain-infeasible-count-trap",
+          "description": "Keeping an algebraic root outside the permitted positive production range.",
+          "trapFormula": "n≤0 or n>capacity retained"
+        }
+      ],
+      "versatileDomains": [
+        "average cost",
+        "unit economics"
+      ],
+      "usedContexts": [],
+      "figureNone": "The item builds and solves symbolic cost relations; a graph would not clarify the required model construction."
+    }
+  ]
+}
