@@ -1198,6 +1198,200 @@
           }
         }
       ]
+    },
+    {
+      "archetypeKey": "prg-c03-u07-bfs-shortest-path",
+      "unitCode": "PRG-T01-C03-U07",
+      "level": 1,
+      "archetype": "problem-solving",
+      "name": "BFS Shortest Unweighted Path",
+      "competencies": [
+        "data-handling",
+        "performance-optimization"
+      ],
+      "coreConcept": "Breadth-first search explores vertices in non-decreasing hop distance from the start node, marking neighbors visited on enqueue so each vertex enters the queue at most once.",
+      "mentalModel": [
+        "Check missing start/target vertices and the start === target trivial path first.",
+        "Mark neighbors visited when enqueuing them rather than when dequeuing.",
+        "Advance a queue head index instead of calling Array.prototype.shift()."
+      ],
+      "governingInvariant": "Every vertex is enqueued at most once and its recorded parent/distance matches a minimum-hop path from start.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "mark-visited-on-dequeue",
+          "name": "Mark Visited Only on Dequeue",
+          "description": "Deferring visited marking until dequeue lets multiple parents enqueue the same node and can overwrite parent pointers.",
+          "reproducer": "const current = queue[head++]; if (visited.has(current)) continue; visited.add(current);"
+        },
+        {
+          "trapTag": "start-equals-target-missed",
+          "name": "Missing Start-Equals-Target Guard",
+          "description": "Returning null or requiring at least one edge when start equals target produces wrong hop counts.",
+          "reproducer": "if (next === target) return hops; // never checked before loop when start === target"
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "service_mesh_hop_routing",
+          "description": "Compute minimum-hop service-to-service routes across unweighted microservice links."
+        }
+      ],
+      "usedContexts": [
+        "service_mesh_hop_routing",
+        "transit_station_hops"
+      ],
+      "source": "MDN JavaScript Guide (Map/Set) & standard unweighted BFS shortest-path algorithm.",
+      "qualityChecks": [
+        {
+          "id": "QC-prg-c03-u07-bfs-visited-on-enqueue",
+          "check": "BFS marks start and newly discovered neighbors visited when adding them to the queue rather than after dequeuing.",
+          "why": "Marking at enqueue time prevents duplicate queue entries and guarantees minimum-hop parent pointers.",
+          "severity": "must",
+          "knownBad": {
+            "code": "const current = queue[head++];\nif (visited.has(current)) continue;\nvisited.add(current);",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-prg-c03-u07-bfs-linear-queue",
+          "check": "BFS advances a queue head index (or O(1) queue) instead of calling Array.prototype.shift() in the traversal loop.",
+          "why": "Repeated shift() re-indexes the queue array and turns an O(V + E) traversal into quadratic work.",
+          "severity": "should",
+          "knownBad": {
+            "code": "while (queue.length > 0) {\n  const node = queue.shift();\n  if (node !== undefined) visit(node);\n}",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "prg-c03-u07-directed-cycle-detection",
+      "unitCode": "PRG-T01-C03-U07",
+      "level": 2,
+      "archetype": "debugging",
+      "name": "Three-State Directed Cycle Detection",
+      "competencies": [
+        "data-handling",
+        "architecture-separation"
+      ],
+      "coreConcept": "A directed graph contains a cycle if and only if depth-first search traverses an edge into a vertex currently on the active recursion stack (visiting), not merely an already-finished vertex (visited).",
+      "mentalModel": [
+        "Track three states per vertex: unvisited, visiting (active stack), and visited (completed).",
+        "Iterate over every vertex in the graph so disconnected components are checked.",
+        "Handle self-loops (u -> u) as immediate back-edges to a visiting vertex."
+      ],
+      "governingInvariant": "A cycle is reported if and only if a directed path leads from a vertex back to itself.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "binary-visited-flags-dag-diamond",
+          "name": "Binary Visited Set Flags DAG Diamond",
+          "description": "Using a single boolean visited set treats converging branches in a DAG as a cycle.",
+          "reproducer": "if (visited.has(next)) return true; // fails on A -> B -> D and A -> C -> D"
+        },
+        {
+          "trapTag": "single-root-misses-disconnected-cycle",
+          "name": "Single-Start Misses Disconnected Component",
+          "description": "Starting DFS from only the first node misses cycles in other components.",
+          "reproducer": "return dfs(nodes[0]); // skips unreachable component containing a cycle"
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "build_dependency_validation",
+          "description": "Detect circular task or package dependencies in a workspace build graph."
+        }
+      ],
+      "usedContexts": [
+        "build_dependency_validation"
+      ],
+      "source": "MDN JavaScript Guide & TypeScript Handbook 5.9.3: 3-color DFS state discrimination.",
+      "qualityChecks": [
+        {
+          "id": "QC-prg-c03-u07-cycle-three-color",
+          "check": "Directed cycle detection separates active stack vertices (visiting) from completed vertices (visited) and checks all graph components.",
+          "why": "A two-state visited set reports false cycles on valid DAG diamonds, while single-start DFS misses disconnected cycles.",
+          "severity": "must",
+          "knownBad": {
+            "code": "if (visited.has(next)) return true;",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-prg-c03-u07-graph-no-input-mutation",
+          "check": "Graph utilities do not mutate caller-provided edge lists or adjacency maps.",
+          "why": "Mutating shared graph inputs corrupts downstream queries and violates caller ownership.",
+          "severity": "must",
+          "knownBad": {
+            "code": "edges.sort((a, b) => a[0].localeCompare(b[0]));",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "prg-c03-u07-reachability-and-toposort",
+      "unitCode": "PRG-T01-C03-U07",
+      "level": 2,
+      "archetype": "refactoring",
+      "name": "Graph Reachability & Component Queries",
+      "competencies": [
+        "data-handling",
+        "performance-optimization",
+        "component-design"
+      ],
+      "coreConcept": "Adjacency Map representations and BFS/DFS reachability queries decouple graph indexing from traversal so callers can inspect reachable sets, components, or valid topological steps in O(V + E).",
+      "mentalModel": [
+        "Build adjacency Map and in-degree counts in one pass without mutating inputs.",
+        "Use Set for visited membership and head-index queue for BFS expansion.",
+        "Return explicit empty or null results when nodes are unknown or cycles block ordering."
+      ],
+      "governingInvariant": "Every reachable vertex or zero-in-degree stage is emitted at most once in valid dependency order, or failure is signaled explicitly on cycles.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "directed-vs-undirected-edge-confusion",
+          "name": "Confusing Directed and Undirected Edges",
+          "description": "Adding reverse edges on a directed dependency graph or omitting reverse edges on an undirected route breaks reachability.",
+          "reproducer": "graph.get(to).push(from); // added reverse edge on a directed dependency graph"
+        },
+        {
+          "trapTag": "mutate-caller-adjacency-or-edges",
+          "name": "Mutating Caller Graph Inputs",
+          "description": "Sorting or popping caller-owned edge arrays or neighbor arrays mutates caller state.",
+          "reproducer": "const next = graph.get(node).pop();"
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "package_upgrade_impact",
+          "description": "Find all services or packages transitively affected by a dependency change or schedule acyclic build stages."
+        }
+      ],
+      "usedContexts": [
+        "package_upgrade_impact"
+      ],
+      "source": "MDN JavaScript Guide & TypeScript Handbook 5.9.3: Map/Set graph traversal invariants.",
+      "qualityChecks": [
+        {
+          "id": "QC-prg-c03-u07-edge-direction-preserved",
+          "check": "Directed graph builders and reachability queries preserve edge direction instead of inserting reverse edges.",
+          "why": "Adding reverse edges turns directed dependency queries into undirected reachability and produces invalid impact sets.",
+          "severity": "must",
+          "knownBad": {
+            "code": "adjacency.get(to)?.push(from);",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-prg-c03-u07-isolated-graph-index",
+          "check": "Graph queries build local Map/Set indexes without mutating caller-owned edge lists or neighbor arrays.",
+          "why": "Preserves caller data across repeated graph queries.",
+          "severity": "must",
+          "knownBad": {
+            "code": "adjacency.get(node)?.splice(0, 1);",
+            "caughtBy": "review"
+          }
+        }
+      ]
     }
   ]
 }

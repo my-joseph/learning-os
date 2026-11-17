@@ -1,0 +1,390 @@
+{
+  "unitCode": "PRG-T01-C03-U07",
+  "unitTitle": "Graphs & Shortest-Path Basics",
+  "environment": "typescript-strict",
+  "sourceAttribution": "MDN JavaScript Guide (Map/Set) & TypeScript Handbook 5.9.3",
+  "config": {
+    "questionCount": 4,
+    "difficulty": "ALL",
+    "difficultyMode": "AI Synthesized Engineering Mode"
+  },
+  "problems": [
+    {
+      "id": "Q01",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "codeType": "implement",
+      "archetypeKey": "prg-c03-u07-bfs-shortest-path",
+      "commonTrapTag": "start-equals-target-missed",
+      "context": "service_mesh_hop_routing",
+      "entryPoint": "findShortestHopPath",
+      "prompt": "Implement `findShortestHopPath(edges, startService, targetService)` to compute a minimum-hop route across a directed microservice network.\n\n**Input Contract:**\n- `edges`: `readonly (readonly [string, string])[]` representing directed `[fromService, toService]` links.\n- `startService` and `targetService`: `string` service identifiers.\n\n**Behavior Rules:**\n- A vertex exists in the graph if it appears as either endpoint of any entry in `edges`.\n- If `startService` or `targetService` does not exist in the graph, return `null`.\n- If `startService === targetService` and that service exists in the graph, return `[startService]`.\n- Otherwise return the shortest path array `[startService, ..., targetService]` following directed edges in order, or `null` when unreachable.\n- Do not mutate `edges`.\n\n**Return Contract:** `string[] | null`.",
+      "inputHint": "Export findShortestHopPath(edges, startService, targetService) returning string[] | null",
+      "checkpointHint": "Validate whether both endpoints exist in the edge set and handle identical endpoints before starting the breadth-first queue.",
+      "starterCode": "export type ServiceEdge = readonly [string, string];\n\nexport function findShortestHopPath(\n  _edges: readonly ServiceEdge[],\n  _startService: string,\n  _targetService: string,\n): string[] | null {\n  throw new Error(\"Not implemented\");\n}\n",
+      "solutionCode": "export type ServiceEdge = readonly [string, string];\n\nfunction buildAdjacency(edges: readonly ServiceEdge[]): Map<string, string[]> {\n  const adjacency = new Map<string, string[]>();\n  for (const [fromService, toService] of edges) {\n    if (!adjacency.has(fromService)) {\n      adjacency.set(fromService, []);\n    }\n    if (!adjacency.has(toService)) {\n      adjacency.set(toService, []);\n    }\n    adjacency.get(fromService)?.push(toService);\n  }\n  return adjacency;\n}\n\nfunction reconstructPath(\n  parents: ReadonlyMap<string, string>,\n  startService: string,\n  targetService: string,\n): string[] {\n  const reversed: string[] = [targetService];\n  let cursor: string | undefined = targetService;\n  while (cursor !== undefined && cursor !== startService) {\n    cursor = parents.get(cursor);\n    if (cursor !== undefined) {\n      reversed.push(cursor);\n    }\n  }\n  return reversed.reverse();\n}\n\nfunction searchShortestParents(\n  adjacency: ReadonlyMap<string, readonly string[]>,\n  startService: string,\n  targetService: string,\n): Map<string, string> | null {\n  const visited = new Set<string>([startService]);\n  const parents = new Map<string, string>();\n  const queue: string[] = [startService];\n  for (let head = 0; head < queue.length; head += 1) {\n    const current = queue[head];\n    for (const neighbor of adjacency.get(current) ?? []) {\n      if (visited.has(neighbor)) {\n        continue;\n      }\n      visited.add(neighbor);\n      parents.set(neighbor, current);\n      if (neighbor === targetService) {\n        return parents;\n      }\n      queue.push(neighbor);\n    }\n  }\n  return null;\n}\n\nexport function findShortestHopPath(\n  edges: readonly ServiceEdge[],\n  startService: string,\n  targetService: string,\n): string[] | null {\n  const adjacency = buildAdjacency(edges);\n  if (!adjacency.has(startService) || !adjacency.has(targetService)) {\n    return null;\n  }\n  if (startService === targetService) {\n    return [startService];\n  }\n  const parents = searchShortestParents(adjacency, startService, targetService);\n  return parents === null ? null : reconstructPath(parents, startService, targetService);\n}\n",
+      "trapMutant": "export type ServiceEdge = readonly [string, string];\n\nexport function findShortestHopPath(\n  edges: readonly ServiceEdge[],\n  startService: string,\n  targetService: string,\n): string[] | null {\n  const adjacency = new Map<string, string[]>();\n  for (const [fromService, toService] of edges) {\n    if (!adjacency.has(fromService)) adjacency.set(fromService, []);\n    if (!adjacency.has(toService)) adjacency.set(toService, []);\n    adjacency.get(fromService)?.push(toService);\n  }\n  if (!adjacency.has(startService) || !adjacency.has(targetService)) return null;\n  const visited = new Set<string>([startService]);\n  const parents = new Map<string, string>();\n  const queue: string[] = [startService];\n  for (let head = 0; head < queue.length; head += 1) {\n    const current = queue[head];\n    for (const neighbor of adjacency.get(current) ?? []) {\n      if (visited.has(neighbor)) continue;\n      visited.add(neighbor);\n      parents.set(neighbor, current);\n      if (neighbor === targetService) {\n        const path = [targetService];\n        let cur: string | undefined = targetService;\n        while (cur !== undefined && cur !== startService) {\n          cur = parents.get(cur);\n          if (cur !== undefined) path.push(cur);\n        }\n        return path.reverse();\n      }\n      queue.push(neighbor);\n    }\n  }\n  return null;\n}\n",
+      "visibleTests": [
+        {
+          "name": "finds shortest hop path over competing multi-hop routes",
+          "testCode": "const edges = [\n  [\"gateway\", \"auth\"],\n  [\"auth\", \"profile\"],\n  [\"profile\", \"billing\"],\n  [\"gateway\", \"edge-cache\"],\n  [\"edge-cache\", \"billing\"],\n] as const;\nassert.deepEqual(findShortestHopPath(edges, \"gateway\", \"billing\"), [\"gateway\", \"edge-cache\", \"billing\"]);"
+        },
+        {
+          "name": "returns null when graph is empty or target is unreachable",
+          "testCode": "assert.equal(findShortestHopPath([], \"gateway\", \"billing\"), null);\nassert.equal(findShortestHopPath([[\"gateway\", \"auth\"], [\"ledger\", \"billing\"]], \"gateway\", \"billing\"), null);"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "returns single-node path when startService equals targetService on an existing vertex",
+          "testCode": "const edges = Object.freeze([[\"gateway\", \"auth\"], [\"auth\", \"billing\"]]);\nassert.deepEqual(findShortestHopPath(edges, \"auth\", \"auth\"), [\"auth\"]);\nassert.equal(findShortestHopPath(edges, \"unknown\", \"unknown\"), null);"
+        },
+        {
+          "name": "handles cycles without looping infinitely",
+          "testCode": "const cyclic = [[\"a\", \"b\"], [\"b\", \"a\"], [\"b\", \"c\"]] as const;\nassert.deepEqual(findShortestHopPath(cyclic, \"a\", \"c\"), [\"a\", \"b\", \"c\"]);\nassert.equal(findShortestHopPath(cyclic, \"c\", \"a\"), null);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Index directed edges into a local adjacency Map while registering both endpoints as graph vertices."
+        },
+        {
+          "explain": "Return null if either endpoint is absent and [startService] when both endpoints match."
+        },
+        {
+          "explain": "Run BFS with a head-index queue, marking neighbors visited on enqueue and recording parent links to reconstruct the shortest path."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "start-equals-target-missed|direct|findShortestHopPath",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 3,
+          "hasTrapOrFlaw": false,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "start-equals-target-missed",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 6
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Foundation",
+      "unitCode": "PRG-T01-C03-U07",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-U07-01/Q01_findShortestHopPath.ts"
+    },
+    {
+      "id": "Q02",
+      "level": 2,
+      "category": "Trap & Edge Case",
+      "archetype": "debugging",
+      "codeType": "fix-bug",
+      "archetypeKey": "prg-c03-u07-directed-cycle-detection",
+      "commonTrapTag": "binary-visited-flags-dag-diamond",
+      "context": "build_dependency_validation",
+      "entryPoint": "hasDependencyCycle",
+      "prompt": "Fix `hasDependencyCycle(packages, dependencies)` so it accurately reports whether a directed workspace dependency graph contains a cycle.\n\n**Symptom:**\n- Valid acyclic diamond graphs (for example `app -> core`, `app -> cli`, `core -> shared`, `cli -> shared`) are wrongly reported as cycles.\n- Disconnected components and self-dependencies must still be checked across the entire `packages` list.\n\n**Input & Return Contract:**\n- `packages`: `readonly string[]` naming all workspace packages.\n- `dependencies`: `readonly (readonly [string, string])[]` where `[pkg, dep]` means `pkg` depends on `dep`.\n- Returns `boolean` (`true` if any directed cycle exists, otherwise `false`) without mutating inputs.",
+      "inputHint": "Fix hasDependencyCycle(packages, dependencies) returning boolean",
+      "checkpointHint": "Distinguish vertices currently on the active traversal stack from vertices whose entire subgraph has already finished.",
+      "starterCode": "export type DependencyEdge = readonly [string, string];\n\nexport function hasDependencyCycle(\n  packages: readonly string[],\n  dependencies: readonly DependencyEdge[],\n): boolean {\n  const graph = new Map<string, string[]>();\n  for (const pkg of packages) {\n    graph.set(pkg, []);\n  }\n  for (const [pkg, dep] of dependencies) {\n    const list = graph.get(pkg) ?? [];\n    list.push(dep);\n    graph.set(pkg, list);\n  }\n\n  const visited = new Set<string>();\n  function explore(current: string): boolean {\n    if (visited.has(current)) {\n      return true;\n    }\n    visited.add(current);\n    for (const next of graph.get(current) ?? []) {\n      if (explore(next)) {\n        return true;\n      }\n    }\n    return false;\n  }\n\n  for (const pkg of packages) {\n    if (!visited.has(pkg) && explore(pkg)) {\n      return true;\n    }\n  }\n  return false;\n}\n",
+      "solutionCode": "export type DependencyEdge = readonly [string, string];\n\ntype VisitState = \"unvisited\" | \"visiting\" | \"visited\";\n\nfunction buildDependencyMap(\n  packages: readonly string[],\n  dependencies: readonly DependencyEdge[],\n): Map<string, string[]> {\n  const graph = new Map<string, string[]>();\n  for (const pkg of packages) {\n    graph.set(pkg, []);\n  }\n  for (const [pkg, dep] of dependencies) {\n    const list = graph.get(pkg) ?? [];\n    list.push(dep);\n    graph.set(pkg, list);\n  }\n  return graph;\n}\n\nexport function hasDependencyCycle(\n  packages: readonly string[],\n  dependencies: readonly DependencyEdge[],\n): boolean {\n  const graph = buildDependencyMap(packages, dependencies);\n  const state = new Map<string, VisitState>();\n\n  function explore(current: string): boolean {\n    state.set(current, \"visiting\");\n    for (const next of graph.get(current) ?? []) {\n      const nextState = state.get(next) ?? \"unvisited\";\n      if (nextState === \"visiting\") {\n        return true;\n      }\n      if (nextState === \"unvisited\" && explore(next)) {\n        return true;\n      }\n    }\n    state.set(current, \"visited\");\n    return false;\n  }\n\n  for (const pkg of graph.keys()) {\n    const pkgState = state.get(pkg) ?? \"unvisited\";\n    if (pkgState === \"unvisited\" && explore(pkg)) {\n      return true;\n    }\n  }\n  return false;\n}\n",
+      "trapMutant": "export type DependencyEdge = readonly [string, string];\n\nexport function hasDependencyCycle(\n  packages: readonly string[],\n  dependencies: readonly DependencyEdge[],\n): boolean {\n  const graph = new Map<string, string[]>();\n  for (const pkg of packages) graph.set(pkg, []);\n  for (const [pkg, dep] of dependencies) {\n    const list = graph.get(pkg) ?? [];\n    list.push(dep);\n    graph.set(pkg, list);\n  }\n  const visited = new Set<string>();\n  function explore(current: string): boolean {\n    if (visited.has(current)) return true;\n    visited.add(current);\n    for (const next of graph.get(current) ?? []) {\n      if (explore(next)) return true;\n    }\n    return false;\n  }\n  return packages.some((pkg) => !visited.has(pkg) && explore(pkg));\n}\n",
+      "visibleTests": [
+        {
+          "name": "detects a multi-node cycle and returns false on empty input",
+          "testCode": "assert.equal(hasDependencyCycle([], []), false);\nassert.equal(\n  hasDependencyCycle([\"api\", \"auth\", \"session\"], [[\"api\", \"auth\"], [\"auth\", \"session\"], [\"session\", \"api\"]]),\n  true,\n);"
+        },
+        {
+          "name": "allows acyclic chains and shared linear sinks",
+          "testCode": "assert.equal(\n  hasDependencyCycle([\"web\", \"sdk\", \"types\"], [[\"web\", \"sdk\"], [\"sdk\", \"types\"]]),\n  false,\n);"
+        },
+        {
+          "name": "does not report a cycle on an acyclic diamond graph",
+          "testCode": "assert.equal(hasDependencyCycle([\"app\", \"core\", \"cli\", \"shared\"], [[\"app\", \"core\"], [\"app\", \"cli\"], [\"core\", \"shared\"], [\"cli\", \"shared\"]]), false);"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "does not flag a DAG diamond as a cycle",
+          "testCode": "assert.equal(\n  hasDependencyCycle(\n    [\"app\", \"core\", \"cli\", \"shared\"],\n    [[\"app\", \"core\"], [\"app\", \"cli\"], [\"core\", \"shared\"], [\"cli\", \"shared\"]],\n  ),\n  false,\n);"
+        },
+        {
+          "name": "detects self-loops and cycles in disconnected components",
+          "testCode": "assert.equal(hasDependencyCycle([\"a\", \"b\", \"c\"], [[\"a\", \"b\"], [\"c\", \"c\"]]), true);\nassert.equal(hasDependencyCycle([\"a\", \"b\", \"x\", \"y\"], [[\"a\", \"b\"], [\"x\", \"y\"], [\"y\", \"x\"]]), true);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Replace the binary visited Set with a three-state Map tracking unvisited, visiting, and visited vertices."
+        },
+        {
+          "explain": "Report a cycle only when an outgoing edge reaches a vertex currently in the visiting state."
+        },
+        {
+          "explain": "Mark each vertex visited after exploring all descendants and scan every vertex in the graph."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "binary-visited-flags-dag-diamond|direct|hasDependencyCycle",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "debugging"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "binary-visited-flags-dag-diamond",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 6
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Standard Exam",
+      "unitCode": "PRG-T01-C03-U07",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-U07-01/Q02_hasDependencyCycle.ts"
+    },
+    {
+      "id": "Q03",
+      "level": 2,
+      "category": "Refactor & Design",
+      "archetype": "refactoring",
+      "codeType": "refactor",
+      "archetypeKey": "prg-c03-u07-reachability-and-toposort",
+      "commonTrapTag": "directed-vs-undirected-edge-confusion",
+      "context": "package_upgrade_impact",
+      "entryPoint": "collectImpactedPackages",
+      "prompt": "Refactor `collectImpactedPackages(dependentsMap, rootPackage)` so it computes transitive downstream dependents accurately in linear BFS order without mutating caller inputs or reversing dependency direction.\n\n**Requirements:**\n- `dependentsMap`: `ReadonlyMap<string, readonly string[]>` mapping each package to the packages that directly depend on it.\n- `rootPackage`: `string` starting package.\n- Return an array of unique reachable packages in breadth-first discovery order, starting with `rootPackage` when `dependentsMap.has(rootPackage)`, or `[]` if `rootPackage` is unknown.\n- Never mutate `dependentsMap` or any neighbor array inside it, and avoid repeated front-shifting (`shift()`).\n\n**Return Contract:** `string[]`.",
+      "inputHint": "Refactor collectImpactedPackages(dependentsMap, rootPackage) returning string[]",
+      "checkpointHint": "Walk outgoing edges using a queue head index and guard against unknown roots or cycles with a local visited set.",
+      "starterCode": "export function collectImpactedPackages(\n  dependentsMap: ReadonlyMap<string, readonly string[]>,\n  rootPackage: string,\n): string[] {\n  const visited = new Set<string>([rootPackage]);\n  const queue: string[] = [rootPackage];\n  const impacted: string[] = [];\n  while (queue.length > 0) {\n    const current = queue.shift();\n    if (current === undefined) {\n      continue;\n    }\n    impacted.push(current);\n    for (const next of dependentsMap.get(current) ?? []) {\n      if (!visited.has(next)) {\n        visited.add(next);\n        queue.push(next);\n      }\n    }\n  }\n  return impacted;\n}\n",
+      "solutionCode": "export function collectImpactedPackages(\n  dependentsMap: ReadonlyMap<string, readonly string[]>,\n  rootPackage: string,\n): string[] {\n  if (!dependentsMap.has(rootPackage)) {\n    return [];\n  }\n  const visited = new Set<string>([rootPackage]);\n  const queue: string[] = [rootPackage];\n  for (let head = 0; head < queue.length; head += 1) {\n    const current = queue[head];\n    for (const dependent of dependentsMap.get(current) ?? []) {\n      if (!visited.has(dependent)) {\n        visited.add(dependent);\n        queue.push(dependent);\n      }\n    }\n  }\n  return queue;\n}\n",
+      "trapMutant": "export function collectImpactedPackages(\n  dependentsMap: ReadonlyMap<string, readonly string[]>,\n  rootPackage: string,\n): string[] {\n  if (!dependentsMap.has(rootPackage)) return [];\n  const undirected = new Map<string, string[]>();\n  for (const [pkg, deps] of dependentsMap.entries()) {\n    if (!undirected.has(pkg)) undirected.set(pkg, []);\n    for (const d of deps) {\n      undirected.get(pkg)?.push(d);\n      if (!undirected.has(d)) undirected.set(d, []);\n      undirected.get(d)?.push(pkg);\n    }\n  }\n  const visited = new Set<string>([rootPackage]);\n  const queue: string[] = [rootPackage];\n  for (let head = 0; head < queue.length; head += 1) {\n    const current = queue[head];\n    for (const next of undirected.get(current) ?? []) {\n      if (!visited.has(next)) { visited.add(next); queue.push(next); }\n    }\n  }\n  return queue;\n}\n",
+      "visibleTests": [
+        {
+          "name": "returns impacted packages in BFS order and empty array for unknown root",
+          "testCode": "const map = new Map<string, readonly string[]>([\n  [\"schema\", [\"api\", \"cli\"]],\n  [\"api\", [\"web\"]],\n  [\"cli\", []],\n  [\"web\", []],\n]);\nassert.deepEqual(collectImpactedPackages(map, \"schema\"), [\"schema\", \"api\", \"cli\", \"web\"]);\nassert.deepEqual(collectImpactedPackages(map, \"missing\"), []);"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "follows only directed downstream edges without back-propagating to upstream nodes",
+          "testCode": "const map = new Map<string, readonly string[]>([\n  [\"root-lib\", [\"mid-lib\"]],\n  [\"mid-lib\", [\"leaf-app\"]],\n  [\"leaf-app\", []],\n]);\nassert.deepEqual(collectImpactedPackages(map, \"mid-lib\"), [\"mid-lib\", \"leaf-app\"]);"
+        },
+        {
+          "name": "does not mutate caller neighbor arrays and handles cycles",
+          "testCode": "const frozenNeighbors = Object.freeze([\"b\"]);\nconst map = new Map<string, readonly string[]>([[\"a\", frozenNeighbors], [\"b\", [\"a\"]]]);\nassert.deepEqual(collectImpactedPackages(map, \"a\"), [\"a\", \"b\"]);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Check dependentsMap.has(rootPackage) first and return [] when the root is unknown."
+        },
+        {
+          "explain": "Replace queue.shift() with an advancing head index over the local queue array."
+        },
+        {
+          "explain": "Follow only outgoing directed edges in dependentsMap while guarding revisits with a local visited Set."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "directed-vs-undirected-edge-confusion|direct|collectImpactedPackages",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "refactoring"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "directed-vs-undirected-edge-confusion",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 6
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Standard Exam",
+      "unitCode": "PRG-T01-C03-U07",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-U07-01/Q03_collectImpactedPackages.ts"
+    },
+    {
+      "id": "Q04",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "codeType": "implement",
+      "archetypeKey": "prg-c03-u07-bfs-shortest-path",
+      "commonTrapTag": "mark-visited-on-dequeue",
+      "context": "transit_station_hops",
+      "entryPoint": "computeHopDistances",
+      "prompt": "Implement `computeHopDistances(links, origin)` to compute the minimum hop distance from `origin` to every reachable station in an undirected transit graph.\n\n**Input Contract:**\n- `links`: `readonly (readonly [string, string])[]` representing bidirectional `[stationA, stationB]` connections.\n- `origin`: `string` starting station.\n\n**Behavior Rules:**\n- Register every station appearing in `links`.\n- If `origin` does not appear in `links`, return an empty `Map`.\n- Otherwise return a `Map<string, number>` containing every reachable station mapped to its shortest hop distance from `origin` (with `origin` at `0`).\n- Unreachable stations must be omitted from the returned `Map`, and `links` must not be mutated.\n\n**Return Contract:** `Map<string, number>`.",
+      "inputHint": "Export computeHopDistances(links, origin) returning Map<string, number>",
+      "checkpointHint": "Seed distance zero for the origin station, mark neighbors with incremented distance upon enqueuing, and advance a queue head cursor.",
+      "starterCode": "export type StationLink = readonly [string, string];\n\nexport function computeHopDistances(\n  _links: readonly StationLink[],\n  _origin: string,\n): Map<string, number> {\n  throw new Error(\"Not implemented\");\n}\n",
+      "solutionCode": "export type StationLink = readonly [string, string];\n\nfunction buildUndirectedGraph(links: readonly StationLink[]): Map<string, string[]> {\n  const graph = new Map<string, string[]>();\n  for (const [stationA, stationB] of links) {\n    if (!graph.has(stationA)) { graph.set(stationA, []); }\n    if (!graph.has(stationB)) { graph.set(stationB, []); }\n    graph.get(stationA)?.push(stationB);\n    graph.get(stationB)?.push(stationA);\n  }\n  return graph;\n}\n\nexport function computeHopDistances(\n  links: readonly StationLink[],\n  origin: string,\n): Map<string, number> {\n  const graph = buildUndirectedGraph(links);\n  const distances = new Map<string, number>();\n  if (!graph.has(origin)) {\n    return distances;\n  }\n  distances.set(origin, 0);\n  const queue: string[] = [origin];\n  for (let head = 0; head < queue.length; head += 1) {\n    const current = queue[head];\n    const nextDist = (distances.get(current) ?? 0) + 1;\n    for (const neighbor of graph.get(current) ?? []) {\n      if (!distances.has(neighbor)) {\n        distances.set(neighbor, nextDist);\n        queue.push(neighbor);\n      }\n    }\n  }\n  return distances;\n}\n",
+      "trapMutant": "export type StationLink = readonly [string, string];\n\nexport function computeHopDistances(\n  links: readonly StationLink[],\n  origin: string,\n): Map<string, number> {\n  const graph = new Map<string, string[]>();\n  for (const [a, b] of links) {\n    if (!graph.has(a)) graph.set(a, []);\n    if (!graph.has(b)) graph.set(b, []);\n    graph.get(a)?.push(b);\n    graph.get(b)?.push(a);\n  }\n  const distances = new Map<string, number>();\n  if (!graph.has(origin)) return distances;\n  const queue: Array<[string, number]> = [[origin, 0]];\n  for (let head = 0; head < queue.length; head += 1) {\n    const [current, dist] = queue[head];\n    distances.set(current, dist);\n    for (const neighbor of graph.get(current) ?? []) {\n      if (!distances.has(neighbor)) {\n        queue.push([neighbor, dist + 1]);\n      }\n    }\n  }\n  return distances;\n}\n",
+      "visibleTests": [
+        {
+          "name": "computes shortest hop counts across diamond transit routes and omits unreachable stations",
+          "testCode": "const links = [\n  [\"central\", \"north\"],\n  [\"central\", \"east\"],\n  [\"north\", \"hub\"],\n  [\"east\", \"hub\"],\n  [\"hub\", \"airport\"],\n  [\"island\", \"ferry\"],\n] as const;\nconst dist = computeHopDistances(links, \"central\");\nassert.deepEqual(Object.fromEntries(dist), {\n  central: 0,\n  north: 1,\n  east: 1,\n  hub: 2,\n  airport: 3,\n});"
+        },
+        {
+          "name": "returns empty Map when links are empty or origin is unknown",
+          "testCode": "assert.equal(computeHopDistances([], \"central\").size, 0);\nassert.equal(computeHopDistances([[\"a\", \"b\"]], \"unknown\").size, 0);"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "preserves minimum hop distance when a longer route reaches a node before dequeue",
+          "testCode": "const links = [\n  [\"s\", \"a\"],\n  [\"s\", \"b\"],\n  [\"a\", \"c\"],\n  [\"b\", \"c\"],\n  [\"c\", \"d\"],\n  [\"a\", \"d\"],\n] as const;\nconst dist = computeHopDistances(links, \"s\");\nassert.equal(dist.get(\"d\"), 2);\nassert.equal(dist.get(\"c\"), 2);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Build an undirected adjacency Map registering both endpoints of every link."
+        },
+        {
+          "explain": "Return an empty Map when origin is absent from the adjacency Map."
+        },
+        {
+          "explain": "Seed origin at distance 0 and assign neighbor distances at enqueue time so shortest paths are locked on first discovery."
+        }
+      ],
+      "verificationLevel": "partial",
+      "form": "direct",
+      "fingerprint": "mark-visited-on-dequeue|direct|computeHopDistances",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": false,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "mark-visited-on-dequeue",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 6
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Standard Exam",
+      "unitCode": "PRG-T01-C03-U07",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-U07-01/Q04_computeHopDistances.ts"
+    }
+  ],
+  "blindSolve": [
+    {
+      "problemId": "Q01",
+      "passed": true
+    },
+    {
+      "problemId": "Q02",
+      "passed": true
+    },
+    {
+      "problemId": "Q03",
+      "passed": true
+    },
+    {
+      "problemId": "Q04",
+      "passed": true
+    }
+  ],
+  "review": {
+    "verdict": "pass",
+    "note": "All four PRG-T01-C03-U07 problems pass leak, domain, Layer 3 rubric, mix, and trap-mutant checks with clean TypeScript reference solutions."
+  },
+  "drillId": "DRL-PRG-T01-C03-U07-01",
+  "topicCode": "PRG-T01",
+  "chapterCode": "PRG-T01-C03",
+  "schemaVersion": "2.0-code",
+  "subject": "PRG",
+  "createdAt": "2026-11-17 22:16:24",
+  "localFilePath": "drills/data/PRG-T01-C03-U07/DRL-PRG-T01-C03-U07-01.json"
+}
