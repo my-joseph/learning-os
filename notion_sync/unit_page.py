@@ -399,17 +399,237 @@ def _collect_children(blocks: list[dict], token: str) -> dict[str, list[dict]]:
     return children_map
 
 
-def _check_no_learner_content(blocks: list[dict], children_map: dict[str, list[dict]]) -> None:
-    """Refuse if any block in the section (or its descendants) was edited by a person or is a checked to_do."""
+def _block_plain_text(block: dict) -> str:
+    btype = block.get("type", "")
+    body = block.get(btype)
+    if not isinstance(body, dict):
+        return ""
+    if btype == "equation":
+        return str(body.get("expression") or "")
+    rich = body.get("rich_text")
+    if isinstance(rich, list):
+        return "".join(_rt_text(r) for r in rich)
+    if btype == "image":
+        cap = body.get("caption") or []
+        return "".join(_rt_text(r) for r in cap)
+    return ""
+
+
+def _learner_edit_reason(
+    blocks: list[dict], children_map: dict[str, list[dict]], bot_user_id: str | None = None
+) -> str | None:
+    """Return a reason string if any block (or descendant) has learner edits or checked to_dos."""
     for b in blocks:
+        bid = b.get("id", "?")
         editor = b.get("last_edited_by") or {}
         if editor.get("type") == "person":
-            raise ValueError(f"refusing to move section: block {b.get('id', '?')} was last edited by a person")
+            return f"block {bid} was last edited by a person"
+        if bot_user_id and editor.get("id") and editor["id"] != bot_user_id:
+            return f"block {bid} was last edited by user {editor['id']}"
         if b.get("type") == "to_do" and (b.get("to_do") or {}).get("checked"):
-            raise ValueError(f"refusing to move section: to_do block {b.get('id', '?')} is checked")
+            return f"to_do block {bid} is checked"
+        txt = _block_plain_text(b)
+        if "DRL-" in txt and ("Score " in txt or "Mistake Tags:" in txt):
+            return f"block {bid} contains a synced drill log entry"
         kids = children_map.get(b.get("id", ""), [])
         if kids:
-            _check_no_learner_content(kids, children_map)
+            nested = _learner_edit_reason(kids, children_map, bot_user_id)
+            if nested:
+                return nested
+    return None
+
+
+def _check_no_learner_content(blocks: list[dict], children_map: dict[str, list[dict]]) -> None:
+    """Refuse if any block in the section (or its descendants) was edited by a person or is a checked to_do."""
+    reason = _learner_edit_reason(blocks, children_map)
+    if reason:
+        raise ValueError(f"refusing to move section: {reason}")
+
+
+def _block_signature(block: dict, children_map: dict[str, list[dict]]) -> tuple:
+    btype = block.get("type", "")
+    checked = bool((block.get("to_do") or {}).get("checked")) if btype == "to_do" else False
+    kids = tuple(
+        _block_signature(k, children_map) for k in children_map.get(block.get("id", ""), []) if not is_blank(k)
+    )
+    return (btype, _block_plain_text(block).strip(), checked, kids)
+
+
+def _matching_section_spans(blocks: list[dict], heading_needle: str) -> list[tuple[int, int]]:
+    """Return (start_idx, end_idx) spans for every section whose heading contains `heading_needle`.
+    Trailing dividers and blank paragraphs are excluded from each span."""
+    spans: list[tuple[int, int]] = []
+    needle = heading_needle.lower()
+    for start, b in enumerate(blocks):
+        t = b.get("type")
+        if t not in HEADINGS or needle not in heading_text(b).lower():
+            continue
+        level = HEADINGS.index(t)
+        end = len(blocks)
+        for i in range(start + 1, len(blocks)):
+            nt = blocks[i].get("type")
+            if nt in HEADINGS and HEADINGS.index(nt) <= level:
+                end = i
+                break
+        while end > start + 1 and (blocks[end - 1].get("type") == "divider" or is_blank(blocks[end - 1])):
+            end -= 1
+        spans.append((start, end))
+    return spans
+
+
+def dedupe_section(code: str, heading_needle: str, token: str, id_map: dict, dry_run: bool = False) -> str:
+    """Remove duplicate template-only sections matching `heading_needle`, keeping one canonical copy.
+    Refuses if any duplicate copy holds learner edits, checked to_dos, drill logs, or unique non-blank blocks."""
+    entry = id_map.get(code)
+    if not isinstance(entry, dict):
+        raise ValueError(f"{code} is not in id_map.json")
+    page_id = entry["id"]
+    existing = get_all_blocks(page_id, token)
+    spans = _matching_section_spans(existing, heading_needle)
+    if not spans:
+        raise ValueError(f"no heading containing {heading_needle!r} on {code}")
+    if len(spans) == 1:
+        return f"only 1 section matching {heading_needle!r} on {code}; nothing to dedupe"
+
+    me = notion_request("GET", "users/me", token)
+    bot_user_id = me.get("id") if isinstance(me, dict) and me.get("type") == "bot" and me.get("id") else None
+
+    all_sec_blocks = [existing[s:e] for s, e in spans]
+    children_map: dict[str, list[dict]] = {}
+    for sec in all_sec_blocks:
+        children_map.update(_collect_children(sec, token))
+
+    reasons = [_learner_edit_reason(sec, children_map, bot_user_id) for sec in all_sec_blocks]
+    edited_indices = [i for i, r in enumerate(reasons) if r is not None]
+    if len(edited_indices) > 1:
+        raise ValueError(f"multiple sections matching {heading_needle!r} on {code} contain learner content; refusing")
+
+    body_sigs = [[_block_signature(b, children_map) for b in sec[1:] if not is_blank(b)] for sec in all_sec_blocks]
+    if edited_indices:
+        keep_idx = edited_indices[0]
+    else:
+        keep_idx = max(range(len(all_sec_blocks)), key=lambda i: (len(body_sigs[i]), -i))
+
+    kept_heading = re.sub(r"^\d+\.\s*", "", heading_text(all_sec_blocks[keep_idx][0]).strip()).lower()
+    kept_sigs = set(body_sigs[keep_idx])
+    to_delete: list[dict] = []
+    for idx, sec in enumerate(all_sec_blocks):
+        if idx == keep_idx:
+            continue
+        if reasons[idx] is not None:
+            raise ValueError(f"refusing to remove duplicate section on {code}: {reasons[idx]}")
+        cand_heading = re.sub(r"^\d+\.\s*", "", heading_text(sec[0]).strip()).lower()
+        if cand_heading != kept_heading:
+            raise ValueError(
+                f"duplicate headings differ ({heading_text(sec[0])!r} vs {heading_text(all_sec_blocks[keep_idx][0])!r}); refusing"
+            )
+        unique_blocks = [sig for sig in body_sigs[idx] if sig not in kept_sigs]
+        if unique_blocks:
+            raise ValueError(
+                f"duplicate section {heading_text(sec[0])!r} on {code} has {len(unique_blocks)} unique block(s); refusing"
+            )
+        to_delete.extend(sec)
+
+    dup_count = len(spans) - 1
+    title = heading_text(all_sec_blocks[keep_idx][0])
+    if dry_run:
+        return (
+            f"dry run: would remove {dup_count} duplicate section(s) "
+            f"({len(to_delete)} top-level block(s)) matching {title!r} on {code}"
+        )
+
+    failed = []
+    for b in to_delete:
+        try:
+            notion_request("DELETE", f"blocks/{b['id']}", token)
+        except Exception as exc:  # noqa: BLE001
+            failed.append((b["id"], str(exc)[:200]))
+    if failed:
+        raise RuntimeError(
+            f"failed to delete {len(failed)} block(s) from duplicate section {title!r} on {code}: {failed[0]}"
+        )
+    return (
+        f"removed {dup_count} duplicate section(s) ({len(to_delete)} top-level block(s)) matching {title!r} on {code}"
+    )
+
+
+def _render_snapshot_block(block: dict, children_map: dict[str, list[dict]], indent: int = 0) -> list[str]:
+    btype = block.get("type", "")
+    pad = "  " * indent
+    body = block.get(btype) or {}
+    lines: list[str] = []
+    if btype in HEADINGS:
+        level = HEADINGS.index(btype) + 1
+        lines.append(f"{'#' * level} {heading_text(block)}")
+    elif btype == "paragraph":
+        txt = _block_plain_text(block).strip()
+        if txt:
+            lines.append(f"{pad}{txt}")
+    elif btype == "bulleted_list_item":
+        lines.append(f"{pad}- {_block_plain_text(block)}")
+    elif btype == "numbered_list_item":
+        lines.append(f"{pad}1. {_block_plain_text(block)}")
+    elif btype == "to_do":
+        mark = "x" if body.get("checked") else " "
+        lines.append(f"{pad}- [{mark}] {_block_plain_text(block)}")
+    elif btype == "callout":
+        lines.append(f"{pad}> {_block_plain_text(block)}")
+    elif btype == "quote":
+        lines.append(f"{pad}> {_block_plain_text(block)}")
+    elif btype == "equation":
+        lines.append(f"{pad}$${body.get('expression', '')}$$")
+    elif btype == "code":
+        lang = body.get("language", "plain text")
+        lines.append(f"{pad}```{lang}")
+        lines.append(_block_plain_text(block))
+        lines.append(f"{pad}```")
+    elif btype == "toggle":
+        lines.append(f"{pad}<details><summary>{_block_plain_text(block)}</summary>")
+    elif btype == "divider":
+        lines.append("---")
+    elif btype == "image":
+        cap = _block_plain_text(block).strip()
+        lines.append(f"{pad}[Figure{': ' + cap if cap else ''}]")
+    for kid in children_map.get(block.get("id", ""), []):
+        lines.extend(_render_snapshot_block(kid, children_map, indent + 1))
+    if btype == "toggle":
+        lines.append(f"{pad}</details>")
+    return lines
+
+
+def snapshot_page(code: str, token: str, id_map: dict, *, include_learner_section: bool = False) -> str:
+    """Return a read-only Markdown snapshot of `code`, omitting the learner's Mistake Log by default."""
+    entry = id_map.get(code)
+    if not isinstance(entry, dict):
+        raise ValueError(f"{code} is not in id_map.json")
+    page_id = entry["id"]
+    page = notion_request("GET", f"pages/{page_id}", token)
+    props = page.get("properties") or {}
+    title = entry.get("title") or code
+    lines = [f"# {code}: {title}"]
+    for prop_name in ("Learning Objective", "Expected Output", "Objective", "Goal"):
+        prop = props.get(prop_name)
+        if isinstance(prop, dict):
+            val = "".join(r.get("plain_text", "") for r in prop.get(prop.get("type", ""), []) or []).strip()
+            if val:
+                lines.append(f"- **{prop_name}:** {val}")
+    lines.append("")
+
+    blocks = get_all_blocks(page_id, token)
+    children_map = _collect_children(blocks, token)
+    skip_learner = False
+    for b in blocks:
+        btype = b.get("type")
+        if btype in ("heading_1", "heading_2"):
+            skip_learner = (
+                not include_learner_section
+                and btype == "heading_2"
+                and LEARNER_SECTION.lower() in heading_text(b).lower()
+            )
+        if skip_learner:
+            continue
+        lines.extend(_render_snapshot_block(b, children_map))
+    return "\n".join(lines).strip() + "\n"
 
 
 def _clone_block(block: dict, children_map: dict[str, list[dict]]) -> dict:
@@ -648,6 +868,16 @@ def main(argv: list[str] | None = None) -> int:
         help="move a non-learner section (no checked to_do, no person edits) to the end of the page",
     )
     ap.add_argument(
+        "--dedupe-section",
+        metavar="HEADING",
+        help="remove duplicate template-only sections matching HEADING when they hold no learner content",
+    )
+    ap.add_argument(
+        "--snapshot",
+        action="store_true",
+        help="print a read-only Markdown snapshot of the page (omits My Implementation & Mistake Log)",
+    )
+    ap.add_argument(
         "--renumber",
         action="store_true",
         help="rewrite leading 'N. ' of every heading_2 to 1..n (refuses if section count != standard)",
@@ -683,6 +913,10 @@ def main(argv: list[str] | None = None) -> int:
                 print(f"dry run: {len(blocks)} top-level blocks for {args.code} ({args.mode}); target ok; nothing sent")
             else:
                 print(write_page(args.code, spec, args.mode, args.after, token, id_map))
+        if args.snapshot:
+            print(snapshot_page(args.code, token, id_map), end="")
+        if args.dedupe_section:
+            print(dedupe_section(args.code, args.dedupe_section, token, id_map, args.dry_run))
         if args.move_section_to_end:
             print(move_section_to_end(args.code, args.move_section_to_end, token, id_map, args.dry_run))
         if args.renumber:
