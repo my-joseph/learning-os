@@ -1,0 +1,157 @@
+{
+  "unitCode": "MTH-T02-C04-U07",
+  "archetypes": [
+    {
+      "unitCode": "MTH-T02-C04-U07",
+      "archetypeKey": "t02-c04-u07-inverse-of-invertible-polynomial",
+      "level": 1,
+      "name": "Find an Inverse Rule for an Invertible Polynomial",
+      "source": "OpenStax Algebra and Trigonometry 2e §5.7 — Inverses and Radical Functions",
+      "coreConcept": "An inverse rule reverses the input-output relation of a one-to-one function; it is found by exchanging the variables and solving for the new output.",
+      "mentalModel": "Treat the original output as the new input, then undo the original operations in reverse order to recover the old input.",
+      "governingRelation": "y=f(x) ⇔ x=f^{-1}(y); after solving, rename y as x",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c04-u07-inverse-as-reciprocal-trap",
+          "description": "Treating inverse-function notation as a reciprocal of the function value.",
+          "trapFormula": "f^{-1}(x)=1/f(x)"
+        },
+        {
+          "trapTag": "t02-c04-u07-swap-without-solving-trap",
+          "description": "Exchanging x and y but stopping before isolating the new output.",
+          "trapFormula": "f^{-1}(x)=f(x)"
+        }
+      ],
+      "versatileDomains": [
+        "reversible input-output rules",
+        "measurement calibration"
+      ],
+      "usedContexts": [],
+      "figureNone": "The item tests symbolic reversal of a one-to-one rule; a graph would not add information needed to solve it."
+    },
+    {
+      "unitCode": "MTH-T02-C04-U07",
+      "archetypeKey": "t02-c04-u07-restrict-domain-for-polynomial-inverse",
+      "level": 2,
+      "name": "Restrict a Polynomial Domain Before Finding Its Inverse",
+      "source": "OpenStax Algebra and Trigonometry 2e §5.7 — Inverses and Radical Functions",
+      "coreConcept": "A function that is not one-to-one on its full domain can become invertible after restricting its input set to a one-to-one branch.",
+      "mentalModel": "Keep one monotone branch of the original graph; the inverse then returns outputs only from that chosen branch.",
+      "governingRelation": "If f is restricted to D and one-to-one there, Range(f^{-1})=D",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c04-u07-keep-both-square-root-branches-trap",
+          "description": "Keeping both square-root branches even though the restricted original domain permits only one.",
+          "trapFormula": "x=h±sqrt(y)"
+        },
+        {
+          "trapTag": "t02-c04-u07-ignore-domain-restriction-trap",
+          "description": "Choosing an inverse branch without matching the stated restricted domain.",
+          "trapFormula": "x=h-sqrt(y) when original domain x≥h"
+        }
+      ],
+      "versatileDomains": [
+        "one-to-one restrictions",
+        "inverse branches"
+      ],
+      "usedContexts": [],
+      "figureBuilders": [
+        {
+          "fn": "build_function_graph_figure",
+          "args": {
+            "expr": "(x-shift)^2",
+            "x_min": "shift",
+            "x_max": "shift+4",
+            "y_min": 0,
+            "y_max": 16,
+            "title": "A restricted quadratic branch"
+          }
+        }
+      ]
+    },
+    {
+      "unitCode": "MTH-T02-C04-U07",
+      "archetypeKey": "t02-c04-u07-radical-function-domain",
+      "level": 1,
+      "name": "Find the Domain of a Radical Function",
+      "source": "OpenStax Algebra and Trigonometry 2e §5.7 — Inverses and Radical Functions",
+      "coreConcept": "An even-root expression is real only when its radicand is nonnegative; solving that condition determines its real domain.",
+      "mentalModel": "Treat the radicand as the quantity under a real square root and keep exactly the inputs that make it nonnegative.",
+      "governingRelation": "For f(x)=sqrt(g(x)), Dom(f)={x∈R:g(x)≥0}",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c04-u07-strict-root-boundary-trap",
+          "description": "Excluding input values where an even-root radicand is exactly zero, even though the root is defined there.",
+          "trapFormula": "g(x)=0 is omitted from the domain even though sqrt(0) is real"
+        },
+        {
+          "trapTag": "t02-c04-u07-reverse-linear-inequality-trap",
+          "description": "Reversing the accepted interval when solving a radicand inequality with a negative leading coefficient.",
+          "trapFormula": "for a downward quadratic radicand, keep the outside intervals instead of the interval between its roots"
+        }
+      ],
+      "versatileDomains": [
+        "radical domains",
+        "inverse ranges"
+      ],
+      "usedContexts": [],
+      "figureNone": "The prompt gives an algebraic radicand and asks for its domain; a graph would show the endpoint directly instead of testing the domain condition."
+    },
+    {
+      "unitCode": "MTH-T02-C04-U07",
+      "archetypeKey": "t02-c04-u07-inverse-of-radical-function",
+      "level": 2,
+      "name": "Find the Inverse of a Radical Function",
+      "source": "OpenStax Algebra and Trigonometry 2e §5.7 — Inverses and Radical Functions",
+      "coreConcept": "A radical function can often be inverted by exchanging input and output and applying the matching power while preserving the function's domain and range restrictions.",
+      "mentalModel": "Undo the root with its corresponding power, then isolate the original input; check that the result reverses the stated mapping.",
+      "governingRelation": "If y=√[n]{g(x)}, then y^n=g(x), subject to the original domain and range",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c04-u07-reverse-power-missing-trap",
+          "description": "Failing to apply the power that undoes a radical after exchanging variables.",
+          "trapFormula": "sqrt[3](2x-5) inverse remains sqrt[3](2x-5)"
+        },
+        {
+          "trapTag": "t02-c04-u07-inverse-coefficient-reciprocal-trap",
+          "description": "Inverting a coefficient without also reversing the additive term.",
+          "trapFormula": "(x^3+5)/2 becomes 2x^3+5"
+        }
+      ],
+      "versatileDomains": [
+        "undoing radical transforms",
+        "inverse formulas"
+      ],
+      "usedContexts": [],
+      "figureNone": "The item asks for an algebraic inverse rule, not graph reconstruction; an expression check verifies the reversal."
+    },
+    {
+      "unitCode": "MTH-T02-C04-U07",
+      "archetypeKey": "t02-c04-u07-verify-inverse-compositions",
+      "level": 1,
+      "name": "Verify an Inverse Pair with Composition",
+      "source": "OpenStax Algebra and Trigonometry 2e §5.7 — Inverses and Radical Functions",
+      "coreConcept": "Two functions are inverses when composing them in either order returns the original input on the relevant domains.",
+      "mentalModel": "Feed an output through the proposed undo rule and then return through the original rule; each direction should restore its starting input.",
+      "governingRelation": "g(f(x))=x and f(g(x))=x on their respective domains",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c04-u07-check-one-composition-only-trap",
+          "description": "Checking only one composition and overlooking a failure in the reverse order.",
+          "trapFormula": "verify g(f(x))=x but omit f(g(x))"
+        },
+        {
+          "trapTag": "t02-c04-u07-compose-in-wrong-order-trap",
+          "description": "Substituting the two functions in an order different from the composition requested.",
+          "trapFormula": "g(f(x))→f(g(x))"
+        }
+      ],
+      "versatileDomains": [
+        "inverse verification",
+        "composition checks"
+      ],
+      "usedContexts": [],
+      "figureNone": "Composition is a symbolic substitution check; a figure would not determine whether both identities hold."
+    }
+  ]
+}

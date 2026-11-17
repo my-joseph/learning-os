@@ -1,0 +1,492 @@
+{
+  "unitCode": "MTH-T02-C04-U07",
+  "topicTitle": "Polynomial and Rational Functions",
+  "unitTitle": "Inverses and Radical Functions",
+  "subject": "MATH",
+  "problems": [
+    {
+      "id": "Q01",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c04-u07-inverse-of-invertible-polynomial",
+      "context": "",
+      "prompt": "Find the inverse function of $f(x)=4x+9$. Write a simplified expression in $x$.",
+      "display": "y=mx+b; exchange the variables and isolate the new output",
+      "plainText": "Find the inverse function of f(x)=4x+9. Write a simplified expression in x.",
+      "givens": {
+        "slope": 4,
+        "intercept": 9
+      },
+      "constants": {},
+      "trapGivens": [
+        4,
+        9
+      ],
+      "answerSpec": {
+        "type": "expression",
+        "value": "(x-9)/4",
+        "variables": [
+          "x"
+        ]
+      },
+      "answerPlain": "(x-9)/4",
+      "answerDisplay": "(x-9)/4",
+      "inputHint": "Enter a simplified expression in x.",
+      "commonTrapTag": "t02-c04-u07-inverse-as-reciprocal-trap",
+      "trapDerivation": "1/(4*x+9)",
+      "trapValue": "1/(4*x+9)",
+      "verify": {
+        "source": "(x-9)/4",
+        "trapValue": "1/(4*x+9)"
+      },
+      "checkpointHint": "Exchange the variable roles, then undo each operation in reverse order.",
+      "references": [
+        "MTH-T02-C04-U07"
+      ],
+      "steps": [
+        {
+          "latex": "y=4x+9",
+          "explain": "Write the output as a variable so the input and output roles can be exchanged."
+        },
+        {
+          "latex": "x=4y+9",
+          "explain": "Exchange the input and output variables."
+        },
+        {
+          "latex": "x-9=4y",
+          "explain": "Subtract the intercept from both sides."
+        },
+        {
+          "latex": "y=\\frac{x-9}{4}",
+          "explain": "Divide by the nonzero slope to isolate the new output."
+        },
+        {
+          "latex": "f^{-1}(x)=\\frac{x-9}{4}",
+          "explain": "Rename the isolated output as the inverse function.",
+          "val": "(x-9)/4"
+        }
+      ],
+      "verificationLevel": "partial",
+      "review": {
+        "id": "Q01",
+        "verdict": "pass",
+        "note": "The inverse and reciprocal misconception trap are sound, the steps are granular, and the display and hint cue the method without giving the result."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C04-U07",
+          "title": "Inverses and Radical Functions",
+          "notionUrl": "https://www.notion.so/4013818f8ba0811ea0aacf2107cc511a"
+        }
+      ],
+      "unitCode": "MTH-T02-C04-U07",
+      "fingerprint": "t02-c04-u07-inverse-as-reciprocal-trap|reverse|Find the inverse function of f(x)=#x+#. Write a simplified expression in x.",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 5,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c04-u07-inverse-as-reciprocal-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 17
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 2 - Standard Exam"
+    },
+    {
+      "id": "Q02",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c04-u07-restrict-domain-for-polynomial-inverse",
+      "context": "",
+      "prompt": "Find the inverse of $f(x)=(x-3)^2$ when its domain is restricted to $x\\ge3$. Write a simplified expression in $x$.",
+      "display": "y=(x-h)^2 with the original domain x>=h",
+      "plainText": "Find the inverse of f(x)=(x-3)^2 when its domain is restricted to x>=3. Write a simplified expression in x.",
+      "givens": {
+        "vertex_input": 3,
+        "power": 2
+      },
+      "constants": {
+        "unit_coefficient": 1
+      },
+      "trapGivens": [
+        3,
+        1
+      ],
+      "answerSpec": {
+        "type": "expression",
+        "value": "3+sqrt(x)",
+        "variables": [
+          "x"
+        ]
+      },
+      "answerPlain": "3+sqrt(x)",
+      "answerDisplay": "3+sqrt(x)",
+      "inputHint": "Enter the inverse rule as an expression in x.",
+      "commonTrapTag": "t02-c04-u07-keep-both-square-root-branches-trap",
+      "trapDerivation": "3-1*sqrt(x)",
+      "trapValue": "3-sqrt(x)",
+      "verify": {
+        "source": "3+sqrt(x)",
+        "trapValue": "3-sqrt(x)"
+      },
+      "checkpointHint": "The original domain determines which square-root branch returns allowed inputs.",
+      "references": [
+        "MTH-T02-C04-U07"
+      ],
+      "steps": [
+        {
+          "latex": "y=(x-3)^2",
+          "explain": "Write the restricted polynomial with its output named."
+        },
+        {
+          "latex": "x=(y-3)^2",
+          "explain": "Exchange the input and output variables."
+        },
+        {
+          "latex": "\\sqrt{x}=|y-3|",
+          "explain": "Take the principal square root while retaining the absolute value."
+        },
+        {
+          "latex": "y-3\\ge0",
+          "explain": "Use the restricted original domain to choose the nonnegative branch."
+        },
+        {
+          "latex": "y=3+\\sqrt{x}",
+          "explain": "Isolate the new output using the branch that returns inputs at least three.",
+          "val": "3+sqrt(x)"
+        }
+      ],
+      "figureWaiver": "The graph restricted to the stated branch would directly show the branch choice being tested.",
+      "verificationLevel": "partial",
+      "review": {
+        "id": "Q02",
+        "verdict": "pass",
+        "note": "The restriction selects the appropriate inverse branch and supports the stated trap, with clear steps and no result disclosed by the display or hint."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C04-U07",
+          "title": "Inverses and Radical Functions",
+          "notionUrl": "https://www.notion.so/4013818f8ba0811ea0aacf2107cc511a"
+        }
+      ],
+      "unitCode": "MTH-T02-C04-U07",
+      "fingerprint": "t02-c04-u07-keep-both-square-root-branches-trap|reverse|Find the inverse of f(x)=(x-#)^# when its domain is restricted to x>=#. Write a simplified expression in x.",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 5,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c04-u07-keep-both-square-root-branches-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 17
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 2 - Standard Exam"
+    },
+    {
+      "id": "Q03",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c04-u07-radical-function-domain",
+      "context": "",
+      "prompt": "Find the real domain of $f(x)=\\sqrt{(x+2)(6-x)}$. Give the answer in interval notation.",
+      "display": "For a real square root, the radicand must be nonnegative.",
+      "plainText": "Find the real domain of f(x)=sqrt((x+2)(6-x)). Give the answer in interval notation.",
+      "givens": {
+        "left_root_magnitude": 2,
+        "right_root": 6
+      },
+      "constants": {},
+      "trapGivens": [
+        2,
+        6
+      ],
+      "answerSpec": {
+        "type": "interval",
+        "value": "[-2,6]"
+      },
+      "answerPlain": "[-2, 6]",
+      "answerDisplay": "[-2,6]",
+      "inputHint": "Enter the complete real domain in interval notation, using U for unions.",
+      "commonTrapTag": "t02-c04-u07-strict-root-boundary-trap",
+      "trapDerivation": "(-2,6)",
+      "trapValue": "(-2,6)",
+      "verify": {
+        "source": "[-2,6]",
+        "trapValue": "(-2,6)"
+      },
+      "checkpointHint": "Test the sign of the radicand in each interval separated by its zeros.",
+      "references": [
+        "MTH-T02-C04-U07"
+      ],
+      "steps": [
+        {
+          "latex": "(x+2)(6-x)\\ge0",
+          "explain": "Require the radicand to be nonnegative for the square root to be real."
+        },
+        {
+          "latex": "x+2=0",
+          "explain": "Set the first factor to zero to identify one boundary."
+        },
+        {
+          "latex": "x=-2",
+          "explain": "Solve that factor equation for its boundary input."
+        },
+        {
+          "latex": "6-x=0",
+          "explain": "Set the second factor to zero to identify the other boundary."
+        },
+        {
+          "latex": "x=6",
+          "explain": "Solve the second factor equation for its boundary input."
+        },
+        {
+          "latex": "-2\\le x\\le6",
+          "explain": "The radicand is nonnegative between the roots, including both zero endpoints."
+        },
+        {
+          "latex": "\\operatorname{Dom}(f)=[-2,6]",
+          "explain": "Write the complete real domain as an interval with closed endpoints.",
+          "val": "[-2,6]"
+        }
+      ],
+      "verificationLevel": "partial",
+      "review": {
+        "id": "Q03",
+        "verdict": "pass",
+        "note": "The real-domain task, boundary trap, and radical-domain archetype align; the four-step sequence is valid and the display and hint disclose no interval."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C04-U07",
+          "title": "Inverses and Radical Functions",
+          "notionUrl": "https://www.notion.so/4013818f8ba0811ea0aacf2107cc511a"
+        }
+      ],
+      "unitCode": "MTH-T02-C04-U07",
+      "fingerprint": "t02-c04-u07-strict-root-boundary-trap|direct|Find the real domain of f(x)=sqrt((x+#)(#-x)). Give the answer in interval notation.",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 7,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c04-u07-strict-root-boundary-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 21
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 1 - Foundation"
+    },
+    {
+      "id": "Q04",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c04-u07-inverse-of-radical-function",
+      "context": "",
+      "prompt": "Find the inverse function of $f(x)=\\sqrt{2x+5}$. Write a simplified expression in $x$.",
+      "display": "y=sqrt(ax+b); exchange variables, square, then isolate the new output",
+      "plainText": "Find the inverse function of f(x)=sqrt(2x+5). Write a simplified expression in x.",
+      "givens": {
+        "radicand_coefficient": 2,
+        "radicand_constant": 5
+      },
+      "constants": {},
+      "trapGivens": [
+        2,
+        5
+      ],
+      "answerSpec": {
+        "type": "expression",
+        "value": "(x**2-5)/2",
+        "variables": [
+          "x"
+        ]
+      },
+      "answerPlain": "(x^2-5)/2",
+      "answerDisplay": "(x^2-5)/2",
+      "inputHint": "Enter a simplified expression in x.",
+      "commonTrapTag": "t02-c04-u07-inverse-coefficient-reciprocal-trap",
+      "trapDerivation": "x**2/2+5",
+      "trapValue": "x**2/2+5",
+      "verify": {
+        "source": "(x**2-5)/2",
+        "trapValue": "x**2/2+5"
+      },
+      "checkpointHint": "Undo the root first, then reverse each operation inside the radicand.",
+      "references": [
+        "MTH-T02-C04-U07"
+      ],
+      "steps": [
+        {
+          "latex": "y=\\sqrt{2x+5}",
+          "explain": "Name the original output before exchanging the variables."
+        },
+        {
+          "latex": "x=\\sqrt{2y+5}",
+          "explain": "Exchange the input and output variables."
+        },
+        {
+          "latex": "x^2=2y+5",
+          "explain": "Square both nonnegative sides to undo the square root."
+        },
+        {
+          "latex": "x^2-5=2y",
+          "explain": "Subtract the radicand constant from both sides."
+        },
+        {
+          "latex": "y=\\frac{x^2-5}{2}",
+          "explain": "Divide by the radicand coefficient to isolate the new output."
+        },
+        {
+          "latex": "f^{-1}(x)=\\frac{x^2-5}{2}",
+          "explain": "Rename the isolated output as the inverse rule.",
+          "val": "(x**2-5)/2"
+        }
+      ],
+      "verificationLevel": "partial",
+      "review": {
+        "id": "Q04",
+        "verdict": "pass",
+        "note": "The radical inverse and coefficient-reciprocal trap align with the archetype, the derivation is clear, and the display and hint do not reveal the result."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C04-U07",
+          "title": "Inverses and Radical Functions",
+          "notionUrl": "https://www.notion.so/4013818f8ba0811ea0aacf2107cc511a"
+        }
+      ],
+      "unitCode": "MTH-T02-C04-U07",
+      "fingerprint": "t02-c04-u07-inverse-coefficient-reciprocal-trap|reverse|Find the inverse function of f(x)=sqrt(#x+#). Write a simplified expression in x.",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 6,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c04-u07-inverse-coefficient-reciprocal-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 19
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 2 - Standard Exam"
+    }
+  ],
+  "drillId": "DRL-MTH-T02-C04-U07-01",
+  "title": "Inverses and Radical Functions — Verified Math Drill (4 Qs)",
+  "topicCode": "MTH-T02",
+  "chapterCode": "MTH-T02-C04",
+  "schemaVersion": "2.0-math",
+  "createdAt": "2026-11-17 08:57:48",
+  "config": {
+    "questionCount": 4,
+    "difficulty": "ALL",
+    "difficultyMode": "AI Synthesized Reasoning Mode"
+  },
+  "localFilePath": "drills/data/MTH-T02-C04-U07/DRL-MTH-T02-C04-U07-01.json"
+}
