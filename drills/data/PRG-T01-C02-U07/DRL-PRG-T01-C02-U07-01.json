@@ -1,0 +1,418 @@
+{
+  "unitCode": "PRG-T01-C02-U07",
+  "unitTitle": "Discriminated Unions",
+  "environment": "typescript-strict",
+  "sourceAttribution": "PRG-T01-C02-U07 unit page; TypeScript Handbook — Narrowing: Discriminated Unions and Exhaustiveness Checking (https://www.typescriptlang.org/docs/handbook/2/narrowing.html); and current unit reasoning-vault archetypes. Scenarios authored for this drill.",
+  "config": {
+    "questionCount": 4,
+    "difficulty": "ALL",
+    "difficultyMode": "AI Synthesized Engineering Mode"
+  },
+  "problems": [
+    {
+      "id": "Q01",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "codeType": "implement",
+      "archetypeKey": "prg-t01-c02-u07-explicit-result-variants",
+      "commonTrapTag": "optional-property-bag-state",
+      "context": "catalog_import_outcome",
+      "entryPoint": "summarizeImportOutcome",
+      "prompt": "A catalog import endpoint reports either an `accepted` batch or a `rejected` batch. The two outcomes carry different fields, and a valid accepted batch may contain zero rows. Implement `summarizeImportOutcome` so each result is described according to its discriminant.\n\n**Requirements**\n- Preserve the `ImportOutcome` union contract and the exported function name.\n- Read `acceptedRows` only for an accepted outcome and `reason` only for a rejected outcome.\n- Treat zero as a valid accepted-row count.\n- Return a fresh string without changing the input.",
+      "inputHint": "Check which values the shared state field can take before using the associated payload.",
+      "checkpointHint": "Try the accepted outcome when its count is zero, then compare it with the rejected shape.",
+      "starterCode": "type ImportOutcome =\n  | { state: 'accepted'; acceptedRows: number }\n  | { state: 'rejected'; reason: string };\n\nexport function summarizeImportOutcome(_outcome: ImportOutcome): string {\n  return '';\n}\n",
+      "solutionCode": "type ImportOutcome =\n  | { state: 'accepted'; acceptedRows: number }\n  | { state: 'rejected'; reason: string };\n\nfunction assertNever(value: never): never {\n  throw new Error(`Unhandled import outcome: ${JSON.stringify(value)}`);\n}\n\nexport function summarizeImportOutcome(outcome: ImportOutcome): string {\n  switch (outcome.state) {\n    case 'accepted':\n      return `Accepted ${outcome.acceptedRows} rows`;\n    case 'rejected':\n      return `Rejected: ${outcome.reason}`;\n    default:\n      return assertNever(outcome);\n  }\n}\n",
+      "trapMutant": "type ImportOutcome =\n  | { state: 'accepted'; acceptedRows: number }\n  | { state: 'rejected'; reason: string };\n\nexport function summarizeImportOutcome(outcome: ImportOutcome): string {\n  const optionalBag = outcome as unknown as { acceptedRows?: number; reason?: string };\n  if (optionalBag.acceptedRows) return `Accepted ${optionalBag.acceptedRows} rows`;\n  return `Rejected: ${optionalBag.reason}`;\n}\n",
+      "visibleTests": [
+        {
+          "name": "describes a nonempty accepted import",
+          "testCode": "assert.strictEqual(summarizeImportOutcome({ state: 'accepted', acceptedRows: 8 }), 'Accepted 8 rows');"
+        },
+        {
+          "name": "describes a rejected import",
+          "testCode": "assert.strictEqual(summarizeImportOutcome({ state: 'rejected', reason: 'Unknown column' }), 'Rejected: Unknown column');"
+        },
+        {
+          "name": "keeps an empty accepted batch distinct from rejection",
+          "testCode": "assert.strictEqual(summarizeImportOutcome({ state: 'accepted', acceptedRows: 0 }), 'Accepted 0 rows');"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "keeps a zero-row accepted result in the accepted state",
+          "testCode": "const outcome: ImportOutcome = { state: 'accepted', acceptedRows: 0 }; assert.match(summarizeImportOutcome(outcome), /^Accepted/);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Check the shared state field to select the outcome variant."
+        },
+        {
+          "explain": "Read only the payload guaranteed by that variant."
+        },
+        {
+          "explain": "Handle a zero row count as data rather than as a missing outcome."
+        }
+      ],
+      "verificationLevel": "partial",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "Import endpoints commonly return accepted or rejected batch outcomes with distinct payload fields, and a valid import can accept zero rows."
+      },
+      "form": "direct",
+      "fingerprint": "optional-property-bag-state|direct|summarizeImportOutcome",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 3,
+          "hasTrapOrFlaw": false,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "optional-property-bag-state",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 6
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Foundation",
+      "unitCode": "PRG-T01-C02-U07",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U07-01/Q01_summarizeImportOutcome.ts"
+    },
+    {
+      "id": "Q02",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "codeType": "implement",
+      "archetypeKey": "prg-t01-c02-u07-explicit-result-variants",
+      "commonTrapTag": "un-narrowed-union-member-access",
+      "context": "media_playback_status",
+      "entryPoint": "playbackMessage",
+      "prompt": "A media player exposes one of three states: `buffering` with progress, `playing` with a title, or `unavailable` with a reason. Implement `playbackMessage` to return the message promised by each state. Keep the variants mutually exclusive and do not infer the state from whether a payload happens to be present.\n\n**Requirements**\n- Narrow by the `kind` discriminant before reading state-specific fields.\n- Preserve the zero-percent buffering case.\n- Return `Buffering: <percent>%`, `Playing: <title>`, or `Unavailable: <reason>` for the corresponding variant.\n- Keep the exported function name and input type.",
+      "inputHint": "A field that belongs to only one variant is available after the branch selects that variant.",
+      "checkpointHint": "Check the buffering state at the lower boundary and the unavailable state, where no title exists.",
+      "starterCode": "type PlaybackState =\n  | { kind: 'buffering'; percent: number }\n  | { kind: 'playing'; title: string }\n  | { kind: 'unavailable'; reason: string };\n\nexport function playbackMessage(_state: PlaybackState): string {\n  return '';\n}\n",
+      "solutionCode": "type PlaybackState =\n  | { kind: 'buffering'; percent: number }\n  | { kind: 'playing'; title: string }\n  | { kind: 'unavailable'; reason: string };\n\nfunction assertNever(value: never): never {\n  throw new Error(`Unhandled playback state: ${JSON.stringify(value)}`);\n}\n\nexport function playbackMessage(state: PlaybackState): string {\n  switch (state.kind) {\n    case 'buffering':\n      return `Buffering: ${state.percent}%`;\n    case 'playing':\n      return `Playing: ${state.title}`;\n    case 'unavailable':\n      return `Unavailable: ${state.reason}`;\n    default:\n      return assertNever(state);\n  }\n}\n",
+      "trapMutant": "type PlaybackState =\n  | { kind: 'buffering'; percent: number }\n  | { kind: 'playing'; title: string }\n  | { kind: 'unavailable'; reason: string };\n\nexport function playbackMessage(state: PlaybackState): string {\n  const title = (state as unknown as { title?: string }).title;\n  return `Playing: ${title}`;\n}\n",
+      "visibleTests": [
+        {
+          "name": "reports zero buffering progress",
+          "testCode": "assert.strictEqual(playbackMessage({ kind: 'buffering', percent: 0 }), 'Buffering: 0%');"
+        },
+        {
+          "name": "reports the active title",
+          "testCode": "assert.strictEqual(playbackMessage({ kind: 'playing', title: 'Coastal Routes' }), 'Playing: Coastal Routes');"
+        },
+        {
+          "name": "reports why playback is unavailable",
+          "testCode": "assert.strictEqual(playbackMessage({ kind: 'unavailable', reason: 'Rights check pending' }), 'Unavailable: Rights check pending');"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "does not read a title from an unavailable state",
+          "testCode": "const state: PlaybackState = { kind: 'unavailable', reason: 'Region restricted' }; assert.strictEqual(playbackMessage(state), 'Unavailable: Region restricted');"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Compare the literal `kind` value to narrow the union."
+        },
+        {
+          "explain": "Use the progress, title, or reason field only in the matching branch."
+        },
+        {
+          "explain": "Preserve the zero progress value as a valid buffering state."
+        }
+      ],
+      "verificationLevel": "partial",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "Playback systems expose distinct buffering, active, and unavailable states with different state-specific data."
+      },
+      "form": "direct",
+      "fingerprint": "un-narrowed-union-member-access|direct|playbackMessage",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 3,
+          "hasTrapOrFlaw": false,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "un-narrowed-union-member-access",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 6
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Foundation",
+      "unitCode": "PRG-T01-C02-U07",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U07-01/Q02_playbackMessage.ts"
+    },
+    {
+      "id": "Q03",
+      "level": 2,
+      "category": "Trap & Edge Case",
+      "archetype": "problem-solving",
+      "codeType": "implement",
+      "archetypeKey": "prg-t01-c02-u07-exhaustive-result-handlers",
+      "commonTrapTag": "silent-nonexhaustive-default",
+      "context": "permit_approval_workflow",
+      "entryPoint": "nextPermitStep",
+      "prompt": "A permit workflow has a finite set of review states, and each state requires a different next action. Implement `nextPermitStep` so every state receives its own action and future state additions are visible to the compiler. A generic fallback may appear to make the handler robust while silently hiding an unimplemented workflow step.\n\n**Requirements**\n- Handle the `draft`, `submitted`, `approved`, and `rejected` states explicitly.\n- Add an `assertNever` helper that accepts only `never` and use it for the remaining switch value.\n- Preserve the exported function name and return contract.\n- Return the exact action described by each current state in the tests.",
+      "inputHint": "After the listed branches, inspect what type remains before returning a generic value.",
+      "checkpointHint": "The rejected state must receive a deliberate action, and any future state should make the remainder non-never.",
+      "starterCode": "type PermitState =\n  | { status: 'draft' }\n  | { status: 'submitted'; applicationId: string }\n  | { status: 'approved'; permitId: string }\n  | { status: 'rejected'; reason: string };\n\nexport function nextPermitStep(_state: PermitState): string {\n  return 'Review required';\n}\n",
+      "solutionCode": "type PermitState =\n  | { status: 'draft' }\n  | { status: 'submitted'; applicationId: string }\n  | { status: 'approved'; permitId: string }\n  | { status: 'rejected'; reason: string };\n\nfunction assertNever(value: never): never {\n  throw new Error(`Unhandled permit state: ${JSON.stringify(value)}`);\n}\n\nexport function nextPermitStep(state: PermitState): string {\n  switch (state.status) {\n    case 'draft':\n      return 'Complete the application';\n    case 'submitted':\n      return `Wait for review of ${state.applicationId}`;\n    case 'approved':\n      return `Issue permit ${state.permitId}`;\n    case 'rejected':\n      return `Revise application: ${state.reason}`;\n    default:\n      return assertNever(state);\n  }\n}\n",
+      "trapMutant": "type PermitState =\n  | { status: 'draft' }\n  | { status: 'submitted'; applicationId: string }\n  | { status: 'approved'; permitId: string }\n  | { status: 'rejected'; reason: string };\n\nexport function nextPermitStep(state: PermitState): string {\n  switch (state.status) {\n    case 'draft': return 'Complete the application';\n    case 'submitted': return `Wait for review of ${state.applicationId}`;\n    case 'approved': return `Issue permit ${state.permitId}`;\n    default: return 'Review required';\n  }\n}\n",
+      "visibleTests": [
+        {
+          "name": "moves a draft to application completion",
+          "testCode": "assert.strictEqual(nextPermitStep({ status: 'draft' }), 'Complete the application');"
+        },
+        {
+          "name": "keeps the submitted application in review",
+          "testCode": "assert.strictEqual(nextPermitStep({ status: 'submitted', applicationId: 'APP-412' }), 'Wait for review of APP-412');"
+        },
+        {
+          "name": "moves an approved permit to issuance",
+          "testCode": "assert.strictEqual(nextPermitStep({ status: 'approved', permitId: 'PER-208' }), 'Issue permit PER-208');"
+        },
+        {
+          "name": "keeps an empty rejection reason in the rejection state",
+          "testCode": "assert.strictEqual(nextPermitStep({ status: 'rejected', reason: '' }), 'Revise application: ');"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "gives rejected applications a corrective next step",
+          "testCode": "assert.strictEqual(nextPermitStep({ status: 'rejected', reason: 'Missing site plan' }), 'Revise application: Missing site plan');"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "List one branch for each declared workflow state."
+        },
+        {
+          "explain": "Use the payload attached to the state for its action."
+        },
+        {
+          "explain": "Pass the remainder to a `never` helper so a new state cannot silently inherit a generic action."
+        }
+      ],
+      "verificationLevel": "partial",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "Permit reviews use finite workflow states, and each state leads to a distinct operational next step."
+      },
+      "form": "direct",
+      "fingerprint": "silent-nonexhaustive-default|direct|nextPermitStep",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "silent-nonexhaustive-default",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 6
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Standard Exam",
+      "unitCode": "PRG-T01-C02-U07",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U07-01/Q03_nextPermitStep.ts"
+    },
+    {
+      "id": "Q04",
+      "level": 2,
+      "category": "Refactor & Design",
+      "archetype": "refactoring",
+      "codeType": "refactor",
+      "archetypeKey": "prg-t01-c02-u07-exhaustive-result-handlers",
+      "commonTrapTag": "missing-union-member-branch",
+      "context": "support_case_lifecycle",
+      "entryPoint": "caseEventLabel",
+      "prompt": "A support case event formatter currently supports three legacy events, and a cancellation event is being added to the lifecycle. Refactor the event contract and handler so cancellation has its own behavior while all existing labels remain stable. A generic fallback can make a new event appear handled without requiring a deliberate decision.\n\n**Requirements**\n- Preserve the public `caseEventLabel` function and its string result.\n- Keep the existing behavior for `opened`, `assigned`, and `resolved`.\n- Add the `cancelled` event to the event union and give it its own behavior.\n- Replace the generic fallback with a `never`-checked remainder so a later event kind cannot be silently accepted.\n- Keep the event input unchanged.",
+      "inputHint": "Compare the switch branches to every literal in the event union.",
+      "checkpointHint": "A default that returns a label for any remaining value can conceal an omitted current event.",
+      "starterCode": "type CaseEvent =\n  | { kind: 'opened'; caseId: string }\n  | { kind: 'assigned'; agentName: string }\n  | { kind: 'resolved'; resolution: string };\n\nexport function caseEventLabel(event: CaseEvent): string {\n  switch (event.kind) {\n    case 'opened': return `Opened ${event.caseId}`;\n    case 'assigned': return `Assigned to ${event.agentName}`;\n    case 'resolved': return `Resolved: ${event.resolution}`;\n    default: return 'Case updated';\n  }\n}\n",
+      "solutionCode": "type CaseEvent =\n  | { kind: 'opened'; caseId: string }\n  | { kind: 'assigned'; agentName: string }\n  | { kind: 'resolved'; resolution: string }\n  | { kind: 'cancelled'; reason: string };\n\nfunction assertNever(value: never): never {\n  throw new Error(`Unhandled case event: ${JSON.stringify(value)}`);\n}\n\nexport function caseEventLabel(event: CaseEvent): string {\n  switch (event.kind) {\n    case 'opened': return `Opened ${event.caseId}`;\n    case 'assigned': return `Assigned to ${event.agentName}`;\n    case 'resolved': return `Resolved: ${event.resolution}`;\n    case 'cancelled': return `Cancelled: ${event.reason}`;\n    default: return assertNever(event);\n  }\n}\n",
+      "trapMutant": "type CaseEvent =\n  | { kind: 'opened'; caseId: string }\n  | { kind: 'assigned'; agentName: string }\n  | { kind: 'resolved'; resolution: string }\n  | { kind: 'cancelled'; reason: string };\n\nexport function caseEventLabel(event: CaseEvent): string {\n  switch (event.kind) {\n    case 'opened': return `Opened ${event.caseId}`;\n    case 'assigned': return `Assigned to ${event.agentName}`;\n    case 'resolved': return `Resolved: ${event.resolution}`;\n    default: return 'Case updated';\n  }\n}\n",
+      "visibleTests": [
+        {
+          "name": "describes an opened case",
+          "testCode": "assert.strictEqual(caseEventLabel({ kind: 'opened', caseId: 'CS-309' }), 'Opened CS-309');"
+        },
+        {
+          "name": "describes an assigned case",
+          "testCode": "assert.strictEqual(caseEventLabel({ kind: 'assigned', agentName: 'Mina' }), 'Assigned to Mina');"
+        },
+        {
+          "name": "describes a resolved case",
+          "testCode": "assert.strictEqual(caseEventLabel({ kind: 'resolved', resolution: 'Duplicate request' }), 'Resolved: Duplicate request');"
+        },
+        {
+          "name": "handles the empty cancellation reason boundary",
+          "testCode": "assert.strictEqual(caseEventLabel({ kind: 'cancelled', reason: '' } as unknown as CaseEvent), 'Cancelled: ');"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "describes a cancelled case with its reason",
+          "testCode": "assert.strictEqual(caseEventLabel({ kind: 'cancelled', reason: 'Customer withdrew' }), 'Cancelled: Customer withdrew');"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Compare the existing branches with the literals in the event union."
+        },
+        {
+          "explain": "Add behavior for the omitted event and use only its own payload."
+        },
+        {
+          "explain": "Replace the generic fallback with an exhaustive remainder check."
+        }
+      ],
+      "verificationLevel": "partial",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "Support-case event handlers commonly format opened, assigned, resolved, and cancelled lifecycle events with event-specific details."
+      },
+      "form": "direct",
+      "fingerprint": "missing-union-member-branch|direct|caseEventLabel",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "refactoring"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "missing-union-member-branch",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 6
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Standard Exam",
+      "unitCode": "PRG-T01-C02-U07",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U07-01/Q04_caseEventLabel.ts"
+    }
+  ],
+  "blindSolve": [
+    {
+      "problemId": "Q01",
+      "passed": true
+    },
+    {
+      "problemId": "Q02",
+      "passed": true
+    },
+    {
+      "problemId": "Q03",
+      "passed": true
+    },
+    {
+      "problemId": "Q04",
+      "passed": true
+    }
+  ],
+  "review": {
+    "verdict": "pass",
+    "note": "All four problems meet the brief with sound narrowing, exhaustive handling, useful traps and boundaries, distinct contexts, and a working-baseline refactor item."
+  },
+  "drillId": "DRL-PRG-T01-C02-U07-01",
+  "topicCode": "PRG-T01",
+  "chapterCode": "PRG-T01-C02",
+  "schemaVersion": "2.0-code",
+  "subject": "PRG",
+  "createdAt": "2026-11-17 06:36:42",
+  "localFilePath": "drills/data/PRG-T01-C02-U07/DRL-PRG-T01-C02-U07-01.json"
+}

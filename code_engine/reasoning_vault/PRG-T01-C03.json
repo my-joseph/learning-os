@@ -517,6 +517,449 @@
           }
         }
       ]
+    },
+    {
+      "archetypeKey": "prg-c03-u04-map-frequency-index",
+      "unitCode": "PRG-T01-C03-U04",
+      "level": 1,
+      "archetype": "problem-solving",
+      "name": "Map Frequency Index",
+      "competencies": [
+        "data-handling",
+        "keyed-indexing",
+        "algorithmic-efficiency"
+      ],
+      "coreConcept": "A Map models frequency counts by preserving each exact key and associating it with a count that can be updated in place.",
+      "mentalModel": [
+        "1. Start with an empty keyed index.",
+        "2. Read the current count for each input key, treating only an absent entry as a new count.",
+        "3. Return the index after one pass through the input."
+      ],
+      "governingInvariant": "Every source key remains distinct according to the declared key contract, and its stored count equals the number of occurrences processed.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "key-normalization-collision",
+          "name": "Normalize Distinct Keys Without a Contract",
+          "description": "Lowercasing or otherwise transforming keys can merge values that the input contract treats as distinct.",
+          "reproducer": "function count(codes: readonly string[]): Map<string, number> { const out = new Map<string, number>(); for (const code of codes) out.set(code.toLowerCase(), (out.get(code.toLowerCase()) ?? 0) + 1); return out; }"
+        },
+        {
+          "trapTag": "prototype-name-as-dynamic-key",
+          "name": "Treat Dynamic Keys Like Object Properties",
+          "description": "An object used as an index can collide with inherited names or special property behavior when the domain allows arbitrary keys.",
+          "reproducer": "const counts: Record<string, number> = {}; for (const key of keys) counts[key] = (counts[key] ?? 0) + 1;"
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "telemetry_event_frequency",
+          "description": "Count exact event codes in an analytics window."
+        },
+        {
+          "domain": "warehouse_scan_totals",
+          "description": "Aggregate repeated scan identifiers without coercing or normalizing the source keys."
+        }
+      ],
+      "usedContexts": [
+        "telemetry_event_frequency"
+      ],
+      "source": "MDN Web Docs: Map — Key equality and keyed collections.",
+      "qualityChecks": [
+        {
+          "id": "QC-map-preserve-key-contract",
+          "check": "Index keys retain the distinctions promised by the input contract; normalization is applied only when the prompt explicitly requests it.",
+          "why": "Unrequested normalization can merge distinct records and corrupt counts.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function count(codes: readonly string[]): Map<string, number> { const result = new Map<string, number>(); for (const code of codes) result.set(code.toLowerCase(), (result.get(code.toLowerCase()) ?? 0) + 1); return result; }",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-map-frequency-invariant",
+          "check": "Each processed key has a count equal to its occurrence total, and the original input is not mutated.",
+          "why": "Incorrect initialization or updates silently lose telemetry.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function count(codes: readonly string[]): Map<string, number> { const result = new Map<string, number>(); for (const code of codes) result.set(code, 1); return result; }",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "prg-c03-u04-map-groups-and-identity",
+      "unitCode": "PRG-T01-C03-U04",
+      "level": 2,
+      "archetype": "problem-solving",
+      "name": "Map Grouping and Key Identity",
+      "competencies": [
+        "data-handling",
+        "grouping",
+        "key-identity",
+        "state-management"
+      ],
+      "coreConcept": "Map supports grouping under values of any type; primitive keys follow SameValueZero and object keys follow reference identity.",
+      "mentalModel": [
+        "1. Identify which runtime value is the actual grouping key.",
+        "2. Check whether a bucket exists without treating valid falsy keys as absent.",
+        "3. Append each record to exactly the bucket selected by that key."
+      ],
+      "governingInvariant": "Each input record appears in one bucket selected by the exact key semantics named in the contract.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "zero-key-as-missing",
+          "name": "Zero Is a Valid Key",
+          "description": "A truthiness check confuses the numeric key zero with an absent key.",
+          "reproducer": "if (!accountId) return; // drops accountId 0"
+        },
+        {
+          "trapTag": "object-key-serialized-by-shape",
+          "name": "Object Keys Are Compared by Reference",
+          "description": "Map does not merge distinct object references because their fields happen to look alike.",
+          "reproducer": "const first = { id: \"A\" }; const second = { id: \"A\" }; const map = new Map([[first, 1]]); map.get(second); // undefined"
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "ledger_account_buckets",
+          "description": "Group ledger entries by numeric account identifiers including zero."
+        },
+        {
+          "domain": "scheduler_owner_sessions",
+          "description": "Group tickets by the exact in-memory owner session object."
+        }
+      ],
+      "usedContexts": [
+        "ledger_account_buckets",
+        "scheduler_owner_sessions"
+      ],
+      "source": "MDN Web Docs: Map — Key equality and keyed collections.",
+      "qualityChecks": [
+        {
+          "id": "QC-map-grouping-complete",
+          "check": "Every input record is placed in exactly one bucket selected by its declared key, including falsy primitive keys.",
+          "why": "Skipping a valid key loses records from the grouped result.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function addGroup(groups: Map<number, string[]>, accountId: number, label: string): void { if (!accountId) return; groups.set(accountId, [...(groups.get(accountId) ?? []), label]); }",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-map-object-identity",
+          "check": "When the contract names object references as keys, grouping uses reference identity rather than serialized or structural equality.",
+          "why": "Different runtime handles can represent distinct entities even when their fields match.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function sameOwner(left: { id: string }, right: { id: string }): boolean { return left.id === right.id; }",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "prg-c03-u04-set-stable-deduplication",
+      "unitCode": "PRG-T01-C03-U04",
+      "level": 2,
+      "archetype": "debugging",
+      "name": "Set Stable Deduplication",
+      "competencies": [
+        "data-handling",
+        "deduplication",
+        "order-preservation"
+      ],
+      "coreConcept": "Set stores each SameValueZero-distinct value once and iterates the surviving values in first successful insertion order.",
+      "mentalModel": [
+        "1. Read values in source order.",
+        "2. Keep the first occurrence of each key under Set equality.",
+        "3. Return the retained values without sorting or mutating the input."
+      ],
+      "governingInvariant": "The output contains one copy of each distinct value in the order its first occurrence appeared.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "set-reorders-first-seen-values",
+          "name": "Set Deduplication Followed by Sorting",
+          "description": "Sorting the Set output discards the source order promised by a stable deduplication contract.",
+          "reproducer": "return [...new Set(values)].sort();"
+        },
+        {
+          "trapTag": "object-identity-not-structural-equality",
+          "name": "Structurally Similar Objects Are Distinct Set Values",
+          "description": "Distinct object references remain distinct even when their properties match.",
+          "reproducer": "new Set([{ id: \"A\" }, { id: \"A\" }]).size // 2"
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "package_registry_alias_dedupe",
+          "description": "Keep first-seen package aliases while removing repeated exact strings."
+        },
+        {
+          "domain": "subscription_event_keys",
+          "description": "Preserve event arrival order while filtering repeated primitive IDs."
+        }
+      ],
+      "usedContexts": [
+        "package_registry_alias_dedupe"
+      ],
+      "source": "MDN Web Docs: Set — Keyed collections and iteration order.",
+      "qualityChecks": [
+        {
+          "id": "QC-set-first-seen-order",
+          "check": "Deduplicated output preserves the first-occurrence order required by the contract.",
+          "why": "Sorting or using a non-stable replacement changes downstream processing order.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function unique(values: readonly string[]): string[] { return [...new Set(values)].sort(); }",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-set-no-input-mutation",
+          "check": "The source collection is not modified while building the unique result.",
+          "why": "Mutation can affect callers and later operations that reuse the input.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function unique(values: string[]): string[] { values.sort(); return [...new Set(values)]; }",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "prg-c03-u05-singly-list-boundaries",
+      "unitCode": "PRG-T01-C03-U05",
+      "level": 1,
+      "archetype": "problem-solving",
+      "name": "Singly Linked List Boundary Mutations",
+      "competencies": [
+        "data-structures",
+        "pointer-invariants",
+        "boundary-handling"
+      ],
+      "coreConcept": "A singly linked list is a chain of nodes where each next reference identifies the successor and the list separately tracks its first and last nodes.",
+      "mentalModel": [
+        "1. Treat head, tail, size, and every next link as one shared invariant.",
+        "2. Identify whether a mutation changes the first node, last node, or an interior link.",
+        "3. Update every affected list field before returning."
+      ],
+      "governingInvariant": "An empty list has no head or tail; a non-empty list has both, its tail has no successor, and size equals the number of reachable nodes.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "stale-tail-after-removal",
+          "name": "Leave a Removed Tail Reachable",
+          "description": "Removing the final node can leave tail pointing at a node no longer reachable from head.",
+          "reproducer": "if (current.next === null) { current = null; } // tail still points at removed node"
+        },
+        {
+          "trapTag": "empty-to-singleton-links",
+          "name": "Miss an Empty-to-Singleton Transition",
+          "description": "Adding the first node must initialize both endpoints, not just head.",
+          "reproducer": "if (this.head === null) this.head = node; else this.tail.next = node; this.tail = node;"
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "event_queue_buffers",
+          "description": "Maintain an ordered queue of pending event records."
+        },
+        {
+          "domain": "device_registry_updates",
+          "description": "Apply ordered insertion and deletion in a registry mirror."
+        }
+      ],
+      "usedContexts": [
+        "event_queue_buffers",
+        "device_registry_updates"
+      ],
+      "source": "TypeScript Handbook 5.9.3: strict null checking and narrowing; linked-list invariants are derived from the stated data-structure contract.",
+      "qualityChecks": [
+        {
+          "id": "QC-prg-c03-u05-singly-list-endpoints",
+          "check": "Every mutation keeps head and tail consistent with reachability, including empty and singleton transitions.",
+          "why": "Stale endpoint references corrupt subsequent operations even when current output looks correct.",
+          "severity": "must",
+          "knownBad": {
+            "code": "if (this.head === null) this.head = node; else this.tail!.next = node; // tail never initialized",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-prg-c03-u05-singly-list-size",
+          "check": "The stored size equals the number of nodes reachable from head after each successful mutation.",
+          "why": "Incorrect counts make public length metadata diverge from the collection.",
+          "severity": "must",
+          "knownBad": {
+            "code": "removeFirst() { this.head = this.head?.next ?? null; } // size unchanged",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-prg-c03-u05-singly-list-no-input-alias-mutation",
+          "check": "Mutations change only list-owned links and do not rewrite caller-owned values.",
+          "why": "Changing payload records as a side effect can corrupt other consumers.",
+          "severity": "should",
+          "knownBad": {
+            "code": "items[0].next = items[1]; return items;",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "prg-c03-u05-doubly-list-link-symmetry",
+      "unitCode": "PRG-T01-C03-U05",
+      "level": 2,
+      "archetype": "problem-solving",
+      "name": "Doubly Linked List Link Symmetry",
+      "competencies": [
+        "data-structures",
+        "bidirectional-links",
+        "state-management"
+      ],
+      "coreConcept": "A doubly linked list stores both predecessor and successor references, so each adjacent pair must agree in both directions.",
+      "mentalModel": [
+        "1. Locate the node and its left/right neighbors.",
+        "2. Reconnect the neighbors to each other in both directions.",
+        "3. Normalize head/tail links and size at the boundaries."
+      ],
+      "governingInvariant": "For every adjacent pair A and B, A.next is B exactly when B.previous is A; the head has no previous node and the tail has no next node.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "one-sided-unlink",
+          "name": "Update Only One Direction",
+          "description": "Changing next but not previous leaves reverse traversal connected to removed nodes.",
+          "reproducer": "left.next = right; // right.previous still references removed"
+        },
+        {
+          "trapTag": "neighbor-assumption-at-boundary",
+          "name": "Assume Both Neighbors Exist",
+          "description": "Head and tail removals have one missing neighbor and require endpoint updates.",
+          "reproducer": "node.previous!.next = node.next!; node.next!.previous = node.previous!;"
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "recently_viewed_navigation",
+          "description": "Maintain a bidirectional history sequence with fast endpoint updates."
+        },
+        {
+          "domain": "playlist_order_editor",
+          "description": "Move or remove adjacent media items while supporting reverse navigation."
+        }
+      ],
+      "usedContexts": [
+        "playlist_order_editor"
+      ],
+      "source": "TypeScript Handbook 5.9.3: strict null checking and narrowing; bidirectional links are governed by the collection contract.",
+      "qualityChecks": [
+        {
+          "id": "QC-prg-c03-u05-doubly-link-symmetry",
+          "check": "Every reconnect updates both neighboring references so forward and backward traversal describe the same sequence.",
+          "why": "One-sided changes produce inconsistent iteration and retain detached nodes.",
+          "severity": "must",
+          "knownBad": {
+            "code": "left.next = right; // missing reciprocal previous update",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-prg-c03-u05-doubly-endpoint-nullability",
+          "check": "Boundary operations handle a missing predecessor or successor without unsafe dereferences and update the matching endpoint.",
+          "why": "The first and last nodes do not have two neighbors.",
+          "severity": "must",
+          "knownBad": {
+            "code": "node.previous!.next = node.next!; node.next!.previous = node.previous!;",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-prg-c03-u05-doubly-detach-node",
+          "check": "A removed node is no longer reachable from either endpoint and does not retain active neighbor links.",
+          "why": "Detached nodes retaining links can expose stale collection state.",
+          "severity": "should",
+          "knownBad": {
+            "code": "left.next = right; right.previous = left; // removed node still links to both",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "prg-c03-u05-list-mutation-debugging",
+      "unitCode": "PRG-T01-C03-U05",
+      "level": 2,
+      "archetype": "debugging",
+      "name": "Linked List Mutation Regression",
+      "competencies": [
+        "debugging",
+        "invariant-reasoning",
+        "regression-testing"
+      ],
+      "coreConcept": "Linked-list mutation defects often appear only after a sequence crosses an endpoint boundary, so checks must reason over transitions rather than isolated calls.",
+      "mentalModel": [
+        "1. Replay the operation sequence from the initial state.",
+        "2. Compare reachable nodes, endpoints, and size after every step.",
+        "3. Add a regression case for the boundary transition that exposes the divergence."
+      ],
+      "governingInvariant": "After every operation the sequence from head and the reverse sequence from tail agree with the same set of active nodes and the reported size.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "single-operation-only-test",
+          "name": "Test Only the Immediate Return Value",
+          "description": "A mutation may appear correct before a later append or reverse traversal exposes a stale link.",
+          "reproducer": "removeTail(); append(next); // stale tail can make the new node unreachable"
+        },
+        {
+          "trapTag": "value-match-instead-of-node-identity",
+          "name": "Remove a Different Equal-Payload Node",
+          "description": "When the contract identifies a node or position, comparing payloads can unlink a different node with an equal value.",
+          "reproducer": "if (cursor.value === target.value) unlink(cursor);"
+        },
+        {
+          "trapTag": "stale-tail-after-removal",
+          "name": "Retain a Tail After the List Is Empty",
+          "description": "Clearing the last reachable node without clearing the tail leaves a stale endpoint that can disconnect a later append.",
+          "reproducer": "this.head = null; // tail still refers to the removed node"
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "task_board_ordering",
+          "description": "Keep queued work ordered as items are removed and reinserted."
+        },
+        {
+          "domain": "history_cursor_navigation",
+          "description": "Keep back/forward navigation consistent through endpoint changes."
+        }
+      ],
+      "usedContexts": [
+        "history_cursor_navigation"
+      ],
+      "source": "TypeScript Handbook 5.9.3: strict null checking and narrowing; mutation-sequence tests follow the declared linked-list contract.",
+      "qualityChecks": [
+        {
+          "id": "QC-prg-c03-u05-list-transition-regression",
+          "check": "After any successful removal, head, tail, and size agree with the active linked nodes before the method returns.",
+          "why": "A stale endpoint can make later operations disconnect active nodes even when the immediate return value looks correct.",
+          "severity": "must",
+          "knownBad": {
+            "code": "if (this.head === removed) { this.head = null; this.count -= 1; return removed.value; }",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-prg-c03-u05-list-reachability",
+          "check": "All active nodes are reachable exactly once from the declared head and reverse traversal reaches the same sequence from tail.",
+          "why": "Cycles, detached nodes, and stale endpoints can hide behind correct payload output.",
+          "severity": "must",
+          "knownBad": {
+            "code": "tail.next = head; // accidentally creates a cycle",
+            "caughtBy": "review"
+          }
+        }
+      ]
     }
   ]
 }

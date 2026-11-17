@@ -1,0 +1,500 @@
+{
+  "unitCode": "MTH-T02-C04-U08",
+  "topicTitle": "Polynomial and Rational Functions",
+  "unitTitle": "Modeling Using Variation",
+  "subject": "MATH",
+  "problems": [
+    {
+      "id": "Q01",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c04-u08-evaluate-direct-variation",
+      "context": "",
+      "prompt": "For the direct-variation rule $y=7x^2$, find $y$ when $x=3$.",
+      "display": "y=k*x^n",
+      "plainText": "For the direct-variation rule y=7x^2, find y when x=3.",
+      "givens": {
+        "coefficient": 7,
+        "input": 3,
+        "power": 2
+      },
+      "constants": {},
+      "trapGivens": [
+        7,
+        3,
+        2
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "63",
+        "tolerance": 0
+      },
+      "answerPlain": "63",
+      "answerDisplay": "63",
+      "inputHint": "Enter the requested numeric value.",
+      "commonTrapTag": "t02-c04-u08-drop-direct-variation-exponent-trap",
+      "trapDerivation": "7*2*3",
+      "trapValue": "42",
+      "verify": {
+        "source": "63",
+        "trapValue": "42"
+      },
+      "checkpointHint": "Apply the stated power to the input before multiplying by the constant.",
+      "references": [
+        "MTH-T02-C04-U08"
+      ],
+      "steps": [
+        {
+          "latex": "y=7x^2",
+          "explain": "Use the given direct-variation rule."
+        },
+        {
+          "latex": "y=7(3)^2",
+          "explain": "Substitute the requested input."
+        },
+        {
+          "latex": "y=7(9)",
+          "explain": "Evaluate the input power."
+        },
+        {
+          "latex": "y=63",
+          "explain": "Multiply by the variation constant.",
+          "val": "63"
+        }
+      ],
+      "verificationLevel": "partial",
+      "review": {
+        "id": "Q01",
+        "verdict": "pass",
+        "note": "The display now shows only the general direct-variation rule, so it does not reveal the computed result; the prior issue is fixed."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C04-U08",
+          "title": "Modeling Using Variation",
+          "notionUrl": "https://www.notion.so/4013818f8ba08160af23ecfb6ac1b3bb"
+        }
+      ],
+      "unitCode": "MTH-T02-C04-U08",
+      "fingerprint": "t02-c04-u08-drop-direct-variation-exponent-trap|direct|For the direct-variation rule y=#x^#, find y when x=#.",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 4,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c04-u08-drop-direct-variation-exponent-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 15
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 1 - Foundation"
+    },
+    {
+      "id": "Q02",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c04-u08-evaluate-inverse-variation",
+      "context": "",
+      "prompt": "For the inverse-variation rule $p=\\frac{180}{x^2}$, find $p$ when $x=3$.",
+      "display": "p=k/(x^n)",
+      "plainText": "For the inverse-variation rule p=180/x^2, find p when x=3.",
+      "givens": {
+        "constant": 180,
+        "input": 3,
+        "power": 2
+      },
+      "constants": {},
+      "trapGivens": [
+        180,
+        3,
+        2
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "20",
+        "tolerance": 0
+      },
+      "answerPlain": "20",
+      "answerDisplay": "20",
+      "inputHint": "Enter the requested numeric value.",
+      "commonTrapTag": "t02-c04-u08-treat-inverse-as-direct-trap",
+      "trapDerivation": "180*3^2",
+      "trapValue": "1620",
+      "verify": {
+        "source": "20",
+        "trapValue": "1620"
+      },
+      "checkpointHint": "Keep the input power in the same position in the variation rule when substituting.",
+      "references": [
+        "MTH-T02-C04-U08"
+      ],
+      "steps": [
+        {
+          "latex": "p=\\frac{180}{x^2}",
+          "explain": "Use the given inverse-variation rule."
+        },
+        {
+          "latex": "p=\\frac{180}{3^2}",
+          "explain": "Substitute the requested input."
+        },
+        {
+          "latex": "p=\\frac{180}{9}",
+          "explain": "Evaluate the denominator power."
+        },
+        {
+          "latex": "p=20",
+          "explain": "Divide the constant by the denominator value.",
+          "val": "20"
+        }
+      ],
+      "verificationLevel": "partial",
+      "review": {
+        "id": "Q02",
+        "verdict": "pass",
+        "note": "The display now shows only the general inverse-variation rule, so it does not reveal the computed result; the prior issue is fixed."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C04-U08",
+          "title": "Modeling Using Variation",
+          "notionUrl": "https://www.notion.so/4013818f8ba08160af23ecfb6ac1b3bb"
+        }
+      ],
+      "unitCode": "MTH-T02-C04-U08",
+      "fingerprint": "t02-c04-u08-treat-inverse-as-direct-trap|direct|For the inverse-variation rule p=#/x^#, find p when x=#.",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 4,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c04-u08-treat-inverse-as-direct-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 15
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 1 - Foundation"
+    },
+    {
+      "id": "Q03",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c04-u08-calibrate-direct-variation",
+      "context": "",
+      "prompt": "$y$ varies directly with the square of $x$. When $x=3$, $y=45$. Find $y$ when $x=6$.",
+      "display": "k=y_1/(x_1^n); y_2=k*(x_2^n)",
+      "plainText": "y varies directly with the square of x. When x=3, y=45. Find y when x=6.",
+      "givens": {
+        "known_input": 3,
+        "known_output": 45,
+        "target_input": 6
+      },
+      "constants": {
+        "power": 2
+      },
+      "trapGivens": [
+        45,
+        6,
+        3
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "180",
+        "tolerance": 0
+      },
+      "answerPlain": "180",
+      "answerDisplay": "180",
+      "inputHint": "Enter the requested numeric value.",
+      "commonTrapTag": "t02-c04-u08-linear-scale-instead-of-power-trap",
+      "trapDerivation": "45*(6/3)",
+      "trapValue": "90",
+      "verify": {
+        "source": "180",
+        "trapValue": "90"
+      },
+      "checkpointHint": "Use the same power when comparing the known input with the target input.",
+      "references": [
+        "MTH-T02-C04-U08"
+      ],
+      "steps": [
+        {
+          "latex": "k=\\frac{45}{3^2}",
+          "explain": "Divide the known output by the known input power to determine the constant."
+        },
+        {
+          "latex": "k=\\frac{45}{9}",
+          "explain": "Evaluate the squared input."
+        },
+        {
+          "latex": "k=5",
+          "explain": "Simplify to the constant used by the model."
+        },
+        {
+          "latex": "y=5(6^2)",
+          "explain": "Use the calibrated rule at the target input."
+        },
+        {
+          "latex": "y=5(36)",
+          "explain": "Evaluate the target input power."
+        },
+        {
+          "latex": "y=180",
+          "explain": "Multiply to find the predicted output.",
+          "val": "180"
+        }
+      ],
+      "verificationLevel": "partial",
+      "review": {
+        "id": "Q03",
+        "verdict": "pass",
+        "note": "The display now shows the general calibration relations without substituted values or the computed result; the prior issue is fixed."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C04-U08",
+          "title": "Modeling Using Variation",
+          "notionUrl": "https://www.notion.so/4013818f8ba08160af23ecfb6ac1b3bb"
+        }
+      ],
+      "unitCode": "MTH-T02-C04-U08",
+      "fingerprint": "t02-c04-u08-linear-scale-instead-of-power-trap|reverse|y varies directly with the square of x. When x=#, y=#. Find y when x=#.",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 6,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c04-u08-linear-scale-instead-of-power-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 19
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 2 - Standard Exam"
+    },
+    {
+      "id": "Q04",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c04-u08-solve-joint-variation",
+      "context": "",
+      "prompt": "$q$ varies directly with the square of $r$ and inversely with $s$. When $r=2$ and $s=3$, $q=12$. Find $q$ when $r=4$ and $s=6$.",
+      "display": "q=k*(r^a)/(s^b)",
+      "plainText": "q varies directly with the square of r and inversely with s. When r=2 and s=3, q=12. Find q when r=4 and s=6.",
+      "givens": {
+        "known_r": 2,
+        "known_s": 3,
+        "known_q": 12,
+        "target_r": 4,
+        "target_s": 6
+      },
+      "constants": {
+        "power": 2
+      },
+      "trapGivens": [
+        12,
+        4,
+        2,
+        6,
+        3
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "24",
+        "tolerance": 0
+      },
+      "answerPlain": "24",
+      "answerDisplay": "24",
+      "inputHint": "Enter the requested numeric value.",
+      "commonTrapTag": "t02-c04-u08-multiply-inverse-variable-trap",
+      "trapDerivation": "12*(4/2)^2*(6/3)",
+      "trapValue": "96",
+      "verify": {
+        "source": "24",
+        "trapValue": "96"
+      },
+      "checkpointHint": "Use the same relationship for the known and target states, and check the direction of each variable change.",
+      "references": [
+        "MTH-T02-C04-U08"
+      ],
+      "steps": [
+        {
+          "latex": "q=k\\frac{r^2}{s}",
+          "explain": "Translate the direct and inverse dependencies into one joint model."
+        },
+        {
+          "latex": "k=q\\frac{s}{r^2}",
+          "explain": "Rearrange the model to isolate its shared constant."
+        },
+        {
+          "latex": "k=12\\frac{3}{2^2}",
+          "explain": "Substitute the known state into the constant relation."
+        },
+        {
+          "latex": "k=\\frac{36}{4}",
+          "explain": "Evaluate the numerator and denominator."
+        },
+        {
+          "latex": "k=9",
+          "explain": "Simplify to the joint variation constant."
+        },
+        {
+          "latex": "q=9\\frac{4^2}{6}",
+          "explain": "Substitute the target state into the same model."
+        },
+        {
+          "latex": "q=9\\frac{16}{6}",
+          "explain": "Evaluate the target input power."
+        },
+        {
+          "latex": "q=\\frac{144}{6}",
+          "explain": "Multiply before dividing by the inverse variable."
+        },
+        {
+          "latex": "q=24",
+          "explain": "Simplify to the predicted output.",
+          "val": "24"
+        }
+      ],
+      "verificationLevel": "partial",
+      "review": {
+        "id": "Q04",
+        "verdict": "pass",
+        "note": "The display now shows only a general joint-variation relation, so it does not reveal the computed result; the prior issue is fixed."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C04-U08",
+          "title": "Modeling Using Variation",
+          "notionUrl": "https://www.notion.so/4013818f8ba08160af23ecfb6ac1b3bb"
+        }
+      ],
+      "unitCode": "MTH-T02-C04-U08",
+      "fingerprint": "t02-c04-u08-multiply-inverse-variable-trap|reverse|q varies directly with the square of r and inversely with s. When r=# and s=#, q=#. Find q when r=# and s=#.",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 9,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c04-u08-multiply-inverse-variable-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 25
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 2 - Standard Exam"
+    }
+  ],
+  "drillId": "DRL-MTH-T02-C04-U08-01",
+  "title": "Modeling Using Variation — Verified Math Drill (4 Qs)",
+  "topicCode": "MTH-T02",
+  "chapterCode": "MTH-T02-C04",
+  "schemaVersion": "2.0-math",
+  "createdAt": "2026-11-17 09:21:25",
+  "config": {
+    "questionCount": 4,
+    "difficulty": "ALL",
+    "difficultyMode": "AI Synthesized Reasoning Mode"
+  },
+  "localFilePath": "drills/data/MTH-T02-C04-U08/DRL-MTH-T02-C04-U08-01.json"
+}

@@ -1,0 +1,195 @@
+{
+  "unitCode": "MTH-T02-C04-U01",
+  "archetypes": [
+    {
+      "unitCode": "MTH-T02-C04-U01",
+      "archetypeKey": "t02-c04-u01-read-quadratic-form",
+      "level": 1,
+      "name": "Read a Quadratic Form",
+      "source": "OpenStax Algebra and Trigonometry 2e §5.1 — Quadratic Functions",
+      "coreConcept": "A quadratic function has a parabolic graph whose opening, vertex, axis, intercepts, and extrema follow from its coefficients and form.",
+      "mentalModel": "Read the form first: the leading coefficient sets opening, vertex form reveals the turning point, and symmetry organizes the graph around its axis.",
+      "governingRelation": "f(x)=a(x-h)^2+k; vertex=(h,k); axis x=h; a>0 minimum, a<0 maximum",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c04-u01-vertex-inside-sign-trap",
+          "description": "Reading the sign inside (x-h) as the vertex coordinate instead of solving x-h=0.",
+          "trapFormula": "(x+3)^2 -> h=3"
+        },
+        {
+          "trapTag": "t02-c04-u01-confuse-vertex-coordinate-trap",
+          "description": "Reporting the x-coordinate of the vertex when the question asks for the minimum or maximum output.",
+          "trapFormula": "vertex=(h,k), extremum=k"
+        },
+        {
+          "trapTag": "t02-c04-u01-leading-sign-opening-trap",
+          "description": "Reversing whether a positive or negative leading coefficient opens up or down.",
+          "trapFormula": "a<0 -> opens upward"
+        }
+      ],
+      "versatileDomains": [
+        "trajectory analysis",
+        "antenna design",
+        "area optimization"
+      ],
+      "usedContexts": [],
+      "figureBuilders": [
+        {
+          "fn": "build_function_graph_figure",
+          "args": {
+            "expr": "a*(x-h)^2+k",
+            "x_min": "h-4",
+            "x_max": "h+4",
+            "y_min": "k-2",
+            "y_max": "k+12",
+            "mark_x": "h",
+            "mark_labels": "vertex"
+          },
+          "title": "A quadratic graph is symmetric about its vertex"
+        }
+      ]
+    },
+    {
+      "unitCode": "MTH-T02-C04-U01",
+      "archetypeKey": "t02-c04-u01-find-quadratic-vertex",
+      "level": 2,
+      "name": "Find a Vertex from General Form",
+      "source": "OpenStax Algebra and Trigonometry 2e §5.1 — Quadratic Functions",
+      "coreConcept": "For f(x)=ax^2+bx+c, the vertex lies on x=-b/(2a), and its output is found by evaluating the function there.",
+      "mentalModel": "First locate the symmetry axis from the coefficient ratio; then substitute that input into the whole function to find the turning-point output.",
+      "governingRelation": "h=-b/(2a); k=f(h); vertex=(h,k)",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c04-u01-axis-denominator-trap",
+          "description": "Using -b/a instead of -b/(2a) for the axis.",
+          "trapFormula": "h=-b/a"
+        },
+        {
+          "trapTag": "t02-c04-u01-stop-at-axis-trap",
+          "description": "Stopping after finding the vertex input when the question asks for the minimum or maximum value.",
+          "trapFormula": "minimum output = h"
+        },
+        {
+          "trapTag": "t02-c04-u01-evaluate-only-linear-term-trap",
+          "description": "Substituting the vertex input into only one term rather than the entire polynomial.",
+          "trapFormula": "f(h) -> bh"
+        }
+      ],
+      "versatileDomains": [
+        "trajectory analysis",
+        "revenue models",
+        "signal design"
+      ],
+      "usedContexts": [],
+      "figureBuilders": [
+        {
+          "fn": "build_function_graph_figure",
+          "args": {
+            "expr": "a*x^2+b*x+c",
+            "x_min": "h-4",
+            "x_max": "h+4",
+            "mark_x": "h",
+            "mark_labels": "vertex"
+          },
+          "title": "The vertex lies on the axis of symmetry"
+        }
+      ]
+    },
+    {
+      "unitCode": "MTH-T02-C04-U01",
+      "archetypeKey": "t02-c04-u01-domain-range-quadratic",
+      "level": 2,
+      "name": "State a Quadratic Domain and Range",
+      "source": "OpenStax Algebra and Trigonometry 2e §5.1 — Quadratic Functions",
+      "coreConcept": "A polynomial quadratic has all real inputs unless context restricts them; its outputs begin at a minimum or end at a maximum determined by the vertex.",
+      "mentalModel": "Use the variable that represents inputs for the domain, then use the vertex output and opening direction to set the range endpoint.",
+      "governingRelation": "domain=(-∞,∞) for an unrestricted quadratic; a>0 => range=[k,∞); a<0 => range=(-∞,k]",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c04-u01-swap-domain-range-trap",
+          "description": "Applying the vertex's output restriction to inputs or reporting all real outputs.",
+          "trapFormula": "domain=[k,∞)"
+        },
+        {
+          "trapTag": "t02-c04-u01-range-endpoint-direction-trap",
+          "description": "Choosing the wrong closed endpoint direction based on whether the parabola opens up or down.",
+          "trapFormula": "a<0 -> [k,∞)"
+        },
+        {
+          "trapTag": "t02-c04-u01-open-vertex-endpoint-trap",
+          "description": "Using a strict endpoint even though the vertex value is attained.",
+          "trapFormula": "range=(k,∞)"
+        }
+      ],
+      "versatileDomains": [
+        "function analysis",
+        "motion models",
+        "optimization"
+      ],
+      "usedContexts": [],
+      "figureBuilders": [
+        {
+          "fn": "build_function_graph_figure",
+          "args": {
+            "expr": "a*(x-h)^2+k",
+            "x_min": "h-4",
+            "x_max": "h+4",
+            "y_min": "k-2",
+            "y_max": "k+12",
+            "hlines": "k",
+            "title": "The vertex sets the included range endpoint"
+          },
+          "title": "A quadratic's range includes its vertex value"
+        }
+      ]
+    },
+    {
+      "unitCode": "MTH-T02-C04-U01",
+      "archetypeKey": "t02-c04-u01-optimize-quadratic-model",
+      "level": 2,
+      "name": "Optimize a Quadratic Model",
+      "source": "OpenStax Algebra and Trigonometry 2e §5.1 — Quadratic Functions",
+      "coreConcept": "A quadratic model that opens downward has a maximum at its vertex; a feasible context can restrict which inputs are meaningful.",
+      "mentalModel": "Translate the situation into one variable, check the model's feasible input interval, and report both the input where the extreme occurs and its output value.",
+      "governingRelation": "A(x)=ax^2+bx+c; x_vertex=-b/(2a); maximum=A(x_vertex) when a<0 and x_vertex is feasible",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c04-u01-maximize-input-not-output-trap",
+          "description": "Reporting the input where the maximum occurs as the maximum value itself.",
+          "trapFormula": "max A = x_vertex"
+        },
+        {
+          "trapTag": "t02-c04-u01-ignore-feasible-domain-trap",
+          "description": "Using a vertex outside the context's permitted input interval.",
+          "trapFormula": "choose vertex without checking domain"
+        },
+        {
+          "trapTag": "t02-c04-u01-open-down-minimum-trap",
+          "description": "Treating the vertex of a downward-opening parabola as a minimum.",
+          "trapFormula": "a<0 -> minimum"
+        }
+      ],
+      "versatileDomains": [
+        "area design",
+        "revenue",
+        "projectile motion"
+      ],
+      "usedContexts": [
+        "A rectangular garden abuts an existing wall, so only three sides need fencing. The two sides perpendicular to the wall have equal width."
+      ],
+      "figureBuilders": [
+        {
+          "fn": "build_rectangle_figure",
+          "args": {
+            "width": 8,
+            "height": 5,
+            "label_w": "width",
+            "label_h": "height",
+            "title": "A rectangular area is optimized under a fixed constraint"
+          },
+          "title": "A constraint turns the dimensions into one variable"
+        }
+      ]
+    }
+  ]
+}

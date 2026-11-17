@@ -1,9 +1,15 @@
 # -*- coding: utf-8 -*-
 """Tests for the `interval` answer type in answer_check, registry, and ai_drill_ingest."""
 
+import json
+from pathlib import Path
+
+import pytest
+
 from math_engine.ai_drill_ingest import _trap_matches_spec, validate_ai_problem_contract
 from math_engine.answer_check import check_answer, is_omission_trap, match_trap
 from math_engine.answer_spec_registry import get_registered_types, validate_answer_spec
+from math_engine.verify import VerificationError, verify_problem
 
 
 def test_interval_registered():
@@ -119,6 +125,27 @@ def test_interval_ingest_contract():
     }
     assert validate_ai_problem_contract(prob) is True
     assert _trap_matches_spec(prob["answerSpec"], prob["trapValue"]) is True
+
+
+def test_interval_verify_source_and_step_values_are_machine_checked():
+    path = Path(__file__).resolve().parents[1] / "drills/data/MTH-T02-C02-U07/DRL-MTH-T02-C02-U07-01.json"
+    doc = json.loads(path.read_text(encoding="utf-8"))
+    problem = next(p for p in doc["problems"] if p["id"] == "Q03")
+    problem["verify"] = {**problem.get("verify", {}), "source": "[1,9)"}
+    problem["steps"][0]["val"] = "[1,9)"
+    assert verify_problem(problem) is True
+
+    problem["steps"][0]["val"] = "[0,9)"
+    with pytest.raises(VerificationError, match="step 1 interval"):
+        verify_problem(problem)
+
+
+def test_selection_trap_metadata_alone_does_not_require_scalar_step_check():
+    path = Path(__file__).resolve().parents[1] / "drills/data/MTH-T02-C02-U07/DRL-MTH-T02-C02-U07-01.json"
+    doc = json.loads(path.read_text(encoding="utf-8"))
+    problem = next(p for p in doc["problems"] if p["id"] == "Q03")
+    assert "source" not in problem.get("verify", {})
+    assert verify_problem(problem) is True
 
 
 def test_solution_set_superset_trap_passes_ingest_contract():

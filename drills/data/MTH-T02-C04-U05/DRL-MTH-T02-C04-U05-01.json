@@ -1,0 +1,640 @@
+{
+  "unitCode": "MTH-T02-C04-U05",
+  "topicTitle": "Polynomial and Rational Functions",
+  "unitTitle": "Zeros of Polynomial Functions",
+  "subject": "MATH",
+  "problems": [
+    {
+      "id": "Q01",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c04-u05-evaluate-by-remainder-theorem",
+      "context": "",
+      "prompt": "Find the remainder when $f(x)=x^3-2x+1$ is divided by $x-2$.",
+      "display": "f(k)=r when dividing f(x) by x-k",
+      "plainText": "Remainder of f(x)=x^3-2x+1 divided by x-2",
+      "givens": {
+        "a": 1,
+        "b": -2,
+        "c": 1,
+        "k": 2
+      },
+      "constants": {},
+      "trapGivens": [
+        2,
+        -2,
+        1
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "5",
+        "tolerance": 0
+      },
+      "answerPlain": "5",
+      "answerDisplay": "5",
+      "inputHint": "Enter the signed remainder.",
+      "commonTrapTag": "t02-c04-u05-evaluate-at-divisor-sign-trap",
+      "trapDerivation": "(-2)^3-2*(-2)+1",
+      "trapValue": "-3",
+      "verify": {
+        "source": "2^3-2*2+1",
+        "trapValue": "-3"
+      },
+      "checkpointHint": "Enter the signed remainder.",
+      "references": [
+        "MTH-T02-C04-U05"
+      ],
+      "steps": [
+        {
+          "latex": "r=f(2)",
+          "explain": "Use the zero of the divisor as the polynomial input."
+        },
+        {
+          "latex": "r=2^3-2(2)+1",
+          "explain": "Substitute the input into each term."
+        },
+        {
+          "latex": "r=8-4+1",
+          "explain": "Evaluate the powers and products."
+        },
+        {
+          "latex": "r=5",
+          "explain": "Combine the terms to obtain the remainder.",
+          "eq": [
+            "8-4+1",
+            "5"
+          ],
+          "val": "5"
+        }
+      ],
+      "verificationLevel": "partial",
+      "review": {
+        "id": "Q01",
+        "verdict": "pass",
+        "note": "The remainder is f(2)=5, the divisor sign trap evaluates to -3, the steps and hint are sound, and the item matches its L1 remainder theorem archetype."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C04-U05",
+          "title": "Zeros of Polynomial Functions",
+          "notionUrl": "https://www.notion.so/4013818f8ba0815da0b3db91b84ddc87"
+        }
+      ],
+      "unitCode": "MTH-T02-C04-U05",
+      "fingerprint": "t02-c04-u05-evaluate-at-divisor-sign-trap|direct|Remainder of f(x)=x^#-#x+# divided by x-#",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 4,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c04-u05-evaluate-at-divisor-sign-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 15
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 1 - Foundation"
+    },
+    {
+      "id": "Q02",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "choose",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c04-u05-factor-theorem-test",
+      "context": "",
+      "prompt": "Which binomial is a factor of $f(x)=x^3-2x^2+x-2$?",
+      "display": "f(k)=0 iff x-k is a factor",
+      "plainText": "Choose a factor of x^3-2x^2+x-2",
+      "givens": {
+        "b": -2,
+        "d": -2,
+        "k": 2
+      },
+      "constants": {
+        "implicit_unit_coefficient": 1,
+        "implicit_x_coefficient": 1
+      },
+      "trapGivens": [
+        2,
+        -2,
+        1
+      ],
+      "answerSpec": {
+        "type": "choice",
+        "options": [
+          {
+            "id": "A",
+            "label": "$x-2$"
+          },
+          {
+            "id": "B",
+            "label": "$x+2$",
+            "provenance": "Reverses the sign of the proposed zero and tests the opposite input."
+          },
+          {
+            "id": "C",
+            "label": "$x-1$",
+            "provenance": "Confuses a visible coefficient with evidence that the matching factor divides the polynomial."
+          },
+          {
+            "id": "D",
+            "label": "$x+1$",
+            "provenance": "Assumes a constant term determines a factor without testing its zero."
+          }
+        ],
+        "correct": "A"
+      },
+      "answerPlain": "A",
+      "answerDisplay": "A",
+      "inputHint": "Choose the binomial whose zero makes the polynomial value zero.",
+      "commonTrapTag": "t02-c04-u05-factor-root-sign-trap",
+      "trapDerivation": "(-2)^3-2*(-2)^2+1*(-2)-2",
+      "trapValue": "-20",
+      "verify": {
+        "source": "2^3-2*2^2+2-2",
+        "trapValue": "-20"
+      },
+      "checkpointHint": "Choose the binomial whose zero makes the polynomial value zero.",
+      "references": [
+        "MTH-T02-C04-U05"
+      ],
+      "steps": [
+        {
+          "latex": "f(2)=2^3-2(2)^2+2-2",
+          "explain": "Test the zero of the proposed factor x-2."
+        },
+        {
+          "latex": "f(2)=8-8+2-2",
+          "explain": "Evaluate each term at the input."
+        },
+        {
+          "latex": "f(2)=0",
+          "explain": "The polynomial value is zero, so x-2 is a factor.",
+          "eq": [
+            "8-8+2-2",
+            "0"
+          ]
+        }
+      ],
+      "verificationLevel": "partial",
+      "review": {
+        "id": "Q02",
+        "verdict": "pass",
+        "note": "Only x-2 is a factor because f(2)=0, the opposite-root trap gives -20, and the plain prompt, choices, and explanation fit the L1 Factor Theorem archetype."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C04-U05",
+          "title": "Zeros of Polynomial Functions",
+          "notionUrl": "https://www.notion.so/4013818f8ba0815da0b3db91b84ddc87"
+        }
+      ],
+      "unitCode": "MTH-T02-C04-U05",
+      "fingerprint": "t02-c04-u05-factor-root-sign-trap|choose|Choose a factor of x^#-#x^#+x-#",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c04-u05-factor-root-sign-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 3
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 17
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 1 - Foundation"
+    },
+    {
+      "id": "Q03",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c04-u05-rational-zero-candidates",
+      "context": "",
+      "prompt": "How many distinct rational-zero candidates are possible for $f(x)=2x^3+x+6$?",
+      "display": "p/q candidates: p divides constant; q divides leading coefficient",
+      "plainText": "Number of distinct rational-zero candidates for 2x^3+x+6",
+      "givens": {
+        "lead": 2,
+        "constant": 6
+      },
+      "constants": {
+        "candidate_count": 12,
+        "sign_pair_count": 2
+      },
+      "trapGivens": [
+        2,
+        6,
+        12,
+        2
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "12",
+        "tolerance": 0
+      },
+      "answerPlain": "12",
+      "answerDisplay": "12",
+      "inputHint": "Enter the count after removing duplicate fractions.",
+      "commonTrapTag": "t02-c04-u05-forget-negative-candidates-trap",
+      "trapDerivation": "12/2",
+      "trapValue": "6",
+      "verify": {
+        "source": "12",
+        "trapValue": "6"
+      },
+      "checkpointHint": "Enter the count after removing duplicate fractions.",
+      "references": [
+        "MTH-T02-C04-U05"
+      ],
+      "steps": [
+        {
+          "latex": "p\\in\\{\\pm1,\\pm2,\\pm3,\\pm6\\}",
+          "explain": "List signed factors of the constant term."
+        },
+        {
+          "latex": "q\\in\\{1,2\\}",
+          "explain": "List positive factors of the leading coefficient."
+        },
+        {
+          "latex": "p/q\\in\\{\\pm1,\\pm2,\\pm3,\\pm6,\\pm1/2,\\pm3/2\\}",
+          "explain": "Form reduced ratios and remove duplicates."
+        },
+        {
+          "latex": "N=12",
+          "explain": "Count the distinct positive and negative candidates.",
+          "eq": [
+            "6*2",
+            "12"
+          ],
+          "val": "12"
+        }
+      ],
+      "verificationLevel": "partial",
+      "review": {
+        "id": "Q03",
+        "verdict": "pass",
+        "note": "The 12 distinct reduced candidates are correct and the positive-only trap gives 6, with a clear L1 Rational Zero Theorem task and no answer leakage in the hint."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C04-U05",
+          "title": "Zeros of Polynomial Functions",
+          "notionUrl": "https://www.notion.so/4013818f8ba0815da0b3db91b84ddc87"
+        }
+      ],
+      "unitCode": "MTH-T02-C04-U05",
+      "fingerprint": "t02-c04-u05-forget-negative-candidates-trap|direct|Number of distinct rational-zero candidates for #x^#+x+#",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 4,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c04-u05-forget-negative-candidates-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 15
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 1 - Foundation"
+    },
+    {
+      "id": "Q04",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c04-u05-find-polynomial-zeros",
+      "context": "",
+      "prompt": "One zero of $f(x)=x^3+2x^2-9x-18$ is $-2$. How many other real zeros does $f$ have?",
+      "display": "f(x)=(x-k)q(x)",
+      "plainText": "Use the known factor and solve the quotient.",
+      "givens": {
+        "b": 2,
+        "c": -9,
+        "d": -18,
+        "known_zero": -2
+      },
+      "constants": {
+        "other_real_zero_count": 2,
+        "positive_quotient_root_count": 1
+      },
+      "trapGivens": [
+        2,
+        1
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "2",
+        "tolerance": 0
+      },
+      "answerPlain": "2",
+      "answerDisplay": "2",
+      "inputHint": "Enter a whole-number count.",
+      "commonTrapTag": "t02-c04-u05-only-positive-quotient-root-trap",
+      "trapDerivation": "2-1",
+      "trapValue": "1",
+      "verify": {
+        "source": "2",
+        "trapValue": "1"
+      },
+      "checkpointHint": "Remove the known linear factor and determine how many real zeros remain.",
+      "references": [
+        "MTH-T02-C04-U05"
+      ],
+      "steps": [
+        {
+          "latex": "f(x)=(x+2)(x^2-9)",
+          "explain": "Divide out the factor associated with the known zero.",
+          "eq": [
+            "x^3+2*x^2-9*x-18",
+            "(x+2)*(x^2-9)"
+          ]
+        },
+        {
+          "latex": "x^2-9=(x-3)(x+3)",
+          "explain": "Factor the difference of squares.",
+          "eq": [
+            "x^2-9",
+            "(x-3)*(x+3)"
+          ]
+        },
+        {
+          "latex": "x^2-9=0",
+          "explain": "Set the quotient equal to zero to locate its real zeros."
+        },
+        {
+          "latex": "x=3",
+          "explain": "Solve the first quotient factor."
+        },
+        {
+          "latex": "x=-3",
+          "explain": "Solve the second quotient factor."
+        },
+        {
+          "latex": "N=2",
+          "explain": "Count the distinct real zeros contributed by the quotient.",
+          "val": "2"
+        }
+      ],
+      "verificationLevel": "partial",
+      "review": {
+        "id": "Q04",
+        "verdict": "pass",
+        "note": "The known zero gives quotient x²−9 with two distinct real zeros, so the L2 task, missing-quotient-root trap, worked steps, and nonrevealing hints/display are correct and unambiguous."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C04-U05",
+          "title": "Zeros of Polynomial Functions",
+          "notionUrl": "https://www.notion.so/4013818f8ba0815da0b3db91b84ddc87"
+        }
+      ],
+      "unitCode": "MTH-T02-C04-U05",
+      "fingerprint": "t02-c04-u05-only-positive-quotient-root-trap|reverse|Use the known factor and solve the quotient.",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 6,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c04-u05-only-positive-quotient-root-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 19
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 2 - Standard Exam"
+    },
+    {
+      "id": "Q05",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c04-u05-reconstruct-from-zeros",
+      "context": "",
+      "prompt": "A quadratic polynomial has zeros $-1$ and $2$ and passes through $(0,6)$. Find its formula.",
+      "display": "f(x)=a(x-r_1)(x-r_2)",
+      "plainText": "Quadratic polynomial with zeros -1 and 2 through (0,6)",
+      "givens": {
+        "r1": -1,
+        "r2": 2,
+        "x0": 0,
+        "y0": 6
+      },
+      "constants": {
+        "factor_offset": 1
+      },
+      "trapGivens": [
+        1,
+        2
+      ],
+      "answerSpec": {
+        "type": "expression",
+        "value": "-3*(x+1)*(x-2)",
+        "variables": [
+          "x"
+        ]
+      },
+      "answerPlain": "-3x^2+3x+6",
+      "answerDisplay": "-3(x+1)(x-2)",
+      "inputHint": "Enter an equivalent polynomial formula in x.",
+      "commonTrapTag": "t02-c04-u05-zero-factor-sign-trap",
+      "trapDerivation": "-3*(x-((-1)*(-1)))*(x-2)",
+      "trapValue": "-3*(x-1)*(x-2)",
+      "verify": {
+        "source": "-3*(x+1)*(x-2)",
+        "trapValue": "-3*(x-1)*(x-2)"
+      },
+      "checkpointHint": "Enter an equivalent polynomial formula in x.",
+      "references": [
+        "MTH-T02-C04-U05"
+      ],
+      "steps": [
+        {
+          "latex": "f(x)=a(x+1)(x-2)",
+          "explain": "Encode each zero as a linear factor."
+        },
+        {
+          "latex": "6=a(0+1)(0-2)",
+          "explain": "Use the given point to determine the scale."
+        },
+        {
+          "latex": "6=-2a",
+          "explain": "Evaluate the factors at the given input."
+        },
+        {
+          "latex": "a=-3",
+          "explain": "Solve for the leading scale."
+        },
+        {
+          "latex": "f(x)=-3(x+1)(x-2)",
+          "explain": "Write the polynomial with the determined scale.",
+          "eq": [
+            "-3*(x+1)*(x-2)",
+            "-3*x^2+3*x+6"
+          ],
+          "val": "-3*(x+1)*(x-2)"
+        }
+      ],
+      "verificationLevel": "partial",
+      "review": {
+        "id": "Q05",
+        "verdict": "pass",
+        "note": "Solving from the zeros and point gives f(x)=−3(x+1)(x−2), the trap changes the −1 zero to the wrong factor x−1 while retaining the scale, and the steps, L2 reverse task, clarity, and answer-neutral hint are sound."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C04-U05",
+          "title": "Zeros of Polynomial Functions",
+          "notionUrl": "https://www.notion.so/4013818f8ba0815da0b3db91b84ddc87"
+        }
+      ],
+      "unitCode": "MTH-T02-C04-U05",
+      "fingerprint": "t02-c04-u05-zero-factor-sign-trap|reverse|Quadratic polynomial with zeros -# and # through (#,#)",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 5,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c04-u05-zero-factor-sign-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 17
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 2 - Standard Exam"
+    }
+  ],
+  "drillId": "DRL-MTH-T02-C04-U05-01",
+  "title": "Zeros of Polynomial Functions — Verified Math Drill (5 Qs)",
+  "topicCode": "MTH-T02",
+  "chapterCode": "MTH-T02-C04",
+  "schemaVersion": "2.0-math",
+  "createdAt": "2026-11-17 07:56:35",
+  "config": {
+    "questionCount": 5,
+    "difficulty": "ALL",
+    "difficultyMode": "AI Synthesized Reasoning Mode"
+  },
+  "localFilePath": "drills/data/MTH-T02-C04-U05/DRL-MTH-T02-C04-U05-01.json"
+}

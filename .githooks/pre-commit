@@ -7,3 +7,13 @@ if [ "$branch" = "main" ]; then
   echo "Drill-only PRs (drill file, its unit's vault, id_map.json) may be merged by the agent; anything else waits for the learner's \"merge\"." >&2
   exit 1
 fi
+
+# Answers never leave the machine: pilot/ (stand-in learner solutions) and scratch/ (blind-solve and
+# reviewer files) hold drill answers. They are gitignored; this also stops `git add -f`.
+leaked=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '^(pilot|scratch)/' || true)
+if [ -n "$leaked" ]; then
+  echo "BLOCKED: these files hold answers and are never committed:" >&2
+  echo "$leaked" >&2
+  echo "Unstage them: git restore --staged <file>" >&2
+  exit 1
+fi

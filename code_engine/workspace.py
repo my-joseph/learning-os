@@ -84,7 +84,7 @@ ENVIRONMENT_PRESETS = {
             "review": "../../../.venv/bin/python -m code_engine.review",
             "submit": "../../../.venv/bin/python -m code_engine.submit",
         },
-        "devDependencies": {},
+        "devDependencies": {"@types/node": "^20.0.0"},
     },
     "backend-sqlite": {
         "description": "Backend Database & Transaction Environment with In-Memory SQLite",
@@ -465,7 +465,7 @@ test({t_name}, {fn_prefix} {{
         checks = [f"npm run test:{pid.lower()}", lint_command, *([type_command] if type_command else [])]
         test_scripts[f"check:{pid.lower()}"] = "; ".join(
             [
-                *(f"{command}; status_$i=$?" for i, command in enumerate(checks)),
+                *(f"{command}; status_{i}=$?" for i, command in enumerate(checks)),
                 "test " + " -a ".join(f"$status_{i} -eq 0" for i in range(len(checks))),
             ]
         )

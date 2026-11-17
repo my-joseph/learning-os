@@ -1,0 +1,3569 @@
+{
+  "unitCode": "MTH-T02-C03-U02",
+  "topicTitle": "Linear Functions",
+  "unitTitle": "Modeling with Linear Functions",
+  "subject": "MATH",
+  "problems": [
+    {
+      "id": "Q01",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c03-u02-build-model-from-rate-and-start",
+      "context": "A reserve tank contains a starting amount of water, and a pump adds water at a steady rate.",
+      "prompt": "A reserve tank contains $180$ liters of water and a pump adds $24$ liters each minute. How many liters are in the tank after $5$ minutes? Give only the number.",
+      "display": "V(t)=V_0+rt",
+      "plainText": "V(t)=V0+r*t",
+      "givens": {
+        "V0": 180,
+        "r": 24,
+        "t": 5
+      },
+      "constants": {},
+      "trapGivens": [
+        180,
+        24,
+        5
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "300",
+        "tolerance": 0
+      },
+      "answerPlain": "300",
+      "answerDisplay": "300",
+      "inputHint": "Enter the quantity in liters as a number.",
+      "commonTrapTag": "t02-c03-u02-swap-start-and-rate-trap",
+      "trapDerivation": "24+180*5",
+      "trapValue": "924",
+      "verify": {
+        "source": "180+24*5",
+        "trapValue": "924"
+      },
+      "checkpointHint": "Separate the amount present at the start from the repeated change per input unit.",
+      "references": [
+        "MTH-T02-C03-U02"
+      ],
+      "steps": [
+        {
+          "latex": "V(5)=180+24(5)",
+          "explain": "Substitute the elapsed time into the starting-amount plus rate model."
+        },
+        {
+          "latex": "24(5)=120",
+          "explain": "Multiply the per-minute rate by the elapsed minutes.",
+          "eq": [
+            "24*5",
+            "120"
+          ]
+        },
+        {
+          "latex": "V(5)=180+120",
+          "explain": "Add the accumulated amount to the starting volume.",
+          "eq": [
+            "180+120",
+            "300"
+          ]
+        },
+        {
+          "latex": "V(5)=300\\text{ liters}",
+          "explain": "State the resulting tank volume.",
+          "val": "300"
+        }
+      ],
+      "verificationLevel": "partial",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "The domain is elapsed time t ≥ 0 with liters as the output; 300 liters is a plausible positive amount after five minutes, and removing the tank-and-pump context leaves the same calculation 180 + 24×5."
+      },
+      "review": {
+        "verdict": "pass",
+        "note": "180 + 24×5 = 300 liters with consistent units and a plausible nonnegative-time tank model; it tests rate-plus-start modeling and the swapped-start/rate trap, with a clear prompt and nonleaking hint/display."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C03-U02",
+          "title": "Modeling with Linear Functions",
+          "notionUrl": "https://www.notion.so/4013818f8ba080baa391f072c69ed3fe"
+        }
+      ],
+      "unitCode": "MTH-T02-C03-U02",
+      "figure": {
+        "kind": "cartesian_graph",
+        "theme": "indigo",
+        "title": "A starting quantity changes at a constant rate",
+        "xRange": [
+          0.0,
+          10.0
+        ],
+        "yRange": [
+          0.0,
+          420.0
+        ],
+        "grid": true,
+        "axes": true,
+        "plots": [
+          {
+            "type": "curve",
+            "points": [
+              [
+                0.0,
+                180.0
+              ],
+              [
+                0.0417,
+                181.0
+              ],
+              [
+                0.0833,
+                182.0
+              ],
+              [
+                0.125,
+                183.0
+              ],
+              [
+                0.1667,
+                184.0
+              ],
+              [
+                0.2083,
+                185.0
+              ],
+              [
+                0.25,
+                186.0
+              ],
+              [
+                0.2917,
+                187.0
+              ],
+              [
+                0.3333,
+                188.0
+              ],
+              [
+                0.375,
+                189.0
+              ],
+              [
+                0.4167,
+                190.0
+              ],
+              [
+                0.4583,
+                191.0
+              ],
+              [
+                0.5,
+                192.0
+              ],
+              [
+                0.5417,
+                193.0
+              ],
+              [
+                0.5833,
+                194.0
+              ],
+              [
+                0.625,
+                195.0
+              ],
+              [
+                0.6667,
+                196.0
+              ],
+              [
+                0.7083,
+                197.0
+              ],
+              [
+                0.75,
+                198.0
+              ],
+              [
+                0.7917,
+                199.0
+              ],
+              [
+                0.8333,
+                200.0
+              ],
+              [
+                0.875,
+                201.0
+              ],
+              [
+                0.9167,
+                202.0
+              ],
+              [
+                0.9583,
+                203.0
+              ],
+              [
+                1.0,
+                204.0
+              ],
+              [
+                1.0417,
+                205.0
+              ],
+              [
+                1.0833,
+                206.0
+              ],
+              [
+                1.125,
+                207.0
+              ],
+              [
+                1.1667,
+                208.0
+              ],
+              [
+                1.2083,
+                209.0
+              ],
+              [
+                1.25,
+                210.0
+              ],
+              [
+                1.2917,
+                211.0
+              ],
+              [
+                1.3333,
+                212.0
+              ],
+              [
+                1.375,
+                213.0
+              ],
+              [
+                1.4167,
+                214.0
+              ],
+              [
+                1.4583,
+                215.0
+              ],
+              [
+                1.5,
+                216.0
+              ],
+              [
+                1.5417,
+                217.0
+              ],
+              [
+                1.5833,
+                218.0
+              ],
+              [
+                1.625,
+                219.0
+              ],
+              [
+                1.6667,
+                220.0
+              ],
+              [
+                1.7083,
+                221.0
+              ],
+              [
+                1.75,
+                222.0
+              ],
+              [
+                1.7917,
+                223.0
+              ],
+              [
+                1.8333,
+                224.0
+              ],
+              [
+                1.875,
+                225.0
+              ],
+              [
+                1.9167,
+                226.0
+              ],
+              [
+                1.9583,
+                227.0
+              ],
+              [
+                2.0,
+                228.0
+              ],
+              [
+                2.0417,
+                229.0
+              ],
+              [
+                2.0833,
+                230.0
+              ],
+              [
+                2.125,
+                231.0
+              ],
+              [
+                2.1667,
+                232.0
+              ],
+              [
+                2.2083,
+                233.0
+              ],
+              [
+                2.25,
+                234.0
+              ],
+              [
+                2.2917,
+                235.0
+              ],
+              [
+                2.3333,
+                236.0
+              ],
+              [
+                2.375,
+                237.0
+              ],
+              [
+                2.4167,
+                238.0
+              ],
+              [
+                2.4583,
+                239.0
+              ],
+              [
+                2.5,
+                240.0
+              ],
+              [
+                2.5417,
+                241.0
+              ],
+              [
+                2.5833,
+                242.0
+              ],
+              [
+                2.625,
+                243.0
+              ],
+              [
+                2.6667,
+                244.0
+              ],
+              [
+                2.7083,
+                245.0
+              ],
+              [
+                2.75,
+                246.0
+              ],
+              [
+                2.7917,
+                247.0
+              ],
+              [
+                2.8333,
+                248.0
+              ],
+              [
+                2.875,
+                249.0
+              ],
+              [
+                2.9167,
+                250.0
+              ],
+              [
+                2.9583,
+                251.0
+              ],
+              [
+                3.0,
+                252.0
+              ],
+              [
+                3.0417,
+                253.0
+              ],
+              [
+                3.0833,
+                254.0
+              ],
+              [
+                3.125,
+                255.0
+              ],
+              [
+                3.1667,
+                256.0
+              ],
+              [
+                3.2083,
+                257.0
+              ],
+              [
+                3.25,
+                258.0
+              ],
+              [
+                3.2917,
+                259.0
+              ],
+              [
+                3.3333,
+                260.0
+              ],
+              [
+                3.375,
+                261.0
+              ],
+              [
+                3.4167,
+                262.0
+              ],
+              [
+                3.4583,
+                263.0
+              ],
+              [
+                3.5,
+                264.0
+              ],
+              [
+                3.5417,
+                265.0
+              ],
+              [
+                3.5833,
+                266.0
+              ],
+              [
+                3.625,
+                267.0
+              ],
+              [
+                3.6667,
+                268.0
+              ],
+              [
+                3.7083,
+                269.0
+              ],
+              [
+                3.75,
+                270.0
+              ],
+              [
+                3.7917,
+                271.0
+              ],
+              [
+                3.8333,
+                272.0
+              ],
+              [
+                3.875,
+                273.0
+              ],
+              [
+                3.9167,
+                274.0
+              ],
+              [
+                3.9583,
+                275.0
+              ],
+              [
+                4.0,
+                276.0
+              ],
+              [
+                4.0417,
+                277.0
+              ],
+              [
+                4.0833,
+                278.0
+              ],
+              [
+                4.125,
+                279.0
+              ],
+              [
+                4.1667,
+                280.0
+              ],
+              [
+                4.2083,
+                281.0
+              ],
+              [
+                4.25,
+                282.0
+              ],
+              [
+                4.2917,
+                283.0
+              ],
+              [
+                4.3333,
+                284.0
+              ],
+              [
+                4.375,
+                285.0
+              ],
+              [
+                4.4167,
+                286.0
+              ],
+              [
+                4.4583,
+                287.0
+              ],
+              [
+                4.5,
+                288.0
+              ],
+              [
+                4.5417,
+                289.0
+              ],
+              [
+                4.5833,
+                290.0
+              ],
+              [
+                4.625,
+                291.0
+              ],
+              [
+                4.6667,
+                292.0
+              ],
+              [
+                4.7083,
+                293.0
+              ],
+              [
+                4.75,
+                294.0
+              ],
+              [
+                4.7917,
+                295.0
+              ],
+              [
+                4.8333,
+                296.0
+              ],
+              [
+                4.875,
+                297.0
+              ],
+              [
+                4.9167,
+                298.0
+              ],
+              [
+                4.9583,
+                299.0
+              ],
+              [
+                5.0,
+                300.0
+              ],
+              [
+                5.0417,
+                301.0
+              ],
+              [
+                5.0833,
+                302.0
+              ],
+              [
+                5.125,
+                303.0
+              ],
+              [
+                5.1667,
+                304.0
+              ],
+              [
+                5.2083,
+                305.0
+              ],
+              [
+                5.25,
+                306.0
+              ],
+              [
+                5.2917,
+                307.0
+              ],
+              [
+                5.3333,
+                308.0
+              ],
+              [
+                5.375,
+                309.0
+              ],
+              [
+                5.4167,
+                310.0
+              ],
+              [
+                5.4583,
+                311.0
+              ],
+              [
+                5.5,
+                312.0
+              ],
+              [
+                5.5417,
+                313.0
+              ],
+              [
+                5.5833,
+                314.0
+              ],
+              [
+                5.625,
+                315.0
+              ],
+              [
+                5.6667,
+                316.0
+              ],
+              [
+                5.7083,
+                317.0
+              ],
+              [
+                5.75,
+                318.0
+              ],
+              [
+                5.7917,
+                319.0
+              ],
+              [
+                5.8333,
+                320.0
+              ],
+              [
+                5.875,
+                321.0
+              ],
+              [
+                5.9167,
+                322.0
+              ],
+              [
+                5.9583,
+                323.0
+              ],
+              [
+                6.0,
+                324.0
+              ],
+              [
+                6.0417,
+                325.0
+              ],
+              [
+                6.0833,
+                326.0
+              ],
+              [
+                6.125,
+                327.0
+              ],
+              [
+                6.1667,
+                328.0
+              ],
+              [
+                6.2083,
+                329.0
+              ],
+              [
+                6.25,
+                330.0
+              ],
+              [
+                6.2917,
+                331.0
+              ],
+              [
+                6.3333,
+                332.0
+              ],
+              [
+                6.375,
+                333.0
+              ],
+              [
+                6.4167,
+                334.0
+              ],
+              [
+                6.4583,
+                335.0
+              ],
+              [
+                6.5,
+                336.0
+              ],
+              [
+                6.5417,
+                337.0
+              ],
+              [
+                6.5833,
+                338.0
+              ],
+              [
+                6.625,
+                339.0
+              ],
+              [
+                6.6667,
+                340.0
+              ],
+              [
+                6.7083,
+                341.0
+              ],
+              [
+                6.75,
+                342.0
+              ],
+              [
+                6.7917,
+                343.0
+              ],
+              [
+                6.8333,
+                344.0
+              ],
+              [
+                6.875,
+                345.0
+              ],
+              [
+                6.9167,
+                346.0
+              ],
+              [
+                6.9583,
+                347.0
+              ],
+              [
+                7.0,
+                348.0
+              ],
+              [
+                7.0417,
+                349.0
+              ],
+              [
+                7.0833,
+                350.0
+              ],
+              [
+                7.125,
+                351.0
+              ],
+              [
+                7.1667,
+                352.0
+              ],
+              [
+                7.2083,
+                353.0
+              ],
+              [
+                7.25,
+                354.0
+              ],
+              [
+                7.2917,
+                355.0
+              ],
+              [
+                7.3333,
+                356.0
+              ],
+              [
+                7.375,
+                357.0
+              ],
+              [
+                7.4167,
+                358.0
+              ],
+              [
+                7.4583,
+                359.0
+              ],
+              [
+                7.5,
+                360.0
+              ],
+              [
+                7.5417,
+                361.0
+              ],
+              [
+                7.5833,
+                362.0
+              ],
+              [
+                7.625,
+                363.0
+              ],
+              [
+                7.6667,
+                364.0
+              ],
+              [
+                7.7083,
+                365.0
+              ],
+              [
+                7.75,
+                366.0
+              ],
+              [
+                7.7917,
+                367.0
+              ],
+              [
+                7.8333,
+                368.0
+              ],
+              [
+                7.875,
+                369.0
+              ],
+              [
+                7.9167,
+                370.0
+              ],
+              [
+                7.9583,
+                371.0
+              ],
+              [
+                8.0,
+                372.0
+              ],
+              [
+                8.0417,
+                373.0
+              ],
+              [
+                8.0833,
+                374.0
+              ],
+              [
+                8.125,
+                375.0
+              ],
+              [
+                8.1667,
+                376.0
+              ],
+              [
+                8.2083,
+                377.0
+              ],
+              [
+                8.25,
+                378.0
+              ],
+              [
+                8.2917,
+                379.0
+              ],
+              [
+                8.3333,
+                380.0
+              ],
+              [
+                8.375,
+                381.0
+              ],
+              [
+                8.4167,
+                382.0
+              ],
+              [
+                8.4583,
+                383.0
+              ],
+              [
+                8.5,
+                384.0
+              ],
+              [
+                8.5417,
+                385.0
+              ],
+              [
+                8.5833,
+                386.0
+              ],
+              [
+                8.625,
+                387.0
+              ],
+              [
+                8.6667,
+                388.0
+              ],
+              [
+                8.7083,
+                389.0
+              ],
+              [
+                8.75,
+                390.0
+              ],
+              [
+                8.7917,
+                391.0
+              ],
+              [
+                8.8333,
+                392.0
+              ],
+              [
+                8.875,
+                393.0
+              ],
+              [
+                8.9167,
+                394.0
+              ],
+              [
+                8.9583,
+                395.0
+              ],
+              [
+                9.0,
+                396.0
+              ],
+              [
+                9.0417,
+                397.0
+              ],
+              [
+                9.0833,
+                398.0
+              ],
+              [
+                9.125,
+                399.0
+              ],
+              [
+                9.1667,
+                400.0
+              ],
+              [
+                9.2083,
+                401.0
+              ],
+              [
+                9.25,
+                402.0
+              ],
+              [
+                9.2917,
+                403.0
+              ],
+              [
+                9.3333,
+                404.0
+              ],
+              [
+                9.375,
+                405.0
+              ],
+              [
+                9.4167,
+                406.0
+              ],
+              [
+                9.4583,
+                407.0
+              ],
+              [
+                9.5,
+                408.0
+              ],
+              [
+                9.5417,
+                409.0
+              ],
+              [
+                9.5833,
+                410.0
+              ],
+              [
+                9.625,
+                411.0
+              ],
+              [
+                9.6667,
+                412.0
+              ],
+              [
+                9.7083,
+                413.0
+              ],
+              [
+                9.75,
+                414.0
+              ],
+              [
+                9.7917,
+                415.0
+              ],
+              [
+                9.8333,
+                416.0
+              ],
+              [
+                9.875,
+                417.0
+              ],
+              [
+                9.9167,
+                418.0
+              ],
+              [
+                9.9583,
+                419.0
+              ],
+              [
+                10.0,
+                420.0
+              ]
+            ],
+            "color": "#6366f1",
+            "strokeWidth": 2.5
+          },
+          {
+            "type": "text",
+            "coord": [
+              0.4,
+              386.4
+            ],
+            "text": "Q(t)=180+24t",
+            "color": "#6366f1",
+            "anchor": "start"
+          }
+        ]
+      },
+      "fingerprint": "t02-c03-u02-swap-start-and-rate-trap|direct|V(t)=V#+r*t",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 4,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c03-u02-swap-start-and-rate-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 15
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 1 - Foundation"
+    },
+    {
+      "id": "Q02",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c03-u02-predict-from-model",
+      "context": "A packing station's queue monitor tracks the number of boxes waiting as a function of minutes after a shift begins.",
+      "prompt": "A packing station models its waiting boxes by $q(t)=4t+10$, where $t$ is minutes after the shift begins. How many boxes are waiting after $6$ minutes? Give only the number.",
+      "display": "q(t)=4t+10",
+      "plainText": "q(t)=4*t+10",
+      "givens": {
+        "rate": 4,
+        "start": 10,
+        "t": 6
+      },
+      "constants": {},
+      "trapGivens": [
+        4,
+        10,
+        6
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "34",
+        "tolerance": 0
+      },
+      "answerPlain": "34",
+      "answerDisplay": "34",
+      "inputHint": "Enter the box count as a number.",
+      "commonTrapTag": "t02-c03-u02-swap-start-and-rate-trap",
+      "trapDerivation": "10*6+4",
+      "trapValue": "64",
+      "verify": {
+        "source": "4*6+10",
+        "trapValue": "64"
+      },
+      "checkpointHint": "Substitute the requested input into the model and preserve the roles of its two terms.",
+      "references": [
+        "MTH-T02-C03-U02"
+      ],
+      "steps": [
+        {
+          "latex": "q(6)=4(6)+10",
+          "explain": "Substitute the stated time into the queue model."
+        },
+        {
+          "latex": "4(6)=24",
+          "explain": "Multiply the steady arrival rate by the elapsed minutes.",
+          "eq": [
+            "4*6",
+            "24"
+          ]
+        },
+        {
+          "latex": "q(6)=24+10",
+          "explain": "Add the initial queue to the new arrivals.",
+          "eq": [
+            "24+10",
+            "34"
+          ]
+        },
+        {
+          "latex": "q(6)=34\\text{ boxes}",
+          "explain": "State the queue count after the elapsed time.",
+          "val": "34"
+        }
+      ],
+      "verificationLevel": "partial",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "The domain is t ≥ 0 minutes and q(t) counts boxes; 34 is a nonnegative whole-number count, and removing the station context leaves direct substitution into q(6)=4×6+10."
+      },
+      "review": {
+        "verdict": "pass",
+        "note": "4×6 + 10 = 34 boxes, a plausible whole-number queue under the stated minute-based linear model; it tests prediction and the swapped-start/rate trap, and its prompt, display, and hint do not reveal the answer."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C03-U02",
+          "title": "Modeling with Linear Functions",
+          "notionUrl": "https://www.notion.so/4013818f8ba080baa391f072c69ed3fe"
+        }
+      ],
+      "unitCode": "MTH-T02-C03-U02",
+      "fingerprint": "t02-c03-u02-swap-start-and-rate-trap|direct|q(t)=#*t+#",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 4,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c03-u02-swap-start-and-rate-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 15
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 1 - Foundation"
+    },
+    {
+      "id": "Q03",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c03-u02-model-from-two-observations",
+      "context": "A workshop production dashboard tracks a running total that includes orders completed before the monitoring window; additional orders are completed at a constant pace.",
+      "prompt": "The dashboard shows $20$ completed orders after $2$ hours and $40$ after $6$ hours. Assuming the same rate continues, how many orders will it show after $8$ hours? Give only the number.",
+      "display": "Find the constant rate from paired observations, then evaluate the resulting model.",
+      "plainText": "Find the constant rate from paired observations, then evaluate the model.",
+      "givens": {
+        "t1": 2,
+        "q1": 20,
+        "t2": 6,
+        "q2": 40,
+        "t": 8
+      },
+      "constants": {
+        "rate": 5
+      },
+      "trapGivens": [
+        5,
+        8
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "50",
+        "tolerance": 0
+      },
+      "answerPlain": "50",
+      "answerDisplay": "50",
+      "inputHint": "Enter the modeled order count as a number.",
+      "commonTrapTag": "t02-c03-u02-forget-anchor-value-trap",
+      "trapDerivation": "5*8",
+      "trapValue": "40",
+      "verify": {
+        "source": "10+5*8",
+        "trapValue": "40"
+      },
+      "checkpointHint": "Pair each observation, find the change per input unit, and use one observation to anchor the model.",
+      "references": [
+        "MTH-T02-C03-U02"
+      ],
+      "steps": [
+        {
+          "latex": "r=\\frac{40-20}{6-2}",
+          "explain": "Substitute both paired observations into the rate formula."
+        },
+        {
+          "latex": "40-20=20",
+          "explain": "Find the change in completed orders.",
+          "eq": [
+            "40-20",
+            "20"
+          ]
+        },
+        {
+          "latex": "6-2=4",
+          "explain": "Find the corresponding change in hours.",
+          "eq": [
+            "6-2",
+            "4"
+          ]
+        },
+        {
+          "latex": "r=\\frac{20}{4}",
+          "explain": "Divide the output change by the input change."
+        },
+        {
+          "latex": "r=5",
+          "explain": "State the constant hourly rate.",
+          "eq": [
+            "20/4",
+            "5"
+          ]
+        },
+        {
+          "latex": "Q_0=20-5(2)",
+          "explain": "Use the first observation to determine the starting order count."
+        },
+        {
+          "latex": "5(2)=10",
+          "explain": "Find the modeled increase by the first observation time.",
+          "eq": [
+            "5*2",
+            "10"
+          ]
+        },
+        {
+          "latex": "20-10=10",
+          "explain": "Subtract the modeled increase from the observed count.",
+          "eq": [
+            "20-10",
+            "10"
+          ]
+        },
+        {
+          "latex": "Q_0=10",
+          "explain": "State the starting order count.",
+          "eq": [
+            "20-10",
+            "10"
+          ]
+        },
+        {
+          "latex": "5(8)=40",
+          "explain": "Find the modeled increase by the prediction time.",
+          "eq": [
+            "5*8",
+            "40"
+          ]
+        },
+        {
+          "latex": "Q(8)=10+40",
+          "explain": "Add the starting count to the predicted increase."
+        },
+        {
+          "latex": "Q(8)=50\\text{ orders}",
+          "explain": "State the predicted order count.",
+          "val": "50"
+        }
+      ],
+      "verificationLevel": "partial",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "The model applies for elapsed hours t ≥ 0 and counts orders; the inferred slope is 5 orders per hour and gives a plausible total of 50 at hour 8, while removing the dashboard context leaves linear extrapolation from (2,20) and (6,40)."
+      },
+      "review": {
+        "verdict": "pass",
+        "note": "The observations give rate (40−20)/(6−2)=5 orders/hour and intercept 10, so Q(8)=50; the running-total context is consistent, the nonzero anchor makes the listed omission trap meaningful, and the L2 prompt and guidance are clear without giving the answer."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C03-U02",
+          "title": "Modeling with Linear Functions",
+          "notionUrl": "https://www.notion.so/4013818f8ba080baa391f072c69ed3fe"
+        }
+      ],
+      "unitCode": "MTH-T02-C03-U02",
+      "figure": {
+        "kind": "cartesian_graph",
+        "theme": "indigo",
+        "title": "Two observations determine a constant-rate model",
+        "xRange": [
+          2.0,
+          16.0
+        ],
+        "yRange": [
+          20.0,
+          60.0
+        ],
+        "grid": true,
+        "axes": true,
+        "plots": [
+          {
+            "type": "curve",
+            "points": [
+              [
+                2.0,
+                20.0
+              ],
+              [
+                2.0583,
+                20.2917
+              ],
+              [
+                2.1167,
+                20.5833
+              ],
+              [
+                2.175,
+                20.875
+              ],
+              [
+                2.2333,
+                21.1667
+              ],
+              [
+                2.2917,
+                21.4583
+              ],
+              [
+                2.35,
+                21.75
+              ],
+              [
+                2.4083,
+                22.0417
+              ],
+              [
+                2.4667,
+                22.3333
+              ],
+              [
+                2.525,
+                22.625
+              ],
+              [
+                2.5833,
+                22.9167
+              ],
+              [
+                2.6417,
+                23.2083
+              ],
+              [
+                2.7,
+                23.5
+              ],
+              [
+                2.7583,
+                23.7917
+              ],
+              [
+                2.8167,
+                24.0833
+              ],
+              [
+                2.875,
+                24.375
+              ],
+              [
+                2.9333,
+                24.6667
+              ],
+              [
+                2.9917,
+                24.9583
+              ],
+              [
+                3.05,
+                25.25
+              ],
+              [
+                3.1083,
+                25.5417
+              ],
+              [
+                3.1667,
+                25.8333
+              ],
+              [
+                3.225,
+                26.125
+              ],
+              [
+                3.2833,
+                26.4167
+              ],
+              [
+                3.3417,
+                26.7083
+              ],
+              [
+                3.4,
+                27.0
+              ],
+              [
+                3.4583,
+                27.2917
+              ],
+              [
+                3.5167,
+                27.5833
+              ],
+              [
+                3.575,
+                27.875
+              ],
+              [
+                3.6333,
+                28.1667
+              ],
+              [
+                3.6917,
+                28.4583
+              ],
+              [
+                3.75,
+                28.75
+              ],
+              [
+                3.8083,
+                29.0417
+              ],
+              [
+                3.8667,
+                29.3333
+              ],
+              [
+                3.925,
+                29.625
+              ],
+              [
+                3.9833,
+                29.9167
+              ],
+              [
+                4.0417,
+                30.2083
+              ],
+              [
+                4.1,
+                30.5
+              ],
+              [
+                4.1583,
+                30.7917
+              ],
+              [
+                4.2167,
+                31.0833
+              ],
+              [
+                4.275,
+                31.375
+              ],
+              [
+                4.3333,
+                31.6667
+              ],
+              [
+                4.3917,
+                31.9583
+              ],
+              [
+                4.45,
+                32.25
+              ],
+              [
+                4.5083,
+                32.5417
+              ],
+              [
+                4.5667,
+                32.8333
+              ],
+              [
+                4.625,
+                33.125
+              ],
+              [
+                4.6833,
+                33.4167
+              ],
+              [
+                4.7417,
+                33.7083
+              ],
+              [
+                4.8,
+                34.0
+              ],
+              [
+                4.8583,
+                34.2917
+              ],
+              [
+                4.9167,
+                34.5833
+              ],
+              [
+                4.975,
+                34.875
+              ],
+              [
+                5.0333,
+                35.1667
+              ],
+              [
+                5.0917,
+                35.4583
+              ],
+              [
+                5.15,
+                35.75
+              ],
+              [
+                5.2083,
+                36.0417
+              ],
+              [
+                5.2667,
+                36.3333
+              ],
+              [
+                5.325,
+                36.625
+              ],
+              [
+                5.3833,
+                36.9167
+              ],
+              [
+                5.4417,
+                37.2083
+              ],
+              [
+                5.5,
+                37.5
+              ],
+              [
+                5.5583,
+                37.7917
+              ],
+              [
+                5.6167,
+                38.0833
+              ],
+              [
+                5.675,
+                38.375
+              ],
+              [
+                5.7333,
+                38.6667
+              ],
+              [
+                5.7917,
+                38.9583
+              ],
+              [
+                5.85,
+                39.25
+              ],
+              [
+                5.9083,
+                39.5417
+              ],
+              [
+                5.9667,
+                39.8333
+              ],
+              [
+                6.025,
+                40.125
+              ],
+              [
+                6.0833,
+                40.4167
+              ],
+              [
+                6.1417,
+                40.7083
+              ],
+              [
+                6.2,
+                41.0
+              ],
+              [
+                6.2583,
+                41.2917
+              ],
+              [
+                6.3167,
+                41.5833
+              ],
+              [
+                6.375,
+                41.875
+              ],
+              [
+                6.4333,
+                42.1667
+              ],
+              [
+                6.4917,
+                42.4583
+              ],
+              [
+                6.55,
+                42.75
+              ],
+              [
+                6.6083,
+                43.0417
+              ],
+              [
+                6.6667,
+                43.3333
+              ],
+              [
+                6.725,
+                43.625
+              ],
+              [
+                6.7833,
+                43.9167
+              ],
+              [
+                6.8417,
+                44.2083
+              ],
+              [
+                6.9,
+                44.5
+              ],
+              [
+                6.9583,
+                44.7917
+              ],
+              [
+                7.0167,
+                45.0833
+              ],
+              [
+                7.075,
+                45.375
+              ],
+              [
+                7.1333,
+                45.6667
+              ],
+              [
+                7.1917,
+                45.9583
+              ],
+              [
+                7.25,
+                46.25
+              ],
+              [
+                7.3083,
+                46.5417
+              ],
+              [
+                7.3667,
+                46.8333
+              ],
+              [
+                7.425,
+                47.125
+              ],
+              [
+                7.4833,
+                47.4167
+              ],
+              [
+                7.5417,
+                47.7083
+              ],
+              [
+                7.6,
+                48.0
+              ],
+              [
+                7.6583,
+                48.2917
+              ],
+              [
+                7.7167,
+                48.5833
+              ],
+              [
+                7.775,
+                48.875
+              ],
+              [
+                7.8333,
+                49.1667
+              ],
+              [
+                7.8917,
+                49.4583
+              ],
+              [
+                7.95,
+                49.75
+              ],
+              [
+                8.0083,
+                50.0417
+              ],
+              [
+                8.0667,
+                50.3333
+              ],
+              [
+                8.125,
+                50.625
+              ],
+              [
+                8.1833,
+                50.9167
+              ],
+              [
+                8.2417,
+                51.2083
+              ],
+              [
+                8.3,
+                51.5
+              ],
+              [
+                8.3583,
+                51.7917
+              ],
+              [
+                8.4167,
+                52.0833
+              ],
+              [
+                8.475,
+                52.375
+              ],
+              [
+                8.5333,
+                52.6667
+              ],
+              [
+                8.5917,
+                52.9583
+              ],
+              [
+                8.65,
+                53.25
+              ],
+              [
+                8.7083,
+                53.5417
+              ],
+              [
+                8.7667,
+                53.8333
+              ],
+              [
+                8.825,
+                54.125
+              ],
+              [
+                8.8833,
+                54.4167
+              ],
+              [
+                8.9417,
+                54.7083
+              ],
+              [
+                9.0,
+                55.0
+              ],
+              [
+                9.0583,
+                55.2917
+              ],
+              [
+                9.1167,
+                55.5833
+              ],
+              [
+                9.175,
+                55.875
+              ],
+              [
+                9.2333,
+                56.1667
+              ],
+              [
+                9.2917,
+                56.4583
+              ],
+              [
+                9.35,
+                56.75
+              ],
+              [
+                9.4083,
+                57.0417
+              ],
+              [
+                9.4667,
+                57.3333
+              ],
+              [
+                9.525,
+                57.625
+              ],
+              [
+                9.5833,
+                57.9167
+              ],
+              [
+                9.6417,
+                58.2083
+              ],
+              [
+                9.7,
+                58.5
+              ],
+              [
+                9.7583,
+                58.7917
+              ],
+              [
+                9.8167,
+                59.0833
+              ],
+              [
+                9.875,
+                59.375
+              ],
+              [
+                9.9333,
+                59.6667
+              ],
+              [
+                9.9917,
+                59.9583
+              ],
+              [
+                10.05,
+                60.25
+              ],
+              [
+                10.1083,
+                60.5417
+              ],
+              [
+                10.1667,
+                60.8333
+              ],
+              [
+                10.225,
+                61.125
+              ],
+              [
+                10.2833,
+                61.4167
+              ],
+              [
+                10.3417,
+                61.7083
+              ],
+              [
+                10.4,
+                62.0
+              ],
+              [
+                10.4583,
+                62.2917
+              ],
+              [
+                10.5167,
+                62.5833
+              ],
+              [
+                10.575,
+                62.875
+              ],
+              [
+                10.6333,
+                63.1667
+              ],
+              [
+                10.6917,
+                63.4583
+              ],
+              [
+                10.75,
+                63.75
+              ],
+              [
+                10.8083,
+                64.0417
+              ],
+              [
+                10.8667,
+                64.3333
+              ],
+              [
+                10.925,
+                64.625
+              ],
+              [
+                10.9833,
+                64.9167
+              ],
+              [
+                11.0417,
+                65.2083
+              ],
+              [
+                11.1,
+                65.5
+              ],
+              [
+                11.1583,
+                65.7917
+              ],
+              [
+                11.2167,
+                66.0833
+              ],
+              [
+                11.275,
+                66.375
+              ],
+              [
+                11.3333,
+                66.6667
+              ],
+              [
+                11.3917,
+                66.9583
+              ],
+              [
+                11.45,
+                67.25
+              ],
+              [
+                11.5083,
+                67.5417
+              ],
+              [
+                11.5667,
+                67.8333
+              ],
+              [
+                11.625,
+                68.125
+              ],
+              [
+                11.6833,
+                68.4167
+              ],
+              [
+                11.7417,
+                68.7083
+              ],
+              [
+                11.8,
+                69.0
+              ],
+              [
+                11.8583,
+                69.2917
+              ],
+              [
+                11.9167,
+                69.5833
+              ],
+              [
+                11.975,
+                69.875
+              ],
+              [
+                12.0333,
+                70.1667
+              ],
+              [
+                12.0917,
+                70.4583
+              ],
+              [
+                12.15,
+                70.75
+              ],
+              [
+                12.2083,
+                71.0417
+              ],
+              [
+                12.2667,
+                71.3333
+              ],
+              [
+                12.325,
+                71.625
+              ],
+              [
+                12.3833,
+                71.9167
+              ],
+              [
+                12.4417,
+                72.2083
+              ],
+              [
+                12.5,
+                72.5
+              ],
+              [
+                12.5583,
+                72.7917
+              ],
+              [
+                12.6167,
+                73.0833
+              ],
+              [
+                12.675,
+                73.375
+              ],
+              [
+                12.7333,
+                73.6667
+              ],
+              [
+                12.7917,
+                73.9583
+              ],
+              [
+                12.85,
+                74.25
+              ],
+              [
+                12.9083,
+                74.5417
+              ],
+              [
+                12.9667,
+                74.8333
+              ],
+              [
+                13.025,
+                75.125
+              ],
+              [
+                13.0833,
+                75.4167
+              ],
+              [
+                13.1417,
+                75.7083
+              ],
+              [
+                13.2,
+                76.0
+              ],
+              [
+                13.2583,
+                76.2917
+              ],
+              [
+                13.3167,
+                76.5833
+              ],
+              [
+                13.375,
+                76.875
+              ],
+              [
+                13.4333,
+                77.1667
+              ],
+              [
+                13.4917,
+                77.4583
+              ],
+              [
+                13.55,
+                77.75
+              ],
+              [
+                13.6083,
+                78.0417
+              ],
+              [
+                13.6667,
+                78.3333
+              ],
+              [
+                13.725,
+                78.625
+              ],
+              [
+                13.7833,
+                78.9167
+              ],
+              [
+                13.8417,
+                79.2083
+              ],
+              [
+                13.9,
+                79.5
+              ],
+              [
+                13.9583,
+                79.7917
+              ],
+              [
+                14.0167,
+                80.0833
+              ],
+              [
+                14.075,
+                80.375
+              ],
+              [
+                14.1333,
+                80.6667
+              ],
+              [
+                14.1917,
+                80.9583
+              ],
+              [
+                14.25,
+                81.25
+              ],
+              [
+                14.3083,
+                81.5417
+              ],
+              [
+                14.3667,
+                81.8333
+              ],
+              [
+                14.425,
+                82.125
+              ],
+              [
+                14.4833,
+                82.4167
+              ],
+              [
+                14.5417,
+                82.7083
+              ],
+              [
+                14.6,
+                83.0
+              ],
+              [
+                14.6583,
+                83.2917
+              ],
+              [
+                14.7167,
+                83.5833
+              ],
+              [
+                14.775,
+                83.875
+              ],
+              [
+                14.8333,
+                84.1667
+              ],
+              [
+                14.8917,
+                84.4583
+              ],
+              [
+                14.95,
+                84.75
+              ],
+              [
+                15.0083,
+                85.0417
+              ],
+              [
+                15.0667,
+                85.3333
+              ],
+              [
+                15.125,
+                85.625
+              ],
+              [
+                15.1833,
+                85.9167
+              ],
+              [
+                15.2417,
+                86.2083
+              ],
+              [
+                15.3,
+                86.5
+              ],
+              [
+                15.3583,
+                86.7917
+              ],
+              [
+                15.4167,
+                87.0833
+              ],
+              [
+                15.475,
+                87.375
+              ],
+              [
+                15.5333,
+                87.6667
+              ],
+              [
+                15.5917,
+                87.9583
+              ],
+              [
+                15.65,
+                88.25
+              ],
+              [
+                15.7083,
+                88.5417
+              ],
+              [
+                15.7667,
+                88.8333
+              ],
+              [
+                15.825,
+                89.125
+              ],
+              [
+                15.8833,
+                89.4167
+              ],
+              [
+                15.9417,
+                89.7083
+              ],
+              [
+                16.0,
+                90.0
+              ]
+            ],
+            "color": "#6366f1",
+            "strokeWidth": 2.5
+          },
+          {
+            "type": "text",
+            "coord": [
+              2.56,
+              56.8
+            ],
+            "text": "A linear model from paired observations",
+            "color": "#6366f1",
+            "anchor": "start"
+          }
+        ]
+      },
+      "fingerprint": "t02-c03-u02-forget-anchor-value-trap|reverse|Find the constant rate from paired observations, then evaluate the model.",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 12,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c03-u02-forget-anchor-value-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 31
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 2 - Standard Exam"
+    },
+    {
+      "id": "Q04",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c03-u02-interpret-intercepts-and-target-input",
+      "context": "A small reservoir supplies a steady-use system; its water level is tracked by volume over time.",
+      "prompt": "A reservoir begins with $100$ liters and loses water at a steady rate of $8$ liters per hour. How many hours pass before $36$ liters remain? Give only the number.",
+      "display": "Relate the water volume to elapsed hours and set the model equal to the target volume.",
+      "plainText": "Relate water volume to elapsed hours and solve for the target volume time.",
+      "givens": {
+        "V0": 100,
+        "rate": 8,
+        "target": 36
+      },
+      "constants": {},
+      "trapGivens": [
+        100,
+        8,
+        36
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "8",
+        "tolerance": 0
+      },
+      "answerPlain": "8",
+      "answerDisplay": "8",
+      "inputHint": "Enter the time in hours as a number.",
+      "commonTrapTag": "t02-c03-u02-decrease-rate-sign-trap",
+      "trapDerivation": "(36-100)/8",
+      "trapValue": "-8",
+      "verify": {
+        "source": "(36-100)/(-8)",
+        "trapValue": "-8"
+      },
+      "checkpointHint": "Compare the target with the starting quantity, then use the direction of change consistently.",
+      "references": [
+        "MTH-T02-C03-U02"
+      ],
+      "steps": [
+        {
+          "latex": "m=-8\\text{ liters per hour}",
+          "explain": "Represent the steady loss as a negative rate of change."
+        },
+        {
+          "latex": "V(t)=100+(-8)t",
+          "explain": "Build the volume model from its starting amount and signed rate."
+        },
+        {
+          "latex": "36=100+(-8)t",
+          "explain": "Set the modeled volume equal to the target."
+        },
+        {
+          "latex": "36-100=-8t",
+          "explain": "Subtract the starting amount from both sides."
+        },
+        {
+          "latex": "-64=-8t",
+          "explain": "Simplify the left side.",
+          "eq": [
+            "36-100",
+            "-64"
+          ]
+        },
+        {
+          "latex": "t=\\frac{-64}{-8}",
+          "explain": "Divide both sides by the signed rate to isolate elapsed time."
+        },
+        {
+          "latex": "t=8\\text{ hours}",
+          "explain": "Simplify the quotient and state the elapsed time.",
+          "eq": [
+            "(-64)/(-8)",
+            "8"
+          ],
+          "val": "8"
+        }
+      ],
+      "verificationLevel": "partial",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "The domain is elapsed time 0 ≤ t ≤ 12 hours and volume in liters; 36 liters remains after 8 hours within that bound, and removing the reservoir context leaves solving 100−8t=36."
+      },
+      "review": {
+        "verdict": "pass",
+        "note": "The signed-rate trap meaningfully yields −8 hours if the loss is treated as +8; the correct model 100−8t=36 gives t=8 with valid steps, nonrevealing display and hint, and 36 liters is reached within the 0–12-hour domain."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C03-U02",
+          "title": "Modeling with Linear Functions",
+          "notionUrl": "https://www.notion.so/4013818f8ba080baa391f072c69ed3fe"
+        }
+      ],
+      "unitCode": "MTH-T02-C03-U02",
+      "figure": {
+        "kind": "cartesian_graph",
+        "theme": "indigo",
+        "title": "A decreasing balance reaches a target value",
+        "xRange": [
+          0.0,
+          12.5
+        ],
+        "yRange": [
+          0.0,
+          100.0
+        ],
+        "grid": true,
+        "axes": true,
+        "plots": [
+          {
+            "type": "curve",
+            "points": [
+              [
+                0.0,
+                100.0
+              ],
+              [
+                0.0521,
+                99.5833
+              ],
+              [
+                0.1042,
+                99.1667
+              ],
+              [
+                0.1562,
+                98.75
+              ],
+              [
+                0.2083,
+                98.3333
+              ],
+              [
+                0.2604,
+                97.9167
+              ],
+              [
+                0.3125,
+                97.5
+              ],
+              [
+                0.3646,
+                97.0833
+              ],
+              [
+                0.4167,
+                96.6667
+              ],
+              [
+                0.4688,
+                96.25
+              ],
+              [
+                0.5208,
+                95.8333
+              ],
+              [
+                0.5729,
+                95.4167
+              ],
+              [
+                0.625,
+                95.0
+              ],
+              [
+                0.6771,
+                94.5833
+              ],
+              [
+                0.7292,
+                94.1667
+              ],
+              [
+                0.7812,
+                93.75
+              ],
+              [
+                0.8333,
+                93.3333
+              ],
+              [
+                0.8854,
+                92.9167
+              ],
+              [
+                0.9375,
+                92.5
+              ],
+              [
+                0.9896,
+                92.0833
+              ],
+              [
+                1.0417,
+                91.6667
+              ],
+              [
+                1.0938,
+                91.25
+              ],
+              [
+                1.1458,
+                90.8333
+              ],
+              [
+                1.1979,
+                90.4167
+              ],
+              [
+                1.25,
+                90.0
+              ],
+              [
+                1.3021,
+                89.5833
+              ],
+              [
+                1.3542,
+                89.1667
+              ],
+              [
+                1.4062,
+                88.75
+              ],
+              [
+                1.4583,
+                88.3333
+              ],
+              [
+                1.5104,
+                87.9167
+              ],
+              [
+                1.5625,
+                87.5
+              ],
+              [
+                1.6146,
+                87.0833
+              ],
+              [
+                1.6667,
+                86.6667
+              ],
+              [
+                1.7188,
+                86.25
+              ],
+              [
+                1.7708,
+                85.8333
+              ],
+              [
+                1.8229,
+                85.4167
+              ],
+              [
+                1.875,
+                85.0
+              ],
+              [
+                1.9271,
+                84.5833
+              ],
+              [
+                1.9792,
+                84.1667
+              ],
+              [
+                2.0312,
+                83.75
+              ],
+              [
+                2.0833,
+                83.3333
+              ],
+              [
+                2.1354,
+                82.9167
+              ],
+              [
+                2.1875,
+                82.5
+              ],
+              [
+                2.2396,
+                82.0833
+              ],
+              [
+                2.2917,
+                81.6667
+              ],
+              [
+                2.3438,
+                81.25
+              ],
+              [
+                2.3958,
+                80.8333
+              ],
+              [
+                2.4479,
+                80.4167
+              ],
+              [
+                2.5,
+                80.0
+              ],
+              [
+                2.5521,
+                79.5833
+              ],
+              [
+                2.6042,
+                79.1667
+              ],
+              [
+                2.6562,
+                78.75
+              ],
+              [
+                2.7083,
+                78.3333
+              ],
+              [
+                2.7604,
+                77.9167
+              ],
+              [
+                2.8125,
+                77.5
+              ],
+              [
+                2.8646,
+                77.0833
+              ],
+              [
+                2.9167,
+                76.6667
+              ],
+              [
+                2.9688,
+                76.25
+              ],
+              [
+                3.0208,
+                75.8333
+              ],
+              [
+                3.0729,
+                75.4167
+              ],
+              [
+                3.125,
+                75.0
+              ],
+              [
+                3.1771,
+                74.5833
+              ],
+              [
+                3.2292,
+                74.1667
+              ],
+              [
+                3.2812,
+                73.75
+              ],
+              [
+                3.3333,
+                73.3333
+              ],
+              [
+                3.3854,
+                72.9167
+              ],
+              [
+                3.4375,
+                72.5
+              ],
+              [
+                3.4896,
+                72.0833
+              ],
+              [
+                3.5417,
+                71.6667
+              ],
+              [
+                3.5938,
+                71.25
+              ],
+              [
+                3.6458,
+                70.8333
+              ],
+              [
+                3.6979,
+                70.4167
+              ],
+              [
+                3.75,
+                70.0
+              ],
+              [
+                3.8021,
+                69.5833
+              ],
+              [
+                3.8542,
+                69.1667
+              ],
+              [
+                3.9062,
+                68.75
+              ],
+              [
+                3.9583,
+                68.3333
+              ],
+              [
+                4.0104,
+                67.9167
+              ],
+              [
+                4.0625,
+                67.5
+              ],
+              [
+                4.1146,
+                67.0833
+              ],
+              [
+                4.1667,
+                66.6667
+              ],
+              [
+                4.2188,
+                66.25
+              ],
+              [
+                4.2708,
+                65.8333
+              ],
+              [
+                4.3229,
+                65.4167
+              ],
+              [
+                4.375,
+                65.0
+              ],
+              [
+                4.4271,
+                64.5833
+              ],
+              [
+                4.4792,
+                64.1667
+              ],
+              [
+                4.5312,
+                63.75
+              ],
+              [
+                4.5833,
+                63.3333
+              ],
+              [
+                4.6354,
+                62.9167
+              ],
+              [
+                4.6875,
+                62.5
+              ],
+              [
+                4.7396,
+                62.0833
+              ],
+              [
+                4.7917,
+                61.6667
+              ],
+              [
+                4.8438,
+                61.25
+              ],
+              [
+                4.8958,
+                60.8333
+              ],
+              [
+                4.9479,
+                60.4167
+              ],
+              [
+                5.0,
+                60.0
+              ],
+              [
+                5.0521,
+                59.5833
+              ],
+              [
+                5.1042,
+                59.1667
+              ],
+              [
+                5.1562,
+                58.75
+              ],
+              [
+                5.2083,
+                58.3333
+              ],
+              [
+                5.2604,
+                57.9167
+              ],
+              [
+                5.3125,
+                57.5
+              ],
+              [
+                5.3646,
+                57.0833
+              ],
+              [
+                5.4167,
+                56.6667
+              ],
+              [
+                5.4688,
+                56.25
+              ],
+              [
+                5.5208,
+                55.8333
+              ],
+              [
+                5.5729,
+                55.4167
+              ],
+              [
+                5.625,
+                55.0
+              ],
+              [
+                5.6771,
+                54.5833
+              ],
+              [
+                5.7292,
+                54.1667
+              ],
+              [
+                5.7812,
+                53.75
+              ],
+              [
+                5.8333,
+                53.3333
+              ],
+              [
+                5.8854,
+                52.9167
+              ],
+              [
+                5.9375,
+                52.5
+              ],
+              [
+                5.9896,
+                52.0833
+              ],
+              [
+                6.0417,
+                51.6667
+              ],
+              [
+                6.0938,
+                51.25
+              ],
+              [
+                6.1458,
+                50.8333
+              ],
+              [
+                6.1979,
+                50.4167
+              ],
+              [
+                6.25,
+                50.0
+              ],
+              [
+                6.3021,
+                49.5833
+              ],
+              [
+                6.3542,
+                49.1667
+              ],
+              [
+                6.4062,
+                48.75
+              ],
+              [
+                6.4583,
+                48.3333
+              ],
+              [
+                6.5104,
+                47.9167
+              ],
+              [
+                6.5625,
+                47.5
+              ],
+              [
+                6.6146,
+                47.0833
+              ],
+              [
+                6.6667,
+                46.6667
+              ],
+              [
+                6.7188,
+                46.25
+              ],
+              [
+                6.7708,
+                45.8333
+              ],
+              [
+                6.8229,
+                45.4167
+              ],
+              [
+                6.875,
+                45.0
+              ],
+              [
+                6.9271,
+                44.5833
+              ],
+              [
+                6.9792,
+                44.1667
+              ],
+              [
+                7.0312,
+                43.75
+              ],
+              [
+                7.0833,
+                43.3333
+              ],
+              [
+                7.1354,
+                42.9167
+              ],
+              [
+                7.1875,
+                42.5
+              ],
+              [
+                7.2396,
+                42.0833
+              ],
+              [
+                7.2917,
+                41.6667
+              ],
+              [
+                7.3438,
+                41.25
+              ],
+              [
+                7.3958,
+                40.8333
+              ],
+              [
+                7.4479,
+                40.4167
+              ],
+              [
+                7.5,
+                40.0
+              ],
+              [
+                7.5521,
+                39.5833
+              ],
+              [
+                7.6042,
+                39.1667
+              ],
+              [
+                7.6562,
+                38.75
+              ],
+              [
+                7.7083,
+                38.3333
+              ],
+              [
+                7.7604,
+                37.9167
+              ],
+              [
+                7.8125,
+                37.5
+              ],
+              [
+                7.8646,
+                37.0833
+              ],
+              [
+                7.9167,
+                36.6667
+              ],
+              [
+                7.9688,
+                36.25
+              ],
+              [
+                8.0208,
+                35.8333
+              ],
+              [
+                8.0729,
+                35.4167
+              ],
+              [
+                8.125,
+                35.0
+              ],
+              [
+                8.1771,
+                34.5833
+              ],
+              [
+                8.2292,
+                34.1667
+              ],
+              [
+                8.2812,
+                33.75
+              ],
+              [
+                8.3333,
+                33.3333
+              ],
+              [
+                8.3854,
+                32.9167
+              ],
+              [
+                8.4375,
+                32.5
+              ],
+              [
+                8.4896,
+                32.0833
+              ],
+              [
+                8.5417,
+                31.6667
+              ],
+              [
+                8.5938,
+                31.25
+              ],
+              [
+                8.6458,
+                30.8333
+              ],
+              [
+                8.6979,
+                30.4167
+              ],
+              [
+                8.75,
+                30.0
+              ],
+              [
+                8.8021,
+                29.5833
+              ],
+              [
+                8.8542,
+                29.1667
+              ],
+              [
+                8.9062,
+                28.75
+              ],
+              [
+                8.9583,
+                28.3333
+              ],
+              [
+                9.0104,
+                27.9167
+              ],
+              [
+                9.0625,
+                27.5
+              ],
+              [
+                9.1146,
+                27.0833
+              ],
+              [
+                9.1667,
+                26.6667
+              ],
+              [
+                9.2188,
+                26.25
+              ],
+              [
+                9.2708,
+                25.8333
+              ],
+              [
+                9.3229,
+                25.4167
+              ],
+              [
+                9.375,
+                25.0
+              ],
+              [
+                9.4271,
+                24.5833
+              ],
+              [
+                9.4792,
+                24.1667
+              ],
+              [
+                9.5312,
+                23.75
+              ],
+              [
+                9.5833,
+                23.3333
+              ],
+              [
+                9.6354,
+                22.9167
+              ],
+              [
+                9.6875,
+                22.5
+              ],
+              [
+                9.7396,
+                22.0833
+              ],
+              [
+                9.7917,
+                21.6667
+              ],
+              [
+                9.8438,
+                21.25
+              ],
+              [
+                9.8958,
+                20.8333
+              ],
+              [
+                9.9479,
+                20.4167
+              ],
+              [
+                10.0,
+                20.0
+              ],
+              [
+                10.0521,
+                19.5833
+              ],
+              [
+                10.1042,
+                19.1667
+              ],
+              [
+                10.1562,
+                18.75
+              ],
+              [
+                10.2083,
+                18.3333
+              ],
+              [
+                10.2604,
+                17.9167
+              ],
+              [
+                10.3125,
+                17.5
+              ],
+              [
+                10.3646,
+                17.0833
+              ],
+              [
+                10.4167,
+                16.6667
+              ],
+              [
+                10.4688,
+                16.25
+              ],
+              [
+                10.5208,
+                15.8333
+              ],
+              [
+                10.5729,
+                15.4167
+              ],
+              [
+                10.625,
+                15.0
+              ],
+              [
+                10.6771,
+                14.5833
+              ],
+              [
+                10.7292,
+                14.1667
+              ],
+              [
+                10.7812,
+                13.75
+              ],
+              [
+                10.8333,
+                13.3333
+              ],
+              [
+                10.8854,
+                12.9167
+              ],
+              [
+                10.9375,
+                12.5
+              ],
+              [
+                10.9896,
+                12.0833
+              ],
+              [
+                11.0417,
+                11.6667
+              ],
+              [
+                11.0938,
+                11.25
+              ],
+              [
+                11.1458,
+                10.8333
+              ],
+              [
+                11.1979,
+                10.4167
+              ],
+              [
+                11.25,
+                10.0
+              ],
+              [
+                11.3021,
+                9.5833
+              ],
+              [
+                11.3542,
+                9.1667
+              ],
+              [
+                11.4062,
+                8.75
+              ],
+              [
+                11.4583,
+                8.3333
+              ],
+              [
+                11.5104,
+                7.9167
+              ],
+              [
+                11.5625,
+                7.5
+              ],
+              [
+                11.6146,
+                7.0833
+              ],
+              [
+                11.6667,
+                6.6667
+              ],
+              [
+                11.7188,
+                6.25
+              ],
+              [
+                11.7708,
+                5.8333
+              ],
+              [
+                11.8229,
+                5.4167
+              ],
+              [
+                11.875,
+                5.0
+              ],
+              [
+                11.9271,
+                4.5833
+              ],
+              [
+                11.9792,
+                4.1667
+              ],
+              [
+                12.0312,
+                3.75
+              ],
+              [
+                12.0833,
+                3.3333
+              ],
+              [
+                12.1354,
+                2.9167
+              ],
+              [
+                12.1875,
+                2.5
+              ],
+              [
+                12.2396,
+                2.0833
+              ],
+              [
+                12.2917,
+                1.6667
+              ],
+              [
+                12.3438,
+                1.25
+              ],
+              [
+                12.3958,
+                0.8333
+              ],
+              [
+                12.4479,
+                0.4167
+              ],
+              [
+                12.5,
+                0.0
+              ]
+            ],
+            "color": "#6366f1",
+            "strokeWidth": 2.5
+          },
+          {
+            "type": "text",
+            "coord": [
+              7.75,
+              92.0
+            ],
+            "text": "V(t)=100-8t",
+            "color": "#6366f1",
+            "anchor": "start"
+          }
+        ]
+      },
+      "fingerprint": "t02-c03-u02-decrease-rate-sign-trap|reverse|Relate water volume to elapsed hours and solve for the target volume time.",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 7,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c03-u02-decrease-rate-sign-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 21
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 2 - Standard Exam"
+    }
+  ],
+  "drillId": "DRL-MTH-T02-C03-U02-01",
+  "title": "Modeling with Linear Functions — Verified Math Drill (4 Qs)",
+  "topicCode": "MTH-T02",
+  "chapterCode": "MTH-T02-C03",
+  "schemaVersion": "2.0-math",
+  "createdAt": "2026-11-17 04:51:53",
+  "config": {
+    "questionCount": 4,
+    "difficulty": "ALL",
+    "difficultyMode": "AI Synthesized Reasoning Mode"
+  },
+  "localFilePath": "drills/data/MTH-T02-C03-U02/DRL-MTH-T02-C03-U02-01.json"
+}

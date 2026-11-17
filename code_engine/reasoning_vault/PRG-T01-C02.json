@@ -790,6 +790,582 @@
           }
         }
       ]
+    },
+    {
+      "archetypeKey": "prg-t01-c02-u05-preserve-generic-relationships",
+      "unitCode": "PRG-T01-C02-U05",
+      "level": 1,
+      "archetype": "problem-solving",
+      "name": "Preserve Generic Input and Output Relationships",
+      "competencies": [
+        "typescript",
+        "component-design",
+        "type-safety"
+      ],
+      "coreConcept": "A useful generic type parameter captures a concrete caller type and carries it through a reusable function's inputs and outputs.",
+      "mentalModel": [
+        "1. Let the call site's values provide evidence for a type parameter.",
+        "2. Reuse that parameter in the public contract wherever the same type relationship must hold.",
+        "3. Keep the returned type specific enough for callers to use without assertions."
+      ],
+      "governingInvariant": "The public signature preserves the input/output relationship that callers rely on instead of widening useful results to unknown or a broad record type.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "widen-generic-result",
+          "name": "Widening a Useful Result",
+          "description": "A generic input is accepted, but the return type is widened so callers lose the concrete type captured at the call site.",
+          "reproducer": "Pass an array of a domain union to a reusable selector and verify the result still has that union type plus the empty-case value."
+        },
+        {
+          "trapTag": "generic-parameter-used-once",
+          "name": "Using a Type Parameter Without a Relationship",
+          "description": "A type parameter appears only once and adds no caller-visible relationship, making the signature look more precise than it is.",
+          "reproducer": "Replace a generic formatting helper's parameter with unknown and verify that its accepted inputs and return contract do not change."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "invoice_field_projection",
+          "description": "Project a typed field from invoice rows while preserving the selected field's value type."
+        },
+        {
+          "domain": "delivery_state_selector",
+          "description": "Select the first state from a typed notification queue while modeling the empty case."
+        }
+      ],
+      "source": "TypeScript Handbook — Generics: https://www.typescriptlang.org/docs/handbook/2/generics.html",
+      "usedContexts": [
+        "warehouse_restock_queue",
+        "shipment_status_projection"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-generic-relationship",
+          "check": "Public generic signatures preserve a caller-visible relationship between input and output types instead of widening the result unnecessarily.",
+          "why": "Callers lose compile-time guarantees when a reusable helper discards the specific type inferred from its arguments.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function first<T>(items: readonly T[]): unknown { return items[0]; }",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-generic-parameter-earned",
+          "check": "Each type parameter contributes a useful relationship among parameters, properties, callbacks, or the return type.",
+          "why": "An unused type parameter adds apparent complexity without improving what callers can safely do.",
+          "severity": "should",
+          "knownBad": {
+            "code": "function formatValue<T>(value: T): string { return String(value); }",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "prg-t01-c02-u05-constrained-key-access",
+      "unitCode": "PRG-T01-C02-U05",
+      "level": 2,
+      "archetype": "refactoring",
+      "name": "Constrain Reusable Property Access",
+      "competencies": [
+        "typescript",
+        "type-safety",
+        "component-design"
+      ],
+      "coreConcept": "Generic constraints state the minimum capabilities an implementation needs, and key constraints connect a selected property to its corresponding value type.",
+      "mentalModel": [
+        "1. Identify the property capability the implementation actually uses.",
+        "2. Express that capability as a constraint without imposing unrelated domain requirements.",
+        "3. When a caller supplies a key, restrict it to keys of the input and derive the result from that key."
+      ],
+      "governingInvariant": "A generic operation reads only properties guaranteed by its constraint and preserves the selected property's type for valid keys.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "arbitrary-string-key",
+          "name": "Accepting an Arbitrary String as a Key",
+          "description": "A generic field helper accepts keys that are not known to exist on the input and hides the lost relationship behind unknown or a broad lookup.",
+          "reproducer": "Call the helper with a valid numeric field and then a misspelled key; the valid call should retain its numeric result type and the misspelling should be rejected."
+        },
+        {
+          "trapTag": "overconstrained-domain",
+          "name": "Adding an Unneeded Domain Constraint",
+          "description": "A reusable helper requires a specific identifier shape even though its implementation uses no identifier and could support other valid domain values.",
+          "reproducer": "Pass both a string-keyed and number-keyed record to a helper that only returns the original record; both should satisfy the intended contract."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "catalog_field_reader",
+          "description": "Read a chosen typed field from catalog entries without accepting keys that are absent from the entry shape."
+        },
+        {
+          "domain": "generic_page_adapter",
+          "description": "Adapt pages with different item types while preserving the item and cursor types used by each caller."
+        }
+      ],
+      "source": "TypeScript Handbook — Generics and keyof types: https://www.typescriptlang.org/docs/handbook/2/generics.html",
+      "usedContexts": [
+        "carrier_manifest_snapshot",
+        "invoice_field_inspector"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-generic-constraint",
+          "check": "Constraints guarantee every member the implementation reads, while accepting all domain inputs covered by the stated contract.",
+          "why": "An insufficient constraint forces unsafe access; an unnecessarily narrow constraint rejects valid callers and makes a reusable helper brittle.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function keep<T extends { id: string }>(record: T): T { return record; }",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-generic-key-value-link",
+          "check": "A key parameter is restricted to properties of its input, and the result type remains tied to the selected property's value type.",
+          "why": "A broad string key or unknown result lets misspellings through and makes callers cast values the function could have typed precisely.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function readField<T extends object>(record: T, key: string): unknown { return Object.getOwnPropertyDescriptor(record, key)?.value; }",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "prg-t01-c02-u06-derive-safe-dtos",
+      "unitCode": "PRG-T01-C02-U06",
+      "level": 1,
+      "archetype": "problem-solving",
+      "name": "Derive Create and Update DTOs Safely",
+      "competencies": [
+        "typescript",
+        "type-safety",
+        "architecture"
+      ],
+      "coreConcept": "Utility types derive request and response shapes from a canonical domain type so field names and value types stay synchronized while operation-specific rules exclude or relax only the intended fields.",
+      "mentalModel": [
+        "1. Start from the canonical domain entity rather than duplicating its fields.",
+        "2. Remove server-managed fields from create and update contracts.",
+        "3. Make only the editable update fields optional; Partial is shallow unless a nested patch is designed separately."
+      ],
+      "governingInvariant": "Create and update DTOs remain derived from the source entity, and an update patch never admits server-managed identity or creation fields.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "partial-keeps-managed-fields",
+          "name": "Making Managed Fields Optional Instead of Excluding Them",
+          "description": "Partial<T> makes every source property optional, including identifiers and server-owned timestamps, so those fields remain assignable in an update payload.",
+          "reproducer": "Build an update patch for a record with id, createdAt, title, and price; verify that id and createdAt are not accepted as editable patch properties."
+        },
+        {
+          "trapTag": "partial-is-shallow",
+          "name": "Treating Partial as Deep",
+          "description": "Partial<T> makes only top-level properties optional; a nested object that is included must still satisfy its declared shape.",
+          "reproducer": "Use a nested address object with required fields and confirm that an update contract does not accidentally accept a partial address unless a nested patch type is explicitly defined."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "catalog_product_requests",
+          "description": "Derive create and update request DTOs from product records while preventing changes to generated identifiers and creation timestamps."
+        },
+        {
+          "domain": "account_profile_patch",
+          "description": "Model a profile patch that permits editable top-level fields and makes nested update policy explicit."
+        }
+      ],
+      "source": "TypeScript Handbook — Utility Types: https://www.typescriptlang.org/docs/handbook/utility-types.html",
+      "usedContexts": [
+        "catalog_product_patch_payload",
+        "member_profile_patch_boundary"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-dto-derived-source",
+          "check": "Create and update DTO properties derive from the canonical domain type so source fields and value types do not drift across duplicated interfaces.",
+          "why": "Duplicated field lists can silently fall out of sync when the domain model changes.",
+          "severity": "must",
+          "knownBad": {
+            "code": "type Product = { id: string; createdAt: string; name: string; price: number }; type CreateProduct = { name: string; price: number };",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-patch-excludes-managed-fields",
+          "check": "Update payloads exclude server-managed identity and creation fields instead of merely making every source property optional.",
+          "why": "A partial update must not let callers overwrite values owned by persistence or server-side creation.",
+          "severity": "must",
+          "knownBad": {
+            "code": "type Product = { id: string; createdAt: string; name: string; price: number }; type ProductPatch = Partial<Product>;",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-partial-nesting-policy",
+          "check": "Nested update behavior is explicit; Partial is treated as a top-level transformation unless a separate nested patch contract is defined.",
+          "why": "Assuming recursive optionality can make nested replacements incomplete or ambiguous.",
+          "severity": "should",
+          "knownBad": {
+            "code": "type Profile = { name: string; preferences: { email: boolean; sms: boolean } }; type ProfilePatch = Partial<Profile>;",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "prg-t01-c02-u06-exhaustive-record-maps",
+      "unitCode": "PRG-T01-C02-U06",
+      "level": 2,
+      "archetype": "problem-solving",
+      "name": "Build Exhaustive Maps from Finite Key Unions",
+      "competencies": [
+        "typescript",
+        "type-safety",
+        "data-handling"
+      ],
+      "coreConcept": "Record<KeyUnion, Value> constructs a map whose key space is the declared finite union and whose values share the specified type.",
+      "mentalModel": [
+        "1. Define the finite set of domain keys as a literal union.",
+        "2. Use the union as Record keys so every member must be represented.",
+        "3. Keep the value type tied to the map contract and update the map when the union grows."
+      ],
+      "governingInvariant": "A map for a finite domain union contains every declared key with a value that satisfies the domain value contract.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "partial-record-hides-missing-key",
+          "name": "Making an Exhaustive Map Partial",
+          "description": "Partial<Record<K, V>> allows a key from the finite union to be absent, hiding missing labels or handlers.",
+          "reproducer": "Extend a status union with one member and verify that the label map is forced to provide its entry."
+        },
+        {
+          "trapTag": "string-record-widens-domain",
+          "name": "Replacing a Finite Key Set with Arbitrary Strings",
+          "description": "Record<string, V> accepts keys outside the domain union and loses compile-time protection when domain values change.",
+          "reproducer": "Pass a map with a misspelled status key and verify the declared finite key contract rejects it."
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "order_status_labels",
+          "description": "Map each supported order status to a user-facing label used by an operations dashboard."
+        },
+        {
+          "domain": "shipment_event_handlers",
+          "description": "Associate every event kind in a finite transport event union with a typed handler."
+        }
+      ],
+      "source": "TypeScript Handbook — Utility Types: https://www.typescriptlang.org/docs/handbook/utility-types.html",
+      "usedContexts": [
+        "order_status_badge_registry",
+        "shipment_status_label_refactor"
+      ],
+      "qualityChecks": [
+        {
+          "id": "QC-record-union-exhaustive",
+          "check": "A Record keyed by a finite domain union represents every union member and does not make required entries optional.",
+          "why": "Missing map entries otherwise surface later as undefined labels or unhandled cases.",
+          "severity": "must",
+          "knownBad": {
+            "code": "type OrderStatus = \"pending\" | \"paid\" | \"shipped\"; type StatusLabels = Partial<Record<OrderStatus, string>>;",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-record-key-domain",
+          "check": "The map key type stays tied to the declared domain union instead of widening to arbitrary strings.",
+          "why": "A finite key contract rejects misspelled or unsupported values and keeps call sites aligned with the domain.",
+          "severity": "must",
+          "knownBad": {
+            "code": "type OrderStatus = \"pending\" | \"paid\" | \"shipped\"; type StatusLabels = Record<string, string>;",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "prg-t01-c02-u07-explicit-result-variants",
+      "unitCode": "PRG-T01-C02-U07",
+      "level": 1,
+      "archetype": "problem-solving",
+      "name": "Explicit Result Variants and Safe Narrowing",
+      "competencies": [
+        "discriminated-unions",
+        "literal-discriminants",
+        "safe-member-access"
+      ],
+      "coreConcept": "Represent mutually exclusive API outcomes as separate object variants with one shared literal field, then narrow by that field before using variant-specific data.",
+      "mentalModel": [
+        "1. Each object variant describes one valid outcome and the data that outcome owns.",
+        "2. The common literal field identifies which outcome arrived.",
+        "3. A branch on that field narrows the whole object before reading its payload."
+      ],
+      "governingInvariant": "A member-specific field is read only after the shared literal discriminant has narrowed the value to the variant that declares it.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "optional-property-bag-state",
+          "name": "Optional Property Bag for Exclusive Outcomes",
+          "description": "One object with a broad string state and optional success/error payloads permits contradictory combinations that do not correspond to any valid outcome.",
+          "reproducer": "type Result = { state: string; value?: Invoice; message?: string };"
+        },
+        {
+          "trapTag": "un-narrowed-union-member-access",
+          "name": "Reading Payload Before Narrowing",
+          "description": "Reading a field that exists on only one result variant before checking the discriminant assumes that every result carries that field.",
+          "reproducer": "function valueOf(result: Result) { return result.value; }"
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "shipment_tracking_result",
+          "description": "Represent a shipment lookup that may be loading, found, or not found, with state-specific data."
+        },
+        {
+          "domain": "catalog_import_outcome",
+          "description": "Represent accepted and rejected rows from a catalog import with distinct payloads."
+        }
+      ],
+      "usedContexts": [
+        "catalog_import_outcome",
+        "media_playback_status"
+      ],
+      "source": "TypeScript Handbook: Narrowing — Discriminated Unions",
+      "qualityChecks": [
+        {
+          "id": "QC-prg-t01-c02-u07-discriminant-narrowing",
+          "check": "Read a member-specific field only after a valid literal discriminant or equivalent guard narrows the union to the member that declares the field.",
+          "why": "A union guarantees one declared member is present, not that every variant-specific payload exists.",
+          "severity": "must",
+          "knownBad": {
+            "code": "type ShipmentResult = { kind: 'found'; trackingCode: string } | { kind: 'missing'; reason: string };\nfunction label(result: ShipmentResult): string { return result.trackingCode; }",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-prg-t01-c02-u07-no-optional-outcome-bag",
+          "check": "Represent mutually exclusive outcomes as separate union members instead of unrelated optional payload fields on a broad object.",
+          "why": "Separate variants prevent impossible combinations and let the compiler describe the payload available in each state.",
+          "severity": "should",
+          "knownBad": {
+            "code": "type ImportResult = { state: string; acceptedRows?: number; rejectionReason?: string };",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "prg-t01-c02-u07-exhaustive-result-handlers",
+      "unitCode": "PRG-T01-C02-U07",
+      "level": 2,
+      "archetype": "refactoring",
+      "name": "Exhaustive Result Handlers with Never",
+      "competencies": [
+        "discriminated-unions",
+        "switch-narrowing",
+        "never-exhaustiveness"
+      ],
+      "coreConcept": "Handle every declared result variant explicitly and make a newly added variant visible at the handler boundary through a never-typed remainder.",
+      "mentalModel": [
+        "1. Branch on the shared literal discriminant.",
+        "2. Give each current variant behavior that matches its contract.",
+        "3. Pass the remaining value to an assertNever helper so a future variant fails compilation until handled."
+      ],
+      "governingInvariant": "A handler covers every declared discriminant value; when exhaustive handling is required, its default remainder has type never.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "silent-nonexhaustive-default",
+          "name": "Silent Unknown-State Fallback",
+          "description": "A broad default branch silently routes a newly added outcome to generic behavior instead of forcing an explicit decision.",
+          "reproducer": "default: return 'Unknown';"
+        },
+        {
+          "trapTag": "missing-union-member-branch",
+          "name": "Omitted Current Variant",
+          "description": "Leaving a currently declared variant out of a handler causes it to fall through or receive unrelated behavior.",
+          "reproducer": "switch (result.kind) { case 'queued': return 'Waiting'; default: return assertNever(result); }"
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "inventory_lifecycle_reducer",
+          "description": "Update inventory review, approval, and release states through a reducer that must handle every action."
+        },
+        {
+          "domain": "document_review_handler",
+          "description": "Render queued, approved, rejected, and withdrawn document review events."
+        }
+      ],
+      "usedContexts": [
+        "permit_approval_workflow",
+        "support_case_lifecycle"
+      ],
+      "source": "TypeScript Handbook: Narrowing — Exhaustiveness Checking",
+      "qualityChecks": [
+        {
+          "id": "QC-prg-t01-c02-u07-exhaustive-result-handler",
+          "check": "Provide behavior for every current discriminant member and avoid routing a new domain member through a generic fallback.",
+          "why": "Each new state may need distinct business behavior; a generic default can make the type model and behavior diverge.",
+          "severity": "must",
+          "knownBad": {
+            "code": "type Review = { kind: 'queued' } | { kind: 'approved' } | { kind: 'rejected' };\nfunction label(review: Review): string { switch (review.kind) { case 'queued': return 'Waiting'; case 'approved': return 'Done'; default: return 'Other'; } }",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-prg-t01-c02-u07-never-remainder",
+          "check": "Use a never-typed remainder or equivalent compile-time check when the handler contract requires exhaustive coverage.",
+          "why": "When a new union member is added, the remainder ceases to be never and points to the exact handler that needs an update.",
+          "severity": "should",
+          "knownBad": {
+            "code": "function assertNever(value: never): never { throw new Error(String(value)); }\nfunction label(review: Review): string { switch (review.kind) { case 'queued': return 'Waiting'; default: return assertNever(review); } }",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "prg-t01-c02-u08-strict-nullable-boundaries",
+      "unitCode": "PRG-T01-C02-U08",
+      "level": 1,
+      "archetype": "debugging",
+      "name": "Strict Nullable Boundaries",
+      "competencies": [
+        "strict-null-checks",
+        "nullable-unions",
+        "guarded-access"
+      ],
+      "coreConcept": "With strict null checking, represent absence in the type and narrow `null` or `undefined` before using a value that may be absent.",
+      "mentalModel": [
+        "1. Treat `null` and `undefined` as distinct values rather than assuming they fit every type.",
+        "2. Include an absence value in the type only when the contract allows it.",
+        "3. Check for the absence case before using the remaining value."
+      ],
+      "governingInvariant": "A value is used as present only after a guard has removed every allowed absence case from its type.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "non-null-assertion-hides-absence",
+          "name": "Non-null Assertion Hides a Missing Value",
+          "description": "A postfix non-null assertion suppresses the compiler warning but does not add a runtime check, so missing data can still throw.",
+          "reproducer": "function label(name: string | null): string { return name!.trim(); }"
+        },
+        {
+          "trapTag": "null-and-undefined-conflated",
+          "name": "Null and Undefined Are Not Interchangeable",
+          "description": "A contract that permits only one absence value should not silently treat the other as present or valid data.",
+          "reproducer": "const value: string | null = undefined;"
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "member_contact_card",
+          "description": "Format a profile field that may be explicitly null when a member has no verified contact detail."
+        },
+        {
+          "domain": "shipment_delivery_note",
+          "description": "Format an optional delivery note while handling missing values without unsafe assertions."
+        }
+      ],
+      "usedContexts": [
+        "member_contact_card"
+      ],
+      "source": "TypeScript Handbook: tsconfig Reference — strictNullChecks",
+      "qualityChecks": [
+        {
+          "id": "QC-prg-t01-c02-u08-guard-nullable-value",
+          "check": "Before using a value that may be null or undefined, narrow every absence case permitted by its declared type or return a deliberate absence result.",
+          "why": "A type check cannot guarantee presence when the value contract still includes an absence case.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function contactLabel(email: string | null): string { return email.trim(); }",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-prg-t01-c02-u08-no-unsafe-non-null-assertion",
+          "check": "Do not use a non-null assertion to silence a missing-value path when the function contract allows the value to be absent.",
+          "why": "The assertion changes the compiler view but leaves the runtime value unchanged.",
+          "severity": "should",
+          "knownBad": {
+            "code": "function contactLabel(email: string | undefined): string { return email!.trim(); }",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "prg-t01-c02-u08-checked-index-access",
+      "unitCode": "PRG-T01-C02-U08",
+      "level": 2,
+      "archetype": "debugging",
+      "name": "Checked Array and Record Access",
+      "competencies": [
+        "no-unchecked-indexed-access",
+        "array-bounds",
+        "record-key-presence"
+      ],
+      "coreConcept": "An array index or open index-signature lookup may not find a value; `noUncheckedIndexedAccess` exposes that possibility as `undefined` so the code must handle it.",
+      "mentalModel": [
+        "1. A numeric index or open record key does not prove an entry exists.",
+        "2. Handle `undefined` before using the retrieved value.",
+        "3. Preserve empty string, zero, or false when present; only absence takes the missing-value path."
+      ],
+      "governingInvariant": "An indexed value is used only after its presence is established; a present falsy value is not treated as missing.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "assumed-index-presence",
+          "name": "Assumed Array or Record Entry",
+          "description": "Treating an indexed lookup as definitely present makes an empty collection or missing key trigger a runtime error.",
+          "reproducer": "function firstLabel(labels: readonly string[]): string { return labels[0].trim(); }"
+        },
+        {
+          "trapTag": "strict-excludes-index-checks",
+          "name": "Assuming Strict Includes Unchecked Index Checks",
+          "description": "The `strict` family does not automatically enable `noUncheckedIndexedAccess`, so an unchecked lookup may still be typed as present.",
+          "reproducer": "{\"compilerOptions\":{\"strict\":true}} // indexed reads still require presence handling"
+        },
+        {
+          "trapTag": "preserve-present-falsy-values",
+          "name": "A Present Empty String Is Still Present",
+          "description": "Using truthiness to test an indexed string conflates a present empty string with an absent key and silently changes valid data into the missing-value result.",
+          "reproducer": "function readNote(notes: Record<string, string>, key: string): string | undefined { const note = notes[key]; return note ? note.trim() : undefined; }"
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "feature_flag_dictionary",
+          "description": "Read a named rollout flag where a key may not be present and false is a valid configured value."
+        },
+        {
+          "domain": "search_keyword_list",
+          "description": "Read a first keyword from a result list that can be empty."
+        }
+      ],
+      "usedContexts": [
+        "feature_flag_dictionary",
+        "search_keyword_list",
+        "typescript_config_migration"
+      ],
+      "source": "TypeScript Handbook: tsconfig Reference — noUncheckedIndexedAccess",
+      "qualityChecks": [
+        {
+          "id": "QC-prg-t01-c02-u08-guard-indexed-read",
+          "check": "Check that an array or index-signature lookup found a value before calling value-specific methods or returning it as definitely present.",
+          "why": "Valid indexes and open record keys can be absent at runtime even when the container itself exists.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function firstKeyword(words: readonly string[]): string { return words[0].trim(); }",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-prg-t01-c02-u08-preserve-present-falsy-values",
+          "check": "Distinguish a missing indexed value from a present empty string, zero, or false rather than using truthiness as the presence test.",
+          "why": "Falsy values can be legitimate data and must not be replaced with a missing-value fallback.",
+          "severity": "should",
+          "knownBad": {
+            "code": "function flagValue(flags: Record<string, boolean>, key: string): boolean { return flags[key] || true; }",
+            "caughtBy": "review"
+          }
+        }
+      ]
     }
   ]
 }

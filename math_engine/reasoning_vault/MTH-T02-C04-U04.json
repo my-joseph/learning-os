@@ -1,0 +1,76 @@
+{
+  "unitCode": "MTH-T02-C04-U04",
+  "archetypes": [
+    {
+      "unitCode": "MTH-T02-C04-U04",
+      "archetypeKey": "t02-c04-u04-long-divide-polynomial",
+      "level": 1,
+      "name": "Divide Polynomials by Long Division",
+      "source": "OpenStax Algebra and Trigonometry 2e §5.4 — Dividing Polynomials",
+      "coreConcept": "Polynomial long division repeatedly cancels the current leading term, then subtracts and brings down the next term until the remainder has lower degree than the divisor.",
+      "mentalModel": "Each quotient term removes one leading-term mismatch; writing every degree column keeps like terms aligned and subtraction must act on the entire product row.",
+      "governingRelation": "dividend = divisor × quotient + remainder; degree(remainder) < degree(divisor) or remainder = 0",
+      "cognitiveTraps": [
+        {"trapTag": "t02-c04-u04-long-division-subtraction-sign-trap", "description": "Failing to distribute subtraction to every term in the product row.", "trapFormula": "A-(B+C)=A-B+C"},
+        {"trapTag": "t02-c04-u04-omit-zero-degree-placeholder-trap", "description": "Leaving out a missing degree column so later coefficients shift into the wrong powers.", "trapFormula": "x^3+2x-1 -> [1,2,-1]"},
+        {"trapTag": "t02-c04-u04-stop-before-remainder-trap", "description": "Stopping while the residual polynomial still has degree at least that of the divisor.", "trapFormula": "deg(r) >= deg(d)"}
+      ],
+      "versatileDomains": ["polynomial simplification", "volume models", "rational expressions"],
+      "usedContexts": [],
+      "figureNone": "The skill is symbolic polynomial manipulation; a figure would not clarify the coefficient alignment or subtraction."
+    },
+    {
+      "unitCode": "MTH-T02-C04-U04",
+      "archetypeKey": "t02-c04-u04-check-division-algorithm",
+      "level": 2,
+      "name": "Check a Quotient and Remainder",
+      "source": "OpenStax Algebra and Trigonometry 2e §5.4 — Dividing Polynomials",
+      "coreConcept": "The quotient and remainder are correct exactly when multiplying the divisor by the quotient and adding the remainder reconstructs the dividend, with a remainder degree below the divisor's degree.",
+      "mentalModel": "Treat division as a reversible decomposition: multiply back, add the remainder, and verify both the identity and the remainder-degree condition.",
+      "governingRelation": "f(x)=d(x)q(x)+r(x), with r(x)=0 or degree(r)<degree(d)",
+      "cognitiveTraps": [
+        {"trapTag": "t02-c04-u04-forget-remainder-in-reconstruction-trap", "description": "Checking divisor times quotient but omitting the nonzero remainder.", "trapFormula": "f=dq instead of f=dq+r"},
+        {"trapTag": "t02-c04-u04-remainder-degree-bound-trap", "description": "Accepting a remainder whose degree is not lower than the divisor's degree.", "trapFormula": "deg(r) >= deg(d)"}
+      ],
+      "versatileDomains": ["algebra verification", "factor checks", "rational expressions"],
+      "usedContexts": [],
+      "figureNone": "The division identity and degree condition are checked algebraically without a meaningful visual representation."
+    },
+    {
+      "unitCode": "MTH-T02-C04-U04",
+      "archetypeKey": "t02-c04-u04-synthetic-divide-linear-factor",
+      "level": 1,
+      "name": "Use Synthetic Division for x−k",
+      "source": "OpenStax Algebra and Trigonometry 2e §5.4 — Dividing Polynomials",
+      "coreConcept": "Synthetic division is a compact coefficient-only form for dividing by a monic linear divisor x−k; the final entry is the remainder.",
+      "mentalModel": "The divisor determines k with its sign reversed from the constant term; bring down the leading coefficient, then alternate multiplying by k and adding.",
+      "governingRelation": "divisor=x-k; synthetic input=k; bottom-row coefficients form q(x), final entry r",
+      "cognitiveTraps": [
+        {"trapTag": "t02-c04-u04-synthetic-sign-reversal-trap", "description": "Using the constant in x−k directly instead of its opposite as the synthetic input k.", "trapFormula": "x+4 -> k=4"},
+        {"trapTag": "t02-c04-u04-synthetic-missing-coefficient-trap", "description": "Omitting a zero coefficient for an absent power and shifting the remaining entries.", "trapFormula": "x^4+2x^2+1 -> [1,0,2,0,1]"},
+        {"trapTag": "t02-c04-u04-read-remainder-as-quotient-coefficient-trap", "description": "Treating the final synthetic-division entry as another quotient coefficient instead of the remainder.", "trapFormula": "last entry -> coefficient of x^0 in q"}
+      ],
+      "versatileDomains": ["factor testing", "polynomial simplification", "remainder checks"],
+      "usedContexts": [],
+      "figureNone": "Synthetic division is a coefficient algorithm; a diagram would not improve understanding beyond the aligned computation."
+    },
+    {
+      "unitCode": "MTH-T02-C04-U04",
+      "archetypeKey": "t02-c04-u04-reconstruct-dividend-from-division",
+      "level": 2,
+      "name": "Reconstruct a Dividend from Division Data",
+      "source": "OpenStax Algebra and Trigonometry 2e §5.4 — Dividing Polynomials",
+      "coreConcept": "Given a divisor, quotient, and remainder, the original dividend is recovered by multiplying the first two and adding the remainder.",
+      "mentalModel": "Reverse the division algorithm one operation at a time, preserving every term of the remainder and checking the resulting degree.",
+      "governingRelation": "f(x)=d(x)q(x)+r(x)",
+      "cognitiveTraps": [
+        {"trapTag": "t02-c04-u04-remainder-subtract-instead-trap", "description": "Subtracting the remainder when reconstructing the dividend instead of adding it.", "trapFormula": "f=dq-r"},
+        {"trapTag": "t02-c04-u04-multiply-only-leading-terms-trap", "description": "Multiplying only the leading terms of divisor and quotient and omitting cross terms.", "trapFormula": "(x+a)(x+b) -> x^2+ab"},
+        {"trapTag": "t02-c04-u04-forget-remainder-in-reconstruction-trap", "description": "Reconstructing the dividend from divisor and quotient but omitting the stated remainder.", "trapFormula": "f=dq instead of f=dq+r"}
+      ],
+      "versatileDomains": ["algebraic verification", "polynomial models"],
+      "usedContexts": [],
+      "figureNone": "The inverse calculation is an exact symbolic identity, so a figure would not add information."
+    }
+  ]
+}

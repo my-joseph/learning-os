@@ -1,0 +1,378 @@
+{
+  "unitCode": "PRG-T01-C03-U05",
+  "unitTitle": "Linked Lists & Pointer Manipulation",
+  "environment": "typescript-strict",
+  "sourceAttribution": "TypeScript Handbook (TypeScript 5.9.3): strict null checks and narrowing. https://www.typescriptlang.org/docs/handbook/intro.html",
+  "config": {
+    "questionCount": 4,
+    "difficulty": "ALL",
+    "difficultyMode": "AI Synthesized Engineering Mode"
+  },
+  "problems": [
+    {
+      "id": "Q01",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "codeType": "implement",
+      "form": "direct",
+      "archetypeKey": "prg-c03-u05-singly-list-boundaries",
+      "commonTrapTag": "empty-to-singleton-links",
+      "context": "event_queue_buffers",
+      "entryPoint": "SinglyLinkedList",
+      "prompt": "**Objective:** Implement `SinglyLinkedList<T>` for an event buffer that accepts ordered records and removes the oldest record.\n\n**Requirements:**\n- Provide `append(value)`, `removeFirst()`, `toArray()`, and a read-only `length` property.\n- `removeFirst()` returns the removed value, or `undefined` when the list is empty.\n- Preserve insertion order and support repeated operations after the list becomes empty.\n- Treat payloads as values; do not modify caller-owned objects.\n\n**Return contract:** `append` returns `void`; `removeFirst` returns `T | undefined`; `toArray` returns the active values in order. Empty input is a valid state.",
+      "inputHint": "Implement the documented linked-list behavior and preserve the values supplied by the caller.",
+      "checkpointHint": "Check the transition after the last reachable value is removed.",
+      "starterCode": "type QueueNode<T> = { value: T; next: QueueNode<T> | null };\nexport class SinglyLinkedList<T> {\n  private head: QueueNode<T> | null = null;\n  private tail: QueueNode<T> | null = null;\n  private count = 0;\n  get length(): number { return this.count; }\n  append(_value: T): void { throw new Error(\"Not implemented\"); }\n  removeFirst(): T | undefined { throw new Error(\"Not implemented\"); }\n  toArray(): T[] { throw new Error(\"Not implemented\"); }\n}",
+      "solutionCode": "type QueueNode<T> = { value: T; next: QueueNode<T> | null };\nexport class SinglyLinkedList<T> {\n  private head: QueueNode<T> | null = null;\n  private tail: QueueNode<T> | null = null;\n  private count = 0;\n  get length(): number { return this.count; }\n  append(value: T): void {\n    const node: QueueNode<T> = { value, next: null };\n    if (this.tail === null) { this.head = node; this.tail = node; }\n    else { this.tail.next = node; this.tail = node; }\n    this.count += 1;\n  }\n  removeFirst(): T | undefined {\n    if (this.head === null) return undefined;\n    const removed = this.head;\n    this.head = removed.next;\n    if (this.head === null) this.tail = null;\n    this.count -= 1;\n    return removed.value;\n  }\n  toArray(): T[] {\n    const values: T[] = [];\n    let cursor = this.head;\n    while (cursor !== null) { values.push(cursor.value); cursor = cursor.next; }\n    return values;\n  }\n}",
+      "trapMutant": "type QueueNode<T> = { value: T; next: QueueNode<T> | null };\nexport class SinglyLinkedList<T> {\n  private head: QueueNode<T> | null = null;\n  private tail: QueueNode<T> | null = null;\n  private count = 0;\n  get length(): number { return this.count; }\n  append(value: T): void {\n    const node: QueueNode<T> = { value, next: null };\n    if (this.tail === null) { this.head = node; this.tail = node; }\n    else { this.tail.next = node; this.tail = node; }\n    this.count += 1;\n  }\n  removeFirst(): T | undefined {\n    if (this.head === null) return undefined;\n    const removed = this.head;\n    this.head = removed.next;\n    \n    this.count -= 1;\n    return removed.value;\n  }\n  toArray(): T[] {\n    const values: T[] = [];\n    let cursor = this.head;\n    while (cursor !== null) { values.push(cursor.value); cursor = cursor.next; }\n    return values;\n  }\n}",
+      "visibleTests": [
+        {
+          "name": "empty collection exposes no values",
+          "testCode": "const list = new SinglyLinkedList<number>();\nassert.deepEqual(list.toArray(), []);\nassert.equal(list.length, 0);\nassert.equal(list.removeFirst(), undefined);"
+        },
+        {
+          "name": "append and remove preserve arrival order",
+          "testCode": "const list = new SinglyLinkedList<number>();\nlist.append(0); list.append(8);\nassert.equal(list.removeFirst(), 0);\nassert.deepEqual(list.toArray(), [8]);\nassert.equal(list.length, 1);"
+        },
+        {
+          "name": "record payloads remain unchanged",
+          "testCode": "const record = { event: 'queued', priority: 0 };\nconst list = new SinglyLinkedList<typeof record>();\nlist.append(record);\nassert.equal(list.removeFirst(), record);\nassert.deepEqual(record, { event: 'queued', priority: 0 });\nassert.equal(list.length, 0);"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "singleton removal can be followed by a fresh append",
+          "testCode": "const list = new SinglyLinkedList<number>();\nlist.append(4);\nassert.equal(list.removeFirst(), 4);\nlist.append(9);\nassert.deepEqual(list.toArray(), [9]);\nassert.equal(list.length, 1);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Trace reachability and endpoint changes before updating the list metadata."
+        },
+        {
+          "explain": "Check the observable sequence and boundary state after each operation."
+        }
+      ],
+      "verificationLevel": "partial",
+      "fingerprint": "empty-to-singleton-links|direct|SinglyLinkedList",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 2,
+          "hasTrapOrFlaw": false,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "empty-to-singleton-links",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 5
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Foundation",
+      "unitCode": "PRG-T01-C03-U05",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-U05-01/Q01_SinglyLinkedList.ts"
+    },
+    {
+      "id": "Q02",
+      "level": 1,
+      "category": "Trap & Edge Case",
+      "archetype": "problem-solving",
+      "codeType": "implement",
+      "form": "direct",
+      "archetypeKey": "prg-c03-u05-singly-list-boundaries",
+      "commonTrapTag": "stale-tail-after-removal",
+      "context": "device_registry_updates",
+      "entryPoint": "EndpointList",
+      "prompt": "**Objective:** Complete `EndpointList<T>` for a device registry that needs efficient removal of the newest item while retaining a forward-only node chain.\n\n**Requirements:**\n- Provide `append(value)`, `removeLast()`, `toArray()`, and a read-only `length` property.\n- `removeLast()` returns `undefined` for an empty list and otherwise returns the removed value.\n- Removing the only item must leave the collection ready for another append.\n- Removing from a longer list must leave every remaining value reachable in its original order.\n\n**Return contract:** `removeLast` returns `T | undefined`; `toArray` returns active values from oldest to newest. The list may be empty at any point.",
+      "inputHint": "Implement the documented linked-list behavior and preserve the values supplied by the caller.",
+      "checkpointHint": "After removing a boundary value, inspect the next append and the reported size.",
+      "starterCode": "type EndpointNode<T> = { value: T; next: EndpointNode<T> | null };\nexport class EndpointList<T> {\n  private head: EndpointNode<T> | null = null;\n  private tail: EndpointNode<T> | null = null;\n  private count = 0;\n  get length(): number { return this.count; }\n  append(_value: T): void { throw new Error(\"Not implemented\"); }\n  removeLast(): T | undefined { throw new Error(\"Not implemented\"); }\n  toArray(): T[] { throw new Error(\"Not implemented\"); }\n}",
+      "solutionCode": "type EndpointNode<T> = { value: T; next: EndpointNode<T> | null };\nexport class EndpointList<T> {\n  private head: EndpointNode<T> | null = null;\n  private tail: EndpointNode<T> | null = null;\n  private count = 0;\n  get length(): number { return this.count; }\n  append(value: T): void {\n    const node: EndpointNode<T> = { value, next: null };\n    if (this.tail === null) { this.head = node; this.tail = node; }\n    else { this.tail.next = node; this.tail = node; }\n    this.count += 1;\n  }\n  removeLast(): T | undefined {\n    if (this.tail === null) return undefined;\n    const removed = this.tail;\n    if (this.head === removed) { this.head = null; this.tail = null; }\n    else {\n      let cursor = this.head;\n      while (cursor !== null && cursor.next !== removed) cursor = cursor.next;\n      if (cursor === null) return undefined;\n      cursor.next = null;\n      this.tail = cursor;\n    }\n    this.count -= 1;\n    return removed.value;\n  }\n  toArray(): T[] {\n    const values: T[] = []; let cursor = this.head;\n    while (cursor !== null) { values.push(cursor.value); cursor = cursor.next; }\n    return values;\n  }\n}",
+      "trapMutant": "type EndpointNode<T> = { value: T; next: EndpointNode<T> | null };\nexport class EndpointList<T> {\n  private head: EndpointNode<T> | null = null;\n  private tail: EndpointNode<T> | null = null;\n  private count = 0;\n  get length(): number { return this.count; }\n  append(value: T): void {\n    const node: EndpointNode<T> = { value, next: null };\n    if (this.tail === null) { this.head = node; this.tail = node; }\n    else { this.tail.next = node; this.tail = node; }\n    this.count += 1;\n  }\n  removeLast(): T | undefined {\n    if (this.tail === null) return undefined;\n    const removed = this.tail;\n    if (this.head === removed) { this.head = null; }\n    else {\n      let cursor = this.head;\n      while (cursor !== null && cursor.next !== removed) cursor = cursor.next;\n      if (cursor === null) return undefined;\n      cursor.next = null;\n      this.tail = cursor;\n    }\n    this.count -= 1;\n    return removed.value;\n  }\n  toArray(): T[] {\n    const values: T[] = []; let cursor = this.head;\n    while (cursor !== null) { values.push(cursor.value); cursor = cursor.next; }\n    return values;\n  }\n}",
+      "visibleTests": [
+        {
+          "name": "remove from empty and multi-item collections",
+          "testCode": "const list = new EndpointList<string>();\nassert.equal(list.removeLast(), undefined);\nlist.append(\"sensor-a\"); list.append(\"sensor-b\");\nassert.equal(list.removeLast(), \"sensor-b\");\nassert.deepEqual(list.toArray(), [\"sensor-a\"]);\nassert.equal(list.length, 1);"
+        },
+        {
+          "name": "remove latest values repeatedly",
+          "testCode": "const list = new EndpointList<number>();\nlist.append(2); list.append(5); list.append(7);\nassert.equal(list.removeLast(), 7);\nassert.equal(list.removeLast(), 5);\nassert.deepEqual(list.toArray(), [2]);"
+        },
+        {
+          "name": "remove from a longer chain keeps earlier records reachable",
+          "testCode": "const list = new EndpointList<number>();\nlist.append(1); list.append(2); list.append(3);\nassert.equal(list.removeLast(), 3);\nlist.append(4);\nassert.deepEqual(list.toArray(), [1, 2, 4]);\nassert.equal(list.length, 3);"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "emptying by tail removal allows a later append",
+          "testCode": "const list = new EndpointList<number>();\nlist.append(3);\nassert.equal(list.removeLast(), 3);\nlist.append(6);\nassert.deepEqual(list.toArray(), [6]);\nassert.equal(list.length, 1);\nassert.equal(list.removeLast(), 6);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Trace reachability and endpoint changes before updating the list metadata."
+        },
+        {
+          "explain": "Check the observable sequence and boundary state after each operation."
+        }
+      ],
+      "verificationLevel": "partial",
+      "fingerprint": "stale-tail-after-removal|direct|EndpointList",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "stale-tail-after-removal",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 5
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Foundation",
+      "unitCode": "PRG-T01-C03-U05",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-U05-01/Q02_EndpointList.ts"
+    },
+    {
+      "id": "Q03",
+      "level": 2,
+      "category": "Refactor & Design",
+      "archetype": "problem-solving",
+      "codeType": "implement",
+      "form": "direct",
+      "archetypeKey": "prg-c03-u05-doubly-list-link-symmetry",
+      "commonTrapTag": "one-sided-unlink",
+      "context": "playlist_order_editor",
+      "entryPoint": "DoublyList",
+      "prompt": "**Objective:** Implement `DoublyList<T>` for a playlist order editor that inserts and removes by index while supporting traversal in both directions.\n\n**Requirements:**\n- Provide `insertAt(index, value)`, `removeAt(index)`, `toArray()`, `toReverseArray()`, and a read-only `length` property.\n- Valid insertion indices range from zero through the current length; invalid indices leave the list unchanged.\n- Valid removal indices range from zero through `length - 1`; invalid removals return `undefined` and leave the list unchanged.\n- Each successful mutation updates both link directions and the relevant endpoint.\n\n**Return contract:** `insertAt` returns a boolean for success; `removeAt` returns the removed value or `undefined`. Both traversal methods return fresh arrays.",
+      "inputHint": "Implement the documented linked-list behavior and preserve the values supplied by the caller.",
+      "checkpointHint": "Compare the sequence reached from each endpoint after a middle-node change.",
+      "starterCode": "type PlaylistNode<T> = { value: T; next: PlaylistNode<T> | null; previous: PlaylistNode<T> | null };\nexport class DoublyList<T> {\n  private head: PlaylistNode<T> | null = null;\n  private tail: PlaylistNode<T> | null = null;\n  private count = 0;\n  get length(): number { return this.count; }\n  insertAt(_index: number, _value: T): boolean { throw new Error(\"Not implemented\"); }\n  removeAt(_index: number): T | undefined { throw new Error(\"Not implemented\"); }\n  toArray(): T[] { throw new Error(\"Not implemented\"); }\n  toReverseArray(): T[] { throw new Error(\"Not implemented\"); }\n}",
+      "solutionCode": "type PlaylistNode<T> = { value: T; next: PlaylistNode<T> | null; previous: PlaylistNode<T> | null };\nexport class DoublyList<T> {\n  private head: PlaylistNode<T> | null = null;\n  private tail: PlaylistNode<T> | null = null;\n  private count = 0;\n  get length(): number { return this.count; }\n  private nodeAt(index: number): PlaylistNode<T> | null {\n    let cursor = this.head;\n    for (let step = 0; step < index && cursor !== null; step += 1) cursor = cursor.next;\n    return cursor;\n  }\n  private linkBefore(node: PlaylistNode<T>, target: PlaylistNode<T>): void {\n    const added = node; const anchor = target; const previous = anchor.previous;\n    added.previous = previous; added.next = anchor; anchor.previous = added;\n    if (previous === null) this.head = added; else previous.next = added;\n  }\n  private linkAfterTail(node: PlaylistNode<T>): void {\n    const added = node;\n    if (this.tail === null) { this.head = added; this.tail = added; return; }\n    added.previous = this.tail; this.tail.next = added; this.tail = added;\n  }\n  insertAt(index: number, value: T): boolean {\n    if (!Number.isInteger(index) || index < 0 || index > this.count) return false;\n    const node: PlaylistNode<T> = { value, next: null, previous: null };\n    const target = this.nodeAt(index);\n    if (index === 0 && target !== null) this.linkBefore(node, target);\n    else if (target === null) this.linkAfterTail(node);\n    else this.linkBefore(node, target);\n    this.count += 1; return true;\n  }\n  private detach(node: PlaylistNode<T>): void {\n    const detached = node;\n    if (detached.previous === null) this.head = detached.next; else detached.previous.next = detached.next;\n    if (detached.next === null) this.tail = detached.previous; else detached.next.previous = detached.previous;\n    detached.next = null; detached.previous = null;\n  }\n  removeAt(index: number): T | undefined {\n    if (!Number.isInteger(index) || index < 0 || index >= this.count) return undefined;\n    const node = this.nodeAt(index); if (node === null) return undefined;\n    this.detach(node); this.count -= 1; return node.value;\n  }\n  toArray(): T[] { const out: T[] = []; let cursor = this.head; while (cursor !== null) { out.push(cursor.value); cursor = cursor.next; } return out; }\n  toReverseArray(): T[] { const out: T[] = []; let cursor = this.tail; while (cursor !== null) { out.push(cursor.value); cursor = cursor.previous; } return out; }\n}",
+      "trapMutant": "type PlaylistNode<T> = { value: T; next: PlaylistNode<T> | null; previous: PlaylistNode<T> | null };\nexport class DoublyList<T> {\n  private head: PlaylistNode<T> | null = null;\n  private tail: PlaylistNode<T> | null = null;\n  private count = 0;\n  get length(): number { return this.count; }\n  private nodeAt(index: number): PlaylistNode<T> | null {\n    let cursor = this.head;\n    for (let step = 0; step < index && cursor !== null; step += 1) cursor = cursor.next;\n    return cursor;\n  }\n  private linkBefore(node: PlaylistNode<T>, target: PlaylistNode<T>): void {\n    const added = node; const anchor = target; const previous = anchor.previous;\n    added.previous = previous; added.next = anchor; anchor.previous = added;\n    if (previous === null) this.head = added; else previous.next = added;\n  }\n  private linkAfterTail(node: PlaylistNode<T>): void {\n    const added = node;\n    if (this.tail === null) { this.head = added; this.tail = added; return; }\n    added.previous = this.tail; this.tail.next = added; this.tail = added;\n  }\n  insertAt(index: number, value: T): boolean {\n    if (!Number.isInteger(index) || index < 0 || index > this.count) return false;\n    const node: PlaylistNode<T> = { value, next: null, previous: null };\n    const target = this.nodeAt(index);\n    if (index === 0 && target !== null) this.linkBefore(node, target);\n    else if (target === null) this.linkAfterTail(node);\n    else this.linkBefore(node, target);\n    this.count += 1; return true;\n  }\n  private detach(node: PlaylistNode<T>): void {\n    const detached = node;\n    if (detached.previous === null) this.head = detached.next; else detached.previous.next = detached.next;\n    if (detached.next === null) this.tail = detached.previous;\n    detached.next = null; detached.previous = null;\n  }\n  removeAt(index: number): T | undefined {\n    if (!Number.isInteger(index) || index < 0 || index >= this.count) return undefined;\n    const node = this.nodeAt(index); if (node === null) return undefined;\n    this.detach(node); this.count -= 1; return node.value;\n  }\n  toArray(): T[] { const out: T[] = []; let cursor = this.head; while (cursor !== null) { out.push(cursor.value); cursor = cursor.next; } return out; }\n  toReverseArray(): T[] { const out: T[] = []; let cursor = this.tail; while (cursor !== null) { out.push(cursor.value); cursor = cursor.previous; } return out; }\n}",
+      "visibleTests": [
+        {
+          "name": "insert and remove at both ends",
+          "testCode": "const list = new DoublyList<string>();\nassert.equal(list.insertAt(0, \"track-a\"), true);\nassert.equal(list.insertAt(1, \"track-c\"), true);\nassert.equal(list.insertAt(1, \"track-b\"), true);\nassert.deepEqual(list.toArray(), [\"track-a\", \"track-b\", \"track-c\"]);\nassert.deepEqual(list.toReverseArray(), [\"track-c\", \"track-b\", \"track-a\"]);\nassert.equal(list.removeAt(0), \"track-a\");\nassert.equal(list.removeAt(1), \"track-c\");\nassert.deepEqual(list.toArray(), [\"track-b\"]);\nassert.deepEqual(list.toReverseArray(), [\"track-b\"]);"
+        },
+        {
+          "name": "reject invalid indices without changing state",
+          "testCode": "const list = new DoublyList<number>();\nassert.equal(list.insertAt(1, 4), false);\nlist.insertAt(0, 0);\nassert.equal(list.insertAt(-1, 8), false);\nassert.equal(list.removeAt(1), undefined);\nassert.deepEqual(list.toArray(), [0]);\nassert.deepEqual(list.toReverseArray(), [0]);"
+        },
+        {
+          "name": "remove the final node then rebuild in both directions",
+          "testCode": "const list = new DoublyList<number>();\nlist.insertAt(0, 3);\nassert.equal(list.removeAt(0), 3);\nassert.equal(list.insertAt(0, 7), true);\nassert.equal(list.insertAt(1, 8), true);\nassert.deepEqual(list.toArray(), [7, 8]);\nassert.deepEqual(list.toReverseArray(), [8, 7]);"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "repeated interior mutations preserve two-way traversal",
+          "testCode": "const list = new DoublyList<number>();\nfor (const value of [1, 2, 3, 4]) list.insertAt(list.length, value);\nassert.equal(list.removeAt(1), 2);\nassert.equal(list.insertAt(1, 9), true);\nassert.deepEqual(list.toArray(), [1, 9, 3, 4]);\nassert.deepEqual(list.toReverseArray(), [4, 3, 9, 1]);\nassert.equal(list.length, 4);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Trace reachability and endpoint changes before updating the list metadata."
+        },
+        {
+          "explain": "Check the observable sequence and boundary state after each operation."
+        }
+      ],
+      "verificationLevel": "partial",
+      "fingerprint": "one-sided-unlink|direct|DoublyList",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 2,
+          "hasTrapOrFlaw": false,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "one-sided-unlink",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 5
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Standard Exam",
+      "unitCode": "PRG-T01-C03-U05",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-U05-01/Q03_DoublyList.ts"
+    },
+    {
+      "id": "Q04",
+      "level": 2,
+      "category": "Debugging & Analysis",
+      "archetype": "debugging",
+      "codeType": "fix-bug",
+      "form": "direct",
+      "archetypeKey": "prg-c03-u05-list-mutation-debugging",
+      "commonTrapTag": "single-operation-only-test",
+      "context": "history_cursor_navigation",
+      "entryPoint": "HistoryChain",
+      "prompt": "**Objective:** Repair `HistoryChain.removeLast()` for a navigation history sequence whose users may remove every record and then append again.\n\n**Observed contract:** The method returns the last active record, or `undefined` when empty. After a removal, `toArray()` must expose exactly the remaining records in insertion order, and `length` must match that sequence.\n\n**Requirements:**\n- Diagnose the behavior from the supplied implementation and tests.\n- Preserve the active chain when the final record is removed.\n- Do not change caller-owned record objects or the order of retained records.\n\n**Return contract:** `removeLast()` returns `T | undefined`; `append()` returns `void`; `toArray()` returns active records only.",
+      "inputHint": "Implement the documented linked-list behavior and preserve the values supplied by the caller.",
+      "checkpointHint": "Trace endpoint state after the last value is removed, then test another append.",
+      "starterCode": "type HistoryNode<T> = { value: T; next: HistoryNode<T> | null };\nexport class HistoryChain<T> {\n  private head: HistoryNode<T> | null = null;\n  private tail: HistoryNode<T> | null = null;\n  private count = 0;\n  get length(): number { return this.count; }\n  append(value: T): void {\n    const node: HistoryNode<T> = { value, next: null };\n    if (this.tail === null) { this.head = node; this.tail = node; }\n    else { this.tail.next = node; this.tail = node; }\n    this.count += 1;\n  }\n  removeLast(): T | undefined {\n    if (this.tail === null) return undefined;\n    const removed = this.tail;\n    if (this.head === removed) { this.head = null; this.count -= 1; return removed.value; }\n    let cursor = this.head;\n    while (cursor !== null && cursor.next !== removed) cursor = cursor.next;\n    if (cursor === null) return undefined;\n    cursor.next = null; this.tail = cursor; this.count -= 1; return removed.value;\n  }\n  toArray(): T[] { const out: T[] = []; let cursor = this.head; while (cursor !== null) { out.push(cursor.value); cursor = cursor.next; } return out; }\n}",
+      "solutionCode": "type HistoryNode<T> = { value: T; next: HistoryNode<T> | null };\nexport class HistoryChain<T> {\n  private head: HistoryNode<T> | null = null;\n  private tail: HistoryNode<T> | null = null;\n  private count = 0;\n  get length(): number { return this.count; }\n  append(value: T): void {\n    const node: HistoryNode<T> = { value, next: null };\n    if (this.tail === null) { this.head = node; this.tail = node; }\n    else { this.tail.next = node; this.tail = node; }\n    this.count += 1;\n  }\n  removeLast(): T | undefined {\n    if (this.tail === null) return undefined;\n    const removed = this.tail;\n    if (this.head === removed) { this.head = null; this.tail = null; this.count -= 1; return removed.value; }\n    let cursor = this.head;\n    while (cursor !== null && cursor.next !== removed) cursor = cursor.next;\n    if (cursor === null) return undefined;\n    cursor.next = null; this.tail = cursor; this.count -= 1; return removed.value;\n  }\n  toArray(): T[] { const out: T[] = []; let cursor = this.head; while (cursor !== null) { out.push(cursor.value); cursor = cursor.next; } return out; }\n}",
+      "trapMutant": "type HistoryNode<T> = { value: T; next: HistoryNode<T> | null };\nexport class HistoryChain<T> {\n  private head: HistoryNode<T> | null = null;\n  private tail: HistoryNode<T> | null = null;\n  private count = 0;\n  get length(): number { return this.count; }\n  append(value: T): void {\n    const node: HistoryNode<T> = { value, next: null };\n    if (this.tail === null) { this.head = node; this.tail = node; }\n    else { this.tail.next = node; this.tail = node; }\n    this.count += 1;\n  }\n  removeLast(): T | undefined {\n    if (this.tail === null) return undefined;\n    const removed = this.tail;\n    if (this.head === removed) { this.head = null; this.count -= 1; return removed.value; }\n    let cursor = this.head;\n    while (cursor !== null && cursor.next !== removed) cursor = cursor.next;\n    if (cursor === null) return undefined;\n    cursor.next = null; this.tail = cursor; this.count -= 1; return removed.value;\n  }\n  toArray(): T[] { const out: T[] = []; let cursor = this.head; while (cursor !== null) { out.push(cursor.value); cursor = cursor.next; } return out; }\n}",
+      "visibleTests": [
+        {
+          "name": "removing the only history entry clears the active sequence",
+          "testCode": "const chain = new HistoryChain<string>();\nchain.append(\"route-a\");\nassert.equal(chain.removeLast(), \"route-a\");\nassert.deepEqual(chain.toArray(), []);\nassert.equal(chain.length, 0);"
+        },
+        {
+          "name": "a later append remains reachable after clearing",
+          "testCode": "const chain = new HistoryChain<number>();\nchain.append(6);\nassert.equal(chain.removeLast(), 6);\nchain.append(11);\nassert.deepEqual(chain.toArray(), [11]);\nassert.equal(chain.length, 1);"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "multiple cycles of clear and append stay coherent",
+          "testCode": "const chain = new HistoryChain<number>();\nchain.append(0); chain.append(2);\nassert.equal(chain.removeLast(), 2);\nassert.equal(chain.removeLast(), 0);\nchain.append(5); chain.append(8);\nassert.deepEqual(chain.toArray(), [5, 8]);\nassert.equal(chain.length, 2);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Trace reachability and endpoint changes before updating the list metadata."
+        },
+        {
+          "explain": "Check the observable sequence and boundary state after each operation."
+        }
+      ],
+      "verificationLevel": "partial",
+      "fingerprint": "single-operation-only-test|direct|HistoryChain",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "debugging"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 2,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "single-operation-only-test",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 5
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Standard Exam",
+      "unitCode": "PRG-T01-C03-U05",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-U05-01/Q04_HistoryChain.ts"
+    }
+  ],
+  "blindSolve": [
+    {
+      "problemId": "Q01",
+      "passed": true
+    },
+    {
+      "problemId": "Q02",
+      "passed": true
+    },
+    {
+      "problemId": "Q03",
+      "passed": true
+    },
+    {
+      "problemId": "Q04",
+      "passed": true
+    }
+  ],
+  "review": {
+    "verdict": "pass",
+    "note": "All four strict-TypeScript tasks fit the supplied archetype rubrics, span the vault-supported L1 and L2 levels, include a fix-bug item, and use distinct contexts with focused endpoint/link traps and mutants."
+  },
+  "drillId": "DRL-PRG-T01-C03-U05-01",
+  "topicCode": "PRG-T01",
+  "chapterCode": "PRG-T01-C03",
+  "schemaVersion": "2.0-code",
+  "subject": "PRG",
+  "createdAt": "2026-11-17 08:55:42",
+  "localFilePath": "drills/data/PRG-T01-C03-U05/DRL-PRG-T01-C03-U05-01.json"
+}

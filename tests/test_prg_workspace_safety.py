@@ -420,11 +420,27 @@ def test_react_dom_workspace_uses_shared_tools_without_local_dependencies(tmp_pa
     manifest = materialize_drill_workspace(doc, root_dir=str(tmp_path))
     ws_dir = Path(manifest["workspaceDir"])
     package = json.loads((ws_dir / "package.json").read_text(encoding="utf-8"))
-    assert package["devDependencies"] == {}
+    assert package["devDependencies"] == {"@types/node": "^20.0.0"}
     assert "tools/lint/node_modules/.bin/vitest" in package["scripts"]["test"]
     assert (ws_dir / "node_modules").is_symlink()
-    result = subprocess.run(["npm", "test"], cwd=ws_dir, capture_output=True, text=True, check=False)
-    assert result.returncode == 0, result.stdout + result.stderr
+    check = subprocess.run(["npm", "run", "check:q01"], cwd=ws_dir, capture_output=True, text=True, check=False)
+    assert "status_0=$?" in package["scripts"]["check:q01"]
+    assert "status_$i" not in package["scripts"]["check:q01"]
+    assert check.returncode == 0, check.stdout + check.stderr
+
+
+def test_react_dom_workspace_types_node_assert_and_input_value(tmp_path):
+    from code_engine.review_run import typecheck_workspace_file
+
+    drill_path = Path(__file__).resolve().parents[1] / "drills/data/PRG-T02-C01-U06/DRL-PRG-T02-C01-U06-01.json"
+    source_doc = json.loads(drill_path.read_text(encoding="utf-8"))
+    problem = next(p for p in source_doc["problems"] if p["id"] == "Q02")
+    doc = {**source_doc, "problems": [problem]}
+    manifest = materialize_drill_workspace(doc, root_dir=str(tmp_path))
+    ws_dir = Path(manifest["workspaceDir"])
+    source = ws_dir / "Q02_BinScanCapture.tsx"
+    assert source.exists()
+    assert typecheck_workspace_file(ws_dir, source, "react-dom") == []
 
 
 def test_react_dom_review_runs_visible_hidden_lint_and_typecheck(tmp_path):

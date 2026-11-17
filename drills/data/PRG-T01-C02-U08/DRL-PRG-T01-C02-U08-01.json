@@ -1,0 +1,414 @@
+{
+  "unitCode": "PRG-T01-C02-U08",
+  "unitTitle": "Strict Mode and tsconfig",
+  "environment": "typescript-strict",
+  "sourceAttribution": "PRG-T01-C02-U08 unit page; TypeScript Handbook — TSConfig Reference (https://www.typescriptlang.org/tsconfig/), strictNullChecks (https://www.typescriptlang.org/tsconfig/strictNullChecks.html), and noUncheckedIndexedAccess (https://www.typescriptlang.org/tsconfig/noUncheckedIndexedAccess.html); current unit reasoning-vault archetypes. Scenarios authored for this drill.",
+  "config": {
+    "questionCount": 4,
+    "difficulty": "ALL",
+    "difficultyMode": "AI Synthesized Engineering Mode"
+  },
+  "problems": [
+    {
+      "id": "Q01",
+      "level": 1,
+      "category": "Trap & Edge Case",
+      "archetype": "debugging",
+      "codeType": "fix-bug",
+      "archetypeKey": "prg-t01-c02-u08-strict-nullable-boundaries",
+      "commonTrapTag": "non-null-assertion-hides-absence",
+      "context": "member_contact_card",
+      "entryPoint": "formatMemberEmail",
+      "prompt": "A member directory formats verified email addresses for its contact cards. Some legacy profiles explicitly store `null` when no verified address exists, and the current formatter crashes on those profiles. Fix `formatMemberEmail` so its result follows the declared contract.\n\n**Requirements**\n- Keep the exported function name and the `Member` type.\n- Return `null` when `email` is `null`.\n- Trim a present email address before returning it, including when trimming produces an empty string.\n- Do not mutate the profile.",
+      "inputHint": "Check the declared absence case before calling a string method.",
+      "checkpointHint": "A present but whitespace-only value still follows the string path after trimming.",
+      "starterCode": "type Member = { email: string | null };\n\nexport function formatMemberEmail(member: Member): string | null {\n  return member.email!.trim();\n}\n",
+      "solutionCode": "type Member = { email: string | null };\n\nexport function formatMemberEmail(member: Member): string | null {\n  if (member.email === null) return null;\n  return member.email.trim();\n}\n",
+      "trapMutant": "type Member = { email: string | null };\n\nexport function formatMemberEmail(member: Member): string | null {\n  return member.email!.trim();\n}\n",
+      "visibleTests": [
+        {
+          "name": "formats a verified address",
+          "testCode": "assert.strictEqual(formatMemberEmail({ email: ' member@example.com ' }), 'member@example.com');"
+        },
+        {
+          "name": "keeps a missing verified address absent",
+          "testCode": "assert.strictEqual(formatMemberEmail({ email: null }), null);"
+        },
+        {
+          "name": "preserves a present whitespace-only value",
+          "testCode": "assert.strictEqual(formatMemberEmail({ email: '   ' }), '');"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "does not write through a frozen legacy profile",
+          "testCode": "const member = Object.freeze({ email: null }); assert.strictEqual(formatMemberEmail(member), null); assert.deepStrictEqual(member, { email: null });"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Check the only absence value allowed by the Member contract."
+        },
+        {
+          "explain": "Return absence deliberately before calling a method that requires a string."
+        },
+        {
+          "explain": "Process every present string, including one that trims to an empty value."
+        }
+      ],
+      "verificationLevel": "partial",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "Member profile systems commonly represent an unverified contact address as null while preserving present strings for display formatting."
+      },
+      "form": "direct",
+      "fingerprint": "non-null-assertion-hides-absence|direct|formatMemberEmail",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "debugging"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "non-null-assertion-hides-absence",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 6
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Foundation",
+      "unitCode": "PRG-T01-C02-U08",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U08-01/Q01_formatMemberEmail.ts"
+    },
+    {
+      "id": "Q02",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "debugging",
+      "codeType": "fix-bug",
+      "archetypeKey": "prg-t01-c02-u08-checked-index-access",
+      "commonTrapTag": "preserve-present-falsy-values",
+      "context": "feature_flag_dictionary",
+      "entryPoint": "readRolloutNote",
+      "prompt": "A rollout service stores optional operator notes in a string-keyed feature flag dictionary. A deployment can request a key that is absent, which currently causes the reader to throw. Fix `readRolloutNote` to return `undefined` when the requested key is missing and the trimmed note when it is present.\n\n**Requirements**\n- Keep the exported function name and parameter types.\n- Handle an absent key without calling a string method on a missing value.\n- Preserve a present empty string as an empty string.\n- Do not change the supplied dictionary.",
+      "inputHint": "An open key lookup can produce no value even when the dictionary exists.",
+      "checkpointHint": "Compare absence with a key that is present but maps to an empty string.",
+      "starterCode": "export function readRolloutNote(notes: Record<string, string>, key: string): string | undefined {\n  return notes[key]!.trim();\n}\n",
+      "solutionCode": "export function readRolloutNote(notes: Record<string, string>, key: string): string | undefined {\n  const note = notes[key];\n  if (note === undefined) return undefined;\n  return note.trim();\n}\n",
+      "trapMutant": "export function readRolloutNote(notes: Record<string, string>, key: string): string | undefined {\n  const note = notes[key];\n  return note ? note.trim() : undefined;\n}\n",
+      "visibleTests": [
+        {
+          "name": "returns a trimmed rollout note",
+          "testCode": "assert.strictEqual(readRolloutNote({ checkout: ' staged for Friday ' }, 'checkout'), 'staged for Friday');"
+        },
+        {
+          "name": "handles an absent rollout note",
+          "testCode": "assert.strictEqual(readRolloutNote({}, 'checkout'), undefined);"
+        },
+        {
+          "name": "keeps a configured empty note",
+          "testCode": "assert.strictEqual(readRolloutNote({ checkout: '' }, 'checkout'), '');"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "preserves an empty note in a prototype-free dictionary",
+          "testCode": "const notes = Object.assign(Object.create(null), { checkout: '' }) as Record<string, string>; assert.strictEqual(readRolloutNote(notes, 'checkout'), '');"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Read the requested key as a value that may be absent."
+        },
+        {
+          "explain": "Return the missing result before calling a string method."
+        },
+        {
+          "explain": "Use an explicit absence check so an empty string remains valid data."
+        }
+      ],
+      "verificationLevel": "partial",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "Feature flag and rollout dictionaries commonly have optional string metadata, and an explicitly empty note differs from an unconfigured key."
+      },
+      "form": "direct",
+      "fingerprint": "preserve-present-falsy-values|direct|readRolloutNote",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "debugging"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "preserve-present-falsy-values",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 6
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Foundation",
+      "unitCode": "PRG-T01-C02-U08",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U08-01/Q02_readRolloutNote.ts"
+    },
+    {
+      "id": "Q03",
+      "level": 2,
+      "category": "Trap & Edge Case",
+      "archetype": "debugging",
+      "codeType": "fix-bug",
+      "archetypeKey": "prg-t01-c02-u08-checked-index-access",
+      "commonTrapTag": "assumed-index-presence",
+      "context": "search_keyword_list",
+      "entryPoint": "primarySearchKeyword",
+      "prompt": "A search analytics job labels a report with the first normalized keyword from a query. Some queries contain no usable keywords, but the current implementation assumes the first array position always exists. Fix `primarySearchKeyword` to return `null` when the list is empty and a trimmed first keyword when present.\n\n**Requirements**\n- Keep the exported function name and return type.\n- Return `null` for an empty list.\n- Trim the first keyword without modifying the input array.\n- Preserve a present whitespace-only first item as an empty string.",
+      "inputHint": "A collection can be valid even when it has no first element.",
+      "checkpointHint": "Check an empty list and a list whose first present item trims to an empty value.",
+      "starterCode": "export function primarySearchKeyword(keywords: readonly string[]): string | null {\n  return keywords[0]!.trim();\n}\n",
+      "solutionCode": "export function primarySearchKeyword(keywords: readonly string[]): string | null {\n  const firstKeyword = keywords[0];\n  if (firstKeyword === undefined) return null;\n  return firstKeyword.trim();\n}\n",
+      "trapMutant": "export function primarySearchKeyword(keywords: readonly string[]): string | null {\n  const firstKeyword = keywords[0];\n  return firstKeyword === undefined ? '' : firstKeyword.trim();\n}\n",
+      "visibleTests": [
+        {
+          "name": "normalizes the first search keyword",
+          "testCode": "assert.strictEqual(primarySearchKeyword(['  transit map  ', 'weekend']), 'transit map');"
+        },
+        {
+          "name": "handles a query with no keywords",
+          "testCode": "assert.strictEqual(primarySearchKeyword([]), null);"
+        },
+        {
+          "name": "keeps a present blank first keyword distinct from no keyword",
+          "testCode": "assert.strictEqual(primarySearchKeyword(['   ', 'weekend']), '');"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "handles an array with a missing first slot",
+          "testCode": "const keywords = new Array<string>(1); assert.strictEqual(primarySearchKeyword(keywords), null);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Treat a numeric index as a lookup that may have no corresponding element."
+        },
+        {
+          "explain": "Return the specified empty-list result before processing the first item."
+        },
+        {
+          "explain": "Process a present string regardless of its truthiness."
+        }
+      ],
+      "verificationLevel": "partial",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "Search analytics often receive an empty token list after normalization; report labeling must distinguish no token from a present blank token."
+      },
+      "form": "direct",
+      "fingerprint": "assumed-index-presence|direct|primarySearchKeyword",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "debugging"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "assumed-index-presence",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 6
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Standard Exam",
+      "unitCode": "PRG-T01-C02-U08",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U08-01/Q03_primarySearchKeyword.ts"
+    },
+    {
+      "id": "Q04",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "debugging",
+      "codeType": "fix-bug",
+      "archetypeKey": "prg-t01-c02-u08-checked-index-access",
+      "commonTrapTag": "strict-excludes-index-checks",
+      "context": "typescript_config_migration",
+      "entryPoint": "enableSafeIndexChecks",
+      "prompt": "A repository migration enables TypeScript strict checking, but indexed reads from arrays and open dictionaries still need explicit presence checks. Fix `enableSafeIndexChecks` so the generated compiler options enable both the strict family and checked indexed access while preserving unrelated options.\n\n**Requirements**\n- Return a new config object; do not mutate the input.\n- Preserve existing compiler options such as `noEmit`.\n- Set `strict` and `noUncheckedIndexedAccess` to `true` explicitly.\n- Do not assume that enabling `strict` also enables the indexed-access option.",
+      "inputHint": "Treat compiler options as independent switches unless their documented relationship says otherwise.",
+      "checkpointHint": "Inspect the returned options object for both the strict family and indexed reads.",
+      "starterCode": "type CompilerOptions = { strict?: boolean; noUncheckedIndexedAccess?: boolean; noEmit?: boolean };\ntype ProjectConfig = { compilerOptions: CompilerOptions };\n\nexport function enableSafeIndexChecks(config: ProjectConfig): ProjectConfig {\n  return { ...config, compilerOptions: { ...config.compilerOptions, strict: true } };\n}\n",
+      "solutionCode": "type CompilerOptions = { strict?: boolean; noUncheckedIndexedAccess?: boolean; noEmit?: boolean };\ntype ProjectConfig = { compilerOptions: CompilerOptions };\n\nexport function enableSafeIndexChecks(config: ProjectConfig): ProjectConfig {\n  return {\n    ...config,\n    compilerOptions: { ...config.compilerOptions, strict: true, noUncheckedIndexedAccess: true },\n  };\n}\n",
+      "trapMutant": "type CompilerOptions = { strict?: boolean; noUncheckedIndexedAccess?: boolean; noEmit?: boolean };\ntype ProjectConfig = { compilerOptions: CompilerOptions };\n\nexport function enableSafeIndexChecks(config: ProjectConfig): ProjectConfig {\n  return { ...config, compilerOptions: { ...config.compilerOptions, strict: true } };\n}\n",
+      "visibleTests": [
+        {
+          "name": "enables both compiler checks",
+          "testCode": "const result = enableSafeIndexChecks({ compilerOptions: {} }); assert.deepStrictEqual(result.compilerOptions, { strict: true, noUncheckedIndexedAccess: true });"
+        },
+        {
+          "name": "preserves unrelated options",
+          "testCode": "const result = enableSafeIndexChecks({ compilerOptions: { noEmit: false, strict: false } }); assert.deepStrictEqual(result.compilerOptions, { noEmit: false, strict: true, noUncheckedIndexedAccess: true });"
+        },
+        {
+          "name": "does not mutate the source config",
+          "testCode": "const config = { compilerOptions: { noEmit: true } }; const result = enableSafeIndexChecks(config); assert.deepStrictEqual(config, { compilerOptions: { noEmit: true } }); assert.notStrictEqual(result.compilerOptions, config.compilerOptions);"
+        },
+        {
+          "name": "handles an empty options set",
+          "testCode": "assert.deepStrictEqual(enableSafeIndexChecks({ compilerOptions: {} }).compilerOptions, { strict: true, noUncheckedIndexedAccess: true });"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "overrides a previously disabled indexed-access check",
+          "testCode": "const result = enableSafeIndexChecks({ compilerOptions: { strict: true, noUncheckedIndexedAccess: false, noEmit: true } }); assert.strictEqual(result.compilerOptions.strict, true); assert.strictEqual(result.compilerOptions.noUncheckedIndexedAccess, true); assert.strictEqual(result.compilerOptions.noEmit, true);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Copy the project config and nested compiler options to avoid mutating caller-owned state."
+        },
+        {
+          "explain": "Enable the strict option and the indexed-access option as separate settings."
+        },
+        {
+          "explain": "Retain unrelated compiler options from the previous configuration."
+        }
+      ],
+      "verificationLevel": "partial",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "TypeScript configuration migrations often enable a stricter family of checks alongside a separately configured indexed-read option."
+      },
+      "form": "direct",
+      "fingerprint": "strict-excludes-index-checks|direct|enableSafeIndexChecks",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "debugging"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "strict-excludes-index-checks",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 6
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Standard Exam",
+      "unitCode": "PRG-T01-C02-U08",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U08-01/Q04_enableSafeIndexChecks.ts"
+    }
+  ],
+  "blindSolve": [
+    {
+      "problemId": "Q01",
+      "passed": true
+    },
+    {
+      "problemId": "Q02",
+      "passed": true
+    },
+    {
+      "problemId": "Q03",
+      "passed": true
+    },
+    {
+      "problemId": "Q04",
+      "passed": true
+    }
+  ],
+  "review": {
+    "verdict": "pass",
+    "note": "Q01–Q04 meet the U08 scope and level/type mix; distinct hidden edge cases and visible reproducers catch every starter, the empty-string trap is correctly registered and covered, and prompts, hints, domains, reference solutions, and tests are coherent with the stated quality criteria."
+  },
+  "drillId": "DRL-PRG-T01-C02-U08-01",
+  "topicCode": "PRG-T01",
+  "chapterCode": "PRG-T01-C02",
+  "schemaVersion": "2.0-code",
+  "subject": "PRG",
+  "createdAt": "2026-11-17 07:29:48",
+  "localFilePath": "drills/data/PRG-T01-C02-U08/DRL-PRG-T01-C02-U08-01.json"
+}
