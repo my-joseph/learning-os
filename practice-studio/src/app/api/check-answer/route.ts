@@ -1,20 +1,63 @@
 import { NextRequest, NextResponse } from "next/server";
 import { spawn } from "child_process";
 import path from "path";
-import { getPythonBin, getWorkspaceRoot } from "@/lib/paths";
+import { getPythonBin, getWorkspaceRoot, isSafeId, loadProblemFromDisk } from "@/lib/paths";
 
 const TIMEOUT_MS = 5000;
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
+    const drillId = body.drillId || body.drill;
+    const problemId = body.problemId || body.q;
+
+    if (!drillId || !problemId || !isSafeId(drillId) || !isSafeId(problemId)) {
+      return NextResponse.json(
+        {
+          verdict: "invalid input",
+          message: "Missing or invalid drillId or problemId",
+          components: [],
+          diagnostics: [],
+        },
+        { status: 400 }
+      );
+    }
+
+    const loaded = loadProblemFromDisk(drillId, problemId);
+    if (!loaded) {
+      return NextResponse.json(
+        {
+          verdict: "invalid input",
+          message: "Drill or problem not found",
+          components: [],
+          diagnostics: [],
+        },
+        { status: 404 }
+      );
+    }
+
+    const { doc, problem } = loaded;
+    // Server copy wins: ignore any answerSpec or trapValue sent by the client.
+    const answerSpec = (problem.answerSpec || {}) as Record<string, unknown>;
+    const subject =
+      doc.subject === "PRG" || String(doc.unitCode || "").startsWith("PRG-")
+        ? "PRG"
+        : body.subject || "MATH";
+
+    const enginePayload = {
+      subject,
+      answerSpec,
+      trapValue: problem.trapValue,
+      input: typeof body.input === "string" ? body.input : "",
+    };
+
     const rootDir = getWorkspaceRoot();
     const pythonBin = getPythonBin(rootDir);
 
     const isPrg =
-      body.subject === "PRG" ||
+      subject === "PRG" ||
       ["code_output", "predict_output", "line_number", "find_bug"].includes(
-        body.answerSpec?.type
+        String(answerSpec.type || "")
       );
     const engineModule = isPrg
       ? "code_engine.answer_check"
@@ -104,7 +147,7 @@ export async function POST(req: NextRequest) {
         }
       });
 
-      proc.stdin.write(JSON.stringify(body));
+      proc.stdin.write(JSON.stringify(enginePayload));
       proc.stdin.end();
     });
   } catch (err: unknown) {

@@ -97,37 +97,12 @@ interface CodeProblemCardProps {
   onToggleMistakeTag: (tagId: string) => void;
   onMistakeNoteChange: (note: string) => void;
   onResetProblem: () => void;
+  onSolutionRevealed?: () => void;
 }
 
 const getSafePlaceholder = (hint?: string, problem?: Problem): string => {
-  if (!hint) return "Enter predicted terminal output (press Enter to check)...";
-
-  const acceptedList: string[] = [];
-  if (problem?.answerSpec?.accepted) {
-    for (const a of problem.answerSpec.accepted) {
-      if (typeof a === "string" && a.trim()) {
-        acceptedList.push(a.toLowerCase().trim());
-      }
-    }
-  }
-  if (problem?.answerPlain && typeof problem.answerPlain === "string") {
-    acceptedList.push(problem.answerPlain.toLowerCase().trim());
-  }
-  if (problem?.answerDisplay && typeof problem.answerDisplay === "string") {
-    acceptedList.push(problem.answerDisplay.toLowerCase().trim());
-  }
-
-  const lowerHint = hint.toLowerCase();
-  const hasLeak = acceptedList.some((ans) => ans.length >= 2 && lowerHint.includes(ans));
-
-  if (!hasLeak) return hint;
-
-  const stripped = hint.replace(/\s*\([^)]*e\.g\.[^)]*\)/gi, "").trim();
-  if (stripped && !acceptedList.some((ans) => ans.length >= 2 && stripped.toLowerCase().includes(ans))) {
-    return stripped;
-  }
-
-  return "Enter predicted terminal output (press Enter to check)...";
+  if (problem?.placeholder) return problem.placeholder;
+  return hint || "Enter predicted terminal output (press Enter to check)...";
 };
 
 export const CodeProblemCard: React.FC<CodeProblemCardProps> = ({
@@ -145,11 +120,15 @@ export const CodeProblemCard: React.FC<CodeProblemCardProps> = ({
   onToggleMistakeTag,
   onMistakeNoteChange,
   onResetProblem,
+  onSolutionRevealed,
 }) => {
   const [showHint, setShowHint] = useState(false);
   const [showSolution, setShowSolution] = useState(Boolean(problem.state.lastCheck));
   const [showDiskPreview, setShowDiskPreview] = useState(false);
   const [isChecking, setIsChecking] = useState(false);
+  const [revealedSolutionCode, setRevealedSolutionCode] = useState<string | undefined>(
+    problem.solutionCode
+  );
 
   const effectiveArchetype: EngineeringArchetype =
     problem.archetype ||
@@ -228,6 +207,7 @@ export const CodeProblemCard: React.FC<CodeProblemCardProps> = ({
     setUserCode(problem.state?.userCode || problem.starterCode || problem.codeSnippet || "");
     setTestReport(problem.state?.lastTestReport || null);
     setShowSolution(Boolean(problem.state.lastCheck));
+    setRevealedSolutionCode(problem.solutionCode);
   }, [
     problem.id,
     problem.state?.userCode,
@@ -235,6 +215,7 @@ export const CodeProblemCard: React.FC<CodeProblemCardProps> = ({
     problem.codeSnippet,
     problem.state?.lastTestReport,
     problem.state.lastCheck,
+    problem.solutionCode,
   ]);
 
   const score = problem.state.score;
@@ -306,10 +287,10 @@ export const CodeProblemCard: React.FC<CodeProblemCardProps> = ({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          drillId,
+          problemId: problem.id,
           userCode: problem.workspaceFile ? undefined : latestCode,
           workspaceFile: problem.workspaceFile,
-          visibleTests: problem.visibleTests || [],
-          hiddenTests: problem.hiddenTests || [],
         }),
       });
 
@@ -319,14 +300,15 @@ export const CodeProblemCard: React.FC<CodeProblemCardProps> = ({
       onSetScore(getPrgScore(report, problem.state.reviews));
     } catch (err: unknown) {
       const errMsg = err instanceof Error ? err.message : String(err);
+      const hiddenCount = problem.hiddenTestCount ?? problem.hiddenTests?.length ?? 0;
       setTestReport({
         allPassed: false,
         score: 0,
         passedCount: 0,
-        totalCount: (problem.visibleTests?.length || 0) + (problem.hiddenTests?.length || 0),
+        totalCount: (problem.visibleTests?.length || 0) + hiddenCount,
         visibleResults: [{ name: "Execution Error", passed: false, error: errMsg }],
         hiddenPassed: 0,
-        hiddenTotal: problem.hiddenTests?.length || 0,
+        hiddenTotal: hiddenCount,
         executionTimeMs: 0,
       });
     } finally {
@@ -521,8 +503,25 @@ export const CodeProblemCard: React.FC<CodeProblemCardProps> = ({
                     ? undefined
                     : "Available after your code review passes"
                 }
-                onClick={() => {
-                  if (referenceAllowed) setShowSolution(!showSolution);
+                onClick={async () => {
+                  if (!referenceAllowed) return;
+                  const nextShow = !showSolution;
+                  setShowSolution(nextShow);
+                  if (nextShow && !problem.solutionCode && !revealedSolutionCode && drillId) {
+                    try {
+                      const res = await fetch(
+                        `/api/reveal?drill=${encodeURIComponent(drillId)}&q=${encodeURIComponent(problem.id)}&part=solution`
+                      );
+                      if (res.ok) {
+                        const data = await res.json();
+                        if (typeof data.solutionCode === "string") {
+                          setRevealedSolutionCode(data.solutionCode);
+                        }
+                      }
+                    } catch {
+                      // ignore reveal error
+                    }
+                  }
                 }}
                 className="inline-flex items-center gap-1.5 h-9 px-3 rounded-xl bg-white dark:bg-[#1d2333] hover:bg-slate-100 dark:hover:bg-[#25304a] text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-[#2c354d] text-xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
@@ -763,7 +762,12 @@ export const CodeProblemCard: React.FC<CodeProblemCardProps> = ({
 
             <button
               type="button"
-              onClick={() => setShowSolution(!showSolution)}
+              onClick={() => {
+                if (!showSolution && onSolutionRevealed) {
+                  onSolutionRevealed();
+                }
+                setShowSolution(!showSolution);
+              }}
               className="inline-flex items-center gap-1.5 h-10 px-3.5 rounded-xl bg-slate-100 dark:bg-[#1a2133] hover:bg-slate-200/70 dark:hover:bg-indigo-600/20 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-[#2b3752] text-sm font-medium transition-colors"
             >
               {showSolution ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -859,23 +863,25 @@ export const CodeProblemCard: React.FC<CodeProblemCardProps> = ({
             <span className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
               {isKata ? "Canonical Reference Solution" : "Step-by-Step Runtime Breakdown"}
             </span>
-            <span className="text-xs text-slate-600 dark:text-slate-400 font-mono">
-              Verified Target:{" "}
-              <strong className="text-emerald-700 dark:text-emerald-400">
-                {problem.answerDisplay}
-              </strong>
-            </span>
+            {problem.answerDisplay && (
+              <span className="text-xs text-slate-600 dark:text-slate-400 font-mono">
+                Verified Target:{" "}
+                <strong className="text-emerald-700 dark:text-emerald-400">
+                  {problem.answerDisplay}
+                </strong>
+              </span>
+            )}
           </div>
 
-          {isKata && problem.solutionCode && referenceAllowed ? (
+          {isKata && (problem.solutionCode || revealedSolutionCode) && referenceAllowed ? (
             <VSCodeBlock
-              code={problem.solutionCode}
+              code={(problem.solutionCode || revealedSolutionCode)!}
               language={problem.language || "javascript"}
               filename={`reference-${filename}`}
             />
           ) : (
             <div className="space-y-2.5">
-              {problem.steps.map((st, sIdx) => {
+              {(problem.steps || []).map((st, sIdx) => {
                 const isDiverged = problem.state.divergedStep === sIdx;
                 const isActive = activeStep === sIdx;
 

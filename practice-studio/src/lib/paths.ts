@@ -69,5 +69,64 @@ export function getProgressDir(): string {
   if (process.env.PROGRESS_DIR) {
     return path.resolve(process.env.PROGRESS_DIR);
   }
+  const pilot = (process.env.LEARNINGOS_PILOT || "").trim().toLowerCase();
+  if (pilot === "1" || pilot === "true" || pilot === "yes") {
+    return path.join(getWorkspaceRoot(), "pilot", "progress");
+  }
   return path.join(getWorkspaceRoot(), "progress");
+}
+
+/** Locate a drill JSON file under getDrillsDataDir() by drillId. */
+export function findDrillFilePath(drillId: string): string | null {
+  if (!isSafeId(drillId)) return null;
+  const dataDir = getDrillsDataDir();
+  if (!fs.existsSync(dataDir)) return null;
+
+  for (const entry of fs.readdirSync(dataDir, { withFileTypes: true })) {
+    if (!entry.isDirectory()) continue;
+    const candidate = path.join(dataDir, entry.name, `${drillId}.json`);
+    if (fs.existsSync(candidate)) {
+      return candidate;
+    }
+  }
+
+  const visit = (dir: string): string | null => {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const fullPath = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        const match = visit(fullPath);
+        if (match) return match;
+      } else if (entry.isFile() && entry.name === `${drillId}.json`) {
+        return fullPath;
+      }
+    }
+    return null;
+  };
+  return visit(dataDir);
+}
+
+/** Load an unredacted canonical drill document from drills/data on the server. */
+export function loadDrillFromDisk(drillId: string): Record<string, unknown> | null {
+  const filePath = findDrillFilePath(drillId);
+  if (!filePath) return null;
+  try {
+    return JSON.parse(fs.readFileSync(filePath, "utf-8")) as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+}
+
+/** Load a specific problem and its parent drill document from drills/data on the server. */
+export function loadProblemFromDisk(
+  drillId: string,
+  problemId: string
+): { doc: Record<string, unknown>; problem: Record<string, unknown> } | null {
+  if (!isSafeId(drillId) || !isSafeId(problemId)) return null;
+  const doc = loadDrillFromDisk(drillId);
+  if (!doc || !Array.isArray(doc.problems)) return null;
+  const problem = (doc.problems as Array<Record<string, unknown>>).find(
+    (p) => p && typeof p === "object" && p.id === problemId
+  );
+  if (!problem) return null;
+  return { doc, problem };
 }
