@@ -2571,5 +2571,9 @@
   "LAB-PRG-T01-C02-01": {
     "id": "41b3818f-8ba0-8130-a4a2-ed00535871b7",
     "title": "Result & MiniSchema"
+  },
+  "DRL-PRG-T01-C03-U07-01": {
+    "id": "41b3818f-8ba0-8119-b85f-d0988a603839",
+    "title": "Graphs & Shortest-Path Basics — Verified Programming Drill (4 Qs · AI Synthesized Engineering Mode)"
   }
 }
