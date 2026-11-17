@@ -1,12 +1,4 @@
 {
-  "DRILLS_DB": {
-    "id": "40d3818f-8ba0-8125-8cae-ea0de6183186",
-    "title": "Learning Practice & Drills"
-  },
-  "CONCEPT_VAULT_DB": {
-    "id": "4103818f-8ba0-8164-aa0d-eeb2d6cb65b0",
-    "title": "Concept Vault"
-  },
   "PRG-T09": {
     "id": "40c3818f-8ba0-8170-8e0e-c74a4451b116",
     "title": "Deployment, Docker & Cloud"
@@ -2315,6 +2307,10 @@
     "id": "40c3818f-8ba0-8016-a3ad-ec7ecdeece29",
     "title": "MDN – HTML",
     "url": "https://developer.mozilla.org/en-US/docs/Web/HTML"
+  },
+  "DRL-MTH-T02-C04-U06-01": {
+    "id": "41b3818f-8ba0-81a6-a9ee-fe6c04e108f8",
+    "title": "Rational Functions — Verified Math Drill (4 Qs · AI Synthesized Reasoning Mode)"
   },
   "DRL-PRG-T01-C03-U04-01": {
     "id": "41b3818f-8ba0-8111-a4a1-e8b7d7e2ef6c",
