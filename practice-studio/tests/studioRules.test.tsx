@@ -60,7 +60,8 @@ assert.match(THEME_INIT_SCRIPT, /matchMedia/);
 const card = readFileSync("src/components/CodeProblemCard.tsx", "utf8");
 const mathCard = readFileSync("src/components/MathProblemCard.tsx", "utf8");
 const pagination = readFileSync("src/components/QuizPaginationBar.tsx", "utf8");
-const page = readFileSync("src/app/page.tsx", "utf8");
+const studioShell = readFileSync("src/components/shell/StudioShell.tsx", "utf8");
+const studioHeader = readFileSync("src/components/shell/StudioHeader.tsx", "utf8");
 const workspaceRoute = readFileSync("src/app/api/workspace/route.ts", "utf8");
 const runTestsRoute = readFileSync("src/app/api/run-tests/route.ts", "utf8");
 assert.match(card, /hasCheckpointHint\(problem\.checkpointHint\)\s*&&\s*<button/);
@@ -74,8 +75,8 @@ assert.match(mathCard, /aria-label=\{`Answer for question \$\{problem\.id\}`\}/)
 assert.match(mathCard, /hasCheckpointHint\(problem\.checkpointHint\)\s*&&\s*<button/);
 assert.match(pagination, /bg-emerald-700/);
 assert.match(pagination, /overflow-x-auto/);
-assert.match(page, /<h1 className="sr-only"/);
-assert.match(page, /flex-col sm:flex-row sm:items-center/);
+assert.match(studioShell, /<h1 className="sr-only"/);
+assert.match(studioHeader, /flex-col sm:flex-row sm:items-center/);
 assert.match(workspaceRoute, /materializeWorkspace\(drillId, rootDir\)/);
 assert.match(runTestsRoute, /userCode = fs\.readFileSync\(fullPath, "utf-8"\)/);
 
