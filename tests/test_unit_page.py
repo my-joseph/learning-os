@@ -631,3 +631,149 @@ def test_fix_text_can_replace_retired_page_mention_by_visible_title(monkeypatch)
     assert rich[0]["text"]["content"] == "Connection: "
     assert rich[1]["type"] == "mention"
     assert rich[1]["mention"]["page"]["id"] == "active-id"
+
+
+def _bot_p(text, bid, editor_id="bot", editor_type="bot"):
+    return {
+        "id": bid,
+        "type": "paragraph",
+        "has_children": False,
+        "last_edited_by": {"object": "user", "id": editor_id, "type": editor_type},
+        "paragraph": {"rich_text": [{"type": "text", "text": {"content": text}, "plain_text": text}]},
+    }
+
+
+def test_dedupe_section_removes_template_duplicate_and_keeps_divider(monkeypatch):
+    page = [
+        _bot_h2("5. Active Recall Questions", "h5"),
+        _bot_h2("6. My Implementation & Mistake Log", "h6a"),
+        _bot_p("Feynman One-Liner: Prompt", "p6a"),
+        _bot_h2("6. My Implementation & Mistake Log", "h6b"),
+        _bot_p("Feynman One-Liner: Prompt", "p6b"),
+        {"id": "div6", "type": "divider", "divider": {}},
+        _bot_h2("7. Completion Checklist", "h7"),
+    ]
+    deleted = []
+
+    def fake_req(method, endpoint, token, payload=None):
+        if method == "GET" and endpoint == "users/me":
+            return {"id": "bot", "type": "bot"}
+        if method == "DELETE":
+            bid = endpoint.split("/")[1]
+            deleted.append(bid)
+            page[:] = [b for b in page if b["id"] != bid]
+        return {}
+
+    monkeypatch.setattr(up, "get_all_blocks", lambda pid, tok: list(page))
+    monkeypatch.setattr(up, "notion_request", fake_req)
+    ids = {"PRG-T01-C02-U08": {"id": "u8"}}
+
+    dry = up.dedupe_section("PRG-T01-C02-U08", "My Implementation", "tok", ids, dry_run=True)
+    assert "dry run: would remove 1 duplicate section(s) (2 top-level block(s))" in dry
+    assert deleted == []
+
+    res = up.dedupe_section("PRG-T01-C02-U08", "My Implementation", "tok", ids, dry_run=False)
+    assert "removed 1 duplicate section(s) (2 top-level block(s))" in res
+    assert deleted == ["h6b", "p6b"]
+    assert [b["id"] for b in page] == ["h5", "h6a", "p6a", "div6", "h7"]
+    assert "nothing to dedupe" in up.dedupe_section("PRG-T01-C02-U08", "My Implementation", "tok", ids)
+
+
+def test_dedupe_section_guards_learner_content_and_keeps_edited_copy(monkeypatch):
+    ids = {"U8": {"id": "u8"}}
+
+    # 1. Copy 1 has learner note (different user id); Copy 2 is template-only -> remove Copy 2, keep Copy 1
+    page_keep_first = [
+        _bot_h2("6. My Implementation & Mistake Log", "h6a"),
+        _bot_p("Feynman One-Liner: Prompt", "p6a"),
+        _bot_p("Learner personal reflection", "p6a-note", editor_id="learner-1", editor_type="person"),
+        _bot_h2("6. My Implementation & Mistake Log", "h6b"),
+        _bot_p("Feynman One-Liner: Prompt", "p6b"),
+    ]
+    deleted = []
+
+    def fake_req(method, endpoint, token, payload=None):
+        if method == "GET" and endpoint == "users/me":
+            return {"id": "bot", "type": "bot"}
+        if method == "DELETE":
+            deleted.append(endpoint.split("/")[1])
+        return {}
+
+    monkeypatch.setattr(up, "get_all_blocks", lambda pid, tok: list(page_keep_first))
+    monkeypatch.setattr(up, "notion_request", fake_req)
+    up.dedupe_section("U8", "My Implementation", "tok", ids)
+    assert deleted == ["h6b", "p6b"]
+
+    # 2. Both copies have learner edits -> refuse
+    page_both_edited = [
+        _bot_h2("6. My Implementation & Mistake Log", "h6a"),
+        _bot_p("Learner note A", "p6a", editor_id="learner-1", editor_type="person"),
+        _bot_h2("6. My Implementation & Mistake Log", "h6b"),
+        _bot_p("Learner note B", "p6b", editor_id="learner-1", editor_type="person"),
+    ]
+    monkeypatch.setattr(up, "get_all_blocks", lambda pid, tok: list(page_both_edited))
+    with pytest.raises(ValueError, match="multiple sections"):
+        up.dedupe_section("U8", "My Implementation", "tok", ids)
+
+    # 3. Two different template blocks without learner metadata -> refuse
+    page_divergent = [
+        _bot_h2("6. My Implementation & Mistake Log", "h6a"),
+        _bot_p("Prompt A", "p6a"),
+        _bot_h2("6. My Implementation & Mistake Log", "h6b"),
+        _bot_p("Prompt B", "p6b"),
+    ]
+    monkeypatch.setattr(up, "get_all_blocks", lambda pid, tok: list(page_divergent))
+    with pytest.raises(ValueError, match="unique block"):
+        up.dedupe_section("U8", "My Implementation", "tok", ids)
+
+
+def test_snapshot_page_omits_learner_section_and_renders_children(monkeypatch):
+    blocks = [
+        {
+            "id": "c1",
+            "type": "callout",
+            "has_children": False,
+            "callout": {"rich_text": [{"plain_text": "Objective: Test"}]},
+        },
+        _bot_h2("1. Core Concepts", "h1"),
+        {
+            "id": "code1",
+            "type": "code",
+            "has_children": False,
+            "code": {"language": "typescript", "rich_text": [{"plain_text": "const x = 1;"}]},
+        },
+        {
+            "id": "tog1",
+            "type": "toggle",
+            "has_children": True,
+            "toggle": {"rich_text": [{"plain_text": "Why this works"}]},
+        },
+        _bot_h2("6. My Implementation & Mistake Log", "h6"),
+        _bot_p("Private learner notes must not leak", "p6"),
+        _bot_h2("7. Completion Checklist", "h7"),
+        _todo("Review notes", "td1", checked=False),
+    ]
+    children = {"tog1": [_bot_p("Because invariants hold", "tp1")]}
+
+    def fake_get(pid, tok):
+        if pid == "u1":
+            return list(blocks)
+        return list(children.get(pid, []))
+
+    def fake_req(method, endpoint, token, payload=None):
+        return {
+            "properties": {
+                "Learning Objective": {"type": "rich_text", "rich_text": [{"plain_text": "Understand snapshots"}]}
+            }
+        }
+
+    monkeypatch.setattr(up, "get_all_blocks", fake_get)
+    monkeypatch.setattr(up, "notion_request", fake_req)
+    md = up.snapshot_page("PRG-T01-C02-U08", "tok", {"PRG-T01-C02-U08": {"id": "u1", "title": "Strict Mode"}})
+    assert "# PRG-T01-C02-U08: Strict Mode" in md
+    assert "**Learning Objective:** Understand snapshots" in md
+    assert "```typescript\nconst x = 1;\n```" in md
+    assert "<details><summary>Why this works</summary>" in md
+    assert "Because invariants hold" in md
+    assert "Private learner notes must not leak" not in md
+    assert "## 7. Completion Checklist" in md
