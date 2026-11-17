@@ -1,0 +1,410 @@
+{
+  "unitCode": "MTH-T02-C04-U04",
+  "topicTitle": "Polynomial and Rational Functions",
+  "unitTitle": "Dividing Polynomials",
+  "subject": "MATH",
+  "problems": [
+    {
+      "id": "Q01",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c04-u04-long-divide-polynomial",
+      "context": "",
+      "prompt": "Divide $4x^3+4x^2-7x+5$ by $2x-1$. Write the full result as a quotient plus a remainder over the divisor.",
+      "display": "f(x)=d(x)q(x)+r(x)",
+      "plainText": "f(x) = d(x)q(x) + r(x)",
+      "givens": {
+        "a": 4,
+        "b": 4,
+        "c": -7,
+        "d": 5,
+        "lead_divisor": 2,
+        "divisor_constant": -1
+      },
+      "constants": {
+        "quotient_linear_coefficient": 3
+      },
+      "trapGivens": [
+        2,
+        3
+      ],
+      "answerSpec": {
+        "type": "expression",
+        "value": "2*x^2+3*x-2+3/(2*x-1)",
+        "variables": [
+          "x"
+        ]
+      },
+      "answerPlain": "2x^2 + 3x - 2 + 3/(2x - 1)",
+      "answerDisplay": "2x^2+3x-2+\\frac{3}{2x-1}",
+      "inputHint": "Write the quotient polynomial and any remainder fraction.",
+      "commonTrapTag": "t02-c04-u04-stop-before-remainder-trap",
+      "trapDerivation": "2*x^2+3*x-2",
+      "trapValue": "2*x^2+3*x-2",
+      "verify": {
+        "source": "2*x^2+3*x-2+3/(2*x-1)",
+        "trapValue": "2*x^2+3*x-2"
+      },
+      "checkpointHint": "After the last subtraction, compare the remaining degree with the divisor's degree.",
+      "references": [
+        "MTH-T02-C04-U04"
+      ],
+      "figureNone": "The item checks a symbolic quotient and remainder; a figure would not clarify the algorithm.",
+      "steps": [
+        {
+          "latex": "\\frac{4x^3}{2x}=2x^2",
+          "explain": "Divide the leading terms to get the first quotient term."
+        },
+        {
+          "latex": "(2x-1)(2x^2)=4x^3-2x^2",
+          "explain": "Multiply the divisor by the first quotient term."
+        },
+        {
+          "latex": "4x^3+4x^2-7x+5-(4x^3-2x^2)=6x^2-7x+5",
+          "explain": "Subtract the entire product from the current dividend."
+        },
+        {
+          "latex": "\\frac{6x^2}{2x}=3x",
+          "explain": "Divide the new leading terms for the next quotient term."
+        },
+        {
+          "latex": "(2x-1)(3x)=6x^2-3x",
+          "explain": "Multiply the divisor by the next quotient term."
+        },
+        {
+          "latex": "6x^2-7x+5-(6x^2-3x)=-4x+5",
+          "explain": "Subtract the complete product to get the new remainder candidate."
+        },
+        {
+          "latex": "\\frac{-4x}{2x}=-2",
+          "explain": "Divide the residual leading terms for the final quotient term."
+        },
+        {
+          "latex": "(2x-1)(-2)=-4x+2",
+          "explain": "Multiply the divisor by the final quotient term."
+        },
+        {
+          "latex": "(-4x+5)-(-4x+2)=3",
+          "explain": "Subtract to obtain the constant remainder."
+        },
+        {
+          "latex": "q(x)=2x^2+3x-2",
+          "explain": "Collect the quotient terms after the final subtraction."
+        },
+        {
+          "latex": "r(x)=3",
+          "explain": "State the constant left after the last subtraction."
+        },
+        {
+          "latex": "\\frac{4x^3+4x^2-7x+5}{2x-1}=2x^2+3x-2+\\frac{3}{2x-1}",
+          "explain": "Write the quotient together with the remainder over the divisor.",
+          "val": "2*x^2+3*x-2+3/(2*x-1)"
+        }
+      ],
+      "verificationLevel": "partial",
+      "review": {
+        "id": "Q01",
+        "verdict": "pass",
+        "note": "Independent division gives quotient 2x^2+3x-2 with remainder 3; stopping before the remainder matches the trap, the long-division archetype and hints fit, and the prompt is clear without answer leakage."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C04-U04",
+          "title": "Dividing Polynomials",
+          "notionUrl": "https://www.notion.so/4013818f8ba081e7850ecba45bfaddb5"
+        }
+      ],
+      "unitCode": "MTH-T02-C04-U04",
+      "fingerprint": "t02-c04-u04-stop-before-remainder-trap|direct|f(x) = d(x)q(x) + r(x)",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 12,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c04-u04-stop-before-remainder-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 31
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 1 - Foundation"
+    },
+    {
+      "id": "Q02",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c04-u04-synthetic-divide-linear-factor",
+      "context": "",
+      "prompt": "Use synthetic division to divide $2x^3-3x^2+5x-7$ by $x-2$. Give the quotient polynomial.",
+      "display": "2x^3-3x^2+5x-7;\\quad d(x)=x-2",
+      "plainText": "2x^3-3x^2+5x-7 divided by x-2",
+      "givens": {
+        "a": 2,
+        "b": -3,
+        "c": 5,
+        "d": -7,
+        "k": 2
+      },
+      "constants": {
+        "trap_quotient_constant": 19
+      },
+      "trapGivens": [
+        2,
+        7
+      ],
+      "answerSpec": {
+        "type": "expression",
+        "value": "2*x^2+x+7",
+        "variables": [
+          "x"
+        ]
+      },
+      "answerPlain": "2x^2+x+7",
+      "answerDisplay": "2x^2+x+7",
+      "inputHint": "Enter the quotient as a polynomial in descending powers.",
+      "commonTrapTag": "t02-c04-u04-synthetic-sign-reversal-trap",
+      "trapDerivation": "2*x^2-7*x+19",
+      "trapValue": "2*x^2-7*x+19",
+      "verify": {
+        "source": "2*x^2+x+7",
+        "trapValue": "2*x^2-7*x+19"
+      },
+      "checkpointHint": "Translate the divisor into the synthetic input before processing the coefficient row.",
+      "references": [
+        "MTH-T02-C04-U04"
+      ],
+      "figureNone": "The coefficient algorithm is symbolic and does not need a diagram.",
+      "steps": [
+        {
+          "latex": "k=2",
+          "explain": "Use the zero of the divisor x-2 as the synthetic input."
+        },
+        {
+          "latex": "2\\;|\\;2\\quad -3\\quad 5\\quad -7",
+          "explain": "List the dividend coefficients in descending powers."
+        },
+        {
+          "latex": "2\\;|\\;2\\quad 1\\quad 7\\quad 7",
+          "explain": "Bring down the leading coefficient, then multiply by k and add across each column."
+        },
+        {
+          "latex": "q(x)=2x^2+x+7",
+          "explain": "Read the entries before the last as quotient coefficients.",
+          "val": "2*x^2+x+7"
+        }
+      ],
+      "verificationLevel": "partial",
+      "review": {
+        "id": "Q02",
+        "verdict": "pass",
+        "note": "Synthetic division with input 2 gives quotient 2x^2+x+7 and remainder 7; the sign-reversal trap, prescribed synthetic-division archetype, and nonleaking hints are aligned, with clear wording."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C04-U04",
+          "title": "Dividing Polynomials",
+          "notionUrl": "https://www.notion.so/4013818f8ba081e7850ecba45bfaddb5"
+        }
+      ],
+      "unitCode": "MTH-T02-C04-U04",
+      "fingerprint": "t02-c04-u04-synthetic-sign-reversal-trap|direct|#x^#-#x^#+#x-# divided by x-#",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 4,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c04-u04-synthetic-sign-reversal-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 15
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 1 - Foundation"
+    },
+    {
+      "id": "Q03",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c04-u04-reconstruct-dividend-from-division",
+      "context": "",
+      "prompt": "A polynomial with leading terms $2x^3+bx^2+2x+3$ divided by $x+1$ has quotient $2x^2-3x+5$ and remainder $-2$. Find $b$.",
+      "display": "f(x)=(x+1)(2x^2-3x+5)-2",
+      "plainText": "f(x)=(x+1)(2x^2-3x+5)-2",
+      "givens": {
+        "a": 2,
+        "known_x": 2,
+        "bq": -3,
+        "cq": 5,
+        "d": 3,
+        "k": 1,
+        "r": -2
+      },
+      "constants": {},
+      "trapGivens": [
+        3,
+        1
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "-1",
+        "tolerance": 0
+      },
+      "answerPlain": "-1",
+      "answerDisplay": "-1",
+      "inputHint": "Enter the signed coefficient.",
+      "commonTrapTag": "t02-c04-u04-multiply-only-leading-terms-trap",
+      "trapDerivation": "-3*1",
+      "trapValue": "-3",
+      "verify": {
+        "source": "-3+2*1",
+        "trapValue": "-3*1"
+      },
+      "checkpointHint": "Track every product term that contributes to the requested power before combining coefficients.",
+      "references": [
+        "MTH-T02-C04-U04"
+      ],
+      "figureNone": "The requested coefficient follows from an exact product expansion, so a figure adds no information.",
+      "steps": [
+        {
+          "latex": "(x+1)(2x^2-3x+5)-2",
+          "explain": "Use dividend equals divisor times quotient plus remainder."
+        },
+        {
+          "latex": "x(2x^2-3x+5)=2x^3-3x^2+5x",
+          "explain": "Distribute the x term across the quotient."
+        },
+        {
+          "latex": "1(2x^2-3x+5)=2x^2-3x+5",
+          "explain": "Distribute the constant term across the quotient."
+        },
+        {
+          "latex": "b=-3+2",
+          "explain": "Combine both contributions to the x-squared coefficient."
+        },
+        {
+          "latex": "b=-1",
+          "explain": "Simplify the coefficient sum.",
+          "eq": [
+            "-3+2",
+            "-1"
+          ],
+          "val": "-1"
+        }
+      ],
+      "verificationLevel": "partial",
+      "review": {
+        "id": "Q03",
+        "verdict": "pass",
+        "note": "Expanding divisor times quotient and adding the remainder gives the requested coefficient consistently; omitting the cross-term contribution explains the stated trap, and the reverse task, level, steps, and hints are clear and nonleaking."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C04-U04",
+          "title": "Dividing Polynomials",
+          "notionUrl": "https://www.notion.so/4013818f8ba081e7850ecba45bfaddb5"
+        }
+      ],
+      "unitCode": "MTH-T02-C04-U04",
+      "fingerprint": "t02-c04-u04-multiply-only-leading-terms-trap|reverse|f(x)=(x+#)(#x^#-#x+#)-#",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 5,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c04-u04-multiply-only-leading-terms-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 17
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 2 - Standard Exam"
+    }
+  ],
+  "drillId": "DRL-MTH-T02-C04-U04-01",
+  "title": "Dividing Polynomials — Verified Math Drill (3 Qs)",
+  "topicCode": "MTH-T02",
+  "chapterCode": "MTH-T02-C04",
+  "schemaVersion": "2.0-math",
+  "createdAt": "2026-11-17 07:26:30",
+  "config": {
+    "questionCount": 3,
+    "difficulty": "ALL",
+    "difficultyMode": "AI Synthesized Reasoning Mode"
+  },
+  "localFilePath": "drills/data/MTH-T02-C04-U04/DRL-MTH-T02-C04-U04-01.json"
+}
