@@ -2503,5 +2503,9 @@
   "DRL-PRG-T00-C03-02": {
     "id": "4153818f-8ba0-81e9-bac2-f9f97bbbe5c5",
     "title": "JavaScript & TypeScript Baseline — Verified Programming Drill (10 Qs · AI Synthesized Engineering Mode)"
+  },
+  "DRL-PRG-T01-C02-U08-01": {
+    "id": "41b3818f-8ba0-8131-a82c-d2db6e80856a",
+    "title": "Strict Mode and tsconfig — Verified Programming Drill (4 Qs · AI Synthesized Engineering Mode)"
   }
 }

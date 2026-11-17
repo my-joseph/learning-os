@@ -1220,6 +1220,152 @@
           }
         }
       ]
+    },
+    {
+      "archetypeKey": "prg-t01-c02-u08-strict-nullable-boundaries",
+      "unitCode": "PRG-T01-C02-U08",
+      "level": 1,
+      "archetype": "debugging",
+      "name": "Strict Nullable Boundaries",
+      "competencies": [
+        "strict-null-checks",
+        "nullable-unions",
+        "guarded-access"
+      ],
+      "coreConcept": "With strict null checking, represent absence in the type and narrow `null` or `undefined` before using a value that may be absent.",
+      "mentalModel": [
+        "1. Treat `null` and `undefined` as distinct values rather than assuming they fit every type.",
+        "2. Include an absence value in the type only when the contract allows it.",
+        "3. Check for the absence case before using the remaining value."
+      ],
+      "governingInvariant": "A value is used as present only after a guard has removed every allowed absence case from its type.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "non-null-assertion-hides-absence",
+          "name": "Non-null Assertion Hides a Missing Value",
+          "description": "A postfix non-null assertion suppresses the compiler warning but does not add a runtime check, so missing data can still throw.",
+          "reproducer": "function label(name: string | null): string { return name!.trim(); }"
+        },
+        {
+          "trapTag": "null-and-undefined-conflated",
+          "name": "Null and Undefined Are Not Interchangeable",
+          "description": "A contract that permits only one absence value should not silently treat the other as present or valid data.",
+          "reproducer": "const value: string | null = undefined;"
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "member_contact_card",
+          "description": "Format a profile field that may be explicitly null when a member has no verified contact detail."
+        },
+        {
+          "domain": "shipment_delivery_note",
+          "description": "Format an optional delivery note while handling missing values without unsafe assertions."
+        }
+      ],
+      "usedContexts": [
+        "member_contact_card"
+      ],
+      "source": "TypeScript Handbook: tsconfig Reference — strictNullChecks",
+      "qualityChecks": [
+        {
+          "id": "QC-prg-t01-c02-u08-guard-nullable-value",
+          "check": "Before using a value that may be null or undefined, narrow every absence case permitted by its declared type or return a deliberate absence result.",
+          "why": "A type check cannot guarantee presence when the value contract still includes an absence case.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function contactLabel(email: string | null): string { return email.trim(); }",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-prg-t01-c02-u08-no-unsafe-non-null-assertion",
+          "check": "Do not use a non-null assertion to silence a missing-value path when the function contract allows the value to be absent.",
+          "why": "The assertion changes the compiler view but leaves the runtime value unchanged.",
+          "severity": "should",
+          "knownBad": {
+            "code": "function contactLabel(email: string | undefined): string { return email!.trim(); }",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "prg-t01-c02-u08-checked-index-access",
+      "unitCode": "PRG-T01-C02-U08",
+      "level": 2,
+      "archetype": "debugging",
+      "name": "Checked Array and Record Access",
+      "competencies": [
+        "no-unchecked-indexed-access",
+        "array-bounds",
+        "record-key-presence"
+      ],
+      "coreConcept": "An array index or open index-signature lookup may not find a value; `noUncheckedIndexedAccess` exposes that possibility as `undefined` so the code must handle it.",
+      "mentalModel": [
+        "1. A numeric index or open record key does not prove an entry exists.",
+        "2. Handle `undefined` before using the retrieved value.",
+        "3. Preserve empty string, zero, or false when present; only absence takes the missing-value path."
+      ],
+      "governingInvariant": "An indexed value is used only after its presence is established; a present falsy value is not treated as missing.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "assumed-index-presence",
+          "name": "Assumed Array or Record Entry",
+          "description": "Treating an indexed lookup as definitely present makes an empty collection or missing key trigger a runtime error.",
+          "reproducer": "function firstLabel(labels: readonly string[]): string { return labels[0].trim(); }"
+        },
+        {
+          "trapTag": "strict-excludes-index-checks",
+          "name": "Assuming Strict Includes Unchecked Index Checks",
+          "description": "The `strict` family does not automatically enable `noUncheckedIndexedAccess`, so an unchecked lookup may still be typed as present.",
+          "reproducer": "{\"compilerOptions\":{\"strict\":true}} // indexed reads still require presence handling"
+        },
+        {
+          "trapTag": "preserve-present-falsy-values",
+          "name": "A Present Empty String Is Still Present",
+          "description": "Using truthiness to test an indexed string conflates a present empty string with an absent key and silently changes valid data into the missing-value result.",
+          "reproducer": "function readNote(notes: Record<string, string>, key: string): string | undefined { const note = notes[key]; return note ? note.trim() : undefined; }"
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "feature_flag_dictionary",
+          "description": "Read a named rollout flag where a key may not be present and false is a valid configured value."
+        },
+        {
+          "domain": "search_keyword_list",
+          "description": "Read a first keyword from a result list that can be empty."
+        }
+      ],
+      "usedContexts": [
+        "feature_flag_dictionary",
+        "search_keyword_list",
+        "typescript_config_migration"
+      ],
+      "source": "TypeScript Handbook: tsconfig Reference — noUncheckedIndexedAccess",
+      "qualityChecks": [
+        {
+          "id": "QC-prg-t01-c02-u08-guard-indexed-read",
+          "check": "Check that an array or index-signature lookup found a value before calling value-specific methods or returning it as definitely present.",
+          "why": "Valid indexes and open record keys can be absent at runtime even when the container itself exists.",
+          "severity": "must",
+          "knownBad": {
+            "code": "function firstKeyword(words: readonly string[]): string { return words[0].trim(); }",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-prg-t01-c02-u08-preserve-present-falsy-values",
+          "check": "Distinguish a missing indexed value from a present empty string, zero, or false rather than using truthiness as the presence test.",
+          "why": "Falsy values can be legitimate data and must not be replaced with a missing-value fallback.",
+          "severity": "should",
+          "knownBad": {
+            "code": "function flagValue(flags: Record<string, boolean>, key: string): boolean { return flags[key] || true; }",
+            "caughtBy": "review"
+          }
+        }
+      ]
     }
   ]
 }
