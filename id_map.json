@@ -2316,6 +2316,18 @@
     "title": "MDN – HTML",
     "url": "https://developer.mozilla.org/en-US/docs/Web/HTML"
   },
+  "DRL-PRG-T01-C03-U04-01": {
+    "id": "41b3818f-8ba0-8111-a4a1-e8b7d7e2ef6c",
+    "title": "Map, Set & Hashing Patterns — Verified Programming Drill (4 Qs · AI Synthesized Engineering Mode)"
+  },
+  "DRL-MTH-T02-C04-U05-01": {
+    "id": "41b3818f-8ba0-8123-8f5d-ebc25452d34e",
+    "title": "Zeros of Polynomial Functions — Verified Math Drill (5 Qs · AI Synthesized Reasoning Mode)"
+  },
+  "DRL-PRG-T01-C02-U08-01": {
+    "id": "41b3818f-8ba0-8131-a82c-d2db6e80856a",
+    "title": "Strict Mode and tsconfig — Verified Programming Drill (4 Qs · AI Synthesized Engineering Mode)"
+  },
   "DRL-MTH-T02-C04-U04-01": {
     "id": "41b3818f-8ba0-8196-a097-db4238dd781a",
     "title": "Dividing Polynomials — Verified Math Drill (3 Qs · AI Synthesized Reasoning Mode)"
@@ -2507,13 +2519,5 @@
   "DRL-PRG-T00-C03-02": {
     "id": "4153818f-8ba0-81e9-bac2-f9f97bbbe5c5",
     "title": "JavaScript & TypeScript Baseline — Verified Programming Drill (10 Qs · AI Synthesized Engineering Mode)"
-  },
-  "DRL-PRG-T01-C02-U08-01": {
-    "id": "41b3818f-8ba0-8131-a82c-d2db6e80856a",
-    "title": "Strict Mode and tsconfig — Verified Programming Drill (4 Qs · AI Synthesized Engineering Mode)"
-  },
-  "DRL-PRG-T01-C03-U04-01": {
-    "id": "41b3818f-8ba0-8111-a4a1-e8b7d7e2ef6c",
-    "title": "Map, Set & Hashing Patterns — Verified Programming Drill (4 Qs · AI Synthesized Engineering Mode)"
   }
 }
