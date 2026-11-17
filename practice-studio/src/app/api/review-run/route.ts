@@ -1,0 +1,190 @@
+import { NextRequest, NextResponse } from "next/server";
+import { spawn } from "child_process";
+import fs from "fs";
+import path from "path";
+import {
+  getPythonBin,
+  getWorkspaceRoot,
+  isSafeId,
+  loadProblemFromDisk,
+} from "@/lib/paths";
+
+const REVIEW_RUN_TIMEOUT_MS = 30_000;
+
+function isPilotMode(): boolean {
+  const val = (process.env.LEARNINGOS_PILOT || "").trim().toLowerCase();
+  return val === "1" || val === "true" || val === "yes";
+}
+
+function getExpectedWorkspaceDir(drillId: string, rootDir: string): string {
+  const sub = isPilotMode()
+    ? path.join("pilot", "workspace")
+    : path.join("drills", "workspace");
+  return path.join(rootDir, sub, drillId);
+}
+
+async function ensureWorkspaceMaterialized(
+  drillDoc: Record<string, unknown>,
+  rootDir: string,
+  pythonBin: string,
+  pythonPath: string
+): Promise<{ ok: boolean; error?: string }> {
+  const pyCode = [
+    "import json, sys",
+    "from code_engine.workspace import materialize_drill_workspace",
+    "doc = json.loads(sys.stdin.read() or '{}')",
+    `materialize_drill_workspace(doc, root_dir=${JSON.stringify(rootDir)})`,
+  ].join("\n");
+
+  return new Promise((resolve) => {
+    const proc = spawn(pythonBin, ["-c", pyCode], {
+      cwd: rootDir,
+      env: { ...process.env, PYTHONPATH: pythonPath },
+    });
+    let stderr = "";
+    const timer = setTimeout(() => {
+      proc.kill("SIGKILL");
+      resolve({ ok: false, error: "Workspace materialization timed out" });
+    }, REVIEW_RUN_TIMEOUT_MS);
+
+    proc.stderr.on("data", (chunk) => {
+      stderr += chunk.toString();
+    });
+
+    proc.on("close", (code) => {
+      clearTimeout(timer);
+      if (code !== 0) {
+        resolve({ ok: false, error: stderr.trim() || `Exited with code ${code}` });
+      } else {
+        resolve({ ok: true });
+      }
+    });
+
+    proc.stdin.end(JSON.stringify(drillDoc));
+  });
+}
+
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const drillId = body.drillId || body.drill;
+    const problemId = body.problemId || body.q;
+
+    if (!drillId || !problemId || !isSafeId(drillId) || !isSafeId(problemId)) {
+      return NextResponse.json(
+        { error: "Missing or invalid drillId or problemId" },
+        { status: 400 }
+      );
+    }
+
+    const rootDir = getWorkspaceRoot();
+    const pythonBin = getPythonBin(rootDir);
+    const pythonPath = [
+      rootDir,
+      path.resolve(rootDir, ".."),
+      path.join(rootDir, "practice-studio"),
+      process.cwd(),
+    ].join(path.delimiter);
+
+    if (!drillId.startsWith("LAB-")) {
+      const loaded = loadProblemFromDisk(drillId, problemId);
+      if (!loaded) {
+        return NextResponse.json(
+          { error: "Drill or problem not found" },
+          { status: 404 }
+        );
+      }
+
+      const wsDir = getExpectedWorkspaceDir(drillId, rootDir);
+      if (!fs.existsSync(wsDir)) {
+        const materialized = await ensureWorkspaceMaterialized(
+          loaded.doc,
+          rootDir,
+          pythonBin,
+          pythonPath
+        );
+        if (!materialized.ok) {
+          return NextResponse.json(
+            { error: materialized.error || "Failed to materialize workspace" },
+            { status: 500 }
+          );
+        }
+      }
+    }
+
+    return new Promise<NextResponse>((resolve) => {
+      const proc = spawn(
+        pythonBin,
+        ["-m", "code_engine.review_run", drillId, problemId, "--json"],
+        {
+          cwd: rootDir,
+          env: { ...process.env, PYTHONPATH: pythonPath },
+        }
+      );
+
+      let stdout = "";
+      let stderr = "";
+      let timedOut = false;
+
+      const timer = setTimeout(() => {
+        timedOut = true;
+        proc.kill("SIGKILL");
+        resolve(
+          NextResponse.json(
+            { error: "Review check timed out" },
+            { status: 504 }
+          )
+        );
+      }, REVIEW_RUN_TIMEOUT_MS);
+
+      proc.stdout.on("data", (data) => {
+        stdout += data.toString();
+      });
+
+      proc.stderr.on("data", (data) => {
+        stderr += data.toString();
+      });
+
+      proc.on("close", (code) => {
+        clearTimeout(timer);
+        if (timedOut) return;
+
+        if (code !== 0) {
+          resolve(
+            NextResponse.json(
+              {
+                error:
+                  stderr.trim() ||
+                  stdout.trim() ||
+                  `review_run exited with code ${code}`,
+              },
+              { status: 500 }
+            )
+          );
+          return;
+        }
+
+        try {
+          const parsed = JSON.parse(stdout.trim());
+          resolve(
+            NextResponse.json({
+              ...parsed,
+              types: parsed.typecheck ?? [],
+            })
+          );
+        } catch (err: unknown) {
+          const errMsg = err instanceof Error ? err.message : String(err);
+          resolve(
+            NextResponse.json(
+              { error: `Could not parse review_run output: ${errMsg}` },
+              { status: 500 }
+            )
+          );
+        }
+      });
+    });
+  } catch (err: unknown) {
+    const errMsg = err instanceof Error ? err.message : String(err);
+    return NextResponse.json({ error: errMsg }, { status: 500 });
+  }
+}

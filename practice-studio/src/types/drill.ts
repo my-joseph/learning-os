@@ -223,6 +223,7 @@ export interface ReviewRecord {
   findings: ReviewFinding[];
   verdict: "pass" | "revise";
   explain: string | null;
+  explainQuestion?: string | null;
 }
 
 export interface ProblemState {
