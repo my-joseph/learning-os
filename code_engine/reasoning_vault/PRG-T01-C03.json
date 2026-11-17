@@ -726,6 +726,240 @@
           }
         }
       ]
+    },
+    {
+      "archetypeKey": "prg-c03-u05-singly-list-boundaries",
+      "unitCode": "PRG-T01-C03-U05",
+      "level": 1,
+      "archetype": "problem-solving",
+      "name": "Singly Linked List Boundary Mutations",
+      "competencies": [
+        "data-structures",
+        "pointer-invariants",
+        "boundary-handling"
+      ],
+      "coreConcept": "A singly linked list is a chain of nodes where each next reference identifies the successor and the list separately tracks its first and last nodes.",
+      "mentalModel": [
+        "1. Treat head, tail, size, and every next link as one shared invariant.",
+        "2. Identify whether a mutation changes the first node, last node, or an interior link.",
+        "3. Update every affected list field before returning."
+      ],
+      "governingInvariant": "An empty list has no head or tail; a non-empty list has both, its tail has no successor, and size equals the number of reachable nodes.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "stale-tail-after-removal",
+          "name": "Leave a Removed Tail Reachable",
+          "description": "Removing the final node can leave tail pointing at a node no longer reachable from head.",
+          "reproducer": "if (current.next === null) { current = null; } // tail still points at removed node"
+        },
+        {
+          "trapTag": "empty-to-singleton-links",
+          "name": "Miss an Empty-to-Singleton Transition",
+          "description": "Adding the first node must initialize both endpoints, not just head.",
+          "reproducer": "if (this.head === null) this.head = node; else this.tail.next = node; this.tail = node;"
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "event_queue_buffers",
+          "description": "Maintain an ordered queue of pending event records."
+        },
+        {
+          "domain": "device_registry_updates",
+          "description": "Apply ordered insertion and deletion in a registry mirror."
+        }
+      ],
+      "usedContexts": [
+        "event_queue_buffers",
+        "device_registry_updates"
+      ],
+      "source": "TypeScript Handbook 5.9.3: strict null checking and narrowing; linked-list invariants are derived from the stated data-structure contract.",
+      "qualityChecks": [
+        {
+          "id": "QC-prg-c03-u05-singly-list-endpoints",
+          "check": "Every mutation keeps head and tail consistent with reachability, including empty and singleton transitions.",
+          "why": "Stale endpoint references corrupt subsequent operations even when current output looks correct.",
+          "severity": "must",
+          "knownBad": {
+            "code": "if (this.head === null) this.head = node; else this.tail!.next = node; // tail never initialized",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-prg-c03-u05-singly-list-size",
+          "check": "The stored size equals the number of nodes reachable from head after each successful mutation.",
+          "why": "Incorrect counts make public length metadata diverge from the collection.",
+          "severity": "must",
+          "knownBad": {
+            "code": "removeFirst() { this.head = this.head?.next ?? null; } // size unchanged",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-prg-c03-u05-singly-list-no-input-alias-mutation",
+          "check": "Mutations change only list-owned links and do not rewrite caller-owned values.",
+          "why": "Changing payload records as a side effect can corrupt other consumers.",
+          "severity": "should",
+          "knownBad": {
+            "code": "items[0].next = items[1]; return items;",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "prg-c03-u05-doubly-list-link-symmetry",
+      "unitCode": "PRG-T01-C03-U05",
+      "level": 2,
+      "archetype": "problem-solving",
+      "name": "Doubly Linked List Link Symmetry",
+      "competencies": [
+        "data-structures",
+        "bidirectional-links",
+        "state-management"
+      ],
+      "coreConcept": "A doubly linked list stores both predecessor and successor references, so each adjacent pair must agree in both directions.",
+      "mentalModel": [
+        "1. Locate the node and its left/right neighbors.",
+        "2. Reconnect the neighbors to each other in both directions.",
+        "3. Normalize head/tail links and size at the boundaries."
+      ],
+      "governingInvariant": "For every adjacent pair A and B, A.next is B exactly when B.previous is A; the head has no previous node and the tail has no next node.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "one-sided-unlink",
+          "name": "Update Only One Direction",
+          "description": "Changing next but not previous leaves reverse traversal connected to removed nodes.",
+          "reproducer": "left.next = right; // right.previous still references removed"
+        },
+        {
+          "trapTag": "neighbor-assumption-at-boundary",
+          "name": "Assume Both Neighbors Exist",
+          "description": "Head and tail removals have one missing neighbor and require endpoint updates.",
+          "reproducer": "node.previous!.next = node.next!; node.next!.previous = node.previous!;"
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "recently_viewed_navigation",
+          "description": "Maintain a bidirectional history sequence with fast endpoint updates."
+        },
+        {
+          "domain": "playlist_order_editor",
+          "description": "Move or remove adjacent media items while supporting reverse navigation."
+        }
+      ],
+      "usedContexts": [
+        "playlist_order_editor"
+      ],
+      "source": "TypeScript Handbook 5.9.3: strict null checking and narrowing; bidirectional links are governed by the collection contract.",
+      "qualityChecks": [
+        {
+          "id": "QC-prg-c03-u05-doubly-link-symmetry",
+          "check": "Every reconnect updates both neighboring references so forward and backward traversal describe the same sequence.",
+          "why": "One-sided changes produce inconsistent iteration and retain detached nodes.",
+          "severity": "must",
+          "knownBad": {
+            "code": "left.next = right; // missing reciprocal previous update",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-prg-c03-u05-doubly-endpoint-nullability",
+          "check": "Boundary operations handle a missing predecessor or successor without unsafe dereferences and update the matching endpoint.",
+          "why": "The first and last nodes do not have two neighbors.",
+          "severity": "must",
+          "knownBad": {
+            "code": "node.previous!.next = node.next!; node.next!.previous = node.previous!;",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-prg-c03-u05-doubly-detach-node",
+          "check": "A removed node is no longer reachable from either endpoint and does not retain active neighbor links.",
+          "why": "Detached nodes retaining links can expose stale collection state.",
+          "severity": "should",
+          "knownBad": {
+            "code": "left.next = right; right.previous = left; // removed node still links to both",
+            "caughtBy": "review"
+          }
+        }
+      ]
+    },
+    {
+      "archetypeKey": "prg-c03-u05-list-mutation-debugging",
+      "unitCode": "PRG-T01-C03-U05",
+      "level": 2,
+      "archetype": "debugging",
+      "name": "Linked List Mutation Regression",
+      "competencies": [
+        "debugging",
+        "invariant-reasoning",
+        "regression-testing"
+      ],
+      "coreConcept": "Linked-list mutation defects often appear only after a sequence crosses an endpoint boundary, so checks must reason over transitions rather than isolated calls.",
+      "mentalModel": [
+        "1. Replay the operation sequence from the initial state.",
+        "2. Compare reachable nodes, endpoints, and size after every step.",
+        "3. Add a regression case for the boundary transition that exposes the divergence."
+      ],
+      "governingInvariant": "After every operation the sequence from head and the reverse sequence from tail agree with the same set of active nodes and the reported size.",
+      "cognitiveTraps": [
+        {
+          "trapTag": "single-operation-only-test",
+          "name": "Test Only the Immediate Return Value",
+          "description": "A mutation may appear correct before a later append or reverse traversal exposes a stale link.",
+          "reproducer": "removeTail(); append(next); // stale tail can make the new node unreachable"
+        },
+        {
+          "trapTag": "value-match-instead-of-node-identity",
+          "name": "Remove a Different Equal-Payload Node",
+          "description": "When the contract identifies a node or position, comparing payloads can unlink a different node with an equal value.",
+          "reproducer": "if (cursor.value === target.value) unlink(cursor);"
+        },
+        {
+          "trapTag": "stale-tail-after-removal",
+          "name": "Retain a Tail After the List Is Empty",
+          "description": "Clearing the last reachable node without clearing the tail leaves a stale endpoint that can disconnect a later append.",
+          "reproducer": "this.head = null; // tail still refers to the removed node"
+        }
+      ],
+      "realWorldDomains": [
+        {
+          "domain": "task_board_ordering",
+          "description": "Keep queued work ordered as items are removed and reinserted."
+        },
+        {
+          "domain": "history_cursor_navigation",
+          "description": "Keep back/forward navigation consistent through endpoint changes."
+        }
+      ],
+      "usedContexts": [
+        "history_cursor_navigation"
+      ],
+      "source": "TypeScript Handbook 5.9.3: strict null checking and narrowing; mutation-sequence tests follow the declared linked-list contract.",
+      "qualityChecks": [
+        {
+          "id": "QC-prg-c03-u05-list-transition-regression",
+          "check": "After any successful removal, head, tail, and size agree with the active linked nodes before the method returns.",
+          "why": "A stale endpoint can make later operations disconnect active nodes even when the immediate return value looks correct.",
+          "severity": "must",
+          "knownBad": {
+            "code": "if (this.head === removed) { this.head = null; this.count -= 1; return removed.value; }",
+            "caughtBy": "review"
+          }
+        },
+        {
+          "id": "QC-prg-c03-u05-list-reachability",
+          "check": "All active nodes are reachable exactly once from the declared head and reverse traversal reaches the same sequence from tail.",
+          "why": "Cycles, detached nodes, and stale endpoints can hide behind correct payload output.",
+          "severity": "must",
+          "knownBad": {
+            "code": "tail.next = head; // accidentally creates a cycle",
+            "caughtBy": "review"
+          }
+        }
+      ]
     }
   ]
 }

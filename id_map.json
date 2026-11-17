@@ -2515,5 +2515,9 @@
   "DRL-PRG-T00-C03-02": {
     "id": "4153818f-8ba0-81e9-bac2-f9f97bbbe5c5",
     "title": "JavaScript & TypeScript Baseline — Verified Programming Drill (10 Qs · AI Synthesized Engineering Mode)"
+  },
+  "DRL-PRG-T01-C03-U05-01": {
+    "id": "41b3818f-8ba0-8157-9ebe-e247d9fcf696",
+    "title": "Linked Lists & Pointer Manipulation — Verified Programming Drill (4 Qs · AI Synthesized Engineering Mode)"
   }
 }
