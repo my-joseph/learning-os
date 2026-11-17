@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { ChevronLeft, ChevronRight, ClipboardCheck, Eye } from "lucide-react";
 import { Problem } from "@/types/drill";
 
 interface QuizPaginationBarProps {
@@ -15,126 +14,76 @@ interface QuizPaginationBarProps {
   onToggleViewMode: (mode: "quiz" | "review") => void;
 }
 
+/** Question tiles row under the header: one small square per question, colour = first attempt. */
 export const QuizPaginationBar: React.FC<QuizPaginationBarProps> = ({
-  totalQuestions,
   currentIndex,
   problems,
   viewMode,
   onSelectQuestion,
-  onPrev,
-  onNext,
-  onToggleViewMode,
 }) => {
   return (
-    <div className="flex items-center justify-between gap-3 pt-2.5 border-t border-slate-200 dark:border-[#242f47]">
-      {/* Left: Prev/Next & Question Number Pills (No Scrollbar, Generous Spacing & Uncropped Ring) */}
-      <div className="flex items-center gap-2 flex-1 min-w-0">
-        <button
-          type="button"
-          onClick={onPrev}
-          disabled={viewMode === "quiz" ? currentIndex === 0 : false}
-          className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-[#1b2336] hover:bg-slate-200 dark:hover:bg-[#232d44] disabled:opacity-40 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-[#2b3852] transition-colors shrink-0"
-          title="Previous Question (ArrowLeft)"
-        >
-          <ChevronLeft className="w-4 h-4" />
-        </button>
+    <div className="pt-2 border-t border-zinc-200/80 dark:border-zinc-800/80">
+      <div
+        role="navigation"
+        aria-label="Questions"
+        className="flex items-center gap-1.5 overflow-x-auto py-1 px-0.5 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+      >
+        {problems.map((prob, idx) => {
+          const isSkipped = prob.state?.skipped === true;
+          const hasScore = prob.state?.score !== null && prob.state?.score !== undefined;
+          const scoreVal = prob.state?.score ?? 0;
+          const isAssisted = Boolean(
+            prob.state?.setupRevealedBeforeAnswer ||
+              prob.state?.solutionRevealedBeforeAnswer ||
+              (prob.state?.hintsRevealed ?? 0) > 0 ||
+              prob.state?.attempts?.some((a) => a.setupRevealed || a.solutionRevealed)
+          );
+          const isIndependentFull = hasScore && scoreVal >= 1 && !isAssisted && !isSkipped;
+          const isPartialOrAssisted =
+            hasScore && scoreVal > 0 && !isIndependentFull && !isSkipped;
+          const isIncorrect = hasScore && scoreVal === 0 && !isSkipped;
+          const isActive = viewMode === "quiz" && currentIndex === idx;
 
-        <div className="flex items-center gap-2 overflow-x-auto py-1.5 px-1.5 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-          {problems.map((prob, idx) => {
-            const isSkipped = prob.state?.skipped === true;
-            const hasScore = prob.state?.score !== null && prob.state?.score !== undefined;
-            const scoreVal = prob.state?.score ?? 0;
-            const isAssisted = Boolean(
-              prob.state?.setupRevealedBeforeAnswer ||
-                prob.state?.solutionRevealedBeforeAnswer ||
-                (prob.state?.hintsRevealed ?? 0) > 0 ||
-                prob.state?.attempts?.some((a) => a.setupRevealed || a.solutionRevealed)
-            );
-            const isIndependentFull = hasScore && scoreVal >= 1 && !isAssisted && !isSkipped;
-            const isPartialOrAssisted = hasScore && scoreVal > 0 && !isIndependentFull && !isSkipped;
-            const isIncorrect = hasScore && scoreVal === 0 && !isSkipped;
-            const isActive = viewMode === "quiz" && currentIndex === idx;
+          let colorCls =
+            "bg-zinc-50 dark:bg-zinc-950 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600";
+          let statusLabel = "Unanswered";
 
-            let colorCls =
-              "bg-white dark:bg-[#182032] text-slate-700 dark:text-slate-300 border-slate-300 dark:border-[#2b3752] hover:border-indigo-400";
-            let statusLabel = "Unanswered";
+          if (isIndependentFull) {
+            colorCls =
+              "bg-emerald-700 hover:bg-emerald-800 dark:bg-emerald-500 dark:hover:bg-emerald-400 text-white dark:text-zinc-950 border-emerald-700 dark:border-emerald-500";
+            statusLabel = `Correct on first attempt (${scoreVal})`;
+          } else if (isPartialOrAssisted) {
+            colorCls =
+              "bg-amber-600 hover:bg-amber-700 dark:bg-amber-400 dark:hover:bg-amber-300 text-white dark:text-zinc-950 border-amber-600 dark:border-amber-400";
+            statusLabel = `Assisted or partial (${scoreVal})`;
+          } else if (isIncorrect) {
+            colorCls =
+              "bg-rose-600 hover:bg-rose-700 dark:bg-rose-400 dark:hover:bg-rose-300 text-white dark:text-zinc-950 border-rose-600 dark:border-rose-400";
+            statusLabel = "Incorrect (0)";
+          } else if (isSkipped) {
+            colorCls =
+              "bg-transparent hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 dark:text-zinc-500 border-dashed border-zinc-300 dark:border-zinc-700";
+            statusLabel = "Skipped";
+          }
 
-            if (isIndependentFull) {
-              colorCls =
-                "bg-emerald-700 hover:bg-emerald-800 text-white font-bold border-emerald-700 shadow-sm";
-              statusLabel = `Score: ${scoreVal}`;
-            } else if (isPartialOrAssisted) {
-              colorCls =
-                "bg-amber-500 hover:bg-amber-400 text-white font-bold border-amber-400 shadow-sm";
-              statusLabel = `Assisted / Partial (${scoreVal})`;
-            } else if (isIncorrect) {
-              colorCls =
-                "bg-rose-600 hover:bg-rose-500 text-white font-bold border-rose-500 shadow-sm";
-              statusLabel = "Incorrect (0)";
-            } else if (isSkipped) {
-              // Ghost style for skipped question: transparent background, dashed border, muted text
-              colorCls =
-                "bg-transparent hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 dark:text-slate-500 border border-dashed border-slate-300 dark:border-slate-600 font-medium";
-              statusLabel = "Skipped (Concept Gap)";
-            }
+          const activeRing = isActive
+            ? "ring-2 ring-indigo-600 dark:ring-indigo-500 ring-offset-1 ring-offset-white dark:ring-offset-zinc-900 z-10 font-semibold"
+            : "font-medium";
 
-            const activeRing = isActive
-              ? "ring-2 ring-indigo-500 ring-offset-2 ring-offset-white dark:ring-offset-[#151924] z-10 font-black"
-              : "opacity-90 hover:opacity-100 font-semibold";
-
-            return (
-              <button
-                key={prob.id}
-                type="button"
-                onClick={() => onSelectQuestion(idx)}
-                title={`Question ${idx + 1} (${prob.id}) — ${statusLabel}`}
-                className={`relative w-8 h-8 rounded-lg border text-xs flex items-center justify-center font-mono transition-all shrink-0 ${colorCls} ${activeRing}`}
-              >
-                {idx + 1}
-              </button>
-            );
-          })}
-        </div>
-
-        <button
-          type="button"
-          onClick={onNext}
-          disabled={viewMode === "quiz" ? currentIndex === totalQuestions - 1 : false}
-          className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-[#1b2336] hover:bg-slate-200 dark:hover:bg-[#232d44] disabled:opacity-40 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-[#2b3852] transition-colors shrink-0"
-          title="Next Question (ArrowRight)"
-        >
-          <ChevronRight className="w-4 h-4" />
-        </button>
-      </div>
-
-      {/* Right: Icon-Only Mode Switcher (Focus Mode vs Pre-Sync Review) */}
-      <div className="flex items-center gap-1 bg-slate-100 dark:bg-[#0e1320] p-1 rounded-xl border border-slate-200 dark:border-[#242f47] shrink-0">
-        <button
-          type="button"
-          onClick={() => onToggleViewMode("quiz")}
-          title="Focus Mode (Single Question)"
-          aria-label="Focus Mode (Single Question)"
-          className={`inline-flex items-center justify-center w-8 h-8 rounded-lg transition-all ${
-            viewMode === "quiz"
-              ? "bg-indigo-600 text-white shadow-sm"
-              : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
-          }`}
-        >
-          <Eye className="w-4 h-4" />
-        </button>
-        <button
-          type="button"
-          onClick={() => onToggleViewMode("review")}
-          title="Pre-Sync Review & Summary"
-          aria-label="Pre-Sync Review & Summary"
-          className={`inline-flex items-center justify-center w-8 h-8 rounded-lg transition-all ${
-            viewMode === "review"
-              ? "bg-emerald-700 text-white shadow-sm"
-              : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
-          }`}
-        >
-          <ClipboardCheck className="w-4 h-4" />
-        </button>
+          return (
+            <button
+              key={prob.id}
+              type="button"
+              onClick={() => onSelectQuestion(idx)}
+              title={`Question ${idx + 1} — ${statusLabel}`}
+              aria-label={`Question ${idx + 1} — ${statusLabel}`}
+              aria-current={isActive ? "step" : undefined}
+              className={`relative w-7 h-7 rounded-md border text-xs flex items-center justify-center font-mono transition-colors shrink-0 ${colorCls} ${activeRing}`}
+            >
+              {idx + 1}
+            </button>
+          );
+        })}
       </div>
     </div>
   );

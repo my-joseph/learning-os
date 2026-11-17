@@ -122,7 +122,7 @@ export const StudioShell: React.FC<StudioShellProps> = ({
 
   const tiles =
     currentDrill && currentDrill.problems.length > 0 ? (
-      <div className="mt-2.5">
+      <div className="mt-2">
         <QuizPaginationBar
           totalQuestions={currentDrill.problems.length}
           currentIndex={currentProblemIndex}
@@ -136,17 +136,18 @@ export const StudioShell: React.FC<StudioShellProps> = ({
       </div>
     ) : null;
 
+  const containerMaxWidth =
+    viewMode === "review"
+      ? "max-w-5xl"
+      : workspace === "math"
+      ? "max-w-[720px]"
+      : "max-w-5xl";
+
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#0d1017] text-slate-900 dark:text-slate-100 p-3 md:p-5 lg:p-6 transition-colors">
-      <div
-        className={`mx-auto transition-[max-width] duration-200 ${
-          viewMode === "review" ? "max-w-7xl" : "max-w-5xl"
-        }`}
-      >
-        {/* ===================================================================== */}
-        {/* SINGLE UNIFIED STICKY WORKSPACE BAR (Strictly 2 Rows, Auto-hides)     */}
-        {/* ===================================================================== */}
-        {viewMode === "quiz" && (
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 px-4 py-4 sm:py-6 transition-colors">
+      <div className={`mx-auto ${containerMaxWidth}`}>
+        {/* Provide sr-only h1 when not on Math quiz workspace (which renders its own visible h1) */}
+        {viewMode === "quiz" && (workspace !== "math" || !currentDrill) && (
           <h1 className="sr-only">
             {currentDrill
               ? `${currentDrill.unitTitle || currentDrill.unitCode} Practice`
@@ -159,6 +160,8 @@ export const StudioShell: React.FC<StudioShellProps> = ({
           workspace={workspace}
           mathHref={mathHref}
           codeHref={codeHref}
+          viewMode={viewMode}
+          onToggleViewMode={onToggleViewMode}
           currentDrill={currentDrill}
           liveScore={liveScore}
           maxScore={maxScore}
@@ -186,20 +189,23 @@ export const StudioShell: React.FC<StudioShellProps> = ({
           tiles={tiles}
         />
 
-        {/* Status Notification Banner */}
+        {/* Calm Status Notification Banner (left border accent, never full-card fill) */}
         {status && (
           <div
-            className={`p-3.5 rounded-xl mb-5 text-xs md:text-sm flex items-center justify-between border ${
+            role="status"
+            className={`px-4 py-3 rounded-xl mb-5 text-xs sm:text-sm flex items-center justify-between bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 border-l-4 ${
               status.type === "pass"
-                ? "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-500/30"
+                ? "border-l-emerald-700 dark:border-l-emerald-400"
                 : status.type === "fail"
-                ? "bg-rose-50 dark:bg-rose-500/10 text-rose-800 dark:text-rose-300 border-rose-200 dark:border-rose-500/30"
-                : "bg-amber-50 dark:bg-amber-500/10 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-500/30"
+                ? "border-l-rose-600 dark:border-l-rose-400"
+                : "border-l-amber-600 dark:border-l-amber-400"
             }`}
           >
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 text-zinc-800 dark:text-zinc-200">
               {status.type === "pass" ? (
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                <CheckCircle2 className="w-4 h-4 text-emerald-700 dark:text-emerald-400 shrink-0" />
+              ) : status.type === "fail" ? (
+                <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0" />
               ) : (
                 <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
               )}
@@ -208,16 +214,14 @@ export const StudioShell: React.FC<StudioShellProps> = ({
             <button
               type="button"
               onClick={() => onStatusChange(null)}
-              className="inline-flex items-center justify-center w-7 h-7 rounded-lg text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+              aria-label="Dismiss notification"
+              className="inline-flex items-center justify-center w-7 h-7 rounded-lg text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
         )}
 
-        {/* ===================================================================== */}
-        {/* MAIN WORKSPACE AREA: LOADING / QUIZ FOCUS / PRE-SYNC REVIEW           */}
-        {/* ===================================================================== */}
         <main>{children}</main>
       </div>
     </div>

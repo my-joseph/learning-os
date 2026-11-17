@@ -18,15 +18,14 @@ export const MathFigure: React.FC<MathFigureProps> = ({
 }) => {
   if (!figure) return null;
 
-  // Check if it's the new Semantic Spec (has 'kind')
   if ("kind" in figure) {
     return (
       <div
-        className={`my-3 p-3.5 bg-slate-50/80 dark:bg-[#0d121c] rounded-2xl border border-slate-200/80 dark:border-[#222a3d] transition-all flex flex-col items-center shadow-xs ${className}`}
+        className={`w-full p-4 bg-zinc-50 dark:bg-zinc-950 rounded-xl border border-zinc-200 dark:border-zinc-800 flex flex-col items-center ${className}`}
       >
         {figure.title && (
           <div className="w-full flex items-center justify-start mb-2 px-1">
-            <span className="text-[11px] font-semibold tracking-wide text-slate-600 dark:text-slate-400 uppercase">
+            <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
               {figure.title}
             </span>
           </div>
@@ -35,7 +34,7 @@ export const MathFigure: React.FC<MathFigureProps> = ({
         {figure.kind === "geometry_2d" && <GeometryRenderer spec={figure} />}
         {figure.kind === "cartesian_graph" && <CartesianRenderer spec={figure} />}
         {figure.note && (
-          <div className="w-full text-right px-1 mt-1 text-[11px] italic text-slate-600 dark:text-slate-400">
+          <div className="w-full text-right px-1 mt-1 text-xs italic text-zinc-500 dark:text-zinc-400">
             {figure.note}
           </div>
         )}
@@ -43,6 +42,5 @@ export const MathFigure: React.FC<MathFigureProps> = ({
     );
   }
 
-  // Fallback to legacy VisualRenderer if it's the old VisualSpec
   return <VisualRenderer visual={figure} className={className} />;
 };

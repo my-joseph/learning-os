@@ -63,13 +63,13 @@ export const VisualRenderer: React.FC<VisualRendererProps> = ({
   };
 
   return (
-    <div className={`flex flex-col items-center my-3 p-3 bg-slate-50 dark:bg-[#0e121b] rounded-xl border border-slate-200 dark:border-[#232a3d] transition-all ${className}`}>
+    <div className={`w-full flex flex-col items-center p-4 bg-zinc-50 dark:bg-zinc-950 rounded-xl border border-zinc-200 dark:border-zinc-800 transition-all ${className}`}>
       {hasInteractive && (
         <div className="w-full flex justify-end mb-2">
           <button
             type="button"
             onClick={() => setShowInteractive(!showInteractive)}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-lg border transition-colors bg-white dark:bg-[#151b28] text-slate-700 dark:text-slate-300 border-slate-200 dark:border-[#28324a] hover:border-indigo-400 dark:hover:border-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-lg border transition-colors bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-800 hover:border-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400"
           >
             {showInteractive ? (
               <>
@@ -91,8 +91,8 @@ export const VisualRenderer: React.FC<VisualRendererProps> = ({
       ) : (
         <svg
           viewBox={`0 0 ${width} ${height}`}
-          className="w-full max-w-[360px] h-auto select-none overflow-visible"
-          style={{ maxHeight: "240px" }}
+          className="w-full h-auto select-none overflow-visible"
+          style={{ maxHeight: "380px" }}
         >
           {visual.elements.map((el, idx) => (
             <RenderElement key={idx} element={el} />

@@ -178,8 +178,8 @@ export const CartesianRenderer: React.FC<CartesianRendererProps> = ({ spec }) =>
     <div className="relative w-full flex flex-col items-center select-none overflow-hidden">
       <svg
         viewBox={`0 0 ${svgWidth} ${svgHeight}`}
-        className="w-full max-w-[420px] h-auto overflow-visible"
-        style={{ maxHeight: "280px" }}
+        className="w-full h-auto overflow-visible"
+        style={{ maxHeight: "380px" }}
       >
         <defs>
           {/* Arrowhead marker for axes */}

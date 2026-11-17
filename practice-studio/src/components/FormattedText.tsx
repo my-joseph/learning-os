@@ -48,14 +48,14 @@ export const FormattedText: React.FC<FormattedTextProps> = ({
             <span
               key={idx}
               dangerouslySetInnerHTML={{ __html: html }}
-              className="inline-math text-indigo-700 dark:text-indigo-200"
+              className="inline-math"
             />
           );
         } catch {
           return (
             <code
               key={idx}
-              className="font-mono text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-[#171d2c] border border-indigo-200 dark:border-indigo-700/40 px-1.5 py-0.5 rounded text-[0.88em]"
+              className="font-mono text-zinc-800 dark:text-zinc-200 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 px-1.5 py-0.5 rounded text-[0.88em]"
             >
               {tex}
             </code>
@@ -67,7 +67,7 @@ export const FormattedText: React.FC<FormattedTextProps> = ({
       if (seg.startsWith("**") && seg.endsWith("**") && seg.length >= 4) {
         const boldText = seg.slice(2, -2);
         return (
-          <strong key={idx} className="font-semibold text-slate-900 dark:text-white tracking-wide">
+          <strong key={idx} className="font-semibold text-zinc-900 dark:text-zinc-100">
             {boldText}
           </strong>
         );
@@ -79,7 +79,7 @@ export const FormattedText: React.FC<FormattedTextProps> = ({
         return (
           <code
             key={idx}
-            className="font-mono text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-[#131a29] border border-sky-200 dark:border-sky-500/40 px-1.5 py-0.5 rounded text-[0.88em] font-medium shadow-sm"
+            className="font-mono text-zinc-800 dark:text-zinc-200 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 px-1.5 py-0.5 rounded text-[0.88em]"
           >
             {code}
           </code>
@@ -89,14 +89,16 @@ export const FormattedText: React.FC<FormattedTextProps> = ({
       // 4. Concept Vault Token: [[KEY]]
       if (seg.startsWith("[[") && seg.endsWith("]]") && seg.length >= 4) {
         const key = seg.slice(2, -2);
-        const displayLabel = key.startsWith("CON-") ? key.replace("CON-", "").replace(/-/g, " ") : key;
+        const displayLabel = key.startsWith("CON-")
+          ? key.replace("CON-", "").replace(/-/g, " ")
+          : key;
         return (
           <span
             key={idx}
-            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[0.85em] font-medium bg-emerald-50 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/50 shadow-sm align-baseline"
+            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[0.85em] font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 align-baseline"
             title={`Concept Vault: ${key}`}
           >
-            <BookOpen className="w-3 h-3 shrink-0 opacity-80" />
+            <BookOpen className="w-3 h-3 shrink-0 opacity-70" />
             <span>{displayLabel}</span>
           </span>
         );
@@ -108,7 +110,7 @@ export const FormattedText: React.FC<FormattedTextProps> = ({
         return (
           <code
             key={idx}
-            className="font-mono text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-[#131a29] border border-sky-200 dark:border-sky-500/40 px-1.5 py-0.5 rounded text-[0.88em] font-medium shadow-sm"
+            className="font-mono text-zinc-800 dark:text-zinc-200 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 px-1.5 py-0.5 rounded text-[0.88em]"
           >
             {code}
           </code>
@@ -138,9 +140,9 @@ export const FormattedText: React.FC<FormattedTextProps> = ({
           return (
             <div
               key={lineIdx}
-              className="flex items-start gap-2 text-slate-700 dark:text-slate-200 leading-relaxed pl-2 py-0.5"
+              className="flex items-start gap-2 text-zinc-800 dark:text-zinc-200 leading-relaxed pl-2 py-0.5"
             >
-              <span className="text-sky-600 dark:text-sky-400 font-bold select-none text-xs mt-1 shrink-0">
+              <span className="text-zinc-400 dark:text-zinc-500 font-bold select-none text-xs mt-1 shrink-0">
                 •
               </span>
               <div className="flex-1">{renderInline(bulletContent)}</div>
@@ -155,9 +157,9 @@ export const FormattedText: React.FC<FormattedTextProps> = ({
           return (
             <div
               key={lineIdx}
-              className="flex items-start gap-2 text-slate-700 dark:text-slate-200 leading-relaxed pl-2 py-0.5"
+              className="flex items-start gap-2 text-zinc-800 dark:text-zinc-200 leading-relaxed pl-2 py-0.5"
             >
-              <span className="font-mono text-sky-600 dark:text-sky-400 font-bold select-none text-xs mt-0.5 shrink-0">
+              <span className="font-mono text-zinc-500 dark:text-zinc-400 font-semibold select-none text-xs mt-0.5 shrink-0">
                 {num}.
               </span>
               <div className="flex-1">{renderInline(numContent)}</div>
@@ -166,7 +168,7 @@ export const FormattedText: React.FC<FormattedTextProps> = ({
         }
 
         return (
-          <div key={lineIdx} className="text-slate-800 dark:text-slate-200 leading-relaxed">
+          <div key={lineIdx} className="text-zinc-800 dark:text-zinc-200 leading-relaxed">
             {renderInline(line)}
           </div>
         );
