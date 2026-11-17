@@ -1,0 +1,426 @@
+{
+  "unitCode": "PRG-T01-C03-U04",
+  "unitTitle": "Map, Set & Hashing Patterns",
+  "environment": "typescript-strict",
+  "sourceAttribution": "PRG-T01-C03-U04 unit page; MDN Web Docs — Map key equality (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map), Set insertion order (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set), and current unit reasoning-vault archetypes. Scenarios authored for this drill.",
+  "config": {
+    "questionCount": 4,
+    "difficulty": "ALL",
+    "difficultyMode": "AI Synthesized Engineering Mode"
+  },
+  "problems": [
+    {
+      "id": "Q01",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "codeType": "implement",
+      "archetypeKey": "prg-c03-u04-map-frequency-index",
+      "commonTrapTag": "key-normalization-collision",
+      "context": "telemetry_event_frequency",
+      "entryPoint": "countEventCodes",
+      "prompt": "An observability service needs a frequency index for event codes received during a reporting window. Implement `countEventCodes` so each exact code maps to the number of times it appeared.\n\n**Requirements**\n- Keep the exported function name and return a `Map<string, number>`.\n- Preserve the original event-code strings as keys; do not lowercase or trim them.\n- Return an empty map when the input has no codes.\n- Do not mutate the readonly input array; preserve its complete order after returning.",
+      "inputHint": "Treat the event code as the key exactly as it arrived.",
+      "checkpointHint": "Compare two codes that differ only by letter case, then check the empty window.",
+      "starterCode": "export function countEventCodes(_codes: readonly string[]): Map<string, number> {\n  return new Map<string, number>();\n}\n",
+      "solutionCode": "export function countEventCodes(codes: readonly string[]): Map<string, number> {\n  const counts = new Map<string, number>();\n  for (const code of codes) {\n    const currentCount = counts.get(code);\n    if (currentCount === undefined) counts.set(code, 1);\n    else counts.set(code, currentCount + 1);\n  }\n  return counts;\n}\n",
+      "trapMutant": "export function countEventCodes(codes: readonly string[]): Map<string, number> {\n  const counts = new Map<string, number>();\n  for (const code of codes) {\n    const normalized = code.toLowerCase();\n    counts.set(normalized, (counts.get(normalized) ?? 0) + 1);\n  }\n  return counts;\n}\n",
+      "visibleTests": [
+        {
+          "name": "counts repeated event codes",
+          "testCode": "const counts = countEventCodes(['cache.miss', 'queue.ready', 'cache.miss']); assert.strictEqual(counts.get('cache.miss'), 2); assert.strictEqual(counts.get('queue.ready'), 1);"
+        },
+        {
+          "name": "handles a reporting window with no events",
+          "testCode": "assert.strictEqual(countEventCodes([]).size, 0);"
+        },
+        {
+          "name": "keeps differently cased event tokens distinct",
+          "testCode": "const counts = countEventCodes(['Build.Failed', 'build.failed']); assert.strictEqual(counts.size, 2);"
+        },
+        {
+          "name": "leaves the source event sequence unchanged",
+          "testCode": "const codes = ['cache.miss', 'queue.ready', 'cache.miss']; countEventCodes(codes); assert.deepStrictEqual(codes, ['cache.miss', 'queue.ready', 'cache.miss']);"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "preserves original mixed-case key values",
+          "testCode": "const counts = countEventCodes(['SYNC', 'Sync', 'sync']); assert.deepStrictEqual([...counts], [['SYNC', 1], ['Sync', 1], ['sync', 1]]);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Create a Map with the exact string key type promised by the API."
+        },
+        {
+          "explain": "For each code, read its current count and use zero only when that key is absent."
+        },
+        {
+          "explain": "Update the count and return the index without changing the input."
+        }
+      ],
+      "verificationLevel": "partial",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "Telemetry pipelines count exact event identifiers; case normalization is a separate domain policy and can merge distinct codes."
+      },
+      "form": "direct",
+      "fingerprint": "key-normalization-collision|direct|countEventCodes",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 3,
+          "hasTrapOrFlaw": false,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "key-normalization-collision",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 6
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Foundation",
+      "unitCode": "PRG-T01-C03-U04",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-U04-01/Q01_countEventCodes.ts"
+    },
+    {
+      "id": "Q02",
+      "level": 1,
+      "category": "Trap & Edge Case",
+      "archetype": "problem-solving",
+      "codeType": "implement",
+      "archetypeKey": "prg-c03-u04-map-groups-and-identity",
+      "commonTrapTag": "zero-key-as-missing",
+      "context": "ledger_account_buckets",
+      "entryPoint": "groupLedgerEntries",
+      "prompt": "A ledger export groups rows by numeric account ID before producing account summaries. Implement `groupLedgerEntries` so every row is placed in the array for its `accountId`, including the valid ID `0`.\n\n**Requirements**\n- Keep the exported function name and return `Map<number, LedgerEntry[]>`.\n- Create one bucket per distinct account ID and preserve row order within each bucket.\n- Return an empty map for an empty export.\n- Leave the source array and its entries unchanged.",
+      "inputHint": "A numeric identifier can be valid even when it is falsy.",
+      "checkpointHint": "Follow the first row for the zero-valued account key, then check that a later row follows the same grouping contract.",
+      "starterCode": "type LedgerEntry = { accountId: number; amountCents: number };\n\nexport function groupLedgerEntries(_entries: readonly LedgerEntry[]): Map<number, LedgerEntry[]> {\n  return new Map<number, LedgerEntry[]>();\n}\n",
+      "solutionCode": "type LedgerEntry = { accountId: number; amountCents: number };\n\nexport function groupLedgerEntries(entries: readonly LedgerEntry[]): Map<number, LedgerEntry[]> {\n  const groups = new Map<number, LedgerEntry[]>();\n  for (const entry of entries) {\n    const group = groups.get(entry.accountId);\n    if (group === undefined) {\n      groups.set(entry.accountId, [entry]);\n    } else {\n      group.push(entry);\n    }\n  }\n  return groups;\n}\n",
+      "trapMutant": "type LedgerEntry = { accountId: number; amountCents: number };\n\nexport function groupLedgerEntries(entries: readonly LedgerEntry[]): Map<number, LedgerEntry[]> {\n  const groups = new Map<number, LedgerEntry[]>();\n  for (const entry of entries) {\n    if (!entry.accountId) continue;\n    const group = groups.get(entry.accountId);\n    if (group === undefined) groups.set(entry.accountId, [entry]);\n    else group.push(entry);\n  }\n  return groups;\n}\n",
+      "visibleTests": [
+        {
+          "name": "groups rows by numeric account",
+          "testCode": "const a = { accountId: 18, amountCents: 240 }; const b = { accountId: 42, amountCents: 910 }; const groups = groupLedgerEntries([a, b]); assert.deepStrictEqual(groups.get(18), [a]); assert.deepStrictEqual(groups.get(42), [b]);"
+        },
+        {
+          "name": "keeps zero as a valid account identifier",
+          "testCode": "const first = { accountId: 0, amountCents: 120 }; const groups = groupLedgerEntries([first]); assert.deepStrictEqual(groups.get(0), [first]);"
+        },
+        {
+          "name": "handles an empty ledger export",
+          "testCode": "assert.strictEqual(groupLedgerEntries([]).size, 0);"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "keeps all rows for zero alongside other account groups",
+          "testCode": "const first = { accountId: 0, amountCents: 120 }; const later = { accountId: 0, amountCents: 35 }; const other = { accountId: 8, amountCents: 200 }; const groups = groupLedgerEntries([first, other, later]); assert.deepStrictEqual(groups.get(0), [first, later]); assert.deepStrictEqual(groups.get(8), [other]);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Use each entry account ID as its numeric map key."
+        },
+        {
+          "explain": "Check for an absent bucket explicitly so zero remains a valid key."
+        },
+        {
+          "explain": "Append each entry to exactly one bucket in source order."
+        }
+      ],
+      "verificationLevel": "partial",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "Ledger exports group rows by numeric account identifiers, and zero can be a valid imported account code."
+      },
+      "form": "direct",
+      "fingerprint": "zero-key-as-missing|direct|groupLedgerEntries",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "zero-key-as-missing",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 6
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Foundation",
+      "unitCode": "PRG-T01-C03-U04",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-U04-01/Q02_groupLedgerEntries.ts"
+    },
+    {
+      "id": "Q03",
+      "level": 2,
+      "category": "Trap & Edge Case",
+      "archetype": "debugging",
+      "codeType": "fix-bug",
+      "archetypeKey": "prg-c03-u04-set-stable-deduplication",
+      "commonTrapTag": "set-reorders-first-seen-values",
+      "context": "package_registry_alias_dedupe",
+      "entryPoint": "uniquePackageAliases",
+      "prompt": "A package registry merges alias feeds with a defined precedence order. The current helper returns results that violate that order. Fix `uniquePackageAliases` while preserving the alias contract.\n\n**Requirements**\n- Keep the exported function name and return type.\n- Keep one copy of each exact alias.\n- Place each alias according to its first appearance in the combined feed.\n- Return a separate array even when no duplicates were removed, and do not mutate the readonly input.",
+      "inputHint": "A repeated value should not move its first position in the combined feed.",
+      "checkpointHint": "Compare the output sequence with the source positions of the aliases that remain.",
+      "starterCode": "export function uniquePackageAliases(aliases: readonly string[]): string[] {\n  return [...new Set(aliases)].sort();\n}\n",
+      "solutionCode": "export function uniquePackageAliases(aliases: readonly string[]): string[] {\n  const seen = new Set<string>();\n  const unique: string[] = [];\n  for (const alias of aliases) {\n    if (seen.has(alias)) continue;\n    seen.add(alias);\n    unique.push(alias);\n  }\n  return unique;\n}\n",
+      "trapMutant": "export function uniquePackageAliases(aliases: readonly string[]): string[] {\n  return [...new Set(aliases)].sort();\n}\n",
+      "visibleTests": [
+        {
+          "name": "keeps the first-seen alias sequence",
+          "testCode": "assert.deepStrictEqual(uniquePackageAliases(['zeta-core', 'alpha-ui', 'zeta-core', 'queue-kit']), ['zeta-core', 'alpha-ui', 'queue-kit']);"
+        },
+        {
+          "name": "handles an empty alias feed",
+          "testCode": "assert.deepStrictEqual(uniquePackageAliases([]), []);"
+        },
+        {
+          "name": "keeps case-distinct aliases separate",
+          "testCode": "assert.deepStrictEqual(uniquePackageAliases(['Core', 'core', 'Core']), ['Core', 'core']);"
+        },
+        {
+          "name": "returns a separate result without editing the source",
+          "testCode": "const aliases = ['release-8', 'release-2']; const result = uniquePackageAliases(aliases); assert.notStrictEqual(result, aliases); assert.deepStrictEqual(aliases, ['release-8', 'release-2']);"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "does not reorder a distinct first-seen sequence",
+          "testCode": "assert.deepStrictEqual(uniquePackageAliases(['release-9', 'release-2', 'release-5']), ['release-9', 'release-2', 'release-5']);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Create a Set from the aliases to retain one copy of each exact value."
+        },
+        {
+          "explain": "Convert the Set back to a fresh array in its iteration order."
+        },
+        {
+          "explain": "Leave the source array unchanged and avoid an extra ordering step."
+        }
+      ],
+      "verificationLevel": "partial",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "Package registries may merge several alias feeds while preserving the first-seen precedence needed by resolution."
+      },
+      "form": "direct",
+      "fingerprint": "set-reorders-first-seen-values|direct|uniquePackageAliases",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "debugging"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "set-reorders-first-seen-values",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 6
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Standard Exam",
+      "unitCode": "PRG-T01-C03-U04",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-U04-01/Q03_uniquePackageAliases.ts"
+    },
+    {
+      "id": "Q04",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "codeType": "implement",
+      "archetypeKey": "prg-c03-u04-map-groups-and-identity",
+      "commonTrapTag": "object-key-serialized-by-shape",
+      "context": "scheduler_owner_sessions",
+      "entryPoint": "groupTicketsByOwner",
+      "prompt": "A scheduler groups active tickets by their in-memory owner session object. Two session objects with the same `id` still represent distinct live sessions and must remain separate groups; repeated tickets that reference the same object belong together. Implement `groupTicketsByOwner`.\n\n**Requirements**\n- Keep the exported function name and return `Map<OwnerSession, string[]>`.\n- Group by the exact object reference in each ticket, not by the fields inside that object.\n- Preserve ticket order within each group and owner first-seen order in the map.\n- Return an empty map for no tickets and do not mutate the input.",
+      "inputHint": "For object keys, consider which runtime object reference the contract names.",
+      "checkpointHint": "Compare one session object reused twice with two distinct objects that happen to carry the same ID.",
+      "starterCode": "type OwnerSession = { id: string };\ntype ScheduledTicket = { owner: OwnerSession; ticketCode: string };\n\nexport function groupTicketsByOwner(_tickets: readonly ScheduledTicket[]): Map<OwnerSession, string[]> {\n  return new Map<OwnerSession, string[]>();\n}\n",
+      "solutionCode": "type OwnerSession = { id: string };\ntype ScheduledTicket = { owner: OwnerSession; ticketCode: string };\n\nexport function groupTicketsByOwner(tickets: readonly ScheduledTicket[]): Map<OwnerSession, string[]> {\n  const groups = new Map<OwnerSession, string[]>();\n  for (const ticket of tickets) {\n    const group = groups.get(ticket.owner);\n    if (group === undefined) {\n      groups.set(ticket.owner, [ticket.ticketCode]);\n    } else {\n      group.push(ticket.ticketCode);\n    }\n  }\n  return groups;\n}\n",
+      "trapMutant": "type OwnerSession = { id: string };\ntype ScheduledTicket = { owner: OwnerSession; ticketCode: string };\n\nexport function groupTicketsByOwner(tickets: readonly ScheduledTicket[]): Map<OwnerSession, string[]> {\n  const groups = new Map<OwnerSession, string[]>();\n  for (const ticket of tickets) {\n    const matchingOwner = [...groups.keys()].find(owner => owner.id === ticket.owner.id) ?? ticket.owner;\n    const group = groups.get(matchingOwner);\n    if (group === undefined) groups.set(matchingOwner, [ticket.ticketCode]);\n    else group.push(ticket.ticketCode);\n  }\n  return groups;\n}\n",
+      "visibleTests": [
+        {
+          "name": "groups repeated tickets for one owner session",
+          "testCode": "const owner = { id: 'session-18' }; const first = { owner, ticketCode: 'T-401' }; const second = { owner, ticketCode: 'T-408' }; const groups = groupTicketsByOwner([first, second]); assert.deepStrictEqual(groups.get(owner), ['T-401', 'T-408']);"
+        },
+        {
+          "name": "keeps separate live sessions with matching identifiers",
+          "testCode": "const firstOwner = { id: 'session-18' }; const secondOwner = { id: 'session-18' }; const groups = groupTicketsByOwner([{ owner: firstOwner, ticketCode: 'T-401' }, { owner: secondOwner, ticketCode: 'T-502' }]); assert.strictEqual(groups.size, 2);"
+        },
+        {
+          "name": "handles a scheduler with no tickets",
+          "testCode": "assert.strictEqual(groupTicketsByOwner([]).size, 0);"
+        }
+      ],
+      "hiddenTests": [
+        {
+          "name": "preserves each owner reference and its ticket order",
+          "testCode": "const firstOwner = { id: 'session-7' }; const secondOwner = { id: 'session-7' }; const groups = groupTicketsByOwner([{ owner: firstOwner, ticketCode: 'T-9' }, { owner: secondOwner, ticketCode: 'T-3' }, { owner: firstOwner, ticketCode: 'T-12' }]); assert.deepStrictEqual([...groups.entries()], [[firstOwner, ['T-9', 'T-12']], [secondOwner, ['T-3']]]);"
+        }
+      ],
+      "steps": [
+        {
+          "explain": "Use the OwnerSession reference itself as the Map key."
+        },
+        {
+          "explain": "Look up the bucket by that exact reference and create it only when absent."
+        },
+        {
+          "explain": "Append ticket codes in input order and return the groups without changing tickets."
+        }
+      ],
+      "verificationLevel": "partial",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "Schedulers and other in-memory registries can group work by a live object handle when the same visible identifier may refer to distinct active sessions."
+      },
+      "form": "direct",
+      "fingerprint": "object-key-serialized-by-shape|direct|groupTicketsByOwner",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": false,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "object-key-serialized-by-shape",
+          "trapValueVerified": false,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 6
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Standard Exam",
+      "unitCode": "PRG-T01-C03-U04",
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-U04-01/Q04_groupTicketsByOwner.ts"
+    }
+  ],
+  "blindSolve": [
+    {
+      "problemId": "Q01",
+      "passed": true
+    },
+    {
+      "problemId": "Q02",
+      "passed": true
+    },
+    {
+      "problemId": "Q03",
+      "passed": true
+    },
+    {
+      "problemId": "Q04",
+      "passed": true
+    }
+  ],
+  "review": {
+    "verdict": "pass",
+    "note": "Q03 now states the required first-seen contract without naming the sorting defect or prescribing an implementation. Gates/traps, level and type mix, rubric fit, leak checks, and distinct visible/hidden coverage reconfirmed by manual review; automated ingest gates were not run.",
+    "checks": {
+      "q03_contract_and_spoilers": "pass",
+      "gates_and_traps": "pass",
+      "level_type_mix": "pass",
+      "rubric_fit": "pass",
+      "no_leaks": "pass",
+      "visible_hidden_coverage_distinct": "pass"
+    }
+  },
+  "drillId": "DRL-PRG-T01-C03-U04-01",
+  "topicCode": "PRG-T01",
+  "chapterCode": "PRG-T01-C03",
+  "schemaVersion": "2.0-code",
+  "subject": "PRG",
+  "createdAt": "2026-11-17 08:13:41",
+  "localFilePath": "drills/data/PRG-T01-C03-U04/DRL-PRG-T01-C03-U04-01.json"
+}
