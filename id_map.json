@@ -2567,5 +2567,9 @@
   "LAB-PRG-T01-C01-02": {
     "id": "41b3818f-8ba0-81d2-a266-c54814c642ba",
     "title": "Rate-Limited Web Page Fetcher"
+  },
+  "LAB-PRG-T01-C02-01": {
+    "id": "41b3818f-8ba0-8130-a4a2-ed00535871b7",
+    "title": "Result & MiniSchema"
   }
 }

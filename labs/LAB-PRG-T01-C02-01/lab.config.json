@@ -1,0 +1,113 @@
+{
+  "labId": "LAB-PRG-T01-C02-01",
+  "title": "Result & MiniSchema",
+  "chapterCode": "PRG-T01-C02",
+  "unitsUsed": [
+    "PRG-T01-C02-U04",
+    "PRG-T01-C02-U05",
+    "PRG-T01-C02-U06",
+    "PRG-T01-C02-U07",
+    "PRG-T01-C02-U08",
+    "PRG-T01-C02-U09"
+  ],
+  "kind": "chapter-lab",
+  "level": 3,
+  "domain": "api-payload-schema-validator",
+  "targetsWeakSpots": [],
+  "scenario": "Build a small runtime schema parser and Result<T, E> module for decoding external API payloads under strict TypeScript (strict: true). Unknown wire JSON must be validated cleanly without type assertions, preserving nested field paths and falsy domain values (0, \"\", false).",
+  "milestones": [
+    {
+      "id": "M1",
+      "title": "Schema Types & Result Union",
+      "goal": "Define discriminated Result<T, E>, ValidationIssue, SchemaError, and Schema<T> with mapResult and flatMapResult.",
+      "units": [
+        "PRG-T01-C02-U05",
+        "PRG-T01-C02-U07"
+      ],
+      "qualityChecks": [
+        "U-names",
+        "U-one-job",
+        "QC-generic-relationship",
+        "QC-prg-t01-c02-u07-discriminant-narrowing",
+        "QC-prg-t01-c02-u07-no-optional-outcome-bag"
+      ],
+      "visibleTests": "tests/m1_*.test.ts"
+    },
+    {
+      "id": "M2",
+      "title": "Primitive & Object Parsers",
+      "goal": "Validate primitives and plain objects without trusting inherited prototype keys or dropping falsy values.",
+      "units": [
+        "PRG-T01-C02-U04",
+        "PRG-T01-C02-U08",
+        "PRG-T01-C02-U09"
+      ],
+      "qualityChecks": [
+        "U-names",
+        "U-no-input-mutation",
+        "QC-prg-t01-c02-u04-nullish-object-guard",
+        "QC-prg-t01-c02-u04-falsy-value-preserved",
+        "QC-prg-t01-c02-u04-own-property-boundary",
+        "QC-prg-t01-c02-u09-narrow-unknown-before-access"
+      ],
+      "visibleTests": "tests/m2_*.test.ts"
+    },
+    {
+      "id": "M3",
+      "title": "Union & Nested Error Paths",
+      "goal": "Implement arraySchema, optionalSchema, and unionSchema preserving nested paths and every branch failure.",
+      "units": [
+        "PRG-T01-C02-U05",
+        "PRG-T01-C02-U08",
+        "PRG-T01-C02-U09"
+      ],
+      "qualityChecks": [
+        "U-one-job",
+        "QC-generic-relationship",
+        "QC-prg-t01-c02-u08-guard-indexed-read",
+        "QC-prg-t01-c02-u09-explicit-api-failures"
+      ],
+      "visibleTests": "tests/m3_*.test.ts"
+    },
+    {
+      "id": "M4",
+      "title": "Strict Unknown Narrowing & Wire Decoding",
+      "goal": "Decode raw JSON wire payloads cleanly with decodeApiPayload and exhaustive formatDecodeError.",
+      "units": [
+        "PRG-T01-C02-U06",
+        "PRG-T01-C02-U07",
+        "PRG-T01-C02-U09"
+      ],
+      "qualityChecks": [
+        "U-errors",
+        "QC-prg-t01-c02-u07-exhaustive-result-handler",
+        "QC-prg-t01-c02-u07-never-remainder",
+        "QC-prg-t01-c02-u09-success-requires-validation",
+        "QC-prg-t01-c02-u09-check-required-field-types"
+      ],
+      "visibleTests": "tests/m4_*.test.ts"
+    }
+  ],
+  "blindSolve": [
+    {
+      "milestone": "M1",
+      "passed": true
+    },
+    {
+      "milestone": "M2",
+      "passed": true
+    },
+    {
+      "milestone": "M3",
+      "passed": true
+    },
+    {
+      "milestone": "M4",
+      "passed": true
+    }
+  ],
+  "review": {
+    "verdict": "pass",
+    "note": "No leaks appear in README.md, stubs, or tests, the api-payload-schema-validator domain is realistic and distinct from other labs, all PRG-T01-C02 units and milestone qualityChecks fit cleanly with zero must findings in _reference src, and all four trapMutants embody realistic bugs caught by hidden tests."
+  }
+}
