@@ -648,8 +648,13 @@ def is_equal(a, b, variables=None, tolerance=None, timeout=1.5, raise_on_timeout
             try:
                 for _ in range(2):
                     subs = {s: sp.Rational(random.randint(2, 6), 1) for s in syms}
-                    diff_sub = (a - b).subs(subs)
-                    if abs(sp.N(diff_sub, 30)) > 1e-9:
+                    a_sub = sp.N(a.subs(subs), 30)
+                    b_sub = sp.N(b.subs(subs), 30)
+                    if a_sub.is_real is not True or b_sub.is_real is not True:
+                        continue
+                    if a_sub.is_finite is not True or b_sub.is_finite is not True:
+                        continue
+                    if abs(a_sub - b_sub) > 1e-9:
                         return False
             except Exception:
                 pass
@@ -670,14 +675,23 @@ def is_equal(a, b, variables=None, tolerance=None, timeout=1.5, raise_on_timeout
         if not syms:
             return False
 
+        valid_samples = 0
         try:
-            for _ in range(6):
+            # Sample only where both expressions define real, finite values. This
+            # compares equivalent forms on their shared real domain instead of
+            # treating an undefined logarithm or radical sample as inequality.
+            for _ in range(64):
                 subs = {s: sp.Rational(random.randint(-90, 90), random.randint(7, 19)) for s in syms}
-                diff_sub = diff.subs(subs)
-                val = abs(sp.N(diff_sub, 30))
-                if val > 1e-9:
+                a_sub = sp.N(a.subs(subs), 30)
+                b_sub = sp.N(b.subs(subs), 30)
+                if a_sub.is_real is not True or b_sub.is_real is not True:
+                    continue
+                if a_sub.is_finite is not True or b_sub.is_finite is not True:
+                    continue
+                valid_samples += 1
+                if abs(a_sub - b_sub) > 1e-9:
                     return False
-            return True
+            return valid_samples >= 6
         except Exception:
             return False
 
