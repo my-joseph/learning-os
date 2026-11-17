@@ -147,3 +147,25 @@ def test_review_update_keeps_learner_set_4_and_schedules(tmp_path):
     assert upd == {"mastery": 3, "lastReviewed": "2026-11-10", "nextReview": "2026-11-27"}
     assert ws.review_update("MTH-T09-C01-U01", 4, "2026-11-10", *roots)["mastery"] == 4
     assert ws.review_update("MTH-T09-C02-U01", None, "2026-11-10", *roots) is None
+
+
+def test_cli_json_flag_outputs_math_traps_and_empty_scope(tmp_path, capsys):
+    roots = _write(
+        tmp_path,
+        {"D1": [("Q1", 2, "direct", TRAP, _wrong("2026-11-01")), ("Q2", 2, "direct", TRAP, _wrong("2026-11-02"))]},
+    )
+    rc = ws.main(["MTH-T09-C01-U01", "--data-root", roots[0], "--progress-dir", roots[1], "--json"])
+    assert rc == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["scope"] == "MTH-T09-C01-U01"
+    assert len(payload["units"]) == 1
+    unit = payload["units"][0]
+    assert unit["unitCode"] == "MTH-T09-C01-U01"
+    assert unit["subject"] == "MTH"
+    assert [t["id"] for t in unit["open"]] == [TRAP]
+    assert unit["open"][0]["matches"] == 2
+
+    rc_empty = ws.main(["MTH-T09-C99-U01", "--data-root", roots[0], "--progress-dir", roots[1], "--json"])
+    assert rc_empty == 0
+    empty_payload = json.loads(capsys.readouterr().out)
+    assert empty_payload == {"scope": "MTH-T09-C99-U01", "units": []}

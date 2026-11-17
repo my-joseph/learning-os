@@ -19,6 +19,7 @@ from __future__ import annotations
 import datetime
 import json
 import os
+import tempfile
 from pathlib import Path
 from typing import Any
 
@@ -66,6 +67,65 @@ def labs_root(repo_root: str | None = None) -> str:
 
 def progress_path(drill_id: str, repo_root: str | None = None) -> str:
     return os.path.join(progress_root(repo_root), f"{drill_id}.json")
+
+
+def review_schedule_path(repo_root: str | None = None) -> str:
+    """Path to `_review_schedule.json` inside the active progress directory (respects LEARNINGOS_PILOT)."""
+    return os.path.join(progress_root(repo_root), "_review_schedule.json")
+
+
+def load_review_schedule(repo_root: str | None = None) -> dict[str, dict[str, Any]]:
+    """Read the local unit review-schedule cache, or `{}` if missing or invalid."""
+    path = review_schedule_path(repo_root)
+    if not os.path.exists(path):
+        return {}
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+    except (OSError, ValueError):
+        return {}
+    if not isinstance(data, dict):
+        return {}
+    return {k: v for k, v in data.items() if isinstance(k, str) and isinstance(v, dict)}
+
+
+def write_review_schedule(schedule: dict[str, dict[str, Any]], repo_root: str | None = None) -> str:
+    """Atomically write the full unit review-schedule cache to `_review_schedule.json`."""
+    path = review_schedule_path(repo_root)
+    parent = os.path.dirname(path) or "."
+    os.makedirs(parent, exist_ok=True)
+    fd, tmp_path = tempfile.mkstemp(prefix=".review_schedule_", suffix=".tmp", dir=parent)
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            json.dump(schedule, f, ensure_ascii=False, indent=2, sort_keys=True)
+            f.write("\n")
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(tmp_path, path)
+    except BaseException:
+        if os.path.exists(tmp_path):
+            os.unlink(tmp_path)
+        raise
+    return path
+
+
+def merge_review_schedule(updates: dict[str, dict[str, Any]], repo_root: str | None = None) -> str:
+    """Merge unit review-schedule entries into `_review_schedule.json` atomically."""
+    schedule = load_review_schedule(repo_root)
+    for unit_code, vals in updates.items():
+        if not isinstance(unit_code, str) or not isinstance(vals, dict):
+            continue
+        prev = schedule.get(unit_code) or {}
+        entry: dict[str, Any] = {
+            "mastery": vals.get("mastery"),
+            "lastReviewed": vals.get("lastReviewed"),
+            "nextReview": vals.get("nextReview"),
+        }
+        title = vals.get("title") or prev.get("title")
+        if title:
+            entry["title"] = title
+        schedule[unit_code] = entry
+    return write_review_schedule(schedule, repo_root)
 
 
 def extract_progress(drill_doc: dict[str, Any]) -> dict[str, Any]:

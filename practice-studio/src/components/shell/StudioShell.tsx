@@ -1,13 +1,15 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { AlertCircle, CheckCircle2, X } from "lucide-react";
+import { AlertCircle, CheckCircle2, PanelRight, X } from "lucide-react";
 import { DrillDocument, DrillListItem } from "@/types/drill";
 import type { LabListItem } from "@/lib/labModel";
 import { DrillFilter, StatusMessage, ViewMode } from "@/hooks/types";
+import { useSidePanelData } from "@/hooks/useSidePanelData";
 import { Workspace, isLabId } from "@/lib/routes";
 import { QuizPaginationBar } from "@/components/QuizPaginationBar";
 import { StudioHeader } from "./StudioHeader";
+import { StudioSidePanel } from "./StudioSidePanel";
 
 interface StudioShellProps {
   workspace: Workspace;
@@ -81,9 +83,41 @@ export const StudioShell: React.FC<StudioShellProps> = ({
 }) => {
   const [showDrillSwitcher, setShowDrillSwitcher] = useState(false);
   const [showHeader, setShowHeader] = useState(true);
+  const [isSideDrawerOpen, setIsSideDrawerOpen] = useState(false);
   const lastScrollYRef = useRef(0);
   const switcherRef = useRef<HTMLDivElement | null>(null);
   const genPopoverRef = useRef<HTMLDivElement | null>(null);
+
+  const {
+    dueUnits,
+    dueLoading,
+    dueError,
+    weakSpotUnits,
+    weakLoading,
+    weakError,
+  } = useSidePanelData(
+    currentDrill?.unitCode,
+    currentDrill?.sessionSummary?.syncedToNotionAt
+  );
+
+  const openWeakCount = weakSpotUnits.reduce((acc, u) => acc + u.open.length, 0);
+  const sidePanelCount = dueUnits.length + openWeakCount;
+
+  // Close mobile drawer when switching drills or pressing Escape
+  useEffect(() => {
+    setIsSideDrawerOpen(false);
+  }, [selectedDrillId]);
+
+  useEffect(() => {
+    if (!isSideDrawerOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setIsSideDrawerOpen(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isSideDrawerOpen]);
 
   // Auto-hide sticky header on scroll down, reveal on scroll up
   useEffect(() => {
@@ -141,7 +175,21 @@ export const StudioShell: React.FC<StudioShellProps> = ({
     ) : null;
 
   const containerMaxWidth =
-    viewMode === "review" ? "max-w-5xl" : "max-w-[720px]";
+    viewMode === "review" ? "max-w-5xl" : "max-w-[720px] lg:max-w-[1016px]";
+
+  const sidePanelNode = (
+    <StudioSidePanel
+      workspace={workspace}
+      currentUnitCode={currentDrill?.unitCode}
+      dueUnits={dueUnits}
+      dueLoading={dueLoading}
+      dueError={dueError}
+      weakSpotUnits={weakSpotUnits}
+      weakLoading={weakLoading}
+      weakError={weakError}
+      onNavigate={() => setIsSideDrawerOpen(false)}
+    />
+  );
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 px-4 py-4 sm:py-6 transition-colors">
@@ -183,6 +231,10 @@ export const StudioShell: React.FC<StudioShellProps> = ({
           genPopoverRef={genPopoverRef}
           onGenerated={onGenerated}
           onStatusChange={onStatusChange}
+          onOpenSideDrawer={
+            viewMode === "quiz" ? () => setIsSideDrawerOpen(true) : undefined
+          }
+          sidePanelCount={sidePanelCount}
           tiles={tiles}
         />
 
@@ -219,8 +271,68 @@ export const StudioShell: React.FC<StudioShellProps> = ({
           </div>
         )}
 
-        <main>{children}</main>
+        {viewMode === "quiz" ? (
+          <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_272px] lg:gap-6 lg:items-start">
+            <div className="min-w-0">
+              <main>{children}</main>
+              <div className="lg:hidden mt-4 flex justify-center">
+                <button
+                  type="button"
+                  onClick={() => setIsSideDrawerOpen(true)}
+                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 transition-colors"
+                >
+                  <PanelRight className="w-3.5 h-3.5" />
+                  <span>Due today &amp; weak spots</span>
+                  {sidePanelCount > 0 && (
+                    <span className="font-mono text-[11px] text-zinc-600 dark:text-zinc-300">
+                      ({sidePanelCount})
+                    </span>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            <aside
+              aria-label="Due today and weak spots"
+              className="hidden lg:block"
+            >
+              {sidePanelNode}
+            </aside>
+          </div>
+        ) : (
+          <main>{children}</main>
+        )}
       </div>
+
+      {viewMode === "quiz" && isSideDrawerOpen && (
+        <div
+          className="fixed inset-0 z-50 lg:hidden flex justify-end"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Due today and weak spots"
+        >
+          <div
+            className="fixed inset-0 bg-zinc-950/40 backdrop-blur-[1px]"
+            onClick={() => setIsSideDrawerOpen(false)}
+          />
+          <div className="relative z-10 w-[min(calc(100vw-2.5rem),340px)] h-full overflow-y-auto bg-zinc-50 dark:bg-zinc-950 border-l border-zinc-200 dark:border-zinc-800 p-4 space-y-3 shadow-xl">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                Study queue
+              </span>
+              <button
+                type="button"
+                onClick={() => setIsSideDrawerOpen(false)}
+                aria-label="Close side panel"
+                className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 hover:bg-zinc-200/60 dark:hover:bg-zinc-800 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            {sidePanelNode}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -32,7 +32,7 @@ from notion_sync.blocks import (
     toggle_block,
 )
 from notion_sync.client import get_all_blocks, load_env, notion_request
-from progress_store import has_practice, pilot_mode, save_progress
+from progress_store import has_practice, merge_review_schedule, pilot_mode, save_progress
 
 
 def get_data_root() -> str:
@@ -133,27 +133,41 @@ def update_unit_reviews(units: list[str], attempt_date: str, id_map: dict, token
     from scripts.weak_spots import review_update
 
     written = {}
-    for unit in units:
-        page_id = id_map[unit]["id"]
-        props = notion_request("GET", f"pages/{page_id}", token).get("properties", {})
-        if not all(k in props for k in ("Mastery (0-4)", "Last Reviewed", "Next Review")):
-            continue
-        upd = review_update(unit, props["Mastery (0-4)"].get("number"), attempt_date)
-        if not upd:
-            continue
-        notion_request(
-            "PATCH",
-            f"pages/{page_id}",
-            token,
-            {
-                "properties": {
-                    "Mastery (0-4)": {"number": upd["mastery"]},
-                    "Last Reviewed": {"date": {"start": upd["lastReviewed"]}},
-                    "Next Review": {"date": {"start": upd["nextReview"]}},
-                }
-            },
-        )
-        written[unit] = upd
+    cache_updates = {}
+    try:
+        for unit in units:
+            page_id = id_map[unit]["id"]
+            props = notion_request("GET", f"pages/{page_id}", token).get("properties", {})
+            if not all(k in props for k in ("Mastery (0-4)", "Last Reviewed", "Next Review")):
+                continue
+            upd = review_update(unit, props["Mastery (0-4)"].get("number"), attempt_date)
+            if not upd:
+                continue
+            notion_request(
+                "PATCH",
+                f"pages/{page_id}",
+                token,
+                {
+                    "properties": {
+                        "Mastery (0-4)": {"number": upd["mastery"]},
+                        "Last Reviewed": {"date": {"start": upd["lastReviewed"]}},
+                        "Next Review": {"date": {"start": upd["nextReview"]}},
+                    }
+                },
+            )
+            written[unit] = upd
+            entry = {
+                "mastery": upd["mastery"],
+                "lastReviewed": upd["lastReviewed"],
+                "nextReview": upd["nextReview"],
+            }
+            title = id_map[unit].get("title") if isinstance(id_map.get(unit), dict) else None
+            if title:
+                entry["title"] = title
+            cache_updates[unit] = entry
+    finally:
+        if cache_updates:
+            merge_review_schedule(cache_updates)
     return written
 
 
