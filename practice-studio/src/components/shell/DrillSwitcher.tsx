@@ -9,6 +9,7 @@ import {
   X,
 } from "lucide-react";
 import { DrillDocument, DrillListItem } from "@/types/drill";
+import type { LabListItem } from "@/lib/labModel";
 import { DrillFilter } from "@/hooks/types";
 
 interface DrillSwitcherProps {
@@ -18,6 +19,7 @@ interface DrillSwitcherProps {
   switcherRef: React.RefObject<HTMLDivElement>;
   currentDrill: DrillDocument | null;
   drills: DrillListItem[];
+  labs?: LabListItem[];
   selectedDrillId: string;
   drillSearch: string;
   onSearchChange: (value: string) => void;
@@ -26,7 +28,7 @@ interface DrillSwitcherProps {
   onSelectDrill: (drillId: string) => void;
 }
 
-/** Searchable and filterable dropdown for switching between practice drills. */
+/** Searchable and filterable dropdown for switching between practice drills (and project labs). */
 export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
   isOpen,
   onToggle,
@@ -34,6 +36,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
   switcherRef,
   currentDrill,
   drills,
+  labs = [],
   selectedDrillId,
   drillSearch,
   onSearchChange,
@@ -106,65 +109,129 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
             ))}
           </div>
 
-          {/* Drills List */}
+          {/* Drills & Labs List */}
           <div className="max-h-80 overflow-y-auto space-y-1.5 pr-1">
-            {drills.length === 0 ? (
+            {drills.length === 0 && labs.length === 0 ? (
               <div className="py-6 text-center text-xs text-zinc-500 dark:text-zinc-400">
                 No drills match the selected filter.
               </div>
             ) : (
-              drills.map((d) => {
-                const isSelected = d.drillId === selectedDrillId;
-                const isGraded = d.practiceStatus === "Graded";
-                const isInProgress = d.practiceStatus === "In Progress";
+              <>
+                {drills.map((d) => {
+                  const isSelected = d.drillId === selectedDrillId;
+                  const isGraded = d.practiceStatus === "Graded";
+                  const isInProgress = d.practiceStatus === "In Progress";
 
-                return (
-                  <button
-                    key={d.drillId}
-                    type="button"
-                    onClick={() => {
-                      onSelectDrill(d.drillId);
-                      onClose();
-                    }}
-                    className={`w-full text-left p-2.5 rounded-lg border transition-colors flex items-start justify-between gap-3 ${
-                      isSelected
-                        ? "bg-zinc-100 dark:bg-zinc-800/90 border-indigo-600 dark:border-indigo-500"
-                        : "bg-zinc-50/60 dark:bg-zinc-950/50 hover:bg-zinc-100 dark:hover:bg-zinc-800/60 border-zinc-200 dark:border-zinc-800"
-                    }`}
-                  >
-                    <div className="min-w-0 flex-1 space-y-0.5">
-                      <div className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 truncate">
-                        {d.unitTitle || d.unitCode}
+                  return (
+                    <button
+                      key={d.drillId}
+                      type="button"
+                      onClick={() => {
+                        onSelectDrill(d.drillId);
+                        onClose();
+                      }}
+                      className={`w-full text-left p-2.5 rounded-lg border transition-colors flex items-start justify-between gap-3 ${
+                        isSelected
+                          ? "bg-zinc-100 dark:bg-zinc-800/90 border-indigo-600 dark:border-indigo-500"
+                          : "bg-zinc-50/60 dark:bg-zinc-950/50 hover:bg-zinc-100 dark:hover:bg-zinc-800/60 border-zinc-200 dark:border-zinc-800"
+                      }`}
+                    >
+                      <div className="min-w-0 flex-1 space-y-0.5">
+                        <div className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 truncate">
+                          {d.unitTitle || d.unitCode}
+                        </div>
+                        <div className="text-[11px] font-mono text-zinc-500 dark:text-zinc-400">
+                          {d.drillId} · {d.unitCode} · {d.questionCount} Qs
+                        </div>
                       </div>
-                      <div className="text-[11px] font-mono text-zinc-500 dark:text-zinc-400">
-                        {d.drillId} · {d.unitCode} · {d.questionCount} Qs
-                      </div>
-                    </div>
 
-                    <div className="flex flex-col items-end shrink-0 gap-0.5">
-                      <span
-                        className={`inline-flex items-center gap-1 text-[11px] font-medium ${
-                          isGraded
-                            ? "text-emerald-700 dark:text-emerald-400"
-                            : isInProgress
-                            ? "text-amber-600 dark:text-amber-400"
-                            : "text-zinc-500 dark:text-zinc-400"
-                        }`}
-                      >
-                        {isGraded ? (
-                          <CheckCircle2 className="w-3 h-3" />
-                        ) : (
-                          <Clock className="w-3 h-3" />
-                        )}
-                        <span>{d.practiceStatus || "Ready"}</span>
-                      </span>
-                      <span className="text-[11px] font-mono text-zinc-500 dark:text-zinc-400">
-                        {d.score ?? 0}/{d.maxScore ?? d.questionCount}
-                      </span>
+                      <div className="flex flex-col items-end shrink-0 gap-0.5">
+                        <span
+                          className={`inline-flex items-center gap-1 text-[11px] font-medium ${
+                            isGraded
+                              ? "text-emerald-700 dark:text-emerald-400"
+                              : isInProgress
+                              ? "text-amber-600 dark:text-amber-400"
+                              : "text-zinc-500 dark:text-zinc-400"
+                          }`}
+                        >
+                          {isGraded ? (
+                            <CheckCircle2 className="w-3 h-3" />
+                          ) : (
+                            <Clock className="w-3 h-3" />
+                          )}
+                          <span>{d.practiceStatus || "Ready"}</span>
+                        </span>
+                        <span className="text-[11px] font-mono text-zinc-500 dark:text-zinc-400">
+                          {d.score ?? 0}/{d.maxScore ?? d.questionCount}
+                        </span>
+                      </div>
+                    </button>
+                  );
+                })}
+
+                {labs.length > 0 && (
+                  <div className="pt-2 mt-1 border-t border-zinc-200 dark:border-zinc-800 space-y-1.5">
+                    <div className="px-1 text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                      Labs
                     </div>
-                  </button>
-                );
-              })
+                    {labs.map((lab) => {
+                      const isSelected = lab.id === selectedDrillId;
+                      const isGraded = lab.practiceStatus === "Graded";
+                      const isInProgress =
+                        lab.practiceStatus === "In Progress" ||
+                        lab.practiceStatus === "Needs Retry";
+
+                      return (
+                        <button
+                          key={lab.id}
+                          type="button"
+                          onClick={() => {
+                            onSelectDrill(lab.id);
+                            onClose();
+                          }}
+                          className={`w-full text-left p-2.5 rounded-lg border transition-colors flex items-start justify-between gap-3 ${
+                            isSelected
+                              ? "bg-zinc-100 dark:bg-zinc-800/90 border-indigo-600 dark:border-indigo-500"
+                              : "bg-zinc-50/60 dark:bg-zinc-950/50 hover:bg-zinc-100 dark:hover:bg-zinc-800/60 border-zinc-200 dark:border-zinc-800"
+                          }`}
+                        >
+                          <div className="min-w-0 flex-1 space-y-0.5">
+                            <div className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 truncate">
+                              {lab.title}
+                            </div>
+                            <div className="text-[11px] font-mono text-zinc-500 dark:text-zinc-400">
+                              {lab.id} · {lab.chapterCode || lab.unitCode} · {lab.milestoneCount} Ms
+                            </div>
+                          </div>
+
+                          <div className="flex flex-col items-end shrink-0 gap-0.5">
+                            <span
+                              className={`inline-flex items-center gap-1 text-[11px] font-medium ${
+                                isGraded
+                                  ? "text-emerald-700 dark:text-emerald-400"
+                                  : isInProgress
+                                  ? "text-amber-600 dark:text-amber-400"
+                                  : "text-zinc-500 dark:text-zinc-400"
+                              }`}
+                            >
+                              {isGraded ? (
+                                <CheckCircle2 className="w-3 h-3" />
+                              ) : (
+                                <Clock className="w-3 h-3" />
+                              )}
+                              <span>{lab.practiceStatus || "Ready"}</span>
+                            </span>
+                            <span className="text-[11px] font-mono text-zinc-500 dark:text-zinc-400">
+                              {lab.passedCount}/{lab.milestoneCount}
+                            </span>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>

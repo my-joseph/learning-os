@@ -293,6 +293,10 @@ export interface Problem {
   solutionCode?: string;
   entryPoint?: string;
   visibleTests?: TestCase[];
+  visibleTestFiles?: string[];
+  testCommand?: string;
+  checkCommand?: string;
+  mainFile?: string | null;
   hiddenTests?: TestCase[];
   hiddenTestCount?: number;
   workspaceFile?: string;
@@ -371,6 +375,7 @@ export interface DrillDocument {
   problems: Problem[];
   sessionSummary: SessionSummary;
   localFilePath: string;
+  labReadme?: string;
 }
 
 export interface DrillListItem {

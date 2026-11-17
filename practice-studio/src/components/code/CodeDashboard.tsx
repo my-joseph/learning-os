@@ -47,6 +47,7 @@ export interface CodeDashboardProps {
   index: number;
   totalQuestions?: number;
   drillTitle?: string;
+  labReadme?: string;
   mistakeTags: MistakeTag[];
   activeStep: number | null;
   onInputChange: (val: string) => void;
@@ -55,6 +56,7 @@ export interface CodeDashboardProps {
   onToggleStepHighlight: (stepIdx: number) => void;
   onMarkDivergedStep: (stepIdx: number) => void;
   onSetScore: (score: number | null) => void;
+  onTestReportChange?: (report: TestRunReport) => void;
   onToggleMistakeTag: (tagId: string) => void;
   onMistakeNoteChange: (note: string) => void;
   onResetProblem: () => void;
@@ -100,6 +102,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
   index,
   totalQuestions,
   drillTitle,
+  labReadme,
   mistakeTags,
   activeStep,
   onInputChange,
@@ -108,6 +111,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
   onToggleStepHighlight,
   onMarkDivergedStep,
   onSetScore,
+  onTestReportChange,
   onToggleMistakeTag,
   onMistakeNoteChange,
   onResetProblem,
@@ -117,9 +121,10 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
   onNextQuestion,
   onOpenReview,
 }) => {
-  const isKata = isWorkspaceProblem(problem);
+  const isLab = drillId.startsWith("LAB-") || /^M\d+$/i.test(problem.id);
+  const isKata = isLab || isWorkspaceProblem(problem);
   const referenceAllowed = canShowReferenceSolution(problem.state);
-  const { filename, vscodeFolderUrl, cursorFolderUrl } = resolveIdeLinks(problem);
+  const { filename, vscodeFolderUrl, cursorFolderUrl, vscodeUrl } = resolveIdeLinks(problem);
 
   const [userCode, setUserCode] = useState<string>(
     problem.state?.userCode || problem.starterCode || problem.codeSnippet || ""
@@ -180,7 +185,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
     typeof totalQuestions === "number" && totalQuestions > 0 && index === totalQuestions - 1;
 
   const ensureWorkspaceOnDisk = () => {
-    if (!drillId) return;
+    if (!drillId || isLab) return;
     void fetch("/api/workspace", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -193,7 +198,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
     setCheckError(null);
     try {
       let latestCode = userCode;
-      if (problem.workspaceFile && drillId) {
+      if (problem.workspaceFile && drillId && !isLab) {
         const materializeRes = await fetch("/api/workspace", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -231,22 +236,28 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
         setReviewRun(reviewRunData);
       }
 
-      const res = await fetch("/api/run-tests", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          drillId,
-          problemId: problem.id,
-          userCode: problem.workspaceFile ? undefined : latestCode,
-          workspaceFile: problem.workspaceFile,
-        }),
-      });
+      if (!isLab) {
+        const res = await fetch("/api/run-tests", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            drillId,
+            problemId: problem.id,
+            userCode: problem.workspaceFile ? undefined : latestCode,
+            workspaceFile: problem.workspaceFile,
+          }),
+        });
 
-      if (res.ok) {
-        const report: TestRunReport = await res.json();
-        setTestReport(report);
-        onSetScore(getPrgScore(report, problem.state.reviews));
-      } else if (reviewRunData?.tests) {
+        if (res.ok) {
+          const report: TestRunReport = await res.json();
+          setTestReport(report);
+          onTestReportChange?.(report);
+          onSetScore(getPrgScore(report, problem.state.reviews));
+          return;
+        }
+      }
+
+      if (reviewRunData?.tests) {
         const t = reviewRunData.tests;
         const allPassed = t.total > 0 && t.passed === t.total && t.failed.length === 0;
         const fallbackReport: TestRunReport = {
@@ -260,6 +271,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
           executionTimeMs: 0,
         };
         setTestReport(fallbackReport);
+        onTestReportChange?.(fallbackReport);
         onSetScore(getPrgScore(fallbackReport, problem.state.reviews));
       }
     } catch (err: unknown) {
@@ -364,22 +376,30 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
       )}
 
       <article className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 sm:p-6 space-y-6">
-        {/* 1. Brief: problem title + prompt (text-lg), then Visible tests */}
+        {/* 1. Brief: problem/milestone title + prompt (text-lg), then Visible tests */}
         <div className="space-y-2">
           <div className="flex items-center justify-between gap-2 text-sm font-medium text-zinc-500 dark:text-zinc-400">
             <h2 className="flex flex-wrap items-center gap-2">
               <span>
-                Problem {index + 1}
+                {isLab ? `Milestone ${problem.id}` : `Problem ${index + 1}`}
                 {typeof totalQuestions === "number" && totalQuestions > 0
-                  ? ` of ${totalQuestions}`
+                  ? isLab
+                    ? ` (${index + 1} of ${totalQuestions})`
+                    : ` of ${totalQuestions}`
                   : ""}
               </span>
               {problem.entryPoint && (
                 <>
                   <span aria-hidden="true">·</span>
-                  <code className="font-mono text-zinc-700 dark:text-zinc-300">
-                    {problem.entryPoint}
-                  </code>
+                  {isLab ? (
+                    <span className="text-zinc-700 dark:text-zinc-300">
+                      {problem.entryPoint}
+                    </span>
+                  ) : (
+                    <code className="font-mono text-zinc-700 dark:text-zinc-300">
+                      {problem.entryPoint}
+                    </code>
+                  )}
                 </>
               )}
               {!problem.entryPoint &&
@@ -410,27 +430,40 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
               />
             )}
 
-            {/* Visible tests: compact read-only list (names/descriptions only) */}
-            {problem.visibleTests && problem.visibleTests.length > 0 && (
+            {/* Visible tests: compact read-only list (names/descriptions + test command for labs) */}
+            {((problem.visibleTests && problem.visibleTests.length > 0) ||
+              (problem.visibleTestFiles && problem.visibleTestFiles.length > 0)) && (
               <div className="space-y-1.5">
-                <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
-                  Visible tests
-                </h3>
-                <ul className="space-y-1 text-sm text-zinc-700 dark:text-zinc-300">
-                  {problem.visibleTests.map((t, idx) => (
-                    <li key={t.id || idx} className="flex items-baseline gap-2">
-                      <span
-                        className="text-zinc-400 dark:text-zinc-500 font-mono text-xs select-none"
-                        aria-hidden="true"
-                      >
-                        •
-                      </span>
-                      <span>
-                        <FormattedText text={t.name} />
-                      </span>
-                    </li>
-                  ))}
-                </ul>
+                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                  <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                    Visible tests
+                  </h3>
+                  {(problem.visibleTestFiles?.length || problem.testCommand) && (
+                    <span className="text-xs font-mono text-zinc-500 dark:text-zinc-400">
+                      {[
+                        ...(problem.visibleTestFiles || []),
+                        ...(problem.testCommand ? [problem.testCommand] : []),
+                      ].join(" · ")}
+                    </span>
+                  )}
+                </div>
+                {problem.visibleTests && problem.visibleTests.length > 0 && (
+                  <ul className="space-y-1 text-sm text-zinc-700 dark:text-zinc-300">
+                    {problem.visibleTests.map((t, idx) => (
+                      <li key={t.id || idx} className="flex items-baseline gap-2">
+                        <span
+                          className="text-zinc-400 dark:text-zinc-500 font-mono text-xs select-none"
+                          aria-hidden="true"
+                        >
+                          •
+                        </span>
+                        <span>
+                          <FormattedText text={t.name} />
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
             )}
 
@@ -578,6 +611,15 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                   </a>
                 )}
 
+                {vscodeUrl && problem.mainFile && (
+                  <a
+                    href={vscodeUrl}
+                    className="inline-flex items-center gap-1 text-sm font-mono text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+                  >
+                    <span>Open {problem.mainFile}</span>
+                  </a>
+                )}
+
                 {hasCheckpointHint(problem.checkpointHint) && <button
                   type="button"
                   onClick={() => {
@@ -712,52 +754,77 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                 )}
               </div>
 
-              {/* Reference */}
-              <div className="py-2.5">
-                <button
-                  type="button"
-                  onClick={handleToggleReference}
-                  aria-expanded={openReference}
-                  className="w-full flex items-center justify-between text-left text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 py-1 transition-colors"
-                >
-                  <span>Reference</span>
-                  <span className="inline-flex items-center gap-2">
-                    {!referenceAllowed && (
-                      <span className="text-xs font-normal text-zinc-500 dark:text-zinc-400">
-                        Unlocks after review passes
-                      </span>
-                    )}
-                    {openReference ? (
-                      <ChevronUp className="w-4 h-4 text-zinc-400" />
-                    ) : (
-                      <ChevronDown className="w-4 h-4 text-zinc-400" />
-                    )}
-                  </span>
-                </button>
-                {openReference && (
-                  <div className="pt-2 pb-1">
-                    {!referenceAllowed ? (
-                      <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                        Unlocks after review passes
-                      </p>
-                    ) : isLoadingReference ? (
-                      <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                        Loading reference…
-                      </p>
-                    ) : problem.solutionCode || revealedSolutionCode ? (
-                      <VSCodeBlock
-                        code={(problem.solutionCode || revealedSolutionCode)!}
-                        language={problem.language || "javascript"}
-                        filename={`reference-${filename}`}
-                      />
-                    ) : (
-                      <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                        Reference solution unavailable.
-                      </p>
+              {/* Reference (drills) or Lab README (labs; _reference is never served) */}
+              {isLab ? (
+                labReadme ? (
+                  <div className="py-2.5">
+                    <button
+                      type="button"
+                      onClick={() => setOpenReference(!openReference)}
+                      aria-expanded={openReference}
+                      className="w-full flex items-center justify-between text-left text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 py-1 transition-colors"
+                    >
+                      <span>Lab README</span>
+                      {openReference ? (
+                        <ChevronUp className="w-4 h-4 text-zinc-400" />
+                      ) : (
+                        <ChevronDown className="w-4 h-4 text-zinc-400" />
+                      )}
+                    </button>
+                    {openReference && (
+                      <div className="pt-2 pb-1 text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed">
+                        <FormattedText text={labReadme} />
+                      </div>
                     )}
                   </div>
-                )}
-              </div>
+                ) : null
+              ) : (
+                <div className="py-2.5">
+                  <button
+                    type="button"
+                    onClick={handleToggleReference}
+                    aria-expanded={openReference}
+                    className="w-full flex items-center justify-between text-left text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 py-1 transition-colors"
+                  >
+                    <span>Reference</span>
+                    <span className="inline-flex items-center gap-2">
+                      {!referenceAllowed && (
+                        <span className="text-xs font-normal text-zinc-500 dark:text-zinc-400">
+                          Unlocks after review passes
+                        </span>
+                      )}
+                      {openReference ? (
+                        <ChevronUp className="w-4 h-4 text-zinc-400" />
+                      ) : (
+                        <ChevronDown className="w-4 h-4 text-zinc-400" />
+                      )}
+                    </span>
+                  </button>
+                  {openReference && (
+                    <div className="pt-2 pb-1">
+                      {!referenceAllowed ? (
+                        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                          Unlocks after review passes
+                        </p>
+                      ) : isLoadingReference ? (
+                        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                          Loading reference…
+                        </p>
+                      ) : problem.solutionCode || revealedSolutionCode ? (
+                        <VSCodeBlock
+                          code={(problem.solutionCode || revealedSolutionCode)!}
+                          language={problem.language || "javascript"}
+                          filename={`reference-${filename}`}
+                        />
+                      ) : (
+                        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                          Reference solution unavailable.
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </>
         ) : (

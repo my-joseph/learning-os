@@ -12,6 +12,7 @@ import {
   Sun,
 } from "lucide-react";
 import { DrillDocument, DrillListItem } from "@/types/drill";
+import type { LabListItem } from "@/lib/labModel";
 import { DrillFilter, StatusMessage, ViewMode } from "@/hooks/types";
 import { Workspace } from "@/lib/routes";
 import { DrillSwitcher } from "./DrillSwitcher";
@@ -37,6 +38,7 @@ interface StudioHeaderProps {
   onCloseDrillSwitcher: () => void;
   switcherRef: React.RefObject<HTMLDivElement>;
   drills: DrillListItem[];
+  labs?: LabListItem[];
   selectedDrillId: string;
   drillSearch: string;
   onSearchChange: (value: string) => void;
@@ -74,6 +76,7 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
   onCloseDrillSwitcher,
   switcherRef,
   drills,
+  labs = [],
   selectedDrillId,
   drillSearch,
   onSearchChange,
@@ -167,6 +170,7 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
             switcherRef={switcherRef}
             currentDrill={currentDrill}
             drills={drills}
+            labs={labs}
             selectedDrillId={selectedDrillId}
             drillSearch={drillSearch}
             onSearchChange={onSearchChange}

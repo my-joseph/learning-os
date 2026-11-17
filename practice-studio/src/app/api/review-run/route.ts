@@ -3,6 +3,7 @@ import { spawn } from "child_process";
 import fs from "fs";
 import path from "path";
 import {
+  getLabsDir,
   getPythonBin,
   getWorkspaceRoot,
   isSafeId,
@@ -64,11 +65,48 @@ async function ensureWorkspaceMaterialized(
   });
 }
 
+async function ensurePilotLabMaterialized(
+  labId: string,
+  rootDir: string,
+  pythonBin: string,
+  pythonPath: string
+): Promise<{ ok: boolean; error?: string }> {
+  const pyCode = [
+    "from code_engine.workspace import materialize_pilot_lab",
+    `materialize_pilot_lab(${JSON.stringify(labId)}, root_dir=${JSON.stringify(rootDir)})`,
+  ].join("\n");
+
+  return new Promise((resolve) => {
+    const proc = spawn(pythonBin, ["-c", pyCode], {
+      cwd: rootDir,
+      env: { ...process.env, PYTHONPATH: pythonPath },
+    });
+    let stderr = "";
+    const timer = setTimeout(() => {
+      proc.kill("SIGKILL");
+      resolve({ ok: false, error: "Pilot lab materialization timed out" });
+    }, REVIEW_RUN_TIMEOUT_MS);
+
+    proc.stderr.on("data", (chunk) => {
+      stderr += chunk.toString();
+    });
+
+    proc.on("close", (code) => {
+      clearTimeout(timer);
+      if (code !== 0) {
+        resolve({ ok: false, error: stderr.trim() || `Exited with code ${code}` });
+      } else {
+        resolve({ ok: true });
+      }
+    });
+  });
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const drillId = body.drillId || body.drill;
-    const problemId = body.problemId || body.q;
+    const drillId = body.drillId || body.labId || body.drill || body.lab;
+    const problemId = body.problemId || body.milestone || body.m || body.q;
 
     if (!drillId || !problemId || !isSafeId(drillId) || !isSafeId(problemId)) {
       return NextResponse.json(
@@ -86,7 +124,32 @@ export async function POST(req: NextRequest) {
       process.cwd(),
     ].join(path.delimiter);
 
-    if (!drillId.startsWith("LAB-")) {
+    if (drillId.startsWith("LAB-")) {
+      const labCfgPath = path.join(getLabsDir(), drillId, "lab.config.json");
+      if (!fs.existsSync(labCfgPath)) {
+        return NextResponse.json(
+          { error: "Lab not found" },
+          { status: 404 }
+        );
+      }
+      if (isPilotMode() && !process.env.LABS_DIR) {
+        const pilotCfg = path.join(rootDir, "pilot", "labs", drillId, "lab.config.json");
+        if (!fs.existsSync(pilotCfg)) {
+          const materialized = await ensurePilotLabMaterialized(
+            drillId,
+            rootDir,
+            pythonBin,
+            pythonPath
+          );
+          if (!materialized.ok) {
+            return NextResponse.json(
+              { error: materialized.error || "Failed to materialize pilot lab" },
+              { status: 500 }
+            );
+          }
+        }
+      }
+    } else {
       const loaded = loadProblemFromDisk(drillId, problemId);
       if (!loaded) {
         return NextResponse.json(
