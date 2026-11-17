@@ -72,15 +72,22 @@ def query_all(db_id: str, token: str, filter_obj: dict | None = None) -> list[di
     return results
 
 
+def _load_disk_id_map(path: Path = Path("id_map.json")) -> dict:
+    """The current id_map.json, used when no map is passed: CON-* key names exist only there."""
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+
+
 def rebuild_id_map(token: str, existing: dict | None = None) -> dict[str, dict]:
     """Rebuild id_map.json from Notion Topics, Chapters, Units, Resources, Concept Vault, and Drills DBs."""
-    existing = existing or {}
+    existing = existing or _load_disk_id_map()
     out: dict[str, dict] = {}
 
-    # Preserve static DB entries
-    for key in ("DRILLS_DB", "CONCEPT_VAULT_DB"):
-        if key in existing:
-            out[key] = existing[key]
+    # Static database entries come from the constants, so a rebuild can never drop them.
+    out["DRILLS_DB"] = {"id": DRILLS_DB, "title": "Learning Practice & Drills"}
+    out["CONCEPT_VAULT_DB"] = {"id": CONCEPT_VAULT_DB, "title": "Concept Vault"}
 
     # Topics, Chapters, Units
     for db_id in (TOPICS_DB, CHAPTERS_DB, UNITS_DB):

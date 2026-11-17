@@ -2316,6 +2316,90 @@
     "title": "MDN – HTML",
     "url": "https://developer.mozilla.org/en-US/docs/Web/HTML"
   },
+  "CON-WEBSOCKET": {
+    "id": "4103818f-8ba0-8158-8e79-f89d21a435a6",
+    "title": "WebSocket Protocol"
+  },
+  "CON-HTTP": {
+    "id": "4103818f-8ba0-81cc-97b0-d1c9e6f29250",
+    "title": "HTTP Protocol Anatomy"
+  },
+  "CON-TLS": {
+    "id": "4103818f-8ba0-815a-bb7d-ec9b6065d062",
+    "title": "TLS & Modern Encryption"
+  },
+  "CON-TCP-HANDSHAKE": {
+    "id": "4103818f-8ba0-817c-812d-f5f53fa78b71",
+    "title": "TCP 3-Way Handshake"
+  },
+  "CON-DNS": {
+    "id": "4103818f-8ba0-81a9-80f2-dd2f28af9a2c",
+    "title": "DNS (Domain Name System)"
+  },
+  "DRL-MTH-T02-C04-U07-01": {
+    "id": "41b3818f-8ba0-8114-a7f0-d8862df62e6c",
+    "title": "Inverses and Radical Functions — Verified Math Drill (4 Qs · AI Synthesized Reasoning Mode)"
+  },
+  "DRL-PRG-T01-C03-U05-01": {
+    "id": "41b3818f-8ba0-8157-9ebe-e247d9fcf696",
+    "title": "Linked Lists & Pointer Manipulation — Verified Programming Drill (4 Qs · AI Synthesized Engineering Mode)"
+  },
+  "DRL-MTH-T02-C04-U06-01": {
+    "id": "41b3818f-8ba0-81a6-a9ee-fe6c04e108f8",
+    "title": "Rational Functions — Verified Math Drill (4 Qs · AI Synthesized Reasoning Mode)"
+  },
+  "DRL-PRG-T01-C03-U04-01": {
+    "id": "41b3818f-8ba0-8111-a4a1-e8b7d7e2ef6c",
+    "title": "Map, Set & Hashing Patterns — Verified Programming Drill (4 Qs · AI Synthesized Engineering Mode)"
+  },
+  "DRL-MTH-T02-C04-U05-01": {
+    "id": "41b3818f-8ba0-8123-8f5d-ebc25452d34e",
+    "title": "Zeros of Polynomial Functions — Verified Math Drill (5 Qs · AI Synthesized Reasoning Mode)"
+  },
+  "DRL-PRG-T01-C02-U08-01": {
+    "id": "41b3818f-8ba0-8131-a82c-d2db6e80856a",
+    "title": "Strict Mode and tsconfig — Verified Programming Drill (4 Qs · AI Synthesized Engineering Mode)"
+  },
+  "DRL-MTH-T02-C04-U04-01": {
+    "id": "41b3818f-8ba0-8196-a097-db4238dd781a",
+    "title": "Dividing Polynomials — Verified Math Drill (3 Qs · AI Synthesized Reasoning Mode)"
+  },
+  "DRL-MTH-T02-C04-U03-01": {
+    "id": "41a3818f-8ba0-81b0-8e2a-f95ecdc557d9",
+    "title": "Graphs of Polynomial Functions — Verified Math Drill (5 Qs · AI Synthesized Reasoning Mode)"
+  },
+  "DRL-PRG-T01-C02-U07-01": {
+    "id": "41a3818f-8ba0-81ec-83f4-f9ec3b3a4786",
+    "title": "Discriminated Unions — Verified Programming Drill (4 Qs · AI Synthesized Engineering Mode)"
+  },
+  "DRL-MTH-T02-C04-U02-01": {
+    "id": "41a3818f-8ba0-81df-894c-e09038729d81",
+    "title": "Power Functions and Polynomial Functions — Verified Math Drill (3 Qs · AI Synthesized Reasoning Mode)"
+  },
+  "DRL-PRG-T01-C02-U06-01": {
+    "id": "41a3818f-8ba0-8111-a558-fd3c8184ca2b",
+    "title": "Utility Types — Verified Programming Drill (4 Qs · AI Synthesized Engineering Mode)"
+  },
+  "DRL-MTH-T02-C04-U01-01": {
+    "id": "41a3818f-8ba0-81b1-b9f0-d3b71c2ce666",
+    "title": "Quadratic Functions — Verified Math Drill (3 Qs · AI Synthesized Reasoning Mode)"
+  },
+  "DRL-MTH-T02-C03-U03-01": {
+    "id": "41a3818f-8ba0-8165-a608-eb5dca68fc63",
+    "title": "Fitting Linear Models to Data — Verified Math Drill (4 Qs · AI Synthesized Reasoning Mode)"
+  },
+  "DRL-PRG-T01-C02-U05-01": {
+    "id": "41a3818f-8ba0-8117-a145-e88dc9c7b3e3",
+    "title": "Generics — Verified Programming Drill (4 Qs · AI Synthesized Engineering Mode)"
+  },
+  "DRL-MTH-T02-C03-U02-01": {
+    "id": "41a3818f-8ba0-81e8-b7fd-d4cadc9a08ac",
+    "title": "Modeling with Linear Functions — Verified Math Drill (4 Qs · AI Synthesized Reasoning Mode)"
+  },
+  "DRL-MTH-T02-C03-U01-01": {
+    "id": "41a3818f-8ba0-8116-85ca-fe9fce647d6f",
+    "title": "Linear Functions — Verified Math Drill (4 Qs · AI Synthesized Reasoning Mode)"
+  },
   "DRL-MTH-T02-C02-U07-01": {
     "id": "41a3818f-8ba0-819b-86c4-e28fed346d35",
     "title": "Inverse Functions — Verified Math Drill (3 Qs · AI Synthesized Reasoning Mode)"
@@ -2467,9 +2551,5 @@
   "DRL-PRG-T00-C03-02": {
     "id": "4153818f-8ba0-81e9-bac2-f9f97bbbe5c5",
     "title": "JavaScript & TypeScript Baseline — Verified Programming Drill (10 Qs · AI Synthesized Engineering Mode)"
-  },
-  "DRL-MTH-T02-C03-U01-01": {
-    "id": "41a3818f-8ba0-8116-85ca-fe9fce647d6f",
-    "title": "Linear Functions — Verified Math Drill (4 Qs · AI Synthesized Reasoning Mode)"
   }
 }
