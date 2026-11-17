@@ -1,0 +1,97 @@
+{
+  "unitCode": "MTH-T02-C04-U08",
+  "archetypes": [
+    {
+      "unitCode": "MTH-T02-C04-U08",
+      "archetypeKey": "t02-c04-u08-evaluate-direct-variation",
+      "level": 1,
+      "name": "Evaluate a Direct Variation Rule",
+      "source": "OpenStax Algebra and Trigonometry 2e §5.8 — Modeling Using Variation",
+      "coreConcept": "In direct variation, the dependent quantity is a constant multiple of a power of the input.",
+      "mentalModel": "Keep the variation constant and exponent fixed, then substitute the requested input.",
+      "governingRelation": "y=kx^n",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c04-u08-drop-direct-variation-exponent-trap",
+          "description": "Using the exponent as a multiplier instead of raising the input to that power.",
+          "trapFormula": "kx^n → k*n*x"
+        }
+      ],
+      "versatileDomains": [
+        "proportional modeling",
+        "parameter estimation"
+      ],
+      "usedContexts": [],
+      "figureNone": "The rule and input are given explicitly; the exercise is substitution into a symbolic variation model, not graph interpretation."
+    },
+    {
+      "unitCode": "MTH-T02-C04-U08",
+      "archetypeKey": "t02-c04-u08-evaluate-inverse-variation",
+      "level": 1,
+      "name": "Evaluate an Inverse Variation Rule",
+      "source": "OpenStax Algebra and Trigonometry 2e §5.8 — Modeling Using Variation",
+      "coreConcept": "Inverse variation divides the constant by the specified power of the input.",
+      "mentalModel": "Increasing the input changes the denominator; preserve the reciprocal structure when substituting.",
+      "governingRelation": "y=k/x^n",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c04-u08-treat-inverse-as-direct-trap",
+          "description": "Multiplying by the input power instead of dividing by it.",
+          "trapFormula": "k/x^n → k*x^n"
+        }
+      ],
+      "versatileDomains": [
+        "proportional modeling",
+        "parameter estimation"
+      ],
+      "usedContexts": [],
+      "figureNone": "The inverse rule is explicit and the task is a direct substitution check; a graph would not add information."
+    },
+    {
+      "unitCode": "MTH-T02-C04-U08",
+      "archetypeKey": "t02-c04-u08-calibrate-direct-variation",
+      "level": 2,
+      "name": "Calibrate a Direct Variation Constant",
+      "source": "OpenStax Algebra and Trigonometry 2e §5.8 — Modeling Using Variation",
+      "coreConcept": "A known input-output pair determines the constant of variation; the calibrated rule can then predict a new output.",
+      "mentalModel": "Divide the known output by the known input power to identify k, then apply the same rule to the new input.",
+      "governingRelation": "k=y_1/x_1^n; y_2=k*x_2^n",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c04-u08-linear-scale-instead-of-power-trap",
+          "description": "Scaling the output by the input ratio instead of the ratio raised to the variation power.",
+          "trapFormula": "y_2=y_1*(x_2/x_1) when n>1"
+        }
+      ],
+      "versatileDomains": [
+        "proportional modeling",
+        "parameter estimation"
+      ],
+      "usedContexts": [],
+      "figureNone": "The unknown constant is inferred from a data pair, so a graph could expose the model being tested instead of the calibration steps."
+    },
+    {
+      "unitCode": "MTH-T02-C04-U08",
+      "archetypeKey": "t02-c04-u08-solve-joint-variation",
+      "level": 2,
+      "name": "Solve a Joint Variation Model",
+      "source": "OpenStax Algebra and Trigonometry 2e §5.8 — Modeling Using Variation",
+      "coreConcept": "Joint variation combines direct powers of some variables with inverse powers of others under one shared constant.",
+      "mentalModel": "Write one constant times every direct factor divided by every inverse factor; calibrate the constant once and keep the exponents attached to their variables.",
+      "governingRelation": "q=k*r^a*s^b/t^c",
+      "cognitiveTraps": [
+        {
+          "trapTag": "t02-c04-u08-multiply-inverse-variable-trap",
+          "description": "Multiplying by a variable that the model states varies inversely.",
+          "trapFormula": "q=k*r^a*s^b*t^c"
+        }
+      ],
+      "versatileDomains": [
+        "proportional modeling",
+        "parameter estimation"
+      ],
+      "usedContexts": [],
+      "figureNone": "The item is an algebraic multi-variable substitution; plotting one variable would require arbitrary fixed values for the others and would not aid the requested calculation."
+    }
+  ]
+}
