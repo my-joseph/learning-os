@@ -32,6 +32,13 @@ export function getDrillsDataDir(): string {
   return path.join(getWorkspaceRoot(), "drills", "data");
 }
 
+export function getLabsDir(): string {
+  if (process.env.LABS_DIR) {
+    return path.resolve(process.env.LABS_DIR);
+  }
+  return path.join(getWorkspaceRoot(), "labs");
+}
+
 export function getPythonBin(rootDir: string): string {
   const localVenv = path.join(rootDir, ".venv", "bin", "python");
   if (fs.existsSync(localVenv)) {
@@ -55,7 +62,10 @@ export function resolveInsideRoot(relOrAbs: string, rootDir: string = getWorkspa
   const full = path.resolve(root, relOrAbs);
   const rel = path.relative(root, full);
   if (rel === "" || rel.startsWith("..") || path.isAbsolute(rel)) return null;
-  if (path.basename(full).startsWith(".env")) return null;
+  const segments = rel.split(/[\\/]+/);
+  if (segments.includes("_reference") || segments.includes(".canonical")) return null;
+  const base = path.basename(full);
+  if (base.startsWith(".env") || base.includes(".hidden.")) return null;
   return full;
 }
 

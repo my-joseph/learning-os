@@ -3,8 +3,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import { AlertCircle, CheckCircle2, X } from "lucide-react";
 import { DrillDocument, DrillListItem } from "@/types/drill";
+import type { LabListItem } from "@/lib/labModel";
 import { DrillFilter, StatusMessage, ViewMode } from "@/hooks/types";
-import { Workspace } from "@/lib/routes";
+import { Workspace, isLabId } from "@/lib/routes";
 import { QuizPaginationBar } from "@/components/QuizPaginationBar";
 import { StudioHeader } from "./StudioHeader";
 
@@ -23,6 +24,7 @@ interface StudioShellProps {
   onResetAll: () => void;
   // DrillSwitcher & list
   drills: DrillListItem[];
+  labs?: LabListItem[];
   selectedDrillId: string;
   drillSearch: string;
   onSearchChange: (value: string) => void;
@@ -59,6 +61,7 @@ export const StudioShell: React.FC<StudioShellProps> = ({
   onToggleTheme,
   onResetAll,
   drills,
+  labs = [],
   selectedDrillId,
   drillSearch,
   onSearchChange,
@@ -128,6 +131,7 @@ export const StudioShell: React.FC<StudioShellProps> = ({
           currentIndex={currentProblemIndex}
           problems={currentDrill.problems}
           viewMode={viewMode}
+          isLab={isLabId(currentDrill.drillId)}
           onSelectQuestion={onSelectQuestion}
           onPrev={onPrevQuestion}
           onNext={onNextQuestion}
@@ -166,6 +170,7 @@ export const StudioShell: React.FC<StudioShellProps> = ({
           onCloseDrillSwitcher={() => setShowDrillSwitcher(false)}
           switcherRef={switcherRef}
           drills={drills}
+          labs={labs}
           selectedDrillId={selectedDrillId}
           drillSearch={drillSearch}
           onSearchChange={onSearchChange}

@@ -18,6 +18,7 @@ import {
   Workspace,
   drillHref,
   findProblemIndex,
+  isLabId,
   resolveWorkspaceDrill,
 } from "@/lib/routes";
 import { readLastDrillId, writeLastDrillId } from "@/lib/lastDrillStorage";
@@ -97,6 +98,7 @@ export const StudioClient: React.FC<StudioClientProps> = ({
     handleToggleStepHighlight,
     handleMarkDivergedStep,
     handleSetScore,
+    handleTestReportChange,
     handleToggleMistakeTag,
     handleSkipProblem,
     handleResetProblem,
@@ -113,11 +115,13 @@ export const StudioClient: React.FC<StudioClientProps> = ({
 
   const {
     drills,
+    labs,
     drillSearch,
     setDrillSearch,
     drillFilter,
     setDrillFilter,
     filteredDrills,
+    filteredLabs,
     loadDrillsList,
   } = useDrillList({
     workspace,
@@ -137,8 +141,10 @@ export const StudioClient: React.FC<StudioClientProps> = ({
     setLastCodeId(readLastDrillId("code"));
   }, [drillId]);
 
-  // Sync external ?q= updates (e.g., browser navigation or direct link clicks on same drill)
-  const qParam = searchParams.get("q");
+  // Sync external ?q= / ?m= updates (e.g., browser navigation or direct link clicks on same drill/lab)
+  const qParam = isLabId(drillId)
+    ? searchParams.get("m") ?? searchParams.get("q")
+    : searchParams.get("q");
   const prevQParamRef = useRef<string | null | undefined>(undefined);
   useEffect(() => {
     if (prevQParamRef.current === undefined) {
@@ -193,6 +199,8 @@ export const StudioClient: React.FC<StudioClientProps> = ({
   const codeTargetId =
     workspace === "code" && currentDrill
       ? currentDrill.drillId
+      : lastCodeId && isLabId(lastCodeId) && labs.some((l) => l.id === lastCodeId)
+      ? lastCodeId
       : resolveWorkspaceDrill(drills, "code", lastCodeId);
 
   const activeProblemId = currentDrill?.problems[currentProblemIndex]?.id;
@@ -218,6 +226,7 @@ export const StudioClient: React.FC<StudioClientProps> = ({
       onToggleTheme={handleToggleTheme}
       onResetAll={handleResetAll}
       drills={filteredDrills}
+      labs={filteredLabs}
       selectedDrillId={drillId}
       drillSearch={drillSearch}
       onSearchChange={setDrillSearch}
@@ -302,6 +311,7 @@ export const StudioClient: React.FC<StudioClientProps> = ({
                 index={idx}
                 totalQuestions={currentDrill.problems.length}
                 drillTitle={currentDrill.unitTitle || currentDrill.unitCode}
+                labReadme={currentDrill.labReadme}
                 mistakeTags={currentDrill.mistakeTags || []}
                 activeStep={activeSteps[prob.id] ?? null}
                 onInputChange={(val) => handleInputChange(prob.id, val)}
@@ -312,6 +322,7 @@ export const StudioClient: React.FC<StudioClientProps> = ({
                 }
                 onMarkDivergedStep={(stepIdx) => handleMarkDivergedStep(prob.id, stepIdx)}
                 onSetScore={(score) => handleSetScore(prob.id, score)}
+                onTestReportChange={(rep) => handleTestReportChange(prob.id, rep)}
                 onToggleMistakeTag={(tagId) => handleToggleMistakeTag(prob.id, tagId)}
                 onMistakeNoteChange={(note) => handleMistakeNoteChange(prob.id, note)}
                 onResetProblem={() => handleResetProblem(prob.id)}

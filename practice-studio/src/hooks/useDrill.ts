@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { DrillDocument, Problem, CheckResult } from "@/types/drill";
+import { DrillDocument, Problem, CheckResult, TestRunReport } from "@/types/drill";
 import { applyCheckResult, applySkip, applyDivergedStep } from "@/lib/applyCheckResult";
 import {
   createTelemetryTimerState,
@@ -12,7 +12,8 @@ import {
   resetProblemTimer,
   TelemetryTimerState,
 } from "@/lib/telemetryTimer";
-import { findProblemIndex } from "@/lib/routes";
+import { labToDrillDocument, type LabDetailResponse } from "@/lib/labModel";
+import { findProblemIndex, isLabId } from "@/lib/routes";
 import { StatusMessage, ViewMode } from "./types";
 
 interface UseDrillOptions {
@@ -67,14 +68,20 @@ export function useDrill({
       setIsLoadingDrill(true);
       setDrillNotFound(false);
       try {
-        const res = await fetch(`/api/drill?id=${encodeURIComponent(id)}`);
+        const endpoint = isLabId(id)
+          ? `/api/lab?id=${encodeURIComponent(id)}`
+          : `/api/drill?id=${encodeURIComponent(id)}`;
+        const res = await fetch(endpoint);
         if (res.status === 404 || res.status === 400) {
           setCurrentDrill(null);
           setDrillNotFound(true);
           return;
         }
-        if (!res.ok) throw new Error("Could not load drill");
-        const doc: DrillDocument = await res.json();
+        if (!res.ok) throw new Error(isLabId(id) ? "Could not load lab" : "Could not load drill");
+        const rawPayload = await res.json();
+        const doc: DrillDocument = isLabId(id)
+          ? labToDrillDocument(rawPayload as LabDetailResponse)
+          : (rawPayload as DrillDocument);
         const normalizedDoc: DrillDocument = {
           ...doc,
           problems: (doc.problems || []).map((p) => ({
@@ -101,7 +108,7 @@ export function useDrill({
         setActiveSteps({});
       } catch (err: unknown) {
         const errMsg = err instanceof Error ? err.message : String(err);
-        setStatus({ text: `Failed to load drill ${id}: ${errMsg}`, type: "fail" });
+        setStatus({ text: `Failed to load ${id}: ${errMsg}`, type: "fail" });
       } finally {
         setIsLoadingDrill(false);
       }
@@ -305,6 +312,13 @@ export function useDrill({
 
   const handleSetScore = (probId: string, score: number | null) => {
     updateProblem(probId, (p) => ({ ...p, state: { ...p.state, score, skipped: false } }));
+  };
+
+  const handleTestReportChange = (probId: string, report: TestRunReport) => {
+    updateProblem(probId, (p) => ({
+      ...p,
+      state: { ...p.state, lastTestReport: report },
+    }));
   };
 
   const handleToggleMistakeTag = (probId: string, tagId: string) => {
@@ -518,6 +532,7 @@ export function useDrill({
     handleToggleStepHighlight,
     handleMarkDivergedStep,
     handleSetScore,
+    handleTestReportChange,
     handleToggleMistakeTag,
     handleSkipProblem,
     handleResetProblem,

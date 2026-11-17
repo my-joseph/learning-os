@@ -3,6 +3,7 @@ import { getReviewRequest } from "./studioRules";
 
 export type LayerCheckStatus = "pass" | "fail" | "not_run";
 export type ReviewStatus = "pass" | "revise" | "not_requested";
+export type MilestoneTileState = "pass" | "revise" | "not_started";
 export type StatusSymbol = "✓" | "✗" | "–";
 export type PrimaryCodeActionKind = "open_vscode" | "copy_review" | "next_problem";
 
@@ -71,6 +72,8 @@ export interface IdeLinks {
   filename: string;
   vscodeFolderUrl: string;
   cursorFolderUrl: string;
+  vscodeUrl?: string;
+  cursorUrl?: string;
 }
 
 const TS_CODE_RE = /^(TS\d+):\s*(.*)$/;
@@ -91,6 +94,13 @@ export function reviewStatusLabel(status: ReviewStatus): "not requested" | "revi
   if (status === "pass") return "pass";
   if (status === "revise") return "revise";
   return "not requested";
+}
+
+export function deriveMilestoneTileState(state?: ProblemState | null): MilestoneTileState {
+  const review = deriveReviewStatus(state?.reviews);
+  if (review === "pass") return "pass";
+  if (review === "revise") return "revise";
+  return "not_started";
 }
 
 export function formatReviewRunFailures(
@@ -324,5 +334,7 @@ export function resolveIdeLinks(problem: Partial<Problem>): IdeLinks {
     filename,
     vscodeFolderUrl,
     cursorFolderUrl,
+    ...(problem.vscodeUrl ? { vscodeUrl: problem.vscodeUrl } : {}),
+    ...(problem.cursorUrl ? { cursorUrl: problem.cursorUrl } : {}),
   };
 }

@@ -1,12 +1,12 @@
 import React, { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { StudioClient } from "./StudioClient";
-import { Workspace, drillHref, subjectOf } from "@/lib/routes";
+import { Workspace, drillHref, isLabId, labHref, subjectOf } from "@/lib/routes";
 
 interface WorkspaceDrillRouteProps {
   workspace: Workspace;
   drillId: string;
-  searchParams: { q?: string | string[] };
+  searchParams: { q?: string | string[]; m?: string | string[] };
 }
 
 function safeDecode(value: string): string {
@@ -24,12 +24,17 @@ export function WorkspaceDrillRoute({
   searchParams,
 }: WorkspaceDrillRouteProps) {
   const decodedId = safeDecode(drillId);
+  const rawParam = searchParams.q ?? searchParams.m;
   const q =
-    typeof searchParams.q === "string"
-      ? searchParams.q
-      : Array.isArray(searchParams.q)
-      ? searchParams.q[0]
+    typeof rawParam === "string"
+      ? rawParam
+      : Array.isArray(rawParam)
+      ? rawParam[0]
       : undefined;
+
+  if (isLabId(decodedId)) {
+    redirect(labHref(decodedId, q));
+  }
 
   const expected = subjectOf(decodedId);
   if (expected && expected !== workspace) {
