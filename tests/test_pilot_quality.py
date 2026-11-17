@@ -1188,3 +1188,37 @@ def test_invalid_source_or_submission_cannot_quarantine_past_integrity_errors(tm
     with pytest.raises(ValueError, match="integrity/schema"):
         pilot_quality.quarantine_run(repo, "run-bad-items", reason="try bypass corrupt items")
     assert json.loads((bad_dir / "run.json").read_text())["ended_at"] is None
+
+
+def test_materialized_prg_workspace_symlinks_allowed_when_unchanged(tmp_path: Path) -> None:
+    repo = _setup_repo(tmp_path)
+    (repo / "code_engine").mkdir()
+    (repo / "tools" / "lint" / "node_modules").mkdir(parents=True)
+    ws_dir = repo / "drills" / "workspace" / "DRL-PRG-T01-C03-U06-01"
+    ws_dir.mkdir(parents=True)
+    (ws_dir / "Q01.ts").write_text("export {};\n", encoding="utf-8")
+    (ws_dir / "code_engine").symlink_to(repo / "code_engine", target_is_directory=True)
+    (ws_dir / "node_modules").symlink_to(repo / "tools" / "lint" / "node_modules", target_is_directory=True)
+
+    init_doc = _init_clean_run(repo, run_id="run-prg-ws")
+    ws_snap = init_doc["isolation_check"]["protected_snapshot"]["roots"]["drills/workspace"]
+    assert ws_snap["symlinks_found"] == []
+    assert ws_snap["workspace_symlinks"] == {
+        "drills/workspace/DRL-PRG-T01-C03-U06-01/code_engine": "code_engine",
+        "drills/workspace/DRL-PRG-T01-C03-U06-01/node_modules": "tools/lint/node_modules",
+    }
+
+    run_dir = repo / "pilot" / "quality" / "run-prg-ws"
+    pilot_quality.record_item(repo, run_id="run-prg-ws", payload=_base_payload(run_dir, "rec-1", "Q01"))
+    finished = pilot_quality.end_run(repo, "run-prg-ws")
+    assert finished["closure_status"] == "closed"
+    assert pilot_quality.validate_run(repo, "run-prg-ws")["clean_run_eligible"] is True
+
+    # Unexpected symlink inside drills/workspace still fails isolation
+    _init_clean_run(repo, run_id="run-prg-bad-sym")
+    outside = tmp_path.parent / f"{tmp_path.name}_escape"
+    outside.mkdir(exist_ok=True)
+    (ws_dir / "escape").symlink_to(outside, target_is_directory=True)
+    bad_val = pilot_quality.validate_run(repo, "run-prg-bad-sym")
+    assert bad_val["valid"] is False
+    assert bad_val["isolation_status"] == "mismatch"
