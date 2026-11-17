@@ -275,6 +275,29 @@ def _resolve_or_capture_ref(repo_root: Path, run_dir: Path, raw_ref: Any, captur
     return canon
 
 
+def _expected_workspace_symlink_target(root: Path, rel: str, link_path: Path, rpath: str) -> str | None:
+    """Return canonical repo-relative target if `link_path` is a standard materialized drill workspace symlink."""
+    if rel != "drills/workspace":
+        return None
+    parts = Path(rpath).parts
+    if len(parts) != 4:
+        return None
+    link_name = parts[3]
+    expected_map = {
+        "code_engine": root / "code_engine",
+        "node_modules": root / "tools" / "lint" / "node_modules",
+    }
+    expected = expected_map.get(link_name)
+    if expected is None:
+        return None
+    expected_resolved = expected.resolve(strict=False)
+    if not expected_resolved.is_relative_to(root):
+        return None
+    if link_path.resolve(strict=False) != expected_resolved:
+        return None
+    return expected_resolved.relative_to(root).as_posix()
+
+
 def snapshot_protected_paths(repo_root: Path) -> dict[str, Any]:
     """Capture read-only SHA-256 content hashes of protected learner directories."""
     root = repo_root.resolve(strict=True)
@@ -285,6 +308,7 @@ def snapshot_protected_paths(repo_root: Path) -> dict[str, Any]:
             "exists": False,
             "is_symlink": False,
             "symlinks_found": [],
+            "workspace_symlinks": {},
             "file_count": 0,
             "tree_sha256": _sha256_bytes(b""),
             "files": {},
@@ -306,13 +330,19 @@ def snapshot_protected_paths(repo_root: Path) -> dict[str, Any]:
         entry["exists"] = True
         files: dict[str, str] = {}
         symlinks_found: list[str] = []
+        workspace_symlinks: dict[str, str] = {}
         for dirpath, dirnames, filenames in os.walk(target, followlinks=False):
             dp = Path(dirpath)
             kept: list[str] = []
             for dname in sorted(dirnames):
                 dpath = dp / dname
                 if dpath.is_symlink():
-                    symlinks_found.append(dpath.relative_to(root).as_posix())
+                    rpath = dpath.relative_to(root).as_posix()
+                    expected_target = _expected_workspace_symlink_target(root, rel, dpath, rpath)
+                    if expected_target is not None:
+                        workspace_symlinks[rpath] = expected_target
+                    else:
+                        symlinks_found.append(rpath)
                 else:
                     kept.append(dname)
             dirnames[:] = kept
@@ -330,6 +360,7 @@ def snapshot_protected_paths(repo_root: Path) -> dict[str, Any]:
                 "files": files,
                 "file_count": len(files),
                 "symlinks_found": sorted(symlinks_found),
+                "workspace_symlinks": dict(sorted(workspace_symlinks.items())),
                 "tree_sha256": _sha256_bytes(lines.encode("utf-8")),
             }
         )
@@ -354,6 +385,10 @@ def compare_protected_snapshots(recorded: dict[str, Any], current: dict[str, Any
             mismatches.append(f"{rel}: symlinks found inside recorded snapshot: {rec['symlinks_found']}")
         if cur.get("symlinks_found"):
             mismatches.append(f"{rel}: symlinks found inside protected path: {cur['symlinks_found']}")
+        if (rec.get("workspace_symlinks") or {}) != (cur.get("workspace_symlinks") or {}):
+            mismatches.append(
+                f"{rel}: workspace symlink mismatch ({rec.get('workspace_symlinks') or {}} -> {cur.get('workspace_symlinks') or {}})"
+            )
         if rec.get("exists") != cur.get("exists"):
             mismatches.append(f"{rel}: existence changed ({rec.get('exists')} -> {cur.get('exists')})")
         if rec.get("tree_sha256") != cur.get("tree_sha256"):
