@@ -2316,6 +2316,18 @@
     "title": "MDN – HTML",
     "url": "https://developer.mozilla.org/en-US/docs/Web/HTML"
   },
+  "DRL-MTH-T02-C04-U03-01": {
+    "id": "41a3818f-8ba0-81b0-8e2a-f95ecdc557d9",
+    "title": "Graphs of Polynomial Functions — Verified Math Drill (5 Qs · AI Synthesized Reasoning Mode)"
+  },
+  "DRL-PRG-T01-C02-U07-01": {
+    "id": "41a3818f-8ba0-81ec-83f4-f9ec3b3a4786",
+    "title": "Discriminated Unions — Verified Programming Drill (4 Qs · AI Synthesized Engineering Mode)"
+  },
+  "DRL-MTH-T02-C04-U02-01": {
+    "id": "41a3818f-8ba0-81df-894c-e09038729d81",
+    "title": "Power Functions and Polynomial Functions — Verified Math Drill (3 Qs · AI Synthesized Reasoning Mode)"
+  },
   "DRL-PRG-T01-C02-U06-01": {
     "id": "41a3818f-8ba0-8111-a558-fd3c8184ca2b",
     "title": "Utility Types — Verified Programming Drill (4 Qs · AI Synthesized Engineering Mode)"
@@ -2491,13 +2503,5 @@
   "DRL-PRG-T00-C03-02": {
     "id": "4153818f-8ba0-81e9-bac2-f9f97bbbe5c5",
     "title": "JavaScript & TypeScript Baseline — Verified Programming Drill (10 Qs · AI Synthesized Engineering Mode)"
-  },
-  "DRL-MTH-T02-C04-U02-01": {
-    "id": "41a3818f-8ba0-81df-894c-e09038729d81",
-    "title": "Power Functions and Polynomial Functions — Verified Math Drill (3 Qs · AI Synthesized Reasoning Mode)"
-  },
-  "DRL-MTH-T02-C04-U03-01": {
-    "id": "41a3818f-8ba0-81b0-8e2a-f95ecdc557d9",
-    "title": "Graphs of Polynomial Functions — Verified Math Drill (5 Qs · AI Synthesized Reasoning Mode)"
   }
 }
