@@ -129,6 +129,16 @@
         {
           "name": "validates input types",
           "testCode": "await assert.rejects(() => dispatchWebhookBatch(null, async () => ({})), TypeError);\nawait assert.rejects(() => dispatchWebhookBatch([], 'not-fn'), TypeError);"
+        },
+        {
+          "name": "dispatches all deliveries concurrently and preserves order",
+          "testCode": "const deferreds = [];\nlet inFlight = 0;\nlet maxInFlight = 0;\nconst deliver = (ev) => {\n  inFlight += 1;\n  maxInFlight = Math.max(maxInFlight, inFlight);\n  return new Promise((resolve) => {\n    deferreds.push({ ev, resolve });\n  });\n};\nconst pending = dispatchWebhookBatch([{ id: 'a' }, { id: 'b' }, { id: 'c' }], deliver);\nawait new Promise((resolve) => setImmediate(resolve));\nassert.strictEqual(deferreds.length, 3);\nassert.strictEqual(maxInFlight, 3);\nfor (const [idx, receiptId] of [[2, 'rcpt_c'], [0, 'rcpt_a'], [1, 'rcpt_b']]) {\n  inFlight -= 1;\n  deferreds[idx].resolve({ receiptId });\n}\nconst summary = await pending;\nassert.deepStrictEqual(summary, { delivered: 3, receiptIds: ['rcpt_a', 'rcpt_b', 'rcpt_c'] });"
+        }
+      ],
+      "mutants": [
+        {
+          "name": "sequential-await-in-loop",
+          "code": "async function dispatchWebhookBatch(events, deliver) {\n  if (!Array.isArray(events) || typeof deliver !== 'function') {\n    throw new TypeError('Invalid events or deliver handler');\n  }\n  const receiptIds = [];\n  for (const event of events) {\n    const res = await deliver(event);\n    receiptIds.push(res.receiptId);\n  }\n  return { delivered: receiptIds.length, receiptIds };\n}\n\nmodule.exports = { dispatchWebhookBatch };\n"
         }
       ],
       "steps": [
@@ -213,6 +223,16 @@
         {
           "name": "validates arguments",
           "testCode": "await assert.rejects(() => probeClusterNodes(null, async () => ({})), TypeError);\nawait assert.rejects(() => probeClusterNodes([], null), TypeError);"
+        },
+        {
+          "name": "probes all nodes concurrently without waiting for earlier nodes or aborting on failure",
+          "testCode": "const deferreds = [];\nlet inFlight = 0;\nlet maxInFlight = 0;\nconst pingNode = (node) => {\n  inFlight += 1;\n  maxInFlight = Math.max(maxInFlight, inFlight);\n  return new Promise((resolve, reject) => {\n    deferreds.push({ node, resolve, reject });\n  });\n};\nconst nodes = [\n  { region: 'us-east', url: 'https://us.example' },\n  { region: 'eu-west', url: 'https://eu.example' },\n  { region: 'ap-south', url: 'https://ap.example' },\n];\nconst pending = probeClusterNodes(nodes, pingNode);\nawait new Promise((resolve) => setImmediate(resolve));\nassert.strictEqual(deferreds.length, 3);\nassert.strictEqual(maxInFlight, 3);\ninFlight -= 1;\ndeferreds[1].reject(new Error('ECONNREFUSED'));\ninFlight -= 1;\ndeferreds[2].resolve({ latencyMs: 35 });\ninFlight -= 1;\ndeferreds[0].resolve({ latencyMs: 12 });\nconst res = await pending;\nassert.deepStrictEqual(res, {\n  healthy: [\n    { region: 'us-east', latencyMs: 12 },\n    { region: 'ap-south', latencyMs: 35 },\n  ],\n  failed: [{ region: 'eu-west', error: 'ECONNREFUSED' }],\n});"
+        }
+      ],
+      "mutants": [
+        {
+          "name": "sequential-await-in-loop",
+          "code": "async function probeClusterNodes(nodes, pingNode) {\n  if (!Array.isArray(nodes) || typeof pingNode !== 'function') {\n    throw new TypeError('nodes must be an array and pingNode must be a function');\n  }\n  const healthy = [];\n  const failed = [];\n  for (const node of nodes) {\n    try {\n      const res = await pingNode(node);\n      healthy.push({ region: node.region, latencyMs: res.latencyMs });\n    } catch (reason) {\n      failed.push({\n        region: node.region,\n        error: reason instanceof Error ? reason.message : String(reason),\n      });\n    }\n  }\n  return { healthy, failed };\n}\n\nmodule.exports = { probeClusterNodes };\n"
         }
       ],
       "steps": [
@@ -300,6 +320,16 @@
         {
           "name": "validates function arguments",
           "testCode": "await assert.rejects(() => authorizeCheckoutStep(null, async () => ({})), TypeError);\nawait assert.rejects(() => authorizeCheckoutStep(async () => ({}), 123), TypeError);"
+        },
+        {
+          "name": "starts inventory and payment checks concurrently",
+          "testCode": "const deferreds = [];\nlet inFlight = 0;\nlet maxInFlight = 0;\nconst track = (step) => () => {\n  inFlight += 1;\n  maxInFlight = Math.max(maxInFlight, inFlight);\n  return new Promise((resolve, reject) => {\n    deferreds.push({ step, resolve, reject });\n  });\n};\nconst pending = authorizeCheckoutStep(track('inv'), track('pay'));\nawait new Promise((resolve) => setImmediate(resolve));\nassert.strictEqual(deferreds.length, 2);\nassert.strictEqual(maxInFlight, 2);\ninFlight -= 1;\ndeferreds[1].reject(new Error('Gateway down'));\ninFlight -= 1;\ndeferreds[0].resolve({ sku: 'KB-1', qty: 1 });\nconst res = await pending;\nassert.deepStrictEqual(res, { ok: false, errors: ['Gateway down'] });"
+        }
+      ],
+      "mutants": [
+        {
+          "name": "sequential-await-steps",
+          "code": "async function authorizeCheckoutStep(reserveInventory, chargeCard) {\n  if (typeof reserveInventory !== 'function' || typeof chargeCard !== 'function') {\n    throw new TypeError('reserveInventory and chargeCard must be functions');\n  }\n  const errors = [];\n  let reservation;\n  let payment;\n  try {\n    reservation = await reserveInventory();\n  } catch (err) {\n    errors.push(err instanceof Error ? err.message : String(err));\n  }\n  try {\n    payment = await chargeCard();\n  } catch (err) {\n    errors.push(err instanceof Error ? err.message : String(err));\n  }\n  if (errors.length > 0) {\n    return { ok: false, errors };\n  }\n  return { ok: true, reservation, payment };\n}\n\nmodule.exports = { authorizeCheckoutStep };\n"
         }
       ],
       "steps": [
