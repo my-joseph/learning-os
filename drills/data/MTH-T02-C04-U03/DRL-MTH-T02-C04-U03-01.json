@@ -1,0 +1,590 @@
+{
+  "unitCode": "MTH-T02-C04-U03",
+  "topicTitle": "Polynomial and Rational Functions",
+  "unitTitle": "Graphs of Polynomial Functions",
+  "subject": "MATH",
+  "problems": [
+    {
+      "id": "Q01",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c04-u03-bound-turning-points-by-degree",
+      "context": "",
+      "prompt": "What is the greatest possible number of turning points for a polynomial of degree $6$?",
+      "display": "T_{max}=n-1",
+      "plainText": "maximum turning points = degree - 1",
+      "givens": {
+        "n": 6
+      },
+      "constants": {
+        "one": 1
+      },
+      "trapGivens": [
+        6,
+        1
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "5",
+        "tolerance": 0
+      },
+      "answerPlain": "5",
+      "answerDisplay": "5",
+      "inputHint": "Enter a whole number.",
+      "commonTrapTag": "t02-c04-u03-add-one-to-turn-bound-trap",
+      "trapDerivation": "6+1",
+      "trapValue": "7",
+      "verify": {
+        "source": "6-1",
+        "trapValue": "6+1"
+      },
+      "checkpointHint": "Use the degree bound for reversals in direction, not the bound for distinct zeros.",
+      "references": [
+        "MTH-T02-C04-U03"
+      ],
+      "figureNone": "This is a direct symbolic bound; a graph adds no information needed to answer it.",
+      "steps": [
+        {
+          "latex": "T_{max}=n-1",
+          "explain": "Use the maximum turning-point bound for a polynomial."
+        },
+        {
+          "latex": "T_{max}=6-1",
+          "explain": "Substitute the polynomial's degree."
+        },
+        {
+          "latex": "T_{max}=5",
+          "explain": "Subtract one to obtain the greatest possible count.",
+          "val": "5"
+        }
+      ],
+      "verificationLevel": "partial",
+      "review": {
+        "verdict": "pass",
+        "note": "Degree 6 permits at most 5 turning points, and the +1 trap is coherent; the bound item is clear, L1, and hints do not reveal the result."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C04-U03",
+          "title": "Graphs of Polynomial Functions",
+          "notionUrl": "https://www.notion.so/4013818f8ba081a1833fd1bfcaed1830"
+        }
+      ],
+      "unitCode": "MTH-T02-C04-U03",
+      "fingerprint": "t02-c04-u03-add-one-to-turn-bound-trap|direct|maximum turning points = degree - #",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c04-u03-add-one-to-turn-bound-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 1 - Foundation"
+    },
+    {
+      "id": "Q02",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c04-u03-factor-to-find-zeros",
+      "context": "",
+      "prompt": "For $f(x)=(x-2)^2(x-5)$, find the sum of all different real inputs $x$ for which $f(x)=0$. Count a repeated zero once.",
+      "display": "f(x)=(x-2)^2(x-5)",
+      "plainText": "f(x)=(x-2)^2(x-5)",
+      "givens": {
+        "r1": 2,
+        "r2": 5
+      },
+      "constants": {},
+      "trapGivens": [
+        2,
+        5
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "7",
+        "tolerance": 0
+      },
+      "answerPlain": "7",
+      "answerDisplay": "7",
+      "inputHint": "Enter a number.",
+      "commonTrapTag": "t02-c04-u03-count-repeated-zero-multiple-times-trap",
+      "trapDerivation": "2*2+5",
+      "trapValue": "9",
+      "verify": {
+        "source": "2+5",
+        "trapValue": "2*2+5"
+      },
+      "checkpointHint": "Set each distinct factor equal to zero before combining the requested inputs.",
+      "references": [
+        "MTH-T02-C04-U03"
+      ],
+      "figureNone": "A graph would reveal the zeros directly and bypass the factoring task.",
+      "steps": [
+        {
+          "latex": "x-2=0",
+          "explain": "Set the repeated linear factor equal to zero."
+        },
+        {
+          "latex": "x=2",
+          "explain": "Solve the first factor equation."
+        },
+        {
+          "latex": "x-5=0",
+          "explain": "Set the remaining distinct factor equal to zero."
+        },
+        {
+          "latex": "x=5",
+          "explain": "Solve the second factor equation."
+        },
+        {
+          "latex": "2+5=7",
+          "explain": "Add the distinct real zeros, counting the repeated zero once.",
+          "eq": [
+            "2+5",
+            "7"
+          ],
+          "val": "7"
+        }
+      ],
+      "verificationLevel": "partial",
+      "review": {
+        "verdict": "pass",
+        "note": "The distinct zeros are 2 and 5, so their sum is 7; the repeated-zero trap, wording, L1 fit, and non-leaking hints are sound."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C04-U03",
+          "title": "Graphs of Polynomial Functions",
+          "notionUrl": "https://www.notion.so/4013818f8ba081a1833fd1bfcaed1830"
+        }
+      ],
+      "unitCode": "MTH-T02-C04-U03",
+      "fingerprint": "t02-c04-u03-count-repeated-zero-multiple-times-trap|direct|f(x)=(x-#)^#(x-#)",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 5,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c04-u03-count-repeated-zero-multiple-times-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 17
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 1 - Foundation"
+    },
+    {
+      "id": "Q03",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c04-u03-sketch-polynomial-from-features",
+      "context": "",
+      "prompt": "A least-degree polynomial has a double zero at $x=1$, a simple zero at $x=-2$, and passes through $(0,12)$. In $f(x)=a(x-1)^2(x+2)$, find $a$.",
+      "display": "f(x)=a(x-1)^2(x+2);\\quad f(0)=12",
+      "plainText": "f(x)=a(x-1)^2(x+2); f(0)=12",
+      "givens": {
+        "x_point": 0,
+        "y_point": 12,
+        "r1": 1,
+        "r2": -2,
+        "m1": 2
+      },
+      "constants": {},
+      "trapGivens": [
+        12,
+        0,
+        1,
+        2
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "6",
+        "tolerance": 0
+      },
+      "answerPlain": "6",
+      "answerDisplay": "6",
+      "inputHint": "Enter the signed scale factor.",
+      "commonTrapTag": "t02-c04-u03-multiplicity-factor-count-trap",
+      "trapDerivation": "12/((0-1)*(0+2))",
+      "trapValue": "-6",
+      "verify": {
+        "source": "12/((0-1)^2*(0+2))",
+        "trapValue": "12/((0-1)*(0+2))"
+      },
+      "checkpointHint": "Substitute the known point into the complete factored model before isolating its scale.",
+      "references": [
+        "MTH-T02-C04-U03"
+      ],
+      "figureWaiver": "A graph built from the complete polynomial would expose the requested scale factor instead of supporting its reconstruction.",
+      "steps": [
+        {
+          "latex": "12=a(0-1)^2(0+2)",
+          "explain": "Substitute the known point into the factored model."
+        },
+        {
+          "latex": "12=a(1)(2)",
+          "explain": "Evaluate the repeated factor at the known input."
+        },
+        {
+          "latex": "12=2a",
+          "explain": "Multiply the remaining factors."
+        },
+        {
+          "latex": "a=6",
+          "explain": "Divide both sides by the nonzero coefficient.",
+          "eq": [
+            "12/2",
+            "6"
+          ],
+          "val": "6"
+        }
+      ],
+      "verificationLevel": "partial",
+      "review": {
+        "verdict": "pass",
+        "note": "Substitution gives 12=2a and a=6; the missing-multiplicity trap is valid, the least-degree model is unambiguous, and the reconstruction task fits L2 without hint leakage."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C04-U03",
+          "title": "Graphs of Polynomial Functions",
+          "notionUrl": "https://www.notion.so/4013818f8ba081a1833fd1bfcaed1830"
+        }
+      ],
+      "unitCode": "MTH-T02-C04-U03",
+      "fingerprint": "t02-c04-u03-multiplicity-factor-count-trap|reverse|f(x)=a(x-#)^#(x+#); f(#)=#",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 4,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c04-u03-multiplicity-factor-count-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 15
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 2 - Standard Exam"
+    },
+    {
+      "id": "Q04",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c04-u03-apply-intermediate-value-theorem",
+      "context": "",
+      "prompt": "A polynomial $f$ is continuous and has values $f(-3)=-6$, $f(0)=4$, $f(2)=-5$, and $f(6)=8$. Between how many consecutive pairs of listed inputs does the Intermediate Value Theorem guarantee at least one zero?",
+      "display": "x: -3, 0, 2, 6;\\quad f(x): -6, 4, -5, 8",
+      "plainText": "x values -3, 0, 2, 6; outputs -6, 4, -5, 8",
+      "givens": {
+        "x1": -3,
+        "y1": -6,
+        "x2": 0,
+        "y2": 4,
+        "x3": 2,
+        "y3": -5,
+        "x4": 6,
+        "y4": 8
+      },
+      "constants": {},
+      "trapGivens": [
+        6,
+        4,
+        5,
+        8
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "3",
+        "tolerance": 0
+      },
+      "answerPlain": "3",
+      "answerDisplay": "3",
+      "inputHint": "Enter the number of adjacent intervals.",
+      "commonTrapTag": "t02-c04-u03-ivt-uniqueness-trap",
+      "trapDerivation": "(abs(-6*8)-(-6*8))/(2*abs(-6*8))",
+      "trapValue": "1",
+      "verify": {
+        "source": "(abs(-6*4)-(-6*4))/(2*abs(-6*4))+(abs(4*-5)-(4*-5))/(2*abs(4*-5))+(abs(-5*8)-(-5*8))/(2*abs(-5*8))",
+        "trapValue": "(abs(-6*8)-(-6*8))/(2*abs(-6*8))"
+      },
+      "checkpointHint": "Check each neighboring pair separately; a guarantee applies only where the endpoint signs differ.",
+      "references": [
+        "MTH-T02-C04-U03"
+      ],
+      "figureNone": "A graph would reveal the crossings, so the item tests the theorem's guarantee from endpoint data.",
+      "steps": [
+        {
+          "latex": "-6<0<4",
+          "explain": "The first adjacent pair of function values has opposite signs."
+        },
+        {
+          "latex": "4>0>-5",
+          "explain": "The second adjacent pair also has opposite signs."
+        },
+        {
+          "latex": "-5<0<8",
+          "explain": "The third adjacent pair also has opposite signs."
+        },
+        {
+          "latex": "1+1+1=3",
+          "explain": "Count each adjacent sign change as one guaranteed interval containing at least one zero.",
+          "eq": [
+            "1+1+1",
+            "3"
+          ],
+          "val": "3"
+        }
+      ],
+      "verificationLevel": "partial",
+      "review": {
+        "verdict": "pass",
+        "note": "All three adjacent output pairs have opposite signs, so IVT guarantees at least one zero in each; the trap targets uniqueness, and the L2 interval-count task is clear with helpful non-leaking hints."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C04-U03",
+          "title": "Graphs of Polynomial Functions",
+          "notionUrl": "https://www.notion.so/4013818f8ba081a1833fd1bfcaed1830"
+        }
+      ],
+      "unitCode": "MTH-T02-C04-U03",
+      "fingerprint": "t02-c04-u03-ivt-uniqueness-trap|direct|x values -#, #, #, #; outputs -#, #, -#, #",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 4,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c04-u03-ivt-uniqueness-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 15
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 2 - Standard Exam"
+    },
+    {
+      "id": "Q05",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c04-u03-read-zero-multiplicity",
+      "context": "",
+      "prompt": "For $f(x)=-3(x+1)^3(x-4)^2$, what is the multiplicity of the zero at $x=-1$?",
+      "display": "f(x)=-3(x+1)^3(x-4)^2",
+      "plainText": "f(x)=-3(x+1)^3(x-4)^2",
+      "givens": {
+        "a": -3,
+        "r1": -1,
+        "m1": 3,
+        "r2": 4,
+        "m2": 2
+      },
+      "constants": {},
+      "trapGivens": [
+        3,
+        2
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "3",
+        "tolerance": 0
+      },
+      "answerPlain": "3",
+      "answerDisplay": "3",
+      "inputHint": "Enter the factor's exponent as a whole number.",
+      "commonTrapTag": "t02-c04-u03-total-degree-as-zero-multiplicity-trap",
+      "trapDerivation": "3+2",
+      "trapValue": "5",
+      "verify": {
+        "source": "3",
+        "trapValue": "3+2"
+      },
+      "checkpointHint": "Use the factor attached to the named zero, not a property of all factors together.",
+      "references": [
+        "MTH-T02-C04-U03"
+      ],
+      "figureWaiver": "A graph would reveal the requested local multiplicity directly.",
+      "steps": [
+        {
+          "latex": "x+1=0",
+          "explain": "Match the named zero to its factor."
+        },
+        {
+          "latex": "(x+1)^3",
+          "explain": "Read the exponent on the factor associated with this zero."
+        },
+        {
+          "latex": "m=3",
+          "explain": "State the multiplicity for the named zero.",
+          "val": "3"
+        }
+      ],
+      "verificationLevel": "partial",
+      "review": {
+        "verdict": "pass",
+        "note": "The factor for x=-1 is (x+1)^3, so its multiplicity is 3; the total-degree trap and direct L2 skill fit are appropriate, with no answer leakage in the hints."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C04-U03",
+          "title": "Graphs of Polynomial Functions",
+          "notionUrl": "https://www.notion.so/4013818f8ba081a1833fd1bfcaed1830"
+        }
+      ],
+      "unitCode": "MTH-T02-C04-U03",
+      "fingerprint": "t02-c04-u03-total-degree-as-zero-multiplicity-trap|direct|f(x)=-#(x+#)^#(x-#)^#",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c04-u03-total-degree-as-zero-multiplicity-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 2 - Standard Exam"
+    }
+  ],
+  "drillId": "DRL-MTH-T02-C04-U03-01",
+  "title": "Graphs of Polynomial Functions — Verified Math Drill (5 Qs)",
+  "topicCode": "MTH-T02",
+  "chapterCode": "MTH-T02-C04",
+  "schemaVersion": "2.0-math",
+  "createdAt": "2026-11-17 06:50:36",
+  "config": {
+    "questionCount": 5,
+    "difficulty": "ALL",
+    "difficultyMode": "AI Synthesized Reasoning Mode"
+  },
+  "localFilePath": "drills/data/MTH-T02-C04-U03/DRL-MTH-T02-C04-U03-01.json"
+}
