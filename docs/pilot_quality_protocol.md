@@ -1,6 +1,6 @@
 # Exercise quality assessment — pilot protocol v1
 
-Status: proposed manual protocol for the next pilot; no runner or generation skill changed.
+Status: calibration protocol with a local collection CLI; see [runner commands](pilot_quality_runner.md). Collection does not automatically instrument the existing learner runners or change generation skills.
 Scope: assess exercises and design useful observations, not restart content production.
 Read the [initial assessment](pilot_quality_baseline.md) before interpreting historical results.
 
@@ -38,6 +38,8 @@ These are design-review dimensions, not a validated educational scale. Use `supp
 
 Keep existing `form`, `codeType`, category and blind-solve demand tags. Add observations beside them; do not overwrite author labels or turn labels into proof of cognitive demand.
 
+Calibration anchors: use `context=not_applicable` for appropriate plain math without a scenario (neutral, not a defect). Judge objective alignment against the item's stated objective; record missing unit-wide coverage separately. Compare reviewers only when they receive the same evidence: a reviewer without checker contracts must use `assessment_validity=unknown`. Design support and an observed learning outcome remain distinct, even when a model solves every item correctly.
+
 ## Minimum data contract
 
 Store raw records only under ignored `pilot/quality/<run_id>/`. No answers, hidden tests, raw progress, or solution-bearing excerpts go into Git, PRs, or learner-facing reports. Use relative path references plus item IDs and headings/record IDs; keep any private explanation in a separate local file. No changes to the learner's `progress/`, Notion, or current drill schema are needed.
@@ -54,7 +56,7 @@ Use `run.json`, append-only `items.jsonl` (one record per attempt), and `summary
 | Review path | `review_verdict`, `caught_by`, `dispute_ref`, `dispute_outcome`, `explain_status`, `issue_refs` | Verdict PASS/REVISE/blocked/not_reviewed; caught_by test/lint/typecheck/reviewer/none/unknown; disputes upheld/rejected/partial/pending/not_applicable; explain supported/partial/unsupported/not_observed |
 | Effort | `active_ms`, `tool_wait_ms`, `elapsed_ms`, `time_source` | measured/estimated/unavailable; never infer active time from shell wall time or token count |
 | Item review | `dimensions`, `unique_contribution`, `comparison_ids`, `decision`, `decision_reason` | Each dimension has status, evidence refs, confidence; decision keep/revise/replace/investigate |
-| Probe | `probe_id`, `parent_problem_id`, `changed_dimension`, `unchanged_objective`, `delay_ms`, `exposure`, `outcome`, `explanation_status` | Null unless a probe ran; explanation supported/partial/unsupported/not_observed |
+| Probe | `probe_id`, `parent_problem_id`, `changed_dimension`, `unchanged_objective`, `delay_ms`, `exposure`, `outcome`, `explanation_status` | Null unless a probe ran; `unchanged_objective` is a reviewer-verified boolean (the objective statement stays in the referenced probe artifact); explanation supported/partial/unsupported/not_observed |
 
 `planted` is true/false/null. The quality reviewer may join the private plant manifest only after the code-review verdict is locked. Attempt outputs are references, not copied solution text. Preserve raw checker outcomes alongside reviewer interpretations. Record any harness patch and the commit used to re-run it.
 
