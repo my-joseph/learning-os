@@ -1,0 +1,485 @@
+{
+  "unitCode": "MTH-T02-C04-U06",
+  "topicTitle": "Polynomial and Rational Functions",
+  "unitTitle": "Rational Functions",
+  "subject": "MATH",
+  "problems": [
+    {
+      "id": "Q01",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c04-u06-domain-rational-function",
+      "context": "",
+      "prompt": "Find the domain of $f(x)=\\frac{x+2}{x^2-2x-3}$ in interval notation.",
+      "display": "Domain excludes every real zero of the original denominator",
+      "plainText": "Domain of (x+2)/(x^2-2x-3)",
+      "givens": {
+        "numerator_constant": 2,
+        "denominator_linear": -2,
+        "denominator_constant": -3
+      },
+      "constants": {
+        "negative_root_magnitude": 1,
+        "positive_root": 3
+      },
+      "trapGivens": [
+        1,
+        3
+      ],
+      "answerSpec": {
+        "type": "interval",
+        "value": "(-oo,-1) U (-1,3) U (3,oo)"
+      },
+      "answerPlain": "(-oo, -1) U (-1, 3) U (3, oo)",
+      "answerDisplay": "(-oo,-1) U (-1,3) U (3,oo)",
+      "inputHint": "Enter the complete domain using interval notation and U for unions.",
+      "commonTrapTag": "t02-c04-u06-only-middle-domain-interval-trap",
+      "trapDerivation": "(-1,3)",
+      "trapValue": "(-1,3)",
+      "verify": {
+        "source": "(-oo,-1) U (-1,3) U (3,oo)",
+        "trapValue": "(-1,3)"
+      },
+      "checkpointHint": "Find every real zero of the original denominator before writing the intervals.",
+      "references": [
+        "MTH-T02-C04-U06"
+      ],
+      "steps": [
+        {
+          "latex": "x^2-2x-3=0",
+          "explain": "Set the original denominator equal to zero to find excluded inputs."
+        },
+        {
+          "latex": "(x-3)(x+1)=0",
+          "explain": "Factor the quadratic denominator.",
+          "eq": [
+            "x^2-2*x-3",
+            "(x-3)*(x+1)"
+          ]
+        },
+        {
+          "latex": "x=3",
+          "explain": "Solve the first linear factor for its zero."
+        },
+        {
+          "latex": "x=-1",
+          "explain": "Solve the second linear factor for its zero."
+        },
+        {
+          "latex": "D=(-\\infty,-1)\\cup(-1,3)\\cup(3,\\infty)",
+          "explain": "Write the real line with both excluded inputs removed."
+        }
+      ],
+      "verificationLevel": "partial",
+      "review": {
+        "id": "Q01",
+        "verdict": "pass",
+        "note": "Independent factoring confirms the domain and its excluded inputs; the interval trap, steps, archetype, and non-revealing hints/display align clearly."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C04-U06",
+          "title": "Rational Functions",
+          "notionUrl": "https://www.notion.so/4013818f8ba081c5b9c4e60e721830fd"
+        }
+      ],
+      "unitCode": "MTH-T02-C04-U06",
+      "fingerprint": "t02-c04-u06-only-middle-domain-interval-trap|direct|Domain of (x+#)/(x^#-#x-#)",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 5,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c04-u06-only-middle-domain-interval-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 17
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 1 - Foundation"
+    },
+    {
+      "id": "Q02",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c04-u06-separate-hole-from-asymptote",
+      "context": "",
+      "prompt": "For $f(x)=\\frac{x^2-4}{x^2-7x+10}$, give the $x$-coordinate that is a vertical asymptote, not the removable-hole input.",
+      "display": "Cancel common factors; zeros remaining in the denominator give vertical asymptotes",
+      "plainText": "Vertical asymptote x-coordinate of (x^2-4)/(x^2-7x+10)",
+      "givens": {
+        "numerator_constant": -4,
+        "denominator_linear": -7,
+        "denominator_constant": 10
+      },
+      "constants": {
+        "implicit_unit_coefficient": 1,
+        "cancelled_factor_root": 2
+      },
+      "trapGivens": [
+        4,
+        1
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "5",
+        "tolerance": 0
+      },
+      "answerPlain": "5",
+      "answerDisplay": "5",
+      "inputHint": "Enter the x-coordinate.",
+      "commonTrapTag": "t02-c04-u06-hole-as-vertical-asymptote-trap",
+      "trapDerivation": "sqrt(4*1)",
+      "trapValue": "2",
+      "verify": {
+        "source": "5",
+        "trapValue": "2"
+      },
+      "checkpointHint": "Factor both polynomials, then inspect only the denominator factor that remains after cancellation.",
+      "references": [
+        "MTH-T02-C04-U06"
+      ],
+      "steps": [
+        {
+          "latex": "x^2-4=(x-2)(x+2)",
+          "explain": "Factor the numerator."
+        },
+        {
+          "latex": "x^2-7x+10=(x-2)(x-5)",
+          "explain": "Factor the denominator.",
+          "eq": [
+            "x^2-7*x+10",
+            "(x-2)*(x-5)"
+          ]
+        },
+        {
+          "latex": "f(x)=\\frac{x+2}{x-5},\\quad x\\ne2",
+          "explain": "Cancel the common factor while preserving its excluded input."
+        },
+        {
+          "latex": "x-5=0",
+          "explain": "Set the reduced denominator equal to zero."
+        },
+        {
+          "latex": "x=5",
+          "explain": "The remaining denominator zero gives the vertical asymptote.",
+          "val": "5"
+        }
+      ],
+      "verificationLevel": "partial",
+      "review": {
+        "id": "Q02",
+        "verdict": "pass",
+        "note": "Independent cancellation analysis confirms the requested asymptote is distinct from the hole; the trap, derivation, steps, archetype, and hints/display are clear and non-leaking."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C04-U06",
+          "title": "Rational Functions",
+          "notionUrl": "https://www.notion.so/4013818f8ba081c5b9c4e60e721830fd"
+        }
+      ],
+      "unitCode": "MTH-T02-C04-U06",
+      "fingerprint": "t02-c04-u06-hole-as-vertical-asymptote-trap|direct|Vertical asymptote x-coordinate of (x^#-#)/(x^#-#x+#)",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 2,
+          "stepCount": 5,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            2,
+            15
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c04-u06-hole-as-vertical-asymptote-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 17
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 2 - Standard Exam"
+    },
+    {
+      "id": "Q03",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c04-u06-horizontal-asymptote",
+      "context": "",
+      "prompt": "Find the horizontal asymptote of $f(x)=\\frac{6x^2-1}{4x^2+3x+1}$.",
+      "display": "Equal numerator and denominator degrees: ratio of leading coefficients",
+      "plainText": "Horizontal asymptote of (6x^2-1)/(4x^2+3x+1)",
+      "givens": {
+        "numerator_lead": 6,
+        "numerator_constant": -1,
+        "denominator_lead": 4,
+        "denominator_linear": 3,
+        "denominator_constant": 1
+      },
+      "constants": {},
+      "trapGivens": [
+        6,
+        4
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "1.5",
+        "tolerance": 0
+      },
+      "answerPlain": "3/2",
+      "answerDisplay": "3/2",
+      "inputHint": "Enter the horizontal asymptote as a value of y.",
+      "commonTrapTag": "t02-c04-u06-reciprocal-leading-ratio-trap",
+      "trapDerivation": "4/6",
+      "trapValue": "2/3",
+      "verify": {
+        "source": "6/4",
+        "trapValue": "2/3"
+      },
+      "checkpointHint": "Compare the degrees first, then use the leading coefficients in numerator-over-denominator order.",
+      "references": [
+        "MTH-T02-C04-U06"
+      ],
+      "steps": [
+        {
+          "latex": "\\deg(P)=2",
+          "explain": "Read the numerator degree."
+        },
+        {
+          "latex": "\\deg(Q)=2",
+          "explain": "Read the denominator degree."
+        },
+        {
+          "latex": "y=\\frac{6}{4}",
+          "explain": "For equal degrees, form the numerator-over-denominator ratio of leading coefficients."
+        },
+        {
+          "latex": "y=\\frac{3}{2}",
+          "explain": "Reduce the ratio.",
+          "eq": [
+            "6/4",
+            "3/2"
+          ],
+          "val": "3/2"
+        }
+      ],
+      "verificationLevel": "partial",
+      "review": {
+        "id": "Q03",
+        "verdict": "pass",
+        "note": "Equal degrees call for the leading-coefficient ratio, and the answer, reciprocal-ratio trap, steps, archetype, and non-leaking hints/display align without ambiguity."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C04-U06",
+          "title": "Rational Functions",
+          "notionUrl": "https://www.notion.so/4013818f8ba081c5b9c4e60e721830fd"
+        }
+      ],
+      "unitCode": "MTH-T02-C04-U06",
+      "fingerprint": "t02-c04-u06-reciprocal-leading-ratio-trap|direct|Horizontal asymptote of (#x^#-#)/(#x^#+#x+#)",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 4,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c04-u06-reciprocal-leading-ratio-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 15
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 1 - Foundation"
+    },
+    {
+      "id": "Q04",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "archetypeKey": "t02-c04-u06-arrow-notation",
+      "context": "",
+      "prompt": "Assign $1$ to a positive value and $-1$ to a negative value. For $f(x)=\\frac{2}{x-4}$, what sign code describes $f(x)$ for inputs just greater than $4$?",
+      "display": "x\\to4^+; determine the sign of 2/(x-4)",
+      "plainText": "Sign code for the right-hand branch of 2/(x-4)",
+      "givens": {
+        "numerator": 2,
+        "asymptote_input": 4
+      },
+      "constants": {
+        "positive_sign_code": 1,
+        "negative_sign_code": -1,
+        "right_sample": 5
+      },
+      "trapGivens": [
+        5,
+        4
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "1",
+        "tolerance": 0
+      },
+      "answerPlain": "1",
+      "answerDisplay": "1",
+      "inputHint": "Enter the sign code for the one-sided behavior.",
+      "commonTrapTag": "t02-c04-u06-one-sided-behavior-reversal-trap",
+      "trapDerivation": "-(5-4)/(5-4)",
+      "trapValue": "-1",
+      "verify": {
+        "source": "1",
+        "trapValue": "-1"
+      },
+      "checkpointHint": "Separate the sign of the denominator from how close it is to zero.",
+      "references": [
+        "MTH-T02-C04-U06"
+      ],
+      "steps": [
+        {
+          "latex": "x-4\\to0^+",
+          "explain": "Inputs just greater than the asymptote produce positive denominators approaching zero."
+        },
+        {
+          "latex": "\\frac{2}{x-4}\\to+\\infty",
+          "explain": "A positive numerator over a positive denominator approaching zero grows without bound."
+        },
+        {
+          "latex": "s=1",
+          "explain": "Encode positive behavior with the requested sign code.",
+          "val": "1"
+        }
+      ],
+      "verificationLevel": "partial",
+      "review": {
+        "id": "Q04",
+        "verdict": "pass",
+        "note": "For inputs just to the right of the vertical asymptote the function is positive; the sign-reversal trap, steps, archetype, and non-leaking hints/display are clear."
+      },
+      "referenceBadges": [
+        {
+          "code": "MTH-T02-C04-U06",
+          "title": "Rational Functions",
+          "notionUrl": "https://www.notion.so/4013818f8ba081c5b9c4e60e721830fd"
+        }
+      ],
+      "unitCode": "MTH-T02-C04-U06",
+      "fingerprint": "t02-c04-u06-one-sided-behavior-reversal-trap|direct|Sign code for the right-hand branch of #/(x-#)",
+      "qualityGates": {
+        "G1": {
+          "passed": true,
+          "archetype": "problem-solving"
+        },
+        "G2": {
+          "passed": true,
+          "level": 1,
+          "stepCount": 3,
+          "hasTrapOrFlaw": true,
+          "skill": null,
+          "stepRange": [
+            1,
+            10
+          ]
+        },
+        "G4": {
+          "passed": true,
+          "trapTag": "t02-c04-u06-one-sided-behavior-reversal-trap",
+          "trapValueVerified": true,
+          "weakDistractors": 0,
+          "provenanceDistractors": 0
+        },
+        "G6": {
+          "passed": true,
+          "fieldsChecked": 13
+        },
+        "antiLeak": {
+          "passed": true,
+          "hintsChecked": 2
+        },
+        "verificationLevel": "partial",
+        "weakDistractors": 0
+      },
+      "levelLabel": "Level 1 - Foundation"
+    }
+  ],
+  "drillId": "DRL-MTH-T02-C04-U06-01",
+  "title": "Rational Functions — Verified Math Drill (4 Qs)",
+  "topicCode": "MTH-T02",
+  "chapterCode": "MTH-T02-C04",
+  "schemaVersion": "2.0-math",
+  "createdAt": "2026-11-17 08:33:29",
+  "config": {
+    "questionCount": 4,
+    "difficulty": "ALL",
+    "difficultyMode": "AI Synthesized Reasoning Mode"
+  },
+  "localFilePath": "drills/data/MTH-T02-C04-U06/DRL-MTH-T02-C04-U06-01.json"
+}
