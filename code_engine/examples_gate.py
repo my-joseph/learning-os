@@ -208,7 +208,7 @@ def evaluate_drill_examples(
     if not sol.strip():
         return [f"[{pid}] Cannot verify examples without 'solutionCode'."]
     if shutil.which("node") is None:
-        return []
+        return [f"[{pid}] Cannot verify examples: Node.js is not installed (examples must run against the reference)."]
 
     def _run_batch(batch: list[tuple[int, dict[str, Any]]]) -> list[dict[str, Any]]:
         all_calls = "\n".join(ex["call"] for _, ex in batch)
@@ -308,7 +308,9 @@ def evaluate_lab_milestone_examples(
     if not isinstance(examples, list) or not examples:
         return []
     if shutil.which("node") is None:
-        return []
+        return [
+            f"[{ms.get('id', '?')}] Cannot verify examples: Node.js is not installed (examples must run against the reference)."
+        ]
 
     ref_src = ref_dir / "src"
     if not ref_src.is_dir():
