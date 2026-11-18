@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
+import { Reveal } from "@/components/motion/Reveal";
 import {
   Copy,
   Check,
   ChevronDown,
-  ChevronUp,
   ChevronLeft,
   ChevronRight,
   RotateCcw,
@@ -259,6 +259,7 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
           </div>
 
           {/* 4. Feedback directly below the input (thin left border + calm copy, never a red card) */}
+          <Reveal show={Boolean(lastCheck)}>
           {lastCheck && (
             <div
               role="status"
@@ -315,6 +316,7 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
               )}
             </div>
           )}
+          </Reveal>
         </div>
 
         {/* 5. Quiet secondary actions: Try again / equation set-up / hint / steps / skip */}
@@ -338,11 +340,7 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
                 aria-expanded={showSetup}
                 className="inline-flex items-center gap-1 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
               >
-                {showSetup ? (
-                  <ChevronUp className="w-3.5 h-3.5" />
-                ) : (
-                  <ChevronDown className="w-3.5 h-3.5" />
-                )}
+                <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${showSetup ? "rotate-180" : ""}`} />
                 <span>{showSetup ? "Hide equation set-up" : "Show equation set-up"}</span>
               </button>
             )}
@@ -372,11 +370,7 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
               aria-expanded={showSolution}
               className="inline-flex items-center gap-1 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
             >
-              {showSolution ? (
-                <ChevronUp className="w-3.5 h-3.5" />
-              ) : (
-                <ChevronDown className="w-3.5 h-3.5" />
-              )}
+              <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${showSolution ? "rotate-180" : ""}`} />
               <span>{showSolution ? "Hide steps" : "Show steps"}</span>
             </button>
 
@@ -399,13 +393,16 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
           </div>
 
           {/* Checkpoint Hint Disclosure */}
+          <Reveal show={Boolean(showHint && hasCheckpointHint(problem.checkpointHint))}>
           {showHint && hasCheckpointHint(problem.checkpointHint) && (
             <div className="border-l-2 border-amber-600 dark:border-amber-400 pl-3.5 py-1 text-sm text-zinc-700 dark:text-zinc-300">
               <FormattedText text={problem.checkpointHint} />
             </div>
           )}
+          </Reveal>
 
           {/* Equation Set-up Disclosure */}
+          <Reveal show={Boolean(hasSetup && showSetup)}>
           {hasSetup && showSetup && (
             <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 space-y-2.5">
               {problem.display && (
@@ -445,8 +442,10 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
               )}
             </div>
           )}
+          </Reveal>
 
           {/* Step-by-Step Derivation Disclosure */}
+          <Reveal show={Boolean(showSolution)}>
           {showSolution && (
             <div
               className={`bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 space-y-3 ${
@@ -479,6 +478,7 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
               </div>
             </div>
           )}
+          </Reveal>
         </div>
 
         {/* 6. Self-score, mistake tags & mistake note — shown ONLY after an attempt */}

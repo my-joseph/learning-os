@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState, useCallback, useEffect, useRef } from "react";
+import { m } from "motion/react";
+import { fadeUp } from "@/lib/motion";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Plus } from "lucide-react";
 import { DrillDocument } from "@/types/drill";
@@ -267,7 +269,12 @@ export const StudioClient: React.FC<StudioClientProps> = ({
           </button>
         </div>
       ) : viewMode === "quiz" && currentDrill.problems[currentProblemIndex] ? (
-        <div>
+        <m.div
+          key={`${workspace}:${currentDrill.drillId}:${currentDrill.problems[currentProblemIndex].id}`}
+          variants={fadeUp}
+          initial="hidden"
+          animate="shown"
+        >
           {(() => {
             const prob = currentDrill.problems[currentProblemIndex];
             const idx = currentProblemIndex;
@@ -335,7 +342,7 @@ export const StudioClient: React.FC<StudioClientProps> = ({
               />
             );
           })()}
-        </div>
+        </m.div>
       ) : (
         <ReviewPanel
           currentDrill={currentDrill}

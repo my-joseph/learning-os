@@ -1,13 +1,13 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { Reveal } from "@/components/motion/Reveal";
 import {
   Check,
   CheckCircle2,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
-  ChevronUp,
   Copy,
   Flag,
   Loader2,
@@ -641,11 +641,13 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                 </div>
               )}
 
+              <Reveal show={Boolean(showHint && hasCheckpointHint(problem.checkpointHint))}>
               {showHint && hasCheckpointHint(problem.checkpointHint) && (
                 <div className="border-l-2 border-amber-600 dark:border-amber-400 pl-3.5 py-1 text-sm text-zinc-700 dark:text-zinc-300">
                   <FormattedText text={problem.checkpointHint} />
                 </div>
               )}
+              </Reveal>
             </div>
 
             {/* 5. Collapsible sections (closed by default): Review history, Explain, Reference */}
@@ -662,12 +664,9 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                     Review history
                     {reviews.length > 0 ? ` (${reviews.length})` : ""}
                   </span>
-                  {openHistory ? (
-                    <ChevronUp className="w-4 h-4 text-zinc-400" />
-                  ) : (
-                    <ChevronDown className="w-4 h-4 text-zinc-400" />
-                  )}
+                  <ChevronDown className={`w-4 h-4 text-zinc-400 transition-transform duration-200 ${openHistory ? "rotate-180" : ""}`} />
                 </button>
+                <Reveal show={Boolean(openHistory)}>
                 {openHistory && (
                   <div className="pt-2 pb-1 space-y-3 text-sm text-zinc-600 dark:text-zinc-400">
                     {reviews.length === 0 ? (
@@ -719,6 +718,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                     )}
                   </div>
                 )}
+                </Reveal>
               </div>
 
               {/* Explain */}
@@ -730,12 +730,9 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                   className="w-full flex items-center justify-between text-left text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 py-1 transition-colors"
                 >
                   <span>Explain</span>
-                  {openExplain ? (
-                    <ChevronUp className="w-4 h-4 text-zinc-400" />
-                  ) : (
-                    <ChevronDown className="w-4 h-4 text-zinc-400" />
-                  )}
+                  <ChevronDown className={`w-4 h-4 text-zinc-400 transition-transform duration-200 ${openExplain ? "rotate-180" : ""}`} />
                 </button>
+                <Reveal show={Boolean(openExplain)}>
                 {openExplain && (
                   <div className="pt-2 pb-1 space-y-2 text-sm">
                     <p className="text-zinc-700 dark:text-zinc-300">
@@ -752,6 +749,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                     )}
                   </div>
                 )}
+                </Reveal>
               </div>
 
               {/* Reference (drills) or Lab README (labs; _reference is never served) */}
@@ -765,17 +763,15 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                       className="w-full flex items-center justify-between text-left text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 py-1 transition-colors"
                     >
                       <span>Lab README</span>
-                      {openReference ? (
-                        <ChevronUp className="w-4 h-4 text-zinc-400" />
-                      ) : (
-                        <ChevronDown className="w-4 h-4 text-zinc-400" />
-                      )}
+                      <ChevronDown className={`w-4 h-4 text-zinc-400 transition-transform duration-200 ${openReference ? "rotate-180" : ""}`} />
                     </button>
+                    <Reveal show={Boolean(openReference)}>
                     {openReference && (
                       <div className="pt-2 pb-1 text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed">
                         <FormattedText text={labReadme} />
                       </div>
                     )}
+                    </Reveal>
                   </div>
                 ) : null
               ) : (
@@ -793,13 +789,10 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                           Unlocks after review passes
                         </span>
                       )}
-                      {openReference ? (
-                        <ChevronUp className="w-4 h-4 text-zinc-400" />
-                      ) : (
-                        <ChevronDown className="w-4 h-4 text-zinc-400" />
-                      )}
+                      <ChevronDown className={`w-4 h-4 text-zinc-400 transition-transform duration-200 ${openReference ? "rotate-180" : ""}`} />
                     </span>
                   </button>
+                  <Reveal show={Boolean(openReference)}>
                   {openReference && (
                     <div className="pt-2 pb-1">
                       {!referenceAllowed ? (
@@ -823,6 +816,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                       )}
                     </div>
                   )}
+                  </Reveal>
                 </div>
               )}
             </div>
@@ -918,6 +912,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                 </button>
               </div>
 
+              <Reveal show={Boolean(lastCheck)}>
               {lastCheck && (
                 <div
                   role="status"
@@ -974,6 +969,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                   )}
                 </div>
               )}
+              </Reveal>
             </div>
 
             <div className="space-y-3 pt-1">
@@ -1014,11 +1010,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                   aria-expanded={showSolution}
                   className="inline-flex items-center gap-1 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
                 >
-                  {showSolution ? (
-                    <ChevronUp className="w-3.5 h-3.5" />
-                  ) : (
-                    <ChevronDown className="w-3.5 h-3.5" />
-                  )}
+                  <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${showSolution ? "rotate-180" : ""}`} />
                   <span>{showSolution ? "Hide steps" : "Show steps"}</span>
                 </button>
 
@@ -1040,12 +1032,15 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                 )}
               </div>
 
+              <Reveal show={Boolean(showHint && hasCheckpointHint(problem.checkpointHint))}>
               {showHint && hasCheckpointHint(problem.checkpointHint) && (
                 <div className="border-l-2 border-amber-600 dark:border-amber-400 pl-3.5 py-1 text-sm text-zinc-700 dark:text-zinc-300">
                   <FormattedText text={problem.checkpointHint} />
                 </div>
               )}
+              </Reveal>
 
+              <Reveal show={Boolean(showSolution)}>
               {showSolution && (
                 <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 space-y-2.5">
                   {(problem.steps || []).map((st, sIdx) => {
@@ -1093,6 +1088,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                   })}
                 </div>
               )}
+              </Reveal>
             </div>
           </>
         )}

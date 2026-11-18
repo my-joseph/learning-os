@@ -32,7 +32,7 @@ export const QuizPaginationBar: React.FC<QuizPaginationBarProps> = ({
       <div
         role="navigation"
         aria-label={labMode ? "Milestones" : "Questions"}
-        className="flex items-center gap-1.5 overflow-x-auto py-1 px-0.5 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+        className="flex items-center gap-1.5 overflow-x-auto p-1.5 -m-1.5 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
       >
         {problems.map((prob, idx) => {
           const isActive = viewMode === "quiz" && currentIndex === idx;
@@ -86,7 +86,7 @@ export const QuizPaginationBar: React.FC<QuizPaginationBarProps> = ({
           }
 
           const activeRing = isActive
-            ? "ring-2 ring-indigo-600 dark:ring-indigo-500 ring-offset-1 ring-offset-white dark:ring-offset-zinc-900 z-10 font-semibold"
+            ? "ring-2 ring-yellow-500 dark:ring-yellow-300 ring-offset-1 ring-offset-white dark:ring-offset-zinc-900 z-10 font-semibold"
             : "font-medium";
 
           const itemTitle = labMode
@@ -101,7 +101,7 @@ export const QuizPaginationBar: React.FC<QuizPaginationBarProps> = ({
               title={itemTitle}
               aria-label={itemTitle}
               aria-current={isActive ? "step" : undefined}
-              className={`relative min-w-[1.75rem] h-7 px-1.5 rounded-md border text-xs flex items-center justify-center font-mono transition-colors shrink-0 ${colorCls} ${activeRing}`}
+              className={`relative min-w-[1.75rem] h-7 px-1.5 rounded-md border text-xs flex items-center justify-center font-mono transition-[color,background-color,border-color,box-shadow,transform] duration-150 active:scale-95 shrink-0 ${colorCls} ${activeRing}`}
             >
               {labMode ? prob.id : idx + 1}
             </button>

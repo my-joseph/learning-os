@@ -1,6 +1,9 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import { AnimatePresence, m } from "motion/react";
+import { drawer, fade } from "@/lib/motion";
+import { Reveal } from "@/components/motion/Reveal";
 import { AlertCircle, CheckCircle2, PanelRight, X } from "lucide-react";
 import { DrillDocument, DrillListItem } from "@/types/drill";
 import type { LabListItem } from "@/lib/labModel";
@@ -239,6 +242,7 @@ export const StudioShell: React.FC<StudioShellProps> = ({
         />
 
         {/* Calm Status Notification Banner (left border accent, never full-card fill) */}
+        <Reveal show={Boolean(status)}>
         {status && (
           <div
             role="status"
@@ -270,6 +274,7 @@ export const StudioShell: React.FC<StudioShellProps> = ({
             </button>
           </div>
         )}
+        </Reveal>
 
         {viewMode === "quiz" ? (
           <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_272px] lg:gap-6 lg:items-start">
@@ -304,18 +309,24 @@ export const StudioShell: React.FC<StudioShellProps> = ({
         )}
       </div>
 
+      <AnimatePresence>
       {viewMode === "quiz" && isSideDrawerOpen && (
-        <div
+        <m.div
+          key="side-drawer"
+          initial="hidden"
+          animate="shown"
+          exit="hidden"
           className="fixed inset-0 z-50 lg:hidden flex justify-end"
           role="dialog"
           aria-modal="true"
           aria-label="Due today and weak spots"
         >
-          <div
+          <m.div
+            variants={fade}
             className="fixed inset-0 bg-zinc-950/40 backdrop-blur-[1px]"
             onClick={() => setIsSideDrawerOpen(false)}
           />
-          <div className="relative z-10 w-[min(calc(100vw-2.5rem),340px)] h-full overflow-y-auto bg-zinc-50 dark:bg-zinc-950 border-l border-zinc-200 dark:border-zinc-800 p-4 space-y-3 shadow-xl">
+          <m.div variants={drawer} className="relative z-10 w-[min(calc(100vw-2.5rem),340px)] h-full overflow-y-auto bg-zinc-50 dark:bg-zinc-950 border-l border-zinc-200 dark:border-zinc-800 p-4 space-y-3 shadow-xl">
             <div className="flex items-center justify-between">
               <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
                 Study queue
@@ -330,9 +341,10 @@ export const StudioShell: React.FC<StudioShellProps> = ({
               </button>
             </div>
             {sidePanelNode}
-          </div>
-        </div>
+          </m.div>
+        </m.div>
       )}
+      </AnimatePresence>
     </div>
   );
 };
