@@ -51,6 +51,16 @@ body {
   }
 }
 
+/* Text selection: yellow highlighter (learner choice), readable in both themes. */
+::selection {
+  background-color: #fde047; /* yellow-300 */
+  color: #18181b; /* zinc-900 */
+}
+.dark ::selection {
+  background-color: #facc15; /* yellow-400 */
+  color: #18181b; /* zinc-900 */
+}
+
 /* Click-to-Highlight dimming utility */
 .has-active .step-row:not(.step-row-active) {
   opacity: 0.45;
