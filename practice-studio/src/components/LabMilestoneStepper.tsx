@@ -74,16 +74,15 @@ export const LabMilestoneStepper: React.FC<LabMilestoneStepperProps> = ({
         aria-label="Lab milestones"
         className={
           needsHorizontalScroll
-            ? "overflow-x-auto py-0.5 px-2 -mx-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+            ? "overflow-x-auto py-0.5 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
             : "py-0.5"
         }
       >
         <div
-          className="grid items-end"
+          className="grid w-max items-end"
           style={{
-            gridTemplateColumns: needsHorizontalScroll
-              ? `repeat(${totalSteps}, minmax(52px, 1fr))`
-              : `repeat(${totalSteps}, minmax(0, 1fr))`,
+            // Compact, fixed spacing (learner: steps were too far apart); left-aligned like the question tiles.
+            gridTemplateColumns: `repeat(${totalSteps}, ${needsHorizontalScroll ? 52 : 64}px)`,
           }}
         >
           {problems.map((prob, idx) => {
