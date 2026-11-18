@@ -28,9 +28,9 @@ export const StepRow: React.FC<StepRowProps> = ({
       onClick={onToggleHighlight}
       className={`group step-row ${isActive || isDiverged ? "step-row-active" : ""} grid grid-cols-1 md:grid-cols-[1.2fr_1fr_auto] gap-3 items-center rounded-xl p-3 mb-2 last:mb-0 cursor-pointer transition-colors border ${
         isDiverged
-          ? "border-zinc-200 dark:border-zinc-800 border-l-4 border-l-rose-600 dark:border-l-rose-400 bg-white dark:bg-zinc-900"
+          ? "border-rose-300 dark:border-rose-500/40 bg-white dark:bg-zinc-900"
           : isActive
-          ? "border-zinc-200 dark:border-zinc-800 border-l-4 border-l-amber-600 dark:border-l-amber-400 bg-white dark:bg-zinc-900"
+          ? "border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900"
           : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700"
       }`}
     >
