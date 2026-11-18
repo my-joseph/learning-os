@@ -230,6 +230,7 @@ export const StudioClient: React.FC<StudioClientProps> = ({
         if (currentDrill) setShowResetConfirm(true);
       }}
       drills={workspaceDrills}
+      allWorkspaceDrills={workspaceDrills}
       labs={workspaceLabs}
       selectedDrillId={drillId}
       drillSearch={drillSearch}
@@ -361,7 +362,7 @@ export const StudioClient: React.FC<StudioClientProps> = ({
             computedPracticeStatus={computedPracticeStatus}
             isSyncing={isSyncing}
             onStatusOverrideChange={setStatusOverride}
-            onBackToQuiz={handlePrevQuestion}
+            onBackToQuiz={() => setViewMode("quiz")}
             onConfirmSync={handleConfirmSyncToNotion}
             onSelectQuestion={handleSelectQuestion}
             onSetScore={handleSetScore}

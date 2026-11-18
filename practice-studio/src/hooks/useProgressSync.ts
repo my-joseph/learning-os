@@ -47,6 +47,42 @@ interface ConfirmSyncCallbacks {
   onSynced: (drillId: string) => Promise<void>;
 }
 
+export interface SyncResponseLike {
+  ok?: boolean;
+  dryRun?: boolean;
+  pilotSkipped?: boolean;
+  degraded?: boolean;
+  warning?: string;
+}
+
+/** Build the status toast message after a Notion sync response (handling dry-run and pilot mode). */
+export function formatSyncToast(
+  data: SyncResponseLike,
+  drillId: string,
+  unitCode: string,
+  liveScore: number,
+  maxScore: number,
+  accuracyPct: number
+): StatusMessage {
+  if (data.dryRun || data.pilotSkipped) {
+    return {
+      text: `Dry run — nothing written to Notion (${liveScore}/${maxScore} · ${accuracyPct}% saved locally).`,
+      type: "warn",
+    };
+  }
+  if (data.degraded) {
+    // Saved locally, but Notion was unreachable (or no token): do not report it as synced.
+    return {
+      text: `Saved ${drillId} locally, but Notion was not updated: ${data.warning || "Notion unavailable"}`,
+      type: "warn",
+    };
+  }
+  return {
+    text: `Synced ${drillId} (${liveScore}/${maxScore} · ${accuracyPct}%) to Notion Database & ${unitCode} Mistake Log!`,
+    type: "pass",
+  };
+}
+
 /** Manage debounced local progress autosave and Notion sync payloads. */
 export function useProgressSync({ setStatus }: UseProgressSyncOptions) {
   const [statusOverride, setStatusOverride] = useState<PracticeStatusOverride>(null);
@@ -147,18 +183,16 @@ export function useProgressSync({ setStatus }: UseProgressSyncOptions) {
         if (!res.ok || !data.ok) throw new Error(data.error || "Notion Sync failed");
 
         onDrillUpdated(fullDocToSync);
-        if (data.degraded) {
-          // Saved locally, but Notion was unreachable (or no token): do not report it as synced.
-          setStatus({
-            text: `Saved ${currentDrill.drillId} locally, but Notion was not updated: ${data.warning || "Notion unavailable"}`,
-            type: "warn",
-          });
-        } else {
-          setStatus({
-            text: `Synced ${currentDrill.drillId} (${liveScore}/${maxScore} · ${accuracyPct}%) to Notion Database & ${currentDrill.unitCode} Mistake Log!`,
-            type: "pass",
-          });
-        }
+        setStatus(
+          formatSyncToast(
+            data,
+            currentDrill.drillId,
+            currentDrill.unitCode,
+            liveScore,
+            maxScore,
+            accuracyPct
+          )
+        );
         await onSynced(currentDrill.drillId);
       } catch (err: unknown) {
         const errMsg = err instanceof Error ? err.message : String(err);

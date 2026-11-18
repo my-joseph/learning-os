@@ -15,10 +15,9 @@ import {
 } from "lucide-react";
 import { DrillDocument, DrillListItem } from "@/types/drill";
 import type { LabListItem } from "@/lib/labModel";
-import { DrillFilter, StatusMessage } from "@/hooks/types";
+import { DrillFilter } from "@/hooks/types";
 import { Workspace } from "@/lib/routes";
 import { DrillSwitcher } from "./DrillSwitcher";
-import { GeneratePopover } from "./GeneratePopover";
 
 interface StudioHeaderProps {
   headerRef?: React.RefObject<HTMLElement>;
@@ -44,13 +43,8 @@ interface StudioHeaderProps {
   drillFilter: DrillFilter;
   onFilterChange: (filter: DrillFilter) => void;
   onSelectDrill: (drillId: string) => void;
-  // GeneratePopover props
-  showGenPopover: boolean;
-  onToggleGenPopover: () => void;
-  onCloseGenPopover: () => void;
-  genPopoverRef: React.RefObject<HTMLDivElement>;
-  onGenerated: (drillId: string) => Promise<void>;
-  onStatusChange: (status: StatusMessage | null) => void;
+  // Generate dialog trigger
+  onOpenGenPopover: () => void;
   // Side drawer (mobile / <1024px)
   onOpenSideDrawer?: () => void;
   sidePanelCount?: number;
@@ -82,12 +76,7 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
   drillFilter,
   onFilterChange,
   onSelectDrill,
-  showGenPopover,
-  onToggleGenPopover,
-  onCloseGenPopover,
-  genPopoverRef,
-  onGenerated,
-  onStatusChange,
+  onOpenGenPopover,
   onOpenSideDrawer,
   sidePanelCount = 0,
   tiles,
@@ -108,6 +97,26 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    if (!showMoreMenu) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        e.stopPropagation();
+        setShowMoreMenu(false);
+        moreButtonRef.current?.focus();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown, true);
+    return () => window.removeEventListener("keydown", handleKeyDown, true);
+  }, [showMoreMenu]);
+
+  useEffect(() => {
+    if (showDrillSwitcher) {
+      setShowMoreMenu(false);
+    }
+  }, [showDrillSwitcher]);
 
   useEffect(() => {
     if (!showHeader) {
@@ -231,7 +240,13 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
             <button
               ref={moreButtonRef}
               type="button"
-              onClick={() => setShowMoreMenu((prev) => !prev)}
+              onClick={() => {
+                setShowMoreMenu((prev) => {
+                  const next = !prev;
+                  if (next) onCloseDrillSwitcher();
+                  return next;
+                });
+              }}
               aria-expanded={showMoreMenu}
               aria-label="More actions"
               title="More actions"
@@ -331,7 +346,11 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
 
                   <button
                     type="button"
-                    onClick={onToggleGenPopover}
+                    onClick={() => {
+                      setShowMoreMenu(false);
+                      moreButtonRef.current?.focus();
+                      onOpenGenPopover();
+                    }}
                     className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
                   >
                     <Plus className="w-3.5 h-3.5 text-zinc-500 dark:text-zinc-400" />
@@ -351,19 +370,6 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
                     <span>Reset all questions</span>
                   </button>
                 </div>
-
-                <GeneratePopover
-                  isOpen={showGenPopover}
-                  onToggle={onToggleGenPopover}
-                  onClose={onCloseGenPopover}
-                  popoverRef={genPopoverRef}
-                  currentDrill={currentDrill}
-                  onGenerated={async (id) => {
-                    setShowMoreMenu(false);
-                    await onGenerated(id);
-                  }}
-                  onStatusChange={onStatusChange}
-                />
               </m.div>
             )}
             </AnimatePresence>

@@ -9,6 +9,7 @@ import {
   loadProblemFromDisk,
   resolveInsideRoot,
 } from "@/lib/paths";
+import { sanitizeCodeCheckError } from "@/lib/codeStatus";
 
 export async function POST(req: NextRequest) {
   try {
@@ -109,6 +110,7 @@ export async function POST(req: NextRequest) {
 
       proc.on("close", (code) => {
         if (code !== 0) {
+          const rawErr = (stderr || `Exited with code ${code}`).split(`${rootDir}/`).join("");
           resolve(
             NextResponse.json(
               {
@@ -120,13 +122,15 @@ export async function POST(req: NextRequest) {
                   {
                     name: "Test Runner Process Error",
                     passed: false,
-                    error: stderr || `Exited with code ${code}`,
+                    error: sanitizeCodeCheckError(rawErr),
                   },
                 ],
                 hiddenPassed: 0,
                 hiddenTotal: hiddenTests.length,
                 executionTimeMs: 0,
-                rawOutput: stdout + "\n" + stderr,
+                rawOutput: sanitizeCodeCheckError(
+                  (stdout + "\n" + stderr).split(`${rootDir}/`).join("")
+                ),
               },
               { status: 500 }
             )

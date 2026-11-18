@@ -79,6 +79,38 @@ export interface IdeLinks {
 
 const TS_CODE_RE = /^(TS\d+):\s*(.*)$/;
 
+const MISSING_LINT_TOOLS_RE =
+  /LintToolsMissingError|Lint toolkit not installed|TypeScript compiler not installed|Vitest is missing|tools[/\\]lint[/\\]node_modules|run [`'"]?npm ci[`'"]? in tools[/\\]lint/i;
+
+const REPO_REL_PATH_RE =
+  /(?:file:\/\/)?(?:\/[^\s:"'()<>`]+)*?\/((?:tools|drills|pilot|labs|src|tests|code_engine|math_engine)\/[^\s:"'()<>`]+)/g;
+
+const WORKTREE_ROOT_RE =
+  /(?:file:\/\/)?\/(?:Users|home)\/[^\s:"'()<>`]+\/\.claude\/worktrees\/[^/\s:"'()<>`]+\/?/g;
+
+const USER_HOME_PATH_RE =
+  /(?:file:\/\/)?\/(?:Users|home)\/[^/\s:"'()<>`]+(?:\/[^\s:"'()<>`]*)*\/([^\s/:"'()<>`]+)/g;
+
+const TMP_ABS_PATH_RE =
+  /(?:file:\/\/)?\/(?:private\/var|var\/folders|tmp)\/(?:[^\s:"'()<>`]*\/)?([^\s/:"'()<>`]+)/g;
+
+/**
+ * Strip absolute machine paths from code check errors and return a concise setup hint
+ * when `tools/lint` dependencies are missing.
+ */
+export function sanitizeCodeCheckError(raw?: string | null): string {
+  const msg = typeof raw === "string" ? raw.trim() : "";
+  if (!msg) return "";
+  if (MISSING_LINT_TOOLS_RE.test(msg)) {
+    return "Code check tools aren't set up yet. Run `npm ci` in `tools/lint/`.";
+  }
+  return msg
+    .replace(REPO_REL_PATH_RE, "$1")
+    .replace(WORKTREE_ROOT_RE, "")
+    .replace(USER_HOME_PATH_RE, "$1")
+    .replace(TMP_ABS_PATH_RE, "$1");
+}
+
 export function layerSymbol(status: LayerCheckStatus | ReviewStatus): StatusSymbol {
   if (status === "pass") return "✓";
   if (status === "fail" || status === "revise") return "✗";
@@ -160,16 +192,18 @@ export function formatReviewRunFailures(
 
   if (Array.isArray(reviewRun.tests?.failed)) {
     for (const failedName of reviewRun.tests.failed) {
-      lines.push(`${fileFallback}:0 test ${failedName}`);
+      lines.push(sanitizeCodeCheckError(`${fileFallback}:0 test ${failedName}`));
     }
   }
 
   if (Array.isArray(reviewRun.lint)) {
     for (const item of reviewRun.lint) {
-      const file = item.file || fileFallback;
+      const file = sanitizeCodeCheckError(item.file || fileFallback);
       const line = typeof item.line === "number" ? item.line : 0;
       const rule = item.rule || "lint";
-      lines.push(`${file}:${line} ${rule} ${item.message || ""}`.trim());
+      lines.push(
+        sanitizeCodeCheckError(`${file}:${line} ${rule} ${item.message || ""}`.trim())
+      );
     }
   }
 
@@ -180,14 +214,14 @@ export function formatReviewRunFailures(
     : [];
 
   for (const item of typeItems) {
-    const file = item.file || fileFallback;
+    const file = sanitizeCodeCheckError(item.file || fileFallback);
     const line = typeof item.line === "number" ? item.line : 0;
     const msg = (item.message || "").trim();
     const match = TS_CODE_RE.exec(msg);
     if (match) {
-      lines.push(`${file}:${line} ${match[1]} ${match[2]}`.trim());
+      lines.push(sanitizeCodeCheckError(`${file}:${line} ${match[1]} ${match[2]}`.trim()));
     } else {
-      lines.push(`${file}:${line} tsc ${msg}`.trim());
+      lines.push(sanitizeCodeCheckError(`${file}:${line} tsc ${msg}`.trim()));
     }
   }
 
@@ -254,7 +288,7 @@ export function deriveCodeStatus(
       .filter((r) => !r.passed)
       .map((r) => {
         const detail = r.error ? ` ${r.error.split("\n")[0].trim()}` : "";
-        return `${fileFallback}:0 test ${r.name}${detail}`;
+        return sanitizeCodeCheckError(`${fileFallback}:0 test ${r.name}${detail}`);
       });
   }
 
