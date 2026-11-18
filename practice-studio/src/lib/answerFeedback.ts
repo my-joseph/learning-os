@@ -295,7 +295,13 @@ export function isEditableEventTarget(target: EventTarget | null): boolean {
     closest?: (selector: string) => unknown;
   };
   const tag = (el.tagName || "").toUpperCase();
-  if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || el.isContentEditable) {
+  if (
+    tag === "INPUT" ||
+    tag === "TEXTAREA" ||
+    tag === "SELECT" ||
+    tag === "MATH-FIELD" ||
+    el.isContentEditable
+  ) {
     return true;
   }
   if (typeof el.closest === "function") {
