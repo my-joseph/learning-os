@@ -169,8 +169,7 @@ export const LabMilestoneStepper: React.FC<LabMilestoneStepperProps> = ({
                     : "font-medium text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-800 dark:group-hover:text-zinc-200"
                 }`}
               >
-                <ClipboardCheck className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0" aria-hidden="true" />
-                <span>Review</span>
+                <ClipboardCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" aria-hidden="true" />
               </span>
               <span className="h-6 w-6 flex items-center justify-center">
                 <m.span
