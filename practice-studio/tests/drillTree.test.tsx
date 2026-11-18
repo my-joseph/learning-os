@@ -1,9 +1,13 @@
 import assert from "node:assert/strict";
+import React from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 import {
   buildPickerSections,
   buildVisibleTreeRows,
   classifyPickerItemType,
   collectAllTreeCodes,
+  extractChapterShortCode,
+  extractLeafHoverCode,
   extractShortCode,
   findCurrentLeafNodeId,
   findFirstLeafNodeId,
@@ -14,6 +18,7 @@ import {
   normalizeLabPickerItems,
   resolveTreeKeyAction,
 } from "../src/lib/drillGrouping";
+import { DrillSwitcher } from "../src/components/shell/DrillSwitcher";
 import type { LabListItem } from "../src/lib/labModel";
 import type { DrillListItem } from "../src/types/drill";
 
@@ -135,6 +140,16 @@ assert.equal(extractShortCode(mathItems[2]), "U01");
 assert.equal(extractShortCode(mathItems[4]), "U02");
 assert.equal(extractShortCode(labItems[0]), "LAB-02");
 
+assert.equal(extractChapterShortCode("MTH-T02-C01"), "C01");
+assert.equal(extractChapterShortCode("PRG-T01-C04"), "C04");
+assert.equal(extractChapterShortCode("OTHER"), "OTHER");
+
+assert.equal(extractLeafHoverCode(mathItems[0]), "C04-01");
+assert.equal(extractLeafHoverCode(mathItems[2]), "U01-03");
+assert.equal(extractLeafHoverCode(mathItems[4]), "U02");
+assert.equal(extractLeafHoverCode(codeDrill), "U02");
+assert.equal(extractLeafHoverCode(labItems[0]), "LAB-02");
+
 assert.equal(formatFullRowCode(mathItems[0]), "MTH-T01-C04 · DRL-MTH-T01-C04-01");
 assert.equal(formatFullRowCode(mathItems[4]), "MTH-T02-C01-U02");
 assert.equal(formatFullRowCode(labItems[0]), "LAB-PRG-T01-C04-02");
@@ -183,15 +198,15 @@ const defaultRows = buildVisibleTreeRows({
 });
 
 assert.deepEqual(
-  defaultRows.map((r) => [r.kind, r.level, r.nodeId]),
+  defaultRows.map((r) => [r.kind, r.level, r.nodeId, r.hoverCode]),
   [
-    ["topic", 1, "topic:MTH-T01"],
-    ["topic", 1, "topic:MTH-T02"],
-    ["chapter", 2, "chapter:MTH-T02-C01"],
-    ["unit", 3, "unit:MTH-T02-C01-U01"],
-    ["leaf", 4, "leaf:DRL-MTH-T02-C01-U01-03"],
-    ["leaf", 4, "leaf:DRL-MTH-T02-C01-U01-04"],
-    ["leaf", 3, "leaf:DRL-MTH-T02-C01-U02-01"],
+    ["topic", 1, "topic:MTH-T01", "MTH-T01"],
+    ["topic", 1, "topic:MTH-T02", "MTH-T02"],
+    ["chapter", 2, "chapter:MTH-T02-C01", "C01"],
+    ["unit", 3, "unit:MTH-T02-C01-U01", "U01"],
+    ["leaf", 4, "leaf:DRL-MTH-T02-C01-U01-03", "U01-03"],
+    ["leaf", 4, "leaf:DRL-MTH-T02-C01-U01-04", "U01-04"],
+    ["leaf", 3, "leaf:DRL-MTH-T02-C01-U02-01", "U02"],
   ]
 );
 
@@ -289,5 +304,103 @@ assert.deepEqual(
   { type: "select", itemId: "DRL-MTH-T02-C01-U01-04" }
 );
 assert.deepEqual(resolveTreeKeyAction([], null, "ArrowDown"), { type: "none" });
+
+// ---------------------------------------------------------------------------
+// 4. Tree UI polish invariants (hover codes, no empty note slot, no type icons, focus-visible)
+// ---------------------------------------------------------------------------
+const noop = () => {};
+
+const mathTreeHtml = renderToStaticMarkup(
+  <DrillSwitcher
+    isOpen={true}
+    onToggle={noop}
+    onClose={noop}
+    switcherRef={{ current: null }}
+    workspace="math"
+    currentDrill={null}
+    drills={sampleDrills}
+    labs={[]}
+    dueUnitCodes={["MTH-T02-C01-U02"]}
+    selectedDrillId="DRL-MTH-T02-C01-U01-03"
+    drillSearch=""
+    onSearchChange={noop}
+    drillFilter="ALL"
+    onFilterChange={noop}
+    onSelectDrill={noop}
+  />
+);
+
+// 1) Hover codes on every level (topic, chapter, unit, set, single-unit) use hidden (no reserved width)
+//    and sit to the left of the count pill without overlapping it.
+assert.doesNotMatch(mathTreeHtml, /opacity-0/, "hover codes must not reserve width with opacity-0");
+assert.match(mathTreeHtml, /hidden group-hover:inline group-focus-visible:inline[^>]*>MTH-T02</);
+assert.match(
+  mathTreeHtml,
+  /hidden group-hover:inline group-focus-visible:inline[^>]*>C01<\/span><span[^>]*rounded-full[^>]*>3<\/span>/,
+  "chapter hover code sits left of count pill"
+);
+assert.match(
+  mathTreeHtml,
+  /hidden group-hover:inline group-focus-visible:inline[^>]*>U01<\/span><span[^>]*rounded-full[^>]*>2<\/span>/,
+  "unit hover code sits left of count pill"
+);
+assert.match(mathTreeHtml, /hidden group-hover:inline group-focus-visible:inline[^>]*>U01-03</);
+assert.match(mathTreeHtml, /hidden group-hover:inline group-focus-visible:inline[^>]*>U01-04</);
+assert.match(mathTreeHtml, /hidden group-hover:inline group-focus-visible:inline[^>]*>U02</);
+
+// 2) No empty note slot when a leaf has neither notes nor due-today status;
+//    status dot precedes any note/due icon so dots stay vertically aligned.
+assert.doesNotMatch(
+  mathTreeHtml,
+  /<span class="w-3\.5 h-3\.5 shrink-0" aria-hidden="true"><\/span>/,
+  "leaf rows without notes/due must not render an empty note slot"
+);
+// Set 3 (current, no notes, not due) renders StatusDot directly followed by label "Set 3"
+assert.match(
+  mathTreeHtml,
+  /aria-selected="true"[^>]*>(?:(?!<\/button>).)*?<span class="sr-only">In progress<\/span><\/span><span class="text-xs truncate min-w-0 flex-1 font-medium[^>]*>Set 3<\/span>/
+);
+// Set 4 (hasNotes: true) renders StatusDot followed by NoteBadge
+assert.match(
+  mathTreeHtml,
+  /<span class="sr-only">Needs retry<\/span><\/span><span class="w-3\.5 h-3\.5 inline-flex items-center justify-center shrink-0" title="Has notes or mistake tags">/
+);
+
+// 3) All type icons (Sigma, Code2, FlaskConical, Shuffle) removed; only Layers kept on Topic rows
+assert.doesNotMatch(mathTreeHtml, /lucide-sigma/);
+assert.doesNotMatch(mathTreeHtml, /lucide-code-2/);
+assert.doesNotMatch(mathTreeHtml, /lucide-flask-conical/);
+assert.doesNotMatch(mathTreeHtml, /lucide-shuffle/);
+assert.match(mathTreeHtml, /lucide-layers/);
+
+// 4) Branch rows use focus-visible only (no static ring/selected highlight)
+assert.match(mathTreeHtml, /aria-level="1" aria-expanded="true"[^>]*focus-visible:ring-2/);
+assert.match(mathTreeHtml, /aria-level="2" aria-expanded="true"[^>]*focus-visible:ring-2/);
+assert.match(mathTreeHtml, /aria-level="3" aria-expanded="true"[^>]*focus-visible:ring-2/);
+assert.doesNotMatch(mathTreeHtml, /aria-expanded="(true|false)"[^>]*class="[^"]*bg-indigo-50/);
+assert.doesNotMatch(mathTreeHtml, /aria-expanded="(true|false)"[^>]*class="[^"]*(?<!:)\bring-2\b/);
+
+// Labs tab also shows hover code on lab leaf and removes FlaskConical
+const labTreeHtml = renderToStaticMarkup(
+  <DrillSwitcher
+    isOpen={true}
+    onToggle={noop}
+    onClose={noop}
+    switcherRef={{ current: null }}
+    workspace="code"
+    currentDrill={null}
+    drills={[makeDrill("DRL-PRG-T01-C01-U02-01", "PRG-T01-C01-U02", "Closures")]}
+    labs={[makeLab("LAB-PRG-T01-C04-02", "PRG-T01-C04", "SQL Ledger")]}
+    selectedDrillId="LAB-PRG-T01-C04-02"
+    drillSearch=""
+    onSearchChange={noop}
+    drillFilter="ALL"
+    onFilterChange={noop}
+    onSelectDrill={noop}
+  />
+);
+assert.match(labTreeHtml, /hidden group-hover:inline group-focus-visible:inline[^>]*>LAB-02</);
+assert.doesNotMatch(labTreeHtml, /lucide-flask-conical/);
+assert.doesNotMatch(labTreeHtml, /lucide-code-2/);
 
 console.log("drill tree tests passed");
