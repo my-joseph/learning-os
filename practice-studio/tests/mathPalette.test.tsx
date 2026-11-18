@@ -116,6 +116,16 @@ async function main() {
   );
 
   assert.match(openNoTrigHtml, /role="region" aria-label="Math symbol palette"/);
+  assert.match(
+    openNoTrigHtml,
+    /role="region" aria-label="Math symbol palette" class="relative rounded-xl border border-zinc-200/,
+    "Expanded palette panel must be its own quiet rounded-xl bordered block"
+  );
+  assert.doesNotMatch(
+    openNoTrigHtml,
+    /border-t/,
+    "MathPalette toolbar and panel must not use attached border-t dividers"
+  );
   assert.match(openNoTrigHtml, /aria-label="Close math palette"/);
   assert.match(openNoTrigHtml, />BASIC</);
   assert.match(openNoTrigHtml, />FUNCTIONS</);
@@ -378,6 +388,66 @@ async function main() {
   );
   assert.doesNotMatch(choiceHtml, /Answer input mode/);
   assert.doesNotMatch(choiceHtml, /Quick math templates/);
+
+  // ---------------------------------------------------------------------------
+  // 7. Focus ring wraps ONLY the input field (+ embedded = button), not MathPalette
+  // ---------------------------------------------------------------------------
+  const mathProblem: Problem = {
+    ...choiceProblem,
+    id: "Q01",
+    prompt: "Simplify $\\frac{2}{4}$.",
+    answerSpec: { type: "number" },
+  };
+  const mathWorkspaceHtml = renderToStaticMarkup(
+    <MathWorkspace
+      problem={mathProblem}
+      index={0}
+      totalQuestions={1}
+      unitCode="MTH-T01-C01-U01"
+      mistakeTags={[]}
+      activeStep={null}
+      onInputChange={noop}
+      onCheckAnswer={noop}
+      onToggleStepHighlight={noop}
+      onMarkDivergedStep={noop}
+      onSetScore={noop}
+      onToggleMistakeTag={noop}
+      onMistakeNoteChange={noop}
+      onResetProblem={noop}
+    />
+  );
+
+  const focusRingMatches = mathWorkspaceHtml.match(/focus-within:ring-2/g) ?? [];
+  assert.equal(focusRingMatches.length, 1, "Only the answer field container should carry focus-within:ring-2");
+
+  const focusRingOpenMatch = /<div\b[^>]*focus-within:ring-2[^>]*>/.exec(mathWorkspaceHtml);
+  assert.ok(focusRingOpenMatch, "Expected focused field container div");
+  const startIdx = focusRingOpenMatch.index;
+  let depth = 0;
+  let endIdx = -1;
+  const tagRegex = /<\/?div\b[^>]*>/g;
+  tagRegex.lastIndex = startIdx;
+  let m: RegExpExecArray | null;
+  while ((m = tagRegex.exec(mathWorkspaceHtml)) !== null) {
+    if (m[0].startsWith("</div")) {
+      depth--;
+      if (depth === 0) {
+        endIdx = m.index + m[0].length;
+        break;
+      }
+    } else if (!m[0].endsWith("/>")) {
+      depth++;
+    }
+  }
+  assert.ok(endIdx > startIdx, "Expected balanced closing </div> for focused field container");
+  const focusRingHtml = mathWorkspaceHtml.slice(startIdx, endIdx);
+  assert.match(focusRingHtml, /aria-label="Check answer"/, "Embedded Check button lives inside the focused field");
+  assert.match(focusRingHtml, /lucide-equal/, "Embedded Check button uses Equal icon");
+  assert.doesNotMatch(focusRingHtml, /Answer input mode/, "Mode switch toolbar must live outside the focused field");
+  assert.doesNotMatch(focusRingHtml, /Quick math templates/, "Quick keys toolbar must live outside the focused field");
+  assert.doesNotMatch(focusRingHtml, /Math symbol palette/, "Expanded palette must live outside the focused field");
+
+  assert.match(mathWorkspaceHtml, /class="space-y-2"/, "Field and toolbar row should use tight 8px spacing");
 
   console.log("mathPalette tests passed");
 }

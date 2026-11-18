@@ -349,6 +349,9 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
   const isLastQuestion =
     typeof totalQuestions === "number" && totalQuestions > 0 && index === totalQuestions - 1;
 
+  const fieldContainerClassName =
+    "relative flex items-center min-h-[2.75rem] rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 transition-colors focus-within:border-indigo-600 dark:focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-600/20 dark:focus-within:ring-indigo-500/25";
+
   const renderInlineCheckButton = () => (
     <button
       type="button"
@@ -448,9 +451,9 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
                   mathLiveRef.current?.focus();
                 }
               }}
-              className="rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 overflow-hidden transition-colors focus-within:border-indigo-600 dark:focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-600/20 dark:focus-within:ring-indigo-500/25"
+              className="space-y-2"
             >
-              <div className="relative flex items-center min-h-[2.75rem]">
+              <div className={fieldContainerClassName}>
                 {useMathLive ? (
                   <DynamicMathLiveInput
                     value={problem.state.userInput}
@@ -509,7 +512,7 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
           )}
 
           {!isChoice && !isMathLiveSupported && (
-            <div className="relative flex items-center min-h-[2.75rem] rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 transition-colors focus-within:border-indigo-600 dark:focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-600/20 dark:focus-within:ring-indigo-500/25">
+            <div className={fieldContainerClassName}>
               <input
                 ref={answerInputRef}
                 type="text"

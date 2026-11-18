@@ -18,7 +18,7 @@ export interface MathPaletteProps {
   disabled?: boolean;
 }
 
-/** Pure stateless view for the attached toolbar and inline palette panel. */
+/** Pure stateless view for the standalone mode/quick-keys row and quiet inline palette panel. */
 export const MathPaletteView: React.FC<MathPaletteProps> = ({
   inputMode,
   onModeChange,
@@ -34,8 +34,8 @@ export const MathPaletteView: React.FC<MathPaletteProps> = ({
 
   return (
     <div>
-      {/* Attached toolbar row */}
-      <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1.5 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50/80 dark:bg-zinc-900/60 px-2.5 py-1.5">
+      {/* Separate toolbar row below the field */}
+      <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1.5">
         {/* Left: segmented mode switch */}
         <div
           role="group"
@@ -86,7 +86,7 @@ export const MathPaletteView: React.FC<MathPaletteProps> = ({
                 title={key.label}
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => onInsertLatex(key.insertLatex)}
-                className="inline-flex items-center justify-center w-7 h-7 rounded-md text-zinc-700 dark:text-zinc-200 hover:bg-zinc-200/80 dark:hover:bg-zinc-800 active:bg-indigo-50 dark:active:bg-indigo-950/60 active:text-indigo-600 dark:active:text-indigo-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 transition-colors disabled:opacity-40 select-none"
+                className="inline-flex items-center justify-center w-7 h-7 rounded-md text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 active:bg-indigo-50 dark:active:bg-indigo-950/60 active:text-indigo-600 dark:active:text-indigo-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 transition-colors disabled:opacity-40 select-none"
               >
                 <MathKeyIcon
                   iconId={key.iconId}
@@ -112,7 +112,7 @@ export const MathPaletteView: React.FC<MathPaletteProps> = ({
               className={`inline-flex items-center justify-center w-7 h-7 rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 disabled:opacity-40 ${
                 panelOpen
                   ? "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400"
-                  : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-200/80 dark:hover:bg-zinc-800"
+                  : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800"
               }`}
             >
               <MoreHorizontal className="w-4 h-4" aria-hidden="true" />
@@ -121,13 +121,13 @@ export const MathPaletteView: React.FC<MathPaletteProps> = ({
         )}
       </div>
 
-      {/* Inline expandable full palette panel */}
-      <Reveal show={isMathMode && panelOpen}>
+      {/* Inline expandable full palette panel as its own quiet block */}
+      <Reveal show={isMathMode && panelOpen} className="pt-2">
         {isMathMode && panelOpen && (
           <div
             role="region"
             aria-label="Math symbol palette"
-            className="relative border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/40 px-3 py-2.5 space-y-3"
+            className="relative rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 px-3 py-2.5 space-y-3"
           >
             <button
               type="button"
@@ -178,8 +178,8 @@ export const MathPaletteView: React.FC<MathPaletteProps> = ({
 };
 
 /**
- * Attached Wolfram|Alpha-style toolbar + inline math symbol palette.
- * Lives directly below the math input inside the same outer card; never floats.
+ * Standalone mode-switch + quick-keys row and quiet inline math symbol palette.
+ * Lives directly below the math input with tight spacing; never floats.
  */
 export const MathPalette: React.FC<MathPaletteProps> = (props) => (
   <MathPaletteView {...props} />
