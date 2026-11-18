@@ -16,18 +16,25 @@ math-field.studio-math-field {
   --contains-highlight-background-color: rgba(79, 70, 229, 0.08);
   --contains-highlight-color: #4f46e5;
   --smart-fence-color: #52525b;
-  --placeholder-color: #a1a1aa;
+  --latex-color: #4f46e5;
+  --text-highlight-background-color: rgba(79, 70, 229, 0.12);
+  --placeholder-color: #71717a;
+  --placeholder-opacity: 0.8;
 }
 
 html.dark math-field.studio-math-field {
   color: #f4f4f5;
+  --hue: 239;
   --caret-color: #818cf8;
   --selection-color: #f4f4f5;
   --selection-background-color: rgba(99, 102, 241, 0.3);
   --contains-highlight-background-color: rgba(99, 102, 241, 0.16);
   --contains-highlight-color: #a5b4fc;
   --smart-fence-color: #a1a1aa;
-  --placeholder-color: #71717a;
+  --latex-color: #818cf8;
+  --text-highlight-background-color: rgba(99, 102, 241, 0.22);
+  --placeholder-color: #a1a1aa;
+  --placeholder-opacity: 0.85;
 }
 
 math-field.studio-math-field::part(container) {
@@ -40,89 +47,27 @@ math-field.studio-math-field::part(content) {
   padding: 2px 2px;
 }
 
-/* Studio renders its own compact keyboard toggle button and omits the MathLive menu clutter. */
+/* Studio uses its own attached toolbar + inline palette and omits MathLive's built-in toggles. */
 math-field.studio-math-field::part(menu-toggle),
 math-field.studio-math-field::part(virtual-keyboard-toggle) {
   display: none;
 }
 
-/* Virtual keyboard light/dark theme aligned with Studio zinc neutrals + indigo accent. */
-html.light .ML__keyboard {
-  --keyboard-accent-color: #4f46e5;
-  --_accent-color: #4f46e5;
-  --keyboard-background: #f4f4f5;
-  --_background: #f4f4f5;
-  --keyboard-border: #e4e4e7;
-  --_border: #e4e4e7;
-  --keyboard-toolbar-text: #3f3f46;
-  --_toolbar-text: #3f3f46;
-  --keyboard-toolbar-background-hover: #e4e4e7;
-  --_toolbar-background-hover: #e4e4e7;
-  --keyboard-horizontal-rule: 1px solid #e4e4e7;
-  --_horizontal-rule: 1px solid #e4e4e7;
-  --keycap-background: #ffffff;
-  --_keycap-background: #ffffff;
-  --keycap-background-hover: #fafafa;
-  --_keycap-background-hover: #fafafa;
-  --_keycap-border: #e4e4e7;
-  --_keycap-border-bottom: #d4d4d8;
-  --keycap-text: #18181b;
-  --_keycap-text: #18181b;
-  --keycap-secondary-background: #e4e4e7;
-  --_keycap-secondary-background: #e4e4e7;
-  --keycap-secondary-background-hover: #d4d4d8;
-  --_keycap-secondary-background-hover: #d4d4d8;
-  --keycap-secondary-text: #18181b;
-  --_keycap-secondary-text: #18181b;
-  --keycap-secondary-border: #d4d4d8;
-  --_keycap-secondary-border: #d4d4d8;
-  --keycap-secondary-border-bottom: #a1a1aa;
-  --_keycap-secondary-border-bottom: #a1a1aa;
-  --variant-panel-background: #ffffff;
-  --_variant-panel-background: #ffffff;
-  --_variant-keycap-text: #18181b;
-  --variant-keycap-text-active: #ffffff;
-  --_variant-keycap-text-active: #ffffff;
-  --variant-keycap-background-active: #4f46e5;
-  --_variant-keycap-background-active: #4f46e5;
+/* Static MathLive glyphs inside the attached toolbar and inline palette. */
+.studio-palette-key .ML__latex {
+  font-size: 0.9375rem;
+  line-height: 1;
 }
 
-html.dark .ML__keyboard {
-  --keyboard-accent-color: #4f46e5;
-  --_accent-color: #4f46e5;
-  --keyboard-background: #18181b;
-  --_background: #18181b;
-  --keyboard-border: #27272a;
-  --_border: #27272a;
-  --keyboard-toolbar-text: #e4e4e7;
-  --_toolbar-text: #e4e4e7;
-  --keyboard-toolbar-background-hover: #27272a;
-  --_toolbar-background-hover: #27272a;
-  --keyboard-horizontal-rule: 1px solid #27272a;
-  --_horizontal-rule: 1px solid #27272a;
-  --keycap-background: #27272a;
-  --_keycap-background: #27272a;
-  --keycap-background-hover: #3f3f46;
-  --_keycap-background-hover: #3f3f46;
-  --_keycap-border: #3f3f46;
-  --_keycap-border-bottom: #18181b;
-  --keycap-text: #f4f4f5;
-  --_keycap-text: #f4f4f5;
-  --keycap-secondary-background: #3f3f46;
-  --_keycap-secondary-background: #3f3f46;
-  --keycap-secondary-background-hover: #52525b;
-  --_keycap-secondary-background-hover: #52525b;
-  --keycap-secondary-text: #f4f4f5;
-  --_keycap-secondary-text: #f4f4f5;
-  --keycap-secondary-border: #52525b;
-  --_keycap-secondary-border: #52525b;
-  --keycap-secondary-border-bottom: #27272a;
-  --_keycap-secondary-border-bottom: #27272a;
-  --variant-panel-background: #27272a;
-  --_variant-panel-background: #27272a;
-  --_variant-keycap-text: #f4f4f5;
-  --variant-keycap-text-active: #ffffff;
-  --_variant-keycap-text-active: #ffffff;
-  --variant-keycap-background-active: #4f46e5;
-  --_variant-keycap-background-active: #4f46e5;
+.studio-palette-key--sm .ML__latex {
+  font-size: 0.8125rem;
+}
+
+/* Placeholder squares (\square) rendered inside palette keys use calm muted zinc. */
+.studio-palette-key .ML__ams {
+  color: #71717a;
+}
+
+html.dark .studio-palette-key .ML__ams {
+  color: #a1a1aa;
 }

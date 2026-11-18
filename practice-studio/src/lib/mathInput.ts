@@ -49,8 +49,8 @@ export function getUnitKeyboardProfile(options: {
 
   const trig =
     /MTH-T02-C0[6-9]/i.test(unitCode) ||
-    /\b(trig|trigonometr|sine|cosine|tangent|unit circle|periodic|polar)\b/i.test(title) ||
-    /\\(?:sin|cos|tan)\b|\b(?:sin|cos|tan)\s*\(/i.test(promptText);
+    /\b(trig|trigonometr|sine|cosine|tangent|unit circle|periodic|polar|inverse trig)\b/i.test(title) ||
+    /\\(?:sin|cos|tan|arcsin|arccos|arctan)\b|\b(?:sin|cos|tan|arcsin|arccos|arctan)\s*\(/i.test(promptText);
 
   const log =
     /MTH-T02-C05/i.test(unitCode) ||
