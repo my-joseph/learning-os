@@ -84,7 +84,7 @@ export const Placeholder: React.FC<PlaceholderProps> = ({
   y,
   size = 7.5,
   rx = 1.5,
-  strokeWidth = 1.25,
+  strokeWidth = 1.4,
 }) => (
   <rect
     x={x}
@@ -94,7 +94,7 @@ export const Placeholder: React.FC<PlaceholderProps> = ({
     rx={rx}
     fill="none"
     stroke="currentColor"
-    strokeOpacity={0.6}
+    strokeOpacity={0.85}
     strokeWidth={strokeWidth}
     strokeDasharray="1.5 1.5"
   />
@@ -220,7 +220,7 @@ export const PiKeyIcon: React.FC<KeyIconProps> = ({ className }) => (
 
 export const EulerKeyIcon: React.FC<KeyIconProps> = ({ className }) => (
   <KeyIconFrame className={className}>
-    <GlyphText x={12} y={16.5} fontSize={14} fontStyle="italic" textAnchor="middle">
+    <GlyphText x={12} y={16.5} fontSize={12} fontStyle="italic" textAnchor="middle">
       e
     </GlyphText>
   </KeyIconFrame>
@@ -228,7 +228,7 @@ export const EulerKeyIcon: React.FC<KeyIconProps> = ({ className }) => (
 
 export const ExpKeyIcon: React.FC<KeyIconProps> = ({ className }) => (
   <KeyIconFrame className={className}>
-    <GlyphText x={8.25} y={17} fontSize={12.5} fontStyle="italic" textAnchor="middle">
+    <GlyphText x={8.25} y={17} fontSize={11.5} fontStyle="italic" textAnchor="middle">
       e
     </GlyphText>
     <Placeholder x={13.25} y={4.75} size={5.5} rx={1.2} />
@@ -379,7 +379,7 @@ export const ArctanKeyIcon = createInverseTrigIcon("tan");
 
 export const ImaginaryUnitKeyIcon: React.FC<KeyIconProps> = ({ className }) => (
   <KeyIconFrame className={className}>
-    <GlyphText x={12} y={17} fontSize={14} fontStyle="italic" textAnchor="middle">
+    <GlyphText x={12} y={17} fontSize={12} fontStyle="italic" textAnchor="middle">
       i
     </GlyphText>
   </KeyIconFrame>
@@ -387,7 +387,7 @@ export const ImaginaryUnitKeyIcon: React.FC<KeyIconProps> = ({ className }) => (
 
 export const ThetaKeyIcon: React.FC<KeyIconProps> = ({ className }) => (
   <KeyIconFrame className={className}>
-    <GlyphText x={12} y={16.5} fontSize={13.5} fontStyle="italic" textAnchor="middle">
+    <GlyphText x={12} y={16.5} fontSize={12} fontStyle="italic" textAnchor="middle">
       θ
     </GlyphText>
   </KeyIconFrame>
@@ -395,7 +395,7 @@ export const ThetaKeyIcon: React.FC<KeyIconProps> = ({ className }) => (
 
 export const AlphaKeyIcon: React.FC<KeyIconProps> = ({ className }) => (
   <KeyIconFrame className={className}>
-    <GlyphText x={12} y={16} fontSize={13.5} fontStyle="italic" textAnchor="middle">
+    <GlyphText x={12} y={16} fontSize={12} fontStyle="italic" textAnchor="middle">
       α
     </GlyphText>
   </KeyIconFrame>
@@ -403,7 +403,7 @@ export const AlphaKeyIcon: React.FC<KeyIconProps> = ({ className }) => (
 
 export const BetaKeyIcon: React.FC<KeyIconProps> = ({ className }) => (
   <KeyIconFrame className={className}>
-    <GlyphText x={12} y={16.5} fontSize={13.5} fontStyle="italic" textAnchor="middle">
+    <GlyphText x={12} y={16.5} fontSize={12} fontStyle="italic" textAnchor="middle">
       β
     </GlyphText>
   </KeyIconFrame>

@@ -90,7 +90,7 @@ export const MathPaletteView: React.FC<MathPaletteProps> = ({
               >
                 <MathKeyIcon
                   iconId={key.iconId}
-                  className="h-[18px] w-auto shrink-0 pointer-events-none"
+                  className="h-[22px] w-auto max-w-[26px] shrink-0 pointer-events-none"
                 />
               </button>
             ))}
@@ -163,7 +163,7 @@ export const MathPaletteView: React.FC<MathPaletteProps> = ({
                     >
                       <MathKeyIcon
                         iconId={key.iconId}
-                        className="h-[20px] sm:h-[22px] w-auto shrink-0 pointer-events-none"
+                        className="h-[26px] sm:h-[30px] w-auto max-w-[30px] sm:max-w-[34px] shrink-0 pointer-events-none"
                       />
                     </button>
                   ))}
