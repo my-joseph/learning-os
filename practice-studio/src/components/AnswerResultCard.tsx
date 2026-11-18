@@ -119,18 +119,25 @@ export const AnswerResultCard: React.FC<AnswerResultCardProps> = ({
                   </div>
                 )}
 
-                {model.components.length > 0 && (
-                  <div className="flex flex-wrap gap-x-3 gap-y-1 pt-0.5">
+                {/* Part-by-part breakdown only when it adds information (2+ parts, e.g. real/imaginary). */}
+                {model.components.length > 1 && (
+                  <div className="flex flex-wrap gap-1.5 pt-0.5">
                     {model.components.map((c, i) => (
                       <span
                         key={i}
-                        className={`text-xs font-mono ${
+                        className={`inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs bg-white/70 dark:bg-zinc-900/50 ${
                           c.ok
                             ? "text-emerald-700 dark:text-emerald-400"
-                            : "text-rose-600 dark:text-rose-400"
+                            : "text-rose-700 dark:text-rose-400"
                         }`}
                       >
-                        <FormattedText text={c.label} />: {c.ok ? "✓" : "✗"}
+                        {c.ok ? (
+                          <Check className="w-3 h-3" aria-hidden="true" />
+                        ) : (
+                          <X className="w-3 h-3" aria-hidden="true" />
+                        )}
+                        <FormattedText text={c.label} />
+                        <span className="sr-only">{c.ok ? " correct" : " not correct"}</span>
                       </span>
                     ))}
                   </div>

@@ -209,7 +209,7 @@ const almostCardHtml = renderToStaticMarkup(
     lastCheck={{
       verdict: "equivalent_not_in_form",
       message: "The value is correct, but a fraction is not reduced to lowest terms.",
-      components: [{ label: "Value $x_1$", ok: true }],
+      components: [{ label: "Value $x_1$", ok: true }, { label: "Value $x_2$", ok: false }],
       diagnostics: [
         {
           code: "unreduced_fraction",
