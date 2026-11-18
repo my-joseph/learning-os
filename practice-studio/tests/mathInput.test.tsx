@@ -234,7 +234,10 @@ const mathEntryHtml = renderToStaticMarkup(
   />
 );
 assert.match(mathEntryHtml, />Plain text</, "Supported math entry should expose Plain text toggle");
-assert.match(mathEntryHtml, /aria-label="Check answer"/);
+assert.match(
+  mathEntryHtml,
+  /<button[^>]*aria-label="Check answer"[^>]*title="Check \(Enter\)"[^>]*class="[^"]*w-8 h-8 rounded-lg[^"]*"[^>]*><svg[^>]*lucide-equal/
+);
 
 const unsupportedFallbackHtml = renderToStaticMarkup(
   <MathWorkspace
@@ -256,8 +259,12 @@ const unsupportedFallbackHtml = renderToStaticMarkup(
 );
 assert.match(
   unsupportedFallbackHtml,
-  /<input[^>]*type="text"[^>]*aria-label="Answer for question Q01"/,
-  "Unsupported answerSpec type must fall back to plain-text input automatically"
+  /<input[^>]*type="text"[^>]*aria-label="Answer for question Q01"[^>]*class="[^"]*pr-12[^"]*"/,
+  "Unsupported answerSpec type must fall back to plain-text input with reserved right padding"
+);
+assert.match(
+  unsupportedFallbackHtml,
+  /<button[^>]*aria-label="Check answer"[^>]*title="Check \(Enter\)"[^>]*class="[^"]*w-8 h-8 rounded-lg[^"]*"[^>]*><svg[^>]*lucide-equal/
 );
 assert.doesNotMatch(
   unsupportedFallbackHtml,

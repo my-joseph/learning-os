@@ -374,7 +374,7 @@ assert.match(beforeAttemptHtml, /<h1[^>]*class="[^"]*text-lg[^"]*"[^>]*>Linear E
 assert.match(beforeAttemptHtml, /class="text-base leading-relaxed[^"]*">[^]*Solve/);
 assert.match(
   beforeAttemptHtml,
-  /<button[^>]*disabled=""[^>]*aria-label="Check answer"[^>]*title="Check answer \(Enter\)"[^>]*class="[^"]*w-11 h-11[^"]*"[^>]*><svg[^>]*lucide-check/
+  /<button[^>]*disabled=""[^>]*aria-label="Check answer"[^>]*title="Check \(Enter\)"[^>]*class="[^"]*w-8 h-8 rounded-lg[^"]*"[^>]*><svg[^>]*lucide-equal/
 );
 assert.doesNotMatch(beforeAttemptHtml, />Check<\/span>/);
 
