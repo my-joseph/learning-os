@@ -82,8 +82,10 @@ assert.match(drillHtml, /<h4[^>]*text-sm font-semibold[^>]*>Example 1<\/h4>/);
 assert.match(drillHtml, /<h4[^>]*text-sm font-semibold[^>]*>Example 2<\/h4>/);
 assert.match(drillHtml, /Input:\s*<\/span><span[^>]*>nums = \[1, 3, 5, 6\], target = 5<\/span>/);
 assert.match(drillHtml, /Output:\s*<\/span><span[^>]*>2<\/span>/);
-assert.match(drillHtml, /Explanation:/);
-assert.match(drillHtml, /5 is already at index 2\./);
+assert.doesNotMatch(drillHtml, /Explanation:/, "no Explanation: prefix");
+assert.doesNotMatch(drillHtml, />Examples</, "no small Examples label");
+// explanation sits between the Example heading and its code block
+assert.match(drillHtml, />Example 1<\/h4><p[^>]*>[\s\S]*?5 is already at index 2\.[\s\S]*?<\/p><div[^>]*font-mono/);
 assert.match(drillHtml, /0 &lt;= nums\.length &lt;= 10\^4/);
 assert.match(drillHtml, /<code[^>]*>nums<\/code> is sorted ascending/);
 // Quiet zinc rounded block with no left accent border
