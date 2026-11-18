@@ -95,7 +95,19 @@
       },
       "levelLabel": "Foundation",
       "unitCode": "PRG-T01-C02-U04",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U04-01/Q01_readCarrierReference.ts"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U04-01/Q01_readCarrierReference.ts",
+      "examples": [
+        {
+          "input": "payload = { trackingId: 'TRK-9012' }",
+          "output": "'TRK-9012'",
+          "call": "readCarrierReference({ trackingId: 'TRK-9012' })"
+        },
+        {
+          "input": "payload = 'TRK-9012'",
+          "output": "undefined",
+          "call": "readCarrierReference('TRK-9012')"
+        }
+      ]
     },
     {
       "id": "Q02",
@@ -187,7 +199,19 @@
       },
       "levelLabel": "Standard Exam",
       "unitCode": "PRG-T01-C02-U04",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U04-01/Q02_readCreditAmount.ts"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U04-01/Q02_readCreditAmount.ts",
+      "examples": [
+        {
+          "input": "value = 24.5, fallback = 50",
+          "output": "24.5",
+          "call": "readCreditAmount(24.5, 50)"
+        },
+        {
+          "input": "value = undefined, fallback = 50",
+          "output": "50",
+          "call": "readCreditAmount(undefined, 50)"
+        }
+      ]
     },
     {
       "id": "Q03",
@@ -283,7 +307,19 @@
       },
       "levelLabel": "Standard Exam",
       "unitCode": "PRG-T01-C02-U04",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U04-01/Q03_isImportedAccount.ts"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U04-01/Q03_isImportedAccount.ts",
+      "examples": [
+        {
+          "input": "value = { accountId: 'AC-109', active: true }",
+          "output": "true",
+          "call": "isImportedAccount({ accountId: 'AC-109', active: true })"
+        },
+        {
+          "input": "value = { accountId: 'AC-109' }",
+          "output": "false",
+          "call": "isImportedAccount({ accountId: 'AC-109' })"
+        }
+      ]
     },
     {
       "id": "Q04",
@@ -380,7 +416,19 @@
       },
       "levelLabel": "Standard Exam",
       "unitCode": "PRG-T01-C02-U04",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U04-01/Q04_selectTenantLabel.ts"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U04-01/Q04_selectTenantLabel.ts",
+      "examples": [
+        {
+          "input": "value = { label: 'West region' }, fallback = 'Default'",
+          "output": "'West region'",
+          "call": "selectTenantLabel({ label: 'West region' }, 'Default')"
+        },
+        {
+          "input": "value = {}, fallback = 'Default'",
+          "output": "'Default'",
+          "call": "selectTenantLabel({}, 'Default')"
+        }
+      ]
     },
     {
       "id": "Q05",
@@ -476,7 +524,19 @@
       },
       "levelLabel": "Standard Exam",
       "unitCode": "PRG-T01-C02-U04",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U04-01/Q05_isGatewayNotice.ts"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U04-01/Q05_isGatewayNotice.ts",
+      "examples": [
+        {
+          "input": "value = { route: '/hooks/v1', retryAfterSeconds: 12 }",
+          "output": "true",
+          "call": "isGatewayNotice({ route: '/hooks/v1', retryAfterSeconds: 12 })"
+        },
+        {
+          "input": "value = { route: '/hooks/v1' }",
+          "output": "false",
+          "call": "isGatewayNotice({ route: '/hooks/v1' })"
+        }
+      ]
     }
   ],
   "blindSolve": [

@@ -30,7 +30,22 @@
         "U-errors",
         "QC-collection-contract-complete"
       ],
-      "visibleTests": "tests/m1_*.test.ts"
+      "visibleTests": "tests/m1_*.test.ts",
+      "examples": [
+        {
+          "input": "validateCapacity(16)",
+          "output": "16",
+          "call": "validateCapacity(16)"
+        },
+        {
+          "input": "validateCapacity(256)",
+          "output": "256",
+          "call": "validateCapacity(256)"
+        }
+      ],
+      "constraints": [
+        "capacity must be a positive integer >= 1"
+      ]
     },
     {
       "id": "M2",
@@ -48,7 +63,25 @@
         "QC-prg-c03-u05-doubly-endpoint-nullability",
         "QC-prg-c03-u05-doubly-detach-node"
       ],
-      "visibleTests": "tests/m2_*.test.ts"
+      "visibleTests": "tests/m2_*.test.ts",
+      "examples": [
+        {
+          "input": "list = createDoublyLinkedList(); list.pushFront('item-1'); list.pushFront('item-2'); list.toArray()",
+          "output": "['item-2', 'item-1']",
+          "call": "(() => { const list = createDoublyLinkedList(); list.pushFront('item-1'); list.pushFront('item-2'); return list.toArray(); })()"
+        },
+        {
+          "input": "list = createDoublyLinkedList(); list.pushFront(10); list.pushFront(20); list.popBack()",
+          "output": "10",
+          "explanation": "10 is at the tail after pushing 20 to the front.",
+          "call": "(() => { const list = createDoublyLinkedList(); list.pushFront(10); list.pushFront(20); return list.popBack(); })()"
+        },
+        {
+          "input": "list = createDoublyLinkedList(); h1 = list.pushFront('alpha'); list.pushFront('beta'); list.moveToFront(h1); list.toArray()",
+          "output": "['alpha', 'beta']",
+          "call": "(() => { const list = createDoublyLinkedList(); const h1 = list.pushFront('alpha'); list.pushFront('beta'); list.moveToFront(h1); return list.toArray(); })()"
+        }
+      ]
     },
     {
       "id": "M3",
@@ -66,7 +99,24 @@
         "QC-index-built-once",
         "QC-collection-instance-isolation"
       ],
-      "visibleTests": "tests/m3_*.test.ts"
+      "visibleTests": "tests/m3_*.test.ts",
+      "examples": [
+        {
+          "input": "cache = createLRUCache(2); cache.put('k1', 100); cache.put('k2', 200); cache.get('k1'); cache.keysInRecencyOrder()",
+          "output": "['k1', 'k2']",
+          "explanation": "Accessing 'k1' moves it to the most-recent position.",
+          "call": "(() => { const cache = createLRUCache(2); cache.put('k1', 100); cache.put('k2', 200); cache.get('k1'); return cache.keysInRecencyOrder(); })()"
+        },
+        {
+          "input": "cache = createLRUCache(2); cache.put('p1', 1); cache.put('p2', 2); cache.put('p3', 3); { hasP1: cache.has('p1'), keys: cache.keysInRecencyOrder(), stats: cache.stats() }",
+          "output": "{ hasP1: false, keys: ['p3', 'p2'], stats: { hits: 0, misses: 0, evictions: 1, size: 2 } }",
+          "explanation": "Inserting 'p3' at capacity 2 evicts the least recently used entry 'p1'.",
+          "call": "(() => { const cache = createLRUCache(2); cache.put('p1', 1); cache.put('p2', 2); cache.put('p3', 3); return { hasP1: cache.has('p1'), keys: cache.keysInRecencyOrder(), stats: cache.stats() }; })()"
+        }
+      ],
+      "constraints": [
+        "capacity must be a positive integer >= 1"
+      ]
     },
     {
       "id": "M4",
@@ -84,7 +134,25 @@
         "QC-prg-c03-u06-search-first-match",
         "QC-prg-c03-u06-tree-result-purity"
       ],
-      "visibleTests": "tests/m4_*.test.ts"
+      "visibleTests": "tests/m4_*.test.ts",
+      "examples": [
+        {
+          "input": "root = { id: 'catalog', label: 'Catalog', tags: [], data: 0, children: [{ id: 'electronics', label: 'Electronics', tags: [], data: 1, children: [{ id: 'audio', label: 'Audio', tags: ['sale'], data: 2, children: [] }] }, { id: 'apparel', label: 'Apparel', tags: ['sale'], data: 3, children: [] }] }; createTreeIndex(root).collectPreorderIds()",
+          "output": "['catalog', 'electronics', 'audio', 'apparel']",
+          "call": "createTreeIndex({ id: 'catalog', label: 'Catalog', tags: [], data: 0, children: [{ id: 'electronics', label: 'Electronics', tags: [], data: 1, children: [{ id: 'audio', label: 'Audio', tags: ['sale'], data: 2, children: [] }] }, { id: 'apparel', label: 'Apparel', tags: ['sale'], data: 3, children: [] }] }).collectPreorderIds()"
+        },
+        {
+          "input": "createTreeIndex(root).pathToId('audio')",
+          "output": "['catalog', 'electronics', 'audio']",
+          "call": "createTreeIndex({ id: 'catalog', label: 'Catalog', tags: [], data: 0, children: [{ id: 'electronics', label: 'Electronics', tags: [], data: 1, children: [{ id: 'audio', label: 'Audio', tags: ['sale'], data: 2, children: [] }] }, { id: 'apparel', label: 'Apparel', tags: ['sale'], data: 3, children: [] }] }).pathToId('audio')"
+        },
+        {
+          "input": "createTreeIndex(root).findFirstByTag('sale')?.id ?? null",
+          "output": "'apparel'",
+          "explanation": "'apparel' is at depth 1 whereas 'audio' is at depth 2.",
+          "call": "createTreeIndex({ id: 'catalog', label: 'Catalog', tags: [], data: 0, children: [{ id: 'electronics', label: 'Electronics', tags: [], data: 1, children: [{ id: 'audio', label: 'Audio', tags: ['sale'], data: 2, children: [] }] }, { id: 'apparel', label: 'Apparel', tags: ['sale'], data: 3, children: [] }] }).findFirstByTag('sale')?.id ?? null"
+        }
+      ]
     }
   ],
   "blindSolve": [

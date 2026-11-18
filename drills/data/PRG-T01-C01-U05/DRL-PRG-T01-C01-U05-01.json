@@ -94,7 +94,19 @@
       },
       "levelLabel": "Foundation",
       "unitCode": "PRG-T01-C01-U05",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U05-01/Q01_buildBarrelExportMap.js"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U05-01/Q01_buildBarrelExportMap.js",
+      "examples": [
+        {
+          "input": "modules = [{ moduleName: './json.mjs', exports: [{ name: 'parse', kind: 'named', alias: 'parseJson' }] }, { moduleName: './xml.mjs', exports: [{ name: 'parse', kind: 'named', alias: 'parseXml' }] }]",
+          "output": "{ exports: { parseJson: { sourceModule: './json.mjs', originalName: 'parse' }, parseXml: { sourceModule: './xml.mjs', originalName: 'parse' } }, collisions: [] }",
+          "call": "buildBarrelExportMap([{ moduleName: './json.mjs', exports: [{ name: 'parse', kind: 'named', alias: 'parseJson' }] }, { moduleName: './xml.mjs', exports: [{ name: 'parse', kind: 'named', alias: 'parseXml' }] }])"
+        },
+        {
+          "input": "modules = [{ moduleName: './math.mjs', exports: [{ name: 'sum', kind: 'named' }, { name: 'avg', kind: 'named' }] }]",
+          "output": "{ exports: { sum: { sourceModule: './math.mjs', originalName: 'sum' }, avg: { sourceModule: './math.mjs', originalName: 'avg' } }, collisions: [] }",
+          "call": "buildBarrelExportMap([{ moduleName: './math.mjs', exports: [{ name: 'sum', kind: 'named' }, { name: 'avg', kind: 'named' }] }])"
+        }
+      ]
     },
     {
       "id": "Q02",
@@ -178,7 +190,19 @@
       },
       "levelLabel": "Foundation",
       "unitCode": "PRG-T01-C01-U05",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U05-01/Q02_resolveModuleImports.js"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U05-01/Q02_resolveModuleImports.js",
+      "examples": [
+        {
+          "input": "moduleTable = { './client.mjs': { defaultExport: 'ApiClient', namedExports: ['get', 'post'] } }, importSpecs = [{ from: './client.mjs', kind: 'default', symbol: 'default', localName: 'Client' }, { from: './client.mjs', kind: 'named', symbol: 'post', localName: 'sendPost' }]",
+          "output": "{ Client: { source: './client.mjs', resolvedExport: 'ApiClient' }, sendPost: { source: './client.mjs', resolvedExport: 'post' } }",
+          "call": "resolveModuleImports({ './client.mjs': { defaultExport: 'ApiClient', namedExports: ['get', 'post'] } }, [{ from: './client.mjs', kind: 'default', symbol: 'default', localName: 'Client' }, { from: './client.mjs', kind: 'named', symbol: 'post', localName: 'sendPost' }])"
+        },
+        {
+          "input": "moduleTable = { './utils.mjs': { defaultExport: null, namedExports: ['trim', 'slugify'] } }, importSpecs = [{ from: './utils.mjs', kind: 'named', symbol: 'slugify', localName: 'toSlug' }]",
+          "output": "{ toSlug: { source: './utils.mjs', resolvedExport: 'slugify' } }",
+          "call": "resolveModuleImports({ './utils.mjs': { defaultExport: null, namedExports: ['trim', 'slugify'] } }, [{ from: './utils.mjs', kind: 'named', symbol: 'slugify', localName: 'toSlug' }])"
+        }
+      ]
     },
     {
       "id": "Q03",
@@ -265,7 +289,19 @@
       },
       "levelLabel": "Standard Exam",
       "unitCode": "PRG-T01-C01-U05",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U05-01/Q03_evaluateModuleGraph.js"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U05-01/Q03_evaluateModuleGraph.js",
+      "examples": [
+        {
+          "input": "modules = { 'entry.mjs': { deps: ['config.mjs'], topLevelReads: [{ from: 'config.mjs', symbol: 'PORT' }] }, 'config.mjs': { deps: [], topLevelReads: [] } }, entryName = 'entry.mjs'",
+          "output": "{ status: 'ok', order: ['config.mjs', 'entry.mjs'] }",
+          "call": "evaluateModuleGraph({ 'entry.mjs': { deps: ['config.mjs'], topLevelReads: [{ from: 'config.mjs', symbol: 'PORT' }] }, 'config.mjs': { deps: [], topLevelReads: [] } }, 'entry.mjs')"
+        },
+        {
+          "input": "modules = { 'index.mjs': { deps: ['router.mjs'], topLevelReads: [] }, 'router.mjs': { deps: ['logger.mjs'], topLevelReads: [] }, 'logger.mjs': { deps: [], topLevelReads: [] } }, entryName = 'index.mjs'",
+          "output": "{ status: 'ok', order: ['logger.mjs', 'router.mjs', 'index.mjs'] }",
+          "call": "evaluateModuleGraph({ 'index.mjs': { deps: ['router.mjs'], topLevelReads: [] }, 'router.mjs': { deps: ['logger.mjs'], topLevelReads: [] }, 'logger.mjs': { deps: [], topLevelReads: [] } }, 'index.mjs')"
+        }
+      ]
     },
     {
       "id": "Q04",
@@ -348,7 +384,19 @@
       },
       "levelLabel": "Standard Exam",
       "unitCode": "PRG-T01-C01-U05",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U05-01/Q04_simulateCjsCycle.js"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U05-01/Q04_simulateCjsCycle.js",
+      "examples": [
+        {
+          "input": "spec = { beforeRequireProps: { ready: true }, afterRequire: { mode: 'mutate', props: { version: 2 } } }",
+          "output": "{ seenAtRequireTime: { ready: true }, seenAfterLoadByB: { ready: true, version: 2 }, finalModuleAExports: { ready: true, version: 2 } }",
+          "call": "simulateCjsCycle({ beforeRequireProps: { ready: true }, afterRequire: { mode: 'mutate', props: { version: 2 } } })"
+        },
+        {
+          "input": "spec = { beforeRequireProps: { host: 'db' }, afterRequire: { mode: 'mutate', props: { port: 5432 } } }",
+          "output": "{ seenAtRequireTime: { host: 'db' }, seenAfterLoadByB: { host: 'db', port: 5432 }, finalModuleAExports: { host: 'db', port: 5432 } }",
+          "call": "simulateCjsCycle({ beforeRequireProps: { host: 'db' }, afterRequire: { mode: 'mutate', props: { port: 5432 } } })"
+        }
+      ]
     },
     {
       "id": "Q05",

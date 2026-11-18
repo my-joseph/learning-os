@@ -33,7 +33,20 @@
         "QC-err-preserve-cause",
         "QC-err-subclass-instanceof"
       ],
-      "visibleTests": "tests/m1_*.test.ts"
+      "visibleTests": "tests/m1_*.test.ts",
+      "examples": [
+        {
+          "input": "normalizeUrls([' https://guide.example.org/start ', 'https://guide.example.org/docs', 'https://guide.example.org/start'])",
+          "output": "['https://guide.example.org/start', 'https://guide.example.org/docs']",
+          "explanation": "Whitespace is trimmed and duplicate URLs keep only their first occurrence.",
+          "call": "normalizeUrls([' https://guide.example.org/start ', 'https://guide.example.org/docs', 'https://guide.example.org/start'])"
+        },
+        {
+          "input": "err = new CrawlerError('FETCH_FAILED', 'Gateway timeout')",
+          "output": "{ name: 'CrawlerError', code: 'FETCH_FAILED', isError: true }",
+          "call": "(() => { const err = new CrawlerError('FETCH_FAILED', 'Gateway timeout'); return { name: err.name, code: err.code, isError: err instanceof Error }; })()"
+        }
+      ]
     },
     {
       "id": "M2",
@@ -50,7 +63,25 @@
         "QC-closure-isolated-instance",
         "QC-closure-no-state-leak"
       ],
-      "visibleTests": "tests/m2_*.test.ts"
+      "visibleTests": "tests/m2_*.test.ts",
+      "examples": [
+        {
+          "input": "limiter = createRateLimiter({ maxPerWindow: 3, windowMs: 200, now, sleep }); await limiter.acquire(); await limiter.acquire()",
+          "output": "{ sleepCalls: 0, clock: 0 }",
+          "explanation": "Two acquisitions fit within maxPerWindow = 3 without waiting.",
+          "call": "(() => { let clock = 0; let sleepCalls = 0; const limiter = createRateLimiter({ maxPerWindow: 3, windowMs: 200, now: () => clock, sleep: async (ms) => { sleepCalls += 1; clock += ms; } }); return limiter.acquire().then(() => limiter.acquire()).then(() => ({ sleepCalls, clock })); })()"
+        },
+        {
+          "input": "limiter = createRateLimiter({ maxPerWindow: 1, windowMs: 120, now, sleep }); await limiter.acquire(); await limiter.acquire()",
+          "output": "{ sleepDurations: [120], clock: 120 }",
+          "explanation": "The second call waits 120 ms for the first slot to leave the window.",
+          "call": "(() => { let clock = 0; const sleepDurations = []; const limiter = createRateLimiter({ maxPerWindow: 1, windowMs: 120, now: () => clock, sleep: async (ms) => { sleepDurations.push(ms); clock += ms; } }); return limiter.acquire().then(() => limiter.acquire()).then(() => ({ sleepDurations, clock })); })()"
+        }
+      ],
+      "constraints": [
+        "maxPerWindow is a positive integer >= 1",
+        "windowMs is a positive finite number > 0"
+      ]
     },
     {
       "id": "M3",
@@ -68,7 +99,23 @@
         "QC-async-concurrent-dispatch",
         "QC-async-preserve-error-reason"
       ],
-      "visibleTests": "tests/m3_*.test.ts"
+      "visibleTests": "tests/m3_*.test.ts",
+      "examples": [
+        {
+          "input": "crawler = createPageCrawler(fetcher, { concurrency: 2 }); await crawler.crawl(['https://guide.example.org/home', 'https://guide.example.org/faq'])",
+          "output": "{ succeeded: 2, failed: 0, aborted: false, urls: ['https://guide.example.org/home', 'https://guide.example.org/faq'] }",
+          "call": "createPageCrawler(async (url) => ({ url, status: 200, title: 'OK' }), { concurrency: 2 }).crawl(['https://guide.example.org/home', 'https://guide.example.org/faq']).then((r) => ({ succeeded: r.succeeded, failed: r.failed, aborted: r.aborted, urls: r.results.map((x) => x.url) }))"
+        },
+        {
+          "input": "crawler.crawl(['https://guide.example.org/a', ' https://guide.example.org/a ', 'https://guide.example.org/b'])",
+          "output": "{ succeeded: 2, failed: 0, totalResults: 2 }",
+          "explanation": "Duplicate seeds are collapsed into a single fetch.",
+          "call": "createPageCrawler(async (url) => ({ url, status: 200, title: 'Page' }), { concurrency: 2 }).crawl(['https://guide.example.org/a', ' https://guide.example.org/a ', 'https://guide.example.org/b']).then((r) => ({ succeeded: r.succeeded, failed: r.failed, totalResults: r.results.length }))"
+        }
+      ],
+      "constraints": [
+        "concurrency is a positive integer >= 1"
+      ]
     },
     {
       "id": "M4",
@@ -86,7 +133,23 @@
         "QC-abort-settlement-stable",
         "QC-abort-listener-lifecycle"
       ],
-      "visibleTests": "tests/m4_*.test.ts"
+      "visibleTests": "tests/m4_*.test.ts",
+      "examples": [
+        {
+          "input": "crawler.crawl(['https://guide.example.org/p1', 'https://guide.example.org/p2'], { signal: controller.signal })",
+          "output": "{ succeeded: 2, failed: 0, aborted: false }",
+          "call": "(() => { const ac = new AbortController(); return createPageCrawler(async (url) => ({ url, status: 200, title: 'OK' }), { concurrency: 2 }).crawl(['https://guide.example.org/p1', 'https://guide.example.org/p2'], { signal: ac.signal }).then((r) => ({ succeeded: r.succeeded, failed: r.failed, aborted: r.aborted })); })()"
+        },
+        {
+          "input": "Abort controller during the first fetch with concurrency 1 over two URLs",
+          "output": "{ aborted: true, firstOk: true, secondAborted: true }",
+          "explanation": "The in-flight fetch finishes while the queued URL is marked aborted.",
+          "call": "(() => { const ac = new AbortController(); return createPageCrawler(async (url) => { if (url.endsWith('/one')) ac.abort(new Error('cancel')); return { url, status: 200, title: 'OK' }; }, { concurrency: 1 }).crawl(['https://guide.example.org/one', 'https://guide.example.org/two'], { signal: ac.signal }).then((r) => ({ aborted: r.aborted, firstOk: r.results[0].ok, secondAborted: r.results[1].aborted })); })()"
+        }
+      ],
+      "constraints": [
+        "concurrency is a positive integer >= 1"
+      ]
     }
   ],
   "blindSolve": [

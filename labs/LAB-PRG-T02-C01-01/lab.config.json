@@ -30,7 +30,19 @@
         "U-names",
         "U-no-shared-mutable-state"
       ],
-      "visibleTests": "tests/m1_*.test.ts"
+      "visibleTests": "tests/m1_*.test.ts",
+      "examples": [
+        {
+          "input": "store = createMiniStore({ bookmarks: 2 }); store.getState()",
+          "output": "{ bookmarks: 2 }",
+          "call": "createMiniStore({ bookmarks: 2 }).getState()"
+        },
+        {
+          "input": "Subscribe a listener, update bookmarks to 5, unsubscribe, then update bookmarks to 6",
+          "output": "{ finalState: { bookmarks: 6 }, hits: 1 }",
+          "call": "(() => { const store = createMiniStore({ bookmarks: 2 }); let hits = 0; const stop = store.subscribe(() => { hits += 1; }); store.setState({ bookmarks: 5 }); stop(); store.setState({ bookmarks: 6 }); return { finalState: store.getState(), hits }; })()"
+        }
+      ]
     },
     {
       "id": "M2",
@@ -43,7 +55,20 @@
         "U-no-input-mutation",
         "U-one-job"
       ],
-      "visibleTests": "tests/m2_*.test.ts"
+      "visibleTests": "tests/m2_*.test.ts",
+      "examples": [
+        {
+          "input": "store = createMiniStore({ count: 3, theme: 'light' }); store.setState({ count: 7 }); store.getState()",
+          "output": "{ count: 7, theme: 'light' }",
+          "explanation": "Unchanged fields remain preserved across partial updates.",
+          "call": "(() => { const store = createMiniStore({ count: 3, theme: 'light' }); store.setState({ count: 7 }); return store.getState(); })()"
+        },
+        {
+          "input": "store = createMiniStore({ count: 3, theme: 'light' }); store.setState((prev) => ({ count: prev.count + 2 })); store.getState()",
+          "output": "{ count: 5, theme: 'light' }",
+          "call": "(() => { const store = createMiniStore({ count: 3, theme: 'light' }); store.setState((prev) => ({ count: prev.count + 2 })); return store.getState(); })()"
+        }
+      ]
     },
     {
       "id": "M3",
@@ -58,7 +83,19 @@
         "U-names",
         "U-simplest"
       ],
-      "visibleTests": "tests/m3_*.test.tsx"
+      "visibleTests": "tests/m3_*.test.tsx",
+      "examples": [
+        {
+          "input": "Render component reading useStore(store, (s) => s.openCount) with initial state { openCount: 4 }",
+          "output": "'4'",
+          "call": "(async () => { const React = (await import('react')).default; const { render, screen, cleanup } = await import('@testing-library/react'); const store = createMiniStore({ openCount: 4 }); const Panel = () => React.createElement('output', { 'aria-label': 'Open count' }, String(useStore(store, (s) => s.openCount))); render(React.createElement(Panel)); const out = screen.getByLabelText('Open count').textContent; cleanup(); return out; })()"
+        },
+        {
+          "input": "Render component reading openCount = 1, then call store.setState({ openCount: 6 })",
+          "output": "{ before: '1', after: '6' }",
+          "call": "(async () => { const React = (await import('react')).default; const { render, screen, act, cleanup } = await import('@testing-library/react'); const store = createMiniStore({ openCount: 1 }); const Panel = () => React.createElement('output', { 'aria-label': 'Open count' }, String(useStore(store, (s) => s.openCount))); render(React.createElement(Panel)); const before = screen.getByLabelText('Open count').textContent; act(() => { store.setState({ openCount: 6 }); }); const after = screen.getByLabelText('Open count').textContent; cleanup(); return { before, after }; })()"
+        }
+      ]
     },
     {
       "id": "M4",
@@ -72,7 +109,20 @@
         "U-simplest",
         "U-no-shared-mutable-state"
       ],
-      "visibleTests": "tests/m4_*.test.tsx"
+      "visibleTests": "tests/m4_*.test.tsx",
+      "examples": [
+        {
+          "input": "Render TabView (selecting s.tab) and UnreadView (selecting s.unread), then update unread from 2 to 5",
+          "output": "{ tab: 'notes', unread: '5', tabRenders: 1 }",
+          "explanation": "Updating an unrelated slice does not re-render views whose selected value did not change.",
+          "call": "(async () => { const React = (await import('react')).default; const { render, screen, act, cleanup } = await import('@testing-library/react'); const store = createMiniStore({ tab: 'notes', unread: 2 }); let tabRenders = 0; const TabView = () => { tabRenders += 1; return React.createElement('output', { 'aria-label': 'Tab' }, useStore(store, (s) => s.tab)); }; const UnreadView = () => React.createElement('output', { 'aria-label': 'Unread' }, String(useStore(store, (s) => s.unread))); render(React.createElement(React.Fragment, null, React.createElement(TabView), React.createElement(UnreadView))); act(() => { store.setState({ unread: 5 }); }); const res = { tab: screen.getByLabelText('Tab').textContent, unread: screen.getByLabelText('Unread').textContent, tabRenders }; cleanup(); return res; })()"
+        },
+        {
+          "input": "Render PanelView (selecting s.panel) and ZoomView (selecting s.zoom), then update zoom from 100 to 125",
+          "output": "{ panel: 'editor', zoom: '125', panelRenders: 1 }",
+          "call": "(async () => { const React = (await import('react')).default; const { render, screen, act, cleanup } = await import('@testing-library/react'); const store = createMiniStore({ panel: 'editor', zoom: 100 }); let panelRenders = 0; const PanelView = () => { panelRenders += 1; return React.createElement('output', { 'aria-label': 'Panel' }, useStore(store, (s) => s.panel)); }; const ZoomView = () => React.createElement('output', { 'aria-label': 'Zoom' }, String(useStore(store, (s) => s.zoom))); render(React.createElement(React.Fragment, null, React.createElement(PanelView), React.createElement(ZoomView))); act(() => { store.setState({ zoom: 125 }); }); const res = { panel: screen.getByLabelText('Panel').textContent, zoom: screen.getByLabelText('Zoom').textContent, panelRenders }; cleanup(); return res; })()"
+        }
+      ]
     }
   ],
   "blindSolve": [

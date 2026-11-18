@@ -94,7 +94,22 @@
       },
       "levelLabel": "Standard Exam",
       "unitCode": "PRG-T01-C01-U08",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U08-01/Q01_verifyWebhookPayload.js"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U08-01/Q01_verifyWebhookPayload.js",
+      "examples": [
+        {
+          "input": "rawBody = '{\"event\":\"invoice.paid\",\"total\":4200}', signature = 'sig_valid', verifyHmac = () => true",
+          "output": "{ event: 'invoice.paid', total: 4200 }",
+          "call": "verifyWebhookPayload('{\"event\":\"invoice.paid\",\"total\":4200}', 'sig_valid', () => true)"
+        },
+        {
+          "input": "rawBody = '{\"event\":\"user.created\"}', signature = 'sig_ok', verifyHmac = () => true",
+          "output": "{ event: 'user.created' }",
+          "call": "verifyWebhookPayload('{\"event\":\"user.created\"}', 'sig_ok', () => true)"
+        }
+      ],
+      "constraints": [
+        "rawBody and signature must be non-empty strings"
+      ]
     },
     {
       "id": "Q02",
@@ -182,7 +197,22 @@
       },
       "levelLabel": "Standard Exam",
       "unitCode": "PRG-T01-C01-U08",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U08-01/Q02_syncInventoryBatch.js"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U08-01/Q02_syncInventoryBatch.js",
+      "examples": [
+        {
+          "input": "store = { readPending: async () => [{ sku: 'ITEM-1' }, { sku: 'ITEM-2' }] }, warehouseId = 'wh-sg-1'",
+          "output": "{ synced: 2, skus: ['ITEM-1', 'ITEM-2'] }",
+          "call": "syncInventoryBatch({ readPending: async () => [{ sku: 'ITEM-1' }, { sku: 'ITEM-2' }] }, 'wh-sg-1')"
+        },
+        {
+          "input": "store = { readPending: async () => [{ sku: 'ITEM-9' }] }, warehouseId = 'wh-sg-2'",
+          "output": "{ synced: 1, skus: ['ITEM-9'] }",
+          "call": "syncInventoryBatch({ readPending: async () => [{ sku: 'ITEM-9' }] }, 'wh-sg-2')"
+        }
+      ],
+      "constraints": [
+        "warehouseId must be a non-empty string"
+      ]
     },
     {
       "id": "Q03",
@@ -275,7 +305,24 @@
       },
       "levelLabel": "Standard Exam",
       "unitCode": "PRG-T01-C01-U08",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U08-01/Q03_loadServiceConfig.js"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U08-01/Q03_loadServiceConfig.js",
+      "examples": [
+        {
+          "input": "rawJson = '{\"host\":\"api.service.local\",\"port\":3000}'",
+          "output": "{ host: 'api.service.local', port: 3000 }",
+          "call": "loadServiceConfig('{\"host\":\"api.service.local\",\"port\":3000}')"
+        },
+        {
+          "input": "rawJson = '{\"host\":\"worker.internal\",\"port\":9090,\"debug\":false}'",
+          "output": "{ host: 'worker.internal', port: 9090 }",
+          "explanation": "Extra keys are omitted from the returned config.",
+          "call": "loadServiceConfig('{\"host\":\"worker.internal\",\"port\":9090,\"debug\":false}')"
+        }
+      ],
+      "constraints": [
+        "rawJson and parsed.host must be non-empty strings",
+        "parsed.port must be an integer in 1..65535"
+      ]
     },
     {
       "id": "Q04",
@@ -362,7 +409,22 @@
       },
       "levelLabel": "Trap & Diagnostic",
       "unitCode": "PRG-T01-C01-U08",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U08-01/Q04_evaluateTenantQuota.js"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U08-01/Q04_evaluateTenantQuota.js",
+      "examples": [
+        {
+          "input": "tenantId = 'acme', repo = { findUsage: () => 35 }, policy = { isWithinLimit: (u) => u <= 100 }",
+          "output": "{ allowed: true, code: 'OK' }",
+          "call": "evaluateTenantQuota('acme', { findUsage: () => 35 }, { isWithinLimit: (u) => u <= 100 })"
+        },
+        {
+          "input": "tenantId = 'acme', repo = { findUsage: () => 140 }, policy = { isWithinLimit: (u) => u <= 100 }",
+          "output": "{ allowed: false, code: 'QUOTA_EXCEEDED' }",
+          "call": "evaluateTenantQuota('acme', { findUsage: () => 140 }, { isWithinLimit: (u) => u <= 100 })"
+        }
+      ],
+      "constraints": [
+        "tenantId must be a non-empty string"
+      ]
     },
     {
       "id": "Q05",
@@ -448,7 +510,19 @@
       },
       "levelLabel": "Trap & Diagnostic",
       "unitCode": "PRG-T01-C01-U08",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U08-01/Q05_executeWithLease.js"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U08-01/Q05_executeWithLease.js",
+      "examples": [
+        {
+          "input": "lease = { acquire: async () => {}, release: async () => {} }, runJob = async () => 'synced'",
+          "output": "{ ok: true, result: 'synced' }",
+          "call": "executeWithLease({ acquire: async () => {}, release: async () => {} }, async () => 'synced')"
+        },
+        {
+          "input": "lease = { acquire: async () => {}, release: async () => {} }, runJob = async () => ({ count: 4 })",
+          "output": "{ ok: true, result: { count: 4 } }",
+          "call": "executeWithLease({ acquire: async () => {}, release: async () => {} }, async () => ({ count: 4 }))"
+        }
+      ]
     }
   ],
   "blindSolve": [

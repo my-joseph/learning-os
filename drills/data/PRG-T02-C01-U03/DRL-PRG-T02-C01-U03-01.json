@@ -87,7 +87,19 @@
       },
       "levelLabel": "Foundation",
       "unitCode": "PRG-T02-C01-U03",
-      "workspaceFile": "drills/workspace/DRL-PRG-T02-C01-U03-01/Q01_SaveToggle.tsx"
+      "workspaceFile": "drills/workspace/DRL-PRG-T02-C01-U03-01/Q01_SaveToggle.tsx",
+      "examples": [
+        {
+          "input": "Render <SaveToggle />, click 'Save item' once",
+          "output": "'true'",
+          "call": "(async () => { const user = userEvent.setup(); render(<SaveToggle />); const btn = screen.getByRole('button', { name: 'Save item' }); await user.click(btn); return btn.getAttribute('aria-pressed'); })()"
+        },
+        {
+          "input": "Render <SaveToggle />, click 'Save item' twice",
+          "output": "'false'",
+          "call": "(async () => { const user = userEvent.setup(); render(<SaveToggle />); const btn = screen.getByRole('button', { name: 'Save item' }); await user.click(btn); await user.click(btn); return btn.getAttribute('aria-pressed'); })()"
+        }
+      ]
     },
     {
       "id": "Q02",
@@ -171,7 +183,22 @@
       },
       "levelLabel": "Foundation",
       "unitCode": "PRG-T02-C01-U03",
-      "workspaceFile": "drills/workspace/DRL-PRG-T02-C01-U03-01/Q02_SeatStepper.tsx"
+      "workspaceFile": "drills/workspace/DRL-PRG-T02-C01-U03-01/Q02_SeatStepper.tsx",
+      "examples": [
+        {
+          "input": "Render <SeatStepper />, click 'Increase seats' twice",
+          "output": "'2'",
+          "call": "(async () => { const user = userEvent.setup(); render(<SeatStepper />); const up = screen.getByRole('button', { name: 'Increase seats' }); await user.click(up); await user.click(up); return screen.getByLabelText('Seat quantity').textContent; })()"
+        },
+        {
+          "input": "Render <SeatStepper />, click 'Increase seats' twice then 'Decrease seats' once",
+          "output": "'1'",
+          "call": "(async () => { const user = userEvent.setup(); render(<SeatStepper />); const up = screen.getByRole('button', { name: 'Increase seats' }); const down = screen.getByRole('button', { name: 'Decrease seats' }); await user.click(up); await user.click(up); await user.click(down); return screen.getByLabelText('Seat quantity').textContent; })()"
+        }
+      ],
+      "constraints": [
+        "Seat quantity cannot drop below 0"
+      ]
     },
     {
       "id": "Q03",
@@ -255,7 +282,19 @@
       },
       "levelLabel": "Standard Exam",
       "unitCode": "PRG-T02-C01-U03",
-      "workspaceFile": "drills/workspace/DRL-PRG-T02-C01-U03-01/Q03_CartSummary.tsx"
+      "workspaceFile": "drills/workspace/DRL-PRG-T02-C01-U03-01/Q03_CartSummary.tsx",
+      "examples": [
+        {
+          "input": "items = [{ id: 'p-1', label: 'Mouse', price: 15 }, { id: 'p-2', label: 'Cable', price: 10 }]",
+          "output": "{ labels: ['Mouse', 'Cable'], total: '25' }",
+          "call": "(() => { render(<CartSummary items={[{ id: 'p-1', label: 'Mouse', price: 15 }, { id: 'p-2', label: 'Cable', price: 10 }]} />); return { labels: screen.getAllByRole('listitem').map((el) => el.textContent), total: screen.getByLabelText('Cart total').textContent }; })()"
+        },
+        {
+          "input": "items = [{ id: 'p-3', label: 'Stand', price: 32 }]",
+          "output": "{ labels: ['Stand'], total: '32' }",
+          "call": "(() => { render(<CartSummary items={[{ id: 'p-3', label: 'Stand', price: 32 }]} />); return { labels: screen.getAllByRole('listitem').map((el) => el.textContent), total: screen.getByLabelText('Cart total').textContent }; })()"
+        }
+      ]
     },
     {
       "id": "Q04",
@@ -343,7 +382,20 @@
       },
       "levelLabel": "Standard Exam",
       "unitCode": "PRG-T02-C01-U03",
-      "workspaceFile": "drills/workspace/DRL-PRG-T02-C01-U03-01/Q04_CatalogSearch.tsx"
+      "workspaceFile": "drills/workspace/DRL-PRG-T02-C01-U03-01/Q04_CatalogSearch.tsx",
+      "examples": [
+        {
+          "input": "Render <CatalogSearch onSearch={onSearch} />, type 'laptop', press Enter",
+          "output": "['laptop']",
+          "call": "(async () => { const seen: string[] = []; const user = userEvent.setup(); render(<CatalogSearch onSearch={(q) => seen.push(q)} />); await user.type(screen.getByRole('textbox', { name: 'Search products' }), 'laptop'); await user.keyboard('{Enter}'); return seen; })()"
+        },
+        {
+          "input": "Render <CatalogSearch onSearch={onSearch} />, type '  webcam  ', press Enter",
+          "output": "['webcam']",
+          "explanation": "Leading and trailing whitespace is trimmed before invoking onSearch.",
+          "call": "(async () => { const seen: string[] = []; const user = userEvent.setup(); render(<CatalogSearch onSearch={(q) => seen.push(q)} />); await user.type(screen.getByRole('textbox', { name: 'Search products' }), '  webcam  '); await user.keyboard('{Enter}'); return seen; })()"
+        }
+      ]
     }
   ],
   "blindSolve": [

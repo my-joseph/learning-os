@@ -371,7 +371,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
   const score = problem.state.score;
   const lastCheck: CheckResult | null | undefined = problem.state.lastCheck;
   const isChoice = isChoiceQuestion(problem);
-  const choiceOptions = problem.answerSpec.options;
+  const choiceOptions = problem.answerSpec?.options;
   const choiceLocked = isChoiceInteractionLocked({
     isChecking,
     lastCheck,

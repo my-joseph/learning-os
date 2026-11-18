@@ -28,7 +28,21 @@
         "U-names",
         "U-one-job"
       ],
-      "visibleTests": "tests/m1_*.test.ts"
+      "visibleTests": "tests/m1_*.test.ts",
+      "examples": [
+        {
+          "input": "emitter = new TinyEventEmitter(); typeof emitter.on('queued', listener)",
+          "output": "'function'",
+          "explanation": "Subscribing to an event returns a release callback.",
+          "call": "(() => { const emitter = new TinyEventEmitter(); const release = emitter.on('queued', () => {}); return typeof release; })()"
+        },
+        {
+          "input": "emitter.on('delivered', (p) => log.push(p.channel)); emitter.emit('delivered', { channel: 'email' })",
+          "output": "['email']",
+          "explanation": "Emitting a typed event delivers its matching payload to subscribed listeners.",
+          "call": "(() => { const log = []; const emitter = new TinyEventEmitter(); emitter.on('delivered', (p) => log.push(p.channel)); emitter.emit('delivered', { channel: 'email' }); return log; })()"
+        }
+      ]
     },
     {
       "id": "M2",
@@ -43,7 +57,26 @@
         "U-no-input-mutation",
         "U-no-shared-mutable-state"
       ],
-      "visibleTests": "tests/m2_*.test.ts"
+      "visibleTests": "tests/m2_*.test.ts",
+      "examples": [
+        {
+          "input": "Register two 'alert' listeners and emit { code: 'CPU_HIGH' }",
+          "output": "['first:CPU_HIGH', 'second:CPU_HIGH']",
+          "explanation": "Listeners run in the order they were registered.",
+          "call": "(() => { const out = []; const e = new TinyEventEmitter(); e.on('alert', (p) => out.push('first:' + p.code)); e.on('alert', (p) => out.push('second:' + p.code)); e.emit('alert', { code: 'CPU_HIGH' }); return out; })()"
+        },
+        {
+          "input": "Subscribe to 'tick', emit 1, call release(), then emit 2",
+          "output": "[1]",
+          "explanation": "Calling the release function stops subsequent deliveries to that listener.",
+          "call": "(() => { const seen = []; const e = new TinyEventEmitter(); const stop = e.on('tick', (n) => seen.push(n)); e.emit('tick', 1); stop(); e.emit('tick', 2); return seen; })()"
+        },
+        {
+          "input": "Register two 'sync' listeners, remove the first via off(), then emit {}",
+          "output": "['kept']",
+          "call": "(() => { const seen = []; const e = new TinyEventEmitter(); const dropped = () => seen.push('dropped'); e.on('sync', dropped); e.on('sync', () => seen.push('kept')); e.off('sync', dropped); e.emit('sync', {}); return seen; })()"
+        }
+      ]
     },
     {
       "id": "M3",
@@ -60,7 +93,24 @@
         "U-no-magic",
         "U-no-floating-promise"
       ],
-      "visibleTests": "tests/m3_*.test.ts"
+      "visibleTests": "tests/m3_*.test.ts",
+      "examples": [
+        {
+          "input": "new PromisePool(2).run([async () => 'alpha', async () => 'beta'])",
+          "output": "[{ status: 'fulfilled', value: 'alpha' }, { status: 'fulfilled', value: 'beta' }]",
+          "explanation": "Outcomes are returned in the original task order.",
+          "call": "new PromisePool(2).run([async () => 'alpha', async () => 'beta'])"
+        },
+        {
+          "input": "new PromisePool(2).run([() => 'ok', () => { throw new Error('timeout'); }, () => 'done'])",
+          "output": "{ statuses: ['fulfilled', 'rejected', 'fulfilled'], thirdValue: 'done' }",
+          "explanation": "A failing task produces a rejected outcome without blocking remaining tasks.",
+          "call": "new PromisePool(2).run([() => 'ok', () => { throw new Error('timeout'); }, () => 'done']).then((res) => ({ statuses: res.map((r) => r.status), thirdValue: res[2].status === 'fulfilled' ? res[2].value : null }))"
+        }
+      ],
+      "constraints": [
+        "concurrency is a positive integer >= 1"
+      ]
     },
     {
       "id": "M4",
@@ -77,7 +127,24 @@
         "U-no-floating-promise",
         "U-no-shared-mutable-state"
       ],
-      "visibleTests": "tests/m4_*.test.ts"
+      "visibleTests": "tests/m4_*.test.ts",
+      "examples": [
+        {
+          "input": "new PromisePool(2).run([() => 'task-a', () => 'task-b'], controller.signal)",
+          "output": "[{ status: 'fulfilled', value: 'task-a' }, { status: 'fulfilled', value: 'task-b' }]",
+          "explanation": "When the signal is not aborted, all tasks run to completion.",
+          "call": "new PromisePool(2).run([() => 'task-a', () => 'task-b'], new AbortController().signal)"
+        },
+        {
+          "input": "new PromisePool(1).run([() => { controller.abort('stop'); return 'done'; }, () => 'skipped'], controller.signal)",
+          "output": "['fulfilled', 'rejected']",
+          "explanation": "Once aborted, queued tasks do not start and resolve as rejected outcomes.",
+          "call": "(() => { const ac = new AbortController(); return new PromisePool(1).run([() => { ac.abort('stop'); return 'done'; }, () => 'skipped'], ac.signal).then((res) => res.map((r) => r.status)); })()"
+        }
+      ],
+      "constraints": [
+        "concurrency is a positive integer >= 1"
+      ]
     }
   ],
   "blindSolve": [

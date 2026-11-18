@@ -94,7 +94,24 @@
       },
       "levelLabel": "Foundation",
       "unitCode": "PRG-T01-C01-U02",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U02-01/Q01_createQuotaTracker.js"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U02-01/Q01_createQuotaTracker.js",
+      "examples": [
+        {
+          "input": "tracker = createQuotaTracker(6, 10); tracker.consume(2); tracker.getRemaining()",
+          "output": "{ consumed: true, remaining: 4 }",
+          "call": "(() => { const t = createQuotaTracker(6, 10); return { consumed: t.consume(2), remaining: t.getRemaining() }; })()"
+        },
+        {
+          "input": "tracker = createQuotaTracker(4, 10); tracker.refill(3)",
+          "output": "7",
+          "call": "createQuotaTracker(4, 10).refill(3)"
+        }
+      ],
+      "constraints": [
+        "maxQuota is a non-negative integer >= 0",
+        "initialRemaining (when provided) is an integer in [0, maxQuota]",
+        "consume(cost) requires integer cost >= 1; refill(amount) requires integer amount >= 0"
+      ]
     },
     {
       "id": "Q02",
@@ -265,7 +282,24 @@
       },
       "levelLabel": "Standard Exam",
       "unitCode": "PRG-T01-C01-U02",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U02-01/Q03_createIdempotencyStore.js"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U02-01/Q03_createIdempotencyStore.js",
+      "examples": [
+        {
+          "input": "store = createIdempotencyStore(3); store.record('wh_1', 200, { ok: true }); store.get('wh_1')",
+          "output": "{ key: 'wh_1', statusCode: 200, body: { ok: true } }",
+          "call": "(() => { const s = createIdempotencyStore(3); s.record('wh_1', 200, { ok: true }); return s.get('wh_1'); })()"
+        },
+        {
+          "input": "store = createIdempotencyStore(3); first = store.record('wh_1', 200, { ok: true }); dup = store.record('wh_1', 500, { ok: false }); store.listKeys()",
+          "output": "{ first: true, dup: false, keys: ['wh_1'] }",
+          "explanation": "Duplicate keys are ignored and keep the first entry.",
+          "call": "(() => { const s = createIdempotencyStore(3); const first = s.record('wh_1', 200, { ok: true }); const dup = s.record('wh_1', 500, { ok: false }); return { first, dup, keys: s.listKeys() }; })()"
+        }
+      ],
+      "constraints": [
+        "maxEntries is a positive integer >= 1",
+        "key must be a non-empty string"
+      ]
     },
     {
       "id": "Q04",
@@ -344,7 +378,19 @@
       },
       "levelLabel": "Standard Exam",
       "unitCode": "PRG-T01-C01-U02",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U02-01/Q04_buildRouteDispatchers.js"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U02-01/Q04_buildRouteDispatchers.js",
+      "examples": [
+        {
+          "input": "routes = [{ name: 'users', target: '/api/users' }, { name: 'events', target: '/api/events' }]; call dispatchers.users({ page: 1 })",
+          "output": "{ route: 'users', target: '/api/users', payload: { page: 1 } }",
+          "call": "buildRouteDispatchers([{ name: 'users', target: '/api/users' }, { name: 'events', target: '/api/events' }]).users({ page: 1 })"
+        },
+        {
+          "input": "routes = [{ name: 'users', target: '/api/users' }, { name: 'events', target: '/api/events' }]; call dispatchers.events({ id: 9 })",
+          "output": "{ route: 'events', target: '/api/events', payload: { id: 9 } }",
+          "call": "buildRouteDispatchers([{ name: 'users', target: '/api/users' }, { name: 'events', target: '/api/events' }]).events({ id: 9 })"
+        }
+      ]
     },
     {
       "id": "Q05",
@@ -427,7 +473,19 @@
       },
       "levelLabel": "Standard Exam",
       "unitCode": "PRG-T01-C01-U02",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U02-01/Q05_createRetryExecutor.js"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U02-01/Q05_createRetryExecutor.js",
+      "examples": [
+        {
+          "input": "config = { maxRetries: 3, backoffMs: 100 }; evaluate = createRetryExecutor(config); evaluate(2)",
+          "output": "{ shouldRetry: true, delayMs: 200 }",
+          "call": "createRetryExecutor({ maxRetries: 3, backoffMs: 100 })(2)"
+        },
+        {
+          "input": "config = { maxRetries: 3, backoffMs: 100 }; evaluate = createRetryExecutor(config); config.maxRetries = 2; config.backoffMs = 150; evaluate(2)",
+          "output": "{ shouldRetry: true, delayMs: 300 }",
+          "call": "(() => { const cfg = { maxRetries: 3, backoffMs: 100 }; const evaluate = createRetryExecutor(cfg); cfg.maxRetries = 2; cfg.backoffMs = 150; return evaluate(2); })()"
+        }
+      ]
     }
   ],
   "blindSolve": [
