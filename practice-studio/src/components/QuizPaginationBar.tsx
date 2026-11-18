@@ -20,7 +20,7 @@ interface QuizPaginationBarProps {
 }
 
 const TILE_BASE_CLS =
-  "relative min-w-[1.75rem] h-7 px-1.5 rounded-md border text-xs flex items-center justify-center font-mono transition-colors shrink-0";
+  "relative min-w-[1.75rem] h-7 px-1.5 rounded-md border text-xs flex items-center justify-center font-mono transition-colors shrink-0 focus:outline-none focus-visible:border-indigo-500 dark:focus-visible:border-indigo-400";
 const NEUTRAL_TILE_CLS =
   "bg-zinc-50 dark:bg-zinc-950 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600";
 const ACTIVE_TILE_RING_CLS =
@@ -41,6 +41,19 @@ export const QuizPaginationBar: React.FC<QuizPaginationBarProps> = ({
     isLab ?? (problems.length > 0 && problems.every((p) => /^M\d+$/i.test(p.id)));
   const isReview = viewMode === "review";
   const reviewBtnRef = useRef<HTMLButtonElement | null>(null);
+  const navRef = useRef<HTMLDivElement | null>(null);
+
+  // Keep keyboard focus on the current tile: when the question changes (keys, Next/Prev) while
+  // focus is inside this bar, move focus to the new current tile so no stale ring stays behind.
+  useEffect(() => {
+    const nav = navRef.current;
+    if (!nav || isReview) return;
+    const active = document.activeElement;
+    if (active && nav.contains(active)) {
+      const current = nav.querySelector<HTMLButtonElement>('button[aria-current="step"]');
+      if (current && current !== active) current.focus({ preventScroll: true });
+    }
+  }, [currentIndex, isReview]);
 
   useEffect(() => {
     if (isReview && !labMode) {
@@ -66,6 +79,7 @@ export const QuizPaginationBar: React.FC<QuizPaginationBarProps> = ({
   return (
     <div className="pt-2 border-t border-zinc-200/80 dark:border-zinc-800/80 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
       <div
+        ref={navRef}
         role="navigation"
         aria-label={navLabel}
         className="flex items-center justify-center gap-1.5 w-max mx-auto p-1"
