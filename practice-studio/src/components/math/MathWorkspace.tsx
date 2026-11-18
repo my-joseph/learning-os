@@ -152,22 +152,22 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
   return (
     <div className="mx-auto w-full max-w-[720px] space-y-4">
       {drillTitle && (
-        <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight px-0.5">
+        <h1 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight px-0.5">
           {drillTitle}
         </h1>
       )}
 
       <article className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 sm:p-6 space-y-6">
-        {/* 1. Question number + prompt (text-lg, leading-relaxed) */}
+        {/* 1. Question number + prompt (text-base, leading-relaxed) */}
         <div className="space-y-2">
-          <div className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+          <div className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
             Question {index + 1}
             {typeof totalQuestions === "number" && totalQuestions > 0
               ? ` of ${totalQuestions}`
               : ""}
           </div>
 
-          <div className="text-lg leading-relaxed text-zinc-900 dark:text-zinc-100">
+          <div className="text-base leading-relaxed text-zinc-900 dark:text-zinc-100">
             {lineChoiceData ? (
               <LineChoicePrompt
                 parsed={lineChoiceData}
@@ -201,7 +201,7 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
                     key={opt.id}
                     type="button"
                     onClick={() => onInputChange(opt.id)}
-                    className={`min-h-[40px] px-3.5 py-2 rounded-xl border text-sm font-medium transition-colors flex items-center gap-2 ${
+                    className={`min-h-[40px] px-3.5 py-2 rounded-xl border text-xs font-medium transition-colors flex items-center gap-2 ${
                       isSelected
                         ? "bg-zinc-100 dark:bg-zinc-800 border-indigo-600 dark:border-indigo-500 text-zinc-900 dark:text-zinc-100"
                         : "bg-zinc-50 dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200 border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600"
@@ -237,7 +237,7 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
                 }}
                 placeholder={getSafeMathPlaceholder(problem.inputHint, problem)}
                 aria-label={`Answer for question ${problem.id}`}
-                className="flex-1 min-w-0 h-11 font-mono text-base bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 border border-zinc-300 dark:border-zinc-700 rounded-xl px-3.5 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600/25 dark:focus:ring-indigo-500/30 focus:border-indigo-600 dark:focus:border-indigo-500 placeholder:text-zinc-400 dark:placeholder:text-zinc-500"
+                className="flex-1 min-w-0 h-11 font-mono text-sm bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 border border-zinc-300 dark:border-zinc-700 rounded-xl px-3.5 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600/25 dark:focus:ring-indigo-500/30 focus:border-indigo-600 dark:focus:border-indigo-500 placeholder:text-zinc-400 dark:placeholder:text-zinc-500"
               />
             )}
 
@@ -245,15 +245,14 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
               type="button"
               onClick={triggerCheck}
               disabled={isChecking || !problem.state.userInput.trim()}
-              className="inline-flex items-center justify-center gap-2 h-11 px-5 rounded-xl bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400 disabled:opacity-40 text-white text-sm font-semibold transition-colors shrink-0"
+              aria-label="Check answer"
+              title="Check answer (Enter)"
+              className="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400 disabled:opacity-40 text-white transition-colors shrink-0"
             >
               {isChecking ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Checking…</span>
-                </>
+                <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
-                <span>Check</span>
+                <Check className="w-4 h-4" />
               )}
             </button>
           </div>
@@ -263,7 +262,7 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
           {lastCheck && (
             <div
               role="status"
-              className={`border-l-2 pl-3.5 py-1 space-y-1.5 text-sm ${
+              className={`border-l-2 pl-3.5 py-1 space-y-1.5 text-xs ${
                 lastCheck.verdict === "correct"
                   ? "border-emerald-700 dark:border-emerald-400"
                   : lastCheck.verdict === "equivalent_not_in_form" ||
@@ -321,7 +320,7 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
 
         {/* 5. Quiet secondary actions: Try again / equation set-up / hint / steps / skip */}
         <div className="space-y-3 pt-1">
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-zinc-500 dark:text-zinc-400">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-zinc-500 dark:text-zinc-400">
             {hasAttempt && (
               <button
                 type="button"
@@ -395,7 +394,7 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
           {/* Checkpoint Hint Disclosure */}
           <Reveal show={Boolean(showHint && hasCheckpointHint(problem.checkpointHint))}>
           {showHint && hasCheckpointHint(problem.checkpointHint) && (
-            <div className="border-l-2 border-amber-600 dark:border-amber-400 pl-3.5 py-1 text-sm text-zinc-700 dark:text-zinc-300">
+            <div className="border-l-2 border-amber-600 dark:border-amber-400 pl-3.5 py-1 text-xs text-zinc-700 dark:text-zinc-300">
               <FormattedText text={problem.checkpointHint} />
             </div>
           )}
@@ -406,7 +405,7 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
           {hasSetup && showSetup && (
             <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 space-y-2.5">
               {problem.display && (
-                <div className="overflow-x-auto text-zinc-900 dark:text-zinc-100">
+                <div className="overflow-x-auto text-sm text-zinc-900 dark:text-zinc-100">
                   <MathBlock latex={problem.display} />
                 </div>
               )}
@@ -562,7 +561,7 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
 
       {/* Quiet question navigation footer */}
       {(onPrevQuestion || onNextQuestion || onOpenReview) && (
-        <div className="flex items-center justify-between px-1 text-sm text-zinc-500 dark:text-zinc-400">
+        <div className="flex items-center justify-between px-1 text-xs text-zinc-500 dark:text-zinc-400">
           <button
             type="button"
             onClick={onPrevQuestion}

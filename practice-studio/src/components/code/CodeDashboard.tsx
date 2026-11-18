@@ -370,15 +370,15 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
   return (
     <div className="mx-auto w-full max-w-[720px] space-y-4">
       {drillTitle && (
-        <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight px-0.5">
+        <h1 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight px-0.5">
           {drillTitle}
         </h1>
       )}
 
       <article className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 sm:p-6 space-y-6">
-        {/* 1. Brief: problem/milestone title + prompt (text-lg), then Visible tests */}
+        {/* 1. Brief: problem/milestone title + prompt (text-base), then Visible tests */}
         <div className="space-y-2">
-          <div className="flex items-center justify-between gap-2 text-sm font-medium text-zinc-500 dark:text-zinc-400">
+          <div className="flex items-center justify-between gap-2 text-xs font-medium text-zinc-500 dark:text-zinc-400">
             <h2 className="flex flex-wrap items-center gap-2">
               <span>
                 {isLab ? `Milestone ${problem.id}` : `Problem ${index + 1}`}
@@ -415,7 +415,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
             </h2>
           </div>
 
-          <div className="text-lg leading-relaxed text-zinc-900 dark:text-zinc-100">
+          <div className="text-base leading-relaxed text-zinc-900 dark:text-zinc-100">
             <FormattedText text={problem.prompt} />
           </div>
         </div>
@@ -435,7 +435,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
               (problem.visibleTestFiles && problem.visibleTestFiles.length > 0)) && (
               <div className="space-y-1.5">
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
-                  <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                  <h3 className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
                     Visible tests
                   </h3>
                   {(problem.visibleTestFiles?.length || problem.testCommand) && (
@@ -448,7 +448,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                   )}
                 </div>
                 {problem.visibleTests && problem.visibleTests.length > 0 && (
-                  <ul className="space-y-1 text-sm text-zinc-700 dark:text-zinc-300">
+                  <ul className="space-y-1 text-xs text-zinc-700 dark:text-zinc-300">
                     {problem.visibleTests.map((t, idx) => (
                       <li key={t.id || idx} className="flex items-baseline gap-2">
                         <span
@@ -472,7 +472,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
               <div
                 role="status"
                 aria-label="Check and review status"
-                className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm font-mono py-2.5 px-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800"
+                className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-mono py-2.5 px-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800"
               >
                 <span>
                   <span className="text-zinc-600 dark:text-zinc-400">Tests </span>
@@ -537,7 +537,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                   <a
                     href={vscodeFolderUrl || "#"}
                     onClick={ensureWorkspaceOnDisk}
-                    className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400 text-white text-sm font-semibold transition-colors"
+                    className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400 text-white text-xs font-semibold transition-colors"
                   >
                     <span>Open in VS Code</span>
                   </a>
@@ -547,7 +547,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                   <button
                     type="button"
                     onClick={handleCopyReviewRequest}
-                    className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400 text-white text-sm font-semibold transition-colors"
+                    className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400 text-white text-xs font-semibold transition-colors"
                   >
                     {copiedReview ? (
                       <>
@@ -567,7 +567,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                   <button
                     type="button"
                     onClick={handleNextProblem}
-                    className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400 text-white text-sm font-semibold transition-colors"
+                    className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400 text-white text-xs font-semibold transition-colors"
                   >
                     <span>Next problem</span>
                     <ChevronRight className="w-4 h-4" />
@@ -579,7 +579,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                   type="button"
                   onClick={handleRunChecks}
                   disabled={isRunningChecks}
-                  className="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 disabled:opacity-50 transition-colors"
+                  className="inline-flex items-center gap-1.5 text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 disabled:opacity-50 transition-colors"
                 >
                   {isRunningChecks ? (
                     <>
@@ -595,7 +595,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                   <a
                     href={cursorFolderUrl}
                     onClick={ensureWorkspaceOnDisk}
-                    className="inline-flex items-center gap-1 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+                    className="inline-flex items-center gap-1 text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
                   >
                     <span>Open in Cursor</span>
                   </a>
@@ -605,7 +605,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                   <a
                     href={vscodeFolderUrl}
                     onClick={ensureWorkspaceOnDisk}
-                    className="inline-flex items-center gap-1 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+                    className="inline-flex items-center gap-1 text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
                   >
                     <span>Open in VS Code</span>
                   </a>
@@ -614,7 +614,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                 {vscodeUrl && problem.mainFile && (
                   <a
                     href={vscodeUrl}
-                    className="inline-flex items-center gap-1 text-sm font-mono text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+                    className="inline-flex items-center gap-1 text-xs font-mono text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
                   >
                     <span>Open {problem.mainFile}</span>
                   </a>
@@ -629,7 +629,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                     setShowHint(!showHint);
                   }}
                   aria-expanded={showHint}
-                  className="inline-flex items-center gap-1 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+                  className="inline-flex items-center gap-1 text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
                 >
                   <span>{showHint ? "Hide hint" : "Hint"}</span>
                 </button>}
@@ -643,7 +643,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
 
               <Reveal show={Boolean(showHint && hasCheckpointHint(problem.checkpointHint))}>
               {showHint && hasCheckpointHint(problem.checkpointHint) && (
-                <div className="border-l-2 border-amber-600 dark:border-amber-400 pl-3.5 py-1 text-sm text-zinc-700 dark:text-zinc-300">
+                <div className="border-l-2 border-amber-600 dark:border-amber-400 pl-3.5 py-1 text-xs text-zinc-700 dark:text-zinc-300">
                   <FormattedText text={problem.checkpointHint} />
                 </div>
               )}
@@ -658,7 +658,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                   type="button"
                   onClick={() => setOpenHistory(!openHistory)}
                   aria-expanded={openHistory}
-                  className="w-full flex items-center justify-between text-left text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 py-1 transition-colors"
+                  className="w-full flex items-center justify-between text-left text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 py-1 transition-colors"
                 >
                   <span>
                     Review history
@@ -668,7 +668,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                 </button>
                 <Reveal show={Boolean(openHistory)}>
                 {openHistory && (
-                  <div className="pt-2 pb-1 space-y-3 text-sm text-zinc-600 dark:text-zinc-400">
+                  <div className="pt-2 pb-1 space-y-3 text-xs text-zinc-600 dark:text-zinc-400">
                     {reviews.length === 0 ? (
                       <p className="text-zinc-500 dark:text-zinc-400">
                         No reviews recorded yet.
@@ -727,14 +727,14 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                   type="button"
                   onClick={() => setOpenExplain(!openExplain)}
                   aria-expanded={openExplain}
-                  className="w-full flex items-center justify-between text-left text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 py-1 transition-colors"
+                  className="w-full flex items-center justify-between text-left text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 py-1 transition-colors"
                 >
                   <span>Explain</span>
                   <ChevronDown className={`w-4 h-4 text-zinc-400 transition-transform duration-200 ${openExplain ? "rotate-180" : ""}`} />
                 </button>
                 <Reveal show={Boolean(openExplain)}>
                 {openExplain && (
-                  <div className="pt-2 pb-1 space-y-2 text-sm">
+                  <div className="pt-2 pb-1 space-y-2 text-xs">
                     <p className="text-zinc-700 dark:text-zinc-300">
                       <FormattedText text={explainQuestion} />
                     </p>
@@ -760,14 +760,14 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                       type="button"
                       onClick={() => setOpenReference(!openReference)}
                       aria-expanded={openReference}
-                      className="w-full flex items-center justify-between text-left text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 py-1 transition-colors"
+                      className="w-full flex items-center justify-between text-left text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 py-1 transition-colors"
                     >
                       <span>Lab README</span>
                       <ChevronDown className={`w-4 h-4 text-zinc-400 transition-transform duration-200 ${openReference ? "rotate-180" : ""}`} />
                     </button>
                     <Reveal show={Boolean(openReference)}>
                     {openReference && (
-                      <div className="pt-2 pb-1 text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed">
+                      <div className="pt-2 pb-1 text-xs text-zinc-700 dark:text-zinc-300 leading-relaxed">
                         <FormattedText text={labReadme} />
                       </div>
                     )}
@@ -780,7 +780,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                     type="button"
                     onClick={handleToggleReference}
                     aria-expanded={openReference}
-                    className="w-full flex items-center justify-between text-left text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 py-1 transition-colors"
+                    className="w-full flex items-center justify-between text-left text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 py-1 transition-colors"
                   >
                     <span>Reference</span>
                     <span className="inline-flex items-center gap-2">
@@ -796,11 +796,11 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                   {openReference && (
                     <div className="pt-2 pb-1">
                       {!referenceAllowed ? (
-                        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                        <p className="text-xs text-zinc-500 dark:text-zinc-400">
                           Unlocks after review passes
                         </p>
                       ) : isLoadingReference ? (
-                        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                        <p className="text-xs text-zinc-500 dark:text-zinc-400">
                           Loading reference…
                         </p>
                       ) : problem.solutionCode || revealedSolutionCode ? (
@@ -810,7 +810,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                           filename={`reference-${filename}`}
                         />
                       ) : (
-                        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                        <p className="text-xs text-zinc-500 dark:text-zinc-400">
                           Reference solution unavailable.
                         </p>
                       )}
@@ -863,7 +863,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                       >
                         {opt.id}
                       </span>
-                      <div className="flex-1 text-sm pt-0.5 leading-relaxed">
+                      <div className="flex-1 text-xs pt-0.5 leading-relaxed">
                         <FormattedText text={opt.label} />
                       </div>
                     </button>
@@ -895,19 +895,14 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                   type="button"
                   onClick={triggerWebCheck}
                   disabled={isChecking || !problem.state.userInput.trim()}
-                  className="inline-flex items-center justify-center gap-2 h-11 px-5 rounded-xl bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400 disabled:opacity-40 text-white text-sm font-semibold transition-colors shrink-0"
+                  aria-label="Check answer"
+                  title="Check answer (Enter)"
+                  className="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400 disabled:opacity-40 text-white transition-colors shrink-0"
                 >
                   {isChecking ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Checking…</span>
-                    </>
+                    <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
-                    <span>
-                      {isFindBug && selectedLineNumber
-                        ? `Check Line ${selectedLineNumber}`
-                        : "Check"}
-                    </span>
+                    <Check className="w-4 h-4" />
                   )}
                 </button>
               </div>
@@ -916,7 +911,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
               {lastCheck && (
                 <div
                   role="status"
-                  className={`border-l-2 pl-3.5 py-1 space-y-1.5 text-sm ${
+                  className={`border-l-2 pl-3.5 py-1 space-y-1.5 text-xs ${
                     lastCheck.verdict === "correct"
                       ? "border-emerald-700 dark:border-emerald-400"
                       : lastCheck.verdict === "partial" ||
@@ -973,7 +968,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
             </div>
 
             <div className="space-y-3 pt-1">
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-zinc-500 dark:text-zinc-400">
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-zinc-500 dark:text-zinc-400">
                 {hasAttempt && (
                   <button
                     type="button"
@@ -1034,7 +1029,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
 
               <Reveal show={Boolean(showHint && hasCheckpointHint(problem.checkpointHint))}>
               {showHint && hasCheckpointHint(problem.checkpointHint) && (
-                <div className="border-l-2 border-amber-600 dark:border-amber-400 pl-3.5 py-1 text-sm text-zinc-700 dark:text-zinc-300">
+                <div className="border-l-2 border-amber-600 dark:border-amber-400 pl-3.5 py-1 text-xs text-zinc-700 dark:text-zinc-300">
                   <FormattedText text={problem.checkpointHint} />
                 </div>
               )}
@@ -1080,7 +1075,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                             </span>
                           </button>
                         </div>
-                        <div className="text-sm text-zinc-800 dark:text-zinc-200 leading-relaxed">
+                        <div className="text-xs text-zinc-800 dark:text-zinc-200 leading-relaxed">
                           <FormattedText text={st.explain} />
                         </div>
                       </div>
@@ -1176,7 +1171,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
 
       {/* Quiet question navigation footer */}
       {(onPrevQuestion || onNextQuestion || onOpenReview) && (
-        <div className="flex items-center justify-between px-1 text-sm text-zinc-500 dark:text-zinc-400">
+        <div className="flex items-center justify-between px-1 text-xs text-zinc-500 dark:text-zinc-400">
           <button
             type="button"
             onClick={onPrevQuestion}

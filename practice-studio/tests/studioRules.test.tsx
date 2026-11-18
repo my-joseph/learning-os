@@ -5,6 +5,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { FormattedText } from "../src/components/FormattedText";
 import { CodeDashboard } from "../src/components/code/CodeDashboard";
 import { MathWorkspace } from "../src/components/math/MathWorkspace";
+import { ReviewPanel } from "../src/components/shell/ReviewPanel";
 import {
   getPrgScore,
   getReviewRequest,
@@ -13,7 +14,7 @@ import {
   resolveTheme,
   THEME_INIT_SCRIPT,
 } from "../src/lib/studioRules";
-import type { Problem, ReviewRecord, TestRunReport } from "../src/types/drill";
+import type { DrillDocument, Problem, ReviewRecord, TestRunReport } from "../src/types/drill";
 
 const report: TestRunReport = {
   allPassed: true,
@@ -290,5 +291,82 @@ const codeAfterReviewPassHtml = renderToStaticMarkup(
 assert.match(codeAfterReviewPassHtml, /Next problem/);
 assert.match(codeAfterReviewPassHtml, /\(pass\)/);
 assert.doesNotMatch(codeAfterReviewPassHtml, /Unlocks after review passes/);
+
+// Verify type scale, translucent ::selection, and icon-only Check button across MathWorkspace, CodeDashboard, and ReviewPanel
+const globalsCss = readFileSync("src/app/globals.css", "utf8");
+assert.match(globalsCss, /::selection\s*\{[^}]*rgba\(250,\s*204,\s*21,\s*0\.4\)[^}]*color:\s*inherit/s);
+assert.match(globalsCss, /\.dark ::selection\s*\{[^}]*rgba\(250,\s*204,\s*21,\s*0\.3\)[^}]*color:\s*inherit/s);
+
+assert.match(beforeAttemptHtml, /<h1[^>]*class="[^"]*text-lg[^"]*"[^>]*>Linear Equations<\/h1>/);
+assert.match(beforeAttemptHtml, /class="text-base leading-relaxed[^"]*">[^]*Solve/);
+assert.match(
+  beforeAttemptHtml,
+  /<button[^>]*disabled=""[^>]*aria-label="Check answer"[^>]*title="Check answer \(Enter\)"[^>]*class="[^"]*w-11 h-11[^"]*"[^>]*><svg[^>]*lucide-check/
+);
+assert.doesNotMatch(beforeAttemptHtml, />Check<\/span>/);
+
+const inBrowserCodeProblem: Problem = {
+  ...sampleCodeProblem,
+  workspaceFile: undefined,
+  vscodeFolderUrl: undefined,
+  cursorFolderUrl: undefined,
+  visibleTests: undefined,
+  answerSpec: { type: "output", expected: "42" },
+  codeSnippet: "console.log(42);",
+};
+const inBrowserCodeHtml = renderToStaticMarkup(
+  <CodeDashboard
+    problem={inBrowserCodeProblem}
+    drillId="DRL-PRG-T00-C01-01"
+    index={0}
+    totalQuestions={3}
+    drillTitle="Output Prediction"
+    mistakeTags={[]}
+    activeStep={null}
+    onInputChange={noop}
+    onCheckAnswer={noop}
+    onToggleStepHighlight={noop}
+    onMarkDivergedStep={noop}
+    onSetScore={noop}
+    onToggleMistakeTag={noop}
+    onMistakeNoteChange={noop}
+    onResetProblem={noop}
+  />
+);
+assert.match(inBrowserCodeHtml, /<h1[^>]*class="[^"]*text-lg[^"]*"[^>]*>Output Prediction<\/h1>/);
+assert.match(inBrowserCodeHtml, /class="text-base leading-relaxed[^"]*"/);
+assert.match(
+  inBrowserCodeHtml,
+  /<button[^>]*disabled=""[^>]*aria-label="Check answer"[^>]*title="Check answer \(Enter\)"[^>]*class="[^"]*w-11 h-11[^"]*"[^>]*><svg[^>]*lucide-check/
+);
+assert.doesNotMatch(inBrowserCodeHtml, />Check<\/span>/);
+
+const sampleDrillDoc: DrillDocument = {
+  drillId: "DRL-MTH-T01-C01-01",
+  subject: "MTH",
+  unitCode: "MTH-T01-C01-U01",
+  unitTitle: "Linear Equations",
+  problems: [sampleMathProblem],
+  mistakeTags: [],
+};
+const reviewHtml = renderToStaticMarkup(
+  <ReviewPanel
+    currentDrill={sampleDrillDoc}
+    liveScore={1}
+    maxScore={1}
+    accuracyPct={100}
+    skippedCount={0}
+    computedPracticeStatus="Graded"
+    isSyncing={false}
+    onStatusOverrideChange={noop}
+    onBackToQuiz={noop}
+    onConfirmSync={noop}
+    onSelectQuestion={noop}
+    onSetScore={noop}
+    onToggleMistakeTag={noop}
+    onMistakeNoteChange={noop}
+  />
+);
+assert.match(reviewHtml, /<h1[^>]*class="[^"]*text-lg[^"]*"[^>]*>Review &amp; Sync to Notion<\/h1>/);
 
 console.log("studio rules tests passed");

@@ -53,10 +53,10 @@ export const ReviewPanel: React.FC<ReviewPanelProps> = ({
       {/* Review Header */}
       <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-zinc-200 dark:border-zinc-800">
         <div>
-          <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
+          <h1 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
             Review &amp; Sync to Notion
           </h1>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+          <p className="text-xs text-zinc-500 dark:text-zinc-400">
             {currentDrill.unitTitle || currentDrill.unitCode} ·{" "}
             <span className="font-mono text-xs">{currentDrill.drillId}</span>
           </p>
@@ -66,7 +66,7 @@ export const ReviewPanel: React.FC<ReviewPanelProps> = ({
           <button
             type="button"
             onClick={onBackToQuiz}
-            className="inline-flex items-center gap-1.5 h-10 px-3.5 rounded-xl text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-sm font-medium transition-colors"
+            className="inline-flex items-center gap-1.5 h-10 px-3.5 rounded-xl text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-xs font-medium transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Back to problem</span>
@@ -76,7 +76,7 @@ export const ReviewPanel: React.FC<ReviewPanelProps> = ({
             type="button"
             onClick={onConfirmSync}
             disabled={isSyncing}
-            className="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400 disabled:opacity-50 text-white text-sm font-semibold transition-colors"
+            className="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400 disabled:opacity-50 text-white text-xs font-semibold transition-colors"
           >
             {isSyncing ? (
               <>
@@ -94,12 +94,12 @@ export const ReviewPanel: React.FC<ReviewPanelProps> = ({
       </div>
 
       {/* Session Summary Overview Box */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs">
         <div>
           <span className="text-xs text-zinc-500 dark:text-zinc-400 block mb-0.5">
             Score
           </span>
-          <strong className="text-base font-mono font-semibold text-zinc-900 dark:text-zinc-100">
+          <strong className="text-sm font-mono font-semibold text-zinc-900 dark:text-zinc-100">
             {liveScore} / {maxScore} ({accuracyPct}%)
           </strong>
           {skippedCount > 0 && (
@@ -201,7 +201,7 @@ export const ReviewPanel: React.FC<ReviewPanelProps> = ({
                           key={btn.val}
                           type="button"
                           onClick={() => onSetScore(prob.id, btn.val)}
-                          className={`h-7 px-2 rounded-md text-[11px] font-mono border transition-colors ${
+                          className={`h-7 px-2 rounded-md text-xs font-mono border transition-colors ${
                             pScore === btn.val
                               ? `${btn.cls} bg-white dark:bg-zinc-900`
                               : "bg-white dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800"
@@ -235,7 +235,7 @@ export const ReviewPanel: React.FC<ReviewPanelProps> = ({
                   text={prob.prompt}
                 />
 
-                <div className="space-y-1 pt-0.5 text-[11px] font-mono text-zinc-500 dark:text-zinc-400">
+                <div className="space-y-1 pt-0.5 text-xs font-mono text-zinc-500 dark:text-zinc-400">
                   <div className="break-words">
                     <span>Your answer: </span>
                     <strong className="text-zinc-800 dark:text-zinc-200">
@@ -270,7 +270,7 @@ export const ReviewPanel: React.FC<ReviewPanelProps> = ({
                           key={t.id}
                           type="button"
                           onClick={() => onToggleMistakeTag(prob.id, t.id)}
-                          className={`min-h-[24px] py-0.5 px-2.5 rounded-full text-[11px] font-medium border transition-colors inline-flex items-center ${
+                          className={`min-h-[24px] py-0.5 px-2.5 rounded-full text-xs font-medium border transition-colors inline-flex items-center ${
                             hasTag
                               ? "border-rose-600 dark:border-rose-400 text-rose-700 dark:text-rose-300 bg-white dark:bg-zinc-900 font-semibold"
                               : "bg-white dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800"
