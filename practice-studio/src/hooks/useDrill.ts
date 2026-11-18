@@ -191,12 +191,14 @@ export function useDrill({
     []
   );
 
-  const handleCheckAnswer = async (probId: string) => {
+  const handleCheckAnswer = async (probId: string, inputOverride?: string) => {
     if (!currentDrill) return;
     const p = currentDrill.problems.find((item) => item.id === probId);
     if (!p) return;
 
-    const inputVal = p.state.userInput.trim();
+    const inputVal = (
+      inputOverride !== undefined ? inputOverride : p.state.userInput
+    ).trim();
     if (!inputVal) return;
 
     try {
@@ -252,7 +254,7 @@ export function useDrill({
         if (p.hasSetup && !p.display && !p.plainText) {
           partsToReveal.push("display");
         }
-        await saveAndReveal(updatedDoc, probId, partsToReveal);
+        void saveAndReveal(updatedDoc, probId, partsToReveal);
       }
     } catch (err: unknown) {
       const errMsg = err instanceof Error ? err.message : String(err);
