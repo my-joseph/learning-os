@@ -156,10 +156,10 @@ assert.match(
   /title="Opening before checking counts as assisted"[^>]*>[\s\S]*Show steps/,
   "Show steps button must carry assisted tooltip before first attempt"
 );
-assert.match(
+assert.doesNotMatch(
   beforeAttemptHtml,
   /Opening steps before checking counts as assisted\./,
-  "One-line assisted note must appear under buttons before first attempt"
+  "No assisted note line under the buttons (learner removed it; the button title keeps the hint)"
 );
 
 // Invalid input check must not mark problem as attempted or hide Skip / show Self-score
