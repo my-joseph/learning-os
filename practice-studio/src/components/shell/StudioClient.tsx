@@ -121,12 +121,11 @@ export const StudioClient: React.FC<StudioClientProps> = ({
     drills,
     labs,
     workspaceDrills,
+    workspaceLabs,
     drillSearch,
     setDrillSearch,
     drillFilter,
     setDrillFilter,
-    filteredDrills,
-    filteredLabs,
     loadDrillsList,
   } = useDrillList({
     workspace,
@@ -230,9 +229,9 @@ export const StudioClient: React.FC<StudioClientProps> = ({
       onResetAll={() => {
         if (currentDrill) setShowResetConfirm(true);
       }}
-      drills={filteredDrills}
+      drills={workspaceDrills}
       allWorkspaceDrills={workspaceDrills}
-      labs={filteredLabs}
+      labs={workspaceLabs}
       selectedDrillId={drillId}
       drillSearch={drillSearch}
       onSearchChange={setDrillSearch}

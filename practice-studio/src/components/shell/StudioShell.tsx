@@ -119,6 +119,10 @@ export const StudioShell: React.FC<StudioShellProps> = ({
 
   const openWeakCount = weakSpotUnits.reduce((acc, u) => acc + u.open.length, 0);
   const sidePanelCount = dueUnits.length + openWeakCount;
+  const dueUnitCodes = React.useMemo(
+    () => dueUnits.map((u) => u.unitCode),
+    [dueUnits]
+  );
 
   // Close mobile drawer when switching drills or pressing Escape
   useEffect(() => {
@@ -230,6 +234,7 @@ export const StudioShell: React.FC<StudioShellProps> = ({
           switcherRef={switcherRef}
           drills={drills}
           labs={labs}
+          dueUnitCodes={dueUnitCodes}
           selectedDrillId={selectedDrillId}
           drillSearch={drillSearch}
           onSearchChange={onSearchChange}

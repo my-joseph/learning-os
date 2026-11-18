@@ -258,22 +258,37 @@ const switcherHtml = renderToStaticMarkup(
   />
 );
 
-// Single code per row: full drill IDs must not appear in row text
-assert.doesNotMatch(switcherHtml, /DRL-MTH-T01-C04-01/);
-assert.doesNotMatch(switcherHtml, /DRL-MTH-T01-C04-02/);
-assert.doesNotMatch(switcherHtml, /DRL-MTH-T01-C07-01/);
+// Single code per row: full drill IDs must not appear in visible row text
+assert.doesNotMatch(switcherHtml, />DRL-MTH-T01-C04-01</);
+assert.doesNotMatch(switcherHtml, />DRL-MTH-T01-C04-02</);
+assert.doesNotMatch(switcherHtml, />DRL-MTH-T01-C07-01</);
 
-// Grouped unit shows title + unitCode once and compact Set 1 / Set 2 / Set 3 child rows
-assert.equal(
-  (switcherHtml.match(/>MTH-T01-C04</g) || []).length,
-  1,
-  "grouped unit code must appear once in the group header"
-);
+// Grouped unit shows chapter header + count pill + hover code, with Set 1 / Set 2 / Set 3 leaf rows,
+// while non-current chapters start collapsed.
+assert.match(switcherHtml, />Current</);
+assert.doesNotMatch(switcherHtml, />Continue</);
+assert.match(switcherHtml, />Expand all</);
+assert.match(switcherHtml, />Collapse all</);
+assert.match(switcherHtml, />View</);
+assert.doesNotMatch(switcherHtml, />Synced</);
+assert.doesNotMatch(switcherHtml, />Labs</);
+assert.match(switcherHtml, />C04</);
+assert.match(switcherHtml, />C04-01</);
 assert.match(switcherHtml, />Set 1</);
 assert.match(switcherHtml, />Set 2</);
 assert.match(switcherHtml, />Set 3</);
-assert.match(switcherHtml, /MTH-T01-C07 · 5 Qs/);
-assert.match(switcherHtml, /border-indigo-600[^>]*>.*?Set 2/);
+assert.match(switcherHtml, /Proportional &amp; Ratio/);
+assert.match(
+  switcherHtml,
+  /aria-level="2" aria-expanded="false"[^>]*title="MTH-T01-C07"[^>]*>(?:(?!<\/button>).)*?Proportional &amp; Ratio(?:(?!<\/button>).)*?hidden group-hover:block[^>]*>C07<\/span>/,
+  "collapsed chapter shows its hover code without expanding its child leaf"
+);
+assert.doesNotMatch(
+  switcherHtml,
+  /aria-level="3"[^>]*title="MTH-T01-C07"/,
+  "other chapters must start collapsed without rendering child drill rows"
+);
+assert.match(switcherHtml, /bg-indigo-50[^>]*>.*?Set 2/);
 
 // 4. Dynamic Generate unit options filtered by workspace, always including current unit
 const mixedWorkspaceDrills: DrillListItem[] = [

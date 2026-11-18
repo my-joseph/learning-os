@@ -383,6 +383,10 @@ export interface DrillListItem {
   subject?: "MATH" | "PRG";
   unitCode: string;
   unitTitle: string;
+  chapterCode?: string;
+  chapterTitle?: string;
+  topicCode?: string;
+  topicTitle?: string;
   createdAt: string;
   questionCount: number;
   difficultyMode: string;
@@ -390,5 +394,6 @@ export interface DrillListItem {
   score?: number;
   maxScore?: number;
   answeredCount?: number;
+  hasNotes?: boolean;
   localFilePath: string;
 }

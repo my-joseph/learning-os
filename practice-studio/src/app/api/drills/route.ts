@@ -2,11 +2,15 @@ import { NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
 import { DrillListItem } from "@/types/drill";
-import { getDrillsDataDir } from "@/lib/paths";
+import { getDrillsDataDir, loadIdMapTitles } from "@/lib/paths";
+import { cleanCurriculumTitle, parseCurriculumCodes } from "@/lib/drillGrouping";
 import { applyProgress, readProgress } from "@/lib/progress";
+
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   const dataDir = getDrillsDataDir();
+  const idMapTitles = loadIdMapTitles();
 
   if (!fs.existsSync(dataDir)) {
     return NextResponse.json({ drills: [] });
@@ -39,6 +43,14 @@ export async function GET() {
           (acc: number, p: { state?: { score?: number | null } }) => acc + (p.state?.score || 0),
           0
         );
+        const hasNotes =
+          problems.some(
+            (p: { state?: { mistakeNote?: string; mistakes?: unknown[] } }) =>
+              Boolean(p.state?.mistakeNote && p.state.mistakeNote.trim()) ||
+              (Array.isArray(p.state?.mistakes) && p.state.mistakes.length > 0)
+          ) ||
+          (Array.isArray(doc.sessionSummary?.mistakeCategories) &&
+            doc.sessionSummary.mistakeCategories.length > 0);
 
         let practiceStatus: "Ready" | "In Progress" | "Graded" | "Needs Retry" =
           doc.sessionSummary?.practiceStatus || "Ready";
@@ -51,11 +63,26 @@ export async function GET() {
             ? "PRG"
             : "MATH";
 
+        const { topicCode, chapterCode } = parseCurriculumCodes(
+          doc.unitCode,
+          doc.topicCode,
+          doc.chapterCode
+        );
+        const topicTitle =
+          cleanCurriculumTitle(idMapTitles.get(topicCode)) || topicCode;
+        const chapterTitle =
+          cleanCurriculumTitle(idMapTitles.get(chapterCode)) ||
+          (chapterCode === doc.unitCode ? doc.unitTitle || chapterCode : chapterCode);
+
         items.push({
           drillId: doc.drillId,
           subject,
           unitCode: doc.unitCode,
           unitTitle: doc.unitTitle || doc.unitCode,
+          chapterCode,
+          chapterTitle,
+          topicCode,
+          topicTitle,
           createdAt: doc.createdAt || "",
           questionCount,
           difficultyMode: doc.config?.difficultyMode || "Mixed Exam Mode",
@@ -63,6 +90,7 @@ export async function GET() {
           score: doc.sessionSummary?.score ?? liveScore,
           maxScore: doc.sessionSummary?.maxScore ?? questionCount,
           answeredCount,
+          hasNotes,
           localFilePath: filePath,
         });
       } catch {

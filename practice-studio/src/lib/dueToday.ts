@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { getDrillsDataDir, getProgressDir, getWorkspaceRoot } from "@/lib/paths";
+import { getDrillsDataDir, getProgressDir, getWorkspaceRoot, loadIdMapTitles } from "@/lib/paths";
 import { drillHref } from "@/lib/routes";
 
 export interface ReviewScheduleEntry {
@@ -132,23 +132,6 @@ export function findLatestDrillsByUnit(dataDir: string): Map<string, string> {
     result.set(unitCode, cand.drillId);
   });
   return result;
-}
-
-function loadIdMapTitles(rootDir: string): Map<string, string> {
-  const titles = new Map<string, string>();
-  const idMapPath = path.join(rootDir, "id_map.json");
-  if (!fs.existsSync(idMapPath)) return titles;
-  try {
-    const raw = JSON.parse(fs.readFileSync(idMapPath, "utf-8")) as Record<string, unknown>;
-    for (const [key, val] of Object.entries(raw)) {
-      if (val && typeof val === "object" && typeof (val as { title?: unknown }).title === "string") {
-        titles.set(key, (val as { title: string }).title);
-      }
-    }
-  } catch {
-    return titles;
-  }
-  return titles;
 }
 
 export function readReviewSchedule(progressDir: string = getProgressDir()): Record<string, ReviewScheduleEntry> {
