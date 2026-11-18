@@ -262,7 +262,7 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
           {lastCheck && (
             <div
               role="status"
-              className={`border-l-2 pl-3.5 py-1 space-y-1.5 text-xs ${
+              className={`border-l-2 pl-3.5 py-1 space-y-1.5 text-sm ${
                 lastCheck.verdict === "correct"
                   ? "border-emerald-700 dark:border-emerald-400"
                   : lastCheck.verdict === "equivalent_not_in_form" ||
@@ -394,7 +394,7 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
           {/* Checkpoint Hint Disclosure */}
           <Reveal show={Boolean(showHint && hasCheckpointHint(problem.checkpointHint))}>
           {showHint && hasCheckpointHint(problem.checkpointHint) && (
-            <div className="border-l-2 border-amber-600 dark:border-amber-400 pl-3.5 py-1 text-xs text-zinc-700 dark:text-zinc-300">
+            <div className="border-l-2 border-amber-600 dark:border-amber-400 pl-3.5 py-1 text-sm text-zinc-700 dark:text-zinc-300">
               <FormattedText text={problem.checkpointHint} />
             </div>
           )}
