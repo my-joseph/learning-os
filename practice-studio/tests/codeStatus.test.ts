@@ -3,6 +3,8 @@ import { NextRequest } from "next/server";
 import {
   choosePrimaryAction,
   deriveCodeStatus,
+  deriveLabMilestoneStates,
+  deriveMilestoneStepperState,
   deriveReviewStatus,
   formatReviewRunFailures,
   isWorkspaceProblem,
@@ -267,7 +269,122 @@ assert.deepEqual(
   ["Q01_app.ts:4 tsc Cannot find name 'window'."]
 );
 
-// 9. /api/review-run route validation checks
+// 9. Lab milestone stepper states (passed / regressed / notYet)
+assert.equal(deriveMilestoneStepperState(null), "notYet");
+assert.equal(deriveMilestoneStepperState(makeState()), "notYet");
+assert.equal(
+  deriveMilestoneStepperState(
+    makeState({
+      lastTestReport: {
+        allPassed: true,
+        score: 1,
+        passedCount: 3,
+        totalCount: 3,
+        visibleResults: [],
+        hiddenPassed: 0,
+        hiddenTotal: 0,
+        executionTimeMs: 5,
+      },
+    })
+  ),
+  "notYet",
+  "passing tests without a passing review is still notYet"
+);
+assert.equal(
+  deriveMilestoneStepperState(makeState({ reviews: [makeReview("revise")] })),
+  "notYet",
+  "first-time revise verdict without prior pass is notYet"
+);
+assert.equal(
+  deriveMilestoneStepperState(makeState({ reviews: [makeReview("pass")] })),
+  "passed"
+);
+assert.equal(
+  deriveMilestoneStepperState(
+    makeState({ reviews: [makeReview("revise"), makeReview("pass")] })
+  ),
+  "passed"
+);
+assert.equal(
+  deriveMilestoneStepperState(
+    makeState({
+      reviews: [makeReview("pass")],
+      lastTestReport: {
+        allPassed: false,
+        score: 0.67,
+        passedCount: 2,
+        totalCount: 3,
+        visibleResults: [{ name: "handles edge case", passed: false }],
+        hiddenPassed: 0,
+        hiddenTotal: 0,
+        executionTimeMs: 4,
+      },
+    })
+  ),
+  "regressed",
+  "passing review followed by failing lastTestReport is regressed"
+);
+assert.equal(
+  deriveMilestoneStepperState(
+    makeState({ reviews: [makeReview("pass")] }),
+    {
+      tests: { passed: 3, total: 3, failed: [] },
+      lint: [{ rule: "no-unused-vars", line: 4, message: "Unused x" }],
+      typecheck: [],
+    }
+  ),
+  "regressed",
+  "passing review followed by failing lint run is regressed"
+);
+assert.equal(
+  deriveMilestoneStepperState(
+    makeState({ reviews: [makeReview("pass")] }),
+    {
+      tests: { passed: 3, total: 3, failed: [] },
+      lint: [],
+      typecheck: [{ line: 8, message: "TS2322: Type mismatch" }],
+    }
+  ),
+  "regressed",
+  "passing review followed by failing typecheck run is regressed"
+);
+assert.equal(
+  deriveMilestoneStepperState(
+    makeState({
+      reviews: [
+        makeReview("pass"),
+        makeReview("revise", { tests: { passed: 2, total: 3, failed: ["t1"] } }),
+      ],
+    })
+  ),
+  "regressed",
+  "passing review followed by revise review is regressed"
+);
+assert.deepEqual(
+  deriveLabMilestoneStates([
+    { state: makeState({ reviews: [makeReview("pass")] }) },
+    {
+      state: makeState({
+        reviews: [makeReview("pass")],
+        lastTestReport: {
+          allPassed: false,
+          score: 0,
+          passedCount: 0,
+          totalCount: 2,
+          visibleResults: [],
+          hiddenPassed: 0,
+          hiddenTotal: 0,
+          executionTimeMs: 1,
+        },
+      }),
+    },
+    { state: makeState({ reviews: [makeReview("revise")] }) },
+    { state: makeState() },
+  ]),
+  ["passed", "regressed", "notYet", "notYet"]
+);
+
+// 10. /api/review-run route validation checks
 async function runReviewRunRouteChecks() {
   const badIdReq = new NextRequest("http://127.0.0.1:3000/api/review-run", {
     method: "POST",

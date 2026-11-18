@@ -4,6 +4,7 @@ import { getReviewRequest } from "./studioRules";
 export type LayerCheckStatus = "pass" | "fail" | "not_run";
 export type ReviewStatus = "pass" | "revise" | "not_requested";
 export type MilestoneTileState = "pass" | "revise" | "not_started";
+export type MilestoneStepperState = "passed" | "regressed" | "notYet";
 export type StatusSymbol = "✓" | "✗" | "–";
 export type PrimaryCodeActionKind = "open_vscode" | "copy_review" | "next_problem";
 
@@ -101,6 +102,52 @@ export function deriveMilestoneTileState(state?: ProblemState | null): Milestone
   if (review === "pass") return "pass";
   if (review === "revise") return "revise";
   return "not_started";
+}
+
+/**
+ * Derive a lab milestone's stepper state from its persisted state and optional live reviewRun:
+ * - "passed": latest review verdict is "pass" and all layers (tests, lint, types) are green per deriveCodeStatus
+ * - "regressed": review passed before, but the latest test/lint/type run (or latest review) now fails
+ * - "notYet": milestone has not passed review yet
+ */
+export function deriveMilestoneStepperState(
+  state?: ProblemState | null,
+  reviewRun?: Partial<ReviewRunResult> | null
+): MilestoneStepperState {
+  const reviews = state?.reviews ?? [];
+  const hasPassedBefore = reviews.some((r) => r.verdict === "pass");
+  const status = deriveCodeStatus(state, reviewRun);
+  const anyLayerFails =
+    status.tests === "fail" || status.lint === "fail" || status.types === "fail";
+
+  const allLayersGreen =
+    status.review === "pass" &&
+    status.tests === "pass" &&
+    status.lint === "pass" &&
+    status.types === "pass";
+
+  if (allLayersGreen) {
+    return "passed";
+  }
+
+  if (hasPassedBefore && (anyLayerFails || status.review === "revise")) {
+    return "regressed";
+  }
+
+  return "notYet";
+}
+
+/** Compute stepper states for a sequence of lab milestones (or their ProblemState objects). */
+export function deriveLabMilestoneStates(
+  milestones: ReadonlyArray<{ state?: ProblemState | null } | ProblemState | null | undefined>
+): MilestoneStepperState[] {
+  return milestones.map((item) => {
+    if (!item || typeof item !== "object") return "notYet";
+    if ("state" in item) {
+      return deriveMilestoneStepperState(item.state);
+    }
+    return deriveMilestoneStepperState(item as ProblemState);
+  });
 }
 
 export function formatReviewRunFailures(
