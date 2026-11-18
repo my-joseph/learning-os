@@ -20,6 +20,7 @@ from typing import Any
 from notion_sync.blocks import bullet, callout_block, divider_block, h2, toggle_block
 from notion_sync.client import MissingNotionToken, load_env, notion_request, replace_page_content, require_token
 from notion_sync.drill_sync import _mention_or_code
+from notion_sync.id_map import save_id_map
 
 
 def _extract_id(entry: Any) -> str | None:
@@ -107,7 +108,7 @@ def sync_lab_to_notion(lab_dir: Path, *, id_map_path: Path | None = None) -> dic
             page_id = created["id"]
 
         id_map[lab_id] = {"id": page_id, "title": title}
-        im_path.write_text(json.dumps(id_map, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        save_id_map(id_map, im_path)
 
         unit_mentions = ", ".join(_mention_or_code(u, id_map) for u in units_used) or chapter_code
         blocks: list[dict[str, Any]] = [

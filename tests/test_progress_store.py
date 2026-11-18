@@ -121,3 +121,35 @@ def test_item_score_matches_studio_rules():
             "score": 1,
         }
     ) == (1.0, False)
+
+
+def test_save_progress_refuses_to_blank_practised_progress():
+    practised = _doc()
+    practised["problems"][0]["state"] = {"userInput": "42", "score": 1, "attempts": [{"input": "42"}]}
+    practised["sessionSummary"] = {"score": 1, "attemptDate": "2026-11-17", "practiceStatus": "Graded"}
+    ps.save_progress(practised)
+
+    saved = ps.load_progress("DRL-MTH-X-01")
+    assert saved is not None and ps.has_practice(saved)
+
+    # Attempting to overwrite with an empty or pristine-defaults doc must raise and preserve disk state
+    with pytest.raises(ValueError, match="allow_reset=True"):
+        ps.save_progress(_doc())
+
+    pristine_defaults = _doc()
+    pristine_defaults["problems"][0]["state"] = {"userInput": "", "score": None, "mistakes": []}
+    pristine_defaults["sessionSummary"] = {"practiceStatus": "Ready", "score": 0, "attemptDate": None}
+    with pytest.raises(ValueError, match="allow_reset=True"):
+        ps.save_progress(pristine_defaults)
+
+    still_there = ps.load_progress("DRL-MTH-X-01")
+    assert still_there["problems"]["Q01"]["userInput"] == "42"
+    assert still_there["sessionSummary"]["attemptDate"] == "2026-11-17"
+
+    # Explicit reset is allowed
+    ps.save_progress(_doc(), allow_reset=True)
+    reset_prog = ps.load_progress("DRL-MTH-X-01")
+    assert reset_prog is not None and not ps.has_practice(reset_prog)
+
+    # Overwriting a pristine (non-practised) progress file does not require allow_reset
+    ps.save_progress(_doc())
