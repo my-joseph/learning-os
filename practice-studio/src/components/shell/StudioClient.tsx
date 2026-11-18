@@ -1,13 +1,18 @@
 "use client";
 
 import React, { useState, useCallback, useEffect, useRef } from "react";
+import dynamic from "next/dynamic";
 import { m } from "motion/react";
 import { fadeUp } from "@/lib/motion";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Plus } from "lucide-react";
 import { DrillDocument } from "@/types/drill";
-import { CodeDashboard } from "@/components/code/CodeDashboard";
 import { MathWorkspace } from "@/components/math/MathWorkspace";
+
+const CodeDashboard = dynamic(
+  () => import("@/components/code/CodeDashboard").then((mod) => mod.CodeDashboard),
+  { ssr: true }
+);
 import { StudioShell } from "@/components/shell/StudioShell";
 import { ReviewPanel } from "@/components/shell/ReviewPanel";
 import { DrillNotFoundCard } from "@/components/shell/DrillNotFoundCard";

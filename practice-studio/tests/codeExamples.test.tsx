@@ -7,6 +7,7 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { CodeDashboard } from "../src/components/code/CodeDashboard";
 import { labToDrillDocument, type LabDetailResponse } from "../src/lib/labModel";
+import { preloadShiki } from "../src/lib/shiki";
 import type { Problem, ProblemState } from "../src/types/drill";
 
 const noop = () => {};
@@ -208,4 +209,58 @@ assert.match(labHtml, /budget = 4, cost = 1/);
 assert.match(labHtml, /Example 2/);
 assert.match(labHtml, /budget &gt;= 0/);
 
-console.log("codeExamples render tests passed");
+// 4. After Shiki warms up, Examples Input and Output render highlighted JS token spans
+//    while Input:/Output: labels remain plain zinc and inline <code> in requirements/constraints stays plain.
+async function testHighlightedExamples() {
+  await preloadShiki(["javascript"]);
+  const highlightedHtml = renderToStaticMarkup(
+    <CodeDashboard
+      problem={drillProblem}
+      drillId="DRL-PRG-TEST-01"
+      index={0}
+      totalQuestions={1}
+      drillTitle="Sorted Search"
+      mistakeTags={[]}
+      activeStep={null}
+      onInputChange={noop}
+      onCheckAnswer={noop}
+      onToggleStepHighlight={noop}
+      onMarkDivergedStep={noop}
+      onSetScore={noop}
+      onToggleMistakeTag={noop}
+      onMistakeNoteChange={noop}
+      onResetProblem={noop}
+    />
+  );
+
+  // Plain zinc labels stay unhighlighted
+  assert.match(
+    highlightedHtml,
+    /<span class="text-zinc-500 dark:text-zinc-400 select-none">Input: <\/span>/
+  );
+  assert.match(
+    highlightedHtml,
+    /<span class="text-zinc-500 dark:text-zinc-400 select-none">Output: <\/span>/
+  );
+
+  // Input value contains Shiki dual-theme token spans (e.g. `=` and numbers)
+  assert.match(
+    highlightedHtml,
+    /Input: <\/span><span class="whitespace-pre-wrap break-words">(?:<span class="shiki-token" style="--shiki-light:[^;]+;--shiki-dark:[^"]+">[^<]*<\/span>)+<\/span>/
+  );
+  // Output value (`2`) is highlighted as a JS number token
+  assert.match(
+    highlightedHtml,
+    /Output: <\/span><span class="whitespace-pre-wrap break-words"><span class="shiki-token" style="--shiki-light:[^;]+;--shiki-dark:[^"]+">2<\/span><\/span>/
+  );
+  // Inline <code> in requirements and constraints stays as plain <code> without shiki-token spans
+  assert.match(
+    highlightedHtml,
+    /<code class="font-mono[^"]*">searchInsert\(nums, target\)<\/code>/
+  );
+  assert.match(highlightedHtml, /<code class="font-mono[^"]*">nums<\/code> is sorted ascending/);
+
+  console.log("codeExamples render tests passed");
+}
+
+void testHighlightedExamples();

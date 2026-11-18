@@ -20,7 +20,12 @@ import {
   TestRunReport,
 } from "@/types/drill";
 import { VSCodeBlock } from "@/components/VSCodeBlock";
+import { HighlightedCode } from "@/components/HighlightedCode";
 import { FormattedText } from "@/components/FormattedText";
+import {
+  getExtensionForLanguage,
+  inferShikiLanguageFromFilename,
+} from "@/lib/shiki";
 import { AnswerResultCard } from "@/components/AnswerResultCard";
 import { ChoiceOptionGroup } from "@/components/ChoiceOptionGroup";
 import { QuestionTimer } from "@/components/QuestionTimer";
@@ -145,6 +150,8 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
   const isKata = isLab || isWorkspaceProblem(problem);
   const referenceAllowed = canShowReferenceSolution(problem.state);
   const { filename, vscodeFolderUrl, vscodeUrl } = resolveIdeLinks(problem);
+  const snippetLanguage =
+    problem.language || inferShikiLanguageFromFilename(filename) || "javascript";
 
   const [userCode, setUserCode] = useState<string>(
     problem.state?.userCode || problem.starterCode || problem.codeSnippet || ""
@@ -547,13 +554,21 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                       <span className="text-zinc-500 dark:text-zinc-400 select-none">
                         Input:{" "}
                       </span>
-                      <span className="whitespace-pre-wrap break-words">{ex.input}</span>
+                      <HighlightedCode
+                        code={ex.input}
+                        language="javascript"
+                        className="whitespace-pre-wrap break-words"
+                      />
                     </div>
                     <div>
                       <span className="text-zinc-500 dark:text-zinc-400 select-none">
                         Output:{" "}
                       </span>
-                      <span className="whitespace-pre-wrap break-words">{ex.output}</span>
+                      <HighlightedCode
+                        code={ex.output}
+                        language="javascript"
+                        className="whitespace-pre-wrap break-words"
+                      />
                     </div>
                   </div>
                   {ex.explanation && ex.explanation.trim() && (
@@ -598,7 +613,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
             {problem.codeSnippet && !snippetInPrompt && (
               <VSCodeBlock
                 code={problem.codeSnippet}
-                language={problem.language || "javascript"}
+                language={snippetLanguage}
                 filename={filename}
               />
             )}
@@ -966,7 +981,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                       ) : problem.solutionCode || revealedSolutionCode ? (
                         <VSCodeBlock
                           code={(problem.solutionCode || revealedSolutionCode)!}
-                          language={problem.language || "javascript"}
+                          language={snippetLanguage}
                           filename={`reference-${filename}`}
                         />
                       ) : (
@@ -989,8 +1004,10 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
             {problem.codeSnippet && (
               <VSCodeBlock
                 code={problem.codeSnippet}
-                language={problem.language || "javascript"}
-                filename={`challenge-${problem.id.toLowerCase()}.js`}
+                language={snippetLanguage}
+                filename={`challenge-${problem.id.toLowerCase()}.${getExtensionForLanguage(
+                  snippetLanguage
+                )}`}
                 selectableLines={isFindBug}
                 selectedLine={selectedLineNumber}
                 onSelectLine={(lineNum) => {
