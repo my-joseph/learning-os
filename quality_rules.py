@@ -1152,6 +1152,116 @@ def check_gate_g6(
 
 
 # ---------------------------------------------------------------------------
+# Choice Prompt Option Duplication Detector (07 §4)
+# ---------------------------------------------------------------------------
+
+_CHOICE_FLAW_LINE_RE = re.compile(r"^\s*Line \d+:.*$", re.MULTILINE)
+_INLINE_DOLLAR_RE = re.compile(r"(?<!\\)\$[^$\n]+\$")
+_CODE_SPAN_RE = re.compile(r"```[\s\S]*?```|`[^`\n]*`")
+_CHOICE_ENUM_PATTERNS: tuple[tuple[re.Pattern[str], str], ...] = (
+    (
+        re.compile(r"(?:^|[\s:;(\n])A,\s+(?!(?:and|or)\b)\S[^;\n]{0,120}?;\s*B,\s+\S"),
+        "lettered option list 'A, ...; B, ...'",
+    ),
+    (
+        re.compile(r":\s*A,\s+(?!(?:and|or)\b)\S[^,\n]{0,120}?,\s*B,\s+\S"),
+        "lettered option list 'A, ..., B, ...'",
+    ),
+    (
+        re.compile(r"(?<!\w)\(A\)\s*\S.{0,160}?(?<!\w)\(B\)\s*\S"),
+        "lettered option list '(A) ... (B) ...'",
+    ),
+    (
+        re.compile(r"(?<!\w)\(a\)\s*\S.{0,160}?(?<!\w)\(b\)\s*\S"),
+        "lettered option list '(a) ... (b) ...'",
+    ),
+    (
+        re.compile(r"(?<!\w)A\)\s+\S.{0,160}?(?<!\w)B\)\s+\S"),
+        "lettered option list 'A) ... B) ...'",
+    ),
+    (
+        re.compile(r"(?<!\w)a\)\s+\S.{0,160}?(?<!\w)b\)\s+\S"),
+        "lettered option list 'a) ... b) ...'",
+    ),
+    (
+        re.compile(r"(?:^|[\s:;(\n])A\.\s+\S.{1,160}?(?:^|[\s;.\n])B\.\s+\S"),
+        "lettered option list 'A. ... B. ...'",
+    ),
+    (
+        re.compile(r"\bOption\s+A:\s+\S.{0,160}?\bOption\s+B:\s+\S"),
+        "lettered option list 'Option A: ... Option B: ...'",
+    ),
+    (
+        re.compile(r"(?:^|[\n:;])\s*A:\s+\S.{0,160}?[\n;]\s*B:\s+\S"),
+        "lettered option list 'A: ... B: ...'",
+    ),
+)
+_CHOICE_CUE_RE = re.compile(
+    r"(?:"
+    r"\b(?:choose|select|pick)\s+(?:one|from|among)\s*:\s*\S"
+    r"|\boptions\s*:\s*\S"
+    r"|\b(?:choose|select|pick)\s+(?:the\s+)?(?:[a-z]+\s+){1,4}:\s*"
+    r"(?:(?:[A-Da-d1-4][,.)\]:]|\([A-Da-d1-4]\))\s*\S|[^.;\n]+(?:;|,\s*(?:or\s+)?[^.;\n]+))"
+    r")",
+    re.IGNORECASE,
+)
+
+
+def find_choice_prompt_option_duplicates(prob: dict[str, Any]) -> list[str]:
+    """Return reasons a choice problem's prompt duplicates its options (empty = clean)."""
+    spec = prob.get("answerSpec") or {}
+    if spec.get("type") != "choice":
+        return []
+    prompt = prob.get("prompt")
+    if not isinstance(prompt, str) or not prompt.strip():
+        return []
+
+    is_flaw = isinstance((prob.get("verify") or {}).get("flaw"), dict)
+    prompt_body = _CHOICE_FLAW_LINE_RE.sub("", prompt) if is_flaw else prompt
+
+    reasons: list[str] = []
+
+    # 1. Option labels' text repeated in prompt
+    prompt_norm = re.sub(r"\s+", " ", prompt_body).strip().lower()
+    matched_labels: list[str] = []
+    for opt in spec.get("options") or []:
+        if not isinstance(opt, dict):
+            continue
+        label = str(opt.get("label") or "").strip()
+        norm_label = re.sub(r"\s+", " ", label).lower()
+        if not norm_label:
+            continue
+        if re.fullmatch(r"\$?\s*[-+]?\d+(?:\.\d+)?\s*\$?", norm_label):
+            continue
+        if " " not in norm_label and len(norm_label) < 4:
+            continue
+        pattern = re.escape(norm_label)
+        if re.match(r"^\w", norm_label):
+            pattern = r"(?<!\w)" + pattern
+        if re.search(r"\w$", norm_label):
+            pattern = pattern + r"(?!\w)"
+        if re.search(pattern, prompt_norm):
+            matched_labels.append(label)
+    if len(matched_labels) >= 2:
+        reasons.append(f"prompt repeats option labels {matched_labels[:3]}")
+
+    # 2. Lettered enumeration and choice-cue patterns (outside math/code spans)
+    masked = _CODE_SPAN_RE.sub(" CODE ", prompt_body)
+    masked = _INLINE_DOLLAR_RE.sub(" MATH ", masked)
+    for rx, desc in _CHOICE_ENUM_PATTERNS:
+        if rx.search(masked):
+            reasons.append(desc)
+            break
+
+    cue_match = _CHOICE_CUE_RE.search(masked)
+    if cue_match:
+        snippet = cue_match.group(0).strip()[:50]
+        reasons.append(f"prompt lists choices after '{snippet}'")
+
+    return list(dict.fromkeys(reasons))
+
+
+# ---------------------------------------------------------------------------
 # Unified Problem & Set Quality Gate Runner
 # ---------------------------------------------------------------------------
 

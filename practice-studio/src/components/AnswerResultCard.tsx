@@ -96,13 +96,13 @@ export const AnswerResultCard: React.FC<AnswerResultCardProps> = ({
           >
             <div className="flex items-start gap-3 min-w-0 flex-1">
               <span
-                className={`w-7 h-7 rounded-full inline-flex items-center justify-center shrink-0 mt-0.5 ${ICON_CIRCLE_STYLES[model.tone]}`}
+                className={`w-7 h-7 rounded-full inline-flex items-center justify-center shrink-0 ${ICON_CIRCLE_STYLES[model.tone]}`}
               >
                 <ToneIcon tone={model.tone} />
               </span>
 
               <div className="min-w-0 flex-1 space-y-1">
-                <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-0.5">
+                <div className="min-h-7 flex flex-wrap items-center gap-x-2.5 gap-y-0.5">
                   <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
                     {model.title}
                   </span>

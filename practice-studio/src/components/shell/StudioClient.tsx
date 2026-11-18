@@ -308,6 +308,7 @@ export const StudioClient: React.FC<StudioClientProps> = ({
                   problem={prob}
                   index={idx}
                   totalQuestions={currentDrill.problems.length}
+                  unitCode={currentDrill.unitCode}
                   drillTitle={currentDrill.unitTitle || currentDrill.unitCode}
                   mistakeTags={currentDrill.mistakeTags || []}
                   activeStep={activeSteps[prob.id] ?? null}

@@ -1,0 +1,67 @@
+/* Scoped MathLive styles loaded lazily only when MathLiveInput mounts on /math pages. */
+
+/*
+ * MathLive renders inline `\placeholder{}` atoms inside Shadow DOM using `.ML__placeholder`
+ * (Unicode U+25A2 rounded square) without exposing a `::part(...)`, so a CSS dashed border
+ * or a separate caret-inside-placeholder selector cannot pierce the Shadow DOM from CSS alone.
+ * We use MathLive's supported CSS variables (`--placeholder-color` at zinc-400, faint
+ * `--placeholder-opacity`, and indigo-500 `--caret-color` / `--contains-highlight-color`)
+ * plus `::part(placeholder)` so placeholders render thin, faint, and rounded.
+ */
+math-field.studio-math-field {
+  display: block;
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 1rem;
+  line-height: 1.4;
+  color: #18181b;
+  --hue: 239;
+  --caret-color: #6366f1;
+  --selection-color: #18181b;
+  --selection-background-color: rgba(99, 102, 241, 0.18);
+  --contains-highlight-background-color: rgba(99, 102, 241, 0.08);
+  --contains-highlight-color: #6366f1;
+  --smart-fence-color: #52525b;
+  --latex-color: #4f46e5;
+  --text-highlight-background-color: rgba(99, 102, 241, 0.12);
+  --placeholder-color: #a1a1aa;
+  --placeholder-opacity: 0.7;
+}
+
+html.dark math-field.studio-math-field {
+  color: #f4f4f5;
+  --hue: 239;
+  --caret-color: #6366f1;
+  --selection-color: #f4f4f5;
+  --selection-background-color: rgba(99, 102, 241, 0.28);
+  --contains-highlight-background-color: rgba(99, 102, 241, 0.16);
+  --contains-highlight-color: #818cf8;
+  --smart-fence-color: #a1a1aa;
+  --latex-color: #818cf8;
+  --text-highlight-background-color: rgba(99, 102, 241, 0.22);
+  --placeholder-color: #a1a1aa;
+  --placeholder-opacity: 0.65;
+}
+
+math-field.studio-math-field::part(container) {
+  min-height: 36px;
+  padding: 2px 4px;
+  align-items: center;
+}
+
+math-field.studio-math-field::part(content) {
+  padding: 2px 2px;
+}
+
+math-field.studio-math-field::part(placeholder) {
+  color: #a1a1aa;
+  opacity: 0.7;
+}
+
+/* Studio uses its own attached toolbar + inline palette and omits MathLive's built-in toggles. */
+math-field.studio-math-field::part(menu-toggle),
+math-field.studio-math-field::part(virtual-keyboard-toggle) {
+  display: none;
+}
