@@ -124,7 +124,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
   const isLab = drillId.startsWith("LAB-") || /^M\d+$/i.test(problem.id);
   const isKata = isLab || isWorkspaceProblem(problem);
   const referenceAllowed = canShowReferenceSolution(problem.state);
-  const { filename, vscodeFolderUrl, cursorFolderUrl, vscodeUrl } = resolveIdeLinks(problem);
+  const { filename, vscodeFolderUrl, vscodeUrl } = resolveIdeLinks(problem);
 
   const [userCode, setUserCode] = useState<string>(
     problem.state?.userCode || problem.starterCode || problem.codeSnippet || ""
@@ -388,6 +388,14 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                     : ` of ${totalQuestions}`
                   : ""}
               </span>
+              {typeof problem.level === "number" && problem.level > 0 && (
+                <>
+                  <span aria-hidden="true">·</span>
+                  <span title={problem.levelLabel?.trim() || undefined}>
+                    Level {problem.level}
+                  </span>
+                </>
+              )}
               {problem.entryPoint && (
                 <>
                   <span aria-hidden="true">·</span>
@@ -590,16 +598,6 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                     <span>Run checks</span>
                   )}
                 </button>
-
-                {cursorFolderUrl && (
-                  <a
-                    href={cursorFolderUrl}
-                    onClick={ensureWorkspaceOnDisk}
-                    className="inline-flex items-center gap-1 text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
-                  >
-                    <span>Open in Cursor</span>
-                  </a>
-                )}
 
                 {primaryAction.kind !== "open_vscode" && vscodeFolderUrl && (
                   <a

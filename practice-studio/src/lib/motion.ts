@@ -34,5 +34,18 @@ export const drawer: Variants = {
   shown: { x: 0, transition: { duration: 0.26, ease: EASE_OUT } },
 };
 
+/** Centred alertdialog / modal card: scale 0.98 -> 1 + fade. */
+export const dialogCard: Variants = {
+  hidden: { opacity: 0, scale: 0.98, transition: { duration: 0.14, ease: EASE_OUT } },
+  shown: { opacity: 1, scale: 1, transition: quick },
+};
+
+/** Status toast: slide up 8 px + fade in, fade out on exit. */
+export const toastVariants: Variants = {
+  hidden: { opacity: 0, y: 8 },
+  shown: { opacity: 1, y: 0, transition: quick },
+  exit: { opacity: 0, transition: { duration: 0.14, ease: EASE_OUT } },
+};
+
 /** Spread on an `m.*` element inside <AnimatePresence>. */
 export const presence = { initial: "hidden", animate: "shown", exit: "hidden" } as const;

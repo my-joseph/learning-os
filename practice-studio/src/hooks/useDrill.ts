@@ -403,8 +403,6 @@ export function useDrill({
 
   const handleResetAll = () => {
     if (!currentDrill) return;
-    const ok = window.confirm(`Reset all questions in ${currentDrill.drillId} to start over?`);
-    if (!ok) return;
 
     const updated: DrillDocument = {
       ...currentDrill,
@@ -496,8 +494,14 @@ export function useDrill({
       const target = e.target as HTMLElement | null;
       if (
         target &&
-        (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.tagName === "SELECT")
+        (target.tagName === "INPUT" ||
+          target.tagName === "TEXTAREA" ||
+          target.tagName === "SELECT" ||
+          Boolean(target.closest('[role="alertdialog"], [role="dialog"]')))
       ) {
+        return;
+      }
+      if (document.querySelector('[role="alertdialog"], [role="dialog"]')) {
         return;
       }
       if (viewMode !== "quiz") return;

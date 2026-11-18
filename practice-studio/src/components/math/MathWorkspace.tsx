@@ -158,13 +158,23 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
       )}
 
       <article className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 sm:p-6 space-y-6">
-        {/* 1. Question number + prompt (text-base, leading-relaxed) */}
+        {/* 1. Question number + level + prompt (text-base, leading-relaxed) */}
         <div className="space-y-2">
-          <div className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
-            Question {index + 1}
-            {typeof totalQuestions === "number" && totalQuestions > 0
-              ? ` of ${totalQuestions}`
-              : ""}
+          <div className="flex flex-wrap items-center gap-2 text-xs font-medium text-zinc-500 dark:text-zinc-400">
+            <span>
+              Question {index + 1}
+              {typeof totalQuestions === "number" && totalQuestions > 0
+                ? ` of ${totalQuestions}`
+                : ""}
+            </span>
+            {typeof problem.level === "number" && problem.level > 0 && (
+              <>
+                <span aria-hidden="true">·</span>
+                <span title={problem.levelLabel?.trim() || undefined}>
+                  Level {problem.level}
+                </span>
+              </>
+            )}
           </div>
 
           <div className="text-base leading-relaxed text-zinc-900 dark:text-zinc-100">
