@@ -46,7 +46,7 @@ from code_engine.workspace import (
     resolve_test_imports,
 )
 from progress_store import strip_progress
-from quality_rules import QUALITY_RULES
+from quality_rules import QUALITY_RULES, find_choice_prompt_option_duplicates
 
 CODE_VAULT_DIR = os.path.join(os.path.dirname(__file__), "reasoning_vault")
 
@@ -792,6 +792,14 @@ def validate_ai_code_contract(
 
     # 5. Anti-Spoonfeeding Guard
     check_anti_spoonfeeding(pid, prob)
+
+    # 5b. Choice Prompt Option-Duplication Guard (07 §4)
+    choice_dups = find_choice_prompt_option_duplicates(prob)
+    if choice_dups:
+        raise AiContractError(
+            f"[{pid}] Choice prompt must not list or duplicate its options ({'; '.join(choice_dups)}). "
+            "Keep options only in answerSpec.options (Studio and Notion render them)."
+        )
 
     # 6. Starter syntax/compile check
     check_starter_contract(pid, prob, environment=environment, check_identical=False)
