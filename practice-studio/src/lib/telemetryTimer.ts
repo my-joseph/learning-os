@@ -20,19 +20,26 @@ export interface ProblemTimerState {
 export interface TelemetryTimerState {
   activeProblemId: string | null;
   isDocumentVisible: boolean;
+  paused: boolean;
   problems: Record<string, ProblemTimerState>;
 }
 
-export function createTelemetryTimerState(initialProblemId?: string | null, isVisible = true): TelemetryTimerState {
+export function createTelemetryTimerState(
+  initialProblemId?: string | null,
+  isVisible = true,
+  paused = false,
+  now: number = Date.now()
+): TelemetryTimerState {
   const state: TelemetryTimerState = {
     activeProblemId: initialProblemId || null,
     isDocumentVisible: isVisible,
+    paused,
     problems: {},
   };
   if (initialProblemId) {
     state.problems[initialProblemId] = {
       accumulatedMs: 0,
-      lastActiveStart: isVisible ? Date.now() : null,
+      lastActiveStart: isVisible && !paused ? now : null,
       hintsRevealed: 0,
     };
   }
@@ -79,11 +86,7 @@ export function setActiveProblem(
   // Start new active problem if provided
   if (newProblemId) {
     const current = { ...(next.problems[newProblemId] || { accumulatedMs: 0, lastActiveStart: null, hintsRevealed: 0 }) };
-    if (next.isDocumentVisible) {
-      current.lastActiveStart = now;
-    } else {
-      current.lastActiveStart = null;
-    }
+    current.lastActiveStart = next.isDocumentVisible && !next.paused ? now : null;
     next.problems[newProblemId] = current;
   }
 
@@ -122,12 +125,73 @@ export function setVisibility(
       prob.lastActiveStart = null;
     }
   } else {
-    // Tab became visible: resume running clock
+    // Tab became visible: resume running clock only if not manually paused
+    prob.lastActiveStart = next.paused ? null : now;
+  }
+
+  next.problems[next.activeProblemId] = prob;
+  return next;
+}
+
+function setPaused(
+  state: TelemetryTimerState,
+  paused: boolean,
+  now: number = Date.now()
+): TelemetryTimerState {
+  if (state.paused === paused) {
+    return state;
+  }
+
+  const next: TelemetryTimerState = {
+    ...state,
+    paused,
+    problems: { ...state.problems },
+  };
+
+  if (!next.activeProblemId) {
+    return next;
+  }
+
+  const prob = {
+    ...(next.problems[next.activeProblemId] || {
+      accumulatedMs: 0,
+      lastActiveStart: null,
+      hintsRevealed: 0,
+    }),
+  };
+
+  if (paused) {
+    if (prob.lastActiveStart !== null) {
+      const elapsed = Math.max(0, now - prob.lastActiveStart);
+      prob.accumulatedMs += elapsed;
+      prob.lastActiveStart = null;
+    }
+  } else if (next.isDocumentVisible) {
     prob.lastActiveStart = now;
   }
 
   next.problems[next.activeProblemId] = prob;
   return next;
+}
+
+/**
+ * Pause the session timer; paused intervals never accrue.
+ */
+export function pauseTimer(
+  state: TelemetryTimerState,
+  now: number = Date.now()
+): TelemetryTimerState {
+  return setPaused(state, true, now);
+}
+
+/**
+ * Resume the session timer; resumes counting on the active problem when visible.
+ */
+export function resumeTimer(
+  state: TelemetryTimerState,
+  now: number = Date.now()
+): TelemetryTimerState {
+  return setPaused(state, false, now);
 }
 
 /**
@@ -173,7 +237,7 @@ export function consumeAttempt(
 
   // Reset problem attempt timer for next attempt
   prob.accumulatedMs = 0;
-  if (next.activeProblemId === problemId && next.isDocumentVisible) {
+  if (next.activeProblemId === problemId && next.isDocumentVisible && !next.paused) {
     prob.lastActiveStart = now;
   } else {
     prob.lastActiveStart = null;
@@ -193,12 +257,87 @@ export function consumeAttempt(
  */
 export function resetProblemTimer(
   state: TelemetryTimerState,
-  problemId: string
+  problemId: string,
+  now: number = Date.now()
 ): TelemetryTimerState {
   const next: TelemetryTimerState = {
     ...state,
     problems: { ...state.problems },
   };
-  delete next.problems[problemId];
+  if (next.activeProblemId === problemId) {
+    next.problems[problemId] = {
+      accumulatedMs: 0,
+      lastActiveStart: next.isDocumentVisible && !next.paused ? now : null,
+      hintsRevealed: 0,
+    };
+  } else {
+    delete next.problems[problemId];
+  }
   return next;
+}
+
+/**
+ * Return the current attempt's elapsed time in ms (capped at MAX_ATTEMPT_DURATION_MS).
+ */
+export function getAttemptElapsedMs(
+  state: TelemetryTimerState,
+  problemId: string,
+  now: number = Date.now()
+): number {
+  const prob = state.problems[problemId];
+  if (!prob) return 0;
+  let total = prob.accumulatedMs;
+  if (prob.lastActiveStart !== null) {
+    total += Math.max(0, now - prob.lastActiveStart);
+  }
+  return Math.min(MAX_ATTEMPT_DURATION_MS, Math.max(0, total));
+}
+
+/**
+ * Return a problem's recorded durationMs plus the current attempt's running time.
+ */
+export function getProblemDisplayMs(
+  recordedDurationMs: number | undefined | null,
+  state: TelemetryTimerState,
+  problemId: string,
+  now: number = Date.now()
+): number {
+  const recorded =
+    typeof recordedDurationMs === "number" && Number.isFinite(recordedDurationMs) && recordedDurationMs > 0
+      ? recordedDurationMs
+      : 0;
+  return recorded + getAttemptElapsedMs(state, problemId, now);
+}
+
+/**
+ * Sum recorded durationMs + current attempt running time across all problems in a drill or lab.
+ */
+export function getDrillTotalMs(
+  problems: ReadonlyArray<{ id: string; state?: { durationMs?: number } | null }>,
+  state: TelemetryTimerState,
+  now: number = Date.now()
+): number {
+  let total = 0;
+  for (const prob of problems) {
+    total += getProblemDisplayMs(prob.state?.durationMs, state, prob.id, now);
+  }
+  return total;
+}
+
+/**
+ * Format milliseconds as mm:ss, or h:mm:ss when 1 hour or longer.
+ */
+export function formatTimerClock(ms: number): string {
+  if (!Number.isFinite(ms) || ms <= 0) return "00:00";
+  const totalSec = Math.floor(ms / 1000);
+  const secs = totalSec % 60;
+  const totalMins = Math.floor(totalSec / 60);
+  const mins = totalMins % 60;
+  const hrs = Math.floor(totalMins / 60);
+  const ss = String(secs).padStart(2, "0");
+  const mm = String(mins).padStart(2, "0");
+  if (hrs > 0) {
+    return `${hrs}:${mm}:${ss}`;
+  }
+  return `${mm}:${ss}`;
 }

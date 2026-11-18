@@ -37,6 +37,7 @@ interface ReviewPanelProps {
   skippedCount: number;
   computedPracticeStatus: "Graded" | "Needs Retry";
   isSyncing: boolean;
+  totalDurationMs?: number;
   initialExpandedIds?: string[];
   onStatusOverrideChange: (status: "Graded" | "Needs Retry") => void;
   onBackToQuiz: () => void;
@@ -84,6 +85,7 @@ export const ReviewPanel: React.FC<ReviewPanelProps> = ({
   accuracyPct,
   computedPracticeStatus,
   isSyncing,
+  totalDurationMs: totalDurationMsOverride,
   initialExpandedIds,
   onStatusOverrideChange,
   onBackToQuiz,
@@ -163,11 +165,12 @@ export const ReviewPanel: React.FC<ReviewPanelProps> = ({
     correct,
     firstTryCount,
     unansweredCount,
-    totalDurationMs,
+    totalDurationMs: recordedDurationMs,
   } = useMemo(
     () => groupReviewProblems(currentDrill.problems),
     [currentDrill.problems]
   );
+  const totalDurationMs = totalDurationMsOverride ?? recordedDurationMs;
 
   const firstTryPct =
     maxScore > 0 ? Math.round((firstTryCount / maxScore) * 100) : 0;
