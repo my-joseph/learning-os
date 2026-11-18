@@ -255,6 +255,16 @@ export function listLabsFromDisk(labsDir: string = getLabsDir()): LabListItem[] 
 
       const progressFile = readProgress(labId);
       const progress = summarizeLabProgress(rawMilestones, progressFile);
+      const summaryMistakes = (progressFile?.sessionSummary as { mistakeCategories?: unknown } | undefined)
+        ?.mistakeCategories;
+      const hasNotes =
+        rawMilestones.some((ms) => {
+          const mid = String(ms.id || "").trim();
+          if (!mid) return false;
+          const st = makeDefaultMilestoneState(lookupStateForMilestone(progressFile?.problems, mid));
+          return Boolean(st.mistakeNote && st.mistakeNote.trim()) || st.mistakes.length > 0;
+        }) ||
+        (Array.isArray(summaryMistakes) && summaryMistakes.length > 0);
 
       const chapterTitle =
         cleanCurriculumTitle(idMapTitles.get(chapterCode)) || chapterCode;
@@ -279,6 +289,7 @@ export function listLabsFromDisk(labsDir: string = getLabsDir()): LabListItem[] 
         reviseCount: progress.reviseCount,
         score: progress.score,
         maxScore: progress.maxScore,
+        hasNotes,
         progress,
       });
     } catch {

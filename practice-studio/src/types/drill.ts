@@ -394,5 +394,6 @@ export interface DrillListItem {
   score?: number;
   maxScore?: number;
   answeredCount?: number;
+  hasNotes?: boolean;
   localFilePath: string;
 }

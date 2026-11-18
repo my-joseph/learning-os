@@ -26,6 +26,7 @@ export type DrillSwitcherEntry =
 
 export interface PickerItem {
   kind: "drill" | "lab";
+  subject: "MATH" | "PRG";
   id: string;
   title: string;
   setLabel: string | null;
@@ -40,6 +41,7 @@ export interface PickerItem {
   countLabel: string;
   createdAt: string;
   answeredCount: number;
+  hasNotes: boolean;
 }
 
 export interface PickerSetEntry {
@@ -60,6 +62,7 @@ export type PickerChapterEntry =
       unitCode: string;
       unitTitle: string;
       inlineInChapter: boolean;
+      containsCurrent: boolean;
       items: PickerSetEntry[];
     };
 
@@ -86,6 +89,7 @@ export interface PickerSectionsResult {
   topicGroups: PickerTopicGroup[];
   defaultExpandedTopics: string[];
   defaultExpandedChapters: string[];
+  defaultExpandedUnits: string[];
   totalVisibleCount: number;
 }
 
@@ -244,6 +248,8 @@ export function normalizeDrillPickerItems(drills: readonly DrillListItem[]): Pic
 
     return {
       kind: "drill",
+      subject:
+        d.subject === "PRG" || unitCode.toUpperCase().startsWith("PRG-") ? "PRG" : "MATH",
       id: d.drillId,
       title,
       setLabel,
@@ -258,6 +264,7 @@ export function normalizeDrillPickerItems(drills: readonly DrillListItem[]): Pic
       countLabel: `${d.questionCount} Qs`,
       createdAt: d.createdAt || "",
       answeredCount: d.answeredCount ?? 0,
+      hasNotes: Boolean(d.hasNotes),
     };
   });
 }
@@ -276,6 +283,7 @@ export function normalizeLabPickerItems(labs: readonly LabListItem[]): PickerIte
 
     return {
       kind: "lab",
+      subject: "PRG",
       id: l.id,
       title: cleanCurriculumTitle(l.title) || l.id,
       setLabel: null,
@@ -290,6 +298,7 @@ export function normalizeLabPickerItems(labs: readonly LabListItem[]): PickerIte
       countLabel: `${l.milestoneCount} Ms`,
       createdAt: "",
       answeredCount: (l.passedCount ?? 0) + (l.reviseCount ?? 0),
+      hasNotes: Boolean(l.hasNotes),
     };
   });
 }
@@ -528,7 +537,7 @@ export function groupItemsByTopicAndChapter(
     );
 
     const chapters: PickerChapterGroup[] = rawChapters.map((chapter) => {
-      const entries = buildChapterEntries(chapter.items, chapter.chapterCode);
+      const entries = buildChapterEntries(chapter.items, chapter.chapterCode, currentId);
       const containsCurrent = chapter.items.some((item) => item.id === currentId);
       return {
         chapterCode: chapter.chapterCode,
@@ -551,7 +560,8 @@ export function groupItemsByTopicAndChapter(
 
 function buildChapterEntries(
   items: readonly PickerItem[],
-  chapterCode: string
+  chapterCode: string,
+  currentId = ""
 ): PickerChapterEntry[] {
   const unitBuckets = new Map<string, PickerItem[]>();
   for (const item of items) {
@@ -595,6 +605,7 @@ function buildChapterEntries(
       unitCode,
       unitTitle,
       inlineInChapter: sortedKeys.length === 1 && unitCode === chapterCode,
+      containsCurrent: sortedSets.some((item) => item.id === currentId),
       items: sortedSets.map((item) => ({
         item,
         setNumber: extractDrillSetNumber(item.id),
@@ -643,6 +654,19 @@ export function buildPickerSections(options: {
         t.chapters.filter((c) => c.containsCurrent).map((c) => c.chapterCode)
       );
 
+  const defaultExpandedUnits = topicGroups.flatMap((t) =>
+    t.chapters.flatMap((c) =>
+      c.entries
+        .filter(
+          (entry): entry is Extract<PickerChapterEntry, { kind: "unit-group" }> =>
+            entry.kind === "unit-group" &&
+            !entry.inlineInChapter &&
+            (isSearching || entry.containsCurrent)
+        )
+        .map((entry) => entry.unitCode)
+    )
+  );
+
   return {
     isSearching,
     currentItem,
@@ -650,6 +674,7 @@ export function buildPickerSections(options: {
     topicGroups,
     defaultExpandedTopics,
     defaultExpandedChapters,
+    defaultExpandedUnits,
     totalVisibleCount: filtered.length,
   };
 }
@@ -736,4 +761,406 @@ export function clampKeyboardIndex(
   if (totalItems <= 0) return -1;
   if (currentIndex >= 0 && currentIndex < totalItems) return currentIndex;
   return autoSelectFirst ? 0 : -1;
+}
+
+export type DrillTypeIconKind = "math-unit" | "code-unit" | "chapter-mixed" | "lab";
+
+/** Return true when `unitCode` represents a chapter-level mixed drill (no `-U##` unit suffix). */
+export function isChapterMixedUnitCode(unitCode: string): boolean {
+  return /^[A-Za-z]+-T\d+-C\d+$/i.test(unitCode.trim());
+}
+
+/** Extract short code from a unit code (`U01` / `C04`) or lab ID (`LAB-02`). */
+export function extractShortCode(
+  item: Pick<PickerItem, "kind" | "id" | "unitCode">
+): string {
+  if (item.kind === "lab") {
+    const match = /-(\d+)$/.exec(item.id.trim());
+    if (match) return `LAB-${match[1]}`;
+    return item.id.trim();
+  }
+  const code = item.unitCode.trim();
+  const unitMatch = /-(U\d+)$/i.exec(code);
+  if (unitMatch) return unitMatch[1].toUpperCase();
+  const chapterMatch = /-(C\d+)$/i.exec(code);
+  if (chapterMatch) return chapterMatch[1].toUpperCase();
+  return code || item.id.trim();
+}
+
+/** Format full curriculum/drill code for row tooltip (`title` attribute). */
+export function formatFullRowCode(
+  item: Pick<PickerItem, "kind" | "id" | "unitCode" | "setLabel">
+): string {
+  if (item.kind === "lab") return item.id;
+  if (item.setLabel) return `${item.unitCode} · ${item.id}`;
+  return item.unitCode;
+}
+
+/** Classify picker item for leaf type iconography. */
+export function classifyPickerItemType(
+  item: Pick<PickerItem, "kind" | "subject" | "unitCode">
+): DrillTypeIconKind {
+  if (item.kind === "lab") return "lab";
+  if (isChapterMixedUnitCode(item.unitCode)) return "chapter-mixed";
+  if (item.subject === "PRG" || item.unitCode.trim().toUpperCase().startsWith("PRG-")) {
+    return "code-unit";
+  }
+  return "math-unit";
+}
+
+/** Map internal practice status to concise human-readable status words. */
+export function getPickerStatusLabel(status: PickerStatus): string {
+  switch (status) {
+    case "Graded":
+      return "Graded";
+    case "In Progress":
+      return "In progress";
+    case "Needs Retry":
+      return "Needs retry";
+    default:
+      return "Not started";
+  }
+}
+
+/** Collect all topic, chapter, and expandable unit codes in the currently visible tree. */
+export function collectAllTreeCodes(topicGroups: readonly PickerTopicGroup[]): {
+  topicCodes: string[];
+  chapterCodes: string[];
+  unitCodes: string[];
+} {
+  const topicCodes: string[] = [];
+  const chapterCodes: string[] = [];
+  const unitCodes: string[] = [];
+
+  for (const topic of topicGroups) {
+    topicCodes.push(topic.topicCode);
+    for (const chapter of topic.chapters) {
+      chapterCodes.push(chapter.chapterCode);
+      for (const entry of chapter.entries) {
+        if (entry.kind === "unit-group" && !entry.inlineInChapter) {
+          unitCodes.push(entry.unitCode);
+        }
+      }
+    }
+  }
+
+  return { topicCodes, chapterCodes, unitCodes };
+}
+
+export type VisibleTreeRow =
+  | {
+      kind: "topic";
+      nodeId: string;
+      level: 1;
+      parentNodeId: null;
+      topicCode: string;
+      title: string;
+      itemCount: number;
+      expandable: true;
+      expanded: boolean;
+      containsCurrent: boolean;
+      treeIndex: number;
+    }
+  | {
+      kind: "chapter";
+      nodeId: string;
+      level: 2;
+      parentNodeId: string;
+      topicCode: string;
+      chapterCode: string;
+      title: string;
+      itemCount: number;
+      expandable: true;
+      expanded: boolean;
+      containsCurrent: boolean;
+      treeIndex: number;
+    }
+  | {
+      kind: "unit";
+      nodeId: string;
+      level: 3;
+      parentNodeId: string;
+      topicCode: string;
+      chapterCode: string;
+      unitCode: string;
+      shortCode: string;
+      title: string;
+      itemCount: number;
+      expandable: true;
+      expanded: boolean;
+      containsCurrent: boolean;
+      treeIndex: number;
+    }
+  | {
+      kind: "leaf";
+      nodeId: string;
+      level: 3 | 4;
+      parentNodeId: string;
+      topicCode: string;
+      chapterCode: string;
+      item: PickerItem;
+      label: string;
+      shortCode: string;
+      fullCode: string;
+      drillType: DrillTypeIconKind;
+      status: PickerStatus;
+      hasNotes: boolean;
+      isDueToday: boolean;
+      isCurrent: boolean;
+      expandable: false;
+      expanded: false;
+      treeIndex: number;
+    };
+
+/**
+ * Flatten the visible curriculum tree (Topic -> Chapter -> [Unit] -> Leaf) in top-to-bottom
+ * visual order with `level`, `expanded`, `status`, and parent references.
+ */
+export function buildVisibleTreeRows(options: {
+  topicGroups: readonly PickerTopicGroup[];
+  currentId: string;
+  expandedTopics: ReadonlySet<string>;
+  expandedChapters: ReadonlySet<string>;
+  expandedUnits: ReadonlySet<string>;
+  dueUnitCodes?: ReadonlySet<string>;
+  currentHasNotesOverride?: boolean | null;
+}): VisibleTreeRow[] {
+  const {
+    topicGroups,
+    currentId,
+    expandedTopics,
+    expandedChapters,
+    expandedUnits,
+    dueUnitCodes,
+    currentHasNotesOverride = null,
+  } = options;
+
+  const rows: VisibleTreeRow[] = [];
+
+  const pushLeaf = (
+    item: PickerItem,
+    label: string,
+    level: 3 | 4,
+    parentNodeId: string,
+    topicCode: string,
+    chapterCode: string
+  ) => {
+    const isCurrent = item.id === currentId;
+    const hasNotes =
+      isCurrent && currentHasNotesOverride !== null
+        ? item.hasNotes || currentHasNotesOverride
+        : item.hasNotes;
+    rows.push({
+      kind: "leaf",
+      nodeId: `leaf:${item.id}`,
+      level,
+      parentNodeId,
+      topicCode,
+      chapterCode,
+      item,
+      label,
+      shortCode: extractShortCode(item),
+      fullCode: formatFullRowCode(item),
+      drillType: classifyPickerItemType(item),
+      status: item.practiceStatus,
+      hasNotes,
+      isDueToday: Boolean(dueUnitCodes?.has(item.unitCode)),
+      isCurrent,
+      expandable: false,
+      expanded: false,
+      treeIndex: rows.length,
+    });
+  };
+
+  for (const topic of topicGroups) {
+    const topicNodeId = `topic:${topic.topicCode}`;
+    const isTopicExpanded = expandedTopics.has(topic.topicCode);
+    rows.push({
+      kind: "topic",
+      nodeId: topicNodeId,
+      level: 1,
+      parentNodeId: null,
+      topicCode: topic.topicCode,
+      title: topic.topicTitle,
+      itemCount: topic.itemCount,
+      expandable: true,
+      expanded: isTopicExpanded,
+      containsCurrent: topic.containsCurrent,
+      treeIndex: rows.length,
+    });
+
+    if (!isTopicExpanded) continue;
+
+    for (const chapter of topic.chapters) {
+      const chapterNodeId = `chapter:${chapter.chapterCode}`;
+      const isChapterExpanded = expandedChapters.has(chapter.chapterCode);
+      rows.push({
+        kind: "chapter",
+        nodeId: chapterNodeId,
+        level: 2,
+        parentNodeId: topicNodeId,
+        topicCode: topic.topicCode,
+        chapterCode: chapter.chapterCode,
+        title: chapter.chapterTitle,
+        itemCount: chapter.itemCount,
+        expandable: true,
+        expanded: isChapterExpanded,
+        containsCurrent: chapter.containsCurrent,
+        treeIndex: rows.length,
+      });
+
+      if (!isChapterExpanded) continue;
+
+      for (const entry of chapter.entries) {
+        if (entry.kind === "single") {
+          pushLeaf(
+            entry.item,
+            entry.item.title,
+            3,
+            chapterNodeId,
+            topic.topicCode,
+            chapter.chapterCode
+          );
+          continue;
+        }
+
+        if (entry.inlineInChapter) {
+          for (const setEntry of entry.items) {
+            pushLeaf(
+              setEntry.item,
+              setEntry.setLabel,
+              3,
+              chapterNodeId,
+              topic.topicCode,
+              chapter.chapterCode
+            );
+          }
+          continue;
+        }
+
+        const unitNodeId = `unit:${entry.unitCode}`;
+        const isUnitExpanded = expandedUnits.has(entry.unitCode);
+        const unitShortCode = extractShortCode({
+          kind: "drill",
+          id: entry.unitCode,
+          unitCode: entry.unitCode,
+        });
+        rows.push({
+          kind: "unit",
+          nodeId: unitNodeId,
+          level: 3,
+          parentNodeId: chapterNodeId,
+          topicCode: topic.topicCode,
+          chapterCode: chapter.chapterCode,
+          unitCode: entry.unitCode,
+          shortCode: unitShortCode,
+          title: entry.unitTitle,
+          itemCount: entry.items.length,
+          expandable: true,
+          expanded: isUnitExpanded,
+          containsCurrent: entry.containsCurrent,
+          treeIndex: rows.length,
+        });
+
+        if (!isUnitExpanded) continue;
+
+        for (const setEntry of entry.items) {
+          pushLeaf(
+            setEntry.item,
+            setEntry.setLabel,
+            4,
+            unitNodeId,
+            topic.topicCode,
+            chapter.chapterCode
+          );
+        }
+      }
+    }
+  }
+
+  return rows;
+}
+
+export type TreeNavKey = "ArrowDown" | "ArrowUp" | "ArrowRight" | "ArrowLeft" | "Enter";
+
+export type TreeKeyAction =
+  | { type: "focus"; nodeId: string }
+  | { type: "expand"; nodeKind: "topic" | "chapter" | "unit"; code: string }
+  | { type: "collapse"; nodeKind: "topic" | "chapter" | "unit"; code: string }
+  | { type: "toggle"; nodeKind: "topic" | "chapter" | "unit"; code: string }
+  | { type: "select"; itemId: string }
+  | { type: "none" };
+
+function branchCodeOf(
+  row: Extract<VisibleTreeRow, { expandable: true }>
+): string {
+  if (row.kind === "topic") return row.topicCode;
+  if (row.kind === "chapter") return row.chapterCode;
+  return row.unitCode;
+}
+
+/** Resolve WAI-ARIA tree keyboard navigation (`ArrowUp/Down/Left/Right`, `Enter`) on flattened rows. */
+export function resolveTreeKeyAction(
+  rows: readonly VisibleTreeRow[],
+  currentNodeId: string | null,
+  key: TreeNavKey
+): TreeKeyAction {
+  if (rows.length === 0) return { type: "none" };
+  const idx = currentNodeId ? rows.findIndex((r) => r.nodeId === currentNodeId) : -1;
+
+  if (key === "ArrowDown") {
+    const nextIdx = idx < 0 || idx >= rows.length - 1 ? 0 : idx + 1;
+    return { type: "focus", nodeId: rows[nextIdx].nodeId };
+  }
+
+  if (key === "ArrowUp") {
+    const prevIdx = idx <= 0 ? rows.length - 1 : idx - 1;
+    return { type: "focus", nodeId: rows[prevIdx].nodeId };
+  }
+
+  if (idx < 0) return { type: "none" };
+  const row = rows[idx];
+
+  if (key === "ArrowRight") {
+    if (!row.expandable) return { type: "none" };
+    if (!row.expanded) {
+      return { type: "expand", nodeKind: row.kind, code: branchCodeOf(row) };
+    }
+    const next = rows[idx + 1];
+    if (next && next.parentNodeId === row.nodeId) {
+      return { type: "focus", nodeId: next.nodeId };
+    }
+    return { type: "none" };
+  }
+
+  if (key === "ArrowLeft") {
+    if (row.expandable && row.expanded) {
+      return { type: "collapse", nodeKind: row.kind, code: branchCodeOf(row) };
+    }
+    if (row.parentNodeId) {
+      return { type: "focus", nodeId: row.parentNodeId };
+    }
+    return { type: "none" };
+  }
+
+  // Enter
+  if (row.kind === "leaf") {
+    return { type: "select", itemId: row.item.id };
+  }
+  return { type: "toggle", nodeKind: row.kind, code: branchCodeOf(row) };
+}
+
+/** Find the first visible leaf nodeId (used to auto-target first search match on Enter). */
+export function findFirstLeafNodeId(rows: readonly VisibleTreeRow[]): string | null {
+  const found = rows.find((r) => r.kind === "leaf");
+  return found ? found.nodeId : null;
+}
+
+/** Find the nodeId of `currentId` if it is currently visible in the tree. */
+export function findCurrentLeafNodeId(
+  rows: readonly VisibleTreeRow[],
+  currentId: string
+): string | null {
+  const found = rows.find((r) => r.kind === "leaf" && r.item.id === currentId);
+  return found ? found.nodeId : null;
 }

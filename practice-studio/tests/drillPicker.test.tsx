@@ -353,7 +353,7 @@ assert.equal(filterLabs(prgLabs, "", "GRADED").length, 1);
 assert.equal(normalizeLabPickerItems(prgLabs)[0].countLabel, "3 Ms");
 
 // ---------------------------------------------------------------------------
-// 7. DrillSwitcher SSR rendering (Math vs Programming, search expansion, no IDs)
+// 7. DrillSwitcher SSR rendering (Math vs Programming, tree roles, search expansion, no full IDs)
 // ---------------------------------------------------------------------------
 const noop = () => {};
 
@@ -367,6 +367,7 @@ const mathHtml = renderToStaticMarkup(
     currentDrill={null}
     drills={mathDrills}
     labs={prgLabs}
+    dueUnitCodes={["MTH-T02-C01-U02"]}
     selectedDrillId="DRL-MTH-T02-C01-U01-03"
     drillSearch=""
     onSearchChange={noop}
@@ -377,16 +378,31 @@ const mathHtml = renderToStaticMarkup(
 );
 assert.doesNotMatch(mathHtml, />Labs</, "Math workspace must never show a Labs tab");
 assert.match(mathHtml, />Current</);
-assert.match(mathHtml, />Continue</);
-assert.match(mathHtml, />Graded</);
+assert.doesNotMatch(mathHtml, />Continue</, "separate Continue list is removed");
+assert.match(mathHtml, />Expand all</);
+assert.match(mathHtml, />Collapse all</);
+assert.match(mathHtml, />View</);
 assert.doesNotMatch(mathHtml, />Synced</);
+assert.match(mathHtml, /role="tree"/);
+assert.match(mathHtml, /role="treeitem"/);
+assert.match(mathHtml, /aria-level="1"/);
+assert.match(mathHtml, /aria-level="2"/);
+assert.match(mathHtml, /aria-level="3"/);
+assert.match(mathHtml, /aria-level="4"/);
+assert.match(mathHtml, /aria-selected="true"/);
 assert.match(mathHtml, /Algebra and Trigonometry/);
 assert.match(mathHtml, /Equations and Inequalities/);
 assert.match(mathHtml, /Complex Numbers/);
+assert.match(mathHtml, />U01</);
+assert.match(mathHtml, />U02</);
 assert.match(mathHtml, />Set 3</);
+assert.match(mathHtml, /Due today/);
+assert.match(mathHtml, /bg-amber-500/);
+assert.match(mathHtml, /bg-rose-500/);
 // MTH-T01 starts collapsed so Fractions drills inside aren't expanded
 assert.match(mathHtml, /Prealgebra/);
-assert.doesNotMatch(mathHtml, /DRL-MTH-/);
+assert.doesNotMatch(mathHtml, />C04</, "collapsed topic must hide its child drills");
+assert.doesNotMatch(mathHtml, />DRL-MTH-/);
 
 const codeSearchHtml = renderToStaticMarkup(
   <DrillSwitcher
@@ -402,6 +418,7 @@ const codeSearchHtml = renderToStaticMarkup(
         topicTitle: "JS, TS & Data Structures",
         chapterCode: "PRG-T01-C01",
         chapterTitle: "JS Execution & Async",
+        hasNotes: true,
       }),
     ]}
     labs={prgLabs}
@@ -416,7 +433,9 @@ const codeSearchHtml = renderToStaticMarkup(
 assert.match(codeSearchHtml, />Drills</);
 assert.match(codeSearchHtml, />Labs</);
 assert.match(codeSearchHtml, /Closures/);
+assert.match(codeSearchHtml, />U02</);
+assert.match(codeSearchHtml, /Has notes/);
 assert.doesNotMatch(codeSearchHtml, />Current</, "searching hides Current section");
-assert.doesNotMatch(codeSearchHtml, /DRL-PRG-/);
+assert.doesNotMatch(codeSearchHtml, />DRL-PRG-/);
 
 console.log("drill picker tests passed");

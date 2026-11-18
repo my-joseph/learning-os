@@ -5,26 +5,42 @@ import { AnimatePresence, m } from "motion/react";
 import { popover, presence, settle } from "@/lib/motion";
 import { Reveal } from "@/components/motion/Reveal";
 import {
-  CheckCircle2,
+  Check,
   ChevronDown,
   ChevronRight,
-  Clock,
+  ChevronsDownUp,
+  ChevronsUpDown,
+  Code2,
+  FlaskConical,
+  Layers,
+  MessageSquare,
   Search,
+  Shuffle,
+  Sigma,
+  SlidersHorizontal,
   X,
 } from "lucide-react";
 import { DrillDocument, DrillListItem } from "@/types/drill";
 import type { LabListItem } from "@/lib/labModel";
 import {
-  buildNavigableRows,
   buildPickerSections,
-  clampKeyboardIndex,
+  buildVisibleTreeRows,
+  classifyPickerItemType,
+  collectAllTreeCodes,
+  extractShortCode,
   filterPickerItems,
+  findFirstLeafNodeId,
+  formatFullRowCode,
+  getPickerStatusLabel,
   normalizeDrillPickerItems,
   normalizeLabPickerItems,
-  stepKeyboardIndex,
+  resolveTreeKeyAction,
+  type DrillTypeIconKind,
   type PickerItem,
+  type PickerStatus,
+  type TreeNavKey,
+  type VisibleTreeRow,
 } from "@/lib/drillGrouping";
-import { readRecentDrillIds } from "@/lib/lastDrillStorage";
 import { isLabId, subjectOf, type Workspace } from "@/lib/routes";
 import { DrillFilter } from "@/hooks/types";
 
@@ -39,6 +55,7 @@ interface DrillSwitcherProps {
   currentDrill: DrillDocument | null;
   drills: DrillListItem[];
   labs?: LabListItem[];
+  dueUnitCodes?: readonly string[];
   selectedDrillId: string;
   drillSearch: string;
   onSearchChange: (value: string) => void;
@@ -47,104 +64,101 @@ interface DrillSwitcherProps {
   onSelectDrill: (drillId: string) => void;
 }
 
-function StatusSummary({
-  practiceStatus,
-  progressText,
-  inline = false,
-}: {
-  practiceStatus?: string;
-  progressText: string;
-  inline?: boolean;
-}) {
-  const status = practiceStatus || "Ready";
-  const isGraded = status === "Graded";
-  const isInProgress = status === "In Progress" || status === "Needs Retry";
-
-  const statusTone = isGraded
-    ? "text-emerald-700 dark:text-emerald-400"
-    : isInProgress
-    ? "text-amber-600 dark:text-amber-400"
-    : "text-zinc-500 dark:text-zinc-400";
-
-  return (
-    <div
-      className={
-        inline
-          ? "flex items-center gap-2 shrink-0"
-          : "flex flex-col items-end shrink-0 gap-0.5"
-      }
-    >
-      <span className={`inline-flex items-center gap-1 text-[11px] font-medium ${statusTone}`}>
-        {isGraded ? (
-          <CheckCircle2 className="w-3 h-3" aria-hidden="true" />
-        ) : (
-          <Clock className="w-3 h-3" aria-hidden="true" />
-        )}
-        <span>{status}</span>
-      </span>
-      <span className="text-[11px] font-mono tabular-nums text-zinc-500 dark:text-zinc-400">
-        {progressText}
-      </span>
-    </div>
-  );
+function statusDotClass(status: PickerStatus): string {
+  switch (status) {
+    case "Graded":
+      return "bg-emerald-500";
+    case "In Progress":
+      return "bg-amber-500";
+    case "Needs Retry":
+      return "bg-rose-500";
+    default:
+      return "bg-zinc-300 dark:bg-zinc-600";
+  }
 }
 
-function PickerItemRow({
-  item,
-  isSelected,
-  isKeyboardActive,
-  isPinnedCurrent = false,
-  showSetInTitle = false,
-  buttonRef,
-  onPick,
-}: {
-  item: PickerItem;
-  isSelected: boolean;
-  isKeyboardActive: boolean;
-  isPinnedCurrent?: boolean;
-  showSetInTitle?: boolean;
-  buttonRef?: (el: HTMLButtonElement | null) => void;
-  onPick: (id: string) => void;
-}) {
-  const titleText =
-    showSetInTitle && item.setLabel ? `${item.title} · ${item.setLabel}` : item.title;
-
+function StatusDot({ status }: { status: PickerStatus }) {
+  const label = getPickerStatusLabel(status);
   return (
-    <button
-      ref={buttonRef}
-      type="button"
-      onClick={() => onPick(item.id)}
-      aria-current={isSelected ? "true" : undefined}
-      className={`w-full text-left p-2.5 rounded-lg border transition-colors flex items-start justify-between gap-3 ${
-        isPinnedCurrent && isSelected
-          ? "bg-indigo-50/60 dark:bg-indigo-950/30 border-indigo-600 dark:border-indigo-500"
-          : isSelected
-          ? "bg-zinc-100 dark:bg-zinc-800/90 border-indigo-600 dark:border-indigo-500"
-          : "bg-zinc-50/60 dark:bg-zinc-950/50 hover:bg-zinc-100 dark:hover:bg-zinc-800/60 border-zinc-200 dark:border-zinc-800"
-      } ${
-        isKeyboardActive
-          ? "ring-2 ring-indigo-500/70 dark:ring-indigo-400/70 bg-zinc-100/90 dark:bg-zinc-800/80"
-          : ""
-      }`}
+    <span
+      className="inline-flex items-center justify-center w-3 h-3 shrink-0"
+      title={label}
     >
-      <div className="min-w-0 flex-1 space-y-0.5">
-        <div className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 truncate">
-          {titleText}
-        </div>
-        <div className="text-[11px] font-mono text-zinc-500 dark:text-zinc-400">
-          {item.unitCode} · {item.countLabel}
-        </div>
-      </div>
-
-      <StatusSummary
-        practiceStatus={item.practiceStatus}
-        progressText={`${item.score}/${item.maxScore}`}
+      <span
+        className={`w-2 h-2 rounded-full ${statusDotClass(status)}`}
+        aria-hidden="true"
       />
-    </button>
+      <span className="sr-only">{label}</span>
+    </span>
   );
 }
 
-/** Searchable, keyboard-navigable, Topic->Chapter grouped dropdown for drills and labs. */
+function NoteSlot({
+  hasNotes,
+  isDueToday,
+}: {
+  hasNotes: boolean;
+  isDueToday: boolean;
+}) {
+  if (isDueToday) {
+    return (
+      <span
+        className="w-3.5 h-3.5 inline-flex items-center justify-center shrink-0"
+        title={hasNotes ? "Due today · has notes" : "Due today"}
+      >
+        <MessageSquare
+          className="w-3 h-3 text-zinc-900 dark:text-zinc-100 fill-zinc-900 dark:fill-zinc-100"
+          aria-hidden="true"
+        />
+        <span className="sr-only">Due today</span>
+      </span>
+    );
+  }
+  if (hasNotes) {
+    return (
+      <span
+        className="w-3.5 h-3.5 inline-flex items-center justify-center shrink-0"
+        title="Has notes or mistake tags"
+      >
+        <MessageSquare
+          className="w-3 h-3 text-zinc-400 dark:text-zinc-500"
+          aria-hidden="true"
+        />
+        <span className="sr-only">Has notes</span>
+      </span>
+    );
+  }
+  return <span className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />;
+}
+
+function DrillTypeIcon({ kind }: { kind: DrillTypeIconKind }) {
+  const cls = "w-3.5 h-3.5 text-zinc-400 dark:text-zinc-500 shrink-0";
+  switch (kind) {
+    case "lab":
+      return <FlaskConical className={cls} aria-hidden="true" />;
+    case "chapter-mixed":
+      return <Shuffle className={cls} aria-hidden="true" />;
+    case "code-unit":
+      return <Code2 className={cls} aria-hidden="true" />;
+    default:
+      return <Sigma className={cls} aria-hidden="true" />;
+  }
+}
+
+const FILTER_OPTIONS: readonly { id: DrillFilter; label: string }[] = [
+  { id: "ALL", label: "All" },
+  { id: "UNFINISHED", label: "Unfinished" },
+  { id: "GRADED", label: "Graded" },
+];
+
+const STATUS_LEGEND: readonly { status: PickerStatus; label: string }[] = [
+  { status: "Ready", label: "Not started" },
+  { status: "In Progress", label: "In progress" },
+  { status: "Graded", label: "Graded" },
+  { status: "Needs Retry", label: "Needs retry" },
+];
+
+/** Searchable, keyboard-navigable Topic -> Chapter -> Unit -> Leaf tree picker for drills and labs. */
 export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
   isOpen,
   onToggle,
@@ -154,6 +168,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
   currentDrill,
   drills,
   labs = [],
+  dueUnitCodes = [],
   selectedDrillId,
   drillSearch,
   onSearchChange,
@@ -169,15 +184,32 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
     isCodeWorkspace && isLabId(selectedDrillId) ? "labs" : "drills";
 
   const [activeTab, setActiveTab] = useState<PickerTab>(defaultTab);
-  const [recentIds, setRecentIds] = useState<string[]>([]);
-  const [activeKeyboardIndex, setActiveKeyboardIndex] = useState<number>(-1);
+  const [isViewOpen, setIsViewOpen] = useState(false);
+  const [activeNodeId, setActiveNodeId] = useState<string | null>(null);
 
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
+  const viewContainerRef = useRef<HTMLDivElement | null>(null);
+  const viewButtonRef = useRef<HTMLButtonElement | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
-  const currentItemRef = useRef<HTMLButtonElement | null>(null);
-  const rowRefs = useRef<Map<number, HTMLButtonElement | null>>(new Map());
+  const currentTreeRef = useRef<HTMLButtonElement | null>(null);
+  const nodeRefs = useRef<Map<string, HTMLButtonElement | null>>(new Map());
   const wasOpenRef = useRef(isOpen);
+
+  const dueUnitSet = useMemo(() => new Set(dueUnitCodes), [dueUnitCodes]);
+
+  const currentDrillHasNotes = useMemo(() => {
+    if (!currentDrill) return null;
+    const hasProblemNotes = currentDrill.problems.some(
+      (p) =>
+        Boolean(p.state?.mistakeNote && p.state.mistakeNote.trim()) ||
+        (Array.isArray(p.state?.mistakes) && p.state.mistakes.length > 0)
+    );
+    const hasCategories =
+      Array.isArray(currentDrill.sessionSummary?.mistakeCategories) &&
+      currentDrill.sessionSummary.mistakeCategories.length > 0;
+    return hasProblemNotes || hasCategories;
+  }, [currentDrill]);
 
   const drillItems = useMemo(() => normalizeDrillPickerItems(drills), [drills]);
   const labItems = useMemo(() => normalizeLabPickerItems(labs), [labs]);
@@ -198,11 +230,11 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
       buildPickerSections({
         items: activeItems,
         currentId: selectedDrillId,
-        recentIds,
+        recentIds: [],
         search: drillSearch,
         filter: drillFilter,
       }),
-    [activeItems, selectedDrillId, recentIds, drillSearch, drillFilter]
+    [activeItems, selectedDrillId, drillSearch, drillFilter]
   );
 
   const [expandedTopics, setExpandedTopics] = useState<Set<string>>(
@@ -211,171 +243,353 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
   const [expandedChapters, setExpandedChapters] = useState<Set<string>>(
     () => new Set(sections.defaultExpandedChapters)
   );
+  const [expandedUnits, setExpandedUnits] = useState<Set<string>>(
+    () => new Set(sections.defaultExpandedUnits)
+  );
 
-  // Sync tab, recent storage, expanded state, focus, and scroll when opening or switching drills.
+  const allTreeCodes = useMemo(
+    () => collectAllTreeCodes(sections.topicGroups),
+    [sections.topicGroups]
+  );
+
+  const visibleTreeRows = useMemo(
+    () =>
+      buildVisibleTreeRows({
+        topicGroups: sections.topicGroups,
+        currentId: selectedDrillId,
+        expandedTopics,
+        expandedChapters,
+        expandedUnits,
+        dueUnitCodes: dueUnitSet,
+        currentHasNotesOverride: currentDrillHasNotes,
+      }),
+    [
+      sections.topicGroups,
+      selectedDrillId,
+      expandedTopics,
+      expandedChapters,
+      expandedUnits,
+      dueUnitSet,
+      currentDrillHasNotes,
+    ]
+  );
+
+  const rowByNodeId = useMemo(() => {
+    const map = new Map<string, VisibleTreeRow>();
+    for (const row of visibleTreeRows) {
+      map.set(row.nodeId, row);
+    }
+    return map;
+  }, [visibleTreeRows]);
+
+  // Sync tab when opening, reset View popover on open/close.
   useEffect(() => {
     const justOpened = isOpen && !wasOpenRef.current;
     wasOpenRef.current = isOpen;
 
-    if (!isOpen) return;
-
-    const ws: Workspace = isCodeWorkspace ? "code" : "math";
-    setRecentIds(readRecentDrillIds(ws));
+    if (!isOpen) {
+      setIsViewOpen(false);
+      return;
+    }
 
     if (justOpened) {
       const nextTab: PickerTab =
         isCodeWorkspace && isLabId(selectedDrillId) ? "labs" : "drills";
       setActiveTab(nextTab);
-      setActiveKeyboardIndex(drillSearch.trim() ? 0 : -1);
     }
-  }, [isOpen, isCodeWorkspace, selectedDrillId, drillSearch]);
+  }, [isOpen, isCodeWorkspace, selectedDrillId]);
 
-  // Reset expanded groups when picker opens, active tab changes, or selected drill changes.
+  // Expand matching branches on search or reset to current drill's branch on open/tab/filter change.
   useEffect(() => {
     if (!isOpen) return;
     setExpandedTopics(new Set(sections.defaultExpandedTopics));
     setExpandedChapters(new Set(sections.defaultExpandedChapters));
+    setExpandedUnits(new Set(sections.defaultExpandedUnits));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, activeTab, selectedDrillId]);
+  }, [isOpen, activeTab, selectedDrillId, drillSearch, drillFilter]);
 
-  // Autofocus search and scroll current item into view when opened.
+  // Keep active keyboard node aligned with search results or visible rows.
+  useEffect(() => {
+    if (!isOpen) return;
+    if (sections.isSearching) {
+      setActiveNodeId(findFirstLeafNodeId(visibleTreeRows));
+    } else if (activeNodeId && !rowByNodeId.has(activeNodeId)) {
+      setActiveNodeId(null);
+    }
+  }, [isOpen, sections.isSearching, visibleTreeRows, rowByNodeId, activeNodeId]);
+
+  // Autofocus search and scroll the current drill row into view on open.
   useEffect(() => {
     if (!isOpen) return;
     const rafId = window.requestAnimationFrame(() => {
       searchInputRef.current?.focus();
-      if (scrollContainerRef.current) {
-        scrollContainerRef.current.scrollTop = 0;
-      }
-      currentItemRef.current?.scrollIntoView({ block: "nearest" });
+      currentTreeRef.current?.scrollIntoView({ block: "nearest" });
     });
     return () => window.cancelAnimationFrame(rafId);
   }, [isOpen]);
 
-  // Close on Escape even if focus moved outside the search input.
+  // Close View popover when clicking outside it.
+  useEffect(() => {
+    if (!isViewOpen) return;
+    const handlePointerDown = (e: MouseEvent) => {
+      if (
+        viewContainerRef.current &&
+        !viewContainerRef.current.contains(e.target as Node)
+      ) {
+        setIsViewOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handlePointerDown);
+    return () => document.removeEventListener("mousedown", handlePointerDown);
+  }, [isViewOpen]);
+
+  // Close on Escape even if focus is outside the search input.
   useEffect(() => {
     if (!isOpen) return;
     const handleWindowKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         e.preventDefault();
-        onClose();
-        triggerRef.current?.focus();
+        if (isViewOpen) {
+          setIsViewOpen(false);
+          viewButtonRef.current?.focus();
+        } else {
+          onClose();
+          triggerRef.current?.focus();
+        }
       }
     };
     window.addEventListener("keydown", handleWindowKeyDown);
     return () => window.removeEventListener("keydown", handleWindowKeyDown);
-  }, [isOpen, onClose]);
-
-  const navigableRows = useMemo(
-    () => buildNavigableRows(sections, expandedTopics, expandedChapters),
-    [sections, expandedTopics, expandedChapters]
-  );
-
-  const navIndexByKey = useMemo(() => {
-    const map = new Map<string, number>();
-    for (const row of navigableRows) {
-      map.set(`${row.section}:${row.id}`, row.navIndex);
-    }
-    return map;
-  }, [navigableRows]);
-
-  // Keep keyboard highlight clamped or auto-selected on first result while searching.
-  useEffect(() => {
-    setActiveKeyboardIndex((prev) =>
-      clampKeyboardIndex(prev, navigableRows.length, sections.isSearching)
-    );
-  }, [navigableRows.length, sections.isSearching, drillSearch, activeTab, drillFilter]);
-
-  // Scroll the keyboard-highlighted row into view as the user arrows through results.
-  useEffect(() => {
-    if (!isOpen || activeKeyboardIndex < 0) return;
-    const el = rowRefs.current.get(activeKeyboardIndex);
-    el?.scrollIntoView({ block: "nearest" });
-  }, [isOpen, activeKeyboardIndex]);
+  }, [isOpen, isViewOpen, onClose]);
 
   const handlePick = (id: string) => {
     if (drillSearch) {
       onSearchChange("");
     }
+    setIsViewOpen(false);
     onSelectDrill(id);
     onClose();
   };
 
-  const toggleTopic = (topicCode: string) => {
-    setExpandedTopics((prev) => {
+  const setBranchExpanded = (
+    kind: "topic" | "chapter" | "unit",
+    code: string,
+    mode: "toggle" | "expand" | "collapse"
+  ) => {
+    const updater = (prev: Set<string>) => {
       const next = new Set(prev);
-      if (next.has(topicCode)) {
-        next.delete(topicCode);
-      } else {
-        next.add(topicCode);
+      const has = next.has(code);
+      if (mode === "expand" || (mode === "toggle" && !has)) {
+        next.add(code);
+      } else if (mode === "collapse" || (mode === "toggle" && has)) {
+        next.delete(code);
       }
       return next;
-    });
+    };
+    if (kind === "topic") setExpandedTopics(updater);
+    else if (kind === "chapter") setExpandedChapters(updater);
+    else setExpandedUnits(updater);
   };
 
-  const toggleChapter = (chapterCode: string) => {
-    setExpandedChapters((prev) => {
-      const next = new Set(prev);
-      if (next.has(chapterCode)) {
-        next.delete(chapterCode);
-      } else {
-        next.add(chapterCode);
-      }
-      return next;
-    });
+  const handleExpandAll = () => {
+    setExpandedTopics(new Set(allTreeCodes.topicCodes));
+    setExpandedChapters(new Set(allTreeCodes.chapterCodes));
+    setExpandedUnits(new Set(allTreeCodes.unitCodes));
+  };
+
+  const handleCollapseAll = () => {
+    setExpandedTopics(new Set());
+    setExpandedChapters(new Set());
+    setExpandedUnits(new Set());
+    setActiveNodeId(null);
+  };
+
+  const focusTreeNode = (nodeId: string) => {
+    setActiveNodeId(nodeId);
+    const el = nodeRefs.current.get(nodeId);
+    if (el) {
+      el.focus();
+      el.scrollIntoView({ block: "nearest" });
+    }
   };
 
   const handlePopoverKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "ArrowDown") {
-      e.preventDefault();
-      setActiveKeyboardIndex((prev) =>
-        stepKeyboardIndex(prev, navigableRows.length, "down")
-      );
-      return;
-    }
-    if (e.key === "ArrowUp") {
-      e.preventDefault();
-      setActiveKeyboardIndex((prev) =>
-        stepKeyboardIndex(prev, navigableRows.length, "up")
-      );
-      return;
-    }
-    if (e.key === "Enter") {
-      const target = e.target as HTMLElement | null;
-      if (target && target.tagName === "BUTTON" && target !== searchInputRef.current) {
-        return;
-      }
-      if (navigableRows.length === 0) return;
-      const pickedRow =
-        activeKeyboardIndex >= 0
-          ? navigableRows[activeKeyboardIndex]
-          : sections.isSearching
-          ? navigableRows[0]
-          : undefined;
-      if (pickedRow) {
-        e.preventDefault();
-        handlePick(pickedRow.id);
-      }
-      return;
-    }
+    const target = e.target as HTMLElement | null;
+    const inSearchInput = target === searchInputRef.current;
+
     if (e.key === "Escape") {
       e.preventDefault();
-      onClose();
-      triggerRef.current?.focus();
+      e.stopPropagation();
+      if (isViewOpen) {
+        setIsViewOpen(false);
+        viewButtonRef.current?.focus();
+      } else {
+        onClose();
+        triggerRef.current?.focus();
+      }
+      return;
+    }
+
+    if (
+      e.key !== "ArrowDown" &&
+      e.key !== "ArrowUp" &&
+      e.key !== "ArrowRight" &&
+      e.key !== "ArrowLeft" &&
+      e.key !== "Enter"
+    ) {
+      return;
+    }
+
+    // Keep text caret navigation inside the search box.
+    if (inSearchInput && (e.key === "ArrowLeft" || e.key === "ArrowRight")) {
+      return;
+    }
+
+    // Let non-treeitem toolbar buttons (Tabs, Expand/Collapse, View, Clear) handle their own Enter.
+    const isTreeItemTarget = target?.getAttribute("role") === "treeitem";
+    if (e.key === "Enter" && !inSearchInput && !isTreeItemTarget) {
+      return;
+    }
+
+    if (inSearchInput && e.key === "Enter") {
+      const targetNodeId =
+        activeNodeId && rowByNodeId.has(activeNodeId)
+          ? activeNodeId
+          : sections.isSearching
+          ? findFirstLeafNodeId(visibleTreeRows)
+          : null;
+      const targetRow = targetNodeId ? rowByNodeId.get(targetNodeId) : undefined;
+      if (targetRow?.kind === "leaf") {
+        e.preventDefault();
+        handlePick(targetRow.item.id);
+      }
+      return;
+    }
+
+    const action = resolveTreeKeyAction(visibleTreeRows, activeNodeId, e.key as TreeNavKey);
+    if (action.type === "none") return;
+
+    e.preventDefault();
+    if (action.type === "focus") {
+      focusTreeNode(action.nodeId);
+    } else if (action.type === "expand") {
+      setBranchExpanded(action.nodeKind, action.code, "expand");
+    } else if (action.type === "collapse") {
+      setBranchExpanded(action.nodeKind, action.code, "collapse");
+    } else if (action.type === "toggle") {
+      setBranchExpanded(action.nodeKind, action.code, "toggle");
+    } else if (action.type === "select") {
+      handlePick(action.itemId);
     }
   };
 
-  const registerRowRef = (navIndex: number | undefined, el: HTMLButtonElement | null) => {
-    if (navIndex === undefined) return;
+  const registerNodeRef = (nodeId: string, el: HTMLButtonElement | null) => {
     if (el) {
-      rowRefs.current.set(navIndex, el);
+      nodeRefs.current.set(nodeId, el);
     } else {
-      rowRefs.current.delete(navIndex);
+      nodeRefs.current.delete(nodeId);
     }
   };
 
-  const showTreeHeading =
-    !sections.isSearching &&
-    (Boolean(sections.currentItem) || sections.continueItems.length > 0);
+  const currentPinnedItem =
+    !sections.isSearching && sections.currentItem ? sections.currentItem : null;
+  const currentPinnedHasNotes = currentPinnedItem
+    ? currentPinnedItem.hasNotes || Boolean(currentDrillHasNotes)
+    : false;
+  const currentPinnedIsDue = currentPinnedItem
+    ? dueUnitSet.has(currentPinnedItem.unitCode)
+    : false;
+
+  const isTreeEmpty = sections.topicGroups.length === 0;
+  const isFilterActive = drillFilter !== "ALL";
+
+  const expandCollapseButtons = (
+    <>
+      <button
+        type="button"
+        onClick={handleExpandAll}
+        disabled={isTreeEmpty}
+        className="inline-flex items-center gap-1 px-2 py-1 rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800/70 disabled:opacity-40 text-[11px] font-medium text-zinc-700 dark:text-zinc-300 transition-colors whitespace-nowrap"
+      >
+        <ChevronsUpDown className="w-3 h-3 text-zinc-400 shrink-0" aria-hidden="true" />
+        <span>Expand all</span>
+      </button>
+      <button
+        type="button"
+        onClick={handleCollapseAll}
+        disabled={isTreeEmpty}
+        className="inline-flex items-center gap-1 px-2 py-1 rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800/70 disabled:opacity-40 text-[11px] font-medium text-zinc-700 dark:text-zinc-300 transition-colors whitespace-nowrap"
+      >
+        <ChevronsDownUp className="w-3 h-3 text-zinc-400 shrink-0" aria-hidden="true" />
+        <span>Collapse all</span>
+      </button>
+    </>
+  );
+
+  const renderLeafRow = (
+    item: PickerItem,
+    label: string,
+    level: 3 | 4,
+    nodeId: string
+  ) => {
+    const isCurrent = item.id === selectedDrillId;
+    const isKeyboardActive = activeNodeId === nodeId;
+    const shortCode = extractShortCode(item);
+    const fullCode = formatFullRowCode(item);
+    const drillType = classifyPickerItemType(item);
+    const hasNotes =
+      isCurrent && currentDrillHasNotes !== null
+        ? item.hasNotes || currentDrillHasNotes
+        : item.hasNotes;
+    const isDueToday = dueUnitSet.has(item.unitCode);
+
+    return (
+      <button
+        key={nodeId}
+        ref={(el) => {
+          registerNodeRef(nodeId, el);
+          if (isCurrent) {
+            currentTreeRef.current = el;
+          }
+        }}
+        type="button"
+        role="treeitem"
+        aria-level={level}
+        aria-selected={isCurrent}
+        aria-current={isCurrent ? "true" : undefined}
+        title={fullCode}
+        onClick={() => {
+          setActiveNodeId(nodeId);
+          handlePick(item.id);
+        }}
+        className={`w-full text-left px-2 py-1.5 rounded-md transition-colors flex items-center gap-1.5 focus:outline-none ${
+          isCurrent && isKeyboardActive
+            ? "bg-indigo-50 dark:bg-indigo-500/15 ring-2 ring-inset ring-indigo-500/70 dark:ring-indigo-400/70"
+            : isCurrent
+            ? "bg-indigo-50 dark:bg-indigo-500/10 ring-1 ring-inset ring-indigo-500/50 dark:ring-indigo-400/50"
+            : isKeyboardActive
+            ? "bg-zinc-100 dark:bg-zinc-800/80 ring-2 ring-inset ring-indigo-500/70 dark:ring-indigo-400/70"
+            : "hover:bg-zinc-100/80 dark:hover:bg-zinc-800/60"
+        }`}
+      >
+        <NoteSlot hasNotes={hasNotes} isDueToday={isDueToday} />
+        <StatusDot status={item.practiceStatus} />
+        <DrillTypeIcon kind={drillType} />
+        <span className="hidden min-[400px]:inline font-mono text-[11px] text-zinc-400 dark:text-zinc-500 shrink-0 tabular-nums">
+          {shortCode}
+        </span>
+        <span
+          className={`text-xs truncate min-w-0 flex-1 ${
+            isCurrent
+              ? "font-medium text-zinc-900 dark:text-zinc-100"
+              : "text-zinc-700 dark:text-zinc-300"
+          }`}
+        >
+          {label}
+        </span>
+      </button>
+    );
+  };
 
   return (
     <div className="relative min-w-0 flex-1 sm:flex-initial" ref={switcherRef}>
@@ -409,11 +623,11 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
             role="dialog"
             aria-label="Practice drill picker"
             onKeyDown={handlePopoverKeyDown}
-            className="absolute left-0 mt-2 w-[min(calc(100vw-3rem),460px)] max-h-[70vh] flex flex-col overflow-hidden bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-lg p-3 z-50"
+            className="absolute left-0 mt-2 w-[min(calc(100vw-2.75rem),460px)] max-h-[72vh] flex flex-col overflow-hidden bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-lg p-3 z-50"
           >
             {/* Top Search Input */}
-            <div className="shrink-0 flex items-center gap-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-3 py-2 mb-2">
-              <Search className="w-4 h-4 text-zinc-400 shrink-0" />
+            <div className="shrink-0 flex items-center gap-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2.5 py-1.5 mb-2">
+              <Search className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
               <input
                 ref={searchInputRef}
                 type="text"
@@ -443,8 +657,8 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
               )}
             </div>
 
-            {/* Segmented Tabs (Programming only) & Quiet Status Filter */}
-            <div className="shrink-0 flex flex-wrap items-center justify-between gap-2 pb-2.5 mb-2 border-b border-zinc-200 dark:border-zinc-800">
+            {/* Header Actions: Drills|Labs Tabs (Programming) + Expand all / Collapse all + View */}
+            <div className="shrink-0 flex flex-wrap items-center justify-between gap-1.5 pb-2 mb-2 border-b border-zinc-200 dark:border-zinc-800">
               {isCodeWorkspace ? (
                 <div
                   role="tablist"
@@ -471,7 +685,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                         aria-selected={isActive}
                         onClick={() => {
                           setActiveTab(tab.id);
-                          setActiveKeyboardIndex(-1);
+                          setActiveNodeId(null);
                         }}
                         className={`relative z-10 inline-flex items-center justify-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-colors whitespace-nowrap ${
                           isActive
@@ -488,49 +702,172 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                   })}
                 </div>
               ) : (
-                <span className="text-[11px] font-mono tabular-nums text-zinc-500 dark:text-zinc-400 px-1">
-                  {sections.totalVisibleCount}{" "}
-                  {sections.totalVisibleCount === 1 ? "drill" : "drills"}
-                </span>
+                <div className="inline-flex items-center gap-1.5">
+                  {expandCollapseButtons}
+                </div>
               )}
 
-              {/* Quiet Status Filter */}
-              <div
-                role="group"
-                aria-label="Filter by status"
-                className="inline-flex items-center gap-0.5 rounded-lg p-0.5 bg-zinc-100/70 dark:bg-zinc-800/50"
-              >
-                {[
-                  { id: "ALL" as const, label: "All" },
-                  { id: "UNFINISHED" as const, label: "Unfinished" },
-                  { id: "GRADED" as const, label: "Graded" },
-                ].map((tab) => {
-                  const isActive = drillFilter === tab.id;
-                  return (
-                    <button
-                      key={tab.id}
-                      type="button"
-                      aria-pressed={isActive}
-                      onClick={() => onFilterChange(tab.id)}
-                      className={`px-2 py-0.5 rounded-md text-[11px] transition-colors ${
-                        isActive
-                          ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 font-medium shadow-sm"
-                          : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200"
-                      }`}
-                    >
-                      {tab.label}
-                    </button>
-                  );
-                })}
+              <div className="flex items-center gap-1.5">
+                {isCodeWorkspace && expandCollapseButtons}
+
+                {/* View Button + Popover */}
+                <div className="relative" ref={viewContainerRef}>
+                  <button
+                    ref={viewButtonRef}
+                    type="button"
+                    onClick={() => setIsViewOpen((v) => !v)}
+                    aria-expanded={isViewOpen}
+                    aria-haspopup="true"
+                    className={`inline-flex items-center gap-1 px-2 py-1 rounded-md border text-[11px] font-medium transition-colors whitespace-nowrap ${
+                      isViewOpen || isFilterActive
+                        ? "border-indigo-500/50 bg-indigo-50/70 dark:bg-indigo-500/10 text-zinc-900 dark:text-zinc-100"
+                        : "border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800/70 text-zinc-700 dark:text-zinc-300"
+                    }`}
+                  >
+                    <SlidersHorizontal
+                      className="w-3 h-3 text-zinc-500 dark:text-zinc-400 shrink-0"
+                      aria-hidden="true"
+                    />
+                    <span>View</span>
+                    {isFilterActive && (
+                      <span
+                        className="w-1.5 h-1.5 rounded-full bg-indigo-600 dark:bg-indigo-400"
+                        aria-hidden="true"
+                      />
+                    )}
+                  </button>
+
+                  <AnimatePresence>
+                    {isViewOpen && (
+                      <m.div
+                        variants={popover}
+                        {...presence}
+                        style={{ transformOrigin: "top right" }}
+                        className="absolute right-0 mt-1.5 w-52 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-lg p-2.5 z-50 space-y-2.5"
+                      >
+                        <div className="space-y-1">
+                          <div className="px-1 text-[11px] font-medium text-zinc-500 dark:text-zinc-400">
+                            Status
+                          </div>
+                          <div
+                            role="group"
+                            aria-label="Filter by status"
+                            className="space-y-0.5"
+                          >
+                            {FILTER_OPTIONS.map((opt) => {
+                              const isActive = drillFilter === opt.id;
+                              return (
+                                <button
+                                  key={opt.id}
+                                  type="button"
+                                  aria-pressed={isActive}
+                                  onClick={() => {
+                                    onFilterChange(opt.id);
+                                    setIsViewOpen(false);
+                                    viewButtonRef.current?.focus();
+                                  }}
+                                  className={`w-full flex items-center justify-between px-2 py-1 rounded-md text-xs transition-colors ${
+                                    isActive
+                                      ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 font-medium"
+                                      : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/60"
+                                  }`}
+                                >
+                                  <span>{opt.label}</span>
+                                  {isActive && (
+                                    <Check
+                                      className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400"
+                                      aria-hidden="true"
+                                    />
+                                  )}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        <div className="pt-2 border-t border-zinc-200 dark:border-zinc-800 space-y-1.5">
+                          <div className="px-1 text-[11px] font-medium text-zinc-500 dark:text-zinc-400">
+                            Legend
+                          </div>
+                          <div className="grid grid-cols-2 gap-x-2 gap-y-1 px-1">
+                            {STATUS_LEGEND.map((entry) => (
+                              <div
+                                key={entry.status}
+                                className="flex items-center gap-1.5 text-[11px] text-zinc-600 dark:text-zinc-400"
+                              >
+                                <span
+                                  className={`w-2 h-2 rounded-full shrink-0 ${statusDotClass(
+                                    entry.status
+                                  )}`}
+                                  aria-hidden="true"
+                                />
+                                <span className="truncate">{entry.label}</span>
+                              </div>
+                            ))}
+                          </div>
+                          <div className="grid grid-cols-2 gap-x-2 gap-y-1 px-1 pt-1 border-t border-zinc-100 dark:border-zinc-800/70">
+                            <div className="flex items-center gap-1.5 text-[11px] text-zinc-600 dark:text-zinc-400">
+                              <MessageSquare
+                                className="w-3 h-3 text-zinc-400 dark:text-zinc-500 shrink-0"
+                                aria-hidden="true"
+                              />
+                              <span className="truncate">Notes</span>
+                            </div>
+                            <div className="flex items-center gap-1.5 text-[11px] text-zinc-600 dark:text-zinc-400">
+                              <MessageSquare
+                                className="w-3 h-3 text-zinc-900 dark:text-zinc-100 fill-zinc-900 dark:fill-zinc-100 shrink-0"
+                                aria-hidden="true"
+                              />
+                              <span className="truncate">Due today</span>
+                            </div>
+                          </div>
+                        </div>
+                      </m.div>
+                    )}
+                  </AnimatePresence>
+                </div>
               </div>
             </div>
 
-            {/* Scrollable Picker Body */}
+            {/* Pinned Current Row */}
+            {currentPinnedItem && (
+              <div className="shrink-0 pb-2 mb-2 border-b border-zinc-200 dark:border-zinc-800 space-y-1">
+                <div className="px-1 text-[11px] font-medium text-zinc-500 dark:text-zinc-400">
+                  Current
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handlePick(currentPinnedItem.id)}
+                  title={formatFullRowCode(currentPinnedItem)}
+                  className="w-full text-left px-2 py-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 ring-1 ring-indigo-500/40 dark:ring-indigo-400/40 hover:bg-indigo-50/90 dark:hover:bg-indigo-500/15 transition-colors flex items-center gap-1.5"
+                >
+                  <NoteSlot
+                    hasNotes={currentPinnedHasNotes}
+                    isDueToday={currentPinnedIsDue}
+                  />
+                  <StatusDot status={currentPinnedItem.practiceStatus} />
+                  <DrillTypeIcon kind={classifyPickerItemType(currentPinnedItem)} />
+                  <span className="hidden min-[400px]:inline font-mono text-[11px] text-zinc-500 dark:text-zinc-400 shrink-0 tabular-nums">
+                    {extractShortCode(currentPinnedItem)}
+                  </span>
+                  <span className="text-xs font-medium text-zinc-900 dark:text-zinc-100 truncate min-w-0 flex-1">
+                    {currentPinnedItem.setLabel
+                      ? `${currentPinnedItem.title} · ${currentPinnedItem.setLabel}`
+                      : currentPinnedItem.title}
+                  </span>
+                  <span className="text-[11px] font-mono tabular-nums text-zinc-500 dark:text-zinc-400 shrink-0">
+                    {currentPinnedItem.score}/{currentPinnedItem.maxScore}
+                  </span>
+                </button>
+              </div>
+            )}
+
+            {/* Scrollable Curriculum Tree */}
             <div
               ref={scrollContainerRef}
-              className="flex-1 min-h-0 overflow-y-auto overscroll-contain pr-1.5 space-y-3"
+              className="flex-1 min-h-0 overflow-y-auto overscroll-contain pr-1"
             >
-              {sections.topicGroups.length === 0 ? (
+              {isTreeEmpty ? (
                 <div className="py-8 text-center space-y-2">
                   <p className="text-xs text-zinc-500 dark:text-zinc-400">
                     {isCodeWorkspace && activeTab === "labs"
@@ -540,9 +877,10 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                   {otherTabMatchCount > 0 && (
                     <button
                       type="button"
-                      onClick={() =>
-                        setActiveTab(activeTab === "labs" ? "drills" : "labs")
-                      }
+                      onClick={() => {
+                        setActiveTab(activeTab === "labs" ? "drills" : "labs");
+                        setActiveNodeId(null);
+                      }}
                       className="text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline"
                     >
                       Show {otherTabMatchCount} matching{" "}
@@ -557,259 +895,222 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                   )}
                 </div>
               ) : (
-                <>
-                  {/* 1. Current Section (pinned first) */}
-                  {sections.currentItem && (
-                    <section aria-label="Current" className="space-y-1.5">
-                      <div className="px-1 text-xs font-medium text-zinc-500 dark:text-zinc-400">
-                        Current
-                      </div>
-                      <PickerItemRow
-                        item={sections.currentItem}
-                        isSelected={true}
-                        isPinnedCurrent={true}
-                        showSetInTitle={true}
-                        isKeyboardActive={
-                          navIndexByKey.get(`current:${sections.currentItem.id}`) ===
-                          activeKeyboardIndex
-                        }
-                        buttonRef={(el) => {
-                          currentItemRef.current = el;
-                          registerRowRef(
-                            navIndexByKey.get(`current:${sections.currentItem!.id}`),
-                            el
-                          );
-                        }}
-                        onPick={handlePick}
-                      />
-                    </section>
-                  )}
+                <div
+                  role="tree"
+                  aria-label="Practice curriculum"
+                  className="space-y-0.5 py-0.5"
+                >
+                  {sections.topicGroups.map((topic) => {
+                    const topicNodeId = `topic:${topic.topicCode}`;
+                    const isTopicExpanded = expandedTopics.has(topic.topicCode);
+                    const isTopicKeyboardActive = activeNodeId === topicNodeId;
+                    const showTopicCode = topic.topicTitle !== topic.topicCode;
 
-                  {/* 2. Continue Section (up to 3 recent / unfinished) */}
-                  {sections.continueItems.length > 0 && (
-                    <section aria-label="Continue" className="space-y-1.5">
-                      <div className="px-1 text-xs font-medium text-zinc-500 dark:text-zinc-400">
-                        Continue
-                      </div>
-                      <div className="space-y-1.5">
-                        {sections.continueItems.map((item) => {
-                          const navIdx = navIndexByKey.get(`continue:${item.id}`);
-                          return (
-                            <PickerItemRow
-                              key={`continue:${item.id}`}
-                              item={item}
-                              isSelected={item.id === selectedDrillId}
-                              showSetInTitle={true}
-                              isKeyboardActive={navIdx === activeKeyboardIndex}
-                              buttonRef={(el) => registerRowRef(navIdx, el)}
-                              onPick={handlePick}
-                            />
-                          );
-                        })}
-                      </div>
-                    </section>
-                  )}
+                    return (
+                      <div key={topic.topicCode}>
+                        <button
+                          ref={(el) => registerNodeRef(topicNodeId, el)}
+                          type="button"
+                          role="treeitem"
+                          aria-level={1}
+                          aria-expanded={isTopicExpanded}
+                          aria-selected={false}
+                          onClick={() => {
+                            setActiveNodeId(topicNodeId);
+                            setBranchExpanded("topic", topic.topicCode, "toggle");
+                          }}
+                          className={`group w-full flex items-center gap-1.5 px-1.5 py-1.5 rounded-md text-left transition-colors focus:outline-none ${
+                            isTopicKeyboardActive
+                              ? "bg-zinc-100 dark:bg-zinc-800/80 ring-2 ring-inset ring-indigo-500/70 dark:ring-indigo-400/70"
+                              : "hover:bg-zinc-100/80 dark:hover:bg-zinc-800/60"
+                          }`}
+                        >
+                          <ChevronRight
+                            className={`w-3.5 h-3.5 text-zinc-400 shrink-0 transition-transform duration-150 ${
+                              isTopicExpanded ? "rotate-90" : ""
+                            }`}
+                            aria-hidden="true"
+                          />
+                          <Layers
+                            className="w-3.5 h-3.5 text-zinc-400 dark:text-zinc-500 shrink-0"
+                            aria-hidden="true"
+                          />
+                          <span className="text-xs font-medium text-zinc-900 dark:text-zinc-100 truncate min-w-0 flex-1">
+                            {topic.topicTitle}
+                          </span>
+                          {showTopicCode && (
+                            <span className="hidden min-[400px]:inline text-[11px] font-mono text-zinc-400 dark:text-zinc-500 opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity shrink-0">
+                              {topic.topicCode}
+                            </span>
+                          )}
+                        </button>
 
-                  {/* 3. Full List Grouped by Topic -> Chapter */}
-                  <section aria-label="Curriculum" className="space-y-1.5">
-                    {showTreeHeading && (
-                      <div className="px-1 text-xs font-medium text-zinc-500 dark:text-zinc-400">
-                        {isCodeWorkspace && activeTab === "labs" ? "All labs" : "All drills"}
-                      </div>
-                    )}
-
-                    <div className="space-y-1.5">
-                      {sections.topicGroups.map((topic) => {
-                        const isTopicExpanded =
-                          sections.isSearching || expandedTopics.has(topic.topicCode);
-                        const showTopicCode = topic.topicTitle !== topic.topicCode;
-
-                        return (
+                        <Reveal show={isTopicExpanded}>
                           <div
-                            key={topic.topicCode}
-                            className="rounded-lg border border-zinc-200/80 dark:border-zinc-800/90 bg-zinc-50/40 dark:bg-zinc-950/30 p-1.5"
+                            role="group"
+                            className="ml-3 pl-2 border-l border-zinc-200 dark:border-zinc-800 space-y-0.5 py-0.5"
                           >
-                            <button
-                              type="button"
-                              aria-expanded={isTopicExpanded}
-                              onClick={() => toggleTopic(topic.topicCode)}
-                              className="w-full flex items-center justify-between gap-2 px-1.5 py-1 rounded-md hover:bg-zinc-100/80 dark:hover:bg-zinc-800/60 text-left transition-colors"
-                            >
-                              <span className="flex items-center gap-1.5 min-w-0">
-                                <ChevronRight
-                                  className={`w-3.5 h-3.5 text-zinc-400 shrink-0 transition-transform duration-150 ${
-                                    isTopicExpanded ? "rotate-90" : ""
-                                  }`}
-                                  aria-hidden="true"
-                                />
-                                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 truncate">
-                                  {topic.topicTitle}
-                                </span>
-                              </span>
+                            {topic.chapters.map((chapter) => {
+                              const chapterNodeId = `chapter:${chapter.chapterCode}`;
+                              const isChapterExpanded = expandedChapters.has(
+                                chapter.chapterCode
+                              );
+                              const isChapterKeyboardActive =
+                                activeNodeId === chapterNodeId;
 
-                              <span className="flex items-center gap-1.5 shrink-0">
-                                {showTopicCode && (
-                                  <span className="text-[11px] font-mono text-zinc-500 dark:text-zinc-400">
-                                    {topic.topicCode}
-                                  </span>
-                                )}
-                                <span className="text-[11px] font-mono tabular-nums text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded">
-                                  {topic.itemCount}
-                                </span>
-                              </span>
-                            </button>
+                              return (
+                                <div key={chapter.chapterCode}>
+                                  <button
+                                    ref={(el) => registerNodeRef(chapterNodeId, el)}
+                                    type="button"
+                                    role="treeitem"
+                                    aria-level={2}
+                                    aria-expanded={isChapterExpanded}
+                                    aria-selected={false}
+                                    onClick={() => {
+                                      setActiveNodeId(chapterNodeId);
+                                      setBranchExpanded(
+                                        "chapter",
+                                        chapter.chapterCode,
+                                        "toggle"
+                                      );
+                                    }}
+                                    className={`w-full flex items-center justify-between gap-2 px-1.5 py-1.5 rounded-md text-left transition-colors focus:outline-none ${
+                                      isChapterKeyboardActive
+                                        ? "bg-zinc-100 dark:bg-zinc-800/80 ring-2 ring-inset ring-indigo-500/70 dark:ring-indigo-400/70"
+                                        : "hover:bg-zinc-100/80 dark:hover:bg-zinc-800/60"
+                                    }`}
+                                  >
+                                    <span className="flex items-center gap-1.5 min-w-0 flex-1">
+                                      <ChevronRight
+                                        className={`w-3.5 h-3.5 text-zinc-400 shrink-0 transition-transform duration-150 ${
+                                          isChapterExpanded ? "rotate-90" : ""
+                                        }`}
+                                        aria-hidden="true"
+                                      />
+                                      <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300 truncate">
+                                        {chapter.chapterTitle}
+                                      </span>
+                                    </span>
 
-                            <Reveal show={isTopicExpanded}>
-                              <div className="pl-2 ml-2 mt-1 border-l border-zinc-200 dark:border-zinc-800 space-y-1">
-                                {topic.chapters.map((chapter) => {
-                                  const isChapterExpanded =
-                                    sections.isSearching ||
-                                    expandedChapters.has(chapter.chapterCode);
-                                  const showChapterCode =
-                                    chapter.chapterTitle !== chapter.chapterCode;
+                                    <span className="text-[11px] font-mono tabular-nums text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded-full shrink-0">
+                                      {chapter.itemCount}
+                                    </span>
+                                  </button>
 
-                                  return (
-                                    <div key={chapter.chapterCode} className="space-y-1">
-                                      <button
-                                        type="button"
-                                        aria-expanded={isChapterExpanded}
-                                        onClick={() => toggleChapter(chapter.chapterCode)}
-                                        className="w-full flex items-center justify-between gap-2 px-1.5 py-1 rounded-md hover:bg-zinc-100/80 dark:hover:bg-zinc-800/60 text-left transition-colors"
-                                      >
-                                        <span className="flex items-center gap-1.5 min-w-0">
-                                          <ChevronRight
-                                            className={`w-3.5 h-3.5 text-zinc-400 shrink-0 transition-transform duration-150 ${
-                                              isChapterExpanded ? "rotate-90" : ""
-                                            }`}
-                                            aria-hidden="true"
-                                          />
-                                          <span className="text-xs font-medium text-zinc-800 dark:text-zinc-200 truncate">
-                                            {chapter.chapterTitle}
-                                          </span>
-                                        </span>
+                                  <Reveal show={isChapterExpanded}>
+                                    <div
+                                      role="group"
+                                      className="ml-3 pl-2 border-l border-zinc-200 dark:border-zinc-800 space-y-0.5 py-0.5"
+                                    >
+                                      {chapter.entries.map((entry) => {
+                                        if (entry.kind === "single") {
+                                          return renderLeafRow(
+                                            entry.item,
+                                            entry.item.title,
+                                            3,
+                                            `leaf:${entry.item.id}`
+                                          );
+                                        }
 
-                                        <span className="flex items-center gap-1.5 shrink-0">
-                                          {showChapterCode && (
-                                            <span className="text-[11px] font-mono text-zinc-500 dark:text-zinc-400">
-                                              {chapter.chapterCode}
-                                            </span>
-                                          )}
-                                          <span className="text-[11px] font-mono tabular-nums text-zinc-500 dark:text-zinc-400 bg-zinc-100/80 dark:bg-zinc-800/70 px-1.5 py-0.5 rounded">
-                                            {chapter.itemCount}
-                                          </span>
-                                        </span>
-                                      </button>
+                                        if (entry.inlineInChapter) {
+                                          return entry.items.map((setEntry) =>
+                                            renderLeafRow(
+                                              setEntry.item,
+                                              setEntry.setLabel,
+                                              3,
+                                              `leaf:${setEntry.item.id}`
+                                            )
+                                          );
+                                        }
 
-                                      <Reveal show={isChapterExpanded}>
-                                        <div className="pl-2 ml-2 border-l border-zinc-200/80 dark:border-zinc-800/80 space-y-1 py-0.5">
-                                          {chapter.entries.map((entry) => {
-                                            if (entry.kind === "single") {
-                                              const item = entry.item;
-                                              const navIdx = navIndexByKey.get(
-                                                `tree:${item.id}`
-                                              );
-                                              return (
-                                                <PickerItemRow
-                                                  key={entry.key}
-                                                  item={item}
-                                                  isSelected={item.id === selectedDrillId}
-                                                  isKeyboardActive={
-                                                    navIdx === activeKeyboardIndex
-                                                  }
-                                                  buttonRef={(el) =>
-                                                    registerRowRef(navIdx, el)
-                                                  }
-                                                  onPick={handlePick}
+                                        const unitNodeId = `unit:${entry.unitCode}`;
+                                        const isUnitExpanded = expandedUnits.has(
+                                          entry.unitCode
+                                        );
+                                        const isUnitKeyboardActive =
+                                          activeNodeId === unitNodeId;
+                                        const unitShortCode = extractShortCode({
+                                          kind: "drill",
+                                          id: entry.unitCode,
+                                          unitCode: entry.unitCode,
+                                        });
+
+                                        return (
+                                          <div key={entry.key}>
+                                            <button
+                                              ref={(el) =>
+                                                registerNodeRef(unitNodeId, el)
+                                              }
+                                              type="button"
+                                              role="treeitem"
+                                              aria-level={3}
+                                              aria-expanded={isUnitExpanded}
+                                              aria-selected={false}
+                                              title={entry.unitCode}
+                                              onClick={() => {
+                                                setActiveNodeId(unitNodeId);
+                                                setBranchExpanded(
+                                                  "unit",
+                                                  entry.unitCode,
+                                                  "toggle"
+                                                );
+                                              }}
+                                              className={`w-full flex items-center justify-between gap-2 px-1.5 py-1.5 rounded-md text-left transition-colors focus:outline-none ${
+                                                isUnitKeyboardActive
+                                                  ? "bg-zinc-100 dark:bg-zinc-800/80 ring-2 ring-inset ring-indigo-500/70 dark:ring-indigo-400/70"
+                                                  : "hover:bg-zinc-100/80 dark:hover:bg-zinc-800/60"
+                                              }`}
+                                            >
+                                              <span className="flex items-center gap-1.5 min-w-0 flex-1">
+                                                <ChevronRight
+                                                  className={`w-3.5 h-3.5 text-zinc-400 shrink-0 transition-transform duration-150 ${
+                                                    isUnitExpanded ? "rotate-90" : ""
+                                                  }`}
+                                                  aria-hidden="true"
                                                 />
-                                              );
-                                            }
+                                                <span className="hidden min-[400px]:inline font-mono text-[11px] text-zinc-400 dark:text-zinc-500 shrink-0 tabular-nums">
+                                                  {unitShortCode}
+                                                </span>
+                                                <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300 truncate">
+                                                  {entry.unitTitle}
+                                                </span>
+                                              </span>
 
-                                            return (
+                                              <span className="text-[11px] font-mono tabular-nums text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded-full shrink-0">
+                                                {entry.items.length}
+                                              </span>
+                                            </button>
+
+                                            <Reveal show={isUnitExpanded}>
                                               <div
-                                                key={entry.key}
-                                                className={
-                                                  entry.inlineInChapter
-                                                    ? "space-y-1"
-                                                    : "rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/40 p-1.5 space-y-1"
-                                                }
+                                                role="group"
+                                                className="ml-3 pl-2 border-l border-zinc-200 dark:border-zinc-800 space-y-0.5 py-0.5"
                                               >
-                                                {!entry.inlineInChapter && (
-                                                  <div className="px-1.5 pt-0.5 pb-0.5 space-y-0.5">
-                                                    <div className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 truncate">
-                                                      {entry.unitTitle}
-                                                    </div>
-                                                    <div className="text-[11px] font-mono text-zinc-500 dark:text-zinc-400">
-                                                      {entry.unitCode}
-                                                    </div>
-                                                  </div>
+                                                {entry.items.map((setEntry) =>
+                                                  renderLeafRow(
+                                                    setEntry.item,
+                                                    setEntry.setLabel,
+                                                    4,
+                                                    `leaf:${setEntry.item.id}`
+                                                  )
                                                 )}
-
-                                                <div className="space-y-1">
-                                                  {entry.items.map((setEntry) => {
-                                                    const item = setEntry.item;
-                                                    const isSelected =
-                                                      item.id === selectedDrillId;
-                                                    const navIdx = navIndexByKey.get(
-                                                      `tree:${item.id}`
-                                                    );
-                                                    const isKeyboardActive =
-                                                      navIdx === activeKeyboardIndex;
-
-                                                    return (
-                                                      <button
-                                                        key={item.id}
-                                                        ref={(el) =>
-                                                          registerRowRef(navIdx, el)
-                                                        }
-                                                        type="button"
-                                                        aria-current={
-                                                          isSelected ? "true" : undefined
-                                                        }
-                                                        onClick={() => handlePick(item.id)}
-                                                        className={`w-full text-left px-2.5 py-1.5 rounded-md border transition-colors flex items-center justify-between gap-3 ${
-                                                          isSelected
-                                                            ? "bg-zinc-100 dark:bg-zinc-800/90 border-indigo-600 dark:border-indigo-500"
-                                                            : "bg-white/80 dark:bg-zinc-900/60 hover:bg-zinc-100 dark:hover:bg-zinc-800/70 border-transparent"
-                                                        } ${
-                                                          isKeyboardActive
-                                                            ? "ring-2 ring-indigo-500/70 dark:ring-indigo-400/70"
-                                                            : ""
-                                                        }`}
-                                                      >
-                                                        <div className="min-w-0 flex items-baseline gap-1.5 truncate">
-                                                          <span className="text-xs font-medium text-zinc-800 dark:text-zinc-200">
-                                                            {setEntry.setLabel}
-                                                          </span>
-                                                          <span className="text-[11px] font-mono text-zinc-500 dark:text-zinc-400">
-                                                            · {item.countLabel}
-                                                          </span>
-                                                        </div>
-
-                                                        <StatusSummary
-                                                          inline
-                                                          practiceStatus={item.practiceStatus}
-                                                          progressText={`${item.score}/${item.maxScore}`}
-                                                        />
-                                                      </button>
-                                                    );
-                                                  })}
-                                                </div>
                                               </div>
-                                            );
-                                          })}
-                                        </div>
-                                      </Reveal>
+                                            </Reveal>
+                                          </div>
+                                        );
+                                      })}
                                     </div>
-                                  );
-                                })}
-                              </div>
-                            </Reveal>
+                                  </Reveal>
+                                </div>
+                              );
+                            })}
                           </div>
-                        );
-                      })}
-                    </div>
-                  </section>
-                </>
+                        </Reveal>
+                      </div>
+                    );
+                  })}
+                </div>
               )}
             </div>
           </m.div>

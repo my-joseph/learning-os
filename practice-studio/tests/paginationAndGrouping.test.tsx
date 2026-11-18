@@ -256,32 +256,30 @@ const switcherHtml = renderToStaticMarkup(
   />
 );
 
-// Single code per row: full drill IDs must not appear in row text
-assert.doesNotMatch(switcherHtml, /DRL-MTH-T01-C04-01/);
-assert.doesNotMatch(switcherHtml, /DRL-MTH-T01-C04-02/);
-assert.doesNotMatch(switcherHtml, /DRL-MTH-T01-C07-01/);
+// Single code per row: full drill IDs must not appear in visible row text
+assert.doesNotMatch(switcherHtml, />DRL-MTH-T01-C04-01</);
+assert.doesNotMatch(switcherHtml, />DRL-MTH-T01-C04-02</);
+assert.doesNotMatch(switcherHtml, />DRL-MTH-T01-C07-01</);
 
-// Grouped unit shows title + unitCode once in the expanded chapter, with Set 1 / Set 2 / Set 3 rows,
-// while non-current chapters start collapsed with their header + count visible.
-assert.equal(
-  (switcherHtml.match(/>MTH-T01-C04</g) || []).length,
-  1,
-  "grouped unit code must appear once in the group header"
-);
+// Grouped unit shows chapter header + count pill, with Set 1 / Set 2 / Set 3 leaf rows,
+// while non-current chapters start collapsed.
 assert.match(switcherHtml, />Current</);
-assert.match(switcherHtml, />Continue</);
-assert.match(switcherHtml, />Graded</);
+assert.doesNotMatch(switcherHtml, />Continue</);
+assert.match(switcherHtml, />Expand all</);
+assert.match(switcherHtml, />Collapse all</);
+assert.match(switcherHtml, />View</);
 assert.doesNotMatch(switcherHtml, />Synced</);
 assert.doesNotMatch(switcherHtml, />Labs</);
+assert.match(switcherHtml, />C04</);
 assert.match(switcherHtml, />Set 1</);
 assert.match(switcherHtml, />Set 2</);
 assert.match(switcherHtml, />Set 3</);
 assert.match(switcherHtml, /Proportional &amp; Ratio/);
 assert.doesNotMatch(
   switcherHtml,
-  /MTH-T01-C07 · 5 Qs/,
+  />C07</,
   "other chapters must start collapsed"
 );
-assert.match(switcherHtml, /border-indigo-600[^>]*>.*?Set 2/);
+assert.match(switcherHtml, /bg-indigo-50[^>]*>.*?Set 2/);
 
 console.log("pagination and drill grouping tests passed");

@@ -37,6 +37,7 @@ interface StudioHeaderProps {
   switcherRef: React.RefObject<HTMLDivElement>;
   drills: DrillListItem[];
   labs?: LabListItem[];
+  dueUnitCodes?: readonly string[];
   selectedDrillId: string;
   drillSearch: string;
   onSearchChange: (value: string) => void;
@@ -74,6 +75,7 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
   switcherRef,
   drills,
   labs = [],
+  dueUnitCodes = [],
   selectedDrillId,
   drillSearch,
   onSearchChange,
@@ -185,6 +187,7 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
             currentDrill={currentDrill}
             drills={drills}
             labs={labs}
+            dueUnitCodes={dueUnitCodes}
             selectedDrillId={selectedDrillId}
             drillSearch={drillSearch}
             onSearchChange={onSearchChange}
