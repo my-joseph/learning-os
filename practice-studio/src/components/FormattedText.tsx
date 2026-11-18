@@ -3,7 +3,7 @@
 import React, { useMemo } from "react";
 import katex from "katex";
 import { BookOpen } from "lucide-react";
-import { MATH_TOKEN, isMathSegment, unescapeDollar } from "@/lib/mathText";
+import { MATH_TOKEN, isMathSegment, unescapeDollar, wrapBareWordsInLatex } from "@/lib/mathText";
 
 interface FormattedTextProps {
   text: string;
@@ -63,7 +63,7 @@ export const FormattedText: React.FC<FormattedTextProps> = ({
     return segments.map((seg, idx) => {
       // 1. LaTeX Math: $...$
       if (isMathSegment(seg)) {
-        const tex = seg.slice(1, -1);
+        const tex = wrapBareWordsInLatex(seg.slice(1, -1));
         try {
           const html = katex.renderToString(tex, {
             displayMode: false,

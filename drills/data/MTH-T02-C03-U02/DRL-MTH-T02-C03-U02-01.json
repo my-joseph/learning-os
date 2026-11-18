@@ -1255,7 +1255,7 @@
       "archetypeKey": "t02-c03-u02-model-from-two-observations",
       "context": "A workshop production dashboard tracks a running total that includes orders completed before the monitoring window; additional orders are completed at a constant pace.",
       "prompt": "The dashboard shows $20$ completed orders after $2$ hours and $40$ after $6$ hours. Assuming the same rate continues, how many orders will it show after $8$ hours? Give only the number.",
-      "display": "Find the constant rate from paired observations, then evaluate the resulting model.",
+      "display": "\\text{Find the constant rate from paired observations, then evaluate the resulting model.}",
       "plainText": "Find the constant rate from paired observations, then evaluate the model.",
       "givens": {
         "t1": 2,
@@ -2430,7 +2430,7 @@
       "archetypeKey": "t02-c03-u02-interpret-intercepts-and-target-input",
       "context": "A small reservoir supplies a steady-use system; its water level is tracked by volume over time.",
       "prompt": "A reservoir begins with $100$ liters and loses water at a steady rate of $8$ liters per hour. How many hours pass before $36$ liters remain? Give only the number.",
-      "display": "Relate the water volume to elapsed hours and set the model equal to the target volume.",
+      "display": "\\text{Relate the water volume to elapsed hours and set the model equal to the target volume.}",
       "plainText": "Relate water volume to elapsed hours and solve for the target volume time.",
       "givens": {
         "V0": 100,

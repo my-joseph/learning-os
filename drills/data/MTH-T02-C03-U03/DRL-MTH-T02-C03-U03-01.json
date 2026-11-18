@@ -13,7 +13,7 @@
       "archetypeKey": "t02-c03-u03-interpret-scatter-pattern",
       "context": "",
       "prompt": "The observations are: $x=0$ gives $y=15$; $x=2$ gives $y=12$; $x=4$ gives $y=9$; $x=6$ gives $y=6$. Which description best fits the scatter pattern as the input increases? Choose one: A, roughly linear downward; B, roughly linear upward; C, curved; D, no clear trend.",
-      "display": "Choose the overall direction and shape of the point cloud.",
+      "display": "\\text{Choose the overall direction and shape of the point cloud.}",
       "plainText": "Choose the overall direction and shape of the point cloud.",
       "givens": {
         "x1": 0,
@@ -280,7 +280,7 @@
       "archetypeKey": "t02-c03-u03-classify-prediction-range",
       "context": "",
       "prompt": "A fitted line is $f(x)=x-5$, based on observed inputs from $1$ through $8$. The model predicts at input $9$. Choose the prediction type: A, interpolation; B, extrapolation; C, the model cannot classify it.",
-      "display": "Compare the prediction input with the observed input interval.",
+      "display": "\\text{Compare the prediction input with the observed input interval.}",
       "plainText": "Compare the prediction input with the observed input interval.",
       "givens": {
         "m": 1,
@@ -417,7 +417,7 @@
       "archetypeKey": "t02-c03-u03-check-model-breakdown",
       "context": "A subscription service fitted a line to weekly account data from weeks 1 through 8. At the start of week 9, it changed its pricing and onboarding process, which may change account growth.",
       "prompt": "The service recorded data for weeks 1 through 8. Its fitted line is $g(x)=3x+7$. Should it rely on this line for a week 12 forecast after the pricing and onboarding process changed at week 9? Choose one: A, yes, use the same line; B, no, the process and input range changed; C, there is not enough information.",
-      "display": "Check the observed interval and the process change before trusting a forecast.",
+      "display": "\\text{Check the observed interval and the process change before trusting a forecast.}",
       "plainText": "Check the observed interval and the process change before trusting a forecast.",
       "givens": {
         "m": 3,

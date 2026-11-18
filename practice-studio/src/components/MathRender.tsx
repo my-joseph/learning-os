@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo } from "react";
-import { isMathSegment, splitMath, unescapeDollar } from "@/lib/mathText";
+import { isMathSegment, splitMath, unescapeDollar, wrapBareWordsInLatex } from "@/lib/mathText";
 import katex from "katex";
 
 /**
@@ -24,7 +24,7 @@ export function normalizeLatex(tex: string): string {
   // Repair unescaped rac{ or ight) if preceded by space or bracket
   clean = clean.replace(/(?:^|[\s({\[])rac\{/g, (match) => match.replace("rac{", "\\frac{"));
   clean = clean.replace(/(?:^|[\s({\[])ight([)\]}|.])/g, (match) => match.replace("ight", "\\right"));
-  return clean.trim();
+  return wrapBareWordsInLatex(clean.trim());
 }
 
 interface MathTextProps {

@@ -29,6 +29,7 @@ from math_engine.answer_spec_registry import validate_answer_spec
 from math_engine.figure_autofill import archetype_requires_figure, autofill_problem_figure, figure_decision_missing
 from math_engine.fmt import LEVEL_LABELS, unit_hierarchy
 from math_engine.generate import next_drill_id
+from math_engine.latex_guard import find_bare_words
 from math_engine.verify import verify_problem
 from progress_store import strip_progress
 from quality_rules import BLIND_SOLVE_TAGS, QUALITY_RULES, QualityError, check_gate_g3_set, demand_level
@@ -536,6 +537,40 @@ def validate_ai_problem_contract(prob: Dict[str, Any], enforce_leak_gate: bool =
             raise AiContractError(
                 f"[{pid}] Step {s_idx + 1} violates 00_core §7 / 03_stem §1: horizontal equality chaining is forbidden ('{latex_str}'). Each step must isolate a single discrete algebraic transformation."
             )
+        bare_step = find_bare_words(latex_str)
+        if bare_step:
+            raise AiContractError(
+                f"[{pid}] Step {s_idx + 1} 'latex' contains bare English words {bare_step}; wrap prose in \\text{{...}}: {repr(latex_str)}"
+            )
+
+    for field in ("display", "answerDisplay"):
+        val = prob.get(field)
+        if isinstance(val, str) and val.strip():
+            bare = find_bare_words(val)
+            if bare:
+                raise AiContractError(
+                    f"[{pid}] LaTeX field '{field}' contains bare English words {bare}; wrap prose in \\text{{...}}: {repr(val)}"
+                )
+
+    spec_obj = prob.get("answerSpec") or {}
+    if isinstance(spec_obj, dict):
+        if isinstance(spec_obj.get("display"), str) and spec_obj["display"].strip():
+            bare = find_bare_words(spec_obj["display"])
+            if bare:
+                raise AiContractError(
+                    f"[{pid}] LaTeX field 'answerSpec.display' contains bare English words {bare}; wrap prose in \\text{{...}}: {repr(spec_obj['display'])}"
+                )
+        for o_idx, opt in enumerate(spec_obj.get("options") or [], 1):
+            if not isinstance(opt, dict):
+                continue
+            for key in ("latex", "display"):
+                oval = opt.get(key)
+                if isinstance(oval, str) and oval.strip():
+                    bare = find_bare_words(oval)
+                    if bare:
+                        raise AiContractError(
+                            f"[{pid}] Option {o_idx} '{key}' contains bare English words {bare}; wrap prose in \\text{{...}}: {repr(oval)}"
+                        )
 
     # 10. Spatial / Parametric Visual & Figure Spec Guard (rules/03_stem.md Part 2)
     if "figure" in prob:

@@ -127,7 +127,7 @@
       "archetypeKey": "t02-c02-u07-find-inverse-formula",
       "context": "",
       "prompt": "Find the inverse function of $f(x)=3x-8$. Write a simplified expression in $x$.",
-      "display": "y=3x-8; solve for x, then exchange x and y",
+      "display": "y=3x-8;\\ \\text{solve for } x\\text{, then exchange } x \\text{ and } y",
       "plainText": "Find the inverse function of f(x)=3x-8. Write a simplified expression in x.",
       "givens": {
         "a": 3,
@@ -237,7 +237,7 @@
       "archetypeKey": "t02-c02-u07-restrict-domain-and-swap-sets",
       "context": "",
       "prompt": "A one-to-one function $f$ has domain described by $0\\le x\\le 4$ and range described by $1\\le f(x)<9$. Give the domain of $f^{-1}$ as an interval.",
-      "display": "Domain(f)=[0,4]; Range(f)=[1,9)",
+      "display": "\\text{Domain}(f)=[0,4];\\ \\text{Range}(f)=[1,9)",
       "plainText": "A one-to-one function f has domain [0,4] and range [1,9). Give the domain of f inverse as an interval.",
       "givens": {
         "domain_left": 0,

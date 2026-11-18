@@ -115,7 +115,7 @@
       "archetypeKey": "t02-c04-u01-find-quadratic-vertex",
       "context": "",
       "prompt": "For $p(x)=-x^2+4x+1$, what is the maximum output value?",
-      "display": "p(x)=ax^2+bx+c;\\\\quad x_v=-\\\\frac{b}{2a}",
+      "display": "p(x)=ax^2+bx+c;\\quad x_v=-\\frac{b}{2a}",
       "plainText": "p(x)=-x^2+4*x+1; vertex input=-b/(2*a)",
       "givens": {
         "a": -1,

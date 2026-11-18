@@ -15,6 +15,7 @@ Checks per problem:
 import re
 
 from math_engine.answer_check import _intervals_equal, check_answer, is_equal, is_omission_trap, parse_interval, to_expr
+from math_engine.latex_guard import find_bare_words
 from quality_rules import QualityError, check_gate_g3_set, verify_quality_gates
 
 BANNED = [
@@ -65,6 +66,12 @@ def check_text_safety(pid, label, text, is_latex=False):
     else:
         if "$" in delimiters:
             _fail(pid, f"{label} is a LaTeX field and must not contain $ delimiters: {text[:120]}")
+        bare = find_bare_words(text)
+        if bare:
+            _fail(
+                pid,
+                f"{label} contains bare English words {bare} inside LaTeX; wrap prose in \\text{{...}}: {text[:120]}",
+            )
 
 
 def verify_problem(p, id_map=None, rules=None):
@@ -169,6 +176,14 @@ def verify_problem(p, id_map=None, rules=None):
         check_text_safety(pid, f, p.get(f))
     for f in LATEX_FIELDS:
         check_text_safety(pid, f, p.get(f), is_latex=True)
+    if spec.get("display"):
+        check_text_safety(pid, "answerSpec.display", spec.get("display"), is_latex=True)
+    for o_idx, opt in enumerate(spec.get("options") or [], 1):
+        if isinstance(opt, dict):
+            if opt.get("latex"):
+                check_text_safety(pid, f"option {o_idx} latex", opt.get("latex"), is_latex=True)
+            if opt.get("display"):
+                check_text_safety(pid, f"option {o_idx} display", opt.get("display"), is_latex=True)
     for ref in p.get("references", []):
         if id_map is not None and ref not in id_map:
             _fail(pid, f"reference {ref} not found in id_map.json")
