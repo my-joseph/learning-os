@@ -12,7 +12,10 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { NextRequest } from "next/server";
 import { getLabsDir, resolveInsideRoot } from "../src/lib/paths";
 import { writeProgress } from "../src/lib/progress";
-import { deriveMilestoneTileState } from "../src/lib/codeStatus";
+import {
+  deriveMilestoneStepperState,
+  deriveMilestoneTileState,
+} from "../src/lib/codeStatus";
 import {
   ALWAYS_STRIPPED_LAB_FIELDS,
   ALWAYS_STRIPPED_MILESTONE_FIELDS,
@@ -460,9 +463,12 @@ async function testSyntheticLabAndProgress() {
     assert.equal(deriveMilestoneTileState(drillDoc.problems[0].state), "pass");
     assert.equal(deriveMilestoneTileState(drillDoc.problems[1].state), "revise");
     assert.equal(deriveMilestoneTileState(drillDoc.problems[2].state), "not_started");
+    assert.equal(deriveMilestoneStepperState(drillDoc.problems[0].state), "passed");
+    assert.equal(deriveMilestoneStepperState(drillDoc.problems[1].state), "notYet");
+    assert.equal(deriveMilestoneStepperState(drillDoc.problems[2].state), "notYet");
 
     const noop = () => {};
-    const tilesHtml = renderToStaticMarkup(
+    const stepperHtml = renderToStaticMarkup(
       <QuizPaginationBar
         totalQuestions={drillDoc.problems.length}
         currentIndex={1}
@@ -475,17 +481,81 @@ async function testSyntheticLabAndProgress() {
         onToggleViewMode={noop}
       />
     );
-    assert.match(tilesHtml, /aria-label="Milestones"/);
-    assert.match(tilesHtml, />M1</);
-    assert.match(tilesHtml, />M2</);
-    assert.match(tilesHtml, />M3</);
-    assert.match(tilesHtml, /bg-emerald-700/, "M1 (pass) tile must be emerald");
-    assert.match(tilesHtml, /bg-amber-600/, "M2 (revise) tile must be amber");
-    assert.match(tilesHtml, /bg-zinc-50/, "M3 (not started) tile must be neutral");
-    assert.match(tilesHtml, /aria-label="Review &amp; sync"/);
-    assert.doesNotMatch(tilesHtml, />Review<\/span>/);
+    assert.match(stepperHtml, /<nav[^>]*aria-label="Lab milestones"/);
+    assert.match(stepperHtml, />M1</);
+    assert.match(stepperHtml, />M2</);
+    assert.match(stepperHtml, />M3</);
+    assert.match(stepperHtml, />Review<\/span>/);
+    assert.match(stepperHtml, /aria-label="M1 — passed"/);
+    assert.match(stepperHtml, /aria-label="M2 — not passed yet"[^>]*aria-current="step"/);
+    assert.match(stepperHtml, /aria-label="M3 — not passed yet"/);
+    assert.match(stepperHtml, /bg-indigo-600/, "M1 (passed) dot and line must be indigo");
+    assert.match(stepperHtml, /border-zinc-300/, "M3 (not passed yet) dot must be hollow grey");
+    assert.match(stepperHtml, /ring-2 ring-indigo-600/, "Current milestone must have indigo ring");
+    assert.match(stepperHtml, /aria-label="Review &amp; sync"/);
+    assert.doesNotMatch(stepperHtml, /overflow-x-auto/, "3 milestones fit without horizontal scroll");
 
-    const labReviewTilesHtml = renderToStaticMarkup(
+    // Verify regressed milestone renders amber dot while keeping indigo connector line
+    const regressedProblems = drillDoc.problems.map((p, i) =>
+      i === 1
+        ? {
+            ...p,
+            state: {
+              ...p.state,
+              reviews: [makeReview("pass")],
+              lastTestReport: {
+                allPassed: false,
+                score: 0.5,
+                passedCount: 1,
+                totalCount: 2,
+                visibleResults: [{ name: "fails after refactor", passed: false }],
+                hiddenPassed: 0,
+                hiddenTotal: 0,
+                executionTimeMs: 3,
+              },
+            },
+          }
+        : p
+    );
+    const regressedStepperHtml = renderToStaticMarkup(
+      <QuizPaginationBar
+        totalQuestions={regressedProblems.length}
+        currentIndex={2}
+        problems={regressedProblems}
+        viewMode="quiz"
+        isLab={true}
+        onSelectQuestion={noop}
+        onPrev={noop}
+        onNext={noop}
+        onToggleViewMode={noop}
+      />
+    );
+    assert.match(regressedStepperHtml, /aria-label="M2 — regressed"/);
+    assert.match(regressedStepperHtml, /bg-amber-600/, "Regressed milestone dot must be amber");
+    assert.match(regressedStepperHtml, /aria-label="M3 — not passed yet"[^>]*aria-current="step"/);
+
+    // >8 milestones enable horizontal scroll
+    const manyMilestones = Array.from({ length: 9 }, (_, i) => ({
+      ...drillDoc.problems[0],
+      id: `M${i + 1}`,
+      state: makeState(),
+    }));
+    const scrollingStepperHtml = renderToStaticMarkup(
+      <QuizPaginationBar
+        totalQuestions={manyMilestones.length}
+        currentIndex={0}
+        problems={manyMilestones}
+        viewMode="quiz"
+        isLab={true}
+        onSelectQuestion={noop}
+        onPrev={noop}
+        onNext={noop}
+        onToggleViewMode={noop}
+      />
+    );
+    assert.match(scrollingStepperHtml, /overflow-x-auto/);
+
+    const labReviewStepperHtml = renderToStaticMarkup(
       <QuizPaginationBar
         totalQuestions={drillDoc.problems.length}
         currentIndex={1}
@@ -498,7 +568,10 @@ async function testSyntheticLabAndProgress() {
         onToggleViewMode={noop}
       />
     );
-    assert.match(labReviewTilesHtml, /aria-label="Review &amp; sync"[^>]*aria-pressed="true"/);
+    assert.match(
+      labReviewStepperHtml,
+      /aria-label="Review &amp; sync"[^>]*aria-pressed="true"[^>]*aria-current="step"/
+    );
 
     // Render CodeDashboard for M2 (revise, tests passed)
     const dashboardHtml = renderToStaticMarkup(

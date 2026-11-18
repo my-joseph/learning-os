@@ -3,7 +3,7 @@
 import React, { useEffect, useRef } from "react";
 import { ClipboardCheck } from "lucide-react";
 import { Problem } from "@/types/drill";
-import { deriveMilestoneTileState } from "@/lib/codeStatus";
+import { LabMilestoneStepper } from "@/components/LabMilestoneStepper";
 
 interface QuizPaginationBarProps {
   totalQuestions: number;
@@ -40,73 +40,69 @@ export const QuizPaginationBar: React.FC<QuizPaginationBarProps> = ({
   const reviewBtnRef = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
-    if (isReview) {
+    if (isReview && !labMode) {
       reviewBtnRef.current?.scrollIntoView({ inline: "nearest", block: "nearest" });
     }
-  }, [isReview]);
+  }, [isReview, labMode]);
+
+  if (labMode) {
+    return (
+      <LabMilestoneStepper
+        problems={problems}
+        currentIndex={currentIndex}
+        viewMode={viewMode}
+        onSelectQuestion={onSelectQuestion}
+        onToggleViewMode={onToggleViewMode}
+      />
+    );
+  }
 
   return (
     <div className="pt-2 border-t border-zinc-200/80 dark:border-zinc-800/80">
       <div
         role="navigation"
-        aria-label={labMode ? "Milestones" : "Questions"}
+        aria-label="Questions"
         className="flex items-center gap-1.5 overflow-x-auto p-1.5 -m-1.5 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
       >
         {problems.map((prob, idx) => {
           const isActive = viewMode === "quiz" && currentIndex === idx;
           let colorCls = NEUTRAL_TILE_CLS;
-          let statusLabel = labMode ? "Not started" : "Unanswered";
+          let statusLabel = "Unanswered";
 
-          if (labMode) {
-            const tileState = deriveMilestoneTileState(prob.state);
-            if (tileState === "pass") {
-              colorCls =
-                "bg-emerald-700 hover:bg-emerald-800 dark:bg-emerald-500 dark:hover:bg-emerald-400 text-white dark:text-zinc-950 border-emerald-700 dark:border-emerald-500";
-              statusLabel = "Review passed";
-            } else if (tileState === "revise") {
-              colorCls =
-                "bg-amber-600 hover:bg-amber-700 dark:bg-amber-400 dark:hover:bg-amber-300 text-white dark:text-zinc-950 border-amber-600 dark:border-amber-400";
-              statusLabel = "Needs revision";
-            }
-          } else {
-            const isSkipped = prob.state?.skipped === true;
-            const hasScore = prob.state?.score !== null && prob.state?.score !== undefined;
-            const scoreVal = prob.state?.score ?? 0;
-            const isAssisted = Boolean(
-              prob.state?.setupRevealedBeforeAnswer ||
-                prob.state?.solutionRevealedBeforeAnswer ||
-                (prob.state?.hintsRevealed ?? 0) > 0 ||
-                prob.state?.attempts?.some((a) => a.setupRevealed || a.solutionRevealed)
-            );
-            const isIndependentFull = hasScore && scoreVal >= 1 && !isAssisted && !isSkipped;
-            const isPartialOrAssisted =
-              hasScore && scoreVal > 0 && !isIndependentFull && !isSkipped;
-            const isIncorrect = hasScore && scoreVal === 0 && !isSkipped;
+          const isSkipped = prob.state?.skipped === true;
+          const hasScore = prob.state?.score !== null && prob.state?.score !== undefined;
+          const scoreVal = prob.state?.score ?? 0;
+          const isAssisted = Boolean(
+            prob.state?.setupRevealedBeforeAnswer ||
+              prob.state?.solutionRevealedBeforeAnswer ||
+              (prob.state?.hintsRevealed ?? 0) > 0 ||
+              prob.state?.attempts?.some((a) => a.setupRevealed || a.solutionRevealed)
+          );
+          const isIndependentFull = hasScore && scoreVal >= 1 && !isAssisted && !isSkipped;
+          const isPartialOrAssisted =
+            hasScore && scoreVal > 0 && !isIndependentFull && !isSkipped;
+          const isIncorrect = hasScore && scoreVal === 0 && !isSkipped;
 
-            if (isIndependentFull) {
-              colorCls =
-                "bg-emerald-700 hover:bg-emerald-800 dark:bg-emerald-500 dark:hover:bg-emerald-400 text-white dark:text-zinc-950 border-emerald-700 dark:border-emerald-500";
-              statusLabel = `Correct on first attempt (${scoreVal})`;
-            } else if (isPartialOrAssisted) {
-              colorCls =
-                "bg-amber-600 hover:bg-amber-700 dark:bg-amber-400 dark:hover:bg-amber-300 text-white dark:text-zinc-950 border-amber-600 dark:border-amber-400";
-              statusLabel = `Assisted or partial (${scoreVal})`;
-            } else if (isIncorrect) {
-              colorCls =
-                "bg-rose-600 hover:bg-rose-700 dark:bg-rose-400 dark:hover:bg-rose-300 text-white dark:text-zinc-950 border-rose-600 dark:border-rose-400";
-              statusLabel = "Incorrect (0)";
-            } else if (isSkipped) {
-              colorCls =
-                "bg-transparent hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 dark:text-zinc-500 border-dashed border-zinc-300 dark:border-zinc-700";
-              statusLabel = "Skipped";
-            }
+          if (isIndependentFull) {
+            colorCls =
+              "bg-emerald-700 hover:bg-emerald-800 dark:bg-emerald-500 dark:hover:bg-emerald-400 text-white dark:text-zinc-950 border-emerald-700 dark:border-emerald-500";
+            statusLabel = `Correct on first attempt (${scoreVal})`;
+          } else if (isPartialOrAssisted) {
+            colorCls =
+              "bg-amber-600 hover:bg-amber-700 dark:bg-amber-400 dark:hover:bg-amber-300 text-white dark:text-zinc-950 border-amber-600 dark:border-amber-400";
+            statusLabel = `Assisted or partial (${scoreVal})`;
+          } else if (isIncorrect) {
+            colorCls =
+              "bg-rose-600 hover:bg-rose-700 dark:bg-rose-400 dark:hover:bg-rose-300 text-white dark:text-zinc-950 border-rose-600 dark:border-rose-400";
+            statusLabel = "Incorrect (0)";
+          } else if (isSkipped) {
+            colorCls =
+              "bg-transparent hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 dark:text-zinc-500 border-dashed border-zinc-300 dark:border-zinc-700";
+            statusLabel = "Skipped";
           }
 
           const activeRing = isActive ? ACTIVE_TILE_RING_CLS : INACTIVE_TILE_CLS;
-
-          const itemTitle = labMode
-            ? `Milestone ${prob.id} — ${statusLabel}`
-            : `Question ${idx + 1} — ${statusLabel}`;
+          const itemTitle = `Question ${idx + 1} — ${statusLabel}`;
 
           return (
             <button
@@ -118,7 +114,7 @@ export const QuizPaginationBar: React.FC<QuizPaginationBarProps> = ({
               aria-current={isActive ? "step" : undefined}
               className={`${TILE_BASE_CLS} ${colorCls} ${activeRing}`}
             >
-              {labMode ? prob.id : idx + 1}
+              {idx + 1}
             </button>
           );
         })}

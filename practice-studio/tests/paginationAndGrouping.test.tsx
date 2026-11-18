@@ -104,6 +104,8 @@ const drillQuizTiles = renderToStaticMarkup(
     onToggleViewMode={noop}
   />
 );
+assert.match(drillQuizTiles, /role="navigation"[^>]*aria-label="Questions"/);
+assert.doesNotMatch(drillQuizTiles, /aria-label="Lab milestones"/);
 assert.match(drillQuizTiles, /aria-label="Review &amp; sync"/);
 assert.match(drillQuizTiles, /title="Review &amp; sync"/);
 assert.doesNotMatch(drillQuizTiles, />Review<\/span>/);
@@ -125,7 +127,27 @@ assert.match(
   /aria-label="Review &amp; sync"[^>]*aria-pressed="true"[^>]*aria-current="step"[^>]*title="Review &amp; sync"[^>]*class="[^"]*min-w-\[1\.75rem\] h-7[^"]*ring-2 ring-indigo-600/
 );
 
-const labReviewTiles = renderToStaticMarkup(
+const labQuizStepper = renderToStaticMarkup(
+  <QuizPaginationBar
+    totalQuestions={2}
+    currentIndex={0}
+    problems={[makeProblem("M1"), makeProblem("M2")]}
+    viewMode="quiz"
+    isLab={true}
+    onSelectQuestion={noop}
+    onPrev={noop}
+    onNext={noop}
+    onToggleViewMode={noop}
+  />
+);
+assert.match(labQuizStepper, /<nav[^>]*aria-label="Lab milestones"/);
+assert.doesNotMatch(labQuizStepper, /aria-label="Questions"/);
+assert.doesNotMatch(labQuizStepper, /min-w-\[1\.75rem\] h-7/);
+assert.match(labQuizStepper, /aria-label="M1 — not passed yet"[^>]*aria-current="step"/);
+assert.match(labQuizStepper, /aria-label="M2 — not passed yet"/);
+assert.match(labQuizStepper, />Review<\/span>/);
+
+const labReviewStepper = renderToStaticMarkup(
   <QuizPaginationBar
     totalQuestions={2}
     currentIndex={1}
@@ -138,9 +160,14 @@ const labReviewTiles = renderToStaticMarkup(
     onToggleViewMode={noop}
   />
 );
+assert.match(labReviewStepper, /<nav[^>]*aria-label="Lab milestones"/);
 assert.match(
-  labReviewTiles,
-  /aria-label="Review &amp; sync"[^>]*aria-pressed="true"[^>]*aria-current="step"[^>]*class="[^"]*min-w-\[1\.75rem\] h-7[^"]*ring-2 ring-indigo-600/
+  labReviewStepper,
+  /aria-label="Review &amp; sync"[^>]*aria-pressed="true"[^>]*aria-current="step"/
+);
+assert.match(
+  labReviewStepper,
+  /aria-label="Review &amp; sync"[\s\S]*ring-2 ring-indigo-600/
 );
 
 // ---------------------------------------------------------------------------
