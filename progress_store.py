@@ -139,13 +139,22 @@ def extract_progress(drill_doc: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _iter_problem_states(doc: dict[str, Any]) -> list[dict[str, Any]]:
+    """Return problem state dicts from either a drill document (`problems: list`) or a progress file (`problems: dict`)."""
+    problems = doc.get("problems")
+    if isinstance(problems, dict):
+        return [st for st in problems.values() if isinstance(st, dict)]
+    if isinstance(problems, list):
+        return [p.get("state") or {} for p in problems if isinstance(p, dict)]
+    return []
+
+
 def has_practice(drill_doc: dict[str, Any]) -> bool:
-    """True if the document carries anything a learner did (not just pristine defaults)."""
+    """True if the document or progress payload carries anything a learner did (not just pristine defaults)."""
     summary = drill_doc.get("sessionSummary") or {}
     if summary.get("attemptDate") or summary.get("score") or summary.get("syncedToNotionAt"):
         return True
-    for p in drill_doc.get("problems", []):
-        st = p.get("state") or {}
+    for st in _iter_problem_states(drill_doc):
         if st.get("attempts") or st.get("userInput") or st.get("score") is not None or st.get("skipped"):
             return True
         if st.get("mistakes") or st.get("mistakeNote") or st.get("userCode") or st.get("reviews"):
@@ -181,12 +190,27 @@ def apply_progress(drill_doc: dict[str, Any], progress: dict[str, Any] | None) -
     return drill_doc
 
 
-def save_progress(drill_doc: dict[str, Any], repo_root: str | None = None) -> str:
-    """Write the learner-owned part of `drill_doc` to progress/<DRILL_ID>.json. Never touches drill content."""
+def save_progress(
+    drill_doc: dict[str, Any],
+    repo_root: str | None = None,
+    *,
+    allow_reset: bool = False,
+) -> str:
+    """Write the learner-owned part of `drill_doc` to progress/<DRILL_ID>.json. Never touches drill content.
+
+    Refuses to overwrite an existing practised progress file with empty state unless `allow_reset=True`.
+    """
     drill_id = drill_doc.get("drillId")
     if not drill_id:
         raise ValueError("Missing drillId")
     path = progress_path(drill_id, repo_root)
+    if not allow_reset and os.path.exists(path):
+        existing = load_progress(drill_id, repo_root)
+        if existing and has_practice(existing) and not has_practice(drill_doc):
+            raise ValueError(
+                f"Refusing to overwrite practised progress for '{drill_id}' with empty state "
+                "(pass allow_reset=True to reset)"
+            )
     os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
     with open(path, "w", encoding="utf-8") as f:
         json.dump(extract_progress(drill_doc), f, ensure_ascii=False, indent=2)

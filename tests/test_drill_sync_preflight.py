@@ -138,3 +138,160 @@ def test_cli_sync_uses_client_and_returns_nonzero_on_missing(tmp_path, monkeypat
     assert ("POST", "pages") in calls
 
     assert drill_sync.main(["DRL-DOES-NOT-EXIST"]) == 1
+
+
+def test_cli_sync_preserves_practised_progress_and_id_map_newline(tmp_path, monkeypatch, capsys):
+    import progress_store
+
+    data_dir = tmp_path / "data"
+    unit_dir = data_dir / "MTH-T02-C01-U01"
+    unit_dir.mkdir(parents=True)
+    drill_file = unit_dir / "DRL-MTH-T02-C01-U01-99.json"
+    drill_file.write_text(json.dumps(_doc()), encoding="utf-8")
+
+    (tmp_path / "id_map.json").write_text(
+        json.dumps({"DRILLS_DB": {"id": "db-1"}, "MTH-T02-C01-U01": {"id": "u-1"}}, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.delenv("PROGRESS_DIR", raising=False)
+    monkeypatch.setenv("DRILLS_DATA_DIR", str(data_dir))
+    monkeypatch.delenv("NOTION_DRY_RUN", raising=False)
+
+    practised = _doc()
+    practised["problems"][0]["state"] = {
+        "userInput": "7",
+        "score": 1,
+        "attempts": [{"input": "7", "verdict": "correct"}],
+    }
+    practised["sessionSummary"] = {"practiceStatus": "Graded", "score": 1, "maxScore": 1, "attemptDate": "2026-11-17"}
+    progress_store.save_progress(practised)
+
+    monkeypatch.setattr(drill_sync, "load_env", lambda: {"NOTION_TOKEN": "fake-token"})
+    monkeypatch.setattr(
+        drill_sync,
+        "notion_request",
+        lambda method, path, token, payload=None: (
+            {"results": []} if method == "POST" and path.endswith("/query") else {"id": "page-123"}
+        ),
+    )
+    monkeypatch.setattr(drill_sync, "replace_page_blocks", lambda *a, **k: None)
+    monkeypatch.setattr(drill_sync, "update_unit_reviews", lambda *a, **k: {})
+    monkeypatch.setattr(drill_sync, "get_all_blocks", lambda *a, **k: [])
+
+    assert drill_sync.main(["DRL-MTH-T02-C01-U01-99"]) == 0
+    out = json.loads(capsys.readouterr().out)
+    assert out["ok"] is True
+
+    reloaded = progress_store.load_progress("DRL-MTH-T02-C01-U01-99")
+    assert reloaded is not None
+    assert reloaded["sessionSummary"]["attemptDate"] == "2026-11-17"
+    assert reloaded["sessionSummary"]["score"] == 1
+    assert reloaded["problems"]["Q01"]["userInput"] == "7"
+
+    id_map_raw = (tmp_path / "id_map.json").read_text(encoding="utf-8")
+    assert id_map_raw.endswith("\n") and not id_map_raw.endswith("\n\n")
+    assert id_map_raw == json.dumps(json.loads(id_map_raw), ensure_ascii=False, indent=2) + "\n"
+
+
+def test_cli_content_only_skips_progress_and_unit_writes(tmp_path, monkeypatch, capsys):
+    import progress_store
+    from notion_sync import unit_page
+
+    data_dir = tmp_path / "data"
+    unit_dir = data_dir / "MTH-T02-C01-U01"
+    unit_dir.mkdir(parents=True)
+    drill_file = unit_dir / "DRL-MTH-T02-C01-U01-99.json"
+    drill_file.write_text(json.dumps(_doc()), encoding="utf-8")
+
+    (tmp_path / "id_map.json").write_text(
+        json.dumps({"DRILLS_DB": {"id": "db-1"}, "MTH-T02-C01-U01": {"id": "u-1"}}, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.delenv("PROGRESS_DIR", raising=False)
+    monkeypatch.setenv("DRILLS_DATA_DIR", str(data_dir))
+    monkeypatch.delenv("NOTION_DRY_RUN", raising=False)
+
+    practised = _doc()
+    practised["problems"][0]["state"] = {"userInput": "7", "score": 1}
+    practised["sessionSummary"] = {
+        "practiceStatus": "Graded",
+        "score": 1,
+        "maxScore": 1,
+        "accuracyPct": 100,
+        "attemptDate": "2026-11-17",
+    }
+    prog_file_path = progress_store.save_progress(practised)
+    prog_before = open(prog_file_path, encoding="utf-8").read()
+
+    monkeypatch.setattr(drill_sync, "load_env", lambda: {"NOTION_TOKEN": "fake-token"})
+
+    notion_calls = []
+
+    def fake_notion_request(method, path, token, payload=None):
+        notion_calls.append((method, path, payload))
+        if method == "POST" and path.endswith("/query"):
+            return {"results": [{"id": "page-existing"}]}
+        return {"id": "page-existing"}
+
+    replaced = []
+    monkeypatch.setattr(drill_sync, "notion_request", fake_notion_request)
+    monkeypatch.setattr(drill_sync, "replace_page_blocks", lambda pid, blocks, did, tok: replaced.append((pid, blocks)))
+
+    def fail(*a, **k):
+        raise AssertionError("must not be called in --content-only mode")
+
+    monkeypatch.setattr(drill_sync, "save_progress", fail)
+    monkeypatch.setattr(drill_sync, "update_unit_reviews", fail)
+    monkeypatch.setattr(drill_sync, "merge_review_schedule", fail)
+    monkeypatch.setattr(drill_sync, "get_all_blocks", fail)
+    monkeypatch.setattr(unit_page, "insert_after", fail)
+
+    assert drill_sync.main(["DRL-MTH-T02-C01-U01-99", "--content-only"]) == 0
+    out = json.loads(capsys.readouterr().out)
+    assert out["ok"] is True and out["drillPageId"] == "page-existing"
+    assert out["unitReviews"] == {}
+
+    # Drill page updated with merged progress and question blocks
+    patch_calls = [c for c in notion_calls if c[0] == "PATCH" and c[1] == "pages/page-existing"]
+    assert len(patch_calls) == 1
+    props = patch_calls[0][2]["properties"]
+    assert props["Score"]["number"] == 1.0
+    assert props["Practice Status"]["select"]["name"] == "Graded"
+    assert len(replaced) == 1
+
+    # Local progress and review cache untouched
+    assert open(prog_file_path, encoding="utf-8").read() == prog_before
+    assert not (tmp_path / "progress" / "_review_schedule.json").exists()
+    id_map_raw = (tmp_path / "id_map.json").read_text(encoding="utf-8")
+    assert id_map_raw.endswith("\n") and not id_map_raw.endswith("\n\n")
+
+
+def test_cli_content_only_creates_no_progress_file_for_pristine_drill(tmp_path, monkeypatch, capsys):
+    data_dir = tmp_path / "data"
+    unit_dir = data_dir / "MTH-T02-C01-U01"
+    unit_dir.mkdir(parents=True)
+    (unit_dir / "DRL-MTH-T02-C01-U01-99.json").write_text(json.dumps(_doc()), encoding="utf-8")
+    (tmp_path / "id_map.json").write_text(
+        json.dumps({"DRILLS_DB": {"id": "db-1"}, "MTH-T02-C01-U01": {"id": "u-1"}}, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.delenv("PROGRESS_DIR", raising=False)
+    monkeypatch.setenv("DRILLS_DATA_DIR", str(data_dir))
+    monkeypatch.delenv("NOTION_DRY_RUN", raising=False)
+    monkeypatch.setattr(drill_sync, "load_env", lambda: {"NOTION_TOKEN": "fake-token"})
+    monkeypatch.setattr(
+        drill_sync,
+        "notion_request",
+        lambda method, path, token, payload=None: (
+            {"results": []} if method == "POST" and path.endswith("/query") else {"id": "page-123"}
+        ),
+    )
+    monkeypatch.setattr(drill_sync, "replace_page_blocks", lambda *a, **k: None)
+
+    assert drill_sync.main(["DRL-MTH-T02-C01-U01-99", "--content-only"]) == 0
+    out = json.loads(capsys.readouterr().out)
+    assert out["ok"] is True
+    assert not (tmp_path / "progress").exists()

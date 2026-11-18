@@ -32,7 +32,8 @@ from notion_sync.blocks import (
     toggle_block,
 )
 from notion_sync.client import get_all_blocks, load_env, notion_request
-from progress_store import has_practice, merge_review_schedule, pilot_mode, save_progress
+from notion_sync.id_map import save_id_map
+from progress_store import apply_progress, has_practice, load_progress, merge_review_schedule, pilot_mode, save_progress
 
 
 def get_data_root() -> str:
@@ -73,19 +74,24 @@ def validate_and_sanitize_drill_doc(drill_doc: dict) -> None:
                         p["inputHint"] = "Type final answer..."
 
 
+def _drill_content_path(drill_doc: dict) -> str:
+    drill_id = drill_doc.get("drillId")
+    if not drill_id:
+        raise ValueError("Missing drillId")
+    unit_code = drill_doc.get("unitCode", "MTH-T02-C01-U01")
+    return os.path.join(get_data_root(), unit_code, f"{drill_id}.json")
+
+
 def save_drill_doc(drill_doc: dict) -> str:
     """Persist the learner's progress (progress/<DRILL_ID>.json) and return the drill's content path.
 
     The drill content file in drills/data is never rewritten here: practice must not dirty
     curriculum content. inputHint sanitisation is applied in memory so the Notion copy is clean.
     """
-    drill_id = drill_doc.get("drillId")
-    if not drill_id:
-        raise ValueError("Missing drillId")
+    path = _drill_content_path(drill_doc)
     validate_and_sanitize_drill_doc(drill_doc)
     save_progress(drill_doc)
-    unit_code = drill_doc.get("unitCode", "MTH-T02-C01-U01")
-    return os.path.join(get_data_root(), unit_code, f"{drill_id}.json")
+    return path
 
 
 REQUIRED_DRILL_FIELDS = ("drillId", "unitCode", "chapterCode", "topicCode", "problems")
@@ -175,7 +181,7 @@ def _mention_or_code(code: str, id_map: dict) -> str:
     return f"[[{code}]]" if code in id_map else f"`{code}`"
 
 
-def _sync_drill_to_notion_inner(drill_doc: dict, path: str) -> dict:
+def _sync_drill_to_notion_inner(drill_doc: dict, path: str, *, content_only: bool = False) -> dict:
     env = load_env()
     token = env.get("NOTION_TOKEN")
     with open("id_map.json", "r", encoding="utf-8") as f:
@@ -259,8 +265,7 @@ def _sync_drill_to_notion_inner(drill_doc: dict, path: str) -> dict:
         page_id = created["id"]
 
     id_map[drill_id] = {"id": page_id, "title": title}
-    with open("id_map.json", "w", encoding="utf-8") as f:
-        json.dump(id_map, f, ensure_ascii=False, indent=2)
+    save_id_map(id_map)
 
     # Populate Notion Drill Page Body with clean 100% English formatting
     player_url = f"http://localhost:3000/?drill={drill_id}"
@@ -382,12 +387,12 @@ def _sync_drill_to_notion_inner(drill_doc: dict, path: str) -> dict:
     parent_entry = id_map.get(unit_code) or id_map.get(chapter_code)
     parent_page_id = parent_entry["id"] if isinstance(parent_entry, dict) else parent_entry
     reviews = {}
-    if attempt_date:
+    if attempt_date and not content_only:
         try:
             reviews = update_unit_reviews(covered_units(drill_doc, unit_code, id_map), attempt_date, id_map, token)
         except Exception:  # noqa: BLE001 - review scheduling must never fail the drill sync
             reviews = {}
-    if attempt_date and parent_page_id:
+    if attempt_date and parent_page_id and not content_only:
         if pilot_mode():
             print(f"[PILOT] skipped Notion write: unit Mistake Log append ({unit_code})")
         else:
@@ -411,15 +416,19 @@ def _sync_drill_to_notion_inner(drill_doc: dict, path: str) -> dict:
     return {"ok": True, "drillPageId": page_id, "parentPageId": parent_page_id, "unitReviews": reviews}
 
 
-def sync_drill_to_notion(drill_doc: dict) -> dict:
-    """Save locally, then sync to Notion.
+def sync_drill_to_notion(drill_doc: dict, *, content_only: bool = False) -> dict:
+    """Save locally (unless `content_only=True`), then sync to Notion.
 
     - Incomplete drill data -> ok False with the missing fields; nothing is sent to Notion.
     - Notion/network unavailable (incl. missing token) -> ok True, degraded: the file is saved
-      locally and the sync can simply be retried.
+      locally (when not content-only) and the sync can simply be retried.
     - Any other error is a bug -> ok False (never reported as success).
     """
-    path = save_drill_doc(drill_doc)
+    if content_only:
+        path = _drill_content_path(drill_doc)
+        validate_and_sanitize_drill_doc(drill_doc)
+    else:
+        path = save_drill_doc(drill_doc)
     missing = missing_sync_fields(drill_doc)
     if missing:
         return {
@@ -448,15 +457,20 @@ def sync_drill_to_notion(drill_doc: dict) -> dict:
             "pilotSkipped": True,
         }
     try:
-        return _sync_drill_to_notion_inner(drill_doc, path)
+        return (
+            _sync_drill_to_notion_inner(drill_doc, path, content_only=True)
+            if content_only
+            else _sync_drill_to_notion_inner(drill_doc, path)
+        )
     except (OSError, RuntimeError) as err:
         # notion_request raises RuntimeError for HTTP errors / MissingNotionToken, OSError for network.
+        prefix = "Notion was not updated (content-only)" if content_only else "Saved locally; Notion was not updated"
         return {
             "ok": True,
             "localFilePath": path,
             "drillPageId": None,
             "degraded": True,
-            "warning": f"Saved locally; Notion was not updated: {err}",
+            "warning": f"{prefix}: {err}",
         }
     except Exception as err:  # noqa: BLE001 - surfaced to the Studio as a failure, not swallowed
         return {"ok": False, "localFilePath": path, "error": f"Notion sync failed: {type(err).__name__}: {err}"}
@@ -485,6 +499,11 @@ def main(argv: Optional[list[str]] = None) -> int:
     )
     parser.add_argument("target", help="Drill ID (e.g. DRL-PRG-T00-C02-U01-01) or path to drill JSON")
     parser.add_argument("--dry-run", action="store_true", help="Run preflight and local save without calling Notion")
+    parser.add_argument(
+        "--content-only",
+        action="store_true",
+        help="Refresh the drill's Notion page with merged progress without writing local progress or unit reviews/Mistake Log",
+    )
     args = parser.parse_args(argv)
 
     try:
@@ -494,10 +513,14 @@ def main(argv: Optional[list[str]] = None) -> int:
         print(f"Error: {exc}", file=sys.stderr)
         return 1
 
+    drill_id = drill_doc.get("drillId")
+    if drill_id:
+        apply_progress(drill_doc, load_progress(drill_id))
+
     if args.dry_run:
         drill_doc["dryRun"] = True
 
-    result = sync_drill_to_notion(drill_doc)
+    result = sync_drill_to_notion(drill_doc, content_only=args.content_only)
     print(json.dumps(result, ensure_ascii=False, indent=2))
     return 0 if result.get("ok") else 1
 
