@@ -127,6 +127,7 @@ const beforeAttemptHtml = renderToStaticMarkup(
   />
 );
 assert.match(beforeAttemptHtml, /<h1[^>]*>Linear Equations<\/h1>/);
+assert.match(beforeAttemptHtml, /title="Level 1"[^>]*>Level 1<\/span>/);
 assert.doesNotMatch(beforeAttemptHtml, /Self-score:/, "self-score must not appear before an attempt");
 
 const afterAttemptHtml = renderToStaticMarkup(
@@ -222,7 +223,8 @@ assert.doesNotMatch(
 );
 assert.match(codeInitialHtml, /Open in VS Code/);
 assert.match(codeInitialHtml, /Run checks/);
-assert.match(codeInitialHtml, /Open in Cursor/);
+assert.doesNotMatch(codeInitialHtml, /Open in Cursor/);
+assert.match(codeInitialHtml, /title="Level 1"[^>]*>Level 1<\/span>/);
 assert.match(codeInitialHtml, /Unlocks after review passes/);
 assert.match(codeInitialHtml, /\(not requested\)/);
 

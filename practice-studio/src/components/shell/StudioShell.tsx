@@ -1,16 +1,16 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { AnimatePresence, m } from "motion/react";
 import { drawer, fade } from "@/lib/motion";
-import { Reveal } from "@/components/motion/Reveal";
-import { AlertCircle, CheckCircle2, PanelRight, X } from "lucide-react";
+import { PanelRight, X } from "lucide-react";
 import { DrillDocument, DrillListItem } from "@/types/drill";
 import type { LabListItem } from "@/lib/labModel";
 import { DrillFilter, StatusMessage, ViewMode } from "@/hooks/types";
 import { useSidePanelData } from "@/hooks/useSidePanelData";
 import { Workspace, isLabId } from "@/lib/routes";
 import { QuizPaginationBar } from "@/components/QuizPaginationBar";
+import { ToastStack } from "@/components/ui/ToastStack";
 import { StudioHeader } from "./StudioHeader";
 import { StudioSidePanel } from "./StudioSidePanel";
 
@@ -51,7 +51,7 @@ interface StudioShellProps {
   children: React.ReactNode;
 }
 
-/** Page shell composing the sticky header, question tiles bar, status banner, and main workspace. */
+/** Page shell composing the sticky header, question tiles bar, status toasts, sticky side panel, and main workspace. */
 export const StudioShell: React.FC<StudioShellProps> = ({
   workspace,
   mathHref,
@@ -86,10 +86,28 @@ export const StudioShell: React.FC<StudioShellProps> = ({
 }) => {
   const [showDrillSwitcher, setShowDrillSwitcher] = useState(false);
   const [showHeader, setShowHeader] = useState(true);
+  const [headerHeight, setHeaderHeight] = useState(108);
   const [isSideDrawerOpen, setIsSideDrawerOpen] = useState(false);
   const lastScrollYRef = useRef(0);
+  const headerRef = useRef<HTMLElement | null>(null);
   const switcherRef = useRef<HTMLDivElement | null>(null);
   const genPopoverRef = useRef<HTMLDivElement | null>(null);
+
+  const handleClearStatus = useCallback(() => {
+    onStatusChange(null);
+  }, [onStatusChange]);
+
+  // Measure sticky header height so the sticky desktop aside clears it when visible.
+  useEffect(() => {
+    const el = headerRef.current;
+    if (!el) return;
+    const update = () => setHeaderHeight(el.offsetHeight);
+    update();
+    if (typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   const {
     dueUnits,
@@ -179,6 +197,8 @@ export const StudioShell: React.FC<StudioShellProps> = ({
 
   const containerMaxWidth =
     viewMode === "review" ? "max-w-5xl" : "max-w-[720px] lg:max-w-[1016px]";
+  // Sticky header sits at top-2 (8 px); add 12 px breathing room when visible.
+  const asideTopPx = showHeader ? headerHeight + 20 : 16;
 
   const sidePanelNode = (
     <StudioSidePanel
@@ -203,6 +223,7 @@ export const StudioShell: React.FC<StudioShellProps> = ({
         )}
 
         <StudioHeader
+          headerRef={headerRef}
           showHeader={showHeader}
           workspace={workspace}
           mathHref={mathHref}
@@ -241,41 +262,6 @@ export const StudioShell: React.FC<StudioShellProps> = ({
           tiles={tiles}
         />
 
-        {/* Calm Status Notification Banner (left border accent, never full-card fill) */}
-        <Reveal show={Boolean(status)}>
-        {status && (
-          <div
-            role="status"
-            className={`px-4 py-3 rounded-xl mb-5 text-xs sm:text-sm flex items-center justify-between bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 border-l-4 ${
-              status.type === "pass"
-                ? "border-l-emerald-700 dark:border-l-emerald-400"
-                : status.type === "fail"
-                ? "border-l-rose-600 dark:border-l-rose-400"
-                : "border-l-amber-600 dark:border-l-amber-400"
-            }`}
-          >
-            <div className="flex items-center gap-2 text-zinc-800 dark:text-zinc-200">
-              {status.type === "pass" ? (
-                <CheckCircle2 className="w-4 h-4 text-emerald-700 dark:text-emerald-400 shrink-0" />
-              ) : status.type === "fail" ? (
-                <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0" />
-              ) : (
-                <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
-              )}
-              <span dangerouslySetInnerHTML={{ __html: status.text }} />
-            </div>
-            <button
-              type="button"
-              onClick={() => onStatusChange(null)}
-              aria-label="Dismiss notification"
-              className="inline-flex items-center justify-center w-7 h-7 rounded-lg text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-        )}
-        </Reveal>
-
         {viewMode === "quiz" ? (
           <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_272px] lg:gap-6 lg:items-start">
             <div className="min-w-0">
@@ -299,7 +285,13 @@ export const StudioShell: React.FC<StudioShellProps> = ({
 
             <aside
               aria-label="Due today and weak spots"
-              className="hidden lg:block"
+              style={
+                {
+                  "--aside-top": `${asideTopPx}px`,
+                  "--aside-max-h": `calc(100vh - ${asideTopPx + 16}px)`,
+                } as React.CSSProperties
+              }
+              className="hidden lg:block lg:sticky lg:top-[var(--aside-top)] lg:max-h-[var(--aside-max-h)] lg:overflow-y-auto lg:overscroll-contain transition-[top] duration-150"
             >
               {sidePanelNode}
             </aside>
@@ -308,6 +300,8 @@ export const StudioShell: React.FC<StudioShellProps> = ({
           <main>{children}</main>
         )}
       </div>
+
+      <ToastStack status={status} onClearStatus={handleClearStatus} />
 
       <AnimatePresence>
       {viewMode === "quiz" && isSideDrawerOpen && (

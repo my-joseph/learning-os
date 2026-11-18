@@ -11,6 +11,7 @@ import { MathWorkspace } from "@/components/math/MathWorkspace";
 import { StudioShell } from "@/components/shell/StudioShell";
 import { ReviewPanel } from "@/components/shell/ReviewPanel";
 import { DrillNotFoundCard } from "@/components/shell/DrillNotFoundCard";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { StatusMessage } from "@/hooks/types";
 import { useTheme } from "@/hooks/useTheme";
 import { useProgressSync, computeSessionMetrics } from "@/hooks/useProgressSync";
@@ -42,6 +43,7 @@ export const StudioClient: React.FC<StudioClientProps> = ({
 
   const [status, setStatus] = useState<StatusMessage | null>(null);
   const [showGenPopover, setShowGenPopover] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [lastMathId, setLastMathId] = useState<string | null>(null);
   const [lastCodeId, setLastCodeId] = useState<string | null>(null);
 
@@ -133,6 +135,7 @@ export const StudioClient: React.FC<StudioClientProps> = ({
   // Load drill whenever route drillId changes
   useEffect(() => {
     setStatus(null);
+    setShowResetConfirm(false);
     pendingReplacedQsRef.current = [];
     loadDrill(drillId, initialQuestionIdRef.current);
   }, [drillId, loadDrill]);
@@ -226,7 +229,9 @@ export const StudioClient: React.FC<StudioClientProps> = ({
       accuracyPct={accuracyPct}
       theme={theme}
       onToggleTheme={handleToggleTheme}
-      onResetAll={handleResetAll}
+      onResetAll={() => {
+        if (currentDrill) setShowResetConfirm(true);
+      }}
       drills={filteredDrills}
       labs={filteredLabs}
       selectedDrillId={drillId}
@@ -361,6 +366,23 @@ export const StudioClient: React.FC<StudioClientProps> = ({
           onMistakeNoteChange={handleMistakeNoteChange}
         />
       )}
+      <ConfirmDialog
+        open={showResetConfirm && Boolean(currentDrill)}
+        title="Reset all questions?"
+        description={
+          currentDrill
+            ? `Reset all questions in ${currentDrill.drillId} to start over.`
+            : ""
+        }
+        confirmLabel="Reset all"
+        cancelLabel="Cancel"
+        destructive
+        onCancel={() => setShowResetConfirm(false)}
+        onConfirm={() => {
+          setShowResetConfirm(false);
+          handleResetAll();
+        }}
+      />
     </StudioShell>
   );
 };

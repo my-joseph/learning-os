@@ -22,6 +22,7 @@ import { DrillSwitcher } from "./DrillSwitcher";
 import { GeneratePopover } from "./GeneratePopover";
 
 interface StudioHeaderProps {
+  headerRef?: React.RefObject<HTMLElement>;
   showHeader: boolean;
   workspace: Workspace;
   mathHref: string | null;
@@ -64,6 +65,7 @@ interface StudioHeaderProps {
 
 /** Slim one-row Studio header with workspace switch, drill switcher, theme toggle, Notion link, and ⋯ menu. */
 export const StudioHeader: React.FC<StudioHeaderProps> = ({
+  headerRef,
   showHeader,
   workspace,
   mathHref,
@@ -104,6 +106,7 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
   const [pillWorkspace, setPillWorkspace] = useState<Workspace>(workspace);
   useEffect(() => setPillWorkspace(workspace), [workspace]);
   const moreMenuRef = useRef<HTMLDivElement | null>(null);
+  const moreButtonRef = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -128,6 +131,7 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
 
   return (
     <header
+      ref={headerRef}
       className={`sticky top-2 z-50 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md border border-zinc-200 dark:border-zinc-800 rounded-2xl px-3.5 py-2.5 mb-6 shadow-sm transition-all duration-150 ${
         showHeader
           ? "translate-y-0 opacity-100"
@@ -232,6 +236,7 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
           {/* Single ⋯ overflow menu for secondary controls & mobile items */}
           <div className="relative" ref={moreMenuRef}>
             <button
+              ref={moreButtonRef}
               type="button"
               onClick={() => setShowMoreMenu((prev) => !prev)}
               aria-expanded={showMoreMenu}
@@ -370,6 +375,7 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
                     type="button"
                     onClick={() => {
                       setShowMoreMenu(false);
+                      moreButtonRef.current?.focus();
                       onResetAll();
                     }}
                     className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-rose-600 dark:text-rose-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
