@@ -32,6 +32,11 @@ html.light {
   color-scheme: light;
 }
 
+/* Reserve the scrollbar so page width does not shift when content height changes. */
+html {
+  scrollbar-gutter: stable;
+}
+
 body {
   color: var(--foreground);
   background: var(--background);

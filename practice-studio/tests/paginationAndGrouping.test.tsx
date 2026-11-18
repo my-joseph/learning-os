@@ -145,7 +145,7 @@ assert.doesNotMatch(labQuizStepper, /aria-label="Questions"/);
 assert.doesNotMatch(labQuizStepper, /min-w-\[1\.75rem\] h-7/);
 assert.match(labQuizStepper, /aria-label="M1 — not passed yet"[^>]*aria-current="step"/);
 assert.match(labQuizStepper, /aria-label="M2 — not passed yet"/);
-assert.match(labQuizStepper, />Review<\/span>/);
+assert.doesNotMatch(labQuizStepper, />Review<\/span>/); // icon-only Review step
 
 const labReviewStepper = renderToStaticMarkup(
   <QuizPaginationBar

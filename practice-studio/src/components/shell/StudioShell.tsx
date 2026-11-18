@@ -189,8 +189,8 @@ export const StudioShell: React.FC<StudioShellProps> = ({
       </div>
     ) : null;
 
-  const containerMaxWidth =
-    viewMode === "review" ? "max-w-5xl" : "max-w-[720px] lg:max-w-[1016px]";
+  // Same width in every view so the header/tiles never jump when switching to Review.
+  const containerMaxWidth = "max-w-[720px] lg:max-w-[1016px]";
   // Sticky header sits at top-2 (8 px); add 12 px breathing room when visible.
   const asideTopPx = showHeader ? headerHeight + 20 : 16;
 

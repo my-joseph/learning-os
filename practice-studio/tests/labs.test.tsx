@@ -485,7 +485,8 @@ async function testSyntheticLabAndProgress() {
     assert.match(stepperHtml, />M1</);
     assert.match(stepperHtml, />M2</);
     assert.match(stepperHtml, />M3</);
-    assert.match(stepperHtml, />Review<\/span>/);
+    assert.doesNotMatch(stepperHtml, />Review<\/span>/); // icon-only Review step
+    assert.match(stepperHtml, /aria-label="Review &amp; sync"/);
     assert.match(stepperHtml, /aria-label="M1 — passed"/);
     assert.match(stepperHtml, /aria-label="M2 — not passed yet"[^>]*aria-current="step"/);
     assert.match(stepperHtml, /aria-label="M3 — not passed yet"/);
