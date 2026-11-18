@@ -172,6 +172,19 @@ export const FormattedText: React.FC<FormattedTextProps> = ({
           return <div key={lineIdx} className="h-1.5" />;
         }
 
+        const headingMatch = trimmed.match(/^#{1,4}\s+(.+)$/);
+        if (headingMatch) {
+          // Markdown heading ("### Requirements") renders like the bold section labels used elsewhere.
+          return (
+            <div
+              key={lineIdx}
+              className="font-semibold text-zinc-900 dark:text-zinc-100 leading-relaxed pt-1"
+            >
+              {renderInline(headingMatch[1])}
+            </div>
+          );
+        }
+
         if (trimmed.startsWith("- ") || trimmed.startsWith("* ")) {
           const bulletContent = trimmed.slice(2);
           return (
