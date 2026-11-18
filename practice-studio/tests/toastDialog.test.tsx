@@ -4,6 +4,7 @@ import path from "node:path";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { ConfirmDialog } from "../src/components/ui/ConfirmDialog";
+import { formatSyncToast } from "../src/hooks/useProgressSync";
 import {
   TOAST_DURATION_MS,
   dismissToast,
@@ -126,5 +127,20 @@ assert.match(toastStackSrc, /left-2 right-2/);
 const studioShellSrc = readFileSync("src/components/shell/StudioShell.tsx", "utf8");
 assert.match(studioShellSrc, /lg:sticky/);
 assert.match(studioShellSrc, /lg:overflow-y-auto/);
+
+// 5. Dry-run and pilot sync toast must never claim "Synced"
+const dryRunToast = formatSyncToast({ ok: true, dryRun: true }, "DRL-MTH-01", "MTH-T01-C04", 4, 5, 80);
+assert.equal(dryRunToast.type, "warn");
+assert.match(dryRunToast.text, /Dry run — nothing written to Notion/);
+assert.doesNotMatch(dryRunToast.text, /\bSynced\b/);
+
+const pilotToast = formatSyncToast({ ok: true, pilotSkipped: true }, "DRL-MTH-01", "MTH-T01-C04", 4, 5, 80);
+assert.equal(pilotToast.type, "warn");
+assert.match(pilotToast.text, /Dry run — nothing written to Notion/);
+assert.doesNotMatch(pilotToast.text, /\bSynced\b/);
+
+const liveToast = formatSyncToast({ ok: true }, "DRL-MTH-01", "MTH-T01-C04", 4, 5, 80);
+assert.equal(liveToast.type, "pass");
+assert.match(liveToast.text, /^Synced DRL-MTH-01/);
 
 console.log("toast and dialog tests passed");

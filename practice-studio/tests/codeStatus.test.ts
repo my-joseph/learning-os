@@ -12,6 +12,7 @@ import {
   resolveIdeLinks,
   reviewStatusLabel,
   ReviewRunResult,
+  sanitizeCodeCheckError,
 } from "../src/lib/codeStatus";
 import { POST as reviewRunPOST } from "../src/app/api/review-run/route";
 import type { ProblemState, ReviewRecord } from "../src/types/drill";
@@ -404,5 +405,19 @@ async function runReviewRunRouteChecks() {
 }
 
 runReviewRunRouteChecks().then(() => {
+  // 11. Code check error sanitization strips absolute paths and gives setup hint when tools/lint is missing
+  const missingLintErr =
+    "Error: Lint toolkit not installed. Expected /Users/Joseph/Documents/antigravity/LearningOS/.claude/worktrees/fix1/tools/lint/base.js and /Users/Joseph/Documents/antigravity/LearningOS/.claude/worktrees/fix1/tools/lint/node_modules/.bin/eslint. Run `npm ci` in tools/lint.";
+  const sanitizedMissing = sanitizeCodeCheckError(missingLintErr);
+  assert.doesNotMatch(sanitizedMissing, /\/Users\//);
+  assert.match(sanitizedMissing, /npm ci/);
+  assert.match(sanitizedMissing, /tools\/lint/);
+
+  const absPathErr =
+    "Source file for Q01 not found in /Users/Joseph/Documents/antigravity/LearningOS/.claude/worktrees/fix1/drills/workspace/DRL-PRG-01";
+  const sanitizedPath = sanitizeCodeCheckError(absPathErr);
+  assert.doesNotMatch(sanitizedPath, /\/Users\//);
+  assert.match(sanitizedPath, /drills\/workspace\/DRL-PRG-01/);
+
   console.log("codeStatus tests passed");
 });

@@ -2,8 +2,19 @@
  * Test suite for applyCheckResult (8 cases)
  * Run command: npx tsx practice-studio/tests/applyCheckResult.test.ts
  */
-import { applyCheckResult, applySkip, applyDivergedStep } from "../src/lib/applyCheckResult";
-import { Problem, MistakeTag } from "../src/types/drill";
+import { readFileSync } from "node:fs";
+import {
+  applyCheckResult,
+  applySkip,
+  applyDivergedStep,
+  resetDrillForRetry,
+  resetProblemForRetry,
+} from "../src/lib/applyCheckResult";
+import {
+  CALM_PARSE_ERROR_MESSAGE,
+  canRevealVerifiedAnswer,
+} from "../src/lib/reviewGuard";
+import { DrillDocument, Problem, MistakeTag } from "../src/types/drill";
 
 function assert(condition: boolean, msg: string) {
   if (!condition) {
@@ -429,10 +440,122 @@ runCase("Invalid input before correct does not penalize first-try score", () => 
     mockMistakeTags,
     { ts: "2026-11-16T10:03:00Z" }
   );
+  assert(st1.score === null, "Invalid input must leave score null");
+  assert(!canRevealVerifiedAnswer(st1), "Invalid input must not unlock verified answer");
   const st2 = applyCheckResult({ ...prob, state: st1 }, "360", correctResult, mockMistakeTags, {
     ts: "2026-11-16T10:04:00Z",
   });
   assert(st2.score === 1, "Format error before first substantive attempt should still score 1");
+});
+
+runCase("Raw SymPy/Python error in invalid input is sanitized to calm learner copy", () => {
+  const prob = createBaseProblem();
+  const st = applyCheckResult(
+    prob,
+    "(((",
+    {
+      verdict: "invalid input",
+      message:
+        "Invalid input: Could not tokenize expression: ('unexpected EOF in multi-line statement', (1, 0))",
+      components: [],
+      diagnostics: [],
+    },
+    mockMistakeTags,
+    { ts: "2026-11-18T10:00:00Z" }
+  );
+  assert(
+    st.lastCheck?.message === CALM_PARSE_ERROR_MESSAGE,
+    `Expected calm message, got ${st.lastCheck?.message}`
+  );
+  assert(!canRevealVerifiedAnswer(st), "Sanitized invalid input must not unlock verified answer");
+});
+
+runCase("resetDrillForRetry clears the exact same problem state fields as resetProblemForRetry", () => {
+  const dirtyProblem = createBaseProblem({
+    display: "2x = 720",
+    plainText: "2*x = 720",
+    steps: [{ latex: "x = 360", explain: "Divide by 2" }],
+    solutionCode: "export const x = 360;",
+    starterCode: "// starter",
+    state: {
+      userInput: "360",
+      userCode: "// edited",
+      score: 0.5,
+      divergedStep: 0,
+      mistakes: ["sign-error"],
+      mistakeNote: "Flipped sign",
+      skipped: false,
+      lastCheck: correctResult,
+      lastTestReport: {
+        allPassed: true,
+        score: 1,
+        passedCount: 1,
+        totalCount: 1,
+        visibleResults: [],
+        hiddenPassed: 0,
+        hiddenTotal: 0,
+        executionTimeMs: 5,
+      },
+      attempts: [{ input: "360", ts: "2026-11-18T10:00:00Z", verdict: "correct" }],
+      hintsRevealed: 2,
+      setupRevealedBeforeAnswer: true,
+      solutionRevealedBeforeAnswer: true,
+      durationMs: 42_000,
+    },
+  });
+
+  const singleReset = resetProblemForRetry(dirtyProblem);
+  const sampleDoc: DrillDocument = {
+    schemaVersion: "2.0",
+    drillId: "DRL-MTH-TEST-01",
+    subject: "MATH",
+    unitCode: "MTH-TEST",
+    unitTitle: "Test",
+    chapterCode: "MTH-T01-C01",
+    topicCode: "MTH-T01",
+    unitNotionUrl: null,
+    createdAt: "2026-11-18",
+    config: { questionCount: 1, difficulty: "ALL", difficultyMode: "Mixed" },
+    mistakeTags: [],
+    problems: [dirtyProblem],
+    sessionSummary: {
+      practiceStatus: "Graded",
+      score: 1,
+      maxScore: 1,
+      accuracyPct: 100,
+      mistakeCategories: ["Sign Error"],
+      divergedStepsSummary: "Q01",
+      attemptDate: "2026-11-18",
+    },
+    localFilePath: "",
+  };
+
+  const allReset = resetDrillForRetry(sampleDoc);
+  assert(
+    JSON.stringify(allReset.problems[0]) === JSON.stringify(singleReset),
+    "resetDrillForRetry must match resetProblemForRetry field-for-field"
+  );
+  assert(singleReset.state.attempts?.length === 0, "attempts must be cleared");
+  assert(singleReset.state.hintsRevealed === 0, "hintsRevealed must be 0");
+  assert(singleReset.state.setupRevealedBeforeAnswer === false, "setupRevealedBeforeAnswer must be false");
+  assert(singleReset.state.solutionRevealedBeforeAnswer === false, "solutionRevealedBeforeAnswer must be false");
+  assert(singleReset.state.durationMs === 0, "durationMs must be 0");
+  assert(singleReset.state.userCode === "// starter", "userCode must revert to starterCode");
+  assert(!("display" in singleReset), "display must be stripped");
+  assert(!("steps" in singleReset), "steps must be stripped");
+  assert(!("answerDisplay" in singleReset), "answerDisplay must be stripped");
+  assert(allReset.sessionSummary.practiceStatus === "Ready", "sessionSummary status must reset to Ready");
+  assert(allReset.sessionSummary.attemptDate === null, "attemptDate must reset to null");
+
+  const useDrillSrc = readFileSync("src/hooks/useDrill.ts", "utf8");
+  assert(
+    /handleResetAll[\s\S]*createTelemetryTimerState/.test(useDrillSrc),
+    "handleResetAll must reset telemetry timer state"
+  );
+  assert(
+    /handleResetAll[\s\S]*setActiveSteps\(\{\}\)/.test(useDrillSrc),
+    "handleResetAll must clear activeSteps"
+  );
 });
 
 // Extra: Diverged step does not attach mistake tags

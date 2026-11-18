@@ -2,7 +2,18 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { DrillDocument, Problem, CheckResult, TestRunReport } from "@/types/drill";
-import { applyCheckResult, applySkip, applyDivergedStep } from "@/lib/applyCheckResult";
+import {
+  applyCheckResult,
+  applySkip,
+  applyDivergedStep,
+  resetDrillForRetry,
+  resetProblemForRetry,
+} from "@/lib/applyCheckResult";
+import {
+  hasSubstantiveAttempt,
+  isSubstantiveVerdict,
+  sanitizeCheckMessage,
+} from "@/lib/reviewGuard";
 import {
   createTelemetryTimerState,
   setActiveProblem,
@@ -200,7 +211,15 @@ export function useDrill({
         }),
       });
 
-      const result: CheckResult = await res.json();
+      const rawResult: CheckResult = await res.json();
+      const calmMessage = sanitizeCheckMessage(rawResult.verdict, rawResult.message);
+      if (calmMessage !== rawResult.message) {
+        console.error("[check-answer] raw error:", rawResult.message);
+      }
+      const result: CheckResult =
+        calmMessage === rawResult.message
+          ? rawResult
+          : { ...rawResult, message: calmMessage };
 
       const { durationMs, hintsRevealed, nextState } = consumeAttempt(
         timerStateRef.current,
@@ -228,11 +247,13 @@ export function useDrill({
 
       setCurrentDrill(updatedDoc);
       triggerAutoSave(updatedDoc);
-      const partsToReveal: Array<"steps" | "display"> = ["steps"];
-      if (p.hasSetup && !p.display && !p.plainText) {
-        partsToReveal.push("display");
+      if (isSubstantiveVerdict(result.verdict)) {
+        const partsToReveal: Array<"steps" | "display"> = ["steps"];
+        if (p.hasSetup && !p.display && !p.plainText) {
+          partsToReveal.push("display");
+        }
+        await saveAndReveal(updatedDoc, probId, partsToReveal);
       }
-      await saveAndReveal(updatedDoc, probId, partsToReveal);
     } catch (err: unknown) {
       const errMsg = err instanceof Error ? err.message : String(err);
       setStatus({ text: `SymPy Check error: ${errMsg}`, type: "fail" });
@@ -247,12 +268,13 @@ export function useDrill({
     updateProblem(probId, (p) => ({ ...p, state: { ...p.state, mistakeNote: note } }));
   };
 
-  // Equation set-up opened by the learner. Only counts as assistance before the first check.
+  // Equation set-up opened by the learner. Only counts as assistance before the first substantive check.
   const handleSetupRevealed = (probId: string) => {
     if (!currentDrill) return;
     const target = currentDrill.problems.find((p) => p.id === probId);
     if (!target) return;
-    const shouldMarkAssisted = !target.state.lastCheck && !target.state.setupRevealedBeforeAnswer;
+    const shouldMarkAssisted =
+      !hasSubstantiveAttempt(target.state) && !target.state.setupRevealedBeforeAnswer;
     const updatedDoc: DrillDocument = shouldMarkAssisted
       ? {
           ...currentDrill,
@@ -372,74 +394,20 @@ export function useDrill({
   const handleResetProblem = (probId: string) => {
     if (!currentDrill) return;
     timerStateRef.current = resetProblemTimer(timerStateRef.current, probId);
-    updateProblem(probId, (p) => {
-      const rest = { ...p };
-      delete rest.display;
-      delete rest.plainText;
-      delete rest.steps;
-      delete rest.answerDisplay;
-      delete rest.answerPlain;
-      delete rest.solutionCode;
-      return {
-        ...rest,
-        state: {
-          userInput: "",
-          userCode: p.starterCode || p.codeSnippet || "",
-          score: null,
-          divergedStep: null,
-          mistakes: [],
-          mistakeNote: "",
-          skipped: false,
-          lastCheck: null,
-          lastTestReport: null,
-          attempts: [],
-          hintsRevealed: 0,
-          setupRevealedBeforeAnswer: false,
-          solutionRevealedBeforeAnswer: false,
-          durationMs: 0,
-        },
-      };
-    });
+    setActiveSteps((prev) => ({ ...prev, [probId]: null }));
+    updateProblem(probId, resetProblemForRetry);
   };
 
   const handleResetAll = () => {
     if (!currentDrill) return;
 
-    const updated: DrillDocument = {
-      ...currentDrill,
-      problems: currentDrill.problems.map((p) => {
-        const rest = { ...p };
-        delete rest.display;
-        delete rest.plainText;
-        delete rest.steps;
-        delete rest.answerDisplay;
-        delete rest.answerPlain;
-        delete rest.solutionCode;
-        return {
-          ...rest,
-          state: {
-            userInput: "",
-            userCode: p.starterCode || p.codeSnippet || "",
-            score: null,
-            divergedStep: null,
-            mistakes: [],
-            mistakeNote: "",
-            skipped: false,
-            lastCheck: null,
-            lastTestReport: null,
-          },
-        };
-      }),
-      sessionSummary: {
-        ...currentDrill.sessionSummary,
-        score: 0,
-        accuracyPct: 0,
-        practiceStatus: "Ready",
-        mistakeCategories: [],
-        divergedStepsSummary: "",
-        attemptDate: null,
-      },
-    };
+    const updated = resetDrillForRetry(currentDrill);
+    const isVisible = typeof document !== "undefined" ? !document.hidden : true;
+    timerStateRef.current = createTelemetryTimerState(
+      updated.problems[0]?.id ?? null,
+      isVisible
+    );
+    setActiveSteps({});
     setCurrentDrill(updated);
     setCurrentProblemIndex(0);
     setViewMode("quiz");

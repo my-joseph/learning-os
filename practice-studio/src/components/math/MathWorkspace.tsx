@@ -22,6 +22,7 @@ import { StepRow } from "@/components/StepRow";
 import { MathFigure } from "@/components/MathFigure";
 import { LineChoicePrompt, parseLineChoicePrompt } from "@/components/LineChoicePrompt";
 import { hasCheckpointHint } from "@/lib/studioRules";
+import { hasSubstantiveAttempt, sanitizeCheckMessage } from "@/lib/reviewGuard";
 
 export interface MathWorkspaceProps {
   problem: Problem;
@@ -93,13 +94,23 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
   // Equation set-up (display + plain-text) is hidden until the learner asks for it or finishes the problem.
   const [showSetup, setShowSetup] = useState(() => shouldAutoReveal(problem));
   const hasSetup = Boolean(problem.hasSetup || problem.display || problem.plainText);
-  const answered = Boolean(problem.state.lastCheck);
-  const hasAttempt = Boolean(
-    problem.state.lastCheck ||
-      problem.state.skipped ||
-      (problem.state.attempts && problem.state.attempts.length > 0) ||
-      problem.state.score !== null
-  );
+  const answered = hasSubstantiveAttempt(problem.state);
+  const hasAttempt = answered;
+  const setupUnopenedUnattempted =
+    hasSetup &&
+    !hasAttempt &&
+    !showSetup &&
+    !problem.state.setupRevealedBeforeAnswer;
+  const stepsUnopenedUnattempted =
+    !hasAttempt &&
+    !showSolution &&
+    !problem.state.solutionRevealedBeforeAnswer;
+  const showAssistedNote =
+    !hasAttempt &&
+    !showSetup &&
+    !showSolution &&
+    !problem.state.setupRevealedBeforeAnswer &&
+    !problem.state.solutionRevealedBeforeAnswer;
   const hasCorrectAttempt =
     problem.state.score === 1 ||
     Boolean(problem.state.attempts?.some((a) => a.verdict === "correct"));
@@ -277,7 +288,9 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
                   ? "border-emerald-700 dark:border-emerald-400"
                   : lastCheck.verdict === "equivalent_not_in_form" ||
                     lastCheck.verdict === "partial" ||
-                    lastCheck.verdict === "skipped"
+                    lastCheck.verdict === "skipped" ||
+                    lastCheck.verdict === "invalid input" ||
+                    lastCheck.verdict === "parse_error"
                   ? "border-amber-600 dark:border-amber-400"
                   : "border-rose-600 dark:border-rose-400"
               }`}
@@ -287,13 +300,15 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
                   <CheckCircle2 className="w-4 h-4 text-emerald-700 dark:text-emerald-400 shrink-0 mt-0.5" />
                 ) : lastCheck.verdict === "equivalent_not_in_form" ||
                   lastCheck.verdict === "partial" ||
-                  lastCheck.verdict === "skipped" ? (
+                  lastCheck.verdict === "skipped" ||
+                  lastCheck.verdict === "invalid input" ||
+                  lastCheck.verdict === "parse_error" ? (
                   <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
                 ) : (
                   <XCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
                 )}
                 <span className="font-medium text-zinc-900 dark:text-zinc-100">
-                  <FormattedText text={lastCheck.message} />
+                  <FormattedText text={sanitizeCheckMessage(lastCheck.verdict, lastCheck.message)} />
                 </span>
               </div>
 
@@ -347,6 +362,11 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
                 type="button"
                 onClick={toggleSetup}
                 aria-expanded={showSetup}
+                title={
+                  setupUnopenedUnattempted
+                    ? "Opening before checking counts as assisted"
+                    : undefined
+                }
                 className="inline-flex items-center gap-1 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
               >
                 <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${showSetup ? "rotate-180" : ""}`} />
@@ -377,6 +397,11 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
                 setShowSolution(!showSolution);
               }}
               aria-expanded={showSolution}
+              title={
+                stepsUnopenedUnattempted
+                  ? "Opening before checking counts as assisted"
+                  : undefined
+              }
               className="inline-flex items-center gap-1 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
             >
               <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${showSolution ? "rotate-180" : ""}`} />
@@ -400,6 +425,14 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
               </button>
             )}
           </div>
+
+          {showAssistedNote && (
+            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+              {hasSetup
+                ? "Opening equation set-up or steps before checking counts as assisted."
+                : "Opening steps before checking counts as assisted."}
+            </p>
+          )}
 
           {/* Checkpoint Hint Disclosure */}
           <Reveal show={Boolean(showHint && hasCheckpointHint(problem.checkpointHint))}>

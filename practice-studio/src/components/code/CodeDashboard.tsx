@@ -24,7 +24,11 @@ import {
 } from "@/types/drill";
 import { VSCodeBlock } from "@/components/VSCodeBlock";
 import { FormattedText } from "@/components/FormattedText";
-import { canShowReferenceSolution } from "@/lib/reviewGuard";
+import {
+  canShowReferenceSolution,
+  hasSubstantiveAttempt,
+  sanitizeCheckMessage,
+} from "@/lib/reviewGuard";
 import {
   getPrgScore,
   getReviewRequest,
@@ -39,6 +43,7 @@ import {
   resolveIdeLinks,
   ReviewRunResult,
   ReviewStatus,
+  sanitizeCodeCheckError,
 } from "@/lib/codeStatus";
 
 export interface CodeDashboardProps {
@@ -145,11 +150,15 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
 
   // In-browser question state
   const [isChecking, setIsChecking] = useState(false);
-  const [showSolution, setShowSolution] = useState(Boolean(problem.state.lastCheck));
+  const [showSolution, setShowSolution] = useState(() =>
+    hasSubstantiveAttempt(problem.state)
+  );
   const [revealedSolutionCode, setRevealedSolutionCode] = useState<string | undefined>(
     problem.solutionCode
   );
   const [isLoadingReference, setIsLoadingReference] = useState(false);
+
+  const hasSubstantiveState = hasSubstantiveAttempt(problem.state);
 
   useEffect(() => {
     setUserCode(problem.state?.userCode || problem.starterCode || problem.codeSnippet || "");
@@ -160,7 +169,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
     setOpenExplain(false);
     setOpenReference(false);
     setShowHint(false);
-    setShowSolution(Boolean(problem.state.lastCheck));
+    setShowSolution(hasSubstantiveState);
     setRevealedSolutionCode(problem.solutionCode);
   }, [
     problem.id,
@@ -168,8 +177,8 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
     problem.starterCode,
     problem.codeSnippet,
     problem.state?.lastTestReport,
-    problem.state.lastCheck,
     problem.solutionCode,
+    hasSubstantiveState,
   ]);
 
   const effectiveState = {
@@ -276,7 +285,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
       }
     } catch (err: unknown) {
       const errMsg = err instanceof Error ? err.message : String(err);
-      setCheckError(errMsg);
+      setCheckError(sanitizeCodeCheckError(errMsg));
     } finally {
       setIsRunningChecks(false);
     }
@@ -330,7 +339,6 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
     setIsChecking(true);
     try {
       await onCheckAnswer();
-      setShowSolution(true);
     } finally {
       setIsChecking(false);
     }
@@ -355,12 +363,12 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
   const hasAttempt = Boolean(
     testReport ||
       reviewRun ||
-      reviews.length > 0 ||
-      problem.state.lastCheck ||
-      problem.state.skipped ||
-      (problem.state.attempts && problem.state.attempts.length > 0) ||
-      problem.state.score !== null
+      hasSubstantiveAttempt(problem.state)
   );
+  const stepsUnopenedUnattempted =
+    !hasAttempt &&
+    !showSolution &&
+    !problem.state.solutionRevealedBeforeAnswer;
 
   const snippetInPrompt =
     Boolean(problem.codeSnippet) &&
@@ -530,7 +538,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                   aria-label="Check failures"
                   className="border-l-2 border-rose-600 dark:border-rose-400 pl-3.5 py-1 space-y-1 font-mono text-xs text-zinc-800 dark:text-zinc-200"
                 >
-                  {checkError && <li>{checkError}</li>}
+                  {checkError && <li>{sanitizeCodeCheckError(checkError)}</li>}
                   {layeredStatus.failures.map((line, idx) => (
                     <li key={idx}>{line}</li>
                   ))}
@@ -914,7 +922,9 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                       ? "border-emerald-700 dark:border-emerald-400"
                       : lastCheck.verdict === "partial" ||
                         problem.state.skipped ||
-                        (lastCheck.verdict as string) === "skipped"
+                        (lastCheck.verdict as string) === "skipped" ||
+                        lastCheck.verdict === "invalid input" ||
+                        lastCheck.verdict === "parse_error"
                       ? "border-amber-600 dark:border-amber-400"
                       : "border-rose-600 dark:border-rose-400"
                   }`}
@@ -924,13 +934,17 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                       <CheckCircle2 className="w-4 h-4 text-emerald-700 dark:text-emerald-400 shrink-0 mt-0.5" />
                     ) : lastCheck.verdict === "partial" ||
                       problem.state.skipped ||
-                      (lastCheck.verdict as string) === "skipped" ? (
+                      (lastCheck.verdict as string) === "skipped" ||
+                      lastCheck.verdict === "invalid input" ||
+                      lastCheck.verdict === "parse_error" ? (
                       <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
                     ) : (
                       <XCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
                     )}
                     <span className="font-medium text-zinc-900 dark:text-zinc-100">
-                      <FormattedText text={lastCheck.message} />
+                      <FormattedText
+                        text={sanitizeCheckMessage(lastCheck.verdict, lastCheck.message)}
+                      />
                     </span>
                   </div>
 
@@ -1001,6 +1015,11 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                     setShowSolution(!showSolution);
                   }}
                   aria-expanded={showSolution}
+                  title={
+                    stepsUnopenedUnattempted
+                      ? "Opening before checking counts as assisted"
+                      : undefined
+                  }
                   className="inline-flex items-center gap-1 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
                 >
                   <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${showSolution ? "rotate-180" : ""}`} />
@@ -1024,6 +1043,12 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                   </button>
                 )}
               </div>
+
+              {stepsUnopenedUnattempted && (
+                <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                  Opening steps before checking counts as assisted.
+                </p>
+              )}
 
               <Reveal show={Boolean(showHint && hasCheckpointHint(problem.checkpointHint))}>
               {showHint && hasCheckpointHint(problem.checkpointHint) && (

@@ -1,4 +1,12 @@
-import { Problem, ProblemState, CheckResult, MistakeTag, AttemptRecord } from "../types/drill";
+import {
+  DrillDocument,
+  Problem,
+  ProblemState,
+  CheckResult,
+  MistakeTag,
+  AttemptRecord,
+} from "../types/drill";
+import { isSubstantiveVerdict, sanitizeCheckMessage } from "./reviewGuard";
 
 export interface ApplyCheckOptions {
   durationMs?: number;
@@ -127,6 +135,11 @@ export function applyCheckResult(
     });
   }
 
+  const calmMessage = sanitizeCheckMessage(result.verdict, result.message);
+  const sanitizedResult: CheckResult =
+    calmMessage === result.message ? result : { ...result, message: calmMessage };
+  const substantive = isSubstantiveVerdict(result.verdict);
+
   const attempt: AttemptRecord = {
     input: trimmed,
     ts,
@@ -141,9 +154,9 @@ export function applyCheckResult(
     ...prob.state,
     userInput: trimmed,
     score: autoScore,
-    skipped: false,
+    skipped: substantive ? false : Boolean(prob.state?.skipped),
     mistakes: Array.from(newMistakes),
-    lastCheck: result,
+    lastCheck: sanitizedResult,
     attempts: [...currentAttempts, attempt],
     hintsRevealed: hintsCount,
     durationMs: (prob.state?.durationMs || 0) + (options.durationMs || 0),
@@ -180,5 +193,56 @@ export function applyDivergedStep(
     ...prob.state,
     divergedStep: newDiverged,
     score: prob.state?.score === null || prob.state?.score === 1 ? 0.5 : prob.state.score,
+  };
+}
+
+/**
+ * Reset a single problem back to a clean unattempted state and strip revealed solutions.
+ */
+export function resetProblemForRetry(prob: Problem): Problem {
+  const rest = { ...prob };
+  delete rest.display;
+  delete rest.plainText;
+  delete rest.steps;
+  delete rest.answerDisplay;
+  delete rest.answerPlain;
+  delete rest.solutionCode;
+  return {
+    ...rest,
+    state: {
+      userInput: "",
+      userCode: prob.starterCode || prob.codeSnippet || "",
+      score: null,
+      divergedStep: null,
+      mistakes: [],
+      mistakeNote: "",
+      skipped: false,
+      lastCheck: null,
+      lastTestReport: null,
+      attempts: [],
+      hintsRevealed: 0,
+      setupRevealedBeforeAnswer: false,
+      solutionRevealedBeforeAnswer: false,
+      durationMs: 0,
+    },
+  };
+}
+
+/**
+ * Reset every problem in a drill using `resetProblemForRetry` and reset `sessionSummary`.
+ */
+export function resetDrillForRetry(doc: DrillDocument): DrillDocument {
+  return {
+    ...doc,
+    problems: doc.problems.map(resetProblemForRetry),
+    sessionSummary: {
+      ...doc.sessionSummary,
+      score: 0,
+      accuracyPct: 0,
+      practiceStatus: "Ready",
+      mistakeCategories: [],
+      divergedStepsSummary: "",
+      attemptDate: null,
+    },
   };
 }

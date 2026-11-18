@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import { AnimatePresence, m } from "motion/react";
 import { popover, presence } from "@/lib/motion";
 import {
@@ -90,6 +90,21 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
   onSelectDrill,
 }) => {
   const groupedEntries = useMemo(() => groupDrillsByUnit(drills), [drills]);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        e.stopPropagation();
+        onClose();
+        triggerRef.current?.focus();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown, true);
+    return () => window.removeEventListener("keydown", handleKeyDown, true);
+  }, [isOpen, onClose]);
 
   const handlePick = (id: string) => {
     onSelectDrill(id);
@@ -99,6 +114,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
   return (
     <div className="relative min-w-0 flex-1 sm:flex-initial" ref={switcherRef}>
       <button
+        ref={triggerRef}
         type="button"
         onClick={onToggle}
         aria-expanded={isOpen}

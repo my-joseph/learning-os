@@ -9,6 +9,20 @@ import {
   isSafeId,
   loadProblemFromDisk,
 } from "@/lib/paths";
+import { sanitizeCodeCheckError } from "@/lib/codeStatus";
+
+function formatServerCheckError(raw: string, rootDir: string): string {
+  const withoutRoot = rootDir
+    ? raw
+        .split(`file://${rootDir}/`)
+        .join("")
+        .split(`${rootDir}/`)
+        .join("")
+        .split(rootDir)
+        .join(".")
+    : raw;
+  return sanitizeCodeCheckError(withoutRoot);
+}
 
 const REVIEW_RUN_TIMEOUT_MS = 30_000;
 
@@ -143,7 +157,12 @@ export async function POST(req: NextRequest) {
           );
           if (!materialized.ok) {
             return NextResponse.json(
-              { error: materialized.error || "Failed to materialize pilot lab" },
+              {
+                error: formatServerCheckError(
+                  materialized.error || "Failed to materialize pilot lab",
+                  rootDir
+                ),
+              },
               { status: 500 }
             );
           }
@@ -168,7 +187,12 @@ export async function POST(req: NextRequest) {
         );
         if (!materialized.ok) {
           return NextResponse.json(
-            { error: materialized.error || "Failed to materialize workspace" },
+            {
+              error: formatServerCheckError(
+                materialized.error || "Failed to materialize workspace",
+                rootDir
+              ),
+            },
             { status: 500 }
           );
         }
@@ -213,13 +237,12 @@ export async function POST(req: NextRequest) {
         if (timedOut) return;
 
         if (code !== 0) {
+          const rawErr =
+            stderr.trim() || stdout.trim() || `review_run exited with code ${code}`;
           resolve(
             NextResponse.json(
               {
-                error:
-                  stderr.trim() ||
-                  stdout.trim() ||
-                  `review_run exited with code ${code}`,
+                error: formatServerCheckError(rawErr, rootDir),
               },
               { status: 500 }
             )

@@ -136,6 +136,54 @@ const beforeAttemptHtml = renderToStaticMarkup(
 assert.match(beforeAttemptHtml, /<h1[^>]*>Linear Equations<\/h1>/);
 assert.match(beforeAttemptHtml, /title="Level 1"[^>]*>Level 1<\/span>/);
 assert.doesNotMatch(beforeAttemptHtml, /Self-score:/, "self-score must not appear before an attempt");
+assert.match(
+  beforeAttemptHtml,
+  /title="Opening before checking counts as assisted"[^>]*>[\s\S]*Show steps/,
+  "Show steps button must carry assisted tooltip before first attempt"
+);
+assert.match(
+  beforeAttemptHtml,
+  /Opening steps before checking counts as assisted\./,
+  "One-line assisted note must appear under buttons before first attempt"
+);
+
+// Invalid input check must not mark problem as attempted or hide Skip / show Self-score
+const afterInvalidHtml = renderToStaticMarkup(
+  <MathWorkspace
+    problem={{
+      ...sampleMathProblem,
+      state: {
+        ...sampleMathProblem.state,
+        userInput: "(((",
+        lastCheck: {
+          verdict: "invalid input",
+          message: "Invalid input: Could not tokenize expression",
+          components: [],
+          diagnostics: [],
+        },
+        attempts: [{ input: "(((", ts: "2026-11-18T00:00:00Z", verdict: "invalid input" }],
+      },
+    }}
+    index={0}
+    totalQuestions={5}
+    drillTitle="Linear Equations"
+    mistakeTags={[]}
+    activeStep={null}
+    onInputChange={noop}
+    onCheckAnswer={noop}
+    onSkip={noop}
+    onToggleStepHighlight={noop}
+    onMarkDivergedStep={noop}
+    onSetScore={noop}
+    onToggleMistakeTag={noop}
+    onMistakeNoteChange={noop}
+    onResetProblem={noop}
+  />
+);
+assert.match(afterInvalidHtml, /Couldn&#x27;t read that — check brackets and operators\.|Couldn't read that — check brackets and operators\./);
+assert.doesNotMatch(afterInvalidHtml, /Could not tokenize expression/);
+assert.doesNotMatch(afterInvalidHtml, /Self-score:/, "invalid input must not reveal self-score");
+assert.match(afterInvalidHtml, />Skip<\/span>/, "invalid input must keep Skip available");
 
 const afterAttemptHtml = renderToStaticMarkup(
   <MathWorkspace

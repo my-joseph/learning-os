@@ -13,6 +13,7 @@ import { QuizPaginationBar } from "@/components/QuizPaginationBar";
 import { ToastStack } from "@/components/ui/ToastStack";
 import { StudioHeader } from "./StudioHeader";
 import { StudioSidePanel } from "./StudioSidePanel";
+import { GeneratePopover } from "./GeneratePopover";
 
 interface StudioShellProps {
   workspace: Workspace;
@@ -26,6 +27,7 @@ interface StudioShellProps {
   onResetAll: () => void;
   // DrillSwitcher & list
   drills: DrillListItem[];
+  allWorkspaceDrills?: DrillListItem[];
   labs?: LabListItem[];
   selectedDrillId: string;
   drillSearch: string;
@@ -60,6 +62,7 @@ export const StudioShell: React.FC<StudioShellProps> = ({
   onToggleTheme,
   onResetAll,
   drills,
+  allWorkspaceDrills,
   labs = [],
   selectedDrillId,
   drillSearch,
@@ -85,7 +88,6 @@ export const StudioShell: React.FC<StudioShellProps> = ({
   const lastScrollYRef = useRef(0);
   const headerRef = useRef<HTMLElement | null>(null);
   const switcherRef = useRef<HTMLDivElement | null>(null);
-  const genPopoverRef = useRef<HTMLDivElement | null>(null);
 
   const handleClearStatus = useCallback(() => {
     onStatusChange(null);
@@ -146,7 +148,6 @@ export const StudioShell: React.FC<StudioShellProps> = ({
       } else if (diff > 8) {
         setShowHeader(false);
         setShowDrillSwitcher(false);
-        onShowGenPopoverChange(false);
       } else if (diff < -8) {
         setShowHeader(true);
       }
@@ -156,21 +157,18 @@ export const StudioShell: React.FC<StudioShellProps> = ({
 
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [onShowGenPopoverChange]);
+  }, []);
 
-  // Close popovers on outside click
+  // Close DrillSwitcher on outside click
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (switcherRef.current && !switcherRef.current.contains(e.target as Node)) {
         setShowDrillSwitcher(false);
       }
-      if (genPopoverRef.current && !genPopoverRef.current.contains(e.target as Node)) {
-        onShowGenPopoverChange(false);
-      }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [onShowGenPopoverChange]);
+  }, []);
 
   const tiles =
     currentDrill && currentDrill.problems.length > 0 ? (
@@ -238,12 +236,7 @@ export const StudioShell: React.FC<StudioShellProps> = ({
           drillFilter={drillFilter}
           onFilterChange={onFilterChange}
           onSelectDrill={onSelectDrill}
-          showGenPopover={showGenPopover}
-          onToggleGenPopover={() => onShowGenPopoverChange(!showGenPopover)}
-          onCloseGenPopover={() => onShowGenPopoverChange(false)}
-          genPopoverRef={genPopoverRef}
-          onGenerated={onGenerated}
-          onStatusChange={onStatusChange}
+          onOpenGenPopover={() => onShowGenPopoverChange(true)}
           onOpenSideDrawer={
             viewMode === "quiz" ? () => setIsSideDrawerOpen(true) : undefined
           }
@@ -291,6 +284,16 @@ export const StudioShell: React.FC<StudioShellProps> = ({
       </div>
 
       <ToastStack status={status} onClearStatus={handleClearStatus} />
+
+      <GeneratePopover
+        isOpen={showGenPopover}
+        onClose={() => onShowGenPopoverChange(false)}
+        workspace={workspace}
+        drills={allWorkspaceDrills ?? drills}
+        currentDrill={currentDrill}
+        onGenerated={onGenerated}
+        onStatusChange={onStatusChange}
+      />
 
       <AnimatePresence>
       {viewMode === "quiz" && isSideDrawerOpen && (

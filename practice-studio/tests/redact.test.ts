@@ -245,6 +245,46 @@ assert.equal(canRevealSteps(draftState), false);
 assert.equal(canRevealDisplay(draftState), false);
 assert.equal(canRevealSolution(draftState), false);
 
+// Non-substantive verdicts ("invalid input" / "parse_error") must not unlock steps/display/solution
+const invalidInputState = makeState({
+  userInput: "(((",
+  lastCheck: {
+    verdict: "invalid input",
+    message: "Couldn't read that — check brackets and operators.",
+    components: [],
+    diagnostics: [],
+  },
+  attempts: [{ input: "(((", ts: "2026-11-18T00:00:00Z", verdict: "invalid input" }],
+});
+assert.equal(canRevealSteps(invalidInputState), false);
+assert.equal(canRevealDisplay(invalidInputState), false);
+assert.equal(canRevealSolution(invalidInputState), false);
+const afterInvalidInput = redactProblem(leakingMathProblem, invalidInputState, "MATH");
+assert.equal("display" in afterInvalidInput, false);
+assert.equal("steps" in afterInvalidInput, false);
+assert.equal("answerDisplay" in afterInvalidInput, false);
+assert.equal("answerPlain" in afterInvalidInput, false);
+
+const parseErrorState = makeState({
+  userInput: "abc",
+  lastCheck: {
+    verdict: "parse_error",
+    message: "Could not read input.",
+    components: [],
+    diagnostics: [],
+  },
+  attempts: [{ input: "abc", ts: "2026-11-18T00:00:00Z", verdict: "parse_error" }],
+});
+assert.equal(canRevealSteps(parseErrorState), false);
+assert.equal(canRevealDisplay(parseErrorState), false);
+assert.equal(canRevealSolution(parseErrorState), false);
+
+// Self-score alone without a substantive attempt/skip must not unlock steps/display/solution
+const scoreOnlyState = makeState({ score: 1 });
+assert.equal(canRevealSteps(scoreOnlyState), false);
+assert.equal(canRevealDisplay(scoreOnlyState), false);
+assert.equal(canRevealSolution(scoreOnlyState), false);
+
 // Assisted setup reveal unlocks ONLY display/plainText, not steps or solutionCode
 const setupAssistedState = makeState({ setupRevealedBeforeAnswer: true });
 assert.equal(canRevealDisplay(setupAssistedState), true);
@@ -299,13 +339,41 @@ async function runRouteTests() {
   process.env.PROGRESS_DIR = tmpProgress;
 
   try {
-    // 4a. Unanswered problem returns 403 for steps, display, and solution
+    // 4a. Unanswered, malformed-input, and score-only problems return 403 for steps, display, and solution
     for (const part of ["steps", "display", "solution"] as const) {
       const req = new NextRequest(
         `http://127.0.0.1:3000/api/reveal?drill=${mthDrillSample.drillId}&q=${mthDrillSample.problemId}&part=${part}`
       );
       const res = await revealGET(req);
       assert.equal(res.status, 403, `Expected 403 for unanswered ${part}`);
+    }
+
+    writeProgress({
+      drillId: mthDrillSample.drillId,
+      unitCode: "MTH-TEST",
+      problems: [{ id: mthDrillSample.problemId, state: invalidInputState }],
+    });
+    for (const part of ["steps", "display", "solution"] as const) {
+      const res = await revealGET(
+        new NextRequest(
+          `http://127.0.0.1:3000/api/reveal?drill=${mthDrillSample.drillId}&q=${mthDrillSample.problemId}&part=${part}`
+        )
+      );
+      assert.equal(res.status, 403, `Expected 403 after invalid input for ${part}`);
+    }
+
+    writeProgress({
+      drillId: mthDrillSample.drillId,
+      unitCode: "MTH-TEST",
+      problems: [{ id: mthDrillSample.problemId, state: scoreOnlyState }],
+    });
+    for (const part of ["steps", "display", "solution"] as const) {
+      const res = await revealGET(
+        new NextRequest(
+          `http://127.0.0.1:3000/api/reveal?drill=${mthDrillSample.drillId}&q=${mthDrillSample.problemId}&part=${part}`
+        )
+      );
+      assert.equal(res.status, 403, `Expected 403 for score-only ${part}`);
     }
 
     // 4b. Assisted setup reveal persists setupRevealedBeforeAnswer and unlocks display (403 for steps)

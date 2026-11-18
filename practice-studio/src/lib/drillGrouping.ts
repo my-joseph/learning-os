@@ -1,4 +1,5 @@
-import type { DrillListItem } from "@/types/drill";
+import type { DrillDocument, DrillListItem } from "@/types/drill";
+import { workspaceOfListItem, type Workspace } from "./routes";
 
 export interface DrillSetEntry {
   drill: DrillListItem;
@@ -96,4 +97,90 @@ export function groupDrillsByUnit(
   }
 
   return entries;
+}
+
+export interface GenerateUnitOption {
+  unitCode: string;
+  unitTitle: string;
+  groupCode: string;
+}
+
+export interface GenerateUnitGroup {
+  groupCode: string;
+  items: GenerateUnitOption[];
+}
+
+function unitWorkspace(unitCode: string, subject?: string): Workspace | null {
+  const code = unitCode.trim().toUpperCase();
+  if (subject === "PRG" || code.startsWith("PRG-")) return "code";
+  if (subject === "MATH" || code.startsWith("MTH-") || code.startsWith("PHY-")) {
+    return "math";
+  }
+  return null;
+}
+
+function topicGroupOf(unitCode: string): string {
+  const parts = unitCode.trim().split("-");
+  if (parts.length >= 2) return `${parts[0]}-${parts[1]}`;
+  return parts[0] || "Other";
+}
+
+/**
+ * Build sorted unit options for the Generate drill panel dynamically from served drills,
+ * filtered to the active workspace, always ensuring `currentDrill.unitCode` is included.
+ */
+export function buildGenerateUnitOptions(
+  drills: readonly DrillListItem[],
+  workspace: Workspace,
+  currentDrill?: Pick<DrillDocument, "unitCode" | "unitTitle" | "subject"> | null
+): GenerateUnitOption[] {
+  const byCode = new Map<string, string>();
+
+  for (const d of drills) {
+    const code = (d.unitCode || "").trim();
+    if (!code) continue;
+    const ws = workspaceOfListItem(d) ?? unitWorkspace(code, d.subject);
+    if (ws !== workspace) continue;
+    const title = (d.unitTitle || "").trim();
+    const prev = byCode.get(code);
+    if (!prev || (prev === code && title && title !== code)) {
+      byCode.set(code, title || code);
+    }
+  }
+
+  const currentCode = currentDrill?.unitCode?.trim() || "";
+  if (currentCode) {
+    const currentWs = unitWorkspace(currentCode, currentDrill?.subject);
+    if (currentWs === null || currentWs === workspace) {
+      const currentTitle = (currentDrill?.unitTitle || "").trim();
+      const prev = byCode.get(currentCode);
+      if (!prev || (prev === currentCode && currentTitle && currentTitle !== currentCode)) {
+        byCode.set(currentCode, currentTitle || currentCode);
+      }
+    }
+  }
+
+  return Array.from(byCode.entries())
+    .map(([unitCode, unitTitle]) => ({
+      unitCode,
+      unitTitle,
+      groupCode: topicGroupOf(unitCode),
+    }))
+    .sort((a, b) => a.unitCode.localeCompare(b.unitCode));
+}
+
+/** Group sorted unit options by topic prefix (e.g. MTH-T01, MTH-T02, PRG-T01). */
+export function groupGenerateUnitOptions(
+  options: readonly GenerateUnitOption[]
+): GenerateUnitGroup[] {
+  const groups = new Map<string, GenerateUnitOption[]>();
+  for (const opt of options) {
+    const list = groups.get(opt.groupCode);
+    if (list) list.push(opt);
+    else groups.set(opt.groupCode, [opt]);
+  }
+  return Array.from(groups.entries()).map(([groupCode, items]) => ({
+    groupCode,
+    items,
+  }));
 }

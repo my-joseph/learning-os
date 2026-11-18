@@ -4,9 +4,11 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { stepStudyPosition } from "../src/lib/pagination";
 import {
+  buildGenerateUnitOptions,
   extractDrillSetNumber,
   formatDrillSetLabel,
   groupDrillsByUnit,
+  groupGenerateUnitOptions,
 } from "../src/lib/drillGrouping";
 import { QuizPaginationBar } from "../src/components/QuizPaginationBar";
 import { DrillSwitcher } from "../src/components/shell/DrillSwitcher";
@@ -272,5 +274,37 @@ assert.match(switcherHtml, />Set 2</);
 assert.match(switcherHtml, />Set 3</);
 assert.match(switcherHtml, /MTH-T01-C07 · 5 Qs/);
 assert.match(switcherHtml, /border-indigo-600[^>]*>.*?Set 2/);
+
+// 4. Dynamic Generate unit options filtered by workspace, always including current unit
+const mixedWorkspaceDrills: DrillListItem[] = [
+  makeDrillItem("DRL-MTH-T02-C02-U01-01", "MTH-T02-C02-U01", "Transformations of Functions"),
+  makeDrillItem("DRL-MTH-T01-C04-01", "MTH-T01-C04", "Fractions"),
+  makeDrillItem("DRL-PRG-T02-C01-U03-01", "PRG-T02-C01-U03", "State Management", {
+    subject: "PRG",
+  }),
+];
+
+const mathUnitOpts = buildGenerateUnitOptions(mixedWorkspaceDrills, "math", {
+  unitCode: "MTH-T02-C03-U01",
+  unitTitle: "Quadratic Functions",
+  subject: "MATH",
+});
+assert.deepEqual(
+  mathUnitOpts.map((u) => u.unitCode),
+  ["MTH-T01-C04", "MTH-T02-C02-U01", "MTH-T02-C03-U01"],
+  "Math unit options must exclude PRG and always include currentDrill.unitCode"
+);
+const mathUnitGroups = groupGenerateUnitOptions(mathUnitOpts);
+assert.deepEqual(
+  mathUnitGroups.map((g) => g.groupCode),
+  ["MTH-T01", "MTH-T02"]
+);
+
+const codeUnitOpts = buildGenerateUnitOptions(mixedWorkspaceDrills, "code", null);
+assert.deepEqual(
+  codeUnitOpts.map((u) => u.unitCode),
+  ["PRG-T02-C01-U03"],
+  "Code unit options must include only PRG units"
+);
 
 console.log("pagination and drill grouping tests passed");

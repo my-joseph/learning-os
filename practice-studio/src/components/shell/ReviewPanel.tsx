@@ -11,7 +11,7 @@ import {
   Send,
 } from "lucide-react";
 import { DrillDocument, Problem } from "@/types/drill";
-import { canRevealVerifiedAnswer } from "@/lib/reviewGuard";
+import { canRevealVerifiedAnswer, hasSubstantiveAttempt } from "@/lib/reviewGuard";
 import { isLabId } from "@/lib/routes";
 import {
   OUTCOME_META,
@@ -175,6 +175,7 @@ export const ReviewPanel: React.FC<ReviewPanelProps> = ({
     const isHighlighted = highlightedId === prob.id;
     const isExpanded = Boolean(expandedIds[prob.id]);
     const panelId = `review-panel-${prob.id}`;
+    const isAttempted = hasSubstantiveAttempt(prob.state);
 
     const hasVerifiedAnswer = Boolean(prob.answerPlain || prob.answerDisplay);
     const latestReview = prob.state.reviews?.[prob.state.reviews.length - 1];
@@ -233,7 +234,7 @@ export const ReviewPanel: React.FC<ReviewPanelProps> = ({
             />
           </button>
 
-          {currentDrill.subject !== "PRG" && (
+          {currentDrill.subject !== "PRG" && isAttempted && (
             <div className="flex items-center gap-1 shrink-0">
               {SCORE_OPTIONS.map((btn) => (
                 <button
@@ -313,42 +314,44 @@ export const ReviewPanel: React.FC<ReviewPanelProps> = ({
           )}
         </div>
 
-        <div className="pl-5 space-y-2">
-          {mistakeTags.length > 0 && (
-            <div className="flex flex-wrap items-center gap-1.5">
-              {mistakeTags.map((t) => {
-                const hasTag = prob.state.mistakes.includes(t.id);
-                return (
-                  <button
-                    key={t.id}
-                    type="button"
-                    onClick={() => onToggleMistakeTag(prob.id, t.id)}
-                    aria-pressed={hasTag}
-                    className={`min-h-[24px] py-0.5 px-2.5 rounded-full text-[11px] font-medium border transition-colors inline-flex items-center ${
-                      hasTag
-                        ? "border-rose-600 dark:border-rose-400 text-rose-700 dark:text-rose-300 bg-white dark:bg-zinc-900 font-semibold"
-                        : "bg-white dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700"
-                    }`}
-                  >
-                    <FormattedText text={t.label} />
-                  </button>
-                );
-              })}
-            </div>
-          )}
+        {isAttempted && (
+          <div className="pl-5 space-y-2">
+            {mistakeTags.length > 0 && (
+              <div className="flex flex-wrap items-center gap-1.5">
+                {mistakeTags.map((t) => {
+                  const hasTag = prob.state.mistakes.includes(t.id);
+                  return (
+                    <button
+                      key={t.id}
+                      type="button"
+                      onClick={() => onToggleMistakeTag(prob.id, t.id)}
+                      aria-pressed={hasTag}
+                      className={`min-h-[24px] py-0.5 px-2.5 rounded-full text-[11px] font-medium border transition-colors inline-flex items-center ${
+                        hasTag
+                          ? "border-rose-600 dark:border-rose-400 text-rose-700 dark:text-rose-300 bg-white dark:bg-zinc-900 font-semibold"
+                          : "bg-white dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700"
+                      }`}
+                    >
+                      <FormattedText text={t.label} />
+                    </button>
+                  );
+                })}
+              </div>
+            )}
 
-          <div className="flex items-center gap-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2.5 py-1.5 focus-within:border-zinc-400 dark:focus-within:border-zinc-600 transition-colors">
-            <PenLine className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
-            <input
-              type="text"
-              value={prob.state.mistakeNote || ""}
-              onChange={(e) => onMistakeNoteChange(prob.id, e.target.value)}
-              placeholder={`Note for ${qLabel}…`}
-              aria-label={`Note for ${qLabel}`}
-              className="w-full min-w-0 bg-transparent text-xs text-zinc-800 dark:text-zinc-200 placeholder:text-zinc-400 focus:outline-none"
-            />
+            <div className="flex items-center gap-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2.5 py-1.5 focus-within:border-zinc-400 dark:focus-within:border-zinc-600 transition-colors">
+              <PenLine className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+              <input
+                type="text"
+                value={prob.state.mistakeNote || ""}
+                onChange={(e) => onMistakeNoteChange(prob.id, e.target.value)}
+                placeholder={`Note for ${qLabel}…`}
+                aria-label={`Note for ${qLabel}`}
+                className="w-full min-w-0 bg-transparent text-xs text-zinc-800 dark:text-zinc-200 placeholder:text-zinc-400 focus:outline-none"
+              />
+            </div>
           </div>
-        </div>
+        )}
       </div>
     );
   };

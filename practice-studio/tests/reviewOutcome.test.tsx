@@ -166,9 +166,28 @@ const sampleDrill: DrillDocument = {
     { id: "sign-error", label: "Sign error ($-$)", name: "Sign error", autoFrom: [] },
   ],
   problems: [
-    makeProblem("Q01", { ...baseState(), score: 0, userInput: "3", durationMs: 30_000 }),
-    makeProblem("Q02", { ...baseState(), score: 0.5, userInput: "42", hintsRevealed: 1, durationMs: 45_000 }),
-    makeProblem("Q03", { ...baseState(), score: 1, userInput: "42", durationMs: 25_000 }),
+    makeProblem("Q01", {
+      ...baseState(),
+      score: 0,
+      userInput: "3",
+      durationMs: 30_000,
+      attempts: [{ input: "3", ts: "2026-11-18T00:00:00Z", verdict: "incorrect" }],
+    }),
+    makeProblem("Q02", {
+      ...baseState(),
+      score: 0.5,
+      userInput: "42",
+      hintsRevealed: 1,
+      durationMs: 45_000,
+      attempts: [{ input: "42", ts: "2026-11-18T00:01:00Z", verdict: "correct" }],
+    }),
+    makeProblem("Q03", {
+      ...baseState(),
+      score: 1,
+      userInput: "42",
+      durationMs: 25_000,
+      attempts: [{ input: "42", ts: "2026-11-18T00:02:00Z", verdict: "correct" }],
+    }),
     makeProblem("Q04", { ...baseState(), skipped: true, score: 0, durationMs: 10_000 }),
     makeProblem("Q05", { ...baseState(), durationMs: 0 }),
   ],
@@ -245,6 +264,73 @@ assert.match(
   html,
   /Not answered yet/,
   "Unanswered Q05 must keep verified answer hidden"
+);
+
+// Bug 2: Unattempted rows (including invalid-input-only or score-only) hide score buttons, mistake tags, and notes
+assert.match(html, /aria-label="Set Q1 score to 1\.0"/);
+assert.match(html, /aria-label="Set Q4 score to 0"/);
+assert.doesNotMatch(
+  html,
+  /aria-label="Set Q5 score to/,
+  "Unattempted Q5 must not render self-score buttons in ReviewPanel"
+);
+assert.doesNotMatch(
+  html,
+  /aria-label="Note for Q5"/,
+  "Unattempted Q5 must not render note input in ReviewPanel"
+);
+
+const invalidAndScoreOnlyDrill: DrillDocument = {
+  ...sampleDrill,
+  problems: [
+    makeProblem("Q01", {
+      ...baseState(),
+      userInput: "(((",
+      lastCheck: {
+        verdict: "invalid input",
+        message: "Couldn't read that — check brackets and operators.",
+        components: [],
+        diagnostics: [],
+      },
+      attempts: [{ input: "(((", ts: "2026-11-18T00:00:00Z", verdict: "invalid input" }],
+    }),
+    makeProblem("Q02", { ...baseState(), score: 1 }),
+  ],
+};
+const guardedHtml = renderToStaticMarkup(
+  <ReviewPanel
+    currentDrill={invalidAndScoreOnlyDrill}
+    liveScore={0}
+    maxScore={2}
+    accuracyPct={0}
+    skippedCount={0}
+    computedPracticeStatus="Needs Retry"
+    isSyncing={false}
+    onStatusOverrideChange={noop}
+    onBackToQuiz={noop}
+    onConfirmSync={noop}
+    onSelectQuestion={noop}
+    onSetScore={noop}
+    onToggleMistakeTag={noop}
+    onMistakeNoteChange={noop}
+  />
+);
+assert.doesNotMatch(guardedHtml, /aria-label="Set Q1 score to/);
+assert.doesNotMatch(guardedHtml, /aria-label="Set Q2 score to/);
+assert.doesNotMatch(guardedHtml, /aria-label="Note for Q1"/);
+assert.doesNotMatch(guardedHtml, /aria-label="Note for Q2"/);
+assert.doesNotMatch(guardedHtml, /SECRET_42/, "Neither invalid input nor score-only may reveal verified answer");
+
+// Bug 3: Back to questions leaves review without jumping to last question
+const studioClientSrc = readFileSync("src/components/shell/StudioClient.tsx", "utf8");
+assert.match(
+  studioClientSrc,
+  /onBackToQuiz=\{\(\)\s*=>\s*setViewMode\("quiz"\)\}/,
+  "Back to questions must simply return to quiz mode on the active question"
+);
+assert.doesNotMatch(
+  studioClientSrc,
+  /onBackToQuiz=\{handlePrevQuestion\}/
 );
 
 const reviewSource = readFileSync("src/components/shell/ReviewPanel.tsx", "utf8");
