@@ -2,7 +2,8 @@ import fs from "fs";
 import path from "path";
 import type { SessionSummary, TestCase } from "@/types/drill";
 import { deriveReviewStatus } from "@/lib/codeStatus";
-import { getLabsDir, getWorkspaceRoot, isSafeId } from "@/lib/paths";
+import { getLabsDir, getWorkspaceRoot, isSafeId, loadIdMapTitles } from "@/lib/paths";
+import { cleanCurriculumTitle } from "@/lib/drillGrouping";
 import { readProgress } from "@/lib/progress";
 import { isLabId } from "@/lib/routes";
 import {
@@ -204,6 +205,7 @@ function resolveNotionUrlForLab(
 export function listLabsFromDisk(labsDir: string = getLabsDir()): LabListItem[] {
   if (!fs.existsSync(labsDir)) return [];
 
+  const idMapTitles = loadIdMapTitles();
   const entries = fs.readdirSync(labsDir, { withFileTypes: true });
   const items: LabListItem[] = [];
 
@@ -254,13 +256,20 @@ export function listLabsFromDisk(labsDir: string = getLabsDir()): LabListItem[] 
       const progressFile = readProgress(labId);
       const progress = summarizeLabProgress(rawMilestones, progressFile);
 
+      const chapterTitle =
+        cleanCurriculumTitle(idMapTitles.get(chapterCode)) || chapterCode;
+      const topicTitle =
+        cleanCurriculumTitle(idMapTitles.get(topicCode)) || topicCode;
+
       items.push({
         id: labId,
         labId,
         title,
         unitCode,
         chapterCode,
+        chapterTitle,
         topicCode,
+        topicTitle,
         unitsUsed: unitsUsed.length > 0 ? unitsUsed : unitCode ? [unitCode] : [],
         kind,
         level,
