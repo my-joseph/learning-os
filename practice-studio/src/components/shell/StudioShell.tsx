@@ -312,10 +312,10 @@ export const StudioShell: React.FC<StudioShellProps> = ({
           aria-label="Due today and weak spots"
         >
           <div
-            className="fixed inset-0 bg-zinc-950/40 backdrop-blur-[1px]"
+            className="motion-fade fixed inset-0 bg-zinc-950/40 backdrop-blur-[1px]"
             onClick={() => setIsSideDrawerOpen(false)}
           />
-          <div className="relative z-10 w-[min(calc(100vw-2.5rem),340px)] h-full overflow-y-auto bg-zinc-50 dark:bg-zinc-950 border-l border-zinc-200 dark:border-zinc-800 p-4 space-y-3 shadow-xl">
+          <div className="motion-drawer relative z-10 w-[min(calc(100vw-2.5rem),340px)] h-full overflow-y-auto bg-zinc-50 dark:bg-zinc-950 border-l border-zinc-200 dark:border-zinc-800 p-4 space-y-3 shadow-xl">
             <div className="flex items-center justify-between">
               <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
                 Study queue

@@ -5,7 +5,6 @@ import {
   Copy,
   Check,
   ChevronDown,
-  ChevronUp,
   ChevronLeft,
   ChevronRight,
   RotateCcw,
@@ -262,7 +261,7 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
           {lastCheck && (
             <div
               role="status"
-              className={`border-l-2 pl-3.5 py-1 space-y-1.5 text-sm ${
+              className={`motion-reveal border-l-2 pl-3.5 py-1 space-y-1.5 text-sm ${
                 lastCheck.verdict === "correct"
                   ? "border-emerald-700 dark:border-emerald-400"
                   : lastCheck.verdict === "equivalent_not_in_form" ||
@@ -338,11 +337,7 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
                 aria-expanded={showSetup}
                 className="inline-flex items-center gap-1 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
               >
-                {showSetup ? (
-                  <ChevronUp className="w-3.5 h-3.5" />
-                ) : (
-                  <ChevronDown className="w-3.5 h-3.5" />
-                )}
+                <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${showSetup ? "rotate-180" : ""}`} />
                 <span>{showSetup ? "Hide equation set-up" : "Show equation set-up"}</span>
               </button>
             )}
@@ -372,11 +367,7 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
               aria-expanded={showSolution}
               className="inline-flex items-center gap-1 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
             >
-              {showSolution ? (
-                <ChevronUp className="w-3.5 h-3.5" />
-              ) : (
-                <ChevronDown className="w-3.5 h-3.5" />
-              )}
+              <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${showSolution ? "rotate-180" : ""}`} />
               <span>{showSolution ? "Hide steps" : "Show steps"}</span>
             </button>
 
@@ -400,14 +391,14 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
 
           {/* Checkpoint Hint Disclosure */}
           {showHint && hasCheckpointHint(problem.checkpointHint) && (
-            <div className="border-l-2 border-amber-600 dark:border-amber-400 pl-3.5 py-1 text-sm text-zinc-700 dark:text-zinc-300">
+            <div className="motion-reveal border-l-2 border-amber-600 dark:border-amber-400 pl-3.5 py-1 text-sm text-zinc-700 dark:text-zinc-300">
               <FormattedText text={problem.checkpointHint} />
             </div>
           )}
 
           {/* Equation Set-up Disclosure */}
           {hasSetup && showSetup && (
-            <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 space-y-2.5">
+            <div className="motion-reveal bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 space-y-2.5">
               {problem.display && (
                 <div className="overflow-x-auto text-zinc-900 dark:text-zinc-100">
                   <MathBlock latex={problem.display} />
@@ -449,7 +440,7 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
           {/* Step-by-Step Derivation Disclosure */}
           {showSolution && (
             <div
-              className={`bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 space-y-3 ${
+              className={`motion-reveal bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 space-y-3 ${
                 activeStep !== null ? "has-active" : ""
               }`}
             >

@@ -98,6 +98,9 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
   tiles,
 }) => {
   const [showMoreMenu, setShowMoreMenu] = useState(false);
+  // The switch pill slides as soon as it is clicked, before the new route renders.
+  const [pillWorkspace, setPillWorkspace] = useState<Workspace>(workspace);
+  useEffect(() => setPillWorkspace(workspace), [workspace]);
   const moreMenuRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -135,13 +138,19 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
         <div className="flex items-center gap-2 min-w-0 flex-1">
           <nav
             aria-label="Workspace"
-            className="hidden sm:inline-flex items-center rounded-lg bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-800 p-0.5 shrink-0"
+            className="relative hidden sm:grid grid-cols-2 items-center rounded-lg bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-800 p-0.5 shrink-0"
           >
+            <span
+              aria-hidden
+              className="absolute top-0.5 bottom-0.5 left-0.5 w-[calc(50%-2px)] rounded-md bg-white dark:bg-zinc-900 shadow-sm transition-transform duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]"
+              style={{ transform: pillWorkspace === "code" ? "translateX(100%)" : "none" }}
+            />
             {workspaceOptions.map((opt) => {
               const isActive = workspace === opt.id;
-              const cls = `px-2.5 py-1 rounded-md text-xs font-medium transition-colors whitespace-nowrap ${
-                isActive
-                  ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-sm"
+              const isShown = pillWorkspace === opt.id;
+              const cls = `relative z-10 px-2.5 py-1 rounded-md text-xs font-medium text-center transition-colors duration-200 whitespace-nowrap ${
+                isShown
+                  ? "text-zinc-900 dark:text-zinc-100"
                   : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200"
               }`;
               if (!opt.href) {
@@ -161,6 +170,7 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
                   key={opt.id}
                   href={opt.href}
                   aria-current={isActive ? "page" : undefined}
+                  onClick={() => setPillWorkspace(opt.id)}
                   className={cls}
                 >
                   {opt.label}
@@ -229,7 +239,7 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
             </button>
 
             {showMoreMenu && (
-              <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-lg p-2.5 z-50 text-xs space-y-2">
+              <div className="motion-pop-right absolute right-0 mt-2 w-64 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-lg p-2.5 z-50 text-xs space-y-2">
                 {/* Status copy */}
                 {currentDrill && (
                   <div className="px-2 py-1.5 rounded-lg bg-zinc-50 dark:bg-zinc-950 border border-zinc-200/80 dark:border-zinc-800 space-y-0.5">

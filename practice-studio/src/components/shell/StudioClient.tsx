@@ -267,7 +267,10 @@ export const StudioClient: React.FC<StudioClientProps> = ({
           </button>
         </div>
       ) : viewMode === "quiz" && currentDrill.problems[currentProblemIndex] ? (
-        <div>
+        <div
+          key={`${workspace}:${currentDrill.drillId}:${currentDrill.problems[currentProblemIndex].id}`}
+          className="motion-fade-up"
+        >
           {(() => {
             const prob = currentDrill.problems[currentProblemIndex];
             const idx = currentProblemIndex;

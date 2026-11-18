@@ -51,6 +51,40 @@ body {
   }
 }
 
+/* Motion: short, calm, ease-out. One curve for everything; reduced-motion block above turns it off. */
+:root {
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes motion-pop {
+  from { opacity: 0; transform: translateY(-4px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes motion-fade-up {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes motion-reveal {
+  from { opacity: 0; transform: translateY(-3px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes motion-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes motion-drawer {
+  from { transform: translateX(100%); }
+  to { transform: none; }
+}
+/* Dropdowns and menus grow from where they were opened. */
+.motion-pop { animation: motion-pop 160ms var(--ease-out) both; transform-origin: top left; }
+.motion-pop-right { animation: motion-pop 160ms var(--ease-out) both; transform-origin: top right; }
+/* A new question, drill or workspace settles in. */
+.motion-fade-up { animation: motion-fade-up 240ms var(--ease-out) both; }
+/* Hint, set-up, steps, feedback open in place. */
+.motion-reveal { animation: motion-reveal 200ms var(--ease-out) both; }
+.motion-fade { animation: motion-fade 200ms ease-out both; }
+.motion-drawer { animation: motion-drawer 260ms var(--ease-out) both; }
+
 /* Click-to-Highlight dimming utility */
 .has-active .step-row:not(.step-row-active) {
   opacity: 0.45;

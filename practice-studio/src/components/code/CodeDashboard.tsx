@@ -7,7 +7,6 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
-  ChevronUp,
   Copy,
   Flag,
   Loader2,
@@ -642,7 +641,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
               )}
 
               {showHint && hasCheckpointHint(problem.checkpointHint) && (
-                <div className="border-l-2 border-amber-600 dark:border-amber-400 pl-3.5 py-1 text-sm text-zinc-700 dark:text-zinc-300">
+                <div className="motion-reveal border-l-2 border-amber-600 dark:border-amber-400 pl-3.5 py-1 text-sm text-zinc-700 dark:text-zinc-300">
                   <FormattedText text={problem.checkpointHint} />
                 </div>
               )}
@@ -662,14 +661,10 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                     Review history
                     {reviews.length > 0 ? ` (${reviews.length})` : ""}
                   </span>
-                  {openHistory ? (
-                    <ChevronUp className="w-4 h-4 text-zinc-400" />
-                  ) : (
-                    <ChevronDown className="w-4 h-4 text-zinc-400" />
-                  )}
+                  <ChevronDown className={`w-4 h-4 text-zinc-400 transition-transform duration-200 ${openHistory ? "rotate-180" : ""}`} />
                 </button>
                 {openHistory && (
-                  <div className="pt-2 pb-1 space-y-3 text-sm text-zinc-600 dark:text-zinc-400">
+                  <div className="motion-reveal pt-2 pb-1 space-y-3 text-sm text-zinc-600 dark:text-zinc-400">
                     {reviews.length === 0 ? (
                       <p className="text-zinc-500 dark:text-zinc-400">
                         No reviews recorded yet.
@@ -730,14 +725,10 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                   className="w-full flex items-center justify-between text-left text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 py-1 transition-colors"
                 >
                   <span>Explain</span>
-                  {openExplain ? (
-                    <ChevronUp className="w-4 h-4 text-zinc-400" />
-                  ) : (
-                    <ChevronDown className="w-4 h-4 text-zinc-400" />
-                  )}
+                  <ChevronDown className={`w-4 h-4 text-zinc-400 transition-transform duration-200 ${openExplain ? "rotate-180" : ""}`} />
                 </button>
                 {openExplain && (
-                  <div className="pt-2 pb-1 space-y-2 text-sm">
+                  <div className="motion-reveal pt-2 pb-1 space-y-2 text-sm">
                     <p className="text-zinc-700 dark:text-zinc-300">
                       <FormattedText text={explainQuestion} />
                     </p>
@@ -765,14 +756,10 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                       className="w-full flex items-center justify-between text-left text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 py-1 transition-colors"
                     >
                       <span>Lab README</span>
-                      {openReference ? (
-                        <ChevronUp className="w-4 h-4 text-zinc-400" />
-                      ) : (
-                        <ChevronDown className="w-4 h-4 text-zinc-400" />
-                      )}
+                      <ChevronDown className={`w-4 h-4 text-zinc-400 transition-transform duration-200 ${openReference ? "rotate-180" : ""}`} />
                     </button>
                     {openReference && (
-                      <div className="pt-2 pb-1 text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed">
+                      <div className="motion-reveal pt-2 pb-1 text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed">
                         <FormattedText text={labReadme} />
                       </div>
                     )}
@@ -793,15 +780,11 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                           Unlocks after review passes
                         </span>
                       )}
-                      {openReference ? (
-                        <ChevronUp className="w-4 h-4 text-zinc-400" />
-                      ) : (
-                        <ChevronDown className="w-4 h-4 text-zinc-400" />
-                      )}
+                      <ChevronDown className={`w-4 h-4 text-zinc-400 transition-transform duration-200 ${openReference ? "rotate-180" : ""}`} />
                     </span>
                   </button>
                   {openReference && (
-                    <div className="pt-2 pb-1">
+                    <div className="motion-reveal pt-2 pb-1">
                       {!referenceAllowed ? (
                         <p className="text-sm text-zinc-500 dark:text-zinc-400">
                           Unlocks after review passes
@@ -921,7 +904,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
               {lastCheck && (
                 <div
                   role="status"
-                  className={`border-l-2 pl-3.5 py-1 space-y-1.5 text-sm ${
+                  className={`motion-reveal border-l-2 pl-3.5 py-1 space-y-1.5 text-sm ${
                     lastCheck.verdict === "correct"
                       ? "border-emerald-700 dark:border-emerald-400"
                       : lastCheck.verdict === "partial" ||
@@ -1014,11 +997,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                   aria-expanded={showSolution}
                   className="inline-flex items-center gap-1 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
                 >
-                  {showSolution ? (
-                    <ChevronUp className="w-3.5 h-3.5" />
-                  ) : (
-                    <ChevronDown className="w-3.5 h-3.5" />
-                  )}
+                  <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${showSolution ? "rotate-180" : ""}`} />
                   <span>{showSolution ? "Hide steps" : "Show steps"}</span>
                 </button>
 
@@ -1041,13 +1020,13 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
               </div>
 
               {showHint && hasCheckpointHint(problem.checkpointHint) && (
-                <div className="border-l-2 border-amber-600 dark:border-amber-400 pl-3.5 py-1 text-sm text-zinc-700 dark:text-zinc-300">
+                <div className="motion-reveal border-l-2 border-amber-600 dark:border-amber-400 pl-3.5 py-1 text-sm text-zinc-700 dark:text-zinc-300">
                   <FormattedText text={problem.checkpointHint} />
                 </div>
               )}
 
               {showSolution && (
-                <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 space-y-2.5">
+                <div className="motion-reveal bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 space-y-2.5">
                   {(problem.steps || []).map((st, sIdx) => {
                     const isDiverged = problem.state.divergedStep === sIdx;
                     const isActive = activeStep === sIdx;

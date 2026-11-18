@@ -93,7 +93,7 @@ export const GeneratePopover: React.FC<GeneratePopoverProps> = ({
   return (
     <div
       ref={popoverRef}
-      className="mt-2 pt-2 border-t border-zinc-200 dark:border-zinc-800 space-y-2.5 text-xs"
+      className="motion-reveal mt-2 pt-2 border-t border-zinc-200 dark:border-zinc-800 space-y-2.5 text-xs"
     >
       <div className="flex items-center justify-between">
         <span className="font-semibold text-zinc-700 dark:text-zinc-300">
