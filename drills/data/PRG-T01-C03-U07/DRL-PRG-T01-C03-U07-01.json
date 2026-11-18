@@ -95,7 +95,19 @@
       },
       "levelLabel": "Foundation",
       "unitCode": "PRG-T01-C03-U07",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-U07-01/Q01_findShortestHopPath.ts"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-U07-01/Q01_findShortestHopPath.ts",
+      "examples": [
+        {
+          "input": "edges = [['api', 'auth'], ['auth', 'db'], ['api', 'cache'], ['cache', 'db']], startService = 'api', targetService = 'db'",
+          "output": "['api', 'auth', 'db']",
+          "call": "findShortestHopPath([ ['api', 'auth'], ['auth', 'db'], ['api', 'cache'], ['cache', 'db'] ], 'api', 'db')"
+        },
+        {
+          "input": "edges = [['edge', 'gw'], ['gw', 'core']], startService = 'edge', targetService = 'core'",
+          "output": "['edge', 'gw', 'core']",
+          "call": "findShortestHopPath([ ['edge', 'gw'], ['gw', 'core'] ], 'edge', 'core')"
+        }
+      ]
     },
     {
       "id": "Q02",
@@ -187,7 +199,19 @@
       },
       "levelLabel": "Standard Exam",
       "unitCode": "PRG-T01-C03-U07",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-U07-01/Q02_hasDependencyCycle.ts"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-U07-01/Q02_hasDependencyCycle.ts",
+      "examples": [
+        {
+          "input": "packages = ['web', 'api', 'db'], dependencies = [['web', 'api'], ['api', 'db']]",
+          "output": "false",
+          "call": "hasDependencyCycle(['web', 'api', 'db'], [ ['web', 'api'], ['api', 'db'] ])"
+        },
+        {
+          "input": "packages = ['svc-a', 'svc-b', 'svc-c'], dependencies = [['svc-a', 'svc-b'], ['svc-b', 'svc-c'], ['svc-c', 'svc-a']]",
+          "output": "true",
+          "call": "hasDependencyCycle(['svc-a', 'svc-b', 'svc-c'], [ ['svc-a', 'svc-b'], ['svc-b', 'svc-c'], ['svc-c', 'svc-a'] ])"
+        }
+      ]
     },
     {
       "id": "Q03",
@@ -271,7 +295,19 @@
       },
       "levelLabel": "Standard Exam",
       "unitCode": "PRG-T01-C03-U07",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-U07-01/Q03_collectImpactedPackages.ts"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-U07-01/Q03_collectImpactedPackages.ts",
+      "examples": [
+        {
+          "input": "dependentsMap = new Map([ ['core', ['ui', 'cli']], ['ui', ['app']], ['cli', []], ['app', []] ]), rootPackage = 'core'",
+          "output": "['core', 'ui', 'cli', 'app']",
+          "call": "collectImpactedPackages(new Map([ ['core', ['ui', 'cli']], ['ui', ['app']], ['cli', []], ['app', []] ]), 'core')"
+        },
+        {
+          "input": "dependentsMap = new Map([ ['core', ['ui']], ['ui', ['app']], ['app', []] ]), rootPackage = 'ui'",
+          "output": "['ui', 'app']",
+          "call": "collectImpactedPackages(new Map([ ['core', ['ui']], ['ui', ['app']], ['app', []] ]), 'ui')"
+        }
+      ]
     },
     {
       "id": "Q04",
@@ -355,7 +391,19 @@
       },
       "levelLabel": "Standard Exam",
       "unitCode": "PRG-T01-C03-U07",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-U07-01/Q04_computeHopDistances.ts"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-U07-01/Q04_computeHopDistances.ts",
+      "examples": [
+        {
+          "input": "links = [['hub', 'east'], ['hub', 'west'], ['east', 'edge']], origin = 'hub'",
+          "output": "new Map([ ['hub', 0], ['east', 1], ['west', 1], ['edge', 2] ])",
+          "call": "computeHopDistances([ ['hub', 'east'], ['hub', 'west'], ['east', 'edge'] ], 'hub')"
+        },
+        {
+          "input": "links = [['s1', 's2'], ['s2', 's3']], origin = 's1'",
+          "output": "new Map([ ['s1', 0], ['s2', 1], ['s3', 2] ])",
+          "call": "computeHopDistances([ ['s1', 's2'], ['s2', 's3'] ], 's1')"
+        }
+      ]
     }
   ],
   "blindSolve": [

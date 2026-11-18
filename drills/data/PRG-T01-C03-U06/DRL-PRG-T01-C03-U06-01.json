@@ -99,7 +99,19 @@
       },
       "levelLabel": "Foundation",
       "unitCode": "PRG-T01-C03-U06",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-U06-01/Q01_collectPreorderLabels.ts"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-U06-01/Q01_collectPreorderLabels.ts",
+      "examples": [
+        {
+          "input": "root = { id: 'f0', label: 'Workspace', kind: 'folder', enabled: true, children: [{ id: 'f1', label: 'Docs', kind: 'folder', enabled: true, children: [] }, { id: 'f2', label: 'Code', kind: 'folder', enabled: true, children: [] }] }",
+          "output": "['Workspace', 'Docs', 'Code']",
+          "call": "collectPreorderLabels({ id: 'f0', label: 'Workspace', kind: 'folder', enabled: true, children: [{ id: 'f1', label: 'Docs', kind: 'folder', enabled: true, children: [] }, { id: 'f2', label: 'Code', kind: 'folder', enabled: true, children: [] }] })"
+        },
+        {
+          "input": "root = { id: 'r', label: 'Root', kind: 'folder', enabled: true, children: [{ id: 's', label: 'Src', kind: 'folder', enabled: true, children: [{ id: 'u', label: 'Utils', kind: 'folder', enabled: true, children: [] }] }] }",
+          "output": "['Root', 'Src', 'Utils']",
+          "call": "collectPreorderLabels({ id: 'r', label: 'Root', kind: 'folder', enabled: true, children: [{ id: 's', label: 'Src', kind: 'folder', enabled: true, children: [{ id: 'u', label: 'Utils', kind: 'folder', enabled: true, children: [] }] }] })"
+        }
+      ]
     },
     {
       "id": "Q02",
@@ -187,7 +199,19 @@
       },
       "levelLabel": "Standard Exam",
       "unitCode": "PRG-T01-C03-U06",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-U06-01/Q02_groupNodeIdsByDepth.ts"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-U06-01/Q02_groupNodeIdsByDepth.ts",
+      "examples": [
+        {
+          "input": "root = { id: 'root', label: 'All', kind: 'category', enabled: true, children: [{ id: 'cat-1', label: 'Books', kind: 'category', enabled: true, children: [] }, { id: 'cat-2', label: 'Music', kind: 'category', enabled: true, children: [] }] }",
+          "output": "[ ['root'], ['cat-1', 'cat-2'] ]",
+          "call": "groupNodeIdsByDepth({ id: 'root', label: 'All', kind: 'category', enabled: true, children: [{ id: 'cat-1', label: 'Books', kind: 'category', enabled: true, children: [] }, { id: 'cat-2', label: 'Music', kind: 'category', enabled: true, children: [] }] })"
+        },
+        {
+          "input": "root = { id: 'root', label: 'All', kind: 'category', enabled: true, children: [{ id: 'cat-1', label: 'Books', kind: 'category', enabled: true, children: [{ id: 'sub-1', label: 'Sci-Fi', kind: 'category', enabled: true, children: [] }] }, { id: 'cat-2', label: 'Music', kind: 'category', enabled: true, children: [] }] }",
+          "output": "[ ['root'], ['cat-1', 'cat-2'], ['sub-1'] ]",
+          "call": "groupNodeIdsByDepth({ id: 'root', label: 'All', kind: 'category', enabled: true, children: [{ id: 'cat-1', label: 'Books', kind: 'category', enabled: true, children: [{ id: 'sub-1', label: 'Sci-Fi', kind: 'category', enabled: true, children: [] }] }, { id: 'cat-2', label: 'Music', kind: 'category', enabled: true, children: [] }] })"
+        }
+      ]
     },
     {
       "id": "Q03",
@@ -279,7 +303,19 @@
       },
       "levelLabel": "Standard Exam",
       "unitCode": "PRG-T01-C03-U06",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-U06-01/Q03_findFirstByKind.ts"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-U06-01/Q03_findFirstByKind.ts",
+      "examples": [
+        {
+          "input": "root = { id: 'grp', label: 'Org', kind: 'group', enabled: true, children: [{ id: 'rule-1', label: 'Read', kind: 'rule', enabled: true, children: [] }, { id: 'rule-2', label: 'Write', kind: 'rule', enabled: true, children: [] }] }, kind = 'rule'",
+          "output": "'rule-1'",
+          "call": "findFirstByKind({ id: 'grp', label: 'Org', kind: 'group', enabled: true, children: [{ id: 'rule-1', label: 'Read', kind: 'rule', enabled: true, children: [] }, { id: 'rule-2', label: 'Write', kind: 'rule', enabled: true, children: [] }] }, 'rule')"
+        },
+        {
+          "input": "root = { id: 'root', label: 'Admin', kind: 'rule', enabled: true, children: [] }, kind = 'rule'",
+          "output": "'root'",
+          "call": "findFirstByKind({ id: 'root', label: 'Admin', kind: 'rule', enabled: true, children: [] }, 'rule')"
+        }
+      ]
     },
     {
       "id": "Q04",
@@ -371,7 +407,19 @@
       },
       "levelLabel": "Standard Exam",
       "unitCode": "PRG-T01-C03-U06",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-U06-01/Q04_countEnabledNodes.ts"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-U06-01/Q04_countEnabledNodes.ts",
+      "examples": [
+        {
+          "input": "root = { id: 'r', label: 'Store', kind: 'cat', enabled: true, children: [{ id: 'c1', label: 'A', kind: 'cat', enabled: true, children: [] }, { id: 'c2', label: 'B', kind: 'cat', enabled: true, children: [] }] }",
+          "output": "3",
+          "call": "countEnabledNodes({ id: 'r', label: 'Store', kind: 'cat', enabled: true, children: [{ id: 'c1', label: 'A', kind: 'cat', enabled: true, children: [] }, { id: 'c2', label: 'B', kind: 'cat', enabled: true, children: [] }] })"
+        },
+        {
+          "input": "root = { id: 'r', label: 'Store', kind: 'cat', enabled: true, children: [{ id: 'c1', label: 'A', kind: 'cat', enabled: true, children: [] }, { id: 'c2', label: 'B', kind: 'cat', enabled: false, children: [] }] }",
+          "output": "2",
+          "call": "countEnabledNodes({ id: 'r', label: 'Store', kind: 'cat', enabled: true, children: [{ id: 'c1', label: 'A', kind: 'cat', enabled: true, children: [] }, { id: 'c2', label: 'B', kind: 'cat', enabled: false, children: [] }] })"
+        }
+      ]
     }
   ],
   "blindSolve": [

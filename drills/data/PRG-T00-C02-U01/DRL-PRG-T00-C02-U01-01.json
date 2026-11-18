@@ -106,7 +106,24 @@
       },
       "levelLabel": "Foundation",
       "unitCode": "PRG-T00-C02-U01",
-      "workspaceFile": "drills/workspace/DRL-PRG-T00-C02-U01-01/Q01_resolveArchiveInput.js"
+      "workspaceFile": "drills/workspace/DRL-PRG-T00-C02-U01-01/Q01_resolveArchiveInput.js",
+      "examples": [
+        {
+          "input": "cwd = '/srv/logs', targetArg = 'daily/app.log'",
+          "output": "{ resolvedPath: '/srv/logs/daily/app.log', isInsideCwd: true }",
+          "explanation": "The relative path stays inside cwd.",
+          "call": "resolveArchiveInput('/srv/logs', 'daily/app.log')"
+        },
+        {
+          "input": "cwd = '/srv/logs/api', targetArg = '../shared/err.log'",
+          "output": "{ resolvedPath: '/srv/logs/shared/err.log', isInsideCwd: false }",
+          "explanation": "Parent traversal resolves outside cwd.",
+          "call": "resolveArchiveInput('/srv/logs/api', '../shared/err.log')"
+        }
+      ],
+      "constraints": [
+        "cwd and targetArg must be non-empty strings after trimming"
+      ]
     },
     {
       "id": "Q02",
@@ -205,7 +222,23 @@
       },
       "levelLabel": "Standard Exam",
       "unitCode": "PRG-T00-C02-U01",
-      "workspaceFile": "drills/workspace/DRL-PRG-T00-C02-U01-01/Q02_resolveWorkspaceOutput.js"
+      "workspaceFile": "drills/workspace/DRL-PRG-T00-C02-U01-01/Q02_resolveWorkspaceOutput.js",
+      "examples": [
+        {
+          "input": "workspaceRoot = '/app/site', outArg = 'build/bundle.js'",
+          "output": "'/app/site/build/bundle.js'",
+          "call": "resolveWorkspaceOutput('/app/site', 'build/bundle.js')"
+        },
+        {
+          "input": "workspaceRoot = '/app/site', outArg = 'pages/../dist/index.html'",
+          "output": "'/app/site/dist/index.html'",
+          "call": "resolveWorkspaceOutput('/app/site', 'pages/../dist/index.html')"
+        }
+      ],
+      "constraints": [
+        "workspaceRoot and outArg must be non-empty strings after trimming",
+        "Resolved path must remain within workspaceRoot"
+      ]
     },
     {
       "id": "Q03",
@@ -304,7 +337,24 @@
       },
       "levelLabel": "Standard Exam",
       "unitCode": "PRG-T00-C02-U01",
-      "workspaceFile": "drills/workspace/DRL-PRG-T00-C02-U01-01/Q03_runPreflight.js"
+      "workspaceFile": "drills/workspace/DRL-PRG-T00-C02-U01-01/Q03_runPreflight.js",
+      "examples": [
+        {
+          "input": "argv = [], env = {}",
+          "output": "{ exitCode: 0, stdout: '{\"port\":3000,\"env\":\"development\"}\\n', stderr: '' }",
+          "explanation": "Defaults apply when neither CLI flags nor env vars are set.",
+          "call": "runPreflight([], {})"
+        },
+        {
+          "input": "argv = ['--port', '4200', '--env=staging'], env = { PORT: '3001', APP_ENV: 'production' }",
+          "output": "{ exitCode: 0, stdout: '{\"port\":4200,\"env\":\"staging\"}\\n', stderr: '' }",
+          "explanation": "CLI flags take precedence over environment variables.",
+          "call": "runPreflight(['--port', '4200', '--env=staging'], { PORT: '3001', APP_ENV: 'production' })"
+        }
+      ],
+      "constraints": [
+        "Resolved port must be an integer in 1..65535"
+      ]
     },
     {
       "id": "Q04",
@@ -392,7 +442,22 @@
       },
       "levelLabel": "Standard Exam",
       "unitCode": "PRG-T00-C02-U01",
-      "workspaceFile": "drills/workspace/DRL-PRG-T00-C02-U01-01/Q04_runSchemaCheck.js"
+      "workspaceFile": "drills/workspace/DRL-PRG-T00-C02-U01-01/Q04_runSchemaCheck.js",
+      "examples": [
+        {
+          "input": "argv = [], env = {}, readFile = () => '{\"name\":\"billing\",\"version\":\"2.1.0\"}'",
+          "output": "{ exitCode: 0, stdout: 'OK: billing@2.1.0\\n', stderr: '' }",
+          "call": "runSchemaCheck([], {}, () => '{\"name\":\"billing\",\"version\":\"2.1.0\"}')"
+        },
+        {
+          "input": "argv = ['--file=cfg.json'], env = {}, readFile = () => '{\"name\":\"auth\",\"version\":\"1.0.4\"}'",
+          "output": "{ exitCode: 0, stdout: 'OK: auth@1.0.4\\n', stderr: '' }",
+          "call": "runSchemaCheck(['--file=cfg.json'], {}, () => '{\"name\":\"auth\",\"version\":\"1.0.4\"}')"
+        }
+      ],
+      "constraints": [
+        "Schema JSON must define non-empty string name and version fields"
+      ]
     },
     {
       "id": "Q05",
@@ -487,7 +552,19 @@
       },
       "levelLabel": "Standard Exam",
       "unitCode": "PRG-T00-C02-U01",
-      "workspaceFile": "drills/workspace/DRL-PRG-T00-C02-U01-01/Q05_auditProjectLayout.js"
+      "workspaceFile": "drills/workspace/DRL-PRG-T00-C02-U01-01/Q05_auditProjectLayout.js",
+      "examples": [
+        {
+          "input": "projectRoot containing src/, tests/, valid package.json, and .gitignore with node_modules/ and .env",
+          "output": "{ ok: true, missingDirs: [], manifestErrors: [], ignoreErrors: [] }",
+          "call": "(() => { const fs = require('node:fs'); const os = require('node:os'); const path = require('node:path'); const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ex-ok-')); try { fs.mkdirSync(path.join(dir, 'src')); fs.mkdirSync(path.join(dir, 'tests')); fs.writeFileSync(path.join(dir, 'package.json'), JSON.stringify({ name: 'svc', main: './src/index.js' })); fs.writeFileSync(path.join(dir, '.gitignore'), 'node_modules/\\n.env\\n'); return auditProjectLayout(dir); } finally { fs.rmSync(dir, { recursive: true, force: true }); } })()"
+        },
+        {
+          "input": "projectRoot with src/, valid package.json and .gitignore, but missing tests/",
+          "output": "{ ok: false, missingDirs: ['tests'], manifestErrors: [], ignoreErrors: [] }",
+          "call": "(() => { const fs = require('node:fs'); const os = require('node:os'); const path = require('node:path'); const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ex-dir-')); try { fs.mkdirSync(path.join(dir, 'src')); fs.writeFileSync(path.join(dir, 'package.json'), JSON.stringify({ name: 'svc' })); fs.writeFileSync(path.join(dir, '.gitignore'), 'node_modules/\\n.env\\n'); return auditProjectLayout(dir); } finally { fs.rmSync(dir, { recursive: true, force: true }); } })()"
+        }
+      ]
     }
   ],
   "blindSolve": [

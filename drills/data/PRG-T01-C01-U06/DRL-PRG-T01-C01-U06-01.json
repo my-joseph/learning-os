@@ -94,7 +94,19 @@
       },
       "levelLabel": "Foundation",
       "unitCode": "PRG-T01-C01-U06",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U06-01/Q01_hydrateUserRecords.js"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U06-01/Q01_hydrateUserRecords.js",
+      "examples": [
+        {
+          "input": "userIds = ['usr-1', 'usr-2'], fetchUser = async (id) => ({ id, role: 'member' })",
+          "output": "{ users: [{ id: 'usr-1', role: 'member' }, { id: 'usr-2', role: 'member' }], count: 2 }",
+          "call": "hydrateUserRecords(['usr-1', 'usr-2'], async (id) => ({ id, role: 'member' }))"
+        },
+        {
+          "input": "userIds = ['usr-9'], fetchUser = async (id) => ({ id, role: 'admin' })",
+          "output": "{ users: [{ id: 'usr-9', role: 'admin' }], count: 1 }",
+          "call": "hydrateUserRecords(['usr-9'], async (id) => ({ id, role: 'admin' }))"
+        }
+      ]
     },
     {
       "id": "Q02",
@@ -188,7 +200,19 @@
       },
       "levelLabel": "Foundation",
       "unitCode": "PRG-T01-C01-U06",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U06-01/Q02_dispatchWebhookBatch.js"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U06-01/Q02_dispatchWebhookBatch.js",
+      "examples": [
+        {
+          "input": "events = [{ id: 'ev-1' }, { id: 'ev-2' }], deliver = async (ev) => ({ receiptId: `rcpt_${ev.id}` })",
+          "output": "{ delivered: 2, receiptIds: ['rcpt_ev-1', 'rcpt_ev-2'] }",
+          "call": "dispatchWebhookBatch([{ id: 'ev-1' }, { id: 'ev-2' }], async (ev) => ({ receiptId: `rcpt_${ev.id}` }))"
+        },
+        {
+          "input": "events = [{ id: 'ev-7' }], deliver = async (ev) => ({ receiptId: `rcpt_${ev.id}` })",
+          "output": "{ delivered: 1, receiptIds: ['rcpt_ev-7'] }",
+          "call": "dispatchWebhookBatch([{ id: 'ev-7' }], async (ev) => ({ receiptId: `rcpt_${ev.id}` }))"
+        }
+      ]
     },
     {
       "id": "Q03",
@@ -285,7 +309,19 @@
       },
       "levelLabel": "Standard Exam",
       "unitCode": "PRG-T01-C01-U06",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U06-01/Q03_probeClusterNodes.js"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U06-01/Q03_probeClusterNodes.js",
+      "examples": [
+        {
+          "input": "nodes = [{ region: 'us-west', url: 'https://us-w.example' }, { region: 'eu-central', url: 'https://eu-c.example' }], pingNode = async (n) => ({ latencyMs: n.region === 'us-west' ? 14 : 28 })",
+          "output": "{ healthy: [{ region: 'us-west', latencyMs: 14 }, { region: 'eu-central', latencyMs: 28 }], failed: [] }",
+          "call": "probeClusterNodes([{ region: 'us-west', url: 'https://us-w.example' }, { region: 'eu-central', url: 'https://eu-c.example' }], async (n) => ({ latencyMs: n.region === 'us-west' ? 14 : 28 }))"
+        },
+        {
+          "input": "nodes = [{ region: 'us-east', url: 'https://us.example' }, { region: 'ap-east', url: 'https://ap.example' }], pingNode throws 'ETIMEDOUT' for ap-east",
+          "output": "{ healthy: [{ region: 'us-east', latencyMs: 18 }], failed: [{ region: 'ap-east', error: 'ETIMEDOUT' }] }",
+          "call": "probeClusterNodes([{ region: 'us-east', url: 'https://us.example' }, { region: 'ap-east', url: 'https://ap.example' }], async (n) => { if (n.region === 'ap-east') throw new Error('ETIMEDOUT'); return { latencyMs: 18 }; })"
+        }
+      ]
     },
     {
       "id": "Q04",
@@ -382,7 +418,19 @@
       },
       "levelLabel": "Standard Exam",
       "unitCode": "PRG-T01-C01-U06",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U06-01/Q04_authorizeCheckoutStep.js"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U06-01/Q04_authorizeCheckoutStep.js",
+      "examples": [
+        {
+          "input": "reserveInventory = async () => ({ sku: 'MON-4K', qty: 2 }), chargeCard = async () => ({ txId: 'tx_402' })",
+          "output": "{ ok: true, reservation: { sku: 'MON-4K', qty: 2 }, payment: { txId: 'tx_402' } }",
+          "call": "authorizeCheckoutStep(async () => ({ sku: 'MON-4K', qty: 2 }), async () => ({ txId: 'tx_402' }))"
+        },
+        {
+          "input": "reserveInventory = async () => ({ sku: 'MON-4K', qty: 2 }), chargeCard = async () => { throw new Error('Insufficient limit'); }",
+          "output": "{ ok: false, errors: ['Insufficient limit'] }",
+          "call": "authorizeCheckoutStep(async () => ({ sku: 'MON-4K', qty: 2 }), async () => { throw new Error('Insufficient limit'); })"
+        }
+      ]
     },
     {
       "id": "Q05",
@@ -469,7 +517,22 @@
       },
       "levelLabel": "Trap & Diagnostic",
       "unitCode": "PRG-T01-C01-U06",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U06-01/Q05_callWithDeadline.js"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U06-01/Q05_callWithDeadline.js",
+      "examples": [
+        {
+          "input": "invokeRpc = async () => ({ healthy: true }), deadlineMs = 100",
+          "output": "{ ok: true, value: { healthy: true } }",
+          "call": "callWithDeadline(async () => ({ healthy: true }), 100)"
+        },
+        {
+          "input": "invokeRpc = async () => 'pong', deadlineMs = 50",
+          "output": "{ ok: true, value: 'pong' }",
+          "call": "callWithDeadline(async () => 'pong', 50)"
+        }
+      ],
+      "constraints": [
+        "deadlineMs must be a finite number > 0"
+      ]
     }
   ],
   "blindSolve": [

@@ -301,7 +301,23 @@
       },
       "levelLabel": "Standard Exam",
       "unitCode": "PRG-T01-C01-U03",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U03-01/Q03_bindServiceHandlers.js"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U03-01/Q03_bindServiceHandlers.js",
+      "examples": [
+        {
+          "input": "service = { prefix: 'api', format(msg) { return this.prefix + ':' + msg; } }; { format } = bindServiceHandlers(service, ['format']); format('ready')",
+          "output": "'api:ready'",
+          "call": "(() => { const svc = { prefix: 'api', format(msg) { return `${this.prefix}:${msg}`; } }; const { format } = bindServiceHandlers(svc, ['format']); return format('ready'); })()"
+        },
+        {
+          "input": "service = { base: 10, add(x) { return this.base + x; } }; { add } = bindServiceHandlers(service, ['add']); add(5)",
+          "output": "15",
+          "call": "(() => { const svc = { base: 10, add(x) { return this.base + x; } }; const { add } = bindServiceHandlers(svc, ['add']); return add(5); })()"
+        }
+      ],
+      "constraints": [
+        "service must be a non-null object",
+        "methodNames must be an array of function property names on service"
+      ]
     },
     {
       "id": "Q04",
@@ -386,7 +402,19 @@
       },
       "levelLabel": "Standard Exam",
       "unitCode": "PRG-T01-C01-U03",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U03-01/Q04_InvoiceFormatter.js"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U03-01/Q04_InvoiceFormatter.js",
+      "examples": [
+        {
+          "input": "new InvoiceFormatter('USD', 0.1).formatBatch([{ sku: 'K1', cents: 2000 }])",
+          "output": "['USD 22.00']",
+          "call": "new InvoiceFormatter('USD', 0.1).formatBatch([{ sku: 'K1', cents: 2000 }])"
+        },
+        {
+          "input": "new InvoiceFormatter('EUR', 0.2).formatBatch([{ sku: 'M2', cents: 500 }, { sku: 'M3', cents: 1000 }])",
+          "output": "['EUR 6.00', 'EUR 12.00']",
+          "call": "new InvoiceFormatter('EUR', 0.2).formatBatch([{ sku: 'M2', cents: 500 }, { sku: 'M3', cents: 1000 }])"
+        }
+      ]
     },
     {
       "id": "Q05",
@@ -471,7 +499,23 @@
       },
       "levelLabel": "Standard Exam",
       "unitCode": "PRG-T01-C01-U03",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U03-01/Q05_dispatchWebhook.js"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U03-01/Q05_dispatchWebhook.js",
+      "examples": [
+        {
+          "input": "targetContext = { endpoint: 'https://events.example.com', signingKey: 'sec-1' }, event = { id: 'evt-12' }",
+          "output": "'https://events.example.com:sec-1:evt-12'",
+          "call": "dispatchWebhook({ endpoint: 'https://events.example.com', signingKey: 'sec-1' }, { id: 'evt-12' })"
+        },
+        {
+          "input": "targetContext = { endpoint: 'https://hooks.example.org', signingKey: 'sec-9' }, event = { id: 'evt-44' }",
+          "output": "'https://hooks.example.org:sec-9:evt-44'",
+          "call": "dispatchWebhook({ endpoint: 'https://hooks.example.org', signingKey: 'sec-9' }, { id: 'evt-44' })"
+        }
+      ],
+      "constraints": [
+        "targetContext must include endpoint and signingKey",
+        "event must include id"
+      ]
     }
   ],
   "blindSolve": [

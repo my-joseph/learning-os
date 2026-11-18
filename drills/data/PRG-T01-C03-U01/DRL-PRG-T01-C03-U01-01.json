@@ -191,7 +191,19 @@
       },
       "levelLabel": "Standard Exam",
       "unitCode": "PRG-T01-C03-U01",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-U01-01/Q02_uniqueShipmentEvents.js"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-U01-01/Q02_uniqueShipmentEvents.js",
+      "examples": [
+        {
+          "input": "events = [{ shipmentId: 'SH-10', scan: 'in' }, { shipmentId: 'SH-20', scan: 'in' }, { shipmentId: 'SH-10', scan: 'out' }]",
+          "output": "[{ shipmentId: 'SH-10', scan: 'in' }, { shipmentId: 'SH-20', scan: 'in' }]",
+          "call": "uniqueShipmentEvents([{ shipmentId: 'SH-10', scan: 'in' }, { shipmentId: 'SH-20', scan: 'in' }, { shipmentId: 'SH-10', scan: 'out' }])"
+        },
+        {
+          "input": "events = [{ shipmentId: 'SH-30' }, { shipmentId: 'SH-31' }]",
+          "output": "[{ shipmentId: 'SH-30' }, { shipmentId: 'SH-31' }]",
+          "call": "uniqueShipmentEvents([{ shipmentId: 'SH-30' }, { shipmentId: 'SH-31' }])"
+        }
+      ]
     },
     {
       "id": "Q03",
@@ -283,7 +295,19 @@
       },
       "levelLabel": "Standard Exam",
       "unitCode": "PRG-T01-C03-U01",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-U01-01/Q03_joinInvoiceEvents.js"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-U01-01/Q03_joinInvoiceEvents.js",
+      "examples": [
+        {
+          "input": "events = [{ invoiceId: 'INV-10' }, { invoiceId: 'INV-11' }, { invoiceId: 'INV-10' }], invoices = [{ invoiceId: 'INV-10' }]",
+          "output": "[{ invoiceId: 'INV-10' }, { invoiceId: 'INV-10' }]",
+          "call": "joinInvoiceEvents([{ invoiceId: 'INV-10' }, { invoiceId: 'INV-11' }, { invoiceId: 'INV-10' }], [{ invoiceId: 'INV-10' }])"
+        },
+        {
+          "input": "events = [{ invoiceId: 'INV-1' }, { invoiceId: 'INV-2' }], invoices = [{ invoiceId: 'INV-2' }]",
+          "output": "[{ invoiceId: 'INV-2' }]",
+          "call": "joinInvoiceEvents([{ invoiceId: 'INV-1' }, { invoiceId: 'INV-2' }], [{ invoiceId: 'INV-2' }])"
+        }
+      ]
     },
     {
       "id": "Q04",
@@ -375,7 +399,19 @@
       },
       "levelLabel": "Standard Exam",
       "unitCode": "PRG-T01-C03-U01",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-U01-01/Q04_summarizeCarrierScans.js"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-U01-01/Q04_summarizeCarrierScans.js",
+      "examples": [
+        {
+          "input": "scans = [{ routeId: 'RT-1' }, { routeId: 'RT-2' }, { routeId: 'RT-1' }]",
+          "output": "[{ routeId: 'RT-1', scanCount: 2 }, { routeId: 'RT-2', scanCount: 1 }]",
+          "call": "summarizeCarrierScans([{ routeId: 'RT-1' }, { routeId: 'RT-2' }, { routeId: 'RT-1' }])"
+        },
+        {
+          "input": "scans = [{ routeId: 'RT-9' }]",
+          "output": "[{ routeId: 'RT-9', scanCount: 1 }]",
+          "call": "summarizeCarrierScans([{ routeId: 'RT-9' }])"
+        }
+      ]
     }
   ],
   "blindSolve": [

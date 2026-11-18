@@ -103,7 +103,19 @@
       },
       "levelLabel": "Foundation",
       "unitCode": "PRG-T01-C03-U04",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-U04-01/Q01_countEventCodes.ts"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-U04-01/Q01_countEventCodes.ts",
+      "examples": [
+        {
+          "input": "codes = ['auth.ok', 'auth.fail', 'auth.ok']",
+          "output": "new Map([ ['auth.ok', 2], ['auth.fail', 1] ])",
+          "call": "countEventCodes(['auth.ok', 'auth.fail', 'auth.ok'])"
+        },
+        {
+          "input": "codes = ['cache.hit']",
+          "output": "new Map([ ['cache.hit', 1] ])",
+          "call": "countEventCodes(['cache.hit'])"
+        }
+      ]
     },
     {
       "id": "Q02",
@@ -195,7 +207,19 @@
       },
       "levelLabel": "Foundation",
       "unitCode": "PRG-T01-C03-U04",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-U04-01/Q02_groupLedgerEntries.ts"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-U04-01/Q02_groupLedgerEntries.ts",
+      "examples": [
+        {
+          "input": "entries = [{ accountId: 10, amountCents: 300 }, { accountId: 20, amountCents: 450 }, { accountId: 10, amountCents: 150 }]",
+          "output": "new Map([ [10, [{ accountId: 10, amountCents: 300 }, { accountId: 10, amountCents: 150 }]], [20, [{ accountId: 20, amountCents: 450 }]] ])",
+          "call": "groupLedgerEntries([{ accountId: 10, amountCents: 300 }, { accountId: 20, amountCents: 450 }, { accountId: 10, amountCents: 150 }])"
+        },
+        {
+          "input": "entries = [{ accountId: 5, amountCents: 90 }]",
+          "output": "new Map([ [5, [{ accountId: 5, amountCents: 90 }]] ])",
+          "call": "groupLedgerEntries([{ accountId: 5, amountCents: 90 }])"
+        }
+      ]
     },
     {
       "id": "Q03",
@@ -291,7 +315,19 @@
       },
       "levelLabel": "Standard Exam",
       "unitCode": "PRG-T01-C03-U04",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-U04-01/Q03_uniquePackageAliases.ts"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-U04-01/Q03_uniquePackageAliases.ts",
+      "examples": [
+        {
+          "input": "aliases = ['ui-kit', 'core-lib', 'ui-kit', 'cli-tool']",
+          "output": "['ui-kit', 'core-lib', 'cli-tool']",
+          "call": "uniquePackageAliases(['ui-kit', 'core-lib', 'ui-kit', 'cli-tool'])"
+        },
+        {
+          "input": "aliases = ['pkg-b', 'pkg-a', 'pkg-b']",
+          "output": "['pkg-b', 'pkg-a']",
+          "call": "uniquePackageAliases(['pkg-b', 'pkg-a', 'pkg-b'])"
+        }
+      ]
     },
     {
       "id": "Q04",
@@ -383,7 +419,19 @@
       },
       "levelLabel": "Standard Exam",
       "unitCode": "PRG-T01-C03-U04",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-U04-01/Q04_groupTicketsByOwner.ts"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-U04-01/Q04_groupTicketsByOwner.ts",
+      "examples": [
+        {
+          "input": "owner = { id: 'sess-1' }; groupTicketsByOwner([{ owner, ticketCode: 'TK-1' }, { owner, ticketCode: 'TK-2' }]).get(owner)",
+          "output": "['TK-1', 'TK-2']",
+          "call": "(() => { const owner = { id: 'sess-1' }; return groupTicketsByOwner([{ owner, ticketCode: 'TK-1' }, { owner, ticketCode: 'TK-2' }]).get(owner); })()"
+        },
+        {
+          "input": "o1 = { id: 'sess-a' }, o2 = { id: 'sess-b' }; groupTicketsByOwner([{ owner: o1, ticketCode: 'TK-1' }, { owner: o2, ticketCode: 'TK-2' }, { owner: o1, ticketCode: 'TK-3' }])",
+          "output": "[ ['TK-1', 'TK-3'], ['TK-2'] ]",
+          "call": "(() => { const o1 = { id: 'sess-a' }; const o2 = { id: 'sess-b' }; const m = groupTicketsByOwner([{ owner: o1, ticketCode: 'TK-1' }, { owner: o2, ticketCode: 'TK-2' }, { owner: o1, ticketCode: 'TK-3' }]); return [m.get(o1), m.get(o2)]; })()"
+        }
+      ]
     }
   ],
   "blindSolve": [

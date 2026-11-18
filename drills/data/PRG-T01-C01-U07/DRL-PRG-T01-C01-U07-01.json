@@ -466,7 +466,22 @@
       },
       "levelLabel": "Trap & Diagnostic",
       "unitCode": "PRG-T01-C01-U07",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U07-01/Q05_indexLogBatches.js"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U07-01/Q05_indexLogBatches.js",
+      "examples": [
+        {
+          "input": "entries = ['log-1', 'log-2', 'log-3'], chunkSize = 2",
+          "output": "{ total: 3, chunks: [['log-1', 'log-2'], ['log-3']] }",
+          "call": "(() => { const chunks = []; return indexLogBatches(['log-1', 'log-2', 'log-3'], 2, (s) => chunks.push(s)).then((total) => ({ total, chunks })); })()"
+        },
+        {
+          "input": "entries = ['a', 'b'], chunkSize = 1",
+          "output": "{ total: 2, chunks: [['a'], ['b']] }",
+          "call": "(() => { const chunks = []; return indexLogBatches(['a', 'b'], 1, (s) => chunks.push(s)).then((total) => ({ total, chunks })); })()"
+        }
+      ],
+      "constraints": [
+        "chunkSize must be a positive integer >= 1"
+      ]
     }
   ],
   "blindSolve": [

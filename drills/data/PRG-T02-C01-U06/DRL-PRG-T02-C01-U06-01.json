@@ -100,7 +100,19 @@
       },
       "levelLabel": "Foundation",
       "unitCode": "PRG-T02-C01-U06",
-      "workspaceFile": "drills/workspace/DRL-PRG-T02-C01-U06-01/Q01_ClaimReferenceField.tsx"
+      "workspaceFile": "drills/workspace/DRL-PRG-T02-C01-U06-01/Q01_ClaimReferenceField.tsx",
+      "examples": [
+        {
+          "input": "Render <ClaimReferenceField />, click 'Check claim'",
+          "output": "{ hasInput: true, focused: true }",
+          "call": "(async () => { const user = userEvent.setup(); render(<ClaimReferenceField />); await user.click(screen.getByRole('button', { name: 'Check claim' })); const field = screen.queryByRole('textbox', { name: 'Claim reference' }); return { hasInput: field !== null, focused: document.activeElement === field }; })()"
+        },
+        {
+          "input": "Render <ClaimReferenceField errorMessage='Invalid claim ID' />",
+          "output": "'Invalid claim ID'",
+          "call": "(() => { render(<ClaimReferenceField errorMessage='Invalid claim ID' />); return screen.getByRole('alert').textContent; })()"
+        }
+      ]
     },
     {
       "id": "Q02",
@@ -189,7 +201,19 @@
       },
       "levelLabel": "Foundation",
       "unitCode": "PRG-T02-C01-U06",
-      "workspaceFile": "drills/workspace/DRL-PRG-T02-C01-U06-01/Q02_BinScanCapture.tsx"
+      "workspaceFile": "drills/workspace/DRL-PRG-T02-C01-U06-01/Q02_BinScanCapture.tsx",
+      "examples": [
+        {
+          "input": "Render <BinScanCapture onCapture={onCapture} />, click 'Start scan', enter 'BIN-12A', click 'Capture bin'",
+          "output": "['BIN-12A']",
+          "call": "(async () => { const captured: string[] = []; const user = userEvent.setup(); render(<BinScanCapture onCapture={(c) => captured.push(c)} />); await user.click(screen.getByRole('button', { name: 'Start scan' })); await user.type(screen.getByRole('textbox', { name: 'Bin code' }), 'BIN-12A'); await user.click(screen.getByRole('button', { name: 'Capture bin' })); return captured; })()"
+        },
+        {
+          "input": "Render <BinScanCapture onCapture={onCapture} />, click 'Start scan', enter '  RACK-4  ', click 'Capture bin'",
+          "output": "{ captured: ['RACK-4'], inputValue: '  RACK-4  ' }",
+          "call": "(async () => { const captured: string[] = []; const user = userEvent.setup(); render(<BinScanCapture onCapture={(c) => captured.push(c)} />); await user.click(screen.getByRole('button', { name: 'Start scan' })); const field = screen.getByRole('textbox', { name: 'Bin code' }) as HTMLInputElement; await user.type(field, '  RACK-4  '); await user.click(screen.getByRole('button', { name: 'Capture bin' })); return { captured, inputValue: field.value }; })()"
+        }
+      ]
     },
     {
       "id": "Q03",
@@ -282,7 +306,19 @@
       },
       "levelLabel": "Standard Exam",
       "unitCode": "PRG-T02-C01-U06",
-      "workspaceFile": "drills/workspace/DRL-PRG-T02-C01-U06-01/Q03_ActivityFeed.tsx"
+      "workspaceFile": "drills/workspace/DRL-PRG-T02-C01-U06-01/Q03_ActivityFeed.tsx",
+      "examples": [
+        {
+          "input": "Render <ActivityFeed items={['Created', 'Assigned']} onLoadOlder={fn} />",
+          "output": "{ count: '2', items: ['Created', 'Assigned'] }",
+          "call": "(() => { render(<ActivityFeed items={['Created', 'Assigned']} onLoadOlder={() => {}} />); return { count: screen.getByLabelText('Activity count').textContent, items: screen.getAllByRole('listitem').map((el) => el.textContent) }; })()"
+        },
+        {
+          "input": "Render <ActivityFeed items={['Created']} onLoadOlder={fn} />, click 'Load older activity'",
+          "output": "{ calls: 1, status: 'Older activity requested' }",
+          "call": "(async () => { let calls = 0; const user = userEvent.setup(); render(<ActivityFeed items={['Created']} onLoadOlder={() => { calls += 1; }} />); await user.click(screen.getByRole('button', { name: 'Load older activity' })); return { calls, status: screen.getByText('Older activity requested').textContent }; })()"
+        }
+      ]
     },
     {
       "id": "Q04",
@@ -371,7 +407,19 @@
       },
       "levelLabel": "Standard Exam",
       "unitCode": "PRG-T02-C01-U06",
-      "workspaceFile": "drills/workspace/DRL-PRG-T02-C01-U06-01/Q04_FilterPanel.tsx"
+      "workspaceFile": "drills/workspace/DRL-PRG-T02-C01-U06-01/Q04_FilterPanel.tsx",
+      "examples": [
+        {
+          "input": "Render <FilterPanel filters={['Status', 'Team']} />, click 'Show filters'",
+          "output": "{ focusedField: 'Status' }",
+          "call": "(async () => { const user = userEvent.setup(); render(<FilterPanel filters={['Status', 'Team']} />); await user.click(screen.getByRole('button', { name: 'Show filters' })); const field = screen.getByRole('textbox', { name: 'Status' }); return { focusedField: document.activeElement === field ? 'Status' : null }; })()"
+        },
+        {
+          "input": "Render <FilterPanel filters={['Status']} />, click 'Show filters', then click 'Close filters'",
+          "output": "{ panelOpenAfterClose: false }",
+          "call": "(async () => { const user = userEvent.setup(); render(<FilterPanel filters={['Status']} />); await user.click(screen.getByRole('button', { name: 'Show filters' })); await user.click(screen.getByRole('button', { name: 'Close filters' })); return { panelOpenAfterClose: screen.queryByRole('textbox', { name: 'Status' }) !== null }; })()"
+        }
+      ]
     }
   ],
   "blindSolve": [

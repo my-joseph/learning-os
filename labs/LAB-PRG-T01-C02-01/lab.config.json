@@ -31,7 +31,24 @@
         "QC-prg-t01-c02-u07-discriminant-narrowing",
         "QC-prg-t01-c02-u07-no-optional-outcome-bag"
       ],
-      "visibleTests": "tests/m1_*.test.ts"
+      "visibleTests": "tests/m1_*.test.ts",
+      "examples": [
+        {
+          "input": "ok(15)",
+          "output": "{ ok: true, value: 15 }",
+          "call": "ok(15)"
+        },
+        {
+          "input": "mapResult(ok(12), (n) => n + 3)",
+          "output": "{ ok: true, value: 15 }",
+          "call": "mapResult(ok(12), (n) => n + 3)"
+        },
+        {
+          "input": "flatMapResult(ok(8), (n) => ok(n * 2))",
+          "output": "{ ok: true, value: 16 }",
+          "call": "flatMapResult(ok(8), (n) => ok(n * 2))"
+        }
+      ]
     },
     {
       "id": "M2",
@@ -50,7 +67,25 @@
         "QC-prg-t01-c02-u04-own-property-boundary",
         "QC-prg-t01-c02-u09-narrow-unknown-before-access"
       ],
-      "visibleTests": "tests/m2_*.test.ts"
+      "visibleTests": "tests/m2_*.test.ts",
+      "examples": [
+        {
+          "input": "objectSchema({ sku: stringSchema(), qty: numberSchema() }).parse({ sku: 'DESK-1', qty: 4 })",
+          "output": "{ ok: true, value: { sku: 'DESK-1', qty: 4 } }",
+          "call": "objectSchema({ sku: stringSchema(), qty: numberSchema() }).parse({ sku: 'DESK-1', qty: 4 })"
+        },
+        {
+          "input": "objectSchema({ enabled: booleanSchema(), tier: literalSchema('pro') }).parse({ enabled: true, tier: 'pro' })",
+          "output": "{ ok: true, value: { enabled: true, tier: 'pro' } }",
+          "call": "objectSchema({ enabled: booleanSchema(), tier: literalSchema('pro') }).parse({ enabled: true, tier: 'pro' })"
+        },
+        {
+          "input": "numberSchema().parse('42').ok",
+          "output": "false",
+          "explanation": "Strings are not coerced into numbers.",
+          "call": "numberSchema().parse('42').ok"
+        }
+      ]
     },
     {
       "id": "M3",
@@ -67,7 +102,24 @@
         "QC-prg-t01-c02-u08-guard-indexed-read",
         "QC-prg-t01-c02-u09-explicit-api-failures"
       ],
-      "visibleTests": "tests/m3_*.test.ts"
+      "visibleTests": "tests/m3_*.test.ts",
+      "examples": [
+        {
+          "input": "arraySchema(stringSchema()).parse(['api', 'web'])",
+          "output": "{ ok: true, value: ['api', 'web'] }",
+          "call": "arraySchema(stringSchema()).parse(['api', 'web'])"
+        },
+        {
+          "input": "objectSchema({ id: stringSchema(), note: optionalSchema(stringSchema()) }).parse({ id: 'USR-1' })",
+          "output": "{ ok: true, value: { id: 'USR-1', note: undefined } }",
+          "call": "objectSchema({ id: stringSchema(), note: optionalSchema(stringSchema()) }).parse({ id: 'USR-1' })"
+        },
+        {
+          "input": "unionSchema(literalSchema('open'), literalSchema('closed')).parse('open')",
+          "output": "{ ok: true, value: 'open' }",
+          "call": "unionSchema(literalSchema('open'), literalSchema('closed')).parse('open')"
+        }
+      ]
     },
     {
       "id": "M4",
@@ -85,7 +137,19 @@
         "QC-prg-t01-c02-u09-success-requires-validation",
         "QC-prg-t01-c02-u09-check-required-field-types"
       ],
-      "visibleTests": "tests/m4_*.test.ts"
+      "visibleTests": "tests/m4_*.test.ts",
+      "examples": [
+        {
+          "input": "decodeApiPayload('{\"page\":2,\"limit\":25}', objectSchema({ page: numberSchema(), limit: numberSchema() }))",
+          "output": "{ ok: true, value: { page: 2, limit: 25 } }",
+          "call": "decodeApiPayload('{\"page\":2,\"limit\":25}', objectSchema({ page: numberSchema(), limit: numberSchema() }))"
+        },
+        {
+          "input": "formatDecodeError({ kind: 'validation-failed', issues: [{ path: 'limit', message: 'Expected a finite number' }] })",
+          "output": "'limit: Expected a finite number'",
+          "call": "formatDecodeError({ kind: 'validation-failed', issues: [{ path: 'limit', message: 'Expected a finite number' }] })"
+        }
+      ]
     }
   ],
   "blindSolve": [

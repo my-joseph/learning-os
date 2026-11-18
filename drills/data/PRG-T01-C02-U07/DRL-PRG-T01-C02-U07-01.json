@@ -99,7 +99,19 @@
       },
       "levelLabel": "Foundation",
       "unitCode": "PRG-T01-C02-U07",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U07-01/Q01_summarizeImportOutcome.ts"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U07-01/Q01_summarizeImportOutcome.ts",
+      "examples": [
+        {
+          "input": "outcome = { state: 'accepted', acceptedRows: 14 }",
+          "output": "'Accepted 14 rows'",
+          "call": "summarizeImportOutcome({ state: 'accepted', acceptedRows: 14 })"
+        },
+        {
+          "input": "outcome = { state: 'rejected', reason: 'Missing SKU header' }",
+          "output": "'Rejected: Missing SKU header'",
+          "call": "summarizeImportOutcome({ state: 'rejected', reason: 'Missing SKU header' })"
+        }
+      ]
     },
     {
       "id": "Q02",
@@ -191,7 +203,24 @@
       },
       "levelLabel": "Foundation",
       "unitCode": "PRG-T01-C02-U07",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U07-01/Q02_playbackMessage.ts"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U07-01/Q02_playbackMessage.ts",
+      "examples": [
+        {
+          "input": "state = { kind: 'buffering', percent: 35 }",
+          "output": "'Buffering: 35%'",
+          "call": "playbackMessage({ kind: 'buffering', percent: 35 })"
+        },
+        {
+          "input": "state = { kind: 'playing', title: 'Morning Jazz' }",
+          "output": "'Playing: Morning Jazz'",
+          "call": "playbackMessage({ kind: 'playing', title: 'Morning Jazz' })"
+        },
+        {
+          "input": "state = { kind: 'unavailable', reason: 'License expired' }",
+          "output": "'Unavailable: License expired'",
+          "call": "playbackMessage({ kind: 'unavailable', reason: 'License expired' })"
+        }
+      ]
     },
     {
       "id": "Q03",
@@ -287,7 +316,24 @@
       },
       "levelLabel": "Standard Exam",
       "unitCode": "PRG-T01-C02-U07",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U07-01/Q03_nextPermitStep.ts"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U07-01/Q03_nextPermitStep.ts",
+      "examples": [
+        {
+          "input": "state = { status: 'draft' }",
+          "output": "'Complete the application'",
+          "call": "nextPermitStep({ status: 'draft' })"
+        },
+        {
+          "input": "state = { status: 'submitted', applicationId: 'APP-901' }",
+          "output": "'Wait for review of APP-901'",
+          "call": "nextPermitStep({ status: 'submitted', applicationId: 'APP-901' })"
+        },
+        {
+          "input": "state = { status: 'approved', permitId: 'PER-510' }",
+          "output": "'Issue permit PER-510'",
+          "call": "nextPermitStep({ status: 'approved', permitId: 'PER-510' })"
+        }
+      ]
     },
     {
       "id": "Q04",
@@ -383,7 +429,24 @@
       },
       "levelLabel": "Standard Exam",
       "unitCode": "PRG-T01-C02-U07",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U07-01/Q04_caseEventLabel.ts"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U07-01/Q04_caseEventLabel.ts",
+      "examples": [
+        {
+          "input": "event = { kind: 'opened', caseId: 'CS-112' }",
+          "output": "'Opened CS-112'",
+          "call": "caseEventLabel({ kind: 'opened', caseId: 'CS-112' })"
+        },
+        {
+          "input": "event = { kind: 'assigned', agentName: 'Lina' }",
+          "output": "'Assigned to Lina'",
+          "call": "caseEventLabel({ kind: 'assigned', agentName: 'Lina' })"
+        },
+        {
+          "input": "event = { kind: 'resolved', resolution: 'Patched in v2.1' }",
+          "output": "'Resolved: Patched in v2.1'",
+          "call": "caseEventLabel({ kind: 'resolved', resolution: 'Patched in v2.1' })"
+        }
+      ]
     }
   ],
   "blindSolve": [
