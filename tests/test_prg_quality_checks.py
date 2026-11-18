@@ -65,6 +65,10 @@ def _valid_problem(archetype_key: str = "prg-test-arch", solution_code: str | No
         "hiddenTests": [
             {"name": "adds negative numbers", "testCode": "assert.strictEqual(addNums(-2, 5), 3);"},
         ],
+        "examples": [
+            {"input": "a = 2, b = 3", "output": "5", "call": "addNums(2, 3)"},
+            {"input": "a = 10, b = 15", "output": "25", "call": "addNums(10, 15)"},
+        ],
         "steps": [{"explain": "Return the sum of a and b."}],
     }
 

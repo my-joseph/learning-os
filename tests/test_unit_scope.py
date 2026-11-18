@@ -173,6 +173,10 @@ def test_prg_load_scope_archetypes_and_ingest_unit_stamp(tmp_path):
                     {"name": "sums positive prices", "testCode": "assert.strictEqual(sumPrices([2, 3]), 5);"}
                 ],
                 "hiddenTests": [{"name": "handles empty list", "testCode": "assert.strictEqual(sumPrices([]), 0);"}],
+                "examples": [
+                    {"input": "items = [2, 3]", "output": "5", "call": "sumPrices([2, 3])"},
+                    {"input": "items = [10, 20, 5]", "output": "35", "call": "sumPrices([10, 20, 5])"},
+                ],
                 "steps": [{"explain": "Accumulate item prices starting from zero."}],
             }
         ],

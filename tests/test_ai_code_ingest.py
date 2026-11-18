@@ -313,6 +313,18 @@ class TestAiCodeIngest(unittest.TestCase):
                 vault_dir=tmp_data_dir,
             )
             prob = self._create_valid_problem()
+            prob["examples"] = [
+                {
+                    "input": "capacity = 3, refillRatePerSecond = 1, consume(2)",
+                    "output": "true",
+                    "call": "createTokenBucketRateLimiter({ capacity: 3, refillRatePerSecond: 1 }).consume(2)",
+                },
+                {
+                    "input": "capacity = 2, refillRatePerSecond = 1, consume(4)",
+                    "output": "false",
+                    "call": "createTokenBucketRateLimiter({ capacity: 2, refillRatePerSecond: 1 }).consume(4)",
+                },
+            ]
             prob["trapMutant"] = (
                 "function createTokenBucketRateLimiter({ capacity }) {\n"
                 "  let tokens = capacity;\n"

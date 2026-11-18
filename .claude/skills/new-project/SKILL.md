@@ -47,6 +47,15 @@ Create `labs/<LAB_ID>/lab.config.json`:
       "units": ["PRG-T01-C01-U02"],
       "qualityChecks": ["U-names", "U-no-input-mutation", "QC-..."],
       "visibleTests": "tests/m1_*.test.ts",
+      "examples": [
+        {
+          "input": "...",
+          "output": "...",
+          "explanation": "Optional short walkthrough",
+          "call": "entryFn(...)"
+        }
+      ],
+      "constraints": ["..."],
       "trapMutant": {
         "files": {"src/...": "..."},
         "note": "Plausible wrong implementation embodying the target trap"
@@ -56,6 +65,7 @@ Create `labs/<LAB_ID>/lab.config.json`:
 }
 ```
 - Every `qualityChecks` entry must exist in `code_engine/quality_checks.json` (`U-*`) or in the archetypes of `milestone.units` (`code_engine/reasoning_vault/`).
+- Each milestone must include 2–3 `examples` `[{"input": "...", "output": "...", "explanation": "...", "call": "..."}]` (**normal cases only** — never reuse hidden-test inputs or `trapMutant` trap cases) plus optional `constraints: string[]` when the input has limits; `input`/`output` are JS/TS literal display strings and `call` is verified against `labs/_reference/<LAB_ID>/src/` by `lab_ingest --check` and finalise.
 - Create `labs/<LAB_ID>/README.md`: scenario, milestones (`M1`..`Mk`), acceptance criteria, and how to run `npm test` / `npm run check` / `"ตรวจโค้ด <LAB_ID> M1"`. **No implementation hints, no internal data-structure spoilers, no solution leaks.**
 
 ## 4. Author workspace, stubs, visible tests, reference, hidden tests, and trap mutants
@@ -97,7 +107,7 @@ Copy that JSON list into `lab.config.json` as `"blindSolve"` (never show the cod
 Spawn **one** fresh reviewer subagent for the whole lab. Give it the brief, `labs/<LAB_ID>/`, `labs/_reference/<LAB_ID>/`, `rules/04_code.md`, and `docs/prg_reviewer_spec.md`. Tell it to write its verdict to `scratch/reviews/<LAB_ID>-review.json` and reply only `done`.
 
 Ask it to check:
-1. **No leaks**: `README.md`, `src/` stubs, and `tests/` names/code never reveal the implementation.
+1. **No leaks**: `README.md`, `src/` stubs, `examples`, and `tests/` names/code never reveal the implementation, hidden-test inputs, or trap cases (2–3 normal examples per milestone, plus `constraints` when inputs have limits).
 2. **Realistic domain**: production domain, no toy names, different domain from earlier labs in that scope.
 3. **Rubric & Layer 3**: every milestone's `qualityChecks` fits the milestone, and `labs/_reference/<LAB_ID>/src/` has zero `must` findings.
 4. **Scope & traps**: `unitsUsed` are all in scope (and `Done`/`In progress` for `extra-project`), and each `trapMutant` genuinely embodies a realistic trap.

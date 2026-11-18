@@ -373,6 +373,15 @@ async function testSyntheticLabAndProgress() {
           goal: "Run bounded pool.",
           mainFile: "../_reference/LAB-PRG-T01-C01-99/src/emitter.ts",
           visibleTests: "tests/m2_*.test.ts",
+          examples: [
+            {
+              input: "concurrency = 2, tasks = [() => 1, () => 2]",
+              output: "[1, 2]",
+              explanation: "Runs both tasks and preserves order.",
+              call: "SECRET_LAB_CALL_EXPRESSION(2)",
+            },
+          ],
+          constraints: ["1 <= concurrency <= 16"],
         },
         {
           id: "M3",
@@ -453,6 +462,10 @@ async function testSyntheticLabAndProgress() {
     assert.equal(detail.milestones[1].vscodeUrl, null);
     assert.equal(detail.milestones[1].cursorUrl, null);
     assert.equal(detail.milestones[1].reviewStatus, "revise");
+    assert.equal(detail.milestones[1].examples?.length, 1);
+    assert.equal("call" in (detail.milestones[1].examples?.[0] ?? {}), false);
+    assert.equal(detailJson.includes("SECRET_LAB_CALL_EXPRESSION"), false);
+    assert.deepEqual(detail.milestones[1].constraints, ["1 <= concurrency <= 16"]);
 
     // M3 has no mainFile and no reviews
     assert.equal(detail.milestones[2].mainFile, null);
@@ -601,6 +614,11 @@ async function testSyntheticLabAndProgress() {
     assert.match(dashboardHtml, /Copy review request/);
     assert.match(dashboardHtml, /ตรวจโค้ด LAB-PRG-T01-C01-99 M2/);
     assert.match(dashboardHtml, /Lab README/);
+    assert.match(dashboardHtml, /Examples/);
+    assert.match(dashboardHtml, /Example 1/);
+    assert.match(dashboardHtml, /concurrency = 2, tasks = \[\(\) =&gt; 1, \(\) =&gt; 2\]/);
+    assert.match(dashboardHtml, /Constraints/);
+    assert.match(dashboardHtml, /1 &lt;= concurrency &lt;= 16/);
     assert.doesNotMatch(dashboardHtml, /Unlocks after review passes/);
 
     // Render DrillSwitcher open with drills + labs

@@ -1,4 +1,5 @@
 import type {
+  CodeExample,
   DrillDocument,
   Problem,
   ProblemState,
@@ -43,6 +44,8 @@ export interface LabMilestoneDetail {
   points?: number;
   visibleTestFiles: string[];
   visibleTests: TestCase[];
+  examples?: CodeExample[];
+  constraints?: string[];
   testCommand: string;
   checkCommand: string;
   mainFile: string | null;
@@ -317,6 +320,8 @@ export function labToDrillDocument(lab: LabDetailResponse): DrillDocument {
       archetype: "project-based",
       visibleTests: ms.visibleTests,
       visibleTestFiles: ms.visibleTestFiles,
+      ...(ms.examples && ms.examples.length > 0 ? { examples: ms.examples } : {}),
+      ...(ms.constraints && ms.constraints.length > 0 ? { constraints: ms.constraints } : {}),
       testCommand: ms.testCommand,
       checkCommand: ms.checkCommand,
       mainFile: ms.mainFile,
