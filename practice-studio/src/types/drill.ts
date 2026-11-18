@@ -148,6 +148,13 @@ export interface TestCase {
   isHidden?: boolean;
 }
 
+export interface CodeExample {
+  input: string;
+  output: string;
+  explanation?: string;
+  call?: string;
+}
+
 export interface TestResult {
   name: string;
   passed: boolean;
@@ -322,6 +329,8 @@ export interface Problem {
   fingerprint?: string;
   qualityGates?: Record<string, unknown>;
   steps?: Step[];
+  examples?: CodeExample[];
+  constraints?: string[];
   references?: string[];
   referenceBadges?: ReferenceBadge[];
   state: ProblemState;

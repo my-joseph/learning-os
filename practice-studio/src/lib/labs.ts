@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import type { SessionSummary, TestCase } from "@/types/drill";
+import type { CodeExample, SessionSummary, TestCase } from "@/types/drill";
 import { deriveReviewStatus } from "@/lib/codeStatus";
 import { getLabsDir, getWorkspaceRoot, isSafeId, loadIdMapTitles } from "@/lib/paths";
 import { cleanCurriculumTitle } from "@/lib/drillGrouping";
@@ -406,6 +406,20 @@ export function loadLabDetailFromDisk(
 
     const visibleTestFiles = resolveMilestoneVisibleTestFiles(labDir, ms);
     const visibleTests = extractVisibleTestCases(labDir, mid, visibleTestFiles);
+    const examples: CodeExample[] | undefined = Array.isArray(ms.examples)
+      ? ms.examples
+          .filter((ex): ex is Record<string, unknown> => Boolean(ex && typeof ex === "object"))
+          .map((ex) => ({
+            input: typeof ex.input === "string" ? ex.input : String(ex.input ?? ""),
+            output: typeof ex.output === "string" ? ex.output : String(ex.output ?? ""),
+            ...(typeof ex.explanation === "string" && ex.explanation.trim()
+              ? { explanation: ex.explanation }
+              : {}),
+          }))
+      : undefined;
+    const constraints: string[] | undefined = Array.isArray(ms.constraints)
+      ? ms.constraints.filter((c): c is string => typeof c === "string" && c.trim().length > 0)
+      : undefined;
     const lowerMid = mid.toLowerCase();
     const testCommand = `npm run test:${lowerMid}`;
     const checkCommand = `npm run check:${lowerMid}`;
@@ -428,6 +442,8 @@ export function loadLabDetailFromDisk(
       ...(points !== undefined ? { points } : {}),
       visibleTestFiles,
       visibleTests,
+      ...(examples && examples.length > 0 ? { examples } : {}),
+      ...(constraints && constraints.length > 0 ? { constraints } : {}),
       testCommand,
       checkCommand,
       mainFile,

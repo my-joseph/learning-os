@@ -176,6 +176,20 @@ def _make_fixture_lab(tmp_path: Path, *, kind: str = "chapter-lab") -> tuple[Pat
                 "units": ["PRG-T01-C01-U02"],
                 "qualityChecks": ["U-names", "U-errors"],
                 "visibleTests": "tests/m1_*.test.ts",
+                "examples": [
+                    {
+                        "input": "budget = 3, cost = 1",
+                        "output": "2",
+                        "explanation": "Deducts cost 1 from budget 3.",
+                        "call": "consumeRetry(3, 1)",
+                    },
+                    {
+                        "input": "budget = 5, cost = 2",
+                        "output": "3",
+                        "call": "consumeRetry(5, 2)",
+                    },
+                ],
+                "constraints": ["budget >= 0", "cost is an integer"],
                 "trapMutant": {"files": {"src/budget.ts": trap_mutant_code}, "note": "Allows negative balance"},
             }
         ],
