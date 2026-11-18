@@ -13,6 +13,10 @@ const config: Config = {
         background: "var(--background)",
         foreground: "var(--foreground)",
       },
+      // Learner choice: base text 15px.
+      fontSize: {
+        base: ["0.9375rem", { lineHeight: "1.5rem" }],
+      },
       fontFamily: {
         sans: [
           "var(--font-geist-sans)",

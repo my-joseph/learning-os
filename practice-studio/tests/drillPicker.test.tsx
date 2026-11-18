@@ -397,8 +397,8 @@ assert.match(mathHtml, />U01</);
 assert.match(mathHtml, />U02</);
 assert.match(mathHtml, />Set 3</);
 assert.match(mathHtml, /Due today/);
-assert.match(mathHtml, /bg-amber-500/);
-assert.match(mathHtml, /bg-rose-500/);
+assert.match(mathHtml, /bg-blue-500/);
+assert.match(mathHtml, /bg-orange-500/);
 // MTH-T01 starts collapsed so Fractions drills inside aren't expanded
 assert.match(mathHtml, /Prealgebra/);
 assert.doesNotMatch(mathHtml, />C04</, "collapsed topic must hide its child drills");
