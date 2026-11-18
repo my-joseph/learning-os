@@ -6,6 +6,8 @@ import { getDrillsDataDir, loadIdMapTitles } from "@/lib/paths";
 import { cleanCurriculumTitle, parseCurriculumCodes } from "@/lib/drillGrouping";
 import { applyProgress, readProgress } from "@/lib/progress";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   const dataDir = getDrillsDataDir();
   const idMapTitles = loadIdMapTitles();
@@ -41,6 +43,14 @@ export async function GET() {
           (acc: number, p: { state?: { score?: number | null } }) => acc + (p.state?.score || 0),
           0
         );
+        const hasNotes =
+          problems.some(
+            (p: { state?: { mistakeNote?: string; mistakes?: unknown[] } }) =>
+              Boolean(p.state?.mistakeNote && p.state.mistakeNote.trim()) ||
+              (Array.isArray(p.state?.mistakes) && p.state.mistakes.length > 0)
+          ) ||
+          (Array.isArray(doc.sessionSummary?.mistakeCategories) &&
+            doc.sessionSummary.mistakeCategories.length > 0);
 
         let practiceStatus: "Ready" | "In Progress" | "Graded" | "Needs Retry" =
           doc.sessionSummary?.practiceStatus || "Ready";
@@ -80,6 +90,7 @@ export async function GET() {
           score: doc.sessionSummary?.score ?? liveScore,
           maxScore: doc.sessionSummary?.maxScore ?? questionCount,
           answeredCount,
+          hasNotes,
           localFilePath: filePath,
         });
       } catch {

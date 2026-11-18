@@ -84,6 +84,7 @@ export interface LabListItem {
   reviseCount: number;
   score: number;
   maxScore: number;
+  hasNotes?: boolean;
   progress: LabProgressSummary;
 }
 

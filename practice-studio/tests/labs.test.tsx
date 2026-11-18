@@ -638,8 +638,9 @@ async function testSyntheticLabAndProgress() {
     );
     assert.match(switcherHtml, />Labs</);
     assert.match(switcherHtml, /Synthetic Emitter/);
-    assert.match(switcherHtml, /PRG-T01-C01 · 3 Ms/);
-    assert.doesNotMatch(switcherHtml, /LAB-PRG-T01-C01-99/);
+    assert.match(switcherHtml, />LAB-99</);
+    assert.match(switcherHtml, /title="LAB-PRG-T01-C01-99"/);
+    assert.doesNotMatch(switcherHtml, />LAB-PRG-T01-C01-99</);
 
     // Route rejection checks
     const badRes1 = await labGET(new NextRequest("http://127.0.0.1:3000/api/lab?id=_reference"));
