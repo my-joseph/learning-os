@@ -128,9 +128,13 @@ function NoteBadge({
 }
 
 function HoverRowCode({ code }: { code: string }) {
+  // Zero-width anchor: the code floats over the end of the title on hover, so the row never
+  // changes width (no jitter) and nothing is reserved when not hovered.
   return (
-    <span className="hidden group-hover:inline group-focus-visible:inline font-mono text-[11px] text-zinc-400 dark:text-zinc-500 shrink-0 tabular-nums">
-      {code}
+    <span className="relative w-0 shrink-0 self-stretch">
+      <span className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 hidden group-hover:block group-focus-visible:block whitespace-nowrap rounded px-1 bg-zinc-100 dark:bg-zinc-800 font-mono text-[11px] text-zinc-500 dark:text-zinc-400 tabular-nums">
+        {code}
+      </span>
     </span>
   );
 }
@@ -847,9 +851,6 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                       : currentPinnedItem.title}
                   </span>
                   <HoverRowCode code={extractLeafHoverCode(currentPinnedItem)} />
-                  <span className="text-[11px] font-mono tabular-nums text-zinc-500 dark:text-zinc-400 shrink-0">
-                    {currentPinnedItem.score}/{currentPinnedItem.maxScore}
-                  </span>
                 </button>
               </div>
             )}

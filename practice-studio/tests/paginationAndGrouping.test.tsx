@@ -278,7 +278,7 @@ assert.match(switcherHtml, />Set 3</);
 assert.match(switcherHtml, /Proportional &amp; Ratio/);
 assert.match(
   switcherHtml,
-  /aria-level="2" aria-expanded="false"[^>]*title="MTH-T01-C07"[^>]*>(?:(?!<\/button>).)*?Proportional &amp; Ratio(?:(?!<\/button>).)*?hidden group-hover:inline[^>]*>C07<\/span>/,
+  /aria-level="2" aria-expanded="false"[^>]*title="MTH-T01-C07"[^>]*>(?:(?!<\/button>).)*?Proportional &amp; Ratio(?:(?!<\/button>).)*?hidden group-hover:block[^>]*>C07<\/span>/,
   "collapsed chapter shows its hover code without expanding its child leaf"
 );
 assert.doesNotMatch(
