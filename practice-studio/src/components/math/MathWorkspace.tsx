@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import dynamic from "next/dynamic";
 import { Reveal } from "@/components/motion/Reveal";
 import {
   Copy,
@@ -21,6 +22,15 @@ import { LineChoicePrompt, parseLineChoicePrompt } from "@/components/LineChoice
 import { ChoiceOptionGroup } from "@/components/ChoiceOptionGroup";
 import { AnswerResultCard } from "@/components/AnswerResultCard";
 import { QuestionTimer } from "@/components/QuestionTimer";
+import type { MathLiveInputHandle } from "@/components/math/MathLiveInput";
+import {
+  getProblemPlaceholder,
+  getUnitKeyboardProfile,
+  isMathLiveSupportedAnswerSpec,
+  MathInputMode,
+  readMathInputMode,
+  writeMathInputMode,
+} from "@/lib/mathInput";
 import { hasCheckpointHint } from "@/lib/studioRules";
 import { hasSubstantiveAttempt } from "@/lib/reviewGuard";
 import {
@@ -32,10 +42,23 @@ import {
   submitChoiceSelection,
 } from "@/lib/answerFeedback";
 
+const DynamicMathLiveInput = dynamic(
+  () => import("@/components/math/MathLiveInput"),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex-1 min-w-0 h-11 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 px-3.5 py-2 flex items-center text-sm text-zinc-400 dark:text-zinc-500">
+        Loading math input…
+      </div>
+    ),
+  }
+);
+
 export interface MathWorkspaceProps {
   problem: Problem;
   index: number;
   totalQuestions?: number;
+  unitCode?: string;
   drillTitle?: string;
   mistakeTags: MistakeTag[];
   activeStep: number | null;
@@ -60,23 +83,12 @@ export interface MathWorkspaceProps {
   onToggleTimerPause?: () => void;
 }
 
-const DEFAULT_PLACEHOLDER_BY_TYPE: Record<string, string> = {
-  interval: "Enter interval, e.g. [a, b) or (-inf, a) U (a, inf)...",
-};
-
-const getSafeMathPlaceholder = (hint?: string, problem?: Problem): string => {
-  if (problem?.placeholder) return problem.placeholder;
-  const fallback =
-    (problem?.answerSpec?.type && DEFAULT_PLACEHOLDER_BY_TYPE[problem.answerSpec.type]) ||
-    "Enter your answer…";
-  return hint || fallback;
-};
-
 /** Clean centred Math workspace following docs/studio_design.md. */
 export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
   problem,
   index,
   totalQuestions,
+  unitCode,
   drillTitle,
   mistakeTags,
   activeStep,
@@ -111,8 +123,14 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
   const [choiceRetryUnlocked, setChoiceRetryUnlocked] = useState(false);
   // Equation set-up (display + plain-text) is hidden until the learner asks for it or finishes the problem.
   const [showSetup, setShowSetup] = useState(() => shouldAutoReveal(problem));
+  const [inputMode, setInputMode] = useState<MathInputMode>("math");
   const answerInputRef = useRef<HTMLInputElement | null>(null);
+  const mathLiveRef = useRef<MathLiveInputHandle | null>(null);
   const stepsRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    setInputMode(readMathInputMode());
+  }, []);
   const hasSetup = Boolean(problem.hasSetup || problem.display || problem.plainText);
   const answered = hasSubstantiveAttempt(problem.state);
   const hasAttempt = answered;
@@ -162,19 +180,62 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
     setTimeout(() => setCopied(false), 1200);
   };
 
-  const triggerCheck = async () => {
-    if (!problem.state.userInput.trim() || isChecking) return;
+  const score = problem.state.score;
+  const lastCheck: CheckResult | null | undefined = problem.state.lastCheck;
+  const isChoice = isChoiceQuestion(problem);
+  const isMathLiveSupported = isMathLiveSupportedAnswerSpec(problem.answerSpec);
+  const useMathLive = !isChoice && isMathLiveSupported && inputMode === "math";
+  const placeholder = getProblemPlaceholder(problem);
+  const keyboardProfile = useMemo(
+    () =>
+      getUnitKeyboardProfile({
+        unitCode,
+        drillTitle,
+        prompt: problem.prompt,
+        inputHint: problem.inputHint,
+      }),
+    [unitCode, drillTitle, problem.prompt, problem.inputHint]
+  );
+
+  const triggerCheck = async (inputOverride?: string) => {
+    if (isChecking) return;
+    const resolved =
+      inputOverride !== undefined
+        ? inputOverride
+        : useMathLive
+        ? mathLiveRef.current?.getPlainText() ?? problem.state.userInput
+        : problem.state.userInput;
+    if (!resolved.trim()) return;
+    if (resolved !== problem.state.userInput) {
+      onInputChange(resolved);
+    }
     setIsChecking(true);
     try {
-      await onCheckAnswer();
+      await onCheckAnswer(resolved);
     } finally {
       setIsChecking(false);
     }
   };
 
-  const score = problem.state.score;
-  const lastCheck: CheckResult | null | undefined = problem.state.lastCheck;
-  const isChoice = isChoiceQuestion(problem);
+  const handleToggleInputMode = () => {
+    if (useMathLive) {
+      const plain = mathLiveRef.current?.getPlainText();
+      if (plain !== undefined && plain !== problem.state.userInput) {
+        onInputChange(plain);
+      }
+      setInputMode("plain");
+      writeMathInputMode("plain");
+      requestAnimationFrame(() => {
+        answerInputRef.current?.focus();
+      });
+    } else {
+      setInputMode("math");
+      writeMathInputMode("math");
+      requestAnimationFrame(() => {
+        mathLiveRef.current?.focus();
+      });
+    }
+  };
   const choiceOptions = problem.answerSpec.options;
   const choiceLocked = isChoiceInteractionLocked({
     isChecking,
@@ -238,6 +299,11 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
   const handleTryAgain = () => {
     if (isChoice) {
       setChoiceRetryUnlocked(true);
+      return;
+    }
+    if (useMathLive) {
+      mathLiveRef.current?.focus();
+      mathLiveRef.current?.select();
       return;
     }
     answerInputRef.current?.focus();
@@ -333,37 +399,66 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
           )}
 
           {!isChoice && (
-            <div className="flex items-center gap-2.5">
-              <input
-                ref={answerInputRef}
-                type="text"
-                value={problem.state.userInput}
-                onChange={(e) => onInputChange(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    triggerCheck();
-                  }
-                }}
-                placeholder={getSafeMathPlaceholder(problem.inputHint, problem)}
-                aria-label={`Answer for question ${problem.id}`}
-                className="flex-1 min-w-0 h-11 font-mono text-sm bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 border border-zinc-300 dark:border-zinc-700 rounded-xl px-3.5 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600/25 dark:focus:ring-indigo-500/30 focus:border-indigo-600 dark:focus:border-indigo-500 placeholder:text-zinc-400 dark:placeholder:text-zinc-500"
-              />
-
-              <button
-                type="button"
-                onClick={triggerCheck}
-                disabled={isChecking || !problem.state.userInput.trim()}
-                aria-label="Check answer"
-                title="Check answer (Enter)"
-                className="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-700 disabled:opacity-40 text-white transition-colors shrink-0"
-              >
-                {isChecking ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2.5">
+                {useMathLive ? (
+                  <DynamicMathLiveInput
+                    value={problem.state.userInput}
+                    placeholder={placeholder}
+                    ariaLabel={`Answer for question ${problem.id}`}
+                    variables={problem.answerSpec.variables}
+                    keyboardProfile={keyboardProfile}
+                    disabled={isChecking}
+                    fieldRef={mathLiveRef}
+                    onChange={onInputChange}
+                    onCheck={(plain) => void triggerCheck(plain)}
+                  />
                 ) : (
-                  <Check className="w-4 h-4" />
+                  <input
+                    ref={answerInputRef}
+                    type="text"
+                    value={problem.state.userInput}
+                    onChange={(e) => onInputChange(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        void triggerCheck();
+                      }
+                    }}
+                    placeholder={placeholder}
+                    aria-label={`Answer for question ${problem.id}`}
+                    className="flex-1 min-w-0 h-11 font-mono text-sm bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 border border-zinc-300 dark:border-zinc-700 rounded-xl px-3.5 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600/25 dark:focus:ring-indigo-500/30 focus:border-indigo-600 dark:focus:border-indigo-500 placeholder:text-zinc-400 dark:placeholder:text-zinc-500"
+                  />
                 )}
-              </button>
+
+                <button
+                  type="button"
+                  onClick={() => void triggerCheck()}
+                  disabled={isChecking || !problem.state.userInput.trim()}
+                  aria-label="Check answer"
+                  title="Check answer (Enter)"
+                  className="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-700 disabled:opacity-40 text-white transition-colors shrink-0"
+                >
+                  {isChecking ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Check className="w-4 h-4" />
+                  )}
+                </button>
+              </div>
+
+              {isMathLiveSupported && (
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={handleToggleInputMode}
+                    aria-pressed={inputMode === "plain"}
+                    className="text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors py-0.5 px-1"
+                  >
+                    {inputMode === "math" ? "Plain text" : "Math input"}
+                  </button>
+                </div>
+              )}
             </div>
           )}
 

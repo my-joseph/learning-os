@@ -554,6 +554,7 @@ export function useDrill({
         (target.tagName === "INPUT" ||
           target.tagName === "TEXTAREA" ||
           target.tagName === "SELECT" ||
+          target.tagName === "MATH-FIELD" ||
           target.isContentEditable ||
           Boolean(target.closest('[role="alertdialog"], [role="dialog"]')))
       ) {
