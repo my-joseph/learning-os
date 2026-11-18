@@ -495,6 +495,7 @@ async function testSyntheticLabAndProgress() {
       />
     );
     assert.match(stepperHtml, /<nav[^>]*aria-label="Lab milestones"/);
+    assert.match(stepperHtml, /mx-auto/, "Lab milestone stepper must be centred inside header");
     assert.match(stepperHtml, />M1</);
     assert.match(stepperHtml, />M2</);
     assert.match(stepperHtml, />M3</);

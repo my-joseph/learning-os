@@ -445,6 +445,83 @@ def _ticks(lo: float, hi: float, step: float) -> list[float]:
     return out
 
 
+def _pt_seg_dist(px: float, py: float, x1: float, y1: float, x2: float, y2: float) -> float:
+    dx, dy = x2 - x1, y2 - y1
+    lsq = dx * dx + dy * dy
+    if lsq <= 1e-9:
+        return math.hypot(px - x1, py - y1)
+    t = max(0.0, min(1.0, ((px - x1) * dx + (py - y1) * dy) / lsq))
+    return math.hypot(px - (x1 + t * dx), py - (y1 + t * dy))
+
+
+def _place_cartesian_point_label(
+    x: float,
+    y: float,
+    label: Any,
+    position: str,
+    ox: float,
+    oy: float,
+    show_y: bool,
+    w: int,
+    h: int,
+    pad: int,
+) -> tuple[float, float, str, tuple[float, float, float, float]]:
+    """Return (tx, ty, anchor, (left, top, right, bottom)) nudged away from axis tick zones."""
+    dx, dy, anchor = _POS.get(position, _POS["top-right"])
+    tx, ty = x + dx, y + dy
+    text_len = max(1, len(to_unicode(label).strip()))
+    pw = min(140.0, max(32.0, text_len * 6.8 + 10.0))
+    ph = 18.0
+
+    def box_for(cx: float, cy: float, anc: str) -> tuple[float, float, float, float]:
+        if anc == "end":
+            left_x, right_x = cx - pw, cx
+        elif anc == "start":
+            left_x, right_x = cx, cx + pw
+        else:
+            left_x, right_x = cx - pw / 2, cx + pw / 2
+        return (left_x, cy - ph / 2, right_x, cy + ph / 2)
+
+    left, top, right, bottom = box_for(tx, ty, anchor)
+    if right > pad - 10 and left < w - pad + 12 and top < oy + 18 and bottom > oy - 4:
+        ty = min(y - 12, oy - 6 - ph / 2) if y <= oy + 4 else max(y + 12, oy + 19 + ph / 2)
+        left, top, right, bottom = box_for(tx, ty, anchor)
+    if show_y and bottom > pad - 12 and top < h - pad + 10 and left < ox + 4 and right > ox - 24:
+        if x >= ox - 4:
+            tx = max(x + 10, ox + 6)
+            anchor = "start"
+        else:
+            tx = min(x - 10, ox - 24)
+            anchor = "end"
+        left, top, right, bottom = box_for(tx, ty, anchor)
+    return tx, ty, anchor, (left, top, right, bottom)
+
+
+def _skip_tick_label(
+    box: tuple[float, float, float, float],
+    dashed_segs: list[tuple[float, float, float, float]],
+    label_boxes: list[tuple[float, float, float, float]],
+    axis: str,
+    tick_coord: float,
+    margin: float = 10.0,
+) -> bool:
+    left_x, top_y, right_x, bot_y = box
+    cx, cy = (left_x + right_x) / 2, (top_y + bot_y) / 2
+    for x1, y1, x2, y2 in dashed_segs:
+        if _pt_seg_dist(cx, cy, x1, y1, x2, y2) <= margin:
+            return True
+        if axis == "x" and abs(x1 - x2) <= 1.5 and abs(tick_coord - x1) <= margin:
+            if max(y1, y2) >= top_y - 16 and min(y1, y2) <= bot_y + 4:
+                return True
+        if axis == "y" and abs(y1 - y2) <= 1.5 and abs(tick_coord - y1) <= margin:
+            if max(x1, x2) >= left_x - 4 and min(x1, x2) <= right_x + 16:
+                return True
+    for pl, pt, pr, pb in label_boxes:
+        if right_x >= pl - margin and left_x <= pr + margin and bot_y >= pt - margin and top_y <= pb + margin:
+            return True
+    return False
+
+
 def _cartesian(fig: dict, stroke: str, fill: str, w: int, h: int, markers: _Markers) -> str:
     pad = 38
     x0, x1 = fig.get("xRange", [-5, 5])
@@ -504,29 +581,55 @@ def _cartesian(fig: dict, stroke: str, fill: str, w: int, h: int, markers: _Mark
         and p.get("strokeDasharray")
         and p.get("from", [0, 0])[1] == p.get("to", [0, 0])[1]
     ]
+    dashed_segs = [
+        (
+            sx(p.get("from", [0, 0])[0]),
+            sy(p.get("from", [0, 0])[1]),
+            sx(p.get("to", [0, 0])[0]),
+            sy(p.get("to", [0, 0])[1]),
+        )
+        for p in fig.get("plots", [])
+        if p.get("type") == "segment" and p.get("strokeDasharray")
+    ]
+    point_placements: dict[int, tuple[float, float, str]] = {}
+    point_label_boxes: list[tuple[float, float, float, float]] = []
+    for idx, p in enumerate(fig.get("plots", [])):
+        if p.get("type") == "point" and p.get("label"):
+            px, py = sx(p["coord"][0]), sy(p["coord"][1])
+            tx, ty, anc, box = _place_cartesian_point_label(
+                px, py, p["label"], p.get("position", "top-right"), ox, oy, show_y, w, h, pad
+            )
+            point_placements[idx] = (tx, ty, anc)
+            point_label_boxes.append(box)
+
     for v in _ticks(x0, x1, xs):
         if show_y and abs(sx(v) - ox) < 18 or any(abs(v - p["from"][0]) < xs * 0.04 for p in vlines):
             continue
         if abs(v) > 1e-9 or not show_y:
+            tx = sx(v)
             out.append(
-                f'<line x1="{sx(v):.1f}" y1="{oy - 3:.1f}" x2="{sx(v):.1f}" y2="{oy + 3:.1f}" stroke="{MUTED}" stroke-width="1.2"/>'
+                f'<line x1="{tx:.1f}" y1="{oy - 3:.1f}" x2="{tx:.1f}" y2="{oy + 3:.1f}" stroke="{MUTED}" stroke-width="1.2"/>'
             )
-            out.append(_text(sx(v), oy + 13, f"{v:g}", 10, "middle", MUTED, mode="math"))
+            if not _skip_tick_label((tx - 6, oy + 4, tx + 6, oy + 16), dashed_segs, point_label_boxes, "x", tx):
+                out.append(_text(tx, oy + 13, f"{v:g}", 10, "middle", MUTED, mode="math"))
     if show_y:
         for v in _ticks(y0, y1, ys):
             if any(abs(v - p["from"][1]) < ys * 0.04 for p in hlines):
                 continue
             if abs(v) > 1e-9:
+                ty = sy(v)
                 out.append(
-                    f'<line x1="{ox - 3:.1f}" y1="{sy(v):.1f}" x2="{ox + 3:.1f}" y2="{sy(v):.1f}" stroke="{MUTED}" stroke-width="1.2"/>'
+                    f'<line x1="{ox - 3:.1f}" y1="{ty:.1f}" x2="{ox + 3:.1f}" y2="{ty:.1f}" stroke="{MUTED}" stroke-width="1.2"/>'
                 )
-                out.append(_text(ox - 6, sy(v), f"{v:g}", 10, "end", MUTED, mode="math"))
+                if not _skip_tick_label((ox - 22, ty - 5, ox - 4, ty + 5), dashed_segs, point_label_boxes, "y", ty):
+                    out.append(_text(ox - 6, ty, f"{v:g}", 10, "end", MUTED, mode="math"))
         if x0 < 0 < x1 and y0 < 0 < y1:
-            out.append(_text(ox - 6, oy + 12, "0", 10, "end", MUTED, mode="math"))
+            if not _skip_tick_label((ox - 14, oy + 4, ox - 3, oy + 16), dashed_segs, point_label_boxes, "origin", ox):
+                out.append(_text(ox - 6, oy + 12, "0", 10, "end", MUTED, mode="math"))
 
     lines: list[str] = []
     top: list[str] = []
-    for p in fig.get("plots", []):
+    for idx, p in enumerate(fig.get("plots", [])):
         t, col = p.get("type"), p.get("color") or stroke
         sw = p.get("strokeWidth", 2.4)
         if t in ("function", "curve"):
@@ -567,8 +670,8 @@ def _cartesian(fig: dict, stroke: str, fill: str, w: int, h: int, markers: _Mark
             face = "#ffffff" if p.get("hollow") else col
             top.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="4.5" fill="{face}" stroke="{col}" stroke-width="2"/>')
             if p.get("label"):
-                dx, dy, anchor = _POS.get(p.get("position", "top-right"), _POS["top-right"])
-                top.append(_text(x + dx, y + dy, p["label"], 11, anchor))
+                tx, ty, anchor = point_placements[idx]
+                top.append(_text(tx, ty, p["label"], 11, anchor))
         elif t == "text":
             top.append(
                 _text(

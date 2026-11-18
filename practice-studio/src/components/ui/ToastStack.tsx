@@ -75,12 +75,12 @@ const ToastItemRow: React.FC<ToastItemRowProps> = ({ item, onDismiss }) => {
         />
       ) : inProgress ? (
         <Loader2
-          className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5 animate-spin"
+          className="w-4 h-4 text-amber-700 dark:text-amber-400 shrink-0 mt-0.5 animate-spin"
           aria-hidden="true"
         />
       ) : (
         <AlertTriangle
-          className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5"
+          className="w-4 h-4 text-amber-700 dark:text-amber-400 shrink-0 mt-0.5"
           aria-hidden="true"
         />
       )}
@@ -93,7 +93,7 @@ const ToastItemRow: React.FC<ToastItemRowProps> = ({ item, onDismiss }) => {
         type="button"
         onClick={() => onDismiss(item.id)}
         aria-label="Dismiss notification"
-        className="inline-flex items-center justify-center w-6 h-6 -mr-1 -mt-0.5 rounded-lg text-zinc-400 hover:text-zinc-900 dark:text-zinc-500 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors shrink-0"
+        className="inline-flex items-center justify-center w-6 h-6 -mr-1 -mt-0.5 rounded-lg text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors shrink-0"
       >
         <X className="w-3.5 h-3.5" />
       </button>

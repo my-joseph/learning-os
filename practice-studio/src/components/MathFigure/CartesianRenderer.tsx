@@ -4,6 +4,13 @@ import React, { useMemo } from "react";
 import { CartesianGraphSpec, FigureTheme, CartesianPlot } from "@/types/figure";
 import { FormattedText } from "../FormattedText";
 import { toMathText } from "@/lib/mathText";
+import {
+  placePointLabel,
+  shouldSkipTickLabel,
+  type PointLabelPlacement,
+  type RectBox,
+  type SvgSegment,
+} from "@/lib/figureLayout";
 
 const THEME_STYLES: Record<
   FigureTheme,
@@ -157,29 +164,131 @@ export const CartesianRenderer: React.FC<CartesianRendererProps> = ({ spec }) =>
     return lines;
   }, [xMin, xMax, yMin, yMax, effectiveXStep, effectiveYStep, spec.grid, spec.plots, showY, axisX, toSvgX, toSvgY, padding, svgWidth, svgHeight]);
 
+  // Dashed reference segments and point label placements (used to avoid tick/label collisions)
+  const { dashedSegments, pointPlacements, pointLabelBoxes } = useMemo(() => {
+    const dashed: SvgSegment[] = [];
+    const placements = new Map<number, PointLabelPlacement>();
+    const boxes: RectBox[] = [];
+
+    (spec.plots || []).forEach((p, idx) => {
+      if (p.type === "segment" && p.strokeDasharray) {
+        dashed.push({
+          x1: toSvgX(p.from[0]),
+          y1: toSvgY(p.from[1]),
+          x2: toSvgX(p.to[0]),
+          y2: toSvgY(p.to[1]),
+        });
+      } else if (p.type === "point" && p.label) {
+        const placement = placePointLabel({
+          sx: toSvgX(p.coord[0]),
+          sy: toSvgY(p.coord[1]),
+          label: p.label,
+          position: p.position,
+          axisX,
+          axisY,
+          showY,
+          svgWidth,
+          svgHeight,
+          padding,
+        });
+        placements.set(idx, placement);
+        boxes.push({
+          left: placement.x,
+          top: placement.y,
+          right: placement.x + placement.width,
+          bottom: placement.y + placement.height,
+        });
+      }
+    });
+
+    return { dashedSegments: dashed, pointPlacements: placements, pointLabelBoxes: boxes };
+  }, [spec.plots, toSvgX, toSvgY, axisX, axisY, showY, svgWidth, svgHeight, padding]);
+
   // Tick marks on axes
   const ticks = useMemo(() => {
-    const list: { val: number; x: number; y: number; isX: boolean }[] = [];
+    const list: { val: number; x: number; y: number; isX: boolean; showLabel: boolean }[] = [];
     const startX = Math.ceil(xMin / effectiveXStep) * effectiveXStep;
     for (let x = startX; x <= xMax; x += effectiveXStep) {
-      const dashedX = (spec.plots || []).some((p) => p.type === "segment" && p.strokeDasharray && p.from[0] === p.to[0] && Math.abs(x - p.from[0]) < effectiveXStep * 0.04);
-      if ((showY && Math.abs(toSvgX(x) - axisX) < 18) || dashedX) continue;
+      const tx = toSvgX(x);
+      const dashedX = (spec.plots || []).some(
+        (p) =>
+          p.type === "segment" &&
+          p.strokeDasharray &&
+          p.from[0] === p.to[0] &&
+          Math.abs(x - p.from[0]) < effectiveXStep * 0.04
+      );
+      if ((showY && Math.abs(tx - axisX) < 18) || dashedX) continue;
       if (Math.abs(x) < 1e-6 && showY) continue;
       const cleanVal = Math.round(x * 1000) / 1000;
-      list.push({ val: cleanVal, x: toSvgX(x), y: axisY, isX: true });
+      const showLabel = !shouldSkipTickLabel({
+        labelBox: { left: tx - 6, top: axisY + 4, right: tx + 6, bottom: axisY + 15 },
+        dashedSegments,
+        pointLabelBoxes,
+        axis: "x",
+        tickCoord: tx,
+      });
+      list.push({ val: cleanVal, x: tx, y: axisY, isX: true, showLabel });
     }
     if (!showY) return list;
 
     const startY = Math.ceil(yMin / effectiveYStep) * effectiveYStep;
     for (let y = startY; y <= yMax; y += effectiveYStep) {
-      const dashedY = (spec.plots || []).some((p) => p.type === "segment" && p.strokeDasharray && p.from[1] === p.to[1] && Math.abs(y - p.from[1]) < effectiveYStep * 0.04);
+      const ty = toSvgY(y);
+      const dashedY = (spec.plots || []).some(
+        (p) =>
+          p.type === "segment" &&
+          p.strokeDasharray &&
+          p.from[1] === p.to[1] &&
+          Math.abs(y - p.from[1]) < effectiveYStep * 0.04
+      );
       if (dashedY) continue;
       if (Math.abs(y) < 1e-6) continue;
       const cleanVal = Math.round(y * 1000) / 1000;
-      list.push({ val: cleanVal, x: axisX, y: toSvgY(y), isX: false });
+      const showLabel = !shouldSkipTickLabel({
+        labelBox: { left: axisX - 22, top: ty - 5, right: axisX - 4, bottom: ty + 5 },
+        dashedSegments,
+        pointLabelBoxes,
+        axis: "y",
+        tickCoord: ty,
+      });
+      list.push({ val: cleanVal, x: axisX, y: ty, isX: false, showLabel });
     }
     return list;
-  }, [xMin, xMax, yMin, yMax, effectiveXStep, effectiveYStep, showY, axisX, axisY, toSvgX, toSvgY, spec.plots]);
+  }, [
+    xMin,
+    xMax,
+    yMin,
+    yMax,
+    effectiveXStep,
+    effectiveYStep,
+    showY,
+    axisX,
+    axisY,
+    toSvgX,
+    toSvgY,
+    spec.plots,
+    dashedSegments,
+    pointLabelBoxes,
+  ]);
+
+  const showOriginZero =
+    showY &&
+    xMin < 0 &&
+    xMax > 0 &&
+    yMin < 0 &&
+    yMax > 0 &&
+    !shouldSkipTickLabel({
+      labelBox: {
+        left: originX - 13,
+        top: originY + 4,
+        right: originX - 3,
+        bottom: originY + 15,
+      },
+      dashedSegments,
+      pointLabelBoxes,
+      axis: "origin",
+      tickCoord: originX,
+    });
 
   return (
     <div className="relative w-full flex flex-col items-center select-none overflow-hidden">
@@ -284,7 +393,7 @@ export const CartesianRenderer: React.FC<CartesianRendererProps> = ({ spec }) =>
         )}
 
         {/* 3. Ticks and Numbers */}
-        <g className="fill-slate-400 dark:fill-slate-500 text-[10px]" style={TICK_FONT}>
+        <g className="fill-slate-500 dark:fill-slate-400 text-[10px]" style={TICK_FONT}>
           {ticks.map((t, idx) => {
             if (t.isX) {
               return (
@@ -297,9 +406,11 @@ export const CartesianRenderer: React.FC<CartesianRendererProps> = ({ spec }) =>
                     stroke="#64748b"
                     strokeWidth={1.2}
                   />
-                  <text x={t.x} y={t.y + 12} textAnchor="middle">
-                    {t.val}
-                  </text>
+                  {t.showLabel && (
+                    <text x={t.x} y={t.y + 12} textAnchor="middle">
+                      {t.val}
+                    </text>
+                  )}
                 </g>
               );
             } else {
@@ -313,21 +424,23 @@ export const CartesianRenderer: React.FC<CartesianRendererProps> = ({ spec }) =>
                     stroke="#64748b"
                     strokeWidth={1.2}
                   />
-                  <text x={t.x - 6} y={t.y + 3} textAnchor="end">
-                    {t.val}
-                  </text>
+                  {t.showLabel && (
+                    <text x={t.x - 6} y={t.y + 3} textAnchor="end">
+                      {t.val}
+                    </text>
+                  )}
                 </g>
               );
             }
           })}
 
           {/* Origin 0 label */}
-          {showY && xMin < 0 && xMax > 0 && yMin < 0 && yMax > 0 && (
+          {showOriginZero && (
             <text
               x={originX - 5}
               y={originY + 12}
               textAnchor="end"
-              className="fill-slate-400 dark:fill-slate-500 text-[10px]"
+              className="fill-slate-500 dark:fill-slate-400 text-[10px]"
               style={TICK_FONT}
             >
               0
@@ -356,6 +469,7 @@ export const CartesianRenderer: React.FC<CartesianRendererProps> = ({ spec }) =>
             const sx = toSvgX(plot.coord[0]);
             const sy = toSvgY(plot.coord[1]);
             const ptColor = plot.color || colors.primary;
+            const placement = pointPlacements.get(idx);
 
             return (
               <g key={`pt-plot-${idx}`}>
@@ -368,16 +482,24 @@ export const CartesianRenderer: React.FC<CartesianRendererProps> = ({ spec }) =>
                   strokeWidth={2}
                   className="shadow-sm"
                 />
-                {plot.label && (
+                {plot.label && placement && (
                   <foreignObject
-                    x={sx + (plot.position === "left" || plot.position === "bottom-left" ? -75 : 8)}
-                    y={sy + (plot.position === "top" || plot.position === "top-right" ? -26 : -13)}
-                    width={80}
-                    height={26}
+                    x={placement.x}
+                    y={placement.y}
+                    width={placement.width}
+                    height={placement.height}
                     className="overflow-visible pointer-events-none"
                   >
-                    <div className="w-full h-full flex items-center">
-                      <span className="text-[11px] font-bold px-1 py-0.5 rounded bg-white/80 dark:bg-slate-900/80 text-slate-800 dark:text-slate-100 shadow-sm border border-slate-200/50 dark:border-slate-700/50">
+                    <div
+                      className={`w-full h-full flex items-center ${
+                        placement.align === "right"
+                          ? "justify-end"
+                          : placement.align === "center"
+                          ? "justify-center"
+                          : "justify-start"
+                      }`}
+                    >
+                      <span className="whitespace-nowrap text-[11px] font-bold px-1 py-0.5 rounded bg-white/85 dark:bg-slate-900/85 text-slate-800 dark:text-slate-100 shadow-sm border border-slate-200/50 dark:border-slate-700/50">
                         <FormattedText
                           text={toMathText(plot.label)}
                         />

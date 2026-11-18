@@ -257,10 +257,22 @@ async function runTests() {
     );
     assert.match(prgEmptyHtml, /No open check or lint issues in this unit\./);
 
+    const embeddedDrawerHtml = renderToStaticMarkup(
+      <StudioSidePanel
+        workspace="math"
+        currentUnitCode="MTH-T09-C01-U01"
+        dueUnits={[]}
+        weakSpotUnits={[]}
+        embedded
+      />
+    );
+    assert.doesNotMatch(embeddedDrawerHtml, /rounded-2xl border/, "embedded side panel must not render a nested bordered card");
+
     const shellSource = fs.readFileSync("src/components/shell/StudioShell.tsx", "utf8");
     assert.match(shellSource, /useState\(false\)/, "drawer must be closed by default");
     assert.match(shellSource, /hidden lg:block/, "side panel visible on >=1024px");
     assert.match(shellSource, /lg:hidden/, "drawer only below 1024px");
+    assert.match(shellSource, /embedded/, "drawer must pass embedded to StudioSidePanel");
 
     fs.rmSync(tmp, { recursive: true, force: true });
     console.log("side panel tests passed");

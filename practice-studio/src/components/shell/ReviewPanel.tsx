@@ -58,7 +58,7 @@ const SCORE_OPTIONS = [
     val: 0.5,
     label: "0.5",
     activeCls:
-      "border-amber-600 dark:border-amber-400 text-amber-600 dark:text-amber-400 font-semibold",
+      "border-amber-700 dark:border-amber-400 text-amber-700 dark:text-amber-400 font-semibold",
   },
   {
     val: 0,
@@ -106,8 +106,25 @@ export const ReviewPanel: React.FC<ReviewPanelProps> = ({
   const rowRefs = useRef<Map<string, HTMLDivElement>>(new Map());
 
   const isLab = isLabId(currentDrill.drillId);
+  const isCode = currentDrill.subject === "PRG" && !isLab;
   const drillTitle = currentDrill.unitTitle || currentDrill.unitCode;
   const mistakeTags = currentDrill.mistakeTags || [];
+
+  const backLabel = isLab
+    ? "Back to milestones"
+    : isCode
+    ? "Back to problems"
+    : "Back to questions";
+  const allFirstTryText = isLab
+    ? "All milestones were completed on the first try."
+    : isCode
+    ? "All problems were solved on the first try."
+    : "All questions were answered correctly on the first try.";
+  const outcomeGroupLabel = isLab
+    ? "Milestone outcomes"
+    : isCode
+    ? "Problem outcomes"
+    : "Question outcomes";
 
   useEffect(() => {
     setShowCorrect(false);
@@ -179,11 +196,14 @@ export const ReviewPanel: React.FC<ReviewPanelProps> = ({
 
     const hasVerifiedAnswer = Boolean(prob.answerPlain || prob.answerDisplay);
     const latestReview = prob.state.reviews?.[prob.state.reviews.length - 1];
+    const hasAnswerText = Boolean(prob.state.userInput || prob.state.lastTestReport);
+    const isQuietUnanswered = outcome === "unanswered" && !hasAnswerText;
     const learnerAnswerText =
       prob.state.userInput ||
       (prob.state.lastTestReport
         ? `${prob.state.lastTestReport.passedCount}/${prob.state.lastTestReport.totalCount} tests passed`
-        : "Unanswered");
+        : "Not answered yet");
+    const hasFigure = Boolean(prob.figure || prob.visual);
 
     return (
       <div
@@ -193,11 +213,12 @@ export const ReviewPanel: React.FC<ReviewPanelProps> = ({
           if (el) rowRefs.current.set(prob.id, el);
           else rowRefs.current.delete(prob.id);
         }}
-        className={`px-4 py-4 sm:px-6 space-y-2.5 transition-colors ${
+        className={`px-4 py-4 sm:px-6 grid grid-cols-[64px_minmax(0,1fr)] gap-x-2.5 items-start transition-colors ${
           isHighlighted ? "bg-indigo-50/70 dark:bg-indigo-950/25" : ""
         }`}
       >
-        <div className="flex items-center gap-2.5 min-w-0">
+        {/* Column 1: status node + question/milestone label (fixed width, top-aligned) */}
+        <div className="flex items-center gap-2 pt-1 min-w-0">
           <span
             title={meta.label}
             aria-hidden="true"
@@ -211,147 +232,160 @@ export const ReviewPanel: React.FC<ReviewPanelProps> = ({
             className="inline-flex items-center gap-0.5 text-xs font-mono font-semibold text-zinc-900 dark:text-zinc-100 hover:text-indigo-600 dark:hover:text-indigo-400 shrink-0 transition-colors"
           >
             <span>{qLabel}</span>
-            <ArrowUpRight className="w-3 h-3 text-zinc-400" />
+            <ArrowUpRight className="w-3 h-3 text-zinc-500 dark:text-zinc-400" />
           </button>
-
-          <button
-            type="button"
-            onClick={() => setExpandedIds((prev) => toggleExpandedRow(prev, prob.id))}
-            aria-expanded={isExpanded}
-            aria-controls={panelId}
-            title={isExpanded ? `Collapse ${qLabel} prompt` : `Expand ${qLabel} prompt`}
-            className="min-w-0 flex-1 flex items-center gap-2 text-left rounded-md py-0.5 text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 transition-colors"
-          >
-            {/* While open, the full prompt is shown below; don't repeat it truncated here. */}
-            <span className="min-w-0 flex-1 truncate text-sm">
-              {!isExpanded && <FormattedText text={singleLinePrompt} />}
-            </span>
-            <ChevronDown
-              aria-hidden="true"
-              className={`w-4 h-4 text-zinc-400 shrink-0 transition-transform duration-150 ${
-                isExpanded ? "rotate-180" : ""
-              }`}
-            />
-          </button>
-
-          {currentDrill.subject !== "PRG" && isAttempted && (
-            <div className="flex items-center gap-1 shrink-0">
-              {SCORE_OPTIONS.map((btn) => (
-                <button
-                  key={btn.val}
-                  type="button"
-                  onClick={() => onSetScore(prob.id, btn.val)}
-                  aria-label={`Set ${qLabel} score to ${btn.label}`}
-                  aria-pressed={pScore === btn.val}
-                  className={`h-7 px-2 rounded-md text-[11px] font-mono border transition-colors ${
-                    pScore === btn.val
-                      ? `${btn.activeCls} bg-zinc-50 dark:bg-zinc-950`
-                      : "bg-white dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700"
-                  }`}
-                >
-                  {btn.label}
-                </button>
-              ))}
-            </div>
-          )}
         </div>
 
-        <Reveal show={isExpanded}>
-          <div id={panelId} className="pl-5 pt-0.5 pb-1 space-y-3">
-            <div className="text-sm leading-relaxed text-zinc-800 dark:text-zinc-200 break-words">
-              <FormattedText text={prob.prompt} />
-            </div>
-            {(prob.figure || prob.visual) && (
-              <div className="w-full">
-                <MathFigure
-                  figure={prob.figure || prob.visual!}
-                  className="w-full"
-                />
-              </div>
-            )}
-          </div>
-        </Reveal>
+        {/* Column 2: in-place expandable prompt + figure + answer/result + bottom note & score line */}
+        <div className="min-w-0 space-y-2">
+          <div>
+            <button
+              type="button"
+              onClick={() => setExpandedIds((prev) => toggleExpandedRow(prev, prob.id))}
+              aria-expanded={isExpanded}
+              aria-controls={panelId}
+              title={isExpanded ? `Collapse ${qLabel} prompt` : `Expand ${qLabel} prompt`}
+              className="w-full min-w-0 flex items-start justify-between gap-2 text-left rounded-md py-0.5 text-zinc-800 dark:text-zinc-200 hover:text-zinc-950 dark:hover:text-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 transition-colors"
+            >
+              <span
+                className={`block min-w-0 flex-1 text-sm leading-relaxed break-words ${
+                  isExpanded ? "" : "truncate"
+                }`}
+              >
+                <FormattedText text={isExpanded ? prob.prompt : singleLinePrompt} />
+              </span>
+              <ChevronDown
+                aria-hidden="true"
+                className={`w-4 h-4 mt-1 text-zinc-500 dark:text-zinc-400 shrink-0 transition-transform duration-150 ${
+                  isExpanded ? "rotate-180" : ""
+                }`}
+              />
+            </button>
 
-        <div className="pl-5 flex flex-wrap items-baseline gap-x-4 gap-y-1 text-xs">
-          <div className="min-w-0 break-words">
-            <span className="text-zinc-500 dark:text-zinc-400">Your answer: </span>
-            <span className="font-mono text-zinc-800 dark:text-zinc-200">
-              {learnerAnswerText}
-            </span>
-          </div>
-
-          <div className="min-w-0 break-words">
-            {hasVerifiedAnswer ? (
-              <>
-                <span className="text-zinc-500 dark:text-zinc-400">Verified: </span>
-                {canRevealVerifiedAnswer(prob.state) ? (
-                  <span className="font-mono text-emerald-700 dark:text-emerald-400">
-                    {prob.answerPlain || prob.answerDisplay}
-                  </span>
-                ) : (
-                  <span className="italic text-zinc-400 dark:text-zinc-500">
-                    Not answered yet
-                  </span>
+            <Reveal show={isExpanded}>
+              <div id={panelId} className={hasFigure ? "pt-2" : undefined}>
+                {hasFigure && (
+                  <MathFigure
+                    figure={prob.figure || prob.visual!}
+                    className="w-full"
+                  />
                 )}
-              </>
+              </div>
+            </Reveal>
+          </div>
+
+          <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 text-xs">
+            {isQuietUnanswered ? (
+              <span className="italic text-zinc-500 dark:text-zinc-400">
+                Not answered yet
+              </span>
             ) : (
               <>
-                <span className="text-zinc-500 dark:text-zinc-400">Result: </span>
-                <span className={`font-medium ${meta.textClassName}`}>
-                  {latestReview
-                    ? `${meta.label} (review: ${latestReview.verdict})`
-                    : meta.label}
-                </span>
+                <div className="min-w-0 break-words">
+                  <span className="text-zinc-500 dark:text-zinc-400">Your answer: </span>
+                  <span className="font-mono text-zinc-800 dark:text-zinc-200">
+                    {learnerAnswerText}
+                  </span>
+                </div>
+
+                <div className="min-w-0 break-words">
+                  {hasVerifiedAnswer ? (
+                    <>
+                      <span className="text-zinc-500 dark:text-zinc-400">Verified: </span>
+                      {canRevealVerifiedAnswer(prob.state) ? (
+                        <span className="font-mono text-emerald-700 dark:text-emerald-400">
+                          {prob.answerPlain || prob.answerDisplay}
+                        </span>
+                      ) : (
+                        <span className="italic text-zinc-500 dark:text-zinc-400">
+                          Not answered yet
+                        </span>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-zinc-500 dark:text-zinc-400">Result: </span>
+                      <span className={`font-medium ${meta.textClassName}`}>
+                        {latestReview
+                          ? `${meta.label} (review: ${latestReview.verdict})`
+                          : meta.label}
+                      </span>
+                    </>
+                  )}
+                </div>
               </>
             )}
+
+            {typeof prob.state.divergedStep === "number" && (
+              <span className="inline-flex items-center gap-1 text-rose-600 dark:text-rose-400 font-medium">
+                <Flag className="w-3 h-3" />
+                <span>Diverged at step {prob.state.divergedStep + 1}</span>
+              </span>
+            )}
           </div>
 
-          {typeof prob.state.divergedStep === "number" && (
-            <span className="inline-flex items-center gap-1 text-rose-600 dark:text-rose-400 font-medium">
-              <Flag className="w-3 h-3" />
-              <span>Diverged at step {prob.state.divergedStep + 1}</span>
-            </span>
+          {isAttempted && (
+            <div className="space-y-2">
+              {mistakeTags.length > 0 && (
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {mistakeTags.map((t) => {
+                    const hasTag = prob.state.mistakes.includes(t.id);
+                    return (
+                      <button
+                        key={t.id}
+                        type="button"
+                        onClick={() => onToggleMistakeTag(prob.id, t.id)}
+                        aria-pressed={hasTag}
+                        className={`min-h-[24px] py-0.5 px-2.5 rounded-full text-[11px] font-medium border transition-colors inline-flex items-center ${
+                          hasTag
+                            ? "border-rose-600 dark:border-rose-400 text-rose-700 dark:text-rose-300 bg-white dark:bg-zinc-900 font-semibold"
+                            : "bg-white dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700"
+                        }`}
+                      >
+                        <FormattedText text={t.label} />
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
+              <div className="flex flex-wrap sm:flex-nowrap items-center gap-2">
+                <div className="flex-1 min-w-[180px] flex items-center gap-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2.5 py-1.5 focus-within:border-zinc-400 dark:focus-within:border-zinc-600 transition-colors">
+                  <PenLine className="w-3.5 h-3.5 text-zinc-500 dark:text-zinc-400 shrink-0" />
+                  <input
+                    type="text"
+                    value={prob.state.mistakeNote || ""}
+                    onChange={(e) => onMistakeNoteChange(prob.id, e.target.value)}
+                    placeholder={`Note for ${qLabel}…`}
+                    aria-label={`Note for ${qLabel}`}
+                    className="w-full min-w-0 bg-transparent text-xs text-zinc-800 dark:text-zinc-200 placeholder:text-zinc-500 dark:placeholder:text-zinc-400 focus:outline-none"
+                  />
+                </div>
+
+                {currentDrill.subject !== "PRG" && (
+                  <div className="flex items-center gap-1 shrink-0">
+                    {SCORE_OPTIONS.map((btn) => (
+                      <button
+                        key={btn.val}
+                        type="button"
+                        onClick={() => onSetScore(prob.id, btn.val)}
+                        aria-label={`Set ${qLabel} score to ${btn.label}`}
+                        aria-pressed={pScore === btn.val}
+                        className={`h-7 px-2 rounded-md text-[11px] font-mono border transition-colors ${
+                          pScore === btn.val
+                            ? `${btn.activeCls} bg-zinc-50 dark:bg-zinc-950`
+                            : "bg-white dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700"
+                        }`}
+                      >
+                        {btn.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
           )}
         </div>
-
-        {isAttempted && (
-          <div className="pl-5 space-y-2">
-            {mistakeTags.length > 0 && (
-              <div className="flex flex-wrap items-center gap-1.5">
-                {mistakeTags.map((t) => {
-                  const hasTag = prob.state.mistakes.includes(t.id);
-                  return (
-                    <button
-                      key={t.id}
-                      type="button"
-                      onClick={() => onToggleMistakeTag(prob.id, t.id)}
-                      aria-pressed={hasTag}
-                      className={`min-h-[24px] py-0.5 px-2.5 rounded-full text-[11px] font-medium border transition-colors inline-flex items-center ${
-                        hasTag
-                          ? "border-rose-600 dark:border-rose-400 text-rose-700 dark:text-rose-300 bg-white dark:bg-zinc-900 font-semibold"
-                          : "bg-white dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700"
-                      }`}
-                    >
-                      <FormattedText text={t.label} />
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-
-            <div className="flex items-center gap-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2.5 py-1.5 focus-within:border-zinc-400 dark:focus-within:border-zinc-600 transition-colors">
-              <PenLine className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
-              <input
-                type="text"
-                value={prob.state.mistakeNote || ""}
-                onChange={(e) => onMistakeNoteChange(prob.id, e.target.value)}
-                placeholder={`Note for ${qLabel}…`}
-                aria-label={`Note for ${qLabel}`}
-                className="w-full min-w-0 bg-transparent text-xs text-zinc-800 dark:text-zinc-200 placeholder:text-zinc-400 focus:outline-none"
-              />
-            </div>
-          </div>
-        )}
       </div>
     );
   };
@@ -364,10 +398,8 @@ export const ReviewPanel: React.FC<ReviewPanelProps> = ({
           <h1 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight">
             {drillTitle}
           </h1>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            <span className="font-mono text-xs">{currentDrill.unitCode}</span>
-            <span aria-hidden="true"> · </span>
-            <span>Review &amp; sync</span>
+          <p className="font-mono text-xs text-zinc-500 dark:text-zinc-400">
+            {currentDrill.unitCode}
           </p>
         </div>
 
@@ -384,8 +416,8 @@ export const ReviewPanel: React.FC<ReviewPanelProps> = ({
           <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
             <div
               role="group"
-              aria-label="Question outcomes"
-              className="flex flex-wrap items-center gap-1"
+              aria-label={outcomeGroupLabel}
+              className="flex flex-wrap items-center -m-1.5"
             >
               {currentDrill.problems.map((prob, idx) => {
                 const outcome = classifyReviewOutcome(prob.state);
@@ -401,18 +433,23 @@ export const ReviewPanel: React.FC<ReviewPanelProps> = ({
                     }
                     title={tooltip}
                     aria-label={tooltip}
-                    className={`w-2.5 h-2.5 rounded-[3px] transition-transform hover:scale-125 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 focus-visible:ring-offset-1 focus-visible:ring-offset-white dark:focus-visible:ring-offset-zinc-900 ${meta.nodeClassName}`}
-                  />
+                    className="group inline-flex items-center justify-center w-6 h-6 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
+                  >
+                    <span
+                      aria-hidden="true"
+                      className={`w-2.5 h-2.5 rounded-[3px] transition-transform group-hover:scale-125 ${meta.nodeClassName}`}
+                    />
+                  </button>
                 );
               })}
             </div>
 
             <div
               aria-hidden="true"
-              className="hidden sm:flex items-center gap-3 text-[11px] text-zinc-500 dark:text-zinc-400 whitespace-nowrap"
+              className="flex flex-wrap items-center gap-x-2.5 gap-y-1 sm:gap-x-3 text-[11px] text-zinc-500 dark:text-zinc-400"
             >
               {LEGEND_ITEMS.map((item) => (
-                <span key={item.key} className="inline-flex items-center gap-1">
+                <span key={item.key} className="inline-flex items-center gap-1 whitespace-nowrap">
                   <span
                     className={`w-2 h-2 rounded-[2px] ${OUTCOME_META[item.key].nodeClassName}`}
                   />
@@ -471,7 +508,7 @@ export const ReviewPanel: React.FC<ReviewPanelProps> = ({
             type="button"
             onClick={onConfirmSync}
             disabled={isSyncing || maxScore === 0}
-            className="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400 disabled:opacity-50 text-white text-sm font-medium transition-colors shrink-0"
+            className="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-700 disabled:opacity-50 text-white text-sm font-medium transition-colors shrink-0"
           >
             {isSyncing ? (
               <>
@@ -492,11 +529,11 @@ export const ReviewPanel: React.FC<ReviewPanelProps> = ({
             className="inline-flex items-center gap-1.5 h-10 px-2.5 rounded-xl text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-sm font-medium transition-colors shrink-0"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>Back to questions</span>
+            <span>{backLabel}</span>
           </button>
 
           {unansweredCount > 0 && (
-            <p className="text-xs text-amber-600 dark:text-amber-400">
+            <p className="text-xs text-amber-700 dark:text-amber-400">
               {unansweredCount} unanswered — sync anyway or finish first.
             </p>
           )}
@@ -508,7 +545,7 @@ export const ReviewPanel: React.FC<ReviewPanelProps> = ({
         </p>
       </section>
 
-      {/* 3. Question list */}
+      {/* 3. Question / problem / milestone list */}
       <section className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden">
         <div className="px-4 py-3 sm:px-6 bg-zinc-50/70 dark:bg-zinc-950/50 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
           <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
@@ -525,7 +562,7 @@ export const ReviewPanel: React.FC<ReviewPanelProps> = ({
           </div>
         ) : (
           <p className="px-4 py-4 sm:px-6 text-sm text-zinc-500 dark:text-zinc-400">
-            All questions were answered correctly on the first try.
+            {allFirstTryText}
           </p>
         )}
 

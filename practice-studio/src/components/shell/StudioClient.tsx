@@ -30,6 +30,7 @@ interface StudioClientProps {
   workspace: Workspace;
   drillId: string;
   initialQuestionId?: string;
+  isLabRoute?: boolean;
 }
 
 /** Main interactive Practice Studio client bound to a workspace and drill route. */
@@ -37,6 +38,7 @@ export const StudioClient: React.FC<StudioClientProps> = ({
   workspace,
   drillId,
   initialQuestionId,
+  isLabRoute = false,
 }) => {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -223,6 +225,7 @@ export const StudioClient: React.FC<StudioClientProps> = ({
       codeHref={codeHref}
       viewMode={viewMode}
       currentDrill={currentDrill}
+      drillNotFound={drillNotFound}
       currentProblemIndex={currentProblemIndex}
       theme={theme}
       onToggleTheme={handleToggleTheme}
@@ -256,7 +259,7 @@ export const StudioClient: React.FC<StudioClientProps> = ({
           <div className="h-10 w-1/2 bg-zinc-200 dark:bg-zinc-800 rounded-xl" />
         </div>
       ) : drillNotFound ? (
-        <DrillNotFoundCard drillId={drillId} />
+        <DrillNotFoundCard drillId={drillId} isLab={isLabRoute || isLabId(drillId)} />
       ) : !currentDrill ? (
         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-10 text-center space-y-3">
           <p className="text-base font-semibold text-zinc-800 dark:text-zinc-200">
@@ -265,7 +268,7 @@ export const StudioClient: React.FC<StudioClientProps> = ({
           <button
             type="button"
             onClick={() => setShowGenPopover(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400 text-white text-sm font-semibold"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-700 text-white text-sm font-semibold"
           >
             <Plus className="w-4 h-4" />
             <span>Generate drill set</span>
@@ -371,23 +374,36 @@ export const StudioClient: React.FC<StudioClientProps> = ({
           />
         </m.div>
       )}
-      <ConfirmDialog
-        open={showResetConfirm && Boolean(currentDrill)}
-        title="Reset all questions?"
-        description={
-          currentDrill
-            ? `Reset all questions in ${currentDrill.drillId} to start over.`
-            : ""
-        }
-        confirmLabel="Reset all"
-        cancelLabel="Cancel"
-        destructive
-        onCancel={() => setShowResetConfirm(false)}
-        onConfirm={() => {
-          setShowResetConfirm(false);
-          handleResetAll();
-        }}
-      />
+      {(() => {
+        const isCurrentLab = Boolean(currentDrill && isLabId(currentDrill.drillId));
+        const itemPlural = isCurrentLab
+          ? "milestones"
+          : workspace === "code"
+          ? "problems"
+          : "questions";
+        const drillLabel = currentDrill
+          ? currentDrill.unitTitle || currentDrill.unitCode
+          : "";
+        return (
+          <ConfirmDialog
+            open={showResetConfirm && Boolean(currentDrill)}
+            title={`Reset all ${itemPlural}?`}
+            description={
+              currentDrill
+                ? `Reset all ${itemPlural} in ${drillLabel} to start over.`
+                : ""
+            }
+            confirmLabel="Reset all"
+            cancelLabel="Cancel"
+            destructive
+            onCancel={() => setShowResetConfirm(false)}
+            onConfirm={() => {
+              setShowResetConfirm(false);
+              handleResetAll();
+            }}
+          />
+        );
+      })()}
     </StudioShell>
   );
 };

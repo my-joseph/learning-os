@@ -26,7 +26,7 @@ export const StepRow: React.FC<StepRowProps> = ({
   return (
     <div
       onClick={onToggleHighlight}
-      className={`step-row ${isActive || isDiverged ? "step-row-active" : ""} grid grid-cols-1 md:grid-cols-[1.2fr_1fr_auto] gap-3 items-center rounded-xl p-3 mb-2 last:mb-0 cursor-pointer transition-colors border ${
+      className={`group step-row ${isActive || isDiverged ? "step-row-active" : ""} grid grid-cols-1 md:grid-cols-[1.2fr_1fr_auto] gap-3 items-center rounded-xl p-3 mb-2 last:mb-0 cursor-pointer transition-colors border ${
         isDiverged
           ? "border-zinc-200 dark:border-zinc-800 border-l-4 border-l-rose-600 dark:border-l-rose-400 bg-white dark:bg-zinc-900"
           : isActive
@@ -60,10 +60,10 @@ export const StepRow: React.FC<StepRowProps> = ({
             e.stopPropagation();
             onMarkDiverged();
           }}
-          className={`inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-lg whitespace-nowrap font-medium transition-colors border ${
+          className={`inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-lg whitespace-nowrap font-medium transition-all border ${
             isDiverged
-              ? "border-rose-600 dark:border-rose-400 text-rose-600 dark:text-rose-400 bg-zinc-50 dark:bg-zinc-950"
-              : "border-zinc-200 dark:border-zinc-800 text-zinc-500 dark:text-zinc-400 hover:text-rose-600 dark:hover:text-rose-400 hover:border-rose-300 dark:hover:border-rose-500/40"
+              ? "opacity-100 border-rose-600 dark:border-rose-400 text-rose-600 dark:text-rose-400 bg-zinc-50 dark:bg-zinc-950"
+              : "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100 border-zinc-200 dark:border-zinc-800 text-zinc-500 dark:text-zinc-400 hover:text-rose-600 dark:hover:text-rose-400 hover:border-rose-300 dark:hover:border-rose-500/40"
           }`}
         >
           <Flag className="w-3.5 h-3.5 shrink-0" />
