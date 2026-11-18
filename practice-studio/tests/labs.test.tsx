@@ -482,6 +482,23 @@ async function testSyntheticLabAndProgress() {
     assert.match(tilesHtml, /bg-emerald-700/, "M1 (pass) tile must be emerald");
     assert.match(tilesHtml, /bg-amber-600/, "M2 (revise) tile must be amber");
     assert.match(tilesHtml, /bg-zinc-50/, "M3 (not started) tile must be neutral");
+    assert.match(tilesHtml, /aria-label="Review &amp; sync"/);
+    assert.match(tilesHtml, />Review<\/span>/);
+
+    const labReviewTilesHtml = renderToStaticMarkup(
+      <QuizPaginationBar
+        totalQuestions={drillDoc.problems.length}
+        currentIndex={1}
+        problems={drillDoc.problems}
+        viewMode="review"
+        isLab={true}
+        onSelectQuestion={noop}
+        onPrev={noop}
+        onNext={noop}
+        onToggleViewMode={noop}
+      />
+    );
+    assert.match(labReviewTilesHtml, /aria-label="Review &amp; sync"[^>]*aria-pressed="true"/);
 
     // Render CodeDashboard for M2 (revise, tests passed)
     const dashboardHtml = renderToStaticMarkup(

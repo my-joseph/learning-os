@@ -4,12 +4,14 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import {
   classifyReviewOutcome,
+  ensureExpandedRow,
   formatDuration,
   getProblemOutcomeMeta,
   getQuestionLabel,
   getReviewOutcomeMeta,
   groupReviewProblems,
   toSingleLinePrompt,
+  toggleExpandedRow,
 } from "../src/lib/reviewOutcome";
 import { ReviewPanel } from "../src/components/shell/ReviewPanel";
 import type { DrillDocument, Problem, ProblemState } from "../src/types/drill";
@@ -251,5 +253,112 @@ assert.doesNotMatch(
   /border-l-[24]/,
   "ReviewPanel must not use left accent borders on rounded boxes"
 );
+assert.match(reviewSource, /ensureExpandedRow/, "Score-strip jump must expand the target row");
+assert.match(reviewSource, /<Reveal\s+show=\{isExpanded\}/, "Row accordion must animate with Reveal");
+
+// 6. Accordion state helpers & collapsed vs expanded HTML (no steps/solution leakage)
+let expandedState: Record<string, boolean> = {};
+expandedState = toggleExpandedRow(expandedState, "Q01");
+assert.equal(expandedState.Q01, true);
+expandedState = toggleExpandedRow(expandedState, "Q01");
+assert.equal(expandedState.Q01, false);
+expandedState = ensureExpandedRow(expandedState, "Q02");
+assert.equal(expandedState.Q02, true);
+assert.equal(ensureExpandedRow(expandedState, "Q02"), expandedState);
+
+const accordionProblem: Problem = {
+  id: "Q01",
+  templateKey: "tpl-acc",
+  level: 2,
+  levelLabel: "Level 2",
+  category: "Geometry",
+  prompt: "Find $x$ in the triangle.\n\n```txt\nEXPANDED_PROMPT_BLOCK\n```",
+  display: "SECRET_DISPLAY_SETUP",
+  solutionCode: "SECRET_SOLUTION_CODE",
+  checkpointHint: "SECRET_CHECKPOINT_HINT",
+  steps: [
+    {
+      title: "SECRET_STEP_TITLE",
+      math: "SECRET_STEP_MATH",
+      explanation: "SECRET_STEP_EXPLANATION",
+    },
+  ],
+  figure: {
+    kind: "geometry_2d",
+    title: "Right triangle ABC",
+    points: { A: [0, 0], B: [3, 0], C: [0, 4] },
+    shapes: [{ type: "polygon", vertices: ["A", "B", "C"] }],
+  },
+  answerPlain: "SECRET_42",
+  answerDisplay: "SECRET_42",
+  answerSpec: { type: "number" },
+  state: baseState(),
+};
+
+const accordionDrill: DrillDocument = {
+  ...sampleDrill,
+  problems: [accordionProblem],
+};
+
+const collapsedHtml = renderToStaticMarkup(
+  <ReviewPanel
+    currentDrill={accordionDrill}
+    liveScore={0}
+    maxScore={1}
+    accuracyPct={0}
+    skippedCount={0}
+    computedPracticeStatus="Needs Retry"
+    isSyncing={false}
+    onStatusOverrideChange={noop}
+    onBackToQuiz={noop}
+    onConfirmSync={noop}
+    onSelectQuestion={noop}
+    onSetScore={noop}
+    onToggleMistakeTag={noop}
+    onMistakeNoteChange={noop}
+  />
+);
+
+assert.match(collapsedHtml, /aria-expanded="false"/);
+assert.match(collapsedHtml, /aria-controls="review-panel-Q01"/);
+assert.doesNotMatch(collapsedHtml, /id="review-panel-Q01"/);
+assert.doesNotMatch(collapsedHtml, /EXPANDED_PROMPT_BLOCK/);
+assert.doesNotMatch(collapsedHtml, /Right triangle ABC/);
+
+const expandedHtml = renderToStaticMarkup(
+  <ReviewPanel
+    currentDrill={accordionDrill}
+    liveScore={0}
+    maxScore={1}
+    accuracyPct={0}
+    skippedCount={0}
+    computedPracticeStatus="Needs Retry"
+    isSyncing={false}
+    initialExpandedIds={["Q01"]}
+    onStatusOverrideChange={noop}
+    onBackToQuiz={noop}
+    onConfirmSync={noop}
+    onSelectQuestion={noop}
+    onSetScore={noop}
+    onToggleMistakeTag={noop}
+    onMistakeNoteChange={noop}
+  />
+);
+
+assert.match(expandedHtml, /aria-expanded="true"/);
+assert.match(expandedHtml, /aria-controls="review-panel-Q01"/);
+assert.match(expandedHtml, /id="review-panel-Q01"/);
+assert.match(expandedHtml, /EXPANDED_PROMPT_BLOCK/);
+assert.match(expandedHtml, /katex/);
+assert.match(expandedHtml, /Right triangle ABC/);
+assert.match(expandedHtml, /<svg/);
+assert.match(expandedHtml, /Not answered yet/);
+assert.doesNotMatch(expandedHtml, /SECRET_DISPLAY_SETUP/);
+assert.doesNotMatch(expandedHtml, /SECRET_SOLUTION_CODE/);
+assert.doesNotMatch(expandedHtml, /SECRET_CHECKPOINT_HINT/);
+assert.doesNotMatch(expandedHtml, /SECRET_STEP_TITLE/);
+assert.doesNotMatch(expandedHtml, /SECRET_STEP_MATH/);
+assert.doesNotMatch(expandedHtml, /SECRET_STEP_EXPLANATION/);
+assert.doesNotMatch(expandedHtml, /SECRET_42/);
 
 console.log("reviewOutcome tests passed");

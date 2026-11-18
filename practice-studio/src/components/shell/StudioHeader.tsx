@@ -6,7 +6,6 @@ import { popover, presence, settle } from "@/lib/motion";
 import Link from "next/link";
 import {
   ArrowUpRight,
-  ClipboardCheck,
   Moon,
   MoreHorizontal,
   PanelRight,
@@ -16,7 +15,7 @@ import {
 } from "lucide-react";
 import { DrillDocument, DrillListItem } from "@/types/drill";
 import type { LabListItem } from "@/lib/labModel";
-import { DrillFilter, StatusMessage, ViewMode } from "@/hooks/types";
+import { DrillFilter, StatusMessage } from "@/hooks/types";
 import { Workspace } from "@/lib/routes";
 import { DrillSwitcher } from "./DrillSwitcher";
 import { GeneratePopover } from "./GeneratePopover";
@@ -27,12 +26,7 @@ interface StudioHeaderProps {
   workspace: Workspace;
   mathHref: string | null;
   codeHref: string | null;
-  viewMode: ViewMode;
-  onToggleViewMode: (mode: ViewMode) => void;
   currentDrill: DrillDocument | null;
-  liveScore: number;
-  maxScore: number;
-  accuracyPct: number;
   theme: "light" | "dark";
   onToggleTheme: () => void;
   onResetAll: () => void;
@@ -70,12 +64,7 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
   workspace,
   mathHref,
   codeHref,
-  viewMode,
-  onToggleViewMode,
   currentDrill,
-  liveScore,
-  maxScore,
-  accuracyPct,
   theme,
   onToggleTheme,
   onResetAll,
@@ -254,18 +243,6 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
                 {...presence}
                 style={{ transformOrigin: "top right" }}
                 className="absolute right-0 mt-2 w-64 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-lg p-2.5 z-50 text-xs space-y-2">
-                {/* Status copy */}
-                {currentDrill && (
-                  <div className="px-2 py-1.5 rounded-lg bg-zinc-50 dark:bg-zinc-950 border border-zinc-200/80 dark:border-zinc-800 space-y-0.5">
-                    <div className="font-mono text-[11px] text-zinc-500 dark:text-zinc-400 truncate">
-                      {currentDrill.drillId} · {currentDrill.unitCode}
-                    </div>
-                    <div className="text-xs font-medium text-zinc-800 dark:text-zinc-200">
-                      Score: {liveScore} / {maxScore} ({accuracyPct}%)
-                    </div>
-                  </div>
-                )}
-
                 {/* Below 640px items: workspace switch, theme toggle, Notion link */}
                 <div className="sm:hidden space-y-1 pb-2 border-b border-zinc-200 dark:border-zinc-800">
                   <div className="grid grid-cols-2 gap-1 p-0.5 rounded-lg bg-zinc-100 dark:bg-zinc-800">
@@ -347,20 +324,6 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
                       )}
                     </button>
                   )}
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onToggleViewMode(viewMode === "review" ? "quiz" : "review");
-                      setShowMoreMenu(false);
-                    }}
-                    className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-                  >
-                    <ClipboardCheck className="w-3.5 h-3.5 text-zinc-500 dark:text-zinc-400" />
-                    <span>
-                      {viewMode === "review" ? "Back to questions" : "Review & Sync to Notion"}
-                    </span>
-                  </button>
 
                   <button
                     type="button"

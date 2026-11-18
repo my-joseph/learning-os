@@ -16,14 +16,17 @@ import { isLabId } from "@/lib/routes";
 import {
   OUTCOME_META,
   classifyReviewOutcome,
+  ensureExpandedRow,
   formatDuration,
   getQuestionLabel,
   getReviewOutcomeMeta,
   groupReviewProblems,
   toSingleLinePrompt,
+  toggleExpandedRow,
   type GroupedReviewItem,
 } from "@/lib/reviewOutcome";
 import { FormattedText } from "@/components/FormattedText";
+import { MathFigure } from "@/components/MathFigure";
 import { Reveal } from "@/components/motion/Reveal";
 
 interface ReviewPanelProps {
@@ -34,6 +37,7 @@ interface ReviewPanelProps {
   skippedCount: number;
   computedPracticeStatus: "Graded" | "Needs Retry";
   isSyncing: boolean;
+  initialExpandedIds?: string[];
   onStatusOverrideChange: (status: "Graded" | "Needs Retry") => void;
   onBackToQuiz: () => void;
   onConfirmSync: () => void;
@@ -80,6 +84,7 @@ export const ReviewPanel: React.FC<ReviewPanelProps> = ({
   accuracyPct,
   computedPracticeStatus,
   isSyncing,
+  initialExpandedIds,
   onStatusOverrideChange,
   onBackToQuiz,
   onConfirmSync,
@@ -89,6 +94,13 @@ export const ReviewPanel: React.FC<ReviewPanelProps> = ({
   onMistakeNoteChange,
 }) => {
   const [showCorrect, setShowCorrect] = useState(false);
+  const [expandedIds, setExpandedIds] = useState<Record<string, boolean>>(() => {
+    const initial: Record<string, boolean> = {};
+    for (const id of initialExpandedIds ?? []) {
+      initial[id] = true;
+    }
+    return initial;
+  });
   const [pendingScrollId, setPendingScrollId] = useState<string | null>(null);
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
   const rowRefs = useRef<Map<string, HTMLDivElement>>(new Map());
@@ -99,9 +111,14 @@ export const ReviewPanel: React.FC<ReviewPanelProps> = ({
 
   useEffect(() => {
     setShowCorrect(false);
+    const initial: Record<string, boolean> = {};
+    for (const id of initialExpandedIds ?? []) {
+      initial[id] = true;
+    }
+    setExpandedIds(initial);
     setPendingScrollId(null);
     setHighlightedId(null);
-  }, [currentDrill.drillId]);
+  }, [currentDrill.drillId, initialExpandedIds]);
 
   useEffect(() => {
     if (!pendingScrollId) return;
@@ -142,6 +159,7 @@ export const ReviewPanel: React.FC<ReviewPanelProps> = ({
     if (inCorrectGroup && !showCorrect) {
       setShowCorrect(true);
     }
+    setExpandedIds((prev) => ensureExpandedRow(prev, probId));
     setPendingScrollId(probId);
   };
 
@@ -155,6 +173,8 @@ export const ReviewPanel: React.FC<ReviewPanelProps> = ({
     const qLabel = getQuestionLabel(prob.id, idx, isLab);
     const singleLinePrompt = toSingleLinePrompt(prob.prompt);
     const isHighlighted = highlightedId === prob.id;
+    const isExpanded = Boolean(expandedIds[prob.id]);
+    const panelId = `review-panel-${prob.id}`;
 
     const hasVerifiedAnswer = Boolean(prob.answerPlain || prob.answerDisplay);
     const latestReview = prob.state.reviews?.[prob.state.reviews.length - 1];
@@ -193,9 +213,24 @@ export const ReviewPanel: React.FC<ReviewPanelProps> = ({
             <ArrowUpRight className="w-3 h-3 text-zinc-400" />
           </button>
 
-          <p className="min-w-0 flex-1 truncate py-0.5 text-sm text-zinc-700 dark:text-zinc-300">
-            <FormattedText text={singleLinePrompt} />
-          </p>
+          <button
+            type="button"
+            onClick={() => setExpandedIds((prev) => toggleExpandedRow(prev, prob.id))}
+            aria-expanded={isExpanded}
+            aria-controls={panelId}
+            title={isExpanded ? `Collapse ${qLabel} prompt` : `Expand ${qLabel} prompt`}
+            className="min-w-0 flex-1 flex items-center gap-2 text-left rounded-md py-0.5 text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 transition-colors"
+          >
+            <span className="min-w-0 flex-1 truncate text-sm">
+              <FormattedText text={singleLinePrompt} />
+            </span>
+            <ChevronDown
+              aria-hidden="true"
+              className={`w-4 h-4 text-zinc-400 shrink-0 transition-transform duration-150 ${
+                isExpanded ? "rotate-180" : ""
+              }`}
+            />
+          </button>
 
           {currentDrill.subject !== "PRG" && (
             <div className="flex items-center gap-1 shrink-0">
@@ -218,6 +253,22 @@ export const ReviewPanel: React.FC<ReviewPanelProps> = ({
             </div>
           )}
         </div>
+
+        <Reveal show={isExpanded}>
+          <div id={panelId} className="pl-5 pt-0.5 pb-1 space-y-3">
+            <div className="text-sm leading-relaxed text-zinc-800 dark:text-zinc-200 break-words">
+              <FormattedText text={prob.prompt} />
+            </div>
+            {(prob.figure || prob.visual) && (
+              <div className="w-full">
+                <MathFigure
+                  figure={prob.figure || prob.visual!}
+                  className="w-full"
+                />
+              </div>
+            )}
+          </div>
+        </Reveal>
 
         <div className="pl-5 flex flex-wrap items-baseline gap-x-4 gap-y-1 text-xs">
           <div className="min-w-0 break-words">
@@ -318,10 +369,10 @@ export const ReviewPanel: React.FC<ReviewPanelProps> = ({
 
         <div className="space-y-3">
           <div className="flex items-baseline gap-2.5">
-            <span className="text-3xl sm:text-4xl font-semibold font-mono tabular-nums tracking-tight text-zinc-900 dark:text-zinc-100">
+            <span className="text-3xl sm:text-4xl font-semibold font-sans tabular-nums tracking-tight text-zinc-900 dark:text-zinc-100">
               {liveScore} / {maxScore}
             </span>
-            <span className="text-sm font-mono tabular-nums text-zinc-500 dark:text-zinc-400">
+            <span className="text-sm font-sans tabular-nums text-zinc-500 dark:text-zinc-400">
               ({accuracyPct}%)
             </span>
           </div>

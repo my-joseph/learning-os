@@ -224,9 +224,6 @@ export const StudioClient: React.FC<StudioClientProps> = ({
       viewMode={viewMode}
       currentDrill={currentDrill}
       currentProblemIndex={currentProblemIndex}
-      liveScore={liveScore}
-      maxScore={maxScore}
-      accuracyPct={accuracyPct}
       theme={theme}
       onToggleTheme={handleToggleTheme}
       onResetAll={() => {
