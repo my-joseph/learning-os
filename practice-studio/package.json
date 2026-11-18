@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start -H 127.0.0.1",
     "lint": "next lint",
-    "test:telemetry": "tsx tests/applyCheckResult.test.ts && tsx tests/practiceScoringParity.test.ts && tsx tests/telemetryTimer.test.ts && tsx tests/progress.test.ts && tsx tests/mathText.test.ts && tsx tests/figureLayout.test.ts && tsx tests/reviewGuard.test.ts && tsx tests/reviewOutcome.test.tsx && tsx tests/studioRules.test.tsx && tsx tests/routes.test.ts && tsx tests/redact.test.ts && tsx tests/codeStatus.test.ts && tsx tests/labs.test.tsx && tsx tests/sidePanel.test.tsx && tsx tests/toastDialog.test.tsx && tsx tests/paginationAndGrouping.test.tsx && tsx tests/drillPicker.test.tsx && tsx tests/drillTree.test.tsx && tsx tests/codeExamples.test.tsx"
+    "test:telemetry": "tsx tests/applyCheckResult.test.ts && tsx tests/practiceScoringParity.test.ts && tsx tests/telemetryTimer.test.ts && tsx tests/progress.test.ts && tsx tests/mathText.test.ts && tsx tests/figureLayout.test.ts && tsx tests/reviewGuard.test.ts && tsx tests/reviewOutcome.test.tsx && tsx tests/studioRules.test.tsx && tsx tests/routes.test.ts && tsx tests/redact.test.ts && tsx tests/codeStatus.test.ts && tsx tests/labs.test.tsx && tsx tests/sidePanel.test.tsx && tsx tests/toastDialog.test.tsx && tsx tests/paginationAndGrouping.test.tsx && tsx tests/drillPicker.test.tsx && tsx tests/drillTree.test.tsx && tsx tests/codeExamples.test.tsx && tsx tests/answerFeedback.test.tsx"
   },
   "dependencies": {
     "@react-three/drei": "^9.122.0",

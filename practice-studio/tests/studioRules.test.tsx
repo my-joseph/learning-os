@@ -64,13 +64,16 @@ assert.match(THEME_INIT_SCRIPT, /matchMedia/);
 
 const codeDashboard = readFileSync("src/components/code/CodeDashboard.tsx", "utf8");
 const mathWorkspace = readFileSync("src/components/math/MathWorkspace.tsx", "utf8");
+const answerResultCard = readFileSync("src/components/AnswerResultCard.tsx", "utf8");
 const pagination = readFileSync("src/components/QuizPaginationBar.tsx", "utf8");
 const studioShell = readFileSync("src/components/shell/StudioShell.tsx", "utf8");
 const studioHeader = readFileSync("src/components/shell/StudioHeader.tsx", "utf8");
 const workspaceRoute = readFileSync("src/app/api/workspace/route.ts", "utf8");
 const runTestsRoute = readFileSync("src/app/api/run-tests/route.ts", "utf8");
 assert.match(codeDashboard, /hasCheckpointHint\(problem\.checkpointHint\)\s*&&\s*<button/);
-assert.match(codeDashboard, /FormattedText text=\{c\.label\}/);
+assert.match(answerResultCard, /FormattedText text=\{c\.label\}/);
+assert.doesNotMatch(answerResultCard, /border-l-/);
+assert.match(codeDashboard, /<AnswerResultCard/);
 assert.match(codeDashboard, /aria-label=\{`Answer for \$\{isLab \? "milestone" : "problem"\} \$\{problem\.id\}`\}/);
 assert.match(codeDashboard, /Copy review request/);
 assert.match(codeDashboard, /Run checks/);
@@ -79,7 +82,7 @@ assert.doesNotMatch(codeDashboard, /review-code skill/);
 assert.match(codeDashboard, /Ask Claude to review your code/);
 assert.match(codeDashboard, /method: "POST"[\s\S]*?JSON\.stringify\(\{ drillId \}\)/);
 assert.match(codeDashboard, /workspace file from disk/);
-assert.match(mathWorkspace, /FormattedText text=\{c\.label\}/);
+assert.match(mathWorkspace, /<AnswerResultCard/);
 assert.match(mathWorkspace, /aria-label=\{`Answer for question \$\{problem\.id\}`\}/);
 assert.match(mathWorkspace, /hasCheckpointHint\(problem\.checkpointHint\)\s*&&\s*<button/);
 assert.match(mathWorkspace, /max-w-\[720px\]/);
@@ -229,7 +232,8 @@ const afterAttemptHtml = renderToStaticMarkup(
   />
 );
 assert.match(afterAttemptHtml, /Self-score:/, "self-score must appear after an attempt");
-assert.match(afterAttemptHtml, /border-rose-600/, "wrong feedback uses rose left border");
+assert.match(afterAttemptHtml, /bg-rose-50/, "wrong feedback uses rose result card");
+assert.match(afterAttemptHtml, /Not quite/, "wrong feedback shows calm title");
 
 // Verify CodeDashboard renders layered status, visible test names only, primary action transitions, and locked reference
 const sampleCodeProblem: Problem = {

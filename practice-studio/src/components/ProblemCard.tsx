@@ -13,7 +13,7 @@ interface ProblemCardProps {
   mistakeTags: MistakeTag[];
   activeStep: number | null;
   onInputChange: (val: string) => void;
-  onCheckAnswer: () => Promise<void> | void;
+  onCheckAnswer: (inputOverride?: string) => Promise<void> | void;
   onSkip?: () => void;
   onToggleStepHighlight: (stepIdx: number) => void;
   onMarkDivergedStep: (stepIdx: number) => void;

@@ -296,7 +296,7 @@ export const StudioClient: React.FC<StudioClientProps> = ({
                   mistakeTags={currentDrill.mistakeTags || []}
                   activeStep={activeSteps[prob.id] ?? null}
                   onInputChange={(val) => handleInputChange(prob.id, val)}
-                  onCheckAnswer={() => handleCheckAnswer(prob.id)}
+                  onCheckAnswer={(inputOverride) => handleCheckAnswer(prob.id, inputOverride)}
                   onSkip={() => handleSkipProblem(prob.id)}
                   onToggleStepHighlight={(stepIdx) =>
                     handleToggleStepHighlight(prob.id, stepIdx)
@@ -328,7 +328,7 @@ export const StudioClient: React.FC<StudioClientProps> = ({
                 mistakeTags={currentDrill.mistakeTags || []}
                 activeStep={activeSteps[prob.id] ?? null}
                 onInputChange={(val) => handleInputChange(prob.id, val)}
-                onCheckAnswer={() => handleCheckAnswer(prob.id)}
+                onCheckAnswer={(inputOverride) => handleCheckAnswer(prob.id, inputOverride)}
                 onSkip={() => handleSkipProblem(prob.id)}
                 onToggleStepHighlight={(stepIdx) =>
                   handleToggleStepHighlight(prob.id, stepIdx)

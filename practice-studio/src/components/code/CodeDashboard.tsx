@@ -1,10 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Reveal } from "@/components/motion/Reveal";
 import {
   Check,
-  CheckCircle2,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
@@ -13,8 +12,6 @@ import {
   Loader2,
   PenLine,
   RotateCcw,
-  XCircle,
-  AlertTriangle,
 } from "lucide-react";
 import {
   Problem,
@@ -24,11 +21,20 @@ import {
 } from "@/types/drill";
 import { VSCodeBlock } from "@/components/VSCodeBlock";
 import { FormattedText } from "@/components/FormattedText";
+import { AnswerResultCard } from "@/components/AnswerResultCard";
+import { ChoiceOptionGroup } from "@/components/ChoiceOptionGroup";
 import {
   canShowReferenceSolution,
   hasSubstantiveAttempt,
-  sanitizeCheckMessage,
 } from "@/lib/reviewGuard";
+import {
+  getChoiceResultStatus,
+  isChoiceInteractionLocked,
+  isChoiceQuestion,
+  isEditableEventTarget,
+  resolveChoiceKeyOption,
+  submitChoiceSelection,
+} from "@/lib/answerFeedback";
 import {
   getPrgScore,
   getReviewRequest,
@@ -56,7 +62,7 @@ export interface CodeDashboardProps {
   mistakeTags: MistakeTag[];
   activeStep: number | null;
   onInputChange: (val: string) => void;
-  onCheckAnswer: () => Promise<void> | void;
+  onCheckAnswer: (inputOverride?: string) => Promise<void> | void;
   onSkip?: () => void;
   onToggleStepHighlight: (stepIdx: number) => void;
   onMarkDivergedStep: (stepIdx: number) => void;
@@ -150,6 +156,8 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
 
   // In-browser question state
   const [isChecking, setIsChecking] = useState(false);
+  const [checkingOptionId, setCheckingOptionId] = useState<string | null>(null);
+  const [choiceRetryUnlocked, setChoiceRetryUnlocked] = useState(false);
   const [showSolution, setShowSolution] = useState(() =>
     hasSubstantiveAttempt(problem.state)
   );
@@ -157,6 +165,8 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
     problem.solutionCode
   );
   const [isLoadingReference, setIsLoadingReference] = useState(false);
+  const answerInputRef = useRef<HTMLInputElement | null>(null);
+  const stepsRef = useRef<HTMLDivElement | null>(null);
 
   const hasSubstantiveState = hasSubstantiveAttempt(problem.state);
 
@@ -180,6 +190,11 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
     problem.solutionCode,
     hasSubstantiveState,
   ]);
+
+  useEffect(() => {
+    setCheckingOptionId(null);
+    setChoiceRetryUnlocked(false);
+  }, [problem.id]);
 
   const effectiveState = {
     ...problem.state,
@@ -346,6 +361,80 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
 
   const score = problem.state.score;
   const lastCheck: CheckResult | null | undefined = problem.state.lastCheck;
+  const isChoice = isChoiceQuestion(problem);
+  const choiceOptions = problem.answerSpec.options;
+  const choiceLocked = isChoiceInteractionLocked({
+    isChecking,
+    lastCheck,
+    skipped: problem.state.skipped,
+    retryUnlocked: choiceRetryUnlocked,
+  });
+  const choiceResultStatus = getChoiceResultStatus({
+    isChecking,
+    lastCheck,
+    skipped: problem.state.skipped,
+  });
+
+  const handleChoiceSelect = useCallback(
+    async (optionId: string) => {
+      await submitChoiceSelection({
+        optionId,
+        disabled: choiceLocked,
+        isChecking,
+        onStart: (id) => {
+          setChoiceRetryUnlocked(false);
+          setCheckingOptionId(id);
+          setIsChecking(true);
+        },
+        onInputChange,
+        onCheckAnswer,
+        onFinish: () => {
+          setIsChecking(false);
+          setCheckingOptionId(null);
+        },
+      });
+    },
+    [choiceLocked, isChecking, onInputChange, onCheckAnswer]
+  );
+
+  useEffect(() => {
+    if (isKata || !isChoice || !choiceOptions?.length) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      if (!/^[1-9]$/.test(e.key)) return;
+      if (isEditableEventTarget(e.target)) return;
+      if (document.querySelector('[role="alertdialog"], [role="dialog"]')) return;
+      if (choiceLocked || isChecking) return;
+      const matched = resolveChoiceKeyOption(e.key, choiceOptions);
+      if (!matched) return;
+      e.preventDefault();
+      void handleChoiceSelect(matched.id);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isKata, isChoice, choiceOptions, choiceLocked, isChecking, handleChoiceSelect]);
+
+  const handleTryAgain = () => {
+    if (isChoice) {
+      setChoiceRetryUnlocked(true);
+      return;
+    }
+    answerInputRef.current?.focus();
+    answerInputRef.current?.select();
+  };
+
+  const handleShowStepsFromCard = () => {
+    if (!showSolution) {
+      if (onSolutionRevealed) {
+        onSolutionRevealed();
+      }
+      setShowSolution(true);
+    }
+    requestAnimationFrame(() => {
+      stepsRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    });
+  };
+
   const isFindBug =
     problem.codeType === "find-bug" || problem.answerSpec?.type === "line_number";
   const selectedLineNumber = isFindBug
@@ -895,138 +984,68 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
               />
             )}
 
-            {problem.answerSpec.type === "choice" && problem.answerSpec.options && (
-              <div className="grid grid-cols-1 gap-2">
-                {problem.answerSpec.options.map((opt) => {
-                  const isSelected = problem.state.userInput === opt.id;
-                  return (
-                    <button
-                      key={opt.id}
-                      type="button"
-                      onClick={() => onInputChange(opt.id)}
-                      className={`w-full text-left p-3.5 rounded-xl border transition-colors flex items-start gap-3 ${
-                        isSelected
-                          ? "bg-zinc-100 dark:bg-zinc-800 border-indigo-600 dark:border-indigo-500 text-zinc-900 dark:text-zinc-100"
-                          : "bg-zinc-50 dark:bg-zinc-950 hover:border-zinc-400 dark:hover:border-zinc-600 border-zinc-200 dark:border-zinc-800 text-zinc-800 dark:text-zinc-200"
-                      }`}
-                    >
-                      <span
-                        className={`inline-flex items-center justify-center w-6 h-6 rounded-md text-xs font-mono font-semibold shrink-0 ${
-                          isSelected
-                            ? "bg-indigo-600 dark:bg-indigo-500 text-white"
-                            : "bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-800"
-                        }`}
-                      >
-                        {opt.id}
-                      </span>
-                      <div className="flex-1 text-xs pt-0.5 leading-relaxed">
-                        <FormattedText text={opt.label} />
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
+            {isChoice && choiceOptions && (
+              <ChoiceOptionGroup
+                options={choiceOptions}
+                selectedValue={problem.state.userInput}
+                onSelect={(optId) => void handleChoiceSelect(optId)}
+                disabled={choiceLocked}
+                checkingOptionId={checkingOptionId}
+                resultStatus={choiceResultStatus}
+                layout="stack"
+              />
             )}
 
             <div className="space-y-3">
-              <div className="flex items-center gap-2.5">
-                {!isFindBug && problem.answerSpec.type !== "choice" && (
-                  <input
-                    type="text"
-                    value={problem.state.userInput}
-                    onChange={(e) => onInputChange(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        void triggerWebCheck();
-                      }
-                    }}
-                    placeholder={getSafePlaceholder(problem.inputHint, problem)}
-                    aria-label={`Answer for ${isLab ? "milestone" : "problem"} ${problem.id}`}
-                    className="flex-1 min-w-0 h-11 font-mono text-sm bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 border border-zinc-300 dark:border-zinc-700 rounded-xl px-3.5 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600/25 dark:focus:ring-indigo-500/30 focus:border-indigo-600 dark:focus:border-indigo-500 placeholder:text-zinc-500 dark:placeholder:text-zinc-400"
-                  />
-                )}
-
-                <button
-                  type="button"
-                  onClick={triggerWebCheck}
-                  disabled={isChecking || !problem.state.userInput.trim()}
-                  aria-label="Check answer"
-                  title="Check answer (Enter)"
-                  className="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-700 disabled:opacity-40 text-white transition-colors shrink-0"
-                >
-                  {isChecking ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Check className="w-4 h-4" />
+              {!isChoice && (
+                <div className="flex items-center gap-2.5">
+                  {!isFindBug && (
+                    <input
+                      ref={answerInputRef}
+                      type="text"
+                      value={problem.state.userInput}
+                      onChange={(e) => onInputChange(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          void triggerWebCheck();
+                        }
+                      }}
+                      placeholder={getSafePlaceholder(problem.inputHint, problem)}
+                      aria-label={`Answer for ${isLab ? "milestone" : "problem"} ${problem.id}`}
+                      className="flex-1 min-w-0 h-11 font-mono text-sm bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 border border-zinc-300 dark:border-zinc-700 rounded-xl px-3.5 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600/25 dark:focus:ring-indigo-500/30 focus:border-indigo-600 dark:focus:border-indigo-500 placeholder:text-zinc-500 dark:placeholder:text-zinc-400"
+                    />
                   )}
-                </button>
-              </div>
 
-              <Reveal show={Boolean(lastCheck)}>
-              {lastCheck && (
-                <div
-                  role="status"
-                  className={`border-l-2 pl-3.5 py-1 space-y-1.5 text-sm ${
-                    lastCheck.verdict === "correct"
-                      ? "border-emerald-700 dark:border-emerald-400"
-                      : lastCheck.verdict === "partial" ||
-                        problem.state.skipped ||
-                        (lastCheck.verdict as string) === "skipped" ||
-                        lastCheck.verdict === "invalid input" ||
-                        lastCheck.verdict === "parse_error"
-                      ? "border-amber-600 dark:border-amber-400"
-                      : "border-rose-600 dark:border-rose-400"
-                  }`}
-                >
-                  <div className="flex items-start gap-2">
-                    {lastCheck.verdict === "correct" ? (
-                      <CheckCircle2 className="w-4 h-4 text-emerald-700 dark:text-emerald-400 shrink-0 mt-0.5" />
-                    ) : lastCheck.verdict === "partial" ||
-                      problem.state.skipped ||
-                      (lastCheck.verdict as string) === "skipped" ||
-                      lastCheck.verdict === "invalid input" ||
-                      lastCheck.verdict === "parse_error" ? (
-                      <AlertTriangle className="w-4 h-4 text-amber-700 dark:text-amber-400 shrink-0 mt-0.5" />
+                  <button
+                    type="button"
+                    onClick={triggerWebCheck}
+                    disabled={isChecking || !problem.state.userInput.trim()}
+                    aria-label="Check answer"
+                    title="Check answer (Enter)"
+                    className="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-700 disabled:opacity-40 text-white transition-colors shrink-0"
+                  >
+                    {isChecking ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
                     ) : (
-                      <XCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
+                      <Check className="w-4 h-4" />
                     )}
-                    <span className="font-medium text-zinc-900 dark:text-zinc-100">
-                      <FormattedText
-                        text={sanitizeCheckMessage(lastCheck.verdict, lastCheck.message)}
-                      />
-                    </span>
-                  </div>
-
-                  {lastCheck.components && lastCheck.components.length > 0 && (
-                    <div className="flex flex-wrap gap-3 pl-6">
-                      {lastCheck.components.map((c, i) => (
-                        <span
-                          key={i}
-                          className={`text-xs font-mono ${
-                            c.ok
-                              ? "text-emerald-700 dark:text-emerald-400"
-                              : "text-rose-600 dark:text-rose-400"
-                          }`}
-                        >
-                          <FormattedText text={c.label} />: {c.ok ? "✓" : "✗"}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-
-                  {lastCheck.diagnostics && lastCheck.diagnostics.length > 0 && (
-                    <div className="pl-6 text-xs text-zinc-600 dark:text-zinc-400 space-y-1">
-                      {lastCheck.diagnostics.map((d, i) => (
-                        <div key={i}>
-                          <FormattedText text={d.message} />
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                  </button>
                 </div>
               )}
-              </Reveal>
+
+              <AnswerResultCard
+                lastCheck={lastCheck}
+                state={problem.state}
+                problem={problem}
+                mistakeTags={mistakeTags}
+                isLastQuestion={isLastQuestion}
+                nextLabel={isLab ? "Next milestone" : "Next problem"}
+                onNextQuestion={onNextQuestion}
+                onOpenReview={onOpenReview}
+                onTryAgain={handleTryAgain}
+                onShowSteps={handleShowStepsFromCard}
+              />
             </div>
 
             <div className="space-y-3 pt-1">
@@ -1034,11 +1053,15 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                 {hasAttempt && (
                   <button
                     type="button"
-                    onClick={onResetProblem}
+                    onClick={() => {
+                      setChoiceRetryUnlocked(false);
+                      setCheckingOptionId(null);
+                      onResetProblem();
+                    }}
                     className="inline-flex items-center gap-1.5 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
                   >
                     <RotateCcw className="w-3.5 h-3.5" />
-                    <span>Try again</span>
+                    <span>Reset</span>
                   </button>
                 )}
 
@@ -1111,7 +1134,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
 
               <Reveal show={Boolean(showSolution)}>
               {showSolution && (
-                <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 space-y-2.5">
+                <div ref={stepsRef} className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 space-y-2.5">
                   {(problem.steps || []).map((st, sIdx) => {
                     const isDiverged = problem.state.divergedStep === sIdx;
                     const isActive = activeStep === sIdx;
