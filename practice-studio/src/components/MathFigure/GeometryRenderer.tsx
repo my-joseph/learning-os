@@ -41,10 +41,10 @@ const THEME_STYLES: Record<
     marker: "#047857",
   },
   amber: {
-    primary: "stroke-amber-600 dark:stroke-amber-400",
+    primary: "stroke-amber-700 dark:stroke-amber-400",
     stroke: "#d97706",
     fill: "rgba(245, 158, 11, 0.09)",
-    accent: "text-amber-600 dark:text-amber-400",
+    accent: "text-amber-700 dark:text-amber-400",
     marker: "#b45309",
   },
   rose: {
@@ -498,7 +498,7 @@ const AngleArcMarkerSvg: React.FC<{
           className="overflow-visible pointer-events-none"
         >
           <div className="w-full h-full flex items-center justify-center">
-            <span className="text-[11px] font-mono font-bold text-amber-600 dark:text-amber-400">
+            <span className="text-[11px] font-mono font-bold text-amber-700 dark:text-amber-400">
               <FormattedText
                 text={marker.label.startsWith("$") ? marker.label : `$${marker.label}$`}
               />

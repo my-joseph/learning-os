@@ -139,8 +139,9 @@ assert.equal(pilotToast.type, "warn");
 assert.match(pilotToast.text, /Dry run — nothing written to Notion/);
 assert.doesNotMatch(pilotToast.text, /\bSynced\b/);
 
-const liveToast = formatSyncToast({ ok: true }, "DRL-MTH-01", "MTH-T01-C04", 4, 5, 80);
+const liveToast = formatSyncToast({ ok: true }, "Fractions", "MTH-T01-C04", 4, 5, 80);
 assert.equal(liveToast.type, "pass");
-assert.match(liveToast.text, /^Synced DRL-MTH-01/);
+assert.match(liveToast.text, /^Synced Fractions/);
+assert.doesNotMatch(liveToast.text, /DRL-/);
 
 console.log("toast and dialog tests passed");

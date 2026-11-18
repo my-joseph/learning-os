@@ -107,10 +107,27 @@ const drillQuizTiles = renderToStaticMarkup(
   />
 );
 assert.match(drillQuizTiles, /role="navigation"[^>]*aria-label="Questions"/);
+assert.match(drillQuizTiles, /justify-center[^>]*w-max mx-auto|w-max mx-auto/);
 assert.doesNotMatch(drillQuizTiles, /aria-label="Lab milestones"/);
 assert.match(drillQuizTiles, /aria-label="Review &amp; sync"/);
 assert.match(drillQuizTiles, /title="Review &amp; sync"/);
 assert.doesNotMatch(drillQuizTiles, />Review<\/span>/);
+
+const codeQuizTiles = renderToStaticMarkup(
+  <QuizPaginationBar
+    totalQuestions={2}
+    currentIndex={0}
+    problems={[makeProblem("Q01"), makeProblem("Q02")]}
+    viewMode="quiz"
+    workspace="code"
+    onSelectQuestion={noop}
+    onPrev={noop}
+    onNext={noop}
+    onToggleViewMode={noop}
+  />
+);
+assert.match(codeQuizTiles, /role="navigation"[^>]*aria-label="Problems"/);
+assert.match(codeQuizTiles, /aria-label="Problem 1 — Unanswered"/);
 
 const drillReviewTiles = renderToStaticMarkup(
   <QuizPaginationBar

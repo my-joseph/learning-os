@@ -415,8 +415,9 @@ export function useDrill({
     if (updated.problems[0]) {
       onQuestionChange?.(updated.drillId, updated.problems[0].id);
     }
+    const drillLabel = currentDrill.unitTitle || currentDrill.unitCode || currentDrill.drillId;
     setStatus({
-      text: `Reset ${currentDrill.drillId} to initial state.`,
+      text: `Reset ${drillLabel} to initial state.`,
       type: "pass",
     });
   };

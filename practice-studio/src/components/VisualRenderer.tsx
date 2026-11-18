@@ -208,7 +208,7 @@ const RenderElement: React.FC<{ element: VisualElement }> = ({ element }) => {
               y={lblY}
               textAnchor="middle"
               dominantBaseline="central"
-              className="fill-amber-600 dark:fill-amber-400 font-mono font-bold"
+              className="fill-amber-700 dark:fill-amber-400 font-mono font-bold"
               style={{ fontSize: "11px" }}
             >
               {element.label}
@@ -274,7 +274,7 @@ const RenderElement: React.FC<{ element: VisualElement }> = ({ element }) => {
           dominantBaseline="central"
           className={`text-xs font-mono font-bold ${
             element.highlight
-              ? "fill-amber-600 dark:fill-amber-400 font-extrabold"
+              ? "fill-amber-700 dark:fill-amber-400 font-extrabold"
               : "fill-slate-800 dark:fill-slate-200"
           }`}
           style={{ fontSize: "11px" }}

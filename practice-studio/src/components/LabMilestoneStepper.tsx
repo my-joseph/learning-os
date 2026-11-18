@@ -51,7 +51,8 @@ export const LabMilestoneStepper: React.FC<LabMilestoneStepperProps> = ({
   const isReview = viewMode === "review";
   const states = deriveLabMilestoneStates(problems);
   const totalSteps = problems.length + 1;
-  const needsHorizontalScroll = problems.length > 8;
+  const isCompact = problems.length > 8;
+  const needsHorizontalScroll = problems.length > 4;
 
   const stepBtnRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const reviewBtnRef = useRef<HTMLButtonElement | null>(null);
@@ -79,10 +80,9 @@ export const LabMilestoneStepper: React.FC<LabMilestoneStepperProps> = ({
         }
       >
         <div
-          className="grid w-max items-end"
+          className="grid w-max items-end mx-auto"
           style={{
-            // Compact, fixed spacing (learner: steps were too far apart); left-aligned like the question tiles.
-            gridTemplateColumns: `repeat(${totalSteps}, ${needsHorizontalScroll ? 52 : 64}px)`,
+            gridTemplateColumns: `repeat(${totalSteps}, ${isCompact ? 52 : 64}px)`,
           }}
         >
           {problems.map((prob, idx) => {

@@ -16,6 +16,7 @@ export interface StudioSidePanelProps {
   weakSpotUnits: WeakSpotUnit[];
   weakLoading?: boolean;
   weakError?: string | null;
+  embedded?: boolean;
   onNavigate?: () => void;
 }
 
@@ -52,6 +53,7 @@ export const StudioSidePanel: React.FC<StudioSidePanelProps> = ({
   weakSpotUnits,
   weakLoading = false,
   weakError = null,
+  embedded = false,
   onNavigate,
 }) => {
   const isPrg = workspace === "code";
@@ -72,7 +74,13 @@ export const StudioSidePanel: React.FC<StudioSidePanelProps> = ({
     : "No open traps for this unit yet.";
 
   return (
-    <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 divide-y divide-zinc-200 dark:divide-zinc-800">
+    <div
+      className={
+        embedded
+          ? "divide-y divide-zinc-200 dark:divide-zinc-800"
+          : "bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 divide-y divide-zinc-200 dark:divide-zinc-800"
+      }
+    >
       {/* Section 1: Due today */}
       <section aria-labelledby="side-panel-due-heading" className="pb-4 space-y-2.5">
         <div className="flex items-baseline justify-between gap-2">
@@ -202,7 +210,7 @@ export const StudioSidePanel: React.FC<StudioSidePanelProps> = ({
                   </p>
                 )}
                 {showUnitHeading && spot.unitTitle && (
-                  <p className="text-[11px] text-zinc-400 dark:text-zinc-500 truncate">
+                  <p className="text-[11px] text-zinc-500 dark:text-zinc-400 truncate">
                     {spot.unitTitle}
                   </p>
                 )}

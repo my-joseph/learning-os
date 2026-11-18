@@ -58,7 +58,7 @@ export interface SyncResponseLike {
 /** Build the status toast message after a Notion sync response (handling dry-run and pilot mode). */
 export function formatSyncToast(
   data: SyncResponseLike,
-  drillId: string,
+  drillTitle: string,
   unitCode: string,
   liveScore: number,
   maxScore: number,
@@ -73,12 +73,12 @@ export function formatSyncToast(
   if (data.degraded) {
     // Saved locally, but Notion was unreachable (or no token): do not report it as synced.
     return {
-      text: `Saved ${drillId} locally, but Notion was not updated: ${data.warning || "Notion unavailable"}`,
+      text: `Saved ${drillTitle} locally, but Notion was not updated: ${data.warning || "Notion unavailable"}`,
       type: "warn",
     };
   }
   return {
-    text: `Synced ${drillId} (${liveScore}/${maxScore} · ${accuracyPct}%) to Notion Database & ${unitCode} Mistake Log!`,
+    text: `Synced ${drillTitle} (${liveScore}/${maxScore} · ${accuracyPct}%) to Notion Database & ${unitCode} Mistake Log!`,
     type: "pass",
   };
 }
@@ -115,9 +115,10 @@ export function useProgressSync({ setStatus }: UseProgressSyncOptions) {
         statusOverride
       );
 
+      const drillLabel = currentDrill.unitTitle || currentDrill.unitCode || currentDrill.drillId;
       setIsSyncing(true);
       setStatus({
-        text: `Syncing ${currentDrill.drillId} (${liveScore}/${maxScore}) to Notion...`,
+        text: `Syncing ${drillLabel} (${liveScore}/${maxScore}) to Notion...`,
         type: "warn",
       });
 
@@ -186,7 +187,7 @@ export function useProgressSync({ setStatus }: UseProgressSyncOptions) {
         setStatus(
           formatSyncToast(
             data,
-            currentDrill.drillId,
+            drillLabel,
             currentDrill.unitCode,
             liveScore,
             maxScore,
