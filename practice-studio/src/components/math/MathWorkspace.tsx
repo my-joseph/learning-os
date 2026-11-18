@@ -20,6 +20,7 @@ import { MathFigure } from "@/components/MathFigure";
 import { LineChoicePrompt, parseLineChoicePrompt } from "@/components/LineChoicePrompt";
 import { ChoiceOptionGroup } from "@/components/ChoiceOptionGroup";
 import { AnswerResultCard } from "@/components/AnswerResultCard";
+import { QuestionTimer } from "@/components/QuestionTimer";
 import { hasCheckpointHint } from "@/lib/studioRules";
 import { hasSubstantiveAttempt } from "@/lib/reviewGuard";
 import {
@@ -53,6 +54,10 @@ export interface MathWorkspaceProps {
   onPrevQuestion?: () => void;
   onNextQuestion?: () => void;
   onOpenReview?: () => void;
+  questionTimerMs?: number;
+  totalTimerMs?: number;
+  isTimerPaused?: boolean;
+  onToggleTimerPause?: () => void;
 }
 
 const DEFAULT_PLACEHOLDER_BY_TYPE: Record<string, string> = {
@@ -90,6 +95,10 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
   onPrevQuestion,
   onNextQuestion,
   onOpenReview,
+  questionTimerMs,
+  totalTimerMs,
+  isTimerPaused = false,
+  onToggleTimerPause,
 }) => {
   const shouldAutoReveal = (p: Problem) =>
     p.state.lastCheck?.verdict === "correct" || Boolean(p.state.skipped);
@@ -259,20 +268,28 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
       )}
 
       <article className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 sm:p-6 space-y-6">
-        {/* 1. Question number + level + prompt (text-base, leading-relaxed) */}
+        {/* 1. Question number + level + timer + prompt (text-base, leading-relaxed) */}
         <div className="space-y-2">
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-medium text-zinc-500 dark:text-zinc-400">
-            <span>
-              Question {index + 1}
-              {typeof totalQuestions === "number" && totalQuestions > 0
-                ? ` of ${totalQuestions}`
-                : ""}
-            </span>
-            {typeof problem.level === "number" && problem.level > 0 && (
-              <span title={problem.levelLabel?.trim() || undefined}>
-                Level {problem.level}
+          <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 text-xs font-medium text-zinc-500 dark:text-zinc-400">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+              <span>
+                Question {index + 1}
+                {typeof totalQuestions === "number" && totalQuestions > 0
+                  ? ` of ${totalQuestions}`
+                  : ""}
               </span>
-            )}
+              {typeof problem.level === "number" && problem.level > 0 && (
+                <span title={problem.levelLabel?.trim() || undefined}>
+                  Level {problem.level}
+                </span>
+              )}
+            </div>
+            <QuestionTimer
+              questionMs={questionTimerMs ?? (problem.state?.durationMs || 0)}
+              totalMs={totalTimerMs ?? (questionTimerMs ?? (problem.state?.durationMs || 0))}
+              isPaused={isTimerPaused}
+              onTogglePause={onToggleTimerPause}
+            />
           </div>
 
           <div className="text-base leading-relaxed text-zinc-900 dark:text-zinc-100">

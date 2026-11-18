@@ -18,9 +18,12 @@ import {
   createTelemetryTimerState,
   setActiveProblem,
   setVisibility,
+  pauseTimer,
+  resumeTimer,
   recordHint,
   consumeAttempt,
   resetProblemTimer,
+  getAttemptElapsedMs,
   TelemetryTimerState,
 } from "@/lib/telemetryTimer";
 import { labToDrillDocument, type LabDetailResponse } from "@/lib/labModel";
@@ -51,25 +54,74 @@ export function useDrill({
 
   // Minimal telemetry: robust timer measuring visible active problem time & hint telemetry
   const timerStateRef = useRef<TelemetryTimerState>(createTelemetryTimerState());
+  const [timerState, setTimerState] = useState<TelemetryTimerState>(() => timerStateRef.current);
+  const [timerNow, setTimerNow] = useState<number>(() => Date.now());
+
+  const commitTimerState = useCallback(
+    (next: TelemetryTimerState, now: number = Date.now()) => {
+      timerStateRef.current = next;
+      setTimerState(next);
+      setTimerNow(now);
+    },
+    []
+  );
+
+  const activeProbId =
+    viewMode === "quiz" && currentDrill && currentDrill.problems.length > 0
+      ? currentDrill.problems[currentProblemIndex]?.id ?? null
+      : null;
 
   useEffect(() => {
     if (!currentDrill || !currentDrill.problems.length) return;
-    const currentProb = currentDrill.problems[currentProblemIndex];
-    if (currentProb) {
-      timerStateRef.current = setActiveProblem(timerStateRef.current, currentProb.id, Date.now());
-    }
-  }, [currentDrill, currentProblemIndex]);
+    if (timerStateRef.current.activeProblemId === activeProbId) return;
+    const now = Date.now();
+    commitTimerState(setActiveProblem(timerStateRef.current, activeProbId, now), now);
+  }, [currentDrill, activeProbId, commitTimerState]);
 
   useEffect(() => {
     const handleVisibilityChange = () => {
       const isVisible = !document.hidden;
-      timerStateRef.current = setVisibility(timerStateRef.current, isVisible, Date.now());
+      const now = Date.now();
+      commitTimerState(setVisibility(timerStateRef.current, isVisible, now), now);
     };
     document.addEventListener("visibilitychange", handleVisibilityChange);
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, []);
+  }, [commitTimerState]);
+
+  const isTimerRunning =
+    Boolean(currentDrill) &&
+    viewMode === "quiz" &&
+    timerState.activeProblemId !== null &&
+    timerState.isDocumentVisible &&
+    !timerState.paused;
+
+  useEffect(() => {
+    if (!isTimerRunning || !activeProbId) return;
+    let lastWholeSec = Math.floor(
+      getAttemptElapsedMs(timerStateRef.current, activeProbId, Date.now()) / 1000
+    );
+    const id = window.setInterval(() => {
+      const now = Date.now();
+      const wholeSec = Math.floor(
+        getAttemptElapsedMs(timerStateRef.current, activeProbId, now) / 1000
+      );
+      if (wholeSec !== lastWholeSec) {
+        lastWholeSec = wholeSec;
+        setTimerNow(now);
+      }
+    }, 250);
+    return () => window.clearInterval(id);
+  }, [isTimerRunning, activeProbId]);
+
+  const handleToggleTimerPause = useCallback(() => {
+    const now = Date.now();
+    const next = timerStateRef.current.paused
+      ? resumeTimer(timerStateRef.current, now)
+      : pauseTimer(timerStateRef.current, now);
+    commitTimerState(next, now);
+  }, [commitTimerState]);
 
   const handleHintRevealed = useCallback((probId: string) => {
     timerStateRef.current = recordHint(timerStateRef.current, probId);
@@ -113,8 +165,16 @@ export function useDrill({
             },
           })),
         };
+        const targetIndex = findProblemIndex(normalizedDoc.problems, initialQuestionId);
+        const initialProbId = normalizedDoc.problems[targetIndex]?.id ?? null;
+        const now = Date.now();
+        const isVisible = typeof document !== "undefined" ? !document.hidden : true;
+        commitTimerState(
+          createTelemetryTimerState(initialProbId, isVisible, timerStateRef.current.paused, now),
+          now
+        );
         setCurrentDrill(normalizedDoc);
-        setCurrentProblemIndex(findProblemIndex(normalizedDoc.problems, initialQuestionId));
+        setCurrentProblemIndex(targetIndex);
         setViewMode("quiz");
         onDrillLoaded?.(normalizedDoc);
         setActiveSteps({});
@@ -125,7 +185,7 @@ export function useDrill({
         setIsLoadingDrill(false);
       }
     },
-    [onDrillLoaded, setStatus]
+    [commitTimerState, onDrillLoaded, setStatus]
   );
 
   const updateProblem = useCallback(
@@ -223,12 +283,13 @@ export function useDrill({
           ? rawResult
           : { ...rawResult, message: calmMessage };
 
+      const now = Date.now();
       const { durationMs, hintsRevealed, nextState } = consumeAttempt(
         timerStateRef.current,
         probId,
-        Date.now()
+        now
       );
-      timerStateRef.current = nextState;
+      commitTimerState(nextState, now);
       const hintsCount = hintsRevealed + (p.state?.hintsRevealed || 0);
 
       const updatedProblems = currentDrill.problems.map((prob) => {
@@ -362,12 +423,13 @@ export function useDrill({
     const p = currentDrill.problems.find((item) => item.id === probId);
     if (!p) return;
 
+    const now = Date.now();
     const { durationMs, hintsRevealed, nextState } = consumeAttempt(
       timerStateRef.current,
       probId,
-      Date.now()
+      now
     );
-    timerStateRef.current = nextState;
+    commitTimerState(nextState, now);
     const hintsCount = hintsRevealed + (p.state?.hintsRevealed || 0);
 
     const updatedDoc: DrillDocument = {
@@ -395,7 +457,8 @@ export function useDrill({
 
   const handleResetProblem = (probId: string) => {
     if (!currentDrill) return;
-    timerStateRef.current = resetProblemTimer(timerStateRef.current, probId);
+    const now = Date.now();
+    commitTimerState(resetProblemTimer(timerStateRef.current, probId, now), now);
     setActiveSteps((prev) => ({ ...prev, [probId]: null }));
     updateProblem(probId, resetProblemForRetry);
   };
@@ -404,10 +467,16 @@ export function useDrill({
     if (!currentDrill) return;
 
     const updated = resetDrillForRetry(currentDrill);
+    const now = Date.now();
     const isVisible = typeof document !== "undefined" ? !document.hidden : true;
-    timerStateRef.current = createTelemetryTimerState(
-      updated.problems[0]?.id ?? null,
-      isVisible
+    commitTimerState(
+      createTelemetryTimerState(
+        updated.problems[0]?.id ?? null,
+        isVisible,
+        timerStateRef.current.paused,
+        now
+      ),
+      now
     );
     setActiveSteps({});
     setCurrentDrill(updated);
@@ -497,11 +566,19 @@ export function useDrill({
         handlePrevQuestion();
       } else if (e.key === "ArrowRight") {
         handleNextQuestion();
+      } else if (
+        !e.repeat &&
+        e.key.toLowerCase() === "p" &&
+        viewMode === "quiz" &&
+        Boolean(currentDrill)
+      ) {
+        e.preventDefault();
+        handleToggleTimerPause();
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [handlePrevQuestion, handleNextQuestion]);
+  }, [handlePrevQuestion, handleNextQuestion, handleToggleTimerPause, viewMode, currentDrill]);
 
   return {
     currentDrill,
@@ -515,6 +592,9 @@ export function useDrill({
     setIsLoadingDrill,
     drillNotFound,
     loadDrill,
+    timerState,
+    timerNow,
+    handleToggleTimerPause,
     handleHintRevealed,
     handleCheckAnswer,
     handleInputChange,
