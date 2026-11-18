@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { Reveal } from "@/components/motion/Reveal";
 import {
   Check,
   CheckCircle2,
@@ -640,11 +641,13 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                 </div>
               )}
 
+              <Reveal show={Boolean(showHint && hasCheckpointHint(problem.checkpointHint))}>
               {showHint && hasCheckpointHint(problem.checkpointHint) && (
-                <div className="motion-reveal border-l-2 border-amber-600 dark:border-amber-400 pl-3.5 py-1 text-sm text-zinc-700 dark:text-zinc-300">
+                <div className="border-l-2 border-amber-600 dark:border-amber-400 pl-3.5 py-1 text-sm text-zinc-700 dark:text-zinc-300">
                   <FormattedText text={problem.checkpointHint} />
                 </div>
               )}
+              </Reveal>
             </div>
 
             {/* 5. Collapsible sections (closed by default): Review history, Explain, Reference */}
@@ -663,8 +666,9 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                   </span>
                   <ChevronDown className={`w-4 h-4 text-zinc-400 transition-transform duration-200 ${openHistory ? "rotate-180" : ""}`} />
                 </button>
+                <Reveal show={Boolean(openHistory)}>
                 {openHistory && (
-                  <div className="motion-reveal pt-2 pb-1 space-y-3 text-sm text-zinc-600 dark:text-zinc-400">
+                  <div className="pt-2 pb-1 space-y-3 text-sm text-zinc-600 dark:text-zinc-400">
                     {reviews.length === 0 ? (
                       <p className="text-zinc-500 dark:text-zinc-400">
                         No reviews recorded yet.
@@ -714,6 +718,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                     )}
                   </div>
                 )}
+                </Reveal>
               </div>
 
               {/* Explain */}
@@ -727,8 +732,9 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                   <span>Explain</span>
                   <ChevronDown className={`w-4 h-4 text-zinc-400 transition-transform duration-200 ${openExplain ? "rotate-180" : ""}`} />
                 </button>
+                <Reveal show={Boolean(openExplain)}>
                 {openExplain && (
-                  <div className="motion-reveal pt-2 pb-1 space-y-2 text-sm">
+                  <div className="pt-2 pb-1 space-y-2 text-sm">
                     <p className="text-zinc-700 dark:text-zinc-300">
                       <FormattedText text={explainQuestion} />
                     </p>
@@ -743,6 +749,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                     )}
                   </div>
                 )}
+                </Reveal>
               </div>
 
               {/* Reference (drills) or Lab README (labs; _reference is never served) */}
@@ -758,11 +765,13 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                       <span>Lab README</span>
                       <ChevronDown className={`w-4 h-4 text-zinc-400 transition-transform duration-200 ${openReference ? "rotate-180" : ""}`} />
                     </button>
+                    <Reveal show={Boolean(openReference)}>
                     {openReference && (
-                      <div className="motion-reveal pt-2 pb-1 text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed">
+                      <div className="pt-2 pb-1 text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed">
                         <FormattedText text={labReadme} />
                       </div>
                     )}
+                    </Reveal>
                   </div>
                 ) : null
               ) : (
@@ -783,8 +792,9 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                       <ChevronDown className={`w-4 h-4 text-zinc-400 transition-transform duration-200 ${openReference ? "rotate-180" : ""}`} />
                     </span>
                   </button>
+                  <Reveal show={Boolean(openReference)}>
                   {openReference && (
-                    <div className="motion-reveal pt-2 pb-1">
+                    <div className="pt-2 pb-1">
                       {!referenceAllowed ? (
                         <p className="text-sm text-zinc-500 dark:text-zinc-400">
                           Unlocks after review passes
@@ -806,6 +816,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                       )}
                     </div>
                   )}
+                  </Reveal>
                 </div>
               )}
             </div>
@@ -901,10 +912,11 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                 </button>
               </div>
 
+              <Reveal show={Boolean(lastCheck)}>
               {lastCheck && (
                 <div
                   role="status"
-                  className={`motion-reveal border-l-2 pl-3.5 py-1 space-y-1.5 text-sm ${
+                  className={`border-l-2 pl-3.5 py-1 space-y-1.5 text-sm ${
                     lastCheck.verdict === "correct"
                       ? "border-emerald-700 dark:border-emerald-400"
                       : lastCheck.verdict === "partial" ||
@@ -957,6 +969,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                   )}
                 </div>
               )}
+              </Reveal>
             </div>
 
             <div className="space-y-3 pt-1">
@@ -1019,14 +1032,17 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                 )}
               </div>
 
+              <Reveal show={Boolean(showHint && hasCheckpointHint(problem.checkpointHint))}>
               {showHint && hasCheckpointHint(problem.checkpointHint) && (
-                <div className="motion-reveal border-l-2 border-amber-600 dark:border-amber-400 pl-3.5 py-1 text-sm text-zinc-700 dark:text-zinc-300">
+                <div className="border-l-2 border-amber-600 dark:border-amber-400 pl-3.5 py-1 text-sm text-zinc-700 dark:text-zinc-300">
                   <FormattedText text={problem.checkpointHint} />
                 </div>
               )}
+              </Reveal>
 
+              <Reveal show={Boolean(showSolution)}>
               {showSolution && (
-                <div className="motion-reveal bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 space-y-2.5">
+                <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 space-y-2.5">
                   {(problem.steps || []).map((st, sIdx) => {
                     const isDiverged = problem.state.divergedStep === sIdx;
                     const isActive = activeStep === sIdx;
@@ -1072,6 +1088,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                   })}
                 </div>
               )}
+              </Reveal>
             </div>
           </>
         )}

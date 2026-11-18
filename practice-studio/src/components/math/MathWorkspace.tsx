@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
+import { Reveal } from "@/components/motion/Reveal";
 import {
   Copy,
   Check,
@@ -258,10 +259,11 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
           </div>
 
           {/* 4. Feedback directly below the input (thin left border + calm copy, never a red card) */}
+          <Reveal show={Boolean(lastCheck)}>
           {lastCheck && (
             <div
               role="status"
-              className={`motion-reveal border-l-2 pl-3.5 py-1 space-y-1.5 text-sm ${
+              className={`border-l-2 pl-3.5 py-1 space-y-1.5 text-sm ${
                 lastCheck.verdict === "correct"
                   ? "border-emerald-700 dark:border-emerald-400"
                   : lastCheck.verdict === "equivalent_not_in_form" ||
@@ -314,6 +316,7 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
               )}
             </div>
           )}
+          </Reveal>
         </div>
 
         {/* 5. Quiet secondary actions: Try again / equation set-up / hint / steps / skip */}
@@ -390,15 +393,18 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
           </div>
 
           {/* Checkpoint Hint Disclosure */}
+          <Reveal show={Boolean(showHint && hasCheckpointHint(problem.checkpointHint))}>
           {showHint && hasCheckpointHint(problem.checkpointHint) && (
-            <div className="motion-reveal border-l-2 border-amber-600 dark:border-amber-400 pl-3.5 py-1 text-sm text-zinc-700 dark:text-zinc-300">
+            <div className="border-l-2 border-amber-600 dark:border-amber-400 pl-3.5 py-1 text-sm text-zinc-700 dark:text-zinc-300">
               <FormattedText text={problem.checkpointHint} />
             </div>
           )}
+          </Reveal>
 
           {/* Equation Set-up Disclosure */}
+          <Reveal show={Boolean(hasSetup && showSetup)}>
           {hasSetup && showSetup && (
-            <div className="motion-reveal bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 space-y-2.5">
+            <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 space-y-2.5">
               {problem.display && (
                 <div className="overflow-x-auto text-zinc-900 dark:text-zinc-100">
                   <MathBlock latex={problem.display} />
@@ -436,11 +442,13 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
               )}
             </div>
           )}
+          </Reveal>
 
           {/* Step-by-Step Derivation Disclosure */}
+          <Reveal show={Boolean(showSolution)}>
           {showSolution && (
             <div
-              className={`motion-reveal bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 space-y-3 ${
+              className={`bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 space-y-3 ${
                 activeStep !== null ? "has-active" : ""
               }`}
             >
@@ -470,6 +478,7 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
               </div>
             </div>
           )}
+          </Reveal>
         </div>
 
         {/* 6. Self-score, mistake tags & mistake note — shown ONLY after an attempt */}

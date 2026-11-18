@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { Reveal } from "@/components/motion/Reveal";
 import { Plus, RefreshCw, X } from "lucide-react";
 import { DrillDocument } from "@/types/drill";
 import { StatusMessage } from "@/hooks/types";
@@ -52,7 +53,6 @@ export const GeneratePopover: React.FC<GeneratePopoverProps> = ({
     }
   }, [currentDrill]);
 
-  if (!isOpen) return null;
 
   const handleGenerateDrill = async () => {
     setIsGenerating(true);
@@ -91,9 +91,10 @@ export const GeneratePopover: React.FC<GeneratePopoverProps> = ({
   };
 
   return (
+    <Reveal show={isOpen}>
     <div
       ref={popoverRef}
-      className="motion-reveal mt-2 pt-2 border-t border-zinc-200 dark:border-zinc-800 space-y-2.5 text-xs"
+      className="mt-2 pt-2 border-t border-zinc-200 dark:border-zinc-800 space-y-2.5 text-xs"
     >
       <div className="flex items-center justify-between">
         <span className="font-semibold text-zinc-700 dark:text-zinc-300">
@@ -194,5 +195,6 @@ export const GeneratePopover: React.FC<GeneratePopoverProps> = ({
         <span>{isGenerating ? "Generating..." : "Generate set"}</span>
       </button>
     </div>
+    </Reveal>
   );
 };

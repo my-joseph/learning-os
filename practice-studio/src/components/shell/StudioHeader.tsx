@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import { AnimatePresence, m } from "motion/react";
+import { popover, presence, settle } from "@/lib/motion";
 import Link from "next/link";
 import {
   ArrowUpRight,
@@ -140,10 +142,12 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
             aria-label="Workspace"
             className="relative hidden sm:grid grid-cols-2 items-center rounded-lg bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-800 p-0.5 shrink-0"
           >
-            <span
+            <m.span
               aria-hidden
-              className="absolute top-0.5 bottom-0.5 left-0.5 w-[calc(50%-2px)] rounded-md bg-white dark:bg-zinc-900 shadow-sm transition-transform duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]"
-              style={{ transform: pillWorkspace === "code" ? "translateX(100%)" : "none" }}
+              className="absolute top-0.5 bottom-0.5 left-0.5 w-[calc(50%-2px)] rounded-md bg-white dark:bg-zinc-900 shadow-sm"
+              initial={false}
+              animate={{ x: pillWorkspace === "code" ? "100%" : "0%" }}
+              transition={settle}
             />
             {workspaceOptions.map((opt) => {
               const isActive = workspace === opt.id;
@@ -238,8 +242,13 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
               <MoreHorizontal className="w-4 h-4" />
             </button>
 
+            <AnimatePresence>
             {showMoreMenu && (
-              <div className="motion-pop-right absolute right-0 mt-2 w-64 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-lg p-2.5 z-50 text-xs space-y-2">
+              <m.div
+                variants={popover}
+                {...presence}
+                style={{ transformOrigin: "top right" }}
+                className="absolute right-0 mt-2 w-64 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-lg p-2.5 z-50 text-xs space-y-2">
                 {/* Status copy */}
                 {currentDrill && (
                   <div className="px-2 py-1.5 rounded-lg bg-zinc-50 dark:bg-zinc-950 border border-zinc-200/80 dark:border-zinc-800 space-y-0.5">
@@ -382,8 +391,9 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
                   }}
                   onStatusChange={onStatusChange}
                 />
-              </div>
+              </m.div>
             )}
+            </AnimatePresence>
           </div>
         </div>
       </div>

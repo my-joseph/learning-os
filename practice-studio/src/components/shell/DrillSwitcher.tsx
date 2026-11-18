@@ -1,6 +1,8 @@
 "use client";
 
 import React from "react";
+import { AnimatePresence, m } from "motion/react";
+import { popover, presence } from "@/lib/motion";
 import {
   CheckCircle2,
   ChevronDown,
@@ -61,8 +63,13 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
         <ChevronDown className={`w-4 h-4 text-zinc-500 dark:text-zinc-400 shrink-0 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
       </button>
 
+      <AnimatePresence>
       {isOpen && (
-        <div className="motion-pop absolute left-0 mt-2 w-[min(calc(100vw-2rem),440px)] bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-lg p-3 z-50">
+        <m.div
+          variants={popover}
+          {...presence}
+          style={{ transformOrigin: "top left" }}
+          className="absolute left-0 mt-2 w-[min(calc(100vw-2rem),440px)] bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-lg p-3 z-50">
           {/* Search Input */}
           <div className="flex items-center gap-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-3 py-2 mb-2.5">
             <Search className="w-4 h-4 text-zinc-400 shrink-0" />
@@ -234,8 +241,9 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
               </>
             )}
           </div>
-        </div>
+        </m.div>
       )}
+      </AnimatePresence>
     </div>
   );
 };
