@@ -1,5 +1,13 @@
 /* Scoped MathLive styles loaded lazily only when MathLiveInput mounts on /math pages. */
 
+/*
+ * MathLive renders inline `\placeholder{}` atoms inside Shadow DOM using `.ML__placeholder`
+ * (Unicode U+25A2 rounded square) without exposing a `::part(...)`, so a CSS dashed border
+ * or a separate caret-inside-placeholder selector cannot pierce the Shadow DOM from CSS alone.
+ * We use MathLive's supported CSS variables (`--placeholder-color` at zinc-400, faint
+ * `--placeholder-opacity`, and indigo-500 `--caret-color` / `--contains-highlight-color`)
+ * plus `::part(placeholder)` so placeholders render thin, faint, and rounded.
+ */
 math-field.studio-math-field {
   display: block;
   width: 100%;
@@ -10,31 +18,31 @@ math-field.studio-math-field {
   line-height: 1.4;
   color: #18181b;
   --hue: 239;
-  --caret-color: #4f46e5;
+  --caret-color: #6366f1;
   --selection-color: #18181b;
-  --selection-background-color: rgba(79, 70, 229, 0.18);
-  --contains-highlight-background-color: rgba(79, 70, 229, 0.08);
-  --contains-highlight-color: #4f46e5;
+  --selection-background-color: rgba(99, 102, 241, 0.18);
+  --contains-highlight-background-color: rgba(99, 102, 241, 0.08);
+  --contains-highlight-color: #6366f1;
   --smart-fence-color: #52525b;
   --latex-color: #4f46e5;
-  --text-highlight-background-color: rgba(79, 70, 229, 0.12);
-  --placeholder-color: #71717a;
-  --placeholder-opacity: 0.8;
+  --text-highlight-background-color: rgba(99, 102, 241, 0.12);
+  --placeholder-color: #a1a1aa;
+  --placeholder-opacity: 0.7;
 }
 
 html.dark math-field.studio-math-field {
   color: #f4f4f5;
   --hue: 239;
-  --caret-color: #818cf8;
+  --caret-color: #6366f1;
   --selection-color: #f4f4f5;
-  --selection-background-color: rgba(99, 102, 241, 0.3);
+  --selection-background-color: rgba(99, 102, 241, 0.28);
   --contains-highlight-background-color: rgba(99, 102, 241, 0.16);
-  --contains-highlight-color: #a5b4fc;
+  --contains-highlight-color: #818cf8;
   --smart-fence-color: #a1a1aa;
   --latex-color: #818cf8;
   --text-highlight-background-color: rgba(99, 102, 241, 0.22);
   --placeholder-color: #a1a1aa;
-  --placeholder-opacity: 0.85;
+  --placeholder-opacity: 0.65;
 }
 
 math-field.studio-math-field::part(container) {
@@ -47,27 +55,13 @@ math-field.studio-math-field::part(content) {
   padding: 2px 2px;
 }
 
+math-field.studio-math-field::part(placeholder) {
+  color: #a1a1aa;
+  opacity: 0.7;
+}
+
 /* Studio uses its own attached toolbar + inline palette and omits MathLive's built-in toggles. */
 math-field.studio-math-field::part(menu-toggle),
 math-field.studio-math-field::part(virtual-keyboard-toggle) {
   display: none;
-}
-
-/* Static MathLive glyphs inside the attached toolbar and inline palette. */
-.studio-palette-key .ML__latex {
-  font-size: 0.9375rem;
-  line-height: 1;
-}
-
-.studio-palette-key--sm .ML__latex {
-  font-size: 0.8125rem;
-}
-
-/* Placeholder squares (\square) rendered inside palette keys use calm muted zinc. */
-.studio-palette-key .ML__ams {
-  color: #71717a;
-}
-
-html.dark .studio-palette-key .ML__ams {
-  color: #a1a1aa;
 }

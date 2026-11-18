@@ -3,22 +3,18 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
+import { MathKeyIcon, MATH_KEY_ICONS } from "../src/components/math/MathKeyIcons";
 import { MathPalette, MathPaletteView } from "../src/components/math/MathPalette";
 import { MathWorkspace } from "../src/components/math/MathWorkspace";
 import {
   getMathPaletteSections,
   insertLatexIntoMathField,
-  preloadPaletteRenderer,
   QUICK_PALETTE_KEYS,
-  renderPaletteKeyMarkup,
   type MathFieldInsertTarget,
 } from "../src/lib/mathPalette";
 import type { Problem } from "../src/types/drill";
 
 async function main() {
-  const loaded = await preloadPaletteRenderer();
-  assert.ok(loaded, "Expected MathLive static renderer to preload");
-
   const noop = () => {};
 
   function findElements(
@@ -150,23 +146,74 @@ async function main() {
   assert.match(openWithTrigHtml, /aria-label="Inverse cosine \(arccos\)"/);
   assert.match(openWithTrigHtml, /aria-label="Inverse tangent \(arctan\)"/);
 
-  // Every template key renders valid MathLive static markup with placeholder square boxes and no errors
-  for (const section of getMathPaletteSections({ trig: true })) {
-    for (const key of section.keys) {
-      const html = renderPaletteKeyMarkup(key.displayLatex);
-      assert.ok(html.includes("ML__latex"), `Key ${key.id} should render ML__latex markup`);
-      assert.ok(!html.includes("ML__error"), `Key ${key.id} should render without ML__error`);
-      if (key.displayLatex.includes("\\placeholder{}")) {
-        assert.ok(
-          html.includes("□"),
-          `Template key ${key.id} should render visible placeholder square(s)`
-        );
-      }
+  // ---------------------------------------------------------------------------
+  // 3. Every key renders an <svg> icon and zero MathLive static markup is used
+  // ---------------------------------------------------------------------------
+  const allKeys = [
+    ...QUICK_PALETTE_KEYS,
+    ...getMathPaletteSections({ trig: true }).flatMap((section) => section.keys),
+  ];
+
+  for (const key of allKeys) {
+    assert.ok(key.iconId in MATH_KEY_ICONS, `Missing custom SVG icon for key ${key.id}`);
+    const iconHtml = renderToStaticMarkup(<MathKeyIcon iconId={key.iconId} />);
+    assert.match(iconHtml, /^<svg\b/, `Key ${key.id} icon must render an <svg> root`);
+    assert.doesNotMatch(iconHtml, /ML__latex|ML__ams|ML__error/, `Key ${key.id} must not use MathLive static markup`);
+  }
+
+  // Every key button inside the rendered palette contains an <svg> and no MathLive static markup
+  assert.doesNotMatch(
+    openWithTrigHtml,
+    /ML__latex|ML__ams|ML__error/,
+    "Open palette must never render MathLive static markup for keycaps"
+  );
+  const decodeHtmlAttr = (s: string) => s.replaceAll("&#x27;", "'").replaceAll("&amp;", "&");
+  const keyButtonMatches = Array.from(
+    openWithTrigHtml.matchAll(/<button[^>]*aria-label="([^"]+)"[^>]*>([\s\S]*?)<\/button>/g)
+  ).map((m) => [decodeHtmlAttr(m[1]), m[2]] as const);
+  for (const key of allKeys) {
+    const matchingButtons = keyButtonMatches.filter(([label]) => label === key.label);
+    assert.ok(matchingButtons.length >= 1, `Expected rendered button for key "${key.label}"`);
+    for (const [, innerHtml] of matchingButtons) {
+      assert.match(innerHtml, /<svg\b/, `Button "${key.label}" must contain an <svg> icon`);
     }
   }
 
+  // Template keys with placeholders must render dashed rounded-square <rect> placeholders
+  for (const iconId of [
+    "frac",
+    "square",
+    "power",
+    "sqrt",
+    "cbrt",
+    "nroot",
+    "abs",
+    "exp",
+    "le",
+    "ge",
+    "ne",
+    "parens",
+    "brackets",
+    "ln",
+    "log",
+    "logb",
+    "sin",
+    "cos",
+    "tan",
+    "arcsin",
+    "arccos",
+    "arctan",
+  ] as const) {
+    const iconHtml = renderToStaticMarkup(<MathKeyIcon iconId={iconId} />);
+    assert.match(
+      iconHtml,
+      /<rect[^>]*stroke-dasharray="1\.5 1\.5"/,
+      `Template icon "${iconId}" must include dashed <Placeholder /> rect`
+    );
+  }
+
   // ---------------------------------------------------------------------------
-  // 3. Clicking a key calls insert with the right LaTeX (mock field)
+  // 4. Clicking a key calls insert with the right LaTeX (mock field)
   // ---------------------------------------------------------------------------
   const recordedCommands: unknown[] = [];
   let focusCount = 0;
@@ -190,7 +237,6 @@ async function main() {
     onInsertLatex: (latex) => {
       insertLatexIntoMathField(mockField, latex);
     },
-    rendererReady: true,
   });
 
   const fracButtons = findElements(
@@ -233,7 +279,7 @@ async function main() {
   assert.equal(focusCount, 3);
 
   // ---------------------------------------------------------------------------
-  // 4. Floating virtual keyboard is disabled everywhere (policy manual) & no purple accent
+  // 5. Floating virtual keyboard disabled, no MathLive keycap renderer, no purple accent
   // ---------------------------------------------------------------------------
   const srcDir = path.resolve(process.cwd(), "src");
   const mathLiveInputSource = readFileSync(
@@ -242,6 +288,14 @@ async function main() {
   );
   const mathPaletteSource = readFileSync(
     path.join(srcDir, "components/math/MathPalette.tsx"),
+    "utf8"
+  );
+  const mathKeyIconsSource = readFileSync(
+    path.join(srcDir, "components/math/MathKeyIcons.tsx"),
+    "utf8"
+  );
+  const mathPaletteLibSource = readFileSync(
+    path.join(srcDir, "lib/mathPalette.ts"),
     "utf8"
   );
   const mathLiveCss = readFileSync(
@@ -265,13 +319,18 @@ async function main() {
     "Floating MathLive virtual keyboard must never be shown"
   );
   assert.doesNotMatch(
-    `${mathLiveInputSource}\n${mathPaletteSource}\n${mathLiveCss}`,
+    `${mathPaletteSource}\n${mathKeyIconsSource}\n${mathPaletteLibSource}\n${mathLiveCss}`,
+    /convertLatexToMarkup|ML__latex|ML__ams|renderPaletteKeyMarkup/,
+    "Palette keycaps must use custom SVGs, never MathLive static markup"
+  );
+  assert.doesNotMatch(
+    `${mathLiveInputSource}\n${mathPaletteSource}\n${mathKeyIconsSource}\n${mathLiveCss}`,
     /\bpurple-\d+/,
     "Palette and math input must use zinc neutrals + indigo accent, never purple"
   );
 
   // ---------------------------------------------------------------------------
-  // 5. MathWorkspace integration: choice questions unaffected, math gets toolbar
+  // 6. MathWorkspace integration: choice questions unaffected
   // ---------------------------------------------------------------------------
   const choiceProblem: Problem = {
     id: "Q02",

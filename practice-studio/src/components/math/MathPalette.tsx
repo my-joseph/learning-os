@@ -1,16 +1,11 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { MoreHorizontal, Sigma, Type, X } from "lucide-react";
 import { Reveal } from "@/components/motion/Reveal";
+import { MathKeyIcon } from "@/components/math/MathKeyIcons";
 import type { MathInputMode, UnitKeyboardProfile } from "@/lib/mathInput";
-import {
-  getMathPaletteSections,
-  isPaletteRendererReady,
-  preloadPaletteRenderer,
-  QUICK_PALETTE_KEYS,
-  renderPaletteKeyMarkup,
-} from "@/lib/mathPalette";
+import { getMathPaletteSections, QUICK_PALETTE_KEYS } from "@/lib/mathPalette";
 
 export interface MathPaletteProps {
   inputMode: MathInputMode;
@@ -24,9 +19,7 @@ export interface MathPaletteProps {
 }
 
 /** Pure stateless view for the attached toolbar and inline palette panel. */
-export const MathPaletteView: React.FC<
-  MathPaletteProps & { rendererReady?: boolean }
-> = ({
+export const MathPaletteView: React.FC<MathPaletteProps> = ({
   inputMode,
   onModeChange,
   keyboardProfile,
@@ -35,22 +28,9 @@ export const MathPaletteView: React.FC<
   onClosePanel,
   onInsertLatex,
   disabled = false,
-  rendererReady = isPaletteRendererReady(),
 }) => {
   const isMathMode = inputMode === "math";
-
-  const quickMarkups = QUICK_PALETTE_KEYS.map((key) => ({
-    key,
-    html: rendererReady ? renderPaletteKeyMarkup(key.displayLatex) : "",
-  }));
-
-  const sections = getMathPaletteSections(keyboardProfile).map((section) => ({
-    ...section,
-    items: section.keys.map((key) => ({
-      key,
-      html: rendererReady ? renderPaletteKeyMarkup(key.displayLatex) : "",
-    })),
-  }));
+  const sections = getMathPaletteSections(keyboardProfile);
 
   return (
     <div>
@@ -97,7 +77,7 @@ export const MathPaletteView: React.FC<
             aria-label="Quick math templates"
             className="flex items-center gap-1"
           >
-            {quickMarkups.map(({ key, html }) => (
+            {QUICK_PALETTE_KEYS.map((key) => (
               <button
                 key={key.id}
                 type="button"
@@ -106,17 +86,12 @@ export const MathPaletteView: React.FC<
                 title={key.label}
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => onInsertLatex(key.insertLatex)}
-                className="studio-palette-key studio-palette-key--sm inline-flex items-center justify-center min-w-[30px] h-7 px-1.5 rounded-md text-zinc-700 dark:text-zinc-200 hover:bg-zinc-200/80 dark:hover:bg-zinc-800 active:bg-zinc-300/70 dark:active:bg-zinc-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 transition-colors disabled:opacity-40 select-none"
+                className="inline-flex items-center justify-center w-7 h-7 rounded-md text-zinc-700 dark:text-zinc-200 hover:bg-zinc-200/80 dark:hover:bg-zinc-800 active:bg-indigo-50 dark:active:bg-indigo-950/60 active:text-indigo-600 dark:active:text-indigo-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 transition-colors disabled:opacity-40 select-none"
               >
-                {html ? (
-                  <span
-                    aria-hidden="true"
-                    className="pointer-events-none leading-none"
-                    dangerouslySetInnerHTML={{ __html: html }}
-                  />
-                ) : (
-                  <span aria-hidden="true" className="w-3 h-3 rounded-sm bg-zinc-200 dark:bg-zinc-700" />
-                )}
+                <MathKeyIcon
+                  iconId={key.iconId}
+                  className="h-[18px] w-auto shrink-0 pointer-events-none"
+                />
               </button>
             ))}
 
@@ -168,14 +143,14 @@ export const MathPaletteView: React.FC<
             {sections.map((section, sectionIdx) => (
               <div key={section.id} className="space-y-1.5">
                 <div
-                  className={`text-[11px] font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400 ${
+                  className={`text-[11px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400 ${
                     sectionIdx === 0 ? "pr-8" : ""
                   }`}
                 >
                   {section.heading}
                 </div>
                 <div className="flex flex-wrap gap-1.5">
-                  {section.items.map(({ key, html }) => (
+                  {section.keys.map((key) => (
                     <button
                       key={key.id}
                       type="button"
@@ -184,19 +159,12 @@ export const MathPaletteView: React.FC<
                       title={key.label}
                       onMouseDown={(e) => e.preventDefault()}
                       onClick={() => onInsertLatex(key.insertLatex)}
-                      className={`studio-palette-key inline-flex items-center justify-center min-w-[40px] h-10 ${
-                        key.wide ? "px-2.5" : "px-1.5"
-                      } rounded-lg bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 active:bg-zinc-300/70 dark:active:bg-zinc-600 text-zinc-900 dark:text-zinc-100 transition-colors select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 disabled:opacity-40`}
+                      className="inline-flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 active:bg-indigo-50 dark:active:bg-indigo-950/60 text-zinc-700 dark:text-zinc-200 active:text-indigo-600 dark:active:text-indigo-400 transition-colors select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 disabled:opacity-40"
                     >
-                      {html ? (
-                        <span
-                          aria-hidden="true"
-                          className="pointer-events-none leading-none"
-                          dangerouslySetInnerHTML={{ __html: html }}
-                        />
-                      ) : (
-                        <span aria-hidden="true" className="w-4 h-4 rounded-sm bg-zinc-200 dark:bg-zinc-700" />
-                      )}
+                      <MathKeyIcon
+                        iconId={key.iconId}
+                        className="h-[20px] sm:h-[22px] w-auto shrink-0 pointer-events-none"
+                      />
                     </button>
                   ))}
                 </div>
@@ -213,21 +181,6 @@ export const MathPaletteView: React.FC<
  * Attached Wolfram|Alpha-style toolbar + inline math symbol palette.
  * Lives directly below the math input inside the same outer card; never floats.
  */
-export const MathPalette: React.FC<MathPaletteProps> = (props) => {
-  const [rendererReady, setRendererReady] = useState(() => isPaletteRendererReady());
-
-  useEffect(() => {
-    if (rendererReady) return;
-    let active = true;
-    void preloadPaletteRenderer().then((fn) => {
-      if (active && fn) {
-        setRendererReady(true);
-      }
-    });
-    return () => {
-      active = false;
-    };
-  }, [rendererReady]);
-
-  return <MathPaletteView {...props} rendererReady={rendererReady} />;
-};
+export const MathPalette: React.FC<MathPaletteProps> = (props) => (
+  <MathPaletteView {...props} />
+);
