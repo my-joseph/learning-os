@@ -143,7 +143,7 @@ export const MathPaletteView: React.FC<MathPaletteProps> = ({
             {sections.map((section, sectionIdx) => (
               <div key={section.id} className="space-y-1.5">
                 <div
-                  className={`text-[11px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400 ${
+                  className={`text-xs font-medium text-zinc-500 dark:text-zinc-400 ${
                     sectionIdx === 0 ? "pr-8" : ""
                   }`}
                 >

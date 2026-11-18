@@ -127,9 +127,9 @@ async function main() {
     "MathPalette toolbar and panel must not use attached border-t dividers"
   );
   assert.match(openNoTrigHtml, /aria-label="Close math palette"/);
-  assert.match(openNoTrigHtml, />BASIC</);
-  assert.match(openNoTrigHtml, />FUNCTIONS</);
-  assert.match(openNoTrigHtml, />SYMBOLS</);
+  assert.match(openNoTrigHtml, />Basic</);
+  assert.match(openNoTrigHtml, />Functions</);
+  assert.match(openNoTrigHtml, />Symbols</);
   assert.match(openNoTrigHtml, /aria-label="Natural logarithm ln"/);
   assert.match(openNoTrigHtml, /aria-label="Common logarithm log"/);
   assert.match(openNoTrigHtml, /aria-label="Logarithm with base"/);
