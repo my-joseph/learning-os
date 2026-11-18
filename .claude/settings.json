@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(git status *)",
+      "Bash(git log *)",
+      "Bash(git diff *)",
+      "Bash(git show *)",
+      "Bash(git fetch *)",
+      "Bash(git worktree add *)",
+      "Bash(git worktree list *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git merge origin/main *)",
+      "Bash(git pull --ff-only *)",
+      "Bash(git check-ignore *)",
+      "Bash(gh pr list *)",
+      "Bash(gh pr view *)",
+      "Bash(gh pr checks *)",
+      "Bash(gh pr create *)",
+      "Bash(gh run view *)",
+      "Bash(npm ci *)",
+      "Bash(npm install *)",
+      "Bash(npm run lint *)",
+      "Bash(npm run build *)",
+      "Bash(npm run test:telemetry *)",
+      "Bash(npx next build *)",
+      "Bash(npx next start *)",
+      "Bash(.venv/bin/python -m pytest *)",
+      "Bash(.venv/bin/ruff check *)",
+      "Bash(.venv/bin/ruff format --check *)",
+      "Bash(ruff check *)",
+      "Bash(ruff format --check *)",
+      "Bash(.venv/bin/python -m code_engine.lint_check *)"
+    ],
+    "deny": [
+      "Bash(git push --force *)",
+      "Bash(git push -f *)",
+      "Bash(git push --force-with-lease *)",
+      "Bash(git push origin main *)",
+      "Bash(git push origin HEAD:main *)",
+      "Bash(git commit --no-verify *)",
+      "Bash(git commit -n *)",
+      "Bash(git reset --hard origin *)",
+      "Bash(rm -rf / *)",
+      "Bash(rm -rf ~ *)"
+    ]
+  }
+}
