@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { FormattedText } from "../src/components/FormattedText";
+import { QuizPaginationBar } from "../src/components/QuizPaginationBar";
 import { CodeDashboard } from "../src/components/code/CodeDashboard";
 import { MathWorkspace } from "../src/components/math/MathWorkspace";
 import { ReviewPanel } from "../src/components/shell/ReviewPanel";
@@ -82,9 +83,15 @@ assert.match(mathWorkspace, /max-w-\[720px\]/);
 assert.match(mathWorkspace, /border-rose-600/);
 assert.match(pagination, /bg-emerald-700/);
 assert.match(pagination, /overflow-x-auto/);
+assert.match(pagination, /aria-label="Review &amp; sync"|aria-label="Review & sync"/);
 assert.match(studioShell, /<h1 className="sr-only"/);
 assert.match(studioHeader, /hidden sm:inline-flex/);
 assert.match(studioHeader, /MoreHorizontal/);
+assert.doesNotMatch(studioHeader, /Review &amp; Sync|Review & Sync/);
+assert.doesNotMatch(studioHeader, /Score:/);
+assert.doesNotMatch(studioHeader, /currentDrill\.drillId/);
+assert.match(studioHeader, /Generate drill set/);
+assert.match(studioHeader, /Reset all questions/);
 assert.match(workspaceRoute, /materializeWorkspace\(drillId, rootDir\)/);
 assert.match(runTestsRoute, /userCode = fs\.readFileSync\(fullPath, "utf-8"\)/);
 
@@ -370,5 +377,49 @@ const reviewHtml = renderToStaticMarkup(
   />
 );
 assert.match(reviewHtml, /<h1[^>]*class="[^"]*text-lg[^"]*"[^>]*>Linear Equations<\/h1>/);
+assert.match(
+  reviewHtml,
+  /class="[^"]*font-sans tabular-nums[^"]*"[^>]*>1 \/ 1<\/span>/,
+  "ReviewPanel total score must use font-sans tabular-nums"
+);
+assert.match(
+  reviewHtml,
+  /class="[^"]*font-sans tabular-nums[^"]*"[^>]*>\(100%\)<\/span>/,
+  "ReviewPanel score percentage must use font-sans tabular-nums"
+);
+
+const quizTilesHtml = renderToStaticMarkup(
+  <QuizPaginationBar
+    totalQuestions={1}
+    currentIndex={0}
+    problems={[sampleMathProblem]}
+    viewMode="quiz"
+    onSelectQuestion={noop}
+    onPrev={noop}
+    onNext={noop}
+    onToggleViewMode={noop}
+  />
+);
+assert.match(
+  quizTilesHtml,
+  /<button[^>]*aria-label="Review &amp; sync"[^>]*aria-pressed="false"[^>]*>.*Review<\/span><\/button><\/div><\/div>$/
+);
+
+const reviewTilesHtml = renderToStaticMarkup(
+  <QuizPaginationBar
+    totalQuestions={1}
+    currentIndex={0}
+    problems={[sampleMathProblem]}
+    viewMode="review"
+    onSelectQuestion={noop}
+    onPrev={noop}
+    onNext={noop}
+    onToggleViewMode={noop}
+  />
+);
+assert.match(
+  reviewTilesHtml,
+  /<button[^>]*aria-label="Review &amp; sync"[^>]*aria-pressed="true"[^>]*class="[^"]*ring-indigo-600[^"]*"[^>]*>.*Review<\/span><\/button><\/div><\/div>$/
+);
 
 console.log("studio rules tests passed");

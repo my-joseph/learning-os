@@ -1,6 +1,7 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useRef } from "react";
+import { ClipboardCheck } from "lucide-react";
 import { Problem } from "@/types/drill";
 import { deriveMilestoneTileState } from "@/lib/codeStatus";
 
@@ -23,9 +24,18 @@ export const QuizPaginationBar: React.FC<QuizPaginationBarProps> = ({
   viewMode,
   isLab,
   onSelectQuestion,
+  onToggleViewMode,
 }) => {
   const labMode =
     isLab ?? (problems.length > 0 && problems.every((p) => /^M\d+$/i.test(p.id)));
+  const isReview = viewMode === "review";
+  const reviewBtnRef = useRef<HTMLButtonElement | null>(null);
+
+  useEffect(() => {
+    if (isReview) {
+      reviewBtnRef.current?.scrollIntoView({ inline: "nearest", block: "nearest" });
+    }
+  }, [isReview]);
 
   return (
     <div className="pt-2 border-t border-zinc-200/80 dark:border-zinc-800/80">
@@ -107,6 +117,23 @@ export const QuizPaginationBar: React.FC<QuizPaginationBarProps> = ({
             </button>
           );
         })}
+
+        <button
+          ref={reviewBtnRef}
+          type="button"
+          onClick={() => onToggleViewMode(isReview ? "quiz" : "review")}
+          aria-label="Review & sync"
+          aria-pressed={isReview}
+          title={isReview ? "Back to questions" : "Review & sync"}
+          className={`relative h-7 px-2 rounded-md border text-xs inline-flex items-center justify-center gap-1 font-sans transition-colors shrink-0 ${
+            isReview
+              ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 border-zinc-400 dark:border-zinc-600 ring-2 ring-indigo-600 dark:ring-indigo-500 ring-offset-1 ring-offset-white dark:ring-offset-zinc-900 z-10 font-semibold"
+              : "bg-zinc-50 dark:bg-zinc-950 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600 hover:text-zinc-900 dark:hover:text-zinc-100 font-medium"
+          }`}
+        >
+          <ClipboardCheck className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+          <span>Review</span>
+        </button>
       </div>
     </div>
   );
