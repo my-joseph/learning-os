@@ -292,9 +292,9 @@ export function getMathPaletteSections(
     : [...LOG_FUNCTION_KEYS];
 
   return [
-    { id: "basic", heading: "BASIC", keys: BASIC_KEYS },
-    { id: "functions", heading: "FUNCTIONS", keys: functionsKeys },
-    { id: "symbols", heading: "SYMBOLS", keys: SYMBOL_KEYS },
+    { id: "basic", heading: "Basic", keys: BASIC_KEYS },
+    { id: "functions", heading: "Functions", keys: functionsKeys },
+    { id: "symbols", heading: "Symbols", keys: SYMBOL_KEYS },
   ];
 }
 

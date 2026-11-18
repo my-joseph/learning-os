@@ -249,7 +249,10 @@ export const MathLiveInput = forwardRef<MathLiveInputHandle, MathLiveInputProps>
     }, [ready, value]);
 
     return (
-      <div className="relative flex items-center flex-1 min-w-0 min-h-[2.75rem] px-1.5 py-0.5">
+      <div
+        onClick={() => mfRef.current?.focus()}
+        className="relative flex items-center flex-1 min-w-0 min-h-[2.75rem] pl-2 pr-12 py-0.5 cursor-text"
+      >
         {!ready && (
           <div
             aria-hidden="true"
@@ -261,7 +264,7 @@ export const MathLiveInput = forwardRef<MathLiveInputHandle, MathLiveInputProps>
         {isEmpty && ready && placeholder && (
           <span
             aria-hidden="true"
-            className="pointer-events-none absolute left-2.5 right-2 text-sm text-zinc-400 dark:text-zinc-500 truncate select-none"
+            className="pointer-events-none absolute left-3 right-12 text-sm text-zinc-400 dark:text-zinc-500 truncate select-none"
           >
             {placeholder}
           </span>
