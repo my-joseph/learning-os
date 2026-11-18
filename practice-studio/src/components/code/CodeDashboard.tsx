@@ -20,7 +20,12 @@ import {
   TestRunReport,
 } from "@/types/drill";
 import { VSCodeBlock } from "@/components/VSCodeBlock";
+import { HighlightedCode } from "@/components/HighlightedCode";
 import { FormattedText } from "@/components/FormattedText";
+import {
+  getExtensionForLanguage,
+  inferShikiLanguageFromFilename,
+} from "@/lib/shiki";
 import { AnswerResultCard } from "@/components/AnswerResultCard";
 import { ChoiceOptionGroup } from "@/components/ChoiceOptionGroup";
 import { QuestionTimer } from "@/components/QuestionTimer";
@@ -145,6 +150,8 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
   const isKata = isLab || isWorkspaceProblem(problem);
   const referenceAllowed = canShowReferenceSolution(problem.state);
   const { filename, vscodeFolderUrl, vscodeUrl } = resolveIdeLinks(problem);
+  const snippetLanguage =
+    problem.language || inferShikiLanguageFromFilename(filename) || "javascript";
 
   const [userCode, setUserCode] = useState<string>(
     problem.state?.userCode || problem.starterCode || problem.codeSnippet || ""
@@ -533,37 +540,39 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
 
         {problem.examples && problem.examples.length > 0 && (
           <section aria-label="Examples" className="space-y-3">
-            <h3 className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
-              Examples
-            </h3>
             <div className="space-y-3">
               {problem.examples.map((ex, exIdx) => (
                 <div key={exIdx} className="space-y-1.5">
                   <h4 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
                     Example {exIdx + 1}
                   </h4>
+                  {ex.explanation && ex.explanation.trim() && (
+                    <p className="text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">
+                      <FormattedText text={ex.explanation} />
+                    </p>
+                  )}
                   <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3.5 py-2.5 font-mono text-xs text-zinc-800 dark:text-zinc-200 space-y-1 overflow-x-auto">
                     <div>
                       <span className="text-zinc-500 dark:text-zinc-400 select-none">
                         Input:{" "}
                       </span>
-                      <span className="whitespace-pre-wrap break-words">{ex.input}</span>
+                      <HighlightedCode
+                        code={ex.input}
+                        language="javascript"
+                        className="whitespace-pre-wrap break-words"
+                      />
                     </div>
                     <div>
                       <span className="text-zinc-500 dark:text-zinc-400 select-none">
                         Output:{" "}
                       </span>
-                      <span className="whitespace-pre-wrap break-words">{ex.output}</span>
+                      <HighlightedCode
+                        code={ex.output}
+                        language="javascript"
+                        className="whitespace-pre-wrap break-words"
+                      />
                     </div>
                   </div>
-                  {ex.explanation && ex.explanation.trim() && (
-                    <div className="text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">
-                      <span className="font-medium text-zinc-900 dark:text-zinc-100">
-                        Explanation:{" "}
-                      </span>
-                      <FormattedText text={ex.explanation} />
-                    </div>
-                  )}
                 </div>
               ))}
             </div>
@@ -598,7 +607,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
             {problem.codeSnippet && !snippetInPrompt && (
               <VSCodeBlock
                 code={problem.codeSnippet}
-                language={problem.language || "javascript"}
+                language={snippetLanguage}
                 filename={filename}
               />
             )}
@@ -966,7 +975,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                       ) : problem.solutionCode || revealedSolutionCode ? (
                         <VSCodeBlock
                           code={(problem.solutionCode || revealedSolutionCode)!}
-                          language={problem.language || "javascript"}
+                          language={snippetLanguage}
                           filename={`reference-${filename}`}
                         />
                       ) : (
@@ -989,8 +998,10 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
             {problem.codeSnippet && (
               <VSCodeBlock
                 code={problem.codeSnippet}
-                language={problem.language || "javascript"}
-                filename={`challenge-${problem.id.toLowerCase()}.js`}
+                language={snippetLanguage}
+                filename={`challenge-${problem.id.toLowerCase()}.${getExtensionForLanguage(
+                  snippetLanguage
+                )}`}
                 selectableLines={isFindBug}
                 selectedLine={selectedLineNumber}
                 onSelectLine={(lineNum) => {

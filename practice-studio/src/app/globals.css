@@ -84,7 +84,7 @@ body {
 }
 
 /* ========================================================================== */
-/* LIGHT MODE OVERRIDES FOR LEGACY CLASSES & CODE TOKENS                      */
+/* LIGHT MODE OVERRIDES & SHIKI DUAL-THEME TOKEN COLORS                       */
 /* ========================================================================== */
 
 html.light body {
@@ -92,41 +92,15 @@ html.light body {
   color: #18181b;
 }
 
-/* VS Code Tokens in Light Mode */
-html.light .vscode-token-comment {
-  color: #008000 !important;
-  font-style: italic;
+/* Shiki dual-theme CSS variables (github-dark / github-light, no flash on switch) */
+.shiki-token {
+  color: var(--shiki-dark);
+  font-style: var(--shiki-dark-font-style, normal);
+  font-weight: var(--shiki-dark-font-weight, inherit);
 }
 
-html.light .vscode-token-string {
-  color: #a31515 !important;
-}
-
-html.light .vscode-token-keyword {
-  color: #0000ff !important;
-}
-
-html.light .vscode-token-control {
-  color: #af00db !important;
-}
-
-html.light .vscode-token-builtin {
-  color: #267f99 !important;
-}
-
-html.light .vscode-token-method {
-  color: #795e26 !important;
-}
-
-html.light .vscode-token-number {
-  color: #098658 !important;
-}
-
-html.light .vscode-token-constant {
-  color: #0000ff !important;
-  font-weight: bold;
-}
-
-html.light .vscode-token-plain {
-  color: #1f2328 !important;
+html.light .shiki-token {
+  color: var(--shiki-light);
+  font-style: var(--shiki-light-font-style, normal);
+  font-weight: var(--shiki-light-font-weight, inherit);
 }
