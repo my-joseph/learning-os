@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { DrillListItem } from "@/types/drill";
 import type { LabListItem } from "@/lib/labModel";
 import { Workspace, workspaceOfListItem } from "@/lib/routes";
+import { filterDrills, filterLabs } from "@/lib/drillGrouping";
 import { DrillFilter, StatusMessage } from "./types";
 
 interface UseDrillListOptions {
@@ -51,36 +52,15 @@ export function useDrillList({ workspace, setStatus }: UseDrillListOptions) {
     [labs, workspace]
   );
 
-  const filteredDrills = useMemo(() => {
-    return workspaceDrills.filter((d) => {
-      if (drillFilter === "UNFINISHED" && d.practiceStatus === "Graded") return false;
-      if (drillFilter === "GRADED" && d.practiceStatus !== "Graded") return false;
+  const filteredDrills = useMemo(
+    () => filterDrills(workspaceDrills, drillSearch, drillFilter),
+    [workspaceDrills, drillFilter, drillSearch]
+  );
 
-      if (!drillSearch.trim()) return true;
-      const q = drillSearch.toLowerCase();
-      return (
-        d.drillId.toLowerCase().includes(q) ||
-        d.unitCode.toLowerCase().includes(q) ||
-        (d.unitTitle || "").toLowerCase().includes(q)
-      );
-    });
-  }, [workspaceDrills, drillFilter, drillSearch]);
-
-  const filteredLabs = useMemo(() => {
-    return workspaceLabs.filter((l) => {
-      if (drillFilter === "UNFINISHED" && l.practiceStatus === "Graded") return false;
-      if (drillFilter === "GRADED" && l.practiceStatus !== "Graded") return false;
-
-      if (!drillSearch.trim()) return true;
-      const q = drillSearch.toLowerCase();
-      return (
-        l.id.toLowerCase().includes(q) ||
-        l.title.toLowerCase().includes(q) ||
-        l.unitCode.toLowerCase().includes(q) ||
-        l.chapterCode.toLowerCase().includes(q)
-      );
-    });
-  }, [workspaceLabs, drillFilter, drillSearch]);
+  const filteredLabs = useMemo(
+    () => filterLabs(workspaceLabs, drillSearch, drillFilter),
+    [workspaceLabs, drillFilter, drillSearch]
+  );
 
   return {
     drills,

@@ -181,6 +181,7 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
             onToggle={onToggleDrillSwitcher}
             onClose={onCloseDrillSwitcher}
             switcherRef={switcherRef}
+            workspace={workspace}
             currentDrill={currentDrill}
             drills={drills}
             labs={labs}
