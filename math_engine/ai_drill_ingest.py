@@ -32,7 +32,14 @@ from math_engine.generate import next_drill_id
 from math_engine.latex_guard import find_bare_words
 from math_engine.verify import verify_problem
 from progress_store import strip_progress
-from quality_rules import BLIND_SOLVE_TAGS, QUALITY_RULES, QualityError, check_gate_g3_set, demand_level
+from quality_rules import (
+    BLIND_SOLVE_TAGS,
+    QUALITY_RULES,
+    QualityError,
+    check_gate_g3_set,
+    demand_level,
+    find_choice_prompt_option_duplicates,
+)
 
 VAULT_DIR = os.path.join(os.path.dirname(__file__), "reasoning_vault")
 
@@ -378,6 +385,13 @@ def validate_ai_problem_contract(prob: Dict[str, Any], enforce_leak_gate: bool =
 
     if enforce_leak_gate:
         check_prompt_does_not_leak_solution(pid, prompt)
+
+    choice_dups = find_choice_prompt_option_duplicates(prob)
+    if choice_dups:
+        raise AiContractError(
+            f"[{pid}] Choice prompt must not list or duplicate its options ({'; '.join(choice_dups)}). "
+            "Keep options only in answerSpec.options (Studio and Notion render them)."
+        )
 
     # Forward: every number in prompt must be defined in givens (or be a declared constant)
     known_vals = list(givens_floats.values()) + list(constant_floats.values())
