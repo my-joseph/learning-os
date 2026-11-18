@@ -28,7 +28,7 @@ export const OUTCOME_META: Record<ReviewOutcome, ReviewOutcomeMeta> = {
     outcome: "assisted_or_partial",
     label: "Assisted / partial",
     nodeClassName: "bg-amber-600 dark:bg-amber-400",
-    textClassName: "text-amber-600 dark:text-amber-400",
+    textClassName: "text-amber-700 dark:text-amber-400",
     needsAttention: true,
   },
   wrong: {

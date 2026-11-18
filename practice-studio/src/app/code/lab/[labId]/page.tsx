@@ -36,6 +36,7 @@ export default function CodeLabPage({ params, searchParams }: CodeLabPageProps) 
         workspace="code"
         drillId={decodedId}
         initialQuestionId={milestone}
+        isLabRoute={true}
       />
     </Suspense>
   );

@@ -6,6 +6,7 @@ import { FormattedText } from "../src/components/FormattedText";
 import { QuizPaginationBar } from "../src/components/QuizPaginationBar";
 import { CodeDashboard } from "../src/components/code/CodeDashboard";
 import { MathWorkspace } from "../src/components/math/MathWorkspace";
+import { DrillNotFoundCard } from "../src/components/shell/DrillNotFoundCard";
 import { ReviewPanel } from "../src/components/shell/ReviewPanel";
 import {
   getPrgScore,
@@ -70,10 +71,12 @@ const workspaceRoute = readFileSync("src/app/api/workspace/route.ts", "utf8");
 const runTestsRoute = readFileSync("src/app/api/run-tests/route.ts", "utf8");
 assert.match(codeDashboard, /hasCheckpointHint\(problem\.checkpointHint\)\s*&&\s*<button/);
 assert.match(codeDashboard, /FormattedText text=\{c\.label\}/);
-assert.match(codeDashboard, /aria-label=\{`Answer for question \$\{problem\.id\}`\}/);
+assert.match(codeDashboard, /aria-label=\{`Answer for \$\{isLab \? "milestone" : "problem"\} \$\{problem\.id\}`\}/);
 assert.match(codeDashboard, /Copy review request/);
 assert.match(codeDashboard, /Run checks/);
 assert.match(codeDashboard, /Unlocks after review passes/);
+assert.doesNotMatch(codeDashboard, /review-code skill/);
+assert.match(codeDashboard, /Ask Claude to review your code/);
 assert.match(codeDashboard, /method: "POST"[\s\S]*?JSON\.stringify\(\{ drillId \}\)/);
 assert.match(codeDashboard, /workspace file from disk/);
 assert.match(mathWorkspace, /FormattedText text=\{c\.label\}/);
@@ -81,17 +84,26 @@ assert.match(mathWorkspace, /aria-label=\{`Answer for question \$\{problem\.id\}
 assert.match(mathWorkspace, /hasCheckpointHint\(problem\.checkpointHint\)\s*&&\s*<button/);
 assert.match(mathWorkspace, /max-w-\[720px\]/);
 assert.match(mathWorkspace, /border-rose-600/);
+assert.doesNotMatch(mathWorkspace, /Review &amp; Sync|Review & Sync/);
+assert.doesNotMatch(codeDashboard, /Review &amp; Sync|Review & Sync/);
 assert.match(pagination, /bg-emerald-700/);
 assert.match(pagination, /overflow-x-auto/);
+assert.match(pagination, /justify-center/);
 assert.match(pagination, /aria-label="Review &amp; sync"|aria-label="Review & sync"/);
 assert.match(studioShell, /<h1 className="sr-only"/);
-assert.match(studioHeader, /hidden sm:inline-flex/);
-assert.match(studioHeader, /MoreHorizontal/);
+assert.match(studioShell, /fixed left-3 top-1\/2/);
+assert.match(studioShell, /Due today &amp; weak spots/);
+assert.doesNotMatch(studioShell, /Study queue/);
+assert.match(studioHeader, /lg:hidden/);
+assert.doesNotMatch(studioHeader, /MoreHorizontal|More actions/);
 assert.doesNotMatch(studioHeader, /Review &amp; Sync|Review & Sync/);
 assert.doesNotMatch(studioHeader, /Score:/);
 assert.doesNotMatch(studioHeader, /currentDrill\.drillId/);
 assert.match(studioHeader, /Generate drill set/);
 assert.match(studioHeader, /Reset all questions/);
+assert.match(studioHeader, /Reset all problems/);
+assert.match(studioHeader, /Reset all milestones/);
+assert.match(studioHeader, /Due today & weak spots/);
 assert.match(workspaceRoute, /materializeWorkspace\(drillId, rootDir\)/);
 assert.match(runTestsRoute, /userCode = fs\.readFileSync\(fullPath, "utf-8"\)/);
 
@@ -470,5 +482,15 @@ assert.match(
   reviewTilesHtml,
   /<button[^>]*aria-label="Review &amp; sync"[^>]*aria-pressed="true"[^>]*aria-current="step"[^>]*title="Review &amp; sync"[^>]*class="[^"]*ring-indigo-600[^"]*"[^>]*><svg[^>]*>.*<\/svg><\/button><\/div><\/div>$/
 );
+
+// Verify DrillNotFoundCard renders visible h1 for drills and labs
+const drillNotFoundHtml = renderToStaticMarkup(<DrillNotFoundCard drillId="DRL-MTH-01" />);
+assert.match(drillNotFoundHtml, /<h1[^>]*>Drill not found<\/h1>/);
+const labNotFoundHtml = renderToStaticMarkup(<DrillNotFoundCard drillId="LAB-PRG-01" />);
+assert.match(labNotFoundHtml, /<h1[^>]*>Lab not found<\/h1>/);
+const labRouteNotFoundHtml = renderToStaticMarkup(
+  <DrillNotFoundCard drillId="DOES-NOT-EXIST" isLab={true} />
+);
+assert.match(labRouteNotFoundHtml, /<h1[^>]*>Lab not found<\/h1>/);
 
 console.log("studio rules tests passed");

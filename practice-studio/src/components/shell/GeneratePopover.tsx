@@ -22,7 +22,7 @@ interface GeneratePopoverProps {
   onStatusChange: (status: StatusMessage | null) => void;
 }
 
-/** Drill-generation dialog triggered from the header ⋯ menu or empty state. */
+/** Drill-generation dialog triggered from the header Generate button or empty state. */
 export const GeneratePopover: React.FC<GeneratePopoverProps> = ({
   isOpen,
   onClose,
@@ -140,9 +140,16 @@ export const GeneratePopover: React.FC<GeneratePopoverProps> = ({
   const handleGenerateDrill = async () => {
     if (!cfgUnit) return;
     setIsGenerating(true);
-    const engineLabel = cfgUnit.startsWith("PRG-") ? "Node.js" : "SymPy";
+    const isPrg = cfgUnit.startsWith("PRG-");
+    const engineLabel = isPrg ? "Node.js" : "SymPy";
+    const itemNoun = isPrg ? "problems" : "questions";
+    const selectedOption = unitOptions.find((u) => u.unitCode === cfgUnit);
+    const unitLabel =
+      selectedOption?.unitTitle && selectedOption.unitTitle !== cfgUnit
+        ? selectedOption.unitTitle
+        : cfgUnit;
     onStatusChange({
-      text: `Generating and verifying ${cfgCount} questions with ${engineLabel}...`,
+      text: `Generating and verifying ${cfgCount} ${itemNoun} with ${engineLabel}...`,
       type: "warn",
     });
 
@@ -161,7 +168,7 @@ export const GeneratePopover: React.FC<GeneratePopoverProps> = ({
       if (!res.ok || !data.ok) throw new Error(data.error || "Generation failed");
 
       onStatusChange({
-        text: `Generated & verified ${data.drillId} (${cfgCount} questions)!`,
+        text: `Generated & verified ${unitLabel} (${cfgCount} ${itemNoun})!`,
         type: "pass",
       });
       onClose();
@@ -207,7 +214,7 @@ export const GeneratePopover: React.FC<GeneratePopoverProps> = ({
                 type="button"
                 onClick={onClose}
                 aria-label="Close generator"
-                className="inline-flex items-center justify-center w-7 h-7 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                className="inline-flex items-center justify-center w-7 h-7 rounded-lg text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -294,7 +301,7 @@ export const GeneratePopover: React.FC<GeneratePopoverProps> = ({
               type="button"
               onClick={handleGenerateDrill}
               disabled={isGenerating || !cfgUnit}
-              className="w-full inline-flex items-center justify-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400 disabled:opacity-50 text-white text-xs font-semibold h-9 rounded-xl transition-colors"
+              className="w-full inline-flex items-center justify-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-700 disabled:opacity-50 text-white text-xs font-semibold h-9 rounded-xl transition-colors"
             >
               {isGenerating ? (
                 <RefreshCw className="w-3.5 h-3.5 animate-spin" />

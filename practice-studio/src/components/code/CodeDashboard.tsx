@@ -88,7 +88,7 @@ function statusSymbolColor(status: LayerCheckStatus | ReviewStatus): string {
   if (status === "fail" || status === "revise") {
     return "text-rose-600 dark:text-rose-400 font-semibold";
   }
-  return "text-zinc-400 dark:text-zinc-500";
+  return "text-zinc-500 dark:text-zinc-400";
 }
 
 function formatReviewDate(iso?: string): string {
@@ -387,7 +387,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
         {/* 1. Brief: problem/milestone title + prompt (text-base), then Visible tests */}
         <div className="space-y-2">
           <div className="flex items-center justify-between gap-2 text-xs font-medium text-zinc-500 dark:text-zinc-400">
-            <h2 className="flex flex-wrap items-center gap-2">
+            <h2 className="flex flex-wrap items-center gap-x-3 gap-y-1">
               <span>
                 {isLab ? `Milestone ${problem.id}` : `Problem ${index + 1}`}
                 {typeof totalQuestions === "number" && totalQuestions > 0
@@ -397,36 +397,27 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                   : ""}
               </span>
               {typeof problem.level === "number" && problem.level > 0 && (
-                <>
-                  <span aria-hidden="true">·</span>
-                  <span title={problem.levelLabel?.trim() || undefined}>
-                    Level {problem.level}
-                  </span>
-                </>
+                <span title={problem.levelLabel?.trim() || undefined}>
+                  Level {problem.level}
+                </span>
               )}
               {problem.entryPoint && (
-                <>
-                  <span aria-hidden="true">·</span>
-                  {isLab ? (
-                    <span className="text-zinc-700 dark:text-zinc-300">
-                      {problem.entryPoint}
-                    </span>
-                  ) : (
-                    <code className="font-mono text-zinc-700 dark:text-zinc-300">
-                      {problem.entryPoint}
-                    </code>
-                  )}
-                </>
+                isLab ? (
+                  <span className="text-zinc-700 dark:text-zinc-300">
+                    {problem.entryPoint}
+                  </span>
+                ) : (
+                  <code className="font-mono text-zinc-700 dark:text-zinc-300">
+                    {problem.entryPoint}
+                  </code>
+                )
               )}
               {!problem.entryPoint &&
                 problem.context &&
                 !isContextSlug(problem.context) && (
-                  <>
-                    <span aria-hidden="true">·</span>
-                    <span className="text-zinc-700 dark:text-zinc-300">
-                      <FormattedText text={problem.context} />
-                    </span>
-                  </>
+                  <span className="text-zinc-700 dark:text-zinc-300">
+                    <FormattedText text={problem.context} />
+                  </span>
                 )}
             </h2>
           </div>
@@ -455,12 +446,14 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                     Visible tests
                   </h3>
                   {(problem.visibleTestFiles?.length || problem.testCommand) && (
-                    <span className="text-xs font-mono text-zinc-500 dark:text-zinc-400">
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-mono text-zinc-500 dark:text-zinc-400">
                       {[
                         ...(problem.visibleTestFiles || []),
                         ...(problem.testCommand ? [problem.testCommand] : []),
-                      ].join(" · ")}
-                    </span>
+                      ].map((item, idx) => (
+                        <span key={idx}>{item}</span>
+                      ))}
+                    </div>
                   )}
                 </div>
                 {problem.visibleTests && problem.visibleTests.length > 0 && (
@@ -468,7 +461,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                     {problem.visibleTests.map((t, idx) => (
                       <li key={t.id || idx} className="flex items-baseline gap-2">
                         <span
-                          className="text-zinc-400 dark:text-zinc-500 font-mono text-xs select-none"
+                          className="text-zinc-500 dark:text-zinc-400 font-mono text-xs select-none"
                           aria-hidden="true"
                         >
                           •
@@ -483,12 +476,12 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
               </div>
             )}
 
-            {/* 2. Status line: Tests · Lint · Types · Review */}
+            {/* 2. Status line: Tests, Lint, Types, Review */}
             <div className="space-y-2.5">
               <div
                 role="status"
                 aria-label="Check and review status"
-                className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-mono py-2.5 px-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800"
+                className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs font-mono py-2.5 px-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800"
               >
                 <span>
                   <span className="text-zinc-600 dark:text-zinc-400">Tests </span>
@@ -501,26 +494,17 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                     </span>
                   )}
                 </span>
-                <span className="text-zinc-300 dark:text-zinc-700" aria-hidden="true">
-                  ·
-                </span>
                 <span>
                   <span className="text-zinc-600 dark:text-zinc-400">Lint </span>
                   <span className={statusSymbolColor(layeredStatus.lint)}>
                     {layeredStatus.lintSymbol}
                   </span>
                 </span>
-                <span className="text-zinc-300 dark:text-zinc-700" aria-hidden="true">
-                  ·
-                </span>
                 <span>
                   <span className="text-zinc-600 dark:text-zinc-400">Types </span>
                   <span className={statusSymbolColor(layeredStatus.types)}>
                     {layeredStatus.typesSymbol}
                   </span>
-                </span>
-                <span className="text-zinc-300 dark:text-zinc-700" aria-hidden="true">
-                  ·
                 </span>
                 <span>
                   <span className="text-zinc-600 dark:text-zinc-400">Review </span>
@@ -553,7 +537,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                   <a
                     href={vscodeFolderUrl || "#"}
                     onClick={ensureWorkspaceOnDisk}
-                    className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400 text-white text-xs font-semibold transition-colors"
+                    className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-700 text-white text-xs font-semibold transition-colors"
                   >
                     <span>Open in VS Code</span>
                   </a>
@@ -563,7 +547,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                   <button
                     type="button"
                     onClick={handleCopyReviewRequest}
-                    className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400 text-white text-xs font-semibold transition-colors"
+                    className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-700 text-white text-xs font-semibold transition-colors"
                   >
                     {copiedReview ? (
                       <>
@@ -583,9 +567,9 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                   <button
                     type="button"
                     onClick={handleNextProblem}
-                    className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400 text-white text-xs font-semibold transition-colors"
+                    className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-700 text-white text-xs font-semibold transition-colors"
                   >
-                    <span>Next problem</span>
+                    <span>{isLab ? "Next milestone" : "Next problem"}</span>
                     <ChevronRight className="w-4 h-4" />
                   </button>
                 )}
@@ -637,6 +621,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                   aria-expanded={showHint}
                   className="inline-flex items-center gap-1 text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
                 >
+                  <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${showHint ? "rotate-180" : ""}`} />
                   <span>{showHint ? "Hide hint" : "Hint"}</span>
                 </button>}
               </div>
@@ -750,7 +735,10 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                       </div>
                     ) : (
                       <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                        Answer through the review-code skill after your review passes.
+                        Ask Claude to review your code, e.g.{" "}
+                        <code className="font-mono text-zinc-700 dark:text-zinc-300">
+                          {drillId ? reviewRequestText : `ตรวจโค้ด <ID> ${problem.id}`}
+                        </code>
                       </p>
                     )}
                   </div>
@@ -892,8 +880,8 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                       }
                     }}
                     placeholder={getSafePlaceholder(problem.inputHint, problem)}
-                    aria-label={`Answer for question ${problem.id}`}
-                    className="flex-1 min-w-0 h-11 font-mono text-sm bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 border border-zinc-300 dark:border-zinc-700 rounded-xl px-3.5 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600/25 dark:focus:ring-indigo-500/30 focus:border-indigo-600 dark:focus:border-indigo-500 placeholder:text-zinc-400 dark:placeholder:text-zinc-500"
+                    aria-label={`Answer for ${isLab ? "milestone" : "problem"} ${problem.id}`}
+                    className="flex-1 min-w-0 h-11 font-mono text-sm bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 border border-zinc-300 dark:border-zinc-700 rounded-xl px-3.5 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600/25 dark:focus:ring-indigo-500/30 focus:border-indigo-600 dark:focus:border-indigo-500 placeholder:text-zinc-500 dark:placeholder:text-zinc-400"
                   />
                 )}
 
@@ -903,7 +891,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                   disabled={isChecking || !problem.state.userInput.trim()}
                   aria-label="Check answer"
                   title="Check answer (Enter)"
-                  className="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400 disabled:opacity-40 text-white transition-colors shrink-0"
+                  className="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-700 disabled:opacity-40 text-white transition-colors shrink-0"
                 >
                   {isChecking ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -937,7 +925,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                       (lastCheck.verdict as string) === "skipped" ||
                       lastCheck.verdict === "invalid input" ||
                       lastCheck.verdict === "parse_error" ? (
-                      <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                      <AlertTriangle className="w-4 h-4 text-amber-700 dark:text-amber-400 shrink-0 mt-0.5" />
                     ) : (
                       <XCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
                     )}
@@ -1003,6 +991,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                   aria-expanded={showHint}
                   className="inline-flex items-center gap-1 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
                 >
+                  <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${showHint ? "rotate-180" : ""}`} />
                   <span>{showHint ? "Hide hint" : "Hint"}</span>
                 </button>}
 
@@ -1068,7 +1057,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                       <div
                         key={sIdx}
                         onClick={() => onToggleStepHighlight(sIdx)}
-                        className={`p-3 rounded-xl border cursor-pointer transition-colors ${
+                        className={`group p-3 rounded-xl border cursor-pointer transition-colors ${
                           isDiverged
                             ? "border-rose-600 dark:border-rose-400"
                             : isActive
@@ -1086,15 +1075,15 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                               e.stopPropagation();
                               onMarkDivergedStep(sIdx);
                             }}
-                            className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded border ${
+                            className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded border transition-all ${
                               isDiverged
-                                ? "border-rose-600 dark:border-rose-400 text-rose-600 dark:text-rose-400 font-semibold"
-                                : "border-zinc-200 dark:border-zinc-800 text-zinc-500 dark:text-zinc-400"
+                                ? "opacity-100 border-rose-600 dark:border-rose-400 text-rose-600 dark:text-rose-400 font-semibold"
+                                : "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100 border-zinc-200 dark:border-zinc-800 text-zinc-500 dark:text-zinc-400 hover:text-rose-600 dark:hover:text-rose-400 hover:border-rose-300 dark:hover:border-rose-500/40"
                             }`}
                           >
                             <Flag className="w-3 h-3 shrink-0" />
                             <span>
-                              {isDiverged ? `Diverged at step ${sIdx + 1}` : "Mark diverged"}
+                              {isDiverged ? `Diverged at step ${sIdx + 1}` : "Diverged here"}
                             </span>
                           </button>
                         </div>
@@ -1129,7 +1118,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                       val: 0.5,
                       label: "0.5",
                       activeCls:
-                        "border-amber-600 dark:border-amber-400 text-amber-600 dark:text-amber-400 font-semibold bg-zinc-50 dark:bg-zinc-950",
+                        "border-amber-700 dark:border-amber-400 text-amber-700 dark:text-amber-400 font-semibold bg-zinc-50 dark:bg-zinc-950",
                     },
                     {
                       val: 0,
@@ -1142,6 +1131,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                       key={btn.val}
                       type="button"
                       onClick={() => onSetScore(btn.val)}
+                      aria-pressed={score === btn.val}
                       className={`h-7 px-2.5 rounded-lg font-mono border transition-colors ${
                         score === btn.val
                           ? btn.activeCls
@@ -1164,6 +1154,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                         key={t.id}
                         type="button"
                         onClick={() => onToggleMistakeTag(t.id)}
+                        aria-pressed={hasTag}
                         className={`min-h-[28px] py-1 px-2.5 rounded-full text-xs border transition-colors inline-flex items-center ${
                           hasTag
                             ? "border-rose-600 dark:border-rose-400 text-rose-700 dark:text-rose-300 bg-zinc-50 dark:bg-zinc-950 font-semibold"
@@ -1179,13 +1170,14 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
             </div>
 
             <div className="flex items-center gap-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3 py-2">
-              <PenLine className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+              <PenLine className="w-3.5 h-3.5 text-zinc-500 dark:text-zinc-400 shrink-0" />
               <input
                 type="text"
                 value={problem.state.mistakeNote || ""}
                 onChange={(e) => onMistakeNoteChange(e.target.value)}
+                aria-label={`Note for ${isLab ? "milestone" : "problem"} ${problem.id}`}
                 placeholder="Note what went wrong (optional)…"
-                className="w-full bg-transparent text-xs text-zinc-800 dark:text-zinc-200 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 focus:outline-none"
+                className="w-full bg-transparent text-xs text-zinc-800 dark:text-zinc-200 placeholder:text-zinc-500 dark:placeholder:text-zinc-400 focus:outline-none"
               />
             </div>
           </div>
@@ -1211,7 +1203,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
               onClick={onOpenReview}
               className="inline-flex items-center gap-1 py-1.5 font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
             >
-              <span>Review &amp; Sync</span>
+              <span>Review &amp; sync</span>
               <ChevronRight className="w-4 h-4" />
             </button>
           ) : (

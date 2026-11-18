@@ -693,7 +693,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                         }`}
                       >
                         <span>{tab.label}</span>
-                        <span className="text-[11px] font-mono tabular-nums text-zinc-400 dark:text-zinc-500">
+                        <span className="text-[11px] font-mono tabular-nums text-zinc-500 dark:text-zinc-400">
                           {tab.count}
                         </span>
                       </button>

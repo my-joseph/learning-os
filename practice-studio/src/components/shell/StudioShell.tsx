@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import Link from "next/link";
 import { AnimatePresence, m } from "motion/react";
-import { drawer, fade } from "@/lib/motion";
-import { PanelRight, X } from "lucide-react";
+import { drawer, fade, settle } from "@/lib/motion";
+import { Code2, Sigma, X, type LucideIcon } from "lucide-react";
 import { DrillDocument, DrillListItem } from "@/types/drill";
 import type { LabListItem } from "@/lib/labModel";
 import { DrillFilter, StatusMessage, ViewMode } from "@/hooks/types";
@@ -21,6 +22,7 @@ interface StudioShellProps {
   codeHref: string | null;
   viewMode: ViewMode;
   currentDrill: DrillDocument | null;
+  drillNotFound?: boolean;
   currentProblemIndex: number;
   theme: "light" | "dark";
   onToggleTheme: () => void;
@@ -50,13 +52,14 @@ interface StudioShellProps {
   children: React.ReactNode;
 }
 
-/** Page shell composing the sticky header, question tiles bar, status toasts, sticky side panel, and main workspace. */
+/** Page shell composing the fixed left workspace rail, sticky header, tiles bar, status toasts, sticky side panel, and main workspace. */
 export const StudioShell: React.FC<StudioShellProps> = ({
   workspace,
   mathHref,
   codeHref,
   viewMode,
   currentDrill,
+  drillNotFound = false,
   currentProblemIndex,
   theme,
   onToggleTheme,
@@ -85,9 +88,16 @@ export const StudioShell: React.FC<StudioShellProps> = ({
   const [showHeader, setShowHeader] = useState(true);
   const [headerHeight, setHeaderHeight] = useState(108);
   const [isSideDrawerOpen, setIsSideDrawerOpen] = useState(false);
+  const [pillWorkspace, setPillWorkspace] = useState<Workspace>(workspace);
+  useEffect(() => setPillWorkspace(workspace), [workspace]);
+
   const lastScrollYRef = useRef(0);
   const headerRef = useRef<HTMLElement | null>(null);
   const switcherRef = useRef<HTMLDivElement | null>(null);
+  const drawerCardRef = useRef<HTMLDivElement | null>(null);
+  const drawerCloseBtnRef = useRef<HTMLButtonElement | null>(null);
+  const drawerPrevFocusRef = useRef<HTMLElement | null>(null);
+  const drawerWasOpenRef = useRef(false);
 
   const handleClearStatus = useCallback(() => {
     onStatusChange(null);
@@ -124,21 +134,66 @@ export const StudioShell: React.FC<StudioShellProps> = ({
     [dueUnits]
   );
 
-  // Close mobile drawer when switching drills or pressing Escape
+  // Close mobile drawer when switching drills or leaving quiz view
   useEffect(() => {
     setIsSideDrawerOpen(false);
-  }, [selectedDrillId]);
+  }, [selectedDrillId, viewMode]);
 
+  // Capture trigger focus on drawer open, focus close button, and restore focus on close.
+  const drawerActive = viewMode === "quiz" && isSideDrawerOpen;
   useEffect(() => {
-    if (!isSideDrawerOpen) return;
+    if (drawerActive && !drawerWasOpenRef.current) {
+      drawerPrevFocusRef.current =
+        document.activeElement instanceof HTMLElement ? document.activeElement : null;
+      drawerWasOpenRef.current = true;
+      const rafId = requestAnimationFrame(() => drawerCloseBtnRef.current?.focus());
+      return () => cancelAnimationFrame(rafId);
+    }
+
+    if (!drawerActive && drawerWasOpenRef.current) {
+      drawerWasOpenRef.current = false;
+      const prev = drawerPrevFocusRef.current;
+      drawerPrevFocusRef.current = null;
+      if (prev && prev.isConnected) {
+        prev.focus();
+      }
+    }
+  }, [drawerActive]);
+
+  // Escape closes mobile drawer; Tab wraps within drawer controls while open.
+  useEffect(() => {
+    if (!drawerActive) return;
+
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
+        e.preventDefault();
+        e.stopPropagation();
         setIsSideDrawerOpen(false);
+        return;
+      }
+
+      if (e.key === "Tab" && drawerCardRef.current) {
+        const focusable = Array.from(
+          drawerCardRef.current.querySelectorAll<HTMLElement>(
+            'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+          )
+        );
+        if (focusable.length === 0) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
       }
     };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isSideDrawerOpen]);
+
+    window.addEventListener("keydown", handleKeyDown, true);
+    return () => window.removeEventListener("keydown", handleKeyDown, true);
+  }, [drawerActive]);
 
   // Auto-hide sticky header on scroll down, reveal on scroll up
   useEffect(() => {
@@ -182,6 +237,7 @@ export const StudioShell: React.FC<StudioShellProps> = ({
           currentIndex={currentProblemIndex}
           problems={currentDrill.problems}
           viewMode={viewMode}
+          workspace={workspace}
           isLab={isLabId(currentDrill.drillId)}
           onSelectQuestion={onSelectQuestion}
           onPrev={onPrevQuestion}
@@ -196,25 +252,72 @@ export const StudioShell: React.FC<StudioShellProps> = ({
   // Sticky header sits at top-2 (8 px); add 12 px breathing room when visible.
   const asideTopPx = showHeader ? headerHeight + 20 : 16;
 
-  const sidePanelNode = (
-    <StudioSidePanel
-      workspace={workspace}
-      currentUnitCode={currentDrill?.unitCode}
-      dueUnits={dueUnits}
-      dueLoading={dueLoading}
-      dueError={dueError}
-      weakSpotUnits={weakSpotUnits}
-      weakLoading={weakLoading}
-      weakError={weakError}
-      onNavigate={() => setIsSideDrawerOpen(false)}
-    />
-  );
+  const railOptions: {
+    id: Workspace;
+    label: string;
+    href: string | null;
+    icon: LucideIcon;
+  }[] = [
+    { id: "math", label: "Math", href: mathHref, icon: Sigma },
+    { id: "code", label: "Programming", href: codeHref, icon: Code2 },
+  ];
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 px-4 py-4 sm:py-6 transition-colors">
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 px-4 lg:px-16 py-4 sm:py-6 transition-colors">
+      {/* >=1024px: Fixed icon-only workspace rail at the left-middle edge */}
+      <nav
+        aria-label="Workspace"
+        className="hidden lg:grid fixed left-3 top-1/2 -translate-y-1/2 z-40 grid-rows-2 items-center rounded-xl bg-zinc-100/95 dark:bg-zinc-800/80 backdrop-blur-md border border-zinc-200 dark:border-zinc-800 p-1 shadow-sm"
+      >
+        <m.span
+          aria-hidden
+          className="pointer-events-none absolute left-1 right-1 top-1 h-[calc(50%-4px)] rounded-lg bg-white dark:bg-zinc-900 shadow-sm"
+          initial={false}
+          animate={{ y: pillWorkspace === "code" ? "100%" : "0%" }}
+          transition={settle}
+        />
+        {railOptions.map((opt) => {
+          const isActive = workspace === opt.id;
+          const isShown = pillWorkspace === opt.id;
+          const Icon = opt.icon;
+          const cls = `relative z-10 inline-flex items-center justify-center w-8 h-8 rounded-lg transition-colors duration-200 ${
+            isShown
+              ? "text-zinc-900 dark:text-zinc-100"
+              : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200"
+          }`;
+          if (!opt.href) {
+            return (
+              <span
+                key={opt.id}
+                aria-label={opt.label}
+                title={opt.label}
+                aria-current={isActive ? "page" : undefined}
+                aria-disabled={!isActive ? true : undefined}
+                className={`${cls} ${!isActive ? "opacity-50 cursor-not-allowed" : ""}`}
+              >
+                <Icon className="w-4 h-4" aria-hidden={true} />
+              </span>
+            );
+          }
+          return (
+            <Link
+              key={opt.id}
+              href={opt.href}
+              aria-label={opt.label}
+              title={opt.label}
+              aria-current={isActive ? "page" : undefined}
+              onClick={() => setPillWorkspace(opt.id)}
+              className={cls}
+            >
+              <Icon className="w-4 h-4" aria-hidden={true} />
+            </Link>
+          );
+        })}
+      </nav>
+
       <div className={`mx-auto ${containerMaxWidth}`}>
-        {/* Provide sr-only h1 when no active drill workspace renders a visible h1 */}
-        {viewMode === "quiz" && !currentDrill && (
+        {/* Provide sr-only h1 when no active drill or not-found card renders a visible h1 */}
+        {viewMode === "quiz" && !currentDrill && !drillNotFound && (
           <h1 className="sr-only">Practice Studio</h1>
         )}
 
@@ -222,6 +325,8 @@ export const StudioShell: React.FC<StudioShellProps> = ({
           headerRef={headerRef}
           showHeader={showHeader}
           workspace={workspace}
+          pillWorkspace={pillWorkspace}
+          onSelectWorkspace={setPillWorkspace}
           mathHref={mathHref}
           codeHref={codeHref}
           currentDrill={currentDrill}
@@ -253,21 +358,6 @@ export const StudioShell: React.FC<StudioShellProps> = ({
           <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_272px] lg:gap-6 lg:items-start">
             <div className="min-w-0">
               <main>{children}</main>
-              <div className="lg:hidden mt-4 flex justify-center">
-                <button
-                  type="button"
-                  onClick={() => setIsSideDrawerOpen(true)}
-                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 transition-colors"
-                >
-                  <PanelRight className="w-3.5 h-3.5" />
-                  <span>Due today &amp; weak spots</span>
-                  {sidePanelCount > 0 && (
-                    <span className="font-mono text-[11px] text-zinc-600 dark:text-zinc-300">
-                      ({sidePanelCount})
-                    </span>
-                  )}
-                </button>
-              </div>
             </div>
 
             <aside
@@ -280,7 +370,17 @@ export const StudioShell: React.FC<StudioShellProps> = ({
               }
               className="hidden lg:block lg:sticky lg:top-[var(--aside-top)] lg:max-h-[var(--aside-max-h)] lg:overflow-y-auto lg:overscroll-contain transition-[top] duration-150"
             >
-              {sidePanelNode}
+              <StudioSidePanel
+                workspace={workspace}
+                currentUnitCode={currentDrill?.unitCode}
+                dueUnits={dueUnits}
+                dueLoading={dueLoading}
+                dueError={dueError}
+                weakSpotUnits={weakSpotUnits}
+                weakLoading={weakLoading}
+                weakError={weakError}
+                onNavigate={() => setIsSideDrawerOpen(false)}
+              />
             </aside>
           </div>
         ) : (
@@ -301,7 +401,7 @@ export const StudioShell: React.FC<StudioShellProps> = ({
       />
 
       <AnimatePresence>
-      {viewMode === "quiz" && isSideDrawerOpen && (
+      {drawerActive && (
         <m.div
           key="side-drawer"
           initial="hidden"
@@ -310,28 +410,44 @@ export const StudioShell: React.FC<StudioShellProps> = ({
           className="fixed inset-0 z-50 lg:hidden flex justify-end"
           role="dialog"
           aria-modal="true"
-          aria-label="Due today and weak spots"
+          aria-label="Due today & weak spots"
         >
           <m.div
             variants={fade}
             className="fixed inset-0 bg-zinc-950/40 backdrop-blur-[1px]"
             onClick={() => setIsSideDrawerOpen(false)}
           />
-          <m.div variants={drawer} className="relative z-10 w-[min(calc(100vw-2.5rem),340px)] h-full overflow-y-auto bg-zinc-50 dark:bg-zinc-950 border-l border-zinc-200 dark:border-zinc-800 p-4 space-y-3 shadow-xl">
-            <div className="flex items-center justify-between">
+          <m.div
+            ref={drawerCardRef}
+            variants={drawer}
+            className="relative z-10 w-[min(calc(100vw-2.5rem),340px)] h-full overflow-y-auto bg-white dark:bg-zinc-900 border-l border-zinc-200 dark:border-zinc-800 p-4 space-y-4 shadow-xl"
+          >
+            <div className="flex items-center justify-between pb-2 border-b border-zinc-200 dark:border-zinc-800">
               <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                Study queue
+                Due today &amp; weak spots
               </span>
               <button
+                ref={drawerCloseBtnRef}
                 type="button"
                 onClick={() => setIsSideDrawerOpen(false)}
                 aria-label="Close side panel"
-                className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 hover:bg-zinc-200/60 dark:hover:bg-zinc-800 transition-colors"
+                className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
-            {sidePanelNode}
+            <StudioSidePanel
+              workspace={workspace}
+              currentUnitCode={currentDrill?.unitCode}
+              dueUnits={dueUnits}
+              dueLoading={dueLoading}
+              dueError={dueError}
+              weakSpotUnits={weakSpotUnits}
+              weakLoading={weakLoading}
+              weakError={weakError}
+              embedded
+              onNavigate={() => setIsSideDrawerOpen(false)}
+            />
           </m.div>
         </m.div>
       )}

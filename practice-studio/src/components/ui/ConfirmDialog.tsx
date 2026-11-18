@@ -94,8 +94,8 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   }, [open, onCancel]);
 
   const confirmBtnCls = destructive
-    ? "bg-rose-600 hover:bg-rose-700 dark:bg-rose-500 dark:hover:bg-rose-400 focus:ring-rose-600/35"
-    : "bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400 focus:ring-indigo-600/35";
+    ? "bg-rose-600 hover:bg-rose-700 dark:bg-rose-600 dark:hover:bg-rose-700 focus:ring-rose-600/35"
+    : "bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-700 focus:ring-indigo-600/35";
 
   return (
     <AnimatePresence>

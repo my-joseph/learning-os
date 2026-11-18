@@ -171,7 +171,7 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
       <article className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 sm:p-6 space-y-6">
         {/* 1. Question number + level + prompt (text-base, leading-relaxed) */}
         <div className="space-y-2">
-          <div className="flex flex-wrap items-center gap-2 text-xs font-medium text-zinc-500 dark:text-zinc-400">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-medium text-zinc-500 dark:text-zinc-400">
             <span>
               Question {index + 1}
               {typeof totalQuestions === "number" && totalQuestions > 0
@@ -179,12 +179,9 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
                 : ""}
             </span>
             {typeof problem.level === "number" && problem.level > 0 && (
-              <>
-                <span aria-hidden="true">·</span>
-                <span title={problem.levelLabel?.trim() || undefined}>
-                  Level {problem.level}
-                </span>
-              </>
+              <span title={problem.levelLabel?.trim() || undefined}>
+                Level {problem.level}
+              </span>
             )}
           </div>
 
@@ -268,7 +265,7 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
               disabled={isChecking || !problem.state.userInput.trim()}
               aria-label="Check answer"
               title="Check answer (Enter)"
-              className="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400 disabled:opacity-40 text-white transition-colors shrink-0"
+              className="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-700 disabled:opacity-40 text-white transition-colors shrink-0"
             >
               {isChecking ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -303,7 +300,7 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
                   lastCheck.verdict === "skipped" ||
                   lastCheck.verdict === "invalid input" ||
                   lastCheck.verdict === "parse_error" ? (
-                  <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                  <AlertTriangle className="w-4 h-4 text-amber-700 dark:text-amber-400 shrink-0 mt-0.5" />
                 ) : (
                   <XCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
                 )}
@@ -385,6 +382,7 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
               aria-expanded={showHint}
               className="inline-flex items-center gap-1 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
             >
+              <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${showHint ? "rotate-180" : ""}`} />
               <span>{showHint ? "Hide hint" : "Hint"}</span>
             </button>}
 
@@ -540,7 +538,7 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
                     val: 0.5,
                     label: "0.5",
                     activeCls:
-                      "border-amber-600 dark:border-amber-400 text-amber-600 dark:text-amber-400 font-semibold bg-zinc-50 dark:bg-zinc-950",
+                      "border-amber-700 dark:border-amber-400 text-amber-700 dark:text-amber-400 font-semibold bg-zinc-50 dark:bg-zinc-950",
                   },
                   {
                     val: 0,
@@ -553,6 +551,7 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
                     key={btn.val}
                     type="button"
                     onClick={() => onSetScore(btn.val)}
+                    aria-pressed={score === btn.val}
                     className={`h-7 px-2.5 rounded-lg font-mono border transition-colors ${
                       score === btn.val
                         ? btn.activeCls
@@ -574,6 +573,7 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
                         key={t.id}
                         type="button"
                         onClick={() => onToggleMistakeTag(t.id)}
+                        aria-pressed={hasTag}
                         className={`min-h-[28px] py-1 px-2.5 rounded-full text-xs border transition-colors inline-flex items-center ${
                           hasTag
                             ? "border-rose-600 dark:border-rose-400 text-rose-700 dark:text-rose-300 bg-zinc-50 dark:bg-zinc-950 font-semibold"
@@ -589,13 +589,14 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
             </div>
 
             <div className="flex items-center gap-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3 py-2">
-              <PenLine className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+              <PenLine className="w-3.5 h-3.5 text-zinc-500 dark:text-zinc-400 shrink-0" />
               <input
                 type="text"
                 value={problem.state.mistakeNote || ""}
                 onChange={(e) => onMistakeNoteChange(e.target.value)}
+                aria-label={`Note for question ${index + 1}`}
                 placeholder="Note what went wrong (optional)…"
-                className="w-full bg-transparent text-xs text-zinc-800 dark:text-zinc-200 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 focus:outline-none"
+                className="w-full bg-transparent text-xs text-zinc-800 dark:text-zinc-200 placeholder:text-zinc-500 dark:placeholder:text-zinc-400 focus:outline-none"
               />
             </div>
           </div>
@@ -621,7 +622,7 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
               onClick={onOpenReview}
               className="inline-flex items-center gap-1 py-1.5 font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
             >
-              <span>Review &amp; Sync</span>
+              <span>Review &amp; sync</span>
               <ChevronRight className="w-4 h-4" />
             </button>
           ) : (

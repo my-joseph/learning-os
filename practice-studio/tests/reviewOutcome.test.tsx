@@ -239,6 +239,7 @@ const html = renderToStaticMarkup(
 
 assert.match(html, /<h1[^>]*>Linear Equations<\/h1>/);
 assert.match(html, /MTH-T01-C01-U01/);
+assert.doesNotMatch(html, /· Review &amp; sync|· Review & sync/);
 assert.match(html, /1\.5 \/ 5/);
 assert.match(html, /title="Q3 — Correct"/);
 assert.match(html, /title="Q1 — Wrong"/);
@@ -265,6 +266,53 @@ assert.match(
   /Not answered yet/,
   "Unanswered Q05 must keep verified answer hidden"
 );
+assert.doesNotMatch(
+  html,
+  /Your answer: <\/span><span[^>]*>Unanswered/,
+  "Unanswered Q05 must show quiet Not answered yet instead of Your answer: Unanswered"
+);
+// Score-strip hit target >= 24px (w-6 h-6) and compact legend visible without hidden sm:flex
+assert.match(html, /class="group inline-flex items-center justify-center w-6 h-6/);
+assert.doesNotMatch(html, /hidden sm:flex items-center gap-3/);
+// Lab & Code noun parity in ReviewPanel
+const labReviewHtml = renderToStaticMarkup(
+  <ReviewPanel
+    currentDrill={{ ...sampleDrill, drillId: "LAB-PRG-T01-C01-01", subject: "PRG" }}
+    liveScore={0}
+    maxScore={5}
+    accuracyPct={0}
+    skippedCount={0}
+    computedPracticeStatus="Needs Retry"
+    isSyncing={false}
+    onStatusOverrideChange={noop}
+    onBackToQuiz={noop}
+    onConfirmSync={noop}
+    onSelectQuestion={noop}
+    onSetScore={noop}
+    onToggleMistakeTag={noop}
+    onMistakeNoteChange={noop}
+  />
+);
+assert.match(labReviewHtml, /Back to milestones/);
+const codeReviewHtml = renderToStaticMarkup(
+  <ReviewPanel
+    currentDrill={{ ...sampleDrill, drillId: "DRL-PRG-T01-C01-U01-01", subject: "PRG" }}
+    liveScore={0}
+    maxScore={5}
+    accuracyPct={0}
+    skippedCount={0}
+    computedPracticeStatus="Needs Retry"
+    isSyncing={false}
+    onStatusOverrideChange={noop}
+    onBackToQuiz={noop}
+    onConfirmSync={noop}
+    onSelectQuestion={noop}
+    onSetScore={noop}
+    onToggleMistakeTag={noop}
+    onMistakeNoteChange={noop}
+  />
+);
+assert.match(codeReviewHtml, /Back to problems/);
 
 // Bug 2: Unattempted rows (including invalid-input-only or score-only) hide score buttons, mistake tags, and notes
 assert.match(html, /aria-label="Set Q1 score to 1\.0"/);
@@ -439,6 +487,16 @@ assert.match(expandedHtml, /katex/);
 assert.match(expandedHtml, /Right triangle ABC/);
 assert.match(expandedHtml, /<svg/);
 assert.match(expandedHtml, /Not answered yet/);
+assert.match(
+  expandedHtml,
+  /grid-cols-\[64px_minmax\(0,1fr\)\]/,
+  "Review row must use 2-column grid so prompt expands in place"
+);
+assert.doesNotMatch(
+  reviewSource,
+  /!isExpanded && <FormattedText/,
+  "Prompt must expand in place rather than hiding truncated prompt while open"
+);
 assert.doesNotMatch(expandedHtml, /SECRET_DISPLAY_SETUP/);
 assert.doesNotMatch(expandedHtml, /SECRET_SOLUTION_CODE/);
 assert.doesNotMatch(expandedHtml, /SECRET_CHECKPOINT_HINT/);

@@ -3,6 +3,7 @@
 import React, { useEffect, useRef } from "react";
 import { ClipboardCheck } from "lucide-react";
 import { Problem } from "@/types/drill";
+import { Workspace } from "@/lib/routes";
 import { LabMilestoneStepper } from "@/components/LabMilestoneStepper";
 
 interface QuizPaginationBarProps {
@@ -10,6 +11,7 @@ interface QuizPaginationBarProps {
   currentIndex: number;
   problems: Problem[];
   viewMode: "quiz" | "review";
+  workspace?: Workspace;
   isLab?: boolean;
   onSelectQuestion: (index: number) => void;
   onPrev: () => void;
@@ -30,6 +32,7 @@ export const QuizPaginationBar: React.FC<QuizPaginationBarProps> = ({
   currentIndex,
   problems,
   viewMode,
+  workspace,
   isLab,
   onSelectQuestion,
   onToggleViewMode,
@@ -57,12 +60,15 @@ export const QuizPaginationBar: React.FC<QuizPaginationBarProps> = ({
     );
   }
 
+  const itemNoun = workspace === "code" ? "Problem" : "Question";
+  const navLabel = workspace === "code" ? "Problems" : "Questions";
+
   return (
-    <div className="pt-2 border-t border-zinc-200/80 dark:border-zinc-800/80">
+    <div className="pt-2 border-t border-zinc-200/80 dark:border-zinc-800/80 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
       <div
         role="navigation"
-        aria-label="Questions"
-        className="flex items-center gap-1.5 overflow-x-auto p-1.5 -m-1.5 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+        aria-label={navLabel}
+        className="flex items-center justify-center gap-1.5 w-max mx-auto p-1"
       >
         {problems.map((prob, idx) => {
           const isActive = viewMode === "quiz" && currentIndex === idx;
@@ -97,12 +103,12 @@ export const QuizPaginationBar: React.FC<QuizPaginationBarProps> = ({
             statusLabel = "Incorrect (0)";
           } else if (isSkipped) {
             colorCls =
-              "bg-transparent hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 dark:text-zinc-500 border-dashed border-zinc-300 dark:border-zinc-700";
+              "bg-transparent hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 dark:text-zinc-400 border-dashed border-zinc-300 dark:border-zinc-700";
             statusLabel = "Skipped";
           }
 
           const activeRing = isActive ? ACTIVE_TILE_RING_CLS : INACTIVE_TILE_CLS;
-          const itemTitle = `Question ${idx + 1} — ${statusLabel}`;
+          const itemTitle = `${itemNoun} ${idx + 1} — ${statusLabel}`;
 
           return (
             <button
