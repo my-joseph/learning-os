@@ -483,7 +483,7 @@ async function testSyntheticLabAndProgress() {
     assert.match(tilesHtml, /bg-amber-600/, "M2 (revise) tile must be amber");
     assert.match(tilesHtml, /bg-zinc-50/, "M3 (not started) tile must be neutral");
     assert.match(tilesHtml, /aria-label="Review &amp; sync"/);
-    assert.match(tilesHtml, />Review<\/span>/);
+    assert.doesNotMatch(tilesHtml, />Review<\/span>/);
 
     const labReviewTilesHtml = renderToStaticMarkup(
       <QuizPaginationBar
@@ -564,7 +564,8 @@ async function testSyntheticLabAndProgress() {
     );
     assert.match(switcherHtml, />Labs</);
     assert.match(switcherHtml, /Synthetic Emitter/);
-    assert.match(switcherHtml, /LAB-PRG-T01-C01-99 · PRG-T01-C01 · 3 Ms/);
+    assert.match(switcherHtml, /PRG-T01-C01 · 3 Ms/);
+    assert.doesNotMatch(switcherHtml, /LAB-PRG-T01-C01-99/);
 
     // Route rejection checks
     const badRes1 = await labGET(new NextRequest("http://127.0.0.1:3000/api/lab?id=_reference"));

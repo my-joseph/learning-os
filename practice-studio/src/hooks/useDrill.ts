@@ -13,6 +13,7 @@ import {
   TelemetryTimerState,
 } from "@/lib/telemetryTimer";
 import { labToDrillDocument, type LabDetailResponse } from "@/lib/labModel";
+import { stepStudyPosition } from "@/lib/pagination";
 import { findProblemIndex, isLabId } from "@/lib/routes";
 import { StatusMessage, ViewMode } from "./types";
 
@@ -466,17 +467,32 @@ export function useDrill({
   );
 
   const handlePrevQuestion = useCallback(() => {
-    if (currentProblemIndex > 0) {
-      selectQuestionIndex(currentProblemIndex - 1);
+    if (!currentDrill || currentDrill.problems.length === 0) return;
+    const nextPos = stepStudyPosition(
+      { viewMode, index: currentProblemIndex },
+      currentDrill.problems.length,
+      "prev"
+    );
+    if (nextPos.viewMode === viewMode && nextPos.index === currentProblemIndex) return;
+    setViewMode(nextPos.viewMode);
+    if (nextPos.viewMode === "quiz") {
+      selectQuestionIndex(nextPos.index);
     }
-  }, [currentProblemIndex, selectQuestionIndex]);
+  }, [currentDrill, viewMode, currentProblemIndex, selectQuestionIndex]);
 
   const handleNextQuestion = useCallback(() => {
-    const maxIdx = (currentDrill?.problems.length ?? 1) - 1;
-    if (currentProblemIndex < maxIdx) {
-      selectQuestionIndex(currentProblemIndex + 1);
+    if (!currentDrill || currentDrill.problems.length === 0) return;
+    const nextPos = stepStudyPosition(
+      { viewMode, index: currentProblemIndex },
+      currentDrill.problems.length,
+      "next"
+    );
+    if (nextPos.viewMode === viewMode && nextPos.index === currentProblemIndex) return;
+    setViewMode(nextPos.viewMode);
+    if (nextPos.viewMode === "quiz") {
+      selectQuestionIndex(nextPos.index);
     }
-  }, [currentDrill, currentProblemIndex, selectQuestionIndex]);
+  }, [currentDrill, viewMode, currentProblemIndex, selectQuestionIndex]);
 
   const handleSelectQuestion = useCallback(
     (idx: number) => {
@@ -488,15 +504,17 @@ export function useDrill({
     [selectQuestionIndex, viewMode]
   );
 
-  // Keyboard navigation
+  // Keyboard navigation across questions/milestones and the trailing Review step
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
       const target = e.target as HTMLElement | null;
       if (
         target &&
         (target.tagName === "INPUT" ||
           target.tagName === "TEXTAREA" ||
           target.tagName === "SELECT" ||
+          target.isContentEditable ||
           Boolean(target.closest('[role="alertdialog"], [role="dialog"]')))
       ) {
         return;
@@ -504,7 +522,6 @@ export function useDrill({
       if (document.querySelector('[role="alertdialog"], [role="dialog"]')) {
         return;
       }
-      if (viewMode !== "quiz") return;
       if (e.key === "ArrowLeft") {
         handlePrevQuestion();
       } else if (e.key === "ArrowRight") {
@@ -513,7 +530,7 @@ export function useDrill({
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [viewMode, handlePrevQuestion, handleNextQuestion]);
+  }, [handlePrevQuestion, handleNextQuestion]);
 
   return {
     currentDrill,
