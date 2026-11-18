@@ -17,7 +17,15 @@ interface QuizPaginationBarProps {
   onToggleViewMode: (mode: "quiz" | "review") => void;
 }
 
-/** Question/milestone tiles row under the header: one small square per question/milestone. */
+const TILE_BASE_CLS =
+  "relative min-w-[1.75rem] h-7 px-1.5 rounded-md border text-xs flex items-center justify-center font-mono transition-colors shrink-0";
+const NEUTRAL_TILE_CLS =
+  "bg-zinc-50 dark:bg-zinc-950 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600";
+const ACTIVE_TILE_RING_CLS =
+  "ring-2 ring-indigo-600 dark:ring-indigo-500 ring-offset-1 ring-offset-white dark:ring-offset-zinc-900 z-10 font-semibold";
+const INACTIVE_TILE_CLS = "font-medium";
+
+/** Question/milestone tiles row under the header: one small square per question/milestone, followed by Review & sync. */
 export const QuizPaginationBar: React.FC<QuizPaginationBarProps> = ({
   currentIndex,
   problems,
@@ -46,8 +54,7 @@ export const QuizPaginationBar: React.FC<QuizPaginationBarProps> = ({
       >
         {problems.map((prob, idx) => {
           const isActive = viewMode === "quiz" && currentIndex === idx;
-          let colorCls =
-            "bg-zinc-50 dark:bg-zinc-950 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600";
+          let colorCls = NEUTRAL_TILE_CLS;
           let statusLabel = labMode ? "Not started" : "Unanswered";
 
           if (labMode) {
@@ -95,9 +102,7 @@ export const QuizPaginationBar: React.FC<QuizPaginationBarProps> = ({
             }
           }
 
-          const activeRing = isActive
-            ? "ring-2 ring-indigo-600 dark:ring-indigo-500 ring-offset-1 ring-offset-white dark:ring-offset-zinc-900 z-10 font-semibold"
-            : "font-medium";
+          const activeRing = isActive ? ACTIVE_TILE_RING_CLS : INACTIVE_TILE_CLS;
 
           const itemTitle = labMode
             ? `Milestone ${prob.id} — ${statusLabel}`
@@ -111,7 +116,7 @@ export const QuizPaginationBar: React.FC<QuizPaginationBarProps> = ({
               title={itemTitle}
               aria-label={itemTitle}
               aria-current={isActive ? "step" : undefined}
-              className={`relative min-w-[1.75rem] h-7 px-1.5 rounded-md border text-xs flex items-center justify-center font-mono transition-colors shrink-0 ${colorCls} ${activeRing}`}
+              className={`${TILE_BASE_CLS} ${colorCls} ${activeRing}`}
             >
               {labMode ? prob.id : idx + 1}
             </button>
@@ -124,15 +129,13 @@ export const QuizPaginationBar: React.FC<QuizPaginationBarProps> = ({
           onClick={() => onToggleViewMode(isReview ? "quiz" : "review")}
           aria-label="Review & sync"
           aria-pressed={isReview}
-          title={isReview ? "Back to questions" : "Review & sync"}
-          className={`relative h-7 px-2 rounded-md border text-xs inline-flex items-center justify-center gap-1 font-sans transition-colors shrink-0 ${
-            isReview
-              ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 border-zinc-400 dark:border-zinc-600 ring-2 ring-indigo-600 dark:ring-indigo-500 ring-offset-1 ring-offset-white dark:ring-offset-zinc-900 z-10 font-semibold"
-              : "bg-zinc-50 dark:bg-zinc-950 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600 hover:text-zinc-900 dark:hover:text-zinc-100 font-medium"
+          aria-current={isReview ? "step" : undefined}
+          title="Review & sync"
+          className={`${TILE_BASE_CLS} ${NEUTRAL_TILE_CLS} ${
+            isReview ? ACTIVE_TILE_RING_CLS : INACTIVE_TILE_CLS
           }`}
         >
           <ClipboardCheck className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-          <span>Review</span>
         </button>
       </div>
     </div>

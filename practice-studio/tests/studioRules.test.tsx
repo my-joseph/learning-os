@@ -402,8 +402,9 @@ const quizTilesHtml = renderToStaticMarkup(
 );
 assert.match(
   quizTilesHtml,
-  /<button[^>]*aria-label="Review &amp; sync"[^>]*aria-pressed="false"[^>]*>.*Review<\/span><\/button><\/div><\/div>$/
+  /<button[^>]*aria-label="Review &amp; sync"[^>]*aria-pressed="false"[^>]*title="Review &amp; sync"[^>]*><svg[^>]*>.*<\/svg><\/button><\/div><\/div>$/
 );
+assert.doesNotMatch(quizTilesHtml, />Review<\/span>/);
 
 const reviewTilesHtml = renderToStaticMarkup(
   <QuizPaginationBar
@@ -419,7 +420,7 @@ const reviewTilesHtml = renderToStaticMarkup(
 );
 assert.match(
   reviewTilesHtml,
-  /<button[^>]*aria-label="Review &amp; sync"[^>]*aria-pressed="true"[^>]*class="[^"]*ring-indigo-600[^"]*"[^>]*>.*Review<\/span><\/button><\/div><\/div>$/
+  /<button[^>]*aria-label="Review &amp; sync"[^>]*aria-pressed="true"[^>]*aria-current="step"[^>]*title="Review &amp; sync"[^>]*class="[^"]*ring-indigo-600[^"]*"[^>]*><svg[^>]*>.*<\/svg><\/button><\/div><\/div>$/
 );
 
 console.log("studio rules tests passed");

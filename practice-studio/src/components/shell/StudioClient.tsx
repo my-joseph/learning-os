@@ -346,22 +346,29 @@ export const StudioClient: React.FC<StudioClientProps> = ({
           })()}
         </m.div>
       ) : (
-        <ReviewPanel
-          currentDrill={currentDrill}
-          liveScore={liveScore}
-          maxScore={maxScore}
-          accuracyPct={accuracyPct}
-          skippedCount={skippedCount}
-          computedPracticeStatus={computedPracticeStatus}
-          isSyncing={isSyncing}
-          onStatusOverrideChange={setStatusOverride}
-          onBackToQuiz={() => setViewMode("quiz")}
-          onConfirmSync={handleConfirmSyncToNotion}
-          onSelectQuestion={handleSelectQuestion}
-          onSetScore={handleSetScore}
-          onToggleMistakeTag={handleToggleMistakeTag}
-          onMistakeNoteChange={handleMistakeNoteChange}
-        />
+        <m.div
+          key={`${workspace}:${currentDrill.drillId}:review`}
+          variants={fadeUp}
+          initial="hidden"
+          animate="shown"
+        >
+          <ReviewPanel
+            currentDrill={currentDrill}
+            liveScore={liveScore}
+            maxScore={maxScore}
+            accuracyPct={accuracyPct}
+            skippedCount={skippedCount}
+            computedPracticeStatus={computedPracticeStatus}
+            isSyncing={isSyncing}
+            onStatusOverrideChange={setStatusOverride}
+            onBackToQuiz={handlePrevQuestion}
+            onConfirmSync={handleConfirmSyncToNotion}
+            onSelectQuestion={handleSelectQuestion}
+            onSetScore={handleSetScore}
+            onToggleMistakeTag={handleToggleMistakeTag}
+            onMistakeNoteChange={handleMistakeNoteChange}
+          />
+        </m.div>
       )}
       <ConfirmDialog
         open={showResetConfirm && Boolean(currentDrill)}
