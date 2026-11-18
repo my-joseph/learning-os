@@ -1133,12 +1133,6 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                 )}
               </div>
 
-              {stepsUnopenedUnattempted && (
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                  Opening steps before checking counts as assisted.
-                </p>
-              )}
-
               <Reveal show={Boolean(showHint && hasCheckpointHint(problem.checkpointHint))}>
               {showHint && hasCheckpointHint(problem.checkpointHint) && (
                 <div className="border-l-2 border-amber-600 dark:border-amber-400 pl-3.5 py-1 text-sm text-zinc-700 dark:text-zinc-300">

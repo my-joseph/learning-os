@@ -152,12 +152,6 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
     !hasAttempt &&
     !showSolution &&
     !problem.state.solutionRevealedBeforeAnswer;
-  const showAssistedNote =
-    !hasAttempt &&
-    !showSetup &&
-    !showSolution &&
-    !problem.state.setupRevealedBeforeAnswer &&
-    !problem.state.solutionRevealedBeforeAnswer;
   const hasCorrectAttempt =
     problem.state.score === 1 ||
     Boolean(problem.state.attempts?.some((a) => a.verdict === "correct"));
@@ -646,14 +640,6 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
               </button>
             )}
           </div>
-
-          {showAssistedNote && (
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">
-              {hasSetup
-                ? "Opening equation set-up or steps before checking counts as assisted."
-                : "Opening steps before checking counts as assisted."}
-            </p>
-          )}
 
           {/* Checkpoint Hint Disclosure */}
           <Reveal show={Boolean(showHint && hasCheckpointHint(problem.checkpointHint))}>

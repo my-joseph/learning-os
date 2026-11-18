@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useId, useState } from "react";
 import { AnimatePresence, m } from "motion/react";
 import { Clock, Pause, Play } from "lucide-react";
 import { formatTimerClock } from "@/lib/telemetryTimer";
@@ -17,7 +17,7 @@ export interface QuestionTimerProps {
   onTogglePause?: () => void;
 }
 
-/** Quiet meta-line timer showing per-question elapsed time, pause toggle, and drill/lab total. */
+/** Quiet meta-line timer: this question's time + pause toggle; the drill/lab total floats on hover/focus of the clock. */
 export const QuestionTimer: React.FC<QuestionTimerProps> = ({
   questionMs,
   totalMs,
@@ -26,6 +26,8 @@ export const QuestionTimer: React.FC<QuestionTimerProps> = ({
 }) => {
   const questionClock = formatTimerClock(questionMs);
   const totalClock = formatTimerClock(totalMs);
+  const [showTotal, setShowTotal] = useState(false);
+  const tipId = useId();
 
   return (
     <div className="inline-flex items-center gap-2 ml-auto shrink-0">
@@ -36,7 +38,32 @@ export const QuestionTimer: React.FC<QuestionTimerProps> = ({
             : "text-zinc-500 dark:text-zinc-400"
         }`}
       >
-        <Clock className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+        <span
+          className="relative inline-flex rounded-sm cursor-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600/50 dark:focus-visible:ring-indigo-400/60"
+          tabIndex={0}
+          aria-label={`Total ${totalClock}`}
+          aria-describedby={showTotal ? tipId : undefined}
+          onMouseEnter={() => setShowTotal(true)}
+          onMouseLeave={() => setShowTotal(false)}
+          onFocus={() => setShowTotal(true)}
+          onBlur={() => setShowTotal(false)}
+        >
+          <Clock className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+          <AnimatePresence>
+            {showTotal && (
+              <m.span
+                key="total"
+                id={tipId}
+                role="tooltip"
+                variants={fade}
+                {...presence}
+                className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-30 whitespace-nowrap rounded-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-1 text-xs font-medium tabular-nums text-zinc-700 dark:text-zinc-200 shadow-md"
+              >
+                Total {totalClock}
+              </m.span>
+            )}
+          </AnimatePresence>
+        </span>
         <AnimatePresence initial={false}>
           {isPaused && (
             <m.span key="paused" variants={fade} {...presence}>
@@ -66,9 +93,6 @@ export const QuestionTimer: React.FC<QuestionTimerProps> = ({
         )}
       </button>
 
-      <span className="text-[11px] font-normal tabular-nums text-zinc-500 dark:text-zinc-400 whitespace-nowrap">
-        Total {totalClock}
-      </span>
     </div>
   );
 };
