@@ -21,9 +21,6 @@ interface StudioShellProps {
   viewMode: ViewMode;
   currentDrill: DrillDocument | null;
   currentProblemIndex: number;
-  liveScore: number;
-  maxScore: number;
-  accuracyPct: number;
   theme: "light" | "dark";
   onToggleTheme: () => void;
   onResetAll: () => void;
@@ -59,9 +56,6 @@ export const StudioShell: React.FC<StudioShellProps> = ({
   viewMode,
   currentDrill,
   currentProblemIndex,
-  liveScore,
-  maxScore,
-  accuracyPct,
   theme,
   onToggleTheme,
   onResetAll,
@@ -228,12 +222,7 @@ export const StudioShell: React.FC<StudioShellProps> = ({
           workspace={workspace}
           mathHref={mathHref}
           codeHref={codeHref}
-          viewMode={viewMode}
-          onToggleViewMode={onToggleViewMode}
           currentDrill={currentDrill}
-          liveScore={liveScore}
-          maxScore={maxScore}
-          accuracyPct={accuracyPct}
           theme={theme}
           onToggleTheme={onToggleTheme}
           onResetAll={onResetAll}

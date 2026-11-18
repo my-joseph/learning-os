@@ -177,3 +177,20 @@ export function toSingleLinePrompt(prompt: string): string {
     .replace(/\s{2,}/g, " ")
     .trim();
 }
+
+/** Toggle a single row ID in the expanded-rows map. */
+export function toggleExpandedRow(
+  expanded: Record<string, boolean>,
+  probId: string
+): Record<string, boolean> {
+  return { ...expanded, [probId]: !expanded[probId] };
+}
+
+/** Ensure a single row ID is expanded without collapsing other open rows. */
+export function ensureExpandedRow(
+  expanded: Record<string, boolean>,
+  probId: string
+): Record<string, boolean> {
+  if (expanded[probId]) return expanded;
+  return { ...expanded, [probId]: true };
+}
