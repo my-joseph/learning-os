@@ -25,6 +25,7 @@ import {
   resolveWorkspaceDrill,
 } from "@/lib/routes";
 import { readLastDrillId, writeLastDrillId } from "@/lib/lastDrillStorage";
+import { getDrillTotalMs, getProblemDisplayMs } from "@/lib/telemetryTimer";
 
 interface StudioClientProps {
   workspace: Workspace;
@@ -95,6 +96,9 @@ export const StudioClient: React.FC<StudioClientProps> = ({
     isLoadingDrill,
     drillNotFound,
     loadDrill,
+    timerState,
+    timerNow,
+    handleToggleTimerPause,
     handleHintRevealed,
     handleCheckAnswer,
     handleInputChange,
@@ -284,6 +288,13 @@ export const StudioClient: React.FC<StudioClientProps> = ({
           {(() => {
             const prob = currentDrill.problems[currentProblemIndex];
             const idx = currentProblemIndex;
+            const questionTimerMs = getProblemDisplayMs(
+              prob.state?.durationMs,
+              timerState,
+              prob.id,
+              timerNow
+            );
+            const totalTimerMs = getDrillTotalMs(currentDrill.problems, timerState, timerNow);
 
             if (workspace === "math") {
               return (
@@ -312,6 +323,10 @@ export const StudioClient: React.FC<StudioClientProps> = ({
                   onPrevQuestion={handlePrevQuestion}
                   onNextQuestion={handleNextQuestion}
                   onOpenReview={() => setViewMode("review")}
+                  questionTimerMs={questionTimerMs}
+                  totalTimerMs={totalTimerMs}
+                  isTimerPaused={timerState.paused}
+                  onToggleTimerPause={handleToggleTimerPause}
                 />
               );
             }
@@ -345,6 +360,10 @@ export const StudioClient: React.FC<StudioClientProps> = ({
                 onPrevQuestion={handlePrevQuestion}
                 onNextQuestion={handleNextQuestion}
                 onOpenReview={() => setViewMode("review")}
+                questionTimerMs={questionTimerMs}
+                totalTimerMs={totalTimerMs}
+                isTimerPaused={timerState.paused}
+                onToggleTimerPause={handleToggleTimerPause}
               />
             );
           })()}
@@ -364,6 +383,7 @@ export const StudioClient: React.FC<StudioClientProps> = ({
             skippedCount={skippedCount}
             computedPracticeStatus={computedPracticeStatus}
             isSyncing={isSyncing}
+            totalDurationMs={getDrillTotalMs(currentDrill.problems, timerState, timerNow)}
             onStatusOverrideChange={setStatusOverride}
             onBackToQuiz={() => setViewMode("quiz")}
             onConfirmSync={handleConfirmSyncToNotion}
