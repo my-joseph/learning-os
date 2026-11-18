@@ -333,20 +333,20 @@ const mathTreeHtml = renderToStaticMarkup(
 // 1) Hover codes on every level (topic, chapter, unit, set, single-unit) use hidden (no reserved width)
 //    and sit to the left of the count pill without overlapping it.
 assert.doesNotMatch(mathTreeHtml, /opacity-0/, "hover codes must not reserve width with opacity-0");
-assert.match(mathTreeHtml, /hidden group-hover:inline group-focus-visible:inline[^>]*>MTH-T02</);
+assert.match(mathTreeHtml, /hidden group-hover:block group-focus-visible:block[^>]*>MTH-T02</);
 assert.match(
   mathTreeHtml,
-  /hidden group-hover:inline group-focus-visible:inline[^>]*>C01<\/span><span[^>]*rounded-full[^>]*>3<\/span>/,
+  /hidden group-hover:block group-focus-visible:block[^>]*>C01<\/span><\/span><span[^>]*rounded-full[^>]*>3<\/span>/,
   "chapter hover code sits left of count pill"
 );
 assert.match(
   mathTreeHtml,
-  /hidden group-hover:inline group-focus-visible:inline[^>]*>U01<\/span><span[^>]*rounded-full[^>]*>2<\/span>/,
+  /hidden group-hover:block group-focus-visible:block[^>]*>U01<\/span><\/span><span[^>]*rounded-full[^>]*>2<\/span>/,
   "unit hover code sits left of count pill"
 );
-assert.match(mathTreeHtml, /hidden group-hover:inline group-focus-visible:inline[^>]*>U01-03</);
-assert.match(mathTreeHtml, /hidden group-hover:inline group-focus-visible:inline[^>]*>U01-04</);
-assert.match(mathTreeHtml, /hidden group-hover:inline group-focus-visible:inline[^>]*>U02</);
+assert.match(mathTreeHtml, /hidden group-hover:block group-focus-visible:block[^>]*>U01-03</);
+assert.match(mathTreeHtml, /hidden group-hover:block group-focus-visible:block[^>]*>U01-04</);
+assert.match(mathTreeHtml, /hidden group-hover:block group-focus-visible:block[^>]*>U02</);
 
 // 2) No empty note slot when a leaf has neither notes nor due-today status;
 //    status dot precedes any note/due icon so dots stay vertically aligned.
@@ -399,7 +399,7 @@ const labTreeHtml = renderToStaticMarkup(
     onSelectDrill={noop}
   />
 );
-assert.match(labTreeHtml, /hidden group-hover:inline group-focus-visible:inline[^>]*>LAB-02</);
+assert.match(labTreeHtml, /hidden group-hover:block group-focus-visible:block[^>]*>LAB-02</);
 assert.doesNotMatch(labTreeHtml, /lucide-flask-conical/);
 assert.doesNotMatch(labTreeHtml, /lucide-code-2/);
 
