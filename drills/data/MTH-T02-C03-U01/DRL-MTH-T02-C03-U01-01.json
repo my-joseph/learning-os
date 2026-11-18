@@ -1241,7 +1241,7 @@
       "archetypeKey": "t02-c03-u01-write-line-from-point-slope",
       "context": "",
       "prompt": "A line has slope $3$ and passes through a point with input $-2$ and output $6$. Find the x-coordinate where it crosses the x-axis. Enter only a number.",
-      "display": "Find the line from the slope and point, then set the output to zero.",
+      "display": "\\text{Find the line from the slope and point, then set the output to zero.}",
       "plainText": "Find the line from the slope and point, then set the output to zero.",
       "givens": {
         "m": 3,
@@ -1371,7 +1371,7 @@
       "archetypeKey": "t02-c03-u01-classify-line-relations",
       "context": "",
       "prompt": "A line with slope $2$ is parallel to another line through a point with input $3$ and output $1$. Find only the y-intercept of the second line. Enter only a number.",
-      "display": "Use the shared slope and point to find the second line’s y-intercept.",
+      "display": "\\text{Use the shared slope and point to find the second line’s } y\\text{-intercept.}",
       "plainText": "Use the shared slope and point to find the second line y-intercept.",
       "givens": {
         "m": 2,

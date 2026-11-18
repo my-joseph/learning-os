@@ -31,7 +31,7 @@
         "tolerance": 0
       },
       "answerPlain": "3/2",
-      "answerDisplay": "\\\\frac{3}{2}",
+      "answerDisplay": "\\frac{3}{2}",
       "inputHint": "Enter the exponent as an exact fraction.",
       "commonTrapTag": "t02-c04-u02-confuse-coefficient-and-exponent-trap",
       "trapDerivation": "6*2/2",
@@ -50,7 +50,7 @@
           "explain": "Match the function to the single-term power form."
         },
         {
-          "latex": "p=\\\\frac{3}{2}",
+          "latex": "p=\\frac{3}{2}",
           "explain": "Read the fixed exponent attached to the variable base.",
           "val": "3/2"
         }
@@ -114,7 +114,7 @@
       "archetypeKey": "t02-c04-u02-power-end-behavior",
       "context": "",
       "prompt": "For $f(x)=-2x^4$, what does $f(x)$ approach as $x$ approaches positive infinity?",
-      "display": "f(x)=-2x^4;\\\\quad x\\\\to\\\\infty",
+      "display": "f(x)=-2x^4;\\quad x\\to\\infty",
       "plainText": "f(x)=-2*x^4 as x->oo",
       "givens": {
         "k": -2,
@@ -131,7 +131,7 @@
         "tolerance": 0
       },
       "answerPlain": "-oo",
-      "answerDisplay": "-\\\\infty",
+      "answerDisplay": "-\\infty",
       "inputHint": "Use oo to represent infinity.",
       "commonTrapTag": "t02-c04-u02-ignore-leading-sign-trap",
       "trapDerivation": "2*oo^4",
@@ -147,7 +147,7 @@
       "figureWaiver": "The graph would show the requested limiting direction directly.",
       "steps": [
         {
-          "latex": "4\\\\text{ is even}",
+          "latex": "4\\text{ is even}",
           "explain": "An even power is positive at large positive inputs."
         },
         {
@@ -155,7 +155,7 @@
           "explain": "The negative coefficient makes the output negative."
         },
         {
-          "latex": "f(x)\\\\to-\\\\infty",
+          "latex": "f(x)\\to-\\infty",
           "explain": "The magnitude grows while the sign stays negative.",
           "val": "-oo"
         }
@@ -267,7 +267,7 @@
           "explain": "Write the polynomial after simplifying the product."
         },
         {
-          "latex": "degree(h)=7",
+          "latex": "\\text{degree}(h)=7",
           "explain": "The highest exponent determines the degree.",
           "val": "7"
         }

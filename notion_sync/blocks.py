@@ -8,6 +8,7 @@ Pure data builders except `replace_page_blocks`, which writes through notion_syn
 import json
 import re
 
+from math_engine.latex_guard import wrap_bare_words_in_latex
 from notion_sync.client import replace_page_content
 
 
@@ -41,7 +42,7 @@ def mention_page(page_id, bold=False):
 def eq_inline(expr, bold=False):
     return {
         "type": "equation",
-        "equation": {"expression": expr},
+        "equation": {"expression": wrap_bare_words_in_latex(expr)},
         "annotations": default_annotations(bold=bold),
     }
 
@@ -211,7 +212,7 @@ def divider_block():
 
 
 def eq_block(expr):
-    return {"object": "block", "type": "equation", "equation": {"expression": expr}}
+    return {"object": "block", "type": "equation", "equation": {"expression": wrap_bare_words_in_latex(expr)}}
 
 
 NOTION_VALID_LANGUAGES = {

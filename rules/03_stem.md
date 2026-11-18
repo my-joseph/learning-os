@@ -28,6 +28,7 @@ When showing mathematical equation solving, algebraic simplification, worked exa
 
 ### 2. KaTeX Notation & UI Rendering Standards
 - **Inline Math:** Use KaTeX inline syntax (`$expr$`) for isolated symbols, variables, units, and short expressions (e.g., $x \in \mathbb{R}$, $v = 10\text{ m/s}$, $a^2 + b^2 = c^2$).
+- **Prose Inside LaTeX:** Any English words or prose inside LaTeX (`display`, `steps[].latex`, `answerDisplay`) must be wrapped in `\text{...}` (never bare words, which KaTeX runs together in italics; enforced at ingest).
 - **Block Equations:** Use native Notion `equation` blocks for major formulas, theorems, multi-line systems, and formal derivations.
 - **Annotated Steps:** Pair complex algebraic transformations with brief explanatory text preceding or following the equation block to explain *why* an operation was performed (e.g., *"Divide both sides by the non-zero coefficient"*).
 - **Mandatory `<FormattedText />` for Mistake Tags & UI Pills:** Whenever a `mistakeTags[].label`, `context`, `option.label`, or diagnostic message in `practice-studio` contains inline LaTeX (`$...$`), it **MUST** be rendered through `<FormattedText text={label} />` (never raw string `{t.label}`), and its pill container must use flexible height (`min-h-[28px] py-1`) rather than rigid fixed height so fractions (e.g., `$\frac{1}{2}$`) and exponents never clip or display raw `$` delimiters.

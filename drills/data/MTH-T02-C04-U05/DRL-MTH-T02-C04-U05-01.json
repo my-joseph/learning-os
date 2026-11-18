@@ -13,7 +13,7 @@
       "archetypeKey": "t02-c04-u05-evaluate-by-remainder-theorem",
       "context": "",
       "prompt": "Find the remainder when $f(x)=x^3-2x+1$ is divided by $x-2$.",
-      "display": "f(k)=r when dividing f(x) by x-k",
+      "display": "f(k)=r \\text{ when dividing } f(x) \\text{ by } x-k",
       "plainText": "Remainder of f(x)=x^3-2x+1 divided by x-2",
       "givens": {
         "a": 1,
@@ -129,7 +129,7 @@
       "archetypeKey": "t02-c04-u05-factor-theorem-test",
       "context": "",
       "prompt": "Which binomial is a factor of $f(x)=x^3-2x^2+x-2$?",
-      "display": "f(k)=0 iff x-k is a factor",
+      "display": "f(k)=0 \\text{ iff } x-k \\text{ is a factor}",
       "plainText": "Choose a factor of x^3-2x^2+x-2",
       "givens": {
         "b": -2,
@@ -262,7 +262,7 @@
       "archetypeKey": "t02-c04-u05-rational-zero-candidates",
       "context": "",
       "prompt": "How many distinct rational-zero candidates are possible for $f(x)=2x^3+x+6$?",
-      "display": "p/q candidates: p divides constant; q divides leading coefficient",
+      "display": "p/q \\text{ candidates: } p \\text{ divides constant; } q \\text{ divides leading coefficient}",
       "plainText": "Number of distinct rational-zero candidates for 2x^3+x+6",
       "givens": {
         "lead": 2,

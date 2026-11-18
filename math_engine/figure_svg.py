@@ -84,7 +84,7 @@ def to_unicode(text: Any) -> str:
     s = re.sub(r"\b(sqrt|cbrt)\(", lambda m: "√(" if m.group(1) == "sqrt" else "∛(", s)
     s = re.sub(r"\^\{?\\circ\}?", "°", s)
     s = re.sub(r"\\mathbb\{(\w)\}", lambda m: _BLACKBOARD.get(m.group(1), m.group(1)), s)
-    s = re.sub(r"\\(?:text|mathrm|mathbf|operatorname)\{([^{}]*)\}", r"\1", s)
+    s = re.sub(r"\\(?:text|textrm|textit|textbf|textsf|texttt|mathrm|mathbf|operatorname)\{([^{}]*)\}", r"\1", s)
     s = re.sub(r"\\(?:bar|overline)\{([^{}]*)\}", lambda m: "".join(c + "\u0304" for c in m.group(1)), s)
     s = re.sub(r"\\sqrt\[3\]\{([^{}]*)\}", r"∛(\1)", s)
     s = re.sub(r"\\sqrt\{([^{}]*)\}", r"√(\1)", s)

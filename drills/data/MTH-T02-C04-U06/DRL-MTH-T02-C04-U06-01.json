@@ -13,7 +13,7 @@
       "archetypeKey": "t02-c04-u06-domain-rational-function",
       "context": "",
       "prompt": "Find the domain of $f(x)=\\frac{x+2}{x^2-2x-3}$ in interval notation.",
-      "display": "Domain excludes every real zero of the original denominator",
+      "display": "\\text{Domain excludes every real zero of the original denominator}",
       "plainText": "Domain of (x+2)/(x^2-2x-3)",
       "givens": {
         "numerator_constant": 2,
@@ -132,7 +132,7 @@
       "archetypeKey": "t02-c04-u06-separate-hole-from-asymptote",
       "context": "",
       "prompt": "For $f(x)=\\frac{x^2-4}{x^2-7x+10}$, give the $x$-coordinate that is a vertical asymptote, not the removable-hole input.",
-      "display": "Cancel common factors; zeros remaining in the denominator give vertical asymptotes",
+      "display": "\\text{Cancel common factors; zeros remaining in the denominator give vertical asymptotes}",
       "plainText": "Vertical asymptote x-coordinate of (x^2-4)/(x^2-7x+10)",
       "givens": {
         "numerator_constant": -4,
@@ -253,7 +253,7 @@
       "archetypeKey": "t02-c04-u06-horizontal-asymptote",
       "context": "",
       "prompt": "Find the horizontal asymptote of $f(x)=\\frac{6x^2-1}{4x^2+3x+1}$.",
-      "display": "Equal numerator and denominator degrees: ratio of leading coefficients",
+      "display": "\\text{Equal numerator and denominator degrees: ratio of leading coefficients}",
       "plainText": "Horizontal asymptote of (6x^2-1)/(4x^2+3x+1)",
       "givens": {
         "numerator_lead": 6,
@@ -369,7 +369,7 @@
       "archetypeKey": "t02-c04-u06-arrow-notation",
       "context": "",
       "prompt": "Assign $1$ to a positive value and $-1$ to a negative value. For $f(x)=\\frac{2}{x-4}$, what sign code describes $f(x)$ for inputs just greater than $4$?",
-      "display": "x\\to4^+; determine the sign of 2/(x-4)",
+      "display": "x\\to 4^+;\\ \\text{determine the sign of } 2/(x-4)",
       "plainText": "Sign code for the right-hand branch of 2/(x-4)",
       "givens": {
         "numerator": 2,

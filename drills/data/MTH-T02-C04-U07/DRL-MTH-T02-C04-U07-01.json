@@ -13,7 +13,7 @@
       "archetypeKey": "t02-c04-u07-inverse-of-invertible-polynomial",
       "context": "",
       "prompt": "Find the inverse function of $f(x)=4x+9$. Write a simplified expression in $x$.",
-      "display": "y=mx+b; exchange the variables and isolate the new output",
+      "display": "y = mx + b;\\ \\text{exchange the variables and isolate the new output}",
       "plainText": "Find the inverse function of f(x)=4x+9. Write a simplified expression in x.",
       "givens": {
         "slope": 4,
@@ -128,7 +128,7 @@
       "archetypeKey": "t02-c04-u07-restrict-domain-for-polynomial-inverse",
       "context": "",
       "prompt": "Find the inverse of $f(x)=(x-3)^2$ when its domain is restricted to $x\\ge3$. Write a simplified expression in $x$.",
-      "display": "y=(x-h)^2 with the original domain x>=h",
+      "display": "y = (x-h)^2\\text{ with the original domain } x \\ge h",
       "plainText": "Find the inverse of f(x)=(x-3)^2 when its domain is restricted to x>=3. Write a simplified expression in x.",
       "givens": {
         "vertex_input": 3,
@@ -246,7 +246,7 @@
       "archetypeKey": "t02-c04-u07-radical-function-domain",
       "context": "",
       "prompt": "Find the real domain of $f(x)=\\sqrt{(x+2)(6-x)}$. Give the answer in interval notation.",
-      "display": "For a real square root, the radicand must be nonnegative.",
+      "display": "\\text{For a real square root, the radicand must be nonnegative.}",
       "plainText": "Find the real domain of f(x)=sqrt((x+2)(6-x)). Give the answer in interval notation.",
       "givens": {
         "left_root_magnitude": 2,
@@ -366,7 +366,7 @@
       "archetypeKey": "t02-c04-u07-inverse-of-radical-function",
       "context": "",
       "prompt": "Find the inverse function of $f(x)=\\sqrt{2x+5}$. Write a simplified expression in $x$.",
-      "display": "y=sqrt(ax+b); exchange variables, square, then isolate the new output",
+      "display": "y = \\sqrt{ax+b};\\ \\text{exchange variables, square, then isolate the new output}",
       "plainText": "Find the inverse function of f(x)=sqrt(2x+5). Write a simplified expression in x.",
       "givens": {
         "radicand_coefficient": 2,
