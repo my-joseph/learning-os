@@ -34,12 +34,12 @@ export const StepRow: React.FC<StepRowProps> = ({
           : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700"
       }`}
     >
-      <div className="overflow-x-auto text-left text-zinc-900 dark:text-zinc-100">
+      <div className="overflow-x-auto text-left text-sm text-zinc-900 dark:text-zinc-100">
         <MathBlock latex={step.latex} />
       </div>
 
       <div
-        className={`text-sm border-l pl-3 transition-colors ${
+        className={`text-xs border-l pl-3 transition-colors ${
           isDiverged
             ? "border-rose-600 dark:border-rose-400 text-zinc-900 dark:text-zinc-100"
             : isActive
