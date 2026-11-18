@@ -1,0 +1,255 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import React from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import {
+  classifyReviewOutcome,
+  formatDuration,
+  getProblemOutcomeMeta,
+  getQuestionLabel,
+  getReviewOutcomeMeta,
+  groupReviewProblems,
+  toSingleLinePrompt,
+} from "../src/lib/reviewOutcome";
+import { ReviewPanel } from "../src/components/shell/ReviewPanel";
+import type { DrillDocument, Problem, ProblemState } from "../src/types/drill";
+
+const baseState = (): ProblemState => ({
+  userInput: "",
+  score: null,
+  divergedStep: null,
+  mistakes: [],
+});
+
+// 1. Outcome classification
+assert.equal(classifyReviewOutcome(null), "unanswered");
+assert.equal(classifyReviewOutcome(undefined), "unanswered");
+assert.equal(classifyReviewOutcome(baseState()), "unanswered");
+assert.equal(
+  classifyReviewOutcome({ ...baseState(), userInput: "42" }),
+  "unanswered",
+  "Draft input without score or review remains unanswered"
+);
+assert.equal(
+  classifyReviewOutcome({ ...baseState(), skipped: true, score: 0 }),
+  "skipped"
+);
+assert.equal(
+  classifyReviewOutcome({ ...baseState(), score: 1 }),
+  "correct_first"
+);
+assert.equal(
+  classifyReviewOutcome({
+    ...baseState(),
+    score: 1,
+    setupRevealedBeforeAnswer: true,
+  }),
+  "assisted_or_partial",
+  "Opening setup before answering must not classify as first-try correct"
+);
+assert.equal(
+  classifyReviewOutcome({
+    ...baseState(),
+    score: 1,
+    solutionRevealedBeforeAnswer: true,
+  }),
+  "assisted_or_partial"
+);
+assert.equal(
+  classifyReviewOutcome({ ...baseState(), score: 1, hintsRevealed: 1 }),
+  "assisted_or_partial"
+);
+assert.equal(
+  classifyReviewOutcome({
+    ...baseState(),
+    score: 1,
+    attempts: [{ input: "5", ts: "2026-11-18T00:00:00Z", verdict: "correct", setupRevealed: true }],
+  }),
+  "assisted_or_partial"
+);
+assert.equal(
+  classifyReviewOutcome({ ...baseState(), score: 0.5 }),
+  "assisted_or_partial"
+);
+assert.equal(classifyReviewOutcome({ ...baseState(), score: 0 }), "wrong");
+assert.equal(
+  classifyReviewOutcome({
+    ...baseState(),
+    reviews: [
+      {
+        at: "2026-11-18T00:00:00Z",
+        attempt: 1,
+        codeHash: "sha256:abc",
+        code: "",
+        tests: { passed: 1, total: 1, failed: [] },
+        lint: [],
+        typecheck: [],
+        findings: [],
+        verdict: "pass",
+        explain: null,
+      },
+    ],
+  }),
+  "correct_first"
+);
+assert.equal(
+  classifyReviewOutcome({
+    ...baseState(),
+    reviews: [
+      {
+        at: "2026-11-18T00:00:00Z",
+        attempt: 1,
+        codeHash: "sha256:abc",
+        code: "",
+        tests: { passed: 1, total: 1, failed: [] },
+        lint: [],
+        typecheck: [],
+        findings: [],
+        verdict: "revise",
+        explain: null,
+      },
+    ],
+  }),
+  "assisted_or_partial"
+);
+
+// 2. Outcome colours & labels
+assert.match(getReviewOutcomeMeta("correct_first").nodeClassName, /emerald-700/);
+assert.match(getReviewOutcomeMeta("assisted_or_partial").nodeClassName, /amber-600/);
+assert.match(getReviewOutcomeMeta("wrong").nodeClassName, /rose-600/);
+assert.match(getReviewOutcomeMeta("skipped").nodeClassName, /border-dashed/);
+assert.match(getReviewOutcomeMeta("unanswered").nodeClassName, /zinc-200/);
+assert.equal(getProblemOutcomeMeta({ ...baseState(), score: 1 }).label, "Correct");
+
+// 3. Labels, durations, and single-line prompt formatting
+assert.equal(getQuestionLabel("Q03", 2, false), "Q3");
+assert.equal(getQuestionLabel("M2", 1, true), "M2");
+assert.equal(formatDuration(0), "—");
+assert.equal(formatDuration(45_000), "45s");
+assert.equal(formatDuration(252_000), "4m 12s");
+assert.equal(formatDuration(120_000), "2m");
+assert.equal(formatDuration(3_720_000), "1h 2m");
+assert.equal(
+  toSingleLinePrompt("Solve $2x = 6$\n\n```js\nconst a = 1;\n```\nReturn value."),
+  "Solve $2x = 6$ Return value."
+);
+
+// 4. Grouping & counts
+const makeProblem = (id: string, state: ProblemState): Problem => ({
+  id,
+  templateKey: "tpl",
+  level: 1,
+  levelLabel: "Level 1",
+  category: "Algebra",
+  prompt: `Solve for $x$ in ${id}.`,
+  answerPlain: "SECRET_42",
+  answerDisplay: "SECRET_42",
+  checkpointHint: "",
+  answerSpec: { type: "number" },
+  state,
+});
+
+const sampleDrill: DrillDocument = {
+  schemaVersion: "2.0",
+  drillId: "DRL-MTH-T01-C01-U01-01",
+  subject: "MATH",
+  unitCode: "MTH-T01-C01-U01",
+  unitTitle: "Linear Equations",
+  chapterCode: "MTH-T01-C01",
+  topicCode: "MTH-T01",
+  unitNotionUrl: null,
+  createdAt: "2026-11-18T00:00:00Z",
+  config: { questionCount: 5, difficulty: "ALL", difficultyMode: "Mixed" },
+  mistakeTags: [
+    { id: "sign-error", label: "Sign error ($-$)", name: "Sign error", autoFrom: [] },
+  ],
+  problems: [
+    makeProblem("Q01", { ...baseState(), score: 0, userInput: "3", durationMs: 30_000 }),
+    makeProblem("Q02", { ...baseState(), score: 0.5, userInput: "42", hintsRevealed: 1, durationMs: 45_000 }),
+    makeProblem("Q03", { ...baseState(), score: 1, userInput: "42", durationMs: 25_000 }),
+    makeProblem("Q04", { ...baseState(), skipped: true, score: 0, durationMs: 10_000 }),
+    makeProblem("Q05", { ...baseState(), durationMs: 0 }),
+  ],
+  sessionSummary: {
+    practiceStatus: "Needs Retry",
+    score: 1.5,
+    maxScore: 5,
+    accuracyPct: 30,
+    mistakeCategories: [],
+    divergedStepsSummary: "",
+    attemptDate: null,
+  },
+  localFilePath: "drills/data/MTH-T01-C01-U01/DRL-MTH-T01-C01-U01-01.json",
+};
+
+const grouped = groupReviewProblems(sampleDrill.problems);
+assert.deepEqual(
+  grouped.needsAttention.map((g) => g.problem.id),
+  ["Q01", "Q02", "Q04", "Q05"]
+);
+assert.deepEqual(
+  grouped.correct.map((g) => g.problem.id),
+  ["Q03"]
+);
+assert.equal(grouped.firstTryCount, 1);
+assert.equal(grouped.unansweredCount, 1);
+assert.equal(grouped.totalDurationMs, 110_000);
+
+// 5. ReviewPanel layout invariants & reveal guard
+const noop = () => {};
+const html = renderToStaticMarkup(
+  <ReviewPanel
+    currentDrill={sampleDrill}
+    liveScore={1.5}
+    maxScore={5}
+    accuracyPct={30}
+    skippedCount={1}
+    computedPracticeStatus="Needs Retry"
+    isSyncing={false}
+    onStatusOverrideChange={noop}
+    onBackToQuiz={noop}
+    onConfirmSync={noop}
+    onSelectQuestion={noop}
+    onSetScore={noop}
+    onToggleMistakeTag={noop}
+    onMistakeNoteChange={noop}
+  />
+);
+
+assert.match(html, /<h1[^>]*>Linear Equations<\/h1>/);
+assert.match(html, /MTH-T01-C01-U01/);
+assert.match(html, /1\.5 \/ 5/);
+assert.match(html, /title="Q3 — Correct"/);
+assert.match(html, /title="Q1 — Wrong"/);
+assert.match(html, /title="Q2 — Assisted \/ partial"/);
+assert.match(html, /title="Q4 — Skipped"/);
+assert.match(html, /title="Q5 — Unanswered"/);
+assert.match(html, /First-try/);
+assert.match(html, /20%/);
+assert.match(html, /1m 50s/);
+assert.match(html, /Sync to Notion/);
+assert.match(html, /Back to questions/);
+assert.match(html, /1 unanswered — sync anyway or finish first\./);
+assert.match(html, /Needs attention/);
+assert.match(html, /aria-expanded="false"[^>]*>.*Correct/);
+assert.doesNotMatch(
+  html,
+  /id="review-row-Q03"/,
+  "Correct group must be collapsed by default"
+);
+assert.match(html, /id="review-row-Q01"/);
+assert.match(html, /id="review-row-Q05"/);
+assert.match(
+  html,
+  /Not answered yet/,
+  "Unanswered Q05 must keep verified answer hidden"
+);
+
+const reviewSource = readFileSync("src/components/shell/ReviewPanel.tsx", "utf8");
+assert.doesNotMatch(
+  reviewSource,
+  /border-l-[24]/,
+  "ReviewPanel must not use left accent borders on rounded boxes"
+);
+
+console.log("reviewOutcome tests passed");
