@@ -21,6 +21,12 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from code_engine.answer_check import parse_tokens
+from code_engine.examples_gate import (
+    TOY_IDENTIFIER_PATTERN,
+    check_examples_zero_leak,
+    evaluate_drill_examples,
+    validate_examples_and_constraints_schema,
+)
 from code_engine.fmt import LEVEL_LABELS, unit_hierarchy
 from code_engine.generate import next_drill_id
 from code_engine.lint_check import (
@@ -52,14 +58,8 @@ class AiContractError(Exception):
 
 
 # ---------------------------------------------------------------------------
-# Zero Toy Code Pattern
+# Zero Toy Code Pattern (shared via code_engine.examples_gate)
 # ---------------------------------------------------------------------------
-TOY_IDENTIFIER_PATTERN = re.compile(
-    r"\b(foo|baz|qux|foobar|test1|test2|test3|funcA|funcB|func1|func2|"
-    r"myFunc|myVar|someVar|someFunc|doSomething|temp1|temp2|dummy|dummyFunc|dummyVar)\b|"
-    r"(?<!progress[-_ ])(?<!status[-_ ])(?<!scroll[-_ ])(?<!app[-_ ])(?<!nav[-_ ])(?<!tool[-_ ])\bbar\b",
-    re.IGNORECASE,
-)
 
 
 def scan_for_toy_identifiers(text: str, location_label: str, pid: str) -> None:
@@ -705,11 +705,44 @@ def validate_starter_lint_expected(prob: Dict[str, Any]) -> set[str]:
     return {entry["rule"].strip() for entry in expected}
 
 
+def check_problem_examples(
+    pid: str,
+    prob: Dict[str, Any],
+    *,
+    environment: str = "node-vanilla",
+    require_examples: bool = False,
+) -> List[str]:
+    """Validate optional/required `examples` & `constraints`, zero-leak against hiddenTests, and reference execution."""
+    is_tracing_with_snippet = (
+        prob.get("archetype") == "code-tracing" or prob.get("codeType") in ("predict-output", "trace-explain")
+    ) and bool(prob.get("codeSnippet"))
+    should_require = require_examples and _is_coding_problem(prob) and not is_tracing_with_snippet
+
+    errors = validate_examples_and_constraints_schema(pid, prob, require_examples=should_require)
+    if errors:
+        return errors
+
+    examples = prob.get("examples")
+    if not isinstance(examples, list) or not examples:
+        return []
+
+    hidden_sources = [
+        (f"hiddenTests[{idx}]", str(ht.get("testCode") or ""))
+        for idx, ht in enumerate(prob.get("hiddenTests") or [], 1)
+    ]
+    leak_errors = check_examples_zero_leak(pid, examples, hidden_sources)
+    if leak_errors:
+        return leak_errors
+
+    return evaluate_drill_examples(pid, prob, environment=environment)
+
+
 def validate_ai_code_contract(
     prob: Dict[str, Any],
     *,
     environment: str = "node-vanilla",
     require_trap_mutant: bool = False,
+    require_examples: bool = False,
 ) -> bool:
     """
     Enforces strict rules for AI-written programming problems (04_CODE, 07_PROBLEM_GEN §4):
@@ -774,6 +807,11 @@ def validate_ai_code_contract(
 
     # 9. Mutation Testing Guard (Anti-Green-Illusion)
     check_mutation_testing(pid, prob, environment=environment, require_trap_mutant=require_trap_mutant)
+
+    # 10. Examples & Constraints Gate
+    example_errors = check_problem_examples(pid, prob, environment=environment, require_examples=require_examples)
+    if example_errors:
+        raise AiContractError("; ".join(example_errors))
 
     return True
 
@@ -1244,11 +1282,14 @@ def check_code_drill(
 
         # 2. Contract, no-leak, starter compile, dual pre-exec, trapMutant + generic mutants, quality gates
         try:
-            validate_ai_code_contract(prob, environment=env_key, require_trap_mutant=True)
+            validate_ai_code_contract(prob, environment=env_key, require_trap_mutant=True, require_examples=False)
             verify_problem(prob, rules=active_rules, environment=env_key)
         except Exception as exc:  # noqa: BLE001 - collect all per-problem gate errors
             msg = str(exc)
             errors.append(msg if f"[{pid}]" in msg else f"[{pid}] {msg}")
+
+        # 2b. Examples & Constraints Gate (2-3 verified normal examples required for new drills)
+        errors.extend(check_problem_examples(pid, prob, environment=env_key, require_examples=True))
 
     # 3. Layer 2 lint + tsc on solutionCode, and Layer 2 lint on starterCode
     try:

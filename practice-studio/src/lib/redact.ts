@@ -1,6 +1,7 @@
 import {
   AnswerSpec,
   ChoiceOption,
+  CodeExample,
   DrillDocument,
   Problem,
   ProblemState,
@@ -335,6 +336,17 @@ export function redactProblem(
 
   if (problem.answerSpec) {
     raw.answerSpec = redactAnswerSpec(problem.answerSpec);
+  }
+  if (Array.isArray(problem.examples)) {
+    raw.examples = problem.examples.map((ex) => {
+      if (!ex || typeof ex !== "object") return ex;
+      const sanitized: CodeExample = {
+        input: ex.input,
+        output: ex.output,
+        ...(ex.explanation !== undefined ? { explanation: ex.explanation } : {}),
+      };
+      return sanitized;
+    });
   }
   raw.placeholder = placeholder;
   raw.hasSetup = hasSetup;

@@ -27,6 +27,11 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
+from code_engine.examples_gate import (
+    check_examples_zero_leak,
+    evaluate_lab_milestone_examples,
+    validate_examples_and_constraints_schema,
+)
 from code_engine.lint_check import TOOLS_LINT_DIR, get_lint_binaries
 from code_engine.quality_checks import load_universal
 from code_engine.submit import _parse_junit_xml
@@ -597,6 +602,39 @@ def _check_blind_solve(lab_dir: Path, ref_dir: Path, cfg: dict[str, Any]) -> lis
     return errors
 
 
+def _check_examples(lab_dir: Path, ref_dir: Path, cfg: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    hidden_dir = ref_dir / "hidden"
+    for ms in cfg.get("milestones") or []:
+        if not isinstance(ms, dict):
+            continue
+        mid = str(ms.get("id") or "?")
+        schema_errs = validate_examples_and_constraints_schema(mid, ms, require_examples=True)
+        if schema_errs:
+            errors.extend(schema_errs)
+            continue
+
+        examples = ms.get("examples") or []
+        hid_files = _milestone_hidden_tests(hidden_dir, mid)
+        hidden_sources = [(f.name, f.read_text(encoding="utf-8")) for f in hid_files if f.is_file()]
+        leak_errs = check_examples_zero_leak(mid, examples, hidden_sources)
+        if leak_errs:
+            errors.extend(leak_errs)
+            continue
+
+        errors.extend(
+            evaluate_lab_milestone_examples(
+                mid,
+                ms,
+                lab_dir,
+                ref_dir,
+                _run_node_tests,
+                tools_lint_dir=TOOLS_LINT_DIR,
+            )
+        )
+    return errors
+
+
 def _check_review(cfg: dict[str, Any]) -> list[str]:
     rv = cfg.get("review")
     if not isinstance(rv, dict):
@@ -631,6 +669,7 @@ def check_lab(
     errors.extend(_check_rubric(cfg, vault_dir=vault_dir, universal_path=universal_path))
     errors.extend(_check_no_leaks(lab_dir))
     errors.extend(_check_reference(lab_dir, resolved_ref, cfg))
+    errors.extend(_check_examples(lab_dir, resolved_ref, cfg))
     errors.extend(_check_stubs(lab_dir, cfg))
     errors.extend(_check_trap_mutants(resolved_ref, cfg))
     errors.extend(_check_blind_solve(lab_dir, resolved_ref, cfg))

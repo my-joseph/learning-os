@@ -143,6 +143,20 @@ def _good_four_problem_draft() -> dict:
                         "testCode": "assert.strictEqual(resolveRetryDelay({ delayMs: 0 }), 0);",
                     },
                 ],
+                "examples": [
+                    {
+                        "input": "options = { delayMs: 500 }",
+                        "output": "500",
+                        "explanation": "Returns the configured positive delay directly.",
+                        "call": "resolveRetryDelay({ delayMs: 500 })",
+                    },
+                    {
+                        "input": "options = { delayMs: 120 }",
+                        "output": "120",
+                        "call": "resolveRetryDelay({ delayMs: 120 })",
+                    },
+                ],
+                "constraints": ["delayMs >= 0 when provided"],
                 "steps": [{"explain": "Use optional chaining and nullish coalescing."}],
             },
             {
@@ -180,6 +194,19 @@ def _good_four_problem_draft() -> dict:
                 ],
                 "hiddenTests": [
                     {"name": "keeps zero cap", "testCode": "assert.strictEqual(resolveQuotaCap({ maxItems: 0 }), 0);"},
+                ],
+                "examples": [
+                    {
+                        "input": "policy = { maxItems: 25 }",
+                        "output": "25",
+                        "call": "resolveQuotaCap({ maxItems: 25 })",
+                    },
+                    {
+                        "input": "policy = {}",
+                        "output": "100",
+                        "explanation": "Falls back to 100 when maxItems is omitted.",
+                        "call": "resolveQuotaCap({})",
+                    },
                 ],
                 "steps": [
                     {"explain": "Read policy?.maxItems safely without throwing on missing policy."},
@@ -240,6 +267,18 @@ def _good_four_problem_draft() -> dict:
                         ),
                     }
                 ],
+                "examples": [
+                    {
+                        "input": "items = ['sku-1'], nextItem = 'sku-2'",
+                        "output": "['sku-1', 'sku-2']",
+                        "call": "appendLineItem(['sku-1'], 'sku-2')",
+                    },
+                    {
+                        "input": "items = ['a', 'b'], nextItem = 'c'",
+                        "output": "['a', 'b', 'c']",
+                        "call": "appendLineItem(['a', 'b'], 'c')",
+                    },
+                ],
                 "steps": [
                     {"explain": "Avoid Array.prototype.push on the input array."},
                     {"explain": "Return a shallow copy with the new item appended."},
@@ -289,6 +328,18 @@ def _good_four_problem_draft() -> dict:
                             "assert.deepStrictEqual(res, ['intro', 'chorus']);\n"
                         ),
                     }
+                ],
+                "examples": [
+                    {
+                        "input": "queue = ['a'], track = 'b'",
+                        "output": "['a', 'b']",
+                        "call": "enqueueTrack(['a'], 'b')",
+                    },
+                    {
+                        "input": "queue = ['intro', 'verse'], track = 'outro'",
+                        "output": "['intro', 'verse', 'outro']",
+                        "call": "enqueueTrack(['intro', 'verse'], 'outro')",
+                    },
                 ],
                 "steps": [
                     {"explain": "Avoid mutating the caller's queue in place."},

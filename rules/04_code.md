@@ -127,6 +127,8 @@ To ensure maximum cognitive clarity and mirror real-world engineering specificat
   3. **Strict Code Identifier Typography:** Every code symbol, variable/parameter (`order.items`, `subtotal`), literal value (`"PERCENT10"`, `true`, `8 USD`), and Error type (`RangeError`, `TypeError`) must be formatted as inline code with backticks.
   4. **Explicit Return Schema Contract:** Multi-key return objects or data structures must be explicitly written out as an inline code contract (e.g. `{ subtotal, discount, shipping, tax, total, currency: 'USD' }`) or code block so the developer never has to guess the shape.
 
+New PRG drill problems and lab milestones also include 2–3 LeetCode-style `examples` (`[{ input, output, explanation?, call? }]`, with `input`/`output` in JS/TS literal syntax and `call` verified against the reference solution at ingest and stripped before browser delivery) and optional `constraints: string[]` when inputs have limits; examples are visible before any attempt and must use normal cases only (never hidden-test inputs or `commonTrap` cases).
+
 ### 5. Final-Pass Concept Vault Cross-Referencing & Auto-Linking Protocol
 - **Final-Pass Cross-Reference:** In the final step of generating any drill problem, lab specification, or question README, AI must cross-reference the generated text against the `Concept Vault` database and `id_map.json` (keys prefixed with `CON-*`).
 - **Automatic Semantic Keyword Matching:** When the problem text references a foundational concept (e.g. `TCP 3-Way Handshake`, `DNS`, `TLS`, `HTTP`, `WebSocket`, `Sliding Window Rate Limiter`, `Promises`, `Closures`), AI must bind that term using a native `@Page` mention (`[[CON-<KEY>]]`).

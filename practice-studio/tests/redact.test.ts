@@ -232,6 +232,45 @@ assert.equal("steps" in redactedLeaking, false);
 assert.equal("value" in redactedLeaking.answerSpec, false);
 assert.equal("accepted" in redactedLeaking.answerSpec, false);
 
+// PRG examples & constraints stay visible before any attempt, while `call` is stripped server-side
+const prgWithExamples: Problem = {
+  id: "Q01",
+  templateKey: "tpl",
+  level: 1,
+  levelLabel: "Foundation",
+  category: "Core Skill",
+  prompt: "Implement `searchInsert(nums, target)`.",
+  starterCode: "export function searchInsert() { return 0; }",
+  solutionCode: "export function searchInsert() { return 2; }",
+  examples: [
+    {
+      input: "nums = [1, 3, 5, 6], target = 5",
+      output: "2",
+      explanation: "5 appears at index 2.",
+      call: "searchInsert([1, 3, 5, 6], 5)",
+    },
+    {
+      input: "nums = [1, 3, 5, 6], target = 2",
+      output: "1",
+      call: "searchInsert([1, 3, 5, 6], 2)",
+    },
+  ],
+  constraints: ["1 <= nums.length <= 10^4"],
+  answerSpec: { type: "code_output" },
+  checkpointHint: "",
+  state: makeState(),
+};
+
+const redactedExamplesProb = redactProblem(prgWithExamples, makeState(), "PRG");
+assert.equal(redactedExamplesProb.examples?.length, 2);
+assert.equal(redactedExamplesProb.examples?.[0].input, "nums = [1, 3, 5, 6], target = 5");
+assert.equal(redactedExamplesProb.examples?.[0].output, "2");
+assert.equal(redactedExamplesProb.examples?.[0].explanation, "5 appears at index 2.");
+assert.equal("call" in (redactedExamplesProb.examples?.[0] ?? {}), false);
+assert.equal("call" in (redactedExamplesProb.examples?.[1] ?? {}), false);
+assert.deepEqual(redactedExamplesProb.constraints, ["1 <= nums.length <= 10^4"]);
+assert.equal("solutionCode" in redactedExamplesProb, false);
+
 // ---------------------------------------------------------------------------
 // 3. Unlock rules unit tests
 // ---------------------------------------------------------------------------
