@@ -787,6 +787,25 @@ export function extractShortCode(
   return code || item.id.trim();
 }
 
+/** Extract short chapter code from a chapter code (e.g. `MTH-T02-C01` -> `C01`). */
+export function extractChapterShortCode(chapterCode: string): string {
+  const trimmed = chapterCode.trim();
+  const match = /-(C\d+)$/i.exec(trimmed);
+  return match ? match[1].toUpperCase() : trimmed;
+}
+
+/** Extract concise hover code for a leaf row (`U01-03`, `C04-01`, `U02`, `LAB-02`). */
+export function extractLeafHoverCode(
+  item: Pick<PickerItem, "kind" | "id" | "unitCode" | "setLabel">
+): string {
+  const base = extractShortCode(item);
+  if (item.kind === "drill" && item.setLabel) {
+    const match = /-(\d+)$/.exec(item.id.trim());
+    if (match) return `${base}-${match[1]}`;
+  }
+  return base;
+}
+
 /** Format full curriculum/drill code for row tooltip (`title` attribute). */
 export function formatFullRowCode(
   item: Pick<PickerItem, "kind" | "id" | "unitCode" | "setLabel">
@@ -854,6 +873,7 @@ export type VisibleTreeRow =
       level: 1;
       parentNodeId: null;
       topicCode: string;
+      hoverCode: string;
       title: string;
       itemCount: number;
       expandable: true;
@@ -868,6 +888,8 @@ export type VisibleTreeRow =
       parentNodeId: string;
       topicCode: string;
       chapterCode: string;
+      shortCode: string;
+      hoverCode: string;
       title: string;
       itemCount: number;
       expandable: true;
@@ -884,6 +906,7 @@ export type VisibleTreeRow =
       chapterCode: string;
       unitCode: string;
       shortCode: string;
+      hoverCode: string;
       title: string;
       itemCount: number;
       expandable: true;
@@ -901,6 +924,7 @@ export type VisibleTreeRow =
       item: PickerItem;
       label: string;
       shortCode: string;
+      hoverCode: string;
       fullCode: string;
       drillType: DrillTypeIconKind;
       status: PickerStatus;
@@ -960,6 +984,7 @@ export function buildVisibleTreeRows(options: {
       item,
       label,
       shortCode: extractShortCode(item),
+      hoverCode: extractLeafHoverCode(item),
       fullCode: formatFullRowCode(item),
       drillType: classifyPickerItemType(item),
       status: item.practiceStatus,
@@ -981,6 +1006,7 @@ export function buildVisibleTreeRows(options: {
       level: 1,
       parentNodeId: null,
       topicCode: topic.topicCode,
+      hoverCode: topic.topicCode,
       title: topic.topicTitle,
       itemCount: topic.itemCount,
       expandable: true,
@@ -994,6 +1020,7 @@ export function buildVisibleTreeRows(options: {
     for (const chapter of topic.chapters) {
       const chapterNodeId = `chapter:${chapter.chapterCode}`;
       const isChapterExpanded = expandedChapters.has(chapter.chapterCode);
+      const chapterShortCode = extractChapterShortCode(chapter.chapterCode);
       rows.push({
         kind: "chapter",
         nodeId: chapterNodeId,
@@ -1001,6 +1028,8 @@ export function buildVisibleTreeRows(options: {
         parentNodeId: topicNodeId,
         topicCode: topic.topicCode,
         chapterCode: chapter.chapterCode,
+        shortCode: chapterShortCode,
+        hoverCode: chapterShortCode,
         title: chapter.chapterTitle,
         itemCount: chapter.itemCount,
         expandable: true,
@@ -1054,6 +1083,7 @@ export function buildVisibleTreeRows(options: {
           chapterCode: chapter.chapterCode,
           unitCode: entry.unitCode,
           shortCode: unitShortCode,
+          hoverCode: unitShortCode,
           title: entry.unitTitle,
           itemCount: entry.items.length,
           expandable: true,

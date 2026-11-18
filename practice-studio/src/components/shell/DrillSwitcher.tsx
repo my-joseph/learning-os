@@ -10,13 +10,9 @@ import {
   ChevronRight,
   ChevronsDownUp,
   ChevronsUpDown,
-  Code2,
-  FlaskConical,
   Layers,
   MessageSquare,
   Search,
-  Shuffle,
-  Sigma,
   SlidersHorizontal,
   X,
 } from "lucide-react";
@@ -25,8 +21,9 @@ import type { LabListItem } from "@/lib/labModel";
 import {
   buildPickerSections,
   buildVisibleTreeRows,
-  classifyPickerItemType,
   collectAllTreeCodes,
+  extractChapterShortCode,
+  extractLeafHoverCode,
   extractShortCode,
   filterPickerItems,
   findFirstLeafNodeId,
@@ -35,7 +32,6 @@ import {
   normalizeDrillPickerItems,
   normalizeLabPickerItems,
   resolveTreeKeyAction,
-  type DrillTypeIconKind,
   type PickerItem,
   type PickerStatus,
   type TreeNavKey,
@@ -81,7 +77,7 @@ function StatusDot({ status }: { status: PickerStatus }) {
   const label = getPickerStatusLabel(status);
   return (
     <span
-      className="inline-flex items-center justify-center w-3 h-3 shrink-0"
+      className="inline-flex items-center justify-center w-3.5 h-3.5 shrink-0"
       title={label}
     >
       <span
@@ -93,7 +89,7 @@ function StatusDot({ status }: { status: PickerStatus }) {
   );
 }
 
-function NoteSlot({
+function NoteBadge({
   hasNotes,
   isDueToday,
 }: {
@@ -128,22 +124,27 @@ function NoteSlot({
       </span>
     );
   }
-  return <span className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />;
+  return null;
 }
 
-function DrillTypeIcon({ kind }: { kind: DrillTypeIconKind }) {
-  const cls = "w-3.5 h-3.5 text-zinc-400 dark:text-zinc-500 shrink-0";
-  switch (kind) {
-    case "lab":
-      return <FlaskConical className={cls} aria-hidden="true" />;
-    case "chapter-mixed":
-      return <Shuffle className={cls} aria-hidden="true" />;
-    case "code-unit":
-      return <Code2 className={cls} aria-hidden="true" />;
-    default:
-      return <Sigma className={cls} aria-hidden="true" />;
-  }
+function HoverRowCode({ code }: { code: string }) {
+  return (
+    <span className="hidden group-hover:inline group-focus-visible:inline font-mono text-[11px] text-zinc-400 dark:text-zinc-500 shrink-0 tabular-nums">
+      {code}
+    </span>
+  );
 }
+
+function CountPill({ count }: { count: number }) {
+  return (
+    <span className="text-[11px] font-mono tabular-nums text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded-full shrink-0">
+      {count}
+    </span>
+  );
+}
+
+const BRANCH_ROW_CLASS =
+  "group w-full flex items-center gap-1.5 px-1.5 py-1.5 rounded-md text-left transition-colors focus:outline-none hover:bg-zinc-100/80 dark:hover:bg-zinc-800/60 focus-visible:bg-zinc-100 dark:focus-visible:bg-zinc-800/80 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500/70 dark:focus-visible:ring-indigo-400/70";
 
 const FILTER_OPTIONS: readonly { id: DrillFilter; label: string }[] = [
   { id: "ALL", label: "All" },
@@ -533,10 +534,9 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
     nodeId: string
   ) => {
     const isCurrent = item.id === selectedDrillId;
-    const isKeyboardActive = activeNodeId === nodeId;
-    const shortCode = extractShortCode(item);
+    const isSearchTarget = sections.isSearching && activeNodeId === nodeId;
+    const hoverCode = extractLeafHoverCode(item);
     const fullCode = formatFullRowCode(item);
-    const drillType = classifyPickerItemType(item);
     const hasNotes =
       isCurrent && currentDrillHasNotes !== null
         ? item.hasNotes || currentDrillHasNotes
@@ -562,22 +562,16 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
           setActiveNodeId(nodeId);
           handlePick(item.id);
         }}
-        className={`w-full text-left px-2 py-1.5 rounded-md transition-colors flex items-center gap-1.5 focus:outline-none ${
-          isCurrent && isKeyboardActive
-            ? "bg-indigo-50 dark:bg-indigo-500/15 ring-2 ring-inset ring-indigo-500/70 dark:ring-indigo-400/70"
-            : isCurrent
-            ? "bg-indigo-50 dark:bg-indigo-500/10 ring-1 ring-inset ring-indigo-500/50 dark:ring-indigo-400/50"
-            : isKeyboardActive
+        className={`group w-full text-left px-1.5 py-1.5 rounded-md transition-colors flex items-center gap-1.5 focus:outline-none ${
+          isCurrent
+            ? "bg-indigo-50 dark:bg-indigo-500/10 ring-1 ring-inset ring-indigo-500/50 dark:ring-indigo-400/50 focus-visible:ring-2 focus-visible:ring-indigo-500/70 dark:focus-visible:ring-indigo-400/70"
+            : isSearchTarget
             ? "bg-zinc-100 dark:bg-zinc-800/80 ring-2 ring-inset ring-indigo-500/70 dark:ring-indigo-400/70"
-            : "hover:bg-zinc-100/80 dark:hover:bg-zinc-800/60"
+            : "hover:bg-zinc-100/80 dark:hover:bg-zinc-800/60 focus-visible:bg-zinc-100 dark:focus-visible:bg-zinc-800/80 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500/70 dark:focus-visible:ring-indigo-400/70"
         }`}
       >
-        <NoteSlot hasNotes={hasNotes} isDueToday={isDueToday} />
         <StatusDot status={item.practiceStatus} />
-        <DrillTypeIcon kind={drillType} />
-        <span className="hidden min-[400px]:inline font-mono text-[11px] text-zinc-400 dark:text-zinc-500 shrink-0 tabular-nums">
-          {shortCode}
-        </span>
+        <NoteBadge hasNotes={hasNotes} isDueToday={isDueToday} />
         <span
           className={`text-xs truncate min-w-0 flex-1 ${
             isCurrent
@@ -587,6 +581,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
         >
           {label}
         </span>
+        <HoverRowCode code={hoverCode} />
       </button>
     );
   };
@@ -839,22 +834,19 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                   type="button"
                   onClick={() => handlePick(currentPinnedItem.id)}
                   title={formatFullRowCode(currentPinnedItem)}
-                  className="w-full text-left px-2 py-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 ring-1 ring-indigo-500/40 dark:ring-indigo-400/40 hover:bg-indigo-50/90 dark:hover:bg-indigo-500/15 transition-colors flex items-center gap-1.5"
+                  className="group w-full text-left px-1.5 py-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 ring-1 ring-indigo-500/40 dark:ring-indigo-400/40 hover:bg-indigo-50/90 dark:hover:bg-indigo-500/15 transition-colors flex items-center gap-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/70 dark:focus-visible:ring-indigo-400/70"
                 >
-                  <NoteSlot
+                  <StatusDot status={currentPinnedItem.practiceStatus} />
+                  <NoteBadge
                     hasNotes={currentPinnedHasNotes}
                     isDueToday={currentPinnedIsDue}
                   />
-                  <StatusDot status={currentPinnedItem.practiceStatus} />
-                  <DrillTypeIcon kind={classifyPickerItemType(currentPinnedItem)} />
-                  <span className="hidden min-[400px]:inline font-mono text-[11px] text-zinc-500 dark:text-zinc-400 shrink-0 tabular-nums">
-                    {extractShortCode(currentPinnedItem)}
-                  </span>
                   <span className="text-xs font-medium text-zinc-900 dark:text-zinc-100 truncate min-w-0 flex-1">
                     {currentPinnedItem.setLabel
                       ? `${currentPinnedItem.title} · ${currentPinnedItem.setLabel}`
                       : currentPinnedItem.title}
                   </span>
+                  <HoverRowCode code={extractLeafHoverCode(currentPinnedItem)} />
                   <span className="text-[11px] font-mono tabular-nums text-zinc-500 dark:text-zinc-400 shrink-0">
                     {currentPinnedItem.score}/{currentPinnedItem.maxScore}
                   </span>
@@ -903,7 +895,6 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                   {sections.topicGroups.map((topic) => {
                     const topicNodeId = `topic:${topic.topicCode}`;
                     const isTopicExpanded = expandedTopics.has(topic.topicCode);
-                    const isTopicKeyboardActive = activeNodeId === topicNodeId;
                     const showTopicCode = topic.topicTitle !== topic.topicCode;
 
                     return (
@@ -915,15 +906,12 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                           aria-level={1}
                           aria-expanded={isTopicExpanded}
                           aria-selected={false}
+                          title={topic.topicCode}
                           onClick={() => {
                             setActiveNodeId(topicNodeId);
                             setBranchExpanded("topic", topic.topicCode, "toggle");
                           }}
-                          className={`group w-full flex items-center gap-1.5 px-1.5 py-1.5 rounded-md text-left transition-colors focus:outline-none ${
-                            isTopicKeyboardActive
-                              ? "bg-zinc-100 dark:bg-zinc-800/80 ring-2 ring-inset ring-indigo-500/70 dark:ring-indigo-400/70"
-                              : "hover:bg-zinc-100/80 dark:hover:bg-zinc-800/60"
-                          }`}
+                          className={BRANCH_ROW_CLASS}
                         >
                           <ChevronRight
                             className={`w-3.5 h-3.5 text-zinc-400 shrink-0 transition-transform duration-150 ${
@@ -938,11 +926,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                           <span className="text-xs font-medium text-zinc-900 dark:text-zinc-100 truncate min-w-0 flex-1">
                             {topic.topicTitle}
                           </span>
-                          {showTopicCode && (
-                            <span className="hidden min-[400px]:inline text-[11px] font-mono text-zinc-400 dark:text-zinc-500 opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity shrink-0">
-                              {topic.topicCode}
-                            </span>
-                          )}
+                          {showTopicCode && <HoverRowCode code={topic.topicCode} />}
                         </button>
 
                         <Reveal show={isTopicExpanded}>
@@ -955,8 +939,11 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                               const isChapterExpanded = expandedChapters.has(
                                 chapter.chapterCode
                               );
-                              const isChapterKeyboardActive =
-                                activeNodeId === chapterNodeId;
+                              const chapterShortCode = extractChapterShortCode(
+                                chapter.chapterCode
+                              );
+                              const showChapterCode =
+                                chapter.chapterTitle !== chapterShortCode;
 
                               return (
                                 <div key={chapter.chapterCode}>
@@ -967,6 +954,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                                     aria-level={2}
                                     aria-expanded={isChapterExpanded}
                                     aria-selected={false}
+                                    title={chapter.chapterCode}
                                     onClick={() => {
                                       setActiveNodeId(chapterNodeId);
                                       setBranchExpanded(
@@ -975,27 +963,21 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                                         "toggle"
                                       );
                                     }}
-                                    className={`w-full flex items-center justify-between gap-2 px-1.5 py-1.5 rounded-md text-left transition-colors focus:outline-none ${
-                                      isChapterKeyboardActive
-                                        ? "bg-zinc-100 dark:bg-zinc-800/80 ring-2 ring-inset ring-indigo-500/70 dark:ring-indigo-400/70"
-                                        : "hover:bg-zinc-100/80 dark:hover:bg-zinc-800/60"
-                                    }`}
+                                    className={BRANCH_ROW_CLASS}
                                   >
-                                    <span className="flex items-center gap-1.5 min-w-0 flex-1">
-                                      <ChevronRight
-                                        className={`w-3.5 h-3.5 text-zinc-400 shrink-0 transition-transform duration-150 ${
-                                          isChapterExpanded ? "rotate-90" : ""
-                                        }`}
-                                        aria-hidden="true"
-                                      />
-                                      <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300 truncate">
-                                        {chapter.chapterTitle}
-                                      </span>
+                                    <ChevronRight
+                                      className={`w-3.5 h-3.5 text-zinc-400 shrink-0 transition-transform duration-150 ${
+                                        isChapterExpanded ? "rotate-90" : ""
+                                      }`}
+                                      aria-hidden="true"
+                                    />
+                                    <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300 truncate min-w-0 flex-1">
+                                      {chapter.chapterTitle}
                                     </span>
-
-                                    <span className="text-[11px] font-mono tabular-nums text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded-full shrink-0">
-                                      {chapter.itemCount}
-                                    </span>
+                                    {showChapterCode && (
+                                      <HoverRowCode code={chapterShortCode} />
+                                    )}
+                                    <CountPill count={chapter.itemCount} />
                                   </button>
 
                                   <Reveal show={isChapterExpanded}>
@@ -1028,8 +1010,6 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                                         const isUnitExpanded = expandedUnits.has(
                                           entry.unitCode
                                         );
-                                        const isUnitKeyboardActive =
-                                          activeNodeId === unitNodeId;
                                         const unitShortCode = extractShortCode({
                                           kind: "drill",
                                           id: entry.unitCode,
@@ -1056,30 +1036,19 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                                                   "toggle"
                                                 );
                                               }}
-                                              className={`w-full flex items-center justify-between gap-2 px-1.5 py-1.5 rounded-md text-left transition-colors focus:outline-none ${
-                                                isUnitKeyboardActive
-                                                  ? "bg-zinc-100 dark:bg-zinc-800/80 ring-2 ring-inset ring-indigo-500/70 dark:ring-indigo-400/70"
-                                                  : "hover:bg-zinc-100/80 dark:hover:bg-zinc-800/60"
-                                              }`}
+                                              className={BRANCH_ROW_CLASS}
                                             >
-                                              <span className="flex items-center gap-1.5 min-w-0 flex-1">
-                                                <ChevronRight
-                                                  className={`w-3.5 h-3.5 text-zinc-400 shrink-0 transition-transform duration-150 ${
-                                                    isUnitExpanded ? "rotate-90" : ""
-                                                  }`}
-                                                  aria-hidden="true"
-                                                />
-                                                <span className="hidden min-[400px]:inline font-mono text-[11px] text-zinc-400 dark:text-zinc-500 shrink-0 tabular-nums">
-                                                  {unitShortCode}
-                                                </span>
-                                                <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300 truncate">
-                                                  {entry.unitTitle}
-                                                </span>
+                                              <ChevronRight
+                                                className={`w-3.5 h-3.5 text-zinc-400 shrink-0 transition-transform duration-150 ${
+                                                  isUnitExpanded ? "rotate-90" : ""
+                                                }`}
+                                                aria-hidden="true"
+                                              />
+                                              <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300 truncate min-w-0 flex-1">
+                                                {entry.unitTitle}
                                               </span>
-
-                                              <span className="text-[11px] font-mono tabular-nums text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded-full shrink-0">
-                                                {entry.items.length}
-                                              </span>
+                                              <HoverRowCode code={unitShortCode} />
+                                              <CountPill count={entry.items.length} />
                                             </button>
 
                                             <Reveal show={isUnitExpanded}>

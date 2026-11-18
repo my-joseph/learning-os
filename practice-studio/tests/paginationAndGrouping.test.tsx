@@ -261,7 +261,7 @@ assert.doesNotMatch(switcherHtml, />DRL-MTH-T01-C04-01</);
 assert.doesNotMatch(switcherHtml, />DRL-MTH-T01-C04-02</);
 assert.doesNotMatch(switcherHtml, />DRL-MTH-T01-C07-01</);
 
-// Grouped unit shows chapter header + count pill, with Set 1 / Set 2 / Set 3 leaf rows,
+// Grouped unit shows chapter header + count pill + hover code, with Set 1 / Set 2 / Set 3 leaf rows,
 // while non-current chapters start collapsed.
 assert.match(switcherHtml, />Current</);
 assert.doesNotMatch(switcherHtml, />Continue</);
@@ -271,14 +271,20 @@ assert.match(switcherHtml, />View</);
 assert.doesNotMatch(switcherHtml, />Synced</);
 assert.doesNotMatch(switcherHtml, />Labs</);
 assert.match(switcherHtml, />C04</);
+assert.match(switcherHtml, />C04-01</);
 assert.match(switcherHtml, />Set 1</);
 assert.match(switcherHtml, />Set 2</);
 assert.match(switcherHtml, />Set 3</);
 assert.match(switcherHtml, /Proportional &amp; Ratio/);
+assert.match(
+  switcherHtml,
+  /aria-level="2" aria-expanded="false"[^>]*title="MTH-T01-C07"[^>]*>(?:(?!<\/button>).)*?Proportional &amp; Ratio(?:(?!<\/button>).)*?hidden group-hover:inline[^>]*>C07<\/span>/,
+  "collapsed chapter shows its hover code without expanding its child leaf"
+);
 assert.doesNotMatch(
   switcherHtml,
-  />C07</,
-  "other chapters must start collapsed"
+  /aria-level="3"[^>]*title="MTH-T01-C07"/,
+  "other chapters must start collapsed without rendering child drill rows"
 );
 assert.match(switcherHtml, /bg-indigo-50[^>]*>.*?Set 2/);
 
