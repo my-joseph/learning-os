@@ -8,24 +8,17 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { Keyboard } from "lucide-react";
-import type {
-  MathfieldElement,
-  VirtualKeyboardInterface,
-  VirtualKeyboardKeycap,
-  VirtualKeyboardLayout,
-} from "mathlive";
-import {
-  normalizeMathLiveAsciiMath,
-  plainTextToLatex,
-  UnitKeyboardProfile,
-} from "@/lib/mathInput";
+import type { MathfieldElement } from "mathlive";
+import { normalizeMathLiveAsciiMath, plainTextToLatex } from "@/lib/mathInput";
+import { insertLatexIntoMathField } from "@/lib/mathPalette";
+import "mathlive/static.css";
 import "./mathlive-studio.css";
 
 export interface MathLiveInputHandle {
   focus: () => void;
   select: () => void;
   getPlainText: () => string;
+  insertLatex: (latex: string) => void;
 }
 
 export interface MathLiveInputProps {
@@ -33,121 +26,12 @@ export interface MathLiveInputProps {
   placeholder?: string;
   ariaLabel: string;
   variables?: readonly string[];
-  keyboardProfile: UnitKeyboardProfile;
   disabled?: boolean;
   fieldRef?: React.MutableRefObject<MathLiveInputHandle | null>;
   onChange: (plainText: string) => void;
   onCheck: (plainText: string) => void;
-}
-
-function buildCompactKeyboardLayout(
-  profile: UnitKeyboardProfile
-): VirtualKeyboardLayout {
-  const rows: Array<Array<string | Partial<VirtualKeyboardKeycap>>> = [];
-
-  if (profile.trig || profile.log) {
-    const topicRow: Array<string | Partial<VirtualKeyboardKeycap>> = [];
-    if (profile.trig) {
-      topicRow.push(
-        { latex: "\\sin", insert: "\\sin(#0)", class: "small" },
-        { latex: "\\cos", insert: "\\cos(#0)", class: "small" },
-        { latex: "\\tan", insert: "\\tan(#0)", class: "small" },
-        { latex: "\\theta" }
-      );
-    }
-    if (profile.log) {
-      topicRow.push(
-        { latex: "\\ln", insert: "\\ln(#0)", class: "small" },
-        { latex: "\\log", insert: "\\log(#0)", class: "small" },
-        { latex: "\\log_{#?}", insert: "\\log_{#?}(#0)", class: "small" },
-        { latex: "e^{#?}", insert: "e^{#0}", class: "small" }
-      );
-    }
-    rows.push(topicRow);
-  }
-
-  rows.push(
-    [
-      { latex: "\\frac{#@}{#?}", insert: "\\frac{#@}{#?}", class: "small" },
-      { latex: "#@^{#?}", insert: "#@^{#?}", class: "small" },
-      { latex: "\\sqrt{#0}", insert: "\\sqrt{#0}", class: "small" },
-      { latex: "\\sqrt[#?]{#0}", insert: "\\sqrt[#?]{#0}", class: "small" },
-      { latex: "\\left|#0\\right|", insert: "\\left|#0\\right|", class: "small" },
-      { latex: "\\pi" },
-      { latex: "i" },
-      { latex: "\\pm" },
-      { latex: "\\infty" },
-    ],
-    [
-      "(",
-      ")",
-      { latex: "[", variants: ["\\{"] },
-      { latex: "]", variants: ["\\}"] },
-      ",",
-      "\\le",
-      "\\ge",
-      "\\ne",
-      { latex: "\\cup" },
-    ],
-    ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"],
-    [
-      { latex: "x", variants: ["y", "k", "n"] },
-      "+",
-      "-",
-      "=",
-      ".",
-      "[left]",
-      "[right]",
-      { label: "[backspace]", class: "action hide-shift", width: 1.0 },
-      { label: "[return]", class: "action hide-shift", width: 1.0 },
-      { label: "[hide-keyboard]", width: 1.0 },
-    ]
-  );
-
-  return {
-    id: "studio-compact",
-    label: "Math",
-    displayEditToolbar: false,
-    layers: [
-      {
-        style: `
-          div.studio-vk-backdrop {
-            display: flex;
-            justify-content: center;
-          }
-          div.studio-vk-container {
-            --keycap-height: 36px;
-            --keycap-max-width: 48px;
-            --keycap-font-size: 15px;
-            --keycap-small-font-size: 12px;
-            --keycap-gap: 3px;
-            background: var(--keyboard-background);
-            padding: 8px 6px 8px 6px;
-            border-top-left-radius: 12px;
-            border-top-right-radius: 12px;
-            border: 1px solid var(--keyboard-border);
-            border-bottom: none;
-            box-shadow: 0 -4px 24px rgb(0 0 0 / 12%);
-            max-width: 540px;
-            width: 100%;
-            box-sizing: border-box;
-          }
-        `,
-        backdrop: "studio-vk-backdrop",
-        container: "studio-vk-container",
-        rows,
-      },
-    ],
-  };
-}
-
-function applyKeyboardConfig(
-  vk: (VirtualKeyboardInterface & EventTarget) | undefined,
-  profile: UnitKeyboardProfile
-): void {
-  if (!vk) return;
-  vk.editToolbar = "none";
-  vk.layouts = [buildCompactKeyboardLayout(profile)];
+  onFocus?: () => void;
+  onEscape?: () => boolean;
 }
 
 function readFieldPlainText(
@@ -170,11 +54,12 @@ export const MathLiveInput = forwardRef<MathLiveInputHandle, MathLiveInputProps>
       placeholder,
       ariaLabel,
       variables,
-      keyboardProfile,
       disabled = false,
       fieldRef,
       onChange,
       onCheck,
+      onFocus,
+      onEscape,
     },
     ref
   ) {
@@ -187,14 +72,15 @@ export const MathLiveInput = forwardRef<MathLiveInputHandle, MathLiveInputProps>
     onChangeRef.current = onChange;
     const onCheckRef = useRef(onCheck);
     onCheckRef.current = onCheck;
+    const onFocusRef = useRef(onFocus);
+    onFocusRef.current = onFocus;
+    const onEscapeRef = useRef(onEscape);
+    onEscapeRef.current = onEscape;
     const disabledRef = useRef(disabled);
     disabledRef.current = disabled;
-    const keyboardProfileRef = useRef(keyboardProfile);
-    keyboardProfileRef.current = keyboardProfile;
 
     const [ready, setReady] = useState(false);
     const [isEmpty, setIsEmpty] = useState(() => !value.trim());
-    const [vkVisible, setVkVisible] = useState(false);
 
     const handleObj = useMemo<MathLiveInputHandle>(
       () => ({
@@ -214,6 +100,17 @@ export const MathLiveInput = forwardRef<MathLiveInputHandle, MathLiveInputProps>
         getPlainText: () => {
           if (!mfRef.current || !ready) return value;
           return readFieldPlainText(mfRef.current, variablesRef.current);
+        },
+        insertLatex: (latex: string) => {
+          const mf = mfRef.current;
+          if (!mf || !ready || disabledRef.current) return;
+          insertLatexIntoMathField(mf, latex);
+          setIsEmpty(!(mf.value || "").trim());
+          const plain = readFieldPlainText(mf, variablesRef.current);
+          if (plain !== lastEmittedPlainRef.current) {
+            lastEmittedPlainRef.current = plain;
+            onChangeRef.current(plain);
+          }
         },
       }),
       [ready, value]
@@ -243,7 +140,11 @@ export const MathLiveInput = forwardRef<MathLiveInputHandle, MathLiveInputProps>
         mf.smartFence = false;
         mf.smartSuperscript = true;
         mf.popoverPolicy = "off";
-        mf.mathVirtualKeyboardPolicy = "auto";
+        // Turn off MathLive's floating virtual keyboard everywhere; Studio uses its own inline palette.
+        mf.mathVirtualKeyboardPolicy = "manual";
+        if (window.mathVirtualKeyboard?.visible) {
+          window.mathVirtualKeyboard.hide({ animate: false });
+        }
         mf.readOnly = disabledRef.current;
         mf.inlineShortcuts = {
           ...mf.inlineShortcuts,
@@ -262,8 +163,6 @@ export const MathLiveInput = forwardRef<MathLiveInputHandle, MathLiveInputProps>
         mf.value = initialLatex;
         lastEmittedPlainRef.current = value;
         setIsEmpty(!initialLatex.trim());
-
-        applyKeyboardConfig(window.mathVirtualKeyboard, keyboardProfileRef.current);
 
         const syncAndCheck = () => {
           const plain = readFieldPlainText(mf, variablesRef.current);
@@ -288,6 +187,11 @@ export const MathLiveInput = forwardRef<MathLiveInputHandle, MathLiveInputProps>
             e.preventDefault();
             e.stopPropagation();
             syncAndCheck();
+            return;
+          }
+          if (e.key === "Escape" && onEscapeRef.current?.()) {
+            e.preventDefault();
+            e.stopPropagation();
           }
         };
 
@@ -299,23 +203,14 @@ export const MathLiveInput = forwardRef<MathLiveInputHandle, MathLiveInputProps>
         };
 
         const handleFocus = () => {
-          applyKeyboardConfig(window.mathVirtualKeyboard, keyboardProfileRef.current);
-        };
-
-        const handleVkToggle = () => {
-          setVkVisible(Boolean(window.mathVirtualKeyboard?.visible));
+          onFocusRef.current?.();
         };
 
         mf.addEventListener("input", handleInput);
         mf.addEventListener("keydown", handleKeyDown);
         mf.addEventListener("beforeinput", handleBeforeInput as EventListener);
         mf.addEventListener("focus", handleFocus);
-        window.mathVirtualKeyboard?.addEventListener(
-          "virtual-keyboard-toggle",
-          handleVkToggle
-        );
 
-        setVkVisible(Boolean(window.mathVirtualKeyboard?.visible));
         setReady(true);
 
         cleanup = () => {
@@ -323,10 +218,6 @@ export const MathLiveInput = forwardRef<MathLiveInputHandle, MathLiveInputProps>
           mf.removeEventListener("keydown", handleKeyDown);
           mf.removeEventListener("beforeinput", handleBeforeInput as EventListener);
           mf.removeEventListener("focus", handleFocus);
-          window.mathVirtualKeyboard?.removeEventListener(
-            "virtual-keyboard-toggle",
-            handleVkToggle
-          );
           if (window.mathVirtualKeyboard?.visible) {
             window.mathVirtualKeyboard.hide({ animate: false });
           }
@@ -340,12 +231,6 @@ export const MathLiveInput = forwardRef<MathLiveInputHandle, MathLiveInputProps>
       };
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
-
-    // Keep keyboard layout synced when switching between units/problems
-    useEffect(() => {
-      if (!ready) return;
-      applyKeyboardConfig(window.mathVirtualKeyboard, keyboardProfile);
-    }, [ready, keyboardProfile]);
 
     // Sync disabled/readOnly state
     useEffect(() => {
@@ -363,21 +248,8 @@ export const MathLiveInput = forwardRef<MathLiveInputHandle, MathLiveInputProps>
       setIsEmpty(!nextLatex.trim());
     }, [ready, value]);
 
-    const handleToggleKeyboard = () => {
-      const vk = window.mathVirtualKeyboard;
-      const mf = mfRef.current;
-      if (!vk || !mf) return;
-      if (vk.visible) {
-        vk.hide();
-      } else {
-        applyKeyboardConfig(vk, keyboardProfile);
-        mf.focus();
-        vk.show();
-      }
-    };
-
     return (
-      <div className="relative flex items-center flex-1 min-w-0 min-h-[2.75rem] bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-xl pl-2.5 pr-1.5 py-1 focus-within:ring-2 focus-within:ring-indigo-600/25 dark:focus-within:ring-indigo-500/30 focus-within:border-indigo-600 dark:focus-within:border-indigo-500 transition-colors">
+      <div className="relative flex items-center flex-1 min-w-0 min-h-[2.75rem] px-1.5 py-0.5">
         {!ready && (
           <div
             aria-hidden="true"
@@ -389,7 +261,7 @@ export const MathLiveInput = forwardRef<MathLiveInputHandle, MathLiveInputProps>
         {isEmpty && ready && placeholder && (
           <span
             aria-hidden="true"
-            className="pointer-events-none absolute left-3.5 right-10 text-sm text-zinc-400 dark:text-zinc-500 truncate select-none"
+            className="pointer-events-none absolute left-2.5 right-2 text-sm text-zinc-400 dark:text-zinc-500 truncate select-none"
           >
             {placeholder}
           </span>
@@ -397,24 +269,9 @@ export const MathLiveInput = forwardRef<MathLiveInputHandle, MathLiveInputProps>
         {React.createElement("math-field", {
           ref: mfRef,
           "aria-label": ariaLabel,
+          "math-virtual-keyboard-policy": "manual",
           class: `studio-math-field flex-1 min-w-0 ${ready ? "" : "sr-only"}`,
         })}
-        <button
-          type="button"
-          onMouseDown={(e) => e.preventDefault()}
-          onClick={handleToggleKeyboard}
-          disabled={!ready || disabled}
-          aria-label="Toggle math keyboard"
-          aria-pressed={vkVisible}
-          title="Math keyboard"
-          className={`inline-flex items-center justify-center w-8 h-8 rounded-lg transition-colors shrink-0 ${
-            vkVisible
-              ? "text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60"
-              : "text-zinc-400 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-          } disabled:opacity-40`}
-        >
-          <Keyboard className="w-4 h-4" />
-        </button>
       </div>
     );
   }
