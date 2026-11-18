@@ -221,8 +221,9 @@ export const ReviewPanel: React.FC<ReviewPanelProps> = ({
             title={isExpanded ? `Collapse ${qLabel} prompt` : `Expand ${qLabel} prompt`}
             className="min-w-0 flex-1 flex items-center gap-2 text-left rounded-md py-0.5 text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 transition-colors"
           >
+            {/* While open, the full prompt is shown below; don't repeat it truncated here. */}
             <span className="min-w-0 flex-1 truncate text-sm">
-              <FormattedText text={singleLinePrompt} />
+              {!isExpanded && <FormattedText text={singleLinePrompt} />}
             </span>
             <ChevronDown
               aria-hidden="true"
