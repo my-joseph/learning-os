@@ -186,10 +186,11 @@ export const StudioSidePanel: React.FC<StudioSidePanelProps> = ({
                 <div className="flex items-baseline justify-between gap-2">
                   <span
                     className={`text-xs font-medium text-zinc-800 dark:text-zinc-200 break-words min-w-0 ${
-                      isPrg || spot.subject === "PRG" ? "font-mono" : ""
+                      spot.name ? "" : "font-mono"
                     }`}
+                    title={spot.name ? spot.id : undefined}
                   >
-                    {spot.id}
+                    {spot.name ?? spot.id}
                   </span>
                   <span className="text-[11px] text-zinc-500 dark:text-zinc-400 tabular-nums shrink-0">
                     {spot.matches}x

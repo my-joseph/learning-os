@@ -169,3 +169,29 @@ def test_cli_json_flag_outputs_math_traps_and_empty_scope(tmp_path, capsys):
     assert rc_empty == 0
     empty_payload = json.loads(capsys.readouterr().out)
     assert empty_payload == {"scope": "MTH-T09-C99-U01", "units": []}
+
+
+def test_trap_name_is_plain_language():
+    assert ws.trap_name("t02-c01-u01-i-squared-positive-one-trap") == "I squared positive one"
+    assert ws.trap_name("c04-divide-not-invert-trap") == "Divide not invert"
+    assert ws.trap_name("c01-place-value-misalignment") == "Place value misalignment"
+
+
+def test_json_math_trap_has_name_and_vault_description(tmp_path, capsys, monkeypatch):
+    roots = _write(
+        tmp_path,
+        {"D1": [("Q1", 2, "direct", TRAP, _wrong("2026-11-01")), ("Q2", 2, "direct", TRAP, _wrong("2026-11-02"))]},
+    )
+    monkeypatch.setattr(
+        ws, "_load_mth_trap_descriptions", lambda: {TRAP: "Divides instead of multiplying by the reciprocal."}
+    )
+    ws.main(["MTH-T09-C01-U01", "--data-root", roots[0], "--progress-dir", roots[1], "--json"])
+    row = json.loads(capsys.readouterr().out)["units"][0]["open"][0]
+    assert row["id"] == TRAP
+    assert row["name"] == "Divide not invert"
+    assert row["detail"] == "Divides instead of multiplying by the reciprocal."
+
+
+def test_every_vault_trap_has_a_description():
+    descriptions = ws._load_mth_trap_descriptions()
+    assert descriptions and all(d.strip() for d in descriptions.values())

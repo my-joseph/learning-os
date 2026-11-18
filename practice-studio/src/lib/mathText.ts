@@ -20,3 +20,12 @@ export function isMathSegment(seg: string): boolean {
 export function unescapeDollar(plain: string): string {
   return plain.replace(/\\\$/g, "$");
 }
+
+/** Plain-text math in figure labels (`y = sqrt(x - 3)`) as `$...$` LaTeX, like math_engine/figure_builder.py. */
+export function toMathText(raw: string): string {
+  if (raw.startsWith("$")) return raw;
+  const tex = raw
+    .replace(/\bcbrt\(([^()]*)\)/g, "\\sqrt[3]{$1}")
+    .replace(/\bsqrt\(([^()]*)\)/g, "\\sqrt{$1}");
+  return `$${tex}$`;
+}

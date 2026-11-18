@@ -3,6 +3,7 @@
 import React, { useMemo } from "react";
 import { CartesianGraphSpec, FigureTheme, CartesianPlot } from "@/types/figure";
 import { FormattedText } from "../FormattedText";
+import { toMathText } from "@/lib/mathText";
 
 const THEME_STYLES: Record<
   FigureTheme,
@@ -72,6 +73,7 @@ const AXIS_LABEL_FONT: React.CSSProperties = {
   fontStyle: "italic",
 };
 
+
 interface CartesianRendererProps {
   spec: CartesianGraphSpec;
 }
@@ -123,6 +125,11 @@ export const CartesianRenderer: React.FC<CartesianRendererProps> = ({ spec }) =>
   // Origin (0, 0) in SVG
   const originX = toSvgX(0);
   const originY = toSvgY(0);
+  // Where the axes are drawn: at the origin, or pinned to the plot edge when 0 is out of range.
+  const axisX = Math.max(padding, Math.min(svgWidth - padding, originX));
+  const axisY = Math.max(padding, Math.min(svgHeight - padding, originY));
+  
+  
 
   // Generate Grid lines
   const gridLines = useMemo(() => {
@@ -132,7 +139,7 @@ export const CartesianRenderer: React.FC<CartesianRendererProps> = ({ spec }) =>
     const startX = Math.ceil(xMin / effectiveXStep) * effectiveXStep;
     for (let x = startX; x <= xMax; x += effectiveXStep) {
       const dashedX = (spec.plots || []).some((p) => p.type === "segment" && p.strokeDasharray && p.from[0] === p.to[0] && Math.abs(x - p.from[0]) < effectiveXStep * 0.04);
-      if ((showY && Math.abs(toSvgX(x) - originX) < 18) || dashedX) continue;
+      if ((showY && Math.abs(toSvgX(x) - axisX) < 18) || dashedX) continue;
       if (Math.abs(x) < 1e-6) continue; // Skip axis line here
       const sx = toSvgX(x);
       lines.push({ x1: sx, y1: padding, x2: sx, y2: svgHeight - padding });
@@ -148,7 +155,7 @@ export const CartesianRenderer: React.FC<CartesianRendererProps> = ({ spec }) =>
     }
 
     return lines;
-  }, [xMin, xMax, yMin, yMax, effectiveXStep, effectiveYStep, spec.grid, spec.plots, showY, originX, toSvgX, toSvgY, padding, svgWidth, svgHeight]);
+  }, [xMin, xMax, yMin, yMax, effectiveXStep, effectiveYStep, spec.grid, spec.plots, showY, axisX, toSvgX, toSvgY, padding, svgWidth, svgHeight]);
 
   // Tick marks on axes
   const ticks = useMemo(() => {
@@ -156,10 +163,10 @@ export const CartesianRenderer: React.FC<CartesianRendererProps> = ({ spec }) =>
     const startX = Math.ceil(xMin / effectiveXStep) * effectiveXStep;
     for (let x = startX; x <= xMax; x += effectiveXStep) {
       const dashedX = (spec.plots || []).some((p) => p.type === "segment" && p.strokeDasharray && p.from[0] === p.to[0] && Math.abs(x - p.from[0]) < effectiveXStep * 0.04);
-      if ((showY && Math.abs(toSvgX(x) - originX) < 18) || dashedX) continue;
+      if ((showY && Math.abs(toSvgX(x) - axisX) < 18) || dashedX) continue;
       if (Math.abs(x) < 1e-6 && showY) continue;
       const cleanVal = Math.round(x * 1000) / 1000;
-      list.push({ val: cleanVal, x: toSvgX(x), y: originY, isX: true });
+      list.push({ val: cleanVal, x: toSvgX(x), y: axisY, isX: true });
     }
     if (!showY) return list;
 
@@ -169,10 +176,10 @@ export const CartesianRenderer: React.FC<CartesianRendererProps> = ({ spec }) =>
       if (dashedY) continue;
       if (Math.abs(y) < 1e-6) continue;
       const cleanVal = Math.round(y * 1000) / 1000;
-      list.push({ val: cleanVal, x: originX, y: toSvgY(y), isX: false });
+      list.push({ val: cleanVal, x: axisX, y: toSvgY(y), isX: false });
     }
     return list;
-  }, [xMin, xMax, yMin, yMax, effectiveXStep, effectiveYStep, showY, originX, originY, toSvgX, toSvgY, spec.plots]);
+  }, [xMin, xMax, yMin, yMax, effectiveXStep, effectiveYStep, showY, axisX, axisY, toSvgX, toSvgY, spec.plots]);
 
   return (
     <div className="relative w-full flex flex-col items-center select-none overflow-hidden">
@@ -238,17 +245,17 @@ export const CartesianRenderer: React.FC<CartesianRendererProps> = ({ spec }) =>
           {/* X Axis */}
           <line
             x1={padding - 10}
-            y1={Math.max(padding, Math.min(svgHeight - padding, originY))}
+            y1={axisY}
             x2={svgWidth - padding + 12}
-            y2={Math.max(padding, Math.min(svgHeight - padding, originY))}
+            y2={axisY}
             markerEnd="url(#axis-arrow)"
           />
           {/* Y Axis */}
           {showY && (
           <line
-            x1={Math.max(padding, Math.min(svgWidth - padding, originX))}
+            x1={axisX}
             y1={svgHeight - padding + 10}
-            x2={Math.max(padding, Math.min(svgWidth - padding, originX))}
+            x2={axisX}
             y2={padding - 12}
             markerEnd="url(#axis-arrow)"
           />
@@ -258,7 +265,7 @@ export const CartesianRenderer: React.FC<CartesianRendererProps> = ({ spec }) =>
         {/* Axis Labels */}
         <text
           x={svgWidth - padding + 14}
-          y={Math.max(padding, Math.min(svgHeight - padding, originY)) + 4}
+          y={axisY + 4}
           className="text-[13px] fill-slate-500"
           style={AXIS_LABEL_FONT}
         >
@@ -266,7 +273,7 @@ export const CartesianRenderer: React.FC<CartesianRendererProps> = ({ spec }) =>
         </text>
         {showY && (
         <text
-          x={Math.max(padding, Math.min(svgWidth - padding, originX)) - 4}
+          x={axisX - 4}
           y={padding - 16}
           textAnchor="end"
           className="text-[13px] fill-slate-500"
@@ -372,7 +379,7 @@ export const CartesianRenderer: React.FC<CartesianRendererProps> = ({ spec }) =>
                     <div className="w-full h-full flex items-center">
                       <span className="text-[11px] font-bold px-1 py-0.5 rounded bg-white/80 dark:bg-slate-900/80 text-slate-800 dark:text-slate-100 shadow-sm border border-slate-200/50 dark:border-slate-700/50">
                         <FormattedText
-                          text={plot.label.startsWith("$") ? plot.label : `$${plot.label}$`}
+                          text={toMathText(plot.label)}
                         />
                       </span>
                     </div>
@@ -400,7 +407,7 @@ export const CartesianRenderer: React.FC<CartesianRendererProps> = ({ spec }) =>
                     className="text-[11px] font-bold text-slate-800 dark:text-slate-100"
                     style={plot.color ? { color: plot.color } : undefined}
                   >
-                    <FormattedText text={plot.text.startsWith("$") ? plot.text : `$${plot.text}$`} />
+                    <FormattedText text={toMathText(plot.text)} />
                   </span>
                 </div>
               </foreignObject>

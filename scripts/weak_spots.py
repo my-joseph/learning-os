@@ -19,6 +19,7 @@ import argparse
 import glob
 import json
 import os
+import re
 from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import date, timedelta
@@ -381,6 +382,32 @@ def _load_titles() -> dict[str, str]:
     return {}
 
 
+_TRAP_PREFIX = re.compile(r"^(?:t\d+-)?(?:c\d+-)?(?:u\d+-)?")
+
+
+def trap_name(trap_id: str) -> str:
+    """Plain-language name from a MTH trap tag: `t02-c01-u01-i-squared-positive-one-trap` -> `I squared positive one`."""
+    words = _TRAP_PREFIX.sub("", trap_id.lower())
+    words = re.sub(r"-trap$", "", words).replace("-", " ").strip()
+    return words[:1].upper() + words[1:] if words else trap_id
+
+
+def _load_mth_trap_descriptions() -> dict[str, str]:
+    """trapTag -> description from the MTH reasoning vaults."""
+    cwd_vault = os.path.join("math_engine", "reasoning_vault")
+    vault_dir = (
+        cwd_vault if os.path.isdir(cwd_vault) else os.path.join(find_repo_root(), "math_engine", "reasoning_vault")
+    )
+    out: dict[str, str] = {}
+    for vpath in sorted(glob.glob(os.path.join(vault_dir, "*.json"))):
+        with open(vpath, encoding="utf-8") as f:
+            for a in json.load(f).get("archetypes", []):
+                for t in a.get("cognitiveTraps") or []:
+                    if isinstance(t, dict) and t.get("trapTag") and t.get("description"):
+                        out.setdefault(t["trapTag"], t["description"])
+    return out
+
+
 def _build_unit_reports(
     scope: str | None = None,
     data_root: str = "drills/data",
@@ -394,6 +421,7 @@ def _build_unit_reports(
     titles = _load_titles()
     traps = trap_status(items)
     _, _, _, check_sentences = _load_prg_vault_meta()
+    trap_descriptions = _load_mth_trap_descriptions()
     reports: list[dict] = []
     for unit in sorted({i.unit for i in items}):
         its = [i for i in items if i.unit == unit]
@@ -416,6 +444,10 @@ def _build_unit_reports(
             }
             if trap_id in check_sentences:
                 row["detail"] = check_sentences[trap_id]
+            elif s["subject"] == "MTH":
+                row["name"] = trap_name(trap_id)
+                if trap_id in trap_descriptions:
+                    row["detail"] = trap_descriptions[trap_id]
             return row
 
         reports.append(

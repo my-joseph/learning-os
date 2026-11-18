@@ -27,6 +27,8 @@ export interface DueTodayResponse {
 
 export interface WeakSpotItem {
   id: string;
+  /** Plain-language trap name (MTH); PRG rows show the check id. */
+  name?: string;
   detail?: string;
   matches: number;
   drills: number;

@@ -2,7 +2,7 @@
  * Escaped dollar signs in drill text (src/lib/mathText.ts).
  * Run: npx tsx tests/mathText.test.ts
  */
-import { isMathSegment, splitMath, unescapeDollar } from "../src/lib/mathText";
+import { isMathSegment, splitMath, toMathText, unescapeDollar } from "../src/lib/mathText";
 
 function assert(cond: boolean, msg: string) {
   if (!cond) throw new Error(`FAIL: ${msg}`);
@@ -18,3 +18,9 @@ assert(plain.includes("The bill is $83 in total."), `plain text: ${plain}`);
 assert(parts.join("") === prompt, "split loses no text");
 assert(JSON.stringify(splitMath("$x^2$ and $y$")) === JSON.stringify(["$x^2$", " and ", "$y$"]), "plain math unchanged");
 console.log("mathText tests passed");
+
+// Figure labels: plain sqrt()/cbrt() become LaTeX roots; $...$ labels pass through.
+assert(toMathText("y = sqrt(x - 3)") === "$y = \\sqrt{x - 3}$", `sqrt label: ${toMathText("y = sqrt(x - 3)")}`);
+assert(toMathText("y = -cbrt(x)") === "$y = -\\sqrt[3]{x}$", "cbrt label");
+assert(toMathText("$A$") === "$A$", "dollar label unchanged");
+assert(toMathText("P") === "$P$", "plain label wrapped");
