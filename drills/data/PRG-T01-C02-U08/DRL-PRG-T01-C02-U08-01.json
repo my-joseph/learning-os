@@ -99,7 +99,19 @@
       },
       "levelLabel": "Foundation",
       "unitCode": "PRG-T01-C02-U08",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U08-01/Q01_formatMemberEmail.ts"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U08-01/Q01_formatMemberEmail.ts",
+      "examples": [
+        {
+          "input": "member = { email: '  alice@acme.io  ' }",
+          "output": "'alice@acme.io'",
+          "call": "formatMemberEmail({ email: '  alice@acme.io  ' })"
+        },
+        {
+          "input": "member = { email: null }",
+          "output": "null",
+          "call": "formatMemberEmail({ email: null })"
+        }
+      ]
     },
     {
       "id": "Q02",
@@ -191,7 +203,19 @@
       },
       "levelLabel": "Foundation",
       "unitCode": "PRG-T01-C02-U08",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U08-01/Q02_readRolloutNote.ts"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U08-01/Q02_readRolloutNote.ts",
+      "examples": [
+        {
+          "input": "notes = { billing: ' enabled in eu-west ' }, key = 'billing'",
+          "output": "'enabled in eu-west'",
+          "call": "readRolloutNote({ billing: ' enabled in eu-west ' }, 'billing')"
+        },
+        {
+          "input": "notes = {}, key = 'billing'",
+          "output": "undefined",
+          "call": "readRolloutNote({}, 'billing')"
+        }
+      ]
     },
     {
       "id": "Q03",
@@ -283,7 +307,19 @@
       },
       "levelLabel": "Standard Exam",
       "unitCode": "PRG-T01-C02-U08",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U08-01/Q03_primarySearchKeyword.ts"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U08-01/Q03_primarySearchKeyword.ts",
+      "examples": [
+        {
+          "input": "keywords = ['  wireless charger  ', 'usb-c']",
+          "output": "'wireless charger'",
+          "call": "primarySearchKeyword(['  wireless charger  ', 'usb-c'])"
+        },
+        {
+          "input": "keywords = ['monitor', 'stand']",
+          "output": "'monitor'",
+          "call": "primarySearchKeyword(['monitor', 'stand'])"
+        }
+      ]
     },
     {
       "id": "Q04",
@@ -379,7 +415,19 @@
       },
       "levelLabel": "Standard Exam",
       "unitCode": "PRG-T01-C02-U08",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U08-01/Q04_enableSafeIndexChecks.ts"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U08-01/Q04_enableSafeIndexChecks.ts",
+      "examples": [
+        {
+          "input": "config = { compilerOptions: { noEmit: false } }",
+          "output": "{ compilerOptions: { noEmit: false, strict: true, noUncheckedIndexedAccess: true } }",
+          "call": "enableSafeIndexChecks({ compilerOptions: { noEmit: false } })"
+        },
+        {
+          "input": "config = { compilerOptions: { strict: false } }",
+          "output": "{ compilerOptions: { strict: true, noUncheckedIndexedAccess: true } }",
+          "call": "enableSafeIndexChecks({ compilerOptions: { strict: false } })"
+        }
+      ]
     }
   ],
   "blindSolve": [

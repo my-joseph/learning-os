@@ -275,7 +275,22 @@
       },
       "levelLabel": "Standard Exam",
       "unitCode": "PRG-T01-C01-U04",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U04-01/Q03_AuditSession.js"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U04-01/Q03_AuditSession.js",
+      "examples": [
+        {
+          "input": "session = new AuditSession('sess-101'); session.record('opened'); session.getEvents()",
+          "output": "['opened']",
+          "call": "(() => { const s = new AuditSession('sess-101'); s.record('opened'); return s.getEvents(); })()"
+        },
+        {
+          "input": "s1 = new AuditSession('s-10'); s2 = new AuditSession('s-20'); s1.record('view'); s2.record('edit'); { s1: s1.getEvents(), s2: s2.getEvents() }",
+          "output": "{ s1: ['view'], s2: ['edit'] }",
+          "call": "(() => { const s1 = new AuditSession('s-10'); const s2 = new AuditSession('s-20'); s1.record('view'); s2.record('edit'); return { s1: s1.getEvents(), s2: s2.getEvents() }; })()"
+        }
+      ],
+      "constraints": [
+        "sessionId and eventName must be non-empty strings after trimming"
+      ]
     },
     {
       "id": "Q04",
@@ -355,7 +370,22 @@
       },
       "levelLabel": "Standard Exam",
       "unitCode": "PRG-T01-C01-U04",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U04-01/Q04_createServiceClient.js"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U04-01/Q04_createServiceClient.js",
+      "examples": [
+        {
+          "input": "createServiceClient('catalog', { timeoutMs: 2500 }).describe()",
+          "output": "'catalog:2500ms'",
+          "call": "createServiceClient('catalog', { timeoutMs: 2500 }).describe()"
+        },
+        {
+          "input": "createServiceClient('search').describe()",
+          "output": "'search:1000ms'",
+          "call": "createServiceClient('search').describe()"
+        }
+      ],
+      "constraints": [
+        "name must be a non-empty string after trimming"
+      ]
     },
     {
       "id": "Q05",
@@ -438,7 +468,22 @@
       },
       "levelLabel": "Standard Exam",
       "unitCode": "PRG-T01-C01-U04",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U04-01/Q05_ScopedRegistry.js"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U04-01/Q05_ScopedRegistry.js",
+      "examples": [
+        {
+          "input": "reg = new ScopedRegistry('plugins', 'staging'); reg.set('cache', 30); reg.get('cache')",
+          "output": "{ scope: 'staging', value: 30 }",
+          "call": "(() => { const reg = new ScopedRegistry('plugins', 'staging'); reg.set('cache', 30); return reg.get('cache'); })()"
+        },
+        {
+          "input": "inspectPrototypeDepth({ port: 80 })",
+          "output": "1",
+          "call": "inspectPrototypeDepth({ port: 80 })"
+        }
+      ],
+      "constraints": [
+        "namespace and key must be non-empty strings after trimming"
+      ]
     }
   ],
   "blindSolve": [

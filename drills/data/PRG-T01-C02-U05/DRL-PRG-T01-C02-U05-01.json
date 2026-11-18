@@ -99,7 +99,19 @@
       },
       "levelLabel": "Foundation",
       "unitCode": "PRG-T01-C02-U05",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U05-01/Q01_firstRestockItem.ts"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U05-01/Q01_firstRestockItem.ts",
+      "examples": [
+        {
+          "input": "items = [{ sku: 'SKU-12', units: 5 }, { sku: 'SKU-18', units: 2 }]",
+          "output": "{ sku: 'SKU-12', units: 5 }",
+          "call": "firstRestockItem([{ sku: 'SKU-12', units: 5 }, { sku: 'SKU-18', units: 2 }])"
+        },
+        {
+          "input": "items = ['LOT-3', 'LOT-4']",
+          "output": "'LOT-3'",
+          "call": "firstRestockItem(['LOT-3', 'LOT-4'])"
+        }
+      ]
     },
     {
       "id": "Q02",
@@ -191,7 +203,19 @@
       },
       "levelLabel": "Foundation",
       "unitCode": "PRG-T01-C02-U05",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U05-01/Q02_copyManifestSnapshot.ts"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U05-01/Q02_copyManifestSnapshot.ts",
+      "examples": [
+        {
+          "input": "record = { routeCode: 'R-22', stopCount: 4 }",
+          "output": "{ routeCode: 'R-22', stopCount: 4 }",
+          "call": "copyManifestSnapshot({ routeCode: 'R-22', stopCount: 4 })"
+        },
+        {
+          "input": "record = { warehouse: 'BKK', active: true }",
+          "output": "{ warehouse: 'BKK', active: true }",
+          "call": "copyManifestSnapshot({ warehouse: 'BKK', active: true })"
+        }
+      ]
     },
     {
       "id": "Q03",
@@ -287,7 +311,19 @@
       },
       "levelLabel": "Standard Exam",
       "unitCode": "PRG-T01-C02-U05",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U05-01/Q03_readInvoiceField.ts"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U05-01/Q03_readInvoiceField.ts",
+      "examples": [
+        {
+          "input": "record = { invoiceNumber: 'INV-88', totalCents: 4500 }, key = 'totalCents'",
+          "output": "4500",
+          "call": "readInvoiceField({ invoiceNumber: 'INV-88', totalCents: 4500 }, 'totalCents')"
+        },
+        {
+          "input": "record = { invoiceNumber: 'INV-88', totalCents: 4500 }, key = 'invoiceNumber'",
+          "output": "'INV-88'",
+          "call": "readInvoiceField({ invoiceNumber: 'INV-88', totalCents: 4500 }, 'invoiceNumber')"
+        }
+      ]
     },
     {
       "id": "Q04",
@@ -379,7 +415,19 @@
       },
       "levelLabel": "Standard Exam",
       "unitCode": "PRG-T01-C02-U05",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U05-01/Q04_projectShipmentField.ts"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U05-01/Q04_projectShipmentField.ts",
+      "examples": [
+        {
+          "input": "shipments = [{ shipmentCode: 'SHP-21' }, { shipmentCode: 'SHP-22' }], field = 'shipmentCode'",
+          "output": "['SHP-21', 'SHP-22']",
+          "call": "projectShipmentField([{ shipmentCode: 'SHP-21' }, { shipmentCode: 'SHP-22' }], 'shipmentCode')"
+        },
+        {
+          "input": "shipments = [{ shipmentCode: 'SHP-21', deliveredAt: '2026-11-12' }, { shipmentCode: 'SHP-22' }], field = 'deliveredAt'",
+          "output": "['2026-11-12', undefined]",
+          "call": "projectShipmentField([{ shipmentCode: 'SHP-21', deliveredAt: '2026-11-12' }, { shipmentCode: 'SHP-22' }], 'deliveredAt')"
+        }
+      ]
     }
   ],
   "blindSolve": [

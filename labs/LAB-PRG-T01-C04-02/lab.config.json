@@ -14,28 +14,96 @@
       "title": "Domain Models & Schema Validation",
       "points": 25,
       "testPattern": "m1_schemas",
-      "mistakeCategory": "Schema Invalidation / Type Guard Flaw"
+      "mistakeCategory": "Schema Invalidation / Type Guard Flaw",
+      "examples": [
+        {
+          "input": "validateProduct({ id: 'p-101', sku: 'APL-2048', name: 'Wireless Mouse', unitPriceInCents: 3500, stockQuantity: 12 })",
+          "output": "{ id: 'p-101', sku: 'APL-2048', name: 'Wireless Mouse', unitPriceInCents: 3500, stockQuantity: 12 }",
+          "call": "validateProduct({ id: 'p-101', sku: 'APL-2048', name: 'Wireless Mouse', unitPriceInCents: 3500, stockQuantity: 12 })"
+        },
+        {
+          "input": "validateCartItem({ productId: 'p-101', quantity: 2 }, catalog)",
+          "output": "{ productId: 'p-101', quantity: 2, unitPriceInCents: 3500 }",
+          "call": "validateCartItem({ productId: 'p-101', quantity: 2 }, new Map([ ['p-101', { id: 'p-101', sku: 'APL-2048', name: 'Wireless Mouse', unitPriceInCents: 3500, stockQuantity: 12 }] ]))"
+        }
+      ],
+      "constraints": [
+        "sku matches /^[A-Z]{3}-[0-9]{4}$/",
+        "unitPriceInCents is a positive integer > 0",
+        "stockQuantity is a non-negative integer >= 0",
+        "CartItem.quantity is a positive integer >= 1"
+      ]
     },
     {
       "id": "M2",
       "title": "Pricing & Tiered Discount Engine",
       "points": 25,
       "testPattern": "m2_pricing",
-      "mistakeCategory": "Financial Precision & Rounding Trap"
+      "mistakeCategory": "Financial Precision & Rounding Trap",
+      "examples": [
+        {
+          "input": "calculateCartTotals([{ productId: 'p-10', quantity: 2, unitPriceInCents: 1500 }], undefined, 7)",
+          "output": "{ subtotalInCents: 3000, discountInCents: 0, taxableAmountInCents: 3000, taxInCents: 210, grandTotalInCents: 3210 }",
+          "call": "calculateCartTotals([{ productId: 'p-10', quantity: 2, unitPriceInCents: 1500 }], undefined, 7)"
+        },
+        {
+          "input": "calculateCartTotals([{ productId: 'p-10', quantity: 1, unitPriceInCents: 10000 }], { code: 'SAVE15', discountType: 'PERCENTAGE', value: 15, minSubtotalInCents: 5000 }, 10)",
+          "output": "{ subtotalInCents: 10000, discountInCents: 1500, taxableAmountInCents: 8500, taxInCents: 850, grandTotalInCents: 9350 }",
+          "call": "calculateCartTotals([{ productId: 'p-10', quantity: 1, unitPriceInCents: 10000 }], { code: 'SAVE15', discountType: 'PERCENTAGE', value: 15, minSubtotalInCents: 5000 }, 10)"
+        }
+      ],
+      "constraints": [
+        "Monetary values are integer cents",
+        "quantity is a positive integer >= 1"
+      ]
     },
     {
       "id": "M3",
       "title": "Order State Machine & Transition Guards",
       "points": 25,
       "testPattern": "m3_state_machine",
-      "mistakeCategory": "Invalid State Machine Transition"
+      "mistakeCategory": "Invalid State Machine Transition",
+      "examples": [
+        {
+          "input": "transitionOrderStatus('DRAFT', 'SUBMIT')",
+          "output": "'PENDING_PAYMENT'",
+          "call": "transitionOrderStatus('DRAFT', 'SUBMIT')"
+        },
+        {
+          "input": "transitionOrderStatus('PAID', 'START_PROCESSING')",
+          "output": "'PROCESSING'",
+          "call": "transitionOrderStatus('PAID', 'START_PROCESSING')"
+        },
+        {
+          "input": "transitionOrderStatus('SHIPPED', 'DELIVER')",
+          "output": "'DELIVERED'",
+          "call": "transitionOrderStatus('SHIPPED', 'DELIVER')"
+        }
+      ]
     },
     {
       "id": "M4",
       "title": "Async Concurrency & Inventory Lock",
       "points": 25,
       "testPattern": "m4_inventory_lock",
-      "mistakeCategory": "Concurrency Race Condition & Rollback Failure"
+      "mistakeCategory": "Concurrency Race Condition & Rollback Failure",
+      "examples": [
+        {
+          "input": "service = new InventoryService([{ id: 'sku-1', sku: 'KBD-1001', name: 'Keyboard', unitPriceInCents: 8000, stockQuantity: 8 }]); await service.reserveOrderStock('order-42', [{ productId: 'sku-1', quantity: 3 }]); service.getAvailableStock('sku-1')",
+          "output": "5",
+          "call": "(async () => { const s = new InventoryService([{ id: 'sku-1', sku: 'KBD-1001', name: 'Keyboard', unitPriceInCents: 8000, stockQuantity: 8 }]); await s.reserveOrderStock('order-42', [{ productId: 'sku-1', quantity: 3 }]); return s.getAvailableStock('sku-1'); })()"
+        },
+        {
+          "input": "Reserve 3 units for 'order-42', then call releaseReservation('order-42')",
+          "output": "8",
+          "explanation": "Releasing a reservation restores the reserved stock.",
+          "call": "(async () => { const s = new InventoryService([{ id: 'sku-1', sku: 'KBD-1001', name: 'Keyboard', unitPriceInCents: 8000, stockQuantity: 8 }]); await s.reserveOrderStock('order-42', [{ productId: 'sku-1', quantity: 3 }]); await s.releaseReservation('order-42'); return s.getAvailableStock('sku-1'); })()"
+        }
+      ],
+      "constraints": [
+        "stockQuantity >= 0",
+        "ReservationRequest.quantity >= 1"
+      ]
     }
   ],
   "scenario": "Implement the core services behind an e-commerce checkout, including catalog validation, pricing, order transitions, and concurrent inventory reservation."

@@ -92,7 +92,19 @@
       },
       "levelLabel": "Foundation",
       "unitCode": "PRG-T01-C03-U05",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-U05-01/Q01_SinglyLinkedList.ts"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-U05-01/Q01_SinglyLinkedList.ts",
+      "examples": [
+        {
+          "input": "list = new SinglyLinkedList(); list.append(10); list.append(20); { removed: list.removeFirst(), rest: list.toArray() }",
+          "output": "{ removed: 10, rest: [20] }",
+          "call": "(() => { const list = new SinglyLinkedList(); list.append(10); list.append(20); return { removed: list.removeFirst(), rest: list.toArray() }; })()"
+        },
+        {
+          "input": "list = new SinglyLinkedList(); list.append('x'); list.append('y'); list.append('z'); list.toArray()",
+          "output": "['x', 'y', 'z']",
+          "call": "(() => { const list = new SinglyLinkedList(); list.append('x'); list.append('y'); list.append('z'); return list.toArray(); })()"
+        }
+      ]
     },
     {
       "id": "Q02",
@@ -177,7 +189,19 @@
       },
       "levelLabel": "Foundation",
       "unitCode": "PRG-T01-C03-U05",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-U05-01/Q02_EndpointList.ts"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-U05-01/Q02_EndpointList.ts",
+      "examples": [
+        {
+          "input": "list = new EndpointList(); list.append('ep-1'); list.append('ep-2'); { removed: list.removeLast(), rest: list.toArray() }",
+          "output": "{ removed: 'ep-2', rest: ['ep-1'] }",
+          "call": "(() => { const list = new EndpointList(); list.append('ep-1'); list.append('ep-2'); return { removed: list.removeLast(), rest: list.toArray() }; })()"
+        },
+        {
+          "input": "list = new EndpointList(); list.append(10); list.append(20); list.append(30); list.removeLast()",
+          "output": "30",
+          "call": "(() => { const list = new EndpointList(); list.append(10); list.append(20); list.append(30); return list.removeLast(); })()"
+        }
+      ]
     },
     {
       "id": "Q03",
@@ -262,7 +286,19 @@
       },
       "levelLabel": "Standard Exam",
       "unitCode": "PRG-T01-C03-U05",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-U05-01/Q03_DoublyList.ts"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-U05-01/Q03_DoublyList.ts",
+      "examples": [
+        {
+          "input": "list = new DoublyList(); list.insertAt(0, 'a'); list.insertAt(1, 'c'); list.insertAt(1, 'b'); { forward: list.toArray(), reverse: list.toReverseArray() }",
+          "output": "{ forward: ['a', 'b', 'c'], reverse: ['c', 'b', 'a'] }",
+          "call": "(() => { const list = new DoublyList(); list.insertAt(0, 'a'); list.insertAt(1, 'c'); list.insertAt(1, 'b'); return { forward: list.toArray(), reverse: list.toReverseArray() }; })()"
+        },
+        {
+          "input": "list = new DoublyList(); list.insertAt(0, 10); list.insertAt(1, 20); list.removeAt(0)",
+          "output": "10",
+          "call": "(() => { const list = new DoublyList(); list.insertAt(0, 10); list.insertAt(1, 20); return list.removeAt(0); })()"
+        }
+      ]
     },
     {
       "id": "Q04",
@@ -343,7 +379,19 @@
       },
       "levelLabel": "Standard Exam",
       "unitCode": "PRG-T01-C03-U05",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-U05-01/Q04_HistoryChain.ts"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C03-U05-01/Q04_HistoryChain.ts",
+      "examples": [
+        {
+          "input": "chain = new HistoryChain(); chain.append('home'); chain.append('docs'); { removed: chain.removeLast(), rest: chain.toArray() }",
+          "output": "{ removed: 'docs', rest: ['home'] }",
+          "call": "(() => { const c = new HistoryChain(); c.append('home'); c.append('docs'); return { removed: c.removeLast(), rest: c.toArray() }; })()"
+        },
+        {
+          "input": "chain = new HistoryChain(); chain.append('a'); chain.append('b'); chain.append('c'); chain.toArray()",
+          "output": "['a', 'b', 'c']",
+          "call": "(() => { const c = new HistoryChain(); c.append('a'); c.append('b'); c.append('c'); return c.toArray(); })()"
+        }
+      ]
     }
   ],
   "blindSolve": [

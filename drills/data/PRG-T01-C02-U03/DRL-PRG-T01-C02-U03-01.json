@@ -95,7 +95,24 @@
       },
       "levelLabel": "Foundation",
       "unitCode": "PRG-T01-C02-U03",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U03-01/Q01_summarizeDelivery.ts"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U03-01/Q01_summarizeDelivery.ts",
+      "examples": [
+        {
+          "input": "delivery = { status: 'in_transit', trackingId: 'PK-401', estimatedDays: 4 }",
+          "output": "'PK-401 arrives in 4 days'",
+          "call": "summarizeDelivery({ status: 'in_transit', trackingId: 'PK-401', estimatedDays: 4 })"
+        },
+        {
+          "input": "delivery = { status: 'delivered', trackingId: 'PK-402', deliveredAt: '2026-11-18T14:00Z' }",
+          "output": "'PK-402 delivered at 2026-11-18T14:00Z'",
+          "call": "summarizeDelivery({ status: 'delivered', trackingId: 'PK-402', deliveredAt: '2026-11-18T14:00Z' })"
+        },
+        {
+          "input": "delivery = { status: 'exception', trackingId: 'PK-501', reason: 'Customs hold' }",
+          "output": "'PK-501 needs attention: Customs hold'",
+          "call": "summarizeDelivery({ status: 'exception', trackingId: 'PK-501', reason: 'Customs hold' })"
+        }
+      ]
     },
     {
       "id": "Q02",
@@ -187,7 +204,19 @@
       },
       "levelLabel": "Standard Exam",
       "unitCode": "PRG-T01-C02-U03",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U03-01/Q02_adjustmentAmount.ts"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U03-01/Q02_adjustmentAmount.ts",
+      "examples": [
+        {
+          "input": "adjustment = { kind: 'credit', amount: 25 }, subtotal = 100",
+          "output": "25",
+          "call": "adjustmentAmount({ kind: 'credit', amount: 25 }, 100)"
+        },
+        {
+          "input": "adjustment = { kind: 'rate', percent: 15 }, subtotal = 200",
+          "output": "30",
+          "call": "adjustmentAmount({ kind: 'rate', percent: 15 }, 200)"
+        }
+      ]
     },
     {
       "id": "Q03",
@@ -279,7 +308,24 @@
       },
       "levelLabel": "Trap & Diagnostic",
       "unitCode": "PRG-T01-C02-U03",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U03-01/Q03_describeSampleState.ts"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U03-01/Q03_describeSampleState.ts",
+      "examples": [
+        {
+          "input": "sample = { state: 'received', sampleId: 'LAB-401', receivedAt: '09:30' }",
+          "output": "'Received LAB-401 at 09:30'",
+          "call": "describeSampleState({ state: 'received', sampleId: 'LAB-401', receivedAt: '09:30' })"
+        },
+        {
+          "input": "sample = { state: 'analyzing', sampleId: 'LAB-402', assay: 'BMP', percent: 45 }",
+          "output": "'BMP for LAB-402: 45%'",
+          "call": "describeSampleState({ state: 'analyzing', sampleId: 'LAB-402', assay: 'BMP', percent: 45 })"
+        },
+        {
+          "input": "sample = { state: 'ready', sampleId: 'LAB-403', resultCode: 'R-OK' }",
+          "output": "'Ready LAB-403: R-OK'",
+          "call": "describeSampleState({ state: 'ready', sampleId: 'LAB-403', resultCode: 'R-OK' })"
+        }
+      ]
     },
     {
       "id": "Q04",
@@ -363,7 +409,19 @@
       },
       "levelLabel": "Trap & Diagnostic",
       "unitCode": "PRG-T01-C02-U03",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U03-01/Q04_collectArtworkIds.ts"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U03-01/Q04_collectArtworkIds.ts",
+      "examples": [
+        {
+          "input": "manifest = [{ kind: 'accession', artworkId: 'ART-10', collection: 'Sculpture' }, { kind: 'accession', artworkId: 'ART-11', collection: 'Prints' }]",
+          "output": "['ART-10', 'ART-11']",
+          "call": "collectArtworkIds([{ kind: 'accession', artworkId: 'ART-10', collection: 'Sculpture' }, { kind: 'accession', artworkId: 'ART-11', collection: 'Prints' }])"
+        },
+        {
+          "input": "manifest = [{ kind: 'accession', artworkId: 'ART-10', collection: 'Sculpture' }, { kind: 'loan', artworkId: 'ART-12', lender: 'City Gallery' }]",
+          "output": "['ART-10', 'ART-12']",
+          "call": "collectArtworkIds([{ kind: 'accession', artworkId: 'ART-10', collection: 'Sculpture' }, { kind: 'loan', artworkId: 'ART-12', lender: 'City Gallery' }])"
+        }
+      ]
     },
     {
       "id": "Q05",
@@ -451,7 +509,19 @@
       },
       "levelLabel": "Applied Synthesis",
       "unitCode": "PRG-T01-C02-U03",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U03-01/Q05_renderActivityFeed.ts"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U03-01/Q05_renderActivityFeed.ts",
+      "examples": [
+        {
+          "input": "activities = [{ kind: 'reply', author: 'Sam', body: 'Package shipped' }, { kind: 'internal_note', author: 'Ava', note: 'Verified address' }]",
+          "output": "['Sam: Package shipped', 'Ava: Verified address']",
+          "call": "renderActivityFeed([{ kind: 'reply', author: 'Sam', body: 'Package shipped' }, { kind: 'internal_note', author: 'Ava', note: 'Verified address' }])"
+        },
+        {
+          "input": "activities = [{ kind: 'reply', author: 'Leo', body: 'Received, thanks' }]",
+          "output": "['Leo: Received, thanks']",
+          "call": "renderActivityFeed([{ kind: 'reply', author: 'Leo', body: 'Received, thanks' }])"
+        }
+      ]
     }
   ],
   "blindSolve": [

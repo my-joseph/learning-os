@@ -184,7 +184,23 @@
       },
       "levelLabel": "Foundation",
       "unitCode": "PRG-T01-C01-U01",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U01-01/Q02_createWebhookDispatchers.js"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U01-01/Q02_createWebhookDispatchers.js",
+      "examples": [
+        {
+          "input": "endpoints = ['https://hooks.example.com/a', 'https://hooks.example.com/b']",
+          "output": "[{ index: 0, endpoint: 'https://hooks.example.com/a' }, { index: 1, endpoint: 'https://hooks.example.com/b' }]",
+          "explanation": "Invoking each returned dispatcher returns its index and endpoint.",
+          "call": "createWebhookDispatchers(['https://hooks.example.com/a', 'https://hooks.example.com/b']).map((fn) => fn())"
+        },
+        {
+          "input": "endpoints = ['https://hooks.example.com/only']",
+          "output": "[{ index: 0, endpoint: 'https://hooks.example.com/only' }]",
+          "call": "createWebhookDispatchers(['https://hooks.example.com/only']).map((fn) => fn())"
+        }
+      ],
+      "constraints": [
+        "Each endpoint must be a non-empty string after trimming"
+      ]
     },
     {
       "id": "Q03",
@@ -361,7 +377,22 @@
       },
       "levelLabel": "Standard Exam",
       "unitCode": "PRG-T01-C01-U01",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U01-01/Q04_resolveTenantQuotas.js"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U01-01/Q04_resolveTenantQuotas.js",
+      "examples": [
+        {
+          "input": "baseQuota = 100, overrideQuota = 250",
+          "output": "{ baseQuota: 100, effectiveQuota: 250, overridden: true }",
+          "call": "resolveTenantQuotas(100, 250)"
+        },
+        {
+          "input": "baseQuota = 150, overrideQuota = undefined",
+          "output": "{ baseQuota: 150, effectiveQuota: 150, overridden: false }",
+          "call": "resolveTenantQuotas(150, undefined)"
+        }
+      ],
+      "constraints": [
+        "baseQuota and any provided overrideQuota must be finite numbers >= 0"
+      ]
     },
     {
       "id": "Q05",
@@ -445,7 +476,22 @@
       },
       "levelLabel": "Standard Exam",
       "unitCode": "PRG-T01-C01-U01",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U01-01/Q05_createScopedAuditEntry.js"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C01-U01-01/Q05_createScopedAuditEntry.js",
+      "examples": [
+        {
+          "input": "defaultActor = 'scheduler', overrideActor = 'ops-lead', action = 'rotate-token'",
+          "output": "{ actor: 'ops-lead', action: 'rotate-token', usedOverride: true }",
+          "call": "createScopedAuditEntry('scheduler', 'ops-lead', 'rotate-token')"
+        },
+        {
+          "input": "defaultActor = 'scheduler', overrideActor = undefined, action = 'flush-cache'",
+          "output": "{ actor: 'scheduler', action: 'flush-cache', usedOverride: false }",
+          "call": "createScopedAuditEntry('scheduler', undefined, 'flush-cache')"
+        }
+      ],
+      "constraints": [
+        "defaultActor, action, and any provided overrideActor must be non-empty strings after trimming"
+      ]
     }
   ],
   "blindSolve": [

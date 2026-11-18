@@ -84,7 +84,24 @@
         "verificationLevel": "partial",
         "weakDistractors": 0
       },
-      "workspaceFile": "drills/workspace/DRL-PRG-T00-C03-02/Q01_clampBatteryPercent.js"
+      "workspaceFile": "drills/workspace/DRL-PRG-T00-C03-02/Q01_clampBatteryPercent.js",
+      "examples": [
+        {
+          "input": "rawLevel = 72",
+          "output": "72",
+          "call": "clampBatteryPercent(72)"
+        },
+        {
+          "input": "rawLevel = 125",
+          "output": "100",
+          "call": "clampBatteryPercent(125)"
+        },
+        {
+          "input": "rawLevel = -12",
+          "output": "0",
+          "call": "clampBatteryPercent(-12)"
+        }
+      ]
     },
     {
       "level": 1,
@@ -165,7 +182,19 @@
         "verificationLevel": "partial",
         "weakDistractors": 0
       },
-      "workspaceFile": "drills/workspace/DRL-PRG-T00-C03-02/Q02_resolveRetryLimit.js"
+      "workspaceFile": "drills/workspace/DRL-PRG-T00-C03-02/Q02_resolveRetryLimit.js",
+      "examples": [
+        {
+          "input": "settings = { maxRetries: 6 }",
+          "output": "6",
+          "call": "resolveRetryLimit({ maxRetries: 6 })"
+        },
+        {
+          "input": "settings = {}",
+          "output": "3",
+          "call": "resolveRetryLimit({})"
+        }
+      ]
     },
     {
       "level": 1,
@@ -250,7 +279,20 @@
         "verificationLevel": "partial",
         "weakDistractors": 0
       },
-      "workspaceFile": "drills/workspace/DRL-PRG-T00-C03-02/Q03_countValidQuantities.js"
+      "workspaceFile": "drills/workspace/DRL-PRG-T00-C03-02/Q03_countValidQuantities.js",
+      "examples": [
+        {
+          "input": "rawQuantities = [3, 7, 12]",
+          "output": "3",
+          "call": "countValidQuantities([3, 7, 12])"
+        },
+        {
+          "input": "rawQuantities = [5, '10', 8]",
+          "output": "2",
+          "explanation": "The string '10' is ignored.",
+          "call": "countValidQuantities([5, '10', 8])"
+        }
+      ]
     },
     {
       "level": 1,
@@ -327,7 +369,19 @@
         "verificationLevel": "partial",
         "weakDistractors": 0
       },
-      "workspaceFile": "drills/workspace/DRL-PRG-T00-C03-02/Q04_formatDisplayName.js"
+      "workspaceFile": "drills/workspace/DRL-PRG-T00-C03-02/Q04_formatDisplayName.js",
+      "examples": [
+        {
+          "input": "profile = { fullName: 'Nadia Chen', username: 'nadia' }",
+          "output": "'Nadia Chen'",
+          "call": "formatDisplayName({ fullName: 'Nadia Chen', username: 'nadia' })"
+        },
+        {
+          "input": "profile = { fullName: '', username: 'nadia' }",
+          "output": "'nadia'",
+          "call": "formatDisplayName({ fullName: '', username: 'nadia' })"
+        }
+      ]
     },
     {
       "level": 1,
@@ -408,7 +462,20 @@
         "verificationLevel": "partial",
         "weakDistractors": 0
       },
-      "workspaceFile": "drills/workspace/DRL-PRG-T00-C03-02/Q05_applyDiscount.js"
+      "workspaceFile": "drills/workspace/DRL-PRG-T00-C03-02/Q05_applyDiscount.js",
+      "examples": [
+        {
+          "input": "price = 120, rate = 0.2",
+          "output": "96",
+          "call": "applyDiscount(120, 0.2)"
+        },
+        {
+          "input": "price = 40",
+          "output": "36",
+          "explanation": "Uses the default 0.1 discount rate.",
+          "call": "applyDiscount(40)"
+        }
+      ]
     },
     {
       "level": 1,
@@ -489,7 +556,19 @@
         "verificationLevel": "partial",
         "weakDistractors": 0
       },
-      "workspaceFile": "drills/workspace/DRL-PRG-T00-C03-02/Q06_sumInvoiceTotal.js"
+      "workspaceFile": "drills/workspace/DRL-PRG-T00-C03-02/Q06_sumInvoiceTotal.js",
+      "examples": [
+        {
+          "input": "taxRate = 0.1, lineAmounts = [80, 20]",
+          "output": "110",
+          "call": "sumInvoiceTotal(0.1, 80, 20)"
+        },
+        {
+          "input": "taxRate = 0.2, lineAmounts = [50]",
+          "output": "60",
+          "call": "sumInvoiceTotal(0.2, 50)"
+        }
+      ]
     },
     {
       "level": 1,
@@ -570,7 +649,22 @@
         "verificationLevel": "partial",
         "weakDistractors": 0
       },
-      "workspaceFile": "drills/workspace/DRL-PRG-T00-C03-02/Q07_summarizeTemperatures.js"
+      "workspaceFile": "drills/workspace/DRL-PRG-T00-C03-02/Q07_summarizeTemperatures.js",
+      "examples": [
+        {
+          "input": "readings = [18, 22, 26]",
+          "output": "{ min: 18, max: 26, average: 22 }",
+          "call": "summarizeTemperatures([18, 22, 26])"
+        },
+        {
+          "input": "readings = [-4, 2, 8]",
+          "output": "{ min: -4, max: 8, average: 2 }",
+          "call": "summarizeTemperatures([-4, 2, 8])"
+        }
+      ],
+      "constraints": [
+        "readings is a non-empty array of numbers"
+      ]
     },
     {
       "level": 1,
@@ -651,7 +745,19 @@
         "verificationLevel": "partial",
         "weakDistractors": 0
       },
-      "workspaceFile": "drills/workspace/DRL-PRG-T00-C03-02/Q08_listActiveEmails.js"
+      "workspaceFile": "drills/workspace/DRL-PRG-T00-C03-02/Q08_listActiveEmails.js",
+      "examples": [
+        {
+          "input": "subscribers = [{ email: 'lena@acme.io', isActive: true }, { email: 'ops@acme.io', isActive: false }]",
+          "output": "['lena@acme.io']",
+          "call": "listActiveEmails([{ email: 'lena@acme.io', isActive: true }, { email: 'ops@acme.io', isActive: false }])"
+        },
+        {
+          "input": "subscribers = [{ email: '  Kai@Acme.IO ', isActive: true }]",
+          "output": "['kai@acme.io']",
+          "call": "listActiveEmails([{ email: '  Kai@Acme.IO ', isActive: true }])"
+        }
+      ]
     },
     {
       "level": 1,
@@ -728,7 +834,19 @@
         "verificationLevel": "partial",
         "weakDistractors": 0
       },
-      "workspaceFile": "drills/workspace/DRL-PRG-T00-C03-02/Q09_buildShippingLabel.js"
+      "workspaceFile": "drills/workspace/DRL-PRG-T00-C03-02/Q09_buildShippingLabel.js",
+      "examples": [
+        {
+          "input": "order = { customer: { name: 'Sora Sato', address: { city: 'Kyoto', postalCode: '600-8216' } }, items: ['mug', 'plate'] }",
+          "output": "'Sora Sato - Kyoto 600-8216 (2 items)'",
+          "call": "buildShippingLabel({ customer: { name: 'Sora Sato', address: { city: 'Kyoto', postalCode: '600-8216' } }, items: ['mug', 'plate'] })"
+        },
+        {
+          "input": "order = { customer: { name: 'Liam Park', address: { city: 'Busan', postalCode: '48058' } }, items: ['notebook'] }",
+          "output": "'Liam Park - Busan 48058 (1 item)'",
+          "call": "buildShippingLabel({ customer: { name: 'Liam Park', address: { city: 'Busan', postalCode: '48058' } }, items: ['notebook'] })"
+        }
+      ]
     },
     {
       "level": 1,
@@ -809,7 +927,19 @@
         "verificationLevel": "partial",
         "weakDistractors": 0
       },
-      "workspaceFile": "drills/workspace/DRL-PRG-T00-C03-02/Q10_adjustStock.js"
+      "workspaceFile": "drills/workspace/DRL-PRG-T00-C03-02/Q10_adjustStock.js",
+      "examples": [
+        {
+          "input": "stockBySku = { 'SKU-10': 5, 'SKU-20': 8 }, sku = 'SKU-10', delta = 4",
+          "output": "{ 'SKU-10': 9, 'SKU-20': 8 }",
+          "call": "adjustStock({ 'SKU-10': 5, 'SKU-20': 8 }, 'SKU-10', 4)"
+        },
+        {
+          "input": "stockBySku = { 'SKU-10': 6 }, sku = 'SKU-10', delta = -2",
+          "output": "{ 'SKU-10': 4 }",
+          "call": "adjustStock({ 'SKU-10': 6 }, 'SKU-10', -2)"
+        }
+      ]
     }
   ],
   "drillId": "DRL-PRG-T00-C03-02",

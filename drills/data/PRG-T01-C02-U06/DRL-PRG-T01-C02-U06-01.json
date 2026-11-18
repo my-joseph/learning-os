@@ -103,7 +103,20 @@
       },
       "levelLabel": "Foundation",
       "unitCode": "PRG-T01-C02-U06",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U06-01/Q01_projectProductPatch.ts"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U06-01/Q01_projectProductPatch.ts",
+      "examples": [
+        {
+          "input": "input = { id: 'PRD-100', createdAt: '2026-11-10', name: 'Desk Lamp', priceCents: 2900 }",
+          "output": "{ name: 'Desk Lamp', priceCents: 2900 }",
+          "explanation": "Managed fields id and createdAt are omitted.",
+          "call": "projectProductPatch({ id: 'PRD-100', createdAt: '2026-11-10', name: 'Desk Lamp', priceCents: 2900 })"
+        },
+        {
+          "input": "input = { id: 'PRD-101', createdAt: '2026-11-10', name: 'USB Cable' }",
+          "output": "{ name: 'USB Cable' }",
+          "call": "projectProductPatch({ id: 'PRD-101', createdAt: '2026-11-10', name: 'USB Cable' })"
+        }
+      ]
     },
     {
       "id": "Q02",
@@ -195,7 +208,19 @@
       },
       "levelLabel": "Foundation",
       "unitCode": "PRG-T01-C02-U06",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U06-01/Q02_applyMemberProfilePatch.ts"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U06-01/Q02_applyMemberProfilePatch.ts",
+      "examples": [
+        {
+          "input": "profile = { displayName: 'Taro', preferences: { email: true, sms: false } }, patch = { displayName: 'Taro K.' }",
+          "output": "{ displayName: 'Taro K.', preferences: { email: true, sms: false } }",
+          "call": "applyMemberProfilePatch({ displayName: 'Taro', preferences: { email: true, sms: false } }, { displayName: 'Taro K.' })"
+        },
+        {
+          "input": "profile = { displayName: 'Taro', preferences: { email: true, sms: false } }, patch = { preferences: { email: false, sms: true } }",
+          "output": "{ displayName: 'Taro', preferences: { email: false, sms: true } }",
+          "call": "applyMemberProfilePatch({ displayName: 'Taro', preferences: { email: true, sms: false } }, { preferences: { email: false, sms: true } })"
+        }
+      ]
     },
     {
       "id": "Q03",
@@ -299,7 +324,24 @@
       },
       "levelLabel": "Standard Exam",
       "unitCode": "PRG-T01-C02-U06",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U06-01/Q03_getOrderStatusLabel.ts"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U06-01/Q03_getOrderStatusLabel.ts",
+      "examples": [
+        {
+          "input": "status = 'pending'",
+          "output": "'Awaiting payment'",
+          "call": "getOrderStatusLabel('pending')"
+        },
+        {
+          "input": "status = 'paid'",
+          "output": "'Payment confirmed'",
+          "call": "getOrderStatusLabel('paid')"
+        },
+        {
+          "input": "status = 'shipped'",
+          "output": "'In transit'",
+          "call": "getOrderStatusLabel('shipped')"
+        }
+      ]
     },
     {
       "id": "Q04",
@@ -395,7 +437,19 @@
       },
       "levelLabel": "Standard Exam",
       "unitCode": "PRG-T01-C02-U06",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U06-01/Q04_getShipmentStatusLabel.ts"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U06-01/Q04_getShipmentStatusLabel.ts",
+      "examples": [
+        {
+          "input": "status = 'queued'",
+          "output": "'Queued'",
+          "call": "getShipmentStatusLabel('queued')"
+        },
+        {
+          "input": "status = 'inTransit'",
+          "output": "'In transit'",
+          "call": "getShipmentStatusLabel('inTransit')"
+        }
+      ]
     }
   ],
   "blindSolve": [

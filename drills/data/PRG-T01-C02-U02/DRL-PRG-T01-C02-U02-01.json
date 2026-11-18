@@ -91,7 +91,19 @@
       },
       "levelLabel": "Foundation",
       "unitCode": "PRG-T01-C02-U02",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U02-01/Q01_updateBorrowerNote.ts"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U02-01/Q01_updateBorrowerNote.ts",
+      "examples": [
+        {
+          "input": "receipt = { receiptId: 'LN-101', borrowerNote: 'Desk pickup' }, nextNote = 'Extended 7 days'",
+          "output": "{ receiptId: 'LN-101', borrowerNote: 'Extended 7 days' }",
+          "call": "updateBorrowerNote({ receiptId: 'LN-101', borrowerNote: 'Desk pickup' }, 'Extended 7 days')"
+        },
+        {
+          "input": "receipt = { receiptId: 'LN-305', borrowerNote: 'Hold shelf' }, nextNote = 'Picked up'",
+          "output": "{ receiptId: 'LN-305', borrowerNote: 'Picked up' }",
+          "call": "updateBorrowerNote({ receiptId: 'LN-305', borrowerNote: 'Hold shelf' }, 'Picked up')"
+        }
+      ]
     },
     {
       "id": "Q02",
@@ -180,7 +192,26 @@
       },
       "levelLabel": "Standard Exam",
       "unitCode": "PRG-T01-C02-U02",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U02-01/Q02_getAlertThresholds.ts"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U02-01/Q02_getAlertThresholds.ts",
+      "examples": [
+        {
+          "input": "getAlertThresholds()",
+          "output": "[4, 8]",
+          "call": "[...getAlertThresholds()]"
+        },
+        {
+          "input": "getAlertThresholds()[1]",
+          "output": "8",
+          "explanation": "Index 1 holds the critical threshold in Celsius.",
+          "call": "getAlertThresholds()[1]"
+        },
+        {
+          "input": "getAlertThresholds()[0]",
+          "output": "4",
+          "explanation": "Index 0 holds the warning threshold in Celsius.",
+          "call": "getAlertThresholds()[0]"
+        }
+      ]
     },
     {
       "id": "Q03",
@@ -274,7 +305,19 @@
       },
       "levelLabel": "Standard Exam",
       "unitCode": "PRG-T01-C02-U02",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U02-01/Q03_describeBillingState.ts"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U02-01/Q03_describeBillingState.ts",
+      "examples": [
+        {
+          "input": "state = 'active'",
+          "output": "'Subscription active'",
+          "call": "describeBillingState('active')"
+        },
+        {
+          "input": "states = ['pending', 'paused']",
+          "output": "['Payment pending', 'Subscription paused']",
+          "call": "(['pending', 'paused'] as const).map((s) => describeBillingState(s))"
+        }
+      ]
     },
     {
       "id": "Q04",
@@ -371,7 +414,19 @@
       },
       "levelLabel": "Standard Exam",
       "unitCode": "PRG-T01-C02-U02",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U02-01/Q04_buildQueueCard.ts"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U02-01/Q04_buildQueueCard.ts",
+      "examples": [
+        {
+          "input": "episodeId = 'EP-12', title = 'Morning Brief', position = 2",
+          "output": "{ episodeId: 'EP-12', title: 'Morning Brief', position: 2 }",
+          "call": "buildQueueCard('EP-12', 'Morning Brief', 2)"
+        },
+        {
+          "input": "episodeId = 'EP-14', title = 'Evening Wrap'",
+          "output": "{ episodeId: 'EP-14', title: 'Evening Wrap' }",
+          "call": "buildQueueCard('EP-14', 'Evening Wrap')"
+        }
+      ]
     },
     {
       "id": "Q05",
@@ -465,7 +520,19 @@
       },
       "levelLabel": "Standard Exam",
       "unitCode": "PRG-T01-C02-U02",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U02-01/Q05_buildEvaluationOptions.ts"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U02-01/Q05_buildEvaluationOptions.ts",
+      "examples": [
+        {
+          "input": "flagKey = 'dark-header', region = 'us-east'",
+          "output": "{ flagKey: 'dark-header', region: 'us-east' }",
+          "call": "buildEvaluationOptions('dark-header', 'us-east')"
+        },
+        {
+          "input": "flagKey = 'audit-stream'",
+          "output": "{ flagKey: 'audit-stream' }",
+          "call": "buildEvaluationOptions('audit-stream')"
+        }
+      ]
     }
   ],
   "blindSolve": [

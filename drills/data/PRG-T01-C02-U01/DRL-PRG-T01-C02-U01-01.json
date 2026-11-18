@@ -99,7 +99,24 @@
       },
       "levelLabel": "Foundation",
       "unitCode": "PRG-T01-C02-U01",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U01-01/Q01_calculateLineTotal.ts"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U01-01/Q01_calculateLineTotal.ts",
+      "examples": [
+        {
+          "input": "unitPrice = 12.5, quantity = 4, taxRate = 0.08",
+          "output": "{ subtotal: 50, tax: 4, total: 54 }",
+          "call": "calculateLineTotal(12.5, 4, 0.08)"
+        },
+        {
+          "input": "unitPrice = 19.99, quantity = 2, taxRate = 0.07",
+          "output": "{ subtotal: 39.98, tax: 2.8, total: 42.78 }",
+          "call": "calculateLineTotal(19.99, 2, 0.07)"
+        }
+      ],
+      "constraints": [
+        "unitPrice >= 0 (finite number)",
+        "quantity >= 0 (finite integer)",
+        "0 <= taxRate <= 1 (finite number)"
+      ]
     },
     {
       "id": "Q02",
@@ -187,7 +204,23 @@
       },
       "levelLabel": "Foundation",
       "unitCode": "PRG-T01-C02-U01",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U01-01/Q02_filterEnabledFlags.ts"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U01-01/Q02_filterEnabledFlags.ts",
+      "examples": [
+        {
+          "input": "flags = [{ key: 'dark-mode', enabled: true, rolloutPct: 60 }, { key: 'search-v2', enabled: true, rolloutPct: 20 }], userBucket = 30",
+          "output": "['dark-mode']",
+          "call": "filterEnabledFlags([{ key: 'dark-mode', enabled: true, rolloutPct: 60 }, { key: 'search-v2', enabled: true, rolloutPct: 20 }], 30)"
+        },
+        {
+          "input": "flags = [{ key: 'beta-nav', enabled: true, rolloutPct: 50 }, { key: 'fast-pay', enabled: true, rolloutPct: 80 }], userBucket = 10",
+          "output": "['beta-nav', 'fast-pay']",
+          "call": "filterEnabledFlags([{ key: 'beta-nav', enabled: true, rolloutPct: 50 }, { key: 'fast-pay', enabled: true, rolloutPct: 80 }], 10)"
+        }
+      ],
+      "constraints": [
+        "0 <= userBucket < 100 (finite number)",
+        "0 <= flag.rolloutPct <= 100 (finite number)"
+      ]
     },
     {
       "id": "Q03",
@@ -275,7 +308,22 @@
       },
       "levelLabel": "Standard Exam",
       "unitCode": "PRG-T01-C02-U01",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U01-01/Q03_createRetryPlan.ts"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U01-01/Q03_createRetryPlan.ts",
+      "examples": [
+        {
+          "input": "method = 'GET', baseDelayMs = 100, strategy = 'fixed'",
+          "output": "{ method: 'GET', strategy: 'fixed', delaysMs: [100, 100, 100] }",
+          "call": "createRetryPlan('GET', 100, 'fixed')"
+        },
+        {
+          "input": "method = 'POST', baseDelayMs = 50, strategy = 'exponential'",
+          "output": "{ method: 'POST', strategy: 'exponential', delaysMs: [50, 100, 200] }",
+          "call": "createRetryPlan('POST', 50, 'exponential')"
+        }
+      ],
+      "constraints": [
+        "baseDelayMs is a positive integer > 0"
+      ]
     },
     {
       "id": "Q04",
@@ -369,7 +417,23 @@
       },
       "levelLabel": "Standard Exam",
       "unitCode": "PRG-T01-C02-U01",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U01-01/Q04_parseServiceConfig.ts"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U01-01/Q04_parseServiceConfig.ts",
+      "examples": [
+        {
+          "input": "rawJson = '{\"host\":\"cache.internal\",\"port\":6379}'",
+          "output": "{ host: 'cache.internal', port: 6379, tls: false }",
+          "call": "parseServiceConfig('{\"host\":\"cache.internal\",\"port\":6379}')"
+        },
+        {
+          "input": "rawJson = '{\"host\":\"auth.internal\",\"port\":8443,\"tls\":true}'",
+          "output": "{ host: 'auth.internal', port: 8443, tls: true }",
+          "call": "parseServiceConfig('{\"host\":\"auth.internal\",\"port\":8443,\"tls\":true}')"
+        }
+      ],
+      "constraints": [
+        "host must be a non-empty string after trimming",
+        "port must be an integer in 1..65535"
+      ]
     },
     {
       "id": "Q05",
@@ -463,7 +527,22 @@
       },
       "levelLabel": "Standard Exam",
       "unitCode": "PRG-T01-C02-U01",
-      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U01-01/Q05_formatAuditEntries.ts"
+      "workspaceFile": "drills/workspace/DRL-PRG-T01-C02-U01-01/Q05_formatAuditEntries.ts",
+      "examples": [
+        {
+          "input": "entries = [{ actor: 'dana', action: 'login' }, { actor: 'ops', action: 'restart', level: 'warn' }]",
+          "output": "['[INFO] dana: login', '[WARN] ops: restart']",
+          "call": "formatAuditEntries([{ actor: 'dana', action: 'login' }, { actor: 'ops', action: 'restart', level: 'warn' }])"
+        },
+        {
+          "input": "entries = [{ actor: 'ci-bot', action: 'deploy', level: 'error' }]",
+          "output": "['[ERROR] ci-bot: deploy']",
+          "call": "formatAuditEntries([{ actor: 'ci-bot', action: 'deploy', level: 'error' }])"
+        }
+      ],
+      "constraints": [
+        "actor and action must be non-empty strings after trimming"
+      ]
     }
   ],
   "blindSolve": [
