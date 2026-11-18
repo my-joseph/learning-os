@@ -367,6 +367,6 @@ const reviewHtml = renderToStaticMarkup(
     onMistakeNoteChange={noop}
   />
 );
-assert.match(reviewHtml, /<h1[^>]*class="[^"]*text-lg[^"]*"[^>]*>Review &amp; Sync to Notion<\/h1>/);
+assert.match(reviewHtml, /<h1[^>]*class="[^"]*text-lg[^"]*"[^>]*>Linear Equations<\/h1>/);
 
 console.log("studio rules tests passed");

@@ -306,7 +306,7 @@ export const ReviewPanel: React.FC<ReviewPanelProps> = ({
       {/* 1. Summary card */}
       <section className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 sm:p-6 space-y-4">
         <div className="space-y-1">
-          <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight">
+          <h1 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight">
             {drillTitle}
           </h1>
           <p className="text-sm text-zinc-500 dark:text-zinc-400">
