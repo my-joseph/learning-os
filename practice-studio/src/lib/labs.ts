@@ -2,7 +2,13 @@ import fs from "fs";
 import path from "path";
 import type { CodeExample, SessionSummary, TestCase } from "@/types/drill";
 import { deriveReviewStatus } from "@/lib/codeStatus";
-import { getLabsDir, getWorkspaceRoot, isSafeId, loadIdMapTitles } from "@/lib/paths";
+import {
+  getLabWorkspaceDir,
+  getLabsDir,
+  getWorkspaceRoot,
+  isSafeId,
+  loadIdMapTitles,
+} from "@/lib/paths";
 import { cleanCurriculumTitle } from "@/lib/drillGrouping";
 import { readProgress } from "@/lib/progress";
 import { isLabId } from "@/lib/routes";
@@ -138,7 +144,8 @@ function extractVisibleTestCases(
 
 function resolveMilestoneMainFile(
   labDir: string,
-  ms: Record<string, unknown>
+  ms: Record<string, unknown>,
+  workspaceLabDir: string = labDir
 ): { mainFile: string | null; vscodeUrl: string | null } {
   const rawMain =
     ms.mainFile ?? ms.file ?? ms.sourceFile ?? ms.entryFile ?? null;
@@ -161,7 +168,8 @@ function resolveMilestoneMainFile(
     return { mainFile: null, vscodeUrl: null };
   }
   const cleanRel = relToLab.replace(/\\/g, "/");
-  const absNormalized = absTarget.startsWith("/") ? absTarget : `/${absTarget}`;
+  const absWsTarget = path.resolve(workspaceLabDir, cleanRel);
+  const absNormalized = absWsTarget.startsWith("/") ? absWsTarget : `/${absWsTarget}`;
   return {
     mainFile: cleanRel,
     vscodeUrl: `vscode://file${absNormalized}`,
@@ -371,7 +379,13 @@ export function loadLabDetailFromDisk(
   const scenario =
     typeof rawConfig.scenario === "string" ? rawConfig.scenario.trim() : "";
 
-  const absLabDir = labDir.startsWith("/") ? labDir : `/${labDir}`;
+  const useDefaultLabsDir = path.resolve(labsDir) === path.resolve(getLabsDir());
+  const workspaceLabDir = useDefaultLabsDir
+    ? getLabWorkspaceDir(canonicalId) ?? labDir
+    : labDir;
+  const absLabDir = workspaceLabDir.startsWith("/")
+    ? workspaceLabDir
+    : `/${workspaceLabDir}`;
   const vscodeFolderUrl = `vscode://file${absLabDir}`;
 
   const progressFile = readProgress(canonicalId);
@@ -421,7 +435,8 @@ export function loadLabDetailFromDisk(
 
     const { mainFile, vscodeUrl } = resolveMilestoneMainFile(
       labDir,
-      ms
+      ms,
+      workspaceLabDir
     );
 
     const savedState = lookupStateForMilestone(progressFile?.problems, mid);
@@ -495,7 +510,7 @@ export function loadLabDetailFromDisk(
     domain,
     scenario,
     readme,
-    workspaceDir: labDir,
+    workspaceDir: workspaceLabDir,
     vscodeFolderUrl,
     testCommand: "npm test",
     checkCommand: "npm run check",

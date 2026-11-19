@@ -3,9 +3,13 @@ import { spawn } from "child_process";
 import fs from "fs";
 import path from "path";
 import {
+  getDrillWorkspaceDir,
+  getDrillWorkspacesDir,
+  getLabWorkspaceDir,
   getLabsDir,
   getPythonBin,
   getWorkspaceRoot,
+  isPilotMode,
   isSafeId,
   loadProblemFromDisk,
 } from "@/lib/paths";
@@ -26,16 +30,11 @@ function formatServerCheckError(raw: string, rootDir: string): string {
 
 const REVIEW_RUN_TIMEOUT_MS = 30_000;
 
-function isPilotMode(): boolean {
-  const val = (process.env.LEARNINGOS_PILOT || "").trim().toLowerCase();
-  return val === "1" || val === "true" || val === "yes";
-}
-
 function getExpectedWorkspaceDir(drillId: string, rootDir: string): string {
-  const sub = isPilotMode()
-    ? path.join("pilot", "workspace")
-    : path.join("drills", "workspace");
-  return path.join(rootDir, sub, drillId);
+  return (
+    getDrillWorkspaceDir(drillId, rootDir) ??
+    path.join(getDrillWorkspacesDir(rootDir), drillId)
+  );
 }
 
 async function ensureWorkspaceMaterialized(
@@ -147,7 +146,10 @@ export async function POST(req: NextRequest) {
         );
       }
       if (isPilotMode() && !process.env.LABS_DIR) {
-        const pilotCfg = path.join(rootDir, "pilot", "labs", drillId, "lab.config.json");
+        const pilotLabDir =
+          getLabWorkspaceDir(drillId, rootDir) ??
+          path.join(rootDir, "pilot", "labs", drillId);
+        const pilotCfg = path.join(pilotLabDir, "lab.config.json");
         if (!fs.existsSync(pilotCfg)) {
           const materialized = await ensurePilotLabMaterialized(
             drillId,
