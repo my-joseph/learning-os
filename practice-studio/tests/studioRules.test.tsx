@@ -536,4 +536,13 @@ assert.match(codeGenerateHtml, />5 problems<\/option>/);
 assert.doesNotMatch(codeGenerateHtml, />5 Qs<\/option>/);
 assert.match(codeGenerateHtml, />Level 5<\/option>/);
 
+// Learner 2026-11-19: 32px palette keys, no stray vertical scrollbar on line choices,
+// no CAS copy row on choice questions (their plain text is only the prompt).
+const mathPaletteSrc = readFileSync("src/components/math/MathPalette.tsx", "utf8");
+const lineChoiceSrc = readFileSync("src/components/LineChoicePrompt.tsx", "utf8");
+assert.match(mathPaletteSrc, /justify-center w-8 h-8 rounded-lg bg-zinc-100/);
+assert.doesNotMatch(mathPaletteSrc, /sm:w-10 sm:h-10/);
+assert.match(lineChoiceSrc, /overflow-x-auto overflow-y-hidden/);
+assert.match(mathWorkspace, /problem\.plainText && !isChoice/);
+
 console.log("studio rules tests passed");

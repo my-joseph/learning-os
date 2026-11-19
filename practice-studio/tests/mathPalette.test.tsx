@@ -48,7 +48,6 @@ async function main() {
       keyboardProfile={{ trig: false, log: false }}
       panelOpen={false}
       onTogglePanel={noop}
-      onClosePanel={noop}
       onInsertLatex={noop}
     />
   );
@@ -84,7 +83,6 @@ async function main() {
       keyboardProfile={{ trig: true, log: true }}
       panelOpen={true}
       onTogglePanel={noop}
-      onClosePanel={noop}
       onInsertLatex={noop}
     />
   );
@@ -110,7 +108,6 @@ async function main() {
       keyboardProfile={{ trig: false, log: false }}
       panelOpen={true}
       onTogglePanel={noop}
-      onClosePanel={noop}
       onInsertLatex={noop}
     />
   );
@@ -118,7 +115,7 @@ async function main() {
   assert.match(openNoTrigHtml, /role="region" aria-label="Math symbol palette"/);
   assert.match(
     openNoTrigHtml,
-    /role="region" aria-label="Math symbol palette" class="relative rounded-xl border border-zinc-200/,
+    /role="region" aria-label="Math symbol palette" class="rounded-xl border border-zinc-200/,
     "Expanded palette panel must be its own quiet rounded-xl bordered block"
   );
   assert.doesNotMatch(
@@ -126,7 +123,9 @@ async function main() {
     /border-t/,
     "MathPalette toolbar and panel must not use attached border-t dividers"
   );
-  assert.match(openNoTrigHtml, /aria-label="Close math palette"/);
+  // Learner 2026-11-19: no X close button in the expanded panel; the "..." toggle closes it.
+  assert.doesNotMatch(openNoTrigHtml, /title="Close \(Esc\)"/);
+  assert.match(openNoTrigHtml, /aria-label="Close math palette"[^>]*aria-expanded="true"/);
   assert.match(openNoTrigHtml, />Basic</);
   assert.match(openNoTrigHtml, />Functions</);
   assert.match(openNoTrigHtml, />Symbols</);
@@ -144,7 +143,6 @@ async function main() {
       keyboardProfile={{ trig: true, log: false }}
       panelOpen={true}
       onTogglePanel={noop}
-      onClosePanel={noop}
       onInsertLatex={noop}
     />
   );
@@ -243,7 +241,6 @@ async function main() {
     keyboardProfile: { trig: true, log: true },
     panelOpen: true,
     onTogglePanel: noop,
-    onClosePanel: noop,
     onInsertLatex: (latex) => {
       insertLatexIntoMathField(mockField, latex);
     },

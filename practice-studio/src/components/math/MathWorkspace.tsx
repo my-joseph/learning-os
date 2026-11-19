@@ -504,10 +504,6 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
                   setPanelOpen((prev) => !prev);
                   mathLiveRef.current?.focus();
                 }}
-                onClosePanel={() => {
-                  setPanelOpen(false);
-                  mathLiveRef.current?.focus();
-                }}
                 onInsertLatex={handleInsertLatex}
                 disabled={isChecking}
               />
@@ -653,11 +649,12 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
           {hasSetup && showSetup && (
             <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 space-y-2.5">
               {problem.display && (
-                <div className="overflow-x-auto text-sm text-zinc-900 dark:text-zinc-100">
+                <div className="overflow-x-auto overflow-y-hidden text-sm text-zinc-900 dark:text-zinc-100">
                   <MathBlock latex={problem.display} />
                 </div>
               )}
-              {problem.plainText && (
+              {/* CAS copy row: only for typed answers; on choice questions the plain text is just the prompt. */}
+              {problem.plainText && !isChoice && (
                 <div
                   className={`flex flex-wrap items-center justify-between gap-2 text-xs ${
                     problem.display
