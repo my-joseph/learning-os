@@ -166,4 +166,57 @@ assert.strictEqual(
   "Revise followed by pass unlocks reference solution"
 );
 
+// 3. Cycle-aware gating after Reset (history kept behind cycleStartedAt)
+assert.strictEqual(
+  hasSubstantiveAttempt({
+    ...baseState(),
+    attempts: [{ input: "42", ts: "2026-11-16T10:00:00Z", verdict: "correct" }],
+    cycleStartedAt: "2026-11-20T00:00:00Z",
+  }),
+  false,
+  "Pre-reset attempts before cycleStartedAt must not count as attempted in the new cycle"
+);
+assert.strictEqual(
+  hasSubstantiveAttempt({
+    ...baseState(),
+    attempts: [
+      { input: "42", ts: "2026-11-16T10:00:00Z", verdict: "correct" },
+      { input: "40", ts: "2026-11-20T00:01:00Z", verdict: "incorrect" },
+    ],
+    cycleStartedAt: "2026-11-20T00:00:00Z",
+  }),
+  true,
+  "Attempt at or after cycleStartedAt counts in the current cycle"
+);
+assert.strictEqual(
+  hasSubstantiveAttempt({
+    ...baseState(),
+    reviews: [makeReview("pass")],
+    cycleStartedAt: "2026-11-20T00:00:00Z",
+  }),
+  false,
+  "Pre-reset PRG review before cycleStartedAt must not count as attempted in the new cycle"
+);
+assert.strictEqual(
+  canShowReferenceSolution({
+    ...baseState(),
+    reviews: [makeReview("pass")],
+    cycleStartedAt: "2026-11-20T00:00:00Z",
+  }),
+  false,
+  "Pre-reset passing review must not unlock reference solution in the new cycle"
+);
+assert.strictEqual(
+  canShowReferenceSolution({
+    ...baseState(),
+    reviews: [
+      makeReview("pass"),
+      { ...makeReview("pass"), at: "2026-11-20T00:05:00Z", attempt: 2 },
+    ],
+    cycleStartedAt: "2026-11-20T00:00:00Z",
+  }),
+  true,
+  "Passing review in the current cycle unlocks reference solution"
+);
+
 console.log("reviewGuard tests passed");

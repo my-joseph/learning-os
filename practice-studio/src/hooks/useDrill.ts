@@ -15,6 +15,7 @@ import {
   isSubstantiveVerdict,
   sanitizeCheckMessage,
 } from "@/lib/reviewGuard";
+import { cycleOriginalAttempts } from "@/lib/similarTabs";
 import {
   createTelemetryTimerState,
   setActiveProblem,
@@ -220,7 +221,7 @@ export function computeSolutionRevealTransition(
   if (!target) return null;
   const hasCorrect =
     target.state.score === 1 ||
-    Boolean(target.state.attempts?.some((a) => a.verdict === "correct"));
+    cycleOriginalAttempts(target.state).some((a) => a.verdict === "correct");
   const shouldMarkAssisted = !hasCorrect && !target.state.solutionRevealedBeforeAnswer;
   const updatedDoc: DrillDocument = shouldMarkAssisted
     ? {
@@ -305,10 +306,11 @@ export function computeResetProblemTransition(
 } {
   const nextTimerState = resetProblemTimer(timerState, probId, now);
   const nextActiveSteps = { ...activeSteps, [probId]: null };
+  const nowIso = new Date(now).toISOString();
   const updatedDoc: DrillDocument = {
     ...currentDrill,
     problems: currentDrill.problems.map((p) =>
-      p.id === probId ? resetProblemForRetry(p) : p
+      p.id === probId ? resetProblemForRetry(p, nowIso) : p
     ),
   };
   return {
@@ -331,7 +333,8 @@ export function computeResetAllTransition(
   firstProblemId: string | null;
   statusMessage: StatusMessage;
 } {
-  const updatedDoc = resetDrillForRetry(currentDrill);
+  const nowIso = new Date(now).toISOString();
+  const updatedDoc = resetDrillForRetry(currentDrill, nowIso);
   const firstProblemId = updatedDoc.problems[0]?.id ?? null;
   const nextTimerState = createTelemetryTimerState(
     firstProblemId,

@@ -40,6 +40,7 @@ import { ProblemSelfEval } from "@/components/workspace/ProblemSelfEval";
 import { useChoiceController } from "@/components/workspace/useChoiceController";
 import {
   canShowReferenceSolution,
+  cycleReviews,
   hasSubstantiveAttempt,
 } from "@/lib/reviewGuard";
 import { statusTone } from "@/lib/statusTone";
@@ -438,7 +439,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
     ? parseInt(problem.state.userInput.replace(/\D/g, ""), 10) || null
     : null;
 
-  const reviews = problem.state.reviews || [];
+  const reviews = cycleReviews(problem.state);
   const latestPassingReview = [...reviews].reverse().find((r) => r.verdict === "pass");
   const latestReview = reviews.length > 0 ? reviews[reviews.length - 1] : undefined;
   const explainSource = latestPassingReview || latestReview;

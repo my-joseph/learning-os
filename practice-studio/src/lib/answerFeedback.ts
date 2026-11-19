@@ -8,6 +8,7 @@ import {
 } from "../types/drill";
 import { canRevealSteps } from "./redact";
 import { isSubstantiveVerdict, sanitizeCheckMessage } from "./reviewGuard";
+import { cycleAttempts } from "./similarTabs";
 import { statusTone } from "./statusTone";
 
 export type ResultCardTone = "correct" | "almost" | "wrong" | "skipped";
@@ -204,9 +205,11 @@ export function formatDiagnosticBody(
   return null;
 }
 
-/** Count substantive (non-parse-error) attempts recorded on a problem. */
+/** Count substantive (non-parse-error) attempts recorded on a problem in the current cycle. */
 export function getSubstantiveAttemptCount(state?: ProblemState | null): number {
-  return (state?.attempts || []).filter((a) => isSubstantiveVerdict(a.verdict)).length;
+  return cycleAttempts(state?.attempts, state?.cycleStartedAt).filter((a) =>
+    isSubstantiveVerdict(a.verdict)
+  ).length;
 }
 
 /** Build the complete presentation model for the Result Card without mutating state. */

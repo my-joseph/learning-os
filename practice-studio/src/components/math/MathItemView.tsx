@@ -22,6 +22,7 @@ import { MathQuestionBody } from "@/components/math/MathQuestionBody";
 import { MathAnswerArea, MathAnswerAreaHandle } from "@/components/math/MathAnswerArea";
 import { getProblemPlaceholder } from "@/lib/mathInput";
 import { hasSubstantiveAttempt } from "@/lib/reviewGuard";
+import { cycleOriginalAttempts } from "@/lib/similarTabs";
 import { statusTone } from "@/lib/statusTone";
 import { CheckResult, MistakeTag, Problem } from "@/types/drill";
 import type { SkipOptions } from "@/hooks/types";
@@ -180,7 +181,7 @@ export const MathItemView = forwardRef<MathItemViewHandle, MathItemViewProps>(
       !problem.state.solutionRevealedBeforeAnswer;
     const hasCorrectAttempt =
       problem.state.score === 1 ||
-      Boolean(problem.state.attempts?.some((a) => a.verdict === "correct"));
+      cycleOriginalAttempts(problem.state).some((a) => a.verdict === "correct");
 
     useEffect(() => {
       const reveal =
