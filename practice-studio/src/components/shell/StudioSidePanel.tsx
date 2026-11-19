@@ -87,6 +87,10 @@ export const StudioSidePanel: React.FC<StudioSidePanelProps> = ({
     typeof estimatedMinutes === "number" && estimatedMinutes > 0
       ? estimatedMinutes
       : estimateFallbackMinutes(dueReviewCount);
+  const sessionSize = Math.min(8, dueReviewCount);
+  const sessionMinutes = dueReviewCount > 0
+    ? Math.max(1, Math.round((resolvedMinutes * sessionSize) / dueReviewCount))
+    : 0;
 
   const unitContext: UnitMasteryContext | null =
     currentUnitMastery ??
@@ -139,7 +143,7 @@ export const StudioSidePanel: React.FC<StudioSidePanelProps> = ({
           </h2>
           {!dueLoading && dueReviewCount > 0 && (
             <span className="text-xs text-zinc-500 dark:text-zinc-400 tabular-nums shrink-0">
-              {dueReviewCount}
+              {dueReviewCount + otherWorkspaceDueCount} total across workspaces
             </span>
           )}
         </div>
@@ -161,28 +165,26 @@ export const StudioSidePanel: React.FC<StudioSidePanelProps> = ({
           <div className="space-y-2.5 min-w-0">
             <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed tabular-nums break-words">
               <span className="font-medium text-zinc-800 dark:text-zinc-200">
-                {dueReviewCount} due · ~{resolvedMinutes} min
+                {dueReviewCount} due · next {sessionSize} ~{sessionMinutes} min
               </span>
-              {otherWorkspaceDueCount > 0 && (
-                <>
-                  {" "}
-                  <Link
-                    href={otherReviewHref}
-                    onClick={onNavigate}
-                    className="text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors"
-                  >
-                    · {otherWorkspaceDueCount} in the other workspace
-                  </Link>
-                </>
-              )}
             </p>
+
+            {otherWorkspaceDueCount > 0 && (
+              <Link
+                href={otherReviewHref}
+                onClick={onNavigate}
+                className="flex w-full min-h-[36px] items-center rounded-lg px-2 text-xs text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors"
+              >
+                {otherWorkspaceDueCount} due in the other workspace
+              </Link>
+            )}
 
             <Link
               href={workspaceReviewHref}
               onClick={onNavigate}
               className="inline-flex w-full items-center justify-center gap-1.5 min-h-[40px] px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition-colors"
             >
-              <span>Start review</span>
+              <span>Start review · {sessionSize} of {dueReviewCount}</span>
               <ChevronRight aria-hidden="true" className="w-3.5 h-3.5 shrink-0" />
             </Link>
           </div>
@@ -197,15 +199,13 @@ export const StudioSidePanel: React.FC<StudioSidePanelProps> = ({
               </p>
             )}
             {otherWorkspaceDueCount > 0 && (
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 tabular-nums">
-                <Link
-                  href={otherReviewHref}
-                  onClick={onNavigate}
-                  className="hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors"
-                >
-                  · {otherWorkspaceDueCount} in the other workspace
-                </Link>
-              </p>
+              <Link
+                href={otherReviewHref}
+                onClick={onNavigate}
+                className="flex w-full min-h-[36px] items-center rounded-lg px-2 text-xs tabular-nums hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors"
+              >
+                {otherWorkspaceDueCount} due in the other workspace
+              </Link>
             )}
           </div>
         )}

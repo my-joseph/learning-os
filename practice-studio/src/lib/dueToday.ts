@@ -79,6 +79,18 @@ export function formatLocalDate(date: Date = new Date()): string {
   return `${y}-${m}-${d}`;
 }
 
+/** Format a review due date as "Tomorrow" or a short local calendar date. */
+export function formatReviewDueDate(dateStr?: string | null, today: string = formatLocalDate()): string {
+  if (!dateStr || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return "—";
+  const [year, month, day] = dateStr.split("-").map(Number);
+  const target = new Date(year, month - 1, day);
+  const [todayYear, todayMonth, todayDay] = today.split("-").map(Number);
+  const current = new Date(todayYear, todayMonth - 1, todayDay);
+  const diff = Math.round((target.getTime() - current.getTime()) / 86_400_000);
+  if (diff === 1) return "Tomorrow";
+  return target.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
+}
+
 interface DrillCandidate {
   drillId: string;
   createdAt: string;

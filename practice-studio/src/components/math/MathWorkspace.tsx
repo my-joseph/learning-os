@@ -140,10 +140,10 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
 
   const [copied, setCopied] = useState(false);
   const [showHint, setShowHint] = useState(false);
-  const [showSolution, setShowSolution] = useState(() => shouldAutoReveal(problem));
+  const [showSolution, setShowSolution] = useState(() => !isReviewSession && shouldAutoReveal(problem));
   const [isChecking, setIsChecking] = useState(false);
   // Equation set-up (display + plain-text) is hidden until the learner asks for it or finishes the problem.
-  const [showSetup, setShowSetup] = useState(() => shouldAutoReveal(problem));
+  const [showSetup, setShowSetup] = useState(() => !isReviewSession && shouldAutoReveal(problem));
   const [inputMode, setInputMode] = useState<MathInputMode>("math");
   const [panelOpen, setPanelOpen] = useState(false);
   const [tryVariant, setTryVariant] = useState<{
@@ -200,12 +200,34 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
     Boolean(problem.state.attempts?.some((a) => a.verdict === "correct"));
 
   useEffect(() => {
-    const reveal =
-      problem.state.lastCheck?.verdict === "correct" || Boolean(problem.state.skipped);
+    const reveal = problem.state.lastCheck?.verdict === "correct" ||
+      (!isReviewSession && Boolean(problem.state.skipped));
     setShowSolution(reveal);
     setShowSetup(reveal);
     setShowHint(false);
-  }, [problem.id, problem.state.lastCheck?.verdict, problem.state.skipped]);
+  }, [problem.id, problem.state.lastCheck?.verdict, problem.state.skipped, isReviewSession]);
+
+  useEffect(() => {
+    if (!isReviewSession) return;
+    const frame = requestAnimationFrame(() => {
+      if (hasAttempt) {
+        document.querySelector<HTMLButtonElement>('[data-review-primary-action="true"]')?.focus();
+      } else if (inputMode === "plain") {
+        answerInputRef.current?.focus();
+      } else {
+        mathLiveRef.current?.focus();
+      }
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [problem.id, hasAttempt, inputMode, isReviewSession]);
+
+  useEffect(() => {
+    if (!isReviewSession) return;
+    try {
+      const saved = window.sessionStorage.getItem("learningos:review-math-input-mode");
+      setInputMode(saved === "plain" ? "plain" : "math");
+    } catch { /* use the default input mode */ }
+  }, [isReviewSession]);
 
   const toggleSetup = () => {
     if (!showSetup && (!answered || (!problem.display && !problem.plainText)) && onSetupRevealed) {
@@ -274,13 +296,15 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
       }
       setPanelOpen(false);
       setInputMode("plain");
-      writeMathInputMode("plain");
+      if (isReviewSession) window.sessionStorage.setItem("learningos:review-math-input-mode", "plain");
+      else writeMathInputMode("plain");
       requestAnimationFrame(() => {
         answerInputRef.current?.focus();
       });
     } else {
       setInputMode("math");
-      writeMathInputMode("math");
+      if (isReviewSession) window.sessionStorage.setItem("learningos:review-math-input-mode", "math");
+      else writeMathInputMode("math");
       requestAnimationFrame(() => {
         mathLiveRef.current?.focus();
       });

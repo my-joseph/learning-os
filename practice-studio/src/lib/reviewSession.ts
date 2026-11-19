@@ -79,6 +79,8 @@ export interface ReviewSessionItemOutcome {
   hintsUsed: number;
   dueDate: string;
   commonTrapTag?: string | null;
+  skipped?: boolean;
+  correctOnRetry?: boolean;
 }
 
 export interface ReviewSessionSummary {
@@ -98,6 +100,8 @@ export interface MissedReviewItem {
   unitCode: string;
   unitTitle: string;
   href: string;
+  questionLine: string;
+  group: "Missed" | "Skipped" | "Correct on retry";
 }
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -139,20 +143,24 @@ export function formatReviewScheduleHint(
 export function getMissedReviewItems(
   items: ReadonlyArray<Pick<ReviewItem, "drillId" | "qid" | "unitCode">>,
   outcomes: Record<string, ReviewSessionItemOutcome>,
-  unitTitles?: Record<string, string>
+  unitTitles?: Record<string, string>,
+  prompts?: Record<string, string>
 ): MissedReviewItem[] {
   const missed: MissedReviewItem[] = [];
   for (const item of items) {
     const key = reviewItemKey(item.drillId, item.qid);
     const outcome = outcomes[key];
-    if (!outcome || outcome.correct) continue;
+    if (!outcome || (outcome.correct && !outcome.correctOnRetry)) continue;
     const rawTitle = unitTitles?.[item.unitCode] || item.unitCode;
+    const firstLine = (prompts?.[key] || "").split(/\r?\n/, 1)[0];
     missed.push({
       drillId: item.drillId,
       qid: item.qid,
       unitCode: item.unitCode,
       unitTitle: plainTitle(rawTitle) || item.unitCode,
       href: drillHref(item.drillId, item.qid),
+      questionLine: firstLine.replace(/[`*_~#]/g, "").replace(/\s+/g, " ").trim().slice(0, 100),
+      group: outcome.correctOnRetry ? "Correct on retry" : outcome.skipped ? "Skipped" : "Missed",
     });
   }
   return missed;
@@ -426,6 +434,10 @@ export async function executeReviewItemCheck(params: {
     };
   }
 
+  if (existingOutcome && transition.result.verdict === "correct") {
+    outcome = { ...existingOutcome, correctOnRetry: true };
+  }
+
   await saveReviewProblemState(
     drillDoc.drillId,
     item.unitCode || drillDoc.unitCode,
@@ -458,7 +470,7 @@ export async function executeReviewItemCheck(params: {
 
 /**
  * Full skip wiring for a Daily Review item:
- * applies skip state, saves to `/api/save-state` (`reviewMerge: true`), reveals steps,
+ * applies skip state, saves to `/api/save-state` (`reviewMerge: true`), keeps steps hidden,
  * and records `correct: false` via `POST /api/review-items`.
  */
 export async function executeReviewItemSkip(params: {
@@ -546,6 +558,7 @@ export async function executeReviewItemSkip(params: {
       hintsUsed,
       dueDate,
       commonTrapTag,
+      skipped: true,
     };
   }
 
@@ -557,20 +570,6 @@ export async function executeReviewItemSkip(params: {
       updatedProb.state,
       fetchFn
     );
-  }
-
-  if (transition.partsToReveal.length > 0) {
-    const patch = await fetchRevealedParts(
-      drillDoc.drillId,
-      item.qid,
-      transition.partsToReveal,
-      fetchFn
-    );
-    if (Object.keys(patch).length > 0) {
-      updatedDoc =
-        mergeRevealedPatchIntoDrill(updatedDoc, drillDoc.drillId, item.qid, patch) ??
-        updatedDoc;
-    }
   }
 
   return {

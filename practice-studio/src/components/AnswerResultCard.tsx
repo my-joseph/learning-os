@@ -15,6 +15,7 @@ export interface AnswerResultCardProps {
   problem?: Pick<Problem, "commonTrapTag" | "answerSpec">;
   mistakeTags?: MistakeTag[];
   isLastQuestion?: boolean;
+  isReviewSession?: boolean;
   nextLabel?: string;
   scheduleNote?: string | null;
   onNextQuestion?: () => void;
@@ -65,6 +66,7 @@ export const AnswerResultCard: React.FC<AnswerResultCardProps> = ({
   problem,
   mistakeTags = [],
   isLastQuestion = false,
+  isReviewSession = false,
   nextLabel = "Next question",
   scheduleNote = null,
   onNextQuestion,
@@ -106,7 +108,9 @@ export const AnswerResultCard: React.FC<AnswerResultCardProps> = ({
               <div className="min-w-0 flex-1 space-y-1">
                 <div className="min-h-7 flex flex-wrap items-center gap-x-2.5 gap-y-0.5">
                   <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                    {model.title}
+                    {isReviewSession && model.tone === "correct" && model.attemptNumber !== null
+                      ? "Correct on retry"
+                      : model.title}
                     {scheduleNote && (
                       <span className="font-normal text-zinc-600 dark:text-zinc-400">
                         {" "}· {scheduleNote}
@@ -157,6 +161,7 @@ export const AnswerResultCard: React.FC<AnswerResultCardProps> = ({
                 <button
                   type="button"
                   onClick={onNextQuestion}
+                  data-review-primary-action={isReviewSession ? "true" : undefined}
                   className={actionButtonClass}
                 >
                   <span>{nextLabel}</span>
@@ -170,6 +175,7 @@ export const AnswerResultCard: React.FC<AnswerResultCardProps> = ({
                 <button
                   type="button"
                   onClick={onOpenReview}
+                  data-review-primary-action={isReviewSession ? "true" : undefined}
                   className={actionButtonClass}
                 >
                   <span>Review</span>
@@ -183,6 +189,7 @@ export const AnswerResultCard: React.FC<AnswerResultCardProps> = ({
                 <button
                   type="button"
                   onClick={onTryAgain}
+                  data-review-primary-action={isReviewSession ? "true" : undefined}
                   className={actionButtonClass}
                 >
                   <span>Try again</span>
@@ -195,6 +202,7 @@ export const AnswerResultCard: React.FC<AnswerResultCardProps> = ({
                 <button
                   type="button"
                   onClick={onShowSteps}
+                  data-review-primary-action={isReviewSession ? "true" : undefined}
                   className={actionButtonClass}
                 >
                   <span>Show steps</span>

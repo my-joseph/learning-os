@@ -60,6 +60,7 @@ import {
   TelemetryTimerState,
 } from "@/lib/telemetryTimer";
 import { plainTitle, trapName } from "@/lib/titleText";
+import { formatReviewDueDate } from "@/lib/dueToday";
 
 export interface DailyReviewViewProps {
   loading?: boolean;
@@ -107,6 +108,8 @@ export interface DailyReviewViewProps {
 }
 
 const noop = () => {};
+const REVIEW_SESSION_STORAGE_PREFIX = "learningos:review-session:";
+const reviewStorageKey = (scope: string | null) => `${REVIEW_SESSION_STORAGE_PREFIX}${scope || "all"}`;
 
 /**
  * Pure presentational view for the `/review` Daily Review page across all states:
@@ -190,7 +193,7 @@ export const DailyReviewView: React.FC<DailyReviewViewProps> = ({
                 aria-label="Review progress"
                 className="text-sm text-zinc-500 dark:text-zinc-400 tabular-nums"
               >
-                {currentIndex + 1} of {items.length}
+                Review {currentIndex + 1} of {items.length}
               </span>
             )}
           </div>
@@ -317,37 +320,43 @@ export const DailyReviewView: React.FC<DailyReviewViewProps> = ({
                     Next due
                   </div>
                   <div className="font-semibold text-zinc-900 dark:text-zinc-100 tabular-nums">
-                    {computedSummary.nextDueDate || "—"}
+                    {formatReviewDueDate(computedSummary.nextDueDate, today || undefined)}
                   </div>
                 </div>
               </div>
 
               {missedItems.length > 0 && (
                 <div className="space-y-2">
-                  <h3 className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
-                    Missed ({missedItems.length})
-                  </h3>
-                  <ul className="divide-y divide-zinc-200 dark:divide-zinc-800 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/60 dark:bg-zinc-950/60">
-                    {missedItems.map((missed) => (
-                      <li key={`${missed.drillId}/${missed.qid}`}>
-                        <Link
-                          href={missed.href}
-                          className="flex items-center justify-between gap-3 px-3.5 py-2.5 text-xs hover:bg-zinc-100/80 dark:hover:bg-zinc-900 transition-colors"
-                        >
-                          <span className="min-w-0 truncate text-zinc-800 dark:text-zinc-200">
-                            <span className="font-mono text-zinc-500 dark:text-zinc-400 mr-2">
-                              {missed.qid}
-                            </span>
-                            <span className="font-medium">{missed.unitTitle}</span>
-                          </span>
-                          <span className="inline-flex items-center gap-1 text-zinc-500 dark:text-zinc-400 shrink-0">
-                            <span>Open in drill</span>
-                            <ArrowUpRight className="w-3.5 h-3.5" aria-hidden="true" />
-                          </span>
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
+                  {(["Missed", "Skipped", "Correct on retry"] as const).map((group) => {
+                    const rows = missedItems.filter((item) => item.group === group);
+                    if (!rows.length) return null;
+                    return (
+                      <section key={group} className="space-y-1.5">
+                        <h3 className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                          {group} ({rows.length})
+                        </h3>
+                        <ul className="divide-y divide-zinc-200 dark:divide-zinc-800 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/60 dark:bg-zinc-950/60">
+                          {rows.map((missed) => (
+                            <li key={`${missed.drillId}/${missed.qid}`}>
+                              <Link
+                                href={`${missed.href}&review=missed`}
+                                className="flex items-start justify-between gap-3 px-3.5 py-2.5 text-xs hover:bg-zinc-100/80 dark:hover:bg-zinc-900 transition-colors"
+                              >
+                                <span className="min-w-0 whitespace-normal text-zinc-800 dark:text-zinc-200">
+                                  <span className="block font-medium leading-snug">{missed.unitTitle}</span>
+                                  {missed.questionLine && <span className="block mt-0.5 text-zinc-500 dark:text-zinc-400 leading-snug">{missed.questionLine}</span>}
+                                </span>
+                                <span className="inline-flex items-center gap-1 text-zinc-500 dark:text-zinc-400 shrink-0">
+                                  <span>Open in drill</span>
+                                  <ArrowUpRight className="w-3.5 h-3.5" aria-hidden="true" />
+                                </span>
+                              </Link>
+                            </li>
+                          ))}
+                        </ul>
+                      </section>
+                    );
+                  })}
                 </div>
               )}
 
@@ -404,7 +413,7 @@ export const DailyReviewView: React.FC<DailyReviewViewProps> = ({
                   ));
 
               // Strictly reveal trap title ONLY after the learner has answered (never before).
-              const rawTrapTag = hasAttempt
+              const rawTrapTag = hasAttempt && currentProblem.state.lastCheck?.verdict === "incorrect" && currentProblem.state.lastCheck.trapMatched
                 ? revealedTrapTag ||
                   currentItem.commonTrapTag ||
                   currentProblem.commonTrapTag ||
@@ -512,8 +521,8 @@ export const DailyReviewView: React.FC<DailyReviewViewProps> = ({
                       isReviewSession
                       reviewUnitTitle={resolvedUnitTitle}
                       reviewScheduleNote={reviewScheduleNote}
-                      nextCardLabel="Next"
-                      lastQuestionNavLabel="Next"
+                      nextCardLabel={currentIndex === items.length - 1 ? "Finish" : "Next"}
+                      lastQuestionNavLabel="Finish"
                     />
                   ) : (
                     <MathWorkspace
@@ -549,8 +558,8 @@ export const DailyReviewView: React.FC<DailyReviewViewProps> = ({
                       isReviewSession
                       reviewUnitTitle={resolvedUnitTitle}
                       reviewScheduleNote={reviewScheduleNote}
-                      nextCardLabel="Next"
-                      lastQuestionNavLabel="Next"
+                      nextCardLabel={currentIndex === items.length - 1 ? "Finish" : "Next"}
+                      lastQuestionNavLabel="Finish"
                     />
                   )}
                 </div>
@@ -628,6 +637,33 @@ export const DailyReviewPage: React.FC = () => {
   // Load due items from GET /api/review-items?limit=8 (preserving optional scope)
   useEffect(() => {
     let cancelled = false;
+    if (batchCounter === 0) {
+      try {
+        const saved = window.sessionStorage.getItem(reviewStorageKey(activeScope));
+        if (saved) {
+          const snapshot = JSON.parse(saved) as {
+            items?: ReviewItem[]; outcomes?: Record<string, ReviewSessionItemOutcome>;
+            totalDue?: number; unitTitles?: Record<string, string>; today?: string;
+            nextDueDate?: string | null; lastDrillHref?: string;
+          };
+          if (Array.isArray(snapshot.items) && snapshot.completed === true) {
+            setItems(snapshot.items);
+            setOutcomes(snapshot.outcomes || {});
+            setTotalDue(snapshot.totalDue || snapshot.items.length);
+            setUnitTitles(snapshot.unitTitles || {});
+            setToday(snapshot.today || "");
+            setInitialNextDueDate(snapshot.nextDueDate || null);
+            setLastDrillHref(snapshot.lastDrillHref || "/");
+            setCurrentIndex(snapshot.items.length - 1);
+            setCompleted(true);
+            setLoading(false);
+            return () => { cancelled = true; };
+          }
+        }
+      } catch {
+        window.sessionStorage.removeItem(reviewStorageKey(activeScope));
+      }
+    }
     setLoading(true);
     setError(null);
 
@@ -692,8 +728,10 @@ export const DailyReviewPage: React.FC = () => {
   }, [activeScope, batchCounter]);
 
   const handleReviewMore = useCallback(() => {
+    window.sessionStorage.removeItem(reviewStorageKey(activeScope));
+    setCompleted(false);
     setBatchCounter((n) => n + 1);
-  }, []);
+  }, [activeScope]);
 
   const currentItem =
     !loading && !completed && items.length > 0
@@ -1067,7 +1105,12 @@ export const DailyReviewPage: React.FC = () => {
 
   const summary = summarizeReviewSession(items, outcomes, initialNextDueDate);
   const stillDueCount = Math.max(0, totalDue - Object.keys(outcomes).length);
-  const missedItems = getMissedReviewItems(items, outcomes, unitTitles);
+  const promptsByKey = Object.fromEntries(items.map((item) => {
+    const key = reviewItemKey(item.drillId, item.qid);
+    const prompt = drillsByKey[key]?.problems.find((problem) => problem.id === item.qid)?.prompt || "";
+    return [key, prompt];
+  }));
+  const missedItems = getMissedReviewItems(items, outcomes, unitTitles, promptsByKey);
   const currentOutcome = currentKey ? outcomes[currentKey] ?? null : null;
   const currentUnitTitle = currentItem
     ? plainTitle(
@@ -1076,6 +1119,18 @@ export const DailyReviewPage: React.FC = () => {
           currentItem.unitCode
       )
     : undefined;
+
+  useEffect(() => {
+    if (!completed || items.length === 0) return;
+    try {
+      window.sessionStorage.setItem(reviewStorageKey(activeScope), JSON.stringify({
+        completed: true, items, outcomes, totalDue, unitTitles, today,
+        nextDueDate: initialNextDueDate, lastDrillHref,
+      }));
+    } catch {
+      // A full sessionStorage quota must not block the end screen.
+    }
+  }, [completed, items, outcomes, totalDue, unitTitles, today, initialNextDueDate, lastDrillHref, activeScope]);
 
   return (
     <DailyReviewView
