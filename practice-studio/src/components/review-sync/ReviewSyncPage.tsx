@@ -89,6 +89,7 @@ export const ReviewSyncPage: React.FC<ReviewPanelProps> = ({
 }) => {
   const isLab = isLabId(currentDrill.drillId);
   const isCode = currentDrill.subject === "PRG" && !isLab;
+  const isEditLocked = isSyncing || syncState.phase === "syncing";
   const mistakeTags = currentDrill.mistakeTags || [];
 
   const groups = useMemo(
@@ -385,6 +386,7 @@ export const ReviewSyncPage: React.FC<ReviewPanelProps> = ({
                 mistakeTags={mistakeTags}
                 expanded={Boolean(expandedIds[problem.id])}
                 highlighted={highlightedId === problem.id}
+                disabled={isEditLocked}
                 rowRef={(el) => {
                   if (el) rowRefs.current.set(problem.id, el);
                   else rowRefs.current.delete(problem.id);
@@ -455,6 +457,7 @@ export const ReviewSyncPage: React.FC<ReviewPanelProps> = ({
                     mistakeTags={mistakeTags}
                     expanded={Boolean(expandedIds[problem.id])}
                     highlighted={highlightedId === problem.id}
+                    disabled={isEditLocked}
                     rowRef={(el) => {
                       if (el) rowRefs.current.set(problem.id, el);
                       else rowRefs.current.delete(problem.id);

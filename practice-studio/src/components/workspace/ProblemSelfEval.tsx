@@ -9,6 +9,7 @@ import { MistakeTag } from "@/types/drill";
 export interface ProblemSelfEvalProps {
   hasAttempt: boolean;
   showSelfScore?: boolean;
+  disabled?: boolean;
   score: number | null;
   mistakes: string[];
   mistakeNote?: string;
@@ -41,6 +42,7 @@ const SELF_SCORE_BUTTONS = [
 export const ProblemSelfEval: React.FC<ProblemSelfEvalProps> = ({
   hasAttempt,
   showSelfScore = true,
+  disabled = false,
   score,
   mistakes,
   mistakeNote,
@@ -64,9 +66,10 @@ export const ProblemSelfEval: React.FC<ProblemSelfEvalProps> = ({
               <button
                 key={btn.val}
                 type="button"
+                disabled={disabled}
                 onClick={() => onSetScore(btn.val)}
                 aria-pressed={score === btn.val}
-                className={`min-h-[44px] sm:min-h-[28px] px-3 sm:px-2.5 rounded-lg font-display tabular-nums border transition-colors ${
+                className={`min-h-[44px] sm:min-h-[28px] px-3 sm:px-2.5 rounded-lg font-display tabular-nums border transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
                   score === btn.val
                     ? btn.activeCls
                     : "bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600"
@@ -87,9 +90,10 @@ export const ProblemSelfEval: React.FC<ProblemSelfEvalProps> = ({
                 <button
                   key={t.id}
                   type="button"
+                  disabled={disabled}
                   onClick={() => onToggleMistakeTag(t.id)}
                   aria-pressed={hasTag}
-                  className={`min-h-[44px] sm:min-h-[28px] py-1 px-2.5 rounded-full text-xs border transition-colors inline-flex items-center ${
+                  className={`min-h-[44px] sm:min-h-[28px] py-1 px-2.5 rounded-full text-xs border transition-colors inline-flex items-center disabled:opacity-50 disabled:cursor-not-allowed ${
                     hasTag
                       ? statusTone.wrong.selfScoreActive
                       : "bg-white dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600"
@@ -107,11 +111,12 @@ export const ProblemSelfEval: React.FC<ProblemSelfEvalProps> = ({
         <PenLine className="w-3.5 h-3.5 text-zinc-500 dark:text-zinc-400 shrink-0" />
         <input
           type="text"
+          disabled={disabled}
           value={mistakeNote || ""}
           onChange={(e) => onMistakeNoteChange(e.target.value)}
           aria-label={noteAriaLabel}
           placeholder="Note what went wrong (optional)…"
-          className="w-full bg-transparent text-xs text-zinc-800 dark:text-zinc-200 placeholder:text-zinc-500 dark:placeholder:text-zinc-400 focus:outline-none"
+          className="w-full bg-transparent text-xs text-zinc-800 dark:text-zinc-200 placeholder:text-zinc-500 dark:placeholder:text-zinc-400 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
         />
       </div>
     </div>

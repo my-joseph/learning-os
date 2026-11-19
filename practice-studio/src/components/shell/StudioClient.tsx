@@ -26,7 +26,10 @@ import { DrillNotFoundCard } from "@/components/shell/DrillNotFoundCard";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { StatusMessage } from "@/hooks/types";
 import { useTheme } from "@/hooks/useTheme";
-import { useProgressSync } from "@/hooks/useProgressSync";
+import {
+  useProgressSync,
+  mergeSyncStampIntoLatestDrill,
+} from "@/hooks/useProgressSync";
 import { useDrill } from "@/hooks/useDrill";
 import { useDrillList } from "@/hooks/useDrillList";
 import {
@@ -114,6 +117,7 @@ export const StudioClient: React.FC<StudioClientProps> = ({
   const {
     currentDrill,
     setCurrentDrill,
+    getLatestDrill,
     activeSteps,
     currentProblemIndex,
     setCurrentProblemIndex,
@@ -212,20 +216,34 @@ export const StudioClient: React.FC<StudioClientProps> = ({
   }, [qParam, currentDrill, drillId, setCurrentProblemIndex]);
 
   const handleConfirmSyncToNotion = () =>
-    confirmSyncToNotion(currentDrill, {
-      onDrillUpdated: setCurrentDrill,
+    confirmSyncToNotion(getLatestDrill() ?? currentDrill, {
+      getLatestDrill,
+      onDrillUpdated: (stampedDoc) =>
+        setCurrentDrill(
+          (prev) =>
+            mergeSyncStampIntoLatestDrill(
+              prev,
+              stampedDoc.drillId,
+              stampedDoc.sessionSummary
+            ) ?? prev
+        ),
       onSynced: () => loadDrillsList(),
     });
 
   const handleStatusOverrideChange = (override: "Graded" | "Needs Retry") => {
     setStatusOverride(override);
-    if (!currentDrill) return;
-    const updated = {
-      ...currentDrill,
-      sessionSummary: { ...currentDrill.sessionSummary, statusOverride: override },
-    };
-    setCurrentDrill(updated);
-    triggerAutoSave(updated);
+    let updated: DrillDocument | null = null;
+    setCurrentDrill((prev) => {
+      if (!prev) return prev;
+      updated = {
+        ...prev,
+        sessionSummary: { ...prev.sessionSummary, statusOverride: override },
+      };
+      return updated;
+    });
+    if (updated) {
+      triggerAutoSave(updated);
+    }
   };
 
   const handleTrySimilarQuestion = (probId: string, idx: number) => {
