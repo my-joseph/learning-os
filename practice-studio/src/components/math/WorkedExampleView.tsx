@@ -121,9 +121,6 @@ export const WorkedExampleView: React.FC<WorkedExampleViewProps> = ({
                 step={st}
                 index={sIdx}
                 isActive={activeStep === sIdx}
-                onToggleHighlight={() =>
-                  setActiveStep((prev) => (prev === sIdx ? null : sIdx))
-                }
               />
             ))}
           </div>
@@ -198,7 +195,7 @@ export const WorkedExampleDisclosure: React.FC<WorkedExampleDisclosureProps> = (
   defaultOpen = false,
 }) => {
   const [open, setOpen] = useState(defaultOpen);
-  const [activeStep, setActiveStep] = useState<number | null>(null);
+  const activeStep: number | null = null; // steps focus on hover (globals.css)
 
   return (
     <div className="space-y-2">
@@ -255,9 +252,6 @@ export const WorkedExampleDisclosure: React.FC<WorkedExampleDisclosureProps> = (
                   step={st}
                   index={sIdx}
                   isActive={activeStep === sIdx}
-                  onToggleHighlight={() =>
-                    setActiveStep((prev) => (prev === sIdx ? null : sIdx))
-                  }
                 />
               ))}
             </div>

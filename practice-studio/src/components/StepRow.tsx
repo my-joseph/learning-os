@@ -12,7 +12,6 @@ interface StepRowProps {
   index: number;
   isActive: boolean;
   isDiverged?: boolean;
-  onToggleHighlight: () => void;
   onMarkDiverged?: () => void;
 }
 
@@ -21,7 +20,6 @@ export const StepRow: React.FC<StepRowProps> = ({
   index,
   isActive,
   isDiverged = false,
-  onToggleHighlight,
   onMarkDiverged,
 }) => {
   const hasLatex = Boolean(step.latex && step.latex.trim());
@@ -34,9 +32,9 @@ export const StepRow: React.FC<StepRowProps> = ({
     : "md:grid-cols-1";
 
   return (
+    // Hover (or keyboard focus inside) focuses a step; other rows dim via globals.css.
     <div
-      onClick={onToggleHighlight}
-      className={`group step-row ${isActive || isDiverged ? "step-row-active" : ""} grid grid-cols-1 ${gridCols} gap-3 items-center rounded-xl p-3 mb-2 last:mb-0 cursor-pointer transition-colors border ${
+      className={`group step-row ${isActive || isDiverged ? "step-row-active" : ""} grid grid-cols-1 ${gridCols} gap-3 items-center rounded-xl p-3 mb-2 last:mb-0 transition-[colors,opacity] duration-150 border ${
         isDiverged
           ? `${statusTone.wrong.borderSoft} bg-white dark:bg-zinc-900`
           : isActive
@@ -56,7 +54,7 @@ export const StepRow: React.FC<StepRowProps> = ({
             ? `${statusTone.wrong.border} text-zinc-900 dark:text-zinc-100`
             : isActive
             ? "border-accent text-zinc-900 dark:text-zinc-100"
-            : "border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-300"
+            : "border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-300 group-hover:border-accent group-hover:text-zinc-900 dark:group-hover:text-zinc-100"
         }`}
       >
         <span className="font-medium text-zinc-500 dark:text-zinc-400 mr-1.5">

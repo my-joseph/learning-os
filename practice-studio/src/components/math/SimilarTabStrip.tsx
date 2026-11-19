@@ -204,7 +204,7 @@ export const SimilarTabStrip: React.FC<SimilarTabStripProps> = ({
       role="tablist"
       aria-label={`Question ${questionNumber} and similar questions`}
       onBlur={handleListBlur}
-      className="flex items-center gap-1 border-b border-zinc-200 dark:border-zinc-800 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden snap-x -mx-4 px-4 sm:mx-0 sm:px-0"
+      className="flex items-center gap-1 border-b border-zinc-200 dark:border-zinc-800 overflow-x-auto overflow-y-hidden [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden snap-x -mx-4 px-4 sm:mx-0 sm:px-0"
     >
       {locked && hasSimilarSlots && (
         <span id={lockDescId} className="sr-only">

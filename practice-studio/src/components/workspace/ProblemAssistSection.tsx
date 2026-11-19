@@ -43,7 +43,8 @@ export interface ProblemAssistSectionProps {
   showStepsHeader?: boolean;
   loadingSteps?: boolean;
   activeStep: number | null;
-  onToggleStepHighlight: (stepIdx: number) => void;
+  /** Unused since steps focus on hover (2026-11-20); kept so callers compile. */
+  onToggleStepHighlight?: (stepIdx: number) => void;
   onMarkDivergedStep?: (stepIdx: number) => void;
   onReset: () => void;
   onSkip?: () => void;
@@ -73,7 +74,6 @@ export const ProblemAssistSection: React.FC<ProblemAssistSectionProps> = ({
   showStepsHeader = false,
   loadingSteps = false,
   activeStep,
-  onToggleStepHighlight,
   onMarkDivergedStep,
   onReset,
   onSkip,
@@ -212,7 +212,6 @@ export const ProblemAssistSection: React.FC<ProblemAssistSectionProps> = ({
                     index={sIdx}
                     isActive={activeStep === sIdx}
                     isDiverged={onMarkDivergedStep ? problem.state.divergedStep === sIdx : false}
-                    onToggleHighlight={() => onToggleStepHighlight(sIdx)}
                     onMarkDiverged={onMarkDivergedStep ? () => onMarkDivergedStep(sIdx) : undefined}
                   />
                 ))}
