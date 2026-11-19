@@ -49,6 +49,7 @@ export interface ReviewItemRowProps {
   mistakeTags: MistakeTag[];
   expanded: boolean;
   highlighted?: boolean;
+  disabled?: boolean;
   rowRef?: (el: HTMLDivElement | null) => void;
   onToggle: () => void;
   onOpen: () => void;
@@ -286,6 +287,7 @@ export const ReviewItemRow: React.FC<ReviewItemRowProps> = ({
   mistakeTags,
   expanded,
   highlighted = false,
+  disabled = false,
   rowRef,
   onToggle,
   onOpen,
@@ -444,6 +446,7 @@ export const ReviewItemRow: React.FC<ReviewItemRowProps> = ({
                       <ProblemSelfEval
                         hasAttempt={isAttempted}
                         showSelfScore={!isCode && !isLab}
+                        disabled={disabled}
                         score={problem.state.score}
                         mistakes={problem.state.mistakes || []}
                         mistakeNote={problem.state.mistakeNote}
@@ -463,11 +466,12 @@ export const ReviewItemRow: React.FC<ReviewItemRowProps> = ({
                       />
                       <input
                         type="text"
+                        disabled={disabled}
                         value={problem.state.revisitNote || ""}
                         onChange={(e) => onRevisitNoteChange(e.target.value)}
                         aria-label={`Revisit note for ${qLabel}`}
                         placeholder="Next time I will…"
-                        className="w-full min-w-0 bg-transparent text-xs text-zinc-800 dark:text-zinc-200 placeholder:text-zinc-500 dark:placeholder:text-zinc-400 focus:outline-none"
+                        className="w-full min-w-0 bg-transparent text-xs text-zinc-800 dark:text-zinc-200 placeholder:text-zinc-500 dark:placeholder:text-zinc-400 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                       />
                     </div>
                   </div>

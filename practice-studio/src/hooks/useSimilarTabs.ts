@@ -207,6 +207,131 @@ export interface SimilarProgressPatch {
   variantRecord?: VariantSessionRecord;
 }
 
+/**
+ * Compute updated similar problem + server-sync record from the post-await latest tab problem,
+ * preserving any hints, set-up, or steps revealed while `/api/check-answer` was in flight.
+ */
+export function applySimilarCheckToLatestProblem(
+  latestProb: Problem,
+  resolvedInput: string,
+  checked: CheckResult,
+  attemptElapsed: number,
+  nowIso: string = new Date().toISOString(),
+  existingServedAt?: string
+): {
+  nextProblem: Problem;
+  nextRecord: VariantSessionRecord;
+  needsSteps: boolean;
+  needsDisplay: boolean;
+} {
+  const prevAttempts = latestProb.state.attempts || [];
+  const usedHelp = Boolean(
+    (latestProb.state.hintsRevealed || 0) > 0 ||
+      latestProb.state.setupRevealedBeforeAnswer ||
+      latestProb.state.solutionRevealedBeforeAnswer ||
+      prevAttempts.some((a) => a.setupRevealed || a.solutionRevealed)
+  );
+  const nextAttempt: AttemptRecord = {
+    input: resolvedInput,
+    ts: nowIso,
+    verdict: checked.verdict,
+    kind: "variant",
+    ...(latestProb.state.setupRevealedBeforeAnswer ? { setupRevealed: true } : {}),
+    ...(latestProb.state.solutionRevealedBeforeAnswer ? { solutionRevealed: true } : {}),
+  };
+  const updatedAttempts = [...prevAttempts, nextAttempt];
+  const nextScore =
+    checked.verdict === "correct"
+      ? usedHelp
+        ? 0.5
+        : 1
+      : checked.verdict === "incorrect"
+      ? 0
+      : checked.verdict === "partial" || checked.verdict === "equivalent_not_in_form"
+      ? 0.5
+      : latestProb.state.score;
+  const nextDuration = (latestProb.state.durationMs || 0) + attemptElapsed;
+  const nextProblem: Problem = {
+    ...latestProb,
+    state: {
+      ...latestProb.state,
+      userInput: resolvedInput,
+      score: nextScore,
+      lastCheck: checked,
+      attempts: updatedAttempts,
+      durationMs: nextDuration,
+    },
+  };
+  const nextRecord: VariantSessionRecord = {
+    role: "try",
+    attempts: updatedAttempts,
+    hintsRevealed: latestProb.state.hintsRevealed || 0,
+    setupRevealed: Boolean(latestProb.state.setupRevealedBeforeAnswer),
+    stepsRevealed: Boolean(latestProb.state.solutionRevealedBeforeAnswer),
+    durationMs: nextDuration,
+    servedAt: existingServedAt || nowIso,
+  };
+  const needsSteps =
+    checked.verdict === "correct" && (!latestProb.steps || latestProb.steps.length === 0);
+  const needsDisplay = Boolean(
+    checked.verdict === "correct" &&
+      latestProb.hasSetup &&
+      !latestProb.display &&
+      !latestProb.plainText
+  );
+  return { nextProblem, nextRecord, needsSteps, needsDisplay };
+}
+
+/**
+ * Compute updated similar problem + sync record after `GET /api/reveal?part=hint` finishes,
+ * reading from the post-await latest problem so any concurrent check attempt is never dropped.
+ */
+export function applySimilarHintToLatestProblem(
+  latestProb: Problem,
+  checkpointHint: string,
+  nowIso: string = new Date().toISOString(),
+  existingServedAt?: string
+): {
+  nextProblem: Problem;
+  nextRecord: VariantSessionRecord;
+  didIncrement: boolean;
+} {
+  const hasCorrect = Boolean(
+    latestProb.state.score === 1 ||
+      latestProb.state.attempts?.some((a) => a.verdict === "correct")
+  );
+  const nextHints = hasCorrect
+    ? latestProb.state.hintsRevealed || 0
+    : (latestProb.state.hintsRevealed || 0) + 1;
+  const nextProblem: Problem = {
+    ...latestProb,
+    checkpointHint,
+    state: {
+      ...latestProb.state,
+      hintsRevealed: nextHints,
+    },
+  };
+  const nextRecord: VariantSessionRecord = {
+    role: "try",
+    attempts: latestProb.state.attempts || [],
+    hintsRevealed: nextHints,
+    setupRevealed: Boolean(latestProb.state.setupRevealedBeforeAnswer),
+    stepsRevealed: Boolean(latestProb.state.solutionRevealedBeforeAnswer),
+    durationMs: latestProb.state.durationMs || 0,
+    servedAt: existingServedAt || nowIso,
+  };
+  return { nextProblem, nextRecord, didIncrement: !hasCorrect };
+}
+
+/** Return true when opening steps on a similar tab must persist `stepsRevealed` to the server. */
+export function shouldPersistVariantStepsReveal(prob: Problem): boolean {
+  const hasCorrect = Boolean(
+    prob.state.score === 1 ||
+      prob.state.attempts?.some((a) => a.verdict === "correct")
+  );
+  return !hasCorrect && !prob.state.solutionRevealedBeforeAnswer;
+}
+
 export interface UseSimilarTabsOptions {
   drillId?: string;
   problem: Problem;
@@ -281,6 +406,26 @@ export function useSimilarTabs({
   tabsRef.current = tabs;
   const tabProblemsRef = useRef<Record<string, Problem>>(tabProblems);
   tabProblemsRef.current = tabProblems;
+  const tabServedAtRef = useRef<Record<string, string>>({});
+  const questionKey = `${drillId ?? ""}:${problem.id}`;
+  const questionKeyRef = useRef(questionKey);
+  questionKeyRef.current = questionKey;
+
+  const updateTabProblem = useCallback(
+    (tok: string, updater: (cur: Problem) => Problem): Problem | null => {
+      const cur = tabProblemsRef.current[tok];
+      if (!cur) return null;
+      const next = updater(cur);
+      tabProblemsRef.current = { ...tabProblemsRef.current, [tok]: next };
+      setTabProblems((prev) => {
+        const existing = prev[tok];
+        if (!existing) return prev;
+        return { ...prev, [tok]: next };
+      });
+      return next;
+    },
+    []
+  );
 
   const onTabActivatedRef = useRef(onTabActivated);
   onTabActivatedRef.current = onTabActivated;
@@ -386,6 +531,10 @@ export function useSimilarTabs({
           throw new Error("Missing variant payload");
         }
         const built = buildSimilarProblem(data.variant, data.session, data.revealed);
+        if (data.session?.servedAt) {
+          tabServedAtRef.current[tab.token] = data.session.servedAt;
+        }
+        tabProblemsRef.current = { ...tabProblemsRef.current, [tab.token]: built };
         setTabProblems((prev) => ({ ...prev, [tab.token]: built }));
         const alreadySolved = built.state.lastCheck?.verdict === "correct";
         if (selectedTabRef.current === tabId) {
@@ -772,32 +921,26 @@ export function useSimilarTabs({
     (val: string) => {
       const tok = activeTokenRef.current;
       if (!tok) return;
-      setTabProblems((prev) => {
-        const cur = prev[tok];
-        if (!cur) return prev;
-        return {
-          ...prev,
-          [tok]: {
-            ...cur,
-            state: {
-              ...cur.state,
-              userInput: val,
-            },
-          },
-        };
-      });
+      updateTabProblem(tok, (cur) => ({
+        ...cur,
+        state: {
+          ...cur.state,
+          userInput: val,
+        },
+      }));
     },
-    []
+    [updateTabProblem]
   );
 
   const handleSimilarCheckAnswer = useCallback(
     async (inputOverride?: string) => {
       const tok = activeTokenRef.current;
       if (!drillId || !tok) return;
-      const curProb = tabProblemsRef.current[tok];
-      if (!curProb) return;
+      const snapProb = tabProblemsRef.current[tok];
+      if (!snapProb) return;
+      const targetQuestionKey = questionKeyRef.current;
       const resolved = (
-        inputOverride !== undefined ? inputOverride : curProb.state.userInput
+        inputOverride !== undefined ? inputOverride : snapProb.state.userInput
       ).trim();
       if (!resolved) return;
 
@@ -820,26 +963,27 @@ export function useSimilarTabs({
           }),
         });
         const raw = (await res.json()) as CheckResult;
+        if (questionKeyRef.current !== targetQuestionKey) return;
+
         const calmMsg = sanitizeCheckMessage(raw.verdict, raw.message);
         const checked: CheckResult =
           calmMsg === raw.message ? raw : { ...raw, message: calmMsg };
 
+        // Read post-await latest tab state so mid-check hints or set-up reveals are never lost.
+        const latestProb = tabProblemsRef.current[tok];
+        if (!latestProb) return;
+
         const nowIso = new Date().toISOString();
-        const prevAttempts = curProb.state.attempts || [];
-        const usedHelp = Boolean(
-          (curProb.state.hintsRevealed || 0) > 0 ||
-            curProb.state.setupRevealedBeforeAnswer ||
-            curProb.state.solutionRevealedBeforeAnswer ||
-            prevAttempts.some((a) => a.setupRevealed || a.solutionRevealed)
-        );
-        const nextAttempt: AttemptRecord = {
-          input: resolved,
-          ts: nowIso,
-          verdict: checked.verdict,
-          kind: "variant",
-          ...(curProb.state.setupRevealedBeforeAnswer ? { setupRevealed: true } : {}),
-          ...(curProb.state.solutionRevealedBeforeAnswer ? { solutionRevealed: true } : {}),
-        };
+        const { nextProblem, nextRecord, needsSteps, needsDisplay } =
+          applySimilarCheckToLatestProblem(
+            latestProb,
+            resolved,
+            checked,
+            attemptElapsed,
+            nowIso,
+            tabServedAtRef.current[tok]
+          );
+        tabServedAtRef.current[tok] = nextRecord.servedAt;
 
         if (checked.verdict === "correct") {
           similarTickStartRef.current = null;
@@ -849,49 +993,8 @@ export function useSimilarTabs({
         setSimilarBaseMs((prev) => prev + attemptElapsed);
         setSimilarElapsedMs(0);
 
-        const updatedAttempts = [...prevAttempts, nextAttempt];
-        const nextScore =
-          checked.verdict === "correct"
-            ? usedHelp
-              ? 0.5
-              : 1
-            : checked.verdict === "incorrect"
-            ? 0
-            : checked.verdict === "partial" ||
-              checked.verdict === "equivalent_not_in_form"
-            ? 0.5
-            : curProb.state.score;
+        updateTabProblem(tok, () => nextProblem);
 
-        const nextDuration = (curProb.state.durationMs || 0) + attemptElapsed;
-
-        setTabProblems((prev) => {
-          const existing = prev[tok];
-          if (!existing) return prev;
-          return {
-            ...prev,
-            [tok]: {
-              ...existing,
-              state: {
-                ...existing.state,
-                userInput: resolved,
-                score: nextScore,
-                lastCheck: checked,
-                attempts: updatedAttempts,
-                durationMs: nextDuration,
-              },
-            },
-          };
-        });
-
-        const nextRecord: VariantSessionRecord = {
-          role: "try",
-          attempts: updatedAttempts,
-          hintsRevealed: curProb.state.hintsRevealed || 0,
-          setupRevealed: Boolean(curProb.state.setupRevealedBeforeAnswer),
-          stepsRevealed: Boolean(curProb.state.solutionRevealedBeforeAnswer),
-          durationMs: nextDuration,
-          servedAt: nowIso,
-        };
         const nextStatus: SimilarTabStatus = deriveVariantStatus(
           nextRecord,
           problemStateRef.current.cycleStartedAt
@@ -907,10 +1010,6 @@ export function useSimilarTabs({
         // Auto-reveal steps and equation set-up after a correct answer (identical to the real question),
         // without marking the already-solved similar question as assisted.
         if (checked.verdict === "correct") {
-          const needsSteps = !curProb.steps || curProb.steps.length === 0;
-          const needsDisplay = Boolean(
-            curProb.hasSetup && !curProb.display && !curProb.plainText
-          );
           if (needsSteps) {
             setLoadingSteps(true);
             const stepsQs = new URLSearchParams({
@@ -929,20 +1028,13 @@ export function useSimilarTabs({
                     answerPlain?: string;
                   } | null
                 ) => {
-                  if (!data) return;
-                  setTabProblems((prev) => {
-                    const cur = prev[tok];
-                    if (!cur) return prev;
-                    return {
-                      ...prev,
-                      [tok]: {
-                        ...cur,
-                        steps: Array.isArray(data.steps) ? data.steps : [],
-                        answerDisplay: data.answerDisplay || data.answerPlain || "",
-                        answerPlain: data.answerPlain || "",
-                      },
-                    };
-                  });
+                  if (!data || questionKeyRef.current !== targetQuestionKey) return;
+                  updateTabProblem(tok, (cur) => ({
+                    ...cur,
+                    steps: Array.isArray(data.steps) ? data.steps : [],
+                    answerDisplay: data.answerDisplay || data.answerPlain || "",
+                    answerPlain: data.answerPlain || "",
+                  }));
                 }
               )
               .catch(() => {
@@ -962,23 +1054,16 @@ export function useSimilarTabs({
             void fetch(`/api/reveal?${dispQs.toString()}`)
               .then(async (r) => (r.ok ? await r.json() : null))
               .then((data: { display?: string; plainText?: string } | null) => {
-                if (!data) return;
-                setTabProblems((prev) => {
-                  const cur = prev[tok];
-                  if (!cur) return prev;
-                  return {
-                    ...prev,
-                    [tok]: {
-                      ...cur,
-                      ...(typeof data.display === "string"
-                        ? { display: data.display }
-                        : {}),
-                      ...(typeof data.plainText === "string"
-                        ? { plainText: data.plainText }
-                        : {}),
-                    },
-                  };
-                });
+                if (!data || questionKeyRef.current !== targetQuestionKey) return;
+                updateTabProblem(tok, (cur) => ({
+                  ...cur,
+                  ...(typeof data.display === "string"
+                    ? { display: data.display }
+                    : {}),
+                  ...(typeof data.plainText === "string"
+                    ? { plainText: data.plainText }
+                    : {}),
+                }));
               })
               .catch(() => {
                 // non-blocking auto-reveal
@@ -986,28 +1071,22 @@ export function useSimilarTabs({
           }
         }
       } catch {
-        setTabProblems((prev) => {
-          const existing = prev[tok];
-          if (!existing) return prev;
-          return {
-            ...prev,
-            [tok]: {
-              ...existing,
-              state: {
-                ...existing.state,
-                lastCheck: {
-                  verdict: "invalid input",
-                  message: "Couldn't check that answer right now. Please try again.",
-                  components: [],
-                  diagnostics: [],
-                },
-              },
+        if (questionKeyRef.current !== targetQuestionKey) return;
+        updateTabProblem(tok, (existing) => ({
+          ...existing,
+          state: {
+            ...existing.state,
+            lastCheck: {
+              verdict: "invalid input",
+              message: "Couldn't check that answer right now. Please try again.",
+              components: [],
+              diagnostics: [],
             },
-          };
-        });
+          },
+        }));
       }
     },
-    [drillId, problem.id]
+    [drillId, problem.id, updateTabProblem]
   );
 
   const syncSimilarHelpStatus = useCallback(
@@ -1020,6 +1099,8 @@ export function useSimilarTabs({
         stepsRevealed?: boolean;
       }
     ) => {
+      const servedAt = tabServedAtRef.current[tok] || new Date().toISOString();
+      tabServedAtRef.current[tok] = servedAt;
       const nextRecord: VariantSessionRecord = {
         role: "try",
         attempts: baseProb.state.attempts || [],
@@ -1036,7 +1117,7 @@ export function useSimilarTabs({
             ? patch.stepsRevealed
             : Boolean(baseProb.state.solutionRevealedBeforeAnswer),
         durationMs: baseProb.state.durationMs || 0,
-        servedAt: new Date().toISOString(),
+        servedAt,
       };
       const nextStatus = deriveVariantStatus(
         nextRecord,
@@ -1056,12 +1137,8 @@ export function useSimilarTabs({
   const handleSimilarHintRevealed = useCallback(async () => {
     const tok = activeTokenRef.current;
     if (!drillId || !tok) return;
-    const existing = tabProblemsRef.current[tok];
-    if (!existing) return;
-    const hasCorrect = Boolean(
-      existing.state.score === 1 ||
-        existing.state.attempts?.some((a) => a.verdict === "correct")
-    );
+    if (!tabProblemsRef.current[tok]) return;
+    const targetQuestionKey = questionKeyRef.current;
     const params = new URLSearchParams({
       drill: drillId,
       q: problem.id,
@@ -1069,55 +1146,57 @@ export function useSimilarTabs({
       part: "hint",
     });
     const res = await fetch(`/api/reveal?${params.toString()}`);
-    if (!res.ok) return;
+    if (!res.ok || questionKeyRef.current !== targetQuestionKey) return;
     const data = (await res.json()) as { checkpointHint?: string };
-    const nextHints = hasCorrect
-      ? existing.state.hintsRevealed || 0
-      : (existing.state.hintsRevealed || 0) + 1;
-    setTabProblems((prev) => {
-      const cur = prev[tok];
-      if (!cur) return prev;
-      return {
-        ...prev,
-        [tok]: {
-          ...cur,
-          checkpointHint: data.checkpointHint || "",
-          state: {
-            ...cur.state,
-            hintsRevealed: nextHints,
-          },
-        },
-      };
-    });
-    if (!hasCorrect) {
-      syncSimilarHelpStatus(tok, existing, { hintsRevealed: nextHints });
+    if (questionKeyRef.current !== targetQuestionKey) return;
+
+    // Re-read post-await latest problem so any concurrent check attempt is never overwritten.
+    const latest = tabProblemsRef.current[tok];
+    if (!latest) return;
+    const nowIso = new Date().toISOString();
+    const { nextProblem, nextRecord, didIncrement } = applySimilarHintToLatestProblem(
+      latest,
+      data.checkpointHint || "",
+      nowIso,
+      tabServedAtRef.current[tok]
+    );
+    tabServedAtRef.current[tok] = nextRecord.servedAt;
+    updateTabProblem(tok, () => nextProblem);
+    if (didIncrement) {
+      const nextStatus = deriveVariantStatus(
+        nextRecord,
+        problemStateRef.current.cycleStartedAt
+      );
+      setTabs((prev) =>
+        prev.map((t) => (t.token === tok ? { ...t, status: nextStatus } : t))
+      );
+      onSimilarProgressSyncRef.current?.({
+        variantToken: tok,
+        variantRecord: nextRecord,
+      });
     }
-  }, [drillId, problem.id, syncSimilarHelpStatus]);
+  }, [drillId, problem.id, updateTabProblem]);
 
   const handleSimilarSetupRevealed = useCallback(async () => {
     const tok = activeTokenRef.current;
     if (!drillId || !tok) return;
     const existing = tabProblemsRef.current[tok];
     if (!existing) return;
+    const targetQuestionKey = questionKeyRef.current;
     const hasSubstantive = (existing.state.attempts || []).some((a) =>
       isSubstantiveVerdict(a.verdict)
     );
     if (!hasSubstantive && !existing.state.setupRevealedBeforeAnswer) {
-      setTabProblems((prev) => {
-        const cur = prev[tok];
-        if (!cur) return prev;
-        return {
-          ...prev,
-          [tok]: {
-            ...cur,
-            state: {
-              ...cur.state,
-              setupRevealedBeforeAnswer: true,
-            },
-          },
-        };
-      });
-      syncSimilarHelpStatus(tok, existing, { setupRevealed: true });
+      const updated = updateTabProblem(tok, (cur) => ({
+        ...cur,
+        state: {
+          ...cur.state,
+          setupRevealedBeforeAnswer: true,
+        },
+      }));
+      if (updated) {
+        syncSimilarHelpStatus(tok, updated, { setupRevealed: true });
+      }
     }
     if (existing.display || existing.plainText) return;
     try {
@@ -1128,60 +1207,68 @@ export function useSimilarTabs({
         part: "display",
       });
       const res = await fetch(`/api/reveal?${qs.toString()}`);
-      if (!res.ok) return;
+      if (!res.ok || questionKeyRef.current !== targetQuestionKey) return;
       const data = (await res.json()) as { display?: string; plainText?: string };
-      setTabProblems((prev) => {
-        const cur = prev[tok];
-        if (!cur) return prev;
-        return {
-          ...prev,
-          [tok]: {
-            ...cur,
-            ...(typeof data.display === "string" ? { display: data.display } : {}),
-            ...(typeof data.plainText === "string"
-              ? { plainText: data.plainText }
-              : {}),
-          },
-        };
-      });
+      if (questionKeyRef.current !== targetQuestionKey) return;
+      updateTabProblem(tok, (cur) => ({
+        ...cur,
+        ...(typeof data.display === "string" ? { display: data.display } : {}),
+        ...(typeof data.plainText === "string"
+          ? { plainText: data.plainText }
+          : {}),
+      }));
     } catch {
       // ignore transient error
     }
-  }, [drillId, problem.id, syncSimilarHelpStatus]);
+  }, [drillId, problem.id, syncSimilarHelpStatus, updateTabProblem]);
 
   const handleSimilarSolutionRevealed = useCallback(async () => {
     const tok = activeTokenRef.current;
     if (!drillId || !tok) return;
     const existing = tabProblemsRef.current[tok];
     if (!existing) return;
+    const targetQuestionKey = questionKeyRef.current;
     const hasSubstantive = (existing.state.attempts || []).some((a) =>
       isSubstantiveVerdict(a.verdict)
     );
-    const hasCorrect = Boolean(
-      existing.state.score === 1 ||
-        existing.state.attempts?.some((a) => a.verdict === "correct")
-    );
-    if (!hasCorrect && !existing.state.solutionRevealedBeforeAnswer) {
-      setTabProblems((prev) => {
-        const cur = prev[tok];
-        if (!cur) return prev;
-        return {
-          ...prev,
-          [tok]: {
-            ...cur,
-            state: {
-              ...cur.state,
-              solutionRevealedBeforeAnswer: true,
-            },
-          },
-        };
-      });
-      syncSimilarHelpStatus(tok, existing, { stepsRevealed: true });
+    const shouldPersist = shouldPersistVariantStepsReveal(existing);
+    if (shouldPersist) {
+      const updated = updateTabProblem(tok, (cur) => ({
+        ...cur,
+        state: {
+          ...cur.state,
+          solutionRevealedBeforeAnswer: true,
+        },
+      }));
+      if (updated) {
+        syncSimilarHelpStatus(tok, updated, { stepsRevealed: true });
+      }
     }
-    if (existing.steps && existing.steps.length > 0) return;
+    const needsFetchSteps = !existing.steps || existing.steps.length === 0;
+    if (!needsFetchSteps) {
+      // Steps were already cached locally (e.g. reopened after a wrong attempt),
+      // so still persist `stepsRevealed` on the server so status survives reload.
+      if (shouldPersist) {
+        try {
+          await fetch("/api/variant", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              drillId,
+              qid: problem.id,
+              variantToken: tok,
+              action: "reveal-steps",
+            }),
+          });
+        } catch {
+          // ignore transient error
+        }
+      }
+      return;
+    }
     setLoadingSteps(true);
     try {
-      if (!hasSubstantive) {
+      if (shouldPersist || !hasSubstantive) {
         await fetch("/api/variant", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -1193,6 +1280,7 @@ export function useSimilarTabs({
           }),
         });
       }
+      if (questionKeyRef.current !== targetQuestionKey) return;
       const qs = new URLSearchParams({
         drillId,
         qid: problem.id,
@@ -1200,29 +1288,23 @@ export function useSimilarTabs({
         part: "steps",
       });
       const res = await fetch(`/api/reveal?${qs.toString()}`);
-      if (!res.ok) return;
+      if (!res.ok || questionKeyRef.current !== targetQuestionKey) return;
       const data = (await res.json()) as {
         steps?: Step[];
         answerDisplay?: string;
         answerPlain?: string;
       };
-      setTabProblems((prev) => {
-        const cur = prev[tok];
-        if (!cur) return prev;
-        return {
-          ...prev,
-          [tok]: {
-            ...cur,
-            steps: Array.isArray(data.steps) ? data.steps : [],
-            answerDisplay: data.answerDisplay || data.answerPlain || "",
-            answerPlain: data.answerPlain || "",
-          },
-        };
-      });
+      if (questionKeyRef.current !== targetQuestionKey) return;
+      updateTabProblem(tok, (cur) => ({
+        ...cur,
+        steps: Array.isArray(data.steps) ? data.steps : [],
+        answerDisplay: data.answerDisplay || data.answerPlain || "",
+        answerPlain: data.answerPlain || "",
+      }));
     } finally {
       setLoadingSteps(false);
     }
-  }, [drillId, problem.id, syncSimilarHelpStatus]);
+  }, [drillId, problem.id, syncSimilarHelpStatus, updateTabProblem]);
 
   const handleSimilarReset = useCallback(() => {
     const tok = activeTokenRef.current;
@@ -1292,6 +1374,8 @@ export function useSimilarTabs({
 
   const resetAllVariantUi = useCallback(() => {
     fetchedListKeyRef.current = null;
+    tabProblemsRef.current = {};
+    tabServedAtRef.current = {};
     setSelectedTab("q");
     setShowingExample(false);
     setListEmpty(false);

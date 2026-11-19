@@ -366,6 +366,35 @@ const prgPassState = makeState({ reviews: [makeReview("pass")] });
 assert.equal(canRevealSolution(prgPassState), true);
 assert.equal(isPartUnlocked("solution", prgPassState), true);
 
+// Reset cycle isolation: pre-reset attempts/flags do not unlock steps, display, or solution
+const postResetState = makeState({
+  attempts: [
+    {
+      input: "42",
+      ts: "2026-11-17T10:00:00Z",
+      verdict: "correct",
+      setupRevealed: true,
+      solutionRevealed: true,
+    },
+  ],
+  reviews: [makeReview("pass")],
+  cycleStartedAt: "2026-11-20T00:00:00Z",
+});
+assert.equal(canRevealSteps(postResetState), false, "pre-reset attempts must not unlock steps after Reset");
+assert.equal(canRevealDisplay(postResetState), false, "pre-reset attempts must not unlock display after Reset");
+assert.equal(canRevealSolution(postResetState), false, "pre-reset pass review must not unlock solution after Reset");
+
+// Cycle-scoped review reveal timestamps unlock reveal in the current cycle without mutating original help flags
+const reviewRevealState = makeState({
+  ...postResetState,
+  reviewSetupRevealedAt: "2026-11-20T00:01:00Z",
+  reviewStepsRevealedAt: "2026-11-20T00:02:00Z",
+});
+assert.equal(canRevealDisplay(reviewRevealState), true);
+assert.equal(canRevealSteps(reviewRevealState), true);
+assert.equal(reviewRevealState.setupRevealedBeforeAnswer, undefined);
+assert.equal(reviewRevealState.solutionRevealedBeforeAnswer, undefined);
+
 // ---------------------------------------------------------------------------
 // 4. Route handler integration tests (/api/reveal and /api/check-answer)
 // ---------------------------------------------------------------------------

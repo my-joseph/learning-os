@@ -1,6 +1,24 @@
-import { ProblemState } from "../types/drill";
+import { ProblemState, ReviewRecord } from "../types/drill";
 
 export const NON_SUBSTANTIVE_VERDICTS = new Set(["invalid input", "parse_error"]);
+
+/** Return true when `ts` falls at or after `cycleStartedAt` (absent `cycleStartedAt` counts all history). */
+export function isTimestampInCycle(
+  ts?: string | null,
+  cycleStartedAt?: string | null
+): boolean {
+  if (!cycleStartedAt) return true;
+  return typeof ts === "string" && ts.length > 0 && ts >= cycleStartedAt;
+}
+
+/** Return PRG/lab review records belonging to the current cycle (all reviews when `cycleStartedAt` is absent). */
+export function cycleReviews(state?: ProblemState | null): ReviewRecord[] {
+  const reviews = Array.isArray(state?.reviews) ? state!.reviews : [];
+  if (reviews.length === 0) return [];
+  const cycleStartedAt = state?.cycleStartedAt;
+  if (!cycleStartedAt) return reviews;
+  return reviews.filter((r) => r && isTimestampInCycle(r.at, cycleStartedAt));
+}
 
 export const CALM_PARSE_ERROR_MESSAGE =
   "Couldn't read that — check brackets and operators.";
@@ -37,12 +55,15 @@ export function isWrongAttemptVerdict(verdict?: string | null): boolean {
   return verdict === "incorrect" || verdict === "partial";
 }
 
-/** Count wrong substantive attempts on the original problem state (excludes kind: "variant"). */
+/** Count wrong substantive attempts on the original problem state in the current cycle (excludes kind: "variant"). */
 export function countWrongAttempts(state?: ProblemState | null): number {
   if (!state) return 0;
-  if (Array.isArray(state.attempts) && state.attempts.length > 0) {
-    return state.attempts.filter(
-      (a) => a?.kind !== "variant" && isWrongAttemptVerdict(a?.verdict)
+  const origAttempts = Array.isArray(state.attempts)
+    ? state.attempts.filter((a) => a && a.kind !== "variant")
+    : [];
+  if (origAttempts.length > 0) {
+    return origAttempts.filter(
+      (a) => isWrongAttemptVerdict(a.verdict) && isTimestampInCycle(a.ts, state.cycleStartedAt)
     ).length;
   }
   if (state.lastCheck && isWrongAttemptVerdict(state.lastCheck.verdict)) {
@@ -102,19 +123,26 @@ export function sanitizeCheckMessage(
 }
 
 /**
- * Return true only if the problem has a substantive check/attempt, was skipped,
- * has a PRG test report, or has a code review. Draft input, parse/invalid-input
- * checks, and self-score alone do not count.
+ * Return true only if the problem has a substantive check/attempt in the current cycle,
+ * was skipped, has a PRG test report, or has a code review in the current cycle.
+ * Draft input, parse/invalid-input checks, and self-score alone do not count.
  */
 export function hasSubstantiveAttempt(state?: ProblemState | null): boolean {
   if (!state) return false;
   if (state.skipped) return true;
-  if (state.attempts?.some((a) => a?.kind !== "variant" && isSubstantiveVerdict(a.verdict))) {
+  if (
+    state.attempts?.some(
+      (a) =>
+        a?.kind !== "variant" &&
+        isSubstantiveVerdict(a.verdict) &&
+        isTimestampInCycle(a.ts, state.cycleStartedAt)
+    )
+  ) {
     return true;
   }
   if (state.lastCheck != null && isSubstantiveVerdict(state.lastCheck.verdict)) return true;
   if (state.lastTestReport != null) return true;
-  if ((state.reviews?.length ?? 0) > 0) return true;
+  if (cycleReviews(state).length > 0) return true;
   return false;
 }
 
@@ -128,11 +156,11 @@ export function canRevealVerifiedAnswer(state?: ProblemState | null): boolean {
 }
 
 /**
- * Return true only if the problem's latest review record has verdict "pass"
+ * Return true only if the problem's latest review record in the current cycle has verdict "pass"
  * (docs/prg_reviewer_spec.md rule 3: reference solution only after a pass).
  */
 export function canShowReferenceSolution(state?: ProblemState | null): boolean {
-  const reviews = state?.reviews;
-  if (!reviews || reviews.length === 0) return false;
+  const reviews = cycleReviews(state);
+  if (reviews.length === 0) return false;
   return reviews[reviews.length - 1].verdict === "pass";
 }

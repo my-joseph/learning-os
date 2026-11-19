@@ -208,9 +208,14 @@ export function applyDivergedStep(
 }
 
 /**
- * Reset a single problem back to a clean unattempted state and strip revealed solutions.
+ * Reset a single problem for a new retry cycle: clears the visible/active state and
+ * strips revealed solutions, sets `cycleStartedAt = now`, and preserves all history
+ * (`attempts`, `mistakes`, `mistakeNote`, `revisitNote`, `reviews`, variant history).
  */
-export function resetProblemForRetry(prob: Problem): Problem {
+export function resetProblemForRetry(
+  prob: Problem,
+  nowIso: string = new Date().toISOString()
+): Problem {
   const rest = { ...prob };
   delete rest.display;
   delete rest.plainText;
@@ -218,25 +223,32 @@ export function resetProblemForRetry(prob: Problem): Problem {
   delete rest.answerDisplay;
   delete rest.answerPlain;
   delete rest.solutionCode;
+  const prevState = prob.state;
+  const nextState: ProblemState = {
+    ...prevState,
+    userInput: "",
+    userCode: prob.starterCode || prob.codeSnippet || "",
+    score: null,
+    divergedStep: null,
+    mistakes: Array.isArray(prevState?.mistakes) ? [...prevState.mistakes] : [],
+    mistakeNote: prevState?.mistakeNote || "",
+    ...(prevState?.revisitNote ? { revisitNote: prevState.revisitNote } : {}),
+    skipped: false,
+    lastCheck: null,
+    lastTestReport: null,
+    attempts: Array.isArray(prevState?.attempts) ? [...prevState.attempts] : [],
+    ...(Array.isArray(prevState?.reviews) ? { reviews: [...prevState.reviews] } : {}),
+    hintsRevealed: 0,
+    setupRevealedBeforeAnswer: false,
+    solutionRevealedBeforeAnswer: false,
+    durationMs: 0,
+    cycleStartedAt: nowIso,
+  };
+  delete nextState.reviewSetupRevealedAt;
+  delete nextState.reviewStepsRevealedAt;
   return {
     ...rest,
-    state: {
-      userInput: "",
-      userCode: prob.starterCode || prob.codeSnippet || "",
-      score: null,
-      divergedStep: null,
-      mistakes: [],
-      mistakeNote: "",
-      ...(prob.state?.revisitNote ? { revisitNote: prob.state.revisitNote } : {}),
-      skipped: false,
-      lastCheck: null,
-      lastTestReport: null,
-      attempts: [],
-      hintsRevealed: 0,
-      setupRevealedBeforeAnswer: false,
-      solutionRevealedBeforeAnswer: false,
-      durationMs: 0,
-    },
+    state: nextState,
   };
 }
 
@@ -260,12 +272,16 @@ export function resetAnswerForReviewRetry(
 }
 
 /**
- * Reset every problem in a drill using `resetProblemForRetry` and reset `sessionSummary`.
+ * Reset every problem in a drill using `resetProblemForRetry` (starting a new cycle
+ * while preserving history) and reset `sessionSummary`.
  */
-export function resetDrillForRetry(doc: DrillDocument): DrillDocument {
+export function resetDrillForRetry(
+  doc: DrillDocument,
+  nowIso: string = new Date().toISOString()
+): DrillDocument {
   return {
     ...doc,
-    problems: doc.problems.map(resetProblemForRetry),
+    problems: doc.problems.map((p) => resetProblemForRetry(p, nowIso)),
     sessionSummary: {
       ...doc.sessionSummary,
       score: 0,

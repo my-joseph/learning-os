@@ -40,6 +40,7 @@ import { ProblemSelfEval } from "@/components/workspace/ProblemSelfEval";
 import { useChoiceController } from "@/components/workspace/useChoiceController";
 import {
   canShowReferenceSolution,
+  cycleReviews,
   hasSubstantiveAttempt,
 } from "@/lib/reviewGuard";
 import { statusTone } from "@/lib/statusTone";
@@ -61,6 +62,7 @@ import {
 } from "@/lib/codeStatus";
 import { plainTitle } from "@/lib/titleText";
 import { ListDot } from "@/components/ui/ListDot";
+import type { SkipOptions } from "@/hooks/types";
 
 export interface CodeDashboardProps {
   problem: Problem;
@@ -73,11 +75,11 @@ export interface CodeDashboardProps {
   activeStep: number | null;
   onInputChange: (val: string) => void;
   onCheckAnswer: (inputOverride?: string) => Promise<void> | void;
-  onSkip?: () => void;
+  onSkip?: (opts?: SkipOptions) => void;
   onToggleStepHighlight: (stepIdx: number) => void;
   onMarkDivergedStep: (stepIdx: number) => void;
   onSetScore: (score: number | null) => void;
-  onTestReportChange?: (report: TestRunReport) => void;
+  onTestReportChange?: (report: TestRunReport, score?: number | null) => void;
   onToggleMistakeTag: (tagId: string) => void;
   onMistakeNoteChange: (note: string) => void;
   onResetProblem: () => void;
@@ -323,9 +325,13 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
 
         if (res.ok) {
           const report: TestRunReport = await res.json();
+          const nextScore = getPrgScore(report, cycleReviews(problem.state));
           setTestReport(report);
-          onTestReportChange?.(report);
-          onSetScore(getPrgScore(report, problem.state.reviews));
+          if (onTestReportChange) {
+            onTestReportChange(report, nextScore);
+          } else {
+            onSetScore(nextScore);
+          }
           return;
         }
       }
@@ -343,9 +349,13 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
           hiddenTotal: problem.hiddenTestCount ?? 0,
           executionTimeMs: 0,
         };
+        const nextScore = getPrgScore(fallbackReport, cycleReviews(problem.state));
         setTestReport(fallbackReport);
-        onTestReportChange?.(fallbackReport);
-        onSetScore(getPrgScore(fallbackReport, problem.state.reviews));
+        if (onTestReportChange) {
+          onTestReportChange(fallbackReport, nextScore);
+        } else {
+          onSetScore(nextScore);
+        }
       }
     } catch (err: unknown) {
       const errMsg = err instanceof Error ? err.message : String(err);
@@ -438,7 +448,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
     ? parseInt(problem.state.userInput.replace(/\D/g, ""), 10) || null
     : null;
 
-  const reviews = problem.state.reviews || [];
+  const reviews = cycleReviews(problem.state);
   const latestPassingReview = [...reviews].reverse().find((r) => r.verdict === "pass");
   const latestReview = reviews.length > 0 ? reviews[reviews.length - 1] : undefined;
   const explainSource = latestPassingReview || latestReview;
@@ -648,7 +658,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                 {onSkip && !hasAttempt && (
                   <button
                     type="button"
-                    onClick={onSkip}
+                    onClick={() => onSkip()}
                     className="inline-flex min-h-[36px] items-center gap-1 px-2 text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors ml-auto"
                   >
                     <span>{isReviewSession ? "Skip · due tomorrow" : "Skip"}</span>
@@ -1193,14 +1203,12 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
               onSkip={
                 onSkip
                   ? () => {
-                      if (!isReviewSession && !showHint && onHintRevealed) {
-                        onHintRevealed();
-                      }
+                      const countHint = Boolean(!isReviewSession && !showHint && onHintRevealed);
                       if (!isReviewSession) {
                         setShowHint(true);
                         setShowSolution(true);
                       }
-                      onSkip();
+                      onSkip({ countHint });
                     }
                   : undefined
               }

@@ -16,7 +16,7 @@ import {
   canShowReferenceSolution,
   isSubstantiveVerdict,
 } from "./reviewGuard";
-import { cycleAttempts } from "./similarTabs";
+import { cycleAttempts, cycleOriginalAttempts, isInCycle } from "./similarTabs";
 import { hasCheckpointHint } from "./studioRules";
 
 /**
@@ -127,7 +127,13 @@ export function canRevealSteps(state?: ProblemState | null): boolean {
   if (!state) return false;
   if (canRevealVerifiedAnswer(state)) return true;
   if (state.solutionRevealedBeforeAnswer) return true;
-  if (state.attempts?.some((a) => a.solutionRevealed)) return true;
+  if (
+    state.reviewStepsRevealedAt &&
+    isInCycle(state.reviewStepsRevealedAt, state.cycleStartedAt)
+  ) {
+    return true;
+  }
+  if (cycleOriginalAttempts(state).some((a) => a.solutionRevealed)) return true;
   return false;
 }
 
@@ -140,7 +146,13 @@ export function canRevealDisplay(state?: ProblemState | null): boolean {
   if (!state) return false;
   if (canRevealVerifiedAnswer(state)) return true;
   if (state.setupRevealedBeforeAnswer) return true;
-  if (state.attempts?.some((a) => a.setupRevealed)) return true;
+  if (
+    state.reviewSetupRevealedAt &&
+    isInCycle(state.reviewSetupRevealedAt, state.cycleStartedAt)
+  ) {
+    return true;
+  }
+  if (cycleOriginalAttempts(state).some((a) => a.setupRevealed)) return true;
   return false;
 }
 

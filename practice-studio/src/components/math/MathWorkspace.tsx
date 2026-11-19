@@ -493,21 +493,7 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
                   onMarkDivergedStep={onMarkDivergedStep}
                   onReset={() => {
                     resetAllVariantUi();
-                    if (drillId) {
-                      void fetch("/api/variant", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                          drillId,
-                          qid: problem.id,
-                          action: "reset-question",
-                        }),
-                      }).then((res) => {
-                        if (res.ok) onResetProblem();
-                      });
-                    } else {
-                      onResetProblem();
-                    }
+                    onResetProblem();
                   }}
                   onHintRevealed={onHintRevealed}
                   onSetupRevealed={onSetupRevealed}

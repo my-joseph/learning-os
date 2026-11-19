@@ -1,4 +1,5 @@
 import type { Problem, ProblemState, ReviewRecord } from "../types/drill";
+import { cycleReviews } from "./reviewGuard";
 import { getReviewRequest } from "./studioRules";
 
 export type LayerCheckStatus = "pass" | "fail" | "not_run";
@@ -128,7 +129,7 @@ export function reviewStatusLabel(status: ReviewStatus): "not requested" | "revi
 }
 
 export function deriveMilestoneTileState(state?: ProblemState | null): MilestoneTileState {
-  const review = deriveReviewStatus(state?.reviews);
+  const review = deriveReviewStatus(cycleReviews(state));
   if (review === "pass") return "pass";
   if (review === "revise") return "revise";
   return "not_started";
@@ -144,7 +145,7 @@ export function deriveMilestoneStepperState(
   state?: ProblemState | null,
   reviewRun?: Partial<ReviewRunResult> | null
 ): MilestoneStepperState {
-  const reviews = state?.reviews ?? [];
+  const reviews = cycleReviews(state);
   const hasPassedBefore = reviews.some((r) => r.verdict === "pass");
   const status = deriveCodeStatus(state, reviewRun);
   const anyLayerFails =
@@ -231,11 +232,10 @@ export function deriveCodeStatus(
   reviewRun?: Partial<ReviewRunResult> | null,
   defaultFile = "solution.js"
 ): CodeLayeredStatus {
-  const review = deriveReviewStatus(state?.reviews);
+  const activeReviews = cycleReviews(state);
+  const review = deriveReviewStatus(activeReviews);
   const latestReview =
-    state?.reviews && state.reviews.length > 0
-      ? state.reviews[state.reviews.length - 1]
-      : undefined;
+    activeReviews.length > 0 ? activeReviews[activeReviews.length - 1] : undefined;
 
   let tests: LayerCheckStatus = "not_run";
   let testsCount: { passed: number; total: number } | undefined;
