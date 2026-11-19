@@ -14,63 +14,12 @@ import {
 
 const THEME_STYLES: Record<
   FigureTheme,
-  {
-    primary: string;
-    stroke: string;
-    fill: string;
-    accent: string;
-    grid: string;
-    axis: string;
-  }
+  { primaryClass: string }
 > = {
-  indigo: {
-    primary: "#6366f1",
-    stroke: "#4f46e5",
-    fill: "rgba(99, 102, 241, 0.12)",
-    accent: "#4338ca",
-    grid: "#e2e8f0",
-    axis: "#475569",
-  },
-  blue: {
-    primary: "#0284c7",
-    stroke: "#0369a1",
-    fill: "rgba(14, 165, 233, 0.12)",
-    accent: "#0284c7",
-    grid: "#e2e8f0",
-    axis: "#475569",
-  },
-  emerald: {
-    primary: "#059669",
-    stroke: "#047857",
-    fill: "rgba(16, 185, 129, 0.12)",
-    accent: "#0d9488",
-    grid: "#e2e8f0",
-    axis: "#475569",
-  },
-  amber: {
-    primary: "#d97706",
-    stroke: "#b45309",
-    fill: "rgba(245, 158, 11, 0.12)",
-    accent: "#ea580c",
-    grid: "#e2e8f0",
-    axis: "#475569",
-  },
-  rose: {
-    primary: "#e11d48",
-    stroke: "#be123c",
-    fill: "rgba(244, 63, 94, 0.12)",
-    accent: "#9f1239",
-    grid: "#e2e8f0",
-    axis: "#475569",
-  },
-  purple: {
-    primary: "#7c3aed",
-    stroke: "#6d28d9",
-    fill: "rgba(139, 92, 246, 0.12)",
-    accent: "#5b21b6",
-    grid: "#e2e8f0",
-    axis: "#475569",
-  },
+  indigo: { primaryClass: "text-indigo-600 dark:text-indigo-400" },
+  emerald: { primaryClass: "text-emerald-700 dark:text-emerald-400" },
+  amber: { primaryClass: "text-amber-700 dark:text-amber-400" },
+  rose: { primaryClass: "text-rose-600 dark:text-rose-400" },
 };
 
 // Numbers and axis letters in KaTeX's fonts, like the equations in labels and on Notion (math_engine/figure_svg.py).
@@ -86,8 +35,8 @@ interface CartesianRendererProps {
 }
 
 export const CartesianRenderer: React.FC<CartesianRendererProps> = ({ spec }) => {
-  const theme = spec.theme || "blue";
-  const colors = THEME_STYLES[theme] || THEME_STYLES.blue;
+  const theme = spec.theme || "indigo";
+  const colors = THEME_STYLES[theme] || THEME_STYLES.indigo;
 
   const showY = spec.yAxis !== false;
   const [xLabel, yLabel] = spec.axisLabels || ["x", "y"];
@@ -294,7 +243,7 @@ export const CartesianRenderer: React.FC<CartesianRendererProps> = ({ spec }) =>
     <div className="relative w-full flex flex-col items-center select-none overflow-hidden">
       <svg
         viewBox={`0 0 ${svgWidth} ${svgHeight}`}
-        className="w-full h-auto overflow-visible"
+        className={`w-full h-auto overflow-visible ${colors.primaryClass}`}
         style={{ maxHeight: "380px" }}
       >
         <defs>
@@ -308,7 +257,7 @@ export const CartesianRenderer: React.FC<CartesianRendererProps> = ({ spec }) =>
             markerHeight="5"
             orient="auto-start-reverse"
           >
-            <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#64748b" />
+            <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="context-stroke" />
           </marker>
 
           <marker
@@ -336,7 +285,7 @@ export const CartesianRenderer: React.FC<CartesianRendererProps> = ({ spec }) =>
         </defs>
 
         {/* 1. Grid Background */}
-        <g className="stroke-slate-200 dark:stroke-slate-800" strokeWidth={1}>
+        <g className="stroke-zinc-200 dark:stroke-zinc-800" strokeWidth={1}>
           {gridLines.map((l, idx) => (
             <line
               key={`grid-${idx}`}
@@ -350,7 +299,7 @@ export const CartesianRenderer: React.FC<CartesianRendererProps> = ({ spec }) =>
         </g>
 
         {/* 2. Axes (X and Y) with Arrowheads */}
-        <g stroke="#64748b" strokeWidth={1.8}>
+        <g className="text-zinc-500 dark:text-zinc-400" stroke="currentColor" strokeWidth={1.8}>
           {/* X Axis */}
           <line
             x1={padding - 10}
@@ -375,7 +324,7 @@ export const CartesianRenderer: React.FC<CartesianRendererProps> = ({ spec }) =>
         <text
           x={svgWidth - padding + 14}
           y={axisY + 4}
-          className="text-[13px] fill-slate-500"
+          className="text-[13px] fill-zinc-500"
           style={AXIS_LABEL_FONT}
         >
           {xLabel}
@@ -385,7 +334,7 @@ export const CartesianRenderer: React.FC<CartesianRendererProps> = ({ spec }) =>
           x={axisX - 4}
           y={padding - 16}
           textAnchor="end"
-          className="text-[13px] fill-slate-500"
+          className="text-[13px] fill-zinc-500"
           style={AXIS_LABEL_FONT}
         >
           {yLabel}
@@ -393,7 +342,7 @@ export const CartesianRenderer: React.FC<CartesianRendererProps> = ({ spec }) =>
         )}
 
         {/* 3. Ticks and Numbers */}
-        <g className="fill-slate-500 dark:fill-slate-400 text-[10px]" style={TICK_FONT}>
+        <g className="fill-zinc-500 dark:fill-zinc-400 text-[10px]" style={TICK_FONT}>
           {ticks.map((t, idx) => {
             if (t.isX) {
               return (
@@ -403,8 +352,9 @@ export const CartesianRenderer: React.FC<CartesianRendererProps> = ({ spec }) =>
                     y1={t.y - 3}
                     x2={t.x}
                     y2={t.y + 3}
-                    stroke="#64748b"
+                    stroke="currentColor"
                     strokeWidth={1.2}
+                    className="text-zinc-500 dark:text-zinc-400"
                   />
                   {t.showLabel && (
                     <text x={t.x} y={t.y + 12} textAnchor="middle">
@@ -421,8 +371,9 @@ export const CartesianRenderer: React.FC<CartesianRendererProps> = ({ spec }) =>
                     y1={t.y}
                     x2={t.x + 3}
                     y2={t.y}
-                    stroke="#64748b"
+                    stroke="currentColor"
                     strokeWidth={1.2}
+                    className="text-zinc-500 dark:text-zinc-400"
                   />
                   {t.showLabel && (
                     <text x={t.x - 6} y={t.y + 3} textAnchor="end">
@@ -440,7 +391,7 @@ export const CartesianRenderer: React.FC<CartesianRendererProps> = ({ spec }) =>
               x={originX - 5}
               y={originY + 12}
               textAnchor="end"
-              className="fill-slate-500 dark:fill-slate-400 text-[10px]"
+              className="fill-zinc-500 dark:fill-zinc-400 text-[10px]"
               style={TICK_FONT}
             >
               0
@@ -458,7 +409,7 @@ export const CartesianRenderer: React.FC<CartesianRendererProps> = ({ spec }) =>
               xMax={xMax}
               toSvgX={toSvgX}
               toSvgY={toSvgY}
-              defaultColor={colors.primary}
+              defaultColor="currentColor"
             />
           ))}
         </g>
@@ -468,7 +419,7 @@ export const CartesianRenderer: React.FC<CartesianRendererProps> = ({ spec }) =>
           if (plot.type === "point") {
             const sx = toSvgX(plot.coord[0]);
             const sy = toSvgY(plot.coord[1]);
-            const ptColor = plot.color || colors.primary;
+            const ptColor = plot.color || "currentColor";
             const placement = pointPlacements.get(idx);
 
             return (
@@ -477,10 +428,10 @@ export const CartesianRenderer: React.FC<CartesianRendererProps> = ({ spec }) =>
                   cx={sx}
                   cy={sy}
                   r={4.5}
-                  fill={plot.hollow ? "#ffffff" : ptColor}
+                  fill={ptColor}
                   stroke={ptColor}
                   strokeWidth={2}
-                  className="shadow-sm"
+                  className={plot.hollow ? "shadow-sm fill-white dark:fill-zinc-950" : "shadow-sm"}
                 />
                 {plot.label && placement && (
                   <foreignObject
@@ -499,7 +450,7 @@ export const CartesianRenderer: React.FC<CartesianRendererProps> = ({ spec }) =>
                           : "justify-start"
                       }`}
                     >
-                      <span className="whitespace-nowrap text-[11px] font-bold px-1 py-0.5 rounded bg-white/85 dark:bg-slate-900/85 text-slate-800 dark:text-slate-100 shadow-sm border border-slate-200/50 dark:border-slate-700/50">
+                      <span className="whitespace-nowrap text-[11px] font-bold px-1 py-0.5 rounded bg-white/85 dark:bg-zinc-900/85 text-zinc-800 dark:text-zinc-100 shadow-sm border border-zinc-200/50 dark:border-zinc-700/50">
                         <FormattedText
                           text={toMathText(plot.label)}
                         />
@@ -526,7 +477,7 @@ export const CartesianRenderer: React.FC<CartesianRendererProps> = ({ spec }) =>
                   }`}
                 >
                   <span
-                    className="text-[11px] font-bold text-slate-800 dark:text-slate-100"
+                    className="text-[11px] font-bold text-zinc-800 dark:text-zinc-100"
                     style={plot.color ? { color: plot.color } : undefined}
                   >
                     <FormattedText text={toMathText(plot.text)} />
@@ -645,7 +596,8 @@ const PlotRenderer: React.FC<{
         {/* Shaded triangle area */}
         <polygon
           points={`${sx1},${sy1} ${cornerX},${cornerY} ${sx2},${sy2}`}
-          fill="rgba(245, 158, 11, 0.12)"
+          fill="currentColor"
+          className="text-amber-700 dark:text-amber-400 fill-amber-500/10"
           stroke="none"
         />
         {/* Horizontal run leg */}
@@ -654,9 +606,10 @@ const PlotRenderer: React.FC<{
           y1={sy1}
           x2={cornerX}
           y2={cornerY}
-          stroke="#d97706"
+          stroke="currentColor"
           strokeWidth={2}
           strokeDasharray="4 3"
+          className="text-amber-700 dark:text-amber-400"
         />
         {/* Vertical rise leg */}
         <line
@@ -664,9 +617,10 @@ const PlotRenderer: React.FC<{
           y1={cornerY}
           x2={sx2}
           y2={sy2}
-          stroke="#d97706"
+          stroke="currentColor"
           strokeWidth={2}
           strokeDasharray="4 3"
+          className="text-amber-700 dark:text-amber-400"
         />
         {/* Hypotenuse line */}
         <line

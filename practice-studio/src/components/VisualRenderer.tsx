@@ -123,14 +123,15 @@ const RenderElement: React.FC<{ element: VisualElement }> = ({ element }) => {
       if (!element.points || element.points.length < 2) return null;
       const pointsStr = element.points.map((p) => `${p[0]},${p[1]}`).join(" ");
       return (
-        <g>
+        <g className="text-indigo-600 dark:text-indigo-400">
           <polygon
             points={pointsStr}
-            stroke={element.stroke || "#6366f1"}
+            stroke={element.stroke || "currentColor"}
             strokeWidth={element.strokeWidth || 2.5}
-            fill={element.fill || "rgba(99, 102, 241, 0.1)"}
+            fill={element.fill || "currentColor"}
             strokeLinejoin="round"
             strokeDasharray={element.strokeDasharray}
+            className={!element.fill ? "fill-indigo-500/10" : undefined}
           />
           {element.rightAngleAt && renderRightAngle(element.rightAngleAt, element.points)}
         </g>
@@ -146,9 +147,10 @@ const RenderElement: React.FC<{ element: VisualElement }> = ({ element }) => {
           y1={start[1]}
           x2={end[0]}
           y2={end[1]}
-          stroke={element.stroke || "#64748b"}
+          stroke={element.stroke || "currentColor"}
           strokeWidth={element.strokeWidth || 2}
           strokeDasharray={element.strokeDasharray}
+          className="text-zinc-500 dark:text-zinc-400"
         />
       );
     }
@@ -161,24 +163,33 @@ const RenderElement: React.FC<{ element: VisualElement }> = ({ element }) => {
           cx={cx}
           cy={cy}
           r={r}
-          stroke={element.stroke || "#0284c7"}
+          stroke={element.stroke || "currentColor"}
           strokeWidth={element.strokeWidth || 2.5}
-          fill={element.fill || "rgba(56, 189, 248, 0.1)"}
+          fill={element.fill || "currentColor"}
+          className={`text-indigo-600 dark:text-indigo-400 ${!element.fill ? "fill-indigo-500/10" : ""}`}
         />
       );
     }
 
     case "point": {
       const [cx, cy] = element.coord || [0, 0];
-      const color = element.color || "#2563eb";
+      const color = element.color || "currentColor";
       return (
-        <g>
-          <circle cx={cx} cy={cy} r={4.5} fill={color} stroke="#ffffff" strokeWidth={1.5} />
+        <g className={!element.color ? "text-indigo-600 dark:text-indigo-400" : undefined}>
+          <circle
+            cx={cx}
+            cy={cy}
+            r={4.5}
+            fill={color}
+            stroke="currentColor"
+            strokeWidth={1.5}
+            className={element.color ? "text-white dark:text-zinc-950" : "fill-indigo-600 dark:fill-indigo-400 stroke-white dark:stroke-zinc-950"}
+          />
           {element.label && (
             <text
               x={cx + 8}
               y={cy - 8}
-              className="fill-slate-800 dark:fill-slate-200 font-sans font-semibold text-xs select-none"
+              className="fill-zinc-800 dark:fill-zinc-200 font-sans font-semibold text-xs select-none"
               style={{ fontSize: "11px" }}
             >
               {element.label}
@@ -213,8 +224,9 @@ const RenderElement: React.FC<{ element: VisualElement }> = ({ element }) => {
           <path
             d={`M ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 0 ${x2} ${y2}`}
             fill="none"
-            stroke="#d97706"
+            stroke="currentColor"
             strokeWidth={1.8}
+            className="text-amber-700 dark:text-amber-400"
           />
           {element.label && (
             <text
@@ -241,8 +253,8 @@ const RenderElement: React.FC<{ element: VisualElement }> = ({ element }) => {
           x={x}
           y={y}
           style={{ fontSize: `${fs}px` }}
-          fill={element.color || "#1e293b"}
-          className="font-sans font-semibold select-none"
+          fill={element.color || "currentColor"}
+          className="text-zinc-900 dark:text-zinc-100 font-sans font-semibold select-none"
         >
           {element.label}
         </text>
@@ -289,7 +301,7 @@ const RenderElement: React.FC<{ element: VisualElement }> = ({ element }) => {
           className={`text-xs font-mono font-bold ${
             element.highlight
               ? "fill-amber-700 dark:fill-amber-400 font-extrabold"
-              : "fill-slate-800 dark:fill-slate-200"
+              : "fill-zinc-800 dark:fill-zinc-200"
           }`}
           style={{ fontSize: "11px" }}
         >
@@ -307,18 +319,20 @@ const RenderElement: React.FC<{ element: VisualElement }> = ({ element }) => {
       const bottomY = cy + h / 2;
 
       return (
-        <g stroke={element.stroke || "#0284c7"} strokeWidth={element.strokeWidth || 2}>
+        <g stroke={element.stroke || "currentColor"} strokeWidth={element.strokeWidth || 2} className="text-indigo-600 dark:text-indigo-400">
           <path
             d={`M ${cx - rx} ${topY} L ${cx - rx} ${bottomY} A ${rx} ${ry} 0 0 0 ${cx + rx} ${bottomY} L ${cx + rx} ${topY}`}
-            fill={element.fill || "rgba(56, 189, 248, 0.08)"}
+            fill={element.fill || "currentColor"}
+            className={!element.fill ? "fill-indigo-500/10" : undefined}
           />
           <path
             d={`M ${cx - rx} ${bottomY} A ${rx} ${ry} 0 0 1 ${cx + rx} ${bottomY}`}
             fill="none"
             strokeDasharray="4 4"
-            stroke="#64748b"
+            stroke="currentColor"
+            className="text-zinc-500 dark:text-zinc-400"
           />
-          <ellipse cx={cx} cy={topY} rx={rx} ry={ry} fill={element.fill || "rgba(56, 189, 248, 0.14)"} />
+          <ellipse cx={cx} cy={topY} rx={rx} ry={ry} fill={element.fill || "currentColor"} className={!element.fill ? "fill-indigo-500/15" : undefined} />
         </g>
       );
     }
@@ -345,9 +359,10 @@ function renderRightAngle(vertex: [number, number], points: [number, number][]) 
   return (
     <polyline
       points={`${c1[0]},${c1[1]} ${c2[0]},${c2[1]} ${c3[0]},${c3[1]}`}
-      stroke="#64748b"
+      stroke="currentColor"
       strokeWidth={1.5}
       fill="none"
+      className="text-zinc-500 dark:text-zinc-400"
     />
   );
 }

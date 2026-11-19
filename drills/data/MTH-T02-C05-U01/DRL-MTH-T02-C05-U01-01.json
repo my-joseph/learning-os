@@ -529,7 +529,6 @@
       "context": "",
       "prompt": "A student calculated the balance of an account starting with $\\$1000$ earning $8\\%$ annual interest compounded quarterly for $3$ years:\nLine 1: $A = 1000\\left(1 + \\frac{0.08}{4}\\right)^3$\nLine 2: $= 1000(1 + 0.02)^3$\nLine 3: $= 1000(1.02)^3$\nLine 4: $= 1061.208$\nWhich line is the first one that is wrong?",
       "display": "A = P\\left(1 + \\frac{r}{n}\\right)^{nt}",
-      "plainText": "A student calculated the balance of $1000 at 8% compounded quarterly for 3 years: Line 1: 1000*(1 + 0.08/4)^3; Line 2: 1000*(1 + 0.02)^3; Line 3: 1000*(1.02)^3; Line 4: 1061.208. Which line is the first one that is wrong?",
       "givens": {
         "P": 1000,
         "r_pct": 8,

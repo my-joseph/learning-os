@@ -484,7 +484,6 @@
       "verificationLevel": "partial",
       "prompt": "A student simplified $\\frac{\\frac{5}{6}}{\\frac{3}{4} - \\frac{1}{8}}$ step by step:\nLine 1: $\\frac{\\frac{5}{6}}{\\frac{6}{8} - \\frac{1}{8}}$\nLine 2: $\\frac{\\frac{5}{6}}{\\frac{5}{8}}$\nLine 3: $\\frac{5 \\times 5}{6 \\times 8}$\nLine 4: $\\frac{25}{48}$\nWhich line is the first one that is wrong?",
       "display": "\\frac{\\frac{5}{6}}{\\frac{3}{4} - \\frac{1}{8}}",
-      "plainText": "A student simplified (5/6) / (3/4 - 1/8) step by step: Line 1: (5/6) / (6/8 - 1/8); Line 2: (5/6) / (5/8); Line 3: (5 * 5) / (6 * 8); Line 4: 25/48. Which line is the first one that is wrong?",
       "givens": {
         "a": 5,
         "b": 6,

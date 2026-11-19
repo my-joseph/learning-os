@@ -74,7 +74,7 @@ export const PlainAnswerField: React.FC<PlainAnswerFieldProps> = ({
         }}
         placeholder={placeholder}
         aria-label={ariaLabel}
-        className="w-full h-11 font-mono text-sm bg-transparent text-zinc-900 dark:text-zinc-100 pl-3.5 pr-12 py-2 focus:outline-none placeholder:text-zinc-400 dark:placeholder:text-zinc-500"
+        className="w-full h-11 font-mono text-sm bg-transparent text-zinc-900 dark:text-zinc-100 pl-3.5 pr-12 py-2 focus:outline-none placeholder:font-sans placeholder:text-zinc-400 dark:placeholder:text-zinc-500"
       />
       <InlineCheckButton
         onClick={onCheck}
