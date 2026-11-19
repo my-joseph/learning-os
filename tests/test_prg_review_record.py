@@ -310,7 +310,7 @@ def test_weak_spots_prg_level_advice(tmp_path):
 
 
 def test_mastery_prg_only_from_pass_and_mocked_notion(tmp_path, monkeypatch):
-    # Test results without review -> not yet passed (score 0 -> mastery 1)
+    # Passing tests without review -> awaiting review (score None -> no mastery evidence yet; never Mastery 3)
     roots_no_rev = _write_prg_progress(
         tmp_path / "norev",
         {
@@ -322,7 +322,21 @@ def test_mastery_prg_only_from_pass_and_mocked_notion(tmp_path, monkeypatch):
         },
     )
     upd_no_rev = weak_spots.review_update("PRG-T09-C01-U01", None, "2026-11-16", *roots_no_rev)
-    assert upd_no_rev is not None and upd_no_rev["mastery"] == 1
+    assert upd_no_rev is None
+
+    # Failing tests without review -> score 0 -> mastery 1
+    roots_fail = _write_prg_progress(
+        tmp_path / "fail",
+        {
+            "D1": [
+                ("Q01", 3, "debugging", {"lastTestReport": {"allPassed": False}}),
+                ("Q02", 3, "problem-solving", {"lastTestReport": {"allPassed": False}}),
+                ("Q03", 3, "problem-solving", {"lastTestReport": {"allPassed": False}}),
+            ]
+        },
+    )
+    upd_fail = weak_spots.review_update("PRG-T09-C01-U01", None, "2026-11-16", *roots_fail)
+    assert upd_fail is not None and upd_fail["mastery"] == 1
 
     # 3 L3+ problems (including an L4 challenge) with latest review 'pass' -> mastery 3 (via mocked Notion update_unit_reviews)
     roots_pass = _write_prg_progress(
@@ -377,3 +391,103 @@ def test_verdict_never_passes_without_tests():
 
     assert compute_verdict({"passed": 0, "total": 0, "failed": []}, [], [], []) == "revise"
     assert compute_verdict({"passed": 3, "total": 3, "failed": []}, [], [], []) == "pass"
+
+
+def test_review_record_sets_state_score_via_shared_rule(tmp_path, monkeypatch):
+    from progress_store import load_progress
+
+    drill_doc = _make_prg_drill(level=1)
+    drill_id = drill_doc["drillId"]
+
+    def fake_run_review_with_source(*_args, **_kwargs):
+        return (
+            {
+                "drillId": drill_id,
+                "problemId": "Q01",
+                "codeHash": "sha256:abc",
+                "tests": {"passed": 3, "total": 3, "failed": []},
+                "lint": [],
+                "typecheck": [],
+                "checks": [{"id": "U-names", "severity": "must", "check": "Clear names", "why": "readability"}],
+            },
+            "function clampPort(p) { return p; }",
+            json.loads(json.dumps(drill_doc)),
+        )
+
+    monkeypatch.setattr(review_record, "run_review_with_source", fake_run_review_with_source)
+    monkeypatch.setattr(
+        review_record,
+        "find_drill_doc",
+        lambda _id: (json.loads(json.dumps(drill_doc)), tmp_path / f"{drill_id}.json"),
+    )
+
+    # 1. Clean first pass sets state.score = 1.0 even without prior Studio test run
+    rec = review_record.add_record(drill_id, "Q01", [])
+    assert rec["verdict"] == "pass"
+    prog = load_progress(drill_id)
+    assert prog["problems"]["Q01"]["score"] == 1.0
+
+    # 2. Revise sets state.score = 0.0, then subsequent pass sets state.score = 0.5
+    drill_doc_2 = _make_prg_drill(drill_id="DRL-PRG-T00-C03-98", level=1)
+    did2 = drill_doc_2["drillId"]
+    monkeypatch.setattr(
+        review_record,
+        "run_review_with_source",
+        lambda *_a, **_kw: (
+            {
+                "drillId": did2,
+                "problemId": "Q01",
+                "codeHash": "sha256:def",
+                "tests": {"passed": 3, "total": 3, "failed": []},
+                "lint": [],
+                "typecheck": [],
+                "checks": [{"id": "U-names", "severity": "must", "check": "Clear names", "why": "readability"}],
+            },
+            "function clampPort(p) { return p; }",
+            json.loads(json.dumps(drill_doc_2)),
+        ),
+    )
+    monkeypatch.setattr(
+        review_record,
+        "find_drill_doc",
+        lambda _id: (json.loads(json.dumps(drill_doc_2)), tmp_path / f"{did2}.json"),
+    )
+
+    r1 = review_record.add_record(did2, "Q01", [{"check": "U-names", "line": 1, "note": "vague"}])
+    assert r1["verdict"] == "revise"
+    assert load_progress(did2)["problems"]["Q01"]["score"] == 0.0
+
+    r2 = review_record.add_record(did2, "Q01", [])
+    assert r2["verdict"] == "pass"
+    assert load_progress(did2)["problems"]["Q01"]["score"] == 0.5
+
+    # 3. Dispute unblocking first revise flips verdict to pass and sets state.score = 1.0
+    drill_doc_3 = _make_prg_drill(drill_id="DRL-PRG-T00-C03-97", level=1)
+    did3 = drill_doc_3["drillId"]
+    monkeypatch.setattr(
+        review_record,
+        "run_review_with_source",
+        lambda *_a, **_kw: (
+            {
+                "drillId": did3,
+                "problemId": "Q01",
+                "codeHash": "sha256:ghi",
+                "tests": {"passed": 3, "total": 3, "failed": []},
+                "lint": [],
+                "typecheck": [],
+                "checks": [{"id": "U-names", "severity": "must", "check": "Clear names", "why": "readability"}],
+            },
+            "function clampPort(p) { return p; }",
+            json.loads(json.dumps(drill_doc_3)),
+        ),
+    )
+    monkeypatch.setattr(
+        review_record,
+        "find_drill_doc",
+        lambda _id: (json.loads(json.dumps(drill_doc_3)), tmp_path / f"{did3}.json"),
+    )
+    review_record.add_record(did3, "Q01", [{"check": "U-names", "line": 1, "note": "vague"}])
+    assert load_progress(did3)["problems"]["Q01"]["score"] == 0.0
+    updated, _ = review_record.dispute_finding(did3, "Q01", "U-names", reason="domain term")
+    assert updated["verdict"] == "pass"
+    assert load_progress(did3)["problems"]["Q01"]["score"] == 1.0

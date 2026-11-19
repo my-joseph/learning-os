@@ -43,6 +43,8 @@ export const LineChoicePrompt: React.FC<LineChoicePromptProps> = ({
           const isSelected = activeSelected === item.option.id;
           const isCorrectChosen =
             isSelected && !isCheckingThis && resultStatus === "correct";
+          const isAssistedChosen =
+            isSelected && !isCheckingThis && resultStatus === "assisted";
           const isWrongChosen =
             isSelected && !isCheckingThis && resultStatus === "wrong";
 
@@ -61,6 +63,10 @@ export const LineChoicePrompt: React.FC<LineChoicePromptProps> = ({
             rowCls = statusTone.correct.choiceCard;
             lineNumCls = statusTone.correct.solidBadge;
             circleCls = statusTone.correct.solidBadge;
+          } else if (isAssistedChosen) {
+            rowCls = statusTone.assisted.choiceCard;
+            lineNumCls = statusTone.assisted.solidBadge;
+            circleCls = statusTone.assisted.solidBadge;
           } else if (isWrongChosen) {
             rowCls = statusTone.wrong.choiceCard;
             lineNumCls = statusTone.wrong.solidBadge;

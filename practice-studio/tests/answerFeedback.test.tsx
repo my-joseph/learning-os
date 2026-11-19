@@ -64,9 +64,34 @@ const sampleTags: MistakeTag[] = [
 // 1. Pure Result Card logic tests
 // ---------------------------------------------------------------------------
 assert.equal(getResultCardTone({ verdict: "correct", message: "Correct.", components: [], diagnostics: [] }), "correct");
+assert.equal(
+  getResultCardTone(
+    { verdict: "correct", message: "Correct.", components: [], diagnostics: [] },
+    baseState({
+      attempts: [
+        { input: "4", ts: "2026-11-18T00:00:00Z", verdict: "incorrect" },
+        { input: "5", ts: "2026-11-18T00:00:05Z", verdict: "correct" },
+      ],
+    })
+  ),
+  "assisted",
+  "correct after wrong must render assisted tone, never solid green correct"
+);
+assert.equal(
+  getResultCardTone(
+    { verdict: "correct", message: "Correct.", components: [], diagnostics: [] },
+    baseState({
+      hintsRevealed: 1,
+      attempts: [{ input: "5", ts: "2026-11-18T00:00:05Z", verdict: "correct", hintsUsed: 1 }],
+    })
+  ),
+  "assisted",
+  "correct with hint must render assisted tone"
+);
 assert.equal(getResultCardTone({ verdict: "equivalent_not_in_form", message: "Not factored", components: [], diagnostics: [] }), "almost");
 assert.equal(getResultCardTone({ verdict: "partial", message: "Some match", components: [], diagnostics: [] }), "almost");
-assert.equal(getResultCardTone({ verdict: "invalid input", message: "Bad", components: [], diagnostics: [] }), "almost");
+assert.equal(getResultCardTone({ verdict: "invalid input", message: "Bad", components: [], diagnostics: [] }), "inputError");
+assert.equal(getResultCardTone({ verdict: "parse_error", message: "Bad", components: [], diagnostics: [] }), "inputError");
 assert.equal(getResultCardTone({ verdict: "incorrect", message: "Wrong", components: [], diagnostics: [] }), "wrong");
 assert.equal(getResultCardTone({ verdict: "skipped", message: "Skipped", components: [], diagnostics: [] }), "skipped");
 assert.equal(
@@ -75,12 +100,13 @@ assert.equal(
 );
 
 assert.equal(getResultCardTitle({ verdict: "correct", message: "", components: [], diagnostics: [] }, "correct"), "Correct");
+assert.equal(getResultCardTitle({ verdict: "correct", message: "", components: [], diagnostics: [] }, "assisted"), "Correct");
 assert.equal(
   getResultCardTitle({ verdict: "equivalent_not_in_form", message: "", components: [], diagnostics: [] }, "almost"),
   "Almost — check the form"
 );
 assert.equal(getResultCardTitle({ verdict: "partial", message: "", components: [], diagnostics: [] }, "almost"), "Almost");
-assert.equal(getResultCardTitle({ verdict: "invalid input", message: "", components: [], diagnostics: [] }, "almost"), "Check your input");
+assert.equal(getResultCardTitle({ verdict: "invalid input", message: "", components: [], diagnostics: [] }, "inputError"), "Check your input");
 assert.equal(getResultCardTitle({ verdict: "incorrect", message: "", components: [], diagnostics: [] }, "wrong"), "Not quite");
 assert.equal(getResultCardTitle({ verdict: "skipped", message: "", components: [], diagnostics: [] }, "skipped"), "Skipped");
 
@@ -204,6 +230,32 @@ const lastCorrectCardHtml = renderToStaticMarkup(
 );
 assert.match(lastCorrectCardHtml, />Review</);
 assert.match(lastCorrectCardHtml, />Attempt 2</);
+assert.ok(
+  lastCorrectCardHtml.includes(statusTone.assisted.softCard),
+  "Correct after wrong must render assisted green-outline card"
+);
+assert.ok(
+  !lastCorrectCardHtml.includes(statusTone.correct.softCard),
+  "Correct after wrong must NOT render solid-green first-try card"
+);
+assert.match(lastCorrectCardHtml, /lucide-check/);
+
+const inputErrorCardHtml = renderToStaticMarkup(
+  <AnswerResultCard
+    lastCheck={{ verdict: "invalid input", message: "Could not parse.", components: [], diagnostics: [] }}
+    state={baseState({ attempts: [{ input: "((", ts: "2026-11-18T00:00:00Z", verdict: "invalid input" }] })}
+    onTryAgain={noop}
+  />
+);
+assert.ok(
+  inputErrorCardHtml.includes(statusTone.notTried.softCard),
+  "Invalid input / parse_error must render neutral card"
+);
+assert.ok(
+  !inputErrorCardHtml.includes("status-correct") && !inputErrorCardHtml.includes("status-assisted"),
+  "Invalid input / parse_error must NEVER render green"
+);
+assert.match(inputErrorCardHtml, />Check your input</);
 
 const almostCardHtml = renderToStaticMarkup(
   <AnswerResultCard

@@ -281,6 +281,24 @@ function makeProblem(overrides: Partial<Problem> = {}): Problem {
     "answering similar correctly after revealing steps marks it assisted"
   );
   assert.equal(
+    deriveVariantStatus({
+      role: "try",
+      servedAt: "2026-11-19T10:01:00Z",
+      attempts: [
+        { input: "9/8", ts: "2026-11-19T10:02:00Z", verdict: "incorrect", kind: "variant" },
+        { input: "1/8", ts: "2026-11-19T10:03:00Z", verdict: "correct", kind: "variant" },
+      ],
+    }),
+    "assisted",
+    "wrong then correct on a similar question must score assisted (same rule as main question)"
+  );
+  const useSimilarSrc = fs.readFileSync("src/hooks/useSimilarTabs.ts", "utf8");
+  assert.match(
+    useSimilarSrc,
+    /if \(!res\.ok\)[\s\S]*?fetchedListKeyRef\.current = null/,
+    "BUG 4: failed variant list fetch must clear fetchedListKeyRef so user can retry"
+  );
+  assert.equal(
     deriveVariantStatus(
       {
         role: "try",

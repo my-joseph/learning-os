@@ -13,6 +13,7 @@ import {
 import type { MistakeTag, Problem } from "@/types/drill";
 import { CARD_STYLES, getSubstantiveAttemptCount, type ResultCardTone } from "@/lib/answerFeedback";
 import { canRevealVerifiedAnswer, hasSubstantiveAttempt } from "@/lib/reviewGuard";
+import { maxAllowedSelfScore, scoreProblem } from "@/lib/scoring";
 import { similarUnlock } from "@/lib/similarTabs";
 import {
   formatDuration,
@@ -62,8 +63,9 @@ export interface ReviewItemRowProps {
 
 function toneForOutcome(outcome: ReviewOutcome): ResultCardTone {
   if (outcome === "correct_first") return "correct";
-  if (outcome === "assisted_or_partial") return "almost";
+  if (outcome === "assisted_or_partial") return "assisted";
   if (outcome === "skipped") return "skipped";
+  if (outcome === "awaiting_review" || outcome === "unanswered") return "inputError";
   return "wrong";
 }
 
@@ -447,7 +449,9 @@ export const ReviewItemRow: React.FC<ReviewItemRowProps> = ({
                         hasAttempt={isAttempted}
                         showSelfScore={!isCode && !isLab}
                         disabled={disabled}
-                        score={problem.state.score}
+                        maxScore={maxAllowedSelfScore(problem.state, { isPrg: isCode || isLab })}
+                        skipped={Boolean(problem.state.skipped)}
+                        score={scoreProblem(problem.state, { isPrg: isCode || isLab }).score}
                         mistakes={problem.state.mistakes || []}
                         mistakeNote={problem.state.mistakeNote}
                         mistakeTags={mistakeTags}

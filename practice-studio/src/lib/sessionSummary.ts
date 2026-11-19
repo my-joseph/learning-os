@@ -3,6 +3,7 @@ import type { PracticeStatusOverride } from "../hooks/types";
 import type { MasteryCap, ReviewScheduleEntry } from "./dueToday";
 import { hasSubstantiveAttempt } from "./reviewGuard";
 import { classifyReviewOutcome } from "./reviewOutcome";
+import { scoreProblem } from "./scoring";
 import { plainTitle } from "./titleText";
 
 export interface SessionMetrics {
@@ -45,18 +46,24 @@ export function getPersistedStatusOverride(
     : null;
 }
 
-/** Compute live score, accuracy, skipped count, and target practice status for a drill. */
+/** Compute live score, accuracy, skipped count, and target practice status for a drill via `scoreProblem`. */
 export function computeSessionMetrics(
   currentDrill: DrillDocument | null,
   statusOverride: PracticeStatusOverride
 ): SessionMetrics {
+  const isPrg = currentDrill?.subject === "PRG";
   const liveScore = currentDrill
-    ? currentDrill.problems.reduce((acc, p) => acc + (p.state?.score || 0), 0)
+    ? currentDrill.problems.reduce(
+        (acc, p) => acc + (scoreProblem(p.state, { isPrg }).score ?? 0),
+        0
+      )
     : 0;
   const maxScore = currentDrill?.problems.length || 0;
   const accuracyPct = maxScore > 0 ? Math.round((liveScore / maxScore) * 1000) / 10 : 0;
   const skippedCount = currentDrill
-    ? currentDrill.problems.filter((p) => p.state?.skipped).length
+    ? currentDrill.problems.filter(
+        (p) => scoreProblem(p.state, { isPrg }).outcome === "skipped"
+      ).length
     : 0;
 
   const computedPracticeStatus: "Graded" | "Needs Retry" =
@@ -91,9 +98,12 @@ export function buildSessionSummary(
   const divergedList: string[] = [];
   const skippedProblems: string[] = [];
 
+  const isPrg = currentDrill.subject === "PRG";
   currentDrill.problems.forEach((p) => {
+    const scored = scoreProblem(p.state, { isPrg });
+    const isSkipped = scored.outcome === "skipped";
     const parts: string[] = [];
-    if (p.state?.skipped) {
+    if (isSkipped) {
       skippedProblems.push(`${p.id} (${p.context || p.category})`);
       parts.push("SKIPPED - Concept Gap");
     }
@@ -105,11 +115,10 @@ export function buildSessionSummary(
       const st = p.steps?.[p.state.divergedStep];
       parts.push(`Step ${p.state.divergedStep + 1}: ${st ? st.explain : "Diverged"}`);
     } else if (
-      p.state?.score !== null &&
-      p.state?.score !== undefined &&
-      p.state.score < 1 &&
+      scored.score !== null &&
+      scored.score < 1 &&
       (p.state?.mistakes || []).length > 0 &&
-      !p.state?.skipped
+      !isSkipped
     ) {
       parts.push((p.state?.mistakes || []).map((t) => tagMap.get(t) || t).join(", "));
     }

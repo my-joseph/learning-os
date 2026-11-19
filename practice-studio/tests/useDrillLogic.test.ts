@@ -480,11 +480,45 @@ async function main() {
     const updated = computeTestRunTransition(doc, "Q01", report, 1);
     assert.ok(updated);
     const st = updated.problems[0].state;
-    assert.deepEqual(st.lastTestReport, report, "lastTestReport must be persisted");
-    assert.equal(st.score, 1, "score must be persisted in the same transition");
+    const { ts: reportTs, ...reportWithoutTs } = st.lastTestReport!;
+    assert.ok(typeof reportTs === "string" && reportTs.length > 0, "lastTestReport must be timestamped");
+    assert.deepEqual(reportWithoutTs, report, "lastTestReport fields must be persisted");
+    assert.equal(st.testRuns?.length, 1, "testRuns history must record the run");
+    assert.equal(st.score, null, "passing tests without review must await review (score null)");
     assert.equal(st.skipped, false);
     assert.equal(st.mistakeNote, "Keep this note edited during checks", "concurrent note edits must be preserved");
     assert.deepEqual(st.mistakes, ["QC-NAMING"]);
+
+    // With a failing run followed by a passing run + pass review, score must be 0.5 (not 1)
+    const docWithFail = computeTestRunTransition(doc, "Q01", { ...report, allPassed: false, score: 0, passedCount: 1 }, 0)!;
+    assert.equal(docWithFail.problems[0].state.score, 0, "failing tests must score 0");
+    const docWithPassReview: DrillDocument = {
+      ...docWithFail,
+      problems: [
+        {
+          ...docWithFail.problems[0],
+          state: {
+            ...docWithFail.problems[0].state,
+            reviews: [
+              {
+                at: "2026-11-20T01:00:00Z",
+                attempt: 1,
+                codeHash: "sha256:x",
+                code: "",
+                tests: { passed: 4, total: 4, failed: [] },
+                lint: [],
+                typecheck: [],
+                findings: [],
+                verdict: "pass",
+                explain: null,
+              },
+            ],
+          },
+        },
+      ],
+    };
+    const afterPassRun = computeTestRunTransition(docWithPassReview, "Q01", report, 1)!;
+    assert.equal(afterPassRun.problems[0].state.score, 0.5, "earlier failing test run in cycle caps pass score at 0.5");
   }
 
   // 9. Hint reveal transition respects current cycle and does not run side effects inside setState (K2)
@@ -510,7 +544,7 @@ async function main() {
     // and useDrill never calls triggerAutoSave inside a setCurrentDrill updater (K2).
     const codeDashSrc = readFileSync("src/components/code/CodeDashboard.tsx", "utf8");
     assert.match(codeDashSrc, /onSkip\(\{\s*countHint\s*\}\)/, "PRG Skip must pass { countHint }");
-    assert.match(codeDashSrc, /onTestReportChange\(report,\s*nextScore\)/, "PRG Run checks must save report and score together");
+    assert.match(codeDashSrc, /onTestReportChange\(report\)/, "PRG Run checks must save report and canonical score together");
     const studioClientSrc = readFileSync("src/components/shell/StudioClient.tsx", "utf8");
     assert.match(studioClientSrc, /onSkip=\{\(opts\)\s*=>\s*handleSkipProblem\(prob\.id,\s*opts\)\}/);
     const useDrillSrc = readFileSync("src/hooks/useDrill.ts", "utf8");

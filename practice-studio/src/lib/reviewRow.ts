@@ -7,13 +7,14 @@ import type {
 import type { WeakSpotUnit } from "./dueToday";
 import { parseLineChoicePrompt } from "./lineChoicePrompt";
 import { countWrongAttempts, cycleReviews, isSubstantiveVerdict } from "./reviewGuard";
-import { countPractisedSimilar, cycleOriginalAttempts } from "./similarTabs";
+import { countPractisedSimilar, cycleOriginalAttempts, isInCycle } from "./similarTabs";
 import {
   classifyReviewOutcome,
   getQuestionLabel,
   type GroupedReviewItem,
   type ReviewOutcome,
 } from "./reviewOutcome";
+import { scoreProblem } from "./scoring";
 import { drillHref } from "./routes";
 import { isContextSlug } from "./studioRules";
 import { plainTitle, trapName } from "./titleText";
@@ -342,12 +343,17 @@ export function rowReason(
           `${rev.findings.length} ${rev.findings.length === 1 ? "finding" : "findings"}`
         );
       }
+    } else if (outcome === "awaiting_review") {
+      parts.push("Awaiting review");
     }
 
     if (parts.length > 0) {
       return parts.join(" · ");
     }
-    return outcome === "correct_first" ? "Passed" : "Needs revision";
+    if (outcome === "awaiting_review") return "Awaiting review";
+    return outcome === "correct_first" || outcome === "assisted_or_partial"
+      ? "Passed"
+      : "Needs revision";
   }
 
   // Math row reason
@@ -360,8 +366,12 @@ export function rowReason(
   const traps = matchedTraps(state);
   const firstTrap = traps.length > 0 ? trapName(traps[0]) : "";
   const wrongCount = countWrongAttempts(state);
+  const gotCorrect = cycleOriginalAttempts(state).some((a) => a.verdict === "correct");
 
   if (outcome === "wrong") {
+    if (wrongCount === 0 && gotCorrect) {
+      return withPractised("Self-scored 0");
+    }
     const tries = Math.max(1, wrongCount);
     const tryText = `${tries} wrong ${tries === 1 ? "try" : "tries"}`;
     return withPractised(firstTrap ? `${tryText} · trap: ${firstTrap}` : tryText);
@@ -369,9 +379,9 @@ export function rowReason(
 
   if (outcome === "assisted_or_partial") {
     const hints = state?.hintsRevealed ?? 0;
-    const gotCorrect =
-      (state?.score ?? 0) >= 1 ||
-      cycleOriginalAttempts(state).some((a) => a.verdict === "correct");
+    const exampleViewed = Boolean(
+      state?.exampleViewedAt && isInCycle(state.exampleViewedAt, state.cycleStartedAt)
+    );
 
     if (hints > 0 && gotCorrect) {
       return withPractised(`Correct after ${hints} ${hints === 1 ? "hint" : "hints"}`);
@@ -382,11 +392,17 @@ export function rowReason(
     if (state?.setupRevealedBeforeAnswer) {
       return withPractised(gotCorrect ? "Correct after set-up" : "Used set-up");
     }
+    if (exampleViewed && gotCorrect) {
+      return withPractised("Correct after worked example");
+    }
     if (wrongCount > 0 && gotCorrect) {
       return withPractised(`Correct after ${wrongCount} wrong ${wrongCount === 1 ? "try" : "tries"}`);
     }
     if (hints > 0) {
       return withPractised(`Used ${hints} ${hints === 1 ? "hint" : "hints"}`);
+    }
+    if (gotCorrect) {
+      return withPractised("Self-scored 0.5");
     }
     return withPractised("Partial credit");
   }
@@ -397,9 +413,10 @@ export function rowReason(
 const ATTENTION_ORDER: Record<ReviewOutcome, number> = {
   wrong: 0,
   assisted_or_partial: 1,
-  skipped: 2,
-  unanswered: 3,
-  correct_first: 4,
+  awaiting_review: 2,
+  skipped: 3,
+  unanswered: 4,
+  correct_first: 5,
 };
 
 /** Sort "To review" rows worst-first (`wrong`, `assisted_or_partial`, `skipped`, `unanswered`), then by index. */
@@ -427,19 +444,24 @@ export function getDefaultExpandedRowIds(
   return map;
 }
 
-/** Count how many items the learner got right (first-try OR assisted correct). */
+/** Count how many items the learner got right (first-try OR assisted correct, excluding partial-only). */
 export function countRightItems(problems: readonly Problem[]): number {
   let right = 0;
   for (const p of problems) {
-    const outcome = classifyReviewOutcome(p.state);
-    if (outcome === "correct_first") {
+    const scored = scoreProblem(p.state);
+    if (scored.outcome === "correct") {
       right += 1;
-    } else if (
-      outcome === "assisted_or_partial" &&
-      ((p.state?.score ?? 0) >= 1 ||
-        cycleOriginalAttempts(p.state).some((a) => a.verdict === "correct"))
-    ) {
-      right += 1;
+    } else if (scored.outcome === "assisted") {
+      const currentReviews = cycleReviews(p.state);
+      const passedPrgReview =
+        currentReviews.length > 0 &&
+        currentReviews[currentReviews.length - 1].verdict === "pass";
+      const hadCorrectAttempt = cycleOriginalAttempts(p.state).some(
+        (a) => a.verdict === "correct"
+      );
+      if (passedPrgReview || hadCorrectAttempt) {
+        right += 1;
+      }
     }
   }
   return right;

@@ -8,25 +8,36 @@ import {
 } from "../types/drill";
 import { canRevealSteps } from "./redact";
 import { isSubstantiveVerdict, sanitizeCheckMessage } from "./reviewGuard";
+import { isLockedAfterCorrect, scoreProblem, type ScoreProblemOptions } from "./scoring";
 import { cycleAttempts } from "./similarTabs";
 import { statusTone } from "./statusTone";
 
-export type ResultCardTone = "correct" | "almost" | "wrong" | "skipped";
+export type ResultCardTone =
+  | "correct"
+  | "assisted"
+  | "almost"
+  | "wrong"
+  | "skipped"
+  | "inputError";
 export type ResultCardActionKind = "next" | "review" | "retry" | "show_steps" | "back";
-export type ChoiceResultStatus = "correct" | "wrong" | null;
+export type ChoiceResultStatus = "correct" | "assisted" | "wrong" | null;
 
 export const CARD_STYLES: Record<ResultCardTone, string> = {
   correct: statusTone.correct.softCard,
+  assisted: statusTone.assisted.softCard,
   almost: statusTone.assisted.softCard,
   wrong: statusTone.wrong.softCard,
   skipped: statusTone.skipped.softCard,
+  inputError: statusTone.notTried.softCard,
 };
 
 export const ICON_CIRCLE_STYLES: Record<ResultCardTone, string> = {
   correct: statusTone.correct.iconCircle,
+  assisted: statusTone.assisted.iconCircle,
   almost: statusTone.assisted.iconCircle,
   wrong: statusTone.wrong.iconCircle,
   skipped: statusTone.skipped.iconCircle,
+  inputError: statusTone.notTried.iconCircle,
 };
 
 export interface ResultCardModel {
@@ -101,24 +112,46 @@ function polishFeedbackText(verdict: string, rawText?: string | null): string {
   return sanitized;
 }
 
-/** Map a check verdict and problem state to one of the 4 calm Result Card tones. */
+/**
+ * Map a check verdict and problem state to a Result Card tone using the canonical `scoreProblem` rule:
+ * - `invalid input` / `parse_error`: `"inputError"` (neutral card, never green)
+ * - `skipped`: `"skipped"`
+ * - `correct`: `"correct"` ONLY when `outcome === "correct"`; `"assisted"` when `outcome === "assisted"`; `"wrong"` if lowered to 0
+ * - `partial` / `equivalent_not_in_form`: `"almost"` when `outcome === "assisted"`, else `"wrong"`
+ * - `incorrect`: `"wrong"`
+ */
 export function getResultCardTone(
   lastCheck: CheckResult,
-  state?: ProblemState | null
+  state?: ProblemState | null,
+  opts?: Pick<ScoreProblemOptions, "isVariant">
 ): ResultCardTone {
-  if (state?.skipped || lastCheck.verdict === "skipped") {
-    return "skipped";
-  }
-  if (lastCheck.verdict === "correct") {
-    return "correct";
-  }
   if (
-    lastCheck.verdict === "equivalent_not_in_form" ||
-    lastCheck.verdict === "partial" ||
     lastCheck.verdict === "invalid input" ||
     lastCheck.verdict === "parse_error"
   ) {
-    return "almost";
+    return "inputError";
+  }
+  if (state?.skipped || lastCheck.verdict === "skipped") {
+    return "skipped";
+  }
+
+  const effectiveState: Partial<ProblemState> = state
+    ? state.lastCheck
+      ? state
+      : { ...state, lastCheck }
+    : { lastCheck };
+  const scored = scoreProblem(effectiveState, opts);
+
+  if (lastCheck.verdict === "correct") {
+    if (scored.outcome === "correct") return "correct";
+    if (scored.outcome === "wrong") return "wrong";
+    return "assisted";
+  }
+  if (
+    lastCheck.verdict === "equivalent_not_in_form" ||
+    lastCheck.verdict === "partial"
+  ) {
+    return scored.outcome === "assisted" ? "almost" : "wrong";
   }
   return "wrong";
 }
@@ -128,9 +161,19 @@ export function getResultCardTitle(
   lastCheck: CheckResult,
   tone: ResultCardTone
 ): string {
-  if (tone === "correct") return "Correct";
+  if (tone === "inputError") return "Check your input";
+  if (tone === "correct" || tone === "assisted") return "Correct";
   if (tone === "skipped") return "Skipped";
-  if (tone === "wrong") return "Not quite";
+  if (tone === "wrong") {
+    if (lastCheck.verdict === "correct") return "Correct";
+    if (lastCheck.verdict === "equivalent_not_in_form") {
+      return "Almost — check the form";
+    }
+    if (lastCheck.verdict === "partial") {
+      return "Almost";
+    }
+    return "Not quite";
+  }
   if (lastCheck.verdict === "equivalent_not_in_form") {
     return "Almost — check the form";
   }
@@ -220,6 +263,7 @@ export function buildResultCardModel(params: {
   mistakeTags?: MistakeTag[];
   isLastQuestion?: boolean;
   preferBackAction?: boolean;
+  isVariant?: boolean;
 }): ResultCardModel {
   const {
     lastCheck,
@@ -228,17 +272,18 @@ export function buildResultCardModel(params: {
     mistakeTags = [],
     isLastQuestion = false,
     preferBackAction = false,
+    isVariant = false,
   } = params;
-  const tone = getResultCardTone(lastCheck, state);
+  const tone = getResultCardTone(lastCheck, state, { isVariant });
   const title = getResultCardTitle(lastCheck, tone);
   const body = formatDiagnosticBody(lastCheck, problem, state, mistakeTags);
   const attemptCount = getSubstantiveAttemptCount(state);
   const attemptNumber = attemptCount > 0 ? attemptCount : null;
 
   let actionKind: ResultCardActionKind | null = null;
-  if (tone === "correct") {
+  if (tone === "correct" || tone === "assisted" || (lastCheck.verdict === "correct" && tone === "wrong")) {
     actionKind = preferBackAction ? "back" : isLastQuestion ? "review" : "next";
-  } else if (tone === "almost" || tone === "wrong") {
+  } else if (tone === "almost" || tone === "wrong" || tone === "inputError") {
     actionKind = "retry";
   } else if (tone === "skipped" && canRevealSteps(state)) {
     actionKind = "show_steps";
@@ -267,14 +312,19 @@ export function isChoiceQuestion(problem: Pick<Problem, "answerSpec">): boolean 
   return problem.answerSpec?.type === "choice";
 }
 
-/** Determine whether choice options are disabled (while checking, skipped, or awaiting "Try again"). */
+/** Determine whether choice options are disabled (while checking, skipped, locked after correct, or awaiting "Try again"). */
 export function isChoiceInteractionLocked(params: {
   isChecking: boolean;
   lastCheck?: CheckResult | null;
   skipped?: boolean;
   retryUnlocked: boolean;
+  state?: ProblemState | null;
+  isVariant?: boolean;
 }): boolean {
   if (params.isChecking || params.skipped) return true;
+  if (params.state && isLockedAfterCorrect(params.state, { isVariant: params.isVariant })) {
+    return true;
+  }
   if (!params.lastCheck) return false;
   if (params.lastCheck.verdict === "correct") return true;
   if (isSubstantiveVerdict(params.lastCheck.verdict)) {
@@ -288,9 +338,18 @@ export function getChoiceResultStatus(params: {
   isChecking: boolean;
   lastCheck?: CheckResult | null;
   skipped?: boolean;
+  state?: ProblemState | null;
+  isVariant?: boolean;
 }): ChoiceResultStatus {
   if (params.isChecking || params.skipped || !params.lastCheck) return null;
-  if (params.lastCheck.verdict === "correct") return "correct";
+  if (params.lastCheck.verdict === "correct") {
+    if (params.state) {
+      const scored = scoreProblem(params.state, { isVariant: params.isVariant });
+      if (scored.outcome === "assisted") return "assisted";
+      if (scored.outcome === "wrong") return "wrong";
+    }
+    return "correct";
+  }
   if (
     params.lastCheck.verdict === "incorrect" ||
     params.lastCheck.verdict === "partial"

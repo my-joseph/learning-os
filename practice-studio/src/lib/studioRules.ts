@@ -1,4 +1,5 @@
-import type { ProblemState, TestRunReport } from "@/types/drill";
+import type { ProblemState, TestRunReport } from "../types/drill";
+import { scoreProblem } from "./scoring";
 
 export function isContextSlug(context?: string): boolean {
   return Boolean(context && /^[a-z0-9]+(?:_[a-z0-9]+)+$/.test(context));
@@ -6,12 +7,17 @@ export function isContextSlug(context?: string): boolean {
 
 export function getPrgScore(
   report: TestRunReport | null,
-  reviews: ProblemState["reviews"]
+  reviews: ProblemState["reviews"],
+  state?: Partial<ProblemState> | null
 ): number | null {
-  if (!report) return null;
-  const latestReview = reviews?.at(-1);
-  if (!report.allPassed) return 0;
-  return latestReview?.verdict === "pass" ? 1 : null;
+  return scoreProblem(
+    {
+      ...state,
+      lastTestReport: report,
+      reviews: reviews ?? state?.reviews ?? [],
+    },
+    { isPrg: true, ignoreStateScore: true }
+  ).score;
 }
 
 export function getReviewRequest(drillId: string, questionId: string): string {

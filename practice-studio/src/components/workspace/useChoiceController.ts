@@ -18,6 +18,7 @@ export interface UseChoiceControllerOptions {
   onInputChange: (val: string) => void;
   onCheckAnswer: (inputOverride?: string) => Promise<void> | void;
   enabled?: boolean;
+  isVariant?: boolean;
 }
 
 /**
@@ -31,6 +32,7 @@ export function useChoiceController({
   onInputChange,
   onCheckAnswer,
   enabled = true,
+  isVariant = false,
 }: UseChoiceControllerOptions) {
   const [checkingOptionId, setCheckingOptionId] = useState<string | null>(null);
   const [choiceRetryUnlocked, setChoiceRetryUnlocked] = useState(false);
@@ -53,12 +55,16 @@ export function useChoiceController({
     lastCheck,
     skipped: problem.state.skipped,
     retryUnlocked: choiceRetryUnlocked,
+    state: problem.state,
+    isVariant,
   });
 
   const choiceResultStatus = getChoiceResultStatus({
     isChecking,
     lastCheck,
     skipped: problem.state.skipped,
+    state: problem.state,
+    isVariant,
   });
 
   const handleChoiceSelect = useCallback(

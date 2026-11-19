@@ -60,6 +60,7 @@ export interface MathAnswerAreaProps {
   unitCode?: string;
   drillTitle?: string;
   isChecking: boolean;
+  locked?: boolean;
   isChoice: boolean;
   hasLineChoice: boolean;
   choiceOptions?: ChoiceOption[];
@@ -92,6 +93,7 @@ export const MathAnswerArea = forwardRef<MathAnswerAreaHandle, MathAnswerAreaPro
       unitCode,
       drillTitle,
       isChecking,
+      locked = false,
       isChoice,
       hasLineChoice,
       choiceOptions,
@@ -278,10 +280,14 @@ export const MathAnswerArea = forwardRef<MathAnswerAreaHandle, MathAnswerAreaPro
                   placeholder={placeholder}
                   ariaLabel={ariaLabel}
                   variables={answerSpec.variables}
-                  disabled={isChecking}
+                  disabled={isChecking || locked}
                   fieldRef={mathLiveRef}
-                  onChange={onChange}
-                  onCheck={(plain) => onCheck(plain)}
+                  onChange={(val) => {
+                    if (!locked) onChange(val);
+                  }}
+                  onCheck={(plain) => {
+                    if (!locked) onCheck(plain);
+                  }}
                   onFocus={handleMathFieldFocus}
                   onEscape={() => {
                     if (!panelOpen) return false;
@@ -290,8 +296,10 @@ export const MathAnswerArea = forwardRef<MathAnswerAreaHandle, MathAnswerAreaPro
                   }}
                 />
                 <InlineCheckButton
-                  onClick={() => onCheck()}
-                  disabled={isChecking || !value.trim()}
+                  onClick={() => {
+                    if (!locked) onCheck();
+                  }}
+                  disabled={locked || isChecking || !value.trim()}
                   isChecking={isChecking}
                 />
               </div>
@@ -304,6 +312,7 @@ export const MathAnswerArea = forwardRef<MathAnswerAreaHandle, MathAnswerAreaPro
                 placeholder={placeholder}
                 aria-label={ariaLabel}
                 isChecking={isChecking}
+                locked={locked}
               />
             )}
 
@@ -313,11 +322,12 @@ export const MathAnswerArea = forwardRef<MathAnswerAreaHandle, MathAnswerAreaPro
               keyboardProfile={keyboardProfile}
               panelOpen={panelOpen}
               onTogglePanel={() => {
+                if (locked) return;
                 setPanelOpen((prev) => !prev);
                 mathLiveRef.current?.focus();
               }}
               onInsertLatex={handleInsertLatex}
-              disabled={isChecking}
+              disabled={isChecking || locked}
             />
           </div>
         )}
@@ -331,6 +341,7 @@ export const MathAnswerArea = forwardRef<MathAnswerAreaHandle, MathAnswerAreaPro
             placeholder={placeholder}
             aria-label={ariaLabel}
             isChecking={isChecking}
+            locked={locked}
           />
         )}
       </>

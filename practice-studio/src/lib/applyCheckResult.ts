@@ -7,7 +7,8 @@ import {
   AttemptRecord,
 } from "../types/drill";
 import { isSubstantiveVerdict, sanitizeCheckMessage } from "./reviewGuard";
-import { cycleOriginalAttempts, isInCycle } from "./similarTabs";
+import { isLockedAfterCorrect, scoreProblem } from "./scoring";
+import { isInCycle } from "./similarTabs";
 
 export interface ApplyCheckOptions {
   durationMs?: number;
@@ -36,6 +37,11 @@ export function applyCheckResult(
     return { ...prob.state };
   }
 
+  // 2. Lock after correct (Rule 2): ignore further checks once correct in the current cycle.
+  if (result.verdict !== "skipped" && isLockedAfterCorrect(prob.state)) {
+    return { ...prob.state };
+  }
+
   // 4. Skip action
   if (result.verdict === "skipped") {
     currentMistakes.add("concept-gap");
@@ -60,36 +66,10 @@ export function applyCheckResult(
   }
 
   const cycleStartedAt = prob.state?.cycleStartedAt ?? null;
-  const cycleOrigAttempts = cycleOriginalAttempts(prob.state);
   const exampleViewed = Boolean(
     prob.state?.exampleViewedAt &&
       isInCycle(prob.state.exampleViewedAt, cycleStartedAt)
   );
-  const isAssisted = Boolean(
-    prob.state?.setupRevealedBeforeAnswer ||
-      prob.state?.solutionRevealedBeforeAnswer ||
-      exampleViewed ||
-      hintsCount > 0 ||
-      cycleOrigAttempts.some(
-        (a) => a.setupRevealed || a.solutionRevealed || a.exampleViewed
-      )
-  );
-  const hadPriorWrongOrPartial = cycleOrigAttempts.some(
-    (a) =>
-      a.verdict !== "correct" &&
-      a.verdict !== "invalid input" &&
-      a.verdict !== "parse_error"
-  );
-
-  // Calculate score (matches progress_store.item_score / weak_spots)
-  let autoScore = prob.state?.score ?? null;
-  if (result.verdict === "correct") {
-    autoScore = isAssisted || hadPriorWrongOrPartial ? 0.5 : 1;
-  } else if (result.verdict === "equivalent_not_in_form" || result.verdict === "partial") {
-    autoScore = 0.5;
-  } else if (result.verdict === "incorrect") {
-    autoScore = 0;
-  }
 
   const newMistakes = new Set(prob.state?.mistakes || []);
   let matchedTrapTag: string | undefined;
@@ -161,16 +141,24 @@ export function applyCheckResult(
     ...(exampleViewed ? { exampleViewed: true } : {}),
   };
 
-  return {
+  const nextStateWithoutScore: ProblemState = {
     ...prob.state,
     userInput: trimmed,
-    score: autoScore,
     skipped: substantive ? false : Boolean(prob.state?.skipped),
     mistakes: Array.from(newMistakes),
     lastCheck: sanitizedResult,
     attempts: [...currentAttempts, attempt],
     hintsRevealed: hintsCount,
     durationMs: (prob.state?.durationMs || 0) + (options.durationMs || 0),
+  };
+
+  const computedScore = substantive
+    ? scoreProblem(nextStateWithoutScore, { ignoreStateScore: true }).score
+    : prob.state?.score ?? null;
+
+  return {
+    ...nextStateWithoutScore,
+    score: computedScore,
   };
 }
 
@@ -192,7 +180,7 @@ export function applySkip(
 
 /**
  * Pure function to toggle diverged step.
- * Diverged does NOT attach any mistake tags!
+ * Diverged step is a learning note only (Rule 4): never modifies mistake tags or score.
  */
 export function applyDivergedStep(
   prob: Problem,
@@ -203,7 +191,6 @@ export function applyDivergedStep(
   return {
     ...prob.state,
     divergedStep: newDiverged,
-    score: prob.state?.score === null || prob.state?.score === 1 ? 0.5 : prob.state.score,
   };
 }
 
@@ -236,6 +223,7 @@ export function resetProblemForRetry(
     skipped: false,
     lastCheck: null,
     lastTestReport: null,
+    ...(Array.isArray(prevState?.testRuns) ? { testRuns: [...prevState.testRuns] } : {}),
     attempts: Array.isArray(prevState?.attempts) ? [...prevState.attempts] : [],
     ...(Array.isArray(prevState?.reviews) ? { reviews: [...prevState.reviews] } : {}),
     hintsRevealed: 0,

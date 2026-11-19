@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
-import { DrillListItem } from "@/types/drill";
+import { DrillListItem, ProblemState } from "@/types/drill";
 import { getDrillsDataDir, loadIdMapTitles } from "@/lib/paths";
 import { cleanCurriculumTitle, parseCurriculumCodes } from "@/lib/drillGrouping";
 import { plainTitle } from "@/lib/titleText";
 import { applyProgress, readProgress } from "@/lib/progress";
+import { isAwaitingReview, scoreProblem } from "@/lib/scoring";
 
 export const dynamic = "force-dynamic";
 
@@ -32,16 +33,26 @@ export async function GET() {
         const raw = JSON.parse(content);
         const doc = applyProgress(raw, readProgress(raw.drillId || file.replace(/\.json$/, "")));
 
+        const subject: "MATH" | "PRG" =
+          doc.subject === "PRG" || String(doc.unitCode || "").startsWith("PRG-")
+            ? "PRG"
+            : "MATH";
+        const isPrg = subject === "PRG";
         const problems = Array.isArray(doc.problems) ? doc.problems : [];
         const questionCount = doc.config?.questionCount || problems.length || 0;
         const answeredCount = problems.filter(
-          (p: { state?: { score?: number | null; skipped?: boolean; userInput?: string } }) =>
-            (p.state?.score !== null && p.state?.score !== undefined) ||
-            p.state?.skipped === true ||
-            Boolean(p.state?.userInput && p.state.userInput.trim())
+          (p: { state?: ProblemState }) => {
+            const scored = scoreProblem(p.state, { isPrg });
+            return (
+              scored.outcome !== "notTried" ||
+              isAwaitingReview(p.state, { isPrg }) ||
+              Boolean(p.state?.userInput && p.state.userInput.trim())
+            );
+          }
         ).length;
         const liveScore = problems.reduce(
-          (acc: number, p: { state?: { score?: number | null } }) => acc + (p.state?.score || 0),
+          (acc: number, p: { state?: ProblemState }) =>
+            acc + (scoreProblem(p.state, { isPrg }).score ?? 0),
           0
         );
         const hasNotes =
@@ -58,11 +69,6 @@ export async function GET() {
         if (practiceStatus === "Ready" && answeredCount > 0) {
           practiceStatus = "In Progress";
         }
-
-        const subject: "MATH" | "PRG" =
-          doc.subject === "PRG" || String(doc.unitCode || "").startsWith("PRG-")
-            ? "PRG"
-            : "MATH";
 
         const { topicCode, chapterCode } = parseCurriculumCodes(
           doc.unitCode,

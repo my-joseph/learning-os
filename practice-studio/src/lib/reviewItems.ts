@@ -9,7 +9,9 @@ import {
   isSafeId,
   loadIdMapTitles,
 } from "@/lib/paths";
+import { scoreProblem } from "@/lib/scoring";
 import { plainTitle } from "@/lib/titleText";
+import type { ProblemState } from "@/types/drill";
 
 /**
  * Per-item review schedule (mirrors `scripts/review_items.py`):
@@ -837,18 +839,7 @@ function firstAttemptTs(state: Record<string, unknown>, fallback: string): strin
 }
 
 function isAssistedState(state: Record<string, unknown>): boolean {
-  const attempts = (
-    Array.isArray(state.attempts)
-      ? (state.attempts as Array<Record<string, unknown>>)
-      : []
-  ).filter((a) => a && typeof a === "object" && a.kind !== "variant");
-  return Boolean(
-    state.setupRevealedBeforeAnswer ||
-      state.solutionRevealedBeforeAnswer ||
-      state.exampleViewedAt ||
-      (typeof state.hintsRevealed === "number" && state.hintsRevealed > 0) ||
-      attempts.some((a) => a.setupRevealed || a.solutionRevealed || a.exampleViewed)
-  );
+  return scoreProblem(state as Partial<ProblemState>).usedHelp;
 }
 
 /** Collect matchedTrap tags from original attempts and server-stored variant attempts (mirrors `scripts.weak_spots._collect_matched_traps`). */
@@ -880,68 +871,16 @@ function collectMatchedTraps(state: Record<string, unknown>): string[] {
   return matched;
 }
 
-/** Mirrors `progress_store.item_score`. */
+/** Mirrors `progress_store.item_score` via the single canonical `scoreProblem` rule. */
 function computeMathItemScore(state: Record<string, unknown>): [number, boolean] {
-  const attempts = (
-    Array.isArray(state.attempts)
-      ? (state.attempts as Array<Record<string, unknown>>)
-      : []
-  ).filter((a) => a && typeof a === "object" && a.kind !== "variant");
-  const assisted = isAssistedState(state);
-  if (state.skipped) {
-    return [0.0, assisted];
-  }
-  const substantive = attempts.filter(
-    (a) => a && typeof a === "object" && !NON_SUBSTANTIVE_VERDICTS.has(String(a.verdict || ""))
-  );
-  if (substantive.length > 0) {
-    const first = substantive[0]?.verdict;
-    if (first === "correct" && !assisted) {
-      return [1.0, false];
-    }
-    if (
-      substantive.some(
-        (a) =>
-          a.verdict === "correct" ||
-          a.verdict === "equivalent_not_in_form" ||
-          a.verdict === "partial"
-      )
-    ) {
-      return [0.5, assisted];
-    }
-    return [0.0, assisted];
-  }
-  if (typeof state.score !== "number" || Number.isNaN(state.score)) {
-    return [-1.0, assisted];
-  }
-  return [assisted ? Math.min(state.score, 0.5) : state.score, assisted];
+  const res = scoreProblem(state as Partial<ProblemState>);
+  return [res.score === null ? -1.0 : res.score, res.usedHelp];
 }
 
-/** Mirrors `scripts.weak_spots._prg_item_score`. */
+/** Mirrors `scripts.weak_spots._prg_item_score` via the single canonical `scoreProblem` rule. */
 function computePrgItemScore(state: Record<string, unknown>): number {
-  if (state.skipped) return 0.0;
-  const assisted = isAssistedState(state);
-  const reviews = Array.isArray(state.reviews)
-    ? (state.reviews as Array<Record<string, unknown>>)
-    : [];
-  if (reviews.length > 0) {
-    if (reviews[reviews.length - 1]?.verdict === "pass") {
-      const raw = reviews[0]?.verdict === "pass" ? 1.0 : 0.5;
-      return assisted ? Math.min(raw, 0.5) : raw;
-    }
-    return 0.0;
-  }
-  if (
-    (state.lastTestReport !== undefined && state.lastTestReport !== null) ||
-    (state.score !== undefined && state.score !== null)
-  ) {
-    return 0.0;
-  }
-  if (Array.isArray(state.attempts) && state.attempts.length > 0) {
-    const [sc] = computeMathItemScore(state);
-    return sc;
-  }
-  return -1.0;
+  const res = scoreProblem(state as Partial<ProblemState>, { isPrg: true });
+  return res.score === null ? -1.0 : res.score;
 }
 
 function extractPrgSignals(state: Record<string, unknown>): string[] {

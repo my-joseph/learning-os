@@ -1,6 +1,5 @@
 import type { ProblemState } from "../types/drill";
-import { cycleReviews } from "./reviewGuard";
-import { cycleOriginalAttempts } from "./similarTabs";
+import { isAwaitingReview, scoreProblem } from "./scoring";
 import { statusTone } from "./statusTone";
 
 export type ReviewOutcome =
@@ -8,6 +7,7 @@ export type ReviewOutcome =
   | "assisted_or_partial"
   | "wrong"
   | "skipped"
+  | "awaiting_review"
   | "unanswered";
 
 export interface ReviewOutcomeMeta {
@@ -48,6 +48,13 @@ export const OUTCOME_META: Record<ReviewOutcome, ReviewOutcomeMeta> = {
     textClassName: statusTone.skipped.text,
     needsAttention: true,
   },
+  awaiting_review: {
+    outcome: "awaiting_review",
+    label: "Awaiting review",
+    nodeClassName: "bg-transparent ring-[1.5px] ring-inset ring-zinc-400 dark:ring-zinc-500",
+    textClassName: statusTone.notTried.text,
+    needsAttention: true,
+  },
   unanswered: {
     outcome: "unanswered",
     label: "Unanswered",
@@ -57,29 +64,14 @@ export const OUTCOME_META: Record<ReviewOutcome, ReviewOutcomeMeta> = {
   },
 };
 
-/** Classify a problem's practice state into a single display outcome. */
+/** Classify a problem's practice state into a single display outcome via the canonical `scoreProblem` rule. */
 export function classifyReviewOutcome(state?: ProblemState | null): ReviewOutcome {
-  if (!state) return "unanswered";
-  if (state.skipped === true) return "skipped";
-
-  const isAssisted = Boolean(
-    state.setupRevealedBeforeAnswer ||
-      state.solutionRevealedBeforeAnswer ||
-      (state.hintsRevealed ?? 0) > 0 ||
-      cycleOriginalAttempts(state).some((a) => a.setupRevealed || a.solutionRevealed)
-  );
-
-  if (typeof state.score === "number") {
-    if (state.score >= 1 && !isAssisted) return "correct_first";
-    if (state.score > 0) return "assisted_or_partial";
-    return "wrong";
-  }
-
-  const currentReviews = cycleReviews(state);
-  const latestReview = currentReviews[currentReviews.length - 1];
-  if (latestReview?.verdict === "pass") return "correct_first";
-  if (latestReview?.verdict === "revise") return "assisted_or_partial";
-
+  const scored = scoreProblem(state);
+  if (scored.outcome === "correct") return "correct_first";
+  if (scored.outcome === "assisted") return "assisted_or_partial";
+  if (scored.outcome === "wrong") return "wrong";
+  if (scored.outcome === "skipped") return "skipped";
+  if (isAwaitingReview(state)) return "awaiting_review";
   return "unanswered";
 }
 

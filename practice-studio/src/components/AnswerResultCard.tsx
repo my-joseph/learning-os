@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef } from "react";
 import { AnimatePresence, m } from "motion/react";
-import { ArrowRight, Check, ChevronRight, Loader2, Minus, SkipForward, X } from "lucide-react";
+import { AlertCircle, ArrowRight, Check, ChevronRight, Loader2, Minus, SkipForward, X } from "lucide-react";
 import { FormattedText } from "@/components/FormattedText";
 import { Reveal } from "@/components/motion/Reveal";
 import {
@@ -32,6 +32,7 @@ export interface AnswerResultCardProps {
   mistakeTags?: MistakeTag[];
   isLastQuestion?: boolean;
   isReviewSession?: boolean;
+  isVariant?: boolean;
   isCorrectOnRetry?: boolean;
   nextLabel?: string;
   scheduleNote?: string | null;
@@ -50,11 +51,14 @@ export interface AnswerResultCardProps {
 }
 
 function ToneIcon({ tone }: { tone: ResultCardTone }) {
-  if (tone === "correct") {
+  if (tone === "correct" || tone === "assisted") {
     return <Check className="w-4 h-4" aria-hidden="true" />;
   }
   if (tone === "almost") {
     return <Minus className="w-4 h-4" aria-hidden="true" />;
+  }
+  if (tone === "inputError") {
+    return <AlertCircle className="w-4 h-4" aria-hidden="true" />;
   }
   if (tone === "skipped") {
     return <SkipForward className="w-3.5 h-3.5" aria-hidden="true" />;
@@ -70,6 +74,7 @@ export const AnswerResultCard: React.FC<AnswerResultCardProps> = ({
   mistakeTags = [],
   isLastQuestion = false,
   isReviewSession = false,
+  isVariant = false,
   isCorrectOnRetry = false,
   nextLabel = "Next question",
   scheduleNote = null,
@@ -94,6 +99,7 @@ export const AnswerResultCard: React.FC<AnswerResultCardProps> = ({
         mistakeTags,
         isLastQuestion,
         preferBackAction: Boolean(onBack),
+        isVariant,
       })
     : null;
   const actionKind = isReviewSession && model?.tone === "skipped" ? "next" : model?.actionKind;
@@ -129,7 +135,7 @@ export const AnswerResultCard: React.FC<AnswerResultCardProps> = ({
 
   const displayTitle =
     titleOverride ||
-    (isReviewSession && model?.tone === "correct" && isCorrectOnRetry
+    (isReviewSession && (model?.tone === "correct" || model?.tone === "assisted") && isCorrectOnRetry
       ? "Correct on retry"
       : model?.title || "");
   const visibleSecondary = secondaryActions.filter(Boolean);

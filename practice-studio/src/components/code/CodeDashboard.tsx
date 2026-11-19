@@ -43,6 +43,11 @@ import {
   cycleReviews,
   hasSubstantiveAttempt,
 } from "@/lib/reviewGuard";
+import {
+  isLockedAfterCorrect,
+  maxAllowedSelfScore,
+  scoreProblem,
+} from "@/lib/scoring";
 import { statusTone } from "@/lib/statusTone";
 import {
   getPrgScore,
@@ -325,12 +330,11 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
 
         if (res.ok) {
           const report: TestRunReport = await res.json();
-          const nextScore = getPrgScore(report, cycleReviews(problem.state));
           setTestReport(report);
           if (onTestReportChange) {
-            onTestReportChange(report, nextScore);
+            onTestReportChange(report);
           } else {
-            onSetScore(nextScore);
+            onSetScore(getPrgScore(report, cycleReviews(problem.state), problem.state));
           }
           return;
         }
@@ -349,12 +353,11 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
           hiddenTotal: problem.hiddenTestCount ?? 0,
           executionTimeMs: 0,
         };
-        const nextScore = getPrgScore(fallbackReport, cycleReviews(problem.state));
         setTestReport(fallbackReport);
         if (onTestReportChange) {
-          onTestReportChange(fallbackReport, nextScore);
+          onTestReportChange(fallbackReport);
         } else {
-          onSetScore(nextScore);
+          onSetScore(getPrgScore(fallbackReport, cycleReviews(problem.state), problem.state));
         }
       }
     } catch (err: unknown) {
@@ -408,8 +411,10 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
     }
   };
 
+  const answerLocked = !isKata && isLockedAfterCorrect(problem.state);
+
   const triggerWebCheck = async () => {
-    if (!problem.state.userInput.trim() || isChecking) return;
+    if (answerLocked || !problem.state.userInput.trim() || isChecking) return;
     setIsChecking(true);
     try {
       await onCheckAnswer();
@@ -418,7 +423,8 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
     }
   };
 
-  const score = problem.state.score;
+  const score = scoreProblem(effectiveState, { isPrg: isKata }).score;
+  const maxSelfScore = maxAllowedSelfScore(effectiveState, { isPrg: isKata });
   const lastCheck: CheckResult | null | undefined = problem.state.lastCheck;
 
   const handleTryAgain = () => {
@@ -1118,10 +1124,10 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                 filename={`challenge-${problem.id.toLowerCase()}.${getExtensionForLanguage(
                   snippetLanguage
                 )}`}
-                selectableLines={isFindBug}
+                selectableLines={isFindBug && !answerLocked}
                 selectedLine={selectedLineNumber}
                 onSelectLine={(lineNum) => {
-                  onInputChange(String(lineNum));
+                  if (!answerLocked) onInputChange(String(lineNum));
                 }}
               />
             )}
@@ -1144,7 +1150,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                   <div className="flex items-center">
                     <InlineCheckButton
                       onClick={triggerWebCheck}
-                      disabled={isChecking || !problem.state.userInput.trim()}
+                      disabled={answerLocked || isChecking || !problem.state.userInput.trim()}
                       isChecking={isChecking}
                       embedded={false}
                     />
@@ -1160,6 +1166,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                       ? `Answer for ${isLab ? "milestone" : "problem"} ${index + 1} of ${totalQuestions ?? 1}`
                       : `Answer for ${isLab ? "milestone" : "problem"} ${problem.id}`}
                     isChecking={isChecking}
+                    locked={answerLocked}
                   />
                 ))}
 
@@ -1230,6 +1237,8 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
         <ProblemSelfEval
           hasAttempt={hasAttempt}
           showSelfScore={!isKata && !(isReviewSession && problem.state.skipped)}
+          maxScore={maxSelfScore}
+          skipped={Boolean(problem.state.skipped)}
           score={score}
           mistakes={problem.state.mistakes}
           mistakeNote={problem.state.mistakeNote}

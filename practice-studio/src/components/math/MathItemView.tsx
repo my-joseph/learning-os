@@ -22,7 +22,7 @@ import { MathQuestionBody } from "@/components/math/MathQuestionBody";
 import { MathAnswerArea, MathAnswerAreaHandle } from "@/components/math/MathAnswerArea";
 import { getProblemPlaceholder } from "@/lib/mathInput";
 import { hasSubstantiveAttempt } from "@/lib/reviewGuard";
-import { cycleOriginalAttempts } from "@/lib/similarTabs";
+import { isLockedAfterCorrect } from "@/lib/scoring";
 import { CheckResult, MistakeTag, Problem } from "@/types/drill";
 import type { SkipOptions } from "@/hooks/types";
 
@@ -44,6 +44,7 @@ export interface MathItemViewProps {
   activeStep: number | null;
   isLastQuestion?: boolean;
   isReviewSession?: boolean;
+  isVariant?: boolean;
   useSessionInputMode?: boolean;
   isCorrectOnRetry?: boolean;
   reviewScheduleNote?: string | null;
@@ -96,6 +97,7 @@ export const MathItemView = forwardRef<MathItemViewHandle, MathItemViewProps>(
       activeStep,
       isLastQuestion = false,
       isReviewSession = false,
+      isVariant = false,
       useSessionInputMode,
       isCorrectOnRetry = false,
       reviewScheduleNote = null,
@@ -164,6 +166,7 @@ export const MathItemView = forwardRef<MathItemViewHandle, MathItemViewProps>(
       onInputChange,
       onCheckAnswer,
       enabled: choiceKeyboardEnabled,
+      isVariant,
     });
 
     const hasSetup = Boolean(problem.hasSetup || problem.display || problem.plainText);
@@ -178,9 +181,8 @@ export const MathItemView = forwardRef<MathItemViewHandle, MathItemViewProps>(
       !hasAttempt &&
       !showSolution &&
       !problem.state.solutionRevealedBeforeAnswer;
-    const hasCorrectAttempt =
-      problem.state.score === 1 ||
-      cycleOriginalAttempts(problem.state).some((a) => a.verdict === "correct");
+    const answerLocked = isLockedAfterCorrect(problem.state, { isVariant });
+    const hasCorrectAttempt = answerLocked;
 
     useEffect(() => {
       const reveal =
@@ -249,7 +251,7 @@ export const MathItemView = forwardRef<MathItemViewHandle, MathItemViewProps>(
     const placeholder = getProblemPlaceholder(problem);
 
     const triggerCheck = async (inputOverride?: string) => {
-      if (isChecking) return;
+      if (isChecking || answerLocked) return;
       const resolved =
         inputOverride !== undefined
           ? inputOverride
@@ -350,6 +352,7 @@ export const MathItemView = forwardRef<MathItemViewHandle, MathItemViewProps>(
             unitCode={unitCode}
             drillTitle={drillTitle}
             isChecking={isChecking}
+            locked={answerLocked}
             isChoice={isChoice}
             hasLineChoice={Boolean(lineChoiceData)}
             choiceOptions={choiceOptions}
@@ -359,7 +362,9 @@ export const MathItemView = forwardRef<MathItemViewHandle, MathItemViewProps>(
             useSessionInputMode={useSessionInputMode ?? isReviewSession}
             autoFocusOnMount={isReviewSession && !hasAttempt}
             onSelectChoice={(optId) => void handleChoiceSelect(optId)}
-            onChange={onInputChange}
+            onChange={(val) => {
+              if (!answerLocked) onInputChange(val);
+            }}
             onCheck={(override) => void triggerCheck(override)}
           />
 
@@ -371,6 +376,7 @@ export const MathItemView = forwardRef<MathItemViewHandle, MathItemViewProps>(
             mistakeTags={mistakeTags}
             isLastQuestion={isLastQuestion}
             isReviewSession={isReviewSession}
+            isVariant={isVariant}
             isCorrectOnRetry={isCorrectOnRetry}
             nextLabel={nextLabel}
             scheduleNote={isReviewSession ? reviewScheduleNote : null}

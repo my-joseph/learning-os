@@ -34,7 +34,13 @@ export interface SyncCardProps {
   changedCount: number;
   isLab: boolean;
   labId?: string;
-  labSummary?: { passed: number; revise: number; notTried: number; total: number };
+  labSummary?: {
+    passed: number;
+    awaitingReview?: number;
+    revise: number;
+    notTried: number;
+    total: number;
+  };
   l4Challenge?: ProblemJumpTarget | null;
   onSync: () => void;
   onStatusOverrideChange: (status: "Graded" | "Needs Retry") => void;
@@ -93,6 +99,7 @@ export const SyncCard: React.FC<SyncCardProps> = ({
 
     const total = labSummary?.total ?? preview.summary.maxScore;
     const passed = labSummary?.passed ?? 0;
+    const awaitingReview = labSummary?.awaitingReview ?? 0;
     const revise = labSummary?.revise ?? 0;
     const notTried = labSummary?.notTried ?? total;
 
@@ -118,6 +125,13 @@ export const SyncCard: React.FC<SyncCardProps> = ({
               {total}
             </span>{" "}
             milestones passed
+            {awaitingReview > 0 && (
+              <>
+                {" · "}
+                <span className="font-display tabular-nums">{awaitingReview}</span>{" "}
+                awaiting review
+              </>
+            )}
             {revise > 0 && (
               <>
                 {" · "}

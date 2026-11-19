@@ -141,8 +141,15 @@ function oldInlinePayload(drill: DrillDocument, statusOverride: "Graded" | "Need
 const prgDrill = { ...mathDrill, drillId: "DRL-PRG-T01-C03-U05-01", subject: "PRG" as const,
   problems: [makeProblem("Q01", { ...baseState(), score: 1, reviews: [{ at: "2026-11-19T00:00:00Z", attempt: 1, codeHash: "sha256:test", code: "", tests: { passed: 3, total: 3, failed: [] }, lint: [], typecheck: [], findings: [], verdict: "pass", explain: null }] })] };
 const labDrill = { ...prgDrill, drillId: "LAB-PRG-T01-C02-01", problems: [makeProblem("M1", {
-  ...baseState(), score: 1, lastTestReport: { allPassed: true, score: 1, passedCount: 3, totalCount: 3, visibleResults: [], hiddenPassed: 1, hiddenTotal: 1, executionTimeMs: 2 },
+  ...baseState(), score: 1,
+  lastTestReport: { allPassed: true, score: 1, passedCount: 3, totalCount: 3, visibleResults: [], hiddenPassed: 1, hiddenTotal: 1, executionTimeMs: 2 },
+  reviews: [{ at: "2026-11-19T00:00:00Z", attempt: 1, codeHash: "sha256:lab", code: "", tests: { passed: 3, total: 3, failed: [] }, lint: [], typecheck: [], findings: [], verdict: "pass", explain: null }],
 })] };
+const labAwaitingReviewDrill = { ...prgDrill, drillId: "LAB-PRG-T01-C02-01", problems: [makeProblem("M1", {
+  ...baseState(), score: null,
+  lastTestReport: { allPassed: true, score: 1, passedCount: 3, totalCount: 3, visibleResults: [], hiddenPassed: 1, hiddenTotal: 1, executionTimeMs: 2 },
+})] };
+assert.equal(buildSessionSummary(labAwaitingReviewDrill, null, { attemptDate: "2026-11-19" }).score, 0, "lab with passing tests but no review must not score 1");
 const skippedDrill = { ...mathDrill, problems: [makeProblem("Q01", { ...baseState(), skipped: true, score: 0 })] };
 for (const [label, fixture] of [["math", mathDrill], ["PRG", prgDrill], ["lab", labDrill], ["skipped", skippedDrill]] as const) {
   const actual = JSON.stringify(buildSyncPayload(fixture, null, { attemptDate: "2026-11-19" }));
@@ -438,6 +445,81 @@ assert.match(labHtml, /Submit lab/);
 assert.match(labHtml, /Copy submit command/);
 assert.match(labHtml, /Start M1/);
 assert.doesNotMatch(labHtml, /Sync to Notion/);
+
+// Rule 5: PRG pass review without re-running tests scores 1 everywhere; awaiting review shows Awaiting review + Copy review request.
+const prgPassNoReport = {
+  ...prgDrill,
+  problems: [
+    makeProblem("Q01", {
+      ...baseState(),
+      score: null,
+      reviews: [
+        {
+          at: "2026-11-19T00:00:00Z",
+          attempt: 1,
+          codeHash: "sha256:pass",
+          code: "",
+          tests: { passed: 3, total: 3, failed: [] },
+          lint: [],
+          typecheck: [],
+          findings: [],
+          verdict: "pass",
+          explain: null,
+        },
+      ],
+    }),
+  ],
+};
+assert.equal(buildSessionSummary(prgPassNoReport, null, { attemptDate: "2026-11-19" }).score, 1, "PRG pass review without test report must score 1");
+
+const prgAwaitingHtml = render(
+  {
+    ...prgDrill,
+    problems: [
+      makeProblem("Q01", {
+        ...baseState(),
+        score: null,
+        lastTestReport: {
+          allPassed: true,
+          score: 1,
+          passedCount: 3,
+          totalCount: 3,
+          visibleResults: [],
+          hiddenPassed: 0,
+          hiddenTotal: 0,
+          executionTimeMs: 2,
+        },
+      }),
+    ],
+  },
+  { initialExpandedIds: ["Q01"] }
+);
+assert.match(prgAwaitingHtml, /Awaiting review/);
+assert.match(prgAwaitingHtml, /Copy review request/);
+
+// Rule 3: Self-score may only lower auto score or set unverified; never raises wrong/skipped or clears skipped.
+{
+  const { applySelfScore } = await import("../src/lib/scoring");
+  const cleanCorrect = {
+    ...baseState(),
+    score: 1,
+    attempts: [{ input: "14+8i", ts: "2026-11-19T00:00:00Z", verdict: "correct" }],
+  };
+  assert.equal(applySelfScore(cleanCorrect, 0.5).score, 0.5, "can lower 1 -> 0.5");
+  assert.equal(applySelfScore(cleanCorrect, 0).score, 0, "can lower 1 -> 0");
+  const wrongState = {
+    ...baseState(),
+    score: 0,
+    attempts: [{ input: "wrong", ts: "2026-11-19T00:00:00Z", verdict: "incorrect" }],
+  };
+  assert.equal(applySelfScore(wrongState, 1).score, 0, "cannot raise wrong -> 1");
+  assert.equal(applySelfScore(wrongState, 0.5).score, 0, "cannot raise wrong -> 0.5");
+  const skippedState = { ...baseState(), skipped: true, score: 0 };
+  const afterSkipSelf = applySelfScore(skippedState, 1);
+  assert.equal(afterSkipSelf.skipped, true, "self-score must never clear skipped");
+  assert.equal(afterSkipSelf.score, 0, "self-score must never raise skipped");
+  assert.equal(applySelfScore(baseState(), 1).score, 1, "unverified item may set self-score");
+}
 
 console.log("reviewSync tests passed");
 }

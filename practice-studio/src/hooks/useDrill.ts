@@ -15,7 +15,11 @@ import {
   isSubstantiveVerdict,
   sanitizeCheckMessage,
 } from "@/lib/reviewGuard";
-import { cycleOriginalAttempts } from "@/lib/similarTabs";
+import {
+  applySelfScore,
+  isLockedAfterCorrect,
+  scoreProblem,
+} from "@/lib/scoring";
 import {
   createTelemetryTimerState,
   setActiveProblem,
@@ -119,29 +123,54 @@ export async function executeSaveAndReveal(
   return patch;
 }
 
-/** Pure transition for recording a PRG test run report and optional score in one atomic update. */
+/** Pure transition for recording a PRG test run report, test run history, and canonical score in one atomic update. */
 export function computeTestRunTransition(
   currentDrill: DrillDocument,
   probId: string,
   report: TestRunReport,
-  score?: number | null
+  _score?: number | null,
+  nowIso: string = new Date().toISOString()
 ): DrillDocument | null {
   const exists = currentDrill.problems.some((p) => p.id === probId);
   if (!exists) return null;
+  const runTs = report.ts || nowIso;
+  const stampedReport: TestRunReport = { ...report, ts: runTs };
+  const allPassed = Boolean(
+    stampedReport.allPassed &&
+      (typeof stampedReport.totalCount !== "number" || stampedReport.totalCount > 0)
+  );
   return {
     ...currentDrill,
-    problems: currentDrill.problems.map((p) =>
-      p.id === probId
-        ? {
-            ...p,
-            state: {
-              ...p.state,
-              lastTestReport: report,
-              ...(score !== undefined ? { score, skipped: false } : {}),
-            },
-          }
-        : p
-    ),
+    problems: currentDrill.problems.map((p) => {
+      if (p.id !== probId) return p;
+      const prevRuns = Array.isArray(p.state?.testRuns) ? p.state.testRuns : [];
+      const nextRuns = [
+        ...prevRuns,
+        {
+          ts: runTs,
+          allPassed,
+          passedCount: stampedReport.passedCount,
+          totalCount: stampedReport.totalCount,
+        },
+      ];
+      const candidateState = {
+        ...p.state,
+        lastTestReport: stampedReport,
+        testRuns: nextRuns,
+        skipped: false,
+      };
+      const computedScore = scoreProblem(candidateState, {
+        isPrg: true,
+        ignoreStateScore: true,
+      }).score;
+      return {
+        ...p,
+        state: {
+          ...candidateState,
+          score: computedScore,
+        },
+      };
+    }),
   };
 }
 
@@ -152,10 +181,7 @@ export function computeHintRevealTransition(
 ): DrillDocument | null {
   const target = currentDrill.problems.find((p) => p.id === probId);
   if (!target) return null;
-  const hasCorrect =
-    target.state.score === 1 ||
-    cycleOriginalAttempts(target.state).some((a) => a.verdict === "correct");
-  if (hasCorrect) return null;
+  if (isLockedAfterCorrect(target.state)) return null;
   return {
     ...currentDrill,
     problems: currentDrill.problems.map((p) =>
@@ -188,6 +214,7 @@ export function computeCheckAnswerTransition(
 } | null {
   const p = currentDrill.problems.find((item) => item.id === probId);
   if (!p) return null;
+  if (rawResult.verdict !== "skipped" && isLockedAfterCorrect(p.state)) return null;
 
   const calmMessage = sanitizeCheckMessage(rawResult.verdict, rawResult.message);
   const result: CheckResult =
@@ -277,9 +304,7 @@ export function computeSolutionRevealTransition(
 } | null {
   const target = currentDrill.problems.find((p) => p.id === probId);
   if (!target) return null;
-  const hasCorrect =
-    target.state.score === 1 ||
-    cycleOriginalAttempts(target.state).some((a) => a.verdict === "correct");
+  const hasCorrect = isLockedAfterCorrect(target.state);
   const shouldMarkAssisted = !hasCorrect && !target.state.solutionRevealedBeforeAnswer;
   const updatedDoc: DrillDocument = shouldMarkAssisted
     ? {
@@ -757,6 +782,7 @@ export function useDrill({
       if (!snap) return;
       const p = snap.problems.find((item) => item.id === probId);
       if (!p) return;
+      if (isLockedAfterCorrect(p.state)) return;
 
       const targetDrillId = snap.drillId;
       const targetSubject = snap.subject;
@@ -899,7 +925,10 @@ export function useDrill({
 
   const handleSetScore = useCallback(
     (probId: string, score: number | null) => {
-      updateProblem(probId, (p) => ({ ...p, state: { ...p.state, score, skipped: false } }));
+      updateProblem(probId, (p) => ({
+        ...p,
+        state: applySelfScore(p.state, score),
+      }));
     },
     [updateProblem]
   );

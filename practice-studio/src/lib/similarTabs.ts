@@ -4,6 +4,7 @@ import type {
   VariantSessionRecord,
 } from "../types/drill";
 import { isSubstantiveVerdict, isWrongAttemptVerdict } from "./reviewGuard";
+import { scoreProblem, scoreVariant } from "./scoring";
 
 export type SimilarTabStatus =
   | "untried"
@@ -132,94 +133,26 @@ export function similarUnlock(state?: ProblemState | null): boolean {
   return false;
 }
 
-/** Derive a single similar tab's status from its own attempts and help signals in the current cycle. */
+/** Derive a single similar tab's status from the canonical `scoreVariant` rule in the current cycle. */
 export function deriveVariantStatus(
   record?: VariantSessionRecord | null,
   cycleStartedAt?: string | null
 ): SimilarTabStatus {
-  if (!record) return "untried";
-  const inCurrentCycle =
-    !cycleStartedAt ||
-    (typeof record.servedAt === "string" &&
-      record.servedAt.length > 0 &&
-      record.servedAt >= cycleStartedAt);
-
-  const attempts = Array.isArray(record.attempts)
-    ? cycleAttempts(record.attempts, cycleStartedAt)
-    : [];
-  const substantive = attempts.filter((a) => isSubstantiveVerdict(a.verdict));
-  const usedHelp = Boolean(
-    (inCurrentCycle &&
-      ((record.hintsRevealed ?? 0) > 0 ||
-        record.setupRevealed ||
-        record.stepsRevealed)) ||
-      attempts.some((a) => a.setupRevealed || a.solutionRevealed)
-  );
-
-  if (substantive.length === 0) {
-    return usedHelp ? "usedHelp" : "untried";
-  }
-  const latest = substantive[substantive.length - 1];
-  if (latest.verdict === "correct") {
-    return usedHelp ? "assisted" : "correct";
-  }
-  if (
-    latest.verdict === "partial" ||
-    latest.verdict === "equivalent_not_in_form"
-  ) {
-    return "partial";
-  }
-  return "wrong";
+  const scored = scoreVariant(record, cycleStartedAt);
+  if (scored.outcome === "correct") return "correct";
+  if (scored.outcome === "assisted") return "assisted";
+  if (scored.outcome === "wrong") return "wrong";
+  return scored.usedHelp ? "usedHelp" : "untried";
 }
 
-/** Derive the real question tab's status mark in the current cycle. */
+/** Derive the real question tab's status mark from the canonical `scoreProblem` rule in the current cycle. */
 export function deriveRealTabStatus(state?: ProblemState | null): RealTabStatus {
-  if (!state) return "untried";
-
-  const usedHelpBeforeAnswer = Boolean(
-    state.setupRevealedBeforeAnswer ||
-      state.solutionRevealedBeforeAnswer ||
-      (state.hintsRevealed ?? 0) > 0
-  );
-
-  if (!similarUnlock(state)) {
-    return usedHelpBeforeAnswer ? "usedHelp" : "untried";
-  }
-
-  const origInCycle = cycleOriginalAttempts(state);
-  const origSubstantive = origInCycle.filter((a) =>
-    isSubstantiveVerdict(a.verdict)
-  );
-  const usedHelpInCycle = Boolean(
-    usedHelpBeforeAnswer ||
-      origInCycle.some(
-        (a) => a.setupRevealed || a.solutionRevealed || a.exampleViewed
-      )
-  );
-  const latestVerdict =
-    origSubstantive.length > 0
-      ? origSubstantive[origSubstantive.length - 1].verdict
-      : state.skipped
-      ? "skipped"
-      : state.lastCheck?.verdict;
-
-  if (latestVerdict === "correct") {
-    if (
-      (typeof state.score === "number" && state.score > 0 && state.score < 1) ||
-      usedHelpInCycle
-    ) {
-      return "assisted";
-    }
-    return "correct";
-  }
-  if (
-    latestVerdict === "partial" ||
-    latestVerdict === "equivalent_not_in_form"
-  ) {
-    return "partial";
-  }
-  if (latestVerdict === "skipped") return "skipped";
-  return "wrong";
+  const scored = scoreProblem(state);
+  if (scored.outcome === "correct") return "correct";
+  if (scored.outcome === "assisted") return "assisted";
+  if (scored.outcome === "wrong") return "wrong";
+  if (scored.outcome === "skipped") return "skipped";
+  return scored.usedHelp ? "usedHelp" : "untried";
 }
 
 /** Derive the ordered Similar 1..3 tab summaries from `state.similarSlots` and `state.variants`. */

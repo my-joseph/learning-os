@@ -269,6 +269,11 @@ export function writeProgress(doc: DocLike): string {
           st.reviews = mergedReviews;
         }
 
+        const mergedTestRuns = mergeAttempts(prev.testRuns, incoming.testRuns);
+        if (mergedTestRuns !== undefined) {
+          st.testRuns = mergedTestRuns;
+        }
+
         if (Array.isArray(incoming.mistakes) && incoming.mistakes.length > 0) {
           st.mistakes = mergeStringTags(prev.mistakes, incoming.mistakes);
         }
@@ -303,6 +308,11 @@ export function writeProgress(doc: DocLike): string {
           const mergedReviews = mergeReviews(prev.reviews, st.reviews);
           if (mergedReviews !== undefined) {
             st.reviews = mergedReviews;
+          }
+
+          const mergedTestRuns = mergeAttempts(prev.testRuns, st.testRuns);
+          if (mergedTestRuns !== undefined) {
+            st.testRuns = mergedTestRuns;
           }
 
           for (const key of ["mistakes", "mistakeNote", "revisitNote"] as const) {

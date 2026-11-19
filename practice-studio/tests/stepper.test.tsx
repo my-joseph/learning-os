@@ -85,8 +85,38 @@ assert.equal(
 );
 assert.equal(
   drillStepResult(makeProblem("Q01", {}, { score: 0.5 })),
-  "partial",
-  "0 < score < 1 without help is partial"
+  "assisted",
+  "0 < score < 1 maps to assisted (green outline)"
+);
+assert.equal(
+  drillStepResult(
+    makeProblem("Q01", {}, {
+      attempts: [
+        { input: "1", ts: "2026-11-19T12:00:00.000Z", verdict: "incorrect" },
+        { input: "2", ts: "2026-11-19T12:01:00.000Z", verdict: "correct" },
+      ],
+    })
+  ),
+  "assisted",
+  "wrong then correct maps to assisted"
+);
+assert.equal(
+  drillStepResult(
+    makeProblem("Q01", {}, {
+      lastTestReport: {
+        allPassed: true,
+        score: 1,
+        passedCount: 2,
+        totalCount: 2,
+        visibleResults: [],
+        hiddenPassed: 0,
+        hiddenTotal: 0,
+        executionTimeMs: 5,
+      },
+    })
+  ),
+  "awaitingReview",
+  "PRG tests passing without review maps to awaitingReview"
 );
 assert.equal(
   drillStepResult(makeProblem("Q01", {}, { score: 1, hintsRevealed: 1 })),
@@ -187,7 +217,7 @@ assert.deepEqual(
   [
     ["Level 1", "correct", "Question 1, Level 1, correct"],
     ["Level 2", "assisted", "Question 2, Level 2, correct with help"],
-    ["Level 2", "partial", "Question 3, Level 2, partly correct"],
+    ["Level 2", "assisted", "Question 3, Level 2, correct with help"],
     ["Level 3", "wrong", "Question 4, Level 3, wrong"],
     ["Level 3", "skipped", "Question 5, Level 3, skipped"],
     ["Level 4", "notTried", "Question 6, Level 4, not tried"],
@@ -393,10 +423,10 @@ assert.match(
   sixHtml,
   new RegExp(`aria-label="Question 4, Level 2, correct with help"[\\s\\S]*?${escapeRe(statusTone.assisted.solidCircle)}[\\s\\S]*?<svg`)
 );
-// Q05 partial -> assisted (pale green) statusTone + svg minus
+// Q05 score 0.5 -> assisted (green outline) statusTone + svg check
 assert.match(
   sixHtml,
-  new RegExp(`aria-label="Question 5, Level 3, partly correct"[\\s\\S]*?${escapeRe(statusTone.assisted.solidCircle)}[\\s\\S]*?<svg`)
+  new RegExp(`aria-label="Question 5, Level 3, correct with help"[\\s\\S]*?${escapeRe(statusTone.assisted.solidCircle)}[\\s\\S]*?<svg`)
 );
 // Q06 skipped -> dashed border + "Q6"
 assert.match(
