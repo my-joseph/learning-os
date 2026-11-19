@@ -77,6 +77,10 @@ export interface MathWorkspaceProps {
   totalTimerMs?: number;
   isTimerPaused?: boolean;
   onToggleTimerPause?: () => void;
+  reviewSupplement?: React.ReactNode;
+  isReviewSession?: boolean;
+  nextCardLabel?: string;
+  lastQuestionNavLabel?: string;
 }
 
 /** Clean centred Math workspace following docs/studio_design.md. */
@@ -107,6 +111,10 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
   totalTimerMs,
   isTimerPaused = false,
   onToggleTimerPause,
+  reviewSupplement,
+  isReviewSession = false,
+  nextCardLabel,
+  lastQuestionNavLabel,
 }) => {
   const shouldAutoReveal = (p: Problem) =>
     p.state.lastCheck?.verdict === "correct" || Boolean(p.state.skipped);
@@ -455,14 +463,16 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
             state={problem.state}
             problem={problem}
             mistakeTags={mistakeTags}
-            isLastQuestion={isLastQuestion}
-            nextLabel="Next question"
+            isLastQuestion={isReviewSession ? false : isLastQuestion}
+            nextLabel={nextCardLabel ?? "Next question"}
             onNextQuestion={onNextQuestion}
             onOpenReview={onOpenReview}
             onTryAgain={handleTryAgain}
             onShowSteps={handleShowStepsFromCard}
           />
         </div>
+
+        {reviewSupplement}
 
         {/* 5. Quiet secondary actions: Reset / equation set-up / hint / steps / skip */}
         <ProblemAssistSection
@@ -575,6 +585,7 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
         onPrevQuestion={onPrevQuestion}
         onNextQuestion={onNextQuestion}
         onOpenReview={onOpenReview}
+        lastQuestionLabel={lastQuestionNavLabel}
       />
     </div>
   );

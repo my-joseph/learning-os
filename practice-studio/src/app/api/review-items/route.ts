@@ -29,7 +29,16 @@ export async function GET(req: NextRequest) {
     }
 
     const result = getDueReviewItems({ today, limit });
-    return NextResponse.json(result);
+    // Never expose trap tags or archetype keys before the learner answers (zero-leak rule).
+    const safeItems = result.items.map((item) => ({
+      ...item,
+      commonTrapTag: null,
+      archetypeKey: null,
+    }));
+    return NextResponse.json({
+      ...result,
+      items: safeItems,
+    });
   } catch (err: unknown) {
     const errMsg = err instanceof Error ? err.message : String(err);
     return NextResponse.json({ error: errMsg }, { status: 500 });

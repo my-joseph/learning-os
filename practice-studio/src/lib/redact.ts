@@ -385,3 +385,78 @@ export function redactDrill<T extends DrillDocument>(doc: T): T {
       : [],
   };
 }
+
+/**
+ * Pure function that prepares a single problem for a fresh Daily Review attempt:
+ * resets the in-session state to unattempted (preserving only `revisitNote`) so no steps,
+ * answers, equation set-up, or reference solutions are leaked from past attempts, and
+ * strips trap tags and archetype keys before the learner answers.
+ */
+export function redactProblemForReview(
+  problem: Problem,
+  subject?: "MATH" | "PRG"
+): Problem {
+  const cleanState: ProblemState = {
+    userInput: "",
+    userCode: problem.starterCode || problem.codeSnippet || "",
+    score: null,
+    divergedStep: null,
+    mistakes: [],
+    mistakeNote: "",
+    ...(problem.state?.revisitNote ? { revisitNote: problem.state.revisitNote } : {}),
+    skipped: false,
+    lastCheck: null,
+    lastTestReport: null,
+    attempts: [],
+    hintsRevealed: 0,
+    setupRevealedBeforeAnswer: false,
+    solutionRevealedBeforeAnswer: false,
+    durationMs: 0,
+  };
+
+  const base = redactProblem(problem, cleanState, subject) as unknown as Record<string, unknown>;
+  delete base.commonTrapTag;
+  delete base.archetypeKey;
+  delete base.archetype;
+  base.templateKey = "";
+
+  if (base.answerSpec && typeof base.answerSpec === "object") {
+    const specCopy: Record<string, unknown> = { ...(base.answerSpec as Record<string, unknown>) };
+    delete specCopy.commonTrapTag;
+    if (Array.isArray(specCopy.options)) {
+      specCopy.options = (specCopy.options as Array<Record<string, unknown>>).map((opt) => {
+        if (!opt || typeof opt !== "object") return opt;
+        const optCopy: Record<string, unknown> = { ...opt };
+        delete optCopy.trapTag;
+        delete optCopy.tag;
+        return optCopy;
+      });
+    }
+    base.answerSpec = specCopy;
+  }
+
+  return base as unknown as Problem;
+}
+
+/**
+ * Pure function that redacts every problem in a drill document for a fresh Daily Review session.
+ */
+export function redactDrillForReview<T extends DrillDocument>(doc: T): T {
+  const subject: "MATH" | "PRG" =
+    doc.subject === "PRG" || String(doc.unitCode || "").startsWith("PRG-") ? "PRG" : "MATH";
+  return {
+    ...doc,
+    problems: Array.isArray(doc.problems)
+      ? doc.problems.map((p) => redactProblemForReview(p, subject))
+      : [],
+    ...(doc.sessionSummary
+      ? {
+          sessionSummary: {
+            ...doc.sessionSummary,
+            mistakeCategories: [],
+            divergedStepsSummary: "",
+          },
+        }
+      : {}),
+  };
+}

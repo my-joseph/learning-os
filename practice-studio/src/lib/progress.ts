@@ -20,6 +20,7 @@ type DocLike = {
   unitCode?: string;
   sessionSummary?: unknown;
   problems?: Array<{ id?: string; state?: unknown }>;
+  reviewMerge?: boolean;
 };
 
 function progressFile(drillId: string): string {
@@ -55,12 +56,27 @@ export function writeProgress(doc: DocLike): string {
   if (!doc.drillId || !isSafeId(doc.drillId)) throw new Error("Invalid drillId");
   const existing = readProgress(doc.drillId);
   const existingProblems = (existing?.problems || {}) as Record<string, Record<string, unknown>>;
-  const problems: Record<string, unknown> = {};
+  const problems: Record<string, unknown> = doc.reviewMerge ? { ...existingProblems } : {};
   for (const p of doc.problems || []) {
     if (!p.id) continue;
     const prev = existingProblems[p.id];
     if (p.state) {
       const st = { ...(p.state as Record<string, unknown>) };
+      if (doc.reviewMerge && prev && Array.isArray(prev.attempts)) {
+        const prevAttempts = prev.attempts as Array<Record<string, unknown>>;
+        const nextAttempts = Array.isArray(st.attempts)
+          ? (st.attempts as Array<Record<string, unknown>>)
+          : [];
+        const seenTs = new Set(
+          prevAttempts
+            .map((a) => (a && typeof a.ts === "string" ? a.ts : ""))
+            .filter(Boolean)
+        );
+        const appended = nextAttempts.filter(
+          (a) => !a || typeof a.ts !== "string" || !seenTs.has(a.ts)
+        );
+        st.attempts = [...prevAttempts, ...appended];
+      }
       if (st.reviews === undefined && prev && prev.reviews !== undefined) {
         st.reviews = prev.reviews;
       }
@@ -77,9 +93,12 @@ export function writeProgress(doc: DocLike): string {
   }
   const data: ProgressFile = {
     drillId: doc.drillId,
-    unitCode: doc.unitCode,
+    unitCode: doc.unitCode || existing?.unitCode,
     updatedAt: new Date().toISOString(),
-    sessionSummary: (doc.sessionSummary as Record<string, unknown>) || {},
+    sessionSummary:
+      (doc.sessionSummary as Record<string, unknown>) ||
+      (doc.reviewMerge ? existing?.sessionSummary : undefined) ||
+      {},
     problems,
   };
   const file = progressFile(doc.drillId);

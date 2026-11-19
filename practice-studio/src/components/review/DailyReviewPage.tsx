@@ -1,0 +1,1011 @@
+"use client";
+
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import Link from "next/link";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Check,
+  Moon,
+  PenLine,
+  Sun,
+} from "lucide-react";
+import {
+  DrillDocument,
+  MistakeTag,
+  Problem,
+} from "@/types/drill";
+import { MathWorkspace } from "@/components/math/MathWorkspace";
+import { CodeDashboard } from "@/components/code/CodeDashboard";
+import {
+  computeResetProblemTransition,
+  computeSetupRevealTransition,
+  computeSolutionRevealTransition,
+  mergeRevealedPatchIntoDrill,
+  normalizeLoadedDrillDoc,
+  RevealPart,
+} from "@/hooks/useDrill";
+import { useTheme } from "@/hooks/useTheme";
+import { applyDivergedStep } from "@/lib/applyCheckResult";
+import { labToDrillDocument, type LabDetailResponse } from "@/lib/labModel";
+import { readLastDrillId } from "@/lib/lastDrillStorage";
+import { hasSubstantiveAttempt } from "@/lib/reviewGuard";
+import type { ReviewItem } from "@/lib/reviewItems";
+import {
+  executeReviewItemCheck,
+  executeReviewItemSkip,
+  prepareProblemForReviewItem,
+  reviewItemKey,
+  ReviewSessionItemOutcome,
+  ReviewSessionSummary,
+  saveReviewProblemState,
+  summarizeReviewSession,
+} from "@/lib/reviewSession";
+import { drillHref, isLabId } from "@/lib/routes";
+import {
+  createTelemetryTimerState,
+  getAttemptElapsedMs,
+  getProblemDisplayMs,
+  pauseTimer,
+  recordHint,
+  resumeTimer,
+  setActiveProblem,
+  setVisibility,
+  TelemetryTimerState,
+} from "@/lib/telemetryTimer";
+import { trapName } from "@/lib/titleText";
+
+export interface DailyReviewViewProps {
+  loading?: boolean;
+  error?: string | null;
+  items: ReviewItem[];
+  currentIndex?: number;
+  currentProblem?: Problem | null;
+  currentDrillMistakeTags?: MistakeTag[];
+  isLoadingProblem?: boolean;
+  completed?: boolean;
+  summary?: ReviewSessionSummary;
+  nextDueDate?: string | null;
+  lastDrillHref?: string;
+  revealedTrapTag?: string | null;
+  revisitNoteDraft?: string;
+  activeStep?: number | null;
+  questionTimerMs?: number;
+  totalTimerMs?: number;
+  isTimerPaused?: boolean;
+  theme?: "light" | "dark";
+  onToggleTheme?: () => void;
+  onToggleTimerPause?: () => void;
+  onInputChange?: (val: string) => void;
+  onCheckAnswer?: (inputOverride?: string) => Promise<void> | void;
+  onSkip?: () => void;
+  onResetProblem?: () => void;
+  onHintRevealed?: () => void;
+  onSetupRevealed?: () => void;
+  onSolutionRevealed?: () => void;
+  onToggleStepHighlight?: (stepIdx: number) => void;
+  onMarkDivergedStep?: (stepIdx: number) => void;
+  onSetScore?: (score: number | null) => void;
+  onToggleMistakeTag?: (tagId: string) => void;
+  onMistakeNoteChange?: (note: string) => void;
+  onRevisitNoteChange?: (note: string) => void;
+  onPrevItem?: () => void;
+  onNextItem?: () => void;
+}
+
+const noop = () => {};
+
+/**
+ * Pure presentational view for the `/review` Daily Review page across all states:
+ * loading, empty ("Nothing to review today" + next due date), active item (with optional
+ * "Your note from last time: …" above the problem, strict zero-leak before an attempt,
+ * post-answer "Trap: <plain title>", and post-correct "Next time I will…" revisit note input),
+ * and end screen (correct / total, moved up / down a level, next due date, link back to last drill).
+ */
+export const DailyReviewView: React.FC<DailyReviewViewProps> = ({
+  loading = false,
+  error = null,
+  items,
+  currentIndex = 0,
+  currentProblem = null,
+  currentDrillMistakeTags = [],
+  isLoadingProblem = false,
+  completed = false,
+  summary,
+  nextDueDate = null,
+  lastDrillHref,
+  revealedTrapTag = null,
+  revisitNoteDraft = "",
+  activeStep = null,
+  questionTimerMs = 0,
+  totalTimerMs = 0,
+  isTimerPaused = false,
+  theme = "light",
+  onToggleTheme,
+  onToggleTimerPause,
+  onInputChange = noop,
+  onCheckAnswer = noop,
+  onSkip,
+  onResetProblem = noop,
+  onHintRevealed,
+  onSetupRevealed,
+  onSolutionRevealed,
+  onToggleStepHighlight = noop,
+  onMarkDivergedStep = noop,
+  onSetScore = noop,
+  onToggleMistakeTag = noop,
+  onMistakeNoteChange = noop,
+  onRevisitNoteChange,
+  onPrevItem,
+  onNextItem,
+}) => {
+  const fallbackLastDrillId =
+    items.length > 0 ? items[items.length - 1]?.drillId : null;
+  const resolvedBackHref =
+    lastDrillHref ||
+    (fallbackLastDrillId ? drillHref(fallbackLastDrillId) : "/");
+
+  const currentItem =
+    !loading && !completed && items.length > 0
+      ? items[Math.max(0, Math.min(currentIndex, items.length - 1))]
+      : null;
+
+  const showProgressCounter =
+    !loading && !completed && items.length > 0 && currentItem !== null;
+
+  const computedSummary: ReviewSessionSummary =
+    summary ?? summarizeReviewSession(items, {}, nextDueDate);
+
+  return (
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 px-4 lg:px-16 py-4 sm:py-6 transition-colors">
+      <div className="mx-auto w-full max-w-[720px] space-y-4">
+        {/* Slim header row: one h1 ("Daily review"), progress "3 of 8", back link, theme toggle */}
+        <header className="bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md border border-zinc-200 dark:border-zinc-800 rounded-2xl px-3.5 py-2.5 shadow-sm flex items-center justify-between gap-3">
+          <div className="flex items-baseline gap-3 min-w-0">
+            <h1 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight">
+              Daily review
+            </h1>
+            {showProgressCounter && (
+              <span
+                aria-label="Review progress"
+                className="text-sm text-zinc-500 dark:text-zinc-400 tabular-nums"
+              >
+                {currentIndex + 1} of {items.length}
+              </span>
+            )}
+          </div>
+
+          <div className="flex items-center gap-1.5 shrink-0">
+            <Link
+              href={resolvedBackHref}
+              className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-lg text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" aria-hidden="true" />
+              <span>Back to drill</span>
+            </Link>
+
+            {onToggleTheme && (
+              <button
+                type="button"
+                onClick={onToggleTheme}
+                title={theme === "light" ? "Switch to dark mode" : "Switch to light mode"}
+                aria-label={theme === "light" ? "Switch to dark mode" : "Switch to light mode"}
+                className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+              >
+                {theme === "light" ? (
+                  <Moon className="w-4 h-4" />
+                ) : (
+                  <Sun className="w-4 h-4" />
+                )}
+              </button>
+            )}
+          </div>
+        </header>
+
+        <main className="space-y-4">
+          {loading ? (
+            <div
+              role="status"
+              aria-label="Loading daily review"
+              className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 space-y-4"
+            >
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                Loading daily review…
+              </p>
+              <div className="space-y-3 animate-pulse">
+                <div className="h-4 w-1/3 bg-zinc-200 dark:bg-zinc-800 rounded-lg" />
+                <div className="h-20 w-full bg-zinc-100 dark:bg-zinc-950 rounded-xl" />
+                <div className="h-10 w-1/2 bg-zinc-200 dark:bg-zinc-800 rounded-xl" />
+              </div>
+            </div>
+          ) : error ? (
+            <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 space-y-3">
+              <p className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
+                Could not load daily review
+              </p>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">{error}</p>
+              <Link
+                href={resolvedBackHref}
+                className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition-colors"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" aria-hidden="true" />
+                <span>Back to drill</span>
+              </Link>
+            </div>
+          ) : items.length === 0 ? (
+            /* Empty state when nothing is due */
+            <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 sm:p-8 space-y-4">
+              <div className="space-y-1.5">
+                <p className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
+                  Nothing to review today
+                </p>
+                <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                  {nextDueDate
+                    ? `Next due: ${nextDueDate}`
+                    : "No upcoming reviews scheduled yet."}
+                </p>
+              </div>
+              <div>
+                <Link
+                  href={resolvedBackHref}
+                  className="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition-colors"
+                >
+                  <span>Back to drill</span>
+                  <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
+                </Link>
+              </div>
+            </div>
+          ) : completed ? (
+            /* End screen */
+            <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 sm:p-8 space-y-6">
+              <div className="flex items-start gap-3">
+                <span className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 inline-flex items-center justify-center shrink-0">
+                  <Check className="w-4 h-4" aria-hidden="true" />
+                </span>
+                <div className="space-y-1">
+                  <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
+                    Review complete
+                  </h2>
+                  <p className="text-sm text-zinc-600 dark:text-zinc-400 tabular-nums">
+                    {computedSummary.correctCount} / {computedSummary.totalCount} correct
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
+                <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 px-3.5 py-2.5 space-y-0.5">
+                  <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                    Moved up
+                  </div>
+                  <div className="font-semibold text-emerald-700 dark:text-emerald-400 tabular-nums">
+                    {computedSummary.movedUpCount} moved up a level
+                  </div>
+                </div>
+
+                <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 px-3.5 py-2.5 space-y-0.5">
+                  <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                    Moved down
+                  </div>
+                  <div className="font-semibold text-rose-600 dark:text-rose-400 tabular-nums">
+                    {computedSummary.movedDownCount} moved down a level
+                  </div>
+                </div>
+
+                <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 px-3.5 py-2.5 space-y-0.5">
+                  <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                    Next due
+                  </div>
+                  <div className="font-semibold text-zinc-900 dark:text-zinc-100 tabular-nums">
+                    {computedSummary.nextDueDate || "—"}
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <Link
+                  href={resolvedBackHref}
+                  className="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition-colors"
+                >
+                  <span>Back to drill</span>
+                  <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
+                </Link>
+              </div>
+            </div>
+          ) : isLoadingProblem || !currentProblem || !currentItem ? (
+            <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 space-y-4 animate-pulse">
+              <div className="h-4 w-1/4 bg-zinc-200 dark:bg-zinc-800 rounded-lg" />
+              <div className="h-20 w-full bg-zinc-100 dark:bg-zinc-950 rounded-xl" />
+              <div className="h-10 w-1/2 bg-zinc-200 dark:bg-zinc-800 rounded-xl" />
+            </div>
+          ) : (
+            (() => {
+              const safeProblem = prepareProblemForReviewItem(
+                currentProblem,
+                currentItem
+              );
+              const hasAttempt = hasSubstantiveAttempt(safeProblem.state);
+              const isCorrect =
+                hasAttempt &&
+                (safeProblem.state.lastCheck?.verdict === "correct" ||
+                  safeProblem.state.score === 1 ||
+                  Boolean(
+                    safeProblem.state.attempts?.some((a) => a.verdict === "correct")
+                  ));
+
+              // Strictly reveal trap title ONLY after the learner has answered (never before).
+              const rawTrapTag = hasAttempt
+                ? revealedTrapTag ||
+                  currentItem.commonTrapTag ||
+                  currentProblem.commonTrapTag ||
+                  null
+                : null;
+              const plainTrapTitle = rawTrapTag ? trapName(rawTrapTag) : "";
+
+              const reviewSupplement = hasAttempt ? (
+                <div className="space-y-3 pt-1">
+                  {plainTrapTitle && (
+                    <p className="text-xs text-zinc-600 dark:text-zinc-400">
+                      Trap:{" "}
+                      <span className="font-medium text-zinc-800 dark:text-zinc-200">
+                        {plainTrapTitle}
+                      </span>
+                    </p>
+                  )}
+
+                  {isCorrect && (
+                    <div className="space-y-1.5">
+                      <label
+                        htmlFor={`revisit-note-${safeProblem.id}`}
+                        className="block text-xs font-medium text-zinc-600 dark:text-zinc-400"
+                      >
+                        Next time I will…
+                      </label>
+                      <div className="flex items-center gap-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3 py-2 transition-colors focus-within:border-indigo-600 dark:focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-600/20 dark:focus-within:ring-indigo-400/25">
+                        <PenLine className="w-3.5 h-3.5 text-zinc-500 dark:text-zinc-400 shrink-0" />
+                        <input
+                          id={`revisit-note-${safeProblem.id}`}
+                          type="text"
+                          value={revisitNoteDraft}
+                          onChange={(e) => onRevisitNoteChange?.(e.target.value)}
+                          aria-label="Next time I will…"
+                          placeholder="Next time I will…"
+                          className="w-full bg-transparent text-xs text-zinc-800 dark:text-zinc-200 placeholder:text-zinc-500 dark:placeholder:text-zinc-400 focus:outline-none"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : null;
+
+              const noteFromLastTime =
+                typeof currentItem.revisitNote === "string" &&
+                currentItem.revisitNote.trim()
+                  ? currentItem.revisitNote.trim()
+                  : null;
+
+              return (
+                <div className="space-y-3">
+                  {/* Quiet revisitNote from last time ABOVE the problem */}
+                  {noteFromLastTime && (
+                    <div
+                      role="note"
+                      className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-4 py-3 text-sm text-zinc-700 dark:text-zinc-300"
+                    >
+                      <span className="text-zinc-500 dark:text-zinc-400">
+                        Your note from last time:{" "}
+                      </span>
+                      <span>{noteFromLastTime}</span>
+                    </div>
+                  )}
+
+                  {currentItem.subject === "PRG" ? (
+                    <CodeDashboard
+                      key={`${currentItem.drillId}:${safeProblem.id}`}
+                      problem={safeProblem}
+                      drillId={currentItem.drillId}
+                      index={currentIndex}
+                      totalQuestions={items.length}
+                      drillTitle=""
+                      mistakeTags={currentDrillMistakeTags}
+                      activeStep={activeStep}
+                      onInputChange={onInputChange}
+                      onCheckAnswer={onCheckAnswer}
+                      onSkip={onSkip}
+                      onToggleStepHighlight={onToggleStepHighlight}
+                      onMarkDivergedStep={onMarkDivergedStep}
+                      onSetScore={onSetScore}
+                      onToggleMistakeTag={onToggleMistakeTag}
+                      onMistakeNoteChange={onMistakeNoteChange}
+                      onResetProblem={onResetProblem}
+                      onHintRevealed={onHintRevealed}
+                      onSolutionRevealed={onSolutionRevealed}
+                      onPrevQuestion={onPrevItem}
+                      onNextQuestion={onNextItem}
+                      onOpenReview={onNextItem}
+                      questionTimerMs={questionTimerMs}
+                      totalTimerMs={totalTimerMs}
+                      isTimerPaused={isTimerPaused}
+                      onToggleTimerPause={onToggleTimerPause}
+                      openInDrillHref={drillHref(currentItem.drillId, currentItem.qid)}
+                      reviewSupplement={reviewSupplement}
+                      isReviewSession
+                      nextCardLabel="Next"
+                      lastQuestionNavLabel="Next"
+                    />
+                  ) : (
+                    <MathWorkspace
+                      key={`${currentItem.drillId}:${safeProblem.id}`}
+                      problem={safeProblem}
+                      index={currentIndex}
+                      totalQuestions={items.length}
+                      unitCode={currentItem.unitCode}
+                      drillTitle=""
+                      mistakeTags={currentDrillMistakeTags}
+                      activeStep={activeStep}
+                      onInputChange={onInputChange}
+                      onCheckAnswer={onCheckAnswer}
+                      onSkip={onSkip}
+                      onToggleStepHighlight={onToggleStepHighlight}
+                      onMarkDivergedStep={onMarkDivergedStep}
+                      onSetScore={onSetScore}
+                      onToggleMistakeTag={onToggleMistakeTag}
+                      onMistakeNoteChange={onMistakeNoteChange}
+                      onResetProblem={onResetProblem}
+                      onHintRevealed={onHintRevealed}
+                      onSetupRevealed={onSetupRevealed}
+                      onSolutionRevealed={onSolutionRevealed}
+                      onPrevQuestion={onPrevItem}
+                      onNextQuestion={onNextItem}
+                      onOpenReview={onNextItem}
+                      questionTimerMs={questionTimerMs}
+                      totalTimerMs={totalTimerMs}
+                      isTimerPaused={isTimerPaused}
+                      onToggleTimerPause={onToggleTimerPause}
+                      reviewSupplement={reviewSupplement}
+                      isReviewSession
+                      nextCardLabel="Next"
+                      lastQuestionNavLabel="Next"
+                    />
+                  )}
+                </div>
+              );
+            })()
+          )}
+        </main>
+      </div>
+    </div>
+  );
+};
+
+/**
+ * Interactive Daily Review page controller for `/review`:
+ * fetches today's interleaved due items (`GET /api/review-items?limit=8`), loads each item's
+ * original problem in zero-leak review mode, manages the per-question timer, records check
+ * outcomes via `POST /api/review-items` + `POST /api/save-state`, and saves optional
+ * `"Next time I will…"` revisit notes.
+ */
+export const DailyReviewPage: React.FC = () => {
+  const { theme, handleToggleTheme } = useTheme();
+
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [today, setToday] = useState<string>("");
+  const [items, setItems] = useState<ReviewItem[]>([]);
+  const [initialNextDueDate, setInitialNextDueDate] = useState<string | null>(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [completed, setCompleted] = useState(false);
+
+  const [drillsByKey, setDrillsByKey] = useState<Record<string, DrillDocument>>({});
+  const [loadingKey, setLoadingKey] = useState<string | null>(null);
+  const [outcomes, setOutcomes] = useState<Record<string, ReviewSessionItemOutcome>>({});
+  const [hintsByKey, setHintsByKey] = useState<Record<string, number>>({});
+  const [revisitDraftByKey, setRevisitDraftByKey] = useState<Record<string, string>>({});
+  const [activeStepsByKey, setActiveStepsByKey] = useState<Record<string, number | null>>({});
+  const [lastDrillHref, setLastDrillHref] = useState<string>("/");
+
+  // Per-question telemetry timer
+  const timerStateRef = useRef<TelemetryTimerState>(createTelemetryTimerState());
+  const [timerState, setTimerState] = useState<TelemetryTimerState>(() => timerStateRef.current);
+  const [timerNow, setTimerNow] = useState<number>(() => Date.now());
+
+  const commitTimerState = useCallback(
+    (next: TelemetryTimerState, now: number = Date.now()) => {
+      timerStateRef.current = next;
+      setTimerState(next);
+      setTimerNow(now);
+    },
+    []
+  );
+
+  // Read last opened drill ID on mount
+  useEffect(() => {
+    const mathId = readLastDrillId("math");
+    const codeId = readLastDrillId("code");
+    const candidate = mathId || codeId;
+    if (candidate) {
+      setLastDrillHref(drillHref(candidate));
+    }
+  }, []);
+
+  // Load due items from GET /api/review-items?limit=8
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+
+    fetch("/api/review-items?limit=8", { cache: "no-store" })
+      .then(async (res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return (await res.json()) as {
+          today?: string;
+          items?: ReviewItem[];
+          nextDueDate?: string | null;
+        };
+      })
+      .then((data) => {
+        if (cancelled) return;
+        const dueList = Array.isArray(data.items) ? data.items : [];
+        setToday(typeof data.today === "string" ? data.today : "");
+        setItems(dueList);
+        setInitialNextDueDate(
+          typeof data.nextDueDate === "string" ? data.nextDueDate : null
+        );
+        setCurrentIndex(0);
+        setCompleted(false);
+        if (dueList.length > 0) {
+          const lastItem = dueList[dueList.length - 1];
+          setLastDrillHref((prev) =>
+            prev && prev !== "/" ? prev : drillHref(lastItem.drillId)
+          );
+        }
+      })
+      .catch((err: unknown) => {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : "Failed to load review items");
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const currentItem =
+    !loading && !completed && items.length > 0
+      ? items[Math.max(0, Math.min(currentIndex, items.length - 1))] ?? null
+      : null;
+  const currentKey = currentItem
+    ? reviewItemKey(currentItem.drillId, currentItem.qid)
+    : null;
+  const currentDrill = currentKey ? drillsByKey[currentKey] ?? null : null;
+  const currentProblem =
+    currentDrill && currentItem
+      ? currentDrill.problems.find((p) => p.id === currentItem.qid) ?? null
+      : null;
+
+  // Load the current item's drill document if not yet loaded
+  useEffect(() => {
+    if (!currentItem || !currentKey) return;
+    if (drillsByKey[currentKey]) return;
+
+    let cancelled = false;
+    setLoadingKey(currentKey);
+
+    const endpoint = isLabId(currentItem.drillId)
+      ? `/api/lab?id=${encodeURIComponent(currentItem.drillId)}`
+      : `/api/drill?id=${encodeURIComponent(currentItem.drillId)}&review=1`;
+
+    fetch(endpoint, { cache: "no-store" })
+      .then(async (res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const raw = await res.json();
+        const doc: DrillDocument = isLabId(currentItem.drillId)
+          ? labToDrillDocument(raw as LabDetailResponse)
+          : (raw as DrillDocument);
+        const normalized = normalizeLoadedDrillDoc(doc);
+        const prepared: DrillDocument = {
+          ...normalized,
+          problems: normalized.problems.map((p) =>
+            p.id === currentItem.qid
+              ? prepareProblemForReviewItem(p, currentItem)
+              : p
+          ),
+        };
+        if (!cancelled) {
+          setDrillsByKey((prev) => ({ ...prev, [currentKey]: prepared }));
+        }
+      })
+      .catch(() => {
+        // leave problem null if load fails
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setLoadingKey((prev) => (prev === currentKey ? null : prev));
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [currentItem, currentKey, drillsByKey]);
+
+  // Activate per-question timer on current item
+  useEffect(() => {
+    const activeProbId =
+      !loading && !completed && currentKey ? currentKey : null;
+    if (timerStateRef.current.activeProblemId === activeProbId) return;
+    const now = Date.now();
+    commitTimerState(setActiveProblem(timerStateRef.current, activeProbId, now), now);
+  }, [loading, completed, currentKey, commitTimerState]);
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      const isVisible = !document.hidden;
+      const now = Date.now();
+      commitTimerState(setVisibility(timerStateRef.current, isVisible, now), now);
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [commitTimerState]);
+
+  const isTimerRunning =
+    Boolean(currentKey) &&
+    !loading &&
+    !completed &&
+    timerState.activeProblemId !== null &&
+    timerState.isDocumentVisible &&
+    !timerState.paused;
+
+  useEffect(() => {
+    if (!isTimerRunning || !currentKey) return;
+    let lastWholeSec = Math.floor(
+      getAttemptElapsedMs(timerStateRef.current, currentKey, Date.now()) / 1000
+    );
+    const id = window.setInterval(() => {
+      const now = Date.now();
+      const wholeSec = Math.floor(
+        getAttemptElapsedMs(timerStateRef.current, currentKey, now) / 1000
+      );
+      if (wholeSec !== lastWholeSec) {
+        lastWholeSec = wholeSec;
+        setTimerNow(now);
+      }
+    }, 250);
+    return () => window.clearInterval(id);
+  }, [isTimerRunning, currentKey]);
+
+  const handleToggleTimerPause = useCallback(() => {
+    const now = Date.now();
+    const next = timerStateRef.current.paused
+      ? resumeTimer(timerStateRef.current, now)
+      : pauseTimer(timerStateRef.current, now);
+    commitTimerState(next, now);
+  }, [commitTimerState]);
+
+  const updateCurrentProblem = useCallback(
+    (
+      updater: (prob: Problem) => Problem,
+      options?: { autoSave?: boolean }
+    ) => {
+      if (!currentKey || !currentItem) return;
+      setDrillsByKey((prev) => {
+        const doc = prev[currentKey];
+        if (!doc) return prev;
+        const updatedProblems = doc.problems.map((p) =>
+          p.id === currentItem.qid ? updater(p) : p
+        );
+        const updatedDoc: DrillDocument = { ...doc, problems: updatedProblems };
+        if (options?.autoSave) {
+          const updatedProb = updatedProblems.find((p) => p.id === currentItem.qid);
+          if (updatedProb) {
+            void saveReviewProblemState(
+              doc.drillId,
+              currentItem.unitCode || doc.unitCode,
+              currentItem.qid,
+              updatedProb.state
+            );
+          }
+        }
+        return { ...prev, [currentKey]: updatedDoc };
+      });
+    },
+    [currentKey, currentItem]
+  );
+
+  const incrementHintsUsed = useCallback(() => {
+    if (!currentKey) return;
+    setHintsByKey((prev) => ({
+      ...prev,
+      [currentKey]: (prev[currentKey] || 0) + 1,
+    }));
+  }, [currentKey]);
+
+  const handleHintRevealed = useCallback(() => {
+    if (!currentKey || !currentItem) return;
+    timerStateRef.current = recordHint(timerStateRef.current, currentItem.qid);
+    incrementHintsUsed();
+  }, [currentKey, currentItem, incrementHintsUsed]);
+
+  const fetchAndMergeReveal = useCallback(
+    async (doc: DrillDocument, key: string, qid: string, parts: RevealPart[]) => {
+      for (const part of parts) {
+        try {
+          const res = await fetch(
+            `/api/reveal?drill=${encodeURIComponent(doc.drillId)}&q=${encodeURIComponent(qid)}&part=${part}`
+          );
+          if (!res.ok) continue;
+          const data = await res.json();
+          const patch: Partial<Problem> = {};
+          if (part === "steps") {
+            if (Array.isArray(data.steps)) patch.steps = data.steps;
+            if (typeof data.answerDisplay === "string") patch.answerDisplay = data.answerDisplay;
+            if (typeof data.answerPlain === "string") patch.answerPlain = data.answerPlain;
+          } else if (part === "display") {
+            if (typeof data.display === "string") patch.display = data.display;
+            if (typeof data.plainText === "string") patch.plainText = data.plainText;
+          } else if (part === "solution") {
+            if (typeof data.solutionCode === "string") patch.solutionCode = data.solutionCode;
+          }
+          if (Object.keys(patch).length > 0) {
+            setDrillsByKey((prev) => {
+              const cur = prev[key];
+              if (!cur) return prev;
+              const merged = mergeRevealedPatchIntoDrill(cur, cur.drillId, qid, patch);
+              return merged ? { ...prev, [key]: merged } : prev;
+            });
+          }
+        } catch {
+          // ignore transient reveal error
+        }
+      }
+    },
+    []
+  );
+
+  const handleSetupRevealed = useCallback(async () => {
+    if (!currentDrill || !currentItem || !currentKey) return;
+    incrementHintsUsed();
+    const transition = computeSetupRevealTransition(currentDrill, currentItem.qid);
+    if (!transition) return;
+    setDrillsByKey((prev) => ({ ...prev, [currentKey]: transition.updatedDoc }));
+    const prob = transition.updatedDoc.problems.find((p) => p.id === currentItem.qid);
+    if (prob) {
+      await saveReviewProblemState(
+        currentDrill.drillId,
+        currentItem.unitCode || currentDrill.unitCode,
+        currentItem.qid,
+        prob.state
+      );
+    }
+    if (transition.partsToReveal.length > 0) {
+      await fetchAndMergeReveal(
+        transition.updatedDoc,
+        currentKey,
+        currentItem.qid,
+        transition.partsToReveal
+      );
+    }
+  }, [currentDrill, currentItem, currentKey, incrementHintsUsed, fetchAndMergeReveal]);
+
+  const handleSolutionRevealed = useCallback(async () => {
+    if (!currentDrill || !currentItem || !currentKey) return;
+    incrementHintsUsed();
+    const transition = computeSolutionRevealTransition(currentDrill, currentItem.qid);
+    if (!transition) return;
+    setDrillsByKey((prev) => ({ ...prev, [currentKey]: transition.updatedDoc }));
+    const prob = transition.updatedDoc.problems.find((p) => p.id === currentItem.qid);
+    if (prob) {
+      await saveReviewProblemState(
+        currentDrill.drillId,
+        currentItem.unitCode || currentDrill.unitCode,
+        currentItem.qid,
+        prob.state
+      );
+    }
+    if (transition.partsToReveal.length > 0) {
+      await fetchAndMergeReveal(
+        transition.updatedDoc,
+        currentKey,
+        currentItem.qid,
+        transition.partsToReveal
+      );
+    }
+  }, [currentDrill, currentItem, currentKey, incrementHintsUsed, fetchAndMergeReveal]);
+
+  const handleCheckAnswer = useCallback(
+    async (inputOverride?: string) => {
+      if (!currentDrill || !currentItem || !currentKey || !currentProblem) return;
+      const inputVal = (
+        inputOverride !== undefined ? inputOverride : currentProblem.state.userInput
+      ).trim();
+      if (!inputVal) return;
+
+      const hintsUsed = hintsByKey[currentKey] || 0;
+      const now = Date.now();
+      const res = await executeReviewItemCheck({
+        drillDoc: currentDrill,
+        item: currentItem,
+        inputVal,
+        hintsUsed,
+        timerState: timerStateRef.current,
+        now,
+        today: today || undefined,
+        existingOutcome: outcomes[currentKey] ?? null,
+      });
+      if (!res) return;
+
+      commitTimerState(res.nextTimerState, now);
+      setDrillsByKey((prev) => ({ ...prev, [currentKey]: res.updatedDoc }));
+      if (res.outcome) {
+        const outcome = res.outcome;
+        setOutcomes((prev) => ({ ...prev, [currentKey]: outcome }));
+      }
+    },
+    [
+      currentDrill,
+      currentItem,
+      currentKey,
+      currentProblem,
+      hintsByKey,
+      today,
+      outcomes,
+      commitTimerState,
+    ]
+  );
+
+  const handleSkip = useCallback(async () => {
+    if (!currentDrill || !currentItem || !currentKey) return;
+    const hintsUsed = hintsByKey[currentKey] || 0;
+    const now = Date.now();
+    const res = await executeReviewItemSkip({
+      drillDoc: currentDrill,
+      item: currentItem,
+      hintsUsed,
+      timerState: timerStateRef.current,
+      now,
+      today: today || undefined,
+      existingOutcome: outcomes[currentKey] ?? null,
+    });
+    if (!res) return;
+
+    commitTimerState(res.nextTimerState, now);
+    setDrillsByKey((prev) => ({ ...prev, [currentKey]: res.updatedDoc }));
+    setOutcomes((prev) => ({ ...prev, [currentKey]: res.outcome }));
+  }, [currentDrill, currentItem, currentKey, hintsByKey, today, outcomes, commitTimerState]);
+
+  const handleResetProblem = useCallback(() => {
+    if (!currentDrill || !currentItem || !currentKey) return;
+    const now = Date.now();
+    const transition = computeResetProblemTransition(
+      currentDrill,
+      currentItem.qid,
+      timerStateRef.current,
+      { [currentItem.qid]: activeStepsByKey[currentKey] ?? null },
+      now
+    );
+    commitTimerState(transition.nextTimerState, now);
+    setActiveStepsByKey((prev) => ({ ...prev, [currentKey]: null }));
+    setDrillsByKey((prev) => ({ ...prev, [currentKey]: transition.updatedDoc }));
+  }, [currentDrill, currentItem, currentKey, activeStepsByKey, commitTimerState]);
+
+  const handleRevisitNoteChange = useCallback(
+    (note: string) => {
+      if (!currentKey) return;
+      setRevisitDraftByKey((prev) => ({ ...prev, [currentKey]: note }));
+      updateCurrentProblem(
+        (p) => ({
+          ...p,
+          state: {
+            ...p.state,
+            revisitNote: note.trim(),
+          },
+        }),
+        { autoSave: true }
+      );
+    },
+    [currentKey, updateCurrentProblem]
+  );
+
+  const handlePrevItem = useCallback(() => {
+    setCurrentIndex((idx) => Math.max(0, idx - 1));
+  }, []);
+
+  const handleNextItem = useCallback(() => {
+    if (currentIndex >= items.length - 1) {
+      setCompleted(true);
+    } else {
+      setCurrentIndex((idx) => idx + 1);
+    }
+  }, [currentIndex, items.length]);
+
+  const questionTimerMs =
+    currentKey && currentProblem
+      ? getProblemDisplayMs(
+          currentProblem.state?.durationMs,
+          timerState,
+          currentKey,
+          timerNow
+        )
+      : 0;
+
+  const summary = summarizeReviewSession(items, outcomes, initialNextDueDate);
+
+  return (
+    <DailyReviewView
+      loading={loading}
+      error={error}
+      items={items}
+      currentIndex={currentIndex}
+      currentProblem={currentProblem}
+      currentDrillMistakeTags={currentDrill?.mistakeTags || []}
+      isLoadingProblem={Boolean(currentKey && loadingKey === currentKey && !currentProblem)}
+      completed={completed}
+      summary={summary}
+      nextDueDate={initialNextDueDate}
+      lastDrillHref={lastDrillHref}
+      revealedTrapTag={currentKey ? outcomes[currentKey]?.commonTrapTag ?? null : null}
+      revisitNoteDraft={currentKey ? revisitDraftByKey[currentKey] ?? "" : ""}
+      activeStep={currentKey ? activeStepsByKey[currentKey] ?? null : null}
+      questionTimerMs={questionTimerMs}
+      totalTimerMs={questionTimerMs}
+      isTimerPaused={timerState.paused}
+      theme={theme}
+      onToggleTheme={handleToggleTheme}
+      onToggleTimerPause={handleToggleTimerPause}
+      onInputChange={(val) =>
+        updateCurrentProblem((p) => ({ ...p, state: { ...p.state, userInput: val } }))
+      }
+      onCheckAnswer={handleCheckAnswer}
+      onSkip={handleSkip}
+      onResetProblem={handleResetProblem}
+      onHintRevealed={handleHintRevealed}
+      onSetupRevealed={handleSetupRevealed}
+      onSolutionRevealed={handleSolutionRevealed}
+      onToggleStepHighlight={(stepIdx) => {
+        if (!currentKey) return;
+        setActiveStepsByKey((prev) => ({
+          ...prev,
+          [currentKey]: prev[currentKey] === stepIdx ? null : stepIdx,
+        }));
+      }}
+      onMarkDivergedStep={(stepIdx) =>
+        updateCurrentProblem(
+          (p) => ({ ...p, state: applyDivergedStep(p, stepIdx) }),
+          { autoSave: true }
+        )
+      }
+      onSetScore={(score) =>
+        updateCurrentProblem(
+          (p) => ({ ...p, state: { ...p.state, score, skipped: false } }),
+          { autoSave: true }
+        )
+      }
+      onToggleMistakeTag={(tagId) =>
+        updateCurrentProblem(
+          (p) => {
+            const list = p.state.mistakes || [];
+            const next = list.includes(tagId)
+              ? list.filter((t) => t !== tagId)
+              : [...list, tagId];
+            return { ...p, state: { ...p.state, mistakes: next } };
+          },
+          { autoSave: true }
+        )
+      }
+      onMistakeNoteChange={(note) =>
+        updateCurrentProblem(
+          (p) => ({ ...p, state: { ...p.state, mistakeNote: note } }),
+          { autoSave: true }
+        )
+      }
+      onRevisitNoteChange={handleRevisitNoteChange}
+      onPrevItem={handlePrevItem}
+      onNextItem={handleNextItem}
+    />
+  );
+};
