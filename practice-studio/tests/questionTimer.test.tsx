@@ -247,9 +247,13 @@ const reviewHtml = renderToStaticMarkup(
 );
 assert.match(reviewHtml, /2m 15s/);
 
-// 5. Source invariant: "p" shortcut in useDrill guards inputs and dialogs
+// 5. Source invariant: "p" shortcut in useDrill guards inputs and dialogs, and Total tooltip opens below clock
 const useDrillSrc = readFileSync("src/hooks/useDrill.ts", "utf8");
 assert.match(useDrillSrc, /e\.key\.toLowerCase\(\)\s*===\s*"p"/);
 assert.match(useDrillSrc, /\[role="alertdialog"\],\s*\[role="dialog"\]/);
+
+const questionTimerSrc = readFileSync("src/components/QuestionTimer.tsx", "utf8");
+assert.match(questionTimerSrc, /\btop-full\b[^\n]*\bmt-2\b/, "Total tooltip must render below clock to clear sticky header");
+assert.doesNotMatch(questionTimerSrc, /\bbottom-full\b/);
 
 console.log("questionTimer render and shortcut tests passed");

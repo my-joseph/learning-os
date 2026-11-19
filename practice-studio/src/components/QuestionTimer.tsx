@@ -57,7 +57,7 @@ export const QuestionTimer: React.FC<QuestionTimerProps> = ({
                 role="tooltip"
                 variants={fade}
                 {...presence}
-                className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-30 whitespace-nowrap rounded-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-1 text-xs font-medium tabular-nums text-zinc-700 dark:text-zinc-200 shadow-md"
+                className="pointer-events-none absolute top-full left-1/2 -translate-x-1/2 mt-2 z-30 whitespace-nowrap rounded-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-1 text-xs font-medium tabular-nums text-zinc-700 dark:text-zinc-200 shadow-md"
               >
                 Total {totalClock}
               </m.span>
