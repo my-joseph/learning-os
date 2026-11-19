@@ -22,7 +22,7 @@
 - Lab (run in `labs/LAB-PRG-T01-C04-02/`): `npm test` fails until solved; `npm run test:reference` passes (21 tests); `npm run check:reference` runs reference tests + lint + `tsc`. `npm run submit` writes to Notion — only on request.
 - PRG lint toolkit (run in `tools/lint/`): `npm ci` installs ESLint 9 + `tsc` for PRG drill workspaces and labs. In any PRG drill workspace or lab, `npm run check` runs tests + lint (+ `tsc --noEmit` for TypeScript). Check all PRG drill reference solutions from repo root: `.venv/bin/python -m code_engine.lint_check --all`.
 - Python tests (repo root): `.venv/bin/python -m pip install -r requirements-dev.txt && .venv/bin/python -m pytest` (dev deps installed in the main `.venv` 2026-11-15; its `bin/pip` launcher is broken, so use `-m`) (653 pass, 92 subtests, ~4.5 min with JS/TS lint/test suites; hermetic, no Notion/network). Studio unit tests: `npm run test:telemetry` in `practice-studio/`.
-- CI: `.github/workflows/ci.yml` runs pytest, studio lint+build, lab tests. No Makefile/Dockerfile. TODO: verify any other command before using it.
+- CI: `.github/workflows/ci.yml` runs pytest (+ ruff, drill lint, vault checks), studio lint+build+test:telemetry, lab tests. The Python job is skipped for PRs that only change files under `practice-studio/` and delete/rename nothing (a `changes` job decides); pushes to main always run everything. No Makefile/Dockerfile. TODO: verify any other command before using it.
 
 ## Conventions (target — apply to new/changed code)
 - Python: ruff format + lint, type hints on public functions, one shared Notion client on stdlib `urllib` (no new deps), secrets only from env.
