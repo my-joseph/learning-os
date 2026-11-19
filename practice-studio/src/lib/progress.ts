@@ -64,9 +64,15 @@ export function writeProgress(doc: DocLike): string {
       if (st.reviews === undefined && prev && prev.reviews !== undefined) {
         st.reviews = prev.reviews;
       }
+      if (st.revisitNote === undefined && prev && typeof prev.revisitNote === "string") {
+        st.revisitNote = prev.revisitNote;
+      }
       problems[p.id] = st;
-    } else if (prev && prev.reviews !== undefined) {
-      problems[p.id] = { reviews: prev.reviews };
+    } else if (prev && (prev.reviews !== undefined || typeof prev.revisitNote === "string")) {
+      const preserved: Record<string, unknown> = {};
+      if (prev.reviews !== undefined) preserved.reviews = prev.reviews;
+      if (typeof prev.revisitNote === "string") preserved.revisitNote = prev.revisitNote;
+      problems[p.id] = preserved;
     }
   }
   const data: ProgressFile = {

@@ -146,12 +146,27 @@ async function runTests() {
         ["PRG-T09-C01-U02", "DRL-PRG-T09-C01-01", "/code/DRL-PRG-T09-C01-01", 1],
       ]
     );
+    assert.deepEqual(due.units[0].masteryCap, {
+      capped: true,
+      reason: "needs one L4 challenge without hints",
+    });
+    assert.deepEqual(due.units[1].masteryCap, {
+      capped: false,
+      reason: "",
+    });
 
     // Route /api/due-today
     const dueRes = await dueTodayGET();
     assert.equal(dueRes.status, 200);
-    const dueJson = (await dueRes.json()) as { today: string; units: Array<{ unitCode: string }> };
+    const dueJson = (await dueRes.json()) as {
+      today: string;
+      units: Array<{ unitCode: string; masteryCap: { capped: boolean; reason: string } }>;
+    };
     assert.ok(Array.isArray(dueJson.units));
+    assert.deepEqual(dueJson.units[0]?.masteryCap, {
+      capped: true,
+      reason: "needs one L4 challenge without hints",
+    });
 
     // Route /api/weak-spots rejects invalid scope and returns weak spots for valid scope
     const badRes = await weakSpotsGET(
@@ -165,7 +180,11 @@ async function runTests() {
     assert.equal(wsRes.status, 200);
     const wsJson = (await wsRes.json()) as {
       scope: string;
-      units: Array<{ unitCode: string; open: Array<{ id: string }> }>;
+      units: Array<{
+        unitCode: string;
+        open: Array<{ id: string }>;
+        masteryCap: { capped: boolean; reason: string };
+      }>;
     };
     assert.equal(wsJson.scope, "MTH-T09-C01-U01");
     assert.equal(wsJson.units.length, 1);
@@ -173,6 +192,10 @@ async function runTests() {
       wsJson.units[0].open.map((x) => x.id),
       ["c09-sign-flip"]
     );
+    assert.deepEqual(wsJson.units[0].masteryCap, {
+      capped: false,
+      reason: "",
+    });
 
     // 4. Component rendering: Math vs PRG labels, mastery dots, deep links, empty states
     const mathHtml = renderToStaticMarkup(

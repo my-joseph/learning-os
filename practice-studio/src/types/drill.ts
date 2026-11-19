@@ -239,6 +239,7 @@ export interface ProblemState {
   divergedStep: number | null;
   mistakes: string[];
   mistakeNote?: string;
+  revisitNote?: string;
   skipped?: boolean;
   lastCheck?: CheckResult | null;
   lastTestReport?: TestRunReport | null;

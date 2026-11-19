@@ -4,11 +4,17 @@ import { getDrillsDataDir, getProgressDir, getWorkspaceRoot, loadIdMapTitles } f
 import { drillHref } from "@/lib/routes";
 import { plainTitle } from "@/lib/titleText";
 
+export interface MasteryCap {
+  capped: boolean;
+  reason: string;
+}
+
 export interface ReviewScheduleEntry {
   mastery?: number | null;
   lastReviewed?: string | null;
   nextReview?: string | null;
   title?: string | null;
+  masteryCap?: MasteryCap | null;
 }
 
 export interface DueTodayUnit {
@@ -19,6 +25,7 @@ export interface DueTodayUnit {
   nextReview: string;
   drillId: string | null;
   href: string | null;
+  masteryCap: MasteryCap;
 }
 
 export interface DueTodayResponse {
@@ -48,6 +55,7 @@ export interface WeakSpotUnit {
   levels: Record<string, { pct: number; n: number; move: "up" | "down" | "stay" }>;
   assistedCount: number;
   skipped: string[];
+  masteryCap?: MasteryCap;
 }
 
 export interface WeakSpotsResponse {
@@ -152,6 +160,120 @@ function clampMastery(raw: unknown): number {
   return Math.max(0, Math.min(4, Math.round(raw)));
 }
 
+const L4_CHALLENGE_CAP_REASON = "needs one L4 challenge without hints";
+
+function unitsWithL4Challenge(dataDir: string, progressDir: string): Set<string> {
+  const passedUnits = new Set<string>();
+  if (!fs.existsSync(dataDir) || !fs.existsSync(progressDir)) {
+    return passedUnits;
+  }
+
+  const drillsById = new Map<
+    string,
+    { unitCode: string; isPrg: boolean; problems: Array<{ id: string; level: number; unitCode: string }> }
+  >();
+
+  const visit = (dir: string) => {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const fullPath = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        visit(fullPath);
+      } else if (entry.isFile() && entry.name.endsWith(".json")) {
+        try {
+          const doc = JSON.parse(fs.readFileSync(fullPath, "utf-8")) as {
+            drillId?: unknown;
+            subject?: unknown;
+            unitCode?: unknown;
+            problems?: Array<{ id?: unknown; level?: unknown; unitCode?: unknown }>;
+          };
+          if (typeof doc.drillId !== "string" || !doc.drillId) continue;
+          const drillUnit = typeof doc.unitCode === "string" ? doc.unitCode : "";
+          const isPrg =
+            doc.subject === "PRG" || drillUnit.startsWith("PRG-") || doc.drillId.startsWith("DRL-PRG-");
+          const problems: Array<{ id: string; level: number; unitCode: string }> = [];
+          for (const p of doc.problems || []) {
+            if (!p || typeof p.id !== "string") continue;
+            const lv = typeof p.level === "number" ? p.level : 0;
+            const pUnit = typeof p.unitCode === "string" && p.unitCode ? p.unitCode : drillUnit;
+            problems.push({ id: p.id, level: lv, unitCode: pUnit });
+          }
+          drillsById.set(doc.drillId, { unitCode: drillUnit, isPrg, problems });
+        } catch {
+          continue;
+        }
+      }
+    }
+  };
+  visit(dataDir);
+
+  for (const entry of fs.readdirSync(progressDir, { withFileTypes: true })) {
+    if (!entry.isFile() || !entry.name.endsWith(".json") || entry.name.startsWith("_") || entry.name === "review_items.json") {
+      continue;
+    }
+    try {
+      const prog = JSON.parse(fs.readFileSync(path.join(progressDir, entry.name), "utf-8")) as {
+        drillId?: unknown;
+        problems?: Record<string, Record<string, unknown>>;
+      };
+      if (typeof prog.drillId !== "string") continue;
+      const drill = drillsById.get(prog.drillId);
+      if (!drill || !prog.problems) continue;
+
+      for (const prob of drill.problems) {
+        if (prob.level < 4 || !prob.unitCode) continue;
+        const st = prog.problems[prob.id];
+        if (!st || typeof st !== "object" || st.skipped) continue;
+        const attempts = Array.isArray(st.attempts) ? (st.attempts as Array<Record<string, unknown>>) : [];
+        const assisted = Boolean(
+          st.setupRevealedBeforeAnswer ||
+            st.solutionRevealedBeforeAnswer ||
+            (typeof st.hintsRevealed === "number" && st.hintsRevealed > 0) ||
+            attempts.some((a) => a && (a.setupRevealed || a.solutionRevealed))
+        );
+        if (assisted) continue;
+
+        if (drill.isPrg) {
+          const reviews = Array.isArray(st.reviews) ? (st.reviews as Array<Record<string, unknown>>) : [];
+          if (reviews.length > 0 && reviews[0]?.verdict === "pass" && reviews[reviews.length - 1]?.verdict === "pass") {
+            passedUnits.add(prob.unitCode);
+          }
+        } else {
+          const substantive = attempts.filter(
+            (a) => a && a.verdict !== "invalid input" && a.verdict !== "parse_error"
+          );
+          if (substantive.length > 0 && substantive[0]?.verdict === "correct") {
+            passedUnits.add(prob.unitCode);
+          } else if (substantive.length === 0 && st.score === 1) {
+            passedUnits.add(prob.unitCode);
+          }
+        }
+      }
+    } catch {
+      continue;
+    }
+  }
+
+  return passedUnits;
+}
+
+function resolveMasteryCap(
+  unitCode: string,
+  mastery: number,
+  entryCap: MasteryCap | null | undefined,
+  l4Units: Set<string>
+): MasteryCap {
+  if (entryCap && typeof entryCap === "object" && typeof entryCap.capped === "boolean") {
+    return {
+      capped: entryCap.capped,
+      reason: typeof entryCap.reason === "string" ? entryCap.reason : "",
+    };
+  }
+  if (mastery === 2 && !l4Units.has(unitCode)) {
+    return { capped: true, reason: L4_CHALLENGE_CAP_REASON };
+  }
+  return { capped: false, reason: "" };
+}
+
 /** Read `_review_schedule.json` and return units with `nextReview <= today` (local date) plus deep links. */
 export function getDueTodayUnits(options?: {
   today?: string;
@@ -167,6 +289,7 @@ export function getDueTodayUnits(options?: {
   const schedule = readReviewSchedule(progressDir);
   const latestDrills = findLatestDrillsByUnit(dataDir);
   const idMapTitles = loadIdMapTitles(rootDir);
+  const l4Units = unitsWithL4Challenge(dataDir, progressDir);
 
   const units: DueTodayUnit[] = [];
   for (const [unitCode, entry] of Object.entries(schedule)) {
@@ -185,15 +308,17 @@ export function getDueTodayUnits(options?: {
       plainTitle(typeof entry.title === "string" ? entry.title : "") ||
       plainTitle(idMapTitles.get(unitCode)) ||
       unitCode;
+    const mastery = clampMastery(entry.mastery);
 
     units.push({
       unitCode,
       title,
-      mastery: clampMastery(entry.mastery),
+      mastery,
       lastReviewed: rawLast,
       nextReview: rawNext,
       drillId,
       href: href && href !== "/" ? href : null,
+      masteryCap: resolveMasteryCap(unitCode, mastery, entry.masteryCap, l4Units),
     });
   }
 

@@ -77,5 +77,27 @@ assert(
 );
 assert(reloadedState.mistakeNote === "checked", "writeProgress keeps new state fields alongside preserved reviews");
 
+// Verify revisitNote is saved and preserved by writeProgress
+const withRevisit = prgDoc();
+withRevisit.problems[0].state = {
+  userInput: "",
+  score: 1,
+  revisitNote: "Next time guard against empty inputs first.",
+};
+writeProgress({ ...withRevisit, sessionSummary: { score: 1 } });
+const reloadedWithNote = applyProgress(prgDoc(), readProgress("DRL-PRG-X-01"));
+const noteState = reloadedWithNote.problems[0].state as {
+  reviews?: unknown[];
+  revisitNote?: string;
+};
+assert(
+  noteState.revisitNote === "Next time guard against empty inputs first.",
+  "writeProgress persists revisitNote",
+);
+assert(
+  Array.isArray(noteState.reviews) && noteState.reviews.length === 1,
+  "writeProgress keeps reviews when updating revisitNote",
+);
+
 fs.rmSync(tmp, { recursive: true, force: true });
-console.log("ALL 6 PROGRESS CHECKS PASSED");
+console.log("ALL 8 PROGRESS CHECKS PASSED");

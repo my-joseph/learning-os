@@ -74,6 +74,11 @@ def review_schedule_path(repo_root: str | None = None) -> str:
     return os.path.join(progress_root(repo_root), "_review_schedule.json")
 
 
+def review_items_path(repo_root: str | None = None) -> str:
+    """Path to `review_items.json` inside the active progress directory (respects LEARNINGOS_PILOT)."""
+    return os.path.join(progress_root(repo_root), "review_items.json")
+
+
 def load_review_schedule(repo_root: str | None = None) -> dict[str, dict[str, Any]]:
     """Read the local unit review-schedule cache, or `{}` if missing or invalid."""
     path = review_schedule_path(repo_root)
@@ -124,6 +129,11 @@ def merge_review_schedule(updates: dict[str, dict[str, Any]], repo_root: str | N
         title = vals.get("title") or prev.get("title")
         if title:
             entry["title"] = title
+        if isinstance(vals.get("masteryCap"), dict):
+            entry["masteryCap"] = {
+                "capped": bool(vals["masteryCap"].get("capped")),
+                "reason": str(vals["masteryCap"].get("reason") or ""),
+            }
         schedule[unit_code] = entry
     return write_review_schedule(schedule, repo_root)
 
@@ -157,7 +167,13 @@ def has_practice(drill_doc: dict[str, Any]) -> bool:
     for st in _iter_problem_states(drill_doc):
         if st.get("attempts") or st.get("userInput") or st.get("score") is not None or st.get("skipped"):
             return True
-        if st.get("mistakes") or st.get("mistakeNote") or st.get("userCode") or st.get("reviews"):
+        if (
+            st.get("mistakes")
+            or st.get("mistakeNote")
+            or st.get("revisitNote")
+            or st.get("userCode")
+            or st.get("reviews")
+        ):
             return True
         if (
             st.get("setupRevealedBeforeAnswer")

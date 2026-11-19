@@ -127,8 +127,20 @@ def test_unit_comes_from_the_archetype_when_the_problem_has_none(tmp_path, monke
 
 def _items(scores_levels):
     return [
-        ws.Item("D", "U", f"Q{n}", lv, "direct", None, None, f"2026-11-{n + 1:02d}", sc, False, False)
-        for n, (sc, lv) in enumerate(scores_levels)
+        ws.Item(
+            "D",
+            "U",
+            f"Q{n}",
+            lv,
+            "direct",
+            None,
+            None,
+            f"2026-11-{n + 1:02d}",
+            sc,
+            False,
+            bool(rest[0]) if rest else False,
+        )
+        for n, (sc, lv, *rest) in enumerate(scores_levels)
     ]
 
 
@@ -136,15 +148,59 @@ def test_suggest_mastery_ladder():
     assert ws.suggest_mastery([], False) is None
     assert ws.suggest_mastery(_items([(0, 1), (0.5, 1), (0, 2)]), False) == 1
     assert ws.suggest_mastery(_items([(1, 1), (1, 2), (0.5, 3)]), False) == 2
-    strong = _items([(1, 1), (1, 2), (1, 3), (1, 3), (0.5, 4)])
+    strong = _items([(1, 1), (1, 2), (1, 3), (1, 3), (1, 4)])
     assert ws.suggest_mastery(strong, False) == 3
     assert ws.suggest_mastery(strong, True) == 2  # an open weak spot caps it
 
 
+def test_mastery_capped_at_2_without_unassisted_l4_challenge_or_when_assisted():
+    # High L3 average without any L4+ item -> capped at 2
+    only_l3 = _items([(1, 3), (1, 3), (1, 3), (1, 3)])
+    assert ws.suggest_mastery(only_l3, False) == 2
+    assert ws.mastery_cap(only_l3, False) == {
+        "capped": True,
+        "reason": "needs one L4 challenge without hints",
+    }
+
+    # L4 item answered with a hint / assistance -> does not unlock Mastery 3
+    assisted_l4 = _items([(1, 3), (1, 3), (1, 4, True)])
+    assert ws.suggest_mastery(assisted_l4, False) == 2
+    assert ws.mastery_cap(assisted_l4, False) == {
+        "capped": True,
+        "reason": "needs one L4 challenge without hints",
+    }
+
+    # Assisted L3 items weighted below fluent ones (0.5 vs 1.0) keep average below 70%
+    mostly_assisted = _items([(1, 3, True), (1, 3, True), (1, 4, False)])
+    mastery, cap = ws.suggest_mastery(mostly_assisted, False, return_cap=True)
+    assert mastery == 2
+    assert cap["capped"] is True
+
+    # Adding a fluent L3 and unassisted L4 reaches Mastery 3 with no cap
+    unlocked = _items([(1, 3, False), (1, 3, True), (1, 4, False)])
+    assert ws.suggest_mastery(unlocked, False) == 3
+    assert ws.mastery_cap(unlocked, False) == {"capped": False, "reason": ""}
+
+
 def test_review_update_keeps_learner_set_4_and_schedules(tmp_path):
-    roots = _write(tmp_path, {"D1": [(f"Q{i}", 3, "direct", None, _right(f"2026-11-0{i}")) for i in range(1, 5)]})
+    roots = _write(
+        tmp_path,
+        {
+            "D1": [
+                ("Q1", 3, "direct", None, _right("2026-11-01")),
+                ("Q2", 3, "direct", None, _right("2026-11-02")),
+                ("Q3", 3, "direct", None, _right("2026-11-03")),
+                ("Q4", 4, "direct", None, _right("2026-11-04")),
+            ]
+        },
+    )
     upd = ws.review_update("MTH-T09-C01-U01", None, "2026-11-10T09:00:00Z", *roots)
-    assert upd == {"mastery": 3, "lastReviewed": "2026-11-10", "nextReview": "2026-11-27"}
+    assert upd == {
+        "mastery": 3,
+        "lastReviewed": "2026-11-10",
+        "nextReview": "2026-11-27",
+        "masteryCap": {"capped": False, "reason": ""},
+    }
     assert ws.review_update("MTH-T09-C01-U01", 4, "2026-11-10", *roots)["mastery"] == 4
     assert ws.review_update("MTH-T09-C02-U01", None, "2026-11-10", *roots) is None
 
@@ -164,6 +220,10 @@ def test_cli_json_flag_outputs_math_traps_and_empty_scope(tmp_path, capsys):
     assert unit["subject"] == "MTH"
     assert [t["id"] for t in unit["open"]] == [TRAP]
     assert unit["open"][0]["matches"] == 2
+    assert unit["masteryCap"] == {
+        "capped": True,
+        "reason": "needs one L4 challenge without hints",
+    }
 
     rc_empty = ws.main(["MTH-T09-C99-U01", "--data-root", roots[0], "--progress-dir", roots[1], "--json"])
     assert rc_empty == 0
