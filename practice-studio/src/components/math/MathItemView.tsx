@@ -57,7 +57,6 @@ export interface MathItemViewProps {
   autoRevealOnCorrect?: boolean;
   autoRevealOnSkip?: boolean;
   hideShowStepsButton?: boolean;
-  isPracticeOnly?: boolean;
   loadingSteps?: boolean;
   ariaLabel?: string;
   choiceKeyboardEnabled?: boolean;
@@ -110,7 +109,6 @@ export const MathItemView = forwardRef<MathItemViewHandle, MathItemViewProps>(
       autoRevealOnCorrect = true,
       autoRevealOnSkip,
       hideShowStepsButton = false,
-      isPracticeOnly = false,
       loadingSteps = false,
       ariaLabel,
       choiceKeyboardEnabled = true,
@@ -445,7 +443,6 @@ export const MathItemView = forwardRef<MathItemViewHandle, MathItemViewProps>(
           setupUnopenedUnattempted={setupUnopenedUnattempted}
           onToggleSetup={toggleSetup}
           hideShowStepsButton={hideShowStepsButton}
-          isPracticeOnly={isPracticeOnly}
           setupDisclosure={
             <Reveal show={Boolean(hasSetup && showSetup)}>
               {hasSetup && showSetup && (

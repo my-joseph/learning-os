@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import { Check, Circle, Minus, SkipForward, X } from "lucide-react";
+import { Check, Minus, X } from "lucide-react";
 import {
+  buildLockedSimilarPlaceholders,
   nextTabIndexForKey,
   RealTabStatus,
   SimilarTabId,
@@ -18,45 +19,98 @@ export interface SimilarTabStripProps {
   realStatus: RealTabStatus;
   tabs: readonly SimilarTabSummary[];
   selectedTab: SimilarTabId;
+  locked?: boolean;
+  lockedSlotCount?: number;
   onSelectTab: (tabId: SimilarTabId) => void;
 }
 
-function StatusMark({ status }: { status: SimilarTabStatus | RealTabStatus }) {
+/**
+ * Shared tab status circle matching the Pagination Stepper colour language:
+ * - not tried: plain outlined circle (no fill)
+ * - skipped: dashed outlined circle
+ * - correct: filled green circle with white ✓
+ * - wrong: filled red circle with white ✗
+ * - assisted (used help + correct): filled yellow circle with ✓
+ * - usedHelp (used help before answering): filled yellow circle (no ✓)
+ * - partial: filled yellow circle with –
+ */
+function StatusMark({
+  status,
+  muted = false,
+}: {
+  status: SimilarTabStatus | RealTabStatus;
+  muted?: boolean;
+}) {
   if (status === "correct") {
     return (
-      <Check
-        className="w-3.5 h-3.5 shrink-0 text-emerald-700 dark:text-emerald-400"
+      <span
+        data-status="correct"
+        className="w-4 h-4 rounded-full bg-emerald-600 dark:bg-emerald-500 text-white dark:text-zinc-950 inline-flex items-center justify-center shrink-0"
         aria-hidden="true"
-      />
+      >
+        <Check className="w-2.5 h-2.5" strokeWidth={3} />
+      </span>
     );
   }
   if (status === "wrong") {
     return (
-      <X
-        className="w-3.5 h-3.5 shrink-0 text-rose-600 dark:text-rose-400"
+      <span
+        data-status="wrong"
+        className="w-4 h-4 rounded-full bg-rose-600 dark:bg-rose-400 text-white dark:text-zinc-950 inline-flex items-center justify-center shrink-0"
+        aria-hidden="true"
+      >
+        <X className="w-2.5 h-2.5" strokeWidth={3} />
+      </span>
+    );
+  }
+  if (status === "assisted") {
+    return (
+      <span
+        data-status="assisted"
+        className="w-4 h-4 rounded-full bg-amber-600 dark:bg-amber-400 text-white dark:text-zinc-950 inline-flex items-center justify-center shrink-0"
+        aria-hidden="true"
+      >
+        <Check className="w-2.5 h-2.5" strokeWidth={3} />
+      </span>
+    );
+  }
+  if (status === "usedHelp") {
+    return (
+      <span
+        data-status="usedHelp"
+        className="w-4 h-4 rounded-full bg-amber-600 dark:bg-amber-400 inline-flex items-center justify-center shrink-0"
         aria-hidden="true"
       />
     );
   }
-  if (status === "partial" || status === "assisted") {
+  if (status === "partial") {
     return (
-      <Minus
-        className="w-3.5 h-3.5 shrink-0 text-amber-700 dark:text-amber-400"
+      <span
+        data-status="partial"
+        className="w-4 h-4 rounded-full bg-amber-600 dark:bg-amber-400 text-white dark:text-zinc-950 inline-flex items-center justify-center shrink-0"
         aria-hidden="true"
-      />
+      >
+        <Minus className="w-2.5 h-2.5" strokeWidth={3} />
+      </span>
     );
   }
   if (status === "skipped") {
     return (
-      <SkipForward
-        className="w-3.5 h-3.5 shrink-0 text-zinc-400 dark:text-zinc-500"
+      <span
+        data-status="skipped"
+        className="w-4 h-4 rounded-full border-[1.5px] border-dashed border-zinc-400 dark:border-zinc-500 inline-block shrink-0"
         aria-hidden="true"
       />
     );
   }
   return (
-    <Circle
-      className="w-3.5 h-3.5 shrink-0 text-zinc-400 dark:text-zinc-500"
+    <span
+      data-status="untried"
+      className={`w-4 h-4 rounded-full border-[1.5px] inline-block shrink-0 ${
+        muted
+          ? "border-zinc-300 dark:border-zinc-600"
+          : "border-zinc-400 dark:border-zinc-500"
+      }`}
       aria-hidden="true"
     />
   );
@@ -65,6 +119,8 @@ function StatusMark({ status }: { status: SimilarTabStatus | RealTabStatus }) {
 /**
  * WAI-ARIA manual-activation tab strip for switching between the real question and
  * Similar 1..3 practice tabs inside a Math question card.
+ * Shown by default including before the first attempt; similar tabs render as locked
+ * ghost tabs (`aria-disabled="true"`) until the real question is attempted in the cycle.
  */
 export const SimilarTabStrip: React.FC<SimilarTabStripProps> = ({
   problemId,
@@ -72,22 +128,32 @@ export const SimilarTabStrip: React.FC<SimilarTabStripProps> = ({
   realStatus,
   tabs,
   selectedTab,
+  locked = false,
+  lockedSlotCount,
   onSelectTab,
 }) => {
-  const orderedIds: SimilarTabId[] = ["q", ...tabs.map((t) => slotToTabId(t.slot))];
-  const [rovingTab, setRovingTab] = useState<SimilarTabId>(selectedTab);
+  const lockedSlots = locked ? buildLockedSimilarPlaceholders(lockedSlotCount) : [];
+  const orderedIds: SimilarTabId[] = locked
+    ? ["q"]
+    : ["q", ...tabs.map((t) => slotToTabId(t.slot))];
+  const effectiveSelected: SimilarTabId = locked ? "q" : selectedTab;
+
+  const [rovingTab, setRovingTab] = useState<SimilarTabId>(effectiveSelected);
   const tabRefs = useRef<Map<SimilarTabId, HTMLButtonElement | null>>(new Map());
   const listRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    setRovingTab(selectedTab);
-    const btn = tabRefs.current.get(selectedTab);
+    setRovingTab(effectiveSelected);
+    const btn = tabRefs.current.get(effectiveSelected);
     if (btn && typeof btn.scrollIntoView === "function") {
       btn.scrollIntoView({ inline: "nearest", block: "nearest" });
     }
-  }, [selectedTab]);
+  }, [effectiveSelected]);
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>, currentId: SimilarTabId) => {
+  const handleKeyDown = (
+    e: React.KeyboardEvent<HTMLButtonElement>,
+    currentId: SimilarTabId
+  ) => {
     const currentIndex = orderedIds.indexOf(currentId);
     if (currentIndex < 0) return;
 
@@ -113,11 +179,14 @@ export const SimilarTabStrip: React.FC<SimilarTabStripProps> = ({
   const handleListBlur = (e: React.FocusEvent<HTMLDivElement>) => {
     const nextTarget = e.relatedTarget as Node | null;
     if (!nextTarget || !listRef.current?.contains(nextTarget)) {
-      setRovingTab(selectedTab);
+      setRovingTab(effectiveSelected);
     }
   };
 
   const panelId = `panel-${problemId}`;
+  const lockDescId = `similar-lock-desc-${problemId}`;
+  const lockTooltip = `Answer Question ${questionNumber} first`;
+
   const baseTabClass =
     "inline-flex items-center justify-center gap-1.5 shrink-0 snap-start min-h-[44px] sm:min-h-0 sm:h-9 px-3 text-sm whitespace-nowrap border-b-2 -mb-px transition-colors rounded-t-md focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400";
 
@@ -125,9 +194,12 @@ export const SimilarTabStrip: React.FC<SimilarTabStripProps> = ({
     "text-zinc-900 dark:text-zinc-100 font-semibold border-indigo-600 dark:border-indigo-400";
   const unselectedClass =
     "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 border-transparent";
+  const ghostClass =
+    "text-zinc-400 dark:text-zinc-500 border-transparent cursor-not-allowed opacity-70 select-none";
 
-  const realSelected = selectedTab === "q";
+  const realSelected = effectiveSelected === "q";
   const realAriaLabel = `Question ${questionNumber}${tabStatusAccessibleSuffix(realStatus)}`;
+  const hasSimilarSlots = locked ? lockedSlots.length > 0 : tabs.length > 0;
 
   return (
     <div
@@ -137,6 +209,12 @@ export const SimilarTabStrip: React.FC<SimilarTabStripProps> = ({
       onBlur={handleListBlur}
       className="flex items-center gap-1 border-b border-zinc-200 dark:border-zinc-800 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden snap-x -mx-4 px-4 sm:mx-0 sm:px-0"
     >
+      {locked && hasSimilarSlots && (
+        <span id={lockDescId} className="sr-only">
+          {lockTooltip}
+        </span>
+      )}
+
       <button
         ref={(el) => {
           tabRefs.current.set("q", el);
@@ -159,44 +237,78 @@ export const SimilarTabStrip: React.FC<SimilarTabStripProps> = ({
         <span className="sm:hidden font-display tabular-nums">Q{questionNumber}</span>
       </button>
 
-      {tabs.length > 0 && (
+      {hasSimilarSlots && (
         <span
           aria-hidden="true"
-          className="sm:hidden shrink-0 pl-1 pr-0.5 text-xs text-zinc-500 dark:text-zinc-400 select-none"
+          className={`sm:hidden shrink-0 pl-1 pr-0.5 text-xs select-none ${
+            locked
+              ? "text-zinc-400 dark:text-zinc-600 opacity-60"
+              : "text-zinc-500 dark:text-zinc-400"
+          }`}
         >
           Similar
         </span>
       )}
 
-      {tabs.map((tab) => {
-        const tabId = slotToTabId(tab.slot);
-        const isSelected = selectedTab === tabId;
-        const tabAriaLabel = `Similar question ${tab.slot}${tabStatusAccessibleSuffix(tab.status)}`;
-        return (
-          <button
-            key={tab.token}
-            ref={(el) => {
-              tabRefs.current.set(tabId, el);
-            }}
-            type="button"
-            role="tab"
-            id={`tab-${problemId}-${tabId}`}
-            aria-selected={isSelected}
-            aria-controls={panelId}
-            aria-label={tabAriaLabel}
-            tabIndex={rovingTab === tabId ? 0 : -1}
-            onClick={() => onSelectTab(tabId)}
-            onKeyDown={(e) => handleKeyDown(e, tabId)}
-            className={`${baseTabClass} ${isSelected ? selectedClass : unselectedClass}`}
-          >
-            <StatusMark status={tab.status} />
-            <span className="hidden sm:inline">
-              Similar <span className="font-display tabular-nums">{tab.slot}</span>
-            </span>
-            <span className="sm:hidden font-display tabular-nums">{tab.slot}</span>
-          </button>
-        );
-      })}
+      {locked
+        ? lockedSlots.map((slot) => {
+            const tabId = slotToTabId(slot);
+            return (
+              <button
+                key={`locked-${tabId}`}
+                type="button"
+                role="tab"
+                id={`tab-${problemId}-${tabId}`}
+                aria-selected={false}
+                aria-disabled="true"
+                aria-label={`Similar question ${slot}`}
+                aria-describedby={lockDescId}
+                title={lockTooltip}
+                tabIndex={-1}
+                onClick={(e) => {
+                  e.preventDefault();
+                }}
+                className={`${baseTabClass} ${ghostClass}`}
+              >
+                <StatusMark status="untried" muted />
+                <span className="hidden sm:inline">
+                  Similar <span className="font-display tabular-nums">{slot}</span>
+                </span>
+                <span className="sm:hidden font-display tabular-nums">{slot}</span>
+              </button>
+            );
+          })
+        : tabs.map((tab) => {
+            const tabId = slotToTabId(tab.slot);
+            const isSelected = effectiveSelected === tabId;
+            const tabAriaLabel = `Similar question ${tab.slot}${tabStatusAccessibleSuffix(
+              tab.status
+            )}`;
+            return (
+              <button
+                key={tab.token}
+                ref={(el) => {
+                  tabRefs.current.set(tabId, el);
+                }}
+                type="button"
+                role="tab"
+                id={`tab-${problemId}-${tabId}`}
+                aria-selected={isSelected}
+                aria-controls={panelId}
+                aria-label={tabAriaLabel}
+                tabIndex={rovingTab === tabId ? 0 : -1}
+                onClick={() => onSelectTab(tabId)}
+                onKeyDown={(e) => handleKeyDown(e, tabId)}
+                className={`${baseTabClass} ${isSelected ? selectedClass : unselectedClass}`}
+              >
+                <StatusMark status={tab.status} />
+                <span className="hidden sm:inline">
+                  Similar <span className="font-display tabular-nums">{tab.slot}</span>
+                </span>
+                <span className="sm:hidden font-display tabular-nums">{tab.slot}</span>
+              </button>
+            );
+          })}
     </div>
   );
 };

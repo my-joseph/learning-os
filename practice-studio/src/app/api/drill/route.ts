@@ -12,8 +12,9 @@ import {
 } from "@/lib/paths";
 import { applyProgress, readProgress } from "@/lib/progress";
 import { redactDrill, redactDrillForReview } from "@/lib/redact";
+import { MAX_SIMILAR_TABS } from "@/lib/similarTabs";
 import { plainTitle } from "@/lib/titleText";
-import { hasVariantsForProblem } from "@/lib/variants";
+import { findVariantsForProblem } from "@/lib/variants";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -71,11 +72,15 @@ export async function GET(req: NextRequest) {
         for (const prob of doc.problems) {
           if (prob && typeof prob === "object") {
             if (isMath) {
-              prob.hasVariants = hasVariantsForProblem(
+              const variantCount = findVariantsForProblem(
                 doc as Record<string, unknown>,
                 prob as Record<string, unknown>,
                 variantBankCache
-              );
+              ).length;
+              prob.hasVariants = variantCount > 0;
+              if (variantCount > 0) {
+                prob.similarCount = Math.min(variantCount, MAX_SIMILAR_TABS);
+              }
             }
             if (doc.drillId && wsDir && prob.workspaceFile) {
               const mappedRel = remapWorkspaceFileForMode(

@@ -6,6 +6,7 @@ import { deriveCodeStatus, deriveMilestoneStepperState } from "./codeStatus";
 export type DrillStepResult =
   | "correct"
   | "assisted"
+  | "usedHelp"
   | "partial"
   | "wrong"
   | "skipped"
@@ -37,6 +38,7 @@ export interface ReviewStepMeta {
 const DRILL_RESULT_LABEL: Record<DrillStepResult, string> = {
   correct: "correct",
   assisted: "correct with help",
+  usedHelp: "used help",
   partial: "partly correct",
   wrong: "wrong",
   skipped: "skipped",
@@ -66,6 +68,7 @@ export function drillStepResult(problem: Problem): DrillStepResult {
   if (hasScore && scoreVal > 0 && !isAssisted && !isSkipped) return "partial";
   if (hasScore && scoreVal === 0 && !isSkipped) return "wrong";
   if (isSkipped) return "skipped";
+  if (isAssisted) return "usedHelp";
   return "notTried";
 }
 
@@ -167,7 +170,10 @@ export function buildReviewStepMeta(
     };
   }
   const answered = steps.filter(
-    (s) => s.result !== "notTried" && s.result !== "skipped"
+    (s) =>
+      s.result !== "notTried" &&
+      s.result !== "skipped" &&
+      s.result !== "usedHelp"
   ).length;
   const secondary = `${answered} of ${total} answered`;
   return {

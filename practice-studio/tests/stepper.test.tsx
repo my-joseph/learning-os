@@ -111,6 +111,21 @@ assert.equal(
   "help used with score > 0 is assisted"
 );
 assert.equal(
+  drillStepResult(makeProblem("Q01", {}, { hintsRevealed: 1 })),
+  "usedHelp",
+  "hint revealed before answering is usedHelp"
+);
+assert.equal(
+  drillStepResult(makeProblem("Q01", {}, { setupRevealedBeforeAnswer: true })),
+  "usedHelp",
+  "set-up revealed before answering is usedHelp"
+);
+assert.equal(
+  drillStepResult(makeProblem("Q01", {}, { solutionRevealedBeforeAnswer: true })),
+  "usedHelp",
+  "steps revealed before answering is usedHelp"
+);
+assert.equal(
   drillStepResult(
     makeProblem("Q01", {}, {
       score: 1,
@@ -295,7 +310,7 @@ assert.deepEqual(buildReviewStepMeta(labSteps, true), {
   ariaLabel: "Review & sync, 1 of 5 passed",
 });
 
-// Verify rendered lab circles match state table (passed -> indigo ✓, testsOnly -> outlined + "02", regressed -> amber + "03")
+// Verify rendered lab circles match state table (passed -> emerald ✓, testsOnly -> outlined + "02", regressed -> amber + "03")
 const labHtml = renderToStaticMarkup(
   <QuizPaginationBar
     currentIndex={0}
@@ -308,7 +323,7 @@ const labHtml = renderToStaticMarkup(
 );
 assert.match(
   labHtml,
-  /aria-label="Milestone 1, Schema Types &amp; Result Union, tests passing, passed, current"[^>]*aria-current="step"[\s\S]*?bg-indigo-600[\s\S]*?ring-4 ring-indigo-600\/15[\s\S]*?<svg/
+  /aria-label="Milestone 1, Schema Types &amp; Result Union, tests passing, passed, current"[^>]*aria-current="step"[\s\S]*?bg-emerald-600[\s\S]*?ring-4 ring-indigo-600\/15[\s\S]*?<svg/
 );
 assert.match(
   labHtml,
@@ -357,10 +372,10 @@ assert.match(
   sixHtml,
   /aria-label="Question 3, Level 2, not tried, current"[^>]*aria-current="step"[\s\S]*?border-indigo-600[\s\S]*?ring-4 ring-indigo-600\/15[\s\S]*?>03<\/span>/
 );
-// Q01 correct -> indigo + svg check
+// Q01 correct -> emerald + svg check
 assert.match(
   sixHtml,
-  /aria-label="Question 1, Level 1, correct"[\s\S]*?bg-indigo-600[\s\S]*?<svg/
+  /aria-label="Question 1, Level 1, correct"[\s\S]*?bg-emerald-600[\s\S]*?<svg/
 );
 // Q02 wrong -> rose + svg X
 assert.match(
@@ -381,6 +396,26 @@ assert.match(
 assert.match(
   sixHtml,
   /aria-label="Question 6, Level 3, skipped"[\s\S]*?border-dashed[\s\S]*?>06<\/span>/
+);
+
+// Used help before answering -> amber circle with step number (no ✓) and not counted as answered
+const usedHelpSteps = buildDrillSteps([makeProblem("Q01", { level: 1 }, { hintsRevealed: 1 })], "math");
+assert.equal(usedHelpSteps[0].result, "usedHelp");
+assert.equal(usedHelpSteps[0].ariaLabel, "Question 1, Level 1, used help");
+assert.equal(buildReviewStepMeta(usedHelpSteps, false).secondary, "0 of 1 answered");
+const usedHelpHtml = renderToStaticMarkup(
+  <QuizPaginationBar
+    currentIndex={0}
+    problems={[makeProblem("Q01", { level: 1 }, { hintsRevealed: 1 })]}
+    viewMode="quiz"
+    workspace="math"
+    onSelectQuestion={noop}
+    onToggleViewMode={noop}
+  />
+);
+assert.match(
+  usedHelpHtml,
+  /aria-label="Question 1, Level 1, used help, current"[\s\S]*?bg-amber-600[\s\S]*?ring-4 ring-indigo-600\/15[\s\S]*?>01<\/span>/
 );
 
 // Review step is last, has an svg, and has no step number inside its circle

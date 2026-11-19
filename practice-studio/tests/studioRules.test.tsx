@@ -105,6 +105,7 @@ assert.match(problemSelfEval, /border-rose-600/);
 assert.doesNotMatch(mathWorkspace, /Review &amp; Sync|Review & Sync/);
 assert.doesNotMatch(codeDashboard, /Review &amp; Sync|Review & Sync/);
 assert.doesNotMatch(problemNavFooter, /Review &amp; Sync|Review & Sync/);
+assert.match(stepper, /bg-emerald-600/);
 assert.match(stepper, /bg-indigo-600/);
 assert.match(stepper, /overflow-x-auto/);
 assert.match(stepper, /justify-center/);
@@ -165,7 +166,12 @@ const beforeAttemptHtml = renderToStaticMarkup(
   />
 );
 assert.match(beforeAttemptHtml, /<h1[^>]*>Linear Equations<\/h1>/);
-assert.match(beforeAttemptHtml, /title="Level 1"[^>]*>Level 1<\/span>/);
+assert.doesNotMatch(
+  beforeAttemptHtml,
+  /Level 1/,
+  "Math question card meta line must not show Level N (level lives under the pagination stepper)"
+);
+assert.doesNotMatch(beforeAttemptHtml, /Practice only/i, "Math card must not show Practice only text");
 assert.doesNotMatch(beforeAttemptHtml, /Self-score:/, "self-score must not appear before an attempt");
 assert.match(
   beforeAttemptHtml,
@@ -177,6 +183,35 @@ assert.doesNotMatch(
   /Opening steps before checking counts as assisted\./,
   "No assisted note line under the buttons (learner removed it; the button title keeps the hint)"
 );
+assert.doesNotMatch(mathWorkspace, /Practice only|· Practice|isPracticeOnly/);
+assert.doesNotMatch(mathWorkspace, /!similarHasAttempt/);
+
+// With variants available, untouched MathWorkspace renders locked ghost similar tabs & reduced top padding
+const beforeAttemptWithVariantsHtml = renderToStaticMarkup(
+  <MathWorkspace
+    problem={{ ...sampleMathProblem, hasVariants: true }}
+    drillId="DRL-MTH-T01-C01-01"
+    index={0}
+    totalQuestions={5}
+    drillTitle="Linear Equations"
+    mistakeTags={[]}
+    activeStep={null}
+    onInputChange={noop}
+    onCheckAnswer={noop}
+    onToggleStepHighlight={noop}
+    onMarkDivergedStep={noop}
+    onSetScore={noop}
+    onToggleMistakeTag={noop}
+    onMistakeNoteChange={noop}
+    onResetProblem={noop}
+  />
+);
+assert.match(beforeAttemptWithVariantsHtml, /role="tablist"/);
+assert.match(beforeAttemptWithVariantsHtml, /aria-disabled="true"/);
+assert.match(beforeAttemptWithVariantsHtml, /Answer Question 1 first/);
+assert.match(beforeAttemptWithVariantsHtml, /pt-2 sm:px-6 sm:pb-6 sm:pt-3/);
+assert.doesNotMatch(beforeAttemptWithVariantsHtml, /Level 1/);
+assert.doesNotMatch(beforeAttemptWithVariantsHtml, /Practice only/i);
 
 // Invalid input check must not mark problem as attempted or hide Skip / show Self-score
 const afterInvalidHtml = renderToStaticMarkup(

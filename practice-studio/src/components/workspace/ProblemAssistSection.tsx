@@ -54,7 +54,6 @@ export interface ProblemAssistSectionProps {
   onToggleSetup?: () => void;
   setupDisclosure?: React.ReactNode;
   hideShowStepsButton?: boolean;
-  isPracticeOnly?: boolean;
 }
 
 /**
@@ -84,7 +83,6 @@ export const ProblemAssistSection: React.FC<ProblemAssistSectionProps> = ({
   onToggleSetup,
   setupDisclosure,
   hideShowStepsButton = false,
-  isPracticeOnly = false,
 }) => {
   const canShowHint = Boolean(problem.hasHint || hasCheckpointHint(problem.checkpointHint));
   return (
@@ -107,7 +105,7 @@ export const ProblemAssistSection: React.FC<ProblemAssistSectionProps> = ({
             onClick={onToggleSetup}
             aria-expanded={showSetup}
             title={
-              !isPracticeOnly && setupUnopenedUnattempted
+              setupUnopenedUnattempted
                 ? "Opening before checking counts as assisted"
                 : undefined
             }
@@ -142,7 +140,7 @@ export const ProblemAssistSection: React.FC<ProblemAssistSectionProps> = ({
             onClick={onToggleSolution}
             aria-expanded={showSolution}
             title={
-              !isPracticeOnly && stepsUnopenedUnattempted
+              stepsUnopenedUnattempted
                 ? "Opening before checking counts as assisted"
                 : undefined
             }

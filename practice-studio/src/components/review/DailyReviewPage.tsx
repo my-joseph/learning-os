@@ -940,7 +940,20 @@ export const DailyReviewPage: React.FC = () => {
     if (!currentKey || !currentItem) return;
     timerStateRef.current = recordHint(timerStateRef.current, currentItem.qid);
     incrementHintsUsed();
-  }, [currentKey, currentItem, incrementHintsUsed]);
+    updateCurrentProblem((p) => {
+      const hasCorrect =
+        p.state.score === 1 ||
+        Boolean(p.state.attempts?.some((a) => a.verdict === "correct"));
+      if (hasCorrect) return p;
+      return {
+        ...p,
+        state: {
+          ...p.state,
+          hintsRevealed: (p.state.hintsRevealed || 0) + 1,
+        },
+      };
+    });
+  }, [currentKey, currentItem, incrementHintsUsed, updateCurrentProblem]);
 
   const handleExampleViewed = useCallback(
     (viewedAt: string) => {

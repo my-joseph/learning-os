@@ -197,17 +197,19 @@ export async function GET(req: NextRequest) {
       cycleRecAttempts.length > 0 ||
       isInCycle(effectiveRec.servedAt, cycleStartedAt);
 
+    const hasCorrectInCycle = cycleRecAttempts.some((a) => a.verdict === "correct");
     const revealed: Record<string, unknown> = {};
-    if (effectiveRec.setupRevealed && inCurrentCycle) {
+    if ((effectiveRec.setupRevealed && inCurrentCycle) || hasCorrectInCycle) {
       const disp = extractRevealedPart(loadedVar.variant as Partial<Problem>, "display");
-      if ("display" in disp) {
+      if ("display" in disp && (disp.display || disp.plainText)) {
         revealed.display = disp.display;
         revealed.plainText = disp.plainText;
       }
     }
     if (
-      effectiveRec.stepsRevealed &&
-      canRevealVariantSteps(effectiveRec, cycleStartedAt)
+      hasCorrectInCycle ||
+      (effectiveRec.stepsRevealed &&
+        canRevealVariantSteps(effectiveRec, cycleStartedAt))
     ) {
       const stp = extractRevealedPart(loadedVar.variant as Partial<Problem>, "steps");
       if ("steps" in stp) {
@@ -414,10 +416,20 @@ export async function POST(req: NextRequest) {
     const unitCode =
       loaded && typeof loaded.doc.unitCode === "string" ? loaded.doc.unitCode : undefined;
 
+    const cycleRecAttempts = cycleAttempts(
+      resolved.record.attempts,
+      resolved.state.cycleStartedAt
+    );
+    const hasCorrectInCycle = cycleRecAttempts.some((a) => a.verdict === "correct");
+
     if (action === "hint") {
-      updateVariantSession(drillId, unitCode, qid, variantToken, { hintIncrement: 1 });
+      if (!hasCorrectInCycle) {
+        updateVariantSession(drillId, unitCode, qid, variantToken, { hintIncrement: 1 });
+      }
     } else if (action === "reveal-steps") {
-      updateVariantSession(drillId, unitCode, qid, variantToken, { stepsRevealed: true });
+      if (!hasCorrectInCycle) {
+        updateVariantSession(drillId, unitCode, qid, variantToken, { stepsRevealed: true });
+      }
     } else if (action === "reset") {
       updateVariantSession(drillId, unitCode, qid, variantToken, { reset: true });
     } else if (action === "duration") {

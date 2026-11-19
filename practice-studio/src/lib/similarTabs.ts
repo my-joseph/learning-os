@@ -5,9 +5,16 @@ import type {
 } from "../types/drill";
 import { isSubstantiveVerdict, isWrongAttemptVerdict } from "./reviewGuard";
 
-export type SimilarTabStatus = "untried" | "correct" | "wrong" | "partial";
+export type SimilarTabStatus =
+  | "untried"
+  | "usedHelp"
+  | "correct"
+  | "assisted"
+  | "wrong"
+  | "partial";
 export type RealTabStatus =
   | "untried"
+  | "usedHelp"
   | "correct"
   | "assisted"
   | "wrong"
@@ -23,6 +30,21 @@ export interface SimilarTabSummary {
 }
 
 export const MAX_SIMILAR_TABS = 3;
+
+/** Return ordered slot numbers (1..count, default 3) for locked ghost similar tabs before unlock. */
+export function buildLockedSimilarPlaceholders(
+  count?: number
+): SimilarSlotNumber[] {
+  const n =
+    typeof count === "number" && Number.isFinite(count)
+      ? Math.max(0, Math.min(Math.trunc(count), MAX_SIMILAR_TABS))
+      : MAX_SIMILAR_TABS;
+  const slots: SimilarSlotNumber[] = [];
+  for (let i = 1; i <= n; i += 1) {
+    slots.push(i as SimilarSlotNumber);
+  }
+  return slots;
+}
 
 /** Return true when `ts` falls at or after `cycleStartedAt` (absent `cycleStartedAt` counts all history). */
 export function isInCycle(
@@ -110,18 +132,37 @@ export function similarUnlock(state?: ProblemState | null): boolean {
   return false;
 }
 
-/** Derive a single similar tab's status from its own attempts in the current cycle. */
+/** Derive a single similar tab's status from its own attempts and help signals in the current cycle. */
 export function deriveVariantStatus(
   record?: VariantSessionRecord | null,
   cycleStartedAt?: string | null
 ): SimilarTabStatus {
-  if (!record || !Array.isArray(record.attempts)) return "untried";
-  const substantive = cycleAttempts(record.attempts, cycleStartedAt).filter((a) =>
-    isSubstantiveVerdict(a.verdict)
+  if (!record) return "untried";
+  const inCurrentCycle =
+    !cycleStartedAt ||
+    (typeof record.servedAt === "string" &&
+      record.servedAt.length > 0 &&
+      record.servedAt >= cycleStartedAt);
+
+  const attempts = Array.isArray(record.attempts)
+    ? cycleAttempts(record.attempts, cycleStartedAt)
+    : [];
+  const substantive = attempts.filter((a) => isSubstantiveVerdict(a.verdict));
+  const usedHelp = Boolean(
+    (inCurrentCycle &&
+      ((record.hintsRevealed ?? 0) > 0 ||
+        record.setupRevealed ||
+        record.stepsRevealed)) ||
+      attempts.some((a) => a.setupRevealed || a.solutionRevealed)
   );
-  if (substantive.length === 0) return "untried";
+
+  if (substantive.length === 0) {
+    return usedHelp ? "usedHelp" : "untried";
+  }
   const latest = substantive[substantive.length - 1];
-  if (latest.verdict === "correct") return "correct";
+  if (latest.verdict === "correct") {
+    return usedHelp ? "assisted" : "correct";
+  }
   if (
     latest.verdict === "partial" ||
     latest.verdict === "equivalent_not_in_form"
@@ -133,10 +174,27 @@ export function deriveVariantStatus(
 
 /** Derive the real question tab's status mark in the current cycle. */
 export function deriveRealTabStatus(state?: ProblemState | null): RealTabStatus {
-  if (!state || !similarUnlock(state)) return "untried";
+  if (!state) return "untried";
 
-  const origSubstantive = cycleOriginalAttempts(state).filter((a) =>
+  const usedHelpBeforeAnswer = Boolean(
+    state.setupRevealedBeforeAnswer ||
+      state.solutionRevealedBeforeAnswer ||
+      (state.hintsRevealed ?? 0) > 0
+  );
+
+  if (!similarUnlock(state)) {
+    return usedHelpBeforeAnswer ? "usedHelp" : "untried";
+  }
+
+  const origInCycle = cycleOriginalAttempts(state);
+  const origSubstantive = origInCycle.filter((a) =>
     isSubstantiveVerdict(a.verdict)
+  );
+  const usedHelpInCycle = Boolean(
+    usedHelpBeforeAnswer ||
+      origInCycle.some(
+        (a) => a.setupRevealed || a.solutionRevealed || a.exampleViewed
+      )
   );
   const latestVerdict =
     origSubstantive.length > 0
@@ -146,7 +204,10 @@ export function deriveRealTabStatus(state?: ProblemState | null): RealTabStatus 
       : state.lastCheck?.verdict;
 
   if (latestVerdict === "correct") {
-    if (typeof state.score === "number" && state.score > 0 && state.score < 1) {
+    if (
+      (typeof state.score === "number" && state.score > 0 && state.score < 1) ||
+      usedHelpInCycle
+    ) {
       return "assisted";
     }
     return "correct";
@@ -224,26 +285,33 @@ export function parseTabParam(raw?: string | null): SimilarTabId | null {
   return null;
 }
 
-/** Pick the first untried similar tab, else the first wrong/partial similar tab, else null (all correct or none). */
+/** Pick the first untried similar tab, else the first used-help/wrong/partial similar tab, else null (all correct or none). */
 export function pickNextUntriedOrWrongTab(
   tabs: readonly SimilarTabSummary[]
 ): SimilarTabSummary | null {
   const untried = tabs.find((t) => t.status === "untried");
   if (untried) return untried;
   const notCorrect = tabs.find(
-    (t) => t.status === "wrong" || t.status === "partial"
+    (t) =>
+      t.status === "usedHelp" ||
+      t.status === "wrong" ||
+      t.status === "partial"
   );
   return notCorrect ?? null;
 }
 
-/** Pick the first untried similar tab (optionally excluding the currently selected token). */
+/** Pick the first untried (or used-help unattempted) similar tab (optionally excluding the currently selected token). */
 export function pickNextUntriedTab(
   tabs: readonly SimilarTabSummary[],
   excludeToken?: string | null
 ): SimilarTabSummary | null {
+  const untried = tabs.find(
+    (t) => t.status === "untried" && (!excludeToken || t.token !== excludeToken)
+  );
+  if (untried) return untried;
   return (
     tabs.find(
-      (t) => t.status === "untried" && (!excludeToken || t.token !== excludeToken)
+      (t) => t.status === "usedHelp" && (!excludeToken || t.token !== excludeToken)
     ) ?? null
   );
 }
@@ -298,10 +366,12 @@ export function tabStatusAccessibleSuffix(
   switch (status) {
     case "untried":
       return ", not tried";
+    case "usedHelp":
+      return ", used help";
     case "correct":
       return ", correct";
     case "assisted":
-      return ", correct, 0.5";
+      return ", correct with help";
     case "wrong":
       return ", not correct yet";
     case "partial":

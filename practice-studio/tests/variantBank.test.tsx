@@ -270,7 +270,9 @@ async function runTests() {
       assert.equal(drillRes.status, 200);
       const drillData = (await drillRes.json()) as { problems: Problem[] };
       assert.equal(drillData.problems[0].hasVariants, true);
+      assert.equal(drillData.problems[0].similarCount, 3);
       assert.equal(drillData.problems[1].hasVariants, false);
+      assert.equal(drillData.problems[1].similarCount, undefined);
 
       const headHit = await variantHEAD(
         new NextRequest("http://127.0.0.1:3000/api/variant?drillId=DRL-MTH-T01-C04-99&qid=Q01")
@@ -597,7 +599,7 @@ async function runTests() {
       assert.equal(q01State.variants?.[tok1]?.durationMs, 7300);
       assert.equal(q01State.variants?.[tok1]?.attempts[0]?.kind, "variant");
 
-      // mode=list now reflects [correct, wrong, untried]
+      // mode=list now reflects [assisted, wrong, untried] because tok1 revealed display & hint before answering
       const listAfter = (await (
         await variantGET(
           new NextRequest(
@@ -607,7 +609,50 @@ async function runTests() {
       ).json()) as { tabs: Array<{ status: string }> };
       assert.deepEqual(
         listAfter.tabs.map((t) => t.status),
-        ["correct", "wrong", "untried"]
+        ["assisted", "wrong", "untried"]
+      );
+
+      // Answering tok3 correctly WITHOUT prior help gives status "correct"; revealing steps/display/hint AFTERWARDS keeps it "correct"
+      const tok3 = q01Tokens[2];
+      const openS3 = await variantGET(
+        new NextRequest(
+          `http://127.0.0.1:3000/api/variant?drillId=DRL-MTH-T01-C04-99&qid=Q01&mode=open&token=${tok3}`
+        )
+      );
+      assert.equal(openS3.status, 200);
+      const rightS3 = await checkAnswerPOST(
+        new NextRequest("http://127.0.0.1:3000/api/check-answer", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            variantToken: tok3,
+            drillId: "DRL-MTH-T01-C04-99",
+            qid: "Q01",
+            input: "3/5",
+          }),
+        })
+      );
+      assert.equal(rightS3.status, 200);
+      assert.equal((await rightS3.json()).verdict, "correct");
+      // Post-correct reveals must not downgrade "correct" to "assisted"
+      for (const part of ["steps", "display", "hint"]) {
+        const postRev = await revealGET(
+          new NextRequest(
+            `http://127.0.0.1:3000/api/reveal?variantToken=${tok3}&drillId=DRL-MTH-T01-C04-99&qid=Q01&part=${part}`
+          )
+        );
+        assert.equal(postRev.status, 200);
+      }
+      const listAfterS3 = (await (
+        await variantGET(
+          new NextRequest(
+            "http://127.0.0.1:3000/api/variant?drillId=DRL-MTH-T01-C04-99&qid=Q01&mode=list"
+          )
+        )
+      ).json()) as { tabs: Array<{ status: string }> };
+      assert.deepEqual(
+        listAfterS3.tabs.map((t) => t.status),
+        ["assisted", "wrong", "correct"]
       );
 
       // Review schedule at level >= 2 is UNTOUCHED by similar attempts!
@@ -741,7 +786,7 @@ async function runTests() {
     }
 
     // -----------------------------------------------------------------------
-    // 7. UI smoke check: untouched MathWorkspace hides strip and links
+    // 7. UI smoke check: untouched MathWorkspace shows locked ghost strip (zero-leak) & hides result links
     // -----------------------------------------------------------------------
     {
       const noop = () => {};
@@ -765,7 +810,10 @@ async function runTests() {
           onResetProblem={noop}
         />
       );
-      assert.ok(!html0.includes('role="tablist"'));
+      assert.ok(html0.includes('role="tablist"'), "tab strip must be visible before first attempt");
+      assert.ok(html0.includes('aria-disabled="true"'), "similar tabs must be locked ghost tabs before attempt");
+      assert.ok(html0.includes("Answer Question 1 first"), "locked tabs must show Answer Question N first hint");
+      assert.ok(!html0.includes("VAR-MTH-"), "zero-leak: no bank variant IDs before unlock");
       assert.ok(!html0.includes("Practise a similar question"));
       assert.ok(!html0.includes("See a worked example"));
     }
