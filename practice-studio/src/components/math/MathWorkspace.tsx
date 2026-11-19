@@ -7,7 +7,13 @@ import {
   Copy,
   Check,
 } from "lucide-react";
-import { Problem, MistakeTag, CheckResult } from "@/types/drill";
+import {
+  Problem,
+  MistakeTag,
+  CheckResult,
+  RedactedVariant,
+  WorkedExampleVariant,
+} from "@/types/drill";
 import { MathBlock } from "@/components/MathRender";
 import { FormattedText } from "@/components/FormattedText";
 import { MathFigure } from "@/components/MathFigure";
@@ -23,6 +29,11 @@ import {
 import { ProblemAssistSection } from "@/components/workspace/ProblemAssistSection";
 import { ProblemNavFooter } from "@/components/workspace/ProblemNavFooter";
 import { ProblemSelfEval } from "@/components/workspace/ProblemSelfEval";
+import {
+  VariantActionButtons,
+  VariantPracticeCard,
+  WorkedExampleCard,
+} from "@/components/workspace/VariantPracticePanel";
 import type { MathLiveInputHandle } from "@/components/math/MathLiveInput";
 import { MathPalette } from "@/components/math/MathPalette";
 import {
@@ -34,7 +45,7 @@ import {
   writeMathInputMode,
 } from "@/lib/mathInput";
 import { isTouchPrimaryDevice } from "@/lib/mathPalette";
-import { hasSubstantiveAttempt } from "@/lib/reviewGuard";
+import { countWrongAttempts, hasSubstantiveAttempt } from "@/lib/reviewGuard";
 import { plainTitle } from "@/lib/titleText";
 import { useChoiceController } from "@/components/workspace/useChoiceController";
 
@@ -52,6 +63,7 @@ const DynamicMathLiveInput = dynamic(
 
 export interface MathWorkspaceProps {
   problem: Problem;
+  drillId?: string;
   index: number;
   totalQuestions?: number;
   unitCode?: string;
@@ -70,6 +82,7 @@ export interface MathWorkspaceProps {
   onHintRevealed?: () => void;
   onSetupRevealed?: () => void;
   onSolutionRevealed?: () => void;
+  onBeforeFetchVariant?: () => Promise<void>;
   onPrevQuestion?: () => void;
   onNextQuestion?: () => void;
   onOpenReview?: () => void;
@@ -88,6 +101,7 @@ export interface MathWorkspaceProps {
 /** Clean centred Math workspace following docs/studio_design.md. */
 export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
   problem,
+  drillId,
   index,
   totalQuestions,
   unitCode,
@@ -106,6 +120,7 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
   onHintRevealed,
   onSetupRevealed,
   onSolutionRevealed,
+  onBeforeFetchVariant,
   onPrevQuestion,
   onNextQuestion,
   onOpenReview,
@@ -131,6 +146,13 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
   const [showSetup, setShowSetup] = useState(() => shouldAutoReveal(problem));
   const [inputMode, setInputMode] = useState<MathInputMode>("math");
   const [panelOpen, setPanelOpen] = useState(false);
+  const [tryVariant, setTryVariant] = useState<{
+    variant: RedactedVariant;
+    remainingCount: number;
+  } | null>(null);
+  const [exampleVariant, setExampleVariant] = useState<WorkedExampleVariant | null>(null);
+  const [variantLoading, setVariantLoading] = useState<"try" | "example" | null>(null);
+  const [variantError, setVariantError] = useState<string | null>(null);
   const answerInputRef = useRef<HTMLInputElement | null>(null);
   const mathLiveRef = useRef<MathLiveInputHandle | null>(null);
   const stepsRef = useRef<HTMLDivElement | null>(null);
@@ -281,6 +303,59 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
         ? parseLineChoicePrompt(problem.prompt, problem.answerSpec.options)
         : null,
     [isChoice, problem.prompt, problem.answerSpec.options]
+  );
+
+  useEffect(() => {
+    setTryVariant(null);
+    setExampleVariant(null);
+    setVariantLoading(null);
+    setVariantError(null);
+  }, [problem.id]);
+
+  const wrongAttempts = countWrongAttempts(problem.state);
+
+  const handleFetchVariant = useCallback(
+    async (mode: "try" | "example") => {
+      if (!drillId || variantLoading) return;
+      setVariantLoading(mode);
+      setVariantError(null);
+      try {
+        if (onBeforeFetchVariant) {
+          await onBeforeFetchVariant();
+        }
+        const qs = new URLSearchParams({
+          drillId,
+          qid: problem.id,
+          mode,
+        });
+        if (mode === "example" && tryVariant?.variant.variantId) {
+          qs.set("exclude", tryVariant.variant.variantId);
+        }
+        const res = await fetch(`/api/variant?${qs.toString()}`);
+        const data = (await res.json()) as {
+          variant?: RedactedVariant | WorkedExampleVariant;
+          remainingCount?: number;
+          error?: string;
+        };
+        if (!res.ok || !data.variant) {
+          setVariantError(data.error || "No similar question is available right now.");
+          return;
+        }
+        if (mode === "try") {
+          setTryVariant({
+            variant: data.variant as RedactedVariant,
+            remainingCount: typeof data.remainingCount === "number" ? data.remainingCount : 0,
+          });
+        } else {
+          setExampleVariant(data.variant as WorkedExampleVariant);
+        }
+      } catch {
+        setVariantError("Couldn't load a similar question right now.");
+      } finally {
+        setVariantLoading(null);
+      }
+    },
+    [drillId, onBeforeFetchVariant, problem.id, tryVariant, variantLoading]
   );
 
   const handleTryAgain = () => {
@@ -492,6 +567,17 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
             onTryAgain={handleTryAgain}
             onShowSteps={handleShowStepsFromCard}
           />
+
+          {drillId && (
+            <VariantActionButtons
+              hasVariants={problem.hasVariants}
+              wrongAttempts={wrongAttempts}
+              loadingMode={variantLoading}
+              errorMessage={variantError}
+              onTrySimilar={() => void handleFetchVariant("try")}
+              onSeeExample={() => void handleFetchVariant("example")}
+            />
+          )}
         </div>
 
         {reviewSupplement}
@@ -521,6 +607,9 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
           onToggleStepHighlight={onToggleStepHighlight}
           onMarkDivergedStep={onMarkDivergedStep}
           onReset={() => {
+            setTryVariant(null);
+            setExampleVariant(null);
+            setVariantError(null);
             resetChoiceState();
             onResetProblem();
           }}
@@ -600,6 +689,32 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
           onMistakeNoteChange={onMistakeNoteChange}
         />
       </article>
+
+      {/* Inline similar-question practice and worked example under the problem card */}
+      <Reveal show={Boolean(drillId && tryVariant)}>
+        {drillId && tryVariant && (
+          <VariantPracticeCard
+            key={tryVariant.variant.variantId}
+            drillId={drillId}
+            qid={problem.id}
+            variant={tryVariant.variant}
+            remainingCount={tryVariant.remainingCount}
+            loadingAnother={variantLoading === "try"}
+            onAnother={() => void handleFetchVariant("try")}
+            onClose={() => setTryVariant(null)}
+          />
+        )}
+      </Reveal>
+
+      <Reveal show={Boolean(exampleVariant)}>
+        {exampleVariant && (
+          <WorkedExampleCard
+            key={exampleVariant.variantId}
+            example={exampleVariant}
+            onClose={() => setExampleVariant(null)}
+          />
+        )}
+      </Reveal>
 
       {/* Quiet question navigation footer */}
       <ProblemNavFooter

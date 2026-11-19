@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Parameterized problem templates for MTH-T01-C04: Fractions."""
 
+import math
 from fractions import Fraction
 
 from math_engine.templates._prealg_helpers import S, format_frac_latex
@@ -401,3 +402,394 @@ TEMPLATES = [
         "build": t_c04_synthesis,
     },
 ]
+
+
+def _v_c04_simplification_gcf(rng):
+    base_pairs = [
+        (2, 5),
+        (3, 7),
+        (4, 9),
+        (5, 8),
+        (5, 12),
+        (7, 10),
+        (7, 12),
+        (5, 9),
+        (3, 8),
+        (2, 9),
+        (4, 11),
+        (7, 15),
+        (8, 15),
+        (5, 11),
+        (3, 11),
+    ]
+    factors = [3, 4, 5, 6, 7, 8, 9, 11]
+    p, q = rng.choice(base_pairs)
+    g = rng.choice(factors)
+    a, b = p * g, q * g
+    ans_f = Fraction(a, b)
+    trap_f = Fraction(b - a, b)
+    ans_s, trap_s = _fstr(ans_f), _fstr(trap_f)
+    return {
+        "level": 1,
+        "levelLabel": "Level 1 - Foundation",
+        "category": "Fraction Simplification",
+        "archetype": "problem-solving",
+        "archetypeKey": "c04-fraction-simplification-gcf",
+        "sourceArchetype": "c04-fraction-simplification-gcf",
+        "unitCode": "MTH-T01-C04-U04",
+        "form": "direct",
+        "context": "",
+        "verificationLevel": "partial",
+        "prompt": f"Reduce $\\frac{{{a}}}{{{b}}}$ to lowest terms.",
+        "display": f"\\frac{{{a}}}{{{b}}}",
+        "plainText": f"{a}/{b}",
+        "givens": {"a": a, "b": b},
+        "constants": {},
+        "trapGivens": [a, b],
+        "answerSpec": {
+            "type": "number",
+            "value": ans_s,
+            "tol": 0,
+            "forms": ["reduced_fraction", "exact"],
+        },
+        "answerPlain": ans_s,
+        "answerDisplay": format_frac_latex(ans_s),
+        "inputHint": "Enter a reduced fraction",
+        "commonTrapTag": "c04-partial-common-factor-reduction",
+        "trapDerivation": f"({b} - {a}) / {b}",
+        "trapValue": trap_s,
+        "verify": {"source": f"{a} / {b}", "trapValue": trap_s},
+        "checkpointHint": "Factor out the greatest common divisor shared by both the numerator and the denominator.",
+        "references": ["MTH-T01-C04"],
+        "steps": [
+            S(
+                f"\\frac{{{a}}}{{{b}}} = \\frac{{{p} \\cdot {g}}}{{{q} \\cdot {g}}}",
+                "Factor the greatest common divisor out of both the numerator and the denominator.",
+                eq=[f"{a} / {b}", f"({p} * {g}) / ({q} * {g})"],
+            ),
+            S(
+                f"\\frac{{{p} \\cdot {g}}}{{{q} \\cdot {g}}} = {format_frac_latex(ans_s)}",
+                "Cancel the common factor to obtain the fraction in lowest terms.",
+                val=ans_s,
+            ),
+        ],
+    }
+
+
+def _v_c04_multiplication_product(rng):
+    cases = [
+        (3, 5, 10, 9),
+        (4, 9, 15, 8),
+        (5, 6, 9, 25),
+        (7, 12, 8, 21),
+        (3, 10, 5, 12),
+        (8, 15, 5, 12),
+        (9, 14, 7, 15),
+        (4, 15, 9, 16),
+        (5, 14, 7, 20),
+        (6, 11, 22, 15),
+        (7, 10, 15, 14),
+        (9, 16, 4, 27),
+    ]
+    a, b, c, d = rng.choice(cases)
+    ans_f = Fraction(a, b) * Fraction(c, d)
+    trap_f = Fraction(a * d, b * c)
+    ans_s, trap_s = _fstr(ans_f), _fstr(trap_f)
+    raw_num, raw_den = a * c, b * d
+    return {
+        "level": 1,
+        "levelLabel": "Level 1 - Foundation",
+        "category": "Fraction Multiplication",
+        "archetype": "problem-solving",
+        "archetypeKey": "c04-fraction-multiplication-product",
+        "sourceArchetype": "c04-fraction-multiplication-product",
+        "unitCode": "MTH-T01-C04-U04",
+        "form": "direct",
+        "context": "",
+        "verificationLevel": "partial",
+        "prompt": f"Multiply $\\frac{{{a}}}{{{b}}} \\times \\frac{{{c}}}{{{d}}}$ and express the result in lowest terms.",
+        "display": f"\\frac{{{a}}}{{{b}}} \\times \\frac{{{c}}}{{{d}}}",
+        "plainText": f"({a}/{b}) * ({c}/{d})",
+        "givens": {"a": a, "b": b, "c": c, "d": d},
+        "constants": {},
+        "trapGivens": [a, b, c, d],
+        "answerSpec": {
+            "type": "number",
+            "value": ans_s,
+            "tol": 0,
+            "forms": ["reduced_fraction", "exact"],
+        },
+        "answerPlain": ans_s,
+        "answerDisplay": format_frac_latex(ans_s),
+        "inputHint": "Enter a reduced fraction",
+        "commonTrapTag": "c04-cross-multiplication-confusion",
+        "trapDerivation": f"({a} * {d}) / ({b} * {c})",
+        "trapValue": trap_s,
+        "verify": {"source": f"({a} / {b}) * ({c} / {d})", "trapValue": trap_s},
+        "checkpointHint": "Multiply numerator by numerator and denominator by denominator, then cancel common factors.",
+        "references": ["MTH-T01-C04"],
+        "steps": [
+            S(
+                f"\\frac{{{a}}}{{{b}}} \\times \\frac{{{c}}}{{{d}}} = \\frac{{{a} \\cdot {c}}}{{{b} \\cdot {d}}}",
+                "Multiply the numerators together and multiply the denominators together.",
+                eq=[f"({a} / {b}) * ({c} / {d})", f"({a} * {c}) / ({b} * {d})"],
+            ),
+            S(
+                f"\\frac{{{a} \\cdot {c}}}{{{b} \\cdot {d}}} = \\frac{{{raw_num}}}{{{raw_den}}}",
+                "Evaluate the products in the numerator and the denominator.",
+                eq=[f"({a} * {c}) / ({b} * {d})", f"{raw_num} / {raw_den}"],
+            ),
+            S(
+                f"\\frac{{{raw_num}}}{{{raw_den}}} = {format_frac_latex(ans_s)}",
+                "Divide both numerator and denominator by their greatest common factor.",
+                val=ans_s,
+            ),
+        ],
+    }
+
+
+def _v_c04_division_reciprocal(rng):
+    cases = [
+        (3, 5, 9, 10),
+        (5, 8, 15, 16),
+        (4, 7, 8, 21),
+        (7, 9, 14, 15),
+        (5, 12, 10, 9),
+        (9, 10, 3, 4),
+        (7, 8, 21, 16),
+        (4, 9, 16, 15),
+        (5, 6, 15, 8),
+        (3, 8, 9, 16),
+        (8, 9, 4, 15),
+        (11, 12, 22, 9),
+    ]
+    a, b, c, d = rng.choice(cases)
+    ans_f = Fraction(a, b) / Fraction(c, d)
+    trap_f = Fraction(a, b) * Fraction(c, d)
+    ans_s, trap_s = _fstr(ans_f), _fstr(trap_f)
+    raw_num, raw_den = a * d, b * c
+    return {
+        "level": 2,
+        "levelLabel": "Level 2 - Standard Exam",
+        "category": "Fraction Division",
+        "archetype": "problem-solving",
+        "archetypeKey": "c04-fraction-division-reciprocal-inversion",
+        "sourceArchetype": "c04-fraction-division-reciprocal-inversion",
+        "unitCode": "MTH-T01-C04-U04",
+        "form": "direct",
+        "context": "",
+        "verificationLevel": "partial",
+        "prompt": f"Divide $\\frac{{{a}}}{{{b}}} \\div \\frac{{{c}}}{{{d}}}$ and write the answer in lowest terms.",
+        "display": f"\\frac{{{a}}}{{{b}}} \\div \\frac{{{c}}}{{{d}}}",
+        "plainText": f"({a}/{b}) / ({c}/{d})",
+        "givens": {"a": a, "b": b, "c": c, "d": d},
+        "constants": {},
+        "trapGivens": [a, b, c, d],
+        "answerSpec": {
+            "type": "number",
+            "value": ans_s,
+            "tol": 0,
+            "forms": ["reduced_fraction", "exact"],
+        },
+        "answerPlain": ans_s,
+        "answerDisplay": format_frac_latex(ans_s),
+        "inputHint": "Enter a reduced fraction",
+        "commonTrapTag": "c04-first-fraction-reciprocal-flip",
+        "trapDerivation": f"({a} * {c}) / ({b} * {d})",
+        "trapValue": trap_s,
+        "verify": {"source": f"({a} / {b}) / ({c} / {d})", "trapValue": trap_s},
+        "checkpointHint": "Keep the dividend unchanged and multiply by the reciprocal of the divisor fraction.",
+        "references": ["MTH-T01-C04"],
+        "steps": [
+            S(
+                f"\\frac{{{a}}}{{{b}}} \\div \\frac{{{c}}}{{{d}}} = \\frac{{{a}}}{{{b}}} \\times \\frac{{{d}}}{{{c}}}",
+                "Rewrite division as multiplication by the reciprocal of the divisor fraction.",
+                eq=[f"({a} / {b}) / ({c} / {d})", f"({a} / {b}) * ({d} / {c})"],
+            ),
+            S(
+                f"\\frac{{{a}}}{{{b}}} \\times \\frac{{{d}}}{{{c}}} = \\frac{{{raw_num}}}{{{raw_den}}}",
+                "Multiply the numerators together and multiply the denominators together.",
+                eq=[f"({a} / {b}) * ({d} / {c})", f"{raw_num} / {raw_den}"],
+            ),
+            S(
+                f"\\frac{{{raw_num}}}{{{raw_den}}} = {format_frac_latex(ans_s)}",
+                "Reduce the resulting fraction to lowest terms.",
+                val=ans_s,
+            ),
+        ],
+    }
+
+
+def _v_c04_addition_like_denom(rng):
+    cases = [
+        (3, 5, 12),
+        (5, 7, 16),
+        (4, 5, 15),
+        (5, 9, 18),
+        (7, 11, 24),
+        (3, 7, 15),
+        (5, 11, 20),
+        (7, 9, 20),
+        (5, 7, 18),
+        (4, 11, 21),
+        (5, 13, 24),
+        (7, 8, 25),
+    ]
+    a, b, d = rng.choice(cases)
+    total_num = a + b
+    ans_f = Fraction(total_num, d)
+    trap_f = Fraction(total_num, d + d)
+    ans_s, trap_s = _fstr(ans_f), _fstr(trap_f)
+    return {
+        "level": 2,
+        "levelLabel": "Level 2 - Standard Exam",
+        "category": "Fraction Addition",
+        "archetype": "problem-solving",
+        "archetypeKey": "c04-fraction-addition-like-denominators",
+        "sourceArchetype": "c04-fraction-addition-like-denominators",
+        "unitCode": "MTH-T01-C04-U02",
+        "form": "direct",
+        "context": "",
+        "verificationLevel": "partial",
+        "prompt": f"Add $\\frac{{{a}}}{{{d}}} + \\frac{{{b}}}{{{d}}}$ and simplify your answer to lowest terms.",
+        "display": f"\\frac{{{a}}}{{{d}}} + \\frac{{{b}}}{{{d}}}",
+        "plainText": f"{a}/{d} + {b}/{d}",
+        "givens": {"a": a, "b": b, "d": d},
+        "constants": {},
+        "trapGivens": [a, b, d],
+        "answerSpec": {
+            "type": "number",
+            "value": ans_s,
+            "tol": 0,
+            "forms": ["reduced_fraction", "exact"],
+        },
+        "answerPlain": ans_s,
+        "answerDisplay": format_frac_latex(ans_s),
+        "inputHint": "Enter a reduced fraction",
+        "commonTrapTag": "c04-denominator-addition-fallacy",
+        "trapDerivation": f"({a} + {b}) / ({d} + {d})",
+        "trapValue": trap_s,
+        "verify": {"source": f"{a} / {d} + {b} / {d}", "trapValue": trap_s},
+        "checkpointHint": "Keep the shared denominator unchanged while adding only the numerators, then reduce.",
+        "references": ["MTH-T01-C04"],
+        "steps": [
+            S(
+                f"\\frac{{{a}}}{{{d}}} + \\frac{{{b}}}{{{d}}} = \\frac{{{a} + {b}}}{{{d}}}",
+                "Combine the numerators over the shared denominator.",
+                eq=[f"{a} / {d} + {b} / {d}", f"({a} + {b}) / {d}"],
+            ),
+            S(
+                f"\\frac{{{a} + {b}}}{{{d}}} = \\frac{{{total_num}}}{{{d}}}",
+                "Add the numerators.",
+                eq=[f"({a} + {b}) / {d}", f"{total_num} / {d}"],
+            ),
+            S(
+                f"\\frac{{{total_num}}}{{{d}}} = {format_frac_latex(ans_s)}",
+                "Divide numerator and denominator by their greatest common factor.",
+                val=ans_s,
+            ),
+        ],
+    }
+
+
+def _v_c04_addition_unlike_denom(rng):
+    cases = [
+        (2, 3, 1, 4),
+        (3, 5, 1, 2),
+        (5, 6, 3, 8),
+        (4, 9, 5, 6),
+        (7, 10, 2, 15),
+        (3, 7, 5, 14),
+        (5, 8, 1, 6),
+        (2, 9, 5, 12),
+        (3, 4, 2, 5),
+        (5, 12, 3, 10),
+        (4, 15, 7, 20),
+        (1, 6, 4, 9),
+    ]
+    a, b, c, d = rng.choice(cases)
+    lcd = math.lcm(b, d)
+    m1, m2 = lcd // b, lcd // d
+    n1, n2 = a * m1, c * m2
+    sum_n = n1 + n2
+    ans_f = Fraction(a, b) + Fraction(c, d)
+    trap_f = Fraction(a + c, b + d)
+    ans_s, trap_s = _fstr(ans_f), _fstr(trap_f)
+    steps = [
+        S(
+            f"\\text{{LCD}}({b}, {d}) = {lcd}",
+            "Find the least common denominator of the two fractions.",
+            eq=[str(lcd), str(lcd)],
+        ),
+        S(
+            f"\\frac{{{a}}}{{{b}}} + \\frac{{{c}}}{{{d}}} = \\frac{{{n1}}}{{{lcd}}} + \\frac{{{n2}}}{{{lcd}}}",
+            "Convert each fraction to an equivalent fraction with the common denominator.",
+            eq=[f"{a} / {b} + {c} / {d}", f"{n1} / {lcd} + {n2} / {lcd}"],
+        ),
+    ]
+    if math.gcd(sum_n, lcd) > 1:
+        steps.append(
+            S(
+                f"\\frac{{{n1}}}{{{lcd}}} + \\frac{{{n2}}}{{{lcd}}} = \\frac{{{sum_n}}}{{{lcd}}}",
+                "Add the numerators over the common denominator.",
+                eq=[f"{n1} / {lcd} + {n2} / {lcd}", f"{sum_n} / {lcd}"],
+            )
+        )
+        steps.append(
+            S(
+                f"\\frac{{{sum_n}}}{{{lcd}}} = {format_frac_latex(ans_s)}",
+                "Reduce the sum to lowest terms.",
+                val=ans_s,
+            )
+        )
+    else:
+        steps.append(
+            S(
+                f"\\frac{{{n1}}}{{{lcd}}} + \\frac{{{n2}}}{{{lcd}}} = {format_frac_latex(ans_s)}",
+                "Add the numerators over the common denominator; the result is already in lowest terms.",
+                val=ans_s,
+            )
+        )
+    return {
+        "level": 2,
+        "levelLabel": "Level 2 - Standard Exam",
+        "category": "Fraction Addition",
+        "archetype": "problem-solving",
+        "archetypeKey": "c04-fraction-addition-unlike-denominators-lcd",
+        "sourceArchetype": "c04-fraction-addition-unlike-denominators-lcd",
+        "unitCode": "MTH-T01-C04-U03",
+        "form": "direct",
+        "context": "",
+        "verificationLevel": "partial",
+        "prompt": f"Add $\\frac{{{a}}}{{{b}}} + \\frac{{{c}}}{{{d}}}$ and write the result as a reduced fraction.",
+        "display": f"\\frac{{{a}}}{{{b}}} + \\frac{{{c}}}{{{d}}}",
+        "plainText": f"{a}/{b} + {c}/{d}",
+        "givens": {"a": a, "b": b, "c": c, "d": d},
+        "constants": {},
+        "trapGivens": [a, b, c, d],
+        "answerSpec": {
+            "type": "number",
+            "value": ans_s,
+            "tol": 0,
+            "forms": ["reduced_fraction", "exact"],
+        },
+        "answerPlain": ans_s,
+        "answerDisplay": format_frac_latex(ans_s),
+        "inputHint": "Enter a reduced fraction",
+        "commonTrapTag": "c04-naive-numerator-denominator-sum",
+        "trapDerivation": f"({a} + {c}) / ({b} + {d})",
+        "trapValue": trap_s,
+        "verify": {"source": f"{a} / {b} + {c} / {d}", "trapValue": trap_s},
+        "checkpointHint": "Rewrite both fractions over their least common denominator before adding the numerators.",
+        "references": ["MTH-T01-C04"],
+        "steps": steps,
+    }
+
+
+VARIANT_TEMPLATES = {
+    "c04-fraction-simplification-gcf": _v_c04_simplification_gcf,
+    "c04-fraction-multiplication-product": _v_c04_multiplication_product,
+    "c04-fraction-division-reciprocal-inversion": _v_c04_division_reciprocal,
+    "c04-fraction-addition-like-denominators": _v_c04_addition_like_denom,
+    "c04-fraction-addition-unlike-denominators-lcd": _v_c04_addition_unlike_denom,
+}

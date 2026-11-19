@@ -519,6 +519,7 @@ export const DailyReviewView: React.FC<DailyReviewViewProps> = ({
                     <MathWorkspace
                       key={`${currentItem.drillId}:${safeProblem.id}`}
                       problem={safeProblem}
+                      drillId={currentItem.drillId}
                       index={currentIndex}
                       totalQuestions={items.length}
                       unitCode={currentItem.unitCode}

@@ -5,7 +5,9 @@ import {
   DrillDocument,
   Problem,
   ProblemState,
+  RedactedVariant,
   Step,
+  WorkedExampleVariant,
 } from "../types/drill";
 import { canRevealVerifiedAnswer, canShowReferenceSolution } from "./reviewGuard";
 
@@ -458,5 +460,95 @@ export function redactDrillForReview<T extends DrillDocument>(doc: T): T {
           },
         }
       : {}),
+  };
+}
+
+/**
+ * Zero-leak redaction for a bank variant served in `mode=try`:
+ * strips every answer, step, display/plainText, trap, archetype, and internal metadata field.
+ */
+export function redactVariantForTry(variant: Record<string, unknown>): RedactedVariant {
+  const variantId = String(variant.variantId || variant.id || "");
+  const asProblem = {
+    ...(variant as unknown as Problem),
+    id: variantId,
+    templateKey: "",
+  };
+  const redacted = redactProblem(asProblem, null, "MATH") as unknown as Record<string, unknown>;
+
+  // Strip archetype / trap / internal bank identifiers so mode=try never hints the trap.
+  delete redacted.commonTrapTag;
+  delete redacted.archetypeKey;
+  delete redacted.sourceArchetype;
+  delete redacted.archetype;
+  delete redacted.templateKey;
+  delete redacted.fingerprint;
+  delete redacted.references;
+  delete redacted.referenceBadges;
+
+  if (redacted.answerSpec && typeof redacted.answerSpec === "object") {
+    const specCopy: Record<string, unknown> = { ...(redacted.answerSpec as Record<string, unknown>) };
+    delete specCopy.commonTrapTag;
+    if (Array.isArray(specCopy.options)) {
+      specCopy.options = (specCopy.options as Array<Record<string, unknown>>).map((opt) => {
+        if (!opt || typeof opt !== "object") return opt;
+        const optCopy: Record<string, unknown> = { ...opt };
+        delete optCopy.trapTag;
+        delete optCopy.tag;
+        return optCopy;
+      });
+    }
+    redacted.answerSpec = specCopy;
+  }
+
+  return {
+    variantId,
+    id: variantId,
+    level: typeof redacted.level === "number" ? redacted.level : 1,
+    ...(typeof redacted.levelLabel === "string" ? { levelLabel: redacted.levelLabel } : {}),
+    ...(typeof redacted.category === "string" ? { category: redacted.category } : {}),
+    ...(typeof redacted.context === "string" && redacted.context ? { context: redacted.context } : {}),
+    prompt: String(redacted.prompt || ""),
+    ...(redacted.figure ? { figure: redacted.figure as Problem["figure"] } : {}),
+    ...(redacted.visual ? { visual: redacted.visual as Problem["visual"] } : {}),
+    answerSpec: (redacted.answerSpec as AnswerSpec) || { type: "number" },
+    ...(typeof redacted.inputHint === "string" ? { inputHint: redacted.inputHint } : {}),
+    ...(typeof redacted.placeholder === "string" ? { placeholder: redacted.placeholder } : {}),
+    ...(typeof redacted.checkpointHint === "string"
+      ? { checkpointHint: redacted.checkpointHint }
+      : {}),
+    hasSetup: Boolean(redacted.hasSetup),
+  };
+}
+
+/**
+ * Format a bank variant as a fully solved worked example (`mode=example`),
+ * returning only learner-facing prompt, figure, final answer, and steps with explain.
+ */
+export function formatWorkedExampleVariant(
+  variant: Record<string, unknown>
+): WorkedExampleVariant {
+  const variantId = String(variant.variantId || variant.id || "");
+  const rawSteps = Array.isArray(variant.steps) ? (variant.steps as Array<Record<string, unknown>>) : [];
+  const steps: Step[] = rawSteps
+    .filter((st) => st && typeof st === "object")
+    .map((st) => ({
+      ...(typeof st.latex === "string" ? { latex: st.latex } : {}),
+      explain: typeof st.explain === "string" ? st.explain : "",
+    }));
+
+  return {
+    variantId,
+    id: variantId,
+    level: typeof variant.level === "number" ? variant.level : 1,
+    ...(typeof variant.levelLabel === "string" ? { levelLabel: variant.levelLabel } : {}),
+    ...(typeof variant.category === "string" ? { category: variant.category } : {}),
+    ...(typeof variant.context === "string" && variant.context ? { context: variant.context } : {}),
+    prompt: String(variant.prompt || ""),
+    ...(variant.figure ? { figure: variant.figure as Problem["figure"] } : {}),
+    ...(variant.visual ? { visual: variant.visual as Problem["visual"] } : {}),
+    answerDisplay: String(variant.answerDisplay ?? variant.answerPlain ?? ""),
+    answerPlain: String(variant.answerPlain ?? ""),
+    steps,
   };
 }

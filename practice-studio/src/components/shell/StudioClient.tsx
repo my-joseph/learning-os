@@ -74,6 +74,7 @@ export const StudioClient: React.FC<StudioClientProps> = ({
     setStatusOverride,
     isSyncing,
     triggerAutoSave,
+    flushAutoSave,
     confirmSyncToNotion,
   } = useProgressSync({ setStatus });
 
@@ -312,6 +313,7 @@ export const StudioClient: React.FC<StudioClientProps> = ({
                 <MathWorkspace
                   key={prob.id}
                   problem={prob}
+                  drillId={currentDrill.drillId}
                   index={idx}
                   totalQuestions={currentDrill.problems.length}
                   unitCode={currentDrill.unitCode}
@@ -332,6 +334,7 @@ export const StudioClient: React.FC<StudioClientProps> = ({
                   onHintRevealed={() => handleHintRevealed(prob.id)}
                   onSetupRevealed={() => handleSetupRevealed(prob.id)}
                   onSolutionRevealed={() => handleSolutionRevealed(prob.id)}
+                  onBeforeFetchVariant={flushAutoSave}
                   onPrevQuestion={handlePrevQuestion}
                   onNextQuestion={handleNextQuestion}
                   onOpenReview={() => setViewMode("review")}

@@ -1800,17 +1800,27 @@ def match_trap(spec: dict, user_input: str, trap_val: object) -> bool:
         return False
 
 
-if __name__ == "__main__":
-    payload = json.loads(sys.stdin.read() or "{}")
-    spec = payload.get("answerSpec", {})
-    user_input = payload.get("input", "")
-    res = check_answer(spec, user_input)
+def check_variant_answer(variant_id: str, raw: str, variants_dir: str | None = None) -> dict:
+    """Check ``raw`` against a variant in ``drills/variants/`` identified by ``variant_id``."""
+    from math_engine.variant_bank import find_variant
 
-    trap_val = payload.get("trapValue")
-    if res.get("verdict") in TRAP_VERDICTS and trap_val is not None and match_trap(spec, user_input, trap_val):
+    found = find_variant(variant_id, variants_dir=variants_dir)
+    if not found:
+        return {
+            "verdict": "invalid input",
+            "message": f"Variant '{variant_id}' not found.",
+            "components": [],
+            "diagnostics": [],
+        }
+    _, variant = found
+    spec = variant.get("answerSpec") or {}
+    res = check_answer(spec, raw)
+    trap_val = variant.get("trapValue")
+    if trap_val is None:
+        trap_val = (variant.get("verify") or {}).get("trapValue")
+    if res.get("verdict") in TRAP_VERDICTS and trap_val is not None and match_trap(spec, raw, trap_val):
         res["trapMatched"] = True
-
-    print(json.dumps(res))
+    return res
 
 
 def is_omission_trap(spec: dict, tv: object) -> bool:
@@ -1832,3 +1842,19 @@ def is_omission_trap(spec: dict, tv: object) -> bool:
     except Exception:
         return False
     return 0 < len(items) < len(expected) and all(any(is_equal(i, e) for e in expected) for i in items)
+
+
+if __name__ == "__main__":
+    payload = json.loads(sys.stdin.read() or "{}")
+    user_input = payload.get("input", "")
+    variant_id = payload.get("variantId")
+    if isinstance(variant_id, str) and variant_id.strip():
+        res = check_variant_answer(variant_id.strip(), user_input)
+    else:
+        spec = payload.get("answerSpec", {})
+        res = check_answer(spec, user_input)
+        trap_val = payload.get("trapValue")
+        if res.get("verdict") in TRAP_VERDICTS and trap_val is not None and match_trap(spec, user_input, trap_val):
+            res["trapMatched"] = True
+
+    print(json.dumps(res))

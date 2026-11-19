@@ -93,11 +93,31 @@ export function writeProgress(doc: DocLike): string {
       if (st.revisitNote === undefined && prev && typeof prev.revisitNote === "string") {
         st.revisitNote = prev.revisitNote;
       }
+      for (const variantKey of ["variantsSeen", "variantsAttempted"] as const) {
+        const prevList =
+          prev && Array.isArray(prev[variantKey])
+            ? (prev[variantKey] as unknown[]).filter((x): x is string => typeof x === "string")
+            : [];
+        const nextList = Array.isArray(st[variantKey])
+          ? (st[variantKey] as unknown[]).filter((x): x is string => typeof x === "string")
+          : [];
+        if (prevList.length > 0 || nextList.length > 0) {
+          st[variantKey] = Array.from(new Set([...prevList, ...nextList]));
+        }
+      }
       problems[p.id] = st;
-    } else if (prev && (prev.reviews !== undefined || typeof prev.revisitNote === "string")) {
+    } else if (
+      prev &&
+      (prev.reviews !== undefined ||
+        typeof prev.revisitNote === "string" ||
+        Array.isArray(prev.variantsSeen) ||
+        Array.isArray(prev.variantsAttempted))
+    ) {
       const preserved: Record<string, unknown> = {};
       if (prev.reviews !== undefined) preserved.reviews = prev.reviews;
       if (typeof prev.revisitNote === "string") preserved.revisitNote = prev.revisitNote;
+      if (Array.isArray(prev.variantsSeen)) preserved.variantsSeen = prev.variantsSeen;
+      if (Array.isArray(prev.variantsAttempted)) preserved.variantsAttempted = prev.variantsAttempted;
       problems[p.id] = preserved;
     }
   }
@@ -115,4 +135,57 @@ export function writeProgress(doc: DocLike): string {
   fs.mkdirSync(path.dirname(file), { recursive: true });
   fs.writeFileSync(file, JSON.stringify(data, null, 2), "utf-8");
   return file;
+}
+
+function appendVariantTrackingField(
+  drillId: string,
+  unitCode: string | undefined,
+  qid: string,
+  field: "variantsSeen" | "variantsAttempted",
+  variantId: string
+): string[] {
+  if (!isSafeId(drillId) || !isSafeId(qid) || !isSafeId(variantId)) {
+    throw new Error("Invalid drillId, qid, or variantId");
+  }
+  const existing = readProgress(drillId);
+  const problems = { ...((existing?.problems || {}) as Record<string, Record<string, unknown>>) };
+  const prevState = { ...(problems[qid] || {}) };
+  const prevList = Array.isArray(prevState[field])
+    ? (prevState[field] as unknown[]).filter((x): x is string => typeof x === "string")
+    : [];
+  const nextList = prevList.includes(variantId) ? prevList : [...prevList, variantId];
+  prevState[field] = nextList;
+  problems[qid] = prevState;
+
+  const data: ProgressFile = {
+    drillId,
+    unitCode: unitCode || existing?.unitCode,
+    updatedAt: new Date().toISOString(),
+    sessionSummary: existing?.sessionSummary || {},
+    problems,
+  };
+  const file = progressFile(drillId);
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(file, JSON.stringify(data, null, 2), "utf-8");
+  return nextList;
+}
+
+/** Record that `variantId` was served to the learner for `(drillId, qid)` in `progress/<DRILL_ID>.json`. */
+export function recordVariantSeen(
+  drillId: string,
+  unitCode: string | undefined,
+  qid: string,
+  variantId: string
+): string[] {
+  return appendVariantTrackingField(drillId, unitCode, qid, "variantsSeen", variantId);
+}
+
+/** Record that the learner submitted a substantive attempt on `variantId` for `(drillId, qid)`. */
+export function recordVariantAttempted(
+  drillId: string,
+  unitCode: string | undefined,
+  qid: string,
+  variantId: string
+): string[] {
+  return appendVariantTrackingField(drillId, unitCode, qid, "variantsAttempted", variantId);
 }

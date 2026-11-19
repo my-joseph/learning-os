@@ -10,27 +10,32 @@ interface StepRowProps {
   step: Step;
   index: number;
   isActive: boolean;
-  isDiverged: boolean;
+  isDiverged?: boolean;
   onToggleHighlight: () => void;
-  onMarkDiverged: () => void;
+  onMarkDiverged?: () => void;
 }
 
 export const StepRow: React.FC<StepRowProps> = ({
   step,
   index,
   isActive,
-  isDiverged,
+  isDiverged = false,
   onToggleHighlight,
   onMarkDiverged,
 }) => {
   const hasLatex = Boolean(step.latex && step.latex.trim());
+  const gridCols = onMarkDiverged
+    ? hasLatex
+      ? "md:grid-cols-[1.2fr_1fr_auto]"
+      : "md:grid-cols-[1fr_auto]"
+    : hasLatex
+    ? "md:grid-cols-[1.2fr_1fr]"
+    : "md:grid-cols-1";
 
   return (
     <div
       onClick={onToggleHighlight}
-      className={`group step-row ${isActive || isDiverged ? "step-row-active" : ""} grid grid-cols-1 ${
-        hasLatex ? "md:grid-cols-[1.2fr_1fr_auto]" : "md:grid-cols-[1fr_auto]"
-      } gap-3 items-center rounded-xl p-3 mb-2 last:mb-0 cursor-pointer transition-colors border ${
+      className={`group step-row ${isActive || isDiverged ? "step-row-active" : ""} grid grid-cols-1 ${gridCols} gap-3 items-center rounded-xl p-3 mb-2 last:mb-0 cursor-pointer transition-colors border ${
         isDiverged
           ? "border-rose-300 dark:border-rose-500/40 bg-white dark:bg-zinc-900"
           : isActive
@@ -59,23 +64,25 @@ export const StepRow: React.FC<StepRowProps> = ({
         <FormattedText text={step.explain} />
       </div>
 
-      <div className="flex justify-end">
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onMarkDiverged();
-          }}
-          className={`inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-lg whitespace-nowrap font-medium transition-all border ${
-            isDiverged
-              ? "opacity-100 border-rose-600 dark:border-rose-400 text-rose-600 dark:text-rose-400 bg-zinc-50 dark:bg-zinc-950"
-              : "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100 border-zinc-200 dark:border-zinc-800 text-zinc-500 dark:text-zinc-400 hover:text-rose-600 dark:hover:text-rose-400 hover:border-rose-300 dark:hover:border-rose-500/40"
-          }`}
-        >
-          <Flag className="w-3.5 h-3.5 shrink-0" />
-          <span>{isDiverged ? `Diverged at step ${index + 1}` : "Diverged here"}</span>
-        </button>
-      </div>
+      {onMarkDiverged && (
+        <div className="flex justify-end">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onMarkDiverged();
+            }}
+            className={`inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-lg whitespace-nowrap font-medium transition-all border ${
+              isDiverged
+                ? "opacity-100 border-rose-600 dark:border-rose-400 text-rose-600 dark:text-rose-400 bg-zinc-50 dark:bg-zinc-950"
+                : "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100 border-zinc-200 dark:border-zinc-800 text-zinc-500 dark:text-zinc-400 hover:text-rose-600 dark:hover:text-rose-400 hover:border-rose-300 dark:hover:border-rose-500/40"
+            }`}
+          >
+            <Flag className="w-3.5 h-3.5 shrink-0" />
+            <span>{isDiverged ? `Diverged at step ${index + 1}` : "Diverged here"}</span>
+          </button>
+        </div>
+      )}
     </div>
   );
 };
