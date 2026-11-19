@@ -11,8 +11,14 @@
 #     killed. Here the fallback model runs ONLY when the first run failed for quota /
 #     rate-limit reasons, never after a kill, a timeout, or once a PR exists.
 #
-# Env (optional): MODELS="gemini-4-hydrogen-high gemini-4-argon-high", MAX_SECS=7200,
-#                 IDLE_AFTER_PR=300, POLL=20
+# Env (optional): MODELS="gemini-4-neon-high gemini-4-argon-high gpt-6-luna",
+#                 MAX_SECS=7200, IDLE_AFTER_PR=300, POLL=20,
+#                 DONE_FILE=<report path for read-only jobs>,
+#                 USAGE_LOG=<jsonl path; default <main checkout>/pilot/agent-usage.jsonl>
+#
+# Output is agy stream-json, so the log grows while the worker runs (idle detection) and
+# every step carries token usage. After each model run the token totals are printed to the
+# log and appended to USAGE_LOG, also when the run was killed.
 set -u
 
 if [ $# -ne 4 ]; then
@@ -23,10 +29,16 @@ WT=$1
 BRANCH=$2
 PROMPT_FILE=$3
 LOG=$4
-MODELS=${MODELS:-"gemini-4-hydrogen-high gemini-4-argon-high"}
+# Neon first; Argon and GPT Luna are the quota fallbacks (Hydrogen shares Neon's quota, so it is
+# useless as a fallback). gpt-* models run through the Codex CLI, everything else through agy.
+MODELS=${MODELS:-"gemini-4-neon-high gemini-4-argon-high gpt-6-luna"}
+CODEX_BIN=${CODEX_BIN:-/Applications/ChatGPT.app/Contents/Resources/codex-cli/bin/codex}
+CODEX_EFFORT=${CODEX_EFFORT:-high}
 MAX_SECS=${MAX_SECS:-7200}
 IDLE_AFTER_PR=${IDLE_AFTER_PR:-300}
 POLL=${POLL:-20}
+DONE_FILE=${DONE_FILE:-}
+SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 
 CLEANUP_NOTE='
 
@@ -35,6 +47,8 @@ RUNNER RULES: Stop every server or background process you started before you fin
 log() { echo "[run-worker $(date +%H:%M:%S)] $*" >>"$LOG"; }
 
 pr_exists() {
+  # A read-only job is "done" once its report file exists (DONE_FILE), like a PR for code jobs.
+  if [ -n "$DONE_FILE" ] && [ -s "$DONE_FILE" ]; then return 0; fi
   gh pr list --head "$BRANCH" --state all --json number -q '.[0].number' 2>/dev/null | grep -q .
 }
 
@@ -55,6 +69,16 @@ stop_worktree_servers() {
 file_size() { wc -c <"$LOG" 2>/dev/null | tr -d ' '; }
 
 cd "$WT" || { echo "no worktree $WT" >&2; exit 2; }
+if [ -z "${USAGE_LOG:-}" ]; then
+  COMMON=$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null)
+  USAGE_LOG="${COMMON:+$(dirname "$COMMON")/}pilot/agent-usage.jsonl"
+fi
+
+# Sum token usage of this run's log segment and record it (works for killed runs too).
+record_usage() { # <model> <start-offset> <outcome>
+  tail -c +"$(($2 + 1))" "$LOG" | python3 "$SCRIPT_DIR/usage_summary.py" \
+    --model "$1" --branch "$BRANCH" --outcome "$3" --append "$USAGE_LOG" >>"$LOG" 2>&1
+}
 : >>"$LOG"
 PROMPT="$(cat "$PROMPT_FILE")$CLEANUP_NOTE"
 
@@ -62,7 +86,15 @@ set -m # background jobs get their own process group, so stop_tree reaches child
 for MODEL in $MODELS; do
   START_OFFSET=$(file_size)
   log "start model=$MODEL branch=$BRANCH"
-  agy -p "$PROMPT" --model "$MODEL" --dangerously-skip-permissions >>"$LOG" 2>&1 &
+  case "$MODEL" in
+    gpt-*)
+      "$CODEX_BIN" exec --json -m "$MODEL" -c model_reasoning_effort="$CODEX_EFFORT" \
+        --dangerously-bypass-approvals-and-sandbox -C "$WT" "$PROMPT" </dev/null >>"$LOG" 2>&1 &
+      ;;
+    *)
+      agy -p "$PROMPT" --model "$MODEL" --dangerously-skip-permissions --output-format stream-json >>"$LOG" 2>&1 &
+      ;;
+  esac
   PID=$!
   STARTED=$(date +%s)
   LAST_SIZE=$(file_size)
@@ -91,6 +123,7 @@ for MODEL in $MODELS; do
   wait "$PID" 2>/dev/null
   RC=$?
   stop_worktree_servers
+  record_usage "$MODEL" "$START_OFFSET" "rc=$RC${REASON:+ $REASON}"
 
   if pr_exists; then
     log "done: PR exists (rc=$RC${REASON:+, $REASON})"
