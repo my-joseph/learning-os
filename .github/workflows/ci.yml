@@ -5,7 +5,7 @@ on:
     branches: [main]
 jobs:
   # Decide whether the slow Python job is needed. It is skipped only for pull requests whose
-  # changed files are ALL under practice-studio/ and that delete or rename nothing (pytest
+  # changed files are ALL under practice-studio/ (or docs/studio_design.md) and that delete or rename nothing (pytest
   # checks that some Studio files exist). Pushes to main always run everything.
   changes:
     runs-on: ubuntu-latest
@@ -25,7 +25,8 @@ jobs:
           changed=$(git diff --name-only "$base"..."$head")
           removed=$(git diff --name-only --diff-filter=DR "$base"..."$head")
           echo "Changed files:"; echo "$changed"
-          if [ -n "$removed" ] || echo "$changed" | grep -qv '^practice-studio/'; then
+          # docs/studio_design.md is the Studio design guide; pytest never reads it.
+          if [ -n "$removed" ] || echo "$changed" | grep -Ev '^(practice-studio/|docs/studio_design\.md$)' | grep -q .; then
             echo "python=true" >> "$GITHUB_OUTPUT"
           else
             echo "python=false" >> "$GITHUB_OUTPUT"
