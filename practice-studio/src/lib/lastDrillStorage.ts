@@ -1,8 +1,8 @@
 import type { Workspace } from "./routes";
 
-export const LAST_DRILL_STORAGE_KEY = "practice_studio_last_drill";
-export const LAST_WORKSPACE_DRILL_STORAGE_PREFIX = "practice_studio_last_drill_";
-export const RECENT_DRILLS_STORAGE_PREFIX = "practice_studio_recent_drills_";
+const LAST_DRILL_STORAGE_KEY = "practice_studio_last_drill";
+const LAST_WORKSPACE_DRILL_STORAGE_PREFIX = "practice_studio_last_drill_";
+const RECENT_DRILLS_STORAGE_PREFIX = "practice_studio_recent_drills_";
 const MAX_RECENT_DRILLS = 10;
 
 /** Prepend `drillId` to an MRU list, deduplicating and capping at `limit`. */
@@ -31,7 +31,7 @@ export function readLastDrillId(workspace?: Workspace): string | null {
 }
 
 /** Read the MRU list of recently opened drill/lab IDs for a workspace from localStorage. */
-export function readRecentDrillIds(workspace: Workspace): string[] {
+function readRecentDrillIds(workspace: Workspace): string[] {
   if (typeof window === "undefined") return [];
   try {
     const raw = window.localStorage.getItem(`${RECENT_DRILLS_STORAGE_PREFIX}${workspace}`);

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo } from "react";
-import { isMathSegment, splitMath, unescapeDollar, wrapBareWordsInLatex } from "@/lib/mathText";
+import { wrapBareWordsInLatex } from "@/lib/mathText";
 import katex from "katex";
 
 /**
@@ -26,44 +26,6 @@ export function normalizeLatex(tex: string): string {
   clean = clean.replace(/(?:^|[\s({\[])ight([)\]}|.])/g, (match) => match.replace("ight", "\\right"));
   return wrapBareWordsInLatex(clean.trim());
 }
-
-interface MathTextProps {
-  text: string;
-  className?: string;
-}
-
-export const MathText: React.FC<MathTextProps> = ({ text, className = "" }) => {
-  const parts = useMemo(() => {
-    if (!text) return [];
-    return splitMath(text); // $...$ math; \$ is a literal dollar sign
-  }, [text]);
-
-  return (
-    <span className={className}>
-      {parts.map((part, idx) => {
-        if (isMathSegment(part)) {
-          const tex = normalizeLatex(part.slice(1, -1));
-          try {
-            const html = katex.renderToString(tex, {
-              displayMode: false,
-              throwOnError: false,
-            });
-            return (
-              <span
-                key={idx}
-                dangerouslySetInnerHTML={{ __html: html }}
-                className="inline-math"
-              />
-            );
-          } catch {
-            return <code key={idx}>{tex}</code>;
-          }
-        }
-        return <React.Fragment key={idx}>{unescapeDollar(part)}</React.Fragment>;
-      })}
-    </span>
-  );
-};
 
 interface MathBlockProps {
   latex: string;

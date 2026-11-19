@@ -199,7 +199,7 @@ export function getProgressDir(): string {
 }
 
 /** Locate a drill JSON file under getDrillsDataDir() by drillId. */
-export function findDrillFilePath(drillId: string): string | null {
+function findDrillFilePath(drillId: string): string | null {
   if (!isSafeId(drillId)) return null;
   const dataDir = getDrillsDataDir();
   if (!fs.existsSync(dataDir)) return null;
