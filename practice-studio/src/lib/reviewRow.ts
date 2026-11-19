@@ -7,6 +7,7 @@ import type {
 import type { WeakSpotUnit } from "./dueToday";
 import { parseLineChoicePrompt } from "./lineChoicePrompt";
 import { countWrongAttempts, isSubstantiveVerdict } from "./reviewGuard";
+import { countPractisedSimilar } from "./similarTabs";
 import {
   classifyReviewOutcome,
   getQuestionLabel,
@@ -313,10 +314,10 @@ export function rowReason(
   isLab = false
 ): string {
   if (outcome === "unanswered") return "Not tried yet";
-  if (outcome === "skipped") return "Skipped";
 
   const state = problem.state;
   if (isCode || isLab) {
+    if (outcome === "skipped") return "Skipped";
     const testRep = normaliseTestReport(state?.lastTestReport);
     const rev = latestReviewVerdict(state);
     const parts: string[] = [];
@@ -350,6 +351,12 @@ export function rowReason(
   }
 
   // Math row reason
+  const practisedSimilar = countPractisedSimilar(state);
+  const withPractised = (base: string) =>
+    practisedSimilar > 0 ? `${base} · Practised ${practisedSimilar} similar` : base;
+
+  if (outcome === "skipped") return withPractised("Skipped");
+
   const traps = matchedTraps(state);
   const firstTrap = traps.length > 0 ? trapName(traps[0]) : "";
   const wrongCount = countWrongAttempts(state);
@@ -357,7 +364,7 @@ export function rowReason(
   if (outcome === "wrong") {
     const tries = Math.max(1, wrongCount);
     const tryText = `${tries} wrong ${tries === 1 ? "try" : "tries"}`;
-    return firstTrap ? `${tryText} · trap: ${firstTrap}` : tryText;
+    return withPractised(firstTrap ? `${tryText} · trap: ${firstTrap}` : tryText);
   }
 
   if (outcome === "assisted_or_partial") {
@@ -367,24 +374,24 @@ export function rowReason(
       Boolean(state?.attempts?.some((a) => a.verdict === "correct"));
 
     if (hints > 0 && gotCorrect) {
-      return `Correct after ${hints} ${hints === 1 ? "hint" : "hints"}`;
+      return withPractised(`Correct after ${hints} ${hints === 1 ? "hint" : "hints"}`);
     }
     if (state?.solutionRevealedBeforeAnswer) {
-      return gotCorrect ? "Correct after steps" : "Used steps";
+      return withPractised(gotCorrect ? "Correct after steps" : "Used steps");
     }
     if (state?.setupRevealedBeforeAnswer) {
-      return gotCorrect ? "Correct after set-up" : "Used set-up";
+      return withPractised(gotCorrect ? "Correct after set-up" : "Used set-up");
     }
     if (wrongCount > 0 && gotCorrect) {
-      return `Correct after ${wrongCount} wrong ${wrongCount === 1 ? "try" : "tries"}`;
+      return withPractised(`Correct after ${wrongCount} wrong ${wrongCount === 1 ? "try" : "tries"}`);
     }
     if (hints > 0) {
-      return `Used ${hints} ${hints === 1 ? "hint" : "hints"}`;
+      return withPractised(`Used ${hints} ${hints === 1 ? "hint" : "hints"}`);
     }
-    return "Partial credit";
+    return withPractised("Partial credit");
   }
 
-  return "First try";
+  return withPractised("First try");
 }
 
 const ATTENTION_ORDER: Record<ReviewOutcome, number> = {

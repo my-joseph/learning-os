@@ -76,7 +76,7 @@ const studioHeader = readFileSync("src/components/shell/StudioHeader.tsx", "utf8
 const workspaceRoute = readFileSync("src/app/api/workspace/route.ts", "utf8");
 const runTestsRoute = readFileSync("src/app/api/run-tests/route.ts", "utf8");
 assert.match(codeDashboard, /hasCheckpointHint\(problem\.checkpointHint\)\s*&&\s*<button/);
-assert.match(problemAssistSection, /hasCheckpointHint\(problem\.checkpointHint\)\s*&&\s*<button/);
+assert.match(problemAssistSection, /hasCheckpointHint\(problem\.checkpointHint\)\)?\s*&&\s*<button/);
 assert.match(problemAssistSection, /<StepRow/);
 assert.doesNotMatch(codeDashboard, /Diverged here/);
 assert.match(answerResultCard, /FormattedText text=\{c\.label\}/);

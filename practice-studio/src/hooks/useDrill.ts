@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { DrillDocument, Problem, CheckResult, TestRunReport } from "@/types/drill";
+import { DrillDocument, Problem, CheckResult, TestRunReport, VariantSessionRecord } from "@/types/drill";
 import { plainTitle } from "@/lib/titleText";
 import {
   applyCheckResult,
@@ -477,7 +477,12 @@ export function useDrill({
                 ...p,
                 state: {
                   ...p.state,
-                  exampleViewedAt: p.state.exampleViewedAt || viewedAt,
+                  exampleViewedAt:
+                    p.state.exampleViewedAt &&
+                    (!p.state.cycleStartedAt ||
+                      p.state.exampleViewedAt >= p.state.cycleStartedAt)
+                      ? p.state.exampleViewedAt
+                      : viewedAt,
                 },
               }
             : p
@@ -485,6 +490,39 @@ export function useDrill({
       };
     });
   }, []);
+
+  const handleSimilarProgressSync = useCallback(
+    (
+      probId: string,
+      patch: {
+        similarSlots?: string[];
+        variantToken?: string;
+        variantRecord?: VariantSessionRecord;
+      }
+    ) => {
+      setCurrentDrill((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          problems: prev.problems.map((p) => {
+            if (p.id !== probId) return p;
+            const nextState = { ...p.state };
+            if (Array.isArray(patch.similarSlots)) {
+              nextState.similarSlots = patch.similarSlots;
+            }
+            if (patch.variantToken && patch.variantRecord) {
+              nextState.variants = {
+                ...(nextState.variants || {}),
+                [patch.variantToken]: patch.variantRecord,
+              };
+            }
+            return { ...p, state: nextState };
+          }),
+        };
+      });
+    },
+    []
+  );
 
   const handleHintRevealed = useCallback((probId: string) => {
     timerStateRef.current = recordHint(timerStateRef.current, probId);
@@ -808,7 +846,7 @@ export function useDrill({
   // Keyboard navigation across questions/milestones and the trailing Review step
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.altKey) return;
       const target = e.target as HTMLElement | null;
       if (
         target &&
@@ -817,7 +855,9 @@ export function useDrill({
           target.tagName === "SELECT" ||
           target.tagName === "MATH-FIELD" ||
           target.isContentEditable ||
-          Boolean(target.closest('[role="alertdialog"], [role="dialog"]')))
+          Boolean(
+            target.closest('[role="alertdialog"], [role="dialog"], [role="tablist"]')
+          ))
       ) {
         return;
       }
@@ -859,6 +899,7 @@ export function useDrill({
     handleToggleTimerPause,
     handleVariantModeChange,
     handleExampleViewed,
+    handleSimilarProgressSync,
     handleHintRevealed,
     handleCheckAnswer,
     handleInputChange,

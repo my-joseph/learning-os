@@ -9,7 +9,9 @@ import {
   loadProblemFromDisk,
   loadVariantFromDisk,
 } from "@/lib/paths";
-import { recordVariantAttempt, resolveVariantToken } from "@/lib/progress";
+import { readProgress, recordVariantAttempt, resolveVariantToken } from "@/lib/progress";
+import { similarUnlock } from "@/lib/similarTabs";
+import { ProblemState } from "@/types/drill";
 
 const TIMEOUT_MS = 5000;
 
@@ -91,6 +93,20 @@ export async function POST(req: NextRequest) {
         );
       }
 
+      const progress = readProgress(drillId);
+      const probState = (progress?.problems?.[problemId] as ProblemState | undefined) ?? null;
+      if (!similarUnlock(probState)) {
+        return NextResponse.json(
+          {
+            verdict: "invalid input",
+            message: "Similar questions unlock after an attempt on the original question.",
+            components: [],
+            diagnostics: [],
+          },
+          { status: 403 }
+        );
+      }
+
       const resolved = resolveVariantToken(drillId, problemId, variantToken);
       if (!resolved || !resolved.record.variantId) {
         return NextResponse.json(
@@ -101,6 +117,21 @@ export async function POST(req: NextRequest) {
             diagnostics: [],
           },
           { status: 404 }
+        );
+      }
+
+      if (
+        !Array.isArray(resolved.state.similarSlots) ||
+        !resolved.state.similarSlots.includes(variantToken)
+      ) {
+        return NextResponse.json(
+          {
+            verdict: "invalid input",
+            message: "Invalid similar question token for this problem.",
+            components: [],
+            diagnostics: [],
+          },
+          { status: 403 }
         );
       }
 

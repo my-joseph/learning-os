@@ -48,11 +48,16 @@ export interface MathItemViewProps {
   skipLabel?: string;
   nextLabel?: string;
   backLabel?: string;
+  retryLabel?: string;
+  retryAriaLabel?: string;
+  resultFootnote?: string | null;
   resultTitleOverride?: string;
   resultSecondaryActions?: ResultCardSecondaryAction[];
   autoFocusPrimaryAction?: boolean;
   autoRevealOnCorrect?: boolean;
   autoRevealOnSkip?: boolean;
+  hideShowStepsButton?: boolean;
+  isPracticeOnly?: boolean;
   loadingSteps?: boolean;
   ariaLabel?: string;
   choiceKeyboardEnabled?: boolean;
@@ -96,11 +101,16 @@ export const MathItemView = forwardRef<MathItemViewHandle, MathItemViewProps>(
       skipLabel = "Skip",
       nextLabel = "Next question",
       backLabel,
+      retryLabel,
+      retryAriaLabel,
+      resultFootnote = null,
       resultTitleOverride,
       resultSecondaryActions,
       autoFocusPrimaryAction = false,
       autoRevealOnCorrect = true,
       autoRevealOnSkip,
+      hideShowStepsButton = false,
+      isPracticeOnly = false,
       loadingSteps = false,
       ariaLabel,
       choiceKeyboardEnabled = true,
@@ -365,6 +375,9 @@ export const MathItemView = forwardRef<MathItemViewHandle, MathItemViewProps>(
             nextLabel={nextLabel}
             scheduleNote={isReviewSession ? reviewScheduleNote : null}
             backLabel={backLabel}
+            retryLabel={retryLabel}
+            retryAriaLabel={retryAriaLabel}
+            footnote={resultFootnote}
             titleOverride={resultTitleOverride}
             autoFocusPrimaryAction={autoFocusPrimaryAction}
             secondaryActions={resultSecondaryActions}
@@ -431,6 +444,8 @@ export const MathItemView = forwardRef<MathItemViewHandle, MathItemViewProps>(
           showSetup={showSetup}
           setupUnopenedUnattempted={setupUnopenedUnattempted}
           onToggleSetup={toggleSetup}
+          hideShowStepsButton={hideShowStepsButton}
+          isPracticeOnly={isPracticeOnly}
           setupDisclosure={
             <Reveal show={Boolean(hasSetup && showSetup)}>
               {hasSetup && showSetup && (

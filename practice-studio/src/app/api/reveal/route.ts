@@ -7,6 +7,7 @@ import {
   isPartUnlocked,
   RevealPart,
 } from "@/lib/redact";
+import { similarUnlock } from "@/lib/similarTabs";
 import { Problem, ProblemState } from "@/types/drill";
 
 const VALID_PARTS = new Set<RevealPart>(["steps", "display", "solution"]);
@@ -51,6 +52,16 @@ export async function GET(req: NextRequest) {
     if (!resolved || !resolved.record.variantId) {
       return NextResponse.json({ error: "Variant not found" }, { status: 404 });
     }
+    if (
+      !similarUnlock(resolved.state) ||
+      !Array.isArray(resolved.state.similarSlots) ||
+      !resolved.state.similarSlots.includes(variantToken)
+    ) {
+      return NextResponse.json(
+        { error: "Requested variant is locked or invalid for this problem" },
+        { status: 403 }
+      );
+    }
     const loadedVariant = loadVariantFromDisk(resolved.record.variantId);
     if (!loadedVariant) {
       return NextResponse.json({ error: "Variant not found" }, { status: 404 });
@@ -75,7 +86,7 @@ export async function GET(req: NextRequest) {
     }
 
     // part === "steps": unlocked only after a substantive attempt or explicit give-up (stepsRevealed).
-    if (!canRevealVariantSteps(resolved.record)) {
+    if (!canRevealVariantSteps(resolved.record, resolved.state.cycleStartedAt)) {
       return NextResponse.json(
         { error: "Requested part is locked until earned" },
         { status: 403 }

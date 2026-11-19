@@ -45,8 +45,11 @@ import {
   ReviewSessionItemOutcome,
   ReviewSessionSummary,
   saveReviewProblemState,
+  startReviewItemCycle,
   summarizeReviewSession,
 } from "@/lib/reviewSession";
+import type { SimilarProgressPatch } from "@/hooks/useSimilarTabs";
+import { isInCycle } from "@/lib/similarTabs";
 import { drillHref, isLabId } from "@/lib/routes";
 import {
   createTelemetryTimerState,
@@ -98,6 +101,7 @@ export interface DailyReviewViewProps {
   onSetupRevealed?: () => void;
   onSolutionRevealed?: () => void;
   onExampleViewed?: (viewedAt: string) => void;
+  onSimilarProgressSync?: (patch: SimilarProgressPatch) => void;
   onVariantModeChange?: (inVariantMode: boolean) => void;
   onToggleStepHighlight?: (stepIdx: number) => void;
   onMarkDivergedStep?: (stepIdx: number) => void;
@@ -156,6 +160,7 @@ export const DailyReviewView: React.FC<DailyReviewViewProps> = ({
   onSetupRevealed,
   onSolutionRevealed,
   onExampleViewed,
+  onSimilarProgressSync,
   onVariantModeChange,
   onToggleStepHighlight = noop,
   onMarkDivergedStep = noop,
@@ -553,6 +558,7 @@ export const DailyReviewView: React.FC<DailyReviewViewProps> = ({
                       onSetupRevealed={onSetupRevealed}
                       onSolutionRevealed={onSolutionRevealed}
                       onExampleViewed={onExampleViewed}
+                      onSimilarProgressSync={onSimilarProgressSync}
                       onVariantModeChange={onVariantModeChange}
                       onPrevQuestion={onPrevItem}
                       onNextQuestion={onNextItem}
@@ -782,6 +788,11 @@ export const DailyReviewPage: React.FC = () => {
               : p
           ),
         };
+        const preparedTarget = prepared.problems.find((p) => p.id === currentItem.qid);
+        const startedAt = preparedTarget?.state?.cycleStartedAt;
+        if (!isLabId(currentItem.drillId) && typeof startedAt === "string" && startedAt) {
+          await startReviewItemCycle(currentItem.drillId, currentItem.qid, startedAt);
+        }
         if (!cancelled) {
           setDrillsByKey((prev) => ({ ...prev, [currentKey]: prepared }));
           if (currentItem.unitCode && prepared.unitTitle) {
@@ -938,11 +949,34 @@ export const DailyReviewPage: React.FC = () => {
         ...p,
         state: {
           ...p.state,
-          exampleViewedAt: p.state.exampleViewedAt || viewedAt,
+          exampleViewedAt:
+            p.state.exampleViewedAt &&
+            isInCycle(p.state.exampleViewedAt, p.state.cycleStartedAt)
+              ? p.state.exampleViewedAt
+              : viewedAt,
         },
       }));
     },
     [incrementHintsUsed, updateCurrentProblem]
+  );
+
+  const handleSimilarProgressSync = useCallback(
+    (patch: SimilarProgressPatch) => {
+      updateCurrentProblem((p) => {
+        const nextState = { ...p.state };
+        if (Array.isArray(patch.similarSlots)) {
+          nextState.similarSlots = patch.similarSlots;
+        }
+        if (patch.variantToken && patch.variantRecord) {
+          nextState.variants = {
+            ...(nextState.variants || {}),
+            [patch.variantToken]: patch.variantRecord,
+          };
+        }
+        return { ...p, state: nextState };
+      });
+    },
+    [updateCurrentProblem]
   );
 
   const fetchAndMergeReveal = useCallback(
@@ -1095,6 +1129,7 @@ export const DailyReviewPage: React.FC = () => {
   const handleResetProblem = useCallback(() => {
     if (!currentDrill || !currentItem || !currentKey) return;
     const now = Date.now();
+    const nextCycleAt = new Date(now).toISOString();
     const transition = computeResetProblemTransition(
       currentDrill,
       currentItem.qid,
@@ -1102,9 +1137,20 @@ export const DailyReviewPage: React.FC = () => {
       { [currentItem.qid]: activeStepsByKey[currentKey] ?? null },
       now
     );
+    const updatedDoc: DrillDocument = {
+      ...transition.updatedDoc,
+      problems: transition.updatedDoc.problems.map((p) =>
+        p.id === currentItem.qid
+          ? { ...p, state: { ...p.state, cycleStartedAt: nextCycleAt } }
+          : p
+      ),
+    };
     commitTimerState(transition.nextTimerState, now);
     setActiveStepsByKey((prev) => ({ ...prev, [currentKey]: null }));
-    setDrillsByKey((prev) => ({ ...prev, [currentKey]: transition.updatedDoc }));
+    setDrillsByKey((prev) => ({ ...prev, [currentKey]: updatedDoc }));
+    if (!isLabId(currentDrill.drillId)) {
+      void startReviewItemCycle(currentDrill.drillId, currentItem.qid, nextCycleAt);
+    }
   }, [currentDrill, currentItem, currentKey, activeStepsByKey, commitTimerState]);
 
   const handleRevisitNoteChange = useCallback(
@@ -1215,6 +1261,7 @@ export const DailyReviewPage: React.FC = () => {
       onSetupRevealed={handleSetupRevealed}
       onSolutionRevealed={handleSolutionRevealed}
       onExampleViewed={handleExampleViewed}
+      onSimilarProgressSync={handleSimilarProgressSync}
       onVariantModeChange={handleVariantModeChange}
       onToggleStepHighlight={(stepIdx) => {
         if (!currentKey) return;

@@ -180,12 +180,18 @@ export function getMissedReviewItems(
  */
 export function prepareProblemForReviewItem(
   problem: Problem,
-  item?: Pick<ReviewItem, "subject" | "revisitNote"> | null
+  item?: Pick<ReviewItem, "subject" | "revisitNote"> | null,
+  cycleStartedAt?: string
 ): Problem {
   const subj: "MATH" | "PRG" =
     item?.subject === "PRG" ? "PRG" : "MATH";
   if (!hasSubstantiveAttempt(problem.state)) {
-    const redacted = redactProblemForReview(problem, subj);
+    const startedAt =
+      (typeof cycleStartedAt === "string" && cycleStartedAt.trim() ? cycleStartedAt.trim() : "") ||
+      (typeof problem.state?.cycleStartedAt === "string" && problem.state.cycleStartedAt.trim()
+        ? problem.state.cycleStartedAt.trim()
+        : new Date().toISOString());
+    const redacted = redactProblemForReview(problem, subj, startedAt);
     const note =
       item?.revisitNote ??
       (typeof problem.state?.revisitNote === "string" && problem.state.revisitNote.trim()
@@ -200,6 +206,33 @@ export function prepareProblemForReviewItem(
     };
   }
   return problem;
+}
+
+/**
+ * Stamp `cycleStartedAt` on the server when a Daily Review item starts a new cycle,
+ * so `mode=list` and variant gates immediately isolate prior-cycle attempts.
+ */
+export async function startReviewItemCycle(
+  drillId: string,
+  qid: string,
+  cycleStartedAt: string,
+  fetchFn: typeof fetch = fetch
+): Promise<boolean> {
+  try {
+    const res = await fetchFn("/api/variant", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        drillId,
+        qid,
+        action: "start-cycle",
+        cycleStartedAt,
+      }),
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
 }
 
 /**

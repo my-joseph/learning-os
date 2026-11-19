@@ -13,6 +13,7 @@ import {
 import type { MistakeTag, Problem } from "@/types/drill";
 import { CARD_STYLES, getSubstantiveAttemptCount, type ResultCardTone } from "@/lib/answerFeedback";
 import { canRevealVerifiedAnswer, hasSubstantiveAttempt } from "@/lib/reviewGuard";
+import { similarUnlock } from "@/lib/similarTabs";
 import {
   formatDuration,
   getQuestionLabel,
@@ -482,7 +483,7 @@ export const ReviewItemRow: React.FC<ReviewItemRowProps> = ({
                     <ArrowUpRight className="w-3.5 h-3.5" aria-hidden="true" />
                   </button>
 
-                  {!isCode && !isLab && problem.hasVariants && onTrySimilar && (
+                  {!isCode && !isLab && problem.hasVariants && onTrySimilar && similarUnlock(problem.state) && (
                     <button
                       type="button"
                       onClick={onTrySimilar}

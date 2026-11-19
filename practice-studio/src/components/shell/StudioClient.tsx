@@ -125,6 +125,7 @@ export const StudioClient: React.FC<StudioClientProps> = ({
     handleToggleTimerPause,
     handleVariantModeChange,
     handleExampleViewed,
+    handleSimilarProgressSync,
     handleHintRevealed,
     handleCheckAnswer,
     handleInputChange,
@@ -248,6 +249,7 @@ export const StudioClient: React.FC<StudioClientProps> = ({
     };
     setCurrentDrill(updated);
     triggerAutoSave(updated);
+    void flushAutoSave();
     setReviewRetryStarted(true);
     requestAnimationFrame(() => {
       document.querySelector<HTMLElement>('[aria-label^="Answer for"]')?.focus();
@@ -396,6 +398,7 @@ export const StudioClient: React.FC<StudioClientProps> = ({
                   onSolutionRevealed={() => handleSolutionRevealed(prob.id)}
                   onBeforeFetchVariant={flushAutoSave}
                   onExampleViewed={(viewedAt) => handleExampleViewed(prob.id, viewedAt)}
+                  onSimilarProgressSync={(patch) => handleSimilarProgressSync(prob.id, patch)}
                   onVariantModeChange={handleVariantModeChange}
                   autoOpenSimilar={pendingSimilarProbId === prob.id}
                   onAutoOpenSimilarConsumed={() => setPendingSimilarProbId(null)}
@@ -510,8 +513,9 @@ export const StudioClient: React.FC<StudioClientProps> = ({
               void handleResetAll().then(() => {
                 setResetAllVersion((version) => version + 1);
                 const url = new URL(window.location.href);
-                if (url.searchParams.has("similar")) {
+                if (url.searchParams.has("similar") || url.searchParams.has("tab")) {
                   url.searchParams.delete("similar");
+                  url.searchParams.delete("tab");
                   window.history.replaceState(
                     window.history.state,
                     "",

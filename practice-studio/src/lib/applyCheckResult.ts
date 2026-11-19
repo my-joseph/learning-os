@@ -7,6 +7,7 @@ import {
   AttemptRecord,
 } from "../types/drill";
 import { isSubstantiveVerdict, sanitizeCheckMessage } from "./reviewGuard";
+import { cycleOriginalAttempts, isInCycle } from "./similarTabs";
 
 export interface ApplyCheckOptions {
   durationMs?: number;
@@ -58,21 +59,23 @@ export function applyCheckResult(
     };
   }
 
-  const exampleViewed = Boolean(prob.state?.exampleViewedAt);
+  const cycleStartedAt = prob.state?.cycleStartedAt ?? null;
+  const cycleOrigAttempts = cycleOriginalAttempts(prob.state);
+  const exampleViewed = Boolean(
+    prob.state?.exampleViewedAt &&
+      isInCycle(prob.state.exampleViewedAt, cycleStartedAt)
+  );
   const isAssisted = Boolean(
     prob.state?.setupRevealedBeforeAnswer ||
       prob.state?.solutionRevealedBeforeAnswer ||
       exampleViewed ||
       hintsCount > 0 ||
-      currentAttempts.some(
-        (a) =>
-          a.kind !== "variant" &&
-          (a.setupRevealed || a.solutionRevealed || a.exampleViewed)
+      cycleOrigAttempts.some(
+        (a) => a.setupRevealed || a.solutionRevealed || a.exampleViewed
       )
   );
-  const hadPriorWrongOrPartial = currentAttempts.some(
+  const hadPriorWrongOrPartial = cycleOrigAttempts.some(
     (a) =>
-      a.kind !== "variant" &&
       a.verdict !== "correct" &&
       a.verdict !== "invalid input" &&
       a.verdict !== "parse_error"
@@ -238,7 +241,10 @@ export function resetProblemForRetry(prob: Problem): Problem {
 }
 
 /** Clear the visible answer/result for a review retry while retaining the attempt history. */
-export function resetAnswerForReviewRetry(state: ProblemState): ProblemState {
+export function resetAnswerForReviewRetry(
+  state: ProblemState,
+  nowIso: string = new Date().toISOString()
+): ProblemState {
   return {
     ...state,
     userInput: "",
@@ -246,6 +252,10 @@ export function resetAnswerForReviewRetry(state: ProblemState): ProblemState {
     divergedStep: null,
     skipped: false,
     lastCheck: null,
+    setupRevealedBeforeAnswer: false,
+    solutionRevealedBeforeAnswer: false,
+    hintsRevealed: 0,
+    cycleStartedAt: nowIso,
   };
 }
 

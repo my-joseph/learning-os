@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isSafeId, loadProblemFromDisk, loadVariantFromDisk } from "@/lib/paths";
 import {
+  addVariantDuration,
+  allocateSimilarSlots,
+  markVariantServed,
   readProgress,
   registerServedVariant,
   resetVariantProgress,
   resolveVariantToken,
+  startProblemCycle,
   updateVariantSession,
 } from "@/lib/progress";
 import {
@@ -14,15 +18,16 @@ import {
   redactVariantForTry,
 } from "@/lib/redact";
 import {
-  countClusterWrongAttempts,
-  countWrongAttempts,
-  isSubstantiveVerdict,
-} from "@/lib/reviewGuard";
+  countCycleOriginalWrongAttempts,
+  cycleAttempts,
+  deriveTabStatuses,
+  isInCycle,
+  similarUnlock,
+} from "@/lib/similarTabs";
 import {
   collectSeenVariantIds,
   findVariantsForProblem,
   pickExampleVariant,
-  pickUnseenVariant,
 } from "@/lib/variants";
 import { AttemptRecord, Problem, ProblemState, VariantSessionRecord } from "@/types/drill";
 
@@ -31,9 +36,11 @@ export const dynamic = "force-dynamic";
 function resolveParams(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const drillId = searchParams.get("drillId") || searchParams.get("drill");
-  const qid = searchParams.get("qid") || searchParams.get("q") || searchParams.get("problemId");
+  const qid =
+    searchParams.get("qid") || searchParams.get("q") || searchParams.get("problemId");
   const mode = searchParams.get("mode");
-  return { drillId, qid, mode };
+  const token = searchParams.get("token");
+  return { drillId, qid, mode, token };
 }
 
 function sanitizeVariantAttemptsForClient(attempts?: AttemptRecord[]): AttemptRecord[] {
@@ -43,18 +50,6 @@ function sanitizeVariantAttemptsForClient(attempts?: AttemptRecord[]): AttemptRe
     delete copy.matchedTrap;
     return copy;
   });
-}
-
-function computeTryIndex(
-  variantsMap: Record<string, VariantSessionRecord> | undefined,
-  token: string
-): number {
-  if (!variantsMap) return 1;
-  const tryTokens = Object.entries(variantsMap)
-    .filter(([, rec]) => rec && rec.role === "try")
-    .map(([tok]) => tok);
-  const pos = tryTokens.indexOf(token);
-  return pos >= 0 ? pos + 1 : tryTokens.length || 1;
 }
 
 function findExistingExampleEntry(
@@ -67,16 +62,6 @@ function findExistingExampleEntry(
     }
   }
   return null;
-}
-
-function countRemainingUnseen(
-  variants: Array<Record<string, unknown>>,
-  state?: ProblemState | null
-): number {
-  const seen = new Set(collectSeenVariantIds(state));
-  return variants.filter(
-    (v) => typeof v.variantId === "string" && !seen.has(v.variantId)
-  ).length;
 }
 
 export async function HEAD(req: NextRequest) {
@@ -93,7 +78,7 @@ export async function HEAD(req: NextRequest) {
 }
 
 export async function GET(req: NextRequest) {
-  const { drillId, qid, mode } = resolveParams(req);
+  const { drillId, qid, mode, token } = resolveParams(req);
 
   if (!drillId || !qid || !isSafeId(drillId) || !isSafeId(qid)) {
     return NextResponse.json(
@@ -101,9 +86,9 @@ export async function GET(req: NextRequest) {
       { status: 400 }
     );
   }
-  if (mode !== "try" && mode !== "example" && mode !== "active") {
+  if (mode !== "list" && mode !== "open" && mode !== "example") {
     return NextResponse.json(
-      { error: "Invalid mode parameter; expected 'try', 'example', or 'active'" },
+      { error: "Invalid mode parameter; expected 'list', 'open', or 'example'" },
       { status: 400 }
     );
   }
@@ -120,90 +105,28 @@ export async function GET(req: NextRequest) {
   const variants = findVariantsForProblem(doc, problem);
   const progress = readProgress(drillId);
   const state = (progress?.problems?.[qid] as ProblemState | undefined) ?? null;
-  const total = variants.length;
   const unitCode = typeof doc.unitCode === "string" ? doc.unitCode : undefined;
 
-  if (mode === "active") {
-    const remainingCount = countRemainingUnseen(variants, state);
-    const clusterWrongAttempts = countClusterWrongAttempts(state);
+  if (mode === "list") {
+    if (variants.length === 0 || !similarUnlock(state)) {
+      return NextResponse.json({
+        unlocked: false,
+        tabs: [],
+      });
+    }
+
+    const { state: nextState } = allocateSimilarSlots(drillId, unitCode, qid, variants);
+    const tabs = deriveTabStatuses(nextState);
     const exampleViewedAt =
-      typeof state?.exampleViewedAt === "string" && state.exampleViewedAt
-        ? state.exampleViewedAt
+      typeof nextState.exampleViewedAt === "string" &&
+      nextState.exampleViewedAt &&
+      isInCycle(nextState.exampleViewedAt, nextState.cycleStartedAt)
+        ? nextState.exampleViewedAt
         : null;
-
-    let activePayload: Record<string, unknown> | null = null;
-    const activeToken =
-      typeof state?.activeVariant === "string" && state.activeVariant
-        ? state.activeVariant
-        : null;
-    if (activeToken && state?.variants?.[activeToken]) {
-      const rec = state.variants[activeToken];
-      if (rec.role === "try" && typeof rec.variantId === "string" && rec.variantId) {
-        const loadedVar = loadVariantFromDisk(rec.variantId);
-        if (loadedVar) {
-          const revealed: Record<string, unknown> = {};
-          if (rec.setupRevealed) {
-            const disp = extractRevealedPart(
-              loadedVar.variant as Partial<Problem>,
-              "display"
-            );
-            if ("display" in disp) {
-              revealed.display = disp.display;
-              revealed.plainText = disp.plainText;
-            }
-          }
-          if (rec.stepsRevealed && canRevealVariantSteps(rec)) {
-            const stp = extractRevealedPart(
-              loadedVar.variant as Partial<Problem>,
-              "steps"
-            );
-            if ("steps" in stp) {
-              revealed.steps = stp.steps;
-              revealed.answerDisplay = stp.answerDisplay;
-              revealed.answerPlain = stp.answerPlain;
-            }
-          }
-          activePayload = {
-            token: activeToken,
-            index: computeTryIndex(state.variants, activeToken),
-            total,
-            remainingCount,
-            variant: redactVariantForTry(loadedVar.variant, activeToken),
-            session: {
-              attempts: sanitizeVariantAttemptsForClient(rec.attempts),
-              hintsRevealed: rec.hintsRevealed || 0,
-              setupRevealed: Boolean(rec.setupRevealed),
-              stepsRevealed: Boolean(rec.stepsRevealed),
-              durationMs: rec.durationMs || 0,
-              servedAt: rec.servedAt,
-            },
-            ...(Object.keys(revealed).length > 0 ? { revealed } : {}),
-          };
-        }
-      }
-    }
-
-    let examplePayload: Record<string, unknown> | null = null;
-    const existingEx = findExistingExampleEntry(state);
-    if (existingEx && existingEx.record.variantId) {
-      const loadedEx = loadVariantFromDisk(existingEx.record.variantId);
-      if (loadedEx) {
-        examplePayload = {
-          token: existingEx.token,
-          variant: formatWorkedExampleVariant(loadedEx.variant, existingEx.token),
-        };
-      }
-    }
 
     return NextResponse.json({
-      mode: "active",
-      drillId,
-      qid,
-      active: activePayload,
-      example: examplePayload,
-      total,
-      remainingCount,
-      clusterWrongAttempts,
+      unlocked: true,
+      tabs,
       exampleViewedAt,
     });
   }
@@ -215,134 +138,188 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  if (mode === "example") {
-    const clusterWrongs = countClusterWrongAttempts(state);
-    if (clusterWrongs < 2) {
+  if (mode === "open") {
+    if (!token || !isSafeId(token)) {
       return NextResponse.json(
-        {
-          error: "A worked example unlocks after 2 wrong attempts.",
-          wrongAttempts: clusterWrongs,
-        },
+        { error: "Missing or invalid token parameter" },
+        { status: 400 }
+      );
+    }
+
+    if (!similarUnlock(state)) {
+      return NextResponse.json(
+        { error: "Similar questions unlock after an attempt on the original question." },
         { status: 403 }
       );
     }
 
-    // Idempotent: if a worked example was already served for this problem, return the same one.
-    const existingEx = findExistingExampleEntry(state);
-    if (existingEx && existingEx.record.variantId) {
-      const loadedEx = loadVariantFromDisk(existingEx.record.variantId);
-      if (loadedEx) {
-        return NextResponse.json({
-          mode: "example",
-          drillId,
-          qid,
-          token: existingEx.token,
-          variant: formatWorkedExampleVariant(loadedEx.variant, existingEx.token),
-          exampleViewedAt: state?.exampleViewedAt || existingEx.record.servedAt,
-          remainingCount: countRemainingUnseen(variants, state),
-        });
-      }
+    const { slots, state: slotState } = allocateSimilarSlots(
+      drillId,
+      unitCode,
+      qid,
+      variants
+    );
+    const slotIndex = slots.indexOf(token);
+    if (slotIndex < 0) {
+      return NextResponse.json(
+        { error: "Invalid similar question token for this problem." },
+        { status: 403 }
+      );
     }
 
-    const activeToken =
-      typeof state?.activeVariant === "string" && state.activeVariant
-        ? state.activeVariant
-        : null;
-    const activeVariantId =
-      activeToken && state?.variants?.[activeToken]?.variantId
-        ? state.variants[activeToken].variantId
-        : null;
-
-    const seenIds = collectSeenVariantIds(state);
-    const picked = pickExampleVariant(variants, seenIds, activeVariantId);
-    if (!picked) {
+    const rawRecord = slotState.variants?.[token];
+    if (!rawRecord || typeof rawRecord.variantId !== "string" || !rawRecord.variantId) {
       return NextResponse.json(
-        { error: "No variants available for this archetype." },
+        { error: "Variant not found" },
         { status: 404 }
       );
     }
 
-    const pickedId = String(picked.variantId);
-    const { token, state: nextState } = registerServedVariant(
+    const loadedVar = loadVariantFromDisk(rawRecord.variantId);
+    if (!loadedVar) {
+      return NextResponse.json(
+        { error: "Variant not found" },
+        { status: 404 }
+      );
+    }
+
+    const { record: servedRec, state: afterServeState } = markVariantServed(
       drillId,
       unitCode,
       qid,
-      pickedId,
-      "example"
+      token
     );
+    const effectiveRec = servedRec ?? rawRecord;
+    const cycleStartedAt = afterServeState.cycleStartedAt ?? null;
+    const cycleRecAttempts = cycleAttempts(effectiveRec.attempts, cycleStartedAt);
+    const inCurrentCycle =
+      !cycleStartedAt ||
+      cycleRecAttempts.length > 0 ||
+      isInCycle(effectiveRec.servedAt, cycleStartedAt);
+
+    const revealed: Record<string, unknown> = {};
+    if (effectiveRec.setupRevealed && inCurrentCycle) {
+      const disp = extractRevealedPart(loadedVar.variant as Partial<Problem>, "display");
+      if ("display" in disp) {
+        revealed.display = disp.display;
+        revealed.plainText = disp.plainText;
+      }
+    }
+    if (
+      effectiveRec.stepsRevealed &&
+      canRevealVariantSteps(effectiveRec, cycleStartedAt)
+    ) {
+      const stp = extractRevealedPart(loadedVar.variant as Partial<Problem>, "steps");
+      if ("steps" in stp) {
+        revealed.steps = stp.steps;
+        revealed.answerDisplay = stp.answerDisplay;
+        revealed.answerPlain = stp.answerPlain;
+      }
+    }
 
     return NextResponse.json({
-      mode: "example",
+      mode: "open",
       drillId,
       qid,
       token,
-      variant: formatWorkedExampleVariant(picked, token),
-      exampleViewedAt: nextState.exampleViewedAt,
-      remainingCount: countRemainingUnseen(variants, nextState),
+      slot: slotIndex + 1,
+      total: slots.length,
+      variant: redactVariantForTry(loadedVar.variant, token),
+      session: {
+        attempts: sanitizeVariantAttemptsForClient(cycleRecAttempts),
+        hintsRevealed: inCurrentCycle ? effectiveRec.hintsRevealed || 0 : 0,
+        setupRevealed: Boolean(effectiveRec.setupRevealed && inCurrentCycle),
+        stepsRevealed: Boolean(
+          effectiveRec.stepsRevealed &&
+            canRevealVariantSteps(effectiveRec, cycleStartedAt)
+        ),
+        durationMs: inCurrentCycle ? effectiveRec.durationMs || 0 : 0,
+        servedAt: effectiveRec.servedAt,
+      },
+      ...(Object.keys(revealed).length > 0 ? { revealed } : {}),
     });
   }
 
-  // mode === "try"
-  const originalWrongAttempts = countWrongAttempts(state);
-  if (originalWrongAttempts < 1) {
+  // mode === "example" (existing worked-example path kept intact per binding scope change)
+  const existingEx = findExistingExampleEntry(state);
+  const exampleAlreadyViewedInCycle = Boolean(
+    existingEx &&
+      state?.exampleViewedAt &&
+      isInCycle(state.exampleViewedAt, state.cycleStartedAt)
+  );
+
+  if (exampleAlreadyViewedInCycle && existingEx && existingEx.record.variantId) {
+    const loadedEx = loadVariantFromDisk(existingEx.record.variantId);
+    if (loadedEx) {
+      return NextResponse.json({
+        mode: "example",
+        drillId,
+        qid,
+        token: existingEx.token,
+        variant: formatWorkedExampleVariant(loadedEx.variant, existingEx.token),
+        exampleViewedAt: state?.exampleViewedAt || existingEx.record.servedAt,
+      });
+    }
+  }
+
+  const origWrongs = countCycleOriginalWrongAttempts(state);
+  if (origWrongs < 2) {
     return NextResponse.json(
-      { error: "A similar question unlocks after a wrong attempt on the original question." },
+      {
+        error: "A worked example unlocks after 2 wrong attempts.",
+        wrongAttempts: origWrongs,
+      },
       { status: 403 }
     );
   }
 
-  // Refuse serving a new try while the current active try has no substantive attempt yet.
-  const activeToken =
-    typeof state?.activeVariant === "string" && state.activeVariant
-      ? state.activeVariant
-      : null;
-  if (activeToken && state?.variants?.[activeToken]) {
-    const activeRec = state.variants[activeToken];
-    const hasAttemptedActive =
-      Array.isArray(activeRec.attempts) &&
-      activeRec.attempts.some((a) => isSubstantiveVerdict(a?.verdict));
-    if (activeRec.role === "try" && !hasAttemptedActive) {
-      return NextResponse.json(
-        {
-          error: "Attempt the current similar question before loading another one.",
-          activeToken,
-        },
-        { status: 409 }
+  // Idempotent: if a worked example was already served in an earlier cycle, reuse it.
+  if (existingEx && existingEx.record.variantId) {
+    const loadedEx = loadVariantFromDisk(existingEx.record.variantId);
+    if (loadedEx) {
+      const { state: nextState } = registerServedVariant(
+        drillId,
+        unitCode,
+        qid,
+        existingEx.record.variantId,
+        "example"
       );
+      return NextResponse.json({
+        mode: "example",
+        drillId,
+        qid,
+        token: existingEx.token,
+        variant: formatWorkedExampleVariant(loadedEx.variant, existingEx.token),
+        exampleViewedAt: nextState.exampleViewedAt,
+      });
     }
   }
 
   const seenIds = collectSeenVariantIds(state);
-  const picked = pickUnseenVariant(variants, seenIds);
+  const picked = pickExampleVariant(variants, seenIds);
   if (!picked) {
     return NextResponse.json(
-      {
-        error: "You have already seen all available variants for this archetype.",
-        allSeen: true,
-      },
+      { error: "No variants available for this archetype." },
       { status: 404 }
     );
   }
 
-  const pickedId = String(picked.variant.variantId);
-  const { token, state: nextState } = registerServedVariant(
+  const pickedId = String(picked.variantId);
+  const { token: exToken, state: nextState } = registerServedVariant(
     drillId,
     unitCode,
     qid,
     pickedId,
-    "try"
+    "example"
   );
-  const index = computeTryIndex(nextState.variants, token);
 
   return NextResponse.json({
-    mode: "try",
+    mode: "example",
     drillId,
     qid,
-    token,
-    index,
-    total,
-    remainingCount: picked.remainingCount,
-    variant: redactVariantForTry(picked.variant, token),
+    token: exToken,
+    variant: formatWorkedExampleVariant(picked, exToken),
+    exampleViewedAt: nextState.exampleViewedAt,
   });
 }
 
@@ -350,10 +327,13 @@ const ALLOWED_ACTIONS = new Set([
   "hint",
   "reveal-steps",
   "reset",
-  "deactivate",
+  "duration",
+  "start-cycle",
   "reset-question",
   "reset-all",
 ]);
+
+const ISO_TS_RE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/;
 
 export async function POST(req: NextRequest) {
   try {
@@ -370,19 +350,38 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-    if (action === "reset-question" || action === "reset-all") {
-      const qid = typeof body.qid === "string" ? body.qid.trim() : undefined;
-      if (action === "reset-question" && (!qid || !isSafeId(qid))) {
+    if (action === "start-cycle") {
+      if (!qid || !isSafeId(qid)) {
         return NextResponse.json({ ok: false, error: "Invalid qid" }, { status: 400 });
       }
-      const loaded = qid ? loadProblemFromDisk(drillId, qid) : null;
-      if (qid && !loaded) {
+      const loaded = loadProblemFromDisk(drillId, qid);
+      if (!loaded) {
+        return NextResponse.json({ ok: false, error: "Problem not found" }, { status: 404 });
+      }
+      const rawCycleTs =
+        typeof body.cycleStartedAt === "string" ? body.cycleStartedAt.trim() : "";
+      const cycleTs = ISO_TS_RE.test(rawCycleTs) ? rawCycleTs : new Date().toISOString();
+      const { cycleStartedAt } = startProblemCycle(
+        drillId,
+        typeof loaded.doc.unitCode === "string" ? loaded.doc.unitCode : undefined,
+        qid,
+        cycleTs
+      );
+      return NextResponse.json({ ok: true, cycleStartedAt });
+    }
+    if (action === "reset-question" || action === "reset-all") {
+      const targetQid = typeof body.qid === "string" ? body.qid.trim() : undefined;
+      if (action === "reset-question" && (!targetQid || !isSafeId(targetQid))) {
+        return NextResponse.json({ ok: false, error: "Invalid qid" }, { status: 400 });
+      }
+      const loaded = targetQid ? loadProblemFromDisk(drillId, targetQid) : null;
+      if (targetQid && !loaded) {
         return NextResponse.json({ ok: false, error: "Problem not found" }, { status: 404 });
       }
       resetVariantProgress(
         drillId,
         loaded && typeof loaded.doc.unitCode === "string" ? loaded.doc.unitCode : undefined,
-        action === "reset-question" ? qid : undefined
+        action === "reset-question" ? targetQid : undefined
       );
       return NextResponse.json({ ok: true });
     }
@@ -400,6 +399,16 @@ export async function POST(req: NextRequest) {
         { status: 404 }
       );
     }
+    if (
+      !similarUnlock(resolved.state) ||
+      !Array.isArray(resolved.state.similarSlots) ||
+      !resolved.state.similarSlots.includes(variantToken)
+    ) {
+      return NextResponse.json(
+        { ok: false, error: "Invalid or locked similar question token" },
+        { status: 403 }
+      );
+    }
 
     const loaded = loadProblemFromDisk(drillId, qid);
     const unitCode =
@@ -411,8 +420,14 @@ export async function POST(req: NextRequest) {
       updateVariantSession(drillId, unitCode, qid, variantToken, { stepsRevealed: true });
     } else if (action === "reset") {
       updateVariantSession(drillId, unitCode, qid, variantToken, { reset: true });
-    } else if (action === "deactivate") {
-      updateVariantSession(drillId, unitCode, qid, variantToken, { deactivate: true });
+    } else if (action === "duration") {
+      const durationMs =
+        typeof body.durationMs === "number" && Number.isFinite(body.durationMs)
+          ? body.durationMs
+          : 0;
+      if (durationMs > 0) {
+        addVariantDuration(drillId, unitCode, qid, variantToken, durationMs);
+      }
     }
 
     return NextResponse.json({ ok: true, token: variantToken, action });
