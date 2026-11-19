@@ -22,6 +22,7 @@ interface StudioShellProps {
   codeHref: string | null;
   viewMode: ViewMode;
   currentDrill: DrillDocument | null;
+  isLoadingDrill?: boolean;
   drillNotFound?: boolean;
   currentProblemIndex: number;
   theme: "light" | "dark";
@@ -57,6 +58,7 @@ export const StudioShell: React.FC<StudioShellProps> = ({
   codeHref,
   viewMode,
   currentDrill,
+  isLoadingDrill = false,
   drillNotFound = false,
   currentProblemIndex,
   theme,
@@ -112,24 +114,26 @@ export const StudioShell: React.FC<StudioShellProps> = ({
   }, []);
 
   const {
-    dueUnits,
     dueReviewCount,
+    reviewSessionSize,
+    otherWorkspaceDueCount,
+    estimatedMinutes,
+    nextDueDate,
+    dueUnitCodes,
+    currentUnitMastery,
     dueLoading,
     dueError,
     weakSpotUnits,
     weakLoading,
     weakError,
   } = useSidePanelData(
+    workspace,
     currentDrill?.unitCode,
     currentDrill?.sessionSummary?.syncedToNotionAt
   );
 
   const openWeakCount = weakSpotUnits.reduce((acc, u) => acc + u.open.length, 0);
-  const sidePanelCount = dueUnits.length + (dueReviewCount > 0 ? 1 : 0) + openWeakCount;
-  const dueUnitCodes = React.useMemo(
-    () => dueUnits.map((u) => u.unitCode),
-    [dueUnits]
-  );
+  const sidePanelCount = dueReviewCount + openWeakCount;
 
   // Close mobile drawer when switching drills or leaving quiz view
   useEffect(() => {
@@ -317,8 +321,13 @@ export const StudioShell: React.FC<StudioShellProps> = ({
               <StudioSidePanel
                 workspace={workspace}
                 currentUnitCode={currentDrill?.unitCode}
-                dueUnits={dueUnits}
+                drillLoading={isLoadingDrill}
                 dueReviewCount={dueReviewCount}
+                reviewSessionSize={reviewSessionSize}
+                otherWorkspaceDueCount={otherWorkspaceDueCount}
+                estimatedMinutes={estimatedMinutes}
+                nextDueDate={nextDueDate}
+                currentUnitMastery={currentUnitMastery}
                 dueLoading={dueLoading}
                 dueError={dueError}
                 weakSpotUnits={weakSpotUnits}
@@ -352,7 +361,7 @@ export const StudioShell: React.FC<StudioShellProps> = ({
           initial="hidden"
           animate="shown"
           exit="hidden"
-          className="fixed inset-0 z-50 lg:hidden flex justify-end"
+          className="fixed inset-0 z-50 lg:hidden flex justify-end pl-4 overflow-hidden"
           role="dialog"
           aria-modal="true"
           aria-label="Due today & weak spots"
@@ -365,10 +374,10 @@ export const StudioShell: React.FC<StudioShellProps> = ({
           <m.div
             ref={drawerCardRef}
             variants={drawer}
-            className="relative z-10 w-[min(calc(100vw-2.5rem),340px)] h-full overflow-y-auto bg-white dark:bg-zinc-900 border-l border-zinc-200 dark:border-zinc-800 p-4 space-y-4 shadow-xl"
+            className="relative z-10 w-full max-w-[360px] min-w-0 h-full overflow-y-auto overflow-x-hidden bg-white dark:bg-zinc-900 border-l border-zinc-200 dark:border-zinc-800 p-4 space-y-4 shadow-xl"
           >
-            <div className="flex items-center justify-between pb-2 border-b border-zinc-200 dark:border-zinc-800">
-              <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+            <div className="flex items-center justify-between gap-2 min-w-0 pb-2 border-b border-zinc-200 dark:border-zinc-800">
+              <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 truncate">
                 Due today &amp; weak spots
               </span>
               <button
@@ -376,7 +385,7 @@ export const StudioShell: React.FC<StudioShellProps> = ({
                 type="button"
                 onClick={() => setIsSideDrawerOpen(false)}
                 aria-label="Close side panel"
-                className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                className="inline-flex items-center justify-center w-8 h-8 shrink-0 rounded-lg text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -384,8 +393,13 @@ export const StudioShell: React.FC<StudioShellProps> = ({
             <StudioSidePanel
               workspace={workspace}
               currentUnitCode={currentDrill?.unitCode}
-              dueUnits={dueUnits}
+              drillLoading={isLoadingDrill}
               dueReviewCount={dueReviewCount}
+              reviewSessionSize={reviewSessionSize}
+              otherWorkspaceDueCount={otherWorkspaceDueCount}
+              estimatedMinutes={estimatedMinutes}
+              nextDueDate={nextDueDate}
+              currentUnitMastery={currentUnitMastery}
               dueLoading={dueLoading}
               dueError={dueError}
               weakSpotUnits={weakSpotUnits}

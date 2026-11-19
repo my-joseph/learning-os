@@ -60,6 +60,9 @@ export interface MathWorkspaceProps {
   onToggleTimerPause?: () => void;
   reviewSupplement?: React.ReactNode;
   isReviewSession?: boolean;
+  isCorrectOnRetry?: boolean;
+  reviewUnitTitle?: string;
+  reviewScheduleNote?: string | null;
   nextCardLabel?: string;
   lastQuestionNavLabel?: string;
 }
@@ -98,6 +101,9 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
   onToggleTimerPause,
   reviewSupplement,
   isReviewSession = false,
+  isCorrectOnRetry = false,
+  reviewUnitTitle,
+  reviewScheduleNote = null,
   nextCardLabel,
   lastQuestionNavLabel,
 }) => {
@@ -258,16 +264,33 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
   const questionHeader = (
     <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 text-xs font-medium text-zinc-500 dark:text-zinc-400">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-        <span>
-          Question {questionNumber}
-          {typeof totalQuestions === "number" && totalQuestions > 0
-            ? ` of ${totalQuestions}`
-            : ""}
-        </span>
-        {typeof problem.level === "number" && problem.level > 0 && (
-          <span title={problem.levelLabel?.trim() || undefined}>
-            Level {problem.level}
-          </span>
+        {isReviewSession ? (
+          <>
+            {(plainTitle(reviewUnitTitle) || unitCode) && (
+              <span className="text-zinc-700 dark:text-zinc-300">
+                {plainTitle(reviewUnitTitle) || unitCode}
+              </span>
+            )}
+            {typeof problem.level === "number" && problem.level > 0 && (
+              <span title={problem.levelLabel?.trim() || undefined}>
+                Difficulty {problem.level}
+              </span>
+            )}
+          </>
+        ) : (
+          <>
+            <span>
+              Question {questionNumber}
+              {typeof totalQuestions === "number" && totalQuestions > 0
+                ? ` of ${totalQuestions}`
+                : ""}
+            </span>
+            {typeof problem.level === "number" && problem.level > 0 && (
+              <span title={problem.levelLabel?.trim() || undefined}>
+                Level {problem.level}
+              </span>
+            )}
+          </>
         )}
       </div>
       <QuestionTimer
@@ -371,6 +394,7 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
             drillTitle={drillTitle}
             mistakeTags={[]}
             activeStep={similarActiveStep}
+            useSessionInputMode={isReviewSession}
             autoRevealOnCorrect={false}
             autoFocusPrimaryAction={similarHasAttempt && !similarIsCorrect}
             loadingSteps={loadingSteps}
@@ -412,6 +436,16 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
             mistakeTags={mistakeTags}
             activeStep={activeStep}
             isLastQuestion={isReviewSession ? false : isLastQuestion}
+            isReviewSession={isReviewSession}
+            isCorrectOnRetry={isCorrectOnRetry}
+            reviewScheduleNote={isReviewSession ? reviewScheduleNote : null}
+            skipLabel={isReviewSession ? "Skip · due tomorrow" : "Skip"}
+            autoRevealOnSkip={!isReviewSession}
+            ariaLabel={
+              isReviewSession
+                ? `Answer for question ${index + 1} of ${totalQuestions ?? 1}`
+                : `Answer for question ${problem.id}`
+            }
             nextLabel={nextCardLabel ?? "Next question"}
             resultSecondaryActions={originalSecondaryActions}
             onInputChange={onInputChange}
@@ -468,6 +502,8 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
           onNextQuestion={onNextQuestion}
           onOpenReview={onOpenReview}
           lastQuestionLabel={lastQuestionNavLabel}
+          nextDisabled={isReviewSession && !hasAttempt}
+          hideNext={isReviewSession && hasAttempt}
         />
       )}
     </div>

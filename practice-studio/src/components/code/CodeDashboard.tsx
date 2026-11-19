@@ -92,6 +92,9 @@ export interface CodeDashboardProps {
   openInDrillHref?: string;
   reviewSupplement?: React.ReactNode;
   isReviewSession?: boolean;
+  isCorrectOnRetry?: boolean;
+  reviewUnitTitle?: string;
+  reviewScheduleNote?: string | null;
   nextCardLabel?: string;
   lastQuestionNavLabel?: string;
 }
@@ -155,6 +158,9 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
   openInDrillHref,
   reviewSupplement,
   isReviewSession = false,
+  isCorrectOnRetry = false,
+  reviewUnitTitle,
+  reviewScheduleNote = null,
   nextCardLabel,
   lastQuestionNavLabel,
 }) => {
@@ -444,6 +450,19 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
       reviewRun ||
       hasSubstantiveAttempt(problem.state)
   );
+  useEffect(() => {
+    if (!isReviewSession) return;
+    const frame = requestAnimationFrame(() => {
+      if (hasAttempt) {
+        document.querySelector<HTMLButtonElement>('[data-review-primary-action="true"]')?.focus();
+      } else if (isChoice) {
+        document.querySelector<HTMLButtonElement>('[role="radiogroup"] [role="radio"]')?.focus();
+      } else {
+        answerInputRef.current?.focus();
+      }
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [problem.id, hasAttempt, isReviewSession, isChoice]);
   const stepsUnopenedUnattempted =
     !hasAttempt &&
     !showSolution &&
@@ -469,18 +488,35 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
         <div className="space-y-2">
           <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 text-xs font-medium text-zinc-500 dark:text-zinc-400">
             <h2 className="flex flex-wrap items-center gap-x-3 gap-y-1">
-              <span>
-                {isLab ? `Milestone ${problem.id}` : `Problem ${index + 1}`}
-                {typeof totalQuestions === "number" && totalQuestions > 0
-                  ? isLab
-                    ? ` (${index + 1} of ${totalQuestions})`
-                    : ` of ${totalQuestions}`
-                  : ""}
-              </span>
-              {typeof problem.level === "number" && problem.level > 0 && (
-                <span title={problem.levelLabel?.trim() || undefined}>
-                  Level {problem.level}
-                </span>
+              {isReviewSession ? (
+                <>
+                  {plainTitle(reviewUnitTitle) && (
+                    <span className="text-zinc-700 dark:text-zinc-300">
+                      {plainTitle(reviewUnitTitle)}
+                    </span>
+                  )}
+                  {typeof problem.level === "number" && problem.level > 0 && (
+                    <span title={problem.levelLabel?.trim() || undefined}>
+                      Difficulty {problem.level}
+                    </span>
+                  )}
+                </>
+              ) : (
+                <>
+                  <span>
+                    {isLab ? `Milestone ${problem.id}` : `Problem ${index + 1}`}
+                    {typeof totalQuestions === "number" && totalQuestions > 0
+                      ? isLab
+                        ? ` (${index + 1} of ${totalQuestions})`
+                        : ` of ${totalQuestions}`
+                      : ""}
+                  </span>
+                  {typeof problem.level === "number" && problem.level > 0 && (
+                    <span title={problem.levelLabel?.trim() || undefined}>
+                      Level {problem.level}
+                    </span>
+                  )}
+                </>
               )}
               {problem.entryPoint && (
                 isLab ? (
@@ -607,6 +643,16 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                   <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${showHint ? "rotate-180" : ""}`} />
                   <span>{showHint ? "Hide hint" : "Hint"}</span>
                 </button>}
+
+                {onSkip && !hasAttempt && (
+                  <button
+                    type="button"
+                    onClick={onSkip}
+                    className="inline-flex min-h-[36px] items-center gap-1 px-2 text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors ml-auto"
+                  >
+                    <span>{isReviewSession ? "Skip · due tomorrow" : "Skip"}</span>
+                  </button>
+                )}
               </div>
 
               <CheckpointHintDisclosure
@@ -1090,7 +1136,9 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                     onChange={onInputChange}
                     onCheck={() => void triggerWebCheck()}
                     placeholder={getSafePlaceholder(problem.inputHint, problem)}
-                    aria-label={`Answer for ${isLab ? "milestone" : "problem"} ${problem.id}`}
+                    aria-label={isReviewSession
+                      ? `Answer for ${isLab ? "milestone" : "problem"} ${index + 1} of ${totalQuestions ?? 1}`
+                      : `Answer for ${isLab ? "milestone" : "problem"} ${problem.id}`}
                     isChecking={isChecking}
                   />
                 ))}
@@ -1100,8 +1148,11 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                 state={problem.state}
                 problem={problem}
                 mistakeTags={mistakeTags}
+                isReviewSession={isReviewSession}
+                isCorrectOnRetry={isCorrectOnRetry}
                 isLastQuestion={isReviewSession ? false : isLastQuestion}
                 nextLabel={nextCardLabel ?? (isLab ? "Next milestone" : "Next problem")}
+                scheduleNote={isReviewSession ? reviewScheduleNote : null}
                 onNextQuestion={onNextQuestion}
                 onOpenReview={onOpenReview}
                 onTryAgain={handleTryAgain}
@@ -1141,15 +1192,18 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
               onSkip={
                 onSkip
                   ? () => {
-                      if (!showHint && onHintRevealed) {
+                      if (!isReviewSession && !showHint && onHintRevealed) {
                         onHintRevealed();
                       }
-                      setShowHint(true);
-                      setShowSolution(true);
+                      if (!isReviewSession) {
+                        setShowHint(true);
+                        setShowSolution(true);
+                      }
                       onSkip();
                     }
                   : undefined
               }
+              skipLabel={isReviewSession ? "Skip · due tomorrow" : "Skip"}
             />
           </>
         )}
@@ -1157,7 +1211,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
         {/* Mistake tags & note after an attempt */}
         <ProblemSelfEval
           hasAttempt={hasAttempt}
-          showSelfScore={!isKata}
+          showSelfScore={!isKata && !(isReviewSession && problem.state.skipped)}
           score={score}
           mistakes={problem.state.mistakes}
           mistakeNote={problem.state.mistakeNote}
@@ -1177,6 +1231,8 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
         onNextQuestion={onNextQuestion}
         onOpenReview={onOpenReview}
         lastQuestionLabel={lastQuestionNavLabel}
+        nextDisabled={isReviewSession && !(isKata && Boolean(openInDrillHref)) && !hasAttempt}
+        hideNext={isReviewSession && hasAttempt}
       />
     </div>
   );

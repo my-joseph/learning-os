@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isSafeId } from "@/lib/paths";
-import { getDueReviewItems, recordReviewItemResult } from "@/lib/reviewItems";
+import {
+  getDueReviewItems,
+  parseReviewScope,
+  recordReviewItemResult,
+} from "@/lib/reviewItems";
 
 export const dynamic = "force-dynamic";
 
@@ -9,6 +13,7 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const rawLimit = searchParams.get("limit");
     const rawToday = searchParams.get("today");
+    const rawScope = searchParams.get("scope");
 
     let limit: number | undefined;
     if (rawLimit !== null && rawLimit.trim() !== "") {
@@ -28,15 +33,36 @@ export async function GET(req: NextRequest) {
       today = trimmed;
     }
 
-    const result = getDueReviewItems({ today, limit });
-    // Never expose trap tags or archetype keys before the learner answers (zero-leak rule).
+    let scope: string | undefined;
+    if (rawScope !== null && rawScope.trim() !== "") {
+      try {
+        const parsedScope = parseReviewScope(rawScope);
+        if (parsedScope) {
+          scope = `${parsedScope.kind}:${parsedScope.value}`;
+        }
+      } catch {
+        return NextResponse.json({ error: "Invalid scope" }, { status: 400 });
+      }
+    }
+
+    const result = getDueReviewItems({ today, limit, scope });
+    // Never expose trap tags, archetype keys, or lastWrong before the learner answers (zero-leak rule).
     const safeItems = result.items.map((item) => ({
-      ...item,
+      drillId: item.drillId,
+      qid: item.qid,
+      unitCode: item.unitCode,
+      subject: item.subject,
       commonTrapTag: null,
       archetypeKey: null,
+      level: item.level,
+      lastReviewed: item.lastReviewed,
+      dueDate: item.dueDate,
+      revisitNote: item.revisitNote,
     }));
+    const { scope: _omittedScope, ...rest } = result;
+    void _omittedScope;
     return NextResponse.json({
-      ...result,
+      ...rest,
       items: safeItems,
     });
   } catch (err: unknown) {

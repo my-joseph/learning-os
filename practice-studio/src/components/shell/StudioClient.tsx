@@ -39,6 +39,7 @@ import {
 import { readLastDrillId, writeLastDrillId } from "@/lib/lastDrillStorage";
 import { getDrillTotalMs, getProblemDisplayMs } from "@/lib/telemetryTimer";
 import { plainTitle } from "@/lib/titleText";
+import { resetAnswerForReviewRetry } from "@/lib/applyCheckResult";
 
 interface StudioClientProps {
   workspace: Workspace;
@@ -63,6 +64,8 @@ export const StudioClient: React.FC<StudioClientProps> = ({
   const [resetAllVersion, setResetAllVersion] = useState(0);
   const [lastMathId, setLastMathId] = useState<string | null>(null);
   const [lastCodeId, setLastCodeId] = useState<string | null>(null);
+  const [reviewRetryStarted, setReviewRetryStarted] = useState(false);
+  const isMissedReviewLink = searchParams.get("review") === "missed";
 
   const initialQuestionIdRef = useRef<string | undefined>(initialQuestionId);
   initialQuestionIdRef.current = initialQuestionId;
@@ -158,6 +161,7 @@ export const StudioClient: React.FC<StudioClientProps> = ({
   // Load drill whenever route drillId changes
   useEffect(() => {
     setStatus(null);
+    setReviewRetryStarted(false);
     setShowResetConfirm(false);
     pendingReplacedQsRef.current = [];
     loadDrill(drillId, initialQuestionIdRef.current);
@@ -214,6 +218,25 @@ export const StudioClient: React.FC<StudioClientProps> = ({
     router.push(drillHref(nextDrillId));
   };
 
+  const handleReviewRetry = () => {
+    const problem = currentDrill?.problems[currentProblemIndex];
+    if (!currentDrill || !problem) return;
+    const updated = {
+      ...currentDrill,
+      problems: currentDrill.problems.map((candidate) =>
+        candidate.id === problem.id
+          ? { ...candidate, state: resetAnswerForReviewRetry(candidate.state) }
+          : candidate
+      ),
+    };
+    setCurrentDrill(updated);
+    triggerAutoSave(updated);
+    setReviewRetryStarted(true);
+    requestAnimationFrame(() => {
+      document.querySelector<HTMLElement>('[aria-label^="Answer for"]')?.focus();
+    });
+  };
+
   const handleGenerated = async (newDrillId: string) => {
     await loadDrillsList();
     router.push(drillHref(newDrillId));
@@ -245,6 +268,7 @@ export const StudioClient: React.FC<StudioClientProps> = ({
       codeHref={codeHref}
       viewMode={viewMode}
       currentDrill={currentDrill}
+      isLoadingDrill={isLoadingDrill}
       drillNotFound={drillNotFound}
       currentProblemIndex={currentProblemIndex}
       theme={theme}
@@ -310,9 +334,26 @@ export const StudioClient: React.FC<StudioClientProps> = ({
             );
             const totalTimerMs = getDrillTotalMs(currentDrill.problems, timerState, timerNow);
 
+            const reviewContext = isMissedReviewLink ? (
+              <div role="note" className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 px-4 py-3">
+                <p className="text-sm text-zinc-700 dark:text-zinc-300">You missed this in today&apos;s review</p>
+                {!reviewRetryStarted && (
+                  <button
+                    type="button"
+                    onClick={handleReviewRetry}
+                    className="inline-flex min-h-[36px] items-center rounded-lg border border-zinc-300 dark:border-zinc-700 px-3 text-xs font-medium text-zinc-800 dark:text-zinc-200 hover:bg-white dark:hover:bg-zinc-800"
+                  >
+                    Try again
+                  </button>
+                )}
+              </div>
+            ) : null;
+
             if (workspace === "math") {
               return (
-                <MathWorkspace
+                <>
+                  {reviewContext}
+                  <MathWorkspace
                   key={prob.id}
                   problem={prob}
                   drillId={currentDrill.drillId}
@@ -346,12 +387,15 @@ export const StudioClient: React.FC<StudioClientProps> = ({
                   totalTimerMs={totalTimerMs}
                   isTimerPaused={timerState.paused}
                   onToggleTimerPause={handleToggleTimerPause}
-                />
+                  />
+                </>
               );
             }
 
             return (
-              <CodeDashboard
+              <>
+                {reviewContext}
+                <CodeDashboard
                 key={prob.id}
                 problem={prob}
                 drillId={currentDrill.drillId}
@@ -382,7 +426,8 @@ export const StudioClient: React.FC<StudioClientProps> = ({
                 totalTimerMs={totalTimerMs}
                 isTimerPaused={timerState.paused}
                 onToggleTimerPause={handleToggleTimerPause}
-              />
+                />
+              </>
             );
           })()}
         </m.div>

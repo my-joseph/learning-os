@@ -13,7 +13,9 @@ import {
 import { redactProblemForReview } from "@/lib/redact";
 import { hasSubstantiveAttempt, isSubstantiveVerdict } from "@/lib/reviewGuard";
 import type { ReviewItem } from "@/lib/reviewItems";
+import { drillHref } from "@/lib/routes";
 import { TelemetryTimerState } from "@/lib/telemetryTimer";
+import { plainTitle } from "@/lib/titleText";
 
 export const CLIENT_REVIEW_INTERVALS: Record<number, number> = {
   1: 1,
@@ -77,6 +79,8 @@ export interface ReviewSessionItemOutcome {
   hintsUsed: number;
   dueDate: string;
   commonTrapTag?: string | null;
+  skipped?: boolean;
+  correctOnRetry?: boolean;
 }
 
 export interface ReviewSessionSummary {
@@ -88,7 +92,87 @@ export interface ReviewSessionSummary {
   nextDueDate: string | null;
 }
 
+export const REVIEW_BATCH_SIZE = 8;
+
+export interface MissedReviewItem {
+  drillId: string;
+  qid: string;
+  unitCode: string;
+  unitTitle: string;
+  href: string;
+  questionLine: string;
+  group: "Missed" | "Skipped" | "Correct on retry";
+}
+
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+/** Return signed calendar day difference `toDate - fromDate`, or null when either date is invalid. */
+export function daysBetweenDates(
+  fromDate?: string | null,
+  toDate?: string | null
+): number | null {
+  if (typeof fromDate !== "string" || typeof toDate !== "string") return null;
+  const a = fromDate.trim().slice(0, 10);
+  const b = toDate.trim().slice(0, 10);
+  if (!DATE_RE.test(a) || !DATE_RE.test(b)) return null;
+  const [ay, am, ad] = a.split("-").map((x) => parseInt(x, 10));
+  const [by, bm, bd] = b.split("-").map((x) => parseInt(x, 10));
+  const utcA = Date.UTC(ay, am - 1, ad);
+  const utcB = Date.UTC(by, bm - 1, bd);
+  return Math.round((utcB - utcA) / 86_400_000);
+}
+
+/** Plain-language scheduling suffix for the `/review` result card ("next in N days" / "back tomorrow"). */
+export function formatReviewScheduleHint(
+  outcome: Pick<ReviewSessionItemOutcome, "correct" | "newLevel" | "dueDate"> | null | undefined,
+  today?: string | null
+): string | null {
+  if (!outcome) return null;
+  if (!outcome.correct) {
+    return "back tomorrow";
+  }
+  const diff = daysBetweenDates(today, outcome.dueDate);
+  const days =
+    diff !== null && diff >= 1
+      ? diff
+      : CLIENT_REVIEW_INTERVALS[outcome.newLevel] ?? 1;
+  return days === 1 ? "next in 1 day" : `next in ${days} days`;
+}
+
+/** Collect all missed (wrong or skipped) items from a completed review batch with deep links. */
+export function getMissedReviewItems(
+  items: ReadonlyArray<Pick<ReviewItem, "drillId" | "qid" | "unitCode">>,
+  outcomes: Record<string, ReviewSessionItemOutcome>,
+  unitTitles?: Record<string, string>,
+  prompts?: Record<string, string>
+): MissedReviewItem[] {
+  const missed: MissedReviewItem[] = [];
+  for (const item of items) {
+    const key = reviewItemKey(item.drillId, item.qid);
+    const outcome = outcomes[key];
+    if (!outcome || (outcome.correct && !outcome.correctOnRetry)) continue;
+    const rawTitle = unitTitles?.[item.unitCode] || item.unitCode;
+    const firstLine = (prompts?.[key] || "").split(/\r?\n/, 1)[0];
+    missed.push({
+      drillId: item.drillId,
+      qid: item.qid,
+      unitCode: item.unitCode,
+      unitTitle: plainTitle(rawTitle) || item.unitCode,
+      href: drillHref(item.drillId, item.qid),
+      questionLine: firstLine
+        .replace(/```[\s\S]*?```/g, " ")
+        .replace(/[`*_~#]/g, "")
+        .replace(/\$+/g, "")
+        .replace(/\\([a-zA-Z]+)/g, "$1")
+        .replace(/[{}]/g, "")
+        .replace(/\s+/g, " ")
+        .trim()
+        .slice(0, 100),
+      group: outcome.correctOnRetry ? "Correct on retry" : outcome.skipped ? "Skipped" : "Missed",
+    });
+  }
+  return missed;
+}
 
 /**
  * Ensure an unattempted review problem never exposes answers, steps, display, solutionCode,
@@ -358,6 +442,10 @@ export async function executeReviewItemCheck(params: {
     };
   }
 
+  if (existingOutcome && transition.result.verdict === "correct") {
+    outcome = { ...existingOutcome, correctOnRetry: true };
+  }
+
   await saveReviewProblemState(
     drillDoc.drillId,
     item.unitCode || drillDoc.unitCode,
@@ -390,7 +478,7 @@ export async function executeReviewItemCheck(params: {
 
 /**
  * Full skip wiring for a Daily Review item:
- * applies skip state, saves to `/api/save-state` (`reviewMerge: true`), reveals steps,
+ * applies skip state, saves to `/api/save-state` (`reviewMerge: true`), keeps steps hidden,
  * and records `correct: false` via `POST /api/review-items`.
  */
 export async function executeReviewItemSkip(params: {
@@ -426,7 +514,7 @@ export async function executeReviewItemSkip(params: {
   );
   if (!transition) return null;
 
-  let updatedDoc = transition.updatedDoc;
+  const updatedDoc = transition.updatedDoc;
   const updatedProb = updatedDoc.problems.find((p) => p.id === item.qid);
 
   let outcome = existingOutcome;
@@ -478,6 +566,7 @@ export async function executeReviewItemSkip(params: {
       hintsUsed,
       dueDate,
       commonTrapTag,
+      skipped: true,
     };
   }
 
@@ -489,20 +578,6 @@ export async function executeReviewItemSkip(params: {
       updatedProb.state,
       fetchFn
     );
-  }
-
-  if (transition.partsToReveal.length > 0) {
-    const patch = await fetchRevealedParts(
-      drillDoc.drillId,
-      item.qid,
-      transition.partsToReveal,
-      fetchFn
-    );
-    if (Object.keys(patch).length > 0) {
-      updatedDoc =
-        mergeRevealedPatchIntoDrill(updatedDoc, drillDoc.drillId, item.qid, patch) ??
-        updatedDoc;
-    }
   }
 
   return {

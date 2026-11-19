@@ -41,12 +41,18 @@ export interface MathItemViewProps {
   mistakeTags: MistakeTag[];
   activeStep: number | null;
   isLastQuestion?: boolean;
+  isReviewSession?: boolean;
+  useSessionInputMode?: boolean;
+  isCorrectOnRetry?: boolean;
+  reviewScheduleNote?: string | null;
+  skipLabel?: string;
   nextLabel?: string;
   backLabel?: string;
   resultTitleOverride?: string;
   resultSecondaryActions?: ResultCardSecondaryAction[];
   autoFocusPrimaryAction?: boolean;
   autoRevealOnCorrect?: boolean;
+  autoRevealOnSkip?: boolean;
   loadingSteps?: boolean;
   ariaLabel?: string;
   choiceKeyboardEnabled?: boolean;
@@ -83,12 +89,18 @@ export const MathItemView = forwardRef<MathItemViewHandle, MathItemViewProps>(
       mistakeTags,
       activeStep,
       isLastQuestion = false,
+      isReviewSession = false,
+      useSessionInputMode,
+      isCorrectOnRetry = false,
+      reviewScheduleNote = null,
+      skipLabel = "Skip",
       nextLabel = "Next question",
       backLabel,
       resultTitleOverride,
       resultSecondaryActions,
       autoFocusPrimaryAction = false,
       autoRevealOnCorrect = true,
+      autoRevealOnSkip,
       loadingSteps = false,
       ariaLabel,
       choiceKeyboardEnabled = true,
@@ -111,9 +123,11 @@ export const MathItemView = forwardRef<MathItemViewHandle, MathItemViewProps>(
     },
     ref
   ) {
+    const allowAutoRevealOnSkip = autoRevealOnSkip ?? !isReviewSession;
     const shouldAutoReveal = (p: Problem) =>
       autoRevealOnCorrect &&
-      (p.state.lastCheck?.verdict === "correct" || Boolean(p.state.skipped));
+      (p.state.lastCheck?.verdict === "correct" ||
+        (allowAutoRevealOnSkip && Boolean(p.state.skipped)));
 
     const [copied, setCopied] = useState(false);
     const [showHint, setShowHint] = useState(false);
@@ -161,11 +175,47 @@ export const MathItemView = forwardRef<MathItemViewHandle, MathItemViewProps>(
     useEffect(() => {
       const reveal =
         autoRevealOnCorrect &&
-        (problem.state.lastCheck?.verdict === "correct" || Boolean(problem.state.skipped));
+        (problem.state.lastCheck?.verdict === "correct" ||
+          (allowAutoRevealOnSkip && Boolean(problem.state.skipped)));
       setShowSolution(reveal);
       setShowSetup(reveal);
       setShowHint(false);
-    }, [autoRevealOnCorrect, problem.id, problem.state.lastCheck?.verdict, problem.state.skipped]);
+    }, [
+      autoRevealOnCorrect,
+      allowAutoRevealOnSkip,
+      problem.id,
+      problem.state.lastCheck?.verdict,
+      problem.state.skipped,
+    ]);
+
+    useEffect(() => {
+      if (!isReviewSession || !hasAttempt) return;
+      let secondFrame: number | null = null;
+      const firstFrame = requestAnimationFrame(() => {
+        const btn = document.querySelector<HTMLButtonElement>(
+          '[data-review-primary-action="true"]'
+        );
+        if (btn) {
+          btn.focus();
+          return;
+        }
+        secondFrame = requestAnimationFrame(() => {
+          document
+            .querySelector<HTMLButtonElement>('[data-review-primary-action="true"]')
+            ?.focus();
+        });
+      });
+      return () => {
+        cancelAnimationFrame(firstFrame);
+        if (secondFrame !== null) cancelAnimationFrame(secondFrame);
+      };
+    }, [
+      isReviewSession,
+      hasAttempt,
+      problem.id,
+      problem.state.lastCheck?.verdict,
+      problem.state.attempts?.length,
+    ]);
 
     useEffect(() => {
       onStepsOpenChange?.(showSolution);
@@ -296,6 +346,8 @@ export const MathItemView = forwardRef<MathItemViewHandle, MathItemViewProps>(
             choiceLocked={choiceLocked}
             checkingOptionId={checkingOptionId}
             choiceResultStatus={choiceResultStatus}
+            useSessionInputMode={useSessionInputMode ?? isReviewSession}
+            autoFocusOnMount={isReviewSession && !hasAttempt}
             onSelectChoice={(optId) => void handleChoiceSelect(optId)}
             onChange={onInputChange}
             onCheck={(override) => void triggerCheck(override)}
@@ -308,7 +360,10 @@ export const MathItemView = forwardRef<MathItemViewHandle, MathItemViewProps>(
             problem={problem}
             mistakeTags={mistakeTags}
             isLastQuestion={isLastQuestion}
+            isReviewSession={isReviewSession}
+            isCorrectOnRetry={isCorrectOnRetry}
             nextLabel={nextLabel}
+            scheduleNote={isReviewSession ? reviewScheduleNote : null}
             backLabel={backLabel}
             titleOverride={resultTitleOverride}
             autoFocusPrimaryAction={autoFocusPrimaryAction}
@@ -360,15 +415,18 @@ export const MathItemView = forwardRef<MathItemViewHandle, MathItemViewProps>(
           onSkip={
             onSkip
               ? () => {
-                  if (!showHint && onHintRevealed) {
+                  if (allowAutoRevealOnSkip && !showHint && onHintRevealed) {
                     onHintRevealed();
                   }
-                  setShowHint(true);
-                  setShowSolution(true);
+                  if (allowAutoRevealOnSkip) {
+                    setShowHint(true);
+                    setShowSolution(true);
+                  }
                   onSkip();
                 }
               : undefined
           }
+          skipLabel={skipLabel}
           hasSetup={hasSetup}
           showSetup={showSetup}
           setupUnopenedUnattempted={setupUnopenedUnattempted}
