@@ -11,7 +11,7 @@ from typing import Any
 
 from math_engine.answer_check import TRAP_VERDICTS, check_answer, match_trap
 from math_engine.figure_svg import figure_to_svg
-from progress_store import apply_progress, progress_root, save_progress, workspace_root
+from progress_store import apply_progress, progress_root, save_progress, score_problem, workspace_root
 
 
 def _repo_root() -> Path:
@@ -124,21 +124,18 @@ def _record_answer(doc: dict[str, Any], qid: str, raw: str) -> dict[str, Any]:
         result["trapMatched"] = True
 
     attempts = list(state.get("attempts") or [])
+    cycle_start = state.get("cycleStartedAt")
+    already_correct = any(
+        isinstance(a, dict)
+        and a.get("kind") != "variant"
+        and a.get("verdict") == "correct"
+        and (not cycle_start or (isinstance(a.get("ts"), str) and a["ts"] >= cycle_start))
+        for a in attempts
+    )
+    if already_correct:
+        return state.get("lastCheck") or result
+
     mistakes = set(state.get("mistakes") or [])
-    hints_count = state.get("hintsRevealed", 0)
-    if result["verdict"] == "correct":
-        prior_wrong = any(a.get("verdict") not in ("correct", "invalid input", "parse_error") for a in attempts)
-        assisted = bool(
-            state.get("setupRevealedBeforeAnswer")
-            or state.get("solutionRevealedBeforeAnswer")
-            or hints_count > 0
-            or any(a.get("setupRevealed") or a.get("solutionRevealed") for a in attempts)
-        )
-        state["score"] = 0.5 if assisted or prior_wrong else 1
-    elif result["verdict"] in ("equivalent_not_in_form", "partial"):
-        state["score"] = 0.5
-    elif result["verdict"] == "incorrect":
-        state["score"] = 0
 
     matched_tag = None
     diag_codes = [d.get("code") for d in result.get("diagnostics", [])]
@@ -177,15 +174,17 @@ def _record_answer(doc: dict[str, Any], qid: str, raw: str) -> dict[str, Any]:
         attempt["setupRevealed"] = True
     if state.get("solutionRevealedBeforeAnswer"):
         attempt["solutionRevealed"] = True
+    substantive = result["verdict"] not in ("invalid input", "parse_error")
     state.update(
         {
             "userInput": trimmed,
-            "skipped": False,
+            "skipped": False if substantive else bool(state.get("skipped")),
             "mistakes": sorted(mistakes),
             "lastCheck": result,
             "attempts": [*attempts, attempt],
         }
     )
+    state["score"] = score_problem(state, ignore_state_score=True)["score"]
     doc["sessionSummary"] = _summary(doc)
     _save(doc)
     print(json.dumps(result, ensure_ascii=False))

@@ -1,0 +1,448 @@
+{
+  "description": "Shared canonical scoring & classification fixtures consumed by both pytest (tests/test_scoring_parity.py) and Practice Studio (practice-studio/tests/scoringParity.test.ts).",
+  "cases": [
+    {
+      "id": "math-untouched",
+      "state": { "userInput": "", "score": null, "attempts": [] },
+      "expected": { "score": null, "outcome": "notTried", "firstTry": false, "usedHelp": false, "awaitingReview": false }
+    },
+    {
+      "id": "math-draft-input-only",
+      "state": { "userInput": "42", "score": null, "attempts": [] },
+      "expected": { "score": null, "outcome": "notTried", "firstTry": false, "usedHelp": false, "awaitingReview": false }
+    },
+    {
+      "id": "math-parse-error-only",
+      "state": {
+        "userInput": "(((",
+        "score": null,
+        "lastCheck": { "verdict": "invalid input", "message": "Bad", "components": [], "diagnostics": [] },
+        "attempts": [{ "input": "(((", "ts": "2026-11-20T10:00:00Z", "verdict": "invalid input" }]
+      },
+      "expected": { "score": null, "outcome": "notTried", "firstTry": false, "usedHelp": false, "awaitingReview": false }
+    },
+    {
+      "id": "math-help-hint-unanswered",
+      "state": { "hintsRevealed": 1, "score": null, "attempts": [] },
+      "expected": { "score": null, "outcome": "notTried", "firstTry": false, "usedHelp": true, "awaitingReview": false }
+    },
+    {
+      "id": "math-help-setup-unanswered",
+      "state": { "setupRevealedBeforeAnswer": true, "score": null, "attempts": [] },
+      "expected": { "score": null, "outcome": "notTried", "firstTry": false, "usedHelp": true, "awaitingReview": false }
+    },
+    {
+      "id": "math-help-steps-unanswered",
+      "state": { "solutionRevealedBeforeAnswer": true, "score": null, "attempts": [] },
+      "expected": { "score": null, "outcome": "notTried", "firstTry": false, "usedHelp": true, "awaitingReview": false }
+    },
+    {
+      "id": "math-help-example-unanswered",
+      "state": { "exampleViewedAt": "2026-11-20T10:00:00Z", "score": null, "attempts": [] },
+      "expected": { "score": null, "outcome": "notTried", "firstTry": false, "usedHelp": true, "awaitingReview": false }
+    },
+    {
+      "id": "math-first-try-correct",
+      "state": {
+        "score": 1,
+        "attempts": [{ "input": "5", "ts": "2026-11-20T10:00:00Z", "verdict": "correct" }]
+      },
+      "expected": { "score": 1, "outcome": "correct", "firstTry": true, "usedHelp": false, "awaitingReview": false }
+    },
+    {
+      "id": "math-parse-error-then-first-try-correct",
+      "state": {
+        "score": 1,
+        "attempts": [
+          { "input": "((", "ts": "2026-11-20T10:00:00Z", "verdict": "invalid input" },
+          { "input": "2x+", "ts": "2026-11-20T10:00:05Z", "verdict": "parse_error" },
+          { "input": "5", "ts": "2026-11-20T10:00:10Z", "verdict": "correct" }
+        ]
+      },
+      "expected": { "score": 1, "outcome": "correct", "firstTry": true, "usedHelp": false, "awaitingReview": false }
+    },
+    {
+      "id": "math-wrong-then-correct",
+      "state": {
+        "score": 0.5,
+        "attempts": [
+          { "input": "4", "ts": "2026-11-20T10:00:00Z", "verdict": "incorrect" },
+          { "input": "5", "ts": "2026-11-20T10:01:00Z", "verdict": "correct" }
+        ]
+      },
+      "expected": { "score": 0.5, "outcome": "assisted", "firstTry": false, "usedHelp": false, "awaitingReview": false }
+    },
+    {
+      "id": "math-partial-then-correct",
+      "state": {
+        "score": 0.5,
+        "attempts": [
+          { "input": "2/4", "ts": "2026-11-20T10:00:00Z", "verdict": "equivalent_not_in_form" },
+          { "input": "1/2", "ts": "2026-11-20T10:01:00Z", "verdict": "correct" }
+        ]
+      },
+      "expected": { "score": 0.5, "outcome": "assisted", "firstTry": false, "usedHelp": false, "awaitingReview": false }
+    },
+    {
+      "id": "math-hint-then-correct",
+      "state": {
+        "hintsRevealed": 1,
+        "score": 0.5,
+        "attempts": [{ "input": "5", "ts": "2026-11-20T10:00:00Z", "verdict": "correct" }]
+      },
+      "expected": { "score": 0.5, "outcome": "assisted", "firstTry": false, "usedHelp": true, "awaitingReview": false }
+    },
+    {
+      "id": "math-setup-then-correct",
+      "state": {
+        "setupRevealedBeforeAnswer": true,
+        "score": 1,
+        "attempts": [{ "input": "5", "ts": "2026-11-20T10:00:00Z", "verdict": "correct", "setupRevealed": true }]
+      },
+      "expected": { "score": 0.5, "outcome": "assisted", "firstTry": false, "usedHelp": true, "awaitingReview": false }
+    },
+    {
+      "id": "math-steps-then-correct",
+      "state": {
+        "solutionRevealedBeforeAnswer": true,
+        "score": 0.5,
+        "attempts": [{ "input": "5", "ts": "2026-11-20T10:00:00Z", "verdict": "correct", "solutionRevealed": true }]
+      },
+      "expected": { "score": 0.5, "outcome": "assisted", "firstTry": false, "usedHelp": true, "awaitingReview": false }
+    },
+    {
+      "id": "math-worked-example-then-correct",
+      "state": {
+        "exampleViewedAt": "2026-11-20T09:59:00Z",
+        "score": 0.5,
+        "attempts": [{ "input": "5", "ts": "2026-11-20T10:00:00Z", "verdict": "correct", "exampleViewed": true }]
+      },
+      "expected": { "score": 0.5, "outcome": "assisted", "firstTry": false, "usedHelp": true, "awaitingReview": false }
+    },
+    {
+      "id": "math-partial-only",
+      "state": {
+        "score": 0.5,
+        "attempts": [{ "input": "x=2", "ts": "2026-11-20T10:00:00Z", "verdict": "partial" }]
+      },
+      "expected": { "score": 0.5, "outcome": "assisted", "firstTry": false, "usedHelp": false, "awaitingReview": false }
+    },
+    {
+      "id": "math-equivalent-not-in-form-only",
+      "state": {
+        "score": 0.5,
+        "attempts": [{ "input": "2/4", "ts": "2026-11-20T10:00:00Z", "verdict": "equivalent_not_in_form" }]
+      },
+      "expected": { "score": 0.5, "outcome": "assisted", "firstTry": false, "usedHelp": false, "awaitingReview": false }
+    },
+    {
+      "id": "math-partial-then-wrong",
+      "state": {
+        "score": 0,
+        "attempts": [
+          { "input": "x=2", "ts": "2026-11-20T10:00:00Z", "verdict": "partial" },
+          { "input": "x=9", "ts": "2026-11-20T10:01:00Z", "verdict": "incorrect" }
+        ]
+      },
+      "expected": { "score": 0, "outcome": "wrong", "firstTry": false, "usedHelp": false, "awaitingReview": false }
+    },
+    {
+      "id": "math-wrong-only",
+      "state": {
+        "score": 0,
+        "attempts": [{ "input": "4", "ts": "2026-11-20T10:00:00Z", "verdict": "incorrect" }]
+      },
+      "expected": { "score": 0, "outcome": "wrong", "firstTry": false, "usedHelp": false, "awaitingReview": false }
+    },
+    {
+      "id": "math-skipped",
+      "state": {
+        "skipped": true,
+        "score": 0,
+        "attempts": [{ "input": "(Skipped)", "ts": "2026-11-20T10:00:00Z", "verdict": "skipped" }]
+      },
+      "expected": { "score": 0, "outcome": "skipped", "firstTry": false, "usedHelp": false, "awaitingReview": false }
+    },
+    {
+      "id": "math-legacy-correct-then-incorrect-locked",
+      "state": {
+        "score": null,
+        "attempts": [
+          { "input": "5", "ts": "2026-11-20T10:00:00Z", "verdict": "correct" },
+          { "input": "4", "ts": "2026-11-20T10:01:00Z", "verdict": "incorrect" }
+        ]
+      },
+      "expected": { "score": 1, "outcome": "correct", "firstTry": true, "usedHelp": false, "awaitingReview": false }
+    },
+    {
+      "id": "math-self-score-lowers-1-to-half",
+      "state": {
+        "score": 0.5,
+        "attempts": [{ "input": "5", "ts": "2026-11-20T10:00:00Z", "verdict": "correct" }]
+      },
+      "expected": { "score": 0.5, "outcome": "assisted", "firstTry": false, "usedHelp": false, "awaitingReview": false }
+    },
+    {
+      "id": "math-self-score-lowers-1-to-0",
+      "state": {
+        "score": 0,
+        "attempts": [{ "input": "5", "ts": "2026-11-20T10:00:00Z", "verdict": "correct" }]
+      },
+      "expected": { "score": 0, "outcome": "wrong", "firstTry": false, "usedHelp": false, "awaitingReview": false }
+    },
+    {
+      "id": "math-self-score-lowers-half-to-0",
+      "state": {
+        "score": 0,
+        "attempts": [
+          { "input": "4", "ts": "2026-11-20T10:00:00Z", "verdict": "incorrect" },
+          { "input": "5", "ts": "2026-11-20T10:01:00Z", "verdict": "correct" }
+        ]
+      },
+      "expected": { "score": 0, "outcome": "wrong", "firstTry": false, "usedHelp": false, "awaitingReview": false }
+    },
+    {
+      "id": "math-self-score-cannot-raise-wrong",
+      "state": {
+        "score": 1,
+        "attempts": [{ "input": "4", "ts": "2026-11-20T10:00:00Z", "verdict": "incorrect" }]
+      },
+      "expected": { "score": 0, "outcome": "wrong", "firstTry": false, "usedHelp": false, "awaitingReview": false }
+    },
+    {
+      "id": "math-self-score-cannot-raise-retry-to-1",
+      "state": {
+        "score": 1,
+        "attempts": [
+          { "input": "4", "ts": "2026-11-20T10:00:00Z", "verdict": "incorrect" },
+          { "input": "5", "ts": "2026-11-20T10:01:00Z", "verdict": "correct" }
+        ]
+      },
+      "expected": { "score": 0.5, "outcome": "assisted", "firstTry": false, "usedHelp": false, "awaitingReview": false }
+    },
+    {
+      "id": "math-self-score-cannot-raise-or-clear-skipped",
+      "state": { "skipped": true, "score": 1 },
+      "expected": { "score": 0, "outcome": "skipped", "firstTry": false, "usedHelp": false, "awaitingReview": false }
+    },
+    {
+      "id": "math-unverified-manual-self-score-1",
+      "state": { "score": 1, "attempts": [] },
+      "expected": { "score": 1, "outcome": "correct", "firstTry": true, "usedHelp": false, "awaitingReview": false }
+    },
+    {
+      "id": "math-unverified-manual-self-score-1-with-help-capped",
+      "state": { "score": 1, "hintsRevealed": 1, "attempts": [] },
+      "expected": { "score": 0.5, "outcome": "assisted", "firstTry": false, "usedHelp": true, "awaitingReview": false }
+    },
+    {
+      "id": "math-diverged-step-on-unattempted-stays-not-tried",
+      "state": { "divergedStep": 1, "score": null, "solutionRevealedBeforeAnswer": true, "attempts": [] },
+      "expected": { "score": null, "outcome": "notTried", "firstTry": false, "usedHelp": true, "awaitingReview": false }
+    },
+    {
+      "id": "math-diverged-step-on-first-try-correct-keeps-1",
+      "state": {
+        "divergedStep": 0,
+        "score": 1,
+        "attempts": [{ "input": "5", "ts": "2026-11-20T10:00:00Z", "verdict": "correct" }]
+      },
+      "expected": { "score": 1, "outcome": "correct", "firstTry": true, "usedHelp": false, "awaitingReview": false }
+    },
+    {
+      "id": "prg-tests-pass-no-review-awaiting",
+      "opts": { "isPrg": true },
+      "state": {
+        "score": 1,
+        "lastTestReport": { "allPassed": true, "passedCount": 4, "totalCount": 4 },
+        "reviews": []
+      },
+      "expected": { "score": null, "outcome": "notTried", "firstTry": false, "usedHelp": false, "awaitingReview": true }
+    },
+    {
+      "id": "prg-tests-fail-no-review",
+      "opts": { "isPrg": true },
+      "state": {
+        "lastTestReport": { "allPassed": false, "passedCount": 2, "totalCount": 4 },
+        "reviews": []
+      },
+      "expected": { "score": 0, "outcome": "wrong", "firstTry": false, "usedHelp": false, "awaitingReview": false }
+    },
+    {
+      "id": "prg-first-pass-clean-with-test-report",
+      "opts": { "isPrg": true },
+      "state": {
+        "lastTestReport": { "allPassed": true, "passedCount": 4, "totalCount": 4, "ts": "2026-11-20T10:00:00Z" },
+        "testRuns": [{ "ts": "2026-11-20T10:00:00Z", "allPassed": true }],
+        "reviews": [{ "at": "2026-11-20T10:05:00Z", "verdict": "pass", "tests": { "passed": 4, "total": 4, "failed": [] } }]
+      },
+      "expected": { "score": 1, "outcome": "correct", "firstTry": true, "usedHelp": false, "awaitingReview": false }
+    },
+    {
+      "id": "prg-review-record-pass-without-last-test-report",
+      "opts": { "isPrg": true },
+      "state": {
+        "score": null,
+        "lastTestReport": null,
+        "reviews": [{ "at": "2026-11-20T10:05:00Z", "verdict": "pass", "tests": { "passed": 3, "total": 3, "failed": [] } }]
+      },
+      "expected": { "score": 1, "outcome": "correct", "firstTry": true, "usedHelp": false, "awaitingReview": false }
+    },
+    {
+      "id": "prg-pass-with-hint-scores-half",
+      "opts": { "isPrg": true },
+      "state": {
+        "hintsRevealed": 1,
+        "lastTestReport": { "allPassed": true, "passedCount": 3, "totalCount": 3 },
+        "reviews": [{ "at": "2026-11-20T10:05:00Z", "verdict": "pass", "tests": { "passed": 3, "total": 3, "failed": [] } }]
+      },
+      "expected": { "score": 0.5, "outcome": "assisted", "firstTry": false, "usedHelp": true, "awaitingReview": false }
+    },
+    {
+      "id": "prg-pass-after-earlier-failed-test-run-scores-half",
+      "opts": { "isPrg": true },
+      "state": {
+        "lastTestReport": { "allPassed": true, "passedCount": 3, "totalCount": 3, "ts": "2026-11-20T10:04:00Z" },
+        "testRuns": [
+          { "ts": "2026-11-20T10:00:00Z", "allPassed": false },
+          { "ts": "2026-11-20T10:04:00Z", "allPassed": true }
+        ],
+        "reviews": [{ "at": "2026-11-20T10:05:00Z", "verdict": "pass", "tests": { "passed": 3, "total": 3, "failed": [] } }]
+      },
+      "expected": { "score": 0.5, "outcome": "assisted", "firstTry": false, "usedHelp": false, "awaitingReview": false }
+    },
+    {
+      "id": "prg-pass-after-revise-scores-half",
+      "opts": { "isPrg": true },
+      "state": {
+        "lastTestReport": { "allPassed": true, "passedCount": 3, "totalCount": 3 },
+        "reviews": [
+          { "at": "2026-11-20T10:00:00Z", "verdict": "revise", "tests": { "passed": 3, "total": 3, "failed": [] } },
+          { "at": "2026-11-20T10:10:00Z", "verdict": "pass", "tests": { "passed": 3, "total": 3, "failed": [] } }
+        ]
+      },
+      "expected": { "score": 0.5, "outcome": "assisted", "firstTry": false, "usedHelp": false, "awaitingReview": false }
+    },
+    {
+      "id": "prg-revise-only-scores-0",
+      "opts": { "isPrg": true },
+      "state": {
+        "lastTestReport": { "allPassed": true, "passedCount": 3, "totalCount": 3 },
+        "reviews": [{ "at": "2026-11-20T10:00:00Z", "verdict": "revise", "tests": { "passed": 3, "total": 3, "failed": [] } }]
+      },
+      "expected": { "score": 0, "outcome": "wrong", "firstTry": false, "usedHelp": false, "awaitingReview": false }
+    },
+    {
+      "id": "prg-pass-then-regressed-failing-tests",
+      "opts": { "isPrg": true },
+      "state": {
+        "reviews": [{ "at": "2026-11-20T10:00:00Z", "verdict": "pass", "tests": { "passed": 3, "total": 3, "failed": [] } }],
+        "lastTestReport": { "allPassed": false, "passedCount": 1, "totalCount": 3, "ts": "2026-11-20T10:15:00Z" }
+      },
+      "expected": { "score": 0, "outcome": "wrong", "firstTry": false, "usedHelp": false, "awaitingReview": false }
+    },
+    {
+      "id": "prg-older-failing-report-superseded-by-newer-pass-review",
+      "opts": { "isPrg": true },
+      "state": {
+        "lastTestReport": { "allPassed": false, "passedCount": 1, "totalCount": 3, "ts": "2026-11-20T10:00:00Z" },
+        "reviews": [{ "at": "2026-11-20T10:05:00Z", "verdict": "pass", "tests": { "passed": 3, "total": 3, "failed": [] } }]
+      },
+      "expected": { "score": 0.5, "outcome": "assisted", "firstTry": false, "usedHelp": false, "awaitingReview": false }
+    },
+    {
+      "id": "prg-in-browser-predict-output-uses-attempts",
+      "opts": { "isPrg": true },
+      "state": {
+        "score": 1,
+        "attempts": [{ "input": "42", "ts": "2026-11-20T10:00:00Z", "verdict": "correct" }]
+      },
+      "expected": { "score": 1, "outcome": "correct", "firstTry": true, "usedHelp": false, "awaitingReview": false }
+    },
+    {
+      "id": "cycle-prior-wrong-and-example-ignored-in-new-cycle",
+      "state": {
+        "cycleStartedAt": "2026-11-20T12:00:00Z",
+        "exampleViewedAt": "2026-11-19T10:00:00Z",
+        "score": 1,
+        "attempts": [
+          { "input": "4", "ts": "2026-11-19T09:55:00Z", "verdict": "incorrect", "setupRevealed": true },
+          { "input": "5", "ts": "2026-11-20T12:05:00Z", "verdict": "correct" }
+        ]
+      },
+      "expected": { "score": 1, "outcome": "correct", "firstTry": true, "usedHelp": false, "awaitingReview": false }
+    },
+    {
+      "id": "cycle-prior-skip-after-reset-is-not-tried",
+      "state": {
+        "skipped": true,
+        "score": 0,
+        "cycleStartedAt": "2026-11-20T12:00:00Z",
+        "attempts": [{ "input": "(Skipped)", "ts": "2026-11-19T10:00:00Z", "verdict": "skipped" }]
+      },
+      "expected": { "score": null, "outcome": "notTried", "firstTry": false, "usedHelp": false, "awaitingReview": false }
+    },
+    {
+      "id": "cycle-prior-prg-revise-ignored-in-new-cycle-clean-pass",
+      "opts": { "isPrg": true },
+      "state": {
+        "cycleStartedAt": "2026-11-20T12:00:00Z",
+        "testRuns": [{ "ts": "2026-11-19T10:00:00Z", "allPassed": false }],
+        "reviews": [
+          { "at": "2026-11-19T10:05:00Z", "verdict": "revise", "tests": { "passed": 2, "total": 3, "failed": ["t1"] } },
+          { "at": "2026-11-20T12:10:00Z", "verdict": "pass", "tests": { "passed": 3, "total": 3, "failed": [] } }
+        ]
+      },
+      "expected": { "score": 1, "outcome": "correct", "firstTry": true, "usedHelp": false, "awaitingReview": false }
+    },
+    {
+      "id": "cycle-prior-prg-pass-after-reset-is-not-tried",
+      "opts": { "isPrg": true },
+      "state": {
+        "cycleStartedAt": "2026-11-20T12:00:00Z",
+        "reviews": [{ "at": "2026-11-19T10:05:00Z", "verdict": "pass", "tests": { "passed": 3, "total": 3, "failed": [] } }]
+      },
+      "expected": { "score": null, "outcome": "notTried", "firstTry": false, "usedHelp": false, "awaitingReview": false }
+    },
+    {
+      "id": "variant-wrong-then-correct-scores-half-assisted",
+      "kind": "variant",
+      "cycleStartedAt": null,
+      "record": {
+        "role": "try",
+        "servedAt": "2026-11-20T10:00:00Z",
+        "attempts": [
+          { "input": "3", "ts": "2026-11-20T10:01:00Z", "verdict": "incorrect", "kind": "variant" },
+          { "input": "5", "ts": "2026-11-20T10:02:00Z", "verdict": "correct", "kind": "variant" }
+        ]
+      },
+      "expected": { "score": 0.5, "outcome": "assisted", "firstTry": false, "usedHelp": false }
+    },
+    {
+      "id": "variant-first-try-correct",
+      "kind": "variant",
+      "cycleStartedAt": null,
+      "record": {
+        "role": "try",
+        "servedAt": "2026-11-20T10:00:00Z",
+        "attempts": [
+          { "input": "5", "ts": "2026-11-20T10:01:00Z", "verdict": "correct", "kind": "variant" }
+        ]
+      },
+      "expected": { "score": 1, "outcome": "correct", "firstTry": true, "usedHelp": false }
+    },
+    {
+      "id": "variant-prior-cycle-help-ignored",
+      "kind": "variant",
+      "cycleStartedAt": "2026-11-20T12:00:00Z",
+      "record": {
+        "role": "try",
+        "servedAt": "2026-11-19T10:00:00Z",
+        "stepsRevealed": true,
+        "hintsRevealed": 2,
+        "attempts": []
+      },
+      "expected": { "score": null, "outcome": "notTried", "firstTry": false, "usedHelp": false }
+    }
+  ]
+}

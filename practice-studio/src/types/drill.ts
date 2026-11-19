@@ -174,6 +174,14 @@ export interface TestRunReport {
   hiddenTotal: number;
   executionTimeMs: number;
   rawOutput?: string;
+  ts?: string;
+}
+
+export interface TestRunRecord {
+  ts: string;
+  allPassed: boolean;
+  passedCount?: number;
+  totalCount?: number;
 }
 
 export interface AttemptRecord {
@@ -237,6 +245,7 @@ export interface ReviewTestsSummary {
 
 export interface ReviewRecord {
   at: string;
+  ts?: string;
   attempt: number;
   codeHash: string;
   code: string;
@@ -259,6 +268,7 @@ export interface ProblemState {
   skipped?: boolean;
   lastCheck?: CheckResult | null;
   lastTestReport?: TestRunReport | null;
+  testRuns?: TestRunRecord[];
   userCode?: string;
   attempts?: AttemptRecord[];
   reviews?: ReviewRecord[];

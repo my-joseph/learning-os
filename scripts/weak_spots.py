@@ -25,7 +25,7 @@ from dataclasses import dataclass, field
 from datetime import date, timedelta
 
 from code_engine.quality_checks import load_universal
-from progress_store import find_repo_root, item_score, progress_root
+from progress_store import find_repo_root, item_score, progress_root, score_problem
 from progress_store import labs_root as default_labs_root
 
 MIN_MATCHES = 2
@@ -75,14 +75,7 @@ def _first_ts(state: dict, fallback: str) -> str:
 
 
 def _is_assisted_state(state: dict) -> bool:
-    attempts = [a for a in (state.get("attempts") or []) if isinstance(a, dict) and a.get("kind") != "variant"]
-    return bool(
-        state.get("setupRevealedBeforeAnswer")
-        or state.get("solutionRevealedBeforeAnswer")
-        or state.get("exampleViewedAt")
-        or (state.get("hintsRevealed") or 0) > 0
-        or any(a.get("setupRevealed") or a.get("solutionRevealed") or a.get("exampleViewed") for a in attempts)
-    )
+    return bool(score_problem(state)["usedHelp"])
 
 
 def _collect_matched_traps(state: dict) -> list[str]:
@@ -101,21 +94,8 @@ def _collect_matched_traps(state: dict) -> list[str]:
 
 
 def _prg_item_score(state: dict) -> float:
-    if state.get("skipped"):
-        return 0.0
-    assisted = _is_assisted_state(state)
-    reviews = state.get("reviews") or []
-    if reviews:
-        if reviews[-1].get("verdict") == "pass":
-            raw = 1.0 if reviews[0].get("verdict") == "pass" else 0.5
-            return min(raw, 0.5) if assisted else raw
-        return 0.0
-    if state.get("lastTestReport") is not None or state.get("score") is not None:
-        return 0.0
-    if state.get("attempts"):
-        sc, _ = _item_score(state)
-        return sc
-    return -1.0
+    sc, _ = item_score(state, is_prg=True)
+    return sc
 
 
 _item_score = item_score
@@ -227,10 +207,11 @@ def load_items(
             raw_note = state.get("revisitNote")
             revisit_note = raw_note.strip() if isinstance(raw_note, str) and raw_note.strip() else None
             if is_prg:
-                score = _prg_item_score(state)
-                if score < 0:
+                scored = score_problem(state, is_prg=True)
+                if scored["score"] is None:
                     continue
-                assisted = _is_assisted_state(state)
+                score = float(scored["score"])
+                assisted = bool(scored["usedHelp"])
                 reviews = state.get("reviews") or []
                 sigs: list[str] = []
                 for r in reviews:
@@ -259,7 +240,7 @@ def load_items(
                         assisted=assisted,
                         matched=[],
                         subject="PRG",
-                        passed=bool(reviews and reviews[-1].get("verdict") == "pass") or (score == 1.0),
+                        passed=scored["outcome"] in ("correct", "assisted"),
                         signals=sigs,
                         applicable_checks=(
                             universal_ids | set(prob.get("qualityChecks") or [])

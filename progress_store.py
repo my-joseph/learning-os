@@ -173,6 +173,8 @@ def has_practice(drill_doc: dict[str, Any]) -> bool:
             or st.get("revisitNote")
             or st.get("userCode")
             or st.get("reviews")
+            or st.get("lastTestReport")
+            or st.get("testRuns")
         ):
             return True
         if (
@@ -248,35 +250,391 @@ def strip_progress(drill_doc: dict[str, Any]) -> dict[str, Any]:
 _NON_SUBSTANTIVE_VERDICTS = ("invalid input", "parse_error")
 
 
-def item_score(state: dict[str, Any]) -> tuple[float, bool]:
-    """Return (score, assisted) for a math problem state, matching Studio's applyCheckResult.
+def _is_in_cycle(ts: Any, cycle_started_at: str | None) -> bool:
+    """Return True when `ts` falls at or after `cycle_started_at` (absent boundary includes all history)."""
+    if not cycle_started_at:
+        return True
+    return isinstance(ts, str) and len(ts) > 0 and ts >= cycle_started_at
 
-    - Skipped -> (0.0, assisted)
-    - First substantive attempt is 'correct' and unassisted -> (1.0, False)
-    - Correct after a wrong/partial attempt or assisted -> (0.5, assisted)
-    - Otherwise -> (0.0, assisted), or (-1.0, assisted) if unattempted.
-    """
-    attempts = [a for a in (state.get("attempts") or []) if isinstance(a, dict) and a.get("kind") != "variant"]
-    assisted = bool(
-        state.get("setupRevealedBeforeAnswer")
+
+def _is_substantive_verdict(verdict: Any) -> bool:
+    return isinstance(verdict, str) and len(verdict) > 0 and verdict not in _NON_SUBSTANTIVE_VERDICTS
+
+
+def _finite_num(val: Any) -> float | None:
+    if isinstance(val, bool) or not isinstance(val, (int, float)):
+        return None
+    f = float(val)
+    if f != f or f in (float("inf"), float("-inf")):
+        return None
+    return f
+
+
+def _clamp_score_value(val: Any) -> float | None:
+    num = _finite_num(val)
+    if num is None:
+        return None
+    if num >= 1.0:
+        return 1.0
+    if num > 0.0:
+        return 0.5
+    return 0.0
+
+
+def _normalise_report(raw: Any, cycle_started_at: str | None) -> dict[str, Any]:
+    if not isinstance(raw, dict):
+        return {"hasData": False, "allPassed": False, "ts": None}
+    raw_ts = raw.get("ts")
+    ts = raw_ts.strip() if isinstance(raw_ts, str) and raw_ts.strip() else None
+    if ts and cycle_started_at and not _is_in_cycle(ts, cycle_started_at):
+        return {"hasData": False, "allPassed": False, "ts": None}
+
+    passed = _finite_num(raw.get("passedCount"))
+    if passed is None:
+        passed = _finite_num(raw.get("passed"))
+    total = _finite_num(raw.get("totalCount"))
+    if total is None:
+        total = _finite_num(raw.get("total"))
+    raw_failed = raw.get("failed")
+    failed_count = float(len(raw_failed)) if isinstance(raw_failed, list) else _finite_num(raw_failed)
+
+    all_passed = False
+    if isinstance(raw.get("allPassed"), bool):
+        all_passed = bool(raw["allPassed"]) and (total is None or total > 0)
+    elif passed is not None and total is not None:
+        all_passed = total > 0 and passed == total and (failed_count is None or failed_count == 0)
+
+    return {"hasData": True, "allPassed": all_passed, "ts": ts}
+
+
+def _review_ts(review: dict[str, Any]) -> str:
+    for key in ("at", "ts"):
+        val = review.get(key)
+        if isinstance(val, str) and val.strip():
+            return val.strip()
+    return ""
+
+
+def _review_tests_pass(review: dict[str, Any]) -> bool | None:
+    tests = review.get("tests")
+    if not isinstance(tests, dict):
+        return None
+    total = _finite_num(tests.get("total"))
+    if total is None:
+        return None
+    passed = _finite_num(tests.get("passed")) or 0.0
+    raw_failed = tests.get("failed")
+    failed_count = float(len(raw_failed)) if isinstance(raw_failed, list) else (_finite_num(raw_failed) or 0.0)
+    return total > 0 and passed == total and failed_count == 0
+
+
+def _extract_cycle_data(
+    state: dict[str, Any],
+    *,
+    test_report: dict[str, Any] | None = None,
+    has_test_report_override: bool = False,
+    cycle_started_at: str | None = None,
+    has_cycle_override: bool = False,
+    is_variant: bool = False,
+) -> dict[str, Any]:
+    raw_cycle = cycle_started_at if has_cycle_override else state.get("cycleStartedAt")
+    eff_cycle = raw_cycle if isinstance(raw_cycle, str) and raw_cycle else None
+
+    raw_attempts = state.get("attempts") if isinstance(state.get("attempts"), list) else []
+    all_orig_attempts = [a for a in raw_attempts if isinstance(a, dict) and (is_variant or a.get("kind") != "variant")]
+    cycle_atts = [a for a in all_orig_attempts if _is_in_cycle(a.get("ts"), eff_cycle)]
+    substantive_atts = [a for a in cycle_atts if _is_substantive_verdict(a.get("verdict"))]
+
+    raw_reviews = state.get("reviews") if isinstance(state.get("reviews"), list) else []
+    all_reviews = [r for r in raw_reviews if isinstance(r, dict) and r.get("verdict")]
+    cycle_revs = [r for r in all_reviews if _is_in_cycle(_review_ts(r), eff_cycle)]
+
+    raw_test_runs = state.get("testRuns") if isinstance(state.get("testRuns"), list) else []
+    all_test_runs = [tr for tr in raw_test_runs if isinstance(tr, dict)]
+    cycle_test_runs = [tr for tr in all_test_runs if _is_in_cycle(tr.get("ts"), eff_cycle)]
+
+    raw_report = test_report if has_test_report_override else state.get("lastTestReport")
+    report_info = _normalise_report(raw_report, eff_cycle)
+
+    example_viewed_in_cycle = bool(
+        state.get("exampleViewedAt") and _is_in_cycle(state.get("exampleViewedAt"), eff_cycle)
+    )
+    review_help_in_cycle = bool(
+        (state.get("reviewSetupRevealedAt") and _is_in_cycle(state.get("reviewSetupRevealedAt"), eff_cycle))
+        or (state.get("reviewStepsRevealedAt") and _is_in_cycle(state.get("reviewStepsRevealedAt"), eff_cycle))
+    )
+    hints_val = _finite_num(state.get("hintsRevealed")) or 0.0
+    used_help = bool(
+        hints_val > 0
+        or state.get("setupRevealedBeforeAnswer")
         or state.get("solutionRevealedBeforeAnswer")
-        or state.get("exampleViewedAt")
-        or (state.get("hintsRevealed") or 0) > 0
+        or example_viewed_in_cycle
+        or review_help_in_cycle
+        or any(a.get("setupRevealed") or a.get("solutionRevealed") or a.get("exampleViewed") for a in cycle_atts)
     )
-    assisted = assisted or any(
-        a.get("setupRevealed") or a.get("solutionRevealed") or a.get("exampleViewed") for a in attempts
+
+    has_prior_history = bool(all_orig_attempts or all_reviews or all_test_runs)
+    has_current_cycle_record = bool(cycle_atts or cycle_revs or cycle_test_runs or report_info["hasData"])
+    is_stale_prev_cycle = bool(eff_cycle and has_prior_history and not has_current_cycle_record)
+
+    return {
+        "cycleStartedAt": eff_cycle,
+        "allOrigAttempts": all_orig_attempts,
+        "cycleAtts": cycle_atts,
+        "substantiveAtts": substantive_atts,
+        "cycleRevs": cycle_revs,
+        "cycleTestRuns": cycle_test_runs,
+        "reportInfo": report_info,
+        "usedHelp": used_help,
+        "isStalePrevCycle": is_stale_prev_cycle,
+    }
+
+
+def _resolve_prg_latest_tests_status(
+    report_info: dict[str, Any],
+    cycle_revs: list[dict[str, Any]],
+    cycle_test_runs: list[dict[str, Any]],
+) -> str:
+    latest_rev = cycle_revs[-1] if cycle_revs else None
+    latest_rev_at = _review_ts(latest_rev) if latest_rev else ""
+    rev_test_pass = _review_tests_pass(latest_rev) if latest_rev else None
+
+    if report_info["hasData"] and latest_rev:
+        if report_info["ts"] and latest_rev_at and latest_rev_at > report_info["ts"] and rev_test_pass is not None:
+            return "pass" if rev_test_pass else "fail"
+        return "pass" if report_info["allPassed"] else "fail"
+    if report_info["hasData"]:
+        return "pass" if report_info["allPassed"] else "fail"
+    if latest_rev:
+        if rev_test_pass is not None:
+            return "pass" if rev_test_pass else "fail"
+        return "pass" if latest_rev.get("verdict") == "pass" else "unknown"
+    if cycle_test_runs:
+        return "pass" if cycle_test_runs[-1].get("allPassed") else "fail"
+    return "unknown"
+
+
+def _apply_lower_only_self_score(
+    auto_score: float,
+    auto_outcome: str,
+    first_try: bool,
+    used_help: bool,
+    state: dict[str, Any],
+    *,
+    ignore_state_score: bool,
+    is_variant: bool,
+) -> dict[str, Any]:
+    if ignore_state_score or is_variant:
+        return {"score": auto_score, "outcome": auto_outcome, "firstTry": first_try, "usedHelp": used_help}
+    self_score = _clamp_score_value(state.get("score"))
+    if self_score is not None and self_score < auto_score:
+        if self_score == 0.0:
+            return {"score": 0.0, "outcome": "wrong", "firstTry": False, "usedHelp": used_help}
+        return {"score": 0.5, "outcome": "assisted", "firstTry": False, "usedHelp": used_help}
+    return {"score": auto_score, "outcome": auto_outcome, "firstTry": first_try, "usedHelp": used_help}
+
+
+def score_problem(
+    state: dict[str, Any] | None,
+    *,
+    is_prg: bool = False,
+    test_report: dict[str, Any] | None = None,
+    has_test_report_override: bool = False,
+    cycle_started_at: str | None = None,
+    has_cycle_override: bool = False,
+    is_variant: bool = False,
+    ignore_state_score: bool = False,
+) -> dict[str, Any]:
+    """Canonical scoring & classification rule (exact parity with `practice-studio/src/lib/scoring.ts`).
+
+    Returns `{"score": 1.0 | 0.5 | 0.0 | None, "outcome": str, "firstTry": bool, "usedHelp": bool}`.
+    """
+    _ = is_prg  # PRG path is auto-detected from reviews/test reports/test runs; in-browser PRG uses attempts.
+    if not isinstance(state, dict):
+        return {"score": None, "outcome": "notTried", "firstTry": False, "usedHelp": False}
+
+    data = _extract_cycle_data(
+        state,
+        test_report=test_report,
+        has_test_report_override=has_test_report_override,
+        cycle_started_at=cycle_started_at,
+        has_cycle_override=has_cycle_override,
+        is_variant=is_variant,
     )
-    if state.get("skipped"):
-        return 0.0, assisted
-    substantive = [a for a in attempts if a.get("verdict") not in _NON_SUBSTANTIVE_VERDICTS]
-    if substantive:
-        first = substantive[0].get("verdict")
-        if first == "correct" and not assisted:
-            return 1.0, assisted
-        if any(a.get("verdict") in ("correct", "equivalent_not_in_form", "partial") for a in substantive):
-            return 0.5, assisted
-        return 0.0, assisted
-    score = state.get("score")
-    if score is None:
-        return -1.0, assisted  # not attempted
-    return (min(float(score), 0.5) if assisted else float(score)), assisted
+    substantive_atts = data["substantiveAtts"]
+    cycle_revs = data["cycleRevs"]
+    cycle_test_runs = data["cycleTestRuns"]
+    report_info = data["reportInfo"]
+    used_help = data["usedHelp"]
+
+    if data["isStalePrevCycle"]:
+        return {"score": None, "outcome": "notTried", "firstTry": False, "usedHelp": used_help}
+
+    if state.get("skipped") is True:
+        return {"score": 0.0, "outcome": "skipped", "firstTry": False, "usedHelp": used_help}
+
+    # PRG workspace / lab path: tests + code reviews.
+    has_prg_evidence = bool(cycle_revs or report_info["hasData"] or cycle_test_runs)
+    if has_prg_evidence:
+        latest_tests_status = _resolve_prg_latest_tests_status(report_info, cycle_revs, cycle_test_runs)
+        latest_rev = cycle_revs[-1] if cycle_revs else None
+
+        if latest_tests_status == "fail":
+            return {"score": 0.0, "outcome": "wrong", "firstTry": False, "usedHelp": used_help}
+        if not latest_rev:
+            return {"score": None, "outcome": "notTried", "firstTry": False, "usedHelp": used_help}
+        if latest_rev.get("verdict") != "pass":
+            return {"score": 0.0, "outcome": "wrong", "firstTry": False, "usedHelp": used_help}
+
+        had_earlier_revise = any(r.get("verdict") != "pass" for r in cycle_revs)
+        had_earlier_failed_test_run = (
+            any(not tr.get("allPassed") for tr in cycle_test_runs)
+            or (report_info["hasData"] and not report_info["allPassed"])
+            or any(_review_tests_pass(r) is False for r in cycle_revs)
+        )
+        if not used_help and not had_earlier_revise and not had_earlier_failed_test_run:
+            return {"score": 1.0, "outcome": "correct", "firstTry": True, "usedHelp": False}
+        return {"score": 0.5, "outcome": "assisted", "firstTry": False, "usedHelp": used_help}
+
+    # Math / choice / in-browser PRG path: substantive check attempts in current cycle.
+    if substantive_atts:
+        first_correct_idx = next((i for i, a in enumerate(substantive_atts) if a.get("verdict") == "correct"), -1)
+        if first_correct_idx == 0:
+            auto_score = 0.5 if used_help else 1.0
+            auto_outcome = "assisted" if used_help else "correct"
+            return _apply_lower_only_self_score(
+                auto_score,
+                auto_outcome,
+                not used_help,
+                used_help,
+                state,
+                ignore_state_score=ignore_state_score,
+                is_variant=is_variant,
+            )
+        if first_correct_idx > 0:
+            return _apply_lower_only_self_score(
+                0.5,
+                "assisted",
+                False,
+                used_help,
+                state,
+                ignore_state_score=ignore_state_score,
+                is_variant=is_variant,
+            )
+        latest_verdict = substantive_atts[-1].get("verdict")
+        if latest_verdict == "skipped":
+            return {"score": 0.0, "outcome": "skipped", "firstTry": False, "usedHelp": used_help}
+        if latest_verdict in ("partial", "equivalent_not_in_form"):
+            return _apply_lower_only_self_score(
+                0.5,
+                "assisted",
+                False,
+                used_help,
+                state,
+                ignore_state_score=ignore_state_score,
+                is_variant=is_variant,
+            )
+        return {"score": 0.0, "outcome": "wrong", "firstTry": False, "usedHelp": used_help}
+
+    # Fallback for lightweight state carrying a substantive `lastCheck` without `attempts[]`.
+    last_check = state.get("lastCheck")
+    if isinstance(last_check, dict) and _is_substantive_verdict(last_check.get("verdict")):
+        v = last_check.get("verdict")
+        if v == "skipped":
+            return {"score": 0.0, "outcome": "skipped", "firstTry": False, "usedHelp": used_help}
+        if v == "correct":
+            auto_score = 0.5 if used_help else 1.0
+            auto_outcome = "assisted" if used_help else "correct"
+            return _apply_lower_only_self_score(
+                auto_score,
+                auto_outcome,
+                not used_help,
+                used_help,
+                state,
+                ignore_state_score=ignore_state_score,
+                is_variant=is_variant,
+            )
+        if v in ("partial", "equivalent_not_in_form"):
+            return _apply_lower_only_self_score(
+                0.5,
+                "assisted",
+                False,
+                used_help,
+                state,
+                ignore_state_score=ignore_state_score,
+                is_variant=is_variant,
+            )
+        return {"score": 0.0, "outcome": "wrong", "firstTry": False, "usedHelp": used_help}
+
+    # Unverified item with manual self-score.
+    if not is_variant and not ignore_state_score:
+        manual = _clamp_score_value(state.get("score"))
+        if manual is not None:
+            if manual == 1.0:
+                if used_help:
+                    return {"score": 0.5, "outcome": "assisted", "firstTry": False, "usedHelp": True}
+                return {"score": 1.0, "outcome": "correct", "firstTry": True, "usedHelp": False}
+            if manual == 0.5:
+                return {"score": 0.5, "outcome": "assisted", "firstTry": False, "usedHelp": used_help}
+            return {"score": 0.0, "outcome": "wrong", "firstTry": False, "usedHelp": used_help}
+
+    return {"score": None, "outcome": "notTried", "firstTry": False, "usedHelp": used_help}
+
+
+def score_variant(record: dict[str, Any] | None, cycle_started_at: str | None = None) -> dict[str, Any]:
+    """Score a variant session record using the exact same rule as the main question."""
+    if not isinstance(record, dict):
+        return {"score": None, "outcome": "notTried", "firstTry": False, "usedHelp": False}
+    served_at = record.get("servedAt")
+    in_current_cycle = not cycle_started_at or (
+        isinstance(served_at, str) and len(served_at) > 0 and served_at >= cycle_started_at
+    )
+    adapted: dict[str, Any] = {
+        "attempts": record.get("attempts") if isinstance(record.get("attempts"), list) else [],
+        "hintsRevealed": record.get("hintsRevealed", 0) if in_current_cycle else 0,
+        "setupRevealedBeforeAnswer": bool(record.get("setupRevealed")) if in_current_cycle else False,
+        "solutionRevealedBeforeAnswer": bool(record.get("stepsRevealed")) if in_current_cycle else False,
+        "cycleStartedAt": cycle_started_at,
+    }
+    return score_problem(
+        adapted,
+        cycle_started_at=cycle_started_at,
+        has_cycle_override=True,
+        is_variant=True,
+        ignore_state_score=True,
+    )
+
+
+def is_awaiting_review(
+    state: dict[str, Any] | None,
+    *,
+    test_report: dict[str, Any] | None = None,
+    has_test_report_override: bool = False,
+    cycle_started_at: str | None = None,
+    has_cycle_override: bool = False,
+) -> bool:
+    """Return True for a PRG item whose latest test run in the current cycle passed with no review yet."""
+    if not isinstance(state, dict) or state.get("skipped") is True:
+        return False
+    data = _extract_cycle_data(
+        state,
+        test_report=test_report,
+        has_test_report_override=has_test_report_override,
+        cycle_started_at=cycle_started_at,
+        has_cycle_override=has_cycle_override,
+    )
+    if data["isStalePrevCycle"] or data["cycleRevs"]:
+        return False
+    if not (data["reportInfo"]["hasData"] or data["cycleTestRuns"]):
+        return False
+    return _resolve_prg_latest_tests_status(data["reportInfo"], data["cycleRevs"], data["cycleTestRuns"]) == "pass"
+
+
+def item_score(state: dict[str, Any], *, is_prg: bool = False) -> tuple[float, bool]:
+    """Return (score, used_help) for a problem state using the canonical `score_problem` rule.
+
+    Returns `(-1.0, used_help)` when the item has no score yet (not tried / awaiting review).
+    """
+    res = score_problem(state, is_prg=is_prg)
+    sc = res["score"]
+    return (-1.0 if sc is None else float(sc)), bool(res["usedHelp"])

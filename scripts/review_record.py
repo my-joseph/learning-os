@@ -19,7 +19,7 @@ from pathlib import Path
 from typing import Any
 
 from code_engine.review_run import _find_lab_config, find_drill_doc, find_problem, run_review_with_source
-from progress_store import apply_progress, load_progress, save_progress
+from progress_store import apply_progress, load_progress, save_progress, score_problem
 from scripts.issues import add_issue
 
 
@@ -125,12 +125,50 @@ def add_record(
     state = prob.setdefault("state", {})
     reviews = state.setdefault("reviews", [])
 
+    now_iso = datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
+    tests_res = review_res["tests"]
+    tests_total = int(tests_res.get("total", 0) or 0)
+    tests_passed = int(tests_res.get("passed", 0) or 0)
+    tests_failed = list(tests_res.get("failed") or [])
+    all_tests_pass = tests_total > 0 and tests_passed == tests_total and not tests_failed
+
+    # Preserve an earlier failing Studio test report in `testRuns` before updating `lastTestReport`.
+    prev_report = state.get("lastTestReport")
+    if isinstance(prev_report, dict) and prev_report.get("allPassed") is False:
+        cycle_start = state.get("cycleStartedAt")
+        test_runs = state.setdefault("testRuns", [])
+        already_recorded = any(
+            isinstance(tr, dict)
+            and tr.get("allPassed") is False
+            and (not cycle_start or (isinstance(tr.get("ts"), str) and tr["ts"] >= cycle_start))
+            for tr in test_runs
+        )
+        if not already_recorded:
+            prev_ts = (
+                prev_report.get("ts")
+                if isinstance(prev_report.get("ts"), str) and prev_report.get("ts")
+                else (cycle_start if isinstance(cycle_start, str) and cycle_start else now_iso)
+            )
+            test_runs.append({"ts": prev_ts, "allPassed": False})
+
+    state["lastTestReport"] = {
+        "allPassed": all_tests_pass,
+        "score": (tests_passed / tests_total) if tests_total > 0 else 0,
+        "passedCount": tests_passed,
+        "totalCount": tests_total,
+        "visibleResults": [{"name": name, "passed": False} for name in tests_failed],
+        "hiddenPassed": 0,
+        "hiddenTotal": 0,
+        "executionTimeMs": 0,
+        "ts": now_iso,
+    }
+
     record: dict[str, Any] = {
-        "at": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z"),
+        "at": now_iso,
         "attempt": len(reviews) + 1,
         "codeHash": review_res["codeHash"],
         "code": src_text,
-        "tests": review_res["tests"],
+        "tests": tests_res,
         "lint": review_res["lint"],
         "typecheck": review_res["typecheck"],
         "findings": findings,
@@ -138,6 +176,7 @@ def add_record(
         "explain": explain,
     }
     reviews.append(record)
+    state["score"] = score_problem(state, is_prg=True, ignore_state_score=True)["score"]
     save_progress(drill_doc)
     return record
 
@@ -196,6 +235,8 @@ def dispute_finding(drill_id: str, qid: str, check_id: str, reason: str) -> tupl
         latest.get("typecheck") or [],
         latest.get("findings") or [],
     )
+    state = prob.setdefault("state", {})
+    state["score"] = score_problem(state, is_prg=True, ignore_state_score=True)["score"]
     save_progress(doc)
     return latest, issue_id
 
