@@ -17,7 +17,7 @@ export function cycleReviews(state?: ProblemState | null): ReviewRecord[] {
   if (reviews.length === 0) return [];
   const cycleStartedAt = state?.cycleStartedAt;
   if (!cycleStartedAt) return reviews;
-  return reviews.filter((r) => r && isTimestampInCycle(r.at, cycleStartedAt));
+  return reviews.filter((r) => r && isTimestampInCycle(r.at || r.ts, cycleStartedAt));
 }
 
 export const CALM_PARSE_ERROR_MESSAGE =

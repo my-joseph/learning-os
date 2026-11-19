@@ -45,6 +45,7 @@ export const ChoiceOptionGroup: React.FC<ChoiceOptionGroupProps> = ({
         const isCheckingThis = checkingOptionId === opt.id;
         const isSelected = activeSelected === opt.id;
         const isCorrectChosen = isSelected && !isCheckingThis && resultStatus === "correct";
+        const isAssistedChosen = isSelected && !isCheckingThis && resultStatus === "assisted";
         const isWrongChosen = isSelected && !isCheckingThis && resultStatus === "wrong";
 
         let buttonCls =
@@ -59,6 +60,9 @@ export const ChoiceOptionGroup: React.FC<ChoiceOptionGroupProps> = ({
         } else if (isCorrectChosen) {
           buttonCls = `${statusTone.correct.choiceCard} text-zinc-900 dark:text-zinc-100`;
           badgeCls = statusTone.correct.solidBadge;
+        } else if (isAssistedChosen) {
+          buttonCls = `${statusTone.assisted.choiceCard} text-zinc-900 dark:text-zinc-100`;
+          badgeCls = statusTone.assisted.solidBadge;
         } else if (isWrongChosen) {
           buttonCls = `${statusTone.wrong.choiceCard} text-zinc-900 dark:text-zinc-100`;
           badgeCls = statusTone.wrong.solidBadge;
@@ -109,6 +113,12 @@ export const ChoiceOptionGroup: React.FC<ChoiceOptionGroupProps> = ({
             {isCorrectChosen && (
               <Check
                 className={`w-4 h-4 ${statusTone.correct.text} shrink-0`}
+                aria-hidden="true"
+              />
+            )}
+            {isAssistedChosen && (
+              <Check
+                className={`w-4 h-4 ${statusTone.assisted.text} shrink-0`}
                 aria-hidden="true"
               />
             )}

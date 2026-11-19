@@ -46,6 +46,7 @@ function getCircleClass(result: StepResult, isCurrent: boolean): string {
         ? `border-dashed border-indigo-600 dark:border-indigo-400 bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-300${halo}`
         : statusTone.skipped.solidCircle;
     case "inProgress":
+    case "awaitingReview":
       return isCurrent
         ? `border-indigo-600 dark:border-indigo-400 bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-300${halo}`
         : "border-zinc-400 dark:border-zinc-500 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 group-hover:border-zinc-500 dark:group-hover:border-zinc-400";

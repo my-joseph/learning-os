@@ -607,11 +607,53 @@ runCase("review retry clears the answer but preserves progress history", () => {
   assert(reset.mistakes?.[0] === "sign-error", "mistake history must remain");
 });
 
-// Extra: Diverged step does not attach mistake tags
-const probDiverged = createBaseProblem();
-const stDiv = applyDivergedStep(probDiverged, 1);
-assert(stDiv.divergedStep === 1, "Diverged step must be set to 1");
-assert(stDiv.mistakes.length === 0, "Diverged step must NOT attach commonTrapTag or any mistake tags");
+runCase("Lock after correct ignores subsequent checks in same cycle and unlocks on Reset", () => {
+  const prob = createBaseProblem();
+  const st1 = applyCheckResult(prob, "360", correctResult, mockMistakeTags, {
+    ts: "2026-11-20T10:00:00Z",
+  });
+  assert(st1.score === 1, "First-try correct must score 1");
+  assert(st1.attempts?.length === 1, "One attempt recorded");
+
+  const st2 = applyCheckResult(
+    { ...prob, state: st1 },
+    "999",
+    { verdict: "incorrect", message: "Wrong", components: [], diagnostics: [] },
+    mockMistakeTags,
+    { ts: "2026-11-20T10:01:00Z" }
+  );
+  assert(st2.userInput === "360", "Input must remain unchanged while locked");
+  assert(st2.lastCheck?.verdict === "correct", "lastCheck must remain correct while locked");
+  assert(st2.score === 1, "Score must remain 1 after locked check");
+  assert(st2.attempts?.length === 1, "No extra attempt may be appended while locked");
+
+  const resetProb = resetProblemForRetry({ ...prob, state: st1 }, "2026-11-20T10:05:00Z");
+  const st3 = applyCheckResult(resetProb, "360", correctResult, mockMistakeTags, {
+    ts: "2026-11-20T10:06:00Z",
+  });
+  assert(st3.score === 1, "Checking after Reset in a new cycle must work again");
+  assert(st3.attempts?.length === 2, "New cycle attempt appends while preserving prior history");
+});
+
+runCase("Mark diverged step is a note only: never turns null into 0.5 or lowers 1.0", () => {
+  const probNull = createBaseProblem();
+  const stDivNull = applyDivergedStep(probNull, 1);
+  assert(stDivNull.divergedStep === 1, "Diverged step must be set to 1");
+  assert(stDivNull.score === null, "Diverged step must NOT turn a null score into 0.5");
+  assert(stDivNull.mistakes.length === 0, "Diverged step must NOT attach mistake tags");
+
+  const probOne = {
+    ...createBaseProblem(),
+    state: {
+      ...createBaseProblem().state,
+      score: 1,
+      attempts: [{ input: "360", ts: "2026-11-20T10:00:00Z", verdict: "correct" }],
+    },
+  };
+  const stDivOne = applyDivergedStep(probOne, 0);
+  assert(stDivOne.divergedStep === 0, "Diverged step must be set to 0");
+  assert(stDivOne.score === 1, "Diverged step must NOT overwrite a first-try 1.0 score");
+});
 
 console.log("\n=======================================================");
 console.log(`ALL ${passed} TEST CASES PASSED SUCCESSFULLY!`);

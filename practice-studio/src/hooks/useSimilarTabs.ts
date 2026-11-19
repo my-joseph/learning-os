@@ -5,6 +5,7 @@ import {
   isSubstantiveVerdict,
   sanitizeCheckMessage,
 } from "@/lib/reviewGuard";
+import { isLockedAfterCorrect, scoreProblem, scoreVariant } from "@/lib/scoring";
 import {
   deriveRealTabStatus,
   deriveTabStatuses,
@@ -88,23 +89,17 @@ function buildSimilarProblem(
         diagnostics: [],
       }
     : null;
-  const usedHelp = Boolean(
-    (session?.hintsRevealed ?? 0) > 0 ||
-      session?.setupRevealed ||
-      session?.stepsRevealed ||
-      attempts.some((a) => a.setupRevealed || a.solutionRevealed)
-  );
-  const restoredScore =
-    lastAttempt?.verdict === "correct"
-      ? usedHelp
-        ? 0.5
-        : 1
-      : lastAttempt?.verdict === "incorrect"
-      ? 0
-      : lastAttempt?.verdict === "partial" ||
-        lastAttempt?.verdict === "equivalent_not_in_form"
-      ? 0.5
-      : null;
+  const restoredScore = scoreVariant(
+    {
+      role: "try",
+      attempts,
+      hintsRevealed: session?.hintsRevealed || 0,
+      setupRevealed: Boolean(session?.setupRevealed),
+      stepsRevealed: Boolean(session?.stepsRevealed),
+      servedAt: "",
+    },
+    null
+  ).score;
 
   return {
     id: variant.token,
@@ -225,12 +220,24 @@ export function applySimilarCheckToLatestProblem(
   needsDisplay: boolean;
 } {
   const prevAttempts = latestProb.state.attempts || [];
-  const usedHelp = Boolean(
-    (latestProb.state.hintsRevealed || 0) > 0 ||
-      latestProb.state.setupRevealedBeforeAnswer ||
-      latestProb.state.solutionRevealedBeforeAnswer ||
-      prevAttempts.some((a) => a.setupRevealed || a.solutionRevealed)
-  );
+  // Rule 2 & 6: lock after correct on similar tabs just like the main question.
+  if (isLockedAfterCorrect(latestProb.state, { isVariant: true })) {
+    const unchangedRecord: VariantSessionRecord = {
+      role: "try",
+      attempts: prevAttempts,
+      hintsRevealed: latestProb.state.hintsRevealed || 0,
+      setupRevealed: Boolean(latestProb.state.setupRevealedBeforeAnswer),
+      stepsRevealed: Boolean(latestProb.state.solutionRevealedBeforeAnswer),
+      durationMs: latestProb.state.durationMs || 0,
+      servedAt: existingServedAt || nowIso,
+    };
+    return {
+      nextProblem: latestProb,
+      nextRecord: unchangedRecord,
+      needsSteps: false,
+      needsDisplay: false,
+    };
+  }
   const nextAttempt: AttemptRecord = {
     input: resolvedInput,
     ts: nowIso,
@@ -240,26 +247,23 @@ export function applySimilarCheckToLatestProblem(
     ...(latestProb.state.solutionRevealedBeforeAnswer ? { solutionRevealed: true } : {}),
   };
   const updatedAttempts = [...prevAttempts, nextAttempt];
-  const nextScore =
-    checked.verdict === "correct"
-      ? usedHelp
-        ? 0.5
-        : 1
-      : checked.verdict === "incorrect"
-      ? 0
-      : checked.verdict === "partial" || checked.verdict === "equivalent_not_in_form"
-      ? 0.5
-      : latestProb.state.score;
   const nextDuration = (latestProb.state.durationMs || 0) + attemptElapsed;
+  const candidateState = {
+    ...latestProb.state,
+    userInput: resolvedInput,
+    lastCheck: checked,
+    attempts: updatedAttempts,
+    durationMs: nextDuration,
+  };
+  const nextScore = scoreProblem(candidateState, {
+    isVariant: true,
+    ignoreStateScore: true,
+  }).score;
   const nextProblem: Problem = {
     ...latestProb,
     state: {
-      ...latestProb.state,
-      userInput: resolvedInput,
+      ...candidateState,
       score: nextScore,
-      lastCheck: checked,
-      attempts: updatedAttempts,
-      durationMs: nextDuration,
     },
   };
   const nextRecord: VariantSessionRecord = {
@@ -296,10 +300,7 @@ export function applySimilarHintToLatestProblem(
   nextRecord: VariantSessionRecord;
   didIncrement: boolean;
 } {
-  const hasCorrect = Boolean(
-    latestProb.state.score === 1 ||
-      latestProb.state.attempts?.some((a) => a.verdict === "correct")
-  );
+  const hasCorrect = isLockedAfterCorrect(latestProb.state, { isVariant: true });
   const nextHints = hasCorrect
     ? latestProb.state.hintsRevealed || 0
     : (latestProb.state.hintsRevealed || 0) + 1;
@@ -325,10 +326,7 @@ export function applySimilarHintToLatestProblem(
 
 /** Return true when opening steps on a similar tab must persist `stepsRevealed` to the server. */
 export function shouldPersistVariantStepsReveal(prob: Problem): boolean {
-  const hasCorrect = Boolean(
-    prob.state.score === 1 ||
-      prob.state.attempts?.some((a) => a.verdict === "correct")
-  );
+  const hasCorrect = isLockedAfterCorrect(prob.state, { isVariant: true });
   return !hasCorrect && !prob.state.solutionRevealedBeforeAnswer;
 }
 
@@ -728,7 +726,11 @@ export function useSimilarTabs({
         const res = await fetch(`/api/variant?${qs.toString()}`, {
           cache: "no-store",
         });
-        if (!res.ok || cancelled) return;
+        if (cancelled) return;
+        if (!res.ok) {
+          fetchedListKeyRef.current = null;
+          return;
+        }
         const data = (await res.json()) as ListApiResponse;
         if (cancelled) return;
 
@@ -938,6 +940,7 @@ export function useSimilarTabs({
       if (!drillId || !tok) return;
       const snapProb = tabProblemsRef.current[tok];
       if (!snapProb) return;
+      if (isLockedAfterCorrect(snapProb.state, { isVariant: true })) return;
       const targetQuestionKey = questionKeyRef.current;
       const resolved = (
         inputOverride !== undefined ? inputOverride : snapProb.state.userInput

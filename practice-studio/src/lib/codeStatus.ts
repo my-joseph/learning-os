@@ -1,10 +1,11 @@
 import type { Problem, ProblemState, ReviewRecord } from "../types/drill";
 import { cycleReviews } from "./reviewGuard";
+import { isAwaitingReview, scoreProblem } from "./scoring";
 import { getReviewRequest } from "./studioRules";
 
 export type LayerCheckStatus = "pass" | "fail" | "not_run";
 export type ReviewStatus = "pass" | "revise" | "not_requested";
-export type MilestoneTileState = "pass" | "revise" | "not_started";
+export type MilestoneTileState = "pass" | "awaiting_review" | "revise" | "not_started";
 export type MilestoneStepperState = "passed" | "regressed" | "notYet";
 export type StatusSymbol = "✓" | "✗" | "–";
 export type PrimaryCodeActionKind = "open_vscode" | "copy_review" | "next_problem";
@@ -129,9 +130,10 @@ export function reviewStatusLabel(status: ReviewStatus): "not requested" | "revi
 }
 
 export function deriveMilestoneTileState(state?: ProblemState | null): MilestoneTileState {
-  const review = deriveReviewStatus(cycleReviews(state));
-  if (review === "pass") return "pass";
-  if (review === "revise") return "revise";
+  const scored = scoreProblem(state, { isPrg: true });
+  if (scored.outcome === "correct" || scored.outcome === "assisted") return "pass";
+  if (isAwaitingReview(state, { isPrg: true })) return "awaiting_review";
+  if (scored.outcome === "wrong") return "revise";
   return "not_started";
 }
 
@@ -240,8 +242,22 @@ export function deriveCodeStatus(
   let tests: LayerCheckStatus = "not_run";
   let testsCount: { passed: number; total: number } | undefined;
 
+  const latestReviewAt = latestReview ? latestReview.at || latestReview.ts || "" : "";
+  const reportTs = state?.lastTestReport?.ts || "";
+  const reviewTestsNewerThanReport = Boolean(
+    latestReview?.tests &&
+      typeof latestReview.tests.total === "number" &&
+      reportTs &&
+      latestReviewAt &&
+      latestReviewAt > reportTs
+  );
+
   if (reviewRun?.tests && typeof reviewRun.tests.total === "number") {
     const { passed = 0, total = 0, failed = [] } = reviewRun.tests;
+    testsCount = { passed, total };
+    tests = total > 0 && passed === total && failed.length === 0 ? "pass" : "fail";
+  } else if (reviewTestsNewerThanReport && latestReview?.tests) {
+    const { passed = 0, total = 0, failed = [] } = latestReview.tests;
     testsCount = { passed, total };
     tests = total > 0 && passed === total && failed.length === 0 ? "pass" : "fail";
   } else if (state?.lastTestReport) {

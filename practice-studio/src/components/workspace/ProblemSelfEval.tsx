@@ -10,6 +10,10 @@ export interface ProblemSelfEvalProps {
   hasAttempt: boolean;
   showSelfScore?: boolean;
   disabled?: boolean;
+  /** Maximum score allowed by Rule 3 (self-score may only lower auto-computed scores). */
+  maxScore?: 1 | 0.5 | 0 | null;
+  /** True when the problem is skipped (self-score cannot raise or clear skipped). */
+  skipped?: boolean;
   score: number | null;
   mistakes: string[];
   mistakeNote?: string;
@@ -43,6 +47,8 @@ export const ProblemSelfEval: React.FC<ProblemSelfEvalProps> = ({
   hasAttempt,
   showSelfScore = true,
   disabled = false,
+  maxScore,
+  skipped = false,
   score,
   mistakes,
   mistakeNote,
@@ -62,22 +68,28 @@ export const ProblemSelfEval: React.FC<ProblemSelfEvalProps> = ({
         {showSelfScore && (
           <div className="flex items-center gap-1.5">
             <span className="mr-1">Self-score:</span>
-            {SELF_SCORE_BUTTONS.map((btn) => (
-              <button
-                key={btn.val}
-                type="button"
-                disabled={disabled}
-                onClick={() => onSetScore(btn.val)}
-                aria-pressed={score === btn.val}
-                className={`min-h-[44px] sm:min-h-[28px] px-3 sm:px-2.5 rounded-lg font-display tabular-nums border transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
-                  score === btn.val
-                    ? btn.activeCls
-                    : "bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600"
-                }`}
-              >
-                {btn.label}
-              </button>
-            ))}
+            {SELF_SCORE_BUTTONS.map((btn) => {
+              const exceedsCap =
+                skipped ||
+                (maxScore !== undefined && (maxScore === null || btn.val > maxScore));
+              const btnDisabled = disabled || exceedsCap;
+              return (
+                <button
+                  key={btn.val}
+                  type="button"
+                  disabled={btnDisabled}
+                  onClick={() => onSetScore(btn.val)}
+                  aria-pressed={score === btn.val}
+                  className={`min-h-[44px] sm:min-h-[28px] px-3 sm:px-2.5 rounded-lg font-display tabular-nums border transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
+                    score === btn.val
+                      ? btn.activeCls
+                      : "bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600"
+                  }`}
+                >
+                  {btn.label}
+                </button>
+              );
+            })}
           </div>
         )}
 

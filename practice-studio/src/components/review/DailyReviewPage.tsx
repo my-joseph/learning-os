@@ -29,6 +29,7 @@ import {
 } from "@/hooks/useDrill";
 import { useTheme } from "@/hooks/useTheme";
 import { applyDivergedStep } from "@/lib/applyCheckResult";
+import { applySelfScore, isLockedAfterCorrect } from "@/lib/scoring";
 import { labToDrillDocument, type LabDetailResponse } from "@/lib/labModel";
 import { readLastDrillId } from "@/lib/lastDrillStorage";
 import { hasSubstantiveAttempt } from "@/lib/reviewGuard";
@@ -974,10 +975,7 @@ export const DailyReviewPage: React.FC = () => {
     timerStateRef.current = recordHint(timerStateRef.current, currentItem.qid);
     incrementHintsUsed();
     updateCurrentProblem((p) => {
-      const hasCorrect =
-        p.state.score === 1 ||
-        Boolean(p.state.attempts?.some((a) => a.verdict === "correct"));
-      if (hasCorrect) return p;
+      if (isLockedAfterCorrect(p.state)) return p;
       return {
         ...p,
         state: {
@@ -1114,6 +1112,7 @@ export const DailyReviewPage: React.FC = () => {
   const handleCheckAnswer = useCallback(
     async (inputOverride?: string) => {
       if (!currentDrill || !currentItem || !currentKey || !currentProblem) return;
+      if (isLockedAfterCorrect(currentProblem.state)) return;
       const inputVal = (
         inputOverride !== undefined ? inputOverride : currentProblem.state.userInput
       ).trim();
@@ -1324,7 +1323,7 @@ export const DailyReviewPage: React.FC = () => {
       }
       onSetScore={(score) =>
         updateCurrentProblem(
-          (p) => ({ ...p, state: { ...p.state, score, skipped: false } }),
+          (p) => ({ ...p, state: applySelfScore(p.state, score) }),
           { autoSave: true }
         )
       }

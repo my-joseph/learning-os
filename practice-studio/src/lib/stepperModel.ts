@@ -1,6 +1,7 @@
 import type { Problem } from "../types/drill";
 import type { Workspace } from "./routes";
 import { cycleReviews } from "./reviewGuard";
+import { isAwaitingReview, scoreProblem } from "./scoring";
 import { countPractisedSimilar, cycleOriginalAttempts } from "./similarTabs";
 import { deriveCodeStatus, deriveMilestoneStepperState } from "./codeStatus";
 
@@ -8,6 +9,7 @@ export type DrillStepResult =
   | "correct"
   | "assisted"
   | "usedHelp"
+  | "awaitingReview"
   | "partial"
   | "wrong"
   | "skipped"
@@ -39,6 +41,7 @@ const DRILL_RESULT_LABEL: Record<DrillStepResult, string> = {
   correct: "correct",
   assisted: "correct with help",
   usedHelp: "used help",
+  awaitingReview: "awaiting review",
   partial: "partly correct",
   wrong: "wrong",
   skipped: "skipped",
@@ -46,29 +49,20 @@ const DRILL_RESULT_LABEL: Record<DrillStepResult, string> = {
 };
 
 /**
- * Derive a drill problem's stepper result from its score, help signals, and skipped flag.
- * Uses `cycleOriginalAttempts` so review retries reflect the active review cycle.
+ * Derive a drill problem's stepper result from the single canonical `scoreProblem` rule.
  */
-export function drillStepResult(problem: Problem): DrillStepResult {
-  const state = problem.state;
-  const isSkipped = state?.skipped === true;
-  const hasScore = state?.score !== null && state?.score !== undefined;
-  const scoreVal = state?.score ?? 0;
-  const isAssisted = Boolean(
-    state?.setupRevealedBeforeAnswer ||
-      state?.solutionRevealedBeforeAnswer ||
-      (state?.hintsRevealed ?? 0) > 0 ||
-      cycleOriginalAttempts(state).some(
-        (a) => a.setupRevealed || a.solutionRevealed || a.exampleViewed
-      )
-  );
-
-  if (hasScore && scoreVal >= 1 && !isAssisted && !isSkipped) return "correct";
-  if (hasScore && scoreVal > 0 && isAssisted && !isSkipped) return "assisted";
-  if (hasScore && scoreVal > 0 && !isAssisted && !isSkipped) return "partial";
-  if (hasScore && scoreVal === 0 && !isSkipped) return "wrong";
-  if (isSkipped) return "skipped";
-  if (isAssisted) return "usedHelp";
+export function drillStepResult(
+  problem: Problem,
+  workspace?: Workspace
+): DrillStepResult {
+  const isPrg = workspace === "code";
+  const scored = scoreProblem(problem.state, { isPrg });
+  if (scored.outcome === "correct") return "correct";
+  if (scored.outcome === "assisted") return "assisted";
+  if (scored.outcome === "wrong") return "wrong";
+  if (scored.outcome === "skipped") return "skipped";
+  if (isAwaitingReview(problem.state, { isPrg })) return "awaitingReview";
+  if (scored.usedHelp) return "usedHelp";
   return "notTried";
 }
 
@@ -109,7 +103,7 @@ export function buildDrillSteps(
 ): StepItem[] {
   const noun = workspace === "code" ? "Problem" : "Question";
   return problems.map((problem, idx) => {
-    const result = drillStepResult(problem);
+    const result = drillStepResult(problem, workspace);
     const levelLabelMatch = problem.levelLabel?.match(/Level\s+\d+/i);
     const levelText =
       typeof problem.level === "number"

@@ -18,6 +18,7 @@ import {
   useSimilarTabs,
 } from "@/hooks/useSimilarTabs";
 import { hasSubstantiveAttempt } from "@/lib/reviewGuard";
+import { maxAllowedSelfScore, scoreProblem } from "@/lib/scoring";
 import {
   deriveRealTabStatus,
   isInCycle,
@@ -203,7 +204,8 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
   }, [showingExample, closeWorkedExample]);
 
   const hasAttempt = hasSubstantiveAttempt(problem.state);
-  const score = problem.state.score;
+  const score = scoreProblem(problem.state).score;
+  const maxSelfScore = maxAllowedSelfScore(problem.state);
   const effectiveExampleViewedAt = exampleViewedAt || problem.state.exampleViewedAt || null;
   const exampleViewed = Boolean(
     example ||
@@ -437,6 +439,7 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
                     drillTitle={drillTitle}
                     mistakeTags={[]}
                     activeStep={similarActiveStep}
+                    isVariant={true}
                     useSessionInputMode={isReviewSession}
                     hideShowStepsButton={sPlan.showSimilarShowSteps}
                     loadingSteps={loadingSteps}
@@ -507,6 +510,8 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
                   footer={
                     <ProblemSelfEval
                       hasAttempt={hasAttempt}
+                      maxScore={maxSelfScore}
+                      skipped={Boolean(problem.state.skipped)}
                       score={score}
                       mistakes={problem.state.mistakes}
                       mistakeNote={problem.state.mistakeNote}
