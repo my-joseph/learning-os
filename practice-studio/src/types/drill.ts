@@ -252,6 +252,10 @@ export interface ProblemState {
   /** Set when the learner opens the step-by-step solution before the first correct answer. */
   solutionRevealedBeforeAnswer?: boolean;
   durationMs?: number;
+  /** Variant IDs already served to the learner in "Try a similar question" mode. */
+  variantsSeen?: string[];
+  /** Variant IDs the learner has substantively attempted (unlocks reveal for that variant). */
+  variantsAttempted?: string[];
 }
 
 export type EngineeringArchetype =
@@ -272,6 +276,10 @@ export type EngineeringCompetency =
 
 export interface Problem {
   id: string;
+  variantId?: string;
+  sourceArchetype?: string;
+  archetypeKey?: string;
+  unitCode?: string;
   templateKey: string;
   level: number;
   levelLabel: string;
@@ -281,6 +289,7 @@ export interface Problem {
   display?: string;
   plainText?: string;
   hasSetup?: boolean;
+  hasVariants?: boolean;
   codeSnippet?: string;
   language?: string;
   codeType?:
@@ -404,4 +413,36 @@ export interface DrillListItem {
   answeredCount?: number;
   hasNotes?: boolean;
   localFilePath: string;
+}
+
+export interface RedactedVariant {
+  variantId: string;
+  id: string;
+  level: number;
+  levelLabel?: string;
+  category?: string;
+  context?: string;
+  prompt: string;
+  figure?: MathFigureSpec;
+  visual?: VisualSpec;
+  answerSpec: AnswerSpec;
+  inputHint?: string;
+  placeholder?: string;
+  checkpointHint?: string;
+  hasSetup?: boolean;
+}
+
+export interface WorkedExampleVariant {
+  variantId: string;
+  id: string;
+  level: number;
+  levelLabel?: string;
+  category?: string;
+  context?: string;
+  prompt: string;
+  figure?: MathFigureSpec;
+  visual?: VisualSpec;
+  answerDisplay: string;
+  answerPlain: string;
+  steps: Step[];
 }

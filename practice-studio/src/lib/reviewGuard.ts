@@ -30,6 +30,26 @@ export function isSubstantiveVerdict(verdict?: string | null): boolean {
 }
 
 /**
+ * Return true when a check verdict represents a wrong/unsuccessful attempt
+ * (excludes "correct", "skipped", "invalid input", "parse_error", and "equivalent_not_in_form").
+ */
+export function isWrongAttemptVerdict(verdict?: string | null): boolean {
+  return verdict === "incorrect" || verdict === "partial";
+}
+
+/** Count wrong substantive attempts on a problem state (used for variant try/worked-example gating). */
+export function countWrongAttempts(state?: ProblemState | null): number {
+  if (!state) return 0;
+  if (Array.isArray(state.attempts) && state.attempts.length > 0) {
+    return state.attempts.filter((a) => isWrongAttemptVerdict(a?.verdict)).length;
+  }
+  if (state.lastCheck && isWrongAttemptVerdict(state.lastCheck.verdict)) {
+    return 1;
+  }
+  return 0;
+}
+
+/**
  * Replace raw SymPy / Python / internal check error strings with calm learner-facing copy.
  */
 export function sanitizeCheckMessage(

@@ -35,6 +35,14 @@ export function getDrillsDataDir(): string {
   return path.join(getWorkspaceRoot(), "drills", "data");
 }
 
+/** Directory holding variant bank JSON files (`drills/variants/<UNIT>.json`). */
+export function getVariantsDir(): string {
+  if (process.env.VARIANTS_DIR) {
+    return path.resolve(process.env.VARIANTS_DIR);
+  }
+  return path.join(getWorkspaceRoot(), "drills", "variants");
+}
+
 export function getLabsDir(): string {
   if (process.env.LABS_DIR) {
     return path.resolve(process.env.LABS_DIR);
@@ -297,6 +305,62 @@ export function loadProblemFromDisk(
   );
   if (!problem) return null;
   return { doc, problem };
+}
+
+/** Load an unredacted variant bank JSON file (`drills/variants/<unitCode>.json`) on the server. */
+export function loadVariantBankFromDisk(
+  unitCode: string
+): { unitCode: string; variants: Array<Record<string, unknown>> } | null {
+  if (!isSafeId(unitCode)) return null;
+  const filePath = path.join(getVariantsDir(), `${unitCode}.json`);
+  if (!fs.existsSync(filePath)) return null;
+  try {
+    const raw = JSON.parse(fs.readFileSync(filePath, "utf-8")) as Record<string, unknown>;
+    if (!raw || typeof raw !== "object" || !Array.isArray(raw.variants)) return null;
+    return {
+      unitCode: typeof raw.unitCode === "string" ? raw.unitCode : unitCode,
+      variants: raw.variants.filter(
+        (v): v is Record<string, unknown> => Boolean(v && typeof v === "object")
+      ),
+    };
+  } catch {
+    return null;
+  }
+}
+
+/** Locate an unredacted variant by `variantId` across `drills/variants/*.json` on the server. */
+export function loadVariantFromDisk(
+  variantId: string
+): { unitCode: string; variant: Record<string, unknown> } | null {
+  if (!isSafeId(variantId)) return null;
+  const dir = getVariantsDir();
+  if (!fs.existsSync(dir)) return null;
+
+  const files = fs
+    .readdirSync(dir)
+    .filter((f) => f.endsWith(".json"))
+    .sort();
+
+  // Prefer the bank whose unitCode matches the prefix after "VAR-".
+  if (variantId.startsWith("VAR-")) {
+    const tail = variantId.slice(4);
+    files.sort((a, b) => {
+      const aMatch = tail.startsWith(a.slice(0, -5) + "-") ? 0 : 1;
+      const bMatch = tail.startsWith(b.slice(0, -5) + "-") ? 0 : 1;
+      return aMatch - bMatch || a.localeCompare(b);
+    });
+  }
+
+  for (const file of files) {
+    const unitCode = file.slice(0, -5);
+    const bank = loadVariantBankFromDisk(unitCode);
+    if (!bank) continue;
+    const match = bank.variants.find((v) => v.variantId === variantId);
+    if (match) {
+      return { unitCode: bank.unitCode, variant: match };
+    }
+  }
+  return null;
 }
 
 /** Load curriculum code -> title mappings from `id_map.json` at the workspace root. */
