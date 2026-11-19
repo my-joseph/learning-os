@@ -17,6 +17,7 @@ import json
 import os
 import socket
 import ssl
+import sys
 import time
 import urllib.error
 import urllib.request
@@ -169,7 +170,10 @@ def replace_page_content(page_id: str, new_blocks: list[dict], token: str, label
     with ThreadPoolExecutor(max_workers=5) as pool:
         list(pool.map(_delete, old_ids))
     if failed:
-        print(f"  WARNING [{label or page_id}]: {len(failed)} old block(s) could not be deleted:")
+        print(
+            f"  WARNING [{label or page_id}]: {len(failed)} old block(s) could not be deleted:",
+            file=sys.stderr,
+        )
         for b_id, err in failed[:5]:
-            print(f"    - {b_id}: {err}")
+            print(f"    - {b_id}: {err}", file=sys.stderr)
     return failed

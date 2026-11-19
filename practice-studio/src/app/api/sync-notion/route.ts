@@ -67,7 +67,13 @@ export async function POST(req: NextRequest) {
     }
 
     try {
-      const res = JSON.parse(stdout);
+      const outputLines = stdout
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter(Boolean)
+      const lastOutputLine = outputLines[outputLines.length - 1];
+      if (!lastOutputLine) throw new Error("Sync helper produced no JSON output");
+      const res = JSON.parse(lastOutputLine);
       return NextResponse.json(res);
     } catch {
       return NextResponse.json(

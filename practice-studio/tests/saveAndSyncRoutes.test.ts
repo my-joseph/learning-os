@@ -223,11 +223,11 @@ async function main() {
         capturedSpawns.push(spawnArgs);
         return {
           code: 0,
-          stdout: JSON.stringify({
+          stdout: `[PILOT] skipped Notion write: learner state\n${JSON.stringify({
             ok: true,
             dryRun: spawnArgs.env.NOTION_DRY_RUN === "1",
             notionPageId: "page-stub-123",
-          }),
+          })}`,
           stderr: "",
         };
       });

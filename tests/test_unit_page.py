@@ -406,21 +406,43 @@ def test_drill_sync_inserts_at_end_of_section_6_when_section_7_follows(monkeypat
         _bot_h2("7. Completion Checklist", "h7"),
         _todo("Done", "t1"),
     ]
-    patch_calls = []
+    insert_calls = []
 
     def fake_req(method, endpoint, token, payload=None):
         if method == "POST" and endpoint == "databases/db1/query":
             return {"results": []}
         if method == "POST" and endpoint == "pages":
             return {"id": "drill-page-1"}
-        if method == "PATCH" and endpoint == "blocks/u1/children":
-            patch_calls.append(payload)
-            return {"results": [{"id": "log-1"}]}
         return {"results": []}
+
+    def fake_insert_after(parent_id, after_id, blocks, token):
+        insert_calls.append((parent_id, after_id, blocks))
+        for block in blocks:
+            body = block[block["type"]]
+            unit_blocks.append(
+                {
+                    "id": f"log-{len(insert_calls)}",
+                    "type": block["type"],
+                    block["type"]: {
+                        "rich_text": [
+                            {
+                                **item,
+                                **(
+                                    {"plain_text": item.get("text", {}).get("content", "")}
+                                    if item.get("type") == "text"
+                                    else {}
+                                ),
+                            }
+                            for item in body.get("rich_text", [])
+                        ]
+                    },
+                }
+            )
 
     monkeypatch.setattr(drill_sync, "load_env", lambda: {"NOTION_TOKEN": "tok"})
     monkeypatch.setattr(drill_sync, "notion_request", fake_req)
     monkeypatch.setattr(up, "notion_request", fake_req)
+    monkeypatch.setattr(up, "insert_after", fake_insert_after)
     monkeypatch.setattr(drill_sync, "replace_page_blocks", lambda *a, **kw: None)
     monkeypatch.setattr(drill_sync, "update_unit_reviews", lambda *a, **kw: {})
     monkeypatch.setattr(drill_sync, "get_all_blocks", lambda pid, tok: list(unit_blocks))
@@ -443,9 +465,11 @@ def test_drill_sync_inserts_at_end_of_section_6_when_section_7_follows(monkeypat
         "problems": [],
     }
     res = drill_sync._sync_drill_to_notion_inner(doc, "drills/data/PRG-T00-C02-U01/DRL-PRG-T00-C02-U01-01.json")
+    second_res = drill_sync._sync_drill_to_notion_inner(doc, "drills/data/PRG-T00-C02-U01/DRL-PRG-T00-C02-U01-01.json")
     assert res["ok"] is True
-    assert len(patch_calls) == 1
-    assert patch_calls[0]["after"] == "note-last"
+    assert second_res["ok"] is True
+    assert len(insert_calls) == 1
+    assert insert_calls[0][1] == "note-last"
 
 
 def test_fix_text_guards_and_preserves_equations(monkeypatch):
