@@ -23,7 +23,6 @@ import { MathAnswerArea, MathAnswerAreaHandle } from "@/components/math/MathAnsw
 import { getProblemPlaceholder } from "@/lib/mathInput";
 import { hasSubstantiveAttempt } from "@/lib/reviewGuard";
 import { isLockedAfterCorrect } from "@/lib/scoring";
-import { statusTone } from "@/lib/statusTone";
 import { CheckResult, MistakeTag, Problem } from "@/types/drill";
 import type { SkipOptions } from "@/hooks/types";
 
