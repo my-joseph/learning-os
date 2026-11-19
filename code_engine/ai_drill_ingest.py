@@ -16,6 +16,7 @@ import os
 import re
 import shutil
 import subprocess
+import sys
 import tempfile
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -166,7 +167,22 @@ def check_zero_leak_hint(pid: str, prob: Dict[str, Any]) -> None:
                 )
 
 
-def _check_code_compiles(pid: str, label: str, code: str, environment: str = "node-vanilla") -> None:
+def _allow_missing_lint(explicit: bool = False) -> bool:
+    return bool(explicit) or os.environ.get("LEARNINGOS_ALLOW_MISSING_LINT", "").strip().lower() in (
+        "1",
+        "true",
+        "yes",
+    )
+
+
+def _check_code_compiles(
+    pid: str,
+    label: str,
+    code: str,
+    environment: str = "node-vanilla",
+    *,
+    allow_missing_lint: bool = False,
+) -> None:
     """Verify starter/mutant code parses/compiles cleanly in Node or tsc."""
     if not code or not code.strip():
         return
@@ -174,8 +190,13 @@ def _check_code_compiles(pid: str, label: str, code: str, environment: str = "no
         ext = ENVIRONMENT_PRESETS.get(environment, {}).get("defaultExt", "ts")
         try:
             diags = typecheck_code_snippet(code, ext=ext, filename=f"{pid}_{label}")
-        except LintToolsMissingError:
-            return
+        except LintToolsMissingError as exc:
+            if _allow_missing_lint(allow_missing_lint):
+                return
+            raise AiContractError(
+                f"[{pid}] {label} TypeScript compile gate cannot run: {exc} "
+                "(Run `cd tools/lint && npm ci`, or opt out with --allow-missing-lint / LEARNINGOS_ALLOW_MISSING_LINT=1.)"
+            ) from exc
         if diags:
             msg = "; ".join(f"line {d['line']} {d['message']}" for d in diags[:3])
             raise AiContractError(f"[{pid}] {label} failed TypeScript compile check: {msg}")
@@ -215,6 +236,7 @@ def check_starter_contract(
     environment: str = "node-vanilla",
     *,
     check_identical: bool = True,
+    allow_missing_lint: bool = False,
 ) -> None:
     """Verify starterCode compiles/parses and does not leak the reference solution."""
     if not _is_coding_problem(prob):
@@ -224,7 +246,7 @@ def check_starter_contract(
     if not starter.strip():
         raise AiContractError(f"[{pid}] starterCode is required and cannot be empty.")
 
-    _check_code_compiles(pid, "starterCode", starter, environment=environment)
+    _check_code_compiles(pid, "starterCode", starter, environment=environment, allow_missing_lint=allow_missing_lint)
 
     if sol.strip():
         if check_identical:
@@ -590,6 +612,7 @@ def check_mutation_testing(
     *,
     environment: str = "node-vanilla",
     require_trap_mutant: bool = False,
+    allow_missing_lint: bool = False,
 ) -> None:
     """Enforces Mutation Testing Guard (Anti-Green-Illusion Guard):
     Runs mutated / cheating implementations against the problem's test suites.
@@ -615,7 +638,7 @@ def check_mutation_testing(
                 f"[{pid}] Missing 'trapMutant': supply a plausible wrong solution embodying "
                 f"commonTrapTag '{prob.get('commonTrapTag', '?')}' that fails hiddenTests."
             )
-        _check_code_compiles(pid, "trapMutant", tm_code, environment=environment)
+        _check_code_compiles(pid, "trapMutant", tm_code, environment=environment, allow_missing_lint=allow_missing_lint)
         tm_report = run_problem_in_workspace(
             prob, tm_code, environment=environment, run_visible=False, run_hidden=True, timeout_sec=2.0
         )
@@ -743,6 +766,7 @@ def validate_ai_code_contract(
     environment: str = "node-vanilla",
     require_trap_mutant: bool = False,
     require_examples: bool = False,
+    allow_missing_lint: bool = False,
 ) -> bool:
     """
     Enforces strict rules for AI-written programming problems (04_CODE, 07_PROBLEM_GEN §4):
@@ -802,7 +826,9 @@ def validate_ai_code_contract(
         )
 
     # 6. Starter syntax/compile check
-    check_starter_contract(pid, prob, environment=environment, check_identical=False)
+    check_starter_contract(
+        pid, prob, environment=environment, check_identical=False, allow_missing_lint=allow_missing_lint
+    )
 
     # 7. Deterministic Clock Invariant
     check_deterministic_clock(pid, prob)
@@ -811,10 +837,18 @@ def validate_ai_code_contract(
     check_dual_pre_execution(pid, prob, environment=environment)
 
     # 9. Starter no-leak check (cannot be identical to solutionCode)
-    check_starter_contract(pid, prob, environment=environment, check_identical=True)
+    check_starter_contract(
+        pid, prob, environment=environment, check_identical=True, allow_missing_lint=allow_missing_lint
+    )
 
     # 9. Mutation Testing Guard (Anti-Green-Illusion)
-    check_mutation_testing(pid, prob, environment=environment, require_trap_mutant=require_trap_mutant)
+    check_mutation_testing(
+        pid,
+        prob,
+        environment=environment,
+        require_trap_mutant=require_trap_mutant,
+        allow_missing_lint=allow_missing_lint,
+    )
 
     # 10. Examples & Constraints Gate
     example_errors = check_problem_examples(pid, prob, environment=environment, require_examples=require_examples)
@@ -1023,17 +1057,28 @@ def validate_drill_quality_checks(
         checked_archetypes.add(arch_key)
 
 
-def validate_drill_solution_lint(drill_doc: Dict[str, Any]) -> None:
+def validate_drill_solution_lint(drill_doc: Dict[str, Any], *, allow_missing_lint: bool = False) -> None:
     """Run Layer 2 ESLint (and tsc for TS presets) checks on every problem's solutionCode."""
     if shutil.which("node") is None:
-        print("  [SKIP] solutionCode lint gate: node binary not found on PATH.")
-        return
+        if _allow_missing_lint(allow_missing_lint):
+            print("  [SKIP] solutionCode lint gate: node binary not found on PATH.")
+            return
+        raise AiContractError(
+            "solutionCode lint/tsc gate cannot run: node binary not found on PATH. "
+            "Install Node.js and run `cd tools/lint && npm ci`, or opt out with "
+            "--allow-missing-lint / LEARNINGOS_ALLOW_MISSING_LINT=1."
+        )
     try:
         findings = lint_drill_doc(drill_doc)
         ts_diags = typecheck_drill_doc(drill_doc)
     except LintToolsMissingError as exc:
-        print(f"  [SKIP] solutionCode lint gate: {exc}")
-        return
+        if _allow_missing_lint(allow_missing_lint):
+            print(f"  [SKIP] solutionCode lint gate: {exc}")
+            return
+        raise AiContractError(
+            f"solutionCode lint/tsc gate cannot run: {exc} "
+            "(Run `cd tools/lint && npm ci`, or opt out with --allow-missing-lint / LEARNINGOS_ALLOW_MISSING_LINT=1.)"
+        ) from exc
 
     if findings:
         details = "; ".join(f"[{f['problemId']}] line {f['line']} {f['rule']} {f['message']}" for f in findings)
@@ -1043,7 +1088,7 @@ def validate_drill_solution_lint(drill_doc: Dict[str, Any]) -> None:
         raise AiContractError(f"solutionCode failed TypeScript typecheck: {details}")
 
 
-def validate_drill_starter_lint(drill_doc: Dict[str, Any]) -> None:
+def validate_drill_starter_lint(drill_doc: Dict[str, Any], *, allow_missing_lint: bool = False) -> None:
     """Run Layer 2 ESLint on every problem's starterCode with the drill's config.
 
     Errors are allowed only when covered by drill-level `lintOverrides` (disabled in ESLint)
@@ -1056,13 +1101,24 @@ def validate_drill_starter_lint(drill_doc: Dict[str, Any]) -> None:
         expected_by_pid[pid] = validate_starter_lint_expected(prob)
 
     if shutil.which("node") is None:
-        print("  [SKIP] starterCode lint gate: node binary not found on PATH.")
-        return
+        if _allow_missing_lint(allow_missing_lint):
+            print("  [SKIP] starterCode lint gate: node binary not found on PATH.")
+            return
+        raise AiContractError(
+            "starterCode lint gate cannot run: node binary not found on PATH. "
+            "Install Node.js and run `cd tools/lint && npm ci`, or opt out with "
+            "--allow-missing-lint / LEARNINGOS_ALLOW_MISSING_LINT=1."
+        )
     try:
         findings = lint_drill_doc(drill_doc, field="starterCode")
     except LintToolsMissingError as exc:
-        print(f"  [SKIP] starterCode lint gate: {exc}")
-        return
+        if _allow_missing_lint(allow_missing_lint):
+            print(f"  [SKIP] starterCode lint gate: {exc}")
+            return
+        raise AiContractError(
+            f"starterCode lint gate cannot run: {exc} "
+            "(Run `cd tools/lint && npm ci`, or opt out with --allow-missing-lint / LEARNINGOS_ALLOW_MISSING_LINT=1.)"
+        ) from exc
 
     unexpected = [f for f in findings if f["rule"] not in expected_by_pid.get(f["problemId"], set())]
     if unexpected:
@@ -1179,13 +1235,19 @@ def _normalize_whitespace(code: str) -> str:
     return " ".join(code.split())
 
 
-def validate_drill_blind_solve(drill_doc: Dict[str, Any], problems: List[Dict[str, Any]]) -> List[str]:
+def validate_drill_blind_solve(
+    drill_doc: Dict[str, Any],
+    problems: List[Dict[str, Any]],
+    *,
+    ingested: bool = False,
+) -> List[str]:
     """Verify blindSolve: [{problemId, solutionCode, ambiguous, note}] for every problem.
 
     Runs each blind solver's solutionCode against visibleTests AND hiddenTests using
     code_engine.test_runner, and rejects missing entries, ambiguous flags, test failures,
     or blind solutions that are byte-identical (after whitespace normalisation) to the
-    reference solutionCode.
+    reference solutionCode. When `ingested=True`, accepts `{problemId, passed: True}`
+    provenance records produced by `ingest_ai_code_drill`.
     """
     bs = drill_doc.get("blindSolve")
     if not isinstance(bs, list) or not bs:
@@ -1210,6 +1272,8 @@ def validate_drill_blind_solve(drill_doc: Dict[str, Any], problems: List[Dict[st
 
         blind_code = rec.get("solutionCode")
         if not isinstance(blind_code, str) or not blind_code.strip():
+            if ingested and rec.get("passed") is True:
+                continue
             errors.append(f"[{pid}] blindSolve entry for '{pid}' is missing 'solutionCode'.")
             continue
 
@@ -1241,6 +1305,9 @@ def check_code_drill(
     drill_doc: Dict[str, Any],
     rules: Optional[Dict[str, Any]] = None,
     vault_dir: Optional[str] = None,
+    *,
+    ingested: bool = False,
+    allow_missing_lint: bool = False,
 ) -> List[str]:
     """Run every PRG ingest gate on a draft WITHOUT writing anything or touching the vault.
 
@@ -1290,7 +1357,13 @@ def check_code_drill(
 
         # 2. Contract, no-leak, starter compile, dual pre-exec, trapMutant + generic mutants, quality gates
         try:
-            validate_ai_code_contract(prob, environment=env_key, require_trap_mutant=True, require_examples=False)
+            validate_ai_code_contract(
+                prob,
+                environment=env_key,
+                require_trap_mutant=True,
+                require_examples=False,
+                allow_missing_lint=allow_missing_lint,
+            )
             verify_problem(prob, rules=active_rules, environment=env_key)
         except Exception as exc:  # noqa: BLE001 - collect all per-problem gate errors
             msg = str(exc)
@@ -1301,11 +1374,11 @@ def check_code_drill(
 
     # 3. Layer 2 lint + tsc on solutionCode, and Layer 2 lint on starterCode
     try:
-        validate_drill_solution_lint(drill_doc)
+        validate_drill_solution_lint(drill_doc, allow_missing_lint=allow_missing_lint)
     except AiContractError as exc:
         errors.append(str(exc))
     try:
-        validate_drill_starter_lint(drill_doc)
+        validate_drill_starter_lint(drill_doc, allow_missing_lint=allow_missing_lint)
     except AiContractError as exc:
         errors.append(str(exc))
 
@@ -1313,7 +1386,7 @@ def check_code_drill(
     errors.extend(validate_drill_mix(drill_doc, working_problems))
 
     # 5. Blind solve & Reviewer record
-    errors.extend(validate_drill_blind_solve(drill_doc, working_problems))
+    errors.extend(validate_drill_blind_solve(drill_doc, working_problems, ingested=ingested))
     errors.extend(validate_drill_review(drill_doc, working_problems))
 
     return errors
@@ -1339,6 +1412,8 @@ def ingest_ai_code_drill(
     workspace_root: Optional[str] = None,
     rules: Optional[Dict[str, Any]] = None,
     vault_dir: Optional[str] = None,
+    *,
+    allow_missing_lint: bool = False,
 ) -> Dict[str, Any]:
     """
     Validates an AI-written programming drill document against Contract 04_CODE & 07 §4,
@@ -1359,7 +1434,9 @@ def ingest_ai_code_drill(
     active_rules = rules or QUALITY_RULES
 
     # 1. Run all ingest gates
-    gate_errors = check_code_drill(drill_doc, rules=active_rules, vault_dir=vault_dir)
+    gate_errors = check_code_drill(
+        drill_doc, rules=active_rules, vault_dir=vault_dir, allow_missing_lint=allow_missing_lint
+    )
     if gate_errors:
         raise AiContractError("\n".join(gate_errors))
 
@@ -1448,7 +1525,21 @@ def ingest_ai_code_drill(
     return drill_doc
 
 
-if __name__ == "__main__":
+def _resolve_ingested_drill_path(target: str, data_root: Optional[str] = None) -> str:
+    """Resolve a drill JSON path or DRILL_ID (e.g. DRL-PRG-T00-C02-U01-01) under data_root."""
+    if os.path.isfile(target):
+        return target
+    root = Path(data_root or os.environ.get("DRILLS_DATA_DIR", "drills/data"))
+    drill_id = target[:-5] if target.endswith(".json") else target
+    matches = sorted(root.glob(f"*/{drill_id}.json"))
+    if not matches:
+        matches = sorted(root.glob(f"**/{drill_id}.json"))
+    if not matches:
+        raise FileNotFoundError(f"Ingested drill '{target}' not found under {root}")
+    return str(matches[0])
+
+
+def main(argv: Optional[List[str]] = None) -> int:
     parser = argparse.ArgumentParser(description="Ingest AI-generated code drill or inspect Reasoning Vault.")
     parser.add_argument("--unit", default="PRG-T01-C04", help="Unit code (e.g. PRG-T01-C04)")
     parser.add_argument("--list-vault", action="store_true", help="List registered engineering archetypes")
@@ -1458,9 +1549,21 @@ if __name__ == "__main__":
         nargs="?",
         const="__USE_INGEST_FILE__",
         default=None,
-        help="Run all gates without writing or touching the vault. Pass a draft path or combine with --ingest-file.",
+        help="Run all gates without writing or touching the vault. Pass a draft path or combine with --ingest-file / --ingested.",
     )
-    args = parser.parse_args()
+    parser.add_argument(
+        "--ingested",
+        nargs="?",
+        const=True,
+        default=False,
+        help="Re-run gates on an already-ingested drill (accepts stripped blindSolve provenance). Pass a DRILL_ID/path or combine with --check <path>.",
+    )
+    parser.add_argument(
+        "--allow-missing-lint",
+        action="store_true",
+        help="Allow skipping ESLint/tsc gates if tools/lint/node_modules or node is missing (or set LEARNINGOS_ALLOW_MISSING_LINT=1).",
+    )
+    args = parser.parse_args(argv)
 
     if args.list_vault:
         archs = load_scope_archetypes(args.unit)
@@ -1473,16 +1576,35 @@ if __name__ == "__main__":
             checks_str = ", ".join(f"{c.get('id')} ({c.get('severity')})" for c in checks) if checks else "none"
             print(f"      Quality Checks: {checks_str}")
 
-    check_target = None
+    ingested_mode = bool(args.ingested)
+    check_target: Optional[str] = None
     if args.check is not None:
-        check_target = args.ingest_file if args.check == "__USE_INGEST_FILE__" else args.check
+        if args.check != "__USE_INGEST_FILE__":
+            check_target = args.check
+        elif isinstance(args.ingested, str):
+            check_target = args.ingested
+        else:
+            check_target = args.ingest_file
         if not check_target:
-            parser.error("--check requires a draft JSON path (or --ingest-file <path>)")
+            parser.error("--check requires a draft JSON path, --ingest-file <path>, or --ingested <DRILL_ID>")
+    elif ingested_mode:
+        check_target = args.ingested if isinstance(args.ingested, str) else args.ingest_file
+        if not check_target:
+            parser.error("--ingested requires a DRILL_ID/path (or combine with --check <path>)")
 
     if check_target:
-        with open(check_target, "r", encoding="utf-8") as f:
+        try:
+            resolved_target = _resolve_ingested_drill_path(check_target) if ingested_mode else check_target
+        except FileNotFoundError as exc:
+            print(f"  FAIL {exc}", file=sys.stderr)
+            return 1
+        with open(resolved_target, "r", encoding="utf-8") as f:
             drill_data = json.load(f)
-        failures = check_code_drill(drill_data)
+        failures = check_code_drill(
+            drill_data,
+            ingested=ingested_mode,
+            allow_missing_lint=args.allow_missing_lint,
+        )
         for warning in visible_edge_case_warnings(drill_data):
             print(f"  WARN {warning}")
         for line in failures:
@@ -1493,10 +1615,15 @@ if __name__ == "__main__":
             if failures
             else f"OK: all {n} problems pass every gate (nothing saved)."
         )
-        raise SystemExit(1 if failures else 0)
+        return 1 if failures else 0
 
     if args.ingest_file:
         with open(args.ingest_file, "r", encoding="utf-8") as f:
             drill_data = json.load(f)
-        saved = ingest_ai_code_drill(drill_data)
+        saved = ingest_ai_code_drill(drill_data, allow_missing_lint=args.allow_missing_lint)
         print(f"Successfully verified and ingested code drill: {saved.get('drillId')}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

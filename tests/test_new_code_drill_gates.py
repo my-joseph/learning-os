@@ -710,3 +710,67 @@ def test_underscore_emphasis_check_ignores_backticks_and_code_blocks(tmp_path):
     draft_bad["problems"][0]["prompt"] = "Implement `resolveRetryDelay(options)` with __strict__ fallback to `250`."
     errors = check_code_drill(draft_bad, vault_dir=str(vault_dir))
     assert any("Markdown underscore emphasis (__)" in e for e in errors)
+
+
+def test_check_code_drill_ingested_mode_accepts_stripped_blind_solve_provenance(tmp_path, monkeypatch):
+    """B-12: --ingested mode re-runs all non-draft gates on already-ingested PRG drills."""
+    _require_lint_tools()
+    import code_engine.ai_drill_ingest as ingest_mod
+
+    vault_dir = tmp_path / "vault"
+    data_dir = tmp_path / "data"
+    ws_dir = tmp_path / "ws"
+    _seed_vault(vault_dir)
+
+    saved = ingest_ai_code_drill(
+        _good_four_problem_draft(),
+        data_root=str(data_dir),
+        workspace_root=str(ws_dir),
+        vault_dir=str(vault_dir),
+    )
+
+    # Default mode rejects stripped blindSolve provenance
+    raw_errors = check_code_drill(saved, vault_dir=str(vault_dir))
+    assert any("missing 'solutionCode'" in e for e in raw_errors)
+
+    # Ingested mode accepts {problemId, passed: True} provenance while still running every other gate
+    assert check_code_drill(saved, vault_dir=str(vault_dir), ingested=True) == []
+
+    # Ingested mode still rejects a failed/missing blindSolve provenance entry
+    broken = deepcopy(saved)
+    broken["blindSolve"][0]["passed"] = False
+    broken_errs = check_code_drill(broken, vault_dir=str(vault_dir), ingested=True)
+    assert any("missing 'solutionCode'" in e for e in broken_errs)
+
+    # CLI `--check --ingested <DRILL_ID>` resolves the drill JSON under DRILLS_DATA_DIR
+    monkeypatch.setenv("DRILLS_DATA_DIR", str(data_dir))
+    monkeypatch.setenv("CODE_REASONING_VAULT_DIR", str(vault_dir))
+    assert ingest_mod.main(["--check", "--ingested", saved["drillId"]]) == 0
+
+
+def test_lint_gate_fails_closed_when_lint_tools_missing_unless_opted_out(tmp_path, monkeypatch):
+    """B-13: Missing tools/lint/node_modules fails closed unless explicitly opted out."""
+    _require_lint_tools()
+    import code_engine.ai_drill_ingest as ingest_mod
+
+    vault_dir = tmp_path / "vault"
+    _seed_vault(vault_dir)
+    draft = _good_four_problem_draft()
+
+    def _raise_missing(*_args, **_kwargs):
+        raise LintToolsMissingError("ESLint binary not installed in tools/lint/node_modules.")
+
+    monkeypatch.setattr(ingest_mod, "lint_drill_doc", _raise_missing)
+    monkeypatch.delenv("LEARNINGOS_ALLOW_MISSING_LINT", raising=False)
+
+    # 1. Default: fail closed with an actionable message
+    errors = check_code_drill(draft, vault_dir=str(vault_dir))
+    assert any("solutionCode lint/tsc gate cannot run" in e and "cd tools/lint && npm ci" in e for e in errors)
+    assert any("starterCode lint gate cannot run" in e and "cd tools/lint && npm ci" in e for e in errors)
+
+    # 2. Explicit flag opt-out skips cleanly
+    assert check_code_drill(draft, vault_dir=str(vault_dir), allow_missing_lint=True) == []
+
+    # 3. Environment variable opt-out skips cleanly
+    monkeypatch.setenv("LEARNINGOS_ALLOW_MISSING_LINT", "1")
+    assert check_code_drill(draft, vault_dir=str(vault_dir)) == []
