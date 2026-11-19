@@ -1062,7 +1062,6 @@
       "context": "",
       "prompt": "A student computed the sum of all integers in $[-2, 6]$ that belong to the domain of $f(x) = \\frac{x - 4}{(x - 4)(x - 1)}$:\nLine 1: $(-2) + (-1) + 0 + 2 + 3 + 4 + 5 + 6$\nLine 2: $(-3) + 0 + 2 + 3 + 4 + 5 + 6$\nLine 3: $(-3) + 20$\nLine 4: $17$\nWhich line is the first one that is wrong?",
       "display": "f(x) = \\frac{x - 4}{(x - 4)(x - 1)}",
-      "plainText": "Sum of integers in [-2, 6] in the domain of f(x) = (x - 4) / ((x - 4)(x - 1))",
       "givens": {
         "a": 2,
         "b": 6,
