@@ -403,6 +403,8 @@ assert.match(mathHtml, /bg-orange-500/);
 assert.match(mathHtml, /Prealgebra/);
 assert.doesNotMatch(mathHtml, />C04</, "collapsed topic must hide its child drills");
 assert.doesNotMatch(mathHtml, />DRL-MTH-/);
+assert.match(mathHtml, /class="sm:relative min-w-0 flex-1 sm:flex-initial"/, "mobile wrapper stays static so popover anchors to header row");
+assert.match(mathHtml, /role="dialog"[^>]*class="[^"]*left-0 right-0 top-full[^"]*sm:right-auto/, "mobile popover spans header row without overflowing viewport");
 
 const codeSearchHtml = renderToStaticMarkup(
   <DrillSwitcher

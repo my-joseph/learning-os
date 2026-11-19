@@ -591,7 +591,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
   };
 
   return (
-    <div className="relative min-w-0 flex-1 sm:flex-initial" ref={switcherRef}>
+    <div className="sm:relative min-w-0 flex-1 sm:flex-initial" ref={switcherRef}>
       <button
         ref={triggerRef}
         type="button"
@@ -622,7 +622,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
             role="dialog"
             aria-label="Practice drill picker"
             onKeyDown={handlePopoverKeyDown}
-            className="absolute left-0 mt-2 w-[min(calc(100vw-2.75rem),460px)] max-h-[72vh] flex flex-col overflow-hidden bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-lg p-3 z-50"
+            className="absolute left-0 right-0 top-full mt-2 max-w-[460px] sm:right-auto sm:w-[min(calc(100vw-2.75rem),460px)] max-h-[72vh] flex flex-col overflow-hidden bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-lg p-3 z-50"
           >
             {/* Top Search Input */}
             <div className="shrink-0 flex items-center gap-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2.5 py-1.5 mb-2">
