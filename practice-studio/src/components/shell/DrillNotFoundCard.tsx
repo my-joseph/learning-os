@@ -26,7 +26,7 @@ export const DrillNotFoundCard: React.FC<DrillNotFoundCardProps> = ({
           {isLab
             ? "We could not find a project lab matching "
             : "We could not find a practice drill matching "}
-          <code className="font-mono text-zinc-800 dark:text-zinc-200 bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded">
+          <code className="font-display text-zinc-800 dark:text-zinc-200 bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded">
             {drillId}
           </code>
           .

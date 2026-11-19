@@ -19,13 +19,15 @@ const config: Config = {
       },
       fontFamily: {
         sans: [
-          "var(--font-geist-sans)",
+          '"Source Sans Pro"',
           "-apple-system",
           "BlinkMacSystemFont",
           "Segoe UI",
           "Roboto",
           "sans-serif",
         ],
+        // Secondary/accent family: non-code numbers and labels (scores, Q1/Q2, timers, IDs).
+        display: ['"Roboto Slab Variable"', '"Roboto Slab"', "Georgia", "serif"],
         mono: [
           "var(--font-geist-mono)",
           "ui-monospace",
