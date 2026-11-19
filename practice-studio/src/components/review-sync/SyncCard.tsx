@@ -23,6 +23,7 @@ import {
 import { statusTone, warningTone } from "@/lib/statusTone";
 import { Reveal } from "@/components/motion/Reveal";
 import { ListDot } from "@/components/ui/ListDot";
+import { CopyButton } from "@/components/ui/CopyButton";
 import type { EffectiveSyncPhase } from "./SessionSummaryCard";
 
 export interface SyncCardProps {
@@ -82,21 +83,11 @@ export const SyncCard: React.FC<SyncCardProps> = ({
 }) => {
   const [showLines, setShowLines] = useState(false);
   const [showErrorDetails, setShowErrorDetails] = useState(false);
-  const [copiedError, setCopiedError] = useState(false);
-  const [copiedSubmitCmd, setCopiedSubmitCmd] = useState(false);
 
   // Lab variant: terminal submission only — never calls drill sync.
   if (isLab) {
     const safeLabId = labId || "LAB";
     const submitCommand = `cd labs/${safeLabId} && npm run submit`;
-    const handleCopySubmit = () => {
-      if (typeof navigator !== "undefined" && navigator.clipboard) {
-        void navigator.clipboard.writeText(submitCommand);
-      }
-      setCopiedSubmitCmd(true);
-      window.setTimeout(() => setCopiedSubmitCmd(false), 1500);
-    };
-
     const total = labSummary?.total ?? preview.summary.maxScore;
     const passed = labSummary?.passed ?? 0;
     const awaitingReview = labSummary?.awaitingReview ?? 0;
@@ -157,23 +148,22 @@ export const SyncCard: React.FC<SyncCardProps> = ({
         </div>
 
         <div className="flex flex-col sm:flex-row sm:items-center gap-2.5">
-          <button
-            type="button"
-            onClick={handleCopySubmit}
+          <CopyButton
+            text={submitCommand}
             className="w-full sm:w-auto inline-flex items-center justify-center gap-2 min-h-[44px] sm:h-10 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-700 text-white text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 shrink-0"
-          >
-            {copiedSubmitCmd ? (
+            timeoutMs={1500}
+            copiedContent={
               <>
                 <Check className="w-4 h-4" aria-hidden="true" />
                 <span>Copied submit command</span>
               </>
-            ) : (
-              <>
-                <Copy className="w-4 h-4" aria-hidden="true" />
-                <span>Copy submit command</span>
-              </>
-            )}
-          </button>
+            }
+          >
+            <>
+              <Copy className="w-4 h-4" aria-hidden="true" />
+              <span>Copy submit command</span>
+            </>
+          </CopyButton>
 
           <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
             Runs every test (including hidden ones) and records the result in Notion.
@@ -201,14 +191,6 @@ export const SyncCard: React.FC<SyncCardProps> = ({
 
   const errorFullText = syncState.message || "Notion sync failed.";
   const errorBrief = firstLine(errorFullText);
-
-  const handleCopyError = () => {
-    if (typeof navigator !== "undefined" && navigator.clipboard) {
-      void navigator.clipboard.writeText(errorFullText);
-    }
-    setCopiedError(true);
-    window.setTimeout(() => setCopiedError(false), 1500);
-  };
 
   return (
     <section
@@ -625,23 +607,22 @@ export const SyncCard: React.FC<SyncCardProps> = ({
                           }`}
                         />
                       </button>
-                      <button
-                        type="button"
-                        onClick={handleCopyError}
+                      <CopyButton
+                        text={errorFullText}
                         className="inline-flex items-center gap-1 min-h-[44px] sm:min-h-[32px] font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 rounded"
-                      >
-                        {copiedError ? (
+                        timeoutMs={1500}
+                        copiedContent={
                           <>
                             <Check className="w-3 h-3" aria-hidden="true" />
                             <span>Copied</span>
                           </>
-                        ) : (
-                          <>
-                            <Copy className="w-3 h-3" aria-hidden="true" />
-                            <span>Copy error</span>
-                          </>
-                        )}
-                      </button>
+                        }
+                      >
+                        <>
+                          <Copy className="w-3 h-3" aria-hidden="true" />
+                          <span>Copy error</span>
+                        </>
+                      </CopyButton>
                     </div>
 
                     <Reveal show={showErrorDetails}>

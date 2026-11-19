@@ -38,7 +38,7 @@ import { ReviewItemRow } from "./ReviewItemRow";
 import { SyncCard } from "./SyncCard";
 import { NextActions } from "./NextActions";
 
-export interface ReviewPanelProps {
+export interface ReviewSyncPageProps {
   currentDrill: DrillDocument;
   statusOverride: PracticeStatusOverride;
   isSyncing: boolean;
@@ -64,7 +64,7 @@ export interface ReviewPanelProps {
 }
 
 /** Redesigned Review & Sync page: Session summary -> To review -> Got right -> Sync to Notion (or Submit lab) -> What next. */
-export const ReviewSyncPage: React.FC<ReviewPanelProps> = ({
+export const ReviewSyncPage: React.FC<ReviewSyncPageProps> = ({
   currentDrill,
   statusOverride,
   isSyncing,

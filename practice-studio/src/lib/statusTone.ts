@@ -31,8 +31,13 @@ export interface StatusToneRecipe {
   selfScoreActive: string;
   /** Clickable outcome tile in Review & Sync SessionSummaryCard (includes hover). */
   tile: string;
-  /** Accent border colour (CodeDashboard left-borders, StepRow diverged border). */
+}
+
+interface AccentBorderToneRecipe extends StatusToneRecipe {
   border: string;
+}
+
+interface WrongStatusToneRecipe extends AccentBorderToneRecipe {
   /** Subtle framing border (StepRow diverged card border, SyncCard error details pre). */
   borderSoft: string;
   /** Hover text accent (StudioHeader Reset All, StepRow diverged button hover). */
@@ -41,7 +46,19 @@ export interface StatusToneRecipe {
   hoverBorderSoft: string;
 }
 
-export const statusTone: Record<StatusTone, StatusToneRecipe> = {
+type ReducedStatusToneRecipe = Omit<
+  StatusToneRecipe,
+  "choiceCard" | "solidBadge" | "selfScoreActive"
+>;
+type StatusToneRecipes = {
+  correct: AccentBorderToneRecipe;
+  assisted: StatusToneRecipe;
+  wrong: WrongStatusToneRecipe;
+  skipped: ReducedStatusToneRecipe;
+  notTried: ReducedStatusToneRecipe;
+};
+
+export const statusTone: StatusToneRecipes = {
   correct: {
     solidCircle:
       "bg-status-correct border-status-correct text-status-on-correct group-hover:brightness-95 dark:group-hover:brightness-110",
@@ -56,9 +73,6 @@ export const statusTone: Record<StatusTone, StatusToneRecipe> = {
       "border-status-correct-text text-status-correct-text font-semibold bg-zinc-50 dark:bg-zinc-950",
     tile: "bg-status-correct text-status-on-correct border-status-correct hover:brightness-95 dark:hover:brightness-110",
     border: "border-status-correct-text",
-    borderSoft: "border-status-correct/30",
-    hoverText: "hover:text-status-correct-text",
-    hoverBorderSoft: "hover:border-status-correct/40",
   },
   assisted: {
     // Correct with help / after a wrong try / partial: same green as correct, but an
@@ -75,10 +89,6 @@ export const statusTone: Record<StatusTone, StatusToneRecipe> = {
     selfScoreActive:
       "border-status-assisted text-status-on-assisted font-semibold bg-zinc-50 dark:bg-zinc-950",
     tile: "bg-transparent text-status-on-assisted border-status-assisted hover:bg-status-assisted/10",
-    border: "border-status-assisted",
-    borderSoft: "border-status-assisted/50",
-    hoverText: "hover:text-status-on-assisted",
-    hoverBorderSoft: "hover:border-status-assisted",
   },
 
   wrong: {
@@ -104,37 +114,20 @@ export const statusTone: Record<StatusTone, StatusToneRecipe> = {
       "border-dashed border-status-skipped bg-white dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400 group-hover:border-zinc-500 dark:group-hover:border-zinc-400",
     tabMark: "border-[1.5px] border-dashed border-status-skipped",
     softCard: "bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700/60",
-    choiceCard: "bg-zinc-50 dark:bg-zinc-800/50 border-zinc-200 dark:border-zinc-700/60",
-    solidBadge: "bg-zinc-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-200",
     iconCircle: "bg-zinc-200/80 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300",
     text: "text-zinc-500 dark:text-zinc-400",
     dot: "border border-dashed border-status-skipped bg-transparent",
-    selfScoreActive:
-      "border-status-skipped text-zinc-700 dark:text-zinc-300 font-semibold bg-zinc-50 dark:bg-zinc-950",
     tile: "bg-transparent hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border-dashed border-status-skipped",
-    border: "border-status-skipped",
-    borderSoft: "border-status-skipped/50",
-    hoverText: "hover:text-zinc-700 dark:hover:text-zinc-300",
-    hoverBorderSoft: "hover:border-status-skipped",
   },
   notTried: {
     solidCircle:
       "border-status-neutral bg-white dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400 group-hover:border-zinc-500 dark:group-hover:border-zinc-400",
     tabMark: "border-[1.5px] border-status-skipped",
     softCard: "bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800",
-    choiceCard: "bg-zinc-50 dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800",
-    solidBadge:
-      "bg-white dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-800",
     iconCircle: "bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400",
     text: "text-zinc-500 dark:text-zinc-400",
     dot: "bg-status-neutral",
-    selfScoreActive:
-      "border-zinc-400 dark:border-zinc-600 text-zinc-700 dark:text-zinc-300 font-semibold bg-zinc-50 dark:bg-zinc-950",
     tile: "bg-zinc-50 hover:bg-zinc-100 dark:bg-zinc-950 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800",
-    border: "border-status-neutral",
-    borderSoft: "border-zinc-200 dark:border-zinc-800",
-    hoverText: "hover:text-zinc-700 dark:hover:text-zinc-300",
-    hoverBorderSoft: "hover:border-zinc-400 dark:hover:border-zinc-600",
   },
 };
 

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import {
   ArrowUpRight,
   Check,
@@ -32,11 +32,13 @@ import {
 } from "@/lib/reviewRow";
 import { getReviewRequest } from "@/lib/studioRules";
 import { statusTone } from "@/lib/statusTone";
+import { statusSymbolClass } from "@/lib/statusSymbol";
 import { trapName } from "@/lib/titleText";
 import { FormattedText } from "@/components/FormattedText";
 import { MathFigure } from "@/components/MathFigure";
 import { Reveal } from "@/components/motion/Reveal";
 import { ListDot } from "@/components/ui/ListDot";
+import { CopyButton } from "@/components/ui/CopyButton";
 import { ProblemSelfEval } from "@/components/workspace/ProblemSelfEval";
 
 export interface ReviewItemRowProps {
@@ -67,12 +69,6 @@ function toneForOutcome(outcome: ReviewOutcome): ResultCardTone {
   if (outcome === "skipped") return "skipped";
   if (outcome === "awaiting_review" || outcome === "unanswered") return "inputError";
   return "wrong";
-}
-
-function statusSymbolClass(kind: "pass" | "fail" | "none"): string {
-  if (kind === "pass") return `${statusTone.correct.text} font-semibold`;
-  if (kind === "fail") return `${statusTone.wrong.text} font-semibold`;
-  return statusTone.notTried.text;
 }
 
 /** Compact math or PRG/lab result summary shown inside an expanded Review & Sync row. */
@@ -299,7 +295,6 @@ export const ReviewItemRow: React.FC<ReviewItemRowProps> = ({
   onMistakeNoteChange,
   onRevisitNoteChange,
 }) => {
-  const [copiedReview, setCopiedReview] = useState(false);
 
   const meta = getReviewOutcomeMeta(outcome);
   const qLabel = getQuestionLabel(problem.id, index, isLab);
@@ -319,14 +314,6 @@ export const ReviewItemRow: React.FC<ReviewItemRowProps> = ({
   const canCopyReviewRequest =
     (isCode || isLab) && testRep.allPassed && rev.status !== "pass" && Boolean(drillId);
   const reviewRequestCmd = getReviewRequest(drillId, problem.id);
-
-  const handleCopyReview = () => {
-    if (typeof navigator !== "undefined" && navigator.clipboard) {
-      void navigator.clipboard.writeText(reviewRequestCmd);
-    }
-    setCopiedReview(true);
-    window.setTimeout(() => setCopiedReview(false), 1500);
-  };
 
   const unansweredActionLabel = isLab
     ? `Start ${qLabel}`
@@ -503,23 +490,23 @@ export const ReviewItemRow: React.FC<ReviewItemRowProps> = ({
                   )}
 
                   {canCopyReviewRequest && (
-                    <button
-                      type="button"
-                      onClick={handleCopyReview}
+                    <CopyButton
+                      text={reviewRequestCmd}
                       className="inline-flex items-center gap-1.5 min-h-[44px] sm:min-h-[28px] text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 rounded-md"
-                    >
-                      {copiedReview ? (
+                      timeoutMs={1500}
+                      requireClipboard
+                      copiedContent={
                         <>
                           <Check className="w-3.5 h-3.5" aria-hidden="true" />
                           <span>Copied review request</span>
                         </>
-                      ) : (
-                        <>
-                          <Copy className="w-3.5 h-3.5" aria-hidden="true" />
-                          <span>Copy review request</span>
-                        </>
-                      )}
-                    </button>
+                      }
+                    >
+                      <>
+                        <Copy className="w-3.5 h-3.5" aria-hidden="true" />
+                        <span>Copy review request</span>
+                      </>
+                    </CopyButton>
                   )}
                 </div>
               </>
