@@ -39,6 +39,8 @@ function getLanguageBadge(language: string, filename: string): LanguageBadge {
       return { label: "JSX", className: "bg-[#f7df1e] text-black" };
     case "python":
       return { label: "PY", className: "bg-[#3776ab] text-white" };
+    case "sql":
+      return { label: "SQL", className: "bg-indigo-600 text-white" };
     case "bash":
       return { label: "SH", className: "bg-zinc-700 text-white" };
     case "json":
