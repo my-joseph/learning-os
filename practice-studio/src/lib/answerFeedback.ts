@@ -160,7 +160,7 @@ export function formatDiagnosticBody(
   const cleanMsg = polishFeedbackText(lastCheck.verdict, lastCheck.message);
 
   if (tone === "skipped") {
-    return cleanMsg || "Review the steps below when you're ready.";
+    return null;
   }
 
   const rawDiag = lastCheck.diagnostics?.find((d) => d.message?.trim())?.message;

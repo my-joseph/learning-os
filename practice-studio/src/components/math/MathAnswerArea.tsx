@@ -66,10 +66,14 @@ export interface MathAnswerAreaProps {
   choiceLocked: boolean;
   checkingOptionId: string | null;
   choiceResultStatus: ChoiceResultStatus;
+  useSessionInputMode?: boolean;
+  autoFocusOnMount?: boolean;
   onSelectChoice: (optId: string) => void;
   onChange: (val: string) => void;
   onCheck: (inputOverride?: string) => void;
 }
+
+const REVIEW_MATH_INPUT_MODE_KEY = "learningos:review-math-input-mode";
 
 /**
  * Reusable Math answer input area supporting choice options, MathLive + palette + Math/Plain
@@ -94,6 +98,8 @@ export const MathAnswerArea = forwardRef<MathAnswerAreaHandle, MathAnswerAreaPro
       choiceLocked,
       checkingOptionId,
       choiceResultStatus,
+      useSessionInputMode = false,
+      autoFocusOnMount = false,
       onSelectChoice,
       onChange,
       onCheck,
@@ -101,13 +107,24 @@ export const MathAnswerArea = forwardRef<MathAnswerAreaHandle, MathAnswerAreaPro
     ref
   ) {
     const [inputMode, setInputMode] = useState<MathInputMode>("math");
+    const [inputModeLoaded, setInputModeLoaded] = useState(false);
     const [panelOpen, setPanelOpen] = useState(false);
     const answerInputRef = useRef<HTMLInputElement | null>(null);
     const mathLiveRef = useRef<MathLiveInputHandle | null>(null);
 
     useEffect(() => {
-      setInputMode(readMathInputMode());
-    }, []);
+      if (useSessionInputMode) {
+        try {
+          const saved = window.sessionStorage.getItem(REVIEW_MATH_INPUT_MODE_KEY);
+          setInputMode(saved === "plain" ? "plain" : "math");
+        } catch {
+          setInputMode("math");
+        }
+      } else {
+        setInputMode(readMathInputMode());
+      }
+      setInputModeLoaded(true);
+    }, [useSessionInputMode]);
 
     useEffect(() => {
       if (isTouchPrimaryDevice()) {
@@ -117,6 +134,18 @@ export const MathAnswerArea = forwardRef<MathAnswerAreaHandle, MathAnswerAreaPro
 
     const isMathLiveSupported = isMathLiveSupportedAnswerSpec(answerSpec);
     const useMathLive = !isChoice && isMathLiveSupported && inputMode === "math";
+
+    useEffect(() => {
+      if (!autoFocusOnMount || !inputModeLoaded || isChoice) return;
+      const frame = requestAnimationFrame(() => {
+        if (useMathLive) {
+          mathLiveRef.current?.focus();
+        } else {
+          answerInputRef.current?.focus();
+        }
+      });
+      return () => cancelAnimationFrame(frame);
+    }, [autoFocusOnMount, inputModeLoaded, itemKey, useMathLive, isChoice]);
 
     const keyboardProfile = useMemo(
       () =>
@@ -178,13 +207,29 @@ export const MathAnswerArea = forwardRef<MathAnswerAreaHandle, MathAnswerAreaPro
         }
         setPanelOpen(false);
         setInputMode("plain");
-        writeMathInputMode("plain");
+        if (useSessionInputMode) {
+          try {
+            window.sessionStorage.setItem(REVIEW_MATH_INPUT_MODE_KEY, "plain");
+          } catch {
+            // ignore storage errors
+          }
+        } else {
+          writeMathInputMode("plain");
+        }
         requestAnimationFrame(() => {
           answerInputRef.current?.focus();
         });
       } else {
         setInputMode("math");
-        writeMathInputMode("math");
+        if (useSessionInputMode) {
+          try {
+            window.sessionStorage.setItem(REVIEW_MATH_INPUT_MODE_KEY, "math");
+          } catch {
+            // ignore storage errors
+          }
+        } else {
+          writeMathInputMode("math");
+        }
         requestAnimationFrame(() => {
           mathLiveRef.current?.focus();
         });

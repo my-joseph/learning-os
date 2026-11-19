@@ -237,6 +237,18 @@ export function resetProblemForRetry(prob: Problem): Problem {
   };
 }
 
+/** Clear the visible answer/result for a review retry while retaining the attempt history. */
+export function resetAnswerForReviewRetry(state: ProblemState): ProblemState {
+  return {
+    ...state,
+    userInput: "",
+    score: null,
+    divergedStep: null,
+    skipped: false,
+    lastCheck: null,
+  };
+}
+
 /**
  * Reset every problem in a drill using `resetProblemForRetry` and reset `sessionSummary`.
  */

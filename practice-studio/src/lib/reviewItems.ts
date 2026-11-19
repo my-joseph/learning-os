@@ -7,7 +7,9 @@ import {
   getProgressDir,
   getWorkspaceRoot,
   isSafeId,
+  loadIdMapTitles,
 } from "@/lib/paths";
+import { plainTitle } from "@/lib/titleText";
 
 /**
  * Per-item review schedule (mirrors `scripts/review_items.py`):
@@ -28,9 +30,18 @@ export const REVIEW_INTERVALS: Record<number, number> = {
 
 export const MIN_REVIEW_LEVEL = 1;
 export const MAX_REVIEW_LEVEL = 5;
+export const DEFAULT_ITEM_DURATION_MS = 90_000; // 1.5 minutes fallback per item
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+const SAFE_TRAP_RE = /^[A-Za-z0-9@._/-]{1,128}$/;
 const NON_SUBSTANTIVE_VERDICTS = new Set(["invalid input", "parse_error"]);
+
+export type ReviewScopeKind = "subject" | "unit" | "chapter" | "trap" | "drill";
+
+export interface ParsedReviewScope {
+  kind: ReviewScopeKind;
+  value: string;
+}
 
 export interface ReviewItem {
   drillId: string;
@@ -43,6 +54,7 @@ export interface ReviewItem {
   lastReviewed: string;
   dueDate: string;
   revisitNote: string | null;
+  lastWrong?: boolean;
 }
 
 export interface ReviewEvent {
@@ -55,10 +67,97 @@ export interface ReviewEvent {
 export interface ReviewStoreOptions {
   today?: string;
   limit?: number;
+  scope?: string | null;
   dataDir?: string;
   progressDir?: string;
   labsDir?: string;
   rootDir?: string;
+}
+
+export interface DueReviewItemsResult {
+  today: string;
+  items: ReviewItem[];
+  totalDue: number;
+  bySubject: { MTH: number; PRG: number };
+  nextDueDate: string | null;
+  nextDueCount: number;
+  medianDurationMs: number;
+  estimatedMinutes: number;
+  unitTitles: Record<string, string>;
+  scope?: string;
+}
+
+/**
+ * Parse and validate a review scope filter:
+ * `subject:MTH|PRG`, `unit:<code>`, `chapter:<code>`, `trap:<tag>`, `drill:<id>`.
+ */
+export function parseReviewScope(raw?: string | null): ParsedReviewScope | null {
+  if (raw === undefined || raw === null) return null;
+  const text = raw.trim();
+  if (!text) return null;
+  const colonIdx = text.indexOf(":");
+  if (colonIdx <= 0) {
+    throw new Error(`Invalid scope '${raw}': expected '<kind>:<value>'`);
+  }
+  const kind = text.slice(0, colonIdx).trim().toLowerCase();
+  const value = text.slice(colonIdx + 1).trim();
+  if (!value) {
+    throw new Error(`Invalid scope '${raw}': missing value`);
+  }
+  if (kind === "subject") {
+    const upper = value.toUpperCase();
+    if (upper !== "MTH" && upper !== "PRG") {
+      throw new Error(`Invalid subject scope '${raw}': expected MTH or PRG`);
+    }
+    return { kind: "subject", value: upper };
+  }
+  if (kind === "unit" || kind === "chapter" || kind === "drill") {
+    if (!isSafeId(value)) {
+      throw new Error(`Invalid ${kind} scope value: '${value}'`);
+    }
+    return { kind, value };
+  }
+  if (kind === "trap") {
+    if (!SAFE_TRAP_RE.test(value) || value.includes("..")) {
+      throw new Error(`Invalid trap scope value: '${value}'`);
+    }
+    return { kind: "trap", value };
+  }
+  throw new Error(`Unknown scope kind '${kind}'`);
+}
+
+export function matchesReviewScope(
+  item: Pick<ReviewItem, "subject" | "unitCode" | "commonTrapTag" | "drillId">,
+  parsedScope: ParsedReviewScope | null
+): boolean {
+  if (!parsedScope) return true;
+  const { kind, value } = parsedScope;
+  switch (kind) {
+    case "subject":
+      return item.subject === value;
+    case "unit":
+      return item.unitCode === value;
+    case "chapter":
+      return item.unitCode === value || item.unitCode.startsWith(`${value}-U`);
+    case "trap":
+      return item.commonTrapTag === value;
+    case "drill":
+      return item.drillId === value;
+  }
+}
+
+export function estimateReviewMinutes(
+  itemCount: number,
+  medianDurationMs: number = DEFAULT_ITEM_DURATION_MS
+): number {
+  if (itemCount <= 0) return 0;
+  const ms =
+    typeof medianDurationMs === "number" &&
+    Number.isFinite(medianDurationMs) &&
+    medianDurationMs > 0
+      ? medianDurationMs
+      : DEFAULT_ITEM_DURATION_MS;
+  return Math.max(1, Math.round((itemCount * ms) / 60_000));
 }
 
 export function reviewItemKey(drillId: string, qid: string): string {
@@ -241,7 +340,7 @@ export function extractReviewEvents(
 
 export function replayReviewEvents(
   events: ReviewEvent[]
-): { level: number; lastReviewed: string; dueDate: string } | null {
+): { level: number; lastReviewed: string; dueDate: string; lastWrong: boolean } | null {
   if (!Array.isArray(events) || events.length === 0) return null;
   const itemEvents = events.filter((ev) => ev && ev.kind !== "variant");
   if (itemEvents.length === 0) return null;
@@ -278,7 +377,12 @@ export function replayReviewEvents(
     }
   }
 
-  return { level, lastReviewed, dueDate };
+  return {
+    level,
+    lastReviewed,
+    dueDate,
+    lastWrong: !Boolean(itemEvents[itemEvents.length - 1]?.correct),
+  };
 }
 
 function cleanRevisitNote(raw: unknown): string | null {
@@ -320,6 +424,7 @@ export function redactReviewItem(
       typeof rec.dueDate === "string" ? rec.dueDate : undefined
     ),
     revisitNote: cleanRevisitNote(rec.revisitNote),
+    lastWrong: Boolean(rec.lastWrong),
   };
 }
 
@@ -327,7 +432,19 @@ function cmpStr(a: string, b: string): number {
   return a < b ? -1 : a > b ? 1 : 0;
 }
 
-function compareBaseOrder(a: ReviewItem, b: ReviewItem): number {
+function comparePriorityOrder(
+  a: ReviewItem,
+  b: ReviewItem,
+  openWeakTraps?: ReadonlySet<string>
+): number {
+  const aWrong = a.lastWrong ? 0 : 1;
+  const bWrong = b.lastWrong ? 0 : 1;
+  if (aWrong !== bWrong) return aWrong - bWrong;
+
+  const aWeak = a.commonTrapTag && openWeakTraps?.has(a.commonTrapTag) ? 0 : 1;
+  const bWeak = b.commonTrapTag && openWeakTraps?.has(b.commonTrapTag) ? 0 : 1;
+  if (aWeak !== bWeak) return aWeak - bWeak;
+
   if (a.dueDate !== b.dueDate) return cmpStr(a.dueDate, b.dueDate);
   if (a.level !== b.level) return a.level - b.level;
   if (a.unitCode !== b.unitCode) return cmpStr(a.unitCode, b.unitCode);
@@ -336,12 +453,34 @@ function compareBaseOrder(a: ReviewItem, b: ReviewItem): number {
 }
 
 /**
- * Interleave due items so no two consecutive items come from the same unit when avoidable,
- * mixing MTH and PRG subjects (deterministic parity with `scripts.review_items.interleave_due_items`).
+ * Sort due items by priority:
+ * (a) wrong on last attempt,
+ * (b) commonTrapTag is an open weak spot,
+ * (c) most overdue (dueDate ascending), then level / unitCode / drillId / qid.
  */
-export function interleaveDueItems(items: ReviewItem[], limit?: number): ReviewItem[] {
-  const remaining = items.map((it) => redactReviewItem(it));
-  remaining.sort(compareBaseOrder);
+export function prioritizeDueItems(
+  items: ReviewItem[],
+  openWeakTraps?: ReadonlySet<string>
+): ReviewItem[] {
+  const cleaned = items.map((it) => redactReviewItem(it));
+  cleaned.sort((a, b) => comparePriorityOrder(a, b, openWeakTraps));
+  return cleaned;
+}
+
+/**
+ * Pick the top `limit` highest-priority due items first, then interleave them so no two
+ * consecutive items come from the same unit when avoidable, mixing MTH and PRG subjects
+ * (deterministic parity with `scripts.review_items.interleave_due_items`).
+ */
+export function interleaveDueItems(
+  items: ReviewItem[],
+  limit?: number,
+  openWeakTraps?: ReadonlySet<string>
+): ReviewItem[] {
+  let remaining = prioritizeDueItems(items, openWeakTraps);
+  if (typeof limit === "number" && limit >= 0) {
+    remaining = remaining.slice(0, limit);
+  }
 
   const result: ReviewItem[] = [];
   let lastUnit: string | null = null;
@@ -382,7 +521,7 @@ export function interleaveDueItems(items: ReviewItem[], limit?: number): ReviewI
         if (candCount > chosenCount) {
           chosen = cand;
         }
-      } else if (compareBaseOrder(cand, chosen) < 0) {
+      } else if (comparePriorityOrder(cand, chosen, openWeakTraps) < 0) {
         chosen = cand;
       }
     }
@@ -394,9 +533,6 @@ export function interleaveDueItems(items: ReviewItem[], limit?: number): ReviewI
     lastSubject = chosen.subject;
   }
 
-  if (typeof limit === "number" && limit >= 0) {
-    return result.slice(0, limit);
-  }
   return result;
 }
 
@@ -409,39 +545,83 @@ interface ProblemMeta {
   unitCode: string;
   commonTrapTag: string | null;
   archetypeKey: string | null;
+  qualityChecks: string[];
 }
 
 interface DrillMeta {
   drillId: string;
   unitCode: string;
+  unitTitle: string;
   subject: "MTH" | "PRG";
+  lintOverrides: Set<string>;
   problems: Map<string, ProblemMeta>;
 }
 
-function loadVaultUnitMap(rootDir: string): Map<string, string> {
+interface VaultMeta {
+  unitOf: Map<string, string>;
+  archChecks: Map<string, Set<string>>;
+  universalIds: Set<string>;
+}
+
+function loadVaultMeta(rootDir: string): VaultMeta {
   const unitOf = new Map<string, string>();
+  const archChecks = new Map<string, Set<string>>();
+  const universalIds = new Set<string>();
+
+  const universalPath = path.join(rootDir, "code_engine", "quality_checks.json");
+  if (fs.existsSync(universalPath)) {
+    try {
+      const raw = JSON.parse(fs.readFileSync(universalPath, "utf-8")) as unknown;
+      const list = Array.isArray(raw)
+        ? raw
+        : raw && typeof raw === "object" && Array.isArray((raw as { checks?: unknown }).checks)
+        ? ((raw as { checks: unknown[] }).checks)
+        : [];
+      for (const c of list) {
+        if (c && typeof c === "object" && typeof (c as { id?: unknown }).id === "string") {
+          const cid = (c as { id: string }).id;
+          if (cid) universalIds.add(cid);
+        }
+      }
+    } catch {
+      // ignore unreadable universal checks
+    }
+  }
+
   for (const sub of [
     path.join("math_engine", "reasoning_vault"),
     path.join("code_engine", "reasoning_vault"),
   ]) {
     const dir = path.join(rootDir, sub);
     if (!fs.existsSync(dir)) continue;
+    const isCodeVault = sub.startsWith("code_engine");
     for (const entry of fs.readdirSync(dir, { withFileTypes: true }).sort((a, b) => cmpStr(a.name, b.name))) {
       if (!entry.isFile() || !entry.name.endsWith(".json")) continue;
       try {
         const doc = JSON.parse(fs.readFileSync(path.join(dir, entry.name), "utf-8")) as {
-          archetypes?: Array<{ archetypeKey?: unknown; unitCode?: unknown }>;
+          archetypes?: Array<{
+            archetypeKey?: unknown;
+            unitCode?: unknown;
+            qualityChecks?: Array<{ id?: unknown }>;
+          }>;
         };
         for (const arch of doc.archetypes || []) {
+          if (!arch || typeof arch.archetypeKey !== "string" || !arch.archetypeKey) continue;
           if (
-            arch &&
-            typeof arch.archetypeKey === "string" &&
-            arch.archetypeKey &&
             typeof arch.unitCode === "string" &&
             arch.unitCode &&
             !unitOf.has(arch.archetypeKey)
           ) {
             unitOf.set(arch.archetypeKey, arch.unitCode);
+          }
+          if (isCodeVault) {
+            const cids = new Set<string>();
+            for (const c of arch.qualityChecks || []) {
+              if (c && typeof c.id === "string" && c.id) {
+                cids.add(c.id);
+              }
+            }
+            archChecks.set(arch.archetypeKey, cids);
           }
         }
       } catch {
@@ -449,7 +629,7 @@ function loadVaultUnitMap(rootDir: string): Map<string, string> {
       }
     }
   }
-  return unitOf;
+  return { unitOf, archChecks, universalIds };
 }
 
 function loadAllDrillMeta(
@@ -471,14 +651,23 @@ function loadAllDrillMeta(
               drillId?: unknown;
               subject?: unknown;
               unitCode?: unknown;
+              unitTitle?: unknown;
+              lintOverrides?: Array<{ rule?: unknown }>;
               problems?: Array<Record<string, unknown>>;
             };
             if (typeof doc.drillId !== "string" || !doc.drillId) continue;
             const drillUnit = typeof doc.unitCode === "string" ? doc.unitCode : "";
+            const drillUnitTitle = typeof doc.unitTitle === "string" ? doc.unitTitle : "";
             const isPrg =
               doc.subject === "PRG" ||
               drillUnit.startsWith("PRG-") ||
               doc.drillId.startsWith("DRL-PRG-");
+            const lintOverrides = new Set<string>();
+            for (const o of doc.lintOverrides || []) {
+              if (o && typeof o.rule === "string" && o.rule) {
+                lintOverrides.add(o.rule);
+              }
+            }
             const problems = new Map<string, ProblemMeta>();
             for (const p of doc.problems || []) {
               if (!p || typeof p.id !== "string" || !p.id) continue;
@@ -496,17 +685,23 @@ function loadAllDrillMeta(
                 typeof p.commonTrapTag === "string" && p.commonTrapTag
                   ? p.commonTrapTag
                   : null;
+              const qualityChecks = Array.isArray(p.qualityChecks)
+                ? p.qualityChecks.filter((c): c is string => typeof c === "string" && Boolean(c))
+                : [];
               problems.set(p.id, {
                 id: p.id,
                 unitCode: pUnit,
                 commonTrapTag: trap,
                 archetypeKey: archKey,
+                qualityChecks,
               });
             }
             drills.set(doc.drillId, {
               drillId: doc.drillId,
               unitCode: drillUnit,
+              unitTitle: drillUnitTitle,
               subject: isPrg ? "PRG" : "MTH",
+              lintOverrides,
               problems,
             });
           } catch {
@@ -526,6 +721,7 @@ function loadAllDrillMeta(
       try {
         const cfg = JSON.parse(fs.readFileSync(cfgPath, "utf-8")) as {
           labId?: unknown;
+          title?: unknown;
           chapterCode?: unknown;
           unitsUsed?: unknown[];
           milestones?: Array<Record<string, unknown>>;
@@ -542,17 +738,23 @@ function loadAllDrillMeta(
           const msUnits = Array.isArray(ms.units) ? ms.units : [];
           const msUnit =
             (typeof msUnits[0] === "string" && msUnits[0]) || defaultUnit;
+          const qualityChecks = Array.isArray(ms.qualityChecks)
+            ? ms.qualityChecks.filter((c): c is string => typeof c === "string" && Boolean(c))
+            : [];
           problems.set(ms.id, {
             id: ms.id,
             unitCode: msUnit,
             commonTrapTag: null,
             archetypeKey: null,
+            qualityChecks,
           });
         }
         drills.set(cfg.labId, {
           drillId: cfg.labId,
           unitCode: defaultUnit,
+          unitTitle: typeof cfg.title === "string" ? cfg.title : "",
           subject: "PRG",
+          lintOverrides: new Set<string>(),
           problems,
         });
       } catch {
@@ -564,40 +766,71 @@ function loadAllDrillMeta(
   return drills;
 }
 
-function extractFirstProgSignal(state: Record<string, unknown>): string | null {
-  const reviews = Array.isArray(state.reviews)
-    ? (state.reviews as Array<Record<string, unknown>>)
-    : [];
-  for (const r of reviews) {
-    if (!r || typeof r !== "object") continue;
-    const findings = Array.isArray(r.findings)
-      ? (r.findings as Array<Record<string, unknown>>)
-      : [];
-    for (const f of findings) {
-      if (f && !f.disputed && typeof f.check === "string" && f.check) {
-        return f.check;
-      }
-    }
-    const lint = Array.isArray(r.lint)
-      ? (r.lint as Array<Record<string, unknown>>)
-      : [];
-    for (const l of lint) {
-      if (l && typeof l.rule === "string" && l.rule) {
-        return l.rule;
-      }
-    }
-  }
-  return null;
+const WEAK_SPOT_MIN_MATCHES = 2;
+const WEAK_SPOT_CLOSE_AFTER = 2;
+
+interface LoadedProgressItem {
+  drillId: string;
+  unitCode: string;
+  qid: string;
+  subject: "MTH" | "PRG";
+  trap: string | null;
+  archetypeKey: string | null;
+  ts: string;
+  score: number;
+  skipped: boolean;
+  assisted: boolean;
+  passed: boolean;
+  matched: string[];
+  signals: string[];
+  applicableChecks: Set<string>;
+  lintOverrides: Set<string>;
+  revisitNote: string | null;
+  state: Record<string, unknown>;
 }
 
-function extractLastMatchedTrap(state: Record<string, unknown>): string | null {
+function firstAttemptTs(state: Record<string, unknown>, fallback: string): string {
   const attempts = Array.isArray(state.attempts)
     ? (state.attempts as Array<Record<string, unknown>>)
     : [];
-  let last: string | null = null;
+  if (attempts.length > 0) {
+    const t = attempts[0]?.ts;
+    return typeof t === "string" ? t : fallback;
+  }
+  const reviews = Array.isArray(state.reviews)
+    ? (state.reviews as Array<Record<string, unknown>>)
+    : [];
+  if (reviews.length > 0) {
+    const t = reviews[0]?.at;
+    return typeof t === "string" ? t : fallback;
+  }
+  return fallback;
+}
+
+function isAssistedState(state: Record<string, unknown>): boolean {
+  const attempts = (
+    Array.isArray(state.attempts)
+      ? (state.attempts as Array<Record<string, unknown>>)
+      : []
+  ).filter((a) => a && typeof a === "object" && a.kind !== "variant");
+  return Boolean(
+    state.setupRevealedBeforeAnswer ||
+      state.solutionRevealedBeforeAnswer ||
+      state.exampleViewedAt ||
+      (typeof state.hintsRevealed === "number" && state.hintsRevealed > 0) ||
+      attempts.some((a) => a.setupRevealed || a.solutionRevealed || a.exampleViewed)
+  );
+}
+
+/** Collect matchedTrap tags from original attempts and server-stored variant attempts (mirrors `scripts.weak_spots._collect_matched_traps`). */
+function collectMatchedTraps(state: Record<string, unknown>): string[] {
+  const matched: string[] = [];
+  const attempts = Array.isArray(state.attempts)
+    ? (state.attempts as Array<Record<string, unknown>>)
+    : [];
   for (const a of attempts) {
     if (a && typeof a.matchedTrap === "string" && a.matchedTrap) {
-      last = a.matchedTrap;
+      matched.push(a.matchedTrap);
     }
   }
   const variants =
@@ -610,79 +843,266 @@ function extractLastMatchedTrap(state: Record<string, unknown>): string | null {
       if (!rec || !Array.isArray(rec.attempts)) continue;
       for (const a of rec.attempts as Array<Record<string, unknown>>) {
         if (a && typeof a.matchedTrap === "string" && a.matchedTrap) {
-          last = a.matchedTrap;
+          matched.push(a.matchedTrap);
         }
       }
     }
   }
-  return last;
+  return matched;
 }
 
-function isPracticedState(
-  state: Record<string, unknown>,
-  subject: "MTH" | "PRG"
-): boolean {
-  if (state.skipped) return true;
-  if (subject === "PRG") {
-    const reviews = Array.isArray(state.reviews) ? state.reviews : [];
-    if (reviews.length > 0) return true;
-    if (state.lastTestReport !== undefined && state.lastTestReport !== null) return true;
-    if (state.score !== undefined && state.score !== null) return true;
-    const attempts = Array.isArray(state.attempts)
+/** Mirrors `progress_store.item_score`. */
+function computeMathItemScore(state: Record<string, unknown>): [number, boolean] {
+  const attempts = (
+    Array.isArray(state.attempts)
       ? (state.attempts as Array<Record<string, unknown>>)
-      : [];
+      : []
+  ).filter((a) => a && typeof a === "object" && a.kind !== "variant");
+  const assisted = isAssistedState(state);
+  if (state.skipped) {
+    return [0.0, assisted];
+  }
+  const substantive = attempts.filter(
+    (a) => a && typeof a === "object" && !NON_SUBSTANTIVE_VERDICTS.has(String(a.verdict || ""))
+  );
+  if (substantive.length > 0) {
+    const first = substantive[0]?.verdict;
+    if (first === "correct" && !assisted) {
+      return [1.0, false];
+    }
     if (
-      attempts.some(
-        (a) => a && !NON_SUBSTANTIVE_VERDICTS.has(String(a.verdict || ""))
+      substantive.some(
+        (a) =>
+          a.verdict === "correct" ||
+          a.verdict === "equivalent_not_in_form" ||
+          a.verdict === "partial"
       )
     ) {
-      return true;
+      return [0.5, assisted];
     }
-    if (state.score !== null && state.score !== undefined) return true;
-    return false;
+    return [0.0, assisted];
   }
-  const attempts = Array.isArray(state.attempts)
-    ? (state.attempts as Array<Record<string, unknown>>)
+  if (typeof state.score !== "number" || Number.isNaN(state.score)) {
+    return [-1.0, assisted];
+  }
+  return [assisted ? Math.min(state.score, 0.5) : state.score, assisted];
+}
+
+/** Mirrors `scripts.weak_spots._prg_item_score`. */
+function computePrgItemScore(state: Record<string, unknown>): number {
+  if (state.skipped) return 0.0;
+  const assisted = isAssistedState(state);
+  const reviews = Array.isArray(state.reviews)
+    ? (state.reviews as Array<Record<string, unknown>>)
     : [];
-  const substantive = attempts.filter(
-    (a) => a && !NON_SUBSTANTIVE_VERDICTS.has(String(a.verdict || ""))
-  );
-  if (substantive.length > 0) return true;
-  const lastCheck = state.lastCheck as Record<string, unknown> | null | undefined;
-  if (
-    lastCheck &&
-    typeof lastCheck === "object" &&
-    typeof lastCheck.verdict === "string" &&
-    lastCheck.verdict &&
-    !NON_SUBSTANTIVE_VERDICTS.has(lastCheck.verdict)
-  ) {
-    return true;
+  if (reviews.length > 0) {
+    if (reviews[reviews.length - 1]?.verdict === "pass") {
+      const raw = reviews[0]?.verdict === "pass" ? 1.0 : 0.5;
+      return assisted ? Math.min(raw, 0.5) : raw;
+    }
+    return 0.0;
   }
-  return typeof state.score === "number" && !Number.isNaN(state.score);
+  if (
+    (state.lastTestReport !== undefined && state.lastTestReport !== null) ||
+    (state.score !== undefined && state.score !== null)
+  ) {
+    return 0.0;
+  }
+  if (Array.isArray(state.attempts) && state.attempts.length > 0) {
+    const [sc] = computeMathItemScore(state);
+    return sc;
+  }
+  return -1.0;
+}
+
+function extractPrgSignals(state: Record<string, unknown>): string[] {
+  const sigs: string[] = [];
+  const reviews = Array.isArray(state.reviews)
+    ? (state.reviews as Array<Record<string, unknown>>)
+    : [];
+  for (const r of reviews) {
+    if (!r || typeof r !== "object") continue;
+    const findings = Array.isArray(r.findings)
+      ? (r.findings as Array<Record<string, unknown>>)
+      : [];
+    for (const f of findings) {
+      if (f && !f.disputed && typeof f.check === "string" && f.check && !sigs.includes(f.check)) {
+        sigs.push(f.check);
+      }
+    }
+    const lint = Array.isArray(r.lint)
+      ? (r.lint as Array<Record<string, unknown>>)
+      : [];
+    for (const l of lint) {
+      if (l && typeof l.rule === "string" && l.rule && !sigs.includes(l.rule)) {
+        sigs.push(l.rule);
+      }
+    }
+  }
+  return sigs;
+}
+
+function isPrgSignalApplicable(sig: string, item: LoadedProgressItem): boolean {
+  if (sig.startsWith("U-") || sig.startsWith("QC-")) {
+    return item.applicableChecks.has(sig);
+  }
+  return !item.lintOverrides.has(sig);
 }
 
 /**
- * Backfill `{ "<drillId>/<qid>": ReviewItem }` from `progress/<DRILL_ID>.json` and drill definitions.
+ * Compute open weak-spot trap/check tags from loaded progress items
+ * (exact deterministic parity with `scripts.weak_spots.trap_status`).
  */
-export function buildScheduleFromProgress(
-  options?: ReviewStoreOptions
-): Record<string, ReviewItem> {
+function computeOpenWeakTrapsFromLoaded(loaded: LoadedProgressItem[]): Set<string> {
+  const open = new Set<string>();
+
+  const mthItems = loaded.filter((i) => i.subject !== "PRG");
+  const mthTraps = new Set<string>();
+  for (const it of mthItems) {
+    for (const t of it.matched) mthTraps.add(t);
+    if (it.trap) mthTraps.add(it.trap);
+  }
+  mthTraps.forEach((trap) => {
+    const hits = mthItems.filter((i) => i.matched.includes(trap));
+    let n = 0;
+    for (const h of hits) {
+      for (const m of h.matched) {
+        if (m === trap) n += 1;
+      }
+    }
+    if (n < WEAK_SPOT_MIN_MATCHES) return;
+    let lastHit = "";
+    for (const h of hits) {
+      if (h.ts > lastHit) lastHit = h.ts;
+    }
+    const laterByDrill = new Map<string, LoadedProgressItem[]>();
+    for (const it of mthItems) {
+      if (
+        (it.trap === trap || it.matched.includes(trap)) &&
+        it.ts > lastHit &&
+        !it.matched.includes(trap)
+      ) {
+        const list = laterByDrill.get(it.drillId) || [];
+        list.push(it);
+        laterByDrill.set(it.drillId, list);
+      }
+    }
+    let cleanCount = 0;
+    laterByDrill.forEach((its) => {
+      if (its.every((x) => x.score === 1.0)) {
+        cleanCount += 1;
+      }
+    });
+    if (cleanCount < WEAK_SPOT_CLOSE_AFTER) {
+      open.add(trap);
+    }
+  });
+
+  const prgItems = loaded.filter((i) => i.subject === "PRG");
+  const prgSignals = new Set<string>();
+  for (const it of prgItems) {
+    for (const s of it.signals) prgSignals.add(s);
+  }
+  prgSignals.forEach((sig) => {
+    const hitIndices: number[] = [];
+    for (let idx = 0; idx < prgItems.length; idx += 1) {
+      if (prgItems[idx].signals.includes(sig)) {
+        hitIndices.push(idx);
+      }
+    }
+    if (hitIndices.length < WEAK_SPOT_MIN_MATCHES) return;
+    const lastIdx = hitIndices[hitIndices.length - 1];
+    let cleanCount = 0;
+    for (let idx = lastIdx + 1; idx < prgItems.length; idx += 1) {
+      const it = prgItems[idx];
+      if (it.passed && isPrgSignalApplicable(sig, it) && !it.signals.includes(sig)) {
+        cleanCount += 1;
+      }
+    }
+    if (cleanCount < WEAK_SPOT_CLOSE_AFTER) {
+      open.add(sig);
+    }
+  });
+
+  return open;
+}
+
+/**
+ * Compute median positive `durationMs` across past attempts (fallback 1.5 min = 90_000 ms).
+ * Mirrors `scripts.review_items.estimate_median_duration_ms`.
+ */
+export function computeMedianDurationMsFromLoaded(
+  loaded: ReadonlyArray<{ subject: "MTH" | "PRG"; state: Record<string, unknown> }>,
+  subject?: "MTH" | "PRG" | null
+): number {
+  const allDurations: number[] = [];
+  const bySubject: Record<"MTH" | "PRG", number[]> = { MTH: [], PRG: [] };
+
+  for (const item of loaded) {
+    const state = item.state;
+    const attempts = Array.isArray(state.attempts)
+      ? (state.attempts as Array<Record<string, unknown>>)
+      : [];
+    const perAttempt: number[] = [];
+    for (const att of attempts) {
+      if (!att || typeof att !== "object") continue;
+      if (att.kind === "variant") continue;
+      if (NON_SUBSTANTIVE_VERDICTS.has(String(att.verdict || ""))) continue;
+      const dur = att.durationMs;
+      if (typeof dur === "number" && Number.isFinite(dur) && dur > 0) {
+        perAttempt.push(dur);
+      }
+    }
+    if (perAttempt.length > 0) {
+      allDurations.push(...perAttempt);
+      bySubject[item.subject].push(...perAttempt);
+    } else {
+      const stateDur = state.durationMs;
+      if (typeof stateDur === "number" && Number.isFinite(stateDur) && stateDur > 0) {
+        allDurations.push(stateDur);
+        bySubject[item.subject].push(stateDur);
+      }
+    }
+  }
+
+  const pool =
+    subject && (subject === "MTH" || subject === "PRG") && bySubject[subject].length > 0
+      ? bySubject[subject]
+      : allDurations;
+  if (pool.length === 0) {
+    return DEFAULT_ITEM_DURATION_MS;
+  }
+  const sorted = [...pool].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  if (sorted.length % 2 === 1) {
+    return Math.round(sorted[mid]);
+  }
+  return Math.round((sorted[mid - 1] + sorted[mid]) / 2);
+}
+
+function loadProgressContext(options?: ReviewStoreOptions): {
+  loaded: LoadedProgressItem[];
+  drills: Map<string, DrillMeta>;
+} {
   const rootDir = options?.rootDir ?? getWorkspaceRoot();
   const dataDir = options?.dataDir ?? getDrillsDataDir();
   const progressDir = options?.progressDir ?? getProgressDir();
   const labsDir = options?.labsDir ?? getLabsDir();
 
-  if (!fs.existsSync(progressDir)) return {};
-
-  const unitOf = loadVaultUnitMap(rootDir);
+  const { unitOf, archChecks, universalIds } = loadVaultMeta(rootDir);
   const drills = loadAllDrillMeta(dataDir, labsDir, unitOf);
-  const schedule: Record<string, ReviewItem> = {};
+
+  if (!fs.existsSync(progressDir)) {
+    return { loaded: [], drills };
+  }
 
   const files = fs
     .readdirSync(progressDir, { withFileTypes: true })
     .filter((e) => e.isFile() && e.name.endsWith(".json"))
     .map((e) => e.name)
     .sort(cmpStr);
+
+  const loaded: LoadedProgressItem[] = [];
 
   for (const name of files) {
     if (name === "review_items.json" || name.startsWith("_")) continue;
@@ -716,31 +1136,111 @@ export function buildScheduleFromProgress(
     drill.problems.forEach((probMeta, qid) => {
       const state = progProblems[qid];
       if (!state || typeof state !== "object") return;
-      if (!isPracticedState(state, drill.subject)) return;
+      const revisitNote = cleanRevisitNote(state.revisitNote);
 
-      const events = extractReviewEvents(state, fallbackTs);
-      const replayed = replayReviewEvents(events);
-      if (!replayed) return;
+      if (drill.subject === "PRG") {
+        const score = computePrgItemScore(state);
+        if (score < 0) return;
+        const assisted = isAssistedState(state);
+        const reviews = Array.isArray(state.reviews)
+          ? (state.reviews as Array<Record<string, unknown>>)
+          : [];
+        const sigs = extractPrgSignals(state);
+        const applicableChecks = new Set<string>(universalIds);
+        if (probMeta.qualityChecks.length > 0) {
+          for (const cid of probMeta.qualityChecks) applicableChecks.add(cid);
+        } else if (probMeta.archetypeKey) {
+          const ac = archChecks.get(probMeta.archetypeKey);
+          if (ac) ac.forEach((cid) => applicableChecks.add(cid));
+        }
+        loaded.push({
+          drillId,
+          unitCode: probMeta.unitCode,
+          qid,
+          subject: "PRG",
+          trap: probMeta.commonTrapTag || (sigs[0] ?? null),
+          archetypeKey: probMeta.archetypeKey,
+          ts: firstAttemptTs(state, fallbackTs),
+          score,
+          skipped: Boolean(state.skipped),
+          assisted,
+          passed:
+            (reviews.length > 0 && reviews[reviews.length - 1]?.verdict === "pass") ||
+            score === 1.0,
+          matched: [],
+          signals: sigs,
+          applicableChecks,
+          lintOverrides: drill.lintOverrides,
+          revisitNote,
+          state,
+        });
+      } else {
+        const [score, assisted] = computeMathItemScore(state);
+        if (score < 0) return;
+        const matched = collectMatchedTraps(state);
+        loaded.push({
+          drillId,
+          unitCode: probMeta.unitCode,
+          qid,
+          subject: "MTH",
+          trap: probMeta.commonTrapTag,
+          archetypeKey: probMeta.archetypeKey,
+          ts: firstAttemptTs(state, fallbackTs),
+          score,
+          skipped: Boolean(state.skipped),
+          assisted,
+          passed: score === 1.0,
+          matched,
+          signals: [],
+          applicableChecks: new Set<string>(),
+          lintOverrides: new Set<string>(),
+          revisitNote,
+          state,
+        });
+      }
+    });
+  }
 
-      const trapTag =
-        probMeta.commonTrapTag ||
-        (drill.subject === "PRG"
-          ? extractFirstProgSignal(state)
-          : extractLastMatchedTrap(state));
+  loaded.sort((a, b) => cmpStr(a.ts, b.ts));
+  return { loaded, drills };
+}
 
-      const key = reviewItemKey(drillId, qid);
-      schedule[key] = redactReviewItem({
-        drillId,
-        qid,
-        unitCode: probMeta.unitCode,
-        subject: drill.subject,
-        commonTrapTag: trapTag,
-        archetypeKey: probMeta.archetypeKey,
-        level: replayed.level,
-        lastReviewed: replayed.lastReviewed,
-        dueDate: replayed.dueDate,
-        revisitNote: cleanRevisitNote(state.revisitNote),
-      });
+function buildScheduleFromLoaded(
+  loaded: LoadedProgressItem[]
+): Record<string, ReviewItem> {
+  const schedule: Record<string, ReviewItem> = {};
+  for (const item of loaded) {
+    if (!item.drillId || !item.qid) continue;
+    let events = extractReviewEvents(item.state, item.ts);
+    if (events.length === 0) {
+      events = [
+        {
+          date: normalizeReviewDate(item.ts),
+          correct: item.score > 0 && !item.skipped,
+          assisted: Boolean(item.assisted || (item.score > 0 && item.score < 1.0)),
+        },
+      ];
+    }
+    const replayed = replayReviewEvents(events);
+    if (!replayed) continue;
+
+    const trapTag =
+      item.trap ||
+      (item.matched.length > 0 ? item.matched[item.matched.length - 1] : null);
+
+    const key = reviewItemKey(item.drillId, item.qid);
+    schedule[key] = redactReviewItem({
+      drillId: item.drillId,
+      qid: item.qid,
+      unitCode: item.unitCode,
+      subject: item.subject,
+      commonTrapTag: trapTag,
+      archetypeKey: item.archetypeKey,
+      level: replayed.level,
+      lastReviewed: replayed.lastReviewed,
+      dueDate: replayed.dueDate,
+      revisitNote: item.revisitNote,
+      lastWrong: replayed.lastWrong,
     });
   }
 
@@ -750,6 +1250,16 @@ export function buildScheduleFromProgress(
     ordered[k] = schedule[k];
   }
   return ordered;
+}
+
+/**
+ * Backfill `{ "<drillId>/<qid>": ReviewItem }` from `progress/<DRILL_ID>.json` and drill definitions.
+ */
+export function buildScheduleFromProgress(
+  options?: ReviewStoreOptions
+): Record<string, ReviewItem> {
+  const { loaded } = loadProgressContext(options);
+  return buildScheduleFromLoaded(loaded);
 }
 
 export function loadSavedReviewItems(
@@ -801,12 +1311,10 @@ export function writeReviewItemsStore(
   return filePath;
 }
 
-export function getReviewItemsSchedule(
-  options?: ReviewStoreOptions
+function mergeSavedSchedule(
+  backfilled: Record<string, ReviewItem>,
+  saved: Record<string, ReviewItem>
 ): Record<string, ReviewItem> {
-  const progressDir = options?.progressDir ?? getProgressDir();
-  const backfilled = buildScheduleFromProgress({ ...options, progressDir });
-  const saved = loadSavedReviewItems(progressDir);
   if (Object.keys(saved).length === 0) {
     return backfilled;
   }
@@ -843,25 +1351,81 @@ export function getReviewItemsSchedule(
   return ordered;
 }
 
-export function getDueReviewItems(options?: ReviewStoreOptions): {
-  today: string;
-  items: ReviewItem[];
-  totalDue: number;
-  nextDueDate: string | null;
-} {
+export function getReviewItemsSchedule(
+  options?: ReviewStoreOptions
+): Record<string, ReviewItem> {
+  const progressDir = options?.progressDir ?? getProgressDir();
+  const backfilled = buildScheduleFromProgress({ ...options, progressDir });
+  const saved = loadSavedReviewItems(progressDir);
+  return mergeSavedSchedule(backfilled, saved);
+}
+
+export function getDueReviewItems(options?: ReviewStoreOptions): DueReviewItemsResult {
+  const parsedScope = parseReviewScope(options?.scope);
   const today = normalizeReviewDate(options?.today);
-  const schedule = getReviewItemsSchedule(options);
+  const rootDir = options?.rootDir ?? getWorkspaceRoot();
+  const progressDir = options?.progressDir ?? getProgressDir();
+
+  const { loaded, drills } = loadProgressContext({ ...options, rootDir, progressDir });
+  const openWeakTraps = computeOpenWeakTrapsFromLoaded(loaded);
+  const backfilled = buildScheduleFromLoaded(loaded);
+  const saved = loadSavedReviewItems(progressDir);
+  const schedule = mergeSavedSchedule(backfilled, saved);
+
   const allItems = Object.values(schedule);
-  const due = allItems.filter((it) => it.dueDate <= today);
-  const futureDates = allItems
+  const allDue = allItems.filter((it) => it.dueDate <= today);
+  const bySubject = {
+    MTH: allDue.filter((it) => it.subject === "MTH").length,
+    PRG: allDue.filter((it) => it.subject === "PRG").length,
+  };
+
+  const scopedAll = allItems.filter((it) => matchesReviewScope(it, parsedScope));
+  const scopedDue = scopedAll.filter((it) => it.dueDate <= today);
+  const futureDates = scopedAll
     .filter((it) => it.dueDate > today)
     .map((it) => it.dueDate)
     .sort(cmpStr);
+  const nextDueDate = futureDates[0] ?? null;
+  const nextDueCount = nextDueDate
+    ? futureDates.filter((d) => d === nextDueDate).length
+    : 0;
+
+  const picked = interleaveDueItems(scopedDue, options?.limit, openWeakTraps);
+
+  const scopeSubject =
+    parsedScope?.kind === "subject" ? (parsedScope.value as "MTH" | "PRG") : null;
+  const medianDurationMs = computeMedianDurationMsFromLoaded(loaded, scopeSubject);
+  const estimatedMinutes = estimateReviewMinutes(scopedDue.length, medianDurationMs);
+
+  const idMapTitles = loadIdMapTitles(rootDir);
+  const drillTitleByUnit = new Map<string, string>();
+  drills.forEach((d) => {
+    if (d.unitCode && d.unitTitle && !drillTitleByUnit.has(d.unitCode)) {
+      drillTitleByUnit.set(d.unitCode, d.unitTitle);
+    }
+  });
+  const unitTitles: Record<string, string> = {};
+  for (const it of picked) {
+    if (it.unitCode && !unitTitles[it.unitCode]) {
+      const rawTitle =
+        idMapTitles.get(it.unitCode) ||
+        drillTitleByUnit.get(it.unitCode) ||
+        it.unitCode;
+      unitTitles[it.unitCode] = plainTitle(rawTitle) || it.unitCode;
+    }
+  }
+
   return {
     today,
-    items: interleaveDueItems(due, options?.limit),
-    totalDue: due.length,
-    nextDueDate: futureDates[0] ?? null,
+    items: picked,
+    totalDue: scopedDue.length,
+    bySubject,
+    nextDueDate,
+    nextDueCount,
+    medianDurationMs,
+    estimatedMinutes,
+    unitTitles,
+    ...(parsedScope ? { scope: `${parsedScope.kind}:${parsedScope.value}` } : {}),
   };
 }
 
@@ -881,7 +1445,7 @@ function lookupProblemMetadata(
   const labsDir = options?.labsDir ?? getLabsDir();
   const progressDir = options?.progressDir ?? getProgressDir();
 
-  const unitOf = loadVaultUnitMap(rootDir);
+  const { unitOf } = loadVaultMeta(rootDir);
   const drills = loadAllDrillMeta(dataDir, labsDir, unitOf);
   const drill = drills.get(drillId);
   const prob = drill?.problems.get(qid);
@@ -953,6 +1517,7 @@ export function recordReviewItemResult(
   base.level = step.level;
   base.lastReviewed = step.lastReviewed;
   base.dueDate = step.dueDate;
+  base.lastWrong = !Boolean(input.correct);
 
   const updated = redactReviewItem(base);
   schedule[key] = updated;

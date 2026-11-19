@@ -82,7 +82,7 @@ assert.doesNotMatch(codeDashboard, /Diverged here/);
 assert.match(answerResultCard, /FormattedText text=\{c\.label\}/);
 assert.doesNotMatch(answerResultCard, /border-l-/);
 assert.match(codeDashboard, /<AnswerResultCard/);
-assert.match(codeDashboard, /aria-label=\{`Answer for \$\{isLab \? "milestone" : "problem"\} \$\{problem\.id\}`\}/);
+assert.match(codeDashboard, /aria-label=\{isReviewSession\s*\? `Answer for \$\{isLab \? "milestone" : "problem"\} \$\{index \+ 1\} of \$\{totalQuestions \?\? 1\}`\s*:\s*`Answer for \$\{isLab \? "milestone" : "problem"\} \$\{problem\.id\}`\}/);
 assert.match(codeDashboard, /Copy review request/);
 assert.match(codeDashboard, /Run checks/);
 assert.match(codeDashboard, /Unlocks after review passes/);
@@ -93,6 +93,10 @@ assert.match(codeDashboard, /workspace file from disk/);
 assert.match(mathItemView, /<AnswerResultCard/);
 assert.match(mathItemView, /`Answer for question \$\{problem\.id\}`/);
 assert.match(mathItemView, /<ProblemAssistSection/);
+assert.match(
+  mathWorkspace,
+  /ariaLabel=\{\s*isReviewSession\s*\?\s*`Answer for question \$\{index \+ 1\} of \$\{totalQuestions \?\? 1\}`\s*:\s*`Answer for question \$\{problem\.id\}`\s*\}/
+);
 assert.match(codeDashboard, /<ProblemAssistSection/);
 assert.match(mathWorkspace, /max-w-\[720px\]/);
 assert.match(mathWorkspace, /<ProblemSelfEval/);

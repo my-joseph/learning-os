@@ -3,6 +3,7 @@ import path from "path";
 import { getDrillsDataDir, getProgressDir, getWorkspaceRoot, loadIdMapTitles } from "@/lib/paths";
 import { drillHref } from "@/lib/routes";
 import { plainTitle } from "@/lib/titleText";
+export { formatReviewDueDate } from "@/lib/reviewDate";
 
 export interface MasteryCap {
   capped: boolean;
@@ -28,9 +29,17 @@ export interface DueTodayUnit {
   masteryCap: MasteryCap;
 }
 
+export interface UnitMasteryContext {
+  unitCode: string;
+  title: string;
+  mastery: number;
+  masteryCap: MasteryCap;
+}
+
 export interface DueTodayResponse {
   today: string;
   units: DueTodayUnit[];
+  unitMastery?: Record<string, UnitMasteryContext>;
 }
 
 export interface WeakSpotItem {
@@ -292,8 +301,22 @@ export function getDueTodayUnits(options?: {
   const l4Units = unitsWithL4Challenge(dataDir, progressDir);
 
   const units: DueTodayUnit[] = [];
+  const unitMastery: Record<string, UnitMasteryContext> = {};
   for (const [unitCode, entry] of Object.entries(schedule)) {
     if (!entry || typeof entry !== "object") continue;
+    const title =
+      plainTitle(typeof entry.title === "string" ? entry.title : "") ||
+      plainTitle(idMapTitles.get(unitCode)) ||
+      unitCode;
+    const mastery = clampMastery(entry.mastery);
+    const masteryCap = resolveMasteryCap(unitCode, mastery, entry.masteryCap, l4Units);
+    unitMastery[unitCode] = {
+      unitCode,
+      title,
+      mastery,
+      masteryCap,
+    };
+
     const rawNext = typeof entry.nextReview === "string" ? entry.nextReview.trim().slice(0, 10) : "";
     if (!/^\d{4}-\d{2}-\d{2}$/.test(rawNext) || rawNext > today) {
       continue;
@@ -304,11 +327,6 @@ export function getDueTodayUnits(options?: {
         : null;
     const drillId = latestDrills.get(unitCode) ?? null;
     const href = drillId ? drillHref(drillId) : null;
-    const title =
-      plainTitle(typeof entry.title === "string" ? entry.title : "") ||
-      plainTitle(idMapTitles.get(unitCode)) ||
-      unitCode;
-    const mastery = clampMastery(entry.mastery);
 
     units.push({
       unitCode,
@@ -318,7 +336,7 @@ export function getDueTodayUnits(options?: {
       nextReview: rawNext,
       drillId,
       href: href && href !== "/" ? href : null,
-      masteryCap: resolveMasteryCap(unitCode, mastery, entry.masteryCap, l4Units),
+      masteryCap,
     });
   }
 
@@ -327,7 +345,7 @@ export function getDueTodayUnits(options?: {
     return a.unitCode.localeCompare(b.unitCode);
   });
 
-  return { today, units };
+  return { today, units, unitMastery };
 }
 
 /** Read-only lookup of current `_review_schedule.json` entries for a list of unit codes. */

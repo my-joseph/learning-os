@@ -22,7 +22,7 @@ import {
   pickTopWeakSpot,
   sortNeedsAttention,
 } from "@/lib/reviewRow";
-import { isLabId } from "@/lib/routes";
+import { isLabId, subjectOf } from "@/lib/routes";
 import {
   buildSyncPreview,
   countSummaryChanges,
@@ -142,6 +142,7 @@ export const ReviewSyncPage: React.FC<ReviewPanelProps> = ({
     currentDrill.sessionSummary?.syncedToNotionAt || syncState.at || null;
 
   const sidePanelData = useSidePanelData(
+    subjectOf(currentDrill.drillId) ?? "math",
     dueReviewCountProp === undefined || weakSpotUnitsProp === undefined
       ? currentDrill.unitCode
       : null,

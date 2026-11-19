@@ -30,7 +30,10 @@ export interface AnswerResultCardProps {
   problem?: Pick<Problem, "commonTrapTag" | "answerSpec">;
   mistakeTags?: MistakeTag[];
   isLastQuestion?: boolean;
+  isReviewSession?: boolean;
+  isCorrectOnRetry?: boolean;
   nextLabel?: string;
+  scheduleNote?: string | null;
   backLabel?: string;
   titleOverride?: string;
   autoFocusPrimaryAction?: boolean;
@@ -62,7 +65,10 @@ export const AnswerResultCard: React.FC<AnswerResultCardProps> = ({
   problem,
   mistakeTags = [],
   isLastQuestion = false,
+  isReviewSession = false,
+  isCorrectOnRetry = false,
   nextLabel = "Next question",
+  scheduleNote = null,
   backLabel,
   titleOverride,
   autoFocusPrimaryAction = false,
@@ -83,6 +89,7 @@ export const AnswerResultCard: React.FC<AnswerResultCardProps> = ({
         preferBackAction: Boolean(onBack),
       })
     : null;
+  const actionKind = isReviewSession && model?.tone === "skipped" ? "next" : model?.actionKind;
 
   const primaryBtnRef = useRef<HTMLButtonElement | null>(null);
   const cleanupFrame = useRef<number | null>(null);
@@ -113,7 +120,11 @@ export const AnswerResultCard: React.FC<AnswerResultCardProps> = ({
   const secondaryLinkClass =
     "inline-flex items-center gap-1 min-h-[44px] sm:min-h-0 py-1 sm:py-0.5 text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-zinc-100 disabled:opacity-50 transition-colors rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400";
 
-  const displayTitle = titleOverride || model?.title || "";
+  const displayTitle =
+    titleOverride ||
+    (isReviewSession && model?.tone === "correct" && isCorrectOnRetry
+      ? "Correct on retry"
+      : model?.title || "");
   const visibleSecondary = secondaryActions.filter(Boolean);
 
   return (
@@ -139,8 +150,13 @@ export const AnswerResultCard: React.FC<AnswerResultCardProps> = ({
                   <div className="min-h-7 flex flex-wrap items-center gap-x-2.5 gap-y-0.5">
                     <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
                       {displayTitle}
+                      {scheduleNote && (
+                        <span className="font-normal text-zinc-600 dark:text-zinc-400">
+                          {" "}· {scheduleNote}
+                        </span>
+                      )}
                     </span>
-                    {model.attemptNumber !== null && (
+                    {model.attemptNumber !== null && !isReviewSession && (
                       <span className="text-xs text-zinc-500 dark:text-zinc-400 tabular-nums">
                         Attempt {model.attemptNumber}
                       </span>
@@ -179,12 +195,13 @@ export const AnswerResultCard: React.FC<AnswerResultCardProps> = ({
                 </div>
               </div>
 
-              {model.actionKind === "back" && onBack && (
+              {actionKind === "back" && onBack && (
                 <div className="flex sm:justify-end pl-10 sm:pl-0 shrink-0">
                   <button
                     ref={primaryBtnRef}
                     type="button"
                     onClick={onBack}
+                    data-review-primary-action={isReviewSession ? "true" : undefined}
                     className={backButtonClass}
                   >
                     <span>{backLabel || "Back to question"}</span>
@@ -193,12 +210,13 @@ export const AnswerResultCard: React.FC<AnswerResultCardProps> = ({
                 </div>
               )}
 
-              {model.actionKind === "next" && onNextQuestion && (
+              {actionKind === "next" && onNextQuestion && (
                 <div className="flex sm:justify-end pl-10 sm:pl-0 shrink-0">
                   <button
                     ref={primaryBtnRef}
                     type="button"
                     onClick={onNextQuestion}
+                    data-review-primary-action={isReviewSession ? "true" : undefined}
                     className={actionButtonClass}
                   >
                     <span>{nextLabel}</span>
@@ -207,12 +225,13 @@ export const AnswerResultCard: React.FC<AnswerResultCardProps> = ({
                 </div>
               )}
 
-              {model.actionKind === "review" && onOpenReview && (
+              {actionKind === "review" && onOpenReview && (
                 <div className="flex sm:justify-end pl-10 sm:pl-0 shrink-0">
                   <button
                     ref={primaryBtnRef}
                     type="button"
                     onClick={onOpenReview}
+                    data-review-primary-action={isReviewSession ? "true" : undefined}
                     className={actionButtonClass}
                   >
                     <span>Review</span>
@@ -221,12 +240,13 @@ export const AnswerResultCard: React.FC<AnswerResultCardProps> = ({
                 </div>
               )}
 
-              {model.actionKind === "retry" && onTryAgain && (
+              {actionKind === "retry" && onTryAgain && (
                 <div className="flex sm:justify-end pl-10 sm:pl-0 shrink-0">
                   <button
                     ref={primaryBtnRef}
                     type="button"
                     onClick={onTryAgain}
+                    data-review-primary-action={isReviewSession ? "true" : undefined}
                     className={actionButtonClass}
                   >
                     <span>Try again</span>
@@ -234,12 +254,13 @@ export const AnswerResultCard: React.FC<AnswerResultCardProps> = ({
                 </div>
               )}
 
-              {model.actionKind === "show_steps" && onShowSteps && (
+              {actionKind === "show_steps" && onShowSteps && (
                 <div className="flex sm:justify-end pl-10 sm:pl-0 shrink-0">
                   <button
                     ref={primaryBtnRef}
                     type="button"
                     onClick={onShowSteps}
+                    data-review-primary-action={isReviewSession ? "true" : undefined}
                     className={actionButtonClass}
                   >
                     <span>Show steps</span>
