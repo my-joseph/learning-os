@@ -31,6 +31,66 @@ html.light {
   color-scheme: light;
 }
 
+/* ========================================================================== */
+/* SEMANTIC COLOUR TOKENS (RGB channels — single source for Tailwind tokens)  */
+/* ========================================================================== */
+
+:root,
+html.light {
+  /* Answer & progress status */
+  --status-correct: 5 150 105;         /* emerald-600 (#059669) — filled circles/tiles */
+  --status-correct-text: 4 120 87;     /* emerald-700 (#047857) — AA >= 4.5:1 text on light */
+  --status-correct-soft: 236 253 245;  /* emerald-50  (#ecfdf5) — soft result card fill */
+  --status-on-correct: 255 255 255;    /* white       (#ffffff) — icon/text on correct fill */
+
+  --status-assisted: 167 243 208;      /* emerald-200 (#a7f3d0) — pale green fill (assisted/partial) */
+  --status-assisted-soft: 240 253 247; /* pale mint   (#f0fdf7) — soft result card fill */
+  --status-on-assisted: 6 95 70;       /* emerald-800 (#065f46) — AA text on assisted & light surfaces */
+
+  --status-wrong: 225 29 72;           /* rose-600    (#e11d48) — fill, border, AA text */
+  --status-wrong-soft: 255 241 242;    /* rose-50     (#fff1f2) — soft result card fill */
+  --status-on-wrong: 255 255 255;      /* white       (#ffffff) — icon/text on wrong fill */
+
+  --status-skipped: 161 161 170;       /* zinc-400    (#a1a1aa) — dashed outline */
+  --status-neutral: 212 212 216;       /* zinc-300    (#d4d4d8) — untried outline & dot */
+
+  /* Non-status warning (sync degraded, timer paused, toast pending/warn, hint/trap border) */
+  --warning: 180 83 9;                 /* amber-700   (#b45309) — AA text & icon */
+  --warning-soft: 255 251 235;         /* amber-50    (#fffbeb) — soft warning banner */
+  --warning-border: 217 119 6;         /* amber-600   (#d97706) — hint & trap left-border */
+
+  /* Brand accent */
+  --accent: 79 70 229;                 /* indigo-600  (#4f46e5) */
+}
+
+html.dark,
+.dark {
+  /* Answer & progress status */
+  --status-correct: 16 185 129;        /* emerald-500 (#10b981) — filled circles/tiles */
+  --status-correct-text: 52 211 153;   /* emerald-400 (#34d399) — AA text on dark */
+  --status-correct-soft: 23 40 37;     /* emerald-500/10 over zinc-900 (#172825) */
+  --status-on-correct: 9 9 11;         /* zinc-950    (#09090b) — icon/text on correct fill */
+
+  --status-assisted: 21 80 63;         /* emerald-500/35 over zinc-900 (#15503f) */
+  --status-assisted-soft: 21 36 33;    /* subtle pale-green tint over zinc-900 (#152421) */
+  --status-on-assisted: 167 243 208;   /* emerald-200 (#a7f3d0) — AA text on assisted & dark surfaces */
+
+  --status-wrong: 251 113 133;         /* rose-400    (#fb7185) — fill, border, AA text */
+  --status-wrong-soft: 46 28 34;       /* rose-500/10 over zinc-900 (#2e1c22) */
+  --status-on-wrong: 9 9 11;           /* zinc-950    (#09090b) — icon/text on wrong fill */
+
+  --status-skipped: 113 113 122;       /* zinc-500    (#71717a) — dashed outline */
+  --status-neutral: 63 63 70;          /* zinc-700    (#3f3f46) — untried outline & dot */
+
+  /* Non-status warning */
+  --warning: 251 191 36;               /* amber-400   (#fbbf24) — AA text & icon */
+  --warning-soft: 46 37 22;            /* amber-500/10 over zinc-900 (#2e2516) */
+  --warning-border: 251 191 36;        /* amber-400   (#fbbf24) — hint & trap left-border */
+
+  /* Brand accent */
+  --accent: 129 140 248;               /* indigo-400  (#818cf8) */
+}
+
 /* Reserve the scrollbar so page width does not shift when content height changes. */
 html {
   scrollbar-gutter: stable;
