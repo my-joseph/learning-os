@@ -808,7 +808,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
               {(checkError || layeredStatus.failures.length > 0) && (
                 <ul
                   aria-label="Check failures"
-                  className={`border-l-2 ${statusTone.wrong.border} pl-3.5 py-1 space-y-1 font-mono text-xs text-zinc-800 dark:text-zinc-200`}
+                  className={`min-w-0 max-w-full overflow-x-auto whitespace-pre-wrap break-words border-l-2 ${statusTone.wrong.border} pl-3.5 py-1 space-y-1 font-sans text-xs text-zinc-800 dark:text-zinc-200`}
                 >
                   {checkError && <li>{sanitizeCodeCheckError(checkError)}</li>}
                   {layeredStatus.failures.map((line, idx) => (
