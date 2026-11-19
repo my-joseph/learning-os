@@ -7,7 +7,8 @@ import {
   isPartUnlocked,
   RevealPart,
 } from "@/lib/redact";
-import { similarUnlock } from "@/lib/similarTabs";
+import { isSubstantiveVerdict } from "@/lib/reviewGuard";
+import { cycleAttempts, similarUnlock } from "@/lib/similarTabs";
 import { Problem, ProblemState } from "@/types/drill";
 
 const VALID_PARTS = new Set<RevealPart>(["steps", "display", "solution"]);
@@ -67,32 +68,45 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Variant not found" }, { status: 404 });
     }
 
+    const cycleRecAttempts = cycleAttempts(
+      resolved.record.attempts,
+      resolved.state.cycleStartedAt
+    );
+    const hasSubstantiveInCycle = cycleRecAttempts.some((a) =>
+      isSubstantiveVerdict(a.verdict)
+    );
+    const hasCorrectInCycle = cycleRecAttempts.some((a) => a.verdict === "correct");
+
     if (partParam === "hint") {
-      updateVariantSession(drillId, loadedVariant.unitCode, problemId, variantToken, {
-        hintIncrement: 1,
-      });
+      if (!hasCorrectInCycle) {
+        updateVariantSession(drillId, loadedVariant.unitCode, problemId, variantToken, {
+          hintIncrement: 1,
+        });
+      }
       return NextResponse.json({ checkpointHint: loadedVariant.variant.checkpointHint || "" });
     }
 
     const part = partParam as RevealPart;
     if (part === "display") {
-      // Equation set-up is allowed on request and marks subsequent attempts on the variant as assisted.
-      updateVariantSession(drillId, loadedVariant.unitCode, problemId, variantToken, {
-        setupRevealed: true,
-      });
+      // Equation set-up is allowed on request; marks the variant as assisted only before a substantive attempt.
+      if (!hasSubstantiveInCycle) {
+        updateVariantSession(drillId, loadedVariant.unitCode, problemId, variantToken, {
+          setupRevealed: true,
+        });
+      }
       return NextResponse.json(
         extractRevealedPart(loadedVariant.variant as Partial<Problem>, "display")
       );
     }
 
-    // part === "steps": unlocked only after a substantive attempt or explicit give-up (stepsRevealed).
+    // part === "steps": unlocked after a substantive attempt or explicit reveal-steps.
     if (!canRevealVariantSteps(resolved.record, resolved.state.cycleStartedAt)) {
       return NextResponse.json(
         { error: "Requested part is locked until earned" },
         { status: 403 }
       );
     }
-    if (!resolved.record.stepsRevealed) {
+    if (!hasCorrectInCycle && !resolved.record.stepsRevealed) {
       updateVariantSession(drillId, loadedVariant.unitCode, problemId, variantToken, {
         stepsRevealed: true,
       });

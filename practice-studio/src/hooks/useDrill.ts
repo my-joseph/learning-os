@@ -21,7 +21,6 @@ import {
   setVisibility,
   pauseTimer,
   resumeTimer,
-  recordHint,
   consumeAttempt,
   resetProblemTimer,
   getAttemptElapsedMs,
@@ -524,9 +523,36 @@ export function useDrill({
     []
   );
 
-  const handleHintRevealed = useCallback((probId: string) => {
-    timerStateRef.current = recordHint(timerStateRef.current, probId);
-  }, []);
+  const handleHintRevealed = useCallback(
+    (probId: string) => {
+      setCurrentDrill((prev) => {
+        if (!prev) return prev;
+        const target = prev.problems.find((p) => p.id === probId);
+        if (!target) return prev;
+        const hasCorrect =
+          target.state.score === 1 ||
+          Boolean(target.state.attempts?.some((a) => a.verdict === "correct"));
+        if (hasCorrect) return prev;
+        const updated: DrillDocument = {
+          ...prev,
+          problems: prev.problems.map((p) =>
+            p.id === probId
+              ? {
+                  ...p,
+                  state: {
+                    ...p.state,
+                    hintsRevealed: (p.state.hintsRevealed || 0) + 1,
+                  },
+                }
+              : p
+          ),
+        };
+        triggerAutoSave(updated);
+        return updated;
+      });
+    },
+    [triggerAutoSave]
+  );
 
   const loadDrill = useCallback(
     async (id: string, initialQuestionId?: string | null) => {

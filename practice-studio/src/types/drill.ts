@@ -315,6 +315,8 @@ export interface Problem {
   hasSetup?: boolean;
   hasHint?: boolean;
   hasVariants?: boolean;
+  /** Zero-leak count (0..3) of available similar questions for rendering locked ghost tabs before unlock. */
+  similarCount?: number;
   codeSnippet?: string;
   language?: string;
   codeType?:

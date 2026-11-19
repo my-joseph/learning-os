@@ -37,6 +37,7 @@ import {
   countPractisedSimilar,
   deriveRealTabStatus,
   deriveTabStatuses,
+  deriveVariantStatus,
   nextTabIndexForKey,
   resolveInitialTab,
   resultCardActions,
@@ -228,6 +229,65 @@ function makeProblem(overrides: Partial<Problem> = {}): Problem {
     })),
     "assisted"
   );
+  assert.equal(deriveRealTabStatus(baseState({ hintsRevealed: 1 })), "usedHelp");
+  assert.equal(deriveRealTabStatus(baseState({ setupRevealedBeforeAnswer: true })), "usedHelp");
+  assert.equal(deriveRealTabStatus(baseState({ solutionRevealedBeforeAnswer: true })), "usedHelp");
+  assert.equal(deriveRealTabStatus(baseState({ skipped: true, score: 0 })), "skipped");
+
+  assert.equal(
+    deriveVariantStatus({
+      role: "try",
+      servedAt: "2026-11-19T10:01:00Z",
+      attempts: [],
+      stepsRevealed: true,
+    }),
+    "usedHelp",
+    "revealing steps before answering marks similar question as usedHelp"
+  );
+  assert.equal(
+    deriveVariantStatus({
+      role: "try",
+      servedAt: "2026-11-19T10:01:00Z",
+      attempts: [],
+      hintsRevealed: 1,
+    }),
+    "usedHelp",
+    "revealing hint before answering marks similar question as usedHelp"
+  );
+  assert.equal(
+    deriveVariantStatus({
+      role: "try",
+      servedAt: "2026-11-19T10:01:00Z",
+      attempts: [],
+      setupRevealed: true,
+    }),
+    "usedHelp",
+    "revealing equation set-up before answering marks similar question as usedHelp"
+  );
+  assert.equal(
+    deriveVariantStatus({
+      role: "try",
+      servedAt: "2026-11-19T10:01:00Z",
+      attempts: [{ input: "1/8", ts: "2026-11-19T10:02:00Z", verdict: "correct", kind: "variant" }],
+      stepsRevealed: true,
+    }),
+    "assisted",
+    "answering similar correctly after revealing steps marks it assisted"
+  );
+  assert.equal(
+    deriveVariantStatus(
+      {
+        role: "try",
+        servedAt: "2026-11-18T10:01:00Z",
+        attempts: [],
+        stepsRevealed: true,
+      },
+      "2026-11-19T10:00:00Z"
+    ),
+    "untried",
+    "prior-cycle help must reset to untried in a new review cycle"
+  );
+
   const statuses = deriveTabStatuses(stateWithTabs);
   assert.deepEqual(
     statuses.map((s) => s.status),
@@ -349,13 +409,13 @@ function makeProblem(overrides: Partial<Problem> = {}): Problem {
 }
 
 // ---------------------------------------------------------------------------
-// 3. SimilarTabStrip ARIA, roving tabIndex, status labels, mobile targets, NO Example tab
+// 3. SimilarTabStrip ARIA, roving tabIndex, unified status icons, locked ghost tabs, NO Example tab
 // ---------------------------------------------------------------------------
 {
   const tabs: SimilarTabSummary[] = [
     { token: "va11111", slot: 1, status: "correct" },
     { token: "vb22222", slot: 2, status: "untried" },
-    { token: "vc33333", slot: 3, status: "partial" },
+    { token: "vc33333", slot: 3, status: "assisted" },
   ];
   const html = renderToStaticMarkup(
     <SimilarTabStrip
@@ -371,19 +431,118 @@ function makeProblem(overrides: Partial<Problem> = {}): Problem {
   assert.match(html, /aria-label="Question 2 and similar questions"/);
   assert.match(html, /id="tab-Q02-q"[^>]*aria-selected="false"[^>]*aria-controls="panel-Q02"/);
   assert.match(html, /aria-label="Question 2, not correct yet"/);
+  assert.match(html, /data-status="wrong"[^>]*bg-rose-600[^>]*><svg/);
   assert.match(html, /id="tab-Q02-s1"[^>]*aria-selected="true"[^>]*aria-controls="panel-Q02"[^>]*aria-label="Similar question 1, correct"[^>]*tabindex="0"/);
+  assert.match(html, /data-status="correct"[^>]*bg-emerald-600[^>]*><svg/);
   assert.match(html, /id="tab-Q02-s2"[^>]*aria-selected="false"[^>]*aria-controls="panel-Q02"[^>]*aria-label="Similar question 2, not tried"[^>]*tabindex="-1"/);
-  assert.match(html, /id="tab-Q02-s3"[^>]*aria-selected="false"[^>]*aria-controls="panel-Q02"[^>]*aria-label="Similar question 3, almost"[^>]*tabindex="-1"/);
+  assert.match(html, /data-status="untried"[^>]*rounded-full border-\[1\.5px\]/);
+  assert.match(html, /id="tab-Q02-s3"[^>]*aria-selected="false"[^>]*aria-controls="panel-Q02"[^>]*aria-label="Similar question 3, correct with help"[^>]*tabindex="-1"/);
+  assert.match(html, /data-status="assisted"[^>]*bg-amber-600[^>]*><svg/);
   assert.match(html, /min-h-\[44px\]/, "mobile tabs must be at least 44px tall");
   assert.match(html, /Q2/, "mobile compact label Q2");
   assert.doesNotMatch(html, /tab-Q02-example/, "Example tab must NOT be rendered (binding scope change)");
   assert.doesNotMatch(html, /Shown in example/i, "Shown in example must NOT exist (binding scope change)");
+
+  // Skipped (dashed outline) and usedHelp (filled yellow circle without checkmark)
+  const skippedAndHelpHtml = renderToStaticMarkup(
+    <SimilarTabStrip
+      problemId="Q03"
+      questionNumber={3}
+      realStatus="skipped"
+      tabs={[
+        { token: "va11111", slot: 1, status: "usedHelp" },
+        { token: "vb22222", slot: 2, status: "partial" },
+      ]}
+      selectedTab="q"
+      onSelectTab={noop}
+    />
+  );
+  assert.match(skippedAndHelpHtml, /aria-label="Question 3, skipped"/);
+  assert.match(skippedAndHelpHtml, /data-status="skipped"[^>]*border-dashed/);
+  assert.match(skippedAndHelpHtml, /aria-label="Similar question 1, used help"/);
+  assert.match(
+    skippedAndHelpHtml,
+    /data-status="usedHelp"[^>]*bg-amber-600[^>]*><\/span>/,
+    "usedHelp before answering renders filled yellow circle with no checkmark"
+  );
+  assert.match(skippedAndHelpHtml, /aria-label="Similar question 2, almost"/);
+  assert.match(skippedAndHelpHtml, /data-status="partial"[^>]*bg-amber-600[^>]*><svg/);
+
+  // Locked ghost tabs before first attempt (zero-leak: no tokens, aria-disabled="true", Answer Question N first)
+  const lockedStripHtml = renderToStaticMarkup(
+    <SimilarTabStrip
+      problemId="Q02"
+      questionNumber={2}
+      realStatus="untried"
+      tabs={[]}
+      selectedTab="q"
+      locked
+      onSelectTab={noop}
+    />
+  );
+  assert.match(lockedStripHtml, /id="similar-lock-desc-Q02"[^>]*>Answer Question 2 first<\/span>/);
+  assert.match(
+    lockedStripHtml,
+    /id="tab-Q02-s1"[^>]*aria-selected="false"[^>]*aria-disabled="true"[^>]*aria-label="Similar question 1"[^>]*aria-describedby="similar-lock-desc-Q02"[^>]*title="Answer Question 2 first"[^>]*tabindex="-1"/
+  );
+  assert.match(lockedStripHtml, /id="tab-Q02-s2"[^>]*aria-disabled="true"/);
+  assert.match(lockedStripHtml, /id="tab-Q02-s3"[^>]*aria-disabled="true"/);
+  assert.match(lockedStripHtml, /cursor-not-allowed/);
 }
 
 // ---------------------------------------------------------------------------
-// 4. MathWorkspace SSR states (R wrong #1, R wrong #2, R correct, bank empty, review retry)
+// 4. MathWorkspace SSR states (untouched locked strip, usedHelp before attempt, R wrong #1/#2, R correct, bank empty)
 // ---------------------------------------------------------------------------
 {
+  const untouchedHtml = renderToStaticMarkup(
+    <MathWorkspace
+      problem={makeProblem({ similarCount: 3 })}
+      drillId="DRL-MTH-T01-C04-01"
+      index={1}
+      totalQuestions={6}
+      mistakeTags={[]}
+      activeStep={null}
+      onInputChange={noop}
+      onCheckAnswer={noop}
+      onToggleStepHighlight={noop}
+      onMarkDivergedStep={noop}
+      onSetScore={noop}
+      onToggleMistakeTag={noop}
+      onMistakeNoteChange={noop}
+      onResetProblem={noop}
+    />
+  );
+  assert.match(untouchedHtml, /role="tablist"/, "strip must be visible before first attempt");
+  assert.match(untouchedHtml, /aria-disabled="true"/, "similar tabs must be locked ghost tabs before attempt");
+  assert.match(untouchedHtml, /Answer Question 2 first/);
+  assert.match(untouchedHtml, /pt-2 sm:px-6 sm:pb-6 sm:pt-3/, "reduced top padding above strip");
+  assert.doesNotMatch(untouchedHtml, /Level 1/, "Level N tag must not appear in card meta line");
+  assert.doesNotMatch(untouchedHtml, /Practice only/i, "Practice only text must not appear");
+
+  const usedHelpBeforeAttemptHtml = renderToStaticMarkup(
+    <MathWorkspace
+      problem={makeProblem({
+        state: baseState({ hintsRevealed: 1 }),
+      })}
+      drillId="DRL-MTH-T01-C04-01"
+      index={1}
+      totalQuestions={6}
+      mistakeTags={[]}
+      activeStep={null}
+      onInputChange={noop}
+      onCheckAnswer={noop}
+      onToggleStepHighlight={noop}
+      onMarkDivergedStep={noop}
+      onSetScore={noop}
+      onToggleMistakeTag={noop}
+      onMistakeNoteChange={noop}
+      onResetProblem={noop}
+    />
+  );
+  assert.match(usedHelpBeforeAttemptHtml, /aria-label="Question 2, used help"/);
+  assert.match(usedHelpBeforeAttemptHtml, /data-status="usedHelp"[^>]*bg-amber-600[^>]*><\/span>/);
+  assert.match(usedHelpBeforeAttemptHtml, /aria-disabled="true"/, "using help before answering must keep similar tabs locked");
+
   const slots = ["va11111", "vb22222", "vc33333"];
   const wrong1Html = renderToStaticMarkup(
     <MathWorkspace
@@ -942,7 +1101,7 @@ async function testReviewCycleIsolation() {
       "utf-8"
     );
 
-    // Sanity check: before the new review cycle starts, slot 2 is "correct" and Practised 1 similar.
+    // Sanity check: before the new review cycle starts, slot 2 is "assisted" (hints/setup/steps used) and Practised 1 similar.
     const preListRes = await variantGET(
       new NextRequest(
         `http://127.0.0.1:3000/api/variant?drillId=${drillId}&qid=Q01&mode=list`
@@ -955,7 +1114,7 @@ async function testReviewCycleIsolation() {
     assert.equal(preList.unlocked, true);
     assert.deepEqual(
       preList.tabs.map((t) => t.status),
-      ["untried", "correct", "untried"]
+      ["untried", "assisted", "untried"]
     );
     assert.equal(
       countPractisedSimilar(readProgress(drillId)?.problems?.Q01 as ProblemState),
@@ -1070,10 +1229,20 @@ async function testReviewCycleIsolation() {
         onResetProblem={noop}
       />
     );
-    assert.doesNotMatch(
+    assert.match(
       preReviewHtml,
       /role="tablist"/,
-      "strip must be hidden on /review before the new review attempt"
+      "strip must be visible on /review before the new review attempt (with locked ghost tabs)"
+    );
+    assert.match(
+      preReviewHtml,
+      /aria-disabled="true"[^>]*aria-label="Similar question 1"[^>]*aria-describedby="similar-lock-desc-Q01"[^>]*title="Answer Question 1 first"/,
+      "similar tabs on /review must be locked ghost tabs before the new review attempt"
+    );
+    assert.doesNotMatch(
+      preReviewHtml,
+      /vb22222/,
+      "zero-leak: no variant tokens in locked strip before new review attempt"
     );
 
     // 7b. Submit a wrong review attempt via executeReviewItemCheck: strip unlocks with ALL tabs "not tried".
@@ -1188,10 +1357,63 @@ async function testReviewCycleIsolation() {
     assert.equal(
       stepsStillLockedRes.status,
       403,
-      "similar tab steps must stay locked in the new cycle until attempted again"
+      "similar tab steps must stay locked in the new cycle until requested via reveal-steps or attempted"
     );
 
-    // Answering Similar 2 correctly in the new cycle updates slot 2 to "correct" and Practised 1.
+    // Clicking "Show steps" before answering (action: reveal-steps) unlocks steps and marks the similar tab as usedHelp!
+    const preAnswerRevealStepsRes = await variantPOST(
+      new NextRequest("http://127.0.0.1:3000/api/variant", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          drillId,
+          qid: "Q01",
+          variantToken: "va11111",
+          action: "reveal-steps",
+        }),
+      })
+    );
+    assert.equal(preAnswerRevealStepsRes.status, 200);
+    const preAnswerStepsPayloadRes = await revealGET(
+      new NextRequest(
+        `http://127.0.0.1:3000/api/reveal?drill=${drillId}&q=Q01&variantToken=va11111&part=steps`
+      )
+    );
+    assert.equal(
+      preAnswerStepsPayloadRes.status,
+      200,
+      "steps must be available on a similar question before answering once reveal-steps is recorded"
+    );
+    const listAfterUsedHelp = (await (
+      await variantGET(
+        new NextRequest(
+          `http://127.0.0.1:3000/api/variant?drillId=${drillId}&qid=Q01&mode=list`
+        )
+      )
+    ).json()) as { tabs: SimilarTabSummary[] };
+    assert.deepEqual(
+      listAfterUsedHelp.tabs.map((t) => t.status),
+      ["usedHelp", "untried", "untried"],
+      "revealing steps before answering must mark Similar 1 as usedHelp"
+    );
+
+    // Answering Similar 1 correctly after revealing steps marks it assisted;
+    // answering Similar 2 correctly without help marks it correct.
+    const sim1CheckRes = await checkAnswerPOST(
+      new NextRequest("http://127.0.0.1:3000/api/check-answer", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          drillId,
+          qid: "Q01",
+          variantToken: "va11111",
+          input: "8/15",
+        }),
+      })
+    );
+    assert.equal(sim1CheckRes.status, 200);
+    assert.equal((await sim1CheckRes.json()).verdict, "correct");
+
     const simCheckRes = await checkAnswerPOST(
       new NextRequest("http://127.0.0.1:3000/api/check-answer", {
         method: "POST",
@@ -1218,11 +1440,11 @@ async function testReviewCycleIsolation() {
     };
     assert.deepEqual(
       afterSimList.tabs.map((t) => t.status),
-      ["untried", "correct", "untried"]
+      ["assisted", "correct", "untried"]
     );
     assert.equal(
       countPractisedSimilar(readProgress(drillId)?.problems?.Q01 as ProblemState),
-      1
+      2
     );
 
     // 7c. Drill review retry (resetAnswerForReviewRetry + save-state): locks strip again, then fresh tabs.

@@ -137,6 +137,7 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
 
   const {
     isUnlocked,
+    listEmpty,
     selectedTab,
     tabs,
     activeSimilarTab,
@@ -210,8 +211,9 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
   );
 
   const realTabStatus = deriveRealTabStatus(problem.state);
-  const showTabStrip = Boolean(!showingExample && isUnlocked && tabs.length > 0);
   const hasVariantsAvailable = Boolean(drillId && problem.hasVariants);
+  const showTabStrip = Boolean(!showingExample && hasVariantsAvailable && !listEmpty);
+  const stripLocked = !isUnlocked || tabs.length === 0;
 
   const rPlan = resultCardActions({
     tab: "q",
@@ -270,19 +272,12 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
             )}
           </>
         ) : (
-          <>
-            <span className="truncate">
-              Question {questionNumber}
-              {typeof totalQuestions === "number" && totalQuestions > 0
-                ? ` of ${totalQuestions}`
-                : ""}
-            </span>
-            {typeof problem.level === "number" && problem.level > 0 && (
-              <span className="shrink-0" title={problem.levelLabel?.trim() || undefined}>
-                Level {problem.level}
-              </span>
-            )}
-          </>
+          <span className="truncate">
+            Question {questionNumber}
+            {typeof totalQuestions === "number" && totalQuestions > 0
+              ? ` of ${totalQuestions}`
+              : ""}
+          </span>
         )}
       </div>
       <QuestionTimer
@@ -296,9 +291,6 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
 
   const similarIsCorrect =
     activeSimilarProblem?.state.lastCheck?.verdict === "correct";
-  const similarHasAttempt = activeSimilarProblem
-    ? hasSubstantiveAttempt(activeSimilarProblem.state)
-    : false;
 
   const sPlan = resultCardActions({
     tab: selectedTab,
@@ -349,7 +341,11 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
 
       <article
         ref={cardRef}
-        className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 sm:p-6 space-y-6 scroll-mt-4"
+        className={`bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl scroll-mt-4 ${
+          showTabStrip
+            ? "px-4 pb-4 pt-2 sm:px-6 sm:pb-6 sm:pt-3 space-y-5"
+            : "p-4 sm:p-6 space-y-6"
+        }`}
       >
         {showingExample && example ? (
           <WorkedExampleView
@@ -367,6 +363,8 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
                 realStatus={realTabStatus}
                 tabs={tabs}
                 selectedTab={selectedTab}
+                locked={stripLocked}
+                lockedSlotCount={problem.similarCount}
                 onSelectTab={(tabId) => selectTab(tabId)}
               />
             )}
@@ -418,22 +416,12 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
                             <span className="font-display tabular-nums">
                               {tabs.length}
                             </span>
-                            {typeof activeSimilarProblem.level === "number" &&
-                            activeSimilarProblem.level > 0
-                              ? ` · Level ${activeSimilarProblem.level}`
-                              : ""}
-                            {" · Practice only"}
                           </span>
                           <span className="sm:hidden">
                             Similar{" "}
                             <span className="font-display tabular-nums">
                               {activeSimilarTab.slot}/{tabs.length}
                             </span>
-                            {typeof activeSimilarProblem.level === "number" &&
-                            activeSimilarProblem.level > 0
-                              ? ` · L${activeSimilarProblem.level}`
-                              : ""}
-                            {" · Practice"}
                           </span>
                         </div>
                         <QuestionTimer
@@ -449,16 +437,9 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
                     mistakeTags={[]}
                     activeStep={similarActiveStep}
                     useSessionInputMode={isReviewSession}
-                    autoRevealOnCorrect={false}
-                    hideShowStepsButton={
-                      !similarHasAttempt || sPlan.showSimilarShowSteps
-                    }
-                    isPracticeOnly
+                    hideShowStepsButton={sPlan.showSimilarShowSteps}
                     loadingSteps={loadingSteps}
                     ariaLabel={`Answer for similar question ${activeSimilarTab.slot} of ${tabs.length}`}
-                    resultTitleOverride={
-                      similarIsCorrect ? "Correct · practice only" : undefined
-                    }
                     backLabel={`Back to Question ${questionNumber}`}
                     retryLabel={sPlan.retryLabel}
                     onBack={
