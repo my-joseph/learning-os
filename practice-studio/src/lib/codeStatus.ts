@@ -72,9 +72,7 @@ export interface IdeLinks {
   workspaceDir: string;
   filename: string;
   vscodeFolderUrl: string;
-  cursorFolderUrl: string;
   vscodeUrl?: string;
-  cursorUrl?: string;
 }
 
 const TS_CODE_RE = /^(TS\d+):\s*(.*)$/;
@@ -407,15 +405,11 @@ export function resolveIdeLinks(problem: Partial<Problem>): IdeLinks {
 
   const vscodeFolderUrl =
     problem.vscodeFolderUrl || (normalizedDir ? `vscode://file${normalizedDir}` : "");
-  const cursorFolderUrl =
-    problem.cursorFolderUrl || (normalizedDir ? `cursor://file${normalizedDir}` : "");
 
   return {
     workspaceDir: workspaceDir || ".",
     filename,
     vscodeFolderUrl,
-    cursorFolderUrl,
     ...(problem.vscodeUrl ? { vscodeUrl: problem.vscodeUrl } : {}),
-    ...(problem.cursorUrl ? { cursorUrl: problem.cursorUrl } : {}),
   };
 }

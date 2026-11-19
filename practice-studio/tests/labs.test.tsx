@@ -177,9 +177,10 @@ async function testAllRealLabs() {
       detail.vscodeFolderUrl.startsWith("vscode://file/"),
       `${labId}: vscodeFolderUrl must be folder link`
     );
-    assert.ok(
-      detail.cursorFolderUrl.startsWith("cursor://file/"),
-      `${labId}: cursorFolderUrl must be folder link`
+    assert.equal(
+      "cursorFolderUrl" in (detail as unknown as Record<string, unknown>),
+      false,
+      `${labId}: cursorFolderUrl must not be emitted`
     );
     assert.ok(detail.milestones.length >= 1, `${labId}: must have milestones`);
 
@@ -275,7 +276,7 @@ async function testAllRealLabs() {
 
 // ---------------------------------------------------------------------------
 // 3. Synthetic lab test: strips unfinalised trapMutant/hiddenTests/blindSolve,
-//    computes mainFile vscodeUrl/cursorUrl, and reflects progress review states
+//    computes mainFile vscodeUrl, and reflects progress review states
 // ---------------------------------------------------------------------------
 async function testSyntheticLabAndProgress() {
   const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), "studio-labs-test-"));
@@ -454,13 +455,15 @@ async function testSyntheticLabAndProgress() {
     // M1 has valid mainFile inside labDir
     assert.equal(detail.milestones[0].mainFile, "src/emitter.ts");
     assert.ok(detail.milestones[0].vscodeUrl?.endsWith("/src/emitter.ts"));
-    assert.ok(detail.milestones[0].cursorUrl?.endsWith("/src/emitter.ts"));
+    assert.equal(
+      "cursorUrl" in (detail.milestones[0] as unknown as Record<string, unknown>),
+      false
+    );
     assert.equal(detail.milestones[0].reviewStatus, "pass");
 
     // M2 had a mainFile pointing into ../_reference -> rejected to null
     assert.equal(detail.milestones[1].mainFile, null);
     assert.equal(detail.milestones[1].vscodeUrl, null);
-    assert.equal(detail.milestones[1].cursorUrl, null);
     assert.equal(detail.milestones[1].reviewStatus, "revise");
     assert.equal(detail.milestones[1].examples?.length, 1);
     assert.equal("call" in (detail.milestones[1].examples?.[0] ?? {}), false);

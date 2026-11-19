@@ -246,7 +246,6 @@ const sampleCodeProblem: Problem = {
   prompt: "Implement `clampBatteryPercent(val)`.",
   workspaceFile: "drills/workspace/DRL-PRG-T00-C03-02/Q01_clampBatteryPercent.js",
   vscodeFolderUrl: "vscode://file/drills/workspace/DRL-PRG-T00-C03-02",
-  cursorFolderUrl: "cursor://file/drills/workspace/DRL-PRG-T00-C03-02",
   visibleTests: [
     {
       id: "T1",
@@ -398,7 +397,6 @@ const inBrowserCodeProblem: Problem = {
   ...sampleCodeProblem,
   workspaceFile: undefined,
   vscodeFolderUrl: undefined,
-  cursorFolderUrl: undefined,
   visibleTests: undefined,
   answerSpec: { type: "output", expected: "42" },
   codeSnippet: "console.log(42);",

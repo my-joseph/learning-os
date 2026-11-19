@@ -250,8 +250,9 @@ assert.equal(
   "vscode://file/drills/workspace/DRL-PRG-T00-C03-02"
 );
 assert.equal(
-  links.cursorFolderUrl,
-  "cursor://file/drills/workspace/DRL-PRG-T00-C03-02"
+  "cursorFolderUrl" in (links as unknown as Record<string, unknown>),
+  false,
+  "cursorFolderUrl must not be emitted"
 );
 assert.equal(
   links.vscodeFolderUrl.endsWith(".js"),

@@ -308,9 +308,7 @@ export interface Problem {
   hiddenTestCount?: number;
   workspaceFile?: string;
   workspaceDir?: string;
-  cursorUrl?: string;
   vscodeUrl?: string;
-  cursorFolderUrl?: string;
   vscodeFolderUrl?: string;
   figure?: MathFigureSpec;
   visual?: VisualSpec;

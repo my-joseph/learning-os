@@ -9,18 +9,18 @@
 ## PART 1 — Core Governing Principle: 100% Local IDE Execution & Dual-Engine Evaluation
 
 ### 1. Zero In-Browser Code Editing Mandate
-All code authoring, multi-file browsing, refactoring, and debugging must take place natively inside **VS Code or Cursor** in the local workspace. In-browser web textareas promote toy single-file scripting and lack Language Server Protocols (LSP), linters, formatting, and real terminal execution.
+All code authoring, multi-file browsing, refactoring, and debugging must take place natively inside **your local IDE (e.g. VS Code)** in the local workspace. In-browser web textareas promote toy single-file scripting and lack Language Server Protocols (LSP), linters, formatting, and real terminal execution.
 
 **Strict Separation of Concerns:**
-- **Local IDE (VS Code / Cursor):** The primary execution cockpit. Developers write real TypeScript/JavaScript, run real-time tests via terminal (`npm test`), and submit results via `npm run submit`.
-- **Practice Studio (Web Dashboard):** The Mission Control & Telemetry Hub. Displays business scenarios, Acceptance Criteria, deep launcher links (`vscode://` / `cursor://`), live test execution reports, mistake categorization, and spaced retention tracking.
+- **Local IDE (e.g. VS Code):** The primary execution cockpit. Developers write real TypeScript/JavaScript, run real-time tests via terminal (`npm test`), and submit results via `npm run submit`.
+- **Practice Studio (Web Dashboard):** The Mission Control & Telemetry Hub. Displays business scenarios, Acceptance Criteria, deep launcher links (`vscode://`), live test execution reports, mistake categorization, and spaced retention tracking.
 
 ### 1.1 Local Workspace Deep Linking Contract (Folder vs. Single-File Invariant)
 To maintain the 100% Local IDE Execution mandate without breaking IDE context, all launcher links between Practice Studio and the local IDE must obey this strict contract:
-- **Primary Workspace Launcher MUST target the Folder Directory (`vscodeFolderUrl` / `cursorFolderUrl`)**:  
-  Clicking "Open in VS Code" or "Open in Cursor" MUST open the entire workspace folder (`vscode://file/<abs_workspace_dir>`), NEVER an isolated single file (`vscode://file/<abs_file_path>`).  
+- **Primary Workspace Launcher MUST target the Folder Directory (`vscodeFolderUrl`)**:  
+  Clicking "Open in VS Code" MUST open the entire workspace folder (`vscode://file/<abs_workspace_dir>`), NEVER an isolated single file (`vscode://file/<abs_file_path>`). (Code is edited in the learner's own editor; do not render an "Open in Cursor" button or emit `cursor://` links.)  
   *Why*: Opening an isolated file launches the IDE in "No Folder Opened" mode. The IDE fails to discover `package.json`, disables the NPM Scripts explorer, and defaults the integrated terminal to the user's home or root directory instead of the problem directory. Opening the workspace folder guarantees `package.json` scripts (`npm test`, `npm run test:q01`) and terminal paths work instantly.
-- **Secondary Jump-to-File Link (`vscodeUrl` / `cursorUrl`)**:  
+- **Secondary Jump-to-File Link (`vscodeUrl`)**:  
   An optional "Open File" button may exist to jump directly into the source file or a specific line, but it must never replace or overwrite the primary folder-level launcher action.
 - **Defensive Frontend Resolution**:  
   If problem metadata omits `vscodeFolderUrl`, Practice Studio must compute the folder directory from `workspaceDir` or `workspaceFile` (by trimming filename), and must **never** fall back to opening an isolated file in place of the folder.
@@ -103,7 +103,7 @@ All programming drills and labs enforce this systematic, professional engineerin
 $$\text{Think Before Coding} \longrightarrow \text{Hands-On Implementation} \longrightarrow \text{Automated Testing} \longrightarrow \text{Code Explanation} \longrightarrow \text{Refactor} \longrightarrow \text{Scale Difficulty}$$
 
 1. **Think Before Coding (Mental Model & Invariant Planning):** Before writing a single line of code, review the business context, input/output contracts, and potential boundary traps. Sketch the mental model, data transformations, and state transitions.
-2. **Hands-On Implementation (Local IDE Execution):** Launch VS Code or Cursor directly via one-click deep links. Implement the logic using real IDE tools, linting, type systems, and autocomplete.
+2. **Hands-On Implementation (Local IDE Execution):** Open the workspace folder in your local editor (e.g. via the "Open in VS Code" deep link). Implement the logic using real IDE tools, linting, type systems, and autocomplete.
 3. **Automated Testing (Acceptance Testing):** Run local test suites in the terminal (`npm test`). Iterate until all visible scenarios and edge-case acceptance criteria pass with 100% green.
 4. **Code Explanation (Rubric-Bound PR Review):** Run `python -m code_engine.review_run <DRILL_ID> <QID>` (or ask in Claude Code: `review code <DRILL_ID> <QID>`), address any `must` or lint/typecheck findings via `scripts.review_record`, and record a concise explanation of why the solution works.
 5. **Refactor (Clean Code & Decoupling):** Eliminate code smells, extract single-responsibility helpers, improve naming, optimize hot paths, and refine type annotations while keeping tests green.
@@ -231,7 +231,7 @@ For **multi-milestone labs**, follow the `new-project` skill (`.claude/skills/ne
 
 1. **Clean Architectural Separation:**
    - **JSON Data Layer (`drills/data/<UNIT>/`):** Pure verified problem specs, Acceptance Criteria, and session states without HTML pollution.
-   - **Workspace Layer (`drills/workspace/<DRILL_ID>/` or `labs/<LAB_ID>/`):** Real TypeScript/Node workspaces on disk ready for VS Code / Cursor.
+   - **Workspace Layer (`drills/workspace/<DRILL_ID>/` or `labs/<LAB_ID>/`):** Real TypeScript/Node workspaces on disk ready for your local IDE (e.g. VS Code).
    - **Central Next.js Practice Studio (`practice-studio`):** Mission Control Dashboard, launcher links, and live telemetry viewer.
    - **Notion Database (`Learning Practice & Drills`):** Permanent retention record and spaced review ledger.
 2. **Zero In-Browser Textareas:** Studio renders clean requirement specifications, test runners reading from disk, and mistake logs, delegating all code editing to the local IDE.

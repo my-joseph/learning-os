@@ -56,9 +56,7 @@ export async function GET(req: NextRequest) {
             const absFile = path.resolve(rootDir, prob.workspaceFile);
             prob.workspaceDir = wsDir;
             prob.vscodeFolderUrl = `vscode://file/${wsDir}`;
-            prob.cursorFolderUrl = `cursor://file/${wsDir}`;
             prob.vscodeUrl = `vscode://file/${absFile}`;
-            prob.cursorUrl = `cursor://file/${absFile}`;
           }
         }
       }

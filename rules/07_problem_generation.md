@@ -61,7 +61,7 @@
   4. **Dual Pre-Execution Verification**:
      - Canonical solution (`solutionCode`) must run 100% Green on test suites.
      - Starter code (`starterCode`) for debugging problems must fail at least one reproducer test (Red before Green).
-  5. **100% Local IDE Scaffolding**: `ingest_ai_code_drill` automatically materializes `drills/workspace/<drillId>/` with `package.json`, `README.md`, and sets `vscodeFolderUrl` / `cursorFolderUrl` pointing to the workspace folder.
+  5. **100% Local IDE Scaffolding**: `ingest_ai_code_drill` automatically materializes `drills/workspace/<drillId>/` with `package.json`, `README.md`, and sets relative `workspaceFile` (Practice Studio computes `vscodeFolderUrl` / `vscodeUrl` at runtime; no `cursor://` links).
   6. **No Duplicated Choice Options in Prompt (`find_choice_prompt_option_duplicates`)**: choice prompts never list the options; options live only in `answerSpec.options` (Studio and Notion render them).
 - `[code]` V1 automatic: `verify_problem` (G1–G6 item gates) and `validate_ai_problem_contract` / `validate_ai_code_contract`.
 - `[code]` Scope and levels: an archetype is a skill tagged with its unit (`unitCode`); a unit drill draws only on that unit's archetypes, a chapter drill on all its units' (`load_scope_archetypes`). An archetype's `level` is its base level; problems may build on it at any level from there up, and the gates decide whether the level is earned. `scripts/vault_report.py` counts, per archetype and level, ingested problems that earned it (L3+: the blind solve's mapped level) and issue-log failures (`<SCOPE>/<key>@L<n>`), and flags `FAILING@Ln` and `UNPROVEN`. A `FAILING` level gets a `levelNote` on how to earn it, or the archetype stops being used there, when the issue log is cleared.
