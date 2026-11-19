@@ -23,10 +23,14 @@ export const StepRow: React.FC<StepRowProps> = ({
   onToggleHighlight,
   onMarkDiverged,
 }) => {
+  const hasLatex = Boolean(step.latex && step.latex.trim());
+
   return (
     <div
       onClick={onToggleHighlight}
-      className={`group step-row ${isActive || isDiverged ? "step-row-active" : ""} grid grid-cols-1 md:grid-cols-[1.2fr_1fr_auto] gap-3 items-center rounded-xl p-3 mb-2 last:mb-0 cursor-pointer transition-colors border ${
+      className={`group step-row ${isActive || isDiverged ? "step-row-active" : ""} grid grid-cols-1 ${
+        hasLatex ? "md:grid-cols-[1.2fr_1fr_auto]" : "md:grid-cols-[1fr_auto]"
+      } gap-3 items-center rounded-xl p-3 mb-2 last:mb-0 cursor-pointer transition-colors border ${
         isDiverged
           ? "border-rose-300 dark:border-rose-500/40 bg-white dark:bg-zinc-900"
           : isActive
@@ -34,12 +38,14 @@ export const StepRow: React.FC<StepRowProps> = ({
           : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700"
       }`}
     >
-      <div className="overflow-x-auto text-left text-sm text-zinc-900 dark:text-zinc-100">
-        <MathBlock latex={step.latex} />
-      </div>
+      {hasLatex && (
+        <div className="overflow-x-auto text-left text-sm text-zinc-900 dark:text-zinc-100">
+          <MathBlock latex={step.latex!} />
+        </div>
+      )}
 
       <div
-        className={`text-xs border-l pl-3 transition-colors ${
+        className={`text-xs ${hasLatex ? "border-l pl-3" : ""} transition-colors ${
           isDiverged
             ? "border-rose-600 dark:border-rose-400 text-zinc-900 dark:text-zinc-100"
             : isActive

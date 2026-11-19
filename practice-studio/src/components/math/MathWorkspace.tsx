@@ -7,19 +7,17 @@ import {
   Copy,
   Check,
   Equal,
-  ChevronDown,
-  RotateCcw,
   Loader2,
 } from "lucide-react";
 import { Problem, MistakeTag, CheckResult } from "@/types/drill";
 import { MathBlock } from "@/components/MathRender";
 import { FormattedText } from "@/components/FormattedText";
-import { StepRow } from "@/components/StepRow";
 import { MathFigure } from "@/components/MathFigure";
 import { LineChoicePrompt, parseLineChoicePrompt } from "@/components/LineChoicePrompt";
 import { ChoiceOptionGroup } from "@/components/ChoiceOptionGroup";
 import { AnswerResultCard } from "@/components/AnswerResultCard";
 import { QuestionTimer } from "@/components/QuestionTimer";
+import { ProblemAssistSection } from "@/components/workspace/ProblemAssistSection";
 import { ProblemNavFooter } from "@/components/workspace/ProblemNavFooter";
 import { ProblemSelfEval } from "@/components/workspace/ProblemSelfEval";
 import type { MathLiveInputHandle } from "@/components/math/MathLiveInput";
@@ -33,7 +31,6 @@ import {
   writeMathInputMode,
 } from "@/lib/mathInput";
 import { isTouchPrimaryDevice } from "@/lib/mathPalette";
-import { hasCheckpointHint } from "@/lib/studioRules";
 import { hasSubstantiveAttempt } from "@/lib/reviewGuard";
 import { plainTitle } from "@/lib/titleText";
 import {
@@ -547,183 +544,95 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
         </div>
 
         {/* 5. Quiet secondary actions: Reset / equation set-up / hint / steps / skip */}
-        <div className="space-y-3 pt-1">
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-zinc-500 dark:text-zinc-400">
-            {hasAttempt && (
-              <button
-                type="button"
-                onClick={() => {
-                  setChoiceRetryUnlocked(false);
-                  setCheckingOptionId(null);
-                  onResetProblem();
-                }}
-                className="inline-flex items-center gap-1.5 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
-              >
-                <RotateCcw className="w-3.5 h-3.5" />
-                <span>Reset</span>
-              </button>
-            )}
-
-            {hasSetup && (
-              <button
-                type="button"
-                onClick={toggleSetup}
-                aria-expanded={showSetup}
-                title={
-                  setupUnopenedUnattempted
-                    ? "Opening before checking counts as assisted"
-                    : undefined
-                }
-                className="inline-flex items-center gap-1 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
-              >
-                <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${showSetup ? "rotate-180" : ""}`} />
-                <span>{showSetup ? "Hide equation set-up" : "Show equation set-up"}</span>
-              </button>
-            )}
-
-            {hasCheckpointHint(problem.checkpointHint) && <button
-              type="button"
-              onClick={() => {
-                if (!showHint && onHintRevealed) {
-                  onHintRevealed();
-                }
-                setShowHint(!showHint);
-              }}
-              aria-expanded={showHint}
-              className="inline-flex items-center gap-1 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
-            >
-              <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${showHint ? "rotate-180" : ""}`} />
-              <span>{showHint ? "Hide hint" : "Hint"}</span>
-            </button>}
-
-            <button
-              type="button"
-              onClick={() => {
-                if (!showSolution && (!hasCorrectAttempt || !problem.steps?.length) && onSolutionRevealed) {
-                  onSolutionRevealed();
-                }
-                setShowSolution(!showSolution);
-              }}
-              aria-expanded={showSolution}
-              title={
-                stepsUnopenedUnattempted
-                  ? "Opening before checking counts as assisted"
-                  : undefined
-              }
-              className="inline-flex items-center gap-1 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
-            >
-              <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${showSolution ? "rotate-180" : ""}`} />
-              <span>{showSolution ? "Hide steps" : "Show steps"}</span>
-            </button>
-
-            {onSkip && !hasAttempt && (
-              <button
-                type="button"
-                onClick={() => {
+        <ProblemAssistSection
+          problem={problem}
+          hasAttempt={hasAttempt}
+          showHint={showHint}
+          onToggleHint={() => {
+            if (!showHint && onHintRevealed) {
+              onHintRevealed();
+            }
+            setShowHint(!showHint);
+          }}
+          showSolution={showSolution}
+          onToggleSolution={() => {
+            if (!showSolution && (!hasCorrectAttempt || !problem.steps?.length) && onSolutionRevealed) {
+              onSolutionRevealed();
+            }
+            setShowSolution(!showSolution);
+          }}
+          stepsUnopenedUnattempted={stepsUnopenedUnattempted}
+          stepsRef={stepsRef}
+          showStepsHeader={true}
+          activeStep={activeStep}
+          onToggleStepHighlight={onToggleStepHighlight}
+          onMarkDivergedStep={onMarkDivergedStep}
+          onReset={() => {
+            setChoiceRetryUnlocked(false);
+            setCheckingOptionId(null);
+            onResetProblem();
+          }}
+          onSkip={
+            onSkip
+              ? () => {
                   if (!showHint && onHintRevealed) {
                     onHintRevealed();
                   }
                   setShowHint(true);
                   setShowSolution(true);
                   onSkip();
-                }}
-                className="inline-flex items-center gap-1 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors ml-auto"
-              >
-                <span>Skip</span>
-              </button>
-            )}
-          </div>
-
-          {/* Checkpoint Hint Disclosure */}
-          <Reveal show={Boolean(showHint && hasCheckpointHint(problem.checkpointHint))}>
-          {showHint && hasCheckpointHint(problem.checkpointHint) && (
-            <div className="border-l-2 border-amber-600 dark:border-amber-400 pl-3.5 py-1 text-sm text-zinc-700 dark:text-zinc-300">
-              <FormattedText text={problem.checkpointHint} />
-            </div>
-          )}
-          </Reveal>
-
-          {/* Equation Set-up Disclosure */}
-          <Reveal show={Boolean(hasSetup && showSetup)}>
-          {hasSetup && showSetup && (
-            <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 space-y-2.5">
-              {problem.display && (
-                <div className="overflow-x-auto overflow-y-hidden text-sm text-zinc-900 dark:text-zinc-100">
-                  <MathBlock latex={problem.display} />
+                }
+              : undefined
+          }
+          hasSetup={hasSetup}
+          showSetup={showSetup}
+          setupUnopenedUnattempted={setupUnopenedUnattempted}
+          onToggleSetup={toggleSetup}
+          setupDisclosure={
+            <Reveal show={Boolean(hasSetup && showSetup)}>
+              {hasSetup && showSetup && (
+                <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 space-y-2.5">
+                  {problem.display && (
+                    <div className="overflow-x-auto overflow-y-hidden text-sm text-zinc-900 dark:text-zinc-100">
+                      <MathBlock latex={problem.display} />
+                    </div>
+                  )}
+                  {/* CAS copy row: only for typed answers; on choice questions the plain text is just the prompt. */}
+                  {problem.plainText && !isChoice && (
+                    <div
+                      className={`flex flex-wrap items-center justify-between gap-2 text-xs ${
+                        problem.display
+                          ? "pt-2.5 border-t border-zinc-200 dark:border-zinc-800"
+                          : ""
+                      }`}
+                    >
+                      <code className="font-mono text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 px-2 py-0.5 rounded">
+                        {problem.plainText}
+                      </code>
+                      <button
+                        type="button"
+                        onClick={handleCopyCas}
+                        className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-lg text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 transition-colors shrink-0"
+                      >
+                        {copied ? (
+                          <>
+                            <Check className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
+                            <span>Copied</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-3.5 h-3.5" />
+                            <span>Copy</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
-              {/* CAS copy row: only for typed answers; on choice questions the plain text is just the prompt. */}
-              {problem.plainText && !isChoice && (
-                <div
-                  className={`flex flex-wrap items-center justify-between gap-2 text-xs ${
-                    problem.display
-                      ? "pt-2.5 border-t border-zinc-200 dark:border-zinc-800"
-                      : ""
-                  }`}
-                >
-                  <code className="font-mono text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 px-2 py-0.5 rounded">
-                    {problem.plainText}
-                  </code>
-                  <button
-                    type="button"
-                    onClick={handleCopyCas}
-                    className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-lg text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 transition-colors shrink-0"
-                  >
-                    {copied ? (
-                      <>
-                        <Check className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
-                        <span>Copied</span>
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="w-3.5 h-3.5" />
-                        <span>Copy</span>
-                      </>
-                    )}
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-          </Reveal>
-
-          {/* Step-by-Step Derivation Disclosure */}
-          <Reveal show={Boolean(showSolution)}>
-          {showSolution && (
-            <div
-              ref={stepsRef}
-              className={`bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 space-y-3 ${
-                activeStep !== null ? "has-active" : ""
-              }`}
-            >
-              <div className="flex flex-wrap justify-between items-center gap-2 pb-2 border-b border-zinc-200 dark:border-zinc-800 text-xs text-zinc-500 dark:text-zinc-400">
-                <span className="font-medium">Steps</span>
-                {problem.answerDisplay && (
-                  <span>
-                    Answer:{" "}
-                    <strong className="text-zinc-900 dark:text-zinc-100 font-semibold">
-                      <FormattedText text={`$${problem.answerDisplay}$`} />
-                    </strong>
-                  </span>
-                )}
-              </div>
-              <div>
-                {(problem.steps || []).map((st, sIdx) => (
-                  <StepRow
-                    key={sIdx}
-                    step={st}
-                    index={sIdx}
-                    isActive={activeStep === sIdx}
-                    isDiverged={problem.state.divergedStep === sIdx}
-                    onToggleHighlight={() => onToggleStepHighlight(sIdx)}
-                    onMarkDiverged={() => onMarkDivergedStep(sIdx)}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-          </Reveal>
-        </div>
+            </Reveal>
+          }
+        />
 
         {/* 6. Self-score, mistake tags & mistake note — shown ONLY after an attempt */}
         <ProblemSelfEval

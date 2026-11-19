@@ -8,9 +8,7 @@ import {
   ChevronRight,
   Copy,
   Equal,
-  Flag,
   Loader2,
-  RotateCcw,
 } from "lucide-react";
 import {
   Problem,
@@ -28,6 +26,10 @@ import {
 import { AnswerResultCard } from "@/components/AnswerResultCard";
 import { ChoiceOptionGroup } from "@/components/ChoiceOptionGroup";
 import { QuestionTimer } from "@/components/QuestionTimer";
+import {
+  CheckpointHintDisclosure,
+  ProblemAssistSection,
+} from "@/components/workspace/ProblemAssistSection";
 import { ProblemNavFooter } from "@/components/workspace/ProblemNavFooter";
 import { ProblemSelfEval } from "@/components/workspace/ProblemSelfEval";
 import {
@@ -810,13 +812,10 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                 </div>
               )}
 
-              <Reveal show={Boolean(showHint && hasCheckpointHint(problem.checkpointHint))}>
-              {showHint && hasCheckpointHint(problem.checkpointHint) && (
-                <div className="border-l-2 border-amber-600 dark:border-amber-400 pl-3.5 py-1 text-sm text-zinc-700 dark:text-zinc-300">
-                  <FormattedText text={problem.checkpointHint} />
-                </div>
-              )}
-              </Reveal>
+              <CheckpointHintDisclosure
+                checkpointHint={problem.checkpointHint}
+                show={showHint}
+              />
             </div>
 
             {/* 5. Collapsible sections (closed by default): Review history, Explain, Reference */}
@@ -1093,134 +1092,47 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
               />
             </div>
 
-            <div className="space-y-3 pt-1">
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-zinc-500 dark:text-zinc-400">
-                {hasAttempt && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setChoiceRetryUnlocked(false);
-                      setCheckingOptionId(null);
-                      onResetProblem();
-                    }}
-                    className="inline-flex items-center gap-1.5 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
-                  >
-                    <RotateCcw className="w-3.5 h-3.5" />
-                    <span>Reset</span>
-                  </button>
-                )}
-
-                {hasCheckpointHint(problem.checkpointHint) && <button
-                  type="button"
-                  onClick={() => {
-                    if (!showHint && onHintRevealed) {
-                      onHintRevealed();
-                    }
-                    setShowHint(!showHint);
-                  }}
-                  aria-expanded={showHint}
-                  className="inline-flex items-center gap-1 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
-                >
-                  <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${showHint ? "rotate-180" : ""}`} />
-                  <span>{showHint ? "Hide hint" : "Hint"}</span>
-                </button>}
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (!showSolution && onSolutionRevealed) {
-                      onSolutionRevealed();
-                    }
-                    setShowSolution(!showSolution);
-                  }}
-                  aria-expanded={showSolution}
-                  title={
-                    stepsUnopenedUnattempted
-                      ? "Opening before checking counts as assisted"
-                      : undefined
-                  }
-                  className="inline-flex items-center gap-1 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
-                >
-                  <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${showSolution ? "rotate-180" : ""}`} />
-                  <span>{showSolution ? "Hide steps" : "Show steps"}</span>
-                </button>
-
-                {onSkip && !hasAttempt && (
-                  <button
-                    type="button"
-                    onClick={() => {
+            <ProblemAssistSection
+              problem={problem}
+              hasAttempt={hasAttempt}
+              showHint={showHint}
+              onToggleHint={() => {
+                if (!showHint && onHintRevealed) {
+                  onHintRevealed();
+                }
+                setShowHint(!showHint);
+              }}
+              showSolution={showSolution}
+              onToggleSolution={() => {
+                if (!showSolution && onSolutionRevealed) {
+                  onSolutionRevealed();
+                }
+                setShowSolution(!showSolution);
+              }}
+              stepsUnopenedUnattempted={stepsUnopenedUnattempted}
+              stepsRef={stepsRef}
+              showStepsHeader={false}
+              activeStep={activeStep}
+              onToggleStepHighlight={onToggleStepHighlight}
+              onMarkDivergedStep={onMarkDivergedStep}
+              onReset={() => {
+                setChoiceRetryUnlocked(false);
+                setCheckingOptionId(null);
+                onResetProblem();
+              }}
+              onSkip={
+                onSkip
+                  ? () => {
                       if (!showHint && onHintRevealed) {
                         onHintRevealed();
                       }
                       setShowHint(true);
                       setShowSolution(true);
                       onSkip();
-                    }}
-                    className="inline-flex items-center gap-1 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors ml-auto"
-                  >
-                    <span>Skip</span>
-                  </button>
-                )}
-              </div>
-
-              <Reveal show={Boolean(showHint && hasCheckpointHint(problem.checkpointHint))}>
-              {showHint && hasCheckpointHint(problem.checkpointHint) && (
-                <div className="border-l-2 border-amber-600 dark:border-amber-400 pl-3.5 py-1 text-sm text-zinc-700 dark:text-zinc-300">
-                  <FormattedText text={problem.checkpointHint} />
-                </div>
-              )}
-              </Reveal>
-
-              <Reveal show={Boolean(showSolution)}>
-              {showSolution && (
-                <div ref={stepsRef} className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 space-y-2.5">
-                  {(problem.steps || []).map((st, sIdx) => {
-                    const isDiverged = problem.state.divergedStep === sIdx;
-                    const isActive = activeStep === sIdx;
-                    return (
-                      <div
-                        key={sIdx}
-                        onClick={() => onToggleStepHighlight(sIdx)}
-                        className={`group p-3 rounded-xl border cursor-pointer transition-colors ${
-                          isDiverged
-                            ? "border-rose-600 dark:border-rose-400"
-                            : isActive
-                            ? "border-indigo-600 dark:border-indigo-500"
-                            : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800"
-                        }`}
-                      >
-                        <div className="flex items-center justify-between gap-2 mb-1">
-                          <span className="text-xs font-mono text-zinc-500 dark:text-zinc-400">
-                            Step {sIdx + 1}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onMarkDivergedStep(sIdx);
-                            }}
-                            className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded border transition-all ${
-                              isDiverged
-                                ? "opacity-100 border-rose-600 dark:border-rose-400 text-rose-600 dark:text-rose-400 font-semibold"
-                                : "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100 border-zinc-200 dark:border-zinc-800 text-zinc-500 dark:text-zinc-400 hover:text-rose-600 dark:hover:text-rose-400 hover:border-rose-300 dark:hover:border-rose-500/40"
-                            }`}
-                          >
-                            <Flag className="w-3 h-3 shrink-0" />
-                            <span>
-                              {isDiverged ? `Diverged at step ${sIdx + 1}` : "Diverged here"}
-                            </span>
-                          </button>
-                        </div>
-                        <div className="text-xs text-zinc-800 dark:text-zinc-200 leading-relaxed">
-                          <FormattedText text={st.explain} />
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-              </Reveal>
-            </div>
+                    }
+                  : undefined
+              }
+            />
           </>
         )}
 
