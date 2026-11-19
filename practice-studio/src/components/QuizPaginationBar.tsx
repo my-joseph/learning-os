@@ -17,7 +17,7 @@ interface QuizPaginationBarProps {
 }
 
 const TILE_BASE_CLS =
-  "relative min-w-8 h-8 px-2 rounded-md border text-xs flex items-center justify-center font-mono transition-colors shrink-0 focus:outline-none focus-visible:border-indigo-500 dark:focus-visible:border-indigo-400";
+  "relative min-w-8 h-8 px-2 rounded-md border text-xs flex items-center justify-center font-display transition-colors shrink-0 focus:outline-none focus-visible:border-indigo-500 dark:focus-visible:border-indigo-400";
 const NEUTRAL_TILE_CLS =
   "bg-zinc-50 dark:bg-zinc-950 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600";
 const ACTIVE_TILE_RING_CLS =
