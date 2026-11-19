@@ -7,7 +7,6 @@ import {
   ChevronDown,
   ChevronRight,
   Copy,
-  Equal,
   Loader2,
 } from "lucide-react";
 import {
@@ -26,6 +25,10 @@ import {
 import { AnswerResultCard } from "@/components/AnswerResultCard";
 import { ChoiceOptionGroup } from "@/components/ChoiceOptionGroup";
 import { QuestionTimer } from "@/components/QuestionTimer";
+import {
+  InlineCheckButton,
+  PlainAnswerField,
+} from "@/components/workspace/PlainAnswerField";
 import {
   CheckpointHintDisclosure,
   ProblemAssistSection,
@@ -980,54 +983,23 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
               {!isChoice &&
                 (isFindBug ? (
                   <div className="flex items-center">
-                    <button
-                      type="button"
+                    <InlineCheckButton
                       onClick={triggerWebCheck}
                       disabled={isChecking || !problem.state.userInput.trim()}
-                      aria-label="Check answer"
-                      title="Check (Enter)"
-                      className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-700 disabled:opacity-40 disabled:hover:bg-indigo-600 dark:disabled:hover:bg-indigo-600 text-white transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 focus-visible:ring-offset-1"
-                    >
-                      {isChecking ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <Equal className="w-4 h-4" />
-                      )}
-                    </button>
+                      isChecking={isChecking}
+                      embedded={false}
+                    />
                   </div>
                 ) : (
-                  <div className="relative flex items-center min-h-[2.75rem] rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 transition-colors focus-within:border-indigo-600 dark:focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-600/20 dark:focus-within:ring-indigo-500/25">
-                    <input
-                      ref={answerInputRef}
-                      type="text"
-                      value={problem.state.userInput}
-                      onChange={(e) => onInputChange(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          e.preventDefault();
-                          void triggerWebCheck();
-                        }
-                      }}
-                      placeholder={getSafePlaceholder(problem.inputHint, problem)}
-                      aria-label={`Answer for ${isLab ? "milestone" : "problem"} ${problem.id}`}
-                      className="w-full h-11 font-mono text-sm bg-transparent text-zinc-900 dark:text-zinc-100 pl-3.5 pr-12 py-2 focus:outline-none placeholder:text-zinc-400 dark:placeholder:text-zinc-500"
-                    />
-
-                    <button
-                      type="button"
-                      onClick={triggerWebCheck}
-                      disabled={isChecking || !problem.state.userInput.trim()}
-                      aria-label="Check answer"
-                      title="Check (Enter)"
-                      className="absolute right-1.5 top-1/2 -translate-y-1/2 inline-flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-700 disabled:opacity-40 disabled:hover:bg-indigo-600 dark:disabled:hover:bg-indigo-600 text-white transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 focus-visible:ring-offset-1"
-                    >
-                      {isChecking ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <Equal className="w-4 h-4" />
-                      )}
-                    </button>
-                  </div>
+                  <PlainAnswerField
+                    inputRef={answerInputRef}
+                    value={problem.state.userInput}
+                    onChange={onInputChange}
+                    onCheck={() => void triggerWebCheck()}
+                    placeholder={getSafePlaceholder(problem.inputHint, problem)}
+                    aria-label={`Answer for ${isLab ? "milestone" : "problem"} ${problem.id}`}
+                    isChecking={isChecking}
+                  />
                 ))}
 
               <AnswerResultCard
