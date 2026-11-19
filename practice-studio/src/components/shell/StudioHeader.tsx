@@ -1,24 +1,19 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { m } from "motion/react";
-import { settle } from "@/lib/motion";
-import Link from "next/link";
 import {
   ArrowUpRight,
-  Code2,
   Moon,
   PanelRight,
   Plus,
   RotateCcw,
-  Sigma,
   Sun,
-  type LucideIcon,
 } from "lucide-react";
 import { DrillDocument, DrillListItem } from "@/types/drill";
 import type { LabListItem } from "@/lib/labModel";
 import { DrillFilter } from "@/hooks/types";
 import { Workspace, isLabId } from "@/lib/routes";
+import { WorkspaceSwitch } from "@/components/workspace/WorkspaceSwitch";
 import { DrillSwitcher } from "./DrillSwitcher";
 
 interface StudioHeaderProps {
@@ -96,16 +91,6 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
     onSelectWorkspace?.(next);
   };
 
-  const workspaceOptions: {
-    id: Workspace;
-    label: string;
-    href: string | null;
-    icon: LucideIcon;
-  }[] = [
-    { id: "math", label: "Math", href: mathHref, icon: Sigma },
-    { id: "code", label: "Programming", href: codeHref, icon: Code2 },
-  ];
-
   const resetAllLabel = isLabId(selectedDrillId)
     ? "Reset all milestones"
     : workspace === "code"
@@ -125,55 +110,15 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
       <div className="relative flex items-center justify-between gap-1.5 sm:gap-2">
         {/* Left: Workspace switch (<1024px, icon-only) + Drill switcher + Generate button */}
         <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1">
-          <nav
-            aria-label="Workspace"
+          <WorkspaceSwitch
+            variant="header"
+            workspace={workspace}
+            pillWorkspace={pillWorkspace}
+            onSelectWorkspace={handleSelectWorkspace}
+            mathHref={mathHref}
+            codeHref={codeHref}
             className="relative grid lg:hidden grid-cols-2 items-center rounded-lg bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-800 p-0.5 shrink-0"
-          >
-            <m.span
-              aria-hidden
-              className="pointer-events-none absolute top-0.5 bottom-0.5 left-0.5 w-[calc(50%-2px)] rounded-md bg-white dark:bg-zinc-900 shadow-sm"
-              initial={false}
-              animate={{ x: pillWorkspace === "code" ? "100%" : "0%" }}
-              transition={settle}
-            />
-            {workspaceOptions.map((opt) => {
-              const isActive = workspace === opt.id;
-              const isShown = pillWorkspace === opt.id;
-              const Icon = opt.icon;
-              const cls = `relative z-10 inline-flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-md transition-colors duration-200 ${
-                isShown
-                  ? "text-zinc-900 dark:text-zinc-100"
-                  : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200"
-              }`;
-              if (!opt.href) {
-                return (
-                  <span
-                    key={opt.id}
-                    aria-label={opt.label}
-                    title={opt.label}
-                    aria-current={isActive ? "page" : undefined}
-                    aria-disabled={!isActive ? true : undefined}
-                    className={`${cls} ${!isActive ? "opacity-50 cursor-not-allowed" : ""}`}
-                  >
-                    <Icon className="w-4 h-4" aria-hidden={true} />
-                  </span>
-                );
-              }
-              return (
-                <Link
-                  key={opt.id}
-                  href={opt.href}
-                  aria-label={opt.label}
-                  title={opt.label}
-                  aria-current={isActive ? "page" : undefined}
-                  onClick={() => handleSelectWorkspace(opt.id)}
-                  className={cls}
-                >
-                  <Icon className="w-4 h-4" aria-hidden={true} />
-                </Link>
-              );
-            })}
-          </nav>
+          />
 
           <DrillSwitcher
             isOpen={showDrillSwitcher}
