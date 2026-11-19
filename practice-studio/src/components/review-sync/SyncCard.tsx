@@ -20,6 +20,7 @@ import {
   formatSyncTimestamp,
   type SyncPreview,
 } from "@/lib/sessionSummary";
+import { statusTone, warningTone } from "@/lib/statusTone";
 import { Reveal } from "@/components/motion/Reveal";
 import { ListDot } from "@/components/ui/ListDot";
 import type { EffectiveSyncPhase } from "./SessionSummaryCard";
@@ -415,11 +416,11 @@ export const SyncCard: React.FC<SyncCardProps> = ({
           </div>
         )}
 
-        {/* Synced state (emerald light tint) */}
+        {/* Synced state (soft correct tint) */}
         {effectiveSyncPhase === "synced" && (
-          <div className="rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200/70 dark:border-emerald-500/20 p-4 space-y-3">
+          <div className={`rounded-xl ${statusTone.correct.softCard} p-4 space-y-3`}>
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <div className="inline-flex items-center gap-2 text-sm font-semibold text-emerald-800 dark:text-emerald-300">
+              <div className={`inline-flex items-center gap-2 text-sm font-semibold ${statusTone.correct.text}`}>
                 <Check className="w-4 h-4 shrink-0" aria-hidden="true" />
                 <span>
                   Synced to Notion
@@ -437,7 +438,7 @@ export const SyncCard: React.FC<SyncCardProps> = ({
                   href={notionUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 min-h-[44px] sm:min-h-[32px] text-xs font-medium text-emerald-800 dark:text-emerald-300 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 rounded"
+                  className={`inline-flex items-center gap-1 min-h-[44px] sm:min-h-[32px] text-xs font-medium ${statusTone.correct.text} hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 rounded`}
                 >
                   <span>Open in Notion</span>
                   <ArrowUpRight className="w-3.5 h-3.5" aria-hidden="true" />
@@ -511,12 +512,12 @@ export const SyncCard: React.FC<SyncCardProps> = ({
           </div>
         )}
 
-        {/* Degraded / saved locally (amber light tint) */}
+        {/* Degraded / saved locally (warning tint) */}
         {effectiveSyncPhase === "degraded" && (
-          <div className="rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200/70 dark:border-amber-500/20 p-4 space-y-3">
+          <div className={`rounded-xl ${warningTone.softCard} p-4 space-y-3`}>
             <div className="flex items-start gap-2.5 text-sm text-zinc-800 dark:text-zinc-200">
               <AlertTriangle
-                className="w-4 h-4 mt-0.5 text-amber-700 dark:text-amber-400 shrink-0"
+                className={`w-4 h-4 mt-0.5 ${warningTone.text} shrink-0`}
                 aria-hidden="true"
               />
               <div className="min-w-0 flex-1 space-y-1.5">
@@ -545,7 +546,7 @@ export const SyncCard: React.FC<SyncCardProps> = ({
 
                 <Reveal show={showErrorDetails}>
                   {showErrorDetails && (
-                    <pre className="font-mono text-xs bg-white/80 dark:bg-zinc-950/80 border border-amber-200/80 dark:border-amber-500/20 rounded-lg p-2.5 overflow-x-auto whitespace-pre-wrap break-words text-zinc-700 dark:text-zinc-300">
+                    <pre className={`font-mono text-xs bg-white/80 dark:bg-zinc-950/80 border ${warningTone.borderSoft} rounded-lg p-2.5 overflow-x-auto whitespace-pre-wrap break-words text-zinc-700 dark:text-zinc-300`}>
                       {errorFullText}
                     </pre>
                   )}
@@ -567,18 +568,18 @@ export const SyncCard: React.FC<SyncCardProps> = ({
           </div>
         )}
 
-        {/* Error or Offline (rose light tint) */}
+        {/* Error or Offline (soft wrong tint) */}
         {(effectiveSyncPhase === "error" || effectiveSyncPhase === "offline") && (
-          <div className="rounded-xl bg-rose-50 dark:bg-rose-500/10 border border-rose-200/70 dark:border-rose-500/20 p-4 space-y-3">
+          <div className={`rounded-xl ${statusTone.wrong.softCard} p-4 space-y-3`}>
             <div className="flex items-start gap-2.5 text-sm text-zinc-800 dark:text-zinc-200">
               {effectiveSyncPhase === "offline" ? (
                 <WifiOff
-                  className="w-4 h-4 mt-0.5 text-rose-600 dark:text-rose-400 shrink-0"
+                  className={`w-4 h-4 mt-0.5 ${statusTone.wrong.text} shrink-0`}
                   aria-hidden="true"
                 />
               ) : (
                 <AlertTriangle
-                  className="w-4 h-4 mt-0.5 text-rose-600 dark:text-rose-400 shrink-0"
+                  className={`w-4 h-4 mt-0.5 ${statusTone.wrong.text} shrink-0`}
                   aria-hidden="true"
                 />
               )}
@@ -616,7 +617,7 @@ export const SyncCard: React.FC<SyncCardProps> = ({
                       >
                         {copiedError ? (
                           <>
-                            <Check className="w-3 h-3 text-emerald-700 dark:text-emerald-400" aria-hidden="true" />
+                            <Check className={`w-3 h-3 ${statusTone.correct.text}`} aria-hidden="true" />
                             <span>Copied</span>
                           </>
                         ) : (
@@ -630,7 +631,7 @@ export const SyncCard: React.FC<SyncCardProps> = ({
 
                     <Reveal show={showErrorDetails}>
                       {showErrorDetails && (
-                        <pre className="font-mono text-xs bg-white/80 dark:bg-zinc-950/80 border border-rose-200/80 dark:border-rose-500/20 rounded-lg p-2.5 overflow-x-auto whitespace-pre-wrap break-words text-zinc-700 dark:text-zinc-300">
+                        <pre className={`font-mono text-xs bg-white/80 dark:bg-zinc-950/80 border ${statusTone.wrong.borderSoft} rounded-lg p-2.5 overflow-x-auto whitespace-pre-wrap break-words text-zinc-700 dark:text-zinc-300`}>
                           {errorFullText}
                         </pre>
                       )}

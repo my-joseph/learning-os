@@ -12,6 +12,7 @@ import {
   slotToTabId,
   tabStatusAccessibleSuffix,
 } from "@/lib/similarTabs";
+import { MUTED_UNTRIED_TAB_MARK, statusTone } from "@/lib/statusTone";
 
 export interface SimilarTabStripProps {
   problemId: string;
@@ -26,13 +27,11 @@ export interface SimilarTabStripProps {
 
 /**
  * Shared tab status circle matching the Pagination Stepper colour language:
- * - not tried: plain outlined circle (no fill)
+ * - not tried / usedHelp (unanswered): plain outlined circle (no colour)
  * - skipped: dashed outlined circle
- * - correct: filled green circle with white ✓
- * - wrong: filled red circle with white ✗
- * - assisted (used help + correct): filled light-green circle with ✓ (paler than correct)
- * - usedHelp (used help before answering): filled yellow circle (no ✓)
- * - partial: filled yellow circle with –
+ * - correct: filled green circle with ✓
+ * - assisted (used help + correct) / partial: filled pale-green circle with ✓ or –
+ * - wrong: filled rose circle with ✗
  */
 function StatusMark({
   status,
@@ -45,7 +44,7 @@ function StatusMark({
     return (
       <span
         data-status="correct"
-        className="w-4 h-4 rounded-full bg-emerald-600 dark:bg-emerald-500 text-white dark:text-zinc-950 inline-flex items-center justify-center shrink-0"
+        className={`w-4 h-4 rounded-full ${statusTone.correct.tabMark} inline-flex items-center justify-center shrink-0`}
         aria-hidden="true"
       >
         <Check className="w-2.5 h-2.5" strokeWidth={3} />
@@ -56,7 +55,7 @@ function StatusMark({
     return (
       <span
         data-status="wrong"
-        className="w-4 h-4 rounded-full bg-rose-600 dark:bg-rose-400 text-white dark:text-zinc-950 inline-flex items-center justify-center shrink-0"
+        className={`w-4 h-4 rounded-full ${statusTone.wrong.tabMark} inline-flex items-center justify-center shrink-0`}
         aria-hidden="true"
       >
         <X className="w-2.5 h-2.5" strokeWidth={3} />
@@ -67,27 +66,18 @@ function StatusMark({
     return (
       <span
         data-status="assisted"
-        className="w-4 h-4 rounded-full bg-emerald-200 text-emerald-800 dark:bg-emerald-500/35 dark:text-emerald-200 inline-flex items-center justify-center shrink-0"
+        className={`w-4 h-4 rounded-full ${statusTone.assisted.tabMark} inline-flex items-center justify-center shrink-0`}
         aria-hidden="true"
       >
         <Check className="w-2.5 h-2.5" strokeWidth={3} />
       </span>
     );
   }
-  if (status === "usedHelp") {
-    return (
-      <span
-        data-status="usedHelp"
-        className="w-4 h-4 rounded-full bg-amber-600 dark:bg-amber-400 inline-flex items-center justify-center shrink-0"
-        aria-hidden="true"
-      />
-    );
-  }
   if (status === "partial") {
     return (
       <span
         data-status="partial"
-        className="w-4 h-4 rounded-full bg-amber-600 dark:bg-amber-400 text-white dark:text-zinc-950 inline-flex items-center justify-center shrink-0"
+        className={`w-4 h-4 rounded-full ${statusTone.assisted.tabMark} inline-flex items-center justify-center shrink-0`}
         aria-hidden="true"
       >
         <Minus className="w-2.5 h-2.5" strokeWidth={3} />
@@ -98,7 +88,16 @@ function StatusMark({
     return (
       <span
         data-status="skipped"
-        className="w-4 h-4 rounded-full border-[1.5px] border-dashed border-zinc-400 dark:border-zinc-500 inline-block shrink-0"
+        className={`w-4 h-4 rounded-full ${statusTone.skipped.tabMark} inline-block shrink-0`}
+        aria-hidden="true"
+      />
+    );
+  }
+  if (status === "usedHelp") {
+    return (
+      <span
+        data-status="usedHelp"
+        className={`w-4 h-4 rounded-full ${statusTone.notTried.tabMark} inline-block shrink-0`}
         aria-hidden="true"
       />
     );
@@ -106,10 +105,8 @@ function StatusMark({
   return (
     <span
       data-status="untried"
-      className={`w-4 h-4 rounded-full border-[1.5px] inline-block shrink-0 ${
-        muted
-          ? "border-zinc-300 dark:border-zinc-600"
-          : "border-zinc-400 dark:border-zinc-500"
+      className={`w-4 h-4 rounded-full inline-block shrink-0 ${
+        muted ? MUTED_UNTRIED_TAB_MARK : statusTone.notTried.tabMark
       }`}
       aria-hidden="true"
     />

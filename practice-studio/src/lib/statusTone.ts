@@ -1,0 +1,163 @@
+/**
+ * Single source of truth for Practice Studio status & warning Tailwind class recipes.
+ *
+ * Every status-coloured component must import from this module rather than hard-coding
+ * Tailwind palette classes (`emerald-*`, `amber-*`, `yellow-*`, `rose-*`).
+ *
+ * Underlying RGB tokens live in `src/app/globals.css` and are exposed via `tailwind.config.ts`.
+ * Changing a status colour means editing one CSS variable in `globals.css`.
+ */
+
+export type StatusTone = "correct" | "assisted" | "wrong" | "skipped" | "notTried";
+
+export interface StatusToneRecipe {
+  /** Filled/outlined circle for Stepper steps (includes group-hover). */
+  solidCircle: string;
+  /** Compact 16px status mark for SimilarTabStrip (no hover). */
+  tabMark: string;
+  /** Calm tinted container (bg + border) for result cards and sync banners. */
+  softCard: string;
+  /** Selected multiple-choice / line-choice option card tint and border. */
+  choiceCard: string;
+  /** Solid small badge/pill (choice letter badge, line number badge, destructive button). */
+  solidBadge: string;
+  /** Circular icon container (AnswerResultCard icon circle, DailyReviewPage end icon). */
+  iconCircle: string;
+  /** Readable status text colour on light/dark neutral surfaces (WCAG AA >= 4.5:1). */
+  text: string;
+  /** Compact 8–10px indicator dot/square (ReviewItemRow outcome node, DrillSwitcher dot). */
+  dot: string;
+  /** Active state for ProblemSelfEval score buttons and mistake tag chips. */
+  selfScoreActive: string;
+  /** Clickable outcome tile in Review & Sync SessionSummaryCard (includes hover). */
+  tile: string;
+  /** Accent border colour (CodeDashboard left-borders, StepRow diverged border). */
+  border: string;
+  /** Subtle framing border (StepRow diverged card border, SyncCard error details pre). */
+  borderSoft: string;
+  /** Hover text accent (StudioHeader Reset All, StepRow diverged button hover). */
+  hoverText: string;
+  /** Hover soft border (StepRow diverged button hover). */
+  hoverBorderSoft: string;
+}
+
+export const statusTone: Record<StatusTone, StatusToneRecipe> = {
+  correct: {
+    solidCircle:
+      "bg-status-correct border-status-correct text-status-on-correct group-hover:brightness-95 dark:group-hover:brightness-110",
+    tabMark: "bg-status-correct text-status-on-correct",
+    softCard: "bg-status-correct-soft border border-status-correct/25",
+    choiceCard: "bg-status-correct-soft border-status-correct/60",
+    solidBadge: "bg-status-correct text-status-on-correct",
+    iconCircle: "bg-status-correct/15 text-status-correct-text",
+    text: "text-status-correct-text",
+    dot: "bg-status-correct",
+    selfScoreActive:
+      "border-status-correct-text text-status-correct-text font-semibold bg-zinc-50 dark:bg-zinc-950",
+    tile: "bg-status-correct text-status-on-correct border-status-correct hover:brightness-95 dark:hover:brightness-110",
+    border: "border-status-correct-text",
+    borderSoft: "border-status-correct/30",
+    hoverText: "hover:text-status-correct-text",
+    hoverBorderSoft: "hover:border-status-correct/40",
+  },
+  assisted: {
+    solidCircle:
+      "bg-status-assisted border-status-assisted text-status-on-assisted group-hover:brightness-95 dark:group-hover:brightness-125",
+    tabMark: "bg-status-assisted text-status-on-assisted",
+    softCard: "bg-status-assisted-soft border border-status-assisted",
+    choiceCard: "bg-status-assisted-soft border-status-assisted",
+    solidBadge: "bg-status-assisted text-status-on-assisted",
+    iconCircle: "bg-status-assisted/60 text-status-on-assisted",
+    text: "text-status-on-assisted",
+    dot: "bg-status-assisted ring-1 ring-inset ring-status-on-assisted/30",
+    selfScoreActive:
+      "border-status-assisted bg-status-assisted/45 text-status-on-assisted font-semibold",
+    tile: "bg-status-assisted text-status-on-assisted border-status-assisted hover:brightness-95 dark:hover:brightness-125",
+    border: "border-status-assisted",
+    borderSoft: "border-status-assisted/60",
+    hoverText: "hover:text-status-on-assisted",
+    hoverBorderSoft: "hover:border-status-assisted",
+  },
+  wrong: {
+    solidCircle:
+      "bg-status-wrong border-status-wrong text-status-on-wrong group-hover:brightness-95 dark:group-hover:brightness-110",
+    tabMark: "bg-status-wrong text-status-on-wrong",
+    softCard: "bg-status-wrong-soft border border-status-wrong/25",
+    choiceCard: "bg-status-wrong-soft border-status-wrong/60",
+    solidBadge: "bg-status-wrong text-status-on-wrong",
+    iconCircle: "bg-status-wrong/15 text-status-wrong",
+    text: "text-status-wrong",
+    dot: "bg-status-wrong",
+    selfScoreActive:
+      "border-status-wrong text-status-wrong font-semibold bg-zinc-50 dark:bg-zinc-950",
+    tile: "bg-status-wrong text-status-on-wrong border-status-wrong hover:brightness-95 dark:hover:brightness-110",
+    border: "border-status-wrong",
+    borderSoft: "border-status-wrong/40",
+    hoverText: "hover:text-status-wrong",
+    hoverBorderSoft: "hover:border-status-wrong/40",
+  },
+  skipped: {
+    solidCircle:
+      "border-dashed border-status-skipped bg-white dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400 group-hover:border-zinc-500 dark:group-hover:border-zinc-400",
+    tabMark: "border-[1.5px] border-dashed border-status-skipped",
+    softCard: "bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700/60",
+    choiceCard: "bg-zinc-50 dark:bg-zinc-800/50 border-zinc-200 dark:border-zinc-700/60",
+    solidBadge: "bg-zinc-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-200",
+    iconCircle: "bg-zinc-200/80 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300",
+    text: "text-zinc-500 dark:text-zinc-400",
+    dot: "border border-dashed border-status-skipped bg-transparent",
+    selfScoreActive:
+      "border-status-skipped text-zinc-700 dark:text-zinc-300 font-semibold bg-zinc-50 dark:bg-zinc-950",
+    tile: "bg-transparent hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border-dashed border-status-skipped",
+    border: "border-status-skipped",
+    borderSoft: "border-status-skipped/50",
+    hoverText: "hover:text-zinc-700 dark:hover:text-zinc-300",
+    hoverBorderSoft: "hover:border-status-skipped",
+  },
+  notTried: {
+    solidCircle:
+      "border-status-neutral bg-white dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400 group-hover:border-zinc-500 dark:group-hover:border-zinc-400",
+    tabMark: "border-[1.5px] border-status-skipped",
+    softCard: "bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800",
+    choiceCard: "bg-zinc-50 dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800",
+    solidBadge:
+      "bg-white dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-800",
+    iconCircle: "bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400",
+    text: "text-zinc-500 dark:text-zinc-400",
+    dot: "bg-status-neutral",
+    selfScoreActive:
+      "border-zinc-400 dark:border-zinc-600 text-zinc-700 dark:text-zinc-300 font-semibold bg-zinc-50 dark:bg-zinc-950",
+    tile: "bg-zinc-50 hover:bg-zinc-100 dark:bg-zinc-950 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800",
+    border: "border-status-neutral",
+    borderSoft: "border-zinc-200 dark:border-zinc-800",
+    hoverText: "hover:text-zinc-700 dark:hover:text-zinc-300",
+    hoverBorderSoft: "hover:border-zinc-400 dark:hover:border-zinc-600",
+  },
+};
+
+/** Muted untried tab mark for locked ghost tabs in SimilarTabStrip. */
+export const MUTED_UNTRIED_TAB_MARK = "border-[1.5px] border-status-neutral";
+
+/** Destructive confirmation button recipe (ConfirmDialog). */
+export const DESTRUCTIVE_BUTTON_CLS =
+  "bg-status-wrong text-status-on-wrong hover:brightness-95 dark:hover:brightness-110";
+
+/**
+ * Non-status warning recipes (amber).
+ * Independent of `statusTone` — strictly for operational warnings, paused timers,
+ * pending/warn toasts, and hint/trap left-borders. Never use for answer status.
+ */
+export const warningTone = {
+  /** Warning text or icon colour (QuestionTimer paused, ToastStack pending/warn, SyncCard icon). */
+  text: "text-warning",
+  /** Warning text link with subtle hover feedback (SessionSummaryCard sync link). */
+  textLink: "text-warning hover:opacity-80",
+  /** Soft warning banner card (SyncCard degraded state). */
+  softCard: "bg-warning-soft border border-warning/25",
+  /** Subtle warning framing border (SyncCard degraded details pre). */
+  borderSoft: "border-warning/25",
+  /** Hint disclosure left-border (ProblemAssistSection). */
+  leftBorder: "border-l-2 border-warning-border",
+  /** Softer trap note left-border (StudioSidePanel weak spots). */
+  leftBorderSoft: "border-l-2 border-warning-border/70",
+} as const;

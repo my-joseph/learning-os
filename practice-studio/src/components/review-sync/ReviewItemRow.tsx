@@ -30,6 +30,7 @@ import {
   verifiedAnswerLabel,
 } from "@/lib/reviewRow";
 import { getReviewRequest } from "@/lib/studioRules";
+import { statusTone } from "@/lib/statusTone";
 import { trapName } from "@/lib/titleText";
 import { FormattedText } from "@/components/FormattedText";
 import { MathFigure } from "@/components/MathFigure";
@@ -66,9 +67,9 @@ function toneForOutcome(outcome: ReviewOutcome): ResultCardTone {
 }
 
 function statusSymbolClass(kind: "pass" | "fail" | "none"): string {
-  if (kind === "pass") return "text-emerald-700 dark:text-emerald-400 font-semibold";
-  if (kind === "fail") return "text-rose-600 dark:text-rose-400 font-semibold";
-  return "text-zinc-500 dark:text-zinc-400";
+  if (kind === "pass") return `${statusTone.correct.text} font-semibold`;
+  if (kind === "fail") return `${statusTone.wrong.text} font-semibold`;
+  return statusTone.notTried.text;
 }
 
 /** Compact math or PRG/lab result summary shown inside an expanded Review & Sync row. */
@@ -238,7 +239,7 @@ const ReviewItemResult: React.FC<{
         {verifiedText && (
           <div className="min-w-0 break-words">
             <span className="text-zinc-500 dark:text-zinc-400">Verified answer: </span>
-            <span className="font-display font-semibold text-emerald-700 dark:text-emerald-400">
+            <span className={`font-display font-semibold ${statusTone.correct.text}`}>
               <FormattedText text={verifiedText} />
             </span>
           </div>
@@ -246,7 +247,7 @@ const ReviewItemResult: React.FC<{
       </div>
 
       {typeof state?.divergedStep === "number" && (
-        <div className="inline-flex items-center gap-1.5 text-rose-600 dark:text-rose-400 font-medium">
+        <div className={`inline-flex items-center gap-1.5 ${statusTone.wrong.text} font-medium`}>
           <Flag className="w-3 h-3 shrink-0" aria-hidden="true" />
           <span>
             Went off track at step{" "}
@@ -382,7 +383,7 @@ export const ReviewItemRow: React.FC<ReviewItemRowProps> = ({
             <span
               title="Mistake tag recorded"
               aria-label="Mistake tag recorded"
-              className="w-2 h-2 rounded-full bg-rose-600 dark:bg-rose-400 shrink-0"
+              className={`w-2 h-2 rounded-full ${statusTone.wrong.dot} shrink-0`}
             />
           )}
           <ChevronDown
@@ -501,7 +502,7 @@ export const ReviewItemRow: React.FC<ReviewItemRowProps> = ({
                     >
                       {copiedReview ? (
                         <>
-                          <Check className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" aria-hidden="true" />
+                          <Check className={`w-3.5 h-3.5 ${statusTone.correct.text}`} aria-hidden="true" />
                           <span>Copied review request</span>
                         </>
                       ) : (

@@ -4,6 +4,7 @@ import path from "node:path";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { ConfirmDialog } from "../src/components/ui/ConfirmDialog";
+import { DESTRUCTIVE_BUTTON_CLS } from "../src/lib/statusTone";
 import { formatSyncToast } from "../src/hooks/useProgressSync";
 import {
   TOAST_DURATION_MS,
@@ -88,7 +89,10 @@ assert.match(openHtml, /aria-modal="true"/);
 assert.match(openHtml, /aria-labelledby="/);
 assert.match(openHtml, /aria-describedby="/);
 assert.match(openHtml, />Cancel<\/button>/);
-assert.match(openHtml, /bg-rose-600[^>]*>Reset all<\/button>/);
+assert.ok(
+  openHtml.includes(DESTRUCTIVE_BUTTON_CLS) && />Reset all<\/button>/.test(openHtml),
+  "destructive confirm button uses DESTRUCTIVE_BUTTON_CLS"
+);
 
 // 4. Source invariants: no window.confirm / window.alert anywhere in src/, toast styling, sticky aside
 function walkTsFiles(dir: string): string[] {

@@ -12,6 +12,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { NextRequest } from "next/server";
 import { getLabsDir, resolveInsideRoot } from "../src/lib/paths";
 import { writeProgress } from "../src/lib/progress";
+import { statusTone } from "../src/lib/statusTone";
 import {
   deriveMilestoneStepperState,
   deriveMilestoneTileState,
@@ -508,10 +509,16 @@ async function testSyntheticLabAndProgress() {
       /aria-label="Milestone 2, Pool, tests passing, current"[^>]*aria-current="step"/
     );
     assert.match(stepperHtml, /aria-label="Milestone 3, Abort, not started"/);
-    assert.match(stepperHtml, /bg-emerald-600/, "M1 (passed) circle must be emerald green");
+    assert.ok(
+      stepperHtml.includes(statusTone.correct.solidCircle),
+      "M1 (passed) circle must use statusTone.correct.solidCircle"
+    );
     assert.match(stepperHtml, />M2<\/span>/, "untried milestones show their M number");
     assert.match(stepperHtml, /bg-indigo-600/, "Active connector must remain indigo");
-    assert.match(stepperHtml, /border-zinc-300/, "M3 (not started) circle must be hollow grey");
+    assert.ok(
+      stepperHtml.includes(statusTone.notTried.solidCircle),
+      "M3 (not started) circle must use statusTone.notTried.solidCircle"
+    );
     assert.match(stepperHtml, /ring-4 ring-indigo-600\/15/, "Current milestone must have indigo halo");
     assert.match(stepperHtml, /overflow-x-auto/);
 
@@ -549,7 +556,10 @@ async function testSyntheticLabAndProgress() {
     );
     assert.match(regressedStepperHtml, /aria-label="Milestone 2, Pool, in progress, regressed"/);
     assert.match(regressedStepperHtml, />M2<\/span>/);
-    assert.match(regressedStepperHtml, /bg-amber-600/, "Regressed milestone circle must be amber");
+    assert.ok(
+      regressedStepperHtml.includes(statusTone.wrong.solidCircle),
+      "Regressed milestone circle must use statusTone.wrong.solidCircle"
+    );
     assert.match(
       regressedStepperHtml,
       /aria-label="Milestone 3, Abort, not started, current"[^>]*aria-current="step"/

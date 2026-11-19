@@ -5,6 +5,7 @@ import { AnimatePresence, m } from "motion/react";
 import { AlertCircle, AlertTriangle, CheckCircle2, Loader2, X } from "lucide-react";
 import { StatusMessage } from "@/hooks/types";
 import { toastVariants } from "@/lib/motion";
+import { statusTone, warningTone } from "@/lib/statusTone";
 import {
   ToastItem,
   dismissToast,
@@ -65,22 +66,22 @@ const ToastItemRow: React.FC<ToastItemRowProps> = ({ item, onDismiss }) => {
     >
       {message.type === "pass" ? (
         <CheckCircle2
-          className="w-4 h-4 text-emerald-700 dark:text-emerald-400 shrink-0 mt-0.5"
+          className={`w-4 h-4 ${statusTone.correct.text} shrink-0 mt-0.5`}
           aria-hidden="true"
         />
       ) : isFail ? (
         <AlertCircle
-          className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5"
+          className={`w-4 h-4 ${statusTone.wrong.text} shrink-0 mt-0.5`}
           aria-hidden="true"
         />
       ) : inProgress ? (
         <Loader2
-          className="w-4 h-4 text-amber-700 dark:text-amber-400 shrink-0 mt-0.5 animate-spin"
+          className={`w-4 h-4 ${warningTone.text} shrink-0 mt-0.5 animate-spin`}
           aria-hidden="true"
         />
       ) : (
         <AlertTriangle
-          className="w-4 h-4 text-amber-700 dark:text-amber-400 shrink-0 mt-0.5"
+          className={`w-4 h-4 ${warningTone.text} shrink-0 mt-0.5`}
           aria-hidden="true"
         />
       )}

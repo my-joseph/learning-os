@@ -14,6 +14,7 @@ import {
   toggleExpandedRow,
 } from "../src/lib/reviewOutcome";
 import { ReviewPanel } from "../src/components/shell/ReviewPanel";
+import { statusTone } from "../src/lib/statusTone";
 import type { DrillDocument, Problem, ProblemState } from "../src/types/drill";
 
 const baseState = (): ProblemState => ({
@@ -116,11 +117,11 @@ assert.equal(
 );
 
 // 2. Outcome colours & labels
-assert.match(getReviewOutcomeMeta("correct_first").nodeClassName, /emerald-700/);
-assert.match(getReviewOutcomeMeta("assisted_or_partial").nodeClassName, /amber-600/);
-assert.match(getReviewOutcomeMeta("wrong").nodeClassName, /rose-600/);
-assert.match(getReviewOutcomeMeta("skipped").nodeClassName, /border-dashed/);
-assert.match(getReviewOutcomeMeta("unanswered").nodeClassName, /zinc-200/);
+assert.equal(getReviewOutcomeMeta("correct_first").nodeClassName, statusTone.correct.dot);
+assert.equal(getReviewOutcomeMeta("assisted_or_partial").nodeClassName, statusTone.assisted.dot);
+assert.equal(getReviewOutcomeMeta("wrong").nodeClassName, statusTone.wrong.dot);
+assert.equal(getReviewOutcomeMeta("skipped").nodeClassName, statusTone.skipped.dot);
+assert.equal(getReviewOutcomeMeta("unanswered").nodeClassName, statusTone.notTried.dot);
 assert.equal(getProblemOutcomeMeta({ ...baseState(), score: 1 }).label, "Correct");
 
 // 3. Labels, durations, and single-line prompt formatting

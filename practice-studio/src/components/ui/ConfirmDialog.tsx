@@ -3,6 +3,7 @@
 import React, { useEffect, useId, useRef } from "react";
 import { AnimatePresence, m } from "motion/react";
 import { dialogCard, fade, presence } from "@/lib/motion";
+import { DESTRUCTIVE_BUTTON_CLS } from "@/lib/statusTone";
 
 export interface ConfirmDialogProps {
   open: boolean;
@@ -94,8 +95,8 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   }, [open, onCancel]);
 
   const confirmBtnCls = destructive
-    ? "bg-rose-600 hover:bg-rose-700 dark:bg-rose-600 dark:hover:bg-rose-700 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400"
-    : "bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-700 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400";
+    ? `${DESTRUCTIVE_BUTTON_CLS} focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400`
+    : "bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-700 text-white focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400";
 
   return (
     <AnimatePresence>
@@ -147,7 +148,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
               <button
                 type="button"
                 onClick={onConfirm}
-                className={`h-9 px-3.5 rounded-xl text-xs font-semibold text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 ${confirmBtnCls}`}
+                className={`h-9 px-3.5 rounded-xl text-xs font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 ${confirmBtnCls}`}
               >
                 {confirmLabel}
               </button>

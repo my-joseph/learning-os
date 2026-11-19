@@ -11,6 +11,7 @@ import {
   ICON_CIRCLE_STYLES,
   ResultCardTone,
 } from "@/lib/answerFeedback";
+import { statusTone } from "@/lib/statusTone";
 import { dialogCard, presence } from "@/lib/motion";
 import { CheckResult, MistakeTag, Problem, ProblemState } from "@/types/drill";
 
@@ -182,9 +183,7 @@ export const AnswerResultCard: React.FC<AnswerResultCardProps> = ({
                         <span
                           key={i}
                           className={`inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs bg-white/70 dark:bg-zinc-900/50 ${
-                            c.ok
-                              ? "text-emerald-700 dark:text-emerald-400"
-                              : "text-rose-700 dark:text-rose-400"
+                            c.ok ? statusTone.correct.text : statusTone.wrong.text
                           }`}
                         >
                           {c.ok ? (

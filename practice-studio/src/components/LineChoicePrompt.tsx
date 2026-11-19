@@ -4,6 +4,7 @@ import React from "react";
 import { Check, Loader2, X } from "lucide-react";
 import { FormattedText } from "./FormattedText";
 import { ChoiceResultStatus } from "@/lib/answerFeedback";
+import { statusTone } from "@/lib/statusTone";
 import { ParsedLineChoicePrompt, parseLineChoicePrompt } from "@/lib/lineChoicePrompt";
 
 export { parseLineChoicePrompt };
@@ -57,15 +58,13 @@ export const LineChoicePrompt: React.FC<LineChoicePromptProps> = ({
             lineNumCls = "bg-indigo-600 dark:bg-indigo-500 text-white";
             circleCls = "bg-indigo-600 dark:bg-indigo-500 text-white";
           } else if (isCorrectChosen) {
-            rowCls =
-              "bg-emerald-50 dark:bg-emerald-500/10 border-emerald-500/60 dark:border-emerald-500/50";
-            lineNumCls = "bg-emerald-700 dark:bg-emerald-500 text-white";
-            circleCls = "bg-emerald-700 dark:bg-emerald-500 text-white";
+            rowCls = statusTone.correct.choiceCard;
+            lineNumCls = statusTone.correct.solidBadge;
+            circleCls = statusTone.correct.solidBadge;
           } else if (isWrongChosen) {
-            rowCls =
-              "bg-rose-50 dark:bg-rose-500/10 border-rose-500/60 dark:border-rose-500/50";
-            lineNumCls = "bg-rose-600 dark:bg-rose-500 text-white";
-            circleCls = "bg-rose-600 dark:bg-rose-500 text-white";
+            rowCls = statusTone.wrong.choiceCard;
+            lineNumCls = statusTone.wrong.solidBadge;
+            circleCls = statusTone.wrong.solidBadge;
           } else if (isSelected) {
             rowCls =
               "bg-zinc-100 dark:bg-zinc-800/80 border-indigo-600 dark:border-indigo-500";

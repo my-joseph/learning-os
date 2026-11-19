@@ -1,4 +1,5 @@
 import type { ProblemState } from "../types/drill";
+import { statusTone } from "./statusTone";
 
 export type ReviewOutcome =
   | "correct_first"
@@ -20,37 +21,36 @@ export const OUTCOME_META: Record<ReviewOutcome, ReviewOutcomeMeta> = {
   correct_first: {
     outcome: "correct_first",
     label: "Correct",
-    nodeClassName: "bg-emerald-700 dark:bg-emerald-400",
-    textClassName: "text-emerald-700 dark:text-emerald-400",
+    nodeClassName: statusTone.correct.dot,
+    textClassName: statusTone.correct.text,
     needsAttention: false,
   },
   assisted_or_partial: {
     outcome: "assisted_or_partial",
     label: "Assisted / partial",
-    nodeClassName: "bg-amber-600 dark:bg-amber-400",
-    textClassName: "text-amber-700 dark:text-amber-400",
+    nodeClassName: statusTone.assisted.dot,
+    textClassName: statusTone.assisted.text,
     needsAttention: true,
   },
   wrong: {
     outcome: "wrong",
     label: "Wrong",
-    nodeClassName: "bg-rose-600 dark:bg-rose-400",
-    textClassName: "text-rose-600 dark:text-rose-400",
+    nodeClassName: statusTone.wrong.dot,
+    textClassName: statusTone.wrong.text,
     needsAttention: true,
   },
   skipped: {
     outcome: "skipped",
     label: "Skipped",
-    nodeClassName:
-      "border border-dashed border-zinc-500 dark:border-zinc-400 bg-transparent",
-    textClassName: "text-zinc-500 dark:text-zinc-400",
+    nodeClassName: statusTone.skipped.dot,
+    textClassName: statusTone.skipped.text,
     needsAttention: true,
   },
   unanswered: {
     outcome: "unanswered",
     label: "Unanswered",
-    nodeClassName: "bg-zinc-200 dark:bg-zinc-700",
-    textClassName: "text-zinc-500 dark:text-zinc-400",
+    nodeClassName: statusTone.notTried.dot,
+    textClassName: statusTone.notTried.text,
     needsAttention: true,
   },
 };

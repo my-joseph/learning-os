@@ -12,6 +12,9 @@ import {
   labStepResult,
 } from "../src/lib/stepperModel";
 import { QuizPaginationBar } from "../src/components/QuizPaginationBar";
+import { statusTone } from "../src/lib/statusTone";
+
+const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 const noop = () => {};
 
@@ -319,7 +322,9 @@ const labHtml = renderToStaticMarkup(
 );
 assert.match(
   labHtml,
-  /aria-label="Milestone 1, Schema Types &amp; Result Union, tests passing, passed, current"[^>]*aria-current="step"[\s\S]*?bg-emerald-600[\s\S]*?ring-4 ring-indigo-600\/15[\s\S]*?<svg/
+  new RegExp(
+    `aria-label="Milestone 1, Schema Types &amp; Result Union, tests passing, passed, current"[^>]*aria-current="step"[\\s\\S]*?${escapeRe(statusTone.correct.solidCircle)}[\\s\\S]*?ring-4 ring-indigo-600\\/15[\\s\\S]*?<svg`
+  )
 );
 assert.match(
   labHtml,
@@ -327,11 +332,15 @@ assert.match(
 );
 assert.match(
   labHtml,
-  /aria-label="Milestone 3, Validators, in progress, regressed"[\s\S]*?bg-amber-600[\s\S]*?>M3<\/span>/
+  new RegExp(
+    `aria-label="Milestone 3, Validators, in progress, regressed"[\\s\\S]*?${escapeRe(statusTone.wrong.solidCircle)}[\\s\\S]*?>M3<\\/span>`
+  )
 );
 assert.match(
   labHtml,
-  /aria-label="Milestone 4, CLI Wiring, not started"[\s\S]*?border-zinc-300[\s\S]*?>M4<\/span>/
+  new RegExp(
+    `aria-label="Milestone 4, CLI Wiring, not started"[\\s\\S]*?${escapeRe(statusTone.notTried.solidCircle)}[\\s\\S]*?>M4<\\/span>`
+  )
 );
 assert.doesNotMatch(labHtml, />Tests passing|>In progress|>Not started<\/span>/);
 
@@ -369,33 +378,33 @@ assert.match(
   sixHtml,
   /aria-label="Question 3, Level 2, not tried, current"[^>]*aria-current="step"[\s\S]*?border-indigo-600[\s\S]*?ring-4 ring-indigo-600\/15[\s\S]*?>Q3<\/span>/
 );
-// Q01 correct -> emerald + svg check
+// Q01 correct -> correct statusTone + svg check
 assert.match(
   sixHtml,
-  /aria-label="Question 1, Level 1, correct"[\s\S]*?bg-emerald-600[\s\S]*?<svg/
+  new RegExp(`aria-label="Question 1, Level 1, correct"[\\s\\S]*?${escapeRe(statusTone.correct.solidCircle)}[\\s\\S]*?<svg`)
 );
-// Q02 wrong -> rose + svg X
+// Q02 wrong -> wrong statusTone + svg X
 assert.match(
   sixHtml,
-  /aria-label="Question 2, Level 1, wrong"[\s\S]*?bg-rose-600[\s\S]*?<svg/
+  new RegExp(`aria-label="Question 2, Level 1, wrong"[\\s\\S]*?${escapeRe(statusTone.wrong.solidCircle)}[\\s\\S]*?<svg`)
 );
-// Q04 assisted -> amber + svg check
+// Q04 assisted -> assisted (pale green) statusTone + svg check
 assert.match(
   sixHtml,
-  /aria-label="Question 4, Level 2, correct with help"[\s\S]*?bg-amber-600[\s\S]*?<svg/
+  new RegExp(`aria-label="Question 4, Level 2, correct with help"[\\s\\S]*?${escapeRe(statusTone.assisted.solidCircle)}[\\s\\S]*?<svg`)
 );
-// Q05 partial -> amber + svg minus
+// Q05 partial -> assisted (pale green) statusTone + svg minus
 assert.match(
   sixHtml,
-  /aria-label="Question 5, Level 3, partly correct"[\s\S]*?bg-amber-600[\s\S]*?<svg/
+  new RegExp(`aria-label="Question 5, Level 3, partly correct"[\\s\\S]*?${escapeRe(statusTone.assisted.solidCircle)}[\\s\\S]*?<svg`)
 );
 // Q06 skipped -> dashed border + "Q6"
 assert.match(
   sixHtml,
-  /aria-label="Question 6, Level 3, skipped"[\s\S]*?border-dashed[\s\S]*?>Q6<\/span>/
+  new RegExp(`aria-label="Question 6, Level 3, skipped"[\\s\\S]*?${escapeRe(statusTone.skipped.solidCircle)}[\\s\\S]*?>Q6<\\/span>`)
 );
 
-// Used help before answering -> amber circle with step number (no ✓) and not counted as answered
+// Used help before answering -> renders as plain outline like notTried (no colour, preserves usedHelp state/aria)
 const usedHelpSteps = buildDrillSteps([makeProblem("Q01", { level: 1 }, { hintsRevealed: 1 })], "math");
 assert.equal(usedHelpSteps[0].result, "usedHelp");
 assert.equal(usedHelpSteps[0].ariaLabel, "Question 1, Level 1, used help");
@@ -412,8 +421,9 @@ const usedHelpHtml = renderToStaticMarkup(
 );
 assert.match(
   usedHelpHtml,
-  /aria-label="Question 1, Level 1, used help, current"[\s\S]*?bg-amber-600[\s\S]*?ring-4 ring-indigo-600\/15[\s\S]*?>Q1<\/span>/
+  /aria-label="Question 1, Level 1, used help, current"[\s\S]*?border-indigo-600[\s\S]*?ring-4 ring-indigo-600\/15[\s\S]*?>Q1<\/span>/
 );
+assert.doesNotMatch(usedHelpHtml, /bg-amber|bg-status-assisted/);
 
 // Review step is last, has an svg, and has no step number inside its circle
 const lastLiMatch = sixHtml.match(/<li[^>]*>(?:(?!<li).)*<\/li><\/ol>/);

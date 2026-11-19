@@ -6,6 +6,7 @@ import { Reveal } from "@/components/motion/Reveal";
 import { FormattedText } from "@/components/FormattedText";
 import { StepRow } from "@/components/StepRow";
 import { hasCheckpointHint } from "@/lib/studioRules";
+import { warningTone } from "@/lib/statusTone";
 import { Problem } from "@/types/drill";
 
 export interface CheckpointHintDisclosureProps {
@@ -22,7 +23,7 @@ export const CheckpointHintDisclosure: React.FC<CheckpointHintDisclosureProps> =
   return (
     <Reveal show={visible}>
       {visible && (
-        <div className="border-l-2 border-amber-600 dark:border-amber-400 pl-3.5 py-1 text-sm text-zinc-700 dark:text-zinc-300">
+        <div className={`${warningTone.leftBorder} pl-3.5 py-1 text-sm text-zinc-700 dark:text-zinc-300`}>
           <FormattedText text={checkpointHint!} />
         </div>
       )}

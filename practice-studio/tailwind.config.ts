@@ -6,12 +6,33 @@ const config: Config = {
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/lib/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
     extend: {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
+        accent: "rgb(var(--accent) / <alpha-value>)",
+        warning: {
+          DEFAULT: "rgb(var(--warning) / <alpha-value>)",
+          soft: "rgb(var(--warning-soft) / <alpha-value>)",
+          border: "rgb(var(--warning-border) / <alpha-value>)",
+        },
+        status: {
+          correct: "rgb(var(--status-correct) / <alpha-value>)",
+          "correct-text": "rgb(var(--status-correct-text) / <alpha-value>)",
+          "correct-soft": "rgb(var(--status-correct-soft) / <alpha-value>)",
+          assisted: "rgb(var(--status-assisted) / <alpha-value>)",
+          "assisted-soft": "rgb(var(--status-assisted-soft) / <alpha-value>)",
+          wrong: "rgb(var(--status-wrong) / <alpha-value>)",
+          "wrong-soft": "rgb(var(--status-wrong-soft) / <alpha-value>)",
+          skipped: "rgb(var(--status-skipped) / <alpha-value>)",
+          neutral: "rgb(var(--status-neutral) / <alpha-value>)",
+          "on-correct": "rgb(var(--status-on-correct) / <alpha-value>)",
+          "on-assisted": "rgb(var(--status-on-assisted) / <alpha-value>)",
+          "on-wrong": "rgb(var(--status-on-wrong) / <alpha-value>)",
+        },
       },
       // Learner choice: base text 15px.
       fontSize: {

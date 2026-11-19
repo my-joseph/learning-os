@@ -32,6 +32,7 @@ import { applyDivergedStep } from "@/lib/applyCheckResult";
 import { labToDrillDocument, type LabDetailResponse } from "@/lib/labModel";
 import { readLastDrillId } from "@/lib/lastDrillStorage";
 import { hasSubstantiveAttempt } from "@/lib/reviewGuard";
+import { statusTone } from "@/lib/statusTone";
 import type { ReviewItem } from "@/lib/reviewItems";
 import {
   executeReviewItemCheck,
@@ -291,7 +292,7 @@ export const DailyReviewView: React.FC<DailyReviewViewProps> = ({
             /* End screen */
             <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 sm:p-8 space-y-6">
               <div className="flex items-start gap-3">
-                <span className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 inline-flex items-center justify-center shrink-0">
+                <span className={`w-8 h-8 rounded-full ${statusTone.correct.iconCircle} inline-flex items-center justify-center shrink-0`}>
                   <Check className="w-4 h-4" aria-hidden="true" />
                 </span>
                 <div className="space-y-1">
@@ -310,7 +311,7 @@ export const DailyReviewView: React.FC<DailyReviewViewProps> = ({
                   <div className="text-xs text-zinc-500 dark:text-zinc-400">
                     Moved up
                   </div>
-                  <div className="font-semibold text-emerald-700 dark:text-emerald-400 tabular-nums">
+                  <div className={`font-semibold ${statusTone.correct.text} tabular-nums`}>
                     {computedSummary.movedUpCount} moved up a level
                   </div>
                 </div>
@@ -319,7 +320,7 @@ export const DailyReviewView: React.FC<DailyReviewViewProps> = ({
                   <div className="text-xs text-zinc-500 dark:text-zinc-400">
                     Moved down
                   </div>
-                  <div className="font-semibold text-rose-600 dark:text-rose-400 tabular-nums">
+                  <div className={`font-semibold ${statusTone.wrong.text} tabular-nums`}>
                     {computedSummary.movedDownCount} moved down a level
                   </div>
                 </div>

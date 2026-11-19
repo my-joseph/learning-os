@@ -13,6 +13,7 @@ import {
 } from "@/lib/reviewOutcome";
 import { countRightItems, type SessionPattern } from "@/lib/reviewRow";
 import { formatSyncTimestamp } from "@/lib/sessionSummary";
+import { statusTone, warningTone } from "@/lib/statusTone";
 import { plainTitle } from "@/lib/titleText";
 
 export type EffectiveSyncPhase =
@@ -42,16 +43,11 @@ export interface SessionSummaryCardProps {
 }
 
 const TILE_COLORS: Record<ReviewOutcome, string> = {
-  correct_first:
-    "bg-emerald-700 hover:bg-emerald-800 dark:bg-emerald-500 dark:hover:bg-emerald-400 text-white dark:text-zinc-950 border-emerald-700 dark:border-emerald-500",
-  assisted_or_partial:
-    "bg-amber-600 hover:bg-amber-700 dark:bg-amber-400 dark:hover:bg-amber-300 text-white dark:text-zinc-950 border-amber-600 dark:border-amber-400",
-  wrong:
-    "bg-rose-600 hover:bg-rose-700 dark:bg-rose-400 dark:hover:bg-rose-300 text-white dark:text-zinc-950 border-rose-600 dark:border-rose-400",
-  skipped:
-    "bg-transparent hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border-dashed border-zinc-400 dark:border-zinc-600",
-  unanswered:
-    "bg-zinc-50 hover:bg-zinc-100 dark:bg-zinc-950 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800",
+  correct_first: statusTone.correct.tile,
+  assisted_or_partial: statusTone.assisted.tile,
+  wrong: statusTone.wrong.tile,
+  skipped: statusTone.skipped.tile,
+  unanswered: statusTone.notTried.tile,
 };
 
 function syncStatusLinkText(
@@ -78,30 +74,27 @@ function syncStatusLinkText(
       return {
         label: relativeLabel ? `Synced ${relativeLabel}` : "Synced",
         showArrow: false,
-        toneClass:
-          "text-emerald-700 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300",
+        toneClass: `${statusTone.correct.text} hover:opacity-80`,
       };
     }
     case "changed":
       return {
         label: "Changed since sync",
         showArrow: true,
-        toneClass:
-          "text-amber-700 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-300",
+        toneClass: warningTone.textLink,
       };
     case "degraded":
       return {
         label: "Saved locally · retry",
         showArrow: true,
-        toneClass:
-          "text-amber-700 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-300",
+        toneClass: warningTone.textLink,
       };
     case "error":
     case "offline":
       return {
         label: phase === "offline" ? "Offline · retry" : "Couldn't sync",
         showArrow: true,
-        toneClass: "text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300",
+        toneClass: `${statusTone.wrong.text} hover:opacity-80`,
       };
     case "dryRun":
       return {
