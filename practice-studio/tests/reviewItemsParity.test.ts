@@ -17,6 +17,8 @@ import {
   estimateReviewMinutes,
   getDueReviewItems,
   interleaveDueItems,
+  extractReviewEvents,
+  normalizeReviewDate,
   parseReviewScope,
   prioritizeDueItems,
   recordReviewItemResult,
@@ -50,6 +52,33 @@ async function runTests() {
     { level: 1, lastReviewed: "2026-11-10", dueDate: "2026-11-11" }
   );
   assert.equal(addDays("2026-11-10", 35), "2026-12-15");
+
+  // Local calendar boundary parity, including timestamps between midnight and 06:59 in UTC+7.
+  const previousTz = process.env.TZ;
+  process.env.TZ = "Asia/Bangkok";
+  try {
+    const localDates = [
+      normalizeReviewDate("2026-11-18T17:00:00Z"),
+      normalizeReviewDate("2026-11-18T23:59:00Z"),
+      normalizeReviewDate("2026-11-18T16:59:00Z"),
+      extractReviewEvents({ attempts: [{ verdict: "correct" }] })[0]?.date,
+    ];
+    assert.deepEqual(localDates, ["2026-11-19", "2026-11-19", "2026-11-18", "1970-01-01"]);
+    const root = path.resolve(process.cwd(), "..");
+    const pyDates = spawnSync(
+      process.env.PYTHON ||
+        (fs.existsSync(path.join(root, ".venv", "bin", "python"))
+          ? path.join(root, ".venv", "bin", "python")
+          : "python3"),
+      ["-c", "from scripts.review_items import _normalize_date, extract_review_events; import json; print(json.dumps([_normalize_date('2026-11-18T17:00:00Z'), _normalize_date('2026-11-18T23:59:00Z'), _normalize_date('2026-11-18T16:59:00Z'), extract_review_events({'attempts':[{'verdict':'correct'}]})[0]['date']]))"],
+      { cwd: root, encoding: "utf8", env: { ...process.env, TZ: "Asia/Bangkok" } }
+    );
+    assert.equal(pyDates.status, 0, pyDates.stderr);
+    assert.deepEqual(JSON.parse(pyDates.stdout), localDates);
+  } finally {
+    if (previousTz === undefined) delete process.env.TZ;
+    else process.env.TZ = previousTz;
+  }
 
   // 2. Python <-> TypeScript parity on a shared multi-unit, multi-subject fixture
   const root = path.resolve(process.cwd(), "..");
@@ -911,6 +940,32 @@ async function runTests() {
     // Q01: 11-10 correct -> L2; 11-15 wrong -> L1; 11-19 correct AFTER exampleViewedAt -> assisted -> STAYS at L1 (due +1d = 11-20)
     assert.equal(tsVariantParity["DRL-MTH-T01-C04-U01-01/Q01"].level, 1);
     assert.equal(tsVariantParity["DRL-MTH-T01-C04-U01-01/Q01"].dueDate, "2026-11-20");
+
+    // A reset later on the same local day invalidates evidence and must be pruned in both engines.
+    const resetProgressPath = path.join(progressDir, "DRL-MTH-T01-C04-U01-01.json");
+    const resetProgress = JSON.parse(fs.readFileSync(resetProgressPath, "utf8")) as Record<string, any>;
+    resetProgress.problems.Q01.cycleStartedAt = "2026-11-19T11:30:00Z";
+    fs.writeFileSync(resetProgressPath, JSON.stringify(resetProgress), "utf8");
+    const resetTestTz = process.env.TZ;
+    process.env.TZ = "UTC";
+    try {
+      const tsAfterReset = buildScheduleFromProgress({ dataDir, progressDir, labsDir, rootDir: root });
+      const pyAfterReset = spawnSync(
+        python,
+        ["-m", "scripts.review_items", "--data-root", dataDir, "--progress-dir", progressDir, "--json"],
+        { cwd: root, encoding: "utf8", env: { ...process.env, TZ: "UTC" } }
+      );
+      assert.equal(pyAfterReset.status, 0, pyAfterReset.stderr);
+      const pyResetMap = Object.fromEntries(
+        (JSON.parse(pyAfterReset.stdout) as { items: ReviewItem[] }).items.map((item) => [`${item.drillId}/${item.qid}`, item])
+      );
+      assert.equal(tsAfterReset["DRL-MTH-T01-C04-U01-01/Q01"], undefined);
+      assert.equal(pyResetMap["DRL-MTH-T01-C04-U01-01/Q01"], undefined);
+      assert.deepEqual(tsAfterReset, pyResetMap, "TS and Python must agree after a same-day reset");
+    } finally {
+      if (resetTestTz === undefined) delete process.env.TZ;
+      else process.env.TZ = resetTestTz;
+    }
 
     console.log("[PASS] Python and TypeScript review_items schedules, priority, scopes, variants, and /api/review-items routes match");
   } finally {

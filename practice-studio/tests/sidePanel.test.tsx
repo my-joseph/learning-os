@@ -56,6 +56,7 @@ async function runTests() {
             form: "direct",
             commonTrapTag: "c09-sign-flip",
           },
+          { id: "Q03", level: 4, form: "direct", commonTrapTag: "c09-sign-flip" },
         ],
       }),
       "utf-8"
@@ -97,6 +98,11 @@ async function runTests() {
           Q02: {
             attempts: [{ verdict: "incorrect", ts: "2026-11-02", matchedTrap: "c09-sign-flip" }],
             score: 0,
+          },
+          Q03: {
+            attempts: [{ verdict: "correct", ts: "2026-11-03", exampleViewed: true }],
+            exampleViewedAt: "2026-11-03T09:00:00Z",
+            score: 0.5,
           },
         },
       }),
