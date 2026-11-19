@@ -4,6 +4,7 @@ import React, { useMemo } from "react";
 import katex from "katex";
 import { BookOpen } from "lucide-react";
 import { HighlightedCode } from "@/components/HighlightedCode";
+import { ListDot } from "@/components/ui/ListDot";
 import { MATH_TOKEN, isMathSegment, unescapeDollar, wrapBareWordsInLatex } from "@/lib/mathText";
 import { normalizeShikiLanguage } from "@/lib/shiki";
 
@@ -204,10 +205,7 @@ export const FormattedText: React.FC<FormattedTextProps> = ({
               key={lineIdx}
               className="flex items-start gap-2 text-zinc-800 dark:text-zinc-200 leading-relaxed pl-2 py-0.5"
             >
-              {/* Indigo dot like the Visible tests list; centred on the first text line (1lh tall box). */}
-              <span className="h-[1lh] flex items-center shrink-0 select-none" aria-hidden="true">
-                <span className="w-1.5 h-1.5 rounded-full bg-indigo-600 dark:bg-indigo-400" />
-              </span>
+              <ListDot />
               <div className="flex-1">{renderInline(bulletContent)}</div>
             </div>
           );

@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync, statSync } from "node:fs";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { FormattedText } from "../src/components/FormattedText";
@@ -554,5 +554,17 @@ assert.match(mathPaletteSrc, /justify-center w-8 h-8 rounded-lg bg-zinc-100/);
 assert.doesNotMatch(mathPaletteSrc, /sm:w-10 sm:h-10/);
 assert.match(lineChoiceSrc, /overflow-x-auto overflow-y-hidden/);
 assert.match(mathWorkspace, /problem\.plainText && !isChoice/);
+
+// Learner 2026-11-19: one global list bullet (ListDot, small indigo dot); no "•" glyph bullets.
+{
+  const walk = (dir: string): string[] =>
+    readdirSync(dir).flatMap((f) => {
+      const p = `${dir}/${f}`;
+      return statSync(p).isDirectory() ? walk(p) : p.endsWith(".tsx") ? [p] : [];
+    });
+  for (const file of walk("src/components")) {
+    assert.doesNotMatch(readFileSync(file, "utf8"), />\s*•\s*</, `${file} renders a "•" glyph bullet; use <ListDot />`);
+  }
+}
 
 console.log("studio rules tests passed");

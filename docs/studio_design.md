@@ -18,6 +18,7 @@ The learner's brief: clean, few tags, easy to work a problem, no confusing butto
 ## Colour (Tailwind tokens; light / dark)
 - Neutral base: `zinc` (bg `zinc-50` / `zinc-950`, surface `white` / `zinc-900`, border `zinc-200` / `zinc-800`, muted text `zinc-500` / `zinc-400`).
 - One accent for the primary action: `indigo-600` (both light and dark, `>= 4.5:1`), text white.
+- Lists: every bulleted list uses the shared `ListDot` (6px indigo-600 / dark indigo-400 dot, centred on the first text line); no "•" glyphs or `list-disc`.
 - Focus indicators: keyboard `focus-visible` indigo rings only (`indigo-600` light / `indigo-400` dark); suppress mouse-click focus rings and browser default outlines.
 - Status only, never decoration: correct `emerald-700`/`emerald-400`, assisted/partial `amber-700`/`amber-400`, wrong `rose-600`/`rose-400`. Status colour appears on tiles, icons, unrounded left borders, or light status tints (`bg-*-50` / `dark:bg-*-500/10`) on result cards and selected choice states — never as a left-accent border on rounded boxes or saturated full-card fills.
 - Default theme follows `prefers-color-scheme`; the toggle overrides it. Contrast AA (`>= 4.5:1`) everywhere.
