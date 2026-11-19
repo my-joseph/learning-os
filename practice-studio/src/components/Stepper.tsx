@@ -17,7 +17,7 @@ export interface StepperProps {
 }
 
 const CIRCLE_BASE_CLS =
-  "relative flex items-center justify-center shrink-0 w-[22px] h-[22px] sm:w-6 sm:h-6 rounded-full border-2 font-display text-[10px] sm:text-[11px] font-semibold tabular-nums leading-none transition-[background-color,border-color,box-shadow,color] duration-150 group-focus-visible:outline group-focus-visible:outline-2 group-focus-visible:outline-indigo-600 dark:group-focus-visible:outline-indigo-400 group-focus-visible:outline-offset-[5px]";
+  "relative flex items-center justify-center shrink-0 w-[22px] h-[22px] sm:w-6 sm:h-6 rounded-full border-2 font-display text-[10px] sm:text-[11px] font-semibold tabular-nums leading-none transition-[background-color,border-color,box-shadow,color] duration-150";
 
 const CURRENT_HALO_CLS = "ring-4 ring-indigo-600/15 dark:ring-indigo-400/25";
 
@@ -111,7 +111,6 @@ export const Stepper: React.FC<StepperProps> = ({
   const [overflow, setOverflow] = useState(false);
 
   const currentPosition = isReview ? steps.length : currentIndex;
-  const titleSizeCls = "text-[11px]";
 
   // Keep keyboard focus on the current step (including Review) when navigation happens
   // while focus is already inside this nav.
@@ -205,7 +204,7 @@ export const Stepper: React.FC<StepperProps> = ({
                   <span
                     aria-hidden="true"
                     data-connector-active={isSegmentIndigo ? "true" : "false"}
-                    className="pointer-events-none absolute top-[11px] sm:top-3 -translate-y-1/2 left-[calc(50%_+_15px)] w-[30px] sm:left-[calc(50%_+_18px)] sm:w-[calc(100%_-_36px)] h-0.5 rounded-full z-0"
+                    className="pointer-events-none absolute top-[15px] sm:top-4 -translate-y-1/2 left-[calc(50%_+_15px)] w-[30px] sm:left-[calc(50%_+_18px)] sm:w-[calc(100%_-_36px)] h-0.5 rounded-full z-0"
                   >
                     <span className="block w-full h-full bg-zinc-200 dark:bg-zinc-800 rounded-full" />
                     <m.span
@@ -239,11 +238,7 @@ export const Stepper: React.FC<StepperProps> = ({
 
                     <span
                       aria-hidden="true"
-                      className={`hidden sm:block mt-1 max-w-full truncate px-1 font-display ${titleSizeCls} font-semibold leading-tight transition-colors ${
-                        isCurrent
-                          ? "text-zinc-900 dark:text-zinc-100"
-                          : "text-zinc-700 dark:text-zinc-300 group-hover:text-zinc-900 dark:group-hover:text-zinc-100"
-                      }`}
+                      className={`hidden sm:block mt-1 max-w-full truncate px-1 font-display text-xs font-medium leading-tight text-zinc-500 dark:text-zinc-400`}
                     >
                       {step.title}
                     </span>
@@ -280,11 +275,7 @@ export const Stepper: React.FC<StepperProps> = ({
 
                 <span
                   aria-hidden="true"
-                  className={`hidden sm:block mt-1 max-w-full truncate px-1 font-display ${titleSizeCls} font-semibold leading-tight transition-colors ${
-                    isReview
-                      ? "text-zinc-900 dark:text-zinc-100"
-                      : "text-zinc-700 dark:text-zinc-300 group-hover:text-zinc-900 dark:group-hover:text-zinc-100"
-                  }`}
+                  className={`hidden sm:block mt-1 max-w-full truncate px-1 font-display text-xs font-medium leading-tight text-zinc-500 dark:text-zinc-400`}
                 >
                   Review
                 </span>
