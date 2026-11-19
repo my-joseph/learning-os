@@ -1,0 +1,691 @@
+{
+  "unitCode": "MTH-T02-C02-U04",
+  "variants": [
+    {
+      "variantId": "VAR-MTH-T02-C02-U04-t02-c02-u04-evaluate-composition-01",
+      "sourceArchetype": "t02-c02-u04-evaluate-composition",
+      "archetypeKey": "t02-c02-u04-evaluate-composition",
+      "archetype": "problem-solving",
+      "unitCode": "MTH-T02-C02-U04",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "context": "",
+      "prompt": "Let $f(x) = 3x - 2$ and $g(x) = x^2$. Find $(f \\circ g)(4)$.",
+      "display": "f(g(4))",
+      "plainText": "Let f(x)=3x-2 and g(x)=x^2. Find (f o g)(4).",
+      "givens": {
+        "a": 3,
+        "b": 2,
+        "x": 4
+      },
+      "constants": {},
+      "trapGivens": [
+        3,
+        2,
+        4
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "46",
+        "tolerance": 0
+      },
+      "answerPlain": "46",
+      "answerDisplay": "46",
+      "inputHint": "Enter a number",
+      "commonTrapTag": "t02-c02-u04-reverse-composition-order-trap",
+      "trapDerivation": "(3 * 4 - 2)^2",
+      "trapValue": "100",
+      "verify": {
+        "source": "3 * (4^2) - 2",
+        "trapValue": "100"
+      },
+      "checkpointHint": "Evaluate the inner function first, then substitute that result into the outer function.",
+      "references": [
+        "MTH-T02-C02-U04"
+      ],
+      "verificationLevel": "partial",
+      "steps": [
+        {
+          "latex": "g(4) = 4^2",
+          "explain": "Evaluate the inner function g at x = 4.",
+          "eq": [
+            "4^2",
+            "16"
+          ]
+        },
+        {
+          "latex": "f(g(4)) = f(16)",
+          "explain": "Pass the inner output 16 into the outer function f."
+        },
+        {
+          "latex": "f(16) = 3(16) - 2",
+          "explain": "Substitute 16 into the rule for f."
+        },
+        {
+          "latex": "f(16) = 46",
+          "explain": "Simplify to obtain the composite value.",
+          "val": "46"
+        }
+      ],
+      "id": "VAR-MTH-T02-C02-U04-t02-c02-u04-evaluate-composition-01",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "t02-c02-u04-reverse-composition-order-trap|direct|Let f(x)=#x-# and g(x)=x^#. Find (f o g)(#)."
+    },
+    {
+      "variantId": "VAR-MTH-T02-C02-U04-t02-c02-u04-evaluate-composition-02",
+      "sourceArchetype": "t02-c02-u04-evaluate-composition",
+      "archetypeKey": "t02-c02-u04-evaluate-composition",
+      "archetype": "problem-solving",
+      "unitCode": "MTH-T02-C02-U04",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "context": "",
+      "prompt": "Let $f(x) = 4x + 3$ and $g(x) = x + 5$. Find $x$ if $(f \\circ g)(x) = 35$.",
+      "display": "4(x + 5) + 3 = 35",
+      "plainText": "Let f(x)=4x+3 and g(x)=x+5. Find x if (f o g)(x)=35.",
+      "givens": {
+        "a": 4,
+        "b": 3,
+        "c": 5,
+        "target": 35
+      },
+      "constants": {},
+      "trapGivens": [
+        4,
+        3,
+        5,
+        35
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "3",
+        "tolerance": 0
+      },
+      "answerPlain": "3",
+      "answerDisplay": "3",
+      "inputHint": "Enter a number",
+      "commonTrapTag": "t02-c02-u04-stop-at-inner-output-trap",
+      "trapDerivation": "(35 - 3) / 4",
+      "trapValue": "8",
+      "verify": {
+        "source": "(35 - 23) / 4",
+        "trapValue": "8"
+      },
+      "checkpointHint": "Substitute the inner rule into the outer rule and solve all the way down to the original input variable.",
+      "references": [
+        "MTH-T02-C02-U04"
+      ],
+      "verificationLevel": "partial",
+      "steps": [
+        {
+          "latex": "4(x + 5) + 3 = 35",
+          "explain": "Substitute g(x) = x + 5 into f(x) = 4x + 3."
+        },
+        {
+          "latex": "4x + 20 + 3 = 35",
+          "explain": "Distribute 4 across the inner binomial."
+        },
+        {
+          "latex": "4x + 23 = 35",
+          "explain": "Combine the constant terms.",
+          "eq": [
+            "20 + 3",
+            "23"
+          ]
+        },
+        {
+          "latex": "4x = 12",
+          "explain": "Subtract 23 from both sides.",
+          "eq": [
+            "35 - 23",
+            "12"
+          ]
+        },
+        {
+          "latex": "x = 3",
+          "explain": "Divide both sides by 4.",
+          "val": "3"
+        }
+      ],
+      "id": "VAR-MTH-T02-C02-U04-t02-c02-u04-evaluate-composition-02",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c02-u04-stop-at-inner-output-trap|reverse|Let f(x)=#x+# and g(x)=x+#. Find x if (f o g)(x)=#."
+    },
+    {
+      "variantId": "VAR-MTH-T02-C02-U04-t02-c02-u04-evaluate-composition-03",
+      "sourceArchetype": "t02-c02-u04-evaluate-composition",
+      "archetypeKey": "t02-c02-u04-evaluate-composition",
+      "archetype": "problem-solving",
+      "unitCode": "MTH-T02-C02-U04",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "context": "",
+      "prompt": "Let $f(x) = 5x - 4$ and $g(x) = x + 3$. Find $x$ if $(f \\circ g)(x) = 41$.",
+      "display": "5(x + 3) - 4 = 41",
+      "plainText": "Let f(x)=5x-4 and g(x)=x+3. Find x if (f o g)(x)=41.",
+      "givens": {
+        "a": 5,
+        "b": 4,
+        "c": 3,
+        "target": 41
+      },
+      "constants": {},
+      "trapGivens": [
+        5,
+        4,
+        3,
+        41
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "6",
+        "tolerance": 0
+      },
+      "answerPlain": "6",
+      "answerDisplay": "6",
+      "inputHint": "Enter a number",
+      "commonTrapTag": "t02-c02-u04-stop-at-inner-output-trap",
+      "trapDerivation": "(41 + 4) / 5",
+      "trapValue": "9",
+      "verify": {
+        "source": "(41 - 11) / 5",
+        "trapValue": "9"
+      },
+      "checkpointHint": "After inverting the outer function to find the inner output, undo the inner function as well.",
+      "references": [
+        "MTH-T02-C02-U04"
+      ],
+      "verificationLevel": "partial",
+      "steps": [
+        {
+          "latex": "5(x + 3) - 4 = 41",
+          "explain": "Replace x in f(x) with g(x) = x + 3."
+        },
+        {
+          "latex": "5x + 15 - 4 = 41",
+          "explain": "Distribute 5 across (x + 3)."
+        },
+        {
+          "latex": "5x + 11 = 41",
+          "explain": "Combine the constant terms.",
+          "eq": [
+            "15 - 4",
+            "11"
+          ]
+        },
+        {
+          "latex": "5x = 30",
+          "explain": "Subtract 11 from both sides.",
+          "eq": [
+            "41 - 11",
+            "30"
+          ]
+        },
+        {
+          "latex": "x = 6",
+          "explain": "Divide both sides by 5.",
+          "val": "6"
+        }
+      ],
+      "id": "VAR-MTH-T02-C02-U04-t02-c02-u04-evaluate-composition-03",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c02-u04-stop-at-inner-output-trap|reverse|Let f(x)=#x-# and g(x)=x+#. Find x if (f o g)(x)=#."
+    },
+    {
+      "variantId": "VAR-MTH-T02-C02-U04-t02-c02-u04-domain-of-composite-01",
+      "sourceArchetype": "t02-c02-u04-domain-of-composite",
+      "archetypeKey": "t02-c02-u04-domain-of-composite",
+      "archetype": "problem-solving",
+      "unitCode": "MTH-T02-C02-U04",
+      "level": 3,
+      "category": "Problem Solving",
+      "form": "direct",
+      "context": "",
+      "prompt": "Let $f(u) = \\frac{1}{\\sqrt{u}}$ and $g(x) = \\sqrt{3x - 12}$. Give the domain of $(f \\circ g)(x)$ in interval notation.",
+      "display": "(f \\circ g)(x) = \\frac{1}{\\sqrt{\\sqrt{3x - 12}}}",
+      "plainText": "Let f(u)=1/sqrt(u) and g(x)=sqrt(3x-12). Give the domain of (f o g)(x) in interval notation.",
+      "givens": {
+        "scale": 3,
+        "offset": 12,
+        "unit": 1
+      },
+      "constants": {},
+      "trapGivens": [
+        3,
+        12
+      ],
+      "answerSpec": {
+        "type": "interval",
+        "value": "(4, oo)"
+      },
+      "answerPlain": "(4, oo)",
+      "answerDisplay": "(4, oo)",
+      "inputHint": "Enter an interval using parentheses or brackets as appropriate",
+      "commonTrapTag": "t02-c02-u04-include-composite-zero-endpoint-trap",
+      "trapDerivation": "[12 / 3, oo)",
+      "trapValue": "[4, oo)",
+      "verify": {
+        "trapValue": "[4, oo)"
+      },
+      "checkpointHint": "Check both that the inner square root is defined and that its output is strictly positive for the outer denominator.",
+      "references": [
+        "MTH-T02-C02-U04"
+      ],
+      "verificationLevel": "partial",
+      "steps": [
+        {
+          "latex": "3x - 12 \\ge 0",
+          "explain": "Require the inner square root to have a non-negative radicand."
+        },
+        {
+          "latex": "x \\ge 4",
+          "explain": "Solve the inner domain inequality."
+        },
+        {
+          "latex": "3(4) - 12 = 0",
+          "explain": "Check the boundary x = 4: g(4) = 0 makes the outer denominator zero.",
+          "eq": [
+            "3 * 4 - 12",
+            "0"
+          ]
+        },
+        {
+          "latex": "x > 4",
+          "explain": "Exclude x = 4 so the composite domain is (4, oo)."
+        }
+      ],
+      "blindSolve": {
+        "answer": "(4, oo)",
+        "ambiguous": false,
+        "setup": "given",
+        "strategy": "choose",
+        "check": "edge",
+        "edgeRejected": "x = 4, where g(4) = 0 and f(0) is undefined",
+        "task": "compute",
+        "reverse": false,
+        "steps": 3
+      },
+      "id": "VAR-MTH-T02-C02-U04-t02-c02-u04-domain-of-composite-01",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "t02-c02-u04-include-composite-zero-endpoint-trap|direct|Let f(u)=#/sqrt(u) and g(x)=sqrt(#x-#). Give the domain of (f o g)(x) in interval notation."
+    },
+    {
+      "variantId": "VAR-MTH-T02-C02-U04-t02-c02-u04-domain-of-composite-02",
+      "sourceArchetype": "t02-c02-u04-domain-of-composite",
+      "archetypeKey": "t02-c02-u04-domain-of-composite",
+      "archetype": "problem-solving",
+      "unitCode": "MTH-T02-C02-U04",
+      "level": 3,
+      "category": "Problem Solving",
+      "form": "direct",
+      "context": "",
+      "prompt": "Let $f(u) = \\frac{1}{\\sqrt{u}}$ and $g(x) = \\sqrt{4x - 20}$. Give the domain of $(f \\circ g)(x)$ in interval notation.",
+      "display": "(f \\circ g)(x) = \\frac{1}{\\sqrt{\\sqrt{4x - 20}}}",
+      "plainText": "Let f(u)=1/sqrt(u) and g(x)=sqrt(4x-20). Give the domain of (f o g)(x) in interval notation.",
+      "givens": {
+        "scale": 4,
+        "offset": 20,
+        "unit": 1
+      },
+      "constants": {},
+      "trapGivens": [
+        4,
+        20
+      ],
+      "answerSpec": {
+        "type": "interval",
+        "value": "(5, oo)"
+      },
+      "answerPlain": "(5, oo)",
+      "answerDisplay": "(5, oo)",
+      "inputHint": "Enter an interval using parentheses or brackets as appropriate",
+      "commonTrapTag": "t02-c02-u04-include-composite-zero-endpoint-trap",
+      "trapDerivation": "[20 / 4, oo)",
+      "trapValue": "[5, oo)",
+      "verify": {
+        "trapValue": "[5, oo)"
+      },
+      "checkpointHint": "Verify whether the inner domain's boundary endpoint produces a zero output that the outer reciprocal rejects.",
+      "references": [
+        "MTH-T02-C02-U04"
+      ],
+      "verificationLevel": "partial",
+      "steps": [
+        {
+          "latex": "4x - 20 \\ge 0",
+          "explain": "Require the inner radicand to be non-negative."
+        },
+        {
+          "latex": "x \\ge 5",
+          "explain": "Solve for the inner domain."
+        },
+        {
+          "latex": "4(5) - 20 = 0",
+          "explain": "Test the endpoint x = 5: g(5) = 0 is excluded by the outer denominator.",
+          "eq": [
+            "4 * 5 - 20",
+            "0"
+          ]
+        },
+        {
+          "latex": "x > 5",
+          "explain": "Keep inputs strictly greater than 5, giving (5, oo)."
+        }
+      ],
+      "blindSolve": {
+        "answer": "(5, oo)",
+        "ambiguous": false,
+        "setup": "given",
+        "strategy": "choose",
+        "check": "edge",
+        "edgeRejected": "x = 5, where g(5) = 0 makes the outer denominator zero",
+        "task": "compute",
+        "reverse": false,
+        "steps": 3
+      },
+      "id": "VAR-MTH-T02-C02-U04-t02-c02-u04-domain-of-composite-02",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "t02-c02-u04-include-composite-zero-endpoint-trap|direct|Let f(u)=#/sqrt(u) and g(x)=sqrt(#x-#). Give the domain of (f o g)(x) in interval notation."
+    },
+    {
+      "variantId": "VAR-MTH-T02-C02-U04-t02-c02-u04-domain-of-composite-03",
+      "sourceArchetype": "t02-c02-u04-domain-of-composite",
+      "archetypeKey": "t02-c02-u04-domain-of-composite",
+      "archetype": "problem-solving",
+      "unitCode": "MTH-T02-C02-U04",
+      "level": 3,
+      "category": "Problem Solving",
+      "form": "direct",
+      "context": "",
+      "prompt": "Let $f(u) = \\frac{1}{\\sqrt{u}}$ and $g(x) = \\sqrt{18 - 3x}$. Give the domain of $(f \\circ g)(x)$ in interval notation.",
+      "display": "(f \\circ g)(x) = \\frac{1}{\\sqrt{\\sqrt{18 - 3x}}}",
+      "plainText": "Let f(u)=1/sqrt(u) and g(x)=sqrt(18-3x). Give the domain of (f o g)(x) in interval notation.",
+      "givens": {
+        "scale": 3,
+        "offset": 18,
+        "unit": 1
+      },
+      "constants": {},
+      "trapGivens": [
+        18,
+        3
+      ],
+      "answerSpec": {
+        "type": "interval",
+        "value": "(-oo, 6)"
+      },
+      "answerPlain": "(-oo, 6)",
+      "answerDisplay": "(-oo, 6)",
+      "inputHint": "Enter an interval using parentheses or brackets as appropriate",
+      "commonTrapTag": "t02-c02-u04-include-composite-zero-endpoint-trap",
+      "trapDerivation": "(-oo, 18 / 3]",
+      "trapValue": "(-oo, 6]",
+      "verify": {
+        "trapValue": "(-oo, 6]"
+      },
+      "checkpointHint": "Intersect the inner radical domain with the outer requirement that the inner output be strictly positive.",
+      "references": [
+        "MTH-T02-C02-U04"
+      ],
+      "verificationLevel": "partial",
+      "steps": [
+        {
+          "latex": "18 - 3x \\ge 0",
+          "explain": "Require the inner square root to have a non-negative radicand."
+        },
+        {
+          "latex": "x \\le 6",
+          "explain": "Solve the inner domain condition."
+        },
+        {
+          "latex": "18 - 3(6) = 0",
+          "explain": "Check the endpoint x = 6: g(6) = 0 cannot enter the outer denominator.",
+          "eq": [
+            "18 - 3 * 6",
+            "0"
+          ]
+        },
+        {
+          "latex": "x < 6",
+          "explain": "Exclude x = 6 to obtain (-oo, 6)."
+        }
+      ],
+      "blindSolve": {
+        "answer": "(-oo, 6)",
+        "ambiguous": false,
+        "setup": "given",
+        "strategy": "choose",
+        "check": "edge",
+        "edgeRejected": "x = 6, where g(6) = 0 makes f(g(6)) undefined",
+        "task": "compute",
+        "reverse": false,
+        "steps": 3
+      },
+      "id": "VAR-MTH-T02-C02-U04-t02-c02-u04-domain-of-composite-03",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "t02-c02-u04-include-composite-zero-endpoint-trap|direct|Let f(u)=#/sqrt(u) and g(x)=sqrt(#-#x). Give the domain of (f o g)(x) in interval notation."
+    },
+    {
+      "variantId": "VAR-MTH-T02-C02-U04-t02-c02-u04-build-composite-rule-01",
+      "sourceArchetype": "t02-c02-u04-build-composite-rule",
+      "archetypeKey": "t02-c02-u04-build-composite-rule",
+      "archetype": "problem-solving",
+      "unitCode": "MTH-T02-C02-U04",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "direct",
+      "context": "",
+      "prompt": "Let $f(x) = x^2 + 4$ and $g(x) = 3x - 2$. Find and simplify $(f \\circ g)(x)$.",
+      "display": "(3x - 2)^2 + 4",
+      "plainText": "Let f(x)=x^2+4 and g(x)=3x-2. Find and simplify (f o g)(x).",
+      "givens": {
+        "a": 4,
+        "b": 3,
+        "c": 2
+      },
+      "constants": {},
+      "trapGivens": [
+        4,
+        3,
+        2
+      ],
+      "answerSpec": {
+        "type": "expression",
+        "value": "9*x^2 - 12*x + 8",
+        "variables": [
+          "x"
+        ]
+      },
+      "answerPlain": "9x^2 - 12x + 8",
+      "answerDisplay": "9x^2 - 12x + 8",
+      "inputHint": "Enter a polynomial in x",
+      "commonTrapTag": "t02-c02-u04-partial-substitution-trap",
+      "trapDerivation": "(3*x)^2 - 2 + 4",
+      "trapValue": "9*x^2 + 2",
+      "verify": {
+        "source": "(3*x - 2)^2 + 4",
+        "trapValue": "9*x^2 + 2"
+      },
+      "checkpointHint": "Substitute the entire inner binomial in parentheses for the outer variable before squaring.",
+      "references": [
+        "MTH-T02-C02-U04"
+      ],
+      "verificationLevel": "partial",
+      "steps": [
+        {
+          "latex": "(f \\circ g)(x) = (3x - 2)^2 + 4",
+          "explain": "Replace x in f(x) with the grouped inner rule (3x - 2)."
+        },
+        {
+          "latex": "(3x - 2)^2 + 4 = (3x - 2)(3x - 2) + 4",
+          "explain": "Write the squared binomial as a product."
+        },
+        {
+          "latex": "(3x - 2)(3x - 2) + 4 = 9x^2 - 12x + 4 + 4",
+          "explain": "Expand the product using distribution.",
+          "eq": [
+            "(3*x - 2)^2",
+            "9*x^2 - 12*x + 4"
+          ]
+        },
+        {
+          "latex": "9x^2 - 12x + 4 + 4 = 9x^2 - 12x + 8",
+          "explain": "Combine the constant terms.",
+          "val": "9*x^2 - 12*x + 8"
+        }
+      ],
+      "id": "VAR-MTH-T02-C02-U04-t02-c02-u04-build-composite-rule-01",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c02-u04-partial-substitution-trap|direct|Let f(x)=x^#+# and g(x)=#x-#. Find and simplify (f o g)(x)."
+    },
+    {
+      "variantId": "VAR-MTH-T02-C02-U04-t02-c02-u04-build-composite-rule-02",
+      "sourceArchetype": "t02-c02-u04-build-composite-rule",
+      "archetypeKey": "t02-c02-u04-build-composite-rule",
+      "archetype": "problem-solving",
+      "unitCode": "MTH-T02-C02-U04",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "direct",
+      "context": "",
+      "prompt": "Let $f(x) = x^2 - 5$ and $g(x) = 2x + 7$. Find and simplify $(f \\circ g)(x)$.",
+      "display": "(2x + 7)^2 - 5",
+      "plainText": "Let f(x)=x^2-5 and g(x)=2x+7. Find and simplify (f o g)(x).",
+      "givens": {
+        "a": 5,
+        "b": 2,
+        "c": 7
+      },
+      "constants": {},
+      "trapGivens": [
+        5,
+        2,
+        7
+      ],
+      "answerSpec": {
+        "type": "expression",
+        "value": "4*x^2 + 28*x + 44",
+        "variables": [
+          "x"
+        ]
+      },
+      "answerPlain": "4x^2 + 28x + 44",
+      "answerDisplay": "4x^2 + 28x + 44",
+      "inputHint": "Enter a polynomial in x",
+      "commonTrapTag": "t02-c02-u04-partial-substitution-trap",
+      "trapDerivation": "(2*x)^2 + 7 - 5",
+      "trapValue": "4*x^2 + 2",
+      "verify": {
+        "source": "(2*x + 7)^2 - 5",
+        "trapValue": "4*x^2 + 2"
+      },
+      "checkpointHint": "Keep parentheses around the inner expression so the entire binomial is squared.",
+      "references": [
+        "MTH-T02-C02-U04"
+      ],
+      "verificationLevel": "partial",
+      "steps": [
+        {
+          "latex": "(f \\circ g)(x) = (2x + 7)^2 - 5",
+          "explain": "Substitute g(x) = 2x + 7 into f(x) = x^2 - 5."
+        },
+        {
+          "latex": "(2x + 7)^2 - 5 = (2x + 7)(2x + 7) - 5",
+          "explain": "Rewrite the square as a product."
+        },
+        {
+          "latex": "(2x + 7)(2x + 7) - 5 = 4x^2 + 28x + 49 - 5",
+          "explain": "Expand the binomial product.",
+          "eq": [
+            "(2*x + 7)^2",
+            "4*x^2 + 28*x + 49"
+          ]
+        },
+        {
+          "latex": "4x^2 + 28x + 49 - 5 = 4x^2 + 28x + 44",
+          "explain": "Combine the constant terms.",
+          "val": "4*x^2 + 28*x + 44"
+        }
+      ],
+      "id": "VAR-MTH-T02-C02-U04-t02-c02-u04-build-composite-rule-02",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c02-u04-partial-substitution-trap|direct|Let f(x)=x^#-# and g(x)=#x+#. Find and simplify (f o g)(x)."
+    },
+    {
+      "variantId": "VAR-MTH-T02-C02-U04-t02-c02-u04-build-composite-rule-03",
+      "sourceArchetype": "t02-c02-u04-build-composite-rule",
+      "archetypeKey": "t02-c02-u04-build-composite-rule",
+      "archetype": "problem-solving",
+      "unitCode": "MTH-T02-C02-U04",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "direct",
+      "context": "",
+      "prompt": "Let $f(x) = x^2 + 6$ and $g(x) = 4x - 5$. Find and simplify $(f \\circ g)(x)$.",
+      "display": "(4x - 5)^2 + 6",
+      "plainText": "Let f(x)=x^2+6 and g(x)=4x-5. Find and simplify (f o g)(x).",
+      "givens": {
+        "a": 6,
+        "b": 4,
+        "c": 5
+      },
+      "constants": {},
+      "trapGivens": [
+        6,
+        4,
+        5
+      ],
+      "answerSpec": {
+        "type": "expression",
+        "value": "16*x^2 - 40*x + 31",
+        "variables": [
+          "x"
+        ]
+      },
+      "answerPlain": "16x^2 - 40x + 31",
+      "answerDisplay": "16x^2 - 40x + 31",
+      "inputHint": "Enter a polynomial in x",
+      "commonTrapTag": "t02-c02-u04-partial-substitution-trap",
+      "trapDerivation": "(4*x)^2 - 5 + 6",
+      "trapValue": "16*x^2 + 1",
+      "verify": {
+        "source": "(4*x - 5)^2 + 6",
+        "trapValue": "16*x^2 + 1"
+      },
+      "checkpointHint": "Replace the outer input variable with the complete inner expression before expanding.",
+      "references": [
+        "MTH-T02-C02-U04"
+      ],
+      "verificationLevel": "partial",
+      "steps": [
+        {
+          "latex": "(f \\circ g)(x) = (4x - 5)^2 + 6",
+          "explain": "Substitute g(x) = 4x - 5 into f(x) = x^2 + 6."
+        },
+        {
+          "latex": "(4x - 5)^2 + 6 = (4x - 5)(4x - 5) + 6",
+          "explain": "Write the squared binomial as a product."
+        },
+        {
+          "latex": "(4x - 5)(4x - 5) + 6 = 16x^2 - 40x + 25 + 6",
+          "explain": "Expand the product using distribution.",
+          "eq": [
+            "(4*x - 5)^2",
+            "16*x^2 - 40*x + 25"
+          ]
+        },
+        {
+          "latex": "16x^2 - 40x + 25 + 6 = 16x^2 - 40x + 31",
+          "explain": "Combine the constant terms.",
+          "val": "16*x^2 - 40*x + 31"
+        }
+      ],
+      "id": "VAR-MTH-T02-C02-U04-t02-c02-u04-build-composite-rule-03",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c02-u04-partial-substitution-trap|direct|Let f(x)=x^#+# and g(x)=#x-#. Find and simplify (f o g)(x)."
+    }
+  ]
+}
