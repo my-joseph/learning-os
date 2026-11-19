@@ -462,8 +462,13 @@ export function redactDrill<T extends DrillDocument>(doc: T): T {
  */
 export function redactProblemForReview(
   problem: Problem,
-  subject?: "MATH" | "PRG"
+  subject?: "MATH" | "PRG",
+  cycleStartedAt?: string
 ): Problem {
+  const startedAt =
+    typeof cycleStartedAt === "string" && cycleStartedAt.trim()
+      ? cycleStartedAt.trim()
+      : new Date().toISOString();
   const cleanState: ProblemState = {
     userInput: "",
     userCode: problem.starterCode || problem.codeSnippet || "",
@@ -480,6 +485,7 @@ export function redactProblemForReview(
     setupRevealedBeforeAnswer: false,
     solutionRevealedBeforeAnswer: false,
     durationMs: 0,
+    cycleStartedAt: startedAt,
   };
 
   const base = redactProblem(problem, cleanState, subject) as unknown as Record<string, unknown>;
@@ -509,13 +515,20 @@ export function redactProblemForReview(
 /**
  * Pure function that redacts every problem in a drill document for a fresh Daily Review session.
  */
-export function redactDrillForReview<T extends DrillDocument>(doc: T): T {
+export function redactDrillForReview<T extends DrillDocument>(
+  doc: T,
+  cycleStartedAt?: string
+): T {
   const subject: "MATH" | "PRG" =
     doc.subject === "PRG" || String(doc.unitCode || "").startsWith("PRG-") ? "PRG" : "MATH";
+  const startedAt =
+    typeof cycleStartedAt === "string" && cycleStartedAt.trim()
+      ? cycleStartedAt.trim()
+      : new Date().toISOString();
   return {
     ...doc,
     problems: Array.isArray(doc.problems)
-      ? doc.problems.map((p) => redactProblemForReview(p, subject))
+      ? doc.problems.map((p) => redactProblemForReview(p, subject, startedAt))
       : [],
     ...(doc.sessionSummary
       ? {

@@ -384,7 +384,34 @@ export function allocateSimilarSlots(
   return { slots: assignedSlots, state };
 }
 
-/** Mark `servedAt` on the first open of a similar-tab token. */
+/**
+ * Start a new attempt cycle for `(drillId, qid)` by stamping `cycleStartedAt`
+ * (keeping the later timestamp if one already exists) without erasing attempt
+ * history, notes, tags, or variant records.
+ */
+export function startProblemCycle(
+  drillId: string,
+  unitCode: string | undefined,
+  qid: string,
+  cycleStartedAt: string = new Date().toISOString()
+): { cycleStartedAt: string; state: ProblemState } {
+  const safeTs =
+    typeof cycleStartedAt === "string" && cycleStartedAt.trim()
+      ? cycleStartedAt.trim()
+      : new Date().toISOString();
+  let effectiveCycle = safeTs;
+  const state = mutateProblemVariantState(drillId, unitCode, qid, (st) => {
+    const prevCycle =
+      typeof st.cycleStartedAt === "string" && st.cycleStartedAt
+        ? st.cycleStartedAt
+        : null;
+    effectiveCycle = prevCycle && prevCycle > safeTs ? prevCycle : safeTs;
+    st.cycleStartedAt = effectiveCycle;
+  });
+  return { cycleStartedAt: effectiveCycle, state };
+}
+
+/** Mark `servedAt` on the first open of a similar-tab token in the current cycle. */
 export function markVariantServed(
   drillId: string,
   unitCode: string | undefined,
@@ -393,16 +420,32 @@ export function markVariantServed(
   nowIso: string = new Date().toISOString()
 ): { record: VariantSessionRecord | null; state: ProblemState } {
   const existing = resolveVariantToken(drillId, qid, token);
-  if (existing && existing.record.servedAt) {
+  if (
+    existing &&
+    existing.record.servedAt &&
+    (!existing.state.cycleStartedAt ||
+      existing.record.servedAt >= existing.state.cycleStartedAt)
+  ) {
     return existing;
   }
   let updatedRecord: VariantSessionRecord | null = null;
   const state = mutateProblemVariantState(drillId, unitCode, qid, (st) => {
     if (!st.variants || !st.variants[token]) return;
     const prev = st.variants[token];
-    const nextRec: VariantSessionRecord = prev.servedAt
+    const inCurrentCycle = Boolean(
+      prev.servedAt && (!st.cycleStartedAt || prev.servedAt >= st.cycleStartedAt)
+    );
+    const nextRec: VariantSessionRecord = inCurrentCycle
       ? prev
-      : { ...prev, servedAt: nowIso };
+      : {
+          ...prev,
+          // New cycle: keep attempt history (filtered by cycleStartedAt) but reset per-cycle UI telemetry.
+          hintsRevealed: 0,
+          setupRevealed: false,
+          stepsRevealed: false,
+          durationMs: 0,
+          servedAt: nowIso,
+        };
     st.variants = { ...st.variants, [token]: nextRec };
     updatedRecord = nextRec;
   });
@@ -508,16 +551,27 @@ export function recordVariantAttempt(
       typeof durationMs === "number" && Number.isFinite(durationMs) && durationMs > 0
         ? Math.min(Math.round(durationMs), 600_000)
         : 0;
+    const prevInCycle = Boolean(
+      !st.cycleStartedAt || (prev.servedAt && prev.servedAt >= st.cycleStartedAt)
+    );
     const entry: AttemptRecord = {
       ...attempt,
       kind: "variant",
-      ...(prev.setupRevealed ? { setupRevealed: true } : {}),
-      ...(prev.stepsRevealed ? { solutionRevealed: true } : {}),
+      ...(prevInCycle && prev.setupRevealed ? { setupRevealed: true } : {}),
+      ...(prevInCycle && prev.stepsRevealed ? { solutionRevealed: true } : {}),
     };
     const nextRec: VariantSessionRecord = {
       ...prev,
       attempts: [...(Array.isArray(prev.attempts) ? prev.attempts : []), entry],
-      durationMs: (prev.durationMs || 0) + safeDuration,
+      ...(prevInCycle
+        ? { durationMs: (prev.durationMs || 0) + safeDuration }
+        : {
+            hintsRevealed: 0,
+            setupRevealed: false,
+            stepsRevealed: false,
+            durationMs: safeDuration,
+            servedAt: attempt.ts || new Date().toISOString(),
+          }),
     };
     st.variants = { ...st.variants, [token]: nextRec };
     updatedRecord = nextRec;
@@ -553,6 +607,16 @@ export function updateVariantSession(
         durationMs: 0,
       };
     } else {
+      if (st.cycleStartedAt && (!prev.servedAt || prev.servedAt < st.cycleStartedAt)) {
+        nextRec = {
+          ...prev,
+          hintsRevealed: 0,
+          setupRevealed: false,
+          stepsRevealed: false,
+          durationMs: 0,
+          servedAt: new Date().toISOString(),
+        };
+      }
       if (typeof patch.hintIncrement === "number" && patch.hintIncrement > 0) {
         nextRec.hintsRevealed = (nextRec.hintsRevealed || 0) + patch.hintIncrement;
       }
@@ -561,9 +625,6 @@ export function updateVariantSession(
       }
       if (patch.stepsRevealed) {
         nextRec.stepsRevealed = true;
-        if (st.cycleStartedAt && (!nextRec.servedAt || nextRec.servedAt < st.cycleStartedAt)) {
-          nextRec.servedAt = new Date().toISOString();
-        }
       }
     }
     st.variants = { ...st.variants, [token]: nextRec };

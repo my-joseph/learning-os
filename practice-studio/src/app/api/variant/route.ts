@@ -8,6 +8,7 @@ import {
   registerServedVariant,
   resetVariantProgress,
   resolveVariantToken,
+  startProblemCycle,
   updateVariantSession,
 } from "@/lib/progress";
 import {
@@ -232,7 +233,7 @@ export async function GET(req: NextRequest) {
           effectiveRec.stepsRevealed &&
             canRevealVariantSteps(effectiveRec, cycleStartedAt)
         ),
-        durationMs: effectiveRec.durationMs || 0,
+        durationMs: inCurrentCycle ? effectiveRec.durationMs || 0 : 0,
         servedAt: effectiveRec.servedAt,
       },
       ...(Object.keys(revealed).length > 0 ? { revealed } : {}),
@@ -327,9 +328,12 @@ const ALLOWED_ACTIONS = new Set([
   "reveal-steps",
   "reset",
   "duration",
+  "start-cycle",
   "reset-question",
   "reset-all",
 ]);
+
+const ISO_TS_RE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/;
 
 export async function POST(req: NextRequest) {
   try {
@@ -345,6 +349,25 @@ export async function POST(req: NextRequest) {
         { ok: false, error: "Invalid drillId or variant action" },
         { status: 400 }
       );
+    }
+    if (action === "start-cycle") {
+      if (!qid || !isSafeId(qid)) {
+        return NextResponse.json({ ok: false, error: "Invalid qid" }, { status: 400 });
+      }
+      const loaded = loadProblemFromDisk(drillId, qid);
+      if (!loaded) {
+        return NextResponse.json({ ok: false, error: "Problem not found" }, { status: 404 });
+      }
+      const rawCycleTs =
+        typeof body.cycleStartedAt === "string" ? body.cycleStartedAt.trim() : "";
+      const cycleTs = ISO_TS_RE.test(rawCycleTs) ? rawCycleTs : new Date().toISOString();
+      const { cycleStartedAt } = startProblemCycle(
+        drillId,
+        typeof loaded.doc.unitCode === "string" ? loaded.doc.unitCode : undefined,
+        qid,
+        cycleTs
+      );
+      return NextResponse.json({ ok: true, cycleStartedAt });
     }
     if (action === "reset-question" || action === "reset-all") {
       const targetQid = typeof body.qid === "string" ? body.qid.trim() : undefined;

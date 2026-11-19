@@ -83,7 +83,6 @@ export function countCycleOriginalWrongAttempts(
  */
 export function similarUnlock(state?: ProblemState | null): boolean {
   if (!state) return false;
-  if (state.skipped) return true;
 
   const origInCycle = cycleOriginalAttempts(state);
   if (origInCycle.some((a) => isSubstantiveVerdict(a.verdict))) {
@@ -97,8 +96,14 @@ export function similarUnlock(state?: ProblemState | null): boolean {
     if (hasOriginalHistory) {
       return false;
     }
+    if (state.skipped) return true;
+    if (state.lastCheck && isSubstantiveVerdict(state.lastCheck.verdict)) {
+      return true;
+    }
+    return false;
   }
 
+  if (state.skipped) return true;
   if (state.lastCheck && isSubstantiveVerdict(state.lastCheck.verdict)) {
     return true;
   }
@@ -129,7 +134,6 @@ export function deriveVariantStatus(
 /** Derive the real question tab's status mark in the current cycle. */
 export function deriveRealTabStatus(state?: ProblemState | null): RealTabStatus {
   if (!state || !similarUnlock(state)) return "untried";
-  if (state.skipped) return "skipped";
 
   const origSubstantive = cycleOriginalAttempts(state).filter((a) =>
     isSubstantiveVerdict(a.verdict)
@@ -137,6 +141,8 @@ export function deriveRealTabStatus(state?: ProblemState | null): RealTabStatus 
   const latestVerdict =
     origSubstantive.length > 0
       ? origSubstantive[origSubstantive.length - 1].verdict
+      : state.skipped
+      ? "skipped"
       : state.lastCheck?.verdict;
 
   if (latestVerdict === "correct") {

@@ -11,7 +11,11 @@ import path from "node:path";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { NextRequest } from "next/server";
-import { GET as variantGET } from "../src/app/api/variant/route";
+import { GET as drillGET } from "../src/app/api/drill/route";
+import { GET as revealGET } from "../src/app/api/reveal/route";
+import { POST as reviewItemsPOST } from "../src/app/api/review-items/route";
+import { POST as saveStatePOST } from "../src/app/api/save-state/route";
+import { GET as variantGET, POST as variantPOST } from "../src/app/api/variant/route";
 import { POST as checkAnswerPOST } from "../src/app/api/check-answer/route";
 import { SimilarTabStrip } from "../src/components/math/SimilarTabStrip";
 import { MathWorkspace } from "../src/components/math/MathWorkspace";
@@ -23,6 +27,12 @@ import {
 import { readProgress } from "../src/lib/progress";
 import { rowReason } from "../src/lib/reviewRow";
 import {
+  executeReviewItemCheck,
+  prepareProblemForReviewItem,
+  startReviewItemCycle,
+} from "../src/lib/reviewSession";
+import { createTelemetryTimerState } from "../src/lib/telemetryTimer";
+import {
   countCycleOriginalWrongAttempts,
   countPractisedSimilar,
   deriveRealTabStatus,
@@ -33,7 +43,7 @@ import {
   similarUnlock,
   type SimilarTabSummary,
 } from "../src/lib/similarTabs";
-import type { Problem, ProblemState } from "../src/types/drill";
+import type { DrillDocument, Problem, ProblemState } from "../src/types/drill";
 
 const noop = () => {};
 
@@ -159,7 +169,19 @@ function makeProblem(overrides: Partial<Problem> = {}): Problem {
     [],
     { ts: "2026-11-20T09:02:00Z" }
   );
-  assert.equal(retrySecondTry.score, 0.5, "correct after a new-cycle wrong must cap at 0.5");
+  // Skipped in a previous cycle + new cycleStartedAt -> still locked until a new attempt
+  const skippedPrevCycle = baseState({
+    skipped: true,
+    score: 0,
+    attempts: [{ input: "(Skipped)", ts: "2026-11-01T10:00:00Z", verdict: "skipped" }],
+    cycleStartedAt: "2026-11-20T09:00:00Z",
+  });
+  assert.equal(
+    similarUnlock(skippedPrevCycle),
+    false,
+    "prior-cycle skip must not unlock the strip after cycleStartedAt"
+  );
+  assert.equal(deriveRealTabStatus(skippedPrevCycle), "untried");
 }
 
 // ---------------------------------------------------------------------------
@@ -757,7 +779,526 @@ async function testV1Migration() {
   }
 }
 
+// ---------------------------------------------------------------------------
+// 7. Review cycle isolation (/review item start + drill review retry)
+// ---------------------------------------------------------------------------
+async function testReviewCycleIsolation() {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), "learningos-review-cycle-"));
+  const drillsDir = path.join(base, "drills");
+  const variantsDir = path.join(base, "variants");
+  const progressDir = path.join(base, "progress");
+  fs.mkdirSync(path.join(drillsDir, "MTH-T01-C04"), { recursive: true });
+  fs.mkdirSync(variantsDir, { recursive: true });
+  fs.mkdirSync(progressDir, { recursive: true });
+
+  const prevDrills = process.env.DRILLS_DATA_DIR;
+  const prevVariants = process.env.VARIANTS_DIR;
+  const prevProgress = process.env.PROGRESS_DIR;
+  process.env.DRILLS_DATA_DIR = drillsDir;
+  process.env.VARIANTS_DIR = variantsDir;
+  process.env.PROGRESS_DIR = progressDir;
+
+  const drillId = "DRL-MTH-T01-C04-89";
+  const unitCode = "MTH-T01-C04";
+
+  try {
+    fs.writeFileSync(
+      path.join(drillsDir, unitCode, `${drillId}.json`),
+      JSON.stringify({
+        schemaVersion: "2.0-math",
+        drillId,
+        subject: "MATH",
+        unitCode,
+        unitTitle: "Fractions",
+        chapterCode: unitCode,
+        topicCode: "MTH-T01",
+        problems: [
+          {
+            id: "Q01",
+            level: 1,
+            levelLabel: "Level 1",
+            category: "Fractions",
+            archetypeKey: "c04-fraction-simplification-gcf",
+            templateKey: "c04-fraction-simplification-gcf",
+            prompt: "Simplify $\\frac{27}{45}$.",
+            display: "\\frac{27}{45}",
+            plainText: "27/45",
+            answerSpec: { type: "number", value: "3/5" },
+            answerPlain: "3/5",
+            answerDisplay: "\\frac{3}{5}",
+            checkpointHint: "Find GCD.",
+            steps: [{ explain: "Divide by 9." }],
+          },
+        ],
+      }),
+      "utf-8"
+    );
+
+    fs.writeFileSync(
+      path.join(variantsDir, `${unitCode}.json`),
+      JSON.stringify({
+        unitCode,
+        variants: [
+          {
+            variantId: "VAR-MTH-T01-C04-c04-fraction-simplification-gcf-01",
+            archetypeKey: "c04-fraction-simplification-gcf",
+            level: 1,
+            prompt: "Reduce $\\frac{88}{165}$.",
+            display: "\\frac{88}{165}",
+            plainText: "88/165",
+            answerSpec: { type: "number", value: "8/15" },
+            answerPlain: "8/15",
+            answerDisplay: "\\frac{8}{15}",
+            checkpointHint: "Divide by 11.",
+            steps: [{ explain: "Divide by 11." }],
+          },
+          {
+            variantId: "VAR-MTH-T01-C04-c04-fraction-simplification-gcf-02",
+            archetypeKey: "c04-fraction-simplification-gcf",
+            level: 1,
+            prompt: "Reduce $\\frac{42}{90}$.",
+            display: "\\frac{42}{90}",
+            plainText: "42/90",
+            answerSpec: { type: "number", value: "7/15" },
+            answerPlain: "7/15",
+            answerDisplay: "\\frac{7}{15}",
+            checkpointHint: "Divide by 6.",
+            steps: [{ explain: "Divide by 6." }],
+          },
+          {
+            variantId: "VAR-MTH-T01-C04-c04-fraction-simplification-gcf-03",
+            archetypeKey: "c04-fraction-simplification-gcf",
+            level: 1,
+            prompt: "Reduce $\\frac{36}{60}$.",
+            display: "\\frac{36}{60}",
+            plainText: "36/60",
+            answerSpec: { type: "number", value: "3/5" },
+            answerPlain: "3/5",
+            answerDisplay: "\\frac{3}{5}",
+            checkpointHint: "Divide by 12.",
+            steps: [{ explain: "Divide by 12." }],
+          },
+        ],
+      }),
+      "utf-8"
+    );
+
+    // Seed progress fixture from an earlier cycle: Q01 wrong, Similar 2 answered correctly, example viewed.
+    fs.writeFileSync(
+      path.join(progressDir, `${drillId}.json`),
+      JSON.stringify({
+        drillId,
+        unitCode,
+        updatedAt: "2026-11-01T10:05:00Z",
+        problems: {
+          Q01: {
+            userInput: "1/2",
+            score: 0,
+            divergedStep: null,
+            mistakes: [],
+            lastCheck: { verdict: "incorrect", message: "Wrong", components: [], diagnostics: [] },
+            attempts: [
+              { input: "1/2", ts: "2026-11-01T10:00:00Z", verdict: "incorrect" },
+            ],
+            exampleViewedAt: "2026-11-01T10:05:00Z",
+            similarSlots: ["va11111", "vb22222", "vc33333"],
+            variants: {
+              va11111: {
+                variantId: "VAR-MTH-T01-C04-c04-fraction-simplification-gcf-01",
+                role: "try",
+                attempts: [],
+                hintsRevealed: 0,
+                setupRevealed: false,
+                stepsRevealed: false,
+                durationMs: 0,
+                servedAt: "",
+              },
+              vb22222: {
+                variantId: "VAR-MTH-T01-C04-c04-fraction-simplification-gcf-02",
+                role: "try",
+                attempts: [
+                  { input: "7/15", ts: "2026-11-01T10:02:00Z", verdict: "correct", kind: "variant" },
+                ],
+                hintsRevealed: 1,
+                setupRevealed: true,
+                stepsRevealed: true,
+                durationMs: 9000,
+                servedAt: "2026-11-01T10:01:00Z",
+              },
+              vc33333: {
+                variantId: "VAR-MTH-T01-C04-c04-fraction-simplification-gcf-03",
+                role: "try",
+                attempts: [],
+                hintsRevealed: 0,
+                setupRevealed: false,
+                stepsRevealed: false,
+                durationMs: 0,
+                servedAt: "",
+              },
+            },
+          },
+        },
+      }),
+      "utf-8"
+    );
+
+    // Sanity check: before the new review cycle starts, slot 2 is "correct" and Practised 1 similar.
+    const preListRes = await variantGET(
+      new NextRequest(
+        `http://127.0.0.1:3000/api/variant?drillId=${drillId}&qid=Q01&mode=list`
+      )
+    );
+    const preList = (await preListRes.json()) as {
+      unlocked: boolean;
+      tabs: SimilarTabSummary[];
+    };
+    assert.equal(preList.unlocked, true);
+    assert.deepEqual(
+      preList.tabs.map((t) => t.status),
+      ["untried", "correct", "untried"]
+    );
+    assert.equal(
+      countPractisedSimilar(readProgress(drillId)?.problems?.Q01 as ProblemState),
+      1
+    );
+
+    // 7a. Start a new /review cycle: load /api/drill?review=1, prepare item, and post start-cycle.
+    const reviewDrillRes = await drillGET(
+      new NextRequest(`http://127.0.0.1:3000/api/drill?id=${drillId}&review=1`)
+    );
+    assert.equal(reviewDrillRes.status, 200);
+    const reviewDoc = (await reviewDrillRes.json()) as DrillDocument;
+    const preparedQ1 = prepareProblemForReviewItem(reviewDoc.problems[0], {
+      subject: "MATH",
+      revisitNote: "",
+    });
+    assert.ok(
+      typeof preparedQ1.state.cycleStartedAt === "string" && preparedQ1.state.cycleStartedAt,
+      "prepareProblemForReviewItem must stamp cycleStartedAt"
+    );
+    const preparedReviewDoc: DrillDocument = { ...reviewDoc, problems: [preparedQ1] };
+
+    const customFetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+      const urlStr = typeof input === "string" ? input : input.toString();
+      const method = (init?.method || "GET").toUpperCase();
+      if (urlStr === "/api/variant" && method === "POST") {
+        return variantPOST(
+          new NextRequest("http://127.0.0.1:3000/api/variant", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: init?.body as string,
+          })
+        );
+      }
+      if (urlStr === "/api/check-answer" && method === "POST") {
+        return checkAnswerPOST(
+          new NextRequest("http://127.0.0.1:3000/api/check-answer", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: init?.body as string,
+          })
+        );
+      }
+      if (urlStr === "/api/save-state" && method === "POST") {
+        return saveStatePOST(
+          new NextRequest("http://127.0.0.1:3000/api/save-state", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: init?.body as string,
+          })
+        );
+      }
+      if (urlStr.startsWith("/api/reveal") && method === "GET") {
+        return revealGET(new NextRequest(`http://127.0.0.1:3000${urlStr}`));
+      }
+      if (urlStr === "/api/review-items" && method === "POST") {
+        return reviewItemsPOST(
+          new NextRequest("http://127.0.0.1:3000/api/review-items", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: init?.body as string,
+          })
+        );
+      }
+      throw new Error(`Unexpected fetch: ${method} ${urlStr}`);
+    }) as typeof fetch;
+
+    const cycleStartedOk = await startReviewItemCycle(
+      drillId,
+      "Q01",
+      preparedQ1.state.cycleStartedAt!,
+      customFetch
+    );
+    assert.equal(cycleStartedOk, true, "start-cycle must succeed");
+
+    // Before the new review attempt: cycleStartedAt is persisted on disk, strip is hidden, mode=list locked.
+    const stateBeforeReviewAttempt = readProgress(drillId)?.problems?.Q01 as ProblemState;
+    assert.equal(stateBeforeReviewAttempt.cycleStartedAt, preparedQ1.state.cycleStartedAt);
+    assert.equal(similarUnlock(stateBeforeReviewAttempt), false);
+    assert.equal(countPractisedSimilar(stateBeforeReviewAttempt), 0);
+
+    const lockedListRes = await variantGET(
+      new NextRequest(
+        `http://127.0.0.1:3000/api/variant?drillId=${drillId}&qid=Q01&mode=list`
+      )
+    );
+    assert.deepEqual(await lockedListRes.json(), { unlocked: false, tabs: [] });
+
+    const lockedOpenRes = await variantGET(
+      new NextRequest(
+        `http://127.0.0.1:3000/api/variant?drillId=${drillId}&qid=Q01&mode=open&token=vb22222`
+      )
+    );
+    assert.equal(lockedOpenRes.status, 403, "mode=open must be 403 before new review attempt");
+
+    const preReviewHtml = renderToStaticMarkup(
+      <MathWorkspace
+        problem={preparedQ1}
+        drillId={drillId}
+        index={0}
+        totalQuestions={1}
+        mistakeTags={[]}
+        activeStep={null}
+        isReviewSession
+        onInputChange={noop}
+        onCheckAnswer={noop}
+        onToggleStepHighlight={noop}
+        onMarkDivergedStep={noop}
+        onSetScore={noop}
+        onToggleMistakeTag={noop}
+        onMistakeNoteChange={noop}
+        onResetProblem={noop}
+      />
+    );
+    assert.doesNotMatch(
+      preReviewHtml,
+      /role="tablist"/,
+      "strip must be hidden on /review before the new review attempt"
+    );
+
+    // 7b. Submit a wrong review attempt via executeReviewItemCheck: strip unlocks with ALL tabs "not tried".
+    const reviewTimer = createTelemetryTimerState(`${drillId}/Q01`, true, false, 1_000);
+    const reviewCheck = await executeReviewItemCheck({
+      drillDoc: preparedReviewDoc,
+      item: {
+        drillId,
+        qid: "Q01",
+        unitCode,
+        subject: "MATH",
+        level: 1,
+        dueDate: "2026-11-19",
+        lastReviewed: "2026-11-01",
+        commonTrapTag: null,
+        revisitNote: "",
+      },
+      inputVal: "2/5",
+      hintsUsed: 0,
+      timerState: reviewTimer,
+      now: 5_000,
+      today: "2026-11-19",
+      fetchFn: customFetch,
+    });
+    assert.ok(reviewCheck);
+    assert.equal(reviewCheck.result.verdict, "incorrect");
+
+    const stateAfterReviewAttempt = readProgress(drillId)?.problems?.Q01 as ProblemState;
+    assert.equal(stateAfterReviewAttempt.cycleStartedAt, preparedQ1.state.cycleStartedAt);
+    assert.equal(stateAfterReviewAttempt.attempts?.length, 2, "prior attempt preserved + new review attempt appended");
+    assert.equal(similarUnlock(stateAfterReviewAttempt), true);
+    assert.equal(countPractisedSimilar(stateAfterReviewAttempt), 0, "old similar attempts must not count in new cycle");
+    assert.doesNotMatch(
+      rowReason(makeProblem({ state: stateAfterReviewAttempt }), "wrong", false, false),
+      /Practised/,
+      "Review & Sync row must not count previous-cycle similar practice"
+    );
+
+    const postListRes = await variantGET(
+      new NextRequest(
+        `http://127.0.0.1:3000/api/variant?drillId=${drillId}&qid=Q01&mode=list`
+      )
+    );
+    const postList = (await postListRes.json()) as {
+      unlocked: boolean;
+      tabs: SimilarTabSummary[];
+      exampleViewedAt: string | null;
+    };
+    assert.equal(postList.unlocked, true);
+    assert.deepEqual(
+      postList.tabs.map((t) => t.status),
+      ["untried", "untried", "untried"],
+      "mode=list must report all tabs untried after a new review attempt"
+    );
+    assert.equal(postList.exampleViewedAt, null, "prior-cycle exampleViewedAt must not bleed into new cycle");
+
+    // Strip SSR with the post-attempt state shows all similar tabs as "not tried"
+    const postReviewHtml = renderToStaticMarkup(
+      <MathWorkspace
+        problem={{ ...preparedQ1, state: stateAfterReviewAttempt }}
+        drillId={drillId}
+        index={0}
+        totalQuestions={1}
+        mistakeTags={[]}
+        activeStep={null}
+        isReviewSession
+        onInputChange={noop}
+        onCheckAnswer={noop}
+        onToggleStepHighlight={noop}
+        onMarkDivergedStep={noop}
+        onSetScore={noop}
+        onToggleMistakeTag={noop}
+        onMistakeNoteChange={noop}
+        onResetProblem={noop}
+      />
+    );
+    assert.match(postReviewHtml, /role="tablist"/);
+    assert.match(postReviewHtml, /aria-label="Similar question 1, not tried"/);
+    assert.match(postReviewHtml, /aria-label="Similar question 2, not tried"/);
+    assert.match(postReviewHtml, /aria-label="Similar question 3, not tried"/);
+    assert.doesNotMatch(postReviewHtml, /Similar question 2, correct/);
+
+    // Opening Similar 2 in the new cycle starts clean (0 attempts, 0 duration, no revealed steps/setup).
+    const openCleanRes = await variantGET(
+      new NextRequest(
+        `http://127.0.0.1:3000/api/variant?drillId=${drillId}&qid=Q01&mode=open&token=vb22222`
+      )
+    );
+    assert.equal(openCleanRes.status, 200);
+    const openClean = (await openCleanRes.json()) as {
+      session: {
+        attempts: unknown[];
+        hintsRevealed: number;
+        setupRevealed: boolean;
+        stepsRevealed: boolean;
+        durationMs: number;
+      };
+      revealed?: unknown;
+    };
+    assert.equal(openClean.session.attempts.length, 0);
+    assert.equal(openClean.session.hintsRevealed, 0);
+    assert.equal(openClean.session.setupRevealed, false);
+    assert.equal(openClean.session.stepsRevealed, false);
+    assert.equal(openClean.session.durationMs, 0);
+    assert.equal(openClean.revealed, undefined);
+
+    const stepsStillLockedRes = await revealGET(
+      new NextRequest(
+        `http://127.0.0.1:3000/api/reveal?drill=${drillId}&q=Q01&variantToken=vb22222&part=steps`
+      )
+    );
+    assert.equal(
+      stepsStillLockedRes.status,
+      403,
+      "similar tab steps must stay locked in the new cycle until attempted again"
+    );
+
+    // Answering Similar 2 correctly in the new cycle updates slot 2 to "correct" and Practised 1.
+    const simCheckRes = await checkAnswerPOST(
+      new NextRequest("http://127.0.0.1:3000/api/check-answer", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          drillId,
+          qid: "Q01",
+          variantToken: "vb22222",
+          input: "7/15",
+        }),
+      })
+    );
+    assert.equal(simCheckRes.status, 200);
+    assert.equal((await simCheckRes.json()).verdict, "correct");
+
+    const afterSimListRes = await variantGET(
+      new NextRequest(
+        `http://127.0.0.1:3000/api/variant?drillId=${drillId}&qid=Q01&mode=list`
+      )
+    );
+    const afterSimList = (await afterSimListRes.json()) as {
+      unlocked: boolean;
+      tabs: SimilarTabSummary[];
+    };
+    assert.deepEqual(
+      afterSimList.tabs.map((t) => t.status),
+      ["untried", "correct", "untried"]
+    );
+    assert.equal(
+      countPractisedSimilar(readProgress(drillId)?.problems?.Q01 as ProblemState),
+      1
+    );
+
+    // 7c. Drill review retry (resetAnswerForReviewRetry + save-state): locks strip again, then fresh tabs.
+    const latestBeforeRetry = readProgress(drillId)?.problems?.Q01 as ProblemState;
+    const retryCycleAt = new Date(Date.now() + 2_000).toISOString();
+    const retryResetState = resetAnswerForReviewRetry(latestBeforeRetry, retryCycleAt);
+    const saveRetryRes = await saveStatePOST(
+      new NextRequest("http://127.0.0.1:3000/api/save-state", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          drillId,
+          unitCode,
+          problems: [{ id: "Q01", state: retryResetState }],
+        }),
+      })
+    );
+    assert.equal(saveRetryRes.status, 200);
+
+    const retryLockedList = await variantGET(
+      new NextRequest(
+        `http://127.0.0.1:3000/api/variant?drillId=${drillId}&qid=Q01&mode=list`
+      )
+    );
+    assert.deepEqual(await retryLockedList.json(), { unlocked: false, tabs: [] });
+
+    const retryAttemptState = applyCheckResult(
+      makeProblem({ id: "Q01", state: retryResetState }),
+      "1/9",
+      { verdict: "incorrect", message: "Wrong", components: [], diagnostics: [] },
+      [],
+      { ts: new Date(Date.now() + 3_000).toISOString() }
+    );
+    const saveRetryAttemptRes = await saveStatePOST(
+      new NextRequest("http://127.0.0.1:3000/api/save-state", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          drillId,
+          unitCode,
+          problems: [{ id: "Q01", state: retryAttemptState }],
+        }),
+      })
+    );
+    assert.equal(saveRetryAttemptRes.status, 200);
+
+    const retryUnlockedList = (await (
+      await variantGET(
+        new NextRequest(
+          `http://127.0.0.1:3000/api/variant?drillId=${drillId}&qid=Q01&mode=list`
+        )
+      )
+    ).json()) as { unlocked: boolean; tabs: SimilarTabSummary[] };
+    assert.equal(retryUnlockedList.unlocked, true);
+    assert.deepEqual(
+      retryUnlockedList.tabs.map((t) => t.status),
+      ["untried", "untried", "untried"],
+      "drill review retry must reset all similar tab statuses to untried in the new cycle"
+    );
+    assert.equal(
+      countPractisedSimilar(readProgress(drillId)?.problems?.Q01 as ProblemState),
+      0
+    );
+  } finally {
+    if (prevDrills === undefined) delete process.env.DRILLS_DATA_DIR;
+    else process.env.DRILLS_DATA_DIR = prevDrills;
+    if (prevVariants === undefined) delete process.env.VARIANTS_DIR;
+    else process.env.VARIANTS_DIR = prevVariants;
+    if (prevProgress === undefined) delete process.env.PROGRESS_DIR;
+    else process.env.PROGRESS_DIR = prevProgress;
+    fs.rmSync(base, { recursive: true, force: true });
+  }
+}
+
 testV1Migration()
+  .then(() => testReviewCycleIsolation())
   .then(() => {
     console.log("PASS: similarTabs.test.tsx (state model, cycle rule, migration, ARIA, copy, deep link, Review & Sync)");
   })

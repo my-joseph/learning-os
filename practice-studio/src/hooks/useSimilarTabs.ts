@@ -248,8 +248,11 @@ export function useSimilarTabs({
   // Existing worked-example path (unchanged per binding scope change)
   const [showingExample, setShowingExample] = useState(false);
   const [example, setExample] = useState<WorkedExampleVariant | null>(null);
-  const [exampleViewedAt, setExampleViewedAt] = useState<string | null>(
-    problem.state.exampleViewedAt ?? null
+  const [exampleViewedAt, setExampleViewedAt] = useState<string | null>(() =>
+    problem.state.exampleViewedAt &&
+    isInCycle(problem.state.exampleViewedAt, problem.state.cycleStartedAt)
+      ? problem.state.exampleViewedAt
+      : null
   );
   const [loadingExample, setLoadingExample] = useState(false);
 
@@ -482,7 +485,12 @@ export function useSimilarTabs({
     setLoadingSteps(false);
     setActiveStep(null);
     setExample(null);
-    setExampleViewedAt(problem.state.exampleViewedAt ?? null);
+    setExampleViewedAt(
+      problem.state.exampleViewedAt &&
+        isInCycle(problem.state.exampleViewedAt, problem.state.cycleStartedAt)
+        ? problem.state.exampleViewedAt
+        : null
+    );
     setSimilarBaseMs(0);
     setSimilarElapsedMs(0);
     setIsSimilarPaused(false);

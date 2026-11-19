@@ -249,6 +249,7 @@ export const StudioClient: React.FC<StudioClientProps> = ({
     };
     setCurrentDrill(updated);
     triggerAutoSave(updated);
+    void flushAutoSave();
     setReviewRetryStarted(true);
     requestAnimationFrame(() => {
       document.querySelector<HTMLElement>('[aria-label^="Answer for"]')?.focus();
