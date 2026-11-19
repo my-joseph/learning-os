@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { MoreHorizontal, Sigma, Type, X } from "lucide-react";
+import { MoreHorizontal, Sigma, Type } from "lucide-react";
 import { Reveal } from "@/components/motion/Reveal";
 import { MathKeyIcon } from "@/components/math/MathKeyIcons";
 import type { MathInputMode, UnitKeyboardProfile } from "@/lib/mathInput";
@@ -13,7 +13,6 @@ export interface MathPaletteProps {
   keyboardProfile: UnitKeyboardProfile;
   panelOpen: boolean;
   onTogglePanel: () => void;
-  onClosePanel: () => void;
   onInsertLatex: (latex: string) => void;
   disabled?: boolean;
 }
@@ -25,7 +24,6 @@ export const MathPaletteView: React.FC<MathPaletteProps> = ({
   keyboardProfile,
   panelOpen,
   onTogglePanel,
-  onClosePanel,
   onInsertLatex,
   disabled = false,
 }) => {
@@ -127,26 +125,12 @@ export const MathPaletteView: React.FC<MathPaletteProps> = ({
           <div
             role="region"
             aria-label="Math symbol palette"
-            className="relative rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 px-3 py-2.5 space-y-3"
+            className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 px-3 py-2.5 space-y-3"
           >
-            <button
-              type="button"
-              onMouseDown={(e) => e.preventDefault()}
-              onClick={onClosePanel}
-              aria-label="Close math palette"
-              title="Close (Esc)"
-              className="absolute top-2 right-2 inline-flex items-center justify-center w-7 h-7 rounded-lg text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-200/70 dark:hover:bg-zinc-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 transition-colors"
-            >
-              <X className="w-4 h-4" aria-hidden="true" />
-            </button>
 
-            {sections.map((section, sectionIdx) => (
+            {sections.map((section) => (
               <div key={section.id} className="space-y-1.5">
-                <div
-                  className={`text-xs font-medium text-zinc-500 dark:text-zinc-400 ${
-                    sectionIdx === 0 ? "pr-8" : ""
-                  }`}
-                >
+                <div className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
                   {section.heading}
                 </div>
                 <div className="flex flex-wrap gap-1.5">
@@ -159,11 +143,11 @@ export const MathPaletteView: React.FC<MathPaletteProps> = ({
                       title={key.label}
                       onMouseDown={(e) => e.preventDefault()}
                       onClick={() => onInsertLatex(key.insertLatex)}
-                      className="inline-flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 active:bg-indigo-50 dark:active:bg-indigo-950/60 text-zinc-700 dark:text-zinc-200 active:text-indigo-600 dark:active:text-indigo-400 transition-colors select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 disabled:opacity-40"
+                      className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 active:bg-indigo-50 dark:active:bg-indigo-950/60 text-zinc-700 dark:text-zinc-200 active:text-indigo-600 dark:active:text-indigo-400 transition-colors select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 disabled:opacity-40"
                     >
                       <MathKeyIcon
                         iconId={key.iconId}
-                        className="h-[26px] sm:h-[30px] w-auto max-w-[30px] sm:max-w-[34px] shrink-0 pointer-events-none"
+                        className="h-[24px] w-auto max-w-[28px] shrink-0 pointer-events-none"
                       />
                     </button>
                   ))}

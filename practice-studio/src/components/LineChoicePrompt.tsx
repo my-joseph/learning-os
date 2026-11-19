@@ -97,7 +97,7 @@ export const LineChoicePrompt: React.FC<LineChoicePromptProps> = ({
                   {item.lineNumber}
                 </span>
 
-                <div className="min-w-0 flex-1 overflow-x-auto text-sm text-zinc-900 dark:text-zinc-100 py-0.5">
+                <div className="min-w-0 flex-1 overflow-x-auto overflow-y-hidden text-sm text-zinc-900 dark:text-zinc-100 py-1">
                   <FormattedText text={item.content} />
                 </div>
               </div>
