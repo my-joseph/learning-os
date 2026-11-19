@@ -10,13 +10,14 @@ Backfilled from existing `progress/<DRILL_ID>.json` (`attempts[]`, `reviews[]`, 
 `score`, `lastCheck`, `skipped`, `revisitNote`) by reusing `scripts.weak_spots.load_items`.
 Read-only unless `--rebuild` is passed.
 
-    python -m scripts.review_items [--due [--limit N]] [--rebuild] [--json]
+    python -m scripts.review_items [--due [--limit N]] [--scope KIND:VALUE] [--rebuild] [--json]
 """
 
 from __future__ import annotations
 
 import argparse
 import json
+import math
 import os
 import re
 import tempfile
@@ -36,9 +37,64 @@ REVIEW_INTERVALS: dict[int, int] = {
 }
 MIN_LEVEL = 1
 MAX_LEVEL = 5
+DEFAULT_ITEM_DURATION_MS = 90_000  # 1.5 minutes fallback per item
 
 _DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+_SAFE_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$")
+_SAFE_TRAP_RE = re.compile(r"^[A-Za-z0-9@._/-]{1,128}$")
 _NON_SUBSTANTIVE_VERDICTS = ("invalid input", "parse_error")
+
+
+def _round_half_up(value: float) -> int:
+    """Round non-negative numbers half-up to match JavaScript Math.round."""
+    return int(math.floor(value + 0.5))
+
+
+def parse_scope(raw: str | None) -> tuple[str, str] | None:
+    """Parse and validate a review scope filter (`subject:MTH|PRG`, `unit:<code>`, `chapter:<code>`, `trap:<tag>`, `drill:<id>`)."""
+    if raw is None or not raw.strip():
+        return None
+    text = raw.strip()
+    if ":" not in text:
+        raise ValueError(f"Invalid scope {raw!r}: expected '<kind>:<value>'")
+    kind, value = text.split(":", 1)
+    kind = kind.strip().lower()
+    value = value.strip()
+    if not value:
+        raise ValueError(f"Invalid scope {raw!r}: missing value")
+    if kind == "subject":
+        upper = value.upper()
+        if upper not in ("MTH", "PRG"):
+            raise ValueError(f"Invalid subject scope {raw!r}: expected MTH or PRG")
+        return ("subject", upper)
+    if kind in ("unit", "chapter", "drill"):
+        if not _SAFE_ID_RE.match(value):
+            raise ValueError(f"Invalid {kind} scope value: {value!r}")
+        return (kind, value)
+    if kind == "trap":
+        if not _SAFE_TRAP_RE.match(value) or ".." in value:
+            raise ValueError(f"Invalid trap scope value: {value!r}")
+        return ("trap", value)
+    raise ValueError(f"Unknown scope kind {kind!r}")
+
+
+def matches_scope(item: dict[str, Any], parsed_scope: tuple[str, str] | None) -> bool:
+    """Return True when `item` matches `parsed_scope` (or when `parsed_scope` is None)."""
+    if parsed_scope is None:
+        return True
+    kind, value = parsed_scope
+    if kind == "subject":
+        return str(item.get("subject") or "").upper() == value
+    if kind == "unit":
+        return str(item.get("unitCode") or "") == value
+    if kind == "chapter":
+        unit = str(item.get("unitCode") or "")
+        return unit == value or unit.startswith(f"{value}-U")
+    if kind == "trap":
+        return item.get("commonTrapTag") == value
+    if kind == "drill":
+        return str(item.get("drillId") or "") == value
+    return False
 
 
 def item_key(drill_id: str, qid: str) -> str:
@@ -200,6 +256,7 @@ def replay_events(events: list[dict[str, Any]]) -> dict[str, Any] | None:
         "level": level,
         "lastReviewed": last_reviewed,
         "dueDate": due_date,
+        "lastWrong": not bool(events[-1].get("correct")),
     }
 
 
@@ -227,16 +284,11 @@ def redact_review_item(entry: dict[str, Any]) -> dict[str, Any]:
         "lastReviewed": _normalize_date(entry.get("lastReviewed")),
         "dueDate": _normalize_date(entry.get("dueDate")),
         "revisitNote": _clean_revisit_note(entry.get("revisitNote")),
+        "lastWrong": bool(entry.get("lastWrong", False)),
     }
 
 
-def build_schedule_from_progress(
-    data_root: str | None = None,
-    progress_dir: str | None = None,
-    labs_root: str | None = None,
-) -> dict[str, dict[str, Any]]:
-    """Build the full review schedule map (`{ "<drillId>/<qid>": ReviewItem }`) from progress via `weak_spots.load_items`."""
-    loaded = weak_spots.load_items(data_root=data_root, progress_dir=progress_dir, labs_root=labs_root)
+def _build_schedule_from_loaded(loaded: list[weak_spots.Item]) -> dict[str, dict[str, Any]]:
     schedule: dict[str, dict[str, Any]] = {}
     for item in loaded:
         if not item.drill or not item.pid:
@@ -268,9 +320,80 @@ def build_schedule_from_progress(
                 "lastReviewed": replayed["lastReviewed"],
                 "dueDate": replayed["dueDate"],
                 "revisitNote": item.revisit_note,
+                "lastWrong": replayed["lastWrong"],
             }
         )
     return dict(sorted(schedule.items()))
+
+
+def build_schedule_from_progress(
+    data_root: str | None = None,
+    progress_dir: str | None = None,
+    labs_root: str | None = None,
+) -> dict[str, dict[str, Any]]:
+    """Build the full review schedule map (`{ "<drillId>/<qid>": ReviewItem }`) from progress via `weak_spots.load_items`."""
+    loaded = weak_spots.load_items(data_root=data_root, progress_dir=progress_dir, labs_root=labs_root)
+    return _build_schedule_from_loaded(loaded)
+
+
+def get_open_weak_traps(loaded: list[weak_spots.Item]) -> set[str]:
+    """Return the set of open weak-spot trap/check tags from `weak_spots.trap_status`."""
+    status = weak_spots.trap_status(loaded)
+    return {tag for tag, info in status.items() if info.get("open")}
+
+
+def estimate_median_duration_ms(
+    loaded: list[weak_spots.Item],
+    *,
+    subject: str | None = None,
+) -> int:
+    """Compute median positive `durationMs` across past attempts (fallback 1.5 min = 90_000 ms)."""
+    all_durations: list[float] = []
+    by_subject: dict[str, list[float]] = {"MTH": [], "PRG": []}
+
+    for item in loaded:
+        state = item.state if isinstance(item.state, dict) else {}
+        subj = "PRG" if item.subject == "PRG" else "MTH"
+        attempts = state.get("attempts") or []
+        per_attempt: list[float] = []
+        for att in attempts:
+            if not isinstance(att, dict):
+                continue
+            if att.get("verdict") in _NON_SUBSTANTIVE_VERDICTS:
+                continue
+            dur = att.get("durationMs")
+            if isinstance(dur, (int, float)) and not isinstance(dur, bool) and math.isfinite(dur) and dur > 0:
+                per_attempt.append(float(dur))
+        if per_attempt:
+            all_durations.extend(per_attempt)
+            by_subject[subj].extend(per_attempt)
+        else:
+            state_dur = state.get("durationMs")
+            if (
+                isinstance(state_dur, (int, float))
+                and not isinstance(state_dur, bool)
+                and math.isfinite(state_dur)
+                and state_dur > 0
+            ):
+                all_durations.append(float(state_dur))
+                by_subject[subj].append(float(state_dur))
+
+    pool = by_subject[subject] if subject in ("MTH", "PRG") and by_subject[subject] else all_durations
+    if not pool:
+        return DEFAULT_ITEM_DURATION_MS
+    pool.sort()
+    mid = len(pool) // 2
+    if len(pool) % 2 == 1:
+        return _round_half_up(pool[mid])
+    return _round_half_up((pool[mid - 1] + pool[mid]) / 2.0)
+
+
+def estimate_review_minutes(item_count: int, median_duration_ms: int = DEFAULT_ITEM_DURATION_MS) -> int:
+    """Estimate total review minutes for `item_count` items using `median_duration_ms` (min 1 when count > 0)."""
+    if item_count <= 0:
+        return 0
+    ms = median_duration_ms if median_duration_ms > 0 else DEFAULT_ITEM_DURATION_MS
+    return max(1, _round_half_up((item_count * ms) / 60_000.0))
 
 
 def _store_path(progress_dir: str | None = None, repo_root: str | None = None) -> str:
@@ -352,24 +475,10 @@ def rebuild_review_items(
     return schedule
 
 
-def get_review_items_schedule(
-    data_root: str | None = None,
-    progress_dir: str | None = None,
-    labs_root: str | None = None,
-    repo_root: str | None = None,
+def _merge_saved_schedule(
+    backfilled: dict[str, dict[str, Any]],
+    saved: dict[str, dict[str, Any]],
 ) -> dict[str, dict[str, Any]]:
-    """Return the active review schedule without writing to disk (read-only).
-
-    Reads `review_items.json` when present and merges any backfilled items and updated `revisitNote`
-    values from `progress/<DRILL_ID>.json` in memory.
-    """
-    resolved_progress = progress_dir or progress_root(repo_root)
-    backfilled = build_schedule_from_progress(
-        data_root=data_root,
-        progress_dir=resolved_progress,
-        labs_root=labs_root,
-    )
-    saved = load_saved_review_items(progress_dir=resolved_progress, repo_root=repo_root)
     if not saved:
         return backfilled
     merged: dict[str, dict[str, Any]] = dict(backfilled)
@@ -393,8 +502,36 @@ def get_review_items_schedule(
     return dict(sorted(merged.items()))
 
 
-def _base_sort_key(item: dict[str, Any]) -> tuple[str, int, str, str, str]:
+def get_review_items_schedule(
+    data_root: str | None = None,
+    progress_dir: str | None = None,
+    labs_root: str | None = None,
+    repo_root: str | None = None,
+) -> dict[str, dict[str, Any]]:
+    """Return the active review schedule without writing to disk (read-only).
+
+    Reads `review_items.json` when present and merges any backfilled items and updated `revisitNote`
+    values from `progress/<DRILL_ID>.json` in memory.
+    """
+    resolved_progress = progress_dir or progress_root(repo_root)
+    backfilled = build_schedule_from_progress(
+        data_root=data_root,
+        progress_dir=resolved_progress,
+        labs_root=labs_root,
+    )
+    saved = load_saved_review_items(progress_dir=resolved_progress, repo_root=repo_root)
+    return _merge_saved_schedule(backfilled, saved)
+
+
+def _priority_sort_key(
+    item: dict[str, Any],
+    open_weak_traps: set[str] | frozenset[str] | None = None,
+) -> tuple[int, int, str, int, str, str, str]:
+    traps = open_weak_traps or frozenset()
+    tag = item.get("commonTrapTag")
     return (
+        0 if item.get("lastWrong") else 1,
+        0 if (isinstance(tag, str) and tag in traps) else 1,
         str(item.get("dueDate") or ""),
         int(item.get("level") or 1),
         str(item.get("unitCode") or ""),
@@ -403,10 +540,27 @@ def _base_sort_key(item: dict[str, Any]) -> tuple[str, int, str, str, str]:
     )
 
 
-def interleave_due_items(items: list[dict[str, Any]], limit: int | None = None) -> list[dict[str, Any]]:
-    """Interleave due items so no two consecutive items share a unit when avoidable, mixing MTH and PRG."""
-    remaining = [redact_review_item(it) for it in items]
-    remaining.sort(key=_base_sort_key)
+def prioritize_due_items(
+    items: list[dict[str, Any]],
+    *,
+    open_weak_traps: set[str] | frozenset[str] | None = None,
+) -> list[dict[str, Any]]:
+    """Sort due items by priority: (a) wrong on last attempt, (b) open weak spot trap, (c) most overdue."""
+    cleaned = [redact_review_item(it) for it in items]
+    cleaned.sort(key=lambda it: _priority_sort_key(it, open_weak_traps))
+    return cleaned
+
+
+def interleave_due_items(
+    items: list[dict[str, Any]],
+    limit: int | None = None,
+    *,
+    open_weak_traps: set[str] | frozenset[str] | None = None,
+) -> list[dict[str, Any]]:
+    """Pick the highest-priority `limit` items first, then interleave across units and subjects."""
+    remaining = prioritize_due_items(items, open_weak_traps=open_weak_traps)
+    if limit is not None and limit >= 0:
+        remaining = remaining[:limit]
 
     result: list[dict[str, Any]] = []
     last_unit: str | None = None
@@ -432,7 +586,7 @@ def interleave_due_items(items: list[dict[str, Any]], limit: int | None = None) 
             pool,
             key=lambda it: (
                 -unit_counts[it["unitCode"]],
-                *_base_sort_key(it),
+                *_priority_sort_key(it, open_weak_traps),
             ),
         )
         remaining.remove(chosen)
@@ -440,8 +594,6 @@ def interleave_due_items(items: list[dict[str, Any]], limit: int | None = None) 
         last_unit = chosen["unitCode"]
         last_subject = chosen["subject"]
 
-    if limit is not None and limit >= 0:
-        return result[:limit]
     return result
 
 
@@ -449,21 +601,23 @@ def get_due_items(
     *,
     today: str | None = None,
     limit: int | None = None,
+    scope: str | None = None,
     data_root: str | None = None,
     progress_dir: str | None = None,
     labs_root: str | None = None,
     repo_root: str | None = None,
 ) -> list[dict[str, Any]]:
-    """Return due review items (`dueDate <= today`), interleaved across units and subjects (read-only)."""
+    """Return due review items (`dueDate <= today`), prioritized, scoped, and interleaved (read-only)."""
+    parsed_scope = parse_scope(scope)
     today_str = _normalize_date(today)
-    schedule = get_review_items_schedule(
-        data_root=data_root,
-        progress_dir=progress_dir,
-        labs_root=labs_root,
-        repo_root=repo_root,
-    )
-    due = [it for it in schedule.values() if it["dueDate"] <= today_str]
-    return interleave_due_items(due, limit=limit)
+    resolved_progress = progress_dir or progress_root(repo_root)
+    loaded = weak_spots.load_items(data_root=data_root, progress_dir=resolved_progress, labs_root=labs_root)
+    open_weak_traps = get_open_weak_traps(loaded)
+    backfilled = _build_schedule_from_loaded(loaded)
+    saved = load_saved_review_items(progress_dir=resolved_progress, repo_root=repo_root)
+    schedule = _merge_saved_schedule(backfilled, saved)
+    due = [it for it in schedule.values() if it["dueDate"] <= today_str and matches_scope(it, parsed_scope)]
+    return interleave_due_items(due, limit=limit, open_weak_traps=open_weak_traps)
 
 
 def record_review_result(
@@ -511,6 +665,7 @@ def record_review_result(
     base["level"] = step["level"]
     base["lastReviewed"] = step["lastReviewed"]
     base["dueDate"] = step["dueDate"]
+    base["lastWrong"] = not bool(correct)
     updated = redact_review_item(base)
     schedule[key] = updated
     write_review_items(schedule, progress_dir=resolved_progress, repo_root=repo_root)
@@ -544,6 +699,11 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--due", action="store_true", help="List only items due on or before today, interleaved")
     ap.add_argument("--limit", type=int, default=None, help="Maximum number of due items to return")
     ap.add_argument(
+        "--scope",
+        default=None,
+        help="Optional scope filter: subject:MTH|PRG, unit:<code>, chapter:<code>, trap:<tag>, drill:<id>",
+    )
+    ap.add_argument(
         "--rebuild",
         action="store_true",
         help="Rebuild progress/review_items.json from existing progress/<DRILL_ID>.json files",
@@ -554,61 +714,78 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--progress-dir", default=None)
     args = ap.parse_args(argv)
 
+    try:
+        parsed_scope = parse_scope(args.scope)
+    except ValueError as exc:
+        ap.error(str(exc))
+
     repo_root = find_repo_root()
     resolved_progress = args.progress_dir or progress_root(repo_root)
     today_str = _normalize_date(args.today)
 
-    if args.rebuild:
-        schedule = rebuild_review_items(
-            data_root=args.data_root,
-            progress_dir=resolved_progress,
-            repo_root=repo_root,
-        )
-    else:
-        schedule = get_review_items_schedule(
-            data_root=args.data_root,
-            progress_dir=resolved_progress,
-            repo_root=repo_root,
-        )
+    loaded = weak_spots.load_items(data_root=args.data_root, progress_dir=resolved_progress)
+    open_weak_traps = get_open_weak_traps(loaded)
+    backfilled = _build_schedule_from_loaded(loaded)
 
+    if args.rebuild:
+        write_review_items(backfilled, progress_dir=resolved_progress, repo_root=repo_root)
+        schedule = backfilled
+    else:
+        saved = load_saved_review_items(progress_dir=resolved_progress, repo_root=repo_root)
+        schedule = _merge_saved_schedule(backfilled, saved)
+
+    all_due = [it for it in schedule.values() if it["dueDate"] <= today_str]
+    by_subject = {
+        "MTH": sum(1 for it in all_due if it["subject"] == "MTH"),
+        "PRG": sum(1 for it in all_due if it["subject"] == "PRG"),
+    }
+    scoped_due = [it for it in all_due if matches_scope(it, parsed_scope)]
     due_items = interleave_due_items(
-        [it for it in schedule.values() if it["dueDate"] <= today_str],
+        scoped_due,
         limit=args.limit,
+        open_weak_traps=open_weak_traps,
     )
+    scope_subject = parsed_scope[1] if parsed_scope and parsed_scope[0] == "subject" else None
+    median_ms = estimate_median_duration_ms(loaded, subject=scope_subject)
+    estimated_minutes = estimate_review_minutes(len(scoped_due), median_ms)
 
     if args.due:
         if args.as_json:
-            print(
-                json.dumps(
-                    {
-                        "today": today_str,
-                        "count": len(due_items),
-                        "items": due_items,
-                    },
-                    ensure_ascii=False,
-                )
-            )
+            payload: dict[str, Any] = {
+                "today": today_str,
+                "count": len(due_items),
+                "totalDue": len(scoped_due),
+                "bySubject": by_subject,
+                "medianDurationMs": median_ms,
+                "estimatedMinutes": estimated_minutes,
+                "items": due_items,
+            }
+            if parsed_scope is not None:
+                payload["scope"] = f"{parsed_scope[0]}:{parsed_scope[1]}"
+            print(json.dumps(payload, ensure_ascii=False))
         else:
             print(_format_text_report(due_items, due_only=True, today=today_str))
         return 0
 
-    all_items = list(schedule.values())
+    all_items = [it for it in schedule.values() if matches_scope(it, parsed_scope)]
     if args.limit is not None and args.limit >= 0:
         all_items = all_items[: args.limit]
     if args.as_json:
-        print(
-            json.dumps(
-                {
-                    "ok": True,
-                    "today": today_str,
-                    "path": _store_path(resolved_progress, repo_root),
-                    "count": len(schedule),
-                    "dueCount": len(due_items),
-                    "items": all_items,
-                },
-                ensure_ascii=False,
-            )
-        )
+        payload = {
+            "ok": True,
+            "today": today_str,
+            "path": _store_path(resolved_progress, repo_root),
+            "count": len(all_items) if parsed_scope is not None else len(schedule),
+            "dueCount": len(due_items),
+            "totalDue": len(scoped_due),
+            "bySubject": by_subject,
+            "medianDurationMs": median_ms,
+            "estimatedMinutes": estimated_minutes,
+            "items": all_items,
+        }
+        if parsed_scope is not None:
+            payload["scope"] = f"{parsed_scope[0]}:{parsed_scope[1]}"
+        print(json.dumps(payload, ensure_ascii=False))
     else:
         print(_format_text_report(all_items, due_only=False, today=today_str))
     return 0

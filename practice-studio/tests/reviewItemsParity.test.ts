@@ -10,11 +10,15 @@ import os from "node:os";
 import path from "node:path";
 import { NextRequest } from "next/server";
 import {
+  DEFAULT_ITEM_DURATION_MS,
   REVIEW_INTERVALS,
   addDays,
   buildScheduleFromProgress,
+  estimateReviewMinutes,
   getDueReviewItems,
   interleaveDueItems,
+  parseReviewScope,
+  prioritizeDueItems,
   recordReviewItemResult,
   stepReviewSchedule,
   ReviewItem,
@@ -485,7 +489,361 @@ async function runTests() {
       ["MTH-U1", "PRG-U1", "MTH-U1"]
     );
 
-    console.log("[PASS] Python and TypeScript review_items schedules and /api/review-items routes match");
+    // 7. Priority rule (wrong-last > open weak spot > most overdue, pick-then-interleave),
+    //    all 5 scope filters, HTTP redaction on scope=trap:..., and duration estimation parity
+    const priTmp = fs.mkdtempSync(path.join(os.tmpdir(), "learningos-review-priority-parity-"));
+    const priData = path.join(priTmp, "drills", "data");
+    const priProgress = path.join(priTmp, "progress");
+    const priLabs = path.join(priTmp, "labs");
+    try {
+      for (const sub of [
+        "MTH-T01-C04-U01",
+        "MTH-T01-C04-U02",
+        "MTH-T02-C01-U01",
+        "PRG-T01-C01-U01",
+      ]) {
+        fs.mkdirSync(path.join(priData, sub), { recursive: true });
+      }
+      fs.mkdirSync(priProgress, { recursive: true });
+      fs.mkdirSync(priLabs, { recursive: true });
+
+      fs.writeFileSync(
+        path.join(priData, "MTH-T01-C04-U01", "DRL-MTH-T01-C04-U01-01.json"),
+        JSON.stringify({
+          drillId: "DRL-MTH-T01-C04-U01-01",
+          unitCode: "MTH-T01-C04-U01",
+          unitTitle: "Fraction Division",
+          problems: [
+            { id: "Q01", level: 2, commonTrapTag: "c04-open-weak-trap", archetypeKey: "a1" },
+            { id: "Q02", level: 2, commonTrapTag: "c04-closed-trap", archetypeKey: "a2" },
+          ],
+        }),
+        "utf-8"
+      );
+      fs.writeFileSync(
+        path.join(priData, "MTH-T01-C04-U02", "DRL-MTH-T01-C04-U02-01.json"),
+        JSON.stringify({
+          drillId: "DRL-MTH-T01-C04-U02-01",
+          unitCode: "MTH-T01-C04-U02",
+          unitTitle: "Signed Fractions",
+          problems: [
+            { id: "Q01", level: 2, commonTrapTag: "c04-other-trap", archetypeKey: "b1" },
+            { id: "Q02", level: 2, commonTrapTag: "c04-open-weak-trap", archetypeKey: "b2" },
+          ],
+        }),
+        "utf-8"
+      );
+      fs.writeFileSync(
+        path.join(priData, "MTH-T02-C01-U01", "DRL-MTH-T02-C01-U01-01.json"),
+        JSON.stringify({
+          drillId: "DRL-MTH-T02-C01-U01-01",
+          unitCode: "MTH-T02-C01-U01",
+          unitTitle: "Complex Numbers",
+          problems: [
+            { id: "Q01", level: 2, commonTrapTag: "t02-sign-trap", archetypeKey: "c1" },
+          ],
+        }),
+        "utf-8"
+      );
+      fs.writeFileSync(
+        path.join(priData, "PRG-T01-C01-U01", "DRL-PRG-T01-C01-U01-01.json"),
+        JSON.stringify({
+          drillId: "DRL-PRG-T01-C01-U01-01",
+          subject: "PRG",
+          unitCode: "PRG-T01-C01-U01",
+          unitTitle: "Array Guards",
+          problems: [
+            { id: "Q01", level: 2, archetypeKey: "p1" },
+            { id: "Q02", level: 2, archetypeKey: "p2" },
+          ],
+        }),
+        "utf-8"
+      );
+
+      fs.writeFileSync(
+        path.join(priProgress, "DRL-MTH-T01-C04-U01-01.json"),
+        JSON.stringify({
+          drillId: "DRL-MTH-T01-C04-U01-01",
+          updatedAt: "2026-11-17T10:00:00Z",
+          problems: {
+            Q01: {
+              attempts: [
+                {
+                  verdict: "incorrect",
+                  ts: "2026-11-10T10:00:00Z",
+                  matchedTrap: "c04-open-weak-trap",
+                  durationMs: 120000,
+                },
+                {
+                  verdict: "correct",
+                  ts: "2026-11-17T10:00:00Z",
+                  assisted: true,
+                  durationMs: 60000,
+                },
+              ],
+              score: 0.5,
+              hintsRevealed: 1,
+            },
+            Q02: {
+              attempts: [
+                { verdict: "correct", ts: "2026-11-02T10:00:00Z", durationMs: 180000 },
+              ],
+              score: 1.0,
+            },
+          },
+        }),
+        "utf-8"
+      );
+      fs.writeFileSync(
+        path.join(priProgress, "DRL-MTH-T01-C04-U02-01.json"),
+        JSON.stringify({
+          drillId: "DRL-MTH-T01-C04-U02-01",
+          updatedAt: "2026-11-18T10:00:00Z",
+          problems: {
+            Q01: {
+              attempts: [
+                { verdict: "incorrect", ts: "2026-11-18T10:00:00Z", durationMs: 120000 },
+              ],
+              score: 0,
+            },
+            Q02: {
+              attempts: [
+                {
+                  verdict: "incorrect",
+                  ts: "2026-11-15T10:00:00Z",
+                  matchedTrap: "c04-open-weak-trap",
+                  durationMs: 120000,
+                },
+                {
+                  verdict: "correct",
+                  ts: "2026-11-15T10:05:00Z",
+                  durationMs: 60000,
+                },
+              ],
+              score: 0.5,
+            },
+          },
+        }),
+        "utf-8"
+      );
+      fs.writeFileSync(
+        path.join(priProgress, "DRL-MTH-T02-C01-U01-01.json"),
+        JSON.stringify({
+          drillId: "DRL-MTH-T02-C01-U01-01",
+          updatedAt: "2026-11-07T10:00:00Z",
+          problems: {
+            Q01: {
+              attempts: [
+                { verdict: "correct", ts: "2026-11-07T10:00:00Z", durationMs: 120000 },
+              ],
+              score: 1.0,
+            },
+          },
+        }),
+        "utf-8"
+      );
+      fs.writeFileSync(
+        path.join(priProgress, "DRL-PRG-T01-C01-U01-01.json"),
+        JSON.stringify({
+          drillId: "DRL-PRG-T01-C01-U01-01",
+          updatedAt: "2026-11-18T09:00:00Z",
+          problems: {
+            Q01: {
+              reviews: [
+                {
+                  at: "2026-11-18T09:00:00Z",
+                  verdict: "revise",
+                  findings: [{ check: "U-edge-empty", severity: "must", line: 2, note: "guard" }],
+                  lint: [],
+                },
+              ],
+              durationMs: 240000,
+            },
+            Q02: {
+              reviews: [
+                {
+                  at: "2026-11-14T09:00:00Z",
+                  verdict: "revise",
+                  findings: [{ check: "U-edge-empty", severity: "must", line: 4, note: "guard" }],
+                  lint: [],
+                },
+                {
+                  at: "2026-11-16T09:00:00Z",
+                  verdict: "pass",
+                  findings: [],
+                  lint: [],
+                },
+              ],
+              durationMs: 180000,
+            },
+          },
+        }),
+        "utf-8"
+      );
+
+      process.env.PROGRESS_DIR = priProgress;
+      process.env.DRILLS_DATA_DIR = priData;
+      process.env.LABS_DIR = priLabs;
+
+      const cases: Array<{ scope?: string; limit?: number }> = [
+        { limit: 4 },
+        { scope: "subject:MTH" },
+        { scope: "subject:PRG" },
+        { scope: "unit:MTH-T01-C04-U01" },
+        { scope: "chapter:MTH-T01-C04" },
+        { scope: "trap:c04-open-weak-trap" },
+        { scope: "drill:DRL-MTH-T02-C01-U01-01" },
+      ];
+
+      for (const c of cases) {
+        const tsRes = getDueReviewItems({
+          today: "2026-11-19",
+          limit: c.limit,
+          scope: c.scope,
+          dataDir: priData,
+          progressDir: priProgress,
+          labsDir: priLabs,
+          rootDir: root,
+        });
+        const pyArgs = [
+          "-m",
+          "scripts.review_items",
+          "--due",
+          "--today",
+          "2026-11-19",
+          "--data-root",
+          priData,
+          "--progress-dir",
+          priProgress,
+          "--json",
+        ];
+        if (c.limit !== undefined) pyArgs.push("--limit", String(c.limit));
+        if (c.scope) pyArgs.push("--scope", c.scope);
+
+        const pyRun = spawnSync(python, pyArgs, {
+          cwd: root,
+          encoding: "utf8",
+          env: {
+            ...process.env,
+            PROGRESS_DIR: priProgress,
+            DRILLS_DATA_DIR: priData,
+            LABS_DIR: priLabs,
+          },
+        });
+        if (pyRun.status !== 0) {
+          throw new Error(`Python review_items failed for ${JSON.stringify(c)}: ${pyRun.stderr}`);
+        }
+        const pyJson = JSON.parse(pyRun.stdout) as {
+          items: ReviewItem[];
+          totalDue: number;
+          bySubject: { MTH: number; PRG: number };
+          medianDurationMs: number;
+          estimatedMinutes: number;
+        };
+
+        assert.deepEqual(
+          tsRes.items,
+          pyJson.items,
+          `Py/TS parity mismatch on items for ${JSON.stringify(c)}`
+        );
+        assert.equal(tsRes.totalDue, pyJson.totalDue);
+        assert.deepEqual(tsRes.bySubject, pyJson.bySubject);
+        assert.equal(tsRes.medianDurationMs, pyJson.medianDurationMs);
+        assert.equal(tsRes.estimatedMinutes, pyJson.estimatedMinutes);
+      }
+
+      // Verify pure prioritizeDueItems order: wrong > open weak > oldest dueDate
+      const priTest = prioritizeDueItems(
+        [
+          {
+            drillId: "D1",
+            qid: "Q1",
+            unitCode: "MTH-U1",
+            subject: "MTH",
+            commonTrapTag: "t-normal",
+            archetypeKey: null,
+            level: 1,
+            lastReviewed: "2026-11-01",
+            dueDate: "2026-11-02",
+            revisitNote: null,
+            lastWrong: false,
+          },
+          {
+            drillId: "D2",
+            qid: "Q1",
+            unitCode: "MTH-U2",
+            subject: "MTH",
+            commonTrapTag: "t-weak",
+            archetypeKey: null,
+            level: 2,
+            lastReviewed: "2026-11-10",
+            dueDate: "2026-11-18",
+            revisitNote: null,
+            lastWrong: false,
+          },
+          {
+            drillId: "D3",
+            qid: "Q1",
+            unitCode: "MTH-U3",
+            subject: "MTH",
+            commonTrapTag: "t-other",
+            archetypeKey: null,
+            level: 1,
+            lastReviewed: "2026-11-18",
+            dueDate: "2026-11-19",
+            revisitNote: null,
+            lastWrong: true,
+          },
+        ],
+        new Set(["t-weak"])
+      );
+      assert.deepEqual(
+        priTest.map((x) => x.drillId),
+        ["D3", "D2", "D1"]
+      );
+
+      // Verify GET /api/review-items?scope=trap:... filters on server AND stays strictly redacted
+      const trapRes = await reviewItemsGET(
+        new NextRequest(
+          "http://127.0.0.1:3000/api/review-items?today=2026-11-19&scope=trap:c04-open-weak-trap"
+        )
+      );
+      assert.equal(trapRes.status, 200);
+      const trapBody = await trapRes.text();
+      assert.ok(
+        !trapBody.includes("c04-open-weak-trap"),
+        "GET /api/review-items?scope=trap:... must not leak trap tag in response payload"
+      );
+      assert.ok(
+        !trapBody.includes("lastWrong"),
+        "GET /api/review-items must not expose lastWrong before an attempt"
+      );
+      const trapJson = JSON.parse(trapBody) as { totalDue: number; items: ReviewItem[] };
+      assert.equal(trapJson.totalDue, 2);
+      assert.equal(trapJson.items.length, 2);
+      assert.ok(trapJson.items.every((it) => it.commonTrapTag === null && it.archetypeKey === null));
+
+      // Invalid scope returns 400
+      for (const bad of ["invalid", "subject:BIO", "unit:../etc", "trap:a..b", "foo:bar"]) {
+        assert.throws(() => parseReviewScope(bad));
+        const badRes = await reviewItemsGET(
+          new NextRequest(
+            `http://127.0.0.1:3000/api/review-items?scope=${encodeURIComponent(bad)}`
+          )
+        );
+        assert.equal(badRes.status, 400, `Expected 400 for invalid scope '${bad}'`);
+      }
+
+      // Duration fallback 1.5 min/item
+      assert.equal(DEFAULT_ITEM_DURATION_MS, 90_000);
+      assert.equal(estimateReviewMinutes(0, 90_000), 0);
+      assert.equal(estimateReviewMinutes(1, 90_000), 2);
+      assert.equal(estimateReviewMinutes(8, 90_000), 12);
+    } finally {
+      fs.rmSync(priTmp, { recursive: true, force: true });
+    }
+
+    console.log("[PASS] Python and TypeScript review_items schedules, priority, scopes, and /api/review-items routes match");
   } finally {
     if (prevProgressDir === undefined) delete process.env.PROGRESS_DIR;
     else process.env.PROGRESS_DIR = prevProgressDir;
