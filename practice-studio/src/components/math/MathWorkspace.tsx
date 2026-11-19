@@ -140,6 +140,8 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
   const {
     isUnlocked,
     listEmpty,
+    listError,
+    isLoadingList,
     selectedTab,
     tabs,
     activeSimilarTab,
@@ -159,6 +161,7 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
     isSimilarPaused,
     toggleSimilarPaused,
     selectTab,
+    retrySimilarList,
     retryActiveTab,
     openWorkedExample,
     closeWorkedExample,
@@ -216,7 +219,7 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
   const realTabStatus = deriveRealTabStatus(problem.state);
   const hasVariantsAvailable = Boolean(drillId && problem.hasVariants);
   const showTabStrip = Boolean(!showingExample && hasVariantsAvailable && !listEmpty);
-  const stripLocked = !isUnlocked || tabs.length === 0;
+  const stripLocked = !isUnlocked;
 
   const rPlan = resultCardActions({
     tab: "q",
@@ -368,6 +371,9 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
                 selectedTab={selectedTab}
                 locked={stripLocked}
                 lockedSlotCount={problem.similarCount}
+                listError={listError}
+                loadingList={isLoadingList}
+                onRetryList={retrySimilarList}
                 onSelectTab={(tabId) => selectTab(tabId)}
               />
             )}

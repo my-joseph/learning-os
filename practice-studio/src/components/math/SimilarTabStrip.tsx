@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import { Check, Minus, X } from "lucide-react";
+import { Check, Minus, RefreshCw, X } from "lucide-react";
 import {
   buildLockedSimilarPlaceholders,
   nextTabIndexForKey,
@@ -22,6 +22,9 @@ export interface SimilarTabStripProps {
   selectedTab: SimilarTabId;
   locked?: boolean;
   lockedSlotCount?: number;
+  listError?: string | null;
+  loadingList?: boolean;
+  onRetryList?: () => void;
   onSelectTab: (tabId: SimilarTabId) => void;
 }
 
@@ -127,13 +130,18 @@ export const SimilarTabStrip: React.FC<SimilarTabStripProps> = ({
   selectedTab,
   locked = false,
   lockedSlotCount,
+  listError = null,
+  loadingList = false,
+  onRetryList,
   onSelectTab,
 }) => {
   const lockedSlots = locked ? buildLockedSimilarPlaceholders(lockedSlotCount) : [];
-  const orderedIds: SimilarTabId[] = locked
-    ? ["q"]
-    : ["q", ...tabs.map((t) => slotToTabId(t.slot))];
-  const effectiveSelected: SimilarTabId = locked ? "q" : selectedTab;
+  const orderedIds: SimilarTabId[] =
+    locked || tabs.length === 0
+      ? ["q"]
+      : ["q", ...tabs.map((t) => slotToTabId(t.slot))];
+  const effectiveSelected: SimilarTabId =
+    locked || tabs.length === 0 ? "q" : selectedTab;
 
   const [rovingTab, setRovingTab] = useState<SimilarTabId>(effectiveSelected);
   const tabRefs = useRef<Map<SimilarTabId, HTMLButtonElement | null>>(new Map());
@@ -197,115 +205,152 @@ export const SimilarTabStrip: React.FC<SimilarTabStripProps> = ({
   const realSelected = effectiveSelected === "q";
   const realAriaLabel = `Question ${questionNumber}${tabStatusAccessibleSuffix(realStatus)}`;
   const hasSimilarSlots = locked ? lockedSlots.length > 0 : tabs.length > 0;
+  const showListError = !locked && tabs.length === 0 && Boolean(listError);
+  const showListLoading = !locked && tabs.length === 0 && !listError && loadingList;
 
   return (
-    <div
-      ref={listRef}
-      role="tablist"
-      aria-label={`Question ${questionNumber} and similar questions`}
-      onBlur={handleListBlur}
-      className="flex items-center gap-1 border-b border-zinc-200 dark:border-zinc-800 overflow-x-auto overflow-y-hidden [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden snap-x -mx-4 px-4 sm:mx-0 sm:px-0"
-    >
-      {locked && hasSimilarSlots && (
-        <span id={lockDescId} className="sr-only">
-          {lockTooltip}
-        </span>
-      )}
-
-      <button
-        ref={(el) => {
-          tabRefs.current.set("q", el);
-        }}
-        type="button"
-        role="tab"
-        id={`tab-${problemId}-q`}
-        aria-selected={realSelected}
-        aria-controls={panelId}
-        aria-label={realAriaLabel}
-        tabIndex={rovingTab === "q" ? 0 : -1}
-        onClick={() => onSelectTab("q")}
-        onKeyDown={(e) => handleKeyDown(e, "q")}
-        className={`${baseTabClass} ${realSelected ? selectedClass : unselectedClass}`}
+    <div className="flex items-center justify-between gap-2 border-b border-zinc-200 dark:border-zinc-800 -mx-4 px-4 sm:mx-0 sm:px-0">
+      <div
+        ref={listRef}
+        role="tablist"
+        aria-label={`Question ${questionNumber} and similar questions`}
+        onBlur={handleListBlur}
+        className="flex items-center gap-1 min-w-0 overflow-x-auto overflow-y-hidden [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden snap-x -mb-px"
       >
-        <StatusMark status={realStatus} />
-        <span className="hidden sm:inline">
-          Question <span className="font-display tabular-nums">{questionNumber}</span>
-        </span>
-        <span className="sm:hidden font-display tabular-nums">Q{questionNumber}</span>
-      </button>
+        {locked && hasSimilarSlots && (
+          <span id={lockDescId} className="sr-only">
+            {lockTooltip}
+          </span>
+        )}
 
-      {hasSimilarSlots && (
-        <span
-          aria-hidden="true"
-          className={`sm:hidden shrink-0 pl-1 pr-0.5 text-xs select-none ${
-            locked
-              ? "text-zinc-400 dark:text-zinc-600 opacity-60"
-              : "text-zinc-500 dark:text-zinc-400"
-          }`}
+        <button
+          ref={(el) => {
+            tabRefs.current.set("q", el);
+          }}
+          type="button"
+          role="tab"
+          id={`tab-${problemId}-q`}
+          aria-selected={realSelected}
+          aria-controls={panelId}
+          aria-label={realAriaLabel}
+          tabIndex={rovingTab === "q" ? 0 : -1}
+          onClick={() => onSelectTab("q")}
+          onKeyDown={(e) => handleKeyDown(e, "q")}
+          className={`${baseTabClass} ${realSelected ? selectedClass : unselectedClass}`}
         >
-          Similar
-        </span>
+          <StatusMark status={realStatus} />
+          <span className="hidden sm:inline">
+            Question <span className="font-display tabular-nums">{questionNumber}</span>
+          </span>
+          <span className="sm:hidden font-display tabular-nums">Q{questionNumber}</span>
+        </button>
+
+        {hasSimilarSlots && (
+          <span
+            aria-hidden="true"
+            className={`sm:hidden shrink-0 pl-1 pr-0.5 text-xs select-none ${
+              locked
+                ? "text-zinc-400 dark:text-zinc-600 opacity-60"
+                : "text-zinc-500 dark:text-zinc-400"
+            }`}
+          >
+            Similar
+          </span>
+        )}
+
+        {locked
+          ? lockedSlots.map((slot) => {
+              const tabId = slotToTabId(slot);
+              return (
+                <button
+                  key={`locked-${tabId}`}
+                  type="button"
+                  role="tab"
+                  id={`tab-${problemId}-${tabId}`}
+                  aria-selected={false}
+                  aria-disabled="true"
+                  aria-label={`Similar question ${slot}`}
+                  aria-describedby={lockDescId}
+                  title={lockTooltip}
+                  tabIndex={-1}
+                  onClick={(e) => {
+                    e.preventDefault();
+                  }}
+                  className={`${baseTabClass} ${ghostClass}`}
+                >
+                  <StatusMark status="untried" muted />
+                  <span className="hidden sm:inline">
+                    Similar <span className="font-display tabular-nums">{slot}</span>
+                  </span>
+                  <span className="sm:hidden font-display tabular-nums">{slot}</span>
+                </button>
+              );
+            })
+          : tabs.map((tab) => {
+              const tabId = slotToTabId(tab.slot);
+              const isSelected = effectiveSelected === tabId;
+              const tabAriaLabel = `Similar question ${tab.slot}${tabStatusAccessibleSuffix(
+                tab.status
+              )}`;
+              return (
+                <button
+                  key={tab.token}
+                  ref={(el) => {
+                    tabRefs.current.set(tabId, el);
+                  }}
+                  type="button"
+                  role="tab"
+                  id={`tab-${problemId}-${tabId}`}
+                  aria-selected={isSelected}
+                  aria-controls={panelId}
+                  aria-label={tabAriaLabel}
+                  tabIndex={rovingTab === tabId ? 0 : -1}
+                  onClick={() => onSelectTab(tabId)}
+                  onKeyDown={(e) => handleKeyDown(e, tabId)}
+                  className={`${baseTabClass} ${isSelected ? selectedClass : unselectedClass}`}
+                >
+                  <StatusMark status={tab.status} />
+                  <span className="hidden sm:inline">
+                    Similar <span className="font-display tabular-nums">{tab.slot}</span>
+                  </span>
+                  <span className="sm:hidden font-display tabular-nums">{tab.slot}</span>
+                </button>
+              );
+            })}
+      </div>
+
+      {showListError && (
+        <div
+          role="status"
+          data-similar-list-error="true"
+          className="flex items-center gap-2 shrink-0 py-1 text-xs text-zinc-500 dark:text-zinc-400"
+        >
+          <span className="truncate">{listError}</span>
+          {onRetryList && (
+            <button
+              type="button"
+              onClick={onRetryList}
+              disabled={loadingList}
+              className="inline-flex items-center gap-1 shrink-0 min-h-[32px] sm:min-h-0 px-1.5 py-0.5 rounded font-medium text-indigo-600 dark:text-indigo-400 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 disabled:opacity-50"
+            >
+              <RefreshCw
+                className={`w-3 h-3 ${loadingList ? "animate-spin" : ""}`}
+                aria-hidden="true"
+              />
+              <span>{loadingList ? "Retrying..." : "Retry"}</span>
+            </button>
+          )}
+        </div>
       )}
 
-      {locked
-        ? lockedSlots.map((slot) => {
-            const tabId = slotToTabId(slot);
-            return (
-              <button
-                key={`locked-${tabId}`}
-                type="button"
-                role="tab"
-                id={`tab-${problemId}-${tabId}`}
-                aria-selected={false}
-                aria-disabled="true"
-                aria-label={`Similar question ${slot}`}
-                aria-describedby={lockDescId}
-                title={lockTooltip}
-                tabIndex={-1}
-                onClick={(e) => {
-                  e.preventDefault();
-                }}
-                className={`${baseTabClass} ${ghostClass}`}
-              >
-                <StatusMark status="untried" muted />
-                <span className="hidden sm:inline">
-                  Similar <span className="font-display tabular-nums">{slot}</span>
-                </span>
-                <span className="sm:hidden font-display tabular-nums">{slot}</span>
-              </button>
-            );
-          })
-        : tabs.map((tab) => {
-            const tabId = slotToTabId(tab.slot);
-            const isSelected = effectiveSelected === tabId;
-            const tabAriaLabel = `Similar question ${tab.slot}${tabStatusAccessibleSuffix(
-              tab.status
-            )}`;
-            return (
-              <button
-                key={tab.token}
-                ref={(el) => {
-                  tabRefs.current.set(tabId, el);
-                }}
-                type="button"
-                role="tab"
-                id={`tab-${problemId}-${tabId}`}
-                aria-selected={isSelected}
-                aria-controls={panelId}
-                aria-label={tabAriaLabel}
-                tabIndex={rovingTab === tabId ? 0 : -1}
-                onClick={() => onSelectTab(tabId)}
-                onKeyDown={(e) => handleKeyDown(e, tabId)}
-                className={`${baseTabClass} ${isSelected ? selectedClass : unselectedClass}`}
-              >
-                <StatusMark status={tab.status} />
-                <span className="hidden sm:inline">
-                  Similar <span className="font-display tabular-nums">{tab.slot}</span>
-                </span>
-                <span className="sm:hidden font-display tabular-nums">{tab.slot}</span>
-              </button>
-            );
-          })}
+      {showListLoading && (
+        <span
+          role="status"
+          className="shrink-0 py-1 text-xs text-zinc-400 dark:text-zinc-500"
+        >
+          Loading similar...
+        </span>
+      )}
     </div>
   );
 };

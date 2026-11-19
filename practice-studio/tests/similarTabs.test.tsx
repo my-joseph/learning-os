@@ -21,9 +21,12 @@ import { SimilarTabStrip } from "../src/components/math/SimilarTabStrip";
 import { MathWorkspace } from "../src/components/math/MathWorkspace";
 import { QuizPaginationBar } from "../src/components/QuizPaginationBar";
 import {
+  SIMILAR_LIST_ERROR_MESSAGE,
+  SIMILAR_LIST_RETRY_DELAYS_MS,
   applySimilarCheckToLatestProblem,
   applySimilarHintToLatestProblem,
   executeSimilarStepsReveal,
+  getSimilarListRetryDelayMs,
   shouldPersistVariantStepsReveal,
 } from "../src/hooks/useSimilarTabs";
 import {
@@ -293,11 +296,25 @@ function makeProblem(overrides: Partial<Problem> = {}): Problem {
     "assisted",
     "wrong then correct on a similar question must score assisted (same rule as main question)"
   );
+  // B4: bounded backoff schedule for failed mode=list fetches
+  assert.equal(getSimilarListRetryDelayMs(0), null);
+  assert.equal(getSimilarListRetryDelayMs(1), SIMILAR_LIST_RETRY_DELAYS_MS[0]);
+  assert.equal(getSimilarListRetryDelayMs(2), SIMILAR_LIST_RETRY_DELAYS_MS[1]);
+  assert.equal(
+    getSimilarListRetryDelayMs(SIMILAR_LIST_RETRY_DELAYS_MS.length + 1),
+    null,
+    "auto-retry backoff must stop after bounded attempts"
+  );
   const useSimilarSrc = fs.readFileSync("src/hooks/useSimilarTabs.ts", "utf8");
   assert.match(
     useSimilarSrc,
-    /if \(!res\.ok\)[\s\S]*?fetchedListKeyRef\.current = null/,
-    "BUG 4: failed variant list fetch must clear fetchedListKeyRef so user can retry"
+    /const scheduleFailureRetry = \(\) => \{[\s\S]*?fetchedListKeyRef\.current = null;[\s\S]*?setListError\(SIMILAR_LIST_ERROR_MESSAGE\);/,
+    "B4: failed variant list fetch must clear fetchedListKeyRef, surface quiet error, and schedule backoff retry"
+  );
+  assert.match(
+    useSimilarSrc,
+    /pendingTabRef\.current = nextTabId;[\s\S]*?retrySimilarList\(\)/,
+    "B4: clicking Practise a similar question while list is unloaded must queue tab and retry list"
   );
   assert.equal(
     deriveVariantStatus(
@@ -528,12 +545,87 @@ function makeProblem(overrides: Partial<Problem> = {}): Problem {
   assert.match(lockedStripHtml, /id="tab-Q02-s2"[^>]*aria-disabled="true"/);
   assert.match(lockedStripHtml, /id="tab-Q02-s3"[^>]*aria-disabled="true"/);
   assert.match(lockedStripHtml, /cursor-not-allowed/);
+
+  // B4: Unlocked strip with failed list load shows quiet error + Retry action instead of permanent "Answer Question N first" lock
+  const listErrorStripHtml = renderToStaticMarkup(
+    <SimilarTabStrip
+      problemId="Q02"
+      questionNumber={2}
+      realStatus="wrong"
+      tabs={[]}
+      selectedTab="q"
+      locked={false}
+      listError={SIMILAR_LIST_ERROR_MESSAGE}
+      onRetryList={noop}
+      onSelectTab={noop}
+    />
+  );
+  assert.match(listErrorStripHtml, /data-similar-list-error="true"/);
+  assert.match(listErrorStripHtml, /Couldn&#x27;t load similar questions\./);
+  assert.match(listErrorStripHtml, />Retry</);
+  assert.doesNotMatch(
+    listErrorStripHtml,
+    /Answer Question 2 first/,
+    "failed list load must NOT show locked 'Answer Question N first' tooltip"
+  );
+  assert.doesNotMatch(
+    listErrorStripHtml,
+    /aria-disabled="true"/,
+    "failed list load must NOT render locked ghost tabs"
+  );
+
+  // Loading state while list is fetching after unlock must also not render fake lock tooltip
+  const listLoadingStripHtml = renderToStaticMarkup(
+    <SimilarTabStrip
+      problemId="Q02"
+      questionNumber={2}
+      realStatus="wrong"
+      tabs={[]}
+      selectedTab="q"
+      locked={false}
+      loadingList={true}
+      onSelectTab={noop}
+    />
+  );
+  assert.match(listLoadingStripHtml, /Loading similar\.\.\./);
+  assert.doesNotMatch(listLoadingStripHtml, /Answer Question 2 first/);
 }
 
 // ---------------------------------------------------------------------------
 // 4. MathWorkspace SSR states (untouched locked strip, usedHelp before attempt, R wrong #1/#2, R correct, bank empty)
 // ---------------------------------------------------------------------------
 {
+  // Unlocked question whose similarSlots have not loaded yet must NOT show locked ghost tabs
+  const unlockedBeforeListHtml = renderToStaticMarkup(
+    <MathWorkspace
+      problem={makeProblem({
+        state: baseState({
+          userInput: "1/2",
+          score: 0,
+          lastCheck: { verdict: "incorrect", message: "Wrong", components: [], diagnostics: [] },
+          attempts: [{ input: "1/2", ts: "2026-11-19T10:00:00Z", verdict: "incorrect" }],
+        }),
+      })}
+      drillId="DRL-MTH-T01-C04-01"
+      index={1}
+      totalQuestions={6}
+      mistakeTags={[]}
+      activeStep={null}
+      onInputChange={noop}
+      onCheckAnswer={noop}
+      onToggleStepHighlight={noop}
+      onMarkDivergedStep={noop}
+      onSetScore={noop}
+      onToggleMistakeTag={noop}
+      onMistakeNoteChange={noop}
+      onResetProblem={noop}
+    />
+  );
+  assert.doesNotMatch(
+    unlockedBeforeListHtml,
+    /Answer Question 2 first/,
+    "answered question must not show locked 'Answer Question N first' even while tabs array is empty"
+  );
   const untouchedHtml = renderToStaticMarkup(
     <MathWorkspace
       problem={makeProblem({ similarCount: 3 })}
