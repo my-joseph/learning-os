@@ -12,6 +12,7 @@ import {
   type ReviewOutcome,
 } from "@/lib/reviewOutcome";
 import { countRightItems, type SessionPattern } from "@/lib/reviewRow";
+import { scoreProblem } from "@/lib/scoring";
 import { formatSyncTimestamp } from "@/lib/sessionSummary";
 import { statusTone, warningTone } from "@/lib/statusTone";
 import { plainTitle } from "@/lib/titleText";
@@ -47,6 +48,8 @@ const TILE_COLORS: Record<ReviewOutcome, string> = {
   assisted_or_partial: statusTone.assisted.tile,
   wrong: statusTone.wrong.tile,
   skipped: statusTone.skipped.tile,
+  awaiting_review:
+    "bg-zinc-50 hover:bg-zinc-100 dark:bg-zinc-950 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border-zinc-400 dark:border-zinc-500",
   unanswered: statusTone.notTried.tile,
 };
 
@@ -130,7 +133,10 @@ export const SessionSummaryCard: React.FC<SessionSummaryCardProps> = ({
   const drillTitle = plainTitle(drill.unitTitle) || drill.unitCode;
   const totalCount = drill.problems.length;
   const rightCount = countRightItems(drill.problems);
-  const points = drill.problems.reduce((sum, problem) => sum + (problem.state?.score ?? 0), 0);
+  const points = drill.problems.reduce(
+    (sum, problem) => sum + (scoreProblem(problem.state, { isPrg: isCode || isLab }).score ?? 0),
+    0
+  );
   const firstTryCount = groups.firstTryCount;
   const allFirstTry = totalCount > 0 && firstTryCount === totalCount;
   const formattedTime = durationMs > 0 ? formatDuration(durationMs) : null;

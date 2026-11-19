@@ -113,7 +113,24 @@ assert.equal(
       },
     ],
   }),
-  "assisted_or_partial"
+  "wrong"
+);
+assert.equal(
+  classifyReviewOutcome({
+    ...baseState(),
+    lastTestReport: {
+      allPassed: true,
+      score: 1,
+      passedCount: 2,
+      totalCount: 2,
+      visibleResults: [],
+      hiddenPassed: 0,
+      hiddenTotal: 0,
+      executionTimeMs: 5,
+    },
+  }),
+  "awaiting_review",
+  "PRG passing tests without a review classify as awaiting_review"
 );
 
 // 2. Outcome colours & labels

@@ -18,10 +18,10 @@ import {
   findL4ProblemTarget,
   findNextDrill,
   getDefaultExpandedRowIds,
-  latestReviewVerdict,
   pickTopWeakSpot,
   sortNeedsAttention,
 } from "@/lib/reviewRow";
+import { deriveMilestoneTileState } from "@/lib/codeStatus";
 import { isLabId, subjectOf } from "@/lib/routes";
 import {
   buildSyncPreview,
@@ -299,15 +299,17 @@ export const ReviewSyncPage: React.FC<ReviewPanelProps> = ({
   const labSummary = useMemo(() => {
     if (!isLab) return undefined;
     let passed = 0;
+    let awaitingReview = 0;
     let revise = 0;
     let notTried = 0;
     for (const p of currentDrill.problems) {
-      const rev = latestReviewVerdict(p.state);
-      if (rev.status === "pass") passed += 1;
-      else if (rev.status === "revise" || p.state?.lastTestReport) revise += 1;
+      const tile = deriveMilestoneTileState(p.state);
+      if (tile === "pass") passed += 1;
+      else if (tile === "awaiting_review") awaitingReview += 1;
+      else if (tile === "revise") revise += 1;
       else notTried += 1;
     }
-    return { passed, revise, notTried, total: currentDrill.problems.length };
+    return { passed, awaitingReview, revise, notTried, total: currentDrill.problems.length };
   }, [currentDrill.problems, isLab]);
 
   const firstUnansweredIndex = useMemo(() => {
