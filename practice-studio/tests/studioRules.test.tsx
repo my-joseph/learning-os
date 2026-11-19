@@ -112,7 +112,8 @@ assert.match(stepper, /justify-center/);
 assert.match(stepper, /^\s*Review$/m);
 assert.match(stepper, /w-\[22px\] h-\[22px\] sm:w-6 sm:h-6/);
 assert.match(stepper, /text-\[10px\] sm:text-\[11px\]/);
-assert.match(stepper, /group-focus-visible:outline/);
+// Learner 2026-11-19: no keyboard focus ring on the stepper (the current-step halo is enough).
+assert.doesNotMatch(stepper, /group-focus-visible:outline/);
 assert.doesNotMatch(stepper, /focus-visible:ring-2/);
 assert.match(studioShell, /<h1 className="sr-only"/);
 assert.match(studioShell, /fixed left-3 top-1\/2/);
