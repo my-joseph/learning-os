@@ -40,11 +40,7 @@ import { NextActions } from "./NextActions";
 
 export interface ReviewPanelProps {
   currentDrill: DrillDocument;
-  liveScore: number;
-  maxScore: number;
-  accuracyPct: number;
-  computedPracticeStatus: "Graded" | "Needs Retry";
-  statusOverride?: PracticeStatusOverride;
+  statusOverride: PracticeStatusOverride;
   isSyncing: boolean;
   syncState?: SyncState;
   totalDurationMs?: number;
@@ -70,7 +66,6 @@ export interface ReviewPanelProps {
 /** Redesigned Review & Sync page: Session summary -> To review -> Got right -> Sync to Notion (or Submit lab) -> What next. */
 export const ReviewSyncPage: React.FC<ReviewPanelProps> = ({
   currentDrill,
-  computedPracticeStatus,
   statusOverride,
   isSyncing,
   syncState = INITIAL_SYNC_STATE,
@@ -228,18 +223,9 @@ export const ReviewSyncPage: React.FC<ReviewPanelProps> = ({
     return () => window.clearTimeout(timer);
   }, [highlightedId]);
 
-  const effectiveStatusOverride: PracticeStatusOverride = useMemo(() => {
-    if (statusOverride !== undefined) return statusOverride;
-    const total = currentDrill.problems.length;
-    const score = currentDrill.problems.reduce((acc, p) => acc + (p.state?.score || 0), 0);
-    const autoStatus: "Graded" | "Needs Retry" =
-      total > 0 && score / total >= 0.8 ? "Graded" : "Needs Retry";
-    return computedPracticeStatus !== autoStatus ? computedPracticeStatus : null;
-  }, [computedPracticeStatus, currentDrill.problems, statusOverride]);
-
   const preview = useMemo(
-    () => buildSyncPreview(currentDrill, effectiveStatusOverride, scheduleCache),
-    [currentDrill, effectiveStatusOverride, scheduleCache]
+    () => buildSyncPreview(currentDrill, statusOverride, scheduleCache),
+    [currentDrill, statusOverride, scheduleCache]
   );
 
   const persistedSyncedAt = currentDrill.sessionSummary?.syncedToNotionAt || null;

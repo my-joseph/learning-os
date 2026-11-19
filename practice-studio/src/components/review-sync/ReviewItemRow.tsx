@@ -455,7 +455,7 @@ export const ReviewItemRow: React.FC<ReviewItemRowProps> = ({
                       />
                     )}
 
-                    {/* Revisit note ("Next time I will…", local only, not in Notion sync payload) */}
+                    {/* Revisit note stays in learner progress; the Notion drill page does not display it. */}
                     <div className="flex items-center gap-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3 py-2 transition-colors focus-within:border-indigo-600 dark:focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-600/20 dark:focus-within:ring-indigo-400/25">
                       <RotateCcw
                         className="w-3.5 h-3.5 text-zinc-500 dark:text-zinc-400 shrink-0"

@@ -36,6 +36,15 @@ export interface SyncPreview {
 
 export const NO_DIVERGED_STEPS_SUMMARY = "No diverged steps logged.";
 
+/** Read the learner-owned manual status choice saved alongside the session summary. */
+export function getPersistedStatusOverride(
+  summary: Partial<SessionSummary> | null | undefined
+): PracticeStatusOverride {
+  return summary?.statusOverride === "Graded" || summary?.statusOverride === "Needs Retry"
+    ? summary.statusOverride
+    : null;
+}
+
 /** Compute live score, accuracy, skipped count, and target practice status for a drill. */
 export function computeSessionMetrics(
   currentDrill: DrillDocument | null,
@@ -123,6 +132,7 @@ export function buildSessionSummary(
     divergedStepsSummary:
       divergedList.length > 0 ? divergedList.join(" | ") : NO_DIVERGED_STEPS_SUMMARY,
     attemptDate: options?.attemptDate ?? new Date().toISOString().slice(0, 10),
+    ...(statusOverride ? { statusOverride } : {}),
   };
 }
 

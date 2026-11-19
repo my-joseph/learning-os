@@ -33,6 +33,21 @@ assert(st.attempts.length === 1 && st.setupRevealedBeforeAnswer === true, "state
 assert(merged.problems[1].state === undefined, "untouched problem stays without state");
 assert(readProgress("../../etc/passwd") === null, "unsafe ids rejected");
 
+const overrideDoc = {
+  ...content(),
+  drillId: "DRL-MTH-X-OVERRIDE",
+  sessionSummary: { score: 1, statusOverride: "Graded" },
+};
+writeProgress(overrideDoc);
+const restoredOverride = applyProgress(
+  { ...content(), sessionSummary: {} as Record<string, unknown> },
+  readProgress("DRL-MTH-X-OVERRIDE"),
+);
+assert(
+  restoredOverride.sessionSummary.statusOverride === "Graded",
+  "manual status override is persisted in sessionSummary",
+);
+
 let threw = false;
 try {
   writeProgress({ ...content(), drillId: "../x" });

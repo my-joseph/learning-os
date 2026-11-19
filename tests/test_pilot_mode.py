@@ -147,12 +147,15 @@ def test_pilot_skips_notion_learner_writes_but_allows_pristine(monkeypatch, tmp_
     assert res.get("pilotSkipped") is True
     assert (tmp_path / "pilot" / "progress" / "DRL-PRG-TEST-01.json").is_file()
     assert not (tmp_path / "progress").exists()
-    out = capsys.readouterr().out
-    assert "[PILOT] skipped Notion write:" in out
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert "[PILOT] skipped Notion write:" in captured.err
 
     # 2. Direct unit review update -> skipped
     assert drill_sync.update_unit_reviews(["PRG-T00-C02-U01"], "2026-11-16", {}, "tok") == {}
-    assert "[PILOT] skipped Notion write:" in capsys.readouterr().out
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert "[PILOT] skipped Notion write:" in captured.err
 
     # 3. Lab result sync -> skipped
     lab_cfg = {"labId": "LAB-PRG-TEST-01", "title": "Lab"}

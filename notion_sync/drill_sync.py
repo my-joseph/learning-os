@@ -130,11 +130,37 @@ def unit_relation_ids(drill_doc: dict, unit_code: str, id_map: dict) -> list[str
     return [id_map[u]["id"] for u in covered_units(drill_doc, unit_code, id_map)]
 
 
+def _block_text(block: dict) -> str:
+    """Return plain text from a Notion block's rich text, for sync-log deduplication."""
+    body = block.get(block.get("type", ""), {})
+    rich_text = body.get("rich_text", []) if isinstance(body, dict) else []
+    return "".join(item.get("plain_text") or item.get("text", {}).get("content", "") for item in rich_text)
+
+
+def _has_mistake_log_entry(blocks: list[dict], attempt_date: str, drill_id: str, id_map: dict) -> bool:
+    """Match a date plus the drill's native page mention in an existing unit log line."""
+    drill_entry = id_map.get(drill_id)
+    drill_page_id = drill_entry.get("id") if isinstance(drill_entry, dict) else drill_entry
+    for block in blocks:
+        body = block.get(block.get("type", ""), {})
+        rich_text = body.get("rich_text", []) if isinstance(body, dict) else []
+        if f"[{attempt_date}]" not in _block_text(block):
+            continue
+        if any(
+            item.get("type") == "mention"
+            and item.get("mention", {}).get("type") == "page"
+            and item.get("mention", {}).get("page", {}).get("id") == drill_page_id
+            for item in rich_text
+        ):
+            return True
+    return False
+
+
 def update_unit_reviews(units: list[str], attempt_date: str, id_map: dict, token: str) -> dict:
     """After practice, write evidence-based Mastery (0-4), Last Reviewed and Next Review to each unit page
     that has those properties (rules/01 §7-8). Returns {unit: update} for what was written."""
     if pilot_mode():
-        print(f"[PILOT] skipped Notion write: unit review update ({', '.join(units)})")
+        print(f"[PILOT] skipped Notion write: unit review update ({', '.join(units)})", file=sys.stderr)
         return {}
     from scripts.weak_spots import review_update
 
@@ -396,7 +422,7 @@ def _sync_drill_to_notion_inner(drill_doc: dict, path: str, *, content_only: boo
             reviews = {}
     if attempt_date and parent_page_id and not content_only:
         if pilot_mode():
-            print(f"[PILOT] skipped Notion write: unit Mistake Log append ({unit_code})")
+            print(f"[PILOT] skipped Notion write: unit Mistake Log append ({unit_code})", file=sys.stderr)
         else:
             pct = summary.get("accuracyPct", 0)
             mistakes_str = ", ".join(mistake_cats) if mistake_cats else "None"
@@ -410,8 +436,10 @@ def _sync_drill_to_notion_inner(drill_doc: dict, path: str, *, content_only: boo
                 # or at the end of the page if it has no such section.
                 from notion_sync.unit_page import insert_after, section_end
 
-                anchor = section_end(get_all_blocks(parent_page_id, token), "Mistake Log")
-                insert_after(parent_page_id, anchor, [bullet(log_line, id_map)], token)
+                unit_blocks = get_all_blocks(parent_page_id, token)
+                anchor = section_end(unit_blocks, "Mistake Log")
+                if not _has_mistake_log_entry(unit_blocks, attempt_date, drill_id, id_map):
+                    insert_after(parent_page_id, anchor, [bullet(log_line, id_map)], token)
             except Exception:
                 pass
 
@@ -450,7 +478,7 @@ def sync_drill_to_notion(drill_doc: dict, *, content_only: bool = False) -> dict
             "dryRun": True,
         }
     if pilot_mode() and has_practice(drill_doc):
-        print(f"[PILOT] skipped Notion write: drill result sync ({drill_doc.get('drillId')})")
+        print(f"[PILOT] skipped Notion write: drill result sync ({drill_doc.get('drillId')})", file=sys.stderr)
         return {
             "ok": True,
             "localFilePath": path,

@@ -6,7 +6,7 @@ import { POST as syncNotionPost } from "../src/app/api/sync-notion/route";
 import { ReviewPanel } from "../src/components/shell/ReviewPanel";
 import { executeNotionSync } from "../src/hooks/useProgressSync";
 import { setNotionDrillSyncSpawnerForTests } from "../src/lib/notionSyncRunner";
-import { buildSessionSummary, buildSyncPayload, summaryFingerprint } from "../src/lib/sessionSummary";
+import { buildSessionSummary, buildSyncPayload, getPersistedStatusOverride, summaryFingerprint } from "../src/lib/sessionSummary";
 import {
   formatChoiceAnswerLabel,
   findNextDrill,
@@ -73,15 +73,10 @@ const mathDrill: DrillDocument = {
 };
 
 function render(drill: DrillDocument, overrides: Record<string, unknown> = {}): string {
-  const liveScore = drill.problems.reduce((sum, problem) => sum + (problem.state?.score || 0), 0);
-  const maxScore = drill.problems.length;
   return renderToStaticMarkup(
     <ReviewPanel
       currentDrill={drill}
-      liveScore={liveScore}
-      maxScore={maxScore}
-      accuracyPct={maxScore ? Math.round((liveScore / maxScore) * 1000) / 10 : 0}
-      computedPracticeStatus={maxScore > 0 && liveScore / maxScore >= 0.8 ? "Graded" : "Needs Retry"}
+      statusOverride={null}
       isSyncing={false}
       onStatusOverrideChange={noop}
       onBackToQuiz={noop}
@@ -246,7 +241,23 @@ assert.match(idleHtml, /Not tried yet/);
 assert.doesNotMatch(idleHtml, /Verified answer:.*14 \+ 8i/, "unanswered row must not reveal the verified answer");
 assert.doesNotMatch(idleHtml, /aria-label="Set Q3 score to/);
 assert.doesNotMatch(idleHtml, /Note for Q3/);
-assert.doesNotMatch(JSON.stringify(buildSyncPayload(mathDrill, null, { attemptDate: "2026-11-19" })), /revisitNote/);
+const revisitNoteDrill = {
+  ...mathDrill,
+  problems: mathDrill.problems.map((problem, index) =>
+    index === 0
+      ? { ...problem, state: { ...problem.state!, revisitNote: "Check the final product." } }
+      : problem
+  ),
+};
+const revisitPayload = buildSyncPayload(revisitNoteDrill, null, { attemptDate: "2026-11-19" });
+assert.equal(revisitPayload.problems[0].state?.revisitNote, "Check the final product.");
+assert.equal("revisitNote" in revisitPayload.sessionSummary, false);
+
+const overriddenSummary = buildSessionSummary(mathDrill, "Graded", { attemptDate: "2026-11-19" });
+assert.equal(overriddenSummary.statusOverride, "Graded");
+assert.equal(getPersistedStatusOverride(overriddenSummary), "Graded");
+assert.equal(getPersistedStatusOverride({ ...overriddenSummary, statusOverride: "Needs Retry" }), "Needs Retry");
+assert.equal(getPersistedStatusOverride({ ...overriddenSummary, statusOverride: null }), null);
 
 const untouched = { ...mathDrill, problems: [makeProblem("Q01"), makeProblem("Q02")] };
 const untouchedHtml = render(untouched);
