@@ -26,7 +26,7 @@ import { DrillNotFoundCard } from "@/components/shell/DrillNotFoundCard";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { StatusMessage } from "@/hooks/types";
 import { useTheme } from "@/hooks/useTheme";
-import { useProgressSync, computeSessionMetrics } from "@/hooks/useProgressSync";
+import { useProgressSync } from "@/hooks/useProgressSync";
 import { useDrill } from "@/hooks/useDrill";
 import { useDrillList } from "@/hooks/useDrillList";
 import {
@@ -40,6 +40,7 @@ import { readLastDrillId, writeLastDrillId } from "@/lib/lastDrillStorage";
 import { getDrillTotalMs, getProblemDisplayMs } from "@/lib/telemetryTimer";
 import { plainTitle } from "@/lib/titleText";
 import { resetAnswerForReviewRetry } from "@/lib/applyCheckResult";
+import { getPersistedStatusOverride } from "@/lib/sessionSummary";
 
 interface StudioClientProps {
   workspace: Workspace;
@@ -89,7 +90,7 @@ export const StudioClient: React.FC<StudioClientProps> = ({
 
   const handleDrillLoaded = useCallback(
     (doc: DrillDocument) => {
-      setStatusOverride(null);
+      setStatusOverride(getPersistedStatusOverride(doc.sessionSummary));
       resetSyncState();
       writeLastDrillId(doc.drillId, workspace);
       if (workspace === "math") {
@@ -208,18 +209,22 @@ export const StudioClient: React.FC<StudioClientProps> = ({
     }
   }, [qParam, currentDrill, drillId, setCurrentProblemIndex]);
 
-  const {
-    liveScore,
-    maxScore,
-    accuracyPct,
-    computedPracticeStatus,
-  } = computeSessionMetrics(currentDrill, statusOverride);
-
   const handleConfirmSyncToNotion = () =>
     confirmSyncToNotion(currentDrill, {
       onDrillUpdated: setCurrentDrill,
       onSynced: () => loadDrillsList(),
     });
+
+  const handleStatusOverrideChange = (override: "Graded" | "Needs Retry") => {
+    setStatusOverride(override);
+    if (!currentDrill) return;
+    const updated = {
+      ...currentDrill,
+      sessionSummary: { ...currentDrill.sessionSummary, statusOverride: override },
+    };
+    setCurrentDrill(updated);
+    triggerAutoSave(updated);
+  };
 
   const handleTrySimilarQuestion = (probId: string, idx: number) => {
     setPendingSimilarProbId(probId);
@@ -462,16 +467,12 @@ export const StudioClient: React.FC<StudioClientProps> = ({
         >
           <ReviewPanel
             currentDrill={currentDrill}
-            liveScore={liveScore}
-            maxScore={maxScore}
-            accuracyPct={accuracyPct}
-            computedPracticeStatus={computedPracticeStatus}
             statusOverride={statusOverride}
             isSyncing={isSyncing}
             syncState={syncState}
             totalDurationMs={getDrillTotalMs(currentDrill.problems, timerState, timerNow)}
             workspaceDrills={workspaceDrills}
-            onStatusOverrideChange={setStatusOverride}
+            onStatusOverrideChange={handleStatusOverrideChange}
             onBackToQuiz={() => setViewMode("quiz")}
             onConfirmSync={handleConfirmSyncToNotion}
             onSelectQuestion={handleSelectQuestion}

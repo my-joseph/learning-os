@@ -394,6 +394,7 @@ export interface SessionSummary {
   mistakeCategories: string[];
   divergedStepsSummary: string;
   attemptDate: string | null;
+  statusOverride?: "Graded" | "Needs Retry" | null;
   syncedToNotionAt?: string | null;
   notionPageId?: string | null;
   syncedFingerprint?: string | null;
