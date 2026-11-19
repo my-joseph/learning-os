@@ -213,7 +213,7 @@ const sampleExample: WorkedExampleVariant = {
     }
   );
 
-  // [F] Wrong again on Q2 AFTER viewing worked example -> own "Show steps" added to result card!
+  // [F] The assist row remains the single entry point for the learner's own steps.
   assert.deepEqual(
     getOriginalLadderActions({
       hasVariants: true,
@@ -251,7 +251,7 @@ const sampleExample: WorkedExampleVariant = {
     }
   );
 
-  // [C] Similar correct -> Back to Question N + quiet Show steps, NEVER Another similar question
+  // [C] Similar correct -> Back to Question N + optional "Another one", with no duplicate Show steps.
   assert.deepEqual(
     getSimilarLadderActions({
       hasAttemptOnCurrent: true,
@@ -262,9 +262,9 @@ const sampleExample: WorkedExampleVariant = {
     }),
     {
       showBackToOriginal: true,
-      showStepsLink: true,
+      showStepsLink: false,
       showSeeExample: false,
-      showAnotherSimilar: false,
+      showAnotherSimilar: true,
     }
   );
 
@@ -370,7 +370,7 @@ const sampleExample: WorkedExampleVariant = {
   assert.ok(htmlResume.includes("Resume similar question"));
   assert.ok(!htmlResume.includes("Try a similar question"));
 
-  // [F] Wrong again AFTER viewing worked example -> result card offers own "Show steps"
+  // [F] Wrong again AFTER viewing worked example -> the assist row is the only "Show steps" entry.
   const htmlAfterExWrong = renderQ2(
     makeProblem({
       state: {
@@ -388,12 +388,9 @@ const sampleExample: WorkedExampleVariant = {
       },
     })
   );
-  // Count occurrences of "Show steps": one in result card, one in assist row (>= 2)
+  // Count occurrences of "Show steps": one in the assist row.
   const showStepsMatches = htmlAfterExWrong.match(/Show steps/g) || [];
-  assert.ok(
-    showStepsMatches.length >= 2,
-    `Expected Show steps in result card + assist row after example + wrong, got ${showStepsMatches.length}`
-  );
+  assert.equal(showStepsMatches.length, 1);
 }
 
 // ---------------------------------------------------------------------------
@@ -448,12 +445,12 @@ const sampleExample: WorkedExampleVariant = {
   assert.ok(similarHtml.includes('aria-label="Check answer"'), "Similar question must offer embedded = check button");
   assert.ok(similarHtml.includes("Show equation set-up"), "Similar question must offer equation set-up");
   assert.ok(similarHtml.includes("Hint"), "Similar question must offer Hint");
-  assert.ok(similarHtml.includes("Show steps"), "Similar question must offer Show steps");
+  assert.equal((similarHtml.match(/Show steps/g) || []).length, 1, "Similar question has one Show steps action");
   assert.ok(similarHtml.includes("00:05"), "Similar question must offer its own timer");
   assert.ok(!similarHtml.includes("Self-score"), "Similar question must NOT render Self-score");
   assert.ok(!similarHtml.includes("Diverged here"), "Similar question must NOT render Diverged here");
 
-  // [C] AnswerResultCard in similar-correct state: "Correct · now try Question 2" + "Back to Question 2" + quiet "Show steps"
+  // [C] Correct similar answer offers Back and Another one without a duplicate Show steps action.
   const similarCorrectCard = renderToStaticMarkup(
     <AnswerResultCard
       lastCheck={{ verdict: "correct", message: "Correct.", components: [], diagnostics: [] }}
@@ -467,12 +464,12 @@ const sampleExample: WorkedExampleVariant = {
       titleOverride="Correct · now try Question 2"
       backLabel="Back to Question 2"
       onBack={noop}
-      secondaryActions={[{ label: "Show steps", onClick: noop }]}
+      secondaryActions={[{ label: "Another one", onClick: noop }]}
     />
   );
   assert.ok(similarCorrectCard.includes("Correct · now try Question 2"));
   assert.ok(similarCorrectCard.includes("Back to Question 2"));
-  assert.ok(similarCorrectCard.includes("Show steps"));
+  assert.ok(similarCorrectCard.includes("Another one"));
   assert.ok(!similarCorrectCard.includes("Another similar question"));
   assert.ok(similarCorrectCard.includes("min-h-[44px]"), "Mobile tap targets must be >= 44px");
 }
@@ -490,6 +487,7 @@ const sampleExample: WorkedExampleVariant = {
       initialRevealedCount={0}
     />
   );
+  assert.ok(ex0Html.includes(`Step 1 of ${sampleExample.steps.length}`));
   assert.ok(ex0Html.includes("Question 2"));
   assert.ok(ex0Html.includes("Worked example"));
   assert.ok(ex0Html.includes("A similar question, not yours"));

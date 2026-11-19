@@ -215,7 +215,7 @@ export function buildResultCardModel(params: {
   const title = getResultCardTitle(lastCheck, tone);
   const body = formatDiagnosticBody(lastCheck, problem, state, mistakeTags);
   const attemptCount = getSubstantiveAttemptCount(state);
-  const attemptNumber = attemptCount > 1 ? attemptCount : null;
+  const attemptNumber = attemptCount > 0 ? attemptCount : null;
 
   let actionKind: ResultCardActionKind | null = null;
   if (tone === "correct") {

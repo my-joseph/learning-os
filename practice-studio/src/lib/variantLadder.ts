@@ -106,7 +106,6 @@ export function getSimilarLadderActions(
     isCurrentCorrect,
     clusterWrongAttempts,
     remainingCount,
-    stepsOpen,
   } = input;
 
   if (!hasAttemptOnCurrent) {
@@ -121,9 +120,9 @@ export function getSimilarLadderActions(
   if (isCurrentCorrect) {
     return {
       showBackToOriginal: true,
-      showStepsLink: !stepsOpen,
+      showStepsLink: false,
       showSeeExample: false,
-      showAnotherSimilar: false,
+      showAnotherSimilar: remainingCount > 0,
     };
   }
 

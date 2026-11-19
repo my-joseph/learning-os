@@ -102,16 +102,23 @@ export const AnswerResultCard: React.FC<AnswerResultCardProps> = ({
     : null;
 
   const primaryBtnRef = useRef<HTMLButtonElement | null>(null);
+  const cleanupFrame = useRef<number | null>(null);
   const resultKey = model?.resultKey ?? "";
   const shouldAutoFocusPrimary =
     Boolean(model) && (autoFocusPrimaryAction || model?.actionKind === "back");
 
   useEffect(() => {
     if (!shouldAutoFocusPrimary || !resultKey) return;
-    const raf = requestAnimationFrame(() => {
-      primaryBtnRef.current?.focus();
+    const firstFrame = requestAnimationFrame(() => {
+      const secondFrame = requestAnimationFrame(() => {
+        primaryBtnRef.current?.focus({ preventScroll: true });
+      });
+      cleanupFrame.current = secondFrame;
     });
-    return () => cancelAnimationFrame(raf);
+    return () => {
+      cancelAnimationFrame(firstFrame);
+      if (cleanupFrame.current !== null) cancelAnimationFrame(cleanupFrame.current);
+    };
   }, [shouldAutoFocusPrimary, resultKey]);
 
   const actionButtonClass =

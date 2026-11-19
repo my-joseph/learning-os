@@ -250,13 +250,6 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
       trailingChevron: true,
     });
   }
-  if (originalLadder.showOwnSteps) {
-    originalSecondaryActions.push({
-      label: "Show steps",
-      onClick: () => originalItemRef.current?.openSteps(),
-    });
-  }
-
   const isLastQuestion =
     typeof totalQuestions === "number" && totalQuestions > 0 && index === totalQuestions - 1;
 
@@ -303,12 +296,6 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
   });
 
   const similarSecondaryActions: ResultCardSecondaryAction[] = [];
-  if (similarLadder.showStepsLink) {
-    similarSecondaryActions.push({
-      label: "Show steps",
-      onClick: () => similarItemRef.current?.openSteps(),
-    });
-  }
   if (similarLadder.showSeeExample) {
     similarSecondaryActions.push({
       label: "See a worked example",
@@ -320,7 +307,7 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
   }
   if (similarLadder.showAnotherSimilar) {
     similarSecondaryActions.push({
-      label: "Another similar question",
+      label: similarIsCorrect ? "Another one" : "Another similar question",
       onClick: () => void loadAnotherSimilar(),
       loading: loadingAction === "try",
       disabled: loadingAction !== null,
@@ -433,7 +420,17 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
             onMarkDivergedStep={onMarkDivergedStep}
             onReset={() => {
               resetAllVariantUi();
-              onResetProblem();
+              if (drillId) {
+                void fetch("/api/variant", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ drillId, qid: problem.id, action: "reset-question" }),
+                }).then((res) => {
+                  if (res.ok) onResetProblem();
+                });
+              } else {
+                onResetProblem();
+              }
             }}
             onHintRevealed={onHintRevealed}
             onSetupRevealed={onSetupRevealed}
