@@ -66,9 +66,9 @@ function statusDotClass(status: PickerStatus): string {
     case "Graded":
       return "bg-emerald-500";
     case "In Progress":
-      return "bg-blue-500";
+      return "bg-indigo-600 dark:bg-indigo-400";
     case "Needs Retry":
-      return "bg-orange-500";
+      return "bg-rose-600 dark:bg-rose-400";
     default:
       return "bg-zinc-300 dark:bg-zinc-600";
   }
