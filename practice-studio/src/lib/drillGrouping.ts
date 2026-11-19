@@ -2,6 +2,7 @@ import type { DrillFilter } from "@/hooks/types";
 import type { LabListItem } from "@/lib/labModel";
 import type { DrillDocument, DrillListItem } from "@/types/drill";
 import { workspaceOfListItem, type Workspace } from "./routes";
+import { plainTitle } from "./titleText";
 
 export type PickerStatus = "Ready" | "In Progress" | "Graded" | "Needs Retry";
 
@@ -116,8 +117,7 @@ export function formatDrillSetLabel(drillId: string): string {
 
 /** Strip inline markdown backticks and trim whitespace from curriculum titles. */
 export function cleanCurriculumTitle(title: string | null | undefined): string {
-  if (typeof title !== "string") return "";
-  return title.replace(/`/g, "").trim();
+  return plainTitle(title);
 }
 
 /**
@@ -185,7 +185,7 @@ export function groupDrillsByUnit(
     const sorted = sortDrillsBySetNumber(list);
     const unitCode = sorted[0].unitCode.trim() || key;
     const unitTitle =
-      sorted.find((d) => d.unitTitle && d.unitTitle.trim())?.unitTitle.trim() ||
+      plainTitle(sorted.find((d) => plainTitle(d.unitTitle))?.unitTitle) ||
       unitCode;
 
     entries.push({
@@ -1238,7 +1238,7 @@ export function buildGenerateUnitOptions(
     if (!code) continue;
     const ws = workspaceOfListItem(d) ?? unitWorkspace(code, d.subject);
     if (ws !== workspace) continue;
-    const title = (d.unitTitle || "").trim();
+    const title = plainTitle(d.unitTitle);
     const prev = byCode.get(code);
     if (!prev || (prev === code && title && title !== code)) {
       byCode.set(code, title || code);
@@ -1249,7 +1249,7 @@ export function buildGenerateUnitOptions(
   if (currentCode) {
     const currentWs = unitWorkspace(currentCode, currentDrill?.subject);
     if (currentWs === null || currentWs === workspace) {
-      const currentTitle = (currentDrill?.unitTitle || "").trim();
+      const currentTitle = plainTitle(currentDrill?.unitTitle);
       const prev = byCode.get(currentCode);
       if (!prev || (prev === currentCode && currentTitle && currentTitle !== currentCode)) {
         byCode.set(currentCode, currentTitle || currentCode);

@@ -38,6 +38,7 @@ import {
   type VisibleTreeRow,
 } from "@/lib/drillGrouping";
 import { isLabId, subjectOf, type Workspace } from "@/lib/routes";
+import { plainTitle } from "@/lib/titleText";
 import { DrillFilter } from "@/hooks/types";
 
 type PickerTab = "drills" | "labs";
@@ -583,7 +584,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
               : "text-zinc-700 dark:text-zinc-300"
           }`}
         >
-          {label}
+          {plainTitle(label)}
         </span>
         <HoverRowCode code={hoverCode} />
       </button>
@@ -603,7 +604,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
       >
         <span className="text-xs sm:text-sm font-medium text-zinc-900 dark:text-zinc-100 truncate max-w-[220px] sm:max-w-[300px] md:max-w-[360px]">
           {currentDrill
-            ? currentDrill.unitTitle || currentDrill.unitCode
+            ? plainTitle(currentDrill.unitTitle) || currentDrill.unitCode
             : "Select practice drill"}
         </span>
         <ChevronDown
@@ -847,8 +848,8 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                   />
                   <span className="text-xs font-medium text-zinc-900 dark:text-zinc-100 truncate min-w-0 flex-1">
                     {currentPinnedItem.setLabel
-                      ? `${currentPinnedItem.title} · ${currentPinnedItem.setLabel}`
-                      : currentPinnedItem.title}
+                      ? `${plainTitle(currentPinnedItem.title)} · ${currentPinnedItem.setLabel}`
+                      : plainTitle(currentPinnedItem.title)}
                   </span>
                   <HoverRowCode code={extractLeafHoverCode(currentPinnedItem)} />
                 </button>
@@ -925,7 +926,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                             aria-hidden="true"
                           />
                           <span className="text-xs font-medium text-zinc-900 dark:text-zinc-100 truncate min-w-0 flex-1">
-                            {topic.topicTitle}
+                            {plainTitle(topic.topicTitle)}
                           </span>
                           {showTopicCode && <HoverRowCode code={topic.topicCode} />}
                         </button>
@@ -973,7 +974,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                                       aria-hidden="true"
                                     />
                                     <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300 truncate min-w-0 flex-1">
-                                      {chapter.chapterTitle}
+                                      {plainTitle(chapter.chapterTitle)}
                                     </span>
                                     {showChapterCode && (
                                       <HoverRowCode code={chapterShortCode} />
@@ -1046,7 +1047,7 @@ export const DrillSwitcher: React.FC<DrillSwitcherProps> = ({
                                                 aria-hidden="true"
                                               />
                                               <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300 truncate min-w-0 flex-1">
-                                                {entry.unitTitle}
+                                                {plainTitle(entry.unitTitle)}
                                               </span>
                                               <HoverRowCode code={unitShortCode} />
                                               <CountPill count={entry.items.length} />

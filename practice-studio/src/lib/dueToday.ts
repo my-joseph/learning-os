@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import { getDrillsDataDir, getProgressDir, getWorkspaceRoot, loadIdMapTitles } from "@/lib/paths";
 import { drillHref } from "@/lib/routes";
+import { plainTitle } from "@/lib/titleText";
 
 export interface ReviewScheduleEntry {
   mastery?: number | null;
@@ -181,8 +182,8 @@ export function getDueTodayUnits(options?: {
     const drillId = latestDrills.get(unitCode) ?? null;
     const href = drillId ? drillHref(drillId) : null;
     const title =
-      (typeof entry.title === "string" && entry.title.trim()) ||
-      idMapTitles.get(unitCode) ||
+      plainTitle(typeof entry.title === "string" ? entry.title : "") ||
+      plainTitle(idMapTitles.get(unitCode)) ||
       unitCode;
 
     units.push({

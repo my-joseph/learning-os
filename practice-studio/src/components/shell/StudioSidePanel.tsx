@@ -4,6 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { Workspace } from "@/lib/routes";
+import { plainTitle } from "@/lib/titleText";
 import type { DueTodayUnit, WeakSpotUnit } from "@/lib/dueToday";
 import { FormattedText } from "@/components/FormattedText";
 
@@ -116,7 +117,7 @@ export const StudioSidePanel: React.FC<StudioSidePanelProps> = ({
                 <>
                   <div className="min-w-0 flex-1 space-y-1">
                     <div className="text-xs font-medium text-zinc-800 dark:text-zinc-200 leading-snug line-clamp-2">
-                      {unit.title}
+                      {plainTitle(unit.title)}
                     </div>
                     <div className="flex items-center gap-2">
                       <MasteryDots mastery={unit.mastery} />
@@ -211,7 +212,7 @@ export const StudioSidePanel: React.FC<StudioSidePanelProps> = ({
                 )}
                 {showUnitHeading && spot.unitTitle && (
                   <p className="text-[11px] text-zinc-500 dark:text-zinc-400 truncate">
-                    {spot.unitTitle}
+                    {plainTitle(spot.unitTitle)}
                   </p>
                 )}
               </li>

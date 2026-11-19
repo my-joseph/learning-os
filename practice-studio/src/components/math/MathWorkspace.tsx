@@ -36,6 +36,7 @@ import {
 import { isTouchPrimaryDevice } from "@/lib/mathPalette";
 import { hasCheckpointHint } from "@/lib/studioRules";
 import { hasSubstantiveAttempt } from "@/lib/reviewGuard";
+import { plainTitle } from "@/lib/titleText";
 import {
   getChoiceResultStatus,
   isChoiceInteractionLocked,
@@ -369,11 +370,13 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
     </button>
   );
 
+  const displayTitle = plainTitle(drillTitle);
+
   return (
     <div className="mx-auto w-full max-w-[720px] space-y-4">
-      {drillTitle && (
+      {displayTitle && (
         <h1 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight px-0.5">
-          {drillTitle}
+          {displayTitle}
         </h1>
       )}
 

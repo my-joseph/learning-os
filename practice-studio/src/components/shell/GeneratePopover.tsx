@@ -7,6 +7,7 @@ import { Plus, RefreshCw, X } from "lucide-react";
 import { DrillDocument, DrillListItem } from "@/types/drill";
 import { StatusMessage } from "@/hooks/types";
 import { Workspace } from "@/lib/routes";
+import { plainTitle } from "@/lib/titleText";
 import {
   buildGenerateUnitOptions,
   groupGenerateUnitOptions,
@@ -144,9 +145,10 @@ export const GeneratePopover: React.FC<GeneratePopoverProps> = ({
     const engineLabel = isPrg ? "Node.js" : "SymPy";
     const itemNoun = isPrg ? "problems" : "questions";
     const selectedOption = unitOptions.find((u) => u.unitCode === cfgUnit);
+    const selectedTitle = plainTitle(selectedOption?.unitTitle);
     const unitLabel =
-      selectedOption?.unitTitle && selectedOption.unitTitle !== cfgUnit
-        ? selectedOption.unitTitle
+      selectedTitle && selectedTitle !== cfgUnit
+        ? selectedTitle
         : cfgUnit;
     onStatusChange({
       text: `Generating and verifying ${cfgCount} ${itemNoun} with ${engineLabel}...`,
@@ -240,13 +242,16 @@ export const GeneratePopover: React.FC<GeneratePopoverProps> = ({
                 ) : (
                   unitGroups.map((group) => (
                     <optgroup key={group.groupCode} label={group.groupCode}>
-                      {group.items.map((u) => (
-                        <option key={u.unitCode} value={u.unitCode}>
-                          {u.unitTitle && u.unitTitle !== u.unitCode
-                            ? `${u.unitCode} · ${u.unitTitle}`
-                            : u.unitCode}
-                        </option>
-                      ))}
+                      {group.items.map((u) => {
+                        const cleanTitle = plainTitle(u.unitTitle);
+                        return (
+                          <option key={u.unitCode} value={u.unitCode}>
+                            {cleanTitle && cleanTitle !== u.unitCode
+                              ? `${u.unitCode} · ${cleanTitle}`
+                              : u.unitCode}
+                          </option>
+                        );
+                      })}
                     </optgroup>
                   ))
                 )}

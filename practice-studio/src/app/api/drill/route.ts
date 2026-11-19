@@ -4,6 +4,7 @@ import path from "path";
 import { getDrillsDataDir, getWorkspaceRoot, isSafeId } from "@/lib/paths";
 import { applyProgress, readProgress } from "@/lib/progress";
 import { redactDrill } from "@/lib/redact";
+import { plainTitle } from "@/lib/titleText";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -36,13 +37,15 @@ export async function GET(req: NextRequest) {
           const idMapPath = path.join(rootDir, "id_map.json");
           if (fs.existsSync(idMapPath)) {
             const idMap = JSON.parse(fs.readFileSync(idMapPath, "utf-8"));
-            doc.unitTitle = idMap[doc.unitCode]?.title || doc.unitCode;
+            doc.unitTitle = plainTitle(idMap[doc.unitCode]?.title) || doc.unitCode;
           } else {
             doc.unitTitle = doc.unitCode;
           }
         } catch {
           doc.unitTitle = doc.unitCode;
         }
+      } else if (doc.unitTitle) {
+        doc.unitTitle = plainTitle(doc.unitTitle) || doc.unitCode;
       }
 
       // Compute local IDE workspace paths at runtime from repo root (never baked into drill JSON)

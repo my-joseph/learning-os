@@ -13,6 +13,7 @@ import {
 import { DrillDocument, Problem } from "@/types/drill";
 import { canRevealVerifiedAnswer, hasSubstantiveAttempt } from "@/lib/reviewGuard";
 import { isLabId } from "@/lib/routes";
+import { plainTitle } from "@/lib/titleText";
 import {
   OUTCOME_META,
   classifyReviewOutcome,
@@ -109,7 +110,7 @@ export const ReviewPanel: React.FC<ReviewPanelProps> = ({
 
   const isLab = isLabId(currentDrill.drillId);
   const isCode = currentDrill.subject === "PRG" && !isLab;
-  const drillTitle = currentDrill.unitTitle || currentDrill.unitCode;
+  const drillTitle = plainTitle(currentDrill.unitTitle) || currentDrill.unitCode;
   const mistakeTags = currentDrill.mistakeTags || [];
 
   const backLabel = isLab

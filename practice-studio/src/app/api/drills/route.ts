@@ -4,6 +4,7 @@ import path from "path";
 import { DrillListItem } from "@/types/drill";
 import { getDrillsDataDir, loadIdMapTitles } from "@/lib/paths";
 import { cleanCurriculumTitle, parseCurriculumCodes } from "@/lib/drillGrouping";
+import { plainTitle } from "@/lib/titleText";
 import { applyProgress, readProgress } from "@/lib/progress";
 
 export const dynamic = "force-dynamic";
@@ -68,17 +69,18 @@ export async function GET() {
           doc.topicCode,
           doc.chapterCode
         );
+        const unitTitle = plainTitle(doc.unitTitle) || doc.unitCode;
         const topicTitle =
           cleanCurriculumTitle(idMapTitles.get(topicCode)) || topicCode;
         const chapterTitle =
           cleanCurriculumTitle(idMapTitles.get(chapterCode)) ||
-          (chapterCode === doc.unitCode ? doc.unitTitle || chapterCode : chapterCode);
+          (chapterCode === doc.unitCode ? unitTitle || chapterCode : chapterCode);
 
         items.push({
           drillId: doc.drillId,
           subject,
           unitCode: doc.unitCode,
-          unitTitle: doc.unitTitle || doc.unitCode,
+          unitTitle,
           chapterCode,
           chapterTitle,
           topicCode,

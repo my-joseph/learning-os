@@ -58,6 +58,7 @@ import {
   ReviewStatus,
   sanitizeCodeCheckError,
 } from "@/lib/codeStatus";
+import { plainTitle } from "@/lib/titleText";
 
 export interface CodeDashboardProps {
   problem: Problem;
@@ -481,11 +482,13 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
     Boolean(problem.prompt) &&
     problem.prompt.includes(problem.codeSnippet!.trim().slice(0, 32));
 
+  const displayTitle = plainTitle(drillTitle);
+
   return (
     <div className="mx-auto w-full max-w-[720px] space-y-4">
-      {drillTitle && (
+      {displayTitle && (
         <h1 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight px-0.5">
-          {drillTitle}
+          {displayTitle}
         </h1>
       )}
 
