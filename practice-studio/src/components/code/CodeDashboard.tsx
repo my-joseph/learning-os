@@ -42,6 +42,7 @@ import {
   canShowReferenceSolution,
   hasSubstantiveAttempt,
 } from "@/lib/reviewGuard";
+import { statusTone } from "@/lib/statusTone";
 import {
   getPrgScore,
   getReviewRequest,
@@ -109,12 +110,12 @@ const getSafePlaceholder = (hint?: string, problem?: Problem): string => {
 
 function statusSymbolColor(status: LayerCheckStatus | ReviewStatus): string {
   if (status === "pass") {
-    return "text-emerald-700 dark:text-emerald-400 font-semibold";
+    return `${statusTone.correct.text} font-semibold`;
   }
   if (status === "fail" || status === "revise") {
-    return "text-rose-600 dark:text-rose-400 font-semibold";
+    return `${statusTone.wrong.text} font-semibold`;
   }
-  return "text-zinc-500 dark:text-zinc-400";
+  return statusTone.notTried.text;
 }
 
 function formatReviewDate(iso?: string): string {
@@ -791,7 +792,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
               {(checkError || layeredStatus.failures.length > 0) && (
                 <ul
                   aria-label="Check failures"
-                  className="border-l-2 border-rose-600 dark:border-rose-400 pl-3.5 py-1 space-y-1 font-mono text-xs text-zinc-800 dark:text-zinc-200"
+                  className={`border-l-2 ${statusTone.wrong.border} pl-3.5 py-1 space-y-1 font-mono text-xs text-zinc-800 dark:text-zinc-200`}
                 >
                   {checkError && <li>{sanitizeCodeCheckError(checkError)}</li>}
                   {layeredStatus.failures.map((line, idx) => (
@@ -938,8 +939,8 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                           key={r.attempt || rIdx}
                           className={`border-l-2 pl-3 py-0.5 space-y-1 ${
                             r.verdict === "pass"
-                              ? "border-emerald-700 dark:border-emerald-400"
-                              : "border-rose-600 dark:border-rose-400"
+                              ? statusTone.correct.border
+                              : statusTone.wrong.border
                           }`}
                         >
                           <div className="flex flex-wrap items-center gap-2 text-xs font-mono">
@@ -1001,7 +1002,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                       <FormattedText text={explainQuestion} />
                     </p>
                     {recordedExplain ? (
-                      <div className="border-l-2 border-emerald-700 dark:border-emerald-400 pl-3 py-0.5 text-zinc-800 dark:text-zinc-200">
+                      <div className={`border-l-2 ${statusTone.correct.border} pl-3 py-0.5 text-zinc-800 dark:text-zinc-200`}>
                         <FormattedText text={recordedExplain} />
                       </div>
                     ) : (

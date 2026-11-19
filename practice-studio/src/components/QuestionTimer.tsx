@@ -4,6 +4,7 @@ import React, { useId, useState } from "react";
 import { AnimatePresence, m } from "motion/react";
 import { Clock, Pause, Play } from "lucide-react";
 import { formatTimerClock } from "@/lib/telemetryTimer";
+import { warningTone } from "@/lib/statusTone";
 import { fade, presence } from "@/lib/motion";
 
 export interface QuestionTimerProps {
@@ -33,9 +34,7 @@ export const QuestionTimer: React.FC<QuestionTimerProps> = ({
     <div className="inline-flex items-center gap-2 ml-auto shrink-0">
       <span
         className={`inline-flex items-center gap-1 text-xs font-medium tabular-nums transition-colors ${
-          isPaused
-            ? "text-amber-700 dark:text-amber-400"
-            : "text-zinc-500 dark:text-zinc-400"
+          isPaused ? warningTone.text : "text-zinc-500 dark:text-zinc-400"
         }`}
       >
         <span
@@ -82,7 +81,7 @@ export const QuestionTimer: React.FC<QuestionTimerProps> = ({
         title={isPaused ? "Resume timer (p)" : "Pause timer (p)"}
         className={`inline-flex items-center justify-center w-6 h-6 rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600/50 dark:focus-visible:ring-indigo-400/60 ${
           isPaused
-            ? "text-amber-700 dark:text-amber-400 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+            ? `${warningTone.text} hover:bg-zinc-100 dark:hover:bg-zinc-800`
             : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800"
         }`}
       >

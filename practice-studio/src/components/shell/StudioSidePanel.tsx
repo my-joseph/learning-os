@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { Workspace } from "@/lib/routes";
 import { plainTitle } from "@/lib/titleText";
+import { warningTone } from "@/lib/statusTone";
 import type { DueTodayUnit, UnitMasteryContext, WeakSpotUnit } from "@/lib/dueToday";
 import { FormattedText } from "@/components/FormattedText";
 
@@ -266,7 +267,7 @@ export const StudioSidePanel: React.FC<StudioSidePanelProps> = ({
             {openSpots.map((spot) => (
               <li
                 key={`${spot.unitCode}:${spot.id}`}
-                className="min-w-0 max-w-full border-l-2 border-amber-600/70 dark:border-amber-400/70 pl-2.5 py-0.5 space-y-0.5"
+                className={`min-w-0 max-w-full ${warningTone.leftBorderSoft} pl-2.5 py-0.5 space-y-0.5`}
               >
                 <div className="flex items-baseline justify-between gap-2 min-w-0">
                   <span

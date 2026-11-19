@@ -3,6 +3,7 @@
 import React from "react";
 import { PenLine } from "lucide-react";
 import { FormattedText } from "@/components/FormattedText";
+import { statusTone } from "@/lib/statusTone";
 import { MistakeTag } from "@/types/drill";
 
 export interface ProblemSelfEvalProps {
@@ -22,20 +23,17 @@ const SELF_SCORE_BUTTONS = [
   {
     val: 1,
     label: "1.0",
-    activeCls:
-      "border-emerald-700 dark:border-emerald-400 text-emerald-700 dark:text-emerald-400 font-semibold bg-zinc-50 dark:bg-zinc-950",
+    activeCls: statusTone.correct.selfScoreActive,
   },
   {
     val: 0.5,
     label: "0.5",
-    activeCls:
-      "border-amber-700 dark:border-amber-400 text-amber-700 dark:text-amber-400 font-semibold bg-zinc-50 dark:bg-zinc-950",
+    activeCls: statusTone.assisted.selfScoreActive,
   },
   {
     val: 0,
     label: "0",
-    activeCls:
-      "border-rose-600 dark:border-rose-400 text-rose-600 dark:text-rose-400 font-semibold bg-zinc-50 dark:bg-zinc-950",
+    activeCls: statusTone.wrong.selfScoreActive,
   },
 ] as const;
 
@@ -93,7 +91,7 @@ export const ProblemSelfEval: React.FC<ProblemSelfEvalProps> = ({
                   aria-pressed={hasTag}
                   className={`min-h-[44px] sm:min-h-[28px] py-1 px-2.5 rounded-full text-xs border transition-colors inline-flex items-center ${
                     hasTag
-                      ? "border-rose-600 dark:border-rose-400 text-rose-700 dark:text-rose-300 bg-zinc-50 dark:bg-zinc-950 font-semibold"
+                      ? statusTone.wrong.selfScoreActive
                       : "bg-white dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600"
                   }`}
                 >

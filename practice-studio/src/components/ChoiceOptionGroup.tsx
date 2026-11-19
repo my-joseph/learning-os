@@ -4,6 +4,7 @@ import React from "react";
 import { Check, Loader2, X } from "lucide-react";
 import { FormattedText } from "@/components/FormattedText";
 import { ChoiceResultStatus } from "@/lib/answerFeedback";
+import { statusTone } from "@/lib/statusTone";
 import { ChoiceOption } from "@/types/drill";
 
 export interface ChoiceOptionGroupProps {
@@ -56,13 +57,11 @@ export const ChoiceOptionGroup: React.FC<ChoiceOptionGroupProps> = ({
             "bg-zinc-100 dark:bg-zinc-800 border-indigo-600 dark:border-indigo-500 text-zinc-900 dark:text-zinc-100";
           badgeCls = "bg-indigo-600 dark:bg-indigo-500 text-white";
         } else if (isCorrectChosen) {
-          buttonCls =
-            "bg-emerald-50 dark:bg-emerald-500/10 border-emerald-500/60 dark:border-emerald-500/50 text-zinc-900 dark:text-zinc-100";
-          badgeCls = "bg-emerald-700 dark:bg-emerald-500 text-white";
+          buttonCls = `${statusTone.correct.choiceCard} text-zinc-900 dark:text-zinc-100`;
+          badgeCls = statusTone.correct.solidBadge;
         } else if (isWrongChosen) {
-          buttonCls =
-            "bg-rose-50 dark:bg-rose-500/10 border-rose-500/60 dark:border-rose-500/50 text-zinc-900 dark:text-zinc-100";
-          badgeCls = "bg-rose-600 dark:bg-rose-500 text-white";
+          buttonCls = `${statusTone.wrong.choiceCard} text-zinc-900 dark:text-zinc-100`;
+          badgeCls = statusTone.wrong.solidBadge;
         } else if (isSelected) {
           buttonCls =
             "bg-zinc-100 dark:bg-zinc-800 border-indigo-600 dark:border-indigo-500 text-zinc-900 dark:text-zinc-100";
@@ -109,13 +108,13 @@ export const ChoiceOptionGroup: React.FC<ChoiceOptionGroupProps> = ({
             )}
             {isCorrectChosen && (
               <Check
-                className="w-4 h-4 text-emerald-700 dark:text-emerald-400 shrink-0"
+                className={`w-4 h-4 ${statusTone.correct.text} shrink-0`}
                 aria-hidden="true"
               />
             )}
             {isWrongChosen && (
               <X
-                className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0"
+                className={`w-4 h-4 ${statusTone.wrong.text} shrink-0`}
                 aria-hidden="true"
               />
             )}

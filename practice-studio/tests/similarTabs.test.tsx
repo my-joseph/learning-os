@@ -32,6 +32,7 @@ import {
   startReviewItemCycle,
 } from "../src/lib/reviewSession";
 import { createTelemetryTimerState } from "../src/lib/telemetryTimer";
+import { statusTone } from "../src/lib/statusTone";
 import {
   countCycleOriginalWrongAttempts,
   countPractisedSimilar,
@@ -431,19 +432,28 @@ function makeProblem(overrides: Partial<Problem> = {}): Problem {
   assert.match(html, /aria-label="Question 2 and similar questions"/);
   assert.match(html, /id="tab-Q02-q"[^>]*aria-selected="false"[^>]*aria-controls="panel-Q02"/);
   assert.match(html, /aria-label="Question 2, not correct yet"/);
-  assert.match(html, /data-status="wrong"[^>]*bg-rose-600[^>]*><svg/);
+  assert.ok(
+    html.includes(`data-status="wrong" class="w-4 h-4 rounded-full ${statusTone.wrong.tabMark}`),
+    "wrong tab mark must use statusTone.wrong.tabMark"
+  );
   assert.match(html, /id="tab-Q02-s1"[^>]*aria-selected="true"[^>]*aria-controls="panel-Q02"[^>]*aria-label="Similar question 1, correct"[^>]*tabindex="0"/);
-  assert.match(html, /data-status="correct"[^>]*bg-emerald-600[^>]*><svg/);
+  assert.ok(
+    html.includes(`data-status="correct" class="w-4 h-4 rounded-full ${statusTone.correct.tabMark}`),
+    "correct tab mark must use statusTone.correct.tabMark"
+  );
   assert.match(html, /id="tab-Q02-s2"[^>]*aria-selected="false"[^>]*aria-controls="panel-Q02"[^>]*aria-label="Similar question 2, not tried"[^>]*tabindex="-1"/);
-  assert.match(html, /data-status="untried"[^>]*rounded-full border-\[1\.5px\]/);
+  assert.match(html, /data-status="untried"[^>]*rounded-full[^>]*border-\[1\.5px\]/);
   assert.match(html, /id="tab-Q02-s3"[^>]*aria-selected="false"[^>]*aria-controls="panel-Q02"[^>]*aria-label="Similar question 3, correct with help"[^>]*tabindex="-1"/);
-  assert.match(html, /data-status="assisted"[^>]*bg-emerald-200[^>]*><svg/);
+  assert.ok(
+    html.includes(`data-status="assisted" class="w-4 h-4 rounded-full ${statusTone.assisted.tabMark}`),
+    "assisted tab mark must use statusTone.assisted.tabMark"
+  );
   assert.match(html, /min-h-\[44px\]/, "mobile tabs must be at least 44px tall");
   assert.match(html, /Q2/, "mobile compact label Q2");
   assert.doesNotMatch(html, /tab-Q02-example/, "Example tab must NOT be rendered (binding scope change)");
   assert.doesNotMatch(html, /Shown in example/i, "Shown in example must NOT exist (binding scope change)");
 
-  // Skipped (dashed outline) and usedHelp (filled yellow circle without checkmark)
+  // Skipped (dashed outline), usedHelp (plain outline like notTried, no colour), partial (assisted pale green)
   const skippedAndHelpHtml = renderToStaticMarkup(
     <SimilarTabStrip
       problemId="Q03"
@@ -460,13 +470,19 @@ function makeProblem(overrides: Partial<Problem> = {}): Problem {
   assert.match(skippedAndHelpHtml, /aria-label="Question 3, skipped"/);
   assert.match(skippedAndHelpHtml, /data-status="skipped"[^>]*border-dashed/);
   assert.match(skippedAndHelpHtml, /aria-label="Similar question 1, used help"/);
-  assert.match(
-    skippedAndHelpHtml,
-    /data-status="usedHelp"[^>]*bg-amber-600[^>]*><\/span>/,
-    "usedHelp before answering renders filled yellow circle with no checkmark"
+  assert.ok(
+    skippedAndHelpHtml.includes(
+      `data-status="usedHelp" class="w-4 h-4 rounded-full ${statusTone.notTried.tabMark}`
+    ),
+    "usedHelp before answering renders plain outline like notTried with no colour"
   );
   assert.match(skippedAndHelpHtml, /aria-label="Similar question 2, almost"/);
-  assert.match(skippedAndHelpHtml, /data-status="partial"[^>]*bg-amber-600[^>]*><svg/);
+  assert.ok(
+    skippedAndHelpHtml.includes(
+      `data-status="partial" class="w-4 h-4 rounded-full ${statusTone.assisted.tabMark}`
+    ),
+    "partial renders assisted pale-green tab mark"
+  );
 
   // Locked ghost tabs before first attempt (zero-leak: no tokens, aria-disabled="true", Answer Question N first)
   const lockedStripHtml = renderToStaticMarkup(
@@ -540,7 +556,11 @@ function makeProblem(overrides: Partial<Problem> = {}): Problem {
     />
   );
   assert.match(usedHelpBeforeAttemptHtml, /aria-label="Question 2, used help"/);
-  assert.match(usedHelpBeforeAttemptHtml, /data-status="usedHelp"[^>]*bg-amber-600[^>]*><\/span>/);
+  assert.ok(
+    usedHelpBeforeAttemptHtml.includes(
+      `data-status="usedHelp" class="w-4 h-4 rounded-full ${statusTone.notTried.tabMark}`
+    )
+  );
   assert.match(usedHelpBeforeAttemptHtml, /aria-disabled="true"/, "using help before answering must keep similar tabs locked");
 
   const slots = ["va11111", "vb22222", "vc33333"];
@@ -729,7 +749,10 @@ function makeProblem(overrides: Partial<Problem> = {}): Problem {
     /aria-label="Question 1, Level 1, correct, practised 2 similar, current"/
   );
   assert.match(pagHtml, /lucide-check/);
-  assert.match(pagHtml, /bg-emerald-600/, "stepper circle colour must come from R only (emerald for 1.0)");
+  assert.ok(
+    pagHtml.includes(statusTone.correct.solidCircle),
+    "stepper circle colour must come from R only (correct recipe for 1.0)"
+  );
 }
 
 // ---------------------------------------------------------------------------

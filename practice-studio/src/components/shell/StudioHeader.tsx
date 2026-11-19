@@ -13,6 +13,7 @@ import { DrillDocument, DrillListItem } from "@/types/drill";
 import type { LabListItem } from "@/lib/labModel";
 import { DrillFilter } from "@/hooks/types";
 import { Workspace, isLabId } from "@/lib/routes";
+import { statusTone } from "@/lib/statusTone";
 import { WorkspaceSwitch } from "@/components/workspace/WorkspaceSwitch";
 import { DrillSwitcher } from "./DrillSwitcher";
 
@@ -208,7 +209,7 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
               onClick={onResetAll}
               aria-label={resetAllLabel}
               title={resetAllLabel}
-              className="inline-flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-lg text-zinc-600 dark:text-zinc-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+              className={`inline-flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-lg text-zinc-600 dark:text-zinc-400 ${statusTone.wrong.hoverText} hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors`}
             >
               <RotateCcw className="w-4 h-4" aria-hidden="true" />
             </button>

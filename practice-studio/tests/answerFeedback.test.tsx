@@ -19,6 +19,7 @@ import {
   submitChoiceSelection,
 } from "../src/lib/answerFeedback";
 import { CALM_PARSE_ERROR_MESSAGE } from "../src/lib/reviewGuard";
+import { statusTone } from "../src/lib/statusTone";
 import type { MistakeTag, Problem, ProblemState } from "../src/types/drill";
 
 const noop = () => {};
@@ -181,7 +182,7 @@ const correctCardHtml = renderToStaticMarkup(
   />
 );
 assert.match(correctCardHtml, /rounded-xl/);
-assert.match(correctCardHtml, /bg-emerald-50/);
+assert.ok(correctCardHtml.includes(statusTone.correct.softCard));
 assert.doesNotMatch(correctCardHtml, /border-l-/);
 assert.match(correctCardHtml, /lucide-check/);
 assert.match(correctCardHtml, />Correct</);
@@ -221,7 +222,8 @@ const almostCardHtml = renderToStaticMarkup(
     onTryAgain={noop}
   />
 );
-assert.match(almostCardHtml, /bg-amber-50/);
+assert.ok(almostCardHtml.includes(statusTone.assisted.softCard));
+assert.doesNotMatch(almostCardHtml, /bg-amber/);
 assert.doesNotMatch(almostCardHtml, /border-l-/);
 assert.match(almostCardHtml, /lucide-minus/);
 assert.match(almostCardHtml, /Almost — check the form/);
@@ -246,7 +248,7 @@ const wrongCardHtml = renderToStaticMarkup(
     onTryAgain={noop}
   />
 );
-assert.match(wrongCardHtml, /bg-rose-50/);
+assert.ok(wrongCardHtml.includes(statusTone.wrong.softCard));
 assert.doesNotMatch(wrongCardHtml, /border-l-/);
 assert.match(wrongCardHtml, /lucide-x/);
 assert.match(wrongCardHtml, />Not quite</);
@@ -477,11 +479,10 @@ void testChoiceAutoSubmit().then(() => {
     /aria-label="Check answer"/,
     "Check button must be absent for Math choice questions"
   );
-  // Chosen wrong option A gets rose styling; correct option B must NOT get emerald styling!
-  assert.match(regularChoiceMathHtml, /bg-rose-50/);
-  assert.doesNotMatch(
-    regularChoiceMathHtml,
-    /bg-emerald-50/,
+  // Chosen wrong option A gets wrong styling; correct option B must NOT get correct styling!
+  assert.ok(regularChoiceMathHtml.includes(statusTone.wrong.choiceCard));
+  assert.ok(
+    !regularChoiceMathHtml.includes(statusTone.correct.choiceCard),
     "Correct choice option must not be highlighted on wrong result"
   );
 
@@ -529,7 +530,7 @@ void testChoiceAutoSubmit().then(() => {
     /aria-label="Check answer"/,
     "Check button must be absent for Code choice questions"
   );
-  assert.match(choiceCodeHtml, /bg-emerald-50/);
+  assert.ok(choiceCodeHtml.includes(statusTone.correct.choiceCard));
   assert.match(choiceCodeHtml, /Next problem/);
 
   // Checking spinner + disabled state on ChoiceOptionGroup and LineChoicePrompt

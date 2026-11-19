@@ -17,6 +17,7 @@ import {
   resolveTheme,
   THEME_INIT_SCRIPT,
 } from "../src/lib/studioRules";
+import { statusTone } from "../src/lib/statusTone";
 import type { DrillDocument, Problem, ReviewRecord, TestRunReport } from "../src/types/drill";
 
 const report: TestRunReport = {
@@ -101,11 +102,11 @@ assert.match(codeDashboard, /<ProblemAssistSection/);
 assert.match(mathWorkspace, /max-w-\[720px\]/);
 assert.match(mathWorkspace, /<ProblemSelfEval/);
 assert.match(codeDashboard, /<ProblemSelfEval/);
-assert.match(problemSelfEval, /border-rose-600/);
+assert.match(problemSelfEval, /statusTone\.wrong\.selfScoreActive/);
 assert.doesNotMatch(mathWorkspace, /Review &amp; Sync|Review & Sync/);
 assert.doesNotMatch(codeDashboard, /Review &amp; Sync|Review & Sync/);
 assert.doesNotMatch(problemNavFooter, /Review &amp; Sync|Review & Sync/);
-assert.match(stepper, /bg-emerald-600/);
+assert.match(stepper, /statusTone\.correct\.solidCircle/);
 assert.match(stepper, /bg-indigo-600/);
 assert.match(stepper, /overflow-x-auto/);
 assert.match(stepper, /justify-center/);
@@ -288,7 +289,10 @@ const afterAttemptHtml = renderToStaticMarkup(
   />
 );
 assert.match(afterAttemptHtml, /Self-score:/, "self-score must appear after an attempt");
-assert.match(afterAttemptHtml, /bg-rose-50/, "wrong feedback uses rose result card");
+assert.ok(
+  afterAttemptHtml.includes(statusTone.wrong.softCard),
+  "wrong feedback uses wrong statusTone softCard"
+);
 assert.match(afterAttemptHtml, /Not quite/, "wrong feedback shows calm title");
 
 // Verify CodeDashboard renders layered status, visible test names only, primary action transitions, and locked reference

@@ -11,6 +11,7 @@ import { QuestionTimer } from "../src/components/QuestionTimer";
 import { MathWorkspace } from "../src/components/math/MathWorkspace";
 import { CodeDashboard } from "../src/components/code/CodeDashboard";
 import { ReviewPanel } from "../src/components/shell/ReviewPanel";
+import { warningTone } from "../src/lib/statusTone";
 import type { DrillDocument, Problem } from "../src/types/drill";
 
 const noop = () => {};
@@ -42,7 +43,7 @@ const pausedHtml = renderToStaticMarkup(
     onTogglePause={noop}
   />
 );
-assert.match(pausedHtml, /text-amber-700/);
+assert.ok(pausedHtml.includes(warningTone.text));
 assert.match(pausedHtml, />Paused</);
 assert.match(pausedHtml, />1:01:05</);
 assert.match(pausedHtml, /Total 2:02:05/);
@@ -118,7 +119,7 @@ const mathMetaPaused = renderToStaticMarkup(
     onToggleTimerPause={noop}
   />
 );
-assert.match(mathMetaPaused, /text-amber-700[^>]*>.*Paused.*00:42/);
+assert.match(mathMetaPaused, new RegExp(`${warningTone.text}[^>]*>.*Paused.*00:42`));
 assert.match(mathMetaPaused, /aria-label="Resume timer"/);
 assert.match(mathMetaPaused, /aria-pressed="true"/);
 

@@ -38,6 +38,7 @@ import {
   type VisibleTreeRow,
 } from "@/lib/drillGrouping";
 import { isLabId, subjectOf, type Workspace } from "@/lib/routes";
+import { statusTone } from "@/lib/statusTone";
 import { plainTitle } from "@/lib/titleText";
 import { DrillFilter } from "@/hooks/types";
 
@@ -64,13 +65,13 @@ interface DrillSwitcherProps {
 function statusDotClass(status: PickerStatus): string {
   switch (status) {
     case "Graded":
-      return "bg-emerald-500";
+      return statusTone.correct.dot;
     case "In Progress":
       return "bg-indigo-600 dark:bg-indigo-400";
     case "Needs Retry":
       return "bg-rose-600 dark:bg-rose-400";
     default:
-      return "bg-zinc-300 dark:bg-zinc-600";
+      return statusTone.notTried.dot;
   }
 }
 

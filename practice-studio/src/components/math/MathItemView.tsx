@@ -22,6 +22,7 @@ import { MathQuestionBody } from "@/components/math/MathQuestionBody";
 import { MathAnswerArea, MathAnswerAreaHandle } from "@/components/math/MathAnswerArea";
 import { getProblemPlaceholder } from "@/lib/mathInput";
 import { hasSubstantiveAttempt } from "@/lib/reviewGuard";
+import { statusTone } from "@/lib/statusTone";
 import { CheckResult, MistakeTag, Problem } from "@/types/drill";
 import type { SkipOptions } from "@/hooks/types";
 
@@ -473,7 +474,7 @@ export const MathItemView = forwardRef<MathItemViewHandle, MathItemViewProps>(
                       >
                         {copied ? (
                           <>
-                            <Check className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
+                            <Check className={`w-3.5 h-3.5 ${statusTone.correct.text}`} />
                             <span>Copied</span>
                           </>
                         ) : (

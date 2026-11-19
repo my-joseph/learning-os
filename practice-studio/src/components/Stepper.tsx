@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { m } from "motion/react";
 import { Check, ClipboardCheck, Minus, X } from "lucide-react";
 import type { ReviewStepMeta, StepItem, StepResult } from "@/lib/stepperModel";
+import { statusTone } from "@/lib/statusTone";
 import { quick, settle } from "@/lib/motion";
 
 export interface StepperProps {
@@ -17,7 +18,7 @@ export interface StepperProps {
 }
 
 const CIRCLE_BASE_CLS =
-  "relative flex items-center justify-center shrink-0 w-[22px] h-[22px] sm:w-6 sm:h-6 rounded-full border-2 font-display text-[10px] sm:text-[11px] font-semibold tabular-nums leading-none transition-[background-color,border-color,box-shadow,color] duration-150";
+  "relative flex items-center justify-center shrink-0 w-[22px] h-[22px] sm:w-6 sm:h-6 rounded-full border-2 font-display text-[10px] sm:text-[11px] font-semibold tabular-nums leading-none transition-[background-color,border-color,box-shadow,color,filter] duration-150";
 
 const CURRENT_HALO_CLS = "ring-4 ring-indigo-600/15 dark:ring-indigo-400/25";
 
@@ -33,30 +34,28 @@ function getCircleClass(result: StepResult, isCurrent: boolean): string {
   switch (result) {
     case "correct":
     case "passed":
-      return `bg-emerald-600 border-emerald-600 text-white group-hover:bg-emerald-700 group-hover:border-emerald-700 dark:bg-emerald-500 dark:border-emerald-500 dark:text-zinc-950 dark:group-hover:bg-emerald-400 dark:group-hover:border-emerald-400${halo}`;
+      return `${statusTone.correct.solidCircle}${halo}`;
     case "assisted":
-      // Correct with help: a paler green than a clean correct (learner 2026-11-19).
-      return `bg-emerald-200 border-emerald-200 text-emerald-800 group-hover:bg-emerald-300 group-hover:border-emerald-300 dark:bg-emerald-500/35 dark:border-emerald-500/35 dark:text-emerald-200 dark:group-hover:bg-emerald-500/50 dark:group-hover:border-emerald-500/50${halo}`;
-    case "usedHelp":
     case "partial":
-    case "regressed":
-      return `bg-amber-600 border-amber-600 text-white group-hover:bg-amber-700 group-hover:border-amber-700 dark:bg-amber-400 dark:border-amber-400 dark:text-zinc-950 dark:group-hover:bg-amber-300 dark:group-hover:border-amber-300${halo}`;
+      return `${statusTone.assisted.solidCircle}${halo}`;
     case "wrong":
-      return `bg-rose-600 border-rose-600 text-white group-hover:bg-rose-700 group-hover:border-rose-700 dark:bg-rose-400 dark:border-rose-400 dark:text-zinc-950 dark:group-hover:bg-rose-300 dark:group-hover:border-rose-300${halo}`;
+    case "regressed":
+      return `${statusTone.wrong.solidCircle}${halo}`;
     case "skipped":
       return isCurrent
         ? `border-dashed border-indigo-600 dark:border-indigo-400 bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-300${halo}`
-        : "border-dashed border-zinc-400 dark:border-zinc-500 bg-white dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400 group-hover:border-zinc-500 dark:group-hover:border-zinc-400";
+        : statusTone.skipped.solidCircle;
     case "inProgress":
       return isCurrent
         ? `border-indigo-600 dark:border-indigo-400 bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-300${halo}`
         : "border-zinc-400 dark:border-zinc-500 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 group-hover:border-zinc-500 dark:group-hover:border-zinc-400";
+    case "usedHelp":
     case "notTried":
     case "notStarted":
     default:
       return isCurrent
         ? `border-indigo-600 dark:border-indigo-400 bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-300${halo}`
-        : "border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400 group-hover:border-zinc-500 dark:group-hover:border-zinc-400";
+        : statusTone.notTried.solidCircle;
   }
 }
 
