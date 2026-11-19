@@ -1,0 +1,1157 @@
+{
+  "unitCode": "MTH-T01-C12",
+  "variants": [
+    {
+      "variantId": "VAR-MTH-T01-C12-c12-composite-geometric-area-modeling-01",
+      "sourceArchetype": "c12-composite-geometric-area-modeling",
+      "archetypeKey": "c12-composite-geometric-area-modeling",
+      "archetype": "problem-solving",
+      "level": 3,
+      "category": "Trap & Edge Case",
+      "form": "direct",
+      "context": "greenhouse_end_wall_glazing",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "Composite greenhouse gable end wall (rectangle plus isosceles triangular gable minus circular exhaust fan opening) obeys Euclidean area addition/subtraction with consistent m and m^2 units and realistic dimensions (16 m by 5 m wall, 10 m rafter > 8 m half-width, 2 m radius fan fits cleanly)."
+      },
+      "verificationLevel": "partial",
+      "prompt": "The end wall of a commercial greenhouse is a rectangle $16$ m wide and $5$ m tall, topped by an isosceles triangular gable on the same base. Each sloping edge of the gable measures $10$ m. A circular exhaust fan opening of radius $2$ m is cut out of the wall. Using $\\pi = 3.14$, how many square meters of glazing cover the remaining wall? Give the answer in square meters, rounded to two decimal places.",
+      "display": "A = LW + \\tfrac{1}{2}Wh - \\pi \\rho^2,\\quad h = \\sqrt{s^2 - (W/2)^2}",
+      "plainText": "A = 16*5 + 16*sqrt(10^2 - (16/2)^2)/2 - 3.14*2^2",
+      "givens": {
+        "width": 16,
+        "wall_ht": 5,
+        "rafter": 10,
+        "fan_r": 2,
+        "pi_approx": 3.14
+      },
+      "constants": {
+        "half": 2
+      },
+      "answerSpec": {
+        "type": "number",
+        "value": "115.44",
+        "tolerance": 0.005
+      },
+      "answerPlain": "115.44",
+      "answerDisplay": "115.44",
+      "inputHint": "Enter a decimal rounded to two decimal places",
+      "commonTrapTag": "c12-rafter-as-height-trap",
+      "trapDerivation": "16*5 + 16*10/2 - 3.14*2^2",
+      "trapValue": "147.44",
+      "trapGivens": [
+        16,
+        5,
+        10,
+        2,
+        3.14
+      ],
+      "verify": {
+        "source": "16*5 + 16*sqrt(10^2 - (16/2)^2)/2 - 3.14*2^2",
+        "trapValue": "147.44"
+      },
+      "checkpointHint": "The sloping gable edge is the hypotenuse of a right triangle formed with half the wall width and the vertical gable height.",
+      "figureWaiver": "The vertical gable height is derived from the sloping edge; a labeled facade figure would give it away.",
+      "references": [
+        "MTH-T01-C12"
+      ],
+      "steps": [
+        {
+          "latex": "\\frac{16}{2} = 8",
+          "explain": "Halve the base width to get the horizontal leg of the right triangle inside the gable.",
+          "eq": [
+            "16/2",
+            "8"
+          ]
+        },
+        {
+          "latex": "h^2 = 10^2 - 8^2",
+          "explain": "Apply the Pythagorean theorem with the sloping edge as the hypotenuse."
+        },
+        {
+          "latex": "h^2 = 100 - 64",
+          "explain": "Square the sloping edge and the half-base.",
+          "eq": [
+            "10^2 - 8^2",
+            "100 - 64"
+          ]
+        },
+        {
+          "latex": "h^2 = 36",
+          "explain": "Subtract to find the square of the gable height.",
+          "eq": [
+            "100 - 64",
+            "36"
+          ]
+        },
+        {
+          "latex": "h = 6",
+          "explain": "Take the positive square root to obtain the gable height."
+        },
+        {
+          "latex": "A_{\\text{rect}} = 16 \\cdot 5",
+          "explain": "Set up the area of the rectangular wall."
+        },
+        {
+          "latex": "A_{\\text{rect}} = 80",
+          "explain": "Multiply the width and height of the rectangle.",
+          "eq": [
+            "16*5",
+            "80"
+          ]
+        },
+        {
+          "latex": "A_{\\text{gable}} = \\frac{1}{2} \\cdot 16 \\cdot 6",
+          "explain": "Set up the area of the triangular gable using the derived vertical height."
+        },
+        {
+          "latex": "A_{\\text{gable}} = 48",
+          "explain": "Evaluate the area of the triangular gable.",
+          "eq": [
+            "16*6/2",
+            "48"
+          ]
+        },
+        {
+          "latex": "A_{\\text{fan}} = 3.14 \\cdot 2^2",
+          "explain": "Set up the area of the circular exhaust fan opening."
+        },
+        {
+          "latex": "A_{\\text{fan}} = 12.56",
+          "explain": "Square the radius and multiply by pi.",
+          "eq": [
+            "3.14*2^2",
+            "12.56"
+          ]
+        },
+        {
+          "latex": "A = 80 + 48 - 12.56",
+          "explain": "Add the rectangular wall and gable areas, then subtract the circular cut-out."
+        },
+        {
+          "latex": "A = 115.44",
+          "explain": "Compute the net glazing area.",
+          "val": "115.44"
+        }
+      ],
+      "blindSolve": {
+        "answer": "115.44",
+        "ambiguous": false,
+        "setup": "model",
+        "strategy": "prescribed",
+        "check": "none",
+        "task": "compute",
+        "reverse": false,
+        "steps": 5
+      },
+      "id": "VAR-MTH-T01-C12-c12-composite-geometric-area-modeling-01",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "c12-rafter-as-height-trap|direct|A = #*# + #*sqrt(#^# - (#/#)^#)/# - #*#^#"
+    },
+    {
+      "variantId": "VAR-MTH-T01-C12-c12-composite-geometric-area-modeling-02",
+      "sourceArchetype": "c12-composite-geometric-area-modeling",
+      "archetypeKey": "c12-composite-geometric-area-modeling",
+      "archetype": "problem-solving",
+      "level": 3,
+      "category": "Trap & Edge Case",
+      "form": "direct",
+      "context": "boathouse_gable_siding_panel",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "Composite boathouse front facade (rectangle plus low-pitched isosceles gable minus circular louver vent) uses Euclidean geometry with consistent meter units and realistic proportions (24 m wide, 6 m wall, 13 m rafter > 12 m half-span, 2 m radius vent)."
+      },
+      "verificationLevel": "partial",
+      "prompt": "The front facade of a lakeside boathouse consists of a rectangle $24$ m wide and $6$ m tall, topped by an isosceles triangular gable spanning the full width. Each sloping roof edge along the gable is $13$ m long. A circular louver vent of radius $2$ m is removed from the wall. Using $\\pi = 3.14$, how many square meters of cedar siding are required to cover the facade? Round to two decimal places.",
+      "display": "A = LW + \\tfrac{1}{2}Wh - \\pi \\rho^2,\\quad h = \\sqrt{s^2 - (W/2)^2}",
+      "plainText": "A = 24*6 + 24*sqrt(13^2 - (24/2)^2)/2 - 3.14*2^2",
+      "givens": {
+        "width": 24,
+        "wall_ht": 6,
+        "rafter": 13,
+        "vent_r": 2,
+        "pi_approx": 3.14
+      },
+      "constants": {
+        "half": 2
+      },
+      "answerSpec": {
+        "type": "number",
+        "value": "191.44",
+        "tolerance": 0.005
+      },
+      "answerPlain": "191.44",
+      "answerDisplay": "191.44",
+      "inputHint": "Enter a decimal rounded to two decimal places",
+      "commonTrapTag": "c12-rafter-as-height-trap",
+      "trapDerivation": "24*6 + 24*13/2 - 3.14*2^2",
+      "trapValue": "287.44",
+      "trapGivens": [
+        24,
+        6,
+        13,
+        2,
+        3.14
+      ],
+      "verify": {
+        "source": "24*6 + 24*sqrt(13^2 - (24/2)^2)/2 - 3.14*2^2",
+        "trapValue": "287.44"
+      },
+      "checkpointHint": "Find the vertical height of the triangular gable from the right triangle formed by half the base and the sloping edge before computing areas.",
+      "figureWaiver": "The vertical gable height is derived from the sloping edge; a labeled facade figure would give it away.",
+      "references": [
+        "MTH-T01-C12"
+      ],
+      "steps": [
+        {
+          "latex": "\\frac{24}{2} = 12",
+          "explain": "Halve the wall width to obtain the horizontal leg of the gable right triangle.",
+          "eq": [
+            "24/2",
+            "12"
+          ]
+        },
+        {
+          "latex": "h^2 = 13^2 - 12^2",
+          "explain": "Apply the Pythagorean theorem with the sloping roof edge as hypotenuse."
+        },
+        {
+          "latex": "h^2 = 169 - 144",
+          "explain": "Square the sloping edge and half-base.",
+          "eq": [
+            "13^2 - 12^2",
+            "169 - 144"
+          ]
+        },
+        {
+          "latex": "h^2 = 25",
+          "explain": "Subtract to find the square of the gable height.",
+          "eq": [
+            "169 - 144",
+            "25"
+          ]
+        },
+        {
+          "latex": "h = 5",
+          "explain": "Take the positive square root to get the vertical gable height."
+        },
+        {
+          "latex": "A_{\\text{rect}} = 24 \\cdot 6",
+          "explain": "Set up the area of the rectangular wall."
+        },
+        {
+          "latex": "A_{\\text{rect}} = 144",
+          "explain": "Multiply the wall width by its height.",
+          "eq": [
+            "24*6",
+            "144"
+          ]
+        },
+        {
+          "latex": "A_{\\text{gable}} = \\frac{1}{2} \\cdot 24 \\cdot 5",
+          "explain": "Set up the area of the triangular gable with the derived height."
+        },
+        {
+          "latex": "A_{\\text{gable}} = 60",
+          "explain": "Evaluate the gable area.",
+          "eq": [
+            "24*5/2",
+            "60"
+          ]
+        },
+        {
+          "latex": "A_{\\text{vent}} = 3.14 \\cdot 2^2",
+          "explain": "Set up the area of the circular louver vent."
+        },
+        {
+          "latex": "A_{\\text{vent}} = 12.56",
+          "explain": "Square the radius and multiply by pi.",
+          "eq": [
+            "3.14*2^2",
+            "12.56"
+          ]
+        },
+        {
+          "latex": "A = 144 + 60 - 12.56",
+          "explain": "Combine the wall and gable areas and subtract the circular vent."
+        },
+        {
+          "latex": "A = 191.44",
+          "explain": "Compute the net siding area.",
+          "val": "191.44"
+        }
+      ],
+      "blindSolve": {
+        "answer": "191.44",
+        "ambiguous": false,
+        "setup": "model",
+        "strategy": "prescribed",
+        "check": "none",
+        "task": "compute",
+        "reverse": false,
+        "steps": 5
+      },
+      "id": "VAR-MTH-T01-C12-c12-composite-geometric-area-modeling-02",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "c12-rafter-as-height-trap|direct|A = #*# + #*sqrt(#^# - (#/#)^#)/# - #*#^#"
+    },
+    {
+      "variantId": "VAR-MTH-T01-C12-c12-composite-geometric-area-modeling-03",
+      "sourceArchetype": "c12-composite-geometric-area-modeling",
+      "archetypeKey": "c12-composite-geometric-area-modeling",
+      "archetype": "problem-solving",
+      "level": 3,
+      "category": "Trap & Edge Case",
+      "form": "direct",
+      "context": "timber_lodge_rose_window_facade",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "Composite alpine lodge wall area (rectangle plus steep isosceles gable minus circular rose window) follows Euclidean area formulas with consistent meter units and realistic dimensions (18 m by 7 m wall, 15 m rafter > 9 m half-base, 3 m radius window fits in wall)."
+      },
+      "verificationLevel": "partial",
+      "prompt": "A timber alpine lodge has a front wall built from a rectangle $18$ m wide and $7$ m tall, topped by an isosceles triangular gable on the same base. Each sloping rafter of the gable measures $15$ m. A circular rose window of radius $3$ m is cut out of the wall. Using $\\pi = 3.14$, how many square meters of stone veneer cover the wall around the window? Round to two decimal places.",
+      "display": "A = LW + \\tfrac{1}{2}Wh - \\pi \\rho^2,\\quad h = \\sqrt{s^2 - (W/2)^2}",
+      "plainText": "A = 18*7 + 18*sqrt(15^2 - (18/2)^2)/2 - 3.14*3^2",
+      "givens": {
+        "width": 18,
+        "wall_ht": 7,
+        "rafter": 15,
+        "window_r": 3,
+        "pi_approx": 3.14
+      },
+      "constants": {
+        "half": 2
+      },
+      "answerSpec": {
+        "type": "number",
+        "value": "205.74",
+        "tolerance": 0.005
+      },
+      "answerPlain": "205.74",
+      "answerDisplay": "205.74",
+      "inputHint": "Enter a decimal rounded to two decimal places",
+      "commonTrapTag": "c12-rafter-as-height-trap",
+      "trapDerivation": "18*7 + 18*15/2 - 3.14*3^2",
+      "trapValue": "232.74",
+      "trapGivens": [
+        18,
+        7,
+        15,
+        3,
+        3.14
+      ],
+      "verify": {
+        "source": "18*7 + 18*sqrt(15^2 - (18/2)^2)/2 - 3.14*3^2",
+        "trapValue": "232.74"
+      },
+      "checkpointHint": "Use the right triangle formed by half the base and the sloping rafter to find the vertical gable height before adding the regions and subtracting the circular window.",
+      "figureWaiver": "The vertical gable height is derived from the sloping rafter; a labeled facade figure would give it away.",
+      "references": [
+        "MTH-T01-C12"
+      ],
+      "steps": [
+        {
+          "latex": "\\frac{18}{2} = 9",
+          "explain": "Halve the wall width to obtain the horizontal leg of the gable right triangle.",
+          "eq": [
+            "18/2",
+            "9"
+          ]
+        },
+        {
+          "latex": "h^2 = 15^2 - 9^2",
+          "explain": "Apply the Pythagorean theorem with the sloping rafter as hypotenuse."
+        },
+        {
+          "latex": "h^2 = 225 - 81",
+          "explain": "Square the rafter length and half-base.",
+          "eq": [
+            "15^2 - 9^2",
+            "225 - 81"
+          ]
+        },
+        {
+          "latex": "h^2 = 144",
+          "explain": "Subtract to obtain the square of the vertical height.",
+          "eq": [
+            "225 - 81",
+            "144"
+          ]
+        },
+        {
+          "latex": "h = 12",
+          "explain": "Take the positive square root to obtain the gable height."
+        },
+        {
+          "latex": "A_{\\text{rect}} = 18 \\cdot 7",
+          "explain": "Set up the area of the rectangular wall."
+        },
+        {
+          "latex": "A_{\\text{rect}} = 126",
+          "explain": "Multiply width by wall height.",
+          "eq": [
+            "18*7",
+            "126"
+          ]
+        },
+        {
+          "latex": "A_{\\text{gable}} = \\frac{1}{2} \\cdot 18 \\cdot 12",
+          "explain": "Set up the triangular gable area using the vertical height."
+        },
+        {
+          "latex": "A_{\\text{gable}} = 108",
+          "explain": "Evaluate the gable area.",
+          "eq": [
+            "18*12/2",
+            "108"
+          ]
+        },
+        {
+          "latex": "A_{\\text{window}} = 3.14 \\cdot 3^2",
+          "explain": "Set up the area of the circular rose window."
+        },
+        {
+          "latex": "A_{\\text{window}} = 28.26",
+          "explain": "Square the radius and multiply by pi.",
+          "eq": [
+            "3.14*3^2",
+            "28.26"
+          ]
+        },
+        {
+          "latex": "A = 126 + 108 - 28.26",
+          "explain": "Sum the rectangle and gable areas, then subtract the circular window."
+        },
+        {
+          "latex": "A = 205.74",
+          "explain": "Compute the stone veneer area.",
+          "val": "205.74"
+        }
+      ],
+      "blindSolve": {
+        "answer": "205.74",
+        "ambiguous": false,
+        "setup": "model",
+        "strategy": "prescribed",
+        "check": "none",
+        "task": "compute",
+        "reverse": false,
+        "steps": 5
+      },
+      "id": "VAR-MTH-T01-C12-c12-composite-geometric-area-modeling-03",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "c12-rafter-as-height-trap|direct|A = #*# + #*sqrt(#^# - (#/#)^#)/# - #*#^#"
+    },
+    {
+      "variantId": "VAR-MTH-T01-C12-c12-applied-cylindrical-surface-coating-synthesis-01",
+      "sourceArchetype": "c12-applied-cylindrical-surface-coating-synthesis",
+      "archetypeKey": "c12-applied-cylindrical-surface-coating-synthesis",
+      "archetype": "problem-solving",
+      "level": 3,
+      "category": "Trap & Edge Case",
+      "form": "direct",
+      "context": "dairy_milk_holding_tank_sealant",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "Cylinder volume back-solves radius (3 m), lateral area (150.72 m^2) divided by sealant coverage (12 m^2/bucket) yields 12.56 -> 13 whole buckets; geometry, units, and industrial vat dimensions are physically consistent."
+      },
+      "verificationLevel": "partial",
+      "prompt": "A cylindrical dairy holding tank holds $226.08$ m$^3$ and is $8$ m tall. Only its curved vertical side will be coated with thermal sealant. Each bucket of sealant covers $12$ m$^2$, and sealant is sold only in whole buckets. Using $\\pi = 3.14$, how many buckets must be purchased?",
+      "display": "r = \\sqrt{\\frac{V}{\\pi h}},\\quad A_{\\text{lat}} = 2\\pi r h",
+      "plainText": "r = sqrt(226.08/(3.14*8)), buckets = ceil(2*3.14*r*8/12)",
+      "givens": {
+        "capacity": 226.08,
+        "ht": 8,
+        "coverage": 12,
+        "pi_approx": 3.14
+      },
+      "constants": {
+        "two": 2
+      },
+      "answerSpec": {
+        "type": "number",
+        "value": "13",
+        "tolerance": 0.001
+      },
+      "answerPlain": "13",
+      "answerDisplay": "13",
+      "inputHint": "Enter a whole number of buckets",
+      "commonTrapTag": "c12-omitted-circumference-factor-trap",
+      "trapDerivation": "3.14*sqrt(226.08/(3.14*8))*8/12",
+      "trapValue": "6.28",
+      "trapGivens": [
+        226.08,
+        8,
+        12,
+        3.14
+      ],
+      "verify": {
+        "source": "13",
+        "trapValue": "6.28"
+      },
+      "checkpointHint": "Back-solve the radius from the volume first, multiply the full circumference by the height for the curved surface area, and round up to whole containers.",
+      "figureWaiver": "The radius is derived from the tank capacity; a labeled cylinder figure would give it away.",
+      "references": [
+        "MTH-T01-C12"
+      ],
+      "steps": [
+        {
+          "latex": "226.08 = 3.14 \\cdot r^2 \\cdot 8",
+          "explain": "Substitute capacity and height into the cylinder volume formula."
+        },
+        {
+          "latex": "226.08 = 25.12\\,r^2",
+          "explain": "Multiply pi by the height.",
+          "eq": [
+            "3.14*8",
+            "25.12"
+          ]
+        },
+        {
+          "latex": "r^2 = 9",
+          "explain": "Divide both sides by the coefficient of the squared radius.",
+          "eq": [
+            "226.08/25.12",
+            "9"
+          ]
+        },
+        {
+          "latex": "r = 3",
+          "explain": "Take the positive square root to find the radius."
+        },
+        {
+          "latex": "A_{\\text{lat}} = 2 \\cdot 3.14 \\cdot 3 \\cdot 8",
+          "explain": "Write the lateral surface area of the curved side using the derived radius."
+        },
+        {
+          "latex": "A_{\\text{lat}} = 150.72",
+          "explain": "Evaluate the curved surface area.",
+          "eq": [
+            "2*3.14*3*8",
+            "150.72"
+          ]
+        },
+        {
+          "latex": "\\frac{150.72}{12} = 12.56",
+          "explain": "Divide the curved surface area by the coverage per bucket.",
+          "eq": [
+            "150.72/12",
+            "12.56"
+          ]
+        },
+        {
+          "latex": "n = 13",
+          "explain": "Round up to the next whole bucket so the entire curved side is covered.",
+          "val": "13"
+        }
+      ],
+      "blindSolve": {
+        "answer": "13",
+        "ambiguous": false,
+        "setup": "translate",
+        "strategy": "prescribed",
+        "check": "edge",
+        "task": "compute",
+        "reverse": true,
+        "steps": 5,
+        "edgeRejected": "r = -3 (non-physical negative radius) and 12 buckets (12*12 = 144 m^2 < 150.72 m^2, insufficient sealant)."
+      },
+      "id": "VAR-MTH-T01-C12-c12-applied-cylindrical-surface-coating-synthesis-01",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "c12-omitted-circumference-factor-trap|direct|r = sqrt(#/(#*#)), buckets = ceil(#*#*r*#/#)"
+    },
+    {
+      "variantId": "VAR-MTH-T01-C12-c12-applied-cylindrical-surface-coating-synthesis-02",
+      "sourceArchetype": "c12-applied-cylindrical-surface-coating-synthesis",
+      "archetypeKey": "c12-applied-cylindrical-surface-coating-synthesis",
+      "archetype": "problem-solving",
+      "level": 3,
+      "category": "Trap & Edge Case",
+      "form": "direct",
+      "context": "district_heating_buffer_tank_primer",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "Cylinder volume (785 m^3) and height (10 m) give radius 5 m, lateral area 314 m^2, and 314/16 = 19.625 -> 20 tins of primer; units and municipal thermal tank dimensions are physically consistent."
+      },
+      "verificationLevel": "partial",
+      "prompt": "A cylindrical district-heating buffer tank has a volume of $785$ m$^3$ and a height of $10$ m. Only its curved outer wall will receive anti-corrosion primer. One tin of primer covers $16$ m$^2$, and only full tins can be bought. Using $\\pi = 3.14$, how many tins of primer are needed?",
+      "display": "r = \\sqrt{\\frac{V}{\\pi h}},\\quad A_{\\text{lat}} = 2\\pi r h",
+      "plainText": "r = sqrt(785/(3.14*10)), tins = ceil(2*3.14*r*10/16)",
+      "givens": {
+        "capacity": 785,
+        "ht": 10,
+        "coverage": 16,
+        "pi_approx": 3.14
+      },
+      "constants": {
+        "two": 2
+      },
+      "answerSpec": {
+        "type": "number",
+        "value": "20",
+        "tolerance": 0.001
+      },
+      "answerPlain": "20",
+      "answerDisplay": "20",
+      "inputHint": "Enter a whole number of tins",
+      "commonTrapTag": "c12-omitted-circumference-factor-trap",
+      "trapDerivation": "3.14*sqrt(785/(3.14*10))*10/16",
+      "trapValue": "9.8125",
+      "trapGivens": [
+        785,
+        10,
+        16,
+        3.14
+      ],
+      "verify": {
+        "source": "20",
+        "trapValue": "9.8125"
+      },
+      "checkpointHint": "Solve for the radius from the volume equation first, then compute the curved wall area from the circumference and height, and round up to whole tins.",
+      "figureWaiver": "The radius is derived from the buffer tank volume; a labeled cylinder figure would give it away.",
+      "references": [
+        "MTH-T01-C12"
+      ],
+      "steps": [
+        {
+          "latex": "785 = 3.14 \\cdot r^2 \\cdot 10",
+          "explain": "Write the cylinder volume equation with the radius unknown."
+        },
+        {
+          "latex": "785 = 31.4\\,r^2",
+          "explain": "Multiply pi by the tank height.",
+          "eq": [
+            "3.14*10",
+            "31.4"
+          ]
+        },
+        {
+          "latex": "r^2 = 25",
+          "explain": "Divide both sides by the product of pi and height.",
+          "eq": [
+            "785/31.4",
+            "25"
+          ]
+        },
+        {
+          "latex": "r = 5",
+          "explain": "Take the positive square root to get the tank radius."
+        },
+        {
+          "latex": "A_{\\text{lat}} = 2 \\cdot 3.14 \\cdot 5 \\cdot 10",
+          "explain": "Write the lateral area of the curved wall."
+        },
+        {
+          "latex": "A_{\\text{lat}} = 314",
+          "explain": "Multiply to find the curved wall area.",
+          "eq": [
+            "2*3.14*5*10",
+            "314"
+          ]
+        },
+        {
+          "latex": "\\frac{314}{16} = 19.625",
+          "explain": "Divide the lateral area by the coverage of one tin.",
+          "eq": [
+            "314/16",
+            "19.625"
+          ]
+        },
+        {
+          "latex": "n = 20",
+          "explain": "Round up because only full tins are sold.",
+          "val": "20"
+        }
+      ],
+      "blindSolve": {
+        "answer": "20",
+        "ambiguous": false,
+        "setup": "translate",
+        "strategy": "prescribed",
+        "check": "edge",
+        "task": "compute",
+        "reverse": true,
+        "steps": 5,
+        "edgeRejected": "r = -5 (non-physical negative radius) and 19 tins (19*16 = 304 m^2 < 314 m^2, insufficient primer)."
+      },
+      "id": "VAR-MTH-T01-C12-c12-applied-cylindrical-surface-coating-synthesis-02",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "c12-omitted-circumference-factor-trap|direct|r = sqrt(#/(#*#)), tins = ceil(#*#*r*#/#)"
+    },
+    {
+      "variantId": "VAR-MTH-T01-C12-c12-applied-cylindrical-surface-coating-synthesis-03",
+      "sourceArchetype": "c12-applied-cylindrical-surface-coating-synthesis",
+      "archetypeKey": "c12-applied-cylindrical-surface-coating-synthesis",
+      "archetype": "problem-solving",
+      "level": 3,
+      "category": "Trap & Edge Case",
+      "form": "direct",
+      "context": "brewery_conditioning_vessel_coating",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "Cylinder volume (791.28 m^3) and height (7 m) back-solve radius 6 m, lateral area 263.76 m^2, and 263.76/25 = 10.5504 -> 11 drums; domain formulas, units, and industrial vessel size are physically consistent."
+      },
+      "verificationLevel": "partial",
+      "prompt": "A cylindrical brewery conditioning vessel holds $791.28$ m$^3$ and stands $7$ m tall. Only its curved vertical wall will be coated with protective epoxy. One drum of epoxy covers $25$ m$^2$, and only whole drums are sold. Using $\\pi = 3.14$, how many drums must be ordered?",
+      "display": "r = \\sqrt{\\frac{V}{\\pi h}},\\quad A_{\\text{lat}} = 2\\pi r h",
+      "plainText": "r = sqrt(791.28/(3.14*7)), drums = ceil(2*3.14*r*7/25)",
+      "givens": {
+        "capacity": 791.28,
+        "ht": 7,
+        "coverage": 25,
+        "pi_approx": 3.14
+      },
+      "constants": {
+        "two": 2
+      },
+      "answerSpec": {
+        "type": "number",
+        "value": "11",
+        "tolerance": 0.001
+      },
+      "answerPlain": "11",
+      "answerDisplay": "11",
+      "inputHint": "Enter a whole number of drums",
+      "commonTrapTag": "c12-omitted-circumference-factor-trap",
+      "trapDerivation": "3.14*sqrt(791.28/(3.14*7))*7/25",
+      "trapValue": "5.2752",
+      "trapGivens": [
+        791.28,
+        7,
+        25,
+        3.14
+      ],
+      "verify": {
+        "source": "11",
+        "trapValue": "5.2752"
+      },
+      "checkpointHint": "Recover the radius from the volume formula first, find the curved wall area from the circumference and height, and round up to whole drums.",
+      "figureWaiver": "The vessel radius is derived from its capacity; a labeled cylinder figure would give it away.",
+      "references": [
+        "MTH-T01-C12"
+      ],
+      "steps": [
+        {
+          "latex": "791.28 = 3.14 \\cdot r^2 \\cdot 7",
+          "explain": "Substitute capacity and height into the cylinder volume formula."
+        },
+        {
+          "latex": "791.28 = 21.98\\,r^2",
+          "explain": "Multiply pi by the height.",
+          "eq": [
+            "3.14*7",
+            "21.98"
+          ]
+        },
+        {
+          "latex": "r^2 = 36",
+          "explain": "Divide both sides by the coefficient of the squared radius.",
+          "eq": [
+            "791.28/21.98",
+            "36"
+          ]
+        },
+        {
+          "latex": "r = 6",
+          "explain": "Take the positive square root to find the vessel radius."
+        },
+        {
+          "latex": "A_{\\text{lat}} = 2 \\cdot 3.14 \\cdot 6 \\cdot 7",
+          "explain": "Set up the lateral area of the curved wall."
+        },
+        {
+          "latex": "A_{\\text{lat}} = 263.76",
+          "explain": "Evaluate the curved wall area.",
+          "eq": [
+            "2*3.14*6*7",
+            "263.76"
+          ]
+        },
+        {
+          "latex": "\\frac{263.76}{25} = 10.5504",
+          "explain": "Divide the lateral area by the coverage per drum.",
+          "eq": [
+            "263.76/25",
+            "10.5504"
+          ]
+        },
+        {
+          "latex": "n = 11",
+          "explain": "Round up to the next whole drum so coverage is complete.",
+          "val": "11"
+        }
+      ],
+      "blindSolve": {
+        "answer": "11",
+        "ambiguous": false,
+        "setup": "translate",
+        "strategy": "prescribed",
+        "check": "edge",
+        "task": "compute",
+        "reverse": true,
+        "steps": 5,
+        "edgeRejected": "r = -6 (non-physical negative radius) and 10 drums (10*25 = 250 m^2 < 263.76 m^2, insufficient epoxy)."
+      },
+      "id": "VAR-MTH-T01-C12-c12-applied-cylindrical-surface-coating-synthesis-03",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "c12-omitted-circumference-factor-trap|direct|r = sqrt(#/(#*#)), drums = ceil(#*#*r*#/#)"
+    },
+    {
+      "variantId": "VAR-MTH-T01-C12-c12-composite-silo-volume-synthesis-01",
+      "sourceArchetype": "c12-composite-silo-volume-synthesis",
+      "archetypeKey": "c12-composite-silo-volume-synthesis",
+      "archetype": "problem-solving",
+      "level": 3,
+      "category": "Trap & Edge Case",
+      "form": "direct",
+      "context": "cement_terminal_storage_silo",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "Composite cement silo volume (cylinder plus conical roof) uses exact 3D geometry with consistent meter/m^3 units and realistic terminal dimensions (radius 6 m, slant 10 m > 6 m, cone height 8 m, cylinder height 15 m)."
+      },
+      "verificationLevel": "partial",
+      "prompt": "A cement terminal storage silo consists of a cylinder of radius $6$ m topped by a conical roof of the same radius. The roof's sloping edge measures $10$ m from rim to apex. If the silo must hold exactly $636\\pi$ m$^3$ in total, how tall must the cylindrical section be, in meters?",
+      "display": "h_2 = \\sqrt{s^2 - r^2},\\quad V = \\pi r^2 h_1 + \\tfrac{1}{3}\\pi r^2 h_2",
+      "plainText": "h2 = sqrt(10^2 - 6^2), 636 = 6^2*h1 + 6^2*h2/3",
+      "givens": {
+        "radius": 6,
+        "slant": 10,
+        "total_k": 636
+      },
+      "constants": {
+        "third": "1/3"
+      },
+      "answerSpec": {
+        "type": "number",
+        "value": "15",
+        "tolerance": 0.001
+      },
+      "answerPlain": "15",
+      "answerDisplay": "15",
+      "inputHint": "Enter a whole number in meters",
+      "commonTrapTag": "c12-slant-as-cone-height-trap",
+      "trapDerivation": "(636 - 6^2*10/3)/6^2",
+      "trapValue": "43/3",
+      "trapGivens": [
+        636,
+        6,
+        10
+      ],
+      "verify": {
+        "source": "(636 - 6^2*sqrt(10^2 - 6^2)/3)/6^2",
+        "trapValue": "43/3"
+      },
+      "checkpointHint": "Use the right triangle formed by the radius and the sloping roof edge to find the vertical cone height before subtracting the roof volume from the total.",
+      "figureWaiver": "Both the cone height and cylinder height are derived from the slant edge and total volume; a labeled silo figure would give away the answer.",
+      "references": [
+        "MTH-T01-C12"
+      ],
+      "steps": [
+        {
+          "latex": "h_2^2 = 10^2 - 6^2",
+          "explain": "Apply the Pythagorean theorem with the roof slant edge as hypotenuse."
+        },
+        {
+          "latex": "h_2^2 = 100 - 36",
+          "explain": "Square the slant edge and radius.",
+          "eq": [
+            "10^2 - 6^2",
+            "100 - 36"
+          ]
+        },
+        {
+          "latex": "h_2^2 = 64",
+          "explain": "Subtract to find the square of the cone height.",
+          "eq": [
+            "100 - 36",
+            "64"
+          ]
+        },
+        {
+          "latex": "h_2 = 8",
+          "explain": "Take the positive square root to get the vertical cone height."
+        },
+        {
+          "latex": "V_{\\text{cone}} = \\frac{1}{3}\\pi \\cdot 6^2 \\cdot 8",
+          "explain": "Write the conical roof volume using the derived vertical height."
+        },
+        {
+          "latex": "V_{\\text{cone}} = 96\\pi",
+          "explain": "Evaluate the volume of the conical roof.",
+          "eq": [
+            "36*8/3",
+            "96"
+          ]
+        },
+        {
+          "latex": "36\\pi h_1 + 96\\pi = 636\\pi",
+          "explain": "Set the sum of cylinder volume and cone volume equal to the total capacity."
+        },
+        {
+          "latex": "36 h_1 = 540",
+          "explain": "Divide by pi and subtract the cone coefficient from the total.",
+          "eq": [
+            "636 - 96",
+            "540"
+          ]
+        },
+        {
+          "latex": "h_1 = 15",
+          "explain": "Divide by the squared radius to find the cylindrical height.",
+          "val": "15"
+        }
+      ],
+      "blindSolve": {
+        "answer": "15",
+        "ambiguous": false,
+        "setup": "model",
+        "strategy": "prescribed",
+        "check": "none",
+        "task": "compute",
+        "reverse": true,
+        "steps": 4
+      },
+      "id": "VAR-MTH-T01-C12-c12-composite-silo-volume-synthesis-01",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "c12-slant-as-cone-height-trap|direct|h# = sqrt(#^# - #^#), # = #^#*h# + #^#*h#/#"
+    },
+    {
+      "variantId": "VAR-MTH-T01-C12-c12-composite-silo-volume-synthesis-02",
+      "sourceArchetype": "c12-composite-silo-volume-synthesis",
+      "archetypeKey": "c12-composite-silo-volume-synthesis",
+      "archetype": "problem-solving",
+      "level": 3,
+      "category": "Trap & Edge Case",
+      "form": "direct",
+      "context": "road_salt_depot_storage_tower",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "Composite road-salt storage tower (cylinder plus conical cap) uses exact 3D volume formulas with consistent meter/m^3 units and realistic municipal depot dimensions (radius 5 m, slant 13 m > 5 m, cone height 12 m, cylinder height 14 m)."
+      },
+      "verificationLevel": "partial",
+      "prompt": "A highway depot's road-salt tower is a cylinder of radius $5$ m topped by a conical cap of the same radius. The cap's slant edge measures $13$ m from rim to peak. The tower must have a total interior volume of exactly $450\\pi$ m$^3$. What height, in meters, is required for the cylindrical portion?",
+      "display": "h_2 = \\sqrt{s^2 - r^2},\\quad V = \\pi r^2 h_1 + \\tfrac{1}{3}\\pi r^2 h_2",
+      "plainText": "h2 = sqrt(13^2 - 5^2), 450 = 5^2*h1 + 5^2*h2/3",
+      "givens": {
+        "radius": 5,
+        "slant": 13,
+        "total_k": 450
+      },
+      "constants": {
+        "third": "1/3"
+      },
+      "answerSpec": {
+        "type": "number",
+        "value": "14",
+        "tolerance": 0.001
+      },
+      "answerPlain": "14",
+      "answerDisplay": "14",
+      "inputHint": "Enter a whole number in meters",
+      "commonTrapTag": "c12-slant-as-cone-height-trap",
+      "trapDerivation": "(450 - 5^2*13/3)/5^2",
+      "trapValue": "41/3",
+      "trapGivens": [
+        450,
+        5,
+        13
+      ],
+      "verify": {
+        "source": "(450 - 5^2*sqrt(13^2 - 5^2)/3)/5^2",
+        "trapValue": "41/3"
+      },
+      "checkpointHint": "Find the vertical height of the conical cap from the radius and slant edge first, then solve for the cylinder height from the remaining volume.",
+      "figureWaiver": "Both the cone height and cylinder height are derived from the slant edge and total volume; a labeled tower figure would give away the answer.",
+      "references": [
+        "MTH-T01-C12"
+      ],
+      "steps": [
+        {
+          "latex": "h_2^2 = 13^2 - 5^2",
+          "explain": "Apply the Pythagorean theorem with the cap slant edge as hypotenuse."
+        },
+        {
+          "latex": "h_2^2 = 169 - 25",
+          "explain": "Square the slant edge and the base radius.",
+          "eq": [
+            "13^2 - 5^2",
+            "169 - 25"
+          ]
+        },
+        {
+          "latex": "h_2^2 = 144",
+          "explain": "Subtract to find the square of the vertical cone height.",
+          "eq": [
+            "169 - 25",
+            "144"
+          ]
+        },
+        {
+          "latex": "h_2 = 12",
+          "explain": "Take the positive square root to get the cone height."
+        },
+        {
+          "latex": "V_{\\text{cone}} = \\frac{1}{3}\\pi \\cdot 5^2 \\cdot 12",
+          "explain": "Set up the conical cap volume using the vertical height."
+        },
+        {
+          "latex": "V_{\\text{cone}} = 100\\pi",
+          "explain": "Evaluate the volume of the conical cap.",
+          "eq": [
+            "25*12/3",
+            "100"
+          ]
+        },
+        {
+          "latex": "25\\pi h_1 + 100\\pi = 450\\pi",
+          "explain": "Set the combined cylinder and cone volumes equal to the required total."
+        },
+        {
+          "latex": "25 h_1 = 350",
+          "explain": "Divide by pi and subtract the cone term.",
+          "eq": [
+            "450 - 100",
+            "350"
+          ]
+        },
+        {
+          "latex": "h_1 = 14",
+          "explain": "Divide by the squared radius to obtain the cylindrical height.",
+          "val": "14"
+        }
+      ],
+      "blindSolve": {
+        "answer": "14",
+        "ambiguous": false,
+        "setup": "model",
+        "strategy": "prescribed",
+        "check": "none",
+        "task": "compute",
+        "reverse": true,
+        "steps": 4
+      },
+      "id": "VAR-MTH-T01-C12-c12-composite-silo-volume-synthesis-02",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "c12-slant-as-cone-height-trap|direct|h# = sqrt(#^# - #^#), # = #^#*h# + #^#*h#/#"
+    },
+    {
+      "variantId": "VAR-MTH-T01-C12-c12-composite-silo-volume-synthesis-03",
+      "sourceArchetype": "c12-composite-silo-volume-synthesis",
+      "archetypeKey": "c12-composite-silo-volume-synthesis",
+      "archetype": "problem-solving",
+      "level": 3,
+      "category": "Trap & Edge Case",
+      "form": "direct",
+      "context": "wood_pellet_biomass_bunker",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "Composite biomass wood-pellet bunker (cylinder plus conical roof) uses exact 3D volume geometry with consistent meter/m^3 units and realistic facility dimensions (radius 8 m, slant 17 m > 8 m, cone height 15 m, cylinder height 10 m)."
+      },
+      "verificationLevel": "partial",
+      "prompt": "A biomass heating plant stores wood pellets in a cylindrical bunker of radius $8$ m capped with a conical roof of the same radius. The roof's slant length from rim to apex is $17$ m. The bunker must hold exactly $960\\pi$ m$^3$ in total. How tall must the cylindrical wall be, in meters?",
+      "display": "h_2 = \\sqrt{s^2 - r^2},\\quad V = \\pi r^2 h_1 + \\tfrac{1}{3}\\pi r^2 h_2",
+      "plainText": "h2 = sqrt(17^2 - 8^2), 960 = 8^2*h1 + 8^2*h2/3",
+      "givens": {
+        "radius": 8,
+        "slant": 17,
+        "total_k": 960
+      },
+      "constants": {
+        "third": "1/3"
+      },
+      "answerSpec": {
+        "type": "number",
+        "value": "10",
+        "tolerance": 0.001
+      },
+      "answerPlain": "10",
+      "answerDisplay": "10",
+      "inputHint": "Enter a whole number in meters",
+      "commonTrapTag": "c12-slant-as-cone-height-trap",
+      "trapDerivation": "(960 - 8^2*17/3)/8^2",
+      "trapValue": "28/3",
+      "trapGivens": [
+        960,
+        8,
+        17
+      ],
+      "verify": {
+        "source": "(960 - 8^2*sqrt(17^2 - 8^2)/3)/8^2",
+        "trapValue": "28/3"
+      },
+      "checkpointHint": "Find the vertical cone height from the radius and slant length via a right triangle before computing the cone volume and solving for the cylinder height.",
+      "figureWaiver": "Both the cone height and cylinder height are derived from the slant length and total volume; a labeled bunker figure would give away the answer.",
+      "references": [
+        "MTH-T01-C12"
+      ],
+      "steps": [
+        {
+          "latex": "h_2^2 = 17^2 - 8^2",
+          "explain": "Apply the Pythagorean theorem with the roof slant length as hypotenuse."
+        },
+        {
+          "latex": "h_2^2 = 289 - 64",
+          "explain": "Square the slant length and base radius.",
+          "eq": [
+            "17^2 - 8^2",
+            "289 - 64"
+          ]
+        },
+        {
+          "latex": "h_2^2 = 225",
+          "explain": "Subtract to find the square of the cone height.",
+          "eq": [
+            "289 - 64",
+            "225"
+          ]
+        },
+        {
+          "latex": "h_2 = 15",
+          "explain": "Take the positive square root to obtain the vertical cone height."
+        },
+        {
+          "latex": "V_{\\text{cone}} = \\frac{1}{3}\\pi \\cdot 8^2 \\cdot 15",
+          "explain": "Write the conical roof volume using the derived vertical height."
+        },
+        {
+          "latex": "V_{\\text{cone}} = 320\\pi",
+          "explain": "Evaluate the volume of the conical roof.",
+          "eq": [
+            "64*15/3",
+            "320"
+          ]
+        },
+        {
+          "latex": "64\\pi h_1 + 320\\pi = 960\\pi",
+          "explain": "Set cylinder volume plus cone volume equal to the total bunker capacity."
+        },
+        {
+          "latex": "64 h_1 = 640",
+          "explain": "Divide by pi and subtract the cone term from the total.",
+          "eq": [
+            "960 - 320",
+            "640"
+          ]
+        },
+        {
+          "latex": "h_1 = 10",
+          "explain": "Divide by the squared radius to find the cylindrical height.",
+          "val": "10"
+        }
+      ],
+      "blindSolve": {
+        "answer": "10",
+        "ambiguous": false,
+        "setup": "model",
+        "strategy": "prescribed",
+        "check": "none",
+        "task": "compute",
+        "reverse": true,
+        "steps": 4
+      },
+      "id": "VAR-MTH-T01-C12-c12-composite-silo-volume-synthesis-03",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "c12-slant-as-cone-height-trap|direct|h# = sqrt(#^# - #^#), # = #^#*h# + #^#*h#/#"
+    }
+  ]
+}
