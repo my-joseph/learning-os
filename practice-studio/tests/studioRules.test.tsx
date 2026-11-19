@@ -105,6 +105,7 @@ assert.match(problemSelfEval, /border-rose-600/);
 assert.doesNotMatch(mathWorkspace, /Review &amp; Sync|Review & Sync/);
 assert.doesNotMatch(codeDashboard, /Review &amp; Sync|Review & Sync/);
 assert.doesNotMatch(problemNavFooter, /Review &amp; Sync|Review & Sync/);
+assert.match(stepper, /bg-emerald-600/);
 assert.match(stepper, /bg-indigo-600/);
 assert.match(stepper, /overflow-x-auto/);
 assert.match(stepper, /justify-center/);

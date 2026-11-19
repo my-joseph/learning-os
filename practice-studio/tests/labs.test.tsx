@@ -509,7 +509,8 @@ async function testSyntheticLabAndProgress() {
       /aria-label="Milestone 2, Pool, tests passing, current"[^>]*aria-current="step"/
     );
     assert.match(stepperHtml, /aria-label="Milestone 3, Abort, not started"/);
-    assert.match(stepperHtml, /bg-indigo-600/, "M1 (passed) circle and active connector must be indigo");
+    assert.match(stepperHtml, /bg-emerald-600/, "M1 (passed) circle must be emerald green");
+    assert.match(stepperHtml, /bg-indigo-600/, "Active connector must remain indigo");
     assert.match(stepperHtml, /border-zinc-300/, "M3 (not started) circle must be hollow grey");
     assert.match(stepperHtml, /ring-4 ring-indigo-600\/15/, "Current milestone must have indigo halo");
     assert.match(stepperHtml, /overflow-x-auto/);
