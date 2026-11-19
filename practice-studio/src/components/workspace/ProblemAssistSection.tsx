@@ -152,7 +152,7 @@ export const ProblemAssistSection: React.FC<ProblemAssistSectionProps> = ({
           <button
             type="button"
             onClick={onSkip}
-            className="inline-flex items-center gap-1 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors ml-auto"
+            className="inline-flex min-h-[36px] items-center gap-1 px-2 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors ml-auto"
           >
             <span>{skipLabel}</span>
           </button>

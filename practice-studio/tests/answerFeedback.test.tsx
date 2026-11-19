@@ -83,7 +83,7 @@ assert.equal(getResultCardTitle({ verdict: "invalid input", message: "", compone
 assert.equal(getResultCardTitle({ verdict: "incorrect", message: "", components: [], diagnostics: [] }, "wrong"), "Not quite");
 assert.equal(getResultCardTitle({ verdict: "skipped", message: "", components: [], diagnostics: [] }, "skipped"), "Skipped");
 
-// Rewrites internal-sounding skipped / choice messages and never leaks raw errors
+// Skipped results keep the next action visible without implying that hidden steps are open.
 assert.equal(
   formatDiagnosticBody(
     {
@@ -95,7 +95,7 @@ assert.equal(
     undefined,
     baseState({ skipped: true })
   ),
-  "Review the steps below when you're ready."
+  null
 );
 assert.equal(
   formatDiagnosticBody({
@@ -270,7 +270,7 @@ assert.match(skippedCardHtml, /bg-zinc-50/);
 assert.doesNotMatch(skippedCardHtml, /border-l-/);
 assert.match(skippedCardHtml, /lucide-skip-forward/);
 assert.match(skippedCardHtml, />Skipped</);
-assert.match(skippedCardHtml, /Review the steps below when you&#x27;re ready\.|Review the steps below when you're ready\./);
+assert.doesNotMatch(skippedCardHtml, /Review the steps below/);
 assert.match(skippedCardHtml, />Show steps</);
 
 const gatedSkippedCardHtml = renderToStaticMarkup(

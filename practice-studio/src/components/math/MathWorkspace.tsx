@@ -92,6 +92,7 @@ export interface MathWorkspaceProps {
   onToggleTimerPause?: () => void;
   reviewSupplement?: React.ReactNode;
   isReviewSession?: boolean;
+  isCorrectOnRetry?: boolean;
   reviewUnitTitle?: string;
   reviewScheduleNote?: string | null;
   nextCardLabel?: string;
@@ -130,6 +131,7 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
   onToggleTimerPause,
   reviewSupplement,
   isReviewSession = false,
+  isCorrectOnRetry = false,
   reviewUnitTitle,
   reviewScheduleNote = null,
   nextCardLabel,
@@ -519,7 +521,7 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
                   <DynamicMathLiveInput
                     value={problem.state.userInput}
                     placeholder={placeholder}
-                    ariaLabel={`Answer for question ${problem.id}`}
+                    ariaLabel={isReviewSession ? `Answer for question ${index + 1} of ${totalQuestions ?? 1}` : `Answer for question ${problem.id}`}
                     variables={problem.answerSpec.variables}
                     disabled={isChecking}
                     fieldRef={mathLiveRef}
@@ -545,7 +547,7 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
                   onChange={onInputChange}
                   onCheck={() => void triggerCheck()}
                   placeholder={placeholder}
-                  aria-label={`Answer for question ${problem.id}`}
+                  aria-label={isReviewSession ? `Answer for question ${index + 1} of ${totalQuestions ?? 1}` : `Answer for question ${problem.id}`}
                   isChecking={isChecking}
                 />
               )}
@@ -572,7 +574,7 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
               onChange={onInputChange}
               onCheck={() => void triggerCheck()}
               placeholder={placeholder}
-              aria-label={`Answer for question ${problem.id}`}
+              aria-label={isReviewSession ? `Answer for question ${index + 1} of ${totalQuestions ?? 1}` : `Answer for question ${problem.id}`}
               isChecking={isChecking}
             />
           )}
@@ -583,6 +585,8 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
             state={problem.state}
             problem={problem}
             mistakeTags={mistakeTags}
+            isReviewSession={isReviewSession}
+            isCorrectOnRetry={isCorrectOnRetry}
             isLastQuestion={isReviewSession ? false : isLastQuestion}
             nextLabel={nextCardLabel ?? "Next question"}
             scheduleNote={isReviewSession ? reviewScheduleNote : null}
@@ -640,11 +644,13 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
           onSkip={
             onSkip
               ? () => {
-                  if (!showHint && onHintRevealed) {
+                  if (!isReviewSession && !showHint && onHintRevealed) {
                     onHintRevealed();
                   }
-                  setShowHint(true);
-                  setShowSolution(true);
+                  if (!isReviewSession) {
+                    setShowHint(true);
+                    setShowSolution(true);
+                  }
                   onSkip();
                 }
               : undefined
@@ -749,6 +755,7 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
         onOpenReview={onOpenReview}
         lastQuestionLabel={lastQuestionNavLabel}
         nextDisabled={isReviewSession && !hasAttempt}
+        hideNext={isReviewSession && hasAttempt}
       />
     </div>
   );

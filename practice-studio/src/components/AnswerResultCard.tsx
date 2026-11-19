@@ -16,6 +16,7 @@ export interface AnswerResultCardProps {
   mistakeTags?: MistakeTag[];
   isLastQuestion?: boolean;
   isReviewSession?: boolean;
+  isCorrectOnRetry?: boolean;
   nextLabel?: string;
   scheduleNote?: string | null;
   onNextQuestion?: () => void;
@@ -67,6 +68,7 @@ export const AnswerResultCard: React.FC<AnswerResultCardProps> = ({
   mistakeTags = [],
   isLastQuestion = false,
   isReviewSession = false,
+  isCorrectOnRetry = false,
   nextLabel = "Next question",
   scheduleNote = null,
   onNextQuestion,
@@ -83,6 +85,7 @@ export const AnswerResultCard: React.FC<AnswerResultCardProps> = ({
         isLastQuestion,
       })
     : null;
+  const actionKind = isReviewSession && model?.tone === "skipped" ? "next" : model?.actionKind;
 
   const actionButtonClass =
     "inline-flex items-center justify-center gap-1.5 h-8 px-3 rounded-lg text-xs font-medium bg-white/90 dark:bg-zinc-900/80 border border-zinc-200/90 dark:border-zinc-700 text-zinc-800 dark:text-zinc-200 hover:bg-white dark:hover:bg-zinc-900 hover:border-zinc-300 dark:hover:border-zinc-600 transition-colors shrink-0";
@@ -108,7 +111,7 @@ export const AnswerResultCard: React.FC<AnswerResultCardProps> = ({
               <div className="min-w-0 flex-1 space-y-1">
                 <div className="min-h-7 flex flex-wrap items-center gap-x-2.5 gap-y-0.5">
                   <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                    {isReviewSession && model.tone === "correct" && model.attemptNumber !== null
+                    {isReviewSession && model.tone === "correct" && isCorrectOnRetry
                       ? "Correct on retry"
                       : model.title}
                     {scheduleNote && (
@@ -117,7 +120,7 @@ export const AnswerResultCard: React.FC<AnswerResultCardProps> = ({
                       </span>
                     )}
                   </span>
-                  {model.attemptNumber !== null && (
+                  {model.attemptNumber !== null && !isReviewSession && (
                     <span className="text-xs text-zinc-500 dark:text-zinc-400 tabular-nums">
                       Attempt {model.attemptNumber}
                     </span>
@@ -156,7 +159,7 @@ export const AnswerResultCard: React.FC<AnswerResultCardProps> = ({
               </div>
             </div>
 
-            {model.actionKind === "next" && onNextQuestion && (
+            {actionKind === "next" && onNextQuestion && (
               <div className="flex sm:justify-end pl-10 sm:pl-0 shrink-0">
                 <button
                   type="button"
@@ -170,7 +173,7 @@ export const AnswerResultCard: React.FC<AnswerResultCardProps> = ({
               </div>
             )}
 
-            {model.actionKind === "review" && onOpenReview && (
+            {actionKind === "review" && onOpenReview && (
               <div className="flex sm:justify-end pl-10 sm:pl-0 shrink-0">
                 <button
                   type="button"
@@ -184,7 +187,7 @@ export const AnswerResultCard: React.FC<AnswerResultCardProps> = ({
               </div>
             )}
 
-            {model.actionKind === "retry" && onTryAgain && (
+            {actionKind === "retry" && onTryAgain && (
               <div className="flex sm:justify-end pl-10 sm:pl-0 shrink-0">
                 <button
                   type="button"
@@ -197,7 +200,7 @@ export const AnswerResultCard: React.FC<AnswerResultCardProps> = ({
               </div>
             )}
 
-            {model.actionKind === "show_steps" && onShowSteps && (
+            {actionKind === "show_steps" && onShowSteps && (
               <div className="flex sm:justify-end pl-10 sm:pl-0 shrink-0">
                 <button
                   type="button"
