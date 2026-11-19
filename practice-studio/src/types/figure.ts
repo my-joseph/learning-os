@@ -1,4 +1,4 @@
-export type FigureTheme = "indigo" | "blue" | "emerald" | "amber" | "rose" | "purple";
+export type FigureTheme = "indigo" | "emerald" | "amber" | "rose";
 
 export interface Point2D {
   x: number;

@@ -82,49 +82,49 @@ export const InteractivePythagoras2D: React.FC<InteractivePythagoras2DProps> = (
   return (
     <div className="flex flex-col items-center w-full select-none">
       {/* SVG Interactive Canvas */}
-      <div className="relative w-full bg-[#0a0d14] rounded-xl border border-[#232a3d] p-2 flex flex-col justify-center items-center overflow-hidden">
+      <div className="relative w-full bg-white dark:bg-zinc-950 rounded-xl border border-zinc-200 dark:border-zinc-800 p-2 flex flex-col justify-center items-center overflow-hidden">
         
         {/* Dynamic Tooltip / Parameter Inspector Bar */}
-        <div className="w-full mb-1.5 px-3 py-1.5 bg-[#121724]/90 backdrop-blur border border-indigo-500/25 rounded-lg text-xs flex justify-between items-center transition-all min-h-[36px]">
+        <div className="w-full mb-1.5 px-3 py-1.5 bg-zinc-50 dark:bg-zinc-900 backdrop-blur border border-indigo-500/25 rounded-lg text-xs flex justify-between items-center transition-all min-h-[36px]">
           <div className="flex items-center gap-2">
-            <Sparkles className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
-            <span className="text-slate-200">
+            <Sparkles className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" />
+            <span className="text-zinc-700 dark:text-zinc-200">
               {hovered === "triangle" ? (
                 <span>
-                  <strong className="text-indigo-300">Triangle Interior:</strong> Area = &frac12; &times; a &times; b = &frac12;({legA})({legB}) = <strong className="text-emerald-300">{area}</strong>
+                  <strong className="text-indigo-600 dark:text-indigo-400">Triangle Interior:</strong> Area = &frac12; &times; a &times; b = &frac12;({legA})({legB}) = <strong className="text-emerald-700 dark:text-emerald-400">{area}</strong>
                 </span>
               ) : hovered === "legA" || hovered === "vertA" ? (
                 <span>
-                  <strong className="text-sky-300">Vertical Leg a = {legA}</strong> (Projected square a&sup2; = {aSq}) &mdash; <span className="text-slate-400">Drag to adjust height</span>
+                  <strong className="text-indigo-600 dark:text-indigo-400">Vertical Leg a = {legA}</strong> (Projected square a&sup2; = {aSq}) &mdash; <span className="text-zinc-500 dark:text-zinc-400">Drag to adjust height</span>
                 </span>
               ) : hovered === "legB" || hovered === "vertB" ? (
                 <span>
-                  <strong className="text-emerald-300">Horizontal Leg b = {legB}</strong> (Projected square b&sup2; = {bSq}) &mdash; <span className="text-slate-400">Drag to adjust width</span>
+                  <strong className="text-emerald-700 dark:text-emerald-400">Horizontal Leg b = {legB}</strong> (Projected square b&sup2; = {bSq}) &mdash; <span className="text-zinc-500 dark:text-zinc-400">Drag to adjust width</span>
                 </span>
               ) : hovered === "hyp" ? (
                 <span>
-                  <strong className="text-amber-300">Hypotenuse c = {hyp}</strong> &mdash; c&sup2; = a&sup2; + b&sup2; = {aSq} + {bSq} = <strong className="text-indigo-300">{cSq}</strong>
+                  <strong className="text-amber-700 dark:text-amber-400">Hypotenuse c = {hyp}</strong> &mdash; c&sup2; = a&sup2; + b&sup2; = {aSq} + {bSq} = <strong className="text-indigo-600 dark:text-indigo-400">{cSq}</strong>
                 </span>
               ) : hovered === "rightAngle" ? (
                 <span>
-                  <strong className="text-amber-400">Right Angle &ang;C = 90&deg;</strong> (Perpendicular legs a &perp; b)
+                  <strong className="text-amber-700 dark:text-amber-400">Right Angle &ang;C = 90&deg;</strong> (Perpendicular legs a &perp; b)
                 </span>
               ) : hovered === "sqA" ? (
                 <span>
-                  <strong className="text-sky-300">Dashed Square on a:</strong> Area a&sup2; = {legA} &times; {legA} = <strong className="text-sky-300">{aSq}</strong>
+                  <strong className="text-indigo-600 dark:text-indigo-400">Dashed Square on a:</strong> Area a&sup2; = {legA} &times; {legA} = <strong className="text-indigo-600 dark:text-indigo-400">{aSq}</strong>
                 </span>
               ) : hovered === "sqB" ? (
                 <span>
-                  <strong className="text-emerald-300">Dashed Square on b:</strong> Area b&sup2; = {legB} &times; {legB} = <strong className="text-emerald-300">{bSq}</strong>
+                  <strong className="text-emerald-700 dark:text-emerald-400">Dashed Square on b:</strong> Area b&sup2; = {legB} &times; {legB} = <strong className="text-emerald-700 dark:text-emerald-400">{bSq}</strong>
                 </span>
               ) : (
-                <span className="text-slate-400">
-                  Directly drag <span className="text-sky-300 font-semibold">Leg a</span> or <span className="text-emerald-300 font-semibold">Leg b</span> handles. Hover elements to inspect properties.
+                <span className="text-zinc-500 dark:text-zinc-400">
+                  Directly drag <span className="text-indigo-600 dark:text-indigo-400 font-semibold">Leg a</span> or <span className="text-emerald-700 dark:text-emerald-400 font-semibold">Leg b</span> handles. Hover elements to inspect properties.
                 </span>
               )}
             </span>
           </div>
-          <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-indigo-950/70 text-indigo-300 border border-indigo-800/50 shrink-0 hidden sm:inline-block">
+          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-indigo-950/70 text-indigo-600 dark:text-indigo-400 border border-indigo-800/50 shrink-0 hidden sm:inline-block">
             2D Interactive
           </span>
         </div>
@@ -146,7 +146,7 @@ export const InteractivePythagoras2D: React.FC<InteractivePythagoras2DProps> = (
           </defs>
 
           {/* Background Grid Pattern */}
-          <g stroke="#161c2b" strokeWidth="0.8">
+          <g className="stroke-zinc-200 dark:stroke-zinc-800" strokeWidth="0.8">
             {Array.from({ length: 16 }).map((_, i) => (
               <line key={`gx-${i}`} x1={ox + i * scale} y1={25} x2={ox + i * scale} y2={oy + 15} />
             ))}
@@ -161,11 +161,11 @@ export const InteractivePythagoras2D: React.FC<InteractivePythagoras2DProps> = (
             y={topY}
             width={Math.min(48, legA * scale * 0.45)}
             height={legA * scale}
-            fill={hovered === "sqA" || hovered === "legA" ? "rgba(56, 189, 248, 0.14)" : "rgba(56, 189, 248, 0.04)"}
-            stroke={hovered === "sqA" || hovered === "legA" ? "#38bdf8" : "#223249"}
+            fill="currentColor"
+            stroke="currentColor"
             strokeDasharray="3 3"
             strokeWidth={1.5}
-            className="cursor-pointer transition-colors"
+            className={`cursor-pointer transition-colors ${hovered === "sqA" || hovered === "legA" ? "fill-indigo-500/15 stroke-indigo-600 dark:stroke-indigo-400" : "fill-indigo-500/5 stroke-zinc-300 dark:stroke-zinc-700"}`}
             onPointerOver={() => setHovered("sqA")}
             onPointerOut={() => setHovered(null)}
           />
@@ -174,7 +174,7 @@ export const InteractivePythagoras2D: React.FC<InteractivePythagoras2DProps> = (
             y={(oy + topY) / 2}
             textAnchor="middle"
             dominantBaseline="central"
-            className="fill-sky-400/60 font-mono text-[10px] pointer-events-none select-none"
+            className="fill-indigo-600 dark:fill-indigo-400/60 font-mono text-[10px] pointer-events-none select-none"
           >
             a&sup2;={aSq}
           </text>
@@ -185,11 +185,11 @@ export const InteractivePythagoras2D: React.FC<InteractivePythagoras2DProps> = (
             y={oy}
             width={legB * scale}
             height={Math.min(42, legB * scale * 0.4)}
-            fill={hovered === "sqB" || hovered === "legB" ? "rgba(16, 185, 129, 0.14)" : "rgba(16, 185, 129, 0.04)"}
-            stroke={hovered === "sqB" || hovered === "legB" ? "#10b981" : "#223249"}
+            fill="currentColor"
+            stroke="currentColor"
             strokeDasharray="3 3"
             strokeWidth={1.5}
-            className="cursor-pointer transition-colors"
+            className={`cursor-pointer transition-colors ${hovered === "sqB" || hovered === "legB" ? "fill-emerald-500/15 stroke-emerald-600 dark:stroke-emerald-400" : "fill-emerald-500/5 stroke-zinc-300 dark:stroke-zinc-700"}`}
             onPointerOver={() => setHovered("sqB")}
             onPointerOut={() => setHovered(null)}
           />
@@ -198,7 +198,7 @@ export const InteractivePythagoras2D: React.FC<InteractivePythagoras2DProps> = (
             y={oy + Math.min(42, legB * scale * 0.4) / 2}
             textAnchor="middle"
             dominantBaseline="central"
-            className="fill-emerald-400/60 font-mono text-[10px] pointer-events-none select-none"
+            className="fill-emerald-700 dark:fill-emerald-400/60 font-mono text-[10px] pointer-events-none select-none"
           >
             b&sup2;={bSq}
           </text>
@@ -206,11 +206,11 @@ export const InteractivePythagoras2D: React.FC<InteractivePythagoras2DProps> = (
           {/* Main Triangle Body */}
           <polygon
             points={`${ox},${oy} ${rightX},${oy} ${ox},${topY}`}
-            stroke={hovered === "triangle" ? "#a5b4fc" : "#818cf8"}
+            stroke="currentColor"
             strokeWidth={hovered === "triangle" ? 3 : 2}
-            fill={hovered === "triangle" ? "rgba(99, 102, 241, 0.22)" : "rgba(99, 102, 241, 0.08)"}
+            fill="currentColor"
             strokeLinejoin="round"
-            className="transition-colors cursor-pointer"
+            className={`transition-colors cursor-pointer text-indigo-600 dark:text-indigo-400 ${hovered === "triangle" ? "fill-indigo-500/20" : "fill-indigo-500/10"}`}
             onPointerOver={() => setHovered("triangle")}
             onPointerOut={() => setHovered(null)}
           />
@@ -223,9 +223,10 @@ export const InteractivePythagoras2D: React.FC<InteractivePythagoras2DProps> = (
           >
             <polyline
               points={`${ox},${oy - 14} ${ox + 14},${oy - 14} ${ox + 14},${oy}`}
-              stroke={hovered === "rightAngle" ? "#f59e0b" : "#94a3b8"}
+              stroke="currentColor"
               strokeWidth={hovered === "rightAngle" ? 2.5 : 1.5}
               fill="none"
+              className={hovered === "rightAngle" ? "text-amber-700 dark:text-amber-400" : "text-zinc-400 dark:text-zinc-500"}
             />
             {/* Square fill inside 90 deg corner */}
             <rect
@@ -252,9 +253,10 @@ export const InteractivePythagoras2D: React.FC<InteractivePythagoras2DProps> = (
               y1={oy}
               x2={ox}
               y2={topY}
-              stroke={hovered === "legA" || hovered === "vertA" ? "#38bdf8" : "#0284c7"}
+              stroke="currentColor"
               strokeWidth={hovered === "legA" || hovered === "vertA" ? 5 : 3.5}
               filter={hovered === "legA" || hovered === "vertA" ? "url(#glow-pyth)" : undefined}
+              className="text-indigo-600 dark:text-indigo-400"
             />
             {/* Dimension label */}
             <text
@@ -263,7 +265,7 @@ export const InteractivePythagoras2D: React.FC<InteractivePythagoras2DProps> = (
               textAnchor="end"
               dominantBaseline="central"
               className={`font-mono text-xs font-bold transition-all ${
-                hovered === "legA" || hovered === "vertA" ? "fill-sky-300 font-extrabold text-sm" : "fill-sky-400"
+                hovered === "legA" || hovered === "vertA" ? "fill-indigo-600 dark:fill-indigo-400 font-extrabold text-sm" : "fill-indigo-600 dark:fill-indigo-400"
               }`}
             >
               a = {legA}
@@ -285,9 +287,10 @@ export const InteractivePythagoras2D: React.FC<InteractivePythagoras2DProps> = (
               y1={oy}
               x2={rightX}
               y2={oy}
-              stroke={hovered === "legB" || hovered === "vertB" ? "#10b981" : "#059669"}
+              stroke="currentColor"
               strokeWidth={hovered === "legB" || hovered === "vertB" ? 5 : 3.5}
               filter={hovered === "legB" || hovered === "vertB" ? "url(#glow-pyth)" : undefined}
+              className="text-emerald-600 dark:text-emerald-400"
             />
             {/* Dimension label */}
             <text
@@ -296,7 +299,7 @@ export const InteractivePythagoras2D: React.FC<InteractivePythagoras2DProps> = (
               textAnchor="middle"
               dominantBaseline="central"
               className={`font-mono text-xs font-bold transition-all ${
-                hovered === "legB" || hovered === "vertB" ? "fill-emerald-300 font-extrabold text-sm" : "fill-emerald-400"
+                hovered === "legB" || hovered === "vertB" ? "fill-emerald-700 dark:fill-emerald-400 font-extrabold text-sm" : "fill-emerald-700 dark:fill-emerald-400"
               }`}
             >
               b = {legB}
@@ -317,9 +320,10 @@ export const InteractivePythagoras2D: React.FC<InteractivePythagoras2DProps> = (
               y1={topY}
               x2={rightX}
               y2={oy}
-              stroke={hovered === "hyp" ? "#fbbf24" : "#d97706"}
+              stroke="currentColor"
               strokeWidth={hovered === "hyp" ? 5 : 3.5}
               filter={hovered === "hyp" ? "url(#glow-pyth)" : undefined}
+              className="text-amber-700 dark:text-amber-400"
             />
             {/* Dimension label */}
             <text
@@ -328,7 +332,7 @@ export const InteractivePythagoras2D: React.FC<InteractivePythagoras2DProps> = (
               textAnchor="start"
               dominantBaseline="central"
               className={`font-mono text-xs font-bold transition-all ${
-                hovered === "hyp" ? "fill-amber-300 font-extrabold text-sm" : "fill-amber-400"
+                hovered === "hyp" ? "fill-amber-700 dark:fill-amber-400 font-extrabold text-sm" : "fill-amber-700 dark:fill-amber-400"
               }`}
             >
               c = {hyp}
@@ -347,14 +351,14 @@ export const InteractivePythagoras2D: React.FC<InteractivePythagoras2DProps> = (
               cx={ox}
               cy={topY}
               r={hovered === "vertA" ? 9 : 7}
-              fill="#38bdf8"
-              stroke="#ffffff"
+              fill="currentColor"
+              stroke="currentColor"
               strokeWidth={2}
-              className="transition-all filter drop-shadow-[0_0_8px_rgba(56,189,248,0.9)]"
+              className="transition-all filter drop-shadow-[0_0_8px_rgba(79,70,229,0.35)] text-indigo-600 dark:text-indigo-400 stroke-white dark:stroke-zinc-950"
             />
             {/* Direction Arrows Indicator on hover */}
             {hovered === "vertA" && (
-              <g stroke="#ffffff" strokeWidth={1.5} fill="none" opacity={0.9}>
+              <g className="stroke-white dark:stroke-zinc-950" strokeWidth={1.5} fill="none" opacity={0.9}>
                 <path d={`M ${ox} ${topY - 14} L ${ox} ${topY - 20} M ${ox - 3} ${topY - 17} L ${ox} ${topY - 20} L ${ox + 3} ${topY - 17}`} />
                 <path d={`M ${ox} ${topY + 14} L ${ox} ${topY + 20} M ${ox - 3} ${topY + 17} L ${ox} ${topY + 20} L ${ox + 3} ${topY + 17}`} />
               </g>
@@ -373,14 +377,14 @@ export const InteractivePythagoras2D: React.FC<InteractivePythagoras2DProps> = (
               cx={rightX}
               cy={oy}
               r={hovered === "vertB" ? 9 : 7}
-              fill="#10b981"
-              stroke="#ffffff"
+              fill="currentColor"
+              stroke="currentColor"
               strokeWidth={2}
-              className="transition-all filter drop-shadow-[0_0_8px_rgba(16,185,129,0.9)]"
+              className="transition-all filter drop-shadow-[0_0_8px_rgba(16,185,129,0.35)] text-emerald-600 dark:text-emerald-400 stroke-white dark:stroke-zinc-950"
             />
             {/* Direction Arrows Indicator on hover */}
             {hovered === "vertB" && (
-              <g stroke="#ffffff" strokeWidth={1.5} fill="none" opacity={0.9}>
+              <g className="stroke-white dark:stroke-zinc-950" strokeWidth={1.5} fill="none" opacity={0.9}>
                 <path d={`M ${rightX + 14} ${oy} L ${rightX + 20} ${oy} M ${rightX + 17} ${oy - 3} L ${rightX + 20} ${oy} L ${rightX + 17} ${oy + 3}`} />
                 <path d={`M ${rightX - 14} ${oy} L ${rightX - 20} ${oy} M ${rightX - 17} ${oy - 3} L ${rightX - 20} ${oy} L ${rightX - 17} ${oy + 3}`} />
               </g>
@@ -390,24 +394,24 @@ export const InteractivePythagoras2D: React.FC<InteractivePythagoras2DProps> = (
       </div>
 
       {/* Live Telemetry & Equation Proof Bar */}
-      <div className="w-full mt-2 p-2.5 bg-[#121622] border border-[#232a3d] rounded-xl flex flex-wrap justify-between items-center gap-2 font-mono text-xs">
+      <div className="w-full mt-2 p-2.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl flex flex-wrap justify-between items-center gap-2 font-mono text-xs">
         <div className="flex items-center gap-2">
-          <span className="text-slate-400">Equation:</span>
-          <span className="text-sky-300 font-bold">{legA}&sup2;</span>
-          <span className="text-slate-500">+</span>
-          <span className="text-emerald-300 font-bold">{legB}&sup2;</span>
-          <span className="text-slate-500">=</span>
-          <span className="text-sky-400">{aSq}</span>
-          <span className="text-slate-500">+</span>
-          <span className="text-emerald-400">{bSq}</span>
-          <span className="text-slate-500">=</span>
-          <span className="text-indigo-300 font-extrabold">{cSq}</span>
+          <span className="text-zinc-500 dark:text-zinc-400">Equation:</span>
+          <span className="text-indigo-600 dark:text-indigo-400 font-bold">{legA}&sup2;</span>
+          <span className="text-zinc-500 dark:text-zinc-400">+</span>
+          <span className="text-emerald-700 dark:text-emerald-400 font-bold">{legB}&sup2;</span>
+          <span className="text-zinc-500 dark:text-zinc-400">=</span>
+          <span className="text-indigo-600 dark:text-indigo-400">{aSq}</span>
+          <span className="text-zinc-500 dark:text-zinc-400">+</span>
+          <span className="text-emerald-700 dark:text-emerald-400">{bSq}</span>
+          <span className="text-zinc-500 dark:text-zinc-400">=</span>
+          <span className="text-indigo-600 dark:text-indigo-400 font-extrabold">{cSq}</span>
         </div>
 
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-amber-950/40 border border-amber-600/30">
-            <span className="text-slate-400">c = &radic;{cSq} =</span>
-            <span className="text-amber-300 font-black text-sm">{hyp}</span>
+            <span className="text-zinc-500 dark:text-zinc-400">c = &radic;{cSq} =</span>
+            <span className="text-amber-700 dark:text-amber-400 font-black text-sm">{hyp}</span>
           </div>
 
           <button
@@ -421,7 +425,7 @@ export const InteractivePythagoras2D: React.FC<InteractivePythagoras2DProps> = (
             className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
               isChanged
                 ? "bg-indigo-600 hover:bg-indigo-500 text-white shadow-sm"
-                : "bg-[#1b2233] text-slate-500 cursor-not-allowed"
+                : "bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 cursor-not-allowed"
             }`}
           >
             <RotateCcw className="w-3 h-3" />
