@@ -12,55 +12,13 @@ import { FormattedText } from "../FormattedText";
 const THEME_STYLES: Record<
   FigureTheme,
   {
-    primary: string;
-    stroke: string;
-    fill: string;
-    accent: string;
-    marker: string;
+    primaryClass: string;
   }
 > = {
-  indigo: {
-    primary: "stroke-indigo-600 dark:stroke-indigo-400",
-    stroke: "#6366f1",
-    fill: "rgba(99, 102, 241, 0.09)",
-    accent: "text-indigo-600 dark:text-indigo-400",
-    marker: "#4f46e5",
-  },
-  blue: {
-    primary: "stroke-sky-600 dark:stroke-sky-400",
-    stroke: "#0284c7",
-    fill: "rgba(14, 165, 233, 0.09)",
-    accent: "text-sky-600 dark:text-sky-400",
-    marker: "#0369a1",
-  },
-  emerald: {
-    primary: "stroke-emerald-600 dark:stroke-emerald-400",
-    stroke: "#059669",
-    fill: "rgba(16, 185, 129, 0.09)",
-    accent: "text-emerald-600 dark:text-emerald-400",
-    marker: "#047857",
-  },
-  amber: {
-    primary: "stroke-amber-700 dark:stroke-amber-400",
-    stroke: "#d97706",
-    fill: "rgba(245, 158, 11, 0.09)",
-    accent: "text-amber-700 dark:text-amber-400",
-    marker: "#b45309",
-  },
-  rose: {
-    primary: "stroke-rose-600 dark:stroke-rose-400",
-    stroke: "#e11d48",
-    fill: "rgba(244, 63, 94, 0.09)",
-    accent: "text-rose-600 dark:text-rose-400",
-    marker: "#be123c",
-  },
-  purple: {
-    primary: "stroke-purple-600 dark:stroke-purple-400",
-    stroke: "#7c3aed",
-    fill: "rgba(139, 92, 246, 0.09)",
-    accent: "text-purple-600 dark:text-purple-400",
-    marker: "#6d28d9",
-  },
+  indigo: { primaryClass: "text-indigo-600 dark:text-indigo-400" },
+  emerald: { primaryClass: "text-emerald-700 dark:text-emerald-400" },
+  amber: { primaryClass: "text-amber-700 dark:text-amber-400" },
+  rose: { primaryClass: "text-rose-600 dark:text-rose-400" },
 };
 
 interface GeometryRendererProps {
@@ -145,7 +103,7 @@ export const GeometryRenderer: React.FC<GeometryRendererProps> = ({ spec }) => {
     <div className="relative w-full flex flex-col items-center select-none overflow-hidden">
       <svg
         viewBox={`0 0 ${svgWidth} ${svgHeight}`}
-        className="w-full h-auto overflow-visible"
+        className={`w-full h-auto overflow-visible ${colors.primaryClass}`}
         style={{ maxHeight: "380px" }}
       >
         <defs>
@@ -179,9 +137,10 @@ export const GeometryRenderer: React.FC<GeometryRendererProps> = ({ spec }) => {
               <polygon
                 key={`poly-${idx}`}
                 points={ptsStr}
-                stroke={shape.stroke || colors.stroke}
+                stroke={shape.stroke || "currentColor"}
                 strokeWidth={shape.strokeWidth || 2.2}
-                fill={shape.fill ? colors.fill : "none"}
+                fill={shape.fill ? "currentColor" : "none"}
+                fillOpacity={shape.fill ? 0.09 : undefined}
                 strokeLinejoin="round"
                 strokeDasharray={shape.strokeDasharray}
                 className="transition-colors"
@@ -201,7 +160,7 @@ export const GeometryRenderer: React.FC<GeometryRendererProps> = ({ spec }) => {
                 y1={p1[1]}
                 x2={p2[0]}
                 y2={p2[1]}
-                stroke={shape.stroke || colors.stroke}
+                stroke={shape.stroke || "currentColor"}
                 strokeWidth={shape.strokeWidth || 2}
                 strokeDasharray={shape.strokeDasharray}
                 markerEnd={shape.arrow ? "url(#geo-arrow)" : undefined}
@@ -220,9 +179,10 @@ export const GeometryRenderer: React.FC<GeometryRendererProps> = ({ spec }) => {
                 cx={center[0]}
                 cy={center[1]}
                 r={rSvg}
-                stroke={shape.stroke || colors.stroke}
+                stroke={shape.stroke || "currentColor"}
                 strokeWidth={shape.strokeWidth || 2}
-                fill={shape.fill ? colors.fill : "none"}
+                fill={shape.fill ? "currentColor" : "none"}
+                fillOpacity={shape.fill ? 0.09 : undefined}
                 strokeDasharray={shape.strokeDasharray}
               />
             );
@@ -241,9 +201,10 @@ export const GeometryRenderer: React.FC<GeometryRendererProps> = ({ spec }) => {
                 cy={center[1]}
                 rx={rxSvg}
                 ry={rySvg}
-                stroke={shape.stroke || colors.stroke}
+                stroke={shape.stroke || "currentColor"}
                 strokeWidth={shape.strokeWidth || 2}
-                fill={shape.fill ? colors.fill : "none"}
+                fill={shape.fill ? "currentColor" : "none"}
+                fillOpacity={shape.fill ? 0.09 : undefined}
                 strokeDasharray={shape.strokeDasharray}
               />
             );
@@ -260,7 +221,7 @@ export const GeometryRenderer: React.FC<GeometryRendererProps> = ({ spec }) => {
                 key={`m-ra-${idx}`}
                 marker={marker}
                 getPt={getPt}
-                strokeColor={colors.stroke}
+                strokeColor="currentColor"
               />
             );
           }
@@ -271,7 +232,7 @@ export const GeometryRenderer: React.FC<GeometryRendererProps> = ({ spec }) => {
                 key={`m-arc-${idx}`}
                 marker={marker}
                 getPt={getPt}
-                strokeColor={colors.stroke}
+                strokeColor="currentColor"
               />
             );
           }
@@ -290,7 +251,7 @@ export const GeometryRenderer: React.FC<GeometryRendererProps> = ({ spec }) => {
               cx={pt[0]}
               cy={pt[1]}
               r={3.5}
-              className="fill-slate-900 dark:fill-white stroke-white dark:stroke-slate-900"
+              className="fill-zinc-900 dark:fill-white stroke-white dark:stroke-zinc-900"
               strokeWidth={1.5}
             />
           );
@@ -315,7 +276,7 @@ export const GeometryRenderer: React.FC<GeometryRendererProps> = ({ spec }) => {
                 className="overflow-visible pointer-events-none"
               >
                 <div className="w-full h-full flex items-center justify-center">
-                  <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                  <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200">
                     <FormattedText text={textStr.startsWith("$") ? textStr : `$${textStr}$`} />
                   </span>
                 </div>
@@ -373,7 +334,7 @@ export const GeometryRenderer: React.FC<GeometryRendererProps> = ({ spec }) => {
                     className={`px-1.5 py-0.5 rounded text-xs font-semibold backdrop-blur-[2px] ${
                       isHighlight
                         ? "bg-amber-100/90 dark:bg-amber-950/80 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-700/60 font-bold shadow-sm"
-                        : "bg-white/70 dark:bg-slate-900/70 text-slate-800 dark:text-slate-200"
+                        : "bg-white/70 dark:bg-zinc-900/70 text-zinc-800 dark:text-zinc-200"
                     }`}
                   >
                     <FormattedText text={formatted} />
@@ -395,7 +356,7 @@ export const GeometryRenderer: React.FC<GeometryRendererProps> = ({ spec }) => {
                 className="overflow-visible pointer-events-none"
               >
                 <div className="w-full h-full flex items-center justify-center">
-                  <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">
+                  <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-300">
                     <FormattedText text={label.text.startsWith("$") ? label.text : `$${label.text}$`} />
                   </span>
                 </div>
