@@ -1314,7 +1314,7 @@ TEMPLATES = [
             "math_engine/verify.py",
             "quality_rules.py",
             "practice-studio/src/types/drill.ts",
-            "practice-studio/src/components/MathProblemCard.tsx",
+            "practice-studio/src/components/math/MathWorkspace.tsx",
         ]
         for path in touchpoints:
             self.assertTrue(os.path.exists(path), f"Touchpoint file {path} referenced in contract does not exist")

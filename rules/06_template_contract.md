@@ -224,7 +224,7 @@ Sources: Webb's Depth of Knowledge (math descriptors); NAEP mathematical complex
 3. **`math_engine/verify.py`**: เพิ่มการตรวจเฉลยกับ `verify.source` (รองรับทั้ง SymPy analytical และ fallback เชิงตัวเลข)
 4. **`quality_rules.py`**: อัปเดตด่าน G1 (Anti-Leak component extraction), G2, G4, และ G6 ให้รองรับโครงสร้าง spec ใหม่
 5. **`practice-studio/src/types/drill.ts`**: ประกาศ TypeScript interface สำหรับ `AnswerSpec` และชนิดตัวแปรใหม่ให้ตรงกัน
-6. **`practice-studio/src/components/MathProblemCard.tsx`**: เพิ่มคอมโพเนนต์สำหรับรับค่า (Input Box / Bracket layout) และ placeholder
+6. **`practice-studio/src/components/math/MathWorkspace.tsx`**: เพิ่มคอมโพเนนต์สำหรับรับค่า (Input Box / Bracket layout) และ placeholder
 7. **`tests/test_quality_gates.py`**: เพิ่ม unit test สำหรับ comparator, parser bounds, edge cases, unicode normalization, และ template round-trip
 
 ---
