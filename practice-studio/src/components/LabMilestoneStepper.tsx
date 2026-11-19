@@ -128,7 +128,7 @@ export const LabMilestoneStepper: React.FC<LabMilestoneStepperProps> = ({
                   className="group relative z-10 flex flex-col items-center w-full pt-0.5 rounded-lg cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600/50 dark:focus-visible:ring-indigo-400/60"
                 >
                   <span
-                    className={`h-4 flex items-center justify-center mb-1 font-mono text-[11px] sm:text-xs leading-none whitespace-nowrap transition-colors ${labelCls}`}
+                    className={`h-4 flex items-center justify-center mb-1 font-display text-[11px] sm:text-xs leading-none whitespace-nowrap transition-colors ${labelCls}`}
                   >
                     {prob.id}
                   </span>
