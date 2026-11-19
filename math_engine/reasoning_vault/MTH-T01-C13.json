@@ -221,7 +221,8 @@
       "usedContexts": [
         "architectural_courtyard_layout"
       ],
-      "unitCode": "MTH-T01-C13-U06"
+      "unitCode": "MTH-T01-C13-U06",
+      "figureNone": "Factoring a quadratic area polynomial and solving a perimeter equation; drawing the rectangle with numeric sides would reveal the unknown dimensions."
     },
     {
       "archetypeKey": "c13-applied-polynomial-kinematics-synthesis",
@@ -242,7 +243,8 @@
       "usedContexts": [
         "sounding_rocket_trajectory"
       ],
-      "unitCode": "MTH-T01-C13-U06"
+      "unitCode": "MTH-T01-C13-U06",
+      "figureNone": "Solving for the roots of a parabolic height polynomial; plotting the trajectory on a grid would reveal the ground-impact root directly."
     }
   ]
 }

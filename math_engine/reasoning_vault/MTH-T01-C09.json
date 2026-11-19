@@ -199,7 +199,35 @@
       "usedContexts": [
         "drone_waypoint_direct_distance"
       ],
-      "unitCode": "MTH-T01-C09-U02"
+      "unitCode": "MTH-T01-C09-U02",
+      "figureBuilders": [
+        {
+          "fn": "build_right_triangle_figure",
+          "args": {
+            "base": "a",
+            "height": "sqrt(L^2 - a^2)"
+          },
+          "labels": {
+            "label_base": "{a:g}",
+            "label_height": "h = ?",
+            "label_hypot": "{L:g}"
+          },
+          "title": "Initial Right Triangle"
+        },
+        {
+          "fn": "build_right_triangle_figure",
+          "args": {
+            "base": "foot",
+            "height": "sqrt(length^2 - foot^2)"
+          },
+          "labels": {
+            "label_base": "{foot:g}",
+            "label_height": "h = ?",
+            "label_hypot": "{length:g}"
+          },
+          "title": "Initial Right Triangle"
+        }
+      ]
     },
     {
       "archetypeKey": "c09-radical-equation-extraneous-solutions",

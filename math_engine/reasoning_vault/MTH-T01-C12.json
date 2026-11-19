@@ -23,6 +23,24 @@
         "garden_fencing_perimeter",
         "solar_farm_inverter_substation_lot"
       ],
+      "figureBuilders": [
+        {
+          "fn": "build_rectangle_figure",
+          "args": {
+            "width": "length",
+            "height": "width"
+          },
+          "title": "Rectangle"
+        },
+        {
+          "fn": "build_rectangle_figure",
+          "args": {
+            "width": "len",
+            "height": "wid"
+          },
+          "title": "Rectangle"
+        }
+      ],
       "unitCode": "MTH-T01-C12-U04"
     },
     {
@@ -462,6 +480,21 @@
         "railroad_switch_transversal_alignment",
         "high_speed_rail_cant_deflection"
       ],
+      "figureBuilders": [
+        {
+          "fn": "build_transversal_figure",
+          "args": {
+            "angle_acute": "70",
+            "angle_obtuse": "110"
+          },
+          "labels": {
+            "label_acute": "({a:g}x + {b:g})^\\circ",
+            "label_obtuse": "({c:g}x + {d:g})^\\circ"
+          },
+          "note": "Not to scale",
+          "title": "Parallel Lines & Transversal"
+        }
+      ],
       "unitCode": "MTH-T01-C12-U03"
     },
     {
@@ -487,6 +520,34 @@
         "warehouse_mezzanine_access_ramp",
         "coastal_breakwater_riprap_triangulation"
       ],
+      "figureBuilders": [
+        {
+          "fn": "build_right_triangle_figure",
+          "args": {
+            "base": "k * rise",
+            "height": "rise"
+          },
+          "labels": {
+            "label_base": "\\text{{run}} = ?",
+            "label_height": "{rise:g}",
+            "label_hypot": "d = ?"
+          },
+          "title": "Access Ramp Profile"
+        },
+        {
+          "fn": "build_right_triangle_figure",
+          "args": {
+            "base": "run",
+            "height": "rise"
+          },
+          "labels": {
+            "label_base": "{run:g}",
+            "label_height": "{rise:g}",
+            "label_hypot": "d = ?"
+          },
+          "title": "Right Triangle"
+        }
+      ],
       "unitCode": "MTH-T01-C12-U03"
     },
     {
@@ -510,6 +571,32 @@
       "usedContexts": [
         "aircraft_turbofan_casing_annulus"
       ],
+      "figureBuilders": [
+        {
+          "fn": "build_annulus_figure",
+          "args": {
+            "r_inner": "r",
+            "r_outer": "sqrt(r^2 + (budget / price) / pi)"
+          },
+          "labels": {
+            "label_inner": "r = {r:g}",
+            "label_gap": "w = ?"
+          },
+          "title": "Annular Path"
+        },
+        {
+          "fn": "build_annulus_figure",
+          "args": {
+            "r_inner": "r_inner",
+            "r_outer": "r_outer"
+          },
+          "labels": {
+            "label_inner": "r = {r_inner:g}",
+            "label_gap": "w = ?"
+          },
+          "title": "Annulus"
+        }
+      ],
       "unitCode": "MTH-T01-C12-U05"
     },
     {
@@ -532,6 +619,17 @@
       "usedContexts": [
         "agricultural_feed_silo_geometry",
         "brewery_grain_hopper_tower"
+      ],
+      "figureBuilders": [
+        {
+          "fn": "build_silo_figure",
+          "args": {
+            "radius": "radius",
+            "h_cyl": "h_cyl",
+            "h_cone": "h_cone"
+          },
+          "title": "Composite Silo"
+        }
       ],
       "unitCode": "MTH-T01-C12-U06"
     }

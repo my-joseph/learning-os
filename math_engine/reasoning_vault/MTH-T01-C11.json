@@ -220,7 +220,8 @@
       "usedContexts": [
         "high_speed_rail_encounter"
       ],
-      "unitCode": "MTH-T01-C11-U03"
+      "unitCode": "MTH-T01-C11-U03",
+      "figureNone": "Linear uniform-motion rate equation solved algebraically; a diagram adds nothing beyond the stated distance and rates."
     }
   ]
 }

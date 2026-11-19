@@ -312,7 +312,8 @@
       "usedContexts": [
         "urban_park_boundary_fencing"
       ],
-      "unitCode": "MTH-T01-C12-U04"
+      "unitCode": "MTH-T01-C12-U04",
+      "figureNone": "Algebraic feasibility inequalities for an unknown width set; drawing a fixed rectangle would either be arbitrary or reveal the answer."
     },
     {
       "archetypeKey": "c02-consecutive-integer-sum-inversion",
