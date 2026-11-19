@@ -1,0 +1,1212 @@
+{
+  "unitCode": "MTH-T02-C04-U05",
+  "variants": [
+    {
+      "variantId": "VAR-MTH-T02-C04-U05-t02-c04-u05-evaluate-by-remainder-theorem-01",
+      "sourceArchetype": "t02-c04-u05-evaluate-by-remainder-theorem",
+      "archetypeKey": "t02-c04-u05-evaluate-by-remainder-theorem",
+      "unitCode": "MTH-T02-C04-U05",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Find the remainder when $g(x) = 2x^3 - 5x^2 + 3x - 4$ is divided by $x - 3$.",
+      "display": "g(k) = r \\text{ when dividing } g(x) \\text{ by } x - k",
+      "plainText": "Remainder of g(x) = 2*x^3 - 5*x^2 + 3*x - 4 divided by x - 3",
+      "givens": {
+        "a": 2,
+        "b": -5,
+        "c": 3,
+        "d": -4,
+        "k": 3
+      },
+      "constants": {},
+      "trapGivens": [
+        2,
+        5,
+        3,
+        4
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "14",
+        "tolerance": 0
+      },
+      "answerPlain": "14",
+      "answerDisplay": "14",
+      "inputHint": "Enter the signed remainder.",
+      "commonTrapTag": "t02-c04-u05-evaluate-at-divisor-sign-trap",
+      "trapDerivation": "2*(-3)^3 - 5*(-3)^2 + 3*(-3) - 4",
+      "trapValue": "-112",
+      "verify": {
+        "source": "2*3^3 - 5*3^2 + 3*3 - 4",
+        "trapValue": "-112"
+      },
+      "checkpointHint": "Find the zero of the linear divisor first, then evaluate the dividend at that value.",
+      "references": [
+        "MTH-T02-C04-U05"
+      ],
+      "steps": [
+        {
+          "latex": "r = g(3)",
+          "explain": "By the Remainder Theorem, evaluate the dividend at the zero of x - 3."
+        },
+        {
+          "latex": "r = 2(3)^3 - 5(3)^2 + 3(3) - 4",
+          "explain": "Substitute x = 3 into every term."
+        },
+        {
+          "latex": "r = 54 - 45 + 9 - 4",
+          "explain": "Evaluate each power and product.",
+          "eq": [
+            "2*3^3 - 5*3^2 + 3*3 - 4",
+            "54 - 45 + 9 - 4"
+          ]
+        },
+        {
+          "latex": "r = 14",
+          "explain": "Combine the terms to find the remainder.",
+          "val": "14"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U05-t02-c04-u05-evaluate-by-remainder-theorem-01",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "t02-c04-u05-evaluate-at-divisor-sign-trap|direct|Remainder of g(x) = #*x^# - #*x^# + #*x - # divided by x - #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U05-t02-c04-u05-evaluate-by-remainder-theorem-02",
+      "sourceArchetype": "t02-c04-u05-evaluate-by-remainder-theorem",
+      "archetypeKey": "t02-c04-u05-evaluate-by-remainder-theorem",
+      "unitCode": "MTH-T02-C04-U05",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Find the remainder when $h(x) = x^3 + 4x^2 - 7x + 2$ is divided by $x + 2$.",
+      "display": "h(k) = r \\text{ when dividing } h(x) \\text{ by } x - k",
+      "plainText": "Remainder of h(x) = x^3 + 4*x^2 - 7*x + 2 divided by x + 2",
+      "givens": {
+        "b": 4,
+        "c": -7,
+        "d": 2,
+        "divisor_const": 2
+      },
+      "constants": {},
+      "trapGivens": [
+        4,
+        7,
+        2
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "24",
+        "tolerance": 0
+      },
+      "answerPlain": "24",
+      "answerDisplay": "24",
+      "inputHint": "Enter the signed remainder.",
+      "commonTrapTag": "t02-c04-u05-evaluate-at-divisor-sign-trap",
+      "trapDerivation": "2^3 + 4*2^2 - 7*2 + 2",
+      "trapValue": "12",
+      "verify": {
+        "source": "(-2)^3 + 4*(-2)^2 - 7*(-2) + 2",
+        "trapValue": "12"
+      },
+      "checkpointHint": "Set the linear divisor equal to zero to get the signed input before substituting.",
+      "references": [
+        "MTH-T02-C04-U05"
+      ],
+      "steps": [
+        {
+          "latex": "r = h(-2)",
+          "explain": "Solve x + 2 = 0 to find the evaluation input k = -2."
+        },
+        {
+          "latex": "r = (-2)^3 + 4(-2)^2 - 7(-2) + 2",
+          "explain": "Substitute x = -2 into each term of h(x)."
+        },
+        {
+          "latex": "r = -8 + 16 + 14 + 2",
+          "explain": "Evaluate each power and product carefully with signs.",
+          "eq": [
+            "(-2)^3 + 4*(-2)^2 - 7*(-2) + 2",
+            "-8 + 16 + 14 + 2"
+          ]
+        },
+        {
+          "latex": "r = 24",
+          "explain": "Add the terms to obtain the remainder.",
+          "val": "24"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U05-t02-c04-u05-evaluate-by-remainder-theorem-02",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "t02-c04-u05-evaluate-at-divisor-sign-trap|direct|Remainder of h(x) = x^# + #*x^# - #*x + # divided by x + #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U05-t02-c04-u05-evaluate-by-remainder-theorem-03",
+      "sourceArchetype": "t02-c04-u05-evaluate-by-remainder-theorem",
+      "archetypeKey": "t02-c04-u05-evaluate-by-remainder-theorem",
+      "unitCode": "MTH-T02-C04-U05",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Find the remainder when $p(x) = 3x^4 - 2x^2 + 5x - 6$ is divided by $x + 1$.",
+      "display": "p(k) = r \\text{ when dividing } p(x) \\text{ by } x - k",
+      "plainText": "Remainder of p(x) = 3*x^4 - 2*x^2 + 5*x - 6 divided by x + 1",
+      "givens": {
+        "a": 3,
+        "degree": 4,
+        "b": -2,
+        "c": 5,
+        "d": -6,
+        "divisor_const": 1
+      },
+      "constants": {},
+      "trapGivens": [
+        3,
+        2,
+        5,
+        6,
+        1
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "-10",
+        "tolerance": 0
+      },
+      "answerPlain": "-10",
+      "answerDisplay": "-10",
+      "inputHint": "Enter the signed remainder.",
+      "commonTrapTag": "t02-c04-u05-evaluate-at-divisor-sign-trap",
+      "trapDerivation": "3*1^4 - 2*1^2 + 5*1 - 6",
+      "trapValue": "0",
+      "verify": {
+        "source": "3*(-1)^4 - 2*(-1)^2 + 5*(-1) - 6",
+        "trapValue": "0"
+      },
+      "checkpointHint": "Use the zero of the divisor with its proper sign when evaluating the polynomial.",
+      "references": [
+        "MTH-T02-C04-U05"
+      ],
+      "steps": [
+        {
+          "latex": "r = p(-1)",
+          "explain": "Solve x + 1 = 0 to get the evaluation input k = -1."
+        },
+        {
+          "latex": "r = 3(-1)^4 - 2(-1)^2 + 5(-1) - 6",
+          "explain": "Substitute x = -1 into every term."
+        },
+        {
+          "latex": "r = 3 - 2 - 5 - 6",
+          "explain": "Evaluate even and odd powers of -1.",
+          "eq": [
+            "3*(-1)^4 - 2*(-1)^2 + 5*(-1) - 6",
+            "3 - 2 - 5 - 6"
+          ]
+        },
+        {
+          "latex": "r = -10",
+          "explain": "Combine the terms to obtain the remainder.",
+          "val": "-10"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U05-t02-c04-u05-evaluate-by-remainder-theorem-03",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "t02-c04-u05-evaluate-at-divisor-sign-trap|direct|Remainder of p(x) = #*x^# - #*x^# + #*x - # divided by x + #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U05-t02-c04-u05-factor-theorem-test-01",
+      "sourceArchetype": "t02-c04-u05-factor-theorem-test",
+      "archetypeKey": "t02-c04-u05-factor-theorem-test",
+      "unitCode": "MTH-T02-C04-U05",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "choose",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Which binomial is a factor of $g(x) = x^3 + 3x^2 + 2x + 6$?",
+      "display": "g(k) = 0 \\text{ iff } x - k \\text{ is a factor}",
+      "givens": {
+        "b": 3,
+        "c": 2,
+        "d": 6
+      },
+      "constants": {},
+      "trapGivens": [
+        3,
+        2,
+        6
+      ],
+      "answerSpec": {
+        "type": "choice",
+        "options": [
+          {
+            "id": "A",
+            "label": "$x - 3$",
+            "trapTag": "t02-c04-u05-factor-root-sign-trap",
+            "provenance": "Reverses the sign of the zero and treats x = 3 as a root."
+          },
+          {
+            "id": "B",
+            "label": "$x + 3$"
+          },
+          {
+            "id": "C",
+            "label": "$x + 2$",
+            "provenance": "Assumes a divisor of the constant term is automatically a factor without testing."
+          },
+          {
+            "id": "D",
+            "label": "$x - 2$",
+            "provenance": "Uses a visible coefficient directly as a root without checking g(2)."
+          }
+        ],
+        "correct": "B"
+      },
+      "answerPlain": "B",
+      "answerDisplay": "B",
+      "inputHint": "Choose the binomial whose zero makes the polynomial equal zero.",
+      "commonTrapTag": "t02-c04-u05-factor-root-sign-trap",
+      "trapDerivation": "3^3 + 3*3^2 + 2*3 + 6",
+      "trapValue": "66",
+      "verify": {
+        "source": "(-3)^3 + 3*(-3)^2 + 2*(-3) + 6",
+        "trapValue": "66"
+      },
+      "checkpointHint": "Find the zero of each candidate binomial and check which one evaluates the polynomial to zero.",
+      "references": [
+        "MTH-T02-C04-U05"
+      ],
+      "steps": [
+        {
+          "latex": "g(-3) = (-3)^3 + 3(-3)^2 + 2(-3) + 6",
+          "explain": "Test the zero x = -3 of the proposed factor x + 3."
+        },
+        {
+          "latex": "g(-3) = -27 + 27 - 6 + 6",
+          "explain": "Evaluate each term at x = -3."
+        },
+        {
+          "latex": "g(-3) = 0",
+          "explain": "Because the value vanishes, x + 3 is a factor by the Factor Theorem.",
+          "eq": [
+            "-27 + 27 - 6 + 6",
+            "0"
+          ]
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U05-t02-c04-u05-factor-theorem-test-01",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "t02-c04-u05-factor-root-sign-trap|choose|Which binomial is a factor of $g(x) = x^# + #x^# + #x + #$?"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U05-t02-c04-u05-factor-theorem-test-02",
+      "sourceArchetype": "t02-c04-u05-factor-theorem-test",
+      "archetypeKey": "t02-c04-u05-factor-theorem-test",
+      "unitCode": "MTH-T02-C04-U05",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "choose",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Which binomial is a factor of $h(x) = x^3 - 4x^2 + 3x - 12$?",
+      "display": "h(k) = 0 \\text{ iff } x - k \\text{ is a factor}",
+      "givens": {
+        "b": -4,
+        "c": 3,
+        "d": -12
+      },
+      "constants": {},
+      "trapGivens": [
+        4,
+        3,
+        12
+      ],
+      "answerSpec": {
+        "type": "choice",
+        "options": [
+          {
+            "id": "A",
+            "label": "$x + 3$",
+            "provenance": "Selects a divisor of the constant term without evaluating the polynomial."
+          },
+          {
+            "id": "B",
+            "label": "$x - 3$",
+            "provenance": "Confuses the linear coefficient with a polynomial zero."
+          },
+          {
+            "id": "C",
+            "label": "$x - 4$"
+          },
+          {
+            "id": "D",
+            "label": "$x + 4$",
+            "trapTag": "t02-c04-u05-factor-root-sign-trap",
+            "provenance": "Reverses the sign of the root x = 4 when writing the linear factor."
+          }
+        ],
+        "correct": "C"
+      },
+      "answerPlain": "C",
+      "answerDisplay": "C",
+      "inputHint": "Choose the binomial whose zero makes the polynomial equal zero.",
+      "commonTrapTag": "t02-c04-u05-factor-root-sign-trap",
+      "trapDerivation": "(-4)^3 - 4*(-4)^2 + 3*(-4) - 12",
+      "trapValue": "-152",
+      "verify": {
+        "source": "4^3 - 4*4^2 + 3*4 - 12",
+        "trapValue": "-152"
+      },
+      "checkpointHint": "Substitute each candidate factor's zero into the polynomial and see which one produces zero.",
+      "references": [
+        "MTH-T02-C04-U05"
+      ],
+      "steps": [
+        {
+          "latex": "h(4) = 4^3 - 4(4)^2 + 3(4) - 12",
+          "explain": "Evaluate h(x) at the zero x = 4 of the candidate x - 4."
+        },
+        {
+          "latex": "h(4) = 64 - 64 + 12 - 12",
+          "explain": "Compute each term."
+        },
+        {
+          "latex": "h(4) = 0",
+          "explain": "Since h(4) = 0, x - 4 is a factor of h(x).",
+          "eq": [
+            "64 - 64 + 12 - 12",
+            "0"
+          ]
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U05-t02-c04-u05-factor-theorem-test-02",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "t02-c04-u05-factor-root-sign-trap|choose|Which binomial is a factor of $h(x) = x^# - #x^# + #x - #$?"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U05-t02-c04-u05-factor-theorem-test-03",
+      "sourceArchetype": "t02-c04-u05-factor-theorem-test",
+      "archetypeKey": "t02-c04-u05-factor-theorem-test",
+      "unitCode": "MTH-T02-C04-U05",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "choose",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Which binomial is a factor of $p(x) = x^3 + 5x^2 + 4x + 20$?",
+      "display": "p(k) = 0 \\text{ iff } x - k \\text{ is a factor}",
+      "givens": {
+        "b": 5,
+        "c": 4,
+        "d": 20
+      },
+      "constants": {},
+      "trapGivens": [
+        5,
+        4,
+        20
+      ],
+      "answerSpec": {
+        "type": "choice",
+        "options": [
+          {
+            "id": "A",
+            "label": "$x - 4$",
+            "provenance": "Uses a factor of the constant term without checking whether p(4) = 0."
+          },
+          {
+            "id": "B",
+            "label": "$x + 4$",
+            "provenance": "Assumes the linear coefficient determines a linear factor."
+          },
+          {
+            "id": "C",
+            "label": "$x - 5$",
+            "trapTag": "t02-c04-u05-factor-root-sign-trap",
+            "provenance": "Reverses the sign of the root x = -5 when forming the binomial factor."
+          },
+          {
+            "id": "D",
+            "label": "$x + 5$"
+          }
+        ],
+        "correct": "D"
+      },
+      "answerPlain": "D",
+      "answerDisplay": "D",
+      "inputHint": "Choose the binomial whose zero makes the polynomial equal zero.",
+      "commonTrapTag": "t02-c04-u05-factor-root-sign-trap",
+      "trapDerivation": "5^3 + 5*5^2 + 4*5 + 20",
+      "trapValue": "290",
+      "verify": {
+        "source": "(-5)^3 + 5*(-5)^2 + 4*(-5) + 20",
+        "trapValue": "290"
+      },
+      "checkpointHint": "Check the sign of each candidate's zero carefully before substituting into the polynomial.",
+      "references": [
+        "MTH-T02-C04-U05"
+      ],
+      "steps": [
+        {
+          "latex": "p(-5) = (-5)^3 + 5(-5)^2 + 4(-5) + 20",
+          "explain": "Test the zero x = -5 of the candidate x + 5."
+        },
+        {
+          "latex": "p(-5) = -125 + 125 - 20 + 20",
+          "explain": "Evaluate each term."
+        },
+        {
+          "latex": "p(-5) = 0",
+          "explain": "Because p(-5) = 0, x + 5 is a factor by the Factor Theorem.",
+          "eq": [
+            "-125 + 125 - 20 + 20",
+            "0"
+          ]
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U05-t02-c04-u05-factor-theorem-test-03",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "t02-c04-u05-factor-root-sign-trap|choose|Which binomial is a factor of $p(x) = x^# + #x^# + #x + #$?"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U05-t02-c04-u05-rational-zero-candidates-01",
+      "sourceArchetype": "t02-c04-u05-rational-zero-candidates",
+      "archetypeKey": "t02-c04-u05-rational-zero-candidates",
+      "unitCode": "MTH-T02-C04-U05",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "How many distinct rational-zero candidates are possible for $g(x) = 3x^3 - 4x^2 + x + 10$?",
+      "display": "p/q \\text{ candidates: } p \\text{ divides constant; } q \\text{ divides leading coefficient}",
+      "plainText": "Number of distinct rational-zero candidates for 3*x^3 - 4*x^2 + x + 10",
+      "givens": {
+        "lead": 3,
+        "b": -4,
+        "constant": 10
+      },
+      "constants": {
+        "candidate_count": 16,
+        "sign_pair_count": 2
+      },
+      "trapGivens": [
+        16,
+        2
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "16",
+        "tolerance": 0
+      },
+      "answerPlain": "16",
+      "answerDisplay": "16",
+      "inputHint": "Enter the total count after removing duplicate fractions.",
+      "commonTrapTag": "t02-c04-u05-forget-negative-candidates-trap",
+      "trapDerivation": "16/2",
+      "trapValue": "8",
+      "verify": {
+        "source": "16",
+        "trapValue": "8"
+      },
+      "checkpointHint": "Form all reduced ratios of constant-term divisors over leading-coefficient divisors, remembering both signs.",
+      "references": [
+        "MTH-T02-C04-U05"
+      ],
+      "steps": [
+        {
+          "latex": "p \\in \\{\\pm 1, \\pm 2, \\pm 5, \\pm 10\\}",
+          "explain": "List all integer divisors of the constant term 10."
+        },
+        {
+          "latex": "q \\in \\{1, 3\\}",
+          "explain": "List all positive divisors of the leading coefficient 3."
+        },
+        {
+          "latex": "p/q \\in \\{\\pm 1, \\pm 2, \\pm 5, \\pm 10, \\pm \\frac{1}{3}, \\pm \\frac{2}{3}, \\pm \\frac{5}{3}, \\pm \\frac{10}{3}\\}",
+          "explain": "Form all reduced ratios; none duplicate because 10 and 3 share no common factor."
+        },
+        {
+          "latex": "N = 16",
+          "explain": "Count both positive and negative candidates.",
+          "eq": [
+            "8*2",
+            "16"
+          ],
+          "val": "16"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U05-t02-c04-u05-rational-zero-candidates-01",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "t02-c04-u05-forget-negative-candidates-trap|direct|Number of distinct rational-zero candidates for #*x^# - #*x^# + x + #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U05-t02-c04-u05-rational-zero-candidates-02",
+      "sourceArchetype": "t02-c04-u05-rational-zero-candidates",
+      "archetypeKey": "t02-c04-u05-rational-zero-candidates",
+      "unitCode": "MTH-T02-C04-U05",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "How many distinct rational-zero candidates are possible for $h(x) = 5x^4 + 3x^2 - 2x + 7$?",
+      "display": "p/q \\text{ candidates: } p \\text{ divides constant; } q \\text{ divides leading coefficient}",
+      "plainText": "Number of distinct rational-zero candidates for 5*x^4 + 3*x^2 - 2*x + 7",
+      "givens": {
+        "lead": 5,
+        "degree": 4,
+        "b": 3,
+        "c": -2,
+        "constant": 7
+      },
+      "constants": {
+        "candidate_count": 8
+      },
+      "trapGivens": [
+        8,
+        2
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "8",
+        "tolerance": 0
+      },
+      "answerPlain": "8",
+      "answerDisplay": "8",
+      "inputHint": "Enter the total count after removing duplicate fractions.",
+      "commonTrapTag": "t02-c04-u05-forget-negative-candidates-trap",
+      "trapDerivation": "8/2",
+      "trapValue": "4",
+      "verify": {
+        "source": "8",
+        "trapValue": "4"
+      },
+      "checkpointHint": "Combine divisors of the constant term with divisors of the leading coefficient and include both positive and negative ratios.",
+      "references": [
+        "MTH-T02-C04-U05"
+      ],
+      "steps": [
+        {
+          "latex": "p \\in \\{\\pm 1, \\pm 7\\}",
+          "explain": "List all signed divisors of the constant term 7."
+        },
+        {
+          "latex": "q \\in \\{1, 5\\}",
+          "explain": "List all positive divisors of the leading coefficient 5."
+        },
+        {
+          "latex": "p/q \\in \\{\\pm 1, \\pm 7, \\pm \\frac{1}{5}, \\pm \\frac{7}{5}\\}",
+          "explain": "Form every reduced ratio p/q."
+        },
+        {
+          "latex": "N = 8",
+          "explain": "Count all distinct positive and negative rational candidates.",
+          "eq": [
+            "4*2",
+            "8"
+          ],
+          "val": "8"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U05-t02-c04-u05-rational-zero-candidates-02",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "t02-c04-u05-forget-negative-candidates-trap|direct|Number of distinct rational-zero candidates for #*x^# + #*x^# - #*x + #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U05-t02-c04-u05-rational-zero-candidates-03",
+      "sourceArchetype": "t02-c04-u05-rational-zero-candidates",
+      "archetypeKey": "t02-c04-u05-rational-zero-candidates",
+      "unitCode": "MTH-T02-C04-U05",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "How many distinct rational-zero candidates are possible for $p(x) = 4x^3 - 5x^2 + 7x + 12$?",
+      "display": "p/q \\text{ candidates: } p \\text{ divides constant; } q \\text{ divides leading coefficient}",
+      "plainText": "Number of distinct rational-zero candidates for 4*x^3 - 5*x^2 + 7*x + 12",
+      "givens": {
+        "lead": 4,
+        "b": -5,
+        "c": 7,
+        "constant": 12
+      },
+      "constants": {
+        "candidate_count": 20,
+        "sign_pair_count": 2
+      },
+      "trapGivens": [
+        20,
+        2
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "20",
+        "tolerance": 0
+      },
+      "answerPlain": "20",
+      "answerDisplay": "20",
+      "inputHint": "Enter the total count after removing duplicate fractions.",
+      "commonTrapTag": "t02-c04-u05-forget-negative-candidates-trap",
+      "trapDerivation": "20/2",
+      "trapValue": "10",
+      "verify": {
+        "source": "20",
+        "trapValue": "10"
+      },
+      "checkpointHint": "Reduce every fraction to lowest terms to eliminate duplicates, and count both positive and negative values.",
+      "references": [
+        "MTH-T02-C04-U05"
+      ],
+      "steps": [
+        {
+          "latex": "p \\in \\{\\pm 1, \\pm 2, \\pm 3, \\pm 4, \\pm 6, \\pm 12\\}",
+          "explain": "List signed divisors of the constant term 12."
+        },
+        {
+          "latex": "q \\in \\{1, 2, 4\\}",
+          "explain": "List positive divisors of the leading coefficient 4."
+        },
+        {
+          "latex": "p/q \\in \\{\\pm 1, \\pm 2, \\pm 3, \\pm 4, \\pm 6, \\pm 12, \\pm \\frac{1}{2}, \\pm \\frac{3}{2}, \\pm \\frac{1}{4}, \\pm \\frac{3}{4}\\}",
+          "explain": "Reduce all fractions and remove duplicates."
+        },
+        {
+          "latex": "N = 20",
+          "explain": "Count all 10 positive ratios together with their 10 negative counterparts.",
+          "eq": [
+            "10*2",
+            "20"
+          ],
+          "val": "20"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U05-t02-c04-u05-rational-zero-candidates-03",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "t02-c04-u05-forget-negative-candidates-trap|direct|Number of distinct rational-zero candidates for #*x^# - #*x^# + #*x + #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U05-t02-c04-u05-find-polynomial-zeros-01",
+      "sourceArchetype": "t02-c04-u05-find-polynomial-zeros",
+      "archetypeKey": "t02-c04-u05-find-polynomial-zeros",
+      "unitCode": "MTH-T02-C04-U05",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "One zero of $g(x) = x^4 + 2x^3 - 7x^2 - 8x + 12$ is $1$. How many other distinct real zeros does $g$ have?",
+      "display": "g(x) = (x - k)q(x)",
+      "plainText": "Other real zeros of g(x) = x^4 + 2*x^3 - 7*x^2 - 8*x + 12 given zero 1",
+      "givens": {
+        "degree": 4,
+        "b": 2,
+        "c": -7,
+        "d": -8,
+        "e": 12,
+        "known_zero": 1
+      },
+      "constants": {
+        "other_count": 3
+      },
+      "trapGivens": [
+        3,
+        2
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "3",
+        "tolerance": 0
+      },
+      "answerPlain": "3",
+      "answerDisplay": "3",
+      "inputHint": "Enter a whole-number count.",
+      "commonTrapTag": "t02-c04-u05-only-positive-quotient-root-trap",
+      "trapDerivation": "3 - 2",
+      "trapValue": "1",
+      "verify": {
+        "source": "3",
+        "trapValue": "1"
+      },
+      "checkpointHint": "Divide out the known linear factor, then factor the cubic quotient completely to count both positive and negative real zeros.",
+      "references": [
+        "MTH-T02-C04-U05"
+      ],
+      "steps": [
+        {
+          "latex": "g(x) = (x - 1)(x^3 + 3x^2 - 4x - 12)",
+          "explain": "Divide g(x) by the known factor x - 1.",
+          "eq": [
+            "x^4 + 2*x^3 - 7*x^2 - 8*x + 12",
+            "(x - 1)*(x^3 + 3*x^2 - 4*x - 12)"
+          ]
+        },
+        {
+          "latex": "x^3 + 3x^2 - 4x - 12 = (x + 3)(x^2 - 4)",
+          "explain": "Factor the cubic quotient by grouping.",
+          "eq": [
+            "x^3 + 3*x^2 - 4*x - 12",
+            "(x + 3)*(x^2 - 4)"
+          ]
+        },
+        {
+          "latex": "(x + 3)(x^2 - 4) = (x + 3)(x - 2)(x + 2)",
+          "explain": "Factor the difference of squares completely.",
+          "eq": [
+            "(x + 3)*(x^2 - 4)",
+            "(x + 3)*(x - 2)*(x + 2)"
+          ]
+        },
+        {
+          "latex": "x \\in \\{-3, -2, 2\\}",
+          "explain": "Read all distinct real zeros of the quotient."
+        },
+        {
+          "latex": "N = 3",
+          "explain": "Count all 3 remaining distinct real zeros.",
+          "val": "3"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U05-t02-c04-u05-find-polynomial-zeros-01",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c04-u05-only-positive-quotient-root-trap|reverse|Other real zeros of g(x) = x^# + #*x^# - #*x^# - #*x + # given zero #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U05-t02-c04-u05-find-polynomial-zeros-02",
+      "sourceArchetype": "t02-c04-u05-find-polynomial-zeros",
+      "archetypeKey": "t02-c04-u05-find-polynomial-zeros",
+      "unitCode": "MTH-T02-C04-U05",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "One zero of $h(x) = x^5 - 2x^4 - 10x^3 + 20x^2 + 9x - 18$ is $2$. How many other distinct real zeros does $h$ have?",
+      "display": "h(x) = (x - k)q(x)",
+      "plainText": "Other real zeros of h(x) = x^5 - 2*x^4 - 10*x^3 + 20*x^2 + 9*x - 18 given zero 2",
+      "givens": {
+        "degree": 5,
+        "b": -2,
+        "c": -10,
+        "d": 20,
+        "e": 9,
+        "f": -18,
+        "known_zero": 2
+      },
+      "constants": {
+        "other_count": 4
+      },
+      "trapGivens": [
+        4,
+        2
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "4",
+        "tolerance": 0
+      },
+      "answerPlain": "4",
+      "answerDisplay": "4",
+      "inputHint": "Enter a whole-number count.",
+      "commonTrapTag": "t02-c04-u05-only-positive-quotient-root-trap",
+      "trapDerivation": "4/2",
+      "trapValue": "2",
+      "verify": {
+        "source": "4",
+        "trapValue": "2"
+      },
+      "checkpointHint": "Divide out the known factor first, then factor the quartic quotient completely including negative square roots.",
+      "references": [
+        "MTH-T02-C04-U05"
+      ],
+      "steps": [
+        {
+          "latex": "h(x) = (x - 2)(x^4 - 10x^2 + 9)",
+          "explain": "Factor out x - 2 using synthetic division or grouping.",
+          "eq": [
+            "x^5 - 2*x^4 - 10*x^3 + 20*x^2 + 9*x - 18",
+            "(x - 2)*(x^4 - 10*x^2 + 9)"
+          ]
+        },
+        {
+          "latex": "x^4 - 10x^2 + 9 = (x^2 - 1)(x^2 - 9)",
+          "explain": "Factor the quartic quotient as a quadratic in x^2.",
+          "eq": [
+            "x^4 - 10*x^2 + 9",
+            "(x^2 - 1)*(x^2 - 9)"
+          ]
+        },
+        {
+          "latex": "(x^2 - 1)(x^2 - 9) = (x - 1)(x + 1)(x - 3)(x + 3)",
+          "explain": "Factor both differences of squares.",
+          "eq": [
+            "(x^2 - 1)*(x^2 - 9)",
+            "(x - 1)*(x + 1)*(x - 3)*(x + 3)"
+          ]
+        },
+        {
+          "latex": "x \\in \\{-3, -1, 1, 3\\}",
+          "explain": "Identify all distinct real zeros of the quotient."
+        },
+        {
+          "latex": "N = 4",
+          "explain": "Count all 4 remaining distinct real zeros.",
+          "val": "4"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U05-t02-c04-u05-find-polynomial-zeros-02",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c04-u05-only-positive-quotient-root-trap|reverse|Other real zeros of h(x) = x^# - #*x^# - #*x^# + #*x^# + #*x - # given zero #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U05-t02-c04-u05-find-polynomial-zeros-03",
+      "sourceArchetype": "t02-c04-u05-find-polynomial-zeros",
+      "archetypeKey": "t02-c04-u05-find-polynomial-zeros",
+      "unitCode": "MTH-T02-C04-U05",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "One zero of $p(x) = x^6 - 3x^5 - 5x^4 + 15x^3 + 4x^2 - 12x$ is $3$. How many other distinct real zeros does $p$ have?",
+      "display": "p(x) = (x - k)q(x)",
+      "plainText": "Other real zeros of p(x) = x^6 - 3*x^5 - 5*x^4 + 15*x^3 + 4*x^2 - 12*x given zero 3",
+      "givens": {
+        "degree": 6,
+        "b": -3,
+        "c": -5,
+        "d": 15,
+        "e": 4,
+        "f": -12,
+        "known_zero": 3
+      },
+      "constants": {
+        "other_count": 5
+      },
+      "trapGivens": [
+        5,
+        3
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "5",
+        "tolerance": 0
+      },
+      "answerPlain": "5",
+      "answerDisplay": "5",
+      "inputHint": "Enter a whole-number count.",
+      "commonTrapTag": "t02-c04-u05-only-positive-quotient-root-trap",
+      "trapDerivation": "5 - 3",
+      "trapValue": "2",
+      "verify": {
+        "source": "5",
+        "trapValue": "2"
+      },
+      "checkpointHint": "Factor out both the known linear factor and any common variable factor, then include zero and negative roots as well as positive ones.",
+      "references": [
+        "MTH-T02-C04-U05"
+      ],
+      "steps": [
+        {
+          "latex": "p(x) = (x - 3)(x^5 - 5x^3 + 4x)",
+          "explain": "Divide out the known factor x - 3.",
+          "eq": [
+            "x^6 - 3*x^5 - 5*x^4 + 15*x^3 + 4*x^2 - 12*x",
+            "(x - 3)*(x^5 - 5*x^3 + 4*x)"
+          ]
+        },
+        {
+          "latex": "x^5 - 5x^3 + 4x = x(x^4 - 5x^2 + 4)",
+          "explain": "Factor out the common variable x.",
+          "eq": [
+            "x^5 - 5*x^3 + 4*x",
+            "x*(x^4 - 5*x^2 + 4)"
+          ]
+        },
+        {
+          "latex": "x(x^4 - 5x^2 + 4) = x(x^2 - 1)(x^2 - 4)",
+          "explain": "Factor the quartic into two differences of squares.",
+          "eq": [
+            "x*(x^4 - 5*x^2 + 4)",
+            "x*(x^2 - 1)*(x^2 - 4)"
+          ]
+        },
+        {
+          "latex": "x(x - 1)(x + 1)(x - 2)(x + 2) = 0",
+          "explain": "Write all linear factors of the quotient."
+        },
+        {
+          "latex": "x \\in \\{-2, -1, 0, 1, 2\\}",
+          "explain": "List all 5 distinct real zeros contributed by the quotient."
+        },
+        {
+          "latex": "N = 5",
+          "explain": "Count all 5 remaining distinct real zeros.",
+          "val": "5"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U05-t02-c04-u05-find-polynomial-zeros-03",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c04-u05-only-positive-quotient-root-trap|reverse|Other real zeros of p(x) = x^# - #*x^# - #*x^# + #*x^# + #*x^# - #*x given zero #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U05-t02-c04-u05-reconstruct-from-zeros-01",
+      "sourceArchetype": "t02-c04-u05-reconstruct-from-zeros",
+      "archetypeKey": "t02-c04-u05-reconstruct-from-zeros",
+      "unitCode": "MTH-T02-C04-U05",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "A quadratic polynomial has zeros $-3$ and $4$ and passes through $(0, 24)$. Find its formula.",
+      "display": "f(x) = a(x - r_1)(x - r_2)",
+      "plainText": "Quadratic polynomial with zeros -3 and 4 through (0, 24)",
+      "givens": {
+        "r1": -3,
+        "r2": 4,
+        "x0": 0,
+        "y0": 24
+      },
+      "constants": {
+        "scale": -2
+      },
+      "trapGivens": [
+        3,
+        4,
+        2
+      ],
+      "answerSpec": {
+        "type": "expression",
+        "value": "-2*(x + 3)*(x - 4)",
+        "variables": [
+          "x"
+        ]
+      },
+      "answerPlain": "-2*(x + 3)*(x - 4)",
+      "answerDisplay": "-2(x + 3)(x - 4)",
+      "inputHint": "Enter an equivalent polynomial formula in x.",
+      "commonTrapTag": "t02-c04-u05-zero-factor-sign-trap",
+      "trapDerivation": "-2*(x - 3)*(x - 4)",
+      "trapValue": "-2*(x - 3)*(x - 4)",
+      "verify": {
+        "source": "-2*(x + 3)*(x - 4)",
+        "trapValue": "-2*(x - 3)*(x - 4)"
+      },
+      "checkpointHint": "Turn each zero into its matching factor with opposite sign, then solve for the leading coefficient using the given point.",
+      "references": [
+        "MTH-T02-C04-U05"
+      ],
+      "steps": [
+        {
+          "latex": "f(x) = a(x + 3)(x - 4)",
+          "explain": "Write one linear factor for each given zero."
+        },
+        {
+          "latex": "24 = a(0 + 3)(0 - 4)",
+          "explain": "Substitute the known point (0, 24)."
+        },
+        {
+          "latex": "24 = -12a",
+          "explain": "Multiply the factors at x = 0."
+        },
+        {
+          "latex": "a = -2",
+          "explain": "Divide both sides by -12 to find the leading scale.",
+          "eq": [
+            "24/(-12)",
+            "-2"
+          ]
+        },
+        {
+          "latex": "f(x) = -2(x + 3)(x - 4)",
+          "explain": "Write the completed polynomial formula.",
+          "val": "-2*(x + 3)*(x - 4)"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U05-t02-c04-u05-reconstruct-from-zeros-01",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c04-u05-zero-factor-sign-trap|reverse|Quadratic polynomial with zeros -# and # through (#, #)"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U05-t02-c04-u05-reconstruct-from-zeros-02",
+      "sourceArchetype": "t02-c04-u05-reconstruct-from-zeros",
+      "archetypeKey": "t02-c04-u05-reconstruct-from-zeros",
+      "unitCode": "MTH-T02-C04-U05",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "A quadratic polynomial has zeros $-4$ and $-1$ and passes through $(0, 12)$. Find its formula.",
+      "display": "g(x) = a(x - r_1)(x - r_2)",
+      "plainText": "Quadratic polynomial with zeros -4 and -1 through (0, 12)",
+      "givens": {
+        "r1": -4,
+        "r2": -1,
+        "x0": 0,
+        "y0": 12
+      },
+      "constants": {
+        "scale": 3
+      },
+      "trapGivens": [
+        4,
+        1,
+        3
+      ],
+      "answerSpec": {
+        "type": "expression",
+        "value": "3*(x + 4)*(x + 1)",
+        "variables": [
+          "x"
+        ]
+      },
+      "answerPlain": "3*(x + 4)*(x + 1)",
+      "answerDisplay": "3(x + 4)(x + 1)",
+      "inputHint": "Enter an equivalent polynomial formula in x.",
+      "commonTrapTag": "t02-c04-u05-zero-factor-sign-trap",
+      "trapDerivation": "3*(x - 4)*(x - 1)",
+      "trapValue": "3*(x - 4)*(x - 1)",
+      "verify": {
+        "source": "3*(x + 4)*(x + 1)",
+        "trapValue": "3*(x - 4)*(x - 1)"
+      },
+      "checkpointHint": "Encode each negative zero as an addition factor before substituting the known point to find the leading scale.",
+      "references": [
+        "MTH-T02-C04-U05"
+      ],
+      "steps": [
+        {
+          "latex": "g(x) = a(x + 4)(x + 1)",
+          "explain": "Form a linear factor (x - r) for each zero."
+        },
+        {
+          "latex": "12 = a(0 + 4)(0 + 1)",
+          "explain": "Substitute the known point (0, 12)."
+        },
+        {
+          "latex": "12 = 4a",
+          "explain": "Multiply the evaluated factors."
+        },
+        {
+          "latex": "a = 3",
+          "explain": "Divide both sides by 4.",
+          "eq": [
+            "12/4",
+            "3"
+          ]
+        },
+        {
+          "latex": "g(x) = 3(x + 4)(x + 1)",
+          "explain": "Write the resulting quadratic formula.",
+          "val": "3*(x + 4)*(x + 1)"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U05-t02-c04-u05-reconstruct-from-zeros-02",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c04-u05-zero-factor-sign-trap|reverse|Quadratic polynomial with zeros -# and -# through (#, #)"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U05-t02-c04-u05-reconstruct-from-zeros-03",
+      "sourceArchetype": "t02-c04-u05-reconstruct-from-zeros",
+      "archetypeKey": "t02-c04-u05-reconstruct-from-zeros",
+      "unitCode": "MTH-T02-C04-U05",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "A cubic polynomial has simple zeros $-2$, $1$, and $3$ and passes through $(0, -12)$. Find its formula.",
+      "display": "h(x) = a(x - r_1)(x - r_2)(x - r_3)",
+      "plainText": "Cubic polynomial with zeros -2, 1, and 3 through (0, -12)",
+      "givens": {
+        "r1": -2,
+        "r2": 1,
+        "r3": 3,
+        "x0": 0,
+        "y0": -12
+      },
+      "constants": {},
+      "trapGivens": [
+        2,
+        1,
+        3
+      ],
+      "answerSpec": {
+        "type": "expression",
+        "value": "-2*(x + 2)*(x - 1)*(x - 3)",
+        "variables": [
+          "x"
+        ]
+      },
+      "answerPlain": "-2*(x + 2)*(x - 1)*(x - 3)",
+      "answerDisplay": "-2(x + 2)(x - 1)(x - 3)",
+      "inputHint": "Enter an equivalent polynomial formula in x.",
+      "commonTrapTag": "t02-c04-u05-zero-factor-sign-trap",
+      "trapDerivation": "-2*(x - 2)*(x - 1)*(x - 3)",
+      "trapValue": "-2*(x - 2)*(x - 1)*(x - 3)",
+      "verify": {
+        "source": "-2*(x + 2)*(x - 1)*(x - 3)",
+        "trapValue": "-2*(x - 2)*(x - 1)*(x - 3)"
+      },
+      "checkpointHint": "Write one factor per zero using subtraction of the root, then use the intercept to solve for the leading coefficient.",
+      "references": [
+        "MTH-T02-C04-U05"
+      ],
+      "steps": [
+        {
+          "latex": "h(x) = a(x + 2)(x - 1)(x - 3)",
+          "explain": "Build the cubic product from its three simple zeros."
+        },
+        {
+          "latex": "-12 = a(0 + 2)(0 - 1)(0 - 3)",
+          "explain": "Substitute the known point (0, -12)."
+        },
+        {
+          "latex": "-12 = 6a",
+          "explain": "Multiply (2)(-1)(-3) to get 6."
+        },
+        {
+          "latex": "a = -2",
+          "explain": "Divide both sides by 6 to isolate the leading coefficient.",
+          "eq": [
+            "-12/6",
+            "-2"
+          ]
+        },
+        {
+          "latex": "h(x) = -2(x + 2)(x - 1)(x - 3)",
+          "explain": "Write the completed cubic formula.",
+          "val": "-2*(x + 2)*(x - 1)*(x - 3)"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U05-t02-c04-u05-reconstruct-from-zeros-03",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c04-u05-zero-factor-sign-trap|reverse|Cubic polynomial with zeros -#, #, and # through (#, -#)"
+    }
+  ]
+}
