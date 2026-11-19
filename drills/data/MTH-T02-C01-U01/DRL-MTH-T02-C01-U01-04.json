@@ -18,7 +18,6 @@
       "verificationLevel": "partial",
       "prompt": "A student multiplied the phasors $(2 + 3i)(4 - 2i)$ and wrote:\nLine 1: $(2 + 3i)(4 - 2i) = 8 - 4i + 12i - 6i^2$\nLine 2: $= 8 + 8i - 6i^2$\nLine 3: $= 8 + 8i - 6$\nLine 4: $= 2 + 8i$\nWhich line is the first one that is wrong?",
       "display": "(a + bi)(c + di) = (ac - bd) + (ad + bc)i",
-      "plainText": "(a + b*i)*(c + d*i) = (a*c - b*d) + (a*d + b*c)*i",
       "givens": {
         "a": 2,
         "b": 3,
@@ -165,7 +164,6 @@
       "verificationLevel": "partial",
       "prompt": "A radar return is modelled by $z = 6 - 5i$. A student computed $z\\bar{z}$ and wrote:\nLine 1: $z\\bar{z} = (6 - 5i)(6 + 5i) = 6^2 - (5i)^2$\nLine 2: $= 36 - 25i^2$\nLine 3: $= 36 - 25$\nLine 4: $= 11$\nWhich line is the first one that is wrong?",
       "display": "(a - bi)(a + bi) = a^2 + b^2",
-      "plainText": "(a - b*i)*(a + b*i) = a^2 + b^2",
       "givens": {
         "a": 6,
         "b": 5
@@ -310,7 +308,6 @@
       "verificationLevel": "partial",
       "prompt": "A filter's transfer ratio is $\\dfrac{6 + 4i}{1 - 2i}$. A student simplified it and wrote:\nLine 1: $\\dfrac{6 + 4i}{1 - 2i} = \\dfrac{6}{1} + \\dfrac{4i}{-2i}$\nLine 2: $= 6 + \\dfrac{4}{-2}$\nLine 3: $= 6 - 2$\nLine 4: $= 4$\nWhich line is the first one that is wrong?",
       "display": "\\frac{a + bi}{c + di} = \\frac{(a + bi)(c - di)}{c^2 + d^2}",
-      "plainText": "(a + b*i)/(c + d*i) = (a + b*i)*(c - d*i)/(c^2 + d^2)",
       "givens": {
         "a": 6,
         "b": 4,
@@ -461,7 +458,6 @@
       "verificationLevel": "partial",
       "prompt": "An antenna engineer needs $\\dfrac{10 + 5i}{3 + 4i}$. A colleague wrote:\nLine 1: $\\dfrac{10 + 5i}{3 + 4i} = \\dfrac{(10 + 5i)(3 + 4i)}{3^2 + 4^2}$\nLine 2: $= \\dfrac{30 + 40i + 15i + 20i^2}{9 + 16}$\nLine 3: $= \\dfrac{10 + 55i}{25}$\nLine 4: $= \\dfrac{2}{5} + \\dfrac{11}{5}i$\nWhich line is the first one that is wrong?",
       "display": "\\frac{a + bi}{c + di} = \\frac{(a + bi)(c - di)}{c^2 + d^2}",
-      "plainText": "(a + b*i)/(c + d*i) = (a + b*i)*(c - d*i)/(c^2 + d^2)",
       "givens": {
         "a": 10,
         "b": 5,

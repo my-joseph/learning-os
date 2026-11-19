@@ -494,9 +494,15 @@ def validate_ai_problem_contract(prob: Dict[str, Any], enforce_leak_gate: bool =
     if not display or not isinstance(display, str) or not display.strip():
         raise AiContractError(f"[{pid}] Math problem must provide a non-empty LaTeX 'display' equation.")
 
-    plain_text = prob.get("plainText")
-    if not plain_text or not isinstance(plain_text, str) or not plain_text.strip():
-        raise AiContractError(f"[{pid}] Math problem must provide a non-empty CAS 'plainText' string.")
+    # plainText is the CAS copy line for typed answers. Choice problems (incl. find-the-flaw)
+    # have no expression to paste into a CAS, so the field is dropped instead of restating
+    # the prompt (learner decision 2026-11-19).
+    if (prob.get("answerSpec") or {}).get("type") == "choice":
+        prob.pop("plainText", None)
+    else:
+        plain_text = prob.get("plainText")
+        if not plain_text or not isinstance(plain_text, str) or not plain_text.strip():
+            raise AiContractError(f"[{pid}] Math problem must provide a non-empty CAS 'plainText' string.")
 
     # 7. Prompt must contain LaTeX math delimiters ($...$) for formulas/numbers
     prompt = prob.get("prompt", "")

@@ -457,7 +457,6 @@
       "verificationLevel": "partial",
       "prompt": "Knowing there are $1000\\text{ m}$ in a kilometer and $3600\\text{ s}$ in an hour, a student converted $180\\text{ m/s}$ to $\\text{km/h}$ step by step:\nLine 1: $180\\text{ m/s} = 180 \\times \\frac{1000}{3600}\\text{ km/h}$\nLine 2: $= 180 \\times \\frac{5}{18}\\text{ km/h}$\nLine 3: $= 10 \\times 5\\text{ km/h}$\nLine 4: $= 50\\text{ km/h}$\nWhich line is the first one that is wrong?",
       "display": "180\\text{ m/s} \\to \\text{km/h}",
-      "plainText": "Convert 180 m/s to km/h",
       "givens": {
         "v": 180
       },
