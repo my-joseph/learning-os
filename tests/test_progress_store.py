@@ -153,3 +153,37 @@ def test_save_progress_refuses_to_blank_practised_progress():
 
     # Overwriting a pristine (non-practised) progress file does not require allow_reset
     ps.save_progress(_doc())
+
+
+def test_revisit_note_persists_in_progress_without_touching_drill_content(tmp_path):
+    drill_dir = tmp_path / "drills" / "data" / "MTH-X"
+    drill_dir.mkdir(parents=True)
+    drill_file = drill_dir / "DRL-MTH-X-01.json"
+    content_doc = _doc()
+    original_json = json.dumps(content_doc, indent=2)
+    drill_file.write_text(original_json, encoding="utf-8")
+
+    working = json.loads(original_json)
+    working["problems"][0]["state"] = {
+        "userInput": "42",
+        "score": 1,
+        "attempts": [{"input": "42", "verdict": "correct", "ts": "2026-11-18T10:00:00Z"}],
+        "revisitNote": "Next time check the reciprocal sign before multiplying.",
+    }
+    assert ps.has_practice(working)
+    ps.save_progress(working)
+
+    # Drill content on disk is completely untouched
+    assert drill_file.read_text(encoding="utf-8") == original_json
+    assert "revisitNote" not in drill_file.read_text(encoding="utf-8")
+
+    # Progress file stores and restores revisitNote
+    loaded = ps.load_progress("DRL-MTH-X-01")
+    assert loaded["problems"]["Q01"]["revisitNote"] == "Next time check the reciprocal sign before multiplying."
+    merged = ps.apply_progress(_doc(), loaded)
+    assert merged["problems"][0]["state"]["revisitNote"] == "Next time check the reciprocal sign before multiplying."
+
+    # A problem state with only revisitNote is also recognized as learner practice
+    note_only = _doc()
+    note_only["problems"][0]["state"] = {"userInput": "", "revisitNote": "Invert divisor first"}
+    assert ps.has_practice(note_only)

@@ -216,6 +216,7 @@ export function resetProblemForRetry(prob: Problem): Problem {
       divergedStep: null,
       mistakes: [],
       mistakeNote: "",
+      ...(prob.state?.revisitNote ? { revisitNote: prob.state.revisitNote } : {}),
       skipped: false,
       lastCheck: null,
       lastTestReport: null,
