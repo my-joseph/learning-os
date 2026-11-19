@@ -66,7 +66,10 @@ async function runTests() {
     assert.deepEqual(localDates, ["2026-11-19", "2026-11-19", "2026-11-18", "1970-01-01"]);
     const root = path.resolve(process.cwd(), "..");
     const pyDates = spawnSync(
-      process.env.PYTHON || path.join(root, ".venv", "bin", "python"),
+      process.env.PYTHON ||
+        (fs.existsSync(path.join(root, ".venv", "bin", "python"))
+          ? path.join(root, ".venv", "bin", "python")
+          : "python3"),
       ["-c", "from scripts.review_items import _normalize_date, extract_review_events; import json; print(json.dumps([_normalize_date('2026-11-18T17:00:00Z'), _normalize_date('2026-11-18T23:59:00Z'), _normalize_date('2026-11-18T16:59:00Z'), extract_review_events({'attempts':[{'verdict':'correct'}]})[0]['date']]))"],
       { cwd: root, encoding: "utf8", env: { ...process.env, TZ: "Asia/Bangkok" } }
     );
