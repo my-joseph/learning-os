@@ -122,15 +122,17 @@ const ATOMIC_IDENTIFIERS = [
   "im",
 ];
 
-function readBalancedGroup(
+function readBalancedDelim(
   str: string,
-  openIdx: number
+  openIdx: number,
+  openCh: string,
+  closeCh: string
 ): { content: string; endIdx: number } | null {
-  if (str[openIdx] !== "(") return null;
+  if (str[openIdx] !== openCh) return null;
   let depth = 0;
   for (let i = openIdx; i < str.length; i++) {
-    if (str[i] === "(") depth++;
-    else if (str[i] === ")") {
+    if (str[i] === openCh) depth++;
+    else if (str[i] === closeCh) {
       depth--;
       if (depth === 0) {
         return { content: str.slice(openIdx + 1, i), endIdx: i };
@@ -138,6 +140,13 @@ function readBalancedGroup(
     }
   }
   return null;
+}
+
+function readBalancedGroup(
+  str: string,
+  openIdx: number
+): { content: string; endIdx: number } | null {
+  return readBalancedDelim(str, openIdx, "(", ")");
 }
 
 /** Convert MathLive's `root(n)(expr)` into `sqrt(expr)` (for n=2) or `(expr)^(1/(n))`. */
@@ -165,22 +174,80 @@ function replaceRootCalls(input: string): string {
   return out;
 }
 
-/** Convert MathLive's `log _(base)(arg)` into SymPy-compatible `log(arg, base)`. */
+/**
+ * Convert MathLive/ASCII-math `log _<base>(arg)` (parenthesised `_(base)`,
+ * braced `_{base}`, or single-token `_2` / `_b` / `_10`, optionally raised
+ * to a power like `log _2^2(x)`) into SymPy-compatible `log(arg, base)`.
+ */
 function replaceLogBaseCalls(input: string): string {
   let out = input;
-  for (let pass = 0; pass < 16; pass++) {
-    const match = /\blog\s*_\s*\(/.exec(out);
+  let searchFrom = 0;
+  for (let pass = 0; pass < 32; pass++) {
+    const re = /(?<![A-Za-z])log\s*_\s*/g;
+    re.lastIndex = searchFrom;
+    const match = re.exec(out);
     if (!match) break;
-    const baseOpen = match.index + match[0].length - 1;
-    const baseGroup = readBalancedGroup(out, baseOpen);
-    if (!baseGroup) break;
-    let cursor = baseGroup.endIdx + 1;
-    while (cursor < out.length && /\s/.test(out[cursor])) cursor++;
-    const argGroup = readBalancedGroup(out, cursor);
-    if (!argGroup) break;
 
-    const replacement = `log(${argGroup.content}, ${baseGroup.content.trim()})`;
+    const baseStart = match.index + match[0].length;
+    let baseContent = "";
+    let cursor = baseStart;
+
+    if (out[baseStart] === "(") {
+      const baseGroup = readBalancedDelim(out, baseStart, "(", ")");
+      if (!baseGroup) {
+        searchFrom = baseStart;
+        continue;
+      }
+      baseContent = baseGroup.content.trim();
+      cursor = baseGroup.endIdx + 1;
+    } else if (out[baseStart] === "{") {
+      const baseGroup = readBalancedDelim(out, baseStart, "{", "}");
+      if (!baseGroup) {
+        searchFrom = baseStart;
+        continue;
+      }
+      baseContent = baseGroup.content.trim();
+      cursor = baseGroup.endIdx + 1;
+    } else {
+      const tokenMatch = /^(?:\d+(?:\.\d+)?|pi|[A-Za-z])/.exec(out.slice(baseStart));
+      if (!tokenMatch) {
+        searchFrom = baseStart;
+        continue;
+      }
+      baseContent = tokenMatch[0];
+      cursor = baseStart + tokenMatch[0].length;
+    }
+
+    if (!baseContent) {
+      searchFrom = cursor;
+      continue;
+    }
+
+    while (cursor < out.length && /\s/.test(out[cursor])) cursor++;
+
+    let exp: string | null = null;
+    if (out[cursor] === "^") {
+      const expMatch = /^\^\s*(\([^)]+\)|\{[^}]+\}|-?\d+|[A-Za-z])/.exec(out.slice(cursor));
+      if (expMatch) {
+        const rawExp = expMatch[1];
+        exp = rawExp.startsWith("{") && rawExp.endsWith("}")
+          ? `(${rawExp.slice(1, -1)})`
+          : rawExp;
+        cursor += expMatch[0].length;
+        while (cursor < out.length && /\s/.test(out[cursor])) cursor++;
+      }
+    }
+
+    const argGroup = readBalancedGroup(out, cursor);
+    if (!argGroup) {
+      searchFrom = cursor;
+      continue;
+    }
+
+    const baseCall = `log(${argGroup.content}, ${baseContent})`;
+    const replacement = exp ? `(${baseCall})^${exp}` : baseCall;
     out = out.slice(0, match.index) + replacement + out.slice(argGroup.endIdx + 1);
+    searchFrom = match.index + (exp ? 5 : 4);
   }
   return out;
 }

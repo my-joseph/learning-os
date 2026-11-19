@@ -87,7 +87,17 @@ const normCases: Array<{
   { name: "trig sin", latex: "\\sin(x)", expected: "sin(x)" },
   { name: "trig power", latex: "\\sin^2(x)", expected: "(sin(x))^2" },
   { name: "log natural", latex: "\\ln(x+1)", expected: "ln(x+1)" },
+  { name: "log natural simple", latex: "\\ln(x)", expected: "ln(x)" },
+  { name: "log common", latex: "\\log(x)", expected: "log(x)" },
   { name: "log base 10", latex: "\\log_{10}(x)", expected: "log(x, 10)" },
+  { name: "log base 2 braced", latex: "\\log_{2}(8)", expected: "log(8, 2)" },
+  { name: "log base 2 unbraced", latex: "\\log_2(8)", expected: "log(8, 2)" },
+  { name: "log base single letter", latex: "\\log_b(x+1)", expected: "log(x+1, b)" },
+  { name: "log base expression", latex: "\\log_{a+1}(2x)", expected: "log(2*x, a+1)" },
+  { name: "log base fraction", latex: "\\log_{\\frac{1}{2}}(4)", expected: "log(4, (1)/(2))" },
+  { name: "log base with coefficient", latex: "2\\log_2(8)+1", expected: "2*log(8, 2)+1" },
+  { name: "log base nested", latex: "\\log_2(\\log_3(x))", expected: "log(log(x, 3), 2)" },
+  { name: "log base power", latex: "\\log_2^2(8)", expected: "(log(8, 2))^2" },
   { name: "vector angle brackets", latex: "\\langle 1, -2, 3 \\rangle", expected: "<1, -2, 3>" },
   { name: "empty placeholder fraction", latex: "\\frac{\\placeholder{}}{\\placeholder{}}", expected: "" },
 ];
@@ -96,6 +106,15 @@ for (const tc of normCases) {
   const actual = latexToPlain(tc.latex, tc.variables);
   assert.equal(actual, tc.expected, `Failed normaliser case "${tc.name}" for ${tc.latex}`);
 }
+
+// Direct ASCII-math log-base normalization cases (e.g. MathLive single-char and braced bases)
+assert.equal(normalizeMathLiveAsciiMath("log _2(8)"), "log(8, 2)");
+assert.equal(normalizeMathLiveAsciiMath("log_2(8)"), "log(8, 2)");
+assert.equal(normalizeMathLiveAsciiMath("log _b(x)"), "log(x, b)");
+assert.equal(normalizeMathLiveAsciiMath("log_{2}(8)"), "log(8, 2)");
+assert.equal(normalizeMathLiveAsciiMath("log_{10}(x)"), "log(x, 10)");
+assert.equal(normalizeMathLiveAsciiMath("log _(10)(x)"), "log(x, 10)");
+assert.equal(normalizeMathLiveAsciiMath("ln(x)"), "ln(x)");
 
 // Plain text -> LaTeX -> Plain text idempotency
 const roundTripPlains = [
