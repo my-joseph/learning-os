@@ -274,8 +274,12 @@ export interface ProblemState {
   similarSlots?: string[];
   /** ISO timestamp when a worked example was first viewed for this problem. */
   exampleViewedAt?: string | null;
-  /** ISO timestamp marking the start of the current review cycle (set on review retry). */
+  /** ISO timestamp marking the start of the current review cycle (set on reset or review retry). */
   cycleStartedAt?: string | null;
+  /** ISO timestamp when equation set-up was revealed during a Daily Review cycle (does not modify original drill flags). */
+  reviewSetupRevealedAt?: string | null;
+  /** ISO timestamp when solution steps were revealed during a Daily Review cycle (does not modify original drill flags). */
+  reviewStepsRevealedAt?: string | null;
   /** Server-derived backward-compat list of bank variant IDs served (stripped before sending to browser). */
   variantsSeen?: string[];
   /** Server-derived backward-compat list of bank variant IDs substantively attempted (stripped before sending to browser). */
