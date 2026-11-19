@@ -1,0 +1,2648 @@
+{
+  "unitCode": "MTH-T02-C01-U01",
+  "variants": [
+    {
+      "variantId": "VAR-MTH-T02-C01-U01-t02-c01-u01-imaginary-unit-definition-01",
+      "sourceArchetype": "t02-c01-u01-imaginary-unit-definition",
+      "archetypeKey": "t02-c01-u01-imaginary-unit-definition",
+      "unitCode": "MTH-T02-C01-U01",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "form": "direct",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Evaluate $15 + 7i^2$, where $i$ is the imaginary unit. Write the result as a real number.",
+      "display": "i^2 = -1",
+      "plainText": "15 + 7*i^2",
+      "givens": {
+        "offset": 15,
+        "coeff": 7
+      },
+      "constants": {
+        "exp": 2
+      },
+      "trapGivens": [
+        15,
+        7
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "8",
+        "tolerance": 0.001
+      },
+      "answerPlain": "8",
+      "answerDisplay": "8",
+      "inputHint": "Enter a real number.",
+      "commonTrapTag": "t02-c01-u01-i-squared-positive-one-trap",
+      "trapDerivation": "15 + 7",
+      "trapValue": "22",
+      "verify": {
+        "source": "15 - 7",
+        "trapValue": "22"
+      },
+      "checkpointHint": "Substitute the real value of the squared imaginary unit before combining the two terms.",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "steps": [
+        {
+          "latex": "15 + 7i^2 = 15 + 7(-1)",
+          "explain": "Replace i^2 with -1."
+        },
+        {
+          "latex": "15 + 7(-1) = 15 - 7",
+          "explain": "Multiply 7 by -1 to get -7."
+        },
+        {
+          "latex": "15 - 7 = 8",
+          "explain": "Subtract 7 from 15 to obtain 8.",
+          "val": "8"
+        }
+      ],
+      "id": "VAR-MTH-T02-C01-U01-t02-c01-u01-imaginary-unit-definition-01",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "t02-c01-u01-i-squared-positive-one-trap|direct|# + #*i^#"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C01-U01-t02-c01-u01-imaginary-unit-definition-02",
+      "sourceArchetype": "t02-c01-u01-imaginary-unit-definition",
+      "archetypeKey": "t02-c01-u01-imaginary-unit-definition",
+      "unitCode": "MTH-T02-C01-U01",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "form": "direct",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Evaluate $20 - 9i^2$, where $i$ is the imaginary unit. Write the result as a real number.",
+      "display": "i^2 = -1",
+      "plainText": "20 - 9*i^2",
+      "givens": {
+        "offset": 20,
+        "coeff": 9
+      },
+      "constants": {
+        "exp": 2
+      },
+      "trapGivens": [
+        20,
+        9
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "29",
+        "tolerance": 0.001
+      },
+      "answerPlain": "29",
+      "answerDisplay": "29",
+      "inputHint": "Enter a real number.",
+      "commonTrapTag": "t02-c01-u01-i-squared-positive-one-trap",
+      "trapDerivation": "20 - 9",
+      "trapValue": "11",
+      "verify": {
+        "source": "20 + 9",
+        "trapValue": "11"
+      },
+      "checkpointHint": "Replace the squared imaginary unit with its negative real value and watch the sign of the subtracted product.",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "steps": [
+        {
+          "latex": "20 - 9i^2 = 20 - 9(-1)",
+          "explain": "Replace i^2 with -1."
+        },
+        {
+          "latex": "20 - 9(-1) = 20 + 9",
+          "explain": "Multiply -9 by -1 to get +9."
+        },
+        {
+          "latex": "20 + 9 = 29",
+          "explain": "Add 20 and 9 to obtain 29.",
+          "val": "29"
+        }
+      ],
+      "id": "VAR-MTH-T02-C01-U01-t02-c01-u01-imaginary-unit-definition-02",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "t02-c01-u01-i-squared-positive-one-trap|direct|# - #*i^#"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C01-U01-t02-c01-u01-imaginary-unit-definition-03",
+      "sourceArchetype": "t02-c01-u01-imaginary-unit-definition",
+      "archetypeKey": "t02-c01-u01-imaginary-unit-definition",
+      "unitCode": "MTH-T02-C01-U01",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "form": "direct",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Evaluate $6i^2 + 11i^2 - 5$, where $i$ is the imaginary unit. Write the result as a real number.",
+      "display": "i^2 = -1",
+      "plainText": "6*i^2 + 11*i^2 - 5",
+      "givens": {
+        "a": 6,
+        "b": 11,
+        "c": 5
+      },
+      "constants": {
+        "exp": 2
+      },
+      "trapGivens": [
+        6,
+        11,
+        5
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "-22",
+        "tolerance": 0.001
+      },
+      "answerPlain": "-22",
+      "answerDisplay": "-22",
+      "inputHint": "Enter a real number.",
+      "commonTrapTag": "t02-c01-u01-i-squared-positive-one-trap",
+      "trapDerivation": "6 + 11 - 5",
+      "trapValue": "12",
+      "verify": {
+        "source": "-6 - 11 - 5",
+        "trapValue": "12"
+      },
+      "checkpointHint": "Combine or evaluate each squared imaginary unit term using its fundamental real definition before subtracting the constant.",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "steps": [
+        {
+          "latex": "6i^2 + 11i^2 - 5 = 17i^2 - 5",
+          "explain": "Combine the like terms 6i^2 and 11i^2 into 17i^2."
+        },
+        {
+          "latex": "17i^2 - 5 = 17(-1) - 5",
+          "explain": "Replace i^2 with -1."
+        },
+        {
+          "latex": "17(-1) - 5 = -17 - 5",
+          "explain": "Multiply 17 by -1 to get -17."
+        },
+        {
+          "latex": "-17 - 5 = -22",
+          "explain": "Subtract 5 from -17 to obtain -22.",
+          "val": "-22"
+        }
+      ],
+      "id": "VAR-MTH-T02-C01-U01-t02-c01-u01-imaginary-unit-definition-03",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "t02-c01-u01-i-squared-positive-one-trap|direct|#*i^# + #*i^# - #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C01-U01-t02-c01-u01-square-root-negative-numbers-01",
+      "sourceArchetype": "t02-c01-u01-square-root-negative-numbers",
+      "archetypeKey": "t02-c01-u01-square-root-negative-numbers",
+      "unitCode": "MTH-T02-C01-U01",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "form": "direct",
+      "context": "lc_tank_natural_frequency",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "An lossless LC tank circuit has purely imaginary characteristic roots lambda = +-sqrt(-1/(LC)) = +-omega_0*i in rad/s; positive natural frequency omega_0 = 12 rad/s obeys the domain law and units."
+      },
+      "verificationLevel": "partial",
+      "prompt": "A lossless LC tank circuit has a characteristic root at $\\lambda = \\sqrt{-144}\\text{ rad/s}$. Rewrite the root in the form $\\lambda = \\omega_0 i$ with $\\omega_0 > 0$, and find $\\omega_0$ in $\\text{rad/s}$.",
+      "display": "\\sqrt{-n} = i\\sqrt{n}",
+      "plainText": "sqrt(-144) = 12*i",
+      "givens": {
+        "radicand": -144
+      },
+      "constants": {
+        "index": 2
+      },
+      "trapGivens": [
+        144,
+        2
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "12",
+        "tolerance": 0.001
+      },
+      "answerPlain": "12",
+      "answerDisplay": "12",
+      "inputHint": "Enter a positive real number.",
+      "commonTrapTag": "t02-c01-u01-divide-by-two-instead-of-root-trap",
+      "trapDerivation": "144 / 2",
+      "trapValue": "72",
+      "verify": {
+        "source": "12",
+        "trapValue": "72"
+      },
+      "checkpointHint": "Factor out the negative sign as the imaginary unit, then evaluate the principal square root of the positive factor.",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "steps": [
+        {
+          "latex": "\\sqrt{-144} = \\sqrt{-1}\\cdot\\sqrt{144}",
+          "explain": "Separate the negative radicand into -1 and 144."
+        },
+        {
+          "latex": "\\sqrt{-1}\\cdot\\sqrt{144} = i\\sqrt{144}",
+          "explain": "Replace the square root of -1 with i."
+        },
+        {
+          "latex": "i\\sqrt{144} = 12i",
+          "explain": "Evaluate the principal square root of 144 to get 12.",
+          "val": "12"
+        }
+      ],
+      "id": "VAR-MTH-T02-C01-U01-t02-c01-u01-square-root-negative-numbers-01",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "t02-c01-u01-divide-by-two-instead-of-root-trap|direct|sqrt(-#) = #*i"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C01-U01-t02-c01-u01-square-root-negative-numbers-02",
+      "sourceArchetype": "t02-c01-u01-square-root-negative-numbers",
+      "archetypeKey": "t02-c01-u01-square-root-negative-numbers",
+      "unitCode": "MTH-T02-C01-U01",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "form": "direct",
+      "context": "mass_spring_eigenvalue_shift",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "An undamped harmonic oscillator with scaled characteristic eigenvalue 3*sqrt(-25) rad/s has purely imaginary frequency 15i rad/s; domain law and rad/s units are physically valid."
+      },
+      "verificationLevel": "partial",
+      "prompt": "An undamped mechanical oscillator has a scaled characteristic eigenvalue $\\lambda = 3\\sqrt{-25}\\text{ rad/s}$. Write $\\lambda$ in the form $\\lambda = \\omega i$ with $\\omega > 0$, and find $\\omega$ in $\\text{rad/s}$.",
+      "display": "k\\sqrt{-n} = ki\\sqrt{n}",
+      "plainText": "3*sqrt(-25) = 15*i",
+      "givens": {
+        "scale": 3,
+        "radicand": -25
+      },
+      "constants": {
+        "index": 2
+      },
+      "trapGivens": [
+        3,
+        25,
+        2
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "15",
+        "tolerance": 0.001
+      },
+      "answerPlain": "15",
+      "answerDisplay": "15",
+      "inputHint": "Enter a positive real number.",
+      "commonTrapTag": "t02-c01-u01-divide-by-two-instead-of-root-trap",
+      "trapDerivation": "3 * 25 / 2",
+      "trapValue": "37.5",
+      "verify": {
+        "source": "15",
+        "trapValue": "37.5"
+      },
+      "checkpointHint": "Extract the imaginary unit from the negative radicand, take the square root of the positive radicand, and multiply by the outer coefficient.",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "steps": [
+        {
+          "latex": "3\\sqrt{-25} = 3i\\sqrt{25}",
+          "explain": "Factor out the square root of -1 as i."
+        },
+        {
+          "latex": "3i\\sqrt{25} = 3i(5)",
+          "explain": "Evaluate the principal square root of 25 to 5."
+        },
+        {
+          "latex": "3i(5) = 15i",
+          "explain": "Multiply 3 by 5 to obtain the imaginary coefficient 15.",
+          "val": "15"
+        }
+      ],
+      "id": "VAR-MTH-T02-C01-U01-t02-c01-u01-square-root-negative-numbers-02",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "t02-c01-u01-divide-by-two-instead-of-root-trap|direct|#*sqrt(-#) = #*i"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C01-U01-t02-c01-u01-square-root-negative-numbers-03",
+      "sourceArchetype": "t02-c01-u01-square-root-negative-numbers",
+      "archetypeKey": "t02-c01-u01-square-root-negative-numbers",
+      "unitCode": "MTH-T02-C01-U01",
+      "level": 1,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "form": "direct",
+      "context": "evanescent_waveguide_wavenumber",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "Below cutoff, transverse wavenumber contributions sqrt(-81) and sqrt(-16) in rad/m are purely imaginary and add along the positive imaginary axis to 13i rad/m; domain law and wavenumber units hold."
+      },
+      "verificationLevel": "partial",
+      "prompt": "Below its cutoff frequency, an electromagnetic waveguide mode has combined imaginary wavenumber $k_z = \\sqrt{-81} + \\sqrt{-16}\\text{ rad/m}$ (using principal positive imaginary roots). Write $k_z$ in the form $\\alpha i$ with $\\alpha > 0$, and find $\\alpha$ in $\\text{rad/m}$.",
+      "display": "\\sqrt{-m} + \\sqrt{-n} = (\\sqrt{m} + \\sqrt{n})i",
+      "plainText": "sqrt(-81) + sqrt(-16) = 13*i",
+      "givens": {
+        "m": -81,
+        "n": -16
+      },
+      "constants": {
+        "index": 2
+      },
+      "trapGivens": [
+        81,
+        16,
+        2
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "13",
+        "tolerance": 0.001
+      },
+      "answerPlain": "13",
+      "answerDisplay": "13",
+      "inputHint": "Enter a positive real number.",
+      "commonTrapTag": "t02-c01-u01-divide-by-two-instead-of-root-trap",
+      "trapDerivation": "(81 + 16) / 2",
+      "trapValue": "48.5",
+      "verify": {
+        "source": "13",
+        "trapValue": "48.5"
+      },
+      "checkpointHint": "Rewrite each negative square root in terms of the imaginary unit before adding their coefficients.",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "steps": [
+        {
+          "latex": "\\sqrt{-81} + \\sqrt{-16} = i\\sqrt{81} + i\\sqrt{16}",
+          "explain": "Factor out the square root of -1 as i from each radical."
+        },
+        {
+          "latex": "i\\sqrt{81} + i\\sqrt{16} = 9i + 4i",
+          "explain": "Evaluate the principal square roots of 81 and 16."
+        },
+        {
+          "latex": "9i + 4i = 13i",
+          "explain": "Add the imaginary coefficients 9 and 4 to obtain 13.",
+          "val": "13"
+        }
+      ],
+      "id": "VAR-MTH-T02-C01-U01-t02-c01-u01-square-root-negative-numbers-03",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "t02-c01-u01-divide-by-two-instead-of-root-trap|direct|sqrt(-#) + sqrt(-#) = #*i"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C01-U01-t02-c01-u01-adding-complex-numbers-01",
+      "sourceArchetype": "t02-c01-u01-adding-complex-numbers",
+      "archetypeKey": "t02-c01-u01-adding-complex-numbers",
+      "unitCode": "MTH-T02-C01-U01",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "form": "direct",
+      "context": "series_ac_impedance_branch",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "Impedances connected in series obey Z_total = Z1 + Z2 in ohms, so the total reactance Im(Z_total) = Im(Z1) + Im(Z2) = 14 ohms; domain law and ohm units hold."
+      },
+      "verificationLevel": "partial",
+      "prompt": "Two AC circuit elements connected in series have complex impedances $z_1 = 12 + 5i\\ \\Omega$ and $z_2 = 8 + 9i\\ \\Omega$. Find the imaginary part (total reactance, in $\\Omega$) of the combined series impedance $z_1 + z_2$.",
+      "display": "\\text{Im}(z_1 + z_2) = \\text{Im}(z_1) + \\text{Im}(z_2)",
+      "plainText": "Im((12 + 5*i) + (8 + 9*i))",
+      "givens": {
+        "re1": 12,
+        "im1": 5,
+        "re2": 8,
+        "im2": 9
+      },
+      "constants": {},
+      "trapGivens": [
+        12,
+        5,
+        8,
+        9
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "14",
+        "tolerance": 0.001
+      },
+      "answerPlain": "14",
+      "answerDisplay": "14",
+      "inputHint": "Enter a real number.",
+      "commonTrapTag": "t02-c01-u01-add-real-and-imaginary-parts-trap",
+      "trapDerivation": "12 + 5 + 8 + 9",
+      "trapValue": "34",
+      "verify": {
+        "source": "5 + 9",
+        "trapValue": "34"
+      },
+      "checkpointHint": "Combine only the imaginary components with each other and keep the real resistance components separate.",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "steps": [
+        {
+          "latex": "z_1 + z_2 = (12 + 5i) + (8 + 9i)",
+          "explain": "Write the sum of the two series impedances."
+        },
+        {
+          "latex": "\\text{Im}(z_1 + z_2) = 5 + 9",
+          "explain": "Select the imaginary parts 5 and 9."
+        },
+        {
+          "latex": "\\text{Im}(z_1 + z_2) = 14",
+          "explain": "Add 5 and 9 to obtain 14.",
+          "val": "14"
+        }
+      ],
+      "id": "VAR-MTH-T02-C01-U01-t02-c01-u01-adding-complex-numbers-01",
+      "levelLabel": "Level 2 - Standard Exam",
+      "figure": {
+        "kind": "cartesian_graph",
+        "theme": "purple",
+        "title": "Complex Plane",
+        "xRange": [
+          -15,
+          15
+        ],
+        "yRange": [
+          -15,
+          15
+        ],
+        "grid": true,
+        "axes": true,
+        "axisLabels": [
+          "Re",
+          "Im"
+        ],
+        "plots": [
+          {
+            "type": "segment",
+            "from": [
+              0,
+              0
+            ],
+            "to": [
+              12.0,
+              5.0
+            ],
+            "color": "#7c3aed",
+            "strokeWidth": 2.2,
+            "arrow": true
+          },
+          {
+            "type": "point",
+            "coord": [
+              12.0,
+              5.0
+            ],
+            "label": "z_1",
+            "position": "top-right",
+            "color": "#7c3aed"
+          },
+          {
+            "type": "segment",
+            "from": [
+              0,
+              0
+            ],
+            "to": [
+              8.0,
+              9.0
+            ],
+            "color": "#0284c7",
+            "strokeWidth": 2.2,
+            "arrow": true
+          },
+          {
+            "type": "point",
+            "coord": [
+              8.0,
+              9.0
+            ],
+            "label": "z_2",
+            "position": "top-right",
+            "color": "#0284c7"
+          }
+        ]
+      },
+      "fingerprint": "t02-c01-u01-add-real-and-imaginary-parts-trap|direct|Im((# + #*i) + (# + #*i))"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C01-U01-t02-c01-u01-adding-complex-numbers-02",
+      "sourceArchetype": "t02-c01-u01-adding-complex-numbers",
+      "archetypeKey": "t02-c01-u01-adding-complex-numbers",
+      "unitCode": "MTH-T02-C01-U01",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "form": "direct",
+      "context": "acoustic_phasor_interference",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "Linear acoustic pressure waves at the same frequency superpose by complex phasor addition p1 + p2 in pascals; real part Re(p1 + p2) = 15 + 6 = 21 Pa obeys physical superposition."
+      },
+      "verificationLevel": "partial",
+      "prompt": "Two coherent acoustic sources produce complex pressure phasors $z_1 = 15 - 4i\\text{ Pa}$ and $z_2 = 6 + 11i\\text{ Pa}$ at a sensor. Find the real part of the total pressure phasor $z_1 + z_2$ in pascals.",
+      "display": "\\text{Re}(z_1 + z_2) = \\text{Re}(z_1) + \\text{Re}(z_2)",
+      "plainText": "Re((15 - 4*i) + (6 + 11*i))",
+      "givens": {
+        "re1": 15,
+        "im1": -4,
+        "re2": 6,
+        "im2": 11
+      },
+      "constants": {},
+      "trapGivens": [
+        15,
+        4,
+        6,
+        11
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "21",
+        "tolerance": 0.001
+      },
+      "answerPlain": "21",
+      "answerDisplay": "21",
+      "inputHint": "Enter a real number.",
+      "commonTrapTag": "t02-c01-u01-add-real-and-imaginary-parts-trap",
+      "trapDerivation": "15 - 4 + 6 + 11",
+      "trapValue": "28",
+      "verify": {
+        "source": "15 + 6",
+        "trapValue": "28"
+      },
+      "checkpointHint": "Add the real part of the first phasor to the real part of the second phasor without mixing in the imaginary parts.",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "steps": [
+        {
+          "latex": "z_1 + z_2 = (15 - 4i) + (6 + 11i)",
+          "explain": "Write the sum of the two complex pressure phasors."
+        },
+        {
+          "latex": "\\text{Re}(z_1 + z_2) = 15 + 6",
+          "explain": "Select the real parts 15 and 6."
+        },
+        {
+          "latex": "\\text{Re}(z_1 + z_2) = 21",
+          "explain": "Add 15 and 6 to obtain 21.",
+          "val": "21"
+        }
+      ],
+      "id": "VAR-MTH-T02-C01-U01-t02-c01-u01-adding-complex-numbers-02",
+      "levelLabel": "Level 2 - Standard Exam",
+      "figure": {
+        "kind": "cartesian_graph",
+        "theme": "purple",
+        "title": "Complex Plane",
+        "xRange": [
+          -20,
+          20
+        ],
+        "yRange": [
+          -20,
+          20
+        ],
+        "grid": true,
+        "axes": true,
+        "axisLabels": [
+          "Re",
+          "Im"
+        ],
+        "plots": [
+          {
+            "type": "segment",
+            "from": [
+              0,
+              0
+            ],
+            "to": [
+              15.0,
+              -4.0
+            ],
+            "color": "#7c3aed",
+            "strokeWidth": 2.2,
+            "arrow": true
+          },
+          {
+            "type": "point",
+            "coord": [
+              15.0,
+              -4.0
+            ],
+            "label": "z_1",
+            "position": "bottom-right",
+            "color": "#7c3aed"
+          },
+          {
+            "type": "segment",
+            "from": [
+              0,
+              0
+            ],
+            "to": [
+              6.0,
+              11.0
+            ],
+            "color": "#0284c7",
+            "strokeWidth": 2.2,
+            "arrow": true
+          },
+          {
+            "type": "point",
+            "coord": [
+              6.0,
+              11.0
+            ],
+            "label": "z_2",
+            "position": "top-right",
+            "color": "#0284c7"
+          }
+        ]
+      },
+      "fingerprint": "t02-c01-u01-add-real-and-imaginary-parts-trap|direct|Re((# - #*i) + (# + #*i))"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C01-U01-t02-c01-u01-adding-complex-numbers-03",
+      "sourceArchetype": "t02-c01-u01-adding-complex-numbers",
+      "archetypeKey": "t02-c01-u01-adding-complex-numbers",
+      "unitCode": "MTH-T02-C01-U01",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "form": "direct",
+      "context": "optical_interferometer_field_sum",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "Coherent optical electric-field phasors in V/m interfere by complex addition E1 + E2 = (11 + 14) + (6 + 9)i = 25 + 15i V/m; domain law and V/m units are physically exact."
+      },
+      "verificationLevel": "partial",
+      "prompt": "In an optical interferometer, two coherent laser beams arrive at a detector with complex electric-field phasors $z_1 = 11 + 6i\\text{ V/m}$ and $z_2 = 14 + 9i\\text{ V/m}$. Find the superposed complex field $z_1 + z_2$ in standard form $a + bi$.",
+      "display": "(a + bi) + (c + di) = (a + c) + (b + d)i",
+      "plainText": "(11 + 6*i) + (14 + 9*i)",
+      "givens": {
+        "re1": 11,
+        "im1": 6,
+        "re2": 14,
+        "im2": 9
+      },
+      "constants": {},
+      "trapGivens": [
+        11,
+        6,
+        14,
+        9
+      ],
+      "answerSpec": {
+        "type": "complex",
+        "value": "25 + 15*I",
+        "tolerance": 0.001
+      },
+      "answerPlain": "25 + 15i",
+      "answerDisplay": "25 + 15i",
+      "inputHint": "Enter a complex number in standard form a + bi.",
+      "commonTrapTag": "t02-c01-u01-add-real-and-imaginary-parts-trap",
+      "trapDerivation": "11 + 6 + 14 + 9",
+      "trapValue": "40",
+      "verify": {
+        "source": "(11 + 14) + (6 + 9)*I",
+        "trapValue": "40"
+      },
+      "checkpointHint": "Group the real parts together and the imaginary parts together separately to keep the result in standard complex form.",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "steps": [
+        {
+          "latex": "z_1 + z_2 = (11 + 14) + (6 + 9)i",
+          "explain": "Group the real parts and the imaginary parts separately."
+        },
+        {
+          "latex": "(11 + 14) + (6 + 9)i = 25 + (6 + 9)i",
+          "explain": "Add the real parts 11 and 14 to get 25."
+        },
+        {
+          "latex": "25 + (6 + 9)i = 25 + 15i",
+          "explain": "Add the imaginary coefficients 6 and 9 to get 15.",
+          "val": "25 + 15*I"
+        }
+      ],
+      "id": "VAR-MTH-T02-C01-U01-t02-c01-u01-adding-complex-numbers-03",
+      "levelLabel": "Level 2 - Standard Exam",
+      "figure": {
+        "kind": "cartesian_graph",
+        "theme": "purple",
+        "title": "Complex Plane",
+        "xRange": [
+          -20,
+          20
+        ],
+        "yRange": [
+          -20,
+          20
+        ],
+        "grid": true,
+        "axes": true,
+        "axisLabels": [
+          "Re",
+          "Im"
+        ],
+        "plots": [
+          {
+            "type": "segment",
+            "from": [
+              0,
+              0
+            ],
+            "to": [
+              11.0,
+              6.0
+            ],
+            "color": "#7c3aed",
+            "strokeWidth": 2.2,
+            "arrow": true
+          },
+          {
+            "type": "point",
+            "coord": [
+              11.0,
+              6.0
+            ],
+            "label": "z_1",
+            "position": "top-right",
+            "color": "#7c3aed"
+          },
+          {
+            "type": "segment",
+            "from": [
+              0,
+              0
+            ],
+            "to": [
+              14.0,
+              9.0
+            ],
+            "color": "#0284c7",
+            "strokeWidth": 2.2,
+            "arrow": true
+          },
+          {
+            "type": "point",
+            "coord": [
+              14.0,
+              9.0
+            ],
+            "label": "z_2",
+            "position": "top-right",
+            "color": "#0284c7"
+          }
+        ]
+      },
+      "fingerprint": "t02-c01-u01-add-real-and-imaginary-parts-trap|direct|(# + #*i) + (# + #*i)"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C01-U01-t02-c01-u01-subtracting-complex-numbers-01",
+      "sourceArchetype": "t02-c01-u01-subtracting-complex-numbers",
+      "archetypeKey": "t02-c01-u01-subtracting-complex-numbers",
+      "unitCode": "MTH-T02-C01-U01",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "form": "direct",
+      "context": "ac_bridge_branch_voltage",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "In an AC Wheatstone bridge, the potential difference between nodes A and B is the complex phasor difference V_A - V_B in volts; Re(V_A - V_B) = 6 - 14 = -8 V follows Kirchhoff voltage law."
+      },
+      "verificationLevel": "partial",
+      "prompt": "In an AC Wheatstone bridge, node A has complex phasor potential $z_1 = 6 + 11i\\text{ V}$ and node B has complex phasor potential $z_2 = 14 + 3i\\text{ V}$. Find the real part of the potential difference $z_1 - z_2$ (node A minus node B, in volts).",
+      "display": "\\text{Re}(z_1 - z_2) = \\text{Re}(z_1) - \\text{Re}(z_2)",
+      "plainText": "Re((6 + 11*i) - (14 + 3*i))",
+      "givens": {
+        "re1": 6,
+        "im1": 11,
+        "re2": 14,
+        "im2": 3
+      },
+      "constants": {},
+      "trapGivens": [
+        6,
+        14
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "-8",
+        "tolerance": 0.001
+      },
+      "answerPlain": "-8",
+      "answerDisplay": "-8",
+      "inputHint": "Enter a real number.",
+      "commonTrapTag": "t02-c01-u01-subtraction-order-swap-trap",
+      "trapDerivation": "14 - 6",
+      "trapValue": "8",
+      "verify": {
+        "source": "6 - 14",
+        "trapValue": "8"
+      },
+      "checkpointHint": "Keep the order of subtraction as stated: subtract the second real component from the first real component.",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "steps": [
+        {
+          "latex": "z_1 - z_2 = (6 + 11i) - (14 + 3i)",
+          "explain": "Write node A potential minus node B potential."
+        },
+        {
+          "latex": "\\text{Re}(z_1 - z_2) = 6 - 14",
+          "explain": "Select the real parts in the stated order."
+        },
+        {
+          "latex": "\\text{Re}(z_1 - z_2) = -8",
+          "explain": "Subtract 14 from 6 to get -8.",
+          "val": "-8"
+        }
+      ],
+      "id": "VAR-MTH-T02-C01-U01-t02-c01-u01-subtracting-complex-numbers-01",
+      "levelLabel": "Level 2 - Standard Exam",
+      "figure": {
+        "kind": "cartesian_graph",
+        "theme": "purple",
+        "title": "Complex Plane",
+        "xRange": [
+          -20,
+          20
+        ],
+        "yRange": [
+          -20,
+          20
+        ],
+        "grid": true,
+        "axes": true,
+        "axisLabels": [
+          "Re",
+          "Im"
+        ],
+        "plots": [
+          {
+            "type": "segment",
+            "from": [
+              0,
+              0
+            ],
+            "to": [
+              6.0,
+              11.0
+            ],
+            "color": "#7c3aed",
+            "strokeWidth": 2.2,
+            "arrow": true
+          },
+          {
+            "type": "point",
+            "coord": [
+              6.0,
+              11.0
+            ],
+            "label": "z_1",
+            "position": "top-right",
+            "color": "#7c3aed"
+          },
+          {
+            "type": "segment",
+            "from": [
+              0,
+              0
+            ],
+            "to": [
+              14.0,
+              3.0
+            ],
+            "color": "#0284c7",
+            "strokeWidth": 2.2,
+            "arrow": true
+          },
+          {
+            "type": "point",
+            "coord": [
+              14.0,
+              3.0
+            ],
+            "label": "z_2",
+            "position": "top-right",
+            "color": "#0284c7"
+          }
+        ]
+      },
+      "fingerprint": "t02-c01-u01-subtraction-order-swap-trap|direct|Re((# + #*i) - (# + #*i))"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C01-U01-t02-c01-u01-subtracting-complex-numbers-02",
+      "sourceArchetype": "t02-c01-u01-subtracting-complex-numbers",
+      "archetypeKey": "t02-c01-u01-subtracting-complex-numbers",
+      "unitCode": "MTH-T02-C01-U01",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "form": "direct",
+      "context": "sonar_hydrophone_phase_shift",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "Differential sonar array processing forms the complex pressure difference z1 - z2 in pascals across two hydrophones; Im(z1 - z2) = 4 - 15 = -11 Pa is physically consistent."
+      },
+      "verificationLevel": "partial",
+      "prompt": "A sonar array records complex pressure phasor $z_1 = 12 + 4i\\text{ Pa}$ at hydrophone A and $z_2 = 5 + 15i\\text{ Pa}$ at hydrophone B. Find the imaginary part of the differential pressure $z_1 - z_2$ (hydrophone A minus hydrophone B, in pascals).",
+      "display": "\\text{Im}(z_1 - z_2) = \\text{Im}(z_1) - \\text{Im}(z_2)",
+      "plainText": "Im((12 + 4*i) - (5 + 15*i))",
+      "givens": {
+        "re1": 12,
+        "im1": 4,
+        "re2": 5,
+        "im2": 15
+      },
+      "constants": {},
+      "trapGivens": [
+        4,
+        15
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "-11",
+        "tolerance": 0.001
+      },
+      "answerPlain": "-11",
+      "answerDisplay": "-11",
+      "inputHint": "Enter a real number.",
+      "commonTrapTag": "t02-c01-u01-subtraction-order-swap-trap",
+      "trapDerivation": "15 - 4",
+      "trapValue": "11",
+      "verify": {
+        "source": "4 - 15",
+        "trapValue": "11"
+      },
+      "checkpointHint": "Distribute the negative sign to the subtrahend and subtract the second imaginary coefficient from the first.",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "steps": [
+        {
+          "latex": "z_1 - z_2 = (12 + 4i) - (5 + 15i)",
+          "explain": "Write the complex difference of hydrophone A minus hydrophone B."
+        },
+        {
+          "latex": "\\text{Im}(z_1 - z_2) = 4 - 15",
+          "explain": "Select the imaginary coefficients in the stated order."
+        },
+        {
+          "latex": "\\text{Im}(z_1 - z_2) = -11",
+          "explain": "Subtract 15 from 4 to obtain -11.",
+          "val": "-11"
+        }
+      ],
+      "id": "VAR-MTH-T02-C01-U01-t02-c01-u01-subtracting-complex-numbers-02",
+      "levelLabel": "Level 2 - Standard Exam",
+      "figure": {
+        "kind": "cartesian_graph",
+        "theme": "purple",
+        "title": "Complex Plane",
+        "xRange": [
+          -20,
+          20
+        ],
+        "yRange": [
+          -20,
+          20
+        ],
+        "grid": true,
+        "axes": true,
+        "axisLabels": [
+          "Re",
+          "Im"
+        ],
+        "plots": [
+          {
+            "type": "segment",
+            "from": [
+              0,
+              0
+            ],
+            "to": [
+              12.0,
+              4.0
+            ],
+            "color": "#7c3aed",
+            "strokeWidth": 2.2,
+            "arrow": true
+          },
+          {
+            "type": "point",
+            "coord": [
+              12.0,
+              4.0
+            ],
+            "label": "z_1",
+            "position": "top-right",
+            "color": "#7c3aed"
+          },
+          {
+            "type": "segment",
+            "from": [
+              0,
+              0
+            ],
+            "to": [
+              5.0,
+              15.0
+            ],
+            "color": "#0284c7",
+            "strokeWidth": 2.2,
+            "arrow": true
+          },
+          {
+            "type": "point",
+            "coord": [
+              5.0,
+              15.0
+            ],
+            "label": "z_2",
+            "position": "top-right",
+            "color": "#0284c7"
+          }
+        ]
+      },
+      "fingerprint": "t02-c01-u01-subtraction-order-swap-trap|direct|Im((# + #*i) - (# + #*i))"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C01-U01-t02-c01-u01-subtracting-complex-numbers-03",
+      "sourceArchetype": "t02-c01-u01-subtracting-complex-numbers",
+      "archetypeKey": "t02-c01-u01-subtracting-complex-numbers",
+      "unitCode": "MTH-T02-C01-U01",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "form": "direct",
+      "context": "qam_constellation_error_vector",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "In QAM digital communications, the constellation error vector is defined as the complex difference z_rx - z_tx between received and ideal I/Q symbols; domain law is exact."
+      },
+      "verificationLevel": "partial",
+      "prompt": "In a quadrature amplitude modulation (QAM) demodulator, the received symbol is $z_1 = 3 + 7i$ and the ideal transmitted reference symbol is $z_2 = 8 + 16i$. Find the complex error vector $z_1 - z_2$ (received minus reference) in standard form $a + bi$.",
+      "display": "(a + bi) - (c + di) = (a - c) + (b - d)i",
+      "plainText": "(3 + 7*i) - (8 + 16*i)",
+      "givens": {
+        "re1": 3,
+        "im1": 7,
+        "re2": 8,
+        "im2": 16
+      },
+      "constants": {},
+      "trapGivens": [
+        3,
+        7,
+        8,
+        16
+      ],
+      "answerSpec": {
+        "type": "complex",
+        "value": "-5 - 9*I",
+        "tolerance": 0.001
+      },
+      "answerPlain": "-5 - 9i",
+      "answerDisplay": "-5 - 9i",
+      "inputHint": "Enter a complex number in standard form a + bi.",
+      "commonTrapTag": "t02-c01-u01-subtraction-order-swap-trap",
+      "trapDerivation": "(8 - 3) + (16 - 7)*I",
+      "trapValue": "5 + 9*I",
+      "verify": {
+        "source": "(3 - 8) + (7 - 16)*I",
+        "trapValue": "5 + 9*I"
+      },
+      "checkpointHint": "Subtract the reference real and imaginary components from the received real and imaginary components in the stated order.",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "steps": [
+        {
+          "latex": "z_1 - z_2 = (3 - 8) + (7 - 16)i",
+          "explain": "Distribute the subtraction across the real and imaginary parts."
+        },
+        {
+          "latex": "(3 - 8) + (7 - 16)i = -5 + (7 - 16)i",
+          "explain": "Subtract 8 from 3 to get -5."
+        },
+        {
+          "latex": "-5 + (7 - 16)i = -5 - 9i",
+          "explain": "Subtract 16 from 7 to get -9.",
+          "val": "-5 - 9*I"
+        }
+      ],
+      "id": "VAR-MTH-T02-C01-U01-t02-c01-u01-subtracting-complex-numbers-03",
+      "levelLabel": "Level 2 - Standard Exam",
+      "figure": {
+        "kind": "cartesian_graph",
+        "theme": "purple",
+        "title": "Complex Plane",
+        "xRange": [
+          -20,
+          20
+        ],
+        "yRange": [
+          -20,
+          20
+        ],
+        "grid": true,
+        "axes": true,
+        "axisLabels": [
+          "Re",
+          "Im"
+        ],
+        "plots": [
+          {
+            "type": "segment",
+            "from": [
+              0,
+              0
+            ],
+            "to": [
+              3.0,
+              7.0
+            ],
+            "color": "#7c3aed",
+            "strokeWidth": 2.2,
+            "arrow": true
+          },
+          {
+            "type": "point",
+            "coord": [
+              3.0,
+              7.0
+            ],
+            "label": "z_1",
+            "position": "top-right",
+            "color": "#7c3aed"
+          },
+          {
+            "type": "segment",
+            "from": [
+              0,
+              0
+            ],
+            "to": [
+              8.0,
+              16.0
+            ],
+            "color": "#0284c7",
+            "strokeWidth": 2.2,
+            "arrow": true
+          },
+          {
+            "type": "point",
+            "coord": [
+              8.0,
+              16.0
+            ],
+            "label": "z_2",
+            "position": "top-right",
+            "color": "#0284c7"
+          }
+        ]
+      },
+      "fingerprint": "t02-c01-u01-subtraction-order-swap-trap|direct|(# + #*i) - (# + #*i)"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C01-U01-t02-c01-u01-multiplying-pure-imaginary-01",
+      "sourceArchetype": "t02-c01-u01-multiplying-pure-imaginary",
+      "archetypeKey": "t02-c01-u01-multiplying-pure-imaginary",
+      "unitCode": "MTH-T02-C01-U01",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "form": "direct",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Evaluate $(9i)(4i)$. Write the result as a real number.",
+      "display": "(bi)(di) = bd\\cdot i^2",
+      "plainText": "(9*i)*(4*i)",
+      "givens": {
+        "b": 9,
+        "d": 4
+      },
+      "constants": {},
+      "trapGivens": [
+        9,
+        4
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "-36",
+        "tolerance": 0.001
+      },
+      "answerPlain": "-36",
+      "answerDisplay": "-36",
+      "inputHint": "Enter a real number.",
+      "commonTrapTag": "t02-c01-u01-forgot-i-squared-negative-sign-trap",
+      "trapDerivation": "9 * 4",
+      "trapValue": "36",
+      "verify": {
+        "source": "-36",
+        "trapValue": "36"
+      },
+      "checkpointHint": "Multiply the real coefficients and the imaginary units, then replace the squared imaginary unit with its real value.",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "steps": [
+        {
+          "latex": "(9i)(4i) = (9\\cdot 4)(i\\cdot i)",
+          "explain": "Group the numerical coefficients and the imaginary units."
+        },
+        {
+          "latex": "(9\\cdot 4)(i\\cdot i) = 36i^2",
+          "explain": "Multiply 9 by 4 to get 36."
+        },
+        {
+          "latex": "36i^2 = 36(-1)",
+          "explain": "Replace i^2 with -1."
+        },
+        {
+          "latex": "36(-1) = -36",
+          "explain": "Multiply 36 by -1 to get -36.",
+          "val": "-36"
+        }
+      ],
+      "id": "VAR-MTH-T02-C01-U01-t02-c01-u01-multiplying-pure-imaginary-01",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c01-u01-forgot-i-squared-negative-sign-trap|direct|(#*i)*(#*i)"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C01-U01-t02-c01-u01-multiplying-pure-imaginary-02",
+      "sourceArchetype": "t02-c01-u01-multiplying-pure-imaginary",
+      "archetypeKey": "t02-c01-u01-multiplying-pure-imaginary",
+      "unitCode": "MTH-T02-C01-U01",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "form": "direct",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Evaluate $(-5i)(11i)$. Write the result as a real number.",
+      "display": "(bi)(di) = bd\\cdot i^2",
+      "plainText": "(-5*i)*(11*i)",
+      "givens": {
+        "b": -5,
+        "d": 11
+      },
+      "constants": {},
+      "trapGivens": [
+        5,
+        11
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "55",
+        "tolerance": 0.001
+      },
+      "answerPlain": "55",
+      "answerDisplay": "55",
+      "inputHint": "Enter a real number.",
+      "commonTrapTag": "t02-c01-u01-forgot-i-squared-negative-sign-trap",
+      "trapDerivation": "-5 * 11",
+      "trapValue": "-55",
+      "verify": {
+        "source": "55",
+        "trapValue": "-55"
+      },
+      "checkpointHint": "Account for both the negative sign on the coefficient and the negative sign produced by the product of the two imaginary units.",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "steps": [
+        {
+          "latex": "(-5i)(11i) = (-5\\cdot 11)(i\\cdot i)",
+          "explain": "Group the real coefficients and the imaginary units."
+        },
+        {
+          "latex": "(-5\\cdot 11)(i\\cdot i) = -55i^2",
+          "explain": "Multiply -5 by 11 to get -55."
+        },
+        {
+          "latex": "-55i^2 = -55(-1)",
+          "explain": "Replace i^2 with -1."
+        },
+        {
+          "latex": "-55(-1) = 55",
+          "explain": "Multiply -55 by -1 to obtain 55.",
+          "val": "55"
+        }
+      ],
+      "id": "VAR-MTH-T02-C01-U01-t02-c01-u01-multiplying-pure-imaginary-02",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c01-u01-forgot-i-squared-negative-sign-trap|direct|(-#*i)*(#*i)"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C01-U01-t02-c01-u01-multiplying-pure-imaginary-03",
+      "sourceArchetype": "t02-c01-u01-multiplying-pure-imaginary",
+      "archetypeKey": "t02-c01-u01-multiplying-pure-imaginary",
+      "unitCode": "MTH-T02-C01-U01",
+      "level": 2,
+      "category": "Core Skill",
+      "archetype": "problem-solving",
+      "form": "reverse",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Find the real number $k$ such that $(8i)(ki) = -72$.",
+      "display": "(8i)(ki) = -72",
+      "plainText": "(8*i)*(k*i) = -72",
+      "givens": {
+        "b": 8,
+        "prod": -72
+      },
+      "constants": {},
+      "trapGivens": [
+        8,
+        72
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "9",
+        "tolerance": 0.001
+      },
+      "answerPlain": "9",
+      "answerDisplay": "9",
+      "inputHint": "Enter a real number.",
+      "commonTrapTag": "t02-c01-u01-forgot-i-squared-negative-sign-trap",
+      "trapDerivation": "-72 / 8",
+      "trapValue": "-9",
+      "verify": {
+        "source": "72 / 8",
+        "trapValue": "-9"
+      },
+      "checkpointHint": "Simplify the product of the two imaginary units on the left side first before dividing to isolate the unknown.",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "steps": [
+        {
+          "latex": "8k i^2 = -72",
+          "explain": "Multiply the factors on the left-hand side."
+        },
+        {
+          "latex": "8k(-1) = -72",
+          "explain": "Replace i^2 with -1."
+        },
+        {
+          "latex": "-8k = -72",
+          "explain": "Simplify the left-hand side to -8k."
+        },
+        {
+          "latex": "k = 9",
+          "explain": "Divide both sides by -8 to find k.",
+          "val": "9"
+        }
+      ],
+      "id": "VAR-MTH-T02-C01-U01-t02-c01-u01-multiplying-pure-imaginary-03",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c01-u01-forgot-i-squared-negative-sign-trap|reverse|(#*i)*(k*i) = -#"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C01-U01-t02-c01-u01-multiplying-complex-binomials-01",
+      "sourceArchetype": "t02-c01-u01-multiplying-complex-binomials",
+      "archetypeKey": "t02-c01-u01-multiplying-complex-binomials",
+      "unitCode": "MTH-T02-C01-U01",
+      "level": 3,
+      "category": "Trap & Edge Case",
+      "archetype": "problem-solving",
+      "form": "diagnose",
+      "context": "ac_voltage_current_product_check",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "By AC Ohm law, voltage phasor V = I*Z = (3 + 2i)(5 - 4i) in volts is the complex product of current and impedance; domain law is exact."
+      },
+      "verificationLevel": "partial",
+      "prompt": "An electrical student calculated the voltage phasor $V = (3 + 2i)(5 - 4i)$ from current and impedance and wrote:\nLine 1: $(3 + 2i)(5 - 4i) = 15 - 12i + 10i - 8i^2$\nLine 2: $= 15 - 2i - 8i^2$\nLine 3: $= 15 - 2i - 8$\nLine 4: $= 7 - 2i$\nWhich line is the first one that is wrong?",
+      "display": "(a + bi)(c + di) = (ac - bd) + (ad + bc)i",
+      "givens": {
+        "a": 3,
+        "b": 2,
+        "c": 5,
+        "d": 4
+      },
+      "constants": {},
+      "trapGivens": [
+        3,
+        2,
+        5,
+        4
+      ],
+      "answerSpec": {
+        "type": "choice",
+        "options": [
+          {
+            "id": "1",
+            "label": "Line 1",
+            "provenance": "flags a correct step as the error"
+          },
+          {
+            "id": "2",
+            "label": "Line 2",
+            "provenance": "flags a correct step as the error"
+          },
+          {
+            "id": "3",
+            "label": "Line 3"
+          },
+          {
+            "id": "4",
+            "label": "Line 4",
+            "trapTag": "t02-c01-u01-positive-last-term-trap"
+          }
+        ],
+        "correct": "3"
+      },
+      "answerPlain": "3",
+      "answerDisplay": "\\text{Line 3}",
+      "inputHint": "Choose a line",
+      "commonTrapTag": "t02-c01-u01-positive-last-term-trap",
+      "trapDerivation": "(3*5 - 2*4) + (2*5 - 3*4)*I",
+      "trapValue": "7 - 2*I",
+      "verify": {
+        "source": "23 - 2*I",
+        "trapValue": "7 - 2*I",
+        "flaw": {
+          "values": [
+            "15 - 12*I + 10*I - 8*I^2",
+            "15 - 2*I - 8*I^2",
+            "15 - 2*I - 8",
+            "7 - 2*I"
+          ],
+          "firstWrong": 3
+        }
+      },
+      "checkpointHint": "Check whether each line keeps the exact same complex value as the line directly above it.",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "steps": [
+        {
+          "latex": "(3 + 2i)(5 - 4i) = 15 - 12i + 10i - 8i^2",
+          "explain": "Line 1 correctly expands all four terms."
+        },
+        {
+          "latex": "-8i^2 = 8",
+          "explain": "Line 3 is the first wrong line (Line 2 correctly combines -12i + 10i into -2i): since i^2 = -1, the term -8i^2 equals +8, not -8."
+        },
+        {
+          "latex": "15 + 8 - 2i",
+          "explain": "Group the real parts 15 and 8 together."
+        },
+        {
+          "latex": "23 - 2i",
+          "explain": "Add the real parts to obtain the true product.",
+          "val": "23 - 2*I"
+        }
+      ],
+      "blindSolve": {
+        "answer": "3",
+        "ambiguous": false,
+        "setup": "given",
+        "strategy": "prescribed",
+        "check": "none",
+        "task": "diagnose",
+        "reverse": false,
+        "steps": 4
+      },
+      "id": "VAR-MTH-T02-C01-U01-t02-c01-u01-multiplying-complex-binomials-01",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "t02-c01-u01-positive-last-term-trap|diagnose|An electrical student calculated the voltage phasor $V = (# + #i)(# - #i)$ from current and impedance and wrote: Line #: $(# + #i)(# - #i) = # - #i + #i - #i^#$ Line #: $= # - #i - #i^#$ Line #: $= # - #i - #$ Line #: $= # - #i$ Which line is the first one that is wrong?"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C01-U01-t02-c01-u01-multiplying-complex-binomials-02",
+      "sourceArchetype": "t02-c01-u01-multiplying-complex-binomials",
+      "archetypeKey": "t02-c01-u01-multiplying-complex-binomials",
+      "unitCode": "MTH-T02-C01-U01",
+      "level": 3,
+      "category": "Trap & Edge Case",
+      "archetype": "problem-solving",
+      "form": "diagnose",
+      "context": "quadrature_mixer_rotation_check",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "Complex baseband quadrature mixing multiplies the complex input sample (4 + 5i) by the complex local-oscillator weight (3 + 2i); domain law is exact."
+      },
+      "verificationLevel": "partial",
+      "prompt": "In a quadrature baseband mixer, a student multiplied the complex sample $(4 + 5i)$ by $(3 + 2i)$ and wrote:\nLine 1: $(4 + 5i)(3 + 2i) = 12 + 8i + 15i + 10i^2$\nLine 2: $= 12 + 8i + 15i + 10$\nLine 3: $= 22 + 8i + 15i$\nLine 4: $= 22 + 23i$\nWhich line is the first one that is wrong?",
+      "display": "(a + bi)(c + di) = (ac - bd) + (ad + bc)i",
+      "givens": {
+        "a": 4,
+        "b": 5,
+        "c": 3,
+        "d": 2
+      },
+      "constants": {},
+      "trapGivens": [
+        4,
+        5,
+        3,
+        2
+      ],
+      "answerSpec": {
+        "type": "choice",
+        "options": [
+          {
+            "id": "1",
+            "label": "Line 1",
+            "provenance": "flags a correct step as the error"
+          },
+          {
+            "id": "2",
+            "label": "Line 2"
+          },
+          {
+            "id": "3",
+            "label": "Line 3",
+            "trapTag": "t02-c01-u01-positive-last-term-trap"
+          },
+          {
+            "id": "4",
+            "label": "Line 4",
+            "trapTag": "t02-c01-u01-positive-last-term-trap"
+          }
+        ],
+        "correct": "2"
+      },
+      "answerPlain": "2",
+      "answerDisplay": "\\text{Line 2}",
+      "inputHint": "Choose a line",
+      "commonTrapTag": "t02-c01-u01-positive-last-term-trap",
+      "trapDerivation": "(4*3 + 5*2) + (4*2 + 5*3)*I",
+      "trapValue": "22 + 23*I",
+      "verify": {
+        "source": "2 + 23*I",
+        "trapValue": "22 + 23*I",
+        "flaw": {
+          "values": [
+            "12 + 8*I + 15*I + 10*I^2",
+            "12 + 8*I + 15*I + 10",
+            "22 + 8*I + 15*I",
+            "22 + 23*I"
+          ],
+          "firstWrong": 2
+        }
+      },
+      "checkpointHint": "Verify each line against the line above it to see where the value of a term changes.",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "steps": [
+        {
+          "latex": "(4 + 5i)(3 + 2i) = 12 + 8i + 15i + 10i^2",
+          "explain": "Line 1 correctly expands all four product terms."
+        },
+        {
+          "latex": "10i^2 = -10",
+          "explain": "Line 2 is the first wrong line: replacing i^2 with -1 turns +10i^2 into -10, not +10."
+        },
+        {
+          "latex": "12 - 10 + 23i",
+          "explain": "Group the real terms 12 and -10 and combine the imaginary terms 8i and 15i."
+        },
+        {
+          "latex": "2 + 23i",
+          "explain": "Subtract 10 from 12 to obtain the correct product.",
+          "val": "2 + 23*I"
+        }
+      ],
+      "blindSolve": {
+        "answer": "2",
+        "ambiguous": false,
+        "setup": "given",
+        "strategy": "prescribed",
+        "check": "none",
+        "task": "diagnose",
+        "reverse": false,
+        "steps": 4
+      },
+      "id": "VAR-MTH-T02-C01-U01-t02-c01-u01-multiplying-complex-binomials-02",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "t02-c01-u01-positive-last-term-trap|diagnose|In a quadrature baseband mixer, a student multiplied the complex sample $(# + #i)$ by $(# + #i)$ and wrote: Line #: $(# + #i)(# + #i) = # + #i + #i + #i^#$ Line #: $= # + #i + #i + #$ Line #: $= # + #i + #i$ Line #: $= # + #i$ Which line is the first one that is wrong?"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C01-U01-t02-c01-u01-multiplying-complex-binomials-03",
+      "sourceArchetype": "t02-c01-u01-multiplying-complex-binomials",
+      "archetypeKey": "t02-c01-u01-multiplying-complex-binomials",
+      "unitCode": "MTH-T02-C01-U01",
+      "level": 3,
+      "category": "Trap & Edge Case",
+      "archetype": "problem-solving",
+      "form": "diagnose",
+      "context": "acoustic_impedance_transmission_check",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "Complex acoustic pressure phasor P = Z_ac * U = (5 + 3i)(2 - 6i) is the product of complex acoustic impedance and volume velocity phasor; domain law is exact."
+      },
+      "verificationLevel": "partial",
+      "prompt": "While finding an acoustic pressure phasor, a student multiplied $(5 + 3i)(2 - 6i)$ and wrote:\nLine 1: $(5 + 3i)(2 - 6i) = 10 - 30i + 6i - 18i^2$\nLine 2: $= 10 - 24i - 18i^2$\nLine 3: $= 10 - 24i - 18$\nLine 4: $= -8 - 24i$\nWhich line is the first one that is wrong?",
+      "display": "(a + bi)(c + di) = (ac - bd) + (ad + bc)i",
+      "givens": {
+        "a": 5,
+        "b": 3,
+        "c": 2,
+        "d": 6
+      },
+      "constants": {},
+      "trapGivens": [
+        5,
+        3,
+        2,
+        6
+      ],
+      "answerSpec": {
+        "type": "choice",
+        "options": [
+          {
+            "id": "1",
+            "label": "Line 1",
+            "provenance": "flags a correct step as the error"
+          },
+          {
+            "id": "2",
+            "label": "Line 2",
+            "provenance": "flags a correct step as the error"
+          },
+          {
+            "id": "3",
+            "label": "Line 3"
+          },
+          {
+            "id": "4",
+            "label": "Line 4",
+            "trapTag": "t02-c01-u01-positive-last-term-trap"
+          }
+        ],
+        "correct": "3"
+      },
+      "answerPlain": "3",
+      "answerDisplay": "\\text{Line 3}",
+      "inputHint": "Choose a line",
+      "commonTrapTag": "t02-c01-u01-positive-last-term-trap",
+      "trapDerivation": "(5*2 - 3*6) + (3*2 - 5*6)*I",
+      "trapValue": "-8 - 24*I",
+      "verify": {
+        "source": "28 - 24*I",
+        "trapValue": "-8 - 24*I",
+        "flaw": {
+          "values": [
+            "10 - 30*I + 6*I - 18*I^2",
+            "10 - 24*I - 18*I^2",
+            "10 - 24*I - 18",
+            "-8 - 24*I"
+          ],
+          "firstWrong": 3
+        }
+      },
+      "checkpointHint": "Compare each line with the line above it to see whether the complex value is preserved.",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "steps": [
+        {
+          "latex": "(5 + 3i)(2 - 6i) = 10 - 30i + 6i - 18i^2",
+          "explain": "Line 1 correctly expands all four products."
+        },
+        {
+          "latex": "-18i^2 = 18",
+          "explain": "Line 3 is the first wrong line (Line 2 correctly simplifies -30i + 6i to -24i): replacing i^2 with -1 makes -18i^2 equal +18, not -18."
+        },
+        {
+          "latex": "10 + 18 - 24i",
+          "explain": "Group the real terms 10 and 18 together."
+        },
+        {
+          "latex": "28 - 24i",
+          "explain": "Add 10 and 18 to obtain the correct product.",
+          "val": "28 - 24*I"
+        }
+      ],
+      "blindSolve": {
+        "answer": "3",
+        "ambiguous": false,
+        "setup": "given",
+        "strategy": "prescribed",
+        "check": "none",
+        "task": "diagnose",
+        "reverse": false,
+        "steps": 4
+      },
+      "id": "VAR-MTH-T02-C01-U01-t02-c01-u01-multiplying-complex-binomials-03",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "t02-c01-u01-positive-last-term-trap|diagnose|While finding an acoustic pressure phasor, a student multiplied $(# + #i)(# - #i)$ and wrote: Line #: $(# + #i)(# - #i) = # - #i + #i - #i^#$ Line #: $= # - #i - #i^#$ Line #: $= # - #i - #$ Line #: $= -# - #i$ Which line is the first one that is wrong?"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C01-U01-t02-c01-u01-complex-conjugates-modulus-01",
+      "sourceArchetype": "t02-c01-u01-complex-conjugates-modulus",
+      "archetypeKey": "t02-c01-u01-complex-conjugates-modulus",
+      "unitCode": "MTH-T02-C01-U01",
+      "level": 3,
+      "category": "Trap & Edge Case",
+      "archetype": "problem-solving",
+      "form": "diagnose",
+      "context": "quantum_state_norm_squared",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "In quantum mechanics, the unnormalized probability weight of a complex amplitude z = 7 - 4i is |z|^2 = z*conj(z) = 65 > 0; domain law and positivity hold."
+      },
+      "verificationLevel": "partial",
+      "prompt": "A quantum state has unnormalized complex amplitude $z = 7 - 4i$. A student computed $z\\bar{z}$ and wrote:\nLine 1: $z\\bar{z} = (7 - 4i)(7 + 4i) = 7^2 - (4i)^2$\nLine 2: $= 49 - 16i^2$\nLine 3: $= 49 - 16$\nLine 4: $= 33$\nWhich line is the first one that is wrong?",
+      "display": "(a - bi)(a + bi) = a^2 + b^2",
+      "givens": {
+        "a": 7,
+        "b": 4
+      },
+      "constants": {},
+      "trapGivens": [
+        7,
+        4
+      ],
+      "answerSpec": {
+        "type": "choice",
+        "options": [
+          {
+            "id": "1",
+            "label": "Line 1",
+            "provenance": "flags a correct step as the error"
+          },
+          {
+            "id": "2",
+            "label": "Line 2",
+            "provenance": "flags a correct step as the error"
+          },
+          {
+            "id": "3",
+            "label": "Line 3"
+          },
+          {
+            "id": "4",
+            "label": "Line 4",
+            "trapTag": "t02-c01-u01-difference-of-squares-minus-sign-trap"
+          }
+        ],
+        "correct": "3"
+      },
+      "answerPlain": "3",
+      "answerDisplay": "\\text{Line 3}",
+      "inputHint": "Choose a line",
+      "commonTrapTag": "t02-c01-u01-difference-of-squares-minus-sign-trap",
+      "trapDerivation": "7^2 - 4^2",
+      "trapValue": "33",
+      "verify": {
+        "source": "65",
+        "trapValue": "33",
+        "flaw": {
+          "values": [
+            "7^2 - (4*I)^2",
+            "49 - 16*I^2",
+            "49 - 16",
+            "33"
+          ],
+          "firstWrong": 3
+        }
+      },
+      "checkpointHint": "Check each step line by line to see where the value of the expression stops matching the line above it.",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "steps": [
+        {
+          "latex": "(7 - 4i)(7 + 4i) = 7^2 - (4i)^2",
+          "explain": "Line 1 correctly applies the difference of squares pattern."
+        },
+        {
+          "latex": "(4i)^2 = 16i^2",
+          "explain": "Line 2 correctly squares 4i to 16i^2."
+        },
+        {
+          "latex": "16i^2 = -16",
+          "explain": "Line 3 is the first wrong line: since i^2 = -1, subtracting 16i^2 means subtracting -16, which adds 16."
+        },
+        {
+          "latex": "49 - (-16) = 65",
+          "explain": "Add 49 and 16 to obtain the true modulus squared.",
+          "val": "65"
+        }
+      ],
+      "blindSolve": {
+        "answer": "3",
+        "ambiguous": false,
+        "setup": "given",
+        "strategy": "prescribed",
+        "check": "none",
+        "task": "diagnose",
+        "reverse": false,
+        "steps": 3
+      },
+      "id": "VAR-MTH-T02-C01-U01-t02-c01-u01-complex-conjugates-modulus-01",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "figure": {
+        "kind": "cartesian_graph",
+        "theme": "purple",
+        "title": "Complex Plane",
+        "xRange": [
+          -10,
+          10
+        ],
+        "yRange": [
+          -10,
+          10
+        ],
+        "grid": true,
+        "axes": true,
+        "axisLabels": [
+          "Re",
+          "Im"
+        ],
+        "plots": [
+          {
+            "type": "segment",
+            "from": [
+              0,
+              0
+            ],
+            "to": [
+              7.0,
+              4.0
+            ],
+            "color": "#7c3aed",
+            "strokeWidth": 2.2,
+            "arrow": true
+          },
+          {
+            "type": "point",
+            "coord": [
+              7.0,
+              4.0
+            ],
+            "label": "z",
+            "position": "top-right",
+            "color": "#7c3aed"
+          },
+          {
+            "type": "segment",
+            "from": [
+              0,
+              0
+            ],
+            "to": [
+              7.0,
+              -4.0
+            ],
+            "color": "#94a3b8",
+            "strokeWidth": 2.2,
+            "arrow": true,
+            "strokeDasharray": "4 3"
+          },
+          {
+            "type": "point",
+            "coord": [
+              7.0,
+              -4.0
+            ],
+            "label": "\\bar{z}",
+            "position": "bottom-right",
+            "color": "#94a3b8"
+          },
+          {
+            "type": "text",
+            "coord": [
+              2.7,
+              3.0
+            ],
+            "text": "|z| = ?"
+          }
+        ],
+        "note": "Not to scale"
+      },
+      "fingerprint": "t02-c01-u01-difference-of-squares-minus-sign-trap|diagnose|A quantum state has unnormalized complex amplitude $z = # - #i$. A student computed $z\\bar{z}$ and wrote: Line #: $z\\bar{z} = (# - #i)(# + #i) = #^# - (#i)^#$ Line #: $= # - #i^#$ Line #: $= # - #$ Line #: $= #$ Which line is the first one that is wrong?"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C01-U01-t02-c01-u01-complex-conjugates-modulus-02",
+      "sourceArchetype": "t02-c01-u01-complex-conjugates-modulus",
+      "archetypeKey": "t02-c01-u01-complex-conjugates-modulus",
+      "unitCode": "MTH-T02-C01-U01",
+      "level": 3,
+      "category": "Trap & Edge Case",
+      "archetype": "problem-solving",
+      "form": "diagnose",
+      "context": "ac_apparent_power_modulus_squared",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "For an AC load impedance z = 8 + 3i ohms, the squared impedance magnitude is |z|^2 = z*conj(z) = 73 ohm^2; domain law and positivity hold."
+      },
+      "verificationLevel": "partial",
+      "prompt": "An AC load has complex impedance $z = 8 + 3i$. A student computed $z\\bar{z}$ and wrote:\nLine 1: $z\\bar{z} = (8 + 3i)(8 - 3i) = 8^2 - (3i)^2$\nLine 2: $= 8^2 - 9$\nLine 3: $= 64 - 9$\nLine 4: $= 55$\nWhich line is the first one that is wrong?",
+      "display": "(a + bi)(a - bi) = a^2 + b^2",
+      "givens": {
+        "a": 8,
+        "b": 3
+      },
+      "constants": {},
+      "trapGivens": [
+        8,
+        3
+      ],
+      "answerSpec": {
+        "type": "choice",
+        "options": [
+          {
+            "id": "1",
+            "label": "Line 1",
+            "provenance": "flags a correct step as the error"
+          },
+          {
+            "id": "2",
+            "label": "Line 2"
+          },
+          {
+            "id": "3",
+            "label": "Line 3",
+            "trapTag": "t02-c01-u01-difference-of-squares-minus-sign-trap"
+          },
+          {
+            "id": "4",
+            "label": "Line 4",
+            "trapTag": "t02-c01-u01-difference-of-squares-minus-sign-trap"
+          }
+        ],
+        "correct": "2"
+      },
+      "answerPlain": "2",
+      "answerDisplay": "\\text{Line 2}",
+      "inputHint": "Choose a line",
+      "commonTrapTag": "t02-c01-u01-difference-of-squares-minus-sign-trap",
+      "trapDerivation": "8^2 - 3^2",
+      "trapValue": "55",
+      "verify": {
+        "source": "73",
+        "trapValue": "55",
+        "flaw": {
+          "values": [
+            "8^2 - (3*I)^2",
+            "8^2 - 9",
+            "64 - 9",
+            "55"
+          ],
+          "firstWrong": 2
+        }
+      },
+      "checkpointHint": "Verify each transformation against the previous line to see where the value first changes.",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "steps": [
+        {
+          "latex": "(8 + 3i)(8 - 3i) = 8^2 - (3i)^2",
+          "explain": "Line 1 is correct: difference of squares."
+        },
+        {
+          "latex": "(3i)^2 = -9",
+          "explain": "Line 2 is the first wrong line: squaring 3i gives 9i^2 = -9, so subtracting (3i)^2 gives 8^2 + 9, not 8^2 - 9."
+        },
+        {
+          "latex": "64 + 9",
+          "explain": "Evaluate 8^2 to 64 and add 9."
+        },
+        {
+          "latex": "73",
+          "explain": "Add 64 and 9 to obtain the true value.",
+          "val": "73"
+        }
+      ],
+      "blindSolve": {
+        "answer": "2",
+        "ambiguous": false,
+        "setup": "given",
+        "strategy": "prescribed",
+        "check": "none",
+        "task": "diagnose",
+        "reverse": false,
+        "steps": 3
+      },
+      "id": "VAR-MTH-T02-C01-U01-t02-c01-u01-complex-conjugates-modulus-02",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "figure": {
+        "kind": "cartesian_graph",
+        "theme": "purple",
+        "title": "Complex Plane",
+        "xRange": [
+          -10,
+          10
+        ],
+        "yRange": [
+          -10,
+          10
+        ],
+        "grid": true,
+        "axes": true,
+        "axisLabels": [
+          "Re",
+          "Im"
+        ],
+        "plots": [
+          {
+            "type": "segment",
+            "from": [
+              0,
+              0
+            ],
+            "to": [
+              8.0,
+              3.0
+            ],
+            "color": "#7c3aed",
+            "strokeWidth": 2.2,
+            "arrow": true
+          },
+          {
+            "type": "point",
+            "coord": [
+              8.0,
+              3.0
+            ],
+            "label": "z",
+            "position": "top-right",
+            "color": "#7c3aed"
+          },
+          {
+            "type": "segment",
+            "from": [
+              0,
+              0
+            ],
+            "to": [
+              8.0,
+              -3.0
+            ],
+            "color": "#94a3b8",
+            "strokeWidth": 2.2,
+            "arrow": true,
+            "strokeDasharray": "4 3"
+          },
+          {
+            "type": "point",
+            "coord": [
+              8.0,
+              -3.0
+            ],
+            "label": "\\bar{z}",
+            "position": "bottom-right",
+            "color": "#94a3b8"
+          },
+          {
+            "type": "text",
+            "coord": [
+              3.2,
+              2.5
+            ],
+            "text": "|z| = ?"
+          }
+        ],
+        "note": "Not to scale"
+      },
+      "fingerprint": "t02-c01-u01-difference-of-squares-minus-sign-trap|diagnose|An AC load has complex impedance $z = # + #i$. A student computed $z\\bar{z}$ and wrote: Line #: $z\\bar{z} = (# + #i)(# - #i) = #^# - (#i)^#$ Line #: $= #^# - #$ Line #: $= # - #$ Line #: $= #$ Which line is the first one that is wrong?"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C01-U01-t02-c01-u01-complex-conjugates-modulus-03",
+      "sourceArchetype": "t02-c01-u01-complex-conjugates-modulus",
+      "archetypeKey": "t02-c01-u01-complex-conjugates-modulus",
+      "unitCode": "MTH-T02-C01-U01",
+      "level": 3,
+      "category": "Trap & Edge Case",
+      "archetype": "problem-solving",
+      "form": "diagnose",
+      "context": "vibration_mode_energy_density",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "In harmonic structural vibration, the squared amplitude of a complex displacement phasor z = 9 - 2i mm is z*conj(z) = 85 mm^2; domain law and units hold."
+      },
+      "verificationLevel": "partial",
+      "prompt": "A structural vibration mode has complex displacement phasor $z = 9 - 2i$. A student computed $z\\bar{z}$ and wrote:\nLine 1: $z\\bar{z} = (9 - 2i)(9 + 2i) = 9^2 - (2i)^2$\nLine 2: $= 81 - 4i^2$\nLine 3: $= 81 - 4$\nLine 4: $= 77$\nWhich line is the first one that is wrong?",
+      "display": "(a - bi)(a + bi) = a^2 + b^2",
+      "givens": {
+        "a": 9,
+        "b": 2
+      },
+      "constants": {},
+      "trapGivens": [
+        9,
+        2
+      ],
+      "answerSpec": {
+        "type": "choice",
+        "options": [
+          {
+            "id": "1",
+            "label": "Line 1",
+            "provenance": "flags a correct step as the error"
+          },
+          {
+            "id": "2",
+            "label": "Line 2",
+            "provenance": "flags a correct step as the error"
+          },
+          {
+            "id": "3",
+            "label": "Line 3"
+          },
+          {
+            "id": "4",
+            "label": "Line 4",
+            "trapTag": "t02-c01-u01-difference-of-squares-minus-sign-trap"
+          }
+        ],
+        "correct": "3"
+      },
+      "answerPlain": "3",
+      "answerDisplay": "\\text{Line 3}",
+      "inputHint": "Choose a line",
+      "commonTrapTag": "t02-c01-u01-difference-of-squares-minus-sign-trap",
+      "trapDerivation": "9^2 - 2^2",
+      "trapValue": "77",
+      "verify": {
+        "source": "85",
+        "trapValue": "77",
+        "flaw": {
+          "values": [
+            "9^2 - (2*I)^2",
+            "81 - 4*I^2",
+            "81 - 4",
+            "77"
+          ],
+          "firstWrong": 3
+        }
+      },
+      "checkpointHint": "Check each step to see whether the value of the line equals the value of the line above it.",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "steps": [
+        {
+          "latex": "(9 - 2i)(9 + 2i) = 9^2 - (2i)^2",
+          "explain": "Line 1 is correct: difference of squares."
+        },
+        {
+          "latex": "(2i)^2 = 4i^2",
+          "explain": "Line 2 is correct: square the imaginary term."
+        },
+        {
+          "latex": "4i^2 = -4",
+          "explain": "Line 3 is the first wrong line: replacing i^2 with -1 gives -4, so 81 - 4i^2 becomes 81 + 4."
+        },
+        {
+          "latex": "81 - (-4) = 85",
+          "explain": "Add 81 and 4 to obtain the correct product.",
+          "val": "85"
+        }
+      ],
+      "blindSolve": {
+        "answer": "3",
+        "ambiguous": false,
+        "setup": "given",
+        "strategy": "prescribed",
+        "check": "none",
+        "task": "diagnose",
+        "reverse": false,
+        "steps": 3
+      },
+      "id": "VAR-MTH-T02-C01-U01-t02-c01-u01-complex-conjugates-modulus-03",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "figure": {
+        "kind": "cartesian_graph",
+        "theme": "purple",
+        "title": "Complex Plane",
+        "xRange": [
+          -12,
+          12
+        ],
+        "yRange": [
+          -12,
+          12
+        ],
+        "grid": true,
+        "axes": true,
+        "axisLabels": [
+          "Re",
+          "Im"
+        ],
+        "plots": [
+          {
+            "type": "segment",
+            "from": [
+              0,
+              0
+            ],
+            "to": [
+              9.0,
+              2.0
+            ],
+            "color": "#7c3aed",
+            "strokeWidth": 2.2,
+            "arrow": true
+          },
+          {
+            "type": "point",
+            "coord": [
+              9.0,
+              2.0
+            ],
+            "label": "z",
+            "position": "top-right",
+            "color": "#7c3aed"
+          },
+          {
+            "type": "segment",
+            "from": [
+              0,
+              0
+            ],
+            "to": [
+              9.0,
+              -2.0
+            ],
+            "color": "#94a3b8",
+            "strokeWidth": 2.2,
+            "arrow": true,
+            "strokeDasharray": "4 3"
+          },
+          {
+            "type": "point",
+            "coord": [
+              9.0,
+              -2.0
+            ],
+            "label": "\\bar{z}",
+            "position": "bottom-right",
+            "color": "#94a3b8"
+          },
+          {
+            "type": "text",
+            "coord": [
+              3.54,
+              2.2
+            ],
+            "text": "|z| = ?"
+          }
+        ],
+        "note": "Not to scale"
+      },
+      "fingerprint": "t02-c01-u01-difference-of-squares-minus-sign-trap|diagnose|A structural vibration mode has complex displacement phasor $z = # - #i$. A student computed $z\\bar{z}$ and wrote: Line #: $z\\bar{z} = (# - #i)(# + #i) = #^# - (#i)^#$ Line #: $= # - #i^#$ Line #: $= # - #$ Line #: $= #$ Which line is the first one that is wrong?"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C01-U01-t02-c01-u01-dividing-complex-numbers-01",
+      "sourceArchetype": "t02-c01-u01-dividing-complex-numbers",
+      "archetypeKey": "t02-c01-u01-dividing-complex-numbers",
+      "unitCode": "MTH-T02-C01-U01",
+      "level": 3,
+      "category": "Trap & Edge Case",
+      "archetype": "problem-solving",
+      "form": "diagnose",
+      "context": "control_loop_sensitivity_ratio",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "A frequency-domain control loop sensitivity ratio (8 + 6i)/(2 - 3i) is a complex phasor quotient; domain law is exact and dimensionless."
+      },
+      "verificationLevel": "partial",
+      "prompt": "A control loop has complex phasor ratio $\\dfrac{8 + 6i}{2 - 3i}$. A student simplified it and wrote:\nLine 1: $\\dfrac{8 + 6i}{2 - 3i} = \\dfrac{8}{2} + \\dfrac{6i}{-3i}$\nLine 2: $= 4 + \\dfrac{6}{-3}$\nLine 3: $= 4 - 2$\nLine 4: $= 2$\nWhich line is the first one that is wrong?",
+      "display": "\\frac{a + bi}{c + di} = \\frac{(a + bi)(c - di)}{c^2 + d^2}",
+      "givens": {
+        "a": 8,
+        "b": 6,
+        "c": 2,
+        "d": 3
+      },
+      "constants": {},
+      "trapGivens": [
+        8,
+        6,
+        2,
+        3
+      ],
+      "answerSpec": {
+        "type": "choice",
+        "options": [
+          {
+            "id": "1",
+            "label": "Line 1"
+          },
+          {
+            "id": "2",
+            "label": "Line 2",
+            "trapTag": "t02-c01-u01-divide-real-and-imag-parts-directly-trap"
+          },
+          {
+            "id": "3",
+            "label": "Line 3",
+            "trapTag": "t02-c01-u01-divide-real-and-imag-parts-directly-trap"
+          },
+          {
+            "id": "4",
+            "label": "Line 4",
+            "trapTag": "t02-c01-u01-divide-real-and-imag-parts-directly-trap"
+          }
+        ],
+        "correct": "1"
+      },
+      "answerPlain": "1",
+      "answerDisplay": "\\text{Line 1}",
+      "inputHint": "Choose a line",
+      "commonTrapTag": "t02-c01-u01-divide-real-and-imag-parts-directly-trap",
+      "trapDerivation": "8/2 + 6/(-3)",
+      "trapValue": "2",
+      "verify": {
+        "source": "-2/13 + 36*I/13",
+        "trapValue": "2",
+        "flaw": {
+          "values": [
+            "8/2 + 6*I/(-3*I)",
+            "4 + 6/(-3)",
+            "4 - 2",
+            "2"
+          ],
+          "firstWrong": 1
+        }
+      },
+      "checkpointHint": "Check whether each line preserves the value of the original complex quotient.",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "steps": [
+        {
+          "latex": "\\frac{8 + 6i}{2 - 3i} \\ne \\frac{8}{2} + \\frac{6i}{-3i}",
+          "explain": "Line 1 is the first wrong line: complex division cannot be performed component by component."
+        },
+        {
+          "latex": "\\frac{8 + 6i}{2 - 3i}\\cdot\\frac{2 + 3i}{2 + 3i}",
+          "explain": "Multiply numerator and denominator by the conjugate of the denominator."
+        },
+        {
+          "latex": "(8 + 6i)(2 + 3i) = -2 + 36i",
+          "explain": "Expand the numerator and simplify i^2 = -1."
+        },
+        {
+          "latex": "(2 - 3i)(2 + 3i) = 13",
+          "explain": "Compute the denominator as the sum of squares 2^2 + 3^2."
+        },
+        {
+          "latex": "\\frac{-2 + 36i}{13} = -\\frac{2}{13} + \\frac{36}{13}i",
+          "explain": "Separate into real and imaginary parts.",
+          "val": "-2/13 + 36*I/13"
+        }
+      ],
+      "blindSolve": {
+        "answer": "1",
+        "ambiguous": false,
+        "setup": "given",
+        "strategy": "prescribed",
+        "check": "none",
+        "task": "diagnose",
+        "reverse": false,
+        "steps": 3
+      },
+      "id": "VAR-MTH-T02-C01-U01-t02-c01-u01-dividing-complex-numbers-01",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "t02-c01-u01-divide-real-and-imag-parts-directly-trap|diagnose|A control loop has complex phasor ratio $\\dfrac{# + #i}{# - #i}$. A student simplified it and wrote: Line #: $\\dfrac{# + #i}{# - #i} = \\dfrac{#}{#} + \\dfrac{#i}{-#i}$ Line #: $= # + \\dfrac{#}{-#}$ Line #: $= # - #$ Line #: $= #$ Which line is the first one that is wrong?"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C01-U01-t02-c01-u01-dividing-complex-numbers-02",
+      "sourceArchetype": "t02-c01-u01-dividing-complex-numbers",
+      "archetypeKey": "t02-c01-u01-dividing-complex-numbers",
+      "unitCode": "MTH-T02-C01-U01",
+      "level": 3,
+      "category": "Trap & Edge Case",
+      "archetype": "problem-solving",
+      "form": "diagnose",
+      "context": "transmission_line_wave_ratio",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "A transmission line wave phasor ratio (5 + 10i)/(4 + 3i) is a dimensionless complex quotient governed by standard complex division."
+      },
+      "verificationLevel": "partial",
+      "prompt": "A microwave engineer needed to simplify the complex wave ratio $\\dfrac{5 + 10i}{4 + 3i}$. A student wrote:\nLine 1: $\\dfrac{5 + 10i}{4 + 3i} = \\dfrac{(5 + 10i)(4 + 3i)}{4^2 + 3^2}$\nLine 2: $= \\dfrac{20 + 15i + 40i + 30i^2}{16 + 9}$\nLine 3: $= \\dfrac{-10 + 55i}{25}$\nLine 4: $= -\\dfrac{2}{5} + \\dfrac{11}{5}i$\nWhich line is the first one that is wrong?",
+      "display": "\\frac{a + bi}{c + di} = \\frac{(a + bi)(c - di)}{c^2 + d^2}",
+      "givens": {
+        "a": 5,
+        "b": 10,
+        "c": 4,
+        "d": 3
+      },
+      "constants": {},
+      "trapGivens": [
+        5,
+        10,
+        4,
+        3
+      ],
+      "answerSpec": {
+        "type": "choice",
+        "options": [
+          {
+            "id": "1",
+            "label": "Line 1"
+          },
+          {
+            "id": "2",
+            "label": "Line 2",
+            "trapTag": "t02-c01-u01-denominator-conjugate-sign-error-trap"
+          },
+          {
+            "id": "3",
+            "label": "Line 3",
+            "trapTag": "t02-c01-u01-denominator-conjugate-sign-error-trap"
+          },
+          {
+            "id": "4",
+            "label": "Line 4",
+            "trapTag": "t02-c01-u01-denominator-conjugate-sign-error-trap"
+          }
+        ],
+        "correct": "1"
+      },
+      "answerPlain": "1",
+      "answerDisplay": "\\text{Line 1}",
+      "inputHint": "Choose a line",
+      "commonTrapTag": "t02-c01-u01-denominator-conjugate-sign-error-trap",
+      "trapDerivation": "(5 + 10*I)*(4 + 3*I)/(4^2 + 3^2)",
+      "trapValue": "-2/5 + 11*I/5",
+      "verify": {
+        "source": "2 + I",
+        "trapValue": "-2/5 + 11*I/5",
+        "flaw": {
+          "values": [
+            "(5 + 10*I)*(4 + 3*I)/(4^2 + 3^2)",
+            "(20 + 15*I + 40*I + 30*I^2)/(16 + 9)",
+            "(-10 + 55*I)/25",
+            "-2/5 + 11*I/5"
+          ],
+          "firstWrong": 1
+        }
+      },
+      "checkpointHint": "Verify whether the factor multiplying the numerator matches the conjugate factor required to produce the real denominator.",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "steps": [
+        {
+          "latex": "\\frac{(5 + 10i)(4 + 3i)}{4^2 + 3^2}",
+          "explain": "Line 1 is the first wrong line: the denominator uses the conjugate product 4^2 + 3^2, but the numerator was multiplied by 4 + 3i instead of the conjugate 4 - 3i."
+        },
+        {
+          "latex": "\\frac{5 + 10i}{4 + 3i}\\cdot\\frac{4 - 3i}{4 - 3i}",
+          "explain": "Multiply both numerator and denominator by the conjugate 4 - 3i."
+        },
+        {
+          "latex": "(5 + 10i)(4 - 3i) = 50 + 25i",
+          "explain": "Expand the numerator and simplify i^2 = -1."
+        },
+        {
+          "latex": "\\frac{50 + 25i}{25} = 2 + i",
+          "explain": "Divide both terms by 25 to obtain the true quotient.",
+          "val": "2 + I"
+        }
+      ],
+      "blindSolve": {
+        "answer": "1",
+        "ambiguous": false,
+        "setup": "given",
+        "strategy": "prescribed",
+        "check": "none",
+        "task": "diagnose",
+        "reverse": false,
+        "steps": 3
+      },
+      "id": "VAR-MTH-T02-C01-U01-t02-c01-u01-dividing-complex-numbers-02",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "t02-c01-u01-denominator-conjugate-sign-error-trap|diagnose|A microwave engineer needed to simplify the complex wave ratio $\\dfrac{# + #i}{# + #i}$. A student wrote: Line #: $\\dfrac{# + #i}{# + #i} = \\dfrac{(# + #i)(# + #i)}{#^# + #^#}$ Line #: $= \\dfrac{# + #i + #i + #i^#}{# + #}$ Line #: $= \\dfrac{-# + #i}{#}$ Line #: $= -\\dfrac{#}{#} + \\dfrac{#}{#}i$ Which line is the first one that is wrong?"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C01-U01-t02-c01-u01-dividing-complex-numbers-03",
+      "sourceArchetype": "t02-c01-u01-dividing-complex-numbers",
+      "archetypeKey": "t02-c01-u01-dividing-complex-numbers",
+      "unitCode": "MTH-T02-C01-U01",
+      "level": 3,
+      "category": "Trap & Edge Case",
+      "archetype": "problem-solving",
+      "form": "diagnose",
+      "context": "acoustic_reflection_phasor_quotient",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "An acoustic wave reflection ratio (13 + 13i)/(2 - 3i) is a complex phasor quotient governed by standard complex division."
+      },
+      "verificationLevel": "partial",
+      "prompt": "An acoustic boundary calculation requires $\\dfrac{13 + 13i}{2 - 3i}$. A student wrote:\nLine 1: $\\dfrac{13 + 13i}{2 - 3i} = \\dfrac{(13 + 13i)(2 - 3i)}{2^2 + 3^2}$\nLine 2: $= \\dfrac{26 - 39i + 26i - 39i^2}{4 + 9}$\nLine 3: $= \\dfrac{65 - 13i}{13}$\nLine 4: $= 5 - i$\nWhich line is the first one that is wrong?",
+      "display": "\\frac{a + bi}{c + di} = \\frac{(a + bi)(c - di)}{c^2 + d^2}",
+      "givens": {
+        "a": 13,
+        "b": 13,
+        "c": 2,
+        "d": 3
+      },
+      "constants": {},
+      "trapGivens": [
+        13,
+        2,
+        3
+      ],
+      "answerSpec": {
+        "type": "choice",
+        "options": [
+          {
+            "id": "1",
+            "label": "Line 1"
+          },
+          {
+            "id": "2",
+            "label": "Line 2",
+            "trapTag": "t02-c01-u01-denominator-conjugate-sign-error-trap"
+          },
+          {
+            "id": "3",
+            "label": "Line 3",
+            "trapTag": "t02-c01-u01-denominator-conjugate-sign-error-trap"
+          },
+          {
+            "id": "4",
+            "label": "Line 4",
+            "trapTag": "t02-c01-u01-denominator-conjugate-sign-error-trap"
+          }
+        ],
+        "correct": "1"
+      },
+      "answerPlain": "1",
+      "answerDisplay": "\\text{Line 1}",
+      "inputHint": "Choose a line",
+      "commonTrapTag": "t02-c01-u01-denominator-conjugate-sign-error-trap",
+      "trapDerivation": "(13 + 13*I)*(2 - 3*I)/(2^2 + 3^2)",
+      "trapValue": "5 - I",
+      "verify": {
+        "source": "-1 + 5*I",
+        "trapValue": "5 - I",
+        "flaw": {
+          "values": [
+            "(13 + 13*I)*(2 - 3*I)/(2^2 + 3^2)",
+            "(26 - 39*I + 26*I - 39*I^2)/(4 + 9)",
+            "(65 - 13*I)/13",
+            "5 - I"
+          ],
+          "firstWrong": 1
+        }
+      },
+      "checkpointHint": "Check whether the factor used in the numerator is the true complex conjugate of the original denominator.",
+      "references": [
+        "MTH-T02-C01-U01"
+      ],
+      "steps": [
+        {
+          "latex": "\\frac{(13 + 13i)(2 - 3i)}{2^2 + 3^2}",
+          "explain": "Line 1 is the first wrong line: the conjugate of 2 - 3i is 2 + 3i, so multiplying the top by 2 - 3i while replacing the bottom with 2^2 + 3^2 changes the value."
+        },
+        {
+          "latex": "\\frac{13 + 13i}{2 - 3i}\\cdot\\frac{2 + 3i}{2 + 3i}",
+          "explain": "Multiply numerator and denominator by the conjugate 2 + 3i."
+        },
+        {
+          "latex": "(13 + 13i)(2 + 3i) = -13 + 65i",
+          "explain": "Expand the numerator and use i^2 = -1."
+        },
+        {
+          "latex": "\\frac{-13 + 65i}{13} = -1 + 5i",
+          "explain": "Divide both terms by 13 to obtain the correct quotient.",
+          "val": "-1 + 5*I"
+        }
+      ],
+      "blindSolve": {
+        "answer": "1",
+        "ambiguous": false,
+        "setup": "given",
+        "strategy": "prescribed",
+        "check": "none",
+        "task": "diagnose",
+        "reverse": false,
+        "steps": 3
+      },
+      "id": "VAR-MTH-T02-C01-U01-t02-c01-u01-dividing-complex-numbers-03",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "t02-c01-u01-denominator-conjugate-sign-error-trap|diagnose|An acoustic boundary calculation requires $\\dfrac{# + #i}{# - #i}$. A student wrote: Line #: $\\dfrac{# + #i}{# - #i} = \\dfrac{(# + #i)(# - #i)}{#^# + #^#}$ Line #: $= \\dfrac{# - #i + #i - #i^#}{# + #}$ Line #: $= \\dfrac{# - #i}{#}$ Line #: $= # - i$ Which line is the first one that is wrong?"
+    }
+  ]
+}
