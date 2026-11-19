@@ -317,7 +317,7 @@ assert.match(prgWeakSpotHtml, /href="\/review\?trap=QC-NAMING"/);
 assert.match(prgWeakSpotHtml, /Practise QC naming/);
 assert.doesNotMatch(prgWeakSpotHtml, /Practise QC-NAMING/);
 const similarRowHtml = render({ ...mathDrill, problems: [{ ...mathDrill.problems[0], hasVariants: true }] }, { initialExpandedIds: ["Q01"], onTrySimilarQuestion: noop });
-assert.match(similarRowHtml, /Try a similar question/);
+assert.match(similarRowHtml, /Practise similar/);
 assert.match(similarRowHtml, /min-h-\[44px\]/, "row text actions have mobile tap targets");
 assert.match(weakSpotHtml, /min-h-\[44px\]/, "What next links have mobile tap targets");
 
