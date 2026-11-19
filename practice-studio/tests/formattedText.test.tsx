@@ -12,6 +12,26 @@ async function main() {
   assert.match(bulletHtml, /w-1\.5 h-1\.5 rounded-full bg-indigo-600 dark:bg-indigo-400/);
   assert.doesNotMatch(bulletHtml, /•/);
 
+  // Learner 2026-11-19: three list kinds picked from the heading above the list.
+  const kindsHtml = renderToStaticMarkup(
+    <FormattedText
+      text={[
+        "**Observed Symptoms:**",
+        "- Clients share defaults",
+        "**Requirements:**",
+        "- Return a fresh array",
+        "**Return Contract:**",
+        "- Return string[]",
+        "Something else",
+        "- plain note",
+      ].join("\n")}
+    />
+  );
+  const kinds = [...kindsHtml.matchAll(/data-list-kind="(\w+)"/g)].map((m) => m[1]);
+  assert.deepEqual(kinds, ["info", "task", "limit", "info"]);
+  assert.match(kindsHtml, /border-indigo-600 dark:border-indigo-400/);
+  assert.match(kindsHtml, /bg-zinc-400 dark:bg-zinc-500/);
+
   const headingHtml = renderToStaticMarkup(
     <FormattedText text={"### Requirements\n- keep order\n#### Return contract"} />
   );

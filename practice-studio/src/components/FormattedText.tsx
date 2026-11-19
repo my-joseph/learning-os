@@ -4,7 +4,7 @@ import React, { useMemo } from "react";
 import katex from "katex";
 import { BookOpen } from "lucide-react";
 import { HighlightedCode } from "@/components/HighlightedCode";
-import { ListDot } from "@/components/ui/ListDot";
+import { ListDot, listKindForHeading } from "@/components/ui/ListDot";
 import { MATH_TOKEN, isMathSegment, unescapeDollar, wrapBareWordsInLatex } from "@/lib/mathText";
 import { normalizeShikiLanguage } from "@/lib/shiki";
 
@@ -157,6 +157,26 @@ export const FormattedText: React.FC<FormattedTextProps> = ({
     return <span className={className}>{renderInline(text)}</span>;
   }
 
+  // Each bullet takes its style from the nearest heading-like line above its list
+  // ("Requirements:", "**Observed Symptoms:**", "### Return Contract").
+  const listKindByLine = new Map<number, ReturnType<typeof listKindForHeading>>();
+  {
+    let heading: string | null = null;
+    for (const block of blocks) {
+      if (block.kind !== "line") {
+        heading = null;
+        continue;
+      }
+      const t = block.line.trim();
+      if (!t) continue;
+      if (t.startsWith("- ") || t.startsWith("* ")) {
+        listKindByLine.set(block.lineIdx, listKindForHeading(heading));
+        continue;
+      }
+      heading = t.replace(/^#{1,4}\s+/, "").replace(/\*\*/g, "").replace(/:\s*$/, "").trim();
+    }
+  }
+
   return (
     <div className={`space-y-1.5 ${className}`}>
       {blocks.map((block) => {
@@ -205,7 +225,7 @@ export const FormattedText: React.FC<FormattedTextProps> = ({
               key={lineIdx}
               className="flex items-start gap-2 text-zinc-800 dark:text-zinc-200 leading-relaxed pl-2 py-0.5"
             >
-              <ListDot />
+              <ListDot kind={listKindByLine.get(lineIdx) ?? "info"} />
               <div className="flex-1">{renderInline(bulletContent)}</div>
             </div>
           );

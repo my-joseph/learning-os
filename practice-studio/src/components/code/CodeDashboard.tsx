@@ -563,7 +563,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
             <ul className="space-y-1 text-sm text-zinc-700 dark:text-zinc-300">
               {problem.constraints.map((constraint, cIdx) => (
                 <li key={cIdx} className="flex items-start gap-2 leading-relaxed">
-                  <ListDot />
+                  <ListDot kind="limit" />
                   <span className="leading-relaxed">
                     <FormattedText text={constraint} />
                   </span>
@@ -915,7 +915,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                             <ul className="space-y-1 text-xs text-zinc-700 dark:text-zinc-300 font-mono">
                               {r.findings.map((f, fIdx) => (
                                 <li key={fIdx} className="flex items-start gap-2">
-                                  <ListDot />
+                                  <ListDot kind="info" />
                                   <span>
                                   {f.check} ({f.severity}
                                   {f.line ? `, line ${f.line}` : ""}
