@@ -16,6 +16,7 @@ import {
   matchedTraps,
   normaliseTestReport,
   shortRowTitle,
+  verifiedAnswerLabel,
 } from "../src/lib/reviewRow";
 import type { DrillDocument, Problem, ProblemState } from "../src/types/drill";
 
@@ -164,10 +165,13 @@ assert.equal(latestReviewVerdict({ ...baseState(), reviews: [{ verdict: "changes
 assert.equal(formatChoiceAnswerLabel({ ...makeProblem("Q01"), prompt: "Line 1: parse logs\nLine 2: write report",
   answerSpec: { type: "choice", options: [{ id: "B", label: "Second line" }] } }, "B"), "Second line");
 const lineChoiceProblem = { ...makeProblem("Q01"), prompt: "Choose the correct step:\nLine 1: Add terms\nLine 2: Combine terms\nLine 3: Simplify result",
-  answerSpec: { type: "choice" as const, options: [{ id: "step-a", label: "Line 1" }, { id: "step-b", label: "Line 2" }, { id: "step-c", label: "Line 3" }] },
+  answerPlain: "step-c",
+  answerSpec: { type: "choice" as const, correct: "step-c", options: [{ id: "step-a", label: "Line 1" }, { id: "step-b", label: "Line 2" }, { id: "step-c", label: "Line 3" }] },
   state: { ...baseState(), userInput: "step-c", attempts: [{ input: "step-c", ts: "2026-11-19T00:00:00Z", verdict: "incorrect" }] } };
 assert.equal(lastAnswerText(lineChoiceProblem), "Line 3", "choice IDs display their option labels");
 assert.equal(formatChoiceAnswerLabel(lineChoiceProblem, "step-b"), "Line 2", "line-choice option IDs map to their visible label");
+assert.equal(formatChoiceAnswerLabel(lineChoiceProblem, "unmatched-id"), "unmatched-id", "unknown inputs remain raw");
+assert.equal(verifiedAnswerLabel(lineChoiceProblem), "Line 3", "verified choice answers stay label-based");
 assert.equal(shortRowTitle(makeProblem("Q01")), "Find the product $$(2+3i)(4-2i)$$.", "row title uses the prompt's first line");
 const attentionItems = ["Q01", "Q02", "Q03"].map((id, index) => ({ problem: makeProblem(id), index, outcome: "wrong" as const }));
 assert.deepEqual(Object.keys(getDefaultExpandedRowIds(attentionItems)), ["Q01", "Q02", "Q03"], "all rows expand when To review has three items");
@@ -233,6 +237,7 @@ setNotionDrillSyncSpawnerForTests(null);
 // State render coverage, zero-leak assertions, and PRG/lab variants.
 const idleHtml = render(mathDrill, { initialExpandedIds: ["Q01", "Q02", "Q03"] });
 assert.match(idleHtml, /Not synced yet/);
+assert.match(idleHtml, /Level 1/, "the question level remains a secondary row label");
 assert.match(idleHtml, /Your answer:/);
 assert.match(idleHtml, /2\+16i/);
 assert.match(idleHtml, /Trap:.*Positive last term/);
