@@ -1,18 +1,13 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Reveal } from "@/components/motion/Reveal";
 import {
   Check,
   ChevronDown,
-  ChevronLeft,
   ChevronRight,
   Copy,
-  Equal,
-  Flag,
   Loader2,
-  PenLine,
-  RotateCcw,
 } from "lucide-react";
 import {
   Problem,
@@ -31,17 +26,20 @@ import { AnswerResultCard } from "@/components/AnswerResultCard";
 import { ChoiceOptionGroup } from "@/components/ChoiceOptionGroup";
 import { QuestionTimer } from "@/components/QuestionTimer";
 import {
+  InlineCheckButton,
+  PlainAnswerField,
+} from "@/components/workspace/PlainAnswerField";
+import {
+  CheckpointHintDisclosure,
+  ProblemAssistSection,
+} from "@/components/workspace/ProblemAssistSection";
+import { ProblemNavFooter } from "@/components/workspace/ProblemNavFooter";
+import { ProblemSelfEval } from "@/components/workspace/ProblemSelfEval";
+import { useChoiceController } from "@/components/workspace/useChoiceController";
+import {
   canShowReferenceSolution,
   hasSubstantiveAttempt,
 } from "@/lib/reviewGuard";
-import {
-  getChoiceResultStatus,
-  isChoiceInteractionLocked,
-  isChoiceQuestion,
-  isEditableEventTarget,
-  resolveChoiceKeyOption,
-  submitChoiceSelection,
-} from "@/lib/answerFeedback";
 import {
   getPrgScore,
   getReviewRequest,
@@ -173,8 +171,6 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
 
   // In-browser question state
   const [isChecking, setIsChecking] = useState(false);
-  const [checkingOptionId, setCheckingOptionId] = useState<string | null>(null);
-  const [choiceRetryUnlocked, setChoiceRetryUnlocked] = useState(false);
   const [showSolution, setShowSolution] = useState(() =>
     hasSubstantiveAttempt(problem.state)
   );
@@ -184,6 +180,24 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
   const [isLoadingReference, setIsLoadingReference] = useState(false);
   const answerInputRef = useRef<HTMLInputElement | null>(null);
   const stepsRef = useRef<HTMLDivElement | null>(null);
+
+  const {
+    isChoice,
+    choiceOptions,
+    checkingOptionId,
+    choiceLocked,
+    choiceResultStatus,
+    handleChoiceSelect,
+    unlockChoiceRetry,
+    resetChoiceState,
+  } = useChoiceController({
+    problem,
+    isChecking,
+    setIsChecking,
+    onInputChange,
+    onCheckAnswer,
+    enabled: !isKata,
+  });
 
   const hasSubstantiveState = hasSubstantiveAttempt(problem.state);
 
@@ -207,11 +221,6 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
     problem.solutionCode,
     hasSubstantiveState,
   ]);
-
-  useEffect(() => {
-    setCheckingOptionId(null);
-    setChoiceRetryUnlocked(false);
-  }, [problem.id]);
 
   const effectiveState = {
     ...problem.state,
@@ -378,62 +387,10 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
 
   const score = problem.state.score;
   const lastCheck: CheckResult | null | undefined = problem.state.lastCheck;
-  const isChoice = isChoiceQuestion(problem);
-  const choiceOptions = problem.answerSpec?.options;
-  const choiceLocked = isChoiceInteractionLocked({
-    isChecking,
-    lastCheck,
-    skipped: problem.state.skipped,
-    retryUnlocked: choiceRetryUnlocked,
-  });
-  const choiceResultStatus = getChoiceResultStatus({
-    isChecking,
-    lastCheck,
-    skipped: problem.state.skipped,
-  });
-
-  const handleChoiceSelect = useCallback(
-    async (optionId: string) => {
-      await submitChoiceSelection({
-        optionId,
-        disabled: choiceLocked,
-        isChecking,
-        onStart: (id) => {
-          setChoiceRetryUnlocked(false);
-          setCheckingOptionId(id);
-          setIsChecking(true);
-        },
-        onInputChange,
-        onCheckAnswer,
-        onFinish: () => {
-          setIsChecking(false);
-          setCheckingOptionId(null);
-        },
-      });
-    },
-    [choiceLocked, isChecking, onInputChange, onCheckAnswer]
-  );
-
-  useEffect(() => {
-    if (isKata || !isChoice || !choiceOptions?.length) return;
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.metaKey || e.ctrlKey || e.altKey) return;
-      if (!/^[1-9]$/.test(e.key)) return;
-      if (isEditableEventTarget(e.target)) return;
-      if (document.querySelector('[role="alertdialog"], [role="dialog"]')) return;
-      if (choiceLocked || isChecking) return;
-      const matched = resolveChoiceKeyOption(e.key, choiceOptions);
-      if (!matched) return;
-      e.preventDefault();
-      void handleChoiceSelect(matched.id);
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isKata, isChoice, choiceOptions, choiceLocked, isChecking, handleChoiceSelect]);
 
   const handleTryAgain = () => {
     if (isChoice) {
-      setChoiceRetryUnlocked(true);
+      unlockChoiceRetry();
       return;
     }
     answerInputRef.current?.focus();
@@ -810,13 +767,10 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                 </div>
               )}
 
-              <Reveal show={Boolean(showHint && hasCheckpointHint(problem.checkpointHint))}>
-              {showHint && hasCheckpointHint(problem.checkpointHint) && (
-                <div className="border-l-2 border-amber-600 dark:border-amber-400 pl-3.5 py-1 text-sm text-zinc-700 dark:text-zinc-300">
-                  <FormattedText text={problem.checkpointHint} />
-                </div>
-              )}
-              </Reveal>
+              <CheckpointHintDisclosure
+                checkpointHint={problem.checkpointHint}
+                show={showHint}
+              />
             </div>
 
             {/* 5. Collapsible sections (closed by default): Review history, Explain, Reference */}
@@ -1029,54 +983,23 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
               {!isChoice &&
                 (isFindBug ? (
                   <div className="flex items-center">
-                    <button
-                      type="button"
+                    <InlineCheckButton
                       onClick={triggerWebCheck}
                       disabled={isChecking || !problem.state.userInput.trim()}
-                      aria-label="Check answer"
-                      title="Check (Enter)"
-                      className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-700 disabled:opacity-40 disabled:hover:bg-indigo-600 dark:disabled:hover:bg-indigo-600 text-white transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 focus-visible:ring-offset-1"
-                    >
-                      {isChecking ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <Equal className="w-4 h-4" />
-                      )}
-                    </button>
+                      isChecking={isChecking}
+                      embedded={false}
+                    />
                   </div>
                 ) : (
-                  <div className="relative flex items-center min-h-[2.75rem] rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 transition-colors focus-within:border-indigo-600 dark:focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-600/20 dark:focus-within:ring-indigo-500/25">
-                    <input
-                      ref={answerInputRef}
-                      type="text"
-                      value={problem.state.userInput}
-                      onChange={(e) => onInputChange(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          e.preventDefault();
-                          void triggerWebCheck();
-                        }
-                      }}
-                      placeholder={getSafePlaceholder(problem.inputHint, problem)}
-                      aria-label={`Answer for ${isLab ? "milestone" : "problem"} ${problem.id}`}
-                      className="w-full h-11 font-mono text-sm bg-transparent text-zinc-900 dark:text-zinc-100 pl-3.5 pr-12 py-2 focus:outline-none placeholder:text-zinc-400 dark:placeholder:text-zinc-500"
-                    />
-
-                    <button
-                      type="button"
-                      onClick={triggerWebCheck}
-                      disabled={isChecking || !problem.state.userInput.trim()}
-                      aria-label="Check answer"
-                      title="Check (Enter)"
-                      className="absolute right-1.5 top-1/2 -translate-y-1/2 inline-flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-700 disabled:opacity-40 disabled:hover:bg-indigo-600 dark:disabled:hover:bg-indigo-600 text-white transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 focus-visible:ring-offset-1"
-                    >
-                      {isChecking ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <Equal className="w-4 h-4" />
-                      )}
-                    </button>
-                  </div>
+                  <PlainAnswerField
+                    inputRef={answerInputRef}
+                    value={problem.state.userInput}
+                    onChange={onInputChange}
+                    onCheck={() => void triggerWebCheck()}
+                    placeholder={getSafePlaceholder(problem.inputHint, problem)}
+                    aria-label={`Answer for ${isLab ? "milestone" : "problem"} ${problem.id}`}
+                    isChecking={isChecking}
+                  />
                 ))}
 
               <AnswerResultCard
@@ -1093,256 +1016,72 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
               />
             </div>
 
-            <div className="space-y-3 pt-1">
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-zinc-500 dark:text-zinc-400">
-                {hasAttempt && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setChoiceRetryUnlocked(false);
-                      setCheckingOptionId(null);
-                      onResetProblem();
-                    }}
-                    className="inline-flex items-center gap-1.5 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
-                  >
-                    <RotateCcw className="w-3.5 h-3.5" />
-                    <span>Reset</span>
-                  </button>
-                )}
-
-                {hasCheckpointHint(problem.checkpointHint) && <button
-                  type="button"
-                  onClick={() => {
-                    if (!showHint && onHintRevealed) {
-                      onHintRevealed();
-                    }
-                    setShowHint(!showHint);
-                  }}
-                  aria-expanded={showHint}
-                  className="inline-flex items-center gap-1 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
-                >
-                  <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${showHint ? "rotate-180" : ""}`} />
-                  <span>{showHint ? "Hide hint" : "Hint"}</span>
-                </button>}
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (!showSolution && onSolutionRevealed) {
-                      onSolutionRevealed();
-                    }
-                    setShowSolution(!showSolution);
-                  }}
-                  aria-expanded={showSolution}
-                  title={
-                    stepsUnopenedUnattempted
-                      ? "Opening before checking counts as assisted"
-                      : undefined
-                  }
-                  className="inline-flex items-center gap-1 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
-                >
-                  <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${showSolution ? "rotate-180" : ""}`} />
-                  <span>{showSolution ? "Hide steps" : "Show steps"}</span>
-                </button>
-
-                {onSkip && !hasAttempt && (
-                  <button
-                    type="button"
-                    onClick={() => {
+            <ProblemAssistSection
+              problem={problem}
+              hasAttempt={hasAttempt}
+              showHint={showHint}
+              onToggleHint={() => {
+                if (!showHint && onHintRevealed) {
+                  onHintRevealed();
+                }
+                setShowHint(!showHint);
+              }}
+              showSolution={showSolution}
+              onToggleSolution={() => {
+                if (!showSolution && onSolutionRevealed) {
+                  onSolutionRevealed();
+                }
+                setShowSolution(!showSolution);
+              }}
+              stepsUnopenedUnattempted={stepsUnopenedUnattempted}
+              stepsRef={stepsRef}
+              showStepsHeader={false}
+              activeStep={activeStep}
+              onToggleStepHighlight={onToggleStepHighlight}
+              onMarkDivergedStep={onMarkDivergedStep}
+              onReset={() => {
+                resetChoiceState();
+                onResetProblem();
+              }}
+              onSkip={
+                onSkip
+                  ? () => {
                       if (!showHint && onHintRevealed) {
                         onHintRevealed();
                       }
                       setShowHint(true);
                       setShowSolution(true);
                       onSkip();
-                    }}
-                    className="inline-flex items-center gap-1 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors ml-auto"
-                  >
-                    <span>Skip</span>
-                  </button>
-                )}
-              </div>
-
-              <Reveal show={Boolean(showHint && hasCheckpointHint(problem.checkpointHint))}>
-              {showHint && hasCheckpointHint(problem.checkpointHint) && (
-                <div className="border-l-2 border-amber-600 dark:border-amber-400 pl-3.5 py-1 text-sm text-zinc-700 dark:text-zinc-300">
-                  <FormattedText text={problem.checkpointHint} />
-                </div>
-              )}
-              </Reveal>
-
-              <Reveal show={Boolean(showSolution)}>
-              {showSolution && (
-                <div ref={stepsRef} className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 space-y-2.5">
-                  {(problem.steps || []).map((st, sIdx) => {
-                    const isDiverged = problem.state.divergedStep === sIdx;
-                    const isActive = activeStep === sIdx;
-                    return (
-                      <div
-                        key={sIdx}
-                        onClick={() => onToggleStepHighlight(sIdx)}
-                        className={`group p-3 rounded-xl border cursor-pointer transition-colors ${
-                          isDiverged
-                            ? "border-rose-600 dark:border-rose-400"
-                            : isActive
-                            ? "border-indigo-600 dark:border-indigo-500"
-                            : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800"
-                        }`}
-                      >
-                        <div className="flex items-center justify-between gap-2 mb-1">
-                          <span className="text-xs font-mono text-zinc-500 dark:text-zinc-400">
-                            Step {sIdx + 1}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onMarkDivergedStep(sIdx);
-                            }}
-                            className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded border transition-all ${
-                              isDiverged
-                                ? "opacity-100 border-rose-600 dark:border-rose-400 text-rose-600 dark:text-rose-400 font-semibold"
-                                : "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100 border-zinc-200 dark:border-zinc-800 text-zinc-500 dark:text-zinc-400 hover:text-rose-600 dark:hover:text-rose-400 hover:border-rose-300 dark:hover:border-rose-500/40"
-                            }`}
-                          >
-                            <Flag className="w-3 h-3 shrink-0" />
-                            <span>
-                              {isDiverged ? `Diverged at step ${sIdx + 1}` : "Diverged here"}
-                            </span>
-                          </button>
-                        </div>
-                        <div className="text-xs text-zinc-800 dark:text-zinc-200 leading-relaxed">
-                          <FormattedText text={st.explain} />
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-              </Reveal>
-            </div>
+                    }
+                  : undefined
+              }
+            />
           </>
         )}
 
         {/* Mistake tags & note after an attempt */}
-        {hasAttempt && (
-          <div className="pt-4 border-t border-zinc-200 dark:border-zinc-800 space-y-3 text-xs text-zinc-500 dark:text-zinc-400">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              {!isKata && (
-                <div className="flex items-center gap-1.5">
-                  <span className="mr-1">Self-score:</span>
-                  {[
-                    {
-                      val: 1,
-                      label: "1.0",
-                      activeCls:
-                        "border-emerald-700 dark:border-emerald-400 text-emerald-700 dark:text-emerald-400 font-semibold bg-zinc-50 dark:bg-zinc-950",
-                    },
-                    {
-                      val: 0.5,
-                      label: "0.5",
-                      activeCls:
-                        "border-amber-700 dark:border-amber-400 text-amber-700 dark:text-amber-400 font-semibold bg-zinc-50 dark:bg-zinc-950",
-                    },
-                    {
-                      val: 0,
-                      label: "0",
-                      activeCls:
-                        "border-rose-600 dark:border-rose-400 text-rose-600 dark:text-rose-400 font-semibold bg-zinc-50 dark:bg-zinc-950",
-                    },
-                  ].map((btn) => (
-                    <button
-                      key={btn.val}
-                      type="button"
-                      onClick={() => onSetScore(btn.val)}
-                      aria-pressed={score === btn.val}
-                      className={`h-7 px-2.5 rounded-lg font-mono border transition-colors ${
-                        score === btn.val
-                          ? btn.activeCls
-                          : "bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600"
-                      }`}
-                    >
-                      {btn.label}
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              {mistakeTags.length > 0 && (
-                <div className="flex flex-wrap items-center gap-1.5">
-                  <span className="mr-1">Mistake:</span>
-                  {mistakeTags.map((t) => {
-                    const hasTag = problem.state.mistakes.includes(t.id);
-                    return (
-                      <button
-                        key={t.id}
-                        type="button"
-                        onClick={() => onToggleMistakeTag(t.id)}
-                        aria-pressed={hasTag}
-                        className={`min-h-[28px] py-1 px-2.5 rounded-full text-xs border transition-colors inline-flex items-center ${
-                          hasTag
-                            ? "border-rose-600 dark:border-rose-400 text-rose-700 dark:text-rose-300 bg-zinc-50 dark:bg-zinc-950 font-semibold"
-                            : "bg-white dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600"
-                        }`}
-                      >
-                        <FormattedText text={t.label} />
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-
-            <div className="flex items-center gap-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3 py-2 transition-colors focus-within:border-indigo-600 dark:focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-600/20 dark:focus-within:ring-indigo-400/25">
-              <PenLine className="w-3.5 h-3.5 text-zinc-500 dark:text-zinc-400 shrink-0" />
-              <input
-                type="text"
-                value={problem.state.mistakeNote || ""}
-                onChange={(e) => onMistakeNoteChange(e.target.value)}
-                aria-label={`Note for ${isLab ? "milestone" : "problem"} ${problem.id}`}
-                placeholder="Note what went wrong (optional)…"
-                className="w-full bg-transparent text-xs text-zinc-800 dark:text-zinc-200 placeholder:text-zinc-500 dark:placeholder:text-zinc-400 focus:outline-none"
-              />
-            </div>
-          </div>
-        )}
+        <ProblemSelfEval
+          hasAttempt={hasAttempt}
+          showSelfScore={!isKata}
+          score={score}
+          mistakes={problem.state.mistakes}
+          mistakeNote={problem.state.mistakeNote}
+          mistakeTags={mistakeTags}
+          noteAriaLabel={`Note for ${isLab ? "milestone" : "problem"} ${problem.id}`}
+          onSetScore={onSetScore}
+          onToggleMistakeTag={onToggleMistakeTag}
+          onMistakeNoteChange={onMistakeNoteChange}
+        />
       </article>
 
       {/* Quiet question navigation footer */}
-      {(onPrevQuestion || onNextQuestion || onOpenReview) && (
-        <div className="flex items-center justify-between px-1 text-xs text-zinc-500 dark:text-zinc-400">
-          <button
-            type="button"
-            onClick={onPrevQuestion}
-            disabled={index === 0}
-            className="inline-flex items-center gap-1 py-1.5 hover:text-zinc-900 dark:hover:text-zinc-100 disabled:opacity-30 disabled:pointer-events-none transition-colors"
-          >
-            <ChevronLeft className="w-4 h-4" />
-            <span>Previous</span>
-          </button>
-
-          {isLastQuestion && onOpenReview ? (
-            <button
-              type="button"
-              onClick={onOpenReview}
-              className="inline-flex items-center gap-1 py-1.5 font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
-            >
-              <span>Review &amp; sync</span>
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={onNextQuestion}
-              disabled={isLastQuestion}
-              className="inline-flex items-center gap-1 py-1.5 hover:text-zinc-900 dark:hover:text-zinc-100 disabled:opacity-30 disabled:pointer-events-none transition-colors"
-            >
-              <span>Next</span>
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          )}
-        </div>
-      )}
+      <ProblemNavFooter
+        index={index}
+        isLastQuestion={isLastQuestion}
+        onPrevQuestion={onPrevQuestion}
+        onNextQuestion={onNextQuestion}
+        onOpenReview={onOpenReview}
+      />
     </div>
   );
 };

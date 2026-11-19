@@ -1,12 +1,26 @@
 "use client";
 
 import React, { useState } from "react";
+import dynamic from "next/dynamic";
 import { VisualSpec, VisualElement } from "@/types/drill";
 import { Sparkles, Image as ImageIcon } from "lucide-react";
-import { InteractivePythagoras2D } from "./InteractivePythagoras2D";
-import { InteractiveTrapezoid2D } from "./InteractiveTrapezoid2D";
-import { InteractiveCircle2D } from "./InteractiveCircle2D";
-import { Interactive3DCylinder } from "./Interactive3DCylinder";
+
+const InteractivePythagoras2D = dynamic(
+  () => import("./InteractivePythagoras2D").then((mod) => mod.InteractivePythagoras2D),
+  { ssr: false }
+);
+const InteractiveTrapezoid2D = dynamic(
+  () => import("./InteractiveTrapezoid2D").then((mod) => mod.InteractiveTrapezoid2D),
+  { ssr: false }
+);
+const InteractiveCircle2D = dynamic(
+  () => import("./InteractiveCircle2D").then((mod) => mod.InteractiveCircle2D),
+  { ssr: false }
+);
+const Interactive3DCylinder = dynamic(
+  () => import("./Interactive3DCylinder").then((mod) => mod.Interactive3DCylinder),
+  { ssr: false }
+);
 
 interface VisualRendererProps {
   visual: VisualSpec;

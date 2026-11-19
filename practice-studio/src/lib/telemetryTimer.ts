@@ -226,6 +226,7 @@ export function consumeAttempt(
 
   // Reset problem attempt timer for next attempt
   prob.accumulatedMs = 0;
+  prob.hintsRevealed = 0;
   if (next.activeProblemId === problemId && next.isDocumentVisible && !next.paused) {
     prob.lastActiveStart = now;
   } else {

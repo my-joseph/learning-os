@@ -65,6 +65,9 @@ assert.match(THEME_INIT_SCRIPT, /matchMedia/);
 
 const codeDashboard = readFileSync("src/components/code/CodeDashboard.tsx", "utf8");
 const mathWorkspace = readFileSync("src/components/math/MathWorkspace.tsx", "utf8");
+const problemAssistSection = readFileSync("src/components/workspace/ProblemAssistSection.tsx", "utf8");
+const problemSelfEval = readFileSync("src/components/workspace/ProblemSelfEval.tsx", "utf8");
+const problemNavFooter = readFileSync("src/components/workspace/ProblemNavFooter.tsx", "utf8");
 const answerResultCard = readFileSync("src/components/AnswerResultCard.tsx", "utf8");
 const pagination = readFileSync("src/components/QuizPaginationBar.tsx", "utf8");
 const studioShell = readFileSync("src/components/shell/StudioShell.tsx", "utf8");
@@ -72,6 +75,9 @@ const studioHeader = readFileSync("src/components/shell/StudioHeader.tsx", "utf8
 const workspaceRoute = readFileSync("src/app/api/workspace/route.ts", "utf8");
 const runTestsRoute = readFileSync("src/app/api/run-tests/route.ts", "utf8");
 assert.match(codeDashboard, /hasCheckpointHint\(problem\.checkpointHint\)\s*&&\s*<button/);
+assert.match(problemAssistSection, /hasCheckpointHint\(problem\.checkpointHint\)\s*&&\s*<button/);
+assert.match(problemAssistSection, /<StepRow/);
+assert.doesNotMatch(codeDashboard, /Diverged here/);
 assert.match(answerResultCard, /FormattedText text=\{c\.label\}/);
 assert.doesNotMatch(answerResultCard, /border-l-/);
 assert.match(codeDashboard, /<AnswerResultCard/);
@@ -85,11 +91,15 @@ assert.match(codeDashboard, /method: "POST"[\s\S]*?JSON\.stringify\(\{ drillId \
 assert.match(codeDashboard, /workspace file from disk/);
 assert.match(mathWorkspace, /<AnswerResultCard/);
 assert.match(mathWorkspace, /aria-label=\{`Answer for question \$\{problem\.id\}`\}/);
-assert.match(mathWorkspace, /hasCheckpointHint\(problem\.checkpointHint\)\s*&&\s*<button/);
+assert.match(mathWorkspace, /<ProblemAssistSection/);
+assert.match(codeDashboard, /<ProblemAssistSection/);
 assert.match(mathWorkspace, /max-w-\[720px\]/);
-assert.match(mathWorkspace, /border-rose-600/);
+assert.match(mathWorkspace, /<ProblemSelfEval/);
+assert.match(codeDashboard, /<ProblemSelfEval/);
+assert.match(problemSelfEval, /border-rose-600/);
 assert.doesNotMatch(mathWorkspace, /Review &amp; Sync|Review & Sync/);
 assert.doesNotMatch(codeDashboard, /Review &amp; Sync|Review & Sync/);
+assert.doesNotMatch(problemNavFooter, /Review &amp; Sync|Review & Sync/);
 assert.match(pagination, /bg-emerald-700/);
 assert.match(pagination, /overflow-x-auto/);
 assert.match(pagination, /justify-center/);

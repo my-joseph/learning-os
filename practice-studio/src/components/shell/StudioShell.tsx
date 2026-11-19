@@ -1,10 +1,9 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import Link from "next/link";
 import { AnimatePresence, m } from "motion/react";
-import { drawer, fade, settle } from "@/lib/motion";
-import { Code2, Sigma, X, type LucideIcon } from "lucide-react";
+import { drawer, fade } from "@/lib/motion";
+import { X } from "lucide-react";
 import { DrillDocument, DrillListItem } from "@/types/drill";
 import type { LabListItem } from "@/lib/labModel";
 import { DrillFilter, StatusMessage, ViewMode } from "@/hooks/types";
@@ -12,6 +11,7 @@ import { useSidePanelData } from "@/hooks/useSidePanelData";
 import { Workspace, isLabId } from "@/lib/routes";
 import { QuizPaginationBar } from "@/components/QuizPaginationBar";
 import { ToastStack } from "@/components/ui/ToastStack";
+import { WorkspaceSwitch } from "@/components/workspace/WorkspaceSwitch";
 import { StudioHeader } from "./StudioHeader";
 import { StudioSidePanel } from "./StudioSidePanel";
 import { GeneratePopover } from "./GeneratePopover";
@@ -245,68 +245,18 @@ export const StudioShell: React.FC<StudioShellProps> = ({
   // Sticky header sits at top-2 (8 px); add 12 px breathing room when visible.
   const asideTopPx = showHeader ? headerHeight + 20 : 16;
 
-  const railOptions: {
-    id: Workspace;
-    label: string;
-    href: string | null;
-    icon: LucideIcon;
-  }[] = [
-    { id: "math", label: "Math", href: mathHref, icon: Sigma },
-    { id: "code", label: "Programming", href: codeHref, icon: Code2 },
-  ];
-
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 px-4 lg:px-16 py-4 sm:py-6 transition-colors">
       {/* >=1024px: Fixed icon-only workspace rail at the left-middle edge */}
-      <nav
-        aria-label="Workspace"
+      <WorkspaceSwitch
+        variant="rail"
+        workspace={workspace}
+        pillWorkspace={pillWorkspace}
+        onSelectWorkspace={setPillWorkspace}
+        mathHref={mathHref}
+        codeHref={codeHref}
         className="hidden lg:grid fixed left-3 top-1/2 -translate-y-1/2 z-40 grid-rows-2 items-center rounded-xl bg-zinc-100/95 dark:bg-zinc-800/80 backdrop-blur-md border border-zinc-200 dark:border-zinc-800 p-1 shadow-sm"
-      >
-        <m.span
-          aria-hidden
-          className="pointer-events-none absolute left-1 right-1 top-1 h-[calc(50%-4px)] rounded-lg bg-white dark:bg-zinc-900 shadow-sm"
-          initial={false}
-          animate={{ y: pillWorkspace === "code" ? "100%" : "0%" }}
-          transition={settle}
-        />
-        {railOptions.map((opt) => {
-          const isActive = workspace === opt.id;
-          const isShown = pillWorkspace === opt.id;
-          const Icon = opt.icon;
-          const cls = `relative z-10 inline-flex items-center justify-center w-8 h-8 rounded-lg transition-colors duration-200 ${
-            isShown
-              ? "text-zinc-900 dark:text-zinc-100"
-              : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200"
-          }`;
-          if (!opt.href) {
-            return (
-              <span
-                key={opt.id}
-                aria-label={opt.label}
-                title={opt.label}
-                aria-current={isActive ? "page" : undefined}
-                aria-disabled={!isActive ? true : undefined}
-                className={`${cls} ${!isActive ? "opacity-50 cursor-not-allowed" : ""}`}
-              >
-                <Icon className="w-4 h-4" aria-hidden={true} />
-              </span>
-            );
-          }
-          return (
-            <Link
-              key={opt.id}
-              href={opt.href}
-              aria-label={opt.label}
-              title={opt.label}
-              aria-current={isActive ? "page" : undefined}
-              onClick={() => setPillWorkspace(opt.id)}
-              className={cls}
-            >
-              <Icon className="w-4 h-4" aria-hidden={true} />
-            </Link>
-          );
-        })}
-      </nav>
+      />
 
       <div className={`mx-auto ${containerMaxWidth}`}>
         {/* Provide sr-only h1 when no active drill or not-found card renders a visible h1 */}

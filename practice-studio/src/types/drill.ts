@@ -71,7 +71,7 @@ export interface VisualSpec {
 }
 
 export interface Step {
-  latex: string;
+  latex?: string;
   explain: string;
 }
 
