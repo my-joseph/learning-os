@@ -1,5 +1,6 @@
 import {
   AnswerSpec,
+  AttemptRecord,
   ChoiceOption,
   CodeExample,
   DrillDocument,
@@ -7,9 +8,14 @@ import {
   ProblemState,
   RedactedVariant,
   Step,
+  VariantSessionRecord,
   WorkedExampleVariant,
 } from "../types/drill";
-import { canRevealVerifiedAnswer, canShowReferenceSolution } from "./reviewGuard";
+import {
+  canRevealVerifiedAnswer,
+  canShowReferenceSolution,
+  isSubstantiveVerdict,
+} from "./reviewGuard";
 
 /**
  * Secret fields stripped by `redactProblem` / `redactDrill` before sending a drill to the browser:
@@ -149,6 +155,53 @@ export function isPartUnlocked(part: RevealPart, state?: ProblemState | null): b
   if (part === "display") return canRevealDisplay(state);
   if (part === "solution") return canRevealSolution(state);
   return false;
+}
+
+/** Unlock rule for variant step-by-step derivation: after a substantive attempt or explicit reveal/give-up. */
+export function canRevealVariantSteps(record?: VariantSessionRecord | null): boolean {
+  if (!record) return false;
+  if (record.stepsRevealed) return true;
+  if (Array.isArray(record.attempts) && record.attempts.some((a) => isSubstantiveVerdict(a?.verdict))) {
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Strip bank `variantId`s, `variantsSeen`/`variantsAttempted`, and variant trap tags from `ProblemState`
+ * before sending it to the browser so method/archetype names never leak.
+ */
+export function redactProblemStateForClient(
+  state?: ProblemState | null
+): ProblemState | undefined {
+  if (!state || typeof state !== "object") return undefined;
+  const copy: ProblemState = { ...state };
+  delete copy.variantsSeen;
+  delete copy.variantsAttempted;
+  if (state.variants && typeof state.variants === "object") {
+    const cleanVariants: Record<string, VariantSessionRecord> = {};
+    for (const [token, rec] of Object.entries(state.variants)) {
+      if (!rec || typeof rec !== "object") continue;
+      const cleanAttempts: AttemptRecord[] = Array.isArray(rec.attempts)
+        ? rec.attempts.map((a) => {
+            const attCopy: AttemptRecord = { ...a };
+            delete attCopy.matchedTrap;
+            return attCopy;
+          })
+        : [];
+      cleanVariants[token] = {
+        role: rec.role === "example" ? "example" : "try",
+        attempts: cleanAttempts,
+        ...(typeof rec.hintsRevealed === "number" ? { hintsRevealed: rec.hintsRevealed } : {}),
+        ...(rec.setupRevealed ? { setupRevealed: true } : {}),
+        ...(rec.stepsRevealed ? { stepsRevealed: true } : {}),
+        ...(typeof rec.durationMs === "number" ? { durationMs: rec.durationMs } : {}),
+        servedAt: rec.servedAt,
+      };
+    }
+    copy.variants = cleanVariants;
+  }
+  return copy;
 }
 
 export function extractRevealedPart(
@@ -367,8 +420,10 @@ export function redactProblem(
     if (state === null) {
       delete raw.state;
     } else {
-      raw.state = state;
+      raw.state = redactProblemStateForClient(state);
     }
+  } else if (raw.state && typeof raw.state === "object") {
+    raw.state = redactProblemStateForClient(raw.state as ProblemState);
   }
 
   return raw as unknown as Problem;
@@ -465,18 +520,23 @@ export function redactDrillForReview<T extends DrillDocument>(doc: T): T {
 
 /**
  * Zero-leak redaction for a bank variant served in `mode=try`:
- * strips every answer, step, display/plainText, trap, archetype, and internal metadata field.
+ * strips every answer, step, display/plainText, trap, archetype, bank `variantId`, and internal metadata field.
+ * Uses only the opaque per-problem `token` (e.g. "v1") as client identifier.
  */
-export function redactVariantForTry(variant: Record<string, unknown>): RedactedVariant {
-  const variantId = String(variant.variantId || variant.id || "");
+export function redactVariantForTry(
+  variant: Record<string, unknown>,
+  token: string
+): RedactedVariant {
+  const safeToken = String(token || "v1");
   const asProblem = {
     ...(variant as unknown as Problem),
-    id: variantId,
+    id: safeToken,
     templateKey: "",
   };
   const redacted = redactProblem(asProblem, null, "MATH") as unknown as Record<string, unknown>;
 
-  // Strip archetype / trap / internal bank identifiers so mode=try never hints the trap.
+  // Strip archetype / trap / bank ID / internal identifiers so mode=try never leaks method or trap.
+  delete redacted.variantId;
   delete redacted.commonTrapTag;
   delete redacted.archetypeKey;
   delete redacted.sourceArchetype;
@@ -502,8 +562,8 @@ export function redactVariantForTry(variant: Record<string, unknown>): RedactedV
   }
 
   return {
-    variantId,
-    id: variantId,
+    token: safeToken,
+    id: safeToken,
     level: typeof redacted.level === "number" ? redacted.level : 1,
     ...(typeof redacted.levelLabel === "string" ? { levelLabel: redacted.levelLabel } : {}),
     ...(typeof redacted.category === "string" ? { category: redacted.category } : {}),
@@ -523,12 +583,14 @@ export function redactVariantForTry(variant: Record<string, unknown>): RedactedV
 
 /**
  * Format a bank variant as a fully solved worked example (`mode=example`),
- * returning only learner-facing prompt, figure, final answer, and steps with explain.
+ * returning only learner-facing prompt, figure, final answer, and steps with explain
+ * under an opaque per-problem `token` (never leaking bank `variantId` or archetype).
  */
 export function formatWorkedExampleVariant(
-  variant: Record<string, unknown>
+  variant: Record<string, unknown>,
+  token: string
 ): WorkedExampleVariant {
-  const variantId = String(variant.variantId || variant.id || "");
+  const safeToken = String(token || "v1");
   const rawSteps = Array.isArray(variant.steps) ? (variant.steps as Array<Record<string, unknown>>) : [];
   const steps: Step[] = rawSteps
     .filter((st) => st && typeof st === "object")
@@ -538,8 +600,8 @@ export function formatWorkedExampleVariant(
     }));
 
   return {
-    variantId,
-    id: variantId,
+    token: safeToken,
+    id: safeToken,
     level: typeof variant.level === "number" ? variant.level : 1,
     ...(typeof variant.levelLabel === "string" ? { levelLabel: variant.levelLabel } : {}),
     ...(typeof variant.category === "string" ? { category: variant.category } : {}),

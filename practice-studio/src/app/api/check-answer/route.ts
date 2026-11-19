@@ -9,30 +9,81 @@ import {
   loadProblemFromDisk,
   loadVariantFromDisk,
 } from "@/lib/paths";
-import { recordVariantAttempted } from "@/lib/progress";
-import { isSubstantiveVerdict } from "@/lib/reviewGuard";
+import { recordVariantAttempt, resolveVariantToken } from "@/lib/progress";
 
 const TIMEOUT_MS = 5000;
+
+function extractVariantMatchedTrap(
+  variant: Record<string, unknown>,
+  userInput: string,
+  result: { verdict?: string; trapMatched?: boolean }
+): string | undefined {
+  if (result.verdict !== "incorrect" && result.verdict !== "partial") return undefined;
+  const spec = variant.answerSpec as Record<string, unknown> | undefined;
+  if (spec?.type === "choice" && Array.isArray(spec.options)) {
+    const trimmed = userInput.trim();
+    const chosen = (spec.options as Array<Record<string, unknown>>).find(
+      (o) => o && String(o.id ?? "").trim() === trimmed
+    );
+    const choiceTrap =
+      (typeof chosen?.trapTag === "string" && chosen.trapTag) ||
+      (typeof chosen?.tag === "string" && chosen.tag) ||
+      "";
+    if (choiceTrap) return choiceTrap;
+  }
+  if (result.trapMatched && typeof variant.commonTrapTag === "string" && variant.commonTrapTag) {
+    return variant.commonTrapTag;
+  }
+  return undefined;
+}
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const variantId = typeof body.variantId === "string" ? body.variantId.trim() : "";
+    const variantToken =
+      typeof body.variantToken === "string" ? body.variantToken.trim() : "";
+    const rawVariantId =
+      typeof body.variantId === "string" ? body.variantId.trim() : "";
     const drillId = body.drillId || body.drill;
     const problemId = body.problemId || body.qid || body.q;
     const userInput = typeof body.input === "string" ? body.input : "";
+    const durationMs =
+      typeof body.durationMs === "number" && Number.isFinite(body.durationMs)
+        ? body.durationMs
+        : undefined;
+
+    if (rawVariantId && !variantToken) {
+      return NextResponse.json(
+        {
+          verdict: "invalid input",
+          message: "Use opaque variantToken instead of variantId",
+          components: [],
+          diagnostics: [],
+        },
+        { status: 400 }
+      );
+    }
 
     let engineModule = "math_engine.answer_check";
     let enginePayload: Record<string, unknown>;
-    let variantMeta: { variantId: string; unitCode: string; drillId?: string; qid?: string } | null =
-      null;
+    let variantMeta: {
+      variantToken: string;
+      variant: Record<string, unknown>;
+      unitCode: string;
+      drillId: string;
+      qid: string;
+    } | null = null;
 
-    if (variantId) {
-      if (!isSafeId(variantId)) {
+    if (variantToken) {
+      if (
+        !isSafeId(variantToken) ||
+        !isSafeId(drillId) ||
+        !isSafeId(problemId)
+      ) {
         return NextResponse.json(
           {
             verdict: "invalid input",
-            message: "Invalid variantId",
+            message: "Missing or invalid drillId, qid, or variantToken",
             components: [],
             diagnostics: [],
           },
@@ -40,7 +91,20 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      const loadedVariant = loadVariantFromDisk(variantId);
+      const resolved = resolveVariantToken(drillId, problemId, variantToken);
+      if (!resolved || !resolved.record.variantId) {
+        return NextResponse.json(
+          {
+            verdict: "invalid input",
+            message: "Variant not found",
+            components: [],
+            diagnostics: [],
+          },
+          { status: 404 }
+        );
+      }
+
+      const loadedVariant = loadVariantFromDisk(resolved.record.variantId);
       if (!loadedVariant) {
         return NextResponse.json(
           {
@@ -53,16 +117,17 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      // Server bank wins: Python checker resolves answerSpec & trapValue by variantId from disk.
+      // Server bank wins: resolve variantId strictly on the server from opaque variantToken.
       enginePayload = {
-        variantId,
+        variantId: resolved.record.variantId,
         input: userInput,
       };
       variantMeta = {
-        variantId,
+        variantToken,
+        variant: loadedVariant.variant,
         unitCode: loadedVariant.unitCode,
-        drillId: isSafeId(drillId) ? drillId : undefined,
-        qid: isSafeId(problemId) ? problemId : undefined,
+        drillId,
+        qid: problemId,
       };
     } else {
       if (!drillId || !problemId || !isSafeId(drillId) || !isSafeId(problemId)) {
@@ -190,19 +255,39 @@ export async function POST(req: NextRequest) {
         }
 
         try {
-          const result = JSON.parse(stdout) as { verdict?: string };
-          if (
-            variantMeta &&
-            variantMeta.drillId &&
-            variantMeta.qid &&
-            isSubstantiveVerdict(result?.verdict)
-          ) {
+          const result = JSON.parse(stdout) as {
+            verdict?: string;
+            trapMatched?: boolean;
+            diagnostics?: Array<{ code?: string }>;
+          };
+          if (variantMeta && userInput.trim()) {
             try {
-              recordVariantAttempted(
+              const diagCodes = Array.isArray(result.diagnostics)
+                ? result.diagnostics
+                    .map((d) => (typeof d?.code === "string" ? d.code : ""))
+                    .filter(Boolean)
+                : [];
+              const matchedTrap = extractVariantMatchedTrap(
+                variantMeta.variant,
+                userInput,
+                result
+              );
+              // Persist variant attempt with kind: "variant" under opaque token.
+              // Review schedule is NEVER modified by variant attempts.
+              recordVariantAttempt(
                 variantMeta.drillId,
                 variantMeta.unitCode,
                 variantMeta.qid,
-                variantMeta.variantId
+                variantMeta.variantToken,
+                {
+                  input: userInput.trim(),
+                  ts: new Date().toISOString(),
+                  verdict: String(result.verdict || "invalid input"),
+                  kind: "variant",
+                  ...(diagCodes.length > 0 ? { diagnosticCodes: diagCodes } : {}),
+                  ...(matchedTrap ? { matchedTrap } : {}),
+                },
+                durationMs
               );
             } catch {
               // Do not fail answer check if progress tracking write fails transiently.

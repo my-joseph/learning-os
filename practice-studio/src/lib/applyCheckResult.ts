@@ -58,14 +58,21 @@ export function applyCheckResult(
     };
   }
 
+  const exampleViewed = Boolean(prob.state?.exampleViewedAt);
   const isAssisted = Boolean(
     prob.state?.setupRevealedBeforeAnswer ||
       prob.state?.solutionRevealedBeforeAnswer ||
+      exampleViewed ||
       hintsCount > 0 ||
-      currentAttempts.some((a) => a.setupRevealed || a.solutionRevealed)
+      currentAttempts.some(
+        (a) =>
+          a.kind !== "variant" &&
+          (a.setupRevealed || a.solutionRevealed || a.exampleViewed)
+      )
   );
   const hadPriorWrongOrPartial = currentAttempts.some(
     (a) =>
+      a.kind !== "variant" &&
       a.verdict !== "correct" &&
       a.verdict !== "invalid input" &&
       a.verdict !== "parse_error"
@@ -148,6 +155,7 @@ export function applyCheckResult(
     ...(matchedTrapTag ? { matchedTrap: matchedTrapTag } : {}),
     ...(prob.state?.setupRevealedBeforeAnswer ? { setupRevealed: true } : {}),
     ...(prob.state?.solutionRevealedBeforeAnswer ? { solutionRevealed: true } : {}),
+    ...(exampleViewed ? { exampleViewed: true } : {}),
   };
 
   return {

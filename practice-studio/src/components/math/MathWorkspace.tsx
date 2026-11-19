@@ -124,9 +124,6 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
           qid: problem.id,
           mode,
         });
-        if (mode === "example" && tryVariant?.variant.variantId) {
-          qs.set("exclude", tryVariant.variant.variantId);
-        }
         const res = await fetch(`/api/variant?${qs.toString()}`);
         const data = (await res.json()) as {
           variant?: RedactedVariant | WorkedExampleVariant;
@@ -151,7 +148,7 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
         setVariantLoading(null);
       }
     },
-    [drillId, onBeforeFetchVariant, problem.id, tryVariant, variantLoading]
+    [drillId, onBeforeFetchVariant, problem.id, variantLoading]
   );
 
   const isLastQuestion =
@@ -250,7 +247,7 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
       <Reveal show={Boolean(drillId && tryVariant)}>
         {drillId && tryVariant && (
           <VariantPracticeCard
-            key={tryVariant.variant.variantId}
+            key={tryVariant.variant.token}
             drillId={drillId}
             qid={problem.id}
             variant={tryVariant.variant}
@@ -265,7 +262,7 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
       <Reveal show={Boolean(exampleVariant)}>
         {exampleVariant && (
           <WorkedExampleCard
-            key={exampleVariant.variantId}
+            key={exampleVariant.token}
             example={exampleVariant}
             onClose={() => setExampleVariant(null)}
           />

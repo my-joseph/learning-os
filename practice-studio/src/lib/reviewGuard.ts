@@ -37,16 +37,52 @@ export function isWrongAttemptVerdict(verdict?: string | null): boolean {
   return verdict === "incorrect" || verdict === "partial";
 }
 
-/** Count wrong substantive attempts on a problem state (used for variant try/worked-example gating). */
+/** Count wrong substantive attempts on the original problem state (excludes kind: "variant"). */
 export function countWrongAttempts(state?: ProblemState | null): number {
   if (!state) return 0;
   if (Array.isArray(state.attempts) && state.attempts.length > 0) {
-    return state.attempts.filter((a) => isWrongAttemptVerdict(a?.verdict)).length;
+    return state.attempts.filter(
+      (a) => a?.kind !== "variant" && isWrongAttemptVerdict(a?.verdict)
+    ).length;
   }
   if (state.lastCheck && isWrongAttemptVerdict(state.lastCheck.verdict)) {
     return 1;
   }
   return 0;
+}
+
+/** Count wrong substantive attempts across the original problem AND all its try variants. */
+export function countClusterWrongAttempts(state?: ProblemState | null): number {
+  if (!state) return 0;
+  let total = countWrongAttempts(state);
+  const variants = state.variants;
+  if (variants && typeof variants === "object") {
+    for (const rec of Object.values(variants)) {
+      if (!rec || typeof rec !== "object" || !Array.isArray(rec.attempts)) continue;
+      for (const att of rec.attempts) {
+        if (isWrongAttemptVerdict(att?.verdict)) {
+          total += 1;
+        }
+      }
+    }
+  }
+  return total;
+}
+
+/** Count wrong substantive attempts on the original problem made at or after `sinceIso` (or flagged `exampleViewed`). */
+export function countWrongAttemptsAfter(
+  state?: ProblemState | null,
+  sinceIso?: string | null
+): number {
+  if (!state || !sinceIso) return 0;
+  const attempts = Array.isArray(state.attempts) ? state.attempts : [];
+  return attempts.filter(
+    (a) =>
+      a &&
+      a.kind !== "variant" &&
+      isWrongAttemptVerdict(a.verdict) &&
+      (Boolean(a.exampleViewed) || (typeof a.ts === "string" && a.ts >= sinceIso))
+  ).length;
 }
 
 /**
@@ -73,7 +109,9 @@ export function sanitizeCheckMessage(
 export function hasSubstantiveAttempt(state?: ProblemState | null): boolean {
   if (!state) return false;
   if (state.skipped) return true;
-  if (state.attempts?.some((a) => isSubstantiveVerdict(a.verdict))) return true;
+  if (state.attempts?.some((a) => a?.kind !== "variant" && isSubstantiveVerdict(a.verdict))) {
+    return true;
+  }
   if (state.lastCheck != null && isSubstantiveVerdict(state.lastCheck.verdict)) return true;
   if (state.lastTestReport != null) return true;
   if ((state.reviews?.length ?? 0) > 0) return true;

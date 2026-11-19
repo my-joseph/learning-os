@@ -130,8 +130,7 @@ export interface VariantPracticeCardProps {
 
 /**
  * Inline practice card for `mode=try` rendered directly under the problem card.
- * Uses the shared workspace answer field + `=` check button and records substantive
- * results on the ORIGINAL problem's review item via `POST /api/review-items`.
+ * Uses opaque `variant.token` for server-side check/reveal without touching the review schedule.
  */
 export const VariantPracticeCard: React.FC<VariantPracticeCardProps> = ({
   drillId,
@@ -199,7 +198,7 @@ export const VariantPracticeCard: React.FC<VariantPracticeCardProps> = ({
     setLoadingSteps(true);
     try {
       const qs = new URLSearchParams({
-        variantId: variant.variantId,
+        variantToken: variant.token,
         drillId,
         qid,
         part: "steps",
@@ -228,7 +227,7 @@ export const VariantPracticeCard: React.FC<VariantPracticeCardProps> = ({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          variantId: variant.variantId,
+          variantToken: variant.token,
           drillId,
           qid,
           input: trimmed,
@@ -244,28 +243,13 @@ export const VariantPracticeCard: React.FC<VariantPracticeCardProps> = ({
         input: trimmed,
         ts: new Date().toISOString(),
         verdict: checked.verdict,
+        kind: "variant",
       };
       setAttempts((prev) => [...prev, nextAttempt]);
 
-      if (isSubstantiveVerdict(checked.verdict)) {
-        // Record result as an attempt on the ORIGINAL problem's review item.
-        void fetch("/api/review-items", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            drillId,
-            qid,
-            correct: checked.verdict === "correct",
-            hintsUsed: hintRevealed ? 1 : 0,
-          }),
-        }).catch(() => {
-          // Non-blocking review schedule update
-        });
-
-        if (checked.verdict === "correct") {
-          setShowSteps(true);
-          void fetchStepsReveal();
-        }
+      if (isSubstantiveVerdict(checked.verdict) && checked.verdict === "correct") {
+        setShowSteps(true);
+        void fetchStepsReveal();
       }
     } catch {
       setLastCheck({
