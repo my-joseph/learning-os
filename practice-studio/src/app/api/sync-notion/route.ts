@@ -10,6 +10,7 @@ import {
   mergeDrillForNotionSync,
   runNotionDrillSync,
 } from "@/lib/notionSyncRunner";
+import { isLabId } from "@/lib/routes";
 
 export async function POST(req: NextRequest) {
   try {
@@ -22,6 +23,15 @@ export async function POST(req: NextRequest) {
     }
     if (!isSafeId(drillId) || !isSafeId(unitCode)) {
       return NextResponse.json({ ok: false, error: "Invalid drillId or unitCode" }, { status: 400 });
+    }
+    if (isLabId(drillId)) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: "Labs must be submitted from the terminal with `npm run submit`, not drill sync.",
+        },
+        { status: 400 }
+      );
     }
 
     // Rehydrate canonical server drill content so redacted client docs keep full steps/answers when syncing.

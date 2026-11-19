@@ -83,6 +83,8 @@ export interface MathWorkspaceProps {
   onSetupRevealed?: () => void;
   onSolutionRevealed?: () => void;
   onBeforeFetchVariant?: () => Promise<void>;
+  autoOpenSimilar?: boolean;
+  onAutoOpenSimilarConsumed?: () => void;
   onPrevQuestion?: () => void;
   onNextQuestion?: () => void;
   onOpenReview?: () => void;
@@ -119,6 +121,8 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
   onSetupRevealed,
   onSolutionRevealed,
   onBeforeFetchVariant,
+  autoOpenSimilar = false,
+  onAutoOpenSimilarConsumed,
   onPrevQuestion,
   onNextQuestion,
   onOpenReview,
@@ -353,6 +357,15 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
     },
     [drillId, onBeforeFetchVariant, problem.id, tryVariant, variantLoading]
   );
+
+  const autoSimilarTriggeredRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!autoOpenSimilar || !problem.hasVariants || !drillId) return;
+    if (autoSimilarTriggeredRef.current === problem.id) return;
+    autoSimilarTriggeredRef.current = problem.id;
+    onAutoOpenSimilarConsumed?.();
+    void handleFetchVariant("try");
+  }, [autoOpenSimilar, drillId, handleFetchVariant, onAutoOpenSimilarConsumed, problem.hasVariants, problem.id]);
 
   const handleTryAgain = () => {
     if (isChoice) {

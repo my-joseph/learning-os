@@ -68,7 +68,7 @@ export const ProblemSelfEval: React.FC<ProblemSelfEvalProps> = ({
                 type="button"
                 onClick={() => onSetScore(btn.val)}
                 aria-pressed={score === btn.val}
-                className={`h-7 px-2.5 rounded-lg font-mono border transition-colors ${
+                className={`min-h-[44px] sm:min-h-[28px] px-3 sm:px-2.5 rounded-lg font-display tabular-nums border transition-colors ${
                   score === btn.val
                     ? btn.activeCls
                     : "bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600"
@@ -91,7 +91,7 @@ export const ProblemSelfEval: React.FC<ProblemSelfEvalProps> = ({
                   type="button"
                   onClick={() => onToggleMistakeTag(t.id)}
                   aria-pressed={hasTag}
-                  className={`min-h-[28px] py-1 px-2.5 rounded-full text-xs border transition-colors inline-flex items-center ${
+                  className={`min-h-[44px] sm:min-h-[28px] py-1 px-2.5 rounded-full text-xs border transition-colors inline-flex items-center ${
                     hasTag
                       ? "border-rose-600 dark:border-rose-400 text-rose-700 dark:text-rose-300 bg-zinc-50 dark:bg-zinc-950 font-semibold"
                       : "bg-white dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600"

@@ -5,7 +5,12 @@ import { AnimatePresence, m } from "motion/react";
 import { ArrowRight, Check, Minus, SkipForward, X } from "lucide-react";
 import { FormattedText } from "@/components/FormattedText";
 import { Reveal } from "@/components/motion/Reveal";
-import { buildResultCardModel, ResultCardTone } from "@/lib/answerFeedback";
+import {
+  buildResultCardModel,
+  CARD_STYLES,
+  ICON_CIRCLE_STYLES,
+  ResultCardTone,
+} from "@/lib/answerFeedback";
 import { dialogCard, presence } from "@/lib/motion";
 import { CheckResult, MistakeTag, Problem, ProblemState } from "@/types/drill";
 
@@ -21,28 +26,6 @@ export interface AnswerResultCardProps {
   onTryAgain?: () => void;
   onShowSteps?: () => void;
 }
-
-const CARD_STYLES: Record<ResultCardTone, string> = {
-  correct:
-    "bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200/70 dark:border-emerald-500/20",
-  almost:
-    "bg-amber-50 dark:bg-amber-500/10 border border-amber-200/70 dark:border-amber-500/20",
-  wrong:
-    "bg-rose-50 dark:bg-rose-500/10 border border-rose-200/70 dark:border-rose-500/20",
-  skipped:
-    "bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700/60",
-};
-
-const ICON_CIRCLE_STYLES: Record<ResultCardTone, string> = {
-  correct:
-    "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400",
-  almost:
-    "bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400",
-  wrong:
-    "bg-rose-100 dark:bg-rose-500/20 text-rose-600 dark:text-rose-400",
-  skipped:
-    "bg-zinc-200/80 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300",
-};
 
 function ToneIcon({ tone }: { tone: ResultCardTone }) {
   if (tone === "correct") {
