@@ -1,7 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
-import { getDrillsDataDir, getWorkspaceRoot, isSafeId } from "@/lib/paths";
+import {
+  getDrillWorkspaceDir,
+  getDrillWorkspacesDir,
+  getDrillsDataDir,
+  getWorkspaceRoot,
+  isSafeId,
+  remapWorkspaceFileForMode,
+  resolveInsideDrillWorkspace,
+} from "@/lib/paths";
 import { applyProgress, readProgress } from "@/lib/progress";
 import { redactDrill } from "@/lib/redact";
 import { plainTitle } from "@/lib/titleText";
@@ -50,10 +58,19 @@ export async function GET(req: NextRequest) {
 
       // Compute local IDE workspace paths at runtime from repo root (never baked into drill JSON)
       if (Array.isArray(doc.problems) && doc.drillId) {
-        const wsDir = path.join(rootDir, "drills", "workspace", doc.drillId);
+        const wsDir =
+          getDrillWorkspaceDir(doc.drillId, rootDir) ??
+          path.join(getDrillWorkspacesDir(rootDir), doc.drillId);
         for (const prob of doc.problems) {
           if (prob && typeof prob === "object" && prob.workspaceFile) {
-            const absFile = path.resolve(rootDir, prob.workspaceFile);
+            const mappedRel = remapWorkspaceFileForMode(
+              prob.workspaceFile,
+              doc.drillId
+            ).replace(/\\/g, "/");
+            const absFile =
+              resolveInsideDrillWorkspace(mappedRel, doc.drillId, rootDir) ??
+              path.resolve(rootDir, mappedRel);
+            prob.workspaceFile = mappedRel;
             prob.workspaceDir = wsDir;
             prob.vscodeFolderUrl = `vscode://file/${wsDir}`;
             prob.vscodeUrl = `vscode://file/${absFile}`;

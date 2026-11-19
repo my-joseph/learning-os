@@ -7,14 +7,21 @@ import { fadeUp } from "@/lib/motion";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Plus } from "lucide-react";
 import { DrillDocument } from "@/types/drill";
-import { MathWorkspace } from "@/components/math/MathWorkspace";
+
+const MathWorkspace = dynamic(
+  () => import("@/components/math/MathWorkspace").then((mod) => mod.MathWorkspace),
+  { ssr: true }
+);
 
 const CodeDashboard = dynamic(
   () => import("@/components/code/CodeDashboard").then((mod) => mod.CodeDashboard),
   { ssr: true }
 );
+const ReviewPanel = dynamic(
+  () => import("@/components/shell/ReviewPanel").then((mod) => mod.ReviewPanel),
+  { ssr: false }
+);
 import { StudioShell } from "@/components/shell/StudioShell";
-import { ReviewPanel } from "@/components/shell/ReviewPanel";
 import { DrillNotFoundCard } from "@/components/shell/DrillNotFoundCard";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { StatusMessage } from "@/hooks/types";

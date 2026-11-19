@@ -6,23 +6,23 @@ import { Reveal } from "@/components/motion/Reveal";
 import {
   Copy,
   Check,
-  Equal,
-  ChevronDown,
-  ChevronLeft,
-  ChevronRight,
-  RotateCcw,
-  Loader2,
-  PenLine,
 } from "lucide-react";
 import { Problem, MistakeTag, CheckResult } from "@/types/drill";
 import { MathBlock } from "@/components/MathRender";
 import { FormattedText } from "@/components/FormattedText";
-import { StepRow } from "@/components/StepRow";
 import { MathFigure } from "@/components/MathFigure";
 import { LineChoicePrompt, parseLineChoicePrompt } from "@/components/LineChoicePrompt";
 import { ChoiceOptionGroup } from "@/components/ChoiceOptionGroup";
 import { AnswerResultCard } from "@/components/AnswerResultCard";
 import { QuestionTimer } from "@/components/QuestionTimer";
+import {
+  ANSWER_FIELD_CONTAINER_CLASS,
+  InlineCheckButton,
+  PlainAnswerField,
+} from "@/components/workspace/PlainAnswerField";
+import { ProblemAssistSection } from "@/components/workspace/ProblemAssistSection";
+import { ProblemNavFooter } from "@/components/workspace/ProblemNavFooter";
+import { ProblemSelfEval } from "@/components/workspace/ProblemSelfEval";
 import type { MathLiveInputHandle } from "@/components/math/MathLiveInput";
 import { MathPalette } from "@/components/math/MathPalette";
 import {
@@ -34,17 +34,9 @@ import {
   writeMathInputMode,
 } from "@/lib/mathInput";
 import { isTouchPrimaryDevice } from "@/lib/mathPalette";
-import { hasCheckpointHint } from "@/lib/studioRules";
 import { hasSubstantiveAttempt } from "@/lib/reviewGuard";
 import { plainTitle } from "@/lib/titleText";
-import {
-  getChoiceResultStatus,
-  isChoiceInteractionLocked,
-  isChoiceQuestion,
-  isEditableEventTarget,
-  resolveChoiceKeyOption,
-  submitChoiceSelection,
-} from "@/lib/answerFeedback";
+import { useChoiceController } from "@/components/workspace/useChoiceController";
 
 const DynamicMathLiveInput = dynamic(
   () => import("@/components/math/MathLiveInput"),
@@ -123,8 +115,6 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
   const [showHint, setShowHint] = useState(false);
   const [showSolution, setShowSolution] = useState(() => shouldAutoReveal(problem));
   const [isChecking, setIsChecking] = useState(false);
-  const [checkingOptionId, setCheckingOptionId] = useState<string | null>(null);
-  const [choiceRetryUnlocked, setChoiceRetryUnlocked] = useState(false);
   // Equation set-up (display + plain-text) is hidden until the learner asks for it or finishes the problem.
   const [showSetup, setShowSetup] = useState(() => shouldAutoReveal(problem));
   const [inputMode, setInputMode] = useState<MathInputMode>("math");
@@ -132,6 +122,23 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
   const answerInputRef = useRef<HTMLInputElement | null>(null);
   const mathLiveRef = useRef<MathLiveInputHandle | null>(null);
   const stepsRef = useRef<HTMLDivElement | null>(null);
+
+  const {
+    isChoice,
+    choiceOptions,
+    checkingOptionId,
+    choiceLocked,
+    choiceResultStatus,
+    handleChoiceSelect,
+    unlockChoiceRetry,
+    resetChoiceState,
+  } = useChoiceController({
+    problem,
+    isChecking,
+    setIsChecking,
+    onInputChange,
+    onCheckAnswer,
+  });
 
   useEffect(() => {
     setInputMode(readMathInputMode());
@@ -166,11 +173,6 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
     setShowHint(false);
   }, [problem.id, problem.state.lastCheck?.verdict, problem.state.skipped]);
 
-  useEffect(() => {
-    setCheckingOptionId(null);
-    setChoiceRetryUnlocked(false);
-  }, [problem.id]);
-
   const toggleSetup = () => {
     if (!showSetup && (!answered || (!problem.display && !problem.plainText)) && onSetupRevealed) {
       onSetupRevealed();
@@ -187,7 +189,6 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
 
   const score = problem.state.score;
   const lastCheck: CheckResult | null | undefined = problem.state.lastCheck;
-  const isChoice = isChoiceQuestion(problem);
   const isMathLiveSupported = isMathLiveSupportedAnswerSpec(problem.answerSpec);
   const useMathLive = !isChoice && isMathLiveSupported && inputMode === "math";
   const placeholder = getProblemPlaceholder(problem);
@@ -261,18 +262,6 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
   const handleInsertLatex = useCallback((latex: string) => {
     mathLiveRef.current?.insertLatex(latex);
   }, []);
-  const choiceOptions = problem.answerSpec.options;
-  const choiceLocked = isChoiceInteractionLocked({
-    isChecking,
-    lastCheck,
-    skipped: problem.state.skipped,
-    retryUnlocked: choiceRetryUnlocked,
-  });
-  const choiceResultStatus = getChoiceResultStatus({
-    isChecking,
-    lastCheck,
-    skipped: problem.state.skipped,
-  });
 
   const lineChoiceData = useMemo(
     () =>
@@ -282,48 +271,9 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
     [isChoice, problem.prompt, problem.answerSpec.options]
   );
 
-  const handleChoiceSelect = useCallback(
-    async (optionId: string) => {
-      await submitChoiceSelection({
-        optionId,
-        disabled: choiceLocked,
-        isChecking,
-        onStart: (id) => {
-          setChoiceRetryUnlocked(false);
-          setCheckingOptionId(id);
-          setIsChecking(true);
-        },
-        onInputChange,
-        onCheckAnswer,
-        onFinish: () => {
-          setIsChecking(false);
-          setCheckingOptionId(null);
-        },
-      });
-    },
-    [choiceLocked, isChecking, onInputChange, onCheckAnswer]
-  );
-
-  useEffect(() => {
-    if (!isChoice || !choiceOptions?.length) return;
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.metaKey || e.ctrlKey || e.altKey) return;
-      if (!/^[1-9]$/.test(e.key)) return;
-      if (isEditableEventTarget(e.target)) return;
-      if (document.querySelector('[role="alertdialog"], [role="dialog"]')) return;
-      if (choiceLocked || isChecking) return;
-      const matched = resolveChoiceKeyOption(e.key, choiceOptions);
-      if (!matched) return;
-      e.preventDefault();
-      void handleChoiceSelect(matched.id);
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isChoice, choiceOptions, choiceLocked, isChecking, handleChoiceSelect]);
-
   const handleTryAgain = () => {
     if (isChoice) {
-      setChoiceRetryUnlocked(true);
+      unlockChoiceRetry();
       return;
     }
     if (useMathLive) {
@@ -349,26 +299,6 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
 
   const isLastQuestion =
     typeof totalQuestions === "number" && totalQuestions > 0 && index === totalQuestions - 1;
-
-  const fieldContainerClassName =
-    "relative flex items-center min-h-[2.75rem] rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 transition-colors focus-within:border-indigo-600 dark:focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-600/20 dark:focus-within:ring-indigo-500/25";
-
-  const renderInlineCheckButton = () => (
-    <button
-      type="button"
-      onClick={() => void triggerCheck()}
-      disabled={isChecking || !problem.state.userInput.trim()}
-      aria-label="Check answer"
-      title="Check (Enter)"
-      className="absolute right-1.5 top-1/2 -translate-y-1/2 inline-flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-700 disabled:opacity-40 disabled:hover:bg-indigo-600 dark:disabled:hover:bg-indigo-600 text-white transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 focus-visible:ring-offset-1"
-    >
-      {isChecking ? (
-        <Loader2 className="w-4 h-4 animate-spin" />
-      ) : (
-        <Equal className="w-4 h-4" />
-      )}
-    </button>
-  );
 
   const displayTitle = plainTitle(drillTitle);
 
@@ -456,8 +386,8 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
               }}
               className="space-y-2"
             >
-              <div className={fieldContainerClassName}>
-                {useMathLive ? (
+              {useMathLive ? (
+                <div className={ANSWER_FIELD_CONTAINER_CLASS}>
                   <DynamicMathLiveInput
                     value={problem.state.userInput}
                     placeholder={placeholder}
@@ -474,26 +404,23 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
                       return true;
                     }}
                   />
-                ) : (
-                  <input
-                    ref={answerInputRef}
-                    type="text"
-                    value={problem.state.userInput}
-                    onChange={(e) => onInputChange(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        void triggerCheck();
-                      }
-                    }}
-                    placeholder={placeholder}
-                    aria-label={`Answer for question ${problem.id}`}
-                    className="w-full h-11 font-mono text-sm bg-transparent text-zinc-900 dark:text-zinc-100 pl-3.5 pr-12 py-2 focus:outline-none placeholder:font-sans placeholder:text-zinc-400 dark:placeholder:text-zinc-500"
+                  <InlineCheckButton
+                    onClick={() => void triggerCheck()}
+                    disabled={isChecking || !problem.state.userInput.trim()}
+                    isChecking={isChecking}
                   />
-                )}
-
-                {renderInlineCheckButton()}
-              </div>
+                </div>
+              ) : (
+                <PlainAnswerField
+                  inputRef={answerInputRef}
+                  value={problem.state.userInput}
+                  onChange={onInputChange}
+                  onCheck={() => void triggerCheck()}
+                  placeholder={placeholder}
+                  aria-label={`Answer for question ${problem.id}`}
+                  isChecking={isChecking}
+                />
+              )}
 
               <MathPalette
                 inputMode={inputMode}
@@ -511,25 +438,15 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
           )}
 
           {!isChoice && !isMathLiveSupported && (
-            <div className={fieldContainerClassName}>
-              <input
-                ref={answerInputRef}
-                type="text"
-                value={problem.state.userInput}
-                onChange={(e) => onInputChange(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    void triggerCheck();
-                  }
-                }}
-                placeholder={placeholder}
-                aria-label={`Answer for question ${problem.id}`}
-                className="w-full h-11 font-mono text-sm bg-transparent text-zinc-900 dark:text-zinc-100 pl-3.5 pr-12 py-2 focus:outline-none placeholder:font-sans placeholder:text-zinc-400 dark:placeholder:text-zinc-500"
-              />
-
-              {renderInlineCheckButton()}
-            </div>
+            <PlainAnswerField
+              inputRef={answerInputRef}
+              value={problem.state.userInput}
+              onChange={onInputChange}
+              onCheck={() => void triggerCheck()}
+              placeholder={placeholder}
+              aria-label={`Answer for question ${problem.id}`}
+              isChecking={isChecking}
+            />
           )}
 
           {/* 4. Calm Result Card directly under the answer area */}
@@ -548,301 +465,117 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
         </div>
 
         {/* 5. Quiet secondary actions: Reset / equation set-up / hint / steps / skip */}
-        <div className="space-y-3 pt-1">
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-zinc-500 dark:text-zinc-400">
-            {hasAttempt && (
-              <button
-                type="button"
-                onClick={() => {
-                  setChoiceRetryUnlocked(false);
-                  setCheckingOptionId(null);
-                  onResetProblem();
-                }}
-                className="inline-flex items-center gap-1.5 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
-              >
-                <RotateCcw className="w-3.5 h-3.5" />
-                <span>Reset</span>
-              </button>
-            )}
-
-            {hasSetup && (
-              <button
-                type="button"
-                onClick={toggleSetup}
-                aria-expanded={showSetup}
-                title={
-                  setupUnopenedUnattempted
-                    ? "Opening before checking counts as assisted"
-                    : undefined
-                }
-                className="inline-flex items-center gap-1 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
-              >
-                <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${showSetup ? "rotate-180" : ""}`} />
-                <span>{showSetup ? "Hide equation set-up" : "Show equation set-up"}</span>
-              </button>
-            )}
-
-            {hasCheckpointHint(problem.checkpointHint) && <button
-              type="button"
-              onClick={() => {
-                if (!showHint && onHintRevealed) {
-                  onHintRevealed();
-                }
-                setShowHint(!showHint);
-              }}
-              aria-expanded={showHint}
-              className="inline-flex items-center gap-1 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
-            >
-              <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${showHint ? "rotate-180" : ""}`} />
-              <span>{showHint ? "Hide hint" : "Hint"}</span>
-            </button>}
-
-            <button
-              type="button"
-              onClick={() => {
-                if (!showSolution && (!hasCorrectAttempt || !problem.steps?.length) && onSolutionRevealed) {
-                  onSolutionRevealed();
-                }
-                setShowSolution(!showSolution);
-              }}
-              aria-expanded={showSolution}
-              title={
-                stepsUnopenedUnattempted
-                  ? "Opening before checking counts as assisted"
-                  : undefined
-              }
-              className="inline-flex items-center gap-1 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
-            >
-              <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${showSolution ? "rotate-180" : ""}`} />
-              <span>{showSolution ? "Hide steps" : "Show steps"}</span>
-            </button>
-
-            {onSkip && !hasAttempt && (
-              <button
-                type="button"
-                onClick={() => {
+        <ProblemAssistSection
+          problem={problem}
+          hasAttempt={hasAttempt}
+          showHint={showHint}
+          onToggleHint={() => {
+            if (!showHint && onHintRevealed) {
+              onHintRevealed();
+            }
+            setShowHint(!showHint);
+          }}
+          showSolution={showSolution}
+          onToggleSolution={() => {
+            if (!showSolution && (!hasCorrectAttempt || !problem.steps?.length) && onSolutionRevealed) {
+              onSolutionRevealed();
+            }
+            setShowSolution(!showSolution);
+          }}
+          stepsUnopenedUnattempted={stepsUnopenedUnattempted}
+          stepsRef={stepsRef}
+          showStepsHeader={true}
+          activeStep={activeStep}
+          onToggleStepHighlight={onToggleStepHighlight}
+          onMarkDivergedStep={onMarkDivergedStep}
+          onReset={() => {
+            resetChoiceState();
+            onResetProblem();
+          }}
+          onSkip={
+            onSkip
+              ? () => {
                   if (!showHint && onHintRevealed) {
                     onHintRevealed();
                   }
                   setShowHint(true);
                   setShowSolution(true);
                   onSkip();
-                }}
-                className="inline-flex items-center gap-1 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors ml-auto"
-              >
-                <span>Skip</span>
-              </button>
-            )}
-          </div>
-
-          {/* Checkpoint Hint Disclosure */}
-          <Reveal show={Boolean(showHint && hasCheckpointHint(problem.checkpointHint))}>
-          {showHint && hasCheckpointHint(problem.checkpointHint) && (
-            <div className="border-l-2 border-amber-600 dark:border-amber-400 pl-3.5 py-1 text-sm text-zinc-700 dark:text-zinc-300">
-              <FormattedText text={problem.checkpointHint} />
-            </div>
-          )}
-          </Reveal>
-
-          {/* Equation Set-up Disclosure */}
-          <Reveal show={Boolean(hasSetup && showSetup)}>
-          {hasSetup && showSetup && (
-            <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 space-y-2.5">
-              {problem.display && (
-                <div className="overflow-x-auto overflow-y-hidden text-sm text-zinc-900 dark:text-zinc-100">
-                  <MathBlock latex={problem.display} />
+                }
+              : undefined
+          }
+          hasSetup={hasSetup}
+          showSetup={showSetup}
+          setupUnopenedUnattempted={setupUnopenedUnattempted}
+          onToggleSetup={toggleSetup}
+          setupDisclosure={
+            <Reveal show={Boolean(hasSetup && showSetup)}>
+              {hasSetup && showSetup && (
+                <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 space-y-2.5">
+                  {problem.display && (
+                    <div className="overflow-x-auto overflow-y-hidden text-sm text-zinc-900 dark:text-zinc-100">
+                      <MathBlock latex={problem.display} />
+                    </div>
+                  )}
+                  {/* CAS copy row: only for typed answers; on choice questions the plain text is just the prompt. */}
+                  {problem.plainText && !isChoice && (
+                    <div
+                      className={`flex flex-wrap items-center justify-between gap-2 text-xs ${
+                        problem.display
+                          ? "pt-2.5 border-t border-zinc-200 dark:border-zinc-800"
+                          : ""
+                      }`}
+                    >
+                      <code className="font-mono text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 px-2 py-0.5 rounded">
+                        {problem.plainText}
+                      </code>
+                      <button
+                        type="button"
+                        onClick={handleCopyCas}
+                        className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-lg text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 transition-colors shrink-0"
+                      >
+                        {copied ? (
+                          <>
+                            <Check className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
+                            <span>Copied</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-3.5 h-3.5" />
+                            <span>Copy</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
-              {/* CAS copy row: only for typed answers; on choice questions the plain text is just the prompt. */}
-              {problem.plainText && !isChoice && (
-                <div
-                  className={`flex flex-wrap items-center justify-between gap-2 text-xs ${
-                    problem.display
-                      ? "pt-2.5 border-t border-zinc-200 dark:border-zinc-800"
-                      : ""
-                  }`}
-                >
-                  <code className="font-mono text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 px-2 py-0.5 rounded">
-                    {problem.plainText}
-                  </code>
-                  <button
-                    type="button"
-                    onClick={handleCopyCas}
-                    className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-lg text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 transition-colors shrink-0"
-                  >
-                    {copied ? (
-                      <>
-                        <Check className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
-                        <span>Copied</span>
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="w-3.5 h-3.5" />
-                        <span>Copy</span>
-                      </>
-                    )}
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-          </Reveal>
-
-          {/* Step-by-Step Derivation Disclosure */}
-          <Reveal show={Boolean(showSolution)}>
-          {showSolution && (
-            <div
-              ref={stepsRef}
-              className={`bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 space-y-3 ${
-                activeStep !== null ? "has-active" : ""
-              }`}
-            >
-              <div className="flex flex-wrap justify-between items-center gap-2 pb-2 border-b border-zinc-200 dark:border-zinc-800 text-xs text-zinc-500 dark:text-zinc-400">
-                <span className="font-medium">Steps</span>
-                {problem.answerDisplay && (
-                  <span>
-                    Answer:{" "}
-                    <strong className="text-zinc-900 dark:text-zinc-100 font-semibold">
-                      <FormattedText text={`$${problem.answerDisplay}$`} />
-                    </strong>
-                  </span>
-                )}
-              </div>
-              <div>
-                {(problem.steps || []).map((st, sIdx) => (
-                  <StepRow
-                    key={sIdx}
-                    step={st}
-                    index={sIdx}
-                    isActive={activeStep === sIdx}
-                    isDiverged={problem.state.divergedStep === sIdx}
-                    onToggleHighlight={() => onToggleStepHighlight(sIdx)}
-                    onMarkDiverged={() => onMarkDivergedStep(sIdx)}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-          </Reveal>
-        </div>
+            </Reveal>
+          }
+        />
 
         {/* 6. Self-score, mistake tags & mistake note — shown ONLY after an attempt */}
-        {hasAttempt && (
-          <div className="pt-4 border-t border-zinc-200 dark:border-zinc-800 space-y-3 text-xs text-zinc-500 dark:text-zinc-400">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="flex items-center gap-1.5">
-                <span className="mr-1">Self-score:</span>
-                {[
-                  {
-                    val: 1,
-                    label: "1.0",
-                    activeCls:
-                      "border-emerald-700 dark:border-emerald-400 text-emerald-700 dark:text-emerald-400 font-semibold bg-zinc-50 dark:bg-zinc-950",
-                  },
-                  {
-                    val: 0.5,
-                    label: "0.5",
-                    activeCls:
-                      "border-amber-700 dark:border-amber-400 text-amber-700 dark:text-amber-400 font-semibold bg-zinc-50 dark:bg-zinc-950",
-                  },
-                  {
-                    val: 0,
-                    label: "0",
-                    activeCls:
-                      "border-rose-600 dark:border-rose-400 text-rose-600 dark:text-rose-400 font-semibold bg-zinc-50 dark:bg-zinc-950",
-                  },
-                ].map((btn) => (
-                  <button
-                    key={btn.val}
-                    type="button"
-                    onClick={() => onSetScore(btn.val)}
-                    aria-pressed={score === btn.val}
-                    className={`h-7 px-2.5 rounded-lg font-mono border transition-colors ${
-                      score === btn.val
-                        ? btn.activeCls
-                        : "bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600"
-                    }`}
-                  >
-                    {btn.label}
-                  </button>
-                ))}
-              </div>
-
-              {mistakeTags.length > 0 && (
-                <div className="flex flex-wrap items-center gap-1.5">
-                  <span className="mr-1">Mistake:</span>
-                  {mistakeTags.map((t) => {
-                    const hasTag = problem.state.mistakes.includes(t.id);
-                    return (
-                      <button
-                        key={t.id}
-                        type="button"
-                        onClick={() => onToggleMistakeTag(t.id)}
-                        aria-pressed={hasTag}
-                        className={`min-h-[28px] py-1 px-2.5 rounded-full text-xs border transition-colors inline-flex items-center ${
-                          hasTag
-                            ? "border-rose-600 dark:border-rose-400 text-rose-700 dark:text-rose-300 bg-zinc-50 dark:bg-zinc-950 font-semibold"
-                            : "bg-white dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600"
-                        }`}
-                      >
-                        <FormattedText text={t.label} />
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-
-            <div className="flex items-center gap-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3 py-2 transition-colors focus-within:border-indigo-600 dark:focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-600/20 dark:focus-within:ring-indigo-400/25">
-              <PenLine className="w-3.5 h-3.5 text-zinc-500 dark:text-zinc-400 shrink-0" />
-              <input
-                type="text"
-                value={problem.state.mistakeNote || ""}
-                onChange={(e) => onMistakeNoteChange(e.target.value)}
-                aria-label={`Note for question ${index + 1}`}
-                placeholder="Note what went wrong (optional)…"
-                className="w-full bg-transparent text-xs text-zinc-800 dark:text-zinc-200 placeholder:text-zinc-500 dark:placeholder:text-zinc-400 focus:outline-none"
-              />
-            </div>
-          </div>
-        )}
+        <ProblemSelfEval
+          hasAttempt={hasAttempt}
+          score={score}
+          mistakes={problem.state.mistakes}
+          mistakeNote={problem.state.mistakeNote}
+          mistakeTags={mistakeTags}
+          noteAriaLabel={`Note for question ${index + 1}`}
+          onSetScore={onSetScore}
+          onToggleMistakeTag={onToggleMistakeTag}
+          onMistakeNoteChange={onMistakeNoteChange}
+        />
       </article>
 
       {/* Quiet question navigation footer */}
-      {(onPrevQuestion || onNextQuestion || onOpenReview) && (
-        <div className="flex items-center justify-between px-1 text-xs text-zinc-500 dark:text-zinc-400">
-          <button
-            type="button"
-            onClick={onPrevQuestion}
-            disabled={index === 0}
-            className="inline-flex items-center gap-1 py-1.5 hover:text-zinc-900 dark:hover:text-zinc-100 disabled:opacity-30 disabled:pointer-events-none transition-colors"
-          >
-            <ChevronLeft className="w-4 h-4" />
-            <span>Previous</span>
-          </button>
-
-          {isLastQuestion && onOpenReview ? (
-            <button
-              type="button"
-              onClick={onOpenReview}
-              className="inline-flex items-center gap-1 py-1.5 font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
-            >
-              <span>Review &amp; sync</span>
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={onNextQuestion}
-              disabled={isLastQuestion}
-              className="inline-flex items-center gap-1 py-1.5 hover:text-zinc-900 dark:hover:text-zinc-100 disabled:opacity-30 disabled:pointer-events-none transition-colors"
-            >
-              <span>Next</span>
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          )}
-        </div>
-      )}
+      <ProblemNavFooter
+        index={index}
+        isLastQuestion={isLastQuestion}
+        onPrevQuestion={onPrevQuestion}
+        onNextQuestion={onNextQuestion}
+        onOpenReview={onOpenReview}
+      />
     </div>
   );
 };

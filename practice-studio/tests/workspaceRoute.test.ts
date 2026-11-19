@@ -4,6 +4,9 @@ import os from "node:os";
 import path from "node:path";
 import { NextRequest } from "next/server";
 import { GET, POST, PUT } from "../src/app/api/workspace/route";
+import { GET as drillGET } from "../src/app/api/drill/route";
+import { POST as runTestsPOST } from "../src/app/api/run-tests/route";
+import { GET as labGET } from "../src/app/api/lab/route";
 
 function makeGetReq(params: Record<string, string>): NextRequest {
   const url = new URL("http://127.0.0.1:3000/api/workspace");
@@ -263,7 +266,7 @@ async function main() {
       assert.equal(JSON.stringify(json).includes(repoRoot), false);
     }
 
-    // 12. Pilot mode scopes GET/PUT to pilot/workspace/<drillId>/
+    // 12. Pilot mode scopes GET/PUT to pilot/workspace/<drillId>/ and maps client-sent drills/workspace/<id>/... to pilot/workspace/<id>/... (C-03)
     {
       process.env.LEARNINGOS_PILOT = "1";
       const resPilotOk = await GET(makeGetReq({ file: pilotWorkspaceFileRel, drillId }));
@@ -271,15 +274,204 @@ async function main() {
       const pilotJson = (await resPilotOk.json()) as Record<string, unknown>;
       assert.equal(pilotJson.content, "// pilot starter\n");
 
-      const resNonPilotBlocked = await GET(makeGetReq({ file: workspaceFileRel, drillId }));
+      // Client-sent drills/workspace/<id>/... maps to pilot/workspace/<id>/... (never reads non-pilot workspace)
+      const resMappedGet = await GET(makeGetReq({ file: workspaceFileRel, drillId }));
       assert.equal(
-        resNonPilotBlocked.status,
+        resMappedGet.status,
+        200,
+        "GET client-sent drills/workspace/<id>/... in pilot mode must map to pilot dir"
+      );
+      const mappedGetJson = (await resMappedGet.json()) as Record<string, unknown>;
+      assert.equal(
+        mappedGetJson.content,
+        "// pilot starter\n",
+        "Mapped GET in pilot mode must read pilot file, not non-pilot file"
+      );
+
+      const nonPilotBefore = fs.readFileSync(validFilePath, "utf-8");
+      const pilotUpdatedCode = "function solve(x) { return x; }\nmodule.exports = { solve };\n";
+      const resMappedPut = await PUT(
+        makeJsonReq("PUT", {
+          drillId,
+          file: workspaceFileRel,
+          content: pilotUpdatedCode,
+        })
+      );
+      assert.equal(
+        resMappedPut.status,
+        200,
+        "PUT client-sent drills/workspace/<id>/... in pilot mode must map to pilot dir"
+      );
+      assert.equal(
+        fs.readFileSync(path.join(repoRoot, pilotWorkspaceFileRel), "utf-8"),
+        pilotUpdatedCode,
+        "Mapped PUT in pilot mode must write to pilot/workspace/<id>/..."
+      );
+      assert.equal(
+        fs.readFileSync(validFilePath, "utf-8"),
+        nonPilotBefore,
+        "Mapped PUT in pilot mode must never modify real drills/workspace/<id>/..."
+      );
+
+      // Absolute path or .. traversal to real drills/workspace in pilot mode is still blocked (403)
+      const resAbsNonPilot = await GET(makeGetReq({ file: validFilePath, drillId }));
+      assert.equal(
+        resAbsNonPilot.status,
         403,
-        "GET drills/workspace file in pilot mode must return 403"
+        "GET absolute drills/workspace path in pilot mode must return 403"
+      );
+      const resTraversalNonPilot = await GET(
+        makeGetReq({
+          file: `pilot/workspace/${drillId}/../../../drills/workspace/${drillId}/Q01_solve.js`,
+          drillId,
+        })
+      );
+      assert.equal(
+        resTraversalNonPilot.status,
+        403,
+        "GET traversal to drills/workspace in pilot mode must return 403"
       );
     }
 
-    console.log("workspaceRoute tests passed (12 security & functional assertions)");
+    // 13. /api/drill, /api/run-tests, and /api/lab respect LEARNINGOS_PILOT (C-03)
+    {
+      // Write a broken solution in non-pilot workspace and a passing solution in pilot workspace
+      fs.writeFileSync(
+        validFilePath,
+        "function solve() { return 999; }\nmodule.exports = { solve };\n",
+        "utf-8"
+      );
+      fs.writeFileSync(
+        path.join(repoRoot, pilotWorkspaceFileRel),
+        "function solve(x) { return x; }\nmodule.exports = { solve };\n",
+        "utf-8"
+      );
+
+      // Set up a synthetic lab under repoRoot/labs/<labId>
+      const labId = "LAB-PRG-T01-C01-88";
+      const labDir = path.join(repoRoot, "labs", labId);
+      fs.mkdirSync(path.join(labDir, "src"), { recursive: true });
+      fs.mkdirSync(path.join(labDir, "tests"), { recursive: true });
+      fs.writeFileSync(path.join(labDir, "src", "index.ts"), "export const x = 1;\n", "utf-8");
+      fs.writeFileSync(
+        path.join(labDir, "tests", "m1_basic.test.ts"),
+        'test("basic milestone test", () => {});\n',
+        "utf-8"
+      );
+      fs.writeFileSync(
+        path.join(labDir, "lab.config.json"),
+        JSON.stringify({
+          labId,
+          title: "Pilot Lab Path Test",
+          chapterCode: "PRG-T01-C01",
+          unitsUsed: ["PRG-T01-C01-U01"],
+          milestones: [
+            {
+              id: "M1",
+              title: "Milestone 1",
+              goal: "Test pilot lab paths",
+              mainFile: "src/index.ts",
+              visibleTests: "tests/m1_*.test.ts",
+            },
+          ],
+        }),
+        "utf-8"
+      );
+
+      // In pilot mode (LEARNINGOS_PILOT = "1"):
+      process.env.LEARNINGOS_PILOT = "1";
+
+      const drillPilotRes = await drillGET(
+        new NextRequest(`http://127.0.0.1:3000/api/drill?id=${encodeURIComponent(drillId)}`)
+      );
+      assert.equal(drillPilotRes.status, 200);
+      const drillPilotDoc = (await drillPilotRes.json()) as {
+        problems: Array<Record<string, unknown>>;
+      };
+      const q1Pilot = drillPilotDoc.problems[0];
+      assert.equal(q1Pilot.workspaceDir, pilotWsDir);
+      assert.equal(q1Pilot.workspaceFile, pilotWorkspaceFileRel);
+      assert.equal(q1Pilot.vscodeFolderUrl, `vscode://file/${pilotWsDir}`);
+      assert.ok(String(q1Pilot.vscodeUrl).includes("/pilot/workspace/"));
+
+      const runPilotRes = await runTestsPOST(
+        new NextRequest("http://127.0.0.1:3000/api/run-tests", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ drillId, problemId: "Q01" }),
+        })
+      );
+      assert.equal(runPilotRes.status, 200);
+      const runPilotReport = (await runPilotRes.json()) as { allPassed: boolean };
+      assert.equal(
+        runPilotReport.allPassed,
+        true,
+        "/api/run-tests in pilot mode must execute pilot/workspace code (which passes), not drills/workspace code (which returns 999)"
+      );
+
+      const labPilotRes = await labGET(
+        new NextRequest(`http://127.0.0.1:3000/api/lab?id=${encodeURIComponent(labId)}`)
+      );
+      assert.equal(labPilotRes.status, 200);
+      const labPilotDoc = (await labPilotRes.json()) as {
+        workspaceDir: string;
+        vscodeFolderUrl: string;
+        milestones: Array<{ vscodeUrl: string | null }>;
+      };
+      const expectedPilotLabDir = path.join(repoRoot, "pilot", "labs", labId);
+      assert.equal(labPilotDoc.workspaceDir, expectedPilotLabDir);
+      assert.equal(labPilotDoc.vscodeFolderUrl, `vscode://file${expectedPilotLabDir}`);
+      assert.equal(
+        labPilotDoc.milestones[0].vscodeUrl,
+        `vscode://file${path.join(expectedPilotLabDir, "src", "index.ts")}`
+      );
+
+      // In normal mode (LEARNINGOS_PILOT unset):
+      delete process.env.LEARNINGOS_PILOT;
+
+      const drillNormalRes = await drillGET(
+        new NextRequest(`http://127.0.0.1:3000/api/drill?id=${encodeURIComponent(drillId)}`)
+      );
+      assert.equal(drillNormalRes.status, 200);
+      const drillNormalDoc = (await drillNormalRes.json()) as {
+        problems: Array<Record<string, unknown>>;
+      };
+      assert.equal(drillNormalDoc.problems[0].workspaceDir, wsDir);
+      assert.equal(drillNormalDoc.problems[0].workspaceFile, workspaceFileRel);
+
+      const runNormalRes = await runTestsPOST(
+        new NextRequest("http://127.0.0.1:3000/api/run-tests", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ drillId, problemId: "Q01" }),
+        })
+      );
+      assert.equal(runNormalRes.status, 200);
+      const runNormalReport = (await runNormalRes.json()) as { allPassed: boolean };
+      assert.equal(
+        runNormalReport.allPassed,
+        false,
+        "/api/run-tests in normal mode must execute drills/workspace code (which returns 999 and fails)"
+      );
+
+      const labNormalRes = await labGET(
+        new NextRequest(`http://127.0.0.1:3000/api/lab?id=${encodeURIComponent(labId)}`)
+      );
+      assert.equal(labNormalRes.status, 200);
+      const labNormalDoc = (await labNormalRes.json()) as {
+        workspaceDir: string;
+        vscodeFolderUrl: string;
+        milestones: Array<{ vscodeUrl: string | null }>;
+      };
+      assert.equal(labNormalDoc.workspaceDir, labDir);
+      assert.equal(labNormalDoc.vscodeFolderUrl, `vscode://file${labDir}`);
+      assert.equal(
+        labNormalDoc.milestones[0].vscodeUrl,
+        `vscode://file${path.join(labDir, "src", "index.ts")}`
+      );
+    }
+
+    console.log("workspaceRoute tests passed (13 security & pilot-mode functional assertions)");
   } finally {
     if (prevRoot === undefined) delete process.env.LEARNINGOS_ROOT;
     else process.env.LEARNINGOS_ROOT = prevRoot;

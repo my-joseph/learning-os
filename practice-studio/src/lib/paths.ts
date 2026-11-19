@@ -100,6 +100,51 @@ export function getDrillWorkspaceDir(
   return path.join(getDrillWorkspacesDir(rootDir), drillId);
 }
 
+/** Base directory holding active project lab workspaces (`LABS_DIR`, else `pilot/labs` in pilot mode, else `labs`). */
+export function getLabWorkspacesDir(rootDir: string = getWorkspaceRoot()): string {
+  if (process.env.LABS_DIR) {
+    return path.resolve(process.env.LABS_DIR);
+  }
+  const sub = isPilotMode() ? path.join("pilot", "labs") : "labs";
+  return path.resolve(rootDir, sub);
+}
+
+/** Active workspace directory for a single lab (`<labWsBase>/<labId>`). */
+export function getLabWorkspaceDir(
+  labId: string,
+  rootDir: string = getWorkspaceRoot()
+): string | null {
+  if (!isSafeId(labId)) return null;
+  return path.join(getLabWorkspacesDir(rootDir), labId);
+}
+
+/**
+ * Maps a relative workspace file path (`drills/workspace/<drillId>/...` or
+ * `pilot/workspace/<drillId>/...`) to the active workspace directory for the
+ * current mode (`pilot/workspace/<drillId>/...` in pilot mode, else
+ * `drills/workspace/<drillId>/...`). Leaves other paths unchanged so
+ * traversal/escape checks can reject them.
+ */
+export function remapWorkspaceFileForMode(
+  relOrAbs: string,
+  drillId: string
+): string {
+  if (typeof relOrAbs !== "string" || !isSafeId(drillId)) return relOrAbs;
+  const trimmed = relOrAbs.trim();
+  if (!trimmed || path.isAbsolute(trimmed)) return relOrAbs;
+  const normalized = trimmed.replace(/\\/g, "/").replace(/^\.\/+/, "");
+  const activePrefix = isPilotMode()
+    ? `pilot/workspace/${drillId}/`
+    : `drills/workspace/${drillId}/`;
+  const altPrefix = isPilotMode()
+    ? `drills/workspace/${drillId}/`
+    : `pilot/workspace/${drillId}/`;
+  if (normalized.startsWith(altPrefix)) {
+    return activePrefix + normalized.slice(altPrefix.length);
+  }
+  return relOrAbs;
+}
+
 function isStrictlyInsideDir(baseDir: string, targetPath: string): boolean {
   const rel = path.relative(baseDir, targetPath);
   return rel !== "" && !rel.startsWith("..") && !path.isAbsolute(rel);
@@ -123,7 +168,8 @@ export function resolveInsideDrillWorkspace(
   if (!wsDir) return null;
 
   const root = path.resolve(rootDir);
-  const candidate = path.resolve(root, relOrAbs);
+  const mappedRelOrAbs = remapWorkspaceFileForMode(relOrAbs, drillId);
+  const candidate = path.resolve(root, mappedRelOrAbs);
   if (!isStrictlyInsideDir(wsDir, candidate)) return null;
 
   const rel = path.relative(wsDir, candidate);

@@ -7,7 +7,7 @@ import {
   getWorkspaceRoot,
   isSafeId,
   loadProblemFromDisk,
-  resolveInsideRoot,
+  resolveInsideDrillWorkspace,
 } from "@/lib/paths";
 import { sanitizeCodeCheckError } from "@/lib/codeStatus";
 
@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
 
     // Workspace-backed PRG tests always execute the source currently saved on disk.
     if (workspaceFile) {
-      const fullPath = resolveInsideRoot(workspaceFile, rootDir);
+      const fullPath = resolveInsideDrillWorkspace(workspaceFile, drillId, rootDir);
       if (!fullPath) return NextResponse.json({ error: "Workspace file path is invalid" }, { status: 403 });
       if (!fs.existsSync(fullPath)) {
         return NextResponse.json({ error: "Workspace file is missing; materialize the workspace first" }, { status: 404 });
