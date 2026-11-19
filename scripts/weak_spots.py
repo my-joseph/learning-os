@@ -23,6 +23,7 @@ import re
 from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import date, timedelta
+from urllib.parse import quote
 
 from code_engine.quality_checks import load_universal
 from progress_store import find_repo_root, item_score, progress_root
@@ -31,6 +32,9 @@ from progress_store import labs_root as default_labs_root
 MIN_MATCHES = 2
 CLOSE_AFTER = 2
 WINDOW = 5
+RECENT_WINDOW = 5
+FIXED_STREAK = 3
+FIXED_VISIBLE_DAYS = 1
 
 
 @dataclass
@@ -67,10 +71,10 @@ def _is_prg(doc: dict) -> bool:
 def _first_ts(state: dict, fallback: str) -> str:
     attempts = state.get("attempts") or []
     if attempts:
-        return attempts[0].get("ts", fallback)
+        return attempts[0].get("ts") or fallback
     reviews = state.get("reviews") or []
     if reviews:
-        return reviews[0].get("at", fallback)
+        return reviews[0].get("at") or reviews[0].get("ts") or fallback
     return fallback
 
 
@@ -489,6 +493,8 @@ def _load_titles() -> dict[str, str]:
 
 
 _TRAP_PREFIX = re.compile(r"^(?:t\d+-)?(?:c\d+-)?(?:u\d+-)?")
+_CHECK_PLUGIN_PREFIX = re.compile(r"^(?:@[^/]+/|[^/]+/)")
+_CHECK_ID_PREFIX = re.compile(r"^(?:qc|u)-(?:prg-(?:t\d+-)?(?:c\d+-)?(?:u\d+-)?)?", re.IGNORECASE)
 
 
 def trap_name(trap_id: str) -> str:
@@ -496,6 +502,228 @@ def trap_name(trap_id: str) -> str:
     words = _TRAP_PREFIX.sub("", trap_id.lower())
     words = re.sub(r"-trap$", "", words).replace("-", " ").strip()
     return words[:1].upper() + words[1:] if words else trap_id
+
+
+def load_prg_check_names() -> dict[str, str]:
+    """Load the canonical PRG check & ESLint plain-name map from `code_engine/check_names.json`."""
+    for path in (
+        os.path.join("code_engine", "check_names.json"),
+        os.path.join(find_repo_root(), "code_engine", "check_names.json"),
+    ):
+        if os.path.exists(path):
+            with open(path, encoding="utf-8") as f:
+                data = json.load(f)
+            if isinstance(data, dict):
+                return {str(k): str(v) for k, v in data.items() if isinstance(k, str) and isinstance(v, str) and v.strip()}
+    return {}
+
+
+def humanize_check_id(check_id: str) -> str:
+    """Fallback plain-language humanizer for an unmapped PRG check or ESLint rule id."""
+    cleaned = check_id.strip()
+    if not cleaned:
+        return ""
+    words = _CHECK_PLUGIN_PREFIX.sub("", cleaned)
+    words = _CHECK_ID_PREFIX.sub("", words)
+    words = re.sub(r"[-_]+", " ", words).strip().lower()
+    return words[:1].upper() + words[1:] if words else cleaned
+
+
+def prg_check_name(check_id: str, names_map: dict[str, str] | None = None) -> str:
+    """Short plain-language name for a PRG rubric check (`QC-*`, `U-*`) or ESLint rule."""
+    mapping = names_map if names_map is not None else load_prg_check_names()
+    if check_id in mapping:
+        return mapping[check_id]
+    return humanize_check_id(check_id)
+
+
+def plain_mistake_name(entry_id: str, subject: str, names_map: dict[str, str] | None = None) -> str:
+    """Plain-language name for a MTH trap tag or PRG check/lint rule id."""
+    if str(subject).upper() == "PRG":
+        return prg_check_name(entry_id, names_map)
+    return trap_name(entry_id)
+
+
+def _unit_matches_current(unit_code: str, current_unit: str | None) -> bool:
+    if not unit_code or not current_unit:
+        return False
+    return unit_code == current_unit or unit_code.startswith(current_unit + "-U")
+
+
+def _fallback_drill_href(drill_id: str | None, qid: str | None, subject: str) -> str | None:
+    if not drill_id:
+        return None
+    if drill_id.startswith("LAB-"):
+        return f"/code/lab/{drill_id}?m={quote(qid, safe='')}" if qid else f"/code/lab/{drill_id}"
+    prefix = "/code" if (subject == "PRG" or drill_id.startswith("DRL-PRG-")) else "/math"
+    return f"{prefix}/{drill_id}?q={quote(qid, safe='')}" if qid else f"{prefix}/{drill_id}"
+
+
+def _parse_iso_date(raw: str | None) -> date | None:
+    if not raw:
+        return None
+    cand = raw.strip()[:10]
+    try:
+        return date.fromisoformat(cand)
+    except ValueError:
+        return None
+
+
+def recent_mistakes(
+    items: list[Item],
+    *,
+    subject: str | None = None,
+    current_unit: str | None = None,
+    today: str | None = None,
+    due_counts: dict[str, int] | None = None,
+    titles: dict[str, str] | None = None,
+    check_sentences: dict[str, str] | None = None,
+    trap_descriptions: dict[str, str] | None = None,
+    check_names: dict[str, str] | None = None,
+) -> list[dict]:
+    """Build the workspace-scoped 'What I get wrong' list ranked by recent miss rate.
+
+    - Includes MTH traps and PRG rubric/lint signals the learner actually missed.
+    - Computes recent miss rate over the last `RECENT_WINDOW` (5) tries.
+    - Marks an entry 'fixed' when there is no miss in the last `FIXED_STREAK` (3) tries;
+      fixed entries remain visible for `FIXED_VISIBLE_DAYS` (1) day after the 3rd clean try,
+      then drop out.
+    - Ranks active entries before fixed entries, pinning `current_unit` entries first,
+      then by recent miss rate descending, recent misses descending, total matches descending,
+      most recent miss date descending, and id ascending.
+    """
+    norm_subject = subject.strip().upper() if isinstance(subject, str) and subject.strip() else None
+    today_date = _parse_iso_date(today) or date.today()
+    resolved_titles = titles if titles is not None else _load_titles()
+    if check_sentences is None:
+        _, _, _, check_sentences = _load_prg_vault_meta()
+    resolved_trap_desc = trap_descriptions if trap_descriptions is not None else _load_mth_trap_descriptions()
+    resolved_check_names = check_names if check_names is not None else load_prg_check_names()
+    resolved_due = due_counts or {}
+
+    entries: list[dict] = []
+
+    def _build_entry(
+        entry_id: str,
+        entry_subject: str,
+        tries: list[tuple[Item, bool]],
+        total_matches: int,
+    ) -> dict | None:
+        missed_items = [it for it, missed in tries if missed]
+        if not missed_items:
+            return None
+
+        is_fixed = len(tries) >= FIXED_STREAK and all(not m for _, m in tries[-FIXED_STREAK:])
+        fixed_at: str | None = None
+        if is_fixed:
+            last_miss_idx = max(idx for idx, (_, m) in enumerate(tries) if m)
+            fixed_item = tries[last_miss_idx + FIXED_STREAK][0]
+            fixed_at = fixed_item.ts[:10] if fixed_item.ts else None
+            fixed_date = _parse_iso_date(fixed_at)
+            if fixed_date is not None and (today_date - fixed_date).days > FIXED_VISIBLE_DAYS:
+                return None
+
+        recent = tries[-RECENT_WINDOW:]
+        recent_tries = len(recent)
+        recent_misses = sum(1 for _, m in recent if m)
+        recent_miss_rate = round(recent_misses / recent_tries, 4) if recent_tries else 0.0
+
+        units_missed = sorted({it.unit for it in missed_items if it.unit})
+        in_current_unit = bool(
+            current_unit and any(_unit_matches_current(u, current_unit) for u in units_missed)
+        )
+        latest_hit = missed_items[-1]
+        last_date = max((it.ts for it in missed_items), default="")[:10]
+        due_count = int(resolved_due.get(entry_id, 0))
+
+        if is_fixed:
+            practise_href = None
+        elif due_count > 0:
+            practise_href = f"/review?trap={quote(entry_id, safe='')}"
+        else:
+            practise_href = _fallback_drill_href(latest_hit.drill, latest_hit.pid, entry_subject)
+
+        primary_unit = (
+            next((u for u in units_missed if _unit_matches_current(u, current_unit)), None)
+            or (latest_hit.unit if latest_hit.unit else (units_missed[0] if units_missed else ""))
+        )
+        detail = (
+            check_sentences.get(entry_id, "")
+            if entry_subject == "PRG"
+            else resolved_trap_desc.get(entry_id, "")
+        )
+        row: dict = {
+            "id": entry_id,
+            "name": plain_mistake_name(entry_id, entry_subject, resolved_check_names),
+            "subject": entry_subject,
+            "status": "fixed" if is_fixed else "active",
+            "recentMisses": recent_misses,
+            "recentTries": recent_tries,
+            "recentMissRate": recent_miss_rate,
+            "matches": total_matches,
+            "drills": len({it.drill for it in missed_items if it.drill}),
+            "last": last_date,
+            "fixedAt": fixed_at,
+            "units": units_missed,
+            "unitCode": primary_unit,
+            "unitTitle": resolved_titles.get(primary_unit, ""),
+            "inCurrentUnit": in_current_unit,
+            "dueCount": due_count,
+            "latestDrillId": latest_hit.drill or None,
+            "latestQid": latest_hit.pid or None,
+            "practiseHref": practise_href,
+        }
+        if detail:
+            row["detail"] = detail
+        return row
+
+    if norm_subject in (None, "MTH"):
+        mth_items = [i for i in items if i.subject != "PRG"]
+        missed_mth_traps = sorted({t for i in mth_items for t in i.matched if t})
+        for trap in missed_mth_traps:
+            tries: list[tuple[Item, bool]] = []
+            total_matches = 0
+            for it in mth_items:
+                if trap in it.matched:
+                    tries.append((it, True))
+                    total_matches += it.matched.count(trap)
+                elif it.trap == trap and not it.skipped and it.score == 1.0:
+                    tries.append((it, False))
+            entry = _build_entry(trap, "MTH", tries, total_matches)
+            if entry is not None:
+                entries.append(entry)
+
+    if norm_subject in (None, "PRG"):
+        prg_items = [i for i in items if i.subject == "PRG"]
+        missed_prg_sigs = sorted({s for i in prg_items for s in i.signals if s})
+        for sig in missed_prg_sigs:
+            tries = []
+            total_matches = 0
+            for it in prg_items:
+                if sig in it.signals:
+                    tries.append((it, True))
+                    total_matches += 1
+                elif it.passed and not it.assisted and not it.skipped and _is_prg_signal_applicable(sig, it):
+                    tries.append((it, False))
+            entry = _build_entry(sig, "PRG", tries, total_matches)
+            if entry is not None:
+                entries.append(entry)
+
+    # Deterministic multi-pass stable sort:
+    # active before fixed, current unit pinned first, recentMissRate desc, recentMisses desc,
+    # total matches desc, last date desc, id asc.
+    entries.sort(key=lambda e: e["id"])
+    entries.sort(key=lambda e: e["last"], reverse=True)
+    entries.sort(
+        key=lambda e: (
+            1 if e["status"] == "fixed" else 0,
+            0 if e["inCurrentUnit"] else 1,
+            -e["recentMissRate"],
+            -e["recentMisses"],
+            -e["matches"],
+        )
+    )
+    return entries
 
 
 def _load_mth_trap_descriptions() -> dict[str, str]:

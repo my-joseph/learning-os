@@ -78,7 +78,28 @@ def parse_scope(raw: str | None) -> tuple[str, str] | None:
     raise ValueError(f"Unknown scope kind {kind!r}")
 
 
-def matches_scope(item: dict[str, Any], parsed_scope: tuple[str, str] | None) -> bool:
+def _build_tags_by_key(loaded: list[weak_spots.Item]) -> dict[str, set[str]]:
+    """Map `<drillId>/<qid>` -> set of all trap tags and PRG check/lint signals observed on the item."""
+    out: dict[str, set[str]] = {}
+    for it in loaded:
+        if not it.drill or not it.pid:
+            continue
+        tags: set[str] = set()
+        if it.trap:
+            tags.add(it.trap)
+        tags.update(t for t in it.matched if t)
+        tags.update(s for s in it.signals if s)
+        if tags:
+            out.setdefault(item_key(it.drill, it.pid), set()).update(tags)
+    return out
+
+
+def matches_scope(
+    item: dict[str, Any],
+    parsed_scope: tuple[str, str] | None,
+    *,
+    tags_by_key: dict[str, set[str]] | None = None,
+) -> bool:
     """Return True when `item` matches `parsed_scope` (or when `parsed_scope` is None)."""
     if parsed_scope is None:
         return True
@@ -91,7 +112,12 @@ def matches_scope(item: dict[str, Any], parsed_scope: tuple[str, str] | None) ->
         unit = str(item.get("unitCode") or "")
         return unit == value or unit.startswith(f"{value}-U")
     if kind == "trap":
-        return item.get("commonTrapTag") == value
+        if item.get("commonTrapTag") == value:
+            return True
+        if tags_by_key:
+            key = item_key(str(item.get("drillId") or ""), str(item.get("qid") or ""))
+            return value in tags_by_key.get(key, ())
+        return False
     if kind == "drill":
         return str(item.get("drillId") or "") == value
     return False
@@ -628,12 +654,51 @@ def get_due_items(
     today_str = _normalize_date(today)
     resolved_progress = progress_dir or progress_root(repo_root)
     loaded = weak_spots.load_items(data_root=data_root, progress_dir=resolved_progress, labs_root=labs_root)
+    tags_by_key = _build_tags_by_key(loaded)
     open_weak_traps = get_open_weak_traps(loaded)
     backfilled = _build_schedule_from_loaded(loaded)
     saved = load_saved_review_items(progress_dir=resolved_progress, repo_root=repo_root)
     schedule = _merge_saved_schedule(backfilled, saved)
-    due = [it for it in schedule.values() if it["dueDate"] <= today_str and matches_scope(it, parsed_scope)]
+    due = [
+        it
+        for it in schedule.values()
+        if it["dueDate"] <= today_str and matches_scope(it, parsed_scope, tags_by_key=tags_by_key)
+    ]
     return interleave_due_items(due, limit=limit, open_weak_traps=open_weak_traps)
+
+
+def due_counts_by_trap(
+    *,
+    today: str | None = None,
+    loaded: list[weak_spots.Item] | None = None,
+    data_root: str | None = None,
+    progress_dir: str | None = None,
+    labs_root: str | None = None,
+    repo_root: str | None = None,
+) -> dict[str, int]:
+    """Count how many due review items (`dueDate <= today`) match each trap tag or PRG check/lint signal."""
+    today_str = _normalize_date(today)
+    resolved_progress = progress_dir or progress_root(repo_root)
+    items_loaded = (
+        loaded
+        if loaded is not None
+        else weak_spots.load_items(data_root=data_root, progress_dir=resolved_progress, labs_root=labs_root)
+    )
+    tags_by_key = _build_tags_by_key(items_loaded)
+    backfilled = _build_schedule_from_loaded(items_loaded)
+    saved = load_saved_review_items(progress_dir=resolved_progress, repo_root=repo_root)
+    schedule = _merge_saved_schedule(backfilled, saved)
+
+    counts: Counter[str] = Counter()
+    for key, it in schedule.items():
+        if it["dueDate"] > today_str:
+            continue
+        item_tags: set[str] = set(tags_by_key.get(key, ()))
+        if isinstance(it.get("commonTrapTag"), str) and it["commonTrapTag"]:
+            item_tags.add(it["commonTrapTag"])
+        for tag in item_tags:
+            counts[tag] += 1
+    return dict(counts)
 
 
 def record_review_result(
@@ -740,6 +805,7 @@ def main(argv: list[str] | None = None) -> int:
     today_str = _normalize_date(args.today)
 
     loaded = weak_spots.load_items(data_root=args.data_root, progress_dir=resolved_progress)
+    tags_by_key = _build_tags_by_key(loaded)
     open_weak_traps = get_open_weak_traps(loaded)
     backfilled = _build_schedule_from_loaded(loaded)
 
@@ -755,7 +821,7 @@ def main(argv: list[str] | None = None) -> int:
         "MTH": sum(1 for it in all_due if it["subject"] == "MTH"),
         "PRG": sum(1 for it in all_due if it["subject"] == "PRG"),
     }
-    scoped_due = [it for it in all_due if matches_scope(it, parsed_scope)]
+    scoped_due = [it for it in all_due if matches_scope(it, parsed_scope, tags_by_key=tags_by_key)]
     due_items = interleave_due_items(
         scoped_due,
         limit=args.limit,
@@ -783,7 +849,7 @@ def main(argv: list[str] | None = None) -> int:
             print(_format_text_report(due_items, due_only=True, today=today_str))
         return 0
 
-    all_items = [it for it in schedule.values() if matches_scope(it, parsed_scope)]
+    all_items = [it for it in schedule.values() if matches_scope(it, parsed_scope, tags_by_key=tags_by_key)]
     if args.limit is not None and args.limit >= 0:
         all_items = all_items[: args.limit]
     if args.as_json:

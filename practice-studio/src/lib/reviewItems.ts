@@ -127,8 +127,11 @@ export function parseReviewScope(raw?: string | null): ParsedReviewScope | null 
 }
 
 export function matchesReviewScope(
-  item: Pick<ReviewItem, "subject" | "unitCode" | "commonTrapTag" | "drillId">,
-  parsedScope: ParsedReviewScope | null
+  item: Pick<ReviewItem, "subject" | "unitCode" | "commonTrapTag" | "drillId"> & {
+    qid?: string;
+  },
+  parsedScope: ParsedReviewScope | null,
+  tagsByKey?: ReadonlyMap<string, ReadonlySet<string>>
 ): boolean {
   if (!parsedScope) return true;
   const { kind, value } = parsedScope;
@@ -139,8 +142,13 @@ export function matchesReviewScope(
       return item.unitCode === value;
     case "chapter":
       return item.unitCode === value || item.unitCode.startsWith(`${value}-U`);
-    case "trap":
-      return item.commonTrapTag === value;
+    case "trap": {
+      if (item.commonTrapTag === value) return true;
+      if (tagsByKey && item.drillId && item.qid) {
+        return Boolean(tagsByKey.get(reviewItemKey(item.drillId, item.qid))?.has(value));
+      }
+      return false;
+    }
     case "drill":
       return item.drillId === value;
   }
@@ -1360,6 +1368,29 @@ export function getReviewItemsSchedule(
   return mergeSavedSchedule(backfilled, saved);
 }
 
+function buildTagsByKeyFromLoaded(
+  loaded: ReadonlyArray<LoadedProgressItem>
+): Map<string, Set<string>> {
+  const out = new Map<string, Set<string>>();
+  for (const it of loaded) {
+    if (!it.drillId || !it.qid) continue;
+    const key = reviewItemKey(it.drillId, it.qid);
+    let tags = out.get(key);
+    if (!tags) {
+      tags = new Set<string>();
+      out.set(key, tags);
+    }
+    if (it.trap) tags.add(it.trap);
+    for (const m of it.matched) {
+      if (m) tags.add(m);
+    }
+    for (const s of it.signals) {
+      if (s) tags.add(s);
+    }
+  }
+  return out;
+}
+
 export function getDueReviewItems(options?: ReviewStoreOptions): DueReviewItemsResult {
   const parsedScope = parseReviewScope(options?.scope);
   const today = normalizeReviewDate(options?.today);
@@ -1367,6 +1398,7 @@ export function getDueReviewItems(options?: ReviewStoreOptions): DueReviewItemsR
   const progressDir = options?.progressDir ?? getProgressDir();
 
   const { loaded, drills } = loadProgressContext({ ...options, rootDir, progressDir });
+  const tagsByKey = buildTagsByKeyFromLoaded(loaded);
   const openWeakTraps = computeOpenWeakTrapsFromLoaded(loaded);
   const backfilled = buildScheduleFromLoaded(loaded);
   const saved = loadSavedReviewItems(progressDir);
@@ -1379,7 +1411,7 @@ export function getDueReviewItems(options?: ReviewStoreOptions): DueReviewItemsR
     PRG: allDue.filter((it) => it.subject === "PRG").length,
   };
 
-  const scopedAll = allItems.filter((it) => matchesReviewScope(it, parsedScope));
+  const scopedAll = allItems.filter((it) => matchesReviewScope(it, parsedScope, tagsByKey));
   const scopedDue = scopedAll.filter((it) => it.dueDate <= today);
   const futureDates = scopedAll
     .filter((it) => it.dueDate > today)
