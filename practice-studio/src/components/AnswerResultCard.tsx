@@ -35,6 +35,9 @@ export interface AnswerResultCardProps {
   nextLabel?: string;
   scheduleNote?: string | null;
   backLabel?: string;
+  retryLabel?: string;
+  retryAriaLabel?: string;
+  footnote?: string | null;
   titleOverride?: string;
   autoFocusPrimaryAction?: boolean;
   secondaryActions?: ResultCardSecondaryAction[];
@@ -70,6 +73,9 @@ export const AnswerResultCard: React.FC<AnswerResultCardProps> = ({
   nextLabel = "Next question",
   scheduleNote = null,
   backLabel,
+  retryLabel = "Try again",
+  retryAriaLabel,
+  footnote = null,
   titleOverride,
   autoFocusPrimaryAction = false,
   secondaryActions = [],
@@ -246,10 +252,11 @@ export const AnswerResultCard: React.FC<AnswerResultCardProps> = ({
                     ref={primaryBtnRef}
                     type="button"
                     onClick={onTryAgain}
+                    aria-label={retryAriaLabel || undefined}
                     data-review-primary-action={isReviewSession ? "true" : undefined}
                     className={actionButtonClass}
                   >
-                    <span>Try again</span>
+                    <span>{retryLabel}</span>
                   </button>
                 </div>
               )}
@@ -289,6 +296,12 @@ export const AnswerResultCard: React.FC<AnswerResultCardProps> = ({
                   </button>
                 ))}
               </div>
+            )}
+
+            {footnote && (
+              <p className="pl-10 text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
+                {footnote}
+              </p>
             )}
           </m.div>
         )}

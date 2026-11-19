@@ -53,6 +53,8 @@ export interface ProblemAssistSectionProps {
   setupUnopenedUnattempted?: boolean;
   onToggleSetup?: () => void;
   setupDisclosure?: React.ReactNode;
+  hideShowStepsButton?: boolean;
+  isPracticeOnly?: boolean;
 }
 
 /**
@@ -81,7 +83,10 @@ export const ProblemAssistSection: React.FC<ProblemAssistSectionProps> = ({
   setupUnopenedUnattempted = false,
   onToggleSetup,
   setupDisclosure,
+  hideShowStepsButton = false,
+  isPracticeOnly = false,
 }) => {
+  const canShowHint = Boolean(problem.hasHint || hasCheckpointHint(problem.checkpointHint));
   return (
     <div className="space-y-3 pt-1">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-zinc-500 dark:text-zinc-400 [&_button]:min-h-[32px] sm:[&_button]:min-h-0">
@@ -102,7 +107,7 @@ export const ProblemAssistSection: React.FC<ProblemAssistSectionProps> = ({
             onClick={onToggleSetup}
             aria-expanded={showSetup}
             title={
-              setupUnopenedUnattempted
+              !isPracticeOnly && setupUnopenedUnattempted
                 ? "Opening before checking counts as assisted"
                 : undefined
             }
@@ -117,7 +122,7 @@ export const ProblemAssistSection: React.FC<ProblemAssistSectionProps> = ({
           </button>
         )}
 
-        {hasCheckpointHint(problem.checkpointHint) && <button
+        {(canShowHint || hasCheckpointHint(problem.checkpointHint)) && <button
           type="button"
           onClick={onToggleHint}
           aria-expanded={showHint}
@@ -131,24 +136,26 @@ export const ProblemAssistSection: React.FC<ProblemAssistSectionProps> = ({
           <span>{showHint ? "Hide hint" : "Hint"}</span>
         </button>}
 
-        <button
-          type="button"
-          onClick={onToggleSolution}
-          aria-expanded={showSolution}
-          title={
-            stepsUnopenedUnattempted
-              ? "Opening before checking counts as assisted"
-              : undefined
-          }
-          className="inline-flex items-center gap-1 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
-        >
-          <ChevronDown
-            className={`w-3.5 h-3.5 transition-transform duration-200 ${
-              showSolution ? "rotate-180" : ""
-            }`}
-          />
-          <span>{showSolution ? "Hide steps" : "Show steps"}</span>
-        </button>
+        {!hideShowStepsButton && (
+          <button
+            type="button"
+            onClick={onToggleSolution}
+            aria-expanded={showSolution}
+            title={
+              !isPracticeOnly && stepsUnopenedUnattempted
+                ? "Opening before checking counts as assisted"
+                : undefined
+            }
+            className="inline-flex items-center gap-1 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+          >
+            <ChevronDown
+              className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                showSolution ? "rotate-180" : ""
+              }`}
+            />
+            <span>{showSolution ? "Hide steps" : "Show steps"}</span>
+          </button>
+        )}
 
         {onSkip && !hasAttempt && (
           <button

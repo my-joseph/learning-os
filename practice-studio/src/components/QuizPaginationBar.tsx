@@ -4,6 +4,7 @@ import React, { useEffect, useRef } from "react";
 import { ClipboardCheck } from "lucide-react";
 import { Problem } from "@/types/drill";
 import { Workspace } from "@/lib/routes";
+import { countPractisedSimilar, cycleOriginalAttempts } from "@/lib/similarTabs";
 import { LabMilestoneStepper } from "@/components/LabMilestoneStepper";
 
 interface QuizPaginationBarProps {
@@ -93,7 +94,9 @@ export const QuizPaginationBar: React.FC<QuizPaginationBarProps> = ({
             prob.state?.setupRevealedBeforeAnswer ||
               prob.state?.solutionRevealedBeforeAnswer ||
               (prob.state?.hintsRevealed ?? 0) > 0 ||
-              prob.state?.attempts?.some((a) => a.setupRevealed || a.solutionRevealed)
+              cycleOriginalAttempts(prob.state).some(
+                (a) => a.setupRevealed || a.solutionRevealed || a.exampleViewed
+              )
           );
           const isIndependentFull = hasScore && scoreVal >= 1 && !isAssisted && !isSkipped;
           const isPartialOrAssisted =
@@ -118,8 +121,12 @@ export const QuizPaginationBar: React.FC<QuizPaginationBarProps> = ({
             statusLabel = "Skipped";
           }
 
+          const practisedSimilar =
+            workspace !== "code" ? countPractisedSimilar(prob.state) : 0;
+          const similarSuffix =
+            practisedSimilar > 0 ? `, practised ${practisedSimilar} similar` : "";
           const activeRing = isActive ? ACTIVE_TILE_RING_CLS : INACTIVE_TILE_CLS;
-          const itemTitle = `${itemNoun} ${idx + 1} — ${statusLabel}`;
+          const itemTitle = `${itemNoun} ${idx + 1} — ${statusLabel}${similarSuffix}`;
 
           return (
             <button
