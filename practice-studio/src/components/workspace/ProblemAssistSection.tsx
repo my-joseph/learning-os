@@ -82,7 +82,7 @@ export const ProblemAssistSection: React.FC<ProblemAssistSectionProps> = ({
 }) => {
   return (
     <div className="space-y-3 pt-1">
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-zinc-500 dark:text-zinc-400">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-zinc-500 dark:text-zinc-400 [&_button]:min-h-[32px] sm:[&_button]:min-h-0">
         {hasAttempt && (
           <button
             type="button"

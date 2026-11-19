@@ -46,9 +46,11 @@ export const WorkedExampleView: React.FC<WorkedExampleViewProps> = ({
   useEffect(() => {
     const raf = requestAnimationFrame(() => {
       if (allRevealed) {
-        tryAgainBtnRef.current?.focus();
+        tryAgainBtnRef.current?.focus({ preventScroll: true });
+        tryAgainBtnRef.current?.scrollIntoView({ block: "nearest" });
       } else {
-        nextStepBtnRef.current?.focus();
+        nextStepBtnRef.current?.focus({ preventScroll: true });
+        nextStepBtnRef.current?.scrollIntoView({ block: "nearest" });
       }
     });
     return () => cancelAnimationFrame(raf);
@@ -138,6 +140,9 @@ export const WorkedExampleView: React.FC<WorkedExampleViewProps> = ({
               className="inline-flex items-center justify-center gap-1.5 min-h-[44px] sm:min-h-0 h-11 sm:h-9 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-700 text-white text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 focus-visible:ring-offset-1"
             >
               <span>Show next step</span>
+              <span className="text-indigo-100/80 tabular-nums">
+                Step {Math.min(revealedCount + 1, steps.length)} of {steps.length}
+              </span>
             </button>
             <button
               type="button"
