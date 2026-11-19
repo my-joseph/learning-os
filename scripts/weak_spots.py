@@ -52,6 +52,8 @@ class Item:
     signals: list[str] = field(default_factory=list)
     applicable_checks: set[str] = field(default_factory=set)
     lint_overrides: set[str] = field(default_factory=set)
+    revisit_note: str | None = None
+    state: dict = field(default_factory=dict)
 
 
 def _is_prg(doc: dict) -> bool:
@@ -72,16 +74,31 @@ def _first_ts(state: dict, fallback: str) -> str:
     return fallback
 
 
+def _is_assisted_state(state: dict) -> bool:
+    attempts = state.get("attempts") or []
+    return bool(
+        state.get("setupRevealedBeforeAnswer")
+        or state.get("solutionRevealedBeforeAnswer")
+        or (state.get("hintsRevealed") or 0) > 0
+        or any(isinstance(a, dict) and (a.get("setupRevealed") or a.get("solutionRevealed")) for a in attempts)
+    )
+
+
 def _prg_item_score(state: dict) -> float:
     if state.get("skipped"):
         return 0.0
+    assisted = _is_assisted_state(state)
     reviews = state.get("reviews") or []
     if reviews:
         if reviews[-1].get("verdict") == "pass":
-            return 1.0 if reviews[0].get("verdict") == "pass" else 0.5
+            raw = 1.0 if reviews[0].get("verdict") == "pass" else 0.5
+            return min(raw, 0.5) if assisted else raw
         return 0.0
     if state.get("lastTestReport") is not None or state.get("score") is not None:
         return 0.0
+    if state.get("attempts"):
+        sc, _ = _item_score(state)
+        return sc
     return -1.0
 
 
@@ -180,19 +197,24 @@ def load_items(
     for path in sorted(glob.glob(os.path.join(progress_dir, "*.json"))):
         with open(path, encoding="utf-8") as f:
             prog = json.load(f)
+        if not isinstance(prog, dict):
+            continue
         doc = drills.get(prog.get("drillId"))
         if not doc:
             continue
         is_prg = _is_prg(doc)
         lint_overrides = {o.get("rule") for o in (doc.get("lintOverrides") or []) if o.get("rule")}
-        fallback = prog.get("updatedAt", "")
+        fallback = prog.get("updatedAt", "") or (prog.get("sessionSummary") or {}).get("attemptDate") or ""
         for prob in doc.get("problems", []):
             state = (prog.get("problems") or {}).get(prob.get("id")) or {}
-            arch_key = prob.get("archetypeKey")
+            arch_key = prob.get("archetypeKey") or prob.get("templateKey")
+            raw_note = state.get("revisitNote")
+            revisit_note = raw_note.strip() if isinstance(raw_note, str) and raw_note.strip() else None
             if is_prg:
                 score = _prg_item_score(state)
                 if score < 0:
                     continue
+                assisted = _is_assisted_state(state)
                 reviews = state.get("reviews") or []
                 sigs: list[str] = []
                 for r in reviews:
@@ -213,15 +235,15 @@ def load_items(
                         pid=prob.get("id", ""),
                         level=level,
                         form=prob.get("archetype") or prob.get("codeType") or prob.get("form", ""),
-                        trap=prob.get("commonTrapTag"),
+                        trap=prob.get("commonTrapTag") or (sigs[0] if sigs else None),
                         archetype=arch_key,
                         ts=_first_ts(state, fallback),
                         score=score,
                         skipped=bool(state.get("skipped")),
-                        assisted=False,
+                        assisted=assisted,
                         matched=[],
                         subject="PRG",
-                        passed=bool(reviews and reviews[-1].get("verdict") == "pass"),
+                        passed=bool(reviews and reviews[-1].get("verdict") == "pass") or (score == 1.0),
                         signals=sigs,
                         applicable_checks=(
                             universal_ids | set(prob.get("qualityChecks") or [])
@@ -229,6 +251,8 @@ def load_items(
                             else universal_ids | prg_arch_checks.get(arch_key or "", set())
                         ),
                         lint_overrides=lint_overrides,
+                        revisit_note=revisit_note,
+                        state=dict(state),
                     )
                 )
             else:
@@ -251,6 +275,8 @@ def load_items(
                         matched=[a["matchedTrap"] for a in state.get("attempts") or [] if a.get("matchedTrap")],
                         subject="MTH",
                         passed=(score == 1.0),
+                        revisit_note=revisit_note,
+                        state=dict(state),
                     )
                 )
     return sorted(items, key=lambda i: i.ts)
@@ -338,40 +364,104 @@ def level_advice(items: list[Item]) -> dict[int, dict]:
 
 MASTERY_WINDOW = 10
 REVIEW_DAYS = {1: 2, 2: 5, 3: 17, 4: 45}  # rules/01 §8 intervals (mid-points)
+L4_CHALLENGE_CAP_REASON = "needs one L4 challenge without hints"
+OPEN_WEAK_SPOT_CAP_REASON = "open weak spot"
+ASSISTED_CAP_REASON = "assisted L3+ answers weighted below fluent"
 
 
-def suggest_mastery(unit_items: list[Item], open_weak_spot: bool) -> int | None:
-    """Evidence-based Mastery (0-4) for one unit from its last items (rules/01 §7).
+def _effective_mastery_score(item: Item) -> float:
+    """Weight assisted items (hints, set-up or steps revealed before answering) below fluent ones."""
+    if item.skipped or item.score <= 0:
+        return 0.0
+    if item.assisted:
+        return min(float(item.score), 0.5)
+    return float(item.score)
 
-    1 under 50%; 3 when at least 3 recent L3+ items average >= 70% and no weak spot is open; otherwise 2.
-    Drills cannot show 4 (Feynman explanation, cross-subject synthesis), so the learner sets 4 by hand.
-    """
+
+def _has_l4_challenge(unit_items: list[Item]) -> bool:
+    """True when the unit has at least one correct L4+ item answered with no hints/assistance."""
+    return any(
+        isinstance(i.level, int)
+        and i.level >= 4
+        and not i.assisted
+        and not i.skipped
+        and _effective_mastery_score(i) >= 1.0
+        for i in unit_items
+    )
+
+
+def evaluate_mastery(unit_items: list[Item], open_weak_spot: bool = False) -> tuple[int | None, dict[str, object]]:
+    """Return (mastery, masteryCap) for one unit from its practice items (rules/01 §7 & §9)."""
+    no_cap: dict[str, object] = {"capped": False, "reason": ""}
     recent = unit_items[-MASTERY_WINDOW:]
     if not recent:
-        return None
-    pct = sum(i.score for i in recent) / len(recent)
+        return None, no_cap
+    pct = sum(_effective_mastery_score(i) for i in recent) / len(recent)
     if pct < 0.5:
-        return 1
+        return 1, no_cap
     hard = [i for i in recent if isinstance(i.level, int) and i.level >= 3]
-    if len(hard) >= 3 and sum(i.score for i in hard) / len(hard) >= 0.7 and not open_weak_spot:
-        return 3
-    return 2
+    hard_avg = (sum(_effective_mastery_score(i) for i in hard) / len(hard)) if hard else 0.0
+    has_challenge = _has_l4_challenge(unit_items)
+    if len(hard) >= 3 and hard_avg >= 0.7 and not open_weak_spot and has_challenge:
+        return 3, no_cap
+    if not has_challenge:
+        return 2, {"capped": True, "reason": L4_CHALLENGE_CAP_REASON}
+    if open_weak_spot:
+        return 2, {"capped": True, "reason": OPEN_WEAK_SPOT_CAP_REASON}
+    if len(hard) >= 3 and hard_avg < 0.7 and any(i.assisted and i.score > 0 for i in hard):
+        unassisted_potential = sum(
+            1.0 if (i.assisted and i.score > 0) else _effective_mastery_score(i) for i in hard
+        ) / len(hard)
+        if unassisted_potential >= 0.7:
+            return 2, {"capped": True, "reason": ASSISTED_CAP_REASON}
+    return 2, no_cap
+
+
+def mastery_cap(unit_items: list[Item], open_weak_spot: bool = False) -> dict[str, object]:
+    """Return `{capped: bool, reason: str}` explaining whether and why a unit's Mastery is capped at 2."""
+    _, cap = evaluate_mastery(unit_items, open_weak_spot)
+    return cap
+
+
+def suggest_mastery(
+    unit_items: list[Item],
+    open_weak_spot: bool = False,
+    *,
+    return_cap: bool = False,
+) -> int | None | tuple[int | None, dict[str, object]]:
+    """Evidence-based Mastery (0-4) for one unit from its last items (rules/01 §7 & §9).
+
+    1 under 50%; 3 when at least 3 recent L3+ items average >= 70%, no weak spot is open,
+    and the unit has at least one correct L4+ item with no hint ("challenge"); otherwise 2.
+    Assisted items (hints, set-up or steps revealed before answering) are weighted below fluent ones.
+    Drills cannot show 4 (Feynman explanation, cross-subject synthesis), so the learner sets 4 by hand.
+    """
+    mastery, cap = evaluate_mastery(unit_items, open_weak_spot)
+    if return_cap:
+        return mastery, cap
+    return mastery
 
 
 def review_update(
     unit: str, current_mastery: int | None, attempt_date: str, data_root: str | None = None, progress_dir=None
 ) -> dict | None:
-    """Mastery, Last Reviewed and Next Review for a unit page after practice, or None without evidence.
+    """Mastery, Last Reviewed, Next Review and masteryCap for a unit page after practice, or None without evidence.
     A learner-set 4 is kept while the evidence still says 3 (drills cannot confirm or refute 4)."""
     items = [i for i in load_items(data_root, progress_dir) if i.unit == unit]
     open_weak = any(s["open"] and unit in s["units"] for s in trap_status(items).values())
-    mastery = suggest_mastery(items, open_weak)
+    mastery, cap = evaluate_mastery(items, open_weak)
     if mastery is None:
         return None
     if current_mastery == 4 and mastery == 3:
         mastery = 4
+        cap = {"capped": False, "reason": ""}
     nxt = date.fromisoformat(attempt_date[:10]) + timedelta(days=REVIEW_DAYS[mastery])
-    return {"mastery": mastery, "lastReviewed": attempt_date[:10], "nextReview": nxt.isoformat()}
+    return {
+        "mastery": mastery,
+        "lastReviewed": attempt_date[:10],
+        "nextReview": nxt.isoformat(),
+        "masteryCap": cap,
+    }
 
 
 def _load_titles() -> dict[str, str]:
@@ -462,6 +552,7 @@ def _build_unit_reports(
                 "levels": level_advice(its),
                 "assistedCount": sum(i.assisted for i in its),
                 "skipped": sorted({i.archetype or i.pid for i in its if i.skipped}),
+                "masteryCap": mastery_cap(its, bool(open_traps)),
             }
         )
     return reports

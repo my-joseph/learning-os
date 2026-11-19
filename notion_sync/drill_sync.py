@@ -167,6 +167,8 @@ def update_unit_reviews(units: list[str], attempt_date: str, id_map: dict, token
                 "lastReviewed": upd["lastReviewed"],
                 "nextReview": upd["nextReview"],
             }
+            if isinstance(upd.get("masteryCap"), dict):
+                entry["masteryCap"] = upd["masteryCap"]
             title = id_map[unit].get("title") if isinstance(id_map.get(unit), dict) else None
             if title:
                 entry["title"] = title

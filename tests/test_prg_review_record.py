@@ -324,14 +324,14 @@ def test_mastery_prg_only_from_pass_and_mocked_notion(tmp_path, monkeypatch):
     upd_no_rev = weak_spots.review_update("PRG-T09-C01-U01", None, "2026-11-16", *roots_no_rev)
     assert upd_no_rev is not None and upd_no_rev["mastery"] == 1
 
-    # 3 L3 problems with latest review 'pass' -> mastery 3 (via mocked Notion update_unit_reviews)
+    # 3 L3+ problems (including an L4 challenge) with latest review 'pass' -> mastery 3 (via mocked Notion update_unit_reviews)
     roots_pass = _write_prg_progress(
         tmp_path / "pass",
         {
             "D2": [
                 ("Q01", 3, "debugging", {"reviews": [_rev("2026-11-10", "pass")]}),
                 ("Q02", 3, "problem-solving", {"reviews": [_rev("2026-11-11", "pass")]}),
-                ("Q03", 3, "problem-solving", {"reviews": [_rev("2026-11-12", "pass")]}),
+                ("Q03", 4, "problem-solving", {"reviews": [_rev("2026-11-12", "pass")]}),
             ]
         },
     )
