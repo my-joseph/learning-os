@@ -437,7 +437,7 @@ function makeProblem(overrides: Partial<Problem> = {}): Problem {
   assert.match(html, /id="tab-Q02-s2"[^>]*aria-selected="false"[^>]*aria-controls="panel-Q02"[^>]*aria-label="Similar question 2, not tried"[^>]*tabindex="-1"/);
   assert.match(html, /data-status="untried"[^>]*rounded-full border-\[1\.5px\]/);
   assert.match(html, /id="tab-Q02-s3"[^>]*aria-selected="false"[^>]*aria-controls="panel-Q02"[^>]*aria-label="Similar question 3, correct with help"[^>]*tabindex="-1"/);
-  assert.match(html, /data-status="assisted"[^>]*bg-amber-600[^>]*><svg/);
+  assert.match(html, /data-status="assisted"[^>]*bg-emerald-200[^>]*><svg/);
   assert.match(html, /min-h-\[44px\]/, "mobile tabs must be at least 44px tall");
   assert.match(html, /Q2/, "mobile compact label Q2");
   assert.doesNotMatch(html, /tab-Q02-example/, "Example tab must NOT be rendered (binding scope change)");

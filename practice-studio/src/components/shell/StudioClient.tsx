@@ -384,7 +384,7 @@ export const StudioClient: React.FC<StudioClientProps> = ({
                   activeStep={activeSteps[prob.id] ?? null}
                   onInputChange={(val) => handleInputChange(prob.id, val)}
                   onCheckAnswer={(inputOverride) => handleCheckAnswer(prob.id, inputOverride)}
-                  onSkip={() => handleSkipProblem(prob.id)}
+                  onSkip={(opts) => handleSkipProblem(prob.id, opts)}
                   onToggleStepHighlight={(stepIdx) =>
                     handleToggleStepHighlight(prob.id, stepIdx)
                   }

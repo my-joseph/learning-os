@@ -367,3 +367,16 @@ main().catch((err) => {
   console.error(err);
   process.exit(1);
 });
+
+// Skip auto-opens the hint: the hint is counted inside the skip save itself, so no
+// second (stale) save can overwrite `skipped: true` (learner bug 2026-11-19).
+{
+  const doc2 = makeDrillDoc();
+  const t0 = computeSkipProblemTransition(doc2, "Q01", createTelemetryTimerState("Q01", true, false, 10_000), 16_000);
+  const t1 = computeSkipProblemTransition(doc2, "Q01", createTelemetryTimerState("Q01", true, false, 10_000), 16_000, { countHint: true });
+  assert.ok(t0 && t1);
+  const s0 = t0.updatedDoc.problems.find((p: { id: string }) => p.id === "Q01")!.state;
+  const s1 = t1.updatedDoc.problems.find((p: { id: string }) => p.id === "Q01")!.state;
+  assert.equal(s1.skipped, true);
+  assert.equal((s1.hintsRevealed ?? 0) - (s0.hintsRevealed ?? 0), 1);
+}

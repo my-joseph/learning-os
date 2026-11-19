@@ -30,7 +30,7 @@ export interface SimilarTabStripProps {
  * - skipped: dashed outlined circle
  * - correct: filled green circle with white ✓
  * - wrong: filled red circle with white ✗
- * - assisted (used help + correct): filled yellow circle with ✓
+ * - assisted (used help + correct): filled light-green circle with ✓ (paler than correct)
  * - usedHelp (used help before answering): filled yellow circle (no ✓)
  * - partial: filled yellow circle with –
  */
@@ -67,7 +67,7 @@ function StatusMark({
     return (
       <span
         data-status="assisted"
-        className="w-4 h-4 rounded-full bg-amber-600 dark:bg-amber-400 text-white dark:text-zinc-950 inline-flex items-center justify-center shrink-0"
+        className="w-4 h-4 rounded-full bg-emerald-200 text-emerald-800 dark:bg-emerald-500/35 dark:text-emerald-200 inline-flex items-center justify-center shrink-0"
         aria-hidden="true"
       >
         <Check className="w-2.5 h-2.5" strokeWidth={3} />

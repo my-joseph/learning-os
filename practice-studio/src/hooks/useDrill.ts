@@ -29,7 +29,7 @@ import {
 import { labToDrillDocument, type LabDetailResponse } from "@/lib/labModel";
 import { stepStudyPosition } from "@/lib/pagination";
 import { findProblemIndex, isLabId } from "@/lib/routes";
-import { StatusMessage, ViewMode } from "./types";
+import { SkipOptions, StatusMessage, ViewMode } from "./types";
 
 export type RevealPart = "steps" | "display" | "solution";
 
@@ -246,7 +246,8 @@ export function computeSkipProblemTransition(
   currentDrill: DrillDocument,
   probId: string,
   timerState: TelemetryTimerState,
-  now: number
+  now: number,
+  opts: SkipOptions = {}
 ): {
   updatedDoc: DrillDocument;
   nextTimerState: TelemetryTimerState;
@@ -260,7 +261,8 @@ export function computeSkipProblemTransition(
     probId,
     now
   );
-  const hintsCount = hintsRevealed + (p.state?.hintsRevealed || 0);
+  const hintsCount =
+    hintsRevealed + (p.state?.hintsRevealed || 0) + (opts.countHint ? 1 : 0);
 
   const updatedDoc: DrillDocument = {
     ...currentDrill,
@@ -748,14 +750,15 @@ export function useDrill({
     });
   };
 
-  const handleSkipProblem = (probId: string) => {
+  const handleSkipProblem = (probId: string, opts: SkipOptions = {}) => {
     if (!currentDrill) return;
     const now = Date.now();
     const transition = computeSkipProblemTransition(
       currentDrill,
       probId,
       timerStateRef.current,
-      now
+      now,
+      opts
     );
     if (!transition) return;
     commitTimerState(transition.nextTimerState, now);

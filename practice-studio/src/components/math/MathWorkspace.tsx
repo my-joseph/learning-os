@@ -25,6 +25,7 @@ import {
   slotToTabId,
 } from "@/lib/similarTabs";
 import { plainTitle } from "@/lib/titleText";
+import type { SkipOptions } from "@/hooks/types";
 
 export interface MathWorkspaceProps {
   problem: Problem;
@@ -37,7 +38,7 @@ export interface MathWorkspaceProps {
   activeStep: number | null;
   onInputChange: (val: string) => void;
   onCheckAnswer: (inputOverride?: string) => Promise<void> | void;
-  onSkip?: () => void;
+  onSkip?: (opts?: SkipOptions) => void;
   onToggleStepHighlight: (stepIdx: number) => void;
   onMarkDivergedStep: (stepIdx: number) => void;
   onSetScore: (score: number | null) => void;
