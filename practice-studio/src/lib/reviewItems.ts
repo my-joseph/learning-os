@@ -49,6 +49,7 @@ export interface ReviewEvent {
   date: string;
   correct: boolean;
   assisted: boolean;
+  kind?: "variant";
 }
 
 export interface ReviewStoreOptions {
@@ -131,11 +132,16 @@ export function extractReviewEvents(
 ): ReviewEvent[] {
   if (!state || typeof state !== "object") return [];
   const fallbackDate = normalizeReviewDate(fallbackTs);
+  const exampleViewedAt =
+    typeof state.exampleViewedAt === "string" && state.exampleViewedAt.trim()
+      ? state.exampleViewedAt.trim()
+      : "";
   const stateAssisted = Boolean(
     state.setupRevealedBeforeAnswer ||
       state.solutionRevealedBeforeAnswer ||
       (typeof state.hintsRevealed === "number" && state.hintsRevealed > 0)
   );
+  const stateAssistedWithExample = stateAssisted || Boolean(exampleViewedAt);
 
   const rawAttempts = Array.isArray(state.attempts)
     ? (state.attempts as Array<Record<string, unknown>>)
@@ -144,6 +150,7 @@ export function extractReviewEvents(
     (a) =>
       a &&
       typeof a === "object" &&
+      a.kind !== "variant" &&
       !NON_SUBSTANTIVE_VERDICTS.has(String(a.verdict || ""))
   );
 
@@ -153,15 +160,18 @@ export function extractReviewEvents(
       substantive[0]?.verdict === "correct" &&
       state.score === 0.5;
     return substantive.map((att) => {
-      const evDate = normalizeReviewDate(
-        typeof att.ts === "string" ? att.ts : "",
-        fallbackDate
-      );
+      const attTs = typeof att.ts === "string" ? att.ts.trim() : "";
+      const evDate = normalizeReviewDate(attTs, fallbackDate);
       const verdict = String(att.verdict || "");
       const correct = verdict === "correct";
       const hasExplicitHint =
         "hintsUsed" in att || "assisted" in att || "hintsRevealed" in att;
-      const attRevealed = Boolean(att.setupRevealed || att.solutionRevealed);
+      const afterExample = Boolean(
+        att.exampleViewed || (exampleViewedAt && (!attTs || attTs >= exampleViewedAt))
+      );
+      const attRevealed = Boolean(
+        att.setupRevealed || att.solutionRevealed || afterExample
+      );
       let assisted: boolean;
       if (hasExplicitHint) {
         assisted = Boolean(
@@ -198,13 +208,13 @@ export function extractReviewEvents(
               rev.assisted ||
               (typeof rev.hintsRevealed === "number" && rev.hintsRevealed > 0)
           )
-        : stateAssisted;
+        : stateAssistedWithExample;
       return { date: evDate, correct, assisted };
     });
   }
 
   if (state.skipped) {
-    return [{ date: fallbackDate, correct: false, assisted: stateAssisted }];
+    return [{ date: fallbackDate, correct: false, assisted: stateAssistedWithExample }];
   }
 
   const lastCheck = state.lastCheck as Record<string, unknown> | null | undefined;
@@ -216,13 +226,13 @@ export function extractReviewEvents(
     !NON_SUBSTANTIVE_VERDICTS.has(lastCheck.verdict)
   ) {
     const correct = lastCheck.verdict === "correct";
-    const assisted = stateAssisted || (correct && state.score === 0.5);
+    const assisted = stateAssistedWithExample || (correct && state.score === 0.5);
     return [{ date: fallbackDate, correct, assisted }];
   }
 
   if (typeof state.score === "number" && !Number.isNaN(state.score)) {
     const correct = state.score > 0;
-    const assisted = stateAssisted || (state.score > 0 && state.score < 1.0);
+    const assisted = stateAssistedWithExample || (state.score > 0 && state.score < 1.0);
     return [{ date: fallbackDate, correct, assisted }];
   }
 
@@ -233,12 +243,14 @@ export function replayReviewEvents(
   events: ReviewEvent[]
 ): { level: number; lastReviewed: string; dueDate: string } | null {
   if (!Array.isArray(events) || events.length === 0) return null;
+  const itemEvents = events.filter((ev) => ev && ev.kind !== "variant");
+  if (itemEvents.length === 0) return null;
   let level = MIN_REVIEW_LEVEL;
   let lastReviewed = "";
   let dueDate = "";
   let lastWrongDate: string | null = null;
 
-  for (const ev of events) {
+  for (const ev of itemEvents) {
     const evDate = normalizeReviewDate(ev.date);
     const correct = Boolean(ev.correct);
     const assisted = Boolean(ev.assisted);
@@ -586,6 +598,21 @@ function extractLastMatchedTrap(state: Record<string, unknown>): string | null {
   for (const a of attempts) {
     if (a && typeof a.matchedTrap === "string" && a.matchedTrap) {
       last = a.matchedTrap;
+    }
+  }
+  const variants =
+    state.variants && typeof state.variants === "object"
+      ? (state.variants as Record<string, Record<string, unknown>>)
+      : null;
+  if (variants) {
+    for (const token of Object.keys(variants).sort(cmpStr)) {
+      const rec = variants[token];
+      if (!rec || !Array.isArray(rec.attempts)) continue;
+      for (const a of rec.attempts as Array<Record<string, unknown>>) {
+        if (a && typeof a.matchedTrap === "string" && a.matchedTrap) {
+          last = a.matchedTrap;
+        }
+      }
     }
   }
   return last;

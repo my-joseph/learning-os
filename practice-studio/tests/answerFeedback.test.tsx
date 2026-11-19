@@ -161,7 +161,7 @@ const lastCorrectModel = buildResultCardModel({
   isLastQuestion: true,
 });
 assert.equal(lastCorrectModel.actionKind, "review");
-assert.equal(lastCorrectModel.attemptNumber, null);
+assert.equal(lastCorrectModel.attemptNumber, 1);
 
 const lockedSkippedModel = buildResultCardModel({
   lastCheck: { verdict: "skipped", message: "Skipped", components: [], diagnostics: [] },
@@ -186,7 +186,7 @@ assert.doesNotMatch(correctCardHtml, /border-l-/);
 assert.match(correctCardHtml, /lucide-check/);
 assert.match(correctCardHtml, />Correct</);
 assert.match(correctCardHtml, />Next question</);
-assert.doesNotMatch(correctCardHtml, /Attempt 1/);
+assert.match(correctCardHtml, /Attempt 1/);
 
 const lastCorrectCardHtml = renderToStaticMarkup(
   <AnswerResultCard
