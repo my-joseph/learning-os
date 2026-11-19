@@ -1631,6 +1631,1826 @@
         "verificationLevel": "partial",
         "weakDistractors": 0
       }
+    },
+    {
+      "variantId": "VAR-MTH-T01-C04-c04-mixed-number-regrouping-subtraction-01",
+      "sourceArchetype": "c04-mixed-number-regrouping-subtraction",
+      "archetypeKey": "c04-mixed-number-regrouping-subtraction",
+      "archetype": "problem-solving",
+      "level": 3,
+      "category": "Mixed Number Regrouping Diagnosis",
+      "form": "diagnose",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "A student simplified $8\\frac{2}{7} - 3\\frac{5}{7}$ step by step:\nLine 1: $8\\frac{2}{7} - 3\\frac{5}{7} = \\left(7 + \\frac{9}{7}\\right) - \\left(3 + \\frac{5}{7}\\right)$\nLine 2: $= (7 - 3) + \\left(\\frac{9}{7} + \\frac{5}{7}\\right)$\nLine 3: $= 4 + \\frac{14}{7}$\nLine 4: $= 6$\nWhich line is the first one that is wrong?",
+      "display": "8\\frac{2}{7} - 3\\frac{5}{7}",
+      "givens": {
+        "w1": 8,
+        "a": 2,
+        "d": 7,
+        "w2": 3,
+        "b": 5
+      },
+      "constants": {},
+      "trapGivens": [
+        8,
+        2,
+        7,
+        3,
+        5
+      ],
+      "answerSpec": {
+        "type": "choice",
+        "options": [
+          {
+            "id": "1",
+            "label": "Line 1",
+            "provenance": "Flags a valid regrouping of one whole unit into equivalent fractional parts."
+          },
+          {
+            "id": "2",
+            "label": "Line 2"
+          },
+          {
+            "id": "3",
+            "label": "Line 3",
+            "trapTag": "c04-subtraction-inversion-on-regrouping"
+          },
+          {
+            "id": "4",
+            "label": "Line 4",
+            "trapTag": "c04-subtraction-inversion-on-regrouping"
+          }
+        ],
+        "correct": "2"
+      },
+      "answerPlain": "2",
+      "answerDisplay": "\\text{Line 2}",
+      "inputHint": "Choose a line",
+      "commonTrapTag": "c04-subtraction-inversion-on-regrouping",
+      "trapDerivation": "(8 - 3) + (2 + 5) / 7",
+      "trapValue": "6",
+      "verify": {
+        "source": "(8 + 2 / 7) - (3 + 5 / 7)",
+        "trapValue": "6",
+        "flaw": {
+          "values": [
+            "(7 + 9 / 7) - (3 + 5 / 7)",
+            "(7 - 3) + (9 / 7 + 5 / 7)",
+            "4 + 14 / 7",
+            "6"
+          ],
+          "firstWrong": 2
+        }
+      },
+      "checkpointHint": "Verify each line independently to check whether its numerical value remains identical to the line directly above it.",
+      "references": [
+        "MTH-T01-C04"
+      ],
+      "steps": [
+        {
+          "latex": "8\\frac{2}{7} - 3\\frac{5}{7} = \\left(7 + \\frac{9}{7}\\right) - \\left(3 + \\frac{5}{7}\\right)",
+          "explain": "Line 1 is valid: borrowing one whole unit rewrites the minuend equivalently without changing its value.",
+          "eq": [
+            "(8 + 2 / 7) - (3 + 5 / 7)",
+            "(7 + 9 / 7) - (3 + 5 / 7)"
+          ]
+        },
+        {
+          "latex": "\\left(7 + \\frac{9}{7}\\right) - \\left(3 + \\frac{5}{7}\\right) = (7 - 3) + \\left(\\frac{9}{7} - \\frac{5}{7}\\right)",
+          "explain": "Line 2 is the first wrong line: subtracting the second mixed number subtracts its fractional part rather than adding it.",
+          "eq": [
+            "(7 + 9 / 7) - (3 + 5 / 7)",
+            "(7 - 3) + (9 / 7 - 5 / 7)"
+          ]
+        },
+        {
+          "latex": "(7 - 3) + \\left(\\frac{9}{7} - \\frac{5}{7}\\right) = 4 + \\frac{4}{7}",
+          "explain": "Subtract the whole parts and the fractional parts separately.",
+          "eq": [
+            "(7 - 3) + (9 / 7 - 5 / 7)",
+            "4 + 4 / 7"
+          ]
+        },
+        {
+          "latex": "4 + \\frac{4}{7} = \\frac{32}{7}",
+          "explain": "Write the true difference as an improper fraction.",
+          "val": "32/7"
+        }
+      ],
+      "blindSolve": {
+        "setup": "given",
+        "strategy": "prescribed",
+        "check": "none",
+        "task": "diagnose",
+        "reverse": false,
+        "steps": 2,
+        "ambiguous": false,
+        "answer": "2"
+      },
+      "id": "VAR-MTH-T01-C04-c04-mixed-number-regrouping-subtraction-01",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "c04-subtraction-inversion-on-regrouping|diagnose|A student simplified $#\\frac{#}{#} - #\\frac{#}{#}$ step by step: Line #: $#\\frac{#}{#} - #\\frac{#}{#} = \\left(# + \\frac{#}{#}\\right) - \\left(# + \\frac{#}{#}\\right)$ Line #: $= (# - #) + \\left(\\frac{#}{#} + \\frac{#}{#}\\right)$ Line #: $= # + \\frac{#}{#}$ Line #: $= #$ Which line is the first one that is wrong?"
+    },
+    {
+      "variantId": "VAR-MTH-T01-C04-c04-mixed-number-regrouping-subtraction-02",
+      "sourceArchetype": "c04-mixed-number-regrouping-subtraction",
+      "archetypeKey": "c04-mixed-number-regrouping-subtraction",
+      "archetype": "problem-solving",
+      "level": 3,
+      "category": "Mixed Number Regrouping Diagnosis",
+      "form": "diagnose",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "A student evaluated $7\\frac{1}{8} - 2\\frac{5}{8}$ step by step:\nLine 1: $7\\frac{1}{8} - 2\\frac{5}{8} = \\left(7 + \\frac{1}{8}\\right) - \\left(2 + \\frac{5}{8}\\right)$\nLine 2: $= \\left(6 + \\frac{9}{8}\\right) - \\left(2 + \\frac{5}{8}\\right)$\nLine 3: $= (6 - 2) + \\left(\\frac{9}{8} + \\frac{5}{8}\\right)$\nLine 4: $= \\frac{23}{4}$\nWhich line is the first one that is wrong?",
+      "display": "7\\frac{1}{8} - 2\\frac{5}{8}",
+      "givens": {
+        "w1": 7,
+        "a": 1,
+        "d": 8,
+        "w2": 2,
+        "b": 5
+      },
+      "constants": {},
+      "trapGivens": [
+        7,
+        1,
+        8,
+        2,
+        5
+      ],
+      "answerSpec": {
+        "type": "choice",
+        "options": [
+          {
+            "id": "1",
+            "label": "Line 1",
+            "provenance": "Flags a valid expansion of mixed numbers into sums of whole and fractional parts."
+          },
+          {
+            "id": "2",
+            "label": "Line 2",
+            "provenance": "Flags a valid regrouping of one whole unit into eighths."
+          },
+          {
+            "id": "3",
+            "label": "Line 3"
+          },
+          {
+            "id": "4",
+            "label": "Line 4",
+            "trapTag": "c04-subtraction-inversion-on-regrouping"
+          }
+        ],
+        "correct": "3"
+      },
+      "answerPlain": "3",
+      "answerDisplay": "\\text{Line 3}",
+      "inputHint": "Choose a line",
+      "commonTrapTag": "c04-subtraction-inversion-on-regrouping",
+      "trapDerivation": "(7 - 2) + (1 + 5) / 8",
+      "trapValue": "23/4",
+      "verify": {
+        "source": "(7 + 1 / 8) - (2 + 5 / 8)",
+        "trapValue": "23/4",
+        "flaw": {
+          "values": [
+            "(7 + 1 / 8) - (2 + 5 / 8)",
+            "(6 + 9 / 8) - (2 + 5 / 8)",
+            "(6 - 2) + (9 / 8 + 5 / 8)",
+            "23 / 4"
+          ],
+          "firstWrong": 3
+        }
+      },
+      "checkpointHint": "Check whether each step preserves the exact numerical value of the previous line.",
+      "references": [
+        "MTH-T01-C04"
+      ],
+      "steps": [
+        {
+          "latex": "7\\frac{1}{8} - 2\\frac{5}{8} = \\left(7 + \\frac{1}{8}\\right) - \\left(2 + \\frac{5}{8}\\right)",
+          "explain": "Line 1 is valid: each mixed number is expanded as the sum of its whole and fractional parts.",
+          "eq": [
+            "(7 + 1 / 8) - (2 + 5 / 8)",
+            "(7 + 1 / 8) - (2 + 5 / 8)"
+          ]
+        },
+        {
+          "latex": "\\left(7 + \\frac{1}{8}\\right) - \\left(2 + \\frac{5}{8}\\right) = \\left(6 + \\frac{9}{8}\\right) - \\left(2 + \\frac{5}{8}\\right)",
+          "explain": "Line 2 is valid: borrowing one whole unit adds eight eighths to the first fractional part.",
+          "eq": [
+            "(7 + 1 / 8) - (2 + 5 / 8)",
+            "(6 + 9 / 8) - (2 + 5 / 8)"
+          ]
+        },
+        {
+          "latex": "\\left(6 + \\frac{9}{8}\\right) - \\left(2 + \\frac{5}{8}\\right) = (6 - 2) + \\left(\\frac{9}{8} - \\frac{5}{8}\\right)",
+          "explain": "Line 3 is the first wrong line: subtracting the second mixed number must subtract its fractional part instead of adding it.",
+          "eq": [
+            "(6 + 9 / 8) - (2 + 5 / 8)",
+            "(6 - 2) + (9 / 8 - 5 / 8)"
+          ]
+        },
+        {
+          "latex": "(6 - 2) + \\left(\\frac{9}{8} - \\frac{5}{8}\\right) = \\frac{9}{2}",
+          "explain": "Evaluate and simplify to find the true difference.",
+          "val": "9/2"
+        }
+      ],
+      "blindSolve": {
+        "setup": "given",
+        "strategy": "prescribed",
+        "check": "none",
+        "task": "diagnose",
+        "reverse": false,
+        "steps": 3,
+        "ambiguous": false,
+        "answer": "3"
+      },
+      "id": "VAR-MTH-T01-C04-c04-mixed-number-regrouping-subtraction-02",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "c04-subtraction-inversion-on-regrouping|diagnose|A student evaluated $#\\frac{#}{#} - #\\frac{#}{#}$ step by step: Line #: $#\\frac{#}{#} - #\\frac{#}{#} = \\left(# + \\frac{#}{#}\\right) - \\left(# + \\frac{#}{#}\\right)$ Line #: $= \\left(# + \\frac{#}{#}\\right) - \\left(# + \\frac{#}{#}\\right)$ Line #: $= (# - #) + \\left(\\frac{#}{#} + \\frac{#}{#}\\right)$ Line #: $= \\frac{#}{#}$ Which line is the first one that is wrong?"
+    },
+    {
+      "variantId": "VAR-MTH-T01-C04-c04-mixed-number-regrouping-subtraction-03",
+      "sourceArchetype": "c04-mixed-number-regrouping-subtraction",
+      "archetypeKey": "c04-mixed-number-regrouping-subtraction",
+      "archetype": "problem-solving",
+      "level": 3,
+      "category": "Mixed Number Regrouping Diagnosis",
+      "form": "diagnose",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "A student computed $10\\frac{2}{9} - 4\\frac{7}{9}$ step by step:\nLine 1: $10\\frac{2}{9} - 4\\frac{7}{9} = \\left(9 + \\frac{11}{9}\\right) - \\left(4 + \\frac{7}{9}\\right)$\nLine 2: $= (9 - 4) + \\left(\\frac{11}{9} + \\frac{7}{9}\\right)$\nLine 3: $= 5 + \\frac{18}{9}$\nLine 4: $= 7$\nWhich line is the first one that is wrong?",
+      "display": "10\\frac{2}{9} - 4\\frac{7}{9}",
+      "givens": {
+        "w1": 10,
+        "a": 2,
+        "d": 9,
+        "w2": 4,
+        "b": 7
+      },
+      "constants": {},
+      "trapGivens": [
+        10,
+        2,
+        9,
+        4,
+        7
+      ],
+      "answerSpec": {
+        "type": "choice",
+        "options": [
+          {
+            "id": "1",
+            "label": "Line 1",
+            "provenance": "Flags a valid regrouping of one whole unit into ninths."
+          },
+          {
+            "id": "2",
+            "label": "Line 2"
+          },
+          {
+            "id": "3",
+            "label": "Line 3",
+            "trapTag": "c04-subtraction-inversion-on-regrouping"
+          },
+          {
+            "id": "4",
+            "label": "Line 4",
+            "trapTag": "c04-subtraction-inversion-on-regrouping"
+          }
+        ],
+        "correct": "2"
+      },
+      "answerPlain": "2",
+      "answerDisplay": "\\text{Line 2}",
+      "inputHint": "Choose a line",
+      "commonTrapTag": "c04-subtraction-inversion-on-regrouping",
+      "trapDerivation": "(10 - 4) + (2 + 7) / 9",
+      "trapValue": "7",
+      "verify": {
+        "source": "(10 + 2 / 9) - (4 + 7 / 9)",
+        "trapValue": "7",
+        "flaw": {
+          "values": [
+            "(9 + 11 / 9) - (4 + 7 / 9)",
+            "(9 - 4) + (11 / 9 + 7 / 9)",
+            "5 + 18 / 9",
+            "7"
+          ],
+          "firstWrong": 2
+        }
+      },
+      "checkpointHint": "Test each step in order to find the first expression whose value differs from the original.",
+      "references": [
+        "MTH-T01-C04"
+      ],
+      "steps": [
+        {
+          "latex": "10\\frac{2}{9} - 4\\frac{7}{9} = \\left(9 + \\frac{11}{9}\\right) - \\left(4 + \\frac{7}{9}\\right)",
+          "explain": "Line 1 is valid: regrouping one whole unit into ninths preserves the value of the first mixed number.",
+          "eq": [
+            "(10 + 2 / 9) - (4 + 7 / 9)",
+            "(9 + 11 / 9) - (4 + 7 / 9)"
+          ]
+        },
+        {
+          "latex": "\\left(9 + \\frac{11}{9}\\right) - \\left(4 + \\frac{7}{9}\\right) = (9 - 4) + \\left(\\frac{11}{9} - \\frac{7}{9}\\right)",
+          "explain": "Line 2 is the first wrong line: subtracting the second mixed number subtracts its fractional part rather than adding it.",
+          "eq": [
+            "(9 + 11 / 9) - (4 + 7 / 9)",
+            "(9 - 4) + (11 / 9 - 7 / 9)"
+          ]
+        },
+        {
+          "latex": "(9 - 4) + \\left(\\frac{11}{9} - \\frac{7}{9}\\right) = 5 + \\frac{4}{9}",
+          "explain": "Subtract the whole parts and the fractional parts.",
+          "eq": [
+            "(9 - 4) + (11 / 9 - 7 / 9)",
+            "5 + 4 / 9"
+          ]
+        },
+        {
+          "latex": "5 + \\frac{4}{9} = \\frac{49}{9}",
+          "explain": "Convert to an improper fraction to obtain the true value.",
+          "val": "49/9"
+        }
+      ],
+      "blindSolve": {
+        "setup": "given",
+        "strategy": "prescribed",
+        "check": "none",
+        "task": "diagnose",
+        "reverse": false,
+        "steps": 2,
+        "ambiguous": false,
+        "answer": "2"
+      },
+      "id": "VAR-MTH-T01-C04-c04-mixed-number-regrouping-subtraction-03",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "c04-subtraction-inversion-on-regrouping|diagnose|A student computed $#\\frac{#}{#} - #\\frac{#}{#}$ step by step: Line #: $#\\frac{#}{#} - #\\frac{#}{#} = \\left(# + \\frac{#}{#}\\right) - \\left(# + \\frac{#}{#}\\right)$ Line #: $= (# - #) + \\left(\\frac{#}{#} + \\frac{#}{#}\\right)$ Line #: $= # + \\frac{#}{#}$ Line #: $= #$ Which line is the first one that is wrong?"
+    },
+    {
+      "variantId": "VAR-MTH-T01-C04-c04-complex-fraction-simplification-01",
+      "sourceArchetype": "c04-complex-fraction-simplification",
+      "archetypeKey": "c04-complex-fraction-simplification",
+      "archetype": "problem-solving",
+      "level": 3,
+      "category": "Complex Fraction Diagnosis",
+      "form": "diagnose",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "A student simplified $\\frac{\\frac{7}{10}}{\\frac{2}{3} - \\frac{1}{6}}$ step by step:\nLine 1: $\\frac{\\frac{7}{10}}{\\frac{4}{6} - \\frac{1}{6}}$\nLine 2: $\\frac{\\frac{7}{10}}{\\frac{3}{6}}$\nLine 3: $\\frac{7 \\times 3}{10 \\times 6}$\nLine 4: $\\frac{7}{20}$\nWhich line is the first one that is wrong?",
+      "display": "\\frac{\\frac{7}{10}}{\\frac{2}{3} - \\frac{1}{6}}",
+      "givens": {
+        "a": 7,
+        "b": 10,
+        "c": 2,
+        "d": 3,
+        "e": 1,
+        "f": 6
+      },
+      "constants": {},
+      "trapGivens": [
+        7,
+        10,
+        2,
+        3,
+        1,
+        6
+      ],
+      "answerSpec": {
+        "type": "choice",
+        "options": [
+          {
+            "id": "1",
+            "label": "Line 1",
+            "provenance": "Flags a valid common-denominator rewrite inside the denominator."
+          },
+          {
+            "id": "2",
+            "label": "Line 2",
+            "provenance": "Flags the valid subtraction of numerators inside the denominator."
+          },
+          {
+            "id": "3",
+            "label": "Line 3"
+          },
+          {
+            "id": "4",
+            "label": "Line 4",
+            "trapTag": "c04-nested-fraction-inversion-slip"
+          }
+        ],
+        "correct": "3"
+      },
+      "answerPlain": "3",
+      "answerDisplay": "\\text{Line 3}",
+      "inputHint": "Choose a line",
+      "commonTrapTag": "c04-nested-fraction-inversion-slip",
+      "trapDerivation": "(7 / 10) * (2 / 3 - 1 / 6)",
+      "trapValue": "7/20",
+      "verify": {
+        "source": "(7 / 10) / (2 / 3 - 1 / 6)",
+        "trapValue": "7/20",
+        "flaw": {
+          "values": [
+            "(7 / 10) / (4 / 6 - 1 / 6)",
+            "(7 / 10) / (3 / 6)",
+            "(7 * 3) / (10 * 6)",
+            "7 / 20"
+          ],
+          "firstWrong": 3
+        }
+      },
+      "checkpointHint": "Compare each consecutive line against the one directly above it to see where the numerical value first changes.",
+      "references": [
+        "MTH-T01-C04"
+      ],
+      "steps": [
+        {
+          "latex": "\\frac{\\frac{7}{10}}{\\frac{2}{3} - \\frac{1}{6}} = \\frac{\\frac{7}{10}}{\\frac{4}{6} - \\frac{1}{6}}",
+          "explain": "Line 1 is valid: rewriting two-thirds as four-sixths creates a common denominator.",
+          "eq": [
+            "(7 / 10) / (2 / 3 - 1 / 6)",
+            "(7 / 10) / (4 / 6 - 1 / 6)"
+          ]
+        },
+        {
+          "latex": "\\frac{\\frac{7}{10}}{\\frac{4}{6} - \\frac{1}{6}} = \\frac{\\frac{7}{10}}{\\frac{3}{6}}",
+          "explain": "Line 2 is valid: subtracting in the denominator gives three-sixths.",
+          "eq": [
+            "(7 / 10) / (4 / 6 - 1 / 6)",
+            "(7 / 10) / (3 / 6)"
+          ]
+        },
+        {
+          "latex": "\\frac{\\frac{7}{10}}{\\frac{3}{6}} = \\frac{7}{10} \\times \\frac{6}{3}",
+          "explain": "Line 3 is the first wrong line: dividing by a fraction multiplies by its reciprocal rather than multiplying straight across.",
+          "eq": [
+            "(7 / 10) / (3 / 6)",
+            "(7 / 10) * (6 / 3)"
+          ]
+        },
+        {
+          "latex": "\\frac{7}{10} \\times \\frac{6}{3} = \\frac{42}{30}",
+          "explain": "Multiply numerators and denominators after inverting the divisor.",
+          "eq": [
+            "(7 * 6) / (10 * 3)",
+            "42 / 30"
+          ]
+        },
+        {
+          "latex": "\\frac{42}{30} = \\frac{7}{5}",
+          "explain": "Reduce to lowest terms to get the true value.",
+          "val": "7/5"
+        }
+      ],
+      "blindSolve": {
+        "answer": "3",
+        "ambiguous": false,
+        "setup": "given",
+        "strategy": "prescribed",
+        "check": "none",
+        "task": "diagnose",
+        "reverse": false,
+        "steps": 3
+      },
+      "id": "VAR-MTH-T01-C04-c04-complex-fraction-simplification-01",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "c04-nested-fraction-inversion-slip|diagnose|A student simplified $\\frac{\\frac{#}{#}}{\\frac{#}{#} - \\frac{#}{#}}$ step by step: Line #: $\\frac{\\frac{#}{#}}{\\frac{#}{#} - \\frac{#}{#}}$ Line #: $\\frac{\\frac{#}{#}}{\\frac{#}{#}}$ Line #: $\\frac{# \\times #}{# \\times #}$ Line #: $\\frac{#}{#}$ Which line is the first one that is wrong?"
+    },
+    {
+      "variantId": "VAR-MTH-T01-C04-c04-complex-fraction-simplification-02",
+      "sourceArchetype": "c04-complex-fraction-simplification",
+      "archetypeKey": "c04-complex-fraction-simplification",
+      "archetype": "problem-solving",
+      "level": 3,
+      "category": "Complex Fraction Diagnosis",
+      "form": "diagnose",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "A student simplified $\\frac{\\frac{3}{8} + \\frac{1}{8}}{\\frac{6}{7}}$ step by step:\nLine 1: $\\frac{\\frac{4}{8}}{\\frac{6}{7}}$\nLine 2: $\\frac{4 \\times 6}{8 \\times 7}$\nLine 3: $\\frac{24}{56}$\nLine 4: $\\frac{3}{7}$\nWhich line is the first one that is wrong?",
+      "display": "\\frac{\\frac{3}{8} + \\frac{1}{8}}{\\frac{6}{7}}",
+      "givens": {
+        "a": 3,
+        "b": 8,
+        "c": 1,
+        "d": 6,
+        "e": 7
+      },
+      "constants": {},
+      "trapGivens": [
+        3,
+        8,
+        1,
+        6,
+        7
+      ],
+      "answerSpec": {
+        "type": "choice",
+        "options": [
+          {
+            "id": "1",
+            "label": "Line 1",
+            "provenance": "Flags the valid addition of like fractions in the numerator."
+          },
+          {
+            "id": "2",
+            "label": "Line 2"
+          },
+          {
+            "id": "3",
+            "label": "Line 3",
+            "trapTag": "c04-nested-fraction-inversion-slip"
+          },
+          {
+            "id": "4",
+            "label": "Line 4",
+            "trapTag": "c04-nested-fraction-inversion-slip"
+          }
+        ],
+        "correct": "2"
+      },
+      "answerPlain": "2",
+      "answerDisplay": "\\text{Line 2}",
+      "inputHint": "Choose a line",
+      "commonTrapTag": "c04-nested-fraction-inversion-slip",
+      "trapDerivation": "(3 / 8 + 1 / 8) * (6 / 7)",
+      "trapValue": "3/7",
+      "verify": {
+        "source": "(3 / 8 + 1 / 8) / (6 / 7)",
+        "trapValue": "3/7",
+        "flaw": {
+          "values": [
+            "(4 / 8) / (6 / 7)",
+            "(4 * 6) / (8 * 7)",
+            "24 / 56",
+            "3 / 7"
+          ],
+          "firstWrong": 2
+        }
+      },
+      "checkpointHint": "Check each transformation line by line to see whether it keeps the same value as the line above it.",
+      "references": [
+        "MTH-T01-C04"
+      ],
+      "steps": [
+        {
+          "latex": "\\frac{\\frac{3}{8} + \\frac{1}{8}}{\\frac{6}{7}} = \\frac{\\frac{4}{8}}{\\frac{6}{7}}",
+          "explain": "Line 1 is valid: adding the like fractions in the numerator gives four-eighths.",
+          "eq": [
+            "(3 / 8 + 1 / 8) / (6 / 7)",
+            "(4 / 8) / (6 / 7)"
+          ]
+        },
+        {
+          "latex": "\\frac{\\frac{4}{8}}{\\frac{6}{7}} = \\frac{4}{8} \\times \\frac{7}{6}",
+          "explain": "Line 2 is the first wrong line: dividing by the denominator fraction requires multiplying by its reciprocal, not multiplying straight across.",
+          "eq": [
+            "(4 / 8) / (6 / 7)",
+            "(4 / 8) * (7 / 6)"
+          ]
+        },
+        {
+          "latex": "\\frac{4}{8} \\times \\frac{7}{6} = \\frac{28}{48}",
+          "explain": "Multiply the numerators and denominators after inverting the divisor.",
+          "eq": [
+            "(4 * 7) / (8 * 6)",
+            "28 / 48"
+          ]
+        },
+        {
+          "latex": "\\frac{28}{48} = \\frac{7}{12}",
+          "explain": "Reduce the fraction to lowest terms to find the true value.",
+          "val": "7/12"
+        }
+      ],
+      "blindSolve": {
+        "answer": "2",
+        "ambiguous": false,
+        "setup": "given",
+        "strategy": "prescribed",
+        "check": "none",
+        "task": "diagnose",
+        "reverse": false,
+        "steps": 2
+      },
+      "id": "VAR-MTH-T01-C04-c04-complex-fraction-simplification-02",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "c04-nested-fraction-inversion-slip|diagnose|A student simplified $\\frac{\\frac{#}{#} + \\frac{#}{#}}{\\frac{#}{#}}$ step by step: Line #: $\\frac{\\frac{#}{#}}{\\frac{#}{#}}$ Line #: $\\frac{# \\times #}{# \\times #}$ Line #: $\\frac{#}{#}$ Line #: $\\frac{#}{#}$ Which line is the first one that is wrong?"
+    },
+    {
+      "variantId": "VAR-MTH-T01-C04-c04-complex-fraction-simplification-03",
+      "sourceArchetype": "c04-complex-fraction-simplification",
+      "archetypeKey": "c04-complex-fraction-simplification",
+      "archetype": "problem-solving",
+      "level": 3,
+      "category": "Complex Fraction Diagnosis",
+      "form": "diagnose",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "A student evaluated $\\frac{\\frac{3}{4}}{\\frac{5}{6} - \\frac{1}{3}}$ step by step:\nLine 1: $\\frac{\\frac{3}{4}}{\\frac{5}{6} - \\frac{2}{6}}$\nLine 2: $\\frac{\\frac{3}{4}}{\\frac{3}{6}}$\nLine 3: $\\frac{3 \\times 3}{4 \\times 6}$\nLine 4: $\\frac{3}{8}$\nWhich line is the first one that is wrong?",
+      "display": "\\frac{\\frac{3}{4}}{\\frac{5}{6} - \\frac{1}{3}}",
+      "givens": {
+        "a": 3,
+        "b": 4,
+        "c": 5,
+        "d": 6,
+        "e": 1
+      },
+      "constants": {},
+      "trapGivens": [
+        3,
+        4,
+        5,
+        6,
+        1
+      ],
+      "answerSpec": {
+        "type": "choice",
+        "options": [
+          {
+            "id": "1",
+            "label": "Line 1",
+            "provenance": "Flags a valid common-denominator conversion inside the denominator."
+          },
+          {
+            "id": "2",
+            "label": "Line 2",
+            "provenance": "Flags the valid subtraction inside the denominator."
+          },
+          {
+            "id": "3",
+            "label": "Line 3"
+          },
+          {
+            "id": "4",
+            "label": "Line 4",
+            "trapTag": "c04-nested-fraction-inversion-slip"
+          }
+        ],
+        "correct": "3"
+      },
+      "answerPlain": "3",
+      "answerDisplay": "\\text{Line 3}",
+      "inputHint": "Choose a line",
+      "commonTrapTag": "c04-nested-fraction-inversion-slip",
+      "trapDerivation": "(3 / 4) * (5 / 6 - 1 / 3)",
+      "trapValue": "3/8",
+      "verify": {
+        "source": "(3 / 4) / (5 / 6 - 1 / 3)",
+        "trapValue": "3/8",
+        "flaw": {
+          "values": [
+            "(3 / 4) / (5 / 6 - 2 / 6)",
+            "(3 / 4) / (3 / 6)",
+            "(3 * 3) / (4 * 6)",
+            "3 / 8"
+          ],
+          "firstWrong": 3
+        }
+      },
+      "checkpointHint": "Work through the simplification on scratch paper and find the first line whose value diverges from the original expression.",
+      "references": [
+        "MTH-T01-C04"
+      ],
+      "steps": [
+        {
+          "latex": "\\frac{\\frac{3}{4}}{\\frac{5}{6} - \\frac{1}{3}} = \\frac{\\frac{3}{4}}{\\frac{5}{6} - \\frac{2}{6}}",
+          "explain": "Line 1 is valid: rewriting one-third as two-sixths creates a common denominator.",
+          "eq": [
+            "(3 / 4) / (5 / 6 - 1 / 3)",
+            "(3 / 4) / (5 / 6 - 2 / 6)"
+          ]
+        },
+        {
+          "latex": "\\frac{\\frac{3}{4}}{\\frac{5}{6} - \\frac{2}{6}} = \\frac{\\frac{3}{4}}{\\frac{3}{6}}",
+          "explain": "Line 2 is valid: subtracting in the denominator gives three-sixths.",
+          "eq": [
+            "(3 / 4) / (5 / 6 - 2 / 6)",
+            "(3 / 4) / (3 / 6)"
+          ]
+        },
+        {
+          "latex": "\\frac{\\frac{3}{4}}{\\frac{3}{6}} = \\frac{3}{4} \\times \\frac{6}{3}",
+          "explain": "Line 3 is the first wrong line: dividing by a fraction multiplies by its reciprocal rather than multiplying straight across.",
+          "eq": [
+            "(3 / 4) / (3 / 6)",
+            "(3 / 4) * (6 / 3)"
+          ]
+        },
+        {
+          "latex": "\\frac{3}{4} \\times \\frac{6}{3} = \\frac{18}{12}",
+          "explain": "Multiply numerators and denominators after inverting the divisor.",
+          "eq": [
+            "(3 * 6) / (4 * 3)",
+            "18 / 12"
+          ]
+        },
+        {
+          "latex": "\\frac{18}{12} = \\frac{3}{2}",
+          "explain": "Reduce to lowest terms to find the true value.",
+          "val": "3/2"
+        }
+      ],
+      "blindSolve": {
+        "answer": "3",
+        "ambiguous": false,
+        "setup": "given",
+        "strategy": "prescribed",
+        "check": "none",
+        "task": "diagnose",
+        "reverse": false,
+        "steps": 3
+      },
+      "id": "VAR-MTH-T01-C04-c04-complex-fraction-simplification-03",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "c04-nested-fraction-inversion-slip|diagnose|A student evaluated $\\frac{\\frac{#}{#}}{\\frac{#}{#} - \\frac{#}{#}}$ step by step: Line #: $\\frac{\\frac{#}{#}}{\\frac{#}{#} - \\frac{#}{#}}$ Line #: $\\frac{\\frac{#}{#}}{\\frac{#}{#}}$ Line #: $\\frac{# \\times #}{# \\times #}$ Line #: $\\frac{#}{#}$ Which line is the first one that is wrong?"
+    },
+    {
+      "variantId": "VAR-MTH-T01-C04-c04-fraction-one-step-linear-equation-01",
+      "sourceArchetype": "c04-fraction-one-step-linear-equation",
+      "archetypeKey": "c04-fraction-one-step-linear-equation",
+      "archetype": "problem-solving",
+      "level": 3,
+      "category": "Fraction Modeling & Linear Equation",
+      "form": "reverse",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "On a number line with $x > 0$, point $P$ is at $\\frac{1}{4}x$, point $Q$ is at $\\frac{5}{6}x$, and point $R$ is at $x$. Point $M$ is the midpoint of segment $PQ$. If the distance between $M$ and $R$ is $220$, find $x$.",
+      "display": "P = \\frac{1}{4}x,\\quad Q = \\frac{5}{6}x,\\quad R = x",
+      "plainText": "P = (1/4)*x, Q = (5/6)*x, R = x, M = (P + Q)/2, R - M = 220",
+      "givens": {
+        "a": 1,
+        "b": 4,
+        "c": 5,
+        "d": 6,
+        "dist": 220
+      },
+      "constants": {
+        "two": 2
+      },
+      "trapGivens": [
+        1,
+        4,
+        5,
+        6,
+        220
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "480",
+        "tolerance": 0,
+        "forms": [
+          "exact"
+        ]
+      },
+      "answerPlain": "480",
+      "answerDisplay": "480",
+      "inputHint": "Enter a whole number",
+      "commonTrapTag": "c04-direct-coefficient-multiplication",
+      "trapDerivation": "220 * (1 - (1 / 4 + 5 / 6) / 2)",
+      "trapValue": "605/6",
+      "verify": {
+        "source": "220 / (1 - (1 / 4 + 5 / 6) / 2)",
+        "trapValue": "605/6"
+      },
+      "checkpointHint": "Express the midpoint and the distance from the midpoint to the rightmost point in terms of the unknown, then isolate the unknown using the reciprocal.",
+      "references": [
+        "MTH-T01-C04"
+      ],
+      "steps": [
+        {
+          "latex": "M = \\frac{\\frac{1}{4}x + \\frac{5}{6}x}{2}",
+          "explain": "Express the midpoint coordinate as the average of the two endpoint coordinates."
+        },
+        {
+          "latex": "\\frac{1}{4} + \\frac{5}{6} = \\frac{3}{12} + \\frac{10}{12}",
+          "explain": "Convert the two fractional coefficients to their least common denominator.",
+          "eq": [
+            "1 / 4 + 5 / 6",
+            "3 / 12 + 10 / 12"
+          ]
+        },
+        {
+          "latex": "\\frac{3}{12} + \\frac{10}{12} = \\frac{13}{12}",
+          "explain": "Sum the two fractional coefficients.",
+          "eq": [
+            "3 / 12 + 10 / 12",
+            "13 / 12"
+          ]
+        },
+        {
+          "latex": "M = \\frac{13}{24}x",
+          "explain": "Divide the summed coefficient by two to get the midpoint position.",
+          "eq": [
+            "(13 / 12) / 2",
+            "13 / 24"
+          ]
+        },
+        {
+          "latex": "x - \\frac{13}{24}x = 220",
+          "explain": "Set the distance from the midpoint to point R equal to the given length."
+        },
+        {
+          "latex": "\\frac{11}{24}x = 220",
+          "explain": "Combine like terms on the left side.",
+          "eq": [
+            "1 - 13 / 24",
+            "11 / 24"
+          ]
+        },
+        {
+          "latex": "x = 220 \\times \\frac{24}{11}",
+          "explain": "Multiply both sides by the reciprocal of the fractional coefficient.",
+          "eq": [
+            "220 * (24 / 11)",
+            "480"
+          ]
+        },
+        {
+          "latex": "x = 480",
+          "explain": "Evaluate the product to find the unknown.",
+          "val": "480"
+        }
+      ],
+      "blindSolve": {
+        "setup": "model",
+        "strategy": "prescribed",
+        "check": "none",
+        "task": "compute",
+        "reverse": true,
+        "steps": 5,
+        "ambiguous": false,
+        "answer": "480"
+      },
+      "id": "VAR-MTH-T01-C04-c04-fraction-one-step-linear-equation-01",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "c04-direct-coefficient-multiplication|reverse|P = (#/#)*x, Q = (#/#)*x, R = x, M = (P + Q)/#, R - M = #"
+    },
+    {
+      "variantId": "VAR-MTH-T01-C04-c04-fraction-one-step-linear-equation-02",
+      "sourceArchetype": "c04-fraction-one-step-linear-equation",
+      "archetypeKey": "c04-fraction-one-step-linear-equation",
+      "archetype": "problem-solving",
+      "level": 3,
+      "category": "Fraction Modeling & Linear Equation",
+      "form": "reverse",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Two positive numbers sum to $x$. The first number is $\\frac{2}{7}x$, and a third number equals $\\frac{1}{2}$ of the second number. If the third number is $60$ greater than the first number, find $x$.",
+      "display": "a = \\frac{2}{7}x,\\quad b = x - a,\\quad c = \\frac{1}{2}b,\\quad c - a = 60",
+      "plainText": "(1/2)*(1 - 2/7)*x - (2/7)*x = 60",
+      "givens": {
+        "n1": 2,
+        "d1": 7,
+        "n2": 1,
+        "d2": 2,
+        "diff": 60
+      },
+      "constants": {},
+      "trapGivens": [
+        2,
+        7,
+        1,
+        60
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "840",
+        "tolerance": 0,
+        "forms": [
+          "exact"
+        ]
+      },
+      "answerPlain": "840",
+      "answerDisplay": "840",
+      "inputHint": "Enter a whole number",
+      "commonTrapTag": "c04-direct-coefficient-multiplication",
+      "trapDerivation": "60 * ((1 / 2) * (1 - 2 / 7) - 2 / 7)",
+      "trapValue": "30/7",
+      "verify": {
+        "source": "60 / ((1 / 2) * (1 - 2 / 7) - 2 / 7)",
+        "trapValue": "30/7"
+      },
+      "checkpointHint": "Write each number as a fraction of the total, form the difference equation, and isolate the total by multiplying by the reciprocal.",
+      "references": [
+        "MTH-T01-C04"
+      ],
+      "steps": [
+        {
+          "latex": "b = x - \\frac{2}{7}x",
+          "explain": "Express the second number as the remainder of the total."
+        },
+        {
+          "latex": "b = \\frac{5}{7}x",
+          "explain": "Subtract the fractional coefficient from one to simplify the second number.",
+          "eq": [
+            "1 - 2 / 7",
+            "5 / 7"
+          ]
+        },
+        {
+          "latex": "c = \\frac{1}{2} \\cdot \\frac{5}{7}x",
+          "explain": "Write the third number as one-half of the second number."
+        },
+        {
+          "latex": "c = \\frac{5}{14}x",
+          "explain": "Multiply the two fractions to simplify the third number.",
+          "eq": [
+            "(1 / 2) * (5 / 7)",
+            "5 / 14"
+          ]
+        },
+        {
+          "latex": "\\frac{5}{14}x - \\frac{2}{7}x = 60",
+          "explain": "Set the difference between the third number and the first number equal to sixty."
+        },
+        {
+          "latex": "\\frac{5}{14}x - \\frac{4}{14}x = 60",
+          "explain": "Rewrite the two fractional coefficients with a common denominator.",
+          "eq": [
+            "5 / 14 - 2 / 7",
+            "5 / 14 - 4 / 14"
+          ]
+        },
+        {
+          "latex": "\\frac{1}{14}x = 60",
+          "explain": "Subtract the numerators over the shared denominator.",
+          "eq": [
+            "5 / 14 - 4 / 14",
+            "1 / 14"
+          ]
+        },
+        {
+          "latex": "x = 60 \\times 14",
+          "explain": "Multiply both sides by the reciprocal of the fractional coefficient.",
+          "eq": [
+            "60 * 14",
+            "840"
+          ]
+        },
+        {
+          "latex": "x = 840",
+          "explain": "Evaluate the product to find the unknown.",
+          "val": "840"
+        }
+      ],
+      "blindSolve": {
+        "setup": "model",
+        "strategy": "prescribed",
+        "check": "none",
+        "task": "compute",
+        "reverse": true,
+        "steps": 4,
+        "ambiguous": false,
+        "answer": "840"
+      },
+      "id": "VAR-MTH-T01-C04-c04-fraction-one-step-linear-equation-02",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "c04-direct-coefficient-multiplication|reverse|(#/#)*(# - #/#)*x - (#/#)*x = #"
+    },
+    {
+      "variantId": "VAR-MTH-T01-C04-c04-fraction-one-step-linear-equation-03",
+      "sourceArchetype": "c04-fraction-one-step-linear-equation",
+      "archetypeKey": "c04-fraction-one-step-linear-equation",
+      "archetype": "problem-solving",
+      "level": 3,
+      "category": "Fraction Modeling & Linear Equation",
+      "form": "reverse",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "A positive quantity $x$ is divided into two parts: the first part is $\\frac{3}{8}x$ and the second part is the remainder. Adding $\\frac{2}{5}$ of the second part to the first part gives $375$. Find $x$.",
+      "display": "\\frac{3}{8}x + \\frac{2}{5}\\left(x - \\frac{3}{8}x\\right) = 375",
+      "plainText": "(3/8)*x + (2/5)*(1 - 3/8)*x = 375",
+      "givens": {
+        "n1": 3,
+        "d1": 8,
+        "n2": 2,
+        "d2": 5,
+        "total": 375
+      },
+      "constants": {
+        "one": 1
+      },
+      "trapGivens": [
+        3,
+        8,
+        2,
+        5,
+        375
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "600",
+        "tolerance": 0,
+        "forms": [
+          "exact"
+        ]
+      },
+      "answerPlain": "600",
+      "answerDisplay": "600",
+      "inputHint": "Enter a whole number",
+      "commonTrapTag": "c04-direct-coefficient-multiplication",
+      "trapDerivation": "375 * (3 / 8 + (2 / 5) * (1 - 3 / 8))",
+      "trapValue": "1875/8",
+      "verify": {
+        "source": "375 / (3 / 8 + (2 / 5) * (1 - 3 / 8))",
+        "trapValue": "1875/8"
+      },
+      "checkpointHint": "Express the second part and the added fraction in terms of the unknown, combine into one fractional coefficient, and multiply by its reciprocal.",
+      "references": [
+        "MTH-T01-C04"
+      ],
+      "steps": [
+        {
+          "latex": "r = x - \\frac{3}{8}x",
+          "explain": "Express the second part as the remainder of the quantity."
+        },
+        {
+          "latex": "r = \\frac{5}{8}x",
+          "explain": "Subtract the first fraction from one to simplify the second part.",
+          "eq": [
+            "1 - 3 / 8",
+            "5 / 8"
+          ]
+        },
+        {
+          "latex": "\\frac{2}{5} \\cdot \\frac{5}{8}x = \\frac{1}{4}x",
+          "explain": "Take two-fifths of the second part and reduce.",
+          "eq": [
+            "(2 / 5) * (5 / 8)",
+            "1 / 4"
+          ]
+        },
+        {
+          "latex": "\\frac{3}{8}x + \\frac{1}{4}x = 375",
+          "explain": "Set the sum of the first part and the added portion equal to the given total."
+        },
+        {
+          "latex": "\\frac{3}{8}x + \\frac{2}{8}x = 375",
+          "explain": "Convert the fractional terms to a common denominator.",
+          "eq": [
+            "3 / 8 + 1 / 4",
+            "3 / 8 + 2 / 8"
+          ]
+        },
+        {
+          "latex": "\\frac{5}{8}x = 375",
+          "explain": "Combine the fractional coefficients on the left side.",
+          "eq": [
+            "3 / 8 + 2 / 8",
+            "5 / 8"
+          ]
+        },
+        {
+          "latex": "x = 375 \\times \\frac{8}{5}",
+          "explain": "Multiply both sides by the reciprocal of the fractional coefficient.",
+          "eq": [
+            "375 * (8 / 5)",
+            "600"
+          ]
+        },
+        {
+          "latex": "x = 600",
+          "explain": "Evaluate the product to find the unknown.",
+          "val": "600"
+        }
+      ],
+      "blindSolve": {
+        "setup": "model",
+        "strategy": "prescribed",
+        "check": "none",
+        "task": "compute",
+        "reverse": true,
+        "steps": 4,
+        "ambiguous": false,
+        "answer": "600"
+      },
+      "id": "VAR-MTH-T01-C04-c04-fraction-one-step-linear-equation-03",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "c04-direct-coefficient-multiplication|reverse|(#/#)*x + (#/#)*(# - #/#)*x = #"
+    },
+    {
+      "variantId": "VAR-MTH-T01-C04-c04-multi-stage-fractional-remainder-synthesis-01",
+      "sourceArchetype": "c04-multi-stage-fractional-remainder-synthesis",
+      "archetypeKey": "c04-multi-stage-fractional-remainder-synthesis",
+      "archetype": "problem-solving",
+      "level": 3,
+      "category": "Fractional Remainder Modeling",
+      "form": "reverse",
+      "context": "municipal_library_acquisition_budget",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "(a) Sequential proportional budget allocations reduce the remaining balance multiplicatively; (b) dollar amounts and dimensionless fractions in (0, 1) are consistent and realistic for a city library acquisition budget ($300,000); (c) removal test holds because chained fractional budget disbursements literally model staged allocations."
+      },
+      "verificationLevel": "partial",
+      "prompt": "A municipal library system spent $\\frac{1}{4}$ of its annual acquisition budget on reference books and then spent $\\frac{1}{3}$ of the remaining budget on digital journal licenses. After both expenditures, $150,000$ dollars remained for general circulation titles. What was the initial annual acquisition budget in dollars?",
+      "display": "T(1 - f_1)(1 - f_2) = R",
+      "plainText": "T * (1 - 1/4) * (1 - 1/3) = 150000",
+      "givens": {
+        "n1": 1,
+        "d1": 4,
+        "n2": 1,
+        "d2": 3,
+        "R": 150000
+      },
+      "constants": {},
+      "trapGivens": [
+        1,
+        4,
+        3,
+        150000
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "300000",
+        "tolerance": 0
+      },
+      "answerPlain": "300000",
+      "answerDisplay": "300000",
+      "inputHint": "Enter a whole number in dollars",
+      "commonTrapTag": "c04-naive-fraction-addition-on-remainder",
+      "trapDerivation": "150000 / (1 - (1 / 4 + 1 / 3))",
+      "trapValue": "360000",
+      "verify": {
+        "source": "150000 / ((1 - 1 / 4) * (1 - 1 / 3))",
+        "trapValue": "360000"
+      },
+      "checkpointHint": "Find the fraction kept after each stage and multiply those retention fractions together before solving backward for the initial budget.",
+      "references": [
+        "MTH-T01-C04"
+      ],
+      "steps": [
+        {
+          "latex": "r_1 = 1 - \\frac{1}{4}",
+          "explain": "Compute the fraction of the initial budget left after the first expenditure.",
+          "eq": [
+            "1 - 1 / 4",
+            "3 / 4"
+          ]
+        },
+        {
+          "latex": "r_2 = 1 - \\frac{1}{3}",
+          "explain": "Compute the fraction of the remaining balance kept after the second expenditure.",
+          "eq": [
+            "1 - 1 / 3",
+            "2 / 3"
+          ]
+        },
+        {
+          "latex": "r_{\\text{rem}} = \\frac{3}{4} \\times \\frac{2}{3}",
+          "explain": "Multiply the two retention fractions to express the final balance as a fraction of the initial budget.",
+          "eq": [
+            "(3 / 4) * (2 / 3)",
+            "1 / 2"
+          ]
+        },
+        {
+          "latex": "\\frac{1}{2} T = 150000",
+          "explain": "Set the remaining fraction of the initial budget equal to the known dollar remainder."
+        },
+        {
+          "latex": "T = 150000 \\times 2",
+          "explain": "Multiply both sides by the reciprocal of the remaining fraction.",
+          "eq": [
+            "150000 * 2",
+            "300000"
+          ]
+        },
+        {
+          "latex": "T = 300000",
+          "explain": "State the initial annual acquisition budget in dollars.",
+          "val": "300000"
+        }
+      ],
+      "blindSolve": {
+        "answer": "300000",
+        "ambiguous": false,
+        "setup": "model",
+        "strategy": "prescribed",
+        "check": "none",
+        "task": "compute",
+        "reverse": true,
+        "steps": 4
+      },
+      "id": "VAR-MTH-T01-C04-c04-multi-stage-fractional-remainder-synthesis-01",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "c04-naive-fraction-addition-on-remainder|reverse|T * (# - #/#) * (# - #/#) = #"
+    },
+    {
+      "variantId": "VAR-MTH-T01-C04-c04-multi-stage-fractional-remainder-synthesis-02",
+      "sourceArchetype": "c04-multi-stage-fractional-remainder-synthesis",
+      "archetypeKey": "c04-multi-stage-fractional-remainder-synthesis",
+      "archetype": "problem-solving",
+      "level": 3,
+      "category": "Fractional Remainder Modeling",
+      "form": "reverse",
+      "context": "coastal_fishery_catch_quota_allocation",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "(a) Sequential quota allocations deduct a fraction of the unallocated balance multiplicatively; (b) metric tons and dimensionless fractions in (0, 1) are physically consistent for a 900 t regional fishery quota; (c) removal test holds since staged quota assignments literally reduce remaining tonnage."
+      },
+      "verificationLevel": "partial",
+      "prompt": "A regional fishery authority assigned $\\frac{1}{5}$ of its seasonal cod quota to local day-boats and then assigned $\\frac{1}{2}$ of the remaining quota to offshore trawlers. The remaining $360$ metric tons were reserved for coastal cooperatives. What was the total seasonal cod quota in metric tons?",
+      "display": "T(1 - f_1)(1 - f_2) = R",
+      "plainText": "T * (1 - 1/5) * (1 - 1/2) = 360",
+      "givens": {
+        "n1": 1,
+        "d1": 5,
+        "n2": 1,
+        "d2": 2,
+        "R": 360
+      },
+      "constants": {},
+      "trapGivens": [
+        1,
+        5,
+        2,
+        360
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "900",
+        "tolerance": 0
+      },
+      "answerPlain": "900",
+      "answerDisplay": "900",
+      "inputHint": "Enter a whole number in metric tons",
+      "commonTrapTag": "c04-naive-fraction-addition-on-remainder",
+      "trapDerivation": "360 / (1 - (1 / 5 + 1 / 2))",
+      "trapValue": "1200",
+      "verify": {
+        "source": "360 / ((1 - 1 / 5) * (1 - 1 / 2))",
+        "trapValue": "1200"
+      },
+      "checkpointHint": "Apply the second fraction only to what remains after the first assignment, multiply the retention fractions, and invert to recover the total quota.",
+      "references": [
+        "MTH-T01-C04"
+      ],
+      "steps": [
+        {
+          "latex": "r_1 = 1 - \\frac{1}{5}",
+          "explain": "Find the fraction of the quota unallocated after the first assignment.",
+          "eq": [
+            "1 - 1 / 5",
+            "4 / 5"
+          ]
+        },
+        {
+          "latex": "r_2 = 1 - \\frac{1}{2}",
+          "explain": "Find the fraction of the remaining quota kept after the second assignment.",
+          "eq": [
+            "1 - 1 / 2",
+            "1 / 2"
+          ]
+        },
+        {
+          "latex": "r_{\\text{rem}} = \\frac{4}{5} \\times \\frac{1}{2}",
+          "explain": "Multiply the retention fractions to express the cooperative reserve as a fraction of the total quota.",
+          "eq": [
+            "(4 / 5) * (1 / 2)",
+            "2 / 5"
+          ]
+        },
+        {
+          "latex": "\\frac{2}{5} T = 360",
+          "explain": "Set the remaining fraction of the total quota equal to the reserved tonnage."
+        },
+        {
+          "latex": "T = 360 \\times \\frac{5}{2}",
+          "explain": "Multiply both sides by the reciprocal of the remaining fraction.",
+          "eq": [
+            "360 * (5 / 2)",
+            "900"
+          ]
+        },
+        {
+          "latex": "T = 900",
+          "explain": "State the total seasonal cod quota in metric tons.",
+          "val": "900"
+        }
+      ],
+      "blindSolve": {
+        "answer": "900",
+        "ambiguous": false,
+        "setup": "model",
+        "strategy": "prescribed",
+        "check": "none",
+        "task": "compute",
+        "reverse": true,
+        "steps": 4
+      },
+      "id": "VAR-MTH-T01-C04-c04-multi-stage-fractional-remainder-synthesis-02",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "c04-naive-fraction-addition-on-remainder|reverse|T * (# - #/#) * (# - #/#) = #"
+    },
+    {
+      "variantId": "VAR-MTH-T01-C04-c04-multi-stage-fractional-remainder-synthesis-03",
+      "sourceArchetype": "c04-multi-stage-fractional-remainder-synthesis",
+      "archetypeKey": "c04-multi-stage-fractional-remainder-synthesis",
+      "archetype": "problem-solving",
+      "level": 3,
+      "category": "Fractional Remainder Modeling",
+      "form": "reverse",
+      "context": "solar_microgrid_battery_discharge_schedule",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "(a) Sequential proportional discharges deplete remaining stored energy multiplicatively and an auxiliary battery bank adds linearly to total remaining energy; (b) kWh units and fractions in (0, 1) are physically realistic for a 720 kWh village microgrid; (c) removal test holds because staged energy drawdowns plus backup storage literally sum."
+      },
+      "verificationLevel": "partial",
+      "prompt": "A village solar microgrid discharged $\\frac{1}{6}$ of the initial stored energy in its main battery bank during the evening peak and then discharged $\\frac{1}{3}$ of the remaining main-bank energy during the overnight baseline load. A separate backup bank holds $\\frac{1}{6}$ of the main bank's initial stored energy. Together, the remaining main-bank energy and the backup bank total $520$ kWh. What was the initial stored energy in the main battery bank, in kWh?",
+      "display": "T(1 - f_1)(1 - f_2) + f_3 T = S",
+      "plainText": "T * (1 - 1/6) * (1 - 1/3) + (1/6) * T = 520",
+      "givens": {
+        "n1": 1,
+        "d1": 6,
+        "n2": 1,
+        "d2": 3,
+        "S": 520
+      },
+      "constants": {},
+      "trapGivens": [
+        1,
+        6,
+        3,
+        520
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "720",
+        "tolerance": 0
+      },
+      "answerPlain": "720",
+      "answerDisplay": "720",
+      "inputHint": "Enter a whole number in kWh",
+      "commonTrapTag": "c04-naive-fraction-addition-on-remainder",
+      "trapDerivation": "520 / ((1 - (1 / 6 + 1 / 3)) + 1 / 6)",
+      "trapValue": "780",
+      "verify": {
+        "source": "520 / ((1 - 1 / 6) * (1 - 1 / 3) + 1 / 6)",
+        "trapValue": "780"
+      },
+      "checkpointHint": "Find the fraction left in the main bank after both sequential discharges, add the backup bank's fraction of the initial energy, and solve for the starting energy.",
+      "references": [
+        "MTH-T01-C04"
+      ],
+      "steps": [
+        {
+          "latex": "r_1 = 1 - \\frac{1}{6}",
+          "explain": "Express the fraction of initial main-bank energy left after the evening peak.",
+          "eq": [
+            "1 - 1 / 6",
+            "5 / 6"
+          ]
+        },
+        {
+          "latex": "r_2 = 1 - \\frac{1}{3}",
+          "explain": "Express the fraction of the remaining energy kept after the overnight load.",
+          "eq": [
+            "1 - 1 / 3",
+            "2 / 3"
+          ]
+        },
+        {
+          "latex": "r_{\\text{main}} = \\frac{5}{6} \\times \\frac{2}{3}",
+          "explain": "Multiply the two retention fractions to find the remaining main-bank energy as a fraction of the initial amount.",
+          "eq": [
+            "(5 / 6) * (2 / 3)",
+            "5 / 9"
+          ]
+        },
+        {
+          "latex": "\\frac{5}{9} T + \\frac{1}{6} T = 520",
+          "explain": "Add the remaining main-bank energy and the backup bank energy to equal the combined total."
+        },
+        {
+          "latex": "\\frac{13}{18} T = 520",
+          "explain": "Combine the fractional coefficients over their least common denominator.",
+          "eq": [
+            "5 / 9 + 1 / 6",
+            "13 / 18"
+          ]
+        },
+        {
+          "latex": "T = 520 \\times \\frac{18}{13}",
+          "explain": "Multiply both sides by the reciprocal of the combined fractional coefficient.",
+          "eq": [
+            "520 * (18 / 13)",
+            "720"
+          ]
+        },
+        {
+          "latex": "T = 720",
+          "explain": "Evaluate the product to find the initial main-bank stored energy in kWh.",
+          "val": "720"
+        }
+      ],
+      "blindSolve": {
+        "answer": "720",
+        "ambiguous": false,
+        "setup": "model",
+        "strategy": "prescribed",
+        "check": "none",
+        "task": "compute",
+        "reverse": true,
+        "steps": 4
+      },
+      "id": "VAR-MTH-T01-C04-c04-multi-stage-fractional-remainder-synthesis-03",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "c04-naive-fraction-addition-on-remainder|reverse|T * (# - #/#) * (# - #/#) + (#/#) * T = #"
+    },
+    {
+      "variantId": "VAR-MTH-T01-C04-c04-constrained-fractional-tank-drain-rate-01",
+      "sourceArchetype": "c04-constrained-fractional-tank-drain-rate",
+      "archetypeKey": "c04-constrained-fractional-tank-drain-rate",
+      "archetype": "problem-solving",
+      "level": 4,
+      "category": "Fractional Rate Modeling",
+      "form": "choose",
+      "context": "hydroponic_nutrient_reservoir_circulation",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "(a) Parallel inflow pump rates add and an open circulation return drain subtracts to give net tank fill rate, with time = remaining fraction / net rate; (b) rates in reservoir-volumes/hr, 3/4 remaining volume, and 4 hours fill time are physically realistic; (c) removal test holds since filling a hydroponic tank with an open circulation line obeys inflow-minus-outflow conservation."
+      },
+      "verificationLevel": "partial",
+      "prompt": "A hydroponic greenhouse refills a nutrient reservoir that starts $\\frac{1}{4}$ full using two supply pumps running together: a main pump that fills an empty reservoir alone in $6$ hours and a booster pump that fills it alone in $12$ hours. During refilling, one overflow return line must stay open. Three return lines are available: Line A empties a full reservoir in $3$ hours, Line B empties a full reservoir in $8$ hours, and Line C empties a full reservoir in $16$ hours. What is the shortest time, in hours, needed to finish filling the reservoir completely using one of these return lines?",
+      "display": "r_{\\text{net}} = \\frac{1}{t_1} + \\frac{1}{t_2} - \\frac{1}{t_{\\text{drain}}}, \\quad T = \\frac{1 - f_0}{r_{\\text{net}}}",
+      "plainText": "r_net = 1/6 + 1/12 - 1/t_drain for t_drain in {3, 8, 16}; min (1 - 1/4) / r_net for r_net > 0",
+      "givens": {
+        "n_init": 1,
+        "d_init": 4,
+        "t1": 6,
+        "t2": 12,
+        "tA": 3,
+        "tB": 8,
+        "tC": 16
+      },
+      "constants": {},
+      "trapGivens": [
+        6,
+        16
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "4",
+        "tolerance": 0
+      },
+      "answerPlain": "4",
+      "answerDisplay": "4",
+      "inputHint": "Enter a whole number in hours",
+      "commonTrapTag": "c04-work-rate-arithmetic-mean-trap",
+      "trapDerivation": "16 - 6",
+      "trapValue": "10",
+      "verify": {
+        "source": "(1 - 1 / 4) / (1 / 6 + 1 / 12 - 1 / 16)",
+        "trapValue": "10"
+      },
+      "checkpointHint": "Compute the combined hourly inflow rate and the unfilled fraction of the reservoir, rule out any return line whose net rate is non-positive, and divide the remaining fraction by the fastest positive net rate.",
+      "references": [
+        "MTH-T01-C04"
+      ],
+      "steps": [
+        {
+          "latex": "r_{\\text{in}} = \\frac{1}{6} + \\frac{1}{12}",
+          "explain": "Add the two supply pump rates to find the combined inflow rate.",
+          "eq": [
+            "1 / 6 + 1 / 12",
+            "1 / 4"
+          ]
+        },
+        {
+          "latex": "f_{\\text{rem}} = 1 - \\frac{1}{4}",
+          "explain": "Find the fraction of the reservoir that remains to be filled.",
+          "eq": [
+            "1 - 1 / 4",
+            "3 / 4"
+          ]
+        },
+        {
+          "latex": "r_A = \\frac{1}{4} - \\frac{1}{3}",
+          "explain": "Calculate the net rate when return Line A is open.",
+          "eq": [
+            "1 / 4 - 1 / 3",
+            "-1 / 12"
+          ]
+        },
+        {
+          "latex": "r_A = -\\frac{1}{12} < 0",
+          "explain": "Reject Line A because outflow exceeds inflow, so the reservoir cannot fill."
+        },
+        {
+          "latex": "r_B = \\frac{1}{4} - \\frac{1}{8}",
+          "explain": "Calculate the net rate when return Line B is open.",
+          "eq": [
+            "1 / 4 - 1 / 8",
+            "1 / 8"
+          ]
+        },
+        {
+          "latex": "T_B = \\frac{3}{4} \\div \\frac{1}{8}",
+          "explain": "Divide the remaining reservoir fraction by the net rate for Line B.",
+          "eq": [
+            "(3 / 4) / (1 / 8)",
+            "6"
+          ]
+        },
+        {
+          "latex": "r_C = \\frac{1}{4} - \\frac{1}{16}",
+          "explain": "Calculate the net rate when return Line C is open.",
+          "eq": [
+            "1 / 4 - 1 / 16",
+            "3 / 16"
+          ]
+        },
+        {
+          "latex": "T_C = \\frac{3}{4} \\div \\frac{3}{16}",
+          "explain": "Divide the remaining reservoir fraction by the net rate for Line C.",
+          "eq": [
+            "(3 / 4) / (3 / 16)",
+            "4"
+          ]
+        },
+        {
+          "latex": "T_{\\min} = 4",
+          "explain": "Select the shortest filling time among the valid return lines.",
+          "val": "4"
+        }
+      ],
+      "blindSolve": {
+        "answer": "4",
+        "ambiguous": false,
+        "setup": "model",
+        "strategy": "prescribed",
+        "check": "edge",
+        "edgeRejected": "Line A (net rate 1/4 - 1/3 = -1/12 tank/hr <= 0, drains instead of filling)",
+        "task": "compute",
+        "reverse": false,
+        "steps": 4
+      },
+      "id": "VAR-MTH-T01-C04-c04-constrained-fractional-tank-drain-rate-01",
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "c04-work-rate-arithmetic-mean-trap|choose|r_net = #/# + #/# - #/t_drain for t_drain in {#, #, #}; min (# - #/#) / r_net for r_net > #"
+    },
+    {
+      "variantId": "VAR-MTH-T01-C04-c04-constrained-fractional-tank-drain-rate-02",
+      "sourceArchetype": "c04-constrained-fractional-tank-drain-rate",
+      "archetypeKey": "c04-constrained-fractional-tank-drain-rate",
+      "archetype": "problem-solving",
+      "level": 4,
+      "category": "Fractional Rate Modeling",
+      "form": "choose",
+      "context": "geothermal_brine_holding_basin",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "(a) Parallel drain rates add and net basin fill rate equals pump inflow minus combined outflow, with fill time = 1 / net rate; (b) rates in basin-volumes/hr and 15 hours inside a 16-hour maintenance window are physically consistent; (c) removal test holds because refilling a geothermal basin against open drains obeys additive rate superposition."
+      },
+      "verificationLevel": "partial",
+      "prompt": "During servicing of a geothermal brine holding basin, a primary discharge valve that empties a full basin in $15$ hours and a bypass drain that empties a full basin in $30$ hours must both remain open. Three transfer pumps are available to fill the empty basin while both drains stay open: Pump A fills an empty basin alone in $12$ hours, Pump B fills it alone in $8$ hours, and Pump C fills it alone in $6$ hours. Refilling must finish within a $16$-hour window. Using the only pump that can fill the basin within this window while both drains are open, how many hours does it take to fill the basin?",
+      "display": "r_{\\text{net}} = \\frac{1}{t_{\\text{pump}}} - \\left(\\frac{1}{d_1} + \\frac{1}{d_2}\\right), \\quad T = \\frac{1}{r_{\\text{net}}}",
+      "plainText": "r_drain = 1/15 + 1/30; T = 1 / (1/t_pump - r_drain) for t_pump in {12, 8, 6} with 0 < T <= 16",
+      "givens": {
+        "d1": 15,
+        "d2": 30,
+        "tA": 12,
+        "tB": 8,
+        "tC": 6,
+        "limit": 16
+      },
+      "constants": {
+        "one": 1
+      },
+      "trapGivens": [
+        15,
+        6
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "15",
+        "tolerance": 0
+      },
+      "answerPlain": "15",
+      "answerDisplay": "15",
+      "inputHint": "Enter a whole number in hours",
+      "commonTrapTag": "c04-work-rate-arithmetic-mean-trap",
+      "trapDerivation": "15 - 6",
+      "trapValue": "9",
+      "verify": {
+        "source": "1 / (1 / 6 - (1 / 15 + 1 / 30))",
+        "trapValue": "9"
+      },
+      "checkpointHint": "Add the two open drain rates first, test each pump for positive net fill rate and compliance with the time window, and invert the surviving net rate.",
+      "references": [
+        "MTH-T01-C04"
+      ],
+      "steps": [
+        {
+          "latex": "r_{\\text{drain}} = \\frac{1}{15} + \\frac{1}{30}",
+          "explain": "Add the two open drain rates to obtain the combined outflow rate.",
+          "eq": [
+            "1 / 15 + 1 / 30",
+            "1 / 10"
+          ]
+        },
+        {
+          "latex": "r_A = \\frac{1}{12} - \\frac{1}{10}",
+          "explain": "Compute the net fill rate using Pump A.",
+          "eq": [
+            "1 / 12 - 1 / 10",
+            "-1 / 60"
+          ]
+        },
+        {
+          "latex": "r_A = -\\frac{1}{60} < 0",
+          "explain": "Reject Pump A because its net rate is negative, so the basin cannot fill."
+        },
+        {
+          "latex": "r_B = \\frac{1}{8} - \\frac{1}{10}",
+          "explain": "Compute the net fill rate using Pump B.",
+          "eq": [
+            "1 / 8 - 1 / 10",
+            "1 / 40"
+          ]
+        },
+        {
+          "latex": "T_B = 40 > 16",
+          "explain": "Reject Pump B because its fill time exceeds the servicing window.",
+          "eq": [
+            "1 / (1 / 40)",
+            "40"
+          ]
+        },
+        {
+          "latex": "r_C = \\frac{1}{6} - \\frac{1}{10}",
+          "explain": "Compute the net fill rate using Pump C.",
+          "eq": [
+            "1 / 6 - 1 / 10",
+            "1 / 15"
+          ]
+        },
+        {
+          "latex": "T_C = \\frac{1}{\\frac{1}{15}}",
+          "explain": "Invert the positive net rate of Pump C to obtain its fill time, which fits within the servicing window.",
+          "eq": [
+            "1 / (1 / 15)",
+            "15"
+          ]
+        },
+        {
+          "latex": "T_C = 15",
+          "explain": "State the hours needed to fill the basin.",
+          "val": "15"
+        }
+      ],
+      "blindSolve": {
+        "answer": "15",
+        "ambiguous": false,
+        "setup": "model",
+        "strategy": "prescribed",
+        "check": "edge",
+        "edgeRejected": "Pump A (net rate 1/12 - 1/10 = -1/60 <= 0, cannot fill) and Pump B (net rate 1/8 - 1/10 = 1/40 gives 40 hr > 16-hour window)",
+        "task": "compute",
+        "reverse": false,
+        "steps": 4
+      },
+      "id": "VAR-MTH-T01-C04-c04-constrained-fractional-tank-drain-rate-02",
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "c04-work-rate-arithmetic-mean-trap|choose|r_drain = #/# + #/#; T = # / (#/t_pump - r_drain) for t_pump in {#, #, #} with # < T <= #"
+    },
+    {
+      "variantId": "VAR-MTH-T01-C04-c04-constrained-fractional-tank-drain-rate-03",
+      "sourceArchetype": "c04-constrained-fractional-tank-drain-rate",
+      "archetypeKey": "c04-constrained-fractional-tank-drain-rate",
+      "archetype": "problem-solving",
+      "level": 4,
+      "category": "Fractional Rate Modeling",
+      "form": "choose",
+      "context": "shipyard_drydock_ballast_pumping",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "(a) Parallel intake pump rates add and an open relief valve subtracts to determine net ballast fill rate, with fill time = remaining fraction / net rate; (b) rates in tank-volumes/hr, 4/5 remaining capacity, and 8-hour fill time are realistic for shipyard ballast operations; (c) removal test holds since ballast filling with an open relief valve literally obeys net rate superposition."
+      },
+      "verificationLevel": "partial",
+      "prompt": "A shipyard ballast tank starts $\\frac{1}{5}$ full and is filled by two intake pumps running together: a port pump that fills an empty tank alone in $9$ hours and a starboard pump that fills it alone in $18$ hours. One pressure-relief drain valve must stay open throughout filling. Three relief valves are available: Valve A empties a full tank in $4$ hours, Valve B empties a full tank in $10$ hours, and Valve C empties a full tank in $15$ hours. What is the shortest time, in hours, needed to finish filling the tank completely using one of these relief valves?",
+      "display": "r_{\\text{net}} = \\frac{1}{t_1} + \\frac{1}{t_2} - \\frac{1}{t_{\\text{drain}}}, \\quad T = \\frac{1 - f_0}{r_{\\text{net}}}",
+      "plainText": "r_net = 1/9 + 1/18 - 1/t_drain for t_drain in {4, 10, 15}; min (1 - 1/5) / r_net for r_net > 0",
+      "givens": {
+        "n_init": 1,
+        "d_init": 5,
+        "t1": 9,
+        "t2": 18,
+        "tA": 4,
+        "tB": 10,
+        "tC": 15
+      },
+      "constants": {},
+      "trapGivens": [
+        9,
+        15
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "8",
+        "tolerance": 0
+      },
+      "answerPlain": "8",
+      "answerDisplay": "8",
+      "inputHint": "Enter a whole number in hours",
+      "commonTrapTag": "c04-work-rate-arithmetic-mean-trap",
+      "trapDerivation": "15 - 9",
+      "trapValue": "6",
+      "verify": {
+        "source": "(1 - 1 / 5) / (1 / 9 + 1 / 18 - 1 / 15)",
+        "trapValue": "6"
+      },
+      "checkpointHint": "Find the combined inflow rate and remaining tank fraction, discard any relief valve that yields a non-positive net rate, and divide the remaining fraction by the largest positive net rate.",
+      "references": [
+        "MTH-T01-C04"
+      ],
+      "steps": [
+        {
+          "latex": "r_{\\text{in}} = \\frac{1}{9} + \\frac{1}{18}",
+          "explain": "Add the two intake pump rates to find the combined inflow rate.",
+          "eq": [
+            "1 / 9 + 1 / 18",
+            "1 / 6"
+          ]
+        },
+        {
+          "latex": "f_{\\text{rem}} = 1 - \\frac{1}{5}",
+          "explain": "Calculate the remaining fraction of the tank to be filled.",
+          "eq": [
+            "1 - 1 / 5",
+            "4 / 5"
+          ]
+        },
+        {
+          "latex": "r_A = \\frac{1}{6} - \\frac{1}{4}",
+          "explain": "Compute the net rate when relief Valve A is open.",
+          "eq": [
+            "1 / 6 - 1 / 4",
+            "-1 / 12"
+          ]
+        },
+        {
+          "latex": "r_A = -\\frac{1}{12} < 0",
+          "explain": "Reject Valve A because outflow exceeds inflow, so the tank cannot fill."
+        },
+        {
+          "latex": "r_B = \\frac{1}{6} - \\frac{1}{10}",
+          "explain": "Compute the net rate when relief Valve B is open.",
+          "eq": [
+            "1 / 6 - 1 / 10",
+            "1 / 15"
+          ]
+        },
+        {
+          "latex": "T_B = \\frac{4}{5} \\div \\frac{1}{15}",
+          "explain": "Divide the remaining tank fraction by the net rate for Valve B.",
+          "eq": [
+            "(4 / 5) / (1 / 15)",
+            "12"
+          ]
+        },
+        {
+          "latex": "r_C = \\frac{1}{6} - \\frac{1}{15}",
+          "explain": "Compute the net rate when relief Valve C is open.",
+          "eq": [
+            "1 / 6 - 1 / 15",
+            "1 / 10"
+          ]
+        },
+        {
+          "latex": "T_C = \\frac{4}{5} \\div \\frac{1}{10}",
+          "explain": "Divide the remaining tank fraction by the net rate for Valve C.",
+          "eq": [
+            "(4 / 5) / (1 / 10)",
+            "8"
+          ]
+        },
+        {
+          "latex": "T_{\\min} = 8",
+          "explain": "Select the shorter filling time among the valid relief valves.",
+          "val": "8"
+        }
+      ],
+      "blindSolve": {
+        "answer": "8",
+        "ambiguous": false,
+        "setup": "model",
+        "strategy": "prescribed",
+        "check": "edge",
+        "edgeRejected": "Valve A (net rate 1/6 - 1/4 = -1/12 tank/hr <= 0, empties instead of filling)",
+        "task": "compute",
+        "reverse": false,
+        "steps": 4
+      },
+      "id": "VAR-MTH-T01-C04-c04-constrained-fractional-tank-drain-rate-03",
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "c04-work-rate-arithmetic-mean-trap|choose|r_net = #/# + #/# - #/t_drain for t_drain in {#, #, #}; min (# - #/#) / r_net for r_net > #"
     }
   ]
 }
