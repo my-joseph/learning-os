@@ -69,7 +69,7 @@ function statusDotClass(status: PickerStatus): string {
     case "In Progress":
       return "bg-indigo-600 dark:bg-indigo-400";
     case "Needs Retry":
-      return "bg-rose-600 dark:bg-rose-400";
+      return statusTone.wrong.dot;
     default:
       return statusTone.notTried.dot;
   }

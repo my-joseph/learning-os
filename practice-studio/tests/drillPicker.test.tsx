@@ -17,6 +17,7 @@ import {
   stepKeyboardIndex,
 } from "../src/lib/drillGrouping";
 import { updateRecentDrillIds } from "../src/lib/lastDrillStorage";
+import { statusTone } from "../src/lib/statusTone";
 import { DrillSwitcher } from "../src/components/shell/DrillSwitcher";
 import type { LabListItem } from "../src/lib/labModel";
 import type { DrillListItem } from "../src/types/drill";
@@ -398,7 +399,7 @@ assert.match(mathHtml, />U02</);
 assert.match(mathHtml, />Set 3</);
 assert.match(mathHtml, /Due today/);
 assert.match(mathHtml, /bg-indigo-600 dark:bg-indigo-400/);
-assert.match(mathHtml, /bg-rose-600 dark:bg-rose-400/);
+assert.ok(mathHtml.includes(statusTone.wrong.dot));
 // MTH-T01 starts collapsed so Fractions drills inside aren't expanded
 assert.match(mathHtml, /Prealgebra/);
 assert.doesNotMatch(mathHtml, />C04</, "collapsed topic must hide its child drills");
