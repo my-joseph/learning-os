@@ -33,14 +33,7 @@ import {
 import { isTouchPrimaryDevice } from "@/lib/mathPalette";
 import { hasSubstantiveAttempt } from "@/lib/reviewGuard";
 import { plainTitle } from "@/lib/titleText";
-import {
-  getChoiceResultStatus,
-  isChoiceInteractionLocked,
-  isChoiceQuestion,
-  isEditableEventTarget,
-  resolveChoiceKeyOption,
-  submitChoiceSelection,
-} from "@/lib/answerFeedback";
+import { useChoiceController } from "@/components/workspace/useChoiceController";
 
 const DynamicMathLiveInput = dynamic(
   () => import("@/components/math/MathLiveInput"),
@@ -119,8 +112,6 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
   const [showHint, setShowHint] = useState(false);
   const [showSolution, setShowSolution] = useState(() => shouldAutoReveal(problem));
   const [isChecking, setIsChecking] = useState(false);
-  const [checkingOptionId, setCheckingOptionId] = useState<string | null>(null);
-  const [choiceRetryUnlocked, setChoiceRetryUnlocked] = useState(false);
   // Equation set-up (display + plain-text) is hidden until the learner asks for it or finishes the problem.
   const [showSetup, setShowSetup] = useState(() => shouldAutoReveal(problem));
   const [inputMode, setInputMode] = useState<MathInputMode>("math");
@@ -128,6 +119,23 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
   const answerInputRef = useRef<HTMLInputElement | null>(null);
   const mathLiveRef = useRef<MathLiveInputHandle | null>(null);
   const stepsRef = useRef<HTMLDivElement | null>(null);
+
+  const {
+    isChoice,
+    choiceOptions,
+    checkingOptionId,
+    choiceLocked,
+    choiceResultStatus,
+    handleChoiceSelect,
+    unlockChoiceRetry,
+    resetChoiceState,
+  } = useChoiceController({
+    problem,
+    isChecking,
+    setIsChecking,
+    onInputChange,
+    onCheckAnswer,
+  });
 
   useEffect(() => {
     setInputMode(readMathInputMode());
@@ -162,11 +170,6 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
     setShowHint(false);
   }, [problem.id, problem.state.lastCheck?.verdict, problem.state.skipped]);
 
-  useEffect(() => {
-    setCheckingOptionId(null);
-    setChoiceRetryUnlocked(false);
-  }, [problem.id]);
-
   const toggleSetup = () => {
     if (!showSetup && (!answered || (!problem.display && !problem.plainText)) && onSetupRevealed) {
       onSetupRevealed();
@@ -183,7 +186,6 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
 
   const score = problem.state.score;
   const lastCheck: CheckResult | null | undefined = problem.state.lastCheck;
-  const isChoice = isChoiceQuestion(problem);
   const isMathLiveSupported = isMathLiveSupportedAnswerSpec(problem.answerSpec);
   const useMathLive = !isChoice && isMathLiveSupported && inputMode === "math";
   const placeholder = getProblemPlaceholder(problem);
@@ -257,18 +259,6 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
   const handleInsertLatex = useCallback((latex: string) => {
     mathLiveRef.current?.insertLatex(latex);
   }, []);
-  const choiceOptions = problem.answerSpec.options;
-  const choiceLocked = isChoiceInteractionLocked({
-    isChecking,
-    lastCheck,
-    skipped: problem.state.skipped,
-    retryUnlocked: choiceRetryUnlocked,
-  });
-  const choiceResultStatus = getChoiceResultStatus({
-    isChecking,
-    lastCheck,
-    skipped: problem.state.skipped,
-  });
 
   const lineChoiceData = useMemo(
     () =>
@@ -278,48 +268,9 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
     [isChoice, problem.prompt, problem.answerSpec.options]
   );
 
-  const handleChoiceSelect = useCallback(
-    async (optionId: string) => {
-      await submitChoiceSelection({
-        optionId,
-        disabled: choiceLocked,
-        isChecking,
-        onStart: (id) => {
-          setChoiceRetryUnlocked(false);
-          setCheckingOptionId(id);
-          setIsChecking(true);
-        },
-        onInputChange,
-        onCheckAnswer,
-        onFinish: () => {
-          setIsChecking(false);
-          setCheckingOptionId(null);
-        },
-      });
-    },
-    [choiceLocked, isChecking, onInputChange, onCheckAnswer]
-  );
-
-  useEffect(() => {
-    if (!isChoice || !choiceOptions?.length) return;
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.metaKey || e.ctrlKey || e.altKey) return;
-      if (!/^[1-9]$/.test(e.key)) return;
-      if (isEditableEventTarget(e.target)) return;
-      if (document.querySelector('[role="alertdialog"], [role="dialog"]')) return;
-      if (choiceLocked || isChecking) return;
-      const matched = resolveChoiceKeyOption(e.key, choiceOptions);
-      if (!matched) return;
-      e.preventDefault();
-      void handleChoiceSelect(matched.id);
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isChoice, choiceOptions, choiceLocked, isChecking, handleChoiceSelect]);
-
   const handleTryAgain = () => {
     if (isChoice) {
-      setChoiceRetryUnlocked(true);
+      unlockChoiceRetry();
       return;
     }
     if (useMathLive) {
@@ -568,8 +519,7 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
           onToggleStepHighlight={onToggleStepHighlight}
           onMarkDivergedStep={onMarkDivergedStep}
           onReset={() => {
-            setChoiceRetryUnlocked(false);
-            setCheckingOptionId(null);
+            resetChoiceState();
             onResetProblem();
           }}
           onSkip={

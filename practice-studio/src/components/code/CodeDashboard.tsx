@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Reveal } from "@/components/motion/Reveal";
 import {
   Check,
@@ -32,18 +32,11 @@ import {
 } from "@/components/workspace/ProblemAssistSection";
 import { ProblemNavFooter } from "@/components/workspace/ProblemNavFooter";
 import { ProblemSelfEval } from "@/components/workspace/ProblemSelfEval";
+import { useChoiceController } from "@/components/workspace/useChoiceController";
 import {
   canShowReferenceSolution,
   hasSubstantiveAttempt,
 } from "@/lib/reviewGuard";
-import {
-  getChoiceResultStatus,
-  isChoiceInteractionLocked,
-  isChoiceQuestion,
-  isEditableEventTarget,
-  resolveChoiceKeyOption,
-  submitChoiceSelection,
-} from "@/lib/answerFeedback";
 import {
   getPrgScore,
   getReviewRequest,
@@ -175,8 +168,6 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
 
   // In-browser question state
   const [isChecking, setIsChecking] = useState(false);
-  const [checkingOptionId, setCheckingOptionId] = useState<string | null>(null);
-  const [choiceRetryUnlocked, setChoiceRetryUnlocked] = useState(false);
   const [showSolution, setShowSolution] = useState(() =>
     hasSubstantiveAttempt(problem.state)
   );
@@ -186,6 +177,24 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
   const [isLoadingReference, setIsLoadingReference] = useState(false);
   const answerInputRef = useRef<HTMLInputElement | null>(null);
   const stepsRef = useRef<HTMLDivElement | null>(null);
+
+  const {
+    isChoice,
+    choiceOptions,
+    checkingOptionId,
+    choiceLocked,
+    choiceResultStatus,
+    handleChoiceSelect,
+    unlockChoiceRetry,
+    resetChoiceState,
+  } = useChoiceController({
+    problem,
+    isChecking,
+    setIsChecking,
+    onInputChange,
+    onCheckAnswer,
+    enabled: !isKata,
+  });
 
   const hasSubstantiveState = hasSubstantiveAttempt(problem.state);
 
@@ -209,11 +218,6 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
     problem.solutionCode,
     hasSubstantiveState,
   ]);
-
-  useEffect(() => {
-    setCheckingOptionId(null);
-    setChoiceRetryUnlocked(false);
-  }, [problem.id]);
 
   const effectiveState = {
     ...problem.state,
@@ -380,62 +384,10 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
 
   const score = problem.state.score;
   const lastCheck: CheckResult | null | undefined = problem.state.lastCheck;
-  const isChoice = isChoiceQuestion(problem);
-  const choiceOptions = problem.answerSpec?.options;
-  const choiceLocked = isChoiceInteractionLocked({
-    isChecking,
-    lastCheck,
-    skipped: problem.state.skipped,
-    retryUnlocked: choiceRetryUnlocked,
-  });
-  const choiceResultStatus = getChoiceResultStatus({
-    isChecking,
-    lastCheck,
-    skipped: problem.state.skipped,
-  });
-
-  const handleChoiceSelect = useCallback(
-    async (optionId: string) => {
-      await submitChoiceSelection({
-        optionId,
-        disabled: choiceLocked,
-        isChecking,
-        onStart: (id) => {
-          setChoiceRetryUnlocked(false);
-          setCheckingOptionId(id);
-          setIsChecking(true);
-        },
-        onInputChange,
-        onCheckAnswer,
-        onFinish: () => {
-          setIsChecking(false);
-          setCheckingOptionId(null);
-        },
-      });
-    },
-    [choiceLocked, isChecking, onInputChange, onCheckAnswer]
-  );
-
-  useEffect(() => {
-    if (isKata || !isChoice || !choiceOptions?.length) return;
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.metaKey || e.ctrlKey || e.altKey) return;
-      if (!/^[1-9]$/.test(e.key)) return;
-      if (isEditableEventTarget(e.target)) return;
-      if (document.querySelector('[role="alertdialog"], [role="dialog"]')) return;
-      if (choiceLocked || isChecking) return;
-      const matched = resolveChoiceKeyOption(e.key, choiceOptions);
-      if (!matched) return;
-      e.preventDefault();
-      void handleChoiceSelect(matched.id);
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isKata, isChoice, choiceOptions, choiceLocked, isChecking, handleChoiceSelect]);
 
   const handleTryAgain = () => {
     if (isChoice) {
-      setChoiceRetryUnlocked(true);
+      unlockChoiceRetry();
       return;
     }
     answerInputRef.current?.focus();
@@ -1116,8 +1068,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
               onToggleStepHighlight={onToggleStepHighlight}
               onMarkDivergedStep={onMarkDivergedStep}
               onReset={() => {
-                setChoiceRetryUnlocked(false);
-                setCheckingOptionId(null);
+                resetChoiceState();
                 onResetProblem();
               }}
               onSkip={
