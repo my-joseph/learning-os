@@ -278,5 +278,47 @@ class IngestFillsSyncFields(unittest.TestCase):
         self.assertTrue(all("state" not in p for p in saved["problems"]))
 
 
+class AuditSolutionLeaksScript(unittest.TestCase):
+    def test_find_the_flaw_shown_work_lines_are_not_flagged(self):
+        """B-10: audit_solution_leaks.py must exempt find-the-flaw Line N: shown work via story_text."""
+        import json
+        import os
+        import tempfile
+
+        from scripts.audit_solution_leaks import main as audit_main
+
+        flaw_prob = {
+            "id": "Q05",
+            "level": 3,
+            "prompt": (
+                "A student solved $2x - 1 = 512$ and wrote:\n"
+                "Line 1: $2x - 1 = 512$\n"
+                "Line 2: $2x = 513$\n"
+                "Line 3: $x = \\frac{513}{2}$\n"
+                "Line 4: $x = 256.5$\n"
+                "Which line is the first one that is wrong?"
+            ),
+            "answerSpec": {"type": "choice", "options": [{"id": "1", "label": "Line 1"}], "correct": "1"},
+            "verify": {"source": "256", "flaw": {"values": ["256", "513/2", "513/2", "513/2"], "firstWrong": 1}},
+        }
+        leaky_prob = {
+            "id": "Q01",
+            "level": 1,
+            "prompt": "A floor is $14$ m long and $9$ m wide. Find the area using $A = 14 \\times 9$.",
+            "answerSpec": {"type": "number", "value": "126"},
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            unit_dir = os.path.join(tmp, "MTH-T02-C01-U03")
+            os.makedirs(unit_dir)
+            flaw_path = os.path.join(unit_dir, "DRL-MTH-T02-C01-U03-01.json")
+            with open(flaw_path, "w", encoding="utf-8") as f:
+                json.dump({"drillId": "DRL-MTH-T02-C01-U03-01", "problems": [flaw_prob]}, f)
+            self.assertEqual(audit_main(["MTH-T02-C01-U03", "--data-root", tmp]), 0)
+
+            with open(flaw_path, "w", encoding="utf-8") as f:
+                json.dump({"drillId": "DRL-MTH-T02-C01-U03-01", "problems": [flaw_prob, leaky_prob]}, f)
+            self.assertEqual(audit_main(["MTH-T02-C01-U03", "--data-root", tmp]), 1)
+
+
 if __name__ == "__main__":
     unittest.main()

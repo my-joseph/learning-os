@@ -22,7 +22,8 @@
       "usedContexts": [
         "gps_waypoint_mapping"
       ],
-      "unitCode": "MTH-T01-C14-U04"
+      "unitCode": "MTH-T01-C14-U04",
+      "figureNone": "Plotting a given ordered pair on a labeled coordinate grid would reveal its quadrant directly; quadrant identification is determined from the signs of x and y."
     },
     {
       "archetypeKey": "c14-intercepts-linear-equations",
@@ -43,7 +44,8 @@
       "usedContexts": [
         "budget_allocation_extremes"
       ],
-      "unitCode": "MTH-T01-C14-U02"
+      "unitCode": "MTH-T01-C14-U02",
+      "figureNone": "Algebraic intercept calculation from Ax + By = C; plotting the line on a labeled coordinate grid would reveal the axis intercepts directly."
     },
     {
       "archetypeKey": "c14-horizontal-vertical-lines",
@@ -64,7 +66,8 @@
       "usedContexts": [
         "drone_horizontal_corridor"
       ],
-      "unitCode": "MTH-T01-C14-U03"
+      "unitCode": "MTH-T01-C14-U03",
+      "figureNone": "Determining the equation or slope of a horizontal or vertical line from algebraic data; plotting the line on a labeled grid would reveal the constant value directly."
     },
     {
       "archetypeKey": "c14-slope-through-two-points",
@@ -84,6 +87,16 @@
       ],
       "usedContexts": [
         "roadway_grade_gradient"
+      ],
+      "figureBuilders": [
+        {
+          "fn": "build_function_graph_figure",
+          "labels": {
+            "points": "({x1:g}, {y1:g}); ({x2:g}, {y2:g})",
+            "point_labels": "P_1|P_2"
+          },
+          "title": "Two Points on the Coordinate Plane"
+        }
       ],
       "unitCode": "MTH-T01-C14-U01"
     },
@@ -106,7 +119,8 @@
       "usedContexts": [
         "sensor_linear_calibration_curve"
       ],
-      "unitCode": "MTH-T01-C14-U01"
+      "unitCode": "MTH-T01-C14-U01",
+      "figureNone": "Extracting slope m and intercept b algebraically from a linear equation; plotting the line on a labeled grid would let the learner read off b and m directly."
     },
     {
       "archetypeKey": "c14-parallel-lines-equal-slope",
@@ -127,7 +141,8 @@
       "usedContexts": [
         "railway_track_parallelism"
       ],
-      "unitCode": "MTH-T01-C14-U01"
+      "unitCode": "MTH-T01-C14-U01",
+      "figureNone": "Find-the-flaw diagnosis of algebraic slope calculations for parallel lines; the work is symbolic and a graph adds nothing."
     },
     {
       "archetypeKey": "c14-midpoint-coordinate-formula",
@@ -148,7 +163,8 @@
       "usedContexts": [
         "telecom_relay_placement"
       ],
-      "unitCode": "MTH-T01-C14-U04"
+      "unitCode": "MTH-T01-C14-U04",
+      "figureNone": "Find-the-flaw diagnosis of algebraic midpoint calculations; plotting the segment on a labeled grid could reveal the midpoint visually."
     },
     {
       "archetypeKey": "c14-perpendicular-lines-negative-reciprocal",
@@ -169,7 +185,8 @@
       "usedContexts": [
         "orthogonal_drainage_gradient"
       ],
-      "unitCode": "MTH-T01-C14-U01"
+      "unitCode": "MTH-T01-C14-U01",
+      "figureNone": "Find-the-flaw diagnosis of algebraic negative-reciprocal slope work; the work is symbolic and a graph adds nothing."
     },
     {
       "archetypeKey": "c14-linear-cost-graph-modeling",
@@ -191,7 +208,8 @@
       "usedContexts": [
         "commercial_fleet_mileage_cost"
       ],
-      "unitCode": "MTH-T01-C14-U03"
+      "unitCode": "MTH-T01-C14-U03",
+      "figureNone": "Deriving two linear cost models and solving for their break-even intersection; plotting both lines on a labeled grid would reveal the intersection point directly."
     },
     {
       "archetypeKey": "c14-coordinate-distance-area-synthesis",
@@ -213,7 +231,8 @@
       "usedContexts": [
         "solar_farm_boundary_acreage"
       ],
-      "unitCode": "MTH-T01-C14-U04"
+      "unitCode": "MTH-T01-C14-U04",
+      "figureNone": "Solving an absolute-value height equation for two unknown vertex positions on a coordinate grid; plotting the target triangle on a grid would reveal the unknown coordinates."
     }
   ]
 }

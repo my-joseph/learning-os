@@ -32,7 +32,7 @@ from code_engine.examples_gate import (
     evaluate_lab_milestone_examples,
     validate_examples_and_constraints_schema,
 )
-from code_engine.lint_check import TOOLS_LINT_DIR, get_lint_binaries
+from code_engine.lint_check import TOOLS_LINT_DIR, LintToolsMissingError, get_lint_binaries
 from code_engine.quality_checks import load_universal
 from code_engine.submit import _parse_junit_xml
 from notion_sync.client import load_env, notion_request
@@ -96,14 +96,26 @@ def _run_react_tests(test_files: list[Path], cwd: Path, src_dir: Path) -> list[d
             continue
         link.symlink_to(shared_modules, target_is_directory=True)
         linked.append(link)
+    test_root = Path(os.path.commonpath([str(f.resolve().parent) for f in test_files]))
+    allowed_dirs = list(
+        dict.fromkeys(
+            (
+                str(cwd),
+                str(src_dir),
+                str(test_root),
+                str(Path(__file__).resolve().parents[1]),
+            )
+        )
+    )
     try:
         with tempfile.TemporaryDirectory(prefix="lab_vitest_", dir=TOOLS_LINT_DIR) as tmp:
             tmp_dir = Path(tmp)
             config = tmp_dir / "vitest.config.ts"
             report = tmp_dir / "junit.xml"
+            allow_js = ", ".join(json.dumps(d) for d in allowed_dirs)
             config.write_text(
                 "import { defineConfig } from 'vitest/config';\n"
-                f"export default defineConfig({{ esbuild: {{ jsx: 'automatic' }}, test: {{ environment: 'jsdom' }}, server: {{ fs: {{ allow: [{json.dumps(str(Path(cwd).resolve()))}, {json.dumps(str(src_dir.resolve()))}, {json.dumps(str(Path(__file__).resolve().parents[1]))}] }} }} }});\n",
+                f"export default defineConfig({{ root: {json.dumps(str(test_root))}, esbuild: {{ jsx: 'automatic' }}, test: {{ environment: 'jsdom' }}, server: {{ fs: {{ allow: [{allow_js}] }} }} }});\n",
                 encoding="utf-8",
             )
             env = dict(os.environ)
@@ -394,7 +406,21 @@ def _check_rubric(
     return errors
 
 
-def _check_reference(lab_dir: Path, ref_dir: Path, cfg: dict[str, Any]) -> list[str]:
+def _allow_missing_lint(explicit: bool = False) -> bool:
+    return bool(explicit) or os.environ.get("LEARNINGOS_ALLOW_MISSING_LINT", "").strip().lower() in (
+        "1",
+        "true",
+        "yes",
+    )
+
+
+def _check_reference(
+    lab_dir: Path,
+    ref_dir: Path,
+    cfg: dict[str, Any],
+    *,
+    allow_missing_lint: bool = False,
+) -> list[str]:
     errors: list[str] = []
     ref_src = ref_dir / "src"
     hidden_dir = ref_dir / "hidden"
@@ -415,26 +441,75 @@ def _check_reference(lab_dir: Path, ref_dir: Path, cfg: dict[str, Any]) -> list[
             if not cases or failed:
                 errors.append(f"[{mid}] Reference failed hidden tests: {failed or '0 tests ran'}")
 
-    lint_findings = _run_eslint_dir(ref_src, eslint_cfg)
+    try:
+        lint_findings = _run_eslint_dir(ref_src, eslint_cfg)
+    except (LintToolsMissingError, FileNotFoundError) as exc:
+        if _allow_missing_lint(allow_missing_lint):
+            print(f"  [SKIP] Reference ESLint gate: {exc}")
+            lint_findings = []
+        else:
+            errors.append(
+                f"Reference ESLint gate cannot run: {exc} "
+                "(Run `cd tools/lint && npm ci`, or opt out with --allow-missing-lint / LEARNINGOS_ALLOW_MISSING_LINT=1.)"
+            )
+            lint_findings = []
     if lint_findings:
         errors.append(f"Reference ESLint errors ({len(lint_findings)}): {lint_findings[:3]}")
 
-    tsc_errors = _run_tsc(ref_dir / "tsconfig.json")
+    try:
+        tsc_errors = _run_tsc(ref_dir / "tsconfig.json")
+    except (LintToolsMissingError, FileNotFoundError) as exc:
+        if _allow_missing_lint(allow_missing_lint):
+            print(f"  [SKIP] Reference tsc gate: {exc}")
+            tsc_errors = []
+        else:
+            errors.append(
+                f"Reference tsc gate cannot run: {exc} "
+                "(Run `cd tools/lint && npm ci`, or opt out with --allow-missing-lint / LEARNINGOS_ALLOW_MISSING_LINT=1.)"
+            )
+            tsc_errors = []
     if tsc_errors:
         errors.append(f"Reference tsc errors: {tsc_errors[:3]}")
     return errors
 
 
-def _check_stubs(lab_dir: Path, cfg: dict[str, Any]) -> list[str]:
+def _check_stubs(
+    lab_dir: Path,
+    cfg: dict[str, Any],
+    *,
+    allow_missing_lint: bool = False,
+) -> list[str]:
     errors: list[str] = []
     stub_src = lab_dir / "src"
     eslint_cfg = lab_dir / "eslint.config.js"
 
-    lint_findings = _run_eslint_dir(stub_src, eslint_cfg)
+    try:
+        lint_findings = _run_eslint_dir(stub_src, eslint_cfg)
+    except (LintToolsMissingError, FileNotFoundError) as exc:
+        if _allow_missing_lint(allow_missing_lint):
+            print(f"  [SKIP] Stub ESLint gate: {exc}")
+            lint_findings = []
+        else:
+            errors.append(
+                f"Stub ESLint gate cannot run: {exc} "
+                "(Run `cd tools/lint && npm ci`, or opt out with --allow-missing-lint / LEARNINGOS_ALLOW_MISSING_LINT=1.)"
+            )
+            lint_findings = []
     if lint_findings:
         errors.append(f"Stub ESLint errors ({len(lint_findings)}): {lint_findings[:3]}")
 
-    tsc_errors = _run_tsc(lab_dir / "tsconfig.json")
+    try:
+        tsc_errors = _run_tsc(lab_dir / "tsconfig.json")
+    except (LintToolsMissingError, FileNotFoundError) as exc:
+        if _allow_missing_lint(allow_missing_lint):
+            print(f"  [SKIP] Stub tsc gate: {exc}")
+            tsc_errors = []
+        else:
+            errors.append(
+                f"Stub tsc gate cannot run: {exc} "
+                "(Run `cd tools/lint && npm ci`, or opt out with --allow-missing-lint / LEARNINGOS_ALLOW_MISSING_LINT=1.)"
+            )
+            tsc_errors = []
     if tsc_errors:
         errors.append(f"Stub tsc errors: {tsc_errors[:3]}")
 
@@ -471,7 +546,7 @@ def _apply_files(base_dir: Path, files_map: dict[str, str]) -> None:
         target.write_text(code, encoding="utf-8")
 
 
-def _check_trap_mutants(ref_dir: Path, cfg: dict[str, Any]) -> list[str]:
+def _check_trap_mutants(ref_dir: Path, cfg: dict[str, Any], *, ingested: bool = False) -> list[str]:
     errors: list[str] = []
     ref_src = ref_dir / "src"
     hidden_dir = ref_dir / "hidden"
@@ -479,6 +554,8 @@ def _check_trap_mutants(ref_dir: Path, cfg: dict[str, Any]) -> list[str]:
     for ms in cfg.get("milestones") or []:
         mid = ms.get("id", "?")
         mutant = ms.get("trapMutant")
+        if mutant is None and ingested:
+            continue
         if not isinstance(mutant, dict):
             errors.append(f"[{mid}] Missing 'trapMutant' on milestone.")
             continue
@@ -530,7 +607,13 @@ def _check_no_leaks(lab_dir: Path) -> list[str]:
     return errors
 
 
-def _check_blind_solve(lab_dir: Path, ref_dir: Path, cfg: dict[str, Any]) -> list[str]:
+def _check_blind_solve(
+    lab_dir: Path,
+    ref_dir: Path,
+    cfg: dict[str, Any],
+    *,
+    ingested: bool = False,
+) -> list[str]:
     errors: list[str] = []
     bs = cfg.get("blindSolve")
     if not isinstance(bs, list) or not bs:
@@ -546,7 +629,7 @@ def _check_blind_solve(lab_dir: Path, ref_dir: Path, cfg: dict[str, Any]) -> lis
 
     with tempfile.TemporaryDirectory(prefix="lab_blind_") as tmp:
         tmp_lab = Path(tmp) / lab_dir.name
-        shutil.copytree(lab_dir, tmp_lab)
+        copied = False
 
         for ms in cfg.get("milestones") or []:
             mid = str(ms.get("id", "?"))
@@ -559,8 +642,14 @@ def _check_blind_solve(lab_dir: Path, ref_dir: Path, cfg: dict[str, Any]) -> lis
                 continue
             fmap = rec.get("files")
             if not isinstance(fmap, dict) or not fmap:
+                if ingested and rec.get("passed") is True:
+                    continue
                 errors.append(f"[{mid}] blindSolve entry for '{mid}' is missing 'files'.")
                 continue
+
+            if not copied:
+                shutil.copytree(lab_dir, tmp_lab)
+                copied = True
 
             identical = False
             for rel, code in fmap.items():
@@ -652,6 +741,8 @@ def check_lab(
     vault_dir: Path | None = None,
     universal_path: Path | None = None,
     offline: bool = False,
+    ingested: bool = False,
+    allow_missing_lint: bool = False,
 ) -> list[str]:
     """Run all lab ingest gates without modifying files. Returns list of error strings."""
     resolved_ref = _resolve_ref_dir(lab_dir, ref_dir)
@@ -668,11 +759,11 @@ def check_lab(
     )
     errors.extend(_check_rubric(cfg, vault_dir=vault_dir, universal_path=universal_path))
     errors.extend(_check_no_leaks(lab_dir))
-    errors.extend(_check_reference(lab_dir, resolved_ref, cfg))
+    errors.extend(_check_reference(lab_dir, resolved_ref, cfg, allow_missing_lint=allow_missing_lint))
     errors.extend(_check_examples(lab_dir, resolved_ref, cfg))
-    errors.extend(_check_stubs(lab_dir, cfg))
-    errors.extend(_check_trap_mutants(resolved_ref, cfg))
-    errors.extend(_check_blind_solve(lab_dir, resolved_ref, cfg))
+    errors.extend(_check_stubs(lab_dir, cfg, allow_missing_lint=allow_missing_lint))
+    errors.extend(_check_trap_mutants(resolved_ref, cfg, ingested=ingested))
+    errors.extend(_check_blind_solve(lab_dir, resolved_ref, cfg, ingested=ingested))
     errors.extend(_check_review(cfg))
     return errors
 
@@ -685,6 +776,7 @@ def finalise_lab(
     vault_dir: Path | None = None,
     universal_path: Path | None = None,
     offline: bool = False,
+    allow_missing_lint: bool = False,
 ) -> dict[str, Any]:
     """Run all gates, then strip blindSolve code and trapMutants from lab.config.json."""
     errors = check_lab(
@@ -694,6 +786,7 @@ def finalise_lab(
         vault_dir=vault_dir,
         universal_path=universal_path,
         offline=offline,
+        allow_missing_lint=allow_missing_lint,
     )
     if errors:
         raise ValueError("\n".join(errors))
@@ -717,24 +810,58 @@ def finalise_lab(
     return final_cfg
 
 
+def _resolve_ingested_lab_dir(target: str) -> Path:
+    candidate = Path(target)
+    if candidate.is_dir():
+        return candidate
+    labs_root = Path(os.environ.get("LABS_DIR", "labs"))
+    return labs_root / target
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="python -m code_engine.lab_ingest",
         description="Validate and finalise a PRG project lab.",
     )
-    parser.add_argument("lab_dir", help="Path to lab directory, e.g. labs/LAB-PRG-T01-C01-01")
+    parser.add_argument("lab_dir", nargs="?", default=None, help="Path to lab directory, e.g. labs/LAB-PRG-T01-C01-01")
     parser.add_argument("--check", action="store_true", help="Run gates only without modifying lab.config.json")
+    parser.add_argument(
+        "--ingested",
+        nargs="?",
+        const=True,
+        default=False,
+        help="Re-run gates on an already-finalised lab (accepts stripped blindSolve/trapMutant provenance). Pass a LAB_ID/path or combine with --check <lab_dir>.",
+    )
+    parser.add_argument(
+        "--allow-missing-lint",
+        action="store_true",
+        help="Allow skipping ESLint/tsc gates if tools/lint/node_modules is missing (or set LEARNINGOS_ALLOW_MISSING_LINT=1).",
+    )
     parser.add_argument("--offline", action="store_true", help="Skip Notion Status GET check for extra-project")
     parser.add_argument("--id-map", default="id_map.json", help="Path to id_map.json")
     parser.add_argument("--vault-dir", default=None, help="Override reasoning_vault directory")
     args = parser.parse_args(argv)
 
-    lab_dir = Path(args.lab_dir)
+    ingested_mode = bool(args.ingested)
+    raw_target = args.lab_dir
+    if raw_target is None and isinstance(args.ingested, str):
+        raw_target = args.ingested
+    if not raw_target:
+        parser.error("lab_dir is required (or pass --ingested <LAB_ID>)")
+
+    lab_dir = _resolve_ingested_lab_dir(raw_target) if ingested_mode else Path(raw_target)
     id_map_path = Path(args.id_map)
     vault_dir = Path(args.vault_dir) if args.vault_dir else None
 
-    if args.check:
-        errors = check_lab(lab_dir, id_map_path=id_map_path, vault_dir=vault_dir, offline=args.offline)
+    if args.check or ingested_mode:
+        errors = check_lab(
+            lab_dir,
+            id_map_path=id_map_path,
+            vault_dir=vault_dir,
+            offline=args.offline,
+            ingested=ingested_mode,
+            allow_missing_lint=args.allow_missing_lint,
+        )
         if errors:
             for err in errors:
                 print(f"FAIL: {err}", file=sys.stderr)
@@ -743,7 +870,13 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     try:
-        cfg = finalise_lab(lab_dir, id_map_path=id_map_path, vault_dir=vault_dir, offline=args.offline)
+        cfg = finalise_lab(
+            lab_dir,
+            id_map_path=id_map_path,
+            vault_dir=vault_dir,
+            offline=args.offline,
+            allow_missing_lint=args.allow_missing_lint,
+        )
     except Exception as exc:
         print(f"FAIL: {exc}", file=sys.stderr)
         return 1

@@ -99,7 +99,11 @@
         "weakDistractors": 0
       },
       "levelLabel": "Level 1 - Core Foundations",
-      "inputHint": "Enter a real number."
+      "inputHint": "Enter a real number.",
+      "review": {
+        "verdict": "pass",
+        "note": "Re-solved: 4i^2 - 9 = 4(-1) - 9 = -13; plain prompt is unambiguous, steps are single-transformation, trap matches i^2 = +1 misconception (-5), and hint does not leak."
+      }
     },
     {
       "id": "Q02",
@@ -108,6 +112,10 @@
       "archetype": "problem-solving",
       "archetypeKey": "t02-c01-u01-square-root-negative-numbers",
       "context": "control_system_poles",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "An undamped second-order control system genuinely has purely imaginary poles s = +-sqrt(-k) = +-bi with positive natural frequency b = 7; domain law and sign constraint hold."
+      },
       "verificationLevel": "partial",
       "prompt": "A control system has a pole at $s = \\sqrt{-49}$. Rewrite the pole in the form $s = bi$ with $b$ positive and find $b$.",
       "display": "\\sqrt{-n} = i\\sqrt{n}",
@@ -195,7 +203,11 @@
         "weakDistractors": 0
       },
       "levelLabel": "Level 1 - Core Foundations",
-      "inputHint": "Enter a positive real number."
+      "inputHint": "Enter a positive real number.",
+      "review": {
+        "verdict": "pass",
+        "note": "Re-solved: sqrt(-49) = 7i so b = 7; prompt clearly specifies positive b, steps are single-transformation, trap matches halving instead of square root (24.5), and hint does not leak."
+      }
     },
     {
       "id": "Q03",
@@ -204,6 +216,10 @@
       "archetype": "problem-solving",
       "archetypeKey": "t02-c01-u01-adding-complex-numbers",
       "context": "rf_superposition",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "Coherent RF phasor amplitudes in volts superpose by complex addition z1 + z2, so the combined real part is Re(z1) + Re(z2) = 9 V; domain law and voltage units hold."
+      },
       "verificationLevel": "partial",
       "prompt": "Two RF signals arrive at an antenna with complex amplitudes $7 + 3i$ and $2 + 8i$ (in volts). Find the real part of the combined amplitude when the signals superpose.",
       "display": "\\text{Re}(z_1 + z_2) = \\text{Re}(z_1) + \\text{Re}(z_2)",
@@ -291,7 +307,11 @@
         "weakDistractors": 0
       },
       "levelLabel": "Level 2 - Applied Inversion",
-      "inputHint": "Enter a real number."
+      "inputHint": "Enter a real number.",
+      "review": {
+        "verdict": "pass",
+        "note": "Re-solved: Re((7+3i)+(2+8i)) = 7 + 2 = 9; prompt is unambiguous, steps are single-transformation, trap matches summing real and imaginary parts (20), and hint does not leak."
+      }
     },
     {
       "id": "Q04",
@@ -300,6 +320,10 @@
       "archetype": "problem-solving",
       "archetypeKey": "t02-c01-u01-subtracting-complex-numbers",
       "context": "radar_doppler_delta",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "Coherent pulse-to-pulse radar echo cancellation takes the complex difference z_now - z_prev; real parts subtract in the stated order (4 - 9 = -5), consistent with domain law and units."
+      },
       "verificationLevel": "partial",
       "prompt": "A radar processor records the complex echo $4 + 13i$ from the current pulse and $9 + 5i$ from the previous pulse. The change is the current echo minus the previous echo. Find the real part of the change.",
       "display": "\\text{Re}(z_1 - z_2) = \\text{Re}(z_1) - \\text{Re}(z_2)",
@@ -387,7 +411,11 @@
         "weakDistractors": 0
       },
       "levelLabel": "Level 2 - Applied Inversion",
-      "inputHint": "Enter a real number."
+      "inputHint": "Enter a real number.",
+      "review": {
+        "verdict": "pass",
+        "note": "Re-solved: Re((4+13i)-(9+5i)) = 4 - 9 = -5; prompt clearly states current minus previous, steps are single-transformation, trap matches subtraction order swap (5), and hint does not leak."
+      }
     },
     {
       "id": "Q05",
@@ -485,7 +513,11 @@
         "weakDistractors": 0
       },
       "levelLabel": "Level 2 - Applied Inversion",
-      "inputHint": "Enter a real number."
+      "inputHint": "Enter a real number.",
+      "review": {
+        "verdict": "pass",
+        "note": "Re-solved: (6i)(7i) = 42i^2 = -42; plain prompt is unambiguous, steps are single-transformation, trap matches forgetting i^2 = -1 (42), and hint does not leak."
+      }
     }
   ],
   "drillId": "DRL-MTH-T02-C01-U01-03",

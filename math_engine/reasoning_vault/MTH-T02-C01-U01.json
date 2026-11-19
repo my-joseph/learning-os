@@ -34,7 +34,8 @@
       "governingRelation": "\\sqrt{-n} = i\\sqrt{n} \\quad (n > 0)",
       "cognitiveTraps": [
         "t02-c01-u01-drop-imaginary-unit-trap",
-        "t02-c01-u01-square-negative-radicand-trap"
+        "t02-c01-u01-square-negative-radicand-trap",
+        "t02-c01-u01-divide-by-two-instead-of-root-trap"
       ],
       "versatileDomains": [
         "rlc_circuit_damping",

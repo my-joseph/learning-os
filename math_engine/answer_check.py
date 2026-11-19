@@ -1404,7 +1404,20 @@ def check_tuple(spec, raw):
 
 
 def check_choice(spec, raw):
-    ok = raw.strip().upper() == str(spec["correct"]).strip().upper()
+    u = str(raw).strip().upper()
+    options = spec.get("options")
+    if isinstance(options, list) and options:
+        valid_ids = {
+            str(opt["id"]).strip().upper() for opt in options if isinstance(opt, dict) and opt.get("id") is not None
+        }
+        if valid_ids and u not in valid_ids:
+            return {
+                "verdict": "invalid input",
+                "message": f"Option '{str(raw).strip()}' is not one of the available choices.",
+                "components": [],
+                "diagnostics": [],
+            }
+    ok = u == str(spec["correct"]).strip().upper()
     return {
         "verdict": "correct" if ok else "incorrect",
         "message": "Correct." if ok else "Incorrect choice.",

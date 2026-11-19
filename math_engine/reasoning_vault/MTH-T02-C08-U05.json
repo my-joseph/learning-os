@@ -84,7 +84,8 @@
         "ferris_wheel_viewing_window",
         "thermal_chamber_cycle_compliance"
       ],
-      "usedContexts": []
+      "usedContexts": [],
+      "figureNone": "Sinusoidal threshold-crossing equations solved algebraically; plotting the wave with the threshold line on a labeled grid would reveal the crossing times and duration directly."
     }
   ]
 }

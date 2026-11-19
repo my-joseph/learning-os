@@ -369,6 +369,59 @@ def test_lab_sync_pristine_mocked(tmp_path: Path, monkeypatch: pytest.MonkeyPatc
     assert copy.deepcopy(updated_map["LAB-PRG-T01-C01-99"])["id"] == "new-lab-page-123"
 
 
+def test_check_lab_ingested_mode_accepts_finalised_lab_provenance(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """B-12: lab_ingest --check --ingested re-runs all non-draft gates on finalised labs."""
+    _require_node_and_lint()
+    lab_dir, ref_dir, id_map_path = _make_fixture_lab(tmp_path)
+
+    lab_ingest.finalise_lab(lab_dir, ref_dir=ref_dir, id_map_path=id_map_path, offline=True)
+
+    # Default mode rejects stripped trapMutant and blindSolve.files
+    raw_errors = lab_ingest.check_lab(lab_dir, ref_dir=ref_dir, id_map_path=id_map_path, offline=True)
+    assert any("Missing 'trapMutant'" in e for e in raw_errors)
+    assert any("missing 'files'" in e for e in raw_errors)
+
+    # Ingested mode accepts finalised provenance while still running all other gates
+    assert lab_ingest.check_lab(lab_dir, ref_dir=ref_dir, id_map_path=id_map_path, offline=True, ingested=True) == []
+
+    # CLI `--check --ingested <LAB_ID>` resolves the lab directory under LABS_DIR
+    monkeypatch.setenv("LABS_DIR", str(lab_dir.parent))
+    assert (
+        lab_ingest.main(
+            ["--check", "--ingested", lab_dir.name, "--offline", "--id-map", str(id_map_path)],
+        )
+        == 0
+    )
+
+
+def test_check_lab_fails_closed_when_lint_tools_missing_unless_opted_out(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """B-13: lab_ingest fails closed with an actionable message when tools/lint/node_modules is missing."""
+    _require_node_and_lint()
+    lab_dir, ref_dir, id_map_path = _make_fixture_lab(tmp_path)
+
+    def _raise_missing(*_args: Any, **_kwargs: Any) -> Any:
+        raise LintToolsMissingError("ESLint binary not installed in tools/lint/node_modules.")
+
+    monkeypatch.setattr(lab_ingest, "_run_eslint_dir", _raise_missing)
+    monkeypatch.setattr(lab_ingest, "_run_tsc", _raise_missing)
+    monkeypatch.delenv("LEARNINGOS_ALLOW_MISSING_LINT", raising=False)
+
+    errors = lab_ingest.check_lab(lab_dir, ref_dir=ref_dir, id_map_path=id_map_path, offline=True)
+    assert any("Reference ESLint gate cannot run" in e and "cd tools/lint && npm ci" in e for e in errors)
+    assert any("Reference tsc gate cannot run" in e and "cd tools/lint && npm ci" in e for e in errors)
+    assert any("Stub ESLint gate cannot run" in e and "cd tools/lint && npm ci" in e for e in errors)
+    assert any("Stub tsc gate cannot run" in e and "cd tools/lint && npm ci" in e for e in errors)
+
+    assert (
+        lab_ingest.check_lab(lab_dir, ref_dir=ref_dir, id_map_path=id_map_path, offline=True, allow_missing_lint=True)
+        == []
+    )
+
+
 def test_lab_sync_cli_help(capsys: pytest.CaptureFixture[str]) -> None:
     with pytest.raises(SystemExit) as exc_info:
         lab_sync.main(["--help"])

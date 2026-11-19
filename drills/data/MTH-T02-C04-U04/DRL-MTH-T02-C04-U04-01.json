@@ -309,7 +309,7 @@
       "trapValue": "-3",
       "verify": {
         "source": "-3+2*1",
-        "trapValue": "-3*1"
+        "trapValue": "-3"
       },
       "checkpointHint": "Track every product term that contributes to the requested power before combining coefficients.",
       "references": [

@@ -38,7 +38,7 @@
       "trapValue": "7",
       "verify": {
         "source": "6-1",
-        "trapValue": "6+1"
+        "trapValue": "7"
       },
       "checkpointHint": "Use the degree bound for reversals in direction, not the bound for distinct zeros.",
       "references": [
@@ -143,7 +143,7 @@
       "trapValue": "9",
       "verify": {
         "source": "2+5",
-        "trapValue": "2*2+5"
+        "trapValue": "9"
       },
       "checkpointHint": "Set each distinct factor equal to zero before combining the requested inputs.",
       "references": [
@@ -265,7 +265,7 @@
       "trapValue": "-6",
       "verify": {
         "source": "12/((0-1)^2*(0+2))",
-        "trapValue": "12/((0-1)*(0+2))"
+        "trapValue": "-6"
       },
       "checkpointHint": "Substitute the known point into the complete factored model before isolating its scale.",
       "references": [
@@ -386,7 +386,7 @@
       "trapValue": "1",
       "verify": {
         "source": "(abs(-6*4)-(-6*4))/(2*abs(-6*4))+(abs(4*-5)-(4*-5))/(2*abs(4*-5))+(abs(-5*8)-(-5*8))/(2*abs(-5*8))",
-        "trapValue": "(abs(-6*8)-(-6*8))/(2*abs(-6*8))"
+        "trapValue": "1"
       },
       "checkpointHint": "Check each neighboring pair separately; a guarantee applies only where the endpoint signs differ.",
       "references": [
@@ -502,7 +502,7 @@
       "trapValue": "5",
       "verify": {
         "source": "3",
-        "trapValue": "3+2"
+        "trapValue": "5"
       },
       "checkpointHint": "Use the factor attached to the named zero, not a property of all factors together.",
       "references": [

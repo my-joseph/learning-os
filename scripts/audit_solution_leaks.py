@@ -17,7 +17,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from math_engine.ai_drill_ingest import find_solution_leaks  # noqa: E402
+from math_engine.ai_drill_ingest import find_solution_leaks, story_text  # noqa: E402
 
 
 def main(argv=None):
@@ -34,7 +34,7 @@ def main(argv=None):
         for prob in drill.get("problems", []):
             total += 1
             display = prob.get("display", "") if args.display else ""
-            reasons = find_solution_leaks(prob.get("prompt", ""), display)
+            reasons = find_solution_leaks(story_text(prob), display)
             if reasons:
                 flagged += 1
                 print(f"{drill.get('drillId')} {prob.get('id')} (L{prob.get('level')})")

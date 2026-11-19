@@ -11,6 +11,10 @@
       "archetype": "problem-solving",
       "archetypeKey": "t02-c01-u01-multiplying-complex-binomials",
       "context": "phasor_gain_stage_check",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "Cascading linear complex phasor gain stages multiplies their complex phasor values (2 + 3i)(4 - 2i); the domain law is exact and the task diagnoses the first wrong algebraic step."
+      },
       "verificationLevel": "partial",
       "prompt": "A student multiplied the phasors $(2 + 3i)(4 - 2i)$ and wrote:\nLine 1: $(2 + 3i)(4 - 2i) = 8 - 4i + 12i - 6i^2$\nLine 2: $= 8 + 8i - 6i^2$\nLine 3: $= 8 + 8i - 6$\nLine 4: $= 2 + 8i$\nWhich line is the first one that is wrong?",
       "display": "(a + bi)(c + di) = (ac - bd) + (ad + bc)i",
@@ -75,7 +79,7 @@
         },
         {
           "latex": "-6i^2 = 6",
-          "explain": "Line 2 is the first wrong line: the square of the imaginary unit is -1, so the last term is +6, not -6."
+          "explain": "Line 3 is the first wrong line (Line 2 correctly combines -4i + 12i into 8i): the square of the imaginary unit is -1, so the last term is +6, not -6."
         },
         {
           "latex": "8 + 6 + 8i",
@@ -141,6 +145,10 @@
         "task": "diagnose",
         "reverse": false,
         "steps": 4
+      },
+      "review": {
+        "verdict": "pass",
+        "note": "Re-solved: Lines 1 and 2 equal 14 + 8i, Line 3 drops the sign flip on -6i^2 = +6 to give 8 + 8i - 6; correct answer is Line 3, trap matches positive-last-term-trap, and hint is non-leaking."
       }
     },
     {
@@ -150,6 +158,10 @@
       "archetype": "problem-solving",
       "archetypeKey": "t02-c01-u01-complex-conjugates-modulus",
       "context": "radar_return_power_estimate",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "Instantaneous power of a complex radar return z = 6 - 5i is proportional to |z|^2 = z*conj(z) = 61 > 0; domain law and positivity hold."
+      },
       "verificationLevel": "partial",
       "prompt": "A radar return is modelled by $z = 6 - 5i$. A student computed $z\\bar{z}$ and wrote:\nLine 1: $z\\bar{z} = (6 - 5i)(6 + 5i) = 6^2 - (5i)^2$\nLine 2: $= 36 - 25i^2$\nLine 3: $= 36 - 25$\nLine 4: $= 11$\nWhich line is the first one that is wrong?",
       "display": "(a - bi)(a + bi) = a^2 + b^2",
@@ -278,7 +290,11 @@
         "verificationLevel": "partial",
         "weakDistractors": 0
       },
-      "levelLabel": "Level 3 - Trap & Diagnostic"
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "review": {
+        "verdict": "pass",
+        "note": "Re-solved: Lines 1 and 2 equal 61, Line 3 replaces -25i^2 with -25 instead of +25; correct answer is Line 3, trap matches difference-of-squares-minus-sign-trap, and hint is non-leaking."
+      }
     },
     {
       "id": "Q03",
@@ -287,6 +303,10 @@
       "archetype": "problem-solving",
       "archetypeKey": "t02-c01-u01-dividing-complex-numbers",
       "context": "filter_transfer_ratio_check",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "A frequency-domain filter transfer ratio is literally the complex quotient (6 + 4i)/(1 - 2i) of output to input phasors; domain law is exact and dimensionless."
+      },
       "verificationLevel": "partial",
       "prompt": "A filter's transfer ratio is $\\dfrac{6 + 4i}{1 - 2i}$. A student simplified it and wrote:\nLine 1: $\\dfrac{6 + 4i}{1 - 2i} = \\dfrac{6}{1} + \\dfrac{4i}{-2i}$\nLine 2: $= 6 + \\dfrac{4}{-2}$\nLine 3: $= 6 - 2$\nLine 4: $= 4$\nWhich line is the first one that is wrong?",
       "display": "\\frac{a + bi}{c + di} = \\frac{(a + bi)(c - di)}{c^2 + d^2}",
@@ -421,6 +441,10 @@
         "task": "diagnose",
         "reverse": false,
         "steps": 3
+      },
+      "review": {
+        "verdict": "pass",
+        "note": "Re-solved: Line 1 illegally splits complex division into 6/1 + 4i/(-2i) instead of rationalizing with the conjugate (1 + 2i); correct answer is Line 1, trap matches divide-real-and-imag-parts-directly-trap, and hint is non-leaking."
       }
     },
     {
@@ -430,6 +454,10 @@
       "archetype": "problem-solving",
       "archetypeKey": "t02-c01-u01-dividing-complex-numbers",
       "context": "antenna_impedance_ratio_check",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "The dimensionless ratio of two complex antenna impedances (10 + 5i)/(3 + 4i) obeys standard complex division; domain law and unit cancellation hold."
+      },
       "verificationLevel": "partial",
       "prompt": "An antenna engineer needs $\\dfrac{10 + 5i}{3 + 4i}$. A colleague wrote:\nLine 1: $\\dfrac{10 + 5i}{3 + 4i} = \\dfrac{(10 + 5i)(3 + 4i)}{3^2 + 4^2}$\nLine 2: $= \\dfrac{30 + 40i + 15i + 20i^2}{9 + 16}$\nLine 3: $= \\dfrac{10 + 55i}{25}$\nLine 4: $= \\dfrac{2}{5} + \\dfrac{11}{5}i$\nWhich line is the first one that is wrong?",
       "display": "\\frac{a + bi}{c + di} = \\frac{(a + bi)(c - di)}{c^2 + d^2}",
@@ -564,6 +592,10 @@
         "task": "diagnose",
         "reverse": false,
         "steps": 3
+      },
+      "review": {
+        "verdict": "pass",
+        "note": "Re-solved: Line 1 multiplies numerator by (3 + 4i) instead of conjugate (3 - 4i) while using 3^2 + 4^2 in the denominator; correct answer is Line 1, trap matches denominator-conjugate-sign-error-trap, and hint is non-leaking."
       }
     }
   ],
