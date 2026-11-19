@@ -285,7 +285,8 @@ def _build_lab_example_test_source(
         "import assert from 'node:assert';",
     ]
     for src_path, syms in by_file.items():
-        lines.append(f"import {{ {', '.join(syms)} }} from {json.dumps(src_path.resolve().as_uri())};")
+        specifier = src_path.resolve().as_posix() if is_tsx else src_path.resolve().as_uri()
+        lines.append(f"import {{ {', '.join(syms)} }} from {json.dumps(specifier)};")
     lines.append("")
 
     for idx, ex in batch:
@@ -320,7 +321,9 @@ def evaluate_lab_milestone_examples(
         ref_src, main_file=ms.get("mainFile") if isinstance(ms.get("mainFile"), str) else None
     )
     vis_pattern = str(ms.get("visibleTests") or "")
-    is_tsx = ".tsx" in vis_pattern or any(p.suffix == ".tsx" for p in symbol_to_file.values())
+    all_calls = "\n".join(str(ex.get("call") or "") for ex in examples if isinstance(ex, dict))
+    used_files = [path for sym, path in symbol_to_file.items() if re.search(rf"\b{re.escape(sym)}\b", all_calls)]
+    is_tsx = ".tsx" in vis_pattern or any(p.suffix == ".tsx" for p in used_files)
     is_ts = is_tsx or ".ts" in vis_pattern or any(p.suffix == ".ts" for p in symbol_to_file.values())
     ext = "test.tsx" if is_tsx else ("test.ts" if is_ts else "test.js")
 

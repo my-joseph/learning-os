@@ -500,3 +500,115 @@ def test_lab_examples_gate_validates_and_rejects_bad_and_leaky(tmp_path: Path, m
     final_cfg = lab_ingest.finalise_lab(lab_dir, ref_dir=ref_dir, id_map_path=id_map_path, offline=True)
     assert len(final_cfg["milestones"][0]["examples"]) == 2
     assert final_cfg["milestones"][0]["constraints"] == ["budget >= 0"]
+
+
+def test_lab_examples_gate_runs_tsx_react_milestone_and_skips_vitest_for_ts_milestone(tmp_path: Path) -> None:
+    """B-02 / issue 3f6602: React (.tsx) lab examples run under Vitest without file:// imports,
+    while pure .ts milestones in the same lab stay on node --test."""
+    _require_node_and_lint()
+    vitest_bin = lab_ingest.TOOLS_LINT_DIR / "node_modules" / ".bin" / "vitest"
+    if not vitest_bin.is_file():
+        pytest.skip(f"vitest binary not installed at {vitest_bin}")
+
+    from code_engine.examples_gate import evaluate_lab_milestone_examples
+
+    lab_dir = tmp_path / "labs" / "LAB-PRG-T09-C02-01"
+    ref_dir = tmp_path / "labs" / "_reference" / "LAB-PRG-T09-C02-01"
+    (lab_dir / "src").mkdir(parents=True)
+    (ref_dir / "src").mkdir(parents=True)
+
+    (ref_dir / "src" / "counter.ts").write_text(
+        "export function nextCount(current: number, step: number): number {\n  return current + step;\n}\n",
+        encoding="utf-8",
+    )
+    (ref_dir / "src" / "StatusBadge.tsx").write_text(
+        "import React from 'react';\n"
+        "export function StatusBadge({ label, count }: { label: string; count: number }) {\n"
+        "  return <output aria-label={label}>{`${label}: ${count}`}</output>;\n"
+        "}\n",
+        encoding="utf-8",
+    )
+
+    # 1. Pure .ts milestone should run via node --test (not Vitest), even though StatusBadge.tsx exists in ref_src
+    seen_test_exts: list[str] = []
+
+    def _recording_runner(test_files: list[Path], cwd: Path, src_dir: Path) -> list[dict[str, Any]]:
+        seen_test_exts.extend(f.suffix for f in test_files)
+        return lab_ingest._run_node_tests(test_files, cwd, src_dir)
+
+    ts_milestone = {
+        "id": "M1",
+        "visibleTests": "tests/m1_*.test.ts",
+        "examples": [
+            {"input": "current = 2, step = 3", "output": "5", "call": "nextCount(2, 3)"},
+            {"input": "current = 10, step = -4", "output": "6", "call": "nextCount(10, -4)"},
+        ],
+    }
+    ts_errs = evaluate_lab_milestone_examples(
+        "M1",
+        ts_milestone,
+        lab_dir,
+        ref_dir,
+        _recording_runner,
+        tools_lint_dir=lab_ingest.TOOLS_LINT_DIR,
+    )
+    assert ts_errs == [], ts_errs
+    assert seen_test_exts == [".ts"]
+
+    # 2. React .tsx milestone runs under Vitest + jsdom and passes valid examples
+    tsx_milestone = {
+        "id": "M2",
+        "visibleTests": "tests/m2_*.test.tsx",
+        "examples": [
+            {
+                "input": "StatusBadge label='Queued' count=3",
+                "output": "'Queued: 3'",
+                "call": (
+                    "(async () => {"
+                    " const React = (await import('react')).default;"
+                    " const { render, screen, cleanup } = await import('@testing-library/react');"
+                    " render(React.createElement(StatusBadge, { label: 'Queued', count: 3 }));"
+                    " const out = screen.getByLabelText('Queued').textContent;"
+                    " cleanup();"
+                    " return out;"
+                    " })()"
+                ),
+            },
+            {
+                "input": "StatusBadge label='Ready' count=7",
+                "output": "'Ready: 7'",
+                "call": (
+                    "(async () => {"
+                    " const React = (await import('react')).default;"
+                    " const { render, screen, cleanup } = await import('@testing-library/react');"
+                    " render(React.createElement(StatusBadge, { label: 'Ready', count: 7 }));"
+                    " const out = screen.getByLabelText('Ready').textContent;"
+                    " cleanup();"
+                    " return out;"
+                    " })()"
+                ),
+            },
+        ],
+    }
+    tsx_errs = evaluate_lab_milestone_examples(
+        "M2",
+        tsx_milestone,
+        lab_dir,
+        ref_dir,
+        lab_ingest._run_node_tests,
+        tools_lint_dir=lab_ingest.TOOLS_LINT_DIR,
+    )
+    assert tsx_errs == [], tsx_errs
+
+    # 3. Mismatched .tsx example output is caught cleanly
+    bad_tsx = deepcopy(tsx_milestone)
+    bad_tsx["examples"][0]["output"] = "'Queued: 99'"
+    bad_errs = evaluate_lab_milestone_examples(
+        "M2",
+        bad_tsx,
+        lab_dir,
+        ref_dir,
+        lab_ingest._run_node_tests,
+        tools_lint_dir=lab_ingest.TOOLS_LINT_DIR,
+    )
+    assert any("Example 1 failed verification" in e for e in bad_errs), bad_errs

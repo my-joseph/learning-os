@@ -96,14 +96,26 @@ def _run_react_tests(test_files: list[Path], cwd: Path, src_dir: Path) -> list[d
             continue
         link.symlink_to(shared_modules, target_is_directory=True)
         linked.append(link)
+    test_root = Path(os.path.commonpath([str(f.resolve().parent) for f in test_files]))
+    allowed_dirs = list(
+        dict.fromkeys(
+            (
+                str(cwd),
+                str(src_dir),
+                str(test_root),
+                str(Path(__file__).resolve().parents[1]),
+            )
+        )
+    )
     try:
         with tempfile.TemporaryDirectory(prefix="lab_vitest_", dir=TOOLS_LINT_DIR) as tmp:
             tmp_dir = Path(tmp)
             config = tmp_dir / "vitest.config.ts"
             report = tmp_dir / "junit.xml"
+            allow_js = ", ".join(json.dumps(d) for d in allowed_dirs)
             config.write_text(
                 "import { defineConfig } from 'vitest/config';\n"
-                f"export default defineConfig({{ esbuild: {{ jsx: 'automatic' }}, test: {{ environment: 'jsdom' }}, server: {{ fs: {{ allow: [{json.dumps(str(Path(cwd).resolve()))}, {json.dumps(str(src_dir.resolve()))}, {json.dumps(str(Path(__file__).resolve().parents[1]))}] }} }} }});\n",
+                f"export default defineConfig({{ root: {json.dumps(str(test_root))}, esbuild: {{ jsx: 'automatic' }}, test: {{ environment: 'jsdom' }}, server: {{ fs: {{ allow: [{allow_js}] }} }} }});\n",
                 encoding="utf-8",
             )
             env = dict(os.environ)
