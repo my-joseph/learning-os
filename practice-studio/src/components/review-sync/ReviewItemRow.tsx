@@ -230,7 +230,7 @@ const ReviewItemResult: React.FC<{
           <span className="font-display font-semibold text-zinc-900 dark:text-zinc-100">
             {outcome === "skipped" && !answerText
               ? "Skipped"
-              : answerText || "Not recorded"}
+              : answerText ? <FormattedText text={answerText} /> : "Not recorded"}
           </span>
         </div>
 
@@ -238,7 +238,7 @@ const ReviewItemResult: React.FC<{
           <div className="min-w-0 break-words">
             <span className="text-zinc-500 dark:text-zinc-400">Verified answer: </span>
             <span className="font-display font-semibold text-emerald-700 dark:text-emerald-400">
-              {verifiedText}
+              <FormattedText text={verifiedText} />
             </span>
           </div>
         )}

@@ -484,7 +484,7 @@ export const SyncCard: React.FC<SyncCardProps> = ({
                             <button
                               type="button"
                               onClick={() => onOpenL4Challenge(l4Challenge.index)}
-                              className="inline-flex items-center gap-1 font-medium text-indigo-600 dark:text-indigo-400 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 rounded"
+                              className="inline-flex items-center gap-1 min-h-[44px] sm:min-h-[32px] font-medium text-indigo-600 dark:text-indigo-400 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 dark:focus-visible:ring-indigo-400 rounded"
                             >
                               <span>Try an L4 challenge</span>
                               <ArrowRight className="w-3 h-3" aria-hidden="true" />

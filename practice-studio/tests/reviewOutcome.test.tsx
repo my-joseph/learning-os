@@ -221,6 +221,7 @@ const noop = () => {};
 const html = renderToStaticMarkup(
   <ReviewPanel
     currentDrill={sampleDrill}
+    initialExpandedIds={["Q01", "Q05"]}
     liveScore={1.5}
     maxScore={5}
     accuracyPct={30}
@@ -435,11 +436,12 @@ const collapsedHtml = renderToStaticMarkup(
   />
 );
 
-assert.match(collapsedHtml, /aria-expanded="false"/);
+assert.match(collapsedHtml, /aria-expanded="true"/,
+  "a To review section with one item expands its row by default");
 assert.match(collapsedHtml, /aria-controls="review-panel-Q01"/);
-assert.doesNotMatch(collapsedHtml, /id="review-panel-Q01"/);
-assert.doesNotMatch(collapsedHtml, /EXPANDED_PROMPT_BLOCK/);
-assert.doesNotMatch(collapsedHtml, /Right triangle ABC/);
+assert.match(collapsedHtml, /id="review-panel-Q01"/);
+assert.match(collapsedHtml, /EXPANDED_PROMPT_BLOCK/);
+assert.match(collapsedHtml, /Right triangle ABC/);
 
 const expandedHtml = renderToStaticMarkup(
   <ReviewPanel

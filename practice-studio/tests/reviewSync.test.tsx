@@ -167,6 +167,7 @@ const lineChoiceProblem = { ...makeProblem("Q01"), prompt: "Choose the correct s
   answerSpec: { type: "choice" as const, options: [{ id: "step-a", label: "Line 1" }, { id: "step-b", label: "Line 2" }, { id: "step-c", label: "Line 3" }] },
   state: { ...baseState(), userInput: "step-c", attempts: [{ input: "step-c", ts: "2026-11-19T00:00:00Z", verdict: "incorrect" }] } };
 assert.equal(lastAnswerText(lineChoiceProblem), "Line 3", "choice IDs display their option labels");
+assert.equal(formatChoiceAnswerLabel(lineChoiceProblem, "step-b"), "Line 2", "line-choice option IDs map to their visible label");
 assert.equal(shortRowTitle(makeProblem("Q01")), "Find the product $$(2+3i)(4-2i)$$.", "row title uses the prompt's first line");
 const attentionItems = ["Q01", "Q02", "Q03"].map((id, index) => ({ problem: makeProblem(id), index, outcome: "wrong" as const }));
 assert.deepEqual(Object.keys(getDefaultExpandedRowIds(attentionItems)), ["Q01", "Q02", "Q03"], "all rows expand when To review has three items");
@@ -174,6 +175,7 @@ assert.deepEqual(getDefaultExpandedRowIds([...attentionItems, { problem: makePro
 const nextDrill = findNextDrill(mathDrill, [{ drillId: "DRL-MTH-T02-C01-U01-04", unitCode: mathDrill.unitCode, unitTitle: "Complex Numbers", chapterCode: mathDrill.chapterCode, createdAt: "2026-11-19", questionCount: 4, difficultyMode: "Mixed" }, { drillId: "DRL-MTH-T02-C01-U01-03", unitCode: mathDrill.unitCode, unitTitle: "Complex Numbers", chapterCode: mathDrill.chapterCode, createdAt: "2026-11-18", questionCount: 4, difficultyMode: "Mixed" }]);
 assert.equal(nextDrill?.drillId, "DRL-MTH-T02-C01-U01-03", "next drill excludes the current drill");
 assert.equal(nextDrill?.title, "Complex Numbers · Set 3", "next drill names its unit and set");
+assert.notEqual(nextDrill?.href, "/math/DRL-MTH-T02-C01-U01-04", "next drill never links to the current drill");
 
 // Sync state and metadata stamping: only a real successful response stamps.
 const reply = (data: unknown, ok = true) => new Response(JSON.stringify(data), { status: ok ? 200 : 500 });
@@ -247,7 +249,8 @@ assert.match(untouchedHtml, /Nothing answered yet/);
 assert.match(untouchedHtml, /Nothing to sync yet — answer at least one question/);
 assert.match(untouchedHtml, /Start Q1/);
 assert.match(untouchedHtml, /disabled=""/);
-assert.match(untouchedHtml, /Nothing to sync yet — answer at least one question/);
+assert.doesNotMatch(untouchedHtml, /0 \/ 2 points/);
+assert.doesNotMatch(untouchedHtml, /No mistakes logged/);
 assert.doesNotMatch(untouchedHtml, /Mark as graded/);
 assert.doesNotMatch(untouchedHtml, /They are sent as not tried/);
 
@@ -276,6 +279,10 @@ assert.match(render(allCorrect), /Nothing to fix/);
 assert.match(render(allCorrect), /1 \/ 1 points/);
 assert.match(render(mathDrill), /0\.5 \/ 3 points/);
 assert.match(render(mathDrill), /0\.5 \/ 3 points/);
+const pointsHtml = render(mathDrill);
+assert.ok((pointsHtml.match(/0\.5 \/ 3/g) || []).length >= 2,
+  "summary and sync card use the same points figure");
+assert.match(pointsHtml, /1 of 3 right/, "right-answer count is secondary to the shared points figure");
 const manyWrong = { ...mathDrill, problems: ["Q01", "Q02", "Q03", "Q04"].map((id) =>
   makeProblem(id, { ...baseState(), score: 0, userInput: "wrong", attempts: [{ input: "wrong", ts: "2026-11-19T00:00:00Z", verdict: "incorrect", matchedTrap: "positive-last-term" }] })) };
 const manyWrongHtml = render(manyWrong);
@@ -289,9 +296,32 @@ const weakSpotHtml = render(mathDrill, {
 });
 assert.match(weakSpotHtml, /href="\/review\?trap=positive-last-term"/);
 assert.match(weakSpotHtml, /Practise Positive last term/);
+assert.doesNotMatch(weakSpotHtml, /Practise positive-last-term/);
 assert.match(weakSpotHtml, /Next drill: Complex Numbers · Set 3/);
+assert.match(weakSpotHtml, /id="review-row-Q01" class="[^"]*"><button[^>]*aria-expanded="true"/,
+  "To review rows start expanded when there are three items");
+const prgWeakSpotHtml = render({ ...prgDrill, problems: [makeProblem("Q01", {
+  ...baseState(), score: 0, attempts: [{ input: "wrong", ts: "2026-11-19T00:00:00Z", verdict: "incorrect" }],
+})] }, {
+  dueReviewCount: 0,
+  weakSpotUnits: [{ unitCode: "PRG-T01-C03-U05", unitTitle: "Naming", subject: "PRG", itemCount: 1,
+    drillCount: 1, open: [{ id: "QC-NAMING", name: "QC-NAMING", matches: 1, drills: 1,
+      last: "2026-11-19", subject: "PRG" }], closed: [], levels: {}, assistedCount: 0, skipped: [] }],
+});
+assert.match(prgWeakSpotHtml, /href="\/review\?trap=QC-NAMING"/);
+assert.match(prgWeakSpotHtml, /Practise QC naming/);
+assert.doesNotMatch(prgWeakSpotHtml, /Practise QC-NAMING/);
 const similarRowHtml = render({ ...mathDrill, problems: [{ ...mathDrill.problems[0], hasVariants: true }] }, { initialExpandedIds: ["Q01"], onTrySimilarQuestion: noop });
 assert.match(similarRowHtml, /Try a similar question/);
+assert.match(similarRowHtml, /min-h-\[44px\]/, "row text actions have mobile tap targets");
+assert.match(weakSpotHtml, /min-h-\[44px\]/, "What next links have mobile tap targets");
+
+const lineChoiceHtml = render({ ...mathDrill, problems: [{ ...lineChoiceProblem, state: {
+  ...baseState(), userInput: "step-c", score: 0,
+  attempts: [{ input: "step-c", ts: "2026-11-19T00:00:00Z", verdict: "incorrect" }],
+} }] }, { initialExpandedIds: ["Q01"] });
+assert.match(lineChoiceHtml, /Your answer: <\/span><span[^>]*><span[^>]*>Line 3/,
+  "choice answer display resolves an option ID to the learner-facing label");
 
 const prgHtml = render({ ...prgDrill, problems: [makeProblem("Q01", { ...baseState(), score: 0,
   lastTestReport: { allPassed: false, score: 0.5, passedCount: 2, totalCount: 4, visibleResults: [], hiddenPassed: 0, hiddenTotal: 0, executionTimeMs: 2 },

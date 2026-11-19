@@ -534,9 +534,10 @@ export function findNextDrill(
   const href = drillHref(picked.drillId);
   if (href === "/") return null;
   const setNumber = Number(picked.drillId.match(/-(\d+)$/)?.[1]);
+  const setLabel = Number.isFinite(setNumber) && setNumber > 0 ? `Set ${setNumber}` : "Drill";
   return {
     drillId: picked.drillId,
-    title: `${plainTitle(picked.unitTitle) || picked.unitCode} · Set ${Number.isFinite(setNumber) && setNumber > 0 ? setNumber : picked.drillId}`,
+    title: `${plainTitle(picked.unitTitle) || picked.unitCode} · ${setLabel}`,
     href,
   };
 }
@@ -568,9 +569,11 @@ export function pickTopWeakSpot(weakSpotUnits: readonly WeakSpotUnit[]): WeakSpo
   for (const unit of weakSpotUnits) {
     if (Array.isArray(unit.open) && unit.open.length > 0) {
       const spot = unit.open[0];
+      const namedSpot = plainTitle(spot.name);
+      const idLikeName = /^[A-Z0-9]+(?:-[A-Z0-9]+)+$/.test(namedSpot);
       return {
         id: spot.id,
-        label: plainTitle(spot.name) || trapName(spot.id),
+        label: !namedSpot || idLikeName ? trapName(spot.id) : namedSpot,
         matches: spot.matches,
         unitCode: unit.unitCode,
       };
