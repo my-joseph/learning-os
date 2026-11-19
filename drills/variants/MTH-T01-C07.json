@@ -1,0 +1,2152 @@
+{
+  "unitCode": "MTH-T01-C07",
+  "variants": [
+    {
+      "variantId": "VAR-MTH-T01-C07-c07-ratio-simplification-part-to-part-01",
+      "sourceArchetype": "c07-ratio-simplification-part-to-part",
+      "archetypeKey": "c07-ratio-simplification-part-to-part",
+      "archetype": "problem-solving",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Write the ratio $42 : 63$ as a fraction in simplest form.",
+      "display": "\\frac{42}{63}",
+      "plainText": "42 / 63",
+      "givens": {
+        "a": 42,
+        "b": 63
+      },
+      "constants": {},
+      "trapGivens": [
+        42,
+        63
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "2/3",
+        "tolerance": 0,
+        "forms": [
+          "reduced_fraction",
+          "exact"
+        ]
+      },
+      "answerPlain": "2/3",
+      "answerDisplay": "\\frac{2}{3}",
+      "inputHint": "Enter a simplified fraction (e.g. 5/9)",
+      "commonTrapTag": "c07-subtraction-ratio-error",
+      "trapDerivation": "(63 - 42) / 63",
+      "trapValue": "1/3",
+      "verify": {
+        "source": "42 / 63",
+        "trapValue": "1/3"
+      },
+      "checkpointHint": "Divide both terms of the ratio by their greatest common divisor.",
+      "references": [
+        "MTH-T01-C07"
+      ],
+      "steps": [
+        {
+          "latex": "\\frac{42}{63} = \\frac{2 \\cdot 21}{3 \\cdot 21}",
+          "explain": "Factor the greatest common divisor out of both the numerator and denominator.",
+          "eq": [
+            "42 / 63",
+            "(2 * 21) / (3 * 21)"
+          ]
+        },
+        {
+          "latex": "\\frac{2 \\cdot 21}{3 \\cdot 21} = \\frac{2}{3}",
+          "explain": "Cancel the common factor to express the ratio in simplest form.",
+          "val": "2/3"
+        }
+      ],
+      "id": "VAR-MTH-T01-C07-c07-ratio-simplification-part-to-part-01",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "c07-subtraction-ratio-error|direct|# / #"
+    },
+    {
+      "variantId": "VAR-MTH-T01-C07-c07-ratio-simplification-part-to-part-02",
+      "sourceArchetype": "c07-ratio-simplification-part-to-part",
+      "archetypeKey": "c07-ratio-simplification-part-to-part",
+      "archetype": "problem-solving",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Express the ratio $36 : 96$ as a reduced fraction.",
+      "display": "\\frac{36}{96}",
+      "plainText": "36 / 96",
+      "givens": {
+        "a": 36,
+        "b": 96
+      },
+      "constants": {},
+      "trapGivens": [
+        36,
+        96
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "3/8",
+        "tolerance": 0,
+        "forms": [
+          "reduced_fraction",
+          "exact"
+        ]
+      },
+      "answerPlain": "3/8",
+      "answerDisplay": "\\frac{3}{8}",
+      "inputHint": "Enter a simplified fraction (e.g. 5/9)",
+      "commonTrapTag": "c07-subtraction-ratio-error",
+      "trapDerivation": "(96 - 36) / 96",
+      "trapValue": "5/8",
+      "verify": {
+        "source": "36 / 96",
+        "trapValue": "5/8"
+      },
+      "checkpointHint": "Find the greatest common factor of both numbers and divide numerator and denominator by it.",
+      "references": [
+        "MTH-T01-C07"
+      ],
+      "steps": [
+        {
+          "latex": "\\frac{36}{96} = \\frac{3 \\cdot 12}{8 \\cdot 12}",
+          "explain": "Factor the greatest common divisor out of both parts of the ratio.",
+          "eq": [
+            "36 / 96",
+            "(3 * 12) / (8 * 12)"
+          ]
+        },
+        {
+          "latex": "\\frac{3 \\cdot 12}{8 \\cdot 12} = \\frac{3}{8}",
+          "explain": "Cancel the common factor to obtain the reduced fraction.",
+          "val": "3/8"
+        }
+      ],
+      "id": "VAR-MTH-T01-C07-c07-ratio-simplification-part-to-part-02",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "c07-subtraction-ratio-error|direct|# / #"
+    },
+    {
+      "variantId": "VAR-MTH-T01-C07-c07-ratio-simplification-part-to-part-03",
+      "sourceArchetype": "c07-ratio-simplification-part-to-part",
+      "archetypeKey": "c07-ratio-simplification-part-to-part",
+      "archetype": "problem-solving",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Simplify the ratio $45 : 105$ and write it as a fraction in lowest terms.",
+      "display": "\\frac{45}{105}",
+      "plainText": "45 / 105",
+      "givens": {
+        "a": 45,
+        "b": 105
+      },
+      "constants": {},
+      "trapGivens": [
+        45,
+        105
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "3/7",
+        "tolerance": 0,
+        "forms": [
+          "reduced_fraction",
+          "exact"
+        ]
+      },
+      "answerPlain": "3/7",
+      "answerDisplay": "\\frac{3}{7}",
+      "inputHint": "Enter a simplified fraction (e.g. 5/9)",
+      "commonTrapTag": "c07-subtraction-ratio-error",
+      "trapDerivation": "(105 - 45) / 105",
+      "trapValue": "4/7",
+      "verify": {
+        "source": "45 / 105",
+        "trapValue": "4/7"
+      },
+      "checkpointHint": "Divide both terms by their greatest common divisor rather than subtracting them.",
+      "references": [
+        "MTH-T01-C07"
+      ],
+      "steps": [
+        {
+          "latex": "\\frac{45}{105} = \\frac{3 \\cdot 15}{7 \\cdot 15}",
+          "explain": "Factor the greatest common divisor out of the numerator and denominator.",
+          "eq": [
+            "45 / 105",
+            "(3 * 15) / (7 * 15)"
+          ]
+        },
+        {
+          "latex": "\\frac{3 \\cdot 15}{7 \\cdot 15} = \\frac{3}{7}",
+          "explain": "Cancel the common factor to reach lowest terms.",
+          "val": "3/7"
+        }
+      ],
+      "id": "VAR-MTH-T01-C07-c07-ratio-simplification-part-to-part-03",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "c07-subtraction-ratio-error|direct|# / #"
+    },
+    {
+      "variantId": "VAR-MTH-T01-C07-c07-unit-rate-comparison-01",
+      "sourceArchetype": "c07-unit-rate-comparison",
+      "archetypeKey": "c07-unit-rate-comparison",
+      "archetype": "problem-solving",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Find the unit rate for $288$ units across $12$ equal intervals, in units per interval.",
+      "display": "r = \\frac{288}{12}",
+      "plainText": "r = 288 / 12",
+      "givens": {
+        "quantity": 288,
+        "count": 12
+      },
+      "constants": {},
+      "trapGivens": [
+        288,
+        12
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "24",
+        "tolerance": 0
+      },
+      "answerPlain": "24",
+      "answerDisplay": "24",
+      "inputHint": "Enter a whole number",
+      "commonTrapTag": "c07-inverted-unit-rate-slip",
+      "trapDerivation": "12 / 288",
+      "trapValue": "1/24",
+      "verify": {
+        "source": "288 / 12",
+        "trapValue": "1/24"
+      },
+      "checkpointHint": "Divide the total quantity by the number of intervals so the denominator becomes one interval.",
+      "references": [
+        "MTH-T01-C07"
+      ],
+      "steps": [
+        {
+          "latex": "r = \\frac{288}{12}",
+          "explain": "Form the unit rate by placing total quantity over the number of intervals.",
+          "eq": [
+            "288 / 12",
+            "24"
+          ]
+        },
+        {
+          "latex": "r = 24",
+          "explain": "Evaluate the quotient to obtain the unit rate.",
+          "val": "24"
+        }
+      ],
+      "id": "VAR-MTH-T01-C07-c07-unit-rate-comparison-01",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "c07-inverted-unit-rate-slip|direct|r = # / #"
+    },
+    {
+      "variantId": "VAR-MTH-T01-C07-c07-unit-rate-comparison-02",
+      "sourceArchetype": "c07-unit-rate-comparison",
+      "archetypeKey": "c07-unit-rate-comparison",
+      "archetype": "problem-solving",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Compute the unit rate for $468$ items distributed evenly across $18$ groups, in items per group.",
+      "display": "r = \\frac{468}{18}",
+      "plainText": "r = 468 / 18",
+      "givens": {
+        "quantity": 468,
+        "count": 18
+      },
+      "constants": {},
+      "trapGivens": [
+        468,
+        18
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "26",
+        "tolerance": 0
+      },
+      "answerPlain": "26",
+      "answerDisplay": "26",
+      "inputHint": "Enter a whole number",
+      "commonTrapTag": "c07-inverted-unit-rate-slip",
+      "trapDerivation": "18 / 468",
+      "trapValue": "1/26",
+      "verify": {
+        "source": "468 / 18",
+        "trapValue": "1/26"
+      },
+      "checkpointHint": "Place the total item count in the numerator and the number of groups in the denominator.",
+      "references": [
+        "MTH-T01-C07"
+      ],
+      "steps": [
+        {
+          "latex": "r = \\frac{468}{18}",
+          "explain": "Write the ratio of total items to number of groups.",
+          "eq": [
+            "468 / 18",
+            "26"
+          ]
+        },
+        {
+          "latex": "r = 26",
+          "explain": "Divide to find the items per group.",
+          "val": "26"
+        }
+      ],
+      "id": "VAR-MTH-T01-C07-c07-unit-rate-comparison-02",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "c07-inverted-unit-rate-slip|direct|r = # / #"
+    },
+    {
+      "variantId": "VAR-MTH-T01-C07-c07-unit-rate-comparison-03",
+      "sourceArchetype": "c07-unit-rate-comparison",
+      "archetypeKey": "c07-unit-rate-comparison",
+      "archetype": "problem-solving",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Determine the unit rate for $532$ units measured over $14$ equal cycles, in units per cycle.",
+      "display": "r = \\frac{532}{14}",
+      "plainText": "r = 532 / 14",
+      "givens": {
+        "quantity": 532,
+        "count": 14
+      },
+      "constants": {},
+      "trapGivens": [
+        532,
+        14
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "38",
+        "tolerance": 0
+      },
+      "answerPlain": "38",
+      "answerDisplay": "38",
+      "inputHint": "Enter a whole number",
+      "commonTrapTag": "c07-inverted-unit-rate-slip",
+      "trapDerivation": "14 / 532",
+      "trapValue": "1/38",
+      "verify": {
+        "source": "532 / 14",
+        "trapValue": "1/38"
+      },
+      "checkpointHint": "Normalize to a single cycle by dividing the total units by the cycle count.",
+      "references": [
+        "MTH-T01-C07"
+      ],
+      "steps": [
+        {
+          "latex": "r = \\frac{532}{14}",
+          "explain": "Divide total units by the number of cycles.",
+          "eq": [
+            "532 / 14",
+            "38"
+          ]
+        },
+        {
+          "latex": "r = 38",
+          "explain": "Evaluate the quotient to find the unit rate.",
+          "val": "38"
+        }
+      ],
+      "id": "VAR-MTH-T01-C07-c07-unit-rate-comparison-03",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "c07-inverted-unit-rate-slip|direct|r = # / #"
+    },
+    {
+      "variantId": "VAR-MTH-T01-C07-c07-proportion-cross-product-isolation-01",
+      "sourceArchetype": "c07-proportion-cross-product-isolation",
+      "archetypeKey": "c07-proportion-cross-product-isolation",
+      "archetype": "problem-solving",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "direct",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Solve the proportion for $x$: $\\frac{5}{8} = \\frac{x}{20}$. Write the answer as a reduced fraction.",
+      "display": "\\frac{5}{8} = \\frac{x}{20}",
+      "plainText": "5 / 8 = x / 20",
+      "givens": {
+        "a": 5,
+        "b": 8,
+        "d": 20
+      },
+      "constants": {},
+      "trapGivens": [
+        5,
+        8,
+        20
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "25/2",
+        "tolerance": 0,
+        "forms": [
+          "reduced_fraction",
+          "exact"
+        ]
+      },
+      "answerPlain": "25/2",
+      "answerDisplay": "\\frac{25}{2}",
+      "inputHint": "Enter a simplified fraction (e.g. 4/7)",
+      "commonTrapTag": "c07-cross-product-operator-confusion",
+      "trapDerivation": "(5 * 8) / 20",
+      "trapValue": "2",
+      "verify": {
+        "source": "(5 * 20) / 8",
+        "trapValue": "2"
+      },
+      "checkpointHint": "Equate the diagonal cross products of the proportion, then divide by the coefficient of the unknown.",
+      "references": [
+        "MTH-T01-C07"
+      ],
+      "steps": [
+        {
+          "latex": "8x = 5 \\times 20",
+          "explain": "Cross-multiply across the proportion."
+        },
+        {
+          "latex": "8x = 100",
+          "explain": "Evaluate the product on the right side.",
+          "eq": [
+            "5 * 20",
+            "100"
+          ]
+        },
+        {
+          "latex": "x = \\frac{100}{8}",
+          "explain": "Divide both sides by the coefficient of x.",
+          "eq": [
+            "100 / 8",
+            "25 / 2"
+          ]
+        },
+        {
+          "latex": "x = \\frac{25}{2}",
+          "explain": "Reduce the fraction to lowest terms.",
+          "val": "25/2"
+        }
+      ],
+      "id": "VAR-MTH-T01-C07-c07-proportion-cross-product-isolation-01",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "c07-cross-product-operator-confusion|direct|# / # = x / #"
+    },
+    {
+      "variantId": "VAR-MTH-T01-C07-c07-proportion-cross-product-isolation-02",
+      "sourceArchetype": "c07-proportion-cross-product-isolation",
+      "archetypeKey": "c07-proportion-cross-product-isolation",
+      "archetype": "problem-solving",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "direct",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Find $x$ in the proportion $\\frac{9}{14} = \\frac{x}{21}$. Express your answer as a reduced fraction.",
+      "display": "\\frac{9}{14} = \\frac{x}{21}",
+      "plainText": "9 / 14 = x / 21",
+      "givens": {
+        "a": 9,
+        "b": 14,
+        "d": 21
+      },
+      "constants": {},
+      "trapGivens": [
+        9,
+        14,
+        21
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "27/2",
+        "tolerance": 0,
+        "forms": [
+          "reduced_fraction",
+          "exact"
+        ]
+      },
+      "answerPlain": "27/2",
+      "answerDisplay": "\\frac{27}{2}",
+      "inputHint": "Enter a simplified fraction (e.g. 4/7)",
+      "commonTrapTag": "c07-cross-product-operator-confusion",
+      "trapDerivation": "(9 * 14) / 21",
+      "trapValue": "6",
+      "verify": {
+        "source": "(9 * 21) / 14",
+        "trapValue": "6"
+      },
+      "checkpointHint": "Set the two cross products equal, then divide to isolate the unknown.",
+      "references": [
+        "MTH-T01-C07"
+      ],
+      "steps": [
+        {
+          "latex": "14x = 9 \\times 21",
+          "explain": "Apply cross multiplication to the proportion."
+        },
+        {
+          "latex": "14x = 189",
+          "explain": "Multiply the factors on the right side.",
+          "eq": [
+            "9 * 21",
+            "189"
+          ]
+        },
+        {
+          "latex": "x = \\frac{189}{14}",
+          "explain": "Divide both sides by the coefficient of the unknown.",
+          "eq": [
+            "189 / 14",
+            "27 / 2"
+          ]
+        },
+        {
+          "latex": "x = \\frac{27}{2}",
+          "explain": "Reduce the fraction to lowest terms.",
+          "val": "27/2"
+        }
+      ],
+      "id": "VAR-MTH-T01-C07-c07-proportion-cross-product-isolation-02",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "c07-cross-product-operator-confusion|direct|# / # = x / #"
+    },
+    {
+      "variantId": "VAR-MTH-T01-C07-c07-proportion-cross-product-isolation-03",
+      "sourceArchetype": "c07-proportion-cross-product-isolation",
+      "archetypeKey": "c07-proportion-cross-product-isolation",
+      "archetype": "problem-solving",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "direct",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Solve for $x$ in the proportion $\\frac{11}{15} = \\frac{x}{25}$. Write your answer as a reduced fraction.",
+      "display": "\\frac{11}{15} = \\frac{x}{25}",
+      "plainText": "11 / 15 = x / 25",
+      "givens": {
+        "a": 11,
+        "b": 15,
+        "d": 25
+      },
+      "constants": {},
+      "trapGivens": [
+        11,
+        15,
+        25
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "55/3",
+        "tolerance": 0,
+        "forms": [
+          "reduced_fraction",
+          "exact"
+        ]
+      },
+      "answerPlain": "55/3",
+      "answerDisplay": "\\frac{55}{3}",
+      "inputHint": "Enter a simplified fraction (e.g. 4/7)",
+      "commonTrapTag": "c07-cross-product-operator-confusion",
+      "trapDerivation": "(11 * 15) / 25",
+      "trapValue": "33/5",
+      "verify": {
+        "source": "(11 * 25) / 15",
+        "trapValue": "33/5"
+      },
+      "checkpointHint": "Match opposite diagonal pairs in cross multiplication before dividing to isolate the variable.",
+      "references": [
+        "MTH-T01-C07"
+      ],
+      "steps": [
+        {
+          "latex": "15x = 11 \\times 25",
+          "explain": "Cross-multiply across the proportion."
+        },
+        {
+          "latex": "15x = 275",
+          "explain": "Compute the product on the right side.",
+          "eq": [
+            "11 * 25",
+            "275"
+          ]
+        },
+        {
+          "latex": "x = \\frac{275}{15}",
+          "explain": "Divide both sides by the coefficient of the unknown.",
+          "eq": [
+            "275 / 15",
+            "55 / 3"
+          ]
+        },
+        {
+          "latex": "x = \\frac{55}{3}",
+          "explain": "Reduce the fraction to lowest terms.",
+          "val": "55/3"
+        }
+      ],
+      "id": "VAR-MTH-T01-C07-c07-proportion-cross-product-isolation-03",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "c07-cross-product-operator-confusion|direct|# / # = x / #"
+    },
+    {
+      "variantId": "VAR-MTH-T01-C07-c07-part-to-whole-ratio-partition-01",
+      "sourceArchetype": "c07-part-to-whole-ratio-partition",
+      "archetypeKey": "c07-part-to-whole-ratio-partition",
+      "archetype": "problem-solving",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "direct",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Divide $360$ into two parts in the ratio $4 : 5$. What is the value of the smaller part?",
+      "display": "\\text{Part}_A = 360 \\times \\frac{4}{4 + 5}",
+      "plainText": "360 * (4 / (4 + 5))",
+      "givens": {
+        "T": 360,
+        "a": 4,
+        "b": 5
+      },
+      "constants": {},
+      "trapGivens": [
+        360,
+        5
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "160",
+        "tolerance": 0
+      },
+      "answerPlain": "160",
+      "answerDisplay": "160",
+      "inputHint": "Enter a whole number",
+      "commonTrapTag": "c07-part-to-part-denominator-error",
+      "trapDerivation": "360 / 5",
+      "trapValue": "72",
+      "verify": {
+        "source": "360 * (4 / (4 + 5))",
+        "trapValue": "72"
+      },
+      "checkpointHint": "Add the two ratio terms first to get the total number of equal shares in the whole.",
+      "references": [
+        "MTH-T01-C07"
+      ],
+      "steps": [
+        {
+          "latex": "4 + 5 = 9",
+          "explain": "Sum the ratio terms to find the total number of equal parts.",
+          "eq": [
+            "4 + 5",
+            "9"
+          ]
+        },
+        {
+          "latex": "\\frac{360}{9} = 40",
+          "explain": "Divide the total by the total number of parts to find one share.",
+          "eq": [
+            "360 / 9",
+            "40"
+          ]
+        },
+        {
+          "latex": "40 \\times 4 = 160",
+          "explain": "Multiply one share by the smaller ratio term.",
+          "val": "160"
+        }
+      ],
+      "id": "VAR-MTH-T01-C07-c07-part-to-whole-ratio-partition-01",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "c07-part-to-part-denominator-error|direct|# * (# / (# + #))"
+    },
+    {
+      "variantId": "VAR-MTH-T01-C07-c07-part-to-whole-ratio-partition-02",
+      "sourceArchetype": "c07-part-to-whole-ratio-partition",
+      "archetypeKey": "c07-part-to-whole-ratio-partition",
+      "archetype": "problem-solving",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "direct",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Split $420$ into two parts in the ratio $3 : 7$. What is the value of the larger part?",
+      "display": "\\text{Part}_B = 420 \\times \\frac{7}{3 + 7}",
+      "plainText": "420 * (7 / (3 + 7))",
+      "givens": {
+        "T": 420,
+        "a": 3,
+        "b": 7
+      },
+      "constants": {},
+      "trapGivens": [
+        420,
+        3
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "294",
+        "tolerance": 0
+      },
+      "answerPlain": "294",
+      "answerDisplay": "294",
+      "inputHint": "Enter a whole number",
+      "commonTrapTag": "c07-part-to-part-denominator-error",
+      "trapDerivation": "420 / 3",
+      "trapValue": "140",
+      "verify": {
+        "source": "420 * (7 / (3 + 7))",
+        "trapValue": "140"
+      },
+      "checkpointHint": "Find the sum of the ratio parts first, divide the total by that sum for one share, then scale by the requested term.",
+      "references": [
+        "MTH-T01-C07"
+      ],
+      "steps": [
+        {
+          "latex": "3 + 7 = 10",
+          "explain": "Add the ratio terms to find the total number of equal shares.",
+          "eq": [
+            "3 + 7",
+            "10"
+          ]
+        },
+        {
+          "latex": "\\frac{420}{10} = 42",
+          "explain": "Divide the total by the total number of shares to find the value of one share.",
+          "eq": [
+            "420 / 10",
+            "42"
+          ]
+        },
+        {
+          "latex": "42 \\times 7 = 294",
+          "explain": "Multiply one share by the larger ratio term.",
+          "val": "294"
+        }
+      ],
+      "id": "VAR-MTH-T01-C07-c07-part-to-whole-ratio-partition-02",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "c07-part-to-part-denominator-error|direct|# * (# / (# + #))"
+    },
+    {
+      "variantId": "VAR-MTH-T01-C07-c07-part-to-whole-ratio-partition-03",
+      "sourceArchetype": "c07-part-to-whole-ratio-partition",
+      "archetypeKey": "c07-part-to-whole-ratio-partition",
+      "archetype": "problem-solving",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "direct",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Partition $495$ into two parts in the ratio $4 : 7$. What is the value of the smaller part?",
+      "display": "\\text{Part}_A = 495 \\times \\frac{4}{4 + 7}",
+      "plainText": "495 * (4 / (4 + 7))",
+      "givens": {
+        "T": 495,
+        "a": 4,
+        "b": 7
+      },
+      "constants": {},
+      "trapGivens": [
+        495,
+        7
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "180",
+        "tolerance": 0
+      },
+      "answerPlain": "180",
+      "answerDisplay": "180",
+      "inputHint": "Enter a whole number",
+      "commonTrapTag": "c07-part-to-part-denominator-error",
+      "trapDerivation": "495 / 7",
+      "trapValue": "495/7",
+      "verify": {
+        "source": "495 * (4 / (4 + 7))",
+        "trapValue": "495/7"
+      },
+      "checkpointHint": "Divide the whole by the sum of both ratio parts before multiplying by the requested part.",
+      "references": [
+        "MTH-T01-C07"
+      ],
+      "steps": [
+        {
+          "latex": "4 + 7 = 11",
+          "explain": "Add the ratio terms to find the total number of equal parts.",
+          "eq": [
+            "4 + 7",
+            "11"
+          ]
+        },
+        {
+          "latex": "\\frac{495}{11} = 45",
+          "explain": "Divide the total by the total number of parts to get one share.",
+          "eq": [
+            "495 / 11",
+            "45"
+          ]
+        },
+        {
+          "latex": "45 \\times 4 = 180",
+          "explain": "Multiply one share by the smaller ratio term.",
+          "val": "180"
+        }
+      ],
+      "id": "VAR-MTH-T01-C07-c07-part-to-whole-ratio-partition-03",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "c07-part-to-part-denominator-error|direct|# * (# / (# + #))"
+    },
+    {
+      "variantId": "VAR-MTH-T01-C07-c07-currency-exchange-rate-conversion-01",
+      "sourceArchetype": "c07-currency-exchange-rate-conversion",
+      "archetypeKey": "c07-currency-exchange-rate-conversion",
+      "archetype": "problem-solving",
+      "level": 3,
+      "category": "Core Skill",
+      "form": "diagnose",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Knowing there are $1000\\text{ m}$ in a kilometer and $3600\\text{ s}$ in an hour, a student converted $90\\text{ m/s}$ to $\\text{km/h}$ step by step:\nLine 1: $90\\text{ m/s} = 90 \\times \\frac{1000}{3600}\\text{ km/h}$\nLine 2: $= 90 \\times \\frac{5}{18}\\text{ km/h}$\nLine 3: $= 5 \\times 5\\text{ km/h}$\nLine 4: $= 25\\text{ km/h}$\nWhich line is the first one that is wrong?",
+      "display": "90\\text{ m/s} \\to \\text{km/h}",
+      "givens": {
+        "v": 90
+      },
+      "constants": {
+        "m_per_km": 1000,
+        "s_per_h": 3600
+      },
+      "trapGivens": [
+        90,
+        3600,
+        1000
+      ],
+      "answerSpec": {
+        "type": "choice",
+        "options": [
+          {
+            "id": "1",
+            "label": "Line 1"
+          },
+          {
+            "id": "2",
+            "label": "Line 2",
+            "trapTag": "c07-exchange-rate-reciprocal-slip"
+          },
+          {
+            "id": "3",
+            "label": "Line 3",
+            "trapTag": "c07-exchange-rate-reciprocal-slip"
+          },
+          {
+            "id": "4",
+            "label": "Line 4",
+            "trapTag": "c07-exchange-rate-reciprocal-slip"
+          }
+        ],
+        "correct": "1"
+      },
+      "answerPlain": "1",
+      "answerDisplay": "\\text{Line 1}",
+      "inputHint": "Choose a line",
+      "commonTrapTag": "c07-exchange-rate-reciprocal-slip",
+      "trapDerivation": "90 / (3600 / 1000)",
+      "trapValue": "25",
+      "verify": {
+        "source": "90 * (3600 / 1000)",
+        "trapValue": "25",
+        "flaw": {
+          "values": [
+            "90 * 1000 / 3600",
+            "90 * 5 / 18",
+            "5 * 5",
+            "25"
+          ],
+          "firstWrong": 1
+        }
+      },
+      "checkpointHint": "Perform the unit conversion independently on scratch paper, then compare each step in order to locate the first divergence.",
+      "references": [
+        "MTH-T01-C07"
+      ],
+      "steps": [
+        {
+          "latex": "90\\text{ m/s} = 90 \\times \\frac{3600}{1000}\\text{ km/h}",
+          "explain": "Line 1 is the first wrong line: converting meters to kilometers divides by one thousand while converting per second to per hour multiplies by thirty-six hundred.",
+          "eq": [
+            "90 * (3600 / 1000)",
+            "324"
+          ]
+        },
+        {
+          "latex": "90 \\times \\frac{3600}{1000} = 90 \\times \\frac{18}{5}",
+          "explain": "Reduce the combined conversion fraction to lowest terms.",
+          "eq": [
+            "3600 / 1000",
+            "18 / 5"
+          ]
+        },
+        {
+          "latex": "90 \\times \\frac{18}{5} = 18 \\times 18",
+          "explain": "Divide the initial speed by the denominator.",
+          "eq": [
+            "90 / 5",
+            "18"
+          ]
+        },
+        {
+          "latex": "18 \\times 18 = 324",
+          "explain": "Multiply to find the true speed in kilometers per hour.",
+          "val": "324"
+        }
+      ],
+      "blindSolve": {
+        "answer": "1",
+        "ambiguous": false,
+        "setup": "given",
+        "strategy": "prescribed",
+        "check": "none",
+        "task": "diagnose",
+        "reverse": false,
+        "steps": 2
+      },
+      "id": "VAR-MTH-T01-C07-c07-currency-exchange-rate-conversion-01",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "c07-exchange-rate-reciprocal-slip|diagnose|Knowing there are $#\\text{ m}$ in a kilometer and $#\\text{ s}$ in an hour, a student converted $#\\text{ m/s}$ to $\\text{km/h}$ step by step: Line #: $#\\text{ m/s} = # \\times \\frac{#}{#}\\text{ km/h}$ Line #: $= # \\times \\frac{#}{#}\\text{ km/h}$ Line #: $= # \\times #\\text{ km/h}$ Line #: $= #\\text{ km/h}$ Which line is the first one that is wrong?"
+    },
+    {
+      "variantId": "VAR-MTH-T01-C07-c07-currency-exchange-rate-conversion-02",
+      "sourceArchetype": "c07-currency-exchange-rate-conversion",
+      "archetypeKey": "c07-currency-exchange-rate-conversion",
+      "archetype": "problem-solving",
+      "level": 3,
+      "category": "Core Skill",
+      "form": "diagnose",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Knowing that $12\\text{ EUR}$ equals $15\\text{ USD}$, a student converted $240\\text{ EUR}$ to $\\text{USD}$ step by step:\nLine 1: $240\\text{ EUR} = 240 \\times \\frac{12}{15}\\text{ USD}$\nLine 2: $= 240 \\times \\frac{4}{5}\\text{ USD}$\nLine 3: $= 48 \\times 4\\text{ USD}$\nLine 4: $= 192\\text{ USD}$\nWhich line is the first one that is wrong?",
+      "display": "240\\text{ EUR} \\to \\text{USD}",
+      "givens": {
+        "eur_ref": 12,
+        "usd_ref": 15,
+        "amount": 240
+      },
+      "constants": {},
+      "trapGivens": [
+        240,
+        15,
+        12
+      ],
+      "answerSpec": {
+        "type": "choice",
+        "options": [
+          {
+            "id": "1",
+            "label": "Line 1"
+          },
+          {
+            "id": "2",
+            "label": "Line 2",
+            "trapTag": "c07-exchange-rate-reciprocal-slip"
+          },
+          {
+            "id": "3",
+            "label": "Line 3",
+            "trapTag": "c07-exchange-rate-reciprocal-slip"
+          },
+          {
+            "id": "4",
+            "label": "Line 4",
+            "trapTag": "c07-exchange-rate-reciprocal-slip"
+          }
+        ],
+        "correct": "1"
+      },
+      "answerPlain": "1",
+      "answerDisplay": "\\text{Line 1}",
+      "inputHint": "Choose a line",
+      "commonTrapTag": "c07-exchange-rate-reciprocal-slip",
+      "trapDerivation": "240 / (15 / 12)",
+      "trapValue": "192",
+      "verify": {
+        "source": "240 * (15 / 12)",
+        "trapValue": "192",
+        "flaw": {
+          "values": [
+            "240 * 12 / 15",
+            "240 * 4 / 5",
+            "48 * 4",
+            "192"
+          ],
+          "firstWrong": 1
+        }
+      },
+      "checkpointHint": "Check each step independently from scratch to locate the first line that fails to preserve the original value.",
+      "references": [
+        "MTH-T01-C07"
+      ],
+      "steps": [
+        {
+          "latex": "240\\text{ EUR} = 240 \\times \\frac{15}{12}\\text{ USD}",
+          "explain": "Line 1 is the first wrong line: to cancel EUR and obtain USD, multiply by the USD-per-EUR ratio rather than its reciprocal.",
+          "eq": [
+            "240 * (15 / 12)",
+            "300"
+          ]
+        },
+        {
+          "latex": "240 \\times \\frac{15}{12} = 240 \\times \\frac{5}{4}",
+          "explain": "Reduce the exchange rate fraction to lowest terms.",
+          "eq": [
+            "15 / 12",
+            "5 / 4"
+          ]
+        },
+        {
+          "latex": "240 \\times \\frac{5}{4} = 60 \\times 5",
+          "explain": "Divide the euro amount by the denominator.",
+          "eq": [
+            "240 / 4",
+            "60"
+          ]
+        },
+        {
+          "latex": "60 \\times 5 = 300",
+          "explain": "Multiply to get the true value in USD.",
+          "val": "300"
+        }
+      ],
+      "blindSolve": {
+        "answer": "1",
+        "ambiguous": false,
+        "setup": "given",
+        "strategy": "prescribed",
+        "check": "none",
+        "task": "diagnose",
+        "reverse": false,
+        "steps": 2
+      },
+      "id": "VAR-MTH-T01-C07-c07-currency-exchange-rate-conversion-02",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "c07-exchange-rate-reciprocal-slip|diagnose|Knowing that $#\\text{ EUR}$ equals $#\\text{ USD}$, a student converted $#\\text{ EUR}$ to $\\text{USD}$ step by step: Line #: $#\\text{ EUR} = # \\times \\frac{#}{#}\\text{ USD}$ Line #: $= # \\times \\frac{#}{#}\\text{ USD}$ Line #: $= # \\times #\\text{ USD}$ Line #: $= #\\text{ USD}$ Which line is the first one that is wrong?"
+    },
+    {
+      "variantId": "VAR-MTH-T01-C07-c07-currency-exchange-rate-conversion-03",
+      "sourceArchetype": "c07-currency-exchange-rate-conversion",
+      "archetypeKey": "c07-currency-exchange-rate-conversion",
+      "archetype": "problem-solving",
+      "level": 3,
+      "category": "Core Skill",
+      "form": "diagnose",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Knowing there are $1000\\text{ mL}$ in a liter and $60\\text{ s}$ in a minute, a student converted $150\\text{ L/min}$ to $\\text{mL/s}$ step by step:\nLine 1: $150\\text{ L/min} = 150 \\times \\frac{60}{1000}\\text{ mL/s}$\nLine 2: $= 150 \\times \\frac{3}{50}\\text{ mL/s}$\nLine 3: $= 3 \\times 3\\text{ mL/s}$\nLine 4: $= 9\\text{ mL/s}$\nWhich line is the first one that is wrong?",
+      "display": "150\\text{ L/min} \\to \\text{mL/s}",
+      "givens": {
+        "flow": 150
+      },
+      "constants": {
+        "ml_per_l": 1000,
+        "s_per_min": 60
+      },
+      "trapGivens": [
+        150,
+        1000,
+        60
+      ],
+      "answerSpec": {
+        "type": "choice",
+        "options": [
+          {
+            "id": "1",
+            "label": "Line 1"
+          },
+          {
+            "id": "2",
+            "label": "Line 2",
+            "trapTag": "c07-exchange-rate-reciprocal-slip"
+          },
+          {
+            "id": "3",
+            "label": "Line 3",
+            "trapTag": "c07-exchange-rate-reciprocal-slip"
+          },
+          {
+            "id": "4",
+            "label": "Line 4",
+            "trapTag": "c07-exchange-rate-reciprocal-slip"
+          }
+        ],
+        "correct": "1"
+      },
+      "answerPlain": "1",
+      "answerDisplay": "\\text{Line 1}",
+      "inputHint": "Choose a line",
+      "commonTrapTag": "c07-exchange-rate-reciprocal-slip",
+      "trapDerivation": "150 / (1000 / 60)",
+      "trapValue": "9",
+      "verify": {
+        "source": "150 * (1000 / 60)",
+        "trapValue": "9",
+        "flaw": {
+          "values": [
+            "150 * 60 / 1000",
+            "150 * 3 / 50",
+            "3 * 3",
+            "9"
+          ],
+          "firstWrong": 1
+        }
+      },
+      "checkpointHint": "Track each step from the original quantity independently and identify the first line where the value diverges.",
+      "references": [
+        "MTH-T01-C07"
+      ],
+      "steps": [
+        {
+          "latex": "150\\text{ L/min} = 150 \\times \\frac{1000}{60}\\text{ mL/s}",
+          "explain": "Line 1 is the first wrong line: converting liters to milliliters multiplies by one thousand while converting per minute to per second divides by sixty.",
+          "eq": [
+            "150 * (1000 / 60)",
+            "2500"
+          ]
+        },
+        {
+          "latex": "150 \\times \\frac{1000}{60} = 150 \\times \\frac{50}{3}",
+          "explain": "Reduce the conversion ratio to lowest terms.",
+          "eq": [
+            "1000 / 60",
+            "50 / 3"
+          ]
+        },
+        {
+          "latex": "150 \\times \\frac{50}{3} = 50 \\times 50",
+          "explain": "Divide the initial flow rate by the denominator.",
+          "eq": [
+            "150 / 3",
+            "50"
+          ]
+        },
+        {
+          "latex": "50 \\times 50 = 2500",
+          "explain": "Multiply to obtain the true flow rate in milliliters per second.",
+          "val": "2500"
+        }
+      ],
+      "blindSolve": {
+        "answer": "1",
+        "ambiguous": false,
+        "setup": "given",
+        "strategy": "prescribed",
+        "check": "none",
+        "task": "diagnose",
+        "reverse": false,
+        "steps": 2
+      },
+      "id": "VAR-MTH-T01-C07-c07-currency-exchange-rate-conversion-03",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "c07-exchange-rate-reciprocal-slip|diagnose|Knowing there are $#\\text{ mL}$ in a liter and $#\\text{ s}$ in a minute, a student converted $#\\text{ L/min}$ to $\\text{mL/s}$ step by step: Line #: $#\\text{ L/min} = # \\times \\frac{#}{#}\\text{ mL/s}$ Line #: $= # \\times \\frac{#}{#}\\text{ mL/s}$ Line #: $= # \\times #\\text{ mL/s}$ Line #: $= #\\text{ mL/s}$ Which line is the first one that is wrong?"
+    },
+    {
+      "variantId": "VAR-MTH-T01-C07-c07-inverse-proportion-rate-time-01",
+      "sourceArchetype": "c07-inverse-proportion-rate-time",
+      "archetypeKey": "c07-inverse-proportion-rate-time",
+      "archetype": "problem-solving",
+      "level": 3,
+      "category": "Core Skill",
+      "form": "direct",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Two positive quantities $w$ and $t$ are inversely proportional, while $w$ is directly proportional to $u$. When $u = 3$, we have $w = 15$ and $t = 24$. Find $t$ when $u = 6$.",
+      "display": "w_1 t_1 = w_2 t_2, \\quad \\frac{w_2}{w_1} = \\frac{u_2}{u_1}",
+      "plainText": "15 * 24 = (15 * 6 / 3) * t2",
+      "givens": {
+        "u1": 3,
+        "w1": 15,
+        "t1": 24,
+        "u2": 6
+      },
+      "constants": {},
+      "trapGivens": [
+        3,
+        15,
+        24,
+        6
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "12",
+        "tolerance": 0
+      },
+      "answerPlain": "12",
+      "answerDisplay": "12",
+      "inputHint": "Enter a whole number",
+      "commonTrapTag": "c07-direct-scaling-on-inverse-trap",
+      "trapDerivation": "((15 * 6 / 3) * 24) / 15",
+      "trapValue": "48",
+      "verify": {
+        "source": "(15 * 24) / (15 * 6 / 3)",
+        "trapValue": "48"
+      },
+      "checkpointHint": "Scale the intermediate variable using direct proportion first, then preserve the constant product of the inversely proportional pair.",
+      "references": [
+        "MTH-T01-C07"
+      ],
+      "steps": [
+        {
+          "latex": "w_2 = 15 \\times \\frac{6}{3}",
+          "explain": "Use direct proportionality between w and u to express the new value of w."
+        },
+        {
+          "latex": "w_2 = 30",
+          "explain": "Evaluate the new intermediate value.",
+          "eq": [
+            "15 * (6 / 3)",
+            "30"
+          ]
+        },
+        {
+          "latex": "15 \\times 24 = 30 \\cdot t_2",
+          "explain": "Set the constant product of w and t equal before and after the change.",
+          "eq": [
+            "15 * 24",
+            "360"
+          ]
+        },
+        {
+          "latex": "t_2 = \\frac{360}{30}",
+          "explain": "Divide the constant product by the new value of w.",
+          "eq": [
+            "360 / 30",
+            "12"
+          ]
+        },
+        {
+          "latex": "t_2 = 12",
+          "explain": "State the resulting value of t.",
+          "val": "12"
+        }
+      ],
+      "blindSolve": {
+        "answer": "12",
+        "ambiguous": false,
+        "setup": "model",
+        "strategy": "prescribed",
+        "check": "none",
+        "task": "compute",
+        "reverse": false,
+        "steps": 4
+      },
+      "id": "VAR-MTH-T01-C07-c07-inverse-proportion-rate-time-01",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "c07-direct-scaling-on-inverse-trap|direct|# * # = (# * # / #) * t#"
+    },
+    {
+      "variantId": "VAR-MTH-T01-C07-c07-inverse-proportion-rate-time-02",
+      "sourceArchetype": "c07-inverse-proportion-rate-time",
+      "archetypeKey": "c07-inverse-proportion-rate-time",
+      "archetype": "problem-solving",
+      "level": 3,
+      "category": "Core Skill",
+      "form": "direct",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Two positive quantities $p$ and $q$ are inversely proportional, while $p$ is directly proportional to $r$. When $r = 5$, we have $p = 10$ and $q = 45$. Find $q$ when $r = 15$.",
+      "display": "p_1 q_1 = p_2 q_2, \\quad \\frac{p_2}{p_1} = \\frac{r_2}{r_1}",
+      "plainText": "10 * 45 = (10 * 15 / 5) * q2",
+      "givens": {
+        "r1": 5,
+        "p1": 10,
+        "q1": 45,
+        "r2": 15
+      },
+      "constants": {},
+      "trapGivens": [
+        5,
+        10,
+        45,
+        15
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "15",
+        "tolerance": 0
+      },
+      "answerPlain": "15",
+      "answerDisplay": "15",
+      "inputHint": "Enter a whole number",
+      "commonTrapTag": "c07-direct-scaling-on-inverse-trap",
+      "trapDerivation": "((10 * 15 / 5) * 45) / 10",
+      "trapValue": "135",
+      "verify": {
+        "source": "(10 * 45) / (10 * 15 / 5)",
+        "trapValue": "135"
+      },
+      "checkpointHint": "Find the updated value of the directly linked variable first, then divide the invariant product by that updated value.",
+      "references": [
+        "MTH-T01-C07"
+      ],
+      "steps": [
+        {
+          "latex": "p_2 = 10 \\times \\frac{15}{5}",
+          "explain": "Scale p directly with r to write the new value of p."
+        },
+        {
+          "latex": "p_2 = 30",
+          "explain": "Evaluate the updated value of p.",
+          "eq": [
+            "10 * (15 / 5)",
+            "30"
+          ]
+        },
+        {
+          "latex": "10 \\times 45 = 30 \\cdot q_2",
+          "explain": "Equate the invariant product of p and q in both states.",
+          "eq": [
+            "10 * 45",
+            "450"
+          ]
+        },
+        {
+          "latex": "q_2 = \\frac{450}{30}",
+          "explain": "Divide the constant product by the updated value of p.",
+          "eq": [
+            "450 / 30",
+            "15"
+          ]
+        },
+        {
+          "latex": "q_2 = 15",
+          "explain": "State the resulting value of q.",
+          "val": "15"
+        }
+      ],
+      "blindSolve": {
+        "answer": "15",
+        "ambiguous": false,
+        "setup": "model",
+        "strategy": "prescribed",
+        "check": "none",
+        "task": "compute",
+        "reverse": false,
+        "steps": 4
+      },
+      "id": "VAR-MTH-T01-C07-c07-inverse-proportion-rate-time-02",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "c07-direct-scaling-on-inverse-trap|direct|# * # = (# * # / #) * q#"
+    },
+    {
+      "variantId": "VAR-MTH-T01-C07-c07-inverse-proportion-rate-time-03",
+      "sourceArchetype": "c07-inverse-proportion-rate-time",
+      "archetypeKey": "c07-inverse-proportion-rate-time",
+      "archetype": "problem-solving",
+      "level": 3,
+      "category": "Core Skill",
+      "form": "direct",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Two positive quantities $m$ and $d$ are inversely proportional, while $m$ is directly proportional to $k$. When $k = 8$, we have $m = 24$ and $d = 15$. Find $d$ when $k = 5$.",
+      "display": "m_1 d_1 = m_2 d_2, \\quad \\frac{m_2}{m_1} = \\frac{k_2}{k_1}",
+      "plainText": "24 * 15 = (24 * 5 / 8) * d2",
+      "givens": {
+        "k1": 8,
+        "m1": 24,
+        "d1": 15,
+        "k2": 5
+      },
+      "constants": {},
+      "trapGivens": [
+        8,
+        24,
+        15,
+        5
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "24",
+        "tolerance": 0
+      },
+      "answerPlain": "24",
+      "answerDisplay": "24",
+      "inputHint": "Enter a whole number",
+      "commonTrapTag": "c07-direct-scaling-on-inverse-trap",
+      "trapDerivation": "((24 * 5 / 8) * 15) / 24",
+      "trapValue": "75/8",
+      "verify": {
+        "source": "(24 * 15) / (24 * 5 / 8)",
+        "trapValue": "75/8"
+      },
+      "checkpointHint": "Determine how the intermediate variable scales with the direct relation first, then keep the inverse pair's product constant.",
+      "references": [
+        "MTH-T01-C07"
+      ],
+      "steps": [
+        {
+          "latex": "m_2 = 24 \\times \\frac{5}{8}",
+          "explain": "Use direct proportionality between m and k to express the new value of m."
+        },
+        {
+          "latex": "m_2 = 15",
+          "explain": "Evaluate the updated value of m.",
+          "eq": [
+            "24 * (5 / 8)",
+            "15"
+          ]
+        },
+        {
+          "latex": "24 \\times 15 = 15 \\cdot d_2",
+          "explain": "Set the constant product of the inverse pair equal in both states.",
+          "eq": [
+            "24 * 15",
+            "360"
+          ]
+        },
+        {
+          "latex": "d_2 = \\frac{360}{15}",
+          "explain": "Divide the constant product by the updated value of m.",
+          "eq": [
+            "360 / 15",
+            "24"
+          ]
+        },
+        {
+          "latex": "d_2 = 24",
+          "explain": "State the resulting value of d.",
+          "val": "24"
+        }
+      ],
+      "blindSolve": {
+        "answer": "24",
+        "ambiguous": false,
+        "setup": "model",
+        "strategy": "prescribed",
+        "check": "none",
+        "task": "compute",
+        "reverse": false,
+        "steps": 4
+      },
+      "id": "VAR-MTH-T01-C07-c07-inverse-proportion-rate-time-03",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "c07-direct-scaling-on-inverse-trap|direct|# * # = (# * # / #) * d#"
+    },
+    {
+      "variantId": "VAR-MTH-T01-C07-c07-constrained-three-way-mixture-proportion-01",
+      "sourceArchetype": "c07-constrained-three-way-mixture-proportion",
+      "archetypeKey": "c07-constrained-three-way-mixture-proportion",
+      "archetype": "problem-solving",
+      "level": 4,
+      "category": "Core Skill",
+      "form": "choose",
+      "context": "artisan_ceramic_glaze_batch",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "(a) Dry ceramic glaze batching obeys mass-ratio conservation with the limiting raw mineral setting maximum batch mass; (b) gram quantities (120 g, 140 g, 250 g) and 420 g total batch are realistic studio glaze weights; (c) removal test holds because blending dry glaze minerals in a fixed weight ratio literally follows limiting-component scaling."
+      },
+      "verificationLevel": "partial",
+      "prompt": "A ceramics studio mixes a dry stoneware glaze from feldspar, silica, and whiting in the mass ratio $3 : 4 : 5$. The studio has $120\\text{ g}$ of feldspar, $140\\text{ g}$ of silica, and $250\\text{ g}$ of whiting in stock. What is the maximum total mass of glaze, in grams, that can be mixed from this stock?",
+      "display": "u = \\min_i \\frac{S_i}{p_i}, \\quad T_{\\max} = u(a + b + c)",
+      "plainText": "u = min(120/3, 140/4, 250/5); T_max = u * (3 + 4 + 5)",
+      "givens": {
+        "a": 3,
+        "b": 4,
+        "c": 5,
+        "s1": 120,
+        "s2": 140,
+        "s3": 250
+      },
+      "constants": {},
+      "trapGivens": [
+        120,
+        3,
+        4,
+        5
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "420",
+        "tolerance": 0
+      },
+      "answerPlain": "420",
+      "answerDisplay": "420",
+      "inputHint": "Enter a whole number in grams",
+      "commonTrapTag": "c07-largest-stock-limits-trap",
+      "trapDerivation": "(120 / 3) * (3 + 4 + 5)",
+      "trapValue": "480",
+      "verify": {
+        "source": "(140 / 4) * (3 + 4 + 5)",
+        "trapValue": "480"
+      },
+      "checkpointHint": "Compute how many ratio units each mineral stock can supply, choose the smallest limit so no ingredient runs short, and multiply by the sum of the ratio terms.",
+      "references": [
+        "MTH-T01-C07"
+      ],
+      "steps": [
+        {
+          "latex": "u_{\\text{feldspar}} = \\frac{120}{3}",
+          "explain": "Calculate the ratio units supported by the feldspar stock.",
+          "eq": [
+            "120 / 3",
+            "40"
+          ]
+        },
+        {
+          "latex": "u_{\\text{silica}} = \\frac{140}{4}",
+          "explain": "Calculate the ratio units supported by the silica stock.",
+          "eq": [
+            "140 / 4",
+            "35"
+          ]
+        },
+        {
+          "latex": "u_{\\text{whiting}} = \\frac{250}{5}",
+          "explain": "Calculate the ratio units supported by the whiting stock.",
+          "eq": [
+            "250 / 5",
+            "50"
+          ]
+        },
+        {
+          "latex": "u = \\min(40, 35, 50)",
+          "explain": "Select the smallest ratio-unit count, since silica is the limiting ingredient and larger values exceed its stock."
+        },
+        {
+          "latex": "3 + 4 + 5 = 12",
+          "explain": "Sum the three ratio terms to find the total parts per batch unit.",
+          "eq": [
+            "3 + 4 + 5",
+            "12"
+          ]
+        },
+        {
+          "latex": "T_{\\max} = 35 \\times 12",
+          "explain": "Multiply the limiting unit count by the sum of ratio parts.",
+          "eq": [
+            "35 * 12",
+            "420"
+          ]
+        },
+        {
+          "latex": "T_{\\max} = 420",
+          "explain": "State the maximum total glaze mass in grams.",
+          "val": "420"
+        }
+      ],
+      "blindSolve": {
+        "answer": "420",
+        "ambiguous": false,
+        "setup": "model",
+        "strategy": "prescribed",
+        "check": "edge",
+        "edgeRejected": "u = 40 (feldspar limit, 480 g glaze) and u = 50 (whiting limit, 600 g glaze) exceed the 140 g silica stock",
+        "task": "compute",
+        "reverse": false,
+        "steps": 5
+      },
+      "id": "VAR-MTH-T01-C07-c07-constrained-three-way-mixture-proportion-01",
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "c07-largest-stock-limits-trap|choose|u = min(#/#, #/#, #/#); T_max = u * (# + # + #)"
+    },
+    {
+      "variantId": "VAR-MTH-T01-C07-c07-constrained-three-way-mixture-proportion-02",
+      "sourceArchetype": "c07-constrained-three-way-mixture-proportion",
+      "archetypeKey": "c07-constrained-three-way-mixture-proportion",
+      "archetype": "problem-solving",
+      "level": 4,
+      "category": "Core Skill",
+      "form": "choose",
+      "context": "horticultural_potting_substrate_blend",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "(a) Nursery substrate mixing follows mass-ratio conservation limited by the component with fewest available ratio units; (b) kilogram stockpiles (110 kg, 240 kg, 360 kg) and 640 kg total mix are realistic commercial nursery quantities; (c) removal test holds because combining soil components in a fixed mass ratio literally yields a limiting-component total."
+      },
+      "verificationLevel": "partial",
+      "prompt": "A plant nursery prepares a potting mix by blending perlite, compost, and coconut coir in the mass ratio $2 : 5 : 9$. The storage shed holds $110\\text{ kg}$ of perlite, $240\\text{ kg}$ of compost, and $360\\text{ kg}$ of coconut coir. What is the maximum total mass of potting mix, in kilograms, that can be blended from this stock?",
+      "display": "u = \\min_i \\frac{S_i}{p_i}, \\quad T_{\\max} = u(a + b + c)",
+      "plainText": "u = min(110/2, 240/5, 360/9); T_max = u * (2 + 5 + 9)",
+      "givens": {
+        "a": 2,
+        "b": 5,
+        "c": 9,
+        "s1": 110,
+        "s2": 240,
+        "s3": 360
+      },
+      "constants": {},
+      "trapGivens": [
+        110,
+        2,
+        5,
+        9
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "640",
+        "tolerance": 0
+      },
+      "answerPlain": "640",
+      "answerDisplay": "640",
+      "inputHint": "Enter a whole number in kilograms",
+      "commonTrapTag": "c07-largest-stock-limits-trap",
+      "trapDerivation": "(110 / 2) * (2 + 5 + 9)",
+      "trapValue": "880",
+      "verify": {
+        "source": "(360 / 9) * (2 + 5 + 9)",
+        "trapValue": "880"
+      },
+      "checkpointHint": "Divide each material's stock by its ratio share, pick the smallest quotient as the bottleneck, and scale the total ratio parts by that limit.",
+      "references": [
+        "MTH-T01-C07"
+      ],
+      "steps": [
+        {
+          "latex": "u_{\\text{perlite}} = \\frac{110}{2}",
+          "explain": "Calculate the ratio units supported by the perlite stock.",
+          "eq": [
+            "110 / 2",
+            "55"
+          ]
+        },
+        {
+          "latex": "u_{\\text{compost}} = \\frac{240}{5}",
+          "explain": "Calculate the ratio units supported by the compost stock.",
+          "eq": [
+            "240 / 5",
+            "48"
+          ]
+        },
+        {
+          "latex": "u_{\\text{coir}} = \\frac{360}{9}",
+          "explain": "Calculate the ratio units supported by the coconut coir stock.",
+          "eq": [
+            "360 / 9",
+            "40"
+          ]
+        },
+        {
+          "latex": "u = \\min(55, 48, 40)",
+          "explain": "Choose the smallest unit count because coconut coir runs out first."
+        },
+        {
+          "latex": "2 + 5 + 9 = 16",
+          "explain": "Sum the three ratio terms to obtain the total parts per unit.",
+          "eq": [
+            "2 + 5 + 9",
+            "16"
+          ]
+        },
+        {
+          "latex": "T_{\\max} = 40 \\times 16",
+          "explain": "Multiply the limiting unit count by the sum of the ratio terms.",
+          "eq": [
+            "40 * 16",
+            "640"
+          ]
+        },
+        {
+          "latex": "T_{\\max} = 640",
+          "explain": "State the maximum total potting mix mass in kilograms.",
+          "val": "640"
+        }
+      ],
+      "blindSolve": {
+        "answer": "640",
+        "ambiguous": false,
+        "setup": "model",
+        "strategy": "prescribed",
+        "check": "edge",
+        "edgeRejected": "u = 55 (perlite limit, 880 kg) and u = 48 (compost limit, 768 kg) exceed the 360 kg coconut coir stock",
+        "task": "compute",
+        "reverse": false,
+        "steps": 5
+      },
+      "id": "VAR-MTH-T01-C07-c07-constrained-three-way-mixture-proportion-02",
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "c07-largest-stock-limits-trap|choose|u = min(#/#, #/#, #/#); T_max = u * (# + # + #)"
+    },
+    {
+      "variantId": "VAR-MTH-T01-C07-c07-constrained-three-way-mixture-proportion-03",
+      "sourceArchetype": "c07-constrained-three-way-mixture-proportion",
+      "archetypeKey": "c07-constrained-three-way-mixture-proportion",
+      "archetype": "problem-solving",
+      "level": 4,
+      "category": "Core Skill",
+      "form": "choose",
+      "context": "specialty_epoxy_grout_formulation",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "(a) Three-component epoxy grout formulation conserves mass in a fixed stoichiometric ratio bounded by the limiting reagent; (b) gram weights (180 g, 110 g, 450 g) and 675 g grout batch are realistic tile-work quantities; (c) removal test holds because resin-hardener-filler mixing literally obeys limiting-component mass scaling."
+      },
+      "verificationLevel": "partial",
+      "prompt": "A tile installer mixes a three-part epoxy grout from resin, hardener, and quartz filler in the mass ratio $3 : 2 : 10$. On site there are $180\\text{ g}$ of resin, $110\\text{ g}$ of hardener, and $450\\text{ g}$ of quartz filler. What is the maximum total mass of epoxy grout, in grams, that can be prepared from these supplies?",
+      "display": "u = \\min_i \\frac{S_i}{p_i}, \\quad T_{\\max} = u(a + b + c)",
+      "plainText": "u = min(180/3, 110/2, 450/10); T_max = u * (3 + 2 + 10)",
+      "givens": {
+        "a": 3,
+        "b": 2,
+        "c": 10,
+        "s1": 180,
+        "s2": 110,
+        "s3": 450
+      },
+      "constants": {},
+      "trapGivens": [
+        110,
+        3,
+        2,
+        10
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "675",
+        "tolerance": 0
+      },
+      "answerPlain": "675",
+      "answerDisplay": "675",
+      "inputHint": "Enter a whole number in grams",
+      "commonTrapTag": "c07-largest-stock-limits-trap",
+      "trapDerivation": "(110 / 2) * (3 + 2 + 10)",
+      "trapValue": "825",
+      "verify": {
+        "source": "(450 / 10) * (3 + 2 + 10)",
+        "trapValue": "825"
+      },
+      "checkpointHint": "Find the ratio units available from each component separately, use the smallest one to respect all stocks, and multiply by the total ratio parts.",
+      "references": [
+        "MTH-T01-C07"
+      ],
+      "steps": [
+        {
+          "latex": "u_{\\text{resin}} = \\frac{180}{3}",
+          "explain": "Calculate the ratio units supported by the resin stock.",
+          "eq": [
+            "180 / 3",
+            "60"
+          ]
+        },
+        {
+          "latex": "u_{\\text{hardener}} = \\frac{110}{2}",
+          "explain": "Calculate the ratio units supported by the hardener stock.",
+          "eq": [
+            "110 / 2",
+            "55"
+          ]
+        },
+        {
+          "latex": "u_{\\text{filler}} = \\frac{450}{10}",
+          "explain": "Calculate the ratio units supported by the quartz filler stock.",
+          "eq": [
+            "450 / 10",
+            "45"
+          ]
+        },
+        {
+          "latex": "u = \\min(60, 55, 45)",
+          "explain": "Select the smallest ratio-unit count because quartz filler is the limiting supply."
+        },
+        {
+          "latex": "3 + 2 + 10 = 15",
+          "explain": "Sum the three ratio parts to get total parts per unit.",
+          "eq": [
+            "3 + 2 + 10",
+            "15"
+          ]
+        },
+        {
+          "latex": "T_{\\max} = 45 \\times 15",
+          "explain": "Multiply the limiting ratio-unit count by the total parts.",
+          "eq": [
+            "45 * 15",
+            "675"
+          ]
+        },
+        {
+          "latex": "T_{\\max} = 675",
+          "explain": "State the maximum total mass of epoxy grout in grams.",
+          "val": "675"
+        }
+      ],
+      "blindSolve": {
+        "answer": "675",
+        "ambiguous": false,
+        "setup": "model",
+        "strategy": "prescribed",
+        "check": "edge",
+        "edgeRejected": "u = 60 (resin limit, 900 g) and u = 55 (hardener limit, 825 g) exceed the 450 g quartz filler stock",
+        "task": "compute",
+        "reverse": false,
+        "steps": 5
+      },
+      "id": "VAR-MTH-T01-C07-c07-constrained-three-way-mixture-proportion-03",
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "c07-largest-stock-limits-trap|choose|u = min(#/#, #/#, #/#); T_max = u * (# + # + #)"
+    },
+    {
+      "variantId": "VAR-MTH-T01-C07-c07-gear-train-transmission-ratio-synthesis-01",
+      "sourceArchetype": "c07-gear-train-transmission-ratio-synthesis",
+      "archetypeKey": "c07-gear-train-transmission-ratio-synthesis",
+      "archetype": "problem-solving",
+      "level": 4,
+      "category": "Core Skill",
+      "form": "choose",
+      "context": "packaging_rotary_turntable_gearbox",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "(a) Compound gear train speed follows omega_out = omega_in * (N1/N2) * (N3/N4) with a shared intermediate shaft; (b) 900 RPM input motor, 15-to-40 tooth gears, and <=200 RPM turntable speed are mechanically realistic; (c) removal test holds since selecting an output gear to stay within a speed limit is a real gearbox design task."
+      },
+      "verificationLevel": "partial",
+      "prompt": "In a compound gearbox driving a packaging turntable, the motor shaft spins at $900\\text{ RPM}$ with a $16$-tooth input gear meshing with a $40$-tooth intermediate gear. A $15$-tooth pinion fixed to the same intermediate shaft drives an interchangeable output gear on the turntable shaft. The turntable speed must not exceed $200\\text{ RPM}$. If the available output gears have $20$, $24$, $30$, or $36$ teeth, what is the highest turntable speed in $\\text{RPM}$ that satisfies this limit?",
+      "display": "\\omega_{\\text{out}} = \\omega_{\\text{in}} \\cdot \\frac{N_1}{N_2} \\cdot \\frac{N_3}{N_4}",
+      "plainText": "omega_out = 900 * (16 / 40) * (15 / N4) for N4 in {20, 24, 30, 36} with omega_out <= 200",
+      "givens": {
+        "omega1": 900,
+        "N1": 16,
+        "N2": 40,
+        "N3": 15,
+        "target": 200,
+        "c1": 20,
+        "c2": 24,
+        "c3": 30,
+        "c4": 36
+      },
+      "constants": {},
+      "trapGivens": [
+        900,
+        16,
+        40,
+        15,
+        30
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "180",
+        "tolerance": 0
+      },
+      "answerPlain": "180",
+      "answerDisplay": "180",
+      "inputHint": "Enter a whole number in RPM",
+      "commonTrapTag": "c07-compound-ratio-added-trap",
+      "trapDerivation": "900 * (16 / 40 + 15 / 30)",
+      "trapValue": "810",
+      "verify": {
+        "source": "900 * (16 / 40) * (15 / 30)",
+        "trapValue": "810"
+      },
+      "checkpointHint": "Find the shared intermediate shaft speed from the first gear mesh, test each candidate output gear, and discard any that exceed the speed ceiling.",
+      "references": [
+        "MTH-T01-C07"
+      ],
+      "steps": [
+        {
+          "latex": "\\omega_{\\text{int}} = 900 \\times \\frac{16}{40}",
+          "explain": "Calculate the shared intermediate shaft speed from the first mesh ratio.",
+          "eq": [
+            "900 * (16 / 40)",
+            "360"
+          ]
+        },
+        {
+          "latex": "\\omega_{20} = 360 \\times \\frac{15}{20}",
+          "explain": "Evaluate the output speed for the smallest candidate gear and reject it because it exceeds the limit.",
+          "eq": [
+            "360 * (15 / 20)",
+            "270"
+          ]
+        },
+        {
+          "latex": "\\omega_{24} = 360 \\times \\frac{15}{24}",
+          "explain": "Evaluate the output speed for the second candidate gear and reject it because it also exceeds the limit.",
+          "eq": [
+            "360 * (15 / 24)",
+            "225"
+          ]
+        },
+        {
+          "latex": "\\omega_{30} = 360 \\times \\frac{15}{30}",
+          "explain": "Evaluate the output speed for the thirty-tooth gear, which meets the speed limit.",
+          "eq": [
+            "360 * (15 / 30)",
+            "180"
+          ]
+        },
+        {
+          "latex": "\\omega_{36} = 360 \\times \\frac{15}{36}",
+          "explain": "Evaluate the output speed for the largest candidate gear, which is valid but slower.",
+          "eq": [
+            "360 * (15 / 36)",
+            "150"
+          ]
+        },
+        {
+          "latex": "\\omega_{\\max} = 180",
+          "explain": "Select the highest valid turntable speed within the ceiling.",
+          "val": "180"
+        }
+      ],
+      "blindSolve": {
+        "answer": "180",
+        "ambiguous": false,
+        "setup": "model",
+        "strategy": "prescribed",
+        "check": "edge",
+        "edgeRejected": "20-tooth gear (270 RPM) and 24-tooth gear (225 RPM) exceed the 200 RPM turntable speed limit",
+        "task": "compute",
+        "reverse": false,
+        "steps": 4
+      },
+      "id": "VAR-MTH-T01-C07-c07-gear-train-transmission-ratio-synthesis-01",
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "c07-compound-ratio-added-trap|choose|omega_out = # * (# / #) * (# / N#) for N# in {#, #, #, #} with omega_out <= #"
+    },
+    {
+      "variantId": "VAR-MTH-T01-C07-c07-gear-train-transmission-ratio-synthesis-02",
+      "sourceArchetype": "c07-gear-train-transmission-ratio-synthesis",
+      "archetypeKey": "c07-gear-train-transmission-ratio-synthesis",
+      "archetype": "problem-solving",
+      "level": 4,
+      "category": "Core Skill",
+      "form": "choose",
+      "context": "cnc_milling_spindle_speed_reducer",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "(a) Compound spindle reducer kinematics obey omega_out = omega_in * (N1/N2) * (N3/N4); (b) 1500 RPM AC motor, 20-to-60 tooth gears, and <=320 RPM spindle limit are realistic machine-tool parameters; (c) removal test holds because matching a spindle speed cap across interchangeable output gears is a real machining setup."
+      },
+      "verificationLevel": "partial",
+      "prompt": "A compound speed reducer for a milling spindle has a motor shaft rotating at $1500\\text{ RPM}$ with a $24$-tooth drive gear meshing with a $60$-tooth intermediate gear. A $20$-tooth pinion shares that intermediate shaft and meshes with a selectable output gear on the spindle. The spindle speed must not exceed $320\\text{ RPM}$. If the available output gears have $25$, $30$, $40$, or $50$ teeth, what is the highest spindle speed in $\\text{RPM}$ that satisfies this limit?",
+      "display": "\\omega_{\\text{out}} = \\omega_{\\text{in}} \\cdot \\frac{N_1}{N_2} \\cdot \\frac{N_3}{N_4}",
+      "plainText": "omega_out = 1500 * (24 / 60) * (20 / N4) for N4 in {25, 30, 40, 50} with omega_out <= 320",
+      "givens": {
+        "omega1": 1500,
+        "N1": 24,
+        "N2": 60,
+        "N3": 20,
+        "target": 320,
+        "c1": 25,
+        "c2": 30,
+        "c3": 40,
+        "c4": 50
+      },
+      "constants": {},
+      "trapGivens": [
+        1500,
+        24,
+        60,
+        20,
+        40
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "300",
+        "tolerance": 0
+      },
+      "answerPlain": "300",
+      "answerDisplay": "300",
+      "inputHint": "Enter a whole number in RPM",
+      "commonTrapTag": "c07-compound-ratio-added-trap",
+      "trapDerivation": "1500 * (24 / 60 + 20 / 40)",
+      "trapValue": "1350",
+      "verify": {
+        "source": "1500 * (24 / 60) * (20 / 40)",
+        "trapValue": "1350"
+      },
+      "checkpointHint": "Calculate the intermediate shaft speed first, multiply by each second-stage ratio, and eliminate any candidate that exceeds the spindle ceiling.",
+      "references": [
+        "MTH-T01-C07"
+      ],
+      "steps": [
+        {
+          "latex": "\\omega_{\\text{int}} = 1500 \\times \\frac{24}{60}",
+          "explain": "Calculate the shared intermediate shaft speed from the first gear mesh.",
+          "eq": [
+            "1500 * (24 / 60)",
+            "600"
+          ]
+        },
+        {
+          "latex": "\\omega_{25} = 600 \\times \\frac{20}{25}",
+          "explain": "Evaluate the output speed for the smallest candidate gear and reject it because it exceeds the ceiling.",
+          "eq": [
+            "600 * (20 / 25)",
+            "480"
+          ]
+        },
+        {
+          "latex": "\\omega_{30} = 600 \\times \\frac{20}{30}",
+          "explain": "Evaluate the output speed for the thirty-tooth gear and reject it because it also exceeds the ceiling.",
+          "eq": [
+            "600 * (20 / 30)",
+            "400"
+          ]
+        },
+        {
+          "latex": "\\omega_{40} = 600 \\times \\frac{20}{40}",
+          "explain": "Evaluate the output speed for the forty-tooth gear, which satisfies the speed limit.",
+          "eq": [
+            "600 * (20 / 40)",
+            "300"
+          ]
+        },
+        {
+          "latex": "\\omega_{50} = 600 \\times \\frac{20}{50}",
+          "explain": "Evaluate the output speed for the largest candidate gear, which is valid but slower.",
+          "eq": [
+            "600 * (20 / 50)",
+            "240"
+          ]
+        },
+        {
+          "latex": "\\omega_{\\max} = 300",
+          "explain": "Select the highest valid spindle speed within the limit.",
+          "val": "300"
+        }
+      ],
+      "blindSolve": {
+        "answer": "300",
+        "ambiguous": false,
+        "setup": "model",
+        "strategy": "prescribed",
+        "check": "edge",
+        "edgeRejected": "25-tooth gear (480 RPM) and 30-tooth gear (400 RPM) exceed the 320 RPM spindle limit",
+        "task": "compute",
+        "reverse": false,
+        "steps": 4
+      },
+      "id": "VAR-MTH-T01-C07-c07-gear-train-transmission-ratio-synthesis-02",
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "c07-compound-ratio-added-trap|choose|omega_out = # * (# / #) * (# / N#) for N# in {#, #, #, #} with omega_out <= #"
+    },
+    {
+      "variantId": "VAR-MTH-T01-C07-c07-gear-train-transmission-ratio-synthesis-03",
+      "sourceArchetype": "c07-gear-train-transmission-ratio-synthesis",
+      "archetypeKey": "c07-gear-train-transmission-ratio-synthesis",
+      "archetype": "problem-solving",
+      "level": 4,
+      "category": "Core Skill",
+      "form": "choose",
+      "context": "commercial_dough_mixer_drive_train",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "(a) Compound bakery mixer transmission obeys omega_out = omega_in * (N1/N2) * (N3/N4); (b) 1000 RPM motor, 16-to-50 tooth gears, and <=175 RPM agitator speed are realistic commercial mixer values; (c) removal test holds because selecting an output gear under an agitator speed ceiling is a genuine mechanical drive task."
+      },
+      "verificationLevel": "partial",
+      "prompt": "In a compound gear train for a commercial dough mixer, the motor shaft runs at $1000\\text{ RPM}$ with an $18$-tooth drive gear meshing with a $45$-tooth intermediate gear. A $16$-tooth pinion shares that intermediate shaft and meshes with a replaceable output gear on the agitator shaft. The agitator speed must not exceed $175\\text{ RPM}$. If the available output gears have $20$, $32$, $40$, or $50$ teeth, what is the highest agitator speed in $\\text{RPM}$ that satisfies this limit?",
+      "display": "\\omega_{\\text{out}} = \\omega_{\\text{in}} \\cdot \\frac{N_1}{N_2} \\cdot \\frac{N_3}{N_4}",
+      "plainText": "omega_out = 1000 * (18 / 45) * (16 / N4) for N4 in {20, 32, 40, 50} with omega_out <= 175",
+      "givens": {
+        "omega1": 1000,
+        "N1": 18,
+        "N2": 45,
+        "N3": 16,
+        "target": 175,
+        "c1": 20,
+        "c2": 32,
+        "c3": 40,
+        "c4": 50
+      },
+      "constants": {},
+      "trapGivens": [
+        1000,
+        18,
+        45,
+        16,
+        40
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "160",
+        "tolerance": 0
+      },
+      "answerPlain": "160",
+      "answerDisplay": "160",
+      "inputHint": "Enter a whole number in RPM",
+      "commonTrapTag": "c07-compound-ratio-added-trap",
+      "trapDerivation": "1000 * (18 / 45 + 16 / 40)",
+      "trapValue": "800",
+      "verify": {
+        "source": "1000 * (18 / 45) * (16 / 40)",
+        "trapValue": "800"
+      },
+      "checkpointHint": "Find the shared intermediate shaft speed first, test each candidate output gear in the second mesh, and rule out any that exceed the speed limit.",
+      "references": [
+        "MTH-T01-C07"
+      ],
+      "steps": [
+        {
+          "latex": "\\omega_{\\text{int}} = 1000 \\times \\frac{18}{45}",
+          "explain": "Calculate the shared intermediate shaft speed from the first gear mesh.",
+          "eq": [
+            "1000 * (18 / 45)",
+            "400"
+          ]
+        },
+        {
+          "latex": "\\omega_{20} = 400 \\times \\frac{16}{20}",
+          "explain": "Evaluate the output speed for the smallest candidate gear and reject it because it exceeds the limit.",
+          "eq": [
+            "400 * (16 / 20)",
+            "320"
+          ]
+        },
+        {
+          "latex": "\\omega_{32} = 400 \\times \\frac{16}{32}",
+          "explain": "Evaluate the output speed for the thirty-two-tooth gear and reject it because it also exceeds the limit.",
+          "eq": [
+            "400 * (16 / 32)",
+            "200"
+          ]
+        },
+        {
+          "latex": "\\omega_{40} = 400 \\times \\frac{16}{40}",
+          "explain": "Evaluate the output speed for the forty-tooth gear, which stays within the limit.",
+          "eq": [
+            "400 * (16 / 40)",
+            "160"
+          ]
+        },
+        {
+          "latex": "\\omega_{50} = 400 \\times \\frac{16}{50}",
+          "explain": "Evaluate the output speed for the largest candidate gear, which is valid but slower.",
+          "eq": [
+            "400 * (16 / 50)",
+            "128"
+          ]
+        },
+        {
+          "latex": "\\omega_{\\max} = 160",
+          "explain": "Select the highest valid agitator speed within the ceiling.",
+          "val": "160"
+        }
+      ],
+      "blindSolve": {
+        "answer": "160",
+        "ambiguous": false,
+        "setup": "model",
+        "strategy": "prescribed",
+        "check": "edge",
+        "edgeRejected": "20-tooth gear (320 RPM) and 32-tooth gear (200 RPM) exceed the 175 RPM agitator speed limit",
+        "task": "compute",
+        "reverse": false,
+        "steps": 4
+      },
+      "id": "VAR-MTH-T01-C07-c07-gear-train-transmission-ratio-synthesis-03",
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "c07-compound-ratio-added-trap|choose|omega_out = # * (# / #) * (# / N#) for N# in {#, #, #, #} with omega_out <= #"
+    }
+  ]
+}
