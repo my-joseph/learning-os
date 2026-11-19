@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Local Workspace Manager for VS Code / Cursor Integration.
+Local Workspace Manager for Local IDE Integration.
 
 Standardizes local workspace scaffolding for Real-World Engineering Drills:
 - Standard folder: drills/workspace/<DRILL_ID>/
@@ -9,7 +9,7 @@ Standardizes local workspace scaffolding for Real-World Engineering Drills:
   ├── <PID>_<name>.js      (Starter code / legacy code / buggy code with rich JSDoc & invariant contracts)
   └── <PID>_<name>.test.js (Node native test runner suite verifying functional acceptance criteria)
 
-Generates one-click IDE deep links (cursor://file/... and vscode://file/...)
+Generates one-click IDE deep links (vscode://file/...)
 so developers can write and debug in their real IDE with full LSP, keybindings, and tools.
 """
 
@@ -475,9 +475,7 @@ test({t_name}, {fn_prefix} {{
         manifest["files"][pid] = {
             "sourcePath": abs_src,
             "testPath": os.path.abspath(test_path),
-            "cursorUrl": f"cursor://file/{abs_src}",
             "vscodeUrl": f"vscode://file/{abs_src}",
-            "cursorFolderUrl": f"cursor://file/{abs_ws}",
             "vscodeFolderUrl": f"vscode://file/{abs_ws}",
             "relativeSrc": os.path.join(ws_base, drill_id, src_filename),
         }
@@ -559,11 +557,11 @@ test({t_name}, {fn_prefix} {{
         f"# {drill_id} — {unit_code}: {unit_title}",
         "",
         f"> **Environment Preset:** `{preset_key}` — {preset['description']}",
-        "> **100% Local IDE Mandate**: All problem solving, refactoring, and debugging must be performed natively in your IDE (VS Code / Cursor).",
+        "> **100% Local IDE Mandate**: All problem solving, refactoring, and debugging must be performed natively in your local editor (e.g. VS Code).",
         "",
         "## Universal 6-Step Pedagogical Practice Loop",
         "1. **Think Before Coding (Mental Model)**: Review the Acceptance Criteria and boundary traps before typing.",
-        "2. **Hands-On Implementation (Local IDE)**: Open the source file in VS Code or Cursor and implement the logic.",
+        "2. **Hands-On Implementation (Local IDE)**: Open the workspace folder in your local editor and implement the logic.",
         "3. **Automated Testing (Acceptance Testing)**: Run `npm test` or `npm run check:q01` in this directory.",
         "4. **Code Review & Explanation (PR Review)**: Run `npm run review -- q01` or ask in Claude Code (`review code <DRILL_ID> Q01`), then explain why your solution works.",
         "5. **Refactor (Clean Architecture)**: Decouple helpers, clean code smells, and optimize hot paths while keeping tests green.",

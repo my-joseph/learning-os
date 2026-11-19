@@ -50,11 +50,11 @@ TEMPLATES = [
 ### 1.3 กฎของโจทย์เขียนโค้ดและ Workspace Deep Links (Coding Kata Workspace Contract)
 สำหรับโจทย์ประเภทเขียนโค้ด (`codeType` เป็น `kata`, `implement`, `refactor` หรือมี `visibleTests`/`starterCode`):
 1. **การสร้าง Workspace บนดิสก์**: ต้องเรียก `code_engine.workspace.materialize_drill_workspace` เพื่อสร้างโครงสร้าง `drills/workspace/<DRILL_ID>/` ที่มี `package.json`, `README.md`, ซอร์สโค้ดเริ่มต้น และไฟล์เทสต์
-2. **Metadata Deep Links ระดับโฟลเดอร์ vs ไฟล์เดี่ยว**:
-   - **ระดับโฟลเดอร์ (Folder-Level)**: ต้องระบุ `workspaceDir` (Absolute Path), `vscodeFolderUrl` (`vscode://file/<abs_ws>`), และ `cursorFolderUrl` (`cursor://file/<abs_ws>`)
-   - **ระดับไฟล์ (File-Level)**: ต้องระบุ `workspaceFile` (Path ไฟล์), `vscodeUrl` (`vscode://file/<abs_src>`), และ `cursorUrl` (`cursor://file/<abs_src>`)
-3. **Invariants ห้ามละเมิด**:
-   - ปุ่มหลัก "Open in VS Code" / "Open in Cursor" ในหน้า Practice Studio **ต้องเปิดโฟลเดอร์ Workspace เสมอ** (`vscodeFolderUrl`) ห้ามชี้หรือ fallback เป็นไฟล์เดี่ยว เพื่อให้ VS Code ตรวจพบ `package.json`, แสดงแผง NPM Scripts, และเปิด Terminal ถูก Directory ทันที
+2. **Folder-Level vs. File-Level Deep Links**:
+   - **Folder-Level**: `workspaceDir` (absolute path) and `vscodeFolderUrl` (`vscode://file/<abs_ws>`) computed at runtime by Studio API (do not emit `cursor://` or `cursorFolderUrl`).
+   - **File-Level**: `workspaceFile` (relative path in drill JSON) and `vscodeUrl` (`vscode://file/<abs_src>`) computed at runtime (do not emit `cursorUrl`).
+3. **Non-Negotiable Invariants**:
+   - The primary "Open in VS Code" button in Practice Studio **must always open the workspace folder** (`vscodeFolderUrl`) and never fall back to a single file, so VS Code discovers `package.json`, NPM Scripts, and the workspace terminal directory. Do not render an "Open in Cursor" button (code is edited in the learner's own editor).
    - การเปิดไฟล์เดี่ยว (`vscodeUrl`) อนุญาตให้เป็นปุ่มรอง "Open File" เท่านั้น
 
 ---

@@ -1,6 +1,6 @@
 # PRG Code Reviewer — spec v1 (2026-11-16)
 
-Status: proposal for the learner to read before implementation. Nothing here is built yet.
+Status: implemented (R1–R4 complete; Studio review UI and multi-milestone project lab reviews are live).
 
 ## Why
 
@@ -138,7 +138,6 @@ problem as correct only on a pass.
 - **Per-finding `disputed` + stored `code` & `typecheck`:** Instead of a top-level `disputes: []` array on the review record, each disputed finding carries `disputed: {reason, issueId}` directly so `compute_verdict` and `weak_spots.py` can ignore disputed findings per-item; records also store `code` (full source text) and `typecheck: [{line, message}]` alongside `lint`.
 - **Clipboard prompt retired in R3:** `code_engine/review.py`, `labs/common/review.py`, and `code_engine/workspace.py`'s README text were updated in R3 (ahead of R4) to point learners to `review code <DRILL_ID> <QID>` and `python -m code_engine.review_run`.
 
-## Out of scope for v1
+## Beyond v1 (implemented)
 
-Studio UI for reviews (UI comes later, with the Math/Programming workspace split in `docs/backlog.md`); reviews of
-multi-file projects beyond the lab (the same rubric idea applies, per milestone, once projects are planned).
+Studio UI for reviews is now live in `practice-studio/` (`CodeDashboard.tsx`, with separate `/math` and `/code` workspaces), and multi-milestone project labs use the same rubric per milestone via `code_engine.review_run`, `scripts.review_record`, `review-code`, and `code_engine.lab_ingest`.

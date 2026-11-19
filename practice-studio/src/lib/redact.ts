@@ -273,7 +273,7 @@ export function computeSafePlaceholder(
  * Strip secret answer fields from `answerSpec`, keeping only `type`, choice `options`
  * (without `provenance`), and non-secret format/unit/variable metadata.
  */
-export function redactAnswerSpec(spec?: AnswerSpec | null): AnswerSpec {
+function redactAnswerSpec(spec?: AnswerSpec | null): AnswerSpec {
   if (!spec || typeof spec !== "object") {
     return { type: "text" };
   }

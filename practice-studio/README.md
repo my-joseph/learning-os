@@ -11,7 +11,7 @@ npm run dev   # http://127.0.0.1:3000 (bound to localhost only)
 
 ## How it fits together
 
-- Drill JSON lives in `../drills/data/<UNIT>/<DRILL_ID>.json` (`drills/` here is a symlink).
+- Drill JSON lives in `../drills/data/<UNIT>/<DRILL_ID>.json` (`drills/data` here is a symlink to `../../drills/data`).
 - API routes in `src/app/api/*` spawn the Python engines from the repo root
   (`math_engine/`, `code_engine/`, `notion_sync/drill_sync.py`) using `../.venv` if present.
 - File access from the browser is restricted to the repo root (`src/lib/paths.ts`).

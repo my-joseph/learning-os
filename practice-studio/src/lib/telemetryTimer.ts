@@ -46,17 +46,6 @@ export function createTelemetryTimerState(
   return state;
 }
 
-export function getOrCreateProblemState(state: TelemetryTimerState, problemId: string): ProblemTimerState {
-  if (!state.problems[problemId]) {
-    state.problems[problemId] = {
-      accumulatedMs: 0,
-      lastActiveStart: null,
-      hintsRevealed: 0,
-    };
-  }
-  return state.problems[problemId];
-}
-
 /**
  * Switch active problem card.
  */

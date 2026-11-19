@@ -21,7 +21,7 @@ export interface SvgSegment {
 }
 
 /** Estimate pill width in SVG pixels from a LaTeX/plain label string. */
-export function estimateLabelPillWidth(label: string): number {
+function estimateLabelPillWidth(label: string): number {
   const stripped = label
     .replace(/\$/g, "")
     .replace(/\\(?:text|mathrm|mathbf|sqrt|frac|overline|bar)\b/g, "")
