@@ -7,12 +7,12 @@ export async function POST(req: NextRequest) {
   try {
     const drillDoc = await req.json();
     const drillId = drillDoc.drillId;
-    const unitCode = drillDoc.unitCode || "MTH-T02-C01-U01";
+    const unitCode = drillDoc.unitCode;
 
     if (!drillId) {
       return NextResponse.json({ ok: false, error: "Missing drillId" }, { status: 400 });
     }
-    if (!isSafeId(drillId) || !isSafeId(unitCode)) {
+    if (!isSafeId(drillId) || (unitCode && !isSafeId(unitCode))) {
       return NextResponse.json({ ok: false, error: "Invalid drillId or unitCode" }, { status: 400 });
     }
 
