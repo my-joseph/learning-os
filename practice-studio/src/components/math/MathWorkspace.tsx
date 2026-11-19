@@ -372,6 +372,7 @@ export const MathWorkspace: React.FC<MathWorkspaceProps> = ({
             mistakeTags={[]}
             activeStep={similarActiveStep}
             autoRevealOnCorrect={false}
+            autoFocusPrimaryAction={similarHasAttempt && !similarIsCorrect}
             loadingSteps={loadingSteps}
             ariaLabel={`Answer for similar question ${activeSimilar.index} of ${activeSimilar.total}`}
             resultTitleOverride={
