@@ -59,6 +59,7 @@ import {
   sanitizeCodeCheckError,
 } from "@/lib/codeStatus";
 import { plainTitle } from "@/lib/titleText";
+import { ListDot } from "@/components/ui/ListDot";
 
 export interface CodeDashboardProps {
   problem: Problem;
@@ -561,13 +562,8 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
             </h3>
             <ul className="space-y-1 text-sm text-zinc-700 dark:text-zinc-300">
               {problem.constraints.map((constraint, cIdx) => (
-                <li key={cIdx} className="flex items-baseline gap-2">
-                  <span
-                    className="text-zinc-400 dark:text-zinc-500 font-mono text-xs select-none"
-                    aria-hidden="true"
-                  >
-                    •
-                  </span>
+                <li key={cIdx} className="flex items-start gap-2 leading-relaxed">
+                  <ListDot />
                   <span className="leading-relaxed">
                     <FormattedText text={constraint} />
                   </span>
@@ -655,10 +651,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                     {problem.visibleTests.map((t, idx) => (
                       <li key={t.id || idx} className="space-y-1">
                         <div className="flex items-start gap-2">
-                          <span
-                            className="mt-[5px] w-1.5 h-1.5 rounded-full bg-indigo-600 dark:bg-indigo-400 shrink-0"
-                            aria-hidden="true"
-                          />
+                          <ListDot />
                           {t.testCode ? (
                             <button
                               type="button"
@@ -921,10 +914,13 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                           {r.findings && r.findings.length > 0 ? (
                             <ul className="space-y-1 text-xs text-zinc-700 dark:text-zinc-300 font-mono">
                               {r.findings.map((f, fIdx) => (
-                                <li key={fIdx}>
+                                <li key={fIdx} className="flex items-start gap-2">
+                                  <ListDot />
+                                  <span>
                                   {f.check} ({f.severity}
                                   {f.line ? `, line ${f.line}` : ""}
                                   {f.disputed ? ", disputed" : ""}): {f.note}
+                                  </span>
                                 </li>
                               ))}
                             </ul>

@@ -104,7 +104,7 @@ assert.doesNotMatch(drillHtml, /aria-label="Examples"[\s\S]*border-l-2/);
 assert.match(drillHtml, /<button[^>]*aria-expanded="false"[^>]*aria-controls="visible-test-code-0"[^>]*>/);
 assert.match(drillHtml, /<button[^>]*aria-expanded="false"[^>]*aria-controls="visible-test-code-1"[^>]*>/);
 assert.match(drillHtml, /<div id="visible-test-code-0" hidden=""/);
-assert.match(drillHtml, /bg-indigo-600 dark:bg-indigo-400 shrink-0/);
+assert.match(drillHtml, /rounded-full bg-indigo-600 dark:bg-indigo-400/);
 assert.match(drillHtml, /inserts before the first value/);
 assert.doesNotMatch(drillHtml, /aria-controls="visible-test-code-2"/, "tests without code stay plain names");
 
