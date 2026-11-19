@@ -324,10 +324,90 @@ export function applySimilarHintToLatestProblem(
   return { nextProblem, nextRecord, didIncrement: !hasCorrect };
 }
 
-/** Return true when opening steps on a similar tab must persist `stepsRevealed` to the server. */
+/** Return true when opening steps on a similar tab must mark local help and persist `stepsRevealed`. */
 export function shouldPersistVariantStepsReveal(prob: Problem): boolean {
   const hasCorrect = isLockedAfterCorrect(prob.state, { isVariant: true });
   return !hasCorrect && !prob.state.solutionRevealedBeforeAnswer;
+}
+
+/**
+ * Record a similar-tab steps reveal on the server (idempotent whenever not yet solved)
+ * BEFORE and INDEPENDENT of fetching steps, then fetch steps only if not already loaded.
+ */
+export async function executeSimilarStepsReveal(params: {
+  drillId: string;
+  qid: string;
+  token: string;
+  existing: Problem;
+  fetchFn?: typeof fetch;
+}): Promise<{
+  recordedServerReveal: boolean;
+  fetchedSteps: boolean;
+  stepsPatch: {
+    steps: Step[];
+    answerDisplay: string;
+    answerPlain: string;
+  } | null;
+}> {
+  const { drillId, qid, token, existing, fetchFn = fetch } = params;
+  const hasCorrect = isLockedAfterCorrect(existing.state, { isVariant: true });
+  const needsFetchSteps = !existing.steps || existing.steps.length === 0;
+  let recordedServerReveal = false;
+
+  if (!hasCorrect) {
+    try {
+      const res = await fetchFn("/api/variant", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          drillId,
+          qid,
+          variantToken: token,
+          action: "reveal-steps",
+        }),
+      });
+      recordedServerReveal = res.ok;
+    } catch {
+      // ignore transient error; next reveal will retry idempotently
+    }
+  }
+
+  if (!needsFetchSteps) {
+    return {
+      recordedServerReveal,
+      fetchedSteps: false,
+      stepsPatch: null,
+    };
+  }
+
+  const qs = new URLSearchParams({
+    drillId,
+    qid,
+    variantToken: token,
+    part: "steps",
+  });
+  const res = await fetchFn(`/api/reveal?${qs.toString()}`);
+  if (!res.ok) {
+    return {
+      recordedServerReveal,
+      fetchedSteps: true,
+      stepsPatch: null,
+    };
+  }
+  const data = (await res.json()) as {
+    steps?: Step[];
+    answerDisplay?: string;
+    answerPlain?: string;
+  };
+  return {
+    recordedServerReveal,
+    fetchedSteps: true,
+    stepsPatch: {
+      steps: Array.isArray(data.steps) ? data.steps : [],
+      answerDisplay: data.answerDisplay || data.answerPlain || "",
+      answerPlain: data.answerPlain || "",
+    },
+  };
 }
 
 export interface UseSimilarTabsOptions {
@@ -1231,9 +1311,6 @@ export function useSimilarTabs({
     const existing = tabProblemsRef.current[tok];
     if (!existing) return;
     const targetQuestionKey = questionKeyRef.current;
-    const hasSubstantive = (existing.state.attempts || []).some((a) =>
-      isSubstantiveVerdict(a.verdict)
-    );
     const shouldPersist = shouldPersistVariantStepsReveal(existing);
     if (shouldPersist) {
       const updated = updateTabProblem(tok, (cur) => ({
@@ -1248,64 +1325,29 @@ export function useSimilarTabs({
       }
     }
     const needsFetchSteps = !existing.steps || existing.steps.length === 0;
-    if (!needsFetchSteps) {
-      // Steps were already cached locally (e.g. reopened after a wrong attempt),
-      // so still persist `stepsRevealed` on the server so status survives reload.
-      if (shouldPersist) {
-        try {
-          await fetch("/api/variant", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              drillId,
-              qid: problem.id,
-              variantToken: tok,
-              action: "reveal-steps",
-            }),
-          });
-        } catch {
-          // ignore transient error
-        }
-      }
-      return;
+    if (needsFetchSteps) {
+      setLoadingSteps(true);
     }
-    setLoadingSteps(true);
     try {
-      if (shouldPersist || !hasSubstantive) {
-        await fetch("/api/variant", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            drillId,
-            qid: problem.id,
-            variantToken: tok,
-            action: "reveal-steps",
-          }),
-        });
-      }
-      if (questionKeyRef.current !== targetQuestionKey) return;
-      const qs = new URLSearchParams({
+      const { stepsPatch } = await executeSimilarStepsReveal({
         drillId,
         qid: problem.id,
-        variantToken: tok,
-        part: "steps",
+        token: tok,
+        existing,
       });
-      const res = await fetch(`/api/reveal?${qs.toString()}`);
-      if (!res.ok || questionKeyRef.current !== targetQuestionKey) return;
-      const data = (await res.json()) as {
-        steps?: Step[];
-        answerDisplay?: string;
-        answerPlain?: string;
-      };
-      if (questionKeyRef.current !== targetQuestionKey) return;
+      if (!stepsPatch || questionKeyRef.current !== targetQuestionKey) return;
       updateTabProblem(tok, (cur) => ({
         ...cur,
-        steps: Array.isArray(data.steps) ? data.steps : [],
-        answerDisplay: data.answerDisplay || data.answerPlain || "",
-        answerPlain: data.answerPlain || "",
+        steps: stepsPatch.steps,
+        answerDisplay: stepsPatch.answerDisplay,
+        answerPlain: stepsPatch.answerPlain,
       }));
+    } catch {
+      // ignore transient error
     } finally {
-      setLoadingSteps(false);
+      if (needsFetchSteps) {
+        setLoadingSteps(false);
+      }
     }
   }, [drillId, problem.id, syncSimilarHelpStatus, updateTabProblem]);
 

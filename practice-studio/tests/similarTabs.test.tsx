@@ -23,6 +23,7 @@ import { QuizPaginationBar } from "../src/components/QuizPaginationBar";
 import {
   applySimilarCheckToLatestProblem,
   applySimilarHintToLatestProblem,
+  executeSimilarStepsReveal,
   shouldPersistVariantStepsReveal,
 } from "../src/hooks/useSimilarTabs";
 import {
@@ -1652,16 +1653,145 @@ async function testReviewCycleIsolation() {
     true,
     "Show steps before a correct answer must persist to server even when steps are already cached"
   );
-  const hookSrc = fs.readFileSync("src/hooks/useSimilarTabs.ts", "utf8");
-  assert.match(
-    hookSrc,
-    /if \(!needsFetchSteps\)[\s\S]{0,650}action:\s*"reveal-steps"/,
-    "handleSimilarSolutionRevealed must POST action:'reveal-steps' even when steps are already cached"
-  );
+}
+
+async function testExecuteSimilarStepsReveal() {
+  // 1. Cached steps + wrong attempt (!hasCorrect): MUST POST reveal-steps idempotently, must NOT re-fetch /api/reveal
+  const calls1: Array<{ url: string; method: string; body?: string }> = [];
+  const mockFetch1 = (async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = typeof input === "string" ? input : input.toString();
+    calls1.push({
+      url,
+      method: (init?.method || "GET").toUpperCase(),
+      body: typeof init?.body === "string" ? init.body : undefined,
+    });
+    return new Response(JSON.stringify({ ok: true }), { status: 200 });
+  }) as typeof fetch;
+
+  const cachedWrongProb = makeProblem({
+    id: "vtok1",
+    steps: [{ latex: "7/30", explain: "Simplify." }],
+    state: baseState({
+      score: 0,
+      solutionRevealedBeforeAnswer: false,
+      attempts: [{ input: "1/2", ts: "2026-11-20T01:00:00.000Z", verdict: "incorrect", kind: "variant" }],
+    }),
+  });
+  const res1 = await executeSimilarStepsReveal({
+    drillId: "DRL-MTH-T01-C04-01",
+    qid: "Q02",
+    token: "vtok1",
+    existing: cachedWrongProb,
+    fetchFn: mockFetch1,
+  });
+  assert.equal(res1.recordedServerReveal, true);
+  assert.equal(res1.fetchedSteps, false);
+  assert.equal(res1.stepsPatch, null);
+  assert.equal(calls1.length, 1);
+  assert.equal(calls1[0].url, "/api/variant");
+  assert.equal(calls1[0].method, "POST");
+  assert.deepEqual(JSON.parse(calls1[0].body || "{}"), {
+    drillId: "DRL-MTH-T01-C04-01",
+    qid: "Q02",
+    variantToken: "vtok1",
+    action: "reveal-steps",
+  });
+
+  // 2. Cached steps + local solutionRevealedBeforeAnswer already true (e.g. retry after transient network error):
+  //    still sends idempotent POST reveal-steps because !hasCorrect
+  const calls2: string[] = [];
+  const mockFetch2 = (async (input: RequestInfo | URL) => {
+    calls2.push(typeof input === "string" ? input : input.toString());
+    return new Response(JSON.stringify({ ok: true }), { status: 200 });
+  }) as typeof fetch;
+  const cachedAlreadyFlagged = makeProblem({
+    id: "vtok1",
+    steps: [{ latex: "7/30", explain: "Simplify." }],
+    state: baseState({
+      score: 0,
+      solutionRevealedBeforeAnswer: true,
+      attempts: [{ input: "1/2", ts: "2026-11-20T01:00:00.000Z", verdict: "incorrect", kind: "variant" }],
+    }),
+  });
+  const res2 = await executeSimilarStepsReveal({
+    drillId: "DRL-MTH-T01-C04-01",
+    qid: "Q02",
+    token: "vtok1",
+    existing: cachedAlreadyFlagged,
+    fetchFn: mockFetch2,
+  });
+  assert.equal(res2.recordedServerReveal, true);
+  assert.deepEqual(calls2, ["/api/variant"]);
+
+  // 3. Cached steps + already solved (hasCorrect): calls neither endpoint
+  const calls3: string[] = [];
+  const mockFetch3 = (async (input: RequestInfo | URL) => {
+    calls3.push(typeof input === "string" ? input : input.toString());
+    return new Response(JSON.stringify({ ok: true }), { status: 200 });
+  }) as typeof fetch;
+  const cachedSolved = makeProblem({
+    id: "vtok1",
+    steps: [{ latex: "7/30", explain: "Simplify." }],
+    state: baseState({
+      score: 1,
+      attempts: [{ input: "7/30", ts: "2026-11-20T01:00:00.000Z", verdict: "correct", kind: "variant" }],
+    }),
+  });
+  const res3 = await executeSimilarStepsReveal({
+    drillId: "DRL-MTH-T01-C04-01",
+    qid: "Q02",
+    token: "vtok1",
+    existing: cachedSolved,
+    fetchFn: mockFetch3,
+  });
+  assert.equal(res3.recordedServerReveal, false);
+  assert.equal(res3.fetchedSteps, false);
+  assert.deepEqual(calls3, []);
+
+  // 4. Uncached steps + wrong attempt: records POST reveal-steps BEFORE GET /api/reveal?part=steps
+  const calls4: string[] = [];
+  const mockFetch4 = (async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = typeof input === "string" ? input : input.toString();
+    const method = (init?.method || "GET").toUpperCase();
+    calls4.push(`${method} ${url}`);
+    if (url.startsWith("/api/reveal")) {
+      return new Response(
+        JSON.stringify({
+          steps: [{ latex: "7/30", explain: "Simplify." }],
+          answerDisplay: "\\frac{7}{30}",
+          answerPlain: "7/30",
+        }),
+        { status: 200 }
+      );
+    }
+    return new Response(JSON.stringify({ ok: true }), { status: 200 });
+  }) as typeof fetch;
+  const uncachedWrong = makeProblem({
+    id: "vtok1",
+    state: baseState({
+      score: 0,
+      attempts: [{ input: "1/2", ts: "2026-11-20T01:00:00.000Z", verdict: "incorrect", kind: "variant" }],
+    }),
+  });
+  const res4 = await executeSimilarStepsReveal({
+    drillId: "DRL-MTH-T01-C04-01",
+    qid: "Q02",
+    token: "vtok1",
+    existing: uncachedWrong,
+    fetchFn: mockFetch4,
+  });
+  assert.equal(res4.recordedServerReveal, true);
+  assert.equal(res4.fetchedSteps, true);
+  assert.equal(res4.stepsPatch?.steps.length, 1);
+  assert.equal(res4.stepsPatch?.answerPlain, "7/30");
+  assert.equal(calls4.length, 2);
+  assert.equal(calls4[0], "POST /api/variant");
+  assert.match(calls4[1], /^GET \/api\/reveal\?.*part=steps/);
 }
 
 testV1Migration()
   .then(() => testReviewCycleIsolation())
+  .then(() => testExecuteSimilarStepsReveal())
   .then(() => {
     console.log("PASS: similarTabs.test.tsx (state model, cycle rule, migration, ARIA, copy, deep link, Review & Sync)");
   })
