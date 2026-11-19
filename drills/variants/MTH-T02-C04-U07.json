@@ -1,0 +1,876 @@
+{
+  "unitCode": "MTH-T02-C04-U07",
+  "variants": [
+    {
+      "variantId": "VAR-MTH-T02-C04-U07-t02-c04-u07-inverse-of-invertible-polynomial-01",
+      "sourceArchetype": "t02-c04-u07-inverse-of-invertible-polynomial",
+      "archetypeKey": "t02-c04-u07-inverse-of-invertible-polynomial",
+      "unitCode": "MTH-T02-C04-U07",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Find the inverse function of $g(x) = 5x - 12$. Write a simplified expression in $x$.",
+      "display": "y = mx + b;\\ \\text{exchange the variables and isolate the new output}",
+      "plainText": "Inverse function of g(x) = 5*x - 12",
+      "givens": {
+        "slope": 5,
+        "intercept": -12
+      },
+      "constants": {},
+      "trapGivens": [
+        5,
+        12
+      ],
+      "answerSpec": {
+        "type": "expression",
+        "value": "(x + 12)/5",
+        "variables": [
+          "x"
+        ]
+      },
+      "answerPlain": "(x + 12)/5",
+      "answerDisplay": "\\frac{x + 12}{5}",
+      "inputHint": "Enter a simplified expression in x.",
+      "commonTrapTag": "t02-c04-u07-inverse-as-reciprocal-trap",
+      "trapDerivation": "1/(5*x - 12)",
+      "trapValue": "1/(5*x - 12)",
+      "verify": {
+        "source": "(x + 12)/5",
+        "trapValue": "1/(5*x - 12)"
+      },
+      "checkpointHint": "Swap the input and output variables, then undo subtraction and multiplication in reverse order.",
+      "references": [
+        "MTH-T02-C04-U07"
+      ],
+      "steps": [
+        {
+          "latex": "y = 5x - 12",
+          "explain": "Rewrite g(x) as y to exchange input and output roles."
+        },
+        {
+          "latex": "x = 5y - 12",
+          "explain": "Swap x and y."
+        },
+        {
+          "latex": "x + 12 = 5y",
+          "explain": "Add 12 to both sides."
+        },
+        {
+          "latex": "y = \\frac{x + 12}{5}",
+          "explain": "Divide both sides by 5 to isolate y."
+        },
+        {
+          "latex": "g^{-1}(x) = \\frac{x + 12}{5}",
+          "explain": "Write the isolated expression as the inverse function.",
+          "val": "(x + 12)/5"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U07-t02-c04-u07-inverse-of-invertible-polynomial-01",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c04-u07-inverse-as-reciprocal-trap|reverse|Inverse function of g(x) = #*x - #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U07-t02-c04-u07-inverse-of-invertible-polynomial-02",
+      "sourceArchetype": "t02-c04-u07-inverse-of-invertible-polynomial",
+      "archetypeKey": "t02-c04-u07-inverse-of-invertible-polynomial",
+      "unitCode": "MTH-T02-C04-U07",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Find the inverse function of $h(x) = -3x + 7$. Write a simplified expression in $x$.",
+      "display": "y = mx + b;\\ \\text{exchange the variables and isolate the new output}",
+      "plainText": "Inverse function of h(x) = -3*x + 7",
+      "givens": {
+        "slope": -3,
+        "intercept": 7
+      },
+      "constants": {},
+      "trapGivens": [
+        3,
+        7
+      ],
+      "answerSpec": {
+        "type": "expression",
+        "value": "(7 - x)/3",
+        "variables": [
+          "x"
+        ]
+      },
+      "answerPlain": "(7 - x)/3",
+      "answerDisplay": "\\frac{7 - x}{3}",
+      "inputHint": "Enter a simplified expression in x.",
+      "commonTrapTag": "t02-c04-u07-inverse-as-reciprocal-trap",
+      "trapDerivation": "1/(-3*x + 7)",
+      "trapValue": "1/(-3*x + 7)",
+      "verify": {
+        "source": "(7 - x)/3",
+        "trapValue": "1/(-3*x + 7)"
+      },
+      "checkpointHint": "Exchange the input and output variables, then isolate the new output while tracking the negative slope.",
+      "references": [
+        "MTH-T02-C04-U07"
+      ],
+      "steps": [
+        {
+          "latex": "y = -3x + 7",
+          "explain": "Express the output using y."
+        },
+        {
+          "latex": "x = -3y + 7",
+          "explain": "Exchange x and y."
+        },
+        {
+          "latex": "x - 7 = -3y",
+          "explain": "Subtract 7 from both sides."
+        },
+        {
+          "latex": "y = \\frac{7 - x}{3}",
+          "explain": "Divide both sides by -3 and simplify the signs."
+        },
+        {
+          "latex": "h^{-1}(x) = \\frac{7 - x}{3}",
+          "explain": "Write the inverse function in terms of x.",
+          "val": "(7 - x)/3"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U07-t02-c04-u07-inverse-of-invertible-polynomial-02",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c04-u07-inverse-as-reciprocal-trap|reverse|Inverse function of h(x) = -#*x + #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U07-t02-c04-u07-inverse-of-invertible-polynomial-03",
+      "sourceArchetype": "t02-c04-u07-inverse-of-invertible-polynomial",
+      "archetypeKey": "t02-c04-u07-inverse-of-invertible-polynomial",
+      "unitCode": "MTH-T02-C04-U07",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Find the inverse function of $p(x) = \\frac{2}{3}x - 4$. Write a simplified expression in $x$.",
+      "display": "y = mx + b;\\ \\text{exchange the variables and isolate the new output}",
+      "plainText": "Inverse function of p(x) = (2/3)*x - 4",
+      "givens": {
+        "slope_num": 2,
+        "slope_den": 3,
+        "intercept": -4
+      },
+      "constants": {},
+      "trapGivens": [
+        2,
+        3,
+        4
+      ],
+      "answerSpec": {
+        "type": "expression",
+        "value": "3*(x + 4)/2",
+        "variables": [
+          "x"
+        ]
+      },
+      "answerPlain": "3*(x + 4)/2",
+      "answerDisplay": "\\frac{3(x + 4)}{2}",
+      "inputHint": "Enter a simplified expression in x.",
+      "commonTrapTag": "t02-c04-u07-inverse-as-reciprocal-trap",
+      "trapDerivation": "1/((2/3)*x - 4)",
+      "trapValue": "1/((2/3)*x - 4)",
+      "verify": {
+        "source": "3*(x + 4)/2",
+        "trapValue": "1/((2/3)*x - 4)"
+      },
+      "checkpointHint": "Swap x and y, undo the constant shift, then multiply by the reciprocal of the linear coefficient.",
+      "references": [
+        "MTH-T02-C04-U07"
+      ],
+      "steps": [
+        {
+          "latex": "y = \\frac{2}{3}x - 4",
+          "explain": "Write p(x) as y."
+        },
+        {
+          "latex": "x = \\frac{2}{3}y - 4",
+          "explain": "Exchange the variables x and y."
+        },
+        {
+          "latex": "x + 4 = \\frac{2}{3}y",
+          "explain": "Add 4 to both sides."
+        },
+        {
+          "latex": "y = \\frac{3(x + 4)}{2}",
+          "explain": "Multiply both sides by 3/2 to isolate y."
+        },
+        {
+          "latex": "p^{-1}(x) = \\frac{3(x + 4)}{2}",
+          "explain": "State the inverse rule.",
+          "val": "3*(x + 4)/2"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U07-t02-c04-u07-inverse-of-invertible-polynomial-03",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c04-u07-inverse-as-reciprocal-trap|reverse|Inverse function of p(x) = (#/#)*x - #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U07-t02-c04-u07-restrict-domain-for-polynomial-inverse-01",
+      "sourceArchetype": "t02-c04-u07-restrict-domain-for-polynomial-inverse",
+      "archetypeKey": "t02-c04-u07-restrict-domain-for-polynomial-inverse",
+      "unitCode": "MTH-T02-C04-U07",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Find the inverse of $g(x) = (x + 4)^2$ when its domain is restricted to $x \\ge -4$. Write a simplified expression in $x$.",
+      "display": "y = (x - h)^2\\text{ with the original domain } x \\ge h",
+      "plainText": "Inverse of g(x) = (x + 4)^2 for x >= -4",
+      "givens": {
+        "vertex_input": -4,
+        "power": 2
+      },
+      "constants": {
+        "unit_coefficient": 1
+      },
+      "trapGivens": [
+        4,
+        1
+      ],
+      "answerSpec": {
+        "type": "expression",
+        "value": "sqrt(x) - 4",
+        "variables": [
+          "x"
+        ]
+      },
+      "answerPlain": "sqrt(x) - 4",
+      "answerDisplay": "\\sqrt{x} - 4",
+      "inputHint": "Enter the inverse rule as an expression in x.",
+      "commonTrapTag": "t02-c04-u07-keep-both-square-root-branches-trap",
+      "trapDerivation": "-4 - 1*sqrt(x)",
+      "trapValue": "-4 - sqrt(x)",
+      "verify": {
+        "source": "sqrt(x) - 4",
+        "trapValue": "-4 - sqrt(x)"
+      },
+      "checkpointHint": "Choose the single square-root branch whose outputs stay inside the restricted domain of the original function.",
+      "references": [
+        "MTH-T02-C04-U07"
+      ],
+      "figureWaiver": "The graph restricted to the stated branch would directly show the branch choice being tested.",
+      "steps": [
+        {
+          "latex": "y = (x + 4)^2",
+          "explain": "Write the restricted quadratic with output y."
+        },
+        {
+          "latex": "x = (y + 4)^2",
+          "explain": "Exchange input and output variables."
+        },
+        {
+          "latex": "\\sqrt{x} = |y + 4|",
+          "explain": "Take the principal square root of both sides."
+        },
+        {
+          "latex": "y + 4 \\ge 0",
+          "explain": "Use the restricted original domain to select the nonnegative branch."
+        },
+        {
+          "latex": "y = \\sqrt{x} - 4",
+          "explain": "Subtract 4 to isolate the inverse output.",
+          "val": "sqrt(x) - 4"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U07-t02-c04-u07-restrict-domain-for-polynomial-inverse-01",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c04-u07-keep-both-square-root-branches-trap|reverse|Inverse of g(x) = (x + #)^# for x >= -#"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U07-t02-c04-u07-restrict-domain-for-polynomial-inverse-02",
+      "sourceArchetype": "t02-c04-u07-restrict-domain-for-polynomial-inverse",
+      "archetypeKey": "t02-c04-u07-restrict-domain-for-polynomial-inverse",
+      "unitCode": "MTH-T02-C04-U07",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Find the inverse of $h(x) = (x - 5)^2$ when its domain is restricted to $x \\le 5$. Write a simplified expression in $x$.",
+      "display": "y = (x - h)^2\\text{ with the original domain } x \\le h",
+      "plainText": "Inverse of h(x) = (x - 5)^2 for x <= 5",
+      "givens": {
+        "vertex_input": 5,
+        "power": 2
+      },
+      "constants": {
+        "unit_coefficient": 1
+      },
+      "trapGivens": [
+        5,
+        1
+      ],
+      "answerSpec": {
+        "type": "expression",
+        "value": "5 - sqrt(x)",
+        "variables": [
+          "x"
+        ]
+      },
+      "answerPlain": "5 - sqrt(x)",
+      "answerDisplay": "5 - \\sqrt{x}",
+      "inputHint": "Enter the inverse rule as an expression in x.",
+      "commonTrapTag": "t02-c04-u07-keep-both-square-root-branches-trap",
+      "trapDerivation": "5 + 1*sqrt(x)",
+      "trapValue": "5 + sqrt(x)",
+      "verify": {
+        "source": "5 - sqrt(x)",
+        "trapValue": "5 + sqrt(x)"
+      },
+      "checkpointHint": "Match the sign on the square root so the inverse outputs lie on the left branch of the vertex.",
+      "references": [
+        "MTH-T02-C04-U07"
+      ],
+      "figureWaiver": "The graph restricted to the stated branch would directly show the branch choice being tested.",
+      "steps": [
+        {
+          "latex": "y = (x - 5)^2",
+          "explain": "Write the restricted quadratic using y."
+        },
+        {
+          "latex": "x = (y - 5)^2",
+          "explain": "Exchange x and y."
+        },
+        {
+          "latex": "\\sqrt{x} = |y - 5|",
+          "explain": "Take the principal square root of both sides."
+        },
+        {
+          "latex": "y - 5 \\le 0",
+          "explain": "Because the original domain is x <= 5, choose the nonpositive branch y - 5 = -sqrt(x)."
+        },
+        {
+          "latex": "y = 5 - \\sqrt{x}",
+          "explain": "Add 5 to both sides to isolate the inverse output.",
+          "val": "5 - sqrt(x)"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U07-t02-c04-u07-restrict-domain-for-polynomial-inverse-02",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c04-u07-keep-both-square-root-branches-trap|reverse|Inverse of h(x) = (x - #)^# for x <= #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U07-t02-c04-u07-restrict-domain-for-polynomial-inverse-03",
+      "sourceArchetype": "t02-c04-u07-restrict-domain-for-polynomial-inverse",
+      "archetypeKey": "t02-c04-u07-restrict-domain-for-polynomial-inverse",
+      "unitCode": "MTH-T02-C04-U07",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Find the inverse of $p(x) = (x - 2)^2 + 7$ when its domain is restricted to $x \\ge 2$. Write a simplified expression in $x$.",
+      "display": "y = (x - h)^2 + k\\text{ with the original domain } x \\ge h",
+      "plainText": "Inverse of p(x) = (x - 2)^2 + 7 for x >= 2",
+      "givens": {
+        "vertex_input": 2,
+        "vertical_shift": 7
+      },
+      "constants": {},
+      "trapGivens": [
+        2,
+        7
+      ],
+      "answerSpec": {
+        "type": "expression",
+        "value": "2 + sqrt(x - 7)",
+        "variables": [
+          "x"
+        ]
+      },
+      "answerPlain": "2 + sqrt(x - 7)",
+      "answerDisplay": "2 + \\sqrt{x - 7}",
+      "inputHint": "Enter the inverse rule as an expression in x.",
+      "commonTrapTag": "t02-c04-u07-keep-both-square-root-branches-trap",
+      "trapDerivation": "2 - sqrt(x - 7)",
+      "trapValue": "2 - sqrt(x - 7)",
+      "verify": {
+        "source": "2 + sqrt(x - 7)",
+        "trapValue": "2 - sqrt(x - 7)"
+      },
+      "checkpointHint": "Isolate the squared expression before taking the square root, then pick the branch matching the original domain.",
+      "references": [
+        "MTH-T02-C04-U07"
+      ],
+      "figureWaiver": "The graph restricted to the stated branch would directly show the branch choice being tested.",
+      "steps": [
+        {
+          "latex": "y = (x - 2)^2 + 7",
+          "explain": "Write the restricted quadratic using y."
+        },
+        {
+          "latex": "x = (y - 2)^2 + 7",
+          "explain": "Exchange the input and output variables."
+        },
+        {
+          "latex": "x - 7 = (y - 2)^2",
+          "explain": "Subtract 7 from both sides to isolate the squared term."
+        },
+        {
+          "latex": "\\sqrt{x - 7} = |y - 2|",
+          "explain": "Take the principal square root of both sides."
+        },
+        {
+          "latex": "y - 2 \\ge 0",
+          "explain": "Use the domain restriction x >= 2 to select the nonnegative branch."
+        },
+        {
+          "latex": "y = 2 + \\sqrt{x - 7}",
+          "explain": "Add 2 to isolate the inverse function.",
+          "val": "2 + sqrt(x - 7)"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U07-t02-c04-u07-restrict-domain-for-polynomial-inverse-03",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c04-u07-keep-both-square-root-branches-trap|reverse|Inverse of p(x) = (x - #)^# + # for x >= #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U07-t02-c04-u07-radical-function-domain-01",
+      "sourceArchetype": "t02-c04-u07-radical-function-domain",
+      "archetypeKey": "t02-c04-u07-radical-function-domain",
+      "unitCode": "MTH-T02-C04-U07",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Find the real domain of $g(x) = \\sqrt{(x + 4)(3 - x)}$. Give the answer in interval notation.",
+      "display": "\\text{For a real square root, the radicand must be nonnegative.}",
+      "plainText": "Real domain of g(x) = sqrt((x + 4)*(3 - x))",
+      "givens": {
+        "left_root_mag": 4,
+        "right_root": 3
+      },
+      "constants": {},
+      "trapGivens": [
+        4,
+        3
+      ],
+      "answerSpec": {
+        "type": "interval",
+        "value": "[-4, 3]"
+      },
+      "answerPlain": "[-4, 3]",
+      "answerDisplay": "[-4, 3]",
+      "inputHint": "Enter the complete real domain in interval notation.",
+      "commonTrapTag": "t02-c04-u07-strict-root-boundary-trap",
+      "trapDerivation": "(-4, 3)",
+      "trapValue": "(-4, 3)",
+      "verify": {
+        "source": "[-4, 3]",
+        "trapValue": "(-4, 3)"
+      },
+      "checkpointHint": "Locate the zeros of the radicand, test signs on each subinterval, and decide whether the boundary zeros are included.",
+      "references": [
+        "MTH-T02-C04-U07"
+      ],
+      "steps": [
+        {
+          "latex": "(x + 4)(3 - x) \\ge 0",
+          "explain": "Set the radicand to be nonnegative."
+        },
+        {
+          "latex": "x = -4",
+          "explain": "Find the zero from the factor x + 4."
+        },
+        {
+          "latex": "x = 3",
+          "explain": "Find the zero from the factor 3 - x."
+        },
+        {
+          "latex": "-4 \\le x \\le 3",
+          "explain": "The product is nonnegative between and including its two roots."
+        },
+        {
+          "latex": "\\operatorname{Dom}(g) = [-4, 3]",
+          "explain": "Include both endpoints because the square root of zero is defined.",
+          "val": "[-4, 3]"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U07-t02-c04-u07-radical-function-domain-01",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "t02-c04-u07-strict-root-boundary-trap|direct|Real domain of g(x) = sqrt((x + #)*(# - x))"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U07-t02-c04-u07-radical-function-domain-02",
+      "sourceArchetype": "t02-c04-u07-radical-function-domain",
+      "archetypeKey": "t02-c04-u07-radical-function-domain",
+      "unitCode": "MTH-T02-C04-U07",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Find the real domain of $h(x) = \\sqrt{(x - 1)(x - 5)}$. Give the answer in interval notation.",
+      "display": "\\text{For a real square root, the radicand must be nonnegative.}",
+      "plainText": "Real domain of h(x) = sqrt((x - 1)*(x - 5))",
+      "givens": {
+        "r1": 1,
+        "r2": 5
+      },
+      "constants": {},
+      "trapGivens": [
+        1,
+        5
+      ],
+      "answerSpec": {
+        "type": "interval",
+        "value": "(-oo, 1] U [5, oo)"
+      },
+      "answerPlain": "(-oo, 1] U [5, oo)",
+      "answerDisplay": "(-\\infty, 1] \\cup [5, \\infty)",
+      "inputHint": "Enter the complete real domain in interval notation, using U for unions.",
+      "commonTrapTag": "t02-c04-u07-strict-root-boundary-trap",
+      "trapDerivation": "(-oo, 1) U (5, oo)",
+      "trapValue": "(-oo, 1) U (5, oo)",
+      "verify": {
+        "source": "(-oo, 1] U [5, oo)",
+        "trapValue": "(-oo, 1) U (5, oo)"
+      },
+      "checkpointHint": "Check where the upward-opening quadratic radicand is positive or zero, and include its boundary roots.",
+      "references": [
+        "MTH-T02-C04-U07"
+      ],
+      "steps": [
+        {
+          "latex": "(x - 1)(x - 5) \\ge 0",
+          "explain": "Require the radicand to be nonnegative."
+        },
+        {
+          "latex": "x = 1",
+          "explain": "Locate the smaller root of the radicand."
+        },
+        {
+          "latex": "x = 5",
+          "explain": "Locate the larger root of the radicand."
+        },
+        {
+          "latex": "x \\le 1 \\text{ or } x \\ge 5",
+          "explain": "An upward-opening product of two linear factors is nonnegative outside the roots, including both zeros."
+        },
+        {
+          "latex": "\\operatorname{Dom}(h) = (-\\infty, 1] \\cup [5, \\infty)",
+          "explain": "Write the union of closed-endpoint rays.",
+          "val": "(-oo, 1] U [5, oo)"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U07-t02-c04-u07-radical-function-domain-02",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "t02-c04-u07-strict-root-boundary-trap|direct|Real domain of h(x) = sqrt((x - #)*(x - #))"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U07-t02-c04-u07-radical-function-domain-03",
+      "sourceArchetype": "t02-c04-u07-radical-function-domain",
+      "archetypeKey": "t02-c04-u07-radical-function-domain",
+      "unitCode": "MTH-T02-C04-U07",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Find the real domain of $p(x) = \\sqrt{2x - 8}$. Give the answer in interval notation.",
+      "display": "\\text{For a real square root, the radicand must be nonnegative.}",
+      "plainText": "Real domain of p(x) = sqrt(2*x - 8)",
+      "givens": {
+        "coeff": 2,
+        "const": -8
+      },
+      "constants": {
+        "root": 4
+      },
+      "trapGivens": [
+        4
+      ],
+      "answerSpec": {
+        "type": "interval",
+        "value": "[4, oo)"
+      },
+      "answerPlain": "[4, oo)",
+      "answerDisplay": "[4, \\infty)",
+      "inputHint": "Enter the complete real domain in interval notation.",
+      "commonTrapTag": "t02-c04-u07-strict-root-boundary-trap",
+      "trapDerivation": "(4, oo)",
+      "trapValue": "(4, oo)",
+      "verify": {
+        "source": "[4, oo)",
+        "trapValue": "(4, oo)"
+      },
+      "checkpointHint": "Set the linear radicand greater than or equal to zero and keep the endpoint where the radicand equals zero.",
+      "references": [
+        "MTH-T02-C04-U07"
+      ],
+      "steps": [
+        {
+          "latex": "2x - 8 \\ge 0",
+          "explain": "Require the radicand to be nonnegative."
+        },
+        {
+          "latex": "2x \\ge 8",
+          "explain": "Add 8 to both sides."
+        },
+        {
+          "latex": "x \\ge 4",
+          "explain": "Divide both sides by 2."
+        },
+        {
+          "latex": "\\operatorname{Dom}(p) = [4, \\infty)",
+          "explain": "Write the domain with a closed bracket at 4.",
+          "val": "[4, oo)"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U07-t02-c04-u07-radical-function-domain-03",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "t02-c04-u07-strict-root-boundary-trap|direct|Real domain of p(x) = sqrt(#*x - #)"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U07-t02-c04-u07-inverse-of-radical-function-01",
+      "sourceArchetype": "t02-c04-u07-inverse-of-radical-function",
+      "archetypeKey": "t02-c04-u07-inverse-of-radical-function",
+      "unitCode": "MTH-T02-C04-U07",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Find the inverse function of $g(x) = \\sqrt{3x - 7}$. Write a simplified expression in $x$.",
+      "display": "y = \\sqrt{ax + b};\\ \\text{exchange variables, square, then isolate the new output}",
+      "plainText": "Inverse function of g(x) = sqrt(3*x - 7)",
+      "givens": {
+        "radicand_coeff": 3,
+        "radicand_const": -7
+      },
+      "constants": {},
+      "trapGivens": [
+        3,
+        7
+      ],
+      "answerSpec": {
+        "type": "expression",
+        "value": "(x^2 + 7)/3",
+        "variables": [
+          "x"
+        ]
+      },
+      "answerPlain": "(x^2 + 7)/3",
+      "answerDisplay": "\\frac{x^2 + 7}{3}",
+      "inputHint": "Enter a simplified expression in x.",
+      "commonTrapTag": "t02-c04-u07-inverse-coefficient-reciprocal-trap",
+      "trapDerivation": "x^2/3 - 7",
+      "trapValue": "x^2/3 - 7",
+      "verify": {
+        "source": "(x^2 + 7)/3",
+        "trapValue": "x^2/3 - 7"
+      },
+      "checkpointHint": "Square both sides after swapping variables, then undo subtraction before dividing the entire numerator.",
+      "references": [
+        "MTH-T02-C04-U07"
+      ],
+      "steps": [
+        {
+          "latex": "y = \\sqrt{3x - 7}",
+          "explain": "Write the original rule with output y."
+        },
+        {
+          "latex": "x = \\sqrt{3y - 7}",
+          "explain": "Exchange the input and output variables."
+        },
+        {
+          "latex": "x^2 = 3y - 7",
+          "explain": "Square both sides to remove the square root."
+        },
+        {
+          "latex": "x^2 + 7 = 3y",
+          "explain": "Add 7 to both sides."
+        },
+        {
+          "latex": "y = \\frac{x^2 + 7}{3}",
+          "explain": "Divide the entire side by 3 to isolate y."
+        },
+        {
+          "latex": "g^{-1}(x) = \\frac{x^2 + 7}{3}",
+          "explain": "Write the isolated expression as the inverse function.",
+          "val": "(x^2 + 7)/3"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U07-t02-c04-u07-inverse-of-radical-function-01",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c04-u07-inverse-coefficient-reciprocal-trap|reverse|Inverse function of g(x) = sqrt(#*x - #)"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U07-t02-c04-u07-inverse-of-radical-function-02",
+      "sourceArchetype": "t02-c04-u07-inverse-of-radical-function",
+      "archetypeKey": "t02-c04-u07-inverse-of-radical-function",
+      "unitCode": "MTH-T02-C04-U07",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Find the inverse function of $h(x) = \\sqrt{4x + 9}$. Write a simplified expression in $x$.",
+      "display": "y = \\sqrt{ax + b};\\ \\text{exchange variables, square, then isolate the new output}",
+      "plainText": "Inverse function of h(x) = sqrt(4*x + 9)",
+      "givens": {
+        "radicand_coeff": 4,
+        "radicand_const": 9
+      },
+      "constants": {},
+      "trapGivens": [
+        4,
+        9
+      ],
+      "answerSpec": {
+        "type": "expression",
+        "value": "(x^2 - 9)/4",
+        "variables": [
+          "x"
+        ]
+      },
+      "answerPlain": "(x^2 - 9)/4",
+      "answerDisplay": "\\frac{x^2 - 9}{4}",
+      "inputHint": "Enter a simplified expression in x.",
+      "commonTrapTag": "t02-c04-u07-inverse-coefficient-reciprocal-trap",
+      "trapDerivation": "x^2/4 + 9",
+      "trapValue": "x^2/4 + 9",
+      "verify": {
+        "source": "(x^2 - 9)/4",
+        "trapValue": "x^2/4 + 9"
+      },
+      "checkpointHint": "Undo the square root first, then reverse both the addition and the multiplication on the entire expression.",
+      "references": [
+        "MTH-T02-C04-U07"
+      ],
+      "steps": [
+        {
+          "latex": "y = \\sqrt{4x + 9}",
+          "explain": "Name the output as y."
+        },
+        {
+          "latex": "x = \\sqrt{4y + 9}",
+          "explain": "Swap x and y."
+        },
+        {
+          "latex": "x^2 = 4y + 9",
+          "explain": "Square both sides to eliminate the radical."
+        },
+        {
+          "latex": "x^2 - 9 = 4y",
+          "explain": "Subtract 9 from both sides."
+        },
+        {
+          "latex": "y = \\frac{x^2 - 9}{4}",
+          "explain": "Divide both sides by 4."
+        },
+        {
+          "latex": "h^{-1}(x) = \\frac{x^2 - 9}{4}",
+          "explain": "State the inverse rule.",
+          "val": "(x^2 - 9)/4"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U07-t02-c04-u07-inverse-of-radical-function-02",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c04-u07-inverse-coefficient-reciprocal-trap|reverse|Inverse function of h(x) = sqrt(#*x + #)"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U07-t02-c04-u07-inverse-of-radical-function-03",
+      "sourceArchetype": "t02-c04-u07-inverse-of-radical-function",
+      "archetypeKey": "t02-c04-u07-inverse-of-radical-function",
+      "unitCode": "MTH-T02-C04-U07",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Find the inverse function of $p(x) = \\sqrt{5x - 3} + 2$ on its range $x \\ge 2$. Write a simplified expression in $x$.",
+      "display": "y = \\sqrt{ax + b} + c;\\ \\text{isolate the radical before squaring}",
+      "plainText": "Inverse function of p(x) = sqrt(5*x - 3) + 2 for x >= 2",
+      "givens": {
+        "radicand_coeff": 5,
+        "radicand_const": -3,
+        "outer_shift": 2
+      },
+      "constants": {},
+      "trapGivens": [
+        5,
+        3,
+        2
+      ],
+      "answerSpec": {
+        "type": "expression",
+        "value": "((x - 2)^2 + 3)/5",
+        "variables": [
+          "x"
+        ]
+      },
+      "answerPlain": "((x - 2)^2 + 3)/5",
+      "answerDisplay": "\\frac{(x - 2)^2 + 3}{5}",
+      "inputHint": "Enter a simplified expression in x.",
+      "commonTrapTag": "t02-c04-u07-inverse-coefficient-reciprocal-trap",
+      "trapDerivation": "(x - 2)^2/5 - 3",
+      "trapValue": "(x - 2)^2/5 - 3",
+      "verify": {
+        "source": "((x - 2)^2 + 3)/5",
+        "trapValue": "(x - 2)^2/5 - 3"
+      },
+      "checkpointHint": "Isolate the radical first, square both sides, and then undo the inner constant before dividing by the coefficient.",
+      "references": [
+        "MTH-T02-C04-U07"
+      ],
+      "steps": [
+        {
+          "latex": "y = \\sqrt{5x - 3} + 2",
+          "explain": "Write p(x) as y."
+        },
+        {
+          "latex": "x = \\sqrt{5y - 3} + 2",
+          "explain": "Exchange input and output variables."
+        },
+        {
+          "latex": "x - 2 = \\sqrt{5y - 3}",
+          "explain": "Subtract 2 from both sides to isolate the radical."
+        },
+        {
+          "latex": "(x - 2)^2 = 5y - 3",
+          "explain": "Square both nonnegative sides."
+        },
+        {
+          "latex": "(x - 2)^2 + 3 = 5y",
+          "explain": "Add 3 to both sides."
+        },
+        {
+          "latex": "y = \\frac{(x - 2)^2 + 3}{5}",
+          "explain": "Divide the entire side by 5 to isolate y."
+        },
+        {
+          "latex": "p^{-1}(x) = \\frac{(x - 2)^2 + 3}{5}",
+          "explain": "Write the inverse function in terms of x.",
+          "val": "((x - 2)^2 + 3)/5"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U07-t02-c04-u07-inverse-of-radical-function-03",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c04-u07-inverse-coefficient-reciprocal-trap|reverse|Inverse function of p(x) = sqrt(#*x - #) + # for x >= #"
+    }
+  ]
+}

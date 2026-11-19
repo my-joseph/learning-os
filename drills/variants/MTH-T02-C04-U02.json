@@ -1,0 +1,638 @@
+{
+  "unitCode": "MTH-T02-C04-U02",
+  "variants": [
+    {
+      "variantId": "VAR-MTH-T02-C04-U02-t02-c04-u02-classify-power-function-01",
+      "sourceArchetype": "t02-c04-u02-classify-power-function",
+      "archetypeKey": "t02-c04-u02-classify-power-function",
+      "unitCode": "MTH-T02-C04-U02",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "For the power function $g(x) = 9x^{5/4}$, enter only the fixed exponent value as a fraction, without writing a variable name.",
+      "display": "g(x) = kx^p",
+      "plainText": "g(x) = 9*x^(5/4)",
+      "givens": {
+        "k": 9,
+        "numerator": 5,
+        "denominator": 4
+      },
+      "constants": {},
+      "trapGivens": [
+        9,
+        4
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "5/4",
+        "tolerance": 0
+      },
+      "answerPlain": "5/4",
+      "answerDisplay": "\\frac{5}{4}",
+      "inputHint": "Enter the exponent as an exact fraction.",
+      "commonTrapTag": "t02-c04-u02-confuse-coefficient-and-exponent-trap",
+      "trapDerivation": "9*4/4",
+      "trapValue": "9",
+      "verify": {
+        "source": "5/4",
+        "trapValue": "9"
+      },
+      "checkpointHint": "Distinguish the multiplying constant in front of the base from the fixed power attached to the variable.",
+      "references": [
+        "MTH-T02-C04-U02"
+      ],
+      "steps": [
+        {
+          "latex": "g(x) = 9x^{5/4}",
+          "explain": "Compare the expression with the single-term power form kx^p."
+        },
+        {
+          "latex": "p = \\frac{5}{4}",
+          "explain": "Identify the fixed exponent on the variable base.",
+          "val": "5/4"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U02-t02-c04-u02-classify-power-function-01",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "t02-c04-u02-confuse-coefficient-and-exponent-trap|direct|g(x) = #*x^(#/#)"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U02-t02-c04-u02-classify-power-function-02",
+      "sourceArchetype": "t02-c04-u02-classify-power-function",
+      "archetypeKey": "t02-c04-u02-classify-power-function",
+      "unitCode": "MTH-T02-C04-U02",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "For the power function $h(x) = -7x^{4/3}$, enter only the fixed exponent value as a fraction, without writing a variable name.",
+      "display": "h(x) = kx^p",
+      "plainText": "h(x) = -7*x^(4/3)",
+      "givens": {
+        "k": -7,
+        "numerator": 4,
+        "denominator": 3
+      },
+      "constants": {},
+      "trapGivens": [
+        7,
+        3
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "4/3",
+        "tolerance": 0
+      },
+      "answerPlain": "4/3",
+      "answerDisplay": "\\frac{4}{3}",
+      "inputHint": "Enter the exponent as an exact fraction.",
+      "commonTrapTag": "t02-c04-u02-confuse-coefficient-and-exponent-trap",
+      "trapDerivation": "-7*3/3",
+      "trapValue": "-7",
+      "verify": {
+        "source": "4/3",
+        "trapValue": "-7"
+      },
+      "checkpointHint": "Read the power on the variable base rather than the signed coefficient in front.",
+      "references": [
+        "MTH-T02-C04-U02"
+      ],
+      "steps": [
+        {
+          "latex": "h(x) = -7x^{4/3}",
+          "explain": "Match the expression to the power-function template kx^p."
+        },
+        {
+          "latex": "p = \\frac{4}{3}",
+          "explain": "Extract the fixed exponent attached to the variable base.",
+          "val": "4/3"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U02-t02-c04-u02-classify-power-function-02",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "t02-c04-u02-confuse-coefficient-and-exponent-trap|direct|h(x) = -#*x^(#/#)"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U02-t02-c04-u02-classify-power-function-03",
+      "sourceArchetype": "t02-c04-u02-classify-power-function",
+      "archetypeKey": "t02-c04-u02-classify-power-function",
+      "unitCode": "MTH-T02-C04-U02",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "For the power function $p(x) = 11x^{-2/5}$, enter only the fixed exponent value as a signed fraction, without writing a variable name.",
+      "display": "p(x) = kx^r",
+      "plainText": "p(x) = 11*x^(-2/5)",
+      "givens": {
+        "k": 11,
+        "numerator": -2,
+        "denominator": 5
+      },
+      "constants": {},
+      "trapGivens": [
+        11,
+        5
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "-2/5",
+        "tolerance": 0
+      },
+      "answerPlain": "-2/5",
+      "answerDisplay": "-\\frac{2}{5}",
+      "inputHint": "Enter the exponent as an exact signed fraction.",
+      "commonTrapTag": "t02-c04-u02-confuse-coefficient-and-exponent-trap",
+      "trapDerivation": "11*5/5",
+      "trapValue": "11",
+      "verify": {
+        "source": "-2/5",
+        "trapValue": "11"
+      },
+      "checkpointHint": "Keep the sign attached to the power on the variable base, not the front coefficient.",
+      "references": [
+        "MTH-T02-C04-U02"
+      ],
+      "steps": [
+        {
+          "latex": "p(x) = 11x^{-2/5}",
+          "explain": "Compare the single-term rule with the power form kx^r."
+        },
+        {
+          "latex": "r = -\\frac{2}{5}",
+          "explain": "Read the signed fixed exponent on the variable base.",
+          "val": "-2/5"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U02-t02-c04-u02-classify-power-function-03",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "t02-c04-u02-confuse-coefficient-and-exponent-trap|direct|p(x) = #*x^(-#/#)"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U02-t02-c04-u02-power-end-behavior-01",
+      "sourceArchetype": "t02-c04-u02-power-end-behavior",
+      "archetypeKey": "t02-c04-u02-power-end-behavior",
+      "unitCode": "MTH-T02-C04-U02",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "For $f(x) = -5x^3$, what does $f(x)$ approach as $x$ approaches negative infinity?",
+      "display": "f(x) = kx^p;\\quad x \\to -\\infty",
+      "plainText": "f(x) = -5*x^3 as x -> -oo",
+      "givens": {
+        "k": -5,
+        "p": 3
+      },
+      "constants": {},
+      "trapGivens": [
+        5,
+        3
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "oo",
+        "tolerance": 0
+      },
+      "answerPlain": "oo",
+      "answerDisplay": "\\infty",
+      "inputHint": "Enter the signed limiting direction using standard infinity notation.",
+      "commonTrapTag": "t02-c04-u02-ignore-leading-sign-trap",
+      "trapDerivation": "5*(-oo)^3",
+      "trapValue": "-oo",
+      "verify": {
+        "source": "oo",
+        "trapValue": "-oo"
+      },
+      "checkpointHint": "Determine the sign of the odd power for large negative inputs first, then multiply by the leading sign.",
+      "references": [
+        "MTH-T02-C04-U02"
+      ],
+      "figureWaiver": "The graph would show the requested limiting direction directly.",
+      "steps": [
+        {
+          "latex": "3 \\text{ is odd}",
+          "explain": "An odd power preserves the negative sign of large negative inputs, so x^3 approaches negative infinity."
+        },
+        {
+          "latex": "-5 < 0",
+          "explain": "Multiplying by a negative leading coefficient reverses the sign to positive."
+        },
+        {
+          "latex": "f(x) \\to \\infty",
+          "explain": "As x goes to negative infinity, the output grows without bound in the positive direction.",
+          "val": "oo"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U02-t02-c04-u02-power-end-behavior-01",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c04-u02-ignore-leading-sign-trap|direct|f(x) = -#*x^# as x -> -oo"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U02-t02-c04-u02-power-end-behavior-02",
+      "sourceArchetype": "t02-c04-u02-power-end-behavior",
+      "archetypeKey": "t02-c04-u02-power-end-behavior",
+      "unitCode": "MTH-T02-C04-U02",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "choose",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Which statement describes the end behavior of $g(x) = -3x^6$?",
+      "display": "g(x) = kx^p;\\quad x \\to \\pm\\infty",
+      "givens": {
+        "k": -3,
+        "p": 6
+      },
+      "constants": {
+        "test_x": 2
+      },
+      "trapGivens": [
+        3,
+        6,
+        2
+      ],
+      "answerSpec": {
+        "type": "choice",
+        "options": [
+          {
+            "id": "A",
+            "label": "As $x \\to -\\infty$, $g(x) \\to \\infty$; as $x \\to \\infty$, $g(x) \\to \\infty$",
+            "trapTag": "t02-c04-u02-ignore-leading-sign-trap",
+            "provenance": "Ignores the negative coefficient and uses the end behavior of +3x^6."
+          },
+          {
+            "id": "B",
+            "label": "As $x \\to -\\infty$, $g(x) \\to -\\infty$; as $x \\to \\infty$, $g(x) \\to -\\infty$"
+          },
+          {
+            "id": "C",
+            "label": "As $x \\to -\\infty$, $g(x) \\to -\\infty$; as $x \\to \\infty$, $g(x) \\to \\infty$",
+            "provenance": "Applies positive odd-degree end behavior instead of even-degree reflected behavior."
+          },
+          {
+            "id": "D",
+            "label": "As $x \\to -\\infty$, $g(x) \\to \\infty$; as $x \\to \\infty$, $g(x) \\to -\\infty$",
+            "provenance": "Treats an even exponent as having opposite left and right end directions."
+          }
+        ],
+        "correct": "B"
+      },
+      "answerPlain": "B",
+      "answerDisplay": "B",
+      "inputHint": "Choose the option matching both left and right end directions.",
+      "commonTrapTag": "t02-c04-u02-ignore-leading-sign-trap",
+      "trapDerivation": "3*2^6",
+      "trapValue": "192",
+      "verify": {
+        "source": "-3*2^6",
+        "trapValue": "192"
+      },
+      "checkpointHint": "Check exponent parity to see whether both ends match, then apply the leading coefficient sign.",
+      "references": [
+        "MTH-T02-C04-U02"
+      ],
+      "figureWaiver": "The graph would show both end directions directly.",
+      "steps": [
+        {
+          "latex": "6 \\text{ is even}",
+          "explain": "An even exponent makes x^6 positive for both large positive and large negative inputs."
+        },
+        {
+          "latex": "-3(2)^6 = -192",
+          "explain": "The negative leading coefficient makes the output negative on both ends.",
+          "eq": [
+            "-3*2^6",
+            "-192"
+          ]
+        },
+        {
+          "latex": "g(x) \\to -\\infty \\text{ as } x \\to \\pm\\infty",
+          "explain": "Both ends fall toward negative infinity, matching option B."
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U02-t02-c04-u02-power-end-behavior-02",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c04-u02-ignore-leading-sign-trap|choose|Which statement describes the end behavior of $g(x) = -#x^#$?"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U02-t02-c04-u02-power-end-behavior-03",
+      "sourceArchetype": "t02-c04-u02-power-end-behavior",
+      "archetypeKey": "t02-c04-u02-power-end-behavior",
+      "unitCode": "MTH-T02-C04-U02",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "choose",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Which statement describes the end behavior of $h(x) = -4x^5$?",
+      "display": "h(x) = kx^p;\\quad x \\to \\pm\\infty",
+      "givens": {
+        "k": -4,
+        "p": 5
+      },
+      "constants": {
+        "test_x": 2
+      },
+      "trapGivens": [
+        4,
+        5,
+        2
+      ],
+      "answerSpec": {
+        "type": "choice",
+        "options": [
+          {
+            "id": "A",
+            "label": "As $x \\to -\\infty$, $h(x) \\to -\\infty$; as $x \\to \\infty$, $h(x) \\to \\infty$",
+            "trapTag": "t02-c04-u02-ignore-leading-sign-trap",
+            "provenance": "Ignores the negative leading sign and uses the end behavior of +4x^5."
+          },
+          {
+            "id": "B",
+            "label": "As $x \\to -\\infty$, $h(x) \\to -\\infty$; as $x \\to \\infty$, $h(x) \\to -\\infty$",
+            "provenance": "Applies even-degree matching end behavior to an odd-degree power function."
+          },
+          {
+            "id": "C",
+            "label": "As $x \\to -\\infty$, $h(x) \\to \\infty$; as $x \\to \\infty$, $h(x) \\to -\\infty$"
+          },
+          {
+            "id": "D",
+            "label": "As $x \\to -\\infty$, $h(x) \\to \\infty$; as $x \\to \\infty$, $h(x) \\to \\infty$",
+            "provenance": "Treats a negative odd-degree power function as rising on both ends."
+          }
+        ],
+        "correct": "C"
+      },
+      "answerPlain": "C",
+      "answerDisplay": "C",
+      "inputHint": "Choose the option matching both left and right end directions.",
+      "commonTrapTag": "t02-c04-u02-ignore-leading-sign-trap",
+      "trapDerivation": "4*2^5",
+      "trapValue": "128",
+      "verify": {
+        "source": "-4*2^5",
+        "trapValue": "128"
+      },
+      "checkpointHint": "Use odd parity to determine that the two tails oppose each other, then reflect using the negative coefficient.",
+      "references": [
+        "MTH-T02-C04-U02"
+      ],
+      "figureWaiver": "The graph would show both end directions directly.",
+      "steps": [
+        {
+          "latex": "5 \\text{ is odd}",
+          "explain": "An odd power sends large negative inputs negative and large positive inputs positive."
+        },
+        {
+          "latex": "-4(2)^5 = -128",
+          "explain": "Multiplying by the negative coefficient reverses both tail signs.",
+          "eq": [
+            "-4*2^5",
+            "-128"
+          ]
+        },
+        {
+          "latex": "x \\to -\\infty \\Rightarrow h(x) \\to \\infty;\\quad x \\to \\infty \\Rightarrow h(x) \\to -\\infty",
+          "explain": "The left tail rises and the right tail falls, matching option C."
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U02-t02-c04-u02-power-end-behavior-03",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c04-u02-ignore-leading-sign-trap|choose|Which statement describes the end behavior of $h(x) = -#x^#$?"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U02-t02-c04-u02-read-degree-leading-term-01",
+      "sourceArchetype": "t02-c04-u02-read-degree-leading-term",
+      "archetypeKey": "t02-c04-u02-read-degree-leading-term",
+      "unitCode": "MTH-T02-C04-U02",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "What is the degree of $p(x) = 4x^2(5x^6) - 3x^5 + 7$ after simplifying?",
+      "display": "x^m x^n = x^{m+n}",
+      "plainText": "p(x) = 4*x^2*(5*x^6) - 3*x^5 + 7",
+      "givens": {
+        "a": 4,
+        "m": 2,
+        "b": 5,
+        "n": 6,
+        "c": -3,
+        "r": 5,
+        "constant": 7
+      },
+      "constants": {
+        "one": 1
+      },
+      "trapGivens": [
+        6,
+        1
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "8",
+        "tolerance": 0
+      },
+      "answerPlain": "8",
+      "answerDisplay": "8",
+      "inputHint": "Enter the greatest exponent after simplifying.",
+      "commonTrapTag": "t02-c04-u02-unsimplified-degree-trap",
+      "trapDerivation": "6*1",
+      "trapValue": "6",
+      "verify": {
+        "source": "2 + 6",
+        "trapValue": "6"
+      },
+      "checkpointHint": "Multiply the variable factors and add their exponents before selecting the highest power.",
+      "references": [
+        "MTH-T02-C04-U02"
+      ],
+      "figureWaiver": "A graph would reveal the general degree behavior; the task is to simplify a leading algebraic term.",
+      "steps": [
+        {
+          "latex": "4x^2(5x^6) = 20x^{2+6}",
+          "explain": "Multiply coefficients and add exponents on the same base."
+        },
+        {
+          "latex": "p(x) = 20x^8 - 3x^5 + 7",
+          "explain": "Write the simplified polynomial in standard descending order.",
+          "eq": [
+            "2 + 6",
+            "8"
+          ]
+        },
+        {
+          "latex": "\\deg(p) = 8",
+          "explain": "Read the largest exponent with a nonzero coefficient.",
+          "val": "8"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U02-t02-c04-u02-read-degree-leading-term-01",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c04-u02-unsimplified-degree-trap|reverse|p(x) = #*x^#*(#*x^#) - #*x^# + #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U02-t02-c04-u02-read-degree-leading-term-02",
+      "sourceArchetype": "t02-c04-u02-read-degree-leading-term",
+      "archetypeKey": "t02-c04-u02-read-degree-leading-term",
+      "unitCode": "MTH-T02-C04-U02",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "What is the degree of $q(x) = -3x^4(2x^5 - x^2) + 8x^3 - 9$ after simplifying?",
+      "display": "x^m(ax^n - bx^r) = ax^{m+n} - bx^{m+r}",
+      "plainText": "q(x) = -3*x^4*(2*x^5 - x^2) + 8*x^3 - 9",
+      "givens": {
+        "a": -3,
+        "m": 4,
+        "b": 2,
+        "n": 5,
+        "r": 2,
+        "c": 8,
+        "s": 3,
+        "constant": -9
+      },
+      "constants": {
+        "one": 1
+      },
+      "trapGivens": [
+        5,
+        1
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "9",
+        "tolerance": 0
+      },
+      "answerPlain": "9",
+      "answerDisplay": "9",
+      "inputHint": "Enter the greatest exponent after simplifying.",
+      "commonTrapTag": "t02-c04-u02-unsimplified-degree-trap",
+      "trapDerivation": "5*1",
+      "trapValue": "5",
+      "verify": {
+        "source": "4 + 5",
+        "trapValue": "5"
+      },
+      "checkpointHint": "Distribute the monomial factor across the parentheses before comparing exponents.",
+      "references": [
+        "MTH-T02-C04-U02"
+      ],
+      "figureWaiver": "A graph would reveal the general degree behavior; the task is to simplify a leading algebraic term.",
+      "steps": [
+        {
+          "latex": "-3x^4(2x^5 - x^2) = -6x^{4+5} + 3x^{4+2}",
+          "explain": "Distribute the outer monomial and add exponents on each term."
+        },
+        {
+          "latex": "q(x) = -6x^9 + 3x^6 + 8x^3 - 9",
+          "explain": "Write the expanded polynomial in descending degree order.",
+          "eq": [
+            "4 + 5",
+            "9"
+          ]
+        },
+        {
+          "latex": "\\deg(q) = 9",
+          "explain": "Identify the highest nonzero power.",
+          "val": "9"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U02-t02-c04-u02-read-degree-leading-term-02",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c04-u02-unsimplified-degree-trap|reverse|q(x) = -#*x^#*(#*x^# - x^#) + #*x^# - #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U02-t02-c04-u02-read-degree-leading-term-03",
+      "sourceArchetype": "t02-c04-u02-read-degree-leading-term",
+      "archetypeKey": "t02-c04-u02-read-degree-leading-term",
+      "unitCode": "MTH-T02-C04-U02",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "What is the degree of $r(x) = (x^3 + 2)(4x^2 - 7x) + 6x^4 - 5$ after simplifying?",
+      "display": "(x^m + c_1)(bx^n + c_2 x) = bx^{m+n} + \\dots",
+      "plainText": "r(x) = (x^3 + 2)*(4*x^2 - 7*x) + 6*x^4 - 5",
+      "givens": {
+        "m": 3,
+        "c1": 2,
+        "b": 4,
+        "n": 2,
+        "c2": -7,
+        "d": 6,
+        "s": 4,
+        "constant": -5
+      },
+      "constants": {
+        "one": 1
+      },
+      "trapGivens": [
+        4,
+        1
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "5",
+        "tolerance": 0
+      },
+      "answerPlain": "5",
+      "answerDisplay": "5",
+      "inputHint": "Enter the greatest exponent after simplifying.",
+      "commonTrapTag": "t02-c04-u02-unsimplified-degree-trap",
+      "trapDerivation": "4*1",
+      "trapValue": "4",
+      "verify": {
+        "source": "3 + 2",
+        "trapValue": "4"
+      },
+      "checkpointHint": "Expand the product of the two binomials first so you find the true highest power.",
+      "references": [
+        "MTH-T02-C04-U02"
+      ],
+      "figureWaiver": "A graph would reveal the general degree behavior; the task is to simplify a leading algebraic term.",
+      "steps": [
+        {
+          "latex": "(x^3 + 2)(4x^2 - 7x) = 4x^5 - 7x^4 + 8x^2 - 14x",
+          "explain": "Multiply every term in the first factor by every term in the second factor.",
+          "eq": [
+            "3 + 2",
+            "5"
+          ]
+        },
+        {
+          "latex": "r(x) = 4x^5 - x^4 + 8x^2 - 14x - 5",
+          "explain": "Combine like terms with 6x^4 - 5."
+        },
+        {
+          "latex": "\\deg(r) = 5",
+          "explain": "Read the highest exponent with a nonzero coefficient.",
+          "val": "5"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U02-t02-c04-u02-read-degree-leading-term-03",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c04-u02-unsimplified-degree-trap|reverse|r(x) = (x^# + #)*(#*x^# - #*x) + #*x^# - #"
+    }
+  ]
+}

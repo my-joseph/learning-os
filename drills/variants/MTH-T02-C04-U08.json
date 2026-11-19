@@ -1,0 +1,930 @@
+{
+  "unitCode": "MTH-T02-C04-U08",
+  "variants": [
+    {
+      "variantId": "VAR-MTH-T02-C04-U08-t02-c04-u08-evaluate-direct-variation-01",
+      "sourceArchetype": "t02-c04-u08-evaluate-direct-variation",
+      "archetypeKey": "t02-c04-u08-evaluate-direct-variation",
+      "unitCode": "MTH-T02-C04-U08",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "For the direct-variation rule $y = 5x^3$, find $y$ when $x = 4$.",
+      "display": "y = k x^n",
+      "plainText": "Evaluate y = 5*x^3 at x = 4",
+      "givens": {
+        "coefficient": 5,
+        "input": 4,
+        "power": 3
+      },
+      "constants": {},
+      "trapGivens": [
+        5,
+        3,
+        4
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "320",
+        "tolerance": 0
+      },
+      "answerPlain": "320",
+      "answerDisplay": "320",
+      "inputHint": "Enter the requested numeric value.",
+      "commonTrapTag": "t02-c04-u08-drop-direct-variation-exponent-trap",
+      "trapDerivation": "5*3*4",
+      "trapValue": "60",
+      "verify": {
+        "source": "5*4^3",
+        "trapValue": "60"
+      },
+      "checkpointHint": "Raise the input to the given power before multiplying by the variation constant.",
+      "references": [
+        "MTH-T02-C04-U08"
+      ],
+      "steps": [
+        {
+          "latex": "y = 5x^3",
+          "explain": "Start from the given direct-variation rule."
+        },
+        {
+          "latex": "y = 5(4)^3",
+          "explain": "Substitute x = 4 into the formula."
+        },
+        {
+          "latex": "y = 5(64)",
+          "explain": "Evaluate 4^3 to 64.",
+          "eq": [
+            "4^3",
+            "64"
+          ]
+        },
+        {
+          "latex": "y = 320",
+          "explain": "Multiply 5 by 64 to find y.",
+          "val": "320"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U08-t02-c04-u08-evaluate-direct-variation-01",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "t02-c04-u08-drop-direct-variation-exponent-trap|direct|Evaluate y = #*x^# at x = #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U08-t02-c04-u08-evaluate-direct-variation-02",
+      "sourceArchetype": "t02-c04-u08-evaluate-direct-variation",
+      "archetypeKey": "t02-c04-u08-evaluate-direct-variation",
+      "unitCode": "MTH-T02-C04-U08",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "For the direct-variation rule $d = 4t^2$, find $d$ when $t = 6$.",
+      "display": "d = k t^n",
+      "plainText": "Evaluate d = 4*t^2 at t = 6",
+      "givens": {
+        "coefficient": 4,
+        "input": 6,
+        "power": 2
+      },
+      "constants": {},
+      "trapGivens": [
+        4,
+        2,
+        6
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "144",
+        "tolerance": 0
+      },
+      "answerPlain": "144",
+      "answerDisplay": "144",
+      "inputHint": "Enter the requested numeric value.",
+      "commonTrapTag": "t02-c04-u08-drop-direct-variation-exponent-trap",
+      "trapDerivation": "4*2*6",
+      "trapValue": "48",
+      "verify": {
+        "source": "4*6^2",
+        "trapValue": "48"
+      },
+      "checkpointHint": "Square the input first, then multiply by the constant of variation.",
+      "references": [
+        "MTH-T02-C04-U08"
+      ],
+      "steps": [
+        {
+          "latex": "d = 4t^2",
+          "explain": "Use the stated direct-variation formula."
+        },
+        {
+          "latex": "d = 4(6)^2",
+          "explain": "Substitute t = 6."
+        },
+        {
+          "latex": "d = 4(36)",
+          "explain": "Evaluate 6^2 to 36.",
+          "eq": [
+            "6^2",
+            "36"
+          ]
+        },
+        {
+          "latex": "d = 144",
+          "explain": "Multiply 4 by 36.",
+          "val": "144"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U08-t02-c04-u08-evaluate-direct-variation-02",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "t02-c04-u08-drop-direct-variation-exponent-trap|direct|Evaluate d = #*t^# at t = #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U08-t02-c04-u08-evaluate-direct-variation-03",
+      "sourceArchetype": "t02-c04-u08-evaluate-direct-variation",
+      "archetypeKey": "t02-c04-u08-evaluate-direct-variation",
+      "unitCode": "MTH-T02-C04-U08",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "For the direct-variation rule $w = 3u^4$, find $w$ when $u = 2$.",
+      "display": "w = k u^n",
+      "plainText": "Evaluate w = 3*u^4 at u = 2",
+      "givens": {
+        "coefficient": 3,
+        "input": 2,
+        "power": 4
+      },
+      "constants": {},
+      "trapGivens": [
+        3,
+        4,
+        2
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "48",
+        "tolerance": 0
+      },
+      "answerPlain": "48",
+      "answerDisplay": "48",
+      "inputHint": "Enter the requested numeric value.",
+      "commonTrapTag": "t02-c04-u08-drop-direct-variation-exponent-trap",
+      "trapDerivation": "3*4*2",
+      "trapValue": "24",
+      "verify": {
+        "source": "3*2^4",
+        "trapValue": "24"
+      },
+      "checkpointHint": "Apply the exponent as repeated multiplication of the input before multiplying by the coefficient.",
+      "references": [
+        "MTH-T02-C04-U08"
+      ],
+      "steps": [
+        {
+          "latex": "w = 3u^4",
+          "explain": "Start with the given direct-variation rule."
+        },
+        {
+          "latex": "w = 3(2)^4",
+          "explain": "Substitute u = 2."
+        },
+        {
+          "latex": "w = 3(16)",
+          "explain": "Evaluate 2^4 to 16.",
+          "eq": [
+            "2^4",
+            "16"
+          ]
+        },
+        {
+          "latex": "w = 48",
+          "explain": "Multiply 3 by 16.",
+          "val": "48"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U08-t02-c04-u08-evaluate-direct-variation-03",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "t02-c04-u08-drop-direct-variation-exponent-trap|direct|Evaluate w = #*u^# at u = #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U08-t02-c04-u08-evaluate-inverse-variation-01",
+      "sourceArchetype": "t02-c04-u08-evaluate-inverse-variation",
+      "archetypeKey": "t02-c04-u08-evaluate-inverse-variation",
+      "unitCode": "MTH-T02-C04-U08",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "For the inverse-variation rule $I = \\frac{400}{d^2}$, find $I$ when $d = 5$.",
+      "display": "I = \\frac{k}{d^n}",
+      "plainText": "Evaluate I = 400/(d^2) at d = 5",
+      "givens": {
+        "constant": 400,
+        "input": 5,
+        "power": 2
+      },
+      "constants": {},
+      "trapGivens": [
+        400,
+        5,
+        2
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "16",
+        "tolerance": 0
+      },
+      "answerPlain": "16",
+      "answerDisplay": "16",
+      "inputHint": "Enter the requested numeric value.",
+      "commonTrapTag": "t02-c04-u08-treat-inverse-as-direct-trap",
+      "trapDerivation": "400*5^2",
+      "trapValue": "10000",
+      "verify": {
+        "source": "400/5^2",
+        "trapValue": "10000"
+      },
+      "checkpointHint": "Keep the squared input in the denominator and divide the variation constant by it.",
+      "references": [
+        "MTH-T02-C04-U08"
+      ],
+      "steps": [
+        {
+          "latex": "I = \\frac{400}{d^2}",
+          "explain": "Start with the given inverse-variation rule."
+        },
+        {
+          "latex": "I = \\frac{400}{5^2}",
+          "explain": "Substitute d = 5 into the denominator."
+        },
+        {
+          "latex": "I = \\frac{400}{25}",
+          "explain": "Evaluate 5^2 to 25.",
+          "eq": [
+            "5^2",
+            "25"
+          ]
+        },
+        {
+          "latex": "I = 16",
+          "explain": "Divide 400 by 25.",
+          "val": "16"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U08-t02-c04-u08-evaluate-inverse-variation-01",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "t02-c04-u08-treat-inverse-as-direct-trap|direct|Evaluate I = #/(d^#) at d = #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U08-t02-c04-u08-evaluate-inverse-variation-02",
+      "sourceArchetype": "t02-c04-u08-evaluate-inverse-variation",
+      "archetypeKey": "t02-c04-u08-evaluate-inverse-variation",
+      "unitCode": "MTH-T02-C04-U08",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "For the inverse-variation rule $y = \\frac{216}{x^3}$, find $y$ when $x = 3$.",
+      "display": "y = \\frac{k}{x^n}",
+      "plainText": "Evaluate y = 216/(x^3) at x = 3",
+      "givens": {
+        "constant": 216,
+        "input": 3,
+        "power": 3
+      },
+      "constants": {},
+      "trapGivens": [
+        216,
+        3
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "8",
+        "tolerance": 0
+      },
+      "answerPlain": "8",
+      "answerDisplay": "8",
+      "inputHint": "Enter the requested numeric value.",
+      "commonTrapTag": "t02-c04-u08-treat-inverse-as-direct-trap",
+      "trapDerivation": "216*3^3",
+      "trapValue": "5832",
+      "verify": {
+        "source": "216/3^3",
+        "trapValue": "5832"
+      },
+      "checkpointHint": "Evaluate the cubed input in the denominator and divide the constant by that value.",
+      "references": [
+        "MTH-T02-C04-U08"
+      ],
+      "steps": [
+        {
+          "latex": "y = \\frac{216}{x^3}",
+          "explain": "Start with the given inverse-variation rule."
+        },
+        {
+          "latex": "y = \\frac{216}{3^3}",
+          "explain": "Substitute x = 3."
+        },
+        {
+          "latex": "y = \\frac{216}{27}",
+          "explain": "Evaluate 3^3 to 27.",
+          "eq": [
+            "3^3",
+            "27"
+          ]
+        },
+        {
+          "latex": "y = 8",
+          "explain": "Divide 216 by 27.",
+          "val": "8"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U08-t02-c04-u08-evaluate-inverse-variation-02",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "t02-c04-u08-treat-inverse-as-direct-trap|direct|Evaluate y = #/(x^#) at x = #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U08-t02-c04-u08-evaluate-inverse-variation-03",
+      "sourceArchetype": "t02-c04-u08-evaluate-inverse-variation",
+      "archetypeKey": "t02-c04-u08-evaluate-inverse-variation",
+      "unitCode": "MTH-T02-C04-U08",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "For the inverse-variation rule $v = \\frac{144}{r^2}$, find $v$ when $r = 6$.",
+      "display": "v = \\frac{k}{r^n}",
+      "plainText": "Evaluate v = 144/(r^2) at r = 6",
+      "givens": {
+        "constant": 144,
+        "input": 6,
+        "power": 2
+      },
+      "constants": {},
+      "trapGivens": [
+        144,
+        6,
+        2
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "4",
+        "tolerance": 0
+      },
+      "answerPlain": "4",
+      "answerDisplay": "4",
+      "inputHint": "Enter the requested numeric value.",
+      "commonTrapTag": "t02-c04-u08-treat-inverse-as-direct-trap",
+      "trapDerivation": "144*6^2",
+      "trapValue": "5184",
+      "verify": {
+        "source": "144/6^2",
+        "trapValue": "5184"
+      },
+      "checkpointHint": "Square the input in the denominator before dividing the constant by that denominator.",
+      "references": [
+        "MTH-T02-C04-U08"
+      ],
+      "steps": [
+        {
+          "latex": "v = \\frac{144}{r^2}",
+          "explain": "Use the stated inverse-variation formula."
+        },
+        {
+          "latex": "v = \\frac{144}{6^2}",
+          "explain": "Substitute r = 6."
+        },
+        {
+          "latex": "v = \\frac{144}{36}",
+          "explain": "Evaluate 6^2 to 36.",
+          "eq": [
+            "6^2",
+            "36"
+          ]
+        },
+        {
+          "latex": "v = 4",
+          "explain": "Divide 144 by 36.",
+          "val": "4"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U08-t02-c04-u08-evaluate-inverse-variation-03",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "t02-c04-u08-treat-inverse-as-direct-trap|direct|Evaluate v = #/(r^#) at r = #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U08-t02-c04-u08-calibrate-direct-variation-01",
+      "sourceArchetype": "t02-c04-u08-calibrate-direct-variation",
+      "archetypeKey": "t02-c04-u08-calibrate-direct-variation",
+      "unitCode": "MTH-T02-C04-U08",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "$y$ varies directly with the square of $x$. When $x = 2$, $y = 28$. Find $y$ when $x = 5$.",
+      "display": "k = \\frac{y_1}{x_1^n};\\quad y_2 = k x_2^n",
+      "plainText": "y varies directly with x^2; y = 28 at x = 2; find y at x = 5",
+      "givens": {
+        "known_input": 2,
+        "known_output": 28,
+        "target_input": 5
+      },
+      "constants": {
+        "power": 2
+      },
+      "trapGivens": [
+        28,
+        5,
+        2
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "175",
+        "tolerance": 0
+      },
+      "answerPlain": "175",
+      "answerDisplay": "175",
+      "inputHint": "Enter the requested numeric value.",
+      "commonTrapTag": "t02-c04-u08-linear-scale-instead-of-power-trap",
+      "trapDerivation": "28*(5/2)",
+      "trapValue": "70",
+      "verify": {
+        "source": "(28/2^2)*5^2",
+        "trapValue": "70"
+      },
+      "checkpointHint": "Find the constant of variation using the squared known input, then apply the same squared power to the new input.",
+      "references": [
+        "MTH-T02-C04-U08"
+      ],
+      "steps": [
+        {
+          "latex": "k = \\frac{28}{2^2}",
+          "explain": "Solve y = k x^2 for k using the known pair."
+        },
+        {
+          "latex": "k = \\frac{28}{4}",
+          "explain": "Evaluate 2^2 to 4."
+        },
+        {
+          "latex": "k = 7",
+          "explain": "Divide 28 by 4 to find k.",
+          "eq": [
+            "28/4",
+            "7"
+          ]
+        },
+        {
+          "latex": "y = 7(5^2)",
+          "explain": "Substitute k = 7 and x = 5 into y = k x^2."
+        },
+        {
+          "latex": "y = 7(25)",
+          "explain": "Evaluate 5^2 to 25."
+        },
+        {
+          "latex": "y = 175",
+          "explain": "Multiply 7 by 25 to get the predicted value.",
+          "val": "175"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U08-t02-c04-u08-calibrate-direct-variation-01",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c04-u08-linear-scale-instead-of-power-trap|reverse|y varies directly with x^#; y = # at x = #; find y at x = #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U08-t02-c04-u08-calibrate-direct-variation-02",
+      "sourceArchetype": "t02-c04-u08-calibrate-direct-variation",
+      "archetypeKey": "t02-c04-u08-calibrate-direct-variation",
+      "unitCode": "MTH-T02-C04-U08",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "$m$ varies directly with the cube of $r$. When $r = 2$, $m = 32$. Find $m$ when $r = 3$.",
+      "display": "k = \\frac{m_1}{r_1^n};\\quad m_2 = k r_2^n",
+      "plainText": "m varies directly with r^3; m = 32 at r = 2; find m at r = 3",
+      "givens": {
+        "known_input": 2,
+        "known_output": 32,
+        "target_input": 3
+      },
+      "constants": {
+        "power": 3
+      },
+      "trapGivens": [
+        32,
+        3,
+        2
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "108",
+        "tolerance": 0
+      },
+      "answerPlain": "108",
+      "answerDisplay": "108",
+      "inputHint": "Enter the requested numeric value.",
+      "commonTrapTag": "t02-c04-u08-linear-scale-instead-of-power-trap",
+      "trapDerivation": "32*(3/2)",
+      "trapValue": "48",
+      "verify": {
+        "source": "(32/2^3)*3^3",
+        "trapValue": "48"
+      },
+      "checkpointHint": "Use the cube of the known input to calibrate the constant, then cube the new input when predicting the output.",
+      "references": [
+        "MTH-T02-C04-U08"
+      ],
+      "steps": [
+        {
+          "latex": "k = \\frac{32}{2^3}",
+          "explain": "Isolate the variation constant k from m = k r^3."
+        },
+        {
+          "latex": "k = \\frac{32}{8}",
+          "explain": "Evaluate 2^3 to 8."
+        },
+        {
+          "latex": "k = 4",
+          "explain": "Simplify to obtain the constant k.",
+          "eq": [
+            "32/8",
+            "4"
+          ]
+        },
+        {
+          "latex": "m = 4(3^3)",
+          "explain": "Substitute k = 4 and r = 3."
+        },
+        {
+          "latex": "m = 4(27)",
+          "explain": "Evaluate 3^3 to 27."
+        },
+        {
+          "latex": "m = 108",
+          "explain": "Multiply 4 by 27.",
+          "val": "108"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U08-t02-c04-u08-calibrate-direct-variation-02",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c04-u08-linear-scale-instead-of-power-trap|reverse|m varies directly with r^#; m = # at r = #; find m at r = #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U08-t02-c04-u08-calibrate-direct-variation-03",
+      "sourceArchetype": "t02-c04-u08-calibrate-direct-variation",
+      "archetypeKey": "t02-c04-u08-calibrate-direct-variation",
+      "unitCode": "MTH-T02-C04-U08",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "$E$ varies directly with the square of $v$. When $v = 4$, $E = 48$. Find $E$ when $v = 10$.",
+      "display": "k = \\frac{E_1}{v_1^n};\\quad E_2 = k v_2^n",
+      "plainText": "E varies directly with v^2; E = 48 at v = 4; find E at v = 10",
+      "givens": {
+        "known_input": 4,
+        "known_output": 48,
+        "target_input": 10
+      },
+      "constants": {
+        "power": 2
+      },
+      "trapGivens": [
+        48,
+        10,
+        4
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "300",
+        "tolerance": 0
+      },
+      "answerPlain": "300",
+      "answerDisplay": "300",
+      "inputHint": "Enter the requested numeric value.",
+      "commonTrapTag": "t02-c04-u08-linear-scale-instead-of-power-trap",
+      "trapDerivation": "48*(10/4)",
+      "trapValue": "120",
+      "verify": {
+        "source": "(48/4^2)*10^2",
+        "trapValue": "120"
+      },
+      "checkpointHint": "Calibrate the constant with the squared input rather than scaling linearly by the ratio of inputs.",
+      "references": [
+        "MTH-T02-C04-U08"
+      ],
+      "steps": [
+        {
+          "latex": "k = \\frac{48}{4^2}",
+          "explain": "Divide the known output by the square of the known input."
+        },
+        {
+          "latex": "k = \\frac{48}{16}",
+          "explain": "Evaluate 4^2 to 16."
+        },
+        {
+          "latex": "k = 3",
+          "explain": "Simplify to find k.",
+          "eq": [
+            "48/16",
+            "3"
+          ]
+        },
+        {
+          "latex": "E = 3(10^2)",
+          "explain": "Substitute k = 3 and v = 10."
+        },
+        {
+          "latex": "E = 3(100)",
+          "explain": "Evaluate 10^2 to 100."
+        },
+        {
+          "latex": "E = 300",
+          "explain": "Multiply 3 by 100.",
+          "val": "300"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U08-t02-c04-u08-calibrate-direct-variation-03",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c04-u08-linear-scale-instead-of-power-trap|reverse|E varies directly with v^#; E = # at v = #; find E at v = #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U08-t02-c04-u08-solve-joint-variation-01",
+      "sourceArchetype": "t02-c04-u08-solve-joint-variation",
+      "archetypeKey": "t02-c04-u08-solve-joint-variation",
+      "unitCode": "MTH-T02-C04-U08",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "$z$ varies directly with the square of $x$ and inversely with $y$. When $x = 3$ and $y = 4$, $z = 18$. Find $z$ when $x = 6$ and $y = 8$.",
+      "display": "z = k \\frac{x^a}{y^b}",
+      "plainText": "z varies directly with x^2 and inversely with y; z=18 at x=3,y=4; find z at x=6,y=8",
+      "givens": {
+        "known_x": 3,
+        "known_y": 4,
+        "known_z": 18,
+        "target_x": 6,
+        "target_y": 8
+      },
+      "constants": {
+        "power": 2
+      },
+      "trapGivens": [
+        18,
+        6,
+        3,
+        8,
+        4
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "36",
+        "tolerance": 0
+      },
+      "answerPlain": "36",
+      "answerDisplay": "36",
+      "inputHint": "Enter the requested numeric value.",
+      "commonTrapTag": "t02-c04-u08-multiply-inverse-variable-trap",
+      "trapDerivation": "18*(6/3)^2*(8/4)",
+      "trapValue": "144",
+      "verify": {
+        "source": "(18*4/3^2)*(6^2/8)",
+        "trapValue": "144"
+      },
+      "checkpointHint": "Place direct-variation factors in the numerator and inverse-variation factors in the denominator when calibrating and evaluating.",
+      "references": [
+        "MTH-T02-C04-U08"
+      ],
+      "steps": [
+        {
+          "latex": "z = k \\frac{x^2}{y}",
+          "explain": "Write the combined direct and inverse variation model."
+        },
+        {
+          "latex": "k = \\frac{18 \\cdot 4}{3^2}",
+          "explain": "Substitute the known state to solve for k."
+        },
+        {
+          "latex": "k = \\frac{72}{9}",
+          "explain": "Evaluate numerator and denominator."
+        },
+        {
+          "latex": "k = 8",
+          "explain": "Simplify to find the shared constant.",
+          "eq": [
+            "72/9",
+            "8"
+          ]
+        },
+        {
+          "latex": "z = 8 \\cdot \\frac{6^2}{8}",
+          "explain": "Substitute k = 8, x = 6, and y = 8 into the model."
+        },
+        {
+          "latex": "z = 36",
+          "explain": "Cancel the factor of 8 and square 6.",
+          "val": "36"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U08-t02-c04-u08-solve-joint-variation-01",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c04-u08-multiply-inverse-variable-trap|reverse|z varies directly with x^# and inversely with y; z=# at x=#,y=#; find z at x=#,y=#"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U08-t02-c04-u08-solve-joint-variation-02",
+      "sourceArchetype": "t02-c04-u08-solve-joint-variation",
+      "archetypeKey": "t02-c04-u08-solve-joint-variation",
+      "unitCode": "MTH-T02-C04-U08",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "$p$ varies jointly with $a$ and $b$, and inversely with $c$. When $a = 2$, $b = 5$, and $c = 4$, $p = 15$. Find $p$ when $a = 4$, $b = 3$, and $c = 6$.",
+      "display": "p = k \\frac{ab}{c}",
+      "plainText": "p varies jointly with a and b and inversely with c; p=15 at a=2,b=5,c=4; find p at a=4,b=3,c=6",
+      "givens": {
+        "a1": 2,
+        "b1": 5,
+        "c1": 4,
+        "p1": 15,
+        "a2": 4,
+        "b2": 3,
+        "c2": 6
+      },
+      "constants": {},
+      "trapGivens": [
+        15,
+        4,
+        2,
+        3,
+        5,
+        6
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "12",
+        "tolerance": 0
+      },
+      "answerPlain": "12",
+      "answerDisplay": "12",
+      "inputHint": "Enter the requested numeric value.",
+      "commonTrapTag": "t02-c04-u08-multiply-inverse-variable-trap",
+      "trapDerivation": "15*(4/2)*(3/5)*(6/4)",
+      "trapValue": "27",
+      "verify": {
+        "source": "(15*4/(2*5))*(4*3/6)",
+        "trapValue": "27"
+      },
+      "checkpointHint": "Keep the jointly varying variables in the numerator and divide by the inversely varying variable.",
+      "references": [
+        "MTH-T02-C04-U08"
+      ],
+      "steps": [
+        {
+          "latex": "p = k \\frac{ab}{c}",
+          "explain": "Translate the joint and inverse relationships into one formula."
+        },
+        {
+          "latex": "k = \\frac{15 \\cdot 4}{2 \\cdot 5}",
+          "explain": "Substitute the known values to isolate k."
+        },
+        {
+          "latex": "k = \\frac{60}{10}",
+          "explain": "Multiply the numerator and denominator."
+        },
+        {
+          "latex": "k = 6",
+          "explain": "Simplify to find k.",
+          "eq": [
+            "60/10",
+            "6"
+          ]
+        },
+        {
+          "latex": "p = 6 \\cdot \\frac{4 \\cdot 3}{6}",
+          "explain": "Substitute k = 6 and the target values."
+        },
+        {
+          "latex": "p = 12",
+          "explain": "Cancel 6 and multiply 4 by 3.",
+          "val": "12"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U08-t02-c04-u08-solve-joint-variation-02",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c04-u08-multiply-inverse-variable-trap|reverse|p varies jointly with a and b and inversely with c; p=# at a=#,b=#,c=#; find p at a=#,b=#,c=#"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U08-t02-c04-u08-solve-joint-variation-03",
+      "sourceArchetype": "t02-c04-u08-solve-joint-variation",
+      "archetypeKey": "t02-c04-u08-solve-joint-variation",
+      "unitCode": "MTH-T02-C04-U08",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "$w$ varies directly with the cube of $u$ and inversely with the square of $v$. When $u = 2$ and $v = 3$, $w = 32$. Find $w$ when $u = 3$ and $v = 6$.",
+      "display": "w = k \\frac{u^a}{v^b}",
+      "plainText": "w varies directly with u^3 and inversely with v^2; w=32 at u=2,v=3; find w at u=3,v=6",
+      "givens": {
+        "u1": 2,
+        "v1": 3,
+        "w1": 32,
+        "u2": 3,
+        "v2": 6
+      },
+      "constants": {},
+      "trapGivens": [
+        32,
+        3,
+        2,
+        6
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "27",
+        "tolerance": 0
+      },
+      "answerPlain": "27",
+      "answerDisplay": "27",
+      "inputHint": "Enter the requested numeric value.",
+      "commonTrapTag": "t02-c04-u08-multiply-inverse-variable-trap",
+      "trapDerivation": "32*(3/2)^3*(6/3)^2",
+      "trapValue": "432",
+      "verify": {
+        "source": "(32*3^2/2^3)*(3^3/6^2)",
+        "trapValue": "432"
+      },
+      "checkpointHint": "Attach each exponent to its own variable, keep the inverse factor in the denominator, and calibrate the constant once.",
+      "references": [
+        "MTH-T02-C04-U08"
+      ],
+      "steps": [
+        {
+          "latex": "w = k \\frac{u^3}{v^2}",
+          "explain": "Write the combined variation equation with both powers."
+        },
+        {
+          "latex": "k = \\frac{32 \\cdot 3^2}{2^3}",
+          "explain": "Rearrange to solve for k at the known state."
+        },
+        {
+          "latex": "k = \\frac{32 \\cdot 9}{8}",
+          "explain": "Evaluate 3^2 = 9 and 2^3 = 8."
+        },
+        {
+          "latex": "k = 36",
+          "explain": "Divide 32 by 8 to get 4, then multiply by 9.",
+          "eq": [
+            "32*9/8",
+            "36"
+          ]
+        },
+        {
+          "latex": "w = 36 \\cdot \\frac{3^3}{6^2}",
+          "explain": "Substitute k = 36, u = 3, and v = 6."
+        },
+        {
+          "latex": "w = 36 \\cdot \\frac{27}{36}",
+          "explain": "Evaluate 3^3 = 27 and 6^2 = 36."
+        },
+        {
+          "latex": "w = 27",
+          "explain": "Cancel 36 to find the predicted value.",
+          "val": "27"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U08-t02-c04-u08-solve-joint-variation-03",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c04-u08-multiply-inverse-variable-trap|reverse|w varies directly with u^# and inversely with v^#; w=# at u=#,v=#; find w at u=#,v=#"
+    }
+  ]
+}

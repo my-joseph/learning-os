@@ -1,0 +1,1093 @@
+{
+  "unitCode": "MTH-T02-C04-U03",
+  "variants": [
+    {
+      "variantId": "VAR-MTH-T02-C04-U03-t02-c04-u03-bound-turning-points-by-degree-01",
+      "sourceArchetype": "t02-c04-u03-bound-turning-points-by-degree",
+      "archetypeKey": "t02-c04-u03-bound-turning-points-by-degree",
+      "unitCode": "MTH-T02-C04-U03",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "What is the greatest possible number of turning points for a polynomial of degree $9$?",
+      "display": "T_{\\max} = n - 1",
+      "plainText": "maximum turning points for degree 9",
+      "givens": {
+        "n": 9
+      },
+      "constants": {
+        "one": 1
+      },
+      "trapGivens": [
+        9,
+        1
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "8",
+        "tolerance": 0
+      },
+      "answerPlain": "8",
+      "answerDisplay": "8",
+      "inputHint": "Enter a whole number.",
+      "commonTrapTag": "t02-c04-u03-add-one-to-turn-bound-trap",
+      "trapDerivation": "9 + 1",
+      "trapValue": "10",
+      "verify": {
+        "source": "9 - 1",
+        "trapValue": "10"
+      },
+      "checkpointHint": "The maximum number of direction reversals is always less than the polynomial's degree.",
+      "references": [
+        "MTH-T02-C04-U03"
+      ],
+      "steps": [
+        {
+          "latex": "T_{\\max} = n - 1",
+          "explain": "Recall the turning-point bound for a degree-n polynomial."
+        },
+        {
+          "latex": "T_{\\max} = 9 - 1",
+          "explain": "Substitute the degree n = 9."
+        },
+        {
+          "latex": "T_{\\max} = 8",
+          "explain": "Subtract 1 to obtain the maximum number of turning points.",
+          "val": "8"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U03-t02-c04-u03-bound-turning-points-by-degree-01",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "t02-c04-u03-add-one-to-turn-bound-trap|direct|maximum turning points for degree #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U03-t02-c04-u03-bound-turning-points-by-degree-02",
+      "sourceArchetype": "t02-c04-u03-bound-turning-points-by-degree",
+      "archetypeKey": "t02-c04-u03-bound-turning-points-by-degree",
+      "unitCode": "MTH-T02-C04-U03",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "What is the greatest possible number of turning points for the polynomial $f(x) = 3x^5 - 2x^3 + 4x - 1$?",
+      "display": "T_{\\max} = \\deg(f) - 1",
+      "plainText": "f(x) = 3*x^5 - 2*x^3 + 4*x - 1",
+      "givens": {
+        "a": 3,
+        "n": 5,
+        "b": -2,
+        "m": 3,
+        "c": 4,
+        "d": -1
+      },
+      "constants": {},
+      "trapGivens": [
+        5,
+        1
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "4",
+        "tolerance": 0
+      },
+      "answerPlain": "4",
+      "answerDisplay": "4",
+      "inputHint": "Enter a whole number.",
+      "commonTrapTag": "t02-c04-u03-add-one-to-turn-bound-trap",
+      "trapDerivation": "5 + 1",
+      "trapValue": "6",
+      "verify": {
+        "source": "5 - 1",
+        "trapValue": "6"
+      },
+      "checkpointHint": "Read the highest exponent first, then apply the turning-point bound.",
+      "references": [
+        "MTH-T02-C04-U03"
+      ],
+      "steps": [
+        {
+          "latex": "\\deg(f) = 5",
+          "explain": "Identify the highest exponent in the polynomial."
+        },
+        {
+          "latex": "T_{\\max} = 5 - 1",
+          "explain": "Subtract 1 from the degree."
+        },
+        {
+          "latex": "T_{\\max} = 4",
+          "explain": "State the greatest possible turning-point count.",
+          "val": "4"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U03-t02-c04-u03-bound-turning-points-by-degree-02",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "t02-c04-u03-add-one-to-turn-bound-trap|direct|f(x) = #*x^# - #*x^# + #*x - #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U03-t02-c04-u03-bound-turning-points-by-degree-03",
+      "sourceArchetype": "t02-c04-u03-bound-turning-points-by-degree",
+      "archetypeKey": "t02-c04-u03-bound-turning-points-by-degree",
+      "unitCode": "MTH-T02-C04-U03",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "What is the greatest possible number of turning points for the factored polynomial $g(x) = (x - 2)^3(x + 5)^4$?",
+      "display": "T_{\\max} = \\deg(g) - 1",
+      "plainText": "g(x) = (x - 2)^3*(x + 5)^4",
+      "givens": {
+        "r1": 2,
+        "m1": 3,
+        "r2": -5,
+        "m2": 4
+      },
+      "constants": {
+        "one": 1
+      },
+      "trapGivens": [
+        3,
+        4,
+        1
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "6",
+        "tolerance": 0
+      },
+      "answerPlain": "6",
+      "answerDisplay": "6",
+      "inputHint": "Enter a whole number.",
+      "commonTrapTag": "t02-c04-u03-add-one-to-turn-bound-trap",
+      "trapDerivation": "3 + 4 + 1",
+      "trapValue": "8",
+      "verify": {
+        "source": "3 + 4 - 1",
+        "trapValue": "8"
+      },
+      "checkpointHint": "Add the factor multiplicities to find the total degree before applying the turning-point bound.",
+      "references": [
+        "MTH-T02-C04-U03"
+      ],
+      "steps": [
+        {
+          "latex": "\\deg(g) = 3 + 4",
+          "explain": "Sum the exponents of the linear factors to find the degree.",
+          "eq": [
+            "3 + 4",
+            "7"
+          ]
+        },
+        {
+          "latex": "\\deg(g) = 7",
+          "explain": "The factored polynomial has degree 7."
+        },
+        {
+          "latex": "T_{\\max} = 7 - 1",
+          "explain": "Subtract 1 from the degree for the turning-point bound."
+        },
+        {
+          "latex": "T_{\\max} = 6",
+          "explain": "Simplify to obtain the maximum number of turning points.",
+          "val": "6"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U03-t02-c04-u03-bound-turning-points-by-degree-03",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "t02-c04-u03-add-one-to-turn-bound-trap|direct|g(x) = (x - #)^#*(x + #)^#"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U03-t02-c04-u03-factor-to-find-zeros-01",
+      "sourceArchetype": "t02-c04-u03-factor-to-find-zeros",
+      "archetypeKey": "t02-c04-u03-factor-to-find-zeros",
+      "unitCode": "MTH-T02-C04-U03",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "For $g(x) = (x - 4)^3(x + 1)$, find the sum of all distinct real zeros. Count a repeated zero once.",
+      "display": "g(x) = (x - 4)^3(x + 1)",
+      "plainText": "g(x) = (x - 4)^3*(x + 1)",
+      "givens": {
+        "r1": 4,
+        "m1": 3,
+        "r2": -1
+      },
+      "constants": {},
+      "trapGivens": [
+        3,
+        4,
+        1
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "3",
+        "tolerance": 0
+      },
+      "answerPlain": "3",
+      "answerDisplay": "3",
+      "inputHint": "Enter a signed integer.",
+      "commonTrapTag": "t02-c04-u03-count-repeated-zero-multiple-times-trap",
+      "trapDerivation": "3*4 - 1",
+      "trapValue": "11",
+      "verify": {
+        "source": "4 - 1",
+        "trapValue": "11"
+      },
+      "checkpointHint": "Solve each distinct factor for its zero and add each unique value only once.",
+      "references": [
+        "MTH-T02-C04-U03"
+      ],
+      "steps": [
+        {
+          "latex": "x - 4 = 0",
+          "explain": "Set the repeated factor equal to zero."
+        },
+        {
+          "latex": "x = 4",
+          "explain": "Solve for the first distinct real zero."
+        },
+        {
+          "latex": "x + 1 = 0",
+          "explain": "Set the second linear factor equal to zero."
+        },
+        {
+          "latex": "x = -1",
+          "explain": "Solve for the second distinct real zero."
+        },
+        {
+          "latex": "4 + (-1) = 3",
+          "explain": "Add the two distinct zeros without repeating the triple zero.",
+          "eq": [
+            "4 - 1",
+            "3"
+          ],
+          "val": "3"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U03-t02-c04-u03-factor-to-find-zeros-01",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "t02-c04-u03-count-repeated-zero-multiple-times-trap|direct|g(x) = (x - #)^#*(x + #)"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U03-t02-c04-u03-factor-to-find-zeros-02",
+      "sourceArchetype": "t02-c04-u03-factor-to-find-zeros",
+      "archetypeKey": "t02-c04-u03-factor-to-find-zeros",
+      "unitCode": "MTH-T02-C04-U03",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "For $h(x) = x^2(x - 8)(x + 2)^2$, find the sum of all distinct real zeros. Count each repeated zero once.",
+      "display": "h(x) = x^2(x - 8)(x + 2)^2",
+      "plainText": "h(x) = x^2*(x - 8)*(x + 2)^2",
+      "givens": {
+        "m0": 2,
+        "r1": 8,
+        "r2": -2
+      },
+      "constants": {},
+      "trapGivens": [
+        8,
+        2
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "6",
+        "tolerance": 0
+      },
+      "answerPlain": "6",
+      "answerDisplay": "6",
+      "inputHint": "Enter a signed integer.",
+      "commonTrapTag": "t02-c04-u03-count-repeated-zero-multiple-times-trap",
+      "trapDerivation": "8 + 2*(-2)",
+      "trapValue": "4",
+      "verify": {
+        "source": "0 + 8 - 2",
+        "trapValue": "4"
+      },
+      "checkpointHint": "Find the unique real input that makes each distinct factor vanish, then sum those unique inputs.",
+      "references": [
+        "MTH-T02-C04-U03"
+      ],
+      "steps": [
+        {
+          "latex": "x^2 = 0",
+          "explain": "Set the monomial factor equal to zero to get x = 0."
+        },
+        {
+          "latex": "x - 8 = 0",
+          "explain": "Set the simple linear factor equal to zero to get x = 8."
+        },
+        {
+          "latex": "x + 2 = 0",
+          "explain": "Set the squared binomial factor equal to zero to get x = -2."
+        },
+        {
+          "latex": "0 + 8 + (-2) = 6",
+          "explain": "Add the three distinct real zeros, counting each repeated zero once.",
+          "eq": [
+            "0 + 8 - 2",
+            "6"
+          ],
+          "val": "6"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U03-t02-c04-u03-factor-to-find-zeros-02",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "t02-c04-u03-count-repeated-zero-multiple-times-trap|direct|h(x) = x^#*(x - #)*(x + #)^#"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U03-t02-c04-u03-factor-to-find-zeros-03",
+      "sourceArchetype": "t02-c04-u03-factor-to-find-zeros",
+      "archetypeKey": "t02-c04-u03-factor-to-find-zeros",
+      "unitCode": "MTH-T02-C04-U03",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "For $p(x) = (x + 5)^2(x - 3)^3$, find the sum of all distinct real zeros. Count each repeated zero once.",
+      "display": "p(x) = (x + 5)^2(x - 3)^3",
+      "plainText": "p(x) = (x + 5)^2*(x - 3)^3",
+      "givens": {
+        "r1": -5,
+        "m1": 2,
+        "r2": 3,
+        "m2": 3
+      },
+      "constants": {},
+      "trapGivens": [
+        2,
+        5,
+        3
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "-2",
+        "tolerance": 0
+      },
+      "answerPlain": "-2",
+      "answerDisplay": "-2",
+      "inputHint": "Enter a signed integer.",
+      "commonTrapTag": "t02-c04-u03-count-repeated-zero-multiple-times-trap",
+      "trapDerivation": "2*(-5) + 3*3",
+      "trapValue": "-1",
+      "verify": {
+        "source": "-5 + 3",
+        "trapValue": "-1"
+      },
+      "checkpointHint": "Ignore factor exponents when summing distinct zeros; include each distinct root only once.",
+      "references": [
+        "MTH-T02-C04-U03"
+      ],
+      "steps": [
+        {
+          "latex": "x + 5 = 0",
+          "explain": "Set the first distinct factor equal to zero."
+        },
+        {
+          "latex": "x = -5",
+          "explain": "Solve for the first real zero."
+        },
+        {
+          "latex": "x - 3 = 0",
+          "explain": "Set the second distinct factor equal to zero."
+        },
+        {
+          "latex": "x = 3",
+          "explain": "Solve for the second real zero."
+        },
+        {
+          "latex": "-5 + 3 = -2",
+          "explain": "Sum the distinct real zeros once each.",
+          "eq": [
+            "-5 + 3",
+            "-2"
+          ],
+          "val": "-2"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U03-t02-c04-u03-factor-to-find-zeros-03",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "t02-c04-u03-count-repeated-zero-multiple-times-trap|direct|p(x) = (x + #)^#*(x - #)^#"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U03-t02-c04-u03-sketch-polynomial-from-features-01",
+      "sourceArchetype": "t02-c04-u03-sketch-polynomial-from-features",
+      "archetypeKey": "t02-c04-u03-sketch-polynomial-from-features",
+      "unitCode": "MTH-T02-C04-U03",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "A least-degree polynomial has a double zero at $x = -2$, a simple zero at $x = 3$, and passes through $(0, -24)$. In $f(x) = a(x + 2)^2(x - 3)$, find $a$.",
+      "display": "f(x) = a(x + 2)^2(x - 3);\\quad f(0) = -24",
+      "plainText": "f(x) = a*(x + 2)^2*(x - 3); f(0) = -24",
+      "givens": {
+        "r1": -2,
+        "r2": 3,
+        "x_point": 0,
+        "y_point": -24,
+        "m1": 2
+      },
+      "constants": {},
+      "trapGivens": [
+        24,
+        2,
+        3
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "2",
+        "tolerance": 0
+      },
+      "answerPlain": "2",
+      "answerDisplay": "2",
+      "inputHint": "Enter the signed scale factor.",
+      "commonTrapTag": "t02-c04-u03-multiplicity-factor-count-trap",
+      "trapDerivation": "-24/((0 + 2)*(0 - 3))",
+      "trapValue": "4",
+      "verify": {
+        "source": "-24/((0 + 2)^2*(0 - 3))",
+        "trapValue": "4"
+      },
+      "checkpointHint": "Substitute the known point into the factored formula while keeping every multiplicity exponent intact.",
+      "references": [
+        "MTH-T02-C04-U03"
+      ],
+      "figureWaiver": "A graph built from the complete polynomial would expose the requested scale factor instead of supporting its reconstruction.",
+      "steps": [
+        {
+          "latex": "-24 = a(0 + 2)^2(0 - 3)",
+          "explain": "Substitute the known point (0, -24) into the factored form."
+        },
+        {
+          "latex": "-24 = a(4)(-3)",
+          "explain": "Evaluate the squared factor and the simple factor at x = 0."
+        },
+        {
+          "latex": "-24 = -12a",
+          "explain": "Multiply the numeric factors on the right side."
+        },
+        {
+          "latex": "a = 2",
+          "explain": "Divide both sides by -12 to isolate the scale factor.",
+          "eq": [
+            "-24/(-12)",
+            "2"
+          ],
+          "val": "2"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U03-t02-c04-u03-sketch-polynomial-from-features-01",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c04-u03-multiplicity-factor-count-trap|reverse|f(x) = a*(x + #)^#*(x - #); f(#) = -#"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U03-t02-c04-u03-sketch-polynomial-from-features-02",
+      "sourceArchetype": "t02-c04-u03-sketch-polynomial-from-features",
+      "archetypeKey": "t02-c04-u03-sketch-polynomial-from-features",
+      "unitCode": "MTH-T02-C04-U03",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "A least-degree polynomial has a double zero at $x = 3$, a simple zero at $x = -1$, and passes through $(1, 32)$. In $g(x) = a(x - 3)^2(x + 1)$, find $a$.",
+      "display": "g(x) = a(x - 3)^2(x + 1);\\quad g(1) = 32",
+      "plainText": "g(x) = a*(x - 3)^2*(x + 1); g(1) = 32",
+      "givens": {
+        "r1": 3,
+        "r2": -1,
+        "x_point": 1,
+        "y_point": 32,
+        "m1": 2
+      },
+      "constants": {},
+      "trapGivens": [
+        32,
+        1,
+        3
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "4",
+        "tolerance": 0
+      },
+      "answerPlain": "4",
+      "answerDisplay": "4",
+      "inputHint": "Enter the signed scale factor.",
+      "commonTrapTag": "t02-c04-u03-multiplicity-factor-count-trap",
+      "trapDerivation": "32/((1 - 3)*(1 + 1))",
+      "trapValue": "-8",
+      "verify": {
+        "source": "32/((1 - 3)^2*(1 + 1))",
+        "trapValue": "-8"
+      },
+      "checkpointHint": "Evaluate the repeated factor with its exponent at the given input before dividing.",
+      "references": [
+        "MTH-T02-C04-U03"
+      ],
+      "figureWaiver": "A graph built from the complete polynomial would expose the requested scale factor instead of supporting its reconstruction.",
+      "steps": [
+        {
+          "latex": "32 = a(1 - 3)^2(1 + 1)",
+          "explain": "Substitute x = 1 and g(1) = 32 into the factored polynomial."
+        },
+        {
+          "latex": "32 = a(-2)^2(2)",
+          "explain": "Simplify inside each set of parentheses."
+        },
+        {
+          "latex": "32 = 8a",
+          "explain": "Square -2 to get 4 and multiply by 2."
+        },
+        {
+          "latex": "a = 4",
+          "explain": "Divide both sides by 8 to find the leading scale factor.",
+          "eq": [
+            "32/8",
+            "4"
+          ],
+          "val": "4"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U03-t02-c04-u03-sketch-polynomial-from-features-02",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c04-u03-multiplicity-factor-count-trap|reverse|g(x) = a*(x - #)^#*(x + #); g(#) = #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U03-t02-c04-u03-sketch-polynomial-from-features-03",
+      "sourceArchetype": "t02-c04-u03-sketch-polynomial-from-features",
+      "archetypeKey": "t02-c04-u03-sketch-polynomial-from-features",
+      "unitCode": "MTH-T02-C04-U03",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "A least-degree polynomial has a triple zero at $x = 2$, a simple zero at $x = -1$, and passes through $(0, 24)$. In $h(x) = a(x - 2)^3(x + 1)$, find $a$.",
+      "display": "h(x) = a(x - 2)^3(x + 1);\\quad h(0) = 24",
+      "plainText": "h(x) = a*(x - 2)^3*(x + 1); h(0) = 24",
+      "givens": {
+        "r1": 2,
+        "r2": -1,
+        "x_point": 0,
+        "y_point": 24,
+        "m1": 3
+      },
+      "constants": {},
+      "trapGivens": [
+        24,
+        2,
+        1
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "-3",
+        "tolerance": 0
+      },
+      "answerPlain": "-3",
+      "answerDisplay": "-3",
+      "inputHint": "Enter the signed scale factor.",
+      "commonTrapTag": "t02-c04-u03-multiplicity-factor-count-trap",
+      "trapDerivation": "24/((0 - 2)*(0 + 1))",
+      "trapValue": "-12",
+      "verify": {
+        "source": "24/((0 - 2)^3*(0 + 1))",
+        "trapValue": "-12"
+      },
+      "checkpointHint": "Keep the full multiplicity exponent on the repeated factor when substituting the known point.",
+      "references": [
+        "MTH-T02-C04-U03"
+      ],
+      "figureWaiver": "A graph built from the complete polynomial would expose the requested scale factor instead of supporting its reconstruction.",
+      "steps": [
+        {
+          "latex": "24 = a(0 - 2)^3(0 + 1)",
+          "explain": "Substitute the known point (0, 24) into the factored polynomial."
+        },
+        {
+          "latex": "24 = a(-8)(1)",
+          "explain": "Evaluate the cubed factor (-2)^3 to -8."
+        },
+        {
+          "latex": "24 = -8a",
+          "explain": "Multiply the numeric factors on the right side."
+        },
+        {
+          "latex": "a = -3",
+          "explain": "Divide both sides by -8 to isolate a.",
+          "eq": [
+            "24/(-8)",
+            "-3"
+          ],
+          "val": "-3"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U03-t02-c04-u03-sketch-polynomial-from-features-03",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c04-u03-multiplicity-factor-count-trap|reverse|h(x) = a*(x - #)^#*(x + #); h(#) = #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U03-t02-c04-u03-apply-intermediate-value-theorem-01",
+      "sourceArchetype": "t02-c04-u03-apply-intermediate-value-theorem",
+      "archetypeKey": "t02-c04-u03-apply-intermediate-value-theorem",
+      "unitCode": "MTH-T02-C04-U03",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "A polynomial $g$ is continuous and has values $g(-6) = -5$, $g(-3) = 4$, $g(-1) = -2$, $g(2) = 7$, $g(4) = -3$, and $g(8) = 9$. Between how many consecutive pairs of listed inputs does the Intermediate Value Theorem guarantee at least one zero?",
+      "display": "x: -6, -3, -1, 2, 4, 8;\\quad g(x): -5, 4, -2, 7, -3, 9",
+      "plainText": "x values -6, -3, -1, 2, 4, 8; outputs -5, 4, -2, 7, -3, 9",
+      "givens": {
+        "x1": -6,
+        "y1": -5,
+        "x2": -3,
+        "y2": 4,
+        "x3": -1,
+        "y3": -2,
+        "x4": 2,
+        "y4": 7,
+        "x5": 4,
+        "y5": -3,
+        "x6": 8,
+        "y6": 9
+      },
+      "constants": {},
+      "trapGivens": [
+        5,
+        9,
+        2
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "5",
+        "tolerance": 0
+      },
+      "answerPlain": "5",
+      "answerDisplay": "5",
+      "inputHint": "Enter the number of adjacent intervals.",
+      "commonTrapTag": "t02-c04-u03-ivt-uniqueness-trap",
+      "trapDerivation": "(abs(-5*9) - (-5*9))/(2*abs(-5*9))",
+      "trapValue": "1",
+      "verify": {
+        "source": "(abs(-5*4)-(-5*4))/(2*abs(-5*4)) + (abs(4*-2)-(4*-2))/(2*abs(4*-2)) + (abs(-2*7)-(-2*7))/(2*abs(-2*7)) + (abs(7*-3)-(7*-3))/(2*abs(7*-3)) + (abs(-3*9)-(-3*9))/(2*abs(-3*9))",
+        "trapValue": "1"
+      },
+      "checkpointHint": "Inspect every adjacent pair of outputs for a sign change rather than looking only at the outer endpoints.",
+      "references": [
+        "MTH-T02-C04-U03"
+      ],
+      "steps": [
+        {
+          "latex": "-5 < 0 < 4",
+          "explain": "The first adjacent pair changes sign from negative to positive."
+        },
+        {
+          "latex": "4 > 0 > -2",
+          "explain": "The second adjacent pair changes sign from positive to negative."
+        },
+        {
+          "latex": "-2 < 0 < 7",
+          "explain": "The third adjacent pair changes sign from negative to positive."
+        },
+        {
+          "latex": "7 > 0 > -3",
+          "explain": "The fourth adjacent pair changes sign from positive to negative."
+        },
+        {
+          "latex": "-3 < 0 < 9",
+          "explain": "The fifth adjacent pair changes sign from negative to positive."
+        },
+        {
+          "latex": "1 + 1 + 1 + 1 + 1 = 5",
+          "explain": "Each of the 5 sign-changing adjacent pairs guarantees at least one zero.",
+          "eq": [
+            "1 + 1 + 1 + 1 + 1",
+            "5"
+          ],
+          "val": "5"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U03-t02-c04-u03-apply-intermediate-value-theorem-01",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c04-u03-ivt-uniqueness-trap|direct|x values -#, -#, -#, #, #, #; outputs -#, #, -#, #, -#, #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U03-t02-c04-u03-apply-intermediate-value-theorem-02",
+      "sourceArchetype": "t02-c04-u03-apply-intermediate-value-theorem",
+      "archetypeKey": "t02-c04-u03-apply-intermediate-value-theorem",
+      "unitCode": "MTH-T02-C04-U03",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "A polynomial $h$ is continuous and has values $h(-2) = 5$, $h(1) = -4$, $h(4) = 3$, and $h(7) = 8$. Between how many consecutive pairs of listed inputs does the Intermediate Value Theorem guarantee at least one zero?",
+      "display": "x: -2, 1, 4, 7;\\quad h(x): 5, -4, 3, 8",
+      "plainText": "x values -2, 1, 4, 7; outputs 5, -4, 3, 8",
+      "givens": {
+        "x1": -2,
+        "y1": 5,
+        "x2": 1,
+        "y2": -4,
+        "x3": 4,
+        "y3": 3,
+        "x4": 7,
+        "y4": 8
+      },
+      "constants": {},
+      "trapGivens": [
+        5,
+        4,
+        2
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "2",
+        "tolerance": 0
+      },
+      "answerPlain": "2",
+      "answerDisplay": "2",
+      "inputHint": "Enter the number of adjacent intervals.",
+      "commonTrapTag": "t02-c04-u03-ivt-uniqueness-trap",
+      "trapDerivation": "(abs(5*(-4)) - (5*(-4)))/(2*abs(5*(-4)))",
+      "trapValue": "1",
+      "verify": {
+        "source": "(abs(5*-4)-(5*-4))/(2*abs(5*-4)) + (abs(-4*3)-(-4*3))/(2*abs(-4*3))",
+        "trapValue": "1"
+      },
+      "checkpointHint": "Test every neighboring pair of outputs separately and count only the intervals where the sign changes.",
+      "references": [
+        "MTH-T02-C04-U03"
+      ],
+      "steps": [
+        {
+          "latex": "5 > 0 > -4",
+          "explain": "The first adjacent pair has opposite signs, guaranteeing a zero between -2 and 1."
+        },
+        {
+          "latex": "-4 < 0 < 3",
+          "explain": "The second adjacent pair has opposite signs, guaranteeing a zero between 1 and 4."
+        },
+        {
+          "latex": "3 > 0 \\text{ and } 8 > 0",
+          "explain": "The third adjacent pair shares the same sign, so IVT gives no guarantee there."
+        },
+        {
+          "latex": "1 + 1 = 2",
+          "explain": "Count the two adjacent intervals where sign changes occur.",
+          "eq": [
+            "1 + 1",
+            "2"
+          ],
+          "val": "2"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U03-t02-c04-u03-apply-intermediate-value-theorem-02",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c04-u03-ivt-uniqueness-trap|direct|x values -#, #, #, #; outputs #, -#, #, #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U03-t02-c04-u03-apply-intermediate-value-theorem-03",
+      "sourceArchetype": "t02-c04-u03-apply-intermediate-value-theorem",
+      "archetypeKey": "t02-c04-u03-apply-intermediate-value-theorem",
+      "unitCode": "MTH-T02-C04-U03",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "A polynomial $p$ is continuous and has values $p(-5) = 6$, $p(-2) = -3$, $p(1) = 5$, $p(4) = -7$, and $p(9) = 2$. Between how many consecutive pairs of listed inputs does the Intermediate Value Theorem guarantee at least one zero?",
+      "display": "x: -5, -2, 1, 4, 9;\\quad p(x): 6, -3, 5, -7, 2",
+      "plainText": "x values -5, -2, 1, 4, 9; outputs 6, -3, 5, -7, 2",
+      "givens": {
+        "x1": -5,
+        "y1": 6,
+        "x2": -2,
+        "y2": -3,
+        "x3": 1,
+        "y3": 5,
+        "x4": 4,
+        "y4": -7,
+        "x5": 9,
+        "y5": 2
+      },
+      "constants": {},
+      "trapGivens": [
+        6,
+        3,
+        2
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "4",
+        "tolerance": 0
+      },
+      "answerPlain": "4",
+      "answerDisplay": "4",
+      "inputHint": "Enter the number of adjacent intervals.",
+      "commonTrapTag": "t02-c04-u03-ivt-uniqueness-trap",
+      "trapDerivation": "(abs(6*(-3)) - (6*(-3)))/(2*abs(6*(-3)))",
+      "trapValue": "1",
+      "verify": {
+        "source": "(abs(6*-3)-(6*-3))/(2*abs(6*-3)) + (abs(-3*5)-(-3*5))/(2*abs(-3*5)) + (abs(5*-7)-(5*-7))/(2*abs(5*-7)) + (abs(-7*2)-(-7*2))/(2*abs(-7*2))",
+        "trapValue": "1"
+      },
+      "checkpointHint": "Check each consecutive pair of outputs for a sign reversal rather than stopping after the first crossing.",
+      "references": [
+        "MTH-T02-C04-U03"
+      ],
+      "steps": [
+        {
+          "latex": "6 > 0 > -3",
+          "explain": "The first adjacent pair changes sign."
+        },
+        {
+          "latex": "-3 < 0 < 5",
+          "explain": "The second adjacent pair changes sign."
+        },
+        {
+          "latex": "5 > 0 > -7",
+          "explain": "The third adjacent pair changes sign."
+        },
+        {
+          "latex": "-7 < 0 < 2",
+          "explain": "The fourth adjacent pair changes sign."
+        },
+        {
+          "latex": "1 + 1 + 1 + 1 = 4",
+          "explain": "All 4 adjacent intervals guarantee at least one zero.",
+          "eq": [
+            "1 + 1 + 1 + 1",
+            "4"
+          ],
+          "val": "4"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U03-t02-c04-u03-apply-intermediate-value-theorem-03",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c04-u03-ivt-uniqueness-trap|direct|x values -#, -#, #, #, #; outputs #, -#, #, -#, #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U03-t02-c04-u03-read-zero-multiplicity-01",
+      "sourceArchetype": "t02-c04-u03-read-zero-multiplicity",
+      "archetypeKey": "t02-c04-u03-read-zero-multiplicity",
+      "unitCode": "MTH-T02-C04-U03",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "For $g(x) = 2(x - 5)^4(x + 3)^2$, what is the multiplicity of the zero at $x = 5$?",
+      "display": "g(x) = 2(x - 5)^4(x + 3)^2",
+      "plainText": "g(x) = 2*(x - 5)^4*(x + 3)^2",
+      "givens": {
+        "a": 2,
+        "r1": 5,
+        "m1": 4,
+        "r2": -3,
+        "m2": 2
+      },
+      "constants": {},
+      "trapGivens": [
+        4,
+        2
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "4",
+        "tolerance": 0
+      },
+      "answerPlain": "4",
+      "answerDisplay": "4",
+      "inputHint": "Enter the factor's exponent as a whole number.",
+      "commonTrapTag": "t02-c04-u03-total-degree-as-zero-multiplicity-trap",
+      "trapDerivation": "4 + 2",
+      "trapValue": "6",
+      "verify": {
+        "source": "4",
+        "trapValue": "6"
+      },
+      "checkpointHint": "Inspect only the exponent on the factor that vanishes at the named zero, not the sum of all exponents.",
+      "references": [
+        "MTH-T02-C04-U03"
+      ],
+      "figureWaiver": "A graph would reveal the local multiplicity behavior directly.",
+      "steps": [
+        {
+          "latex": "x - 5 = 0",
+          "explain": "Match the zero x = 5 to its linear factor."
+        },
+        {
+          "latex": "(x - 5)^4",
+          "explain": "Read the exponent attached to that factor."
+        },
+        {
+          "latex": "m = 4",
+          "explain": "The multiplicity of the zero at x = 5 is 4.",
+          "val": "4"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U03-t02-c04-u03-read-zero-multiplicity-01",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c04-u03-total-degree-as-zero-multiplicity-trap|direct|g(x) = #*(x - #)^#*(x + #)^#"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U03-t02-c04-u03-read-zero-multiplicity-02",
+      "sourceArchetype": "t02-c04-u03-read-zero-multiplicity",
+      "archetypeKey": "t02-c04-u03-read-zero-multiplicity",
+      "unitCode": "MTH-T02-C04-U03",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "For $h(x) = -5x^2(x - 7)^5(x + 2)$, what is the multiplicity of the zero at $x = 0$?",
+      "display": "h(x) = -5x^2(x - 7)^5(x + 2)",
+      "plainText": "h(x) = -5*x^2*(x - 7)^5*(x + 2)",
+      "givens": {
+        "a": -5,
+        "m0": 2,
+        "r1": 7,
+        "m1": 5,
+        "r2": -2
+      },
+      "constants": {
+        "m2": 1
+      },
+      "trapGivens": [
+        2,
+        5,
+        1
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "2",
+        "tolerance": 0
+      },
+      "answerPlain": "2",
+      "answerDisplay": "2",
+      "inputHint": "Enter the factor's exponent as a whole number.",
+      "commonTrapTag": "t02-c04-u03-total-degree-as-zero-multiplicity-trap",
+      "trapDerivation": "2 + 5 + 1",
+      "trapValue": "8",
+      "verify": {
+        "source": "2",
+        "trapValue": "8"
+      },
+      "checkpointHint": "Find the exponent on the factor corresponding specifically to the named zero rather than the polynomial's total degree.",
+      "references": [
+        "MTH-T02-C04-U03"
+      ],
+      "figureWaiver": "A graph would reveal the local touch-and-turn multiplicity directly.",
+      "steps": [
+        {
+          "latex": "x = 0",
+          "explain": "Identify the factor x^2 that vanishes at the zero x = 0."
+        },
+        {
+          "latex": "x^2",
+          "explain": "Read the exponent on that factor alone."
+        },
+        {
+          "latex": "m = 2",
+          "explain": "The multiplicity of the zero at x = 0 is 2.",
+          "val": "2"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U03-t02-c04-u03-read-zero-multiplicity-02",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c04-u03-total-degree-as-zero-multiplicity-trap|direct|h(x) = -#*x^#*(x - #)^#*(x + #)"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C04-U03-t02-c04-u03-read-zero-multiplicity-03",
+      "sourceArchetype": "t02-c04-u03-read-zero-multiplicity",
+      "archetypeKey": "t02-c04-u03-read-zero-multiplicity",
+      "unitCode": "MTH-T02-C04-U03",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "For $p(x) = 4(x + 6)^5(x - 1)^3$, what is the multiplicity of the zero at $x = -6$?",
+      "display": "p(x) = 4(x + 6)^5(x - 1)^3",
+      "plainText": "p(x) = 4*(x + 6)^5*(x - 1)^3",
+      "givens": {
+        "a": 4,
+        "r1": -6,
+        "m1": 5,
+        "r2": 1,
+        "m2": 3
+      },
+      "constants": {},
+      "trapGivens": [
+        5,
+        3
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "5",
+        "tolerance": 0
+      },
+      "answerPlain": "5",
+      "answerDisplay": "5",
+      "inputHint": "Enter the factor's exponent as a whole number.",
+      "commonTrapTag": "t02-c04-u03-total-degree-as-zero-multiplicity-trap",
+      "trapDerivation": "5 + 3",
+      "trapValue": "8",
+      "verify": {
+        "source": "5",
+        "trapValue": "8"
+      },
+      "checkpointHint": "Match the named zero to its factor and read only that factor's exponent.",
+      "references": [
+        "MTH-T02-C04-U03"
+      ],
+      "figureWaiver": "A graph would reveal the local multiplicity behavior directly.",
+      "steps": [
+        {
+          "latex": "x + 6 = 0",
+          "explain": "Identify the linear factor associated with x = -6."
+        },
+        {
+          "latex": "(x + 6)^5",
+          "explain": "Read the exponent on the factor (x + 6)."
+        },
+        {
+          "latex": "m = 5",
+          "explain": "The multiplicity of the zero at x = -6 is 5.",
+          "val": "5"
+        }
+      ],
+      "id": "VAR-MTH-T02-C04-U03-t02-c04-u03-read-zero-multiplicity-03",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c04-u03-total-degree-as-zero-multiplicity-trap|direct|p(x) = #*(x + #)^#*(x - #)^#"
+    }
+  ]
+}
