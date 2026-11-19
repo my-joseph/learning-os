@@ -410,7 +410,7 @@ assert.match(inBrowserCodeHtml, /<h1[^>]*class="[^"]*text-lg[^"]*"[^>]*>Output P
 assert.match(inBrowserCodeHtml, /class="text-base leading-relaxed[^"]*"/);
 assert.match(
   inBrowserCodeHtml,
-  /<button[^>]*disabled=""[^>]*aria-label="Check answer"[^>]*title="Check answer \(Enter\)"[^>]*class="[^"]*w-11 h-11[^"]*"[^>]*><svg[^>]*lucide-check/
+  /<button[^>]*disabled=""[^>]*aria-label="Check answer"[^>]*title="Check \(Enter\)"[^>]*class="[^"]*w-8 h-8 rounded-lg[^"]*"[^>]*><svg[^>]*lucide-equal/
 );
 assert.doesNotMatch(inBrowserCodeHtml, />Check<\/span>/);
 

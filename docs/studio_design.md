@@ -4,7 +4,7 @@ The learner's brief: clean, few tags, easy to work a problem, no confusing butto
 
 ## Principles
 1. **The problem is the page.** The current question (prompt, figure, answer) gets the most space and the strongest type. Everything else is quieter.
-2. **One primary action per state.** Exactly one filled button is visible at a time (icon-only Check `✓`, Open in VS Code, Copy review request, Next problem/milestone). Other actions are text/ghost buttons or compact dialogs.
+2. **One primary action per state.** Exactly one filled button is visible at a time (icon-only `=` inside the field, Open in VS Code, Copy review request, Next problem/milestone). Other actions are text/ghost buttons or compact dialogs.
 3. **Say less.** No decorative badges, IDs, chips or status pills unless the learner acts on them. Drill IDs and metadata live in the switcher, not on the card or in toasts/dialogs. Helper text appears only when it changes what the learner does next.
 4. **Empathy.** Wrong answers get calm, specific feedback and a retry, never alarm colours across the whole card. Copy is short, second person, never blaming ("Not quite — check the sign in step 2"), and uses the item noun of the workspace (`Question` for math, `Problem` for code drills, `Milestone` for labs).
 5. **No answers before an attempt.** Hidden content is not rendered or fetched until it is earned (see rules/00_core.md §6).
@@ -31,6 +31,6 @@ The learner's brief: clean, few tags, easy to work a problem, no confusing butto
 - Calm ease-out motion via `src/lib/motion.ts` and `<Reveal>` for disclosures, dialogs, and the mobile drawer; respect `prefers-reduced-motion`.
 
 ## Workspaces
-- **Math**: prompt → figure → answer input + icon-only Check → feedback → (Try again | Hint / set-up / steps after reveal). Self-score buttons only after an attempt.
+- **Math**: prompt → figure → answer input with `=` inside the field → feedback → (Try again | Hint / set-up / steps after reveal). Self-score buttons only after an attempt.
 - **Programming** (dashboard, no editor): brief → visible tests → status line `Tests  Lint  Types  Review` (✓ / ✗ / –) → primary action (Open in VS Code, or Copy `ตรวจโค้ด <ID> <QID>` once tests pass) → review history and explain question in collapsible sections → reference locked until review = pass.
 - **Labs**: same as Programming, tiles are milestones M1…Mn.
