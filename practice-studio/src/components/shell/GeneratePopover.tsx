@@ -233,7 +233,7 @@ export const GeneratePopover: React.FC<GeneratePopoverProps> = ({
                 value={cfgUnit}
                 onChange={(e) => setCfgUnit(e.target.value)}
                 disabled={unitOptions.length === 0}
-                className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2.5 py-2 text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-indigo-600/25 dark:focus:ring-indigo-500/30 focus:border-indigo-600 dark:focus:border-indigo-500"
+                className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2.5 py-2 text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600/25 dark:focus-visible:ring-indigo-400/35 focus-visible:border-indigo-600 dark:focus-visible:border-indigo-400"
               >
                 {unitOptions.length === 0 ? (
                   <option value="">No units available</option>
@@ -265,7 +265,7 @@ export const GeneratePopover: React.FC<GeneratePopoverProps> = ({
                   id={countFieldId}
                   value={cfgCount}
                   onChange={(e) => setCfgCount(Number(e.target.value))}
-                  className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2.5 py-2 text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-indigo-600/25 dark:focus:ring-indigo-500/30 focus:border-indigo-600 dark:focus:border-indigo-500"
+                  className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2.5 py-2 text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600/25 dark:focus-visible:ring-indigo-400/35 focus-visible:border-indigo-600 dark:focus-visible:border-indigo-400"
                 >
                   <option value={5}>5 Qs</option>
                   <option value={8}>8 Qs</option>
@@ -286,7 +286,7 @@ export const GeneratePopover: React.FC<GeneratePopoverProps> = ({
                   id={levelFieldId}
                   value={cfgDifficulty}
                   onChange={(e) => setCfgDifficulty(e.target.value)}
-                  className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2.5 py-2 text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-indigo-600/25 dark:focus:ring-indigo-500/30 focus:border-indigo-600 dark:focus:border-indigo-500"
+                  className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2.5 py-2 text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600/25 dark:focus-visible:ring-indigo-400/35 focus-visible:border-indigo-600 dark:focus-visible:border-indigo-400"
                 >
                   <option value="ALL">Mixed</option>
                   <option value="1">Level 1</option>

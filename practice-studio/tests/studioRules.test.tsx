@@ -369,6 +369,22 @@ assert.doesNotMatch(codeAfterReviewPassHtml, /Unlocks after review passes/);
 const globalsCss = readFileSync("src/app/globals.css", "utf8");
 assert.match(globalsCss, /::selection\s*\{[^}]*rgba\(250,\s*204,\s*21,\s*0\.4\)[^}]*color:\s*inherit/s);
 assert.match(globalsCss, /\.dark ::selection\s*\{[^}]*rgba\(250,\s*204,\s*21,\s*0\.3\)[^}]*color:\s*inherit/s);
+assert.match(globalsCss, /:focus:not\(:focus-visible\)\s*\{\s*outline:\s*none;/s);
+assert.match(globalsCss, /:focus-visible\s*\{\s*outline:\s*2px solid #4f46e5;\s*outline-offset:\s*2px;/s);
+assert.match(globalsCss, /\.dark :focus-visible\s*\{\s*outline-color:\s*#818cf8;/s);
+
+for (const file of [
+  "src/components/ui/ConfirmDialog.tsx",
+  "src/components/shell/GeneratePopover.tsx",
+  "src/components/code/CodeDashboard.tsx",
+]) {
+  const src = readFileSync(file, "utf8");
+  assert.doesNotMatch(
+    src,
+    /\bfocus:(?:ring|border)-/,
+    `${file} must use focus-visible: instead of focus:ring/focus:border`
+  );
+}
 
 assert.match(beforeAttemptHtml, /<h1[^>]*class="[^"]*text-lg[^"]*"[^>]*>Linear Equations<\/h1>/);
 assert.match(beforeAttemptHtml, /class="text-base leading-relaxed[^"]*">[^]*Solve/);
