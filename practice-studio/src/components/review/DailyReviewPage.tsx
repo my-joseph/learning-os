@@ -118,6 +118,14 @@ const noop = () => {};
 const REVIEW_SESSION_STORAGE_PREFIX = "learningos:review-session:";
 const reviewStorageKey = (scope: string | null) => `${REVIEW_SESSION_STORAGE_PREFIX}${scope || "all"}`;
 
+function currentLocalDate(): string {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
 /**
  * Pure presentational view for the `/review` Daily Review page across all states:
  * loading, empty ("Nothing to review today" + next due date), active item (with optional
@@ -661,7 +669,7 @@ export const DailyReviewPage: React.FC = () => {
             totalDue?: number; unitTitles?: Record<string, string>; today?: string;
             nextDueDate?: string | null; lastDrillHref?: string;
           };
-          if (Array.isArray(snapshot.items) && snapshot.completed === true) {
+          if (Array.isArray(snapshot.items) && snapshot.completed === true && snapshot.today === currentLocalDate()) {
             setItems(snapshot.items);
             setOutcomes(snapshot.outcomes || {});
             setTotalDue(snapshot.totalDue || snapshot.items.length);
@@ -775,6 +783,16 @@ export const DailyReviewPage: React.FC = () => {
 
     fetch(endpoint, { cache: "no-store" })
       .then(async (res) => {
+        if (res.status === 404) {
+          if (!cancelled) {
+            const remaining = items.filter((item) => item.drillId !== currentItem.drillId || item.qid !== currentItem.qid);
+            window.sessionStorage.removeItem(reviewStorageKey(activeScope));
+            setItems(remaining);
+            setTotalDue((count) => Math.max(0, count - 1));
+            if (currentIndex >= remaining.length) setCompleted(true);
+          }
+          return;
+        }
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const raw = await res.json();
         const doc: DrillDocument = isLabId(currentItem.drillId)
@@ -820,7 +838,21 @@ export const DailyReviewPage: React.FC = () => {
     return () => {
       cancelled = true;
     };
-  }, [currentItem, currentKey, drillsByKey]);
+  }, [currentItem, currentKey, drillsByKey, items, currentIndex, activeScope]);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      if (today && today !== currentLocalDate()) {
+        window.sessionStorage.removeItem(reviewStorageKey(activeScope));
+        setCompleted(false);
+        setItems([]);
+        setCurrentIndex(0);
+        setToday(currentLocalDate());
+        setBatchCounter((count) => count + 1);
+      }
+    }, 60_000);
+    return () => window.clearInterval(timer);
+  }, [activeScope, completed, today]);
 
   // Activate per-question timer on current item
   useEffect(() => {
