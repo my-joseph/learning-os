@@ -1,0 +1,4259 @@
+{
+  "unitCode": "MTH-T02-C03-U03",
+  "variants": [
+    {
+      "variantId": "VAR-MTH-T02-C03-U03-t02-c03-u03-interpret-scatter-pattern-01",
+      "sourceArchetype": "t02-c03-u03-interpret-scatter-pattern",
+      "archetypeKey": "t02-c03-u03-interpret-scatter-pattern",
+      "archetype": "problem-solving",
+      "unitCode": "MTH-T02-C03-U03",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "context": "",
+      "prompt": "The paired observations are: $x = 1$ gives $y = 4$; $x = 3$ gives $y = 10$; $x = 5$ gives $y = 16$; $x = 7$ gives $y = 22$. Which description best fits the scatter pattern as the input increases?",
+      "display": "\\text{Examine whether the outputs rise or fall steadily as the inputs increase.}",
+      "givens": {
+        "x1": 1,
+        "y1": 4,
+        "x2": 3,
+        "y2": 10,
+        "x3": 5,
+        "y3": 16,
+        "x4": 7,
+        "y4": 22
+      },
+      "constants": {},
+      "trapGivens": [
+        4,
+        22,
+        7,
+        1
+      ],
+      "answerSpec": {
+        "type": "choice",
+        "options": [
+          {
+            "id": "A",
+            "label": "A positive linear trend as the input increases"
+          },
+          {
+            "id": "B",
+            "label": "A negative linear trend as the input increases",
+            "trapTag": "t02-c03-u03-reverse-trend-direction-trap"
+          },
+          {
+            "id": "C",
+            "label": "A strongly curved nonlinear pattern",
+            "provenance": "Misinterprets a constant rate of increase as curvature."
+          },
+          {
+            "id": "D",
+            "label": "No discernible association between input and output",
+            "provenance": "Overlooks the consistent upward change across the pairs."
+          }
+        ],
+        "correct": "A"
+      },
+      "answerPlain": "A",
+      "answerDisplay": "A",
+      "inputHint": "Choose the description that matches the overall point pattern.",
+      "commonTrapTag": "t02-c03-u03-reverse-trend-direction-trap",
+      "trapDerivation": "(4 - 22) / (7 - 1)",
+      "trapValue": "-3",
+      "verify": {
+        "source": "(22 - 4) / (7 - 1)",
+        "trapValue": "-3"
+      },
+      "checkpointHint": "Compare consecutive output values as the input values increase from left to right.",
+      "references": [
+        "MTH-T02-C03-U03"
+      ],
+      "verificationLevel": "partial",
+      "steps": [
+        {
+          "latex": "10 - 4 = 6",
+          "explain": "The output increases by six across the first two-unit input step.",
+          "eq": [
+            "10 - 4",
+            "6"
+          ]
+        },
+        {
+          "latex": "16 - 10 = 6",
+          "explain": "The output increases by six across the second two-unit input step.",
+          "eq": [
+            "16 - 10",
+            "6"
+          ]
+        },
+        {
+          "latex": "22 - 16 = 6",
+          "explain": "The output increases by six across the final two-unit input step.",
+          "eq": [
+            "22 - 16",
+            "6"
+          ]
+        },
+        {
+          "latex": "\\text{positive linear trend}",
+          "explain": "The observations rise at a steady rate as the input increases."
+        }
+      ],
+      "review": {
+        "verdict": "pass",
+        "note": "Steady upward pattern (+6 per +2 input) clearly identifies a positive linear trend; trap and hints pass all checks."
+      },
+      "id": "VAR-MTH-T02-C03-U03-t02-c03-u03-interpret-scatter-pattern-01",
+      "levelLabel": "Level 1 - Foundation",
+      "figure": {
+        "kind": "cartesian_graph",
+        "theme": "indigo",
+        "title": "A scatter plot shows a broad downward trend",
+        "xRange": [
+          0.0,
+          8.0
+        ],
+        "yRange": [
+          2.0,
+          24.0
+        ],
+        "grid": true,
+        "axes": true,
+        "plots": [
+          {
+            "type": "point",
+            "coord": [
+              1.0,
+              4.0
+            ],
+            "position": "top-right",
+            "label": "A"
+          },
+          {
+            "type": "point",
+            "coord": [
+              3.0,
+              10.0
+            ],
+            "position": "top-right",
+            "label": "B"
+          },
+          {
+            "type": "point",
+            "coord": [
+              5.0,
+              16.0
+            ],
+            "position": "top-right",
+            "label": "C"
+          },
+          {
+            "type": "point",
+            "coord": [
+              7.0,
+              22.0
+            ],
+            "position": "top-right",
+            "label": "D"
+          }
+        ]
+      },
+      "fingerprint": "t02-c03-u03-reverse-trend-direction-trap|direct|The paired observations are: $x = #$ gives $y = #$; $x = #$ gives $y = #$; $x = #$ gives $y = #$; $x = #$ gives $y = #$. Which description best fits the scatter pattern as the input increases?"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C03-U03-t02-c03-u03-interpret-scatter-pattern-02",
+      "sourceArchetype": "t02-c03-u03-interpret-scatter-pattern",
+      "archetypeKey": "t02-c03-u03-interpret-scatter-pattern",
+      "archetype": "problem-solving",
+      "unitCode": "MTH-T02-C03-U03",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "context": "",
+      "prompt": "The paired observations are: $x = 0$ gives $y = 24$; $x = 3$ gives $y = 18$; $x = 6$ gives $y = 12$; $x = 9$ gives $y = 6$. Which description best fits the scatter pattern as the input increases?",
+      "display": "\\text{Track the direction and consistency of the output changes across the ordered inputs.}",
+      "givens": {
+        "x1": 0,
+        "y1": 24,
+        "x2": 3,
+        "y2": 18,
+        "x3": 6,
+        "y3": 12,
+        "x4": 9,
+        "y4": 6
+      },
+      "constants": {},
+      "trapGivens": [
+        24,
+        6,
+        9,
+        0
+      ],
+      "answerSpec": {
+        "type": "choice",
+        "options": [
+          {
+            "id": "A",
+            "label": "An upward linear pattern",
+            "trapTag": "t02-c03-u03-reverse-trend-direction-trap"
+          },
+          {
+            "id": "B",
+            "label": "A negative linear pattern with outputs falling as inputs rise"
+          },
+          {
+            "id": "C",
+            "label": "A U-shaped quadratic pattern",
+            "provenance": "Treats a constant negative rate of change as a curved turnaround."
+          },
+          {
+            "id": "D",
+            "label": "Random scatter with zero trend",
+            "provenance": "Ignores the steady decrease across every observation."
+          }
+        ],
+        "correct": "B"
+      },
+      "answerPlain": "B",
+      "answerDisplay": "B",
+      "inputHint": "Choose the description that matches the overall point pattern.",
+      "commonTrapTag": "t02-c03-u03-reverse-trend-direction-trap",
+      "trapDerivation": "(24 - 6) / (9 - 0)",
+      "trapValue": "2",
+      "verify": {
+        "source": "(6 - 24) / (9 - 0)",
+        "trapValue": "2"
+      },
+      "checkpointHint": "Check whether the y-values increase or decrease as the x-values move to the right.",
+      "references": [
+        "MTH-T02-C03-U03"
+      ],
+      "verificationLevel": "partial",
+      "figureWaiver": "The scatter plot is the requested object of interpretation; a separate figure would display the downward direction directly.",
+      "steps": [
+        {
+          "latex": "24 > 18",
+          "explain": "The output decreases across the first interval.",
+          "eq": [
+            "24 - 18",
+            "6"
+          ]
+        },
+        {
+          "latex": "18 > 12",
+          "explain": "The output decreases by the same amount across the second interval.",
+          "eq": [
+            "18 - 12",
+            "6"
+          ]
+        },
+        {
+          "latex": "12 > 6",
+          "explain": "The steady downward change continues through the last observation.",
+          "eq": [
+            "12 - 6",
+            "6"
+          ]
+        },
+        {
+          "latex": "\\text{negative linear pattern}",
+          "explain": "The outputs fall at a constant rate as the inputs rise."
+        }
+      ],
+      "review": {
+        "verdict": "pass",
+        "note": "Steady decrease of 6 per 3-unit input step shows a negative linear pattern; options and hints pass all checks."
+      },
+      "id": "VAR-MTH-T02-C03-U03-t02-c03-u03-interpret-scatter-pattern-02",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "t02-c03-u03-reverse-trend-direction-trap|direct|The paired observations are: $x = #$ gives $y = #$; $x = #$ gives $y = #$; $x = #$ gives $y = #$; $x = #$ gives $y = #$. Which description best fits the scatter pattern as the input increases?"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C03-U03-t02-c03-u03-interpret-scatter-pattern-03",
+      "sourceArchetype": "t02-c03-u03-interpret-scatter-pattern",
+      "archetypeKey": "t02-c03-u03-interpret-scatter-pattern",
+      "archetype": "problem-solving",
+      "unitCode": "MTH-T02-C03-U03",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "context": "",
+      "prompt": "The paired observations are: $x = 2$ gives $y = 5$; $x = 4$ gives $y = 13$; $x = 6$ gives $y = 21$; $x = 8$ gives $y = 29$. Which description best fits the scatter pattern as the input increases?",
+      "display": "\\text{Compare the change in output across equal steps in input.}",
+      "givens": {
+        "x1": 2,
+        "y1": 5,
+        "x2": 4,
+        "y2": 13,
+        "x3": 6,
+        "y3": 21,
+        "x4": 8,
+        "y4": 29
+      },
+      "constants": {},
+      "trapGivens": [
+        5,
+        29,
+        8,
+        2
+      ],
+      "answerSpec": {
+        "type": "choice",
+        "options": [
+          {
+            "id": "A",
+            "label": "A downward linear trend",
+            "trapTag": "t02-c03-u03-reverse-trend-direction-trap"
+          },
+          {
+            "id": "B",
+            "label": "A curved exponential cluster",
+            "provenance": "Confuses equal vertical increments over equal horizontal steps with exponential growth."
+          },
+          {
+            "id": "C",
+            "label": "An upward linear pattern with constant positive slope"
+          },
+          {
+            "id": "D",
+            "label": "An uncorrelated cloud with no direction",
+            "provenance": "Overlooks the steady increase across all four observations."
+          }
+        ],
+        "correct": "C"
+      },
+      "answerPlain": "C",
+      "answerDisplay": "C",
+      "inputHint": "Choose the description that matches the overall point pattern.",
+      "commonTrapTag": "t02-c03-u03-reverse-trend-direction-trap",
+      "trapDerivation": "(5 - 29) / (8 - 2)",
+      "trapValue": "-4",
+      "verify": {
+        "source": "(29 - 5) / (8 - 2)",
+        "trapValue": "-4"
+      },
+      "checkpointHint": "Observe whether the output rises by a consistent amount for each equal step in input.",
+      "references": [
+        "MTH-T02-C03-U03"
+      ],
+      "verificationLevel": "partial",
+      "steps": [
+        {
+          "latex": "13 - 5 = 8",
+          "explain": "The output rises by eight across the first two-unit input increase.",
+          "eq": [
+            "13 - 5",
+            "8"
+          ]
+        },
+        {
+          "latex": "21 - 13 = 8",
+          "explain": "The output rises by eight across the second two-unit input increase.",
+          "eq": [
+            "21 - 13",
+            "8"
+          ]
+        },
+        {
+          "latex": "29 - 21 = 8",
+          "explain": "The output rises by eight across the third two-unit input increase.",
+          "eq": [
+            "29 - 21",
+            "8"
+          ]
+        },
+        {
+          "latex": "\\text{upward linear pattern}",
+          "explain": "Equal output increases over equal input steps define an upward linear pattern."
+        }
+      ],
+      "review": {
+        "verdict": "pass",
+        "note": "Constant +8 output change per +2 input step defines an upward linear pattern; trap and steps are verified."
+      },
+      "id": "VAR-MTH-T02-C03-U03-t02-c03-u03-interpret-scatter-pattern-03",
+      "levelLabel": "Level 1 - Foundation",
+      "figure": {
+        "kind": "cartesian_graph",
+        "theme": "indigo",
+        "title": "A scatter plot shows a broad downward trend",
+        "xRange": [
+          1.0,
+          9.0
+        ],
+        "yRange": [
+          3.0,
+          31.0
+        ],
+        "grid": true,
+        "axes": true,
+        "plots": [
+          {
+            "type": "point",
+            "coord": [
+              2.0,
+              5.0
+            ],
+            "position": "top-right",
+            "label": "A"
+          },
+          {
+            "type": "point",
+            "coord": [
+              4.0,
+              13.0
+            ],
+            "position": "top-right",
+            "label": "B"
+          },
+          {
+            "type": "point",
+            "coord": [
+              6.0,
+              21.0
+            ],
+            "position": "top-right",
+            "label": "C"
+          },
+          {
+            "type": "point",
+            "coord": [
+              8.0,
+              29.0
+            ],
+            "position": "top-right",
+            "label": "D"
+          }
+        ]
+      },
+      "fingerprint": "t02-c03-u03-reverse-trend-direction-trap|direct|The paired observations are: $x = #$ gives $y = #$; $x = #$ gives $y = #$; $x = #$ gives $y = #$; $x = #$ gives $y = #$. Which description best fits the scatter pattern as the input increases?"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C03-U03-t02-c03-u03-read-regression-model-01",
+      "sourceArchetype": "t02-c03-u03-read-regression-model",
+      "archetypeKey": "t02-c03-u03-read-regression-model",
+      "archetype": "problem-solving",
+      "unitCode": "MTH-T02-C03-U03",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "context": "",
+      "prompt": "A regression line fitted to observations from input $0$ to input $10$ is $r(x) = 4x + 9$. What output does the model predict at input $6$?",
+      "display": "r(x) = 4x + 9",
+      "plainText": "r(6) = 4 * 6 + 9",
+      "givens": {
+        "xmin": 0,
+        "xmax": 10,
+        "m": 4,
+        "b": 9,
+        "x": 6
+      },
+      "constants": {},
+      "trapGivens": [
+        4,
+        9,
+        6
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "33",
+        "tolerance": 0
+      },
+      "answerPlain": "33",
+      "answerDisplay": "33",
+      "inputHint": "Enter a number.",
+      "commonTrapTag": "t02-c03-u03-swap-regression-slope-intercept-trap",
+      "trapDerivation": "9 * 6 + 4",
+      "trapValue": "58",
+      "verify": {
+        "source": "4 * 6 + 9",
+        "trapValue": "58"
+      },
+      "checkpointHint": "Multiply the fitted slope by the given input, then add the vertical intercept.",
+      "references": [
+        "MTH-T02-C03-U03"
+      ],
+      "verificationLevel": "partial",
+      "steps": [
+        {
+          "latex": "r(6) = 4(6) + 9",
+          "explain": "Substitute the input into the fitted regression equation."
+        },
+        {
+          "latex": "4(6) = 24",
+          "explain": "Multiply the slope by the input.",
+          "eq": [
+            "4 * 6",
+            "24"
+          ]
+        },
+        {
+          "latex": "r(6) = 24 + 9",
+          "explain": "Add the vertical intercept to the product.",
+          "eq": [
+            "24 + 9",
+            "33"
+          ]
+        },
+        {
+          "latex": "r(6) = 33",
+          "explain": "State the predicted output.",
+          "val": "33"
+        }
+      ],
+      "review": {
+        "verdict": "pass",
+        "note": "4*6 + 9 = 33 and slope-intercept swap trap 58 are verified, steps and hints pass every gate."
+      },
+      "id": "VAR-MTH-T02-C03-U03-t02-c03-u03-read-regression-model-01",
+      "levelLabel": "Level 1 - Foundation",
+      "figure": {
+        "kind": "cartesian_graph",
+        "theme": "indigo",
+        "title": "A regression line summarizes a data trend",
+        "xRange": [
+          0.0,
+          10.0
+        ],
+        "yRange": [
+          0.0,
+          49.0
+        ],
+        "grid": true,
+        "axes": true,
+        "plots": [
+          {
+            "type": "curve",
+            "points": [
+              [
+                0.0,
+                9.0
+              ],
+              [
+                0.0417,
+                9.1667
+              ],
+              [
+                0.0833,
+                9.3333
+              ],
+              [
+                0.125,
+                9.5
+              ],
+              [
+                0.1667,
+                9.6667
+              ],
+              [
+                0.2083,
+                9.8333
+              ],
+              [
+                0.25,
+                10.0
+              ],
+              [
+                0.2917,
+                10.1667
+              ],
+              [
+                0.3333,
+                10.3333
+              ],
+              [
+                0.375,
+                10.5
+              ],
+              [
+                0.4167,
+                10.6667
+              ],
+              [
+                0.4583,
+                10.8333
+              ],
+              [
+                0.5,
+                11.0
+              ],
+              [
+                0.5417,
+                11.1667
+              ],
+              [
+                0.5833,
+                11.3333
+              ],
+              [
+                0.625,
+                11.5
+              ],
+              [
+                0.6667,
+                11.6667
+              ],
+              [
+                0.7083,
+                11.8333
+              ],
+              [
+                0.75,
+                12.0
+              ],
+              [
+                0.7917,
+                12.1667
+              ],
+              [
+                0.8333,
+                12.3333
+              ],
+              [
+                0.875,
+                12.5
+              ],
+              [
+                0.9167,
+                12.6667
+              ],
+              [
+                0.9583,
+                12.8333
+              ],
+              [
+                1.0,
+                13.0
+              ],
+              [
+                1.0417,
+                13.1667
+              ],
+              [
+                1.0833,
+                13.3333
+              ],
+              [
+                1.125,
+                13.5
+              ],
+              [
+                1.1667,
+                13.6667
+              ],
+              [
+                1.2083,
+                13.8333
+              ],
+              [
+                1.25,
+                14.0
+              ],
+              [
+                1.2917,
+                14.1667
+              ],
+              [
+                1.3333,
+                14.3333
+              ],
+              [
+                1.375,
+                14.5
+              ],
+              [
+                1.4167,
+                14.6667
+              ],
+              [
+                1.4583,
+                14.8333
+              ],
+              [
+                1.5,
+                15.0
+              ],
+              [
+                1.5417,
+                15.1667
+              ],
+              [
+                1.5833,
+                15.3333
+              ],
+              [
+                1.625,
+                15.5
+              ],
+              [
+                1.6667,
+                15.6667
+              ],
+              [
+                1.7083,
+                15.8333
+              ],
+              [
+                1.75,
+                16.0
+              ],
+              [
+                1.7917,
+                16.1667
+              ],
+              [
+                1.8333,
+                16.3333
+              ],
+              [
+                1.875,
+                16.5
+              ],
+              [
+                1.9167,
+                16.6667
+              ],
+              [
+                1.9583,
+                16.8333
+              ],
+              [
+                2.0,
+                17.0
+              ],
+              [
+                2.0417,
+                17.1667
+              ],
+              [
+                2.0833,
+                17.3333
+              ],
+              [
+                2.125,
+                17.5
+              ],
+              [
+                2.1667,
+                17.6667
+              ],
+              [
+                2.2083,
+                17.8333
+              ],
+              [
+                2.25,
+                18.0
+              ],
+              [
+                2.2917,
+                18.1667
+              ],
+              [
+                2.3333,
+                18.3333
+              ],
+              [
+                2.375,
+                18.5
+              ],
+              [
+                2.4167,
+                18.6667
+              ],
+              [
+                2.4583,
+                18.8333
+              ],
+              [
+                2.5,
+                19.0
+              ],
+              [
+                2.5417,
+                19.1667
+              ],
+              [
+                2.5833,
+                19.3333
+              ],
+              [
+                2.625,
+                19.5
+              ],
+              [
+                2.6667,
+                19.6667
+              ],
+              [
+                2.7083,
+                19.8333
+              ],
+              [
+                2.75,
+                20.0
+              ],
+              [
+                2.7917,
+                20.1667
+              ],
+              [
+                2.8333,
+                20.3333
+              ],
+              [
+                2.875,
+                20.5
+              ],
+              [
+                2.9167,
+                20.6667
+              ],
+              [
+                2.9583,
+                20.8333
+              ],
+              [
+                3.0,
+                21.0
+              ],
+              [
+                3.0417,
+                21.1667
+              ],
+              [
+                3.0833,
+                21.3333
+              ],
+              [
+                3.125,
+                21.5
+              ],
+              [
+                3.1667,
+                21.6667
+              ],
+              [
+                3.2083,
+                21.8333
+              ],
+              [
+                3.25,
+                22.0
+              ],
+              [
+                3.2917,
+                22.1667
+              ],
+              [
+                3.3333,
+                22.3333
+              ],
+              [
+                3.375,
+                22.5
+              ],
+              [
+                3.4167,
+                22.6667
+              ],
+              [
+                3.4583,
+                22.8333
+              ],
+              [
+                3.5,
+                23.0
+              ],
+              [
+                3.5417,
+                23.1667
+              ],
+              [
+                3.5833,
+                23.3333
+              ],
+              [
+                3.625,
+                23.5
+              ],
+              [
+                3.6667,
+                23.6667
+              ],
+              [
+                3.7083,
+                23.8333
+              ],
+              [
+                3.75,
+                24.0
+              ],
+              [
+                3.7917,
+                24.1667
+              ],
+              [
+                3.8333,
+                24.3333
+              ],
+              [
+                3.875,
+                24.5
+              ],
+              [
+                3.9167,
+                24.6667
+              ],
+              [
+                3.9583,
+                24.8333
+              ],
+              [
+                4.0,
+                25.0
+              ],
+              [
+                4.0417,
+                25.1667
+              ],
+              [
+                4.0833,
+                25.3333
+              ],
+              [
+                4.125,
+                25.5
+              ],
+              [
+                4.1667,
+                25.6667
+              ],
+              [
+                4.2083,
+                25.8333
+              ],
+              [
+                4.25,
+                26.0
+              ],
+              [
+                4.2917,
+                26.1667
+              ],
+              [
+                4.3333,
+                26.3333
+              ],
+              [
+                4.375,
+                26.5
+              ],
+              [
+                4.4167,
+                26.6667
+              ],
+              [
+                4.4583,
+                26.8333
+              ],
+              [
+                4.5,
+                27.0
+              ],
+              [
+                4.5417,
+                27.1667
+              ],
+              [
+                4.5833,
+                27.3333
+              ],
+              [
+                4.625,
+                27.5
+              ],
+              [
+                4.6667,
+                27.6667
+              ],
+              [
+                4.7083,
+                27.8333
+              ],
+              [
+                4.75,
+                28.0
+              ],
+              [
+                4.7917,
+                28.1667
+              ],
+              [
+                4.8333,
+                28.3333
+              ],
+              [
+                4.875,
+                28.5
+              ],
+              [
+                4.9167,
+                28.6667
+              ],
+              [
+                4.9583,
+                28.8333
+              ],
+              [
+                5.0,
+                29.0
+              ],
+              [
+                5.0417,
+                29.1667
+              ],
+              [
+                5.0833,
+                29.3333
+              ],
+              [
+                5.125,
+                29.5
+              ],
+              [
+                5.1667,
+                29.6667
+              ],
+              [
+                5.2083,
+                29.8333
+              ],
+              [
+                5.25,
+                30.0
+              ],
+              [
+                5.2917,
+                30.1667
+              ],
+              [
+                5.3333,
+                30.3333
+              ],
+              [
+                5.375,
+                30.5
+              ],
+              [
+                5.4167,
+                30.6667
+              ],
+              [
+                5.4583,
+                30.8333
+              ],
+              [
+                5.5,
+                31.0
+              ],
+              [
+                5.5417,
+                31.1667
+              ],
+              [
+                5.5833,
+                31.3333
+              ],
+              [
+                5.625,
+                31.5
+              ],
+              [
+                5.6667,
+                31.6667
+              ],
+              [
+                5.7083,
+                31.8333
+              ],
+              [
+                5.75,
+                32.0
+              ],
+              [
+                5.7917,
+                32.1667
+              ],
+              [
+                5.8333,
+                32.3333
+              ],
+              [
+                5.875,
+                32.5
+              ],
+              [
+                5.9167,
+                32.6667
+              ],
+              [
+                5.9583,
+                32.8333
+              ],
+              [
+                6.0,
+                33.0
+              ],
+              [
+                6.0417,
+                33.1667
+              ],
+              [
+                6.0833,
+                33.3333
+              ],
+              [
+                6.125,
+                33.5
+              ],
+              [
+                6.1667,
+                33.6667
+              ],
+              [
+                6.2083,
+                33.8333
+              ],
+              [
+                6.25,
+                34.0
+              ],
+              [
+                6.2917,
+                34.1667
+              ],
+              [
+                6.3333,
+                34.3333
+              ],
+              [
+                6.375,
+                34.5
+              ],
+              [
+                6.4167,
+                34.6667
+              ],
+              [
+                6.4583,
+                34.8333
+              ],
+              [
+                6.5,
+                35.0
+              ],
+              [
+                6.5417,
+                35.1667
+              ],
+              [
+                6.5833,
+                35.3333
+              ],
+              [
+                6.625,
+                35.5
+              ],
+              [
+                6.6667,
+                35.6667
+              ],
+              [
+                6.7083,
+                35.8333
+              ],
+              [
+                6.75,
+                36.0
+              ],
+              [
+                6.7917,
+                36.1667
+              ],
+              [
+                6.8333,
+                36.3333
+              ],
+              [
+                6.875,
+                36.5
+              ],
+              [
+                6.9167,
+                36.6667
+              ],
+              [
+                6.9583,
+                36.8333
+              ],
+              [
+                7.0,
+                37.0
+              ],
+              [
+                7.0417,
+                37.1667
+              ],
+              [
+                7.0833,
+                37.3333
+              ],
+              [
+                7.125,
+                37.5
+              ],
+              [
+                7.1667,
+                37.6667
+              ],
+              [
+                7.2083,
+                37.8333
+              ],
+              [
+                7.25,
+                38.0
+              ],
+              [
+                7.2917,
+                38.1667
+              ],
+              [
+                7.3333,
+                38.3333
+              ],
+              [
+                7.375,
+                38.5
+              ],
+              [
+                7.4167,
+                38.6667
+              ],
+              [
+                7.4583,
+                38.8333
+              ],
+              [
+                7.5,
+                39.0
+              ],
+              [
+                7.5417,
+                39.1667
+              ],
+              [
+                7.5833,
+                39.3333
+              ],
+              [
+                7.625,
+                39.5
+              ],
+              [
+                7.6667,
+                39.6667
+              ],
+              [
+                7.7083,
+                39.8333
+              ],
+              [
+                7.75,
+                40.0
+              ],
+              [
+                7.7917,
+                40.1667
+              ],
+              [
+                7.8333,
+                40.3333
+              ],
+              [
+                7.875,
+                40.5
+              ],
+              [
+                7.9167,
+                40.6667
+              ],
+              [
+                7.9583,
+                40.8333
+              ],
+              [
+                8.0,
+                41.0
+              ],
+              [
+                8.0417,
+                41.1667
+              ],
+              [
+                8.0833,
+                41.3333
+              ],
+              [
+                8.125,
+                41.5
+              ],
+              [
+                8.1667,
+                41.6667
+              ],
+              [
+                8.2083,
+                41.8333
+              ],
+              [
+                8.25,
+                42.0
+              ],
+              [
+                8.2917,
+                42.1667
+              ],
+              [
+                8.3333,
+                42.3333
+              ],
+              [
+                8.375,
+                42.5
+              ],
+              [
+                8.4167,
+                42.6667
+              ],
+              [
+                8.4583,
+                42.8333
+              ],
+              [
+                8.5,
+                43.0
+              ],
+              [
+                8.5417,
+                43.1667
+              ],
+              [
+                8.5833,
+                43.3333
+              ],
+              [
+                8.625,
+                43.5
+              ],
+              [
+                8.6667,
+                43.6667
+              ],
+              [
+                8.7083,
+                43.8333
+              ],
+              [
+                8.75,
+                44.0
+              ],
+              [
+                8.7917,
+                44.1667
+              ],
+              [
+                8.8333,
+                44.3333
+              ],
+              [
+                8.875,
+                44.5
+              ],
+              [
+                8.9167,
+                44.6667
+              ],
+              [
+                8.9583,
+                44.8333
+              ],
+              [
+                9.0,
+                45.0
+              ],
+              [
+                9.0417,
+                45.1667
+              ],
+              [
+                9.0833,
+                45.3333
+              ],
+              [
+                9.125,
+                45.5
+              ],
+              [
+                9.1667,
+                45.6667
+              ],
+              [
+                9.2083,
+                45.8333
+              ],
+              [
+                9.25,
+                46.0
+              ],
+              [
+                9.2917,
+                46.1667
+              ],
+              [
+                9.3333,
+                46.3333
+              ],
+              [
+                9.375,
+                46.5
+              ],
+              [
+                9.4167,
+                46.6667
+              ],
+              [
+                9.4583,
+                46.8333
+              ],
+              [
+                9.5,
+                47.0
+              ],
+              [
+                9.5417,
+                47.1667
+              ],
+              [
+                9.5833,
+                47.3333
+              ],
+              [
+                9.625,
+                47.5
+              ],
+              [
+                9.6667,
+                47.6667
+              ],
+              [
+                9.7083,
+                47.8333
+              ],
+              [
+                9.75,
+                48.0
+              ],
+              [
+                9.7917,
+                48.1667
+              ],
+              [
+                9.8333,
+                48.3333
+              ],
+              [
+                9.875,
+                48.5
+              ],
+              [
+                9.9167,
+                48.6667
+              ],
+              [
+                9.9583,
+                48.8333
+              ],
+              [
+                10.0,
+                49.0
+              ]
+            ],
+            "color": "#6366f1",
+            "strokeWidth": 2.5
+          },
+          {
+            "type": "text",
+            "coord": [
+              0.4,
+              45.08
+            ],
+            "text": "fitted line",
+            "color": "#6366f1",
+            "anchor": "start"
+          }
+        ]
+      },
+      "fingerprint": "t02-c03-u03-swap-regression-slope-intercept-trap|direct|r(#) = # * # + #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C03-U03-t02-c03-u03-read-regression-model-02",
+      "sourceArchetype": "t02-c03-u03-read-regression-model",
+      "archetypeKey": "t02-c03-u03-read-regression-model",
+      "archetype": "problem-solving",
+      "unitCode": "MTH-T02-C03-U03",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "context": "",
+      "prompt": "A regression line fitted to data for inputs from $1$ to $12$ is $r(x) = 5x + 14$. What output does the model predict at input $8$?",
+      "display": "r(x) = 5x + 14",
+      "plainText": "r(8) = 5 * 8 + 14",
+      "givens": {
+        "xmin": 1,
+        "xmax": 12,
+        "m": 5,
+        "b": 14,
+        "x": 8
+      },
+      "constants": {},
+      "trapGivens": [
+        5,
+        14,
+        8
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "54",
+        "tolerance": 0
+      },
+      "answerPlain": "54",
+      "answerDisplay": "54",
+      "inputHint": "Enter a number.",
+      "commonTrapTag": "t02-c03-u03-swap-regression-slope-intercept-trap",
+      "trapDerivation": "14 * 8 + 5",
+      "trapValue": "117",
+      "verify": {
+        "source": "5 * 8 + 14",
+        "trapValue": "117"
+      },
+      "checkpointHint": "Substitute the target input for x and keep the coefficient of x distinct from the constant term.",
+      "references": [
+        "MTH-T02-C03-U03"
+      ],
+      "verificationLevel": "partial",
+      "steps": [
+        {
+          "latex": "r(8) = 5(8) + 14",
+          "explain": "Substitute the input value into the regression line."
+        },
+        {
+          "latex": "5(8) = 40",
+          "explain": "Multiply the fitted slope by the input.",
+          "eq": [
+            "5 * 8",
+            "40"
+          ]
+        },
+        {
+          "latex": "r(8) = 40 + 14",
+          "explain": "Add the intercept to the slope term.",
+          "eq": [
+            "40 + 14",
+            "54"
+          ]
+        },
+        {
+          "latex": "r(8) = 54",
+          "explain": "State the model's predicted output.",
+          "val": "54"
+        }
+      ],
+      "review": {
+        "verdict": "pass",
+        "note": "5*8 + 14 = 54 and trap 117 are accurate, with clear steps and zero-leak hint."
+      },
+      "id": "VAR-MTH-T02-C03-U03-t02-c03-u03-read-regression-model-02",
+      "levelLabel": "Level 1 - Foundation",
+      "figure": {
+        "kind": "cartesian_graph",
+        "theme": "indigo",
+        "title": "A regression line summarizes a data trend",
+        "xRange": [
+          1.0,
+          12.0
+        ],
+        "yRange": [
+          0.0,
+          74.0
+        ],
+        "grid": true,
+        "axes": true,
+        "plots": [
+          {
+            "type": "curve",
+            "points": [
+              [
+                1.0,
+                19.0
+              ],
+              [
+                1.0458,
+                19.2292
+              ],
+              [
+                1.0917,
+                19.4583
+              ],
+              [
+                1.1375,
+                19.6875
+              ],
+              [
+                1.1833,
+                19.9167
+              ],
+              [
+                1.2292,
+                20.1458
+              ],
+              [
+                1.275,
+                20.375
+              ],
+              [
+                1.3208,
+                20.6042
+              ],
+              [
+                1.3667,
+                20.8333
+              ],
+              [
+                1.4125,
+                21.0625
+              ],
+              [
+                1.4583,
+                21.2917
+              ],
+              [
+                1.5042,
+                21.5208
+              ],
+              [
+                1.55,
+                21.75
+              ],
+              [
+                1.5958,
+                21.9792
+              ],
+              [
+                1.6417,
+                22.2083
+              ],
+              [
+                1.6875,
+                22.4375
+              ],
+              [
+                1.7333,
+                22.6667
+              ],
+              [
+                1.7792,
+                22.8958
+              ],
+              [
+                1.825,
+                23.125
+              ],
+              [
+                1.8708,
+                23.3542
+              ],
+              [
+                1.9167,
+                23.5833
+              ],
+              [
+                1.9625,
+                23.8125
+              ],
+              [
+                2.0083,
+                24.0417
+              ],
+              [
+                2.0542,
+                24.2708
+              ],
+              [
+                2.1,
+                24.5
+              ],
+              [
+                2.1458,
+                24.7292
+              ],
+              [
+                2.1917,
+                24.9583
+              ],
+              [
+                2.2375,
+                25.1875
+              ],
+              [
+                2.2833,
+                25.4167
+              ],
+              [
+                2.3292,
+                25.6458
+              ],
+              [
+                2.375,
+                25.875
+              ],
+              [
+                2.4208,
+                26.1042
+              ],
+              [
+                2.4667,
+                26.3333
+              ],
+              [
+                2.5125,
+                26.5625
+              ],
+              [
+                2.5583,
+                26.7917
+              ],
+              [
+                2.6042,
+                27.0208
+              ],
+              [
+                2.65,
+                27.25
+              ],
+              [
+                2.6958,
+                27.4792
+              ],
+              [
+                2.7417,
+                27.7083
+              ],
+              [
+                2.7875,
+                27.9375
+              ],
+              [
+                2.8333,
+                28.1667
+              ],
+              [
+                2.8792,
+                28.3958
+              ],
+              [
+                2.925,
+                28.625
+              ],
+              [
+                2.9708,
+                28.8542
+              ],
+              [
+                3.0167,
+                29.0833
+              ],
+              [
+                3.0625,
+                29.3125
+              ],
+              [
+                3.1083,
+                29.5417
+              ],
+              [
+                3.1542,
+                29.7708
+              ],
+              [
+                3.2,
+                30.0
+              ],
+              [
+                3.2458,
+                30.2292
+              ],
+              [
+                3.2917,
+                30.4583
+              ],
+              [
+                3.3375,
+                30.6875
+              ],
+              [
+                3.3833,
+                30.9167
+              ],
+              [
+                3.4292,
+                31.1458
+              ],
+              [
+                3.475,
+                31.375
+              ],
+              [
+                3.5208,
+                31.6042
+              ],
+              [
+                3.5667,
+                31.8333
+              ],
+              [
+                3.6125,
+                32.0625
+              ],
+              [
+                3.6583,
+                32.2917
+              ],
+              [
+                3.7042,
+                32.5208
+              ],
+              [
+                3.75,
+                32.75
+              ],
+              [
+                3.7958,
+                32.9792
+              ],
+              [
+                3.8417,
+                33.2083
+              ],
+              [
+                3.8875,
+                33.4375
+              ],
+              [
+                3.9333,
+                33.6667
+              ],
+              [
+                3.9792,
+                33.8958
+              ],
+              [
+                4.025,
+                34.125
+              ],
+              [
+                4.0708,
+                34.3542
+              ],
+              [
+                4.1167,
+                34.5833
+              ],
+              [
+                4.1625,
+                34.8125
+              ],
+              [
+                4.2083,
+                35.0417
+              ],
+              [
+                4.2542,
+                35.2708
+              ],
+              [
+                4.3,
+                35.5
+              ],
+              [
+                4.3458,
+                35.7292
+              ],
+              [
+                4.3917,
+                35.9583
+              ],
+              [
+                4.4375,
+                36.1875
+              ],
+              [
+                4.4833,
+                36.4167
+              ],
+              [
+                4.5292,
+                36.6458
+              ],
+              [
+                4.575,
+                36.875
+              ],
+              [
+                4.6208,
+                37.1042
+              ],
+              [
+                4.6667,
+                37.3333
+              ],
+              [
+                4.7125,
+                37.5625
+              ],
+              [
+                4.7583,
+                37.7917
+              ],
+              [
+                4.8042,
+                38.0208
+              ],
+              [
+                4.85,
+                38.25
+              ],
+              [
+                4.8958,
+                38.4792
+              ],
+              [
+                4.9417,
+                38.7083
+              ],
+              [
+                4.9875,
+                38.9375
+              ],
+              [
+                5.0333,
+                39.1667
+              ],
+              [
+                5.0792,
+                39.3958
+              ],
+              [
+                5.125,
+                39.625
+              ],
+              [
+                5.1708,
+                39.8542
+              ],
+              [
+                5.2167,
+                40.0833
+              ],
+              [
+                5.2625,
+                40.3125
+              ],
+              [
+                5.3083,
+                40.5417
+              ],
+              [
+                5.3542,
+                40.7708
+              ],
+              [
+                5.4,
+                41.0
+              ],
+              [
+                5.4458,
+                41.2292
+              ],
+              [
+                5.4917,
+                41.4583
+              ],
+              [
+                5.5375,
+                41.6875
+              ],
+              [
+                5.5833,
+                41.9167
+              ],
+              [
+                5.6292,
+                42.1458
+              ],
+              [
+                5.675,
+                42.375
+              ],
+              [
+                5.7208,
+                42.6042
+              ],
+              [
+                5.7667,
+                42.8333
+              ],
+              [
+                5.8125,
+                43.0625
+              ],
+              [
+                5.8583,
+                43.2917
+              ],
+              [
+                5.9042,
+                43.5208
+              ],
+              [
+                5.95,
+                43.75
+              ],
+              [
+                5.9958,
+                43.9792
+              ],
+              [
+                6.0417,
+                44.2083
+              ],
+              [
+                6.0875,
+                44.4375
+              ],
+              [
+                6.1333,
+                44.6667
+              ],
+              [
+                6.1792,
+                44.8958
+              ],
+              [
+                6.225,
+                45.125
+              ],
+              [
+                6.2708,
+                45.3542
+              ],
+              [
+                6.3167,
+                45.5833
+              ],
+              [
+                6.3625,
+                45.8125
+              ],
+              [
+                6.4083,
+                46.0417
+              ],
+              [
+                6.4542,
+                46.2708
+              ],
+              [
+                6.5,
+                46.5
+              ],
+              [
+                6.5458,
+                46.7292
+              ],
+              [
+                6.5917,
+                46.9583
+              ],
+              [
+                6.6375,
+                47.1875
+              ],
+              [
+                6.6833,
+                47.4167
+              ],
+              [
+                6.7292,
+                47.6458
+              ],
+              [
+                6.775,
+                47.875
+              ],
+              [
+                6.8208,
+                48.1042
+              ],
+              [
+                6.8667,
+                48.3333
+              ],
+              [
+                6.9125,
+                48.5625
+              ],
+              [
+                6.9583,
+                48.7917
+              ],
+              [
+                7.0042,
+                49.0208
+              ],
+              [
+                7.05,
+                49.25
+              ],
+              [
+                7.0958,
+                49.4792
+              ],
+              [
+                7.1417,
+                49.7083
+              ],
+              [
+                7.1875,
+                49.9375
+              ],
+              [
+                7.2333,
+                50.1667
+              ],
+              [
+                7.2792,
+                50.3958
+              ],
+              [
+                7.325,
+                50.625
+              ],
+              [
+                7.3708,
+                50.8542
+              ],
+              [
+                7.4167,
+                51.0833
+              ],
+              [
+                7.4625,
+                51.3125
+              ],
+              [
+                7.5083,
+                51.5417
+              ],
+              [
+                7.5542,
+                51.7708
+              ],
+              [
+                7.6,
+                52.0
+              ],
+              [
+                7.6458,
+                52.2292
+              ],
+              [
+                7.6917,
+                52.4583
+              ],
+              [
+                7.7375,
+                52.6875
+              ],
+              [
+                7.7833,
+                52.9167
+              ],
+              [
+                7.8292,
+                53.1458
+              ],
+              [
+                7.875,
+                53.375
+              ],
+              [
+                7.9208,
+                53.6042
+              ],
+              [
+                7.9667,
+                53.8333
+              ],
+              [
+                8.0125,
+                54.0625
+              ],
+              [
+                8.0583,
+                54.2917
+              ],
+              [
+                8.1042,
+                54.5208
+              ],
+              [
+                8.15,
+                54.75
+              ],
+              [
+                8.1958,
+                54.9792
+              ],
+              [
+                8.2417,
+                55.2083
+              ],
+              [
+                8.2875,
+                55.4375
+              ],
+              [
+                8.3333,
+                55.6667
+              ],
+              [
+                8.3792,
+                55.8958
+              ],
+              [
+                8.425,
+                56.125
+              ],
+              [
+                8.4708,
+                56.3542
+              ],
+              [
+                8.5167,
+                56.5833
+              ],
+              [
+                8.5625,
+                56.8125
+              ],
+              [
+                8.6083,
+                57.0417
+              ],
+              [
+                8.6542,
+                57.2708
+              ],
+              [
+                8.7,
+                57.5
+              ],
+              [
+                8.7458,
+                57.7292
+              ],
+              [
+                8.7917,
+                57.9583
+              ],
+              [
+                8.8375,
+                58.1875
+              ],
+              [
+                8.8833,
+                58.4167
+              ],
+              [
+                8.9292,
+                58.6458
+              ],
+              [
+                8.975,
+                58.875
+              ],
+              [
+                9.0208,
+                59.1042
+              ],
+              [
+                9.0667,
+                59.3333
+              ],
+              [
+                9.1125,
+                59.5625
+              ],
+              [
+                9.1583,
+                59.7917
+              ],
+              [
+                9.2042,
+                60.0208
+              ],
+              [
+                9.25,
+                60.25
+              ],
+              [
+                9.2958,
+                60.4792
+              ],
+              [
+                9.3417,
+                60.7083
+              ],
+              [
+                9.3875,
+                60.9375
+              ],
+              [
+                9.4333,
+                61.1667
+              ],
+              [
+                9.4792,
+                61.3958
+              ],
+              [
+                9.525,
+                61.625
+              ],
+              [
+                9.5708,
+                61.8542
+              ],
+              [
+                9.6167,
+                62.0833
+              ],
+              [
+                9.6625,
+                62.3125
+              ],
+              [
+                9.7083,
+                62.5417
+              ],
+              [
+                9.7542,
+                62.7708
+              ],
+              [
+                9.8,
+                63.0
+              ],
+              [
+                9.8458,
+                63.2292
+              ],
+              [
+                9.8917,
+                63.4583
+              ],
+              [
+                9.9375,
+                63.6875
+              ],
+              [
+                9.9833,
+                63.9167
+              ],
+              [
+                10.0292,
+                64.1458
+              ],
+              [
+                10.075,
+                64.375
+              ],
+              [
+                10.1208,
+                64.6042
+              ],
+              [
+                10.1667,
+                64.8333
+              ],
+              [
+                10.2125,
+                65.0625
+              ],
+              [
+                10.2583,
+                65.2917
+              ],
+              [
+                10.3042,
+                65.5208
+              ],
+              [
+                10.35,
+                65.75
+              ],
+              [
+                10.3958,
+                65.9792
+              ],
+              [
+                10.4417,
+                66.2083
+              ],
+              [
+                10.4875,
+                66.4375
+              ],
+              [
+                10.5333,
+                66.6667
+              ],
+              [
+                10.5792,
+                66.8958
+              ],
+              [
+                10.625,
+                67.125
+              ],
+              [
+                10.6708,
+                67.3542
+              ],
+              [
+                10.7167,
+                67.5833
+              ],
+              [
+                10.7625,
+                67.8125
+              ],
+              [
+                10.8083,
+                68.0417
+              ],
+              [
+                10.8542,
+                68.2708
+              ],
+              [
+                10.9,
+                68.5
+              ],
+              [
+                10.9458,
+                68.7292
+              ],
+              [
+                10.9917,
+                68.9583
+              ],
+              [
+                11.0375,
+                69.1875
+              ],
+              [
+                11.0833,
+                69.4167
+              ],
+              [
+                11.1292,
+                69.6458
+              ],
+              [
+                11.175,
+                69.875
+              ],
+              [
+                11.2208,
+                70.1042
+              ],
+              [
+                11.2667,
+                70.3333
+              ],
+              [
+                11.3125,
+                70.5625
+              ],
+              [
+                11.3583,
+                70.7917
+              ],
+              [
+                11.4042,
+                71.0208
+              ],
+              [
+                11.45,
+                71.25
+              ],
+              [
+                11.4958,
+                71.4792
+              ],
+              [
+                11.5417,
+                71.7083
+              ],
+              [
+                11.5875,
+                71.9375
+              ],
+              [
+                11.6333,
+                72.1667
+              ],
+              [
+                11.6792,
+                72.3958
+              ],
+              [
+                11.725,
+                72.625
+              ],
+              [
+                11.7708,
+                72.8542
+              ],
+              [
+                11.8167,
+                73.0833
+              ],
+              [
+                11.8625,
+                73.3125
+              ],
+              [
+                11.9083,
+                73.5417
+              ],
+              [
+                11.9542,
+                73.7708
+              ],
+              [
+                12.0,
+                74.0
+              ]
+            ],
+            "color": "#6366f1",
+            "strokeWidth": 2.5
+          },
+          {
+            "type": "text",
+            "coord": [
+              1.44,
+              68.08
+            ],
+            "text": "fitted line",
+            "color": "#6366f1",
+            "anchor": "start"
+          }
+        ]
+      },
+      "fingerprint": "t02-c03-u03-swap-regression-slope-intercept-trap|direct|r(#) = # * # + #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C03-U03-t02-c03-u03-read-regression-model-03",
+      "sourceArchetype": "t02-c03-u03-read-regression-model",
+      "archetypeKey": "t02-c03-u03-read-regression-model",
+      "archetype": "problem-solving",
+      "unitCode": "MTH-T02-C03-U03",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "context": "",
+      "prompt": "A regression line summarizing data from input $2$ to input $15$ is $r(x) = 6x + 11$. What output does the model predict at input $7$?",
+      "display": "r(x) = 6x + 11",
+      "plainText": "r(7) = 6 * 7 + 11",
+      "givens": {
+        "xmin": 2,
+        "xmax": 15,
+        "m": 6,
+        "b": 11,
+        "x": 7
+      },
+      "constants": {},
+      "trapGivens": [
+        6,
+        11,
+        7
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "53",
+        "tolerance": 0
+      },
+      "answerPlain": "53",
+      "answerDisplay": "53",
+      "inputHint": "Enter a number.",
+      "commonTrapTag": "t02-c03-u03-swap-regression-slope-intercept-trap",
+      "trapDerivation": "11 * 7 + 6",
+      "trapValue": "83",
+      "verify": {
+        "source": "6 * 7 + 11",
+        "trapValue": "83"
+      },
+      "checkpointHint": "Evaluate the linear rule at the requested input by multiplying by the slope and adding the intercept.",
+      "references": [
+        "MTH-T02-C03-U03"
+      ],
+      "verificationLevel": "partial",
+      "steps": [
+        {
+          "latex": "r(7) = 6(7) + 11",
+          "explain": "Substitute the requested input into the regression equation."
+        },
+        {
+          "latex": "6(7) = 42",
+          "explain": "Multiply the slope by the input value.",
+          "eq": [
+            "6 * 7",
+            "42"
+          ]
+        },
+        {
+          "latex": "r(7) = 42 + 11",
+          "explain": "Add the constant intercept.",
+          "eq": [
+            "42 + 11",
+            "53"
+          ]
+        },
+        {
+          "latex": "r(7) = 53",
+          "explain": "State the predicted output.",
+          "val": "53"
+        }
+      ],
+      "review": {
+        "verdict": "pass",
+        "note": "6*7 + 11 = 53 and trap 83 are verified, steps and hints pass every check."
+      },
+      "id": "VAR-MTH-T02-C03-U03-t02-c03-u03-read-regression-model-03",
+      "levelLabel": "Level 1 - Foundation",
+      "figure": {
+        "kind": "cartesian_graph",
+        "theme": "indigo",
+        "title": "A regression line summarizes a data trend",
+        "xRange": [
+          2.0,
+          15.0
+        ],
+        "yRange": [
+          0.0,
+          101.0
+        ],
+        "grid": true,
+        "axes": true,
+        "plots": [
+          {
+            "type": "curve",
+            "points": [
+              [
+                2.0,
+                23.0
+              ],
+              [
+                2.0542,
+                23.325
+              ],
+              [
+                2.1083,
+                23.65
+              ],
+              [
+                2.1625,
+                23.975
+              ],
+              [
+                2.2167,
+                24.3
+              ],
+              [
+                2.2708,
+                24.625
+              ],
+              [
+                2.325,
+                24.95
+              ],
+              [
+                2.3792,
+                25.275
+              ],
+              [
+                2.4333,
+                25.6
+              ],
+              [
+                2.4875,
+                25.925
+              ],
+              [
+                2.5417,
+                26.25
+              ],
+              [
+                2.5958,
+                26.575
+              ],
+              [
+                2.65,
+                26.9
+              ],
+              [
+                2.7042,
+                27.225
+              ],
+              [
+                2.7583,
+                27.55
+              ],
+              [
+                2.8125,
+                27.875
+              ],
+              [
+                2.8667,
+                28.2
+              ],
+              [
+                2.9208,
+                28.525
+              ],
+              [
+                2.975,
+                28.85
+              ],
+              [
+                3.0292,
+                29.175
+              ],
+              [
+                3.0833,
+                29.5
+              ],
+              [
+                3.1375,
+                29.825
+              ],
+              [
+                3.1917,
+                30.15
+              ],
+              [
+                3.2458,
+                30.475
+              ],
+              [
+                3.3,
+                30.8
+              ],
+              [
+                3.3542,
+                31.125
+              ],
+              [
+                3.4083,
+                31.45
+              ],
+              [
+                3.4625,
+                31.775
+              ],
+              [
+                3.5167,
+                32.1
+              ],
+              [
+                3.5708,
+                32.425
+              ],
+              [
+                3.625,
+                32.75
+              ],
+              [
+                3.6792,
+                33.075
+              ],
+              [
+                3.7333,
+                33.4
+              ],
+              [
+                3.7875,
+                33.725
+              ],
+              [
+                3.8417,
+                34.05
+              ],
+              [
+                3.8958,
+                34.375
+              ],
+              [
+                3.95,
+                34.7
+              ],
+              [
+                4.0042,
+                35.025
+              ],
+              [
+                4.0583,
+                35.35
+              ],
+              [
+                4.1125,
+                35.675
+              ],
+              [
+                4.1667,
+                36.0
+              ],
+              [
+                4.2208,
+                36.325
+              ],
+              [
+                4.275,
+                36.65
+              ],
+              [
+                4.3292,
+                36.975
+              ],
+              [
+                4.3833,
+                37.3
+              ],
+              [
+                4.4375,
+                37.625
+              ],
+              [
+                4.4917,
+                37.95
+              ],
+              [
+                4.5458,
+                38.275
+              ],
+              [
+                4.6,
+                38.6
+              ],
+              [
+                4.6542,
+                38.925
+              ],
+              [
+                4.7083,
+                39.25
+              ],
+              [
+                4.7625,
+                39.575
+              ],
+              [
+                4.8167,
+                39.9
+              ],
+              [
+                4.8708,
+                40.225
+              ],
+              [
+                4.925,
+                40.55
+              ],
+              [
+                4.9792,
+                40.875
+              ],
+              [
+                5.0333,
+                41.2
+              ],
+              [
+                5.0875,
+                41.525
+              ],
+              [
+                5.1417,
+                41.85
+              ],
+              [
+                5.1958,
+                42.175
+              ],
+              [
+                5.25,
+                42.5
+              ],
+              [
+                5.3042,
+                42.825
+              ],
+              [
+                5.3583,
+                43.15
+              ],
+              [
+                5.4125,
+                43.475
+              ],
+              [
+                5.4667,
+                43.8
+              ],
+              [
+                5.5208,
+                44.125
+              ],
+              [
+                5.575,
+                44.45
+              ],
+              [
+                5.6292,
+                44.775
+              ],
+              [
+                5.6833,
+                45.1
+              ],
+              [
+                5.7375,
+                45.425
+              ],
+              [
+                5.7917,
+                45.75
+              ],
+              [
+                5.8458,
+                46.075
+              ],
+              [
+                5.9,
+                46.4
+              ],
+              [
+                5.9542,
+                46.725
+              ],
+              [
+                6.0083,
+                47.05
+              ],
+              [
+                6.0625,
+                47.375
+              ],
+              [
+                6.1167,
+                47.7
+              ],
+              [
+                6.1708,
+                48.025
+              ],
+              [
+                6.225,
+                48.35
+              ],
+              [
+                6.2792,
+                48.675
+              ],
+              [
+                6.3333,
+                49.0
+              ],
+              [
+                6.3875,
+                49.325
+              ],
+              [
+                6.4417,
+                49.65
+              ],
+              [
+                6.4958,
+                49.975
+              ],
+              [
+                6.55,
+                50.3
+              ],
+              [
+                6.6042,
+                50.625
+              ],
+              [
+                6.6583,
+                50.95
+              ],
+              [
+                6.7125,
+                51.275
+              ],
+              [
+                6.7667,
+                51.6
+              ],
+              [
+                6.8208,
+                51.925
+              ],
+              [
+                6.875,
+                52.25
+              ],
+              [
+                6.9292,
+                52.575
+              ],
+              [
+                6.9833,
+                52.9
+              ],
+              [
+                7.0375,
+                53.225
+              ],
+              [
+                7.0917,
+                53.55
+              ],
+              [
+                7.1458,
+                53.875
+              ],
+              [
+                7.2,
+                54.2
+              ],
+              [
+                7.2542,
+                54.525
+              ],
+              [
+                7.3083,
+                54.85
+              ],
+              [
+                7.3625,
+                55.175
+              ],
+              [
+                7.4167,
+                55.5
+              ],
+              [
+                7.4708,
+                55.825
+              ],
+              [
+                7.525,
+                56.15
+              ],
+              [
+                7.5792,
+                56.475
+              ],
+              [
+                7.6333,
+                56.8
+              ],
+              [
+                7.6875,
+                57.125
+              ],
+              [
+                7.7417,
+                57.45
+              ],
+              [
+                7.7958,
+                57.775
+              ],
+              [
+                7.85,
+                58.1
+              ],
+              [
+                7.9042,
+                58.425
+              ],
+              [
+                7.9583,
+                58.75
+              ],
+              [
+                8.0125,
+                59.075
+              ],
+              [
+                8.0667,
+                59.4
+              ],
+              [
+                8.1208,
+                59.725
+              ],
+              [
+                8.175,
+                60.05
+              ],
+              [
+                8.2292,
+                60.375
+              ],
+              [
+                8.2833,
+                60.7
+              ],
+              [
+                8.3375,
+                61.025
+              ],
+              [
+                8.3917,
+                61.35
+              ],
+              [
+                8.4458,
+                61.675
+              ],
+              [
+                8.5,
+                62.0
+              ],
+              [
+                8.5542,
+                62.325
+              ],
+              [
+                8.6083,
+                62.65
+              ],
+              [
+                8.6625,
+                62.975
+              ],
+              [
+                8.7167,
+                63.3
+              ],
+              [
+                8.7708,
+                63.625
+              ],
+              [
+                8.825,
+                63.95
+              ],
+              [
+                8.8792,
+                64.275
+              ],
+              [
+                8.9333,
+                64.6
+              ],
+              [
+                8.9875,
+                64.925
+              ],
+              [
+                9.0417,
+                65.25
+              ],
+              [
+                9.0958,
+                65.575
+              ],
+              [
+                9.15,
+                65.9
+              ],
+              [
+                9.2042,
+                66.225
+              ],
+              [
+                9.2583,
+                66.55
+              ],
+              [
+                9.3125,
+                66.875
+              ],
+              [
+                9.3667,
+                67.2
+              ],
+              [
+                9.4208,
+                67.525
+              ],
+              [
+                9.475,
+                67.85
+              ],
+              [
+                9.5292,
+                68.175
+              ],
+              [
+                9.5833,
+                68.5
+              ],
+              [
+                9.6375,
+                68.825
+              ],
+              [
+                9.6917,
+                69.15
+              ],
+              [
+                9.7458,
+                69.475
+              ],
+              [
+                9.8,
+                69.8
+              ],
+              [
+                9.8542,
+                70.125
+              ],
+              [
+                9.9083,
+                70.45
+              ],
+              [
+                9.9625,
+                70.775
+              ],
+              [
+                10.0167,
+                71.1
+              ],
+              [
+                10.0708,
+                71.425
+              ],
+              [
+                10.125,
+                71.75
+              ],
+              [
+                10.1792,
+                72.075
+              ],
+              [
+                10.2333,
+                72.4
+              ],
+              [
+                10.2875,
+                72.725
+              ],
+              [
+                10.3417,
+                73.05
+              ],
+              [
+                10.3958,
+                73.375
+              ],
+              [
+                10.45,
+                73.7
+              ],
+              [
+                10.5042,
+                74.025
+              ],
+              [
+                10.5583,
+                74.35
+              ],
+              [
+                10.6125,
+                74.675
+              ],
+              [
+                10.6667,
+                75.0
+              ],
+              [
+                10.7208,
+                75.325
+              ],
+              [
+                10.775,
+                75.65
+              ],
+              [
+                10.8292,
+                75.975
+              ],
+              [
+                10.8833,
+                76.3
+              ],
+              [
+                10.9375,
+                76.625
+              ],
+              [
+                10.9917,
+                76.95
+              ],
+              [
+                11.0458,
+                77.275
+              ],
+              [
+                11.1,
+                77.6
+              ],
+              [
+                11.1542,
+                77.925
+              ],
+              [
+                11.2083,
+                78.25
+              ],
+              [
+                11.2625,
+                78.575
+              ],
+              [
+                11.3167,
+                78.9
+              ],
+              [
+                11.3708,
+                79.225
+              ],
+              [
+                11.425,
+                79.55
+              ],
+              [
+                11.4792,
+                79.875
+              ],
+              [
+                11.5333,
+                80.2
+              ],
+              [
+                11.5875,
+                80.525
+              ],
+              [
+                11.6417,
+                80.85
+              ],
+              [
+                11.6958,
+                81.175
+              ],
+              [
+                11.75,
+                81.5
+              ],
+              [
+                11.8042,
+                81.825
+              ],
+              [
+                11.8583,
+                82.15
+              ],
+              [
+                11.9125,
+                82.475
+              ],
+              [
+                11.9667,
+                82.8
+              ],
+              [
+                12.0208,
+                83.125
+              ],
+              [
+                12.075,
+                83.45
+              ],
+              [
+                12.1292,
+                83.775
+              ],
+              [
+                12.1833,
+                84.1
+              ],
+              [
+                12.2375,
+                84.425
+              ],
+              [
+                12.2917,
+                84.75
+              ],
+              [
+                12.3458,
+                85.075
+              ],
+              [
+                12.4,
+                85.4
+              ],
+              [
+                12.4542,
+                85.725
+              ],
+              [
+                12.5083,
+                86.05
+              ],
+              [
+                12.5625,
+                86.375
+              ],
+              [
+                12.6167,
+                86.7
+              ],
+              [
+                12.6708,
+                87.025
+              ],
+              [
+                12.725,
+                87.35
+              ],
+              [
+                12.7792,
+                87.675
+              ],
+              [
+                12.8333,
+                88.0
+              ],
+              [
+                12.8875,
+                88.325
+              ],
+              [
+                12.9417,
+                88.65
+              ],
+              [
+                12.9958,
+                88.975
+              ],
+              [
+                13.05,
+                89.3
+              ],
+              [
+                13.1042,
+                89.625
+              ],
+              [
+                13.1583,
+                89.95
+              ],
+              [
+                13.2125,
+                90.275
+              ],
+              [
+                13.2667,
+                90.6
+              ],
+              [
+                13.3208,
+                90.925
+              ],
+              [
+                13.375,
+                91.25
+              ],
+              [
+                13.4292,
+                91.575
+              ],
+              [
+                13.4833,
+                91.9
+              ],
+              [
+                13.5375,
+                92.225
+              ],
+              [
+                13.5917,
+                92.55
+              ],
+              [
+                13.6458,
+                92.875
+              ],
+              [
+                13.7,
+                93.2
+              ],
+              [
+                13.7542,
+                93.525
+              ],
+              [
+                13.8083,
+                93.85
+              ],
+              [
+                13.8625,
+                94.175
+              ],
+              [
+                13.9167,
+                94.5
+              ],
+              [
+                13.9708,
+                94.825
+              ],
+              [
+                14.025,
+                95.15
+              ],
+              [
+                14.0792,
+                95.475
+              ],
+              [
+                14.1333,
+                95.8
+              ],
+              [
+                14.1875,
+                96.125
+              ],
+              [
+                14.2417,
+                96.45
+              ],
+              [
+                14.2958,
+                96.775
+              ],
+              [
+                14.35,
+                97.1
+              ],
+              [
+                14.4042,
+                97.425
+              ],
+              [
+                14.4583,
+                97.75
+              ],
+              [
+                14.5125,
+                98.075
+              ],
+              [
+                14.5667,
+                98.4
+              ],
+              [
+                14.6208,
+                98.725
+              ],
+              [
+                14.675,
+                99.05
+              ],
+              [
+                14.7292,
+                99.375
+              ],
+              [
+                14.7833,
+                99.7
+              ],
+              [
+                14.8375,
+                100.025
+              ],
+              [
+                14.8917,
+                100.35
+              ],
+              [
+                14.9458,
+                100.675
+              ],
+              [
+                15.0,
+                101.0
+              ]
+            ],
+            "color": "#6366f1",
+            "strokeWidth": 2.5
+          },
+          {
+            "type": "text",
+            "coord": [
+              2.52,
+              92.92
+            ],
+            "text": "fitted line",
+            "color": "#6366f1",
+            "anchor": "start"
+          }
+        ]
+      },
+      "fingerprint": "t02-c03-u03-swap-regression-slope-intercept-trap|direct|r(#) = # * # + #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C03-U03-t02-c03-u03-classify-prediction-range-01",
+      "sourceArchetype": "t02-c03-u03-classify-prediction-range",
+      "archetypeKey": "t02-c03-u03-classify-prediction-range",
+      "archetype": "problem-solving",
+      "unitCode": "MTH-T02-C03-U03",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "direct",
+      "context": "",
+      "prompt": "A fitted line is $f(x) = 2x + 10$, based on observed inputs from $2$ through $8$. The model is used to predict at input $6$. Which classification describes this prediction?",
+      "display": "\\text{Compare the requested input against the minimum and maximum observed inputs.}",
+      "givens": {
+        "m": 2,
+        "b": 10,
+        "xmin": 2,
+        "xmax": 8,
+        "xstar": 6
+      },
+      "constants": {},
+      "trapGivens": [
+        2,
+        10,
+        6
+      ],
+      "answerSpec": {
+        "type": "choice",
+        "options": [
+          {
+            "id": "A",
+            "label": "Interpolation, because the requested input lies within the observed input interval"
+          },
+          {
+            "id": "B",
+            "label": "Extrapolation, because the predicted output exceeds the observed input endpoints",
+            "trapTag": "t02-c03-u03-confuse-output-with-input-range-trap"
+          },
+          {
+            "id": "C",
+            "label": "Neither, because a regression line only applies at the interval endpoints",
+            "provenance": "Misstates how a regression model applies across an interval."
+          }
+        ],
+        "correct": "A"
+      },
+      "answerPlain": "A",
+      "answerDisplay": "A",
+      "inputHint": "Select the classification by comparing the prediction input with the observed input interval.",
+      "commonTrapTag": "t02-c03-u03-confuse-output-with-input-range-trap",
+      "trapDerivation": "2 * 6 + 10",
+      "trapValue": "22",
+      "verify": {
+        "source": "2 * 6 + 10",
+        "trapValue": "22"
+      },
+      "checkpointHint": "Check whether the prediction input itself sits inside or outside the span of observed inputs.",
+      "references": [
+        "MTH-T02-C03-U03"
+      ],
+      "verificationLevel": "partial",
+      "figureWaiver": "The prompt tests comparing an input with the observed input interval; a marked graph would show the interval location directly.",
+      "steps": [
+        {
+          "latex": "x^* = 6",
+          "explain": "Identify the input where the prediction is requested."
+        },
+        {
+          "latex": "x_{\\min} = 2",
+          "explain": "Identify the smallest observed input."
+        },
+        {
+          "latex": "x_{\\max} = 8",
+          "explain": "Identify the largest observed input."
+        },
+        {
+          "latex": "8 - 6 = 2",
+          "explain": "Verify that the requested input is two units below the upper observed endpoint.",
+          "eq": [
+            "8 - 6",
+            "2"
+          ]
+        },
+        {
+          "latex": "2 \\le 6 \\le 8",
+          "explain": "The prediction input lies inside the observed input interval."
+        },
+        {
+          "latex": "\\text{Interpolation}",
+          "explain": "Predicting inside the observed input domain is interpolation."
+        }
+      ],
+      "review": {
+        "verdict": "pass",
+        "note": "Input 6 lies inside [2, 8] (interpolation) while output 22 exceeds 8, directly testing the input-vs-output range trap."
+      },
+      "id": "VAR-MTH-T02-C03-U03-t02-c03-u03-classify-prediction-range-01",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c03-u03-confuse-output-with-input-range-trap|direct|A fitted line is $f(x) = #x + #$, based on observed inputs from $#$ through $#$. The model is used to predict at input $#$. Which classification describes this prediction?"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C03-U03-t02-c03-u03-classify-prediction-range-02",
+      "sourceArchetype": "t02-c03-u03-classify-prediction-range",
+      "archetypeKey": "t02-c03-u03-classify-prediction-range",
+      "archetype": "problem-solving",
+      "unitCode": "MTH-T02-C03-U03",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "direct",
+      "context": "",
+      "prompt": "A fitted line is $f(x) = 2x - 21$, based on observed inputs from $3$ through $10$. The model is used to predict at input $14$. Which classification describes this prediction?",
+      "display": "\\text{Locate the prediction input relative to the observed input domain.}",
+      "givens": {
+        "m": 2,
+        "b": -21,
+        "xmin": 3,
+        "xmax": 10,
+        "xstar": 14
+      },
+      "constants": {},
+      "trapGivens": [
+        2,
+        14,
+        21
+      ],
+      "answerSpec": {
+        "type": "choice",
+        "options": [
+          {
+            "id": "A",
+            "label": "Interpolation, because the predicted output falls between the input endpoints",
+            "trapTag": "t02-c03-u03-confuse-output-with-input-range-trap"
+          },
+          {
+            "id": "B",
+            "label": "Extrapolation, because the requested input lies above the maximum observed input"
+          },
+          {
+            "id": "C",
+            "label": "Exact observation, because the model is linear",
+            "provenance": "Confuses a model prediction with an observed data point."
+          }
+        ],
+        "correct": "B"
+      },
+      "answerPlain": "B",
+      "answerDisplay": "B",
+      "inputHint": "Select the classification by comparing the prediction input with the observed input interval.",
+      "commonTrapTag": "t02-c03-u03-confuse-output-with-input-range-trap",
+      "trapDerivation": "2 * 14 - 21",
+      "trapValue": "7",
+      "verify": {
+        "source": "2 * 14 - 21",
+        "trapValue": "7"
+      },
+      "checkpointHint": "Base the classification on the requested x-value relative to the observed x-interval, not on the resulting y-value.",
+      "references": [
+        "MTH-T02-C03-U03"
+      ],
+      "verificationLevel": "partial",
+      "figureWaiver": "The prompt tests comparing an input with the observed input interval; a marked graph would give away the classification.",
+      "steps": [
+        {
+          "latex": "x^* = 14",
+          "explain": "Identify the prediction input."
+        },
+        {
+          "latex": "x_{\\max} = 10",
+          "explain": "Identify the maximum observed input."
+        },
+        {
+          "latex": "14 - 10 = 4",
+          "explain": "The prediction input is four units above the largest observed input.",
+          "eq": [
+            "14 - 10",
+            "4"
+          ]
+        },
+        {
+          "latex": "14 > 10",
+          "explain": "The prediction input lies outside the observed input domain."
+        },
+        {
+          "latex": "\\text{Extrapolation}",
+          "explain": "Predicting beyond the observed input range is extrapolation."
+        }
+      ],
+      "review": {
+        "verdict": "pass",
+        "note": "Input 14 > 10 is extrapolation even though output 14 - 8 = 6 lies in [3, 10], cleanly exercising the output-vs-input range trap."
+      },
+      "id": "VAR-MTH-T02-C03-U03-t02-c03-u03-classify-prediction-range-02",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c03-u03-confuse-output-with-input-range-trap|direct|A fitted line is $f(x) = #x - #$, based on observed inputs from $#$ through $#$. The model is used to predict at input $#$. Which classification describes this prediction?"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C03-U03-t02-c03-u03-classify-prediction-range-03",
+      "sourceArchetype": "t02-c03-u03-classify-prediction-range",
+      "archetypeKey": "t02-c03-u03-classify-prediction-range",
+      "archetype": "problem-solving",
+      "unitCode": "MTH-T02-C03-U03",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "direct",
+      "context": "",
+      "prompt": "A fitted line is $f(x) = 3x + 2$, based on observed inputs from $6$ through $15$. The model is used to predict at input $3$. Which classification describes this prediction?",
+      "display": "\\text{Check whether the requested input falls inside or outside the observed input bounds.}",
+      "givens": {
+        "m": 3,
+        "b": 2,
+        "xmin": 6,
+        "xmax": 15,
+        "xstar": 3
+      },
+      "constants": {},
+      "trapGivens": [
+        3,
+        2,
+        6
+      ],
+      "answerSpec": {
+        "type": "choice",
+        "options": [
+          {
+            "id": "A",
+            "label": "Interpolation, because the predicted value lies inside the observed input interval",
+            "trapTag": "t02-c03-u03-confuse-output-with-input-range-trap"
+          },
+          {
+            "id": "B",
+            "label": "Interpolation, because the requested input is positive",
+            "provenance": "Ignores the lower bound of the observed input interval."
+          },
+          {
+            "id": "C",
+            "label": "Extrapolation, because the requested input lies below the minimum observed input"
+          }
+        ],
+        "correct": "C"
+      },
+      "answerPlain": "C",
+      "answerDisplay": "C",
+      "inputHint": "Select the classification by comparing the prediction input with the observed input interval.",
+      "commonTrapTag": "t02-c03-u03-confuse-output-with-input-range-trap",
+      "trapDerivation": "3 * 3 + 2",
+      "trapValue": "11",
+      "verify": {
+        "source": "3 * 3 + 2",
+        "trapValue": "11"
+      },
+      "checkpointHint": "Compare the requested input against both the minimum and maximum observed inputs before classifying.",
+      "references": [
+        "MTH-T02-C03-U03"
+      ],
+      "verificationLevel": "partial",
+      "figureWaiver": "The prompt tests comparing an input with the observed input interval; a marked graph would give away the classification.",
+      "steps": [
+        {
+          "latex": "x^* = 3",
+          "explain": "Identify the input where the prediction is made."
+        },
+        {
+          "latex": "x_{\\min} = 6",
+          "explain": "Identify the smallest observed input."
+        },
+        {
+          "latex": "6 - 3 = 3",
+          "explain": "The requested input is three units below the minimum observed input.",
+          "eq": [
+            "6 - 3",
+            "3"
+          ]
+        },
+        {
+          "latex": "3 < 6",
+          "explain": "The prediction input lies below the observed input interval."
+        },
+        {
+          "latex": "\\text{Extrapolation}",
+          "explain": "Predicting outside the observed input interval is extrapolation."
+        }
+      ],
+      "review": {
+        "verdict": "pass",
+        "note": "Input 3 < 6 is extrapolation even though output 3*3 + 2 = 11 lies in [6, 15]; steps and hints pass every check."
+      },
+      "id": "VAR-MTH-T02-C03-U03-t02-c03-u03-classify-prediction-range-03",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c03-u03-confuse-output-with-input-range-trap|direct|A fitted line is $f(x) = #x + #$, based on observed inputs from $#$ through $#$. The model is used to predict at input $#$. Which classification describes this prediction?"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C03-U03-t02-c03-u03-check-model-breakdown-01",
+      "sourceArchetype": "t02-c03-u03-check-model-breakdown",
+      "archetypeKey": "t02-c03-u03-check-model-breakdown",
+      "archetype": "problem-solving",
+      "unitCode": "MTH-T02-C03-U03",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "direct",
+      "context": "A municipal solar water heater test logged water temperature in degrees Celsius over heating durations from 10 to 40 minutes, fitting a linear rise. At 45 minutes, an automatic thermostat valve opens to cap the tank temperature.",
+      "prompt": "A test fitted the line $T(x) = 2x + 18$ to water temperature data collected from $10$ to $40$ minutes. At $45$ minutes, a thermostat limit valve activates to cap the temperature. Should engineers rely on $T(x) = 2x + 18$ to predict the temperature at $60$ minutes?",
+      "display": "\\text{Evaluate whether the linear trend remains valid beyond the observed window and after the valve activates.}",
+      "givens": {
+        "m": 2,
+        "b": 18,
+        "xmin": 10,
+        "xmax": 40,
+        "changeMin": 45,
+        "xstar": 60
+      },
+      "constants": {},
+      "trapGivens": [
+        2,
+        60,
+        18
+      ],
+      "answerSpec": {
+        "type": "choice",
+        "options": [
+          {
+            "id": "A",
+            "label": "Yes; the fitted linear equation always predicts future temperatures accurately",
+            "trapTag": "t02-c03-u03-ignore-model-breakdown-trap"
+          },
+          {
+            "id": "B",
+            "label": "No; the prediction input is outside the observed range and the thermostat valve alters the system regime"
+          },
+          {
+            "id": "C",
+            "label": "Yes; sixty minutes is a whole-number multiple of ten minutes",
+            "provenance": "Confuses arithmetic convenience with model validity."
+          }
+        ],
+        "correct": "B"
+      },
+      "answerPlain": "B",
+      "answerDisplay": "B",
+      "inputHint": "Choose whether the earlier fitted model remains reliable for this prediction.",
+      "commonTrapTag": "t02-c03-u03-ignore-model-breakdown-trap",
+      "trapDerivation": "2 * 60 + 18",
+      "trapValue": "138",
+      "verify": {
+        "source": "2 * 60 + 18",
+        "trapValue": "138"
+      },
+      "checkpointHint": "Check both whether the requested time lies outside the data range and whether a physical control mechanism changes the heating behavior.",
+      "references": [
+        "MTH-T02-C03-U03"
+      ],
+      "verificationLevel": "partial",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "Water heating from 38 C (at 10 min) to 98 C (at 40 min) cannot continue linearly to 138 C at 60 min in an unpressurized tank after a 45-min thermostat cap; physical breakdown is genuine."
+      },
+      "steps": [
+        {
+          "latex": "x^* = 60",
+          "explain": "Identify the prediction time."
+        },
+        {
+          "latex": "x_{\\max} = 40",
+          "explain": "Identify the end of the observed data window."
+        },
+        {
+          "latex": "60 > 40",
+          "explain": "The prediction time lies outside the observed interval."
+        },
+        {
+          "latex": "2(60) + 18 = 138",
+          "explain": "Unchecked substitution predicts one hundred thirty-eight degrees Celsius, ignoring the thermostat cap.",
+          "eq": [
+            "2 * 60 + 18",
+            "138"
+          ],
+          "val": "138"
+        },
+        {
+          "latex": "\\text{model breakdown occurs after the thermostat valve activates}",
+          "explain": "The linear model from the uncapped heating phase does not apply after the regime change."
+        }
+      ],
+      "review": {
+        "verdict": "pass",
+        "note": "Unchecked linear extrapolation yields 138 C past the 45-minute thermostat cap; context, steps, and hints pass all checks."
+      },
+      "id": "VAR-MTH-T02-C03-U03-t02-c03-u03-check-model-breakdown-01",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c03-u03-ignore-model-breakdown-trap|direct|A test fitted the line $T(x) = #x + #$ to water temperature data collected from $#$ to $#$ minutes. At $#$ minutes, a thermostat limit valve activates to cap the temperature. Should engineers rely on $T(x) = #x + #$ to predict the temperature at $#$ minutes?"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C03-U03-t02-c03-u03-check-model-breakdown-02",
+      "sourceArchetype": "t02-c03-u03-check-model-breakdown",
+      "archetypeKey": "t02-c03-u03-check-model-breakdown",
+      "archetype": "problem-solving",
+      "unitCode": "MTH-T02-C03-U03",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "direct",
+      "context": "A warehouse fulfillment study fitted a line to hourly parcel throughput for crew sizes from 4 to 12 workers. Above 14 workers, the single loading dock reaches physical capacity and cannot accept additional pallets per hour.",
+      "prompt": "A warehouse study fitted $P(x) = 35x + 20$ to hourly parcel output for crew sizes from $4$ through $12$ workers. Beyond $14$ workers, the single loading dock saturates. Is it reasonable to use $P(x) = 35x + 20$ to forecast output for $25$ workers?",
+      "display": "\\text{Compare the target crew size against both the observed data interval and the dock saturation limit.}",
+      "givens": {
+        "m": 35,
+        "b": 20,
+        "xmin": 4,
+        "xmax": 12,
+        "cap": 14,
+        "xstar": 25
+      },
+      "constants": {},
+      "trapGivens": [
+        35,
+        25,
+        20
+      ],
+      "answerSpec": {
+        "type": "choice",
+        "options": [
+          {
+            "id": "A",
+            "label": "No; extrapolating past the dock saturation threshold ignores physical capacity breakdown"
+          },
+          {
+            "id": "B",
+            "label": "Yes; substituting the new worker count into the fitted line gives a reliable forecast",
+            "trapTag": "t02-c03-u03-ignore-model-breakdown-trap"
+          },
+          {
+            "id": "C",
+            "label": "Cannot be determined without knowing the vertical intercept",
+            "provenance": "Ignores the stated intercept and capacity constraint."
+          }
+        ],
+        "correct": "A"
+      },
+      "answerPlain": "A",
+      "answerDisplay": "A",
+      "inputHint": "Choose whether the earlier fitted model remains reliable for this forecast.",
+      "commonTrapTag": "t02-c03-u03-ignore-model-breakdown-trap",
+      "trapDerivation": "35 * 25 + 20",
+      "trapValue": "895",
+      "verify": {
+        "source": "35 * 25 + 20",
+        "trapValue": "895"
+      },
+      "checkpointHint": "Consider whether the linear relationship can continue once the physical bottleneck of the loading dock is reached.",
+      "references": [
+        "MTH-T02-C03-U03"
+      ],
+      "verificationLevel": "partial",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "Warehouse throughput saturates when a shared dock bottleneck is reached above 14 workers, so extrapolating the 4-12 worker line to 25 workers exhibits genuine model breakdown."
+      },
+      "steps": [
+        {
+          "latex": "x^* = 25",
+          "explain": "Identify the requested crew size."
+        },
+        {
+          "latex": "x_{\\max} = 12",
+          "explain": "Identify the maximum observed crew size."
+        },
+        {
+          "latex": "25 > 14",
+          "explain": "The requested crew size exceeds both the observed interval and the dock saturation point."
+        },
+        {
+          "latex": "35(25) + 20 = 895",
+          "explain": "Blindly evaluating the line gives eight hundred ninety-five parcels per hour, ignoring dock saturation.",
+          "eq": [
+            "35 * 25 + 20",
+            "895"
+          ],
+          "val": "895"
+        },
+        {
+          "latex": "\\text{do not rely on the linear forecast past saturation}",
+          "explain": "Physical capacity breakdown invalidates the linear trend at twenty-five workers."
+        }
+      ],
+      "review": {
+        "verdict": "pass",
+        "note": "Extrapolating to 25 workers past the 14-worker dock saturation threshold demonstrates model breakdown; trap 895 and hints pass all gates."
+      },
+      "id": "VAR-MTH-T02-C03-U03-t02-c03-u03-check-model-breakdown-02",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c03-u03-ignore-model-breakdown-trap|direct|A warehouse study fitted $P(x) = #x + #$ to hourly parcel output for crew sizes from $#$ through $#$ workers. Beyond $#$ workers, the single loading dock saturates. Is it reasonable to use $P(x) = #x + #$ to forecast output for $#$ workers?"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C03-U03-t02-c03-u03-check-model-breakdown-03",
+      "sourceArchetype": "t02-c03-u03-check-model-breakdown",
+      "archetypeKey": "t02-c03-u03-check-model-breakdown",
+      "archetype": "problem-solving",
+      "unitCode": "MTH-T02-C03-U03",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "direct",
+      "context": "A regional transit agency fitted a linear trend to weekday bus ridership from weeks 1 through 6 of the academic term. At week 7, the university closed for a holiday recess.",
+      "prompt": "A transit agency fitted $R(x) = 4x + 50$ (in hundreds of riders) to weekday ridership data from weeks $1$ through $6$. At week $7$, the university closed for recess. Should the agency rely on $R(x) = 4x + 50$ to predict ridership in week $9$ during the recess?",
+      "display": "\\text{Assess whether the fitted academic-term trend holds outside the observed weeks after the campus closes.}",
+      "givens": {
+        "m": 4,
+        "b": 50,
+        "xmin": 1,
+        "xmax": 6,
+        "changeWeek": 7,
+        "xstar": 9
+      },
+      "constants": {},
+      "trapGivens": [
+        4,
+        9,
+        50
+      ],
+      "answerSpec": {
+        "type": "choice",
+        "options": [
+          {
+            "id": "A",
+            "label": "Yes; a least-squares line remains valid across schedule and regime changes",
+            "trapTag": "t02-c03-u03-ignore-model-breakdown-trap"
+          },
+          {
+            "id": "B",
+            "label": "Yes; week nine is close enough to the start of the term",
+            "provenance": "Ignores both extrapolation distance and the campus closure."
+          },
+          {
+            "id": "C",
+            "label": "No; the week lies outside the observed window and the university closure changes the underlying travel pattern"
+          }
+        ],
+        "correct": "C"
+      },
+      "answerPlain": "C",
+      "answerDisplay": "C",
+      "inputHint": "Choose whether the earlier fitted model remains reliable for this prediction.",
+      "commonTrapTag": "t02-c03-u03-ignore-model-breakdown-trap",
+      "trapDerivation": "4 * 9 + 50",
+      "trapValue": "86",
+      "verify": {
+        "source": "4 * 9 + 50",
+        "trapValue": "86"
+      },
+      "checkpointHint": "Verify whether the prediction falls outside the observed weeks and whether the underlying conditions that generated the data still hold.",
+      "references": [
+        "MTH-T02-C03-U03"
+      ],
+      "verificationLevel": "partial",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "Campus transit ridership drops sharply during university recess, so extrapolating the weeks 1-6 term growth line into week 9 recess is a realistic regime-change breakdown."
+      },
+      "steps": [
+        {
+          "latex": "x^* = 9",
+          "explain": "Identify the requested forecast week."
+        },
+        {
+          "latex": "x_{\\max} = 6",
+          "explain": "Identify the last observed week."
+        },
+        {
+          "latex": "9 > 6",
+          "explain": "Week nine lies beyond the observed interval."
+        },
+        {
+          "latex": "4(9) + 50 = 86",
+          "explain": "Substituting week nine into the term-time line gives eighty-six hundred riders, ignoring the campus closure.",
+          "eq": [
+            "4 * 9 + 50",
+            "86"
+          ],
+          "val": "86"
+        },
+        {
+          "latex": "\\text{the term-time fit breaks down during recess}",
+          "explain": "Because the university closed at week seven, the earlier linear growth pattern no longer applies."
+        }
+      ],
+      "review": {
+        "verdict": "pass",
+        "note": "Week 9 extrapolation during campus recess exhibits model breakdown; trap 86, contextCheck, and hints pass all checks."
+      },
+      "id": "VAR-MTH-T02-C03-U03-t02-c03-u03-check-model-breakdown-03",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c03-u03-ignore-model-breakdown-trap|direct|A transit agency fitted $R(x) = #x + #$ (in hundreds of riders) to weekday ridership data from weeks $#$ through $#$. At week $#$, the university closed for recess. Should the agency rely on $R(x) = #x + #$ to predict ridership in week $#$ during the recess?"
+    }
+  ]
+}
