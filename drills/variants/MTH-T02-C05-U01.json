@@ -1,0 +1,1284 @@
+{
+  "unitCode": "MTH-T02-C05-U01",
+  "variants": [
+    {
+      "variantId": "VAR-MTH-T02-C05-U01-t02-c05-u01-evaluate-exponential-functions-01",
+      "sourceArchetype": "t02-c05-u01-evaluate-exponential-functions",
+      "archetypeKey": "t02-c05-u01-evaluate-exponential-functions",
+      "unitCode": "MTH-T02-C05-U01",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Evaluate $f(x) = 5 \\cdot 2^{x - 1}$ at $x = 5$.",
+      "display": "f(x) = 5 \\cdot 2^{x - 1}",
+      "plainText": "f(x) = 5 * 2^(x - 1)",
+      "givens": {
+        "a": 5,
+        "b": 2,
+        "c": 1,
+        "x": 5
+      },
+      "constants": {},
+      "trapGivens": [
+        5,
+        2,
+        1
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "80",
+        "tolerance": 0
+      },
+      "answerPlain": "80",
+      "answerDisplay": "80",
+      "inputHint": "Enter an integer",
+      "commonTrapTag": "t02-c05-u01-multiply-before-exponent-trap",
+      "trapDerivation": "(5 * 2)^(5 - 1)",
+      "trapValue": "10000",
+      "verify": {
+        "source": "5 * 2^(5 - 1)",
+        "trapValue": "10000"
+      },
+      "checkpointHint": "Substitute the input into the exponent first, evaluate the power of the base, and then multiply by the leading coefficient.",
+      "references": [
+        "MTH-T02-C05-U01"
+      ],
+      "steps": [
+        {
+          "latex": "f(5) = 5 \\cdot 2^{5 - 1}",
+          "explain": "Substitute x = 5 into the exponent.",
+          "eq": [
+            "5 * 2^(5 - 1)",
+            "5 * 2^4"
+          ]
+        },
+        {
+          "latex": "f(5) = 5 \\cdot 2^4",
+          "explain": "Simplify the exponent 5 - 1 to 4.",
+          "eq": [
+            "5 - 1",
+            "4"
+          ]
+        },
+        {
+          "latex": "f(5) = 5 \\cdot 16",
+          "explain": "Evaluate the power 2^4 before multiplying.",
+          "eq": [
+            "2^4",
+            "16"
+          ]
+        },
+        {
+          "latex": "f(5) = 80",
+          "explain": "Multiply 5 by 16.",
+          "val": "80"
+        }
+      ],
+      "id": "VAR-MTH-T02-C05-U01-t02-c05-u01-evaluate-exponential-functions-01",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "t02-c05-u01-multiply-before-exponent-trap|direct|f(x) = # * #^(x - #)"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C05-U01-t02-c05-u01-evaluate-exponential-functions-02",
+      "sourceArchetype": "t02-c05-u01-evaluate-exponential-functions",
+      "archetypeKey": "t02-c05-u01-evaluate-exponential-functions",
+      "unitCode": "MTH-T02-C05-U01",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Evaluate $f(x) = 4 \\cdot 3^{x + 1}$ at $x = 2$.",
+      "display": "f(x) = 4 \\cdot 3^{x + 1}",
+      "plainText": "f(x) = 4 * 3^(x + 1)",
+      "givens": {
+        "a": 4,
+        "b": 3,
+        "c": 1,
+        "x": 2
+      },
+      "constants": {},
+      "trapGivens": [
+        4,
+        3,
+        1,
+        2
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "108",
+        "tolerance": 0
+      },
+      "answerPlain": "108",
+      "answerDisplay": "108",
+      "inputHint": "Enter an integer",
+      "commonTrapTag": "t02-c05-u01-multiply-before-exponent-trap",
+      "trapDerivation": "(4 * 3)^(2 + 1)",
+      "trapValue": "1728",
+      "verify": {
+        "source": "4 * 3^(2 + 1)",
+        "trapValue": "1728"
+      },
+      "checkpointHint": "Apply the exponent to the base alone before multiplying by the outside coefficient.",
+      "references": [
+        "MTH-T02-C05-U01"
+      ],
+      "steps": [
+        {
+          "latex": "f(2) = 4 \\cdot 3^{2 + 1}",
+          "explain": "Substitute x = 2 into the exponent.",
+          "eq": [
+            "4 * 3^(2 + 1)",
+            "4 * 3^3"
+          ]
+        },
+        {
+          "latex": "f(2) = 4 \\cdot 3^3",
+          "explain": "Add 2 and 1 in the exponent.",
+          "eq": [
+            "2 + 1",
+            "3"
+          ]
+        },
+        {
+          "latex": "f(2) = 4 \\cdot 27",
+          "explain": "Evaluate 3^3 to 27.",
+          "eq": [
+            "3^3",
+            "27"
+          ]
+        },
+        {
+          "latex": "f(2) = 108",
+          "explain": "Multiply 4 by 27.",
+          "val": "108"
+        }
+      ],
+      "id": "VAR-MTH-T02-C05-U01-t02-c05-u01-evaluate-exponential-functions-02",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "t02-c05-u01-multiply-before-exponent-trap|direct|f(x) = # * #^(x + #)"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C05-U01-t02-c05-u01-evaluate-exponential-functions-03",
+      "sourceArchetype": "t02-c05-u01-evaluate-exponential-functions",
+      "archetypeKey": "t02-c05-u01-evaluate-exponential-functions",
+      "unitCode": "MTH-T02-C05-U01",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Evaluate $f(x) = 2 \\cdot 5^{2x - 3}$ at $x = 3$.",
+      "display": "f(x) = 2 \\cdot 5^{2x - 3}",
+      "plainText": "f(x) = 2 * 5^(2*x - 3)",
+      "givens": {
+        "a": 2,
+        "b": 5,
+        "m": 2,
+        "c": 3,
+        "x": 3
+      },
+      "constants": {},
+      "trapGivens": [
+        2,
+        5,
+        3
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "250",
+        "tolerance": 0
+      },
+      "answerPlain": "250",
+      "answerDisplay": "250",
+      "inputHint": "Enter an integer",
+      "commonTrapTag": "t02-c05-u01-multiply-before-exponent-trap",
+      "trapDerivation": "(2 * 5)^(2*3 - 3)",
+      "trapValue": "1000",
+      "verify": {
+        "source": "2 * 5^(2*3 - 3)",
+        "trapValue": "1000"
+      },
+      "checkpointHint": "Simplify the linear expression in the exponent first, raise the base to that power, and then multiply by the leading coefficient.",
+      "references": [
+        "MTH-T02-C05-U01"
+      ],
+      "steps": [
+        {
+          "latex": "f(3) = 2 \\cdot 5^{2(3) - 3}",
+          "explain": "Substitute x = 3 into the exponent."
+        },
+        {
+          "latex": "f(3) = 2 \\cdot 5^3",
+          "explain": "Simplify the exponent 6 - 3 to 3.",
+          "eq": [
+            "2*3 - 3",
+            "3"
+          ]
+        },
+        {
+          "latex": "f(3) = 2 \\cdot 125",
+          "explain": "Evaluate 5^3 to 125.",
+          "eq": [
+            "5^3",
+            "125"
+          ]
+        },
+        {
+          "latex": "f(3) = 250",
+          "explain": "Multiply 2 by 125.",
+          "val": "250"
+        }
+      ],
+      "id": "VAR-MTH-T02-C05-U01-t02-c05-u01-evaluate-exponential-functions-03",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "t02-c05-u01-multiply-before-exponent-trap|direct|f(x) = # * #^(#*x - #)"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C05-U01-t02-c05-u01-evaluate-natural-exponential-01",
+      "sourceArchetype": "t02-c05-u01-evaluate-natural-exponential",
+      "archetypeKey": "t02-c05-u01-evaluate-natural-exponential",
+      "unitCode": "MTH-T02-C05-U01",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Evaluate $f(x) = 300 e^{0.17 x}$ at $x = 2$. Round your answer to two decimal places.",
+      "display": "f(x) = 300 e^{0.17 x}",
+      "plainText": "f(x) = 300 * e^(0.17 * x)",
+      "givens": {
+        "a": 300,
+        "k": 0.17,
+        "x": 2
+      },
+      "constants": {},
+      "trapGivens": [
+        300,
+        0.17,
+        2
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "421.48",
+        "tolerance": 0.01
+      },
+      "answerPlain": "421.48",
+      "answerDisplay": "421.48",
+      "inputHint": "Enter a decimal rounded to two decimal places",
+      "commonTrapTag": "t02-c05-u01-round-exponent-first-trap",
+      "trapDerivation": "floor(300 * exp(floor(0.17 * 2 * 10) / 10) * 100 + 0.5) / 100",
+      "trapValue": "404.96",
+      "verify": {
+        "source": "floor(300 * exp(0.17 * 2) * 100 + 0.5) / 100",
+        "trapValue": "404.96"
+      },
+      "checkpointHint": "Retain the exact decimal product in the exponent when evaluating the power of the natural base, rounding only the final product.",
+      "references": [
+        "MTH-T02-C05-U01"
+      ],
+      "steps": [
+        {
+          "latex": "f(2) = 300 e^{0.17 \\cdot 2}",
+          "explain": "Substitute x = 2 into the exponent.",
+          "eq": [
+            "0.17 * 2",
+            "0.34"
+          ]
+        },
+        {
+          "latex": "f(2) = 300 e^{0.34}",
+          "explain": "Multiply in the exponent without rounding."
+        },
+        {
+          "latex": "f(2) \\approx 300 \\cdot 1.40494759",
+          "explain": "Evaluate the natural exponential."
+        },
+        {
+          "latex": "f(2) \\approx 421.48",
+          "explain": "Multiply by 300 and round to two decimal places.",
+          "val": "421.48"
+        }
+      ],
+      "id": "VAR-MTH-T02-C05-U01-t02-c05-u01-evaluate-natural-exponential-01",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "t02-c05-u01-round-exponent-first-trap|direct|f(x) = # * e^(# * x)"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C05-U01-t02-c05-u01-evaluate-natural-exponential-02",
+      "sourceArchetype": "t02-c05-u01-evaluate-natural-exponential",
+      "archetypeKey": "t02-c05-u01-evaluate-natural-exponential",
+      "unitCode": "MTH-T02-C05-U01",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Evaluate $f(x) = 500 e^{0.13 x}$ at $x = 4$. Round your answer to two decimal places.",
+      "display": "f(x) = 500 e^{0.13 x}",
+      "plainText": "f(x) = 500 * e^(0.13 * x)",
+      "givens": {
+        "a": 500,
+        "k": 0.13,
+        "x": 4
+      },
+      "constants": {},
+      "trapGivens": [
+        500,
+        0.13,
+        4
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "841.01",
+        "tolerance": 0.01
+      },
+      "answerPlain": "841.01",
+      "answerDisplay": "841.01",
+      "inputHint": "Enter a decimal rounded to two decimal places",
+      "commonTrapTag": "t02-c05-u01-round-exponent-first-trap",
+      "trapDerivation": "floor(500 * exp(floor(0.13 * 4 * 10) / 10) * 100 + 0.5) / 100",
+      "trapValue": "824.36",
+      "verify": {
+        "source": "floor(500 * exp(0.13 * 4) * 100 + 0.5) / 100",
+        "trapValue": "824.36"
+      },
+      "checkpointHint": "Compute the full product inside the exponent and evaluate the exponential before rounding the final output.",
+      "references": [
+        "MTH-T02-C05-U01"
+      ],
+      "steps": [
+        {
+          "latex": "f(4) = 500 e^{0.13 \\cdot 4}",
+          "explain": "Substitute x = 4 into the exponent.",
+          "eq": [
+            "0.13 * 4",
+            "0.52"
+          ]
+        },
+        {
+          "latex": "f(4) = 500 e^{0.52}",
+          "explain": "Keep the exact exponent 0.52 without premature rounding."
+        },
+        {
+          "latex": "f(4) \\approx 500 \\cdot 1.68202765",
+          "explain": "Evaluate e^0.52."
+        },
+        {
+          "latex": "f(4) \\approx 841.01",
+          "explain": "Multiply by 500 and round to two decimal places.",
+          "val": "841.01"
+        }
+      ],
+      "id": "VAR-MTH-T02-C05-U01-t02-c05-u01-evaluate-natural-exponential-02",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "t02-c05-u01-round-exponent-first-trap|direct|f(x) = # * e^(# * x)"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C05-U01-t02-c05-u01-evaluate-natural-exponential-03",
+      "sourceArchetype": "t02-c05-u01-evaluate-natural-exponential",
+      "archetypeKey": "t02-c05-u01-evaluate-natural-exponential",
+      "unitCode": "MTH-T02-C05-U01",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Evaluate $f(x) = 250 e^{0.16 x}$ at $x = 4$. Round your answer to two decimal places.",
+      "display": "f(x) = 250 e^{0.16 x}",
+      "plainText": "f(x) = 250 * e^(0.16 * x)",
+      "givens": {
+        "a": 250,
+        "k": 0.16,
+        "x": 4
+      },
+      "constants": {},
+      "trapGivens": [
+        250,
+        0.16,
+        4
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "474.12",
+        "tolerance": 0.01
+      },
+      "answerPlain": "474.12",
+      "answerDisplay": "474.12",
+      "inputHint": "Enter a decimal rounded to two decimal places",
+      "commonTrapTag": "t02-c05-u01-round-exponent-first-trap",
+      "trapDerivation": "floor(250 * exp(floor(0.16 * 4 * 10) / 10) * 100 + 0.5) / 100",
+      "trapValue": "455.53",
+      "verify": {
+        "source": "floor(250 * exp(0.16 * 4) * 100 + 0.5) / 100",
+        "trapValue": "455.53"
+      },
+      "checkpointHint": "Use the unrounded exponent when evaluating the power of e, and round only after multiplying by the initial value.",
+      "references": [
+        "MTH-T02-C05-U01"
+      ],
+      "steps": [
+        {
+          "latex": "f(4) = 250 e^{0.16 \\cdot 4}",
+          "explain": "Substitute x = 4 into the exponent.",
+          "eq": [
+            "0.16 * 4",
+            "0.64"
+          ]
+        },
+        {
+          "latex": "f(4) = 250 e^{0.64}",
+          "explain": "Compute the exact product in the exponent."
+        },
+        {
+          "latex": "f(4) \\approx 250 \\cdot 1.89648088",
+          "explain": "Evaluate the natural exponential."
+        },
+        {
+          "latex": "f(4) \\approx 474.12",
+          "explain": "Multiply by 250 and round to two decimal places.",
+          "val": "474.12"
+        }
+      ],
+      "id": "VAR-MTH-T02-C05-U01-t02-c05-u01-evaluate-natural-exponential-03",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "t02-c05-u01-round-exponent-first-trap|direct|f(x) = # * e^(# * x)"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C05-U01-t02-c05-u01-write-exponential-rule-from-data-01",
+      "sourceArchetype": "t02-c05-u01-write-exponential-rule-from-data",
+      "archetypeKey": "t02-c05-u01-write-exponential-rule-from-data",
+      "unitCode": "MTH-T02-C05-U01",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "An exponential function $f(x) = a b^x$ with $b > 0$ satisfies $f(1) = 20$ and $f(3) = 80$. Find the initial value $a$.",
+      "display": "f(x) = a b^x",
+      "plainText": "f(1) = 20, f(3) = 80, f(x) = a * b^x",
+      "givens": {
+        "x1": 1,
+        "y1": 20,
+        "x2": 3,
+        "y2": 80
+      },
+      "constants": {},
+      "trapGivens": [
+        1,
+        20,
+        3,
+        80
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "10",
+        "tolerance": 0
+      },
+      "answerPlain": "10",
+      "answerDisplay": "10",
+      "inputHint": "Enter a number",
+      "commonTrapTag": "t02-c05-u01-additive-change-as-base-trap",
+      "trapDerivation": "20 - (80 - 20) / (3 - 1)",
+      "trapValue": "-10",
+      "verify": {
+        "source": "20 / sqrt(80 / 20)",
+        "trapValue": "-10"
+      },
+      "checkpointHint": "Form the ratio of the two outputs to solve for the positive multiplicative base first, then back-substitute to find the initial value.",
+      "references": [
+        "MTH-T02-C05-U01"
+      ],
+      "steps": [
+        {
+          "latex": "\\frac{f(3)}{f(1)} = \\frac{a b^3}{a b}",
+          "explain": "Divide the two function equations to eliminate a."
+        },
+        {
+          "latex": "\\frac{80}{20} = b^2",
+          "explain": "Substitute f(3) = 80 and f(1) = 20 and simplify the ratio of powers.",
+          "eq": [
+            "80 / 20",
+            "4"
+          ]
+        },
+        {
+          "latex": "b^2 = 4",
+          "explain": "Divide 80 by 20."
+        },
+        {
+          "latex": "b = 2",
+          "explain": "Take the positive square root since b > 0.",
+          "eq": [
+            "sqrt(4)",
+            "2"
+          ]
+        },
+        {
+          "latex": "20 = a \\cdot 2",
+          "explain": "Substitute b = 2 into f(1) = 20."
+        },
+        {
+          "latex": "a = 10",
+          "explain": "Divide both sides by 2 to find the initial value.",
+          "val": "10"
+        }
+      ],
+      "id": "VAR-MTH-T02-C05-U01-t02-c05-u01-write-exponential-rule-from-data-01",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c05-u01-additive-change-as-base-trap|reverse|f(#) = #, f(#) = #, f(x) = a * b^x"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C05-U01-t02-c05-u01-write-exponential-rule-from-data-02",
+      "sourceArchetype": "t02-c05-u01-write-exponential-rule-from-data",
+      "archetypeKey": "t02-c05-u01-write-exponential-rule-from-data",
+      "unitCode": "MTH-T02-C05-U01",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "An exponential function $f(x) = a b^x$ with $b > 0$ satisfies $f(1) = 15$ and $f(2) = 75$. Find the growth factor $b$.",
+      "display": "f(x) = a b^x",
+      "plainText": "f(1) = 15, f(2) = 75, b = f(2)/f(1)",
+      "givens": {
+        "x1": 1,
+        "y1": 15,
+        "x2": 2,
+        "y2": 75
+      },
+      "constants": {},
+      "trapGivens": [
+        15,
+        75
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "5",
+        "tolerance": 0
+      },
+      "answerPlain": "5",
+      "answerDisplay": "5",
+      "inputHint": "Enter a number",
+      "commonTrapTag": "t02-c05-u01-additive-change-as-base-trap",
+      "trapDerivation": "75 - 15",
+      "trapValue": "60",
+      "verify": {
+        "source": "75 / 15",
+        "trapValue": "60"
+      },
+      "checkpointHint": "Use the quotient of consecutive outputs rather than their difference to recover the exponential base.",
+      "references": [
+        "MTH-T02-C05-U01"
+      ],
+      "steps": [
+        {
+          "latex": "\\frac{f(2)}{f(1)} = \\frac{a b^2}{a b}",
+          "explain": "Form the ratio of the two consecutive outputs."
+        },
+        {
+          "latex": "\\frac{75}{15} = b",
+          "explain": "Substitute the given outputs and cancel the common factor a b."
+        },
+        {
+          "latex": "b = 5",
+          "explain": "Divide 75 by 15 to obtain the growth factor.",
+          "val": "5"
+        }
+      ],
+      "id": "VAR-MTH-T02-C05-U01-t02-c05-u01-write-exponential-rule-from-data-02",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c05-u01-additive-change-as-base-trap|reverse|f(#) = #, f(#) = #, b = f(#)/f(#)"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C05-U01-t02-c05-u01-write-exponential-rule-from-data-03",
+      "sourceArchetype": "t02-c05-u01-write-exponential-rule-from-data",
+      "archetypeKey": "t02-c05-u01-write-exponential-rule-from-data",
+      "unitCode": "MTH-T02-C05-U01",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "An exponential function $f(x) = a b^x$ satisfies $f(0) = 6$ and $f(1) = 24$. Find $f(3)$.",
+      "display": "f(x) = a b^x",
+      "plainText": "f(0) = 6, f(1) = 24, f(3) = a * b^3",
+      "givens": {
+        "x0": 0,
+        "y0": 6,
+        "x1": 1,
+        "y1": 24,
+        "x3": 3
+      },
+      "constants": {},
+      "trapGivens": [
+        6,
+        24,
+        3
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "384",
+        "tolerance": 0
+      },
+      "answerPlain": "384",
+      "answerDisplay": "384",
+      "inputHint": "Enter a number",
+      "commonTrapTag": "t02-c05-u01-additive-change-as-base-trap",
+      "trapDerivation": "6 * (24 - 6)^3",
+      "trapValue": "34992",
+      "verify": {
+        "source": "6 * (24 / 6)^3",
+        "trapValue": "34992"
+      },
+      "checkpointHint": "Identify the initial value from the output at zero, divide to find the multiplicative base, and then evaluate the rule at the requested input.",
+      "references": [
+        "MTH-T02-C05-U01"
+      ],
+      "steps": [
+        {
+          "latex": "a = 6",
+          "explain": "Read the initial value directly from f(0) = 6."
+        },
+        {
+          "latex": "b = \\frac{24}{6}",
+          "explain": "Divide f(1) by f(0) to find the multiplicative base.",
+          "eq": [
+            "24 / 6",
+            "4"
+          ]
+        },
+        {
+          "latex": "b = 4",
+          "explain": "Simplify 24 / 6 to 4."
+        },
+        {
+          "latex": "f(3) = 6 \\cdot 4^3",
+          "explain": "Substitute a = 6, b = 4, and x = 3 into f(x) = a b^x.",
+          "eq": [
+            "4^3",
+            "64"
+          ]
+        },
+        {
+          "latex": "f(3) = 384",
+          "explain": "Multiply 6 by 64 to obtain f(3).",
+          "val": "384"
+        }
+      ],
+      "id": "VAR-MTH-T02-C05-U01-t02-c05-u01-write-exponential-rule-from-data-03",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c05-u01-additive-change-as-base-trap|direct|f(#) = #, f(#) = #, f(#) = a * b^#"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C05-U01-t02-c05-u01-continuous-compound-interest-01",
+      "sourceArchetype": "t02-c05-u01-continuous-compound-interest",
+      "archetypeKey": "t02-c05-u01-continuous-compound-interest",
+      "unitCode": "MTH-T02-C05-U01",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "endowment_trust_continuous_growth",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "Continuous compound interest A = P*e^(r*t) with P = $5000, r = 0.04/year, and t = 6 years is the standard financial law with consistent dollar and year units."
+      },
+      "verificationLevel": "partial",
+      "prompt": "A university scholarship endowment deposits $\\$5000$ into a fund earning $4\\%$ annual interest compounded continuously for $6$ years. What is the balance, in dollars, rounded to the nearest cent?",
+      "display": "A = P e^{rt}",
+      "plainText": "A = 5000 * e^(0.04 * 6)",
+      "givens": {
+        "P": 5000,
+        "r_pct": 4,
+        "t": 6
+      },
+      "constants": {
+        "hundred": 100
+      },
+      "trapGivens": [
+        5000,
+        4,
+        6,
+        100
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "6356.25",
+        "tolerance": 0.01
+      },
+      "answerPlain": "6356.25",
+      "answerDisplay": "6356.25",
+      "inputHint": "Enter a dollar amount rounded to two decimal places",
+      "commonTrapTag": "t02-c05-u01-linear-continuous-interest-trap",
+      "trapDerivation": "5000 * (1 + (4 / 100) * 6)",
+      "trapValue": "6200",
+      "verify": {
+        "source": "floor(5000 * exp((4 / 100) * 6) * 100 + 0.5) / 100",
+        "trapValue": "6200"
+      },
+      "checkpointHint": "Convert the percentage rate to a decimal, multiply by the elapsed time in the exponent of e, and scale by the principal.",
+      "references": [
+        "MTH-T02-C05-U01"
+      ],
+      "steps": [
+        {
+          "latex": "r = \\frac{4}{100}",
+          "explain": "Write the percentage annual interest rate as a fraction.",
+          "eq": [
+            "4 / 100",
+            "0.04"
+          ]
+        },
+        {
+          "latex": "r = 0.04",
+          "explain": "Convert the interest rate to a decimal."
+        },
+        {
+          "latex": "r t = 0.04 \\cdot 6",
+          "explain": "Multiply the decimal rate by the number of years.",
+          "eq": [
+            "0.04 * 6",
+            "0.24"
+          ]
+        },
+        {
+          "latex": "A = 5000 e^{0.24}",
+          "explain": "Substitute the principal and exponent into the continuous compounding formula."
+        },
+        {
+          "latex": "A \\approx 6356.25",
+          "explain": "Evaluate the exponential and round to the nearest cent.",
+          "val": "6356.25"
+        }
+      ],
+      "id": "VAR-MTH-T02-C05-U01-t02-c05-u01-continuous-compound-interest-01",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c05-u01-linear-continuous-interest-trap|direct|A = # * e^(# * #)"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C05-U01-t02-c05-u01-continuous-compound-interest-02",
+      "sourceArchetype": "t02-c05-u01-continuous-compound-interest",
+      "archetypeKey": "t02-c05-u01-continuous-compound-interest",
+      "unitCode": "MTH-T02-C05-U01",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "treasury_reserve_continuous_yield",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "Continuous compounding A = P*e^(r*t) with P = $2500, r = 0.05/year, and t = 8 years follows the exact financial law with realistic positive quantities."
+      },
+      "verificationLevel": "partial",
+      "prompt": "A municipal reserve account invests $\\$2500$ at $5\\%$ annual interest compounded continuously for $8$ years. What is the balance, in dollars, rounded to the nearest cent?",
+      "display": "A = P e^{rt}",
+      "plainText": "A = 2500 * e^(0.05 * 8)",
+      "givens": {
+        "P": 2500,
+        "r_pct": 5,
+        "t": 8
+      },
+      "constants": {
+        "hundred": 100
+      },
+      "trapGivens": [
+        2500,
+        5,
+        8,
+        100
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "3729.56",
+        "tolerance": 0.01
+      },
+      "answerPlain": "3729.56",
+      "answerDisplay": "3729.56",
+      "inputHint": "Enter a dollar amount rounded to two decimal places",
+      "commonTrapTag": "t02-c05-u01-linear-continuous-interest-trap",
+      "trapDerivation": "2500 * (1 + (5 / 100) * 8)",
+      "trapValue": "3500",
+      "verify": {
+        "source": "floor(2500 * exp((5 / 100) * 8) * 100 + 0.5) / 100",
+        "trapValue": "3500"
+      },
+      "checkpointHint": "Express the annual percentage rate as a decimal and apply the natural exponential growth model.",
+      "references": [
+        "MTH-T02-C05-U01"
+      ],
+      "steps": [
+        {
+          "latex": "r = \\frac{5}{100}",
+          "explain": "Express the percentage annual rate as a fraction.",
+          "eq": [
+            "5 / 100",
+            "0.05"
+          ]
+        },
+        {
+          "latex": "r = 0.05",
+          "explain": "Convert the fraction to a decimal rate."
+        },
+        {
+          "latex": "r t = 0.05 \\cdot 8",
+          "explain": "Multiply the decimal rate by the number of years.",
+          "eq": [
+            "0.05 * 8",
+            "0.4"
+          ]
+        },
+        {
+          "latex": "A = 2500 e^{0.4}",
+          "explain": "Substitute into the continuous compounding formula."
+        },
+        {
+          "latex": "A \\approx 3729.56",
+          "explain": "Evaluate and round to the nearest cent.",
+          "val": "3729.56"
+        }
+      ],
+      "id": "VAR-MTH-T02-C05-U01-t02-c05-u01-continuous-compound-interest-02",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c05-u01-linear-continuous-interest-trap|direct|A = # * e^(# * #)"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C05-U01-t02-c05-u01-continuous-compound-interest-03",
+      "sourceArchetype": "t02-c05-u01-continuous-compound-interest",
+      "archetypeKey": "t02-c05-u01-continuous-compound-interest",
+      "unitCode": "MTH-T02-C05-U01",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "retirement_cd_continuous_compounding",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "Continuous compounding A = P*e^(r*t) with P = $6000, r = 0.03/year, and t = 10 years uses the exact continuous compounding law and realistic positive units."
+      },
+      "verificationLevel": "partial",
+      "prompt": "A retirement certificate begins with a principal of $\\$6000$ and earns $3\\%$ annual interest compounded continuously for $10$ years. What is the balance, in dollars, rounded to the nearest cent?",
+      "display": "A = P e^{rt}",
+      "plainText": "A = 6000 * e^(0.03 * 10)",
+      "givens": {
+        "P": 6000,
+        "r_pct": 3,
+        "t": 10
+      },
+      "constants": {
+        "hundred": 100
+      },
+      "trapGivens": [
+        6000,
+        3,
+        10,
+        100
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "8099.15",
+        "tolerance": 0.01
+      },
+      "answerPlain": "8099.15",
+      "answerDisplay": "8099.15",
+      "inputHint": "Enter a dollar amount rounded to two decimal places",
+      "commonTrapTag": "t02-c05-u01-linear-continuous-interest-trap",
+      "trapDerivation": "6000 * (1 + (3 / 100) * 10)",
+      "trapValue": "7800",
+      "verify": {
+        "source": "floor(6000 * exp((3 / 100) * 10) * 100 + 0.5) / 100",
+        "trapValue": "7800"
+      },
+      "checkpointHint": "Use the natural exponential formula with the decimal annual rate times years as the exponent.",
+      "references": [
+        "MTH-T02-C05-U01"
+      ],
+      "steps": [
+        {
+          "latex": "r = \\frac{3}{100}",
+          "explain": "Write the percentage rate as a fraction.",
+          "eq": [
+            "3 / 100",
+            "0.03"
+          ]
+        },
+        {
+          "latex": "r = 0.03",
+          "explain": "Convert the fraction to a decimal."
+        },
+        {
+          "latex": "r t = 0.03 \\cdot 10",
+          "explain": "Multiply the decimal rate by the number of years.",
+          "eq": [
+            "0.03 * 10",
+            "0.3"
+          ]
+        },
+        {
+          "latex": "A = 6000 e^{0.3}",
+          "explain": "Substitute into the continuous compounding model."
+        },
+        {
+          "latex": "A \\approx 8099.15",
+          "explain": "Evaluate the exponential and round to the nearest cent.",
+          "val": "8099.15"
+        }
+      ],
+      "id": "VAR-MTH-T02-C05-U01-t02-c05-u01-continuous-compound-interest-03",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c05-u01-linear-continuous-interest-trap|direct|A = # * e^(# * #)"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C05-U01-t02-c05-u01-compound-interest-model-01",
+      "sourceArchetype": "t02-c05-u01-compound-interest-model",
+      "archetypeKey": "t02-c05-u01-compound-interest-model",
+      "unitCode": "MTH-T02-C05-U01",
+      "level": 3,
+      "category": "Compounding Diagnosis",
+      "form": "diagnose",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "A student calculated the balance of an account starting with $\\$2000$ earning $10\\%$ annual interest compounded semiannually for $2$ years:\nLine 1: $A = 2000\\left(1 + \\frac{0.10}{2}\\right)^2$\nLine 2: $= 2000(1 + 0.05)^2$\nLine 3: $= 2000(1.05)^2$\nLine 4: $= 2205$\nWhich line is the first one that is wrong?",
+      "display": "A = P\\left(1 + \\frac{r}{n}\\right)^{nt}",
+      "givens": {
+        "P": 2000,
+        "r_pct": 10,
+        "t": 2
+      },
+      "constants": {
+        "n": 2,
+        "hundred": 100
+      },
+      "trapGivens": [
+        2000,
+        10,
+        2,
+        100
+      ],
+      "answerSpec": {
+        "type": "choice",
+        "options": [
+          {
+            "id": "1",
+            "label": "Line 1"
+          },
+          {
+            "id": "2",
+            "label": "Line 2",
+            "trapTag": "t02-c05-u01-period-count-missing-trap"
+          },
+          {
+            "id": "3",
+            "label": "Line 3",
+            "trapTag": "t02-c05-u01-period-count-missing-trap"
+          },
+          {
+            "id": "4",
+            "label": "Line 4",
+            "trapTag": "t02-c05-u01-period-count-missing-trap"
+          }
+        ],
+        "correct": "1"
+      },
+      "answerPlain": "1",
+      "answerDisplay": "\\text{Line 1}",
+      "inputHint": "Choose a line",
+      "commonTrapTag": "t02-c05-u01-period-count-missing-trap",
+      "trapDerivation": "2000 * (1 + (10 / 100) / 2)^2",
+      "trapValue": "2205",
+      "verify": {
+        "source": "floor(2000 * (1 + (10 / 100) / 2)^(2 * 2) * 100 + 0.5) / 100",
+        "trapValue": "2205",
+        "flaw": {
+          "values": [
+            "2000 * (1 + 0.10 / 2)^2",
+            "2000 * (1 + 0.05)^2",
+            "2000 * 1.05^2",
+            "2205"
+          ],
+          "firstWrong": 1
+        }
+      },
+      "checkpointHint": "Check whether each line represents the exact compounding setup and numerical value described in the problem statement.",
+      "references": [
+        "MTH-T02-C05-U01"
+      ],
+      "steps": [
+        {
+          "latex": "A = 2000\\left(1 + \\frac{0.10}{2}\\right)^{2 \\cdot 2}",
+          "explain": "Line 1 is the first wrong line: semiannual compounding for 2 years gives n * t = 2 * 2 = 4 compounding periods in the exponent.",
+          "eq": [
+            "2 * 2",
+            "4"
+          ]
+        },
+        {
+          "latex": "A = 2000(1.05)^4",
+          "explain": "Simplify the per-period growth factor and exponent.",
+          "eq": [
+            "1 + 0.10 / 2",
+            "1.05"
+          ]
+        },
+        {
+          "latex": "A \\approx 2431.01",
+          "explain": "Evaluate and round to the nearest cent.",
+          "val": "2431.01"
+        }
+      ],
+      "blindSolve": {
+        "answer": "1",
+        "ambiguous": false,
+        "setup": "translate",
+        "strategy": "prescribed",
+        "check": "none",
+        "task": "diagnose",
+        "reverse": false,
+        "steps": 2
+      },
+      "id": "VAR-MTH-T02-C05-U01-t02-c05-u01-compound-interest-model-01",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "t02-c05-u01-period-count-missing-trap|diagnose|A student calculated the balance of an account starting with $\\$#$ earning $#\\%$ annual interest compounded semiannually for $#$ years: Line #: $A = #\\left(# + \\frac{#}{#}\\right)^#$ Line #: $= #(# + #)^#$ Line #: $= #(#)^#$ Line #: $= #$ Which line is the first one that is wrong?"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C05-U01-t02-c05-u01-compound-interest-model-02",
+      "sourceArchetype": "t02-c05-u01-compound-interest-model",
+      "archetypeKey": "t02-c05-u01-compound-interest-model",
+      "unitCode": "MTH-T02-C05-U01",
+      "level": 3,
+      "category": "Compounding Diagnosis",
+      "form": "diagnose",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "A student calculated the balance of an account starting with $\\$5000$ earning $12\\%$ annual interest compounded quarterly for $2$ years:\nLine 1: $A = 5000\\left(1 + \\frac{0.12}{4}\\right)^2$\nLine 2: $= 5000(1 + 0.03)^2$\nLine 3: $= 5000(1.03)^2$\nLine 4: $= 5304.5$\nWhich line is the first one that is wrong?",
+      "display": "A = P\\left(1 + \\frac{r}{n}\\right)^{nt}",
+      "givens": {
+        "P": 5000,
+        "r_pct": 12,
+        "t": 2
+      },
+      "constants": {
+        "n": 4,
+        "hundred": 100
+      },
+      "trapGivens": [
+        5000,
+        12,
+        4,
+        2,
+        100
+      ],
+      "answerSpec": {
+        "type": "choice",
+        "options": [
+          {
+            "id": "1",
+            "label": "Line 1"
+          },
+          {
+            "id": "2",
+            "label": "Line 2",
+            "trapTag": "t02-c05-u01-period-count-missing-trap"
+          },
+          {
+            "id": "3",
+            "label": "Line 3",
+            "trapTag": "t02-c05-u01-period-count-missing-trap"
+          },
+          {
+            "id": "4",
+            "label": "Line 4",
+            "trapTag": "t02-c05-u01-period-count-missing-trap"
+          }
+        ],
+        "correct": "1"
+      },
+      "answerPlain": "1",
+      "answerDisplay": "\\text{Line 1}",
+      "inputHint": "Choose a line",
+      "commonTrapTag": "t02-c05-u01-period-count-missing-trap",
+      "trapDerivation": "5000 * (1 + (12 / 100) / 4)^2",
+      "trapValue": "5304.5",
+      "verify": {
+        "source": "floor(5000 * (1 + (12 / 100) / 4)^(4 * 2) * 100 + 0.5) / 100",
+        "trapValue": "5304.5",
+        "flaw": {
+          "values": [
+            "5000 * (1 + 0.12 / 4)^2",
+            "5000 * (1 + 0.03)^2",
+            "5000 * 1.03^2",
+            "5304.5"
+          ],
+          "firstWrong": 1
+        }
+      },
+      "checkpointHint": "Verify whether each line matches the compounding model and preserves the value of the line above it.",
+      "references": [
+        "MTH-T02-C05-U01"
+      ],
+      "steps": [
+        {
+          "latex": "A = 5000\\left(1 + \\frac{0.12}{4}\\right)^{4 \\cdot 2}",
+          "explain": "Line 1 is the first wrong line: quarterly compounding over 2 years requires n * t = 4 * 2 = 8 total periods in the exponent.",
+          "eq": [
+            "4 * 2",
+            "8"
+          ]
+        },
+        {
+          "latex": "A = 5000(1.03)^8",
+          "explain": "Simplify the quarterly factor 1 + 0.12/4 = 1.03.",
+          "eq": [
+            "1 + 0.12 / 4",
+            "1.03"
+          ]
+        },
+        {
+          "latex": "A \\approx 6333.85",
+          "explain": "Evaluate and round to the nearest cent.",
+          "val": "6333.85"
+        }
+      ],
+      "blindSolve": {
+        "answer": "1",
+        "ambiguous": false,
+        "setup": "translate",
+        "strategy": "prescribed",
+        "check": "none",
+        "task": "diagnose",
+        "reverse": false,
+        "steps": 2
+      },
+      "id": "VAR-MTH-T02-C05-U01-t02-c05-u01-compound-interest-model-02",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "t02-c05-u01-period-count-missing-trap|diagnose|A student calculated the balance of an account starting with $\\$#$ earning $#\\%$ annual interest compounded quarterly for $#$ years: Line #: $A = #\\left(# + \\frac{#}{#}\\right)^#$ Line #: $= #(# + #)^#$ Line #: $= #(#)^#$ Line #: $= #$ Which line is the first one that is wrong?"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C05-U01-t02-c05-u01-compound-interest-model-03",
+      "sourceArchetype": "t02-c05-u01-compound-interest-model",
+      "archetypeKey": "t02-c05-u01-compound-interest-model",
+      "unitCode": "MTH-T02-C05-U01",
+      "level": 3,
+      "category": "Compounding Diagnosis",
+      "form": "diagnose",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "A student calculated the balance of an account starting with $\\$4000$ earning $8\\%$ annual interest compounded semiannually for $3$ years:\nLine 1: $A = 4000\\left(1 + \\frac{0.08}{2}\\right)^3$\nLine 2: $= 4000(1 + 0.04)^3$\nLine 3: $= 4000(1.04)^3$\nLine 4: $= 4499.456$\nWhich line is the first one that is wrong?",
+      "display": "A = P\\left(1 + \\frac{r}{n}\\right)^{nt}",
+      "givens": {
+        "P": 4000,
+        "r_pct": 8,
+        "t": 3
+      },
+      "constants": {
+        "n": 2,
+        "hundred": 100
+      },
+      "trapGivens": [
+        4000,
+        8,
+        2,
+        3,
+        100
+      ],
+      "answerSpec": {
+        "type": "choice",
+        "options": [
+          {
+            "id": "1",
+            "label": "Line 1"
+          },
+          {
+            "id": "2",
+            "label": "Line 2",
+            "trapTag": "t02-c05-u01-period-count-missing-trap"
+          },
+          {
+            "id": "3",
+            "label": "Line 3",
+            "trapTag": "t02-c05-u01-period-count-missing-trap"
+          },
+          {
+            "id": "4",
+            "label": "Line 4",
+            "trapTag": "t02-c05-u01-period-count-missing-trap"
+          }
+        ],
+        "correct": "1"
+      },
+      "answerPlain": "1",
+      "answerDisplay": "\\text{Line 1}",
+      "inputHint": "Choose a line",
+      "commonTrapTag": "t02-c05-u01-period-count-missing-trap",
+      "trapDerivation": "4000 * (1 + (8 / 100) / 2)^3",
+      "trapValue": "4499.456",
+      "verify": {
+        "source": "floor(4000 * (1 + (8 / 100) / 2)^(2 * 3) * 100 + 0.5) / 100",
+        "trapValue": "4499.456",
+        "flaw": {
+          "values": [
+            "4000 * (1 + 0.08 / 2)^3",
+            "4000 * (1 + 0.04)^3",
+            "4000 * 1.04^3",
+            "4499.456"
+          ],
+          "firstWrong": 1
+        }
+      },
+      "checkpointHint": "Compare the student's setup and each subsequent line against the compound interest formula.",
+      "references": [
+        "MTH-T02-C05-U01"
+      ],
+      "steps": [
+        {
+          "latex": "A = 4000\\left(1 + \\frac{0.08}{2}\\right)^{2 \\cdot 3}",
+          "explain": "Line 1 is the first wrong line: semiannual compounding for 3 years requires n * t = 2 * 3 = 6 total periods in the exponent.",
+          "eq": [
+            "2 * 3",
+            "6"
+          ]
+        },
+        {
+          "latex": "A = 4000(1.04)^6",
+          "explain": "Simplify 1 + 0.08/2 to 1.04.",
+          "eq": [
+            "1 + 0.08 / 2",
+            "1.04"
+          ]
+        },
+        {
+          "latex": "A \\approx 5061.28",
+          "explain": "Evaluate and round to the nearest cent.",
+          "val": "5061.28"
+        }
+      ],
+      "blindSolve": {
+        "answer": "1",
+        "ambiguous": false,
+        "setup": "translate",
+        "strategy": "prescribed",
+        "check": "none",
+        "task": "diagnose",
+        "reverse": false,
+        "steps": 2
+      },
+      "id": "VAR-MTH-T02-C05-U01-t02-c05-u01-compound-interest-model-03",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "t02-c05-u01-period-count-missing-trap|diagnose|A student calculated the balance of an account starting with $\\$#$ earning $#\\%$ annual interest compounded semiannually for $#$ years: Line #: $A = #\\left(# + \\frac{#}{#}\\right)^#$ Line #: $= #(# + #)^#$ Line #: $= #(#)^#$ Line #: $= #$ Which line is the first one that is wrong?"
+    }
+  ]
+}

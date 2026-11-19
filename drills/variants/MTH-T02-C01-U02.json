@@ -1,0 +1,2219 @@
+{
+  "unitCode": "MTH-T02-C01-U02",
+  "variants": [
+    {
+      "variantId": "VAR-MTH-T02-C01-U02-t02-c01-u02-factoring-monic-zero-product-01",
+      "sourceArchetype": "t02-c01-u02-factoring-monic-zero-product",
+      "archetypeKey": "t02-c01-u02-factoring-monic-zero-product",
+      "unitCode": "MTH-T02-C01-U02",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Solve for $x$: $3x^2 - 27x = 0$.",
+      "display": "3x^2 - 27x = 0",
+      "plainText": "3*x^2 - 27*x = 0",
+      "givens": {
+        "a": 3,
+        "b": 27
+      },
+      "constants": {},
+      "trapGivens": [
+        3,
+        27
+      ],
+      "answerSpec": {
+        "type": "solution_set",
+        "values": [
+          "0",
+          "9"
+        ],
+        "variable": "x"
+      },
+      "answerPlain": "0, 9",
+      "answerDisplay": "0, 9",
+      "inputHint": "Enter solutions separated by a comma",
+      "commonTrapTag": "t02-c01-u02-omitted-zero-factor-trap",
+      "trapDerivation": "27 / 3",
+      "trapValue": "9",
+      "verify": {
+        "trapValue": "9"
+      },
+      "checkpointHint": "Factor out the greatest common factor including the variable rather than dividing both sides by the variable.",
+      "references": [
+        "MTH-T02-C01-U02"
+      ],
+      "steps": [
+        {
+          "latex": "3x(x - 9) = 0",
+          "explain": "Factor out the common factor 3x from the left-hand side.",
+          "eq": [
+            "3*9*(9 - 9)",
+            "0"
+          ]
+        },
+        {
+          "latex": "3x = 0",
+          "explain": "Set the first factor equal to zero by the Zero Product Property."
+        },
+        {
+          "latex": "x - 9 = 0",
+          "explain": "Set the second factor equal to zero by the Zero Product Property."
+        },
+        {
+          "latex": "x \\in \\{0, 9\\}",
+          "explain": "Solve each linear equation to obtain both roots.",
+          "eq": [
+            "27 / 3",
+            "9"
+          ]
+        }
+      ],
+      "id": "VAR-MTH-T02-C01-U02-t02-c01-u02-factoring-monic-zero-product-01",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "t02-c01-u02-omitted-zero-factor-trap|direct|#*x^# - #*x = #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C01-U02-t02-c01-u02-factoring-monic-zero-product-02",
+      "sourceArchetype": "t02-c01-u02-factoring-monic-zero-product",
+      "archetypeKey": "t02-c01-u02-factoring-monic-zero-product",
+      "unitCode": "MTH-T02-C01-U02",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Solve for $x$: $4x^2 + 20x = 0$.",
+      "display": "4x^2 + 20x = 0",
+      "plainText": "4*x^2 + 20*x = 0",
+      "givens": {
+        "a": 4,
+        "b": 20
+      },
+      "constants": {},
+      "trapGivens": [
+        4,
+        20
+      ],
+      "answerSpec": {
+        "type": "solution_set",
+        "values": [
+          "-5",
+          "0"
+        ],
+        "variable": "x"
+      },
+      "answerPlain": "-5, 0",
+      "answerDisplay": "-5, 0",
+      "inputHint": "Enter solutions separated by a comma",
+      "commonTrapTag": "t02-c01-u02-omitted-zero-factor-trap",
+      "trapDerivation": "-20 / 4",
+      "trapValue": "-5",
+      "verify": {
+        "trapValue": "-5"
+      },
+      "checkpointHint": "Keep the variable factor when factoring the polynomial so that no root is lost.",
+      "references": [
+        "MTH-T02-C01-U02"
+      ],
+      "steps": [
+        {
+          "latex": "4x(x + 5) = 0",
+          "explain": "Factor out the greatest common factor 4x.",
+          "eq": [
+            "4*(-5)*(-5 + 5)",
+            "0"
+          ]
+        },
+        {
+          "latex": "4x = 0",
+          "explain": "Set the first factor equal to zero."
+        },
+        {
+          "latex": "x + 5 = 0",
+          "explain": "Set the second factor equal to zero."
+        },
+        {
+          "latex": "x \\in \\{-5, 0\\}",
+          "explain": "Solve both linear equations for x.",
+          "eq": [
+            "-20 / 4",
+            "-5"
+          ]
+        }
+      ],
+      "id": "VAR-MTH-T02-C01-U02-t02-c01-u02-factoring-monic-zero-product-02",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "t02-c01-u02-omitted-zero-factor-trap|direct|#*x^# + #*x = #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C01-U02-t02-c01-u02-factoring-monic-zero-product-03",
+      "sourceArchetype": "t02-c01-u02-factoring-monic-zero-product",
+      "archetypeKey": "t02-c01-u02-factoring-monic-zero-product",
+      "unitCode": "MTH-T02-C01-U02",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Solve for $x$: $5x^2 = 30x$.",
+      "display": "5x^2 = 30x",
+      "plainText": "5*x^2 = 30*x",
+      "givens": {
+        "a": 5,
+        "b": 30
+      },
+      "constants": {},
+      "trapGivens": [
+        5,
+        30
+      ],
+      "answerSpec": {
+        "type": "solution_set",
+        "values": [
+          "0",
+          "6"
+        ],
+        "variable": "x"
+      },
+      "answerPlain": "0, 6",
+      "answerDisplay": "0, 6",
+      "inputHint": "Enter solutions separated by a comma",
+      "commonTrapTag": "t02-c01-u02-omitted-zero-factor-trap",
+      "trapDerivation": "30 / 5",
+      "trapValue": "6",
+      "verify": {
+        "trapValue": "6"
+      },
+      "checkpointHint": "Move all terms to one side so the equation equals zero, then factor out the common variable factor.",
+      "references": [
+        "MTH-T02-C01-U02"
+      ],
+      "steps": [
+        {
+          "latex": "5x^2 - 30x = 0",
+          "explain": "Subtract 30x from both sides so the right-hand side is zero."
+        },
+        {
+          "latex": "5x(x - 6) = 0",
+          "explain": "Factor out the greatest common factor 5x.",
+          "eq": [
+            "5*6*(6 - 6)",
+            "0"
+          ]
+        },
+        {
+          "latex": "5x = 0",
+          "explain": "Set the first factor equal to zero."
+        },
+        {
+          "latex": "x - 6 = 0",
+          "explain": "Set the second factor equal to zero."
+        },
+        {
+          "latex": "x \\in \\{0, 6\\}",
+          "explain": "Solve each linear factor for x.",
+          "eq": [
+            "30 / 5",
+            "6"
+          ]
+        }
+      ],
+      "id": "VAR-MTH-T02-C01-U02-t02-c01-u02-factoring-monic-zero-product-03",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "t02-c01-u02-omitted-zero-factor-trap|direct|#*x^# = #*x"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C01-U02-t02-c01-u02-square-root-property-01",
+      "sourceArchetype": "t02-c01-u02-square-root-property",
+      "archetypeKey": "t02-c01-u02-square-root-property",
+      "unitCode": "MTH-T02-C01-U02",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Solve for $x$ over $\\mathbb{R}$: $(x - 5)^2 = 36$.",
+      "display": "(x - 5)^2 = 36",
+      "plainText": "(x - 5)^2 = 36",
+      "givens": {
+        "h": 5,
+        "k": 36
+      },
+      "constants": {},
+      "trapGivens": [
+        5,
+        36
+      ],
+      "answerSpec": {
+        "type": "solution_set",
+        "values": [
+          "-1",
+          "11"
+        ],
+        "variable": "x"
+      },
+      "answerPlain": "-1, 11",
+      "answerDisplay": "-1, 11",
+      "inputHint": "Enter solutions separated by a comma",
+      "commonTrapTag": "t02-c01-u02-omitted-negative-square-root-trap",
+      "trapDerivation": "5 + sqrt(36)",
+      "trapValue": "11",
+      "verify": {
+        "trapValue": "11"
+      },
+      "checkpointHint": "Include both the positive and negative square root branches before isolating the variable.",
+      "references": [
+        "MTH-T02-C01-U02"
+      ],
+      "steps": [
+        {
+          "latex": "x - 5 = \\pm\\sqrt{36}",
+          "explain": "Apply the Square Root Property to both sides."
+        },
+        {
+          "latex": "x - 5 = \\pm 6",
+          "explain": "Evaluate the square root of 36.",
+          "eq": [
+            "sqrt(36)",
+            "6"
+          ]
+        },
+        {
+          "latex": "x = 5 \\pm 6",
+          "explain": "Add 5 to both sides."
+        },
+        {
+          "latex": "x \\in \\{-1, 11\\}",
+          "explain": "Evaluate both branches 5 - 6 and 5 + 6.",
+          "eq": [
+            "5 + 6",
+            "11"
+          ]
+        }
+      ],
+      "id": "VAR-MTH-T02-C01-U02-t02-c01-u02-square-root-property-01",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "t02-c01-u02-omitted-negative-square-root-trap|direct|(x - #)^# = #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C01-U02-t02-c01-u02-square-root-property-02",
+      "sourceArchetype": "t02-c01-u02-square-root-property",
+      "archetypeKey": "t02-c01-u02-square-root-property",
+      "unitCode": "MTH-T02-C01-U02",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Solve for $x$ over the complex numbers: $(x + 4)^2 + 25 = 0$.",
+      "display": "(x + 4)^2 + 25 = 0",
+      "plainText": "(x + 4)^2 + 25 = 0",
+      "givens": {
+        "h": 4,
+        "c": 25
+      },
+      "constants": {},
+      "trapGivens": [
+        4,
+        25
+      ],
+      "answerSpec": {
+        "type": "solution_set",
+        "values": [
+          "-4 + 5*I",
+          "-4 - 5*I"
+        ],
+        "variable": "x"
+      },
+      "answerPlain": "-4 + 5*i, -4 - 5*i",
+      "answerDisplay": "-4 \\pm 5i",
+      "inputHint": "Enter complex solutions separated by a comma",
+      "commonTrapTag": "t02-c01-u02-omitted-negative-square-root-trap",
+      "trapDerivation": "-4 + sqrt(25)*I",
+      "trapValue": "-4 + 5*I",
+      "verify": {
+        "trapValue": "-4 + 5*I"
+      },
+      "checkpointHint": "Isolate the squared binomial first, then take both positive and negative complex square roots.",
+      "references": [
+        "MTH-T02-C01-U02"
+      ],
+      "steps": [
+        {
+          "latex": "(x + 4)^2 = -25",
+          "explain": "Subtract 25 from both sides to isolate the squared binomial.",
+          "eq": [
+            "25 - 25",
+            "0"
+          ]
+        },
+        {
+          "latex": "x + 4 = \\pm\\sqrt{-25}",
+          "explain": "Apply the Square Root Property to both sides."
+        },
+        {
+          "latex": "x + 4 = \\pm 5i",
+          "explain": "Rewrite the square root of -25 in terms of the imaginary unit i.",
+          "eq": [
+            "sqrt(-25)",
+            "5*I"
+          ]
+        },
+        {
+          "latex": "x = -4 \\pm 5i",
+          "explain": "Subtract 4 from both sides to isolate x."
+        }
+      ],
+      "id": "VAR-MTH-T02-C01-U02-t02-c01-u02-square-root-property-02",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "t02-c01-u02-omitted-negative-square-root-trap|direct|(x + #)^# + # = #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C01-U02-t02-c01-u02-square-root-property-03",
+      "sourceArchetype": "t02-c01-u02-square-root-property",
+      "archetypeKey": "t02-c01-u02-square-root-property",
+      "unitCode": "MTH-T02-C01-U02",
+      "level": 1,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Solve for $x$ over $\\mathbb{R}$: $2(x + 1)^2 = 50$.",
+      "display": "2(x + 1)^2 = 50",
+      "plainText": "2*(x + 1)^2 = 50",
+      "givens": {
+        "a": 2,
+        "h": 1,
+        "c": 50
+      },
+      "constants": {},
+      "trapGivens": [
+        2,
+        1,
+        50
+      ],
+      "answerSpec": {
+        "type": "solution_set",
+        "values": [
+          "-6",
+          "4"
+        ],
+        "variable": "x"
+      },
+      "answerPlain": "-6, 4",
+      "answerDisplay": "-6, 4",
+      "inputHint": "Enter solutions separated by a comma",
+      "commonTrapTag": "t02-c01-u02-omitted-negative-square-root-trap",
+      "trapDerivation": "-1 + sqrt(50 / 2)",
+      "trapValue": "4",
+      "verify": {
+        "trapValue": "4"
+      },
+      "checkpointHint": "Divide by the leading coefficient to isolate the squared binomial before taking both square root branches.",
+      "references": [
+        "MTH-T02-C01-U02"
+      ],
+      "steps": [
+        {
+          "latex": "(x + 1)^2 = 25",
+          "explain": "Divide both sides by 2 to isolate the squared expression.",
+          "eq": [
+            "50 / 2",
+            "25"
+          ]
+        },
+        {
+          "latex": "x + 1 = \\pm\\sqrt{25}",
+          "explain": "Apply the Square Root Property to both sides."
+        },
+        {
+          "latex": "x + 1 = \\pm 5",
+          "explain": "Evaluate the square root of 25.",
+          "eq": [
+            "sqrt(25)",
+            "5"
+          ]
+        },
+        {
+          "latex": "x \\in \\{-6, 4\\}",
+          "explain": "Subtract 1 from both branches to obtain the two solutions.",
+          "eq": [
+            "-1 + 5",
+            "4"
+          ]
+        }
+      ],
+      "id": "VAR-MTH-T02-C01-U02-t02-c01-u02-square-root-property-03",
+      "levelLabel": "Level 1 - Foundation",
+      "fingerprint": "t02-c01-u02-omitted-negative-square-root-trap|direct|#*(x + #)^# = #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C01-U02-t02-c01-u02-factoring-nonmonic-rearrange-01",
+      "sourceArchetype": "t02-c01-u02-factoring-nonmonic-rearrange",
+      "archetypeKey": "t02-c01-u02-factoring-nonmonic-rearrange",
+      "unitCode": "MTH-T02-C01-U02",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Find the larger solution of $(x - 2)(x + 3) = 14$.",
+      "display": "(x - 2)(x + 3) = 14",
+      "plainText": "(x - 2)*(x + 3) = 14",
+      "givens": {
+        "p": 2,
+        "q": 3,
+        "k": 14
+      },
+      "constants": {},
+      "trapGivens": [
+        2,
+        14
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "4",
+        "tolerance": 0
+      },
+      "answerPlain": "4",
+      "answerDisplay": "4",
+      "inputHint": "Enter a number",
+      "commonTrapTag": "t02-c01-u02-zero-product-nonzero-rhs-trap",
+      "trapDerivation": "14 + 2",
+      "trapValue": "16",
+      "verify": {
+        "source": "(-1 + sqrt(1^2 - 4*1*(-20))) / 2",
+        "trapValue": "16"
+      },
+      "checkpointHint": "Expand the product and move the constant term so the right-hand side is zero before factoring.",
+      "references": [
+        "MTH-T02-C01-U02"
+      ],
+      "steps": [
+        {
+          "latex": "x^2 + x - 6 = 14",
+          "explain": "Expand the binomial product on the left side.",
+          "eq": [
+            "(4 - 2)*(4 + 3)",
+            "14"
+          ]
+        },
+        {
+          "latex": "x^2 + x - 20 = 0",
+          "explain": "Subtract 14 from both sides so the equation equals zero.",
+          "eq": [
+            "-6 - 14",
+            "-20"
+          ]
+        },
+        {
+          "latex": "(x + 5)(x - 4) = 0",
+          "explain": "Factor the quadratic trinomial."
+        },
+        {
+          "latex": "x \\in \\{-5, 4\\}",
+          "explain": "Apply the Zero Product Property to each factor."
+        },
+        {
+          "latex": "x = 4",
+          "explain": "Select the larger of the two roots.",
+          "val": "4"
+        }
+      ],
+      "id": "VAR-MTH-T02-C01-U02-t02-c01-u02-factoring-nonmonic-rearrange-01",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c01-u02-zero-product-nonzero-rhs-trap|direct|(x - #)*(x + #) = #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C01-U02-t02-c01-u02-factoring-nonmonic-rearrange-02",
+      "sourceArchetype": "t02-c01-u02-factoring-nonmonic-rearrange",
+      "archetypeKey": "t02-c01-u02-factoring-nonmonic-rearrange",
+      "unitCode": "MTH-T02-C01-U02",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Find the smaller solution of $(x - 4)(x + 2) = 7$.",
+      "display": "(x - 4)(x + 2) = 7",
+      "plainText": "(x - 4)*(x + 2) = 7",
+      "givens": {
+        "p": 4,
+        "q": 2,
+        "k": 7
+      },
+      "constants": {},
+      "trapGivens": [
+        2,
+        7
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "-3",
+        "tolerance": 0
+      },
+      "answerPlain": "-3",
+      "answerDisplay": "-3",
+      "inputHint": "Enter a number",
+      "commonTrapTag": "t02-c01-u02-zero-product-nonzero-rhs-trap",
+      "trapDerivation": "7 - 2",
+      "trapValue": "5",
+      "verify": {
+        "source": "(2 - sqrt(2^2 - 4*1*(-15))) / 2",
+        "trapValue": "5"
+      },
+      "checkpointHint": "Rewrite the equation in standard form equal to zero before applying the Zero Product Property.",
+      "references": [
+        "MTH-T02-C01-U02"
+      ],
+      "steps": [
+        {
+          "latex": "x^2 - 2x - 8 = 7",
+          "explain": "Expand the product of the two binomials.",
+          "eq": [
+            "(-3 - 4)*(-3 + 2)",
+            "7"
+          ]
+        },
+        {
+          "latex": "x^2 - 2x - 15 = 0",
+          "explain": "Subtract 7 from both sides to make the right-hand side zero.",
+          "eq": [
+            "-8 - 7",
+            "-15"
+          ]
+        },
+        {
+          "latex": "(x - 5)(x + 3) = 0",
+          "explain": "Factor the resulting quadratic expression."
+        },
+        {
+          "latex": "x \\in \\{-3, 5\\}",
+          "explain": "Set each factor equal to zero and solve for x."
+        },
+        {
+          "latex": "x = -3",
+          "explain": "Select the smaller of the two solutions.",
+          "val": "-3"
+        }
+      ],
+      "id": "VAR-MTH-T02-C01-U02-t02-c01-u02-factoring-nonmonic-rearrange-02",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c01-u02-zero-product-nonzero-rhs-trap|direct|(x - #)*(x + #) = #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C01-U02-t02-c01-u02-factoring-nonmonic-rearrange-03",
+      "sourceArchetype": "t02-c01-u02-factoring-nonmonic-rearrange",
+      "archetypeKey": "t02-c01-u02-factoring-nonmonic-rearrange",
+      "unitCode": "MTH-T02-C01-U02",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Find the positive solution of $(2x - 3)(x + 1) = 7$.",
+      "display": "(2x - 3)(x + 1) = 7",
+      "plainText": "(2*x - 3)*(x + 1) = 7",
+      "givens": {
+        "a": 2,
+        "p": 3,
+        "q": 1,
+        "k": 7
+      },
+      "constants": {},
+      "trapGivens": [
+        2,
+        3,
+        7
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "5/2",
+        "tolerance": 0
+      },
+      "answerPlain": "5/2",
+      "answerDisplay": "\\frac{5}{2}",
+      "inputHint": "Enter a number or reduced fraction",
+      "commonTrapTag": "t02-c01-u02-zero-product-nonzero-rhs-trap",
+      "trapDerivation": "(7 + 3) / 2",
+      "trapValue": "5",
+      "verify": {
+        "source": "(1 + sqrt(1^2 - 4*2*(-10))) / (2*2)",
+        "trapValue": "5"
+      },
+      "checkpointHint": "Expand the left-hand side and subtract the right-hand constant so the quadratic equals zero before factoring.",
+      "references": [
+        "MTH-T02-C01-U02"
+      ],
+      "steps": [
+        {
+          "latex": "2x^2 - x - 3 = 7",
+          "explain": "Expand the binomial product on the left side.",
+          "eq": [
+            "(2*(5/2) - 3)*(5/2 + 1)",
+            "7"
+          ]
+        },
+        {
+          "latex": "2x^2 - x - 10 = 0",
+          "explain": "Subtract 7 from both sides to put the quadratic in standard form.",
+          "eq": [
+            "-3 - 7",
+            "-10"
+          ]
+        },
+        {
+          "latex": "(2x - 5)(x + 2) = 0",
+          "explain": "Factor the non-monic quadratic trinomial."
+        },
+        {
+          "latex": "x \\in \\left\\{-2, \\frac{5}{2}\\right\\}",
+          "explain": "Apply the Zero Product Property to find both roots."
+        },
+        {
+          "latex": "x = \\frac{5}{2}",
+          "explain": "Keep the positive solution.",
+          "val": "5/2"
+        }
+      ],
+      "id": "VAR-MTH-T02-C01-U02-t02-c01-u02-factoring-nonmonic-rearrange-03",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c01-u02-zero-product-nonzero-rhs-trap|direct|(#*x - #)*(x + #) = #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C01-U02-t02-c01-u02-discriminant-classification-01",
+      "sourceArchetype": "t02-c01-u02-discriminant-classification",
+      "archetypeKey": "t02-c01-u02-discriminant-classification",
+      "unitCode": "MTH-T02-C01-U02",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Find the value of $k$ such that $x^2 - 10x + k = 0$ has a repeated real solution.",
+      "display": "x^2 - 10x + k = 0,\\quad \\Delta = 0",
+      "plainText": "x^2 - 10*x + k = 0",
+      "givens": {
+        "b": 10
+      },
+      "constants": {
+        "four": 4
+      },
+      "trapGivens": [
+        10,
+        4
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "25",
+        "tolerance": 0
+      },
+      "answerPlain": "25",
+      "answerDisplay": "25",
+      "inputHint": "Enter a number",
+      "commonTrapTag": "t02-c01-u02-forgot-square-negative-b-trap",
+      "trapDerivation": "-10^2 / 4",
+      "trapValue": "-25",
+      "verify": {
+        "source": "10^2 / 4",
+        "trapValue": "-25"
+      },
+      "checkpointHint": "Set the discriminant equal to zero and square the entire negative linear coefficient including its sign.",
+      "references": [
+        "MTH-T02-C01-U02"
+      ],
+      "steps": [
+        {
+          "latex": "(-10)^2 - 4(1)(k) = 0",
+          "explain": "Set the discriminant b^2 - 4ac equal to zero for a repeated real root.",
+          "eq": [
+            "(-10)^2",
+            "100"
+          ]
+        },
+        {
+          "latex": "100 - 4k = 0",
+          "explain": "Square -10 to get 100."
+        },
+        {
+          "latex": "4k = 100",
+          "explain": "Isolate the term with k."
+        },
+        {
+          "latex": "k = 25",
+          "explain": "Divide both sides by 4 to find k.",
+          "val": "25"
+        }
+      ],
+      "id": "VAR-MTH-T02-C01-U02-t02-c01-u02-discriminant-classification-01",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c01-u02-forgot-square-negative-b-trap|reverse|x^# - #*x + k = #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C01-U02-t02-c01-u02-discriminant-classification-02",
+      "sourceArchetype": "t02-c01-u02-discriminant-classification",
+      "archetypeKey": "t02-c01-u02-discriminant-classification",
+      "unitCode": "MTH-T02-C01-U02",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Find the value of $k$ such that $2x^2 - 8x + k = 0$ has a repeated real solution.",
+      "display": "2x^2 - 8x + k = 0,\\quad \\Delta = 0",
+      "plainText": "2*x^2 - 8*x + k = 0",
+      "givens": {
+        "a": 2,
+        "b": 8
+      },
+      "constants": {
+        "four": 4
+      },
+      "trapGivens": [
+        2,
+        8,
+        4
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "8",
+        "tolerance": 0
+      },
+      "answerPlain": "8",
+      "answerDisplay": "8",
+      "inputHint": "Enter a number",
+      "commonTrapTag": "t02-c01-u02-forgot-square-negative-b-trap",
+      "trapDerivation": "-8^2 / (4 * 2)",
+      "trapValue": "-8",
+      "verify": {
+        "source": "8^2 / (4 * 2)",
+        "trapValue": "-8"
+      },
+      "checkpointHint": "Use the discriminant condition for a single repeated root, squaring the full negative linear coefficient.",
+      "references": [
+        "MTH-T02-C01-U02"
+      ],
+      "steps": [
+        {
+          "latex": "(-8)^2 - 4(2)(k) = 0",
+          "explain": "Set the discriminant b^2 - 4ac equal to zero.",
+          "eq": [
+            "(-8)^2",
+            "64"
+          ]
+        },
+        {
+          "latex": "64 - 8k = 0",
+          "explain": "Evaluate (-8)^2 = 64 and 4(2)k = 8k."
+        },
+        {
+          "latex": "8k = 64",
+          "explain": "Isolate 8k on one side."
+        },
+        {
+          "latex": "k = 8",
+          "explain": "Divide both sides by 8 to solve for k.",
+          "val": "8"
+        }
+      ],
+      "id": "VAR-MTH-T02-C01-U02-t02-c01-u02-discriminant-classification-02",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c01-u02-forgot-square-negative-b-trap|reverse|#*x^# - #*x + k = #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C01-U02-t02-c01-u02-discriminant-classification-03",
+      "sourceArchetype": "t02-c01-u02-discriminant-classification",
+      "archetypeKey": "t02-c01-u02-discriminant-classification",
+      "unitCode": "MTH-T02-C01-U02",
+      "level": 2,
+      "category": "Core Skill",
+      "form": "direct",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Find the value of the discriminant $\\Delta = b^2 - 4ac$ for the quadratic equation $3x^2 - 5x - 2 = 0$.",
+      "display": "\\Delta = b^2 - 4ac",
+      "plainText": "(-5)^2 - 4*3*(-2)",
+      "givens": {
+        "a": 3,
+        "b": 5,
+        "c": 2
+      },
+      "constants": {
+        "four": 4
+      },
+      "trapGivens": [
+        3,
+        5,
+        2,
+        4
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "49",
+        "tolerance": 0
+      },
+      "answerPlain": "49",
+      "answerDisplay": "49",
+      "inputHint": "Enter a number",
+      "commonTrapTag": "t02-c01-u02-forgot-square-negative-b-trap",
+      "trapDerivation": "-5^2 - 4*3*(-2)",
+      "trapValue": "-1",
+      "verify": {
+        "source": "(-5)^2 - 4*3*(-2)",
+        "trapValue": "-1"
+      },
+      "checkpointHint": "Enclose the signed coefficients in parentheses when substituting into the discriminant formula.",
+      "references": [
+        "MTH-T02-C01-U02"
+      ],
+      "steps": [
+        {
+          "latex": "\\Delta = (-5)^2 - 4(3)(-2)",
+          "explain": "Substitute a = 3, b = -5, and c = -2 into the discriminant formula.",
+          "eq": [
+            "(-5)^2",
+            "25"
+          ]
+        },
+        {
+          "latex": "\\Delta = 25 - 4(3)(-2)",
+          "explain": "Evaluate the square of -5 to get +25."
+        },
+        {
+          "latex": "\\Delta = 25 + 24",
+          "explain": "Multiply -4(3)(-2) to get +24."
+        },
+        {
+          "latex": "\\Delta = 49",
+          "explain": "Add 25 and 24 to obtain the discriminant.",
+          "val": "49"
+        }
+      ],
+      "id": "VAR-MTH-T02-C01-U02-t02-c01-u02-discriminant-classification-03",
+      "levelLabel": "Level 2 - Standard Exam",
+      "fingerprint": "t02-c01-u02-forgot-square-negative-b-trap|direct|(-#)^# - #*#*(-#)"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C01-U02-t02-c01-u02-quadratic-flaw-diagnosis-01",
+      "sourceArchetype": "t02-c01-u02-quadratic-flaw-diagnosis",
+      "archetypeKey": "t02-c01-u02-quadratic-flaw-diagnosis",
+      "unitCode": "MTH-T02-C01-U02",
+      "level": 3,
+      "category": "Quadratic Formula Diagnosis",
+      "form": "diagnose",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "A student computed the larger root of $2x^2 - 5x - 3 = 0$ using the quadratic formula:\nLine 1: $x_+ = \\frac{-(-5) + \\sqrt{(-5)^2 - 4(2)(-3)}}{2(2)}$\nLine 2: $= \\frac{5 + \\sqrt{25 + 24}}{2}$\nLine 3: $= \\frac{5 + \\sqrt{49}}{2}$\nLine 4: $= \\frac{5 + 7}{2}$\nLine 5: $= 6$\nWhich line is the first one that is wrong?",
+      "display": "2x^2 - 5x - 3 = 0",
+      "givens": {
+        "a": 2,
+        "b": 5,
+        "c": 3
+      },
+      "constants": {
+        "two": 2,
+        "four": 4
+      },
+      "trapGivens": [
+        2,
+        5,
+        3,
+        4
+      ],
+      "answerSpec": {
+        "type": "choice",
+        "options": [
+          {
+            "id": "1",
+            "label": "Line 1",
+            "provenance": "flags a correct substitution line as the error"
+          },
+          {
+            "id": "2",
+            "label": "Line 2"
+          },
+          {
+            "id": "3",
+            "label": "Line 3",
+            "trapTag": "t02-c01-u02-quadratic-formula-denominator-2-trap"
+          },
+          {
+            "id": "4",
+            "label": "Line 4",
+            "trapTag": "t02-c01-u02-quadratic-formula-denominator-2-trap"
+          },
+          {
+            "id": "5",
+            "label": "Line 5",
+            "trapTag": "t02-c01-u02-quadratic-formula-denominator-2-trap"
+          }
+        ],
+        "correct": "2"
+      },
+      "answerPlain": "2",
+      "answerDisplay": "\\text{Line 2}",
+      "inputHint": "Choose a line",
+      "commonTrapTag": "t02-c01-u02-quadratic-formula-denominator-2-trap",
+      "trapDerivation": "(5 + sqrt((-5)^2 - 4*2*(-3))) / 2",
+      "trapValue": "6",
+      "verify": {
+        "source": "(-(-5) + sqrt((-5)^2 - 4*2*(-3))) / (2*2)",
+        "trapValue": "6",
+        "flaw": {
+          "values": [
+            "(-(-5) + sqrt((-5)^2 - 4*2*(-3))) / (2*2)",
+            "(5 + sqrt(25 + 24)) / 2",
+            "(5 + sqrt(49)) / 2",
+            "(5 + 7) / 2",
+            "6"
+          ],
+          "firstWrong": 2
+        }
+      },
+      "checkpointHint": "Check whether each line keeps the exact numerical value of the line directly above it.",
+      "references": [
+        "MTH-T02-C01-U02"
+      ],
+      "steps": [
+        {
+          "latex": "\\frac{-(-5) + \\sqrt{(-5)^2 - 4(2)(-3)}}{2(2)}",
+          "explain": "Line 1 correctly substitutes the coefficients into the quadratic formula.",
+          "eq": [
+            "(-(-5) + sqrt((-5)^2 - 4*2*(-3))) / (2*2)",
+            "3"
+          ]
+        },
+        {
+          "latex": "\\frac{5 + \\sqrt{25 + 24}}{4}",
+          "explain": "Line 2 is the first wrong line: the denominator 2(2) equals 4, not 2.",
+          "eq": [
+            "(5 + sqrt(25 + 24)) / 4",
+            "3"
+          ]
+        },
+        {
+          "latex": "\\frac{5 + \\sqrt{49}}{4}",
+          "explain": "Add 25 and 24 inside the radical."
+        },
+        {
+          "latex": "\\frac{5 + 7}{4}",
+          "explain": "Evaluate the square root of 49 to 7."
+        },
+        {
+          "latex": "3",
+          "explain": "Divide 12 by 4 to obtain the true larger root.",
+          "val": "3"
+        }
+      ],
+      "blindSolve": {
+        "answer": "2",
+        "ambiguous": false,
+        "setup": "given",
+        "strategy": "prescribed",
+        "check": "none",
+        "task": "diagnose",
+        "reverse": false,
+        "steps": 3
+      },
+      "id": "VAR-MTH-T02-C01-U02-t02-c01-u02-quadratic-flaw-diagnosis-01",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "t02-c01-u02-quadratic-formula-denominator-2-trap|diagnose|A student computed the larger root of $#x^# - #x - # = #$ using the quadratic formula: Line #: $x_+ = \\frac{-(-#) + \\sqrt{(-#)^# - #(#)(-#)}}{#(#)}$ Line #: $= \\frac{# + \\sqrt{# + #}}{#}$ Line #: $= \\frac{# + \\sqrt{#}}{#}$ Line #: $= \\frac{# + #}{#}$ Line #: $= #$ Which line is the first one that is wrong?"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C01-U02-t02-c01-u02-quadratic-flaw-diagnosis-02",
+      "sourceArchetype": "t02-c01-u02-quadratic-flaw-diagnosis",
+      "archetypeKey": "t02-c01-u02-quadratic-flaw-diagnosis",
+      "unitCode": "MTH-T02-C01-U02",
+      "level": 3,
+      "category": "Quadratic Formula Diagnosis",
+      "form": "diagnose",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "A student computed the larger root of $4x^2 - 5x - 6 = 0$ using the quadratic formula:\nLine 1: $x_+ = \\frac{-(-5) + \\sqrt{(-5)^2 - 4(4)(-6)}}{2(4)}$\nLine 2: $= \\frac{5 + \\sqrt{25 + 96}}{2(4)}$\nLine 3: $= \\frac{5 + \\sqrt{121}}{2}$\nLine 4: $= \\frac{5 + 11}{2}$\nLine 5: $= 8$\nWhich line is the first one that is wrong?",
+      "display": "4x^2 - 5x - 6 = 0",
+      "givens": {
+        "a": 4,
+        "b": 5,
+        "c": 6
+      },
+      "constants": {
+        "two": 2,
+        "four": 4
+      },
+      "trapGivens": [
+        4,
+        5,
+        6,
+        2
+      ],
+      "answerSpec": {
+        "type": "choice",
+        "options": [
+          {
+            "id": "1",
+            "label": "Line 1",
+            "provenance": "flags a correct substitution line as the error"
+          },
+          {
+            "id": "2",
+            "label": "Line 2",
+            "provenance": "flags a correct simplification line as the error"
+          },
+          {
+            "id": "3",
+            "label": "Line 3"
+          },
+          {
+            "id": "4",
+            "label": "Line 4",
+            "trapTag": "t02-c01-u02-quadratic-formula-denominator-2-trap"
+          },
+          {
+            "id": "5",
+            "label": "Line 5",
+            "trapTag": "t02-c01-u02-quadratic-formula-denominator-2-trap"
+          }
+        ],
+        "correct": "3"
+      },
+      "answerPlain": "3",
+      "answerDisplay": "\\text{Line 3}",
+      "inputHint": "Choose a line",
+      "commonTrapTag": "t02-c01-u02-quadratic-formula-denominator-2-trap",
+      "trapDerivation": "(5 + sqrt((-5)^2 - 4*4*(-6))) / 2",
+      "trapValue": "8",
+      "verify": {
+        "source": "(-(-5) + sqrt((-5)^2 - 4*4*(-6))) / (2*4)",
+        "trapValue": "8",
+        "flaw": {
+          "values": [
+            "(-(-5) + sqrt((-5)^2 - 4*4*(-6))) / (2*4)",
+            "(5 + sqrt(25 + 96)) / (2*4)",
+            "(5 + sqrt(121)) / 2",
+            "(5 + 11) / 2",
+            "8"
+          ],
+          "firstWrong": 3
+        }
+      },
+      "checkpointHint": "Compare each line with the line above it to identify where the expression value changes.",
+      "references": [
+        "MTH-T02-C01-U02"
+      ],
+      "steps": [
+        {
+          "latex": "\\frac{5 + \\sqrt{25 + 96}}{2(4)}",
+          "explain": "Lines 1 and 2 are both correct.",
+          "eq": [
+            "(5 + sqrt(25 + 96)) / (2*4)",
+            "2"
+          ]
+        },
+        {
+          "latex": "\\frac{5 + \\sqrt{121}}{8}",
+          "explain": "Line 3 is the first wrong line: the denominator 2(4) simplifies to 8, not 2.",
+          "eq": [
+            "(5 + sqrt(121)) / 8",
+            "2"
+          ]
+        },
+        {
+          "latex": "\\frac{5 + 11}{8}",
+          "explain": "Evaluate the square root of 121 to 11."
+        },
+        {
+          "latex": "2",
+          "explain": "Add 5 and 11 and divide 16 by 8 to get 2.",
+          "val": "2"
+        }
+      ],
+      "blindSolve": {
+        "answer": "3",
+        "ambiguous": false,
+        "setup": "given",
+        "strategy": "prescribed",
+        "check": "none",
+        "task": "diagnose",
+        "reverse": false,
+        "steps": 3
+      },
+      "id": "VAR-MTH-T02-C01-U02-t02-c01-u02-quadratic-flaw-diagnosis-02",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "t02-c01-u02-quadratic-formula-denominator-2-trap|diagnose|A student computed the larger root of $#x^# - #x - # = #$ using the quadratic formula: Line #: $x_+ = \\frac{-(-#) + \\sqrt{(-#)^# - #(#)(-#)}}{#(#)}$ Line #: $= \\frac{# + \\sqrt{# + #}}{#(#)}$ Line #: $= \\frac{# + \\sqrt{#}}{#}$ Line #: $= \\frac{# + #}{#}$ Line #: $= #$ Which line is the first one that is wrong?"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C01-U02-t02-c01-u02-quadratic-flaw-diagnosis-03",
+      "sourceArchetype": "t02-c01-u02-quadratic-flaw-diagnosis",
+      "archetypeKey": "t02-c01-u02-quadratic-flaw-diagnosis",
+      "unitCode": "MTH-T02-C01-U02",
+      "level": 3,
+      "category": "Quadratic Formula Diagnosis",
+      "form": "diagnose",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "A student computed the larger root of $5x^2 - 6x - 8 = 0$ using the quadratic formula:\nLine 1: $x_+ = \\frac{-(-6) + \\sqrt{(-6)^2 - 4(5)(-8)}}{2(5)}$\nLine 2: $= \\frac{6 + \\sqrt{36 + 160}}{2}$\nLine 3: $= \\frac{6 + \\sqrt{196}}{2}$\nLine 4: $= \\frac{6 + 14}{2}$\nLine 5: $= 10$\nWhich line is the first one that is wrong?",
+      "display": "5x^2 - 6x - 8 = 0",
+      "givens": {
+        "a": 5,
+        "b": 6,
+        "c": 8
+      },
+      "constants": {
+        "two": 2,
+        "four": 4
+      },
+      "trapGivens": [
+        5,
+        6,
+        8,
+        2,
+        4
+      ],
+      "answerSpec": {
+        "type": "choice",
+        "options": [
+          {
+            "id": "1",
+            "label": "Line 1",
+            "provenance": "flags a correct substitution line as the error"
+          },
+          {
+            "id": "2",
+            "label": "Line 2"
+          },
+          {
+            "id": "3",
+            "label": "Line 3",
+            "trapTag": "t02-c01-u02-quadratic-formula-denominator-2-trap"
+          },
+          {
+            "id": "4",
+            "label": "Line 4",
+            "trapTag": "t02-c01-u02-quadratic-formula-denominator-2-trap"
+          },
+          {
+            "id": "5",
+            "label": "Line 5",
+            "trapTag": "t02-c01-u02-quadratic-formula-denominator-2-trap"
+          }
+        ],
+        "correct": "2"
+      },
+      "answerPlain": "2",
+      "answerDisplay": "\\text{Line 2}",
+      "inputHint": "Choose a line",
+      "commonTrapTag": "t02-c01-u02-quadratic-formula-denominator-2-trap",
+      "trapDerivation": "(6 + sqrt((-6)^2 - 4*5*(-8))) / 2",
+      "trapValue": "10",
+      "verify": {
+        "source": "(-(-6) + sqrt((-6)^2 - 4*5*(-8))) / (2*5)",
+        "trapValue": "10",
+        "flaw": {
+          "values": [
+            "(-(-6) + sqrt((-6)^2 - 4*5*(-8))) / (2*5)",
+            "(6 + sqrt(36 + 160)) / 2",
+            "(6 + sqrt(196)) / 2",
+            "(6 + 14) / 2",
+            "10"
+          ],
+          "firstWrong": 2
+        }
+      },
+      "checkpointHint": "Verify each transformation line by line to see whether the full expression keeps the same value.",
+      "references": [
+        "MTH-T02-C01-U02"
+      ],
+      "steps": [
+        {
+          "latex": "\\frac{-(-6) + \\sqrt{(-6)^2 - 4(5)(-8)}}{2(5)}",
+          "explain": "Line 1 correctly substitutes a = 5, b = -6, and c = -8.",
+          "eq": [
+            "(-(-6) + sqrt((-6)^2 - 4*5*(-8))) / (2*5)",
+            "2"
+          ]
+        },
+        {
+          "latex": "\\frac{6 + \\sqrt{36 + 160}}{10}",
+          "explain": "Line 2 is the first wrong line: the denominator 2(5) simplifies to 10, not 2.",
+          "eq": [
+            "(6 + sqrt(36 + 160)) / 10",
+            "2"
+          ]
+        },
+        {
+          "latex": "\\frac{6 + \\sqrt{196}}{10}",
+          "explain": "Add 36 and 160 inside the square root."
+        },
+        {
+          "latex": "\\frac{6 + 14}{10}",
+          "explain": "Evaluate the square root of 196 to 14."
+        },
+        {
+          "latex": "2",
+          "explain": "Divide 20 by 10 to obtain the true larger root.",
+          "val": "2"
+        }
+      ],
+      "blindSolve": {
+        "answer": "2",
+        "ambiguous": false,
+        "setup": "given",
+        "strategy": "prescribed",
+        "check": "none",
+        "task": "diagnose",
+        "reverse": false,
+        "steps": 3
+      },
+      "id": "VAR-MTH-T02-C01-U02-t02-c01-u02-quadratic-flaw-diagnosis-03",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "t02-c01-u02-quadratic-formula-denominator-2-trap|diagnose|A student computed the larger root of $#x^# - #x - # = #$ using the quadratic formula: Line #: $x_+ = \\frac{-(-#) + \\sqrt{(-#)^# - #(#)(-#)}}{#(#)}$ Line #: $= \\frac{# + \\sqrt{# + #}}{#}$ Line #: $= \\frac{# + \\sqrt{#}}{#}$ Line #: $= \\frac{# + #}{#}$ Line #: $= #$ Which line is the first one that is wrong?"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C01-U02-t02-c01-u02-quadratic-formula-01",
+      "sourceArchetype": "t02-c01-u02-quadratic-formula",
+      "archetypeKey": "t02-c01-u02-quadratic-formula",
+      "unitCode": "MTH-T02-C01-U02",
+      "level": 3,
+      "category": "Core Skill",
+      "form": "choose",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "For what value of $k$ does $x^2 + (k - 3)x + 9 = 0$ have a repeated positive root?",
+      "display": "x^2 + (k - 3)x + 9 = 0",
+      "plainText": "x^2 + (k - 3)*x + 9 = 0",
+      "givens": {
+        "d": 3,
+        "c": 9
+      },
+      "constants": {
+        "four": 4
+      },
+      "trapGivens": [
+        3,
+        9,
+        4
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "-3",
+        "tolerance": 0
+      },
+      "answerPlain": "-3",
+      "answerDisplay": "-3",
+      "inputHint": "Enter a number",
+      "commonTrapTag": "t02-c01-u02-quadratic-formula-sign-of-b-trap",
+      "trapDerivation": "3 + sqrt(4 * 9)",
+      "trapValue": "9",
+      "verify": {
+        "source": "3 - sqrt(4 * 9)",
+        "trapValue": "9"
+      },
+      "checkpointHint": "Solve for all parameter values that make the discriminant zero, then check which one yields a positive root.",
+      "references": [
+        "MTH-T02-C01-U02"
+      ],
+      "steps": [
+        {
+          "latex": "(k - 3)^2 - 4(1)(9) = 0",
+          "explain": "Set the discriminant equal to zero for a repeated root.",
+          "eq": [
+            "4*1*9",
+            "36"
+          ]
+        },
+        {
+          "latex": "(k - 3)^2 = 36",
+          "explain": "Isolate the squared binomial."
+        },
+        {
+          "latex": "k - 3 = \\pm 6",
+          "explain": "Take both square roots of 36."
+        },
+        {
+          "latex": "k \\in \\{-3, 9\\}",
+          "explain": "Add 3 to both branches to find the candidate values for k."
+        },
+        {
+          "latex": "x = -\\frac{k - 3}{2}",
+          "explain": "Use the repeated-root formula x = -b / (2a) to test the sign of the root.",
+          "eq": [
+            "-((-3) - 3) / 2",
+            "3"
+          ]
+        },
+        {
+          "latex": "k = -3",
+          "explain": "Reject k = 9 (which gives x = -3) and keep k = -3 (which gives x = 3 > 0).",
+          "val": "-3"
+        }
+      ],
+      "blindSolve": {
+        "answer": "-3",
+        "ambiguous": false,
+        "setup": "given",
+        "strategy": "prescribed",
+        "check": "edge",
+        "edgeRejected": "k = 9 (produces repeated negative root x = -3)",
+        "task": "compute",
+        "reverse": true,
+        "steps": 4
+      },
+      "id": "VAR-MTH-T02-C01-U02-t02-c01-u02-quadratic-formula-01",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "t02-c01-u02-quadratic-formula-sign-of-b-trap|choose|x^# + (k - #)*x + # = #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C01-U02-t02-c01-u02-quadratic-formula-02",
+      "sourceArchetype": "t02-c01-u02-quadratic-formula",
+      "archetypeKey": "t02-c01-u02-quadratic-formula",
+      "unitCode": "MTH-T02-C01-U02",
+      "level": 3,
+      "category": "Core Skill",
+      "form": "choose",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "For what value of $k$ does $x^2 + (k + 1)x + 16 = 0$ have a repeated negative root?",
+      "display": "x^2 + (k + 1)x + 16 = 0",
+      "plainText": "x^2 + (k + 1)*x + 16 = 0",
+      "givens": {
+        "d": 1,
+        "c": 16
+      },
+      "constants": {
+        "four": 4
+      },
+      "trapGivens": [
+        1,
+        16,
+        4
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "7",
+        "tolerance": 0
+      },
+      "answerPlain": "7",
+      "answerDisplay": "7",
+      "inputHint": "Enter a number",
+      "commonTrapTag": "t02-c01-u02-quadratic-formula-sign-of-b-trap",
+      "trapDerivation": "-1 - sqrt(4 * 16)",
+      "trapValue": "-9",
+      "verify": {
+        "source": "-1 + sqrt(4 * 16)",
+        "trapValue": "-9"
+      },
+      "checkpointHint": "Find both values of the parameter for which the discriminant vanishes, then check the sign of the resulting repeated root.",
+      "references": [
+        "MTH-T02-C01-U02"
+      ],
+      "steps": [
+        {
+          "latex": "(k + 1)^2 - 4(1)(16) = 0",
+          "explain": "Set the discriminant equal to zero for a repeated root.",
+          "eq": [
+            "4*1*16",
+            "64"
+          ]
+        },
+        {
+          "latex": "(k + 1)^2 = 64",
+          "explain": "Isolate the squared expression."
+        },
+        {
+          "latex": "k + 1 = \\pm 8",
+          "explain": "Take both square roots of 64."
+        },
+        {
+          "latex": "k \\in \\{-9, 7\\}",
+          "explain": "Subtract 1 from both branches to obtain the two candidate values for k."
+        },
+        {
+          "latex": "x = -\\frac{k + 1}{2}",
+          "explain": "Evaluate the repeated root x = -b / (2a) for each candidate.",
+          "eq": [
+            "-(7 + 1) / 2",
+            "-4"
+          ]
+        },
+        {
+          "latex": "k = 7",
+          "explain": "Reject k = -9 (which gives x = 4 > 0) and keep k = 7 (which gives x = -4 < 0).",
+          "val": "7"
+        }
+      ],
+      "blindSolve": {
+        "answer": "7",
+        "ambiguous": false,
+        "setup": "given",
+        "strategy": "prescribed",
+        "check": "edge",
+        "edgeRejected": "k = -9 (produces repeated positive root x = 4)",
+        "task": "compute",
+        "reverse": true,
+        "steps": 4
+      },
+      "id": "VAR-MTH-T02-C01-U02-t02-c01-u02-quadratic-formula-02",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "t02-c01-u02-quadratic-formula-sign-of-b-trap|choose|x^# + (k + #)*x + # = #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C01-U02-t02-c01-u02-quadratic-formula-03",
+      "sourceArchetype": "t02-c01-u02-quadratic-formula",
+      "archetypeKey": "t02-c01-u02-quadratic-formula",
+      "unitCode": "MTH-T02-C01-U02",
+      "level": 3,
+      "category": "Core Skill",
+      "form": "choose",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "For what value of $k$ does $x^2 + (k - 4)x + 25 = 0$ have a repeated positive root?",
+      "display": "x^2 + (k - 4)x + 25 = 0",
+      "plainText": "x^2 + (k - 4)*x + 25 = 0",
+      "givens": {
+        "d": 4,
+        "c": 25
+      },
+      "constants": {
+        "four": 4
+      },
+      "trapGivens": [
+        4,
+        25
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "-6",
+        "tolerance": 0
+      },
+      "answerPlain": "-6",
+      "answerDisplay": "-6",
+      "inputHint": "Enter a number",
+      "commonTrapTag": "t02-c01-u02-quadratic-formula-sign-of-b-trap",
+      "trapDerivation": "4 + sqrt(4 * 25)",
+      "trapValue": "14",
+      "verify": {
+        "source": "4 - sqrt(4 * 25)",
+        "trapValue": "14"
+      },
+      "checkpointHint": "Determine all parameter values giving a zero discriminant, then verify the sign of the repeated root from the quadratic formula.",
+      "references": [
+        "MTH-T02-C01-U02"
+      ],
+      "steps": [
+        {
+          "latex": "(k - 4)^2 - 4(1)(25) = 0",
+          "explain": "Set the discriminant equal to zero for a repeated root.",
+          "eq": [
+            "4*1*25",
+            "100"
+          ]
+        },
+        {
+          "latex": "(k - 4)^2 = 100",
+          "explain": "Isolate the squared binomial."
+        },
+        {
+          "latex": "k - 4 = \\pm 10",
+          "explain": "Take both square roots of 100."
+        },
+        {
+          "latex": "k \\in \\{-6, 14\\}",
+          "explain": "Add 4 to both branches to obtain the candidate values for k."
+        },
+        {
+          "latex": "x = -\\frac{k - 4}{2}",
+          "explain": "Substitute into x = -b / (2a) to check the sign of the repeated root.",
+          "eq": [
+            "-((-6) - 4) / 2",
+            "5"
+          ]
+        },
+        {
+          "latex": "k = -6",
+          "explain": "Reject k = 14 (which gives x = -5 < 0) and keep k = -6 (which gives x = 5 > 0).",
+          "val": "-6"
+        }
+      ],
+      "blindSolve": {
+        "answer": "-6",
+        "ambiguous": false,
+        "setup": "given",
+        "strategy": "prescribed",
+        "check": "edge",
+        "edgeRejected": "k = 14 (produces repeated negative root x = -5)",
+        "task": "compute",
+        "reverse": true,
+        "steps": 4
+      },
+      "id": "VAR-MTH-T02-C01-U02-t02-c01-u02-quadratic-formula-03",
+      "levelLabel": "Level 3 - Trap & Diagnostic",
+      "fingerprint": "t02-c01-u02-quadratic-formula-sign-of-b-trap|choose|x^# + (k - #)*x + # = #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C01-U02-t02-c01-u02-quadratic-modeling-constraints-01",
+      "sourceArchetype": "t02-c01-u02-quadratic-modeling-constraints",
+      "archetypeKey": "t02-c01-u02-quadratic-modeling-constraints",
+      "unitCode": "MTH-T02-C01-U02",
+      "level": 4,
+      "category": "Applied Modeling",
+      "form": "choose",
+      "archetype": "problem-solving",
+      "context": "courtyard_paved_walkway_border",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "Rectangle perimeter 2(L + W) = 28 m, inner garden area LW = 45 m^2 (9 m by 5 m), and surrounding walkway outer area (L + 2w)(W + 2w) = 165 m^2 follow exact Euclidean geometry with consistent m and m^2 units and positive width w = 3 m."
+      },
+      "verificationLevel": "partial",
+      "prompt": "A rectangular botanical garden bed has a perimeter of $28$ m and an area of $45$ square meters. A paved stone walkway of uniform width surrounds all four sides of the bed, bringing the total outer area of the bed and walkway to $165$ square meters. What is the width of the walkway in meters?",
+      "display": "2(L + W) = P,\\quad LW = A_{\\text{inner}},\\quad (L + 2w)(W + 2w) = A_{\\text{total}}",
+      "plainText": "2*(L + W) = 28, L*W = 45, (L + 2*w)*(W + 2*w) = 165",
+      "givens": {
+        "P": 28,
+        "A_inner": 45,
+        "A_total": 165
+      },
+      "constants": {
+        "two": 2,
+        "four": 4
+      },
+      "trapGivens": [
+        28,
+        45,
+        165,
+        2,
+        4
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "3",
+        "tolerance": 0
+      },
+      "answerPlain": "3",
+      "answerDisplay": "3",
+      "inputHint": "Enter a number",
+      "commonTrapTag": "t02-c01-u02-double-border-width-missed-trap",
+      "trapDerivation": "(-(28 / 2) + sqrt((28 / 2)^2 - 4*(45 - 165))) / 2",
+      "trapValue": "6",
+      "verify": {
+        "source": "(-7 + sqrt(7^2 - 4*1*(-30))) / 2",
+        "trapValue": "6"
+      },
+      "checkpointHint": "Use the perimeter and inner area to substitute into the expanded outer area expression, accounting for the walkway on opposite sides of both dimensions.",
+      "references": [
+        "MTH-T02-C01-U02"
+      ],
+      "steps": [
+        {
+          "latex": "L + W = 14",
+          "explain": "Divide the perimeter by 2 to find the sum of the bed length and width.",
+          "eq": [
+            "28 / 2",
+            "14"
+          ]
+        },
+        {
+          "latex": "(L + 2w)(W + 2w) = 165",
+          "explain": "Add twice the uniform walkway width to both inner dimensions for the outer area."
+        },
+        {
+          "latex": "LW + 2(L + W)w + 4w^2 = 165",
+          "explain": "Expand the outer area product in terms of LW and L + W."
+        },
+        {
+          "latex": "45 + 28w + 4w^2 = 165",
+          "explain": "Substitute LW = 45 and 2(L + W) = 28."
+        },
+        {
+          "latex": "4w^2 + 28w - 120 = 0",
+          "explain": "Subtract 165 from both sides to obtain standard form.",
+          "eq": [
+            "45 - 165",
+            "-120"
+          ]
+        },
+        {
+          "latex": "w^2 + 7w - 30 = 0",
+          "explain": "Divide every term by 4."
+        },
+        {
+          "latex": "(w + 10)(w - 3) = 0",
+          "explain": "Factor the quadratic equation."
+        },
+        {
+          "latex": "w = 3",
+          "explain": "Reject the negative root w = -10 and keep the positive walkway width w = 3.",
+          "val": "3"
+        }
+      ],
+      "blindSolve": {
+        "answer": "3",
+        "ambiguous": false,
+        "setup": "model",
+        "strategy": "choose",
+        "check": "edge",
+        "edgeRejected": "w = -10 (walkway width must be positive)",
+        "task": "compute",
+        "reverse": true,
+        "steps": 7
+      },
+      "id": "VAR-MTH-T02-C01-U02-t02-c01-u02-quadratic-modeling-constraints-01",
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "t02-c01-u02-double-border-width-missed-trap|choose|#*(L + W) = #, L*W = #, (L + #*w)*(W + #*w) = #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C01-U02-t02-c01-u02-quadratic-modeling-constraints-02",
+      "sourceArchetype": "t02-c01-u02-quadratic-modeling-constraints",
+      "archetypeKey": "t02-c01-u02-quadratic-modeling-constraints",
+      "unitCode": "MTH-T02-C01-U02",
+      "level": 4,
+      "category": "Applied Modeling",
+      "form": "choose",
+      "archetype": "problem-solving",
+      "context": "swimming_pool_safety_deck",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "A 10 m by 6 m rectangular swimming pool has perimeter 32 m and water area 60 m^2; adding a 4 m deck around all four sides gives outer footprint 18 m by 14 m = 252 m^2, satisfying exact geometric laws and realistic pool bounds."
+      },
+      "verificationLevel": "partial",
+      "prompt": "A rectangular swimming pool has a perimeter of $32$ m and a water surface area of $60$ square meters. A non-slip safety deck of uniform width is constructed around all four sides of the pool, making the total outer area of the pool and deck equal to $252$ square meters. What is the width of the safety deck in meters?",
+      "display": "2(L + W) = P,\\quad LW = A_{\\text{inner}},\\quad (L + 2w)(W + 2w) = A_{\\text{total}}",
+      "plainText": "2*(L + W) = 32, L*W = 60, (L + 2*w)*(W + 2*w) = 252",
+      "givens": {
+        "P": 32,
+        "A_inner": 60,
+        "A_total": 252
+      },
+      "constants": {
+        "two": 2,
+        "four": 4
+      },
+      "trapGivens": [
+        32,
+        60,
+        252,
+        2,
+        4
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "4",
+        "tolerance": 0
+      },
+      "answerPlain": "4",
+      "answerDisplay": "4",
+      "inputHint": "Enter a number",
+      "commonTrapTag": "t02-c01-u02-double-border-width-missed-trap",
+      "trapDerivation": "(-(32 / 2) + sqrt((32 / 2)^2 - 4*(60 - 252))) / 2",
+      "trapValue": "8",
+      "verify": {
+        "source": "(-8 + sqrt(8^2 - 4*1*(-48))) / 2",
+        "trapValue": "8"
+      },
+      "checkpointHint": "Relate the pool length and width through the given perimeter and area, expand the outer area with the deck added on both ends of each dimension, and discard the negative root.",
+      "references": [
+        "MTH-T02-C01-U02"
+      ],
+      "steps": [
+        {
+          "latex": "L + W = 16",
+          "explain": "Halve the perimeter to obtain the sum of the pool length and width.",
+          "eq": [
+            "32 / 2",
+            "16"
+          ]
+        },
+        {
+          "latex": "(L + 2w)(W + 2w) = 252",
+          "explain": "Express the total outer area by adding twice the deck width to each pool dimension."
+        },
+        {
+          "latex": "LW + 2(L + W)w + 4w^2 = 252",
+          "explain": "Expand the outer area product."
+        },
+        {
+          "latex": "60 + 32w + 4w^2 = 252",
+          "explain": "Substitute LW = 60 and 2(L + W) = 32."
+        },
+        {
+          "latex": "4w^2 + 32w - 192 = 0",
+          "explain": "Subtract 252 from both sides.",
+          "eq": [
+            "60 - 252",
+            "-192"
+          ]
+        },
+        {
+          "latex": "w^2 + 8w - 48 = 0",
+          "explain": "Divide every term by 4."
+        },
+        {
+          "latex": "(w + 12)(w - 4) = 0",
+          "explain": "Factor the quadratic equation."
+        },
+        {
+          "latex": "w = 4",
+          "explain": "Reject the negative root w = -12 and keep the positive deck width w = 4.",
+          "val": "4"
+        }
+      ],
+      "blindSolve": {
+        "answer": "4",
+        "ambiguous": false,
+        "setup": "model",
+        "strategy": "choose",
+        "check": "edge",
+        "edgeRejected": "w = -12 (deck width must be positive)",
+        "task": "compute",
+        "reverse": true,
+        "steps": 7
+      },
+      "id": "VAR-MTH-T02-C01-U02-t02-c01-u02-quadratic-modeling-constraints-02",
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "t02-c01-u02-double-border-width-missed-trap|choose|#*(L + W) = #, L*W = #, (L + #*w)*(W + #*w) = #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C01-U02-t02-c01-u02-quadratic-modeling-constraints-03",
+      "sourceArchetype": "t02-c01-u02-quadratic-modeling-constraints",
+      "archetypeKey": "t02-c01-u02-quadratic-modeling-constraints",
+      "unitCode": "MTH-T02-C01-U02",
+      "level": 4,
+      "category": "Applied Modeling",
+      "form": "choose",
+      "archetype": "problem-solving",
+      "context": "silicon_die_guard_ring_package",
+      "contextCheck": {
+        "verdict": "ok",
+        "note": "A 12 mm by 10 mm rectangular silicon sensor die has perimeter 44 mm and active area 120 mm^2; adding a 5 mm uniform ceramic package border on all four sides gives outer package area 22 mm by 20 mm = 440 mm^2, consistent with geometric laws and mm units."
+      },
+      "verificationLevel": "partial",
+      "prompt": "A rectangular silicon sensor die has a perimeter of $44$ mm and an active area of $120$ square millimeters. It is enclosed on all four sides by a ceramic package border of uniform width, bringing the total outer footprint area of the package to $440$ square millimeters. What is the width of the ceramic border in millimeters?",
+      "display": "2(L + W) = P,\\quad LW = A_{\\text{inner}},\\quad (L + 2w)(W + 2w) = A_{\\text{total}}",
+      "plainText": "2*(L + W) = 44, L*W = 120, (L + 2*w)*(W + 2*w) = 440",
+      "givens": {
+        "P": 44,
+        "A_inner": 120,
+        "A_total": 440
+      },
+      "constants": {
+        "two": 2,
+        "four": 4
+      },
+      "trapGivens": [
+        44,
+        120,
+        440,
+        2,
+        4
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "5",
+        "tolerance": 0
+      },
+      "answerPlain": "5",
+      "answerDisplay": "5",
+      "inputHint": "Enter a number",
+      "commonTrapTag": "t02-c01-u02-double-border-width-missed-trap",
+      "trapDerivation": "(-(44 / 2) + sqrt((44 / 2)^2 - 4*(120 - 440))) / 2",
+      "trapValue": "10",
+      "verify": {
+        "source": "(-11 + sqrt(11^2 - 4*1*(-80))) / 2",
+        "trapValue": "10"
+      },
+      "checkpointHint": "Combine the perimeter and active area relations with the outer package area formula, remembering that the border adds width to both ends of the length and width.",
+      "references": [
+        "MTH-T02-C01-U02"
+      ],
+      "steps": [
+        {
+          "latex": "L + W = 22",
+          "explain": "Divide the perimeter by 2 to find the sum of the die length and width.",
+          "eq": [
+            "44 / 2",
+            "22"
+          ]
+        },
+        {
+          "latex": "(L + 2w)(W + 2w) = 440",
+          "explain": "Add twice the uniform border width to each inner dimension."
+        },
+        {
+          "latex": "LW + 2(L + W)w + 4w^2 = 440",
+          "explain": "Expand the outer area product."
+        },
+        {
+          "latex": "120 + 44w + 4w^2 = 440",
+          "explain": "Substitute LW = 120 and 2(L + W) = 44."
+        },
+        {
+          "latex": "4w^2 + 44w - 320 = 0",
+          "explain": "Subtract 440 from both sides.",
+          "eq": [
+            "120 - 440",
+            "-320"
+          ]
+        },
+        {
+          "latex": "w^2 + 11w - 80 = 0",
+          "explain": "Divide every term by 4."
+        },
+        {
+          "latex": "(w + 16)(w - 5) = 0",
+          "explain": "Factor the quadratic equation."
+        },
+        {
+          "latex": "w = 5",
+          "explain": "Reject the negative solution w = -16 and keep the positive border width w = 5.",
+          "val": "5"
+        }
+      ],
+      "blindSolve": {
+        "answer": "5",
+        "ambiguous": false,
+        "setup": "model",
+        "strategy": "choose",
+        "check": "edge",
+        "edgeRejected": "w = -16 (border width must be positive)",
+        "task": "compute",
+        "reverse": true,
+        "steps": 7
+      },
+      "id": "VAR-MTH-T02-C01-U02-t02-c01-u02-quadratic-modeling-constraints-03",
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "t02-c01-u02-double-border-width-missed-trap|choose|#*(L + W) = #, L*W = #, (L + #*w)*(W + #*w) = #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C01-U02-t02-c01-u02-discriminant-vieta-parameter-synthesis-01",
+      "sourceArchetype": "t02-c01-u02-discriminant-vieta-parameter-synthesis",
+      "archetypeKey": "t02-c01-u02-discriminant-vieta-parameter-synthesis",
+      "unitCode": "MTH-T02-C01-U02",
+      "level": 4,
+      "category": "Parameter Synthesis",
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Find the real value of $k$ for which $x^2 - kx + k + 4 = 0$ has two distinct real roots $\\alpha$ and $\\beta$ satisfying $\\alpha^2 + \\beta^2 = 16$.",
+      "display": "r_1 + r_2 = -\\frac{b}{a},\\quad r_1 r_2 = \\frac{c}{a},\\quad \\Delta > 0",
+      "plainText": "x^2 - k*x + k + 4 = 0, alpha^2 + beta^2 = 16",
+      "givens": {
+        "c_shift": 4,
+        "sum_sq": 16
+      },
+      "constants": {
+        "two": 2,
+        "four": 4
+      },
+      "trapGivens": [
+        4,
+        16,
+        2
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "-4",
+        "tolerance": 0
+      },
+      "answerPlain": "-4",
+      "answerDisplay": "-4",
+      "inputHint": "Enter a number",
+      "commonTrapTag": "t02-c01-u02-ignored-discriminant-feasibility-trap",
+      "trapDerivation": "(2 + sqrt(2^2 + 4*(2*4 + 16))) / 2",
+      "trapValue": "6",
+      "verify": {
+        "source": "(2 - sqrt(2^2 + 4*(2*4 + 16))) / 2",
+        "trapValue": "6"
+      },
+      "checkpointHint": "Express the sum of squares of the roots in terms of the sum and product of the roots, solve for the candidate parameter values, and test each candidate in the discriminant inequality.",
+      "references": [
+        "MTH-T02-C01-U02"
+      ],
+      "steps": [
+        {
+          "latex": "\\alpha + \\beta = k",
+          "explain": "Express the sum of the roots in terms of k using Vieta's formula."
+        },
+        {
+          "latex": "\\alpha\\beta = k + 4",
+          "explain": "Express the product of the roots in terms of k using Vieta's formula."
+        },
+        {
+          "latex": "(\\alpha + \\beta)^2 - 2\\alpha\\beta = 16",
+          "explain": "Rewrite the sum of squares using the elementary symmetric polynomials."
+        },
+        {
+          "latex": "k^2 - 2(k + 4) = 16",
+          "explain": "Substitute the expressions for the sum and product of the roots."
+        },
+        {
+          "latex": "k^2 - 2k - 24 = 0",
+          "explain": "Expand and move all terms to the left-hand side.",
+          "eq": [
+            "-2*4 - 16",
+            "-24"
+          ]
+        },
+        {
+          "latex": "(k - 6)(k + 4) = 0",
+          "explain": "Factor the quadratic in k to find the candidate values."
+        },
+        {
+          "latex": "\\Delta = k^2 - 4(k + 4) > 0",
+          "explain": "Require the discriminant to be strictly positive for two distinct real roots.",
+          "eq": [
+            "(-4)^2 - 4*(-4 + 4)",
+            "16"
+          ]
+        },
+        {
+          "latex": "k = -4",
+          "explain": "Reject k = 6 (which gives discriminant 36 - 40 = -4 < 0) and keep k = -4 (which gives discriminant 16 > 0).",
+          "val": "-4"
+        }
+      ],
+      "blindSolve": {
+        "answer": "-4",
+        "ambiguous": false,
+        "setup": "model",
+        "strategy": "choose",
+        "check": "edge",
+        "edgeRejected": "k = 6 (yields negative discriminant Δ = -4 < 0, so roots are non-real)",
+        "task": "compute",
+        "reverse": true,
+        "steps": 5
+      },
+      "id": "VAR-MTH-T02-C01-U02-t02-c01-u02-discriminant-vieta-parameter-synthesis-01",
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "t02-c01-u02-ignored-discriminant-feasibility-trap|reverse|x^# - k*x + k + # = #, alpha^# + beta^# = #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C01-U02-t02-c01-u02-discriminant-vieta-parameter-synthesis-02",
+      "sourceArchetype": "t02-c01-u02-discriminant-vieta-parameter-synthesis",
+      "archetypeKey": "t02-c01-u02-discriminant-vieta-parameter-synthesis",
+      "unitCode": "MTH-T02-C01-U02",
+      "level": 4,
+      "category": "Parameter Synthesis",
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Find the real value of $k$ for which $x^2 - kx + 2k + 3 = 0$ has two distinct real roots $\\alpha$ and $\\beta$ satisfying $\\alpha^2 + \\beta^2 = 6$.",
+      "display": "r_1 + r_2 = -\\frac{b}{a},\\quad r_1 r_2 = \\frac{c}{a},\\quad \\Delta > 0",
+      "plainText": "x^2 - k*x + 2*k + 3 = 0, alpha^2 + beta^2 = 6",
+      "givens": {
+        "c_scale": 2,
+        "c_shift": 3,
+        "sum_sq": 6
+      },
+      "constants": {
+        "four": 4
+      },
+      "trapGivens": [
+        2,
+        3,
+        6,
+        4
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "-2",
+        "tolerance": 0
+      },
+      "answerPlain": "-2",
+      "answerDisplay": "-2",
+      "inputHint": "Enter a number",
+      "commonTrapTag": "t02-c01-u02-ignored-discriminant-feasibility-trap",
+      "trapDerivation": "(4 + sqrt(4^2 + 4*(2*3 + 6))) / 2",
+      "trapValue": "6",
+      "verify": {
+        "source": "(4 - sqrt(4^2 + 4*(2*3 + 6))) / 2",
+        "trapValue": "6"
+      },
+      "checkpointHint": "Use the sum-of-squares identity to form a quadratic in the parameter, then check the discriminant condition for distinct real roots.",
+      "references": [
+        "MTH-T02-C01-U02"
+      ],
+      "steps": [
+        {
+          "latex": "\\alpha + \\beta = k",
+          "explain": "Express the sum of the roots in terms of k."
+        },
+        {
+          "latex": "\\alpha\\beta = 2k + 3",
+          "explain": "Express the product of the roots in terms of k."
+        },
+        {
+          "latex": "(\\alpha + \\beta)^2 - 2\\alpha\\beta = 6",
+          "explain": "Rewrite the sum of squares in terms of the sum and product."
+        },
+        {
+          "latex": "k^2 - 2(2k + 3) = 6",
+          "explain": "Substitute the coefficient expressions into the identity."
+        },
+        {
+          "latex": "k^2 - 4k - 12 = 0",
+          "explain": "Expand and collect all terms on the left side.",
+          "eq": [
+            "-2*3 - 6",
+            "-12"
+          ]
+        },
+        {
+          "latex": "(k - 6)(k + 2) = 0",
+          "explain": "Factor the quadratic equation in k."
+        },
+        {
+          "latex": "\\Delta = k^2 - 4(2k + 3) > 0",
+          "explain": "Check the discriminant condition for two distinct real roots.",
+          "eq": [
+            "(-2)^2 - 4*(2*(-2) + 3)",
+            "8"
+          ]
+        },
+        {
+          "latex": "k = -2",
+          "explain": "Reject k = 6 (which gives discriminant 36 - 60 = -24 < 0) and keep k = -2 (which gives discriminant 8 > 0).",
+          "val": "-2"
+        }
+      ],
+      "blindSolve": {
+        "answer": "-2",
+        "ambiguous": false,
+        "setup": "model",
+        "strategy": "choose",
+        "check": "edge",
+        "edgeRejected": "k = 6 (yields negative discriminant Δ = -24 < 0, so roots are non-real)",
+        "task": "compute",
+        "reverse": true,
+        "steps": 5
+      },
+      "id": "VAR-MTH-T02-C01-U02-t02-c01-u02-discriminant-vieta-parameter-synthesis-02",
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "t02-c01-u02-ignored-discriminant-feasibility-trap|reverse|x^# - k*x + #*k + # = #, alpha^# + beta^# = #"
+    },
+    {
+      "variantId": "VAR-MTH-T02-C01-U02-t02-c01-u02-discriminant-vieta-parameter-synthesis-03",
+      "sourceArchetype": "t02-c01-u02-discriminant-vieta-parameter-synthesis",
+      "archetypeKey": "t02-c01-u02-discriminant-vieta-parameter-synthesis",
+      "unitCode": "MTH-T02-C01-U02",
+      "level": 4,
+      "category": "Parameter Synthesis",
+      "form": "reverse",
+      "archetype": "problem-solving",
+      "context": "",
+      "verificationLevel": "partial",
+      "prompt": "Find the real value of $k$ for which $x^2 + kx + 2k + 15 = 0$ has two distinct real roots $\\alpha$ and $\\beta$ satisfying $\\alpha^2 + \\beta^2 = 15$.",
+      "display": "r_1 + r_2 = -\\frac{b}{a},\\quad r_1 r_2 = \\frac{c}{a},\\quad \\Delta > 0",
+      "plainText": "x^2 + k*x + 2*k + 15 = 0, alpha^2 + beta^2 = 15",
+      "givens": {
+        "c_scale": 2,
+        "c_shift": 15,
+        "sum_sq": 15
+      },
+      "constants": {
+        "four": 4
+      },
+      "trapGivens": [
+        2,
+        15,
+        4
+      ],
+      "answerSpec": {
+        "type": "number",
+        "value": "-5",
+        "tolerance": 0
+      },
+      "answerPlain": "-5",
+      "answerDisplay": "-5",
+      "inputHint": "Enter a number",
+      "commonTrapTag": "t02-c01-u02-ignored-discriminant-feasibility-trap",
+      "trapDerivation": "(4 + sqrt(4^2 + 4*(2*15 + 15))) / 2",
+      "trapValue": "9",
+      "verify": {
+        "source": "(4 - sqrt(4^2 + 4*(2*15 + 15))) / 2",
+        "trapValue": "9"
+      },
+      "checkpointHint": "Relate the sum of squares of the roots to the equation coefficients, find all algebraic solutions for the parameter, and verify that the discriminant is positive.",
+      "references": [
+        "MTH-T02-C01-U02"
+      ],
+      "steps": [
+        {
+          "latex": "\\alpha + \\beta = -k",
+          "explain": "Express the sum of the roots in terms of k."
+        },
+        {
+          "latex": "\\alpha\\beta = 2k + 15",
+          "explain": "Express the product of the roots in terms of k."
+        },
+        {
+          "latex": "(\\alpha + \\beta)^2 - 2\\alpha\\beta = 15",
+          "explain": "Rewrite the sum of squares using the sum and product of the roots."
+        },
+        {
+          "latex": "(-k)^2 - 2(2k + 15) = 15",
+          "explain": "Substitute the sum and product expressions."
+        },
+        {
+          "latex": "k^2 - 4k - 45 = 0",
+          "explain": "Expand and collect all terms on the left side.",
+          "eq": [
+            "-2*15 - 15",
+            "-45"
+          ]
+        },
+        {
+          "latex": "(k - 9)(k + 5) = 0",
+          "explain": "Factor the quadratic in k."
+        },
+        {
+          "latex": "\\Delta = k^2 - 4(2k + 15) > 0",
+          "explain": "Require a positive discriminant for two distinct real roots.",
+          "eq": [
+            "(-5)^2 - 4*(2*(-5) + 15)",
+            "5"
+          ]
+        },
+        {
+          "latex": "k = -5",
+          "explain": "Reject k = 9 (which gives discriminant 81 - 132 = -51 < 0) and keep k = -5 (which gives discriminant 5 > 0).",
+          "val": "-5"
+        }
+      ],
+      "blindSolve": {
+        "answer": "-5",
+        "ambiguous": false,
+        "setup": "model",
+        "strategy": "choose",
+        "check": "edge",
+        "edgeRejected": "k = 9 (yields negative discriminant Δ = -51 < 0, so roots are non-real)",
+        "task": "compute",
+        "reverse": true,
+        "steps": 5
+      },
+      "id": "VAR-MTH-T02-C01-U02-t02-c01-u02-discriminant-vieta-parameter-synthesis-03",
+      "levelLabel": "Level 4 - Applied Synthesis",
+      "fingerprint": "t02-c01-u02-ignored-discriminant-feasibility-trap|reverse|x^# + k*x + #*k + # = #, alpha^# + beta^# = #"
+    }
+  ]
+}
