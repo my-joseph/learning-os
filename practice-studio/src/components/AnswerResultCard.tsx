@@ -16,6 +16,7 @@ export interface AnswerResultCardProps {
   mistakeTags?: MistakeTag[];
   isLastQuestion?: boolean;
   nextLabel?: string;
+  scheduleNote?: string | null;
   onNextQuestion?: () => void;
   onOpenReview?: () => void;
   onTryAgain?: () => void;
@@ -65,6 +66,7 @@ export const AnswerResultCard: React.FC<AnswerResultCardProps> = ({
   mistakeTags = [],
   isLastQuestion = false,
   nextLabel = "Next question",
+  scheduleNote = null,
   onNextQuestion,
   onOpenReview,
   onTryAgain,
@@ -105,6 +107,11 @@ export const AnswerResultCard: React.FC<AnswerResultCardProps> = ({
                 <div className="min-h-7 flex flex-wrap items-center gap-x-2.5 gap-y-0.5">
                   <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
                     {model.title}
+                    {scheduleNote && (
+                      <span className="font-normal text-zinc-600 dark:text-zinc-400">
+                        {" "}· {scheduleNote}
+                      </span>
+                    )}
                   </span>
                   {model.attemptNumber !== null && (
                     <span className="text-xs text-zinc-500 dark:text-zinc-400 tabular-nums">

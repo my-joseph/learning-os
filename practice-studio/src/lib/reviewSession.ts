@@ -13,7 +13,9 @@ import {
 import { redactProblemForReview } from "@/lib/redact";
 import { hasSubstantiveAttempt, isSubstantiveVerdict } from "@/lib/reviewGuard";
 import type { ReviewItem } from "@/lib/reviewItems";
+import { drillHref } from "@/lib/routes";
 import { TelemetryTimerState } from "@/lib/telemetryTimer";
+import { plainTitle } from "@/lib/titleText";
 
 export const CLIENT_REVIEW_INTERVALS: Record<number, number> = {
   1: 1,
@@ -88,7 +90,73 @@ export interface ReviewSessionSummary {
   nextDueDate: string | null;
 }
 
+export const REVIEW_BATCH_SIZE = 8;
+
+export interface MissedReviewItem {
+  drillId: string;
+  qid: string;
+  unitCode: string;
+  unitTitle: string;
+  href: string;
+}
+
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+/** Return signed calendar day difference `toDate - fromDate`, or null when either date is invalid. */
+export function daysBetweenDates(
+  fromDate?: string | null,
+  toDate?: string | null
+): number | null {
+  if (typeof fromDate !== "string" || typeof toDate !== "string") return null;
+  const a = fromDate.trim().slice(0, 10);
+  const b = toDate.trim().slice(0, 10);
+  if (!DATE_RE.test(a) || !DATE_RE.test(b)) return null;
+  const [ay, am, ad] = a.split("-").map((x) => parseInt(x, 10));
+  const [by, bm, bd] = b.split("-").map((x) => parseInt(x, 10));
+  const utcA = Date.UTC(ay, am - 1, ad);
+  const utcB = Date.UTC(by, bm - 1, bd);
+  return Math.round((utcB - utcA) / 86_400_000);
+}
+
+/** Plain-language scheduling suffix for the `/review` result card ("next in N days" / "back tomorrow"). */
+export function formatReviewScheduleHint(
+  outcome: Pick<ReviewSessionItemOutcome, "correct" | "newLevel" | "dueDate"> | null | undefined,
+  today?: string | null
+): string | null {
+  if (!outcome) return null;
+  if (!outcome.correct) {
+    return "back tomorrow";
+  }
+  const diff = daysBetweenDates(today, outcome.dueDate);
+  const days =
+    diff !== null && diff >= 1
+      ? diff
+      : CLIENT_REVIEW_INTERVALS[outcome.newLevel] ?? 1;
+  return days === 1 ? "next in 1 day" : `next in ${days} days`;
+}
+
+/** Collect all missed (wrong or skipped) items from a completed review batch with deep links. */
+export function getMissedReviewItems(
+  items: ReadonlyArray<Pick<ReviewItem, "drillId" | "qid" | "unitCode">>,
+  outcomes: Record<string, ReviewSessionItemOutcome>,
+  unitTitles?: Record<string, string>
+): MissedReviewItem[] {
+  const missed: MissedReviewItem[] = [];
+  for (const item of items) {
+    const key = reviewItemKey(item.drillId, item.qid);
+    const outcome = outcomes[key];
+    if (!outcome || outcome.correct) continue;
+    const rawTitle = unitTitles?.[item.unitCode] || item.unitCode;
+    missed.push({
+      drillId: item.drillId,
+      qid: item.qid,
+      unitCode: item.unitCode,
+      unitTitle: plainTitle(rawTitle) || item.unitCode,
+      href: drillHref(item.drillId, item.qid),
+    });
+  }
+  return missed;
+}
 
 /**
  * Ensure an unattempted review problem never exposes answers, steps, display, solutionCode,

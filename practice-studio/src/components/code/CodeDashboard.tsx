@@ -92,6 +92,8 @@ export interface CodeDashboardProps {
   openInDrillHref?: string;
   reviewSupplement?: React.ReactNode;
   isReviewSession?: boolean;
+  reviewUnitTitle?: string;
+  reviewScheduleNote?: string | null;
   nextCardLabel?: string;
   lastQuestionNavLabel?: string;
 }
@@ -155,6 +157,8 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
   openInDrillHref,
   reviewSupplement,
   isReviewSession = false,
+  reviewUnitTitle,
+  reviewScheduleNote = null,
   nextCardLabel,
   lastQuestionNavLabel,
 }) => {
@@ -469,18 +473,35 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
         <div className="space-y-2">
           <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 text-xs font-medium text-zinc-500 dark:text-zinc-400">
             <h2 className="flex flex-wrap items-center gap-x-3 gap-y-1">
-              <span>
-                {isLab ? `Milestone ${problem.id}` : `Problem ${index + 1}`}
-                {typeof totalQuestions === "number" && totalQuestions > 0
-                  ? isLab
-                    ? ` (${index + 1} of ${totalQuestions})`
-                    : ` of ${totalQuestions}`
-                  : ""}
-              </span>
-              {typeof problem.level === "number" && problem.level > 0 && (
-                <span title={problem.levelLabel?.trim() || undefined}>
-                  Level {problem.level}
-                </span>
+              {isReviewSession ? (
+                <>
+                  {plainTitle(reviewUnitTitle) && (
+                    <span className="text-zinc-700 dark:text-zinc-300">
+                      {plainTitle(reviewUnitTitle)}
+                    </span>
+                  )}
+                  {typeof problem.level === "number" && problem.level > 0 && (
+                    <span title={problem.levelLabel?.trim() || undefined}>
+                      Difficulty {problem.level}
+                    </span>
+                  )}
+                </>
+              ) : (
+                <>
+                  <span>
+                    {isLab ? `Milestone ${problem.id}` : `Problem ${index + 1}`}
+                    {typeof totalQuestions === "number" && totalQuestions > 0
+                      ? isLab
+                        ? ` (${index + 1} of ${totalQuestions})`
+                        : ` of ${totalQuestions}`
+                      : ""}
+                  </span>
+                  {typeof problem.level === "number" && problem.level > 0 && (
+                    <span title={problem.levelLabel?.trim() || undefined}>
+                      Level {problem.level}
+                    </span>
+                  )}
+                </>
               )}
               {problem.entryPoint && (
                 isLab ? (
@@ -607,6 +628,16 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                   <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${showHint ? "rotate-180" : ""}`} />
                   <span>{showHint ? "Hide hint" : "Hint"}</span>
                 </button>}
+
+                {onSkip && !hasAttempt && (
+                  <button
+                    type="button"
+                    onClick={onSkip}
+                    className="inline-flex items-center gap-1 text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors ml-auto"
+                  >
+                    <span>{isReviewSession ? "Skip · due tomorrow" : "Skip"}</span>
+                  </button>
+                )}
               </div>
 
               <CheckpointHintDisclosure
@@ -1102,6 +1133,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                 mistakeTags={mistakeTags}
                 isLastQuestion={isReviewSession ? false : isLastQuestion}
                 nextLabel={nextCardLabel ?? (isLab ? "Next milestone" : "Next problem")}
+                scheduleNote={isReviewSession ? reviewScheduleNote : null}
                 onNextQuestion={onNextQuestion}
                 onOpenReview={onOpenReview}
                 onTryAgain={handleTryAgain}
@@ -1150,6 +1182,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
                     }
                   : undefined
               }
+              skipLabel={isReviewSession ? "Skip · due tomorrow" : "Skip"}
             />
           </>
         )}
@@ -1177,6 +1210,7 @@ export const CodeDashboard: React.FC<CodeDashboardProps> = ({
         onNextQuestion={onNextQuestion}
         onOpenReview={onOpenReview}
         lastQuestionLabel={lastQuestionNavLabel}
+        nextDisabled={isReviewSession && !(isKata && Boolean(openInDrillHref)) && !hasAttempt}
       />
     </div>
   );

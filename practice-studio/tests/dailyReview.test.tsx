@@ -21,6 +21,8 @@ import { ReviewItem } from "../src/lib/reviewItems";
 import {
   executeReviewItemCheck,
   executeReviewItemSkip,
+  formatReviewScheduleHint,
+  getMissedReviewItems,
   prepareProblemForReviewItem,
   ReviewSessionItemOutcome,
   saveReviewProblemState,
@@ -138,15 +140,23 @@ async function runTests() {
     assert.match(emptyHtml, /Next due: 2026-11-24/);
     assert.match(emptyHtml, /href="\/math\/DRL-MTH-T01-C04-U01-01"/);
 
-    // 1c. Active item with revisitNote shown ABOVE the problem + progress "1 of 3" + timer
+    // 1c. Active item with revisitNote shown ABOVE the problem + progress "1 of 3" + timer +
+    //     meta line with unit name & Difficulty N + "Skip · due tomorrow" + disabled Next before attempt
     const rawMathProblem = makeUnredactedMathProblem();
     const activeHtml = renderToStaticMarkup(
       <DailyReviewView
         items={sampleItems}
         currentIndex={0}
         currentProblem={rawMathProblem}
+        unitTitles={{
+          "MTH-T01-C04-U01": "Fraction Division",
+          "PRG-T01-C01-U01": "Array Guards",
+          "MTH-T01-C04-U02": "Signed Fractions",
+        }}
         questionTimerMs={14_000}
         totalTimerMs={14_000}
+        onSkip={() => {}}
+        onNextItem={() => {}}
       />
     );
     assert.match(activeHtml, /<h1[^>]*>Daily review<\/h1>/);
@@ -157,6 +167,15 @@ async function runTests() {
     );
     assert.match(activeHtml, /1 of 3/);
     assert.match(activeHtml, /0:14/);
+    assert.match(activeHtml, /Fraction Division/, "Meta line must show unit name");
+    assert.match(activeHtml, /Difficulty 2/, "Meta line must rename Level to Difficulty on /review");
+    assert.doesNotMatch(activeHtml, /Question 1 of 3/, "Card must not duplicate header counter on /review");
+    assert.match(activeHtml, /Skip · due tomorrow/, "Skip button must show due-tomorrow cost on /review");
+    assert.match(
+      activeHtml,
+      /<button[^>]*disabled=""[^>]*><span>Next<\/span>/,
+      "Next button must be disabled before an attempt on /review"
+    );
     assert.match(
       activeHtml,
       /Your note from last time:[\s\S]*?Flip the second fraction before cancelling common factors\./
@@ -210,13 +229,30 @@ async function runTests() {
         items={sampleItems}
         currentIndex={0}
         currentProblem={wrongAttemptProblem}
+        today="2026-11-19"
+        currentOutcome={{
+          drillId: "DRL-MTH-T01-C04-U01-01",
+          qid: "Q01",
+          initialLevel: 2,
+          newLevel: 1,
+          correct: false,
+          hintsUsed: 0,
+          dueDate: "2026-11-20",
+        }}
         revealedTrapTag="c04-divide-not-invert-trap"
+        onNextItem={() => {}}
       />
     );
     assert.match(afterWrongHtml, /Trap:[\s\S]*?Divide not invert/);
+    assert.match(afterWrongHtml, /Not quite[\s\S]*?back tomorrow/);
+    assert.doesNotMatch(
+      afterWrongHtml,
+      /<button[^>]*disabled=""[^>]*><span>Next<\/span>/,
+      "Next button must be enabled after an attempt"
+    );
     assert.doesNotMatch(afterWrongHtml, /Next time I will…/);
 
-    // 1f. After a correct attempt: shows "Trap: <plain title>" AND "Next time I will…" input
+    // 1f. After a correct attempt: shows "next in N days", "Trap: <plain title>", AND "Next time I will…" input
     const correctAttemptProblem: Problem = {
       ...prepareProblemForReviewItem(rawMathProblem, sampleItems[0]),
       steps: rawMathProblem.steps,
@@ -246,13 +282,47 @@ async function runTests() {
         items={sampleItems}
         currentIndex={0}
         currentProblem={correctAttemptProblem}
+        today="2026-11-19"
+        currentOutcome={{
+          drillId: "DRL-MTH-T01-C04-U01-01",
+          qid: "Q01",
+          initialLevel: 2,
+          newLevel: 3,
+          correct: true,
+          hintsUsed: 0,
+          dueDate: "2026-11-26",
+        }}
         revealedTrapTag="c04-divide-not-invert-trap"
         revisitNoteDraft="Invert the divisor right away."
       />
     );
+    assert.match(afterCorrectHtml, /Correct[\s\S]*?next in 7 days/);
     assert.match(afterCorrectHtml, /Trap:[\s\S]*?Divide not invert/);
     assert.match(afterCorrectHtml, /Next time I will…/);
     assert.match(afterCorrectHtml, /Invert the divisor right away\./);
+
+    // Pure schedule-hint helper tests
+    assert.equal(
+      formatReviewScheduleHint(
+        { correct: true, newLevel: 3, dueDate: "2026-11-26" },
+        "2026-11-19"
+      ),
+      "next in 7 days"
+    );
+    assert.equal(
+      formatReviewScheduleHint(
+        { correct: true, newLevel: 1, dueDate: "2026-11-20" },
+        "2026-11-19"
+      ),
+      "next in 1 day"
+    );
+    assert.equal(
+      formatReviewScheduleHint(
+        { correct: false, newLevel: 1, dueDate: "2026-11-20" },
+        "2026-11-19"
+      ),
+      "back tomorrow"
+    );
 
     // 1g. PRG coding problem on /review shows prompt and "Open in drill" link instead of inline editor / VS Code
     const prgCodingProblem: Problem = {
@@ -375,20 +445,56 @@ async function runTests() {
     assert.equal(summary.stayedCount, 1);
     assert.equal(summary.nextDueDate, "2026-11-20");
 
+    const missed = getMissedReviewItems(sampleItems, outcomes, {
+      "PRG-T01-C01-U01": "Array Guards",
+    });
+    assert.deepEqual(missed, [
+      {
+        drillId: "DRL-PRG-T01-C01-U01-01",
+        qid: "Q01",
+        unitCode: "PRG-T01-C01-U01",
+        unitTitle: "Array Guards",
+        href: "/code/DRL-PRG-T01-C01-U01-01?q=Q01",
+      },
+    ]);
+
     const endHtml = renderToStaticMarkup(
       <DailyReviewView
         items={sampleItems}
         completed={true}
         summary={summary}
+        stillDueCount={4}
+        missedItems={missed}
+        onReviewMore={() => {}}
         lastDrillHref="/math/DRL-MTH-T01-C04-U01-01"
       />
     );
     assert.match(endHtml, /Review complete/);
     assert.match(endHtml, /2 \/ 3 correct/);
+    assert.match(endHtml, /Still due 4/);
     assert.match(endHtml, /1 moved up a level/);
     assert.match(endHtml, /1 moved down a level/);
     assert.match(endHtml, /2026-11-20/);
+    assert.match(endHtml, /Review 4 more/);
+    assert.match(endHtml, /Missed \(1\)/);
+    assert.match(endHtml, /Array Guards/);
+    assert.match(endHtml, /href="\/code\/DRL-PRG-T01-C01-U01-01\?q=Q01"/);
+    assert.match(endHtml, /Open in drill/);
     assert.match(endHtml, /href="\/math\/DRL-MTH-T01-C04-U01-01"/);
+
+    // When stillDueCount > 8, primary button caps batch size at 8 ("Review 8 more")
+    const endLargeBacklogHtml = renderToStaticMarkup(
+      <DailyReviewView
+        items={sampleItems}
+        completed={true}
+        summary={summary}
+        stillDueCount={20}
+        onReviewMore={() => {}}
+        lastDrillHref="/math/DRL-MTH-T01-C04-U01-01"
+      />
+    );
+    assert.match(endLargeBacklogHtml, /Still due 20/);
+    assert.match(endLargeBacklogHtml, /Review 8 more/);
   }
 
   // -------------------------------------------------------------------------

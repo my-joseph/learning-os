@@ -45,6 +45,7 @@ export interface ProblemAssistSectionProps {
   onMarkDivergedStep: (stepIdx: number) => void;
   onReset: () => void;
   onSkip?: () => void;
+  skipLabel?: string;
   // Optional equation set-up props (Math workspace)
   hasSetup?: boolean;
   showSetup?: boolean;
@@ -72,6 +73,7 @@ export const ProblemAssistSection: React.FC<ProblemAssistSectionProps> = ({
   onMarkDivergedStep,
   onReset,
   onSkip,
+  skipLabel = "Skip",
   hasSetup = false,
   showSetup = false,
   setupUnopenedUnattempted = false,
@@ -152,7 +154,7 @@ export const ProblemAssistSection: React.FC<ProblemAssistSectionProps> = ({
             onClick={onSkip}
             className="inline-flex items-center gap-1 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors ml-auto"
           >
-            <span>Skip</span>
+            <span>{skipLabel}</span>
           </button>
         )}
       </div>
