@@ -70,7 +70,7 @@ const problemAssistSection = readFileSync("src/components/workspace/ProblemAssis
 const problemSelfEval = readFileSync("src/components/workspace/ProblemSelfEval.tsx", "utf8");
 const problemNavFooter = readFileSync("src/components/workspace/ProblemNavFooter.tsx", "utf8");
 const answerResultCard = readFileSync("src/components/AnswerResultCard.tsx", "utf8");
-const pagination = readFileSync("src/components/QuizPaginationBar.tsx", "utf8");
+const stepper = readFileSync("src/components/Stepper.tsx", "utf8");
 const studioShell = readFileSync("src/components/shell/StudioShell.tsx", "utf8");
 const studioHeader = readFileSync("src/components/shell/StudioHeader.tsx", "utf8");
 const workspaceRoute = readFileSync("src/app/api/workspace/route.ts", "utf8");
@@ -105,10 +105,10 @@ assert.match(problemSelfEval, /border-rose-600/);
 assert.doesNotMatch(mathWorkspace, /Review &amp; Sync|Review & Sync/);
 assert.doesNotMatch(codeDashboard, /Review &amp; Sync|Review & Sync/);
 assert.doesNotMatch(problemNavFooter, /Review &amp; Sync|Review & Sync/);
-assert.match(pagination, /bg-emerald-700/);
-assert.match(pagination, /overflow-x-auto/);
-assert.match(pagination, /justify-center/);
-assert.match(pagination, /aria-label="Review &amp; sync"|aria-label="Review & sync"/);
+assert.match(stepper, /bg-indigo-600/);
+assert.match(stepper, /overflow-x-auto/);
+assert.match(stepper, /justify-center/);
+assert.match(stepper, /Review &amp; sync/);
 assert.match(studioShell, /<h1 className="sr-only"/);
 assert.match(studioShell, /fixed left-3 top-1\/2/);
 assert.match(studioShell, /Due today &amp; weak spots/);
@@ -492,7 +492,7 @@ const quizTilesHtml = renderToStaticMarkup(
 );
 assert.match(
   quizTilesHtml,
-  /<button[^>]*aria-label="Review &amp; sync"[^>]*aria-pressed="false"[^>]*title="Review &amp; sync"[^>]*><svg[^>]*>.*<\/svg><\/button><\/div><\/div>$/
+  /<button[^>]*aria-label="Review &amp; sync, 0 of 1 answered"[^>]*aria-pressed="false"[^>]*title="Review &amp; sync, 0 of 1 answered"[^>]*>.*<svg[^>]*>.*<\/svg>.*<\/button><\/li><\/ol><\/div><\/nav><\/div>$/
 );
 assert.doesNotMatch(quizTilesHtml, />Review<\/span>/);
 
@@ -507,7 +507,7 @@ const reviewTilesHtml = renderToStaticMarkup(
 );
 assert.match(
   reviewTilesHtml,
-  /<button[^>]*aria-label="Review &amp; sync"[^>]*aria-pressed="true"[^>]*aria-current="step"[^>]*title="Review &amp; sync"[^>]*class="[^"]*ring-indigo-600[^"]*"[^>]*><svg[^>]*>.*<\/svg><\/button><\/div><\/div>$/
+  /<button[^>]*aria-label="Review &amp; sync, 0 of 1 answered"[^>]*aria-pressed="true"[^>]*aria-current="step"[^>]*title="Review &amp; sync, 0 of 1 answered"[^>]*>.*ring-indigo-600\/15.*<svg[^>]*>.*<\/svg>.*<\/button><\/li><\/ol><\/div><\/nav><\/div>$/
 );
 
 // Verify DrillNotFoundCard renders visible h1 for drills and labs
