@@ -180,6 +180,18 @@ def check_line_number(spec: dict, raw: str) -> dict:
 
 def check_choice(spec: dict, raw: str) -> dict:
     u = raw.strip().upper()
+    options = spec.get("options")
+    if isinstance(options, list) and options:
+        valid_ids = {
+            str(opt["id"]).strip().upper() for opt in options if isinstance(opt, dict) and opt.get("id") is not None
+        }
+        if valid_ids and u not in valid_ids:
+            return {
+                "verdict": "invalid input",
+                "message": f"Option '{raw.strip()}' is not one of the available choices.",
+                "components": [],
+                "diagnostics": [],
+            }
     c = str(spec.get("correct", "")).strip().upper()
     ok = u == c
     return {
