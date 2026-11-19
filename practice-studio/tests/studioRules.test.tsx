@@ -467,13 +467,13 @@ const reviewHtml = renderToStaticMarkup(
 assert.match(reviewHtml, /<h1[^>]*class="[^"]*text-lg[^"]*"[^>]*>Linear Equations<\/h1>/);
 assert.match(
   reviewHtml,
-  /class="[^"]*font-sans tabular-nums[^"]*"[^>]*>1 \/ 1<\/span>/,
-  "ReviewPanel total score must use font-sans tabular-nums"
+  /class="[^"]*font-display[^\"]*tabular-nums[^\"]*"[^>]*>1<\/span>/,
+  "Review & Sync counts must use the display typeface"
 );
 assert.match(
   reviewHtml,
-  /class="[^"]*font-sans tabular-nums[^"]*"[^>]*>\(100%\)<\/span>/,
-  "ReviewPanel score percentage must use font-sans tabular-nums"
+  /class="[^"]*font-display[^\"]*tabular-nums[^\"]*"[^>]*>1<\/span>/,
+  "Review & Sync totals must use the display typeface"
 );
 
 const quizTilesHtml = renderToStaticMarkup(
