@@ -1,21 +1,41 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import type {
   DueTodayResponse,
-  DueTodayUnit,
+  UnitMasteryContext,
   WeakSpotUnit,
   WeakSpotsResponse,
 } from "@/lib/dueToday";
+import type { Workspace } from "@/lib/routes";
+
+interface ReviewItemsApiPayload {
+  totalDue?: number;
+  bySubject?: { MTH?: number; PRG?: number };
+  estimatedMinutes?: number;
+  nextDueDate?: string | null;
+  items?: Array<{ unitCode?: string }>;
+}
 
 export function useSidePanelData(
+  workspace: Workspace,
   unitCode?: string | null,
   refreshKey?: string | null
 ) {
-  const [dueUnits, setDueUnits] = useState<DueTodayUnit[]>([]);
+  const workspaceSubject = workspace === "code" ? "PRG" : "MTH";
+  const otherSubject = workspace === "code" ? "MTH" : "PRG";
+
   const [dueReviewCount, setDueReviewCount] = useState<number>(0);
+  const [otherWorkspaceDueCount, setOtherWorkspaceDueCount] = useState<number>(0);
+  const [estimatedMinutes, setEstimatedMinutes] = useState<number>(0);
+  const [nextDueDate, setNextDueDate] = useState<string | null>(null);
+  const [dueUnitCodes, setDueUnitCodes] = useState<string[]>([]);
   const [dueLoading, setDueLoading] = useState(true);
   const [dueError, setDueError] = useState<string | null>(null);
+
+  const [unitMasteryByCode, setUnitMasteryByCode] = useState<
+    Record<string, UnitMasteryContext>
+  >({});
 
   const [weakSpotUnits, setWeakSpotUnits] = useState<WeakSpotUnit[]>([]);
   const [weakLoading, setWeakLoading] = useState(false);
@@ -26,54 +46,70 @@ export function useSidePanelData(
     setDueLoading(true);
     setDueError(null);
 
-    fetch("/api/due-today", { cache: "no-store" })
+    fetch(`/api/review-items?scope=${encodeURIComponent(`subject:${workspaceSubject}`)}`, {
+      cache: "no-store",
+    })
       .then(async (res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return (await res.json()) as DueTodayResponse;
+        return (await res.json()) as ReviewItemsApiPayload;
       })
       .then((data) => {
-        if (!cancelled) {
-          setDueUnits(Array.isArray(data.units) ? data.units : []);
-        }
+        if (cancelled) return;
+        const items = Array.isArray(data.items) ? data.items : [];
+        const count =
+          typeof data.totalDue === "number" ? data.totalDue : items.length;
+        const otherCount =
+          typeof data.bySubject?.[otherSubject] === "number"
+            ? data.bySubject[otherSubject]!
+            : 0;
+        const minutes =
+          typeof data.estimatedMinutes === "number" ? data.estimatedMinutes : 0;
+        const codes = Array.from(
+          new Set(
+            items
+              .map((it) => (typeof it?.unitCode === "string" ? it.unitCode : ""))
+              .filter(Boolean)
+          )
+        );
+
+        setDueReviewCount(Math.max(0, count));
+        setOtherWorkspaceDueCount(Math.max(0, otherCount));
+        setEstimatedMinutes(Math.max(0, minutes));
+        setNextDueDate(typeof data.nextDueDate === "string" ? data.nextDueDate : null);
+        setDueUnitCodes(codes);
       })
       .catch((err: unknown) => {
         if (!cancelled) {
-          setDueError(err instanceof Error ? err.message : "Failed to load due units");
+          setDueError(err instanceof Error ? err.message : "Failed to load reviews");
+          setDueReviewCount(0);
+          setOtherWorkspaceDueCount(0);
+          setEstimatedMinutes(0);
+          setDueUnitCodes([]);
         }
       })
       .finally(() => {
         if (!cancelled) setDueLoading(false);
       });
 
-    fetch("/api/review-items", { cache: "no-store" })
+    // Unit mastery dots & cap reason are context only (never used for counts or to-do lists).
+    fetch("/api/due-today", { cache: "no-store" })
       .then(async (res) => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return (await res.json()) as {
-          totalDue?: number;
-          items?: unknown[];
-        };
+        if (!res.ok) return null;
+        return (await res.json()) as DueTodayResponse;
       })
       .then((data) => {
-        if (!cancelled) {
-          const count =
-            typeof data.totalDue === "number"
-              ? data.totalDue
-              : Array.isArray(data.items)
-              ? data.items.length
-              : 0;
-          setDueReviewCount(Math.max(0, count));
+        if (!cancelled && data?.unitMastery && typeof data.unitMastery === "object") {
+          setUnitMasteryByCode(data.unitMastery);
         }
       })
       .catch(() => {
-        if (!cancelled) {
-          setDueReviewCount(0);
-        }
+        // Mastery context is optional; ignore transient failures.
       });
 
     return () => {
       cancelled = true;
     };
-  }, [refreshKey]);
+  }, [workspaceSubject, otherSubject, refreshKey]);
 
   useEffect(() => {
     const scope = unitCode?.trim();
@@ -113,9 +149,19 @@ export function useSidePanelData(
     };
   }, [unitCode, refreshKey]);
 
+  const currentUnitMastery = useMemo(() => {
+    const code = unitCode?.trim();
+    if (!code) return null;
+    return unitMasteryByCode[code] ?? null;
+  }, [unitCode, unitMasteryByCode]);
+
   return {
-    dueUnits,
     dueReviewCount,
+    otherWorkspaceDueCount,
+    estimatedMinutes,
+    nextDueDate,
+    dueUnitCodes,
+    currentUnitMastery,
     dueLoading,
     dueError,
     weakSpotUnits,

@@ -241,6 +241,7 @@ export const StudioClient: React.FC<StudioClientProps> = ({
       codeHref={codeHref}
       viewMode={viewMode}
       currentDrill={currentDrill}
+      isLoadingDrill={isLoadingDrill}
       drillNotFound={drillNotFound}
       currentProblemIndex={currentProblemIndex}
       theme={theme}

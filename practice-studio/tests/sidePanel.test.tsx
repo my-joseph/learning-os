@@ -197,11 +197,22 @@ async function runTests() {
       reason: "",
     });
 
-    // 4. Component rendering: Math vs PRG labels, mastery dots, deep links, empty states
+    // 4. Component rendering: one-queue item counts, workspace split, unit mastery context,
+    //    no unit to-do list, loading skeleton while drill loads, and mobile overflow guards
+    assert.ok(due.unitMastery?.["MTH-T09-C01-U01"]);
+    assert.ok(due.unitMastery?.["MTH-T09-C01-U03"], "unitMastery includes non-due units as context");
+
+    // 4a. Math workspace: header count & CTA come from item-level dueReviewCount (NOT dueUnits.length),
+    //     shows "N due · ~M min", "· K in the other workspace", does NOT render dueUnits as a to-do list,
+    //     and keeps current unit mastery dots + "Capped at 2 · …" as context only.
     const mathHtml = renderToStaticMarkup(
       <StudioSidePanel
         workspace="math"
         currentUnitCode="MTH-T09-C01-U01"
+        dueReviewCount={7}
+        otherWorkspaceDueCount={3}
+        estimatedMinutes={11}
+        currentUnitMastery={due.unitMastery?.["MTH-T09-C01-U01"]}
         dueUnits={due.units}
         weakSpotUnits={[
           {
@@ -228,36 +239,53 @@ async function runTests() {
       />
     );
     assert.match(mathHtml, /Due today/);
+    assert.match(mathHtml, />7<\/span>/, "Due today header count must come from item-level dueReviewCount, not dueUnits.length");
+    assert.match(mathHtml, /7 due · ~11 min/);
+    assert.match(mathHtml, /· 3 in the other workspace/);
+    assert.match(mathHtml, /href="\/review\?scope=subject:MTH"/);
+    assert.match(mathHtml, /href="\/review\?scope=subject:PRG"/);
+    assert.match(mathHtml, /Start review/);
+    // Unit mastery context for current unit stays visible with dots and cap reason, NOT as a to-do link:
     assert.match(mathHtml, /Complex Conjugates/);
     assert.match(mathHtml, /Mastery 2 of 4/);
     assert.match(mathHtml, /Capped at 2 · needs one L4 challenge without hints/);
-    assert.doesNotMatch(mathHtml, /Daily review ·/);
-    assert.match(mathHtml, /href="\/math\/DRL-MTH-T09-C01-U01-02"/);
-    assert.match(mathHtml, /href="\/code\/DRL-PRG-T09-C01-01"/);
+    assert.doesNotMatch(
+      mathHtml,
+      /href="\/math\/DRL-MTH-T09-C01-U01-02"/,
+      "Panel must not list due units as a second to-do list"
+    );
+    assert.doesNotMatch(
+      mathHtml,
+      /href="\/code\/DRL-PRG-T09-C01-01"/,
+      "Panel must not list other-workspace due units as a to-do list"
+    );
+    assert.doesNotMatch(mathHtml, /Async Error Boundaries/);
     assert.match(mathHtml, /Repeated traps/);
     assert.match(mathHtml, /c09-sign-flip/);
 
-    const withDailyReviewRowHtml = renderToStaticMarkup(
+    // 4b. Fallback 1.5 min per item when estimatedMinutes is omitted (5 * 1.5 = 7.5 -> ~8 min)
+    const fallbackEstimateHtml = renderToStaticMarkup(
       <StudioSidePanel
         workspace="math"
         currentUnitCode="MTH-T09-C01-U01"
-        dueUnits={due.units}
         dueReviewCount={5}
+        dueUnits={due.units}
         weakSpotUnits={[]}
       />
     );
-    assert.match(withDailyReviewRowHtml, /href="\/review"/);
-    assert.match(withDailyReviewRowHtml, /Daily review · 5 due/);
-    assert.match(
-      withDailyReviewRowHtml,
-      /Capped at 2 · needs one L4 challenge without hints/
-    );
+    assert.match(fallbackEstimateHtml, /5 due · ~8 min/);
+    assert.match(fallbackEstimateHtml, /href="\/review\?scope=subject:MTH"/);
+    assert.doesNotMatch(fallbackEstimateHtml, /in the other workspace/);
 
+    // 4c. Code workspace split: /code shows PRG items and hints MTH count in the other workspace
     const prgHtml = renderToStaticMarkup(
       <StudioSidePanel
         workspace="code"
         currentUnitCode="PRG-T09-C01-U02"
-        dueUnits={[]}
+        dueReviewCount={4}
+        otherWorkspaceDueCount={6}
+        estimatedMinutes={9}
+        currentUnitMastery={due.unitMastery?.["PRG-T09-C01-U02"]}
         weakSpotUnits={[
           {
             unitCode: "PRG-T09-C01-U02",
@@ -283,37 +311,87 @@ async function runTests() {
         ]}
       />
     );
-    assert.match(prgHtml, /Nothing due today/);
+    assert.match(prgHtml, /4 due · ~9 min/);
+    assert.match(prgHtml, /· 6 in the other workspace/);
+    assert.match(prgHtml, /href="\/review\?scope=subject:PRG"/);
+    assert.match(prgHtml, /href="\/review\?scope=subject:MTH"/);
+    assert.match(prgHtml, /Mastery 1 of 4/);
     assert.match(prgHtml, /Checks and lint rules/);
     assert.match(prgHtml, /U-no-input-mutation/);
     assert.match(prgHtml, /<code[^>]*>req\.body<\/code>/);
 
+    // 4d. Empty workspace due queue still shows other-workspace hint and nextDueDate
     const prgEmptyHtml = renderToStaticMarkup(
       <StudioSidePanel
         workspace="code"
         currentUnitCode="PRG-T09-C01-U02"
-        dueUnits={[]}
+        dueReviewCount={0}
+        otherWorkspaceDueCount={2}
+        nextDueDate="2026-11-22"
+        dueUnits={due.units}
         weakSpotUnits={[]}
       />
     );
+    assert.match(prgEmptyHtml, /Nothing due today/);
+    assert.match(prgEmptyHtml, /Next due: 2026-11-22/);
+    assert.match(prgEmptyHtml, /· 2 in the other workspace/);
     assert.match(prgEmptyHtml, /No open check or lint issues in this unit\./);
+    // Header count must NOT show dueUnits.length when dueReviewCount is 0
+    assert.doesNotMatch(prgEmptyHtml, /Due today<\/h2><span[^>]*>2<\/span>/);
+
+    // 4e. Loading skeleton while drill is still loading: NEVER show "Open a drill to see unit weak spots."
+    const loadingDrillHtml = renderToStaticMarkup(
+      <StudioSidePanel
+        workspace="code"
+        currentUnitCode={undefined}
+        drillLoading={true}
+        dueLoading={true}
+        dueReviewCount={0}
+        weakSpotUnits={[]}
+      />
+    );
+    assert.doesNotMatch(
+      loadingDrillHtml,
+      /Open a drill to see unit weak spots/,
+      "Must not show 'Open a drill to see unit weak spots.' while a drill is still loading"
+    );
+    assert.match(loadingDrillHtml, /animate-pulse/);
+    assert.match(loadingDrillHtml, /aria-label="Loading unit weak spots"/);
+    assert.match(loadingDrillHtml, /aria-label="Loading due reviews"/);
+
+    // When NOT loading and no drill is open, the empty prompt IS shown
+    const noDrillOpenHtml = renderToStaticMarkup(
+      <StudioSidePanel
+        workspace="code"
+        currentUnitCode={undefined}
+        drillLoading={false}
+        weakLoading={false}
+        dueReviewCount={0}
+        weakSpotUnits={[]}
+      />
+    );
+    assert.match(noDrillOpenHtml, /Open a drill to see unit weak spots\./);
 
     const embeddedDrawerHtml = renderToStaticMarkup(
       <StudioSidePanel
         workspace="math"
         currentUnitCode="MTH-T09-C01-U01"
-        dueUnits={[]}
+        dueReviewCount={3}
         weakSpotUnits={[]}
         embedded
       />
     );
     assert.doesNotMatch(embeddedDrawerHtml, /rounded-2xl border/, "embedded side panel must not render a nested bordered card");
+    assert.doesNotMatch(embeddedDrawerHtml, /-mx-/, "panel must not use negative horizontal margins that overflow mobile drawer");
+    assert.match(embeddedDrawerHtml, /overflow-x-hidden/);
 
     const shellSource = fs.readFileSync("src/components/shell/StudioShell.tsx", "utf8");
     assert.match(shellSource, /useState\(false\)/, "drawer must be closed by default");
     assert.match(shellSource, /hidden lg:block/, "side panel visible on >=1024px");
     assert.match(shellSource, /lg:hidden/, "drawer only below 1024px");
     assert.match(shellSource, /embedded/, "drawer must pass embedded to StudioSidePanel");
+    assert.match(shellSource, /overflow-x-hidden/, "mobile drawer panel must prevent horizontal overflow");
+    assert.doesNotMatch(shellSource, /calc\(100vw-2\.5rem\)/, "invalid space-less calc() width must not remain on mobile drawer");
 
     fs.rmSync(tmp, { recursive: true, force: true });
     console.log("side panel tests passed");
